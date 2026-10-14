@@ -625,12 +625,20 @@ library "[[@TEST_NAME]]";
 // amended at fill round 10, round 9's review 1 finding MAJOR-1 and review 2
 // finding MAJOR-1).
 template constraint HasFG {
+  // CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self) -> Undefined;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) -> Undefined;
   fn G(self) -> i32;
 }
 
 template constraint HasGF {
   fn G(self) -> i32;
+  // CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self) -> Undefined;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) -> Undefined;
 }
 
@@ -647,10 +655,49 @@ fn CallFG[template T: HasFG](unused x: T) -> i32 { return 0; }
 
 fn CallGF[template T: HasGF](unused x: T) -> i32 { return 0; }
 
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+13]]:44: error: cannot convert type `Lacking` into type implementing `HasFG` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestLacking(l: Lacking) -> i32 { return CallFG(l); }
+// CHECK:STDERR:                                            ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+10]]:44: note: type `Lacking` has no member named `G` required by template constraint `HasFG` [StructuralMemberMissing]
+// CHECK:STDERR: fn TestLacking(l: Lacking) -> i32 { return CallFG(l); }
+// CHECK:STDERR:                                            ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-31]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn G(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-13]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallFG[template T: HasFG](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestLacking(l: Lacking) -> i32 { return CallFG(l); }
 
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+13]]:46: error: cannot convert type `Lacking` into type implementing `HasGF` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestLackingGF(l: Lacking) -> i32 { return CallGF(l); }
+// CHECK:STDERR:                                              ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+10]]:46: note: type `Lacking` has no member named `G` required by template constraint `HasGF` [StructuralMemberMissing]
+// CHECK:STDERR: fn TestLackingGF(l: Lacking) -> i32 { return CallGF(l); }
+// CHECK:STDERR:                                              ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-42]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn G(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-26]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallGF[template T: HasGF](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestLackingGF(l: Lacking) -> i32 { return CallGF(l); }
 
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE+13]]:42: error: cannot convert type `WrongG` into type implementing `HasFG` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestWrongG(w: WrongG) -> i32 { return CallFG(w); }
+// CHECK:STDERR:                                          ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-40]]:3: note: member `G` of type `WrongG` does not match the signature required by template constraint `HasFG` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn G(unused self) -> bool { return true; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-61]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn G(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_member.carbon:[[@LINE-43]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallFG[template T: HasFG](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestWrongG(w: WrongG) -> i32 { return CallFG(w); }
 
 // --- fail_requirement_signature_error_other_constraint.carbon
@@ -662,6 +709,10 @@ library "[[@TEST_NAME]]";
 // & HasG` when a member of `HasF` has an error (D-SC-9 as amended at fill round
 // 10, round 9's review 1 finding MAJOR-1 and review 2 finding MAJOR-1).
 template constraint HasF {
+  // CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self) -> Undefined;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) -> Undefined;
 }
 
@@ -683,10 +734,43 @@ fn CallGF[template T: HasG & HasF](unused x: T) -> i32 { return 0; }
 
 fn CallFI[template T: HasF & I](unused x: T) -> i32 { return 0; }
 
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE+13]]:33: error: cannot convert type `D` into type implementing `HasF & HasG` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestFG(d: D) -> i32 { return CallFG(d); }
+// CHECK:STDERR:                                 ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE+10]]:33: note: type `D` has no member named `G` required by template constraint `HasG` [StructuralMemberMissing]
+// CHECK:STDERR: fn TestFG(d: D) -> i32 { return CallFG(d); }
+// CHECK:STDERR:                                 ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE-23]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn G(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE-15]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallFG[template T: HasF & HasG](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestFG(d: D) -> i32 { return CallFG(d); }
 
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE+13]]:33: error: cannot convert type `D` into type implementing `HasF & HasG` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestGF(d: D) -> i32 { return CallGF(d); }
+// CHECK:STDERR:                                 ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE+10]]:33: note: type `D` has no member named `G` required by template constraint `HasG` [StructuralMemberMissing]
+// CHECK:STDERR: fn TestGF(d: D) -> i32 { return CallGF(d); }
+// CHECK:STDERR:                                 ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE-38]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn G(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE-28]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallGF[template T: HasG & HasF](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestGF(d: D) -> i32 { return CallGF(d); }
 
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE+7]]:33: error: cannot convert type `D` into type implementing `I & HasF` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestFI(d: D) -> i32 { return CallFI(d); }
+// CHECK:STDERR:                                 ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_other_constraint.carbon:[[@LINE-35]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallFI[template T: HasF & I](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestFI(d: D) -> i32 { return CallFI(d); }
 
 // --- fail_requirement_signature_error_require.carbon
@@ -697,6 +781,10 @@ library "[[@TEST_NAME]]";
 // the interface an interface requires when another member of it has an error
 // (D-SC-9 as amended at fill round 10, round 9's review 1 finding MAJOR-1).
 template constraint HasFG {
+  // CHECK:STDERR: fail_requirement_signature_error_require.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self) -> Undefined;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) -> Undefined;
   fn G(self) -> i32;
 }
@@ -707,6 +795,10 @@ interface I {
 
 class Lacking {
   fn F(unused self) -> i32 { return 1; }
+  // CHECK:STDERR: fail_requirement_signature_error_require.carbon:[[@LINE+4]]:3: error: interface `I` being implemented requires that `Lacking` implements `HasFG` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I {}
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I {}
 }
 
@@ -730,16 +822,28 @@ template constraint HasFG {
 }
 
 class ReturnError {
+  // CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE+4]]:39: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, unused x: i32) -> Undefined { return 0; }
+  // CHECK:STDERR:                                       ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(unused self, unused x: i32) -> Undefined { return 0; }
   fn G(unused self) -> i32 { return 2; }
 }
 
 class ParamError {
+  // CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE+4]]:31: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, unused x: Undefined) -> i32 { return 1; }
+  // CHECK:STDERR:                               ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(unused self, unused x: Undefined) -> i32 { return 1; }
   fn G(unused self) -> i32 { return 2; }
 }
 
 class LackingG {
+  // CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE+4]]:31: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, unused x: Undefined) -> i32 { return 1; }
+  // CHECK:STDERR:                               ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(unused self, unused x: Undefined) -> i32 { return 1; }
 }
 
@@ -747,6 +851,19 @@ fn Call[template T: HasFG](unused x: T) -> i32 { return 0; }
 
 fn Test(r: ReturnError, p: ParamError) -> i32 { return Call(r) + Call(p); }
 
+// CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE+13]]:45: error: cannot convert type `LackingG` into type implementing `HasFG` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestLacking(l: LackingG) -> i32 { return Call(l); }
+// CHECK:STDERR:                                             ^~~~~~~
+// CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE+10]]:45: note: type `LackingG` has no member named `G` required by template constraint `HasFG` [StructuralMemberMissing]
+// CHECK:STDERR: fn TestLacking(l: LackingG) -> i32 { return Call(l); }
+// CHECK:STDERR:                                             ^~~~~~~
+// CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE-39]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn G(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error.carbon:[[@LINE-13]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn Call[template T: HasFG](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestLacking(l: LackingG) -> i32 { return Call(l); }
 
 // --- fail_todo_requirement_signature_error_overload.carbon
@@ -759,6 +876,10 @@ library "[[@TEST_NAME]]";
 // facet type on trunk 0bdce60a5 (fill round 10, round 9's review 1 finding
 // MINOR-1).
 template constraint H {
+  // CHECK:STDERR: fail_todo_requirement_signature_error_overload.carbon:[[@LINE+4]]:11: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(x: Undefined) -> i32;
+  // CHECK:STDERR:           ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(x: Undefined) -> i32;
 }
 
@@ -769,6 +890,16 @@ class C {
 overload fn P[template T: H](unused x: T) -> i32 { return 10; }
 overload fn P(unused x: i32) -> i32 { return 20; }
 
+// CHECK:STDERR: fail_todo_requirement_signature_error_overload.carbon:[[@LINE+10]]:31: error: no member of overload set `P` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Test(c: C) -> i32 { return P(c); }
+// CHECK:STDERR:                               ^~~~
+// CHECK:STDERR: fail_todo_requirement_signature_error_overload.carbon:[[@LINE-6]]:1: note: candidate has generic parameters that could not be deduced [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn P[template T: H](unused x: T) -> i32 { return 10; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_todo_requirement_signature_error_overload.carbon:[[@LINE-8]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn P(unused x: i32) -> i32 { return 20; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Test(c: C) -> i32 { return P(c); }
 
 // --- fail_todo_requirement_signature_error_blanket.carbon
@@ -780,6 +911,10 @@ library "[[@TEST_NAME]]";
 // does for a blanket impl whose own constraint has an error (fill round 10,
 // round 9's review 2 finding MINOR-1).
 template constraint HasF {
+  // CHECK:STDERR: fail_todo_requirement_signature_error_blanket.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self) -> Undefined;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) -> Undefined;
 }
 
@@ -795,4 +930,8 @@ class D {
   fn F(unused self) -> i32 { return 1; }
 }
 
+// CHECK:STDERR: fail_todo_requirement_signature_error_blanket.carbon:[[@LINE+4]]:31: error: cannot access member of interface `I` in type `D` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR: fn Test(d: D) -> i32 { return d.(I.K)(); }
+// CHECK:STDERR:                               ^~~~~~~
+// CHECK:STDERR:
 fn Test(d: D) -> i32 { return d.(I.K)(); }

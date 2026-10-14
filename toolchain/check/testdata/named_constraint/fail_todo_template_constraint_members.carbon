@@ -66,6 +66,10 @@ library "[[@TEST_NAME]]";
 // review 2 finding MINOR-2). A use of a type with such a member reports
 // nothing further.
 template constraint HasF {
+  // CHECK:STDERR: fail_todo_tuple_pattern_param.carbon:[[@LINE+4]]:3: error: semantics TODO: `tuple pattern parameter in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(self, (a: i32, b: i32));
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn F(self, (a: i32, b: i32));
 }
 

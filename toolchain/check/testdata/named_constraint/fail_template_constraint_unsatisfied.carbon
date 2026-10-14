@@ -1943,6 +1943,14 @@ class DefaultExpr {
 }
 
 class DefaultTupleExpr {
+  // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+8]]:42: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, (1, unused w: i32) = Undefined) -> i32 { return 1; }
+  // CHECK:STDERR:                                          ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+4]]:22: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(unused self, (1, unused w: i32) = Undefined) -> i32 { return 1; }
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
   fn F(unused self, (1, unused w: i32) = Undefined) -> i32 { return 1; }
 }
 
@@ -2002,8 +2010,8 @@ fn CallFormErrorDefault[template T: HasFormErrorDefault](unused x: T) -> i32 {
 // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:40: error: cannot convert type `VarExpr` into type implementing `HasVar` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestVar(v: VarExpr) -> i32 { return CallVar(v); }
 // CHECK:STDERR:                                        ^~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-50]]:1: in import [InImport]
-// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:14:3: note: member `F` of type `VarExpr` does not match the signature required by template constraint `HasVar` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-53]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:16:3: note: member `F` of type `VarExpr` does not match the signature required by template constraint `HasVar` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, var z) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-40]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -2020,8 +2028,8 @@ fn TestVarFormError(v: VarExpr) -> i32 { return CallFormError(v); }
 // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:48: error: cannot convert type `DefaultExpr` into type implementing `HasDefault` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefault(d: DefaultExpr) -> i32 { return CallDefault(d); }
 // CHECK:STDERR:                                                ^~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-68]]:1: in import [InImport]
-// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:26:3: note: member `F` of type `DefaultExpr` does not match the signature required by template constraint `HasDefault` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-71]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:28:3: note: member `F` of type `DefaultExpr` does not match the signature required by template constraint `HasDefault` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, (z) = 1) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-54]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -2036,8 +2044,8 @@ fn TestDefault(d: DefaultExpr) -> i32 { return CallDefault(d); }
 // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:57: error: cannot convert type `DefaultExpr` into type implementing `HasFormError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultFormError(d: DefaultExpr) -> i32 { return CallFormError(d); }
 // CHECK:STDERR:                                                         ^~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-84]]:1: in import [InImport]
-// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:26:3: note: member `F` of type `DefaultExpr` does not match the signature required by template constraint `HasFormError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-87]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:28:3: note: member `F` of type `DefaultExpr` does not match the signature required by template constraint `HasFormError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, (z) = 1) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-62]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -2053,6 +2061,20 @@ fn TestDefaultFormErrorDefault(d: DefaultExpr) -> i32 {
   return CallFormErrorDefault(d);
 }
 
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:58: error: cannot convert type `DefaultTupleExpr` into type implementing `HasDefault` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestDefaultTuple(d: DefaultTupleExpr) -> i32 { return CallDefault(d); }
+// CHECK:STDERR:                                                          ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-107]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:40:3: note: member `F` of type `DefaultTupleExpr` does not match the signature required by template constraint `HasDefault` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn F(unused self, (1, unused w: i32) = Undefined) -> i32 { return 1; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-90]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self, y: i32 = 1) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-72]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallDefault[template T: HasDefault](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestDefaultTuple(d: DefaultTupleExpr) -> i32 { return CallDefault(d); }
 
 fn TestDefaultTupleFormErrorDefault(d: DefaultTupleExpr) -> i32 {

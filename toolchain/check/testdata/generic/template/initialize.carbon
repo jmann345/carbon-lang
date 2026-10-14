@@ -350,6 +350,122 @@ fn Use(o: Outer) -> i32 {
   return F(o);
 }
 
+
+// --- return_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn M[template T: type](x: T) -> (T, T) {
+  return (x, 1);
+}
+//@dump-sem-ir-end
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32);
+}
+
+// --- return_struct_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> {.a: T, .b: T} {
+  return {.a = x, .b = 2};
+}
+
+fn Use() -> {.a: i32, .b: i32} {
+  return M(4 as i32);
+}
+
+// --- return_array_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> array(T, 2) {
+  return (x, 3);
+}
+
+fn Use() -> array(i32, 2) {
+  return M(4 as i32);
+}
+
+// --- var_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> (T, T) {
+  var p: (T, T) = (x, 1);
+  return p;
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32);
+}
+
+// --- assign_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T, y: T) -> (T, T) {
+  var t: (T, T) = (x, y);
+  t = (x, 1);
+  return t;
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32, 9 as i32);
+}
+
+// --- return_nested_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> ((T, T), T) {
+  return ((x, 2), 3);
+}
+
+fn Use() -> ((i32, i32), i32) {
+  return M(4 as i32);
+}
+
+// --- template_value_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M(template N: i32, x: i32) -> (i32, i32) {
+  return (N, x);
+}
+
+fn Use() -> (i32, i32) {
+  return M(3, 4);
+}
+
+// --- return_class_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(T: type) {
+  var a: T;
+  var b: T;
+}
+
+fn M[template T: type](x: T) -> P(T) {
+  return {.a = x, .b = 1};
+}
+
+fn Use() -> P(i32) {
+  return M(4 as i32);
+}
+
+// --- var_class_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(T: type) {
+  var a: T;
+  var b: T;
+}
+
+fn M[template T: type](x: T) -> T {
+  var p: P(T) = {.a = x, .b = 2};
+  return p.b;
+}
+
+fn Use() -> i32 {
+  return M(4 as i32);
+}
+
 // CHECK:STDOUT: --- return_tuple.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
@@ -1506,118 +1622,221 @@ fn Use(o: Outer) -> i32 {
 // CHECK:STDOUT:   %.loc5_26.6 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-
-// --- return_tuple_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-//@dump-sem-ir-begin
-fn M[template T: type](x: T) -> (T, T) {
-  return (x, 1);
-}
-//@dump-sem-ir-end
-
-fn Use() -> (i32, i32) {
-  return M(4 as i32);
-}
-
-// --- return_struct_constant_field.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> {.a: T, .b: T} {
-  return {.a = x, .b = 2};
-}
-
-fn Use() -> {.a: i32, .b: i32} {
-  return M(4 as i32);
-}
-
-// --- return_array_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> array(T, 2) {
-  return (x, 3);
-}
-
-fn Use() -> array(i32, 2) {
-  return M(4 as i32);
-}
-
-// --- var_tuple_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> (T, T) {
-  var p: (T, T) = (x, 1);
-  return p;
-}
-
-fn Use() -> (i32, i32) {
-  return M(4 as i32);
-}
-
-// --- assign_tuple_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T, y: T) -> (T, T) {
-  var t: (T, T) = (x, y);
-  t = (x, 1);
-  return t;
-}
-
-fn Use() -> (i32, i32) {
-  return M(4 as i32, 9 as i32);
-}
-
-// --- return_nested_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> ((T, T), T) {
-  return ((x, 2), 3);
-}
-
-fn Use() -> ((i32, i32), i32) {
-  return M(4 as i32);
-}
-
-// --- template_value_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M(template N: i32, x: i32) -> (i32, i32) {
-  return (N, x);
-}
-
-fn Use() -> (i32, i32) {
-  return M(3, 4);
-}
-
-// --- return_class_constant_field.carbon
-library "[[@TEST_NAME]]";
-
-class P(T: type) {
-  var a: T;
-  var b: T;
-}
-
-fn M[template T: type](x: T) -> P(T) {
-  return {.a = x, .b = 1};
-}
-
-fn Use() -> P(i32) {
-  return M(4 as i32);
-}
-
-// --- var_class_constant_field.carbon
-library "[[@TEST_NAME]]";
-
-class P(T: type) {
-  var a: T;
-  var b: T;
-}
-
-fn M[template T: type](x: T) -> T {
-  var p: P(T) = {.a = x, .b = 2};
-  return p.b;
-}
-
-fn Use() -> i32 {
-  return M(4 as i32);
-}
+// CHECK:STDOUT: --- return_tuple_constant_element.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt.3a0592.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0, template [template]
+// CHECK:STDOUT:   %T.67db0b.1: type = symbolic_binding T, 0, template [template]
+// CHECK:STDOUT:   %pattern_type.51d1c4.1: type = pattern_type %T.67db0b.1 [template]
+// CHECK:STDOUT:   %x.param_patt.91d: %pattern_type.51d1c4.1 = value_param_pattern [template]
+// CHECK:STDOUT:   %x.patt.260: %pattern_type.51d1c4.1 = wrapper_binding_pattern x, %x.param_patt.91d [template]
+// CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
+// CHECK:STDOUT:   %tuple.3df: %tuple.type.693 = tuple_value (%T.67db0b.1, %T.67db0b.1) [template]
+// CHECK:STDOUT:   %tuple.type.07a: type = tuple_type (%T.67db0b.1, %T.67db0b.1) [template]
+// CHECK:STDOUT:   %.ce8b: Core.Form = init_form %tuple.type.07a [template]
+// CHECK:STDOUT:   %pattern_type.c3f: type = pattern_type %tuple.type.07a [template]
+// CHECK:STDOUT:   %return.param_patt.e22: %pattern_type.c3f = out_param_pattern [template]
+// CHECK:STDOUT:   %return.patt.1a0: %pattern_type.c3f = return_slot_pattern %return.param_patt.e22, %tuple.type.07a [template]
+// CHECK:STDOUT:   %M.type: type = fn_type @M [concrete]
+// CHECK:STDOUT:   %M: %M.type = struct_value () [concrete]
+// CHECK:STDOUT:   %require_complete.9443dd.1: <witness> = require_complete_type %T.67db0b.1 [template]
+// CHECK:STDOUT:   %require_complete.22a: <witness> = require_complete_type %tuple.type.07a [template]
+// CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
+// CHECK:STDOUT:   %tuple.type.f3b: type = tuple_type (%T.67db0b.1, Core.IntLiteral) [template]
+// CHECK:STDOUT:   %tuple.type.f7a: type = tuple_type (<instruction>) [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.ac2: ref <instruction> = splice_block %tuple.elem0 {
+// CHECK:STDOUT:       %tuple.elem0: ref @M.%T.loc4_16.1 (%T.67db0b.1) = tuple_access @M.%return.param, element0
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %.b669fb.1: %T.67db0b.1 = splice_inst @M.%tuple.elem0.loc5_15.1 [template]
+// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.7a3: ref <instruction> = splice_block %tuple.elem1 {
+// CHECK:STDOUT:       %tuple.elem1: ref @M.%T.loc4_16.1 (%T.67db0b.1) = tuple_access @M.%return.param, element1
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %.b669fb.2: %T.67db0b.1 = splice_inst @M.%tuple.elem0.loc5_15.2 [template]
+// CHECK:STDOUT:   %tuple.8e4: %tuple.type.07a = tuple_value (%.b669fb.1, %.b669fb.2) [template]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %tuple.94e: %tuple.type.693 = tuple_value (%i32, %i32) [concrete]
+// CHECK:STDOUT:   %tuple.type.e55: type = tuple_type (%i32, %i32) [concrete]
+// CHECK:STDOUT:   %.c11: Core.Form = init_form %tuple.type.e55 [concrete]
+// CHECK:STDOUT:   %pattern_type.394: type = pattern_type %tuple.type.e55 [concrete]
+// CHECK:STDOUT:   %return.param_patt.a90: %pattern_type.394 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.2ed: %pattern_type.394 = return_slot_pattern %return.param_patt.a90, %tuple.type.e55 [concrete]
+// CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
+// CHECK:STDOUT:   %complete_type.f8a: <witness> = complete_type_witness %i32.builtin [concrete]
+// CHECK:STDOUT:   %To.fe9: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
+// CHECK:STDOUT:   %x.param_patt.cee: %pattern_type.6b6 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %x.patt.e3b: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt.cee [concrete]
+// CHECK:STDOUT:   %complete_type.6c4: <witness> = complete_type_witness %tuple.type.e55 [concrete]
+// CHECK:STDOUT:   %tuple.type.66e: type = tuple_type (%i32, Core.IntLiteral) [concrete]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.3f6: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.4f6: %Int.as.Copy.impl.Op.type.3f6 = struct_value () [concrete]
+// CHECK:STDOUT:   %Copy.facet: %Copy.type = facet_value %i32, (%Copy.impl_witness.b51) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.381: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet) [concrete]
+// CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.46b: init %i32 = splice_block %.e13 {
+// CHECK:STDOUT:       %.968: %i32 = specific_inst @M.%x.ref, @M(%i32)
+// CHECK:STDOUT:       %impl.elem0.882: %.737 = impl_witness_access %Copy.impl_witness.b51, element0 [concrete = %Int.as.Copy.impl.Op.4f6]
+// CHECK:STDOUT:       %bound_method.906: <bound method> = bound_method %.968, %impl.elem0.882
+// CHECK:STDOUT:       %specific_fn.96a: <specific function> = specific_function %impl.elem0.882, @Int.as.Copy.impl.Op(%int_32) [concrete = %Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:       %bound_method.875: <bound method> = bound_method %.968, %specific_fn.96a
+// CHECK:STDOUT:       %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.875(%.968)
+// CHECK:STDOUT:       %tuple.elem0: ref @M.%T.loc4_16.1 (%T.67db0b.1) = tuple_access @M.%return.param, element0
+// CHECK:STDOUT:       %.11a: ref %i32 = specific_inst %tuple.elem0, @M(%i32)
+// CHECK:STDOUT:       %.e13: init %i32 to %.11a = in_place_init %Int.as.Copy.impl.Op.call
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %tuple.24243e.1: %tuple.type.f7a = tuple_value (%inst.splice_block.426619.3) [concrete]
+// CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%To.fe9) [symbolic]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.845: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74 = struct_value () [symbolic]
+// CHECK:STDOUT:   %ImplicitAs.impl_witness.a2a: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.1aa, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_32) [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ba: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_32) [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ba = struct_value () [concrete]
+// CHECK:STDOUT:   %ImplicitAs.facet: %ImplicitAs.type.914 = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.a2a) [concrete]
+// CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.8eb: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%i32, %ImplicitAs.facet) [concrete]
+// CHECK:STDOUT:   %.b7a: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.8eb, %ImplicitAs.facet [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert(%int_32) [concrete]
+// CHECK:STDOUT:   %bound_method.953: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
+// CHECK:STDOUT:   %int_1.0c6: %i32 = int_value 1 [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.4: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.8d0: init %i32 = splice_block %.a11 [concrete = %int_1.0c6] {
+// CHECK:STDOUT:       %impl.elem0.0e6: %.b7a = impl_witness_access %ImplicitAs.impl_witness.a2a, element0 [concrete = %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
+// CHECK:STDOUT:       %bound_method.ba1: <bound method> = bound_method %int_1.5b8, %impl.elem0.0e6 [concrete = %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
+// CHECK:STDOUT:       %specific_fn.ab8: <specific function> = specific_function %impl.elem0.0e6, @Core.IntLiteral.as.ImplicitAs.impl.Convert(%int_32) [concrete = %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
+// CHECK:STDOUT:       %bound_method.fd6: <bound method> = bound_method %int_1.5b8, %specific_fn.ab8 [concrete = %bound_method.953]
+// CHECK:STDOUT:       %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.fd6(%int_1.5b8) [concrete = %int_1.0c6]
+// CHECK:STDOUT:       %tuple.elem1: ref @M.%T.loc4_16.1 (%T.67db0b.1) = tuple_access @M.%return.param, element1
+// CHECK:STDOUT:       %.fce: ref %i32 = specific_inst %tuple.elem1, @M(%i32)
+// CHECK:STDOUT:       %.a11: init %i32 to %.fce = in_place_init %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = %int_1.0c6]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %tuple.24243e.2: %tuple.type.f7a = tuple_value (%inst.splice_block.426619.4) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
+// CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %M.decl: %M.type = fn_decl @M [concrete = constants.%M] {
+// CHECK:STDOUT:     %T.patt.loc4_16.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0, template [template = %T.patt.loc4_16.2 (constants.%T.patt.3a0592.1)]
+// CHECK:STDOUT:     %x.param_patt.loc4_25.1: @M.%pattern_type.loc4_25 (%pattern_type.51d1c4.1) = value_param_pattern [template = %x.param_patt.loc4_25.2 (constants.%x.param_patt.91d)]
+// CHECK:STDOUT:     %x.patt.loc4_25.1: @M.%pattern_type.loc4_25 (%pattern_type.51d1c4.1) = wrapper_binding_pattern x, %x.param_patt.loc4_25.1 [template = %x.patt.loc4_25.2 (constants.%x.patt.260)]
+// CHECK:STDOUT:     %return.param_patt.loc4_38.1: @M.%pattern_type.loc4_38 (%pattern_type.c3f) = out_param_pattern [template = %return.param_patt.loc4_38.2 (constants.%return.param_patt.e22)]
+// CHECK:STDOUT:     %return.patt.loc4_30.1: @M.%pattern_type.loc4_38 (%pattern_type.c3f) = return_slot_pattern %return.param_patt.loc4_38.1, %.loc4_38.3 [template = %return.patt.loc4_30.2 (constants.%return.patt.1a0)]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %T.ref.loc4_34: type = name_ref T, %T.loc4_16.2 [template = %T.loc4_16.1 (constants.%T.67db0b.1)]
+// CHECK:STDOUT:     %T.ref.loc4_37: type = name_ref T, %T.loc4_16.2 [template = %T.loc4_16.1 (constants.%T.67db0b.1)]
+// CHECK:STDOUT:     %.loc4_38.2: %tuple.type.693 = tuple_literal (%T.ref.loc4_34, %T.ref.loc4_37) [template = %tuple.loc4 (constants.%tuple.3df)]
+// CHECK:STDOUT:     %.loc4_38.3: type = converted %.loc4_38.2, constants.%tuple.type.07a [template = %tuple.type.loc4 (constants.%tuple.type.07a)]
+// CHECK:STDOUT:     %.loc4_38.4: Core.Form = init_form %.loc4_38.3 [template = %.loc4_38.1 (constants.%.ce8b)]
+// CHECK:STDOUT:     %.loc4_18.1: type = splice_block %.loc4_18.2 [concrete = type] {
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.loc4_18.2: type = type_literal type [concrete = type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc4_16.2: type = symbolic_binding T, 0, template [template = %T.loc4_16.1 (constants.%T.67db0b.1)]
+// CHECK:STDOUT:     %x.param: @M.%T.loc4_16.1 (%T.67db0b.1) = value_param call_param0
+// CHECK:STDOUT:     %T.ref.loc4_27: type = name_ref T, %T.loc4_16.2 [template = %T.loc4_16.1 (constants.%T.67db0b.1)]
+// CHECK:STDOUT:     %x: @M.%T.loc4_16.1 (%T.67db0b.1) = wrapper_binding x, %x.param
+// CHECK:STDOUT:     %return.param: ref @M.%tuple.type.loc4 (%tuple.type.07a) = out_param call_param1
+// CHECK:STDOUT:     %return: ref @M.%tuple.type.loc4 (%tuple.type.07a) = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic fn @M(%T.loc4_16.2: type) {
+// CHECK:STDOUT:   %T.patt.loc4_16.2: %pattern_type.9a5 = symbolic_binding_pattern T, 0, template [template = %T.patt.loc4_16.2 (constants.%T.patt.3a0592.1)]
+// CHECK:STDOUT:   %T.loc4_16.1: type = symbolic_binding T, 0, template [template = %T.loc4_16.1 (constants.%T.67db0b.1)]
+// CHECK:STDOUT:   %pattern_type.loc4_25: type = pattern_type %T.loc4_16.1 [template = %pattern_type.loc4_25 (constants.%pattern_type.51d1c4.1)]
+// CHECK:STDOUT:   %x.param_patt.loc4_25.2: @M.%pattern_type.loc4_25 (%pattern_type.51d1c4.1) = value_param_pattern [template = %x.param_patt.loc4_25.2 (constants.%x.param_patt.91d)]
+// CHECK:STDOUT:   %x.patt.loc4_25.2: @M.%pattern_type.loc4_25 (%pattern_type.51d1c4.1) = wrapper_binding_pattern x, %x.param_patt.loc4_25.2 [template = %x.patt.loc4_25.2 (constants.%x.patt.260)]
+// CHECK:STDOUT:   %tuple.loc4: %tuple.type.693 = tuple_value (%T.loc4_16.1, %T.loc4_16.1) [template = %tuple.loc4 (constants.%tuple.3df)]
+// CHECK:STDOUT:   %tuple.type.loc4: type = tuple_type (%T.loc4_16.1, %T.loc4_16.1) [template = %tuple.type.loc4 (constants.%tuple.type.07a)]
+// CHECK:STDOUT:   %.loc4_38.1: Core.Form = init_form %tuple.type.loc4 [template = %.loc4_38.1 (constants.%.ce8b)]
+// CHECK:STDOUT:   %pattern_type.loc4_38: type = pattern_type %tuple.type.loc4 [template = %pattern_type.loc4_38 (constants.%pattern_type.c3f)]
+// CHECK:STDOUT:   %return.param_patt.loc4_38.2: @M.%pattern_type.loc4_38 (%pattern_type.c3f) = out_param_pattern [template = %return.param_patt.loc4_38.2 (constants.%return.param_patt.e22)]
+// CHECK:STDOUT:   %return.patt.loc4_30.2: @M.%pattern_type.loc4_38 (%pattern_type.c3f) = return_slot_pattern %return.param_patt.loc4_38.2, %tuple.type.loc4 [template = %return.patt.loc4_30.2 (constants.%return.patt.1a0)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete.loc4_25: <witness> = require_complete_type %T.loc4_16.1 [template = %require_complete.loc4_25 (constants.%require_complete.9443dd.1)]
+// CHECK:STDOUT:   %require_complete.loc4_30: <witness> = require_complete_type %tuple.type.loc4 [template = %require_complete.loc4_30 (constants.%require_complete.22a)]
+// CHECK:STDOUT:   %tuple.type.loc5: type = tuple_type (%T.loc4_16.1, Core.IntLiteral) [template = %tuple.type.loc5 (constants.%tuple.type.f3b)]
+// CHECK:STDOUT:   %.loc5_15.5: %tuple.type.f7a = initialize_action %x.ref, %T.loc4_16.1, constants.%inst.splice_block.426619.1, true [template]
+// CHECK:STDOUT:   %tuple.elem0.loc5_15.1: <instruction> = tuple_access %.loc5_15.5, element0 [template]
+// CHECK:STDOUT:   %.loc5_15.6: @M.%T.loc4_16.1 (%T.67db0b.1) = splice_inst %tuple.elem0.loc5_15.1 [template = %.loc5_15.6 (constants.%.b669fb.1)]
+// CHECK:STDOUT:   %.loc5_15.7: %tuple.type.f7a = initialize_action %int_1, %T.loc4_16.1, constants.%inst.splice_block.426619.2, true [template]
+// CHECK:STDOUT:   %tuple.elem0.loc5_15.2: <instruction> = tuple_access %.loc5_15.7, element0 [template]
+// CHECK:STDOUT:   %.loc5_15.8: @M.%T.loc4_16.1 (%T.67db0b.1) = splice_inst %tuple.elem0.loc5_15.2 [template = %.loc5_15.8 (constants.%.b669fb.2)]
+// CHECK:STDOUT:   %tuple.loc5: @M.%tuple.type.loc4 (%tuple.type.07a) = tuple_value (%.loc5_15.6, %.loc5_15.8) [template = %tuple.loc5 (constants.%tuple.8e4)]
+// CHECK:STDOUT:
+// CHECK:STDOUT:   fn(%x.param: @M.%T.loc4_16.1 (%T.67db0b.1)) -> out %return.param: @M.%tuple.type.loc4 (%tuple.type.07a) {
+// CHECK:STDOUT:   !entry:
+// CHECK:STDOUT:     %x.ref: @M.%T.loc4_16.1 (%T.67db0b.1) = name_ref x, %x
+// CHECK:STDOUT:     %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
+// CHECK:STDOUT:     %.loc5_15.1: @M.%tuple.type.loc5 (%tuple.type.f3b) = tuple_literal (%x.ref, %int_1)
+// CHECK:STDOUT:     %.loc5_15.2: @M.%T.loc4_16.1 (%T.67db0b.1) = splice_inst %tuple.elem0.loc5_15.1 [template = %.loc5_15.6 (constants.%.b669fb.1)]
+// CHECK:STDOUT:     %.loc5_15.3: @M.%T.loc4_16.1 (%T.67db0b.1) = splice_inst %tuple.elem0.loc5_15.2 [template = %.loc5_15.8 (constants.%.b669fb.2)]
+// CHECK:STDOUT:     %.loc5_15.4: init @M.%tuple.type.loc4 (%tuple.type.07a) to %return.param = tuple_init (%.loc5_15.2, %.loc5_15.3) [template = %tuple.loc5 (constants.%tuple.8e4)]
+// CHECK:STDOUT:     %.loc5_16: init @M.%tuple.type.loc4 (%tuple.type.07a) = converted %.loc5_15.1, %.loc5_15.4 [template = %tuple.loc5 (constants.%tuple.8e4)]
+// CHECK:STDOUT:     return %.loc5_16 to %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @M(constants.%T.67db0b.1) {
+// CHECK:STDOUT:   %T.patt.loc4_16.2 => constants.%T.patt.3a0592.1
+// CHECK:STDOUT:   %T.loc4_16.1 => constants.%T.67db0b.1
+// CHECK:STDOUT:   %pattern_type.loc4_25 => constants.%pattern_type.51d1c4.1
+// CHECK:STDOUT:   %x.param_patt.loc4_25.2 => constants.%x.param_patt.91d
+// CHECK:STDOUT:   %x.patt.loc4_25.2 => constants.%x.patt.260
+// CHECK:STDOUT:   %tuple.loc4 => constants.%tuple.3df
+// CHECK:STDOUT:   %tuple.type.loc4 => constants.%tuple.type.07a
+// CHECK:STDOUT:   %.loc4_38.1 => constants.%.ce8b
+// CHECK:STDOUT:   %pattern_type.loc4_38 => constants.%pattern_type.c3f
+// CHECK:STDOUT:   %return.param_patt.loc4_38.2 => constants.%return.param_patt.e22
+// CHECK:STDOUT:   %return.patt.loc4_30.2 => constants.%return.patt.1a0
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @M(constants.%i32) {
+// CHECK:STDOUT:   %T.patt.loc4_16.2 => constants.%T.patt.3a0592.1
+// CHECK:STDOUT:   %T.loc4_16.1 => constants.%i32
+// CHECK:STDOUT:   %pattern_type.loc4_25 => constants.%pattern_type.6b6
+// CHECK:STDOUT:   %x.param_patt.loc4_25.2 => constants.%x.param_patt.cee
+// CHECK:STDOUT:   %x.patt.loc4_25.2 => constants.%x.patt.e3b
+// CHECK:STDOUT:   %tuple.loc4 => constants.%tuple.94e
+// CHECK:STDOUT:   %tuple.type.loc4 => constants.%tuple.type.e55
+// CHECK:STDOUT:   %.loc4_38.1 => constants.%.c11
+// CHECK:STDOUT:   %pattern_type.loc4_38 => constants.%pattern_type.394
+// CHECK:STDOUT:   %return.param_patt.loc4_38.2 => constants.%return.param_patt.a90
+// CHECK:STDOUT:   %return.patt.loc4_30.2 => constants.%return.patt.2ed
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete.loc4_25 => constants.%complete_type.f8a
+// CHECK:STDOUT:   %require_complete.loc4_30 => constants.%complete_type.6c4
+// CHECK:STDOUT:   %tuple.type.loc5 => constants.%tuple.type.66e
+// CHECK:STDOUT:   %.loc5_15.5 => constants.%tuple.24243e.1
+// CHECK:STDOUT:   %tuple.elem0.loc5_15.1 => constants.%inst.splice_block.426619.3
+// CHECK:STDOUT:   %.loc5_15.6 => <not constant>
+// CHECK:STDOUT:   %.loc5_15.7 => constants.%tuple.24243e.2
+// CHECK:STDOUT:   %tuple.elem0.loc5_15.2 => constants.%inst.splice_block.426619.4
+// CHECK:STDOUT:   %.loc5_15.8 => constants.%int_1.0c6
+// CHECK:STDOUT:   %tuple.loc5 => <not constant>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

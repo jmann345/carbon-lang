@@ -125,6 +125,120 @@ fn Use(t: (i32, i32)) -> i32 {
   return Sum(t);
 }
 
+
+// --- return_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> (T, T) {
+  return (x, 1);
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32);
+}
+
+// --- return_struct_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> {.a: T, .b: T} {
+  return {.a = x, .b = 2};
+}
+
+fn Use() -> {.a: i32, .b: i32} {
+  return M(4 as i32);
+}
+
+// --- return_array_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> array(T, 2) {
+  return (x, 3);
+}
+
+fn Use() -> array(i32, 2) {
+  return M(4 as i32);
+}
+
+// --- var_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> (T, T) {
+  var p: (T, T) = (x, 1);
+  return p;
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32);
+}
+
+// --- assign_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T, y: T) -> (T, T) {
+  var t: (T, T) = (x, y);
+  t = (x, 1);
+  return t;
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32, 9 as i32);
+}
+
+// --- return_nested_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> ((T, T), T) {
+  return ((x, 2), 3);
+}
+
+fn Use() -> ((i32, i32), i32) {
+  return M(4 as i32);
+}
+
+// --- template_value_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M(template N: i32, x: i32) -> (i32, i32) {
+  return (N, x);
+}
+
+fn Use() -> (i32, i32) {
+  return M(3, 4);
+}
+
+// --- return_class_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(T: type) {
+  var a: T;
+  var b: T;
+}
+
+fn M[template T: type](x: T) -> P(T) {
+  return {.a = x, .b = 1};
+}
+
+fn Use() -> P(i32) {
+  return M(4 as i32);
+}
+
+// --- var_class_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(T: type) {
+  var a: T;
+  var b: T;
+}
+
+fn M[template T: type](x: T) -> T {
+  var p: P(T) = {.a = x, .b = 2};
+  return p.b;
+}
+
+fn Use() -> i32 {
+  return M(4 as i32);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'return_param_tuple.carbon'
 // CHECK:STDOUT: source_filename = "return_param_tuple.carbon"
@@ -657,116 +771,607 @@ fn Use(t: (i32, i32)) -> i32 {
 // CHECK:STDOUT: !246 = !DILocation(line: 5, column: 3, scope: !234)
 // CHECK:STDOUT: !247 = !{!235}
 // CHECK:STDOUT:
-
-// --- return_tuple_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> (T, T) {
-  return (x, 1);
-}
-
-fn Use() -> (i32, i32) {
-  return M(4 as i32);
-}
-
-// --- return_struct_constant_field.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> {.a: T, .b: T} {
-  return {.a = x, .b = 2};
-}
-
-fn Use() -> {.a: i32, .b: i32} {
-  return M(4 as i32);
-}
-
-// --- return_array_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> array(T, 2) {
-  return (x, 3);
-}
-
-fn Use() -> array(i32, 2) {
-  return M(4 as i32);
-}
-
-// --- var_tuple_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> (T, T) {
-  var p: (T, T) = (x, 1);
-  return p;
-}
-
-fn Use() -> (i32, i32) {
-  return M(4 as i32);
-}
-
-// --- assign_tuple_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T, y: T) -> (T, T) {
-  var t: (T, T) = (x, y);
-  t = (x, 1);
-  return t;
-}
-
-fn Use() -> (i32, i32) {
-  return M(4 as i32, 9 as i32);
-}
-
-// --- return_nested_constant_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M[template T: type](x: T) -> ((T, T), T) {
-  return ((x, 2), 3);
-}
-
-fn Use() -> ((i32, i32), i32) {
-  return M(4 as i32);
-}
-
-// --- template_value_element.carbon
-library "[[@TEST_NAME]]";
-
-fn M(template N: i32, x: i32) -> (i32, i32) {
-  return (N, x);
-}
-
-fn Use() -> (i32, i32) {
-  return M(3, 4);
-}
-
-// --- return_class_constant_field.carbon
-library "[[@TEST_NAME]]";
-
-class P(T: type) {
-  var a: T;
-  var b: T;
-}
-
-fn M[template T: type](x: T) -> P(T) {
-  return {.a = x, .b = 1};
-}
-
-fn Use() -> P(i32) {
-  return M(4 as i32);
-}
-
-// --- var_class_constant_field.carbon
-library "[[@TEST_NAME]]";
-
-class P(T: type) {
-  var a: T;
-  var b: T;
-}
-
-fn M[template T: type](x: T) -> T {
-  var p: P(T) = {.a = x, .b = 2};
-  return p.b;
-}
-
-fn Use() -> i32 {
-  return M(4 as i32);
-}
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'return_tuple_constant_element.carbon'
+// CHECK:STDOUT: source_filename = "return_tuple_constant_element.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return) #0 !dbg !250 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4), !dbg !253
+// CHECK:STDOUT:   ret void, !dbg !254
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret({ i32, i32 }) %return, i32 %x) #0 !dbg !255 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !261
+// CHECK:STDOUT:   store i32 %x, ptr %tuple.elem0.tuple.elem, align 4, !dbg !261
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !261
+// CHECK:STDOUT:   store i32 1, ptr %tuple.elem1.tuple.elem, align 4, !dbg !261
+// CHECK:STDOUT:   ret void, !dbg !262
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!249}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !248 = !DIFile(filename: "return_tuple_constant_element.carbon", directory: "")
+// CHECK:STDOUT: !249 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !248, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !250 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !248, line: 7, type: !30, spFlags: DISPFlagDefinition, unit: !249)
+// CHECK:STDOUT: !253 = !DILocation(line: 8, column: 10, scope: !250)
+// CHECK:STDOUT: !254 = !DILocation(line: 8, column: 3, scope: !250)
+// CHECK:STDOUT: !255 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !248, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !249, retainedNodes: !263)
+// CHECK:STDOUT: !256 = !DILocalVariable(arg: 1, scope: !255, type: !6)
+// CHECK:STDOUT: !261 = !DILocation(line: 4, column: 10, scope: !255)
+// CHECK:STDOUT: !262 = !DILocation(line: 4, column: 3, scope: !255)
+// CHECK:STDOUT: !263 = !{!256}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'return_struct_constant_field.carbon'
+// CHECK:STDOUT: source_filename = "return_struct_constant_field.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return) #0 !dbg !266 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4), !dbg !269
+// CHECK:STDOUT:   ret void, !dbg !270
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret({ i32, i32 }) %return, i32 %x) #0 !dbg !271 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.c27.a = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !277
+// CHECK:STDOUT:   store i32 %x, ptr %.c27.a, align 4, !dbg !277
+// CHECK:STDOUT:   %.ed7.b = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !277
+// CHECK:STDOUT:   store i32 2, ptr %.ed7.b, align 4, !dbg !277
+// CHECK:STDOUT:   ret void, !dbg !278
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!265}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !264 = !DIFile(filename: "return_struct_constant_field.carbon", directory: "")
+// CHECK:STDOUT: !265 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !264, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !266 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !264, line: 7, type: !30, spFlags: DISPFlagDefinition, unit: !265)
+// CHECK:STDOUT: !269 = !DILocation(line: 8, column: 10, scope: !266)
+// CHECK:STDOUT: !270 = !DILocation(line: 8, column: 3, scope: !266)
+// CHECK:STDOUT: !271 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !264, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !265, retainedNodes: !279)
+// CHECK:STDOUT: !272 = !DILocalVariable(arg: 1, scope: !271, type: !6)
+// CHECK:STDOUT: !277 = !DILocation(line: 4, column: 10, scope: !271)
+// CHECK:STDOUT: !278 = !DILocation(line: 4, column: 3, scope: !271)
+// CHECK:STDOUT: !279 = !{!272}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'return_array_constant_element.carbon'
+// CHECK:STDOUT: source_filename = "return_array_constant_element.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret([2 x i32]) %return) #0 !dbg !282 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4), !dbg !285
+// CHECK:STDOUT:   ret void, !dbg !286
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret([2 x i32]) %return, i32 %x) #0 !dbg !287 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.f16.array.index = getelementptr inbounds [2 x i32], ptr %return, i32 0, i64 0, !dbg !293
+// CHECK:STDOUT:   store i32 %x, ptr %.f16.array.index, align 4, !dbg !293
+// CHECK:STDOUT:   %.69e.array.index = getelementptr inbounds [2 x i32], ptr %return, i32 0, i64 1, !dbg !293
+// CHECK:STDOUT:   store i32 3, ptr %.69e.array.index, align 4, !dbg !293
+// CHECK:STDOUT:   ret void, !dbg !294
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!281}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !280 = !DIFile(filename: "return_array_constant_element.carbon", directory: "")
+// CHECK:STDOUT: !281 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !280, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !282 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !280, line: 7, type: !30, spFlags: DISPFlagDefinition, unit: !281)
+// CHECK:STDOUT: !285 = !DILocation(line: 8, column: 10, scope: !282)
+// CHECK:STDOUT: !286 = !DILocation(line: 8, column: 3, scope: !282)
+// CHECK:STDOUT: !287 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !280, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !281, retainedNodes: !295)
+// CHECK:STDOUT: !288 = !DILocalVariable(arg: 1, scope: !287, type: !6)
+// CHECK:STDOUT: !293 = !DILocation(line: 4, column: 10, scope: !287)
+// CHECK:STDOUT: !294 = !DILocation(line: 4, column: 3, scope: !287)
+// CHECK:STDOUT: !295 = !{!288}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'var_tuple_constant_element.carbon'
+// CHECK:STDOUT: source_filename = "var_tuple_constant_element.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return) #0 !dbg !300 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4), !dbg !303
+// CHECK:STDOUT:   ret void, !dbg !304
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %self) #0 !dbg !305 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !307
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core"(ptr %self) #0 !dbg !309 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 1, !dbg !311
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %tuple.elem1.tuple.elem), !dbg !311
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 0, !dbg !311
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %tuple.elem0.tuple.elem), !dbg !311
+// CHECK:STDOUT:   ret void, !dbg !311
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core"(ptr %self) #0 !dbg !313 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core"(ptr %self), !dbg !315
+// CHECK:STDOUT:   ret void, !dbg !315
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret({ i32, i32 }) %return, i32 %x) #0 !dbg !317 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %p.var = alloca { i32, i32 }, align 4, !dbg !322
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %p.var), !dbg !322
+// CHECK:STDOUT:   %tuple.elem0.ca6.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 0, !dbg !324
+// CHECK:STDOUT:   store i32 %x, ptr %tuple.elem0.ca6.tuple.elem, align 4, !dbg !324
+// CHECK:STDOUT:   %tuple.elem1.4b9.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 1, !dbg !324
+// CHECK:STDOUT:   store i32 1, ptr %tuple.elem1.4b9.tuple.elem, align 4, !dbg !324
+// CHECK:STDOUT:   %tuple.elem0.loc5_10.1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 0, !dbg !326
+// CHECK:STDOUT:   %.ed5 = load i32, ptr %tuple.elem0.loc5_10.1.tuple.elem, align 4, !dbg !326
+// CHECK:STDOUT:   %tuple.elem0.a32.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !326
+// CHECK:STDOUT:   store i32 %.ed5, ptr %tuple.elem0.a32.tuple.elem, align 4, !dbg !326
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 1, !dbg !326
+// CHECK:STDOUT:   %.17a = load i32, ptr %tuple.elem1.tuple.elem, align 4, !dbg !326
+// CHECK:STDOUT:   %tuple.elem1.0ab.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !326
+// CHECK:STDOUT:   store i32 %.17a, ptr %tuple.elem1.0ab.tuple.elem, align 4, !dbg !326
+// CHECK:STDOUT:   call void @"_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core"(ptr %p.var), !dbg !322
+// CHECK:STDOUT:   ret void, !dbg !327
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!297}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !173 = !{null, !7}
+// CHECK:STDOUT: !174 = !DISubroutineType(types: !173)
+// CHECK:STDOUT: !296 = !DIFile(filename: "var_tuple_constant_element.carbon", directory: "")
+// CHECK:STDOUT: !297 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !296, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !298 = !{null, !6}
+// CHECK:STDOUT: !299 = !DISubroutineType(types: !298)
+// CHECK:STDOUT: !300 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !296, line: 8, type: !30, spFlags: DISPFlagDefinition, unit: !297)
+// CHECK:STDOUT: !303 = !DILocation(line: 9, column: 10, scope: !300)
+// CHECK:STDOUT: !304 = !DILocation(line: 9, column: 3, scope: !300)
+// CHECK:STDOUT: !305 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f58524831c37807e:core.Destroy.Core", scope: null, file: !296, line: 4, type: !299, spFlags: DISPFlagDefinition, unit: !297, retainedNodes: !308)
+// CHECK:STDOUT: !306 = !DILocalVariable(arg: 1, scope: !305, type: !6)
+// CHECK:STDOUT: !307 = !DILocation(line: 4, column: 3, scope: !305)
+// CHECK:STDOUT: !308 = !{!306}
+// CHECK:STDOUT: !309 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core", scope: null, file: !296, line: 4, type: !174, spFlags: DISPFlagDefinition, unit: !297, retainedNodes: !312)
+// CHECK:STDOUT: !310 = !DILocalVariable(arg: 1, scope: !309, type: !7)
+// CHECK:STDOUT: !311 = !DILocation(line: 4, column: 3, scope: !309)
+// CHECK:STDOUT: !312 = !{!310}
+// CHECK:STDOUT: !313 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core", scope: null, file: !296, line: 4, type: !174, spFlags: DISPFlagDefinition, unit: !297, retainedNodes: !316)
+// CHECK:STDOUT: !314 = !DILocalVariable(arg: 1, scope: !313, type: !7)
+// CHECK:STDOUT: !315 = !DILocation(line: 4, column: 3, scope: !313)
+// CHECK:STDOUT: !316 = !{!314}
+// CHECK:STDOUT: !317 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !296, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !297, retainedNodes: !328)
+// CHECK:STDOUT: !318 = !DILocalVariable(arg: 1, scope: !317, type: !6)
+// CHECK:STDOUT: !322 = !DILocation(line: 4, column: 3, scope: !317)
+// CHECK:STDOUT: !324 = !DILocation(line: 4, column: 19, scope: !317)
+// CHECK:STDOUT: !326 = !DILocation(line: 5, column: 10, scope: !317)
+// CHECK:STDOUT: !327 = !DILocation(line: 5, column: 3, scope: !317)
+// CHECK:STDOUT: !328 = !{!318}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'assign_tuple_constant_element.carbon'
+// CHECK:STDOUT: source_filename = "assign_tuple_constant_element.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return) #0 !dbg !331 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4, i32 9), !dbg !334
+// CHECK:STDOUT:   ret void, !dbg !337
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %self) #0 !dbg !338 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !340
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core"(ptr %self) #0 !dbg !342 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 1, !dbg !344
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %tuple.elem1.tuple.elem), !dbg !344
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 0, !dbg !344
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %tuple.elem0.tuple.elem), !dbg !344
+// CHECK:STDOUT:   ret void, !dbg !344
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core"(ptr %self) #0 !dbg !346 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core"(ptr %self), !dbg !348
+// CHECK:STDOUT:   ret void, !dbg !348
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret({ i32, i32 }) %return, i32 %x, i32 %y) #0 !dbg !350 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %t.var = alloca { i32, i32 }, align 4, !dbg !357
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %t.var), !dbg !357
+// CHECK:STDOUT:   %tuple.elem0.cc5.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 0, !dbg !360
+// CHECK:STDOUT:   store i32 %x, ptr %tuple.elem0.cc5.tuple.elem, align 4, !dbg !360
+// CHECK:STDOUT:   %tuple.elem1.8ed.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 1, !dbg !360
+// CHECK:STDOUT:   store i32 %y, ptr %tuple.elem1.8ed.tuple.elem, align 4, !dbg !360
+// CHECK:STDOUT:   %tuple.elem0.8ca.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 0, !dbg !364
+// CHECK:STDOUT:   store i32 %x, ptr %tuple.elem0.8ca.tuple.elem, align 4, !dbg !364
+// CHECK:STDOUT:   %tuple.elem1.a10.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 1, !dbg !364
+// CHECK:STDOUT:   store i32 1, ptr %tuple.elem1.a10.tuple.elem, align 4, !dbg !364
+// CHECK:STDOUT:   %tuple.elem0.loc6_10.1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 0, !dbg !365
+// CHECK:STDOUT:   %.0bf = load i32, ptr %tuple.elem0.loc6_10.1.tuple.elem, align 4, !dbg !365
+// CHECK:STDOUT:   %tuple.elem0.e45.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !365
+// CHECK:STDOUT:   store i32 %.0bf, ptr %tuple.elem0.e45.tuple.elem, align 4, !dbg !365
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 1, !dbg !365
+// CHECK:STDOUT:   %.1f6 = load i32, ptr %tuple.elem1.tuple.elem, align 4, !dbg !365
+// CHECK:STDOUT:   %tuple.elem1.537.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !365
+// CHECK:STDOUT:   store i32 %.1f6, ptr %tuple.elem1.537.tuple.elem, align 4, !dbg !365
+// CHECK:STDOUT:   call void @"_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core"(ptr %t.var), !dbg !357
+// CHECK:STDOUT:   ret void, !dbg !366
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!330}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !173 = !{null, !7}
+// CHECK:STDOUT: !174 = !DISubroutineType(types: !173)
+// CHECK:STDOUT: !298 = !{null, !6}
+// CHECK:STDOUT: !299 = !DISubroutineType(types: !298)
+// CHECK:STDOUT: !329 = !DIFile(filename: "assign_tuple_constant_element.carbon", directory: "")
+// CHECK:STDOUT: !330 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !329, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !331 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !329, line: 9, type: !30, spFlags: DISPFlagDefinition, unit: !330)
+// CHECK:STDOUT: !334 = !DILocation(line: 10, column: 10, scope: !331)
+// CHECK:STDOUT: !335 = !{!7, !6, !6}
+// CHECK:STDOUT: !336 = !DISubroutineType(types: !335)
+// CHECK:STDOUT: !337 = !DILocation(line: 10, column: 3, scope: !331)
+// CHECK:STDOUT: !338 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f58524831c37807e:core.Destroy.Core", scope: null, file: !329, line: 4, type: !299, spFlags: DISPFlagDefinition, unit: !330, retainedNodes: !341)
+// CHECK:STDOUT: !339 = !DILocalVariable(arg: 1, scope: !338, type: !6)
+// CHECK:STDOUT: !340 = !DILocation(line: 4, column: 3, scope: !338)
+// CHECK:STDOUT: !341 = !{!339}
+// CHECK:STDOUT: !342 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core", scope: null, file: !329, line: 4, type: !174, spFlags: DISPFlagDefinition, unit: !330, retainedNodes: !345)
+// CHECK:STDOUT: !343 = !DILocalVariable(arg: 1, scope: !342, type: !7)
+// CHECK:STDOUT: !344 = !DILocation(line: 4, column: 3, scope: !342)
+// CHECK:STDOUT: !345 = !{!343}
+// CHECK:STDOUT: !346 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core", scope: null, file: !329, line: 4, type: !174, spFlags: DISPFlagDefinition, unit: !330, retainedNodes: !349)
+// CHECK:STDOUT: !347 = !DILocalVariable(arg: 1, scope: !346, type: !7)
+// CHECK:STDOUT: !348 = !DILocation(line: 4, column: 3, scope: !346)
+// CHECK:STDOUT: !349 = !{!347}
+// CHECK:STDOUT: !350 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !329, line: 3, type: !336, spFlags: DISPFlagDefinition, unit: !330, retainedNodes: !367)
+// CHECK:STDOUT: !351 = !DILocalVariable(arg: 1, scope: !350, type: !6)
+// CHECK:STDOUT: !352 = !DILocalVariable(arg: 2, scope: !350, type: !6)
+// CHECK:STDOUT: !357 = !DILocation(line: 4, column: 3, scope: !350)
+// CHECK:STDOUT: !360 = !DILocation(line: 4, column: 19, scope: !350)
+// CHECK:STDOUT: !364 = !DILocation(line: 5, column: 7, scope: !350)
+// CHECK:STDOUT: !365 = !DILocation(line: 6, column: 10, scope: !350)
+// CHECK:STDOUT: !366 = !DILocation(line: 6, column: 3, scope: !350)
+// CHECK:STDOUT: !367 = !{!351, !352}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'return_nested_constant_element.carbon'
+// CHECK:STDOUT: source_filename = "return_nested_constant_element.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ { i32, i32 }, i32 }) %return) #0 !dbg !370 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4), !dbg !373
+// CHECK:STDOUT:   ret void, !dbg !374
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret({ { i32, i32 }, i32 }) %return, i32 %x) #0 !dbg !375 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %tuple.elem0.9660ab.2.tuple.elem = getelementptr inbounds nuw { { i32, i32 }, i32 }, ptr %return, i32 0, i32 0, !dbg !382
+// CHECK:STDOUT:   %tuple.elem0.18b.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %tuple.elem0.9660ab.2.tuple.elem, i32 0, i32 0, !dbg !381
+// CHECK:STDOUT:   store i32 %x, ptr %tuple.elem0.18b.tuple.elem, align 4, !dbg !381
+// CHECK:STDOUT:   %tuple.elem0.9660ab.1.tuple.elem = getelementptr inbounds nuw { { i32, i32 }, i32 }, ptr %return, i32 0, i32 0, !dbg !382
+// CHECK:STDOUT:   %tuple.elem1.f67.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %tuple.elem0.9660ab.1.tuple.elem, i32 0, i32 1, !dbg !381
+// CHECK:STDOUT:   %tuple.elem0.loc4_20.1.tuple.elem = getelementptr inbounds nuw { { i32, i32 }, i32 }, ptr %return, i32 0, i32 0, !dbg !382
+// CHECK:STDOUT:   store i32 2, ptr %tuple.elem1.f67.tuple.elem, align 4, !dbg !381
+// CHECK:STDOUT:   %tuple.elem1.5d7.tuple.elem = getelementptr inbounds nuw { { i32, i32 }, i32 }, ptr %return, i32 0, i32 1, !dbg !382
+// CHECK:STDOUT:   store i32 3, ptr %tuple.elem1.5d7.tuple.elem, align 4, !dbg !382
+// CHECK:STDOUT:   ret void, !dbg !383
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!369}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !368 = !DIFile(filename: "return_nested_constant_element.carbon", directory: "")
+// CHECK:STDOUT: !369 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !368, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !370 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !368, line: 7, type: !30, spFlags: DISPFlagDefinition, unit: !369)
+// CHECK:STDOUT: !373 = !DILocation(line: 8, column: 10, scope: !370)
+// CHECK:STDOUT: !374 = !DILocation(line: 8, column: 3, scope: !370)
+// CHECK:STDOUT: !375 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !368, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !369, retainedNodes: !384)
+// CHECK:STDOUT: !376 = !DILocalVariable(arg: 1, scope: !375, type: !6)
+// CHECK:STDOUT: !381 = !DILocation(line: 4, column: 11, scope: !375)
+// CHECK:STDOUT: !382 = !DILocation(line: 4, column: 10, scope: !375)
+// CHECK:STDOUT: !383 = !DILocation(line: 4, column: 3, scope: !375)
+// CHECK:STDOUT: !384 = !{!376}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'template_value_element.carbon'
+// CHECK:STDOUT: source_filename = "template_value_element.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return) #0 !dbg !387 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.e384f2fa3c05f2f5(ptr %return, i32 4), !dbg !390
+// CHECK:STDOUT:   ret void, !dbg !391
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.e384f2fa3c05f2f5(ptr sret({ i32, i32 }) %return, i32 %x) #0 !dbg !392 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !398
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !398
+// CHECK:STDOUT:   store i32 %x, ptr %tuple.elem1.tuple.elem, align 4, !dbg !398
+// CHECK:STDOUT:   store i32 3, ptr %tuple.elem0.tuple.elem, align 4, !dbg !398
+// CHECK:STDOUT:   ret void, !dbg !399
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!386}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !385 = !DIFile(filename: "template_value_element.carbon", directory: "")
+// CHECK:STDOUT: !386 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !385, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !387 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !385, line: 7, type: !30, spFlags: DISPFlagDefinition, unit: !386)
+// CHECK:STDOUT: !390 = !DILocation(line: 8, column: 10, scope: !387)
+// CHECK:STDOUT: !391 = !DILocation(line: 8, column: 3, scope: !387)
+// CHECK:STDOUT: !392 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.e384f2fa3c05f2f5", scope: null, file: !385, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !386, retainedNodes: !400)
+// CHECK:STDOUT: !393 = !DILocalVariable(arg: 1, scope: !392, type: !6)
+// CHECK:STDOUT: !398 = !DILocation(line: 4, column: 10, scope: !392)
+// CHECK:STDOUT: !399 = !DILocation(line: 4, column: 3, scope: !392)
+// CHECK:STDOUT: !400 = !{!393}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'return_class_constant_field.carbon'
+// CHECK:STDOUT: source_filename = "return_class_constant_field.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return) #0 !dbg !403 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CM.Main.84588f41d61dafba(ptr %return, i32 4), !dbg !406
+// CHECK:STDOUT:   ret void, !dbg !407
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CM.Main.84588f41d61dafba(ptr sret({ i32, i32 }) %return, i32 %x) #0 !dbg !408 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.dc0.a = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !414
+// CHECK:STDOUT:   store i32 %x, ptr %.dc0.a, align 4, !dbg !414
+// CHECK:STDOUT:   %.f76.b = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !414
+// CHECK:STDOUT:   store i32 1, ptr %.f76.b, align 4, !dbg !414
+// CHECK:STDOUT:   ret void, !dbg !415
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!402}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !29 = !{!7}
+// CHECK:STDOUT: !30 = !DISubroutineType(types: !29)
+// CHECK:STDOUT: !35 = !{!7, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !401 = !DIFile(filename: "return_class_constant_field.carbon", directory: "")
+// CHECK:STDOUT: !402 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !401, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !403 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !401, line: 12, type: !30, spFlags: DISPFlagDefinition, unit: !402)
+// CHECK:STDOUT: !406 = !DILocation(line: 13, column: 10, scope: !403)
+// CHECK:STDOUT: !407 = !DILocation(line: 13, column: 3, scope: !403)
+// CHECK:STDOUT: !408 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !401, line: 8, type: !36, spFlags: DISPFlagDefinition, unit: !402, retainedNodes: !416)
+// CHECK:STDOUT: !409 = !DILocalVariable(arg: 1, scope: !408, type: !6)
+// CHECK:STDOUT: !414 = !DILocation(line: 9, column: 10, scope: !408)
+// CHECK:STDOUT: !415 = !DILocation(line: 9, column: 3, scope: !408)
+// CHECK:STDOUT: !416 = !{!409}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'var_class_constant_field.carbon'
+// CHECK:STDOUT: source_filename = "var_class_constant_field.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !419 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %M.call = call i32 @_CM.Main.84588f41d61dafba(i32 4), !dbg !422
+// CHECK:STDOUT:   ret i32 %M.call, !dbg !423
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %self) #0 !dbg !424 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !426
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.b4c762864cd9a02b:core.Destroy.Core"(ptr %self) #0 !dbg !428 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc9_3.1.b = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 1, !dbg !430
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %.loc9_3.1.b), !dbg !430
+// CHECK:STDOUT:   %.loc9_3.2.a = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 0, !dbg !430
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %.loc9_3.2.a), !dbg !430
+// CHECK:STDOUT:   ret void, !dbg !430
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.b4c762864cd9a02b:core.Destroy.Core"(ptr %self) #0 !dbg !432 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.b4c762864cd9a02b:core.Destroy.Core"(ptr %self), !dbg !434
+// CHECK:STDOUT:   ret void, !dbg !434
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.b38dfa1b7a987e33:core.Destroy.Core"(ptr %self) #0 !dbg !436 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc9_3.1.b = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 1, !dbg !438
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %.loc9_3.1.b), !dbg !438
+// CHECK:STDOUT:   %.loc9_3.2.a = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 0, !dbg !438
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %.loc9_3.2.a), !dbg !438
+// CHECK:STDOUT:   ret void, !dbg !438
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.b38dfa1b7a987e33:core.Destroy.Core"(ptr %self) #0 !dbg !440 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.b38dfa1b7a987e33:core.Destroy.Core"(ptr %self), !dbg !442
+// CHECK:STDOUT:   ret void, !dbg !442
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CM.Main.84588f41d61dafba(i32 %x) #0 !dbg !444 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %p.var = alloca { i32, i32 }, align 4, !dbg !449
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %p.var), !dbg !449
+// CHECK:STDOUT:   %.8e4.a = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 0, !dbg !451
+// CHECK:STDOUT:   store i32 %x, ptr %.8e4.a, align 4, !dbg !451
+// CHECK:STDOUT:   %.122.b = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 1, !dbg !451
+// CHECK:STDOUT:   store i32 2, ptr %.122.b, align 4, !dbg !451
+// CHECK:STDOUT:   %.ebc.b = getelementptr inbounds nuw { i32, i32 }, ptr %p.var, i32 0, i32 1, !dbg !453
+// CHECK:STDOUT:   %.71a = load i32, ptr %.ebc.b, align 4, !dbg !453
+// CHECK:STDOUT:   call void @"_CSelfDestruct.b38dfa1b7a987e33:core.Destroy.Core"(ptr %p.var), !dbg !449
+// CHECK:STDOUT:   ret i32 %.71a, !dbg !454
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!418}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !97 = !{!6}
+// CHECK:STDOUT: !98 = !DISubroutineType(types: !97)
+// CHECK:STDOUT: !103 = !{!6, !6}
+// CHECK:STDOUT: !104 = !DISubroutineType(types: !103)
+// CHECK:STDOUT: !173 = !{null, !7}
+// CHECK:STDOUT: !174 = !DISubroutineType(types: !173)
+// CHECK:STDOUT: !298 = !{null, !6}
+// CHECK:STDOUT: !299 = !DISubroutineType(types: !298)
+// CHECK:STDOUT: !417 = !DIFile(filename: "var_class_constant_field.carbon", directory: "")
+// CHECK:STDOUT: !418 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !417, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !419 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !417, line: 13, type: !98, spFlags: DISPFlagDefinition, unit: !418)
+// CHECK:STDOUT: !422 = !DILocation(line: 14, column: 10, scope: !419)
+// CHECK:STDOUT: !423 = !DILocation(line: 14, column: 3, scope: !419)
+// CHECK:STDOUT: !424 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f58524831c37807e:core.Destroy.Core", scope: null, file: !417, line: 9, type: !299, spFlags: DISPFlagDefinition, unit: !418, retainedNodes: !427)
+// CHECK:STDOUT: !425 = !DILocalVariable(arg: 1, scope: !424, type: !6)
+// CHECK:STDOUT: !426 = !DILocation(line: 9, column: 3, scope: !424)
+// CHECK:STDOUT: !427 = !{!425}
+// CHECK:STDOUT: !428 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.b4c762864cd9a02b:core.Destroy.Core", scope: null, file: !417, line: 9, type: !174, spFlags: DISPFlagDefinition, unit: !418, retainedNodes: !431)
+// CHECK:STDOUT: !429 = !DILocalVariable(arg: 1, scope: !428, type: !7)
+// CHECK:STDOUT: !430 = !DILocation(line: 9, column: 3, scope: !428)
+// CHECK:STDOUT: !431 = !{!429}
+// CHECK:STDOUT: !432 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.b4c762864cd9a02b:core.Destroy.Core", scope: null, file: !417, line: 9, type: !174, spFlags: DISPFlagDefinition, unit: !418, retainedNodes: !435)
+// CHECK:STDOUT: !433 = !DILocalVariable(arg: 1, scope: !432, type: !7)
+// CHECK:STDOUT: !434 = !DILocation(line: 9, column: 3, scope: !432)
+// CHECK:STDOUT: !435 = !{!433}
+// CHECK:STDOUT: !436 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.b38dfa1b7a987e33:core.Destroy.Core", scope: null, file: !417, line: 9, type: !174, spFlags: DISPFlagDefinition, unit: !418, retainedNodes: !439)
+// CHECK:STDOUT: !437 = !DILocalVariable(arg: 1, scope: !436, type: !7)
+// CHECK:STDOUT: !438 = !DILocation(line: 9, column: 3, scope: !436)
+// CHECK:STDOUT: !439 = !{!437}
+// CHECK:STDOUT: !440 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.b38dfa1b7a987e33:core.Destroy.Core", scope: null, file: !417, line: 9, type: !174, spFlags: DISPFlagDefinition, unit: !418, retainedNodes: !443)
+// CHECK:STDOUT: !441 = !DILocalVariable(arg: 1, scope: !440, type: !7)
+// CHECK:STDOUT: !442 = !DILocation(line: 9, column: 3, scope: !440)
+// CHECK:STDOUT: !443 = !{!441}
+// CHECK:STDOUT: !444 = distinct !DISubprogram(name: "M", linkageName: "_CM.Main.84588f41d61dafba", scope: null, file: !417, line: 8, type: !104, spFlags: DISPFlagDefinition, unit: !418, retainedNodes: !455)
+// CHECK:STDOUT: !445 = !DILocalVariable(arg: 1, scope: !444, type: !6)
+// CHECK:STDOUT: !449 = !DILocation(line: 9, column: 3, scope: !444)
+// CHECK:STDOUT: !451 = !DILocation(line: 9, column: 17, scope: !444)
+// CHECK:STDOUT: !453 = !DILocation(line: 10, column: 10, scope: !444)
+// CHECK:STDOUT: !454 = !DILocation(line: 10, column: 3, scope: !444)
+// CHECK:STDOUT: !455 = !{!445}
+// CHECK:STDOUT:

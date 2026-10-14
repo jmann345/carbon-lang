@@ -770,6 +770,10 @@ template constraint HasStaticParamError {
 }
 
 template constraint HasFormError {
+  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+4]]:35: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self, x: i32, y:? form(ref Undefined)) -> i32;
+  // CHECK:STDERR:                                   ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self, x: i32, y:? form(ref Undefined)) -> i32;
 }
 
@@ -880,13 +884,13 @@ fn CallF[template T: HasFormError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:40: error: cannot convert type `Arity` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestArity(a: Arity) -> i32 { return CallR(a); }
 // CHECK:STDERR:                                        ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-96]]:3: note: member `F` of type `Arity` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-106]]:3: note: member `F` of type `Arity` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-127]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-145]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-17]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-19]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -895,13 +899,13 @@ fn TestArity(a: Arity) -> i32 { return CallR(a); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:48: error: cannot convert type `ParamType` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamType(p: ParamType) -> i32 { return CallR(p); }
 // CHECK:STDERR:                                                ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-107]]:3: note: member `F` of type `ParamType` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-117]]:3: note: member `F` of type `ParamType` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: bool) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-142]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-160]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-32]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-34]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -910,13 +914,13 @@ fn TestParamType(p: ParamType) -> i32 { return CallR(p); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:42: error: cannot convert type `NoSelf` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestNoSelf(n: NoSelf) -> i32 { return CallR(n); }
 // CHECK:STDERR:                                          ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-118]]:3: note: member `F` of type `NoSelf` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-128]]:3: note: member `F` of type `NoSelf` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused x: i32, unused y: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-157]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-175]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-47]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-49]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -928,10 +932,10 @@ fn TestNoSelf(n: NoSelf) -> i32 { return CallR(n); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+10]]:40: note: member `F` of type `Field` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
 // CHECK:STDERR: fn TestField(f: Field) -> i32 { return CallR(f); }
 // CHECK:STDERR:                                        ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-172]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-190]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-62]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-64]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -940,13 +944,13 @@ fn TestField(f: Field) -> i32 { return CallR(f); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:50: error: cannot convert type `ParamArity` into type implementing `HasParamError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamArity(p: ParamArity) -> i32 { return CallP(p); }
 // CHECK:STDERR:                                                  ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-132]]:3: note: member `F` of type `ParamArity` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-142]]:3: note: member `F` of type `ParamArity` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-179]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-197]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: Undefined, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-75]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-77]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -955,13 +959,13 @@ fn TestParamArity(p: ParamArity) -> i32 { return CallP(p); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:50: error: cannot convert type `OtherParam` into type implementing `HasParamError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestOtherParam(o: OtherParam) -> i32 { return CallP(o); }
 // CHECK:STDERR:                                                  ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-143]]:3: note: member `F` of type `OtherParam` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-153]]:3: note: member `F` of type `OtherParam` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: bool) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-194]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-212]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: Undefined, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-90]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-92]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -970,13 +974,13 @@ fn TestOtherParam(o: OtherParam) -> i32 { return CallP(o); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:52: error: cannot convert type `ParamReturn` into type implementing `HasParamError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamReturn(p: ParamReturn) -> i32 { return CallP(p); }
 // CHECK:STDERR:                                                    ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-154]]:3: note: member `F` of type `ParamReturn` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-164]]:3: note: member `F` of type `ParamReturn` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i32) -> bool { return true; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-209]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-227]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: Undefined, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-105]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-107]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -987,13 +991,13 @@ fn TestOnly(r: ReturnOnly, p: ParamOnly) -> i32 { return CallR(r) + CallP(p); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:54: error: cannot convert type `ReturnAbsent` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestReturnAbsent(r: ReturnAbsent) -> i32 { return CallR(r); }
 // CHECK:STDERR:                                                      ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-183]]:3: note: member `F` of type `ReturnAbsent` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-193]]:3: note: member `F` of type `ReturnAbsent` does not match the signature required by template constraint `HasReturnError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32) {}
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-234]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-252]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-124]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-126]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1002,13 +1006,13 @@ fn TestReturnAbsent(r: ReturnAbsent) -> i32 { return CallR(r); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:46: error: cannot convert type `ParamRef` into type implementing `HasParamError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamRef(p: ParamRef) -> i32 { return CallP(p); }
 // CHECK:STDERR:                                              ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-178]]:3: note: member `F` of type `ParamRef` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-188]]:3: note: member `F` of type `ParamRef` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused ref x: i32, unused y: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-241]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-259]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: Undefined, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-137]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-139]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1018,13 +1022,13 @@ fn TestOtherParamConvertible(o: OtherParamConvertible) -> i32 {
   // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:10: error: cannot convert type `OtherParamConvertible` into type implementing `HasParamError` [ConversionFailureTypeToFacet]
   // CHECK:STDERR:   return CallP(o);
   // CHECK:STDERR:          ^~~~~~~~
-  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-190]]:3: note: member `F` of type `OtherParamConvertible` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
+  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-200]]:3: note: member `F` of type `OtherParamConvertible` does not match the signature required by template constraint `HasParamError` [StructuralMemberMismatch]
   // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i64) -> i32 { return 1; }
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-257]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-275]]:3: note: requirement declared here [StructuralRequirementHere]
   // CHECK:STDERR:   fn F(self, x: Undefined, y: i32) -> i32;
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-153]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-155]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
   // CHECK:STDERR: fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
@@ -1034,13 +1038,13 @@ fn TestOtherParamConvertible(o: OtherParamConvertible) -> i32 {
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:62: error: cannot convert type `DefaultParamType` into type implementing `HasDefaultError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultParamType(d: DefaultParamType) -> i32 { return CallD(d); }
 // CHECK:STDERR:                                                              ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-202]]:3: note: member `F` of type `DefaultParamType` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-212]]:3: note: member `F` of type `DefaultParamType` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: bool, unused y: i32 = 1) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-265]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-283]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32 = Undefined) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-167]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-169]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1049,13 +1053,13 @@ fn TestDefaultParamType(d: DefaultParamType) -> i32 { return CallD(d); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:52: error: cannot convert type `DefaultType` into type implementing `HasDefaultError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultType(d: DefaultType) -> i32 { return CallD(d); }
 // CHECK:STDERR:                                                    ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-213]]:3: note: member `F` of type `DefaultType` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-223]]:3: note: member `F` of type `DefaultType` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: bool = true) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-280]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-298]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32 = Undefined) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-182]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-184]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1068,13 +1072,13 @@ fn TestDefaultOnly(d: DefaultOnly, b: DefaultBothErrors) -> i32 {
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:56: error: cannot convert type `DefaultAbsent` into type implementing `HasDefaultError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultAbsent(a: DefaultAbsent) -> i32 { return CallD(a); }
 // CHECK:STDERR:                                                        ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-224]]:3: note: member `F` of type `DefaultAbsent` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-234]]:3: note: member `F` of type `DefaultAbsent` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-299]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-317]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32 = Undefined) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-201]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-203]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1083,13 +1087,13 @@ fn TestDefaultAbsent(a: DefaultAbsent) -> i32 { return CallD(a); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:50: error: cannot convert type `DefaultRef` into type implementing `HasDefaultError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultRef(d: DefaultRef) -> i32 { return CallD(d); }
 // CHECK:STDERR:                                                  ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-235]]:3: note: member `F` of type `DefaultRef` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-245]]:3: note: member `F` of type `DefaultRef` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused ref y: i32 = 1) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-314]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-332]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32 = Undefined) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-216]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-218]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1098,13 +1102,13 @@ fn TestDefaultRef(d: DefaultRef) -> i32 { return CallD(d); }
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:50: error: cannot convert type `DefaultVar` into type implementing `HasDefaultError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultVar(d: DefaultVar) -> i32 { return CallD(d); }
 // CHECK:STDERR:                                                  ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-246]]:3: note: member `F` of type `DefaultVar` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-256]]:3: note: member `F` of type `DefaultVar` does not match the signature required by template constraint `HasDefaultError` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused var y: i32 = 1) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-329]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-347]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32 = Undefined) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-231]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-233]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
 // CHECK:STDERR: fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
@@ -1114,6 +1118,19 @@ fn TestMethodForStatic(m: MethodForStatic) -> i32 { return CallS(m); }
 
 fn TestFormOnly(f: FormOnly) -> i32 { return CallF(f); }
 
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:52: error: cannot convert type `FormDefault` into type implementing `HasFormError` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestFormDefault(f: FormDefault) -> i32 { return CallF(f); }
+// CHECK:STDERR:                                                    ^~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-253]]:3: note: member `F` of type `FormDefault` does not match the signature required by template constraint `HasFormError` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i32 = 1) -> i32 { return 1; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-350]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self, x: i32, y:? form(ref Undefined)) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-248]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallF[template T: HasFormError](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestFormDefault(f: FormDefault) -> i32 { return CallF(f); }
 
 // --- fail_requirement_signature_error_other_member.carbon
@@ -1556,12 +1573,20 @@ class ReturnErrorAbsent {
 }
 
 class FormErrorOnly {
+  // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+4]]:49: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
+  // CHECK:STDERR:                                                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
     return 1;
   }
 }
 
 class FormErrorNoDefault {
+  // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+4]]:49: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
+  // CHECK:STDERR:                                                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
     return 1;
   }
@@ -1576,10 +1601,10 @@ fn CallN[template T: HasNoReturn](unused x: T) -> i32 { return 0; }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:62: error: cannot convert type `ReturnErrorArity` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestReturnErrorArity(a: ReturnErrorArity) -> i32 { return Call(a); }
 // CHECK:STDERR:                                                              ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-148]]:3: note: member `F` of type `ReturnErrorArity` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-168]]:3: note: member `F` of type `ReturnErrorArity` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32) -> Undefined { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-167]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-187]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-15]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1591,10 +1616,10 @@ fn TestReturnErrorArity(a: ReturnErrorArity) -> i32 { return Call(a); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:70: error: cannot convert type `ReturnErrorParamType` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestReturnErrorParamType(b: ReturnErrorParamType) -> i32 { return Call(b); }
 // CHECK:STDERR:                                                                      ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-155]]:3: note: member `F` of type `ReturnErrorParamType` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-175]]:3: note: member `F` of type `ReturnErrorParamType` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: bool) -> Undefined { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-182]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-202]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-30]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1606,10 +1631,10 @@ fn TestReturnErrorParamType(b: ReturnErrorParamType) -> i32 { return Call(b); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:66: error: cannot convert type `ReturnErrorRefSelf` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestReturnErrorRefSelf(c: ReturnErrorRefSelf) -> i32 { return Call(c); }
 // CHECK:STDERR:                                                                  ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-162]]:3: note: member `F` of type `ReturnErrorRefSelf` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-182]]:3: note: member `F` of type `ReturnErrorRefSelf` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused ref self, unused x: i32, unused y: i32) -> Undefined { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-197]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-217]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-45]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1621,10 +1646,10 @@ fn TestReturnErrorRefSelf(c: ReturnErrorRefSelf) -> i32 { return Call(c); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:60: error: cannot convert type `ParamErrorArity` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorArity(d: ParamErrorArity) -> i32 { return Call(d); }
 // CHECK:STDERR:                                                            ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-169]]:3: note: member `F` of type `ParamErrorArity` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-189]]:3: note: member `F` of type `ParamErrorArity` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: Undefined) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-212]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-232]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-60]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1636,10 +1661,10 @@ fn TestParamErrorArity(d: ParamErrorArity) -> i32 { return Call(d); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:70: error: cannot convert type `ParamErrorOtherParam` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorOtherParam(e: ParamErrorOtherParam) -> i32 { return Call(e); }
 // CHECK:STDERR:                                                                      ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-176]]:3: note: member `F` of type `ParamErrorOtherParam` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-196]]:3: note: member `F` of type `ParamErrorOtherParam` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: Undefined, unused y: bool) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-227]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-247]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-75]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1651,10 +1676,10 @@ fn TestParamErrorOtherParam(e: ParamErrorOtherParam) -> i32 { return Call(e); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:62: error: cannot convert type `ParamErrorReturn` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorReturn(f: ParamErrorReturn) -> i32 { return Call(f); }
 // CHECK:STDERR:                                                              ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-183]]:3: note: member `F` of type `ParamErrorReturn` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-203]]:3: note: member `F` of type `ParamErrorReturn` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: Undefined, unused y: i32) -> bool { return true; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-242]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-262]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-90]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1666,10 +1691,10 @@ fn TestParamErrorReturn(f: ParamErrorReturn) -> i32 { return Call(f); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:62: error: cannot convert type `ParamErrorNoSelf` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorNoSelf(g: ParamErrorNoSelf) -> i32 { return Call(g); }
 // CHECK:STDERR:                                                              ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-190]]:3: note: member `F` of type `ParamErrorNoSelf` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-210]]:3: note: member `F` of type `ParamErrorNoSelf` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused w: i32, unused x: Undefined, unused y: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-257]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-277]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-105]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1683,10 +1708,10 @@ fn TestErrorsOnly(h: ErrorsOnly) -> i32 { return Call(h); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:56: error: cannot convert type `ParamErrorVar` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorVar(i: ParamErrorVar) -> i32 { return Call(i); }
 // CHECK:STDERR:                                                        ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-185]]:3: note: member `F` of type `ParamErrorVar` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-205]]:3: note: member `F` of type `ParamErrorVar` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: Undefined, unused var y: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-274]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-294]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-122]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1698,10 +1723,10 @@ fn TestParamErrorVar(i: ParamErrorVar) -> i32 { return Call(i); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:64: error: cannot convert type `ParamErrorGeneric` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorGeneric(j: ParamErrorGeneric) -> i32 { return Call(j); }
 // CHECK:STDERR:                                                                ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-192]]:3: note: member `F` of type `ParamErrorGeneric` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-212]]:3: note: member `F` of type `ParamErrorGeneric` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F[unused U: type](unused self, unused x: Undefined, unused y: i32) -> i32 {
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-289]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-309]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-137]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1713,10 +1738,10 @@ fn TestParamErrorGeneric(j: ParamErrorGeneric) -> i32 { return Call(j); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:62: error: cannot convert type `DefaultErrorType` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultErrorType(k: DefaultErrorType) -> i32 { return Call(k); }
 // CHECK:STDERR:                                                              ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-197]]:3: note: member `F` of type `DefaultErrorType` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-217]]:3: note: member `F` of type `DefaultErrorType` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: bool = Undefined) -> i32 {
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-304]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-324]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-152]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1728,10 +1753,10 @@ fn TestDefaultErrorType(k: DefaultErrorType) -> i32 { return Call(k); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:54: error: cannot convert type `DefaultError` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultError(l: DefaultError) -> i32 { return Call(l); }
 // CHECK:STDERR:                                                      ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-202]]:3: note: member `F` of type `DefaultError` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-222]]:3: note: member `F` of type `DefaultError` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i32 = Undefined) -> i32 {
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-319]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-339]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-167]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1745,10 +1770,10 @@ fn TestDefaultOnly(m: DefaultOnly) -> i32 { return CallD(m); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:56: error: cannot convert type `ParamErrorRef` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestParamErrorRef(n: ParamErrorRef) -> i32 { return Call(n); }
 // CHECK:STDERR:                                                        ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-199]]:3: note: member `F` of type `ParamErrorRef` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-219]]:3: note: member `F` of type `ParamErrorRef` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused ref x: Undefined, unused y: i32) -> i32 { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-336]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-356]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-184]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1760,10 +1785,10 @@ fn TestParamErrorRef(n: ParamErrorRef) -> i32 { return Call(n); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:60: error: cannot convert type `DefaultErrorRef` into type implementing `HasF` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestDefaultErrorRef(o: DefaultErrorRef) -> i32 { return Call(o); }
 // CHECK:STDERR:                                                            ^~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-206]]:3: note: member `F` of type `DefaultErrorRef` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-226]]:3: note: member `F` of type `DefaultErrorRef` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused ref y: i32 = Undefined) -> i32 {
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-351]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-371]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32) -> i32;
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-199]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1775,10 +1800,10 @@ fn TestDefaultErrorRef(o: DefaultErrorRef) -> i32 { return Call(o); }
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:64: error: cannot convert type `ReturnErrorAbsent` into type implementing `HasNoReturn` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestReturnErrorAbsent(p: ReturnErrorAbsent) -> i32 { return CallN(p); }
 // CHECK:STDERR:                                                                ^~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-211]]:3: note: member `F` of type `ReturnErrorAbsent` does not match the signature required by template constraint `HasNoReturn` [StructuralMemberMismatch]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-231]]:3: note: member `F` of type `ReturnErrorAbsent` does not match the signature required by template constraint `HasNoReturn` [StructuralMemberMismatch]
 // CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i32) -> Undefined { return 1; }
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-358]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-378]]:3: note: requirement declared here [StructuralRequirementHere]
 // CHECK:STDERR:   fn F(self, x: i32, y: i32);
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-210]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
@@ -1789,6 +1814,19 @@ fn TestReturnErrorAbsent(p: ReturnErrorAbsent) -> i32 { return CallN(p); }
 
 fn TestFormErrorOnly(q: FormErrorOnly) -> i32 { return Call(q); }
 
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE+13]]:66: error: cannot convert type `FormErrorNoDefault` into type implementing `HasDefault` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestFormErrorNoDefault(r: FormErrorNoDefault) -> i32 { return CallD(r); }
+// CHECK:STDERR:                                                                  ^~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-230]]:3: note: member `F` of type `FormErrorNoDefault` does not match the signature required by template constraint `HasDefault` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-399]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self, x: i32, y: i32 = 1) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_genuine.carbon:[[@LINE-229]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallD[template T: HasDefault](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestFormErrorNoDefault(r: FormErrorNoDefault) -> i32 { return CallD(r); }
 
 // --- fail_todo_requirement_signature_error_overload.carbon

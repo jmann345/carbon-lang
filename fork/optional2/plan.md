@@ -6,18 +6,29 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Optional plan: ownership, the `MaybeUnformed` representation fix, a checked `Get()` (OP-2)
 
-**Status:** rev 2, 2026-10-14 -- folds the two plan reviews of R29(c) (review A,
-toolchain root cause and design soundness: APPROVE-WITH-AMENDMENTS with 2 MAJOR
-and 5 MINOR findings; review B, concreteness, process, Goodhart and
+**Status:** rev 3, 2026-10-14 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds the
+focused re-review of rev 2 (APPROVE-WITH-AMENDMENTS: review B's BLOCKER B-1
+verified RESOLVED, one new MAJOR and four new MINOR findings, which the
+re-review numbered N-1..N-5 and this plan cites as RR-1..RR-5), each amended
+sentence or row marked "(amended 2026-10-14, review fold: RR-n)" and tabled in
+the [Review fold record (rev 3)](#review-fold-record-rev-3-2026-10-14); none is
+rejected, and the three reviews are listed in the [Sign-off](#sign-off). Rev 3
+changes no text of §2.1 to §2.5, which are byte-identical to rev 2's, so every
+measurement below stands; it adds one re-measurement to M-16 (§2.2 re-applied to
+SC-1's newer head). Rev 2 (4027885b3) folded the two plan reviews of R29(c)
+(review A, toolchain root cause and design soundness: APPROVE-WITH-AMENDMENTS
+with 2 MAJOR and 5 MINOR findings; review B, concreteness, process, Goodhart and
 cross-workstream: REJECT with 1 BLOCKER, 5 MAJOR and 7 MINOR findings), each
 amended sentence or row marked "(amended 2026-10-14, review fold: A-n)" or "(...
 review fold: B-n)" and tabled in the
-[Review fold record](#review-fold-record-rev-2-2026-10-14); all 20 are folded
-and none is rejected. Review B numbered its findings B-1, M-1..M-5 and m-1..m-7;
-this plan cites them as B-1, B-M1..B-M5 and B-m1..B-m7, so that none reads as a
-measurement M-n. Review A's A-1..A-7 are review findings; the rejected
-alternatives of §7.2 keep their own numbering and are always cited as "§7 A-n".
-The fixer re-ran every measurement a finding is about in its own scratch tree
+[Review fold record](#review-fold-record-rev-2-2026-10-14); all 20 were folded
+and none was rejected. Because review B REJECTed, rev 2 went to that focused
+re-review (the ST-1 precedent, fork/string/plan.md on the st branch). Review B
+numbered its findings B-1, M-1..M-5 and m-1..m-7; this plan cites them as B-1,
+B-M1..B-M5 and B-m1..B-m7, so that none reads as a measurement M-n. Review A's
+A-1..A-7 are review findings; the rejected alternatives of §7.2 keep their own
+numbering and are always cited as "§7 A-n". The fixer re-ran every measurement a
+finding is about in its own scratch tree
 (`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/op2-fixer`,
 `$F` below: copies of the OP-1 and planner installs, a toolchain relinked with
 rev 2's §2.2, a prelude with rev 2's §2.1, its mutants, fill mirrors and
@@ -51,9 +62,10 @@ an empty `Optional(T*)` (W-173 lands a checked `Get`, or TY4 is amended to name
 that obligation); only then does the row move to DONE, with the remaining
 residues as filed limits, in the commit that un-SKIPs the arbiters and quotes
 that run, never by a records-only commit (R9)". This plan meets that criterion
-as amended by D-OP2-16, which gives "a conformance run of record" a container
-provenance while Actions is disabled and keeps everything else, never as written
-(amended 2026-10-14, review fold: B-1, A-7). **Bullet text**
+as amended by D-OP2-16, under which, while Actions is disabled, the carbonbuild
+container run, stated EXPECTED, not of record, satisfies "a conformance run of
+record", and which keeps everything else; never as written (amended 2026-10-14,
+review fold: B-1, A-7, RR-2). **Bullet text**
 (docs/project/milestones.md:201-203): "Types with important language support",
 "Optional"; D-OP2-12 tests the row against it (amended 2026-10-14, review fold:
 B-M4).
@@ -82,8 +94,10 @@ D-OP2-7). No existing line of core/prelude/types/optional.carbon moves
 oracle, one holding an imported C++ class; amended 2026-10-14, review fold:
 B-m7) and five new goldens are added; 28 existing goldens are refilled by
 autoupdate. The row moves PARTIAL → DONE in commit 4, **expected, not of
-record**, by D-OP-13's criterion as amended by D-OP2-16 (amended 2026-10-14,
-review fold: B-1), with four new limits filed (W-196, W-198, W-199, W-200), none
+record**, by D-OP-13's criterion as amended by D-OP2-16, and goes back to
+PARTIAL if §8.8's run on the merge commit or the first hosted run shows a
+program of the bullet not PASS (amended 2026-10-14, review fold: B-1, RR-1),
+with four new limits filed (W-196, W-198, W-199, W-200), none
 an operation of `Core.Optional` that fails through its documented API except by
 a defect that reproduces without `Core.Optional` and is filed under its own
 bullet (D-OP2-12; amended 2026-10-14, review fold: B-M4, A-1, A-2, A-3).
@@ -199,9 +213,12 @@ p000257's direction that an `Optional(T)` gives any payload an unformed state
 the empty representation p000257 suggests needs `UnformedInit` to initialize a
 field (default.carbon:19-24's TODO). That is a filed limit of what 0.1
 implements (W-200), not a rule against the proposal, which fixes no 0.1
-mechanism. D-OP2-16 amends the provenance of D-OP-13's run of record. Both are
-recorded for veto in the decision-log entry (amended 2026-10-14, review fold:
-A-1, B-1).
+mechanism. D-OP2-16 amends D-OP-13's gate phrase "a conformance run of
+record": while Actions is disabled, the container run satisfies it, stated
+EXPECTED, not of record, and the first hosted run stays the record; that departs
+from SL-2's practice of keeping a row PARTIAL until its run of record (§7
+A-14). Both are recorded for veto in the decision-log entry (amended
+2026-10-14, review fold: A-1, B-1, RR-2, RR-5).
 
 ## §0 Audit: what exists, what was measured, what is stale
 
@@ -576,7 +593,15 @@ above, and the fills ran in mirrors.
     (§0.2, not measured). Re-applied at rev 2 to SC-1's head 4bc4802ae with
     rev 2's §2.2: the same offsets (+14, the CHECK still at :1712; +2), and the
     handle.cpp hunk applies unchanged (amended 2026-10-14, fixer
-    re-measurement).
+    re-measurement). Re-applied at rev 3, with `git apply --check` on a `git
+    archive` of the three files, to SC-1's head fa4cd094d (a records commit
+    over 30716a8c2, whose toolchain it equals; from the merge base 8068151ed,
+    convert.cpp +94/-7 and custom_witness.cpp +2, handle.cpp unchanged): the
+    same offsets again (+14, the CHECK at :1712; +2 for all three
+    custom_witness.cpp hunks), and handle.cpp's hunk applies unchanged. This
+    stays textual: whether the two compose at run time is §8.8's to show, and
+    D-OP2-16's break condition says what follows if they do not (amended
+    2026-10-14, review fold: RR-1).
 -   **M-17 (an unformed non-pointer Optional, and D-OP2-15; amended 2026-10-14,
     review fold: A-1).** Review A's probe (`$F/probes/a1/unformed_p.carbon`: a
     class `P` that is `Core.UnformedInit` and whose `Destroy` prints 99 and
@@ -764,8 +789,9 @@ the final prelude, which rev 1 had not run, ran at rev 2 (M-13; amended
 Each decision cites what it follows or the silence it fills and carries a
 one-sentence break condition. The decision-log entry "OP-2 / F-016" is written
 at discharge (§2.6) with these decisions by number; it implements F-015,
-amends F-015's API (D-OP2-15) and mints fork design F-016 (D-OP2-11) (amended
-2026-10-14, review fold: B-M2, A-1).
+amends F-015's API (D-OP2-15), amends D-OP-13's run of record (D-OP2-16) and
+mints fork design F-016 (D-OP2-11) (amended 2026-10-14, review fold: B-M2, A-1,
+RR-2).
 
 -   **D-OP2-1: W-171 is fixed where it is caused, in lowering: an
     `as_compatible` of a value converts between its operand's and its result's
@@ -1008,7 +1034,9 @@ amends F-015's API (D-OP2-15) and mints fork design F-016 (D-OP2-11) (amended
     the language support that uses it (`for`, `?`, nullable pointers, C++
     interop), whose design F-015 states. D-OP-13's break condition is met as
     amended by D-OP2-16, never as written: the three arbiters PASS in the
-    container run (M-13), and TY4 holds for `Get()` (D-OP2-7). D-ST-16's test,
+    container run (§8.4's run on commit 2's build; M-13 measured the same on a
+    relinked prototype; amended 2026-10-14, review fold: RR-1), and TY4 holds
+    for `Get()` (D-OP2-7). D-ST-16's test,
     as D-OP-13 applied it, asks whether an operation of `Core.Optional` fails
     through its documented API. D-OP-13 accepted the crash residues partly
     because W-171 bounded the row anyway; with W-171 closed, each residue is
@@ -1063,7 +1091,8 @@ amends F-015's API (D-OP2-15) and mints fork design F-016 (D-OP2-11) (amended
     `Core.Optional` that fails through its documented API and does not
     reproduce without it, or shows one of the reasons above false; the row
     stays PARTIAL, bounded by it, and commit 4 is corrected by a new commit.
-    D-OP2-16's break condition covers the hosted run.
+    D-OP2-16's break condition covers §8.8's run on the merge commit and the
+    first hosted run (amended 2026-10-14, review fold: RR-1).
 -   **D-OP2-13: merge position, stacked after PR 56, and after DD-1.** OP-2's
     branch carries PR 56's commits, so it merges after PR 56 (OP-1). Trunk's
     queue (fork/ORCHESTRATION.md Next actions item 5) is PR 53, PR 51, PR 52,
@@ -1120,35 +1149,51 @@ amends F-015's API (D-OP2-15) and mints fork design F-016 (D-OP2-11) (amended
     cleanup's `Destroy` gated on the formed state), or `UnformedInit` can
     initialize `has_value` to false; the original impl is restored and
     `fail_unformed_value` becomes a positive split.
--   **D-OP2-16: while Actions is disabled, D-OP-13's "conformance run of
-    record" is the container run of the carbonbuild toolchain built from the
-    tree that lands (amended 2026-10-14, review fold: B-1, A-7).** D-OP-13's
-    break condition reads "`optional_destroys_value`, `optional_bool` and
-    `optional_nested_pointer` [...] all un-SKIP to PASS in a conformance run of
-    record [...]; only then does the row move to DONE [...] in the commit that
-    un-SKIPs the arbiters and quotes that run, never by a records-only commit
-    (R9)"; W-170's break condition ends "optional_destroys_value un-SKIPs to
-    PASS in a conformance run of record", and W-171's "optional_bool and
-    optional_nested_pointer un-SKIP to PASS in a conformance run of record".
-    Actions is disabled with no dispatch date (the gap row's own words), so no
-    commit can quote a hosted run of its own tree, and D-OP-13's rule that the
-    row moves in the un-SKIP commit, never in a records-only one, cannot be
-    kept together with the literal gate. This decision keeps that rule and
-    amends only the run's provenance: until Actions returns, the run of record
-    for these three texts is `carbonbuild/conformance.sh` on the carbonbuild
-    toolchain of the tree that lands. Commit 4 quotes the run on commit 2's
-    build, commit 5 re-quotes §8.8's run on the merge commit, and every record
-    that quotes either says "EXPECTED, not of record", as OP-1's and ST-1's rows
-    already do. When Actions returns, the first hosted conformance run on trunk
-    with OP-2 in it is the record, as ORCHESTRATION item 5 already says for
-    OP-1, and the "not of record" phrases go in a records commit. ST-1's row is
-    practice here, not precedent: D-ST-16 never required a run of record. It is
-    recorded for veto in the decision-log entry, and D-OP2-12, the Outcome and
-    §7 R-7 say "met as amended by D-OP2-16", never "met". Break condition: the
-    first hosted run of record shows any of the seven Optional programs that
-    OP-2 runs (the three arbiters and the four new programs) not PASS; the row
-    reverts to PARTIAL in the next commit, bounded by that program's item, and
-    W-170, W-171 or W-173 is re-opened with the run.
+-   **D-OP2-16: while Actions is disabled, D-OP-13's, W-170's and W-171's "a
+    conformance run of record" is satisfied by the carbonbuild container run,
+    stated EXPECTED, not of record (amended 2026-10-14, review fold: B-1, A-7,
+    RR-2).** D-OP-13's break condition reads "`optional_destroys_value`,
+    `optional_bool` and `optional_nested_pointer` [...] all un-SKIP to PASS in
+    a conformance run of record [...]; only then does the row move to DONE
+    [...] in the commit that un-SKIPs the arbiters and quotes that run, never
+    by a records-only commit (R9)"; W-170's break condition ends
+    "optional_destroys_value un-SKIPs to PASS in a conformance run of record",
+    and W-171's "optional_bool and optional_nested_pointer un-SKIP to PASS in
+    a conformance run of record". Actions is disabled with no dispatch date
+    (the gap row's own words), so no commit can quote a hosted run of its own
+    tree, and D-OP-13's rule that the row moves in the un-SKIP commit, never in
+    a records-only one, cannot be kept together with the literal gate. This
+    decision keeps that rule and amends only what satisfies the gate's phrase:
+    until Actions returns, "a conformance run of record" in these three texts
+    is satisfied by `carbonbuild/conformance.sh` on the carbonbuild toolchain
+    built from the toolchain and prelude of the commit that quotes it, and
+    every record that quotes such a run says "EXPECTED, not of record", as
+    OP-1's and ST-1's rows already do. The run of record itself stays the
+    hosted one ("the hosted conformance run R9 makes the record", the OP-1
+    entry of fork/decision-log.md, :2878-2879). Commit 4 quotes §8.4's run on
+    commit 2's build, whose toolchain and prelude commits 3 and 4 do not
+    change, with commit 4's programs; commit 5 re-quotes §8.8's run on the
+    merge commit's build, whose toolchain and prelude commit 5 does not change
+    (amended 2026-10-14, review fold: RR-1, RR-2). When Actions returns, the
+    first hosted conformance run on a tree with OP-2 in it (OP-2's PR head
+    while it is open, trunk after) is the record, as ORCHESTRATION item 5 says
+    for OP-1's PR head, and the "not of record" phrases go in a records commit
+    (amended 2026-10-14, review fold: RR-3). ST-1's row is practice here, not
+    precedent: D-ST-16 never required a run of record. SL-2's row, kept
+    PARTIAL until its run of record, is the counter-precedent, and §7 A-14 says
+    why this decision departs from it (amended 2026-10-14, review fold: RR-5).
+    It is recorded for veto in the decision-log entry, and D-OP2-12, the
+    Outcome and §7 R-7 say "met as amended by D-OP2-16", never "met". Break
+    condition: §8.8's run on the merge commit, or the first hosted run of
+    record, shows a program of the "Stdlib: Optional" bullet other than the
+    SKIPped optional_pointer_compare not PASS, that is, any of the 13 the row
+    cites as PASS (optional_basic and optional_pointer_niche, which PASS on the
+    floor of record, OP-1's four and OP-2's seven); commit 5 then discharges
+    nothing that program arbitrates (after commit 5, that item is re-opened
+    with the run), and the row reverts to PARTIAL in the next commit, bounded
+    by the item: W-170, W-171 or W-173 for OP-2's seven, W-058 for OP-1's
+    four, and a new item, allocated by the head's rule, for optional_basic or
+    optional_pointer_niche (amended 2026-10-14, review fold: RR-1, RR-4).
 
 ## §1 Design
 
@@ -2706,7 +2751,8 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
 -   **fork/gap-analysis.md, row "Stdlib: Optional"** (:80 here; found by its
     bullet text at the merge), in commit 4 (D-OP2-12, D-OP-13, D-OP2-16): status
     DONE, evidence cell, which names no record that only commit 5 writes
-    (amended 2026-10-14, review fold: B-m5, B-1, B-M4, A-1, A-3, B-m7): "OP-1
+    (amended 2026-10-14, review fold: B-m5, B-1, B-M4, A-1, A-3, B-m7, RR-2,
+    RR-3): "OP-1
     and OP-2 landed (W-058 DISCHARGED 2026-10-13; W-170, W-171 and W-173 landed
     by OP-2, their discharge pending; fork/optional/plan.md,
     fork/optional2/plan.md; decision-log "OP-1 / F-015: Core.Optional
@@ -2748,9 +2794,10 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
     that does not bound the row — EXPECTED, not of record: container run
     `<date>` on the carbonbuild toolchain of `<commit 2 sha>` (scoreboard
     generated `<timestamp>`), 139/0/22 over 161; floor of record 128/0/22 over
-    150, run 37402970811; the hosted run R9 requires is pending with no
-    dispatch date (Actions disabled), and by D-OP2-16 the first one with OP-2
-    in it is the record." The header's counts are recounted from the table's
+    150, run 37402970811; the hosted run of record is pending with no dispatch
+    date (Actions disabled); the row is DONE on the container run by
+    D-OP2-16, and the first hosted run on a tree with OP-2 in it is the
+    record." The header's counts are recounted from the table's
     status column in the same commit, never edited by hand: on this branch 30
     DONE / 21 PARTIAL become 31 / 20 (4 MISSING / 1 DESIGN-ONLY unchanged, over
     56), and on the landing tree, where PR 55 has already moved row 77, commit 5
@@ -2773,8 +2820,10 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
     origin prefix as the ledger's other discharges do (rev 1 had "OP-2
     (DISCHARGED `<date>`): ..."; amended 2026-10-14, review fold: B-m6), and
     notes recording the landing commits, the measured evidence (M-5..M-8,
-    M-2..M-4, M-10, M-13), the corrections of §0.3 items 1-4, D-OP2-16's
-    provenance of the run quoted, and for W-170 its break condition as OP-1
+    M-2..M-4, M-10, M-13, and §8.8's run on the merge commit, which satisfies "a
+    conformance run of record" by D-OP2-16, stated EXPECTED, not of record, with
+    D-OP2-16's break condition; amended 2026-10-14, review fold: RR-1, RR-2),
+    the corrections of §0.3 items 1-4, and for W-170 its break condition as OP-1
     wrote it and as D-OP2-6 amends it (both quoted; amended 2026-10-14, review
     fold: B-M1) and for W-171 that its initializer twin is W-198; W-170's
     subsystem becomes "core/prelude + toolchain/check (custom_witness.cpp)" and
@@ -2799,33 +2848,46 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
     title "OP-2 residue (found by plan review A): a `const C` object never runs
     `C`'s declared `Destroy`, so `Core.Optional(const C)` keeps its value",
     evidence M-19's two probes, custom_witness.cpp:1042-1046, notes and break
-    condition as §1.7) and **W-200** (kind `missing-feature`, size M,
-    subsystem "core/prelude + toolchain/check (pattern_match.cpp,
-    control_flow.cpp)", bullet "Stdlib: Optional", title "OP-2 residue: a
-    non-pointer `Core.Optional` cannot be declared without an initializer, which
-    needs an unformed-state-aware destroy", evidence M-17, the
-    `fail_unformed_value` split, default.carbon:15-25, W-115, notes and break
-    condition as §1.7). W-197 is not filed: it is retired unused and the landed
-    notes say so, unless PR 51 has not landed, in which case it is filed as rev
-    1 wrote it, citing W-126 on the ua2 branch (§1.7). W-126 (PR 51's) gets an
-    "OP-2 note": M-9's `Outer` and `Plain`, an Optional field of a class with
-    its own `Destroy` keeps its value. W-108 gets no note (PR 51 discharged it
-    and rewrote the Slices row's clause, §0.3 item 5).
+    condition as §1.7) and **W-200** (kind `missing-feature`, size M, subsystem
+    "core/prelude + toolchain/check (pattern_match.cpp, control_flow.cpp)",
+    bullet "Stdlib: Optional", title "OP-2 residue: a non-pointer
+    `Core.Optional` cannot be declared without an initializer, which needs an
+    unformed-state-aware destroy", evidence M-17, the `fail_unformed_value`
+    split, default.carbon:15-25, W-115, notes and break condition as §1.7).
+    W-197 is not filed: it is retired unused and the landed notes say so, unless
+    PR 51 has not landed, in which case it is filed as rev 1 wrote it, citing
+    W-126 on the ua2 branch (§1.7). W-126 (PR 51's) gets an "OP-2 note": M-9's
+    `Outer` and `Plain`, an Optional field of a class with its own `Destroy`
+    keeps its value. W-108 gets no note (PR 51 discharged it and rewrote the
+    Slices row's clause, §0.3 item 5).
 -   **fork/decision-log.md** (commit 5): an entry "OP-2 / F-016: Core.Optional
     ownership, adapter destruction, the MaybeUnformed representation fix,
     checked Get (`<date>`)" above the then-newest landed entry, recording
     F-016's design text, D-OP2-1..16 by number, D-OP2-15's amendment of F-015's
     API and D-OP2-16's amendment of D-OP-13's run of record (both quoted, for
-    veto), the row's move to DONE as amended, the commits, the M-numbers it
-    rests on, and V-3 (this plan's head) (amended 2026-10-14, review fold: B-M2,
-    B-1, A-1).
+    veto, the latter with the SL-2 practice it departs from, §7 A-14), the
+    row's move to DONE as amended and D-OP2-16's break condition, the commits,
+    the M-numbers it rests on, and V-3 (this plan's head) (amended 2026-10-14,
+    review fold: B-M2, B-1, A-1, RR-1, RR-5).
 -   **fork/ORCHESTRATION.md** (commit 5; amended 2026-10-14, review fold: B-M3,
     B-1, B-m6): the stamp paragraph; a Branches row for
     `claude/carbon-fork-0-1-op2`; the Scoreboard line (139/0/22 over 161,
     expected, re-quoted from §8.8); in Next actions, OP-2's merge position
-    (after PR 56 and DD-1, D-OP2-13) and the W-196..W-201 reservation; where
-    OP-1's item 5 still expects the hosted run to show "row 78 PARTIAL", that
-    expectation becomes the row DONE since OP-2 (D-OP2-16). For item 6: if PR
+    (after PR 56 and DD-1, D-OP2-13), the W-196..W-201 reservation, and an
+    OP-2 bullet in item 5 beside OP-1's: "When Actions returns, the first
+    hosted conformance run on a tree with OP-2 in it (OP-2's PR head while it
+    is open, trunk after) is the record (expected, from fork/optional2/plan.md
+    §5: over a base that carries OP-1, PASS up 7, SKIP down 3 and programs up
+    4; OP-1 and OP-2 together over a base with neither, PASS up 11, SKIP
+    unchanged and programs up 11; the Optional bullet PASS over 14 programs,
+    13 PASS and optional_pointer_compare SKIP; the row "Stdlib: Optional"
+    DONE), and the "not of record" phrases go in a records commit; if it shows
+    any other program of the bullet not PASS, the row reverts to PARTIAL in
+    the next commit and that program's item is re-opened (D-OP2-16)." OP-1's
+    bullet is left as it stands: its expectation (PASS up 4, SKIP up 3,
+    programs up 7, the bullet over ten programs, row 78 PARTIAL) describes PR
+    56's head and any tree without OP-2 (rev 2 swapped only its "row 78
+    PARTIAL"; amended 2026-10-14, review fold: RR-3, RR-4). For item 6: if PR
     56 has carried it out (the expected order), OP-2 changes no item for it;
     if PR 53 is not yet on trunk, OP-2's two notes of §2.5 are added to item 6
     beside OP-1's amendments for SAFE-1's merge of trunk to make (D-OP2-14).
@@ -2840,10 +2902,11 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
 ## §3 Commit structure (one PR, "OP-2: Core.Optional owns its value, the MaybeUnformed unsafe-as fix, checked Get", R29(b))
 
 1.  **Plan.** Rev 1, "OP-2 plan (rev 1): Core.Optional owns its value, the
-    MaybeUnformed unsafe-as fix, checked Get" (963adda99), and this revision,
-    "OP-2 plan (rev 2): reviews A and B folded, 20 findings", each amended
-    sentence marked "(amended 2026-10-14, review fold: <finding>)"; any later
-    revision is a new commit.
+    MaybeUnformed unsafe-as fix, checked Get" (963adda99), rev 2, "OP-2 plan
+    (rev 2): reviews A and B folded, 20 findings" (4027885b3), and this
+    revision, "OP-2 plan (rev 3): focused re-review folded, sign-off", each
+    amended sentence marked "(amended 2026-10-14, review fold: <finding>)";
+    any later revision is a new commit.
 2.  **Toolchain, prelude and CHECK-free goldens, in ONE commit.** §2.2's
     three files, §2.1's prelude and §2.3's five sources. Either half alone
     breaks file_test (measured, as ST-1's M-10 did): the toolchain alone fails
@@ -2865,10 +2928,15 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
     un-SKIPs the arbiters). The row names no record that commit 5 writes.
 5.  **Discharge.** §2.6's other records, written after the implementation
     review, the merge of trunk and §8.8's re-verification of the merge commit,
-    so every count is quoted from a run on the tree that lands (R9): commit 5
-    re-quotes the Optional row's run, the header's sentence and counts, and the
-    README table from §8.8's run, and writes the SAFE-1 notes and row 43's
-    evidence (amended 2026-10-14, review fold: B-m5).
+    so every count is quoted from a run on the tree that lands, stated
+    EXPECTED, not of record (D-OP2-16): commit 5 re-quotes the Optional row's
+    run, the header's sentence and counts, and the README table from §8.8's
+    run, and writes the SAFE-1 notes and row 43's evidence (amended
+    2026-10-14, review fold: B-m5, RR-2). If §8.8's run shows a program of the
+    bullet other than optional_pointer_compare not PASS, D-OP2-16's break
+    condition applies instead: commit 5 discharges nothing that program
+    arbitrates, and the row reverts to PARTIAL in the next commit (amended
+    2026-10-14, review fold: RR-1).
 
 **Between commits 4 and 5**, in this order: the implementation review of R29(c)
 (ONE review once hosted verification is green; until then two, the OP-1
@@ -2972,8 +3040,10 @@ SKIP unchanged. Other PRs land first (PR 53, PR 51, PR 52, SC-1, PR 54, PR 55,
 PR 56); §8.8 re-measures on the merge commit and the records quote that run,
 never a sum by hand. All totals are expected, not of record (Actions is
 disabled), and the row's evidence says so in those words; D-OP2-16 is the
-decision that lets the row move on them, and its break condition is the first
-hosted run (amended 2026-10-14, review fold: B-1).
+decision that lets the row move on them, and its break condition is §8.8's run
+on the merge commit or the first hosted run, for any of the 13 programs of the
+bullet the row cites as PASS (amended 2026-10-14, review fold: B-1, RR-1,
+RR-4).
 
 ## §6 Churn and collision analysis
 
@@ -3070,8 +3140,14 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     Falsifier of its reach: an existing golden or program with such a field.
     Measured: none (no `UnionFieldNotTriviallyCopyable` in the 28 diffs, M-7;
     conformance unchanged, M-13).
--   **R-4: SC-1's toolchain composes differently.** Not measured (§0.2);
-    falsifier: §8.8's gate or conformance on the merge commit.
+-   **R-4: SC-1's toolchain composes differently.** Not measured beyond M-16's
+    textual application, re-applied at rev 3 to SC-1's head fa4cd094d (§0.2);
+    falsifier: §8.8's gate or conformance on the merge commit. A program of
+    the bullet other than optional_pointer_compare not PASS there has
+    D-OP2-16's consequence: commit 5 discharges nothing that program
+    arbitrates, the row reverts to PARTIAL in the next commit, and the item is
+    re-opened with the run; a gate failure that §3's merge rules do not clear
+    holds commit 5 for a fix commit (amended 2026-10-14, review fold: RR-1).
 -   **R-5: performance.** The destroy costs, per `for` iteration over
     `Core.Range`, a second out-of-line call of the no-op `i32` `SelfDestruct`
     and a store, a reload and a branch on `has_value`, eight more optimized
@@ -3084,11 +3160,13 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     fields, generics, comparisons; M-14's m4 mutant shows the programs would
     catch it).
 -   **R-7: the row is claimed DONE on a container run.** D-OP-13's criterion
-    is met as amended by D-OP2-16, which gives "a conformance run of record" a
-    container provenance while Actions is disabled and is recorded for veto;
-    the row says expected and not of record, and D-OP2-16's break condition
-    reverts it if the first hosted run disagrees (rev 1 relied on OP-1's and
-    ST-1's wording; amended 2026-10-14, review fold: B-1, A-7).
+    is met as amended by D-OP2-16, under which the carbonbuild container run,
+    stated EXPECTED, not of record, satisfies "a conformance run of record"
+    while Actions is disabled, recorded for veto; the row says expected and
+    not of record, and D-OP2-16's break condition reverts it if §8.8's run on
+    the merge commit or the first hosted run shows any of the 13 programs it
+    cites as PASS not PASS (rev 1 relied on OP-1's and ST-1's wording; amended
+    2026-10-14, review fold: B-1, A-7, RR-1, RR-2, RR-4).
 -   **R-8: the initializer twin of W-171 (W-198).** An initializing `unsafe
     as` between `MaybeUnformed(T)` and `T` with differing init representations
     still aborts the verifier or misreads (M-18). Falsifier of the row's claim:
@@ -3184,8 +3262,17 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     requires the row to move in the commit that un-SKIPs the arbiters, never in
     a records-only commit; with Actions disabled that commit can never quote a
     hosted run, so route (a) would need the records-only flip D-OP-13 forbids.
-    D-OP2-16 keeps that rule and amends the provenance instead, with a break
-    condition on the first hosted run.
+    D-OP2-16 keeps that rule and amends what satisfies the gate's phrase
+    instead, with a break condition on §8.8's run and the first hosted run
+    (amended 2026-10-14, review fold: RR-1, RR-2). SL-2 (fork/decision-log.md,
+    the SL-2 entry, :3822-3826, and the round 2 paragraph of its round-1 note,
+    :4177-4191) kept its row PARTIAL until the run of record (R9) while hosted
+    runs existed, and the row went DONE on hosted run 37390640614
+    (fork/gap-analysis.md:84); with Actions disabled and no dispatch date
+    (fork/ORCHESTRATION.md:13-17), that route leaves the row PARTIAL
+    indefinitely and needs the records-only flip D-OP-13 forbids, so D-OP2-16
+    departs from it, recorded for veto (amended 2026-10-14, review fold:
+    RR-5).
 -   **A-15: extend D-OP2-1 to initializers (review A's first option; amended
     2026-10-14, review fold: A-2).** An in-place to by-copy `as_compatible`
     would load from the source's storage, and a by-copy to in-place one would
@@ -3254,10 +3341,16 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     rebuild, refill (any golden change in a new "Autoupdate testdata goldens on
     the container arbiter" commit), gate (the merged base's count plus five),
     conformance, mutants, the R-9 grep for a non-pointer Optional declared
-    without an initializer, the id and F-016 re-scan, and the date re-stamp;
-    the records quote that run (R9), and commit 5 re-quotes the Optional row,
-    the header and the README table from it (amended 2026-10-14, review fold:
-    B-M3, B-m4, B-m5).
+    without an initializer, the id and F-016 re-scan, and the date re-stamp; the
+    records quote that run, stated EXPECTED, not of record (D-OP2-16; amended
+    2026-10-14, review fold: RR-2), and commit 5 re-quotes the Optional row, the
+    header and the README table from it (amended 2026-10-14, review fold: B-M3,
+    B-m4, B-m5). If that conformance shows a program of the bullet other than
+    optional_pointer_compare not PASS, D-OP2-16's break condition applies
+    (commit 5 discharges nothing that program arbitrates, and the row reverts to
+    PARTIAL in the next commit); a gate failure that §3's merge rules do not
+    clear holds commit 5 for a fix commit (R-4; amended 2026-10-14, review fold:
+    RR-1).
 
 ## Hand-off notes for the implementer
 
@@ -3274,7 +3367,11 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     run's (R16(d)).
 -   Commit 4 moves the gap row; if the implementation review finds an
     operation of `Core.Optional` failing through its API, the row goes back to
-    PARTIAL in a fix commit (D-OP2-12's break condition).
+    PARTIAL in a fix commit (D-OP2-12's break condition); if §8.8's run on the
+    merge commit shows a program of the bullet other than
+    optional_pointer_compare not PASS, it goes back to PARTIAL in the next
+    commit and commit 5 discharges nothing that program arbitrates (D-OP2-16's
+    break condition; amended 2026-10-14, review fold: RR-1).
 -   Re-scan the ledger before commit 5 and re-read convert.cpp's CHECK line and
     SC-1's offsets at the merge of trunk (§0.3 item 1).
 -   Both toolchain fixes are upstream defects (M-3, M-5): the landed notes list
@@ -3342,3 +3439,68 @@ are type_safety.md:181-195 and initialization_safety.md:91-107 on adaae4e35;
 SC-1's head moved to 4bc4802ae and DD-1's to 6f1ba74ba, on which M-16 and the
 id scan were re-run; and the new goldens converged on their first fill pass at
 rev 2 (M-12).
+
+## Review fold record (rev 3, 2026-10-14)
+
+The focused re-review of rev 2 (4027885b3) returned APPROVE-WITH-AMENDMENTS. It
+traced the fold of B-1 against review B's counterexample and found it RESOLVED:
+D-OP2-16 quotes D-OP-13 and W-170's and W-171's break conditions with only
+marked elisions, is recorded for veto, has a reverting break condition, and "met
+as amended" is used everywhere B-1 named; route (a)'s rejection (§7 A-14) holds
+against D-OP-13's text. It re-ran the evidence in its own scratch tree
+(`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/op2-rr`):
+a `git archive` of 379f20f67 with §2.1 and §2.2 applied by `git apply` from this
+file (the prelude 307 lines, identical to **t4**), handle.cpp, convert.cpp and
+custom_witness.cpp compiled with the carbon-op flags and carbon-busybox
+relinked, in a copy of the carbon-op install; `runner.py --filter optional` gave
+14 PASS and 1 SKIP (optional_pointer_compare), all seven OP-2 programs PASS, and
+on a pristine OP-1 install copy the same seven gave 0 PASS (optional_bool and
+optional_destroy_diff COMPILE-FAIL; optional_destroys_value,
+optional_nested_pointer and optional_cpp_class_destroy OUTPUT-MISMATCH; the two
+fail-stop programs RUN-FAIL). It did not re-run the full suite (stopped at 24
+programs under a container load of about 25). It added one MAJOR and four MINOR
+findings, numbered N-1..N-5, which this plan cites as RR-1..RR-5 so that none
+reads as a measurement or as review A's or review B's. All five are folded and
+none is rejected. The fixer re-opened every cited location
+(fork/ORCHESTRATION.md:13-17, :46-49 and :585-588; fork/decision-log.md
+:2878-2879, :3822-3826 and :4177-4191; fork/gap-analysis.md:80 and :84;
+fork/rulebook.md:60-62) and re-ran the one measurement a finding rests on, M-16,
+against SC-1's head, in its own scratch tree
+(`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/op2/rr3`).
+Rev 3 changes no text of §2.1 to §2.5, so every other measurement stands.
+
+| Finding | Grade | Disposition | Where folded |
+| --- | --- | --- | --- |
+| B-1 (review B's BLOCKER, rev 2's D-OP2-16) | BLOCKER | Verified RESOLVED by the re-review (above). No change required for the blocker; its remaining gaps are RR-1..RR-5 | None |
+| RR-1 (N-1): the amended run of record is on "the tree that lands", but the row moves on another run, and nothing reverts it if §8.8's run disagrees | MAJOR | Reproduced: rev 2's D-OP2-16 named "the tree that lands" while commit 4 quotes commit 2's build, D-OP2-12 cited M-13 (a relinked prototype), D-OP2-16's break condition fired only on the hosted run and D-OP2-12's only on a review, and R-4 named §8.8 as its falsifier with no consequence. Re-measured M-16 at SC-1's head fa4cd094d (a records commit over 30716a8c2): §2.2 still applies with offsets +14 and +2, handle.cpp unchanged; convert.cpp is +94/-7 from the merge base 8068151ed and custom_witness.cpp +2 (the re-review's "+96/-7" is the two files together). Folded as proposed: D-OP2-16's run is on the toolchain and prelude of the commit that quotes it (commit 4: §8.4's run on commit 2's build, which commits 3 and 4 do not change; commit 5: §8.8's on the merge commit's build); D-OP2-12 cites §8.4's run, with M-13 as the prototype's measurement; D-OP2-16's break condition covers §8.8's run (commit 5 discharges nothing the failing program arbitrates, the row reverts to PARTIAL in the next commit, the item is re-opened); R-4, §3 commit 5, §8.8, §5, R-7, the Outcome and the hand-off carry that consequence, and a gate failure on the merge commit holds commit 5 | Head (Outcome); §0.2 M-16; D-OP2-12; D-OP2-16; §2.6 work items, decision log; §3 commit 5; §5; §7 R-4, R-7, A-14; §8.8; hand-off |
+| RR-2 (N-2): "of record" in two senses, D-OP2-16's container run "of record" against the row's "not of record"; §0.4's intro omits D-OP2-16 | MINOR | Reproduced (rev 2's D-OP2-16 "is the run of record"; the row's "the hosted run R9 requires is pending"; §0.4's intro listed D-OP2-15 and F-016 only). Folded as proposed: D-OP2-16 amends the gate's phrase, so that while Actions is disabled the container run satisfies "a conformance run of record", stated EXPECTED, not of record, and the run of record stays the hosted one (the OP-1 entry, decision-log :2878-2879); the row's sentence is the proposed one; §0.4's intro names D-OP2-16; the head's Items and V-3, R-7, A-14, §3 commit 5, §8.8 and §2.6's ledger notes use the same wording | Head (Items, V-3); §0.4 intro; D-OP2-16; §2.6 row, work items; §3 commit 5; §7 R-7, A-14; §8.8 |
+| RR-3 (N-3): D-OP2-16 misquotes ORCHESTRATION item 5 (PR head, not trunk), and §2.6 updates one phrase of its expectation | MINOR | Reproduced (fork/ORCHESTRATION.md:585-588, "the hosted conformance run on the PR head is the record"; :46-49, "until one of these, no code lands"). Folded with the second option: D-OP2-16 names OP-2's PR head while it is open and trunk after; §2.6 adds an OP-2 bullet to item 5 carrying §5's numbers (over a base with OP-1, PASS +7, SKIP -3, programs +4; OP-1 and OP-2 over a base with neither, +11, unchanged, +11; the bullet over 14 programs; the row DONE) and the break condition. OP-1's bullet is left as it stands, because its expectation (row PARTIAL, the bullet over ten programs) is right for PR 56's head and any tree without OP-2, which rev 2's swap would have made wrong | D-OP2-16; §2.6 row, ORCHESTRATION |
+| RR-4 (N-4): the break condition covers only OP-2's seven programs, while the row cites 13 as PASS | MINOR | Reproduced (the row cites 13 PASS; the floor of record, run 37402970811, has optional_basic and optional_pointer_niche PASS for this bullet, and OP-1's four exist only in container runs). Folded as proposed: D-OP2-16's break condition covers every program of the bullet other than the SKIPped optional_pointer_compare, naming the item each reverts to (W-170, W-171 or W-173 for OP-2's seven, W-058 for OP-1's four, a new item by the head's rule for the floor's two); §5, R-7 and item 5's OP-2 bullet say the same | D-OP2-16; §2.6 ORCHESTRATION; §5; §7 R-7 |
+| RR-5 (N-5): SL-2's counter-precedent, a row kept PARTIAL until the run of record, is not weighed | MINOR | Reproduced (fork/decision-log.md :3822-3826 and the round 2 paragraph at :4177-4191; fork/gap-analysis.md:84, DONE on hosted run 37390640614). Folded as proposed: §7 A-14 states SL-2's practice and why D-OP2-16 departs from it (no dispatch date; route (a) needs the records-only flip D-OP-13 forbids), recorded for veto; D-OP2-16 and V-3 point to it, and the decision-log entry records it with D-OP2-16 | Head (V-3); D-OP2-16; §2.6 decision log; §7 A-14 |
+
+Corrections the fixer made that the re-review did not raise: §8.8's "the
+records quote that run (R9)" and §2.6's ledger notes ("D-OP2-16's provenance of
+the run quoted") used the rev 2 sense of "of record" and are reworded with
+RR-2; §3's commit 1 names rev 2's commit and this revision; and the status
+paragraph records rev 3 and the sign-off.
+
+## Sign-off
+
+Three reviews, every finding folded or verified, none rejected:
+
+| Review | Of | Verdict | Findings |
+| --- | --- | --- | --- |
+| Review A: toolchain root cause and design soundness | rev 1 (963adda99) | APPROVE-WITH-AMENDMENTS | 7: 2 MAJOR, 5 MINOR; all folded in rev 2 (4027885b3) |
+| Review B: concreteness, process, Goodhart and cross-workstream | rev 1 (963adda99) | REJECT | 13: 1 BLOCKER, 5 MAJOR, 7 MINOR; all folded in rev 2 (4027885b3) |
+| Focused re-review | rev 2 (4027885b3) | APPROVE-WITH-AMENDMENTS | 6: review B's BLOCKER B-1 verified RESOLVED, 1 MAJOR and 4 MINOR new (RR-1..RR-5); the five new ones folded in rev 3 (this revision) |
+
+The re-review's verdict is not REJECT, and rev 3 folds all of its findings, so
+the plan is signed off for implementation at rev 3: R29(c)'s two plan reviews
+and the focused re-review that review B's REJECT required are complete. The
+implementation follows §3's commits 2 to 5 on `claude/carbon-fork-0-1-op2`,
+against the measured texts of §2.1 to §2.4 and §4's matrix, with §8's
+verification and the implementation review between commits 4 and 5; residues
+take ids from the W-196..W-201 reservation by the head's rule, and F-016 is
+minted at the discharge. The row moves only as D-OP2-12 and D-OP2-16 say,
+expected and not of record, and reverts by their break conditions. Merge
+position: D-OP2-13, after PR 56 and DD-1.

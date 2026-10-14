@@ -197,7 +197,7 @@ using AnyPointerDeferenceExprId =
     NodeIdOneOf<PrefixOperatorStarId, PointerMemberAccessExprId>;
 using AnyRuntimeBindingPatternName =
     NodeIdOneOf<IdentifierNameNotBeforeSignatureId, SelfValueNameId,
-                UnderscoreNameId>;
+                UnderscoreNameId, EachBindingNameId>;
 using AnyPrimitiveFormIdId =
     NodeIdOneOf<RefPrimitiveFormId, VarPrimitiveFormId, ValPrimitiveFormId>;
 

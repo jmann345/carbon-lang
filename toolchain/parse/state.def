@@ -238,7 +238,7 @@ CARBON_PARSE_STATE_VARIANTS3(BraceExprFinish, Type, Value, Unknown)
 //
 // F( <...>
 //  ^
-//   1. Expr
+//   1. TupleLiteralElement
 //   2. TupleLiteralElementFinish
 //   3. CallExprFinish
 CARBON_PARSE_STATE(CallExpr)
@@ -769,7 +769,7 @@ CARBON_PARSE_STATE(ExprStatementFinish)
 //
 // friend <identifier> ;
 //        ^~~~~~~~~~~~~~
-// friend ??? ;
+// friend <???> ;
 //        ^~~~~
 //   (state done)
 CARBON_PARSE_STATE(FriendDecl)
@@ -1042,6 +1042,13 @@ CARBON_PARSE_STATE(AliasFinish)
 //   2. PatternListElementCheckForDefaultValue
 //   2. PatternListElementFinishAs(Tuple|Struct|Explicit|Implicit)
 //
+//  ... <...> (variant is Tuple, Explicit or Implicit)
+// ^~~
+//   1. Pattern
+//   2. PackExpansionPatternFinish
+//   3. PatternListElementCheckForDefaultValue
+//   4. PatternListElementFinishAs(Tuple|Explicit|Implicit)
+//
 //  .foo = <...> (variant is Struct)
 // ^
 //   1. PeriodAsStruct
@@ -1055,6 +1062,13 @@ CARBON_PARSE_STATE(AliasFinish)
 //  2. PatternListElementFinishAsStruct
 CARBON_PARSE_STATE_VARIANTS4(PatternListElement, Tuple, Struct, Explicit,
                              Implicit)
+
+// Handles a pack expansion pattern list element after its body.
+//
+// ... <...>
+//          ^
+//   (state done)
+CARBON_PARSE_STATE(PackExpansionPatternFinish)
 
 // Some pattern list elements support optional default value expressions,
 // this state checks for the `=` and if present parses it before moving on
@@ -1219,13 +1233,13 @@ CARBON_PARSE_STATE_VARIANTS3(ParenConditionFinish, If, While, Match)
 // Handles a pattern condition after its pattern: adds the VariablePattern
 // wrapper for the `var` spelling, then the `=` and the initializer.
 //
-// if/while ( let ... = ...
-//                   ^
+// if/while ( let <...> = <...>
+//                    ^
 //   1. Expr
 //   2. ParenConditionFinishAs(If|While)
 //
-// if/while ( let ... ???
-//                   ^
+// if/while ( let <...> <???>
+//                    ^
 //   2. ParenConditionFinishAs(If|While)   (state done, error)
 CARBON_PARSE_STATE(PatternConditionAfterPattern)
 
@@ -1255,6 +1269,12 @@ CARBON_PARSE_STATE(OnlyParenExprFinish)
 //   1. Expr
 //   2. ExprAfterOpenParenFinish
 //   3. ParenExprFinish             (SPECIAL: may be replaced)
+//
+// ( ... <...> )
+// ^
+//   1. TupleLiteralElement
+//   2. TupleLiteralElementFinish
+//   3. TupleLiteralFinish
 CARBON_PARSE_STATE(ParenExpr)
 
 // Handles the `)` of a tuple literal.
@@ -1273,7 +1293,7 @@ CARBON_PARSE_STATE(TupleLiteralFinish)
 //
 // ( <...> , <...> )
 //         ^
-//   1. Expr
+//   1. TupleLiteralElement
 //   2. TupleLiteralElementFinish
 //   SPECIAL: parent becomes TupleLiteralFinish
 //
@@ -1291,13 +1311,33 @@ CARBON_PARSE_STATE(ExprAfterOpenParenFinish)
 //
 // ( <...> , <...> )
 //         ^
-//   1. Expr
+//   1. TupleLiteralElement
 //   2. TupleLiteralElementFinish
 //
 // ( <...> )
 //        ^
 //   (state done)
 CARBON_PARSE_STATE(TupleLiteralElementFinish)
+
+// Handles an element of a tuple literal or call argument list, which may be
+// a pack expansion.
+//
+// ... <...>
+// ^~~
+//   1. Expr
+//   2. PackExpansionExprFinish
+//
+// <...>
+// ^
+//   1. Expr
+CARBON_PARSE_STATE(TupleLiteralElement)
+
+// Handles a pack expansion tuple literal element after its body.
+//
+// ... <...>
+//          ^
+//   (state done)
+CARBON_PARSE_STATE(PackExpansionExprFinish)
 
 // Handles the `)` of a parenthesized single expression.
 //
@@ -1877,8 +1917,8 @@ CARBON_PARSE_STATE_VARIANTS2(LetFinish, Regular, AssociatedConstant)
 
 // Handles the end of a `let`-`else` declaration after its else block.
 //
-// let ... = ... else { ... }
-//                           ^
+// let <...> = <...> else { <...> }
+//                                 ^
 //   (state done)
 CARBON_PARSE_STATE(LetElseFinish)
 
@@ -1983,8 +2023,8 @@ CARBON_PARSE_STATE(MatchConditionFinish)
 //                ^
 //   1. MatchDefaultIntroducer
 //   2. MatchCaseLoopAfterDefault
-// match (...) { default if ...}
-//              ^
+// match (<...>) { default if <...>}
+//                ^
 //   1. MatchDefaultIntroducer
 //   2. MatchCaseLoop
 CARBON_PARSE_STATE(MatchCaseLoop)
@@ -2000,20 +2040,20 @@ CARBON_PARSE_STATE(MatchCaseIntroducer)
 // Handles a choice alternative pattern in a `match` `case`: the designator
 // name, then an optional parenthesized payload pattern list.
 //
-// match (...) { case .Name(...) ... }
-//                    ^~~~~
+// match (<...>) { case .Name(<...>) <...> }
+//                      ^~~~~
 //   1. PatternListAsTuple
 //   2. MatchCaseAlternativePatternFinish
 //
-// match (...) { case .Name ... }
-//                    ^~~~~
+// match (<...>) { case .Name <...> }
+//                      ^~~~~
 //   (state done)
 CARBON_PARSE_STATE(MatchCaseAlternativePattern)
 
 // Finishes a choice alternative pattern after its payload pattern list.
 //
-// match (...) { case .Name(...) ... }
-//                             ^
+// match (<...>) { case .Name(<...>) <...> }
+//                                ^
 //   (state done)
 CARBON_PARSE_STATE(MatchCaseAlternativePatternFinish)
 
@@ -2078,17 +2118,17 @@ CARBON_PARSE_STATE(MatchDefaultIntroducer)
 // Handles a guarded `match` default's `=>` and `{` opening statements block,
 // after the guard's closing `)`.
 //
-// match (...) { default if (...) => {...} }
-//                                ^~~~
+// match (<...>) { default if (<...>) => {<...>} }
+//                                    ^~~~
 //   1. StatementScopeLoop
 //   2. MatchHandlerFinish
 //
-// match (...) { default if (...) ??? }
-//                                ^
+// match (<...>) { default if (<...>) <???> }
+//                                    ^
 //   (state done)
 //
-// match (...) { default if (...) => ??? }
-//                                   ^
+// match (<...>) { default if (<...>) => <???> }
+//                                       ^
 //   (state done)
 CARBON_PARSE_STATE(MatchGuardedDefaultStart)
 

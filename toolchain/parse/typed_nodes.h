@@ -419,6 +419,15 @@ struct RuntimeBindingName {
   AnyRuntimeBindingPatternName name;
 };
 
+// An each-name declared by a binding pattern: `each name`.
+struct EachBindingName {
+  static constexpr auto Kind =
+      NodeKind::EachBindingName.Define({.child_count = 1});
+
+  Lex::EachTokenIndex token;
+  IdentifierNameNotBeforeSignatureId name;
+};
+
 struct BindingPatternTypeStart {
   static constexpr auto Kind =
       NodeKind::BindingPatternTypeStart.Define({.child_count = 0});
@@ -434,7 +443,7 @@ struct LetBindingPattern {
 
   // TODO: is there some way to reuse AnyRuntimeBindingPatternName here?
   NodeIdOneOf<IdentifierNameNotBeforeSignature, SelfValueName, UnderscoreName,
-              RefBindingName, RuntimeBindingName>
+              EachBindingName, RefBindingName, RuntimeBindingName>
       name;
   BindingPatternTypeStartId introducer;
   Lex::ColonTokenIndex token;
@@ -460,7 +469,7 @@ struct VarBindingPattern {
 
   // TODO: is there some way to reuse AnyRuntimeBindingPatternName here?
   NodeIdOneOf<IdentifierNameNotBeforeSignature, SelfValueName, UnderscoreName,
-              RuntimeBindingName>
+              EachBindingName, RuntimeBindingName>
       name;
   BindingPatternTypeStartId introducer;
   Lex::ColonTokenIndex token;
@@ -504,7 +513,7 @@ struct CompileTimeBindingPattern {
 
   // TODO: is there some way to reuse AnyRuntimeBindingPatternName here?
   NodeIdOneOf<IdentifierNameNotBeforeSignature, SelfValueName, UnderscoreName,
-              TemplateBindingName>
+              EachBindingName, TemplateBindingName>
       name;
   CompileTimeBindingPatternTypeStartId introducer;
   Lex::ColonTokenIndex token;
@@ -1032,6 +1041,45 @@ struct PackExpansionStatement {
   // This is a virtual token. The `...` token is owned by the
   // PackExpansionStart node.
   Lex::PeriodPeriodPeriodTokenIndex token;
+};
+
+// A pack expansion element of a tuple literal or call argument list:
+// `... expression`.
+struct PackExpansionExpr {
+  static constexpr auto Kind = NodeKind::PackExpansionExpr.Define(
+      {.category = NodeCategory::Expr,
+       .bracketed_by = PackExpansionStart::Kind,
+       .child_count = 2});
+
+  PackExpansionStartId start;
+  AnyExprId body;
+  // This is a virtual token. The `...` token is owned by the
+  // PackExpansionStart node.
+  Lex::PeriodPeriodPeriodTokenIndex token;
+};
+
+// A pack expansion element of a tuple pattern or parameter list:
+// `... pattern`.
+struct PackExpansionPattern {
+  static constexpr auto Kind = NodeKind::PackExpansionPattern.Define(
+      {.category = NodeCategory::Pattern,
+       .bracketed_by = PackExpansionStart::Kind,
+       .child_count = 2});
+
+  PackExpansionStartId start;
+  AnyPatternId body;
+  // This is a virtual token. The `...` token is owned by the
+  // PackExpansionStart node.
+  Lex::PeriodPeriodPeriodTokenIndex token;
+};
+
+// An each-name used in an expression: `each name`.
+struct EachNameExpr {
+  static constexpr auto Kind = NodeKind::EachNameExpr.Define(
+      {.category = NodeCategory::Expr, .child_count = 1});
+
+  Lex::EachTokenIndex token;
+  IdentifierNameNotBeforeSignatureId name;
 };
 
 using MatchConditionStart =

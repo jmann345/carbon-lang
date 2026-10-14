@@ -53,6 +53,14 @@ auto HandleParenExpr(Context& context) -> void {
 
   if (context.PositionIs(Lex::TokenKind::CloseParen)) {
     context.PushState(state, StateKind::TupleLiteralFinish);
+  } else if (context.PositionIs(Lex::TokenKind::PeriodPeriodPeriod)) {
+    // A `...` element makes the parentheses a tuple literal even without a
+    // comma: "if the nearest enclosing delimiters around a `...` are
+    // parentheses, they will be interpreted as forming a tuple rather than as
+    // grouping" (docs/design/variadics.md, "Pack expansions").
+    context.PushState(state, StateKind::TupleLiteralFinish);
+    context.PushState(StateKind::TupleLiteralElementFinish);
+    context.PushState(StateKind::TupleLiteralElement);
   } else {
     context.PushState(state, StateKind::ParenExprFinish);
     context.PushState(StateKind::ExprAfterOpenParenFinish);
@@ -79,7 +87,7 @@ auto HandleExprAfterOpenParenFinish(Context& context) -> void {
   // for the next tuple element.
   if (list_token_kind != Context::ListTokenKind::CommaClose) {
     context.PushState(StateKind::TupleLiteralElementFinish);
-    context.PushState(StateKind::Expr);
+    context.PushState(StateKind::TupleLiteralElement);
   }
 }
 
@@ -94,7 +102,29 @@ auto HandleTupleLiteralElementFinish(Context& context) -> void {
                                Lex::TokenKind::CloseParen, state.has_error) ==
       Context::ListTokenKind::Comma) {
     context.PushState(StateKind::TupleLiteralElementFinish);
-    context.PushState(StateKind::Expr);
+    context.PushState(StateKind::TupleLiteralElement);
+  }
+}
+
+auto HandleTupleLiteralElement(Context& context) -> void {
+  context.PopState();
+
+  // A tuple literal or call argument list element may be a pack expansion,
+  // `... expression`, with the same precedence as `,`
+  // (docs/design/variadics.md, "Pack expansions").
+  if (context.PositionIs(Lex::TokenKind::PeriodPeriodPeriod)) {
+    context.PushState(StateKind::PackExpansionExprFinish);
+    context.AddLeafNode(NodeKind::PackExpansionStart, context.Consume());
+  }
+  context.PushState(StateKind::Expr);
+}
+
+auto HandlePackExpansionExprFinish(Context& context) -> void {
+  auto state = context.PopState();
+
+  context.AddNode(NodeKind::PackExpansionExpr, state.token, state.has_error);
+  if (state.has_error) {
+    context.ReturnErrorOnState();
   }
 }
 
@@ -120,7 +150,7 @@ auto HandleCallExpr(Context& context) -> void {
   context.AddNode(NodeKind::CallExprStart, context.Consume(), state.has_error);
   if (!context.PositionIs(Lex::TokenKind::CloseParen)) {
     context.PushState(StateKind::TupleLiteralElementFinish);
-    context.PushState(StateKind::Expr);
+    context.PushState(StateKind::TupleLiteralElement);
   }
 }
 

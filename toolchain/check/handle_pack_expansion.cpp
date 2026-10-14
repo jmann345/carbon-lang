@@ -17,6 +17,25 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStatementId node_id)
   return context.TODO(node_id, "HandlePackExpansionStatement");
 }
 
+auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
+    -> bool {
+  return context.TODO(node_id, "HandlePackExpansionExpr");
+}
+
+auto HandleParseNode(Context& context, Parse::PackExpansionPatternId node_id)
+    -> bool {
+  return context.TODO(node_id, "HandlePackExpansionPattern");
+}
+
+auto HandleParseNode(Context& context, Parse::EachBindingNameId node_id)
+    -> bool {
+  return context.TODO(node_id, "HandleEachBindingName");
+}
+
+auto HandleParseNode(Context& context, Parse::EachNameExprId node_id) -> bool {
+  return context.TODO(node_id, "HandleEachNameExpr");
+}
+
 auto HandleParseNode(Context& context, Parse::PrefixOperatorExpandId node_id)
     -> bool {
   return context.TODO(node_id, "HandlePrefixOperatorExpand");

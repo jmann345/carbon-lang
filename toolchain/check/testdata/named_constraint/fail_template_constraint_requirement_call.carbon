@@ -370,6 +370,13 @@ fn Overload() -> i32 { return P(HasN.N); }
 
 // A tuple index of a refused tuple is not diagnosed again (round 6's review 2
 // finding MINOR-3: it added "type `<error>` does not support tuple indexing").
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+7]]:34: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn TupleIndex() -> i32 { return (HasN.N, 1).1; }
+// CHECK:STDERR:                                  ^~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-144]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TupleIndex() -> i32 { return (HasN.N, 1).1; }
 
 // --- fail_requirement_through_checked_binding_as_value.carbon
@@ -721,21 +728,55 @@ class V {
 
 impl V as Core.UnformedInit {}
 
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:22: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn ConstParam(unused v: const typeof(HasN.N)) {}
+// CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-82]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn ConstParam(unused v: const typeof(HasN.N)) {}
 
 fn ConstPointer() -> i32 {
   var v: V;
   let p: const typeof(HasN.N)* = &v.f;
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+10]]:15: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   return Take(*p);
+  // CHECK:STDERR:               ^~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-94]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-94]]:25: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+  // CHECK:STDERR:                         ^~~~
+  // CHECK:STDERR:
   return Take(*p);
 }
 
 fn ArrayLet() {
   var v: V;
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:44: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   let unused a: array(typeof(HasN.N), 2) = v.a;
+  // CHECK:STDERR:                                            ^~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-109]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused a: array(typeof(HasN.N), 2) = v.a;
 }
 
 fn ArrayArg() -> i32 {
   var v: V;
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+10]]:15: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   return Take(v.a);
+  // CHECK:STDERR:               ^~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-121]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-121]]:25: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+  // CHECK:STDERR:                         ^~~~
+  // CHECK:STDERR:
   return Take(v.a);
 }
 
@@ -748,10 +789,24 @@ fn ArrayArg() -> i32 {
 class E {
   var t: (typeof(HasN.N), i32);
   var s: {.f: typeof(HasN.N), .x: i32};
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:32: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return self.t.1; }
+  // CHECK:STDERR:                                ^~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-143]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return self.t.1; }
   fn GetRef(ref self) -> i32 { return self.t.1 + self.s.x; }
 }
 
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:38: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn StructField(e: E) -> i32 { return e.s.x; }
+// CHECK:STDERR:                                      ^~~
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-154]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn StructField(e: E) -> i32 { return e.s.x; }
 
 // A `var` parameter's storage is a reference, so its declaration is accepted;
@@ -761,6 +816,16 @@ fn VarParam(var x: typeof(HasN.N)) { Ref(ref x); }
 
 fn CallVarParam() {
   var w: W;
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+10]]:12: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   VarParam(w.f);
+  // CHECK:STDERR:            ^~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-170]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-10]]:13: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn VarParam(var x: typeof(HasN.N)) { Ref(ref x); }
+  // CHECK:STDERR:             ^~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   VarParam(w.f);
 }
 
@@ -772,6 +837,19 @@ fn TemplateDeref[template U: type](p: U*) -> i32 { return Take(*p); }
 
 fn UseTemplateDeref() -> i32 {
   var w: W;
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+13]]:10: error: unable to monomorphize specific `TemplateDeref(<type of HasN.N>)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return TemplateDeref(&w.f);
+  // CHECK:STDERR:          ^~~~~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-7]]:64: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR: fn TemplateDeref[template U: type](p: U*) -> i32 { return Take(*p); }
+  // CHECK:STDERR:                                                                ^~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-194]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-194]]:25: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+  // CHECK:STDERR:                         ^~~~
+  // CHECK:STDERR:
   return TemplateDeref(&w.f);
 }
 
@@ -793,13 +871,44 @@ template constraint Outer {
 fn Take[T: type](unused f: T) -> i32 { return 1; }
 
 fn Init() {
+  // CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE+7]]:23: error: requirement `N` of template constraint `Inner` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   let unused x: i32 = Outer.Inner.N;
+  // CHECK:STDERR:                       ^~~~~~~~~~~~~
+  // CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE-10]]:5: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:     fn N() -> i32;
+  // CHECK:STDERR:     ^~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused x: i32 = Outer.Inner.N;
 }
 
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE+7]]:18: error: requirement `N` of template constraint `Inner` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn Statement() { Outer.Inner.N; }
+// CHECK:STDERR:                  ^~~~~~~~~~~~~
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE-20]]:5: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:     fn N() -> i32;
+// CHECK:STDERR:     ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Statement() { Outer.Inner.N; }
 
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE+7]]:27: error: requirement `N` of template constraint `Inner` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn Call() -> i32 { return Outer.Inner.N(); }
+// CHECK:STDERR:                           ^~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE-29]]:5: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:     fn N() -> i32;
+// CHECK:STDERR:     ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Call() -> i32 { return Outer.Inner.N(); }
 
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE+10]]:31: error: requirement `N` of template constraint `Inner` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn Arg() -> i32 { return Take(Outer.Inner.N); }
+// CHECK:STDERR:                               ^~~~~~~~~~~~~
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE-38]]:5: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:     fn N() -> i32;
+// CHECK:STDERR:     ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_nested_requirement_as_value.carbon:[[@LINE-37]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn Arg() -> i32 { return Take(Outer.Inner.N); }
 
 // --- fail_ladder_alias.carbon

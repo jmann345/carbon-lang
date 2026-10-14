@@ -20,13 +20,6 @@ fn F[template G: type](H: G, x: X) {
 }
 fn TakeX(unused x: X) {}
 
-// CHECK:STDERR: fail_todo_dependent_call_nonconst_arg.carbon:[[@LINE+7]]:21: error: unable to monomorphize specific `F(<type of TakeX>)` [ResolvingSpecificHere]
-// CHECK:STDERR: fn GoodCall(x: X) { F(TakeX, x); }
-// CHECK:STDERR:                     ^
-// CHECK:STDERR: fail_todo_dependent_call_nonconst_arg.carbon:[[@LINE-7]]:3: note: value of type `<type of TakeX>` is not callable [CallToNonCallable]
-// CHECK:STDERR:   H(x);
-// CHECK:STDERR:   ^~~~
-// CHECK:STDERR:
 fn GoodCall(x: X) { F(TakeX, x); }
 
 // --- dependent_call_two_callees.carbon

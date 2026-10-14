@@ -20,4 +20,17 @@ fn F[template G: type](H: G, x: X) {
 }
 fn TakeY(unused y: Y) {}
 
+// CHECK:STDERR: fail_dependent_call_nonconst_arg_wrong_type.carbon:[[@LINE+13]]:20: error: unable to monomorphize specific `F(<type of TakeY>)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn BadCall(x: X) { F(TakeY, x); }
+// CHECK:STDERR:                    ^
+// CHECK:STDERR: fail_dependent_call_nonconst_arg_wrong_type.carbon:[[@LINE-7]]:5: note: cannot implicitly convert expression of type `X` to `Y` [ConversionFailure]
+// CHECK:STDERR:   H(x);
+// CHECK:STDERR:     ^
+// CHECK:STDERR: fail_dependent_call_nonconst_arg_wrong_type.carbon:[[@LINE-10]]:5: note: type `X` does not implement interface `Core.ImplicitAs(Y)` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR:   H(x);
+// CHECK:STDERR:     ^
+// CHECK:STDERR: fail_dependent_call_nonconst_arg_wrong_type.carbon:[[@LINE-11]]:17: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn TakeY(unused y: Y) {}
+// CHECK:STDERR:                 ^~~~
+// CHECK:STDERR:
 fn BadCall(x: X) { F(TakeY, x); }

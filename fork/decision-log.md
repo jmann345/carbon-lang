@@ -4400,8 +4400,16 @@ f2f7b0a96 names it, checks round 15's records against the head (the split
 counts, the autoupdate's removed lines, the statements of the rule and of the
 `self` check's order, the cites of ROUND 15's DECISION, of D-SC-9's mechanism
 and of W-238, the reproducers of W-235 to W-238 on trunk and the nightly, the
-matrices' remaining aborts) and records the re-measure on f2f7b0a96. Each fix is
-an R29(a) implementation decision recorded for after-the-fact veto, with its
+matrices' remaining aborts) and records the re-measure on f2f7b0a96; that
+records commit is 30dbd32eb. Fill round 16 (same day), folding round 15's two
+implementation reviews: 5d778d044 (an imported member's expression pattern under
+`var` or a default value compared by its kind without being imported, ROUND 16's
+DECISION; test sources), 3f97eb57b (1 golden, CHECK lines only) and the records
+commit after them (records: round 15's review record; ROUND 15's DECISION
+amended; ROUND 16's DECISION; D-SC-9 amended and its mechanism cites re-pointed;
+W-238's, W-234's and W-235's evidence; gap row 60; the design page;
+ORCHESTRATION; the PR body and comment; the re-measure on 3f97eb57b). Each fix
+is an R29(a) implementation decision recorded for after-the-fact veto, with its
 design citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Round 7's takes D-SC-10's own break condition on a falsifier other
 than the one it named (a template-phase `Self` breaking a positive golden at the
@@ -5311,7 +5319,12 @@ reviews' probes (sc1-review14/adv1 and adv2) and their trunk analogs on
     visible should upstream accept one. No requirement now has a `TuplePattern`
     or an `ExprPattern`, so `GetDeclaredParamPattern`'s fall-through compares a
     leaf parameter pattern by kind and type and a member's tuple or expression
-    pattern by kind, which never matches; the errors-match mode is unchanged.
+    pattern by kind, which never matches; the errors-match mode is unchanged. A
+    refused requirement is not checked at all, so a use against it reports
+    nothing beyond the requirement's own errors, where trunk's impl analog of
+    `fn F(self, x: i32, var y) -> i32` with `y` not found reports a mismatch
+    through the thunk (sc1-review15/adv1/p/ar l_a4 and l_a7, trunk's i_a4 and
+    i_a7; stated at fill round 16, round 15's review 1 finding MINOR-1).
     Design: D-SC-2 as amended at fill round 15; W-234's precedent of refusing a
     form whose comparison upstream aborts on. Break condition: upstream
     implements expression patterns in parameter lists (`CheckRedeclParam` and
@@ -5326,11 +5339,56 @@ reviews' probes (sc1-review14/adv1 and adv2) and their trunk analogs on
     function has no `self_param_id`, and the `self` check runs first; a member
     with one is a member without `self` and is reported, and a requirement with
     one is a requirement without `self`, against which a member without `self`
-    is compared as for any requirement. Trunk's impl analog reports the member
-    side too (i_sfe). Design: D-SC-5(d) as amended at fill round 12; D-SC-9.
-    Break condition: a Carbon change that keeps a `self` declared with an
-    erroneous form as the function's `self`; then the comparison compares it as
-    any parameter with an error. Pinned by `SelfFormError`.
+    is compared as for any requirement, its erroneous `self` staying its first
+    parameter, the error itself, counted as equal to the member's parameter in
+    its place, a method's `self` included, so that a member without that leading
+    parameter is compared with one parameter fewer and is reported, as trunk's
+    impl analog is (sc1-review15/adv1/p/sf s1 and s2, trunk's t1; stated at fill
+    round 16, round 15's review 1 finding MINOR-2). Trunk's impl analog reports
+    the member side too (i_sfe). Design: D-SC-5(d) as amended at fill round 12;
+    D-SC-9. Break condition: a Carbon change that keeps a `self` declared with
+    an erroneous form as the function's `self`; then the comparison compares it
+    as any parameter with an error. Pinned by `SelfFormError`.
+
+ROUND 16's DECISION (folding round 15's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+4bf275786 with the
+reviews' probes (sc1-review15/adv1 and adv2) and their trunk analogs on
+0bdce60a5 and the upstream nightly 62f1cc6a3.
+
+-   **An imported expression pattern is compared by its kind without being
+    imported** (merge.cpp `DeclaredParamPattern::wraps_imported_expr_pattern`
+    :230-234, `GetDeclaredParamPattern` :237-294 with the guard at :267-271, and
+    the comparison in `CheckRedeclParam`'s errors-match mode at :418-438; round
+    15's review 2 MAJOR-1). Symptom: a member imported from another library
+    whose parameter wraps an expression pattern with an error, `fn F(unused
+    self, var z)` (also `var Undefined`, `var (1 + Undefined)` and `(z) = 1`),
+    aborted every use of its type against a template constraint at
+    import_ref.cpp:5172 (sc1-review15/adv2/p/imp iv_var_var, ix1, ix4v;
+    adv2/mxv, 54 of 81 cases; sc1-fix16/mxw, 288 of 330), where trunk 0bdce60a5
+    and the nightly call such an imported member, name an imported interface
+    with one and use an imported impl with one without aborting. Root cause:
+    since fill round 13 `GetDeclaredParamPattern` imports the subpattern of an
+    imported pattern whose constant value is the error, and upstream's
+    `TryResolveInstCanonical` has no case for an `ExprPattern`. Decision: such a
+    subpattern is not imported; the wrapping pattern keeps its own kind, and the
+    errors-match mode compares the expression pattern with the pattern in its
+    place in the other declaration by its kind alone, as it compares a local
+    one, so it matches only a pattern that is the error itself, no requirement
+    having an expression pattern (W-238). The guard is reached only where the
+    import aborted, so no other result changes. Taken in part: the review's
+    literal fix returned the whole parameter as an `ExprPattern`, which inverts
+    the local result for a member whose parameter is a default value on an
+    expression pattern, `(z) = 1`, reported against `y:? form(ref Undefined)`
+    and silent against `y:? form(ref Undefined) = 1` (sc1-fix16/mxw). Design:
+    D-SC-9 as amended at fill round 16 (an imported member is compared as
+    declared, as a local one is); D-SC-5(d). Break condition: upstream's
+    `TryResolveInstCanonical` gains an `ExprPattern` case (W-238); then the
+    guard goes and such a subpattern is imported as any other. Pinned by
+    `fail_member_signature_error_import` (5 errors: `VarExpr` reported against
+    `var y: i32`, `DefaultExpr` against `y: i32 = 1` and `y:? form(ref
+    Undefined)`; nothing against `y:? form(ref Undefined)` for `VarExpr` or
+    against `y:? form(ref Undefined) = 1` for `DefaultExpr`) and its library
+    split (4 errors).
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -5415,13 +5473,14 @@ on the development build, are not counted. Round 10's rows are derived by hand
 from the trunk analogs but written after its development build ran the reviews'
 shapes, so they are not counted either; nor are round 11's, derived from the
 trunk impl analogs after its development build ran the reviews' shapes, nor
-round 12's, round 13's, round 14's or round 15's, derived from the rule and the
-trunk analogs after their development builds ran the reviews' shapes. No miss
-hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
-coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
-and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
-coverage gap now dumped where the claim needed a dump, and (h) and (i) design
-sentences amended in place beside their fixes.
+round 12's, round 13's, round 14's, round 15's or round 16's, derived from the
+rule and the trunk analogs (round 16's from the local twins too) after their
+development builds ran the reviews' shapes. No miss hides a defect: (a), (c),
+(f), (l), (m), (n) and (o) were prediction errors (the coalescing (o) shows is
+trunk's lowering, outside SC-1), (b) and (e) a cascade and a warning class now
+gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
+where the claim needed a dump, and (h) and (i) design sentences amended in place
+beside their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -6245,6 +6304,70 @@ gap row 60; review 2's MINOR-5 re-points D-SC-9's mechanism cites at the
 round-15 head, with the ledger cites 4bf275786 moved. Per-finding detail is in
 the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
+Round 15's own diff (4bf275786, fd736eb5d, f2f7b0a96, 30dbd32eb) received two
+implementation reviews, 7 findings in all: review 1, APPROVE-WITH-FIXES, 3
+MINOR; review 2, APPROVE-WITH-FIXES, 1 MAJOR and 3 MINOR. Both checked round 15
+on the driver stamped 0.0.0-0.dev+4bf275786 against trunk 0bdce60a5 and the
+upstream nightly 62f1cc6a3, each with a private gate (1959 / 0), review 2 with a
+private conformance run (130 / 0 / 21 of 151, 49/56). On the round's questions
+both found: (a) `GetRefusedParamPatternKind` collects every binding, `var`,
+`ref`, form and `self` parameter, a default value, and an ordinary parameter
+typed as a tuple, struct, array, pointer or `Self`, refuses each tuple and
+expression pattern shape directly, under `var` and under a default value, and
+leaves the rest unreachable (a struct pattern's TODO stops the file's check, an
+expression pattern with a default value aborts at pattern.cpp:62 on trunk too,
+compile-time parameters are the parameterized-requirement TODO, `addr` does not
+parse) (review 1's p/kinds, 49 shapes, with their trunk analogs; review 2's
+p/kinds, p/form and p/impl); naming an imported constraint with a refused
+expression requirement aborts at import_ref.cpp:5172 as naming an imported
+interface with such a member does on trunk and the nightly, while importing it
+without naming it, an imported tuple refusal and the uses of a refused
+requirement do not abort; (b) the matrices (mx3, mx4 and its twins, mxf, mxf2,
+mxx, mxy and mxg, 6710 rows) are byte-identical to the round-15 fixer's, with 17
+aborts, each a requirement-imported case that W-238 lists, and nothing silent
+where trunk's analog reports among the changed cases; (c) the split counts 23,
+39, 9, 1 and 0 hold, the 46 removed CHECK lines are `@LINE` shifts, W-238 is the
+right id for `fail_todo_expr_pattern_param` (W-234's precedent; no id of its own
+is needed), and `SelfFormError` and `return_form_not_compared` pin what they
+claim; (d) the cites hold at the head, the PR body (64,817 characters) and
+comment (52,942) naming all 73 commits with no model name and the merge order
+running through PR 59. Review 1's findings: MINOR-1 a refused `var y`
+requirement (`y` not found) leaves a use silent where trunk's impl analog
+reports a mismatch through the thunk, which the records' claim that nothing is
+silent where trunk reports did not cover (p/ar l_a4 and l_a7); MINOR-2 the
+`self` statement omits that a requirement's erroneous `self` stays its first
+parameter (p/sf s1 and s2, trunk's t1); MINOR-3 a redeclaration of an
+expression- or tuple-pattern requirement inside a template constraint aborts in
+upstream's redeclaration merge, missing from W-238's and W-234's evidence
+(p/redecl r1 and r3; trunk's r1i and r4). Review 2's findings: MAJOR-1 a member
+imported with a parameter that wraps an expression pattern with an error (`var
+z`) aborts every use inside SC-1's `GetDeclaredParamPattern` at
+import_ref.cpp:5172, which no trunk analog shares (p/imp iv_var_var, ix1 and
+ix4v; mxv, all 54 imported cases of 81); MINOR-1 the PR body's 719 characters of
+headroom; MINOR-2 the lone line round 15 left in the member split's header
+comment; MINOR-3 the design page's inverted round-15 sentence. Review 1 found
+the branch dry, review 2 not dry (MAJOR-1, a toolchain change warranted before
+the PR opens). Review 1's probes are sc1-review15/adv1 (p/kinds, p/kindst,
+p/mem, p/memt, p/imp, p/ar, p/sf, p/redecl, p/dflt, p/form, p/trn; the matrices
+re-run); review 2's are sc1-review15/adv2 (p/kinds, p/kinds2, p/form, p/impl,
+p/imp, p/memexpr, p/mixed, p/redir, p/selfform, p/varexpr; mxv; the matrices
+re-run). Fill round 16 folds all 7, each reproduced first on the toolchain
+stamped 0.0.0-0.dev+4bf275786, none rejected. Dispositions: review 2's MAJOR-1
+is ROUND 16's DECISION (5d778d044, taken in part: the wrapping pattern keeps its
+kind, since the review's literal fix would invert the local result for a default
+value on an expression pattern; pinned by the two import splits); review 1's
+MINOR-1 states in D-SC-9, ROUND 15's DECISION, round 15's expectations in the
+plan and W-238 that a refused requirement is not checked at all, the claim
+scoped to the changed matrix cases; review 1's MINOR-2 adds the place of a
+requirement's erroneous `self` to D-SC-9, ROUND 15's DECISION and the design
+page; review 1's MINOR-3 adds the redeclarations to W-238's and W-234's
+evidence; review 2's MINOR-1 moves the PR body's FILL-CAUGHT MISSES paragraph
+into its first comment; review 2's MINOR-2 rejoins the line in 5d778d044, which
+edits that golden's sources for MAJOR-1's pin; review 2's MINOR-3 rewords the
+design page's sentence. Review 1's three MINORs and review 2's MINOR-1 and
+MINOR-3 change no toolchain file. Per-finding detail is in the plan's "Landed
+notes (SC-1 fill rounds, 2026-10-13)".
+
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
 tests, 1955 passing and 3 reporting "Autoupdate would make changes"
@@ -6687,10 +6810,27 @@ call of such an imported method, does, and m1, a requirement compared with such
 an imported member, aborts at :5172 here; sc1-fix15/p/w238s s6 and s7 (`fn F(x:
 i32, 1 = 2)` outside a template constraint) abort at pattern.cpp:62 here and on
 trunk and at pattern.cpp:60 on the nightly, and s2, the same parameter in a
-requirement, at pattern.cpp:62 here. Against
-fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
-exactly two programs move in every run: generics/structural_conformance.carbon
-SKIP to PASS (`42` then `7`) and the new
+requirement, at pattern.cpp:62 here. Round 16 (the toolchain built from the
+round-16 sources before the commit, stamped 0.0.0-0.dev+30dbd32eb.dirty, the
+uncommitted edits being exactly 5d778d044's): autoupdate of
+fail_template_constraint_unsatisfied added 66 CHECK lines, all in the two new
+splits; gate 1959 passed, 0 failed. Re-run on the toolchain rebuilt from
+5d778d044 with a clean tree (stamped 0.0.0-0.dev+5d778d044): autoupdate over the
+19 SC-1 goldens rewrote that golden alone, 66 CHECK lines added and none
+removed, byte for byte the pre-commit fill, and a second pass none (3f97eb57b);
+gate on 3f97eb57b 1959 passed, 0 failed, exit 0, 32 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 74.4 s, no program's status differing from round 15's run
+(sc1-fix16/conf, in a private cache); `runner.py --self-test` OK (151 programs,
+56 bullets); W-235's two redeclaration reproducers abort at merge.cpp:546; the
+reviews' matrices unchanged, their 17 aborts the requirement-imported cases
+W-238 lists, and review 2's mxv and sc1-fix16/mxw giving every imported case its
+local twin's result but for a member `var 1 = Undefined`, which aborts at its
+name lookup as accessing it does on trunk and the nightly; `git merge-tree` of
+3f97eb57b against trunk 8bfd78ae3 conflicts in fork/ORCHESTRATION.md only.
+Against fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150,
+run 37402970811) exactly two programs move in every run:
+generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -7099,7 +7239,26 @@ aborts fall from 45 to 17, each a case with the requirement imported, at
 import_ref.cpp:5172, that W-238 lists; the reproducers and the re-measure on
 f2f7b0a96 in MEASURED and in the plan; the lone lines of this entry's head and
 of the R16(d) sentence of FILL-CAUGHT MISSES rejoined, with the plan's and
-ORCHESTRATION's status paragraph's. No residue is filed by it.
+ORCHESTRATION's status paragraph's. No residue is filed by it. That records
+commit is 30dbd32eb. The records commit after 3f97eb57b: D-SC-2's cite and
+D-SC-9 (the place of a requirement's erroneous `self`, the expression pattern an
+imported pattern wraps, the round-16 matrices, a refused requirement's silence,
+the mechanism cites re-pointed at the round-16 head, the maintenance note's
+import side); round 15's decision amended (a refused requirement not checked at
+all, the erroneous `self`'s place), round 15's expectations scoped, round 15's
+review record, round 16's dispositions, decision, expectations and re-measure,
+the §4 row for round 16 and the round-16 summary in the plan; this entry (its
+head, 30dbd32eb named, ROUND 15's DECISION amended, ROUND 16's DECISION, the
+R16(d) sentence of FILL-CAUGHT MISSES, round 15's review record, MEASURED,
+RECORDS); the design page (the `self` sentence, the round-15 sentence reworded);
+ORCHESTRATION's status paragraph and Branches row (sixteen fill rounds, the
+round-16 toolchain change unreviewed); gap row 60 (sixteen fill rounds); W-027's
+title (sixteen fill rounds), evidence (the round-16 golden) and notes; W-238's
+title, evidence and notes (the round-16 import fix, a refused requirement's
+silence, the redeclarations inside a template constraint, the merge.cpp cites
+5d778d044 moved); W-234's evidence (the tuple redeclaration, the moved cite);
+W-235's evidence (the moved cites, the round-16 build). No residue is filed by
+it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

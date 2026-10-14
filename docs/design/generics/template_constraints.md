@@ -286,8 +286,8 @@ definition in `template constraint`"); a `fn` in a plain, non-`template`
 `constraint` is an error. A requirement with a tuple pattern parameter,
 directly, under `var` or under a default value, is a semantics TODO too ("tuple
 pattern parameter in `template constraint`") and is not collected, since the
-toolchain's signature comparison has no case for a tuple pattern (W-234). So,
-since fill round 15, is one with an expression pattern parameter, directly or
+toolchain's signature comparison has no case for a tuple pattern (W-234). Since
+fill round 15, so is one with an expression pattern parameter, directly or
 under `var` ("expression pattern parameter in `template constraint`"): an
 expression pattern in a parameter list is a semantics TODO of its own, and the
 comparison has no case for two of them (W-238).
@@ -659,7 +659,10 @@ parameter in its place, binding form included. A `self` declared with a form
 that has an error declares no `self`, and the check that a requirement with
 `self` has a member with `self` runs first, so a member with one is reported as
 a member without `self`, and a requirement with one is a requirement without
-`self` (stated 2026-10-14, fill round 15). Everything else is compared as
+`self` whose first parameter is that erroneous `self`, the error itself, which
+counts as equal to the parameter in its place, a method's `self` included, so a
+member without that leading parameter has one parameter fewer and is reported
+(stated 2026-10-14, fill rounds 15 and 16). Everything else is compared as
 without the error, including the binding form (`var`, `ref`) of any other
 parameter with an error and whether a default value or a return type is there; a
 member that differs so is reported as without the error. A member that matches

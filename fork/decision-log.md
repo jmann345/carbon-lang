@@ -4302,17 +4302,23 @@ re-points the structural_conformance.cpp and plan.md cites that round 7 moved at
 the round-7 head and records the re-measure on 30716a8c2. Fill round 8 (same
 day), folding round 7's two implementation reviews: 4c2ecee22 (the comment and
 TODO rewording, test sources, the design page and records), 3245ec0d2 (4
-goldens, CHECK lines only) and the records commit after them (the clean-stamp
-re-measure, the round-8 rows marked FILLED, the commit hashes). Each fix is an
-R29(a) implementation decision recorded for after-the-fact veto, with its design
-citation and break condition; none reopens F-010 or the intent of a D-SC
-decision. Round 7's takes D-SC-10's own break condition on a falsifier other
-than the one it named (a template-phase `Self` breaking a positive golden at the
-commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
-veto-able, and round 8 keeps it as a trade, re-weighed (ROUND 8's DECISION).
-Every count below is a measurement on the container, not of record (R9):
-fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
-record replaces it.
+goldens, CHECK lines only), 253dd4031 (records: the clean-stamp re-measure, the
+round-8 rows marked FILLED, the commit hashes) and a13e70542 (records: the cite
+of the header's adapter rewording); the records commit after a13e70542 completes
+round 7's review record (the reviews' probe counts, the round's answer on the
+rejected signatures under F-010, a follow-on diagnostic left unpinned),
+re-points at the round-8 head the plan.md and member_access.cpp cites of round
+5's and round 6's dispositions that round 8 moved, corrects the exceptions
+stated for the round-8 probe comparisons, and records the re-measure on
+a13e70542. Each fix is an R29(a) implementation decision recorded for
+after-the-fact veto, with its design citation and break condition; none reopens
+F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own break
+condition on a falsifier other than the one it named (a template-phase `Self`
+breaking a positive golden at the commit-1 fill; the falsifier was round 6's
+review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
+re-weighed (ROUND 8's DECISION). Every count below is a measurement on the
+container, not of record (R9): fork/conformance/out/scoreboard.json reads 128 /
+0 / 22 over 150 until a run of record replaces it.
 
 THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
 
@@ -5045,13 +5051,13 @@ specifics; the one rejected valid class was MAJOR-1. The aborts their probes
 found reproduce on trunk 0bdce60a5 (handle_call.cpp:984, sem_ir/generic.cpp:84,
 import_ref.cpp:5172, custom_witness.cpp:487). Fill round 6 folds all 11, each
 reproduced first on the toolchain stamped 0.0.0-0.dev+18775fee3, none rejected.
-Dispositions, with their cites at the round-7 head: MAJOR-1 of both reviews is
+Dispositions, with their cites at the round-8 head: MAJOR-1 of both reviews is
 ROUND 6's DECISION above (convert.cpp:2464, called at :2688, :2495 and :2515;
 the destroy body it lets through, custom_witness.cpp:984
 `MakeSubobjectDestroyOpBody`), fixed at the refusal's rule rather than by either
 suggested mechanism, for the reasons there, and pinned by lower
 `requirement_typeof_object` and requirement-call `ReadField`; review 1 MINOR-1
-is taken as its first fix (D-SC-20 narrowed, fork/structural/plan.md:781-799;
+is taken as its first fix (D-SC-20 narrowed, fork/structural/plan.md:815-833;
 `Pass` and `LetValue` pinned in lower `requirement_typeof_object`), its second
 (an action for every template-dependent value conversion) declined because it
 cannot reach checked generics and would add actions to every template body
@@ -5061,19 +5067,19 @@ upstream's goldens dump; MINOR-2 of both reviews adds import
 Has(i32).N>*` printed), pinning the type's import (import_ref.cpp:3029-3051 and
 :5111-5113), and the stringifier's fallback becomes a `CARBON_CHECK`
 (sem_ir/stringify.cpp:934), the type being formed only for a requirement; review
-2 MAJOR-2 rewords (o) here, in the plan's §4.B row (plan.md:1220), misses list
+2 MAJOR-2 rewords (o) here, in the plan's §4.B row (plan.md:1255), misses list
 and round-5 note, and in the PR body, on evidence reproduced on this build and
 on trunk (lower/specific_coalescer.cpp; `carbon -v compile` logs "Found
 equivalent specifics"; a `Take` whose body depends on `T` keeps three symbols
 and returns 111); review 2 MINOR-1 marks round 5's three §4.B rows
-(plan.md:1218-1220) NOT COUNTED and carries the disclosure here (FILL-CAUGHT
+(plan.md:1253-1255) NOT COUNTED and carries the disclosure here (FILL-CAUGHT
 MISSES) and in the PR body; MINOR-3 restates the name_lookup.cpp claim in ROUND
-5's DECISION, D-SC-20 (plan.md:761-764), the plan's round-5 bullet and W-027's
-evidence; MINOR-4 amends D-SC-10 (plan.md:480-519) and the plan's round-1
+5's DECISION, D-SC-20 (plan.md:786-789), the plan's round-5 bullet and W-027's
+evidence; MINOR-4 amends D-SC-10 (plan.md:480-544) and the plan's round-1
 mechanisms paragraph; MINOR-5 fixes the comment (convert.cpp:2682-2687); MINOR-6
-restores the line breaks of ORCHESTRATION's UA-1 "Last updated" sentences.
-No residue is filed: W-169 is not used. Per-finding detail is in the plan's
-"Landed notes (SC-1 fill rounds, 2026-10-13)".
+restores the line breaks of ORCHESTRATION's UA-1 "Last updated" sentences. No
+residue is filed: W-169 is not used. Per-finding detail is in the plan's "Landed
+notes (SC-1 fill rounds, 2026-10-13)".
 
 Round 6's own diff (56e400145, fb12f63cb, 857d5b048, 4bc4802ae) then received
 two implementation reviews, 7 findings in all. Review 1, REJECT, 1 BLOCKER, 1
@@ -5119,9 +5125,9 @@ an error then an abort, as its trunk analog t41 does. Both ran the gate (1959
 passed, 0 failed) and conformance (130 / 0 / 21 over 151, 49 of 56) privately.
 Fill round 7 folds all 7, each reproduced first on the toolchain built from
 fb12f63cb, none rejected. Dispositions, with their cites at the
-round-7 head: BLOCKER-1 is ROUND 7's first decision above
+round-8 head: BLOCKER-1 is ROUND 7's first decision above
 (handle_named_constraint.cpp:126-133; D-SC-10's amendment,
-fork/structural/plan.md:497-519; W-028's notes); review 1 MAJOR-1 is the second,
+fork/structural/plan.md:497-544; W-028's notes); review 1 MAJOR-1 is the second,
 fixed as asked (structural_conformance.cpp:779-788 follows `const` and array
 element types; the header's array sentence replaced,
 structural_conformance.h:95-100), pinned by `ConstParam`, `ConstPointer`,
@@ -5130,7 +5136,7 @@ evidence against its first, under the same decision: member access on a class
 value acquires the field as a value (member_access.cpp:614-624; a tuple field
 becomes a `tuple_value` of each element's `acquire_value`), so the projection
 does form a value of a type holding the requirement's, and D-SC-20
-(plan.md:799-818), the design page and the test comments say such a field is
+(plan.md:833-852), the design page and the test comments say such a field is
 reached through a reference, pinned by `Get`, `GetRef` and `StructField`; review
 1 MINOR-1 and review 2 MINOR-1 reword convert.cpp :2454-2463 and :2682-2687 and
 structural_conformance.h:104-110, D-SC-20's template sentence (a `let` of the
@@ -5138,7 +5144,7 @@ parameter accepted, a call argument or `var` initializer replayed and refused,
 pinned by `TemplateDeref`), and the design page (a `var` parameter declared and
 uncallable, pinned by `VarParam` and `CallVarParam`); review 2 MINOR-2 restates
 the PR body (outside the repository); review 2 MINOR-3 is the third decision
-(member_access.cpp:1178-1183), pinned by `TupleIndex`. No residue is filed:
+(member_access.cpp:1190-1195), pinned by `TupleIndex`. No residue is filed:
 W-169 is not used. Per-finding detail is in the plan's "Landed notes (SC-1 fill
 rounds, 2026-10-13)".
 
@@ -5166,17 +5172,24 @@ site on 0bdce60a5: lower/file_context.h:187, sem_ir/mangler.cpp:185,
 check/eval.cpp:151, check/generic.cpp:477, sem_ir/inst.h:249, import_ref.cpp,
 lower/function_context.cpp:223, LLVM's PHI assertion), and the `const`, array
 and field rules complete for every shape asked; the rejection of the `Self.N`
-shape mirrors trunk's interfaces, and its record was wrong. Both re-ran every
-earlier probe set (old4 330, r4 223, r5 412, p6 42, r6a 315, r6b 81, round 7's
-14 and its trunk analogs, the 14 import sets) identically, and ran the gate
-(1959 passed, 0 failed) and conformance (130 / 0 / 21 over 151, 49 of 56)
-privately. Review 1's probes are sc1-review7/adv1 (p, p2 to p9, tr to tr6, imp:
-250 runs, 48 trunk analogs, 9 import sets), review 2's sc1-review7/adv2 (p, p2
-to p12, tr to tr6, imp7: about 170 probes). Fill round 8 folds all 9, each
-reproduced first on the toolchain stamped 0.0.0-0.dev+36181a729 and, for the
-round-6 behavior, on that of fb12f63cb, none rejected. Dispositions, with their
-cites at the round-8 head: MAJOR-1 of both reviews and review 2's MAJOR-2 are
-ROUND 8's DECISION above, review 2's MAJOR-1 taken as its second option (the
+shape mirrors trunk's interfaces, and its record was wrong. The rejection is not
+F-010's rule: the design page's definition-time checking defers a requirement's
+checks that involve `Self` to satisfaction, as p002200:714-732 leaves
+template-dependent expressions unchecked until instantiation, so these
+signatures are valid under F-010; their loss is a limit of SC-1, accepted and
+recorded as one (D-SC-10 as restated, the page's as-landed note, the declaration
+golden's `fail_todo_` splits, W-169), which SC-B2's template phase (W-028) is to
+lift. Both re-ran every earlier probe set (old4 330, r4 223, r5 412, p6 42, r6a
+315, r6b 81, round 7's 14 and its trunk analogs, the 14 import sets)
+identically, and ran the gate (1959 passed, 0 failed) and conformance (130 / 0 /
+21 over 151, 49 of 56) privately. Review 1's probes are sc1-review7/adv1 (p, p2
+to p9, tr to tr6, imp: 250 probes, 48 trunk analogs, 9 import sets and trunk
+analogs of 3 of them), review 2's sc1-review7/adv2 (p, p2 to p12, tr to tr6,
+imp7: 175 probes, 28 trunk analogs, 6 import sets). Fill round 8 folds all 9,
+each reproduced first on the toolchain stamped 0.0.0-0.dev+36181a729 and, for
+the round-6 behavior, on that of fb12f63cb, none rejected. Dispositions, with
+their cites at the round-8 head: MAJOR-1 of both reviews and review 2's MAJOR-2
+are ROUND 8's DECISION above, review 2's MAJOR-1 taken as its second option (the
 trade recorded and re-weighed, the flip kept): D-SC-10 restated
 (fork/structural/plan.md:497-544), ROUND 7's first decision amended here, the
 design page's as-landed note (docs/design/generics/template_constraints.md,
@@ -5192,8 +5205,15 @@ page's name-lookup paragraph, and pins it by requirement-call
 `fail_todo_symbolic_facet`; MINOR-3 rewords D-SC-20 and the requirement-call
 comment; MINOR-4 is taken as asked (this entry's head and ROUND 7's first
 decision, the design page's dependency list, W-027's cite at :126-133 and
-:160-162). W-169, the id reserved for SC-1, is used. Per-finding detail is in
-the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
+:160-162). W-169, the id reserved for SC-1, is used. One round-8 observation is
+left unpinned and unfiled: a requirement whose signature has an error (`fn F(x:
+Undefined) -> i32`) still fails each use with `ConversionFailureTypeToFacet` and
+the "does not match" note after the definition's error (sc1-fix8/p8 s05), as
+before round 7, where the `interface` analog on trunk 0bdce60a5 reports the
+definition's error alone (sc1-records8/t/s05t.carbon); it follows a hard error,
+accepts no program and aborts nothing, and no id is left reserved for SC-1.
+Per-finding detail is in the plan's "Landed notes (SC-1 fill rounds,
+2026-10-13)".
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
@@ -5329,20 +5349,31 @@ none); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS
 347 and 49 trunk analogs, round 7's 14, the 51 runs of the further directories
 round 7's review 1 re-ran, round 7's reviews' 298 and 203) gives results
 identical, line for line, to the run on 36181a729, but for nine runs whose TODO
-now says "through a symbolic facet" and the stack addresses of the two
-mangler.cpp:185 aborts, and the 29 import sets of rounds 5 to 7 the same
-results; round 8's 14 probes (sc1-fix8/p8) behave as its splits record. Re-run
-on the toolchain rebuilt from 3245ec0d2 with a clean tree (stamped
+now says "through a symbolic facet" and the addresses that abort traces print
+(the stack addresses of the nine runs aborting at sem_ir/mangler.cpp:185, seven
+of them in round 7's reviews' sets, and the code offsets that other aborts
+print, which move with every rebuild), and the 29 import sets of rounds 5 to 7
+the same results; round 8's 14 probes (sc1-fix8/p8) behave as its splits record.
+Re-run on the toolchain rebuilt from 3245ec0d2 with a clean tree (stamped
 0.0.0-0.dev+3245ec0d2, no toolchain source differing from 4c2ecee22): autoupdate
 over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
 failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 83.1 s;
 every probe run (the 1969 earlier runs, round 8's 14 and the 29 import sets)
 gives results identical, line for line, to the pre-commit build's, but for the
-stack addresses of the two mangler.cpp:185 aborts. Against
-fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
-exactly two programs move in every run: generics/structural_conformance.carbon
-SKIP to PASS (`42` then `7`) and the new
+addresses that abort traces print. Re-run for the records commit after
+a13e70542, on a13e70542 with that installed toolchain (no toolchain source
+differs from 4c2ecee22): autoupdate over the 19 SC-1 goldens changed nothing
+(one dot each, git status clean); gate 1959 passed, 0 failed, exit 0, 54 s, no
+`!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.4 s; every probe run (the 1969 earlier
+runs, round 8's 14 and the 29 import sets) gives results identical, line for
+line, to the run on 3245ec0d2 (sc1-fix8 clean8_*), but for the stack addresses
+of the nine runs aborting at sem_ir/mangler.cpp:185 (round 6's v01 and vt01b;
+round 7's g07, g14 and g15 and their trunk spellings g07t, g07t2, g14t and
+g15t). Against fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150,
+run 37402970811) exactly two programs move in every run:
+generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -5481,9 +5512,25 @@ definition-time checking, the symbolic-facet limit in name lookup, the
 dependency list); the ORCHESTRATION status paragraph and Branches row; W-027's
 title, evidence and notes (eight fill rounds), W-028's notes (the template
 phase's restorations and the require splits it must keep) and W-169 filed. Round
-8's records commit, after 3245ec0d2: the four round-8 §4 rows marked FILLED,
-round 8's commit hashes and the clean-stamp re-measure here, in the plan, in
-ORCHESTRATION and in W-027's notes.
+8's records commits: 253dd4031 (the four round-8 §4 rows marked FILLED, round
+8's commit hashes and the clean-stamp re-measure here, in the plan, in
+ORCHESTRATION and in W-027's notes) and a13e70542 (the cite of the header's
+adapter rewording, structural_conformance.h:98-100, here and in the plan). The
+records commit after a13e70542: 253dd4031 and a13e70542 named at the head of
+this entry and of the plan's note, in ORCHESTRATION's status paragraph (whose
+round-8 sentence named one records commit) and Branches row, and in W-027's
+notes; round 7's review record completed with the reviews' probe counts, the
+round's answer on the rejected signatures under F-010 (p002200:714-732) and the
+unpinned follow-on, here and in the plan; the consequence of round 8's break
+condition in the plan; the cites of round 5's and round 6's dispositions that
+round 8 moved re-pointed at the round-8 head (plan.md:781-799, :1220,
+:1218-1220, :761-764 and :480-519 to :815-833, :1255, :1253-1255, :786-789 and
+:480-544; plan.md:497-519 and :799-818 to :497-544 and :833-852;
+member_access.cpp:1178-1183 to :1190-1195); the exceptions of the round-8 probe
+comparisons corrected (with round 7's reviews' sets, nine runs abort at
+sem_ir/mangler.cpp:185 and print stack addresses, not two, and code offsets move
+between builds), here and in the plan; the re-measure and probe re-run on
+a13e70542 here and in the plan; W-027's notes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

@@ -2271,10 +2271,11 @@ implementation reviews (APPROVE-WITH-FIXES both; 9 findings, none rejected): the
 checked-phase `Self` is kept as a trade, re-weighed, with what it rejects (filed
 as W-169) and what it accepts recorded and pinned, and the compound-access TODO
 names a symbolic facet: 4c2ecee22 (fixes, test sources, the design page,
-records), 3245ec0d2 (4 goldens, CHECK lines only) and the records commit after
-them; it measured the same totals on the toolchain built from its sources and
-again on the toolchain stamped 0.0.0-0.dev+3245ec0d2 (below). Not of record
-until fork/conformance/out/scoreboard.json is updated (R9).
+records), 3245ec0d2 (4 goldens, CHECK lines only), 253dd4031 and a13e70542
+(records); it measured the same totals on the toolchain built from its sources,
+again on the toolchain stamped 0.0.0-0.dev+3245ec0d2 (below) and again on
+a13e70542 for the records commit after it. Not of record until
+fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -3212,8 +3213,16 @@ flip: it rejects a wider class of requirement signatures than D-SC-10 said,
 valid programs that ran on fb12f63cb among them (review 1 MAJOR-1; review 2
 MAJOR-1, whose probes show the `Self.N` shape satisfiable there), and it accepts
 a `require` whose facet type takes `Self` as an argument, rejected since SC-1a
-(review 2 MAJOR-2). Review 1's probes are sc1-review7/adv1 (p, p2 to p9, tr to
-tr6, imp), review 2's sc1-review7/adv2 (p, p2 to p12, tr to tr6, imp7).
+(review 2 MAJOR-2). The rejection is not F-010's rule: the design page's
+definition-time checking defers a requirement's checks that involve `Self` to
+satisfaction, as p002200:714-732 leaves template-dependent expressions unchecked
+until instantiation, so these signatures are valid under F-010; their loss is a
+limit of SC-1, accepted and recorded as one (D-SC-10 as restated, the page's
+as-landed note, the `fail_todo_` splits below, W-169), which SC-B2's template
+phase (W-028) is to lift. Review 1's probes are sc1-review7/adv1 (p, p2 to p9,
+tr to tr6, imp: 250 probes, 48 trunk analogs, 9 import sets and trunk analogs of
+3 of them), review 2's sc1-review7/adv2 (p, p2 to p12, tr to tr6, imp7: 175
+probes, 28 trunk analogs, 6 import sets).
 
 Fill round 8 (2026-10-14), by review finding, each reproduced first on the
 toolchain stamped 0.0.0-0.dev+36181a729 with the reviews' probes, and on the
@@ -3308,7 +3317,9 @@ and break condition:
     condition: SC-B2's template phase (W-028) lands; then the `fail_todo_`
     splits of the declaration golden become positive, and the require golden's
     `require_self_argument` splits stay as they are, or the phase is scoped to
-    the validity blocks' own checks.
+    the validity blocks' own checks. Consequence if taken: SC-B2 re-runs round
+    6's review-1 BLOCKER-1 probes and round 7's reviews' probes named above
+    before it lands (W-028's notes).
 
 Round 8's §4 rows were written after the round-7 build ran their shapes in the
 reviews' probes and the development build ran the splits (R16(d)): they record
@@ -3319,15 +3330,22 @@ further directories round 7's review 1 re-ran; round 7's reviews' own, review
 1's 298 runs in sc1-review7/adv1 and review 2's 203 in sc1-review7/adv2) gives
 the same result, line for line, as on 36181a729, but for nine runs whose TODO
 now says "through a symbolic facet" (round 6's z05, z16, y04 and y09, round 7's
-g11, l02 to l04 and e01) and for the stack addresses of the two
-sem_ir/mangler.cpp:185 aborts; the 29 import sets of rounds 5 to 7 give the same
-results. Round 8's own 14 probes (sc1-fix8/p8: the new splits extracted, the
-method forms and `(C as Has(T)).N` through a symbolic facet, a signature
-depending on a constraint argument rejected for a symbolic one, and a
-requirement whose signature has an error, followed at its use by the "does not
-match" note as before round 7) behave as the splits record, and lower
-`require_self_argument` run as a program returns 5, `CallDo`'s 3 plus
-`CallGet`'s 2 derived by hand.
+g11, l02 to l04 and e01) and for the addresses that abort traces print (the
+stack addresses of the nine runs aborting at sem_ir/mangler.cpp:185, seven of
+them in round 7's reviews' sets, and code offsets, which move with every
+rebuild; amended by the records commit after a13e70542, which said two); the 29
+import sets of rounds 5 to 7 give the same results. Round 8's own 14 probes
+(sc1-fix8/p8: the new splits extracted, the method forms and `(C as Has(T)).N`
+through a symbolic facet, a signature depending on a constraint argument
+rejected for a symbolic one, and a requirement whose signature has an error,
+followed at its use by the "does not match" note as before round 7) behave as
+the splits record, and lower `require_self_argument` run as a program returns 5,
+`CallDo`'s 3 plus `CallGet`'s 2 derived by hand. The follow-on at the uses of a
+requirement whose signature has an error (s05: `ConversionFailureTypeToFacet`
+with the "does not match" note after the definition's error) is pinned by no
+golden and filed under no id; its `interface` analog on trunk 0bdce60a5 reports
+the definition's error alone (sc1-records8/t/s05t.carbon), so it is a second
+diagnostic after a hard error, with no program accepted and no abort.
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
@@ -3460,10 +3478,18 @@ git status clean); gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark;
 conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
 FAIL, 7 SKIP of 56, 83.1 s, the same two programs moving; every probe run (the
 1969 earlier runs, round 8's 14 and the 29 import sets) gives the same result,
-line for line, as on the pre-commit build, but for the stack addresses printed
-by the two sem_ir/mangler.cpp:185 aborts. Round 8's commits: 4c2ecee22 (fixes,
-test sources, docs, records), 3245ec0d2 (goldens) and the records commit after
-them.
+line for line, as on the pre-commit build, but for the addresses that abort
+traces print (amended as above). Round 8's commits: 4c2ecee22 (fixes, test
+sources, docs, records), 3245ec0d2 (goldens), 253dd4031 and a13e70542 (records).
+Re-run for the records commit after a13e70542, on a13e70542 with the installed
+toolchain stamped 0.0.0-0.dev+3245ec0d2 (no toolchain source differs):
+autoupdate over the 19 SC-1 goldens changed nothing (one dot each, git status
+clean); gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark; conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56 (51.4 s), the same two programs moving; every probe run (the 1969 earlier
+runs, round 8's 14 and the 29 import sets) gives results identical, line for
+line, to the run on 3245ec0d2, but for the stack addresses printed by the nine
+runs aborting at sem_ir/mangler.cpp:185.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

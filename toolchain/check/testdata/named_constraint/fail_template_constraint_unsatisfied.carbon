@@ -715,28 +715,32 @@ library "[[@TEST_NAME]]";
 // A requirement with an error does not hide a difference from the member that
 // the error does not cause. The member is compared as for a requirement with no
 // error, with only an erroneous type or default value counted as equal to the
-// type or default value in its place in the member (D-SC-9 as amended at fill
-// rounds 12 and 13). So a different number of parameters, a parameter that
-// differs where neither side has an error, a member without the `self` the
-// requirement has, a different return type where neither is an error, a member
-// that is not a function, a parameter type that differs beside an erroneous
-// default value, a binding form that differs at a parameter with an error
-// (`ParamRef`, `DefaultRef`, `DefaultVar`), and a default value or a return
-// type that only one side has (`DefaultAbsent`, `ReturnAbsent`, and
-// `FormDefault` beside a parameter declared with a form that has an error) are
-// each reported, as without the error. Building the thunk for an impl member
-// reports each against an interface member with the error on trunk 0bdce60a5
-// except `OtherParamConvertible`, whose `i64` the thunk converts to, and
+// type or default value in its place in the member, and a parameter declared
+// with a form that has an error to the parameter in its place, binding form
+// included (D-SC-9 as amended at fill rounds 12 to 14). So a different number
+// of parameters, a parameter that differs where neither side has an error, a
+// member without the `self` the requirement has, a different return type where
+// neither is an error, a member that is not a function, a parameter type that
+// differs beside an erroneous default value, a binding form that differs at a
+// parameter with an error (`ParamRef`, `DefaultRef`, `DefaultVar`), and a
+// default value or a return type that only one side has (`DefaultAbsent`,
+// `ReturnAbsent`, and `FormDefault` beside a parameter declared with a form
+// that has an error) are each reported, as without the error, as is a binding
+// against a parameter that is an expression pattern with an error (`ExprParam`:
+// `y` alone, compared by its pattern's kind). Building the thunk for an impl
+// member reports each against an interface member with the error on trunk
+// 0bdce60a5 except `OtherParamConvertible`, whose `i64` the thunk converts to,
 // `DefaultType`, `ParamRef`, `DefaultRef`, `DefaultVar`, `DefaultAbsent`,
 // `ReturnAbsent` and `FormDefault`, whose interface analogs the thunk does not
-// compare beside the erroneous part. A member that matches only through an
-// error (`ReturnOnly`, `ParamOnly`, `DefaultOnly`, `DefaultBothErrors`,
-// `MethodForStatic`, and `FormOnly`, whose `y: i32` the erroneous form's
-// parameter counts as equal to, binding form included) is skipped (round 10's
-// review 1 finding MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1
-// findings MAJOR-1 and MAJOR-2 and review 2 findings MAJOR-1 and MINOR-1; round
-// 12's review 1 findings MAJOR-1 and MINOR-1 and review 2 finding MAJOR-1;
-// round 13's review 1 finding MAJOR-1).
+// compare beside the erroneous part, and `ExprParam`, whose analog aborts the
+// thunk at thunk.cpp:169, as W-236's default value does. A member that matches
+// only through an error (`ReturnOnly`, `ParamOnly`, `DefaultOnly`,
+// `DefaultBothErrors`, `MethodForStatic`, and `FormOnly`, whose `y: i32` the
+// erroneous form's parameter counts as equal to, binding form included) is
+// skipped (round 10's review 1 finding MAJOR-1 and review 2 finding MAJOR-1;
+// round 11's review 1 findings MAJOR-1 and MAJOR-2 and review 2 findings
+// MAJOR-1 and MINOR-1; round 12's review 1 findings MAJOR-1 and MINOR-1 and
+// review 2 finding MAJOR-1; round 13's review 1 findings MAJOR-1 and MINOR-3).
 template constraint HasReturnError {
   // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+4]]:25: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
@@ -775,6 +779,10 @@ template constraint HasFormError {
   // CHECK:STDERR:                                   ^~~~~~~~~
   // CHECK:STDERR:
   fn F(self, x: i32, y:? form(ref Undefined)) -> i32;
+}
+
+template constraint HasExprParam {
+  fn F(self, x: i32, y) -> i32;
 }
 
 class Arity {
@@ -871,6 +879,10 @@ class FormDefault {
   fn F(unused self, unused x: i32, unused y: i32 = 1) -> i32 { return 1; }
 }
 
+class ExprParam {
+  fn F(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
+}
+
 fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 
 fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
@@ -880,6 +892,8 @@ fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 fn CallS[template T: HasStaticParamError](unused x: T) -> i32 { return 0; }
 
 fn CallF[template T: HasFormError](unused x: T) -> i32 { return 0; }
+
+fn CallE[template T: HasExprParam](unused x: T) -> i32 { return 0; }
 
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:40: error: cannot convert type `Arity` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestArity(a: Arity) -> i32 { return CallR(a); }
@@ -1132,6 +1146,8 @@ fn TestFormOnly(f: FormOnly) -> i32 { return CallF(f); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn TestFormDefault(f: FormDefault) -> i32 { return CallF(f); }
+
+fn TestExprParam(e: ExprParam) -> i32 { return CallE(e); }
 
 // --- fail_requirement_signature_error_other_member.carbon
 library "[[@TEST_NAME]]";
@@ -1393,7 +1409,7 @@ library "[[@TEST_NAME]]";
 // A member whose own declaration has an error does not hide a difference from
 // the requirement that the error does not cause, compared as in
 // `fail_requirement_signature_error_genuine` (D-SC-9 as amended at fill rounds
-// 12 and 13): a different number of parameters, a parameter that differs where
+// 12 to 14): a different number of parameters, a parameter that differs where
 // neither side has an error, a different `self` form, a different return type
 // where neither is an error, a member without the `self` the requirement has, a
 // `var` parameter where the requirement's is not, compile-time parameters of

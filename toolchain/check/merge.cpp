@@ -236,8 +236,8 @@ struct DeclaredParamPattern {
 // subpattern of an imported one is imported in turn. Returns `std::nullopt`
 // only for a parameter that is the error itself, as one declared with a form
 // that has an error is (`y:? form(ref Undefined)`). The kinds with a
-// subpattern are those of `CheckRedeclParam`'s switch; a kind it gains is
-// added here too.
+// subpattern are those of `CheckRedeclParam`'s switch; a kind with a
+// subpattern that it gains is added here too.
 static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
                                     SemIR::Inst const_inst)
     -> std::optional<DeclaredParamPattern> {
@@ -279,11 +279,9 @@ static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
   if (inst.Is<SemIR::ErrorInst>()) {
     return std::nullopt;
   }
-  // A member's `TuplePattern` is compared by its kind alone, which differs from
-  // the requirement's: no requirement has one (W-234).
-  CARBON_CHECK(
-      inst.Is<SemIR::AnyLeafParamPattern>() || inst.Is<SemIR::TuplePattern>(),
-      "Unexpected inst kind in parameter pattern: {0}", inst.kind());
+  // Any other pattern is compared by its kind alone: a leaf parameter pattern,
+  // a member's `TuplePattern` (no requirement has one, W-234) or an erroneous
+  // `ExprPattern` (`fn F(y)`).
   return DeclaredParamPattern{.kind = inst.kind()};
 }
 

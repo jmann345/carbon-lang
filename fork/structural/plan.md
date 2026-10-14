@@ -2136,8 +2136,11 @@ and 5171e5eda (records); it re-measured the same totals on the toolchain stamped
 0.0.0-0.dev+bc8b37290 (below). Fill round 4 folds round 3's two implementation
 reviews: aa67ea281 (fixes, test sources, the design page, records), ff490bd48 (6
 goldens refilled) and d232d4753 (records); it re-measured the same totals on the
-toolchain stamped 0.0.0-0.dev+ff490bd48 (below). Not of record until
-fork/conformance/out/scoreboard.json is updated (R9).
+toolchain stamped 0.0.0-0.dev+ff490bd48 (below). Fill round 5 folds round 4's
+two implementation reviews: 616d0bc4f (fixes, test sources, the design page,
+records), 18775fee3 (5 goldens refilled) and df5120d03 (records); it re-measured
+the same totals on the toolchain stamped 0.0.0-0.dev+18775fee3 (below). Not of
+record until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -2186,6 +2189,17 @@ one falsified carries a dated amendment above):
     ("initializing function parameter"), the context the call-argument
     conversion attaches to any error inside it (upstream's shape). A
     prediction error; the row carries a dated amendment.
+-   (n) round 5's fill: the §4.B compound row predicted no `.Self` binding in
+    the `requirement_typeof` range; the range shows `%.Self.frozen: type`,
+    upstream's frozen `.Self` of the `type` facet its `T: type` parameters
+    spell, as every such compound dump does, and no constraint's `.Self`. A
+    prediction error; the row carries a dated amendment.
+-   (o) round 5's fill: the §4.B lower row predicted `Take` specifics over
+    `C.N`'s and `C.Get`'s function types; the IR has one `Take` definition
+    called for the three tuple shapes, since the mangled name of those specifics
+    does not distinguish the tuple types, as trunk 0bdce60a5 lowers the same
+    calls written without a template. A prediction error (the mangling is
+    trunk's, outside SC-1); the row carries a dated amendment.
 
 Round 1's four mechanisms (1a7cce0b2), each now golden-pinned: the member's own
 specific in `RequirementMatches` (satisfy `generic_self`, `nested_generic`;
@@ -2618,7 +2632,10 @@ findings, with review 1 BLOCKER-2 and review 2 BLOCKER-1 the same defect
 (`typeof`) and the two MAJOR-1s the same R17 judgement. Both confirmed round
 4's union drain and its value refusals on the 0.0.0-0.dev+ff490bd48 driver, its
 gate (1959 passed, 0 failed) and its conformance (130 / 0 / 21 over 151)
-privately. Fill round 5 folds all 9, below.
+privately. On the round's question, whether the branch was dry and round 4's
+chokepoint the root cause, both answered no (R17): the `typeof` and
+instantiation aborts, and an accepted instantiated discard; no rejected valid
+program and no waiting-list defect. Fill round 5 folds all 9, below.
 
 Fill round 5 (2026-10-13), by review finding, each reproduced first on the
 toolchain stamped 0.0.0-0.dev+ff490bd48 with the reviews' probes:
@@ -2694,16 +2711,18 @@ Round 5's decision as an R29(a) implementation decision, with design citation
 and break condition:
 
 -   **A requirement named with no self type has its own concrete type**
-    (sem_ir/typed_insts.h `StructuralRequirementType`;
-    structural_conformance.cpp `MakeStructuralRequirementName`,
-    `GetStructuralRequirementOfType` and `CheckValueIsNotStructuralRequirement`;
-    convert.cpp `Convert` and the four template `PerformAction`s; call.cpp
-    `PerformCallToNonFunction`; member_access.cpp's lookup and compound
-    redirect; the type's lowering, completion, destruction, import, printing and
-    naming beside `OverloadSetType`'s). Design: D-SC-20 as amended, D-SC-4,
-    D-SC-9. Break condition: D-SC-20's. Found while probing it and fixed by it:
-    through a generic constraint in a checked generic, `typeof(Has(T).N)`
-    aborted lowering on round 4's build too (there `.Self` depends on `T`, so
+    (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
+    structural_conformance.cpp:696 `MakeStructuralRequirementName`, :746
+    `GetStructuralRequirementOfType` and :811
+    `CheckValueIsNotStructuralRequirement`; convert.cpp:2645 in `Convert` and
+    :2457, :2476, :2490 and :2534 in the four template `PerformAction`s;
+    call.cpp:772-775 in `PerformCallToNonFunction`; member_access.cpp:400 (the
+    lookup) and :949 (the compound redirect); the type's lowering
+    (lower/type.cpp:879), completion, destruction, import, printing and naming
+    beside `OverloadSetType`'s). Design: D-SC-20 as amended, D-SC-4, D-SC-9.
+    Break condition: D-SC-20's. Found while probing it and fixed by it: through
+    a generic constraint in a checked generic, `typeof(Has(T).N)` aborted
+    lowering on round 4's build too (there `.Self` depends on `T`, so
     generic.cpp's early return did not apply and the specific kept `.Self`). Not
     SC-1's, reproduced on trunk 0bdce60a5 with a class: `Take(((C.N, 1), 2))`
     fails the module verifier (lower/lower.cpp:48), an `if` expression of a
@@ -2772,8 +2791,20 @@ being exactly 616d0bc4f's): autoupdate over the 19 SC-1 goldens to a fixpoint
 or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
 bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 60.9 s, the same two programs moving
 against fork/conformance/out/scoreboard.json. Round 5's commits: 616d0bc4f
-(fixes, test sources, docs, records), 18775fee3 (goldens) and the records
-commit after it.
+(fixes, test sources, docs, records), 18775fee3 (goldens) and df5120d03
+(records). Re-run for the records commit after df5120d03, on df5120d03 with the
+installed toolchain stamped 0.0.0-0.dev+18775fee3 (no toolchain source differs):
+autoupdate over the 19 SC-1 goldens changed nothing; gate 1959 passed and 0
+failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 72.0 s, the same two
+programs moving; the 553 probe runs (round 2's, round 3's and round 4's review
+sets, 514, and round 5's 39) classify on it exactly as on 18775fee3: 398 check
+errors, 131 programs that compile and run, 5 that compile with no `Run` to link,
+and 19 aborts, each trunk's (the 9 runs of p40, p41 and p43; 6 of `typeof` of a
+bound method, type_iterator.cpp:310; 2 of C++ calling a Carbon template,
+sem_ir/generic.cpp:96; 2 of an `if` expression of a tuple holding a function
+value, in `BranchWithArg`), the trunk-spelled probes of each aborting so on the
+trunk build of 0bdce60a5.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

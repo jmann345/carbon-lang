@@ -4275,10 +4275,16 @@ round 3's decisions here and folds in the separate entry "SC-1 fill round 3
 every fill round. Fill round 4, folding round 3's two implementation reviews:
 aa67ea281 (fixes, test sources, the design page and records), ff490bd48 (6
 goldens refilled, CHECK lines only) and d232d4753 (records: the re-measure on a
-clean-stamped toolchain, miss (m)); the records commit after d232d4753 adds
-round 3's per-finding dispositions and the re-measure on d232d4753. Each fix is
-an R29(a) implementation decision recorded for after-the-fact veto, with its
-design citation and break condition; none reopens F-010 or the intent of a D-SC
+clean-stamped toolchain, miss (m)); the records commit after d232d4753,
+77838fdd5, adds round 3's per-finding dispositions and the re-measure on
+d232d4753. Fill round 5, folding round 4's two implementation reviews: 616d0bc4f
+(fixes, test sources, the design page and records), 18775fee3 (5 goldens
+refilled, CHECK lines only) and df5120d03 (records: the re-measure on a
+clean-stamped toolchain, misses (n) and (o)); the records commit after df5120d03
+adds round 4's per-finding dispositions with their cites, the line cites of
+round 5's decision and the re-measure on df5120d03. Each fix is an R29(a)
+implementation decision recorded for after-the-fact veto, with its design
+citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Every count below is a measurement on the container, not of record
 (R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a
 run of record replaces it.
@@ -4526,26 +4532,30 @@ below), reproduced first on the toolchain stamped 0.0.0-0.dev+ff490bd48 with the
 reviews' probes.
 
 -   **A requirement named with no self type has its own concrete type**
-    (sem_ir/typed_insts.h `StructuralRequirementType`;
-    structural_conformance.cpp `MakeStructuralRequirementName`,
-    `GetStructuralRequirementOfType`, `CheckValueIsNotStructuralRequirement`;
-    convert.cpp `Convert` and the four template `PerformAction`s; call.cpp
-    `PerformCallToNonFunction`; review 1 BLOCKER-1, BLOCKER-2, MAJOR-1, MAJOR-2,
-    review 2 BLOCKER-1, MAJOR-1). Symptom: through `typeof`, `fn H(unused f:
-    typeof(HasN.N)) {}` passed check and aborted lowering (lower/type.cpp:459),
-    a parameter of that type passed round 4's check as `Take(f)`, and `impl
-    typeof(HasN.N) as Z` linked to an undefined symbol; through a template
-    instantiated with a facet type, `Take((T.N, 1))` and its struct, nested,
-    `let`, `if`, method and class-member forms aborted lowering, and a discarded
-    `T.N;` ran. Root cause: the requirement's value had a function type symbolic
-    in `.Self`, which no specific replaces, and round 4 refused the value where
-    it was converted; `typeof` converts nothing, and an instantiation converts
-    the constant `tuple_value` (which round 4's literal walk did not visit) or
-    replays conversions in actions that skip `Convert`'s check. Decision: the
-    lookup finds the requirement in the constraint's own-`Self` specific, as
-    upstream's `I.F` finds an interface member, and returns a name reference to
-    an empty `struct_value` of `StructuralRequirementType` (the requirement's
-    function and the constraint's specific without `Self`), concrete unless the
+    (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
+    structural_conformance.cpp:696 `MakeStructuralRequirementName`, called from
+    member_access.cpp:400, :746 `GetStructuralRequirementOfType` and :811
+    `CheckValueIsNotStructuralRequirement`; convert.cpp:2645 in `Convert` and
+    :2457, :2476, :2490 and :2534 in the `PerformAction`s for `ConvertAction`,
+    `ConvertToCategoryAction`, `ConvertToValueAction` and `InitializeAction`;
+    call.cpp:772-775 in `PerformCallToNonFunction`; member_access.cpp:949
+    `RedirectStructuralRequirementAccess`; toolchain/diagnostics/kind.def:477;
+    review 1 BLOCKER-1, BLOCKER-2, MAJOR-1, MAJOR-2, review 2 BLOCKER-1,
+    MAJOR-1). Symptom: through `typeof`, `fn H(unused f: typeof(HasN.N)) {}`
+    passed check and aborted lowering (lower/type.cpp:459), a parameter of that
+    type passed round 4's check as `Take(f)`, and `impl typeof(HasN.N) as Z`
+    linked to an undefined symbol; through a template instantiated with a facet
+    type, `Take((T.N, 1))` and its struct, nested, `let`, `if`, method and
+    class-member forms aborted lowering, and a discarded `T.N;` ran. Root cause:
+    the requirement's value had a function type symbolic in `.Self`, which no
+    specific replaces, and round 4 refused the value where it was converted;
+    `typeof` converts nothing, and an instantiation converts the constant
+    `tuple_value` (which round 4's literal walk did not visit) or replays
+    conversions in actions that skip `Convert`'s check. Decision: the lookup
+    finds the requirement in the constraint's own-`Self` specific, as upstream's
+    `I.F` finds an interface member, and returns a name reference to an empty
+    `struct_value` of `StructuralRequirementType` (the requirement's function
+    and the constraint's specific without `Self`), concrete unless the
     constraint's arguments are symbolic, as upstream's `AssociatedEntityType`
     is; the `.Self` lookup and generic.cpp's early return are deleted (both
     files as on trunk). A call through it is `StructuralRequirementUsed`, a
@@ -4553,15 +4563,27 @@ reviews' probes.
     is its type, and `Convert` refuses a value whose type is or holds (as a
     tuple or struct element) a requirement's type, replayed by the template's
     convert actions. Design: D-SC-20 replaced, D-SC-4, D-SC-9 (the kind renamed
-    `StructuralRequirementUsed`, review 2 MINOR-1). Break condition: upstream
-    gives a named constraint's members associated entities, or W-138's
-    structural witness table lands. Pinned by requirement-call
+    `StructuralRequirementUsed`, review 2 MINOR-1). Break condition: D-SC-20's,
+    upstream gives a named constraint's members associated entities, or W-138's
+    structural witness table lands; then the requirement is an `assoc_entity` of
+    the constraint and `StructuralRequirementType` folds into
+    `AssociatedEntityType`, or a requirement value names the table's entry
+    instead of being refused. Pinned by requirement-call
     `fail_requirement_through_template_instantiation` and
     `fail_requirement_typeof_value`, compound `requirement_typeof`, lower
     `requirement_through_template_instantiation` and `requirement_typeof`;
     review 1 MINOR-1's location (a deduced value has none, so the conversion's)
     by `TemplateValueParam` and `GenericValueParam`, review 2 MINOR-2's
-    `BoundInStruct` and overload-set use in the requirement-call splits.
+    `BoundInStruct` and overload-set use in the requirement-call splits. Found
+    while probing it and fixed by it: through a generic constraint in a checked
+    generic, `typeof(Has(T).N)` aborted lowering on round 4's build too (there
+    `.Self` depends on `T`, so generic.cpp's early return did not apply); round
+    5's probes of it now give `StructuralRequirementUsed` at check for a value
+    and compile and run for a type use. Not SC-1's, each reproduced on trunk
+    0bdce60a5 with a class in place of the requirement: `Take(((C.N, 1), 2))`
+    fails the module verifier (lower/lower.cpp:48), an `if` expression of a
+    tuple holding a function value aborts in `BranchWithArg`, and `typeof` of a
+    bound method is type_iterator.cpp's `BoundMethodType` FATAL.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4735,18 +4757,46 @@ cause (R17); MAJOR-2 a discarded requirement accepted in an instantiated
 template; MINOR-1 the error without a location for a deduced value. Review 2,
 REJECT, 1 BLOCKER, 1 MAJOR and 2 MINOR: BLOCKER-1 the same `typeof` defect;
 MAJOR-1 the records' root-cause and "only uses" claims; MINOR-1 the kind's name;
-MINOR-2 two value surfaces without a golden. Fill round 5 folds all 9, none
-rejected: the five defects and the R17 judgement are ROUND 5's DECISION above,
-the two `typeof` findings by the root fix their reviews prefer rather than the
-minimal alternative (refusing `typeof`, which a template's `typeof(T.N)` would
-escape); review 2 MAJOR-1 amends the convert.cpp comment, D-SC-20, round 4's
-decision in the plan and above, the design page and ORCHESTRATION; review 1
-MINOR-1 takes the conversion's location for a value without one (at
-instantiation the converted constant and its conversion both have none, as in
-upstream's own notes for such an argument); review 2 MINOR-1 renames the kind;
-review 2 MINOR-2 pins `BoundInStruct` and the overload-set use. W-169 is not
-used. Per-finding detail is in the plan's "Landed notes (SC-1 fill rounds,
-2026-10-13)".
+MINOR-2 two value surfaces without a golden. On the round's question (whether
+the branch was dry on the requirement-value, waiting-list and satisfaction
+surfaces, and whether round 4's chokepoint was the root cause, R17), both
+reviews answered no: check-clean programs still aborted lowering through a
+template instantiated with a facet type (review 1 BLOCKER-1) and through
+`typeof` (review 1 BLOCKER-2, review 2 BLOCKER-1), and an instantiated discard
+was accepted (review 1 MAJOR-2); no finding was a rejected valid program or a
+waiting-list defect, and both confirmed round 4's union drain. Fill round 5
+(616d0bc4f, 18775fee3, df5120d03) folds all 9, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+ff490bd48, none rejected and none taken in part.
+Dispositions: review 1 BLOCKER-1 is ROUND 5's DECISION above through the
+type-based refusal and its replay in the template convert actions
+(convert.cpp:2457, :2476, :2490, :2534), pinned by requirement-call
+`fail_requirement_through_template_instantiation` and lower
+`requirement_through_template_instantiation`; review 1 BLOCKER-2 and review 2
+BLOCKER-1 are the same decision through the concrete type
+(sem_ir/typed_insts.h:2235): `typeof(HasN.N)` is usable as a type and its values
+are refused, pinned by `fail_requirement_typeof_value`, compound
+`requirement_typeof` and lower `requirement_typeof`, the root fix both reviews
+prefer and not their minimal alternative (refusing `typeof`, which a template's
+`typeof(T.N)`, evaluated at instantiation, would escape); MAJOR-1 of both
+reviews is agreed (R17) and answered by the same decision, the refusal in
+`Convert` (convert.cpp:2645) kept as D-SC-20's rule and not as a crash guard,
+since deleting it would make `Take(HasN.N)` compile against round 4's decision
+and goldens (R16(b)), and review 2 MAJOR-1's records are amended (the
+convert.cpp:2641-2644 comment, D-SC-20, round 4's BLOCKER-1 bullet and decision
+in the plan and above, the design page, ORCHESTRATION); review 1 MAJOR-2 is the
+replayed category conversion (`ConvertToCategoryAction`, convert.cpp:2476),
+which refuses `T.N;`, `(T.N, 1);` and `{.a = T.N};` instantiated with `HasN`,
+pinned by `Discard`, `DiscardTuple` and `DiscardStruct`; review 1 MINOR-1 gives
+a value that deduction built the conversion's location
+(structural_conformance.cpp:811), pinned at the call by `TemplateValueParam` and
+`GenericValueParam`, while at instantiation a constant argument and its
+conversion both have none, as for upstream's own conversion notes on such an
+argument (trunk 0bdce60a5), pinned so; review 2 MINOR-1 renames the kind
+`StructuralRequirementUsed` (toolchain/diagnostics/kind.def:477, its one
+`CARBON_DIAGNOSTIC`, the goldens by autoupdate); review 2 MINOR-2 pins
+`BoundInStruct` and the overload-set use `Overload` (only `OverloadNoMatch` with
+its two candidate notes). No residue is filed: W-169 is not used. Per-finding
+detail is in the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
@@ -4810,7 +4860,19 @@ reviews and round 5's own (39, and a three-file import) run on it: every round-4
 abort is a check error or a running program; the aborts left (round 2's p40,
 p41, p43 at sem_ir/generic.cpp:84; `typeof` of a bound method; C++ calling a
 Carbon template; the nested-tuple and `if` lowering of a function value) abort
-so on trunk 0bdce60a5 too. Against fork/conformance/out/scoreboard.json (128 / 0
+so on trunk 0bdce60a5 too. Re-run for the records commit after df5120d03, on
+df5120d03 with that installed toolchain (no toolchain source differs from
+616d0bc4f): autoupdate over the 19 SC-1 goldens changed nothing (one dot each);
+gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56,
+72.0 s; the 553 probe runs (round 2's, round 3's and round 4's review sets, 514,
+and round 5's 39) classify on it exactly as on 18775fee3: 398 check errors, 131
+programs that compile and run, 5 that compile with no `Run` to link, and 19
+aborts, each trunk's (the 9 runs of p40, p41 and p43; 6 of `typeof` of a bound
+method, type_iterator.cpp:310; 2 of C++ calling a Carbon template,
+sem_ir/generic.cpp:96; 2 of an `if` expression of a tuple holding a function
+value, in `BranchWithArg`), the trunk-spelled probes of each aborting so on the
+trunk build of 0bdce60a5. Against fork/conformance/out/scoreboard.json (128 / 0
 / 22 over 150, run 37402970811) exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
@@ -4881,7 +4943,13 @@ comments of satisfy `fail_todo_ambiguous_with_interface`, require
 `fail_todo_runtime_facet`. Round 5's records commit, after 18775fee3: the three
 round-5 §4.B rows marked FILLED, misses (n) and (o), the round-5 measurements
 here and in the plan, the ORCHESTRATION status paragraph and Branches row, and
-W-027's notes.
+W-027's notes. The records commit after df5120d03: round 5's commit hashes at
+the head of this entry and of the plan's note, the round's answer and round 4's
+per-finding dispositions with their cites (REVIEWS above), the line cites,
+break-condition consequence and trunk aborts of ROUND 5's DECISION, misses (n)
+and (o) in the plan's list, the re-measure and probe re-run on df5120d03 here
+and in the plan, the ORCHESTRATION status paragraph and Branches row, and
+W-027's title, evidence and notes (five fill rounds).
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

@@ -674,6 +674,22 @@ fn Field(w: W) -> i32 { return Take(w.f); }
 // CHECK:STDERR:
 fn Return() -> typeof(HasN.N) { return HasN.N; }
 
+impl W as Core.UnformedInit {}
+
+fn Ref(unused ref f: typeof(HasN.N)) {}
+
+// A field reached through a `var` is a reference: bound to a `ref` parameter it
+// reads no value and is accepted (D-SC-20 as amended at fill round 6, both
+// reviews' finding MAJOR-1); read as a value it is refused, and so is a
+// requirement name, `ref`-tagged or not. Uses of such an object are lower
+// `requirement_typeof_object`.
+fn ReadField() {
+  var w: W;
+  Ref(ref w.f);
+  let unused v: typeof(HasN.N) = w.f;
+  Ref(ref HasN.N);
+}
+
 // --- fail_ladder_alias.carbon
 library "[[@TEST_NAME]]";
 

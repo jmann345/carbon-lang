@@ -4282,7 +4282,10 @@ d232d4753. Fill round 5, folding round 4's two implementation reviews: 616d0bc4f
 refilled, CHECK lines only) and df5120d03 (records: the re-measure on a
 clean-stamped toolchain, misses (n) and (o)); the records commit after df5120d03
 adds round 4's per-finding dispositions with their cites, the line cites of
-round 5's decision and the re-measure on df5120d03. Each fix is an R29(a)
+round 5's decision and the re-measure on df5120d03. Fill round 6 (2026-10-14),
+folding round 5's two implementation reviews: a fixes commit (the fix, test
+sources, the design page and records), a goldens commit (3 goldens, CHECK lines
+only) and a records commit that names them. Each fix is an R29(a)
 implementation decision recorded for after-the-fact veto, with its design
 citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Every count below is a measurement on the container, not of record
@@ -4557,8 +4560,11 @@ reviews' probes.
     `struct_value` of `StructuralRequirementType` (the requirement's function
     and the constraint's specific without `Self`), concrete unless the
     constraint's arguments are symbolic, as upstream's `AssociatedEntityType`
-    is; the `.Self` lookup and generic.cpp's early return are deleted (both
-    files as on trunk). A call through it is `StructuralRequirementUsed`, a
+    is; the `.Self` lookup and generic.cpp's early return are deleted
+    (name_lookup.cpp's `.Self` hunks reverted, so its with-self path is
+    trunk's, while it keeps SC-1b's `diagnose` parameter; generic.cpp as on the
+    base 8068151ed; restated at fill round 6, round 5's review 2 MINOR-3). A
+    call through it is `StructuralRequirementUsed`, a
     compound access redirects to the base type's own member (D-SC-4), `typeof`
     is its type, and `Convert` refuses a value whose type is or holds (as a
     tuple or struct element) a requirement's type, replayed by the template's
@@ -4584,6 +4590,49 @@ reviews' probes.
     fails the module verifier (lower/lower.cpp:48), an `if` expression of a
     tuple holding a function value aborts in `BranchWithArg`, and `typeof` of a
     bound method is type_iterator.cpp's `BoundMethodType` FATAL.
+
+ROUND 6's DECISION (folding round 5's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+18775fee3 with the
+reviews' probes.
+
+-   **A reference kept a reference is not a requirement's value**
+    (convert.cpp:2464 `CheckConversionIsNotOfStructuralRequirement`, called by
+    `Convert` at :2687 and by the `ConvertAction` and `ConvertToCategoryAction`
+    replays at :2495 and :2515; MAJOR-1 of both reviews). Symptom: a class,
+    generic-class specific, tuple, struct or array with a field of
+    `typeof(HasN.N)` could not be destroyed, so `var w: W;`, `MakeW().x`, a
+    discarded `MakeW()`, `D(p)` for `D[T: Core.Destroy](p: T*)` and a
+    `Box(typeof(HasN.N))` local were each refused with 3 to 19 copies of
+    `StructuralRequirementUsed` at a site naming no requirement, though D-SC-20
+    lists a field as a valid use of the type and the trunk analog (a field of
+    `typeof(Fn)`) runs. Root cause: round 5's refusal applied whatever the
+    conversion's target, and the synthesized `Destroy.Op` binds each element as
+    its own `ref self` (a `NoOp` conversion of the generated function's
+    reference parameter, then `ValueOrRef` and `UnmarkedRefParam` conversions of
+    the element, custom_witness.cpp `MakeSubobjectDestroyOpBody`), none of which
+    reads a value. Decision: a reference expression converted for a target that
+    keeps it a reference (`NoOp`, `ValueOrRef`, `DurableRef`, `RefParam`,
+    `UnmarkedRefParam`, `Discarded`; a `ref` tag looked through) is not
+    refused, as taking its address is not; a value or an initializer still is.
+    D-SC-20 is narrowed to what is enforced, so a value typed by a type
+    parameter bound to the requirement's type is an accepted empty value, in a
+    checked generic and in a template (round 5's review 1 MINOR-1). Design:
+    D-SC-20 as amended at fill round 6. Break condition: D-SC-20's, or upstream
+    makes a conversion to a reference category read the object. Pinned by lower
+    `requirement_typeof_object` (fields of the type and of a tuple, struct and
+    array of it, a generic class's, each destroyed; `ref` and `ref self`
+    bindings; `Pass` and `LetValue`, the accepted type-parameter shapes) and
+    requirement-call `fail_requirement_typeof_value`'s `ReadField` (a `ref`
+    binding accepted, a value read and a `ref`-tagged requirement name refused).
+    The reviews' mechanisms, skipping the destroy call for a requirement-typed
+    element or exempting synthesized `SelfDestruct` calls, are not taken: the
+    first still refuses a struct- or tuple-typed field holding the type and
+    skips a non-trivial element beside it, and the second leaves a user's `ref`
+    binding of the same object refused for no reason D-SC-20 gives. Observed,
+    not SC-1's: a template's `F(ref *p)` with `*p` of the requirement's type is
+    refused at instantiation (the replayed argument is a `SpecificInst` of the
+    `ref` tag), while trunk 0bdce60a5 aborts on every such template call
+    (inst.h:249, with `i32`).
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4648,17 +4697,24 @@ the round-5 compound row predicted no `.Self` binding in the
 frozen `.Self` of the `type` facet its `T: type` parameters spell (as every such
 compound dump already did), and no constraint's `.Self`. (o) the round-5 lower
 row predicted `Take` specifics over `C.N`'s and `C.Get`'s function types; the IR
-has one `Take` definition called for the three tuple shapes, since the mangled
-name of those specifics does not distinguish the tuple types, as trunk 0bdce60a5
-lowers the same calls written without a template. One round-3 clause is
-withdrawn from the held predictions rather than counted as a miss: the
-requirement-call row's `UseStructurally` note was read off the pre-fill build of
-round 3's own sources (round 3's review 2, MINOR-7). No miss hides a defect:
-(a), (c), (f), (l), (m), (n) and (o) were prediction errors (the mangling (o)
-shows is trunk's, outside SC-1), (b) and (e) a cascade and a warning class now
-gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
-where the claim needed a dump, and (h) and (i) design sentences amended in place
-beside their fixes.
+has one `Take` definition called for the three tuple shapes, because the lower
+phase's specific coalescer (lower/specific_coalescer.cpp) merges the three
+specifics, whose bodies are equivalent; their mangled names differ, and trunk
+0bdce60a5 coalesces the same calls written without a template (amended at fill
+round 6, round 5's review 2 MAJOR-2: first recorded as a mangling that does not
+distinguish the tuple types, which it is not). One round-3 clause is withdrawn
+from the held predictions rather than counted as a miss: the requirement-call
+row's `UseStructurally` note was read off the pre-fill build of round 3's own
+sources (round 3's review 2, MINOR-7). Round 5's rows are withdrawn the same way
+(fill round 6, round 5's review 2 MINOR-1, R16(d)): the development build ran
+the reviews' shapes before they were written, so none of their clauses counts as
+a prediction that held, and (n) and (o) stand as errors in them; round 6's rows
+are written after its build ran their shapes and are not counted either. No miss
+hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
+coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
+and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
+coverage gap now dumped where the claim needed a dump, and (h) and (i) design
+sentences amended in place beside their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -4798,6 +4854,49 @@ argument (trunk 0bdce60a5), pinned so; review 2 MINOR-1 renames the kind
 its two candidate notes). No residue is filed: W-169 is not used. Per-finding
 detail is in the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
+Round 5's own diff (616d0bc4f, 18775fee3, df5120d03, a9c887101) then received
+two implementation reviews, 11 findings in all, both APPROVE-WITH-FIXES with no
+BLOCKER. Review 1, 1 MAJOR and 2 MINOR: MAJOR-1 destroy synthesis refusing a
+type with a field of the requirement's type; MINOR-1 D-SC-20's "never a runtime
+value" against values typed by a type parameter; MINOR-2 the type's import path
+without a golden. Review 2, 2 MAJOR and 6 MINOR: MAJOR-1 the same destroy
+defect; MAJOR-2 miss (o) recorded with a false cause (a mangling property, where
+it is the specific coalescer); MINOR-1 round 5's rows counted as held though
+written after the development build ran their shapes (R16(d)); MINOR-2 the same
+import gap and the stringifier's unreached fallback; MINOR-3 "name_lookup.cpp as
+on trunk"; MINOR-4 plan text describing the deleted `.Self` lookup as live;
+MINOR-5 a convert.cpp comment's "below"; MINOR-6 a whitespace-only rewrap of a
+shared ORCHESTRATION paragraph. On the round's question (whether the branch was
+dry with the representation concrete, and the concrete type a sound SemIR
+citizen), both found no check-clean input that crashes or miscompiles because
+of SC-1 and no accepted invalid program, and the type sound for completeness,
+value representation, lowering, mangling, import and export, equality and
+specifics; the one rejected valid class was MAJOR-1. The aborts their probes
+found reproduce on trunk 0bdce60a5 (handle_call.cpp:984, sem_ir/generic.cpp:84,
+import_ref.cpp:5172, custom_witness.cpp:487). Fill round 6 folds all 11, each
+reproduced first on the toolchain stamped 0.0.0-0.dev+18775fee3, none rejected.
+Dispositions: MAJOR-1 of both reviews is ROUND 6's DECISION above, fixed at the
+refusal's rule rather than by either suggested mechanism, for the reasons
+there; review 1 MINOR-1 is taken as its first fix (D-SC-20 narrowed, `Pass` and
+`LetValue` pinned), its second (an action for every template-dependent value
+conversion) declined because it cannot reach checked generics and would add
+actions to every template body upstream's goldens dump; MINOR-2 of both reviews
+adds import `requirement_type_a`, `requirement_type_b` (dumped) and
+`fail_requirement_type_value` (the importer's refusal and `<type of
+Has(i32).N>*` printed), and the stringifier's fallback becomes a `CARBON_CHECK`
+(sem_ir/stringify.cpp:934), the type being formed only for a requirement;
+review 2 MAJOR-2 rewords (o) here, in the plan's §4.B row, misses list and
+round-5 note, and in the PR body, on evidence reproduced on this build and on
+trunk (`carbon -v compile` logs "Found equivalent specifics"; a `Take` whose
+body depends on `T` keeps three symbols and returns 111); review 2 MINOR-1 marks
+round 5's three §4.B rows NOT COUNTED and carries the disclosure here
+(FILL-CAUGHT MISSES) and in the PR body; MINOR-3 restates the name_lookup.cpp
+claim in ROUND 5's DECISION, D-SC-20, the plan's round-5 bullet and W-027's
+evidence; MINOR-4 amends D-SC-10 and the plan's round-1 mechanisms paragraph;
+MINOR-5 fixes the comment; MINOR-6 restores the UA-1 sentences' line breaks.
+No residue is filed: W-169 is not used. Per-finding detail is in the plan's
+"Landed notes (SC-1 fill rounds, 2026-10-13)".
+
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
 tests, 1955 passing and 3 reporting "Autoupdate would make changes"
@@ -4872,8 +4971,17 @@ aborts, each trunk's (the 9 runs of p40, p41 and p43; 6 of `typeof` of a bound
 method, type_iterator.cpp:310; 2 of C++ calling a Carbon template,
 sem_ir/generic.cpp:96; 2 of an `if` expression of a tuple holding a function
 value, in `BranchWithArg`), the trunk-spelled probes of each aborting so on the
-trunk build of 0bdce60a5. Against fork/conformance/out/scoreboard.json (128 / 0
-/ 22 over 150, run 37402970811) exactly two programs move in every run:
+trunk build of 0bdce60a5. Round 6 (the toolchain built from the round-6
+sources before the commit, stamped 0.0.0-0.dev+a9c887101.dirty, the uncommitted
+edits being exactly its fixes commit's): autoupdate over the 19 SC-1 goldens to
+a fixpoint (pass 1 rewrote the 3 with new splits, pass 2 none); gate 1959
+passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.2 s;
+the 553 probe runs classify exactly as on 18775fee3, the round-5 reviews' 412
+runs as 249 check errors, 135 that compile and run, 16 with no `Run` and 12
+aborts, each reproduced on trunk 0bdce60a5. Against
+fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
+exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
@@ -4949,7 +5057,19 @@ per-finding dispositions with their cites (REVIEWS above), the line cites,
 break-condition consequence and trunk aborts of ROUND 5's DECISION, misses (n)
 and (o) in the plan's list, the re-measure and probe re-run on df5120d03 here
 and in the plan, the ORCHESTRATION status paragraph and Branches row, and
-W-027's title, evidence and notes (five fill rounds).
+W-027's title, evidence and notes (five fill rounds). Round 6's fixes commit:
+D-SC-20 amended (a reference kept a reference; a value typed by a type parameter
+bound to the type) and restated (name_lookup.cpp), D-SC-10's amendment and the
+round-1 mechanisms paragraph amended (`.Self` superseded), round 5's three §4.B
+rows marked NOT COUNTED and the lower row's (o) cause corrected, §4.B rows for
+round 6's splits (observed, not counted), the misses list's (o), round 5's
+review record, round 6's dispositions and decision, and the round-6
+measurements in the plan; this entry (the head, ROUND 5's DECISION restated,
+ROUND 6's DECISION, the round-5 review record, (o) and the R16(d) disclosure
+under FILL-CAUGHT MISSES, the measurements); the design page (objects of the
+type, values typed by a parameter bound to it); the ORCHESTRATION status
+paragraph, with df5120d03's rewrap of the UA-1 sentences undone, and Branches
+row; W-027's title, evidence and notes (six fill rounds).
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

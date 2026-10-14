@@ -2451,14 +2451,53 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
   return SemIR::InstId::None;
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4, 5
+// and 6): a `template constraint` requirement is never a runtime value, so a
+// conversion of `expr_id` for a target of `kind` is refused when that value
+// names or holds one (`CheckValueIsNotStructuralRequirement`). A reference to
+// an object that exists, kept a reference (bound to a `ref` parameter or
+// binding, the callee's own `ref self` included, used as a member access base,
+// or discarded), reads no value, as taking its address does not, and is not
+// refused: a class, tuple or struct with an element of a requirement's type is
+// destroyed through the `ref self` of its synthesized `Destroy.Op`
+// (custom_witness.cpp `MakeSubobjectDestroyOpBody`).
+static auto CheckConversionIsNotOfStructuralRequirement(
+    Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
+    ConversionTarget::Kind kind, bool diagnose) -> bool {
+  switch (kind) {
+    case ConversionTarget::NoOp:
+    case ConversionTarget::ValueOrRef:
+    case ConversionTarget::DurableRef:
+    case ConversionTarget::RefParam:
+    case ConversionTarget::UnmarkedRefParam:
+    case ConversionTarget::Discarded: {
+      auto object_id = expr_id;
+      if (auto ref_tag = context.insts().TryGetAs<SemIR::RefTagExpr>(expr_id)) {
+        object_id = ref_tag->expr_id;
+      }
+      if (SemIR::IsRefCategory(
+              SemIR::GetExprCategory(context.sem_ir(), object_id))) {
+        return true;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return CheckValueIsNotStructuralRequirement(context, loc_id, expr_id,
+                                              diagnose);
+}
+
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertAction action) -> SemIR::InstId {
+  const auto& target_bundle = context.bundles().Get(action.target_id);
   // Fork (SC-1, D-SC-20): as in `Convert`.
-  if (!CheckValueIsNotStructuralRequirement(context, loc_id, action.inst_id,
-                                            /*diagnose=*/true)) {
+  if (!CheckConversionIsNotOfStructuralRequirement(
+          context, loc_id, action.inst_id,
+          ConversionTarget::Kind(target_bundle.conversion_kind.index),
+          /*diagnose=*/true)) {
     return SemIR::ErrorInst::InstId;
   }
-  const auto& target_bundle = context.bundles().Get(action.target_id);
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(target_bundle.conversion_kind.index),
       .type_id = context.types().GetTypeIdForTypeInstId(
@@ -2473,8 +2512,10 @@ auto PerformAction(Context& context, SemIR::LocId loc_id,
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertToCategoryAction action) -> SemIR::InstId {
   // Fork (SC-1, D-SC-20): as in `Convert`.
-  if (!CheckValueIsNotStructuralRequirement(context, loc_id, action.inst_id,
-                                            /*diagnose=*/true)) {
+  if (!CheckConversionIsNotOfStructuralRequirement(
+          context, loc_id, action.inst_id,
+          ConversionTarget::Kind(action.conversion_kind.index),
+          /*diagnose=*/true)) {
     return SemIR::ErrorInst::InstId;
   }
   ConversionTarget target = {
@@ -2638,12 +2679,13 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
     return SemIR::ErrorInst::InstId;
   }
 
-  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4
-  // and 5): a `template constraint` requirement is never a runtime value,
-  // whatever the target. A template replays this check when it converts at
-  // instantiation (`PerformAction` below).
-  if (!CheckValueIsNotStructuralRequirement(context, loc_id, expr_id,
-                                            target.diagnose)) {
+  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4,
+  // 5 and 6): a `template constraint` requirement is never a runtime value,
+  // whatever the target; a reference kept a reference reads none. A template
+  // replays this check when it converts at instantiation (the `PerformAction`
+  // overloads above).
+  if (!CheckConversionIsNotOfStructuralRequirement(
+          context, loc_id, expr_id, target.kind, target.diagnose)) {
     return SemIR::ErrorInst::InstId;
   }
 

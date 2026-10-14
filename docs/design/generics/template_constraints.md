@@ -523,7 +523,13 @@ used as a type, but it has no values: passing `HasCount.Count` to a function,
 putting it in a tuple or struct, naming it as a statement, binding a parameter
 of its `typeof`, or doing any of these in a template instantiated with a facet
 type, is the same error, as is a bound method of a requirement found through a
-checked generic binding. Named through a type that satisfies it, as
+checked generic binding. An object of that type, such as a class field, exists
+without being a value: it is destroyed with its enclosing object, and binding
+it to a `ref` parameter, calling a `ref self` method on it, or reaching it
+through a pointer reads no value and is accepted, while reading it as a value
+is the same error. A value typed by a generic or template parameter that is
+bound to that type is an empty value and is accepted (D-SC-20, as amended at
+fill round 6). Named through a type that satisfies it, as
 `C.(HasCount.Count)`, it is that type's own function and is a value like any
 other (D-SC-20, as amended at fill round 4).
 

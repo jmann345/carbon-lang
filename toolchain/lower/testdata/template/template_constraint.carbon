@@ -217,6 +217,88 @@ fn Run() -> i32 {
   return typeof(HasN.N).(Z.F)() + Generic(1) + Satisfied(C.(HasN.N));
 }
 
+// --- requirement_typeof_object.carbon
+library "[[@TEST_NAME]]";
+
+// An object whose type is or holds a requirement's type: a class field, an
+// element of a tuple, struct or array field, a generic class's field. It is
+// destroyed by binding its synthesized `Destroy.Op`'s `ref self` to each
+// element, which reads no value, so it is not refused (D-SC-20 as amended at
+// fill round 6, both reviews' finding MAJOR-1: each use of `W` was refused with
+// a dozen copies of `StructuralRequirementUsed`). A `ref` parameter, a `ref
+// self` method, a discarded reference and the compound access `C.(w.f)` bind
+// or name such an object the same way; reading it as a value is refused
+// (requirement-call `fail_requirement_typeof_value`). A value typed by a type
+// parameter bound to the requirement's type is an empty value, accepted in a
+// checked generic and in a template (`Pass`, `LetValue`; review 1 finding
+// MINOR-1).
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint Has(X: type) {
+  fn N() -> X;
+}
+
+interface Z {
+  fn M(ref self) -> i32;
+}
+
+impl typeof(HasN.N) as Z {
+  fn M(unused ref self) -> i32 { return 4; }
+}
+
+class C {
+  fn N() -> i32 { return 5; }
+}
+
+class W {
+  var f: typeof(HasN.N);
+  var t: (typeof(HasN.N), i32);
+  var s: {.f: typeof(Has(i32).N), .x: i32};
+  var a: array(typeof(HasN.N), 2);
+  var x: i32;
+}
+
+impl W as Core.UnformedInit {}
+
+class Box(T: type) {
+  var v: T;
+  var k: i32;
+}
+
+impl forall [T: type] Box(T) as Core.UnformedInit {}
+
+fn MakeW() -> W {
+  returned var w: W;
+  w.x = 3;
+  return var;
+}
+
+fn D[T: Core.Destroy](unused p: T*) -> i32 { return 1; }
+
+fn Ref(unused ref f: typeof(HasN.N)) -> i32 { return 2; }
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Pass[T: type](p: T*) -> i32 { return Take(*p); }
+
+fn LetValue[template T: type](p: T*) {
+  let unused v: T = *p;
+}
+
+fn Run() -> i32 {
+  var w: W;
+  w.x = 3;
+  w.f;
+  MakeW();
+  var b: Box(typeof(HasN.N));
+  b.k = MakeW().x;
+  LetValue(&w.f);
+  return w.x + b.k + D(&w) + Ref(ref w.f) + w.f.(Z.M)() + w.t.0.(Z.M)() +
+         Pass(&w.f) + C.(w.f)();
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

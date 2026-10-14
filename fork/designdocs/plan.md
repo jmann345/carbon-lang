@@ -6,16 +6,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Design docs without placeholders: status notes, measured 0.1 behavior, the interop TODO sections, the F-008 threads page (DD-1, W-065)
 
-**Status:** rev 3 -- NOT signed off: A-1. The focused re-review of rev 2
-(a1d96520a) returned REJECT with one BLOCKER, A-1 (rev 2 still called leads
-issue 686 open, but the leads answered it on 2022-11-12), and four MINOR
-findings, N-1 to N-4. A separate fixer (R11) folds all five into rev 3, none
-rejected, A-1 with one cited wording deviation; the
+**Status:** rev 4, 2026-10-14 -- SIGNED OFF FOR IMPLEMENTATION (the
+[Sign-off](#sign-off) section at the end lists every review). The second
+focused re-review, of rev 3 (15c719ddc; its own title is "round 1"), returned
+APPROVE-WITH-AMENDMENTS with no BLOCKER open: A-1 RESOLVED, N-1 to N-4
+VERIFIED, B-1 and B-2 RESOLVED on spot-check, and three new findings, RR2-1
+(MAJOR), RR2-2 and RR2-3 (MINOR). A separate fixer (R11) folds all three into
+rev 4, none rejected, and adds one finding of its own, RR2-FX-1; the
+[rev-4 fold record](#focused-re-review-2-rev-4-2026-10-14) lists each
+disposition. Rev-4 fold marks read "(amended 2026-10-14, review fold:
+RR2-x)", where x is the re-review's own finding id. Rev 3 (15c719ddc) folded
+the first focused re-review, of rev 2 (a1d96520a), which returned REJECT with
+one BLOCKER, A-1 (rev 2 still called leads issue 686 open, but the leads
+answered it on 2022-11-12), and four MINOR findings, N-1 to N-4; its fixer
+folded all five, none rejected, A-1 with one cited wording deviation, and the
 [re-review fold record](#focused-re-review-rev-3-2026-10-13) lists each
 disposition. Rev-3 fold marks read "(amended 2026-10-13, review fold:
-RR-x)", where x is the re-review's own finding id (RR-A-1, RR-N-1 to RR-N-4).
-Because the re-review's verdict was REJECT, rev 3 is not signed off until a
-further focused re-review confirms the A-1 fold. Rev 2 (a1d96520a) folded the
+RR-x)", where x is that re-review's own finding id (RR-A-1, RR-N-1 to
+RR-N-4). Rev 2 (a1d96520a) folded the
 two plan reviews of R29(c) (A: fidelity to the toolchain and the accepted
 proposals; B: process, records and Goodhart) by a separate fixer (R11), all
 33 findings, none rejected; the
@@ -73,23 +81,34 @@ already own them: W-155 (EV-1, PR 54), W-167 (ST-1, PR 55), W-080, W-053 and
 W-014 (D-DD-10; amended 2026-10-13, review fold: A-1 / A-4 / A-11 / B-M-1;
 RR-A-1). **No fork design id is minted**: F-016 stays unallocated by this plan
 (D-DD-3). **Id reservation** (recorded here and in the discharge's ORCHESTRATION
-stamp): the ledger maximum over trunk and every live branch is W-168 (SC-1; head
-77838fdd5 at rev 2, a9c887101 at rev 3); W-169 is SC-1's; W-170..W-179 are
-OP-1's; **DD-1 reserves W-180..W-189 and W-191..W-194**. Rev 2 extended rev 1's
-W-180..W-189 to W-194 because its folds needed one more id, and used W-190 for
-the template-export crash. OP-1's implementation-review fold (49e2cf2bf, OP-1
-head aa89cd7cd) had meanwhile taken W-190, "the first id after DD-1's reserved
-W-180..W-189", for its own lowering defect and written it into
-docs/design/optional.md (:302 and :505) on its branch, which merges before DD-1.
-W-190 is therefore OP-1's, and rev 2's W-190 is renumbered W-191 (amended
-2026-10-13, review fold: A-1 / A-4 / B-M-1; RR-FX-1, the fixer's own finding).
-W-180, W-181 and W-186 were rev 1's ids for defects that other items own and are
-withdrawn unused; W-187 is contingent (D-DD-9); W-192..W-194 are spare. The
-rev-3 scan, `git grep -E 'W-1[89][0-9]'` over trunk and every live branch head,
-finds outside this plan only OP-1's references to DD-1's W-180..W-189 and OP-1's
-own W-190. A reserved id that goes unused stays unused. **Merge position:**
-after OP-1, the last of the current queue (PR 53, PR 51, PR 52, SC-1, PR 54, PR
-55, OP-1, then DD-1; fork/ORCHESTRATION.md "Later on 2026-10-13").
+stamp; amended 2026-10-13, review fold: A-1 / A-4 / B-M-1; RR-FX-1; amended
+2026-10-14, review fold: RR2-1): **DD-1's block is W-180..W-194, and W-190 in it
+stays unused.** Rev 1 reserved W-180..W-189; rev 2 extended the block to W-194
+because its folds needed one more id, and used W-190 for the template-export
+crash. W-190 was then allocated on both branches in parallel, and both moved off
+it: OP-1 held W-190 from its implementation-review fold (49e2cf2bf, "the first
+id after DD-1's reserved W-180..W-189") until its discharge (379f20f67,
+2026-10-14 00:14:57 UTC) re-allocated it to W-195, because DD-1's rev 2 reserves
+W-180..W-194; meanwhile rev 3 (00:08:50 UTC), seeing OP-1's W-190, renumbered
+DD-1's W-190 to W-191 (RR-FX-1). DD-1 keeps W-191, and W-190 stays unused under
+the rule that a reserved id that goes unused stays unused; trunk's
+fork/ORCHESTRATION.md (f67ab650d, "On 2026-10-14") records the same: W-190
+"stays unused and is never reused". W-180, W-181 and W-186 were rev 1's ids for
+defects that other items own and are withdrawn unused; W-187 is contingent
+(D-DD-9); W-192..W-194 are spare. The ledger maximum over trunk and every live
+branch is W-195 (OP-1, head 379f20f67, which filed W-170..W-179 and W-195);
+SC-1's maximum is W-168 (head a9c887101) and W-169 is SC-1's reservation. The
+rev-4 scan, `git grep -E 'W-1[89][0-9]'` outside this plan over 73 refs (trunk,
+origin/trunk, upstream-trunk and the 70 local and origin
+`claude/carbon-fork-0-1-*` refs), finds such ids on two commits only: OP-1's
+379f20f67 (its W-195, its record of W-190's re-allocation, and its references to
+DD-1's W-180..W-194) and trunk's f67ab650d (the ORCHESTRATION paragraph that
+records both blocks). **Merge position:** last, after OP-1, which is PR 56: PR
+53, PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, then DD-1 (trunk's
+fork/ORCHESTRATION.md at f67ab650d, "On 2026-10-14"). Trunk advanced from
+162c7e839 to f67ab650d after rev 3 with that stamp alone (fork/ORCHESTRATION.md
+only), so every other line number above stands (amended 2026-10-14, review fold:
+RR2-FX-1).
 
 ## §0 Audit: what the pages say, what the toolchain does, what is stale
 
@@ -207,8 +226,8 @@ the remainder of which are in category C. §0.1f classifies every
 | PR-T a checked generic's symbolic type parameter as a C++ template argument (`var unused b: Cpp.Box(T);` in `fn MakeBox[T: type]`) | REJECTS: "cannot convert type `<splice of <cannot stringify inst...>>` into type implementing `Core.DefaultOrUnformed`" | the same shape | W-043 owns it; prose only, because the message names internal instruction ids (amended 2026-10-13, review fold: B-M-5) |
 | PR-U tuple and struct swaps: `let u = (t.1, t.0); t = u;`, `s = {.a = s.b, .b = s.a};`, and `var old = t; t = (old.1, old.0);` | RUNS: `2 1`, `2 2`, `2 1` | the same | §2.3 states what was measured and leads issue 686's answer, under which both literal forms leave `(2, 1)`; W-188 (toolchain-defect) records the literal form's divergence from it (amended 2026-10-13, review fold: A-1; RR-A-1) |
 | PR-G2 `import Cpp;` then `inline Cpp` | RUNS, prints `41` | the same | the inline rule: an `import Cpp` earlier in the file (amended 2026-10-13, review fold: A-14 / B-m-4) |
-| SC-1 toolchains (`carbon-sc`: 0.0.0-0.dev+bc8b37290 at rev 1; ff490bd48 re-measured for rev 2) | all 16 RUNS samples PASS; all 30 REJECTS diagnostics identical to trunk's; at ff490bd48 every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result | — | state L needs no sample change for SC-1; the branch head 77838fdd5 has no build (§8.10) |
-| OP-1 toolchain (`carbon-op`, 0.0.0-0.dev+5d9edb3e0) | every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result | — | the same for OP-1 (amended 2026-10-13, review fold: A-12 / B-m-1) |
+| SC-1 toolchains (`carbon-sc`: 0.0.0-0.dev+bc8b37290 at rev 1; ff490bd48 re-measured for rev 2; 18775fee3, the toolchain and prelude of the head a9c887101, re-measured for rev 4) | all 16 RUNS samples PASS; all 30 REJECTS diagnostics identical to trunk's; at ff490bd48 and at 18775fee3 every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result; PR-N runs on 18775fee3 | — | state L needs no sample change for SC-1; §8.10 names the build each head was measured on (amended 2026-10-14, review fold: RR2-2) |
+| OP-1 toolchain (`carbon-op`, 0.0.0-0.dev+5d9edb3e0; the head 379f20f67 differs from it in toolchain/ and core/ by three testdata goldens only; re-measured for rev 4) | every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result | — | the same for OP-1 (amended 2026-10-13, review fold: A-12 / B-m-1; amended 2026-10-14, review fold: RR2-2) |
 | UA-2 toolchain (`carbon-ua2`, 05a5c30f7) and ST-1 toolchain (`carbon-st`, 84ff63560) | all 16 RUNS samples PASS | — | same for PR 51 and PR 55 |
 
 #### §0.1e Coverage of the milestone's language and interop items
@@ -288,9 +307,14 @@ inline notes of this kind remain by design (§5).
 
 Measured with `git diff --name-only 0bdce60a5...<branch> -- docs/` and the
 fork-record paths; re-measured for rev 2 from each branch head with `git diff
-162c7e839...<branch>` (heads: SC-1 77838fdd5, PR 53 adaae4e35, PR 55
+162c7e839...<branch>` (heads then: SC-1 77838fdd5, PR 53 adaae4e35, PR 55
 21307851a, PR 54 cb3ef2e74, PR 51 f96fe8a7a, OP-1 1fc03110e) (amended
-2026-10-13, review fold: A-1 / A-12 / B-M-6 / B-m-1).
+2026-10-13, review fold: A-1 / A-12 / B-M-6 / B-m-1); re-measured for rev 4 at
+the current heads, SC-1 a9c887101 and OP-1 379f20f67, the others unchanged
+(PR 52 ea573f672): SC-1's file list and its templates.md hunk are unchanged,
+and OP-1's discharge adds only the fork records of the "all of the above" row
+(amended 2026-10-14, review fold: RR2-2). The writer re-reads every head at
+discharge with `git for-each-ref`.
 
 | Branch (PR) | Files DD-1 also edits | Their hunk | Expected effect at DD-1's integration |
 | --- | --- | --- | --- |
@@ -301,7 +325,7 @@ fork-record paths; re-measured for rev 2 from each branch head with `git diff
 | claude/carbon-fork-0-1-ev (PR 54) | docs/guides/tutorial.md:476-478, docs/guides/evaluator_faq.md:372-373 (state L only) | EV-1 creates these files | DD-1's state-L sentences replace "whose design sections are still placeholders" and "the design documents note their own placeholders" (§2.13) |
 | claude/carbon-fork-0-1-ua2 (PR 51) | none in docs/design/ (it edits functions_overloading.md and slices.md); fork/conformance/programs/generics/templates_dependent_member.carbon (un-SKIP); fork/gap-analysis.md row 91's evidence cell (rewritten: re-read line numbers, 8 TODO headings) and W-014's notes | — | no docs conflict; row 91's cell conflicts with DD-1's rewrite, and DD-1's text replaces it at integration (it supersedes PR 51's re-read); W-014's evidence line is added to PR 51's text then (§8.5) |
 | claude/carbon-fork-0-1-cmake (PR 52) | none in docs/design/ | — | none |
-| claude/carbon-fork-0-1-op (OP-1, signed off at rev 2, implementation in progress) | docs/design/README.md (insertion after :860, the `Optional(T*)` paragraph), docs/design/control_flow/loops.md (after :115), docs/design/error_handling.md (after :445), docs/design/optional.md (new) | no shared hunk with DD-1 | none expected; the W2 rule finds no hit in OP-1's docs tree (fixer's run over the head's docs/design/); at state L the interop pointer section links optional.md (§2.13) |
+| claude/carbon-fork-0-1-op (PR 56, OP-1: discharged at 379f20f67 (W-058; W-170..W-179 and W-195 filed); amended 2026-10-14, review fold: RR2-2) | docs/design/README.md (insertion after :860, the `Optional(T*)` paragraph), docs/design/control_flow/loops.md (after :115), docs/design/error_handling.md (after :445), docs/design/optional.md (new) | no shared hunk with DD-1 | none expected; the W2 rule finds no hit in OP-1's docs tree that trunk lacks (fixer's runs over the head's docs/design/, for rev 2 and at 379f20f67 for rev 4); at state L the interop pointer section links optional.md (§2.13) |
 | all of the above | fork/decision-log.md (every entry inserted after "### Full autonomy and the throughput protocol", :2843), fork/inventory/work-items.json, fork/gap-analysis.md (header and rows), fork/ORCHESTRATION.md, fork/conformance/README.md (generated table) | — | mechanical: DD-1's entry goes first in the landed region; ids disjoint; the gap header is recomputed from the merged rows; the table is regenerated with `runner.py --update-readme-table` |
 | origin/claude/carbon-fork-0-1-7mwfb7-design-docs (stranded, 481e08c24) | holds a 2026-07-19 draft docs/design/interoperability/threading.md (628 lines, seven open sub-forks) and one inline-import paragraph | — | **not used as a source** (D-DD-7): D-DD-7 disposes of each of its seven sub-forks with the record that settles it, and leaves one open on the page; the page of §2.8 is written from F-008, fork/design-sprint/threading-atomics.md:184-224 and measurements (amended 2026-10-13, review fold: A-10) |
 
@@ -334,7 +358,10 @@ heading sets are collected with `grep -nE '^#{1,6} '` on the same fence-masked
 text (amended 2026-10-13, review fold: B-m-5). The files DD-1 edits only at
 state L (expressions/literals.md, safety/mutation_safety.md, docs/guides/
 tutorial.md and evaluator_faq.md) get their baselines in the integration
-commit, measured on the merged trunk.
+commit, measured on the merged trunk. Trunk's f67ab650d, after rev 3, changes
+fork/ORCHESTRATION.md only: 534 lines, the same heading and list counts, and
+the line cited above as :437 is :452 there (amended 2026-10-14, review fold:
+RR2-FX-1).
 
 ### §0.4 Stale claims found (each corrected at discharge, §8.5)
 
@@ -393,7 +420,7 @@ commit, measured on the merged trunk.
     (W-014)". The nightly exports and runs
     one (PR-S prints `42`); the fork's toolchain stops at a CHECK. W-191
     records it (added 2026-10-13, review fold: B-M-5; renumbered from W-190,
-    RR-FX-1).
+    RR-FX-1; W-190 stays unused, amended 2026-10-14, review fold: RR2-1).
 
 ### §0.5 Decisions this plan auto-adopts (R29(a), each with a break condition)
 
@@ -576,7 +603,9 @@ commit, measured on the merged trunk.
     amendments and flip row 91 when those PRs land (amended 2026-10-13, review
     fold: B-M-3).
 -   **D-DD-10 Residues.** W-182 to W-185, W-188, W-189 and W-191 (§8.5; W-191
-    is rev 2's W-190, renumbered because OP-1 holds W-190, RR-FX-1) are filed
+    is rev 2's W-190, renumbered at rev 3 while OP-1 held W-190, RR-FX-1; OP-1
+    has since moved to W-195 and W-190 stays unused, amended 2026-10-14,
+    review fold: RR2-1) are filed
     at discharge with kind, bullet, evidence and the measured probe. W-188 is a
     toolchain-defect: a tuple or struct assignment whose literal right-hand
     side reads the target is assigned in place, element by element, and
@@ -1041,8 +1070,8 @@ ordered items. Samples: P02 (design_docs_statements.carbon), R05, R06, R04.
 ### §2.3 docs/design/assignment.md
 
 Edit 1 replaces line 161 (`_TODO_: Describe the rules for assignment in these
-cases.`) with the text below; lines 163-164 ("See leads issue ... #686 ...")
-stay after it.
+cases.`) with the text below; lines 163-164 (the "See leads issue" line and
+its link to issue 686) stay after it (amended 2026-10-14, review fold: RR2-3).
 
 (The text below is amended 2026-10-13, review fold: A-1 / B-M-1 / B-m-7: the
 status note no longer calls issue 686 open, and the last paragraph states only
@@ -3270,8 +3299,10 @@ allowlisted hits and no other; after commit 2, six; after commit 3, the two
 held-PR hits plus the one `QUALIFIED` entry; after the integration commit, the
 `QUALIFIED` entry only. Run over the docs/design/ trees of the held branch
 heads (PR 53, PR 55, SC-1, PR 54, PR 51, OP-1), the rule finds no hit that
-trunk lacks (fixer's run for rev 2), so the state-L list depends only on
-PR 53 and PR 55 landing.
+trunk lacks (fixer's run for rev 2; re-run for rev 4 at SC-1 a9c887101, OP-1
+379f20f67 and trunk f67ab650d, with the same result; amended 2026-10-14,
+review fold: RR2-2), so the state-L list depends only on PR 53 and PR 55
+landing.
 
 ### §2.13 State-L texts (integration commit)
 
@@ -3360,10 +3391,12 @@ B-M-3 / B-M-7 / B-m-8.)
 
 -   **Plan:** "DD-1 plan (rev 1): ..." (bed95d667), then "DD-1 plan (rev 2):
     reviews A and B folded, ..." (a1d96520a), then "DD-1 plan (rev 3):
-    focused re-review folded, NOT signed off" (this revision; amended
-    2026-10-13, review fold: RR-A-1). Implementation starts only after a
-    focused re-review of rev 3 returns a verdict other than REJECT and the
-    plan's Status line records the sign-off.
+    focused re-review folded, NOT signed off" (15c719ddc; amended 2026-10-13,
+    review fold: RR-A-1), then "DD-1 plan (rev 4): focused re-review 1
+    folded, sign-off" (this revision). The focused re-review of rev 3
+    returned a verdict other than REJECT and the Status line records the
+    sign-off, so implementation starts at rev 4 (amended 2026-10-14, at
+    sign-off).
 -   **DD-1 (1/4): language pages** — §2.1-§2.6 and §2.10, programs P01-P06,
     their fixtures, the checker with the language-page table and the commit-1
     `ALLOWLIST` (sixteen entries), the stub's SKIP reason refreshed (§2.11), the
@@ -4114,9 +4147,10 @@ and evaluator_faq.md (EV-1's), expressions/literals.md, and
 safety/mutation_safety.md (SAFE-1's) (amended 2026-10-13, review fold: A-2 /
 B-1 / B-M-5 / B-M-6). The held PRs' overlaps and their resolutions are §0.2's
 table; name collisions: no held branch adds a `design_docs_*` program or a
-fork/designdocs/ path (`git ls-tree` on each branch head), and the residue ids
-W-180..W-189 and W-191..W-194 are reserved (§0.4 of ORCHESTRATION at
-discharge; W-190 is OP-1's, RR-FX-1). Upstream
+fork/designdocs/ path (`git ls-tree` on each branch head, re-run for rev 4),
+and the residue block W-180..W-194 is DD-1's with W-190 unused, which trunk's
+ORCHESTRATION records at f67ab650d and the discharge stamp restates (§8.8);
+OP-1's residue is W-195 (amended 2026-10-14, review fold: RR2-1). Upstream
 convergence: every DD-1 edit to
 an upstream page is a dated blockquote or a new section after the original
 text, so a weekly upstream merge that rewrites a page conflicts only where
@@ -4293,8 +4327,9 @@ favor of upstream's accepted text.
         R-6, the W-076 root-only record, which no open item owns).
     -   **W-191** (toolchain-defect; bullet "Generics: C++ interop — exporting
         Carbon templates/checked generics as C++ templates") (renumbered from
-        rev 2's W-190, which OP-1 holds; amended 2026-10-13, review fold:
-        RR-FX-1): calling a Carbon
+        rev 2's W-190 at rev 3, while OP-1 held W-190; amended 2026-10-13,
+        review fold: RR-FX-1; amended 2026-10-14, review fold: RR2-1): calling
+        a Carbon
         function with a `template` parameter from C++ stops check at
         "CHECK failure at toolchain/sem_ir/generic.cpp:96: ... before it was
         resolved." (PR-S, both bodies; identical on the OP-1 toolchain); the
@@ -4303,10 +4338,11 @@ favor of upstream's accepted text.
         stale.
     -   **W-187** only under D-DD-9's break condition. **W-180, W-181, W-186**
         withdrawn at rev 2 (owned by W-155, W-080 and W-167), never filed.
-        **W-190** is OP-1's (its lowering defect, written into
-        docs/design/optional.md on its branch), outside DD-1's reservation.
-        **W-192..W-194** spare for later folds (amended 2026-10-13, review
-        fold: RR-FX-1).
+        **W-190** stays unused and is never filed: OP-1 held it from
+        49e2cf2bf until its discharge (379f20f67) re-allocated it to W-195,
+        and DD-1 moved off it at rev 3. **W-192..W-194** spare for later
+        folds (amended 2026-10-13, review fold: RR-FX-1; amended 2026-10-14,
+        review fold: RR2-1).
 6.  **Gap analysis:** §5's row texts and header delta.
 7.  **Decision log:** heading `### DD-1: design docs without placeholders
     (2026-10-DD)` inserted directly after the "### Full autonomy and the
@@ -4320,10 +4356,15 @@ favor of upstream's accepted text.
     2026-10-13, review fold: B-M-4 / B-M-7). Count check: H3
     +1, every other count unchanged; its lists are dash items, and the new dash
     count equals the old plus the items the entry adds.
-8.  **ORCHESTRATION:** the "Last updated" paragraph, a branch row
-    `claude/carbon-fork-0-1-dd`, the id reservation W-180..W-189 and
-    W-191..W-194 (with W-180, W-181 and W-186 withdrawn, and W-190 OP-1's;
-    amended 2026-10-13, review fold: RR-FX-1), and the merge position.
+8.  **ORCHESTRATION:** the "Last updated" paragraph, the branch row
+    `claude/carbon-fork-0-1-dd` (trunk has one since f67ab650d; the discharge
+    rewrites it, and a merge keeps one row with the discharge's text), the id
+    reservation, verbatim: "W-180..W-194 (W-180, W-181, W-186 withdrawn;
+    W-187 contingent; W-190 unused; W-192..W-194 spare); OP-1's residue is
+    W-195", which agrees with OP-1's record (379f20f67) and trunk's
+    (f67ab650d), and the merge position, after PR 56 (OP-1) (amended
+    2026-10-13, review fold: RR-FX-1; amended 2026-10-14, review fold: RR2-1
+    / RR2-FX-1).
 9.  **Landed notes** appended to this plan: commits, deviations (R17: one
     sentence each), measured totals.
 10. **Not run** (added 2026-10-13, review fold: B-M-7). Copied verbatim into
@@ -4339,9 +4380,17 @@ favor of upstream's accepted text.
         Linux;
     -   PR-C on the nightly did not finish: the run hung in the crash handler
         and was terminated (an earlier run exited rc 139);
-    -   the SC-1 branch head (77838fdd5) has no build: SC-1 was measured on its
-        builds at bc8b37290 and ff490bd48; the OP-1 head (1fc03110e) was
-        measured on its build at 5d9edb3e0;
+    -   no build of a branch-head commit itself (amended 2026-10-14, review
+        fold: RR2-2): the heads at rev 4 are trunk f67ab650d, SC-1 a9c887101
+        and OP-1 379f20f67 (PR 53 adaae4e35, PR 51 f96fe8a7a, PR 52
+        ea573f672, PR 54 cb3ef2e74 and PR 55 21307851a unchanged). SC-1 was
+        measured on its builds at bc8b37290 (rev 1), ff490bd48 (rev 2) and
+        18775fee3 (rev 4), the last with the head's toolchain and prelude
+        (`git diff --stat 18775fee3 a9c887101 -- toolchain core` is empty);
+        OP-1 on its build at 5d9edb3e0, whose toolchain/ and core/ differ from
+        the head's by three testdata goldens only. The writer re-reads the
+        heads at discharge with `git for-each-ref` and names the build each
+        was measured on;
     -   no state-L toolchain (trunk with every held PR merged) exists until
         the integration commit builds one;
     -   online status checks, made on 2026-10-13, cover four records only;
@@ -4450,9 +4499,9 @@ fork/conformance/out/scoreboard.json (every one PASS, so bullets stay 48/56),
 id reservation as of its scan. A separate fixer (R11) folds all five findings
 into rev 3, none rejected, and adds one finding of its own, RR-FX-1. Marks
 read "RR-" followed by the re-review's own finding id. Because the verdict was
-REJECT, the Status line reads "rev 3 -- NOT signed off: A-1", and no Sign-off
-section is written until a further focused re-review returns a verdict other
-than REJECT.
+REJECT, the Status line read "rev 3 -- NOT signed off: A-1", and no Sign-off
+section was written until a further focused re-review returned a verdict
+other than REJECT (it did; see the next section and the Sign-off).
 
 The fixer's verification, in its own scratch (`.../scratchpad/dd1/rr3/`,
 with `XDG_CACHE_HOME` there): X01 and X03 on the fork toolchain (0bdce60a5)
@@ -4473,4 +4522,88 @@ page-text fences (counts in the commit message).
 | RR-N-2 (N-2) | MINOR | Folded: the note says that each former placeholder page or section now carries measured 0.1 content or a dated status note, and names them; the state-L sentence is limited to docs/design/ | §2.9 item 6 |
 | RR-N-3 (N-3) | MINOR | Folded, first option: the Co-routines and Concurrency markers stay, each followed by its dated deferral note, as comparison_operators.md's marker does; D-DD-1 states one rule for future extensions and milestone deferrals; §0.1c, §1.1 and row 91's cell follow. Rule (c) does not hit a section that holds a marker and a note, so the allowlist counts per commit (16, 6, 2, 0) are unchanged | D-DD-1, §0.1c, §1.1, §2.9 item 4, §5, hand-off note 9 |
 | RR-N-4 (N-4) | MINOR | Folded: §2.13 reads "(item 6 of §2.9)" and "(item 3 of §2.9)". Rev 2's count matched only digit-and-period markers and could not see a "6)" continuation, so its commit message's R31 claim was incomplete; rev 3 scans `^\s*[0-9]+[.)]` at every indent, outside fences and inside the page-text fences, before and after prek | §2.13 |
-| RR-FX-1 (fixer) | — | Added: OP-1's implementation-review fold (49e2cf2bf, 2026-10-13 23:53 UTC, after rev 2, and not in the re-review's scan, which found no W-18x or W-19x id on any head; OP-1 head aa89cd7cd) took W-190 for its own lowering defect as "the first id after DD-1's reserved W-180..W-189" and wrote it into docs/design/optional.md (:302 and :505) on its branch, which merges before DD-1. Rev 2's W-190 is renumbered W-191; the reservation is W-180..W-189 and W-191..W-194, with W-192..W-194 spare | header, §0.1d, §0.1e, §0.4 item 9, D-DD-10, §1.4, §2.7, §4.2, §5, §6, §8.5, §8.8, rev-2 M-5 row |
+| RR-FX-1 (fixer) | — | Added: OP-1's implementation-review fold (49e2cf2bf, 2026-10-13 23:53 UTC, after rev 2, and not in the re-review's scan, which found no W-18x or W-19x id on any head; OP-1 head aa89cd7cd) took W-190 for its own lowering defect as "the first id after DD-1's reserved W-180..W-189" and wrote it into docs/design/optional.md (:302 and :505) on its branch, which merges before DD-1. Rev 2's W-190 is renumbered W-191; the reservation is W-180..W-189 and W-191..W-194, with W-192..W-194 spare. Superseded in part at rev 4: OP-1's discharge (379f20f67) re-allocated its W-190 to W-195, so W-190 is unused, not OP-1's; DD-1 keeps W-191 (amended 2026-10-14, review fold: RR2-1) | header, §0.1d, §0.1e, §0.4 item 9, D-DD-10, §1.4, §2.7, §4.2, §5, §6, §8.5, §8.8, rev-2 M-5 row |
+
+### Focused re-review 2 (rev 4, 2026-10-14)
+
+The focused re-review of rev 3 (15c719ddc; its own title is "round 1")
+returned **APPROVE-WITH-AMENDMENTS** with no BLOCKER open. A-1 is RESOLVED:
+issue 686 and issue 2489 were re-fetched online on 2026-10-14 and match §2.3's
+record and §8.10; §2.3's page text documents rather than decides; it is
+consistent with F-013 D-SAFE-17 on PR 53 (values.md:485 and
+mutation_safety.md:313 and :415-416 there); W-188 is filed as a
+toolchain-defect; and X01, X03 and the `var` and struct-`let` forms were
+re-measured on the fork toolchain and the nightly 2026.10.12 with the plan's
+results. N-1 to N-4 are VERIFIED (the blockquote-aware matcher prototyped, the
+README note's places and anchors, the marker rule, and the R31 counts outside
+and inside the page-text fences). B-1 and B-2 are RESOLVED on spot-check, and
+§3's commit structure and PR body spec are present. It raised three new
+findings, one MAJOR and two MINOR. A separate fixer (R11) folds all three into
+rev 4, none rejected, and adds one finding of its own, RR2-FX-1. Marks read
+"(amended 2026-10-14, review fold: RR2-x)".
+
+The fixer's verification, in its own scratch (`.../scratchpad/dd1-rr2/fix4/`,
+with `XDG_CACHE_HOME` under `.../dd1-rr2/`): OP-1's head 379f20f67 read at
+fork/ORCHESTRATION.md:118-120, fork/decision-log.md:2961-2966 and :3286-3293,
+docs/design/optional.md:302 and :505 (both W-195) and its ledger (maximum
+W-195), which reproduces RR2-1; the id scan over the 73 refs the header names,
+with its result there; the toolchain/ and core/ diff from 18775fee3 to a9c887101
+empty, the container's `carbon-sc` install at `0.0.0-0.dev+18775fee3`, and the
+same diff from 5d9edb3e0 to 379f20f67 listing three testdata goldens only, which
+with §0.2 and §8.10 naming 77838fdd5 and 1fc03110e reproduces RR2-2; the 67
+sample, fixture and probe files of revs 1 and 2 (the 47 of rev 1 and the 20 of
+rev 2) re-run on the fork, nightly, SC-1 (18775fee3) and OP-1 (5d9edb3e0)
+builds, where the SC-1 and OP-1 builds give the fork's result for every file
+(the first error line, the CHECK line of each crash, as at pattern.cpp:81 and
+generic.cpp:96, or the program's output), X01 prints `2 2 2 2`, X03 `2 1` and
+PR-U's three files `2 1`, `2 2` and `2 1` on the fork and the nightly, and PR-N
+runs on 18775fee3 (prints `12`) and is rejected on the fork; the W2 rule of
+§2.12 item 5, prototyped, over docs/design/ at trunk 162c7e839 and f67ab650d,
+SC-1 a9c887101 and OP-1 379f20f67, which finds the same hits at every head
+(keyed by file, section and clause); `git ls-tree` on every held head (no new
+`design_docs_*` program or fork/designdocs/ path); and `grep -nE '(^| )#[0-9]'`
+over this file, whose one prose hit outside fences and tables was §2.3's
+lead-in, which reproduces RR2-3. The R31 counts before and after prek, at every
+indent outside fences and inside the page-text fences, are in the commit
+message.
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR2-1 | MAJOR | Folded as suggested. W-191 is kept; the reservation is restated as the block W-180..W-194 with W-190 unused, recorded once in the header (OP-1 held W-190 from 49e2cf2bf until its discharge 379f20f67 re-allocated it to W-195; DD-1 moved off it at rev 3), which trunk's f67ab650d also records; every "W-190 is OP-1's" is replaced; §8.8 gives the stamp's reservation text verbatim; the ledger maximum is W-195 (OP-1, 379f20f67); the id scan is re-run over every live ref and its result recorded with the new heads | header, §0.4 item 9, D-DD-10, §6, §8.5, §8.8, RR-FX-1 row |
+| RR2-2 | MINOR | Folded. §0.2, §0.1d and §8.10 name the current heads (trunk f67ab650d, SC-1 a9c887101, OP-1 379f20f67) and the build each was measured on: SC-1 on 18775fee3, the head's toolchain and prelude, re-measured for rev 4; OP-1 on 5d9edb3e0, whose toolchain/ and core/ differ from the head's by three testdata goldens only. The OP-1 row reads "PR 56, OP-1: discharged at 379f20f67 (W-058; W-170..W-179 and W-195 filed)". The writer refreshes the heads at discharge from `git for-each-ref` | §0.1d, §0.2, §2.12, §8.10 |
+| RR2-3 | MINOR | Folded: §2.3's lead-in names the kept lines without a hash ("the 'See leads issue' line and its link to issue 686"); no other prose line outside fences and tables has a space-preceded `#` and digit | §2.3 |
+| RR2-FX-1 (fixer) | — | Added: trunk advanced from 162c7e839 to f67ab650d (2026-10-14 00:20:59 UTC, after the re-review's scan; fork/ORCHESTRATION.md only). That stamp makes OP-1 PR 56, held open, sets the queue to PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, then DD-1, adds a `claude/carbon-fork-0-1-dd` branch row, and records W-190 as unused. The header's merge position cites it; §8.8 rewrites that row instead of adding a second; §0.3 records that the file's heading and list counts are unchanged there (534 lines; :437 is :452). No docs, toolchain, prelude or program changed, so the floor and every other line number stand | header, §0.3, §6, §8.8 |
+
+## Sign-off
+
+Signed off for implementation on 2026-10-14 at rev 4 by the orchestrator under
+R29(a). The focused re-review of rev 3 returned APPROVE-WITH-AMENDMENTS with no
+BLOCKER open, and rev 4 folds its three findings, none rejected, so no further
+re-review is owed. Every review of this plan:
+
+| Review | Of | Verdict | Findings | Folded in |
+| --- | --- | --- | --- | --- |
+| Plan review A (fidelity to the toolchain and the accepted proposals) | rev 1 (bed95d667) | REJECT | 15: one BLOCKER (A-1), four MAJOR, ten MINOR | rev 2 (a1d96520a): all folded, none rejected |
+| Plan review B (process, records and Goodhart) | rev 1 (bed95d667) | REJECT | 18: two BLOCKER (B-1, B-2), eight MAJOR (B-M-1 to B-M-8), eight MINOR (B-m-1 to B-m-8) | rev 2 (a1d96520a): all folded, none rejected |
+| Focused re-review 1, of rev 2 | rev 2 (a1d96520a) | REJECT: A-1 NOT RESOLVED; B-1 and B-2 RESOLVED | 5: A-1 (BLOCKER, still open) and four new MINOR (N-1 to N-4) | rev 3 (15c719ddc): all folded, none rejected; the fixer added RR-FX-1 |
+| Focused re-review 2, of rev 3 (its own title: "round 1") | rev 3 (15c719ddc) | APPROVE-WITH-AMENDMENTS: A-1 RESOLVED; N-1 to N-4 VERIFIED; B-1 and B-2 RESOLVED on spot-check | 3 new: one MAJOR (RR2-1), two MINOR (RR2-2, RR2-3) | rev 4 (this revision): all folded, none rejected; the fixer added RR2-FX-1 |
+
+The three original BLOCKERs, each RESOLVED:
+
+| BLOCKER | Finding | Status | Verified by |
+| --- | --- | --- | --- |
+| A-1 | the assignment.md text decided leads issue 686 and contradicted F-013 D-SAFE-17 on PR 53 | RESOLVED | focused re-review 2 (rev 3's fold: §2.3 documents the measured results and the leads' 2022-11-12 answer, cites issue 686 and issue 2489, and files W-188 as a toolchain-defect); focused re-review 1 had found rev 2's fold NOT RESOLVED |
+| B-1 | D-DD-5 made the documentation bullet PASS with programs that cannot test it | RESOLVED | focused re-review 1 (the stub stays SKIP; the nineteen programs sit under sixteen bullets that are already PASS, so bullets stay 48/56); spot-checked again by focused re-review 2 |
+| B-2 | the design README's "provisional or placeholder" sentence was left untouched | RESOLVED | focused re-review 1 (clause (a) matches the phrase; the dated note after README :149; the `QUALIFIED` entry tied to it); spot-checked again by focused re-review 2 |
+
+Ids: DD-1's block is W-180..W-194. W-182..W-185, W-188, W-189 and W-191 are
+filed at discharge (§8.5); W-180, W-181 and W-186 are withdrawn unused; W-187
+is contingent (D-DD-9); W-190 stays unused and is never filed (OP-1's residue
+is W-195); W-192..W-194 are spare. No fork design id is minted: F-016 stays
+unallocated (D-DD-3).
+
+Merge position: last, after OP-1 (PR 56): PR 53, PR 51, PR 52, SC-1, PR 54, PR
+55, PR 56, then DD-1 (trunk's fork/ORCHESTRATION.md at f67ab650d).
+Implementation follows §3: commits 1/4 to 3/4, the document reviews and their
+fold, the discharge (4/4), the implementation review and its fold, then the
+integration commit at state L after OP-1 lands.

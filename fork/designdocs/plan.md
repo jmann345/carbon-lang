@@ -673,7 +673,10 @@ RR2-FX-1).
     run becomes available before merge, it is the record (R9) and the local
     runs are corroboration.
 -   **D-DD-13 Gap-row effect.** Row 70 PARTIAL → DONE by D-DD-7, written by
-    the discharge commit after the document-review fold. Row 91 PARTIAL →
+    the discharge commit after the document-review fold, or, when a document
+    review returned REJECT, by the commit that records the verdict of the
+    second round D-DD-11's break condition owes (amended 2026-10-14,
+    implementation-review fold: F1). Row 91 PARTIAL →
     DONE on document review (the rows 88-90 precedent), written only by the
     integration commit at state L, when PR 53 and PR 55 are on trunk, the W2
     `ALLOWLIST` is empty, and the document-review fold has landed; until then
@@ -2016,29 +2019,40 @@ inline int CallTwice(int n) { return Carbon::Twice(n) + 1; }
 
 The toolchain reports ``name `Cpp` not found``.
 
-Where inline C++ may appear is question-for-leads
-[issue 6830](https://github.com/carbon-language/carbon-lang/issues/6830), which
-is open. It was closed on 2026-03-26 with inline C++ as a top-level declaration,
-spelled `inline Cpp '''...'''`, and reopened on 2026-03-30 because whether that
-declaration ends with a semicolon is not yet agreed.
+Leads question
+[issue 6830](https://github.com/carbon-language/carbon-lang/issues/6830) asked
+whether `import Cpp inline` should be a declaration among the others rather than
+one of the imports that precede them. On 2026-03-26 it was decided as a
+top-level declaration spelled `inline Cpp '''...'''`, the second form above. The
+issue was reopened on 2026-03-30 only over whether that declaration ends with a
+semicolon, which the toolchain requires
+(`toolchain/parse/testdata/packages/import/cpp_inline.carbon`), so it is open.
 ````
 
-(Amended 2026-10-13, review fold: A-14 / B-m-4: "after any `import Cpp`" read
-as "regardless of any import"; the rule is stated, and R32 pins the
-rejection, which is probe PR-G as a page block; PR-G2 shows a bare
-`import Cpp;` is enough. Amended 2026-10-14, document-review fold: DR1-16:
-quote fixture X04 pins the escape-sequence sentence with both working forms,
-and probe PR-V, §4.3, the unescaped form's rejection; the page text is
-unchanged. DR1-12, the leads question on where `import Cpp inline` may
-appear, is not folded: its status could not be checked online in the fold's
-session, and D-DD-3 calls a question open only after that check; it is on
-the list for commit 4/4. Amended 2026-10-14, discharge: DR1-12: the last
-paragraph is added after the online check of §8.10 found issue 6830 open,
-reopened over the trailing semicolon after it was called decided on placement
-and spelling; cited deviation: the fold's sentence for an open issue, "Where
-`import Cpp inline` may appear is open question-for-leads issue 6830.", would
-call the placement undecided, which the issue's record does not support, so
-the paragraph states that record.)
+(Amended 2026-10-13, review fold: A-14 / B-m-4: "after any `import Cpp`" read as
+"regardless of any import"; the rule is stated, and R32 pins the rejection,
+which is probe PR-G as a page block; PR-G2 shows a bare `import Cpp;` is enough.
+Amended 2026-10-14, document-review fold: DR1-16: quote fixture X04 pins the
+escape-sequence sentence with both working forms, and probe PR-V, §4.3, the
+unescaped form's rejection; the page text is unchanged. DR1-12, the leads
+question on where `import Cpp inline` may appear, is not folded: its status
+could not be checked online in the fold's session, and D-DD-3 calls a question
+open only after that check; it is on the list for commit 4/4. Amended
+2026-10-14, discharge: DR1-12: the last paragraph is added after the online
+check of §8.10 found issue 6830 open, reopened over the trailing semicolon after
+it was called decided on placement and spelling; cited deviation: the fold's
+sentence for an open issue, "Where `import Cpp inline` may appear is open
+question-for-leads issue 6830.", would call the placement undecided, which the
+issue's record does not support, so the paragraph states that record. Amended
+2026-10-14, implementation-review fold: F4: the paragraph opened by calling the
+placement the open question and never said what the issue asked, so a reader
+could not tell which of the two forms the decision favours; it now names the
+issue's question (its title, "Should `import Cpp inline` be part of the
+declaration list rather than the preamble?"), the decided form, and the
+semicolon as the only open point, which the toolchain requires (parse testdata
+`packages/import/cpp_inline.carbon`, split
+`fail_inline_cpp_syntax_errors.carbon`, and the fold's re-run on the fork
+toolchain and the nightly, §4.2); the issue was re-read online for this fold.)
 
 **Line 240**, `### Constructors`:
 
@@ -3489,31 +3503,39 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     `^(>\s*)*([-*+]\s+|[0-9]+[.)]\s+)?(<!--\s*)?[*_]*(TODO|TBD)`, so a TODO or
     TBD paragraph in a list item or an HTML comment is a marker too; and a new
     clause (d) hits a section with no body and no subsection (the next heading,
-    if any, is at the same or a higher level). Over docs/design/ at the fold
-    commit, trunk 162c7e839 and f67ab650d, and the held heads (PR 53 adaae4e35,
-    PR 55 21307851a, SC-1 4bc4802ae, OP-1 379f20f67, PR 54 cb3ef2e74, PR 51
-    f96fe8a7a, PR 52 ea573f672), the hardened rule hits no section the commit-3
-    rule missed: at the fold commit it finds the same three hits, and on trunk
-    and the held heads clause (d) adds only the twin of each empty interop
-    `TODO:` heading that clause (b) already hits. Hits are keyed by (file,
-    section heading, clause). `QUALIFIED` holds (README.md, "This document is
-    provisional", a) with the quote "In this fork, what is provisional is marked
-    in place"; the entry passes only while that quote occurs in the same
-    section, matched after item 3's normalization (blockquote markers stripped,
-    then whitespace collapsed; amended 2026-10-13, review fold: RR-N-1), and it
-    stays at state L. `ALLOWLIST` is set per commit and shrinks (amended
-    2026-10-13, review fold: A-5 / B-2 / B-M-2): after commit 1 it holds the
-    sixteen hits that commits 2 and 3 and the held PRs remove (interop README:
-    eight `TODO:` headings and the :275 TODO-only body; README.md: Enums,
-    Lifetime and move semantics, Abstract machine and execution model,
-    Co-routines, Concurrency, and the disclosure, which commit 3 moves to
-    `QUALIFIED`; arithmetic.md: Strings); after commit 2, six (README.md's
-    Lifetime, Abstract machine, Co-routines, Concurrency and disclosure,
-    arithmetic.md's Strings); after commit 3, two ((README.md, "Lifetime and
-    move semantics", PR 53) and (expressions/arithmetic.md, "Strings", PR 55));
-    in the integration commit, none. An allowlisted entry that no longer hits is
-    itself an error (so the list cannot go stale), and so the checker exits 0 at
-    every commit with the expected list and only then.
+    if any, is at the same or a higher level). Clause (c)'s companions match the
+    same way: `^(>\s*)*(See|References)\b` without regard to case, so a
+    lowercase "see", a blockquoted "> See" and a "References:" paragraph are
+    companions, and a paragraph such as "Seemingly done." is not (amended
+    2026-10-14, implementation-review fold: F6: commit 1's pattern, kept by the
+    document-review fold, `^(See|> References)` was case-sensitive, took only
+    those two literal forms, and matched any word that starts with "See"; over
+    this branch, trunk and every held head the new pattern gives the same hits
+    as the old one). Over docs/design/ at the fold commit, trunk 162c7e839 and
+    f67ab650d, and the held heads (PR 53 adaae4e35, PR 55 21307851a, SC-1
+    4bc4802ae, OP-1 379f20f67, PR 54 cb3ef2e74, PR 51 f96fe8a7a, PR 52
+    ea573f672), the hardened rule hits no section the commit-3 rule missed: at
+    the fold commit it finds the same three hits, and on trunk and the held
+    heads clause (d) adds only the twin of each empty interop `TODO:` heading
+    that clause (b) already hits. Hits are keyed by (file, section heading,
+    clause). `QUALIFIED` holds (README.md, "This document is provisional", a)
+    with the quote "In this fork, what is provisional is marked in place"; the
+    entry passes only while that quote occurs in the same section, matched after
+    item 3's normalization (blockquote markers stripped, then whitespace
+    collapsed; amended 2026-10-13, review fold: RR-N-1), and it stays at state
+    L. `ALLOWLIST` is set per commit and shrinks (amended 2026-10-13, review
+    fold: A-5 / B-2 / B-M-2): after commit 1 it holds the sixteen hits that
+    commits 2 and 3 and the held PRs remove (interop README: eight `TODO:`
+    headings and the :275 TODO-only body; README.md: Enums, Lifetime and move
+    semantics, Abstract machine and execution model, Co-routines, Concurrency,
+    and the disclosure, which commit 3 moves to `QUALIFIED`; arithmetic.md:
+    Strings); after commit 2, six (README.md's Lifetime, Abstract machine,
+    Co-routines, Concurrency and disclosure, arithmetic.md's Strings); after
+    commit 3, two ((README.md, "Lifetime and move semantics", PR 53) and
+    (expressions/arithmetic.md, "Strings", PR 55)); in the integration commit,
+    none. An allowlisted entry that no longer hits is itself an error (so the
+    list cannot go stale), and so the checker exits 0 at every commit with the
+    expected list and only then.
 6.  `--toolchain PATH`: for each fixture, `PATH compile --output=<tmp>
     --output-last-input-only <fixture>`; an EXPECT-ERROR fixture must exit
     non-zero with its first `error:` line's message equal to the pin; an
@@ -3539,7 +3561,12 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     TODO, or only "TBD."; an empty section followed by a heading of its level;
     and three that must not hit: an empty section followed by a subsection, a
     marker followed by a dated note, and content followed by a marker. The
-    output reads `self-check: 4 quote cases, 13 W2 cases, 0 wrong`.
+    output reads `self-check: 4 quote cases, 13 W2 cases, 0 wrong`. The
+    implementation-review fold adds four W2 cases: a TODO marker beside a
+    lowercase "see" paragraph, beside a "> See" paragraph and beside a
+    "References:" paragraph, each a hit, and beside "Seemingly done.", which
+    must not hit; the output reads `self-check: 4 quote cases, 17 W2 cases, 0
+    wrong` (amended 2026-10-14, implementation-review fold: F6).
 
 The W2 rule as specified found the 36 hits of §0.1c at 162c7e839 (prototype run
 for this plan), 37 with clause (a)'s added phrase. Expected results, which each
@@ -3845,6 +3872,7 @@ toolchain: 128 / 0 / 22 over 150, 48/56 bullets PASS.
 | C++ exceptions never unwind Carbon frames (threads page item 7) | fork decision F-006 and W-016, not F-008 (F-008 deferred it, threading-atomics.md:221-224): docs/design/README.md:3969-3972; error_handling.md "Interoperating with C++ exceptions" (:560) (amended 2026-10-13, review fold: A-10) |
 | `match` needs at least one arm (pattern_matching.md) | probe PR-F (`expected cases`); W-068's recorded decision |
 | C++ `"\n"` in a plain block string literal is broken by Carbon's escape processing; `"\\n"` and a raw block string work (interop README, inline) | X04 (both working forms, `3 1 1` on the fork and the nightly); probe PR-V (the unescaped form: first error `expected '}'`, after Clang's "missing terminating '"' character" warnings, on both) (added 2026-10-14, document-review fold: DR1-16) |
+| an `inline Cpp` declaration must end with `;`, the point leads issue 6830 reopened over (interop README, inline) | toolchain/parse/testdata/packages/import/cpp_inline.carbon split `fail_inline_cpp_syntax_errors.carbon` (`` `inline` declarations must end with a `;` ``); re-run by the implementation-review fold on the fork toolchain and the nightly (`inline Cpp '''c++ ... '''` with no `;` before `fn Run()`: that first error on both) (added 2026-10-14, implementation-review fold: F4) |
 | a builtin `fn` is evaluated during compilation; a plain `fn` with a body is not (metaprogramming.md) | probe PR-W (RUNS, prints `2`, on both); R13 (added 2026-10-14, document-review fold: DR1-6) |
 | an interface constraint is satisfied only by an `impl` (templates.md) | X05 (added 2026-10-14, document-review fold: DR-FX-1) |
 | tuple patterns with bindings and `bool` constants are not exhaustive without an irrefutable arm (pattern_matching.md, W-189) | probe PR-X (fork: `` `match` on `(bool, i32)` has no `default` arm and no `case` arm that matches every value ``) (added 2026-10-14, document-review fold: DR1-8) |
@@ -4433,12 +4461,18 @@ the kept Co-routines and Concurrency markers.)
     without placeholders`), discharge commit: stays **PARTIAL**, evidence cell
     "DD-1 landed (fork/designdocs/plan.md; commits <shas>); pending state L:
     PR 53's README.md 'Lifetime and move semantics' and PR 55's arithmetic.md
-    'Strings' sections, the two W2 allowlist entries. Not run: <§8.10
-    verbatim>." This text is the whole cell: it replaces the stale evidence
+    'Strings' sections, the two W2 allowlist entries. Not run
+    (fork/designdocs/plan.md §8.10, verbatim): <§8.10 verbatim>." This text
+    is the whole cell: it replaces the stale evidence
     of §0.1a ("9 'TODO:' section headings", "the F-008..F-011 pages ... have
     not landed", the self-described placeholders), which commits 1 to 3
     disprove, and does not prefix it (amended 2026-10-14, document-review
     fold: DR2-11; D-DD-12 requires the Not-run list in row 91's evidence).
+    While the second round of the two document reviews that D-DD-11's break
+    condition owes has not run, the cell also names that round as a bound,
+    and the Not-run list's lead-in names its source, because the list's
+    cross-references (§2.3, the fold marks) resolve only in this plan
+    (amended 2026-10-14, implementation-review fold: F1 / F8).
     Integration commit, when
     both PRs are on trunk, the `ALLOWLIST` is empty and the document-review
     fold has landed: PARTIAL → **DONE** (expected), the cell rewritten to (it
@@ -4472,18 +4506,32 @@ the kept Co-routines and Concurrency markers.)
     (rows 88-90 precedent); toolchain defects found are filed under their own
     bullets (W-182..W-184, W-188, W-189, W-191) or added to the items that
     own them (W-080, W-053, W-155, W-167, W-014), and the bare-block
-    question is filed as design-needed (W-185). Not run: <§8.10
-    verbatim>." (W-185's place in this text amended 2026-10-14,
-    document-review fold: DR1-4.)
+    question is filed as design-needed (W-185). Not run
+    (fork/designdocs/plan.md §8.10, verbatim): <§8.10 verbatim>." (W-185's
+    place in this text amended 2026-10-14, document-review fold: DR1-4; the
+    Not-run lead-in amended 2026-10-14, implementation-review fold: F8.)
 -   **Row 70** (`C++ interop: threading, atomics, memory model,
     synchronization`), discharge commit, after the document-review fold:
     PARTIAL → **DONE** (expected); the cell's "Missing: ..." sentence becomes
     "The memory-model contract is
     docs/design/interoperability/threads_and_atomics.md (DD-1; W-020
-    DISCHARGED). Not run: <§8.10 verbatim>."
--   **Header:** DONE plus one and PARTIAL minus one at the discharge (row 70),
-    the same again at integration (row 91), against whatever trunk reads then
-    (at 162c7e839: 30 / 21 / 4 / 1 → 31 / 20 / 4 / 1 → 32 / 19 / 4 / 1). The
+    DISCHARGED). Not run (fork/designdocs/plan.md §8.10, verbatim): <§8.10
+    verbatim>." When a document review has returned REJECT, D-DD-11's break
+    condition owes a second round of both reviews, and the row goes DONE
+    only after it: until then it stays PARTIAL, bounded by that round, and
+    the commit that records the round's verdict writes it DONE (expected)
+    unless the round leaves an in-scope placeholder or unmeasured claim on
+    the threads page unresolved (D-DD-13) (amended 2026-10-14,
+    implementation-review fold: F1 / F8: the discharge, written before that
+    round at the orchestrator's direction, had written the row DONE "on
+    document review"; the fold restores PARTIAL and the header's
+    30 / 21 / 4 / 1).
+-   **Header:** DONE plus one and PARTIAL minus one at the discharge (row 70;
+    when the second document-review round is owed, at the commit that
+    records its verdict instead, amended 2026-10-14, implementation-review
+    fold: F1), the same again at integration (row 91), against whatever
+    trunk reads then (at 162c7e839: 30 / 21 / 4 / 1 → 31 / 20 / 4 / 1 → 32 /
+    19 / 4 / 1). The
     discharge writes it in the shape of the precedent header
     (claude/carbon-fork-0-1-ev cb3ef2e74:fork/gap-analysis.md:18-24): the
     counts, then "(row 70 PARTIAL → DONE <date> on document review, DD-1 /
@@ -4837,7 +4885,10 @@ is dropped there in favor of upstream's accepted text.
         asks for both reviews to read the fold before the discharge, and the
         discharge was written first at the orchestrator's direction; the
         second round reads the fold and the discharge together (amended
-        2026-10-14, discharge);
+        2026-10-14, discharge); it had not run at the implementation-review
+        fold either, so row 70 stays PARTIAL, bounded by that round, until
+        the commit that records its verdict (amended 2026-10-14,
+        implementation-review fold: F1);
     -   the heads re-read at the discharge with `git for-each-ref`: trunk
         f67ab650d, SC-1 4bc4802ae (its build at fb12f63cb has the head's
         toolchain and prelude), OP-1 379f20f67 (build 5d9edb3e0), PR 53
@@ -4846,7 +4897,34 @@ is dropped there in favor of upstream's accepted text.
         fold, and a new live head, OP-2 963adda99 (claude/carbon-fork-0-1-op2,
         a plan only, reserving W-196 to W-199; no build); the discharge
         changes no sample, fixture or program, so none was re-run on a held
-        build (amended 2026-10-14, discharge).
+        build (amended 2026-10-14, discharge);
+    -   the samples were not re-run on the SC-1, OP-1, UA-2 and ST-1
+        toolchains at commits 1 to 3 (§0.1d's measurements stood), as those
+        commits' messages added to this list, the document-review fold ran
+        only its new fixtures and probes there, and the discharge none
+        (added 2026-10-14, implementation-review fold: F5); the
+        implementation-review fold ran the checker's `--toolchain` mode and
+        the nineteen programs on the builds SC-1 36181a729, OP-1 5d9edb3e0,
+        UA-2 05a5c30f7 and ST-1 84ff63560: on each, 39 fixtures as pinned,
+        the nineteen programs PASS and the stub SKIP;
+    -   no `prek run --all-files` at commits 1 to 3, the document-review
+        fold or the discharge: prek ran on each commit's files only, as
+        commits 1 to 3 added to this list (added 2026-10-14,
+        implementation-review fold: F5); R25 runs it before the push, and
+        the implementation-review fold ran it in a clone of its own tree,
+        its message and the landed notes giving the result;
+    -   the heads re-read at the implementation-review fold with `git
+        for-each-ref`: trunk f67ab650d, OP-1 379f20f67, OP-2 963adda99, PR 53
+        adaae4e35, PR 51 f96fe8a7a, PR 52 ea573f672, PR 54 cb3ef2e74 and PR
+        55 21307851a, unchanged since the discharge, and SC-1 moved to
+        30716a8c2, whose toolchain and prelude equal its build at 36181a729
+        (`git diff --stat 36181a729 30716a8c2 -- toolchain core` is empty)
+        and whose docs/design/ differs from 4bc4802ae's in
+        generics/template_constraints.md only, which keeps the "Mapping to
+        and from C++20 concepts" heading §2.13 links; over every head's
+        docs/design/ the W2 rule finds no hit that trunk lacks; issue 6830,
+        re-read online through its github.com page, is as the discharge
+        recorded it (amended 2026-10-14, implementation-review fold).
 
 ## Hand-off notes for the writer
 
@@ -5148,29 +5226,31 @@ programs, bullets 48/56); and the nineteen programs on the nightly (16 PASS,
 
 **Discharge.** §3's commit "DD-1 (4/4): discharge — rows 70 and 91, ledger,
 decision-log entry, ORCHESTRATION, plan landed notes" writes §2.14 and §8.5 to
-§8.9 on top of the document-review fold (6f1ba74ba): fork/gap-analysis.md row
-70 PARTIAL → DONE (expected) with §5's sentence, row 91 PARTIAL with §5's
-discharge text as its whole cell, and the header 31 / 20 / 4 / 1 in the
-precedent's shape; fork/inventory/work-items.json, W-065 and W-020 DISCHARGED,
-W-080, W-053, W-043 and W-044 amended with §8.5's texts, W-182, W-183, W-184,
-W-185, W-188, W-189 and W-191 filed (132 items, the last W-191), and the
-`source` note; the decision-log entry "DD-1: design docs without placeholders
-(2026-10-14)", first in the landed region after "Full autonomy and the
-throughput protocol"; fork/ORCHESTRATION.md's "Last updated" line, the DD-1
-discharge paragraph with §8.8's reservation sentence verbatim and the merge
-position, the `claude/carbon-fork-0-1-dd` Branches row, the amended
-stranded-branch row and a dated correction of Next actions item 2; §8.10's
-three new items; and DR1-12's paragraph in the interop README's inline section,
-with §2.7's block and mark. No program, fixture, sample, checker, toolchain,
-prelude or golden file changes.
+§8.9 on top of the document-review fold (6f1ba74ba): fork/gap-analysis.md row 70
+PARTIAL → DONE (expected) with §5's sentence, row 91 PARTIAL with §5's discharge
+text as its whole cell, and the header 31 / 20 / 4 / 1 in the precedent's shape
+(row 70 and the header corrected by the implementation-review fold, F1: PARTIAL
+and 30 / 21 / 4 / 1 until the second document-review round);
+fork/inventory/work-items.json, W-065 and W-020 DISCHARGED, W-080, W-053, W-043
+and W-044 amended with §8.5's texts, W-182, W-183, W-184, W-185, W-188, W-189
+and W-191 filed (132 items, the last W-191), and the `source` note; the
+decision-log entry "DD-1: design docs without placeholders (2026-10-14)", first
+in the landed region after "Full autonomy and the throughput protocol";
+fork/ORCHESTRATION.md's "Last updated" line, the DD-1 discharge paragraph with
+§8.8's reservation sentence verbatim and the merge position, the
+`claude/carbon-fork-0-1-dd` Branches row, the amended stranded-branch row and a
+dated correction of Next actions item 2; §8.10's three new items; and DR1-12's
+paragraph in the interop README's inline section, with §2.7's block and mark. No
+program, fixture, sample, checker, toolchain, prelude or golden file changes.
 
 **Commits.** Plan: bed95d667 (rev 1), a1d96520a (rev 2), 15c719ddc (rev 3),
 97686069f (rev 4, signed off). Implementation: 3ff319642 (1/4: language
 pages), a32421433 (2/4: interoperability), 4287fe0c0 (3/4: design README
-notes), 6f1ba74ba (the document-review fold) and the discharge commit (4/4),
-which cannot name its own sha; the implementation-review fold writes it into
-these notes, the decision-log entry, W-065's notes, row 91 and
-fork/ORCHESTRATION.md.
+notes), 6f1ba74ba (the document-review fold), 9f920d2b9 (4/4: the discharge) and
+"DD-1: implementation-review fold", which wrote 9f920d2b9 into these notes, the
+decision-log entry, W-065's notes, row 91 and fork/ORCHESTRATION.md (the DD-1
+paragraph and the dd Branches row), where the records said "the discharge
+commit, DD-1 (4/4)".
 
 **Ids.** The scan at the discharge read 74 refs (trunk, origin/trunk,
 upstream-trunk and the 71 local and origin `claude/carbon-fork-0-1-*` refs):
@@ -5218,7 +5298,8 @@ fixtures, 3 W2 hits (2 allowlisted, 1 qualified), 0 errors.
     undecided.
 -   Edits were applied by scripts, not the editor tools (R25), with the R12 hook
     run by hand on every file and prek to a fixpoint.
--   The discharge commit's own sha is written by the implementation-review fold.
+-   The discharge commit's own sha, 9f920d2b9, was written by the
+    implementation-review fold.
 -   The `claude/carbon-fork-0-1-dd` Branches row is added here because this
     branch predates trunk's f67ab650d row, and a merge keeps one row.
 -   Next actions item 2 of fork/ORCHESTRATION.md gains a dated correction that
@@ -5227,12 +5308,23 @@ fixtures, 3 W2 hits (2 allowlisted, 1 qualified), 0 errors.
 -   The decision-log entry carries D-DD-1 to D-DD-13 verbatim.
 -   The stub's SKIP text describes, from commit 1 on, what commits 2 and 3 land,
     as §2.11 placed it (DR1-15, DR2-10).
+-   Commit 1's message (3ff319642) calls the R31(c) grep of its diff empty, but
+    it hits five Python comment lines of check_samples.py ("# 1." to "# 4." and
+    "# 2.12 item 5)"), no markdown line, so no heading was manufactured
+    (implementation-review fold: F7).
 
 **Found at the discharge, not edited** (for the implementation review): row 54
 of fork/gap-analysis.md still says "templates.md is a self-described skeletal
 placeholder", and the file's narrative sections (the W2 arbiter, W7, W8's "~10
 placeholder sections", the documentation-completeness summary) keep the
 2026-07-19 audit's wording; §2.14 names only rows 70 and 91 and the header.
+The implementation review found row 67 ("Control flow: matching — good switch
+equivalents", :71) with the same stale clause about the `match` section; its
+fold replaced both clauses with a dated sentence, status unchanged (F2). The
+narrative sections stay. Other rows' program counts name their own program sets
+(row 67's "11/11 ... (control_flow/match_*)"), and DD-1's documentation-sync
+programs change no rollup (D-DD-5), so only row 70's count, in the cell the
+discharge rewrote, gains P16 (F3).
 
 **Reviews.** Every review of this workstream so far:
 
@@ -5245,7 +5337,7 @@ placeholder sections", the documentation-completeness summary) keep the
 | Document review 1 (fidelity) | 3ff319642, a32421433, 4287fe0c0 | REJECT | 16: 1 BLOCKER, 4 MAJOR, 11 MINOR | 6f1ba74ba (15), the discharge (DR1-12) |
 | Document review 2 (readability, cohesion, Goodhart, records) | the same | APPROVE-WITH-AMENDMENTS | 12: 2 MAJOR, 10 MINOR | 6f1ba74ba, with DR-FX-1; DR2-1, DR2-11, DR2-12 carried out at the discharge |
 | Document reviews, second round (D-DD-11's break condition) | the fold and the discharge | not yet run | — | — |
-| Implementation review | programs, fixtures, checker, records | not yet run | — | — |
+| Implementation review | 97686069f to 9f920d2b9: programs, fixtures, checker, records | APPROVE-WITH-AMENDMENTS | 8: 0 BLOCKER, 1 MAJOR (F1), 7 MINOR (F2 to F8) | "DD-1: implementation-review fold": all 8 folded, none rejected |
 
 The document-review findings and their state after the discharge commit (each
 "closed" state awaits the second round's verification):
@@ -5281,3 +5373,66 @@ The document-review findings and their state after the discharge commit (each
 | DR2-11: row 91's discharge text, the header shape, the `TODO` counts | MINOR | Closed at the discharge |
 | DR2-12: the stranded-branch row and W-044's notes | MINOR | Closed at the discharge |
 | DR-FX-1 (fixer): the `Circle` diagnostic had no fixture | — | Closed at the fold (X05) |
+
+**Implementation-review fold (2026-10-14).** The one implementation review of
+D-DD-11 (R29(c)) read 97686069f to 9f920d2b9 before the second document-review
+round and re-ran the full conformance suite on the fork toolchain, the nineteen
+programs on the nightly, `--self-test`, the checker with and without
+`--toolchain` on the fork toolchain and the nightly, mutation tests of the
+checker, hand derivations of five EXPECT lines, R31 counts at every commit,
+prek in a copy of the repository and the records' cross-references. It returned
+**APPROVE-WITH-AMENDMENTS**: no BLOCKER, one MAJOR (F1) and seven MINOR (F2 to
+F8). A separate fixer (R11) reproduced each finding in its own scratch
+(`.../scratchpad/dd1-impl/implfix/`, `XDG_CACHE_HOME` there) and folds all
+eight, none rejected, in one commit, "DD-1: implementation-review fold", which
+also writes the discharge's sha, 9f920d2b9, where the records named "the
+discharge commit". Fold marks read "(amended 2026-10-14, implementation-review
+fold: Fn)".
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| F1: row 70 written DONE "on document review" before the second round D-DD-11's break condition owes | MAJOR | scratch holds no second-round review; the header and row 70 said DONE | Folded, route (b): row 70 PARTIAL, bounded by the second round; the header 30 / 21 / 4 / 1; row 91 names the round too; D-DD-13 and §5 say that the commit recording the round's verdict writes row 70 DONE (expected), unless the round leaves an in-scope finding on the threads page unresolved; W-020's and W-065's notes, the decision-log entry and ORCHESTRATION follow | fork/gap-analysis.md header, :74, :95; D-DD-13; §5; §8.10; ledger; decision log; ORCHESTRATION |
+| F2: stale "skeletal" clauses in rows 54 and 67 | MINOR | :58 and :71 still said so; no W2 hit on either page | Folded: each clause replaced by a dated sentence naming the status note and the measured section; statuses unchanged; this section's found-at-discharge paragraph and the decision log record both | fork/gap-analysis.md :58, :71 |
+| F3: row 70 counted 6/6 programs; the bullet has 7 | MINOR | seven `CONFORMANCE-BULLET` files under the bullet | Folded: "7/7 ... and project/design_docs_cpp_threads.carbon, DD-1's P16, the last in DD-1's local run, not of record" | fork/gap-analysis.md :74 |
+| F4: the issue 6830 paragraph called the placement the open question and did not say what the issue asked | MINOR | the issue re-read online: title, labels "leads question" and "examples-2026", closed 2026-03-26 on `inline Cpp '''...'''`, reopened 2026-03-30 over the semicolon | Folded: the paragraph names the issue's question, the decided form (the second form on the page) and the semicolon as the only open point, which the toolchain requires (parse testdata and a re-run on both toolchains, §4.2); the page's later sections move down three lines, so the ledger's interop README cites in W-020, W-065 and W-191 are re-pinned (W-191's sentence is :734-735) | interop README, "Importing C++ code (inline)"; §2.7; §4.2; ledger |
+| F5: two Not-run items of commits 1 to 3 dropped from §8.10 | MINOR | both items in the messages of 3ff319642, a32421433 and 4287fe0c0, absent from §8.10 | Folded: both restored, the held-build item with this fold's re-run on SC-1, OP-1, UA-2 and ST-1, the `--all-files` item with this fold's run before the push (R25); the decision log's sentence that the samples ran on the held builds at commits 1 to 3 corrected | §8.10; rows 70 and 91; decision log |
+| F6: clause (c)'s "See" and "References" companions matched case-sensitively and in two literal forms | MINOR | lowercase "see", "> See" and "References:" gave no hit; "Seemingly done." gave a false one | Folded: `^(>\s*)*(See\|References)\b` without regard to case; four self-check cases (17 W2 cases); the same hits as before on this branch, trunk and every held head | check_samples.py; §2.12 items 5 and 8 |
+| F7: commit 1's message called its R31(c) grep empty | MINOR | five hits, all Python comments of check_samples.py | Folded: one deviation sentence above (a submitted commit is not amended) | this section |
+| F8: rows 70 and 91 copied plan cross-references without naming the plan | MINOR | "Not run:" with "§2.3" and fold-mark ids unresolvable in the gap file | Folded: the lead-in reads "Not run (fork/designdocs/plan.md §8.10, verbatim):"; §5's prescribed cells follow | fork/gap-analysis.md :74, :95; §5 |
+
+**Merge position.** At the orchestrator's direction (2026-10-14), DD-1 merges
+last, after PR 56 and after OP-2 (claude/carbon-fork-0-1-op2, which stacks on PR
+56, D-OP2-13), through the state L integration commit, which then merges trunk
+once both have landed; fork/ORCHESTRATION.md and the decision-log entry record
+it.
+
+**Verification at the implementation-review fold** (local, not of record):
+the fork toolchain's full conformance run (busybox `0.0.0-0.dev+0bdce60a5`,
+private `--out`, scoreboard generated 2026-10-14T03:06:54Z): 147 PASS / 0 FAIL /
+22 SKIP over 169 programs, bullets 48 PASS, 0 FAIL, 8 SKIP of 56, the threading
+bullet PASS over seven programs; the nightly on the nineteen programs: 16 PASS
+and 3 COMPILE-FAIL as labelled, the stub SKIP; `--self-test`: 169 programs, 56
+bullets, OK, and `--update-readme-table` changes nothing; the checker without
+and with `--toolchain` on the fork toolchain: `self-check: 4 quote cases, 17 W2
+cases, 0 wrong`, then 19 program blocks, 39 fixtures, 3 W2 hits (2 allowlisted,
+1 qualified), 0 errors, the expected W2 output, unchanged since commit 3; with
+`--toolchain` on the nightly, exactly the ten differences §4.1 predicts (X02,
+R15 to R22, X06); with `--toolchain` on the SC-1 (36181a729), OP-1 (5d9edb3e0),
+UA-2 (05a5c30f7) and ST-1 (84ff63560) builds, 0 errors on each, and the
+nineteen programs PASS on each with the stub SKIP; the W2 rule with the old and
+the new companion pattern over this branch, trunk 162c7e839 and f67ab650d and
+the heads of PR 53, PR 55, SC-1 (4bc4802ae and 30716a8c2), OP-1, OP-2, PR 54,
+PR 51 and PR 52: the same hits, and on no head a hit that trunk lacks; `TODO`
+lines over docs/design/: 90 in 20 files, as at the discharge; the R12 hook by
+hand on every touched file, rc 0; prek on the seven touched files to a fixpoint
+(rumdl re-wrapped paragraphs under MD013 in three markdown files on the first
+pass and one decision-log paragraph after this verification was filled in; the
+last pass changed nothing);
+R31: plan dash items +4 (three §8.10 items and one deviation), decision-log dash
+items +3 (the same three §8.10 items), every other heading and list count
+unchanged, the heading sets unchanged, and the manufactured-heading grep of the
+diff empty. `prek run --all-files` with the same `SKIP` list in a clone of
+this tree (R25): rumdl re-wrapped one paragraph of fork/decision-log.md, this
+fold's verification sentence, filled in after the `--files` fixpoint, and every
+other hook passed on every file; a later run on the final tree passed 28 hooks,
+skipped the four bazel-backed ones and changed nothing.

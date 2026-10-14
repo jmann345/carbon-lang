@@ -211,11 +211,14 @@ inline int CallTwice(int n) { return Carbon::Twice(n) + 1; }
 
 The toolchain reports ``name `Cpp` not found``.
 
-Where inline C++ may appear is question-for-leads
-[issue 6830](https://github.com/carbon-language/carbon-lang/issues/6830), which
-is open. It was closed on 2026-03-26 with inline C++ as a top-level declaration,
-spelled `inline Cpp '''...'''`, and reopened on 2026-03-30 because whether that
-declaration ends with a semicolon is not yet agreed.
+Leads question
+[issue 6830](https://github.com/carbon-language/carbon-lang/issues/6830) asked
+whether `import Cpp inline` should be a declaration among the others rather than
+one of the imports that precede them. On 2026-03-26 it was decided as a
+top-level declaration spelled `inline Cpp '''...'''`, the second form above. The
+issue was reopened on 2026-03-30 only over whether that declaration ends with a
+semicolon, which the toolchain requires
+(`toolchain/parse/testdata/packages/import/cpp_inline.carbon`), so it is open.
 
 ### Accessing built-in C++ entities (file-less)
 

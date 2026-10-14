@@ -29,9 +29,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #    phrase wraps across blockquote lines; (b) no heading that starts with
 #    TODO; (c) no section whose paragraphs are only TODO or TBD markers (in a
 #    blockquote, a list item or an HTML comment too), optionally with "See"
-#    paragraphs; and (d) no empty section without subsections; except the
-#    hits that QUALIFIED and ALLOWLIST name. An entry of either list that no
-#    longer hits is an error, so neither list can go stale.
+#    or "References" paragraphs; and (d) no empty section without
+#    subsections; except the hits that QUALIFIED and ALLOWLIST name. An
+#    entry of either list that no longer hits is an error, so neither list
+#    can go stale.
 #
 # `--toolchain PATH` also compiles every fixture: an EXPECT-ERROR fixture must
 # fail with its pinned message on the first error line, and an EXPECT-STDOUT
@@ -432,7 +433,9 @@ TODO_MARKER = re.compile(
     r"^(>\s*)*([-*+]\s+|[0-9]+[.)]\s+)?(<!--\s*)?[*_]*(TODO|TBD)",
     re.IGNORECASE,
 )
-SEE_MARKER = re.compile(r"^(See|> References)")
+# Clause (c)'s optional companions: a "See ..." or "References" paragraph,
+# matched without regard to case, also inside a blockquote.
+SEE_MARKER = re.compile(r"^(>\s*)*(See|References)\b", re.IGNORECASE)
 # The sentence that states a program's output, up to its first `.`, `:` or
 # `;` outside a code span.
 PRINTS = re.compile(r"This prints ((?:`[^`]*`|[^`.:;])*)")
@@ -727,7 +730,7 @@ def w2_file_hits(rel: str, text: str) -> set[tuple[str, str, str]]:
         if heading.upper().startswith("TODO"):
             hits.add((rel, heading, "b"))
         # (c) a section whose paragraphs are all TODO or TBD markers, with
-        # optional "See ..." or "> References" paragraphs. A fenced block
+        # optional "See ..." or "References" paragraphs. A fenced block
         # is one paragraph that is not a marker.
         end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
         paragraphs: list[str] = []
@@ -897,6 +900,12 @@ def self_check() -> int:
         ("## Todo: later\n\nText.\n", {("Todo: later", "b")}),
         ("## S\n\n> **TODO:**\n\n## R\n\nText.\n", {("S", "c")}),
         ("## S\n\n_TODO_: Describe it.\n\nSee issue 1.\n", {("S", "c")}),
+        ("## S\n\n_TODO_: Describe it.\n\nsee issue 1.\n", {("S", "c")}),
+        ("## S\n\n_TODO_: Describe it.\n\n> See issue 1.\n", {("S", "c")}),
+        (
+            "## S\n\n_TODO_: Describe it.\n\nReferences: issue 1.\n",
+            {("S", "c")},
+        ),
         ("## S\n\n-   TODO: describe it.\n", {("S", "c")}),
         ("## S\n\n<!-- TODO: describe it. -->\n", {("S", "c")}),
         ("## S\n\nTBD.\n", {("S", "c")}),
@@ -907,6 +916,7 @@ def self_check() -> int:
             set(),
         ),
         ("## S\n\nText beside a note.\n\n> **TODO:** Refine.\n", set()),
+        ("## S\n\n_TODO_: Describe it.\n\nSeemingly done.\n", set()),
     ]
     for text, want_hits in w2_cases:
         got = {

@@ -2871,9 +2871,13 @@ fork/gap-analysis.md row 91, "Goal: design docs documented, cohesive,
 understandable without placeholders", stays PARTIAL until DD-1's integration
 commit at state L (D-DD-13), and row 70, "C++ interop: threading, atomics,
 memory model, synchronization", goes PARTIAL → DONE by D-DD-7, which absorbs
-W-020's documentation half. The header moves 30 DONE / 21 PARTIAL / 4 MISSING /
-1 DESIGN-ONLY → 31 / 20 / 4 / 1 over 56, and the integration commit moves it
-once more when row 91 flips. The expected conformance scoreboard is 147 PASS / 0
+W-020's documentation half, once the second round of the two document reviews
+that D-DD-11's break condition owes has run: the discharge wrote row 70 DONE
+before that round, and the implementation-review fold set it back to PARTIAL,
+bounded by the round (F1). Until then the header reads 30 DONE / 21 PARTIAL / 4
+MISSING / 1 DESIGN-ONLY over 56; the commit that records the round's verdict
+moves it to 31 / 20 / 4 / 1, and the integration commit moves it once more when
+row 91 flips. The expected conformance scoreboard is 147 PASS / 0
 FAIL / 22 SKIP over 169 programs, 48/56 bullets (trunk's floor of record 128 / 0
 / 22 over 150, 48/56, run 37402970811, plus nineteen PASS programs), stated as
 expected, not of record: GitHub Actions on the repository is disabled, so the
@@ -2889,7 +2893,8 @@ reviews folded), 15c719ddc (rev 3, focused re-review 1 folded, not signed off)
 and 97686069f (rev 4, focused re-review 2 folded, signed off): 3ff319642 (DD-1
 (1/4): the language pages), a32421433 (2/4: the interoperability README and the
 new threads page), 4287fe0c0 (3/4: the design README notes), 6f1ba74ba (the
-document-review fold) and the discharge commit carrying this entry, DD-1 (4/4).
+document-review fold), 9f920d2b9 (DD-1 (4/4), the discharge, which wrote this
+entry) and the implementation-review fold.
 It touches no toolchain, prelude, golden, proposal or .github/ file. Every
 decision below is an R29(a) auto-adopt recorded for after-the-fact veto, each
 with its break condition. No fork design id is minted: F-016 stays unallocated
@@ -3224,7 +3229,10 @@ are the plan's:
     run becomes available before merge, it is the record (R9) and the local
     runs are corroboration.
 -   **D-DD-13 Gap-row effect.** Row 70 PARTIAL → DONE by D-DD-7, written by
-    the discharge commit after the document-review fold. Row 91 PARTIAL →
+    the discharge commit after the document-review fold, or, when a document
+    review returned REJECT, by the commit that records the verdict of the
+    second round D-DD-11's break condition owes (amended 2026-10-14,
+    implementation-review fold: F1). Row 91 PARTIAL →
     DONE on document review (the rows 88-90 precedent), written only by the
     integration commit at state L, when PR 53 and PR 55 are on trunk, the W2
     `ALLOWLIST` is empty, and the document-review fold has landed; until then
@@ -3304,7 +3312,10 @@ and the header: row 54 ("Generics: Integrated templates") still ends
 sections of fork/gap-analysis.md (the W2 arbiter, W7, W8's "~10 placeholder
 sections" and the documentation-completeness summary) keep the 2026-07-19
 audit's description; both are on the implementation review's list (plan "Landed
-notes").
+notes"). The implementation review found row 67 ("Control flow: matching — good
+switch equivalents") with the same stale clause about the `match` section, and
+its fold corrected both rows' clauses with a dated sentence, status unchanged
+(F2); the narrative sections stay as the 2026-07-19 audit wrote them.
 
 RESIDUE, filed at this discharge from DD-1's block W-180..W-194, each with its
 kind, bullet, evidence, mechanism and break condition in the ledger: W-182
@@ -3423,7 +3434,25 @@ the second round to verify; every finding is folded or dispositioned with its
 evidence. The per-finding tables are the plan's review fold record (rev 2), its
 two focused re-review sections, its Document-review fold (2026-10-14) and its
 Landed notes (DD-1, 2026-10-14), which give each document-review finding's state
-after this commit.
+after this commit. The implementation review of programs, fixtures, checker and
+records (R29(c)) read 97686069f to 9f920d2b9 before the second document-review
+round, re-ran every measurement and returned APPROVE-WITH-AMENDMENTS with eight
+findings: no BLOCKER, one MAJOR (F1, row 70 written DONE "on document review"
+before the second round D-DD-11 owes) and seven MINOR (F2 to F8). A separate
+fixer reproduced each and folded all eight, none rejected, in "DD-1:
+implementation-review fold": row 70 back to PARTIAL and the header back to 30 /
+21 / 4 / 1, both bounded by the second round, with D-DD-13 and plan §5 amended
+to say so (F1); the stale placeholder clauses of rows 54 and 67 corrected by a
+dated sentence (F2); row 70's program count 7/7 with P16 (F3); the issue 6830
+paragraph naming the issue's question, the decided form and the semicolon the
+toolchain requires (F4); the two Not-run items commits 1 to 3 had added restored
+to plan §8.10, and `prek run --all-files` run before the push (F5); clause (c)'s
+"See" and "References" companions matched without regard to case, inside
+blockquotes and as whole words, with four more self-check cases (F6); commit 1's
+claim of an empty heading grep corrected in the plan's landed notes (F7); the
+Not-run lead-in of rows 70 and 91 naming plan §8.10 (F8); and 9f920d2b9 written
+wherever the records said "the discharge commit". Across the seven reviews: 77
+findings. The second document-review round has still not run.
 
 VERIFICATION, all LOCAL, never of record (D-DD-12). The fork toolchain is the
 container's CMake and Ninja build of trunk 0bdce60a5's sources
@@ -3448,9 +3477,18 @@ of fork/inventory/work-items.json (132 items, the last W-191); prek with
 SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
 to a fixpoint; and R31's heading and list-item counts before and after for every
 markdown file of this commit (its message and the plan's landed notes give
-them). The samples, fixtures and probes were measured on the fork toolchain, the
-nightly and the SC-1, OP-1, UA-2 and ST-1 builds at commits 1 to 3 and the fold
-(plan §0.1d, §4.1 and the fold record); this commit changes none of them.
+them). The samples, fixtures and probes were measured on the fork toolchain and
+the nightly at commits 1 to 3 and the fold, and on the SC-1, OP-1, UA-2 and ST-1
+builds for the plan (§0.1d) and, for the fold's new fixtures and probes only, at
+the fold (the fold record); this commit changes none of them (sentence corrected
+by the implementation-review fold, F5: commits 1 to 3 did not re-run them on the
+held builds). At the implementation-review fold (local, not of record): the full
+fork run gave the same 147 PASS / 0 FAIL / 22 SKIP over 169, 48/56; the nightly
+the same 16 PASS and three labelled COMPILE-FAIL; `--self-test` OK; the checker,
+now `self-check: 4 quote cases, 17 W2 cases, 0 wrong`, the same three W2 hits
+and 0 errors without and with `--toolchain`; and on the SC-1 (36181a729), OP-1
+(5d9edb3e0), UA-2 (05a5c30f7) and ST-1 (84ff63560) builds every fixture as
+pinned and the nineteen programs PASS (plan "Landed notes").
 
 Not run (plan §8.10, verbatim; the local gate of D-DD-12):
 
@@ -3516,7 +3554,10 @@ Not run (plan §8.10, verbatim; the local gate of D-DD-12):
     asks for both reviews to read the fold before the discharge, and the
     discharge was written first at the orchestrator's direction; the
     second round reads the fold and the discharge together (amended
-    2026-10-14, discharge);
+    2026-10-14, discharge); it had not run at the implementation-review
+    fold either, so row 70 stays PARTIAL, bounded by that round, until
+    the commit that records its verdict (amended 2026-10-14,
+    implementation-review fold: F1);
 -   the heads re-read at the discharge with `git for-each-ref`: trunk
     f67ab650d, SC-1 4bc4802ae (its build at fb12f63cb has the head's
     toolchain and prelude), OP-1 379f20f67 (build 5d9edb3e0), PR 53
@@ -3525,7 +3566,34 @@ Not run (plan §8.10, verbatim; the local gate of D-DD-12):
     fold, and a new live head, OP-2 963adda99 (claude/carbon-fork-0-1-op2,
     a plan only, reserving W-196 to W-199; no build); the discharge
     changes no sample, fixture or program, so none was re-run on a held
-    build (amended 2026-10-14, discharge).
+    build (amended 2026-10-14, discharge);
+-   the samples were not re-run on the SC-1, OP-1, UA-2 and ST-1
+    toolchains at commits 1 to 3 (§0.1d's measurements stood), as those
+    commits' messages added to this list, the document-review fold ran
+    only its new fixtures and probes there, and the discharge none
+    (added 2026-10-14, implementation-review fold: F5); the
+    implementation-review fold ran the checker's `--toolchain` mode and
+    the nineteen programs on the builds SC-1 36181a729, OP-1 5d9edb3e0,
+    UA-2 05a5c30f7 and ST-1 84ff63560: on each, 39 fixtures as pinned,
+    the nineteen programs PASS and the stub SKIP;
+-   no `prek run --all-files` at commits 1 to 3, the document-review
+    fold or the discharge: prek ran on each commit's files only, as
+    commits 1 to 3 added to this list (added 2026-10-14,
+    implementation-review fold: F5); R25 runs it before the push, and
+    the implementation-review fold ran it in a clone of its own tree,
+    its message and the landed notes giving the result;
+-   the heads re-read at the implementation-review fold with `git
+    for-each-ref`: trunk f67ab650d, OP-1 379f20f67, OP-2 963adda99, PR 53
+    adaae4e35, PR 51 f96fe8a7a, PR 52 ea573f672, PR 54 cb3ef2e74 and PR
+    55 21307851a, unchanged since the discharge, and SC-1 moved to
+    30716a8c2, whose toolchain and prelude equal its build at 36181a729
+    (`git diff --stat 36181a729 30716a8c2 -- toolchain core` is empty)
+    and whose docs/design/ differs from 4bc4802ae's in
+    generics/template_constraints.md only, which keeps the "Mapping to
+    and from C++20 concepts" heading §2.13 links; over every head's
+    docs/design/ the W2 rule finds no hit that trunk lacks; issue 6830,
+    re-read online through its github.com page, is as the discharge
+    recorded it (amended 2026-10-14, implementation-review fold).
 
 DEVIATIONS FROM THE PLAN, each the closest faithful form. (1) The discharge was
 written at the orchestrator's direction before the second round of both document
@@ -3534,32 +3602,37 @@ where the fold record has that round read the fold before the discharge. The
 round reads the fold and this discharge together; any finding is folded by a new
 commit, and one that leaves an in-scope placeholder or an unmeasured claim
 unresolved keeps its row PARTIAL with that finding as its bound (D-DD-13's break
-condition), row 70 included. (2) DR1-12: the fold's sentence for an open issue
-6830, "Where `import Cpp inline` may appear is open question-for-leads issue
-6830.", would call the placement undecided; the issue, read online at this
-discharge, was closed on 2026-03-26 as decided (inline C++ a top-level
-declaration spelled `inline Cpp '''...'''`) and reopened on 2026-03-30 over the
-trailing semicolon, so the paragraph added to the interop README's inline
-section states that record, and plan §2.7 carries it with its mark. (3) The
-edits were applied by scripts that copy the texts into place, not by the editor
-tools (R25), as at commits 1 to 3 and the fold; the R12 hook was run by hand on
-every file of this commit and passed, and prek ran to a fixpoint. (4) This
-commit cannot name its own sha: the records call it "the discharge commit, DD-1
-(4/4)", and the implementation-review fold writes the sha into them (the EV-1
-precedent, EV1-IR-5). (5) In fork/ORCHESTRATION.md the
-`claude/carbon-fork-0-1-dd` Branches row is added on this branch, which was cut
-before trunk's f67ab650d added one, so a merge keeps one row with this text
-(§8.8); and Next actions item 2, which still gated the F-008..F-011 design docs
-on the veto digest, gains a dated correction that matches the amended
-stranded-branch row, an extension of §8.8. (6) W-065's evidence keeps its two
-OV-3 lines beside the re-pinned DD-1 sections. (7) THE DECISIONS above are
-§0.5's text verbatim, not one sentence each, so they cannot drift from the plan.
-(8) The stub's SKIP reason, written at commit 1 and amended at the fold,
-describes from commit 1 on what commits 2 and 3 land, as §2.11 placed it
-(DR1-15, DR2-10); the PR lands as one unit.
+condition), row 70 included. The implementation review found that this discharge
+had nonetheless written row 70 DONE "on document review" (F1); its fold sets the
+row back to PARTIAL, bounded by the second round, and the header back to 30 / 21
+/ 4 / 1, so the gate D-DD-11 sets holds again. (2) DR1-12: the fold's sentence
+for an open issue 6830, "Where `import Cpp inline` may appear is open
+question-for-leads issue 6830.", would call the placement undecided; the issue,
+read online at this discharge, was closed on 2026-03-26 as decided (inline C++ a
+top-level declaration spelled `inline Cpp '''...'''`) and reopened on 2026-03-30
+over the trailing semicolon, so the paragraph added to the interop README's
+inline section states that record, and plan §2.7 carries it with its mark. (3)
+The edits were applied by scripts that copy the texts into place, not by the
+editor tools (R25), as at commits 1 to 3 and the fold; the R12 hook was run by
+hand on every file of this commit and passed, and prek ran to a fixpoint. (4)
+This commit cannot name its own sha: the records called it "the discharge
+commit, DD-1 (4/4)", and the implementation-review fold wrote its sha,
+9f920d2b9, into them (the EV-1 precedent, EV1-IR-5). (5) In
+fork/ORCHESTRATION.md the `claude/carbon-fork-0-1-dd` Branches row is added on
+this branch, which was cut before trunk's f67ab650d added one, so a merge keeps
+one row with this text (§8.8); and Next actions item 2, which still gated the
+F-008..F-011 design docs on the veto digest, gains a dated correction that
+matches the amended stranded-branch row, an extension of §8.8. (6) W-065's
+evidence keeps its two OV-3 lines beside the re-pinned DD-1 sections. (7) THE
+DECISIONS above are §0.5's text verbatim, not one sentence each, so they cannot
+drift from the plan. (8) The stub's SKIP reason, written at commit 1 and amended
+at the fold, describes from commit 1 on what commits 2 and 3 land, as §2.11
+placed it (DR1-15, DR2-10); the PR lands as one unit.
 
 STATE L, the condition (D-DD-9, D-DD-13). The integration commit merges trunk
-after OP-1 lands (never a rebase of submitted commits), resolves §0.2's expected
+after OP-1 lands (never a rebase of submitted commits; and, at the
+orchestrator's direction recorded by the implementation-review fold, after
+OP-2, which stacks on PR 56, so that DD-1 merges last), resolves §0.2's expected
 conflicts, applies the state-L texts of plan §2.3, §2.4, §2.9 items 3 and 6, and
 §2.13 (the held-PR citations, the F-013 citations on assignment.md and the
 threads page, M7's link to the threads page, the strings pointer in

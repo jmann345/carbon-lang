@@ -426,8 +426,11 @@ above, and the fills ran in mirrors.
     interface" (12:29 and 13:10), and with **d** + **p3** compiles and prints
     `1` (both copies destroyed; the same with **d** + **t3**). The bound's cost:
     **d** + **t3** without it (`t2nt`) fails 15 goldens, with it 28; the 13
-    extra are SemIR-only (`import_ref`s typed `%Destroy.type` instead of `type`,
-    the storage witness tables).
+    extra are SemIR in nine check goldens (`import_ref`s typed `%Destroy.type`
+    instead of `type`, the storage witness tables) and, in four lower goldens,
+    reordered definitions and unreferenced no-op `SelfDestruct` definitions of
+    pointer-niche specifics (rev 3 said "SemIR-only"; amended 2026-10-14,
+    implementation review fold: R2-m1).
 -   **M-9 (ownership on every path, prototype d + t3; the same with t2).**
     assign.carbon, four helpers each with its own counter, each printing the
     count inside and the caller after: `4 1 3 0 2 0 1 0`. Reading: `o = p` with
@@ -889,9 +892,16 @@ RR-2).
     consequence (its notes, and optional.md:284-290); with it the storage type
     is known destroyable under the generic's bound, and both storage impls
     satisfy it (`DefaultOptionalStorage(T)` by D-OP2-4, `MaybeUnformed(T*)`
-    trivially). It costs 13 SemIR-only refills (M-8). Break condition: the
-    storage leaves the public API (W-176) or upstream's `Optional` design
-    changes the storage interface; the bound moves with it.
+    trivially). It costs 13 refills (M-8): SemIR in nine check goldens, and,
+    in four lower goldens (builtins/cpp, union/basic,
+    interop/cpp/std_initializer_list_pointer_pointer and
+    std_initializer_list_pointer_size), reordered definitions and unreferenced
+    no-op `weak_odr` `SelfDestruct` definitions of pointer-niche specifics,
+    whose `MaybeUnformed(T*)` storage (optional.carbon:189) now needs a
+    `Destroy` witness (rev 3 said "13 SemIR-only refills"; amended 2026-10-14,
+    implementation review fold: R2-m1). Break condition: the storage leaves
+    the public API (W-176) or upstream's `Optional` design changes the storage
+    interface; the bound moves with it.
 -   **D-OP2-6: `Core.Optional(T)` for a non-pointer `T` is not trivially
     destructible, even when `T` is, and W-170's break condition is amended to
     match.** Its storage defines a destructor with a non-empty body, which
@@ -1105,7 +1115,14 @@ RR-2).
     Break condition: PR 56 is withdrawn or reworked so that OP-1's prelude
     lines move (OP-2 re-runs M-11 on the new base before its commit 2), or
     DD-1 is held past OP-2's verification (OP-2 then merges before DD-1, and
-    DD-1 re-reads the shared records at its merge of trunk).
+    DD-1 re-reads the shared records at its merge of trunk). That break
+    condition has fired: at the orchestrator's direction DD-1 merges last,
+    after PR 56 and after OP-2 (claude/carbon-fork-0-1-dd at e27b917c8,
+    fork/ORCHESTRATION.md's DD-1 paragraph and dd Branches row,
+    fork/designdocs/plan.md's "Merge position"), so OP-2 merges after PR 56
+    and before DD-1, DD-1 re-reads the shared records at its merge of trunk,
+    and the trigger of §3's merge and of §8.8 is PR 56's merge alone (amended
+    2026-10-14, implementation review fold: R2-M1).
 -   **D-OP2-14: SAFE-1 reconciliation: TY4's text stays as SAFE-1 wrote it,
     and OP-2 records that it now holds for `Get()` (amended 2026-10-14, review
     fold: B-M3).** OP-1 owes SAFE-1 a TY4 amendment saying TY4 does not yet hold
@@ -2729,7 +2746,8 @@ paragraph, :181-195 on the safe branch at adaae4e35, re-read at the merge):
 
 In initialization_safety.md, directly after the paragraph that lists the
 prelude's `UnformedInit` types (:91-107 on the safe branch at adaae4e35,
-ending "so an unformed `Buf` would free garbage."):
+ending "so an unformed `Buf` would free garbage."; the note's last sentence
+amended 2026-10-14, implementation review fold: R1-m1):
 
 ```markdown
 > **Fork note (<date>, OP-2, F-015).** Since OP-2, `Core.Optional(T)` is
@@ -2738,7 +2756,10 @@ ending "so an unformed `Buf` would free garbage."):
 > :48, cited above, is now a comment that points there). The default storage's
 > `Destroy` reads whether it holds a value, which an unformed object leaves
 > uninitialized, so `var o: Core.Optional(i32);` is an error for the reason
-> given here for `Core.Buf` (fork/optional2/plan.md, D-OP2-15; W-200).
+> given here for `Core.Buf` (fork/optional2/plan.md, D-OP2-15; W-200). For the
+> same reason, a class with a non-pointer `Core.Optional` field, or an adapter
+> of one, must not implement `UnformedInit`, which the toolchain does not
+> prevent.
 ```
 
 No other page changes: loops.md, error_handling.md and README.md's OP-1
@@ -2873,7 +2894,9 @@ once PR 56 lands, which the type_safety.md note supersedes on its path).
     B-1, B-m6): the stamp paragraph; a Branches row for
     `claude/carbon-fork-0-1-op2`; the Scoreboard line (139/0/22 over 161,
     expected, re-quoted from §8.8); in Next actions, OP-2's merge position
-    (after PR 56 and DD-1, D-OP2-13), the W-196..W-201 reservation, and an
+    (after PR 56 and before DD-1, D-OP2-13's break condition having fired;
+    amended 2026-10-14, implementation review fold: R2-M1), the W-196..W-201
+    reservation, and an
     OP-2 bullet in item 5 beside OP-1's: "When Actions returns, the first
     hosted conformance run on a tree with OP-2 in it (OP-2's PR head while it
     is open, trunk after) is the record (expected, from fork/optional2/plan.md
@@ -2944,7 +2967,9 @@ precedent), its fold by a separate fixer (R11) in new commits ("OP-2 fixes: fold
 the implementation review"), any refill being its own "Autoupdate testdata
 goldens on the container arbiter" commit; then the merge of trunk (a merge
 commit, never a rebase), taken when OP-2 is next in D-OP2-13's queue, that is,
-after PR 56 and DD-1 have merged; then §8.8 on the merge commit; then commit 5.
+after PR 56 has merged (DD-1 merges after OP-2, D-OP2-13's break condition;
+amended 2026-10-14, implementation review fold: R2-M1); then §8.8 on the merge
+commit; then commit 5.
 Before each of commits 2, 4 and 5 and each fix commit, `uvx prek run --files
 <that commit's files>` runs to a fixpoint (a run that changes nothing), with
 R31's heading and list-item counts recorded before and after for every `.md` in
@@ -3014,7 +3039,7 @@ split-file names differ.
 | same | `generic.carbon` | three specifics of `Unwrap`: `define linkonce_odr i1 @_CUnwrap.Main.<hash>(ptr %m)` with `load i8, ptr %m`; `define linkonce_odr i32 @_CUnwrap.Main.<hash>(i32 %m)` with `ret i32 %m`; `define linkonce_odr ptr @_CUnwrap.Main.<hash>(ptr %m)` with `load ptr, ptr %m` (not coalesced); 352 lines, 299 CHECK | measured |
 | lower/testdata/optional/destroy.carbon | `destroy.carbon` | `@_CHold.Main` calls a `SelfDestruct` on `%o.var` whose `SubobjectDestroy` calls the storage's `SelfDestruct`, which calls `@"_COp.DefaultOptionalStorage.<hash>.Core:Destroy.Core.<hash>"`: `%has_value = getelementptr inbounds nuw <{ { i32 }, i1 }>, ptr %self, i32 0, i32 1`, `load i8`, `trunc i8 ... to i1`, `br i1`, and on the true edge a `SelfDestruct` of `%value` that calls `@"_COp.Tracked.Main:Destroy.Core"`; `@_CHoldPointer.Main`'s `SelfDestruct` is the no-op one | measured |
 | same | `get.carbon` | `define linkonce_odr i32 @_CGet.Optional.Core.<hash>(ptr %self)` with `%fail_stop.load = load { ptr, i64 }, ptr @const.anon`, `call i64 @write(i32 2, ...)`, `call void @abort()`; the `bool` storage `Get` (`define linkonce_odr i1 @"_CGet.<hash>:OptionalStorage.Core.<hash>"(ptr %value)`) with `load i8` and `trunc i8 ... to i1` (W-171); 530 lines, 482 CHECK | measured |
-| the 28 of §6.1 | -- | each changes only by: generated destroy functions for `DefaultOptionalStorage` replaced by its declared impl; `Optional` adapters' `SubobjectDestroy` gaining the storage call when the payload has destruction work; `import_ref`s of `OptionalStorage.Type` typed `%Destroy.type`; `Get` specifics gaining the fail-stop branch; debug-info lines of the appended functions | measured (M-11) |
+| the 28 of §6.1 | -- | each changes only by: generated destroy functions for `DefaultOptionalStorage` replaced by its declared impl; `Optional` adapters' `SubobjectDestroy` gaining the storage call when the payload has destruction work; `import_ref`s of `OptionalStorage.Type` typed `%Destroy.type`; `Get` specifics gaining the fail-stop branch; debug-info lines of the appended functions; in four lower goldens, reordered definitions and unreferenced no-op `SelfDestruct` definitions of pointer-niche specifics (D-OP2-5); in lower/interop/cpp/pointer.carbon, the fail-stop's attribute-less `declare i64 @write(i32, ptr, i64)` in place of the C++ header's `noundef` one (amended 2026-10-14, implementation review fold: R2-m1) | measured (M-11) |
 
 Falsifiers: any crash; a golden outside §6.1 and §2.3 in the fill's diff; a
 `fail_` split that compiles or a non-`fail_` split with a diagnostic; any key
@@ -3090,8 +3115,11 @@ slice/basic; lower: array/iterate, for/bindings, for/break_continue, for/for,
 interop/cpp/class/export/union, interop/cpp/nullptr, interop/cpp/pointer,
 interop/cpp/void, optional/compare, primitives/optional; M-10); the storage
 destroy without `let Type: Destroy` changes none outside those 15 (M-8's
-**t2nt** fails exactly them); the bound's SemIR (`import_ref`s typed
-`%Destroy.type`) adds the other 13; the W-171 fix alone changes none (M-4, and
+**t2nt** fails exactly them); the bound adds the other 13, SemIR
+(`import_ref`s typed `%Destroy.type`) in nine check goldens and, in four lower
+goldens, reordered definitions and unreferenced no-op `SelfDestruct`
+definitions of pointer-niche specifics (amended 2026-10-14, implementation
+review fold: R2-m1); the W-171 fix alone changes none (M-4, and
 M-21 with rev 2's CHECK). Plus the five new goldens (2444 lines, 2125 CHECK at
 rev 2, after the two new splits; 2282 and 1995 at rev 1; M-12). No min_prelude
 file changes: min_prelude's own `Optional` (parts/optional.carbon) is a separate
@@ -3106,7 +3134,7 @@ class, and no min_prelude golden loads core/prelude.
 | SC-1 (`claude/carbon-fork-0-1-sc` at 857d5b048, 4bc4802ae at rev 2) | toolchain/check/convert.cpp, toolchain/check/custom_witness.cpp, docs/design/generics/details.md; records | §2.2 applies with offsets +14 and +2 (M-16, re-applied at rev 2 on 4bc4802ae); the CHECK is at :1712 there. Semantic composition not measured (§0.2). SC-1's own goldens that lower an Optional `Get` or destroy an Optional would join the refill at the merge; §8.8's refill covers them. SC-1 adds four lines to details.md at :1077, so F-016's citation :1910 is :1914 once SC-1 lands; :223 is unaffected (amended 2026-10-14, review fold: B-m3). |
 | PR 53 (SAFE-1, `claude/carbon-fork-0-1-safe` at adaae4e35) | docs/design/unions.md (rev 1 said none): PR 53 adds a dated amendment at :454-459, below the :216-245 OP-2 cites, which are unchanged; and docs/design/safety/type_safety.md and initialization_safety.md, to which OP-2's discharge adds dated notes (D-OP2-14) | Its line citations of optional.carbon still name what they name, except initialization_safety.md:101-102's :48, whose claim D-OP2-15 narrows (D-OP2-8). TY4's text stays; OP-2 notes after OP-1's amendment that it holds for `Get()` (D-OP2-14). D-SAFE-14 is D-OP2-7's policy (amended 2026-10-14, review fold: B-m3, B-M3, A-1). |
 | PR 51 (UA-2, `claude/carbon-fork-0-1-ua2` at f96fe8a7a) | records: W-108 DISCHARGED for aggregates without a declared `Destroy`, W-126 filed, the Slices row's W-108 clause rewritten | Rev 1's W-197 is W-126 and is retired; W-126 gets an OP-2 note at the discharge (§0.3 item 5, §1.7; amended 2026-10-14, review fold: B-M5). PR 51 merges before OP-1 and OP-2. |
-| DD-1 (`claude/carbon-fork-0-1-dd` at 4287fe0c0, 6f1ba74ba at rev 2) | none: it edits docs/design/README.md, pattern_matching.md and others, not optional.md, classes.md or the safety pages; it adds project/design_docs_cpp_pointers.carbon, which tests `HasValue()` before every `Get()` and declares no Optional without an initializer | Ids: W-180..W-194 are DD-1's; DD-1 does not mint F-016, and OP-2 does (D-OP2-11). DD-1 merges after OP-1 and before OP-2 (D-OP2-13; amended 2026-10-14, review fold: B-m3). |
+| DD-1 (`claude/carbon-fork-0-1-dd` at 4287fe0c0, 6f1ba74ba at rev 2) | none: it edits docs/design/README.md, pattern_matching.md and others, not optional.md, classes.md or the safety pages; it adds project/design_docs_cpp_pointers.carbon, which tests `HasValue()` before every `Get()` and declares no Optional without an initializer | Ids: W-180..W-194 are DD-1's; DD-1 does not mint F-016, and OP-2 does (D-OP2-11). DD-1 merges after OP-1 and before OP-2 (D-OP2-13; amended 2026-10-14, review fold: B-m3); since D-OP2-13's break condition fired, after OP-2, at the orchestrator's direction, and its ORCHESTRATION paragraph at e27b917c8 names OP-2's reservation W-196..W-201 (amended 2026-10-14, implementation review fold: R2-M1). |
 | PR 54 (EV-1), CMake | none outside the shared records | -- |
 | Upstream (trunk head d4f1ec203) | convert.cpp, custom_witness.cpp, lower/handle.cpp, optional.carbon | Each hunk repairs code upstream still carries (M-3, M-5), so an upstream advance conflicts only if upstream fixes the same lines; D-OP2-1's and D-OP2-3's break conditions say what then happens. |
 
@@ -3337,7 +3365,9 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     R21 (amended 2026-10-14, review fold: B-m4); macOS, Windows and an
     opt-mode toolchain; LLVM-side assertions (the CMake LLVM is a Release
     build); the hosted conformance run (Actions disabled; D-OP2-16).
-8.  **The merge of trunk** (after PR 56 and DD-1 merge), by §3's merge rules:
+8.  **The merge of trunk** (after PR 56 merges, DD-1 merging after OP-2 by
+    D-OP2-13's break condition; amended 2026-10-14, implementation review fold:
+    R2-M1), by §3's merge rules:
     rebuild, refill (any golden change in a new "Autoupdate testdata goldens on
     the container arbiter" commit), gate (the merged base's count plus five),
     conformance, mutants, the R-9 grep for a non-pointer Optional declared
@@ -3387,6 +3417,52 @@ id or heading at the merge of trunk (the OP-1 same-anchor rules).
     (D-OP2-14), row 43's evidence (D-OP2-12), W-126's OP-2 note, and the
     W-196..W-201 reservation in ORCHESTRATION (amended 2026-10-14, review
     fold: B-M3, B-M5, B-m6).
+-   The implementation review fold (2026-10-14) adds the items below to commit
+    5; the Implementation review fold record below says why each is there.
+    -   W-200's notes record review 1's d3.carbon and d4.carbon
+        (`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/op2-impl/rev1/probes/dtor`)
+        as reproducers: a user `UnformedInit` impl on a class holding, or an
+        adapter of, a non-pointer `Core.Optional` destroys garbage (R1-m1).
+    -   W-201 is filed from the spare: kind `toolchain-defect`, size M,
+        subsystem "toolchain/check (type_completion.cpp, convert.cpp) +
+        toolchain/lower", bullet "Stdlib: tuple/array library parts", title
+        "OP-2 residue (found by the implementation review): a value of a
+        single-element tuple or struct whose element has a pointer value
+        representation, such as `(C,)` or `{.c: C}` for a class `C`, aborts
+        check or lowering, with or without `MaybeUnformed`", evidence review
+        1's probes/agg (tup1plain, plain_sc, plain_st and plain_tt abort on
+        trunk 0bdce60a5 and on OP-2; tup1gen now stops at handle.cpp's
+        `CheckCopyValueIsObject`), an upstream defect; the head's re-scan
+        rule applies to it as to W-196..W-200 (R1-m2).
+    -   The upstream-report list of the landed notes adds, beside M-2's probes
+        and W-198's two, review 1's iter/iter_bool_only.carbon (a `for` over
+        `array(bool, 3)`), cpp/cpp_iter2.carbon (a C++ range-for whose
+        `operator*` returns a class with a counting destructor),
+        cpp/cpp_adapt.carbon and dtor/a1.carbon (adapters of destructible C++
+        and Carbon types), and W-201's tup1gen.carbon and tup1plain.carbon
+        (R1-m2, R1-m3). A runtime pin of the C++ range-for under the C++
+        iteration-mapping bullet is optional and, if added, goes to §8.8's
+        run, not to a fix commit (R1-m3).
+    -   The decision-log entry's D-OP2-12 residue argument adds `?` on an
+        Optional of a class or tuple payload, rejected as `?` on a
+        `Core.Result` of one is (SF-6, W-010's residue under the Sum types
+        bullet), and its D-OP2-5 states the restated cost of M-8, never
+        "SemIR-only" (R1-m4, R2-m1).
+    -   ORCHESTRATION records OP-2's merge position, after PR 56 and before
+        DD-1, the W-196..W-201 reservation (W-197 retired unused, W-201
+        filed), and a hand-off item for DD-1's integration commit: its
+        fork/inventory/work-items.json header still says "OP-2 reserves
+        W-196..W-199" with no date (claude/carbon-fork-0-1-dd at e27b917c8,
+        :4), and becomes W-196..W-201; the head's id and F-016 scan runs over
+        all refs immediately before the ledger is written (R2-M1).
+    -   Commit 4's forward-looking phrases are rewritten (R2-m3): the row's
+        "W-170, W-171 and W-173 landed by OP-2, their discharge pending"
+        becomes "W-170, W-171 and W-173 DISCHARGED `<date>`", with the
+        decision-log title "OP-2 / F-016: ..." beside OP-1's; the header's
+        "the work-items ledger is reconciled at OP-2's discharge" says that it
+        was; §W9's "OP-2 closed the Optional half" is checked against the
+        ledger; and the W-126 and W-160 check of the bullet above runs, since
+        neither is in this branch's ledger (maximum W-195).
 
 ## Review fold record (rev 2, 2026-10-14)
 
@@ -3503,4 +3579,64 @@ verification and the implementation review between commits 4 and 5; residues
 take ids from the W-196..W-201 reservation by the head's rule, and F-016 is
 minted at the discharge. The row moves only as D-OP2-12 and D-OP2-16 say,
 expected and not of record, and reverts by their break conditions. Merge
-position: D-OP2-13, after PR 56 and DD-1.
+position: D-OP2-13, after PR 56 and DD-1 as signed off, and after PR 56 and
+before DD-1 since its break condition fired (amended 2026-10-14, implementation
+review fold: R2-M1).
+
+## Implementation review fold record (2026-10-14)
+
+Two implementation reviews of commits 2 to 4 (757cd0e74, 189baa262, 503d25895)
+ran, the R29(c) count while hosted verification is not green (the OP-1
+precedent), and both returned APPROVE-WITH-FIXES. Review 1 (correctness and
+soundness: W-171 probes over 20 types and seven paths on four toolchains, a
+destruction tracker with a malloc shim, the checked `Get` at every optimization
+level) found four MINOR findings, cited here as R1-m1..R1-m4. Review 2 (R27
+spelling diffs against §2, R16, the R26 fixpoint, the row flip, readiness for
+commit 5) found one MAJOR and three MINOR, its MAJOR-1 and MINOR-1..MINOR-3,
+cited here as R2-M1 and R2-m1..R2-m3 so that none reads as a measurement or as a
+plan review's finding. All eight are folded and none is rejected. The fixer
+reproduced each one first, in its own scratch tree
+(`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/op2-impl/fix`:
+copies of review 1's probes, its own caches), on 757cd0e74's build before the
+fix and on the fix build after. The fold is two commits: 9f9ccd768, "OP-2 fixes:
+fold the implementation reviews (1 MAJOR, 7 MINOR)" (the toolchain, optional.md
+and classes.md), and the commit that adds this section (the gap row and this
+plan).
+
+| Finding | Grade | Disposition | Where folded |
+| --- | --- | --- | --- |
+| R1-m1: a user `UnformedInit` impl on a class holding, or an adapter of, a non-pointer Optional brings back D-OP2-15's hazard | MINOR | Reproduced: review 1's d3 (`class Box { var o: Core.Optional(Tracked); var n: i32; }` with `impl Box as Core.UnformedInit {}`) and d4 (`class AO { adapt Core.Optional(Tracked); }` with the same impl), each `var unused b` after a stack scribble, print `BAD-DESTROY id=<garbage>` at `--optimize=speed` (d4 also at `size`) and nothing at `none` and `debug`; at `speed` the OP-1 toolchain prints nothing, since no Optional destroy runs there. Folded as proposed, with no toolchain change: such an impl breaks `UnformedInit`'s contract that destroying an unformed object is valid (core/prelude/default.carbon:15-17), as one on a class with a `Core.Buf` field would. optional.md's W-200 limit says so; the classes.md F-016 amendment adds that an adapter may implement `UnformedInit` only when its adapted type's destructor accepts an unformed object; §2.5's initialization_safety.md note gains the sentence; commit 5 records d3 and d4 as W-200's reproducers | 9f9ccd768 (optional.md, classes.md); §2.5; hand-off |
+| R1-m2: `AsCompatible`'s pointer-to-copy arm loads the object, not the value representation, for a single-element aggregate of a pointer-represented element | MINOR | Reproduced: `Unwrap[T](m: Core.MaybeUnformed(T)) -> T` with T = `(C,)`, for a class `C`, aborted at handle_call.cpp:984 (`({ { i32 } } %1)`); without `MaybeUnformed`, `let v: (C,) = t;` aborts at lower.cpp:48 and the `{.p: (i32, i32)}` and `((i32, i32),)` forms at convert.cpp:2199, on trunk 0bdce60a5 as on 757cd0e74's build. Folded as proposed: `CheckCopyValueIsObject` CHECKs, in both converting arms, that the copy side's value type lowers to its object type, naming both. It reads them through `FileContext::GetType`, which adds nothing to the specific's fingerprint, and it does not use `IsCopyOfObjectRepr`, which is false for `Core.Optional(U*)`. `Unwrap((C,))` now aborts at the `as_compatible`: "as_compatible of a copy value representation { ptr } that is not the object type { { i32 } }". No golden moves, no conformance status or detail changes, and of review 1's 51 other probes (w171t, get, misc, tmpl) 45 print byte-identical output, four fail to compile with the same errors and two differ only in the template column's uninitialized values. The aggregate defect itself is trunk's, so commit 5 files it as W-201, the spare, and lists it for the upstream report | 9f9ccd768 (lower/handle.cpp); hand-off |
+| R1-m3: the `for` and adapter fixes are in no runtime program and not on the upstream-report list | MINOR | Reproduced: iter_bool_only.carbon (`for` over `array(bool, 3)`) prints `1 0 1` on the fix build and aborts at lower.cpp:48 on trunk; cpp_iter2.carbon (a C++ range-for whose `operator*` returns a class with a counting destructor) prints `10 0`, and `10 5` on OP-1 and trunk; cpp_adapt.carbon prints `5 0 0` (OP-1 `5 4 0`); dtor/a1.carbon ends `live=0` (OP-1 `live=17`). Folded: commit 5's landed notes put the four on the upstream-report list beside M-2's probes and W-198's two. The optional runtime pin of the C++ range-for is not added here; if added, it goes to §8.8's run, as the finding says | hand-off |
+| R1-m4: `?` on an Optional of a class payload is rejected, a limit neither the row nor optional.md names | MINOR | Reproduced on 757cd0e74's build and on OP-1's: `o?` on `Core.Optional(C)`, with C a class that implements `Core.Copy`, and on `Core.Optional((i32, i32))` fails with "function returns incomplete type `Core.ControlFlow(C, ())`" and the note "choice alternative payload type `C` is not trivially copyable and destructible in this specific"; `Core.Result(C, i32)` with `?` fails the same way; `bool` and `i32*` payloads run (`1 0`, `5 0`). The cause is the Sum types bullet's SF-6 residue (W-010), which row 76 already names for `Core.Result`. It reproduces without Optional, so by D-OP2-12 the row stays DONE. Folded as proposed: a clause in the row's limit list (this commit) and in optional.md's "Propagation and iteration" (9f9ccd768); commit 5 adds it to D-OP2-12's residue argument in the decision-log entry | 9f9ccd768 (optional.md); fork/gap-analysis.md, the row; hand-off |
+| R2-M1: the merge rules point the other way from DD-1's records, which also capped OP-2's ids at W-199 | MAJOR | Reproduced, and partly resolved by DD-1 since the review: at claude/carbon-fork-0-1-dd e27b917c8, fork/ORCHESTRATION.md's DD-1 paragraph (:123-128) says OP-2 "reserves W-196..W-201 (W-196..W-199 in its plan at 963adda99)" and that DD-1 merges "at the orchestrator's direction, also after OP-2", and its dd Branches row says "merges last, after PR 56 and OP-2". Its decision log (:3390, :3645), plan (:5231, :5641) and gap file (:75, :96) name W-196..W-199 only as OP-2's plan held them at 963adda99, but its work-items.json header (:4) still says "OP-2 reserves W-196..W-199" with no date. A re-scan of every local and `origin` ref at this fold finds W-196..W-201 named only on the op2 and dd branches, and filed on none. So D-OP2-13's break condition has fired. Folded: D-OP2-13 records it; §3's merge and §8.8 trigger on PR 56's merge alone; §2.6's ORCHESTRATION item, §6.2's DD-1 row and the Sign-off's merge position say after PR 56 and before DD-1; commit 5 records the reservation in ORCHESTRATION with a hand-off item for DD-1's ledger header, and re-runs the id and F-016 scan just before writing the ledger. ORCHESTRATION is not edited now: §2.6 gives it to commit 5, and DD-1's branch already carries the orchestrator's order | D-OP2-13; §2.6; §3; §6.2; §8.8; Sign-off; hand-off |
+| R2-m1: D-OP2-5's "13 SemIR-only refills" and §4's "each changes only by" list are wrong | MINOR | Reproduced from 189baa262. Of the 13 refills that the bound alone causes (§6.1's 28 less the checked `Get`'s 15), four are lower goldens: builtins/cpp, interop/cpp/std_initializer_list_pointer_pointer, std_initializer_list_pointer_size and union/basic. builtins/cpp gains `define weak_odr void @"_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core"` and `...729fca203337f92a...`, each named only by its definition and its DISubprogram (optional.carbon line 189, the pointer niche's impl). In lower/interop/cpp/pointer.carbon, the C++ header's `declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef)`, with its attribute group, becomes `declare i64 @write(i32, ptr, i64)`, because the checked `Get`'s fail-stop declares `write` first. No diagnostic is added or removed. Folded: M-8, D-OP2-5, §4's last row and §6.1 restate the cost, amended in place; commit 5's decision-log entry quotes the restated cost, never "SemIR-only" | §0.2 M-8; D-OP2-5; §4; §6.1; hand-off |
+| R2-m2: OP-2's toolchain hunks carry no "Fork (...)" markers | MINOR | Reproduced: the other fork hunks of custom_witness.cpp (:262, :285, :1038, :1077 before the fold) and lower/handle_call.cpp (:346, :683) carry them, and OP-2's did not. Folded as proposed: "Fork (OP-2, fork/optional2/plan.md D-OP2-1, W-171)" in handle.cpp, "Fork (OP-2, fork/optional2/plan.md D-OP2-2, W-171)" above convert.cpp's swapped `ForType` calls, and "Fork (OP-2, ... D-OP2-3, fork design F-016)" on `AdapterHasDestroyWork` and both adapter blocks. These are comments only and a deviation from §2.2's text (so is the comment moved above the adapter test in `MakeSubobjectDestroyOpBody`); clang-format 21.1.8 is clean | 9f9ccd768 (the three toolchain files) |
+| R2-m3: commit 5's checklist omits rewriting commit 4's forward-looking record phrases | MINOR | Reproduced: the row (fork/gap-analysis.md:83) says "W-170, W-171 and W-173 landed by OP-2, their discharge pending" and cites only OP-1's decision-log entry; the header (:24) says "the work-items ledger is reconciled at OP-2's discharge"; §W9 (:247) says "OP-2 closed the Optional half"; and neither W-126 nor W-160 is in this branch's fork/inventory/work-items.json (maximum W-195). Folded: the hand-off's commit 5 items name all four rewrites | hand-off |
+
+Verification of the fold, on the clean carbonbuild toolchain of 9f9ccd768
+(`carbon version` 0.0.0-0.dev+9f9ccd768; the incremental build compiled the
+three toolchain files, with no warnings):
+
+-   autoupdate.sh over all 1950 goldens rewrote nothing, so pass 1 is the
+    fixpoint and there is no refill commit (R26);
+-   gate.sh: `1950 passed, 0 failed (exit 0)`, PR 56's 1945 plus the five new
+    goldens (§8.3);
+-   conformance.sh into `op2-impl/conf-fix`: PASS 139, every failure status 0,
+    SKIP 22, over 161 programs, bullets 48 PASS / 0 FAIL / 8 SKIP (scoreboard
+    generated 2026-10-14T05:35:04Z). Against commit 4's quoted run
+    (2026-10-14T04:23:32Z) there are 0 status and 0 detail differences, so §5's
+    delta from PR 56's 132/0/25 over 157 stands, with the same seven status
+    changes. The Optional bullet is PASS: 13 programs PASS and
+    optional_pointer_compare SKIPs;
+-   the same sources built before 9f9ccd768 was committed, stamped
+    503d25895.dirty, gave the same three results.
+
+The row and the header's scoreboard sentence quote this run, on the toolchain
+and prelude of the commit that quotes it (D-OP2-16), in place of commit 2's;
+the header's counts are unchanged (31 / 20 / 4 / 1), since no status moved. The
+mutants of §8.5 were not re-run: the prelude is unchanged, and the toolchain
+change adds a CHECK that no golden or program reaches and comments; §8.8
+re-runs them on the merge commit. Not run, as §8.7 says: Bazel and its unit,
+lit and fuzz tests, clangd-tidy, ASan, macOS, Windows, an opt-mode toolchain,
+LLVM-side assertions and the hosted conformance run.

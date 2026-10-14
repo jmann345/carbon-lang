@@ -335,6 +335,15 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
         }
         break;
       }
+      case CARBON_KIND(SemIR::PackExpansionPattern new_pack_pattern): {
+        auto prev_pack_pattern =
+            prev_param_pattern.As<SemIR::PackExpansionPattern>();
+        pattern_stack.push_back({.prev_id = prev_pack_pattern.subpattern_id,
+                                 .new_id = new_pack_pattern.subpattern_id});
+        pattern_stack.push_back({.prev_id = prev_pack_pattern.arity_pattern_id,
+                                 .new_id = new_pack_pattern.arity_pattern_id});
+        break;
+      }
       case CARBON_KIND(SemIR::DefaultValuePattern new_default_value_pattern): {
         auto prev_default_value_pattern =
             prev_param_pattern.As<SemIR::DefaultValuePattern>();

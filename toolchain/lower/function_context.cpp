@@ -89,6 +89,29 @@ auto FunctionContext::LowerBlockContents(SemIR::InstBlockId block_id) -> void {
   }
 }
 
+auto FunctionContext::LowerPackExpansionBody(
+    uint64_t arity, SemIR::InstBlockId body_block_id,
+    llvm::function_ref<auto(uint64_t index)->void> finish_iteration) -> void {
+  // "A pack expansion [...] cannot contain another pack expansion"
+  // (docs/design/variadics.md, "Pack expansions"); check diagnoses one.
+  CARBON_CHECK(!pack_index_, "Nested pack expansion in lowering");
+  // The arity is specific-dependent: two specifics whose bodies run a different
+  // number of iterations must not be coalesced.
+  AddIntToCurrentFingerprint(arity);
+  for (auto index : llvm::seq(arity)) {
+    pack_index_ = index;
+    LowerBlockContents(body_block_id);
+    if (finish_iteration) {
+      finish_iteration(index);
+    }
+    for (auto inst_id : pack_iteration_locals_) {
+      locals_.Erase(inst_id);
+    }
+    pack_iteration_locals_.clear();
+  }
+  pack_index_ = std::nullopt;
+}
+
 // Handles typed instructions for LowerInst. Many instructions lower using
 // HandleInst, but others are unsupported or have trivial lowering.
 //

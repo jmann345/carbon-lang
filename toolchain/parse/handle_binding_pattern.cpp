@@ -113,11 +113,18 @@ auto HandleBindingPattern(Context& context) -> void {
     misordered_unused_token = context.ConsumeChecked(Lex::TokenKind::Unused);
   }
 
+  // `each` declares the elements of a pack. It is written last, directly
+  // before the name: the order is `...` phase modifier `each` name
+  // (docs/design/variadics.md, "Pack expansion patterns").
+  auto each_token = context.ConsumeIf(Lex::TokenKind::Each);
+
   // The first item should be an identifier, the placeholder `_`, or `self`.
   std::optional<Lex::TokenIndex> self_token;
+  bool has_identifier_name = false;
   if (auto identifier = context.ConsumeIf(Lex::TokenKind::Identifier)) {
     context.AddLeafNode(NodeKind::IdentifierNameNotBeforeSignature,
                         *identifier);
+    has_identifier_name = true;
   } else if (auto self =
                  context.ConsumeIf(Lex::TokenKind::SelfValueIdentifier)) {
     // Checking will validate where `self` may be declared. Its type may be
@@ -153,6 +160,18 @@ auto HandleBindingPattern(Context& context) -> void {
     context.AddLeafNode(NodeKind::IdentifierNameNotBeforeSignature,
                         *context.position(), /*has_error=*/true);
     on_error(/*expected_name=*/true);
+  }
+
+  // An each-name wraps the name it declares; only an identifier can name a
+  // pack.
+  if (each_token) {
+    if (!has_identifier_name && !state.has_error) {
+      CARBON_DIAGNOSTIC(ExpectedIdentifierAfterEachInBinding, Error,
+                        "expected identifier after `each`");
+      context.emitter().Emit(*each_token, ExpectedIdentifierAfterEachInBinding);
+      state.has_error = true;
+    }
+    context.AddNode(NodeKind::EachBindingName, *each_token, state.has_error);
   }
 
   auto token_kind = context.PositionKind();

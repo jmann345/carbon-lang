@@ -29,6 +29,16 @@ auto HandleParseNode(Context& context, Parse::TupleLiteralId node_id) -> bool {
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::TupleLiteralStart>();
   const auto& inst_block = context.inst_blocks().Get(refs_id);
+  // Fork (VA-1, D-VA-4): a tuple literal with a pack expansion element has a
+  // type with a pack segment, `(... «E; N»)`, which this slice does not
+  // represent; only a call's argument list can hold a pack expansion yet.
+  for (auto inst : inst_block) {
+    if (context.insts().Is<SemIR::PackExpansionExpr>(inst)) {
+      return context.TODO(inst,
+                          "pack expansion in a tuple literal outside a call's "
+                          "argument list");
+    }
+  }
   llvm::SmallVector<SemIR::InstId> type_inst_ids;
   type_inst_ids.reserve(inst_block.size());
   for (auto inst : inst_block) {

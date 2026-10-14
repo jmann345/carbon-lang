@@ -868,6 +868,12 @@ static auto DiagnoseOverloadGates(
         param_pattern_id == SemIR::ErrorInst::InstId) {
       continue;
     }
+    // Fork (VA-1, D-VA-4): resolution does not group a member's arguments
+    // into its pack.
+    if (context.insts().Is<SemIR::PackExpansionPattern>(param_pattern_id)) {
+      context.TODO(param_pattern_id, "variadic member of an overload set");
+      break;
+    }
     bool is_value_param = false;
     if (auto binding = context.insts().TryGetAs<SemIR::WrapperBindingPattern>(
             param_pattern_id)) {
@@ -983,6 +989,13 @@ static auto CheckDefaults(Context& context, SemIR::Function& function)
               SemIR::WrapperBindingPattern wrapper_binding_pattern): {
             state->pattern_work_list.push_back(
                 wrapper_binding_pattern.subpattern_id);
+            break;
+          }
+          // Fork (VA-1): a pack expansion pattern's operand is its element.
+          case CARBON_KIND(
+              SemIR::PackExpansionPattern pack_expansion_pattern): {
+            state->pattern_work_list.push_back(
+                pack_expansion_pattern.subpattern_id);
             break;
           }
           case CARBON_KIND(SemIR::TuplePattern tuple_pattern): {
@@ -1277,6 +1290,12 @@ static auto CheckUnusedBindingsInPattern(Context& context,
       }
       case CARBON_KIND(SemIR::DefaultValuePattern default_value_pattern): {
         work_list.push_back(default_value_pattern.subpattern_id);
+        break;
+      }
+      // Fork (VA-1): the each-name binding of a pack is checked like any
+      // other binding.
+      case CARBON_KIND(SemIR::PackExpansionPattern pack_expansion_pattern): {
+        work_list.push_back(pack_expansion_pattern.subpattern_id);
         break;
       }
       default:

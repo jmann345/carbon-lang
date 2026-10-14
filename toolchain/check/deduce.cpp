@@ -9,6 +9,7 @@
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/generic.h"
+#include "toolchain/check/inst.h"
 #include "toolchain/check/subst.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/diagnostic.h"
@@ -430,6 +431,40 @@ auto DeductionContext::Deduce() -> bool {
             return false;
           }
           result_arg_ids_[index.index] = arg_const_inst_id;
+        }
+        continue;
+      }
+
+      // Deducing a pack type `«E; N»` against the tuple type `(A1, ..., Ak)`
+      // of a pack literal deduces the arity `N` as `k`, and `E` against each
+      // `Ai` (docs/design/variadics.md, "Typechecking pattern matches").
+      // Against another pack type, as when a call forwards a pack expansion,
+      // it deduces the element type and the arity from the other's.
+      case CARBON_KIND(SemIR::PackType pack_type): {
+        if (auto arg_pack_type =
+                context().insts().TryGetAs<SemIR::PackType>(arg_id)) {
+          Add(pack_type.arity_id, arg_pack_type->arity_id,
+              /*want_value=*/true);
+          Add(pack_type.element_type_inst_id,
+              arg_pack_type->element_type_inst_id, /*want_value=*/true);
+          continue;
+        }
+        auto arg_tuple_type =
+            context().insts().TryGetAs<SemIR::TupleType>(arg_id);
+        if (!arg_tuple_type) {
+          break;
+        }
+        auto element_ids =
+            context().inst_blocks().Get(arg_tuple_type->type_elements_id);
+        auto arity_id = GetOrAddInst<SemIR::IntValue>(
+            context(), loc_id_,
+            {.type_id =
+                 GetSingletonType(context(), SemIR::IntLiteralType::TypeInstId),
+             .int_id = context().ints().Add(
+                 static_cast<int64_t>(element_ids.size()))});
+        Add(pack_type.arity_id, arity_id, /*want_value=*/true);
+        for (auto element_id : llvm::reverse(element_ids)) {
+          Add(pack_type.element_type_inst_id, element_id, /*want_value=*/true);
         }
         continue;
       }

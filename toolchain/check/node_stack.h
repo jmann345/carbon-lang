@@ -467,6 +467,7 @@ class NodeStack {
       case Parse::NodeKind::ClassIntroducer:
       case Parse::NodeKind::UnionIntroducer:
       case Parse::NodeKind::CodeBlockStart:
+      case Parse::NodeKind::EachBindingName:
       case Parse::NodeKind::ExplicitParamListStart:
       case Parse::NodeKind::ForHeaderStart:
       case Parse::NodeKind::FunctionIntroducer:
@@ -486,6 +487,7 @@ class NodeStack {
       case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchHandlerStart:
       case Parse::NodeKind::NamedConstraintIntroducer:
+      case Parse::NodeKind::PackExpansionStart:
       case Parse::NodeKind::PatternConditionInitializer:
       case Parse::NodeKind::PatternConditionIntroducer:
       case Parse::NodeKind::RefBindingName:

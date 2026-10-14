@@ -136,8 +136,17 @@ auto HandleParseNode(Context& context,
 auto HandleParseNode(Context& context, Parse::IdentifierNameExprId node_id)
     -> bool {
   auto name_id = GetIdentifierAsNameId(context, node_id);
-  context.node_stack().Push(node_id,
-                            HandleNameAsExpr(context, node_id, name_id));
+  auto result = LookupUnqualifiedName(context, node_id, name_id);
+  auto target_id = result.scope_result.target_inst_id();
+  // Fork (VA-1, D-VA-11): the design gives a pack's name without `each` no
+  // meaning yet, and leaves it open for operations on the whole sequence
+  // (proposals/p002240-variadics.md, "Omit each-names").
+  if (context.pack_binding_arities().Contains(target_id)) {
+    return context.TODO(node_id, "use of a pack's name without `each`");
+  }
+  context.node_stack().Push(
+      node_id,
+      BuildNameRef(context, node_id, name_id, target_id, result.specific_id));
   return true;
 }
 

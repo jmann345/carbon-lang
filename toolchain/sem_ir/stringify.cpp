@@ -457,6 +457,12 @@ class Stringifier {
           worklist.push_back(default_value.subpattern_id);
           break;
         }
+        case CARBON_KIND(PackExpansionPattern pack_expansion): {
+          // A pack's argument is the one pack value that the call passes for
+          // its run of arguments.
+          worklist.push_back(pack_expansion.subpattern_id);
+          break;
+        }
         case CARBON_KIND_ANY(AnyBindingPattern, binding): {
           if (binding.subpattern_id.has_value()) {
             worklist.push_back(binding.subpattern_id);
@@ -867,6 +873,11 @@ class Stringifier {
     const auto& name_scope = sem_ir_->name_scopes().Get(inst.name_scope_id);
     step_stack_->PushQualifiedName(name_scope.parent_scope_id(),
                                    name_scope.name_id());
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, PackType inst) -> void {
+    *out_ << "«";
+    step_stack_->Push(inst.element_type_inst_id, "; ", inst.arity_id, "»");
   }
 
   auto StringifyInst(InstId /*inst_id*/, PartialType inst) -> void {

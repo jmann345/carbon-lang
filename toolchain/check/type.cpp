@@ -116,6 +116,11 @@ static auto GetCompleteTypeImpl(Context& context, EachArgT... each_arg)
   return type_id;
 }
 
+auto GetPackType(Context& context, SemIR::TypeInstId element_type_id,
+                 SemIR::InstId arity_id) -> SemIR::TypeId {
+  return GetTypeImpl<SemIR::PackType>(context, element_type_id, arity_id);
+}
+
 auto GetStructType(Context& context, SemIR::StructTypeFieldsId fields_id)
     -> SemIR::TypeId {
   return GetTypeImpl<SemIR::StructType>(context, fields_id);

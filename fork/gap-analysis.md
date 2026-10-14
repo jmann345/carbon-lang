@@ -15,19 +15,25 @@ with real test coverage), **PARTIAL** (works with material gaps),
 
 ## Scoreboard
 
-**30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY** across 56 milestone
-bullets (reconciled 2026-10-05 against the conformance scoreboard —
-128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets PASS — and the
-fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
-24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
-W-012 landing later the same day). The front half of the compiler is done;
+**30 DONE / 22 PARTIAL / 4 MISSING / 0 DESIGN-ONLY** across 56 milestone
+bullets (reconciled 2026-10-14 against the expected conformance scoreboard —
+137 PASS / 0 FAIL / 21 SKIP over 158 programs, 49/56 bullets PASS, VA-1's
+container run on its merge of trunk e25b27e34, whose toolchain is the
+carbonbuild toolchain of 88b1b5bd2, stated as expected, not of record (Actions
+disabled) — when VA-1 moved the variadics row
+DESIGN-ONLY → PARTIAL; reconciled before it on 2026-10-05 against the
+scoreboard of record, 128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56
+bullets PASS, and the fork/inventory/work-items.json ledger; the original
+2026-07-19 audit read 24 / 18 / 13 / 1; the if-let / let-else row flipped
+MISSING → PARTIAL at the W-012 landing later the same day). The front half of
+the compiler is done;
 match, choice payloads, `?` error handling, exception boundaries, threading
 interop, if-let / while-let / let-else, native unions, `overload fn` sets
 with import, api/impl definitions, generic members and C++ export, and
 `Core.Slice`/`Core.Buf` with the runtime bounds fail-stop, and the
 `std::span` <-> `Core.Slice` mapping with owning-container views have since
-landed, leaving variadics and the build-system/documentation rows as the
-open back half.
+landed, leaving variadics beyond its first slice and the
+build-system/documentation rows as the open back half.
 
 ## Per-bullet status
 
@@ -50,7 +56,7 @@ open back half.
 | Type system: Unions (un-discriminated) + C++ union mapping | DONE | UN-1 landed (W-009 DISCHARGED 2026-09-27, fork/unions/plan.md): native `union` end to end — `union` keyword, class-shaped body with methods/impls/forward declarations, an all-offsets-zero `CustomLayoutType` object representation with max-of-fields size/alignment, designated single-field init (`{.a = 42} as U`), unformed-then-assign (`var u: U;`) by way of a synthesized `Core.UnformedInit` witness, whole-union byte copy, import across libraries (parse/check/lower goldens under testdata/union/). UN-2 landed (W-015 DISCHARGED 2026-09-28): imported C++ unions are marked `is_union` on definition import and construct by designated single-field init through the same `ConvertStructToUnion` path as native unions, gated to C++ aggregates (`IsImportedCppAggregate`) so a user-provided constructor is never bypassed, while copy keeps C++'s determination (a union with a non-trivial member keeps Clang's deleted copy constructor); Carbon unions export as `TagTypeKind::Union` with Carbon-supplied layout (size/alignment from the `CustomLayoutType` block, offset zero for every field, no `final`, no destructor thunk), checked by `static_assert(__is_union/sizeof/alignof)` in the embedded Clang; round-trip goldens in both directions, by pointer and by value (`SumLo(Carbon::Wide)` into C++, `MakeWide`/`MakePair` returned by value, `ReadA(Pair)` into C++), under testdata/interop/cpp/class/{import,export}/union*.carbon. Gated residue, each a filed item: concrete unions only — generic unions and unions nested in generic scopes are behind a `generic union` TODO (W-088); the 0.1 field predicate conservatively rejects choice-typed (W-086) and imported C++-typed (W-087) fields (`str` is `Core.String` and is admitted); nested types in a union body diagnose the generic `UnrecognizedDecl` at parse (W-089); invalid-representation reads yield poison rather than the design's fail-stop (W-090); the field copy predicate is textual-order dependent for user impls (W-092) and blind to user blanket `Core.Copy` impls (W-093) — DONE with gated residue on the row 44 precedent (Sum types is DONE with Self-dependent payloads and qualified alternative patterns still gated by diagnostics). Conformance: 4/4 programs PASS (types/union_basic SKIP -> PASS and types/union_pun_diff differential at UN-1, hosted runs 36315125503 and 36318245113; types/union_cpp_import and types/union_cpp_export at UN-2, hosted run 36447037687, 116/0/25 over 141, the bullet already PASS since UN-1). |
 | Generics: generic functions and types | DONE | Generic classes/functions/methods with Generic/Specific definition-checked model (sem_ir/generic.h) and monomorphizing lowering (lower/testdata/function/generic/, 28 tests). |
 | Generics: Checked generics | DONE | Interfaces, impls (forall/blanket/final), witness tables, associated constants, where-rewrites, named constraints, deduction, specialization + match_first — ~227 golden tests; residual gaps (== constraints, observe semantics, interface defaults) are edges. |
-| Generics: Definition-checked variadics | DESIGN-ONLY | Complete 964-line design (docs/design/variadics.md, accepted p002240) but zero implementation — no `...`/`each` tokens exist in token_kind.def (verified). |
+| Generics: Definition-checked variadics | PARTIAL | Slice 1 landed by VA-1 (fork/variadics/plan.md; W-013 stays open), EXPECTED, not of record: `...` (upstream's 2ec4bab59, cherry-picked) and `each` lex and parse; a function may take one pack `... each x: T` of one element type in its explicit parameter list, binding its arguments' values without copying them, expand it in expression statements and pass it on as call arguments (`... e`, evaluated where written); the arity is deduced at each call, the body is checked once against the element type, and each arity is lowered as its own specific. generics/variadics_each.carbon and eight more programs PASS in the container run of 2026-10-14 on the merge of trunk e25b27e34, whose toolchain is the carbonbuild toolchain of 88b1b5bd2 (fork/variadics/plan.md §8.8: `conformance.sh` into a private directory, scoreboard generated 2026-10-14T13:37:37Z, log /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va1-impl/discharge/conf_merge.log; 137 PASS / 0 FAIL / 21 SKIP over 158 programs, 49/56 bullets PASS; file_test 1960 passed, 0 failed). Not yet (W-212..W-230): packs of several or deduced types (`[... each T: type]`), expansions in tuple literals and tuple patterns outside calls and parameter lists, `...and`/`...or`/`...expand`, declarations and control flow inside expansions, default values beside a pack, variadic interface functions, variadic impls (the tuple `Copy` rewrite), C++ variadic templates. |
 | Generics: Integrated templates | PARTIAL | `template T: type` checks and simple dependent member access works by way of deferred actions, but operators/conversions on dependent values are fail_todo, lowering hits CARBON_FATAL 'Template lowering not implemented yet' (lower/handle.cpp:363), and templates.md is a self-described skeletal placeholder. |
 | Generics: Template-style structural conformance to nominal constraints | MISSING | Design decided F-010 (`template constraint` + `require` validity blocks/predicates, fork/design-sprint/structural-conformance.md, 583 lines) but no docs/design page has landed (F-008..F-011 doc landing gated, fork/ORCHESTRATION.md) and nothing is implemented — 'structural conformance' appears nowhere in the toolchain; a `template T:! I` argument still needs a nominal `impl as I` (generics/structural_conformance SKIP; W-027/W-028 open). |
 | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | PARTIAL | Class/function/alias/variable templates import and instantiate on C++ types and Carbon builtins, but Carbon class types as template args error 'unsupported type used as template argument' (interop/cpp/template/generic_call.carbon). |
@@ -183,6 +189,13 @@ Independent of match; can start immediately. Explicit 0.1 bullet.
 the worked examples in docs/design/variadics.md compile and execute;
 core/prelude tuple Copy/Eq rewritten as a single variadic impl replacing the
 arity-3 hand-rolls.
+
+**Slice 1 (VA-1, fork/variadics/plan.md):** homogeneous value packs in explicit
+parameter lists, expression-statement and call-argument expansions, a deduced
+arity, the body checked once and lowered per arity; upstream's 2ec4bab59 and
+a045da8e6 cherry-picked. Next: W-212 (generic and heterogeneous packs), then
+W-213 and W-218 (tuples with pack segments, statement expansions of
+declarations), which the design's Zip needs.
 
 ### W7. Integrated templates completion + structural conformance [L]
 

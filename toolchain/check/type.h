@@ -128,6 +128,11 @@ auto GetPointerType(Context& context, SemIR::TypeInstId pointee_type_id)
 auto GetArrayType(Context& context, SemIR::InstId bound_id,
                   SemIR::TypeInstId element_type_inst_id) -> SemIR::TypeId;
 
+// Gets the pack type `«element_type; arity»`: the type of a pack expansion
+// segment of `arity` elements of type `element_type`.
+auto GetPackType(Context& context, SemIR::TypeInstId element_type_id,
+                 SemIR::InstId arity_id) -> SemIR::TypeId;
+
 // Returns a struct type with the given fields.
 auto GetStructType(Context& context, SemIR::StructTypeFieldsId fields_id)
     -> SemIR::TypeId;

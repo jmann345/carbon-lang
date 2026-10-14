@@ -4283,9 +4283,10 @@ refilled, CHECK lines only) and df5120d03 (records: the re-measure on a
 clean-stamped toolchain, misses (n) and (o)); the records commit after df5120d03
 adds round 4's per-finding dispositions with their cites, the line cites of
 round 5's decision and the re-measure on df5120d03. Fill round 6 (2026-10-14),
-folding round 5's two implementation reviews: a fixes commit (the fix, test
-sources, the design page and records), a goldens commit (3 goldens, CHECK lines
-only) and a records commit that names them. Each fix is an R29(a)
+folding round 5's two implementation reviews: 56e400145 (the fix, test
+sources, the design page and records), fb12f63cb (3 goldens, CHECK lines only)
+and the records commit after them (the clean-stamp re-measure, the round-6 rows
+marked FILLED, the commit hashes). Each fix is an R29(a)
 implementation decision recorded for after-the-fact veto, with its design
 citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Every count below is a measurement on the container, not of record
@@ -4979,7 +4980,12 @@ passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
 failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.2 s;
 the 553 probe runs classify exactly as on 18775fee3, the round-5 reviews' 412
 runs as 249 check errors, 135 that compile and run, 16 with no `Run` and 12
-aborts, each reproduced on trunk 0bdce60a5. Against
+aborts, each reproduced on trunk 0bdce60a5. Re-run on the toolchain rebuilt from
+fb12f63cb with a clean tree (stamped 0.0.0-0.dev+fb12f63cb): autoupdate over the
+19 SC-1 goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or
+`?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
+49 PASS, 0 FAIL, 7 SKIP of 56, 111.3 s; every probe run classifies as on the
+pre-commit build. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
@@ -5069,7 +5075,10 @@ ROUND 6's DECISION, the round-5 review record, (o) and the R16(d) disclosure
 under FILL-CAUGHT MISSES, the measurements); the design page (objects of the
 type, values typed by a parameter bound to it); the ORCHESTRATION status
 paragraph, with df5120d03's rewrap of the UA-1 sentences undone, and Branches
-row; W-027's title, evidence and notes (six fill rounds).
+row; W-027's title, evidence and notes (six fill rounds). Round 6's records
+commit, after fb12f63cb: the three round-6 §4.B rows marked FILLED, round 6's
+commit hashes and the clean-stamp re-measure here, in the plan, in
+ORCHESTRATION's Branches row and in W-027's notes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

@@ -3640,3 +3640,188 @@ change adds a CHECK that no golden or program reaches and comments; §8.8
 re-runs them on the merge commit. Not run, as §8.7 says: Bazel and its unit,
 lit and fuzz tests, clangd-tidy, ASan, macOS, Windows, an opt-mode toolchain,
 LLVM-side assertions and the hosted conformance run.
+
+## Landed notes (OP-2, 2026-10-14)
+
+**Discharge.** §3's commit 5, "OP-2 discharge: W-170, W-171, W-173 discharged,
+residues, decision-log entry, ORCHESTRATION, plan landed notes", writes §2.6's
+records after the implementation reviews, the merge of trunk and §8.8's
+re-verification, so every count it quotes is from a run on the tree it lands on
+(R9), stated EXPECTED, not of record (D-OP2-16): W-170, W-171 and W-173
+DISCHARGED and W-196 to W-201 filed (fork/inventory/work-items.json, 142 items);
+the Optional row's "DISCHARGED 2026-10-14", its decision-log title and its run
+re-quoted from §8.8, row 43's evidence and the header's sentence re-quoted, with
+the counts recounted unchanged at 31 / 20 / 4 / 1 (fork/gap-analysis.md); the
+decision-log entry "OP-2 / F-016: Core.Optional ownership, adapter destruction,
+the MaybeUnformed representation fix, checked Get (2026-10-14)" above OP-1's,
+the newest entry on this branch; the fork/ORCHESTRATION.md stamp paragraph,
+Branches row, Scoreboard line, item 5's OP-2 bullet, item 6's two SAFE-1 notes
+and item 7, the OP-2 merge steps with the W-196..W-201 reservation and DD-1's
+hand-off; in docs/design/optional.md, W-197 in place of W-126 and W-160's title
+in place of its id; and this section. It changes no prelude, toolchain, golden
+or program file. The §W9 sentence ("OP-2 closed the Optional half ...;
+2026-10-14") was checked against the ledger and stands.
+
+**Merge of trunk and §8.8.** Trunk f67ab650d, one ORCHESTRATION stamp over this
+branch's merge base 162c7e839, was merged as c396efeae (`git merge --no-ff
+--no-edit origin/trunk`). It stopped on two conflicts in fork/ORCHESTRATION.md,
+resolved by §3's records rule: the stamp paragraphs keep both sides in date
+order, and the Branches table takes trunk's op row (PR 56) and dd row; R31
+counts H1 1 / H2 1 / H3 5 / H4 0, dash items 18, numbered 6, table rows 17 → 18;
+prek changed nothing. Its message is written, recording that resolution, and
+carries the session trailers. `git diff --name-only 9f9ccd768 c396efeae` names
+fork/ files only and `ninja -n` in the build directory has no work, so §8.8
+needed no rebuild or refill; the carbonbuild toolchain of 9f9ccd768 (`carbon
+version` 0.0.0-0.dev+9f9ccd768) is the merge commit's toolchain and prelude.
+Taken at the orchestrator's direction before PR 56 has merged (trunk carries
+none of PR 51 to PR 56), so the land-time merge re-runs §8.8 and re-anchors
+these records in new commits (fork/ORCHESTRATION.md Next actions item 7). Run on
+c396efeae:
+
+-   gate.sh: exit 0, "1950 passed, 0 failed (exit 0, 83s)", its log's summary
+    line reporting 1950 tests PASSED: PR 56's 1945 plus the five OP-2 goldens.
+-   conformance.sh with
+    `XDG_CACHE_HOME=/home/user/carbon-build/carbon-op2/cache` into a private
+    session-scratch directory: scoreboard generated 2026-10-14T05:49:31Z, 56.9
+    s; PASS 139, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 22 of 161; bullets 48 PASS / 0 FAIL / 8 SKIP of 56.
+    Program by program it equals the fold's run (2026-10-14T05:35:04Z) and
+    commit 4's (2026-10-14T04:23:32Z) in status and detail; against PR 56's
+    container scoreboard (132 / 0 / 25 over 157, generated 2026-10-13T23:57:07Z)
+    exactly §5's seven status changes. The Optional bullet: 13 PASS and
+    optional_pointer_compare SKIP; error_handling/optional_try PASS. D-OP2-16's
+    break condition did not fire.
+-   `runner.py --self-test`: "self-test: 161 programs parsed, 56 bullets in
+    table, OK"; `--update-readme-table` changed nothing.
+-   The mutants of §8.5, re-run on 9f9ccd768's build, each in its own copy of
+    the install with its own cache (`--filter optional`, 15 programs): m1
+    RUN-FAIL -11 on optional_destroys_value, OUTPUT-MISMATCH `1 2 0 1 1 -1` on
+    optional_cpp_class_destroy, PASS on optional_destroy_diff, and RUN-FAIL -5
+    on optional_compare_payload (the mutant's undefined behavior, also at commit
+    4); m2 OUTPUT-MISMATCH on the three (`2 1 1 0 3 2`, `2 1 3 2 2 1 1 1 1 3 2`,
+    `1 2 1 2 2 1`); m4 OUTPUT-MISMATCH on the three (`2 -1 1 0 3 -2`, `2 -1 3 -4
+    0 -1 1 -1 1 3 -2`, `1 2 -1 0 0 -1`); `Get` without the check RUN-FAIL on
+    both fail-stop programs (exit 0 and 233); toolchain mutant (i),
+    custom_witness.cpp from 379f20f67 relinked into 9f9ccd768's build by the
+    ST-1 recipe, OUTPUT-MISMATCH on the three destroy programs; mutant (ii),
+    lower/handle.cpp from 379f20f67, COMPILE-FAIL on optional_bool (compile
+    exits -6) and OUTPUT-MISMATCH on optional_nested_pointer (`1 1 1 0 0`). Each
+    equals commit 4's result on 757cd0e74's build.
+-   The R-9 grep (a non-pointer `Core.Optional` local declared without an
+    initializer) over the `.carbon` files of c396efeae and of the sc, dd, st,
+    ua2, ev, safe and cmake heads and trunk: the only one is
+    `fail_unformed_value`'s, which pins the error; every other match is a class
+    field, a union field or a pointer payload.
+-   §0.3 item 1 re-read: convert.cpp's CHECK is at :1701 here (:1698 at
+    379f20f67); on SC-1's head ee1f905b0 it is at :1712, and `git apply --check`
+    of `git diff 379f20f67 HEAD` for the three toolchain files on a `git
+    archive` of SC-1's applies with offsets +14 (convert.cpp) and +2
+    (custom_witness.cpp, all three hunks), handle.cpp unchanged.
+-   The dates: commit 4 and the discharge are both dated 2026-10-14, so nothing
+    is re-stamped.
+
+**Ids.** The re-scan immediately before the ledger was written read 76 refs
+(trunk, origin/trunk and the 74 local and origin `claude/carbon-fork-0-1-*`
+refs) and, read-only, the working trees of the sc, st, ev, op, dd, ox, va, safe,
+ua2, cmake and trunk worktrees: ledger maxima op and op2 W-195, dd W-191, sc
+W-169 (W-232 on its local round-9 head a5078358c, the id SC-1's round 9 took in
+place of W-200), st W-167, ev W-155; W-196 to W-201 are named only on the op2
+branch and, as OP-2's reservation, on the dd branch and that sc head, and filed
+on none; F-016 is named only on the op2 branch and in DD-1's statement that it
+does not mint it. So W-196, W-198, W-199 and W-200 are filed as reserved, F-016
+is minted, and W-201, the spare, takes the implementation review's aggregate
+defect (R1-m2). W-197: PR 51 is not on trunk (f67ab650d), and W-126, its item
+for the same defect, is in no ledger this branch carries, so by §1.7 and §2.6
+W-197 is filed as rev 1 wrote it (the classes bullet, toolchain-defect, size S),
+citing W-126 on the ua2 branch, to fold into W-126 when PR 51 lands; the
+hand-off's rule for W-126 and W-160 ran too, and since neither PR 51 nor PR 55
+is on trunk, the Optional row and optional.md name W-197 where they named W-126,
+the item this ledger holds for that defect (rather than its bare title, so that
+every id they cite resolves here), and optional.md gives W-160's title,
+"assignment does not destroy the overwritten value", in place of its id. W-126
+therefore gets no OP-2 note here; W-197's notes carry it. fork/ORCHESTRATION.md
+item 7 restores both ids when those PRs land.
+
+**FILL-CAUGHT MISSES: none.** Every §4 key line was reproduced by 189baa262, the
+five new goldens have M-12's rev 2 sizes (321/259, 458/412, 783/673, 352/299,
+530/482: 2444 lines, 2125 CHECK) and the 28 refills §6.1's numstat row by row
+(`+4184 -6785`), each refill byte-identical to the rev 2 fixer's mirror fill; no
+`error:` or `warning:` line was added or removed, and no §4 falsifier fired.
+Review saw nothing to miss, because §4 quotes the rev 2 fixer's measured fills
+with the same three toolchain sources and the same prelude, not predictions;
+only the TIP lines differ.
+
+**Deviations, each recorded where it happened:**
+
+-   The merge of trunk was taken at the orchestrator's direction before PR 56
+    has merged, while §3 times it after PR 56's merge; the land-time merge
+    re-runs §8.8 (item 7).
+-   c396efeae's message is written, not git's default, because the merge stopped
+    on conflicts; it records the resolution and carries the session trailers.
+-   W-197 is filed and the row and optional.md name W-197 and W-160's title, and
+    the SAFE-1 notes wait in ORCHESTRATION item 6, because PR 51, PR 53, PR 55
+    and PR 56 are not on trunk; each is the plan's conditional rule.
+-   The implementer wrote the titles of commits 2 and 4 and the header's
+    scoreboard sentence, which §2.6 and §3 give no verbatim text for.
+-   prek's rumdl hook re-wrapped the classes.md amendment at commit 4 (its dated
+    first line was 84 columns), word for word §2.5's text.
+-   The fold's "Fork (OP-2, ...)" markers, the moved comment in
+    `MakeSubobjectDestroyOpBody` and `CheckCopyValueIsObject` depart from §2.2's
+    text (R2-m2, R1-m2).
+-   The mutants were not re-run at the fold, whose prelude was unchanged and
+    whose new CHECK fires on no golden or program; §8.8 re-ran them, above.
+-   Under m1, optional_compare_payload also fails (RUN-FAIL -5), beyond M-14's
+    prediction: the mutant's undefined behavior, not the landed code.
+-   The conformance runs wrote to session scratch directories; the records cite
+    them by toolchain sha, `generated` timestamp and totals.
+
+**Upstream report list.** Both toolchain fixes repair code that upstream trunk
+d4f1ec203 still carries (M-3, M-5), so the report lists these reproducers, all
+in the session scratch directory
+(`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad`):
+M-2's probes (op2/probes/w171: mu_bool.carbon, `fn F(m:
+Core.MaybeUnformed(bool)) -> bool { return m unsafe as bool; }`, which fails the
+CHECK at convert.cpp:1698, the nightly's :1562; mu_generic.carbon, the generic
+`G` with a `Core.MaybeUnformed(bool)`, which aborts the verifier;
+mu_opt_run.carbon and mu_gen_run.carbon, which print garbage for 7) and M-5's
+op2/probes/w170/adapter_destroy.carbon (`0 201` where `0 202 201` is right);
+W-198's two, op2-fixer/probes/a2/c_only.carbon and rev_init.carbon (M-18);
+review 1's iter/iter_bool_only.carbon (a `for` over `array(bool, 3)`, which
+aborts at lower.cpp:48 on trunk), cpp/cpp_iter2.carbon (a C++ range-for whose
+`operator*` returns a class with a counting destructor, `10 5` on trunk and
+OP-1, `10 0` with OP-2), cpp/cpp_adapt.carbon and dtor/a1.carbon (adapters of
+destructible C++ and Carbon types: `5 4 0` and `live=17` on OP-1, `5 0 0` and
+`live=0` with OP-2), all under op2-impl/rev1/probes; and W-201's
+op2-impl/rev1/probes/agg/tup1gen.carbon and tup1plain.carbon. The optional
+runtime pin of the C++ range-for under the C++ iteration-mapping bullet (R1-m3)
+was not added.
+
+**Not run** (§8.7): Bazel and its unit, lit and fuzz tests; clangd-tidy; ASan;
+macOS, Windows and an opt-mode toolchain; LLVM-side assertions (the CMake LLVM
+is a Release build); the hosted conformance run (Actions disabled; D-OP2-16);
+SC-1's toolchain composed with OP-2 at run time (M-16 is textual; the land-time
+§8.8 covers it).
+
+**Reviews.** Five reviews, 33 findings: 1 BLOCKER, 9 MAJOR and 23 MINOR, none
+rejected; the focused re-review also verified review B's BLOCKER RESOLVED.
+
+| Review | Scope | Verdict | Findings | Folded in |
+| --- | --- | --- | --- | --- |
+| Plan review A | rev 1 (963adda99): toolchain root cause and design soundness | APPROVE-WITH-AMENDMENTS | 7: 2 MAJOR, 5 MINOR (A-1..A-7) | rev 2, 4027885b3 |
+| Plan review B | rev 1 (963adda99): concreteness, process, Goodhart and cross-workstream | REJECT | 13: 1 BLOCKER, 5 MAJOR, 7 MINOR (B-1, B-M1..B-M5, B-m1..B-m7) | rev 2, 4027885b3 |
+| Focused re-review | rev 2 (4027885b3) | APPROVE-WITH-AMENDMENTS | B-1 verified RESOLVED; 5 new: 1 MAJOR, 4 MINOR (RR-1..RR-5) | rev 3, a5b81889b (the sign-off) |
+| Implementation review 1 | 757cd0e74, 189baa262, 503d25895: correctness and soundness | APPROVE-WITH-FIXES | 4 MINOR (R1-m1..R1-m4) | 9f9ccd768, f859c7e73 |
+| Implementation review 2 | the same commits: R27 spelling against §2, R16, the R26 fixpoint, the row flip, readiness for commit 5 | APPROVE-WITH-FIXES | 4: 1 MAJOR, 3 MINOR (R2-M1, R2-m1..R2-m3) | 9f9ccd768, f859c7e73 |
+
+The implementation-review findings and their state after the discharge commit:
+
+| Finding | Grade | State after the discharge |
+| --- | --- | --- |
+| R1-m1: a user `UnformedInit` impl on a class holding, or an adapter of, a non-pointer Optional | MINOR | Closed: optional.md's W-200 limit and the F-016 amendment say so (9f9ccd768); W-200 records d3.carbon and d4.carbon; the initialization_safety.md note waits in ORCHESTRATION item 6 for PR 53 |
+| R1-m2: the new conversion on a single-element aggregate of a pointer-represented element | MINOR | Closed: `CheckCopyValueIsObject` (9f9ccd768); the aggregate defect filed as W-201, re-measured at the discharge |
+| R1-m3: the `for` and adapter fixes on no upstream-report list | MINOR | Closed: the upstream report list above; the optional range-for pin not added |
+| R1-m4: `?` on an Optional of a class payload | MINOR | Closed: the row's limit (f859c7e73), optional.md (9f9ccd768) and the decision-log entry's D-OP2-12 argument |
+| R2-M1: the merge rules against DD-1's records; OP-2's ids capped at W-199 | MAJOR | Closed: D-OP2-13 records the fired break condition (f859c7e73); ORCHESTRATION records the position, the W-196..W-201 reservation and DD-1's ledger-header hand-off (item 7); the id and F-016 re-scan ran |
+| R2-m1: D-OP2-5's "SemIR-only" refills | MINOR | Closed: M-8, D-OP2-5, §4 and §6.1 restated (f859c7e73); the decision-log entry quotes the restated cost |
+| R2-m2: no "Fork (...)" markers | MINOR | Closed: markers on every OP-2 hunk (9f9ccd768) |
+| R2-m3: commit 4's forward-looking phrases | MINOR | Closed: the row says DISCHARGED with both decision-log titles, the header says the ledger was reconciled, §W9 checked, and the W-126 and W-160 rule ran (Ids above) |

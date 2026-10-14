@@ -407,10 +407,10 @@ sub-object exists only when it holds one, so under Strict Carbon assigning an
 
 Assignment `o = p;` does not destroy the old value of any class with a
 `Destroy`; that is not specific to `Core.Optional`, and is filed by the strings
-workstream (W-160: assignment does not destroy the overwritten value). A class
-that declares its own `Destroy` does not yet destroy its fields after that
-`Destroy` runs, so an Optional field of such a class keeps its value (W-126); a
-class without one destroys its fields, an Optional field included.
+workstream ("assignment does not destroy the overwritten value"). A class that
+declares its own `Destroy` does not yet destroy its fields after that `Destroy`
+runs, so an Optional field of such a class keeps its value (W-197); a class
+without one destroys its fields, an Optional field included.
 
 ## Propagation and iteration
 
@@ -535,12 +535,11 @@ Each limit is a filed fork work item, with the condition under which it closes:
     to check.** See [C++ interoperability](#c-interoperability). Filed by the
     C++ export work. Closes when the toolchain can name the `Core` package
     from C++.
--   **Assignment does not destroy the overwritten value** (W-160, filed by the
-    strings workstream). Closes with assignment that destroys the old value.
+-   **Assignment does not destroy the overwritten value** (filed by the strings
+    workstream). Closes with assignment that destroys the old value.
 -   **A class that declares its own `Destroy` does not destroy its fields**
-    (W-126, filed by the upstream-advance workstream), so an Optional field of
-    such a class keeps its value. Closes when such a class's fields are
-    destroyed after its `Destroy` runs.
+    (W-197), so an Optional field of such a class keeps its value. Closes when
+    such a class's fields are destroyed after its `Destroy` runs.
 
 One divergence is disclosed rather than filed: in 0.1 a comparison of two
 non-empty values runs `T`'s `Copy` and `Destroy` once per value

@@ -134,6 +134,38 @@ parallel; both moved off it (OP-1 to W-195, DD-1 to W-191), so W-190 stays
 unused and is never reused. Merge order: PR 53, PR 51, PR 52, SC-1, PR 54,
 PR 55, PR 56, then DD-1. None is merged.
 
+Later on 2026-10-14, the OP-2 discharge (pushed, PR to open and hold, stacked on
+PR 56): OP-2 (claude/carbon-fork-0-1-op2, fork/optional2/plan.md rev 3, W-170,
+W-171 and W-173, gap row "Stdlib: Optional", fork design F-016) is IMPLEMENTED
+AND DISCHARGED on top of PR 56's head 379f20f67, and the row moves PARTIAL →
+DONE, expected and not of record, by D-OP-13's criterion as amended by D-OP2-16
+— 757cd0e74 (the toolchain: lowering converts a value between
+`MaybeUnformed(T)`'s and `T`'s value representations, convert.cpp's CHECK tests
+the operand, and an adapter is destroyed as its adapted type, F-016; the prelude
+275 → 307 lines: the default storage's `Destroy`, `let Type: Destroy`, a checked
+`Get` that fails-stop, `UnformedInit` for `Core.Optional(T*)` only; five
+CHECK-free goldens), 189baa262 (the fill: the five new goldens and the plan's 28
+refills), 503d25895 (three arbiters SKIP → PASS, four new programs, one with a
+C++17 oracle, optional.md and the dated F-016 amendment of classes.md, the row
+DONE), 9f9ccd768 and f859c7e73 (both implementation reviews folded: 1 MAJOR and
+7 MINOR, none rejected), c396efeae (the merge of trunk f67ab650d,
+fork/ORCHESTRATION.md only) and the discharge commit (W-170, W-171 and W-173
+DISCHARGED; W-196 to W-201 filed; the F-016 decision-log entry). Verification is
+container-built and NOT of record (Actions disabled): the carbonbuild toolchain
+of 9f9ccd768, file_test 1950/1950 on the merge commit, the expected scoreboard
+139 PASS / 0 FAIL / 22 SKIP over 161, 48/56 bullets (scoreboard generated
+2026-10-14T05:49:31Z), the seven Optional programs the only change from PR 56's
+132 / 0 / 25 over 157, and every mutant of the plan's §8.5 caught; the header
+reads 31 / 20 / 4 / 1. Not run: Bazel and its tests, clangd-tidy, ASan, any
+hosted run, an opt-mode toolchain, LLVM assertions, non-Linux. Merge position:
+after PR 56 and before DD-1, since DD-1 merges last at the orchestrator's
+direction (D-OP2-13's break condition); merge order now PR 53, PR 51, PR 52,
+SC-1, PR 54, PR 55, PR 56, OP-2, then DD-1. None is merged. Id reservation: OP-2
+reserves W-196..W-201 and used all six at its discharge (W-197 filed because PR
+51 is not on trunk, to fold into PR 51's W-126; W-201 the spare); fork design id
+F-016 is OP-2's. The merge steps are Next actions item 7; item 6 gains OP-2's
+two SAFE-1 notes.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -471,6 +503,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
 | `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 379f20f67 (W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
+| `claude/carbon-fork-0-1-op2` | PUSHED, PR to open and HOLD, stacked on PR 56 — OP-2 Core.Optional ownership, the MaybeUnformed unsafe-as fix and a checked Get, fork design F-016, discharged on top of the trunk merge c396efeae (W-170, W-171, W-173 discharged; W-196..W-201 filed; row "Stdlib: Optional" DONE, expected; expected 139/0/22 over 161); merges after PR 56 and before DD-1. |
 | `claude/carbon-fork-0-1-dd` | PLAN rev 3, NOT signed off — DD-1 design docs without placeholders (W-065, gap row 91); ids W-180..W-189 and W-191..W-194; second focused re-review in progress; merges last. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -492,7 +525,11 @@ makes too; the line had read 126 / 23 / 0 over 149 and 47/56 from the PR 48 run
 37357609478). Expected at OP-1, NOT of record: 132 PASS / 25 SKIP / 0 FAIL over
 157, 48/56 (a container run on the carbonbuild toolchain of 5d9edb3e0 at the
 merge of trunk aa89cd7cd, scoreboard generated 2026-10-13T23:57:07Z; the
-Optional bullet PASS over ten programs, its gap row PARTIAL).
+Optional bullet PASS over ten programs, its gap row PARTIAL). Expected at OP-2,
+NOT of record: 139 PASS / 22 SKIP / 0 FAIL over 161, 48/56 (a container run on
+the carbonbuild toolchain of 9f9ccd768 at the merge of trunk c396efeae,
+scoreboard generated 2026-10-14T05:49:31Z; the Optional bullet PASS over 14
+programs, 13 PASS and optional_pointer_compare SKIP, its gap row DONE).
 History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a → 80
 at S3b → 81 at S3c → 83 at B1b (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 88 F8b
@@ -601,6 +638,17 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
         record (expected: PASS up 4, SKIP up 3 and programs up 7 over the
         base, the Optional bullet PASS over ten programs, row 78 PARTIAL), and
         the "not of record" phrases go in a records commit.
+    -   OP-2 (claude/carbon-fork-0-1-op2, stacked on this branch; item 7): when
+        Actions returns, the first hosted conformance run on a tree with OP-2 in
+        it (OP-2's PR head while it is open, trunk after) is the record
+        (expected, from fork/optional2/plan.md §5: over a base that carries
+        OP-1, PASS up 7, SKIP down 3 and programs up 4; OP-1 and OP-2 together
+        over a base with neither, PASS up 11, SKIP unchanged and programs up 11;
+        the Optional bullet PASS over 14 programs, 13 PASS and
+        optional_pointer_compare SKIP; the row "Stdlib: Optional" DONE), and the
+        "not of record" phrases go in a records commit; if it shows any other
+        program of the bullet not PASS, the row reverts to PARTIAL in the next
+        commit and that program's item is re-opened (D-OP2-16).
 6.  The two SAFE-1 amendments OP-1 owes, verbatim from fork/optional/plan.md
     §2.5 (PR 53 had not landed at OP-1's discharge). OP-1 merges after PR 53,
     so OP-1 makes them at its merge of trunk, dated with the landing date; if
@@ -623,6 +671,79 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
         never a hole"), D-SAFE-9 and `Core.Plain` (safety/mutation_safety.md)
         and EX-M-5 and EX-M-6, which the page names without links until PR 53
         is on trunk.
+    -   OP-2's two dated notes (fork/optional2/plan.md §2.5, D-OP2-14; neither
+        PR 53 nor PR 56 was on trunk at OP-2's discharge), made at OP-2's merge
+        of trunk once both are, dated with the landing date, or by SAFE-1's
+        merge of trunk if OP-2 lands first. Directly after OP-1's TY4 amendment
+        in docs/design/safety/type_safety.md, a blockquote: "**Fork note
+        (<date>, OP-2): TY4 holds for `Get()`.** `Get()` on an empty
+        `Core.Optional(T*)` fails-stop (fork/optional2/plan.md, D-OP2-7): it
+        writes one line to standard error and aborts before any pointer exists,
+        so a `T*` obtained from `Get` is never null, and the OP-1 amendment
+        above no longer applies to that path. A `match` over a `Core.Optional`,
+        which TY4 also names, still waits on W-177."
+    -   Directly after docs/design/safety/initialization_safety.md's paragraph
+        that lists the prelude's `UnformedInit` types (:91-107 on the safe
+        branch at adaae4e35, ending "so an unformed `Buf` would free garbage.";
+        re-read at the merge), a blockquote: "**Fork note (<date>, OP-2,
+        F-015).** Since OP-2, `Core.Optional(T)` is `UnformedInit` only for a
+        pointer payload, `Core.Optional(T*)`
+        (core/prelude/types/optional.carbon, the impl after the storage's
+        `Destroy`; :48, cited above, is now a comment that points there). The
+        default storage's `Destroy` reads whether it holds a value, which an
+        unformed object leaves uninitialized, so `var o: Core.Optional(i32);` is
+        an error for the reason given here for `Core.Buf`
+        (fork/optional2/plan.md, D-OP2-15; W-200). For the same reason, a class
+        with a non-pointer `Core.Optional` field, or an adapter of one, must not
+        implement `UnformedInit`, which the toolchain does not prevent."
+7.  OP-2 merge (`claude/carbon-fork-0-1-op2`, F-016, W-170, W-171 and W-173;
+    stacked on PR 56; merges after PR 56 and before DD-1, D-OP2-13's break
+    condition having fired, so item 5's "LAST" now reads: OP-2 and then DD-1
+    merge after OP-1), in this order (fork/optional2/plan.md §3 and §8.8):
+    -   After PR 56 merges, merge the then-current trunk into the branch with a
+        merge commit, never a rebase (trunk f67ab650d was merged early, as
+        c396efeae, at the orchestrator's direction), by plan §3's rules: a
+        conflicted golden takes trunk's side and is refilled by autoupdate in a
+        new "Autoupdate testdata goldens on the container arbiter" commit; a
+        conflicted optional.md takes trunk's side and plan §2.5's script is
+        re-run on it, re-anchored to PR 56's wording; the records keep trunk's
+        rows and entries for other branches and this branch's OP-2 rows,
+        re-anchored by bullet text, item id or heading; the gap header is
+        recounted, never merged, and the README table regenerated.
+    -   Re-run plan §8.8 on that merge commit: rebuild (the queue's prelude and
+        SC-1's toolchain come in), refill, gate (the base's count plus the five
+        OP-2 goldens), conformance, the mutants, the R-9 grep and the id and
+        F-016 re-scan, and re-quote the Optional row, the header and the README
+        table from that run (R9), never adding them by hand. If a program of the
+        bullet other than optional_pointer_compare is not PASS, D-OP2-16's break
+        condition applies: the row reverts to PARTIAL in the next commit and
+        that program's item is re-opened.
+    -   Re-read W-171's convert.cpp citation (:1701 here; :1712 once SC-1 lands,
+        whose convert.cpp takes OP-2's hunks with an offset of 14 lines) and
+        apply OP-1's land-time renumbering, if any, to OP-2's program headers,
+        golden sources, optional.md and records (plan §3's ids rule).
+    -   PR 51 and PR 55 were not on trunk at OP-2's discharge. Once PR 51 lands,
+        W-197 folds into W-126 in a new commit: W-197's title gains "(FOLDED
+        into W-126)", W-126 gains W-197's OP-2 note (an Optional field of a
+        class with its own `Destroy` keeps its value, M-9's `Outer` and
+        `Plain`), and the Optional row, row 43 and optional.md name W-126 again.
+        Once PR 55 lands, optional.md names W-160 again where it now gives its
+        title.
+    -   Re-stamp, in a new commit if the landing date is not 2026-10-14, every
+        date commit 4 and the discharge wrote: optional.md's status line,
+        classes.md's F-016 amendment, the Optional row's "DISCHARGED
+        2026-10-14", the §W9 sentence, the three ledger titles and the
+        decision-log heading; optional.carbon's comments carry no date.
+    -   Id reservation, recorded so no workstream collides: OP-2 reserves
+        W-196..W-201 and used all six (W-197 filed because PR 51 had not landed;
+        W-201 the spare); fork design id F-016 is OP-2's. Hand-off for DD-1's
+        integration commit: its fork/inventory/work-items.json header still says
+        "OP-2 reserves W-196..W-199" with no date (claude/carbon-fork-0-1-dd at
+        e27b917c8, line 4), which becomes W-196..W-201; DD-1 re-reads the shared
+        records at its merge of trunk after OP-2.
+    -   The upstream-report list (both toolchain fixes are upstream defects,
+        with their reproducers, and W-198's and W-201's) is in
+        fork/optional2/plan.md's "Landed notes (OP-2, 2026-10-14)".
 
 ### Standing user directives
 

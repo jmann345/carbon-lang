@@ -348,14 +348,31 @@ listing them verbatim at discharge (§8.5).
     member's declaration does not match the method's (recorded at fill round 13,
     round 12's review 2 finding MINOR-3; the design page dates the amendment
     2026-10-14, round 12's review 1 finding MINOR-3).
-    Rationale for (b) over a raw `LookupNameInExactScope`: p002200's alias
-    example requires impl lookup through the alias, and the C++ case
-    requires the Cpp-scope import hook; both live only on the member-access
-    path. Break condition: `CheckFunctionTypeMatches` proves too strict for
-    a shape the §4 matrix predicts positive (the likely one: a `ref self`
-    requirement against an imported `const` method whose `self` type
-    carries `const`) — then the matcher gains ONE documented relaxation
-    (qualifier-tolerant `self`) and the golden split moves, never a thunk.
+    AMENDED 2026-10-14 (fill round 14, round 13's review 1 finding MINOR-2 and
+    review 2 finding MINOR-5): the form of the return is not compared, as
+    upstream's comparison does not compare it (function.cpp
+    `CheckFunctionReturnTypeMatches`, :252-318, compares the declared return
+    types), so a member `fn F(self) -> i32` satisfies `fn F(self) -> ref i32`,
+    as trunk 0bdce60a5 accepts such an impl member and the redeclaration `fn F()
+    -> ref i32; fn F() -> i32 {}` (sc1-review13/adv1/p/ret t_r1, i_r1 and c;
+    sc1-review13/adv2/ret t_r4, i_r4 and rd2). Beside an error elsewhere in the
+    signature trunk's thunk, which the error forces, reports what the comparison
+    leaves silent (adv1/p/ret i_r3 against t_r3: "cannot bind durable reference
+    to non-reference value"), the one such shape D-SC-9 names outside the
+    matrices. A template body that assigns through such a member's result aborts
+    lowering ("Store operand must be a pointer", lower.cpp:48), as the same body
+    under an unconstrained `template T: type` does on trunk (adv2/ret run1 and
+    run2, copied to sc1-fix14/p/ret), an upstream defect of template
+    instantiation. Break condition: upstream's comparison compares return forms;
+    then this one does, with no SC-1 change. Rationale for (b) over a raw
+    `LookupNameInExactScope`: p002200's alias example requires impl lookup
+    through the alias, and the C++ case requires the Cpp-scope import hook; both
+    live only on the member-access path. Break condition:
+    `CheckFunctionTypeMatches` proves too strict for a shape the §4 matrix
+    predicts positive (the likely one: a `ref self` requirement against an
+    imported `const` method whose `self` type carries `const`) — then the
+    matcher gains ONE documented relaxation (qualifier-tolerant `self`) and the
+    golden split moves, never a thunk.
 -   **D-SC-6 — a SYMBOLIC (checked-phase) self.** (SUPERSEDED 2026-10-13, fill
     round 2: the positive branch this sentence and the reachability paragraph
     describe was deleted; a checked-symbolic self is now always unsatisfied,
@@ -499,39 +516,51 @@ listing them verbatim at discharge (§8.5).
     `InterfaceRequireImplsNotImplemented` :946-956 for the interface's own
     `require` block) stay `Emit` with NO structural note in SC-1 — the notes are
     wired only into convert.cpp:1503-1527 (amended 2026-10-06, review fold:
-    A5(ii)). Errors follow one rule (amended 2026-10-14, fill rounds 12 and 13):
+    A5(ii)). Errors follow one rule (amended 2026-10-14, fill rounds 12 to 14):
     a member satisfies a requirement exactly when D-SC-5(d)'s comparison holds;
     when it does not, nothing more is reported if the comparison would hold with
     each erroneous type and each erroneous default value of either declaration
     counted as equal to the type or default value in its place in the other (a
     type with an error anywhere in it is the error, and so is a default value of
-    a parameter whose type is the error); everything else, including the binding
-    form (`var`, `ref`) of a parameter with an error and whether a default value
-    or a return type is there, is compared as without the error; such a silent
-    failure is still a failure for a direct use, an overload probe and a blanket
-    impl (W-233). The comparison runs in its errors-match mode, which reads a
-    parameter pattern with an error as declared, since its constant value is the
-    error, and an imported one in the file that declares it. A member that fails
-    is reported as for a requirement with no error, so every difference
-    D-SC-5(d) reports without an error is reported beside one (a member without
-    the `self` the requirement has, the `self` form, the presence and length of
-    each parameter list, a parameter's type, binding form or default value,
-    whether a return type is there and which, the evaluation mode, compile-time
-    parameters of the member's own, a member that is not a function), except a
-    difference that the counted-as-equal parts themselves hide: one inside a
-    composite type with an error (`(i32, Undefined)` against `(bool, i32)`) and
-    the value of a default value of a parameter whose type is the error
-    (sc1-fix13 mx: 19 cases of review 1's 878 and 10 of review 2's 1094). A
+    a parameter whose type is the error) and each parameter declared with a form
+    that has an error (`y:? form(ref Undefined)`), which is the error itself,
+    counted as equal to the parameter in its place, binding form included;
+    everything else, including the binding form (`var`, `ref`) of any other
+    parameter with an error and whether a default value or a return type is
+    there, is compared as without the error; such a silent failure is still a
+    failure for a direct use, an overload probe and a blanket impl (W-233). The
+    comparison runs in its errors-match mode, which reads a parameter pattern
+    with an error as declared, since its constant value is the error, and an
+    imported one in the file that declares it. A member that fails is reported
+    as for a requirement with no error, so every difference D-SC-5(d) reports
+    without an error is reported beside one (a member without the `self` the
+    requirement has, the `self` form, the presence and length of each parameter
+    list, a parameter's type, binding form or default value, whether a return
+    type is there and which, the evaluation mode, compile-time parameters of the
+    member's own, a member that is not a function), except a difference that the
+    counted-as-equal parts themselves hide: one inside a composite type with an
+    error (`(i32, Undefined)` against `(bool, i32)`), the value of a default
+    value of a parameter whose type is the error (sc1-fix13 mx: 19 cases of
+    review 1's 878 and 10 of review 2's 1094) and the binding form of a
+    parameter declared with a form that has an error (`y:? form(ref Undefined)`
+    against `y: i32`: sc1-review13/adv1/p/form f3 and f7; 32 of review 1's 56
+    mxf cases, each silent where the case with the erroneous form replaced by
+    its valid one reports, none reported by trunk's analog; fill round 14). A
     member that matches only through such a part adds no error and no note of
     its own: the error was reported at its declaration, so the requirement is
     skipped with no further diagnostic, in both modes, and every other
     requirement, template constraint and interface of the facet type is still
     checked and reported; the check fails with no diagnostic only when nothing
-    else fails. Trunk 0bdce60a5's impl analog does not govern the rule, and
-    nothing it reports is silent here (sc1-fix13 mx: none of review 1's 330, 275
-    and 878 cases and review 2's 1094). SC-1 diverges from that analog in one
+    else fails. Trunk 0bdce60a5's impl analog does not govern the rule, and in
+    the matrices nothing it reports is silent here (sc1-fix13 mx: none of review
+    1's 330, 275 and 878 cases and review 2's 1094; sc1-fix14: none of round
+    13's reviews' matrices (review 1's 878, 2320 and 56 cases; review 2's 330,
+    275, 878 and 110) or of mxf2's 672); outside them, the form of the return,
+    which D-SC-5(d) does not compare, is silent beside an error where trunk's
+    thunk reports it (sc1-review13/adv1/p/ret t_r3; scoped at fill round 14,
+    round 13's review 1 finding MINOR-2). SC-1 diverges from that analog in one
     class: it reports beside an error every difference it reports without one,
-    but for the two the rule hides, where the thunk adapts some (a convertible
+    but for the three the rule hides, where the thunk adapts some (a convertible
     parameter or return type, the evaluation mode, a `var` parameter, an empty
     implicit parameter list, a deducible compile-time parameter of the member's
     own, a default value of an impl member's own) and stops comparing others
@@ -571,12 +600,30 @@ listing them verbatim at discharge (§8.5).
     `fail_requirement_signature_error` and its `_genuine`, `_other_member`,
     `_other_constraint` and `_require` siblings, `fail_member_signature_error`
     and `fail_member_signature_error_genuine`, and the uses in the declaration
-    golden's `fail_todo_` splits). A deduction that meets such a requirement is
-    a rejection, so an overload set whose other members all reject reports
-    `OverloadNoMatch` and a blanket impl is not applied, as for a member's or a
-    candidate's own error on trunk (W-233). Break condition: a reviewer finds an
-    existing kind whose text already fits — then that kind is reused and the
-    count drops.
+    golden's `fail_todo_` splits; narrowed at fill round 14, round 13's review 1
+    findings MAJOR-1 and MINOR-3 and review 2 finding MINOR-3: a parameter
+    declared with a form that has an error, which upstream makes the error
+    itself, was counted as equal to any parameter, a default value on the other
+    side included (sc1-review13/adv1/p/form f5 and f8); its default value's
+    presence is now compared (merge.cpp `CheckRedeclParam` :393-401),
+    `GetDeclaredParamPattern` (:222-286) returns `std::nullopt` only for such a
+    parameter and compares any pattern it does not descend into by its kind, and
+    the rule is stated at structural_conformance.cpp:502-518; pinned by
+    `FormOnly`, `FormDefault`, `ExprParam`, `FormErrorOnly` and
+    `FormErrorNoDefault`; maintenance, for an upstream advance:
+    `GetDeclaredParamPattern` lists the pattern kinds with a subpattern that
+    `CheckRedeclParam`'s switch descends into, so a kind with a subpattern that
+    the switch gains is added there too (an unlisted kind is compared by its
+    kind alone, not aborted on: a check that aborted on an unlisted kind,
+    8fd124de8's, aborted on an expression-pattern requirement and was removed by
+    55d77c5e1), and the import probes of sc1-review13/adv1 (p/gimp, p/imp, mx4)
+    are re-run after the advance to 66a250ad9, whose import_ref.cpp rewrites the
+    generic and specific import that an imported subpattern's read depends on).
+    A deduction that meets such a requirement is a rejection, so an overload set
+    whose other members all reject reports `OverloadNoMatch` and a blanket impl
+    is not applied, as for a member's or a candidate's own error on trunk
+    (W-233). Break condition: a reviewer finds an existing kind whose text
+    already fits — then that kind is reused and the count drops.
 -   **D-SC-10 — `Self` inside a template constraint is a TEMPLATE-phase
     binding.** (BREAK CONDITION TAKEN 2026-10-14, fill round 7: a CHECKED-phase
     binding as landed; restated at fill round 8, W-169; heading annotated at
@@ -1398,6 +1445,8 @@ convention).
 | check/testdata/named_constraint/template_constraint_require.carbon (round-12 change, 2026-10-14) | `fail_todo_require_in_interface_in_generic_class_impl`'s comment re-points structural_conformance.cpp:541 (stale since fill round 11) to :562, D-SC-6's branch, in its line | Round 12: no CHECK line moves; the gate passes it on the toolchain stamped 0.0.0-0.dev+62d39c9f6 |
 | check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-13 splits, 2026-10-14) | the two `_genuine` splits' comments restated (the rule as narrowed at fill round 13); `fail_requirement_signature_error_genuine`: `ParamOnly` becomes `fn F(unused self, unused x: i32, unused y: i32) -> i32` and round 12's `ref x: i32` member becomes the new `ParamRef`, called through `CallP`; new `ReturnAbsent` (`fn F(unused self, unused x: i32) {}`) through `CallR`; new `DefaultAbsent` (`y: i32`), `DefaultRef` (`ref y: i32 = 1`) and `DefaultVar` (`var y: i32 = 1`) through the `HasDefaultError` caller; `fail_member_signature_error_genuine`: new `HasDefault` (`fn F(self, x: i32, y: i32 = 1) -> i32`) and `HasNoReturn` (`fn F(self, x: i32, y: i32);`), each with its caller; round 12's member-side `DefaultOnly` (`y: i32 = Undefined`) renamed `DefaultError`, still called through `Call`; a new `DefaultOnly` of the same signature through the `HasDefault` caller; new `ParamErrorRef` (`ref x: Undefined`) and `DefaultErrorRef` (`ref y: i32 = Undefined`) through `Call`, and `ReturnErrorAbsent` (`-> Undefined`) through the `HasNoReturn` caller | Round 13, derived from the rule and checked against the trunk impl analogs on 0bdce60a5 (sc1-fix13/p/s, one per class, with each class's no-error twin; observed on the development build first, so not counted, R16(d)): `NameNotFound` at each new `Undefined`; at the uses of `ParamRef`, `ReturnAbsent`, `DefaultAbsent`, `DefaultRef`, `DefaultVar`, `DefaultError`, `ParamErrorRef`, `DefaultErrorRef` and `ReturnErrorAbsent` `ConversionFailureTypeToFacet` with `StructuralMemberMismatch` at the member, `StructuralRequirementHere` and `DeductionGenericHere`; nothing at `TestOnly` (`ParamOnly`, `ReturnOnly`), `TestDefaultOnly` (both splits) or `TestMethodForStatic`; of the trunk analogs only `DefaultErrorRef`'s reports ("value expression passed to reference parameter"), and the analog of the member-side `DefaultOnly` aborts at thunk.cpp:169 (W-236) FILLED 2026-10-14 (fill round 13, 2af5604a3): as derived; the splits give 20 and 31 errors (15 and 23 in the round-12 golden), and every other split its round-12 count |
 | check/testdata/named_constraint/template_constraint_require.carbon (round-13 change, 2026-10-14) | `fail_todo_require_in_interface_in_generic_class_impl`'s comment re-points structural_conformance.cpp:562 (stale since fill round 13) to :569, D-SC-6's branch, in its line | Round 13: no CHECK line moves; the gate passes it on the toolchain stamped 0.0.0-0.dev+dfd22bdd6 |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-14 splits, 2026-10-14) | the two `_genuine` splits' comments restated (the rule as narrowed at fill round 14); `fail_requirement_signature_error_genuine`: new `HasFormError` (`fn F(self, x: i32, y:? form(ref Undefined)) -> i32;`) with its caller `CallF`, and `FormOnly` (`y: i32`) and `FormDefault` (`y: i32 = 1`) through it; new `HasExprParam` (`fn F(self, x: i32, y) -> i32;`, added by 55d77c5e1) with its caller, and `ExprParam` (`y: i32`) through it; `fail_member_signature_error_genuine`: new `FormErrorOnly` and `FormErrorNoDefault` (`y:? form(ref Undefined)`), through `Call` and the `HasDefault` caller | Round 14, derived from the rule and checked against the trunk impl analogs on 0bdce60a5 (sc1-fix14/p/s, one per class, with each class's no-error twin; observed on the development build first, so not counted, R16(d)): `NameNotFound` at each new `Undefined` and at the expression pattern's `y`, with `SemanticsTodo` ("expression pattern"); at the uses of `FormDefault`, `ExprParam` and `FormErrorNoDefault` `ConversionFailureTypeToFacet` with `StructuralMemberMismatch` at the member, `StructuralRequirementHere` and `DeductionGenericHere`; nothing at `TestFormOnly` or `TestFormErrorOnly`; of the trunk analogs none reports, and those of `ExprParam` and `FormErrorNoDefault` abort at thunk.cpp:169 FILLED 2026-10-14 (fill round 14, 0d596103e and f02f4dcf5): as derived; the splits give 25 and 34 errors (20 and 31 in the round-13 golden), and every other split its round-13 count |
+| check/testdata/named_constraint/template_constraint_require.carbon (round-14 change, 2026-10-14) | `fail_todo_require_in_interface_in_generic_class_impl`'s comment re-points structural_conformance.cpp:569 (stale since fill round 14) to :571, D-SC-6's branch, in its line | Round 14: no CHECK line moves; the gate passes it on the toolchain stamped 0.0.0-0.dev+55d77c5e1 |
 
 ### §4.C Commit 3
 
@@ -2472,8 +2521,20 @@ dfd22bdd6 (fixes, test sources, the design page), 2af5604a3 (1 golden, CHECK
 lines only) and 6992c6cc5 (records), which writes round 12's review record
 below; it measured the same totals on the toolchain built from its sources,
 again on the toolchain stamped 0.0.0-0.dev+dfd22bdd6 (below) and again on
-6992c6cc5 for the records commit after it. Not of record until
-fork/conformance/out/scoreboard.json is updated (R9).
+6992c6cc5 for the records commit after it. Fill round 14 (same day) folds round
+13's two implementation reviews (APPROVE-WITH-FIXES both; 10 findings, two taken
+in part): a parameter declared with a form that has an error is the error
+itself, its binding form included, and whether a default value is there is
+compared beside it; `GetDeclaredParamPattern` returns `std::nullopt` only for
+such a parameter; the return form's exclusion and W-236's trigger are recorded;
+the impl-file `MissingDefinitionInImpl` at a requirement is filed as W-237:
+8fd124de8 (fixes, test sources), 0d596103e (1 golden, CHECK lines only),
+55d77c5e1 (8fd124de8's check of the other pattern kinds, which aborted on an
+expression-pattern requirement, removed; the shape pinned), f02f4dcf5 (1 golden,
+CHECK lines only) and the records commit after them, which writes round 13's
+review record below; it measured the same totals on the toolchains built from
+its sources and again on the toolchain stamped 0.0.0-0.dev+55d77c5e1 (below).
+Not of record until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -4183,15 +4244,18 @@ toolchain stamped 0.0.0-0.dev+e7783c80e with the reviews' probes
     `fail_requirement_signature_error_genuine` and by `DefaultOnly` and
     `DefaultErrorType` in `fail_member_signature_error_genuine`, each against
     its trunk analog (sc1-fix12/p/s). `tr_DefaultBothErrors` aborts on trunk at
-    merge.cpp:360, and an interface member's default value aborts trunk's thunk
-    at thunk.cpp:169 even with no error whenever the impl member differs from
-    it, so that a thunk is built (review 2's d2t; sc1-fix12/p h5.t to h7.t;
-    W-236), so the no-error twins of the requirement-side default shapes have no
-    trunk reference beyond that abort (corrected at fill round 13, round 12's
-    review 1 finding MINOR-2 and review 2 finding MINOR-4: this note said a
-    member-side default value aborts the thunk, which accepts one,
-    sc1-review12/adv1/p/h h1e0, so tm_DefaultOnly is a trunk reference for the
-    member side).
+    merge.cpp:360, and an interface member's default value that is not the error
+    aborts trunk's thunk at thunk.cpp:169 even with no error elsewhere whenever
+    the impl member differs from it, so that a thunk is built (review 2's d2t;
+    sc1-fix12/p h5.t to h7.t; W-236), so the no-error twins of the
+    requirement-side default shapes have no trunk reference beyond that abort
+    (corrected at fill round 13, round 12's review 1 finding MINOR-2 and review
+    2 finding MINOR-4: this note said a member-side default value aborts the
+    thunk, which accepts one, sc1-review12/adv1/p/h h1e0, so tm_DefaultOnly is a
+    trunk reference for the member side; qualified at fill round 14, round 13's
+    review 1 finding MINOR-1: an interface default value that is itself the
+    error, or on an erroneous parameter type, does not abort, sc1-fix14/p/w236
+    x_e1, x_e2 and x_e6).
 -   MAJOR-2 (review 1): taken. The one rule is review 1's sentence, stated in
     D-SC-9, round 12's first decision, the decision log, the design page and
     the comment at structural_conformance.cpp:502-509; the records' trunk-parity
@@ -4444,6 +4508,211 @@ default value is the error). The paths without `found_error` are unchanged:
 review 1's 26 probes and its three-file set give byte-identical normalized SemIR
 dumps on trunk and on the round-13 build, n11 differing only in the stack
 addresses of an upstream abort both builds share.
+
+Round 13's own diff (dfd22bdd6, 2af5604a3, 6992c6cc5, d3db9878c) received two
+implementation reviews, 10 findings in all: review 1, APPROVE-WITH-FIXES, 1
+MAJOR and 3 MINOR; review 2, APPROVE-WITH-FIXES, 6 MINOR. Both checked round 13
+on the driver stamped 0.0.0-0.dev+dfd22bdd6 against trunk 0bdce60a5, review 2
+also against the upstream nightly 62f1cc6a3, each with a private gate (1959 / 0)
+and review 2 with a private conformance run (130 / 0 / 21 of 151, 49/56). On the
+round's questions both found: (a) `GetDeclaredParamPattern` runs only in the
+errors-match mode and only for a pattern with an error, the side without one
+read in its specific as upstream reads it, as review 1's 24 specific-dependent
+probes, 98 import sets (one and two levels, api/impl both ways, an out-of-line
+api member), 78 generic import sets and 10 two-level `self` sets and review 2's
+22 generic probes and its import and api/impl sets confirm, an imported symbolic
+subpattern read in the requirement's specific (gc_01 silent with `i64`, gc_02
+reported with `i32`); every non-SC-1 caller passes a null `found_error`
+(decl_name_stack.cpp:533, :547 and :567; impl.cpp:181; merge.cpp:753, :1040 and
+:1046, at :766, :1053 and :1059 at the round-14 head; handle_function.cpp:184
+and :366; thunk.cpp:466 and :486), and review 1's 3198 interface analogs give
+the same diagnostics on the fork and on trunk; (b) the 878-case matrix re-runs
+as recorded (859, and the 19 composite cases), and review 1's new mx4 (2320
+cases: binding form, type and default value on both sides; errors beside a
+differing form or default value; return types) and review 2's (110) all run as
+the rule predicts, none silent where trunk reports and none aborting on the fork
+(trunk aborts on 738 of review 1's, 657 of them W-236 and 81 W-235);
+compile-time parameters with default values are rejected at their declaration;
+(c) trunk's thunk is silent on every composite type with an error (review 1's 20
+forms, review 2's 12), so the composite clause agrees with it, and the clause
+reads the same in the four places; (d) W-235 is exact and upstream-confirmed,
+the nightly aborting at merge.cpp:360 too, and W-236's reproducers behave as
+recorded; (e) the 52 removed CHECK lines are `@LINE` shifts and the split counts
+20, 31 and 1; (f) the PR body (64,864 characters) and comment (64,661) are under
+65,536 with all 63 commits named and no model name; (g) the mode is one rule a
+maintainer can state in one sentence, its hunks small and marked, and upstream
+66a250ad9 touches neither `CheckRedeclParam*` nor `CheckFunction*Matches`, a
+three-way merge of the five SC-1-touched toolchain files being clean. Review 1's
+MAJOR-1: a parameter declared with a form that has an error (`y:? form(ref
+Undefined)`, `y:? Undefined`) is `ErrorInst::InstId` in the parameter block, so
+the mode matched it against any parameter, hiding a default value's presence
+(sc1-review13/adv1/p/form f5 and f8) and the binding form (f3 and f7), 38 of its
+mxf family's 56 cases (none silent where trunk reports), against the rule's
+statements that the binding form and a default value's presence are compared
+beside an error. Review 1's MINORs: MINOR-1 W-236's trigger stated too broadly
+(an interface default value that is itself erroneous, or on an erroneous type,
+does not abort: x_e1, x_e2 and x_e6); MINOR-2 the form of the return not
+compared, so `-> ref i32` is satisfied by `-> i32`, and beside an error trunk's
+thunk reports what SC-1 leaves silent (r3), against D-SC-9's "nothing it reports
+is silent here"; MINOR-3 `GetDeclaredParamPattern` repeating the switch's
+subpattern dispatch, reading an unknown kind as a leaf and an ImportRef as the
+error. Review 2's MINORs: MINOR-1 the PR body and comment stale against trunk
+8bfd78ae3 (PR 59 held, eleven records-only commits); MINOR-2 a template
+constraint declared in an impl file getting `MissingDefinitionInImpl` at each
+requirement, as upstream does for an interface member; MINOR-3 the same coupling
+as review 1's MINOR-3; MINOR-4 W-236 confirmed only on fork trunk, the nightly
+said to abort at thunk.cpp:104; MINOR-5 the return form, as review 1's MINOR-2;
+MINOR-6 a lone "A" line on the design page. Review 1's probes are
+sc1-review13/adv1 (p: comp, ct, einst, form, gimp, imp, ret, s, self, sp, spe,
+spec, w235 and w236; mx3; mx4 with gen4.py; mxf); review 2's are
+sc1-review13/adv2 (ai, g, im, q, ret, w and w235; mx1 to mx4; cmp; s). The round
+counts 1 MAJOR and no BLOCKER.
+
+Fill round 14 (2026-10-14), by review finding, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+dfd22bdd6 with the reviews' probes
+(sc1-review13/adv1 and adv2) and their trunk analogs on 0bdce60a5 and the
+upstream nightly 62f1cc6a3:
+
+-   MAJOR-1 (review 1): reproduced. f3, f5, f7 and f8 give their declarations'
+    errors alone, while their no-error twins z3, z5, z7 and z8 report; the
+    parameter's entry in the parameter block is `ErrorInst::InstId`
+    (sc1-review13/adv1/p/form d.carbon), and with a default value a
+    `DefaultValuePattern` wraps that error (sc1-fix14/p/form d1). Taken as fixes
+    1 to 3, round 14's decision below: beside such a parameter the default
+    value's presence is compared (f5 and f8 now report), and its binding form,
+    part of the erroneous form, is stated in the rule as counted equal, in the
+    four statements, merge.h and D-SC-9's list of hidden differences (f3 and f7
+    stay silent, as their trunk analogs are). Fix 2's alternative, a residue, is
+    not taken: the binding form is lost inside upstream's error as a composite
+    type's elements are, so it is a clause of the rule with its own break
+    condition. Pinned by `FormOnly` and `FormDefault` in
+    `fail_requirement_signature_error_genuine` and by `FormErrorOnly` and
+    `FormErrorNoDefault` in `fail_member_signature_error_genuine`, each against
+    its trunk analog (sc1-fix14/p/s). The re-run of review 1's mxf and the new
+    mxf2 family are in round 14's expectations below.
+-   MINOR-1 (review 1) and MINOR-4 (review 2): reproduced in part. x_e1, x_e2
+    and x_e6 do not abort on trunk, the round-14 build or the nightly, and x_e3,
+    x_e4 and x_e5 abort at thunk.cpp:169 on all three; h5t, i64, other and
+    static abort on the nightly at thunk.cpp:169 too (sc1-fix14/p/w236), so
+    review 2's thunk.cpp:104 is not reproduced, and that part is rejected on
+    that evidence. Taken otherwise: W-236's title says a default value that is
+    not the error, its evidence gains the bounds, the nightly and an
+    expression-pattern parameter, which aborts at the same CHECK, and its break
+    condition is widened to `ClonePattern` no longer aborting on a differing
+    default value; W-235's evidence gains the nightly's merge.cpp:360 (r1, r2,
+    r4, r7, d3, n3 and the two redeclarations) and its note the qualified
+    trigger; W-236's notes record that round 13's brief worded the trigger as
+    the one shape that does not abort.
+-   MINOR-2 (review 1) and MINOR-5 (review 2): reproduced (t_r1 and t_r4 silent;
+    i_r1, i_r4, c and rd2 accepted on trunk; i_r3 reports where t_r3 is silent;
+    run1 and run2 abort lowering alike). Taken as records: D-SC-5(d) and the
+    design page's departure sentence say that the form of the return is not
+    compared, and D-SC-9's sentence on trunk's analog is scoped to the matrices,
+    naming r3 as the shape outside them. Comparing return forms would change
+    upstream's comparison for every caller.
+-   MINOR-3 (review 1) and MINOR-3 (review 2): taken, the first in part. The
+    ImportRef branch, which no path reaches (an imported pattern with an error
+    is read in the file that declares it), is removed, so `std::nullopt` means
+    only a parameter that is the error itself. 8fd124de8 also added review 1's
+    check that any other pattern is a leaf parameter pattern or a member's
+    `TuplePattern`; the re-run of round 13's reviews' probes found it aborting
+    on a requirement whose parameter is an expression pattern with an error
+    (sc1-review13/adv1/p/einst t_e1, `fn F(self, x: i32, y) -> i32`, reported on
+    round 13), so 55d77c5e1 removes it, compares any other pattern by its kind
+    as round 13 did, and pins the shape as `ExprParam`. The coupling is kept by
+    the comment at `GetDeclaredParamPattern` and review 2's maintenance note in
+    D-SC-9, not by an abort.
+-   MINOR-1 (review 2): taken. The PR body and comment name trunk 8bfd78ae3, the
+    eleven records-only commits, PR 59 in trunk's merge order and the `git
+    merge-tree` against 8bfd78ae3; the comment's Verification keeps rounds 12 to
+    14 in full and the earlier rounds in a summary, and the body's longest
+    records bullets are shortened, to stay under 65,536 characters.
+-   MINOR-2 (review 2): reproduced (Q1 and Q2 on the fork; Q3 on trunk, the
+    nightly and the fork). Filed as W-237, upstream-shared, the exemption left
+    for a later round.
+-   MINOR-6 (review 2): taken. The design page's lone "A" is rejoined.
+
+Rejected: review 2's MINOR-4 in part, its abort site on the nightly (above), and
+review 1's MINOR-3 in part, the check that aborted (above).
+
+Round 14's decision as an R29(a) implementation decision, with design citation
+and break condition:
+
+-   **A parameter declared with a form that has an error is the error itself**
+    (merge.cpp `CheckRedeclParam` :393-401 and `GetDeclaredParamPattern`
+    :222-286; the rule in the comment at structural_conformance.cpp:502-518 and
+    in merge.h; round 13's review 1 MAJOR-1 and MINOR-3 and review 2 MINOR-3).
+    Symptom: the requirement `y:? Undefined` against the member `ref y: i32 =
+    1`, and the member `y:? Undefined` against the requirement `y: i32 = 1`,
+    were silent (sc1-review13/adv1/p/form f5 and f8), though a default value's
+    presence is compared beside every other error. Root cause: upstream gives
+    such a parameter no pattern, the error in its place
+    (handle_binding_pattern.cpp:520-522, pattern.cpp:342-343), and round 13
+    counted that as equal to any parameter. Decision: the rule is now: a member
+    satisfies a requirement exactly when D-SC-5(d)'s comparison holds; when it
+    does not, nothing more is reported if the comparison would hold with each
+    erroneous type and each erroneous default value of either declaration
+    counted as equal to the type or default value in its place in the other (a
+    type with an error anywhere in it is the error, and so is a default value of
+    a parameter whose type is the error) and each parameter declared with a form
+    that has an error (`y:? form(ref Undefined)`), which is the error itself,
+    counted as equal to the parameter in its place, binding form included;
+    everything else, including the binding form (`var`, `ref`) of any other
+    parameter with an error and whether a default value or a return type is
+    there, is compared as without the error; such a silent failure is still a
+    failure for a direct use, an overload probe and a blanket impl (W-233). A
+    default value still gives a `DefaultValuePattern` around the error, so its
+    presence is compared; the binding form is part of the erroneous form and
+    cannot be read, so it is counted equal, as a composite type's elements are;
+    `GetDeclaredParamPattern` returns `std::nullopt` only for such a parameter
+    and compares any pattern it does not descend into by its kind. SC-1 now
+    hides three classes, each stated in the rule: a difference inside a
+    composite type with an error, the value of a default value of a parameter
+    whose type is the error, and the binding form of a parameter declared with a
+    form that has an error (32 of review 1's 56 mxf cases, against twins with
+    the valid form, none reported by trunk's analog); none has a case trunk's
+    analog reports. Design: D-SC-9 as narrowed at fill round 14; D-SC-5(d).
+    Break condition: a Carbon change that keeps a pattern for a parameter
+    declared with a form that has an error, after which its binding form is
+    compared as any other's; or D-SC-5(d)'s own. Pinned by
+    `fail_requirement_signature_error_genuine` (25 errors; `FormDefault` and
+    `ExprParam` reported, `FormOnly` silent) and
+    `fail_member_signature_error_genuine` (34 errors; `FormErrorNoDefault`
+    reported, `FormErrorOnly` silent), each class against its trunk analog and
+    its no-error twin (sc1-fix14/p/s).
+
+Round 14's expectations were derived from the rule and checked against the trunk
+analogs and the no-error twins before the splits were written, but the
+development build ran the reviews' shapes first, so none is counted (R16(d)).
+Checked on the round-14 build, the splits give
+`fail_requirement_signature_error_genuine` 25 errors (the round-13 golden had
+20; 0d596103e 22, before `ExprParam`) and `fail_member_signature_error_genuine`
+34 (31); every other split gives its round-13 count. Against a round-13
+toolchain relinked from d3db9878c's merge.cpp (in /dev/shm, deleted after), the
+check-phase diagnostics of every probe of sc1-review12, sc1-review13 and
+sc1-fix13 that uses a template constraint (5887 distinct single files, among
+them all of round 13's reviews' matrices, and 239 multi-file sets) are the same
+on the round-14 build but for 17 files and 1 set, each a parameter declared with
+a form that has an error beside a default value on the other side only, silent
+on round 13 and reported now (review 1's f5, f8 and f11, its imp1 set and 14 of
+its mxf cases), and one W-235 abort whose line moved (apisplit_mem_14,
+merge.cpp:504 to :517); no case aborts that did not (the aborts left are W-235's
+apisplit_mem_14 and round 12's review 2 m4 a2 and b1, a template call through
+`ref *p`, which aborts at sem_ir/inst.h:249 as round 6 recorded trunk 0bdce60a5
+doing on every such call), and none is silent that was reported. Review 1's mxf
+(56 cases and 42 twins with the valid form): on round 13, 48 are silent where
+the twin reports (review 1 counted 38 with its own twins); on round 14 the 16
+with a default value on one side only report (8 of their trunk analogs abort at
+thunk.cpp:169, W-236), and the 32 left are the binding-form class the rule
+states, each silent on trunk too. sc1-fix14/mxf2 (224 cases: a parameter
+declared with each of four erroneous forms, `form(ref Undefined)`, `form(val
+Undefined)`, `form(var Undefined)` and `Undefined`, with and without a default
+value, on either side, against 14 other parameters; each also with the
+requirement imported and with the member imported, 672 in all): every case as
+the rule predicts, reported exactly when one side alone has a default value (112
+of each 224), the imported shapes as the local ones; 64 of each 224 were silent
+on round 13; no abort; trunk's 224 interface analogs report none (200 silent, 24
+aborting at thunk.cpp:169, W-236).
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
@@ -4810,6 +5079,30 @@ word, and the comment at structural_conformance.cpp:502-516 and the design page
 carry each of its clauses in the same words, written as sentences among their
 own on what is reported, the page naming "the signature comparison" for
 D-SC-5(d)'s.
+
+Round 14 (the toolchains built from the round-14 sources before each fixes
+commit, stamped 0.0.0-0.dev+d3db9878c.dirty and 0.0.0-0.dev+0d596103e.dirty, the
+uncommitted edits being 8fd124de8's but for the require golden's comment and
+then 55d77c5e1's beside the records): autoupdate of the unsatisfied golden from
+8fd124de8's test sources (110 CHECK lines added, 72 removed, each removed line
+an `@LINE` offset; the result is 0d596103e) and from 55d77c5e1's (68 added, 47
+removed; the result is f02f4dcf5), a second pass none each time; gate 1959
+passed, 0 failed, exit 0, on each. Re-run on the toolchains rebuilt from
+8fd124de8 and from 55d77c5e1 with a clean tree (stamped 0.0.0-0.dev+8fd124de8
+and 0.0.0-0.dev+55d77c5e1): autoupdate over the 19 SC-1 goldens gave the same
+goldens and a second pass changed nothing; gate on 0d596103e and on f02f4dcf5
+1959 passed, 0 failed, exit 0, no `!` or `?` mark (35 s and 98 s); conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56, on 0d596103e (72.1 s, sc1-fix14/conf) and on f02f4dcf5 (127.1 s,
+sc1-fix14/conf2), exactly the same two programs moving, in a private cache;
+`runner.py --self-test` OK (151 programs, 56 bullets); W-235's reproducers abort
+at merge.cpp:517 and W-236's at thunk.cpp:169, as recorded; the probes and
+matrices as in round 14's expectations; `git merge-tree` of f02f4dcf5 against
+trunk 8bfd78ae3 conflicts in fork/ORCHESTRATION.md only. Round 14's commits:
+8fd124de8 (fixes, test sources), 0d596103e (goldens), 55d77c5e1 (fixes, test
+sources), f02f4dcf5 (goldens) and the records commit after them, which re-ran
+the gate on its tree with that toolchain (1959 passed, 0 failed, exit 0, 67 s,
+no `!` or `?` mark).
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

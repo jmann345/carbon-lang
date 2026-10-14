@@ -263,8 +263,11 @@ impl member and its interface member, in which a `self` parameter is compared as
 a parameter of the self type, and adds one check: a requirement with `self`
 needs a member with `self`. It so departs from redeclaration matching, which
 would reject a method for `fn Get(x: Self)`, and from impl checking, which
-accepts a member without `self` for `fn Get(self)`. As landed (SC-1, D-SC-5):
-the found member must resolve to
+accepts a member without `self` for `fn Get(self)`. Like both, it does not
+compare the form of the return: a member `fn Get(self) -> i32` satisfies `fn
+Get(self) -> ref i32`, as an impl member satisfies such an interface member and
+a definition redeclares such a declaration (D-SC-5(d) as amended 2026-10-14,
+fill round 14). As landed (SC-1, D-SC-5): the found member must resolve to
 exactly one function (an `overload fn` set, a field, a class or a namespace
 does not satisfy; a C++ overload set does only when it holds exactly one
 candidate), it must be accessible from the use site (a `private` member
@@ -646,20 +649,21 @@ When it does not, nothing more is reported if the comparison would hold with
 each erroneous type and each erroneous default value of either declaration
 counted as equal to the type or default value in its place in the other: a type
 with an error anywhere in it is the error, and so is a default value of a
-parameter whose type is the error. Everything else is compared as without the
-error, including the binding form (`var`, `ref`) of a parameter with an error
-and whether a default value or a return type is there; a member that differs so
-is reported as without the error. A member that matches only through an error
-gets no diagnostic of its own, the error having been reported, and the type's
-other requirements, constraints and interfaces are still checked and reported.
-Such a silent failure is still a failure for a direct use, an overload probe
-and a blanket impl (W-233) (D-SC-9 as amended 2026-10-14, fill rounds 9 to 13).
-A
-`require` whose facet type takes `Self` as an argument (`require Self impls
-Conv(Self)`, `require impls Has(Self)`), which a template-phase `Self` rejected,
-is accepted. Deferring the checks that involve `Self`, as this section
-describes, needs a template-phase `Self`, which SC-B2 takes up with validity
-blocks (W-028).
+parameter whose type is the error. A parameter declared with a form that has an
+error (`y:? form(ref Undefined)`) is the error itself and counts as equal to the
+parameter in its place, binding form included. Everything else is compared as
+without the error, including the binding form (`var`, `ref`) of any other
+parameter with an error and whether a default value or a return type is there; a
+member that differs so is reported as without the error. A member that matches
+only through an error gets no diagnostic of its own, the error having been
+reported, and the type's other requirements, constraints and interfaces are
+still checked and reported. Such a silent failure is still a failure for a
+direct use, an overload probe and a blanket impl (W-233) (D-SC-9 as amended
+2026-10-14, fill rounds 9 to 14). A `require` whose facet type takes `Self` as
+an argument (`require Self impls Conv(Self)`, `require impls Has(Self)`), which
+a template-phase `Self` rejected, is accepted. Deferring the checks that involve
+`Self`, as this section describes, needs a template-phase `Self`, which SC-B2
+takes up with validity blocks (W-028).
 
 ### Probe-mode evaluation
 

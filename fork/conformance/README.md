@@ -337,7 +337,13 @@ fails if this table is stale):
 | `interop/string_view_cpp_to_str.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
 | `interop/string_view_str_to_cpp.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
 | `project/cmake_build_integration.carbon` | Project: CMake build-system integration plus Make documentation | SKIP |
+| `project/design_docs_aliases.carbon` | Code organization: Namespaces | run |
+| `project/design_docs_assignment.carbon` | Type system: User-defined types (classes) | run |
+| `project/design_docs_compile_time.carbon` | Generics: generic functions and types | run |
+| `project/design_docs_match.carbon` | Control flow: matching — good switch equivalents | run |
 | `project/design_docs_placeholders.carbon` | Goal: design docs documented, cohesive, understandable without placeholders | SKIP |
+| `project/design_docs_statements.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
+| `project/design_docs_templates.carbon` | Generics: Integrated templates | run |
 | `project/dropin_clang_cpp_toolchain.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | run |
 | `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | SKIP |
 | `project/evaluator_docs_getting_started.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |

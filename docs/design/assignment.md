@@ -158,7 +158,96 @@ respectively. For floating-point types, these operators are not provided.
 
 ## Tuples, structs, choice types, and data classes
 
-_TODO_: Describe the rules for assignment in these cases.
+> **Fork status (2026-10-14).** No accepted proposal states these rules:
+> proposal 2511 leaves the semantics of assignment for these types to leads
+> issue 686, below, whose answer no proposal incorporates yet. The 0.1
+> toolchain implements the following.
+
+A tuple or a struct assigns element by element from a value of the same type,
+including a tuple or struct literal; struct fields are matched by name, so
+`s = {.b = 6, .a = 5};` assigns `.a` from `5`. A class whose fields are all
+accessible assigns from a struct literal that names every field. A choice value
+assigns as a whole.
+
+```carbon
+import Core library "io";
+
+choice Light {
+  Red,
+  Green
+}
+
+class Point {
+  var x: i32;
+  var y: i32;
+}
+
+fn Run() -> i32 {
+  // Tuples and structs assign element by element, from a literal or from
+  // another object of the same type.
+  var t: (i32, i32) = (1, 2);
+  t = (3, 4);
+  var s: {.a: i32, .b: i32} = {.a = 1, .b = 2};
+  let other: {.a: i32, .b: i32} = {.a = 5, .b = 6};
+  s = other;
+  // A class assigns from a struct literal naming every field.
+  var p: Point = {.x = 0, .y = 0};
+  p = {.x = 7, .y = 8};
+  // A choice value assigns as a whole.
+  var light: Light = Light.Red;
+  light = Light.Green;
+  Core.Print(t.0 + t.1);
+  Core.Print(s.a + s.b);
+  Core.Print(p.x + p.y);
+  match (light) {
+    case .Red => { Core.Print(0); }
+    case .Green => { Core.Print(1); }
+  }
+  // To exchange elements, copy the old value first.
+  var old: (i32, i32) = t;
+  t = (old.1, old.0);
+  Core.Print(t.0);
+  return 0;
+}
+```
+
+This prints `7`, `11`, `15`, `1`, and `4`. It compiles only with the fork's
+toolchain, where choice values are copyable; the upstream nightly reports
+``cannot copy value of type `Light` ``.
+
+Assigning one class object from another copies it, so the class must implement
+`Core.Copy`, which a class does not do by default:
+
+```carbon
+class Point {
+  var x: i32;
+  var y: i32;
+}
+
+fn Reset(ref p: Point, q: Point) {
+  p = q;
+}
+```
+
+The toolchain reports ``cannot copy value of type `Point` ``. It also accepts a
+struct literal for a class with `private` fields outside the class, which the
+[`private` rule](classes.md#private-access) forbids (fork work item W-167, on
+held PR 55).
+
+When the right-hand side reads the object being assigned, the result depends
+on how the statement is written. With `t` holding `(1, 2)`, `t = (t.1, t.0);`
+assigns element by element from the literal and leaves `(2, 2)`, and
+`s = {.a = s.b, .b = s.a};` does the same to a struct holding `.a = 1` and
+`.b = 2`. Binding the right-hand side first,
+`let u: (i32, i32) = (t.1, t.0); t = u;`, or copying into a `var` first, as
+the last lines of the example do, leaves `(2, 1)`. Leads issue 686, linked
+below, was answered in 2022: by default, assignment initializes a temporary
+from the right-hand side, destroys the destination, and moves the temporary
+into it, and a type may customize assignment where a different approach is
+more efficient. No proposal incorporates that answer yet (proposal 2511 does
+not; [issue 2489](https://github.com/carbon-language/carbon-lang/issues/2489)
+tracks one). Under it, both literal forms leave `(2, 1)`; the 0.1 toolchain's
+`(2, 2)` differs (fork work item W-188).
 
 See leads issue
 [#686: Operation order in struct/class assignment/initialization](https://github.com/carbon-language/carbon-lang/issues/686)

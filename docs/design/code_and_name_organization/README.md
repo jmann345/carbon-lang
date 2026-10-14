@@ -772,6 +772,10 @@ struct TI.RawData { ... }
 fn ParseData(data: TI.RawData);
 ```
 
+> **Fork note (2026-10-14):** The 0.1 toolchain does not accept a declaration
+> through an alias, such as `TI.RawData` above; see
+> [Aliases in the 0.1 toolchain](/docs/design/aliases.md#aliases-in-the-01-toolchain).
+
 ## Caveats
 
 ### Package and library name conflicts

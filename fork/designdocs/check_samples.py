@@ -259,6 +259,120 @@ SAMPLES = [
         BLOCK,
         "R22_match_scrutinee_type.carbon",
     ),
+    (
+        INTEROP,
+        "Importing C++ code (inline)",
+        PROGRAM,
+        "design_docs_cpp_inline.carbon",
+    ),
+    (
+        INTEROP,
+        "Importing C++ code (inline)",
+        BLOCK,
+        "R32_cpp_inline_no_import.carbon",
+    ),
+    (INTEROP, "Constructors", PROGRAM, "design_docs_cpp_constructors.carbon"),
+    (INTEROP, "Constructors", BLOCK, "R23_cpp_explicit_ctor.carbon"),
+    (
+        INTEROP,
+        "Struct literals",
+        PROGRAM,
+        "design_docs_cpp_struct_literals.carbon",
+    ),
+    (INTEROP, "Struct literals", BLOCK, "R24_cpp_struct_literal.carbon"),
+    (
+        INTEROP,
+        "Accessing C++ classes, structs, and members",
+        PROGRAM,
+        "design_docs_cpp_members.carbon",
+    ),
+    (
+        INTEROP,
+        "Accessing C++ classes, structs, and members",
+        BLOCK,
+        "R25_cpp_private.carbon",
+    ),
+    (
+        INTEROP,
+        "Accessing C++ classes, structs, and members",
+        BLOCK,
+        "R26_cpp_nonconst_on_value.carbon",
+    ),
+    (
+        INTEROP,
+        "Accessing global variables",
+        PROGRAM,
+        "design_docs_cpp_globals.carbon",
+    ),
+    (
+        INTEROP,
+        "Accessing global variables",
+        BLOCK,
+        "R27_cpp_const_global.carbon",
+    ),
+    (
+        INTEROP,
+        "Using C++ templates",
+        PROGRAM,
+        "design_docs_cpp_templates.carbon",
+    ),
+    (
+        INTEROP,
+        "Using Carbon from C++",
+        PROGRAM,
+        "design_docs_carbon_from_cpp.carbon",
+    ),
+    (
+        INTEROP,
+        "Using Carbon from C++",
+        BLOCK,
+        "R33_cpp_export_nontype_generic.carbon",
+    ),
+    (INTEROP, "Integers", PROGRAM, "design_docs_cpp_integers.carbon"),
+    (INTEROP, "Integers", BLOCK, "R28_cpp_long_long.carbon"),
+    (
+        INTEROP,
+        "Advanced type mapping: pointers, references, and `const`",
+        PROGRAM,
+        "design_docs_cpp_pointers.carbon",
+    ),
+    (
+        INTEROP,
+        "Advanced type mapping: pointers, references, and `const`",
+        BLOCK,
+        "R29_cpp_ref_marker.carbon",
+    ),
+    (
+        INTEROP,
+        "C++ ranges in `for` loops",
+        PROGRAM,
+        "design_docs_cpp_ranges.carbon",
+    ),
+    (
+        INTEROP,
+        "C++ ranges in `for` loops",
+        BLOCK,
+        "R34_cpp_pointer_range.carbon",
+    ),
+    (
+        INTEROP,
+        "The operator interoperability model",
+        PROGRAM,
+        "design_docs_cpp_operators.carbon",
+    ),
+    (
+        INTEROP,
+        "The operator interoperability model",
+        BLOCK,
+        "R30_cpp_assign_operator.carbon",
+    ),
+    (
+        "interoperability/threads_and_atomics.md",
+        "In the 0.1 toolchain",
+        PROGRAM,
+        "design_docs_cpp_threads.carbon",
+    ),
+    ("README.md", "Enums", PROGRAM, "design_docs_cpp_enums.carbon"),
 ]
 
 # W2 hits that stay by design because a DD-1 note in the same section answers
@@ -270,32 +384,6 @@ QUALIFIED = {}
 # clause) -> who removes it. The list shrinks commit by commit (plan section
 # 2.12 item 5) and is empty at state L.
 ALLOWLIST = {
-    (INTEROP, "TODO: Importing C++ code (inline)", "b"): "DD-1 commit 2",
-    (INTEROP, "TODO: Constructors", "b"): "DD-1 commit 2",
-    (INTEROP, "TODO: Struct literals", "b"): "DD-1 commit 2",
-    (
-        INTEROP,
-        "TODO: Accessing C++ classes, structs, and members",
-        "b",
-    ): "DD-1 commit 2",
-    (INTEROP, "TODO: Accessing global variables", "b"): "DD-1 commit 2",
-    (INTEROP, "TODO: Integers", "b"): "DD-1 commit 2",
-    (
-        INTEROP,
-        "TODO: Advanced type mapping: pointers, references, and `const`",
-        "b",
-    ): "DD-1 commit 2",
-    (
-        INTEROP,
-        "TODO: Advanced type mapping: pointers, references, and `const`",
-        "c",
-    ): "DD-1 commit 2",
-    (
-        INTEROP,
-        "TODO: The operator interoperability model",
-        "b",
-    ): "DD-1 commit 2",
-    ("README.md", "Enums", "c"): "DD-1 commit 2",
     ("README.md", "Abstract machine and execution model", "c"): "DD-1 commit 3",
     ("README.md", "Co-routines", "c"): "DD-1 commit 3",
     ("README.md", "Concurrency", "c"): "DD-1 commit 3",

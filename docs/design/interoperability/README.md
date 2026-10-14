@@ -17,26 +17,30 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [The C++ interop type](#the-c-interop-type)
 -   [Importing C++ APIs into Carbon](#importing-c-apis-into-carbon)
     -   [Importing C++ libraries (header-based)](#importing-c-libraries-header-based)
-    -   [TODO: Importing C++ code (inline)](#todo-importing-c-code-inline)
+    -   [Importing C++ code (inline)](#importing-c-code-inline)
     -   [Accessing built-in C++ entities (file-less)](#accessing-built-in-c-entities-file-less)
     -   [The `Cpp` package](#the-cpp-package)
     -   [Importing C++ macros](#importing-c-macros)
 -   [Calling C++ code from Carbon](#calling-c-code-from-carbon)
     -   [Function call syntax and semantics](#function-call-syntax-and-semantics)
     -   [Overload resolution](#overload-resolution)
-    -   [TODO: Constructors](#todo-constructors)
-    -   [TODO: Struct literals](#todo-struct-literals)
--   [TODO: Accessing C++ classes, structs, and members](#todo-accessing-c-classes-structs-and-members)
--   [TODO: Accessing global variables](#todo-accessing-global-variables)
+    -   [Constructors](#constructors)
+    -   [Struct literals](#struct-literals)
+-   [Accessing C++ classes, structs, and members](#accessing-c-classes-structs-and-members)
+-   [Accessing global variables](#accessing-global-variables)
+-   [Using C++ templates](#using-c-templates)
+-   [Using Carbon from C++](#using-carbon-from-c)
 -   [Bi-directional type mapping: primitives and core types](#bi-directional-type-mapping-primitives-and-core-types)
-    -   [TODO: Integers](#todo-integers)
+    -   [Integers](#integers)
     -   [Literals](#literals)
     -   [Character types](#character-types)
--   [TODO: Advanced type mapping: pointers, references, and `const`](#todo-advanced-type-mapping-pointers-references-and-const)
+-   [Advanced type mapping: pointers, references, and `const`](#advanced-type-mapping-pointers-references-and-const)
 -   [Bi-directional type mapping: standard library types](#bi-directional-type-mapping-standard-library-types)
     -   [`std::string_view` and `str`](#stdstring_view-and-str)
     -   [`std::span` and `Core.Slice`](#stdspan-and-coreslice)
--   [TODO: The operator interoperability model](#todo-the-operator-interoperability-model)
+    -   [C++ ranges in `for` loops](#c-ranges-in-for-loops)
+-   [Threads, atomics, and the memory model](#threads-atomics-and-the-memory-model)
+-   [The operator interoperability model](#the-operator-interoperability-model)
 -   [References](#references)
 
 <!-- tocstop -->
@@ -153,7 +157,59 @@ This syntax is used for both standard library headers and user-defined headers:
 
     This import makes user-defined declarations and definitions available.
 
-### TODO: Importing C++ code (inline)
+### Importing C++ code (inline)
+
+C++ source can also be written in a Carbon file. `import Cpp inline` followed by
+a string literal, usually a block string literal `'''...'''` tagged `c++`,
+compiles that source as if it were a header: its declarations join the `Cpp`
+package exactly as a header's do, and it may `#include` headers itself. It is an
+`import`, so it comes with the other imports, before any other declaration. The
+`inline Cpp` declaration may instead appear among Carbon declarations, and its
+C++ code can call the Carbon declarations above it through the `Carbon`
+namespace; it requires an `import Cpp` declaration earlier in the file, such
+as `import Cpp;` or the `import Cpp inline` above.
+
+```carbon
+import Core library "io";
+
+// C++ source in an import: its declarations join the `Cpp` package like a
+// header's.
+import Cpp inline '''c++
+inline int Triple(int x) { return 3 * x; }
+''';
+
+fn Twice(n: i32) -> i32 { return n * 2; }
+
+// An `inline Cpp` declaration may follow Carbon declarations, and its C++
+// code can call them through the `Carbon` namespace.
+inline Cpp '''c++
+inline int TwicePlusOne(int n) { return Carbon::Twice(n) + 1; }
+''';
+
+fn Run() -> i32 {
+  Core.Print(Cpp.Triple(14));
+  Core.Print(Cpp.TwicePlusOne(20));
+  return 0;
+}
+```
+
+This prints `42` and `41`. The string literal's escape sequences are Carbon's
+and are processed before C++ sees the text, so a C++ `"\n"` is written `"\\n"`,
+or the whole block is written as a raw block string literal `#'''...'''#`. No
+accepted proposal covers the inline forms; the toolchain parses both
+(`toolchain/parse/handle_inline_decl.cpp`) and the tests in
+`toolchain/check/testdata/interop/cpp/basics/inline/` pin them. Without an
+earlier `import Cpp`, the `inline Cpp` declaration is an error:
+
+```carbon
+fn Twice(n: i32) -> i32 { return n * 2; }
+
+inline Cpp '''c++
+inline int CallTwice(int n) { return Carbon::Twice(n) + 1; }
+''';
+```
+
+The toolchain reports ``name `Cpp` not found``.
 
 ### Accessing built-in C++ entities (file-less)
 
@@ -237,17 +293,506 @@ export direction landed with workstream OV-3, conformance-tested in both
 directions by `fork/conformance/programs/interop/cpp_export_overload_set.carbon`
 and `cpp_export_overload_set_divergence.carbon`).
 
-### TODO: Constructors
+### Constructors
 
-### TODO: Struct literals
+A C++ constructor is a member of its class with the class's name, as in C++, and
+is called with call syntax: `Cpp.Point.Point(1, 2)`. C++ overload resolution
+chooses among the constructors and supplies default arguments
+([Overload resolution](#overload-resolution)). A `var` with no initializer runs
+the default constructor; initializing from another object of the class runs its
+copy constructor; a constructor that is not `explicit` is an implicit
+conversion from its parameter type; and the class's destructor runs when a
+Carbon object of the class goes out of scope.
 
-## TODO: Accessing C++ classes, structs, and members
+```carbon
+import Core library "io";
 
-## TODO: Accessing global variables
+import Cpp inline '''c++
+inline int destroyed = 0;
+
+struct Point {
+  int x;
+  int y;
+  Point() : x(0), y(0) {}
+  Point(int px, int py = 10) : x(px), y(py) {}
+  ~Point() { ++destroyed; }
+};
+
+struct Meters {
+  int n;
+  Meters(int v) : n(v) {}
+};
+
+inline int Length(Meters m) { return m.n; }
+''';
+
+fn Make() -> i32 {
+  // A constructor is called by its C++ name, as a member of its class; C++
+  // overload resolution picks the constructor and fills default arguments.
+  var a: Cpp.Point = Cpp.Point.Point(1, 2);
+  var b: Cpp.Point = Cpp.Point.Point(3);
+  // A `var` with no initializer runs the default constructor.
+  var c: Cpp.Point;
+  // Initializing from another object runs the copy constructor.
+  var d: Cpp.Point = a;
+  d.x = 100;
+  return a.x + a.y + b.y + c.x + d.x;
+}
+
+fn Run() -> i32 {
+  Core.Print(Make());
+  // The four objects were destroyed when `Make` returned.
+  Core.Print(Cpp.destroyed);
+  // A non-`explicit` converting constructor is an implicit conversion.
+  Core.Print(Cpp.Length(5));
+  return 0;
+}
+```
+
+This prints `113`, `4`, and `5`. An `explicit` constructor is not an implicit
+conversion:
+
+```carbon
+import Cpp inline '''c++
+struct Meters {
+  int n;
+  explicit Meters(int v) : n(v) {}
+};
+inline int Length(Meters m) { return m.n; }
+''';
+
+fn F() -> i32 {
+  return Cpp.Length(5);
+}
+```
+
+C++ overload resolution finds no viable `Length`, and the toolchain reports
+`no matching function for call to 'Length'`.
+
+### Struct literals
+
+A Carbon struct literal initializes two kinds of C++ class in 0.1: an empty
+struct literal `{}` initializes an aggregate with no fields, and a one-field
+struct literal initializes a C++ union, naming the member to make active
+([Unions](../unions.md), fork decision F-007). A C++ aggregate with fields is
+built in C++, by a function or a constructor, and then used field by field.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+struct Empty {};
+struct Pair {
+  int first;
+  int second;
+};
+union Number {
+  int as_int;
+  float as_float;
+};
+inline Pair MakePair(int a, int b) { return {a, b}; }
+''';
+
+fn Run() -> i32 {
+  // An empty aggregate initializes from an empty struct literal.
+  var unused e: Cpp.Empty = {};
+  // A C++ union initializes from a one-field struct literal naming the
+  // active member.
+  var n: Cpp.Number = {.as_int = 41};
+  // A non-empty aggregate is built in C++ and then used field by field.
+  var p: Cpp.Pair = Cpp.MakePair(1, 2);
+  p.second = n.as_int;
+  Core.Print(p.first + p.second);
+  return 0;
+}
+```
+
+This prints `42`; the union initialization needs the fork's toolchain. A
+struct literal with fields does not yet initialize a C++ aggregate:
+
+```carbon
+import Cpp inline '''c++
+struct Pair {
+  int first;
+  int second;
+};
+''';
+
+fn F() -> i32 {
+  var p: Cpp.Pair = {.first = 1, .second = 2};
+  return p.first;
+}
+```
+
+The toolchain reports ``cannot implicitly convert expression of type `{.first:
+Core.IntLiteral, .second: Core.IntLiteral}` to `Cpp.Pair` `` (fork work items
+W-048 and W-051).
+
+## Accessing C++ classes, structs, and members
+
+C++ classes and structs are Carbon types in the `Cpp` package, nested in `Cpp`
+namespaces as in C++ (`Cpp.geo.Rect`). Their members use Carbon member access:
+fields and member functions through an object (`r.Area()`, `r.tag`), and static
+member functions and nested types through the class
+(`Cpp.geo.Rect.Square(3)`, `Cpp.geo.Rect.Corner`). Members of a public base
+class are found through a derived object, and a derived object converts to a
+reference to its base.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+namespace geo {
+class Rect {
+ public:
+  Rect(int w, int h) : w_(w), h_(h) {}
+  static Rect Square(int s) { return Rect(s, s); }
+  int Area() const { return w_ * h_; }
+  void Scale(int k) { w_ *= k; h_ *= k; }
+  struct Corner {
+    int x;
+    int y;
+  };
+  int tag = 7;
+
+ private:
+  int w_;
+  int h_;
+};
+
+struct Shape {
+  int id = 5;
+  int Id() const { return id; }
+};
+struct Circle : Shape {
+  int radius = 1;
+};
+inline int IdOf(const Shape& s) { return s.id; }
+}  // namespace geo
+''';
+
+fn Run() -> i32 {
+  // Namespaces, classes, and static member functions are members of `Cpp`.
+  var r: Cpp.geo.Rect = Cpp.geo.Rect.Square(3);
+  // Member functions and public fields use member access.
+  Core.Print(r.Area());
+  r.Scale(2);
+  r.tag = r.Area();
+  Core.Print(r.tag);
+  // A nested class is a member of its enclosing class.
+  var corner: Cpp.geo.Rect.Corner = Cpp.geo.Rect.Corner.Corner();
+  corner.x = 4;
+  Core.Print(corner.x);
+  // Base-class members are found through a derived object, and a derived
+  // object converts to a reference to its base.
+  let c: Cpp.geo.Circle = Cpp.geo.Circle.Circle();
+  Core.Print(c.Id() + c.radius);
+  Core.Print(Cpp.geo.IdOf(c));
+  return 0;
+}
+```
+
+This prints `9`, `36`, `4`, `6`, and `5`. C++ access control applies:
+
+```carbon
+import Cpp inline '''c++
+class Box {
+ public:
+  Box() : v_(1) {}
+
+ private:
+  int v_;
+};
+''';
+
+fn F() -> i32 {
+  var b: Cpp.Box = Cpp.Box.Box();
+  return b.v_;
+}
+```
+
+reports ``cannot access private member `v_` of type `Cpp.Box` ``. A `const`
+member function can be called on any object, including a value; a member
+function that is not `const` needs a reference expression, such as a `var`:
+
+```carbon
+import Cpp inline '''c++
+struct Counter {
+  int n = 1;
+  void Inc() { ++n; }
+};
+''';
+
+fn F() {
+  let c: Cpp.Counter = Cpp.Counter.Counter();
+  c.Inc();
+}
+```
+
+Called on the value `c`, C++ overload resolution finds no viable `Inc`, and the
+toolchain reports `no matching function for call to 'Inc'`.
+
+Inheritance works across the boundary in both directions with a single base: a
+Carbon class can `extend base` a C++ class, using it as its hierarchy root, and
+override its virtual functions, and C++ code can derive a class from an
+exported Carbon base class (the fork's conformance programs
+`interop/inherit_carbon_extends_cpp.carbon` and
+`interop/inherit_cpp_extends_carbon.carbon`). Multiple, virtual, and diamond
+inheritance, and exporting an abstract class whose destructor is not virtual,
+are fork work item W-046.
+
+## Accessing global variables
+
+A C++ variable at namespace scope, such as an `inline` variable or an `extern`
+declaration with its definition, is a durable reference expression in Carbon,
+named through the `Cpp` package: it can be read, assigned, and updated in place.
+A `const` variable can only be read.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+inline int counter = 40;
+inline const int kLimit = 100;
+extern int total;
+int total = 7;
+namespace config {
+inline int verbosity = 1;
+}
+''';
+
+fn Run() -> i32 {
+  // A C++ variable is a durable reference: it can be read, assigned, and
+  // updated in place.
+  Cpp.counter += 2;
+  Core.Print(Cpp.counter);
+  Core.Print(Cpp.kLimit + Cpp.total);
+  Cpp.config.verbosity = 3;
+  Core.Print(Cpp.config.verbosity);
+  return 0;
+}
+```
+
+This prints `42`, `107`, and `3`. Assigning a `const` variable
+
+```carbon
+import Cpp inline '''c++
+inline const int kLimit = 100;
+''';
+
+fn F() {
+  Cpp.kLimit = 3;
+}
+```
+
+reports `expression is not assignable`. C++ `thread_local` variables are
+covered in [Threads, atomics, and the memory model](threads_and_atomics.md).
+
+## Using C++ templates
+
+A C++ template is used from Carbon as C++ code uses it. A function template is
+called like a function, and C++ deduces its template arguments from the Carbon
+arguments. A class template is named with its template arguments in
+parentheses, `Cpp.Box(i32)` for `Box<int>`, and each argument list names a
+distinct type; the standard library's templates work the same way, such as
+`Cpp.std.vector(i32)`. A template argument can be a Carbon class type, so a
+C++ template can be instantiated on a Carbon type.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+template <typename T>
+T Larger(T a, T b) { return a < b ? b : a; }
+
+template <typename T>
+struct Box {
+  T value;
+  T Get() const { return value; }
+  static Box Make(T v) { return Box{v}; }
+};
+''';
+
+class Point {
+  var x: i32;
+  var y: i32;
+}
+
+fn Run() -> i32 {
+  // C++ deduces a function template's arguments from the Carbon arguments.
+  Core.Print(Cpp.Larger(3, 7));
+  // A class template takes its template arguments in parentheses, and each
+  // argument list names a distinct type.
+  let b: Cpp.Box(i32) = Cpp.Box(i32).Make(5);
+  Core.Print(b.Get());
+  // A C++ template can be instantiated on a Carbon class type.
+  let p: Point = {.x = 3, .y = 4};
+  let boxed: Cpp.Box(Point) = Cpp.Box(Point).Make(p);
+  Core.Print(boxed.Get().y);
+  return 0;
+}
+```
+
+This prints `7`, `5`, and `4`. Limits in 0.1: a checked generic's symbolic
+type parameter cannot yet be a C++ template argument, so `Cpp.Box(T)` in the
+body of a function with a parameter `[T: type]` does not compile (fork work
+item W-043). A C++20 concept applied to types is a compile-time `bool`, so
+`Cpp.IsLarge(Cpp.Small)` can be a generic argument
+(`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon
+constraints are not exported as C++ concepts (W-029). Using Carbon generics
+from C++ is described in [Using Carbon from C++](#using-carbon-from-c).
+
+## Using Carbon from C++
+
+C++ code names Carbon declarations through the `Carbon` namespace:
+`Carbon::Twice(7)` calls the Carbon function `Twice`, and `Carbon::Counter` is
+the Carbon class `Counter`, whose fields, methods, and class functions C++ uses
+as its members. A method declared with `ref self` can be called only on a
+non-`const` object that is not a temporary, and one declared with `self` on
+any object (`toolchain/check/testdata/interop/cpp/class/export/method.carbon`).
+C++ code in the same file reaches Carbon this way from an `inline Cpp`
+declaration, placed after the Carbon declarations it names as in the sample
+below. A checked generic function
+whose generic parameters are types is a C++ function template, and C++ deduces
+its arguments; an exported [overload set](#overload-resolution) is resolved by
+C++'s rules.
+
+```carbon
+import Core library "io";
+import Cpp;
+
+class Counter {
+  var n: i32;
+  fn Make(start: i32) -> Counter { return {.n = start}; }
+  fn Get(self) -> i32 { return self.n; }
+  fn Add(ref self, k: i32) { self.n += k; }
+}
+
+fn Twice(n: i32) -> i32 { return n * 2; }
+
+interface Doubler {
+  fn Double(self) -> Self;
+}
+
+class Meters {
+  var n: i32;
+  fn Make(v: i32) -> Meters { return {.n = v}; }
+  fn Value(self) -> i32 { return self.n; }
+  impl as Doubler {
+    fn Double(self) -> Self { return {.n = self.n * 2}; }
+  }
+}
+
+// A checked generic is exported as a C++ function template.
+fn DoubleIt[T: Doubler](x: T) -> T { return x.Double(); }
+
+// C++ code names Carbon declarations through the `Carbon` namespace.
+inline Cpp '''c++
+inline int UseCarbon(int start) {
+  Carbon::Counter c = Carbon::Counter::Make(start);
+  c.Add(3);
+  return Carbon::Twice(c.Get());
+}
+
+inline int UseGeneric() {
+  return Carbon::DoubleIt(Carbon::Meters::Make(21)).Value();
+}
+''';
+
+fn Run() -> i32 {
+  Core.Print(Cpp.UseCarbon(4));
+  Core.Print(Cpp.UseGeneric());
+  return 0;
+}
+```
+
+This prints `14` and `42`. A generic parameter that is not a type is not
+exported:
+
+```carbon
+import Cpp;
+
+fn Times[N: i32](x: i32) -> i32 { return N * x; }
+
+inline Cpp '''c++
+inline int UseTimes() { return Carbon::Times<3>(2); }
+''';
+```
+
+The toolchain reports
+``semantics TODO: `binding maps to a non-type template parameter` `` (fork work
+item W-044). A Carbon function with a `template` parameter cannot yet be
+called from C++: the call stops the compiler (fork work item W-191). Carbon
+operator implementations are not exported as C++ operators
+([The operator interoperability model](#the-operator-interoperability-model)),
+and inheritance across the boundary is described in
+[Accessing C++ classes, structs, and members](#accessing-c-classes-structs-and-members).
 
 ## Bi-directional type mapping: primitives and core types
 
-### TODO: Integers
+### Integers
+
+Proposal 5448 fixes the mapping, and the toolchain implements it: C++ `intN_t`
+and `uintN_t` are Carbon's `iN` and `uN`, and a C++ integer type that is the
+same type as one of them on the target is that Carbon type. On 64-bit Linux,
+`signed char`, `short`, `int`, and `long` are `i8`, `i16`, `i32`, and `i64`, the
+unsigned types are the matching `uN`, and `size_t` is `u64`. `long long` and
+`unsigned long long`, the same width as `long` but different C++ types, are the
+distinct Carbon types `Cpp.long_long` and `Cpp.unsigned_long_long`, which `as`
+converts to and from `i64` and `u64`. Every C++ integer type is also named in
+the `Cpp` package, such as `Cpp.int` and `Cpp.long`.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+#include <cstddef>
+#include <cstdint>
+inline int NextInt(int x) { return x + 1; }
+inline long NextLong(long x) { return x + 1; }
+inline long long NextLongLong(long long x) { return x + 1; }
+inline unsigned NextUnsigned(unsigned x) { return x + 1; }
+inline short NextShort(short x) { return x + 1; }
+inline std::int64_t NextInt64(std::int64_t x) { return x + 1; }
+inline std::size_t NextSize(std::size_t x) { return x + 1; }
+inline unsigned char NextByte(unsigned char x) { return x + 1; }
+''';
+
+fn Run() -> i32 {
+  // `int`, `short`, `unsigned`, and the fixed-width types are Carbon's
+  // integer types; on this target `long` is `i64` and `size_t` is `u64`.
+  let a: i32 = Cpp.NextInt(1);
+  let b: i16 = Cpp.NextShort(2);
+  let c: u32 = Cpp.NextUnsigned(3);
+  let d: i64 = Cpp.NextLong(4);
+  let e: i64 = Cpp.NextInt64(5);
+  let f: u64 = Cpp.NextSize(6);
+  let g: u8 = Cpp.NextByte(7);
+  // `long long` is the distinct type `Cpp.long_long`; `as` converts it.
+  let h: i64 = Cpp.NextLongLong(8) as i64;
+  Core.Print(a + (b as i32) + (c as i32));
+  Core.Print((d + e + h) as i32);
+  Core.Print((f as i32) + (g as i32));
+  return 0;
+}
+```
+
+This prints `9`, `20`, and `15`. A `Cpp.long_long` does not implicitly convert
+to `i64`:
+
+```carbon
+import Cpp inline '''c++
+inline long long NextLongLong(long long x) { return x + 1; }
+''';
+
+fn F() -> i64 {
+  let h: i64 = Cpp.NextLongLong(8);
+  return h;
+}
+```
+
+reports ``cannot implicitly convert expression of type `Cpp.long_long` to
+`i64` ``.
 
 ### Literals
 
@@ -272,10 +817,86 @@ interoperability, though bits will be interpreted differently in each language.
 > -   Proposal
 >     [#6710: `char` redesign](https://github.com/carbon-language/carbon-lang/pull/6710)
 
-## TODO: Advanced type mapping: pointers, references, and `const`
+## Advanced type mapping: pointers, references, and `const`
 
-> **TODO:** Incorporate proposal
-> [#6357: C++ Interop: Mapping pointer types](https://github.com/carbon-language/carbon-lang/pull/6357)
+Proposal 6357 maps C++ object pointers, and the toolchain implements its table:
+a C++ pointer that may be null, `T*`, is `Core.Optional(T*)` in Carbon, with
+null as an empty `Optional`; a pointer annotated `_Nonnull` is a Carbon pointer
+`T*`, which is never null; `const T*` is `Core.Optional(const T*)`; and `void*`
+is `Core.Optional(Core.CppCompat.VoidBase*)`. No accepted proposal maps C++
+references yet: proposal 5434, which introduces Carbon's `ref` parameters,
+leaves the modeling of C++ references to a future proposal. The 0.1 toolchain
+maps them onto Carbon's parameter forms: a parameter of type `T&` is a `ref`
+parameter, whose argument is marked `ref`; a `const T&` parameter takes a
+value; a function returning `T&` returns a durable reference expression, which
+can be assigned; and a field of reference type is reached through a pointer
+(`*s.r`, pinned by
+`toolchain/check/testdata/interop/cpp/class/import/field.carbon`). C++
+references are therefore not translated to `T*`, as the
+[language overview's standard types](../README.md#standard-types) section
+once planned. A `const` member function can be called on a value
+([Accessing C++ classes, structs, and members](#accessing-c-classes-structs-and-members)).
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+inline void Bump(int* _Nonnull p) { *p += 1; }
+inline int* Find(bool found, int* p) { return found ? p : nullptr; }
+inline void AddTen(int& r) { r += 10; }
+inline int Read(const int& r) { return r; }
+inline int ReadThrough(const int* _Nonnull p) { return *p; }
+
+struct Holder {
+  int v = 3;
+  int& Ref() { return v; }
+  int Get() const { return v; }
+};
+''';
+
+fn Run() -> i32 {
+  var n: i32 = 1;
+  // `int* _Nonnull` is `i32*`.
+  Cpp.Bump(&n);
+  Core.Print(n);
+  // A pointer that may be null is `Core.Optional(i32*)`.
+  let found: Core.Optional(i32*) = Cpp.Find(true, &n);
+  if (found.HasValue()) {
+    Core.Print(*found.Get());
+  }
+  let missing: Core.Optional(i32*) = Cpp.Find(false, &n);
+  if (not missing.HasValue()) {
+    Core.Print(0);
+  }
+  // A non-`const` reference parameter takes a `ref` argument; a `const`
+  // reference parameter takes a value.
+  Cpp.AddTen(ref n);
+  Core.Print(Cpp.Read(n));
+  // `const int*` is `const i32*`, and `i32*` converts to it.
+  Core.Print(Cpp.ReadThrough(&n));
+  // A returned non-`const` reference is a durable reference expression.
+  var h: Cpp.Holder = Cpp.Holder.Holder();
+  h.Ref() = 8;
+  Core.Print(h.Get());
+  return 0;
+}
+```
+
+This prints `2`, `2`, `0`, `12`, `12`, and `8`. A `T&` argument must be marked:
+
+```carbon
+import Cpp inline '''c++
+inline void AddTen(int& r) { r += 10; }
+''';
+
+fn F() -> i32 {
+  var n: i32 = 1;
+  Cpp.AddTen(n);
+  return n;
+}
+```
+
+reports ``argument to `ref` parameter not marked with `ref` ``.
 
 ## Bi-directional type mapping: standard library types
 
@@ -347,7 +968,164 @@ only) and is imported as an ordinary class; it is not mapped to `Core.Slice`.
 64-bit target whose standard library lays out the span as pointer then size
 (libc++ and libstdc++ both do).
 
-## TODO: The operator interoperability model
+### C++ ranges in `for` loops
+
+A C++ range can be the range of a Carbon `for` loop. For a C++ class whose
+`begin` and `end` are found as members or by argument-dependent lookup and
+return an iterator of class type, the toolchain implements `Core.Iterate`, and
+the loop calls `begin` and `end` and dereferences and increments the iterator,
+as a C++ range-based `for` does (the fork's conformance programs
+`interop/cpp_range_member_begin_end_iterate.carbon` and
+`interop/cpp_range_adl_begin_end_iterate.carbon`). Standard library containers
+are ranges this way.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+#include <vector>
+
+inline std::vector<int> MakeVector() { return {2, 4, 6}; }
+''';
+
+fn Run() -> i32 {
+  // A C++ range is a Carbon `for` range: the loop calls its `begin` and
+  // `end`, and dereferences and increments the iterator.
+  var v: Cpp.std.vector(i32) = Cpp.MakeVector();
+  var sum: i32 = 0;
+  for (n: i32 in v) {
+    sum += n;
+  }
+  Core.Print(sum);
+  v.push_back(8);
+  var count: i32 = 0;
+  for (unused n: i32 in v) {
+    ++count;
+  }
+  Core.Print(count);
+  return 0;
+}
+```
+
+This prints `12` and `4`. A class whose `begin` and `end` return raw pointers
+is not yet a range:
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+struct Digits {
+  int values[3] = {1, 2, 3};
+  int* begin() { return values; }
+  int* end() { return values + 3; }
+};
+''';
+
+fn Run() -> i32 {
+  var d: Cpp.Digits = Cpp.Digits.Digits();
+  var product: i32 = 1;
+  for (n: i32 in d) {
+    product *= n;
+  }
+  Core.Print(product);
+  return 0;
+}
+```
+
+The toolchain reports ``cannot access member of interface `Core.Iterate` in type
+`Cpp.Digits` that does not implement that interface`` (fork work item W-053).
+
+## Threads, atomics, and the memory model
+
+Carbon 0.1 uses C++'s threads, atomics, and synchronization, through interop,
+under the C++ memory model: a Carbon function runs on a `std::thread`, a Carbon
+variable can have a `std::atomic` type, and C++ locks order Carbon accesses as
+they order C++ ones. The contract is specified in
+[Threads, atomics, and the memory model](threads_and_atomics.md) (fork decision
+F-008).
+
+## The operator interoperability model
+
+Carbon defines operators by implementing interfaces, and C++ defines them as
+functions. The [language overview](../README.md#operator-overloading-1)
+describes a mapping in both directions: a C++ operator overload makes the type
+usable with the corresponding Carbon operator, and a Carbon interface
+implementation makes the C++ operator available. The 0.1 toolchain implements
+the first direction: a Carbon operator expression with a C++ operand looks up
+the C++ operator functions, members and non-members, and resolves among them
+with C++ overload resolution (proposal 6254, "Operator calls"). Imported this
+way are the binary arithmetic, bitwise, shift, and relational operators, `==`
+and `!=`, compound assignment, indexing, unary `-`, prefix `++` and `--`, and
+`^x` for C++'s `operator~` (pinned by
+`toolchain/check/testdata/interop/cpp/operators/`).
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+struct Money {
+  int cents;
+  static Money Make(int c) { return Money{c}; }
+  Money operator-() const { return Money{-cents}; }
+  friend Money operator+(Money a, Money b) { return Money{a.cents + b.cents}; }
+  friend Money& operator+=(Money& a, Money b) {
+    a.cents += b.cents;
+    return a;
+  }
+  friend bool operator==(Money a, Money b) { return a.cents == b.cents; }
+  friend bool operator<(Money a, Money b) { return a.cents < b.cents; }
+};
+''';
+
+fn Run() -> i32 {
+  var a: Cpp.Money = Cpp.Money.Make(30);
+  let b: Cpp.Money = Cpp.Money.Make(12);
+  // Carbon operator syntax calls the C++ operators that C++ overload
+  // resolution selects.
+  var c: Cpp.Money = a + b;
+  Core.Print(c.cents);
+  c += a;
+  Core.Print((-c).cents);
+  if (a == Cpp.Money.Make(30) and b < a) {
+    Core.Print(1);
+  }
+  return 0;
+}
+```
+
+This prints `42`, `-72`, and `1`. Not imported in 0.1 (fork work item W-045):
+`operator=`, C++20's rewritten comparisons (`!=` from `==`, ordering from
+`<=>`), operators whose result is not `bool` where Carbon needs a `bool`, and a
+set of several `operator*` overloads. Some C++ operators have no Carbon
+operator to map to, by design: unary `+`, postfix `++` and `--`, `!`, `&&`,
+`||`, and the comma operator, since Carbon's logical operators are `not`,
+`and`, and `or` on `bool`; the
+[language overview](../README.md#operator-overloading-1) keeps operators like
+these C++-only. Assignment from an `int` fails:
+
+```carbon
+import Cpp inline '''c++
+struct Cell {
+  int value;
+  static Cell Make(int n) { return Cell{n}; }
+  Cell& operator=(int n) {
+    value = n;
+    return *this;
+  }
+};
+''';
+
+fn F() -> i32 {
+  var c: Cpp.Cell = Cpp.Cell.Make(1);
+  c = 42;
+  return c.value;
+}
+```
+
+with ``cannot implicitly convert expression of type `Core.IntLiteral` to
+`Cpp.Cell` ``. The other direction is not implemented: a Carbon type's operator
+interface implementations are not exported as C++ operators (fork work item
+W-054).
 
 ## References
 

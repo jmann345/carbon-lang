@@ -3814,7 +3814,40 @@ corresponding interface.
 
 ### Enums
 
-> **TODO**
+C++ enumerations are imported as Carbon types in the `Cpp` package. An
+enumerator is a member of its enumeration (`Cpp.Color.kGreen`); an unscoped
+enumeration's enumerators are also members of the enclosing scope, as in C++
+(`Cpp.kHigh`); values compare with `==`; and `as` converts an enumerator of an
+enumeration with a fixed underlying type to that integer type. Carbon's own
+enumerated types are [choice types](#choice-types) without payloads.
+
+```carbon
+import Core library "io";
+
+import Cpp inline '''c++
+enum class Color : int { kRed, kGreen = 5, kBlue };
+enum Level : int { kLow = 1, kHigh = 2 };
+inline bool IsGreen(Color c) { return c == Color::kGreen; }
+''';
+
+fn Run() -> i32 {
+  // Enumerators are members of the enumeration; `as` converts an
+  // enumerator to its underlying integer type.
+  let c: Cpp.Color = Cpp.Color.kGreen;
+  Core.Print(c as i32);
+  if (Cpp.IsGreen(c) and c == Cpp.Color.kGreen) {
+    Core.Print(1);
+  }
+  // An unscoped enumeration's enumerators are also members of the enclosing
+  // scope, as in C++.
+  Core.Print((Cpp.kHigh as i32) + (Cpp.Level.kLow as i32));
+  return 0;
+}
+```
+
+This prints `5`, `1`, and `3`. No accepted proposal covers C++ enumerations;
+this is the 0.1 toolchain's behavior (fork, 2026-10-14), pinned by
+`toolchain/check/testdata/interop/cpp/enum/`.
 
 ### Unions
 

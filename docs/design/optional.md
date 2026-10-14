@@ -299,7 +299,7 @@ reading, copying and comparing a `Core.Optional(Core.Optional(U*))` return wrong
 values with no diagnostic (W-171). For a payload that exists only at compile
 time, such as `Core.IntLiteral`, comparing two `Core.Optional(T)` values passes
 check and then crashes the compiler in lowering, as a checked generic's `==` on
-`Core.IntLiteral` does without Optional (W-190).
+`Core.IntLiteral` does without Optional (W-195).
 
 For example, with a library's own pointer equality, which compares the objects
 the pointers refer to, `Core.Optional(C*)` values compare through the null
@@ -502,7 +502,7 @@ Each limit is a filed fork work item, with the condition under which it closes:
 -   **W-179: a non-final impl that a `final` impl completely subsumes is
     diagnosed only where it is used.** Closes when its declaration is
     diagnosed, as proposal p5337 specifies.
--   **W-190: a checked generic's `==` on a compile-time-only type aborts
+-   **W-195: a checked generic's `==` on a compile-time-only type aborts
     lowering.** `Core.Optional(Core.IntLiteral)` values compare through the
     generic impl, which lowers `Core.IntLiteral`'s compile-time-only `==` as a
     run-time call; `Eq2(1, 2)` for `fn Eq2[T: Core.Eq](a: T, b: T)` aborts the

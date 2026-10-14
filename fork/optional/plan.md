@@ -42,6 +42,12 @@ exactly as an OP-1 build would; the trunk file_test differs from an OP-1
 file_test only by the three manifest entries of §2.3, which §0.2 handles with a
 mirror.
 
+**Since rev 2:** implemented in 5d9edb3e0, 4dc9dbefc and a8daacf11, with the
+implementer's pre-review fix 1fc03110e; the two implementation reviews folded in
+49e2cf2bf; trunk 162c7e839 merged in aa89cd7cd; discharged with the row kept
+PARTIAL by the commit that adds the
+[Landed notes (OP-1, 2026-10-13)](#landed-notes-op-1-2026-10-13).
+
 **Item:** W-058 ("W9d: approved Optional design with comparison support", kind
 `design-needed`, size M, subsystem core/prelude + docs/design, bullet "Stdlib:
 Optional"). **Milestone row:** fork/gap-analysis.md:78, PARTIAL. The row is :79,
@@ -3358,3 +3364,129 @@ fold changes no file that the build compiles):
     run>` with its gloss in parentheses; the second rewrapped that paragraph;
     the third changed nothing, and so did two more after this sentence was
     written.
+
+## Landed notes (OP-1, 2026-10-13)
+
+**Discharge.** §3's commit 5, "OP-1 discharge: F-015 entry, ledger W-058 and
+W-170..W-179, gap row, ORCHESTRATION, plan landed notes", writes §2.6's records
+after the merge of trunk and §8.8's re-verification, so every count it quotes is
+from a run on the tree it lands on (R9): W-058 DISCHARGED with W-170 to W-179
+and W-195 filed and OP-1 notes on W-006, W-010, W-011 and W-049
+(fork/inventory/work-items.json, 136 items); row 78 kept PARTIAL with §2.6's
+text, row 68's clause, §W9's paragraph and "Depends on" line, and the header's
+scoreboard sentence (fork/gap-analysis.md); the decision-log entry "OP-1 /
+F-015: Core.Optional comparison and design (2026-10-13)" above SL-2's, the
+newest landed entry after "Full autonomy and the throughput protocol"; the
+fork/ORCHESTRATION.md stamp paragraph, Branches row, Scoreboard line, the exact
+reservation sentence, item 3's dated correction and Next actions items 5 and 6;
+this section; and docs/design/optional.md's W-190 renumbered W-195. It changes
+no prelude, toolchain, golden or program file.
+
+**Merge of trunk and §8.8.** Trunk 162c7e839 was merged as aa89cd7cd (`git
+merge --no-ff --no-edit origin/trunk`, no conflict). `git diff --stat 49e2cf2bf
+aa89cd7cd` names fork/ORCHESTRATION.md only (19 insertions, 3 deletions), so
+§8.8 records that diff and needed no rebuild or refill; the gate and the
+conformance runner re-ran on the existing install of 5d9edb3e0 against the merge
+commit's tree:
+
+-   gate.sh exit 0, "1945 passed, 0 failed (exit 0, 70s)", the log's
+    `[==========] 1945 tests from 1 test suite ran.` and
+    `[  PASSED  ] 1945 tests.`, no `[  FAILED  ]` line.
+-   Conformance (scoreboard generated 2026-10-13T23:57:07Z, 46.5 s): PASS 132,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 25 of 157, bullets 48 PASS and 8 SKIP of 56; program
+    by program identical to the fold's run; against the floor of record (128 /
+    0 / 22 over 150, run 37402970811) the eight changes are all Optional, the 16
+    error_handling programs PASS, and the Optional bullet is PASS over ten
+    programs with its gap status PARTIAL.
+-   The trunk non-vacuity counts quoted by the records and the PR body,
+    re-measured at this discharge on the trunk install (0.0.0-0.dev+0bdce60a5,
+    `--phase=check`): optional_missing_ops 1; optional_compare_diff 6;
+    optional_compare_generic 5 `MissingImplInMemberAccess` (4 `EqWith`, 1
+    `OrderedWith`) and 2 "cannot convert type"; optional_compare_payload 3;
+    optional_nested_pointer 1. They equal the fold's re-measurement (R1-6,
+    IR2-10).
+
+The merge was taken at the orchestrator's direction before OP-1 is next in
+D-OP-15's queue (none of PR 53, PR 51, PR 52, SC-1, PR 54 and PR 55 has merged),
+which §3's timing rule allows: the merge of trunk taken when OP-1 is next
+re-runs §8.8, re-anchors these records and re-stamps the landing dates, each in
+a new commit (fork/ORCHESTRATION.md Next actions item 5). aa89cd7cd carries
+git's default message and no attribution trailers, as `--no-edit` writes it, and
+is not amended.
+
+**Ids.** The re-scan immediately before the ledger was written read 71 refs
+(trunk, origin/trunk and the 69 local and origin `claude/carbon-fork-0-1-*`
+refs): trunk W-125 (the op and dd branches carry trunk's ledger), ua2 W-127,
+cmake W-133, safe W-150, ev W-155, st W-167, sc W-168 (df5120d03). No ref files
+an id from W-169 up, and no text on any ref names W-170 to W-179 except trunk's
+reservation and DD-1's plan, which records them as OP-1's, so W-170 to W-179 are
+used as reserved, all ten. W-190 is taken: DD-1's plan rev 2
+(claude/carbon-fork-0-1-dd at a1d96520a, committed 2026-10-13 23:40 UTC, before
+the fold's 49e2cf2bf at 23:53) reserves W-180..W-194 and gives W-190 to its own
+template-export defect. By §2.6's rule the R1-4 residue takes the maximum plus
+one, skipping every reserved block (W-169 SC-1's, W-170 to W-179 OP-1's, W-180
+to W-194 DD-1's): W-195, renumbered in docs/design/optional.md in the discharge
+commit. This plan's text keeps the name W-190 where the fold wrote it; read it
+as W-195.
+
+**FILL-CAUGHT MISSES: none.** Every §4 key line was reproduced by 4dc9dbefc,
+the sizes equal M-15's (1435/1345, 157/37, 488/465), and no §4 falsifier fired.
+Review saw nothing to miss because §4 quotes M-15's measured fills, not
+predictions.
+
+**Deviations, each recorded where it happened:**
+
+-   1fc03110e, a pre-review fix commit outside §3 (IR2-11).
+-   Commit 4's message overcounts optional_compare_generic's trunk errors; the
+    counts above correct it (R1-6, IR2-10), and the message stays.
+-   Two builds: the first stamped `5d9edb3e0.dirty`; the clean rebuild only
+    recompiled version_stamp.cpp and relinked.
+-   Commit 4's files were drafted during the build and kept in scratch during
+    autoupdate, so the fill commit holds exactly the three goldens.
+-   optional.md's status line sits under the title, before the table of
+    contents, and "The type" has three subsections.
+-   The conformance runs wrote to session scratch, not §8.4's directory (the
+    orchestrator's direction); records cite runs by toolchain sha, `generated`
+    timestamp and totals.
+-   The landing-date stamps read 2026-10-13, the date of commits 2 to 4, the
+    fold, the merge and §8.8's runs, while the discharge commit is dated
+    2026-10-14 UTC; all are on the re-stamp list for the merge date.
+-   §2.6's §W9 replacement is applied to trunk's sentence, which names both the
+    String and the Optional halves: the String half still remains (PR 55 has not
+    landed), and the "Depends on" line keeps the String half as trunk states it.
+-   SAFE-1's two amendments and optional.md's links to TY4, D-SAFE-9,
+    `Core.Plain` and EX-M-5 and EX-M-6 wait for PR 53: their texts are verbatim
+    in fork/ORCHESTRATION.md's Next actions item 6.
+
+**Reviews.** Four reviews, 38 findings, 9 of them MAJOR, no BLOCKER, none
+rejected:
+
+| Review | Scope | Verdict | Findings | Folded in |
+| --- | --- | --- | --- | --- |
+| Plan review A | rev 1: design soundness and toolchain correctness | APPROVE-WITH-AMENDMENTS | 10: 3 MAJOR, 7 MINOR | rev 2, d39c0e91d |
+| Plan review B | rev 1: concreteness, process, Goodhart and cross-workstream | APPROVE-WITH-AMENDMENTS | 9: 4 MAJOR, 5 MINOR | rev 2, d39c0e91d |
+| Implementation review 1 | 5d9edb3e0, 4dc9dbefc, a8daacf11, 1fc03110e: correctness and soundness | APPROVE-WITH-FIXES | 7: 1 MAJOR, 6 MINOR | 49e2cf2bf |
+| Implementation review 2 | the same commits: R27 fidelity, R16 derivations, the F-015 page, prelude style, readiness for commit 5 | APPROVE-WITH-FIXES | 12: 1 MAJOR, 11 MINOR | 49e2cf2bf |
+
+The implementation-review findings and their state after the discharge commit:
+
+| Finding | Grade | State after the discharge |
+| --- | --- | --- |
+| R1-1: W-171's root cause also mis-lowers nested pointer-niche Optionals | MAJOR | Closed: W-171 filed with the widened title and notes; optional_nested_pointer SKIP in the run of §8.8 |
+| R1-2: W-170's consequences for comparison | MINOR | Closed: in W-170's notes |
+| R1-3: `Core.Optional(Cpp.S)` comparison fails at the export TODO | MINOR | Closed: W-049's notes written |
+| R1-4: `==` on `Core.Optional(Core.IntLiteral)` aborts lowering | MINOR | Closed: filed as W-195 (the fold's W-190, re-allocated) |
+| R1-5: two body mutants survive every program | MINOR | Closed: M2 is OUTPUT-MISMATCH on optional_compare_generic; M7-class mutants have the lower golden as arbiter |
+| R1-6 / IR2-10: commit 4's trunk counts | MINOR | Closed: corrected counts quoted in the records and the PR body |
+| R1-7 / IR2-9: the `TrivialDestructor` rule | MINOR | Closed: in W-170's notes as folded |
+| IR2-1: `?` in a `Core.Result` function | MAJOR | Closed at the fold |
+| IR2-2: D-EH-1's clause | MINOR | Closed at the fold |
+| IR2-3: W-173's close condition | MINOR | Closed: W-173's break condition is the fail-stop, the TY4 gate stays in D-OP-13 |
+| IR2-4: Pattern matching and W-177 | MINOR | Closed: W-177's break condition admits `Match` for classes or a constrained `choice` |
+| IR2-5: the integer precedent | MINOR | Closed at the fold |
+| IR2-6: the `UnformedInit` row | MINOR | Closed at the fold |
+| IR2-7: the Overview and the divergence paragraph | MINOR | Closed at the fold; the divergence is in the V-3a register |
+| IR2-8: the TY4 amendment's `match` clause and the safety links | MINOR | Open until PR 53 is on trunk: the texts are in Next actions item 6 |
+| IR2-11: the pre-review fix commit | MINOR | Closed: recorded here and in the decision log |
+| IR2-12: when the merge of trunk is taken | MINOR | Open until OP-1 is next in the queue: Next actions item 5 |

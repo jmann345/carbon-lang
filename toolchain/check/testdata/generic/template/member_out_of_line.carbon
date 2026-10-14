@@ -10,7 +10,7 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/generic/template/member_out_of_line.carbon
 
-// --- fail_todo_basic.carbon
+// --- fail_basic.carbon
 
 library "[[@TEST_NAME]]";
 

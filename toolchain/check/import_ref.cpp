@@ -1167,10 +1167,27 @@ static auto TryFinishGeneric(ImportRefResolver& resolver,
 
   auto specific_data =
       GetLocalSpecificData(resolver, import_generic.self_specific_id);
+
+  // A definition that holds actions or the splices of their results is
+  // resolved for each instantiation (a template's, or a checked generic's that
+  // calls a C++ template or an `eval fn`). Instantiating it in this file needs
+  // a representation of that resolution that does not exist yet (lowering's
+  // "Cross-file template lowering" has the same gap), so the definition is
+  // not imported and the import is diagnosed once, at the `import`.
+  auto definition_block_id = import_generic.definition_block_id;
+  bool resolved_per_instantiation =
+      definition_block_id.has_value() &&
+      llvm::any_of(
+          resolver.import_ir().inst_blocks().Get(definition_block_id),
+          [&](SemIR::InstId inst_id) {
+            auto kind = resolver.import_ir().insts().Get(inst_id).kind();
+            return kind.is_action() || kind == SemIR::SpliceInst::Kind ||
+                   kind == SemIR::SpliceBlock::Kind;
+          });
+
   llvm::SmallVector<SemIR::InstId> definition_block;
-  if (import_generic.definition_block_id.has_value()) {
-    definition_block =
-        GetLocalInstBlockContents(resolver, import_generic.definition_block_id);
+  if (definition_block_id.has_value() && !resolved_per_instantiation) {
+    definition_block = GetLocalInstBlockContents(resolver, definition_block_id);
   }
 
   if (resolver.HasNewWork()) {
@@ -1185,10 +1202,21 @@ static auto TryFinishGeneric(ImportRefResolver& resolver,
       GetOrAddLocalSpecific(resolver, import_generic.self_specific_id,
                             specific_data, local_generic_id);
 
-  if (import_generic.definition_block_id.has_value()) {
+  if (resolved_per_instantiation) {
+    auto import_decl_id =
+        resolver.local_ir().import_irs().Get(resolver.import_ir_id()).decl_id;
+    resolver.local_context().TODO(
+        import_decl_id.has_value() ? SemIR::LocId(import_decl_id)
+                                   : SemIR::LocId::None,
+        "using a generic from another library whose definition is resolved "
+        "for each instantiation, such as a template");
+    // An empty definition: its uses resolve, so the missing body is not
+    // diagnosed a second time, and the file is not lowered.
+    local_generic.definition_block_id = SemIR::InstBlockId::Empty;
+  } else if (definition_block_id.has_value()) {
     local_generic.definition_block_id = ResolveLocalEvalBlock(
-        resolver, import_generic.definition_block_id, definition_block,
-        local_generic_id, SemIR::GenericInstIndex::Region::Definition);
+        resolver, definition_block_id, definition_block, local_generic_id,
+        SemIR::GenericInstIndex::Region::Definition);
   }
   return true;
 }

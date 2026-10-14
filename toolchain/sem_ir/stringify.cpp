@@ -721,8 +721,31 @@ class Stringifier {
   }
 
   auto StringifyInst(InstId /*inst_id*/, SpliceInst inst) -> void {
+    // The splice of a template-dependent operation is printed as the
+    // expression the operation performs.
+    if (sem_ir_->insts().Get(inst.inst_id).kind().is_action()) {
+      step_stack_->PushInstId(inst.inst_id);
+      return;
+    }
     *out_ << "<splice of ";
     step_stack_->Push(inst.inst_id, ">");
+  }
+
+  // Template-dependent operations, printed as the expressions they perform.
+  auto StringifyInst(InstId /*inst_id*/, AccessMemberAction inst) -> void {
+    step_stack_->Push(InstId(inst.base_id), ".", inst.name_id);
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, ConvertAction inst) -> void {
+    step_stack_->PushInstId(inst.inst_id);
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, ConvertToCategoryAction inst) -> void {
+    step_stack_->PushInstId(inst.inst_id);
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, ConvertToValueAction inst) -> void {
+    step_stack_->PushInstId(inst.inst_id);
   }
 
   // Determine the specific interface that an impl witness instruction provides

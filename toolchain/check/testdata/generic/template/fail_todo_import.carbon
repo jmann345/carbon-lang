@@ -29,6 +29,10 @@ fn Plain(x: ()) -> () {
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() -> () {
@@ -38,6 +42,10 @@ fn Use() -> () {
 // --- fail_todo_import_class.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_class.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(b: Box(())) -> () {

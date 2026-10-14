@@ -227,13 +227,19 @@ struct DeclaredParamPattern {
   // The pattern this one wraps: the subpattern of a `DefaultValuePattern`, of a
   // `var` pattern or of a `WrapperBindingPattern`; `None` for any other.
   SemIR::InstId subpattern_id = SemIR::InstId::None;
+  // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 16):
+  // whether the pattern this one wraps is an `ExprPattern` of an import IR,
+  // which is not imported, as upstream cannot import one (W-238);
+  // `subpattern_id` is then `None`.
+  bool wraps_imported_expr_pattern = false;
 };
 
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 13 and
-// 14): returns the parameter pattern `pattern_id`, whose constant value is
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 13, 14
+// and 16): returns the parameter pattern `pattern_id`, whose constant value is
 // `const_inst`, as declared. A pattern with an error has the error as its
 // constant value, so it is read from the instruction that declares it, and the
-// subpattern of an imported one is imported in turn. Returns `std::nullopt`
+// subpattern of an imported one is imported in turn, unless it is an
+// `ExprPattern` (see `wraps_imported_expr_pattern`). Returns `std::nullopt`
 // only for a parameter that is the error itself, as one declared with a form
 // that has an error is (`y:? form(ref Undefined)`). The kinds with a
 // subpattern are those of `CheckRedeclParam`'s switch; a kind with a
@@ -251,30 +257,32 @@ static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
                            : &context.sem_ir();
     inst = file->insts().Get(import_ir_inst.inst_id());
   }
-  auto get_local_id = [&](SemIR::InstId subpattern_id) {
+  // The pattern as declared, wrapping `subpattern_id` of the IR that declares
+  // it.
+  auto wrapping = [&](SemIR::InstId subpattern_id) {
     if (!ir_id.has_value() || !subpattern_id.has_value()) {
-      return subpattern_id;
+      return DeclaredParamPattern{.kind = inst.kind(),
+                                  .subpattern_id = subpattern_id};
+    }
+    if (context.import_irs().Get(ir_id).sem_ir->insts().Is<SemIR::ExprPattern>(
+            subpattern_id)) {
+      return DeclaredParamPattern{.kind = inst.kind(),
+                                  .wraps_imported_expr_pattern = true};
     }
     auto local_id =
         AddImportRef(context, SemIR::ImportIRInst(ir_id, subpattern_id),
                      SemIR::EntityNameId::None);
     LoadImportRef(context, local_id);
-    return local_id;
+    return DeclaredParamPattern{.kind = inst.kind(), .subpattern_id = local_id};
   };
   if (auto default_value_pattern = inst.TryAs<SemIR::DefaultValuePattern>()) {
-    return DeclaredParamPattern{
-        .kind = inst.kind(),
-        .subpattern_id = get_local_id(default_value_pattern->subpattern_id)};
+    return wrapping(default_value_pattern->subpattern_id);
   }
   if (auto var_pattern = inst.TryAs<SemIR::AnyVarPattern>()) {
-    return DeclaredParamPattern{
-        .kind = inst.kind(),
-        .subpattern_id = get_local_id(var_pattern->subpattern_id)};
+    return wrapping(var_pattern->subpattern_id);
   }
   if (auto binding_pattern = inst.TryAs<SemIR::AnyBindingPattern>()) {
-    return DeclaredParamPattern{
-        .kind = inst.kind(),
-        .subpattern_id = get_local_id(binding_pattern->subpattern_id)};
+    return wrapping(binding_pattern->subpattern_id);
   }
   if (inst.Is<SemIR::ErrorInst>()) {
     return std::nullopt;
@@ -406,6 +414,27 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
             !context.types().AreEqualAcrossDeclarations(new_type_id,
                                                         prev_type_id)) {
           return false;
+        }
+        // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round
+        // 16): an imported `ExprPattern` that one wraps is compared with the
+        // pattern in its place in the other by its kind alone, as a local one
+        // is. No requirement has one (W-238), so it matches only a pattern
+        // that is the error itself.
+        if (new_declared->wraps_imported_expr_pattern ||
+            prev_declared->wraps_imported_expr_pattern) {
+          auto [other_id, other_specific_id] =
+              new_declared->wraps_imported_expr_pattern
+                  ? std::pair(prev_declared->subpattern_id, prev_specific_id)
+                  : std::pair(new_declared->subpattern_id, new_specific_id);
+          if (other_id.has_value() &&
+              GetDeclaredParamPattern(
+                  context, other_id,
+                  context.constant_values().GetInst(
+                      SemIR::GetConstantValueInSpecific(
+                          context.sem_ir(), other_specific_id, other_id)))) {
+            return false;
+          }
+          continue;
         }
         if (new_declared->subpattern_id.has_value() &&
             prev_declared->subpattern_id.has_value()) {

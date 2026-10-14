@@ -1433,19 +1433,19 @@ library "[[@TEST_NAME]]";
 // parameter that is an expression pattern with an error (`ExprParam`, compared
 // by its pattern's kind). Each is reported after the member's error, as without
 // the error. Building the thunk for such an impl member reports each on trunk
-// 0bdce60a5 except `ParamErrorVar`,
-// `ParamErrorGeneric`, `ParamErrorRef` and `ReturnErrorAbsent`, which the thunk
-// adapts or does not compare beside the error, `DefaultError`, as the thunk
-// accepts a default value of an impl member's own, and `FormErrorNoDefault`,
-// whose interface analog aborts the thunk (W-236); round 9 reported the first
-// three. A member that matches only through its errors (`ErrorsOnly`,
-// `DefaultOnly`, and `FormErrorOnly`, whose erroneous form's parameter counts
-// as equal to `y: i32`, binding form included) is skipped, and `DefaultOnly`'s
-// interface analog aborts trunk's thunk (W-236) (round 10's review 1 finding
-// MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1 findings MAJOR-1
-// and MAJOR-2; round 12's review 1 findings MAJOR-1 and MINOR-1 and review 2
-// finding MAJOR-1; round 13's review 1 finding MAJOR-1; round 14's review 1
-// findings MAJOR-1 and MINOR-1 and review 2 finding MINOR-2).
+// 0bdce60a5 except `ParamErrorVar`, `ParamErrorGeneric`, `ParamErrorRef` and
+// `ReturnErrorAbsent`, which the thunk adapts or does not compare beside the
+// error, `DefaultError`, as the thunk accepts a default value of an impl
+// member's own, and `FormErrorNoDefault`, whose interface analog aborts the
+// thunk (W-236); round 9 reported the first three. A member that matches only
+// through its errors (`ErrorsOnly`, `DefaultOnly`, and `FormErrorOnly`, whose
+// erroneous form's parameter counts as equal to `y: i32`, binding form
+// included) is skipped, and `DefaultOnly`'s interface analog aborts trunk's
+// thunk (W-236) (round 10's review 1 finding MAJOR-1 and review 2 finding
+// MAJOR-1; round 11's review 1 findings MAJOR-1 and MAJOR-2; round 12's
+// review 1 findings MAJOR-1 and MINOR-1 and review 2 finding MAJOR-1; round
+// 13's review 1 finding MAJOR-1; round 14's review 1 findings MAJOR-1 and
+// MINOR-1 and review 2 finding MINOR-2).
 template constraint HasF {
   fn F(self, x: i32, y: i32) -> i32;
 }
@@ -1910,6 +1910,73 @@ fn TestSelfFormError(s: SelfFormError) -> i32 { return Call(s); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn TestExprParam(t: ExprParam) -> i32 { return Call(t); }
+
+// --- fail_member_signature_error_import_lib.carbon
+library "[[@TEST_NAME]]";
+
+// Members whose parameter wraps an expression pattern with an error, under
+// `var` and under a default value, for `fail_member_signature_error_import`.
+class VarExpr {
+  fn F(unused self, var z) -> i32 { return 1; }
+}
+
+class DefaultExpr {
+  fn F(unused self, (z) = 1) -> i32 { return 1; }
+}
+
+// --- fail_member_signature_error_import.carbon
+library "[[@TEST_NAME]]";
+
+import library "member_signature_error_import_lib";
+
+// An imported member whose parameter wraps an expression pattern with an error
+// is compared as the same member declared locally is, the expression pattern
+// by its kind alone and without importing it, as upstream cannot import one
+// (D-SC-9 as amended at fill round 16, round 15's review 2 finding MAJOR-1;
+// W-238). No requirement has an expression pattern, so `VarExpr` is reported
+// against `var y: i32` and skipped against a parameter declared with a form
+// that has an error, and `DefaultExpr` is reported against `y: i32 = 1` and
+// against that parameter without a default value, and skipped against it with
+// one. Each use aborted at import_ref.cpp:5172 before round 16; trunk
+// 0bdce60a5 calls such an imported member, and uses an imported impl whose
+// member has one, without aborting.
+template constraint HasVar {
+  fn F(self, var y: i32) -> i32;
+}
+
+template constraint HasDefault {
+  fn F(self, y: i32 = 1) -> i32;
+}
+
+template constraint HasFormError {
+  fn F(self, y:? form(ref Undefined)) -> i32;
+}
+
+template constraint HasFormErrorDefault {
+  fn F(self, y:? form(ref Undefined) = 1) -> i32;
+}
+
+fn CallVar[template T: HasVar](unused x: T) -> i32 { return 0; }
+
+fn CallDefault[template T: HasDefault](unused x: T) -> i32 { return 0; }
+
+fn CallFormError[template T: HasFormError](unused x: T) -> i32 { return 0; }
+
+fn CallFormErrorDefault[template T: HasFormErrorDefault](unused x: T) -> i32 {
+  return 0;
+}
+
+fn TestVar(v: VarExpr) -> i32 { return CallVar(v); }
+
+fn TestVarFormError(v: VarExpr) -> i32 { return CallFormError(v); }
+
+fn TestDefault(d: DefaultExpr) -> i32 { return CallDefault(d); }
+
+fn TestDefaultFormError(d: DefaultExpr) -> i32 { return CallFormError(d); }
+
+fn TestDefaultFormErrorDefault(d: DefaultExpr) -> i32 {
+  return CallFormErrorDefault(d);
+}
 
 // --- fail_todo_requirement_signature_error_overload.carbon
 library "[[@TEST_NAME]]";

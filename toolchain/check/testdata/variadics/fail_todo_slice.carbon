@@ -109,13 +109,9 @@ fn F(... (each a: i64,));
 library "[[@TEST_NAME]]";
 
 overload fn G(unused b: bool) {}
-// CHECK:STDERR: fail_todo_overload_member.carbon:[[@LINE+8]]:15: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
-// CHECK:STDERR: overload fn G(... each n: i64) {}
-// CHECK:STDERR:               ^~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_todo_overload_member.carbon:[[@LINE+4]]:19: warning: binding `n` unused [UnusedBinding]
-// CHECK:STDERR: overload fn G(... each n: i64) {}
-// CHECK:STDERR:                   ^~~~~~~~~~~
+// CHECK:STDERR: fail_todo_overload_member.carbon:[[@LINE+4]]:15: error: semantics TODO: `variadic member of an overload set` [SemanticsTodo]
+// CHECK:STDERR: overload fn G(... unused each n: i64) {}
+// CHECK:STDERR:               ^~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 overload fn G(... unused each n: i64) {}
 

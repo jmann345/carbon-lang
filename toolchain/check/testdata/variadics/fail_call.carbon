@@ -77,6 +77,10 @@ fn F() {
 library "[[@TEST_NAME]]";
 
 class C {
+  // CHECK:STDERR: fail_self_after_pack.carbon:[[@LINE+4]]:25: error: `self` must be the first explicit parameter [SelfNotFirstParam]
+  // CHECK:STDERR:   fn F(... each n: i64, self: Self);
+  // CHECK:STDERR:                         ^~~~~~~~~~
+  // CHECK:STDERR:
   fn F(... each n: i64, self: Self);
 }
 
@@ -88,7 +92,15 @@ fn G(c: C) {
 library "[[@TEST_NAME]]";
 
 class C {
+  // CHECK:STDERR: fail_self_in_implicit_list_with_pack.carbon:[[@LINE+4]]:8: error: `self` must be declared in the explicit parameter list [SelfInImplicitParamList]
+  // CHECK:STDERR:   fn F[self: Self](... each n: i64, last: i64);
+  // CHECK:STDERR:        ^~~~~~~~~~
+  // CHECK:STDERR:
   fn F[self: Self](... each n: i64, last: i64);
+  // CHECK:STDERR: fail_self_in_implicit_list_with_pack.carbon:[[@LINE+4]]:8: error: `self` must be declared in the explicit parameter list [SelfInImplicitParamList]
+  // CHECK:STDERR:   fn G[self: Self](... each n: i64);
+  // CHECK:STDERR:        ^~~~~~~~~~
+  // CHECK:STDERR:
   fn G[self: Self](... each n: i64);
 }
 

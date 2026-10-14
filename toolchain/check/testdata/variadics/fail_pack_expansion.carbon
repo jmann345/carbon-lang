@@ -32,13 +32,9 @@ library "[[@TEST_NAME]]";
 fn Consume(x: i64);
 
 fn F(... unused each n: i64) {
-  // CHECK:STDERR: fail_without_each_name.carbon:[[@LINE+8]]:3: error: pack expansion does not use any each-name [PackExpansionWithoutEachName]
+  // CHECK:STDERR: fail_without_each_name.carbon:[[@LINE+4]]:3: error: pack expansion does not use any each-name [PackExpansionWithoutEachName]
   // CHECK:STDERR:   ... Consume(1);
   // CHECK:STDERR:   ^~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_without_each_name.carbon:[[@LINE-5]]:10: warning: binding `n` unused [UnusedBinding]
-  // CHECK:STDERR: fn F(... each n: i64) {
-  // CHECK:STDERR:          ^~~~~~~~~~~
   // CHECK:STDERR:
   ... Consume(1);
 }
@@ -74,6 +70,13 @@ interface I;
 fn G(... unused each x: type) {}
 
 fn F(... each p: I*) {
+  // CHECK:STDERR: fail_incomplete_element.carbon:[[@LINE+7]]:5: error: forming a pack of incomplete type `I` [IncompleteTypeInPackExpansion]
+  // CHECK:STDERR:   G(... *each p);
+  // CHECK:STDERR:     ^~~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_element.carbon:[[@LINE-8]]:1: note: interface was forward declared here [InterfaceForwardDeclaredHere]
+  // CHECK:STDERR: interface I;
+  // CHECK:STDERR: ^~~~~~~~~~~~
+  // CHECK:STDERR:
   G(... *each p);
 }
 
@@ -82,8 +85,29 @@ library "[[@TEST_NAME]]";
 
 interface I;
 
+// CHECK:STDERR: fail_incomplete_element_after_error.carbon:[[@LINE+7]]:17: error: parameter has incomplete type `«I; <pack arity>»` in function definition [IncompleteTypeInFunctionParam]
+// CHECK:STDERR: fn G(... unused each x: I) {}
+// CHECK:STDERR:                 ^~~~~~~~~
+// CHECK:STDERR: fail_incomplete_element_after_error.carbon:[[@LINE-5]]:1: note: interface was forward declared here [InterfaceForwardDeclaredHere]
+// CHECK:STDERR: interface I;
+// CHECK:STDERR: ^~~~~~~~~~~~
+// CHECK:STDERR:
 fn G(... unused each x: I) {}
 
+// CHECK:STDERR: fail_incomplete_element_after_error.carbon:[[@LINE+7]]:10: error: parameter has incomplete type `«I; <pack arity>»` in function definition [IncompleteTypeInFunctionParam]
+// CHECK:STDERR: fn F(... each p: I) {
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_incomplete_element_after_error.carbon:[[@LINE-14]]:1: note: interface was forward declared here [InterfaceForwardDeclaredHere]
+// CHECK:STDERR: interface I;
+// CHECK:STDERR: ^~~~~~~~~~~~
+// CHECK:STDERR:
 fn F(... each p: I) {
+  // CHECK:STDERR: fail_incomplete_element_after_error.carbon:[[@LINE+7]]:5: error: forming a pack of incomplete type `I` [IncompleteTypeInPackExpansion]
+  // CHECK:STDERR:   G(... each p);
+  // CHECK:STDERR:     ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_element_after_error.carbon:[[@LINE-22]]:1: note: interface was forward declared here [InterfaceForwardDeclaredHere]
+  // CHECK:STDERR: interface I;
+  // CHECK:STDERR: ^~~~~~~~~~~~
+  // CHECK:STDERR:
   G(... each p);
 }

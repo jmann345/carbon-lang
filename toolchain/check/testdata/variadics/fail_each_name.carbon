@@ -70,18 +70,30 @@ fn F(... unused each n: i64);
 // --- fail_underscore_without_each.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_underscore_without_each.carbon:[[@LINE+4]]:10: error: binding pattern in a pack expansion must declare an each-name, `each` followed by an identifier [PackExpansionBindingNotIdentifier]
+// CHECK:STDERR: fn F(... _: i64) {}
+// CHECK:STDERR:          ^
+// CHECK:STDERR:
 fn F(... _: i64) {}
 
 // --- fail_self_without_each.carbon
 library "[[@TEST_NAME]]";
 
 class C {
+  // CHECK:STDERR: fail_self_without_each.carbon:[[@LINE+4]]:12: error: binding pattern in a pack expansion must declare an each-name, `each` followed by an identifier [PackExpansionBindingNotIdentifier]
+  // CHECK:STDERR:   fn F(... self) {}
+  // CHECK:STDERR:            ^~~~
+  // CHECK:STDERR:
   fn F(... self) {}
 }
 
 // --- fail_invalid_element_type.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_invalid_element_type.carbon:[[@LINE+4]]:25: error: name `Undeclared` not found [NameNotFound]
+// CHECK:STDERR: fn F(... unused each n: Undeclared) {}
+// CHECK:STDERR:                         ^~~~~~~~~~
+// CHECK:STDERR:
 fn F(... unused each n: Undeclared) {}
 
 fn G() {

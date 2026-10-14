@@ -4292,10 +4292,15 @@ consequence of its break condition, re-points round 5's convert.cpp cites at the
 round-6 head and records the re-measure on 857d5b048. Fill round 7 (same day),
 folding round 6's two implementation reviews: c0fa52df2 (the fixes, test
 sources, the design page and records, convert.cpp cites re-pointed at the
-round-7 head), 36181a729 (2 goldens, CHECK lines only) and the records commit
-after them (the clean-stamp re-measure, the round-7 rows marked FILLED, the
-commit hashes). Each
-fix is an R29(a) implementation decision recorded for after-the-fact veto, with
+round-7 head), 36181a729 (2 goldens, CHECK lines only) and 30716a8c2 (records:
+the clean-stamp re-measure, the round-7 rows marked FILLED, the commit hashes);
+the records commit after 30716a8c2 completes round 6's review record (the
+round's answer, the reviews' probe sets and their verdicts on the records, the
+cites of its dispositions), records round 7's other two fixes as decisions with
+their break conditions, gives ROUND 7's first break condition its consequence,
+re-points the structural_conformance.cpp and plan.md cites that round 7 moved at
+the round-7 head and records the re-measure on 30716a8c2. Each fix is an R29(a)
+implementation decision recorded for after-the-fact veto, with
 its design citation and break condition; none reopens F-010 or the intent of a
 D-SC decision, and round 7's takes D-SC-10's own break condition. Every count
 below is a measurement on the container, not of record (R9):
@@ -4547,11 +4552,11 @@ reviews' probes.
 -   **A requirement named with no self type has its own concrete type**
     (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
     structural_conformance.cpp:696 `MakeStructuralRequirementName`, called from
-    member_access.cpp:400, :746 `GetStructuralRequirementOfType` and :811
+    member_access.cpp:400, :746 `GetStructuralRequirementOfType` and :821
     `CheckValueIsNotStructuralRequirement`; convert.cpp:2688 in `Convert` and
     :2495, :2515, :2531 and :2575 in the `PerformAction`s for `ConvertAction`,
     `ConvertToCategoryAction`, `ConvertToValueAction` and `InitializeAction`,
-    re-cited at the round-6 head, where `Convert` and the first two call round
+    re-cited at the round-7 head, where `Convert` and the first two call round
     6's `CheckConversionIsNotOfStructuralRequirement`; call.cpp:772-775 in
     `PerformCallToNonFunction`; member_access.cpp:949
     `RedirectStructuralRequirementAccess`; toolchain/diagnostics/kind.def:477;
@@ -4647,9 +4652,11 @@ reviews' probes.
     `ref` tag), while trunk 0bdce60a5 aborts on every such template call
     (inst.h:249, with `i32`).
 
-ROUND 7's DECISION (folding round 6's two implementation reviews, REVIEWS
-below), reproduced first on the toolchain stamped 0.0.0-0.dev+fb12f63cb with the
-reviews' probes.
+ROUND 7's DECISIONS (folding round 6's two implementation reviews, REVIEWS
+below), each reproduced first on the toolchain stamped 0.0.0-0.dev+fb12f63cb
+with the reviews' probes; c0fa52df2 recorded the second and third as
+dispositions, and the records commit after 30716a8c2 records them as decisions
+with their break conditions.
 
 -   **`Self` in a template constraint is a checked-phase binding**
     (handle_named_constraint.cpp:126-133; round 6's review 1 BLOCKER-1).
@@ -4678,13 +4685,54 @@ reviews' probes.
     name and diagnosing nested declarations as TODOs, is not taken: it keeps a
     phase nothing in SC-1 uses and adds two rules where one flag suffices
     (R17). Design: D-SC-10 as amended at fill round 7. Break condition: SC-B2's
-    validity blocks, which need the template phase; round 6's review-1 probes
-    are re-run when it returns. Pinned by declaration
+    validity blocks, which need the template phase; then `Self` is a
+    template-phase binding again, flipped together with SC-B2's probe subsystem
+    (W-028), and round 6's review-1 BLOCKER-1 probes are re-run first, each to
+    be diagnosed or to abort only where its `interface` or `constraint` analog
+    aborts on trunk. Pinned by declaration
     `fail_self_dependent_name` and `nested_class` and requirement-call
     `fail_nested_requirement_as_value`. The probes that still abort have
     trunk analogs aborting at the same site (sem_ir/mangler.cpp:185 for a
     `constraint`'s nested class; lower/file_context.h:187, check/eval.cpp:151
     and check/generic.cpp:477 for an interface's nested declarations).
+-   **`const` and array types hold a requirement's type**
+    (structural_conformance.cpp:779-788 in `GetStructuralRequirementOfType`,
+    structural_conformance.h:95-100; round 6's review 1 MAJOR-1, with review 2
+    MAJOR-1 for a field read through a class value). Symptom: values of `const
+    typeof(HasN.N)` and `array(typeof(HasN.N), 2)` were accepted (a by-value
+    parameter, `Take(*p)` through a `const` pointer, `let` and `Take` of an
+    array field), and an `if` expression over them reached LLVM's PHI assertion,
+    which trunk 0bdce60a5 reaches with `typeof(G)` and with an array of `{}`.
+    Root cause: round 5's walk of the value's type looked into tuple and struct
+    types only. Decision: the walk follows a `ConstType`'s inner type and an
+    `ArrayType`'s element type, so a value of either is refused as a tuple's is.
+    A class, adapter or `MaybeUnformed` value is a value of its own type, not
+    built element by element, and stays accepted; a field read through it is
+    acquired as a value (member_access.cpp:614-624) and refused when the field
+    is or holds the type, so such a field is reached through a reference to the
+    object (review 2 MAJOR-1's second option; its first, exempting a same-type
+    conversion of a projection, assumed that the projection forms no value).
+    Design: D-SC-20 as amended at fill round 7. Break condition: D-SC-20's; or
+    upstream stops acquiring a class value's field as a value, so that the field
+    read stays a reference, which round 6's rule admits; then `Get` and
+    `StructField` are respelled as positive splits. Pinned by `ConstParam`,
+    `ConstPointer`, `ArrayLet`, `ArrayArg`, `Get`, `GetRef` and `StructField` in
+    requirement-call `fail_requirement_typeof_value`.
+-   **A refused tuple-index base is diagnosed once**
+    (member_access.cpp:1178-1183 in `PerformTupleAccess`; round 6's review 2
+    MINOR-3). Symptom: after `StructuralRequirementUsed` refused the base of
+    `(HasN.N, 1).1`, or of `self.t.1` through a class value, a second error
+    followed, "type `<error>` does not support tuple indexing". Decision: a base
+    whose conversion returned `ErrorInst` gives `ErrorInst` with no further
+    diagnostic, as upstream's member access does for an error-typed base
+    (member_access.cpp:839). Trunk's own follow-on goes with it: for
+    `undefined.1` trunk 0bdce60a5 prints the name error and then the tuple-index
+    error, this branch the name error only; no golden pins it. Design: D-SC-20
+    (one refusal per use) and upstream's propagation of an error without a
+    second diagnostic. Break condition: upstream guards `PerformTupleAccess`
+    against an error base itself; then the fork hunk is deleted. Pinned by
+    `TupleIndex` in `fail_requirement_as_value` and by the single errors of
+    `Get` and `StructField`.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4897,7 +4945,7 @@ replayed category conversion (`ConvertToCategoryAction`, convert.cpp:2515),
 which refuses `T.N;`, `(T.N, 1);` and `{.a = T.N};` instantiated with `HasN`,
 pinned by `Discard`, `DiscardTuple` and `DiscardStruct`; review 1 MINOR-1 gives
 a value that deduction built the conversion's location
-(structural_conformance.cpp:811), pinned at the call by `TemplateValueParam` and
+(structural_conformance.cpp:821), pinned at the call by `TemplateValueParam` and
 `GenericValueParam`, while at instantiation a constant argument and its
 conversion both have none, as for upstream's own conversion notes on such an
 argument (trunk 0bdce60a5), pinned so; review 2 MINOR-1 renames the kind
@@ -4928,13 +4976,13 @@ specifics; the one rejected valid class was MAJOR-1. The aborts their probes
 found reproduce on trunk 0bdce60a5 (handle_call.cpp:984, sem_ir/generic.cpp:84,
 import_ref.cpp:5172, custom_witness.cpp:487). Fill round 6 folds all 11, each
 reproduced first on the toolchain stamped 0.0.0-0.dev+18775fee3, none rejected.
-Dispositions, with their cites at the round-6 head: MAJOR-1 of both reviews is
+Dispositions, with their cites at the round-7 head: MAJOR-1 of both reviews is
 ROUND 6's DECISION above (convert.cpp:2464, called at :2688, :2495 and :2515;
 the destroy body it lets through, custom_witness.cpp:984
 `MakeSubobjectDestroyOpBody`), fixed at the refusal's rule rather than by either
 suggested mechanism, for the reasons there, and pinned by lower
 `requirement_typeof_object` and requirement-call `ReadField`; review 1 MINOR-1
-is taken as its first fix (D-SC-20 narrowed, fork/structural/plan.md:757-776;
+is taken as its first fix (D-SC-20 narrowed, fork/structural/plan.md:781-799;
 `Pass` and `LetValue` pinned in lower `requirement_typeof_object`), its second
 (an action for every template-dependent value conversion) declined because it
 cannot reach checked generics and would add actions to every template body
@@ -4944,15 +4992,15 @@ upstream's goldens dump; MINOR-2 of both reviews adds import
 Has(i32).N>*` printed), pinning the type's import (import_ref.cpp:3029-3051 and
 :5111-5113), and the stringifier's fallback becomes a `CARBON_CHECK`
 (sem_ir/stringify.cpp:934), the type being formed only for a requirement; review
-2 MAJOR-2 rewords (o) here, in the plan's §4.B row (plan.md:1173), misses list
+2 MAJOR-2 rewords (o) here, in the plan's §4.B row (plan.md:1220), misses list
 and round-5 note, and in the PR body, on evidence reproduced on this build and
 on trunk (lower/specific_coalescer.cpp; `carbon -v compile` logs "Found
 equivalent specifics"; a `Take` whose body depends on `T` keeps three symbols
 and returns 111); review 2 MINOR-1 marks round 5's three §4.B rows
-(plan.md:1171-1173) NOT COUNTED and carries the disclosure here (FILL-CAUGHT
+(plan.md:1218-1220) NOT COUNTED and carries the disclosure here (FILL-CAUGHT
 MISSES) and in the PR body; MINOR-3 restates the name_lookup.cpp claim in ROUND
-5's DECISION, D-SC-20 (plan.md:739-742), the plan's round-5 bullet and W-027's
-evidence; MINOR-4 amends D-SC-10 (plan.md:480-497) and the plan's round-1
+5's DECISION, D-SC-20 (plan.md:761-764), the plan's round-5 bullet and W-027's
+evidence; MINOR-4 amends D-SC-10 (plan.md:480-519) and the plan's round-1
 mechanisms paragraph; MINOR-5 fixes the comment (convert.cpp:2682-2687); MINOR-6
 restores the line breaks of ORCHESTRATION's UA-1 "Last updated" sentences.
 No residue is filed: W-169 is not used. Per-finding detail is in the plan's
@@ -4970,28 +5018,57 @@ or struct field holding the type refused through a class value though reachable
 through a reference; MINOR-1 the design page and comments overclaiming
 (templates, `var` parameters, "never a runtime value", the helper's exempt
 uses); MINOR-2 the PR body's trunk advance and held-open PRs stale; MINOR-3 an
-`<error>` follow-on after a refused tuple-index base. On the round's question,
-both found that round 6's reference exemption lets no requirement value reach
-lowering or escape, that the stringifier's `CARBON_CHECK` is not reachable from
-user input, and the 1007 earlier probe runs unchanged. Fill round 7 folds all 7,
-each reproduced first on the toolchain stamped 0.0.0-0.dev+fb12f63cb, none
-rejected. Dispositions: BLOCKER-1 is ROUND 7's DECISION above; review 1 MAJOR-1
-is fixed as asked (structural_conformance.cpp:779-788 follows `const` and array
+`<error>` follow-on after a refused tuple-index base. On the round's question
+(whether the branch was dry after round 6: whether the reference exemption lets
+a requirement value reach lowering or escape, through a `ref` binding read as a
+value elsewhere, a dereferenced pointer, `ref self` methods, a `ref` parameter
+passed on, a returned reference, the destructors of nested aggregates,
+generic-class specifics, arrays, and copies and moves of the enclosing object;
+whether the stringifier's `CARBON_CHECK` is reachable from user input; whether
+the records are accurate), both found that the exemption lets no requirement
+value reach lowering or escape, every value read of such a reference being
+refused (`addr self` no longer parses, so `ref self` stood in for it, and the
+enclosing objects are not copyable); that the `CARBON_CHECK` is not reachable
+from user input (re-exports, indirect and transitive imports, constraints nested
+in generic classes, interfaces and namespaces, mismatched redeclarations, and in
+review 1 456 dump runs); and the 1007 earlier probe runs identical, line for
+line, their 31 aborts trunk's. Review 1 found the records accurate (every cite
+at the head, the 553, 412 and 42 tallies, fb12f63cb CHECK lines only, the
+ORCHESTRATION rewrap undone, the template `F(ref *p)` claim); review 2 found the
+cites, the NOT COUNTED marking, the ledger and ORCHESTRATION correct, with the
+overclaims of its MINOR-1 and MINOR-2. The branch was not dry: BLOCKER-1, in the
+branch since SC-1a, checked clean and aborted lowering; MAJOR-1 accepted invalid
+values, an `if` over which reached an LLVM assertion that trunk 0bdce60a5 also
+reaches; review 2's MAJOR-1 refused valid reads. Review 1's probes
+(sc1-review6/adv1: p, p2 to p15, imp, tr) abort on fb12f63cb on names of a
+template constraint's body (BLOCKER-1's class, some with `interface` or
+`constraint` analogs aborting on trunk) and on four trunk shapes (r02 at
+inst.h:249, q03 and q05 at LLVM's PHI assertion, k29 a segmentation fault of
+`UnformedInit` on a class with a vtable at run time); review 2's
+(sc1-review6/adv2: 77 probes, 7 import sets, 5 trunk analogs) abort once, q41,
+an error then an abort, as its trunk analog t41 does. Both ran the gate (1959
+passed, 0 failed) and conformance (130 / 0 / 21 over 151, 49 of 56) privately.
+Fill round 7 folds all 7, each reproduced first on the toolchain built from
+fb12f63cb, none rejected. Dispositions, with their cites at the
+round-7 head: BLOCKER-1 is ROUND 7's first decision above
+(handle_named_constraint.cpp:126-133; D-SC-10's amendment,
+fork/structural/plan.md:497-519; W-028's notes); review 1 MAJOR-1 is the second,
+fixed as asked (structural_conformance.cpp:779-788 follows `const` and array
 element types; the header's array sentence replaced,
 structural_conformance.h:95-100), pinned by `ConstParam`, `ConstPointer`,
 `ArrayLet` and `ArrayArg`; review 2 MAJOR-1 is taken as its second option on
-evidence against its first: member access on a class value acquires the field
-as a value (member_access.cpp:614-624; a tuple field becomes a `tuple_value` of
-each element's `acquire_value`), so the projection does form a value of a type
-holding the requirement's, and D-SC-20, the design page and the test comments
-say such a field is reached through a reference, pinned by `Get`, `GetRef` and
-`StructField`; review 1 MINOR-1 and review 2 MINOR-1 reword convert.cpp
-:2454-2463 and :2682-2687 and structural_conformance.h:104-110, D-SC-20's
-template sentence (a `let` of the parameter accepted, a call argument or `var`
-initializer replayed and refused, pinned by `TemplateDeref`), and the design
-page (a `var` parameter declared and uncallable, pinned by `VarParam`); review
-2 MINOR-2 restates the PR body (outside the repository); review 2 MINOR-3
-returns `ErrorInst` from `PerformTupleAccess` for a failed base
+evidence against its first, under the same decision: member access on a class
+value acquires the field as a value (member_access.cpp:614-624; a tuple field
+becomes a `tuple_value` of each element's `acquire_value`), so the projection
+does form a value of a type holding the requirement's, and D-SC-20
+(plan.md:799-818), the design page and the test comments say such a field is
+reached through a reference, pinned by `Get`, `GetRef` and `StructField`; review
+1 MINOR-1 and review 2 MINOR-1 reword convert.cpp :2454-2463 and :2682-2687 and
+structural_conformance.h:104-110, D-SC-20's template sentence (a `let` of the
+parameter accepted, a call argument or `var` initializer replayed and refused,
+pinned by `TemplateDeref`), and the design page (a `var` parameter declared and
+uncallable, pinned by `VarParam` and `CallVarParam`); review 2 MINOR-2 restates
+the PR body (outside the repository); review 2 MINOR-3 is the third decision
 (member_access.cpp:1178-1183), pinned by `TupleIndex`. No residue is filed:
 W-169 is not used. Per-finding detail is in the plan's "Landed notes (SC-1 fill
 rounds, 2026-10-13)".
@@ -5109,7 +5186,17 @@ over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
 failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 65.9 s;
 every probe run line for line as on the pre-commit build (but for the stack
-addresses of the two mangler.cpp:185 aborts). Against
+addresses of the two mangler.cpp:185 aborts). Re-run for the records commit
+after 30716a8c2, on 30716a8c2 with that installed toolchain (no toolchain source
+differs from c0fa52df2): autoupdate over the 19 SC-1 goldens changed nothing
+(one dot each, git status clean); gate 1959 passed, 0 failed, exit 0, 39 s, no
+`!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56 (2060.9 s, its first links rebuilding the
+runtimes into a cold cache while other workstreams' runs loaded the machine),
+the same two programs moving; every probe run of rounds 2 to 7 (the 1007 earlier
+runs, round 6's reviews' 347 and 49 trunk analogs, the 14 import sets and round
+7's 14) gives results identical, line for line, to the run on 36181a729, but for
+the stack addresses printed by the two sem_ir/mangler.cpp:185 aborts. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
@@ -5212,6 +5299,32 @@ the round-6 head (round 6 moved them, and `Convert` and the `ConvertAction` and
 `CheckConversionIsNotOfStructuralRequirement`); the re-measure and probe re-run
 on 857d5b048 here and in the plan; the ORCHESTRATION status paragraph and
 Branches row; W-027's notes and goldens evidence (fb12f63cb for fill round 6).
+Round 7's fixes commit c0fa52df2: D-SC-10's break condition taken, D-SC-20
+amended (`const` and array types; a class value's field reached through a
+reference; the template and `var`-parameter rules), the §2.A step and R-4
+marked, the §4.A and §4.B rows for round 7's splits (observed, not counted),
+round 6's review record, round 7's dispositions and decision, and the round-7
+measurements in the plan; this entry (the head, ROUND 7's DECISION, the round-6
+review record, the measurements, convert.cpp's cites re-pointed at the round-7
+head); the design page (the definition-time limit, the value rules); the
+ORCHESTRATION status paragraph and Branches row; W-027's title, evidence and
+notes (seven fill rounds) and W-028's notes (the template phase an SC-B2
+prerequisite). Round 7's records commit 30716a8c2: the two round-7 §4 rows
+marked FILLED, round 7's commit hashes and the clean-stamp re-measure here, in
+the plan, in ORCHESTRATION and in W-027's notes. The records commit after
+30716a8c2: 30716a8c2 named at the head of this entry and of the plan's note;
+round 6's review record completed with the round's answer, the reviews' probe
+sets and verdicts on the records, and the cites of its dispositions at the
+round-7 head (REVIEWS above, and the plan's round-6 review paragraph); round 7's
+other two fixes recorded as ROUND 7's second and third decisions, with their
+break conditions, and the consequence of the first decision's break condition,
+here and in the plan; the cites that round 7 moved re-pointed at the round-7
+head, structural_conformance.cpp:811 to :821 in ROUND 5's DECISION (here and in
+the plan) and in round 4's dispositions, and in round 5's dispositions
+plan.md:757-776, :739-742, :1171-1173, :1173 and :480-497 to :781-799, :761-764,
+:1218-1220, :1220 and :480-519; the re-measure and probe re-run on 30716a8c2
+here and in the plan; the ORCHESTRATION status paragraph (round 6's records
+commit 4bc4802ae named) and Branches row; W-027's notes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

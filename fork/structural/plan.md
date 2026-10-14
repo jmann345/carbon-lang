@@ -2224,10 +2224,11 @@ implementation reviews (REJECT on one BLOCKER, and APPROVE-WITH-FIXES; 7
 findings, none rejected): a template constraint's `Self` is a checked-phase
 binding, D-SC-10's break condition; `const` and array types hold the
 requirement's type; a class value's field is reached through a reference:
-c0fa52df2 (fixes, test sources, the design page, records), 36181a729 (2
-goldens, CHECK lines only) and the records commit after them; it measured the
-same totals on the toolchain built from its sources and again on the toolchain
-stamped 0.0.0-0.dev+36181a729 (below). Not of record until
+c0fa52df2 (fixes, test sources, the design page, records), 36181a729 (2 goldens,
+CHECK lines only) and 30716a8c2 (records); it measured the same totals on the
+toolchain built from its sources, again on the clean-stamped toolchain of
+36181a729 (`carbon version` 0.0.0-0.dev+36181a729, below) and again on 30716a8c2
+for the records commit after it. Not of record until
 fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -2809,10 +2810,10 @@ and break condition:
 -   **A requirement named with no self type has its own concrete type**
     (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
     structural_conformance.cpp:696 `MakeStructuralRequirementName`, :746
-    `GetStructuralRequirementOfType` and :811
+    `GetStructuralRequirementOfType` and :821
     `CheckValueIsNotStructuralRequirement`; convert.cpp:2688 in `Convert` and
     :2495, :2515, :2531 and :2575 in the four template `PerformAction`s,
-    re-cited at the round-6 head, where `Convert` and the first two call round
+    re-cited at the round-7 head, where `Convert` and the first two call round
     6's `CheckConversionIsNotOfStructuralRequirement`;
     call.cpp:772-775 in `PerformCallToNonFunction`; member_access.cpp:400 (the
     lookup) and :949 (the compound redirect); the type's lowering
@@ -2980,13 +2981,26 @@ destroy probes, from refused to running (review 1's d11 now reaching upstream's
 Round 6's own diff (56e400145, fb12f63cb, 857d5b048, 4bc4802ae) had two
 implementation reviews, 7 findings in all: review 1, REJECT, 1 BLOCKER, 1 MAJOR
 and 1 MINOR (BLOCKER-1, MAJOR-1, MINOR-1); review 2, APPROVE-WITH-FIXES, 1 MAJOR
-and 3 MINOR (MAJOR-1, MINOR-1 to MINOR-3). Both confirmed round 6 on the
-0.0.0-0.dev+fb12f63cb driver, its gate and conformance privately and the 1007
-earlier probe runs line for line; on the round's question, both found that the
-reference exemption lets no requirement value reach lowering and that the
-stringifier's `CARBON_CHECK` is not reachable from user input, and both found
-the records accurate but for the overclaims below. The BLOCKER predates round
-6: D-SC-10's template-phase `Self`, since SC-1a.
+and 3 MINOR (MAJOR-1, MINOR-1 to MINOR-3). Both confirmed round 6 privately on
+the driver stamped 0.0.0-0.dev+fb12f63cb, its gate (1959 passed, 0 failed) and
+conformance (130 / 0 / 21 over 151) and the 1007 earlier probe runs line for
+line, their 31 aborts trunk's. On the round's question, both found that the
+reference exemption lets no requirement value reach lowering or escape (a `ref`
+binding read as a value elsewhere, a dereferenced pointer, `ref self` methods in
+place of the retired `addr self`, a `ref` parameter passed on, a returned
+reference, nested destructors, generic-class specifics and arrays, every value
+read refused; the enclosing objects are not copyable), that the stringifier's
+`CARBON_CHECK` is not reachable from user input (imports of every shape,
+constraints nested in generic classes, interfaces and namespaces, mismatched
+redeclarations, and in review 1 456 dump runs), and both found the records
+accurate but for the overclaims below. The branch was not dry: the BLOCKER,
+which predates round 6 (D-SC-10's template-phase `Self`, since SC-1a), checked
+clean and aborted lowering; review 1's MAJOR-1 accepted invalid values; review
+2's MAJOR-1 refused valid reads. On fb12f63cb review 1's probes
+(sc1-review6/adv1) abort on names of a template constraint's body and on four
+trunk shapes (r02 at inst.h:249, q03 and q05 at LLVM's PHI assertion, k29 a
+segmentation fault at run time), and review 2's (sc1-review6/adv2) once, q41, as
+its trunk analog t41 does.
 
 Fill round 7 (2026-10-14), by review finding, each reproduced first on the
 toolchain stamped 0.0.0-0.dev+fb12f63cb with the reviews' probes:
@@ -3068,8 +3082,9 @@ toolchain stamped 0.0.0-0.dev+fb12f63cb with the reviews' probes:
 Rejected or narrowed: none of the 7. Review 2's MAJOR-1 is taken as its second
 option, on the evidence in its bullet; review 1's BLOCKER-1 as its first.
 
-Round 7's decision as an R29(a) implementation decision, with design citation
-and break condition:
+Round 7's decisions as R29(a) implementation decisions, each with design
+citation and break condition (the second and third recorded as decisions by the
+records commit after 30716a8c2; c0fa52df2 recorded them as dispositions):
 
 -   **`Self` in a template constraint is a checked-phase binding**
     (handle_named_constraint.cpp:126-133). Design: D-SC-10 as amended at fill
@@ -3078,7 +3093,28 @@ and break condition:
     docs/design/generics/template_constraints.md states the as-landed limit.
     Break condition: SC-B2 (W-028) lands validity blocks, which need the
     template phase; the flip comes back with them, and round 6's review-1
-    BLOCKER-1 probes are re-run then.
+    BLOCKER-1 probes are re-run first, each to be diagnosed or to abort only
+    where its `interface` or `constraint` analog aborts on trunk.
+-   **`const` and array types hold a requirement's type**
+    (structural_conformance.cpp:779-788, structural_conformance.h:95-100; review
+    1 MAJOR-1 and review 2 MAJOR-1). Design: D-SC-20 as amended at fill round 7:
+    a type holds a requirement's type when its values are built element by
+    element (a tuple, struct or array element, or the type under `const`); a
+    class, adapter or `MaybeUnformed` value is accepted, and a field read
+    through it, which member access acquires as a value
+    (member_access.cpp:614-624), is refused when the field is or holds the type,
+    so such a field is reached through a reference. Break condition: D-SC-20's;
+    or upstream stops acquiring a class value's field as a value, so that the
+    read stays a reference, which round 6's rule admits; then `Get` and
+    `StructField` are respelled as positive splits.
+-   **A refused tuple-index base is diagnosed once**
+    (member_access.cpp:1178-1183; review 2 MINOR-3). Design: D-SC-20 (one
+    refusal per use) and upstream's propagation of an error without a second
+    diagnostic, as its member access does for an error-typed base
+    (member_access.cpp:839); trunk's own follow-on for an undefined base goes
+    with it (`undefined.1`: two errors on trunk 0bdce60a5, one here, no golden
+    pinning it). Break condition: upstream guards `PerformTupleAccess` against
+    an error base itself; then the fork hunk is deleted.
 
 Round 7's §4 rows were written after the development build ran their shapes
 (R16(d)): they record observations and are not counted as predictions. With
@@ -3207,7 +3243,18 @@ rounds 2 to 7 (the 1007, round 6's reviews' 347 and 49 trunk analogs, the 14
 import sets and round 7's 14) gives the same result, line for line, as on the
 pre-commit build, but for the stack addresses printed by the two
 sem_ir/mangler.cpp:185 aborts. Round 7's commits: c0fa52df2 (fixes, test
-sources, docs, records), 36181a729 (goldens) and the records commit after them.
+sources, docs, records), 36181a729 (goldens) and 30716a8c2 (records). Re-run for
+the records commit after 30716a8c2, on 30716a8c2 with the installed toolchain
+stamped 0.0.0-0.dev+36181a729 (no toolchain source differs): autoupdate over the
+19 SC-1 goldens changed nothing (one dot each, git status clean); gate 1959
+passed and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56 (2060.9
+s, its first links rebuilding the runtimes into a cold cache while other
+workstreams' runs loaded the machine), the same two programs moving; every probe
+run of rounds 2 to 7 (the 1007 earlier runs, round 6's reviews' 347 and 49 trunk
+analogs, the 14 import sets and round 7's 14) gives results identical, line for
+line, to the run on 36181a729, but for the stack addresses printed by the two
+sem_ir/mangler.cpp:185 aborts.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

@@ -526,7 +526,7 @@ library "[[@TEST_NAME]]";
 
 // An impl inside a generic class has the checked-symbolic self `Box(T)`, which
 // never satisfies a structural requirement (D-SC-6;
-// structural_conformance.cpp:541), so the `require` fails at the class end
+// structural_conformance.cpp:562), so the `require` fails at the class end
 // although every `Box(X)` has `Get`; likewise in a class nested in one. Known
 // limitation (W-139). A `template` class parameter makes the self
 // template-phase, deferring the check (D-SC-19). Expected:

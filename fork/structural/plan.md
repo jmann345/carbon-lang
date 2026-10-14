@@ -2312,9 +2312,10 @@ error is not diagnosed again at each use, the trade's lost and restorable
 signatures are pinned in the repository, the records' overstatements are
 corrected and the symbolic-facet compound access is filed as W-232: 58dc46eb6
 (the fix, test sources, the design page, records), a5078358c (3 goldens, CHECK
-lines only) and the records commit after them; it measured the same totals on
-the toolchain built from its sources, again on the toolchain stamped
-0.0.0-0.dev+a5078358c (below) and again for the records commit. Not of record
+lines only) and 6231d5b42 (records); it measured the same totals on the
+toolchain built from its sources, again on the toolchain stamped
+0.0.0-0.dev+a5078358c (below) and again on 6231d5b42, for itself and for the
+records commit after it, which completes round 8's review record. Not of record
 until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -3408,12 +3409,16 @@ MINOR (MINOR-1 to MINOR-4); review 2, APPROVE-WITH-FIXES, 2 MAJOR and 6 MINOR
 driver stamped 0.0.0-0.dev+3245ec0d2: its only toolchain changes are the TODO
 text, chosen by `is_constant()` with the control flow and the `ErrorInst` return
 unchanged (member_access.cpp:1013-1036), and a header comment; its golden commit
-adds CHECK lines only; the gate (1959 passed, 0 failed), conformance (130 / 0 /
-21 over 151, 49 of 56) and every earlier probe run line for line (review 1: 1983
-runs and the 29 import sets). On the round's question (whether the branch is dry
-and the trade honestly recorded and acceptable), both found the records honest
-in D-SC-10, ROUND 8's DECISION, the as-landed note, W-028 and W-169, and the
-trade acceptable under F-010 with SC-B2 as its lift, and neither found round 6's
+adds CHECK lines only. Review 1 re-ran the gate (1959 passed, 0 failed),
+conformance (130 / 0 / 21 over 151, 49 of 56) and every earlier probe run line
+for line (1983 runs and the 29 import sets); review 2's directory holds
+file_test over the four goldens round 8 changed (4 passed) and the conformance
+runner over the two SC-1 programs (both PASS), and no re-run of the earlier sets
+(narrowed by the records commit after 6231d5b42; fill round 9 wrote that both
+re-ran them). On the round's question (whether the branch is dry and the trade
+honestly recorded and acceptable), both found the records honest in D-SC-10,
+ROUND 8's DECISION, the as-landed note, W-028 and W-169, and the trade
+acceptable under F-010 with SC-B2 as its lift, and neither found round 6's
 review-1 second option strictly better. Review 1's evidence: on fb12f63cb a type
 that does not satisfy a `Self`-dependent signature was a hard "unable to
 monomorphize" error even in an overload probe and with `require impls J` (b01 to
@@ -3426,7 +3431,23 @@ aborts lowering (n01 on fb12f63cb); the lost signatures fail closed with trunk's
 definition errors (d01, d01t); relative to trunk nothing is lost. Both found the
 per-use follow-on of a requirement with an error unpinned and unfiled, and gap
 row 60 silent on the trade (review 2 also the PR body's lead). Review 1's probes
-are sc1-review8/adv1 (p, x), review 2's sc1-review8/adv2 (p, splits, lsplits).
+are sc1-review8/adv1 (p, x: 31 probes, 3 of them `interface` or `constraint`
+spellings for trunk), review 2's sc1-review8/adv2 (p: 17 probes, 6 of them such
+spellings; splits and lsplits: round 8's nine new or changed splits, extracted).
+The round counts 2 MAJOR, both review 2's disclosure findings, and no BLOCKER.
+The records commit after 6231d5b42 checked the round's four answers against the
+round-9 head: (a) 4c2ecee22's toolchain diff is member_access.cpp:1013-1036's
+comment and TODO text and structural_conformance.h:95-100's comment, and nothing
+else; (b) the trade is stated in D-SC-10's heading and body (:488-572 above),
+the design page's as-landed note and dependency list
+(template_constraints.md:608-633 and :927-931), W-028's notes, W-169, gap row 60
+(fork/gap-analysis.md:60) and the PR body's lead, the `fail_todo_` splits assert
+the current rejection and name W-169 (`fail_todo_symbolic_facet` W-232), and the
+two conformance programs are unchanged since 830447980; (c) the trade is kept:
+on fb12f63cb b01 and b03 are "unable to monomorphize", a08 is rejected, and c01
+and n01 abort lowering at lower/handle.cpp:405, while on the round-9 build b01
+is rejected at the definition, b03, a08 and c01 run, and n01 is W-232's TODO;
+(d) the follow-on is round 9's decision below, so no id is needed.
 
 Fill round 9 (2026-10-14), by review finding, each reproduced first on the
 toolchain stamped 0.0.0-0.dev+3245ec0d2 with the reviews' probes, and on the
@@ -3536,7 +3557,11 @@ and break condition:
     upstream starts diagnosing an impl member against an erroneous interface
     member; then the guard goes and the split's uses report. Pinned by
     unsatisfied `fail_requirement_signature_error` and the uses in the
-    declaration golden's `fail_todo_` splits.
+    declaration golden's `fail_todo_` splits. Checked by the records commit
+    after 6231d5b42: with `H`'s requirement in error and `C` declaring a
+    mismatching `F`, `P(c)` calls the unconstrained member of the overload set,
+    as a type that does not satisfy the constraint does (sc1-records9/p o01, its
+    `Test` dumped on the round-9 build).
 
 Round 9's new expectations were derived by hand before the fill (the trunk
 analog e01t run on 0bdce60a5 for the unsatisfied split; D-SC-12 for the overload
@@ -3721,9 +3746,21 @@ commit after a5078358c, on its tree with that installed toolchain (no toolchain
 source differs; one comment of the require golden re-pointed): autoupdate over
 the 19 SC-1 goldens changed nothing; gate 1959 passed, 0 failed, exit 0, 93 s,
 no `!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 58.4 s. Round 9's commits: 58dc46eb6
-(fix, test sources, docs, records), a5078358c (goldens) and the records commit
-after them.
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 58.4 s. Re-run for the records commit
+after 6231d5b42, on 6231d5b42 with that installed toolchain (stamped
+0.0.0-0.dev+a5078358c; no toolchain source differs from 58dc46eb6): autoupdate
+over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
+1959 passed, 0 failed, exit 0, 66 s, no `!` or `?` mark; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56,
+105.1 s, the same two programs moving; every probe run (the 1969 earlier runs,
+round 8's 14, round 8's reviews' 48 and round 9's 16, 2047 in all, and the 29
+import sets) gives results identical, line for line, to the run on a5078358c
+(sc1-fix9 clean9_*), but for the stack addresses of the nine
+sem_ir/mangler.cpp:185 aborts (round 6's v01 and vt01b; round 7's g07, g14, g15,
+g07t, g07t2, g14t and g15t); the 64 runs of round 8's reviews and round 9 give
+20 clean, 42 check errors and the 2 trunk-spelling aborts again (sc1-records9
+rec_*). Round 9's commits: 58dc46eb6 (fix, test sources, docs, records),
+a5078358c (goldens) and 6231d5b42 (records).
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

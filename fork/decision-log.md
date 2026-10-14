@@ -4313,15 +4313,20 @@ stated for the round-8 probe comparisons, and records the re-measure on
 a13e70542. Fill round 9 (same day), folding round 8's two implementation
 reviews: 58dc46eb6 (the follow-on diagnostic after a requirement's error
 removed, ROUND 9's DECISION; test sources, the design page, gap row 60 and
-records), a5078358c (3 goldens, CHECK lines only) and the records commit after
-them (the round-9 rows marked FILLED, the commit hashes, the
-structural_conformance.cpp cites that round 9 moved re-pointed at the round-9
-head, the re-measure). Each fix is an R29(a) implementation decision recorded
-for after-the-fact veto, with its design citation and break condition; none
-reopens F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own
-break condition on a falsifier other than the one it named (a template-phase
-`Self` breaking a positive golden at the commit-1 fill; the falsifier was round
-6's review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
+records), a5078358c (3 goldens, CHECK lines only) and 6231d5b42 (records: the
+round-9 rows marked FILLED, the commit hashes, the structural_conformance.cpp
+cites that round 9 moved re-pointed at the round-9 head, the re-measure); the
+records commit after 6231d5b42 completes round 8's review record (its counts,
+the reviews' probe counts, the scope of each review's re-runs as their
+directories show, the round's four answers checked against the head), confirms
+the overload clause of ROUND 9's DECISION with a probe, adds round 9 to the
+R16(d) sentence of FILL-CAUGHT MISSES and to RECORDS, and records the re-measure
+on 6231d5b42. Each fix is an R29(a) implementation decision recorded for
+after-the-fact veto, with its design citation and break condition; none reopens
+F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own break
+condition on a falsifier other than the one it named (a template-phase `Self`
+breaking a positive golden at the commit-1 fill; the falsifier was round 6's
+review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
 re-weighed (ROUND 8's DECISION). Every count below is a measurement on the
 container, not of record (R9): fork/conformance/out/scoreboard.json reads 128 /
 0 / 22 over 150 until a run of record replaces it.
@@ -4867,6 +4872,10 @@ the round-6 behavior on the toolchain of fb12f63cb.
     `fail_requirement_signature_error` (expected from the trunk analog
     sc1-fix9/t/e01t: the two definition errors and the missing-member error) and
     by the uses in the declaration golden's `fail_todo_` splits, each silent.
+    Checked by the records commit after 6231d5b42: with `H`'s requirement in
+    error and `C` declaring a mismatching `F`, `P(c)` calls the unconstrained
+    member of the overload set, as a type that does not satisfy the constraint
+    does (sc1-records9/p o01, its `Test` dumped on the round-9 build).
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4943,13 +4952,16 @@ sources (round 3's review 2, MINOR-7). Round 5's rows are withdrawn the same way
 (fill round 6, round 5's review 2 MINOR-1, R16(d)): the development build ran
 the reviews' shapes before they were written, so none of their clauses counts as
 a prediction that held, and (n) and (o) stand as errors in them; round 6's and
-round 7's and round 8's rows are written after their builds ran their shapes
-and are not counted either. No miss
-hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
-coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
-and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
-coverage gap now dumped where the claim needed a dump, and (h) and (i) design
-sentences amended in place beside their fixes.
+round 7's and round 8's rows are written after their builds ran their shapes and
+are not counted either. Round 9's rows were predicted by hand before its fill
+and are counted, as the plan's round-9 §4 rows say: each held on a5078358c, so
+round 9 adds no miss, and its notes at the prelude classes' parameters, observed
+on the development build, are not counted. No miss hides a defect: (a), (c),
+(f), (l), (m), (n) and (o) were prediction errors (the coalescing (o) shows is
+trunk's lowering, outside SC-1), (b) and (e) a cascade and a warning class now
+gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
+where the claim needed a dump, and (h) and (i) design sentences amended in place
+beside their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -5306,34 +5318,60 @@ against D-SC-12 (b01 to b04), it keeps rejecting `require Self impls Conv(Self)`
 (a08), it must refuse nested template constraints, losing c01, which runs now
 and aborted lowering on fb12f63cb, and a kind of name its refusal misses checks
 clean and aborts lowering (n01); the lost signatures fail closed with trunk's
-definition errors, and most have a workaround. Both re-ran every earlier probe
-set (review 1: 1983 runs and the 29 import sets, identical to the records
-commit's run line for line but for stack addresses), the gate (1959 passed, 0
-failed) and conformance (130 / 0 / 21 over 151, 49 of 56) privately. Review 1's
-probes are sc1-review8/adv1 (p, x), review 2's sc1-review8/adv2 (p, splits,
-lsplits). Fill round 9 folds all 12, each reproduced first on the toolchain
-stamped 0.0.0-0.dev+3245ec0d2 and, for the round-6 behavior, on that of
-fb12f63cb. Dispositions: review 1's MINOR-3 and review 2's MINOR-1 are ROUND 9's
-DECISION, taken as review 1's preferred option, so no id is filed for them;
-review 1's MINOR-1 is taken in part: the f22 cite is replaced, but its claim
-that no class can name `Core.Slice` or `Core.Optional` of itself is rejected on
-evidence, since a class declaring `impl as Core.Copy` and `impl as Core.Destroy`
-before such a member checks on trunk 0bdce60a5, fb12f63cb and the round-9 build
-(sc1-fix9/p z01, z05; the review's x/s1 and x/s5 omit the `Core.Destroy` impl)
-and on fb12f63cb satisfied both signatures and ran (z06, z08), while `require
-impls Core.Copy & Core.Destroy` restores both now (z07, z09), so the records say
-both were lost and restorable; review 1's MINOR-2 is recorded in ROUND 8's
-DECISION, D-SC-10 and W-028 and pinned by `self_facet_in_signature_required`'s
-overload set and lower `overload_probe_require`; review 1's MINOR-4 and review
-2's MAJOR-2 edit gap row 60; review 2's MAJOR-1 edits the PR body (outside the
-repository); review 2's MINOR-2 files W-232, the id given to SC-1's round 9 in
-place of W-200, which OP-2's reservation W-196..W-201 holds; review 2's MINOR-3
-pins the shapes in the declaration golden (the `Core.Slice(Self)` and
-`Core.Optional(Self)` declarations, the satisfying classes with their now silent
-uses, the `Core.Copy & Core.Destroy` workaround, `fn Get2(self) -> A`) and
-re-points ROUND 8's consequence, W-169 and W-028 at them; review 2's MINOR-4,
-MINOR-5 and MINOR-6 reword the workaround (D-SC-10, ROUND 8's DECISION, the
-design page, the PR body), annotate D-SC-10's heading and rewrite
+definition errors, and most have a workaround. Review 1 re-ran every earlier
+probe set (1983 runs and the 29 import sets, identical to the records commit's
+run line for line but for stack addresses), the gate (1959 passed, 0 failed) and
+conformance (130 / 0 / 21 over 151, 49 of 56) privately; review 2's directory
+holds file_test over the four goldens round 8 changed (4 passed) and the
+conformance runner over the two SC-1 programs (both PASS), and no re-run of the
+earlier sets (narrowed by the records commit after 6231d5b42 from "both re-ran",
+which fill round 9 wrote). Review 1's probes are sc1-review8/adv1 (p, x: 31
+probes, 3 of them `interface` or `constraint` spellings for trunk), review 2's
+sc1-review8/adv2 (p: 17 probes, 6 of them such spellings; splits and lsplits:
+round 8's nine new or changed splits, extracted). The round counts 2 MAJOR, both
+review 2's disclosure findings, and no BLOCKER. The records commit after
+6231d5b42 checked the round's four answers against the round-9 head. (a)
+4c2ecee22's toolchain diff is member_access.cpp's comment and TODO text
+(:1013-1036, the text chosen by `is_constant()` with the control flow and the
+`ErrorInst` return unchanged) and structural_conformance.h's comment (:95-100),
+and nothing else. (b) The trade is stated in D-SC-10's heading and body
+(plan.md:488-572), the design page's as-landed note and dependency list
+(docs/design/generics/template_constraints.md:608-633 and :927-931), W-028's
+notes, W-169 (its evidence the declaration golden's splits, its break condition
+SC-B2's template phase), gap row 60 (fork/gap-analysis.md:60) and the PR body's
+lead; `fail_todo_self_member_in_signature` and
+`fail_todo_self_facet_in_signature` assert the definition errors and name W-169,
+`fail_todo_unqualified_requirement_in_signature` the unsatisfied use and W-169,
+`fail_todo_symbolic_facet` the TODO and W-232, and the two conformance programs
+are unchanged since 830447980. (c) The trade is kept: re-run for this record,
+b01 and b03 are "unable to monomorphize" on fb12f63cb, and on the round-9 build
+b01 is rejected at the definition and b03 runs; a08 is rejected on fb12f63cb and
+runs on the round-9 build; c01 and n01 abort lowering at lower/handle.cpp:405 on
+fb12f63cb, and on the round-9 build c01 runs and n01 is W-232's TODO. (d) The
+follow-on is ROUND 9's DECISION, so no id is needed. Fill round 9 folds all 12,
+each reproduced first on the toolchain stamped 0.0.0-0.dev+3245ec0d2 and, for
+the round-6 behavior, on that of fb12f63cb. Dispositions: review 1's MINOR-3 and
+review 2's MINOR-1 are ROUND 9's DECISION, taken as review 1's preferred option,
+so no id is filed for them; review 1's MINOR-1 is taken in part: the f22 cite is
+replaced, but its claim that no class can name `Core.Slice` or `Core.Optional`
+of itself is rejected on evidence, since a class declaring `impl as Core.Copy`
+and `impl as Core.Destroy` before such a member checks on trunk 0bdce60a5,
+fb12f63cb and the round-9 build (sc1-fix9/p z01, z05; the review's x/s1 and x/s5
+omit the `Core.Destroy` impl) and on fb12f63cb satisfied both signatures and ran
+(z06, z08), while `require impls Core.Copy & Core.Destroy` restores both now
+(z07, z09), so the records say both were lost and restorable; review 1's MINOR-2
+is recorded in ROUND 8's DECISION, D-SC-10 and W-028 and pinned by
+`self_facet_in_signature_required`'s overload set and lower
+`overload_probe_require`; review 1's MINOR-4 and review 2's MAJOR-2 edit gap row
+60; review 2's MAJOR-1 edits the PR body (outside the repository); review 2's
+MINOR-2 files W-232, the id given to SC-1's round 9 in place of W-200, which
+OP-2's reservation W-196..W-201 holds; review 2's MINOR-3 pins the shapes in the
+declaration golden (the `Core.Slice(Self)` and `Core.Optional(Self)`
+declarations, the satisfying classes with their now silent uses, the `Core.Copy
+& Core.Destroy` workaround, `fn Get2(self) -> A`) and re-points ROUND 8's
+consequence, W-169 and W-028 at them; review 2's MINOR-4, MINOR-5 and MINOR-6
+reword the workaround (D-SC-10, ROUND 8's DECISION, the design page, the PR
+body), annotate D-SC-10's heading and rewrite
 handle_named_constraint.cpp:127-132 in its six lines. Per-finding detail is in
 the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
@@ -5524,9 +5562,22 @@ tree with that installed toolchain (no toolchain source differs; one comment of
 the require golden re-pointed): autoupdate over the 19 SC-1 goldens changed
 nothing; gate 1959 passed, 0 failed, exit 0, 93 s, no `!` or `?` mark;
 conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
-FAIL, 7 SKIP of 56, 58.4 s. Against fork/conformance/out/scoreboard.json (128 /
-0 / 22 over 150, run 37402970811) exactly two programs move in every run:
-generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+FAIL, 7 SKIP of 56, 58.4 s. Re-run for the records commit after 6231d5b42, on
+6231d5b42 with that installed toolchain (stamped 0.0.0-0.dev+a5078358c; no
+toolchain source differs from 58dc46eb6): autoupdate over the 19 SC-1 goldens
+changed nothing (one dot each, git status clean); gate 1959 passed, 0 failed,
+exit 0, 66 s, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 105.1 s, the same two
+programs moving; every probe run (the 1969 earlier runs, round 8's 14, round 8's
+reviews' 48 and round 9's 16, 2047 in all, and the 29 import sets) gives results
+identical, line for line, to the run on a5078358c (sc1-fix9 clean9_*), but for
+the stack addresses of the nine sem_ir/mangler.cpp:185 aborts (round 6's v01 and
+vt01b; round 7's g07, g14, g15, g07t, g07t2, g14t and g15t); the 64 runs of
+round 8's reviews and round 9 give 20 clean, 42 check errors and the 2
+trunk-spelling aborts again (sc1-records9 rec_*). Against
+fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
+exactly two programs move in every run: generics/structural_conformance.carbon
+SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -5683,7 +5734,28 @@ member_access.cpp:1178-1183 to :1190-1195); the exceptions of the round-8 probe
 comparisons corrected (with round 7's reviews' sets, nine runs abort at
 sem_ir/mangler.cpp:185 and print stack addresses, not two, and code offsets move
 between builds), here and in the plan; the re-measure and probe re-run on
-a13e70542 here and in the plan; W-027's notes.
+a13e70542 here and in the plan; W-027's notes. Round 9's fixes commit 58dc46eb6:
+D-SC-9 amended, D-SC-10's heading and body, D-SC-20's limit (W-232), the §4 rows
+for round 9, round 8's decision amended and its follow-on marked fixed, round
+8's review record, round 9's dispositions and decision in the plan; this entry
+(the head, ROUND 7's first decision, ROUND 8's DECISION, ROUND 9's DECISION,
+round 7's review record's follow-on, round 8's review record); the design page's
+as-landed note and name lookup; gap row 60; W-028's and W-169's notes, W-169's
+evidence, W-232 filed. Round 9's records commit 6231d5b42: the round-9 §4 rows
+marked FILLED, round 9's commit hashes and the clean-stamp re-measure here, in
+the plan, in ORCHESTRATION and in W-027, the structural_conformance.cpp cites
+that round 9 moved re-pointed at the round-9 head (W-027's evidence, W-138,
+W-139, the require golden's comment, the round-9 positions beside rounds 5 to
+7's records), the autoupdate count corrected (3 goldens rewritten, where
+58dc46eb6's and a5078358c's messages say 4). The records commit after 6231d5b42:
+6231d5b42 named at the head of this entry and of the plan's note, in
+ORCHESTRATION's status paragraph and Branches row and in W-027's notes; round
+8's review record completed here and in the plan (its counts, the reviews' probe
+counts, review 2's runs narrowed to what its directory shows, the round's four
+answers checked against the round-9 head); ROUND 9's DECISION's overload clause
+confirmed by a probe, here and in the plan; round 9 added to the R16(d) sentence
+of FILL-CAUGHT MISSES; the re-measure and probe re-run on 6231d5b42 here and in
+the plan; W-027's notes. No residue is filed by it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

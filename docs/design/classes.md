@@ -1801,6 +1801,16 @@ The rules for adapters are:
     explicitly cast between them, but there is no implicit conversion between
     these types.
 
+> **Fork amendment (2026-10-14, OP-2, F-016).** An adapter declares no fields
+> and has the same data representation as its adapted type
+> ([Generics: adapting types](generics/details.md#adapting-types)), so its
+> object is an object of the adapted type, and that object is the adapter's data
+> member for the `TrivialDestructor` rule under [Destructors](#destructors).
+> Destroying an adapter destroys that object as the adapted type's destructor
+> does, and an adapter is trivially destructible exactly when its adapted type
+> is. The fork's 0.1 toolchain implements this (fork/optional2/plan.md,
+> D-OP2-3); before it, an adapter's object was never destroyed.
+
 Inside an adapter, the `Self` type matches the adapter. Members of the original
 type may be accessed by a cast:
 

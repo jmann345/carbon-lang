@@ -354,14 +354,18 @@ fails if this table is stale):
 | `stdlib/iterate_interface.carbon` | Stdlib: interfaces powering language syntax (operators, conversions) | run |
 | `stdlib/operator_interfaces.carbon` | Stdlib: interfaces powering language syntax (operators, conversions) | run |
 | `stdlib/optional_basic.carbon` | Stdlib: Optional | run |
-| `stdlib/optional_bool.carbon` | Stdlib: Optional | SKIP |
+| `stdlib/optional_bool.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_compare_diff.carbon` | Stdlib: Optional | differential |
 | `stdlib/optional_compare_generic.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_compare_payload.carbon` | Stdlib: Optional | run |
-| `stdlib/optional_destroys_value.carbon` | Stdlib: Optional | SKIP |
+| `stdlib/optional_cpp_class_destroy.carbon` | Stdlib: Optional | run |
+| `stdlib/optional_destroy_diff.carbon` | Stdlib: Optional | differential |
+| `stdlib/optional_destroys_value.carbon` | Stdlib: Optional | run |
+| `stdlib/optional_get_empty_fail_stop.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_missing_ops.carbon` | Stdlib: Optional | run |
-| `stdlib/optional_nested_pointer.carbon` | Stdlib: Optional | SKIP |
+| `stdlib/optional_nested_pointer.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_pointer_compare.carbon` | Stdlib: Optional | SKIP |
+| `stdlib/optional_pointer_get_empty_fail_stop.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_pointer_niche.carbon` | Stdlib: Optional | run |
 | `stdlib/pointers.carbon` | Stdlib: pointer types | run |
 | `stdlib/slices_basic.carbon` | Stdlib: Slices | run |

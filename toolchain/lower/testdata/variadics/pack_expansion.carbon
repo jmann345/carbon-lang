@@ -25,7 +25,7 @@ fn SumOfDoubles(... each m: i64) -> i64 {
   return Sum(... Add(each m, each m));
 }
 
-fn Run() -> i64 {
+fn Call() -> i64 {
   return Add(Add(Sum(1, 2, 3), Sum()), SumOfDoubles(4, 5));
 }
 
@@ -62,7 +62,7 @@ fn SumFields(... each c: C) -> i64 {
   return total;
 }
 
-fn Run(c: C, d: C) -> i64 {
+fn Call(c: C, d: C) -> i64 {
   return SumFields(c, d);
 }
 
@@ -71,13 +71,15 @@ library "[[@TEST_NAME]]";
 
 fn P(x: i64) -> i64;
 
-fn Digits(first: i64, ... each mid: i64, last: i64) -> i64;
+fn Digits(first: i64, ... unused each mid: i64, unused last: i64) -> i64 {
+  return first;
+}
 
 fn Plain(... each x: i64) -> i64 {
   return Digits(P(1), ... P(each x), P(9));
 }
 
-fn Run() -> i64 {
+fn Call() -> i64 {
   return Plain(2, 3);
 }
 
@@ -108,7 +110,7 @@ fn SumHeld(... each h: Holder) -> i64 {
   return Sum(... each h.w);
 }
 
-fn Run(h: Holder, k: Holder) -> i64 {
+fn Call(h: Holder, k: Holder) -> i64 {
   return SumHeld(h, k);
 }
 
@@ -128,6 +130,6 @@ library "[[@TEST_NAME]]";
 
 import library "lib";
 
-fn Run() -> i64 {
+fn Call() -> i64 {
   return Add(Sum(1, 2), Sum(3, 4, 5));
 }

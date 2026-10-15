@@ -165,6 +165,47 @@ with 5 findings each). Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR
 56, PR 57, PR 58 through its state L integration commit, then PR 59. None is
 merged.
 
+Later on 2026-10-14 (the TP-1 discharge; pushed, PR to open and hold): TP-1
+(claude/carbon-fork-0-1-tp, fork/templates/plan.md rev 3, a W-014 slice with
+W-127, W-183, W-192 and W-193, gap row 54 "Generics: Integrated templates") is
+IMPLEMENTED AND HELD off trunk b2576f6c3, after two plan reviews (REJECT, 13 and
+14 findings) and a focused re-review (APPROVE-WITH-AMENDMENTS, six), all folded
+(rev 3 aaf43d5a4, signed off), and two implementation reviews (REJECT with seven
+findings, APPROVE-WITH-FIXES with thirteen, nineteen distinct), folded by three
+fix commits, none rejected and IR1-M3 narrowed and filed as W-266 -- C1
+675e0dd94 (template-dependent initializers keep their storage; lowering reads
+the specific), C2 637e3efaf (cross-library generics are a `semantics TODO` at
+the `import`; dependent operations print as expressions), C3 438b3c971 (four
+action kinds: dependent `*`, `->`, `&`, tuple element access and indexing, and
+calls of function-typed values, checked on instantiation), C4 781908afb
+(deduction through a class's arguments, deferred impl lookup), C5 df6487a05
+(constraint lookup on instantiation), each with its autoupdate fill, P 32c8ed777
+(eight programs, one with a C++ oracle), M 6efc3f257 (the merge of trunk
+8bfd78ae3, records only), 4e1f07a91 (the state-T measurements), the fold's
+7c7b1b170 (with a ninth program) and 12bd6d67a with their fills 17501c978 and
+f360b8735 and its records commit 824f29c4e, R 35e2240b5 (row 54 PARTIAL, one
+dated held-state sentence) and the discharge. W-014 stays OPEN with the slice in
+its notes; W-250 to W-266 are filed after W-125, and W-267 to W-269 stay unused
+(the id re-scan before D, over the 78 other fork and trunk refs: maximum W-249,
+nothing in W-250..W-269 or F-019 elsewhere, so no re-allocation); F-019 is not
+minted; the discharges of W-127 (PR 51's) and W-183, W-192 and W-193 (PR 58's)
+wait for the land-time records commit, because those items are not on trunk.
+Verification is container-built and NOT of record (Actions disabled): on the
+head 824f29c4e, whose toolchain is the carbonbuild toolchain of 12bd6d67a,
+file_test 1955/1955 and the expected scoreboard 137 PASS / 0 FAIL / 22 SKIP over
+159, 48/56 bullets (scoreboard generated 2026-10-15T00:56:22Z), the nine
+template programs the only change from the floor of record 128 / 0 / 22 over
+150; all 25 mutants killed. In the held state S, F6 and L are measured, not
+committed: composed over SC-1 1646988dc (with S) and VA-1 b0822a744, every
+composed golden passes (1972 of 1972, 1973 of 1973), and PR 58's checker reports
+0 errors with TP-1's toolchain on copies of fcee90d9b with Appendix C applied.
+Not run: Bazel and its tests, hosted CI with its clangd-tidy step, ASan, macOS
+and Windows, LLVM-side assertions, the owner's runner, and every land-time item
+(fork/templates/plan.md, "Landed notes (TP-1, 2026-10-14)"). Merge order: PR 53,
+PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
+integration commit, PR 59, then TP-1 through its land-time commits M, S, F6 and
+L (Next actions item 5). None is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -505,6 +546,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
+| `claude/carbon-fork-0-1-tp` | IMPLEMENTED AND HELD, PR TO OPEN AND HOLD -- TP-1 integrated templates, toolchain at f360b8735, records through the discharge after R 35e2240b5 (W-014 OPEN; W-250..W-266 filed, W-267..W-269 unused; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1955/1955 and conformance 137/0/22 over 159 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -530,6 +572,15 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 
 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3 → 128 SL-2. The scoreboard
 regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 `conformance`; R28).
+
+Expected at TP-1, NOT of record: 137 PASS / 22 SKIP / 0 FAIL over 159, 48/56
+bullets (a container run on the carbonbuild toolchain of 12bd6d67a at TP-1's
+head 824f29c4e, scoreboard generated 2026-10-15T00:56:22Z; nine programs join
+the "Generics: Integrated templates" bullet, already PASS, and its gap row stays
+PARTIAL), from the floor of record 128 PASS / 22 SKIP / 0 FAIL over 150, 48/56
+(the hosted conformance run 37402970811 on 606a99c5a). TP-1 is measured on trunk
+alone; its landing count is PR 59's expected state with every earlier PR plus
+nine PASS (fork/templates/plan.md §5).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 
@@ -583,6 +634,55 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     subpatterns (W-008).
 4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
+5.  TP-1 at land time (fork/templates/plan.md §3; `claude/carbon-fork-0-1-tp`,
+    after PR 59; this item renumbers after the held PRs' own items at the
+    land-time merge): repeat M over the trunk that holds PR 51 to PR 59, keeping
+    TP-1's appended record blocks after the PRs'; S; F6, with PR 51's split
+    renamed; the id re-scan; L with its document review; a records commit that
+    recomposes the row over the merged one (§2.8) and discharges W-127, W-183,
+    W-192 and W-193; the id re-scan before D's landed notes. In this order:
+    -   M: merge the then-current trunk into the branch with a merge commit,
+        never a rebase, after repeating plan §0.9's dry run against the heads of
+        that day. M resolves conflicts only: SC-1's
+        `PerformAction(ConvertAction)` and `(ConvertToCategoryAction)` keep
+        SC-1's check first and A2's `PendingBlock` after it, member_access.cpp's
+        includes put `pointer_dereference.h` beside `structural_conformance.h`,
+        the conformance README table is regenerated with `runner.py
+        --update-readme-table`, and each record file takes trunk's text with
+        TP-1's appended blocks after the PRs' (row 54 found by its bullet text,
+        W-250..W-266 after the then-last item, the decision-log entry above the
+        entry that then follows "Full autonomy and the throughput protocol",
+        this item and TP-1's Branches row).
+    -   S, "TP-1 (7): over SC-1, a template constraint's requirement defers to
+        the type in constraint lookup": plan §2.5's text, member_access.cpp only
+        (measured at state T and at the fold: SC-1's nine template-constraint
+        goldens pass again; mutant M18 reverts it).
+    -   F6: refill what the merge changes, TP-1's eight refills recomputed, PR
+        51's `fail_todo_unformed_dependent_var` renamed `unformed_dependent_var`
+        and refilled, and any SC-1 or VA-1 golden the merged toolchain changes
+        (measured: none). M, S and F6 are judged together: the full build,
+        autoupdate to its fixpoint, gate, conformance (the base's totals plus
+        nine PASS), the mutants and `runner.py --self-test`, re-quoted from that
+        run (R9).
+    -   The id re-scan of the plan's front matter (its three commands), before
+        L, the first commit that publishes an id outside the plan.
+    -   L, "TP-1: integration with PR 58" (plan §2.9, Appendix C), then its
+        document review (two reviewers, R29(c)) and fold commits, each with
+        `python3 fork/designdocs/check_samples.py` with and without
+        `--toolchain` (simulated: 70 fixtures, 0 errors both ways).
+    -   A records commit: the row recomposed over the merged row (§2.8's full
+        row, one TP-1 sentence), W-127, W-183, W-192 and W-193 discharged with
+        Appendix E's texts, W-014's merged-tree sentence, Appendix E's
+        ORCHESTRATION stamp, and the merged tree's gate, conformance and checker
+        runs in the plan's landed notes.
+    -   The second id re-scan, immediately before that commit's ledger edit; a
+        collision re-allocates from the maximum plus one, skipping every
+        reserved block, rewrites L's and R's ids in a commit before it, and is
+        recorded against 637e3efaf and 12bd6d67a, whose messages name W-250.
+    -   When Actions returns, the hosted autoupdate, gate and conformance runs
+        on a tree with TP-1 in it are the record (expected: PASS up 9 and
+        programs up 9 over the base; the bullet PASS; row 54 PARTIAL), and the
+        "not of record" phrases go in a records commit.
 
 ### Standing user directives
 

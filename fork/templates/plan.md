@@ -15,6 +15,10 @@ fix commits that the
 [implementation review fold record](#implementation-review-fold-record-2026-10-14)
 tables (amended 2026-10-14, implementation-review fold: IR2-MINOR-10).
 
+The row commit R (35e2240b5) and the discharge commit D follow the fold; the
+[landed notes](#landed-notes-tp-1-2026-10-14) record them, the runs measured at
+D and every land-time item (amended 2026-10-14, records: R and D).
+
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
 folded into rev 2 (1b26e8c32) by a separate fixer (R11): 27 findings, none
@@ -4330,6 +4334,107 @@ In all, 33 findings: 3 BLOCKER, 12 MAJOR and 18 MINOR. All are folded and
 none is rejected whole; B-B1's item 5 is rejected in part, with evidence
 (§2.9). Implementation starts from `$Y/v14.diff` (hand-off notes), and the
 implementation reviews of R29(c) run on the merged head (§3).
+
+## Landed notes (TP-1, 2026-10-14)
+
+Written by the discharge commit D, "TP-1 discharge", after the row commit R
+(35e2240b5, "TP-1: row"). Both are dated 2026-10-14, the date of every TP-1
+record, and were committed at 2026-10-15 UTC. In the held state (§1.12) there is
+no merged tree, so these notes record the branch head's runs, the measurements
+on composed copies and every land-time item; the land-time records commit (§3
+item 13, "Held state") adds the merged tree's runs here and the outcomes of its
+two id re-scans.
+
+-   **What D writes** (Appendix E's held-state texts, §2.8, §3 item 13): W-014's
+    notes appended in fork/inventory/work-items.json, with the third arbiter
+    clause and the next slice named beside Appendix E's text and its last
+    sentence in the held-state form; W-250 to W-266 appended after W-125 in id
+    order, W-267 to W-269 unused and never reused; the decision-log entry "TP-1:
+    integrated templates (2026-10-14)" immediately above "OX-1 parked: operator
+    export to C++ cannot be made invisible to Carbon's own resolution
+    (2026-10-14)", with D-TP-1 to D-TP-26 verbatim from §1.14; in
+    fork/ORCHESTRATION.md a dated TP-1 paragraph after PR 59's, a Branches row
+    after VA-1's, the expected scoreboard after the Scoreboard history, and Next
+    actions item 5 with the land-time commits in order; and these notes. R wrote
+    §2.8's held-state row over trunk's line 54, with the container run of the
+    next item quoted as EXPECTED, not of record.
+-   **Id re-scan before D** (the front matter's three commands, run from
+    /home/user/carbon-lang on 2026-10-15, about 00:54 UTC, after `git fetch
+    origin`; origin/trunk is 8bfd78ae3): 80 refs match the patterns and 78
+    remain after TP-1's two are excluded; the first command printed `W-244`,
+    `W-245` and `W-249`, and the second and third printed nothing. That is the
+    expected output, so no id is re-allocated, W-250 stands in the messages of
+    637e3efaf and 12bd6d67a, and F-019 stays unallocated. The re-scan before L
+    did not run, because L is a land-time commit; it and the second re-scan are
+    land-time items below.
+-   **Measured at D, on the branch head 824f29c4e** (the install
+    0.0.0-0.dev+12bd6d67a, whose toolchain sources equal the head's; R and D
+    change records only). Gate: "file_test test mode on /home/user/carbon-tp:
+    1955 passed, 0 failed (exit 0, 31s)", its log "Ran 1955 tests in 29928 ms
+    wall time, 116020 ms across threads" with 0 `!` and 0 `?` marks.
+    Conformance, with a private `XDG_CACHE_HOME` and output directory under
+    `$I/records`: "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+    OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48 PASS / 0
+    FAIL / 8 SKIP / 0 NOT-WRITTEN of 56, scoreboard generated
+    2026-10-15T00:56:22Z in 66.7 s, the nine TP-1 programs PASS; `runner.py
+    --self-test`: "self-test: 159 programs parsed, 56 bullets in table, OK".
+    Expected, not of record (Actions is disabled).
+-   **Measured on copies, in place of the merged tree** (§0.9, §2.9, §8): the
+    compositions over SC-1 and VA-1 at state T (SC-1 a35535174, VA-1 b0822a744)
+    and again at the fold (SC-1 1646988dc, VA-1 b0822a744), every composed
+    golden passing with S (1972 of 1972 on SC-1, 1973 of 1973 on VA-1) and
+    mutant M18 killed without it; and PR 58's checker on `git archive` copies of
+    fcee90d9b with Appendix C applied, 70 fixtures and 0 errors with and without
+    TP-1's toolchain (df6487a05 at state T, 12bd6d67a at the fold). Every
+    `/dev/shm` copy was deleted after its measurement.
+-   **Discharges at land time** (IR2-MAJOR-2): W-127 is PR 51's item and
+    W-183, W-192 and W-193 are PR 58's, so none is in trunk's ledger and D
+    cannot mark them. The land-time records commit gives each title
+    "(DISCHARGED at TP-1, <date>)" and Appendix E's paragraph, with these
+    landing commits: W-127 by C4 781908afb (impl_lookup.cpp
+    `QueryNamesTemplateBinding`) with F4 989a6496c, and PR 51's split renamed
+    in F6; W-183 by C5 df6487a05 (member_access.cpp
+    `LookupMemberInTemplateConstraint`) with F5 96fa092b6, composed with SC-1
+    by S, for an operand whose type in the definition is the parameter (the
+    field form is W-266); W-192 by C1 675e0dd94 (the struct copy, convert.cpp
+    `AddConvertActionIfDependent`) with F1 283197da2 and C3 438b3c971
+    (`IndexAction`) with F3 a8b3c7900; W-193 by C4 781908afb (call.cpp
+    `IsCallPerformable`) with F4 989a6496c.
+-   **Ledger re-cites** (Appendix E: evidence re-cited to the tree D writes on,
+    here the branch head, each with its b2576f6c3 line beside it): W-250
+    lower/handle.cpp:517-524 (:506-513); W-251 handle_operator.cpp:323-342
+    (:342-361); W-253 convert.cpp:448-459 (:430-441); W-256 convert.cpp:2278
+    (:2199); W-264 handle_loop_statement.cpp:220-222, the ordering TODO itself
+    (:219-221; Appendix E's :216-218 included the two TODO lines above it), and
+    :230 (:229), with convert.cpp's value temporaries at :496, :1115 and :1267
+    (:471, :1084, :1203); W-265 sem_ir/expr_info.cpp:365 (:359); W-014's notes
+    name lower/handle.cpp:524 (:513). Evidence in files TP-1 does not change
+    keeps its lines. At land time the records commit re-cites them to the merged
+    tree.
+-   **Program headers** (IR2-MINOR-11): the nine programs name DD-1's fixtures
+    (X13 to X33, R09) and no item id; those fixtures are on PR 58's branch only,
+    so the names resolve when PR 58 lands, and L rewrites the fixtures.
+-   **Land-time items, in order after PR 59** (fork/ORCHESTRATION.md Next
+    actions item 5): (a) M repeated as a merge of the trunk that holds PR 51 to
+    PR 59, after §0.9's dry run against the heads of that day, resolving
+    conflicts only and keeping TP-1's appended record blocks after the PRs'; (b)
+    S (§2.5's text); (c) F6 (TP-1's eight refills recomputed, PR 51's split
+    renamed and refilled, and any SC-1 or VA-1 golden the merged toolchain
+    changes), M, S and F6 judged together with §8's build, autoupdate, gate,
+    conformance and mutants; (d) the id re-scan before L; (e) L with its
+    document review and fold commits, `check_samples.py` with and without
+    `--toolchain` on each; (f) a records commit that recomposes the row over the
+    merged one (§2.8's full row, one TP-1 sentence), discharges W-127, W-183,
+    W-192 and W-193, re-anchors the decision-log entry and writes Appendix E's
+    ORCHESTRATION stamp, W-014's merged-tree sentence and the merged runs here;
+    (g) the second id re-scan, immediately before that commit's ledger edit; (h)
+    the hosted runs when Actions returns, which are the record.
+-   **Against the brief D was given**: D follows this plan as the
+    implementation-review fold left it, so W-266 is filed (W-267 to W-269 are
+    the spare ids), the decision-log entry carries D-TP-25 and D-TP-26 beside
+    D-TP-1 to D-TP-24, and the four discharges move to land time; the Branches
+    row reads "IMPLEMENTED AND HELD, PR TO OPEN AND HOLD", because the PR is
+    opened and held by the orchestrator, not by D.
 
 ## Appendix A: golden sources
 

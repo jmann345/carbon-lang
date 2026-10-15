@@ -1,15 +1,15 @@
 {
-  "generated": "2026-10-06T02:26:01.430659+00:00",
+  "generated": "2026-10-06T04:36:08.828687+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 53.6,
+  "elapsed_seconds": 54.4,
   "totals": {
-    "PASS": 128,
+    "PASS": 131,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 22
+    "SKIP": 19
   },
   "programs": [
     {
@@ -438,8 +438,8 @@
     {
       "path": "generics/templates_dependent_member.carbon",
       "bullet": "Generics: Integrated templates",
-      "status": "SKIP",
-      "detail": "dependent member access `x.n` type-checks via deferred actions but compile aborts: FATAL failure at toolchain/lower/handle.cpp:363: Template lowering not implemented yet (SpliceInst; crash context \"Lowering splice_inst\" at the `x.n` line) \u2014 verified against this arbiter toolchain 2026-07-19",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -683,15 +683,15 @@
     {
       "path": "interop/cpp_template_on_carbon_generic.carbon",
       "bullet": "Type system: C++ interop \u2014 importing C++ types / exporting Carbon types",
-      "status": "SKIP",
-      "detail": "known-missing slice \u2014 instantiating an imported C++ template on a symbolic Carbon generic parameter fails to compile on nightly 2026.07.19 with: \"error: semantics TODO: `unsupported type used as template argument`\" (both uses of Cpp.Box(T) below; same TODO as check/testdata/interop/cpp/template/generic_call.carbon). Concrete Carbon class types as template args DO work \u2014 arbitrated by cpp_type_import_class_enum.carbon.",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
       "path": "interop/cpp_template_symbolic_arg.carbon",
       "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
-      "status": "SKIP",
-      "detail": "a symbolic checked-generic type parameter as a C++ template argument still fails to compile on nightly 2026.07.19: \"error: semantics TODO: `unsupported type used as template argument`\" at `var b: Cpp.Box(T);` \u2014 the exact TODO tracked in toolchain/check/testdata/interop/cpp/template/generic_call.carbon (fail_todo_generic_call); enable when template instantiation is deferred to monomorphization.",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {

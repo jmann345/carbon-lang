@@ -377,7 +377,15 @@ gate and the gate's golden in the same commit:
     the unit until the member maps);
 -   (ix) a marked declaration directly in an `interface` body;
 -   (x) members that disagree on whether they declare `self`;
--   (xi) a call with a template-dependent argument;
+-   (xi) a call with a template-dependent argument — LIFTED IN MECHANISM by
+    the 2026-10 upstream advance (fork/upstream/plan.md, UA-1 fill round 3;
+    UA-2 reconciliation): upstream's `CallAction` defers a call whose argument
+    is template-dependent and performs it per specific, so the gate is no
+    longer reached for such a call (pin
+    toolchain/check/testdata/function/overload/fail_todo_gates.carbon
+    `template_dependent`, a `T2(i32)` and a `T2(bool)` specific each calling
+    the set); the gate's diagnostic stays for a call that is not deferred, and
+    the per-specific member selection has no dumped pin yet (W-101);
 -   (xii) an explicit receiver (`C.M(c, ...)`) for a `ref self` or
     `addr self` member;
 -   (xiii) a marked declaration directly in an `impl` body (which covers
@@ -724,6 +732,11 @@ Carbon sets (and C++'s rule for
 resolution differs, never the algorithm. _Fork amendment 2026-09-27:_ in 0.1
 such a call is D-OV-6 gate (xi), a semantics TODO ("overload resolution with
 template-dependent arguments"); the mechanism is filed as a residue item.
+_Amended 2026-10-06 (UA-2):_ the 2026-10 upstream advance supplies the
+mechanism — upstream's `CallAction` defers the call and performs it per
+specific — so a template-dependent call to a set is now resolved after
+substitution as this section describes, and the gate is reached only by a call
+that is not deferred (see the 0.1 limits, (xi)).
 
 ## C++ interoperability
 

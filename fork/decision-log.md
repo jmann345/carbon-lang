@@ -6178,6 +6178,283 @@ Noted for W8b/W8c: lower merge-block namer emits the label
 choice-payload bind-pass coverage nuance, and the R8 conservative
 gate.
 
+### Upstream reconciliation 2026-10 (UA-2)
+
+The reconciliation PR fork/upstream/plan.md §8.5 specifies (its plan IS that
+section, R29(c): no plan reviews), on claude/carbon-fork-0-1-ua2 cut from trunk
+8068151ed (post-PR 50, the upstream advance). Round 1 (this record's first
+state) lands the un-SKIP probes, the W-108 pin golden pair and the ledger
+note; round 2 reverts failed probes with the measured diagnostic (R10),
+decides W-108 from the fill (R-3), re-cites the ledger and gap rows, and
+repairs the pre-existing manufactured decision-log heading. Design authority
+not reopened; every choice below is an R29(a) implementation decision.
+
+PROBE PLAN AND PREDICTIONS (round 1; one hosted conformance per round, R28;
+the measured results replace the placeholders in round 2). Three SKIP lines
+removed, each header rewritten as history with its prediction:
+generics/templates_dependent_member.carbon (W-014; the SKIP cited
+`lower/handle.cpp:363 Template lowering not implemented yet`; upstream PR 7727
+lowers the resolved specific per specific, upstream goldens
+lower/testdata/template/{convert,operator,class}.carbon, and the one
+`CARBON_FATAL` left in lower/handle.cpp is the cross-file TODO at :513, which a
+same-file instantiation never reaches) — predicted PASS, stdout `42`;
+interop/cpp_template_symbolic_arg.carbon and
+interop/cpp_template_on_carbon_generic.carbon (W-043; the SKIPs cited
+`unsupported type used as template argument` at `var b: Cpp.Box(T);`, the
+TODO of the `fail_todo_generic_call` split that upstream PR 7673 lifted (a
+deferred `CallCppTemplateAction`) and PR 7700 (after PR 7689's `TemplateInst`)
+made pass, dropping the prefix — upstream-trunk's
+check/testdata/interop/cpp/template/generic_call.carbon:27-28 pins
+`fn F[T: type](unused x: T) { var unused v: Cpp.S(T); }` with no `fail_todo`,
+instantiated per specific) — predicted PASS, stdout `7` each, with the
+pre-registered residual (plan §0.6, rev B B8) that both programs also return
+`Cpp.Box(T)` by value from the generic (`-> Cpp.Box(T)`), a shape upstream's
+pin does not cover; if that fails, the candidate diagnostic by reading is
+return.cpp's `support nontrivial conversions between symbolic forms` TODO
+(:218/:229, the only TODO on the return path for a dependent return form) or
+a Clang instantiation error at the specific — the fill measures, round 2
+writes it into the SKIP line. interop/inherit_multiple_bases.carbon stays
+SKIP (W-046): upstream-trunk's
+check/testdata/interop/cpp/class/import/base.carbon:152 still carries the
+`fail_todo_use_multiple_inheritance.carbon` split with the identical
+`ConversionFailure` / `MissingImplInMemberAccessInContext` lines the SKIP
+quotes (:159-177). Expected ceiling if all three flip: 131 PASS / 0 FAIL / 19
+SKIP over 150 (the floor is 128 / 0 / 22; §8.5's "129 / 0 / 20 over 149"
+predates SL-2's program). Of record (round 1): hosted conformance 37407530104
+FAILED — 129 PASS / 2 COMPILE-FAIL / 0 / 0 / 0 / 0 / 19 SKIP over 150, bullets
+46 PASS / 2 FAIL / 8 SKIP; generics/templates_dependent_member.carbon PASS
+(the W-014 probe flipped as predicted); the two W-043 programs COMPILE-FAIL
+(round 2 below).
+
+W-108 PIN (round 1; the fill decides, R-3). New goldens
+toolchain/check/testdata/slice/buf_field.carbon and
+toolchain/lower/testdata/slice/buf_field.carbon, beside SL-1's buf.carbon pair
+(same `min_prelude/full.carbon` include, no `--target` pin, check dump ranges
+only around the function bodies per W-121), CHECK lines empty for the hosted
+autoupdate. Two splits each: `synthesized_owner` — `class Owner { var b:
+Core.Buf(i32); }` with no impl, destroyed at `F`'s scope end — and
+`declared_owner` — `OwnerWithOp` with the same field plus `impl as
+Core.Destroy { fn Op(unused ref self) {} }`. Predictions, traced in
+custom_witness.cpp as merged: `Owner` has no class-keyed impl, so
+`CanDestroyClass` runs the field walk, `HasWitnessForOneField` finds
+`Buf(i32)`'s declared witness and the format is `NonTrivial`; upstream's
+`MakeSubobjectDestroyOpBody` (PR 7840, `DestroyStructFields` →
+`BuildSelfDestructCall`) emits `self.b.(Destroy.SelfDestruct)`, which for
+`Buf(i32)` is the interface's `final` `SelfDestruct` bound through the
+declared impl (D-SL-16) — `self.Op()` is `HeapFree`, so the lower
+`synthesized_owner` module should carry `call void @free` inside
+`_COp.Buf...:Destroy.Core...`, reached from `_CSubobjectDestroy.<hash>:core
+.Destroy.Core` through `_CSelfDestruct.Destroy.Core.<hash>`. `OwnerWithOp` is
+class-keyed, so lookup selects its impl and its `SubobjectDestroy` is the
+interface's `final` placeholder (PR 7773's stated limit, prelude/destroy
+.carbon: "This function body is ignored by the toolchain"), so the
+`declared_owner` module should carry NO `free` and no `_COp.Buf...` define:
+the `Make` block leaks. If the fill shows `free` in `synthesized_owner`,
+round 2 discharges W-108 for aggregates without a user impl and narrows the
+0.1 limit to owners that declare `impl as Destroy` (plus W-125's choice
+payloads); if not, W-108 stays with the measured shape. Fill of record:
+hosted autoupdate 37407492176 → deed58bd1 (exactly the two buf_field.carbon
+goldens, check +568 and lower +984 lines, no manual-fix list).
+
+ROUND 2 (2026-10-06). W-108: DISCHARGED for aggregates without a user-declared
+`Destroy` impl, decided by the fill, not the prediction (R-3). The lower
+golden's `synthesized_owner` module: `@_CF.Main` calls
+`_CSelfDestruct.a97b2b12de121bed:core.Destroy.Core(ptr %o.var)` (:93);
+`_CSubobjectDestroy.a97b2b12de121bed:core.Destroy.Core` calls
+`_CSelfDestruct.Destroy.Core.3fc11083d97fac37(ptr %.loc16_3.1.b)` (:122) —
+the field; that function calls
+`_COp.Buf.a081b942542726db.Core:Destroy.Core.4d9f279dbc2b9f6f` (:271), whose
+body is `call void @free(ptr %1)` (:338). The `declared_owner` module:
+`@_CG.Main` calls `_CSelfDestruct.Destroy.Core.542dc673709d1757(ptr %o.var)`
+(:617), the module defines `_COp.OwnerWithOp.Main:Destroy.Core` (:603) and the
+interface's placeholder `_CSubobjectDestroy.Destroy.Core.<hash>`, and carries
+NO `_COp.Buf...` define and NO `@free` — the `Make` block leaks, upstream PR
+7773's stated limit. The check golden shows the mechanism:
+`fn @Destroy.WithSelf.SubobjectDestroy.loc17_3.2(%self.param: ref %Owner)`
+walks `class_element_access %self.param, element0` and calls
+`Destroy.WithSelf.SelfDestruct` bound to it (:377-388). Records: ledger W-108
+retitled DISCHARGED with the quoted lines; docs/design/slices.md's 0.1 limit
+narrowed to "a `Core.Buf` stored in a field of a class that declares its own
+`impl as Destroy`, or in a choice payload, is not freed", removed when the
+`Destroy` interface gains its `require impls SubobjectDestroy` entry; gap row
+"Stdlib: Slices" evidence re-cited (status PARTIAL unchanged, W-109). The SL-1
+register trigger (block 9 of the UA-1 review below) is met for FIELDS —
+upstream's walk reaches declared impls through `SelfDestruct` — while D-SL-16's
+yield still makes a `Buf` LOCAL free, so the yield stays; W-125 (choice
+payloads) stays. §0.6's register row, closed: re-read at UA-2, the UA-1 listing
+below stands — nine blocks HOLD and OV-2's one entry MOVED (D-UA-6) — with
+block 9's SL-1 trigger met for fields, as just recorded.
+
+The two W-043 probes, root-caused before anything was decided. Both programs
+failed with the same two diagnostics: (1) at the uninitialized
+`var b: Cpp.Box(T);` — `ConversionFailureTypeToFacet` "cannot convert type
+`<splice of <cannot stringify inst...: {kind: ConvertToValueAction, arg0:
+inst..., arg1: inst(TypeType), type: type(inst(InstType))}>>` into type
+implementing `Core.DefaultOrUnformed`" (handle_let_and_var.cpp
+`MakeDefaultInit` forming `Type as Core.DefaultOrUnformed`); (2) "unable to
+monomorphize specific `Wrap(Point)`" / `MakeBox(Pt)` with the notes "cannot
+copy value of type `Point`" / "type `Point` does not implement interface
+`Core.Copy`" at `b.value = v;`. Verdict (b) for (1), an upstream limitation,
+by two independent lines of evidence. First, upstream's own prebuilt nightly
+2026.09.28+1579d4e (the fork's mirrored arbiter, run locally) reproduces both
+diagnostics on the unmodified programs AND reproduces (1) on upstream's EXACT
+pin shape `fn F[T: type](unused x: T) { var unused v: Cpp.S(T); }` compiled
+as a program (the installed toolchain's real prelude), where upstream's golden
+generic_call.carbon:27-28 passes in file_test. (Round-3 record: that
+reproduction ran in a container since recreated; its command and output were
+not written down and are not reproducible from this tree, so the second line is
+the evidence of record, carried by W-127.) Second, the preludes differ
+exactly there: the test prelude's
+toolchain/testing/testdata/min_prelude/parts/default.carbon:19 declares an
+unconstrained `impl forall [T: type] T as DefaultOrUnformed`, so the lookup on
+a template-dependent self can emit the deferred `lookup_impl_witness ...
+[template]` the golden shows (:69-71), while the real prelude's
+core/prelude/default.carbon:52 is `impl forall [T: UnformedInit] T as
+DefaultOrUnformed`, whose constraint cannot be decided for a type unknown until
+instantiation, so the conversion fails eagerly. Not a fork regression: `git
+diff c1e83b0b7 HEAD` over convert.cpp touches only the union/choice struct
+conversions and the `OverloadSetNotCallee` check, impl_lookup.cpp only a
+comment, and the fork's refill of generic_call.carbon is byte-identical to
+upstream's. Verdict (c) for (2), a program bug: a Carbon class is not
+implicitly `Core.Copy` (core/prelude/copy.carbon declares no blanket class
+impl). Disposition: no toolchain change and no re-SKIP — a shape inside the
+programs' claim compiles: the box is initialized through its C++ default
+constructor (`var b: Cpp.Box(T) = Cpp.Box(T).Box();`, upstream's own pin
+check/testdata/interop/cpp/class/import/template.carbon:149 `var unused a:
+Cpp.A(T) = Cpp.A(T).A();`) and `Point`/`Pt` declare `impl as Core.Copy { fn
+Op(self) -> Self { return {.x = self.x}; } }` (the lower/testdata/template/class
+.carbon idiom — an in-class `impl as Core.Copy` whose `Op` returns the copy;
+class.carbon's `Op(unused self)` returns `{}`, so the idiom, not the spelling).
+`Cpp.Box(T)` with symbolic `T` stays in the body and in
+the return type; EXPECT lines unchanged. Both edited programs compile, link
+and print `7` with exit 0 on the 2026.09.28 nightly (the fork tip is measured
+by the next hosted conformance; a failure there is an R10 re-SKIP with the
+measured text). The limitation is pinned for the record and the next re-probe:
+new check golden toolchain/check/testdata/interop/cpp/template/
+dependent_var_full_prelude.carbon under `min_prelude/full.carbon` (splits
+`fail_unformed_dependent_var` — upstream's shape, predicted
+`ConversionFailureTypeToFacet`; renamed `fail_todo_unformed_dependent_var` at
+round 3, below — and `ctor_init_dependent_var` — the working shape with the
+dependent return, predicted clean), CHECK lines empty for the fill; both splits
+compiled with the nightly as predicted. The ledger W-043 carried the root cause
+at round 2 (moved to W-127 at round 3, below); its blocked_by W-014 is kept.
+
+Ledger re-cites (each note dated UA-2, evidence line numbers refreshed to
+c1e83b0b7): W-023 (landed by UA-1; the five thread programs PASS on
+37407530104); W-014 (lower/handle.cpp:513 cross-file TODO, pattern_match.cpp
+:2174-2180, return.cpp:218/:229, the four remaining `fail_todo` splits of
+generic/template/; two of three W7 arbiter clauses met, row 54 stays
+PARTIAL); W-043 (above); W-046 (base.carbon:152/:304/:339, export/base.carbon
+:106/:127, export.cpp:1804); W-037 (upstream PR 7651 parses positional
+params; handle_function.cpp:820 and handle_lambda.cpp still stub); W-030 (the
+function half landed upstream, PRs 7773/7817; the `default let` half stays,
+handle_let_and_var.cpp:454, fail_todo_assoc_const_default.carbon); W-083
+(thunk.cpp:948, custom_witness.cpp:1021/:1047; closer, W-125 names the
+blocker); W-091 (`grep -c union utils/tree_sitter/grammar.js` is 0 after
+upstream PR 7885; highlights.scm:174 and :154 still commented); W-065 (no
+placeholder closed by upstream PRs 7823/7839/7869/7875; templates.md:24,
+metaprogramming.md:20, aliases.md:21, pattern_matching.md:718; the interop
+README has 8 `TODO:` headings, not 9); W-101 (docs/design/functions_overloading
+.md 0.1 limit (xi) and "Calls from template code" amended: LIFTED IN MECHANISM
+by upstream's `CallAction`; not discharged, because the filled
+`template_dependent` split pins the deferral but not the per-specific member
+selection — the specifics' bodies are not dumped). Gap rows re-cited with
+their current line numbers (the plan's 40/43/52/54/89 are now 42/45/54/56/91
+after the SL-2 header growth): 42 and 56 (symbolic generic parameter deferred
+since PRs 7673/7700, the real-prelude uninitialized-`var` limit, the
+constructor-initialized re-probe), 45 (the tip's three `fail_todo` splits and
+export.cpp:1804), 54 (same-file template lowering landed, cross-file and
+pattern splices still fatal), 91 (the surviving placeholders and the
+corrected TODO-heading count), plus 79 (W-108). No row's status flipped, so
+the header stays 30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY.
+
+Manufactured heading repaired (R31; the inheritance UA-1 recorded): the heading
+"7700 splice-stepping for bound methods, …", born as an H2 in a8923ccc4 from the
+2026-09-07 weekly entry's paragraph listing PRs 7689, 7700 and 7710 with hash
+signs (the second wrapped to column 0 and the rumdl hook made it a heading, with
+the 2026-08-31 entry at H3 and the 2026-08-24 entry and F-00x at H4 under it)
+and made an H3 by a later reflow that demoted its followers one level further
+(the levels at 8068151ed; wording corrected at round 3, implementation review
+MINOR-7), is folded back into prose as "PRs 7689 TemplateInst, 7700
+splice-stepping for bound methods, 7710 call-action operand refinement", and the
+seven headings it had demoted are restored to their original H3 (verified
+against ec7d4bcd5 and c991a7797): the 2026-08-31 weekly entry (was H4 at
+8068151ed), the 2026-08-24 weekly entry and F-005, F-001, F-002, F-003, F-004
+(were H5). Heading counts per level, before → after this
+round: H2 2 → 2, H3 44 → 50, H4 1 → 0, H5 6 → 0; list-item counts unchanged; the
+heading-line set differs by the removed heading and the seven relevelled lines
+only.
+
+Round-2 prediction, as written before the runs: 131 PASS / 0 FAIL / 19 SKIP
+over 150, 48/56 bullets (the two re-probed programs PASS, `7` each); the
+autoupdate creates dependent_var_full_prelude.carbon's CHECK lines and changes
+no other golden. OF RECORD (round 2, 2026-10-06; written at round 3 after the
+implementation review's MAJOR-1, R9): hosted autoupdate 37411162511 →
+8b42d1bc4, exactly as predicted — one file, dependent_var_full_prelude.carbon,
+412 inserted lines (the `fail_unformed_dependent_var` split's four STDERR CHECK
+lines, `ConversionFailureTypeToFacet` at the `var`, and the
+`ctor_init_dependent_var` split's clean dump), no other golden changed, no
+manual-fix list; hosted conformance 37411196881: 131 PASS / 0 FAIL / 19 SKIP
+over 150, 48/56 bullets — its scoreboard push lost a non-fast-forward race with
+the fill's push, so it was re-run for the record: hosted conformance
+37413300832 → ace101b0d with the same numbers, fork/conformance/out/scoreboard
+.json `totals` PASS 131, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 19 over 150 programs, bullets 48 PASS /
+8 SKIP of 56, `generated` 2026-10-06T04:36:08.828687+00:00; the two W-043
+programs PASS, `7` each (the headers' "Measured" lines);
+interop/inherit_multiple_bases.carbon still SKIP. The prediction was met
+exactly; no R10 re-SKIP.
+
+ROUND 3 (2026-10-12): the fresh-context implementation review of ace101b0d
+(APPROVE-WITH-FIXES; MAJOR-1..4, MINOR-5..9) folded, every finding. MAJOR-1: the
+of-record runs above. MAJOR-2: the declared-owner leak — an owner that declares
+`impl as Destroy` runs its `Op` and the interface's `final` placeholder
+`SubobjectDestroy`, so its `Buf` field leaks — is filed as its own item, W-126
+(evidence: buf_field.carbon's `declared_owner` lines, core/prelude/destroy
+.carbon:12-13 and :18-20, custom_witness.cpp:269-273's class-keyed yield,
+upstream PR 7773's stated limit), cited from docs/design/slices.md's 0.1 limit
+and gap row "Stdlib: Slices"; W-108 stays DISCHARGED and its title no longer
+carries the open limit (moved to its note, pointing at W-126). MAJOR-3: the pin
+golden's split `fail_unformed_dependent_var` is renamed
+`fail_todo_unformed_dependent_var` (.agents/skills/toolchain_tests/SKILL.md: the
+diagnostic fires but should not — the concrete `var b: Cpp.Box(Pt);` compiles
+and a correct deferral would accept the dependent shape, as the test prelude's
+hack lets generic_call.carbon show); the STDERR CHECK lines embed the split
+name, so they are CLEARED, not hand-edited (R16(a)), and the other split's
+lines are untouched. R19 consequence, recorded: the branch's file_test is RED
+on this one split until the next hosted autoupdate rewrites it, acceptable only
+because the PR is held OPEN (R28(c)) — and GitHub Actions on the repository has
+been disabled since 2026-10-08 (trunk's weekly entry of 2026-10-12, stamp
+8ddf79a0c), so the fork cannot dispatch that fill, the gate or a conformance
+itself. MAJOR-4: the real-prelude `DefaultOrUnformed` limitation is its own
+item, W-127 (evidence: default.carbon:52's `impl forall [T: UnformedInit]`
+versus parts/default.carbon:19's unconstrained hack, handle_let_and_var.cpp:297
+`ConvertToValueOfType`, the pin golden, the two programs' round-1 diagnostics
+from 37407530104; removal condition: impl lookup deferring a template-dependent
+self under a constrained blanket impl, the deferral the min_prelude hack
+simulates), cited from gap rows 42 and 56, the golden header and W-043; W-043
+keeps only its W-014 residue, its note's opening sentence corrected (call.cpp
+:127's TODO was lifted by PR 7673; it is :133 now, reached only for a concrete
+unmapped type). MINOR-5: §0.6's register row closed (above, in the W-108
+paragraph). MINOR-6: the nightly-2026.09.28 reproduction's command and output
+were in a container that has since been recreated and are not reproducible from
+this tree; the structural proof (default.carbon against parts/default.carbon)
+is the evidence of record (noted above, in W-043 and W-127, and in the two
+program headers). MINOR-7: the heading-repair wording corrected above (born as
+an H2; a later reflow made it an H3 and demoted the followers); the count
+record stands. MINOR-8: fork/ORCHESTRATION.md is deliberately NOT edited on this
+branch — trunk's stamp 8ddf79a0c already records the parked state ("HELD OPEN
+… gate impossible (Actions disabled); merge when a gate runs"), and the merge
+brings it. MINOR-9: the Copy impl is cited as the class.carbon idiom, not its
+spelling (above and in the headers). The review's nit on the entry's fork-delta
+list (the `UnformedInit` arm of cpp/impl_lookup.cpp `LookupCppImpl`, :715-719,
+returns `None` and is unreachable for a splice) is recorded in W-127's
+evidence. Verification at round 3, with no hosted run available: `json.load`,
+`runner.py --self-test` (150 programs, 56 bullets), prek on the touched files to
+a fixpoint, R31 heading and list counts before and after (decision-log
+2/50/0/0, slices.md 10/4/0/0, gap-analysis.md 5/23/0/0 at H2/H3/H4/H5; list
+items 23 / 55 / 0 — unchanged). Veto-able.
+
 ### Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)
 
 The fork's upstream cut advances from 631f8fb6d (2026-08-20, "Modularize driver
@@ -6707,10 +6984,8 @@ unaffected).
 Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
 offline since 08-27 ~02:20Z — 11 days; the landing loop keeps a gate
 run queued). Measured upstream trunk 386327e (28 commits since
-f519ccc). The template-action series continued (#7689 TemplateInst,
-
-### 7700 splice-stepping for bound methods, #7710 call-action operand
-
+f519ccc). The template-action series continued (PRs 7689 TemplateInst,
+7700 splice-stepping for bound methods, 7710 call-action operand
 refinement — the last two aimed at exactly the `<bound method>`
 failure class measured last week). Empirical A/B against the freshly
 mirrored 2026.09.07 nightly (version 386327e; mirror is
@@ -6727,7 +7002,7 @@ series stabilizes. Digest note (user's call, unchanged): the
 tip crashes are reportable upstream bugs; filing is an outward-facing
 action left to the user.
 
-#### Weekly upstream merge 2026-08-31: cut HOLDS; tip now crashes the probe (2026-08-31)
+### Weekly upstream merge 2026-08-31: cut HOLDS; tip now crashes the probe (2026-08-31)
 
 Fold-in to the still-unlanded 2026-08-24 staging merge (runner offline
 since 08-27 ~02:20Z; gate never ran). Measured upstream trunk f519ccc
@@ -6752,7 +7027,7 @@ outward-facing action left to the user's call. Staging branch
 otherwise unchanged; the 08-24 record's landing plan still applies
 the moment the runner returns.
 
-##### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
+### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
 
 The scheduled weekly merge (standing rule 5) measured upstream trunk
 2b9fdd6 (24 commits since the 2026-08-17 sync point 864845c), built the
@@ -6801,7 +7076,7 @@ conformance builds the full toolchain in it). The staged merge lands
 the cut-not-tip call, the user.bazelrc cap, and the deferred-commit
 list.
 
-##### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
+### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",
 self-hosted/Linux/X64) on the fork.
@@ -6815,7 +7090,7 @@ builds incremental. Security note: on a public repository, keep the default
 "require approval for outside collaborators' workflow runs" protection enabled
 so third-party PRs can't run code on the runner host.
 
-##### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
+### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
 
 Chase the full official checklist from `docs/project/milestones.md`, in
 dependency order, tagging intermediate fork milestones (`fork-0.1-alpha`,
@@ -6824,7 +7099,7 @@ the undesigned bullets is in scope. Alternatives rejected: pragmatic
 subset-0.1 (diverges from the official definition), upstream-lockstep
 (too slow, not autonomous).
 
-##### F-002: Upstream relationship — **Bun-style merge gating** (2026-07-19)
+### F-002: Upstream relationship — **Bun-style merge gating** (2026-07-19)
 
 User's words: "Follow the same approach used by the Bun zig->rust rewrite
 for merging into my fork branch." Interpretation (recorded for review):
@@ -6840,7 +7115,7 @@ Applied here:
 -   Upstream trunk merges are treated the same way: merge upstream into a
     staging branch, re-run the suite, land only when green.
 
-##### F-003: First scaled track — **Design sprint + match chain in parallel** (2026-07-19)
+### F-003: First scaled track — **Design sprint + match chain in parallel** (2026-07-19)
 
 After the conformance-harness trial (W1): agent fleets draft the missing
 designs (error handling, unions, if-let/let-else, function overloading,
@@ -6849,7 +7124,7 @@ each design fork, while the implementation loop grinds
 match semantics → choice payloads → std::variant/optional interop against
 the harness.
 
-##### F-004: Arbiter toolchain source — **Upstream nightly prebuilt** (2026-07-19)
+### F-004: Arbiter toolchain source — **Upstream nightly prebuilt** (2026-07-19)
 
 User approved adding `carbon-language/carbon-lang` to the session to
 download the nightly prebuilt toolchain tarball (Linux x86_64). This

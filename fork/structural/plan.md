@@ -2617,10 +2617,13 @@ upstream's import walk and places a generic class's import abort at the class's
 name lookup, as round 17's measured notes below now do; W-238's title, D-SC-2
 and the design page name the expression-pattern refusal under a default value;
 the PR body names SC-1's conflicts with PRs 53, 51 and 52 and their rule at the
-merge: one records commit, which writes round 17's review record and round 18's
+merge: 885a7c30a (records), which writes round 17's review record and round 18's
 dispositions below and measured the same totals on its tree with the toolchain
-stamped 0.0.0-0.dev+866468cba (below); it changes no toolchain, test or golden
-file. Not of record until fork/conformance/out/scoreboard.json is updated (R9).
+stamped 0.0.0-0.dev+866468cba (below), again on 885a7c30a for the records commit
+after it, which checks round 18's records against the head, as Measured below
+says; neither changes a toolchain, test or golden file, and the PR is to be
+opened and held OPEN until the land sequence. Not of record until
+fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -5413,7 +5416,9 @@ None is rejected. Round 18 makes no implementation decision and changes no
 toolchain, test or golden file: every finding is records-only, so no expectation
 is derived and no §4 row is written. Round 17's toolchain change is reviewed,
 its review found no MAJOR or BLOCKER, and its fold changes no toolchain file, so
-the PR is to be opened and held OPEN until the land sequence.
+the PR is to be opened and held OPEN until the land sequence. Round 18's commit
+is 885a7c30a (records); the records commit after it names it and checks round
+18's records against the head, as Measured below says.
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
@@ -6094,21 +6099,33 @@ structural_conformance.cpp:519-523 selects, every other caller of
 `CheckFunctionTypeMatches` and `CheckRedeclParamsMatch` passing none.
 
 Round 18 (records only; the installed toolchain stamped 0.0.0-0.dev+866468cba,
-no toolchain or test source differing from 5d978b5ad): on the round-18 records
-commit's tree, gate 1959 passed, 0 failed, exit 0, 77 s, every mark `.`, no `!`
-or `?`; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
-PASS, 0 FAIL, 7 SKIP of 56, 89.5 s, exactly the same two programs moving against
+no toolchain or test source differing from 5d978b5ad): on 885a7c30a's tree, gate
+1959 passed, 0 failed, exit 0, 77 s, every mark `.`, no `!` or `?`; conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56, 89.5 s, exactly the same two programs moving against
 fork/conformance/out/scoreboard.json and every program's status the same as in
 sc1-records17/conf_head (sc1-fix18/conf, in a private cache);
 `runner.py --self-test` OK (151 programs, 56 bullets); the findings' reproducers
 on this build, trunk 0bdce60a5 and the nightly 62f1cc6a3 (sc1-fix18/repro, 23
 probe directories and 57 result lines; rq; edf) as round 18's dispositions above
-say; `git merge-tree` of the round-18 tree against trunk 8bfd78ae3 conflicts in
+say; `git merge-tree` of 885a7c30a's tree against trunk 8bfd78ae3 conflicts in
 fork/ORCHESTRATION.md only, against PR 53's head adaae4e35 and PR 52's ea573f672
 in fork/ORCHESTRATION.md, fork/gap-analysis.md and
 fork/inventory/work-items.json, and against PR 51's f96fe8a7a in
 fork/conformance/README.md, fork/gap-analysis.md and
-fork/inventory/work-items.json (sc1-fix18/mt).
+fork/inventory/work-items.json (sc1-fix18/mt). Again on 885a7c30a for the
+records commit after it (sc1-records18, the same installed toolchain): gate 1959
+passed, 0 failed, exit 0, 73 s, every mark `.`; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 90.9 s,
+every program's status the same as in sc1-fix18/conf; `--self-test` OK;
+sc1-fix18's 57 reproducer result lines, re-run on this build, trunk and the
+nightly, match line for line, and its rq and edf probes give the results the
+dispositions above record; the review record's counts hold against the reviews'
+directories (adv1's mx_sc_all.tsv: 7936 SC-1 rows and 372 non-SC-1 rows; 2220
+SC-1 aborts, 272 at import_ref.cpp:5172 in each of six modes and 588 at
+absolute_node_ref.cpp:27 in the name-export mode; none of stacks_all.tsv's 2305
+stacks through `GetDeclaredParamPattern`; adv2/nest/out.tsv: 49 local and 49
+imported rows, none aborting).
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

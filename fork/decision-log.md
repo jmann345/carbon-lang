@@ -4433,17 +4433,20 @@ W-235, W-238 and W-239, the three `GetDeclaredParamPattern` calls, the
 reproducers of W-235 to W-239 and of round 16's findings on trunk and the
 nightly, the matrices' re-runs) and records the re-measure on 54d8a83f5; that
 records commit is 1646988dc. Fill round 18 (2026-10-15), folding round 17's two
-implementation reviews (no MAJOR or BLOCKER; both found the branch dry): one
-records commit (round 17's review record; round 18's dispositions, all
-records-only; W-238's title, evidence and notes; D-SC-2, the design page and
-round 17's measured notes; W-027; gap row 60; ORCHESTRATION; the PR body and
-comment; the re-measure on its tree), which changes no toolchain, test or golden
-file. Each fix is an R29(a) implementation decision recorded for after-the-fact
-veto, with
-its design citation and break condition; none reopens F-010 or the intent of a
-D-SC decision. Round 7's takes D-SC-10's own break condition on a falsifier
-other than the one it named (a template-phase `Self` breaking a positive golden
-at the commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
+implementation reviews (no MAJOR or BLOCKER; both found the branch dry):
+885a7c30a, one records commit (round 17's review record; round 18's
+dispositions, all records-only; W-238's title, evidence and notes; D-SC-2, the
+design page and round 17's measured notes; W-027; gap row 60; ORCHESTRATION; the
+PR body and comment; the re-measure on its tree), which changes no toolchain,
+test or golden file; the records commit after 885a7c30a names it, checks round
+18's records against the head (the review record's counts against the reviews'
+directories, the reproducers of round 17's findings on this build, trunk and the
+nightly, the cites) and records the re-measure on 885a7c30a. Each fix is an
+R29(a) implementation decision recorded for after-the-fact veto, with its design
+citation and break condition; none reopens F-010 or the intent of a D-SC
+decision. Round 7's takes D-SC-10's own break condition on a falsifier other
+than the one it named (a template-phase `Self` breaking a positive golden at the
+commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
 veto-able, and round 8 keeps it as a trade, re-weighed (ROUND 8's DECISION).
 Every count below is a measurement on the container, not of record (R9):
 fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
@@ -5547,11 +5550,11 @@ round 12's, round 13's, round 14's, round 15's, round 16's or round 17's,
 derived from the rule and the trunk analogs (round 16's and round 17's from the
 local twins too) after their development builds ran the reviews' shapes. Round
 18, records only, writes no row. No miss hides a defect: (a), (c), (f), (l),
-(m), (n) and (o) were prediction errors (the
-coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
-and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
-coverage gap now dumped where the claim needed a dump, and (h) and (i) design
-sentences amended in place beside their fixes.
+(m), (n) and (o) were prediction errors (the coalescing (o) shows is trunk's
+lowering, outside SC-1), (b) and (e) a cascade and a warning class now gone,
+(d), (j) and (k) test-source spellings, (g) a coverage gap now dumped where the
+claim needed a dump, and (h) and (i) design sentences amended in place beside
+their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -6542,11 +6545,11 @@ MINOR-1 the PR body's land paragraph omits SC-1's conflicts with PRs 53, 51 and
 design page omit the refusal under a default value (sc1-review17/adv2/rq), which
 no golden pins. Review 1's probes are sc1-review17/adv1 (mx, p, pg,
 stacks_all.tsv); review 2's are sc1-review17/adv2 (nest, rq, vd, w235, y). Fill
-round 18 (2026-10-15) folds all 4, each reproduced first on the round-17 build,
-trunk and the nightly (sc1-fix18: repro, mt, rq, edf), none rejected, all
-records only. Dispositions: review 1's MINOR-1 and MINOR-2 reword W-238's
-evidence (a default value with an error stops the walk except through a `var`
-pattern beneath it, with sc1-review17/adv1/mx t_VD1U, t_VDT1U, t_DTVU and
+round 18 (2026-10-15, 885a7c30a) folds all 4, each reproduced first on the
+round-17 build, trunk and the nightly (sc1-fix18: repro, mt, rq, edf), none
+rejected, all records only. Dispositions: review 1's MINOR-1 and MINOR-2 reword
+W-238's evidence (a default value with an error stops the walk except through a
+`var` pattern beneath it, with sc1-review17/adv1/mx t_VD1U, t_VDT1U, t_DTVU and
 t_DVT1U; a generic class's abort is at the class's name lookup, with
 sc1-fix17/p17 gen and genacc and adv1/pg tg_G2 and tgs_G2), and MINOR-2 corrects
 round 17's measured notes, in MEASURED and in the plan, in place and marked;
@@ -7135,26 +7138,37 @@ generic mode at the class's), whose plain access aborts on trunk and the
 nightly too, and adv1's 107 rows of 28 member shapes at
 absolute_node_ref.cpp:27; no local row aborts.
 Round 18 (records only; the installed toolchain stamped 0.0.0-0.dev+866468cba,
-no toolchain or test source differing from 5d978b5ad): on the round-18 records
-commit's tree, gate 1959 passed, 0 failed, exit 0, 77 s, every mark `.`, no `!`
-or `?`; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
-PASS, 0 FAIL, 7 SKIP of 56, 89.5 s, exactly the same two programs moving against
+no toolchain or test source differing from 5d978b5ad): on 885a7c30a's tree, gate
+1959 passed, 0 failed, exit 0, 77 s, every mark `.`, no `!` or `?`; conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56, 89.5 s, exactly the same two programs moving against
 fork/conformance/out/scoreboard.json and every program's status the same as in
 sc1-records17/conf_head (sc1-fix18/conf, in a private cache);
 `runner.py --self-test` OK (151 programs, 56 bullets); the findings' reproducers
 on this build, trunk 0bdce60a5 and the nightly 62f1cc6a3 (sc1-fix18/repro, 23
 probe directories and 57 result lines; rq; edf) as round 18's dispositions in
-REVIEWS say; `git merge-tree` of the round-18 tree against trunk 8bfd78ae3
-conflicts in fork/ORCHESTRATION.md only, against PR 53's head adaae4e35 and PR
-52's ea573f672 in fork/ORCHESTRATION.md, fork/gap-analysis.md and
+REVIEWS say; `git merge-tree` of 885a7c30a's tree against trunk 8bfd78ae3
+conflicts in fork/ORCHESTRATION.md only, against PR 53's head adaae4e35 and
+PR 52's ea573f672 in fork/ORCHESTRATION.md, fork/gap-analysis.md and
 fork/inventory/work-items.json, and against PR 51's f96fe8a7a in
 fork/conformance/README.md, fork/gap-analysis.md and
-fork/inventory/work-items.json (sc1-fix18/mt). Against
-fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
-exactly two programs move in every run: generics/structural_conformance.carbon
-SKIP to PASS (`42` then `7`) and the new
-interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 /
-0 / 21 over 151, EXPECTED and not of record.
+fork/inventory/work-items.json (sc1-fix18/mt). Again on 885a7c30a for the
+records commit after it (sc1-records18, the same installed toolchain): gate 1959
+passed, 0 failed, exit 0, 73 s, every mark `.`; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 90.9 s,
+every program's status the same as in sc1-fix18/conf; `--self-test` OK;
+sc1-fix18's 57 reproducer result lines, re-run on this build, trunk and the
+nightly, match line for line, and its rq and edf probes give the results round
+18's dispositions record; the review record's counts hold against the reviews'
+directories (adv1's mx_sc_all.tsv: 7936 SC-1 rows and 372 non-SC-1 rows; 2220
+SC-1 aborts, 272 at import_ref.cpp:5172 in each of six modes and 588 at
+absolute_node_ref.cpp:27 in the name-export mode; none of stacks_all.tsv's 2305
+stacks through `GetDeclaredParamPattern`; adv2/nest/out.tsv: 49 local and 49
+imported rows, none aborting). Against fork/conformance/out/scoreboard.json
+(128 / 0 / 22 over 150, run 37402970811) exactly two programs move in every run:
+generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's
+130 / 0 / 21 over 151, EXPECTED and not of record.
 
 RENUMBER (2f4ebbf6e). SAFE-1 (PR 53) allocated W-144..W-150 after SC-1's
 commit-3 fixer had filed its look-through residue as W-144, so that residue
@@ -7669,7 +7683,20 @@ rounds); W-027's title (an eighteenth round, records only) and notes; W-238's
 title (the refusal under a default value), evidence (a `var` pattern beneath a
 default value with an error; a generic class's abort at the class's name lookup;
 the refusal's probe and its missing pin) and notes. No residue is filed by it,
-and no toolchain, test or golden file changes.
+and no toolchain, test or golden file changes. That records commit is 885a7c30a.
+The records commit after 885a7c30a: 885a7c30a named at the head of this entry,
+in REVIEWS, MEASURED and RECORDS, in the plan's note, in ORCHESTRATION's status
+paragraph and Branches row (now PR TO OPEN AND HOLD) and in W-027's notes; round
+18's records checked against the head (sc1-records18): the review record's
+counts against the reviews' directories, as MEASURED gives them; sc1-fix18's 57
+reproducer result lines and its rq and edf probes re-run on this build, trunk
+0bdce60a5 and the nightly 62f1cc6a3, each with the result round 18 recorded; no
+toolchain or test file differs from 5d978b5ad, and these cites hold at the head
+(W-238's handle_named_constraint.cpp:209-239 and :282-289, merge.cpp:230-235,
+:268-273, :292-295, :421-441 and :548-549 and import_ref.cpp:5165-5172; W-239's
+absolute_node_ref.cpp:25-27; pattern.cpp:62, the declaration abort of a bare
+`1 = 1`); the re-measure on 885a7c30a in MEASURED and in the plan. No residue is
+filed by it, and no toolchain, test or golden file changes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

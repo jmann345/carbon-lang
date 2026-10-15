@@ -4431,8 +4431,15 @@ counts, the autoupdate's added and removed lines, the statements of the rule,
 the cites of ROUND 17's DECISION, of D-SC-2, of D-SC-9's mechanism and of W-234,
 W-235, W-238 and W-239, the three `GetDeclaredParamPattern` calls, the
 reproducers of W-235 to W-239 and of round 16's findings on trunk and the
-nightly, the matrices' re-runs) and records the re-measure on 54d8a83f5. Each
-fix is an R29(a) implementation decision recorded for after-the-fact veto, with
+nightly, the matrices' re-runs) and records the re-measure on 54d8a83f5; that
+records commit is 1646988dc. Fill round 18 (2026-10-15), folding round 17's two
+implementation reviews (no MAJOR or BLOCKER; both found the branch dry): one
+records commit (round 17's review record; round 18's dispositions, all
+records-only; W-238's title, evidence and notes; D-SC-2, the design page and
+round 17's measured notes; W-027; gap row 60; ORCHESTRATION; the PR body and
+comment; the re-measure on its tree), which changes no toolchain, test or golden
+file. Each fix is an R29(a) implementation decision recorded for after-the-fact
+veto, with
 its design citation and break condition; none reopens F-010 or the intent of a
 D-SC decision. Round 7's takes D-SC-10's own break condition on a falsifier
 other than the one it named (a template-phase `Self` breaking a positive golden
@@ -5538,8 +5545,9 @@ shapes, so they are not counted either; nor are round 11's, derived from the
 trunk impl analogs after its development build ran the reviews' shapes, nor
 round 12's, round 13's, round 14's, round 15's, round 16's or round 17's,
 derived from the rule and the trunk analogs (round 16's and round 17's from the
-local twins too) after their development builds ran the reviews' shapes. No miss
-hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
+local twins too) after their development builds ran the reviews' shapes. Round
+18, records only, writes no row. No miss hides a defect: (a), (c), (f), (l),
+(m), (n) and (o) were prediction errors (the
 coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
 and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
 coverage gap now dumped where the claim needed a dump, and (h) and (i) design
@@ -6504,6 +6512,60 @@ fill-round notes, which hold it. Review 1's two MINORs and review 2's MINOR-1,
 MINOR-2, MINOR-4 and MINOR-5 change no toolchain file. Per-finding detail is in
 the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
+Round 17's own diff (866468cba, 5d978b5ad, 54d8a83f5, 1646988dc) received two
+implementation reviews, 4 findings in all: review 1, APPROVE-WITH-FIXES, 2
+MINOR; review 2, APPROVE-WITH-FIXES, 2 MINOR; no MAJOR and no BLOCKER, every
+finding records-only, and both reviews found the branch dry. Both checked round
+17 on the driver stamped 0.0.0-0.dev+866468cba against trunk 0bdce60a5 and the
+upstream nightly 62f1cc6a3, each with a private gate (1959 / 0). On the round's
+questions they found: (a) review 1's matrix, extended to 62 member shapes
+against 16 requirements (7936 rows, and 372 non-SC-1 rows on all three builds),
+has 2220 aborts, none with `GetDeclaredParamPattern` on its stack: 1632
+upstream-shared (17 member shapes with an error-free expression pattern, at
+upstream's name lookup of the member, or of the class in a generic class, as on
+trunk and the nightly) and 588 W-239's; no local row aborts, and every other
+imported row gives its local twin's result but 48 api/impl rows of the
+struct-pattern shapes, which the struct-pattern TODO stops at the declaration,
+as on trunk; review 2's 49 local-against-imported pairs of further nestings
+agree with no abort; (b) no caller outside SC-1 is changed (merge.cpp:400, :402
+and :433 inside `if (found_error)` at :389); (c) the import splits give 6 and 6
+errors and 5d978b5ad's 6 removed CHECK lines are shifts; (d) W-239 is R10-exact
+and D-SC-9 one statable rule, its moved history consistent; (e) the PR texts
+name all 81 branch commits and the base, with no model name. Review 1's
+findings: MINOR-1 W-238's evidence says that a default value with an error stops
+upstream's import walk, where a `var` pattern beneath it does not
+(sc1-review17/adv1/mx t_DTVU, t_DVT1U); MINOR-2 round 17's measured notes and
+W-238's evidence place a generic class's abort at the member's name lookup,
+where it is at the class's (`LookupUnqualifiedName`). Review 2's findings:
+MINOR-1 the PR body's land paragraph omits SC-1's conflicts with PRs 53, 51 and
+52, which land first; MINOR-2 D-SC-2's expression clause, W-238's title and the
+design page omit the refusal under a default value (sc1-review17/adv2/rq), which
+no golden pins. Review 1's probes are sc1-review17/adv1 (mx, p, pg,
+stacks_all.tsv); review 2's are sc1-review17/adv2 (nest, rq, vd, w235, y). Fill
+round 18 (2026-10-15) folds all 4, each reproduced first on the round-17 build,
+trunk and the nightly (sc1-fix18: repro, mt, rq, edf), none rejected, all
+records only. Dispositions: review 1's MINOR-1 and MINOR-2 reword W-238's
+evidence (a default value with an error stops the walk except through a `var`
+pattern beneath it, with sc1-review17/adv1/mx t_VD1U, t_VDT1U, t_DTVU and
+t_DVT1U; a generic class's abort is at the class's name lookup, with
+sc1-fix17/p17 gen and genacc and adv1/pg tg_G2 and tgs_G2), and MINOR-2 corrects
+round 17's measured notes, in MEASURED and in the plan, in place and marked;
+review 2's MINOR-1 is taken in the PR body, which is not a repository file (its
+land paragraph names the conflicts that `git merge-tree` of 1646988dc against
+adaae4e35, f96fe8a7a and ea573f672 shows and their rule at the merge: the
+conformance README with both programs `run`, gap-analysis with each row from the
+PR that edited it and the header counts recomputed, the ledger with both sides'
+items in id order, ORCHESTRATION as for trunk); review 2's MINOR-2 makes
+D-SC-2's expression clause, W-238's title and the design page say "directly,
+under `var` or under a default value" and adds the probe and the missing pin to
+W-238's evidence (a bare `1 = 1` aborts at pattern.cpp:62 at its declaration,
+upstream-shared, as the evidence already records). No toolchain, test or golden
+file changes, and no implementation decision is taken; round 17's toolchain
+change is reviewed with no MAJOR or BLOCKER and its fold changes no toolchain
+file, so the PR is to be opened and held OPEN until the land sequence.
+Per-finding detail is in the plan's "Landed notes (SC-1 fill rounds,
+2026-10-13)".
+
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
 tests, 1955 passing and 3 reporting "Autoupdate would make changes"
@@ -7038,9 +7100,11 @@ the nightly (sc1-fix17/repro) as round 16 recorded but each abort in merge.cpp's
 pattern switch at :549 here (:546 on the round-16 build); round 17's own
 (sc1-fix17/p17): the tuple shapes under a default value with an error give their
 errors without an abort, as their local twins do and as trunk's and the
-nightly's plain access and calls do, `(var 1, w: i32) = Undefined` and a generic
-class's `(1, w: T) = Undefined` abort at the member's name lookup here as their
-plain access does on trunk (:5087) and the nightly (:4875), and
+nightly's plain access and calls do, `(var 1, w: i32) = Undefined` aborts at the
+member's name lookup here and a generic class's `(1, w: T) = Undefined` at the
+class's (`LookupUnqualifiedName`, importing `C`; corrected at fill round 18,
+round 17's review 1 finding MINOR-2), as their plain access does on trunk
+(:5087) and the nightly (:4875), and
 sc1-review16/adv1/p/y's c aborts at absolute_node_ref.cpp:27 here and ct and ic
 there on all three (W-239); `git merge-tree` of 5d978b5ad against trunk
 8bfd78ae3 conflicts in fork/ORCHESTRATION.md only. Round 17's commits:
@@ -7069,7 +7133,23 @@ a name export, abort at absolute_node_ref.cpp:27 (W-239), and the 1581 and
 adv1's 13 and adv2's 10 member shapes at the member's name lookup (adv1's
 generic mode at the class's), whose plain access aborts on trunk and the
 nightly too, and adv1's 107 rows of 28 member shapes at
-absolute_node_ref.cpp:27; no local row aborts. Against
+absolute_node_ref.cpp:27; no local row aborts.
+Round 18 (records only; the installed toolchain stamped 0.0.0-0.dev+866468cba,
+no toolchain or test source differing from 5d978b5ad): on the round-18 records
+commit's tree, gate 1959 passed, 0 failed, exit 0, 77 s, every mark `.`, no `!`
+or `?`; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56, 89.5 s, exactly the same two programs moving against
+fork/conformance/out/scoreboard.json and every program's status the same as in
+sc1-records17/conf_head (sc1-fix18/conf, in a private cache);
+`runner.py --self-test` OK (151 programs, 56 bullets); the findings' reproducers
+on this build, trunk 0bdce60a5 and the nightly 62f1cc6a3 (sc1-fix18/repro, 23
+probe directories and 57 result lines; rq; edf) as round 18's dispositions in
+REVIEWS say; `git merge-tree` of the round-18 tree against trunk 8bfd78ae3
+conflicts in fork/ORCHESTRATION.md only, against PR 53's head adaae4e35 and PR
+52's ea573f672 in fork/ORCHESTRATION.md, fork/gap-analysis.md and
+fork/inventory/work-items.json, and against PR 51's f96fe8a7a in
+fork/conformance/README.md, fork/gap-analysis.md and
+fork/inventory/work-items.json (sc1-fix18/mt). Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -7574,7 +7654,22 @@ inside `if (found_error)` at :389, the errors-match mode, which only
 structural_conformance.cpp:519-523 selects, every other caller of
 `CheckFunctionTypeMatches` and `CheckRedeclParamsMatch` passing none; the
 reproducers, the matrices' re-runs and the re-measure on 54d8a83f5 in MEASURED
-and in the plan. No residue is filed by it.
+and in the plan. No residue is filed by it. That records commit is 1646988dc.
+Round 18's records commit, the fold of round 17's two reviews: D-SC-2's
+expression clause (the refusal under a default value) and round 17's measured
+note in the plan (a generic class's abort at the class's name lookup); round
+17's review record, round 18's dispositions and re-measure and the round-18
+summary in the plan; this entry (its head, 1646988dc named, the R16(d) sentence
+of FILL-CAUGHT MISSES, round 17's review record with round 18's dispositions,
+MEASURED with round 17's note corrected, RECORDS); the design page (the
+expression-pattern refusal under a default value); ORCHESTRATION's status
+paragraph and Branches row (eighteen fill rounds, 1646988dc named, round 17's
+toolchain change reviewed, the PR to be opened); gap row 60 (eighteen fill
+rounds); W-027's title (an eighteenth round, records only) and notes; W-238's
+title (the refusal under a default value), evidence (a `var` pattern beneath a
+default value with an error; a generic class's abort at the class's name lookup;
+the refusal's probe and its missing pin) and notes. No residue is filed by it,
+and no toolchain, test or golden file changes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

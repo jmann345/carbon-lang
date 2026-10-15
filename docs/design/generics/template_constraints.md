@@ -287,10 +287,10 @@ definition in `template constraint`"); a `fn` in a plain, non-`template`
 directly, under `var` or under a default value, is a semantics TODO too ("tuple
 pattern parameter in `template constraint`") and is not collected, since the
 toolchain's signature comparison has no case for a tuple pattern (W-234). Since
-fill round 15, so is one with an expression pattern parameter, directly or
-under `var` ("expression pattern parameter in `template constraint`"): an
-expression pattern in a parameter list is a semantics TODO of its own, and the
-comparison has no case for two of them (W-238).
+fill round 15, so is one with an expression pattern parameter, directly, under
+`var` or under a default value ("expression pattern parameter in `template
+constraint`"): an expression pattern in a parameter list is a semantics TODO of
+its own, and the comparison has no case for two of them (W-238).
 
 > **F-010l — parameterized member requirements: DEFERRED (SC-1, D-SC-2, as
 > recommended).** Whether a requirement declaration may itself be a `template`

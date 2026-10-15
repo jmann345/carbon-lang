@@ -181,12 +181,14 @@ listing them verbatim at discharge (§8.5).
     signature comparison fails fatally on a `TuplePattern`, merge.cpp
     `CheckRedeclParam`, as trunk 0bdce60a5's does for an impl of an interface
     with such a member and for a redeclaration), and, since fill round 15, a
-    requirement `fn` with an expression pattern parameter, directly or under
-    `var` ("expression pattern parameter in `template constraint`", also not
-    collected, W-238; round 14's review 1 finding MAJOR-1 and review 2 finding
-    MINOR-1: the comparison fails fatally on two `ExprPattern`s with no error,
-    merge.cpp:548-549, as trunk 0bdce60a5's does for a redeclaration and for an
-    impl of an interface with such a member, at its merge.cpp:360). DISCLOSURE
+    requirement `fn` with an expression pattern parameter, directly, under
+    `var` or under a default value ("expression pattern parameter in `template
+    constraint`", also not collected, W-238; round 14's review 1 finding
+    MAJOR-1 and review 2 finding MINOR-1: the comparison fails fatally on two
+    `ExprPattern`s with no error, merge.cpp:548-549, as trunk 0bdce60a5's does
+    for a redeclaration and for an impl of an interface with such a member, at
+    its merge.cpp:360; the default value named at fill round 18, round 17's
+    review 2 finding MINOR-2). DISCLOSURE
     (amended 2026-10-06, review fold: B3): deferring `var` field requirements
     REVERSES the recorded F-010b recommendation ("keep them, per proposal 2200"
     — stranded page :245-248 and :798-800; p002200:352-354 admits "function and
@@ -2606,9 +2608,19 @@ pointer to this note: 866468cba (the fix, test sources), 5d978b5ad (1 golden,
 CHECK lines only) and 54d8a83f5 (records), which writes round 16's review record
 and dispositions below; it measured the same totals on the toolchain stamped
 0.0.0-0.dev+866468cba (below), again on its own tree and again on 54d8a83f5 for
-the records commit after it, which checks round 17's records against the head,
-as Measured below says. Not of record until fork/conformance/out/scoreboard.json
-is updated (R9).
+the records commit after it, 1646988dc, which checks round 17's records against
+the head, as Measured below says. Fill round 18 (2026-10-15) folds round 17's
+two implementation reviews (APPROVE-WITH-FIXES both, both finding the branch
+dry; 4 MINOR findings, all records-only, none rejected): W-238's evidence states
+that a `var` pattern beneath a default value with an error does not stop
+upstream's import walk and places a generic class's import abort at the class's
+name lookup, as round 17's measured notes below now do; W-238's title, D-SC-2
+and the design page name the expression-pattern refusal under a default value;
+the PR body names SC-1's conflicts with PRs 53, 51 and 52 and their rule at the
+merge: one records commit, which writes round 17's review record and round 18's
+dispositions below and measured the same totals on its tree with the toolchain
+stamped 0.0.0-0.dev+866468cba (below); it changes no toolchain, test or golden
+file. Not of record until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -5295,6 +5307,114 @@ generic mode at the class's), and the name-export location aborts (107 rows of
 byte-identical to their round-16 runs (sc1-fix17/mx16, mxv_r17.tsv,
 mxw_r17.tsv), with the same 17, 0 and 31 aborts.
 
+Round 17's own diff (866468cba, 5d978b5ad, 54d8a83f5, 1646988dc) received two
+implementation reviews, 4 findings in all: review 1, APPROVE-WITH-FIXES, 2
+MINOR; review 2, APPROVE-WITH-FIXES, 2 MINOR; no MAJOR and no BLOCKER, every
+finding records-only, and both reviews found the branch dry. Both checked round
+17 on the driver stamped 0.0.0-0.dev+866468cba against trunk 0bdce60a5 and the
+upstream nightly 62f1cc6a3, each with a private gate (1959 / 0). On the round's
+questions they found: (a) review 1 re-ran its round-16 matrix extended to 62
+member shapes against 16 requirements (a struct pattern under a default value; a
+binding of an erroneous tuple type under one; a default value that is a tuple
+literal holding `Undefined`, on the member's side, on the requirement's and on
+both), 7936 rows declared locally and imported in eight modes and 372 non-SC-1
+rows on this build, trunk and the nightly; of its 2220 aborts, none with
+`GetDeclaredParamPattern` on its stack, 1632 are upstream-shared (17 member
+shapes with an error-free expression pattern, at import_ref.cpp:5172 in
+upstream's name lookup of the member, or of the class in a generic class, where
+trunk aborts at :5087 and the nightly at :4875 on the same member's plain
+access, call, `export import`, api/impl split and generic class) and 588 are
+W-239's (the name-export rows that report when declared locally); no local row
+aborts, and every other imported row gives its local twin's verdict and messages
+but 48 api/impl rows of the struct-pattern shapes, where the struct-pattern TODO
+stops the api file's checking, as on trunk; a struct pattern under a default
+value stops at that TODO at its declaration and never reaches the comparison,
+and review 2's 49 local-against-imported pairs of further nestings agree with no
+abort; (b) no caller outside SC-1 is changed: the three
+`GetDeclaredParamPattern` calls (merge.cpp:400, :402 and :433) are inside `if
+(found_error)` at :389, which only structural_conformance.cpp:519-523 selects,
+and the 372 non-SC-1 rows are the same on this build, trunk and the nightly; (c)
+the import splits give 6 and 6 errors (4 and 5 at a35535174), every other split
+unchanged, 5d978b5ad's 6 removed CHECK lines are shifts each re-added with its
+new number, and an autoupdate of the 19 SC-1 goldens on the installed toolchain
+changes nothing; (d) W-239 is R10-exact (sc1-review16/adv1/p/y's ct and ic abort
+at absolute_node_ref.cpp:27 on trunk and the nightly too), D-SC-9 is one
+statable rule with its three hidden classes and the refused kinds, its moved
+history consistent with these notes and the decision log, and the records' cites
+hold at the head; (e) the PR texts name all 81 branch commits and the base
+8068151ed, with seventeen rounds, the trade in the lead, the merge order through
+PR 59 and no model name. Review 1's findings: MINOR-1 W-238's evidence says that
+a default value with an error stops upstream's import walk, where a `var`
+pattern beneath it does not (`(w: i32, var 1) = Undefined` and `(var (1, w:
+i32)) = Undefined` abort at the member's name lookup on trunk, the nightly and
+the fork; sc1-review17/adv1/mx t_DTVU and t_DVT1U); MINOR-2 round 17's measured
+notes in this note and in the decision log, and W-238's evidence, place a
+generic class's abort at the member's name lookup, where it is at the class's
+(`LookupUnqualifiedName`, importing `C`). Review 2's findings: MINOR-1 the PR
+body's land paragraph names the conflict with trunk only, not those with PRs 53,
+51 and 52, which land first (fork/conformance/README.md, where taking either
+side alone re-SKIPs the other PR's program, fork/gap-analysis.md,
+fork/inventory/work-items.json and fork/ORCHESTRATION.md); MINOR-2 D-SC-2's
+expression clause, W-238's title and the design page name the expression-pattern
+refusal directly or under `var`, where the code refuses one under a default
+value too (sc1-review17/adv2/rq: `(z) = 1` and `var 1 = Undefined`), and no
+golden pins that case. Review 1's probes are sc1-review17/adv1 (mx, 8308
+directories; p; pg; stacks_all.tsv); review 2's are sc1-review17/adv2 (nest, rq,
+vd, w235, y and the merge-trees).
+
+Fill round 18 (2026-10-15), by review finding; each reproduced first on the
+round-17 build (0.0.0-0.dev+866468cba), trunk 0bdce60a5 and the upstream nightly
+62f1cc6a3 (sc1-fix18):
+
+-   MINOR-1 (review 1): reproduced (sc1-fix18/repro, from sc1-review17/adv1/mx:
+    t_VD1U, t_VDT1U, t_DTVU and t_DVT1U and the calls tc_DTVU and tc_DVT1U abort
+    at the member's name lookup at import_ref.cpp:5087 on trunk, :4875 on the
+    nightly and :5172 here, as m_d__DTVU and m_d__DVT1U do here, with no
+    `GetDeclaredParamPattern` on any stack; t_DT1U, t_DTv and their calls, whose
+    expression pattern no `var` wraps, abort on none of the three). Taken as
+    records: W-238's evidence says that a default value with an error stops the
+    walk except through a `var` pattern beneath it, with these probes. Records
+    only; no toolchain file changes.
+-   MINOR-2 (review 1): reproduced (sc1-fix18/repro gen and genacc, from
+    sc1-fix17/p17, and tg_G2 and tgs_G2, from sc1-review17/adv1/pg: a generic
+    class's `(1, w: T) = Undefined` aborts in `LookupUnqualifiedName` while `C`
+    is imported, at :5172 here, :5087 on trunk and :4875 on the nightly; gen,
+    the use against a template constraint, exits 1 on trunk and the nightly,
+    which do not implement `template constraint`). Taken as records: round 17's
+    measured notes in this note and in the decision log say the class's name
+    lookup (corrected in place and marked), and W-238's evidence says so with
+    these probes. Records only.
+-   MINOR-1 (review 2): reproduced (`git merge-tree --write-tree` of 1646988dc
+    in a shared scratch clone, sc1-fix18/mt: against adaae4e35 (PR 53) it
+    conflicts in fork/ORCHESTRATION.md, fork/gap-analysis.md and
+    fork/inventory/work-items.json; against f96fe8a7a (PR 51), and its recorded
+    head 05a5c30f7, in fork/conformance/README.md, fork/gap-analysis.md and
+    fork/inventory/work-items.json; against ea573f672 (PR 52) in the same three
+    files as against PR 53; against trunk 8bfd78ae3 in fork/ORCHESTRATION.md
+    only). Taken in the PR body, which is not a repository file: its land
+    paragraph names these conflicts and their rule at the merge (the conformance
+    README: both programs `run`; gap-analysis: each row from the PR that edited
+    it, the header counts recomputed; the ledger: both sides' items, in id
+    order; ORCHESTRATION: as for trunk). Records only.
+-   MINOR-2 (review 2): reproduced (sc1-fix18/rq r.carbon, from
+    sc1-review17/adv2/rq: `fn F(self, (z) = 1)` and `fn F(self, var 1 =
+    Undefined)` give the TODO "expression pattern parameter in `template
+    constraint`" at the requirement, neither is collected and nothing is
+    reported at the use; r2.carbon, a bare `1 = 1`, aborts at pattern.cpp:62 at
+    its declaration before the refusal runs, as in any parameter list on trunk
+    and on the nightly at :60, the abort W-238's evidence already records;
+    sc1-fix18/edf). Taken as records: D-SC-2's expression clause, W-238's title
+    and the design page say "directly, under `var` or under a default value",
+    and W-238's evidence cites the probe and states that no golden pins the
+    default-value case. Records only; the golden's split comment describes only
+    the shapes it pins and stays as it is.
+
+None is rejected. Round 18 makes no implementation decision and changes no
+toolchain, test or golden file: every finding is records-only, so no expectation
+is derived and no §4 row is written. Round 17's toolchain change is reviewed,
+its review found no MAJOR or BLOCKER, and its fold changes no toolchain file, so
+the PR is to be opened and held OPEN until the land sequence.
+
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
 rewritten; then the 3 files whose STDERR lines sit above dumped source, `loc`
@@ -5918,9 +6038,11 @@ tuple shapes under a default value with an error (`(1,)`, `(1, w: i32) = (1,
 Undefined)`, the base-class, requirement-imported and blanket-impl uses) give
 their errors without an abort, as their local twins do, while trunk's and the
 nightly's plain access and calls of the same members abort nowhere; `(var 1, w:
-i32) = Undefined` and a generic class's `(1, w: T) = Undefined` abort at the
-member's name lookup here, as their plain access does on trunk (:5087) and the
-nightly (:4875); p/y's c aborts at absolute_node_ref.cpp:27 here, and ct and ic
+i32) = Undefined` aborts at the member's name lookup here and a generic class's
+`(1, w: T) = Undefined` at the class's (`LookupUnqualifiedName`, importing `C`;
+corrected at fill round 18, round 17's review 1 finding MINOR-2), as their plain
+access does on trunk (:5087) and the nightly (:4875); p/y's c aborts at
+absolute_node_ref.cpp:27 here, and ct and ic
 there on all three (W-239). Round 17's commits: 866468cba (the fix, test
 sources), 5d978b5ad (goldens) and 54d8a83f5 (records), which re-ran the gate
 (1959 passed, 0 failed, exit 0, 32 s) and conformance (the same totals, 45.7 s,
@@ -5970,6 +6092,23 @@ and W-235 (merge.cpp:548-549 and :376-449), of W-238
 inside `if (found_error)` at :389, the errors-match mode, which only
 structural_conformance.cpp:519-523 selects, every other caller of
 `CheckFunctionTypeMatches` and `CheckRedeclParamsMatch` passing none.
+
+Round 18 (records only; the installed toolchain stamped 0.0.0-0.dev+866468cba,
+no toolchain or test source differing from 5d978b5ad): on the round-18 records
+commit's tree, gate 1959 passed, 0 failed, exit 0, 77 s, every mark `.`, no `!`
+or `?`; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56, 89.5 s, exactly the same two programs moving against
+fork/conformance/out/scoreboard.json and every program's status the same as in
+sc1-records17/conf_head (sc1-fix18/conf, in a private cache);
+`runner.py --self-test` OK (151 programs, 56 bullets); the findings' reproducers
+on this build, trunk 0bdce60a5 and the nightly 62f1cc6a3 (sc1-fix18/repro, 23
+probe directories and 57 result lines; rq; edf) as round 18's dispositions above
+say; `git merge-tree` of the round-18 tree against trunk 8bfd78ae3 conflicts in
+fork/ORCHESTRATION.md only, against PR 53's head adaae4e35 and PR 52's ea573f672
+in fork/ORCHESTRATION.md, fork/gap-analysis.md and
+fork/inventory/work-items.json, and against PR 51's f96fe8a7a in
+fork/conformance/README.md, fork/gap-analysis.md and
+fork/inventory/work-items.json (sc1-fix18/mt).
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

@@ -10,8 +10,8 @@
 //
 // Proposal 2200 ("Name lookup", p002200:433-441, :476-503): a member of a
 // value whose type is a constrained template parameter is looked up in the
-// argument type and in the constraint (TP-1; DD-1 fixture R09 and fork work
-// item W-183). Square provides Area only through `impl as HasArea`, so the
+// argument type and in the constraint (TP-1; DD-1 fixture R09). Square
+// provides Area only through `impl as HasArea`, so the
 // constraint finds it: 5 x 5 = 25. Rect's `extend impl` makes the type and
 // the constraint find the same function: 2 x 3 = 6.
 

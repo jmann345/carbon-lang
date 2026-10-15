@@ -14,7 +14,7 @@
 // Proposal 2200 (p002200:198-199: impl lookup waits for the template
 // arguments) and "Use of dependent value is dependent": a `var` of a template
 // parameter's type, with or without an initializer (TP-1; DD-1 fixtures X20
-// and X23, fork work item W-127). Swap(4, 5) assigns its second argument into
+// and X23). Swap(4, 5) assigns its second argument into
 // y and returns 5; Peek returns top = 6. Keep(d) copies d into y with
 // D's Copy, which adds 10 (n = 11), and y's destructor prints 11 when Keep
 // returns, before Run prints Keep's result 0; d itself is destroyed when Run

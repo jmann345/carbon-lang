@@ -11,8 +11,8 @@
 //
 // Proposal 2200 (p002200:186-191: template parameters are deduced as checked
 // ones are): a deduced template parameter is deduced through a class's
-// arguments (TP-1; DD-1 fixture X25 and fork work item W-193). Get(h) is the
-// item, 21; GetThrough(&h) reads the item through the pointer, and the program
+// arguments (TP-1; DD-1 fixture X25). Get(h) is the item, 21; GetThrough(&h)
+// reads the item through the pointer, and the program
 // doubles it, 42; Size(v) is the deduced N of Vec(3), 3.
 
 import Core library "io";

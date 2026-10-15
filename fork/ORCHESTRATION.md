@@ -165,6 +165,28 @@ with 5 findings each). Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR
 56, PR 57, PR 58 through its state L integration commit, then PR 59. None is
 merged.
 
+Later on 2026-10-15 (01:30 UTC): PR 60 (SC-1, claude/carbon-fork-0-1-sc, head
+40a76ab81, 83 commits over trunk 8068151ed: template-style structural
+conformance (F-010), `template constraint` method and associated-function
+requirements satisfied by a type's own members; W-027 implemented; W-134 to
+W-143, W-151, W-168, W-169 and W-232 to W-239 filed; expected 130/0/21 over
+151, 49/56; gap row 55, line 60 on the branch, MISSING to PARTIAL expected) is
+OPEN and HELD, verified on the container-built toolchain (gate 1959/1959).
+Eighteen fill rounds: each round's diff had two implementation reviews, folded
+by the next round; round 17's toolchain change (866468cba, merge.cpp) was
+reviewed with no MAJOR or BLOCKER and both reviews found the branch dry, and
+round 18 (885a7c30a) is records only, so no toolchain change is unreviewed.
+The PR description is the summary; the full review record and verification
+are its first comment (GitHub's description limit). `git merge-tree` of
+40a76ab81 against trunk 8bfd78ae3 conflicts in fork/ORCHESTRATION.md only,
+and against PRs 53, 52 and 51 in the files the PR description names with
+their resolutions. TP-1 (claude/carbon-fork-0-1-tp, W-014, gap row 54) has
+its plan rev 3 signed off, commits C1 to C5, P and M pushed, and the fold of
+its implementation review pushed at 824f29c4e; its discharge is in progress
+and its PR opens after a focused re-review of the fix commits. Merge order: PR
+53, PR 51, PR 52, PR 60, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
+integration commit, PR 59, then TP-1. None is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -506,7 +528,8 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
-| `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
+| `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at 40a76ab81 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54. |
+| `claude/carbon-fork-0-1-tp` | IMPLEMENTED on the container toolchain, discharge in progress — TP-1 integrated templates (W-014, gap row 54), plan rev 3 signed off, commits C1 to C5, P and M pushed, the implementation review's fold pushed at 824f29c4e; PR after a focused re-review of the fix commits. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

@@ -368,6 +368,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_tuple_index_as_type_of_used_binding_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_tuple_index_as_type_of_used_binding_on_instantiation.carbon:[[@LINE-8]]:10: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let a: x.0 = 1;
+  // CHECK:STDERR:          ^~~
+  // CHECK:STDERR:
   return F(t);
 }
 
@@ -379,6 +386,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_tuple_index_as_conversion_target_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_tuple_index_as_conversion_target_on_instantiation.carbon:[[@LINE-7]]:15: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   return 2 as x.0;
+  // CHECK:STDERR:               ^~~
+  // CHECK:STDERR:
   return F(t);
 }
 
@@ -390,6 +404,13 @@ fn F[template T: type](x: T) -> x.0 {
 }
 
 fn Use(t: (type, type)) {
+  // CHECK:STDERR: fail_tuple_index_as_return_type_on_instantiation.carbon:[[@LINE+7]]:3: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   F(t);
+  // CHECK:STDERR:   ^~~~
+  // CHECK:STDERR: fail_tuple_index_as_return_type_on_instantiation.carbon:[[@LINE-8]]:33: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR: fn F[template T: type](x: T) -> x.0 {
+  // CHECK:STDERR:                                 ^~~
+  // CHECK:STDERR:
   F(t);
 }
 
@@ -397,12 +418,23 @@ fn Use(t: (type, type)) {
 library "[[@TEST_NAME]]";
 
 fn F[template T: type](x: T) -> i32 {
+  // CHECK:STDERR: fail_tuple_index_as_var_type_on_instantiation.carbon:[[@LINE+4]]:3: error: cannot convert type `x.0` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   var a: x.0;
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   var a: x.0;
   a = 1;
   return a;
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_tuple_index_as_var_type_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_tuple_index_as_var_type_on_instantiation.carbon:[[@LINE-9]]:10: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   var a: x.0;
+  // CHECK:STDERR:          ^~~
+  // CHECK:STDERR:
   return F(t);
 }
 

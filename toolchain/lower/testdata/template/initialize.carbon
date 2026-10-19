@@ -125,7 +125,6 @@ fn Use(t: (i32, i32)) -> i32 {
   return Sum(t);
 }
 
-
 // --- return_tuple_constant_element.carbon
 library "[[@TEST_NAME]]";
 
@@ -237,6 +236,49 @@ fn M[template T: type](x: T) -> T {
 
 fn Use() -> i32 {
   return M(4 as i32);
+}
+
+// --- return_tuple_of_associated_type.carbon
+library "[[@TEST_NAME]]";
+
+interface Container {
+  let Elem: type;
+  fn Get(self) -> Elem;
+}
+
+class Ints {
+  var n: i32;
+  impl as Container where .Elem = i32 {
+    fn Get(self) -> i32 { return self.n; }
+  }
+}
+
+fn F[template T: Container](x: T) -> (T.Elem, i32) {
+  return (x.Get(), 5);
+}
+
+fn Use(n: Ints) -> (i32, i32) {
+  return F(n);
+}
+
+// --- var_tuple_of_associated_type.carbon
+library "[[@TEST_NAME]]";
+
+interface Container {
+  let Elem: type;
+}
+
+class Ints {
+  impl as Container where .Elem = i32 {}
+}
+
+fn G[template T: Container](unused x: T) -> i32 {
+  var t: (T.Elem, i32) = (4, 5);
+  return t.1;
+}
+
+fn Use(n: Ints) -> i32 {
+  return G(n);
 }
 
 // CHECK:STDOUT: ; ---

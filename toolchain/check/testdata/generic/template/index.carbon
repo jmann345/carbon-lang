@@ -106,7 +106,6 @@ fn Use(e: Empty) -> i32 {
   return At1(e);
 }
 
-
 // --- fail_tuple_index_const_param_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
@@ -205,6 +204,86 @@ fn G(template P: type, template p: P) -> C(*p);
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn G(template P: type, template p: P) -> C(p[0]);
+
+// --- fail_tuple_index_as_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  let unused a: x.0 = 1;
+  return 0;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
+// --- fail_index_as_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  let unused a: x[0] = 1;
+  return 0;
+}
+
+fn Use(a: array(type, 1)) -> i32 {
+  return F(a);
+}
+
+// --- fail_tuple_type_element_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  let unused a: (x.0, i32) = (1, 2);
+  return 0;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
+// --- fail_struct_type_field_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  let unused a: {.p: x.0, .q: i32} = {.p = 5, .q = 7};
+  return 0;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
+// --- fail_array_element_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn MakeT(unused n: i32) -> type { return i32; }
+
+fn F[template T: type](x: T) -> i32 {
+  let unused a: array(MakeT(x), 1) = (1,);
+  return 0;
+}
+
+fn Use(n: i32) -> i32 {
+  return F(n);
+}
+
+// --- template_value_as_type.carbon
+library "[[@TEST_NAME]]";
+
+fn F(template t: (type, type)) -> i32 {
+  let a: t.0 = 5;
+  let b: (t.1, i32) = (6, 7);
+  return a + b.0 + b.1;
+}
+
+fn G(template s: {.p: type}) -> i32 {
+  let a: s.p = 4;
+  return a;
+}
+
+fn Use() -> i32 {
+  return F((i32, i32)) + G({.p = i32});
+}
 
 // CHECK:STDOUT: --- tuple_index_param.carbon
 // CHECK:STDOUT:

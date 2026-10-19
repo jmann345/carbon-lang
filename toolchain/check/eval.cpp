@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "common/raw_string_ostream.h"
+#include "common/set.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/Support/ConvertUTF.h"
 #include "llvm/Support/SaveAndRestore.h"
@@ -225,6 +226,13 @@ class EvalContext {
 
   auto emitter() -> DiagnosticEmitterBase& { return context().emitter(); }
 
+  // Records that the runtime value `inst_id` has been diagnosed where a
+  // constant is required. Returns whether it had not been diagnosed yet, so
+  // that each use of the same value in this context is diagnosed once.
+  auto MarkNonConstantDiagnosed(SemIR::InstId inst_id) -> bool {
+    return diagnosed_non_constant_ids_.Insert(inst_id).is_inserted();
+  }
+
  protected:
   explicit EvalContext(Context* context, SemIR::LocId fallback_loc_id,
                        SemIR::SpecificId specific_id,
@@ -250,6 +258,8 @@ class EvalContext {
   // instructions that have already been evaluated. This is here rather than in
   // `FunctionEvalContext` so we can reference it from `GetConstantValue`.
   std::optional<LocalEvalInfo> local_eval_info_;
+  // Runtime values already diagnosed where a constant is required.
+  Set<SemIR::InstId> diagnosed_non_constant_ids_;
 };
 }  // namespace
 
@@ -3094,6 +3104,56 @@ static auto ConvertEvalResultToConstantId(Context& context,
   return result.existing();
 }
 
+// Returns an operand of the instruction `inst_id` whose value in this context
+// is not a constant, or `None` if there is none to point at, such as an
+// argument of a specific.
+static auto FindNonConstantOperand(EvalContext& eval_context,
+                                   SemIR::InstId inst_id) -> SemIR::InstId {
+  auto is_runtime = [&](SemIR::InstId operand_id) {
+    return operand_id.has_value() &&
+           !eval_context.GetConstantValue(operand_id).is_constant();
+  };
+  auto inst = eval_context.insts().Get(inst_id);
+  for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+    CARBON_KIND_SWITCH(arg) {
+      case CARBON_KIND(SemIR::InstId operand_id): {
+        if (is_runtime(operand_id)) {
+          return operand_id;
+        }
+        break;
+      }
+      case CARBON_KIND(SemIR::TypeInstId operand_id): {
+        if (is_runtime(operand_id)) {
+          return operand_id;
+        }
+        break;
+      }
+      case CARBON_KIND(SemIR::InstBlockId block_id): {
+        if (block_id.has_value()) {
+          for (auto operand_id : eval_context.inst_blocks().Get(block_id)) {
+            if (is_runtime(operand_id)) {
+              return operand_id;
+            }
+          }
+        }
+        break;
+      }
+      case CARBON_KIND(SemIR::StructTypeFieldsId fields_id): {
+        for (auto field :
+             eval_context.sem_ir().struct_type_fields().Get(fields_id)) {
+          if (is_runtime(field.type_inst_id)) {
+            return field.type_inst_id;
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  return SemIR::InstId::None;
+}
+
 // Evaluates an instruction of a known type in an evaluation context. The
 // default behavior of this function depends on the constant kind of the
 // instruction:
@@ -3129,22 +3189,29 @@ static auto TryEvalTypedInst(EvalContext& eval_context, SemIR::InstId inst_id,
     if ((SemIR::Internal::HasTypeIdMember<InstT> &&
          !ReplaceTypeWithConstantValue(eval_context, inst_id, &inst, &phase)) ||
         !ReplaceAllFieldsWithConstantValues(eval_context, &inst, &phase)) {
-      if constexpr (ConstantKind == SemIR::InstConstantKind::Always) {
-        CARBON_FATAL("{0} should always be constant", InstT::Kind);
-      }
-      if constexpr (std::same_as<InstT, SemIR::ArrayType>) {
-        // In a template's specific, the bound can be the result of an action,
-        // such as an index or a call, that is not a constant there. It is
-        // diagnosed, as a bound written that way outside a template is
-        // (handle_array.cpp), so that the types formed from the array type
-        // are errors instead of instructions that are not constant.
+      if constexpr (ConstantKind == SemIR::InstConstantKind::Always ||
+                    InstT::Kind.is_type() == SemIR::InstIsType::Always) {
+        // In a specific, an operand of a type, or of an instruction that is
+        // always constant, can be the result of an action that is not a
+        // constant there: `x.0`, `*p`, `a[0]` or a call on a template's
+        // runtime value, used as a type or as an array bound. It is diagnosed
+        // where it is used, as such an operand is outside a template
+        // (`ExprAsType`, handle_array.cpp), once for each value, and the
+        // instruction is an error, so that the types formed from it are
+        // errors instead of instructions that are not constant.
         if (eval_context.specific_id().has_value()) {
-          auto bound_id =
-              eval_context.insts().GetAs<SemIR::ArrayType>(inst_id).bound_id;
-          DiagnoseNonConstantValue(eval_context.context(),
-                                   eval_context.GetDiagnosticLoc({bound_id}));
+          auto operand_id = FindNonConstantOperand(eval_context, inst_id);
+          if (eval_context.MarkNonConstantDiagnosed(
+                  operand_id.has_value() ? operand_id : inst_id)) {
+            DiagnoseNonConstantValue(
+                eval_context.context(),
+                eval_context.GetDiagnosticLoc({operand_id, inst_id}));
+          }
           return SemIR::ErrorInst::ConstantId;
         }
+      }
+      if constexpr (ConstantKind == SemIR::InstConstantKind::Always) {
+        CARBON_FATAL("{0} should always be constant", InstT::Kind);
       }
       return SemIR::ConstantId::NotConstant;
     }

@@ -20,6 +20,7 @@
 #include "toolchain/check/cpp/import.h"
 #include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/check/eval.h"
+#include "toolchain/check/generic.h"
 #include "toolchain/check/impl_lookup.h"
 #include "toolchain/check/import_ref.h"
 #include "toolchain/check/inst.h"
@@ -645,6 +646,15 @@ static auto ConvertTupleToType(Context& context, SemIR::LocId loc_id,
               value_const_id)) {
     for (auto tuple_inst_id :
          context.inst_blocks().Get(tuple_value->elements_id)) {
+      // An element that splices in the result of a template-dependent action,
+      // such as `T.Elem` or `x.0`, is the splice's constant, which is not
+      // attached to the current generic, so a conversion of it would not be
+      // resolved in a specific. Convert the generic's instruction for that
+      // constant instead.
+      if (context.insts().Is<SemIR::SpliceInst>(tuple_inst_id)) {
+        tuple_inst_id =
+            GetOrAddInstWithSpecificConstantValue(context, tuple_inst_id);
+      }
       // TODO: This call recurses back into conversion. Switch to an
       // iterative approach.
       type_inst_ids.push_back(

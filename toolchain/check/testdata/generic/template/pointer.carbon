@@ -104,7 +104,6 @@ fn Use(n: i32) -> i32 {
   return Deref(n);
 }
 
-
 // --- deref_const_param.carbon
 library "[[@TEST_NAME]]";
 
@@ -159,6 +158,32 @@ fn Use(c: Counter) -> i32 {
   // CHECK:STDERR:                 ^
   // CHECK:STDERR:
   return Read(c);
+}
+
+// --- fail_deref_as_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](p: T) -> i32 {
+  let unused a: *p = 1;
+  return 0;
+}
+
+fn Use(p: type*) -> i32 {
+  return F(p);
+}
+
+// --- fail_pointee_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn MakeT(unused n: i32) -> type { return i32; }
+
+fn F[template T: type](x: T, y: i32*) -> i32 {
+  let unused a: MakeT(x)* = y;
+  return 0;
+}
+
+fn Use(n: i32, p: i32*) -> i32 {
+  return F(n, p);
 }
 
 // CHECK:STDOUT: --- deref_param.carbon

@@ -483,54 +483,6 @@ static auto HoldsTemplateDependentArrayBound(Context& context,
   }
 }
 
-// Returns whether the type `type_id` is, or holds as an element of an array,
-// struct or tuple, a class whose fields hold an array with a template-dependent
-// bound (`HoldsTemplateDependentArrayBound`). `ConvertStructToClass` leaves the
-// initializer of such a class to each instantiation, so the aggregate that
-// holds it is converted for each instantiation too, as one conversion: an
-// element converted for each instantiation inside an aggregate converted here
-// is not lowered.
-static auto HoldsClassWithTemplateDependentArrayBound(Context& context,
-                                                      SemIR::LocId loc_id,
-                                                      SemIR::TypeId type_id)
-    -> bool {
-  if (OperandDependence(context, type_id) !=
-      SemIR::ConstantDependence::Template) {
-    return false;
-  }
-  CARBON_KIND_SWITCH(context.types().GetAsInst(type_id)) {
-    case CARBON_KIND(SemIR::ArrayType array_type): {
-      return HoldsClassWithTemplateDependentArrayBound(
-          context, loc_id,
-          context.types().GetTypeIdForTypeInstId(
-              array_type.element_type_inst_id));
-    }
-    case CARBON_KIND(SemIR::StructType struct_type): {
-      return llvm::any_of(
-          context.struct_type_fields().Get(struct_type.fields_id),
-          [&](const SemIR::StructTypeField& field) {
-            return HoldsClassWithTemplateDependentArrayBound(
-                context, loc_id,
-                context.types().GetTypeIdForTypeInstId(field.type_inst_id));
-          });
-    }
-    case CARBON_KIND(SemIR::TupleType tuple_type): {
-      return llvm::any_of(
-          context.types().GetBlockAsTypeIds(
-              context.inst_blocks().Get(tuple_type.type_elements_id)),
-          [&](SemIR::TypeId elem_type_id) {
-            return HoldsClassWithTemplateDependentArrayBound(context, loc_id,
-                                                             elem_type_id);
-          });
-    }
-    case SemIR::ClassType::Kind: {
-      return HoldsTemplateDependentArrayBound(context, loc_id, type_id);
-    }
-    default:
-      return false;
-  }
-}
-
 // Performs a conversion from a tuple to an array type. This function only
 // converts the type, and does not perform a final conversion to the requested
 // expression category.
@@ -586,14 +538,9 @@ static auto ConvertTupleToArray(Context& context, SemIR::TupleType tuple_type,
   }
 
   // The bound and the element count are checked above, where the function is
-  // defined; the elements are converted for each instantiation. So is an array
-  // of a class whose initializer is converted for each instantiation.
-  if ((!target.storage_id.has_value() &&
-       IsTemplateDependentValueTemporary(context, value_id, target.type_id)) ||
-      HoldsClassWithTemplateDependentArrayBound(
-          context, value_loc_id,
-          context.types().GetTypeIdForTypeInstId(
-              array_type.element_type_inst_id))) {
+  // defined; the elements are converted for each instantiation.
+  if (!target.storage_id.has_value() &&
+      IsTemplateDependentValueTemporary(context, value_id, target.type_id)) {
     return value_id;
   }
 
@@ -692,14 +639,6 @@ static auto ConvertTupleToTuple(Context& context, SemIR::TupleType src_type,
                              dest_elem_types.size(), src_elem_types.size());
     }
     return SemIR::ErrorInst::InstId;
-  }
-
-  // A tuple holding a class whose initializer is converted for each
-  // instantiation is converted for each instantiation too, after its size is
-  // checked above.
-  if (HoldsClassWithTemplateDependentArrayBound(context, value_loc_id,
-                                                target.type_id)) {
-    return value_id;
   }
 
   ConversionTarget::Kind inner_kind =
@@ -1200,29 +1139,6 @@ static auto ConvertStructToStructOrClass(
   }
 }
 
-// Returns whether the struct type `src_type` names exactly the fields of
-// `dest_type` that a struct can initialize, which excludes a class's vptr and
-// a choice's payload.
-static auto HasSameFieldNames(Context& context, SemIR::StructType src_type,
-                              SemIR::StructType dest_type) -> bool {
-  auto src_fields = context.struct_type_fields().Get(src_type.fields_id);
-  int32_t num_dest_fields = 0;
-  for (auto dest_field :
-       context.struct_type_fields().Get(dest_type.fields_id)) {
-    if (dest_field.name_id == SemIR::NameId::Vptr ||
-        dest_field.name_id == SemIR::NameId::ChoicePayload) {
-      continue;
-    }
-    ++num_dest_fields;
-    if (!llvm::any_of(src_fields, [&](const SemIR::StructTypeField& field) {
-          return field.name_id == dest_field.name_id;
-        })) {
-      return false;
-    }
-  }
-  return static_cast<int32_t>(src_fields.size()) == num_dest_fields;
-}
-
 // Performs a conversion from a struct to a struct type. This function only
 // converts the type, and does not perform a final conversion to the requested
 // expression category.
@@ -1230,15 +1146,6 @@ static auto ConvertStructToStruct(Context& context, SemIR::StructType src_type,
                                   SemIR::StructType dest_type,
                                   SemIR::InstId value_id,
                                   ConversionTarget target) -> SemIR::InstId {
-  // A struct holding a class whose initializer is converted for each
-  // instantiation is converted for each instantiation too, if its fields are
-  // exactly the destination's, so that a missing or unexpected field is still
-  // diagnosed where the function is defined.
-  if (HasSameFieldNames(context, src_type, dest_type) &&
-      HoldsClassWithTemplateDependentArrayBound(context, SemIR::LocId(value_id),
-                                                target.type_id)) {
-    return value_id;
-  }
   return ConvertStructToStructOrClass<SemIR::StructAccess>(
       context, src_type, dest_type, value_id, target,
       /*get_default=*/[](SemIR::NameId) { return SemIR::InstId::None; });
@@ -1343,6 +1250,29 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
       {.type_id = target.type_id,
        .elements_id = sem_ir.inst_blocks().Add({init_id}),
        .dest_id = target.storage_id});
+}
+
+// Returns whether the struct type `src_type` names exactly the fields of
+// `dest_type` that a struct can initialize, which excludes a class's vptr and
+// a choice's payload.
+static auto HasSameFieldNames(Context& context, SemIR::StructType src_type,
+                              SemIR::StructType dest_type) -> bool {
+  auto src_fields = context.struct_type_fields().Get(src_type.fields_id);
+  int32_t num_dest_fields = 0;
+  for (auto dest_field :
+       context.struct_type_fields().Get(dest_type.fields_id)) {
+    if (dest_field.name_id == SemIR::NameId::Vptr ||
+        dest_field.name_id == SemIR::NameId::ChoicePayload) {
+      continue;
+    }
+    ++num_dest_fields;
+    if (!llvm::any_of(src_fields, [&](const SemIR::StructTypeField& field) {
+          return field.name_id == dest_field.name_id;
+        })) {
+      return false;
+    }
+  }
+  return static_cast<int32_t>(src_fields.size()) == num_dest_fields;
 }
 
 // Performs a conversion from a struct to a class type. This function only

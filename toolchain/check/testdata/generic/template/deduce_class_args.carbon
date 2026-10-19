@@ -241,6 +241,11 @@ fn Make[template T: HasItem](unused x: T) -> i32 {
 }
 
 fn Use(h: Holder) -> i32 {
+  // CHECK:STDERR: fail_class_template_value_with_associated_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(Holder as HasItem)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(h);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_class_template_value_with_associated_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.item: Core.IntLiteral}` to `Box(Holder as HasItem)`: missing field `n` in source type [StructInitMissingFieldInConversion]
+  // CHECK:STDERR:
   return Make(h);
 }
 

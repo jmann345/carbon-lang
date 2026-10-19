@@ -6,9 +6,11 @@
 #define CARBON_TOOLCHAIN_CHECK_CONTEXT_H_
 
 #include <string>
+#include <utility>
 
 #include "common/map.h"
 #include "common/ostream.h"
+#include "common/set.h"
 #include "llvm/ADT/SmallVector.h"
 #include "toolchain/base/canonical_value_store.h"
 #include "toolchain/base/int.h"
@@ -189,6 +191,21 @@ class Context {
   auto import_ir_constant_values()
       -> llvm::SmallVector<SemIR::ConstantValueStore, 0>& {
     return import_ir_constant_values_;
+  }
+
+  // The imported instructions and generics, for each import IR, that the test
+  // of whether an imported entity is resolved for each instantiation
+  // (`PerInstantiationWalk` in import_ref.cpp) has found to reach no action or
+  // splice, so that the imports into a file walk each once. A generic is
+  // recorded in `decls` once its declaration is found to reach none, and in
+  // `types` once its declaration and definition are.
+  struct PerInstantiationWalkCache {
+    Set<std::pair<SemIR::ImportIRId, SemIR::InstId>> insts;
+    Set<std::pair<SemIR::ImportIRId, SemIR::GenericId>> decls;
+    Set<std::pair<SemIR::ImportIRId, SemIR::GenericId>> types;
+  };
+  auto per_instantiation_walk_cache() -> PerInstantiationWalkCache& {
+    return per_instantiation_walk_cache_;
   }
 
   auto definitions_required_by_decl() -> llvm::SmallVector<SemIR::InstId>& {
@@ -830,6 +847,9 @@ class Context {
   //
   // Inline 0 elements because it's expected to require heap allocation.
   llvm::SmallVector<SemIR::ConstantValueStore, 0> import_ir_constant_values_;
+
+  // See `per_instantiation_walk_cache()`.
+  PerInstantiationWalkCache per_instantiation_walk_cache_;
 
   // Declaration instructions of entities that should have definitions by the
   // end of the current source file.

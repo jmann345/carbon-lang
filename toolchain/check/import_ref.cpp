@@ -974,19 +974,28 @@ namespace {
 // The walk is iterative, and records each instruction and generic it reaches,
 // so that it ends for an entity that names itself, such as a class with a
 // field of type `Node(T)*`, or an interface whose members' `Self` has the
-// interface's facet type.
+// interface's facet type. A walk that reaches no action or splice records what
+// it reached in the file's `Context::PerInstantiationWalkCache`, and later
+// walks of the file's imports stop there, so that the imports walk each
+// instruction and generic once rather than once for each entity.
 class PerInstantiationWalk {
  public:
-  explicit PerInstantiationWalk(ImportContext* context) : context_(context) {}
+  explicit PerInstantiationWalk(ImportContext* context)
+      : context_(context),
+        cache_(&context->local_context().per_instantiation_walk_cache()) {}
 
   // Adds the declaration of a generic: its declaration's eval block and the
   // types of its bindings. A binding's type is loaded with the binding, and is
   // not an entry of the eval block when it is concrete, as `WithMethod(Holder)`
   // is.
   auto AddDecl(SemIR::GenericId generic_id) -> void {
-    if (!generic_id.has_value() || !decls_.Insert(generic_id).is_inserted()) {
+    if (!generic_id.has_value() ||
+        cache_->decls.Contains(
+            std::pair(context_->import_ir_id(), generic_id)) ||
+        !decls_.Insert(generic_id).is_inserted()) {
       return;
     }
+    reached_decls_.push_back(generic_id);
     const auto& generic = context_->import_generics().Get(generic_id);
     AddBlock(generic.decl_block_id);
     if (generic.bindings_id.has_value()) {
@@ -1000,9 +1009,13 @@ class PerInstantiationWalk {
   // Adds the declaration and the definition of a generic type, or of an impl.
   // The definition is needed to use the type, so it is loaded with the type.
   auto AddType(SemIR::GenericId generic_id) -> void {
-    if (!generic_id.has_value() || !types_.Insert(generic_id).is_inserted()) {
+    if (!generic_id.has_value() ||
+        cache_->types.Contains(
+            std::pair(context_->import_ir_id(), generic_id)) ||
+        !types_.Insert(generic_id).is_inserted()) {
       return;
     }
+    reached_types_.push_back(generic_id);
     AddDecl(generic_id);
     AddBlock(context_->import_generics().Get(generic_id).definition_block_id);
   }
@@ -1019,11 +1032,15 @@ class PerInstantiationWalk {
   // walk reaches names, or an entry of an eval block of a generic that one
   // names.
   auto Run() -> bool {
+    auto ir_id = context_->import_ir_id();
     while (!insts_.empty()) {
       auto inst_id = insts_.pop_back_val();
-      if (!inst_id.has_value() || !insts_seen_.Insert(inst_id).is_inserted()) {
+      if (!inst_id.has_value() ||
+          cache_->insts.Contains(std::pair(ir_id, inst_id)) ||
+          !insts_seen_.Insert(inst_id).is_inserted()) {
         continue;
       }
+      reached_insts_.push_back(inst_id);
       auto inst = context_->import_insts().Get(inst_id);
       if (inst.kind().is_action() || inst.kind() == SemIR::SpliceInst::Kind ||
           inst.kind() == SemIR::SpliceBlock::Kind) {
@@ -1033,6 +1050,16 @@ class PerInstantiationWalk {
       for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
         arg.Dispatch<void>([&](auto id) { AddOperand(id); });
       }
+    }
+    // Everything the walk reached reaches no action or splice.
+    for (auto inst_id : reached_insts_) {
+      cache_->insts.Insert(std::pair(ir_id, inst_id));
+    }
+    for (auto generic_id : reached_decls_) {
+      cache_->decls.Insert(std::pair(ir_id, generic_id));
+    }
+    for (auto generic_id : reached_types_) {
+      cache_->types.Insert(std::pair(ir_id, generic_id));
     }
     return false;
   }
@@ -1179,13 +1206,18 @@ class PerInstantiationWalk {
   }
 
   ImportContext* context_;
+  Context::PerInstantiationWalkCache* cache_;
   // The instructions still to test.
   llvm::SmallVector<SemIR::InstId> insts_;
-  // The instructions that have been tested.
+  // The instructions that have been tested, as a set and in order.
   Set<SemIR::InstId, 64> insts_seen_;
-  // The generics whose declarations, and whose definitions, have been added.
+  llvm::SmallVector<SemIR::InstId> reached_insts_;
+  // The generics whose declarations, and whose definitions, have been added,
+  // as sets and in order.
   Set<SemIR::GenericId, 16> decls_;
   Set<SemIR::GenericId, 16> types_;
+  llvm::SmallVector<SemIR::GenericId> reached_decls_;
+  llvm::SmallVector<SemIR::GenericId> reached_types_;
 };
 }  // namespace
 

@@ -731,9 +731,125 @@ class Stringifier {
     step_stack_->Push(inst.inst_id, ">");
   }
 
+  // Returns whether `inst_id` is a template-dependent prefix operation, `*x`
+  // or `&x`, looking through splices and conversions, which print as their
+  // operands.
+  auto IsPrefixAction(InstId inst_id) -> bool {
+    while (inst_id.has_value()) {
+      auto inst = sem_ir_->insts().Get(inst_id);
+      CARBON_KIND_SWITCH(inst) {
+        case CARBON_KIND(SpliceInst splice): {
+          inst_id = splice.inst_id;
+          break;
+        }
+        case CARBON_KIND(ConvertAction convert): {
+          inst_id = convert.inst_id;
+          break;
+        }
+        case CARBON_KIND(ConvertToCategoryAction convert): {
+          inst_id = convert.inst_id;
+          break;
+        }
+        case CARBON_KIND(ConvertToValueAction convert): {
+          inst_id = convert.inst_id;
+          break;
+        }
+        case CARBON_KIND(PointerDereferenceAction deref): {
+          return !deref.is_arrow.ToBool();
+        }
+        case CARBON_KIND(AddrOfAction _): {
+          return true;
+        }
+        default:
+          return false;
+      }
+    }
+    return false;
+  }
+
+  // Pushes a postfix operation or a member access on `operand_id`, followed by
+  // `rest`. A prefix operand is parenthesized, so that `(*p)[0]` and `*p[0]`
+  // print differently.
+  template <typename... T>
+  auto PushPostfix(InstId operand_id, T... rest) -> void {
+    if (IsPrefixAction(operand_id)) {
+      step_stack_->Push("(", operand_id, ")", rest...);
+    } else {
+      step_stack_->Push(operand_id, rest...);
+    }
+  }
+
+  // An interface member, as a compound member access names it:
+  // `Interface.Member`.
+  auto StringifyInst(InstId inst_id, AssociatedEntity inst) -> void {
+    auto entity_type =
+        sem_ir_->types().TryGetAs<AssociatedEntityType>(inst.type_id);
+    auto name_id = GetAssociatedEntityNameId(inst.decl_id);
+    if (!name_id.has_value() && entity_type) {
+      // An imported interface names its members in its associated entities.
+      const auto& interface =
+          sem_ir_->interfaces().Get(entity_type->interface_id);
+      if (interface.associated_entities_id.has_value()) {
+        auto entities =
+            sem_ir_->inst_blocks().Get(interface.associated_entities_id);
+        if (static_cast<size_t>(inst.index.index) < entities.size()) {
+          name_id = GetAssociatedEntityNameId(entities[inst.index.index]);
+        }
+      }
+    }
+    if (!name_id.has_value() || !entity_type) {
+      StringifyInstDefault(inst_id, inst);
+      return;
+    }
+    step_stack_->PushNameId(name_id);
+    step_stack_->PushString(".");
+    step_stack_->PushSpecificInterface(entity_type->GetSpecificInterface());
+  }
+
+  // Returns the name of the function or associated constant that `decl_id`
+  // declares, or `None`.
+  auto GetAssociatedEntityNameId(InstId decl_id) -> NameId {
+    if (!decl_id.has_value()) {
+      return NameId::None;
+    }
+    // An imported declaration is named by its import or its constant value.
+    llvm::SmallVector<InstId, 2> ids = {decl_id};
+    auto const_id = sem_ir_->constant_values().Get(decl_id);
+    if (const_id.has_value() && const_id.is_constant()) {
+      ids.push_back(sem_ir_->constant_values().GetInstId(const_id));
+    }
+    for (auto id : ids) {
+      auto decl = sem_ir_->insts().Get(id);
+      auto entity_name_id = EntityNameId::None;
+      if (auto ref = decl.TryAs<ImportRefUnloaded>()) {
+        entity_name_id = ref->entity_name_id;
+      } else if (auto ref = decl.TryAs<ImportRefLoaded>()) {
+        entity_name_id = ref->entity_name_id;
+      }
+      if (entity_name_id.has_value()) {
+        return sem_ir_->entity_names().Get(entity_name_id).name_id;
+      }
+      if (auto function_decl = decl.TryAs<FunctionDecl>()) {
+        return sem_ir_->functions().Get(function_decl->function_id).name_id;
+      }
+      if (auto const_decl = decl.TryAs<AssociatedConstantDecl>()) {
+        return sem_ir_->associated_constants()
+            .Get(const_decl->assoc_const_id)
+            .name_id;
+      }
+      if (decl.type_id().has_value()) {
+        if (auto function_type =
+                sem_ir_->types().TryGetAs<FunctionType>(decl.type_id())) {
+          return sem_ir_->functions().Get(function_type->function_id).name_id;
+        }
+      }
+    }
+    return NameId::None;
+  }
+
   // Template-dependent operations, printed as the expressions they perform.
   auto StringifyInst(InstId /*inst_id*/, AccessMemberAction inst) -> void {
-    step_stack_->Push(InstId(inst.base_id), ".", inst.name_id);
+    PushPostfix(InstId(inst.base_id), ".", inst.name_id);
   }
 
   auto StringifyInst(InstId /*inst_id*/, ConvertAction inst) -> void {
@@ -760,17 +876,25 @@ class Stringifier {
     for (auto arg_id : llvm::reverse(callee_and_args.drop_front())) {
       step_stack_->Push(arg_id, &sep);
     }
-    step_stack_->Push(callee_and_args.front(), "(");
+    PushPostfix(callee_and_args.front(), "(");
   }
 
   auto StringifyInst(InstId /*inst_id*/, CompoundMemberAccessAction inst)
       -> void {
-    step_stack_->Push(InstId(inst.base_id), ".(", InstId(inst.member_expr_id),
-                      ")");
+    // A member that names an interface's member prints from its constant
+    // value, `Interface.Member`, rather than as the name it was written with.
+    auto member_id = InstId(inst.member_expr_id);
+    if (auto const_inst_id =
+            sem_ir_->constant_values().GetConstantInstId(member_id);
+        const_inst_id.has_value() &&
+        sem_ir_->insts().Is<AssociatedEntity>(const_inst_id)) {
+      member_id = const_inst_id;
+    }
+    PushPostfix(InstId(inst.base_id), ".(", member_id, ")");
   }
 
   auto StringifyInst(InstId /*inst_id*/, IndexAction inst) -> void {
-    step_stack_->Push(InstId(inst.operand_id), "[", InstId(inst.index_id), "]");
+    PushPostfix(InstId(inst.operand_id), "[", InstId(inst.index_id), "]");
   }
 
   auto StringifyInst(InstId /*inst_id*/, PointerDereferenceAction inst)
@@ -785,7 +909,7 @@ class Stringifier {
   }
 
   auto StringifyInst(InstId /*inst_id*/, TupleIndexAction inst) -> void {
-    step_stack_->Push(InstId(inst.tuple_id), ".", InstId(inst.index_id));
+    PushPostfix(InstId(inst.tuple_id), ".", InstId(inst.index_id));
   }
 
   // Determine the specific interface that an impl witness instruction provides

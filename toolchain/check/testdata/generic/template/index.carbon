@@ -185,6 +185,13 @@ library "[[@TEST_NAME]]";
 
 class C(N: i32) {}
 
+class D(Q: i32*) {}
+
+interface Container {
+  let Elem: type;
+  let Other: type;
+}
+
 fn F(template T: type, template v: T) -> array(i32, v.0);
 // CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `array(i32, v.1)` [FunctionRedeclReturnTypeDiffers]
 // CHECK:STDERR: fn F(template T: type, template v: T) -> array(i32, v.1);
@@ -204,6 +211,21 @@ fn G(template P: type, template p: P) -> C(*p);
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn G(template P: type, template p: P) -> C(p[0]);
+
+fn H(template P: type, template p: P) -> C(*p[0]);
+fn H(template P: type, template p: P) -> C((*p)[0]);
+
+fn K(template T: type, template v: T) -> C(-v.0);
+fn K(template T: type, template v: T) -> C(-v.1);
+
+fn L[template T: Container](x: T) -> T.(Container.Elem);
+fn L[template T: Container](x: T) -> T.(Container.Other);
+
+fn M(template P: type, template p: P) -> D(&p.n);
+fn M(template P: type, template p: P) -> D(&p.m);
+
+fn N(template P: type, template p: P) -> C(p->n);
+fn N(template P: type, template p: P) -> C(p->m);
 
 // --- fail_tuple_index_as_type_on_instantiation.carbon
 library "[[@TEST_NAME]]";

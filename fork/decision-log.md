@@ -3321,10 +3321,18 @@ none rejected whole. The per-finding table is the plan's "Focused re-review of
 the fold (2026-10-15)", round 2. Neither review judged the branch dry: review 1
 found a crash on D-TP-26's surface and a regression from C4, review 2 the
 cross-library crash after the TODO and three minor records and test gaps. Both
-re-measured 764e55445 (gate 1955/1955, conformance 137/0/22 over 159, 48/56
-bullets, EXPECTED). The fixer changed five toolchain source files, four goldens
-and one program, so round 3 is owed, over 2165322c5..24bf5ea45 and the records
-commit that records round 2.
+re-measured 764e55445 on the container toolchain, EXPECTED and not of record:
+gate 1955 of 1955, conformance 137/0/22 over 159 and 48 of 56 bullets. Review 1
+also rebuilt M21 to M25 over the head, each killed, and re-derived
+templates_constant_elements' nine EXPECT lines by hand; review 2 found that an
+autoupdate of the fold's and round 1's eight goldens changes nothing, prek,
+clang-format and clang-tidy clean, `git merge-tree` reproducing the PR body's
+conflict table and no id collision. Round 2 had MAJOR findings and its fixer
+changed five toolchain source files, four goldens and one program, so round 3
+of the focused re-review is owed, over the round-2 fixer's commits
+2165322c5..bdc1f62d7 and the records commit after them that records round 2's
+reviews; the PR opens and is held after a dry round (amended 2026-10-15,
+records: re-review round 2).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

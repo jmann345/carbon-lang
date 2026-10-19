@@ -2867,7 +2867,9 @@ residues W-183, W-192 and W-193 and UA-2's W-127; fork/templates/plan.md, rev 3
 after two plan reviews (27 findings folded) and a focused re-review
 (APPROVE-WITH-AMENDMENTS, six findings folded), implemented and then folded with
 two implementation reviews (REJECT with seven findings, APPROVE-WITH-FIXES with
-thirteen; plan's implementation review fold record). Every decision auto-adopted
+thirteen; plan's implementation review fold record), whose fold had a focused
+re-review (REJECT with eight findings, APPROVE-WITH-FIXES with six; plan's
+focused re-review fold record; amended 2026-10-15). Every decision auto-adopted
 under V-2/V-3 (R29(a)) and open to veto. Options considered (plan §7.2): turning
 crashes into TODOs (rejected as Goodhart), cherry-picking 947c1eb52 or
 4a8993af2, inserting the storage block at the action (rev 1), deferring every
@@ -2880,7 +2882,8 @@ rather than diagnosed; D-TP-2, same-type dependent initialization is a
 storage-carrying `InitializeAction`; D-TP-3, the action carries a copy of its
 storage access chain that each specific places; D-TP-4, replayed conversions get
 a storage access block; D-TP-5, storage arguments are found in the specific;
-D-TP-6, dependent value conversions are `ConvertToValueAction`s; D-TP-7,
+D-TP-6, dependent value conversions are `ConvertToValueAction`s, and a spliced
+tuple element converts in each specific; D-TP-7,
 lowering reads the specific; D-TP-8, the `for` cursor pointer is completed;
 D-TP-9, four actions for opaque template-dependent operands; D-TP-10, a
 function-typed callee calls its type's function (p2875); D-TP-11, generic type
@@ -2888,15 +2891,19 @@ constructors with dependent argument values are formed eagerly; D-TP-12, impl
 lookup for queries that name a template binding is deferred; D-TP-13, constraint
 lookup on instantiation, with different entities an error and SC-1's
 requirements deferring to the type; D-TP-14, cross-library generics resolved per
-instantiation are a `semantics TODO` at the `import`; D-TP-15, dropped; D-TP-16,
+instantiation, interfaces and named constraints included, are a `semantics TODO`
+at the `import`; D-TP-15, dropped; D-TP-16,
 no cherry-pick; D-TP-17, no fork design id; D-TP-18, row PARTIAL; D-TP-19, merge
 after PR 59, before the implementation reviews; D-TP-20, nine programs; D-TP-21,
 PR 58's fixtures flipped with dated notes; D-TP-22, commit structure, with the
 merge resolving conflicts only; D-TP-23, dependent operations print as
 expressions; D-TP-24, a template-dependent array, union or class value is
 converted whole for each instantiation; D-TP-25, a constant splice lowers the
-storage its block holds; D-TP-26, a runtime array bound in a specific is an
-error. Consequences: row PARTIAL; W-250..W-266 filed, W-267..W-269 unused;
+storage its block holds; D-TP-26, a runtime operand where a specific needs a
+constant, an array bound or a type, is an error at that operand (amended
+2026-10-15, focused re-review of the fold). Consequences: row PARTIAL;
+W-250..W-266 filed at the discharge and W-267..W-270 by the focused re-review of
+the fold, W-271..W-274 unused (TP-1 reserved W-250..W-274);
 W-127, W-183 (for an operand whose type is the parameter; W-266 for a field),
 W-192, W-193 discharged at land time, by the records commit after the repeated
 merge of trunk, because PR 51 and PR 58, which file them, are held and the four
@@ -2979,15 +2986,31 @@ pointer_dereference.{h,cpp}, a member_access.cpp comment): a runtime array bound
 in a specific is an error (D-TP-26), an imported template whose declaration
 holds an action reports W-250's TODO (`IsDeclResolvedPerInstantiation`), the six
 action kinds a template creates print as expressions, and `const T` and `T.Elem`
-are opaque. In all, 26 toolchain source files, 13 new goldens and 8 refilled
-(`git diff --stat b2576f6c3 824f29c4e -- toolchain core`: 47 files, +8693/-536),
-nine programs and one `.diff.cpp` oracle; no core file changes.
+are opaque. In all, at the discharge, 26 toolchain source files, 13 new goldens
+and 8 refilled (`git diff --stat b2576f6c3 824f29c4e -- toolchain core`: 47
+files, +8693/-536), nine programs and one `.diff.cpp` oracle; no core file
+changes. The focused re-review of the fold (amended 2026-10-15) adds four fix
+commits with their fills and a formatting commit: 632f92117 (eval.cpp,
+convert.cpp) diagnoses a runtime operand of any type or always-constant
+instruction in a specific (D-TP-26) and converts a spliced tuple element in
+each specific (D-TP-6); d8f6ab60a (import_ref.cpp) tests an imported class's,
+interface's or named constraint's declaration, definition and member
+declarations before loading it (`IsTypeResolvedPerInstantiation`, D-TP-14);
+73b3124dd (stringify.cpp) prints a prefix operand of a postfix operation in
+parentheses and an interface member as `Interface.Member` (D-TP-23);
+67a9dd91c rewraps two calls; and ba64734e7 (eval.cpp, sem_ir/expr_info.cpp,
+sem_ir/function.cpp) makes a diagnosed operand an error in the specific's value
+block and diagnoses an operand used as a type (D-TP-26). In all, at
+1f0bc7be0, 27 toolchain source files, 13 new goldens and 8 refilled (`git diff
+--stat b2576f6c3 1f0bc7be0 -- toolchain core`: 48 files, +9674/-537).
 
 THE DECISIONS, D-TP-1 to D-TP-26, verbatim from fork/templates/plan.md §1.14 as
 folded through the two plan reviews, the focused re-review and the
 implementation review fold; each break condition is the decision's own or the
 section's it cites, and the `§`, `RC-`, `TR-` and `W-` references are the
-plan's. D-TP-25 and D-TP-26 were added by the implementation review fold.
+plan's. D-TP-25 and D-TP-26 were added by the implementation review fold;
+D-TP-6, D-TP-14, D-TP-18, D-TP-22, D-TP-23 and D-TP-26 were amended by the
+focused re-review of the fold (2026-10-15) and are given here as amended.
 
 **D-TP-1.** The slice is crash and miscompile fixes first (R17), then the
 rejected dependent forms, then W-183, W-193 and W-127, each IN because its root
@@ -3012,7 +3035,10 @@ the action (§1.2; rewritten 2026-10-14, review fold: A-B1).
 **D-TP-5.** `FindStorageArgForInitializer` is specific-aware; an unresolved
 splice has no storage argument (§1.2).
 
-**D-TP-6.** A dependent value conversion is a `ConvertToValueAction` (§1.2).
+**D-TP-6.** A dependent value conversion is a `ConvertToValueAction`; a
+tuple-to-type conversion converts the generic's instruction for a spliced
+element's constant (§1.2; (amended 2026-10-15, focused re-review of the fold:
+RR1-M2)).
 
 **D-TP-7.** Lowering reads categories, constants and storage in the specific; a
 spliced in-place initializer has no value (§1.2).
@@ -3043,7 +3069,10 @@ defers to the type (§1.5; amended 2026-10-14, review fold: A-M1 / A-M2 / B-M6).
 a `semantics TODO` at the `import`, once, with no cascade, a function or class
 template whose declaration holds an action included (§1.2; rewritten 2026-10-14,
 review fold: A-m4 / B-m6; (amended 2026-10-14, implementation-review fold:
-IR1-M2)).
+IR1-M2)), and a class template's field types and member function declarations
+and an interface's or named constraint's declaration too; a checked generic
+calling an imported `eval fn` is not detected ((amended 2026-10-15, focused
+re-review of the fold: RR1-M1 / RR2-M1 / RR1-m2)).
 
 **D-TP-15.** Dropped (A-M3): form parameters are unchanged and filed (W-255).
 
@@ -3059,8 +3088,10 @@ a review shows a rule decided here that proposal 2200 leaves open.
 
 **D-TP-18.** The row stays PARTIAL and W-014 stays OPEN: the first arbiter
 clause is met for the four `fail_todo` splits present when W-014 was filed
-(TP-1's own five `fail_todo` splits pin W-250 and W-266; (amended 2026-10-14,
-implementation-review fold: IR2-MINOR-6)), the second is not (handle.cpp:513,
+(TP-1's own `fail_todo` splits, ten since the focused re-review of the fold,
+pin W-250 and W-266; (amended 2026-10-14, implementation-review fold:
+IR2-MINOR-6; amended 2026-10-15, focused re-review of the fold: RR1-M1 /
+RR2-M1)), the second is not (handle.cpp:513,
 :524 at the fold's head, behind W-250), and the residues of §1.13 are material
 gaps (gap-analysis.md:12-13). _Break:_ the row is re-graded against
 gap-analysis.md:12-13 when W-250, W-254, W-255, W-259 and W-264 are closed; not
@@ -3093,11 +3124,19 @@ L with its document review, R, D last; shrink C5 first, then C3's
 review fold: B-B2 / RR-m2). In the held state S, F6 and L are land-time commits,
 and the fold used two of the three fix commits for the toolchain and the third
 for these records (§1.12, §3; (amended 2026-10-14, implementation-review fold:
-IR2-MINOR-10)). _Break:_ a commit cannot compile without a later commit's files.
+IR2-MINOR-10)). The focused re-review of the fold adds four toolchain fix
+commits with their fills, a formatting commit and a records commit beyond that
+budget, for the root-cause reason §3's dated note gives; nothing is shrunk
+((amended 2026-10-15, focused re-review of the fold: RR1-B1 / RR1-M1 / RR1-M2 /
+RR1-m1 / RR2-m6)). _Break:_ a commit cannot compile without a later commit's
+files.
 
 **D-TP-23.** A diagnostic prints a template-dependent operation's splice as its
-expression, for every action kind a template creates (§1.2; added 2026-10-14,
-review fold: A-m2; (amended 2026-10-14, implementation-review fold: IR1-m2)).
+expression, for every action kind a template creates, with a prefix operand of a
+postfix operation in parentheses and an interface member as `Interface.Member`
+(§1.2; added 2026-10-14, review fold: A-m2; (amended 2026-10-14,
+implementation-review fold: IR1-m2); (amended 2026-10-15, focused re-review of
+the fold: RR1-m1 / RR2-m6)).
 
 **D-TP-24.** A template-dependent conversion that would allocate its own
 temporary for an array, union or class value is deferred whole; a class value
@@ -3108,9 +3147,11 @@ review fold: RR-M1). _Break:_ above.
 constant, where the splice is (§1.2; added 2026-10-14, implementation-review
 fold: IR1-B1). _Break:_ above.
 
-**D-TP-26.** In a specific, an array type whose bound is not a constant is an
-error at the bound (§1.2; added 2026-10-14, implementation-review fold: IR1-M1).
-_Break:_ above.
+**D-TP-26.** In a specific, an operand that is not constant where a type, an
+always-constant instruction or an operand used as a type needs a constant is an
+error at that operand, and its value in the specific is the error constant
+(§1.2; added 2026-10-14, implementation-review fold: IR1-M1; (amended
+2026-10-15, focused re-review of the fold: RR1-B1 / RR1-m2)). _Break:_ above.
 
 OPTIONS CONSIDERED AND REJECTED (plan §7.2, each with its evidence there). (1)
 Turning every crash into a `semantics TODO`: a Goodhart alternative (R16, R17)
@@ -3181,6 +3222,45 @@ the shrink line (R17). Across the five reviews: 53 findings, 52 distinct (4
 BLOCKER, 17 MAJOR, 32 MINOR), none rejected whole. The per-finding tables are
 the plan's "Review fold record (rev 2, 2026-10-14)", its "Focused re-review"
 subsection and the "Implementation review fold record (2026-10-14)".
+
+FOCUSED RE-REVIEW OF THE FOLD (amended 2026-10-15). Two reviews of the fold's
+commits 7c7b1b170..bf8e1b4cc at bf8e1b4cc: review 1 (adversarial correctness)
+REJECT, eight findings (RR1-B1, a runtime result of a deferred action used as
+any type but an array bound reached eval.cpp's FATAL, and `(x.0, i32)` passed
+checking and stopped lowering; RR1-M1, an imported class template whose field
+type or method declaration holds an action, and an imported interface or named
+constraint, still crashed; RR1-M2, a tuple type with a `T.Elem` element passed
+checking and stopped lowering; RR1-m1, precedence and interface members lost in
+printing; RR1-m2 to RR1-m5, records only: D-TP-26's break condition met by an
+imported `eval fn`, and three pre-existing behaviors unfiled); review 2
+(strictness and records) APPROVE-WITH-FIXES, six findings (RR2-M1, RR1-M1's
+finding; RR2-M2, the PR body's missing merge-tree conflicts and the duplicate
+Branches row a merge of trunk makes; RR2-m3 to RR2-m6, the attribution
+statement, W-014's unlabelled counts, TR-8's unamended text, and three printing
+overloads without a golden). A separate fixer reproduced every finding on the
+installed toolchain, trunk and the nightly before changing anything and folded
+all fourteen, thirteen distinct: four toolchain fix commits, each with its fill
+(632f92117 with d069d639d, d8f6ab60a with 22b9074bd, 73b3124dd with 831289fad,
+ba64734e7 with 1f0bc7be0), the formatting commit 67a9dd91c and a records
+commit; none rejected. Four residues filed: W-267 (an action's instantiated
+temporaries never destroyed), W-268 (`var e: T.Elem;` rejected where defined),
+W-269 (`return {} as T;` for a class without `Copy`) and W-270 (an interface or
+named constraint whose later parameter's type depends on a template parameter
+stops the compiler in its own library), each the same on trunk. Measured at
+1f0bc7be0, container-built, EXPECTED and not of record: "file_test test mode on
+/home/user/carbon-tp: 1955 passed, 0 failed (exit 0, 27s)", 0 `!` and 0 `?`
+marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56; mutants
+M22 and M23 (redefined) and M24, whose code the fix commits change, and nine new
+ones, M26 to M34, killed, and M1 to M17, M19 to M21 and M25 re-run and killed;
+clang-tidy 0 diagnostics on the re-review's changed lines; 213 probes of the
+two reviews and the fixer swept on the three toolchains: on the fork 72
+compile, 137 are rejected with a diagnostic and 4 stop the compiler as they do
+on trunk and the nightly (e01_twin, which has no template, W-263's class;
+local_i twice and main_k2, W-270). Across the seven reviews: 67 findings, 65
+distinct (5 BLOCKER, 21 MAJOR and 41 MINOR, counted over all 67), none
+rejected whole. The per-finding table is the plan's "Focused re-review of the
+fold, folded (2026-10-15)".
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
@@ -3404,7 +3484,9 @@ D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a
 constraint method is an error; SC-1's requirements defer to the type; through a
 field it is W-266), D-TP-14 (cross-library templates are a TODO, not
 implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
-sixteen residues), D-TP-23 (the redeclaration split flips by a diagnostic fix),
+twenty residues, four filed by the focused re-review of the fold), D-TP-23 (the
+redeclaration split flips by a diagnostic fix), D-TP-26 (a runtime value where a
+specific needs a type is an error, as outside a template),
 D-TP-24 (a class value is deferred only when its fields match, so
 definition-time field errors stay), W-256 (q07c's template crash traded for the
 miscompile the same code has without templates), and the held state (the four

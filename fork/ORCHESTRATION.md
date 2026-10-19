@@ -206,6 +206,38 @@ PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
 integration commit, PR 59, then TP-1 through its land-time commits M, S, F6 and
 L (Next actions item 5). None is merged.
 
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 1, folded;
+pushed, PR to open and hold when a round is dry): two reviews of the fold's
+commits 7c7b1b170..bf8e1b4cc returned REJECT (one BLOCKER, two MAJOR, five
+MINOR) and APPROVE-WITH-FIXES (two MAJOR, four MINOR), thirteen distinct
+findings, all folded and none rejected (fork/templates/plan.md, "Focused
+re-review of the fold, folded (2026-10-15)"): four toolchain fix commits with
+their fills -- 632f92117 (a runtime result of a deferred action used as a type
+is diagnosed at that operand in the specific, and a tuple type with a
+`T.Elem` element lowers) with d069d639d, d8f6ab60a (an imported class template
+whose field type or method declaration holds an action, and an imported
+interface or named constraint whose declaration holds one, report W-250's TODO
+instead of crashing) with 22b9074bd, 73b3124dd (dependent operations print with
+their precedence and interface members by name) with 831289fad, and ba64734e7
+(the diagnosed operand is an error in its specific, and a runtime `as` target
+is diagnosed) with 1f0bc7be0 -- the formatting commit 67a9dd91c, and a records
+commit. W-267 to W-270 are filed (an action's temporaries never destroyed,
+`var e: T.Elem;` rejected where it is defined, `return {} as T;` for a class
+without `Copy`, and an interface or named constraint whose later parameter's
+type depends on a template parameter crashing in its own library), each the
+same on trunk; TP-1 reserves W-250..W-274 and W-271 to W-274 stay unused; the
+id re-scan over the 79 other refs finds the ids only in trunk's own
+reservation sentence. Verification is container-built and NOT of record
+(Actions disabled): on 1f0bc7be0 file_test 1955/1955 and the expected
+scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard
+generated 2026-10-19T15:28:25Z by the container clock); thirty-three mutants
+re-run and killed, nine of them new; 213 probes swept on the fork, trunk and the
+nightly, the fork stopping on none that trunk and the nightly do not stop on
+the same way. `git merge-tree` of the head against trunk f3156a375 conflicts in
+this file only, and merges trunk's stale TP-1 Branches row beside this one,
+which the land-time merge drops (the PR body's "Conflicts"). Merge order
+unchanged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -546,7 +578,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
-| `claude/carbon-fork-0-1-tp` | IMPLEMENTED AND HELD, PR TO OPEN AND HOLD -- TP-1 integrated templates, toolchain at f360b8735, records through the discharge after R 35e2240b5 (W-014 OPEN; W-250..W-266 filed, W-267..W-269 unused; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1955/1955 and conformance 137/0/22 over 159 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
+| `claude/carbon-fork-0-1-tp` | IMPLEMENTED AND HELD, PR TO OPEN AND HOLD -- TP-1 integrated templates, toolchain at ba64734e7 (fill 1f0bc7be0) after the focused re-review of the fold, records through that re-review's records commit (W-014 OPEN; W-250..W-270 filed, W-271..W-274 unused; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1955/1955 and conformance 137/0/22 over 159 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -636,7 +668,7 @@ nine PASS (fork/templates/plan.md §5).
     CI; W-066 match usefulness diagnostics.
 5.  TP-1 at land time (fork/templates/plan.md §3; `claude/carbon-fork-0-1-tp`,
     after PR 59; this item renumbers after the held PRs' own items at the
-    land-time merge): repeat M over the trunk that holds PR 51 to PR 59, keeping
+    land-time merge): repeat M over the trunk that holds PR 51 to PR 60, keeping
     TP-1's appended record blocks after the PRs'; S; F6, with PR 51's split
     renamed; the id re-scan; L with its document review; a records commit that
     recomposes the row over the merged one (§2.8) and discharges W-127, W-183,
@@ -650,9 +682,11 @@ nine PASS (fork/templates/plan.md §5).
         the conformance README table is regenerated with `runner.py
         --update-readme-table`, and each record file takes trunk's text with
         TP-1's appended blocks after the PRs' (row 54 found by its bullet text,
-        W-250..W-266 after the then-last item, the decision-log entry above the
+        W-250..W-270 after the then-last item, the decision-log entry above the
         entry that then follows "Full autonomy and the throughput protocol",
-        this item and TP-1's Branches row).
+        this item and TP-1's Branches row, trunk's own stale TP-1 Branches row
+        dropped, since a merge keeps both rows without a conflict). The focused
+        re-review's convert.cpp hunk, in `ConvertTupleToType`, merges cleanly.
     -   S, "TP-1 (7): over SC-1, a template constraint's requirement defers to
         the type in constraint lookup": plan §2.5's text, member_access.cpp only
         (measured at state T and at the fold: SC-1's nine template-constraint

@@ -960,16 +960,18 @@ namespace {
 // instruction: the instruction's type and its operands, which include the
 // field types of a struct type, the elements of a block, the generic and the
 // arguments of a specific, the interfaces and named constraints of a facet
-// type with their specifics, and the function, class, interface, named
-// constraint or impl that an operand names. A concrete operand of an entry,
-// such as `FieldBox(Holder)` in `Pair(T, FieldBox(Holder))*`, is loaded with
-// the entry but is not an entry itself. A function adds its declaration only:
-// a function whose definition is resolved for each instantiation is imported
-// without its definition, or its specifics' (`TryFinishGeneric`,
-// `TryFinishSpecific`). A class, interface, named constraint or impl adds its
-// declaration and its definition, which are loaded with it. A specific's
-// values are not walked: they are its generic's entries evaluated for its
-// arguments, so they name what those name.
+// type with their specifics, the function, class, interface, named constraint
+// or impl that an operand names, and the `require` declarations of an
+// interface or named constraint, each with its generic, self type and facet
+// type, and the `observe` declarations of an interface, which are loaded with
+// it. A concrete operand of an entry, such as `FieldBox(Holder)` in
+// `Pair(T, FieldBox(Holder))*`, is loaded with the entry but is not an entry
+// itself. A function adds its declaration only: a function whose definition is
+// resolved for each instantiation is imported without its definition, or its
+// specifics' (`TryFinishGeneric`, `TryFinishSpecific`). A class, interface,
+// named constraint or impl adds its declaration and its definition, which are
+// loaded with it. A specific's values are not walked: they are its generic's
+// entries evaluated for its arguments, so they name what those name.
 //
 // The walk is iterative, and records each instruction and generic it reaches,
 // so that it ends for an entity that names itself, such as a class with a
@@ -1197,12 +1199,43 @@ class PerInstantiationWalk {
     }
   }
 
-  // Adds an interface or named constraint: its generic, and its generic with
-  // `Self`, in which its members are declared.
+  // Adds an interface or named constraint: its generic, its generic with
+  // `Self`, in which its members are declared, and its `require` declarations
+  // and an interface's `observe` declarations, which are loaded with it.
   template <typename EntityT>
   auto AddInterfaceOrConstraint(const EntityT& entity) -> void {
     AddType(entity.generic_id);
     AddType(entity.generic_with_self_id);
+    if (entity.require_impls_block_id.has_value() &&
+        entity.require_impls_block_id != SemIR::RequireImplsBlockId::Empty) {
+      for (auto require_id : context_->import_require_impls_blocks().Get(
+               entity.require_impls_block_id)) {
+        AddOperand(require_id);
+      }
+    }
+    if constexpr (std::is_same_v<EntityT, SemIR::Interface>) {
+      if (entity.observe_block_id.has_value() &&
+          entity.observe_block_id != SemIR::ObserveBlockId::Empty) {
+        for (auto observe_id :
+             context_->import_observe_blocks().Get(entity.observe_block_id)) {
+          AddOperand(observe_id);
+        }
+      }
+    }
+  }
+
+  // Adds a `require` declaration: its generic, in which it is declared, its
+  // self type and its facet type.
+  auto AddOperand(SemIR::RequireImplsId require_id) -> void {
+    const auto& require = context_->import_require_impls().Get(require_id);
+    AddType(require.generic_id);
+    insts_.push_back(require.self_id);
+    insts_.push_back(require.facet_type_inst_id);
+  }
+
+  // Adds an `observe` declaration: the operations it declares.
+  auto AddOperand(SemIR::ObserveId observe_id) -> void {
+    AddBlock(context_->import_observes().Get(observe_id).operations_id);
   }
 
   ImportContext* context_;

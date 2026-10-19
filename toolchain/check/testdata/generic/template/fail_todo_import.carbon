@@ -141,6 +141,18 @@ fn TakesStruct[T: type](unused p: {.a: T, .b: FieldBox(Holder)*}*) {}
 
 fn ConstrainedByRewrite[T: HasItem where .Item = FieldBox(Holder)*](unused t: T) {}
 
+interface RequiresFieldBox(U: type) {
+  require impls WithArg((U, FieldBox(Holder)*));
+}
+
+constraint RequiresFieldBoxC(U: type) {
+  require impls WithArg((U, FieldBox(Holder)*));
+}
+
+fn ConstrainedByRequires[T: RequiresFieldBox(())](unused t: T) {}
+
+fn ConstrainedByRequiresC[T: RequiresFieldBoxC(())](unused t: T) {}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -499,4 +511,40 @@ import library "lib";
 
 fn Use(p: ((), FieldBox(Holder)*)*) {
   TakesTuple(p);
+}
+
+// --- fail_todo_import_interface_requires_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  RequiresFieldBox;
+}
+
+// --- fail_todo_import_constraint_requires_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  RequiresFieldBoxC;
+}
+
+// --- fail_todo_import_function_constrained_by_interface_requiring_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  ConstrainedByRequires;
+}
+
+// --- fail_todo_import_function_constrained_by_constraint_requiring_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  ConstrainedByRequiresC;
 }

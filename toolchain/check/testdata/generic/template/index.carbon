@@ -438,6 +438,30 @@ fn Use(t: (type, type)) -> i32 {
   return F(t);
 }
 
+// --- fail_array_type_two_runtime_operands_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  var a: array(x.0, x.1);
+  return a[0];
+}
+
+fn Use(t: (type, i32)) -> i32 {
+  return F(t);
+}
+
+// --- fail_tuple_type_two_runtime_elements_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  let p: (x.0, x.1) = (1, 2);
+  return p.1;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
 // --- template_value_as_type.carbon
 library "[[@TEST_NAME]]";
 

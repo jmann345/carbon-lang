@@ -3123,87 +3123,74 @@ static auto IsRuntimeOperand(EvalContext& eval_context, SemIR::InstId inst_id)
          !eval_context.GetConstantValue(inst_id).is_constant();
 }
 
-// Overloads of `FindNonConstantOperandIn` for each kind of field. By default,
-// a field has no operand to report, such as the instruction operand of an
-// action, whose value can be a runtime instruction.
+using NonConstantOperands = llvm::SmallVector<NonConstantOperand, 2>;
+
+// Overloads of `AddNonConstantOperandsIn` for each kind of field, which add to
+// `operands` each operand in the field whose value in this context is not a
+// constant. By default, a field has no operand to report, such as the
+// instruction operand of an action, whose value can be a runtime instruction.
 template <typename IdT>
-static auto FindNonConstantOperandIn(EvalContext& /*eval_context*/, IdT /*id*/)
-    -> NonConstantOperand {
-  return {};
-}
+static auto AddNonConstantOperandsIn(EvalContext& /*eval_context*/, IdT /*id*/,
+                                     NonConstantOperands& /*operands*/)
+    -> void {}
 
-static auto FindNonConstantOperandIn(EvalContext& eval_context,
-                                     SemIR::InstId inst_id)
-    -> NonConstantOperand {
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::InstId inst_id,
+                                     NonConstantOperands& operands) -> void {
   if (IsRuntimeOperand(eval_context, inst_id)) {
-    return {.inst_id = inst_id, .is_type = false};
+    operands.push_back({.inst_id = inst_id, .is_type = false});
   }
-  return {};
 }
 
-static auto FindNonConstantOperandIn(EvalContext& eval_context,
-                                     SemIR::TypeInstId inst_id)
-    -> NonConstantOperand {
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::TypeInstId inst_id,
+                                     NonConstantOperands& operands) -> void {
   if (IsRuntimeOperand(eval_context, inst_id)) {
-    return {.inst_id = inst_id, .is_type = true};
+    operands.push_back({.inst_id = inst_id, .is_type = true});
   }
-  return {};
 }
 
-static auto FindNonConstantOperandIn(EvalContext& eval_context,
-                                     SemIR::InstBlockId block_id)
-    -> NonConstantOperand {
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::InstBlockId block_id,
+                                     NonConstantOperands& operands) -> void {
   if (block_id.has_value()) {
     for (auto inst_id : eval_context.inst_blocks().Get(block_id)) {
-      if (IsRuntimeOperand(eval_context, inst_id)) {
-        return {.inst_id = inst_id, .is_type = false};
-      }
+      AddNonConstantOperandsIn(eval_context, inst_id, operands);
     }
   }
-  return {};
 }
 
-static auto FindNonConstantOperandIn(EvalContext& eval_context,
-                                     SemIR::StructTypeFieldsId fields_id)
-    -> NonConstantOperand {
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::StructTypeFieldsId fields_id,
+                                     NonConstantOperands& operands) -> void {
   for (auto field : eval_context.sem_ir().struct_type_fields().Get(fields_id)) {
-    if (IsRuntimeOperand(eval_context, field.type_inst_id)) {
-      return {.inst_id = field.type_inst_id, .is_type = true};
-    }
+    AddNonConstantOperandsIn(eval_context, field.type_inst_id, operands);
   }
-  return {};
 }
 
 template <typename BundleT>
-static auto FindNonConstantOperandIn(EvalContext& eval_context,
-                                     SemIR::BundleId<BundleT> bundle_id)
-    -> NonConstantOperand {
-  NonConstantOperand result;
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::BundleId<BundleT> bundle_id,
+                                     NonConstantOperands& operands) -> void {
   std::apply(
       [&](auto... ids) {
-        (...,
-         (result.inst_id.has_value()
-              ? void()
-              : void(result = FindNonConstantOperandIn(eval_context, ids))));
+        (..., AddNonConstantOperandsIn(eval_context, ids, operands));
       },
       eval_context.context().bundles().GetAsTuple(bundle_id));
-  return result;
 }
 
-// Returns an operand of the instruction `inst_id` whose value in this context
-// is not a constant.
-static auto FindNonConstantOperand(EvalContext& eval_context,
-                                   SemIR::InstId inst_id)
-    -> NonConstantOperand {
+// Returns the operands of the instruction `inst_id` whose values in this
+// context are not constants, in operand order.
+static auto FindNonConstantOperands(EvalContext& eval_context,
+                                    SemIR::InstId inst_id)
+    -> NonConstantOperands {
+  NonConstantOperands operands;
   auto inst = eval_context.insts().Get(inst_id);
   for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
-    auto operand = arg.Dispatch<NonConstantOperand>(
-        [&](auto id) { return FindNonConstantOperandIn(eval_context, id); });
-    if (operand.inst_id.has_value()) {
-      return operand;
-    }
+    arg.Dispatch<void>(
+        [&](auto id) { AddNonConstantOperandsIn(eval_context, id, operands); });
   }
-  return {};
+  return operands;
 }
 
 // Makes the value in this context's specific of the generic's instruction
@@ -3274,31 +3261,42 @@ static auto TryEvalTypedInst(EvalContext& eval_context, SemIR::InstId inst_id,
       // In a specific, an operand used as a type, or any operand of a type or
       // of an instruction that is always constant, can be the result of an
       // action that is not a constant there: `x.0`, `*p`, `a[0]` or a call on
-      // a template's runtime value, used as a type or as an array bound. It is
-      // diagnosed where it is used, as such an operand is outside a template
-      // (`ExprAsType`, handle_array.cpp), once for each value, and the value
-      // is an error in the specific. A type, or an instruction that is always
-      // constant, is then an error too, so that the types formed from it are
-      // errors; any other instruction, such as an action converting to that
-      // type, is not constant, as before.
+      // a template's runtime value, used as a type or as an array bound. Such
+      // an operand is diagnosed where it is used, as it is outside a template
+      // (`ExprAsType`, handle_array.cpp), once for each value: the
+      // instruction's first such operand, or the instruction itself when no
+      // operand can be pointed at. Every such operand is an error in the
+      // specific, so that the instruction's other uses of the specific's
+      // values, such as the element type of `array(x.0, x.1)` read by an
+      // access to its element, see errors rather than runtime values. A type,
+      // or an instruction that is always constant, is then an error too, so
+      // that the types formed from it are errors; any other instruction, such
+      // as an action converting to that type, is not constant, as before.
       constexpr bool RequiresConstantOperands =
           ConstantKind == SemIR::InstConstantKind::Always ||
           InstT::Kind.is_type() == SemIR::InstIsType::Always;
       if (eval_context.specific_id().has_value()) {
-        auto operand = FindNonConstantOperand(eval_context, inst_id);
-        if (RequiresConstantOperands || operand.is_type) {
-          if (eval_context.MarkNonConstantDiagnosed(
-                  operand.inst_id.has_value() ? operand.inst_id : inst_id)) {
-            DiagnoseNonConstantValue(
-                eval_context.context(),
-                eval_context.GetDiagnosticLoc({operand.inst_id, inst_id}));
+        bool diagnosed = false;
+        for (auto operand : FindNonConstantOperands(eval_context, inst_id)) {
+          if (!RequiresConstantOperands && !operand.is_type) {
+            continue;
           }
-          if (operand.inst_id.has_value()) {
-            MakeSpecificValueAnError(eval_context, operand.inst_id);
+          if (!diagnosed) {
+            diagnosed = true;
+            if (eval_context.MarkNonConstantDiagnosed(operand.inst_id)) {
+              DiagnoseNonConstantValue(
+                  eval_context.context(),
+                  eval_context.GetDiagnosticLoc({operand.inst_id, inst_id}));
+            }
           }
-          if constexpr (RequiresConstantOperands) {
-            return SemIR::ErrorInst::ConstantId;
+          MakeSpecificValueAnError(eval_context, operand.inst_id);
+        }
+        if constexpr (RequiresConstantOperands) {
+          if (!diagnosed && eval_context.MarkNonConstantDiagnosed(inst_id)) {
+            DiagnoseNonConstantValue(eval_context.context(),
+                                     eval_context.GetDiagnosticLoc({inst_id}));
           }
+          return SemIR::ErrorInst::ConstantId;
         }
       }
       if constexpr (ConstantKind == SemIR::InstConstantKind::Always) {

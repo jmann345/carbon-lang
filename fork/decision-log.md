@@ -2869,8 +2869,9 @@ after two plan reviews (27 findings folded) and a focused re-review
 two implementation reviews (REJECT with seven findings, APPROVE-WITH-FIXES with
 thirteen; plan's implementation review fold record), whose fold had a focused
 re-review (round 1, amended 2026-10-15: REJECT with eight findings,
-APPROVE-WITH-FIXES with six, neither dry, round 2 owed; plan's focused
-re-review fold record). Every decision auto-adopted
+APPROVE-WITH-FIXES with six, neither dry; round 2, amended 2026-10-15: two
+APPROVE-WITH-FIXES with seven findings, neither dry, round 3 owed; plan's
+focused re-review fold record). Every decision auto-adopted
 under V-2/V-3 (R29(a)) and open to veto. Options considered (plan §7.2): turning
 crashes into TODOs (rejected as Goodhart), cherry-picking 947c1eb52 or
 4a8993af2, inserting the storage block at the action (rev 1), deferring every
@@ -2892,8 +2893,8 @@ constructors with dependent argument values are formed eagerly; D-TP-12, impl
 lookup for queries that name a template binding is deferred; D-TP-13, constraint
 lookup on instantiation, with different entities an error and SC-1's
 requirements deferring to the type; D-TP-14, cross-library generics resolved per
-instantiation, interfaces and named constraints included, are a `semantics TODO`
-at the `import`; D-TP-15, dropped; D-TP-16,
+instantiation, interfaces and named constraints included, and the entities that
+name them, are a `semantics TODO` at the `import`; D-TP-15, dropped; D-TP-16,
 no cherry-pick; D-TP-17, no fork design id; D-TP-18, row PARTIAL; D-TP-19, merge
 after PR 59, before the implementation reviews; D-TP-20, nine programs; D-TP-21,
 PR 58's fixtures flipped with dated notes; D-TP-22, commit structure, with the
@@ -2903,12 +2904,13 @@ converted whole for each instantiation; D-TP-25, a constant splice lowers the
 storage its block holds; D-TP-26, a runtime operand where a specific needs a
 constant, an array bound or a type, is an error at that operand (amended
 2026-10-15, focused re-review of the fold). Consequences: row PARTIAL;
-W-250..W-266 filed at the discharge and W-267..W-270 by the focused re-review of
-the fold, W-271..W-274 unused (TP-1 reserved W-250..W-274);
-W-127, W-183 (for an operand whose type is the parameter; W-266 for a field),
-W-192, W-193 discharged at land time, by the records commit after the repeated
-merge of trunk, because PR 51 and PR 58, which file them, are held and the four
-items are not yet in the ledger (the plan's landed notes hold their texts).
+W-250..W-266 filed at the discharge and W-267..W-271 by the focused re-review of
+the fold (W-271 by its round 2), W-272..W-274 unused (TP-1 reserved
+W-250..W-274); W-127, W-183 (for an operand whose type is the parameter; W-266
+for a field), W-192, W-193 discharged at land time, by the records commit after
+the repeated merge of trunk, because PR 51 and PR 58, which file them, are held
+and the four items are not yet in the ledger (the plan's landed notes hold
+their texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3274,6 +3276,55 @@ fixer changed six toolchain source files and four goldens, so round 2 of the
 focused re-review is owed, over 632f92117..c874c270f and the records commit that
 records round 1; the PR opens and is held after a dry round (amended 2026-10-15,
 records: re-review round 1).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 2 (amended 2026-10-15). Two fresh reviews
+of the round-1 fixer's commits 632f92117..c874c270f and the records commit
+764e55445, at 764e55445: review 1 (adversarial correctness) APPROVE-WITH-FIXES,
+three findings (RR2-1-M1, D-TP-26 made only an instruction's first runtime
+operand an error, so `array(x.0, x.1)` stopped the compiler after the
+diagnostics; RR2-1-M2, a class template's literal whose array field has a
+template-dependent bound was rejected where trunk compiles it, because C4 forms
+`C(N)` in the definition; RR2-1-m1, `->` printed as `(*p).`); review 2
+(strictness and records) APPROVE-WITH-FIXES, four findings (RR2r2-M1, across
+libraries a nested generic class or a template interface's constraint reported
+W-250's TODO and then stopped the compiler; RR2r2-m1, three error guards that no
+golden reaches; RR2r2-m2 and RR2r2-m3, records only: the id paragraph's list of
+commit messages and its failure condition, and the PR body's FILL-CAUGHT
+MISSES). A separate fixer reproduced every finding on the installed toolchain,
+trunk and the nightly before changing anything and folded all seven: four
+toolchain fix commits with their fills (2165322c5 with e6a663c22, 123eb40ca with
+8af8ad78b, b678e2985 with 7ea3fed97, 94227d82c with 4fcbf62ef), 282930a73, which
+makes two of the new tests worklists for clang-tidy's misc-no-recursion,
+f44280c1c with its fill 24bf5ea45, which removes b678e2985's aggregate-level
+deferral once the round's fix of `NeedsSpecificInst` had made it change only
+value names, and a records commit; none rejected. `HasErrorConstraint` is pinned
+by a new split; the other two guards are kept and recorded, as mutants x1 and x2
+that survive. One residue filed: W-271 (a generic class from another library
+that declares a nested class or interface stops the compiler where the class is
+used, with or without a template parameter), the same on trunk and the nightly.
+Measured at 24bf5ea45, container-built, EXPECTED and not of record: "file_test
+test mode on /home/user/carbon-tp: 1955 passed, 0 failed (exit 0, 26s)", 0 `!`
+and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56;
+templates_deduce_class_args prints `21 42 3 16 8`; every mutant killed but x1
+and x2 (sixteen new, M35 to M50, of which M37 to M39 ran at 282930a73 before
+f44280c1c removed the code they mutate; six redefined); clang-tidy 0 diagnostics
+on the round's changed lines; 284 probes of the two reviews and the fixer swept
+on the three toolchains: on the fork 114 compile, 149 are rejected with a
+diagnostic and 21 stop the compiler, 18 at W-263's LLVM verification failure and
+3 at W-271's FATAL, none that trunk compiles. The re-review's fills (d069d639d,
+22b9074bd, 831289fad and 1f0bc7be0 in round 1; e6a663c22, 8af8ad78b, 7ea3fed97,
+4fcbf62ef and 24bf5ea45 in round 2) missed no row of plan §4, whose rows for
+them were written from the fixers' own autoupdates. Across the nine reviews: 74
+findings, 72 distinct (5 BLOCKER, 24 MAJOR and 45 MINOR, counted over all 74),
+none rejected whole. The per-finding table is the plan's "Focused re-review of
+the fold (2026-10-15)", round 2. Neither review judged the branch dry: review 1
+found a crash on D-TP-26's surface and a regression from C4, review 2 the
+cross-library crash after the TODO and three minor records and test gaps. Both
+re-measured 764e55445 (gate 1955/1955, conformance 137/0/22 over 159, 48/56
+bullets, EXPECTED). The fixer changed five toolchain source files, four goldens
+and one program, so round 3 is owed, over 2165322c5..24bf5ea45 and the records
+commit that records round 2.
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

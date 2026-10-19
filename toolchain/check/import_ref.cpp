@@ -974,6 +974,57 @@ static auto IsDeclResolvedPerInstantiation(ImportContext& context,
              context.import_generics().Get(import_generic_id).decl_block_id);
 }
 
+// Returns whether an imported generic type, such as a class template or an
+// interface, cannot be imported because part of it is resolved for each
+// instantiation: its declaration, or its definition, such as a field of type
+// `T.Item`, or the declaration of an entity its definition names, such as a
+// method returning `T.Item`, which resolves to an error
+// (`IsDeclResolvedPerInstantiation`). The type's definition is needed to use
+// it, so the type itself is diagnosed when it is first resolved and resolves
+// to an error, and no error reaches its eval blocks.
+static auto IsTypeResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::GenericId import_generic_id)
+    -> bool {
+  if (!import_generic_id.has_value()) {
+    return false;
+  }
+  if (IsDeclResolvedPerInstantiation(context, import_generic_id)) {
+    return true;
+  }
+  auto definition_block_id =
+      context.import_generics().Get(import_generic_id).definition_block_id;
+  if (!definition_block_id.has_value()) {
+    return false;
+  }
+  if (IsResolvedPerInstantiation(context, definition_block_id)) {
+    return true;
+  }
+  return llvm::any_of(
+      context.import_inst_blocks().Get(definition_block_id),
+      [&](SemIR::InstId inst_id) {
+        CARBON_KIND_SWITCH(context.import_insts().Get(inst_id)) {
+          case CARBON_KIND(SemIR::FunctionType function_type): {
+            return IsDeclResolvedPerInstantiation(
+                context, context.import_functions()
+                             .Get(function_type.function_id)
+                             .generic_id);
+          }
+          case CARBON_KIND(SemIR::GenericClassType class_type): {
+            return IsDeclResolvedPerInstantiation(
+                context,
+                context.import_classes().Get(class_type.class_id).generic_id);
+          }
+          case CARBON_KIND(SemIR::ClassType class_type): {
+            return IsDeclResolvedPerInstantiation(
+                context,
+                context.import_classes().Get(class_type.class_id).generic_id);
+          }
+          default:
+            return false;
+        }
+      });
+}
+
 // Gets a local version of the data associated with a generic. This is processed
 // through `ResolveResult::FinishGenericOrDone`.
 static auto GetLocalGenericData(ImportRefResolver& resolver,
@@ -2170,7 +2221,7 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
   SemIR::ClassId class_id = SemIR::ClassId::None;
   if (!class_const_id.has_value()) {
-    if (IsDeclResolvedPerInstantiation(resolver, import_class.generic_id)) {
+    if (IsTypeResolvedPerInstantiation(resolver, import_class.generic_id)) {
       DiagnoseResolvedPerInstantiation(resolver);
       return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
     }
@@ -3075,7 +3126,7 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
     return ResolveResult::Retry();
   }
   if (class_val_id == SemIR::ErrorInst::InstId) {
-    // The class could not be imported (`IsDeclResolvedPerInstantiation`).
+    // The class could not be imported (`IsTypeResolvedPerInstantiation`).
     return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
   }
   auto class_val = resolver.local_insts().Get(class_val_id);
@@ -3095,6 +3146,10 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   if (resolver.HasNewWork()) {
     return ResolveResult::Retry();
   }
+  if (interface_val_id == SemIR::ErrorInst::InstId) {
+    // The interface could not be imported (`IsTypeResolvedPerInstantiation`).
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+  }
   auto interface_val = resolver.local_insts().Get(interface_val_id);
   CARBON_CHECK(resolver.local_types().Is<SemIR::GenericInterfaceType>(
       interface_val.type_id()));
@@ -3112,6 +3167,11 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                            .first_owning_decl_id);
   if (resolver.HasNewWork()) {
     return ResolveResult::Retry();
+  }
+  if (constraint_val_id == SemIR::ErrorInst::InstId) {
+    // The constraint could not be imported
+    // (`IsTypeResolvedPerInstantiation`).
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
   }
   auto constraint_val = resolver.local_insts().Get(constraint_val_id);
   CARBON_CHECK(resolver.local_types().Is<SemIR::GenericNamedConstraintType>(
@@ -3489,6 +3549,13 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
   auto interface_id = SemIR::InterfaceId::None;
   if (!interface_const_id.has_value()) {
+    // An interface's members are declared in the generic with `Self`.
+    if (IsTypeResolvedPerInstantiation(resolver, import_interface.generic_id) ||
+        IsTypeResolvedPerInstantiation(resolver,
+                                       import_interface.generic_with_self_id)) {
+      DiagnoseResolvedPerInstantiation(resolver);
+      return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+    }
     auto import_specific_id = SemIR::SpecificId::None;
     if (auto import_generic_interface_type =
             resolver.import_types().TryGetAs<SemIR::GenericInterfaceType>(
@@ -3776,6 +3843,13 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
   auto named_constraint_id = SemIR::NamedConstraintId::None;
   if (!named_constraint_const_id.has_value()) {
+    if (IsTypeResolvedPerInstantiation(resolver,
+                                       import_named_constraint.generic_id) ||
+        IsTypeResolvedPerInstantiation(
+            resolver, import_named_constraint.generic_with_self_id)) {
+      DiagnoseResolvedPerInstantiation(resolver);
+      return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+    }
     auto import_specific_id = SemIR::SpecificId::None;
     if (auto import_generic_named_constraint_type =
             resolver.import_types().TryGetAs<SemIR::GenericNamedConstraintType>(
@@ -4106,6 +4180,47 @@ static auto ResolveDeclaredFacetType(
   }
 }
 
+// Returns whether an interface or named constraint of an imported facet type
+// resolved to an error because it could not be imported
+// (`IsTypeResolvedPerInstantiation`). Its constant has already been resolved.
+static auto HasErrorConstraint(
+    ImportRefResolver& resolver,
+    const SemIR::DeclaredFacetType& import_declared_facet_type) -> bool {
+  auto is_error_interface = [&](SemIR::SpecificInterface interface) {
+    return interface.interface_id.has_value() &&
+           GetLocalConstantId(resolver, resolver.import_interfaces()
+                                            .Get(interface.interface_id)
+                                            .first_owning_decl_id) ==
+               SemIR::ErrorInst::ConstantId;
+  };
+  auto is_error_constraint = [&](SemIR::SpecificNamedConstraint constraint) {
+    return constraint.named_constraint_id.has_value() &&
+           GetLocalConstantId(resolver,
+                              resolver.import_named_constraints()
+                                  .Get(constraint.named_constraint_id)
+                                  .first_owning_decl_id) ==
+               SemIR::ErrorInst::ConstantId;
+  };
+  return llvm::any_of(import_declared_facet_type.extend_constraints,
+                      is_error_interface) ||
+         llvm::any_of(import_declared_facet_type.self_impls_constraints,
+                      is_error_interface) ||
+         llvm::any_of(import_declared_facet_type.extend_named_constraints,
+                      is_error_constraint) ||
+         llvm::any_of(import_declared_facet_type.self_impls_named_constraints,
+                      is_error_constraint) ||
+         llvm::any_of(import_declared_facet_type.type_impls_interfaces,
+                      [&](const auto& type_impls) {
+                        return is_error_interface(
+                            type_impls.specific_interface);
+                      }) ||
+         llvm::any_of(import_declared_facet_type.type_impls_named_constraints,
+                      [&](const auto& type_impls) {
+                        return is_error_constraint(
+                            type_impls.specific_named_constraint);
+                      });
+}
+
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::FacetType inst) -> ResolveResult {
   CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
@@ -4117,6 +4232,9 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                            /*local_declared_facet_type=*/nullptr);
   if (resolver.HasNewWork()) {
     return ResolveResult::Retry();
+  }
+  if (HasErrorConstraint(resolver, import_declared_facet_type)) {
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
   }
 
   SemIR::DeclaredFacetType local_declared_facet_type = {

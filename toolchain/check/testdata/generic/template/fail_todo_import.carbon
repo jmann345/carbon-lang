@@ -37,6 +37,23 @@ fn Elem[template T: type](x: T) -> T.Item {
 
 class Pick(template T: type, unused U: T.Item) {}
 
+class FieldBox(template T: type) {
+  var item: T.Item;
+}
+
+class MethodBox(template T: type) {
+  var t: T;
+  fn Get(self) -> T.Item { return self.t.item; }
+}
+
+interface PickI(template T: type, unused U: T.Item) {}
+
+constraint PickC(template T: type, unused U: T.Item) {}
+
+interface WithMethod(template T: type) {
+  fn F() -> T.Item;
+}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -95,3 +112,40 @@ library "[[@TEST_NAME]]";
 import library "lib";
 
 fn Use(unused p: Pick(Holder, ())) {}
+
+// --- fail_todo_import_class_field_type.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused b: FieldBox(Holder)) {}
+
+// --- fail_todo_import_class_method_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(b: MethodBox(Holder)) -> () {
+  return b.Get();
+}
+
+// --- fail_todo_import_interface_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused x: PickI(Holder, ())) {}
+
+// --- fail_todo_import_constraint_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use[V: PickC(Holder, ())](unused v: V) {}
+
+// --- fail_todo_import_interface_member_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused x: WithMethod(Holder)) {}

@@ -442,11 +442,32 @@ fn Use(t: (type, type)) -> i32 {
 library "[[@TEST_NAME]]";
 
 fn F[template T: type](x: T) -> i32 {
+  // CHECK:STDERR: fail_array_type_two_runtime_operands_on_instantiation.carbon:[[@LINE+4]]:3: error: cannot convert type `array(x.0, x.1)` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   var a: array(x.0, x.1);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var a: array(x.0, x.1);
   return a[0];
 }
 
 fn Use(t: (type, i32)) -> i32 {
+  // CHECK:STDERR: fail_array_type_two_runtime_operands_on_instantiation.carbon:[[@LINE+17]]:10: error: unable to monomorphize specific `F((type, i32))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_array_type_two_runtime_operands_on_instantiation.carbon:[[@LINE-8]]:21: note: non-constant call to compile-time-only function [NonConstantCallToCompTimeOnlyFunction]
+  // CHECK:STDERR:   var a: array(x.0, x.1);
+  // CHECK:STDERR:                     ^~~
+  // CHECK:STDERR: {{.*}}/prelude/types/int.carbon:36:3: note: compile-time-only function declared here [CompTimeOnlyFunctionHere]
+  // CHECK:STDERR:   fn Convert(self) -> IntLiteral = "int.convert_checked";
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_array_type_two_runtime_operands_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, i32))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_array_type_two_runtime_operands_on_instantiation.carbon:[[@LINE-18]]:21: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   var a: array(x.0, x.1);
+  // CHECK:STDERR:                     ^~~
+  // CHECK:STDERR:
   return F(t);
 }
 
@@ -459,6 +480,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_tuple_type_two_runtime_elements_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_tuple_type_two_runtime_elements_on_instantiation.carbon:[[@LINE-8]]:10: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let p: (x.0, x.1) = (1, 2);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR:
   return F(t);
 }
 

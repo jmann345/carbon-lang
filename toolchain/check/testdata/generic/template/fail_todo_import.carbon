@@ -116,6 +116,10 @@ fn Use(unused p: Pick(Holder, ())) {}
 // --- fail_todo_import_class_field_type.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_class_field_type.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(unused b: FieldBox(Holder)) {}
@@ -123,6 +127,10 @@ fn Use(unused b: FieldBox(Holder)) {}
 // --- fail_todo_import_class_method_declaration.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_class_method_declaration.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(b: MethodBox(Holder)) -> () {
@@ -132,6 +140,10 @@ fn Use(b: MethodBox(Holder)) -> () {
 // --- fail_todo_import_interface_declaration.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_interface_declaration.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(unused x: PickI(Holder, ())) {}
@@ -139,6 +151,10 @@ fn Use(unused x: PickI(Holder, ())) {}
 // --- fail_todo_import_constraint_declaration.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_constraint_declaration.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use[V: PickC(Holder, ())](unused v: V) {}
@@ -146,6 +162,10 @@ fn Use[V: PickC(Holder, ())](unused v: V) {}
 // --- fail_todo_import_interface_member_declaration.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_interface_member_declaration.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(unused x: WithMethod(Holder)) {}

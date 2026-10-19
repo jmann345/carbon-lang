@@ -189,6 +189,31 @@ fn Make(template N: i32) -> i32 {
   return c.n;
 }
 
+// --- fail_class_template_literal_with_associated_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32 = 5;
+}
+
+fn Make[template T: HasItem](unused x: T) -> i32 {
+  var b: Box(T) = {.item = 4};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return Make(h);
+}
+
 // CHECK:STDOUT: --- holder.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

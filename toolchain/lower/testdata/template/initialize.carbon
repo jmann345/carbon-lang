@@ -382,6 +382,145 @@ fn Use() -> i32 {
   return M(3, 1);
 }
 
+// --- var_class_template_associated_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32;
+}
+
+fn G[template T: HasItem](unused x: T) -> i32 {
+  var b: Box(T) = {.item = 4, .n = 5};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return G(h);
+}
+
+// --- return_class_template_associated_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32;
+}
+
+fn G[template T: HasItem](unused x: T, y: i32) -> Box(T) {
+  return {.item = y, .n = 5};
+}
+
+fn Use(h: Holder) -> Box(Holder) {
+  return G(h, 4);
+}
+
+// --- class_template_factory_associated_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32;
+
+  fn Make(item: T.Item) -> Box(T) {
+    return {.item = item, .n = 5};
+  }
+}
+
+fn Use() -> Box(Holder) {
+  return Box(Holder).Make(4);
+}
+
+// --- class_template_associated_pointer_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class PtrBox(template T: HasItem) {
+  var p: T.Item*;
+  var n: i32;
+}
+
+fn G[template T: HasItem](unused x: T, p: T.Item*) -> i32 {
+  var b: PtrBox(T) = {.p = p, .n = 5};
+  return b.n;
+}
+
+fn Use(h: Holder, p: i32*) -> i32 {
+  return G(h, p);
+}
+
+// --- nested_class_template_computed_argument.carbon
+library "[[@TEST_NAME]]";
+
+class Inner(template N: i32) {
+  var a: i32;
+}
+
+class Outer(template M: i32) {
+  var c: Inner(M + 1);
+}
+
+fn G(template M: i32) -> i32 {
+  var o: Outer(M) = {.c = {.a = 4}};
+  return o.c.a;
+}
+
+fn Use() -> i32 {
+  return G(2);
+}
+
+// --- assign_nested_class_template_computed_argument.carbon
+library "[[@TEST_NAME]]";
+
+class Inner(template N: i32) {
+  var a: i32;
+}
+
+class Outer(template M: i32) {
+  var c: Inner(M + 1);
+}
+
+fn G(template M: i32, x: i32) -> i32 {
+  var o: Outer(M) = {.c = {.a = 4}};
+  o = {.c = {.a = x}};
+  return o.c.a;
+}
+
+fn Use() -> i32 {
+  return G(2, 6);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'return_param_tuple.carbon'
 // CHECK:STDOUT: source_filename = "return_param_tuple.carbon"

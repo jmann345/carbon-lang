@@ -10,6 +10,7 @@
 
 #include "common/check.h"
 #include "common/map.h"
+#include "common/set.h"
 #include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/action.h"
@@ -424,32 +425,152 @@ static auto IsTemplateDependentValueTemporary(Context& context,
              SemIR::ConstantDependence::Template;
 }
 
+namespace {
+// A walk over a template-dependent constant and the template-dependent
+// constants that it names, which finds whether one of them splices in the
+// result of a template action: a produced type or value, such as `T.Item` or
+// `M + 1`. The walk follows a constant's type and its operands: the elements
+// of a block, the field types of a struct type and the arguments of a
+// specific. An operand that names a facet type is counted as such a splice,
+// because the walk does not follow its constraints.
+class TemplateSpliceWalk {
+ public:
+  explicit TemplateSpliceWalk(Context* context) : context_(context) {}
+
+  // Returns whether the constant value of `inst_id`, or a template-dependent
+  // constant that it names, is a splice or an action.
+  auto Run(SemIR::InstId inst_id) -> bool {
+    Add(inst_id);
+    while (!insts_.empty()) {
+      auto const_inst_id = insts_.pop_back_val();
+      if (!seen_.Insert(const_inst_id).is_inserted()) {
+        continue;
+      }
+      auto inst = context_->insts().Get(const_inst_id);
+      if (inst.Is<SemIR::SpliceInst>() || inst.kind().is_action()) {
+        return true;
+      }
+      if (inst.type_id().has_value()) {
+        Add(context_->types().GetTypeInstId(inst.type_id()));
+      }
+      for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+        if (arg.Dispatch<bool>([&](auto id) { return AddOperand(id); })) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+ private:
+  // Adds the constant value of `inst_id` if it depends on a template
+  // parameter.
+  auto Add(SemIR::InstId inst_id) -> void {
+    if (!inst_id.has_value()) {
+      return;
+    }
+    auto const_id = context_->constant_values().Get(inst_id);
+    if (const_id.is_symbolic() &&
+        context_->constant_values().GetSymbolicConstant(const_id).dependence ==
+            SemIR::ConstantDependence::Template) {
+      insts_.push_back(context_->constant_values().GetInstId(const_id));
+    }
+  }
+
+  // Overloads of `AddOperand` for each kind of operand that names a constant,
+  // a block or a specific. Each returns whether the operand counts as a splice
+  // itself. By default, an operand names none, such as a name, an index or an
+  // entity.
+  template <typename IdT>
+  auto AddOperand(IdT /*id*/) -> bool {
+    return false;
+  }
+
+  auto AddOperand(SemIR::InstId inst_id) -> bool {
+    Add(inst_id);
+    return false;
+  }
+
+  auto AddOperand(SemIR::TypeInstId inst_id) -> bool {
+    Add(inst_id);
+    return false;
+  }
+
+  auto AddOperand(SemIR::MetaInstId inst_id) -> bool {
+    Add(inst_id);
+    return false;
+  }
+
+  auto AddOperand(SemIR::InstBlockId block_id) -> bool {
+    if (block_id.has_value()) {
+      for (auto inst_id : context_->inst_blocks().Get(block_id)) {
+        Add(inst_id);
+      }
+    }
+    return false;
+  }
+
+  auto AddOperand(SemIR::StructTypeFieldsId fields_id) -> bool {
+    for (auto field : context_->struct_type_fields().Get(fields_id)) {
+      Add(field.type_inst_id);
+    }
+    return false;
+  }
+
+  auto AddOperand(SemIR::SpecificId specific_id) -> bool {
+    if (specific_id.has_value()) {
+      AddOperand(context_->specifics().Get(specific_id).args_id);
+    }
+    return false;
+  }
+
+  auto AddOperand(SemIR::DeclaredFacetTypeId /*facet_type_id*/) -> bool {
+    return true;
+  }
+
+  auto AddOperand(SemIR::SpecificInterfaceId /*specific_interface_id*/)
+      -> bool {
+    return true;
+  }
+
+  Context* context_;
+  // The constants still to test, and the constants that have been tested.
+  llvm::SmallVector<SemIR::InstId> insts_;
+  Set<SemIR::InstId, 16> seen_;
+};
+}  // namespace
+
 // Returns whether the type `type_id` holds, directly or as an element of an
-// array, struct, tuple or class, an array whose bound depends on a template
-// parameter. Such an array can be initialized from a list of values only once
-// its bound is known, in each specific.
-static auto HoldsTemplateDependentArrayBound(Context& context,
-                                             SemIR::LocId loc_id,
-                                             SemIR::TypeId type_id) -> bool {
+// array, struct, tuple or class, a part that is known only in each specific of
+// the generic that names it: an array whose bound depends on a template
+// parameter, which can be initialized from a list of values only once its
+// bound is known, or a produced type, such as `T.Item`, `T.Item*` or
+// `C(M + 1)`, which splices in the result of a template action. In the type of
+// a class's field, such as `var c: T.Item;` in a class template `D(T)`, the
+// action is one of the class's generic, which the specifics of another
+// generic that forms `D(T)` do not perform, so a conversion to the field's
+// type made there is not resolved in those specifics.
+static auto HoldsPerInstantiationPart(Context& context, SemIR::LocId loc_id,
+                                      SemIR::TypeId type_id) -> bool {
   // Such a type depends on a template parameter itself.
   if (OperandDependence(context, type_id) !=
       SemIR::ConstantDependence::Template) {
     return false;
   }
+  auto type_inst_id = context.types().GetTypeInstId(type_id);
   CARBON_KIND_SWITCH(context.types().GetAsInst(type_id)) {
     case CARBON_KIND(SemIR::ArrayType array_type): {
       return OperandDependence(context, array_type.bound_id) ==
                  SemIR::ConstantDependence::Template ||
-             HoldsTemplateDependentArrayBound(
-                 context, loc_id,
-                 context.types().GetTypeIdForTypeInstId(
-                     array_type.element_type_inst_id));
+             HoldsPerInstantiationPart(context, loc_id,
+                                       context.types().GetTypeIdForTypeInstId(
+                                           array_type.element_type_inst_id));
     }
     case CARBON_KIND(SemIR::StructType struct_type): {
       return llvm::any_of(
           context.struct_type_fields().Get(struct_type.fields_id),
           [&](const SemIR::StructTypeField& field) {
-            return HoldsTemplateDependentArrayBound(
+            return HoldsPerInstantiationPart(
                 context, loc_id,
                 context.types().GetTypeIdForTypeInstId(field.type_inst_id));
           });
@@ -459,11 +580,15 @@ static auto HoldsTemplateDependentArrayBound(Context& context,
           context.types().GetBlockAsTypeIds(
               context.inst_blocks().Get(tuple_type.type_elements_id)),
           [&](SemIR::TypeId elem_type_id) {
-            return HoldsTemplateDependentArrayBound(context, loc_id,
-                                                    elem_type_id);
+            return HoldsPerInstantiationPart(context, loc_id, elem_type_id);
           });
     }
     case CARBON_KIND(SemIR::ClassType class_type): {
+      // A class whose arguments splice in an action's result, such as
+      // `C(M + 1)`, is a produced type.
+      if (TemplateSpliceWalk(&context).Run(type_inst_id)) {
+        return true;
+      }
       // The class's object representation is read from its specific's
       // definition, which completing the class resolves; a class held by a
       // complete type is complete already.
@@ -476,10 +601,12 @@ static auto HoldsTemplateDependentArrayBound(Context& context,
               .GetObjectRepr(context.sem_ir(), class_type.specific_id);
       return object_repr_id.has_value() &&
              object_repr_id != SemIR::ErrorInst::TypeId &&
-             HoldsTemplateDependentArrayBound(context, loc_id, object_repr_id);
+             HoldsPerInstantiationPart(context, loc_id, object_repr_id);
     }
     default:
-      return false;
+      // Any other type, such as `T.Item` itself, `T.Item*` or `const T.Item`,
+      // holds such a part when it names a splice.
+      return TemplateSpliceWalk(&context).Run(type_inst_id);
   }
 }
 
@@ -1254,25 +1381,45 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
 
 // Returns whether the struct type `src_type` names exactly the fields of
 // `dest_type` that a struct can initialize, which excludes a class's vptr and
-// a choice's payload.
-static auto HasSameFieldNames(Context& context, SemIR::StructType src_type,
-                              SemIR::StructType dest_type) -> bool {
+// a choice's payload. If `is_defaulted` is given, a field of `dest_type` that
+// `src_type` omits is allowed when `is_defaulted` holds for its name.
+static auto HasSameFieldNames(
+    Context& context, SemIR::StructType src_type, SemIR::StructType dest_type,
+    llvm::function_ref<auto(SemIR::NameId)->bool> is_defaulted = nullptr)
+    -> bool {
   auto src_fields = context.struct_type_fields().Get(src_type.fields_id);
-  int32_t num_dest_fields = 0;
+  int32_t num_named_fields = 0;
   for (auto dest_field :
        context.struct_type_fields().Get(dest_type.fields_id)) {
     if (dest_field.name_id == SemIR::NameId::Vptr ||
         dest_field.name_id == SemIR::NameId::ChoicePayload) {
       continue;
     }
-    ++num_dest_fields;
-    if (!llvm::any_of(src_fields, [&](const SemIR::StructTypeField& field) {
+    if (llvm::any_of(src_fields, [&](const SemIR::StructTypeField& field) {
           return field.name_id == dest_field.name_id;
         })) {
+      ++num_named_fields;
+    } else if (!is_defaulted || !is_defaulted(dest_field.name_id)) {
       return false;
     }
   }
-  return static_cast<int32_t>(src_fields.size()) == num_dest_fields;
+  return static_cast<int32_t>(src_fields.size()) == num_named_fields;
+}
+
+// Returns the declaration of the field named `name_id` in the class scope
+// `class_scope`, if that name is a field.
+static auto TryGetFieldDecl(Context& context,
+                            const SemIR::NameScope& class_scope,
+                            SemIR::NameId name_id)
+    -> std::optional<SemIR::FieldDecl> {
+  auto entry_id = class_scope.Lookup(name_id);
+  if (!entry_id.has_value()) {
+    return std::nullopt;
+  }
+  auto field_inst_id = class_scope.GetEntry(*entry_id).result.target_inst_id();
+  LoadImportRef(context, field_inst_id);
+  field_inst_id = context.constant_values().GetConstantInstId(field_inst_id);
+  return context.insts().TryGetAs<SemIR::FieldDecl>(field_inst_id);
 }
 
 // Performs a conversion from a struct to a class type. This function only
@@ -1321,17 +1468,30 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   auto dest_struct_type =
       context.types().GetAs<SemIR::StructType>(object_repr_id);
 
-  // An initializer of a class whose fields hold an array with a
-  // template-dependent bound, such as `{.a = (1, 2, 3)}` for a class template
-  // `C(N)` with a field `array(i32, N)`, is converted for each instantiation,
-  // when the bound is known, if its fields are exactly the class's: `Convert`
-  // defers the whole initialization, as it does when the class type is itself
-  // the result of a deferred call. Converting it here would reach the array's
-  // dependent bound (`ArrayInitDependentBound`).
+  // An initializer of a class whose fields hold a part that is known only in
+  // each specific of the class's generic (`HoldsPerInstantiationPart`) is
+  // converted for each instantiation, if its fields are exactly the class's:
+  // `Convert` defers the whole initialization, as it does when the class type
+  // is itself the result of a deferred call. Such a part is an array with a
+  // template-dependent bound, such as a field `array(i32, N)` of a class
+  // template `C(N)` initialized from `{.a = (1, 2, 3)}`, which converting here
+  // would reach (`ArrayInitDependentBound`), or a produced type, such as a
+  // field `T.Item` of a class template `D(T)` initialized from `{.c = 4}`,
+  // whose conversion here would not be resolved in this generic's specifics.
+  // A field that the initializer omits and that has a default initializer
+  // takes it on instantiation too.
+  const auto& dest_class_scope =
+      context.name_scopes().Get(dest_class_info.scope_id);
+  auto is_defaulted = [&](SemIR::NameId name_id) {
+    auto field_decl = TryGetFieldDecl(context, dest_class_scope, name_id);
+    return field_decl && context.fields()
+                             .Get(field_decl->field_id)
+                             .initializer_id.has_value();
+  };
   if (target.is_initializer() &&
-      HasSameFieldNames(context, src_type, dest_struct_type) &&
-      HoldsTemplateDependentArrayBound(context, SemIR::LocId(value_id),
-                                       object_repr_id)) {
+      HasSameFieldNames(context, src_type, dest_struct_type, is_defaulted) &&
+      HoldsPerInstantiationPart(context, SemIR::LocId(value_id),
+                                object_repr_id)) {
     return value_id;
   }
 
@@ -1351,9 +1511,6 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
         SemIR::LocId(value_id), {.type_id = target.type_id});
   }
 
-  const auto& dest_class_scope =
-      context.name_scopes().Get(dest_class_info.scope_id);
-
   // Provide the default value for a field. Returns `InstId::None` if no
   // default is available, or `ErrorInst::InstId` if a diagnosed error
   // occurs.
@@ -1365,19 +1522,9 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
     }
 
     // Look up the field name in the class to get the corresponding
-    // `FieldDecl` `InstId`.
-    auto entry_id = dest_class_scope.Lookup(name_id);
-    if (!entry_id.has_value()) {
-      return SemIR::InstId::None;
-    }
-
-    // Look up the initializer `InstId` for the field and eval as a
+    // `FieldDecl`, and the field's initializer, which is evaluated as a
     // constant.
-    auto field_inst_id =
-        dest_class_scope.GetEntry(*entry_id).result.target_inst_id();
-    LoadImportRef(context, field_inst_id);
-    field_inst_id = context.constant_values().GetConstantInstId(field_inst_id);
-    auto field_decl = context.insts().TryGetAs<SemIR::FieldDecl>(field_inst_id);
+    auto field_decl = TryGetFieldDecl(context, dest_class_scope, name_id);
     if (!field_decl) {
       return SemIR::InstId::None;
     }

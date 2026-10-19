@@ -12,6 +12,7 @@
 
 #include "common/check.h"
 #include "common/growing_range.h"
+#include "common/set.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/base/shared_value_stores.h"
 #include "toolchain/check/context.h"
@@ -928,25 +929,6 @@ struct GenericData {
 };
 }  // namespace
 
-// Returns whether an imported generic's eval block holds actions or the splices
-// of their results. Such a generic is resolved for each instantiation (a
-// template, or a checked generic that calls a C++ template or an `eval fn`),
-// and instantiating it in this file needs a representation of that
-// resolution that does not exist yet (lowering's "Cross-file template
-// lowering" has the same gap).
-static auto IsResolvedPerInstantiation(ImportContext& context,
-                                       SemIR::InstBlockId eval_block_id)
-    -> bool {
-  return eval_block_id.has_value() &&
-         llvm::any_of(context.import_inst_blocks().Get(eval_block_id),
-                      [&](SemIR::InstId inst_id) {
-                        auto kind = context.import_insts().Get(inst_id).kind();
-                        return kind.is_action() ||
-                               kind == SemIR::SpliceInst::Kind ||
-                               kind == SemIR::SpliceBlock::Kind;
-                      });
-}
-
 // Diagnoses the use of a generic that is resolved for each instantiation, at
 // the location of the importing file's `import` declaration (`LocId::None`
 // only for an indirect import, which has none).
@@ -960,69 +942,210 @@ static auto DiagnoseResolvedPerInstantiation(ImportContext& context) -> void {
       "for each instantiation, such as a template");
 }
 
+namespace {
+// The imported generics that one test of whether an entity can be imported
+// (`IsDeclResolvedPerInstantiation`, `IsTypeResolvedPerInstantiation`) has
+// reached, so that each generic is tested once and the test ends for an entity
+// that names itself, such as a class with a field of type `Node(T)*`, or an
+// interface whose members' `Self` has the interface's facet type. A generic
+// that is reached again is not tested again: the test that reached it first
+// decides.
+struct PerInstantiationWalk {
+  Set<SemIR::GenericId, 16> decls;
+  Set<SemIR::GenericId, 16> types;
+};
+}  // namespace
+
+static auto IsDeclResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::GenericId import_generic_id,
+                                           PerInstantiationWalk& walk) -> bool;
+static auto IsTypeResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::GenericId import_generic_id,
+                                           PerInstantiationWalk& walk) -> bool;
+
+// Returns whether an imported interface's or named constraint's generic, or
+// its generic with `Self`, in which its members are declared, cannot be
+// imported (`IsTypeResolvedPerInstantiation`).
+template <typename EntityT>
+static auto IsInterfaceOrConstraintResolvedPerInstantiation(
+    ImportContext& context, const EntityT& entity, PerInstantiationWalk& walk)
+    -> bool {
+  return IsTypeResolvedPerInstantiation(context, entity.generic_id, walk) ||
+         IsTypeResolvedPerInstantiation(context, entity.generic_with_self_id,
+                                        walk);
+}
+
+// Returns whether an imported facet type names an interface or named
+// constraint that cannot be imported, which makes the facet type an error
+// (`HasErrorConstraint`).
+static auto NamesTypeResolvedPerInstantiation(
+    ImportContext& context, const SemIR::DeclaredFacetType& facet_type,
+    PerInstantiationWalk& walk) -> bool {
+  auto is_interface_resolved = [&](SemIR::SpecificInterface interface) {
+    return interface.interface_id.has_value() &&
+           IsInterfaceOrConstraintResolvedPerInstantiation(
+               context, context.import_interfaces().Get(interface.interface_id),
+               walk);
+  };
+  auto is_constraint_resolved = [&](SemIR::SpecificNamedConstraint constraint) {
+    return constraint.named_constraint_id.has_value() &&
+           IsInterfaceOrConstraintResolvedPerInstantiation(
+               context,
+               context.import_named_constraints().Get(
+                   constraint.named_constraint_id),
+               walk);
+  };
+  return llvm::any_of(facet_type.extend_constraints, is_interface_resolved) ||
+         llvm::any_of(facet_type.self_impls_constraints,
+                      is_interface_resolved) ||
+         llvm::any_of(facet_type.extend_named_constraints,
+                      is_constraint_resolved) ||
+         llvm::any_of(facet_type.self_impls_named_constraints,
+                      is_constraint_resolved) ||
+         llvm::any_of(
+             facet_type.type_impls_interfaces,
+             [&](const auto& type_impls) {
+               return is_interface_resolved(type_impls.specific_interface);
+             }) ||
+         llvm::any_of(facet_type.type_impls_named_constraints,
+                      [&](const auto& type_impls) {
+                        return is_constraint_resolved(
+                            type_impls.specific_named_constraint);
+                      });
+}
+
+// Returns whether an imported constant instruction, an entry of a generic's
+// eval block or the type of one of its bindings, is an action or the splice of
+// one's result, or names an entity that cannot be imported because part of it
+// is: a function whose declaration holds one, a class, interface or named
+// constraint whose declaration or definition holds one, or a facet type that
+// names such an interface or constraint. A generic whose eval block holds an
+// action or a splice is resolved for each instantiation (a template, or a
+// checked generic that calls a C++ template or an `eval fn`), and
+// instantiating it in this file needs a representation of that resolution
+// that does not exist yet (lowering's "Cross-file template lowering" has the
+// same gap). An entity that cannot be imported resolves to an error, and an
+// error cannot be an entry of an eval block (`ResolveLocalEvalBlock`) or the
+// type of a symbolic binding.
+static auto IsInstResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::InstId inst_id,
+                                           PerInstantiationWalk& walk) -> bool {
+  auto inst = context.import_insts().Get(inst_id);
+  if (inst.kind().is_action() || inst.kind() == SemIR::SpliceInst::Kind ||
+      inst.kind() == SemIR::SpliceBlock::Kind) {
+    return true;
+  }
+  CARBON_KIND_SWITCH(inst) {
+    case CARBON_KIND(SemIR::FunctionType function_type): {
+      return IsDeclResolvedPerInstantiation(
+          context,
+          context.import_functions().Get(function_type.function_id).generic_id,
+          walk);
+    }
+    case CARBON_KIND(SemIR::GenericClassType class_type): {
+      return IsTypeResolvedPerInstantiation(
+          context, context.import_classes().Get(class_type.class_id).generic_id,
+          walk);
+    }
+    case CARBON_KIND(SemIR::ClassType class_type): {
+      return IsTypeResolvedPerInstantiation(
+          context, context.import_classes().Get(class_type.class_id).generic_id,
+          walk);
+    }
+    case CARBON_KIND(SemIR::FacetType facet_type): {
+      return NamesTypeResolvedPerInstantiation(
+          context,
+          context.import_facet_types().Get(facet_type.declared_facet_type_id),
+          walk);
+    }
+    default:
+      return false;
+  }
+}
+
+// Returns whether an entry of an imported eval block is resolved for each
+// instantiation (`IsInstResolvedPerInstantiation`).
+static auto IsBlockResolvedPerInstantiation(ImportContext& context,
+                                            SemIR::InstBlockId block_id,
+                                            PerInstantiationWalk& walk)
+    -> bool {
+  return block_id.has_value() &&
+         llvm::any_of(context.import_inst_blocks().Get(block_id),
+                      [&](SemIR::InstId inst_id) {
+                        return IsInstResolvedPerInstantiation(context, inst_id,
+                                                              walk);
+                      });
+}
+
 // Returns whether the declaration of an imported generic is resolved for each
 // instantiation, such as a function template whose return type `Vec(F(N))`
-// calls a function on a template parameter. Its signature cannot be imported,
-// so the entity is diagnosed when it is first resolved and resolves to an
-// error.
+// calls a function on a template parameter, or names an entity that cannot be
+// imported, such as a binding whose type is a facet type naming such an
+// interface (`IsInstResolvedPerInstantiation`). Its signature cannot be
+// imported, so the entity is diagnosed when it is first resolved and resolves
+// to an error.
+static auto IsDeclResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::GenericId import_generic_id,
+                                           PerInstantiationWalk& walk) -> bool {
+  if (!import_generic_id.has_value() ||
+      !walk.decls.Insert(import_generic_id).is_inserted()) {
+    return false;
+  }
+  const auto& import_generic = context.import_generics().Get(import_generic_id);
+  if (IsBlockResolvedPerInstantiation(context, import_generic.decl_block_id,
+                                      walk)) {
+    return true;
+  }
+  // A binding's type is loaded with the binding, and is not an entry of the
+  // eval block when it is concrete, as `WithMethod(Holder)` is.
+  return import_generic.bindings_id.has_value() &&
+         llvm::any_of(
+             context.import_inst_blocks().Get(import_generic.bindings_id),
+             [&](SemIR::InstId binding_id) {
+               auto type_id = context.import_insts().Get(binding_id).type_id();
+               return type_id.has_value() &&
+                      IsInstResolvedPerInstantiation(
+                          context,
+                          context.import_types().GetTypeInstId(type_id), walk);
+             });
+}
+
 static auto IsDeclResolvedPerInstantiation(ImportContext& context,
                                            SemIR::GenericId import_generic_id)
     -> bool {
-  return import_generic_id.has_value() &&
-         IsResolvedPerInstantiation(
-             context,
-             context.import_generics().Get(import_generic_id).decl_block_id);
+  PerInstantiationWalk walk;
+  return IsDeclResolvedPerInstantiation(context, import_generic_id, walk);
 }
 
 // Returns whether an imported generic type, such as a class template or an
-// interface, cannot be imported because part of it is resolved for each
-// instantiation: its declaration, or its definition, such as a field of type
-// `T.Item`, or the declaration of an entity its definition names, such as a
-// method returning `T.Item`, which resolves to an error
-// (`IsDeclResolvedPerInstantiation`). The type's definition is needed to use
+// interface, or an impl, cannot be imported because part of it is resolved
+// for each instantiation: its declaration (`IsDeclResolvedPerInstantiation`),
+// or its definition, such as a field of type `T.Item`, or an entity its
+// definition names that cannot be imported, such as a method returning
+// `T.Item` or a nested class with such a field
+// (`IsInstResolvedPerInstantiation`). The type's definition is needed to use
 // it, so the type itself is diagnosed when it is first resolved and resolves
 // to an error, and no error reaches its eval blocks.
 static auto IsTypeResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::GenericId import_generic_id,
+                                           PerInstantiationWalk& walk) -> bool {
+  if (!import_generic_id.has_value() ||
+      !walk.types.Insert(import_generic_id).is_inserted()) {
+    return false;
+  }
+  return IsDeclResolvedPerInstantiation(context, import_generic_id, walk) ||
+         IsBlockResolvedPerInstantiation(context,
+                                         context.import_generics()
+                                             .Get(import_generic_id)
+                                             .definition_block_id,
+                                         walk);
+}
+
+static auto IsTypeResolvedPerInstantiation(ImportContext& context,
                                            SemIR::GenericId import_generic_id)
     -> bool {
-  if (!import_generic_id.has_value()) {
-    return false;
-  }
-  if (IsDeclResolvedPerInstantiation(context, import_generic_id)) {
-    return true;
-  }
-  auto definition_block_id =
-      context.import_generics().Get(import_generic_id).definition_block_id;
-  if (!definition_block_id.has_value()) {
-    return false;
-  }
-  if (IsResolvedPerInstantiation(context, definition_block_id)) {
-    return true;
-  }
-  return llvm::any_of(
-      context.import_inst_blocks().Get(definition_block_id),
-      [&](SemIR::InstId inst_id) {
-        CARBON_KIND_SWITCH(context.import_insts().Get(inst_id)) {
-          case CARBON_KIND(SemIR::FunctionType function_type): {
-            return IsDeclResolvedPerInstantiation(
-                context, context.import_functions()
-                             .Get(function_type.function_id)
-                             .generic_id);
-          }
-          case CARBON_KIND(SemIR::GenericClassType class_type): {
-            return IsDeclResolvedPerInstantiation(
-                context,
-                context.import_classes().Get(class_type.class_id).generic_id);
-          }
-          case CARBON_KIND(SemIR::ClassType class_type): {
-            return IsDeclResolvedPerInstantiation(
-                context,
-                context.import_classes().Get(class_type.class_id).generic_id);
-          }
-          default:
-            return false;
-        }
-      });
+  PerInstantiationWalk walk;
+  return IsTypeResolvedPerInstantiation(context, import_generic_id, walk);
 }
 
 // Gets a local version of the data associated with a generic. This is processed
@@ -1265,12 +1388,13 @@ static auto TryFinishGeneric(ImportRefResolver& resolver,
   auto specific_data =
       GetLocalSpecificData(resolver, import_generic.self_specific_id);
 
-  // A definition that holds actions or the splices of their results is
-  // resolved for each instantiation, so it is not imported, and the import is
-  // diagnosed once, at the `import`.
+  // A definition that holds actions or the splices of their results, or names
+  // an entity that cannot be imported, is resolved for each instantiation, so
+  // it is not imported, and the import is diagnosed once, at the `import`.
   auto definition_block_id = import_generic.definition_block_id;
+  PerInstantiationWalk walk;
   bool resolved_per_instantiation =
-      IsResolvedPerInstantiation(resolver, definition_block_id);
+      IsBlockResolvedPerInstantiation(resolver, definition_block_id, walk);
 
   llvm::SmallVector<SemIR::InstId> definition_block;
   if (definition_block_id.has_value() && !resolved_per_instantiation) {
@@ -3249,6 +3373,15 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   // TODO: This duplicates a lot of the handling of interfaces, classes, and
   // functions. Factor out the commonality.
   const auto& import_impl = resolver.import_impls().Get(inst.impl_id);
+  // An impl whose declaration or definition cannot be imported, such as
+  // `impl forall [V: WithMethod(Holder)] V as Foo` for an interface template
+  // `WithMethod` whose member's return type holds an action, is not imported,
+  // so it is not a candidate for impl lookup in this file.
+  if (!impl_const_id.has_value() &&
+      IsTypeResolvedPerInstantiation(resolver, import_impl.generic_id)) {
+    DiagnoseResolvedPerInstantiation(resolver);
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+  }
   auto specific_interface_data =
       GetLocalSpecificInterfaceData(resolver, import_impl.interface);
   SemIR::ImplId impl_id = SemIR::ImplId::None;

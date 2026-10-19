@@ -54,6 +54,40 @@ interface WithMethod(template T: type) {
   fn F() -> T.Item;
 }
 
+class Outer(template T: type) {
+  class Inner(unused U: type) {
+    var x: T.Item;
+  }
+}
+
+class OuterMethod(template T: type) {
+  class Inner(unused U: type) {
+    fn F() -> T.Item;
+  }
+}
+
+fn Constrained[V: WithMethod(Holder)](unused v: V) {}
+
+fn TakesWithMethod(unused x: WithMethod(Holder)) {}
+
+interface Marker {}
+
+impl forall [V: WithMethod(Holder)] V as Marker {}
+
+fn NeedsMarker[T: Marker](unused t: T) {}
+
+class K {
+  impl as WithMethod(Holder) {
+    fn F() -> () { return (); }
+  }
+}
+
+fn NamesFieldBox[T: type](unused p: FieldBox(T)*) {}
+
+fn BodyNamesFieldBox[T: type](unused t: T) {
+  FieldBox(T);
+}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -169,3 +203,62 @@ library "[[@TEST_NAME]]";
 import library "lib";
 
 fn Use(unused x: WithMethod(Holder)) {}
+
+// --- fail_todo_import_nested_class_field_type.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused o: Outer(Holder)*) {}
+
+// --- fail_todo_import_nested_class_method_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused o: OuterMethod(Holder)*) {}
+
+// --- fail_todo_import_function_constrained_by_template_interface.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(k: K) {
+  Constrained(k);
+}
+
+// --- fail_todo_import_function_parameter_of_template_interface_type.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  TakesWithMethod;
+}
+
+// --- fail_todo_import_impl_constrained_by_template_interface.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(k: K) {
+  NeedsMarker(k);
+}
+
+// --- fail_todo_import_function_declaration_names_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  NamesFieldBox;
+}
+
+// --- fail_todo_import_function_definition_names_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(h: Holder) {
+  BodyNamesFieldBox(h);
+}

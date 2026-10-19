@@ -276,7 +276,7 @@ page and fixture texts of the land-time integration L (Appendix C), the row of R
 (§2.8), and the records of the discharge commit D (amended 2026-10-14, review
 fold: RR-m4), and in the records commits after D that record the focused
 re-review of the fold (c874c270f, 764e55445, its round 2's bdc1f62d7 and
-aa57bfe1c, and its round 3's records commit; (amended 2026-10-15, focused
+aa57bfe1c, and its round 3's records commits; (amended 2026-10-15, focused
 re-review of the fold: RR2r2-m2; records: re-review round 2; focused re-review
 of the fold: all round-3 findings)); no source file, golden or
 program header names one. Three pushed commit messages already
@@ -289,8 +289,10 @@ W-269), rev 3 (aaf43d5a4: W-256, W-264 and W-265) and D (bf8e1b4cc: W-250,
 W-266, W-267 and W-269), as the round-2 fixer's scan of every message since the
 cut found; the round-2 fix commits and both records commits of round 2 name
 none (amended 2026-10-15, focused re-review of the fold: RR2r2-m2; records:
-re-review round 2), and neither do round 3's fix commits and records commit
-(amended 2026-10-15, focused re-review of the fold: all round-3 findings).
+re-review round 2), and neither do round 3's fix commits, while its records
+commit 9923c79fc names W-250 and W-271 in its summary of the ledger edits
+(amended 2026-10-15, focused re-review of the fold: all round-3 findings;
+records: re-review round 3).
 History is not
 rewritten, so if the re-scan before L re-allocates an id, D's landed notes
 record the new id against each commit that names it; later commit messages

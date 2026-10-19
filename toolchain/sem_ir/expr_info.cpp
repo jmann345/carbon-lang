@@ -127,6 +127,10 @@ static auto GetExprCategoryImpl(const File* ir, InstId inst_id,
       } else if constexpr (std::same_as<TypedInstT, SpliceInst>) {
         auto [inst_value_ir, inst_value_const_id] = GetConstantValueInSpecific(
             *specific_ir, specific_id, *ir, inst.inst_id);
+        if (inst_value_const_id == ErrorInst::ConstantId) {
+          // The action's operands are errors in this specific.
+          return ExprCategory::Error;
+        }
         if (inst_value_const_id.is_concrete()) {
           // If we can pull a concrete inst out of the specific, then switch to
           // computing the category of that inst.
@@ -310,7 +314,7 @@ auto FindStorageArgForInitializer(const File& sem_ir, InstId init_id,
         }
         auto const_id =
             GetConstantValueInSpecific(sem_ir, specific_id, inst.inst_id);
-        if (!const_id.is_concrete()) {
+        if (!const_id.is_concrete() || const_id == ErrorInst::ConstantId) {
           // The action that produces the spliced instruction has not been
           // performed: in a template's definition, the initializer and its
           // storage argument are known only on instantiation.

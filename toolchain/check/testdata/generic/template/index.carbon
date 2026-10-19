@@ -359,6 +359,53 @@ fn Use(n: i32) -> i32 {
   return F(n);
 }
 
+// --- fail_tuple_index_as_type_of_used_binding_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  let a: x.0 = 1;
+  return a;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
+// --- fail_tuple_index_as_conversion_target_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  return 2 as x.0;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
+// --- fail_tuple_index_as_return_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> x.0 {
+  return 1;
+}
+
+fn Use(t: (type, type)) {
+  F(t);
+}
+
+// --- fail_tuple_index_as_var_type_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template T: type](x: T) -> i32 {
+  var a: x.0;
+  a = 1;
+  return a;
+}
+
+fn Use(t: (type, type)) -> i32 {
+  return F(t);
+}
+
 // --- template_value_as_type.carbon
 library "[[@TEST_NAME]]";
 

@@ -376,22 +376,22 @@ static auto RefineTypedOperandInSpecific(Context& /*context*/,
 // that its elements are referred to in the specific: `N` is the specific's
 // constant there rather than a template-dependent value.
 static auto NeedsSpecificInst(Context& context, SemIR::InstId inst_id) -> bool {
-  auto inst = context.insts().Get(inst_id);
-  if (inst.type_id().is_symbolic() ||
-      context.constant_values().Get(inst_id).is_symbolic()) {
-    return true;
+  // The instruction and the elements of the literals it holds, still to test.
+  llvm::SmallVector<SemIR::InstId> work = {inst_id};
+  while (!work.empty()) {
+    auto id = work.pop_back_val();
+    auto inst = context.insts().Get(id);
+    if (inst.type_id().is_symbolic() ||
+        context.constant_values().Get(id).is_symbolic()) {
+      return true;
+    }
+    if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
+      llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
+    } else if (auto literal = inst.TryAs<SemIR::TupleLiteral>()) {
+      llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
+    }
   }
-  auto elements_id = SemIR::InstBlockId::None;
-  if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
-    elements_id = literal->elements_id;
-  } else if (auto literal = inst.TryAs<SemIR::TupleLiteral>()) {
-    elements_id = literal->elements_id;
-  }
-  return elements_id.has_value() &&
-         llvm::any_of(context.inst_blocks().Get(elements_id),
-                      [&](SemIR::InstId elem_id) {
-                        return NeedsSpecificInst(context, elem_id);
-                      });
+  return false;
 }
 
 auto AddSpecificInst(Context& context, SemIR::InstId inst_id,

@@ -213,18 +213,53 @@ fn G(template P: type, template p: P) -> C(*p);
 fn G(template P: type, template p: P) -> C(p[0]);
 
 fn H(template P: type, template p: P) -> C(*p[0]);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C((*p)[0])` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn H(template P: type, template p: P) -> C((*p)[0]);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C(*p[0])` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn H(template P: type, template p: P) -> C(*p[0]);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn H(template P: type, template p: P) -> C((*p)[0]);
 
 fn K(template T: type, template v: T) -> C(-v.0);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C(v.1.(Core.Negate.Op)())` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn K(template T: type, template v: T) -> C(-v.1);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C(v.0.(Core.Negate.Op)())` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn K(template T: type, template v: T) -> C(-v.0);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn K(template T: type, template v: T) -> C(-v.1);
 
 fn L[template T: Container](x: T) -> T.(Container.Elem);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `T.(Container.Other)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn L[template T: Container](x: T) -> T.(Container.Other);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `T.(Container.Elem)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn L[template T: Container](x: T) -> T.(Container.Elem);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn L[template T: Container](x: T) -> T.(Container.Other);
 
 fn M(template P: type, template p: P) -> D(&p.n);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `D(&p.m)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn M(template P: type, template p: P) -> D(&p.m);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `D(&p.n)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn M(template P: type, template p: P) -> D(&p.n);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn M(template P: type, template p: P) -> D(&p.m);
 
 fn N(template P: type, template p: P) -> C(p->n);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C((*p).m)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn N(template P: type, template p: P) -> C(p->m);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C((*p).n)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn N(template P: type, template p: P) -> C(p->n);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn N(template P: type, template p: P) -> C(p->m);
 
 // --- fail_tuple_index_as_type_on_instantiation.carbon

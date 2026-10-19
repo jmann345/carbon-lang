@@ -257,22 +257,43 @@ fn M(template P: type, template p: P) -> D(&p.n);
 fn M(template P: type, template p: P) -> D(&p.m);
 
 fn N(template P: type, template p: P) -> C(p->n);
-// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C((*p).m)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C(p->m)` [FunctionRedeclReturnTypeDiffers]
 // CHECK:STDERR: fn N(template P: type, template p: P) -> C(p->m);
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C((*p).n)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C(p->n)` [FunctionRedeclReturnTypePrevious]
 // CHECK:STDERR: fn N(template P: type, template p: P) -> C(p->n);
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn N(template P: type, template p: P) -> C(p->m);
 
 fn R(template P: type, template p: P) -> C(*p->q);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C(*(*p).q)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn R(template P: type, template p: P) -> C(*(*p).q);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C(*p->q)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn R(template P: type, template p: P) -> C(*p->q);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn R(template P: type, template p: P) -> C(*(*p).q);
 
 fn S(template P: type, template p: P) -> C((**p).n);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C((*p)->n)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn S(template P: type, template p: P) -> C((*p)->n);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C((**p).n)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn S(template P: type, template p: P) -> C((**p).n);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn S(template P: type, template p: P) -> C((*p)->n);
 
 fn U(template P: type, template p: P) -> C(p->(J.G)());
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C((*p).(J.G)())` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn U(template P: type, template p: P) -> C((*p).(J.G)());
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C(p->(J.G)())` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn U(template P: type, template p: P) -> C(p->(J.G)());
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn U(template P: type, template p: P) -> C((*p).(J.G)());
 
 // --- fail_tuple_index_as_type_on_instantiation.carbon

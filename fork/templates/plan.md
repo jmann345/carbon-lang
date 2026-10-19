@@ -43,13 +43,14 @@ dry round (amended 2026-10-15, records: re-review round 2).
 
 Round 3 (two APPROVE-WITH-FIXES reviews of 2165322c5..aa57bfe1c, four findings,
 three distinct: one MAJOR, which both reviews found, and two MINOR, records
-only) is folded by the fix commits 68102438e..e7dc20a43 and the records commit
-after them, which the same record tables, with no residue filed (amended
-2026-10-15, focused re-review of the fold: all round-3 findings). Neither review
-judged the branch dry, and the round's fixer changed two toolchain source files
-and one golden, so round 4 is owed, over the round-3 fixer's commits
-68102438e..e7dc20a43 and the records commit after them; the PR opens and is held
-after a dry round.
+only) is folded by the fix commits 68102438e..e7dc20a43 and the records commits
+9923c79fc and 3afd3ec92, which the same record tables, with no residue filed
+(amended 2026-10-15, focused re-review of the fold: all round-3 findings;
+records: re-review round 3). Neither review judged the branch dry, and the
+round's fixer changed two toolchain source files and one golden, so round 4 is
+owed, over the round-3 fixer's commits 68102438e..3afd3ec92 and the records
+commit after them that records round 3's reviews; the PR opens and is held
+after a dry round (amended 2026-10-15, records: re-review round 3).
 
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
@@ -292,7 +293,9 @@ none (amended 2026-10-15, focused re-review of the fold: RR2r2-m2; records:
 re-review round 2), and neither do round 3's fix commits, while its records
 commit 9923c79fc names W-250 and W-271 in its summary of the ledger edits
 (amended 2026-10-15, focused re-review of the fold: all round-3 findings;
-records: re-review round 3).
+records: re-review round 3); the records commits after it, 3afd3ec92 and the
+one that records round 3's reviews, name none (amended 2026-10-15, records:
+re-review round 3).
 History is not
 rewritten, so if the re-scan before L re-allocates an id, D's landed notes
 record the new id against each commit that names it; later commit messages
@@ -1729,9 +1732,11 @@ still reached an eval block as the error constant after the TODO: a checked
 generic, a generic class's method or a blanket impl's method whose body
 calls a function template whose declaration holds an action, through the
 callee and the specific of its `specific_function` (c1 to c4, e1:
-`GetLocalGenericId`'s FATAL); and a class template as a specific's
-argument, a tuple element or a field beside one of type `T` (a1 to a5, b2,
-b3, f3, f3b, g1, g2: generic.cpp:239's or sem_ir/type.cpp:27's CHECK). A
+`GetLocalGenericId`'s FATAL); and a class template, or a template
+interface's facet type (a5), as a specific's argument, a tuple element or a
+field beside one of type `T` (a1, a1c, a2 to a5, b2, b3, f3, f3b, g1, g2:
+generic.cpp:239's or sem_ir/type.cpp:27's CHECK; amended 2026-10-15,
+records: re-review round 3). A
 checked generic whose body calls a function template whose definition alone
 holds one (d1, d2) stopped at `TryResolveInstCanonical`'s InstValue FATAL
 instead: `TryFinishGeneric` did not import the function's definition, but
@@ -4886,7 +4891,7 @@ Container-built, EXPECTED, not of record (Actions disabled).
 
 -   Build (item 1): each fix commit incremental, `-Werror` clean; the install
     of record is 0.0.0-0.dev+d54c37f91, whose toolchain sources equal the
-    head's (ada45a7c6, its fill and the records commit change no toolchain
+    head's (ada45a7c6, its fill and the records commits change no toolchain
     source).
 -   Gate (items 2 and 3): 68102438e alone 1954 of 1955
     (fail_todo_import.carbon), with its fill d0fbfd56b 1955 of 1955, its log
@@ -4933,8 +4938,10 @@ Container-built, EXPECTED, not of record (Actions disabled).
     copy is left.
 -   clang-tidy (item 6): 0 diagnostics on the round's changed lines of
     import_ref.cpp and context.h against aa57bfe1c at d54c37f91
-    (`$F/logs/tidy.log`), with the same exclusion; clang-format 21.1.8
-    changes neither file.
+    (`$F/logs/tidy.log`), with the same exclusion; context.h's lines are
+    checked in import_ref.cpp's translation unit, with
+    `--header-filter='toolchain/.*'` (amended 2026-10-15, records: re-review
+    round 3); clang-format 21.1.8 changes neither file.
 -   Probes: the round's 110 cross-library probes (the first review's 51, the
     second review's 14, round 2's second review's 11, the 17 splits of
     fail_todo_import.carbon at aa57bfe1c run with the full prelude, and the
@@ -4952,10 +4959,10 @@ Container-built, EXPECTED, not of record (Actions disabled).
     the fork and trunk compile. The 103 probes swept at 68102438e's
     toolchain give the same result as at d54c37f91's.
 -   Not re-run (land-time items, §1.12): the compositions with SC-1 and VA-1,
-    the L simulation and PR 58's checker. `git merge-tree` of d54c37f91
-    with trunk f3156a375 and each held PR gives the PR body's conflict
-    table unchanged: context.h and import_ref.cpp merge cleanly with every
-    one.
+    the L simulation and PR 58's checker. `git merge-tree` of d54c37f91,
+    and of 3afd3ec92 (amended 2026-10-15, records: re-review round 3), with
+    trunk f3156a375 and each held PR gives the PR body's conflict table
+    unchanged: context.h and import_ref.cpp merge cleanly with every one.
 
 | Mutant | Named killer | Measured at round 3 of the focused re-review of the fold |
 | --- | --- | --- |
@@ -5530,9 +5537,9 @@ them that records round 2's reviews (amended 2026-10-15, focused re-review of
 the fold: all round-2 findings; records: re-review round 2). Round 3, after
 round 2 below, had one MAJOR finding, which both reviews found, and its fixer
 changed two toolchain source files and one golden, so round 4 is owed, over
-the round-3 fixer's commits 68102438e..e7dc20a43 and the records commit after
-them (amended 2026-10-15, focused re-review of the fold: all round-3
-findings).
+the round-3 fixer's commits 68102438e..3afd3ec92 and the records commit after
+them that records round 3's reviews (amended 2026-10-15, focused re-review of
+the fold: all round-3 findings; records: re-review round 3).
 
 ### Round 1: the fold's commits, at bf8e1b4cc
 
@@ -5824,18 +5831,25 @@ equal the head's, on trunk 0bdce60a5 and on the nightly before changing
 anything; folded the MAJOR finding in a fix commit with its fill, a commit
 that records each walk's result for the file, and a commit of three more
 splits with its fill, which pin the shapes that three of the round's
-mutants change; and folded the two records-only findings in the records
-commit that adds this section. No finding is rejected, no residue is filed
-and W-272 to W-274 stay unused. The fix commits carry the container clock's
-date, 2026-10-19 UTC; this record is dated 2026-10-15, the re-review's date.
+mutants change; and folded the two records-only findings in 9923c79fc, the
+records commit that adds this section, whose id paragraph 3afd3ec92 corrects
+(amended 2026-10-15, records: re-review round 3). No finding is rejected, no
+residue is filed and W-272 to W-274 stay unused. The fix commits carry the
+container clock's date, 2026-10-19 UTC; this record is dated 2026-10-15, the
+re-review's date.
 
 Neither review judged the branch dry. Review 1: the single-library surfaces
-had no defect it could find, but on the W-250 import surface eleven of its
-51 cross-library probes reported the TODO and then stopped the compiler, the
-class of defect graded MAJOR in rounds 1 and 2; there is no BLOCKER. Review
-2: D-TP-14's "no error constant reaches an eval block" was still false
+had no defect it could find (no check-clean program aborts or miscompiles
+because of TP-1, no valid program is rejected, no IN form became a TODO, and
+D-TP-25 and D-TP-26 are root-cause fixes; amended 2026-10-15, records:
+re-review round 3), but on the W-250 import surface eleven of its 51
+cross-library probes reported the TODO and then stopped the compiler, the
+class of defect graded MAJOR in rounds 1 and 2; there is no BLOCKER. Review 2:
+D-TP-14's "no error constant reaches an eval block" was still false
 (RR3r2-M1), and two records were inexact (RR3r2-m1, RR3r2-m2); every crash it
-found also stops trunk and the nightly.
+found also stops trunk and the nightly, nothing is overclaimed as of record,
+and no mutant is claimed killed that is not (amended 2026-10-15, records:
+re-review round 3).
 
 The reviews' own runs at aa57bfe1c, container-built, EXPECTED, not of
 record, the worktree untouched and every `/dev/shm` copy deleted. Review 1
@@ -5881,18 +5895,77 @@ size, 49,972 characters, with no model identifier and no `#NN` reference;
 bdc1f62d7 and aa57bfe1c; and clang-format 21.1.8 clean on round 2's five
 `.cpp` files.
 
+The reviews' runs that the paragraph above leaves out (amended 2026-10-15,
+records: re-review round 3). Review 1 read the toolchain diff of
+764e55445..aa57bfe1c in full (9 files, +1610/-152), found that `git diff
+24bf5ea45 aa57bfe1c -- toolchain core` is empty, so the install it used
+(0.0.0-0.dev+24bf5ea45) is the head's toolchain, and saw each mutant killed
+where it is expected: M21 at lower/function_context.cpp:264's missing-value
+CHECK in lower initialize.carbon and templates_constant_elements; M22 and
+M23, as last redefined, at eval.cpp's
+`PatternType should always be constant` FATAL (index.carbon, pointer.carbon)
+and at `TryResolveInstCanonical`'s SpliceInst FATAL
+(fail_todo_import.carbon); M24 by index.carbon's `<cannot stringify ...>`
+for `TupleIndexAction` and `CallAction`; M25 by pointer.carbon's
+`deref_const_param` and index.carbon's `tuple_index_associated_type`; and
+round 2's M35, M36 and M40 and the impl-guard mutant at value_store.h:284,
+`ArrayInitDependentBound`, value_store.h:284 and check/generic.cpp:239
+respectively. Its D-TP-25 probes put a constant element beside a
+template-dependent one in a tuple, a struct, an array, nested aggregates, a
+class with `Core.Destroy`, a `var`, an assignment, a return, an argument and
+a template value, for `i32` and `i64`, in recursion and in a template that
+calls a template: each printed its non-template twin's output, every
+function's normalized `--dump-llvm-ir` has its twin's store count, with no
+duplicate store, no missing initialization and no double lowering (which
+`SetLocal`'s CHECK would stop), and r06 and r16 are rejected with their
+twins' ``cannot copy value of type `P(i32)` ``. Its D-TP-26 probes found no
+false positive for a template-dependent array bound (a template integer
+parameter, `N * 2 + 1`, an `eval fn` call, three bounds in a class template,
+nested specifics, an array of arrays, `T.Size` through an interface, and
+template tuple and struct values); every runtime value where a constant is
+needed diagnosed with no crash, in ten one-operand forms and the two-operand
+ones; distinct texts for nested combinations of the ten action kinds that
+print; `T.Ptr` and `const T.Ptr` dereferences that compile and run where
+trunk rejects them; and 22 class-template literal probes of round 2's
+D-TP-24 and `NeedsSpecificInst` change that print their twins' values, with
+their twins' IR but for W-267. Its cross-library sweep found the TODO
+misfiring on none of a template with no action, a checked generic, an alias,
+an exported template or alias, a class template used only as a type, and a
+second or indirect import. Review 2 found the brief stale where the tree is
+right (origin/trunk is f3156a375, and the filed range is W-250 to W-271);
+`git diff 24bf5ea45 aa57bfe1c -- toolchain core fork/conformance/programs`
+empty, so the install matches the head; CHECK lines changed only in fill
+commits, which change nothing else; no W-id in any toolchain, golden or
+program diff; Appendix B equal to both changed programs, Appendix A equal to
+every golden's source but for blank lines, and §4's round-2 rows equal to
+the goldens; the round-2 fixer's `allmut3.log` showing every other claimed
+kill, with x1 and x2 surviving as recorded; W-271's evidence exact at
+aa57bfe1c (t1, v1 and s1 at import_ref.cpp:1287 on the fork and :1086 on
+trunk; q1, t2 and u1 as its notes say); 9 files, +1610/-152, for
+`git diff --stat 764e55445 24bf5ea45 -- toolchain core`, and the PR body's
+counts of 65 files, +24015/-542, and 12 files, +2501/-63; every held PR's
+ledger and OX-1's ending at or below W-239, SC-1's; `git merge-tree` with
+SC-1 conflicting in convert.cpp's two `PerformAction` hunks only; the PR
+body's first line, its title, at 241 bytes; and each of the 13 commits since
+764e55445 carrying the trailer, with no model identifier outside the
+trailers.
+
 Commits: 68102438e "TP-1 re-review fix: the import test follows each reference
 that the import loads" (import_ref.cpp and fail_todo_import.carbon's eight new
 splits) and its fill d0fbfd56b; d54c37f91 "TP-1 re-review fix: the import test
 walks each imported instruction once per file" (context.h and import_ref.cpp; no
 golden change); ada45a7c6 "TP-1 re-review fix: pin the struct, rewrite and
 repeated-use import shapes" (three more splits; no toolchain change) and its
-fill e7dc20a43; and the records commit. 68102438e and ada45a7c6 were each
-gated alone, red exactly on fail_todo_import.carbon, with no crash, and then
-with their fills at the autoupdate fixpoint; d54c37f91, which changes no
-golden, passed 1955 of 1955 (§8 "Measured at the focused re-review of the
-fold, round 3"). §3's budget is exceeded by the third dated note there, for
-the root-cause reason it gives.
+fill e7dc20a43; the records commits 9923c79fc "TP-1 records: re-review
+round 3 recorded" and 3afd3ec92 "TP-1 records: re-review round 3's message
+record corrected" (the id paragraph); and the records commit after them,
+which adds the reviews' runs that this record left out and round 4's scope
+(amended 2026-10-15, records: re-review round 3). 68102438e and ada45a7c6
+were each gated alone, red exactly on fail_todo_import.carbon, with no crash,
+and then with their fills at the autoupdate fixpoint; d54c37f91, which
+changes no golden, passed 1955 of 1955 (§8 "Measured at the focused re-review
+of the fold, round 3"). §3's budget is exceeded by the third dated note
+there, for the root-cause reason it gives.
 Since the cut, TP-1 changes 29 toolchain source files and adds 13 goldens and
 refills 8 (`git diff --stat b2576f6c3 e7dc20a43 -- toolchain core`: 50 files,
 +11514/-546; the round's own `git diff --stat aa57bfe1c e7dc20a43 -- toolchain
@@ -5900,7 +5973,7 @@ core`: 3 files, +448/-75).
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
-| RR3-1-M1 = RR3r2-M1: `PerInstantiationWalk` tested only the kind of each entry it reached and never an entry's operands, so a template named through a concrete operand of an entry was missed. Across libraries, a checked generic, a generic class's method or a blanket impl's method whose body calls a function template whose declaration holds an action (c1 to c4, e1), and a class template as a specific's argument, a tuple element or a field beside one of type `T` (a1 to a5, b2, b3, f3, f3b, g1, g2), reported W-250's TODO and then stopped the compiler at `GetLocalGenericId`'s FATAL or at generic.cpp:239's or sem_ir/type.cpp:27's CHECK; a checked generic whose body calls a function template whose definition alone holds one (d1, d2) stopped at `TryResolveInstCanonical`'s InstValue FATAL, because `TryFinishSpecific` imported the definition values of a specific whose generic's definition was not imported; the comments at import_ref.cpp:955-957 and :1111-1113, D-TP-14 and the PR body said no error reaches an eval block | MAJOR | Fixed in 68102438e, d54c37f91 and ada45a7c6 (D-TP-14 amended): the walk follows each instruction's type and operands, the generic and arguments of each specific, each interface and named constraint of a facet type with its specific and the types and values its constraints name, and the function (its declaration), class, interface, named constraint or impl (its declaration and definition) that an operand names; `TryFinishSpecific` leaves the definition of a specific whose generic's definition is resolved for each instantiation empty, as `TryFinishGeneric` leaves the generic's; and the file records what each walk that reaches no action reached (`Context::PerInstantiationWalkCache`), because the wider walk raised the gate's time across threads from 102.6 s to 127.2 s, and with the record the gate takes 91.8 s. The 19 probes and the fixer's 13 more (an array, struct or tuple element, a rewrite constraint's value, a `where .Self impls` constraint's argument, an interface member's return type, a blanket impl's witness as a specific's argument, a struct field of a generic class and a checked generic calling one constrained by such an interface) report the TODO with no crash; trunk and the nightly stop all 32 at `TryResolveInstCanonical`'s SpliceInst FATAL, and each compiles in one file on all three. Eleven fail_todo_import.carbon splits; mutants M51 to M67 and the redefined M43 and M50; the comments are rewritten | Outcome (a), TR-17, §1.2 D-TP-14, §1.8, §1.14, §2.7, §3, §4, §8, Appendix A, Appendix E, ledger W-250 and W-271 |
+| RR3-1-M1 = RR3r2-M1: `PerInstantiationWalk` tested only the kind of each entry it reached and never an entry's operands, so a template named through a concrete operand of an entry was missed. Across libraries, a checked generic, a generic class's method or a blanket impl's method whose body calls a function template whose declaration holds an action (c1 to c4, e1), and a class template, or a template interface's facet type (a5), as a specific's argument, a tuple element or a field beside one of type `T` (a1, a1c, a2 to a5, b2, b3, f3, f3b, g1, g2; amended 2026-10-15, records: re-review round 3), reported W-250's TODO and then stopped the compiler at `GetLocalGenericId`'s FATAL or at generic.cpp:239's or sem_ir/type.cpp:27's CHECK; a checked generic whose body calls a function template whose definition alone holds one (d1, d2) stopped at `TryResolveInstCanonical`'s InstValue FATAL, because `TryFinishSpecific` imported the definition values of a specific whose generic's definition was not imported; the comments at import_ref.cpp:955-957 and :1111-1113, D-TP-14 and the PR body said no error reaches an eval block | MAJOR | Fixed in 68102438e, d54c37f91 and ada45a7c6 (D-TP-14 amended): the walk follows each instruction's type and operands, the generic and arguments of each specific, each interface and named constraint of a facet type with its specific and the types and values its constraints name, and the function (its declaration), class, interface, named constraint or impl (its declaration and definition) that an operand names; `TryFinishSpecific` leaves the definition of a specific whose generic's definition is resolved for each instantiation empty, as `TryFinishGeneric` leaves the generic's; and the file records what each walk that reaches no action reached (`Context::PerInstantiationWalkCache`), because the wider walk raised the gate's time across threads from 102.6 s to 127.2 s, and with the record the gate takes 91.8 s. The 19 probes and the fixer's 13 more (an array, struct or tuple element, a rewrite constraint's value, a `where .Self impls` constraint's argument, an interface member's return type, a blanket impl's witness as a specific's argument, a struct field of a generic class and a checked generic calling one constrained by such an interface) report the TODO with no crash; trunk and the nightly stop all 32 at `TryResolveInstCanonical`'s SpliceInst FATAL, and each compiles in one file on all three. Eleven fail_todo_import.carbon splits; mutants M51 to M67 and the redefined M43 and M50; the comments are rewritten | Outcome (a), TR-17, §1.2 D-TP-14, §1.8, §1.14, §2.7, §3, §4, §8, Appendix A, Appendix E, ledger W-250 and W-271 |
 | RR3r2-m1 (records only): the records said the nightly stops n01, n02, n03 and p1 at `TryResolveInstCanonical`'s FATAL | MINOR | Folded, reproduced: the nightly stops n01, n02, n03, p1 and the checked twin n07 at import_ref.cpp:1168's CHECK and n05 and p2 to p9 at the FATAL (:4875), and trunk stops all thirteen at the FATAL (:5087); the golden's `_nested_class_field_type` and `_nested_class_method_declaration` splits stop the nightly at :1168 too, and trunk at the FATAL and at generic.cpp:420's CHECK. D-TP-14, round 2's RR2r2-M1 row and W-250's evidence are amended; 94227d82c's message, which says the nightly stops them at the FATAL, is not rewritten | §1.2 D-TP-14, round 2's table, ledger W-250 |
 | RR3r2-m2 (records only): the PR body's round-2 probe summary said that trunk and the nightly reach all 21 of the fork's crashes; trunk and the nightly reject two of the 18 W-263 crashes, b06c and b06_type_members, where the function is defined | MINOR | Folded into the PR body with the review's text, reproduced: the fork stops both at lower.cpp:48's CHECK, and trunk and the nightly reject both with ``does not support tuple indexing`` | PR body |
 
@@ -5920,21 +5993,28 @@ SV-1; that file on refs/heads/trunk, refs/remotes/origin/trunk and
 refs/remotes/origin/claude/carbon-fork-0-1-7mwfb7; and nothing. No other
 workstream took an id. `git merge-tree` of the head with trunk f3156a375 and
 each held PR reproduces the PR body's conflict table: context.h and
-import_ref.cpp merge cleanly with every one. Not run, as §8 item 8 says: hosted
-CI, Bazel and its tests, ASan, macOS and Windows, LLVM with assertions and the
-owner's runner; and the land-time items, which wait for PR 51 to PR 60.
+import_ref.cpp merge cleanly with every one. The records commit after
+3afd3ec92 re-ran both on 2026-10-19 (21:34 UTC) after `git fetch origin`,
+origin/trunk still f3156a375: the three commands print the same outputs, and
+`git merge-tree` of 3afd3ec92 with trunk and each held PR's head, each the
+one the PR body names, gives the same table (amended 2026-10-15, records:
+re-review round 3). Not run, as §8 item 8 says: hosted CI, Bazel and its
+tests, ASan, macOS and Windows, LLVM with assertions and the owner's runner;
+and the land-time items, which wait for PR 51 to PR 60.
 
 Round 3's status: not dry in either review, and its fixer changed two
 toolchain source files (check/context.h and check/import_ref.cpp) and one
 golden (check generic/template's fail_todo_import.carbon; `git diff --stat
 aa57bfe1c e7dc20a43 -- toolchain core fork/conformance/programs`). Round 4 is
-owed: two fresh reviews of the round-3 fixer's commits
-68102438e..e7dc20a43 and the records commit after them, which changes records
-only. The PR opens and is held after a round with no BLOCKER or MAJOR
-finding whose fixer changes no toolchain file. fork/ORCHESTRATION.md's TP-1
-Branches row reads "IMPLEMENTED AND HELD, RE-REVIEW ROUND 4 OWED" until a
-round is dry (amended 2026-10-15, focused re-review of the fold: all round-3
-findings).
+owed: two fresh reviews of the round-3 fixer's commits 68102438e..3afd3ec92
+(the fix commits 68102438e..e7dc20a43 and the records commits 9923c79fc and
+3afd3ec92) and the records commit after them that records round 3's
+reviews; the three records commits change records only (amended 2026-10-15,
+records: re-review round 3). The PR opens and is held after a round with no
+BLOCKER or MAJOR finding whose fixer changes no toolchain file.
+fork/ORCHESTRATION.md's TP-1 Branches row reads "IMPLEMENTED AND HELD,
+RE-REVIEW ROUND 4 OWED" until a round is dry (amended 2026-10-15, focused
+re-review of the fold: all round-3 findings).
 
 ## Appendix A: golden sources
 

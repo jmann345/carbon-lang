@@ -3354,9 +3354,10 @@ specific's generic and arguments and a facet type's specifics, and
 generic's definition is not imported), d54c37f91 (the file records what each
 walk that reaches no action reached, so the wider walk does not slow the
 gate), ada45a7c6 with its fill e7dc20a43 (three more splits, which pin the
-shapes that three of the round's mutants change), and a records commit; none
-rejected, no residue filed, W-272..W-274 unused. Measured at e7dc20a43 on
-d54c37f91's toolchain, container-built, EXPECTED and not of record:
+shapes that three of the round's mutants change), and the records commits
+9923c79fc and 3afd3ec92; none rejected, no residue filed, W-272..W-274
+unused. Measured at e7dc20a43 on d54c37f91's toolchain, container-built,
+EXPECTED and not of record:
 "file_test test mode on /home/user/carbon-tp: 1955 passed, 0 failed (exit 0,
 26s)", 0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0,
 LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)",
@@ -3377,9 +3378,14 @@ and two inexact records. Both re-measured aa57bfe1c on the container
 toolchain, EXPECTED and not of record: gate 1955 of 1955, conformance 137/0/22
 over 159 and 48 of 56 bullets. Round 3 had a MAJOR finding and its fixer
 changed two toolchain source files and one golden, so round 4 of the focused
-re-review is owed, over the round-3 fixer's commits 68102438e..e7dc20a43 and
-the records commit after them; the PR opens and is held after a dry round
-(amended 2026-10-15, focused re-review of the fold: all round-3 findings).
+re-review is owed, over the round-3 fixer's commits 68102438e..3afd3ec92 and
+the records commit after them that records round 3's reviews; the PR opens
+and is held after a dry round (amended 2026-10-15, focused re-review of the
+fold: all round-3 findings; records: re-review round 3). That records commit
+adds to the plan's round-3 record the reviews' runs it left out, the probe
+a1c and the template-interface shape a5 in RR3-1-M1's row, and round 4's
+scope, re-runs the id re-scan and `git merge-tree` with the same results,
+and refreshes the PR body (amended 2026-10-15, records: re-review round 3).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

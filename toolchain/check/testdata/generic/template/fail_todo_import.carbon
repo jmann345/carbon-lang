@@ -153,6 +153,12 @@ fn ConstrainedByRequires[T: RequiresFieldBox(())](unused t: T) {}
 
 fn ConstrainedByRequiresC[T: RequiresFieldBoxC(())](unused t: T) {}
 
+interface RequiresFieldBoxConcretely {
+  require impls WithArg(FieldBox(Holder)*);
+}
+
+fn ConstrainedByConcreteRequire[T: RequiresFieldBoxConcretely](unused t: T) {}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -563,4 +569,13 @@ import library "lib";
 
 fn Use() {
   ConstrainedByRequiresC;
+}
+
+// --- fail_todo_import_two_uses_name_interface_requiring_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use[T: RequiresFieldBoxConcretely](t: T) {
+  ConstrainedByConcreteRequire(t);
 }

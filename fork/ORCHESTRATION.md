@@ -10,43 +10,45 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
-the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
+Last updated: 2026-10-19 (weekly check fired again: the cut HOLDS at 85 upstream
+commits with 96 conflicting files and GitHub Actions on the repository is still
+DISABLED, see the paragraph dated 2026-10-19 below; the 2026-10-12 text
+follows). 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on the
+repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
 verification` returns "Actions has been disabled for this repository", the
 repository's own scheduled workflows last ran 2026-10-08, the repository is
 public, and this session has no access to repository settings — so under R28
-there is no autoupdate, gate or conformance arbiter at all. The session was
-also out of usage credits from 2026-10-06 04:30 UTC until this firing, and
-the container was recreated in between (worktrees, the clang-19 syntax
-harness and the bazel cache were lost; rebuilt: worktrees only). STATE: UA-2
-reconciliation on claude/carbon-fork-0-1-ua2 at ace101b0d is complete —
-three probes un-SKIPped and PASSING (templates_dependent_member,
-cpp_template_symbolic_arg, cpp_template_on_carbon_generic; the two Box(T)
-programs needed a constructor-initialized dependent `var` and a declared
-`Core.Copy`, root cause an upstream limitation of the REAL prelude's
-constrained `DefaultOrUnformed` impl, pinned by
-check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon),
-W-108 DISCHARGED on the fill (a `Core.Buf` field is freed through the
-owner's synthesized SubobjectDestroy; an owner with its own `impl as Destroy`
-still leaks — the 0.1 limit), ledger and gap re-cites done, of-record
-conformance run 37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56
-bullets — but its gate never ran: implementation review APPROVE-WITH-FIXES
-(nine findings, all folded in round 3, 05a5c30f7: of-record runs recorded,
-W-126 declared-owner leak and W-127 real-prelude `DefaultOrUnformed` limit
-filed, the prelude pin's failing split retriaged to `fail_todo_` with its
-CHECK lines cleared for the next refill); PR #51 is OPEN and HELD, not
-merged — land sequence once Actions returns: autoupdate (one split) → gate →
-conformance → merge. SC-1 (template structural conformance,
-W-027) plan rev 2 signed off at e612aebc6 on claude/carbon-fork-0-1-sc after
-two reviews (both APPROVE-WITH-AMENDMENTS); the commit-1 implementer died
-with the credits and is NOT relaunched: new toolchain code cannot be filled
-or gated. Weekly: upstream 62f1cc6a3 is 36 commits past the cut with 70
-conflicting files (a tree-wide `ParameterizedClassType` rename); the cut
-HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29: recorded,
-not asked): re-enable Actions on the repository, or permit the session's
-container to install bazelisk + LLVM 21.1.8 and build against upstream's
-public read-only bazel cache (the tool-permission layer declined that setup
-when attempted) — until one of these, no code lands. Next cron Monday
+there is no autoupdate, gate or conformance arbiter at all. The session was also
+out of usage credits from 2026-10-06 04:30 UTC until this firing, and the
+container was recreated in between (worktrees, the clang-19 syntax harness and
+the bazel cache were lost; rebuilt: worktrees only). STATE: UA-2 reconciliation
+on claude/carbon-fork-0-1-ua2 at ace101b0d is complete — three probes un-SKIPped
+and PASSING (templates_dependent_member, cpp_template_symbolic_arg,
+cpp_template_on_carbon_generic; the two Box(T) programs needed a
+constructor-initialized dependent `var` and a declared `Core.Copy`, root cause
+an upstream limitation of the REAL prelude's constrained `DefaultOrUnformed`
+impl, pinned by
+check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon), W-108
+DISCHARGED on the fill (a `Core.Buf` field is freed through the owner's
+synthesized SubobjectDestroy; an owner with its own `impl as Destroy` still
+leaks — the 0.1 limit), ledger and gap re-cites done, of-record conformance run
+37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56 bullets — but its gate
+never ran: implementation review APPROVE-WITH-FIXES (nine findings, all folded
+in round 3, 05a5c30f7: of-record runs recorded, W-126 declared-owner leak and
+W-127 real-prelude `DefaultOrUnformed` limit filed, the prelude pin's failing
+split retriaged to `fail_todo_` with its CHECK lines cleared for the next
+refill); PR #51 is OPEN and HELD, not merged — land sequence once Actions
+returns: autoupdate (one split) → gate → conformance → merge. SC-1 (template
+structural conformance, W-027) plan rev 2 signed off at e612aebc6 on
+claude/carbon-fork-0-1-sc after two reviews (both APPROVE-WITH-AMENDMENTS); the
+commit-1 implementer died with the credits and is NOT relaunched: new toolchain
+code cannot be filled or gated. Weekly: upstream 62f1cc6a3 is 36 commits past
+the cut with 70 conflicting files (a tree-wide `ParameterizedClassType` rename);
+the cut HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29:
+recorded, not asked): re-enable Actions on the repository, or permit the
+session's container to install bazelisk + LLVM 21.1.8 and build against
+upstream's public read-only bazel cache (the tool-permission layer declined that
+setup when attempted) — until one of these, no code lands. Next cron Monday
 2026-10-19; the owner's machine is never used.
 
 Later on 2026-10-12 (after the weekly stamp above): three PRs are OPEN and HELD
@@ -186,6 +188,26 @@ its implementation review pushed at 824f29c4e; its discharge is in progress
 and its PR opens after a focused re-review of the fix commits. Merge order: PR
 53, PR 51, PR 52, PR 60, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
 integration commit, PR 59, then TP-1. None is merged.
+
+Later on 2026-10-19 (14:10 UTC, weekly check fired): upstream trunk 3056e7e31
+is 85 commits past the c1e83b0b7 cut (49 since last week); a `git merge-tree`
+dry run against trunk 5674fe88b conflicts in 96 files, 30 sources and
+grammars and 66 goldens (decision-log entry "Weekly upstream merge
+2026-10-19"); the cut HOLDS, no staging branch was pushed, and the advance
+(UA-3) is scheduled after the held PRs land, under the UA-1 flow. A
+`workflow_dispatch` of `Fork: hosted verification` still returns "Actions
+has been disabled for this repository", so nothing is of record and the ten
+held PRs stay open; the daily Actions re-test routine ends with this firing
+as its prompt provided, and the weekly Routine re-tests. TP-1's focused
+re-review (round 1: review 1 APPROVE-WITH-FIXES with 2 MAJOR and 4 MINOR,
+review 2 REJECT with 1 BLOCKER, 2 MAJOR and 5 MINOR, both on bf8e1b4cc) is
+being folded by its fixer; its PR opens when a round is dry. SV-1 (the
+std::optional and std::variant interop mapping, W-011's open half, gap row
+68) is the next workstream, branch claude/carbon-fork-0-1-sv cut from
+5674fe88b, W-275 to W-294 and F-020 reserved; W-267 to W-274 are held for
+TP-1's re-review residues. Merge order unchanged: PR 53, PR 51, PR 52, PR
+60, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L integration
+commit, PR 59, then TP-1, then SV-1. None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183

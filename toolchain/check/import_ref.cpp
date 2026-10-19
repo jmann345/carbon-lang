@@ -4195,10 +4195,9 @@ static auto HasErrorConstraint(
   };
   auto is_error_constraint = [&](SemIR::SpecificNamedConstraint constraint) {
     return constraint.named_constraint_id.has_value() &&
-           GetLocalConstantId(resolver,
-                              resolver.import_named_constraints()
-                                  .Get(constraint.named_constraint_id)
-                                  .first_owning_decl_id) ==
+           GetLocalConstantId(resolver, resolver.import_named_constraints()
+                                            .Get(constraint.named_constraint_id)
+                                            .first_owning_decl_id) ==
                SemIR::ErrorInst::ConstantId;
   };
   return llvm::any_of(import_declared_facet_type.extend_constraints,
@@ -4209,16 +4208,16 @@ static auto HasErrorConstraint(
                       is_error_constraint) ||
          llvm::any_of(import_declared_facet_type.self_impls_named_constraints,
                       is_error_constraint) ||
-         llvm::any_of(import_declared_facet_type.type_impls_interfaces,
-                      [&](const auto& type_impls) {
-                        return is_error_interface(
-                            type_impls.specific_interface);
-                      }) ||
-         llvm::any_of(import_declared_facet_type.type_impls_named_constraints,
-                      [&](const auto& type_impls) {
-                        return is_error_constraint(
-                            type_impls.specific_named_constraint);
-                      });
+         llvm::any_of(
+             import_declared_facet_type.type_impls_interfaces,
+             [&](const auto& type_impls) {
+               return is_error_interface(type_impls.specific_interface);
+             }) ||
+         llvm::any_of(
+             import_declared_facet_type.type_impls_named_constraints,
+             [&](const auto& type_impls) {
+               return is_error_constraint(type_impls.specific_named_constraint);
+             });
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,

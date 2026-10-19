@@ -516,6 +516,10 @@ fn Use(p: ((), FieldBox(Holder)*)*) {
 // --- fail_todo_import_interface_requires_class_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_interface_requires_class_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {
@@ -525,6 +529,10 @@ fn Use() {
 // --- fail_todo_import_constraint_requires_class_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_constraint_requires_class_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {
@@ -534,6 +542,10 @@ fn Use() {
 // --- fail_todo_import_function_constrained_by_interface_requiring_class_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_constrained_by_interface_requiring_class_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {
@@ -543,6 +555,10 @@ fn Use() {
 // --- fail_todo_import_function_constrained_by_constraint_requiring_class_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_constrained_by_constraint_requiring_class_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {

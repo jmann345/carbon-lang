@@ -355,6 +355,10 @@ fn Use(h: Holder) {
 // --- fail_todo_import_function_definition_calls_function_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_definition_calls_function_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(h: Holder, p: ()*) {
@@ -364,6 +368,10 @@ fn Use(h: Holder, p: ()*) {
 // --- fail_todo_import_function_definition_calls_function_template_definition.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_definition_calls_function_template_definition.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(h: Holder) {
@@ -373,6 +381,10 @@ fn Use(h: Holder) {
 // --- fail_todo_import_impl_method_calls_function_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_impl_method_calls_function_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(h: Holder, p: ()*) {
@@ -382,6 +394,10 @@ fn Use(h: Holder, p: ()*) {
 // --- fail_todo_import_class_field_names_class_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_class_field_names_class_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(unused f: FieldBoxField(())*) {}
@@ -389,6 +405,10 @@ fn Use(unused f: FieldBoxField(())*) {}
 // --- fail_todo_import_function_declaration_names_class_template_in_class_argument.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_declaration_names_class_template_in_class_argument.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {
@@ -398,6 +418,10 @@ fn Use() {
 // --- fail_todo_import_function_declaration_names_class_template_in_tuple.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_declaration_names_class_template_in_tuple.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {
@@ -407,6 +431,10 @@ fn Use() {
 // --- fail_todo_import_function_constrained_by_interface_of_class_template.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_constrained_by_interface_of_class_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {
@@ -416,6 +444,10 @@ fn Use() {
 // --- fail_todo_import_function_declaration_names_impl_of_template_interface.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_declaration_names_impl_of_template_interface.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use() {

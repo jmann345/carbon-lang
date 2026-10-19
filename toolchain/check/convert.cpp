@@ -1497,12 +1497,12 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
 
   // If we're trying to create a class value, form temporary storage to hold the
   // initializer. A template-dependent source whose fields are exactly the
-  // class's is converted for each instantiation instead; any other source is
-  // converted here, so that a missing or unexpected field is diagnosed where
-  // the function is defined.
+  // class's, but for fields with a default initializer, is converted for each
+  // instantiation instead; any other source is converted here, so that a
+  // missing or unexpected field is diagnosed where the function is defined.
   if (!target.is_initializer()) {
     if (IsTemplateDependentValueTemporary(context, value_id, target.type_id) &&
-        HasSameFieldNames(context, src_type, dest_struct_type)) {
+        HasSameFieldNames(context, src_type, dest_struct_type, is_defaulted)) {
       return value_id;
     }
     target.kind = ConversionTarget::Initializing;

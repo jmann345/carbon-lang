@@ -88,6 +88,55 @@ fn BodyNamesFieldBox[T: type](unused t: T) {
   FieldBox(T);
 }
 
+interface HasItem {
+  let Item: type;
+}
+
+impl Holder as HasItem where .Item = () {}
+
+fn TakesItem[template T: HasItem](unused x: T, unused p: T.Item*) {}
+
+fn CallsTakesItem[T: HasItem](t: T, p: T.Item*) {
+  TakesItem(t, p);
+}
+
+fn NamesItem[template T: HasItem](unused x: T) {
+  T.Item;
+}
+
+fn CallsNamesItem[T: HasItem](t: T) {
+  NamesItem(t);
+}
+
+interface ItemDoer(P: type) {
+  fn Do(self, p: P);
+}
+
+impl forall [T: HasItem] T as ItemDoer(T.Item*) {
+  fn Do(self, p: T.Item*) {
+    TakesItem(self, p);
+  }
+}
+
+class FieldBoxField(T: type) {
+  var t: T;
+  var p: FieldBox(Holder)*;
+}
+
+class Pair(unused A: type, unused B: type) {}
+
+fn TakesPair[T: type](unused p: Pair(T, FieldBox(Holder))*) {}
+
+fn TakesTuple[T: type](unused p: (T, FieldBox(Holder)*)*) {}
+
+interface WithArg(unused U: type) {}
+
+fn ConstrainedByWithArg[T: WithArg(FieldBox(Holder))](unused t: T) {}
+
+class MarkerArg(unused A: type, unused B: Marker) {}
+
+fn TakesMarkerArg[T: type](unused p: MarkerArg(T, K)*) {}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -301,4 +350,74 @@ import library "lib";
 
 fn Use(h: Holder) {
   BodyNamesFieldBox(h);
+}
+
+// --- fail_todo_import_function_definition_calls_function_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(h: Holder, p: ()*) {
+  CallsTakesItem(h, p);
+}
+
+// --- fail_todo_import_function_definition_calls_function_template_definition.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(h: Holder) {
+  CallsNamesItem(h);
+}
+
+// --- fail_todo_import_impl_method_calls_function_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(h: Holder, p: ()*) {
+  h.(ItemDoer(()*).Do)(p);
+}
+
+// --- fail_todo_import_class_field_names_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused f: FieldBoxField(())*) {}
+
+// --- fail_todo_import_function_declaration_names_class_template_in_class_argument.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  TakesPair;
+}
+
+// --- fail_todo_import_function_declaration_names_class_template_in_tuple.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  TakesTuple;
+}
+
+// --- fail_todo_import_function_constrained_by_interface_of_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  ConstrainedByWithArg;
+}
+
+// --- fail_todo_import_function_declaration_names_impl_of_template_interface.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  TakesMarkerArg;
 }

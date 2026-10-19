@@ -953,13 +953,28 @@ namespace {
 // does not exist yet (lowering's "Cross-file template lowering" has the same
 // gap). Such an entity resolves to an error, and so does every entity that
 // names it where its data is loaded: an error cannot be an entry of an eval
-// block (`ResolveLocalEvalBlock`) or the type of a symbolic binding, so the
-// walk reaches every entity that the loaded data names.
+// block (`ResolveLocalEvalBlock`), an operand of one, or the type of a
+// symbolic binding.
 //
-// The walk is iterative, and records each generic it reaches, so that it ends
-// for an entity that names itself, such as a class with a field of type
-// `Node(T)*`, or an interface whose members' `Self` has the interface's facet
-// type.
+// So the walk follows each reference that the import follows when it loads an
+// instruction: the instruction's type and its operands, which include the
+// field types of a struct type, the elements of a block, the generic and the
+// arguments of a specific, the interfaces and named constraints of a facet
+// type with their specifics, and the function, class, interface, named
+// constraint or impl that an operand names. A concrete operand of an entry,
+// such as `FieldBox(Holder)` in `Pair(T, FieldBox(Holder))*`, is loaded with
+// the entry but is not an entry itself. A function adds its declaration only:
+// a function whose definition is resolved for each instantiation is imported
+// without its definition, or its specifics' (`TryFinishGeneric`,
+// `TryFinishSpecific`). A class, interface, named constraint or impl adds its
+// declaration and its definition, which are loaded with it. A specific's
+// values are not walked: they are its generic's entries evaluated for its
+// arguments, so they name what those name.
+//
+// The walk is iterative, and records each instruction and generic it reaches,
+// so that it ends for an entity that names itself, such as a class with a
+// field of type `Node(T)*`, or an interface whose members' `Self` has the
+// interface's facet type.
 class PerInstantiationWalk {
  public:
   explicit PerInstantiationWalk(ImportContext* context) : context_(context) {}
@@ -977,10 +992,7 @@ class PerInstantiationWalk {
     if (generic.bindings_id.has_value()) {
       for (auto binding_id :
            context_->import_inst_blocks().Get(generic.bindings_id)) {
-        auto type_id = context_->import_insts().Get(binding_id).type_id();
-        if (type_id.has_value()) {
-          insts_.push_back(context_->import_types().GetTypeInstId(type_id));
-        }
+        AddTypeOf(context_->import_insts().Get(binding_id));
       }
     }
   }
@@ -995,7 +1007,7 @@ class PerInstantiationWalk {
     AddBlock(context_->import_generics().Get(generic_id).definition_block_id);
   }
 
-  // Adds the entries of an eval block.
+  // Adds the entries of an eval block, or the elements of another block.
   auto AddBlock(SemIR::InstBlockId block_id) -> void {
     if (block_id.has_value()) {
       llvm::append_range(insts_, context_->import_inst_blocks().Get(block_id));
@@ -1003,71 +1015,158 @@ class PerInstantiationWalk {
   }
 
   // Returns whether the walk reaches an action or a splice: an entry of an
-  // eval block, or one named by a function whose declaration it reaches, a
-  // class whose declaration or definition it reaches, or an interface or named
-  // constraint that a facet type names, whose declaration, definition and
-  // generic with `Self` it reaches.
+  // eval block, or an instruction that the type or an operand of one that the
+  // walk reaches names, or an entry of an eval block of a generic that one
+  // names.
   auto Run() -> bool {
     while (!insts_.empty()) {
-      auto inst = context_->import_insts().Get(insts_.pop_back_val());
+      auto inst_id = insts_.pop_back_val();
+      if (!inst_id.has_value() || !insts_seen_.Insert(inst_id).is_inserted()) {
+        continue;
+      }
+      auto inst = context_->import_insts().Get(inst_id);
       if (inst.kind().is_action() || inst.kind() == SemIR::SpliceInst::Kind ||
           inst.kind() == SemIR::SpliceBlock::Kind) {
         return true;
       }
-      CARBON_KIND_SWITCH(inst) {
-        case CARBON_KIND(SemIR::FunctionType function_type): {
-          AddDecl(context_->import_functions()
-                      .Get(function_type.function_id)
-                      .generic_id);
-          break;
-        }
-        case CARBON_KIND(SemIR::GenericClassType class_type): {
-          AddType(
-              context_->import_classes().Get(class_type.class_id).generic_id);
-          break;
-        }
-        case CARBON_KIND(SemIR::ClassType class_type): {
-          AddType(
-              context_->import_classes().Get(class_type.class_id).generic_id);
-          break;
-        }
-        case CARBON_KIND(SemIR::FacetType facet_type): {
-          AddFacetType(context_->import_facet_types().Get(
-              facet_type.declared_facet_type_id));
-          break;
-        }
-        default:
-          break;
+      AddTypeOf(inst);
+      for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+        arg.Dispatch<void>([&](auto id) { AddOperand(id); });
       }
     }
     return false;
   }
 
  private:
+  // Adds the type of an instruction.
+  auto AddTypeOf(SemIR::Inst inst) -> void {
+    if (inst.type_id().has_value()) {
+      insts_.push_back(context_->import_types().GetTypeInstId(inst.type_id()));
+    }
+  }
+
+  // Overloads of `AddOperand` for each kind of operand that names an
+  // instruction, a block, a specific or an entity that the import loads with
+  // the instruction. By default, an operand names none, such as a
+  // declaration's block, the destination of an initializer, or the operand of
+  // an action, which the walk stops at.
+  template <typename IdT>
+  auto AddOperand(IdT /*id*/) -> void {}
+
+  auto AddOperand(SemIR::InstId inst_id) -> void { insts_.push_back(inst_id); }
+
+  auto AddOperand(SemIR::TypeInstId inst_id) -> void {
+    insts_.push_back(inst_id);
+  }
+
+  auto AddOperand(SemIR::AbsoluteInstId inst_id) -> void {
+    insts_.push_back(inst_id);
+  }
+
+  auto AddOperand(SemIR::InstBlockId block_id) -> void { AddBlock(block_id); }
+
+  auto AddOperand(SemIR::StructTypeFieldsId fields_id) -> void {
+    for (auto field : context_->import_struct_type_fields().Get(fields_id)) {
+      insts_.push_back(field.type_inst_id);
+    }
+  }
+
+  auto AddOperand(SemIR::SpecificId specific_id) -> void {
+    AddSpecific(specific_id);
+  }
+
+  auto AddOperand(SemIR::SpecificInterfaceId specific_interface_id) -> void {
+    AddSpecificInterface(
+        context_->import_specific_interfaces().Get(specific_interface_id));
+  }
+
+  auto AddOperand(SemIR::DeclaredFacetTypeId facet_type_id) -> void {
+    AddFacetType(context_->import_facet_types().Get(facet_type_id));
+  }
+
+  auto AddOperand(SemIR::FunctionId function_id) -> void {
+    AddDecl(context_->import_functions().Get(function_id).generic_id);
+  }
+
+  auto AddOperand(SemIR::ClassId class_id) -> void {
+    AddType(context_->import_classes().Get(class_id).generic_id);
+  }
+
+  auto AddOperand(SemIR::InterfaceId interface_id) -> void {
+    AddInterfaceOrConstraint(context_->import_interfaces().Get(interface_id));
+  }
+
+  auto AddOperand(SemIR::NamedConstraintId named_constraint_id) -> void {
+    AddInterfaceOrConstraint(
+        context_->import_named_constraints().Get(named_constraint_id));
+  }
+
+  auto AddOperand(SemIR::ImplId impl_id) -> void {
+    AddType(context_->import_impls().Get(impl_id).generic_id);
+  }
+
+  // Adds a specific: the declaration of its generic, and its definition unless
+  // the generic is a function's, and its arguments.
+  auto AddSpecific(SemIR::SpecificId specific_id) -> void {
+    if (!specific_id.has_value()) {
+      return;
+    }
+    const auto& specific = context_->import_specifics().Get(specific_id);
+    if (context_->import_insts().Is<SemIR::FunctionDecl>(
+            context_->import_generics().Get(specific.generic_id).decl_id)) {
+      AddDecl(specific.generic_id);
+    } else {
+      AddType(specific.generic_id);
+    }
+    AddBlock(specific.args_id);
+  }
+
+  // Adds an interface with its specific.
+  auto AddSpecificInterface(SemIR::SpecificInterface interface) -> void {
+    if (interface.interface_id.has_value()) {
+      AddInterfaceOrConstraint(
+          context_->import_interfaces().Get(interface.interface_id));
+    }
+    AddSpecific(interface.specific_id);
+  }
+
+  // Adds a named constraint with its specific.
+  auto AddSpecificNamedConstraint(SemIR::SpecificNamedConstraint constraint)
+      -> void {
+    if (constraint.named_constraint_id.has_value()) {
+      AddInterfaceOrConstraint(context_->import_named_constraints().Get(
+          constraint.named_constraint_id));
+    }
+    AddSpecific(constraint.specific_id);
+  }
+
   // Adds the interfaces and named constraints that a facet type names, which
-  // make it an error when one cannot be imported (`HasErrorConstraint`).
+  // make it an error when one cannot be imported (`HasErrorConstraint`), with
+  // their specifics, and the types and values its constraints name.
   auto AddFacetType(const SemIR::DeclaredFacetType& facet_type) -> void {
-    auto add_interface = [&](SemIR::SpecificInterface interface) {
-      if (interface.interface_id.has_value()) {
-        AddInterfaceOrConstraint(
-            context_->import_interfaces().Get(interface.interface_id));
-      }
-    };
-    auto add_constraint = [&](SemIR::SpecificNamedConstraint constraint) {
-      if (constraint.named_constraint_id.has_value()) {
-        AddInterfaceOrConstraint(context_->import_named_constraints().Get(
-            constraint.named_constraint_id));
-      }
-    };
-    llvm::for_each(facet_type.extend_constraints, add_interface);
-    llvm::for_each(facet_type.self_impls_constraints, add_interface);
-    llvm::for_each(facet_type.extend_named_constraints, add_constraint);
-    llvm::for_each(facet_type.self_impls_named_constraints, add_constraint);
+    for (auto interface : facet_type.extend_constraints) {
+      AddSpecificInterface(interface);
+    }
+    for (auto interface : facet_type.self_impls_constraints) {
+      AddSpecificInterface(interface);
+    }
+    for (auto constraint : facet_type.extend_named_constraints) {
+      AddSpecificNamedConstraint(constraint);
+    }
+    for (auto constraint : facet_type.self_impls_named_constraints) {
+      AddSpecificNamedConstraint(constraint);
+    }
     for (const auto& type_impls : facet_type.type_impls_interfaces) {
-      add_interface(type_impls.specific_interface);
+      insts_.push_back(type_impls.self_type);
+      AddSpecificInterface(type_impls.specific_interface);
     }
     for (const auto& type_impls : facet_type.type_impls_named_constraints) {
-      add_constraint(type_impls.specific_named_constraint);
+      insts_.push_back(type_impls.self_type);
+      AddSpecificNamedConstraint(type_impls.specific_named_constraint);
+    }
+    for (const auto& rewrite : facet_type.rewrite_constraints) {
+      insts_.push_back(rewrite.lhs_id);
+      insts_.push_back(rewrite.rhs_id);
     }
   }
 
@@ -1082,6 +1181,8 @@ class PerInstantiationWalk {
   ImportContext* context_;
   // The instructions still to test.
   llvm::SmallVector<SemIR::InstId> insts_;
+  // The instructions that have been tested.
+  Set<SemIR::InstId, 64> insts_seen_;
   // The generics whose declarations, and whose definitions, have been added.
   Set<SemIR::GenericId, 16> decls_;
   Set<SemIR::GenericId, 16> types_;
@@ -1092,8 +1193,10 @@ class PerInstantiationWalk {
 // instantiation, such as a function template whose return type `Vec(F(N))`
 // calls a function on a template parameter, or names an entity that cannot be
 // imported, such as a binding whose type is a facet type naming such an
-// interface (`PerInstantiationWalk`). Its signature cannot be imported, so the
-// entity is diagnosed when it is first resolved and resolves to an error.
+// interface, or a parameter of type `Pair(T, FieldBox(Holder))*` for a class
+// template `FieldBox` with a field of type `T.Item` (`PerInstantiationWalk`).
+// Its signature cannot be imported, so the entity is diagnosed when it is
+// first resolved and resolves to an error.
 static auto IsDeclResolvedPerInstantiation(ImportContext& context,
                                            SemIR::GenericId import_generic_id)
     -> bool {
@@ -1107,10 +1210,11 @@ static auto IsDeclResolvedPerInstantiation(ImportContext& context,
 // for each instantiation: its declaration (`IsDeclResolvedPerInstantiation`),
 // or its definition, such as a field of type `T.Item`, or an entity its
 // definition names that cannot be imported, such as a method returning
-// `T.Item` or a nested class with such a field (`PerInstantiationWalk`). The
-// type's definition is needed to use it, so the type itself is diagnosed when
-// it is first resolved and resolves to an error, and no error reaches its eval
-// blocks.
+// `T.Item`, a nested class with such a field, or a class template with such a
+// field as the type of a field, `FieldBox(Holder)*`, beside a field of type
+// `T` (`PerInstantiationWalk`). The type's definition is needed to use it, so
+// the type itself is diagnosed when it is first resolved and resolves to an
+// error, and no error reaches its eval blocks.
 static auto IsTypeResolvedPerInstantiation(ImportContext& context,
                                            SemIR::GenericId import_generic_id)
     -> bool {
@@ -1424,8 +1528,23 @@ static auto TryFinishSpecific(ImportRefResolver& resolver,
     decl_block =
         GetLocalInstBlockContents(resolver, import_specific.decl_block_id);
   }
-  auto definition_block =
-      GetLocalInstBlockContents(resolver, import_specific.definition_block_id);
+
+  // A specific's definition holds the values of its generic's definition, so
+  // it is not imported when the generic's is not, because that is resolved for
+  // each instantiation (`TryFinishGeneric`), such as for a specific
+  // `TT2(T)` of a function template that a checked generic's body calls, and
+  // is empty, as the generic's is.
+  bool resolved_per_instantiation =
+      import_specific.definition_block_id.has_value() &&
+      IsBlockResolvedPerInstantiation(resolver,
+                                      resolver.import_generics()
+                                          .Get(import_specific.generic_id)
+                                          .definition_block_id);
+  llvm::SmallVector<SemIR::InstId> definition_block;
+  if (!resolved_per_instantiation) {
+    definition_block = GetLocalInstBlockContents(
+        resolver, import_specific.definition_block_id);
+  }
 
   if (resolver.HasNewWork()) {
     return false;
@@ -1436,10 +1555,14 @@ static auto TryFinishSpecific(ImportRefResolver& resolver,
         resolver, import_specific.decl_block_id, decl_block);
     local_specific.decl_block_has_error = import_specific.decl_block_has_error;
   }
-  local_specific.definition_block_id = GetLocalCanonicalInstBlockId(
-      resolver, import_specific.definition_block_id, definition_block);
-  local_specific.definition_block_has_error =
-      import_specific.definition_block_has_error;
+  if (resolved_per_instantiation) {
+    local_specific.definition_block_id = SemIR::InstBlockId::Empty;
+  } else {
+    local_specific.definition_block_id = GetLocalCanonicalInstBlockId(
+        resolver, import_specific.definition_block_id, definition_block);
+    local_specific.definition_block_has_error =
+        import_specific.definition_block_has_error;
+  }
   return true;
 }
 

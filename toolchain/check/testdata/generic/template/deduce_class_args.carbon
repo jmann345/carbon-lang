@@ -117,6 +117,69 @@ fn Use() -> Vec(3) {
   return Make(3);
 }
 
+// --- class_template_literal_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn Make(template N: i32, x: i32) -> i32 {
+  var c: Arr(N) = {.a = (x, 2, 3), .n = N};
+  return c.n;
+}
+
+fn Use() -> i32 {
+  return Make(3, 1);
+}
+
+// --- class_template_return_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn Make(template N: i32) -> Arr(N) {
+  return {.a = (4, 5, 6), .n = N};
+}
+
+fn Use() -> Arr(3) {
+  return Make(3);
+}
+
+// --- fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn Make(template N: i32) -> i32 {
+  var c: Arr(N) = {.a = (1, 2), .n = N};
+  return c.n;
+}
+
+fn Use() -> i32 {
+  return Make(3);
+}
+
+// --- fail_class_template_literal_with_dependent_array_bound_unknown_field.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn Make(template N: i32) -> i32 {
+  var c: Arr(N) = {.a = (1, 2, 3), .m = N};
+  return c.n;
+}
+
 // CHECK:STDOUT: --- holder.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

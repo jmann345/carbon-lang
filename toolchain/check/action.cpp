@@ -4,6 +4,7 @@
 
 #include "toolchain/check/action.h"
 
+#include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/generic_region_stack.h"
@@ -369,10 +370,28 @@ static auto RefineTypedOperandInSpecific(Context& /*context*/,
 // `SpecificInst` in order to be referred to from within a specific. If the
 // instruction isn't symbolic within the generic, then either it doesn't depend
 // on the specific at all, or evaluation has already replaced it with the
-// corresponding instruction from the specific.
+// corresponding instruction from the specific. An aggregate literal is
+// converted element by element (`GetAggregateLiteralElements`), so a runtime
+// literal such as `{.a = x, .b = N}` needs one too when an element does, so
+// that its elements are referred to in the specific: `N` is the specific's
+// constant there rather than a template-dependent value.
 static auto NeedsSpecificInst(Context& context, SemIR::InstId inst_id) -> bool {
-  return context.insts().Get(inst_id).type_id().is_symbolic() ||
-         context.constant_values().Get(inst_id).is_symbolic();
+  auto inst = context.insts().Get(inst_id);
+  if (inst.type_id().is_symbolic() ||
+      context.constant_values().Get(inst_id).is_symbolic()) {
+    return true;
+  }
+  auto elements_id = SemIR::InstBlockId::None;
+  if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
+    elements_id = literal->elements_id;
+  } else if (auto literal = inst.TryAs<SemIR::TupleLiteral>()) {
+    elements_id = literal->elements_id;
+  }
+  return elements_id.has_value() &&
+         llvm::any_of(context.inst_blocks().Get(elements_id),
+                      [&](SemIR::InstId elem_id) {
+                        return NeedsSpecificInst(context, elem_id);
+                      });
 }
 
 auto AddSpecificInst(Context& context, SemIR::InstId inst_id,

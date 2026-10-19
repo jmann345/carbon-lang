@@ -281,6 +281,107 @@ fn Use(n: Ints) -> i32 {
   return G(n);
 }
 
+// --- var_class_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn M(template N: i32, x: i32) -> i32 {
+  var c: Arr(N) = {.a = (x, 2, 3), .n = N};
+  return c.n;
+}
+
+fn Use() -> i32 {
+  return M(3, 1);
+}
+
+// --- return_class_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn M(template N: i32, x: i32) -> Arr(N) {
+  return {.a = (4, x, 6), .n = N};
+}
+
+fn Use() -> Arr(3) {
+  return M(3, 5);
+}
+
+// --- var_struct_of_class_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn M(template N: i32, x: i32) -> i32 {
+  var s: {.c: Arr(N), .d: i32} = {.c = {.a = (x, 2, 3), .n = N}, .d = x};
+  return s.d;
+}
+
+fn Use() -> i32 {
+  return M(3, 1);
+}
+
+// --- var_tuple_of_class_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn M(template N: i32, x: i32) -> i32 {
+  var t: (Arr(N), i32) = ({.a = (1, 2, x), .n = N}, x);
+  return t.1;
+}
+
+fn Use() -> i32 {
+  return M(3, 1);
+}
+
+// --- var_array_of_class_with_dependent_array_bound.carbon
+library "[[@TEST_NAME]]";
+
+class Arr(template N: i32) {
+  var a: array(i32, N);
+  var n: i32;
+}
+
+fn M(template N: i32, x: i32) -> i32 {
+  var v: array(Arr(N), 2) = ({.a = (x, 2, 3), .n = N}, {.a = (4, 5, 6), .n = x});
+  return v[1].n;
+}
+
+fn Use() -> i32 {
+  return M(3, 1);
+}
+
+// --- let_class_value_with_template_value_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(template N: i32) {
+  var a: i32;
+  var b: i32;
+}
+
+fn M(template N: i32, x: i32) -> i32 {
+  let p: P(N) = {.a = x, .b = N};
+  return p.a;
+}
+
+fn Use() -> i32 {
+  return M(3, 1);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'return_param_tuple.carbon'
 // CHECK:STDOUT: source_filename = "return_param_tuple.carbon"

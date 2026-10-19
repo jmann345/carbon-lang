@@ -2868,8 +2868,9 @@ after two plan reviews (27 findings folded) and a focused re-review
 (APPROVE-WITH-AMENDMENTS, six findings folded), implemented and then folded with
 two implementation reviews (REJECT with seven findings, APPROVE-WITH-FIXES with
 thirteen; plan's implementation review fold record), whose fold had a focused
-re-review (REJECT with eight findings, APPROVE-WITH-FIXES with six; plan's
-focused re-review fold record; amended 2026-10-15). Every decision auto-adopted
+re-review (round 1, amended 2026-10-15: REJECT with eight findings,
+APPROVE-WITH-FIXES with six, neither dry, round 2 owed; plan's focused
+re-review fold record). Every decision auto-adopted
 under V-2/V-3 (R29(a)) and open to veto. Options considered (plan §7.2): turning
 crashes into TODOs (rejected as Goodhart), cherry-picking 947c1eb52 or
 4a8993af2, inserting the storage block at the action (rev 1), deferring every
@@ -3260,7 +3261,19 @@ on trunk and the nightly (e01_twin, which has no template, W-263's class;
 local_i twice and main_k2, W-270). Across the seven reviews: 67 findings, 65
 distinct (5 BLOCKER, 21 MAJOR and 41 MINOR, counted over all 67), none
 rejected whole. The per-finding table is the plan's "Focused re-review of the
-fold, folded (2026-10-15)".
+fold (2026-10-15)", round 1. Neither review judged the branch dry: review 1
+found an invalid program that passes checking and stops lowering because of TP-1
+(r6, r7), four invalid forms that trunk and the nightly diagnose stopping the
+compiler (r1, r2, r3, r8), and the cross-library class-member shape (n8)
+stopping it after W-250's TODO; review 2 found RR2-M1 and RR2-m6 needing
+toolchain or golden changes and two records overclaiming (IR1-M2's "Fixed" with
+D-TP-14's "unreachable", and TR-8). Both re-measured bf8e1b4cc on the container
+toolchain, EXPECTED and not of record: gate 1955 of 1955, conformance 137/0/22
+over 159 and 48 of 56 bullets. Round 1 had a BLOCKER and MAJOR findings and its
+fixer changed six toolchain source files and four goldens, so round 2 of the
+focused re-review is owed, over 632f92117..c874c270f and the records commit that
+records round 1; the PR opens and is held after a dry round (amended 2026-10-15,
+records: re-review round 1).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

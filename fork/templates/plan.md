@@ -19,12 +19,16 @@ The row commit R (35e2240b5) and the discharge commit D follow the fold; the
 [landed notes](#landed-notes-tp-1-2026-10-14) record them, the runs measured at
 D and every land-time item (amended 2026-10-14, records: R and D).
 
-The focused re-review of the fold (two reviews of 7c7b1b170..bf8e1b4cc, REJECT
-and APPROVE-WITH-FIXES, fourteen findings, RR1-M1 and RR2-M1 one finding) is
-folded by the re-review fix commits that the
-[focused re-review fold record](#focused-re-review-of-the-fold-folded-2026-10-15)
+The focused re-review of the fold (round 1: REJECT and APPROVE-WITH-FIXES from
+two reviews of 7c7b1b170..bf8e1b4cc, fourteen findings, RR1-M1 and RR2-M1 one
+finding) is folded by the re-review fix commits that the
+[focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15)
 tables, with four residues filed, W-267 to W-270 (amended 2026-10-15, focused
-re-review of the fold: all findings).
+re-review of the fold: all findings). Neither review of round 1 judged the
+branch dry and its fixer changed the toolchain, so round 2 is owed, over the
+fixer's commits 632f92117..c874c270f and the records commit that records
+round 1; the PR opens and is held after a dry round (amended 2026-10-15,
+records: re-review round 1).
 
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
@@ -255,7 +259,7 @@ already published, in a commit before D. D records both outcomes in
 fork/ORCHESTRATION.md and in the plan's landed notes. From the focused re-review
 of the fold on, the second command's pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`;
 its run on 2026-10-15's records (the
-[focused re-review fold record](#focused-re-review-of-the-fold-folded-2026-10-15))
+[focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15))
 finds the ids only in trunk's own reservation sentence (amended 2026-10-15,
 focused re-review of the fold: RR2-M2).
 
@@ -3705,7 +3709,7 @@ commit's files, which merges the two.
     its fill 831289fad, 67a9dd91c (clang-format only), ba64734e7 (D-TP-26's
     error value in the specific and its readers) with its fill 1f0bc7be0, and
     the records commit that adds the
-    [focused re-review fold record](#focused-re-review-of-the-fold-folded-2026-10-15);
+    [focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15);
     beyond the budget, by the dated note below (amended 2026-10-15, focused
     re-review of the fold: all findings).
 11. **L** "TP-1: integration with PR 58" (§2.9, Appendix C), then its
@@ -4829,9 +4833,23 @@ two id re-scans.
 -   **After D** (amended 2026-10-15, focused re-review of the fold: all
     findings): the focused re-review of the fold changed the toolchain and
     filed W-267 to W-270, so W-267 to W-269 are no longer unused; its record is
-    the [next section](#focused-re-review-of-the-fold-folded-2026-10-15).
+    the [next section](#focused-re-review-of-the-fold-2026-10-15). Its round 1
+    was not dry, so the Branches row reads "IMPLEMENTED AND HELD, RE-REVIEW
+    ROUND 2 OWED" until a dry round (amended 2026-10-15, records: re-review
+    round 1).
 
-## Focused re-review of the fold, folded (2026-10-15)
+## Focused re-review of the fold (2026-10-15)
+
+R29(c)'s focused re-review of the implementation-review fold runs in rounds:
+two fresh reviews of the commits since the last reviewed head, then a separate
+fixer (R11) for what they find. The PR opens and is held after a round with no
+BLOCKER or MAJOR finding whose fixer changes no toolchain file. Round 1, below,
+had one BLOCKER and four MAJOR findings (three distinct), and its fixer changed
+six toolchain source files and four goldens, so round 2 is owed, over the
+round-1 fixer's commits 632f92117..c874c270f and the records commit that
+records round 1 (amended 2026-10-15, records: re-review round 1).
+
+### Round 1: the fold's commits, at bf8e1b4cc
 
 Two reviews (R29(c)) of the fold's commits 7c7b1b170..bf8e1b4cc, at the head
 bf8e1b4cc: review 1 (RR1, adversarial correctness, probes in
@@ -4853,6 +4871,39 @@ TP-1's spare ids, and W-270, the first of W-270..W-274, which the re-review's
 brief reserved to it; W-271 to W-274 stay unused. The fix commits carry the
 container clock's date, 2026-10-19 UTC; this record is dated 2026-10-15, the
 re-review's date.
+
+Neither review judged the branch dry. Review 1: an invalid program passes
+checking because of TP-1 (r6, `let unused a: (x.0, i32) = (1, 2);`, which trunk
+rejects where it is defined) and, with a use (r7), stops lowering at
+function_context.cpp's `Missing value` CHECK; four other invalid forms (r1, r2,
+r3 and r8) that trunk 0bdce60a5 and the nightly 62f1cc6 diagnose stop the
+compiler at eval.cpp's `PatternType should always be constant` FATAL, as they
+did at 4e1f07a91; and the cross-library class-member shape (n8) stops it after
+W-250's TODO. Review 2: one MAJOR (RR2-M1) and one MINOR (RR2-m6) need
+toolchain or golden changes, and two records overclaim, IR1-M2's "Fixed" with
+D-TP-14's "unreachable", and the TR-8 narrowing that the fold record named.
+
+The reviews' own runs at bf8e1b4cc, container-built, EXPECTED, not of record,
+the worktree untouched and every `/dev/shm` copy deleted. Review 1 used the
+install 0.0.0-0.dev+12bd6d67a, whose toolchain sources equal the head's, with a
+private cache, build-root view and conformance output directory: the gate, "1955
+passed, 0 failed", its progress line 1955 `.` with no `!` or `?`; conformance
+"PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+DIFF-MISMATCH 0, SKIP 22" of 159, bullets 48 PASS / 0 FAIL / 8 SKIP of 56, the
+nine TP-1 programs the only movers from
+fork/conformance/out/scoreboard.json's 128/0/22 of 150; M21 to M25 relinked
+under `/dev/shm/rr1-r1`, each killed by the golden the fold names; and the nine
+EXPECT lines of templates_constant_elements re-derived by hand (R16(d)), all
+matching. Review 2 read the full diff of 4e1f07a91..bf8e1b4cc (25 files), re-ran
+IR1's, IR2's and the fold fixer's probes on the three toolchains, three runs
+each, and ran an autoupdate of the fold's eight goldens on a `git archive` copy
+of the head, which changed nothing (R26), and the full gate there, 1955 of 1955;
+conformance 137/0/22 over 159, 48 of 56 bullets, and `runner.py --self-test`,
+"159 programs parsed, 56 bullets in table, OK"; `prek --all-files` on a clone,
+every hook passing; clang-format 21.1.8 clean on the fold's seven C++ files and
+clang-tidy 0 diagnostics on its changed lines of six `.cpp` files; the id
+re-scan of 2026-10-15 over trunk 5674fe88b, the ten held PRs, OX-1 and 65 other
+refs, with no collision; and the PR body's size, 26,664 bytes, under the limit.
 
 Commits: 632f92117 "TP-1 re-review fix: a runtime result of a deferred action
 used as a type is diagnosed; a template splice in a tuple type resolves in each
@@ -4914,6 +4965,18 @@ LLVM with assertions and the owner's runner; and the land-time items (M with
 the PRs, S, F6, L with its document review, the compositions, PR 58's checker,
 the id re-scans before L and D, and the discharges), which wait for PR 51 to
 PR 60.
+
+Round 1's status: not dry in either review, and its fixer changed six
+toolchain source files (check/convert.cpp, check/eval.cpp,
+check/import_ref.cpp, sem_ir/expr_info.cpp, sem_ir/function.cpp and
+sem_ir/stringify.cpp) and four goldens (check generic/template's
+fail_todo_import.carbon, index.carbon and pointer.carbon, and lower
+template/initialize.carbon; `git diff --stat bf8e1b4cc 1f0bc7be0 -- toolchain
+core`). Round 2 is owed: two fresh reviews of 632f92117..c874c270f and the
+records commit that records round 1, which changes records only.
+fork/ORCHESTRATION.md's TP-1 Branches row reads "IMPLEMENTED AND HELD,
+RE-REVIEW ROUND 2 OWED" until a round is dry (amended 2026-10-15, records:
+re-review round 1).
 
 ## Appendix A: golden sources
 

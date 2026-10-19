@@ -137,6 +137,10 @@ class MarkerArg(unused A: type, unused B: Marker) {}
 
 fn TakesMarkerArg[T: type](unused p: MarkerArg(T, K)*) {}
 
+fn TakesStruct[T: type](unused p: {.a: T, .b: FieldBox(Holder)*}*) {}
+
+fn ConstrainedByRewrite[T: HasItem where .Item = FieldBox(Holder)*](unused t: T) {}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -452,4 +456,31 @@ import library "lib";
 
 fn Use() {
   TakesMarkerArg;
+}
+
+// --- fail_todo_import_function_declaration_names_class_template_in_struct.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  TakesStruct;
+}
+
+// --- fail_todo_import_function_constrained_by_rewrite_to_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  ConstrainedByRewrite;
+}
+
+// --- fail_todo_import_two_uses_name_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(p: ((), FieldBox(Holder)*)*) {
+  TakesTuple(p);
 }

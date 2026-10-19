@@ -164,6 +164,11 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
+  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(3);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon: note: cannot initialize array of 3 elements from tuple with 2 elements [ArrayInitFromExprArgCountMismatch]
+  // CHECK:STDERR:
   return Make(3);
 }
 
@@ -176,6 +181,10 @@ class Arr(template N: i32) {
 }
 
 fn Make(template N: i32) -> i32 {
+  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_unknown_field.carbon:[[@LINE+4]]:19: error: struct `Arr(N)` has no field named `m` [StructInitUnexpectedFieldInLiteral]
+  // CHECK:STDERR:   var c: Arr(N) = {.a = (1, 2, 3), .m = N};
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var c: Arr(N) = {.a = (1, 2, 3), .m = N};
   return c.n;
 }

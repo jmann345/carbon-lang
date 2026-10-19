@@ -192,6 +192,10 @@ interface Container {
   let Other: type;
 }
 
+interface J {
+  fn G(self) -> i32;
+}
+
 fn F(template T: type, template v: T) -> array(i32, v.0);
 // CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `array(i32, v.1)` [FunctionRedeclReturnTypeDiffers]
 // CHECK:STDERR: fn F(template T: type, template v: T) -> array(i32, v.1);
@@ -261,6 +265,15 @@ fn N(template P: type, template p: P) -> C(p->n);
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn N(template P: type, template p: P) -> C(p->m);
+
+fn R(template P: type, template p: P) -> C(*p->q);
+fn R(template P: type, template p: P) -> C(*(*p).q);
+
+fn S(template P: type, template p: P) -> C((**p).n);
+fn S(template P: type, template p: P) -> C((*p)->n);
+
+fn U(template P: type, template p: P) -> C(p->(J.G)());
+fn U(template P: type, template p: P) -> C((*p).(J.G)());
 
 // --- fail_tuple_index_as_type_on_instantiation.carbon
 library "[[@TEST_NAME]]";

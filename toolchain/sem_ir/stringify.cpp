@@ -767,6 +767,40 @@ class Stringifier {
     return false;
   }
 
+  // Returns the pointer operand of `inst_id` if it is the dereference that `->`
+  // performs, looking through splices and conversions, which print as their
+  // operands; otherwise returns `None`.
+  auto GetArrowPointer(InstId inst_id) -> InstId {
+    while (inst_id.has_value()) {
+      auto inst = sem_ir_->insts().Get(inst_id);
+      CARBON_KIND_SWITCH(inst) {
+        case CARBON_KIND(SpliceInst splice): {
+          inst_id = splice.inst_id;
+          break;
+        }
+        case CARBON_KIND(ConvertAction convert): {
+          inst_id = convert.inst_id;
+          break;
+        }
+        case CARBON_KIND(ConvertToCategoryAction convert): {
+          inst_id = convert.inst_id;
+          break;
+        }
+        case CARBON_KIND(ConvertToValueAction convert): {
+          inst_id = convert.inst_id;
+          break;
+        }
+        case CARBON_KIND(PointerDereferenceAction deref): {
+          return deref.is_arrow.ToBool() ? InstId(deref.pointer_id)
+                                         : InstId::None;
+        }
+        default:
+          return InstId::None;
+      }
+    }
+    return InstId::None;
+  }
+
   // Pushes a postfix operation or a member access on `operand_id`, followed by
   // `rest`. A prefix operand is parenthesized, so that `(*p)[0]` and `*p[0]`
   // print differently.
@@ -847,8 +881,15 @@ class Stringifier {
     return NameId::None;
   }
 
-  // Template-dependent operations, printed as the expressions they perform.
+  // Template-dependent operations, printed as the expressions they perform. A
+  // member access whose base is the dereference that `->` performs prints as
+  // `p->n`, so that it differs from `(*p).n`'s text as its constant does.
   auto StringifyInst(InstId /*inst_id*/, AccessMemberAction inst) -> void {
+    if (auto pointer_id = GetArrowPointer(InstId(inst.base_id));
+        pointer_id.has_value()) {
+      PushPostfix(pointer_id, "->", inst.name_id);
+      return;
+    }
     PushPostfix(InstId(inst.base_id), ".", inst.name_id);
   }
 
@@ -890,6 +931,11 @@ class Stringifier {
         sem_ir_->insts().Is<AssociatedEntity>(const_inst_id)) {
       member_id = const_inst_id;
     }
+    if (auto pointer_id = GetArrowPointer(InstId(inst.base_id));
+        pointer_id.has_value()) {
+      PushPostfix(pointer_id, "->(", member_id, ")");
+      return;
+    }
     PushPostfix(InstId(inst.base_id), ".(", member_id, ")");
   }
 
@@ -899,8 +945,8 @@ class Stringifier {
 
   auto StringifyInst(InstId /*inst_id*/, PointerDereferenceAction inst)
       -> void {
-    // The operand of `->` is printed as the dereference that `->` performs,
-    // followed by the member access.
+    // The dereference that `->` performs prints as part of the member access
+    // that uses it (`p->n`); printed alone, it is the dereference itself.
     if (inst.is_arrow.ToBool()) {
       step_stack_->Push("(*", InstId(inst.pointer_id), ")");
     } else {

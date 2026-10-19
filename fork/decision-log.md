@@ -2870,8 +2870,9 @@ two implementation reviews (REJECT with seven findings, APPROVE-WITH-FIXES with
 thirteen; plan's implementation review fold record), whose fold had a focused
 re-review (round 1, amended 2026-10-15: REJECT with eight findings,
 APPROVE-WITH-FIXES with six, neither dry; round 2, amended 2026-10-15: two
-APPROVE-WITH-FIXES with seven findings, neither dry, round 3 owed; plan's
-focused re-review fold record). Every decision auto-adopted
+APPROVE-WITH-FIXES with seven findings, neither dry; round 3, amended
+2026-10-15: two APPROVE-WITH-FIXES with four findings, neither dry, round 4
+owed; plan's focused re-review fold record). Every decision auto-adopted
 under V-2/V-3 (R29(a)) and open to veto. Options considered (plan §7.2): turning
 crashes into TODOs (rejected as Goodhart), cherry-picking 947c1eb52 or
 4a8993af2, inserting the storage block at the action (rev 1), deferring every
@@ -3091,16 +3092,16 @@ a review shows a rule decided here that proposal 2200 leaves open.
 
 **D-TP-18.** The row stays PARTIAL and W-014 stays OPEN: the first arbiter
 clause is met for the four `fail_todo` splits present when W-014 was filed
-(TP-1's own `fail_todo` splits, ten since the focused re-review of the fold,
-pin W-250 and W-266; (amended 2026-10-14, implementation-review fold:
-IR2-MINOR-6; amended 2026-10-15, focused re-review of the fold: RR1-M1 /
-RR2-M1)), the second is not (handle.cpp:513,
-:524 at the fold's head, behind W-250), and the residues of §1.13 are material
-gaps (gap-analysis.md:12-13). _Break:_ the row is re-graded against
-gap-analysis.md:12-13 when W-250, W-254, W-255, W-259 and W-264 are closed; not
-moved to DONE on the arbiter alone (amended 2026-10-14, review fold: B-M2 /
-A-m2); W-256 and W-265 are not template defects and do not hold the row (amended
-2026-10-14, review fold: RR-M1 / RR-M2).
+(TP-1's own `fail_todo` splits, twenty-eight since round 3 of the focused
+re-review of the fold, pin W-250 and W-266; (amended 2026-10-14,
+implementation-review fold: IR2-MINOR-6; amended 2026-10-15, focused re-review
+of the fold: RR1-M1 / RR2-M1 / RR2r2-M1 / RR3-1-M1)), the second is not
+(handle.cpp:513, :524 at the fold's head, behind W-250), and the residues of
+§1.13 are material gaps (gap-analysis.md:12-13). _Break:_ the row is re-graded
+against gap-analysis.md:12-13 when W-250, W-254, W-255, W-259 and W-264 are
+closed; not moved to DONE on the arbiter alone (amended 2026-10-14, review fold:
+B-M2 / A-m2); W-256 and W-265 are not template defects and do not hold the row
+(amended 2026-10-14, review fold: RR-M1 / RR-M2).
 
 **D-TP-19.** Merge after PR 59 with a merge of trunk M, before the
 implementation reviews; the PR 58 integration is a separate commit L after them
@@ -3333,6 +3334,52 @@ of the focused re-review is owed, over the round-2 fixer's commits
 2165322c5..bdc1f62d7 and the records commit after them that records round 2's
 reviews; the PR opens and is held after a dry round (amended 2026-10-15,
 records: re-review round 2).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 3 (amended 2026-10-15). Two fresh reviews
+of the round-2 fixer's commits 2165322c5..bdc1f62d7 and the records commit
+aa57bfe1c, at aa57bfe1c: review 1 (adversarial correctness) APPROVE-WITH-FIXES,
+one finding (RR3-1-M1: D-TP-14's walk tested only the kind of each eval block
+entry it reached, so across libraries a checked generic or an impl's method
+that calls a function template, or a checked generic or class that names a
+class template through a specific's argument, a tuple element or a field,
+reported W-250's TODO and then stopped the compiler); review 2 (strictness and
+records) APPROVE-WITH-FIXES, three findings (RR3r2-M1, the same defect;
+RR3r2-m1 and RR3r2-m2, records only: the nightly's crash site for round 2's
+n01, n02, n03 and p1, and the PR body's round-2 probe summary). A separate
+fixer reproduced every finding on the installed toolchain, trunk and the
+nightly before changing anything and folded all of them: 68102438e with its
+fill d0fbfd56b (the walk follows each instruction's type and operands, a
+specific's generic and arguments and a facet type's specifics, and
+`TryFinishSpecific` does not import the definition of a specific whose
+generic's definition is not imported), d54c37f91 (the file records what each
+walk that reaches no action reached, so the wider walk does not slow the
+gate), ada45a7c6 with its fill e7dc20a43 (three more splits, which pin the
+shapes that three of the round's mutants change), and a records commit; none
+rejected, no residue filed, W-272..W-274 unused. Measured at e7dc20a43 on
+d54c37f91's toolchain, container-built, EXPECTED and not of record:
+"file_test test mode on /home/user/carbon-tp: 1955 passed, 0 failed (exit 0,
+26s)", 0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0,
+LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)",
+bullets 48/56; every mutant of the walk killed (seventeen new, M51 to M67;
+M43 and M50 redefined) but M44, M52, M56, M60, M62, M64 and M65, whose paths
+others cover, as the plan records; clang-tidy 0 diagnostics on the round's
+changed lines; 110 cross-library probes swept on aa57bfe1c's import code, the
+head, trunk and the nightly: the 32 that stopped the compiler after the TODO
+report it with no crash, the six that still stop it stop trunk too (W-271's
+four and q1 and q2), and none that compiled changes. The round's fills
+(d0fbfd56b, e7dc20a43) missed no row of plan §4, whose rows for them were
+written from the fixer's own autoupdates. Across the eleven reviews: 78
+findings, 75 distinct (5 BLOCKER, 26 MAJOR and 47 MINOR, counted over all 78),
+none rejected whole. The per-finding table is the plan's "Focused re-review of
+the fold (2026-10-15)", round 3. Neither review judged the branch dry: review 1
+found the crash after the TODO on the W-250 import surface, review 2 the same
+and two inexact records. Both re-measured aa57bfe1c on the container
+toolchain, EXPECTED and not of record: gate 1955 of 1955, conformance 137/0/22
+over 159 and 48 of 56 bullets. Round 3 had a MAJOR finding and its fixer
+changed two toolchain source files and one golden, so round 4 of the focused
+re-review is owed, over the round-3 fixer's commits 68102438e..e7dc20a43 and
+the records commit after them; the PR opens and is held after a dry round
+(amended 2026-10-15, focused re-review of the fold: all round-3 findings).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

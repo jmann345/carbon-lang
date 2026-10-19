@@ -214,6 +214,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_tuple_index_as_type_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_tuple_index_as_type_on_instantiation.carbon:[[@LINE-8]]:17: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: x.0 = 1;
+  // CHECK:STDERR:                 ^~~
+  // CHECK:STDERR:
   return F(t);
 }
 
@@ -226,6 +233,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(a: array(type, 1)) -> i32 {
+  // CHECK:STDERR: fail_index_as_type_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F(array(type, 1))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(a);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_index_as_type_on_instantiation.carbon:[[@LINE-8]]:17: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: x[0] = 1;
+  // CHECK:STDERR:                 ^~~~
+  // CHECK:STDERR:
   return F(a);
 }
 
@@ -238,6 +252,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_tuple_type_element_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_tuple_type_element_on_instantiation.carbon:[[@LINE-8]]:17: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: (x.0, i32) = (1, 2);
+  // CHECK:STDERR:                 ^~~~~~~~~~
+  // CHECK:STDERR:
   return F(t);
 }
 
@@ -250,6 +271,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(t: (type, type)) -> i32 {
+  // CHECK:STDERR: fail_struct_type_field_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F((type, type))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(t);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_struct_type_field_on_instantiation.carbon:[[@LINE-8]]:22: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: {.p: x.0, .q: i32} = {.p = 5, .q = 7};
+  // CHECK:STDERR:                      ^~~
+  // CHECK:STDERR:
   return F(t);
 }
 
@@ -264,6 +292,13 @@ fn F[template T: type](x: T) -> i32 {
 }
 
 fn Use(n: i32) -> i32 {
+  // CHECK:STDERR: fail_array_element_type_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F(i32)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(n);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_array_element_type_on_instantiation.carbon:[[@LINE-8]]:23: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: array(MakeT(x), 1) = (1,);
+  // CHECK:STDERR:                       ^~~~~~~~
+  // CHECK:STDERR:
   return F(n);
 }
 

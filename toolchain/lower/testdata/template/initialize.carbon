@@ -1417,3 +1417,164 @@ fn Use(n: Ints) -> i32 {
 // CHECK:STDOUT: !454 = !DILocation(line: 10, column: 3, scope: !444)
 // CHECK:STDOUT: !455 = !{!445}
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'return_tuple_of_associated_type.carbon'
+// CHECK:STDOUT: source_filename = "return_tuple_of_associated_type.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @"_CGet.Ints.Main:Container.Main"(ptr %self) #0 !dbg !458 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc11_38.1.n = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !463
+// CHECK:STDOUT:   %.loc11_38.2 = load i32, ptr %.loc11_38.1.n, align 4, !dbg !463
+// CHECK:STDOUT:   ret i32 %.loc11_38.2, !dbg !464
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUse.Main(ptr sret({ i32, i32 }) %return, ptr %n) #0 !dbg !466 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CF.Main.bd99b4c472800820(ptr %return, ptr %n), !dbg !472
+// CHECK:STDOUT:   ret void, !dbg !473
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CF.Main.bd99b4c472800820(ptr sret({ i32, i32 }) %return, ptr %x) #0 !dbg !475 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Ints.as.Container.impl.Get.call = call i32 @"_CGet.Ints.Main:Container.Main"(ptr %x), !dbg !480
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 0, !dbg !481
+// CHECK:STDOUT:   store i32 %Ints.as.Container.impl.Get.call, ptr %tuple.elem0.tuple.elem, align 4, !dbg !481
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %return, i32 0, i32 1, !dbg !481
+// CHECK:STDOUT:   store i32 5, ptr %tuple.elem1.tuple.elem, align 4, !dbg !481
+// CHECK:STDOUT:   ret void, !dbg !482
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!457}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !8 = !{!7, !7}
+// CHECK:STDOUT: !9 = !DISubroutineType(types: !8)
+// CHECK:STDOUT: !175 = !{!6, !7}
+// CHECK:STDOUT: !176 = !DISubroutineType(types: !175)
+// CHECK:STDOUT: !456 = !DIFile(filename: "return_tuple_of_associated_type.carbon", directory: "")
+// CHECK:STDOUT: !457 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !456, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !458 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.Ints.Main:Container.Main", scope: null, file: !456, line: 11, type: !176, spFlags: DISPFlagDefinition, unit: !457, retainedNodes: !465)
+// CHECK:STDOUT: !459 = !DILocalVariable(arg: 1, scope: !458, type: !7)
+// CHECK:STDOUT: !463 = !DILocation(line: 11, column: 34, scope: !458)
+// CHECK:STDOUT: !464 = !DILocation(line: 11, column: 27, scope: !458)
+// CHECK:STDOUT: !465 = !{!459}
+// CHECK:STDOUT: !466 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !456, line: 19, type: !9, spFlags: DISPFlagDefinition, unit: !457, retainedNodes: !474)
+// CHECK:STDOUT: !467 = !DILocalVariable(arg: 1, scope: !466, type: !7)
+// CHECK:STDOUT: !472 = !DILocation(line: 20, column: 10, scope: !466)
+// CHECK:STDOUT: !473 = !DILocation(line: 20, column: 3, scope: !466)
+// CHECK:STDOUT: !474 = !{!467}
+// CHECK:STDOUT: !475 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main.bd99b4c472800820", scope: null, file: !456, line: 15, type: !9, spFlags: DISPFlagDefinition, unit: !457, retainedNodes: !483)
+// CHECK:STDOUT: !476 = !DILocalVariable(arg: 1, scope: !475, type: !7)
+// CHECK:STDOUT: !480 = !DILocation(line: 16, column: 11, scope: !475)
+// CHECK:STDOUT: !481 = !DILocation(line: 16, column: 10, scope: !475)
+// CHECK:STDOUT: !482 = !DILocation(line: 16, column: 3, scope: !475)
+// CHECK:STDOUT: !483 = !{!476}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'var_tuple_of_associated_type.carbon'
+// CHECK:STDOUT: source_filename = "var_tuple_of_associated_type.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @tuple.8a1.loc12_3.1 = internal constant { i32, i32 } { i32 4, i32 5 }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CUse.Main(ptr %n) #0 !dbg !486 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %G.call = call i32 @_CG.Main.bd99b4c472800820(ptr %n), !dbg !492
+// CHECK:STDOUT:   ret i32 %G.call, !dbg !493
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %self) #0 !dbg !495 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !497
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core"(ptr %self) #0 !dbg !499 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %tuple.elem1.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 1, !dbg !501
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %tuple.elem1.tuple.elem), !dbg !501
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %self, i32 0, i32 0, !dbg !501
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %tuple.elem0.tuple.elem), !dbg !501
+// CHECK:STDOUT:   ret void, !dbg !501
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core"(ptr %self) #0 !dbg !503 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core"(ptr %self), !dbg !505
+// CHECK:STDOUT:   ret void, !dbg !505
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CG.Main.bd99b4c472800820(ptr %x) #0 !dbg !507 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %t.var = alloca { i32, i32 }, align 4, !dbg !512
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %t.var), !dbg !512
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 0, !dbg !513
+// CHECK:STDOUT:   %tuple.elem1.loc12.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 1, !dbg !513
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %t.var, ptr align 4 @tuple.8a1.loc12_3.1, i64 8, i1 false), !dbg !512
+// CHECK:STDOUT:   %tuple.elem1.loc13.tuple.elem = getelementptr inbounds nuw { i32, i32 }, ptr %t.var, i32 0, i32 1, !dbg !515
+// CHECK:STDOUT:   %.loc13 = load i32, ptr %tuple.elem1.loc13.tuple.elem, align 4, !dbg !515
+// CHECK:STDOUT:   call void @"_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core"(ptr %t.var), !dbg !512
+// CHECK:STDOUT:   ret i32 %.loc13, !dbg !516
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!485}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !173 = !{null, !7}
+// CHECK:STDOUT: !174 = !DISubroutineType(types: !173)
+// CHECK:STDOUT: !175 = !{!6, !7}
+// CHECK:STDOUT: !176 = !DISubroutineType(types: !175)
+// CHECK:STDOUT: !298 = !{null, !6}
+// CHECK:STDOUT: !299 = !DISubroutineType(types: !298)
+// CHECK:STDOUT: !484 = !DIFile(filename: "var_tuple_of_associated_type.carbon", directory: "")
+// CHECK:STDOUT: !485 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !484, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !486 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !484, line: 16, type: !176, spFlags: DISPFlagDefinition, unit: !485, retainedNodes: !494)
+// CHECK:STDOUT: !487 = !DILocalVariable(arg: 1, scope: !486, type: !7)
+// CHECK:STDOUT: !492 = !DILocation(line: 17, column: 10, scope: !486)
+// CHECK:STDOUT: !493 = !DILocation(line: 17, column: 3, scope: !486)
+// CHECK:STDOUT: !494 = !{!487}
+// CHECK:STDOUT: !495 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f58524831c37807e:core.Destroy.Core", scope: null, file: !484, line: 12, type: !299, spFlags: DISPFlagDefinition, unit: !485, retainedNodes: !498)
+// CHECK:STDOUT: !496 = !DILocalVariable(arg: 1, scope: !495, type: !6)
+// CHECK:STDOUT: !497 = !DILocation(line: 12, column: 3, scope: !495)
+// CHECK:STDOUT: !498 = !{!496}
+// CHECK:STDOUT: !499 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.e554695bf635d9c1:core.Destroy.Core", scope: null, file: !484, line: 12, type: !174, spFlags: DISPFlagDefinition, unit: !485, retainedNodes: !502)
+// CHECK:STDOUT: !500 = !DILocalVariable(arg: 1, scope: !499, type: !7)
+// CHECK:STDOUT: !501 = !DILocation(line: 12, column: 3, scope: !499)
+// CHECK:STDOUT: !502 = !{!500}
+// CHECK:STDOUT: !503 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.e554695bf635d9c1:core.Destroy.Core", scope: null, file: !484, line: 12, type: !174, spFlags: DISPFlagDefinition, unit: !485, retainedNodes: !506)
+// CHECK:STDOUT: !504 = !DILocalVariable(arg: 1, scope: !503, type: !7)
+// CHECK:STDOUT: !505 = !DILocation(line: 12, column: 3, scope: !503)
+// CHECK:STDOUT: !506 = !{!504}
+// CHECK:STDOUT: !507 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main.bd99b4c472800820", scope: null, file: !484, line: 11, type: !176, spFlags: DISPFlagDefinition, unit: !485, retainedNodes: !517)
+// CHECK:STDOUT: !508 = !DILocalVariable(arg: 1, scope: !507, type: !7)
+// CHECK:STDOUT: !512 = !DILocation(line: 12, column: 3, scope: !507)
+// CHECK:STDOUT: !513 = !DILocation(line: 12, column: 26, scope: !507)
+// CHECK:STDOUT: !515 = !DILocation(line: 13, column: 10, scope: !507)
+// CHECK:STDOUT: !516 = !DILocation(line: 13, column: 3, scope: !507)
+// CHECK:STDOUT: !517 = !{!508}
+// CHECK:STDOUT:

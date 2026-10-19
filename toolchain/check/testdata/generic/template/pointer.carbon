@@ -169,6 +169,13 @@ fn F[template T: type](p: T) -> i32 {
 }
 
 fn Use(p: type*) -> i32 {
+  // CHECK:STDERR: fail_deref_as_type_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F(type*)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(p);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_deref_as_type_on_instantiation.carbon:[[@LINE-8]]:17: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: *p = 1;
+  // CHECK:STDERR:                 ^~
+  // CHECK:STDERR:
   return F(p);
 }
 
@@ -183,6 +190,13 @@ fn F[template T: type](x: T, y: i32*) -> i32 {
 }
 
 fn Use(n: i32, p: i32*) -> i32 {
+  // CHECK:STDERR: fail_pointee_type_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F(i32)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(n, p);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_pointee_type_on_instantiation.carbon:[[@LINE-8]]:17: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   let unused a: MakeT(x)* = y;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   return F(n, p);
 }
 

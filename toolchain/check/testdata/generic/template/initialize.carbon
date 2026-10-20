@@ -336,6 +336,44 @@ fn Use() -> i32 {
   return G(0 as i32);
 }
 
+// --- fail_todo_let_class_value_of_nested_literal_with_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class Inner {
+  var a: i32;
+  var b: i32 = 2;
+}
+
+class Outer {
+  var inner: Inner;
+}
+
+fn G(template N: i32) -> i32 {
+  let o: Outer = {.inner = {.a = N}};
+  return o.inner.a + o.inner.b;
+}
+
+fn Use() -> i32 {
+  return G(3);
+}
+
+// --- fail_todo_let_array_value_of_class_literal_with_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class C {
+  var a: i32;
+  var b: i32 = 2;
+}
+
+fn G(template N: i32) -> i32 {
+  let t: array(C, 2) = ({.a = N}, {.a = 1});
+  return t[0].a + t[0].b + t[1].a;
+}
+
+fn Use() -> i32 {
+  return G(3);
+}
+
 // --- return_struct_convert.carbon
 library "[[@TEST_NAME]]";
 

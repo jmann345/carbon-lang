@@ -293,12 +293,20 @@ class Outer(template T: type) {
 
   fn InMatch(c: C) -> i32 {
     match (c) {
+      // CHECK:STDERR: fail_unknown_alternative_class_template.carbon:[[@LINE+4]]:12: error: member name `Nope` not found in `C` [MemberNameNotFoundInSpecificScope]
+      // CHECK:STDERR:       case .Nope => { return 0; }
+      // CHECK:STDERR:            ^~~~~
+      // CHECK:STDERR:
       case .Nope => { return 0; }
       default => { return 1; }
     }
   }
 
   fn InIfLet(c: C) -> i32 {
+    // CHECK:STDERR: fail_unknown_alternative_class_template.carbon:[[@LINE+4]]:13: error: member name `Nope` not found in `C` [MemberNameNotFoundInSpecificScope]
+    // CHECK:STDERR:     if (let .Nope = c) {
+    // CHECK:STDERR:             ^~~~~
+    // CHECK:STDERR:
     if (let .Nope = c) {
       return 0;
     }
@@ -306,6 +314,10 @@ class Outer(template T: type) {
   }
 
   fn InLetElse(c: C) -> i32 {
+    // CHECK:STDERR: fail_unknown_alternative_class_template.carbon:[[@LINE+4]]:9: error: member name `Nope` not found in `C` [MemberNameNotFoundInSpecificScope]
+    // CHECK:STDERR:     let .Nope = c else { return 0; }
+    // CHECK:STDERR:         ^~~~~
+    // CHECK:STDERR:
     let .Nope = c else { return 0; }
     return 1;
   }

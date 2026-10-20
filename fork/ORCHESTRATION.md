@@ -327,28 +327,30 @@ reports the TODO instead of stopping the compiler after it), 6aa403cd6 with its
 fill a1285a786 (a class value whose literal leaves a field to its default is
 converted on instantiation too), b0501358f with its fill 3d6685b8b (a split that
 pins the concrete `require` shape a mutant changes), and the records commits
-after them (9db2fbb12, and the one that completes it after a container restart
+after them (9db2fbb12; 7beed27b7, which completes it after a container restart
 at 00:31 UTC on 2026-10-20 by the container clock, re-measuring 9db2fbb12 with
-the same results); one residue filed, W-272 (such a literal that leaves a field
-to its default is rejected on instantiation, as on trunk and the nightly), and
-W-273 and W-274 stay unused. Verification is container-built and NOT of record
-(Actions disabled): on 3d6685b8b with 6aa403cd6's toolchain file_test 1955/1955
-and the expected scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159, 48/56 bullets
-(scoreboard generated 2026-10-19T23:30:16Z by the container clock); every
-round-4 mutant killed but the seven recorded survivors whose paths others cover
-or no measured shape reaches; the first review's 14 crash probes compile and
-run, and the ten `require` probes that stopped the compiler after the TODO
-report it with no crash, where trunk and the nightly stop all ten at the
-SpliceInst FATAL. `git merge-tree` of the head against trunk f3156a375 and each
-held PR gives the PR body's conflict table unchanged (round 4's convert.cpp and
-import_ref.cpp hunks merge cleanly). Neither review judged the branch dry, and
-the fixer changed two toolchain source files and three goldens, so RE-REVIEW
-ROUND 5 OWED: two fresh reviews of the round-4 fixers' commits from c841ad9e7
-(the fix commits c841ad9e7..3d6685b8b and the records commits 9db2fbb12 and the
-one after it) and the records commit after them that records round 4's
-reviews, then a fixer for what they find; the PR opens and is held after a round
-with no BLOCKER or MAJOR whose fixer changes no toolchain file. The merge order
-does not change.
+the same results; and a records pass over the reviews' runs, which re-measures
+7beed27b7 with the same results and splits the PR description, moving its
+verification record to the PR's first comment); one residue filed, W-272 (such a
+literal that leaves a field to its default is rejected on instantiation, as on
+trunk and the nightly), and W-273 and W-274 stay unused. Verification is
+container-built and NOT of record (Actions disabled): on 3d6685b8b with
+6aa403cd6's toolchain file_test 1955/1955 and the expected scoreboard 137 PASS /
+0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard generated
+2026-10-19T23:30:16Z by the container clock); every round-4 mutant killed but
+the seven recorded survivors whose paths others cover or no measured shape
+reaches; the first review's 14 crash probes compile and run, and the ten
+`require` probes that stopped the compiler after the TODO report it with no
+crash, where trunk and the nightly stop all ten at the SpliceInst FATAL. `git
+merge-tree` of the head against trunk f3156a375 and each held PR gives the PR
+body's conflict table unchanged (round 4's convert.cpp and import_ref.cpp hunks
+merge cleanly). Neither review judged the branch dry, and the fixer changed two
+toolchain source files and three goldens, so RE-REVIEW ROUND 5 OWED: two fresh
+reviews of the round-4 fixers' commits c841ad9e7..7beed27b7 (the fix commits
+c841ad9e7..3d6685b8b and the records commits 9db2fbb12 and 7beed27b7) and the
+records commit after them that records round 4's reviews, then a fixer for what
+they find; the PR opens and is held after a round with no BLOCKER or MAJOR whose
+fixer changes no toolchain file. The merge order does not change.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183

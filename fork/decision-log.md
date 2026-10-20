@@ -3448,14 +3448,23 @@ round 4. Neither review judged the branch dry: review 1 found a crash in
 lowering, review 2 a crash after the TODO on the W-250 import surface and two
 inexact records. Round 4 had a BLOCKER and a MAJOR finding and its fixer changed
 two toolchain source files and three goldens, so round 5 of the focused
-re-review is owed, over the round-4 fixers' commits from c841ad9e7 (the fix
-commits c841ad9e7..3d6685b8b and the records commits 9db2fbb12 and the one after
-it) and the records commit after them that records round 4's reviews; the PR
-opens and is held after a dry round (amended 2026-10-15, focused re-review of
-the fold: all round-4 findings). The second records commit's fixer re-ran the
-round's measurements at 9db2fbb12 with the same results (file_test 1955 of 1955;
-conformance 137/0/22 over 159, 48/56 bullets; every mutant and probe as the plan
-records) and made D-TP-22 and D-TP-24 here and in the plan exact.
+re-review is owed, over the round-4 fixers' commits c841ad9e7..7beed27b7 (the
+fix commits c841ad9e7..3d6685b8b and the records commits 9db2fbb12 and
+7beed27b7) and the records commit after them that records round 4's reviews; the
+PR opens and is held after a dry round (amended 2026-10-15, focused re-review of
+the fold: all round-4 findings; records: re-review round 4). The second records
+commit's fixer re-ran the round's measurements at 9db2fbb12 with the same
+results (file_test 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets;
+every mutant and probe as the plan records) and made D-TP-22 and D-TP-24 here
+and in the plan exact. The records commit after 7beed27b7 adds to the plan's
+round-4 record the reviews' runs it left out (among them review 1's two measured
+fixes for RR4-1-B1, of which c841ad9e7 takes the first, and review 2's candidate
+fix for RR4r2-M1, which 0f2002243 takes), names 7beed27b7 in round 5's scope,
+re-runs the id re-scan and `git merge-tree` with the same results, re-measures
+7beed27b7 (file_test 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets;
+EXPECTED, not of record), and splits the PR body, which had passed GitHub's
+65,536-character limit, moving its verification record to the PR's first comment
+(amended 2026-10-15, records: re-review round 4).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

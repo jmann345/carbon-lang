@@ -373,13 +373,12 @@ container-built and NOT of record (Actions disabled): on 82bb5a749 with
 2026-10-20T02:48:42Z by the container clock); every round-5 mutant killed but
 the four recorded survivors whose paths others cover or that no measured shape
 reaches (amended 2026-10-15, focused re-review of the fold: RR6r2-m1); the
-eleven class-value
-probes that the round-4 head rejected print their twins' values. `git
-merge-tree` of the head against trunk f3156a375 and each held PR gives the PR
-body's conflict table unchanged (round 5's convert.cpp hunk merges cleanly).
-Neither review judged the branch dry, and the fixer changed one toolchain source
-file and three goldens, so RE-REVIEW ROUND 6 OWED: two fresh reviews of the
-round-5 fixer's commits 0bd0756c8..82ab5f78a (the fix commits
+eleven class-value probes that the round-4 head rejected print their twins'
+values. `git merge-tree` of the head against trunk f3156a375 and each held PR
+gives the PR body's conflict table unchanged (round 5's convert.cpp hunk merges
+cleanly). Neither review judged the branch dry, and the fixer changed one
+toolchain source file and three goldens, so RE-REVIEW ROUND 6 OWED: two fresh
+reviews of the round-5 fixer's commits 0bd0756c8..82ab5f78a (the fix commits
 0bd0756c8..82bb5a749 and the records commit 82ab5f78a) and the records commit
 after them that records round 5's reviews, then a fixer for what they find; the
 PR opens and is held after a round with no BLOCKER or MAJOR whose fixer changes
@@ -419,6 +418,39 @@ commit 2cb6bfec0) and the records commit after them that records round 6's
 reviews, then a fixer for what they find; the PR opens and is held after a round
 with no BLOCKER or MAJOR whose fixer changes no toolchain file. The merge order
 does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 7, folded;
+pushed; RE-REVIEW ROUND 8 OWED): two fresh reviews of the round-6 fixer's
+commits 4d015cf18..2cb6bfec0 and the records commit aff28da43 returned
+APPROVE-WITH-FIXES (two MINOR, records only, judged dry) and APPROVE-WITH-FIXES
+(one MAJOR, one MINOR records only, not dry), four distinct findings, all folded
+and none rejected (fork/templates/plan.md, "Focused re-review of the fold
+(2026-10-15)", round 7): c4d609c8d with its fill a6c7910d6 (an action keeps a
+struct or tuple literal as its operand instead of the literal's constant value,
+so a constant literal deferred to instantiation takes the defaults of the
+class's concrete specific, nested literals included; `var k: T = 7;` in a class
+template, which round 6's deferral had turned from running into a rejection,
+runs again, and so does every form that W-272 recorded, whose six pins lose
+`fail_todo_`), b82630e75 with its fill d29e91e5c (a lower split that kills the
+round's surviving mutant M85), and the records commit after them (W-270 widened
+to a class template whose later parameter's type is produced, the records'
+comparisons with trunk and the nightly corrected, three paragraphs rewrapped);
+no residue filed, W-272 discharged within TP-1, W-274 stays unused. Verification
+is container-built and NOT of record (Actions disabled): on d29e91e5c with
+c4d609c8d's toolchain file_test 1955/1955 and the expected scoreboard 137 PASS /
+0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard generated
+2026-10-20T07:06:51Z by the container clock), every program equal to round 6's
+run; every round-7 mutant killed but M76, which only completes the walk; a sweep
+of 1445 earlier probes changes only the shapes that the fix makes compile or
+brings to their twins' behavior. `git merge-tree` of the head against trunk
+f3156a375 and each held PR gives the PR body's conflict table unchanged (round
+7's eval.cpp hunk and the two refilled eval goldens merge cleanly). Review 2 did
+not judge the branch dry, and the fixer changed two toolchain source files and
+six goldens, so RE-REVIEW ROUND 8 OWED: two fresh reviews of the round-7 fixer's
+commits c4d609c8d..d29e91e5c and its records commit, and the records commit
+after them that records round 7's reviews, then a fixer for what they find; the
+PR opens and is held after a round with no BLOCKER or MAJOR whose fixer changes
+no toolchain file. The merge order does not change.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -760,7 +792,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
-| `claude/carbon-fork-0-1-tp` | IMPLEMENTED AND HELD, RE-REVIEW ROUND 7 OWED -- TP-1 integrated templates, toolchain at 4d015cf18 (splits through e193865fc) after round 6 of the focused re-review of the fold (two APPROVE-WITH-FIXES on d50052bde, neither dry, all five findings folded), records through round 6's records commits; round 7 reviews 4d015cf18 onward, and the PR opens and is held after a dry round (W-014 OPEN; W-250..W-273 filed, W-274 unused; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1955/1955 and conformance 137/0/22 over 159 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
+| `claude/carbon-fork-0-1-tp` | IMPLEMENTED AND HELD, RE-REVIEW ROUND 8 OWED -- TP-1 integrated templates, toolchain at c4d609c8d (splits through d29e91e5c) after round 7 of the focused re-review of the fold (two APPROVE-WITH-FIXES on aff28da43, one of them dry, all four findings folded), records through round 7's records commit; round 8 reviews c4d609c8d onward, and the PR opens and is held after a dry round (W-014 OPEN; W-250..W-273 filed, W-272 discharged within TP-1, W-274 unused; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1955/1955 and conformance 137/0/22 over 159 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -864,7 +896,7 @@ nine PASS (fork/templates/plan.md §5).
         the conformance README table is regenerated with `runner.py
         --update-readme-table`, and each record file takes trunk's text with
         TP-1's appended blocks after the PRs' (row 54 found by its bullet text,
-        W-250..W-272 after the then-last item, the decision-log entry above the
+        W-250..W-273 after the then-last item, the decision-log entry above the
         entry that then follows "Full autonomy and the throughput protocol",
         this item and TP-1's Branches row, trunk's own stale TP-1 Branches row
         dropped, since a merge keeps both rows without a conflict). The focused
@@ -873,12 +905,13 @@ nine PASS (fork/templates/plan.md §5).
         literal test before `ConvertTupleToArray`, its round 3's
         import_ref.cpp and context.h, and its round 4's convert.cpp
         (`ConvertStructToClass` and the class field tests before it) and
-        import_ref.cpp.
+        import_ref.cpp, and its round 7's eval.cpp and its two refills of
+        check eval/call.carbon and eval/symbolic.carbon.
     -   S, "TP-1 (7): over SC-1, a template constraint's requirement defers to
         the type in constraint lookup": plan §2.5's text, member_access.cpp only
         (measured at state T and at the fold: SC-1's nine template-constraint
         goldens pass again; mutant M18 reverts it).
-    -   F6: refill what the merge changes, TP-1's eight refills recomputed, PR
+    -   F6: refill what the merge changes, TP-1's ten refills recomputed, PR
         51's `fail_todo_unformed_dependent_var` renamed `unformed_dependent_var`
         and refilled, and any SC-1 or VA-1 golden the merged toolchain changes
         (measured: none). M, S and F6 are judged together: the full build,

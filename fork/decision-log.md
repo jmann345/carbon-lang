@@ -2875,8 +2875,9 @@ APPROVE-WITH-FIXES with seven findings, neither dry; round 3, amended
 amended 2026-10-15: REJECT with one finding, APPROVE-WITH-FIXES with three,
 neither dry; round 5, amended 2026-10-15: two APPROVE-WITH-FIXES with two and
 three findings, neither dry; round 6, amended 2026-10-15: two
-APPROVE-WITH-FIXES with three and two findings, neither dry, round 7 owed;
-plan's focused re-review fold record). Every decision
+APPROVE-WITH-FIXES with three and two findings, neither dry; round 7, amended
+2026-10-15: two APPROVE-WITH-FIXES with two findings each, one of them dry,
+round 8 owed; plan's focused re-review fold record). Every decision
 auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options considered (plan
 §7.2): turning crashes into TODOs (rejected as Goodhart), cherry-picking
 947c1eb52 or 4a8993af2, inserting the storage block at the action (rev 1),
@@ -2911,7 +2912,8 @@ constant, an array bound or a type, is an error at that operand (amended
 2026-10-15, focused re-review of the fold). Consequences: row PARTIAL;
 W-250..W-266 filed at the discharge and W-267..W-273 by the focused re-review of
 the fold (W-271 by its round 2, W-272 by its round 4 and W-273 by its round 6),
-W-274 unused (TP-1 reserved W-250..W-274); W-127, W-183 (for an operand whose
+W-272 discharged within TP-1 by its round 7, W-274 unused (TP-1 reserved
+W-250..W-274); W-127, W-183 (for an operand whose
 type is the parameter; W-266 for a field), W-192, W-193 discharged at land time,
 by the records commit after the repeated merge of trunk, because PR 51 and
 PR 58, which file them, are held and the four items are not yet in the ledger
@@ -3601,6 +3603,57 @@ the id re-scan and `git merge-tree` with the same results, and re-measures
 2cb6bfec0 (file_test 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets;
 EXPECTED, not of record) (amended 2026-10-15, records: re-review round 6).
 
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 7 (amended 2026-10-15). Two fresh reviews
+of the round-6 fixer's commits 4d015cf18..2cb6bfec0 and the records commit
+aff28da43, at aff28da43: review 1 (adversarial correctness) APPROVE-WITH-FIXES,
+judged dry, two findings, both records only (RR7-1-m1: the records said trunk
+and the nightly reject a literal whose omitted field's default is produced,
+where for a method of the class template and a local class in a template they
+stop lowering; RR7-1-m2: W-270 named interfaces and named constraints only,
+where a class template whose later parameter's type is produced stops the
+compiler too); review 2 (strictness and records) APPROVE-WITH-FIXES, not dry,
+two findings (RR7r2-M1: 4d015cf18's deferral also covered a default that
+converts a constant to the class's template type parameter, `var k: T = 7;`, so
+a literal that omits it in a template, which f3f99c1c1, 7dd4e1e7c and d50052bde
+ran and printed 11, as its twin without a template does, was rejected with
+"missing field" on instantiation, an IN form of TR-4 turned into a rejection
+that the records did not note; RR7r2-m1, records only: 2cb6bfec0 left lone short
+lines in three record paragraphs). A separate fixer reproduced every finding on
+the installed toolchain, on trunk and on the nightly before changing anything,
+and folded all of them: c4d609c8d with its fill a6c7910d6 (review 2's root fix,
+the removal that the ledger recorded for the rejection: eval.cpp gives an action
+a struct or tuple literal as its operand, not the literal's constant value, so a
+deferred constant literal is converted as a literal on instantiation and takes
+the defaults of the class's concrete specific, nested literals included, while a
+struct value formed another way stays rejected, as without a template; the six
+pins of the rejection lose `fail_todo_`, and three check splits and five lower
+splits are added, one of them review 1's optional split for a method of the
+class template), b82630e75 with its fill d29e91e5c (a lower split that kills the
+mutant M85, which the fix had left a missing golden), and the records commit
+after them (W-270 widened to a class whose later parameter's type is produced,
+the comparison claims corrected, the three paragraphs rewrapped); none rejected,
+no residue filed, W-272 discharged within TP-1, W-274 unused. Review 2's two
+measured alternatives were not taken: wrapping a symbolic default for the
+class's specific stops the produced-default shapes at function_context.cpp:264
+again, and accepting a struct value as a literal accepts `({.a = 4} as {.a:
+i32})`, which is rejected without a template. D-TP-24 is amended in the plan
+(§1.2, §1.14) and here. Measured at d29e91e5c on c4d609c8d's toolchain,
+container-built, EXPECTED and not of record: file_test 1955 passed, 0 failed,
+"Ran 1955 tests in 26483 ms wall time", 0 `!` and 0 `?` marks; conformance "PASS
+137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH
+0, SKIP 22 (of 159)", bullets 48/56; every round-7 mutant killed but M76, which
+only completes the walk; clang-tidy 0 diagnostics on the round's changed lines;
+a sweep of 1445 earlier single-file probes at `--phase=lower` changes only the
+shapes that the fix makes compile or brings to their twins' behavior. Across the
+nineteen reviews: 96 findings, 92 distinct (6 BLOCKER, 32 MAJOR and 58 MINOR,
+counted over all 96), none rejected whole. The per-finding table is the plan's
+"Focused re-review of the fold (2026-10-15)", round 7. Review 2 did not judge
+the branch dry, and the round's fixer changed two toolchain source files and six
+goldens, so round 8 of the focused re-review is owed, over the round-7 fixer's
+commits c4d609c8d..d29e91e5c, its records commit and the records commit after
+them that records round 7's reviews; the PR opens and is held after a dry round
+(amended 2026-10-15, focused re-review of the fold: all round-7 findings).
+
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
 row reproduced, the check and lower initialize.carbon fills equal, but for TIP
@@ -3823,19 +3876,19 @@ D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a
 constraint method is an error; SC-1's requirements defer to the type; through a
 field it is W-266), D-TP-14 (cross-library templates are a TODO, not
 implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
-twenty-three residues, seven filed by the focused re-review of the fold),
-D-TP-23
-(the redeclaration split flips by a diagnostic fix), D-TP-26 (a runtime value
-where a specific needs a type is an error, as outside a template), D-TP-24 (a
-class value is deferred only when its fields match, but for fields with a
-default initializer when its class's fields hold a part known only per
-instantiation or an omitted field's default is produced, so a missing or unknown
-field is still reported where the function is defined, while a constant literal
-nested in a value deferred whole loses its defaults (W-272); amended 2026-10-15,
-focused re-review of the fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1),
-W-256 (q07c's template crash traded for the miscompile the same
-code has without templates), and the held state (the four discharges wait for
-land time).
+twenty-two open residues, six filed by the focused re-review of the fold, whose
+round 7 discharges a seventh), D-TP-23 (the redeclaration split flips by a
+diagnostic fix), D-TP-26 (a runtime value where a specific needs a type is an
+error, as outside a template), D-TP-24 (a class value is deferred only when its
+fields match, but for fields with a default initializer when its class's fields
+hold a part known only per instantiation or an omitted field's default is
+produced, so a missing or unknown field is still reported where the function is
+defined, and a deferred literal, constant or not and nested or not, takes its
+defaults on instantiation because an action keeps a literal as its operand;
+amended 2026-10-15, focused re-review of the fold: RR4-1-B1 / RR5-1-M1 /
+RR6-1-M1 / RR6r2-M1 / RR7r2-M1), W-256 (q07c's template crash traded for the
+miscompile the same code has without templates), and the held state (the four
+discharges wait for land time).
 
 ### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
 

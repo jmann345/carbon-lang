@@ -3133,8 +3133,12 @@ IR2-MINOR-10)). The focused re-review of the fold adds four toolchain fix
 commits with their fills, a formatting commit and a records commit beyond that
 budget, for the root-cause reason §3's dated note gives; nothing is shrunk
 ((amended 2026-10-15, focused re-review of the fold: RR1-B1 / RR1-M1 / RR1-M2 /
-RR1-m1 / RR2-m6)). _Break:_ a commit cannot compile without a later commit's
-files.
+RR1-m1 / RR2-m6)). Its rounds 2, 3 and 4 add further fix commits with their
+fills, and records commits, beyond the budget, each for the reason a dated note
+in §3 gives; round 4 adds three fix commits, a commit of one more split, each
+with its fill, and two records commits ((amended 2026-10-15, focused re-review
+of the fold: RR4-1-B1 / RR4r2-M1)). _Break:_ a commit cannot compile without a
+later commit's files.
 
 **D-TP-23.** A diagnostic prints a template-dependent operation's splice as its
 expression, for every action kind a template creates, with a prefix operand of a
@@ -3146,7 +3150,12 @@ the fold: RR1-m1 / RR2-m6)).
 **D-TP-24.** A template-dependent conversion that would allocate its own
 temporary for an array, union or class value is deferred whole; a class value
 only when its source names exactly the class's fields (§1.2; added 2026-10-14,
-review fold: RR-M1). _Break:_ above.
+review fold: RR-M1); an initializer of a class whose fields hold an array with a
+template-dependent bound or a produced type, such as `T.Item` or `C(M + 1)`, is
+deferred whole too, and a class value or initializer whose literal omits only
+fields with a default initializer is deferred as one that names them all
+((amended 2026-10-15, focused re-review of the fold: RR2-1-M2 / RR4-1-B1)).
+_Break:_ above.
 
 **D-TP-25.** A constant splice lowers the instructions of its block that are not
 constant, where the splice is (§1.2; added 2026-10-14, implementation-review
@@ -3413,7 +3422,8 @@ each `require` declaration's generic, self type and facet type, and an
 interface's `observe` declarations), 6aa403cd6 with its fill a1285a786 (the
 deferral of a class value takes the same literals), b0501358f with its fill
 3d6685b8b (a split that pins the concrete `require` shape that a mutant
-changes), and the records commit after them; none rejected, one residue filed,
+changes), and the records commits after them, 9db2fbb12 and the one that
+completes it after a container restart; none rejected, one residue filed,
 W-272 (such a literal that leaves a field to its default is rejected on
 instantiation, as on trunk and the nightly), W-273..W-274 unused. D-TP-14 and
 D-TP-24 are amended in the plan (§1.2, §1.14). Measured at 3d6685b8b on
@@ -3438,10 +3448,14 @@ round 4. Neither review judged the branch dry: review 1 found a crash in
 lowering, review 2 a crash after the TODO on the W-250 import surface and two
 inexact records. Round 4 had a BLOCKER and a MAJOR finding and its fixer changed
 two toolchain source files and three goldens, so round 5 of the focused
-re-review is owed, over the round-4 fixer's commits c841ad9e7..3d6685b8b and the
-records commit after them that records round 4's reviews; the PR opens and is
-held after a dry round (amended 2026-10-15, focused re-review of the fold: all
-round-4 findings).
+re-review is owed, over the round-4 fixers' commits from c841ad9e7 (the fix
+commits c841ad9e7..3d6685b8b and the records commits 9db2fbb12 and the one after
+it) and the records commit after them that records round 4's reviews; the PR
+opens and is held after a dry round (amended 2026-10-15, focused re-review of
+the fold: all round-4 findings). The second records commit's fixer re-ran the
+round's measurements at 9db2fbb12 with the same results (file_test 1955 of 1955;
+conformance 137/0/22 over 159, 48/56 bullets; every mutant and probe as the plan
+records) and made D-TP-22 and D-TP-24 here and in the plan exact.
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
@@ -3668,10 +3682,12 @@ implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
 twenty-two residues, six filed by the focused re-review of the fold), D-TP-23
 (the redeclaration split flips by a diagnostic fix), D-TP-26 (a runtime value
 where a specific needs a type is an error, as outside a template), D-TP-24 (a
-class value is deferred only when its fields match, so definition-time field
-errors stay), W-256 (q07c's template crash traded for the miscompile the same
-code has without templates), and the held state (the four discharges wait for
-land time).
+class value is deferred only when its fields match, but for fields with a
+default initializer, so a missing or unknown field is still reported where the
+function is defined; amended 2026-10-15, focused re-review of the fold:
+RR4-1-B1), W-256 (q07c's template crash traded for the miscompile the same code
+has without templates), and the held state (the four discharges wait for land
+time).
 
 ### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
 

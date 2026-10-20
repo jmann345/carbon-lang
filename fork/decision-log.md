@@ -2873,7 +2873,9 @@ APPROVE-WITH-FIXES with six, neither dry; round 2, amended 2026-10-15: two
 APPROVE-WITH-FIXES with seven findings, neither dry; round 3, amended
 2026-10-15: two APPROVE-WITH-FIXES with four findings, neither dry; round 4,
 amended 2026-10-15: REJECT with one finding, APPROVE-WITH-FIXES with three,
-neither dry, round 5 owed; plan's focused re-review fold record). Every decision
+neither dry; round 5, amended 2026-10-15: two APPROVE-WITH-FIXES with two and
+three findings, neither dry, round 6 owed; plan's focused re-review fold
+record). Every decision
 auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options considered (plan
 §7.2): turning crashes into TODOs (rejected as Goodhart), cherry-picking
 947c1eb52 or 4a8993af2, inserting the storage block at the action (rev 1),
@@ -3093,11 +3095,11 @@ a review shows a rule decided here that proposal 2200 leaves open.
 
 **D-TP-18.** The row stays PARTIAL and W-014 stays OPEN: the first arbiter
 clause is met for the four `fail_todo` splits present when W-014 was filed
-(TP-1's own `fail_todo` splits, thirty-three since round 4 of the focused
-re-review of the fold, pin W-250 and W-266; (amended 2026-10-14,
+(TP-1's own `fail_todo` splits, thirty-five since round 5 of the focused
+re-review of the fold, pin W-250, W-266 and W-272; (amended 2026-10-14,
 implementation-review fold: IR2-MINOR-6; amended 2026-10-15, focused re-review
-of the fold: RR1-M1 / RR2-M1 / RR2r2-M1 / RR3-1-M1)), the second is not
-(handle.cpp:513, :524 at the fold's head, behind W-250), and the residues of
+of the fold: RR1-M1 / RR2-M1 / RR2r2-M1 / RR3-1-M1 / RR5r2-m1)), the second is
+not (handle.cpp:513, :524 at the fold's head, behind W-250), and the residues of
 §1.13 are material gaps (gap-analysis.md:12-13). _Break:_ the row is re-graded
 against gap-analysis.md:12-13 when W-250, W-254, W-255, W-259 and W-264 are
 closed; not moved to DONE on the arbiter alone (amended 2026-10-14, review fold:
@@ -3133,12 +3135,14 @@ IR2-MINOR-10)). The focused re-review of the fold adds four toolchain fix
 commits with their fills, a formatting commit and a records commit beyond that
 budget, for the root-cause reason §3's dated note gives; nothing is shrunk
 ((amended 2026-10-15, focused re-review of the fold: RR1-B1 / RR1-M1 / RR1-M2 /
-RR1-m1 / RR2-m6)). Its rounds 2, 3 and 4 add further fix commits with their
-fills, and records commits, beyond the budget, each for the reason a dated note
-in §3 gives; round 4 adds three fix commits, a commit of one more split, each
-with its fill, and two records commits ((amended 2026-10-15, focused re-review
-of the fold: RR4-1-B1 / RR4r2-M1)). _Break:_ a commit cannot compile without a
-later commit's files.
+RR1-m1 / RR2-m6)). Its rounds 2 to 5 add further fix commits with their fills,
+and records commits, beyond the budget, each for the reason a dated note in §3
+gives; round 4 adds three fix commits, a commit of one more split, each with its
+fill, and two records commits ((amended 2026-10-15, focused re-review of the
+fold: RR4-1-B1 / RR4r2-M1)); round 5 adds a fix commit and a commit that renames
+two splits, each with its fill, and a records commit ((amended 2026-10-15,
+focused re-review of the fold: RR5-1-M1 / RR5r2-m1)). _Break:_ a commit cannot
+compile without a later commit's files.
 
 **D-TP-23.** A diagnostic prints a template-dependent operation's splice as its
 expression, for every action kind a template creates, with a prefix operand of a
@@ -3152,10 +3156,12 @@ temporary for an array, union or class value is deferred whole; a class value
 only when its source names exactly the class's fields (§1.2; added 2026-10-14,
 review fold: RR-M1); an initializer of a class whose fields hold an array with a
 template-dependent bound or a produced type, such as `T.Item` or `C(M + 1)`, is
-deferred whole too, and a class value or initializer whose literal omits only
-fields with a default initializer is deferred as one that names them all
-((amended 2026-10-15, focused re-review of the fold: RR2-1-M2 / RR4-1-B1)).
-_Break:_ above.
+deferred whole too, and a class value or initializer of such a class whose
+literal omits only fields with a default initializer is deferred as one that
+names them all ((amended 2026-10-15, focused re-review of the fold: RR2-1-M2 /
+RR4-1-B1)); of any other class, such a literal is converted where the function
+is defined and takes the defaults there ((amended 2026-10-15, focused re-review
+of the fold: RR5-1-M1 / RR5-1-m1 / RR5r2-M1)). _Break:_ above.
 
 **D-TP-25.** A constant splice lowers the instructions of its block that are not
 constant, where the splice is (§1.2; added 2026-10-14, implementation-review
@@ -3466,6 +3472,53 @@ EXPECTED, not of record), and splits the PR body, which had passed GitHub's
 65,536-character limit, moving its verification record to the PR's first comment
 (amended 2026-10-15, records: re-review round 4).
 
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 5 (amended 2026-10-15). Two fresh reviews
+of the round-4 fixers' commits c841ad9e7..7beed27b7 and the records commit
+7dd4e1e7c, at 7dd4e1e7c: review 1 (adversarial correctness)
+APPROVE-WITH-FIXES, two findings (RR5-1-M1: 6aa403cd6 let the class-value
+branch of `ConvertStructToClass` defer a template-dependent class value whose
+literal omits only defaulted fields without the per-instantiation test that the
+initializer branch has, so a constant literal, which arrives on instantiation as
+its constant struct value, lost its defaults and was rejected with "missing
+field", where f3f99c1c1 compiled and ran it; RR5-1-m1, records only: the rule as
+TR-4, D-TP-24 and RC-12 stated it overclaimed for an initializer); review 2
+(strictness and records) APPROVE-WITH-FIXES, three findings (RR5r2-M1, the same
+regression, with the records' claim that the rejection matches trunk and the
+nightly, which crash on several of the forms; RR5r2-m1: W-272's two pins were
+named `fail_` for a rejection that is a defect; RR5r2-m2, records only:
+Appendix E's W-250 text lagged the ledger by round 4). A separate fixer
+reproduced every finding on the installed toolchain, on f3f99c1c1's convert.cpp
+relinked, on trunk and on the nightly before changing anything and folded all
+of them: 0bd0756c8 with its fill 2f2cc9bb4 (the class-value branch defers a
+literal that omits defaulted fields only when the class's fields hold a part
+known only per instantiation, as the initializer branch does; three check and
+two lower splits pin it), aec81d0ee with its fill 82bb5a749 (the two pins
+renamed `fail_todo_`), and the records commit after them; none rejected, no
+residue filed, W-273..W-274 unused. Review 2's candidate fix, which also defers
+a source that is not constant, gives the same results on the round's 67 probes;
+neither candidate keeps RC-12's t02 at W-265, which returns to W-264's verifier
+stop. The root fix, W-272's removal, would change how eval.cpp gives every
+action its operands, and stays filed. D-TP-24 is amended in the plan (§1.2,
+§1.14) and here. Measured at 82bb5a749 on 0bd0756c8's toolchain,
+container-built, EXPECTED and not of record: "file_test test mode on
+/home/user/carbon-tp: 1955 passed, 0 failed (exit 0, 24s)", 0 `!` and 0 `?`
+marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56; every
+round-5 mutant killed but the re-run M70, M72, M75 and M76, as in round 4;
+clang-tidy 0 diagnostics on the round's changed lines; the eleven class-value
+probes that 7dd4e1e7c rejected print f3f99c1c1's values. The round's fills
+(2f2cc9bb4, 82bb5a749) missed no row of plan §4, whose rows for them were
+written from the fixer's own autoupdates. Across the fifteen reviews: 87
+findings, 83 distinct (6 BLOCKER, 29 MAJOR and 52 MINOR, counted over all 87),
+none rejected whole. The per-finding table is the plan's "Focused re-review of
+the fold (2026-10-15)", round 5. Neither review judged the branch dry: both
+found the regression. Round 5 had a MAJOR finding and its fixer changed one
+toolchain source file and three goldens, so round 6 of the focused re-review is
+owed, over the round-5 fixer's commits from 0bd0756c8 to its records commit and
+the records commit after them that records round 5's reviews; the PR opens and
+is held after a dry round (amended 2026-10-15, focused re-review of the fold:
+all round-5 findings).
+
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
 row reproduced, the check and lower initialize.carbon fills equal, but for TIP
@@ -3692,11 +3745,12 @@ twenty-two residues, six filed by the focused re-review of the fold), D-TP-23
 (the redeclaration split flips by a diagnostic fix), D-TP-26 (a runtime value
 where a specific needs a type is an error, as outside a template), D-TP-24 (a
 class value is deferred only when its fields match, but for fields with a
-default initializer, so a missing or unknown field is still reported where the
-function is defined; amended 2026-10-15, focused re-review of the fold:
-RR4-1-B1), W-256 (q07c's template crash traded for the miscompile the same code
-has without templates), and the held state (the four discharges wait for land
-time).
+default initializer when its class's fields hold a part known only per
+instantiation, so a missing or unknown field is still reported where the
+function is defined; amended 2026-10-15, focused re-review of the fold: RR4-1-B1
+/ RR5-1-M1), W-256 (q07c's template crash traded for the miscompile the same
+code has without templates), and the held state (the four discharges wait for
+land time).
 
 ### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
 

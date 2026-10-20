@@ -374,6 +374,13 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn H(generic M: i32) -> i32 {
+  // CHECK:STDERR: fail_checked_generic_calls_template_with_class_template_literal.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Make(M)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(M);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_checked_generic_calls_template_with_class_template_literal.carbon:[[@LINE-12]]:16: note: value of type `<bound method>` is not callable [CallToNonCallable]
+  // CHECK:STDERR:   var k: i32 = N + 1;
+  // CHECK:STDERR:                ^~~~~
+  // CHECK:STDERR:
   return Make(M);
 }
 
@@ -391,6 +398,13 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn H(generic M: i32) -> i32 {
+  // CHECK:STDERR: fail_checked_generic_calls_template_with_class_template_value.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Make(M)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(M);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_checked_generic_calls_template_with_class_template_value.carbon:[[@LINE-12]]:16: note: value of type `<bound method>` is not callable [CallToNonCallable]
+  // CHECK:STDERR:   var k: i32 = N + 1;
+  // CHECK:STDERR:                ^~~~~
+  // CHECK:STDERR:
   return Make(M);
 }
 
@@ -408,6 +422,13 @@ fn Make(template N: i32, x: i32) -> i32 {
 }
 
 fn H(generic M: i32, x: i32) -> i32 {
+  // CHECK:STDERR: fail_checked_generic_calls_template_with_class_template_runtime_literal.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Make(M)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(M, x);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_checked_generic_calls_template_with_class_template_runtime_literal.carbon:[[@LINE-12]]:16: note: value of type `<bound method>` is not callable [CallToNonCallable]
+  // CHECK:STDERR:   var k: i32 = N + 1;
+  // CHECK:STDERR:                ^~~~~
+  // CHECK:STDERR:
   return Make(M, x);
 }
 

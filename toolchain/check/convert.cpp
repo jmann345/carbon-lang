@@ -1423,22 +1423,20 @@ static auto TryGetFieldDecl(Context& context,
 }
 
 // Returns the constant value of the default initializer `initializer_id` of a
-// field of a class in the class's specific `specific_id`. A value that depends
-// on the specific is read from its resolved definition. `Convert` completes the
-// class type first, which resolves that definition (`TypeCompleter`), but a
-// template action that converts to the class on instantiation does not: it
-// relies on the eval block's completion of the class type, which is deferred
-// when the class type is symbolic, as `D(M)` is when a checked generic with the
-// parameter `M` calls a template that converts `{.a = 4}` to `D(N)`. So the
-// definition is resolved here, as `TypeCompleter` would resolve it, and a
-// default that cannot be formed in the specific, such as `N + 1` for a symbolic
-// `N`, is diagnosed there.
+// field of a class in the class's specific `specific_id`, read from the
+// specific's resolved definition. `Convert` completes the class type first,
+// which resolves that definition (`TypeCompleter`), but a template action that
+// converts to the class on instantiation does not: it relies on the eval
+// block's completion of the class type, which is deferred when the class type
+// is symbolic, as `D(M)` is when a checked generic with the parameter `M` calls
+// a template that converts `{.a = 4}` to `D(N)`. So the definition is resolved
+// here, as `TypeCompleter` would resolve it; a default that cannot be formed in
+// the specific, such as `N + 1` for a symbolic `N`, is diagnosed there.
 static auto GetFieldInitializerInSpecific(Context& context, SemIR::LocId loc_id,
                                           SemIR::SpecificId specific_id,
                                           SemIR::InstId initializer_id)
     -> SemIR::ConstantId {
-  if (specific_id.has_value() &&
-      context.constant_values().GetAttached(initializer_id).is_symbolic()) {
+  if (specific_id.has_value()) {
     ResolveSpecificDefinition(context, loc_id, specific_id);
   }
   return GetConstantValueInSpecific(context.sem_ir(), specific_id,

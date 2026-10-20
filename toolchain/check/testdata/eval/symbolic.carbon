@@ -40,10 +40,12 @@ fn G(generic B: bool) {
 }
 
 fn H() {
-  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE+5]]:3: error: unable to monomorphize specific `G(true)` [ResolvingSpecificHere]
+  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE+7]]:3: error: unable to monomorphize specific `G(true)` [ResolvingSpecificHere]
   // CHECK:STDERR:   G(true);
   // CHECK:STDERR:   ^
-  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon: note: cannot initialize tuple of 0 elements from tuple with 2 elements [TupleInitElementCountMismatch]
+  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE-7]]:24: note: cannot initialize tuple of 0 elements from tuple with 2 elements [TupleInitElementCountMismatch]
+  // CHECK:STDERR:   let unused n: F(B) = ({}, {});
+  // CHECK:STDERR:                        ^~~~~~~~
   // CHECK:STDERR:
   G(true);
 }

@@ -164,10 +164,12 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
-  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
+  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
   // CHECK:STDERR:   return Make(3);
   // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon: note: cannot initialize array of 3 elements from tuple with 2 elements [ArrayInitFromExprArgCountMismatch]
+  // CHECK:STDERR: fail_class_template_literal_with_dependent_array_bound_count_on_instantiation.carbon:[[@LINE-8]]:25: note: cannot initialize array of 3 elements from 2 initializers [ArrayInitFromLiteralArgCountMismatch]
+  // CHECK:STDERR:   var c: Arr(N) = {.a = (1, 2), .n = N};
+  // CHECK:STDERR:                         ^~~~~~
   // CHECK:STDERR:
   return Make(3);
 }
@@ -211,11 +213,6 @@ fn Make[template T: HasItem](unused x: T) -> i32 {
 }
 
 fn Use(h: Holder) -> i32 {
-  // CHECK:STDERR: fail_todo_class_template_literal_with_associated_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(Holder as HasItem)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   return Make(h);
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR: fail_todo_class_template_literal_with_associated_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.item: Core.IntLiteral}` to `Box(Holder as HasItem)`: missing field `n` in source type [StructInitMissingFieldInConversion]
-  // CHECK:STDERR:
   return Make(h);
 }
 
@@ -241,11 +238,6 @@ fn Make[template T: HasItem](unused x: T) -> i32 {
 }
 
 fn Use(h: Holder) -> i32 {
-  // CHECK:STDERR: fail_todo_class_template_value_with_associated_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(Holder as HasItem)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   return Make(h);
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR: fail_todo_class_template_value_with_associated_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.item: Core.IntLiteral}` to `Box(Holder as HasItem)`: missing field `n` in source type [StructInitMissingFieldInConversion]
-  // CHECK:STDERR:
   return Make(h);
 }
 
@@ -263,11 +255,6 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
-  // CHECK:STDERR: fail_todo_class_template_literal_with_produced_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   return Make(3);
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR: fail_todo_class_template_literal_with_produced_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.a: Core.IntLiteral}` to `D(3)`: missing field `k` in source type [StructInitMissingFieldInConversion]
-  // CHECK:STDERR:
   return Make(3);
 }
 
@@ -285,11 +272,6 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
-  // CHECK:STDERR: fail_todo_class_template_value_with_produced_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   return Make(3);
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR: fail_todo_class_template_value_with_produced_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.a: Core.IntLiteral}` to `D(3)`: missing field `k` in source type [StructInitMissingFieldInConversion]
-  // CHECK:STDERR:
   return Make(3);
 }
 

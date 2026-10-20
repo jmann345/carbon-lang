@@ -555,6 +555,64 @@ fn Use() -> i32 {
   return G(2, 6);
 }
 
+// --- var_class_template_field_of_class_of_associated_pointer.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Tag(U: type) {
+  var x: i32;
+}
+
+class D(template T: HasItem) {
+  var c: Tag(T.Item*);
+  var k: i32;
+}
+
+fn G[template T: HasItem](unused t: T) -> i32 {
+  var d: D(T) = {.c = {.x = 1}, .k = 2};
+  return d.c.x + d.k;
+}
+
+fn Use(h: Holder) -> i32 {
+  return G(h);
+}
+
+// --- var_class_template_field_of_class_of_associated_struct.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Tag(U: type) {
+  var x: i32;
+}
+
+class D(template T: HasItem) {
+  var c: Tag({.a: T.Item});
+  var k: i32;
+}
+
+fn G[template T: HasItem](unused t: T) -> i32 {
+  var d: D(T) = {.c = {.x = 1}, .k = 2};
+  return d.c.x + d.k;
+}
+
+fn Use(h: Holder) -> i32 {
+  return G(h);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'return_param_tuple.carbon'
 // CHECK:STDOUT: source_filename = "return_param_tuple.carbon"

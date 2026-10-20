@@ -451,25 +451,26 @@ none (amended 2026-10-15, focused re-review of the fold: all round-7 findings);
 the records commit after 2b58312ea, which records round 7's reviews, names none
 (amended 2026-10-15, records: re-review round 7). Round 8 files W-274; its fix
 commits 1572d4d65, 6e08becbc and 813804758 and its fill 6983fc5ca name none, and
-so does its records commit (amended 2026-10-15, focused re-review of the fold:
-all round-8 findings). History is not rewritten, so if the re-scan before L
-re-allocates an id, D's landed notes record the new id against each commit that
-names it; later commit messages describe a residue instead of naming its
-reserved id ((amended 2026-10-14, implementation-review fold: IR2-MINOR-4)). The
-three commands are re-run twice: immediately before L, the first commit that
-publishes an id outside this plan, and immediately before
-D writes the ledger. Any output other than the expected one above that names
-W-250..W-274 or F-019 means another workstream took the id (amended 2026-10-15,
-focused re-review of the fold: RR2r2-m2). Before L, the residues re-allocate
-from the maximum plus one, skipping every reserved block, and L, R and D are
-written with the new ids. Before D, the same re-allocation also rewrites the ids
-that L's page and fixture texts and R's row already published, in a commit
-before D. D records both outcomes in fork/ORCHESTRATION.md and in the plan's
-landed notes. From the focused re-review of the fold on, the second command's
-pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`; its run on 2026-10-15's records (the
-[focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15))
-finds the ids only in trunk's own reservation sentence (amended 2026-10-15,
-focused re-review of the fold: RR2-M2).
+so do its records commits, 3a4176711 and the correction after it (amended
+2026-10-15, focused re-review of the fold: all round-8 findings). History is not
+rewritten, so if the re-scan before L re-allocates an id, D's landed notes
+record the new id against each commit that names it; later commit messages
+describe a residue instead of naming its reserved id ((amended 2026-10-14,
+implementation-review fold: IR2-MINOR-4)). The three commands are re-run twice:
+immediately before L, the first commit that publishes an id outside this plan,
+and immediately before D writes the ledger. Any output other than the expected
+one above that names W-250..W-274 or F-019 means another workstream took the id
+(amended 2026-10-15, focused re-review of the fold: RR2r2-m2). Before L, the
+residues re-allocate from the maximum plus one, skipping every reserved block,
+and L, R and D are written with the new ids. Before D, the same re-allocation
+also rewrites the ids that L's page and fixture texts and R's row already
+published, in a commit before D. D records both outcomes in
+fork/ORCHESTRATION.md and in the plan's landed notes. From the focused re-review
+of the fold on, the second command's pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`;
+its run on 2026-10-15's records (the [focused re-review fold
+record](#focused-re-review-of-the-fold-2026-10-15)) finds the ids only in
+trunk's own reservation sentence (amended 2026-10-15, focused re-review of the
+fold: RR2-M2).
 
 **Design authority** (each cited where used):
 
@@ -1847,9 +1848,9 @@ reject them with ``missing field `b` `` (the round-8 second review's c01, c05,
 c18, e03, e06 and e07, which print 6, 28, 12, 6, 7 and 6); two splits pin it,
 `dependent_call_struct_literal_arg_with_field_default` (check
 generic/template/call.carbon) and the eval/call.carbon split
-`symbolic_eval_fn_class_literal_with_field_default`, and the two eval goldens
-that round 7 refilled are such checked generics, the only programs without
-`template` among the review's 1291 whose SemIR or diagnostics changed. Both
+`symbolic_eval_fn_class_literal_with_field_default`, and every program without
+`template` among the review's 1291 whose SemIR or diagnostics changed is such a
+checked generic, the two eval goldens that round 7 refilled among them. Both
 round-8 reviews found that a checked generic that calls such a template with a
 symbolic argument, `return Make(M);` in `fn H(generic M: i32)` for `fn
 Make(template N: i32)` that converts `{.a = 4}` to `D(N)`, for `class D(template
@@ -8834,16 +8835,19 @@ RR8r2-m2 and the one of RR8r2-m1), 6e08becbc "TP-1 re-review fix: the eval fn
 class split returns a field without an operator" (one split's source; no
 toolchain change) and their fill 6983fc5ca; 813804758 "TP-1 re-review fix:
 resolve the class specific for every default read" (convert.cpp; its autoupdate
-changes nothing, so it has no fill); and the round's records commit, which also
-refreshes the PR description and its first comment. Each fix commit was gated
-alone, 1572d4d65 red on its three goldens and 6e08becbc on two, with no crash,
-and then with the fill at the autoupdate fixpoint (§8 "Measured at the focused
-re-review of the fold, round 8"). §3's budget is exceeded by the eighth dated
-note there, for the root-cause reason it gives. Since the cut, TP-1 changes 29
-toolchain source files and adds 13 goldens and refills 10 (`git diff --stat
-b2576f6c3 813804758 -- toolchain core`: 52 files, 14482 lines added and 569
-removed); the round's own `git diff --stat 9bf11355d 813804758 -- toolchain
-core` gives 5 files, 160 lines added and 4 removed.
+changes nothing, so it has no fill); and the round's records commit 3a4176711,
+which also refreshes the PR description and its first comment, and the records
+commit after it, which corrects one sentence of D-TP-24's round-8 paragraph (the
+second review's 1291 programs without `template` that changed are all checked
+generics whose types are `eval fn` results, not only the two eval goldens). Each
+fix commit was gated alone, 1572d4d65 red on its three goldens and 6e08becbc on
+two, with no crash, and then with the fill at the autoupdate fixpoint (§8
+"Measured at the focused re-review of the fold, round 8"). §3's budget is
+exceeded by the eighth dated note there, for the root-cause reason it gives.
+Since the cut, TP-1 changes 29 toolchain source files and adds 13 goldens and
+refills 10 (`git diff --stat b2576f6c3 813804758 -- toolchain core`: 52 files,
+14482 lines added and 569 removed); the round's own `git diff --stat 9bf11355d
+813804758 -- toolchain core` gives 5 files, 160 lines added and 4 removed.
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |

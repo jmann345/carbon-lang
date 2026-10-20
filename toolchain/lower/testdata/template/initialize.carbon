@@ -4515,3 +4515,20 @@ fn Use() -> i32 {
 // CHECK:STDOUT: !1351 = !DILocation(line: 14, column: 22, scope: !1343)
 // CHECK:STDOUT: !1352 = !DILocation(line: 14, column: 3, scope: !1343)
 // CHECK:STDOUT:
+
+// --- let_class_template_value_with_parameter_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N;
+}
+
+fn Make(template N: i32) -> i32 {
+  let d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(3);
+}

@@ -2881,8 +2881,9 @@ round 8, amended 2026-10-15: two APPROVE-WITH-FIXES with three and four
 findings, neither dry, round 9 owed; round 9, amended 2026-10-15: two
 APPROVE-WITH-FIXES with two and three findings, both dry; round 10, amended
 2026-10-20: owed by no review, opened on an external BLOCKER, X-1, fixed at the
-root, two fresh reviews owed; plan's focused re-review fold record). Every
-decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
+root, then two fresh reviews, APPROVE-WITH-FIXES with four and seven MINOR
+findings, one of them dry, the round dry; plan's focused re-review fold record).
+Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
 considered (plan §7.2): turning crashes into TODOs (rejected as Goodhart),
 cherry-picking 947c1eb52 or 4a8993af2, inserting the storage block at the action
 (rev 1), deferring every form, a definition-only W-183, accepting the deferred
@@ -2917,13 +2918,15 @@ a type, is an error at that operand (amended 2026-10-15, focused re-review of
 the fold). Consequences: row PARTIAL; W-250..W-266 filed at the discharge and
 W-267..W-274 by the focused re-review of the fold (W-271 by its round 2, W-272
 by its round 4, W-273 by its round 6 and W-274 by its round 8) and W-295 by its
-round 10 (amended 2026-10-20, round 10: X-1), W-272 discharged within TP-1 by
-its round 7 (TP-1 reserved W-250..W-274, and W-295..W-299 for round 10's
-residues, of which W-296 to W-299 stay unused); W-127, W-183 (for an operand
-whose type is the parameter; W-266 for a field), W-192, W-193 discharged at land
-time, by the records commit after the repeated merge of trunk, because PR 51 and
-PR 58, which file them, are held and the four items are not yet in the ledger
-(the plan's landed notes hold their texts).
+round 10 (amended 2026-10-20, round 10: X-1) and W-296 and W-297 by the records
+commit that records its reviews (amended 2026-10-20, records: round 10), W-272
+discharged within TP-1 by its round 7 (TP-1 reserved W-250..W-274, and
+W-295..W-299 for round 10's residues, of which W-298 and W-299 stay unused;
+amended 2026-10-20, records: round 10); W-127, W-183 (for an operand whose type
+is the parameter; W-266 for a field), W-192, W-193 discharged at land time, by
+the records commit after the repeated merge of trunk, because PR 51 and PR 58,
+which file them, are held and the four items are not yet in the ledger (the
+plan's landed notes hold their texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3854,10 +3857,54 @@ time", 0 `!` and 0 `?` marks; conformance "PASS 138, COMPILE-FAIL 0, LINK-FAIL
 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 160)", bullets
 48/56; clang-tidy 0 diagnostics. The round's fixer changed toolchain files, so
 the round is not dry: two fresh reviews of eafca5cb9, 74e16c4de and the records
-commit after them are owed, and the PR stays held; the TP-1 Branches row of
-fork/ORCHESTRATION.md reads "HELD OPEN AS PR 61, ROUND 10 FIX UNDER REVIEW". The
-per-finding table is the plan's "Focused re-review of the fold, round 10
-(2026-10-20)" (amended 2026-10-20, round 10: X-1).
+commit 3d88e6a60 after them are owed, and the PR stays held; the TP-1 Branches
+row of fork/ORCHESTRATION.md reads "HELD OPEN AS PR 61, ROUND 10 FIX UNDER
+REVIEW". The per-finding table is the plan's "Focused re-review of the fold,
+round 10 (2026-10-20)" (amended 2026-10-20, round 10: X-1).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 10'S REVIEWS (amended 2026-10-20). Two
+fresh reviews of eafca5cb9, 74e16c4de and 3d88e6a60, at 3d88e6a60: review 1
+(adversarial correctness) APPROVE-WITH-FIXES, dry, four findings, all MINOR and
+records only (RR10-1-m1: an unknown alternative name in a pattern condition of a
+class template that nothing instantiates is rejected in the definition since
+eafca5cb9, where trunk and e408ad4d6 accept the program, and the records did not
+say so; RR10-1-m2: an `if` expression whose result is a class or choice value
+stops lowering at LLVM's PHI assertion, an upstream defect that the programs
+without a template share on trunk, which the sweep never probed; RR10-1-m3: a
+generic class's method defined out of line stops lowering at
+sem_ir/generic.cpp:84, upstream too and also unprobed; RR10-1-m4: one inexact
+"every toolchain" sentence); review 2 (strictness, records, tests and the PR
+text) APPROVE-WITH-FIXES, not dry only for RR10r2-m1, seven findings, all MINOR
+(RR10r2-m1, test only: the new check golden's header comment names W-252;
+RR10r2-m2 to RR10r2-m7, records only: the PR description's TR-13 and summary,
+the first comment's FILL-CAUGHT MISSES and two stale lines, the trunk record of
+an unknown name in a `match` arm on a class template's choice, README.md's R31
+counts and the clang-tidy exclusion). No finding is BLOCKER or MAJOR and none
+needs a toolchain change, so round 10 is dry. The records commit after 3d88e6a60
+folds every records-only part, none rejected: the plan's TR-13 states the
+departure from trunk for an unknown name, with its reason, that a choice
+declares its alternatives once for every specific, and its break condition; the
+round-10 record gains the reviews' verdicts, runs and finding table and three
+rows of probes; §1.8 gains two rows and amends one; §8 records README.md's
+counts and review 2's clang-tidy run with the one documented exclusion; and two
+residues are filed from W-295..W-299, W-296 (an `if` expression whose result is
+a class or choice value stops lowering, with or without generics, on trunk and
+the nightly too) and W-297 (a generic class's method defined out of line stops
+lowering at sem_ir/generic.cpp:84, on trunk and the nightly too), leaving W-298
+and W-299 unused. RR10-1-m1's optional split and RR10r2-m1's comment edit are
+test only and owed to the next round's fixer; until the edit, the plan's id
+paragraph records the golden's line as the one exception. Measured at 3d88e6a60
+by both reviews and on the records commit's tree, whose toolchain, goldens and
+programs are 3d88e6a60's, container-built, EXPECTED and not of record: file_test
+1957 passed, 0 failed, "Ran 1957 tests in 24832 ms wall time" in the records
+writer's run, 0 `!` and 0 `?` marks; conformance "PASS 138, COMPILE-FAIL 0,
+LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 160)",
+bullets 48/56. Across the twenty-five reviews: 119 findings, 113 distinct (6
+BLOCKER, 34 MAJOR and 79 MINOR, counted over all 119), none rejected whole; X-1,
+external, is not among them. PR 61 stays held open, as PR 51 to PR 60 are, and
+the TP-1 Branches row of fork/ORCHESTRATION.md reads "PR 61 HELD OPEN, ROUND 10
+DRY". The per-finding table is the plan's "Focused re-review of the fold, round
+10 (2026-10-20)", its reviews (amended 2026-10-20, records: round 10).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

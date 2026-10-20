@@ -2913,11 +2913,11 @@ constant, an array bound or a type, is an error at that operand (amended
 W-250..W-266 filed at the discharge and W-267..W-273 by the focused re-review of
 the fold (W-271 by its round 2, W-272 by its round 4 and W-273 by its round 6),
 W-272 discharged within TP-1 by its round 7, W-274 unused (TP-1 reserved
-W-250..W-274); W-127, W-183 (for an operand whose
-type is the parameter; W-266 for a field), W-192, W-193 discharged at land time,
-by the records commit after the repeated merge of trunk, because PR 51 and
-PR 58, which file them, are held and the four items are not yet in the ledger
-(the plan's landed notes hold their texts).
+W-250..W-274); W-127, W-183 (for an operand whose type is the parameter; W-266
+for a field), W-192, W-193 discharged at land time, by the records commit after
+the repeated merge of trunk, because PR 51 and PR 58, which file them, are held
+and the four items are not yet in the ledger (the plan's landed notes hold their
+texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3630,7 +3630,7 @@ pins of the rejection lose `fail_todo_`, and three check splits and five lower
 splits are added, one of them review 1's optional split for a method of the
 class template), b82630e75 with its fill d29e91e5c (a lower split that kills the
 mutant M85, which the fix had left a missing golden), and the records commit
-after them (W-270 widened to a class whose later parameter's type is produced,
+2b58312ea (W-270 widened to a class whose later parameter's type is produced,
 the comparison claims corrected, the three paragraphs rewrapped); none rejected,
 no residue filed, W-272 discharged within TP-1, W-274 unused. Review 2's two
 measured alternatives were not taken: wrapping a symbolic default for the
@@ -3650,9 +3650,21 @@ counted over all 96), none rejected whole. The per-finding table is the plan's
 "Focused re-review of the fold (2026-10-15)", round 7. Review 2 did not judge
 the branch dry, and the round's fixer changed two toolchain source files and six
 goldens, so round 8 of the focused re-review is owed, over the round-7 fixer's
-commits c4d609c8d..d29e91e5c, its records commit and the records commit after
-them that records round 7's reviews; the PR opens and is held after a dry round
-(amended 2026-10-15, focused re-review of the fold: all round-7 findings).
+commits c4d609c8d..2b58312ea (the fix commits c4d609c8d..d29e91e5c and the
+records commit 2b58312ea) and the records commit after them that records round
+7's reviews; the PR opens and is held after a dry round (amended 2026-10-15,
+focused re-review of the fold: all round-7 findings; records: re-review
+round 7). The records commit after 2b58312ea adds to the plan's round-7 record
+the reviews' runs it left out (among them review 1's fold mutants, D-TP-25
+shapes, bound, W-250 and opaque-type probes and q01's twin, and review 2's
+values at d50052bde, its w11b, which no narrowing where the function is defined
+keeps from stopping the compiler, and its candidate C2's values), names
+2b58312ea in round 8's scope, gives W-272's evidence the six pins' names since
+c4d609c8d, rewraps by hand nine more paragraphs that kept a short line in the
+middle, re-runs the id re-scan and `git merge-tree` with the same results, and
+re-measures 2b58312ea (file_test 1955 of 1955; conformance 137/0/22 over 159,
+48/56 bullets; EXPECTED, not of record) (amended 2026-10-15, records: re-review
+round 7).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

@@ -52,6 +52,17 @@ owed, over the round-3 fixer's commits 68102438e..3afd3ec92 and the records
 commit after them that records round 3's reviews; the PR opens and is held
 after a dry round (amended 2026-10-15, records: re-review round 3).
 
+Round 4 (a REJECT and an APPROVE-WITH-FIXES review of 68102438e..f3f99c1c1, four
+findings: one BLOCKER, one MAJOR and two MINOR, both records only) is folded by
+the fix commits c841ad9e7..3d6685b8b and the records commit after them, which
+the same record tables, with one residue filed, W-272, a rejection on
+instantiation that trunk and the nightly share (amended 2026-10-15, focused
+re-review of the fold: all round-4 findings). Neither review judged the branch
+dry, and the round's fixer changed two toolchain source files and three goldens,
+so round 5 is owed, over the round-4 fixer's commits c841ad9e7..3d6685b8b and
+the records commit after them that records round 4's reviews; the PR opens and
+is held after a dry round.
+
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
 folded into rev 2 (1b26e8c32) by a separate fixer (R11): 27 findings, none
@@ -161,19 +172,25 @@ reach (W-263); and lowering a form-parameter pattern splice, `template` or
 `generic` (W-255). A class value from a struct literal that leaves a field to
 its default initializer also still stops the compiler (W-264's second form), and
 so does the same code without a template parameter, for any runtime class value
-with a defaulted field (W-265). A template used from another library becomes a
-`semantics TODO` at the `import` (W-250), whether the dependent operation is in
-its definition or in its declaration (D-TP-14; (amended 2026-10-14,
+with a defaulted field (W-265). Since round 4 of the focused re-review of the
+fold such a literal is converted on instantiation, so a runtime one reaches
+W-265, as without a template, and a constant one is rejected there with "missing
+field", as on trunk and the nightly (W-272; (amended 2026-10-15, focused
+re-review of the fold: RR4-1-B1)). A template used from another library becomes
+a `semantics TODO` at the `import` (W-250), whether the dependent operation is
+in its definition or in its declaration (D-TP-14; (amended 2026-10-14,
 implementation-review fold: IR1-M2)), a class template's field types and member
 function declarations and an interface's or named constraint's declaration
 included ((amended 2026-10-15, focused re-review of the fold: RR1-M1 / RR2-M1)),
 and so does an entity whose declaration, definition or bindings name such an
 entity, such as a nested generic class or a deduced parameter constrained by
 such an interface ((amended 2026-10-15, focused re-review of the fold:
-RR2r2-M1)). A runtime value used as a type, such as `x.0` for a template's
+RR2r2-M1)), or an interface or named constraint whose `require` declaration
+names one ((amended 2026-10-15, focused re-review of the fold: RR4r2-M1)). A
+runtime value used as a type, such as `x.0` for a template's
 runtime parameter `x`, is an error at that operand on instantiation (D-TP-26;
-(amended 2026-10-15, focused re-review of the fold: RR1-B1)). Five behaviors
-that the focused re-review of the fold measured, each the same on trunk, are
+(amended 2026-10-15, focused re-review of the fold: RR1-B1)). Six behaviors that
+the focused re-review of the fold measured, each the same on trunk, are
 filed under this bullet: the temporaries that a template's actions create on
 instantiation are never destroyed (W-267); `var e: T.Elem;` is rejected where
 the function is defined (W-268); `return {} as T;` for a class without `Copy` is
@@ -182,7 +199,11 @@ later parameter's type depends on a template parameter stops the compiler in its
 own library when it is used (W-270); and, measured by its round 2, a generic
 class from another library that declares a nested class or interface stops the
 compiler where the class is used, with or without a template parameter (W-271;
-(amended 2026-10-15, focused re-review of the fold: RR2r2-M1)). (b) The
+(amended 2026-10-15, focused re-review of the fold: RR2r2-M1)); and, measured by
+its round 4, a class template's literal or value that leaves a field to its
+default initializer, whose class holds a produced field type or a
+template-dependent array bound, is rejected on instantiation (W-272; (amended
+2026-10-15, focused re-review of the fold: RR4-1-B1)). (b) The
 dependent forms of proposal 2200's "Use of dependent value is dependent" that
 trunk rejects where the function is defined -- `*`, `->`, `&`, tuple element
 access, calls of a value whose type is a template parameter, struct copies and
@@ -198,21 +219,23 @@ through a field whose declared type is the parameter is W-266, (amended
 arguments (W-193), with a class template's literal whose array field has a
 template-dependent bound converted on instantiation, as it was on trunk, where
 `C(N)` was a deferred call ((amended 2026-10-15, focused re-review of the fold:
-RR2-1-M2)), and W-127's deferred impl lookup (§1.5 to §1.7); the definition-time
-half of proposal 2200's simple member access and the type-level `T.F` are not
-(TR-8 is PARTIAL, W-260 to W-262). (e) All four `fail_todo` splits under
-generic/template/ flip: three by the dependent forms, and
+RR2-1-M2)), and so is one whose field type is produced, such as `T.Item`,
+`T.Item*` or a class `C(M + 1)` ((amended 2026-10-15, focused re-review of the
+fold: RR4-1-B1)), and W-127's deferred impl lookup (§1.5 to §1.7); the
+definition-time half of proposal 2200's simple member access and the type-level
+`T.F` are not (TR-8 is PARTIAL, W-260 to W-262). (e) All four `fail_todo` splits
+under generic/template/ flip: three by the dependent forms, and
 `member_out_of_line.carbon` `fail_todo_basic` because the redeclaration it
 rejects does differ (p3763) and only its diagnostic text was wrong, which C2
 fixes (D-TP-23); W-014's first arbiter clause is met for the four `fail_todo`
-splits present when W-014 was filed, and TP-1's own twenty-eight `fail_todo`
-splits pin its residues (fail_todo_import.carbon's twenty-seven, W-250's gap
+splits present when W-014 was filed, and TP-1's own thirty-three `fail_todo`
+splits pin its residues (fail_todo_import.carbon's thirty-two, W-250's gap
 behind the second clause, and constraint_lookup.carbon's
 `fail_todo_field_of_template_class`, W-266; (amended 2026-10-14,
 implementation-review fold: IR2-MINOR-6); the focused re-review of the fold
-added five of the twenty-seven in round 1, seven in round 2 and eleven in
-round 3, (amended 2026-10-15, focused re-review of the fold: RR1-M1 / RR2-M1
-/ RR2r2-M1 / RR3-1-M1)); its second is not
+added five of the thirty-two in round 1, seven in round 2, eleven in round 3 and
+five in round 4, (amended 2026-10-15, focused re-review of the fold: RR1-M1 /
+RR2-M1 / RR2r2-M1 / RR3-1-M1 / RR4r2-M1)); its second is not
 (the cross-file lowering fatal stays in the code behind the `semantics TODO`),
 and generic/template/operator.carbon's two `todo_fail` pins stay (W-259), so the
 row stays PARTIAL and W-014 stays OPEN (D-TP-18). (f) Nine conformance programs,
@@ -267,19 +290,22 @@ fold: all findings)); §1.13 files W-250 to W-266 (W-265 added at rev 3; amended
 2026-10-14, review fold: RR-M1; W-266 added by the implementation-review fold,
 (amended 2026-10-14, implementation-review fold: IR1-M3)) and W-267 to W-271
 (filed by the focused re-review of the fold, W-271 by its round 2; (amended
-2026-10-15, focused re-review of the fold: RR2r2-M1)), W-272 to W-274 stay
-unused, and an unused reserved id stays unused and is never reused. **No fork
-design id is minted** (D-TP-17): F-019 stays unallocated unless a review shows
-that the slice decides a rule proposal 2200 leaves open, in which case F-019 is
-minted with a dated amendment to docs/design/templates.md. F-017 and F-018 stay
+2026-10-15, focused re-review of the fold: RR2r2-M1)) and W-272 (filed by its
+round 4; (amended 2026-10-15, focused re-review of the fold: all round-4
+findings)), W-273 and W-274 stay unused, and an unused reserved id stays unused
+and is never reused. **No fork design id is minted** (D-TP-17): F-019 stays
+unallocated unless a review shows that the slice decides a rule proposal 2200
+leaves open, in which case F-019 is minted with a dated amendment to
+docs/design/templates.md. F-017 and F-018 stay
 with OX-1 and VA-1. The ids appear only in this plan and in three commits: the
 page and fixture texts of the land-time integration L (Appendix C), the row of R
 (§2.8), and the records of the discharge commit D (amended 2026-10-14, review
 fold: RR-m4), and in the records commits after D that record the focused
 re-review of the fold (c874c270f, 764e55445, its round 2's bdc1f62d7 and
-aa57bfe1c, and its round 3's records commits; (amended 2026-10-15, focused
-re-review of the fold: RR2r2-m2; records: re-review round 2; focused re-review
-of the fold: all round-3 findings)); no source file, golden or
+aa57bfe1c, its round 3's records commits, and its round 4's; (amended
+2026-10-15, focused re-review of the fold: RR2r2-m2; records: re-review round 2;
+focused re-review of the fold: all round-3 findings; focused re-review of the
+fold: all round-4 findings)); no source file, golden or
 program header names one. Three pushed commit messages already
 name W-250: C2's (637e3efaf, "the latter stays in the code (W-250)"), the second
 fix commit's (12bd6d67a, "W-250's `semantics TODO`") and the records commit of
@@ -293,28 +319,30 @@ none (amended 2026-10-15, focused re-review of the fold: RR2r2-m2; records:
 re-review round 2), and neither do round 3's fix commits, while its records
 commit 9923c79fc names W-250 and W-271 in its summary of the ledger edits
 (amended 2026-10-15, focused re-review of the fold: all round-3 findings;
-records: re-review round 3); the records commits after it, 3afd3ec92 and the
-one that records round 3's reviews, name none (amended 2026-10-15, records:
-re-review round 3).
-History is not
-rewritten, so if the re-scan before L re-allocates an id, D's landed notes
-record the new id against each commit that names it; later commit messages
-describe a residue instead of naming its reserved id ((amended 2026-10-14,
-implementation-review fold: IR2-MINOR-4)). The three commands are re-run twice:
-immediately before L, the first commit that publishes an id outside this plan,
-and immediately before D writes the ledger. Any output other than the expected
-one above that names W-250..W-274 or F-019 means another workstream took the id
-(amended 2026-10-15, focused re-review of the fold: RR2r2-m2). Before L, the
-residues re-allocate from the maximum plus one, skipping every reserved block,
-and L, R and D are written with the new ids. Before D, the same re-allocation
-also rewrites the ids that L's page and fixture texts and R's row already
-published, in a commit before D. D records both outcomes in
-fork/ORCHESTRATION.md and in the plan's landed notes. From the focused re-review
-of the fold on, the second command's pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`;
-its run on 2026-10-15's records (the
-[focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15))
-finds the ids only in trunk's own reservation sentence (amended 2026-10-15,
-focused re-review of the fold: RR2-M2).
+records: re-review round 3); the records commits after it, 3afd3ec92 and the one
+that records round 3's reviews, name none (amended 2026-10-15, records:
+re-review round 3). Of round 4's fix commits only b0501358f names one, W-250
+("report W-250's TODO twice at 0f2002243"), and its records commit names
+W-250, W-253, W-256, W-264, W-265, W-271 and W-272 in its summary of the ledger
+edits (amended 2026-10-15, focused re-review of the fold: all round-4
+findings). History is not rewritten, so if the re-scan before L re-allocates an
+id, D's landed notes record the new id against each commit that names it; later
+commit messages describe a residue instead of naming its reserved id ((amended
+2026-10-14, implementation-review fold: IR2-MINOR-4)). The three commands are
+re-run twice: immediately before L, the first commit that publishes an id
+outside this plan, and immediately before D writes the ledger. Any output other
+than the expected one above that names W-250..W-274 or F-019 means another
+workstream took the id (amended 2026-10-15, focused re-review of the fold:
+RR2r2-m2). Before L, the residues re-allocate from the maximum plus one,
+skipping every reserved block, and L, R and D are written with the new ids.
+Before D, the same re-allocation also rewrites the ids that L's page and fixture
+texts and R's row already published, in a commit before D. D records both
+outcomes in fork/ORCHESTRATION.md and in the plan's landed notes. From the
+focused re-review of the fold on, the second command's pattern is
+`W-(25[0-9]|26[0-9]|27[0-4])\b`; its run on 2026-10-15's records (the [focused
+re-review fold record](#focused-re-review-of-the-fold-2026-10-15)) finds the ids
+only in trunk's own reservation sentence (amended 2026-10-15, focused re-review
+of the fold: RR2-M2).
 
 **Design authority** (each cited where used):
 
@@ -1212,15 +1240,23 @@ the existing diagnostic or a new `semantics TODO` with a golden) and filed.
     value (RC-1, RC-2, X18), returning dependent aggregates (X29 to X32),
     destructuring (X33), `for` over a dependent range (X28), nested
     aggregates built from template calls (review A's b09 to c5), and class,
-    union and array values built from them (the re-review's r2 to r9,
-    D-TP-24); except a template-dependent in-place initializer of a storage
-    root that is allocated after it, which leaves the `for` cursor and a
-    class value with a defaulted field (amended 2026-10-14, review fold: A-B1
-    / RR-M1; RC-12, W-264), and the forms that RC-10 stops on or compiles
-    wrongly with or without templates (amended 2026-10-14, review fold:
-    RR-M2; W-256). A tuple or struct type whose element is a produced type,
-    such as `(T.Elem, i32)`, is IN (amended 2026-10-15, focused re-review of
-    the fold: RR1-M2). Also excepted (amended 2026-10-15, focused re-review
+    union and array values built from them (the re-review's r2 to r9, D-TP-24),
+    and a class template's literal or value whose field type is produced, such
+    as `T.Item`, `T.Item*` or a class `C(M + 1)`, in a `var`, a `return`, an
+    assignment, an argument or an array element (amended 2026-10-15, focused
+    re-review of the fold: RR4-1-B1); except a template-dependent in-place
+    initializer of a storage root that is allocated after it, which leaves the
+    `for` cursor and a class value with a defaulted field (amended 2026-10-14,
+    review fold: A-B1 / RR-M1; RC-12, W-264), though since round 4 of the
+    focused re-review of the fold a class value or initializer whose literal
+    leaves a field to its default is converted on instantiation, where a runtime
+    literal reaches W-265, as without a template, and a constant one is rejected
+    with "missing field", as on trunk (W-272; amended 2026-10-15, focused
+    re-review of the fold: RR4-1-B1), and the forms that RC-10 stops on
+    or compiles wrongly with or without templates (amended 2026-10-14, review
+    fold: RR-M2; W-256). A tuple or struct type whose element is a produced
+    type, such as `(T.Elem, i32)`, is IN (amended 2026-10-15, focused re-review
+    of the fold: RR1-M2). Also excepted (amended 2026-10-15, focused re-review
     of the fold: RR1-m3 / RR1-m5): destroying the temporaries that an action
     creates on instantiation (a `var` parameter's copy of `x`, a temporary
     class value), which are never destroyed, as on trunk (W-267); and a
@@ -1270,8 +1306,12 @@ the existing diagnostic or a new `semantics TODO` with a golden) and filed.
     template-dependent bound from a list is **OUT** (X11, W-253), except in a
     class template's literal whose class's fields hold such an array, which
     is converted on instantiation, as on trunk, where the class type was a
-    deferred call (amended 2026-10-15, focused re-review of the
-    fold: RR2-1-M2).
+    deferred call (amended 2026-10-15, focused re-review of the fold: RR2-1-M2),
+    including an array held by a class field whose type is produced, such as
+    `C(M + 1)` for a class template `C(N)` with an `array(i32, N)` field, and
+    except a literal that leaves a field to its default, which is rejected on
+    instantiation, as on trunk (W-272; amended 2026-10-15, focused re-review of
+    the fold: RR4-1-B1).
 13. TR-13. `match` over a dependent value, each case body dependent
     (:883-902). **OUT** (X10, W-252; the `match` machinery's own scrutinee
     support is the blocker).
@@ -1298,9 +1338,11 @@ the existing diagnostic or a new `semantics TODO` with a golden) and filed.
     focused re-review of the fold: RR2r2-M1), and an entity that names one
     through a concrete operand, such as a call of a function template, a
     class template as a specific's argument, a tuple or struct element or a
-    field type, a constraint's argument or rewrite, or a blanket impl's
-    witness (amended 2026-10-15, focused re-review of the fold: RR3-1-M1 /
-    RR3r2-M1). A generic class from another
+    field type, a constraint's argument or rewrite, or a blanket impl's witness
+    (amended 2026-10-15, focused re-review of the fold: RR3-1-M1 / RR3r2-M1),
+    and an interface or named constraint whose `require` declaration names one,
+    directly or through a function it constrains (amended 2026-10-15, focused
+    re-review of the fold: RR4r2-M1). A generic class from another
     library that declares a nested class or interface and whose data names no
     action stops the compiler where the class is used, with or without a
     template parameter, as on trunk and the nightly (W-271; (amended
@@ -1436,6 +1478,55 @@ deduce_class_args.carbon's four new splits, lower initialize.carbon's six and
 two lines of templates_deduce_class_args pin it; mutants M36 and M40 (M37 to
 M39, which removed the aggregate test from each of its three uses, changed
 lower initialize.carbon in value names only).
+
+A class initializer whose class's fields hold a produced type is deferred whole
+too (amended 2026-10-15, focused re-review of the fold: RR4-1-B1). The round's
+first review found that a class template whose field type is produced by a
+template action, such as `var c: T.Item;`, `var c: T.Item*;` or a field of class
+type `C(M + 1)`, passed checking, and that initializing it in place from a
+literal in a template, `var d: D(T) = {.c = 4, .k = 5};`, a `return`, a static
+factory in the class template, an assignment, an argument or an array element,
+stopped lowering at function_context.cpp:264's missing-value CHECK, where trunk
+and the nightly compile and run every such form they accept. C4 forms `D(T)` in
+the definition, so the literal was converted there field by field; the type of
+such a field in `D(T)`'s object representation splices in an action of the
+class's generic, which the specifics of the function that forms `D(T)` never
+perform, so the field's deferred conversion and the `class_init` built from it
+stayed symbolic there. RR2-1-M2's test deferred only array bounds;
+`HoldsTemplateDependentArrayBound` becomes `HoldsPerInstantiationPart`, which
+also holds for a type that names a splice anywhere (`TemplateSpliceWalk`: a
+constant's type and operands, the elements of a block, a struct type's field
+types and a specific's arguments, with a facet type counted as a splice),
+through struct, tuple, array and class fields (c841ad9e7). The deferral of an
+initializer and of a class value also takes a literal that omits only fields
+with a default initializer (c841ad9e7 and 6aa403cd6): converted field by field,
+such a literal stopped lowering the same way, `let b: Box(T) = {.item = 4};`
+with `var n: i32 = 5;` included (the fixer's x18). On instantiation a runtime
+literal takes the default and then reaches W-265, as it does without a template;
+a constant literal is no longer a literal there, so it is rejected with "missing
+field", as on trunk and the nightly (W-272); and RC-12's class value t02, a
+concrete class whose literal holds a template call and leaves a field to its
+default, now reaches W-265 instead of the verifier. A field value of the wrong
+type, `.k = "s"` for an `i32` field, is reported on instantiation, as on trunk
+and the nightly, where f3f99c1c1 reported it where the function is defined (x12,
+x13); an unknown field is still reported there (x11). Measured: the review's 14
+crash probes compile and run (q02 5, r03 5, s04 9, r07 12, s03 7, n01 4, n05 4,
+n08 7, q03 5, q05 6, b05a 0, b05e 4, b05g 9, r06 35), trunk printing the same
+for the twelve it compiles, rejecting b05g on instantiation and r06 where the
+function is defined, and the nightly also rejecting s03 on instantiation. The
+review's b05, r05 and s05, which f3f99c1c1 stopped at the same CHECK, run too
+(trunk prints the same for r05 and s05 and rejects b05 on instantiation), and
+its s02, a constant tuple that holds such a class, fails LLVM verification as
+its non-template twin s02n does on all three toolchains (W-263). A base class,
+a nested class template, an array, tuple or struct field holding `T.Item`, a
+pointer to a class template and an `as` argument run too (x03 to x07, x14,
+x16), and the 305 single-file probes are unchanged at check and lower. Lower
+initialize.carbon's six new splits and deduce_class_args.carbon's two
+`_default_on_instantiation` splits pin it;
+mutants M68 to M72, M75, M76, M80 and the re-run M36. A class whose arguments
+name a splice is tested by the class arm, though C4 defers a call of a class
+template whose argument is a splice, so no measured shape reaches that arm's
+walk (M70 and M72 survive).
 
 **D-TP-4 (A2): an action that replays an initializing conversion supplies its
 own storage access block.** `PerformAction(ConvertAction)` and
@@ -1718,11 +1809,12 @@ crash, 16 compile, 5 are rejected in their library with trunk's own
 diagnostic, and every one that compiled at 764e55445 still compiles, so no
 error constant reaches an eval block or a binding's type in any shape the two
 rounds measured. The other three, the second review's y04, y05 and y09, stop
-at another FATAL, `GetLocalGenericId`'s (import_ref.cpp:1423; :1287 at
-aa57bfe1c), as they do on
-trunk and the nightly: a generic class from another library that declares a
-nested class or interface, with or without a template parameter, filed as
-W-271 (amended 2026-10-15, focused re-review of the fold: RR2r2-M1).
+at another FATAL, `GetLocalGenericId`'s (import_ref.cpp:1456; :1423 at f3f99c1c1
+and :1287 at aa57bfe1c; amended 2026-10-15, focused re-review of the fold:
+RR4r2-M1), as they do on trunk and the nightly: a generic class from another
+library that declares a nested class or interface, with or without a template
+parameter, filed as W-271 (amended 2026-10-15, focused re-review of the fold:
+RR2r2-M1).
 
 The walk follows each reference that the import loads (amended 2026-10-15,
 focused re-review of the fold: RR3-1-M1 / RR3r2-M1). Round 3's two reviews
@@ -1775,6 +1867,38 @@ report it, once per entity, with no crash; every one that compiled there
 still compiles; and the six that stop the compiler stop trunk too: W-271's
 four, and the round-1 fixer's q1 and q2, a generic class with an empty
 nested class, which W-271's notes record.
+
+The walk also follows the `require` declarations of an interface or named
+constraint, and an interface's `observe` declarations (amended 2026-10-15,
+focused re-review of the fold: RR4r2-M1). The round's second review found that
+`AddInterfaceOrConstraint` walked the entity's generic and its generic with
+`Self` but not its `require` declarations, which the import loads with it
+(`GetLocalRequireImplsBlockContents`: each `RequireImplsDecl` with its own
+generic, self type and facet type). A `require` is declared in its own generic,
+so a class template named through a concrete operand of a parameter-dependent
+`require`, as in `interface Req(U: type) { require impls WithArg((U,
+FieldBox(Holder)*)); }`, was in no eval block that the walk reached, and naming
+such an interface or named constraint from another library, directly or through
+a function it constrains, reported the TODO and then stopped the compiler at
+generic.cpp:239's CHECK (the review's r1, r4, r5, r13, r14 and r18, its r15, an
+invalid impl of such an interface, and the fixer's q1, q2 and q3); trunk and the
+nightly stop all ten at `TryResolveInstCanonical`'s SpliceInst FATAL.
+`AddOperand(SemIR::RequireImplsId)` adds a `require`'s generic, declaration and
+definition, its self type and its facet type, for each `require` of the entity
+and for a `RequireImplsDecl` operand, and `AddOperand(SemIR::ObserveId)` adds an
+`observe`'s operations (0f2002243). No measured `observe` shape stopped the
+compiler (o1 to o5): its operations are not an eval block, and an operation that
+names `Self` is an entry of the generic with `Self`. Five
+fail_todo_import.carbon splits pin the shapes, the fifth (b0501358f) an
+interface whose concrete `require` names `FieldBox(Holder)*`, used with a
+function it constrains, where the TODO is reported twice; mutants M73, M74 and
+M77 to M79 and the re-run M64. Measured: of the 30 `require` and `observe`
+probes, the ten report the TODO with no crash and the others are unchanged;
+round 3's 110 cross-library probes are unchanged but for W-271's line, :1456; of
+the first review's 38 cross-library shapes, a2b and a2c, which name an interface
+with a concrete `require` of `FieldBox(Holder)*` and a function it constrains,
+report the TODO twice instead of once, because the interface itself now resolves
+to an error, once per entity.
 
 **D-TP-15 (dropped 2026-10-14, review fold: A-M3).** Rev 1 diagnosed a
 template form parameter as a `semantics TODO`. RC-9 is not template-specific
@@ -2048,16 +2172,18 @@ Amended 2026-10-14 (review fold: A-M2 / A-M3 / A-m2 / A-m3 / B-M2 / B-M3).
 
 | Form | Today | After TP-1 | W-id |
 | --- | --- | --- | --- |
-| a template, or a generic resolved per instantiation, used from another library | fatal (RC-8) | `semantics TODO` at the `import`, golden `fail_todo_import.carbon`; a function or class template whose declaration holds an action too, its `_declaration` splits (amended 2026-10-14, implementation-review fold: IR1-M2); a class template whose field type or method declaration holds one, and an interface or named constraint whose declaration holds one, five more splits (amended 2026-10-15, focused re-review of the fold: RR1-M1 / RR2-M1); an entity whose declaration, definition or bindings name one of these, such as a nested generic class with such a field or a deduced parameter constrained by such an interface, six more splits, and a seventh for an imported facet type naming such an interface (amended 2026-10-15, focused re-review of the fold: RR2r2-M1); an entity that names one through a concrete operand of an eval block entry, such as a callee, a specific's argument, a tuple or struct element, a field type, a constraint's argument or rewrite, or a blanket impl's witness, eleven more splits (amended 2026-10-15, focused re-review of the fold: RR3-1-M1 / RR3r2-M1) | W-250 |
+| a template, or a generic resolved per instantiation, used from another library | fatal (RC-8) | `semantics TODO` at the `import`, golden `fail_todo_import.carbon`; a function or class template whose declaration holds an action too, its `_declaration` splits (amended 2026-10-14, implementation-review fold: IR1-M2); a class template whose field type or method declaration holds one, and an interface or named constraint whose declaration holds one, five more splits (amended 2026-10-15, focused re-review of the fold: RR1-M1 / RR2-M1); an entity whose declaration, definition or bindings name one of these, such as a nested generic class with such a field or a deduced parameter constrained by such an interface, six more splits, and a seventh for an imported facet type naming such an interface (amended 2026-10-15, focused re-review of the fold: RR2r2-M1); an entity that names one through a concrete operand of an eval block entry, such as a callee, a specific's argument, a tuple or struct element, a field type, a constraint's argument or rewrite, or a blanket impl's witness, eleven more splits (amended 2026-10-15, focused re-review of the fold: RR3-1-M1 / RR3r2-M1); an interface or named constraint whose `require` declaration names one, named directly or through a function it constrains, five more splits (amended 2026-10-15, focused re-review of the fold: RR4r2-M1) | W-250 |
 | an access through a field whose declared type is a constrained template parameter: `self.c.F()` in `class W(template T: A)`, `h.c.F()` for `h: Holder(T)` | member not found on instantiation | unchanged: the field access is itself deferred, so the operand's type in the definition is not the parameter; pinned by constraint_lookup.carbon `fail_todo_field_of_template_class` (amended 2026-10-14, implementation-review fold: IR1-M3) | W-266 |
 | an array bound that a template-dependent operation computes at runtime: `array(i32, a[0])`, `array(i32, Get(a))` | FATAL in eval.cpp (the call form; the index form was an error on trunk) | ``expression is runtime; expected constant`` on instantiation (D-TP-26), index.carbon `fail_index_in_array_bound_on_instantiation` (amended 2026-10-14, implementation-review fold: IR1-M1) | none |
 | a runtime value written as a type in a template: `let a: x.0`, `(x.0, i32)`, `{.p: x.0}`, `array(MakeT(x), 1)`, `-> x.0`, `var a: x.0`, `2 as x.0`, `let a: *p` | rejected where the function is defined (the tuple-index and dereference forms), on instantiation (the index form), FATAL in eval.cpp (the call form) | ``expression is runtime; expected constant`` at the operand on instantiation (D-TP-26), eleven `_on_instantiation` splits of index.carbon and pointer.carbon (amended 2026-10-15, focused re-review of the fold: RR1-B1); with two runtime operands, `array(x.0, x.1)` or `(x.0, x.1)`, both are errors and the first is reported, two more splits (amended 2026-10-15, focused re-review of the fold: RR2-1-M1) | none |
 | a tuple type whose element is a produced type: `var t: (T.Elem, i32)`, `-> (T.Elem, i32)` | CHECK in lowering (`file_context.h`), or rejected before C5 | lowers as `(i32, i32)` (D-TP-6), lower initialize.carbon's two `_of_associated_type` splits (amended 2026-10-15, focused re-review of the fold: RR1-M2) | none |
+| a class template's literal whose field type is produced: `var d: D(T) = {.c = 4, .k = 5}` for `class D(template T: HasItem) { var c: T.Item; var k: i32; }`, the same returned, from a static factory, assigned, as an argument or an array element, and a field `T.Item*` or `C(M + 1)` | trunk compiles them (the class type a deferred call); at f3f99c1c1, since C4, they pass checking and stop lowering at function_context.cpp:264's CHECK | converted on instantiation (D-TP-24), lower initialize.carbon's six splits from `var_class_template_associated_field` (amended 2026-10-15, focused re-review of the fold: RR4-1-B1) | none |
+| a class template's literal or value that leaves a field to its default initializer, whose class's fields hold a produced type or a template-dependent array bound: `var b: Box(T) = {.item = 4};` or `let b: Box(T) = {.item = 4};` with `var n: i32 = 5;` | ``unable to monomorphize specific`` with ``missing field `n` in source type`` on trunk and the nightly; at f3f99c1c1, a lowering CHECK (a produced type) or `ArrayInitDependentBound` where the function is defined (an array) | ``unable to monomorphize specific`` with ``missing field `n` in source type`` on instantiation, as on trunk, deduce_class_args.carbon's two `_default_on_instantiation` splits; a runtime literal takes the default and reaches W-265 (amended 2026-10-15, focused re-review of the fold: RR4-1-B1) | W-272 |
 | the temporaries that a template's actions create on instantiation: `K(x)` for `fn K(var d: D)`, `Mk(x.n + 100).n`, `G((x, 1))` for `fn G(var p: (D, i32))` | never destroyed | unchanged (amended 2026-10-15, focused re-review of the fold: RR1-m3) | W-267 |
 | `var e: T.Elem;` for a template `T: Container` | ``cannot convert type ... into type implementing `Core.DefaultOrUnformed` `` where the function is defined, the type printed `<splice of <cannot stringify ...>>` | unchanged; the type prints `T.Elem` (amended 2026-10-15, focused re-review of the fold: RR1-m4) | W-268 |
 | `return {} as T;` for a class `T` without `Copy` | ``unable to monomorphize specific`` with ``cannot copy value of type `A` `` | unchanged (amended 2026-10-15, focused re-review of the fold: RR1-m5) | W-269 |
 | an interface or named constraint whose later parameter's type depends on a template parameter, used in its own library: `fn UseI[T: I(Holder, 1)](x: T)` for `interface I(template T: type, U: T.Item)` | CHECK at sem_ir/generic.cpp:84 | unchanged; its import reports W-250's TODO (amended 2026-10-15, focused re-review of the fold: RR1-M1 / RR2-M1) | W-270 |
-| a generic class from another library that declares a nested class or interface, used: `fn Use(o: Outer(i32)*)` for `class Outer(T: type) { class Inner { var x: T; } }`, with or without `template` | FATAL at import_ref.cpp:1086 (`GetLocalGenericId`: ``Unexpected inst for generic declaration``) | unchanged (import_ref.cpp:1287); when the nested class's data names an action, W-250's TODO is reported instead (amended 2026-10-15, focused re-review of the fold: RR2r2-M1) | W-271 |
+| a generic class from another library that declares a nested class or interface, used: `fn Use(o: Outer(i32)*)` for `class Outer(T: type) { class Inner { var x: T; } }`, with or without `template` | FATAL at import_ref.cpp:1086 (`GetLocalGenericId`: ``Unexpected inst for generic declaration``) | unchanged (import_ref.cpp:1456 at the head, :1287 at aa57bfe1c; amended 2026-10-15, focused re-review of the fold: RR4r2-M1); when the nested class's data names an action, W-250's TODO is reported instead (amended 2026-10-15, focused re-review of the fold: RR2r2-M1) | W-271 |
 | `partial T*` | `PartialOnFinal`, golden `fail_todo_partial_template_dependent` | unchanged | W-251 |
 | `match` on a dependent value | `semantics TODO`, fixture X10 | unchanged | W-252 |
 | an array with a dependent bound from a list | error, golden `fail_todo_init_template_dependent_bound` | unchanged directly and in a struct or tuple literal; in a class template's literal, `var c: C(N) = {.a = (1, 2, 3), .b = N}` and the same returned from `-> C(N)`, which C4 made an error where trunk compiles them, converted on instantiation (D-TP-24), deduce_class_args.carbon's and lower initialize.carbon's `_dependent_array_bound` splits (amended 2026-10-15, focused re-review of the fold: RR2-1-M2) | W-253 |
@@ -2067,8 +2193,8 @@ Amended 2026-10-14 (review fold: A-M2 / A-M3 / A-m2 / A-m3 / B-M2 / B-M3).
 | assignment through a template-dependent left operand | accepted when not assignable (operator.carbon `todo_fail` splits) | unchanged | W-259 |
 | the constraint's meaning and ambiguity at the definition; a type-level `T.F` | not checked; `T.F` calls the constraint's member | unchanged; fixture X36 for `T.F` | W-260, W-261, W-262 |
 | a constant nested aggregate | LLVM verification CHECK (RC-13), with or without a template | unchanged; template copies of such values now reach it | W-263 |
-| a template-dependent in-place initializer of a storage root allocated after it: the `for` cursor of tuple or class type; a class value whose literal omits a defaulted field | crash (RC-1 or RC-3 on trunk) | crash in lowering (the cursor) or the verifier (the class value) (RC-12); fixture X35; a class, union or array value otherwise runs (D-TP-24; amended 2026-10-14, review fold: RR-M1) | W-264 |
-| a runtime class value or `var` whose field takes its default initializer | FATAL at expr_info.cpp:359 while lowering, with or without a template (added 2026-10-14, review fold: RR-M1) | unchanged; the template form stops at RC-12 first, during checking | W-265 |
+| a template-dependent in-place initializer of a storage root allocated after it: the `for` cursor of tuple or class type; a class value whose literal omits a defaulted field | crash (RC-1 or RC-3 on trunk) | crash in lowering (the cursor) or the verifier (the class value) (RC-12); fixture X35; a class, union or array value otherwise runs (D-TP-24; amended 2026-10-14, review fold: RR-M1); since round 4 the class value is converted on instantiation and reaches W-265, as its non-template twin does (amended 2026-10-15, focused re-review of the fold: RR4-1-B1) | W-264 |
+| a runtime class value or `var` whose field takes its default initializer | FATAL at expr_info.cpp:359 while lowering, with or without a template (added 2026-10-14, review fold: RR-M1) | unchanged; the template form stops at RC-12 first, during checking, and since round 4 reaches W-265 too (amended 2026-10-15, focused re-review of the fold: RR4-1-B1) | W-265 |
 
 ### §1.9 Goldens
 
@@ -2200,15 +2326,16 @@ fills 17501c978 and f360b8735 and its records commit; the compositions were
 measured again over the fold's head (§0.9) (amended 2026-10-14,
 implementation-review fold: IR2-MINOR-10).
 
-### §1.13 Residues filed (W-250..W-271; W-272..W-274 unused)
+### §1.13 Residues filed (W-250..W-272; W-273 and W-274 unused)
 
 Amended 2026-10-14 (review fold: A-M2 / A-M3 / A-m2 / A-m3 / B-M1 / B-M2 /
 B-M3 / RR-M1 / RR-M2 / RR-m1) and 2026-10-15 (focused re-review of the fold:
 RR1-M1 / RR2-M1 / RR1-m2 / RR1-m3 / RR1-m4 / RR1-m5, items 1 and 18 to 21;
-round 2: RR2r2-M1 / RR2-1-M2, items 1, 4 and 22).
-Each item's full ledger text, with kind, size, subsystem, evidence and break
-condition, is in Appendix E; D files W-250 to W-266, and the focused re-review
-of the fold files W-267 to W-270 and, in its round 2, W-271.
+round 2: RR2r2-M1 / RR2-1-M2, items 1, 4 and 22; round 4: RR4-1-B1 / RR4r2-M1,
+items 1, 4, 15, 16, 22 and 23). Each item's full ledger text, with kind, size,
+subsystem, evidence and break condition, is in Appendix E; D files W-250 to
+W-266, and the focused re-review of the fold files W-267 to W-270, in its round
+2 W-271, and in its round 4 W-272.
 
 1.  W-250 (TR-17). A generic whose definition or declaration is resolved per
     instantiation (an eval block that holds an action or a splice: a
@@ -2223,9 +2350,11 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     whose declaration, definition or bindings name such a generic, such as a
     nested generic class or a binding constrained by such an interface, is
     diagnosed the same way (amended 2026-10-15, focused re-review of the fold:
-    RR2r2-M1), and so is one that names it through a concrete operand, such
-    as a callee or a specific's argument (amended 2026-10-15, focused
-    re-review of the fold: RR3-1-M1 / RR3r2-M1). Removal: import of action
+    RR2r2-M1), and so is one that names it through a concrete operand, such as a
+    callee or a specific's argument (amended 2026-10-15, focused re-review of
+    the fold: RR3-1-M1 / RR3r2-M1), and so is an interface or named constraint
+    whose `require` declaration names it (amended 2026-10-15, focused re-review
+    of the fold: RR4r2-M1). Removal: import of action
     and splice instructions and
     cross-file template lowering (lower/handle.cpp:507-513).
 2.  W-251 (TR-19). `partial T*` for a template `T` (X26;
@@ -2237,7 +2366,11 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     `fail_todo_init_template_dependent_bound`); the nightly accepts it after
     upstream 947c1eb52. In a class template's literal whose class's fields
     hold such an array, the initializer is converted on instantiation, as on
-    trunk (amended 2026-10-15, focused re-review of the fold: RR2-1-M2).
+    trunk (amended 2026-10-15, focused re-review of the fold: RR2-1-M2), and so
+    is one whose class's field of produced type holds it, such as `C(M + 1)`; a
+    literal that leaves a field to its default is rejected on instantiation
+    instead (W-272; amended 2026-10-15, focused re-review of the fold:
+    RR4-1-B1).
 5.  W-254 (TR-20). An out-of-line redeclaration of a template class member
     whose signature names a template-dependent type is rejected even when
     token-identical (`$P/probes/mool.carbon`); its message, after D-TP-23,
@@ -2295,14 +2428,20 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     allocating the cursor before its initializer
     (handle_loop_statement.cpp:216-218's own TODO). The value temporaries of
     rev 2's n02 and the re-review's class values are fixed by D-TP-24
-    (amended 2026-10-14, review fold: RR-M1).
+    (amended 2026-10-14, review fold: RR-M1). Since round 4 of the focused
+    re-review of the fold, t02's class value is converted on instantiation and
+    reaches W-265, as its non-template twin t02n does, so W-264's measured form
+    is the cursor (6aa403cd6; amended 2026-10-15, focused re-review of the fold:
+    RR4-1-B1).
 16. W-265. A runtime class value or `var` whose field takes its default
     initializer stops the compiler while it is lowered (``FATAL failure at
     toolchain/sem_ir/expr_info.cpp:359: Initialization from unexpected inst``,
     from `EmitAggregateInitializer`), with or without a template
     (`$Y/probes/v14/t02n`, `t16n`, `t17n`; trunk and the nightly). Not a
     template defect; filed here because the template form t02 reaches it once
-    W-264 is fixed, with the classes row as its candidate owner (added
+    W-264 is fixed, which since round 4 of the focused re-review of the fold it
+    does (6aa403cd6; amended 2026-10-15, focused re-review of the fold:
+    RR4-1-B1), with the classes row as its candidate owner (added
     2026-10-14, review fold: RR-M1).
 17. W-266 (TR-8; added 2026-10-14, implementation-review fold: IR1-M3).
     Member lookup into a constrained template parameter's constraint does not
@@ -2365,15 +2504,37 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     `fn Use(unused o: Outer(i32)*) {}` does for
     `class Outer(T: type) { class Inner { var x: T; } }` (``Unexpected inst
     for generic declaration``, a `FacetType`, the FATAL in
-    `GetLocalGenericId`, import_ref.cpp:1287 and :1086 on trunk; the fixer's
-    t1, v1 with `template T` and s1 with a nested `interface Inner {}`, and
-    the second review's y04, y05 and y09; trunk 0bdce60a5 and the nightly the
-    same). Not a template defect: the same classes compile in their own
-    library, and the import compiles when the class is not used. A generic
-    class whose nested class is empty stops at check/generic.cpp:239's CHECK
-    on the fork and trunk and compiles on the nightly (q1). When the nested
-    class's data names an action, W-250's walk reports the TODO first (y07).
-    The mechanism was not investigated; t1 compiling is the break condition.
+    `GetLocalGenericId`, import_ref.cpp:1456 at the head, :1287 at aa57bfe1c and
+    :1086 on trunk (amended 2026-10-15, focused re-review of the fold:
+    RR4r2-M1); the fixer's t1, v1 with `template T` and s1 with a nested
+    `interface Inner {}`, and the second review's y04, y05 and y09; trunk
+    0bdce60a5 and the nightly the same). Not a template defect: the same classes
+    compile in their own library, and the import compiles when the class is not
+    used. A generic class whose nested class is empty stops at
+    check/generic.cpp:239's CHECK on the fork and trunk and compiles on the
+    nightly (q1). When the nested class's data names an action, W-250's walk
+    reports the TODO first (y07). The mechanism was not investigated; t1
+    compiling is the break condition.
+23. W-272 (TR-4, TR-12; added 2026-10-15, focused re-review of the fold:
+    RR4-1-B1). A class template's literal or value that leaves a field to its
+    default initializer, whose class's fields hold a produced type or an array
+    with a template-dependent bound, is converted on instantiation (D-TP-24,
+    c841ad9e7 and 6aa403cd6), where a constant literal is rejected with ``unable
+    to monomorphize specific `Make(Holder as HasItem)` `` and the note ``cannot
+    convert from struct type `{.item: Core.IntLiteral}` to `Box(Holder as
+    HasItem)`: missing field `n` in source type`` (deduce_class_args.carbon's
+    `fail_class_template_literal_with_associated_field_default_on_instantiation`
+    and
+    `fail_class_template_value_with_associated_field_default_on_instantiation`;
+    the fixer's x02, x18 and x20, and y03 with an array field, the same for
+    their own names), as trunk and the nightly reject them, where the same code
+    without a template parameter compiles and prints 9 (y04): the deferred
+    action refers to a constant literal by its constant value, a struct value,
+    so `get_default` does not find it as a literal (a runtime literal is
+    referred to through a `SpecificInst`, takes the default, and reaches W-265,
+    as without a template: x19). Removal: refer to a deferred literal as a
+    literal, so that `get_default` applies on instantiation; x02 printing 9 is
+    the break condition.
 
 ### §1.14 Decision index (auto-adopted under V-2/V-3; each has a break condition above or here)
 
@@ -2434,8 +2595,10 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     ((amended 2026-10-15, focused re-review of the fold: RR2r2-M1)), the
     walk following each reference the import loads, so an entity that names
     one through a concrete operand of an entry, such as a callee or a
-    specific's argument, is found too ((amended 2026-10-15, focused
-    re-review of the fold: RR3-1-M1 / RR3r2-M1)).
+    specific's argument, is found too ((amended 2026-10-15, focused re-review of
+    the fold: RR3-1-M1 / RR3r2-M1)), and so is one named by the `require`
+    declaration of an interface or named constraint ((amended 2026-10-15,
+    focused re-review of the fold: RR4r2-M1)).
 -   D-TP-15. Dropped (A-M3): form parameters are unchanged and filed (W-255).
 -   D-TP-16. No upstream cherry-pick; 4a8993af2's representation is used for
     a copy, not the shared block (§0.7; amended 2026-10-14, review fold:
@@ -2448,18 +2611,17 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     leaves open.
 -   D-TP-18. The row stays PARTIAL and W-014 stays OPEN: the first arbiter
     clause is met for the four `fail_todo` splits present when W-014 was filed
-    (TP-1's own `fail_todo` splits, twenty-eight since round 3 of the
-    focused re-review of the fold, pin W-250 and W-266; (amended 2026-10-14,
+    (TP-1's own `fail_todo` splits, thirty-three since round 4 of the focused
+    re-review of the fold, pin W-250 and W-266; (amended 2026-10-14,
     implementation-review fold: IR2-MINOR-6; amended 2026-10-15, focused
-    re-review of the fold: RR1-M1 / RR2-M1 / RR2r2-M1 / RR3-1-M1)), the
-    second is not
-    (handle.cpp:513, :524 at the fold's head, behind W-250), and the residues of
-    §1.13 are material gaps (gap-analysis.md:12-13). _Break:_ the row is
-    re-graded against gap-analysis.md:12-13 when W-250, W-254, W-255, W-259 and
-    W-264 are closed; not moved to DONE on the arbiter alone (amended
-    2026-10-14, review fold: B-M2 / A-m2); W-256 and W-265 are not template
-    defects and do not hold the row (amended 2026-10-14, review fold: RR-M1 /
-    RR-M2).
+    re-review of the fold: RR1-M1 / RR2-M1 / RR2r2-M1 / RR3-1-M1 / RR4r2-M1)),
+    the second is not (handle.cpp:513, :524 at the fold's head, behind W-250),
+    and the residues of §1.13 are material gaps (gap-analysis.md:12-13).
+    _Break:_ the row is re-graded against gap-analysis.md:12-13 when W-250,
+    W-254, W-255, W-259 and W-264 are closed; not moved to DONE on the arbiter
+    alone (amended 2026-10-14, review fold: B-M2 / A-m2); W-256 and W-265 are
+    not template defects and do not hold the row (amended 2026-10-14, review
+    fold: RR-M1 / RR-M2).
 -   D-TP-19. Merge after PR 59 with a merge of trunk M, before the
     implementation reviews; the PR 58 integration is a separate commit L after
     them (§1.12, §3; amended 2026-10-14, review fold: B-B2). In the held state M
@@ -2494,7 +2656,10 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     commit with its fill, a commit that records the walk's results for each
     file, a commit of three more splits with its fill, and a records commit,
     for the reason the third dated note gives ((amended 2026-10-15, focused
-    re-review of the fold: RR3-1-M1 / RR3r2-M1)). _Break:_ a commit cannot
+    re-review of the fold: RR3-1-M1 / RR3r2-M1)); its round 4 adds three fix
+    commits with their fills and a records commit, for the reason the fourth
+    dated note gives ((amended 2026-10-15, focused re-review of the fold:
+    RR4-1-B1 / RR4r2-M1)). _Break:_ a commit cannot
     compile without a later commit's files.
 -   D-TP-23. A diagnostic prints a template-dependent operation's splice as its
     expression, for every action kind a template creates, with a prefix
@@ -2511,8 +2676,12 @@ of the fold files W-267 to W-270 and, in its round 2, W-271.
     hold an array with a template-dependent bound is deferred whole too, an
     aggregate that holds one converting it as its element, and a runtime
     literal with a template-dependent element is referred to in the specific
-    ((amended 2026-10-15, focused re-review of the fold: RR2-1-M2)).
-    _Break:_ above.
+    ((amended 2026-10-15, focused re-review of the fold: RR2-1-M2)); an
+    initializer of a class whose fields hold a produced type, such as `T.Item`
+    or `C(M + 1)`, is deferred whole too, and a class value or initializer whose
+    literal omits only fields with a default initializer is deferred as one that
+    names them all ((amended 2026-10-15, focused re-review of the fold:
+    RR4-1-B1)). _Break:_ above.
 -   D-TP-25. A constant splice lowers the instructions of its block that are
     not constant, where the splice is (§1.2; added 2026-10-14,
     implementation-review fold: IR1-B1). _Break:_ above.
@@ -3693,7 +3862,19 @@ unless noted:
     `fail_todo_import_function_declaration_names_class_template_in_struct`,
     `fail_todo_import_function_constrained_by_rewrite_to_class_template` and
     `fail_todo_import_two_uses_name_class_template` (amended 2026-10-15, focused
-    re-review of the fold: RR3-1-M1 / RR3r2-M1).
+    re-review of the fold: RR3-1-M1 / RR3r2-M1). Round 4 adds to `lib.carbon`
+    the interface `RequiresFieldBox(U)` and the named constraint
+    `RequiresFieldBoxC(U)`, each with a `require` whose facet type `WithArg((U,
+    FieldBox(Holder)*))` depends on its parameter, the functions
+    `ConstrainedByRequires` and `ConstrainedByRequiresC` that they constrain,
+    the interface `RequiresFieldBoxConcretely` with `require impls
+    WithArg(FieldBox(Holder)*)` and the function `ConstrainedByConcreteRequire`,
+    and the splits `fail_todo_import_interface_requires_class_template`,
+    `fail_todo_import_constraint_requires_class_template`,
+    `fail_todo_import_function_constrained_by_interface_requiring_class_template`,
+    `fail_todo_import_function_constrained_by_constraint_requiring_class_template`
+    and `fail_todo_import_two_uses_name_interface_requiring_class_template`
+    (amended 2026-10-15, focused re-review of the fold: RR4r2-M1).
 -   check/testdata/generic/template/member_out_of_line.carbon (C2): the split
     `fail_todo_basic` renamed `fail_basic` (body unchanged).
 -   check/testdata/generic/template/pointer.carbon (C3): `deref_param`,
@@ -3761,7 +3942,13 @@ unless noted:
     `fail_class_template_literal_with_dependent_array_bound_count_on_instantiation`
     and `fail_class_template_literal_with_dependent_array_bound_unknown_field`,
     each over `class Arr(template N: i32)` with a field `array(i32, N)` (amended
-    2026-10-15, focused re-review of the fold: RR2-1-M2).
+    2026-10-15, focused re-review of the fold: RR2-1-M2). Round 4 adds
+    `fail_class_template_literal_with_associated_field_default_on_instantiation`
+    and
+    `fail_class_template_value_with_associated_field_default_on_instantiation`,
+    a `var` and a `let` of `Box(T)` for `class Box(template T: HasItem)` with
+    the fields `item: T.Item` and `n: i32 = 5`, each initialized from `{.item =
+    4}` (W-272; amended 2026-10-15, focused re-review of the fold: RR4-1-B1).
 -   check/testdata/generic/template/default_init.carbon (C4): `var_uninit`,
     `class_method_var_uninit`, `fail_var_uninit_tuple_on_instantiation`,
     `template_interface_concrete_self` (`return x;` only), and the fold's
@@ -3800,7 +3987,14 @@ and round 2's `var_class_with_dependent_array_bound`,
 `var_tuple_of_class_with_dependent_array_bound`,
 `var_array_of_class_with_dependent_array_bound` and
 `let_class_value_with_template_value_field`, M36's and M40's killers (amended
-2026-10-15, focused re-review of the fold: RR2-1-M2)),
+2026-10-15, focused re-review of the fold: RR2-1-M2)); and round 4's
+`var_class_template_associated_field`,
+`return_class_template_associated_field`,
+`class_template_factory_associated_field`,
+`class_template_associated_pointer_field`,
+`nested_class_template_computed_argument` and
+`assign_nested_class_template_computed_argument`, M68's and M69's killers
+(amended 2026-10-15, focused re-review of the fold: RR4-1-B1)),
 `for_range.carbon` (C1: `range_param_called_array`, M9's killer),
 `pointer_index.carbon` (C3) and `dependent_call.carbon` (C3).
 
@@ -4185,6 +4379,20 @@ raised the gate's time across threads by a quarter, and the record brings it
 below round 2's; ada45a7c6 changes no toolchain file: it pins the shapes that
 three of the round's mutants change; nothing is shrunk.
 
+**Budget note, round 4 (amended 2026-10-15, focused re-review of the fold:
+RR4-1-B1 / RR4r2-M1).** Round 4 adds three toolchain fix commits and a commit of
+one more split, each with its fill, and a records commit. Root cause: two
+defects that the earlier rounds' fixes left reachable, not a wider slice. C4's
+class types formed in the definition left a class template's literal whose field
+type is produced to be converted there, field by field, which round 2's fix
+deferred for array bounds only (c841ad9e7), with the same literal's value form
+when it leaves a field to its default (6aa403cd6); and D-TP-14's walk did not
+follow the `require` declarations that the import loads with an interface or
+named constraint (0f2002243). Each removes a crash where it arises, and the
+first restores programs that trunk compiles (R17); b0501358f changes no
+toolchain file: it pins the shape that the round's mutant M78 changes; nothing
+is shrunk.
+
 ## §4 Testdata matrix (autoupdate fills; the fill must reproduce these lines)
 
 Amended 2026-10-14 (review fold: A-B1 / A-M1 / A-M4 / B-M5 / A-m2 / A-m4 /
@@ -4277,6 +4485,21 @@ RR2r2-M1 / RR2r2-m1); every line measured by the round's autoupdate):
 | same | let_class_value_with_template_value_field | in `M(3)`, `store i32 %x` into the temporary's `a` and `store i32 3` into its `b` |
 | generic/template/fail_todo_import.carbon | the seven round-2 splits | the `semantics TODO` at the `import` line, once; the impl split also ``cannot convert type `K` into type implementing `Marker` `` |
 | generic/template/fail_todo_import.carbon | the eleven round-3 splits | the `semantics TODO` at the `import` line, once, and nothing else; `fail_todo_import_two_uses_name_class_template` twice, for `FieldBox` and for `TakesTuple` |
+
+Rows added by round 4 of the focused re-review of the fold ((amended 2026-10-15,
+focused re-review of the fold: RR4-1-B1 / RR4r2-M1); every line measured by the
+round's autoupdate):
+
+| Golden | Split | Key line |
+| --- | --- | --- |
+| lower/testdata/template/initialize.carbon | var_class_template_associated_field | in `G(Holder)`, `%b.var` is initialized by a `memcpy` of the constant `{ i32 4, i32 5 }` (`@Box.val.loc17_3.1`), as for a class that is not a template |
+| same | return_class_template_associated_field, class_template_factory_associated_field | `store i32 %y` (`%item` in `Make`) into `%return`'s `item` and `store i32 5` into its `n` |
+| same | class_template_associated_pointer_field | `store ptr %p` into `%b.var`'s `p` and `store i32 5` into its `n` |
+| same | nested_class_template_computed_argument | a `memcpy` of the constant `{ { i32 } } { { i32 } { i32 4 } }` into `%o.var` |
+| same | assign_nested_class_template_computed_argument | the same `memcpy`, then `store i32 %x` into `o.c.a` |
+| generic/template/deduce_class_args.carbon | fail_class_template_literal_with_associated_field_default_on_instantiation, fail_class_template_value_with_associated_field_default_on_instantiation | ``unable to monomorphize specific `Make(Holder as HasItem)` `` with the note ``cannot convert from struct type `{.item: Core.IntLiteral}` to `Box(Holder as HasItem)`: missing field `n` in source type`` |
+| generic/template/fail_todo_import.carbon | the four round-4 splits of 0f2002243 | the `semantics TODO` at the `import` line, once, and nothing else |
+| same | fail_todo_import_two_uses_name_interface_requiring_class_template (b0501358f) | the `semantics TODO` at the `import` line twice, for `RequiresFieldBoxConcretely` and for `ConstrainedByConcreteRequire` |
 
 Refills by name: generic/template/convert.carbon, unimplemented.carbon,
 call.carbon, member_out_of_line.carbon, class/destroy_calls.carbon,
@@ -4550,8 +4773,21 @@ container arbiter's, in
     (M58); a function's specific adds its definition (M60); a walk that
     reaches an action records what it reached (M61); and M44 with M52
     (M67). M44, M52, M56, M60, M62, M64 and M65 are expected to survive, as
-    the round-3 measurements record (amended 2026-10-15, focused re-review
-    of the fold: RR3-1-M1 / RR3r2-M1).
+    the round-3 measurements record (amended 2026-10-15, focused re-review of
+    the fold: RR3-1-M1 / RR3r2-M1). Round 4 re-runs M36 and M64 and adds M68 to
+    M80: in convert.cpp, `HoldsPerInstantiationPart` without
+    `TemplateSpliceWalk`, the array-bound test of f3f99c1c1 (M68), with its
+    default arm returning false, so that `T.Item` and `T.Item*` are not seen
+    (M69), or with its class arm not walking (M70); the initializer's deferral
+    without `is_defaulted` (M71); the walk following no specific's arguments
+    (M72), counting no facet-type operand as a splice (M75) or following no
+    constant's type (M76); and the class value's deferral without `is_defaulted`
+    (M80); in import_ref.cpp, no loop over the `require` declarations (M73), a
+    `require` adding nothing (M74), no `observe` declarations (M77), and a
+    `require` adding its generic only (M78) or its self type and facet type only
+    (M79). M70, M72, M75, M76, M77 and M79 are expected to survive, as the
+    round-4 measurements record (amended 2026-10-15, focused re-review of the
+    fold: RR4-1-B1 / RR4r2-M1).
 6.  **clang-tidy** on every changed `.cpp` with the repository's configuration
     (LLVM 21.1.8's clang-tidy, as VA-1 ran it), except
     `modernize-use-trailing-return-type`: with it, this container's clang-tidy
@@ -4994,6 +5230,116 @@ Container-built, EXPECTED, not of record (Actions disabled).
 | M65 (no specific interface operand) | none | survives, as M62 |
 | M66 (no facet type's constraint types or rewrites) | fail_todo_import.carbon `_function_constrained_by_rewrite_to_class_template` (ada45a7c6) | killed at ada45a7c6: it aborts (sem_ir/type.cpp:27's CHECK); at d54c37f91 the gate passed and two probes stopped the compiler |
 | M67 (M44 and M52) | fail_todo_import.carbon `_function_constrained_by_template_interface` | killed: it aborts (sem_ir/type.cpp:27's CHECK) |
+
+**Measured at the focused re-review of the fold, round 4 (amended 2026-10-15,
+focused re-review of the fold: all round-4 findings).** In `$F`, which for this
+round is `.../tp1-rr/fixer-r4`: `probes/` for the reproductions and the fixer's
+probes (`ab`, the first review's; `req`, the second review's with the fixer's o1
+to o5 and q1 to q5; `fx`, the fixer's single-file probes), `sweep/` for the
+sweeps, `mut/` for the mutants, `conf/` for conformance and `logs/` for the
+builds, autoupdates and gates. Container-built, EXPECTED, not of record (Actions
+disabled).
+
+-   Build (item 1): each fix commit incremental, `-Werror` clean; the install of
+    record is 0.0.0-0.dev+6aa403cd6, whose toolchain sources equal the head's
+    (b0501358f, the fills and the records commit change no toolchain source);
+    `git log -1 --format=%h -- toolchain ':!toolchain/*/testdata/*' core` prints
+    6aa403cd6. The brief's `':!toolchain/*/testdata'` form excludes no nested
+    testdata file, so it prints the last fill, as both reviews found.
+-   Gate (items 2 and 3): the two fixes alone, before their splits, 1955 of
+    1955, so no existing golden changes; c841ad9e7 alone 1953 of 1955 (check
+    deduce_class_args.carbon and lower initialize.carbon), with its fill
+    043e67106 1955 of 1955, its log "Ran 1955 tests in 24089 ms wall time, 92857
+    ms across threads"; 0f2002243 alone 1954 of 1955 (fail_todo_import.carbon),
+    with its fill e0facdb04 1955 of 1955, "Ran 1955 tests in 25763 ms wall time,
+    99379 ms across threads"; 6aa403cd6 alone 1954 of 1955
+    (deduce_class_args.carbon), with its fill a1285a786 1955 of 1955, "Ran 1955
+    tests in 23094 ms wall time, 89032 ms across threads"; b0501358f alone 1954
+    of 1955 (fail_todo_import.carbon), with its fill 3d6685b8b 1955 of 1955; at
+    the head, after the sweeps, "file_test test mode on /home/user/carbon-tp:
+    1955 passed, 0 failed (exit 0, 24s)", "Ran 1955 tests in 22603 ms wall
+    time, 86740 ms across threads", 1955 `.` marks and no `!` or `?`
+    (`$F/logs/gate_official_head.txt`). No commit crashed; each fill's second
+    autoupdate pass changed nothing; the times are one run each on this
+    container, some beside the round's sweeps.
+-   Conformance (item 4), into `$F/conf/out_final`: "PASS 137, COMPILE-FAIL 0,
+    LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22
+    (of 159)", bullets 48 PASS / 0 FAIL / 8 SKIP / 0 NOT-WRITTEN of 56,
+    scoreboard generated 2026-10-19T23:30:16Z (the container clock) in 64.1 s on
+    6aa403cd6's toolchain; the nine TP-1 programs are the only movers from
+    fork/conformance/out/scoreboard.json, and every program's status and detail
+    equal round 3's scoreboard; `runner.py --self-test`: "self-test: 159
+    programs parsed, 56 bullets in table, OK".
+-   Mutants (item 5): each relinked over 6aa403cd6's build by recompiling
+    convert.cpp or import_ref.cpp into `/dev/shm/fixer-r4` (`$F/mut/runmut4.sh`,
+    the texts in `$F/mut/mutate4.py`) and run on its named goldens and the full
+    gate; each that survived was also run on the TP-1 programs (`runner.py
+    --filter generics/templates_`: 11 PASS, trunk's templates_dependent_member
+    SKIP) and swept over the probes below (`$F/sweep/surv_*.tsv`). Killed, as
+    the table below gives: M36, M68, M69, M71, M73, M74 and M80, and M78 once
+    b0501358f's split pins the probes it changes. Seven survive the goldens, the
+    gate, the programs and every probe, none of which any of them changes but
+    for W-271's FATAL line: M70 and M72, the class arm's walk and a specific's
+    arguments, because C4 defers a call of a class template whose argument is a
+    splice, so no measured field type is such a class; M75, because no measured
+    field type names a facet type; M76, because every splice measured is reached
+    as an operand; M77, because no measured `observe` stops the compiler (its
+    operations are not an eval block, and one that names `Self` is an entry of
+    the generic with `Self`); M79, because a parameter-dependent `require`'s
+    facet type is an entry of its generic, as M78's shape is reached through the
+    facet type only (removing both, M74, is killed); and the re-run M64, as at
+    round 3. They stay, because the deferral and the import need what they
+    follow. No `/dev/shm` copy is left.
+-   clang-tidy (item 6): 0 diagnostics on the round's changed lines of
+    convert.cpp and import_ref.cpp against f3f99c1c1 at 3d6685b8b
+    (`$F/logs/tidy_final.log`), with the same exclusion; clang-format 21.1.8
+    changes neither file.
+-   Probes, run on the head, on f3f99c1c1's convert.cpp and import_ref.cpp
+    relinked over the build (`base`), on trunk 0bdce60a5 and, for the fixer's
+    probes, the `require` probes and round 3's 110, on the nightly
+    (`$F/bin/runv.sh`, `$F/bin/sweep.py`, `$F/sweep/*.tsv`,
+    `$F/logs/run_ab_fx_final.txt`): the first review's 14 crash probes compile
+    and run as §1.2 D-TP-24 gives; of its other 35 single-file probes, b05, r05
+    and s05, which stopped `base` at the same CHECK, run and print 6, 4 and 3,
+    s02, a constant tuple that holds such a class, fails LLVM verification as
+    its non-template twin s02n does on all three toolchains (W-263; its runtime
+    form s02r prints 15, where trunk and the nightly stop at file_context.h's
+    CHECK), and the other 31 are unchanged; the fixer's x01 to x20, y01 to y06,
+    t02, t02n and t16n behave as §1.2 D-TP-24 gives, y01 and y02 (a runtime
+    literal that leaves a field of `D(T)`, whose other field has type `T`, to
+    its default) reaching W-265 on the head and on `base`, where trunk and the
+    nightly reject them on instantiation with "missing value for field `k`"; the
+    30 `require` and `observe` probes, of which the ten that stopped `base`
+    after the TODO report it with no crash and the others are unchanged; round
+    3's 110 cross-library probes, unchanged but for W-271's FATAL line,
+    import_ref.cpp:1456 (:1423 at `base`); the first review's 38 cross-library
+    shapes, unchanged but for a2b and a2c, which report the TODO twice instead
+    of once; and the first review's 305 single-file probes, the same on the head
+    and `base` at check and at lower, the 16 lowering crashes W-263's.
+-   Not re-run (land-time items, §1.12): the compositions with SC-1 and VA-1,
+    the L simulation and PR 58's checker. `git merge-tree` of the head with
+    trunk f3156a375 and each held PR's head, each equal to `git ls-remote`,
+    gives the PR body's conflict table unchanged: round 4's hunks of convert.cpp
+    and import_ref.cpp merge cleanly, and convert.cpp still conflicts with PR 60
+    in the two `PerformAction` hunks only.
+
+| Mutant | Named killer | Measured at round 4 of the focused re-review of the fold |
+| --- | --- | --- |
+| M36 (re-run: no initializer deferral) | deduce_class_args.carbon and lower initialize.carbon | killed: both red, the lower splits' functions converted where they are defined |
+| M68 (the array-bound test alone) | lower initialize.carbon `var_class_template_associated_field` | killed: it aborts (function_context.cpp:264's missing-value CHECK) |
+| M69 (the default arm returns false) | the same split | killed: it aborts (the same CHECK) |
+| M70 (the class arm does not walk) | none | survives: gate 1955 of 1955, the programs pass, no probe changes |
+| M71 (the initializer's deferral without `is_defaulted`) | deduce_class_args.carbon `fail_class_template_literal_with_associated_field_default_on_instantiation` | killed: the split has no error |
+| M72 (no specific's arguments) | none | survives, as M70 |
+| M73 (no loop over the `require` declarations) | fail_todo_import.carbon `_interface_requires_class_template` | killed: it aborts (generic.cpp:239's CHECK) |
+| M74 (a `require` adds nothing) | the same split | killed: it aborts (the same CHECK) |
+| M75 (no facet-type operand counts as a splice) | none | survives, as M70 |
+| M76 (no constant's type) | none | survives, as M70 |
+| M77 (no `observe` declarations) | none | survives: gate 1955 of 1955, the programs pass, no probe changes but for W-271's line |
+| M78 (a `require` adds its generic only) | fail_todo_import.carbon `_two_uses_name_interface_requiring_class_template` (b0501358f) | killed at b0501358f: one TODO instead of two; at 6aa403cd6 the gate passed and a2b and a2c reported the TODO once |
+| M79 (a `require` adds its self type and facet type only) | none | survives, as M77 |
+| M80 (the class value's deferral without `is_defaulted`) | deduce_class_args.carbon `fail_class_template_value_with_associated_field_default_on_instantiation` | killed: the split has no error |
+| M64 (re-run: no interface or named-constraint operand) | none | survives, as M77 |
 
 ## Hand-off notes for the implementer
 
@@ -5539,7 +5885,12 @@ round 2 below, had one MAJOR finding, which both reviews found, and its fixer
 changed two toolchain source files and one golden, so round 4 is owed, over
 the round-3 fixer's commits 68102438e..3afd3ec92 and the records commit after
 them that records round 3's reviews (amended 2026-10-15, focused re-review of
-the fold: all round-3 findings; records: re-review round 3).
+the fold: all round-3 findings; records: re-review round 3). Round 4, after
+round 3 below, had one BLOCKER and one MAJOR finding, and its fixer changed two
+toolchain source files and three goldens, so round 5 is owed, over the round-4
+fixer's commits c841ad9e7..3d6685b8b and the records commit after them that
+records round 4's reviews (amended 2026-10-15, focused re-review of the fold:
+all round-4 findings).
 
 ### Round 1: the fold's commits, at bf8e1b4cc
 
@@ -5762,14 +6113,14 @@ M39 showed that b678e2985's aggregate-level deferral changed only value names
 once `NeedsSpecificInst` was fixed, so f44280c1c removes it. §3's budget is
 exceeded by the second dated note there, for the root-cause reason it gives.
 Since the cut, TP-1 changes 28 toolchain source files and adds 13 goldens and
-refills 8 (`git diff --stat b2576f6c3 24bf5ea45 -- toolchain core`: 49 files,
-+11135/-540; the round's own `git diff --stat 764e55445 24bf5ea45 -- toolchain
-core`: 9 files, +1610/-152).
+refills 8 (`git diff --stat b2576f6c3 24bf5ea45 -- toolchain core`:
+49 files, +11135/-540; the round's own `git diff --stat 764e55445 24bf5ea45 --
+toolchain core`: 9 files, +1610/-152).
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
 | RR2-1-M1: D-TP-26 made only an instruction's first runtime operand an error in the specific, so `array(x.0, x.1)` for `x: (type, i32)` stopped the compiler at value_store.h's `inst<none>` CHECK after the diagnostics (c10, c19), and `(x.0, x.1)` as a type had two notes at one location | MAJOR | Fixed in 2165322c5 (D-TP-26 amended): `FindNonConstantOperands` collects every operand that is not constant, and of those the instruction needs constant, the first is diagnosed once and each is the error constant in the specific's value block. c10 and c19 are errors with no crash: on instantiation the specific is reported with the notes ``non-constant call to compile-time-only function`` and ``expression is runtime; expected constant`` at `x.1`; trunk and the nightly reject both where the function is defined. index.carbon's `fail_array_type_two_runtime_operands_on_instantiation` and `fail_tuple_type_two_runtime_elements_on_instantiation`; mutant M35 | §1.2 D-TP-26, §1.8, §1.14, §2.7, §4, §8 |
-| RR2-1-M2: a class template's literal whose array field has a template-dependent bound, `var c: C(N) = {.a = (1, 2, 3), .b = N};` and the same returned from `-> C(N)`, was rejected with `ArrayInitDependentBound` where trunk and the nightly compile and run it (b04b, b12), because C4 forms `C(N)` in the definition | MAJOR | Fixed in b678e2985 and f44280c1c (D-TP-24 amended): `ConvertStructToClass` defers such an initializer whole when its fields are exactly the class's (`HoldsTemplateDependentArrayBound`), and an aggregate that holds one converts it as its element. The fixer's probes found that a deferred runtime literal with a template value element, `let p: P(N) = {.a = x, .b = N};`, already stopped lowering at 764e55445 (value_store.h's CHECK; trunk at an inst.h cast): `NeedsSpecificInst` (action.cpp) now wraps a struct or tuple literal whose element needs it. b04b, b12 and the fixer's f, g and h probes run with their twins' values, except f04, f05, f17, f18 and f20, W-263's class, whose twins fail on all three toolchains; deduce_class_args.carbon's four splits, lower initialize.carbon's six and templates_deduce_class_args's `16` and `8`; mutants M36 and M40. W-253's and W-263's notes are amended | §1.2 D-TP-24, §1.6, §1.8, §1.10, §1.13, §2.7, §4, §8, Appendices A and B, ledger W-253 and W-263 |
+| RR2-1-M2: a class template's literal whose array field has a template-dependent bound, `var c: C(N) = {.a = (1, 2, 3), .b = N};` and the same returned from `-> C(N)`, was rejected with `ArrayInitDependentBound` where trunk and the nightly compile and run it (b04b, b12), because C4 forms `C(N)` in the definition | MAJOR | Fixed in b678e2985 and f44280c1c (D-TP-24 amended; not total: a class template whose field type is produced, such as `T.Item` or `C(M + 1)`, still stopped lowering, which round 4 fixes in c841ad9e7 and 6aa403cd6 (RR4-1-B1; amended 2026-10-15, focused re-review of the fold: RR4-1-B1)): `ConvertStructToClass` defers such an initializer whole when its fields are exactly the class's (`HoldsTemplateDependentArrayBound`), and an aggregate that holds one converts it as its element. The fixer's probes found that a deferred runtime literal with a template value element, `let p: P(N) = {.a = x, .b = N};`, already stopped lowering at 764e55445 (value_store.h's CHECK; trunk at an inst.h cast): `NeedsSpecificInst` (action.cpp) now wraps a struct or tuple literal whose element needs it. b04b, b12 and the fixer's f, g and h probes run with their twins' values, except f04, f05, f17, f18 and f20, W-263's class, whose twins fail on all three toolchains; deduce_class_args.carbon's four splits, lower initialize.carbon's six and templates_deduce_class_args's `16` and `8`; mutants M36 and M40. W-253's and W-263's notes are amended | §1.2 D-TP-24, §1.6, §1.8, §1.10, §1.13, §2.7, §4, §8, Appendices A and B, ledger W-253 and W-263 |
 | RR2-1-m1: a member access through `->` printed as `(*p).n`, so `C(*p->q)` and `C(*(*p).q)`, and two other pairs, printed the same text in a redeclaration diagnostic | MINOR | Fixed in 123eb40ca (D-TP-23 amended): a member access or a compound member access whose base is the dereference that `->` performs, looking through splices and conversions, prints as `p->n` or `p->(I.F)`. The redeclaration split gains R, S and U, and N prints `C(p->n)`; mutants M41 and M42 | §1.2 D-TP-23, §1.14, §2.7, §4, §8 |
 | RR2r2-M1: across libraries, a class template's nested generic class with a field or method of type `T.Item` (n01, n02, n03) and a function constrained by a template interface whose member returns `T.Item` (n05) reported W-250's TODO and then stopped the compiler (generic.cpp:239's or sem_ir/type.cpp:27's CHECK); D-TP-14's "no error constant reaches an eval block" was false | MAJOR | Fixed in 94227d82c and 282930a73 (D-TP-14 amended): `PerInstantiationWalk` walks the imported instructions that an entity's eval blocks and its bindings' types name, adding a function's declaration, a class's declaration and definition, and each interface and named constraint of a facet type, each generic once; an impl whose generic the walk rejects is diagnosed and not imported. n01, n02, n03, n05 and the fixer's p1 to p9 report the TODO once per entity with no crash (trunk stops them at `TryResolveInstCanonical`'s FATAL, and the nightly stops n05 and p2 to p9 there and n01, n02, n03 and p1 at import_ref.cpp:1168's CHECK, as it does their checked twin n07; amended 2026-10-15, focused re-review of the fold: RR3r2-m1); seven fail_todo_import.carbon splits; mutants M43 to M50 and the redefined M28. The second review's y04, y05 and y09 stop at another FATAL on all three toolchains, with or without a template: a generic class from another library that declares a nested class or interface, filed as W-271. 282930a73 makes the walk and the literal test worklists, because clang-tidy's misc-no-recursion is an error here. Round 3 found that the walk tested only each entry's kind, not its operands, and 68102438e makes it follow each reference the import loads (amended 2026-10-15, focused re-review of the fold: RR3-1-M1 / RR3r2-M1) | Outcome (a), TR-17, §1.2 D-TP-14, §1.8, §1.13, §1.14, §2.7, §4, §8, Appendix E, ledger W-250 and W-271 |
 | RR2r2-m1: three error guards that round 1 added are reached by no golden: mutants that remove the use of `HasErrorConstraint` (x4), `TryGetCalleeAsBoundMethod`'s error arm (function.cpp:31-32, x1) and `FindStorageArgForInitializer`'s (expr_info.cpp, x2) survive the gate and 306 probes | MINOR | Folded: `HasErrorConstraint` is reached by a parameter of such a facet type in a function that is not generic, now pinned by `fail_todo_import_function_parameter_of_template_interface_type` (94227d82c; mutant M49). The other two are kept and recorded, not pinned: `FindStorageArgForInitializer` is called with a specific only from lowering, which does not run after the diagnosed error that an error value in a specific implies, and `TryGetCalleeAsBoundMethod` with a specific only through `GetExprCategory`'s `Call` arm, for a callee that is a splice, which no golden or probe of the two rounds reaches; the arms keep an error value in a specific read as an action not performed rather than cast to an instruction (mutants x1 and x2, which survive) | §1.2 D-TP-26, §2.7, §8, ledger W-250 |
@@ -5967,9 +6318,9 @@ changes no golden, passed 1955 of 1955 (§8 "Measured at the focused re-review
 of the fold, round 3"). §3's budget is exceeded by the third dated note
 there, for the root-cause reason it gives.
 Since the cut, TP-1 changes 29 toolchain source files and adds 13 goldens and
-refills 8 (`git diff --stat b2576f6c3 e7dc20a43 -- toolchain core`: 50 files,
-+11514/-546; the round's own `git diff --stat aa57bfe1c e7dc20a43 -- toolchain
-core`: 3 files, +448/-75).
+refills 8 (`git diff --stat b2576f6c3 e7dc20a43 -- toolchain core`:
+50 files, +11514/-546; the round's own `git diff --stat aa57bfe1c e7dc20a43 --
+toolchain core`: 3 files, +448/-75).
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
@@ -6015,6 +6366,149 @@ BLOCKER or MAJOR finding whose fixer changes no toolchain file.
 fork/ORCHESTRATION.md's TP-1 Branches row reads "IMPLEMENTED AND HELD,
 RE-REVIEW ROUND 4 OWED" until a round is dry (amended 2026-10-15, focused
 re-review of the fold: all round-3 findings).
+
+### Round 4: the round-3 fixer's commits, at f3f99c1c1
+
+Two fresh reviews (R29(c)) of the round-3 fixer's commits 68102438e..3afd3ec92
+and the records commit f3f99c1c1, at the head f3f99c1c1 (amended 2026-10-15,
+focused re-review of the fold: all round-4 findings): review 1 (RR4-1,
+adversarial correctness, probes in `.../tp1-rr/rev1-r4`) returned REJECT with
+one finding, a BLOCKER; review 2 (RR4r2, strictness and records,
+`.../tp1-rr/rev2-r4`) returned APPROVE-WITH-FIXES with three, one MAJOR and two
+MINOR, both MINOR records only. The four are distinct. A separate fixer (R11;
+`$F` is `.../tp1-rr/fixer-r4` in this round) reproduced every finding on the
+installed toolchain 0.0.0-0.dev+d54c37f91, whose toolchain sources equal the
+head's, on trunk 0bdce60a5 and on the nightly before changing anything; folded
+the BLOCKER in a fix commit with its fill and, for the value form that its
+probes of that commit found, a second fix commit with its fill; folded the MAJOR
+in a fix commit with its fill and, for the shape that the round's mutant M78
+changes, a commit of one more split with its fill; and folded the two
+records-only findings in the records commit that adds this section. No finding
+is rejected. One residue is filed, W-272, a rejection on instantiation that
+trunk and the nightly share, and W-273 and W-274 stay unused. The fix commits
+carry the container clock's date, 2026-10-19 UTC; this record is dated
+2026-10-15, the re-review's date.
+
+Both reviews found the brief's toolchain command stale: `git log -1 --format=%h
+-- toolchain ':!toolchain/*/testdata' core` printed e7dc20a43, because a
+pathspec with a wildcard must match the whole path and so excludes no nested
+testdata file, while `':!toolchain/*/testdata/*'` printed d54c37f91, the stamp
+the install printed. This record uses the second form; at the round-4 head it
+prints 6aa403cd6, and the install prints 0.0.0-0.dev+6aa403cd6.
+
+Neither review judged the branch dry. Review 1: round 3's change (the walk that
+follows each operand, its per-file record and `TryFinishSpecific`) is sound and
+fixes the root cause, as D-TP-25 and D-TP-26 do, and on the fold's other
+surfaces it found no TP-1 crash, miscompile, wrongly rejected program or IN form
+turned into a TODO; but a class template whose field type is produced by a
+template action, initialized in place from a literal, passed checking and
+stopped lowering where trunk and the nightly compile and run it (RR4-1-B1), a
+defect that predates round 2. Review 2: there is no BLOCKER, but the walk did
+not follow an interface's or named constraint's `require` declarations, so
+across libraries such a `require` naming a class template reported W-250's TODO
+and then stopped the compiler (RR4r2-M1), the class of defect graded MAJOR in
+rounds 1 to 3, and two records were inexact (RR4r2-m1, RR4r2-m2).
+
+The reviews' own runs at f3f99c1c1, container-built, EXPECTED, not of record,
+the worktree untouched and every `/dev/shm` copy deleted. Review 1 read `git
+diff aa57bfe1c..f3f99c1c1 -- toolchain/` in full (context.h +20,
+import_ref.cpp +230/-75, fail_todo_import.carbon +198) and used the
+install 0.0.0-0.dev+d54c37f91 with a private cache and tmp: the gate, 1955 of
+1955 with every progress mark `.`; conformance "PASS 137", every failure class
+0, "SKIP 22" of 159, bullets 48 PASS / 8 SKIP of 56, the nine TP-1 programs the
+only movers from fork/conformance/out/scoreboard.json; round 3's 110
+cross-library probes on the head, on aa57bfe1c's import_ref.cpp relinked, on
+trunk and on the nightly, which reproduce round 3's record exactly; 39 more
+cross-library shapes (witness rewrites, `require`, adapt, base, choice, overload
+sets with a template member, holders that are not generic, aliases and
+factories) on the head, aa57bfe1c, 4e1f07a91's import_ref.cpp relinked and
+trunk, none of which stops the head; 305 single-file probes, the same on the
+head and aa57bfe1c at check and lower, the 16 lowering crashes W-263's; a
+check-phase timing that shows no slowdown from the walk; 13 D-TP-25 template and
+twin pairs, each template run three times, each printing its twin's output with
+its twin's store counts, the only difference a temporary not destroyed (W-267),
+and r06 and r16 rejected with their twins' ``cannot copy value of type `P(i32)`
+``; 12 D-TP-26 probes with no false positive; M21 to M25 relinked over the head,
+each killed by the golden or program the fold names; and the nine EXPECT lines
+of templates_constant_elements re-derived by hand (R16(d)). Review 2 read `git
+diff aa57bfe1c..f3f99c1c1` in full (8 files, +1237/-149); on a `git archive`
+copy ran the gate, 1955 of 1955, and an autoupdate of the 21 goldens changed
+since the cut, which changed nothing (R26); found no CHECK line in a fix commit,
+no W-id in any toolchain, golden or program file, each round-3 split asserting
+the TODO once (`_two_uses` twice), and Appendix A equal to the golden's source;
+ran conformance 137/0/22 over 159, 48 of 56 bullets, `--self-test` and the
+README table, unchanged; checked the implementation-review fold record unchanged
+since aa57bfe1c, the ledger's 147 items ending at W-271, W-271's cite :1423
+exact (:1287 at aa57bfe1c, :1086 on trunk), gap row 54 PARTIAL, the decision-log
+entry above OX-1's and the Branches row; re-ran the id re-scan over 79 refs,
+with no collision, and `git merge-tree` of the head with trunk f3156a375, with
+5674fe88b and with each held PR, which reproduces the PR body's conflict table;
+checked the PR body's title, size (58,845 characters), counts, diffstats and
+commit table; ran `prek --all-files` on a clone, every hook passing, R31's
+counts, clang-format and clang-tidy on the round's changed lines, all clean;
+checked the mutant records against the round-3 fixer's logs; and timed the gate
+in alternated runs, which support "not slower".
+
+Commits: c841ad9e7 "TP-1 re-review fix: a class template's literal whose field
+type is produced is converted on instantiation" (convert.cpp; lower
+initialize.carbon's six new splits and deduce_class_args.carbon's
+`fail_class_template_literal_with_associated_field_default_on_instantiation`)
+and its fill 043e67106; 0f2002243 "TP-1 re-review fix: the import test walks the
+require declarations of an interface or named constraint" (import_ref.cpp;
+fail_todo_import.carbon's four new splits) and its fill e0facdb04; 6aa403cd6
+"TP-1 re-review fix: a class value whose literal leaves a field to its default
+is converted on instantiation" (convert.cpp; deduce_class_args.carbon's
+`fail_class_template_value_with_associated_field_default_on_instantiation`) and
+its fill a1285a786; b0501358f "TP-1 re-review fix: pin the concrete require
+import shape" (fail_todo_import.carbon's
+`fail_todo_import_two_uses_name_interface_requiring_class_template`; no
+toolchain change) and its fill 3d6685b8b; and the records commit that adds this
+section. Each fix commit was gated alone, red exactly on the goldens it adds
+splits to, with no crash, and then with its fill at the autoupdate fixpoint (§8
+"Measured at the focused re-review of the fold, round 4"). §3's budget is
+exceeded by the fourth dated note there, for the root-cause reason it gives.
+Since the cut, TP-1 changes 29 toolchain source files and adds 13 goldens and
+refills 8 (`git diff --stat b2576f6c3 3d6685b8b -- toolchain core`:
+50 files, +12679/-561; the round's own `git diff --stat f3f99c1c1 3d6685b8b --
+toolchain core`: 5 files, +1213/-63).
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR4-1-B1: a class template whose field type is produced by a template action (`T.Item`, `T.Item*`, a class `C(M + 1)`) passed checking, and initializing it in place from a literal in a template (a `var`, a `return`, a static factory in the class template, an assignment, an argument, an array element) stopped lowering at function_context.cpp:264's missing-value CHECK, where trunk and the nightly compile and run the forms they accept: C4 forms `D(T)` in the definition, so the literal was converted there field by field, and the field's conversion spliced in an action of the class's generic that the function's specifics never perform; RR2-1-M2's fix deferred array bounds only, so TR-4, TR-12, D-TP-24 and the RR2-1-M2 row overclaimed | BLOCKER | Fixed in c841ad9e7 and 6aa403cd6 (D-TP-24 amended): `ConvertStructToClass` defers a class initializer whose class's fields hold a part known only per instantiation, a template-dependent array bound or a type that names a splice anywhere (`HoldsPerInstantiationPart`, `TemplateSpliceWalk`), and the deferral of an initializer and of a class value takes a literal that omits only fields with a default initializer. The review's 14 crash probes compile and run (q02 5, r03 5, s04 9, r07 12, s03 7, n01 4, n05 4, n08 7, q03 5, q05 6, b05a 0, b05e 4, b05g 9, r06 35); trunk rejects b05g and r06, which the review lists as running there, and the nightly s03 too; the review's b05, r05 and s05 run too, and its s02, a constant tuple that holds such a class, fails LLVM verification as its non-template twin does on all three toolchains (W-263). The fixer's probes found the value form with a defaulted field stopping lowering the same way (x18), which 6aa403cd6 fixes, and a base class, a nested class template field, an array, tuple or struct field and a pointer to a class template running (x03 to x07, x14, x16). A literal that leaves a field to its default is rejected on instantiation with trunk's "missing field" note (W-272), and a field value of the wrong type is reported on instantiation, as on trunk, where f3f99c1c1 reported it where the function is defined (x12, x13). Lower initialize.carbon's six splits and deduce_class_args.carbon's two; mutants M68 to M72, M75, M76, M80 and the re-run M36. The RR2-1-M2 row is marked not total | TR-4, TR-12, §1.2 D-TP-24, §1.8, §1.13, §1.14, §2.7, §3, §4, §8, Appendix A, Appendix E, ledger W-253, W-264, W-265 and W-272 |
+| RR4r2-M1: `PerInstantiationWalk` did not walk the `require` declarations of an interface or named constraint, which the import loads with the entity, each in its own generic, so across libraries a parameter-dependent `require` naming a class template through a concrete operand reported W-250's TODO and then stopped the compiler at generic.cpp:239's CHECK (r1, r4, r5, r13, r14, r18); the comment at import_ref.cpp:959-972, §1.2, D-TP-14, W-250's evidence and the PR body said the walk follows each reference the import loads | MAJOR | Fixed in 0f2002243 and b0501358f (D-TP-14 amended): `AddInterfaceOrConstraint` walks each `require` declaration (its generic, self type and facet type) and an interface's `observe` declarations. The six probes, the review's r15 (an invalid impl of such an interface) and the fixer's q1, q2 and q3 report the TODO with no crash, where trunk and the nightly stop all ten at `TryResolveInstCanonical`'s SpliceInst FATAL, and the review's single-file twins of r1, r4, r5 and r18 compile on all three; an interface whose concrete `require` names the class template and a function it constrains report the TODO once each (a2b, a2c). Five fail_todo_import.carbon splits; mutants M73, M74 and M77 to M79 and the re-run M64. The comment, §1.2, D-TP-14, W-250's evidence and notes and the PR body are amended, and W-271's evidence is re-cited to import_ref.cpp:1456 | TR-17, §1.2 D-TP-14, §1.8, §1.13, §1.14, §2.7, §3, §4, §8, Appendix A, Appendix E, ledger W-250 and W-271 |
+| RR4r2-m1 (records only): Appendix E's W-014 notes text, which the land-time records commit writes, lagged the ledger: it said W-251 to W-270 and lacked rounds 2 and 3, and the third-clause and next-slice sentences | MINOR | Folded: Appendix E's W-014 text says W-251 to W-272 and has round 2's, 3's and 4's clauses, the third-clause and next-slice sentences and the fatal's line as the ledger words them, and the held-state bullet says that the records commits of the re-review's rounds insert their status sentences before that text's last sentence; the two texts compared sentence by sentence are equal but for the date placeholder, the held-state sentence and those status sentences | Appendix E, ledger W-014 |
+| RR4r2-m2 (records only): a line of the round-3 record began with a list-marker character (`+11514/-546;`) | MINOR | Folded: that line, and round 2's, which began with `+11135/-540;`, are rewrapped so that no line begins with a list-marker character; R31 counts were taken before and after prek | round 2's and round 3's records |
+
+Measured at the head (§8 "Measured at the focused re-review of the fold, round
+4"), container-built, EXPECTED, not of record: gate 1955 of 1955 files;
+conformance 137/0/22 over 159, 48 of 56 bullets PASS; every round-4 mutant
+killed but the seven recorded as surviving, M64, M70, M72, M75, M76, M77 and
+M79, whose paths others cover or no measured shape reaches; no clang-tidy
+diagnostic on the round's changed lines; the probes as §8 gives them. The id
+re-scan of the front matter, re-run on 2026-10-19 (23:32 UTC, the container
+clock) after `git fetch origin` (origin/trunk is f3156a375): 81 refs match the
+patterns and 79 remain after TP-1's two are excluded, and the three commands
+print what round 3's runs printed: `W-274`, `W-275` and `W-294` from trunk's
+ORCHESTRATION paragraph that reserves W-267 to W-274 for this re-review and
+W-275 to W-294 for SV-1; that file on refs/heads/trunk,
+refs/remotes/origin/trunk and refs/remotes/origin/claude/carbon-fork-0-1-7mwfb7;
+and nothing. No other workstream took an id, so W-272 is TP-1's. `git
+merge-tree` of the head with trunk f3156a375 and each held PR's head, each equal
+to `git ls-remote`, gives the PR body's conflict table unchanged. Not run, as §8
+item 8 says: hosted CI, Bazel and its tests, ASan, macOS and Windows, LLVM with
+assertions and the owner's runner; and the land-time items, which wait for PR 51
+to PR 60.
+
+Round 4's status: not dry in either review, and its fixer changed two toolchain
+source files (check/convert.cpp and check/import_ref.cpp) and three goldens
+(check generic/template's deduce_class_args.carbon and fail_todo_import.carbon
+and lower template/initialize.carbon; `git diff --stat f3f99c1c1 3d6685b8b --
+toolchain core fork/conformance/programs`). Round 5 is owed: two fresh reviews
+of the round-4 fixer's commits c841ad9e7..3d6685b8b and the records commit after
+them that records round 4's reviews, which changes records only. The PR opens
+and is held after a round with no BLOCKER or MAJOR finding whose fixer changes
+no toolchain file. fork/ORCHESTRATION.md's TP-1 Branches row reads "IMPLEMENTED
+AND HELD, RE-REVIEW ROUND 5 OWED" until a round is dry.
 
 ## Appendix A: golden sources
 
@@ -6608,12 +7102,15 @@ fn Use(a: array(i32, 3)) -> i32 {
 C1, measured (on v13; `let_class_value_of_call` was added at rev 3 and
 measured on v14, amended 2026-10-14, review fold: RR-M1). The nine splits from
 `return_tuple_constant_element` on are the first fix commit's (7c7b1b170),
-measured (amended 2026-10-14, implementation-review fold: IR1-B1). The last two,
+measured (amended 2026-10-14, implementation-review fold: IR1-B1). The next two,
 `return_tuple_of_associated_type` and `var_tuple_of_associated_type`, are the
 focused re-review's first fix commit's (632f92117), measured (amended
-2026-10-15, focused re-review of the fold: RR1-M2). The last six, from
+2026-10-15, focused re-review of the fold: RR1-M2). The next six, from
 `var_class_with_dependent_array_bound`, are its round 2's (b678e2985),
 measured (amended 2026-10-15, focused re-review of the fold: RR2-1-M2).
+The last six, from `var_class_template_associated_field`, are its round 4's
+(c841ad9e7), measured (amended 2026-10-15, focused re-review of the fold:
+RR4-1-B1).
 
 <!-- google-doc-style-ignore -->
 
@@ -7001,6 +7498,145 @@ fn M(template N: i32, x: i32) -> i32 {
 fn Use() -> i32 {
   return M(3, 1);
 }
+
+// --- var_class_template_associated_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32;
+}
+
+fn G[template T: HasItem](unused x: T) -> i32 {
+  var b: Box(T) = {.item = 4, .n = 5};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return G(h);
+}
+
+// --- return_class_template_associated_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32;
+}
+
+fn G[template T: HasItem](unused x: T, y: i32) -> Box(T) {
+  return {.item = y, .n = 5};
+}
+
+fn Use(h: Holder) -> Box(Holder) {
+  return G(h, 4);
+}
+
+// --- class_template_factory_associated_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32;
+
+  fn Make(item: T.Item) -> Box(T) {
+    return {.item = item, .n = 5};
+  }
+}
+
+fn Use() -> Box(Holder) {
+  return Box(Holder).Make(4);
+}
+
+// --- class_template_associated_pointer_field.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class PtrBox(template T: HasItem) {
+  var p: T.Item*;
+  var n: i32;
+}
+
+fn G[template T: HasItem](unused x: T, p: T.Item*) -> i32 {
+  var b: PtrBox(T) = {.p = p, .n = 5};
+  return b.n;
+}
+
+fn Use(h: Holder, p: i32*) -> i32 {
+  return G(h, p);
+}
+
+// --- nested_class_template_computed_argument.carbon
+library "[[@TEST_NAME]]";
+
+class Inner(template N: i32) {
+  var a: i32;
+}
+
+class Outer(template M: i32) {
+  var c: Inner(M + 1);
+}
+
+fn G(template M: i32) -> i32 {
+  var o: Outer(M) = {.c = {.a = 4}};
+  return o.c.a;
+}
+
+fn Use() -> i32 {
+  return G(2);
+}
+
+// --- assign_nested_class_template_computed_argument.carbon
+library "[[@TEST_NAME]]";
+
+class Inner(template N: i32) {
+  var a: i32;
+}
+
+class Outer(template M: i32) {
+  var c: Inner(M + 1);
+}
+
+fn G(template M: i32, x: i32) -> i32 {
+  var o: Outer(M) = {.c = {.a = 4}};
+  o = {.c = {.a = x}};
+  return o.c.a;
+}
+
+fn Use() -> i32 {
+  return G(2, 6);
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -7047,18 +7683,23 @@ fn Use(a: array(i32, 3)) -> i32 {
 C2, measured. `Holder`, `Elem` and `Pick` in `lib.carbon` and the two
 `_declaration` splits are the second fix commit's (12bd6d67a), measured (amended
 2026-10-14, implementation-review fold: IR1-M2). `FieldBox`, `MethodBox`,
-`PickI`, `PickC` and `WithMethod` in `lib.carbon` and the last five splits are
+`PickI`, `PickC` and `WithMethod` in `lib.carbon` and the next five splits are
 the focused re-review's (d8f6ab60a), measured (amended 2026-10-15, focused
 re-review of the fold: RR1-M1 / RR2-M1). `Outer`, `OuterMethod`, `Constrained`,
 `TakesWithMethod`, `Marker` and its impl, `NeedsMarker`, `K`, `NamesFieldBox`
-and `BodyNamesFieldBox` in `lib.carbon` and the last seven splits are its round
+and `BodyNamesFieldBox` in `lib.carbon` and the next seven splits are its round
 2's (94227d82c), measured (amended 2026-10-15, focused re-review of the fold:
 RR2r2-M1 / RR2r2-m1). `HasItem` and its impl, `TakesItem`, `CallsTakesItem`,
 `NamesItem`, `CallsNamesItem`, `ItemDoer` and its impl, `FieldBoxField`, `Pair`,
 `TakesPair`, `TakesTuple`, `WithArg`, `ConstrainedByWithArg`, `MarkerArg`,
 `TakesMarkerArg`, `TakesStruct` and `ConstrainedByRewrite` in `lib.carbon` and
-the last eleven splits are its round 3's (68102438e, ada45a7c6), measured
+the next eleven splits are its round 3's (68102438e, ada45a7c6), measured
 (amended 2026-10-15, focused re-review of the fold: RR3-1-M1 / RR3r2-M1).
+`RequiresFieldBox`, `RequiresFieldBoxC`, `ConstrainedByRequires`,
+`ConstrainedByRequiresC`, `RequiresFieldBoxConcretely` and
+`ConstrainedByConcreteRequire` in `lib.carbon` and the last five splits are its
+round 4's (0f2002243, b0501358f), measured (amended 2026-10-15, focused
+re-review of the fold: RR4r2-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -7205,6 +7846,24 @@ fn TakesMarkerArg[T: type](unused p: MarkerArg(T, K)*) {}
 fn TakesStruct[T: type](unused p: {.a: T, .b: FieldBox(Holder)*}*) {}
 
 fn ConstrainedByRewrite[T: HasItem where .Item = FieldBox(Holder)*](unused t: T) {}
+
+interface RequiresFieldBox(U: type) {
+  require impls WithArg((U, FieldBox(Holder)*));
+}
+
+constraint RequiresFieldBoxC(U: type) {
+  require impls WithArg((U, FieldBox(Holder)*));
+}
+
+fn ConstrainedByRequires[T: RequiresFieldBox(())](unused t: T) {}
+
+fn ConstrainedByRequiresC[T: RequiresFieldBoxC(())](unused t: T) {}
+
+interface RequiresFieldBoxConcretely {
+  require impls WithArg(FieldBox(Holder)*);
+}
+
+fn ConstrainedByConcreteRequire[T: RequiresFieldBoxConcretely](unused t: T) {}
 
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
@@ -7440,6 +8099,51 @@ import library "lib";
 
 fn Use(p: ((), FieldBox(Holder)*)*) {
   TakesTuple(p);
+}
+
+// --- fail_todo_import_interface_requires_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  RequiresFieldBox;
+}
+
+// --- fail_todo_import_constraint_requires_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  RequiresFieldBoxC;
+}
+
+// --- fail_todo_import_function_constrained_by_interface_requiring_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  ConstrainedByRequires;
+}
+
+// --- fail_todo_import_function_constrained_by_constraint_requiring_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use() {
+  ConstrainedByRequiresC;
+}
+
+// --- fail_todo_import_two_uses_name_interface_requiring_class_template.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use[T: RequiresFieldBoxConcretely](t: T) {
+  ConstrainedByConcreteRequire(t);
 }
 ```
 
@@ -8137,9 +8841,11 @@ fn BadCall(x: X) { F(TakeY, x); }
 
 ### A: check/generic/template/deduce_class_args.carbon
 
-C4, measured. The last four splits are the focused re-review's round 2's
-(b678e2985), measured (amended 2026-10-15, focused re-review of the
-fold: RR2-1-M2).
+C4, measured. The four splits after `class_argument_return_type` are the
+focused re-review's round 2's (b678e2985), measured (amended 2026-10-15,
+focused re-review of the fold: RR2-1-M2). The last two are its round 4's
+(c841ad9e7 and 6aa403cd6), measured (amended 2026-10-15, focused re-review of
+the fold: RR4-1-B1).
 
 <!-- google-doc-style-ignore -->
 
@@ -8324,6 +9030,56 @@ class Arr(template N: i32) {
 fn Make(template N: i32) -> i32 {
   var c: Arr(N) = {.a = (1, 2, 3), .m = N};
   return c.n;
+}
+
+// --- fail_class_template_literal_with_associated_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32 = 5;
+}
+
+fn Make[template T: HasItem](unused x: T) -> i32 {
+  var b: Box(T) = {.item = 4};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return Make(h);
+}
+
+// --- fail_class_template_value_with_associated_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32 = 5;
+}
+
+fn Make[template T: HasItem](unused x: T) -> i32 {
+  let b: Box(T) = {.item = 4};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return Make(h);
 }
 ```
 
@@ -11144,12 +11900,16 @@ TP-1 Branches row and the pre-DD-1 row at gap-analysis.md:54. D then writes:
     checked with PR 58's checker on copies (plan §0.9, §2.9), 0 errors with
     the toolchain. The discharges of PR 51's W-127 and PR 58's W-183, W-192
     and W-193 follow at land time." (The label amended 2026-10-15, focused
-    re-review of the fold: RR2-m4.)
+    re-review of the fold: RR2-m4.) The records commit of each round of the
+    focused re-review of the fold inserts that round's status sentence before
+    the last sentence of that text, as the ledger's W-014 notes show (amended
+    2026-10-15, focused re-review of the fold: RR4r2-m1).
 -   W-250 to W-266 appended to work-items.json's `items` after W-125, as
     below; the focused re-review of the fold appends W-267 to W-270 after
     W-266 (amended 2026-10-15, focused re-review of the fold: all findings),
     and its round 2 W-271 after W-270 (amended 2026-10-15, focused re-review
-    of the fold: RR2r2-M1).
+    of the fold: RR2r2-M1), and its round 4 W-272 after W-271 (amended
+    2026-10-15, focused re-review of the fold: RR4-1-B1).
 -   The decision-log entry, at the place given below.
 -   A Branches row in fork/ORCHESTRATION.md, after VA-1's, for
     `claude/carbon-fork-0-1-tp`, whose state reads: "IMPLEMENTED AND HELD,
@@ -11161,7 +11921,9 @@ TP-1 Branches row and the pre-DD-1 row at gap-analysis.md:54. D then writes:
     fold, the row says W-250..W-270 filed and W-271..W-274 unused (amended
     2026-10-15, focused re-review of the fold: all findings), and since its
     round 2, W-250..W-271 filed and W-272..W-274 unused (amended 2026-10-15,
-    focused re-review of the fold: RR2r2-M1).
+    focused re-review of the fold: RR2r2-M1), and since its round 4,
+    W-250..W-272 filed and W-273..W-274 unused (amended 2026-10-15, focused
+    re-review of the fold: RR4-1-B1).
 -   An item at the end of fork/ORCHESTRATION.md's Next actions: "TP-1 at land
     time (fork/templates/plan.md §3): repeat M over the trunk that holds PR
     51 to PR 59, keeping TP-1's appended record blocks after the PRs'; S;
@@ -11181,35 +11943,54 @@ tree's values.
 > nested aggregates (plan §0.6) are fixed at their root causes (plan §0.3:
 > storage of template-dependent initializers, carried as a copy that each
 > specific places; splices read in the specific; the cursor pointer's
-> completeness); `*`, `->`, `&`, tuple element access, indexing and calls of
-> a function-typed value are deferred to instantiation by four new actions
-> and the callee rule of p2875; member lookup consults the constraint on
-> instantiation (W-183), deduction sees through class arguments (W-193),
-> impl lookup for queries that name a template binding is deferred (W-127),
-> a constant element beside a dependent one is stored, a runtime array
-> bound in a template is an error instead of a fatal, and a diagnostic
-> prints a dependent operation as its expression; since the focused
-> re-review of the fold, a runtime value where a specific needs any type or
-> constant is an error at that value, and a tuple type with a produced
-> element such as `(T.Elem, i32)` lowers; since its round 2, a class
+> completeness); `*`, `->`, `&`, tuple element access, indexing and calls of a
+> function-typed value are deferred to instantiation by four new actions and the
+> callee rule of p2875; member lookup consults the constraint on instantiation
+> (W-183), deduction sees through class arguments (W-193), impl lookup for
+> queries that name a template binding is deferred (W-127), a constant element
+> beside a dependent one is stored, a runtime array bound in a template is an
+> error instead of a fatal, and a diagnostic prints a dependent operation as its
+> expression; since the focused re-review of the fold (2026-10-15), a runtime
+> value where a specific needs any type or constant is an error at that value,
+> and a tuple type with a produced element such as `(T.Elem, i32)` lowers; since
+> its round 2, every runtime operand of such an instruction is an error, a class
 > template's literal whose array field has a template-dependent bound is
-> converted on instantiation. The four generic/template
-> `fail_todo` splits present when W-014 was filed flip (unimplemented.carbon's
-> two, call.carbon's, member_out_of_line.carbon's, whose redeclarations do
-> differ under p3763), so the first arbiter clause is met for them; TP-1's
-> own twenty-eight `fail_todo` splits pin W-250 (twenty-seven, five of them
-> added by the focused re-review of the fold's round 1, seven by its round 2
-> and eleven by its round 3) and W-266 (one). The second
-> clause is not met: the
-> cross-file lowering fatal (lower/handle.cpp:513) stays behind W-250's
-> `semantics TODO`. W-014 stays OPEN for W-250, W-255 (the pattern splices of
-> the title) and W-264, and the row stays PARTIAL with W-251 to W-270
-> (amended 2026-10-14, implementation-review fold: IR2-MINOR-6 / IR1-M3;
-> amended 2026-10-15, focused re-review of the fold: RR1-B1 / RR1-M1 / RR2-M1
-> / RR1-M2 / RR1-m3 / RR1-m4 / RR1-m5 / RR2-1-M2 / RR2r2-M1 / RR3-1-M1).
-> Merged tree: file_test <merged passed> of <merged total>, conformance
-> <merged PASS>/<merged FAIL>/<merged SKIP>, check_samples 0 errors with and
-> without the toolchain.
+> converted on instantiation, as on trunk, and `->` prints as written; since its
+> round 3, an entity from another library that names such a template through a
+> callee, a specific's argument, a tuple or struct element, a field type, a
+> constraint's argument or rewrite, or a blanket impl's witness reports W-250's
+> `semantics TODO` instead of stopping the compiler after it; since its round 4,
+> a class template's literal or value whose field type is produced by an action,
+> such as `T.Item`, `T.Item*` or a class `C(M + 1)`, is converted on
+> instantiation, as on trunk, and an entity from another library that names such
+> a template through an interface's or named constraint's `require` declaration
+> reports the TODO too. The four generic/template `fail_todo` splits present
+> when W-014 was filed flip (unimplemented.carbon's two, call.carbon's,
+> member_out_of_line.carbon's, whose redeclarations do differ under p3763), so
+> the first arbiter clause is met for them; TP-1's own thirty-three `fail_todo`
+> splits pin W-250 (thirty-two, five of them added by the focused re-review of
+> the fold's round 1, seven by its round 2, eleven by its round 3 and five by
+> its round 4) and W-266 (one). The second clause is not met: the cross-file
+> lowering fatal (lower/handle.cpp:524) stays behind W-250's `semantics TODO`.
+> The third clause is met, as it was on trunk by templates_type_param and
+> templates_value_param, and TP-1's nine generics/templates_* programs extend it
+> to every form TP-1 implements. W-014 stays OPEN for W-250, W-255 (the pattern
+> splices of the title) and W-264, and the row stays PARTIAL with W-251 to W-272
+> (W-267 to W-270 filed by the focused re-review of the fold, W-271 by its round
+> 2 and W-272 by its round 4, 2026-10-15). Next slice: W-250, the import of
+> action and splice instructions and cross-file template lowering, which the
+> second clause needs; then W-255 and W-264, and W-254 and W-259, which with
+> them are D-TP-18's condition for re-grading the row. Merged tree:
+> file_test <merged passed> of <merged total>, conformance <merged PASS>/<merged
+> FAIL>/<merged SKIP>, check_samples 0 errors with and without the toolchain.
+
+Amended 2026-10-14 (implementation-review fold: IR2-MINOR-6 / IR1-M3) and
+2026-10-15 (focused re-review of the fold: RR1-B1 / RR1-M1 / RR2-M1 / RR1-M2 /
+RR1-m3 / RR1-m4 / RR1-m5 / RR2-1-M2 / RR2r2-M1 / RR3-1-M1 / RR4-1-B1 /
+RR4r2-M1 / RR4r2-m1). The text is the ledger's W-014 notes from "TP-1 (" on,
+with `YYYY-MM-DD` for the date and the last sentence in place of the
+held-state text and the status sentences that the held-state bullet above
+gives; compared sentence by sentence, the two are otherwise equal.
 
 Evidence is re-cited to the merged tree's lines in the same commit (D comes
 after M, so the lines exist).
@@ -11522,14 +12303,16 @@ IR1-M2 / IR1-M3)):
 
 <!-- google-doc-style-resume -->
 
-### E: residues W-267 to W-271 (focused re-review of the fold)
+### E: residues W-267 to W-272 (focused re-review of the fold)
 
 Four new items, appended after W-266 by the focused re-review of the fold's
 records commit, as written there (amended 2026-10-15, focused re-review of the
 fold: RR1-m3 / RR1-m4 / RR1-m5 / RR1-M1 / RR2-M1), and a fifth, W-271,
 appended after W-270 by the records commit of its round 2 (amended 2026-10-15,
-focused re-review of the fold: RR2r2-M1); their evidence and notes are the
-ledger's, in full.
+focused re-review of the fold: RR2r2-M1), and a sixth, W-272, appended after
+W-271 by the records commit of its round 4 (amended 2026-10-15, focused
+re-review of the fold: RR4-1-B1); their evidence and notes are the ledger's, in
+full.
 
 <!-- google-doc-style-ignore -->
 
@@ -11572,6 +12355,14 @@ ledger's, in full.
   "kind": "toolchain-defect",
   "title": "TP-1 residue: a generic class from another library that declares a nested class or interface stops the compiler where the class is used, with or without a template parameter",
   "subsystem": "toolchain/check (import_ref.cpp)",
+  "size": "M",
+  "bullet": "Generics: Integrated templates"
+ },
+ {
+  "id": "W-272",
+  "kind": "missing-feature",
+  "title": "TP-1 residue: a class template's literal or value in a template that leaves a field to its default initializer, where the class's fields hold a produced type or a template-dependent array bound, is rejected on instantiation with a missing field",
+  "subsystem": "toolchain/check (convert.cpp)",
   "size": "M",
   "bullet": "Generics: Integrated templates"
  }
@@ -11640,7 +12431,11 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 > the fold: all findings. Its round 2 amended it again: W-250..W-271 are
 > filed and W-272..W-274 unused, and the paragraph "FOCUSED RE-REVIEW OF THE
 > FOLD, ROUND 2" follows the first; amended 2026-10-15, focused re-review of
-> the fold: all round-2 findings.)
+> the fold: all round-2 findings. Its rounds 3 and 4 added the paragraphs
+> "FOCUSED RE-REVIEW OF THE FOLD, ROUND 3" and "FOCUSED RE-REVIEW OF THE FOLD,
+> ROUND 4" after the second, and round 4 filed W-272, so W-250..W-272 are filed
+> and W-273..W-274 unused; amended 2026-10-15, focused re-review of the fold:
+> all round-4 findings.)
 > <Implementation, review and merged-tree verification paragraph, as VA-1's
 > entry has.>
 >
@@ -11649,7 +12444,8 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 > beside a constraint method is an error; SC-1's requirements defer to the type;
 > through a field it is W-266), D-TP-14 (cross-library templates are a TODO, not
 > implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
-> sixteen residues; twenty since the focused re-review of the fold), D-TP-23
+> sixteen residues; twenty since the focused re-review of the fold,
+> twenty-one since its round 2 and twenty-two since its round 4), D-TP-23
 > (the redeclaration split flips by a diagnostic fix), D-TP-24 (a class value is
 > deferred only when its fields match, so definition-time field errors stay),
 > W-256 (q07c's template crash traded for the miscompile the same code has
@@ -11658,9 +12454,9 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 ### E: fork/ORCHESTRATION.md stamp
 
 > TP-1 (`claude/carbon-fork-0-1-tp`, PR <n>, head <sha>): integrated
-> templates, W-014 (OPEN), W-127/W-183/W-192/W-193 discharged, W-250..W-271
-> filed (W-272..W-274 unused; amended 2026-10-15, focused re-review of the
-> fold, round 2; re-scans before L and before D:
+> templates, W-014 (OPEN), W-127/W-183/W-192/W-193 discharged, W-250..W-272
+> filed (W-273..W-274 unused; amended 2026-10-15, focused re-review of the
+> fold, round 4; re-scans before L and before D:
 > <outcomes>); merged
 > after PR 59 (<merge sha>); file_test <merged passed>/<merged total>,
 > conformance <merged counts>, check_samples 0 errors; row "Generics:

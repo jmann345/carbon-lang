@@ -129,6 +129,26 @@ focused re-review of the fold: all round-9 findings). The records commit after
 b31a62d62, which records round 9's reviews, changes records only too (amended
 2026-10-15, records: re-review round 9).
 
+Round 10 was owed by no review: it opened on 2026-10-20, after the PR opened as
+PR 61 and was held, on an external finding, X-1, which the fixer of SV-1's plan
+found while probing a composition: a `match` with a `case .None` arm on a value
+of a generic choice applied to a template parameter, `Opt(T)` in `fn
+Conv[template T: type]`, stopped the compiler at check/pattern_match.cpp:1409,
+where trunk reports a `semantics TODO`. It is folded by the fix commit eafca5cb9
+with its fill 74e16c4de and the records commit after them, which the [round-10
+record](#focused-re-review-of-the-fold-round-10-2026-10-20) tables. D-TP-11's
+class types formed in the definition reached an alternative pattern whose name
+was resolved through a member access that defers for a template-dependent base,
+as a choice declared in a class template already did on trunk; the fix resolves
+the name in the definition, so every form of the class runs or is diagnosed as
+its twin is (TR-13 and D-TP-11 amended), and one residue is filed, W-295, a stop
+of checked generics that trunk and the nightly share (amended 2026-10-20, round
+10: X-1). The round's fixer changed three toolchain source files and added two
+goldens and a program, so two fresh reviews of eafca5cb9 and the commits after
+it are owed, and the PR stays held until a round with no BLOCKER or MAJOR
+finding whose fixer changes no toolchain file (amended 2026-10-20, round 10:
+X-1).
+
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
 folded into rev 2 (1b26e8c32) by a separate fixer (R11): 27 findings, none
@@ -399,12 +419,14 @@ parked block W-245..W-249) and nothing from the second and third. **TP-1
 reserves W-250..W-269** (twenty ids) **and W-270..W-274**, which the focused
 re-review of the fold reserved to its own residues (SV-1 holds W-275..W-294, so
 no TP-1 id goes beyond W-274; (amended 2026-10-15, focused re-review of the
-fold: all findings)); §1.13 files W-250 to W-266 (W-265 added at rev 3; amended
-2026-10-14, review fold: RR-M1; W-266 added by the implementation-review fold,
-(amended 2026-10-14, implementation-review fold: IR1-M3)) and W-267 to W-271
-(filed by the focused re-review of the fold, W-271 by its round 2; (amended
-2026-10-15, focused re-review of the fold: RR2r2-M1)) and W-272 (filed by its
-round 4; (amended 2026-10-15, focused re-review of the fold: all round-4
+fold: all findings)), and W-295..W-299, which the orchestrator reserved to TP-1
+on 2026-10-20 for round 10's residues, TP-1's own block being exhausted (amended
+2026-10-20, round 10: X-1); §1.13 files W-250 to W-266 (W-265 added at rev 3;
+amended 2026-10-14, review fold: RR-M1; W-266 added by the implementation-review
+fold, (amended 2026-10-14, implementation-review fold: IR1-M3)) and W-267 to
+W-271 (filed by the focused re-review of the fold, W-271 by its round 2;
+(amended 2026-10-15, focused re-review of the fold: RR2r2-M1)) and W-272 (filed
+by its round 4; (amended 2026-10-15, focused re-review of the fold: all round-4
 findings)) and W-273 (filed by its round 6; (amended 2026-10-15, focused
 re-review of the fold: all round-6 findings)) and W-274 (filed by its round 8;
 (amended 2026-10-15, focused re-review of the fold: all round-8 findings));
@@ -478,24 +500,34 @@ after 1a9fbb6de that records round 8's reviews names none either (amended
 W-274; its records commit b31a62d62 names none (amended 2026-10-15, focused
 re-review of the fold: all round-9 findings), and the records commit after
 b31a62d62 that records round 9's reviews names none either (amended 2026-10-15,
-records: re-review round 9). History is not rewritten, so if the re-scan before
-L re-allocates an id, D's landed notes record the new id against each commit
-that names it; later commit messages describe a residue instead of naming its
-reserved id ((amended 2026-10-14, implementation-review fold: IR2-MINOR-4)). The
-three commands are re-run twice: immediately before L, the first commit that
-publishes an id outside this plan, and immediately before D writes the ledger.
-Any output other than the expected one above that names W-250..W-274 or F-019
-means another workstream took the id (amended 2026-10-15, focused re-review of
-the fold: RR2r2-m2). Before L, the residues re-allocate from the maximum plus
-one, skipping every reserved block, and L, R and D are written with the new ids.
-Before D, the same re-allocation also rewrites the ids that L's page and fixture
-texts and R's row already published, in a commit before D. D records both
-outcomes in fork/ORCHESTRATION.md and in the plan's landed notes. From the
-focused re-review of the fold on, the second command's pattern is
-`W-(25[0-9]|26[0-9]|27[0-4])\b`; its run on 2026-10-15's records (the [focused
-re-review fold record](#focused-re-review-of-the-fold-2026-10-15)) finds the ids
-only in trunk's own reservation sentence (amended 2026-10-15, focused re-review
-of the fold: RR2-M2).
+records: re-review round 9). Round 10, on an external finding, files W-295 and
+leaves W-296 to W-299 unused; its fix commit eafca5cb9 names W-252, as an
+existing item, in its body, its fill 74e16c4de names none, and its records
+commit names none (amended 2026-10-20, round 10: X-1). History is not rewritten,
+so if the re-scan before L re-allocates an id, D's landed notes record the new
+id against each commit that names it; later commit messages describe a residue
+instead of naming its reserved id ((amended 2026-10-14, implementation-review
+fold: IR2-MINOR-4)). The three commands are re-run twice: immediately before L,
+the first commit that publishes an id outside this plan, and immediately before
+D writes the ledger. Any output other than the expected one above that names
+W-250..W-274 or F-019 means another workstream took the id (amended 2026-10-15,
+focused re-review of the fold: RR2r2-m2). Before L, the residues re-allocate
+from the maximum plus one, skipping every reserved block, and L, R and D are
+written with the new ids. Before D, the same re-allocation also rewrites the ids
+that L's page and fixture texts and R's row already published, in a commit
+before D. D records both outcomes in fork/ORCHESTRATION.md and in the plan's
+landed notes. From the focused re-review of the fold on, the second command's
+pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`; its run on 2026-10-15's records (the
+[focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15))
+finds the ids only in trunk's own reservation sentence (amended 2026-10-15,
+focused re-review of the fold: RR2-M2). From round 10 on it is
+`W-(25[0-9]|26[0-9]|27[0-4]|29[5-9])\b`; its run after `git fetch origin` on
+2026-10-20 at 21:21 UTC (origin/trunk 254b935b2, which records PR 61), over the
+80 refs, finds the ids only in trunk's fork/ORCHESTRATION.md, on three refs, and
+in SV-1's plan, on two, which cite TP-1's W-250, W-252 and W-274; the first
+command prints `W-284`, `W-285` and `W-294`, and the third prints trunk's
+ORCHESTRATION.md sentence that F-019 is not minted; no ref names W-295 to W-299
+(amended 2026-10-20, round 10: X-1).
 
 **Design authority** (each cited where used):
 
@@ -1523,7 +1555,25 @@ the existing diagnostic or a new `semantics TODO` with a golden) and filed.
     the fold: RR4-1-B1).
 13. TR-13. `match` over a dependent value, each case body dependent
     (:883-902). **OUT** (X10, W-252; the `match` machinery's own scrutinee
-    support is the blocker).
+    support is the blocker). A refutable pattern (`match`, a pattern condition
+    or `let` ... `else`) on a value whose type is known in the definition and
+    template-dependent only through its arguments is IN: a generic choice
+    applied to a template parameter, which D-TP-11 forms there, a choice
+    declared in a class template, or `Core.Int(N)` or `Core.UInt(N)` for a
+    template `N`. It is checked in the definition as a checked generic's is: the
+    scrutinee gate admits it, an alternative pattern's name resolves in the
+    choice's own scope there (`PerformAlternativeAccess`,
+    refutable_binding.cpp:291-304), since a choice declares its alternatives
+    once for every specific, and a conversion, comparison or guard on a payload
+    of the template parameter's type is an action performed on instantiation. A
+    `match` whose scrutinee's type is not known in the definition stays OUT,
+    with trunk's `semantics TODO` at the scrutinee: a value of the template
+    parameter's type (X10), where proposal 2200 makes the selected case
+    dependent, a tuple holding one, a deferred call's result and a member of a
+    template-dependent value (amended 2026-10-20, round 10: X-1). _Break
+    condition:_ a choice whose alternatives differ between its specifics (none
+    can: a choice declares them once), or a case that is selected differently
+    for different instantiations of a scrutinee type known in the definition.
 14. TR-14. `auto` and template `let` bindings (:327-347, :232-270). **OUT**
     (W-039, W-031; unchanged).
 15. TR-15. Template constraints (:348-432). **OUT** of this slice (SC-1,
@@ -2552,6 +2602,21 @@ whose fields hold an array with a template-dependent bound is converted on
 instantiation by D-TP-24's rule, as trunk's deferred call converted it
 (amended 2026-10-15, focused re-review of the fold: RR2-1-M2).
 
+Round 10 (amended 2026-10-20, round 10: X-1): a type formed in the definition
+also reaches every check that reads a type's shape there, and one relied on
+trunk's deferral. The refutable-pattern scrutinee gate
+(refutable_binding.cpp:83-135) admits a template-dependent choice or
+`Core.Int(N)` formed this way, as it admits a checked generic's, but a `case
+.Name` arm for a payload-free alternative resolved the name through
+`PerformMemberAccess`, which adds a deferred `access_member_action` for a
+template-dependent base, so the arm's designator was a splice whose type is not
+the scrutinee's, and the refutable engine stopped at its check that it is
+(pattern_match.cpp:1407-1409; X-1). A choice declared in a class template is
+template-dependent without D-TP-11 and stops trunk there too. eafca5cb9 resolves
+the name in the definition (TR-13's amendment). _Break condition_, added: a
+check that reads the shape of a type formed here and then hands a value of it to
+code that assumes an operation on it was performed in the definition.
+
 ### §1.7 Deferred impl lookup (W-127, C4)
 
 Root cause: §0.4. Cost, measured on v12 (amended 2026-10-14, review fold:
@@ -2623,7 +2688,8 @@ Amended 2026-10-14 (review fold: A-M2 / A-M3 / A-m2 / A-m3 / B-M2 / B-M3).
 | an interface, named constraint or class whose later parameter's type depends on a template parameter, used in its own library: `fn UseI[T: I(Holder, 1)](x: T)` for `interface I(template T: type, U: T.Item)`; `var d: D(T, 5) = {.c = {.x = 1}, .k = 2};` in `fn G[template T: HasItem]` and `var d: D(Holder, 5) = {.k = 2};` without a template for `class D(template T: HasItem, template V: T.Item)` (added 2026-10-15, focused re-review of the fold: RR7-1-m2) | CHECK at sem_ir/generic.cpp:84; for the class, generic_region_stack.h:98 on trunk and the nightly in a template and file_context.h:187 (:127 on the nightly) without one | unchanged; its import reports W-250's TODO (amended 2026-10-15, focused re-review of the fold: RR1-M1 / RR2-M1); the class in a template stops at sem_ir/generic.cpp:84, and without one at file_context.h:187 as on trunk, where the same class with checked parameters prints 2 on every toolchain (the first review's t01 to t04; amended 2026-10-15, focused re-review of the fold: RR7-1-m2) | W-270 |
 | a generic class from another library that declares a nested class or interface, used: `fn Use(o: Outer(i32)*)` for `class Outer(T: type) { class Inner { var x: T; } }`, with or without `template` | FATAL at import_ref.cpp:1086 (`GetLocalGenericId`: ``Unexpected inst for generic declaration``) | unchanged (import_ref.cpp:1456 at the head, :1287 at aa57bfe1c; amended 2026-10-15, focused re-review of the fold: RR4r2-M1); when the nested class's data names an action, W-250's TODO is reported instead (amended 2026-10-15, focused re-review of the fold: RR2r2-M1) | W-271 |
 | `partial T*` | `PartialOnFinal`, golden `fail_todo_partial_template_dependent` | unchanged | W-251 |
-| `match` on a dependent value | `semantics TODO`, fixture X10 | unchanged | W-252 |
+| `match` on a dependent value whose type is not known where the template is defined: a value of the template parameter's type (fixture X10), a tuple holding one, a deferred call's result or a member of a template-dependent value; and the qualified `case Opt(T).None`, a deferred member access (amended 2026-10-20, round 10: X-1) | `semantics TODO`, at the scrutinee | unchanged; the qualified arm reports ``match case expression pattern on a choice scrutinee that is not an alternative``, where its checked twin reports ``qualified alternative pattern in match case`` | W-252 |
+| a `match`, a pattern condition or `let` ... `else` on a template-dependent choice value, of a generic choice applied to a template parameter such as `Opt(T)` (X-1) or of a choice declared in a class template, or on `Core.Int(N)` or `Core.UInt(N)` for a template `N` (added 2026-10-20, round 10: X-1) | `semantics TODO` at the scrutinee for `Opt(T)` and `Core.Int(N)`; for a class template's choice the forms run, but a `case .Name` arm of a payload-free alternative stops at pattern_match.cpp:1409 | runs, checked in the definition as a checked generic's is (TR-13's amendment): X-1's `.None` arm, exhaustiveness and dead-arm diagnostics, guards, nested matches, payload bindings of type `T`, the pattern conditions, `let` ... `else` and integer arms; an unknown alternative name is diagnosed in the definition, and a payload literal, a guard or a payload type that the instantiation rejects is diagnosed on instantiation; until eafca5cb9 the `case .Name` arm stopped at pattern_match.cpp:1409 | none |
 | an array with a dependent bound from a list | error, golden `fail_todo_init_template_dependent_bound` | unchanged directly and in a struct or tuple literal; in a class template's literal, `var c: C(N) = {.a = (1, 2, 3), .b = N}` and the same returned from `-> C(N)`, which C4 made an error where trunk compiles them, converted on instantiation (D-TP-24), deduce_class_args.carbon's and lower initialize.carbon's `_dependent_array_bound` splits (amended 2026-10-15, focused re-review of the fold: RR2-1-M2) | W-253 |
 | an out-of-line redeclaration naming `T.U`, token-identical | rejected (`$P/probes/mool.carbon`), message printed `<cannot stringify ...>` | still rejected; the message now prints `T.U` on both sides (D-TP-23) | W-254 |
 | a form parameter, `template` or `generic` | lowering fatal (RC-9) | unchanged | W-255 |
@@ -2682,13 +2748,14 @@ narrowing (amended 2026-10-14, review fold: A-M4 / B-M5).
 
 ### §1.10 Conformance programs and their EXPECT derivations (R16(d))
 
-Nine programs under fork/conformance/programs/generics/ (the ninth from the
+Ten programs under fork/conformance/programs/generics/ (the ninth from the
 implementation-review fold; (amended 2026-10-14, implementation-review fold:
-IR1-B1)), bullet "Generics: Integrated templates", each derived from the program
-text and the design, then cross-checked (never derived) against v13 where it can
-run and against the same bodies with the types written out on trunk. Their full
-texts, with headers, are in Appendix B (amended 2026-10-14, review fold: B-M1 /
-B-M4 / B-m3 / B-m5 / A-m6):
+IR1-B1)), the tenth from round 10 of the focused re-review of the fold (amended
+2026-10-20, round 10: X-1), bullet "Generics: Integrated templates", each
+derived from the program text and the design, then cross-checked (never derived)
+against v13 where it can run and against the same bodies with the types written
+out on trunk. Their full texts, with headers, are in Appendix B (amended
+2026-10-14, review fold: B-M1 / B-M4 / B-m3 / B-m5 / A-m6):
 
 | Program | Forms | EXPECT | Derivation |
 | --- | --- | --- | --- |
@@ -2701,6 +2768,7 @@ B-M4 / B-m3 / B-m5 / A-m6):
 | templates_deduce_class_args | W-193: `Holder(T)`, `Holder(T)*`, `Vec(N)`; a class template's literal whose array field has the template bound, in a `var` and returned (amended 2026-10-15, focused re-review of the fold: RR2-1-M2) | `21`, `42`, `3`, `16`, `8` | the item; the item read through the pointer, doubled; the deduced `N`; `SumArr(3, 10)` adds the first and third elements of `(10, 2, 3)` and N, 10 + 3 + 3; `MakeArr(3)`'s second element and N, 5 + 3. v13 prints `21 42 3`; the round-2 head prints all five. |
 | templates_dependent_var (rev 1's templates_uninit_var, renamed) | W-127 in a function and a class template method (X20, X23), and `var y: T = x;` for a class with a destructor (B-M4) | `5`, `6`, `11`, `0`, `1` | `Swap(4, 5)` returns its second argument assigned into `y`; `Peek` returns `top` = 6; `Keep(d)` copies `d` with `D`'s `Copy` (n + 10 = 11), and `y`'s destructor prints 11 as `Keep` returns, before `Run` prints `Keep`'s result 0; `d` is destroyed when `Run` returns and prints 1. v13 prints `5 6 11 0 1`; trunk destroys uninitialized storage there (RC-2). |
 | templates_constant_elements (added by the implementation-review fold, D-TP-25) | a constant element beside a template-dependent one: `(x, 1)`, `{.a = x, .b = 2}` and `(x, 3)` as an array returned, a `var` of `(x, 1)`, an assignment of `(x, 1)`, `((x, 2), 3)`, a template value `N` beside a runtime value, and a class `P(T)` returned and in a `var` | `41`, `42`, `43`, `41`, `41`, `423`, `34`, `41`, `42` | each line is the first element times 10 plus the second, with x = 4: 4 and 1, 4 and 2, 4 and 3, the `var`'s 4 and 1, the assignment's 4 and 1 over the initial 4 and 9, then 4, 2 and 3 as 400 + 20 + 3, `N` = 3 beside 4, the class's 4 and 1, and the `var`'s 4 and 2. The branch head prints them; trunk stops the compiler (a segfault); the review's twins without a template run on trunk. |
+| templates_match_dependent_choice (added by round 10, eafca5cb9) | X-1: `match`, `let` ... `else` and integer arms on values of `Opt(T)`, `Shape(T)`, a class template's `State` and `Core.Int(N)` for template parameters | `0`, `1`, `41`, `7`, `5`, `1`, `0`, `1`, `0`, `2`, `1`, `0` | `Count` of a `None` is 0 and of a `Some` 1; `Unwrap` of `Some(41)` is 41 and of a `None` with the default 7 is 7; `Width` of `Rect(5, 2)` is its `w`, 5, of `Circle(3)` 1 and of `Empty` 0; `Box(i32).Fill(a, true)` holds `Full`, 1, and `Box(i64).Fill(b, false)` `Empty`, 0; `Small` of an `i8` 2 is 2, of an `i64` 1 is 1 and of an `i32` 5 is 0. Derived by hand in the header, then run on eafca5cb9's toolchain, which prints the same; trunk and the nightly reject it |
 
 No program pins a nightly difference: R30 governs Carbon-versus-C++
 divergence, and no form here diverges from C++; the one differential program
@@ -2778,7 +2846,8 @@ size, subsystem, evidence and break condition, is in Appendix E; D files W-250
 to W-266, and the focused re-review of the fold files W-267 to W-270, in its
 round 2 W-271, in its round 4 W-272 and in its round 6 W-273, and its round 7
 discharges W-272 within TP-1, and its round 8 files W-274, and its round 9
-widens W-267 and W-274.
+widens W-267 and W-274, and its round 10, on an external finding, narrows
+W-252 and files W-295 (amended 2026-10-20, round 10: X-1).
 
 1.  W-250 (TR-17). A generic whose definition or declaration is resolved per
     instantiation (an eval block that holds an action or a splice: a
@@ -2803,7 +2872,17 @@ widens W-267 and W-274.
 2.  W-251 (TR-19). `partial T*` for a template `T` (X26;
     class/partial/qualifier.carbon `fail_todo_partial_template_dependent`):
     needs the `PartialOnFinal` check performed on instantiation.
-3.  W-252 (TR-13). `match` on a template-dependent value (X10).
+3.  W-252 (TR-13). `match` on a template-dependent value (X10). Narrowed by
+    round 10 (amended 2026-10-20, round 10: X-1): a refutable pattern on a
+    template-dependent choice or `Core.Int(N)` value runs (TR-13's amendment).
+    What stays is a scrutinee whose type is not known in the definition, the
+    template parameter's own type (X10), a tuple holding it, a deferred call's
+    result and a member of a template-dependent value, which
+    generic/template/match_choice.carbon's `fail_todo_scrutinee_` and
+    `fail_todo_pattern_form_deferred_call` splits pin, and a case expression
+    that is a deferred member access (`fail_todo_qualified_alternative`).
+    Removal: check such a `match` for each instantiation, which proposal 2200's
+    dependent case bodies need.
 4.  W-253 (TR-12). An array with a template-dependent bound initialized
     from a list (X11; array/init_dependent_bound.carbon
     `fail_todo_init_template_dependent_bound`); the nightly accepts it after
@@ -3119,6 +3198,20 @@ widens W-267 and W-274.
     performs, as `Convert` does. n01i and a19 rejected without a CHECK failure
     are the break condition, and x04 printing 9, as its twin does, is a second
     one.
+26. W-295 (no TR; added 2026-10-20, round 10: X-1). Comparing a `Core.Int(N)`
+    whose width is a checked generic's symbolic `N` with an integer literal
+    stops the compiler while lowering: `x == 1` in `fn Is1[N:
+    Core.IntLiteral](x: Core.Int(N)) -> bool`, called with an `i32` (c01), and
+    the same comparison made by `match (x) { case 1 => ... }` (c02, p15c and
+    r15c), stop at the FATAL ``Missing constant value for call to comptime-only
+    function`` (lower/handle_call.cpp:638) while `Equal(32, Core.IntLiteral as
+    Core.ImplicitAs(i32))` is lowered, on the branch, on trunk 0bdce60a5 and on
+    the nightly 62f1cc6 (handle_call.cpp:598 there, for c01; the nightly has no
+    `match`). Not a template form and not a TP-1 regression: round 10's sweep
+    found it as the checked twin of a template probe, whose template form (p15,
+    p15w, r05) runs; the mechanism was not investigated beyond the stack.
+    Removal: give the literal's conversion to a symbolic `Int(N)` a constant in
+    each specific, or a form that runs. c01 printing 1 is the break condition.
 
 ### §1.14 Decision index (auto-adopted under V-2/V-3; each has a break condition above or here)
 
@@ -3157,7 +3250,9 @@ widens W-267 and W-274.
 -   D-TP-10. A function-typed callee with no constant value calls its type's
     function (§1.3).
 -   D-TP-11. Generic type constructors with template-dependent argument
-    values are formed eagerly (§1.6).
+    values are formed eagerly (§1.6). A refutable pattern on such a type
+    resolves its alternative names in the definition (TR-13; amended 2026-10-20,
+    round 10: X-1).
 -   D-TP-12. Impl lookup for a query that names a template binding selects
     no impl in the definition (§1.7; rewritten 2026-10-14, review fold: A-M4
     / B-M5).
@@ -3214,8 +3309,10 @@ widens W-267 and W-274.
     _Break:_ the merge order of record changes.
 -   D-TP-20. Nine conformance programs, one differential, named `_diff` (§1.10;
     amended 2026-10-14, review fold: A-m6 / B-m3; (amended 2026-10-14,
-    implementation-review fold: IR1-B1)). _Break:_ a program's derivation is
-    shown wrong; it is re-derived, never re-run to fit.
+    implementation-review fold: IR1-B1)); ten since round 10's
+    templates_match_dependent_choice (amended 2026-10-20, round 10: X-1).
+    _Break:_ a program's derivation is shown wrong; it is re-derived, never
+    re-run to fit.
 -   D-TP-21. DD-1's fixtures flip at land time with unique quotes; resolved
     limits get dated notes, never silent deletions; the texts are written in
     full and checked by PR 58's checker before L, and L has a document review
@@ -4992,7 +5089,11 @@ commit's files, which merges the two.
     five findings are records only: the records commit b31a62d62 alone, and the
     records commit after it that records the round's reviews, with no fix commit
     and no budget note (amended 2026-10-15, focused re-review of the fold: all
-    round-9 findings; records: re-review round 9).
+    round-9 findings; records: re-review round 9). At its round 10, on an
+    external finding: eafca5cb9 (an alternative pattern's name resolved in the
+    definition, `PerformAlternativeAccess`; two goldens and a tenth program)
+    with its fill 74e16c4de, and the records commit after them, by the ninth
+    dated note (amended 2026-10-20, round 10: X-1).
 11. **L** "TP-1: integration with PR 58" (§2.9, Appendix C), then its
     document review and fold commits; `check_samples.py` with and without
     `--toolchain` on every one of them. The id re-scan of the front matter
@@ -5176,6 +5277,18 @@ no form that ran into a TODO. 6e08becbc changes no toolchain file, and the
 round's other splits pin round 7's reach (RR8r2-m2) and an upstream TODO that
 still holds (RR8r2-m1); nothing is shrunk.
 
+**Budget note, round 10 (amended 2026-10-20, round 10: X-1).** Round 10, opened
+after the PR opened by an external finding, adds a toolchain fix commit with its
+fill and a records commit. Root cause: one defect that C4's type formation
+(D-TP-11) made reachable from a generic choice applied to a template parameter,
+and that trunk already had for a choice declared in a class template, not a
+wider slice: an alternative pattern's name was resolved through a member access
+that defers for a template-dependent base, where the refutable engine needs the
+alternative's constant. eafca5cb9 resolves the name in the definition for both
+lanes, turns every stop of the class into a run or a diagnostic and none into a
+TODO, and pins the class in two new goldens and a tenth program; nothing is
+shrunk.
+
 ## §4 Testdata matrix (autoupdate fills; the fill must reproduce these lines)
 
 Amended 2026-10-14 (review fold: A-B1 / A-M1 / A-M4 / B-M5 / A-m2 / A-m4 /
@@ -5337,6 +5450,27 @@ line measured by the round's autoupdate):
 | eval/call.carbon | symbolic_eval_fn_class_literal_with_field_default | no output; trunk and the nightly reject it with ``missing field `b` `` |
 | eval/symbolic.carbon | fail_symbolic_call_to_eval_fn_non_literal_invalid_instantiation | ``unable to monomorphize specific `G(true)` `` with the note ``cannot initialize tuple of 0 elements from tuple with 2 elements`` and no location, as the narrowed TODO above its `fn H()` says |
 
+Rows added by round 10 of the focused re-review of the fold (amended 2026-10-20,
+round 10: X-1); every line measured by the round's autoupdate:
+
+| Golden | Split | Key line |
+| --- | --- | --- |
+| generic/template/match_choice.carbon | designator_arm | in `Conv`'s SemIR the `case .None` arm is an `expr_pattern` over `name_ref None` of type `Opt(T)` with the constant `%Opt.val`, where e408ad4d6's toolchain stops at pattern_match.cpp:1409 |
+| same | class_template_choice | no STDERR; `Outer.Get`'s SemIR, whose `.B` arm stops trunk at the same CHECK |
+| same | designator_arm_exhaustive, value_param, nested_match, guard, pattern_forms, int_scrutinee | no output |
+| same | fail_unknown_alternative | ``member name `Nope` not found in `Opt(T)` [MemberNameNotFoundInSpecificScope]`` three times, at the `match` arm, the pattern condition and the `let` ... `else`, where the functions are defined and none is called |
+| same | fail_nonexhaustive, fail_never_matches, fail_int_never_matches | ``MatchNonexhaustive`` for `.Some`; ``MatchCaseNeverMatches`` with the prior-arm note, for `.None` and for a repeated `case 1` |
+| same | fail_int_literal_out_of_range_on_instantiation | ``unable to monomorphize specific `Kind(8)` `` with the note ``integer value 300 too large for type `i8` ``, which has no location, and the parameter note in int.carbon |
+| same | fail_payload_literal_on_instantiation, fail_guard_on_instantiation, fail_payload_not_trivial_on_instantiation | ``unable to monomorphize specific`` with the notes ``cannot access member of interface `Core.EqWith(bool)` in type `Core.IntLiteral` ``, ``member name `Valid` not found in `i32` `` and ``choice alternative payload type `P` is not trivially copyable and destructible in this specific``, the last three times, as its checked twin reports it |
+| same | fail_todo_scrutinee_template_type, fail_todo_scrutinee_template_tuple, fail_todo_scrutinee_deferred_call, fail_todo_scrutinee_dependent_member | ``semantics TODO: `match on unsupported scrutinee type` `` at the scrutinee, as on trunk |
+| same | fail_todo_pattern_form_deferred_call | ``semantics TODO: `refutable pattern binding on unsupported scrutinee type` `` at the initializer, as on trunk |
+| same | fail_todo_case_template_constant | the `semantics TODO` for a case expression that is not a constant integer or `bool`, as for a checked parameter |
+| same | fail_todo_qualified_alternative | ``semantics TODO: `match case expression pattern on a choice scrutinee that is not an alternative` `` at the arm |
+| lower/testdata/template/match_choice.carbon | designator_arm | `Get(i8)` loads the `i1` discriminant of `{ i1, [1 x i8] }` and its `i8` payload from element 1; `Get(i64)` the same of `<{ <{ i1, [7 x i8] }>, [8 x i8] }>`, its payload at byte 8 |
+| same | class_template_choice | `Outer(i32).Get` compares `c.var`'s discriminant for `.B`, then for `.A`, and loads the `i32` payload of `A` |
+| same | let_else_payload | `Unwrap(i64)` returns `%d` when the discriminant is not `Some`'s, else the loaded `i64` payload |
+| same | int_scrutinee | `Kind(i8)` compares with `icmp eq i8 1` and `icmp eq i8 -1`, `Kind(i64)` with `icmp eq i64 1` and `icmp eq i64 -1` |
+
 Refills by name: generic/template/convert.carbon, unimplemented.carbon,
 call.carbon, member_out_of_line.carbon, class/destroy_calls.carbon,
 interop/cpp/range_for.carbon, lower/testdata/template/class.carbon, the fold's
@@ -5360,7 +5494,10 @@ The implementation-review fold adds a ninth program, templates_constant_elements
 (D-TP-25): 137/0/22 over 159 at the fold's head, 48 of 56 bullets PASS, and the
 landing count is the floor plus nine PASS (amended 2026-10-14,
 implementation-review fold: IR1-B1). No program moves from SKIP to PASS because
-of TP-1 (PR 51 already un-SKIPs templates_dependent_member).
+of TP-1 (PR 51 already un-SKIPs templates_dependent_member). Round 10 adds a
+tenth, templates_match_dependent_choice: 138/0/22 over 160 at its fix's head, 48
+of 56 bullets PASS, and the landing count is the floor plus ten PASS (amended
+2026-10-20, round 10: X-1).
 
 ## §6 Churn and collisions
 
@@ -6836,6 +6973,74 @@ programs equal b31a62d62's (amended 2026-10-15, records: re-review round 9).
     `git ls-remote`: the PR body's conflict table, with convert.cpp conflicting
     with PR 60 in the two `PerformAction` hunks only.
 
+**Measured at round 10 (amended 2026-10-20, round 10: X-1).** In `$F`, which for
+this round is `.../tp1-x1/fixer`: `final_probes/` for the sweep's 117 probes,
+`out/` for their runs, `probes/` for X-1's reproduction and the SemIR dumps,
+`mut/` for the mutants' sources and logs, `conf_out/` for conformance and `src/`
+for the goldens' sources. Container-built, EXPECTED, not of record (Actions
+disabled).
+
+-   Build (item 1): `build.sh` and `install.sh` after eafca5cb9: `carbon
+    version` prints 0.0.0-0.dev+eafca5cb9, and `git log -1 --format=%h --
+    toolchain ':!toolchain/*/testdata/*' core` prints eafca5cb9, which the fill
+    74e16c4de and the records commit leave unchanged; no warning (`-Werror`).
+
+-   Autoupdate: over every testdata file with eafca5cb9's file_test, "Ran 1957
+    tests", changing only the two new goldens (`$F/au_full1.log`); a second run
+    over them changes nothing (R26), and their CHECK lines equal those that the
+    uncommitted prototype of the same toolchain change wrote
+    (`$F/src/*.filled2`).
+
+-   Gate (items 2 and 3): `gate.sh` with a private cache: 1957 passed, 0 failed,
+    "Ran 1957 tests in 79080 ms wall time, 311796 ms across threads", 1957 `.`
+    marks and no `!` or `?` (`$F/gate1.log`).
+
+-   Conformance (item 4): into `$F/conf_out` with a private cache: "PASS 138,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
+    SKIP 22 (of 160)", bullets 48 PASS / 0 FAIL / 8 SKIP / 0 NOT-WRITTEN of 56,
+    scoreboard generated 2026-10-20T21:09:24Z (the container clock) in 101.8 s,
+    the ten TP-1 programs the only movers from
+    fork/conformance/out/scoreboard.json; `runner.py --self-test`: "self-test:
+    160 programs parsed, 56 bullets in table, OK";
+    templates_match_dependent_choice prints its twelve EXPECT lines.
+
+-   Mutants (item 5), each relinked from the build's objects into
+    `/dev/shm/tp1-x1-fixer` by `$F/bin/variant.py` and deleted after
+    (`$F/mut/gate_*.log`). M1, the `match` lane back on `PerformMemberAccess`
+    (e408ad4d6's handle_match.cpp): file_test aborts at pattern_match.cpp:1409
+    on check generic/template/match_choice.carbon, where ten of the 23 splits
+    stop alone (designator_arm, designator_arm_exhaustive,
+    class_template_choice, value_param, nested_match, guard,
+    fail_unknown_alternative, fail_nonexhaustive, fail_never_matches and
+    fail_payload_not_trivial_on_instantiation), and on lower
+    template/match_choice.carbon; without the two goldens it passes 1955 of
+    1955, so no earlier golden pinned the form. M2, the pending lane's unknown
+    name back on `PerformMemberAccess`: 1956 of 1957, the check golden failing
+    because `fail_unknown_alternative` reports one error where it has three; the
+    lower golden passes. M3, both, which is e408ad4d6's toolchain: as M1, and
+    the 117 probes differ from eafca5cb9 on 31, the 27 stops and the four
+    pattern-condition and `let` ... `else` diagnostics of an unknown name
+    (`$F/out/final_m3.txt`). All three killed.
+
+-   clang-tidy (item 6): 21.1.8 with the repository's .clang-tidy and
+    `-modernize-*` on the changed lines of handle_match.cpp and
+    refutable_binding.cpp, refutable_binding.h's through the header filter
+    (`$F/bin/tidyall.py`): 0 diagnostics, rc 0 (`$F/tidy2.log`).
+
+-   Probes: the sweep's 117, each compiled, linked and run on eafca5cb9, on
+    trunk 0bdce60a5 and on the nightly 62f1cc6 (`$F/bin/sweep_all.sh`,
+    `$F/out/final.txt`, the same as on the uncommitted build of the same change,
+    `$F/out/final_pre.txt`) and on M3; the round-10 record tables them.
+
+-   Not re-run (land-time items, §1.12): the compositions with SC-1 and VA-1,
+    the L simulation and PR 58's checker; no held PR touches handle_match.cpp or
+    refutable_binding.{h,cpp}, and VA-1's pattern_match.cpp and SC-1's
+    member_access.h hunks are elsewhere. After `git fetch origin` at 2026-10-20
+    21:21 UTC (origin/trunk 254b935b2), the id re-scan as the front matter gives
+    it, and `git merge-tree --write-tree --name-only` of 74e16c4de with trunk
+    and each held PR's head, each equal to `git ls-remote`: the PR body's
+    conflict table, with trunk's head 254b935b2.
+
 ## Hand-off notes for the implementer
 
 Amended 2026-10-14 (review fold: B-m6 / B-B2 / A-B1).
@@ -7367,7 +7572,10 @@ two id re-scans.
     read "RE-REVIEW ROUND 5 OWED" to "RE-REVIEW ROUND 9 OWED" in turn; its round
     9 was dry and its fixer changed records only, so the row reads "IMPLEMENTED
     AND HELD, RE-REVIEW DRY AT ROUND 9, PR TO OPEN AND HOLD" (amended
-    2026-10-15, focused re-review of the fold: all round-9 findings).
+    2026-10-15, focused re-review of the fold: all round-9 findings). The PR
+    then opened as PR 61 and was held; round 10, on an external finding (X-1),
+    changed the toolchain, so the row reads "HELD OPEN AS PR 61, ROUND 10 FIX
+    UNDER REVIEW" (amended 2026-10-20, round 10: X-1).
 
 ## Focused re-review of the fold (2026-10-15)
 
@@ -7424,6 +7632,15 @@ records commit b31a62d62 changes no toolchain, golden or program file, nor does
 the records commit after it that records round 9's reviews, so no round 10 is
 owed, and the PR opens and is held (amended 2026-10-15, focused re-review of the
 fold: all round-9 findings; records: re-review round 9).
+
+Round 10 was not owed by round 9: it opened on 2026-10-20, after the PR opened
+and was held, on an external finding, X-1, a crash where trunk reports a
+`semantics TODO`, which the round's fixer treated as a BLOCKER. Its fixer
+changed three toolchain source files and added two goldens and a program, so two
+fresh reviews of the round-10 fixer's commits, eafca5cb9, its fill 74e16c4de and
+the records commit after them, are owed, then a fixer for what they find; the PR
+stays held until a round with no BLOCKER or MAJOR finding whose fixer changes no
+toolchain file (amended 2026-10-20, round 10: X-1).
 
 ### Round 1: the fold's commits, at bf8e1b4cc
 
@@ -9500,6 +9717,10 @@ is held open, as PR 51 to PR 60 are, and fork/ORCHESTRATION.md's TP-1 Branches
 row reads "IMPLEMENTED AND HELD, RE-REVIEW DRY AT ROUND 9, PR TO OPEN AND HOLD"
 (amended 2026-10-15, records: re-review round 9).
 
+Round 9's reviews owed no round 10; round 10 opened on 2026-10-20 on an external
+finding, after the PR opened as PR 61 and was held (below; amended 2026-10-20,
+round 10: X-1).
+
 The reviews' runs that the round's records left out (amended 2026-10-15,
 records: re-review round 9). Both reviews found the head equal to origin and to
 `git ls-remote` and the worktree clean, review 2 before and after its review. In
@@ -9569,6 +9790,175 @@ removed) and `git diff --stat bf8e1b4cc b31a62d62 -- toolchain core` (18 files,
 generated 2026-10-20T11:53:27Z in 74.2 s), which every program of this commit's
 run equals, and its R31 counts; and b31a62d62's message, which names no reserved
 id.
+
+### Focused re-review of the fold, round 10 (2026-10-20)
+
+Round 10 was owed by no review (amended 2026-10-20, round 10: X-1). It opened on
+2026-10-20, after the PR opened as PR 61 and was held, on an external finding,
+X-1, which the fixer of SV-1's plan found while probing a composition (its probe
+`.../sv1-fixer/probes/x/x19_tp_choice_match.carbon`; SV-1's plan routes the
+finding to TP-1). For `choice Opt(T: type) { Some(value: T), None }`, the
+function `fn Conv[template T: type](unused t: T) -> i32` with `let s: Opt(T) =
+Opt(T).None;` and `match (s) { case .Some(unused n: T) => { return 1; } case
+.None => { return 0; } }`, called as `Conv(one)` with `let one: i32 = 1;`, stops
+the compiler of the head e408ad4d6 (0.0.0-0.dev+813804758) at the CHECK at
+check/pattern_match.cpp:1409, ``Alternative constant type differs from scrutinee
+type`` (exit 134), where trunk 0bdce60a5 reports ``semantics TODO: `match on
+unsupported scrutinee type` `` at the scrutinee (exit 1) and the nightly 62f1cc6
+rejects the choice's payload and the `match` with its own `semantics TODO`s.
+TR-13 is OUT, and §1.8 and R17 require an OUT form to be diagnosed, never to
+stop the compiler, so the round's fixer treated the finding as a BLOCKER. No
+golden pinned a refutable pattern on a template-dependent scrutinee, and no
+review of rounds 1 to 9 probed one. A separate fixer (R11; `$F` is
+`.../tp1-x1/fixer` in this round) reproduced it first on the installed
+toolchain, on trunk and on the nightly (`$F/probes/x19.tp.out`).
+
+The class, hunted before any change. Every refutable form, `match`, the `if` and
+`while` pattern conditions and `let` ... `else`, over every template-dependent
+scrutinee kind: 117 probes (`$F/final_probes`), each compiled, linked and run on
+the head's toolchain (as M3, below), on eafca5cb9's, on trunk and on the
+nightly, beside twins without a template or with a checked parameter, and each
+RUN value derived by hand first (`$F/bin/sweep_all.sh`, `$F/out/final.txt` and
+`$F/out/final_m3.txt`). By shape:
+
+<!-- google-doc-style-ignore -->
+
+| Shape (probes) | e408ad4d6 | trunk 0bdce60a5 | nightly 62f1cc6 | eafca5cb9 |
+| --- | --- | --- | --- | --- |
+| A `match` on a template-dependent choice with a `case .Name` arm naming an alternative that has no payload, or no alternative: X-1 (x19, and its copy p01), `.None` beside `default` (p02), an exhaustive pair of arms (p05), a nested `match` (p07), a class template's method (p23), a deduced parameter (p24), a choice with a value parameter (p26), a choice declared in a class template (p29, q15, q32), `Opt((T, i32))` (p30), several instantiations and payload layouts (q01, q31), an unknown name (q02), `Opt(Opt(T))` (q08), a payload returned or modified (q09, q10), `var` and `const` scrutinees (q12, q18), a template calling a template (q17), a single alternative (q20), coverage diagnostics (q27, q28), a class payload (q30, q30t) and a guard over the payload (q33); 27 probes | all 27 stop at pattern_match.cpp:1409 | `match on unsupported scrutinee type` at the scrutinee for 24; p29, q15 and q32 stop at pattern_match.cpp:1409 | its own TODOs for the payload alternatives and the `match` | 18 run and print their hand-derived values; p05 and p29 report the missing `return` that their twins without a template report (an exhaustive `match` is not a terminator); p30, q08, q30 and q30t report the payload restriction on instantiation, as the checked twins p30c and q30c do; q02, q27 and q28 report the unknown name and the coverage diagnostics in the definition, as their checked twins do |
+| The other arms and forms on `Opt(T)`: `default` alone (p03), a binding arm (p04), a guard (p06), payload literals (p36, q06b), the pattern conditions and `let` ... `else` (p18 to p22, p37, p39), and the instantiation errors of a payload literal or guard (q06, q07, q29); 15 probes | as eafca5cb9 | the scrutinee TODO of the `match` or of the pattern forms | its own TODOs | 12 run with their hand-derived values; q06, q07 and q29 are rejected on instantiation, with ``cannot access member of interface `Core.EqWith(bool)` in type `Core.IntLiteral` `` or ``member name `Foo` not found in `i32` `` |
+| Malformed or unknown alternative names: missing or unexpected parentheses (q03, q04, q21q), a wrong arity (q21p) and an unknown name in a pattern condition or `let` ... `else` (q21, q21i, q21l, and q21n on a class template's choice); 8 probes | q03, q04, q21p and q21q diagnosed in the definition; q21 compiles without a diagnostic, as no call instantiates it; q21i, q21l and q21n rejected on instantiation, the unknown name a note | the scrutinee TODO; q21n rejected on instantiation | its own TODOs or a parse error | all 8 diagnosed in the definition, as their checked twins (q03c, q04c, q21c) |
+| The other forms on a choice declared in a class template: a pattern condition, `default`, payload arms and `let` ... `else` (p31 to p34); 4 probes | run | run | its own TODOs or a parse error | run, as on trunk (2, 3, 4 and 6) |
+| An integer of a template width, `Core.Int(N)` or `Core.UInt(N)` for a template `N`: literal arms (p15, p27), two widths (p15w), `default` alone (p28), a negative literal (r05), a tuple (r17), a binding arm (r18), a pattern condition (r19), and an out-of-range or negative literal and a repeated arm (r15, r20, r16); 11 probes | as eafca5cb9 | the scrutinee TODO of the `match` or of the pattern condition | its own TODOs or a parse error | 8 run with their hand-derived values; r15 and r20 are rejected on instantiation (``integer value 300 too large for type `i8` ``, ``negative integer value -1 converted to unsigned type `u8` ``) and r16 in the definition (`MatchCaseNeverMatches`) |
+| A scrutinee whose type is not known in the definition: a value of the template parameter's type (p08, p14, p16, and q22, DD-1's X10), a tuple holding one (p11), a class (p10, p17; a class is never a scrutinee), a deferred call's result (q13, q26), `Opt(T).None` itself (q23) and a member of a template-dependent value (q25, q34); 12 probes | the scrutinee TODO | the same | its own TODOs | the same as trunk (W-252) |
+| Case expressions and guards that use a template parameter: `case K` and `case K + 1` for `template K: i32`, in tuples, payloads and pattern conditions, for `bool` and for a value of type `T` (r01, r02, r07 to r09, r11 to r14), a guard comparing with `K` (r06), and the qualified `case Opt(T).None` (q05); 11 probes | as eafca5cb9 | as eafca5cb9, but for q05 the scrutinee TODO | its own TODOs or a parse error | the case-expression TODO that a checked parameter gets (r10); r06 runs, `1 0`, as on trunk; q05 reports ``match case expression pattern on a choice scrutinee that is not an alternative``, where its checked twin q05c reports ``qualified alternative pattern in match case`` |
+| A nested designator in a tuple or struct pattern: p12, p13 and the pattern condition p38 on `Opt(T)`, and the twin p40 on a concrete choice; 4 probes | ``name `.Self` not found`` | the same for p38 and p40; the scrutinee TODO for p12 and p13 | its own TODOs | ``name `.Self` not found``, as for the concrete twin on every toolchain: a limit of nested designators, not of templates |
+| Twins and controls: without a template or with a checked parameter (p05c, p05n, p29n, p30c, p30n, p35, q02c, q03c, q04c, q05c, q21c, q27c, q28c, q30c, r10, r15n), a concrete choice in a template (p09), a checked parameter beside a template one (p25), a template choice used without a template (p41), an empty generic choice (q19) and `x == 1` on a template width (c03); 21 probes | as eafca5cb9 | as eafca5cb9, but for q19 (the scrutinee TODO) and c03 (``cannot deduce value for generic parameter `N` ``) | its own TODOs, or as trunk | each as on e408ad4d6 |
+| A checked `Core.Int(N)` compared with an integer literal, by `==` (c01) or by `match` (c02, p15c, r15c); 4 probes | stop at lower/handle_call.cpp:638 | the same | c01 stops at handle_call.cpp:598; the others report its `match` TODO | the same stop: a defect outside templates, filed as W-295 |
+
+<!-- google-doc-style-resume -->
+
+In all, eafca5cb9 runs 48 of the 117 and diagnoses 65; the 4 that stop are the
+checked twins of W-295, which stop trunk the same way. Against e408ad4d6's
+toolchain, 31 change: the 27 stops, of which 18 now run and 9 are diagnosed as
+their twins are, and the four unknown names of the pattern conditions and `let`
+... `else`, now diagnosed in the definition; the other 86 are identical. Against
+trunk, 51 behave the same; of the 66 that differ, 37 run where trunk reports a
+`semantics TODO`, 24 are rejected, as on trunk, but with the form's own
+diagnostic in the definition or on instantiation (q05 with the TODO of a case
+expression) where trunk reports its scrutinee TODO, three run or are diagnosed
+where trunk stops (p29, q15, q32), q21n is diagnosed in the definition where
+trunk diagnoses it on instantiation, and c03 runs where trunk cannot deduce `N`
+(D-TP-11).
+
+Root cause. On trunk the annotation `Opt(T)` in a template is the splice of a
+deferred call (`$F/probes/a03.tr.ir`: `%.5372ba.1: type = splice_inst ...`),
+which the scrutinee gate does not admit, so trunk reports its TODO; since C4
+(781908afb, D-TP-11, call.cpp:827-845) it is the class type `class_type @Opt,
+@Opt(%T) [template]` (`$F/probes/a03.tp.ir`), which the gate
+(`IsSupportedScrutineeType`, refutable_binding.cpp:83-135, through
+`IsMatchableChoiceType`, pattern_match.cpp:499-510) admits as it admits a
+checked generic's `Opt(T)`, for which the same `match` runs on trunk and on the
+branch (`$F/probes/a01_checked.carbon`). The alternative pattern's name is
+resolved from the choice's metadata, but a `case .Name` arm for an alternative
+without a payload, and an unknown name, then went through `PerformMemberAccess`
+on the scrutinee's type (handle_match.cpp:363-364 and
+refutable_binding.cpp:321-324 at e408ad4d6), whose `HandleAction`
+(check/action.h:182-201) adds a deferred `access_member_action` and a splice for
+a template-dependent base (`AddActionSpliceIfDependent`, :160-171). The arm's
+designator was that splice, whose type is a `type_of_inst` of the action rather
+than `Opt(T)`, and `DoMatchCaseExprPattern` checks that a designator names an
+alternative constant of the scrutinee's type (pattern_match.cpp:1407-1409).
+Trunk reaches the same check for a choice declared in a class template, which is
+template-dependent without D-TP-11 (p29, q15, q32), so the defect is trunk's,
+made reachable from every generic choice applied to a template parameter by
+D-TP-11. In the pattern conditions and `let` ... `else` the same deferred access
+only delayed an unknown name's diagnostic to each instantiation (q21i, q21l,
+q21n), and left no diagnostic at all when nothing instantiated the function
+(q21). D-TP-13 (the constraint lookup of an operand whose type is a template
+parameter) and D-TP-24 (template-dependent value conversions) are not touched:
+an alternative's name is looked up in the choice's own scope, never in a
+constraint, and no conversion changes.
+
+The decision (TR-13 and D-TP-11 amended, §1.1 and §1.6). Trunk's rejection
+cannot be restored precisely: trunk itself admits a template-dependent choice
+declared in a class template and runs its pattern conditions, `default` and
+payload arms and `let` ... `else` (p31 to p34), so a scrutinee gate on template
+dependence would reject programs that trunk runs, and turn the lanes that
+e408ad4d6 already ran (the 15 probes of the second row, the 11 of the integer
+row) into TODOs; and a gate on how the type was formed has no boundary between
+D-TP-11's `Opt(T)` and a class template's `C`. A guard at the CHECK would give a
+TODO where the same arm runs for a checked generic (R17). The correct
+implementation is cheap and total: one helper, `PerformAlternativeAccess`
+(refutable_binding.h:121-136, refutable_binding.cpp:291-304), performs the
+access with `PerformAction` for `AccessMemberAction`, and both lanes call it
+(handle_match.cpp:360-361, refutable_binding.cpp:336-337); for a base that is
+not template-dependent `PerformMemberAccess` performs the same action at once,
+so nothing else changes (1955 of the 1957 goldens are untouched). It is sound
+because a choice declares its alternatives once for every specific, so lookup on
+instantiation could find nothing else, and the metadata the engine tests is
+already resolved in the definition. The match runs on instantiation in the sense
+TR-13's amendment states: it is checked once in the definition, as a checked
+generic's is, every operation on a payload of the template parameter's type is
+an action performed on instantiation (q06, q07, q29, r15 and r20 are rejected
+there), and each specific is lowered with its own layout (the lower golden's
+offsets and widths). What stays OUT is a scrutinee whose type is not known in
+the definition (W-252, narrowed). _Break condition_: a probe of the class that
+stops the compiler or runs with a value its twin does not print.
+
+Pins (eafca5cb9, filled by 74e16c4de, §4): check
+generic/template/match_choice.carbon, 23 splits (8 that succeed, 8 `fail_` and 7
+`fail_todo_`), lower template/match_choice.carbon, 4 splits, and the program
+generics/templates_match_dependent_choice.carbon (§1.10; its twelve EXPECT lines
+derived by hand in its header, then run). Appendix A holds the goldens' sources
+and Appendix B the program. Mutants M1 (the `match` lane reverted), M2 (the
+pattern-condition lane reverted) and M3 (both, e408ad4d6's toolchain), each
+killed by the check golden, M1 and M3 by the lower golden too (§8).
+
+Residue and observations. W-295 is filed from W-295..W-299, which the
+orchestrator reserved to TP-1 for the round (§1.13 item 26): a checked generic's
+`Core.Int(N)` compared with an integer literal stops the compiler while
+lowering, on trunk and the nightly too, outside templates; W-296 to W-299 stay
+unused. W-252 is narrowed in the ledger, §1.8 and §1.13 item 3. Recorded, not
+filed: the qualified `case Opt(T).None` in a template reports the TODO for a
+case expression that names no alternative, where its checked twin reports the
+qualified-alternative TODO, because the qualified spelling is a deferred member
+access (W-252's notes); a nested designator in a tuple or struct pattern is
+``name `.Self` not found`` on every toolchain, its concrete twin included; and
+an out-of-range literal's note on instantiation has no location. SV-1's plan
+files a residue for X-1 only if X-1 is still on the merged trunk at its D; on
+eafca5cb9 it no longer reproduces.
+
+Commits: eafca5cb9, "TP-1 round-10 fix: resolve an alternative pattern's name in
+the definition for a template-dependent choice" (handle_match.cpp,
+refutable_binding.{h,cpp}, the two goldens' sources, the program and the README
+table); 74e16c4de, "TP-1 round-10 fix fill: autoupdate the template-dependent
+choice match splits on the container arbiter"; and the records commit after them
+(plan.md, work-items.json, decision-log.md, gap-analysis.md and
+ORCHESTRATION.md), which also refreshes the PR description and its first
+comment. The R31 counts of each markdown file before and after prek are in the
+commit messages.
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| X-1 (external, found 2026-10-20 by the fixer of SV-1's plan): `match (s)` with a `case .None` arm on `let s: Opt(T) = Opt(T).None;` in `fn Conv[template T: type]` stops the compiler at check/pattern_match.cpp:1409 (exit 134), where trunk 0bdce60a5 reports ``semantics TODO: `match on unsupported scrutinee type` `` at the scrutinee: an OUT form (TR-13) turned into a crash, against R17 | BLOCKER | Fixed in eafca5cb9 at the root: `PerformAlternativeAccess` (refutable_binding.cpp:291-304) resolves an alternative pattern's name in the definition for both lanes (handle_match.cpp:360-361, refutable_binding.cpp:336-337); TR-13 and D-TP-11 amended, a refutable pattern on a template-dependent choice or `Core.Int(N)` value IN and checked in the definition; W-252 narrowed; the class pinned by check generic/template/match_choice.carbon (23 splits), lower template/match_choice.carbon (4 splits) and templates_match_dependent_choice; the sweep's stop of a checked generic filed as W-295 | §1.1 TR-13, §1.6 D-TP-11, §1.8, §1.10, §1.13 items 3 and 26, §1.14, §3, §4, §5, §8, Appendices A, B and E, ledger W-252 and W-295, decision log, gap row 54, ORCHESTRATION, PR body |
+
+Measured at eafca5cb9 and 74e16c4de (§8 "Measured at round 10"),
+container-built, EXPECTED, not of record: gate 1957 of 1957 files; conformance
+138/0/22 over 160, 48 of 56 bullets PASS; the three mutants killed; clang-tidy 0
+diagnostics on the changed lines; the probes as tabled. Not run, as §8 item 8
+says: hosted CI, Bazel and its tests, ASan, macOS and Windows, LLVM with
+assertions and the owner's runner; and the land-time items, which wait until PR
+51 to PR 60 land.
+
+Round 10's status: the round's fixer changed three toolchain source files (`git
+diff --stat e408ad4d6 74e16c4de -- toolchain core fork/conformance/programs`
+lists handle_match.cpp, refutable_binding.cpp, refutable_binding.h, the two
+goldens and the program), so the round is not dry: two fresh reviews (R29(c)) of
+eafca5cb9, 74e16c4de and the records commit after them are owed, then a fixer
+for what they find, and the PR stays held until a round with no BLOCKER or MAJOR
+finding whose fixer changes no toolchain file. fork/ORCHESTRATION.md's TP-1
+Branches row reads "HELD OPEN AS PR 61, ROUND 10 FIX UNDER REVIEW".
 
 ## Appendix A: golden sources
 
@@ -13043,6 +13433,627 @@ fn Use(w: W(C)) -> i32 {
 
 <!-- google-doc-style-resume -->
 
+### A: check/generic/template/match_choice.carbon
+
+Added by round 10's fix commit (eafca5cb9), measured, and filled by 74e16c4de
+(amended 2026-10-20, round 10: X-1).
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// INCLUDE-FILE: toolchain/testing/testdata/min_prelude/full.carbon
+//
+// AUTOUPDATE
+
+// Refutable patterns on a template-dependent choice value (TP-1 round 10,
+// X-1). A generic choice applied to a template parameter is a class type in
+// the definition (D-TP-11), and so is a choice declared in a class template;
+// the scrutinee gate admits it as it admits a checked generic's choice, and
+// `Core.Int(N)` for a template `N` as it admits a checked `Int(N)`. An
+// alternative pattern's name is resolved in the definition
+// (`PerformAlternativeAccess`, refutable_binding.cpp), so a payload-free
+// alternative's arm compares discriminants as for a checked generic; the
+// deferred access it replaced left a splice that stopped the compiler at
+// pattern_match.cpp:1409. Operations on payloads of the template parameter's
+// type run on instantiation. A scrutinee whose type is not known in the
+// definition, such as the template parameter itself (proposal 2200's `match`
+// on a dependent value, TR-13), stays a `semantics TODO` (W-252).
+
+// --- designator_arm.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+//@dump-sem-ir-begin
+fn Conv[template T: type](unused t: T) -> i32 {
+  let s: Opt(T) = Opt(T).None;
+  match (s) {
+    case .Some(unused n: T) => { return 1; }
+    case .None => { return 0; }
+  }
+  return -1;
+}
+//@dump-sem-ir-end
+
+fn Use() -> i32 {
+  let one: i32 = 1;
+  return Conv(one);
+}
+
+// --- designator_arm_exhaustive.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+// Both alternatives are covered, so no `default` arm is required.
+fn Count[template T: type](s: Opt(T)) -> i32 {
+  match (s) {
+    case .None => { return 0; }
+    case .Some(_: T) => { return 1; }
+  }
+  return -1;
+}
+
+fn Use(a: Opt(i32), b: Opt(bool)) -> i32 {
+  return Count(a) + Count(b);
+}
+
+// --- class_template_choice.carbon
+library "[[@TEST_NAME]]";
+
+// A choice declared in a class template is template-dependent without
+// D-TP-11; trunk stops at the same check for its `.B` arm.
+class Outer(template T: type) {
+  choice C {
+    A(n: T),
+    B
+  }
+
+  //@dump-sem-ir-begin
+  fn Get(t: T, full: bool) -> i32 {
+    var c: C = C.B;
+    if (full) {
+      c = C.A(t);
+    }
+    match (c) {
+      case .B => { return 0; }
+      case .A(_: T) => { return 1; }
+    }
+    return -1;
+  }
+  //@dump-sem-ir-end
+}
+
+fn Use() -> i32 {
+  let x: i32 = 1;
+  return Outer(i32).Get(x, true);
+}
+
+// --- value_param.carbon
+library "[[@TEST_NAME]]";
+
+choice V(N: i32) {
+  A,
+  B
+}
+
+fn Kind(template N: i32) -> i32 {
+  let v: V(N) = V(N).B;
+  match (v) {
+    case .A => { return 1; }
+    case .B => { return 2; }
+  }
+  return -1;
+}
+
+fn Use() -> i32 {
+  return Kind(3);
+}
+
+// --- nested_match.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Inner[template T: type](s: Opt(T), k: i32) -> i32 {
+  match (k) {
+    case 1 => {
+      match (s) {
+        case .None => { return 2; }
+        default => { return 3; }
+      }
+    }
+    default => { return 4; }
+  }
+}
+
+fn Use(s: Opt(i64)) -> i32 {
+  return Inner(s, 1);
+}
+
+// --- guard.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Big[template T: type](t: T) -> i32 {
+  let s: Opt(T) = Opt(T).Some(t);
+  match (s) {
+    case .Some(n: T) if (n > 2) => { return 1; }
+    case .Some(_: T) => { return 2; }
+    case .None => { return 0; }
+  }
+  return -1;
+}
+
+fn Use() -> i32 {
+  let a: i32 = 5;
+  let b: i64 = 0;
+  return Big(a) + Big(b);
+}
+
+// --- pattern_forms.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn HasValue[template T: type](s: Opt(T)) -> bool {
+  if (let .Some(_: T) = s) {
+    return true;
+  }
+  return false;
+}
+
+fn IsNone[template T: type](s: Opt(T)) -> bool {
+  if (let .None = s) {
+    return true;
+  }
+  return false;
+}
+
+fn Unwrap[template T: type](s: Opt(T), d: T) -> T {
+  let .Some(n: T) = s else { return d; }
+  return n;
+}
+
+fn Loop[template T: type](s: Opt(T)) -> i32 {
+  while (let .Some(_: T) = s) {
+    return 1;
+  }
+  return 0;
+}
+
+fn Use(s: Opt(i32), d: i32) -> i32 {
+  if (HasValue(s) and not IsNone(s)) {
+    return Unwrap(s, d) + Loop(s);
+  }
+  return d;
+}
+
+// --- int_scrutinee.carbon
+library "[[@TEST_NAME]]";
+
+fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
+  match (x) {
+    case 1 => { return 1; }
+    case -1 => { return 2; }
+    case n: Core.Int(N) => { return (n as i32) + 10; }
+  }
+  return 0;
+}
+
+fn IsFour[template N: Core.IntLiteral](x: Core.Int(N)) -> bool {
+  if (let 4 = x) {
+    return true;
+  }
+  return false;
+}
+
+fn Use(a: i8, b: i64) -> i32 {
+  if (IsFour(a)) {
+    return Kind(a);
+  }
+  return Kind(b);
+}
+
+// --- fail_unknown_alternative.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+// Diagnosed in the definition, as for a checked generic, though no call
+// instantiates the functions.
+fn InMatch[template T: type](s: Opt(T)) -> i32 {
+  match (s) {
+    case .Nope => { return 0; }
+    default => { return 1; }
+  }
+}
+
+fn InIfLet[template T: type](s: Opt(T)) -> i32 {
+  if (let .Nope = s) {
+    return 0;
+  }
+  return 1;
+}
+
+fn InLetElse[template T: type](s: Opt(T)) -> i32 {
+  let .Nope = s else { return 0; }
+  return 1;
+}
+
+// --- fail_nonexhaustive.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Conv[template T: type](s: Opt(T)) -> i32 {
+  match (s) {
+    case .None => { return 0; }
+  }
+  return 1;
+}
+
+// --- fail_never_matches.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Conv[template T: type](s: Opt(T)) -> i32 {
+  match (s) {
+    case .None => { return 0; }
+    case .Some(_: T) => { return 1; }
+    case .None => { return 2; }
+  }
+  return 3;
+}
+
+// --- fail_int_never_matches.carbon
+library "[[@TEST_NAME]]";
+
+fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
+  match (x) {
+    case 1 => { return 1; }
+    case 1 => { return 2; }
+    default => { return 0; }
+  }
+}
+
+// --- fail_int_literal_out_of_range_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
+  match (x) {
+    case 300 => { return 1; }
+    default => { return 0; }
+  }
+}
+
+fn Use(a: i8) -> i32 {
+  return Kind(a);
+}
+
+// --- fail_payload_literal_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Conv[template T: type](t: T) -> i32 {
+  let s: Opt(T) = Opt(T).Some(t);
+  match (s) {
+    case .Some(1) => { return 1; }
+    default => { return 0; }
+  }
+}
+
+fn Use() -> i32 {
+  return Conv(true);
+}
+
+// --- fail_guard_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Conv[template T: type](t: T) -> i32 {
+  let s: Opt(T) = Opt(T).Some(t);
+  match (s) {
+    case .Some(n: T) if (n.Valid()) => { return 1; }
+    default => { return 0; }
+  }
+}
+
+fn Use() -> i32 {
+  let a: i32 = 3;
+  return Conv(a);
+}
+
+// --- fail_payload_not_trivial_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+class P {
+  var x: i32;
+}
+
+fn Conv[template T: type](t: T) -> i32 {
+  let s: Opt(T) = Opt(T).Some(t);
+  match (s) {
+    case .Some(_: T) => { return 1; }
+    case .None => { return 0; }
+  }
+  return -1;
+}
+
+fn Use() -> i32 {
+  let p: P = {.x = 3};
+  return Conv(p);
+}
+
+// --- fail_todo_scrutinee_template_type.carbon
+library "[[@TEST_NAME]]";
+
+// Proposal 2200's `match` on a dependent value (TR-13, DD-1 fixture X10).
+fn Kind[template T: type](x: T) -> i32 {
+  match (x) {
+    case _: i32 => { return 32; }
+    default => { return 0; }
+  }
+}
+
+fn Use() -> i32 {
+  return Kind(1 as i32);
+}
+
+// --- fail_todo_scrutinee_template_tuple.carbon
+library "[[@TEST_NAME]]";
+
+fn Kind[template T: type](t: T) -> i32 {
+  match ((t, 1)) {
+    case (_: T, 1) => { return 1; }
+    default => { return 0; }
+  }
+}
+
+// --- fail_todo_case_template_constant.carbon
+library "[[@TEST_NAME]]";
+
+// A case expression whose value is a template parameter is not a constant
+// integer in the definition, as for a checked parameter.
+fn Is(template K: i32, x: i32) -> i32 {
+  match (x) {
+    case K => { return 1; }
+    default => { return 0; }
+  }
+}
+
+// --- fail_todo_scrutinee_deferred_call.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Make[T: type](t: T) -> Opt(T) {
+  return Opt(T).Some(t);
+}
+
+// The call is deferred, so the scrutinee's type is not known in the
+// definition.
+fn Conv[template T: type](t: T) -> i32 {
+  match (Make(t)) {
+    case .None => { return 0; }
+    default => { return 1; }
+  }
+}
+
+// --- fail_todo_scrutinee_dependent_member.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+class Holder(T: type) {
+  var o: Opt(T);
+}
+
+fn Conv[template T: type](h: Holder(T)) -> i32 {
+  match (h.o) {
+    case .None => { return 0; }
+    default => { return 1; }
+  }
+}
+
+// --- fail_todo_pattern_form_deferred_call.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Make[T: type](t: T) -> Opt(T) {
+  return Opt(T).Some(t);
+}
+
+fn Conv[template T: type](t: T) -> i32 {
+  if (let .None = Make(t)) {
+    return 0;
+  }
+  return 1;
+}
+
+// --- fail_todo_qualified_alternative.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+// The qualified spelling is a deferred member access in a template, so the
+// case expression is not known to name an alternative in the definition.
+fn Conv[template T: type](s: Opt(T)) -> i32 {
+  match (s) {
+    case Opt(T).None => { return 0; }
+    default => { return 1; }
+  }
+}
+```
+
+<!-- google-doc-style-resume -->
+
+### A: lower/template/match_choice.carbon
+
+Added by round 10's fix commit (eafca5cb9), measured, and filled by 74e16c4de
+(amended 2026-10-20, round 10: X-1).
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// INCLUDE-FILE: toolchain/testing/testdata/min_prelude/full.carbon
+//
+// AUTOUPDATE
+
+// Refutable patterns on a template-dependent choice value (TP-1 round 10,
+// X-1; check/testdata/generic/template/match_choice.carbon): each specific
+// compares its own discriminant and reads its payload at its own offset, and
+// an integer of a template-dependent width compares at its own width.
+
+// --- designator_arm.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Get[template T: type](s: Opt(T), d: T) -> T {
+  match (s) {
+    case .None => { return d; }
+    case .Some(n: T) => { return n; }
+  }
+  return d;
+}
+
+fn UseI8(s: Opt(i8), d: i8) -> i8 {
+  return Get(s, d);
+}
+
+fn UseI64(s: Opt(i64), d: i64) -> i64 {
+  return Get(s, d);
+}
+
+// --- class_template_choice.carbon
+library "[[@TEST_NAME]]";
+
+class Outer(template T: type) {
+  choice C {
+    A(n: T),
+    B
+  }
+
+  fn Get(t: T, full: bool) -> i32 {
+    var c: C = C.B;
+    if (full) {
+      c = C.A(t);
+    }
+    match (c) {
+      case .B => { return 0; }
+      case .A(_: T) => { return 1; }
+    }
+    return -1;
+  }
+}
+
+fn Use(x: i32) -> i32 {
+  return Outer(i32).Get(x, true);
+}
+
+// --- let_else_payload.carbon
+library "[[@TEST_NAME]]";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+fn Unwrap[template T: type](s: Opt(T), d: T) -> T {
+  let .Some(n: T) = s else { return d; }
+  return n;
+}
+
+fn Use(s: Opt(i64), d: i64) -> i64 {
+  return Unwrap(s, d);
+}
+
+// --- int_scrutinee.carbon
+library "[[@TEST_NAME]]";
+
+fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
+  match (x) {
+    case 1 => { return 1; }
+    case -1 => { return 2; }
+    default => { return 0; }
+  }
+}
+
+fn UseI8(a: i8) -> i32 {
+  return Kind(a);
+}
+
+fn UseI64(b: i64) -> i32 {
+  return Kind(b);
+}
+```
+
+<!-- google-doc-style-resume -->
+
 ### A: changes to existing goldens
 
 Each change edits the source lines outside CHECK lines; the fill rewrites the
@@ -13955,6 +14966,142 @@ fn Run() -> i32 {
   let c: P(i32) = RetClass(4 as i32);
   Core.Print(c.a * 10 + c.b);
   Core.Print(VarClass(4 as i32));
+  return 0;
+}
+```
+
+<!-- google-doc-style-resume -->
+
+### B: generics/templates_match_dependent_choice.carbon
+
+Added by round 10's fix commit (eafca5cb9) (amended 2026-10-20, round 10: X-1).
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// CONFORMANCE-BULLET: Generics: Integrated templates
+// EXPECT-EXIT: 0
+// EXPECT-STDOUT:
+//   0
+//   1
+//   41
+//   7
+//   5
+//   1
+//   0
+//   1
+//   0
+//   2
+//   1
+//   0
+//
+// Refutable patterns on a template-dependent choice value (TP-1 round 10,
+// X-1): `Opt(T)` and `Shape(T)` are generic choices applied to a template
+// parameter, and `Box(T).State` is a choice declared in a class template.
+// Count of a `None` is 0 and of a `Some` is 1. Unwrap of `Some(41)` is its
+// payload, 41; of a `None` with the default 7 it is 7 (an i64, printed as
+// i32). Width of `Rect(5, 2)` is the `w` payload, 5; of `Circle(3)` it is 1;
+// of `Empty` it is 0. Box(i32).Fill with `full` true holds `Full`, 1;
+// Box(i64).Fill with `full` false holds `Empty`, 0. `Core.Int(N)` for a
+// template `N` is an integer scrutinee of the instantiation's width: Small of
+// an i8 2 is 2, of an i64 1 is 1 and of an i32 5 is 0 (the `default` arm).
+
+import Core library "io";
+
+choice Opt(T: type) {
+  Some(value: T),
+  None
+}
+
+choice Shape(T: type) {
+  Circle(r: T),
+  Rect(w: i32, h: T),
+  Empty
+}
+
+fn Count[template T: type](s: Opt(T)) -> i32 {
+  match (s) {
+    case .None => { return 0; }
+    case .Some(_: T) => { return 1; }
+  }
+  return -1;
+}
+
+fn Unwrap[template T: type](s: Opt(T), d: T) -> T {
+  let .Some(n: T) = s else { return d; }
+  return n;
+}
+
+fn Width[template T: type](s: Shape(T)) -> i32 {
+  match (s) {
+    case .Empty => { return 0; }
+    case .Circle(_: T) => { return 1; }
+    case .Rect(w: i32, _: T) => { return w; }
+  }
+  return -1;
+}
+
+class Box(template T: type) {
+  choice State {
+    Full(v: T),
+    Empty
+  }
+
+  fn Fill(t: T, full: bool) -> i32 {
+    var s: State = State.Empty;
+    if (full) {
+      s = State.Full(t);
+    }
+    match (s) {
+      case .Empty => { return 0; }
+      case .Full(_: T) => { return 1; }
+    }
+    return -1;
+  }
+}
+
+fn Small[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
+  match (x) {
+    case 1 => { return 1; }
+    case 2 => { return 2; }
+    default => { return 0; }
+  }
+}
+
+fn Run() -> i32 {
+  let a: i32 = 41;
+  let b: i64 = 7;
+  let none_i32: Opt(i32) = Opt(i32).None;
+  let some_i64: Opt(i64) = Opt(i64).Some(b);
+  Core.Print(Count(none_i32));
+  Core.Print(Count(some_i64));
+
+  let some_i32: Opt(i32) = Opt(i32).Some(a);
+  let none_i64: Opt(i64) = Opt(i64).None;
+  Core.Print(Unwrap(some_i32, 0 as i32));
+  Core.Print(Unwrap(none_i64, b) as i32);
+
+  let two: i64 = 2;
+  let rect: Shape(i64) = Shape(i64).Rect(5, two);
+  let circle: Shape(i32) = Shape(i32).Circle(3);
+  let empty: Shape(i32) = Shape(i32).Empty;
+  Core.Print(Width(rect));
+  Core.Print(Width(circle));
+  Core.Print(Width(empty));
+
+  Core.Print(Box(i32).Fill(a, true));
+  Core.Print(Box(i64).Fill(b, false));
+
+  let c: i8 = 2;
+  let d: i64 = 1;
+  let e: i32 = 5;
+  Core.Print(Small(c));
+  Core.Print(Small(d));
+  Core.Print(Small(e));
   return 0;
 }
 ```
@@ -16108,6 +17255,34 @@ and notes are the ledger's, in full.
 
 <!-- google-doc-style-resume -->
 
+### E: residue W-295 (round 10)
+
+One new item, appended after W-274 by the records commit of round 10, as written
+there; W-296 to W-299 stay unused (amended 2026-10-20, round 10: X-1):
+
+<!-- google-doc-style-ignore -->
+
+```json
+[
+ {
+  "id": "W-295",
+  "kind": "toolchain-defect",
+  "title": "Found by TP-1's round 10: in a checked generic, comparing a `Core.Int(N)` of symbolic width with an integer literal, by `==` or by a `match` arm, stops the compiler while lowering, as on trunk and the nightly",
+  "subsystem": "toolchain/lower (handle_call.cpp, a compile-time-only builtin call with no constant value) + toolchain/check (the literal's conversion to a symbolic `Int(N)`; the mechanism was not investigated beyond the stack)",
+  "size": "M",
+  "bullet": "Generics: Checked generics",
+  "evidence": [
+   "toolchain/lower/handle_call.cpp:638 (FATAL `Missing constant value for call to comptime-only function`, reached while `Equal(32, Core.IntLiteral as Core.ImplicitAs(i32))` is lowered; :598 on the nightly 62f1cc6)",
+   "fork/templates/plan.md focused re-review of the fold, round 10, and §1.13 item 26 (the round's sweep: c01, `fn Is1[N: Core.IntLiteral](x: Core.Int(N)) -> bool { return x == 1; }` called with an `i32`, and c02, p15c and r15c, `match (x) { case 1 => ... }` or `case 300` in `fn Kind[N: Core.IntLiteral](x: Core.Int(N)) -> i32`, each stopping at handle_call.cpp:638 on the branch at eafca5cb9 and at e408ad4d6 and on trunk 0bdce60a5; c01 at :598 on the nightly, which has no `match`; the template forms p15, p15w and r05 run)"
+  ],
+  "blocked_by": [],
+  "notes": "Filed at round 10 of the focused re-review of TP-1's fold (2026-10-20, fork/templates/plan.md §1.13 item 26), from W-295..W-299, which the orchestrator reserved to TP-1 for the round's residues. Not a template form and not a TP-1 regression: the round's sweep of refutable patterns on template-dependent values found it as the checked twin of a template probe, and the same comparison with a template `N` runs on the branch (D-TP-11 forms `Core.Int(N)` in the definition and the specific converts the literal at its width). The stack shows the specific `Equal(32, Core.IntLiteral as Core.ImplicitAs(i32))` lowered as a runtime function whose `Core.IntLiteral` operand reaches a compile-time-only builtin call with no constant value (the FATAL's case group, `int.convert_checked` and its kin); the mechanism was not investigated further. Removal: give the conversion a constant in each specific, or a form that runs. Break condition: c01 prints 1."
+ }
+]
+```
+
+<!-- google-doc-style-resume -->
+
 ### E: decision log, entry "TP-1"
 
 Placed immediately above `### OX-1 parked: operator export to C++ cannot be made
@@ -16216,4 +17391,5 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 > the fold, rounds 6 to 8; re-scans before L and before D: <outcomes>); merged
 > after PR 59 (<merge sha>); file_test <merged passed>/<merged total>,
 > conformance <merged counts>, check_samples 0 errors; row "Generics: Integrated
-> templates" PARTIAL.
+> templates" PARTIAL. W-295 (a residue of checked generics) filed by round 10
+> (amended 2026-10-20, round 10: X-1).

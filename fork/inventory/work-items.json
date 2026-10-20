@@ -2258,17 +2258,20 @@
     {
       "id": "W-252",
       "kind": "missing-feature",
-      "title": "TP-1 residue: `match` on a template-dependent value is a `semantics TODO`",
-      "subsystem": "toolchain/check (handle_match.cpp)",
+      "title": "TP-1 residue: `match`, a pattern condition or `let` ... `else` on a template-dependent value whose type is not known where the template is defined (a value of the template parameter's type, a tuple holding one, a deferred call's result or a member of a template-dependent value) is a `semantics TODO`",
+      "subsystem": "toolchain/check (handle_match.cpp, refutable_binding.cpp `CheckRefutableScrutinee`)",
       "size": "M",
       "bullet": "Generics: Integrated templates",
       "evidence": [
         "toolchain/check/handle_match.cpp (unsupported scrutinee type)",
+        "toolchain/check/handle_match.cpp:197-198 and toolchain/check/refutable_binding.cpp:199-202 (`CheckRefutableScrutinee` reports the TODO when `IsSupportedScrutineeType` rejects the scrutinee's type; amended 2026-10-20, round 10: X-1)",
+        "toolchain/check/testdata/generic/template/match_choice.carbon (`fail_todo_scrutinee_template_type`, `fail_todo_scrutinee_template_tuple`, `fail_todo_scrutinee_deferred_call`, `fail_todo_scrutinee_dependent_member`, `fail_todo_pattern_form_deferred_call` and `fail_todo_qualified_alternative`; added by round 10 of the focused re-review of the fold, eafca5cb9)",
         "fork/designdocs/samples/X10_template_match_dependent.carbon",
-        "proposals/p002200-template-generics.md:883-902"
+        "proposals/p002200-template-generics.md:883-902",
+        "fork/templates/plan.md focused re-review of the fold, round 10 (the sweep's row of scrutinees whose type is not known in the definition: p08, p10, p11, p14, p16, p17, q13, q22, q23, q25, q26 and q34, each the scrutinee TODO on the branch at eafca5cb9 as on trunk 0bdce60a5)"
       ],
       "blocked_by": [],
-      "notes": "Filed at the TP-1 discharge (2026-10-14, fork/templates/plan.md §1.13). The `match` machinery's scrutinee support is the blocker. Break condition: X10 compiles."
+      "notes": "Filed at the TP-1 discharge (2026-10-14, fork/templates/plan.md §1.13). The `match` machinery's scrutinee support is the blocker. Narrowed 2026-10-20 (focused re-review of the fold, round 10: X-1): a refutable pattern on a value whose type is known in the definition and template-dependent only through its arguments, a generic choice applied to a template parameter (D-TP-11), a choice declared in a class template, or `Core.Int(N)` or `Core.UInt(N)` for a template `N`, is checked in the definition and runs, its payload operations performed on instantiation (TR-13's amendment; generic/template/match_choice.carbon's success splits, lower/testdata/template/match_choice.carbon and fork/conformance/programs/generics/templates_match_dependent_choice.carbon). What stays is a scrutinee whose type is not known in the definition, which `IsSupportedScrutineeType` rejects with trunk's TODO, `match on unsupported scrutinee type` or `refutable pattern binding on unsupported scrutinee type`: the template parameter's own type (X10), a tuple holding it, a deferred call's result and a member of a template-dependent value. The qualified alternative `case Opt(T).None` in a template is a deferred member access, so the arm is a case expression that names no alternative in the definition and reports ``match case expression pattern on a choice scrutinee that is not an alternative``, where its checked twin reports ``qualified alternative pattern in match case``; it is recorded here, not filed. Removal: check such a `match` for each instantiation, which proposal 2200's dependent case bodies need. Break condition: X10 compiles."
     },
     {
       "id": "W-253",
@@ -2598,6 +2601,20 @@
       ],
       "blocked_by": [],
       "notes": "Filed at round 8 of the focused re-review of TP-1's fold (2026-10-15, fork/templates/plan.md §1.13 item 25). Not a TP-1 regression: trunk and the nightly stop the same way. A template action's conversion relies on the eval block's completion of its target class type, which is deferred while the type is symbolic, so `D(U)`'s definition is not resolved when the conversion reads its object representation; round 8 resolves it before a field default is read, which turns the same call for `var k: i32 = N + 1;` in `class D(template N: i32)` into a diagnostic, but here the object representation depends on `T` and is read first. A literal that names every field, `{.a = 4, .k = 7}`, is rejected with ``cannot implicitly convert ... to `U` `` on the branch, where trunk and the nightly stop too (x07). Removal: complete the target class type of a conversion that a template action performs, as `Convert` does. Amended 2026-10-15 (focused re-review of the fold, round 9: RR9r2-m1 / RR9-1-m1): the stop is not limited to a type parameter: an object representation that depends on an array bound (a19, a08) or on a field of class-template type (a02, h06) is read first the same way. Resolving the class specific before `GetObjectRepr` in `ConvertStructToClass` (four lines; the second review's measurement, repeated by the round-9 fixer) gives a gate of 1955 of 1955 and rejects n01i, a02, a08 and a19 with diagnostics, a08 and a19 with W-253's ``cannot initialize array with dependent bound from a list of initializers``, but h06 then stops at `Convert`'s CHECK that an initializer's type is complete (convert.cpp:3171-3174), so the removal needs `PerformAction` to complete the target type and give up when that fails; a reordering alone is not enough. The item also records a second shape of the same call, as TP-1 has no free id: a `let` of such a class value from a constant literal that leaves a constant default (x04) is rejected on instantiation, where its twin with `fn Make(generic N: i32)` runs, because the conversion where `Make` is defined forms a constant temporary, `temporary invalid, %D.val`, whose destroy is deferred as a member access and a call on that constant, which a specific for a symbolic argument cannot perform; trunk and the nightly reject x04 too, with ``missing field `k` ``, and the same limit gives n02's note on every toolchain (fork/templates/plan.md §1.1 TR-22, OUT). Break condition: n01i and a19 are rejected without a CHECK failure; x04 printing 9, as its twin does, is a second one."
+    },
+    {
+      "id": "W-295",
+      "kind": "toolchain-defect",
+      "title": "Found by TP-1's round 10: in a checked generic, comparing a `Core.Int(N)` of symbolic width with an integer literal, by `==` or by a `match` arm, stops the compiler while lowering, as on trunk and the nightly",
+      "subsystem": "toolchain/lower (handle_call.cpp, a compile-time-only builtin call with no constant value) + toolchain/check (the literal's conversion to a symbolic `Int(N)`; the mechanism was not investigated beyond the stack)",
+      "size": "M",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/lower/handle_call.cpp:638 (FATAL `Missing constant value for call to comptime-only function`, reached while `Equal(32, Core.IntLiteral as Core.ImplicitAs(i32))` is lowered; :598 on the nightly 62f1cc6)",
+        "fork/templates/plan.md focused re-review of the fold, round 10, and §1.13 item 26 (the round's sweep: c01, `fn Is1[N: Core.IntLiteral](x: Core.Int(N)) -> bool { return x == 1; }` called with an `i32`, and c02, p15c and r15c, `match (x) { case 1 => ... }` or `case 300` in `fn Kind[N: Core.IntLiteral](x: Core.Int(N)) -> i32`, each stopping at handle_call.cpp:638 on the branch at eafca5cb9 and at e408ad4d6 and on trunk 0bdce60a5; c01 at :598 on the nightly, which has no `match`; the template forms p15, p15w and r05 run)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at round 10 of the focused re-review of TP-1's fold (2026-10-20, fork/templates/plan.md §1.13 item 26), from W-295..W-299, which the orchestrator reserved to TP-1 for the round's residues. Not a template form and not a TP-1 regression: the round's sweep of refutable patterns on template-dependent values found it as the checked twin of a template probe, and the same comparison with a template `N` runs on the branch (D-TP-11 forms `Core.Int(N)` in the definition and the specific converts the literal at its width). The stack shows the specific `Equal(32, Core.IntLiteral as Core.ImplicitAs(i32))` lowered as a runtime function whose `Core.IntLiteral` operand reaches a compile-time-only builtin call with no constant value (the FATAL's case group, `int.convert_checked` and its kin); the mechanism was not investigated further. Removal: give the conversion a constant in each specific, or a form that runs. Break condition: c01 prints 1."
     }
   ]
 }

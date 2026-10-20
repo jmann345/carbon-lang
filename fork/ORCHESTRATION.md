@@ -525,6 +525,43 @@ no toolchain file, so the re-review is complete: no round 10 is owed, and the
 TP-1 PR opens against trunk and is held open, as PR 51 to PR 60 are. The merge
 order does not change.
 
+Later on 2026-10-20 (TP-1's round 10, on an external finding, fixed; pushed;
+HELD OPEN AS PR 61, ROUND 10 FIX UNDER REVIEW): after round 9 was dry and the PR
+opened as PR 61 and was held, the fixer of SV-1's plan found X-1: a `match` with
+a `case .None` arm on a value of `Opt(T)`, a generic choice applied to the
+template parameter of `fn Conv[template T: type]`, stops the compiler at
+check/pattern_match.cpp:1409, where trunk 0bdce60a5 reports a `semantics TODO`
+at the scrutinee, an OUT form turned into a crash and so a BLOCKER. A separate
+fixer reproduced it on the installed toolchain, on trunk and on the nightly,
+swept the class with 117 probes (every refutable form over every
+template-dependent scrutinee kind, beside twins without a template or with a
+checked parameter) and fixed the root in eafca5cb9, with its fill 74e16c4de: an
+alternative pattern's name is resolved in the definition
+(`PerformAlternativeAccess`, refutable_binding.cpp), where a deferred member
+access left a splice whose type is not the scrutinee's; trunk stops the same way
+for a choice declared in a class template. The plan's TR-13 and D-TP-11 are
+amended (a refutable pattern on a template-dependent choice or `Core.Int(N)`
+value is IN, checked in the definition; a scrutinee whose type is not known in
+the definition stays OUT and W-252 is narrowed to it); the class is pinned by
+check generic/template/match_choice.carbon (23 splits), lower
+template/match_choice.carbon (4 splits) and a tenth program,
+templates_match_dependent_choice; W-295 is filed from W-295..W-299, which the
+orchestrator reserved to TP-1 for the round (a checked generic's `Core.Int(N)`
+compared with an integer literal stops the compiler while lowering, on trunk and
+the nightly too), and W-296 to W-299 stay unused. Verification is
+container-built and NOT of record (Actions disabled): at eafca5cb9 and
+74e16c4de, file_test 1957/1957 and the expected scoreboard 138 PASS / 0 FAIL /
+22 SKIP over 160, 48/56 bullets (scoreboard generated 2026-10-20T21:09:24Z by
+the container clock), the ten TP-1 programs the only movers; the mutants that
+revert either lane or both are killed. `git merge-tree` of the round's head
+against trunk 254b935b2 and each held PR gives the PR body's conflict table with
+trunk at 254b935b2, and no held PR touches handle_match.cpp or
+refutable_binding.{h,cpp}. The fixer changed toolchain files, so two fresh
+reviews (R29(c)) of eafca5cb9, 74e16c4de and the records commit after them are
+owed, then a fixer for what they find, and PR 61 stays held until a round with
+no BLOCKER or MAJOR finding whose fixer changes no toolchain file. The merge
+order does not change.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -865,7 +902,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
-| `claude/carbon-fork-0-1-tp` | IMPLEMENTED AND HELD, RE-REVIEW DRY AT ROUND 9, PR TO OPEN AND HOLD -- TP-1 integrated templates, toolchain at 813804758 (splits through 6983fc5ca) after round 8 of the focused re-review of the fold, records through round 9's records commits (b31a62d62 and the records pass after it; round 9: two APPROVE-WITH-FIXES on c08623fc6, both dry, five MINOR records-only findings folded with no toolchain change); no round 10 is owed, and the PR opens against trunk and is held open (W-014 OPEN; W-250..W-274 filed, W-272 discharged within TP-1; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1955/1955 and conformance 137/0/22 over 159 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
+| `claude/carbon-fork-0-1-tp` | HELD OPEN AS PR 61, ROUND 10 FIX UNDER REVIEW -- TP-1 integrated templates, toolchain at eafca5cb9 (splits through 74e16c4de) after round 10 of the focused re-review of the fold, records through round 10's records commit; round 9 was dry and the PR opened as PR 61 and was held, and round 10 opened on an external finding (X-1, a BLOCKER: a `match` on a template-dependent choice stopped the compiler where trunk reports a TODO; fixed at the root, W-295 filed from W-295..W-299, W-296 to W-299 unused); two fresh reviews of round 10 are owed, and PR 61 stays held (W-014 OPEN; W-250..W-274 and W-295 filed, W-272 discharged within TP-1; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1957/1957 and conformance 138/0/22 over 160 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -892,14 +929,16 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 
 regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 `conformance`; R28).
 
-Expected at TP-1, NOT of record: 137 PASS / 22 SKIP / 0 FAIL over 159, 48/56
-bullets (a container run on the carbonbuild toolchain of 12bd6d67a at TP-1's
-head 824f29c4e, scoreboard generated 2026-10-15T00:56:22Z; nine programs join
-the "Generics: Integrated templates" bullet, already PASS, and its gap row stays
-PARTIAL), from the floor of record 128 PASS / 22 SKIP / 0 FAIL over 150, 48/56
-(the hosted conformance run 37402970811 on 606a99c5a). TP-1 is measured on trunk
-alone; its landing count is PR 59's expected state with every earlier PR plus
-nine PASS (fork/templates/plan.md §5).
+Expected at TP-1, NOT of record: 138 PASS / 22 SKIP / 0 FAIL over 160, 48/56
+bullets (a container run on the carbonbuild toolchain of eafca5cb9 at TP-1's
+head 74e16c4de, scoreboard generated 2026-10-20T21:09:24Z; at 824f29c4e, before
+round 10, 137 over 159 (amended 2026-10-20, round 10: X-1); ten programs, the
+tenth from round 10, join the "Generics: Integrated templates" bullet, already
+PASS, and its gap row stays PARTIAL), from the floor of record 128 PASS / 22
+SKIP / 0 FAIL over 150, 48/56 (the hosted conformance run 37402970811 on
+606a99c5a). TP-1 is measured on trunk alone; its landing count is PR 59's
+expected state with every earlier PR plus ten PASS (fork/templates/plan.md §5)
+(amended 2026-10-20, round 10: X-1).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 
@@ -969,17 +1008,19 @@ nine PASS (fork/templates/plan.md §5).
         the conformance README table is regenerated with `runner.py
         --update-readme-table`, and each record file takes trunk's text with
         TP-1's appended blocks after the PRs' (row 54 found by its bullet text,
-        W-250..W-273 after the then-last item, the decision-log entry above the
-        entry that then follows "Full autonomy and the throughput protocol",
-        this item and TP-1's Branches row, trunk's own stale TP-1 Branches row
-        dropped, since a merge keeps both rows without a conflict). The focused
-        re-review's convert.cpp hunk, in `ConvertTupleToType`, merges cleanly,
-        and so do its round 2's, in `ConvertStructToClass` and the class
-        literal test before `ConvertTupleToArray`, its round 3's
-        import_ref.cpp and context.h, and its round 4's convert.cpp
-        (`ConvertStructToClass` and the class field tests before it) and
-        import_ref.cpp, and its round 7's eval.cpp and its two refills of check
-        eval/call.carbon and eval/symbolic.carbon.
+        W-250..W-274 and W-295 after the then-last item (amended 2026-10-20,
+        round 10: X-1), the decision-log entry above the entry that then follows
+        "Full autonomy and the throughput protocol", this item and TP-1's
+        Branches row, trunk's own stale TP-1 Branches row dropped, since a merge
+        keeps both rows without a conflict). The focused re-review's convert.cpp
+        hunk, in `ConvertTupleToType`, merges cleanly, and so do its round 2's,
+        in `ConvertStructToClass` and the class literal test before
+        `ConvertTupleToArray`, its round 3's import_ref.cpp and context.h, and
+        its round 4's convert.cpp (`ConvertStructToClass` and the class field
+        tests before it) and import_ref.cpp, and its round 7's eval.cpp and its
+        two refills of check eval/call.carbon and eval/symbolic.carbon, and its
+        round 10's handle_match.cpp and refutable_binding.{h,cpp}, which no held
+        PR touches (amended 2026-10-20, round 10: X-1).
     -   S, "TP-1 (7): over SC-1, a template constraint's requirement defers to
         the type in constraint lookup": plan §2.5's text, member_access.cpp only
         (measured at state T and at the fold: SC-1's nine template-constraint
@@ -989,8 +1030,8 @@ nine PASS (fork/templates/plan.md §5).
         and refilled, and any SC-1 or VA-1 golden the merged toolchain changes
         (measured: none). M, S and F6 are judged together: the full build,
         autoupdate to its fixpoint, gate, conformance (the base's totals plus
-        nine PASS), the mutants and `runner.py --self-test`, re-quoted from that
-        run (R9).
+        ten PASS (amended 2026-10-20, round 10: X-1)), the mutants and
+        `runner.py --self-test`, re-quoted from that run (R9).
     -   The id re-scan of the plan's front matter (its three commands), before
         L, the first commit that publishes an id outside the plan.
     -   L, "TP-1: integration with PR 58" (plan §2.9, Appendix C), then its
@@ -1007,9 +1048,10 @@ nine PASS (fork/templates/plan.md §5).
         reserved block, rewrites L's and R's ids in a commit before it, and is
         recorded against 637e3efaf and 12bd6d67a, whose messages name W-250.
     -   When Actions returns, the hosted autoupdate, gate and conformance runs
-        on a tree with TP-1 in it are the record (expected: PASS up 9 and
-        programs up 9 over the base; the bullet PASS; row 54 PARTIAL), and the
-        "not of record" phrases go in a records commit.
+        on a tree with TP-1 in it are the record (expected: PASS up 10 and
+        programs up 10 over the base (amended 2026-10-20, round 10: X-1); the
+        bullet PASS; row 54 PARTIAL), and the "not of record" phrases go in a
+        records commit.
 
 ### Standing user directives
 

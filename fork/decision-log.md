@@ -2878,8 +2878,11 @@ three findings, neither dry; round 6, amended 2026-10-15: two
 APPROVE-WITH-FIXES with three and two findings, neither dry; round 7, amended
 2026-10-15: two APPROVE-WITH-FIXES with two findings each, one of them dry;
 round 8, amended 2026-10-15: two APPROVE-WITH-FIXES with three and four
-findings, neither dry, round 9 owed; plan's focused re-review fold record).
-Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
+findings, neither dry, round 9 owed; round 9, amended 2026-10-15: two
+APPROVE-WITH-FIXES with two and three findings, both dry; round 10, amended
+2026-10-20: owed by no review, opened on an external BLOCKER, X-1, fixed at the
+root, two fresh reviews owed; plan's focused re-review fold record). Every
+decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
 considered (plan §7.2): turning crashes into TODOs (rejected as Goodhart),
 cherry-picking 947c1eb52 or 4a8993af2, inserting the storage block at the action
 (rev 1), deferring every form, a definition-only W-183, accepting the deferred
@@ -2903,22 +2906,24 @@ requirements deferring to the type; D-TP-14, cross-library generics resolved per
 instantiation, interfaces and named constraints included, and the entities that
 name them, are a `semantics TODO` at the `import`; D-TP-15, dropped; D-TP-16, no
 cherry-pick; D-TP-17, no fork design id; D-TP-18, row PARTIAL; D-TP-19, merge
-after PR 59, before the implementation reviews; D-TP-20, nine programs; D-TP-21,
-PR 58's fixtures flipped with dated notes; D-TP-22, commit structure, with the
-merge resolving conflicts only; D-TP-23, dependent operations print as
-expressions; D-TP-24, a template-dependent array, union or class value is
-converted whole for each instantiation; D-TP-25, a constant splice lowers the
-storage its block holds; D-TP-26, a runtime operand where a specific needs a
-constant, an array bound or a type, is an error at that operand (amended
-2026-10-15, focused re-review of the fold). Consequences: row PARTIAL;
-W-250..W-266 filed at the discharge and W-267..W-274 by the focused re-review of
-the fold (W-271 by its round 2, W-272 by its round 4, W-273 by its round 6 and
-W-274 by its round 8), W-272 discharged within TP-1 by its round 7 (TP-1
-reserved W-250..W-274); W-127, W-183 (for an operand whose type is the
-parameter; W-266 for a field), W-192, W-193 discharged at land time, by the
-records commit after the repeated merge of trunk, because PR 51 and PR 58, which
-file them, are held and the four items are not yet in the ledger (the plan's
-landed notes hold their texts).
+after PR 59, before the implementation reviews; D-TP-20, nine programs, ten from
+round 10 (amended 2026-10-20, round 10: X-1); D-TP-21, PR 58's fixtures flipped
+with dated notes; D-TP-22, commit structure, with the merge resolving conflicts
+only; D-TP-23, dependent operations print as expressions; D-TP-24, a
+template-dependent array, union or class value is converted whole for each
+instantiation; D-TP-25, a constant splice lowers the storage its block holds;
+D-TP-26, a runtime operand where a specific needs a constant, an array bound or
+a type, is an error at that operand (amended 2026-10-15, focused re-review of
+the fold). Consequences: row PARTIAL; W-250..W-266 filed at the discharge and
+W-267..W-274 by the focused re-review of the fold (W-271 by its round 2, W-272
+by its round 4, W-273 by its round 6 and W-274 by its round 8) and W-295 by its
+round 10 (amended 2026-10-20, round 10: X-1), W-272 discharged within TP-1 by
+its round 7 (TP-1 reserved W-250..W-274, and W-295..W-299 for round 10's
+residues, of which W-296 to W-299 stay unused); W-127, W-183 (for an operand
+whose type is the parameter; W-266 for a field), W-192, W-193 discharged at land
+time, by the records commit after the repeated merge of trunk, because PR 51 and
+PR 58, which file them, are held and the four items are not yet in the ledger
+(the plan's landed notes hold their texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3066,7 +3071,14 @@ fold: A-m7; (amended 2026-10-14, implementation-review fold: IR1-m3)).
 function (§1.3).
 
 **D-TP-11.** Generic type constructors with template-dependent argument values
-are formed eagerly (§1.6).
+are formed eagerly (§1.6). Round 10 (amended 2026-10-20, round 10: X-1): a type
+so formed reaches the refutable-pattern scrutinee gate, which admits a
+template-dependent choice or `Core.Int(N)` as it admits a checked generic's, and
+an alternative pattern's name is resolved in the choice's own scope in the
+definition (`PerformAlternativeAccess`, refutable_binding.cpp:291-304; the
+plan's TR-13 amended). _Break:_ a check that reads the shape of a type formed
+here and hands a value of it to code that assumes an operation on it was
+performed in the definition.
 
 **D-TP-12.** Impl lookup for a query that names a template binding selects no
 impl in the definition (§1.7; rewritten 2026-10-14, review fold: A-M4 / B-M5).
@@ -3117,10 +3129,11 @@ trunk's records only, and the compositions are measured (§1.12 "Held state";
 (amended 2026-10-14, implementation-review fold: IR2-MINOR-10)). _Break:_ the
 merge order of record changes.
 
-**D-TP-20.** Nine conformance programs, one differential, named `_diff` (§1.10;
-amended 2026-10-14, review fold: A-m6 / B-m3; (amended 2026-10-14,
-implementation-review fold: IR1-B1)). _Break:_ a program's derivation is shown
-wrong; it is re-derived, never re-run to fit.
+**D-TP-20.** Nine conformance programs, ten from round 10 (amended 2026-10-20,
+round 10: X-1), one differential, named `_diff` (§1.10; amended 2026-10-14,
+review fold: A-m6 / B-m3; (amended 2026-10-14, implementation-review fold:
+IR1-B1)). _Break:_ a program's derivation is shown wrong; it is re-derived,
+never re-run to fit.
 
 **D-TP-21.** DD-1's fixtures flip at land time with unique quotes; resolved
 limits get dated notes, never silent deletions; the texts are written in full
@@ -3789,6 +3802,62 @@ that kept a short line in the middle, re-runs the id re-scan and
 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets; EXPECTED, not of
 record), with no toolchain, golden or program file changed (amended 2026-10-15,
 records: re-review round 9).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 10 (amended 2026-10-20). Owed by no review:
+round 9 was dry, and the PR opened as PR 61 and was held. On 2026-10-20 the
+fixer of SV-1's plan found X-1 while probing a composition: `match (s)` with a
+`case .None` arm on `let s: Opt(T) = Opt(T).None;`, for `choice Opt(T: type) {
+Some(value: T), None }`, in `fn Conv[template T: type]` called with an `i32`,
+stops the compiler of e408ad4d6 (0.0.0-0.dev+813804758) at the CHECK at
+check/pattern_match.cpp:1409, ``Alternative constant type differs from scrutinee
+type`` (exit 134), where trunk 0bdce60a5 reports ``semantics TODO: `match on
+unsupported scrutinee type` `` (exit 1): an OUT form of the plan's TR-13 turned
+into a crash, against R17, so a BLOCKER. A separate fixer reproduced it on the
+installed toolchain, on trunk and on the nightly, and hunted the class before
+any change: 117 probes over `match`, the `if` and `while` pattern conditions and
+`let` ... `else` and every template-dependent scrutinee kind, each run on
+e408ad4d6's toolchain, on the fix's, on trunk and on the nightly beside twins
+without a template or with a checked parameter, each RUN value derived by hand
+first. Root cause: since C4 (D-TP-11) `Opt(T)` is a class type formed in the
+definition, which the scrutinee gate admits as it admits a checked generic's,
+where trunk's splice of a deferred call is rejected with its TODO; an
+alternative pattern's name, for a payload-free alternative or an unknown name,
+was then resolved through `PerformMemberAccess`, which adds a deferred
+`access_member_action` and a splice for a template-dependent base, so the
+engine's check that the arm names an alternative constant of the scrutinee's
+type failed; trunk stops the same way for a choice declared in a class template.
+Decision, auto-adopted under V-2/V-3 and open to veto: the correct
+implementation, not trunk's rejection, because trunk itself runs a class
+template's choice in the other refutable forms, so a gate on template dependence
+would reject programs trunk runs and turn lanes that e408ad4d6 already ran into
+TODOs, while a guard at the CHECK would turn an IN form into a TODO (R17). The
+fix commit eafca5cb9 adds `PerformAlternativeAccess`
+(refutable_binding.cpp:291-304), which performs the access in the definition
+with `PerformAction`, and calls it from the `match` lane and the
+pattern-condition lane; it is sound because a choice declares its alternatives
+once for every specific. The plan's TR-13 and D-TP-11 are amended: a refutable
+pattern on a template-dependent choice or `Core.Int(N)` value is IN, checked in
+the definition as a checked generic's is, its payload operations performed on
+instantiation; a scrutinee whose type is not known in the definition stays OUT
+with trunk's TODO, and W-252 is narrowed to it. _Break:_ a probe of the class
+that stops the compiler or runs with a value its twin does not print. Pinned by
+check generic/template/match_choice.carbon (23 splits) and lower
+template/match_choice.carbon (4 splits), which 74e16c4de fills, and by the tenth
+program, templates_match_dependent_choice (twelve EXPECT lines derived by hand);
+the mutants that revert either lane or both are killed. One residue is filed
+from W-295..W-299, which the orchestrator reserved to TP-1 for the round: W-295,
+a checked generic's `Core.Int(N)` compared with an integer literal stops the
+compiler while lowering, on trunk and the nightly too; W-296 to W-299 stay
+unused. Measured at eafca5cb9 and 74e16c4de, container-built, EXPECTED and not
+of record: file_test 1957 passed, 0 failed, "Ran 1957 tests in 79080 ms wall
+time", 0 `!` and 0 `?` marks; conformance "PASS 138, COMPILE-FAIL 0, LINK-FAIL
+0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 160)", bullets
+48/56; clang-tidy 0 diagnostics. The round's fixer changed toolchain files, so
+the round is not dry: two fresh reviews of eafca5cb9, 74e16c4de and the records
+commit after them are owed, and the PR stays held; the TP-1 Branches row of
+fork/ORCHESTRATION.md reads "HELD OPEN AS PR 61, ROUND 10 FIX UNDER REVIEW". The
+per-finding table is the plan's "Focused re-review of the fold, round 10
+(2026-10-20)" (amended 2026-10-20, round 10: X-1).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

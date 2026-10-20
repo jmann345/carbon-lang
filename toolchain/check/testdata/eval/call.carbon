@@ -175,7 +175,7 @@ eval fn F(_: i32) -> type { return C; }
 
 fn G(generic X: i32) -> i32 {
   var v: F(X) = {.a = 1};
-  return v.a + v.b;
+  return v.b;
 }
 
 fn H() -> i32 {

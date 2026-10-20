@@ -3493,13 +3493,13 @@ of them: 0bd0756c8 with its fill 2f2cc9bb4 (the class-value branch defers a
 literal that omits defaulted fields only when the class's fields hold a part
 known only per instantiation, as the initializer branch does; three check and
 two lower splits pin it), aec81d0ee with its fill 82bb5a749 (the two pins
-renamed `fail_todo_`), and the records commit after them; none rejected, no
-residue filed, W-273..W-274 unused. Review 2's candidate fix, which also defers
-a source that is not constant, gives the same results on the round's 67 probes;
-neither candidate keeps RC-12's t02 at W-265, which returns to W-264's verifier
-stop. The root fix, W-272's removal, would change how eval.cpp gives every
-action its operands, and stays filed. D-TP-24 is amended in the plan (§1.2,
-§1.14) and here. Measured at 82bb5a749 on 0bd0756c8's toolchain,
+renamed `fail_todo_`), and the records commit 82ab5f78a after them; none
+rejected, no residue filed, W-273..W-274 unused. Review 2's candidate fix, which
+also defers a source that is not constant, gives the same results on the round's
+67 probes; neither candidate keeps RC-12's t02 at W-265, which returns to
+W-264's verifier stop. The root fix, W-272's removal, would change how eval.cpp
+gives every action its operands, and stays filed. D-TP-24 is amended in the plan
+(§1.2, §1.14) and here. Measured at 82bb5a749 on 0bd0756c8's toolchain,
 container-built, EXPECTED and not of record: "file_test test mode on
 /home/user/carbon-tp: 1955 passed, 0 failed (exit 0, 24s)", 0 `!` and 0 `?`
 marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
@@ -3514,10 +3514,19 @@ none rejected whole. The per-finding table is the plan's "Focused re-review of
 the fold (2026-10-15)", round 5. Neither review judged the branch dry: both
 found the regression. Round 5 had a MAJOR finding and its fixer changed one
 toolchain source file and three goldens, so round 6 of the focused re-review is
-owed, over the round-5 fixer's commits from 0bd0756c8 to its records commit and
-the records commit after them that records round 5's reviews; the PR opens and
-is held after a dry round (amended 2026-10-15, focused re-review of the fold:
-all round-5 findings).
+owed, over the round-5 fixer's commits 0bd0756c8..82ab5f78a (the fix commits
+0bd0756c8..82bb5a749 and the records commit 82ab5f78a) and the records commit
+after them that records round 5's reviews; the PR opens and is held after a dry
+round (amended 2026-10-15, focused re-review of the fold: all round-5 findings;
+records: re-review round 5). The records commit after 82ab5f78a adds to the
+plan's round-5 record the reviews' runs it left out (among them review 1's kill
+sites of M21 to M25, its twins and its two narrower variants that fall short,
+and review 2's controls and its checks of the ledger, the held PRs' ledgers and
+the PR body), names 82ab5f78a in round 6's scope, makes the gap row's W-272
+clause name the classes that W-272's title names, re-runs the id re-scan and
+`git merge-tree` with the same results, and re-measures 82ab5f78a (file_test
+1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets; EXPECTED, not of
+record) (amended 2026-10-15, records: re-review round 5).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

@@ -297,6 +297,7 @@ fails if this table is stale):
 | `generics/templates_dependent_pointer.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_var.carbon` | Generics: Integrated templates | run |
 | `generics/templates_for_dependent_range.carbon` | Generics: Integrated templates | run |
+| `generics/templates_match_dependent_choice.carbon` | Generics: Integrated templates | run |
 | `generics/templates_return_aggregates_diff.carbon` | Generics: Integrated templates | differential |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |

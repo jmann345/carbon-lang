@@ -6,21 +6,28 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Sum-type interop plan: `std::optional` and `std::variant` (SV-1)
 
-**Status:** rev 3 -- NOT signed off: B1, B-1. The focused re-review of rev 2
-(4d85d14fe) returned REJECT on those two BLOCKERs, with one MAJOR and three
-MINORs: trunk's aggregate element conversion drops `diagnose`, so rev 2's
-`overload fn` probe still built control flow for a tuple, struct or array
-parameter. Rev 3 folds all six findings (RR-B1, RR-B-1, RR-M1, RR-m1, RR-m2,
-RR-m3), each measured on the prototype v5 (§0.6) and listed in the [focused
-re-review fold record](#focused-re-review-fold-record-rev-3-2026-10-20) (amended
-2026-10-20, review fold: all RR findings); its sign-off waits on a re-review of
-rev 3. Rev 2 (4d85d14fe) folded the two adversarial plan reviews of R29(c), A
-and B, both REJECT, 30 findings (the [review fold
-record](#review-fold-record-rev-2-2026-10-20)); rev 1 (2026-10-20) is commit
-3287b1072. Workstream SV-1 is W5 slice 4 of fork/w5-choice/plan.md (§4 "S4"):
-the transparent `std::optional` / `std::variant` interop mapping, the OPEN half
-of ledger item W-011, under gap row 68 ("Control flow: matching — sum-type
-consumption incl. std::variant/std::optional interop", PARTIAL). Branch
+**Status:** rev 4 -- NOT signed off: RR3-B1. The focused re-review of rev 3
+(4eef66632) returned REJECT on that BLOCKER, with one MAJOR and four MINORs: the
+land-time hunk M-VA recognized only a bare VA-1 pack element, so a pack whose
+element is a tuple, struct, array or class holding a sum type still stopped
+PR 59's composition at VA-1's CHECK, and rev 3's probe rule made the member an
+`overload fn` call selects depend on where the call is. Rev 4 folds all six
+findings (RR3-B1, RR3-M1, RR3-m1 to RR3-m4), each measured on the prototype v6
+and its compositions (§0.6) and listed in the [re-review of
+rev 3](#re-review-of-rev-3-folded-in-rev-4-2026-10-20) of the focused re-review
+fold record (amended 2026-10-20, review fold: all RR3 findings); its sign-off
+waits on a re-review of rev 4. Rev 3 (4eef66632) folded the focused re-review of
+rev 2 (REJECT on B1 and B-1, six findings: RR-B1, RR-B-1, RR-M1, RR-m1, RR-m2,
+RR-m3), measured on the prototype v5 (§0.6), and the re-review of rev 3 found
+RR-B1, RR-B-1, RR-m2 and RR-m3 resolved, RR-M1 not resolved and RR-m1 resolved
+as stated (amended 2026-10-20, review fold: all RR3 findings). Rev 2 (4d85d14fe)
+folded the two adversarial plan reviews of R29(c), A and B, both REJECT, 30
+findings (the [review fold record](#review-fold-record-rev-2-2026-10-20)); rev 1
+(2026-10-20) is commit 3287b1072. Workstream SV-1 is W5 slice 4 of
+fork/w5-choice/plan.md (§4 "S4"): the transparent `std::optional` /
+`std::variant` interop mapping, the OPEN half of ledger item W-011, under gap
+row 68 ("Control flow: matching — sum-type consumption incl.
+std::variant/std::optional interop", PARTIAL). Branch
 `claude/carbon-fork-0-1-sv`, cut from trunk 5674fe88b, whose toolchain and core
 trees are identical to the fork's trunk toolchain state 0bdce60a5 (the UA-1
 advance over the upstream cut c1e83b0b7). Trunk has since gained two
@@ -51,18 +58,28 @@ not redesigned (PR 56 and PR 57 own it) (amended 2026-10-20, review fold:
 B-M-5 / A-M4). Every conversion a caller only tests, such as an `overload fn`
 candidate probe, builds no control flow and diagnoses nothing, the element
 conversions of a tuple, struct or array argument included (SV-1 passes
-`diagnose` through trunk's aggregate element conversion, which dropped it),
-and accepts only what the committed conversion can build; a Carbon sum value
-converts only to the C++ class whose sum type it is (amended 2026-10-20,
-review fold: A-B1 / B-B-1 / A-B2; RR-B1 / RR-B-1 / RR-m1). Every shape outside
-the mapping is diagnosed (§1.11), never a crash, never a silent wrong value,
-and the residues are filed (§1.16). All of it is prototyped: the rev-3
-prototype v5 (§0.6) emits the final diagnostics, runs every IN shape of this
-plan against C++ oracles, runs the three reviews' probes, and passes the trunk
-gate apart from four mechanical refills; composed with the held PRs that
-touch its toolchain or prelude files, PR 57 (stacked on PR 56), PR 59, PR 60
-and PR 61, each PR's gate fails only the predicted refills, PR 59's with the
-land-time rule of §3 item 8 (amended 2026-10-20, review fold: RR-M1).
+`diagnose` through trunk's aggregate element conversion, which dropped it), and
+is decided from the types alone: where the committed conversion cannot be built
+(at file scope, at a template's instantiation, for a VA-1 pack element), the
+probe still accepts the member and the committed call reports that limit with
+a TODO, so the member a call selects never depends on where the call is; a
+Carbon sum value converts only to the C++ class whose sum type it is (amended
+2026-10-20, review fold: A-B1 / B-B-1 / A-B2; RR-B1 / RR-B-1; RR3-M1). Every
+shape outside the mapping is diagnosed (§1.11), and the residues are filed
+(§1.16). On every probe of this plan and of its four reviews, and on the
+compositions with the held PRs, no valid program stops the compiler and no
+call silently selects another member or computes another value; rev 3 made the
+same claim, and the re-review of rev 3 falsified it twice (a pack element
+reached through a tuple, struct, array or class conversion crashed PR 59's
+composition, and file scope or a template's instantiation silently changed the
+member an `overload fn` call selected), which rev 4 fixes and pins (amended
+2026-10-20, review fold: RR3-B1 / RR3-M1). All of it is prototyped: the rev-4
+prototype v6 (§0.6) emits the final diagnostics, runs every IN shape of this
+plan against C++ oracles, runs the four reviews' probes, and passes the trunk
+gate apart from four mechanical refills; composed with the held PRs that touch
+its toolchain or prelude files, PR 57 (stacked on PR 56), PR 59, PR 60 and
+PR 61, each PR's gate fails only the predicted refills, PR 59's with the
+land-time rule of §3 item 8 (amended 2026-10-20, review fold: RR-M1; RR3-B1).
 
 ## §0 Audit: measurements with file:line evidence
 
@@ -99,7 +116,16 @@ rev-3 log, `bin/` its scripts (`build.sh`, `comp.sh`, `mkft.sh`, `ft.sh`,
 rev-3 sources in rev 2's layout (`final/final.diff`, `final/src/`,
 `final/goldens-src/`, `final/goldens-filled/`, and `final/goldens-filled-M/` for
 the split appended at M-VA), and `land/` the land-time hunk of §3 item 8
-(`land/m-va-pack-element.diff`). Toolchains:
+(`land/m-va-pack-element.diff`). `$W` is the rev-4 fixer's scratch directory,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-fixer4`
+(amended 2026-10-20, review fold: all RR3 findings), with the same layout:
+`probes/` holds copies of the focused re-review of rev 3's probes (`f/`, `h/`,
+`lib/`, `rA/`, `rB/`, `rr/`, `tp/`, `va/`, `vn/`, `vn2/`, `x/`, `y/`) and the
+rev-4 fixer's own (`vn4/`, n13 to n22, and `z/`, z01), `runs/` every rev-4 log,
+`bin/` its scripts (`build.sh`, `comp.sh`, `mkft.sh`, `ft.sh`, `probe.sh`,
+`runall.sh`, `mkfinal.sh`, `conf.sh`), `final/` the rev-4 sources in rev 3's
+layout, and `land/` the land-time hunk of §3 item 8, its split, the
+CHECK-stripped source of the M-VA golden and mutant M21's hunk. Toolchains:
 
 -   **trunk**: `/home/user/carbon-build/carbon-trunk/install/bin/carbon`,
     version `0.0.0-0.dev+0bdce60a5`, the baseline of every comparison; its
@@ -164,6 +190,20 @@ the split appended at M-VA), and `land/` the land-time hunk of §3 item 8
     866468cba in one golden), and gated with the eight goldens added; **vav4**
     and **vav5** are the probe builds of the PR 59 composition (the focused
     re-review's `srcva`, and v5 with the hunk).
+-   **v6**: the rev-4 prototype (amended 2026-10-20, review fold: all RR3
+    findings), `$W/bin/build.sh v6 $W/src6`, the same relink over the trunk
+    build into `/dev/shm/sv1-fixer4/v6`, from the sources of `$W/final/src/`,
+    with the kinds appended as in v5 and its file_test relinked with the eight
+    goldens (`/dev/shm/sv1-fixer4/man/manifest.cpp`); programs and the
+    conformance run link through `/dev/shm/sv1-fixer4/wrapinst/`. **m17** and
+    **m20** are v6 with mutants M17 and M20 (§8 item 5).
+-   **tpv6**, **op2v6**, **scv6**, **vav6g**, **vav6r** and **vav6n**: v6
+    composed by `$W/bin/comp.sh` with PR 61 (TP-1's round-10 head eafca5cb9, as
+    74e16c4de, which adds only that commit's two golden fills, relinked over a
+    snapshot of `/home/user/carbon-build/carbon-tp` taken at eafca5cb9 into
+    `/dev/shm/sv1-fixer4/build-tp`, since a TP-1 fix round rebuilds that tree),
+    PR 57, PR 60 and PR 59 (with the rev-4 land-time hunk, with mutant M21's
+    hunk, rev 3's bare `PackElement` test, and with no hunk, mutant M19).
 
 ### §0.1 The row, the ledger item and the arbiter today
 
@@ -464,6 +504,73 @@ exits 134 is not a conformance PASS), and R-7 records it.
 
 ### §0.6 Prototypes and measurements
 
+**Rev 4 (v6), amended 2026-10-20, review fold: all RR3 findings.** v6
+(`$W/final/final.diff`; built by `$W/bin/build.sh v6 $W/src6`) is v5 with the
+fold of RR3-M1: the non-diagnosing path decides from the types alone and no
+longer calls `CanBuildBranches`, which loses its `diagnose` parameter (§1.4);
+convert.cpp and every file but sum_type.{h,cpp} are v5's. The land-time hunk
+M-VA (RR3-B1) is `$W/land/m-va-pack-element.diff`, measured on the PR 59
+composition only, since it names a VA-1 instruction kind. Measured on v6
+(`$W/runs/`):
+
+-   **The re-review of rev 3's probes** (`$W/probes/`, copies of its `$Z`-style
+    sets; `probes-v6.txt` against its v5 results): the 120 programs of rA, rB,
+    x, rr and y print what they printed on v5, except p05, the `overload fn`
+    call at file scope, which gives the file-scope TODO again, as on v4, by the
+    RR3-M1 rule; f01 gives the file-scope TODO at its `let` (v5, and mutant M20:
+    `1 2`); the 48 programs of h (the re-review of rev 3's hunt: parameter
+    shapes, C++ default arguments and template deduction, 18 unusual alternative
+    types, user `ImplicitAs` and `As` impls) print what they printed on v5, h40
+    3 4 included; the imported overload set of lib prints 10 9 100; no probe
+    crashes.
+-   **Templates on trunk's build**: t4 and t7 give ``unable to monomorphize
+    specific `F(Cpp.std._C.optional)` `` with W-279's TODO as its note at
+    `P(x)`; on M20 t7 prints `1 2` and t4 gets ``no member of overload set
+    `P` accepts this call``, which reproduces RR3-M1 without TP-1.
+-   **The sum-free element probe** (z01, `$W/probes/z/`): t01's members with
+    a `bool` second return print 2 on v6; trunk and M17 give ``cannot
+    implicitly convert expression of type `bool` to `i32` `` (RR3-m4).
+-   **Gate** (`$W/runs/gate-v6.log`): 1946 of 1950, the four function-pointer
+    goldens (34 differing lines, all `clang_function_pointer_type<N>`);
+    refilled by autoupdate, 1950 of 1950 (`gate-v6-2.log`).
+-   **Goldens** (`$W/runs/autoupdate-v6-final-*.log`): the CHECK-stripped
+    sources of Appendix B refill to a fixpoint in two passes (a third writes
+    nothing); eight are byte-identical to v5's fills, and
+    sum_type_overload.carbon has its sixteen splits, the two `fail_todo_`
+    ones with the TODOs of §4.
+-   **Conformance** (`$W/runs/conf-v6.log`, scoreboard
+    `conf-v6-scoreboard.json`): the full suite with the six programs over
+    `/dev/shm/sv1-fixer4/conf-tree` behind the link wrapper: 134 PASS / 0
+    FAIL / 21 SKIP over 155, bullets 48 PASS, 0 FAIL, 8 SKIP of 56, runner
+    exit 0; every one of the 155 programs has its v5 status;
+    `--update-readme-table` then `--self-test` pass (`conf-selftest.log`).
+-   **Mutants** (§8 item 5): M17 stops file_test on sum_type_overload.carbon
+    with ``Built invalid semantics IR: No terminator in block``
+    (`mut-m17.log`); M20 turns `fail_todo_file_scope` and
+    `fail_todo_template_overload` red, both compiling with no diagnostic
+    (`mut-m20.log`).
+-   **The PR 59 composition with the rev-4 M-VA** (vav6g; `probes-vav6g.txt`,
+    `gate-vav6g.log`, `gate-vav6g-M.log`): v02, v03 and v04, n01 to n08, n13,
+    n14 and n16 to n21 give ``semantics TODO: `conversion of a C++
+    `std::optional` or `std::variant` for a pack element` ``; n15 (an
+    adapter's `as` in an expansion body) and n22 (a `var` pack) get VA-1's
+    own TODOs; v05 VA-1's ``control flow in a pack expansion``; v00 prints
+    1 2, v01 7 -1, v06 7 -1, v07 4 -1, n09 7 1 -1 2 and n10 8 1; no probe
+    crashes. The gate passes 1964 of 1968, the four refills, before and
+    after the extended `fail_todo_pack_element` split is filled (two passes
+    to a fixpoint, the file's other splits byte-identical). With rev 3's
+    bare test (vav6r, mutant M21), n01 to n05 stop at VA-1's CHECK
+    (convert.cpp:587), as the re-review measured on vav5g, and the split
+    stops there at `ForwardTuple`; with no hunk (vav6n, M19) it stops at
+    `Forward`.
+-   **The other compositions** (`$W/runs/comp-*.txt`, `gate-<name>.log`):
+    tpv6 (TP-1's round-10 head) passes 1961 of 1965 and scv6 1963 of 1967,
+    the four refills only; op2v6 1951 of 1958, op2v5's seven failures. On
+    tpv6 (`probes-tpv6.txt`): h1, h2, h3, t2, t4, t5, t6, t7 and x20 give
+    W-279's TODO under ``unable to monomorphize specific``, q05 prints 5,
+    t3 3 4 and x19 0 (X-1 fixed); sum_type_overload.carbon passes unchanged
+    on tpv6 and vav6g.
+
 **Rev 3 (v5), amended 2026-10-20, review fold: all RR findings.** v5
 (`$Z/final/final.diff`; built by `$Z/bin/build.sh v5 $Z/src5`) is v4 with the
 folds of the focused re-review: convert.cpp's `ConvertAggregateElement` passes
@@ -697,8 +804,8 @@ trunk: SV-1 always, since every PR lands first, by the rule in the last column.
 | PR 56, OP-1, 379f20f67 | core/prelude/types/optional.carbon (+73/-2); docs/design/optional.md (+582, new) | SV-1 does not edit optional.carbon; sum.carbon imports it and calls `Optional(T).Some`, `.None()`, `HasValue()`, `Get()` only. optional.md is new on PR 56, and SV-1 amends it after M (Doc-M, §3) | none textual; optional.md takes PR 57's text, and Doc-M edits it by Appendix C's anchored edits |
 | PR 57, OP-2, 628273444 (build `/home/user/carbon-build/carbon-op2`, toolchain-identical to the head) | optional.carbon (+111/-8); docs/design/optional.md (+614); convert.cpp (+5/-2, the `MaybeUnformed` value-representation check at :1690-1700); function/import/decayed_param.carbon (+13/-85), pointer.carbon and void_pointer.carbon (not SV-1's) | the bridge calls `Get()` only after `HasValue()`; D-SV-8's name test and walk reach `T*` through OP-2's `MaybeUnformed(T*)` (op2v4, as v4: `$P/probes/v1/s05_ptr` prints 42 0 -1, `d04_carbon_optptr` 3, and `$P/probes/o/o04_bridge_stdoptional` 5 6 -1 9); OP-2's convert.cpp hunk is 100 lines above SV-1's hook (the dry run applies it at offset 3) | measured on op2v4 (§0.6): 1951 of 1958 pass; the seven failures are the four function-pointer refills and three of SV-1's goldens, stdlib/optional.carbon, choice/optional_pointer_payload.carbon and match/core_optional_view.carbon, whose SemIR gains OP-2's `%Destroy.lookup_impl_witness` / `%Destroy.facet` entries and reorders imports (12, 387 and 18 changed lines, no diagnostic line changed); F-M refills the seven (§3) |
 | PR 60, SC-1, 40a76ab81 | convert.cpp (+94/-7); type.cpp (+8, a new function); toolchain/diagnostics/kind.def (+13); toolchain/check/BUILD (+2) | SV-1's convert.cpp hunk applies at offset 14, its type.cpp hunks at offset 8; kind.def: SC-1's 13 kinds are a separate hunk from SV-1's 8 after `CppExportResultNeedsExpectedHeader`; BUILD: SV-1's two lines apply at offset 1 beside SC-1's `structural_conformance.{cpp,h}` | dry run applies (`$X/runs/dry-sc.log`); the mirror of §8.6 |
-| PR 59, VA-1, b0822a744 (build `/home/user/carbon-build/carbon-va`, toolchain-identical to the head) | convert.cpp (+114, a pack-conversion block 11 lines above SV-1's hook); type.cpp (+5); kind.def (+19, its hunk about 15 lines above SV-1's) | textually separate hunks; semantic as well (amended 2026-10-20, review fold: RR-M1): VA-1 converts a pack element in one straight-line block run once per element, an expansion body or `ConvertPackToPack`, and CHECKs that the element conversion made no control flow (convert.cpp:581-583 on the head, ``Control flow in a pack element conversion``), so a sum-type conversion of a pack element stops the compiler (the focused re-review's v02 and v04 on vav4) | dry run applies (convert.cpp at offsets 98 and 114, type.cpp at 5, kind.def at 15; `$Z/runs/dry-va.log`); at M, the land-time hunk M-VA of §3 item 8: the hook refuses a `SemIR::PackElement` value with a TODO (W-284), measured on vav5 and vav5g (§0.6) |
-| PR 61, TP-1, e408ad4d6 (build `/home/user/carbon-build/carbon-tp`, stamp 813804758) | convert.cpp (+560/-29); kind.def (+1) | semantic as well as textual (amended 2026-10-20, review fold: A-M1): TP-1 defers a conversion whose type is template-dependent and performs it at instantiation (`PerformAction`), outside any function body, so SV-1's hook leaves a template-dependent side to TP-1 and the instantiation-time conversion is W-279's TODO (§1.10); measured on tpv4: 1959 of 1963 pass (the four function-pointer refills only); h2 and h3 give W-279's TODO at instantiation; h1, a `match` on `StdOptional(T)` for a template `T`, stops at TP-1's own pattern_match.cpp:1409 CHECK, which TP-1's head reaches with no C++ at all (x19, a pure-Carbon generic choice: TP-1's toolchain stops, trunk gives W-252's TODO), finding X-1 of the fold record, routed to TP-1 | dry run applies, the include hunk with fuzz 1 and the hook at offset 378 (`$X/runs/dry-tp.log`) |
+| PR 59, VA-1, b0822a744 (build `/home/user/carbon-build/carbon-va`, toolchain-identical to the head) | convert.cpp (+114, a pack-conversion block 11 lines above SV-1's hook); type.cpp (+5); kind.def (+19, its hunk about 15 lines above SV-1's) | textually separate hunks; semantic as well (amended 2026-10-20, review fold: RR-M1): VA-1 converts a pack element in one straight-line block run once per element, an expansion body or `ConvertPackToPack`, and CHECKs that the element conversion made no control flow (convert.cpp:581-583 on the head, ``Control flow in a pack element conversion``), so a sum-type conversion of a pack element stops the compiler (the focused re-review's v02 and v04 on vav4) | dry run applies (convert.cpp at offsets 98 and 114, type.cpp at 5, kind.def at 15; `$Z/runs/dry-va.log`); at M, the land-time hunk M-VA of §3 item 8: the hook refuses a `SemIR::PackElement` value, or what a tuple, struct, array, class or adapter conversion projects from one, with a TODO (W-284), measured on vav6g (§0.6; rev 3's hunk refused only a bare `PackElement`, and a pack of tuples, structs, arrays or classes holding a sum type still stopped at the CHECK, n01 to n05; amended 2026-10-20, review fold: RR3-B1) |
+| PR 61, TP-1, e408ad4d6 (build `/home/user/carbon-build/carbon-tp`, stamp 813804758); round-10 head eafca5cb9, not yet pushed (amended 2026-10-20, review fold: RR3-m3) | convert.cpp (+560/-29); kind.def (+1); on eafca5cb9 also refutable_binding.cpp (+18/-5) and refutable_binding.h (+17, not SV-1's) and handle_match.cpp (+2/-5, not SV-1's) | semantic as well as textual (amended 2026-10-20, review fold: A-M1): TP-1 defers a conversion whose type is template-dependent and performs it at instantiation (`PerformAction`), outside any function body, so SV-1's hook leaves a template-dependent side to TP-1 and the instantiation-time conversion is W-279's TODO (§1.10); measured on tpv4: 1959 of 1963 pass (the four function-pointer refills only); h2 and h3 give W-279's TODO at instantiation; h1, a `match` on `StdOptional(T)` for a template `T`, stops at TP-1's own pattern_match.cpp:1409 CHECK, which TP-1's head reaches with no C++ at all (x19, a pure-Carbon generic choice: TP-1's toolchain stops, trunk gives W-252's TODO), finding X-1 of the fold record, routed to TP-1; on the round-10 head X-1 is fixed (x19 compiles and prints 0, and h1 gets W-279's TODO at instantiation for its `let`'s conversion; measured on tpv6, which passes 1961 of 1965, the four function-pointer refills only) | dry run applies, the include hunk with fuzz 1 and the hook at offset 378 (`$X/runs/dry-tp.log`); on 74e16c4de (eafca5cb9's fill) convert.cpp's include hunk and refutable_binding.cpp's first hunk need fuzz 1, and convert.cpp's other hunks apply at offsets 2 to 378 (`$W/runs/dry-summary.txt`); at M, the row is re-measured against PR 61's head of that day (§8 item 6) |
 | OX-1, parked (no PR) | none: SV-1 does not touch cpp/export.cpp or cpp/thunk.cpp | SV-1 exports nothing: the conversion calls existing C++ functions through the existing call path, and the reverse mapping of §1.5 names a specialization of an existing C++ class template as the invented argument type of one overload resolution, declaring no name in any C++ scope; a `Core.CppCompat` choice in an exported signature stays the existing export TODO (`s16`, W-049) | none |
 | PR 58, DD-1, fcee90d9b | none of SV-1's files; adds fork/designdocs/check_samples.py, whose W2 rule covers docs/design/ | SV-1's sum_types.md, unions.md and optional.md edits are subject to it after M | §8 item 11 runs it after M and after Doc-M (amended 2026-10-20, review fold: B-M-4) |
 | PR 51, 52, 53, 54, 55 | none in check, lower, core, kind.def or BUILD (PR 55 touches cpp/export.cpp, which SV-1 does not) | none | none |
@@ -725,6 +832,14 @@ head's convert.cpp has the same four callers of `ConvertAggregateElement`
 relink can reach was then composed and gated (§0.6, tpv5, op2v5, scv5,
 vav5g), so the semantic collisions are measured, not predicted; the full-build
 mirrors of §8.6 repeat them on the full build.
+
+**Measured at rev 4 (2026-10-20, amended 2026-10-20, review fold: RR3-B1 /
+RR3-M1 / RR3-m3).** `$W/final/final.diff` differs from rev 3's in sum_type.h and
+sum_type.cpp only (convert.cpp is rev 3's), so its dry runs are rev 3's; it
+applies to trunk 5674fe88b and to PR 59's head with no rejected hunk, and to
+TP-1's round-10 fill 74e16c4de with refutable_binding.cpp's first hunk at fuzz 1
+(`$W/runs/dry-summary.txt`). The relinked compositions tpv6, op2v6, scv6 and
+vav6g are gated in §0.6.
 
 Records shared with every held PR: fork/gap-analysis.md,
 fork/inventory/work-items.json, fork/decision-log.md, fork/ORCHESTRATION.md and
@@ -1086,7 +1201,8 @@ is left to `Core.Optional`'s own conversion from its payload (amended
 `CppSumTypeMismatch`, k01 to k03).
 
 **Conversions a caller only tests** (added 2026-10-20, review fold: A-B1 /
-B-B-1; rewritten 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1 / RR-m2).
+B-B-1; rewritten 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1 / RR-m2;
+amended 2026-10-20, review fold: RR3-M1).
 `ConversionTarget::diagnose` is false for a conversion whose caller tests
 convertibility (convert.h:79-83: "an ErrorInst may be returned, but it must
 be discarded"). The callers are the `overload fn` candidate probe
@@ -1107,37 +1223,59 @@ aggregate conversion's flag (:393), so the elements of a tuple, struct or array
 argument are converted diagnosing inside the probe. SV-1 passes the flag
 through: `ConvertAggregateElement` takes `bool diagnose`, sets it at :393, and
 its four callers (:486, :577, :971 and :1135) pass `target.diagnose` (§2.5). For
-a non-diagnosing conversion the hook then decides from the types and from
-whether the committed conversion could be built at that point
-(`CanBuildBranches`: inside a function body, with a source expression; below): a
-mismatch, a class with no sum type, or a point where no branch can be built
-returns `ErrorInst` and emits nothing, so an `overload fn` probe skips the
-member exactly when its committed call would fail; a convertible pair returns a
-stand-in of the target type built from no C++ call and no block
-(`MakeTestedConversion`: a `temporary_storage` read as a value), which the
-probe's scratch block discards. The stand-in is never a constant, and neither is
-the branched conversion it stands for, so deduction, which keeps a constant
-result and rejects any other, treats both alike; the slice-element test reads
-types only, and the probe discards its block. The committed call converts again
-with `diagnose` true and builds the real conversion.
+a non-diagnosing conversion the hook then decides from the types alone: a
+mismatch or a class with no sum type returns `ErrorInst` and emits nothing, so
+an `overload fn` probe skips a member whose parameter the argument does not
+convert to; a convertible pair returns a stand-in of the target type built from
+no C++ call and no block (`MakeTestedConversion`: a `temporary_storage` read as
+a value), which the probe's scratch block discards. The stand-in is never a
+constant, and neither is the branched conversion it stands for, so deduction,
+which keeps a constant result and rejects any other, treats both alike; the
+slice-element test reads types only, and the probe discards its block. The
+committed call converts again with `diagnose` true and builds the real
+conversion.
 
-Rev 1 built the branched conversion in the probe: its blocks were added to
-the function's region and survived the probe's `PopAndDiscard`, which crashed
-seven measured `overload fn` calls (``Built invalid semantics IR: No
-terminator in block``) and made a mismatching or unmapped member a hard error
-instead of a skipped candidate (§0.6; mutant M12 restores the crash). Rev 2
-tested the flag, but the flag never reached an aggregate's elements, so the
-same crash and the same hard error survived for a member whose parameter is a
-tuple, struct or array holding a sum type, in both directions and through
-deduction (the focused re-review's p06, p15, q04 to q07 and q09; mutant M17
-restores it), and at file scope the probe accepted a member whose conversion
-the committed call then refused with the file-scope TODO (p05; mutant M18).
-Passing the flag through also changes trunk, for the better: a scalar element
-mismatch inside an `overload fn` probe no longer emits a spurious error and
-skips the member (t01: `P((true, false))` against `(i32, i32)` and then
-`(bool, bool)` gives trunk's ``cannot implicitly convert expression of type
-`bool` to `i32` `` on trunk and v4, and calls the second member on v5); the
-gate shows no other golden changes (§0.6).
+A point where the committed conversion cannot be built (below: outside a
+function body, with no source expression, and from M-VA for a VA-1 pack element)
+is a limit of the toolchain, not of the types, so the non-diagnosing path does
+not test it (amended 2026-10-20, review fold: RR3-M1): the probe accepts the
+member, and the committed call emits the limit's TODO. Rev 3 tested it in the
+probe too (`CanBuildBranches` with `diagnose` false), which skipped such a
+member, so the same call selected different members in different places with no
+diagnostic: `P(Cpp.MaybeSeven())` called the `StdOptional(i32)` member inside a
+function and the `Cpp.std.optional(i32)` member at file scope (f01: `1 2` on v5
+and on mutant M20), and inside a template's instantiation the probe skipped that
+member and called a generic one (t7: `1 2` on the PR 61 composition; mutant M20
+on trunk's build does the same), so lifting W-036 or W-279 would have silently
+changed which member those programs call. F-009's declaration-order first match
+calls the first member that accepts the arguments; the argument converts to that
+member's parameter, so it is the member, and the program gets the TODO (f01 on
+v6: the file-scope TODO; t4 and t7 on tpv6: W-279's TODO under ``unable to
+monomorphize specific``; pinned by sum_type_overload.carbon's
+`fail_todo_file_scope` and `fail_todo_template_overload`). Rev 3's other aim
+stays: a genuine type mismatch is skipped, never a hard error (y01,
+`tuple_mismatch_first`).
+
+Rev 1 built the branched conversion in the probe: its blocks were added to the
+function's region and survived the probe's `PopAndDiscard`, which crashed seven
+measured `overload fn` calls (``Built invalid semantics IR: No terminator in
+block``) and made a mismatching or unmapped member a hard error instead of a
+skipped candidate (§0.6; mutant M12 restores the crash). Rev 2 tested the flag,
+but the flag never reached an aggregate's elements, so the same crash and the
+same hard error survived for a member whose parameter is a tuple, struct or
+array holding a sum type, in both directions and through deduction (the focused
+re-review's p06, p15, q04 to q07 and q09; mutant M17 restores it). Rev 2 also
+accepted, at file scope, a member whose conversion the committed call then
+refused with the file-scope TODO (p05); rev 3 skipped that member instead
+(mutant M18), and rev 4 accepts it again, by the rule above (amended 2026-10-20,
+review fold: RR3-M1). Passing the flag through also changes trunk, for the
+better: a scalar element mismatch inside an `overload fn` probe no longer emits
+a spurious error and skips the member (t01: `P((true, false))` against `(i32,
+i32)` and then `(bool, bool)` gives trunk's ``cannot implicitly convert
+expression of type `bool` to `i32` `` on trunk and v4, and calls the second
+member on v5 and v6); sum_type_overload.carbon's `scalar_tuple_mismatch_first`
+pins it with no sum type in the path (amended 2026-10-20, review fold: RR3-m4),
+and the gate shows no other golden changes (§0.6).
 
 **What SemIR a converted value is.** The C++ value is first made a value
 expression (`ConvertToValueExpr`), so the accessors run on a `const` object
@@ -1172,29 +1310,38 @@ spelling is added. The calls themselves go through the existing call path and
 its thunks (§0.5); the SemIR of the arbiter body is in §1.6.
 
 **Where it cannot branch** (rewritten 2026-10-20, review fold: A-M1 / A-B2;
-amended 2026-10-20, review fold: RR-m1 / RR-M1). The conversion branches, so
-it needs a function body and a parse node for its blocks; `CanBuildBranches`
-tests both, emitting the TODO only when diagnosing, and the non-diagnosing
-path calls it too. Outside a function body it emits ``semantics TODO:
-`conversion of a C++ `std::optional` or `std::variant` outside a function body
-(at file scope, or deferred to a template's instantiation)` `` and returns an
-error: at file
-scope (a `let` initializer; measured `x18`, the rev-1 `t01`/`s15` shape), the
-same limit as every branching expression there (W-036), and during template
-instantiation, where TP-1 performs a deferred conversion outside any function
-body (h2, h3 on tpv4; W-279). A distinguishing test between the two was tried
-and rejected: the conversion's location is an instruction in both. A
-conversion inside a function whose location reaches no parse node emits
-``conversion of a C++ `std::optional` or `std::variant` with no source
-expression`` (W-279); no measured program reaches it: rev 1's crash there
-(`control_flow.cpp:61`, review A's a7, a10, a11) came through C++'s converting
-constructors, which the reverse rule of §1.5 now refuses first, and an impl's
-signature-adapting thunk (x11) reaches its node. From M on, a third place
-cannot hold branches: a VA-1 pack element, converted in one straight-line
-block per element (an expansion body, or `ConvertPackToPack`); the land-time
-hunk M-VA (§3 item 8) adds that test to `CanBuildBranches`, which then emits
-``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a
-pack element` `` (W-284) instead of reaching VA-1's CHECK.
+amended 2026-10-20, review fold: RR-m1 / RR-M1; RR3-M1 / RR3-B1). The conversion
+branches, so it needs a function body and a parse node for its blocks;
+`CanBuildBranches` tests both and emits the TODO, and only the committed
+(diagnosing) conversion calls it. Outside a function body it emits ``semantics
+TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function
+body (at file scope, or deferred to a template's instantiation)` `` and returns
+an error: at file scope (a `let` initializer; measured `x18`, the rev-1
+`t01`/`s15` shape, and an `overload fn` call there, f01), the same limit as
+every branching expression there (W-036), and during template instantiation,
+where TP-1 performs a deferred conversion outside any function body (h2, h3 on
+tpv4; t4, t7 on tpv6; W-279). A distinguishing test between the two was tried
+and rejected: the conversion's location is an instruction in both. A conversion
+inside a function whose location reaches no parse node emits ``conversion of a
+C++ `std::optional` or `std::variant` with no source expression`` (W-279); no
+measured program reaches it: rev 1's crash there (`control_flow.cpp:61`, review
+A's a7, a10, a11) came through C++'s converting constructors, which the reverse
+rule of §1.5 now refuses first, and an impl's signature-adapting thunk (x11)
+reaches its node. From M on, a third place cannot hold branches: a VA-1 pack
+element, converted in one straight-line block per element (an expansion body, or
+`ConvertPackToPack`). The value the hook sees there is the `SemIR::PackElement`
+itself, or, when the element's type is a tuple, struct, array or class holding a
+sum type, what the aggregate conversion projects from it (`TupleAccess`,
+`StructAccess`, `ArrayIndex`, `ClassElementAccess`, through `AsCompatible`,
+`AcquireValue` and `ValueAsRef`); the land-time hunk M-VA (§3 item 8) walks
+those projections back to a `PackElement` in `CanBuildBranches`, which then
+emits ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant`
+for a pack element` `` (W-284) before any block is built, instead of reaching
+VA-1's CHECK (n01 to n08, n13, n14 and n16 to n21 on vav6g; n15 and n22 get
+VA-1's own TODOs first). Rev 3's hunk tested for a bare `PackElement` only, and
+a pack of tuples, structs, arrays or classes holding a sum type still stopped
+PR 59's composition at the CHECK (the re-review of rev 3's n01 to n05; mutant
+M21).
 
 **Valueless.** A valueless `std::variant` is reachable through a throwing
 conversion inside `emplace` (§0.5, rewritten 2026-10-20, review fold: A-m2);
@@ -1203,10 +1350,12 @@ its conversion fail-stops in the last arm's `std::get`, through the B0 fence.
 _Break condition:_ if a caller that sets `diagnose` false keeps a successful
 non-constant result (convert.h's contract forbids it, and deduction keeps only
 constants), a new path builds an element's `ConversionTarget` without the
-aggregate's `diagnose` (mutant M17's shape), or W-036, W-279 or W-284 must be
-lifted, the arms are rebuilt as a call to a synthesized Carbon function per
-specialization (one body, no caller-side blocks, §7.2 R-K), which makes every
-conversion a single call.
+aggregate's `diagnose` (mutant M17's shape), a conversion step projects a pack
+element through an instruction the walk of M-VA does not follow (then the
+straight-line region is marked by VA-1's code instead, §7.1 R-10), or W-036,
+W-279 or W-284 must be lifted, the arms are rebuilt as a call to a synthesized
+Carbon function per specialization (one body, no caller-side blocks, §7.2 R-K),
+which makes every conversion a single call.
 
 ### §1.5 D-SV-5: the conversion from Carbon to C++, and what is exportable
 
@@ -1628,20 +1777,29 @@ golden's refill.
     Carbon's deduction rule, not a residue.
 -   **Templates** (rewritten 2026-10-20, review fold: A-M1). The hook returns
     `None` when either type is template-dependent, so it never diagnoses a
-    conversion whose types are not known (rev 1 diagnosed h1's symbolic
-    target at definition). On trunk such a conversion then takes trunk's
-    existing template path. With PR 61 (TP-1), which lands first, the
-    conversion is deferred and performed at instantiation in `PerformAction`
-    (convert.cpp:2945-2989 on TP-1's head), outside any function body, where
-    the conversion cannot branch: it emits the TODO of §1.4 under ``unable to
+    conversion whose types are not known (rev 1 diagnosed h1's symbolic target
+    at definition). On trunk such a conversion then takes trunk's existing
+    template path. With PR 61 (TP-1), which lands first, the conversion is
+    deferred and performed at instantiation in `PerformAction`
+    (convert.cpp:2945-2989 on TP-1's head), outside any function body, where the
+    conversion cannot branch: it emits the TODO of §1.4 under ``unable to
     monomorphize specific`` (measured on tpv4: h2 and h3; on trunk the same;
     pinned by `fail_todo_template_conversion` in stdlib/fail_sum_types.carbon,
-    unchanged on tpv4); filed as W-279. A `match` on a template-dependent
-    value is W-252's (TP-1's), for every choice: on TP-1's head a `match` on a
+    unchanged on tpv4); filed as W-279. A `match` on a template-dependent value
+    is W-252's (TP-1's), for every choice: on TP-1's head a `match` on a
     template-dependent generic choice stops at pattern_match.cpp:1409 with no
-    C++ involved (x19 on TP-1's own toolchain; trunk gives W-252's TODO), so
-    h1 stops there on tpv4; this is finding X-1 of the fold record, routed to
-    TP-1, and §1.16 files it only if it is still on the merged trunk at D.
+    C++ involved (x19 on TP-1's own toolchain; trunk gives W-252's TODO), so h1
+    stops there on tpv4; this is finding X-1 of the fold record, routed to TP-1,
+    and §1.16 files it only if it is still on the merged trunk at D. TP-1's
+    round-10 head fixes X-1 (amended 2026-10-20, review fold: RR3-m3): on tpv6,
+    x19 compiles and prints 0, and h1 gets W-279's TODO at instantiation for its
+    `let`'s conversion, before its `match`. An `overload fn` call inside a
+    template whose member takes the sum type is the same TODO at instantiation,
+    not a call of a later member (amended 2026-10-20, review fold: RR3-M1): the
+    probe accepts the member, whose committed conversion is the deferred one
+    (t4, and t7 with a generic second member, on tpv6 and on trunk's build;
+    `fail_todo_template_overload` in stdlib/sum_type_overload.carbon, which
+    passes unchanged on tpv6).
 -   **Through a Carbon library.** A library may traffic in the sum types
     (`Fetch(n: i32) -> Core.CppCompat.StdOptional(i32)`), and an importer that
     imports no C++ matches them (`xlib`, and the multi-unit program of
@@ -1658,15 +1816,19 @@ golden's refill.
     existing ``unsupported conversion to constant from APValue {}`` TODO
     (`n17`, unchanged).
 -   **File scope.** §1.4: the TODO, riding W-036.
--   **`overload fn` sets** (added 2026-10-20, review fold: A-B1 / B-B-1;
-    amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1): a member whose
-    parameter is a sum type, the C++ class, or a tuple, struct or array
-    holding one is a candidate like any other: the probe converts without
-    building anything, an aggregate's elements included (§1.4), so the first
-    member that accepts the argument is called, generic members included; at
-    file scope a member that needs the branched conversion is skipped, since
-    its call could not be built there (stdlib/sum_type_overload.carbon's
-    fourteen splits).
+-   **`overload fn` sets** (added 2026-10-20, review fold: A-B1 / B-B-1; amended
+    2026-10-20, review fold: RR-B1 / RR-B-1; RR3-M1): a member whose parameter
+    is a sum type, the C++ class, or a tuple, struct or array holding one is a
+    candidate like any other: the probe converts without building anything, an
+    aggregate's elements included (§1.4), so the first member that accepts the
+    argument is called, generic members included. Where the committed conversion
+    cannot be built, at file scope or at a template's instantiation, that member
+    is still the one the argument converts to, so it is selected and the call
+    reports the limit's TODO; rev 3 skipped it there and silently called a later
+    member (f01, t7), so the member a call selected depended on where the call
+    was (stdlib/sum_type_overload.carbon's sixteen splits:
+    `fail_todo_file_scope` and `fail_todo_template_overload` pin the TODO,
+    `scalar_tuple_mismatch_first` the sum-free element probe).
 
 _Break condition_ (added 2026-10-20, review fold: B-m-6): if deduction learns
 to see through implicit conversions, or TP-1 can splice control flow into an
@@ -1698,11 +1860,11 @@ on v4, which emits the real kinds (§0.0), and pinned by the `fail_` splits of
 | a `ref` payload binding on a mapped or view scrutinee | the existing ``error: cannot bind durable reference to non-reference value of type `i32` [ConversionFailureNonRefToRef]`` | W-280 |
 | a C++ sum class inside a tuple or struct scrutinee | the existing ``semantics TODO: `match on unsupported scrutinee type` `` | W-281 |
 | the conversion inside an `if`-expression arm (`if c then Cpp.MaybeSeven() else Cpp.Nothing()` to a sum type) | the existing ``semantics TODO: `destroying temporaries of a conditionally evaluated operand whose value is not passed by copy` `` | W-122 (a note) |
-| the conversion outside a function body: at file scope, or deferred to a template's instantiation | ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` `` (under ``unable to monomorphize specific`` for a template) | W-036 (file scope, a note); W-279 (instantiation) |
-| the conversion of a VA-1 pack element, in an expansion body or a pack forwarded to a pack of another element type (from M-VA, §3 item 8; amended 2026-10-20, review fold: RR-M1) | ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` `` | W-284 |
+| the conversion outside a function body: at file scope, or deferred to a template's instantiation, an `overload fn` call there whose member takes the sum type included (amended 2026-10-20, review fold: RR3-M1: the member is selected and the call gets the TODO, never a later member; f01, t4, t7) | ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` `` (under ``unable to monomorphize specific`` for a template) | W-036 (file scope, a note); W-279 (instantiation) |
+| the conversion of a VA-1 pack element, in an expansion body or a pack converted to a pack of another element type, whose element is the C++ class, the sum type or a `Core.Optional`, or a tuple, struct, array or class holding one, in either direction (from M-VA, §3 item 8; amended 2026-10-20, review fold: RR-M1; RR3-B1: rev 3 covered the bare element only, and the aggregate forms stopped the compiler, n01 to n05) | ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` `` | W-284 |
 | a conversion with no source expression (no measured program) | ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` with no source expression` `` | W-279 |
 | a `Core.CppCompat` sum type in a signature C++ calls | the existing export TODOs (`s16`; `fail_todo_export_sum_type`) | W-049 (a note) |
-| a `match` on a template-dependent value | W-252's TODO on trunk; TP-1's pattern_match.cpp:1409 CHECK on PR 61's head (X-1) | W-252; X-1 routed to TP-1 |
+| a `match` on a template-dependent value | W-252's TODO on trunk; TP-1's pattern_match.cpp:1409 CHECK on PR 61's pushed head (X-1); on TP-1's round-10 head eafca5cb9 the `match` itself works (x19, a pure-Carbon generic choice, prints 0 on tpv6), and h1, whose `let` converts a C++ optional to `StdOptional(T)` before its `match`, gets W-279's TODO for that conversion at instantiation (amended 2026-10-20, review fold: RR3-m3) | W-252; X-1 routed to TP-1, fixed on its round-10 head |
 
 Rev 1's two rows for the one-step `Core.Optional` conversion (m20, t04) are IN
 at rev 2 (§1.7). The first four rows share one error and differ in the note,
@@ -1730,10 +1892,11 @@ cite this plan's sections and no W-id (W-ids live in the records only). The
 interop goldens mock `std::optional` and `std::variant` in a `sum.h` split, as
 stdlib/span.carbon and string_view.carbon mock theirs, so they are hermetic,
 small, and pin the members the conversions call; `--target=x86_64-linux-gnu`
-pins `size_t`. Sources: Appendix B and `$Z/final/goldens-src/`; fills:
-`$Z/final/goldens-filled/` (v5, a fixpoint, §0.6; rev 2's `$X/final/` held
-v4's, identical but for sum_type_overload.carbon's eight new splits; amended
-2026-10-20, review fold: RR-B1). Rev-2 changes are marked
+pins `size_t`. Sources: Appendix B and `$W/final/goldens-src/`; fills:
+`$W/final/goldens-filled/` (v6, a fixpoint, §0.6; rev 3's `$Z/final/` held
+v5's, identical but for sum_type_overload.carbon, and rev 2's `$X/final/`
+v4's, identical but for that file's eight rev-3 splits; amended 2026-10-20,
+review fold: RR-B1; RR3-M1 / RR3-m4). Rev-2 changes are marked
 (amended 2026-10-20, review fold: A-B1 / B-B-1 / A-B2 / A-M2 / B-M-1 / A-M3 /
 B-M-2 / B-M-5 / A-m3 / A-m5 / B-m-1).
 
@@ -1742,8 +1905,8 @@ B-M-2 / B-M-5 / A-m3 / A-m5 / B-m-1).
 | check/testdata/interop/cpp/stdlib/optional.carbon | `match`, `if_let`, `convert` (both directions, by value and `const&`), `pointer_payload`, `bridge`, `one_step_core_optional` (rev 2), `monostate_payload` (rev 2), `fail_todo_struct_payload`, `fail_dead_default`, `fail_unknown_alternative`, `fail_todo_outside_function`, `fail_todo_ref_binding` (rev 2) |
 | check/testdata/interop/cpp/stdlib/variant.carbon | `match`, `monostate`, `duplicate`, `fail_todo_too_many_alternatives`, `fail_todo_nested_by_value`, `fail_index_out_of_range` |
 | check/testdata/interop/cpp/stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`, `fail_todo_non_trivial` (listed at rev 2; it was in rev 1's source, B-m-1), `fail_conversion_mismatch`, `fail_core_optional_mismatch` (rev 2, replaces rev 1's `fail_todo_core_optional_argument`, now IN), `core_optional_argument_as`, `fail_todo_export_sum_type`, `fail_reverse_other_specialization` (rev 2), `fail_reverse_converting_class` (rev 2), `fail_todo_tuple_scrutinee` (rev 2), `fail_todo_if_arm` (rev 2), `fail_todo_template_conversion` (rev 2); the mock's `optional` gains a converting constructor from `optional<U>` (libc++'s shape) so the reverse splits reach it |
-| check/testdata/interop/cpp/stdlib/sum_type_overload.carbon (rev 2; eight splits added at rev 3, amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1) | `convert_first`, `convert_second`, `mismatch_first`, `not_mapped_first`, `reverse`, `generic_member`; rev 3: `tuple_member`, `tuple_mismatch_first`, `struct_member`, `array_member`, `tuple_reverse`, `tuple_core_optional`, `generic_tuple_member`, `file_scope`: every split compiles with no diagnostic |
-| check/testdata/interop/cpp/stdlib/fail_sum_types.carbon, at M-VA (rev 3; amended 2026-10-20, review fold: RR-M1) | `fail_todo_pack_element` appended (VA-1's syntax exists only after M): the pack-element TODO, forward and reverse |
+| check/testdata/interop/cpp/stdlib/sum_type_overload.carbon (rev 2; eight splits added at rev 3, amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1; three at rev 4, amended 2026-10-20, review fold: RR3-M1 / RR3-m4) | `convert_first`, `convert_second`, `mismatch_first`, `not_mapped_first`, `reverse`, `generic_member`; rev 3: `tuple_member`, `tuple_mismatch_first`, `struct_member`, `array_member`, `tuple_reverse`, `tuple_core_optional`, `generic_tuple_member`; rev 4: `scalar_tuple_mismatch_first` (no sum type: the element probe of trunk's `ConvertAggregateElement`, whose second member returns `bool` so the call's type pins the member), `fail_todo_file_scope` (rev 3's `file_scope`, renamed: the first member is selected and the call gets the file-scope TODO), `fail_todo_template_overload` (the same at a template's instantiation, under ``unable to monomorphize specific``): the fourteen non-`fail_` splits compile with no diagnostic |
+| check/testdata/interop/cpp/stdlib/fail_sum_types.carbon, at M-VA (rev 3; amended 2026-10-20, review fold: RR-M1; RR3-B1) | `fail_todo_pack_element` appended (VA-1's syntax exists only after M): the pack-element TODO, forward and reverse, for a pack of the C++ class or the sum type and, from rev 4, of a tuple, struct, array or class holding one (ten calls) |
 | check/testdata/choice/optional_pointer_payload.carbon | `pointer`, `fail_todo_non_pointer_optional`, `fail_todo_nullptr_payload` (rev 2), `fail_todo_maybe_unformed_payload` (rev 2) |
 | check/testdata/match/core_optional_view.carbon | `concrete`, `pointer`, `fail_todo_generic` (rev 2: rev 1's passing `generic`), `fail_todo_aggregate` (rev 2), `fail_todo_ref_binding` (rev 2), `fail_unknown_alternative` |
 | check/testdata/interop/cpp/exceptions/fail_catching.carbon (existing; one split appended at rev 2) | `fail_nullptr_return`: `Cpp.nullptr_t` is not a catching success type (D-SV-8's narrowing) |
@@ -1752,13 +1915,14 @@ B-M-2 / B-M-5 / A-m3 / A-m5 / B-m-1).
 | interop/cpp/function/import/{carbon_fn_as_callable, decayed_param, function_ptr, method_ptr}.carbon (refills) | only `cpp_fn_ptr_type clang_function_pointer_type<N>` ids change (§0.6) |
 
 `fail_todo_` marks a residue that a later slice lifts (W-275, W-276, W-277,
-W-279, W-280, W-281, W-122, W-036, W-049, and W-177's narrowed scope, named in
-the records only); `fail_` marks a permanent error. The diagnostics coverage
-test (diagnostics/coverage_test.cpp, Bazel-only) is met by construction: each
-of the eight new kinds appears in a `fail_` split (CppSumTypeNotMapped and its
-four notes in fail_sum_types.carbon, optional.carbon and variant.carbon,
-CppSumTypeMismatch and CppSumTypeReverseMismatch in fail_sum_types.carbon,
-CoreOptionalNotMatchable in core_optional_view.carbon).
+W-279, W-280, W-281, W-284, W-122, W-036, W-049, and W-177's narrowed scope,
+named in the records only); `fail_` marks a permanent error. The diagnostics
+coverage test (diagnostics/coverage_test.cpp, Bazel-only) is met by
+construction: each of the eight new kinds appears in a `fail_` split
+(CppSumTypeNotMapped and its four notes in fail_sum_types.carbon,
+optional.carbon and variant.carbon, CppSumTypeMismatch and
+CppSumTypeReverseMismatch in fail_sum_types.carbon, CoreOptionalNotMatchable in
+core_optional_view.carbon).
 
 _Break condition:_ if a mock diverges from libc++ in a way a program shows,
 the mock follows libc++ and its goldens refill.
@@ -1840,14 +2004,15 @@ reviewers of R29(c)) before the PR lands.
     628273444 (amended 2026-10-20, review fold: B-M-1 / B-M-3).
 -   **Records** (commit R for the row, D for the rest; Appendix C.4 to C.9):
     W-011 DISCHARGED (both halves); W-177 stays OPEN with a dated narrowing
-    note; W-275, W-276, W-277, W-279, W-280 and W-281 filed (§1.16), and
-    W-282 only if X-1 is on the merged trunk; notes appended to W-036, W-047,
-    W-049, W-122 and W-252 naming the SV-1 shapes that ride them; row 68 per
-    §1.17; the decision-log entry "SV-1 / F-020: `std::optional` and
-    `std::variant` interop mapping" with F-020, the F-015 amendment and D-SV-2
-    to D-SV-16 and its veto digest; fork/ORCHESTRATION.md's SV-1 row and Next
-    actions item; the conformance README table regenerated with
-    `runner.py --update-readme-table`.
+    note; W-275, W-276, W-277, W-279, W-280 and W-281 filed (§1.16), W-284 filed
+    at D once M-VA has landed (otherwise held until it lands; amended
+    2026-10-20, review fold: RR3-m1), and W-282 only if X-1 is on the merged
+    trunk; notes appended to W-036, W-047, W-049, W-122 and W-252 naming the
+    SV-1 shapes that ride them; row 68 per §1.17; the decision-log entry "SV-1 /
+    F-020: `std::optional` and `std::variant` interop mapping" with F-020, the
+    F-015 amendment and D-SV-2 to D-SV-16 and its veto digest;
+    fork/ORCHESTRATION.md's SV-1 row and Next actions item; the conformance
+    README table regenerated with `runner.py --update-readme-table`.
 
 _Break condition_ (added 2026-10-20, review fold: B-m-6): if sum_types.md is
 re-platformed or DD-1's state L maps its sections differently, the section
@@ -1865,24 +2030,30 @@ repeated against whatever has landed, and only the textual rules change.
 ### §1.16 Residues filed (W-275 to W-281, W-284; W-278 withdrawn; W-282, W-283 conditional; W-285 to W-294 held)
 
 SV-1 reserves W-275 to W-294 (fork/ORCHESTRATION.md on trunk 254b935b2). The
-re-scan of 2026-10-20 at rev 2 (command in §8.7, which now scans local
-branches and every worktree's ledger as well; amended 2026-10-20, review fold:
-B-m-7) covered 82 refs (`refs/remotes/origin/` and `refs/heads/`) and the
-ledgers of the 15 worktrees `git worktree list` names (carbon-tp, -sc, -va,
--op, -op2 and the rest): no id in W-275 to W-294 anywhere; the highest filed id
-is W-274 (TP-1's); F-020 appears in no decision log (`$X/runs/ids-refs.txt`,
+re-scan of 2026-10-20 at rev 2 (command in §8.7, which now scans local branches
+and every worktree's ledger as well; amended 2026-10-20, review fold: B-m-7)
+covered 82 refs (`refs/remotes/origin/` and `refs/heads/`) and the ledgers of
+the 15 worktrees `git worktree list` names (carbon-tp, -sc, -va, -op, -op2 and
+the rest): no id in W-275 to W-294 anywhere; the highest filed id is W-274
+(TP-1's); F-020 appears in no decision log (`$X/runs/ids-refs.txt`,
 `ids-worktrees.txt`). TP-1's block W-250..W-274 is exhausted, so a further
-residue of TP-1's running re-review takes the next free id, possibly W-275 on
-an unpushed commit: the re-scan before D therefore includes the worktrees, and
-an id taken by then moves SV-1's filing to the next free id in its block. The
-full JSON of each item is Appendix C.4 (amended 2026-10-20, review fold:
-B-M-3). Re-run at rev 3 (2026-10-20, the same command over 82 refs and 15
-worktree ledgers, `$Z/runs/ids-refs.txt`, `ids-worktrees.txt`): no id of the
-block anywhere, the highest filed id still W-274, F-020 in no decision log.
-The focused re-review asked for its pack residue as W-283; W-283 is already
-the shrink line's conditional id (§3 item 7, Appendix C.4), so the residue
-takes the next free id of the block, W-284 (amended 2026-10-20, review fold:
-RR-M1). Planned filings:
+residue of TP-1's running re-review takes the next free id, possibly W-275 on an
+unpushed commit: the re-scan before D therefore includes the worktrees, and an
+id taken by then moves SV-1's filing to the next free id in its block. The full
+JSON of each item is Appendix C.4 (amended 2026-10-20, review fold: B-M-3).
+Re-run at rev 3 (2026-10-20, the same command over 82 refs and 15 worktree
+ledgers, `$Z/runs/ids-refs.txt`, `ids-worktrees.txt`): no id of the block
+anywhere, the highest filed id still W-274, F-020 in no decision log. The
+focused re-review asked for its pack residue as W-283; W-283 is already the
+shrink line's conditional id (§3 item 7, Appendix C.4), so the residue takes the
+next free id of the block, W-284 (amended 2026-10-20, review fold: RR-M1).
+Re-run at rev 4 (2026-10-20, the same command over 83 refs and 15 worktree
+ledgers, `$W/runs/ids-refs.txt`, `ids-worktrees.txt`, the grep widened to W-299;
+amended 2026-10-20, review fold: all RR3 findings): no id of SV-1's block
+anywhere; the highest filed id is now W-295, TP-1's (its block is W-295 to
+W-299), on TP-1's local branch and in the carbon-tp worktree's ledger; F-020 in
+no decision log. W-284 is filed at D once M-VA has landed, and held until then
+(§3 items 8 and 10; amended 2026-10-20, review fold: RR3-m1). Planned filings:
 
 | Id | Title | Bullet | Bounds row 68? |
 | --- | --- | --- | --- |
@@ -1893,8 +2064,8 @@ RR-M1). Planned filings:
 | W-279 | a conversion to or from a C++ sum type where no control flow can be built: one a template defers to its instantiation (TP-1's `PerformAction`), and one with no source expression | Generics: Integrated templates | no: the shape is a template's, every non-template form converts, and it is diagnosed at instantiation |
 | W-280 | a `ref` payload binding on a mapped C++ or `Core.Optional` scrutinee is rejected, because the scrutinee is a by-value conversion | this bullet | no for the C++ classes: the payload is a scalar or pointer copy, `var` bindings work, and mutating the C++ object goes through its own API; for `Core.Optional` it is part of W-177's remaining scope (below) |
 | W-281 | a C++ sum class nested in a tuple or struct scrutinee is not converted (`match on unsupported scrutinee type`) | this bullet | no: the whole-value scrutinee and every nesting through a Carbon sum type work, and the shape is the existing TODO |
-| W-284 | (from M-VA) a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack forwarded to a pack of another element type) is a semantics TODO; blocked by VA-1's W-219 (control flow inside an expansion body) | Generics: Definition-checked variadics | no: every non-pack form converts, a pack of the C++ class or of the sum type is forwarded unchanged (v06, v07), and the shape is diagnosed |
-| W-282 | (conditional) TP-1-origin: a `match` on a template-dependent `choice` value stops the compiler at pattern_match.cpp:1409, where trunk gives W-252's TODO (X-1; x19) | Generics: Integrated templates | filed by SV-1 at D only if TP-1 has not filed it and x19 still stops the merged trunk; otherwise unused |
+| W-284 | (from M-VA, filed at D once M-VA has landed) a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack converted to a pack of another element type), whose element is the C++ class, the sum type, a `Core.Optional`, or a tuple, struct, array or class holding one, is a semantics TODO; blocked by VA-1's W-219 (control flow inside an expansion body) (amended 2026-10-20, review fold: RR3-B1 / RR3-m1) | Generics: Definition-checked variadics | no: every non-pack form converts, a pack of the C++ class, of the sum type or of an aggregate holding either is forwarded unchanged (v06, v07, n10) and a pack literal converts element by element (v01, n09), and the shape is diagnosed |
+| W-282 | (conditional) TP-1-origin: a `match` on a template-dependent `choice` value stops the compiler at pattern_match.cpp:1409, where trunk gives W-252's TODO (X-1; x19) | Generics: Integrated templates | filed by SV-1 at D only if TP-1 has not filed it and x19 still stops the merged trunk; otherwise unused. Predicted unused: TP-1's round-10 head eafca5cb9 fixes X-1 (x19 compiles and prints 0 on tpv6; amended 2026-10-20, review fold: RR3-m3) |
 
 **W-177 (OP-1's, on row 68's bullet) stays OPEN** with a dated narrowing note
 (Appendix C.5; amended 2026-10-20, review fold: A-M2 / B-M-1): since SV-1,
@@ -1944,18 +2115,18 @@ conditions rev 1 lacked).
 | F-020 (D-SV-1) | C++ class kept; sum type = specific of a prelude generic choice in `Core.CppCompat` (`StdOptional`, `StdVariant1..8`), nameable (a departure from SF-8's default lean, recorded for veto; SF-9(b)'s two-Optional cost adopted); by-value conversion both ways; `Core.Optional` bridged in one step for non-pointer payloads; F-015 amended | the owner vetoes nameable sum types, variadic choices, the `Match` interface, a choice-based `Core.Optional`, or an upstream mapping |
 | D-SV-2 | `.Alt<i>` by index; `std::monostate` is `()`, in a variant or an optional; duplicates by index; 1 to 8 alternatives; nesting by pointer only | variadic choices or aggregate payloads |
 | D-SV-3 | admitted = trivially copyable class, at most 8, unqualified alternatives that pass SF-6's predicate; else `CppSumTypeNotMapped` | SF-6 admits aggregates or non-trivial payloads, or the reverse conversion can remember its source class |
-| D-SV-4 | C++ to Carbon in convert.cpp's builtin conversion and the scrutinee gate; every conversion a probe performs, an aggregate's element conversions included, has `diagnose` false (SV-1 passes it through `ConvertAggregateElement`) and builds nothing; a non-diagnosing conversion accepts only what the committed one can build; a `Core.Optional` target with an unmatchable payload is not the hook's; a template-dependent side is deferred; accessors through existing thunks; branches per arm; function scope only, and no pack element from M (amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1 / RR-m3 / RR-M1) | a non-diagnosing caller keeps a non-constant result, a new path drops an element's `diagnose`, or W-036, W-279 or W-284 must be lifted (then a synthesized function per specialization) |
+| D-SV-4 | C++ to Carbon in convert.cpp's builtin conversion and the scrutinee gate; every conversion a probe performs, an aggregate's element conversions included, has `diagnose` false (SV-1 passes it through `ConvertAggregateElement`) and builds nothing; a non-diagnosing conversion decides from the types alone, and where the committed one cannot be built the call gets the TODO, never a later member; a `Core.Optional` target with an unmatchable payload is not the hook's; a template-dependent side is deferred; accessors through existing thunks; branches per arm; function scope only, and from M no pack element or projection of one (amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m3 / RR-M1; RR3-M1 / RR3-B1) | a non-diagnosing caller keeps a non-constant result, a new path drops an element's `diagnose`, a pack element reaches the hook through a step the walk does not follow, or W-036, W-279 or W-284 must be lifted (then a synthesized function per specialization) |
 | D-SV-5 | Carbon to C++ by default construction and `emplace`, only to the class whose sum type the value is; `InventClangArg` maps the sum type, and a `Core.Optional(T)` with a matchable non-pointer payload, to the class | an export path for sum types, or C++'s converting constructors must be honored |
 | D-SV-6 | the shared scrutinee gate converts before the shape gate; `ref` bindings and nested C++ classes are not consumed (W-280, W-281) | the `Match` interface |
 | D-SV-7 | the bridge; the one-step conversions both ways for non-pointer payloads; a `Core.Optional(T)` scrutinee is matched as the view for a concrete choice payload `T` only; W-177 narrowed, not discharged | W-058 or the owner wants matching without a copy, by reference or generically; a rename; a change to the pointer mapping |
 | D-SV-8 | the SF-6 predicate also admits `Core.Optional(T*)`, by name; nothing else changes, at any of its four sites | PR 57 changes what the walk reaches, or SF-6 admits non-`Copy` payloads |
 | D-SV-9 | a value constant indexed by a constant GEP is addressed through `FileContext::GetConstant`'s cached global | upstream stops folding such accesses |
-| D-SV-10 | generics, libraries, constants, overload sets work; deduction by its rule; template conversions deferred and then W-279's TODO | deduction sees through conversions, or TP-1 can splice control flow into an instantiation |
+| D-SV-10 | generics, libraries, constants, overload sets work; deduction by its rule; template conversions deferred and then W-279's TODO, an `overload fn` call's included (amended 2026-10-20, review fold: RR3-M1) | deduction sees through conversions, or TP-1 can splice control flow into an instantiation |
 | D-SV-11 | one error kind plus four notes, two mismatch errors and `CoreOptionalNotMatchable`; the C++ spelling without tag keyword; `NoReason` emits | the diagnostics hook or a reviewer wants separate kinds |
 | D-SV-12 | eight new goldens with a mocked `sum.h`, one appended split, four refills | a mock diverges from libc++ in a way a program shows |
 | D-SV-13 | one un-SKIP, five new programs, all differential but the arbiter | an oracle disagreement is a design finding |
 | D-SV-14 | sum_types.md dated section, unions.md link, optional.md amendments, records; every text in Appendix C, frozen by the plan reviews | sum_types.md is re-platformed or DD-1 maps its sections differently |
-| D-SV-15 | lands after PR 61 through M, then M-VA (the pack-element rule of §3 item 8; amended 2026-10-20, review fold: RR-M1) | the merge order changes, or PR 59 no longer lands first (M-VA then waits for it) |
+| D-SV-15 | lands after PR 61 through M, then M-VA (the pack-element rule of §3 item 8, covering an element and its projections; amended 2026-10-20, review fold: RR-M1; RR3-B1) | the merge order changes, or PR 59 no longer lands first (M-VA then waits for it) |
 | D-SV-16 | the row moves to DONE under §1.17's five conditions; predicted PARTIAL on W-177 | any condition fails, or W-177 closes |
 
 ## §2 Spec, file by file
@@ -1983,6 +2154,13 @@ clang-format; v5 appends the kinds as v4 did); every other file of §2 is rev
 2's, unchanged. The land-time hunk M-VA (§3 item 8) is not part of this diff:
 it names `SemIR::PackElement`, which exists only once PR 59 has landed, and is
 `$Z/land/m-va-pack-element.diff`, shown in §3 item 8.
+
+Rev 4 (amended 2026-10-20, review fold: all RR3 findings): sum_type.h and
+sum_type.cpp below are the prototype v6's (`$W/final/final.diff`, the files in
+`$W/final/src/`, formatted as before); convert.cpp and every other file of §2
+are rev 3's, unchanged. The non-diagnosing path no longer calls
+`CanBuildBranches`, which loses its `diagnose` parameter and always emits
+(RR3-M1); the land-time hunk M-VA is `$W/land/m-va-pack-element.diff` (RR3-B1).
 
 ### §2.1 core/prelude/types/cpp/sum.carbon (new) and core/prelude/types.carbon
 
@@ -2294,9 +2472,11 @@ Unchanged at rev 2 (`$X/final/final.diff` carries these hunks as rev 1 did).
 prelude itself is broken: `CppSumType::AlreadyDiagnosed`) and are safe to call
 on any type, so the hooks can consult them on every conversion and every
 scrutinee; `TryConvertCppSumType` takes the conversion's `diagnose` flag and,
-when it is false, emits nothing, builds no block, and accepts only a
-conversion the committed one could build at that point (amended 2026-10-20,
-review fold: RR-m1 / RR-m2: its stand-in is never a constant).
+when it is false, emits nothing, builds no block, and decides from the types
+alone, so a point where the committed conversion cannot be built is that
+conversion's TODO, not a rejection (amended 2026-10-20, review fold: RR-m2: its
+stand-in is never a constant; RR3-M1: rev 3 also rejected where
+`CanBuildBranches` fails).
 
 <!-- google-doc-style-ignore -->
 
@@ -2402,9 +2582,10 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
 // mismatch, which is diagnosed when `diagnose` is true. When `diagnose` is
 // false -- a conversion that the caller only tests: an `overload fn` candidate
 // probe, the element conversions of an aggregate argument included, or
-// deduction -- it decides from the types and from whether the conversion could
-// be built here, emits nothing and builds no control flow; its result is never
-// a constant.
+// deduction -- it decides from the types alone, emits nothing and builds no
+// control flow; its result is never a constant. Where the committed conversion
+// cannot be built (at file scope, at a template's instantiation), that
+// conversion emits the TODO.
 auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
                           SemIR::InstId value_id, SemIR::TypeId target_type_id,
                           bool diagnose) -> SemIR::InstId;
@@ -2449,28 +2630,30 @@ auto DiagnoseCoreOptionalNotMatchable(Context& context, SemIR::LocId loc_id,
 
 ### §2.4 toolchain/check/cpp/sum_type.cpp (new)
 
-**Invariants** (rewritten 2026-10-20, review fold: A-B1 / B-B-1 / A-B2 /
-A-M1 / A-M2 / B-M-1 / B-M-5 / A-m3 / B-m-9): (1) admission is decided before
-the specific is formed, in the order of §1.3's rules, and records the first
-failing rule for the note; the `Core.Optional` view checks its payload the same
-way before forming `StdOptional(T)`; (2) the conversion reads the C++ value
-only through `has_value()`/`value()` or `index()`/`std::get<I>()`, on a value
+**Invariants** (rewritten 2026-10-20, review fold: A-B1 / B-B-1 / A-B2 / A-M1 /
+A-M2 / B-M-1 / B-M-5 / A-m3 / B-m-9): (1) admission is decided before the
+specific is formed, in the order of §1.3's rules, and records the first failing
+rule for the note; the `Core.Optional` view checks its payload the same way
+before forming `StdOptional(T)`; (2) the conversion reads the C++ value only
+through `has_value()`/`value()` or `index()`/`std::get<I>()`, on a value
 expression, and builds the C++ value only through the default constructor and
 `emplace`; (3) every arm of a conversion initializes the one result storage and
 owns its own temporaries (`EmitArms`, the `if`-expression operand discipline);
-(4) a conversion that cannot branch -- outside a function body, or with no
-parse node, and from M-VA for a pack element -- emits a TODO and builds no
-block, so `EmitArms` never sees a `None` node (it CHECKs); (5)
-`TryConvertCppSumType` returns `None` for every pair of types it does not own
-(a `Core.Optional` target whose payload is not matchable included) and for a
-template-dependent side, so no other conversion changes; (6) when `diagnose`
-is false it emits nothing and builds no block, returning `ErrorInst` (also
-where `CanBuildBranches` fails) or `MakeTestedConversion`'s non-constant
-stand-in, and every conversion a probe performs reaches it with `diagnose`
-false, an aggregate's element conversions included (convert.cpp passes the
-flag through `ConvertAggregateElement`, §2.5); (7) a Carbon sum value
-converts only to the C++ class whose sum type it is (amended 2026-10-20,
-review fold: RR-B1 / RR-B-1 / RR-m1 / RR-m2 / RR-m3 / RR-M1).
+(4) a committed conversion that cannot branch -- outside a function body, or
+with no parse node, and from M-VA for a pack element or a projection of one --
+emits a TODO and builds no block, so `EmitArms` never sees a `None` node (it
+CHECKs); (5) `TryConvertCppSumType` returns `None` for every pair of types it
+does not own (a `Core.Optional` target whose payload is not matchable included)
+and for a template-dependent side, so no other conversion changes; (6) when
+`diagnose` is false it emits nothing and builds no block, returning `ErrorInst`
+for a mismatch or `MakeTestedConversion`'s non-constant stand-in for a
+convertible pair, and it does not call `CanBuildBranches`, whose limits are the
+committed conversion's TODOs (rev 3 called it there; amended 2026-10-20, review
+fold: RR3-M1); every conversion a probe performs reaches it with `diagnose`
+false, an aggregate's element conversions included (convert.cpp passes the flag
+through `ConvertAggregateElement`, §2.5); (7) a Carbon sum value converts only
+to the C++ class whose sum type it is (amended 2026-10-20, review fold: RR-B1 /
+RR-B-1 / RR-m2 / RR-m3 / RR-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -2721,32 +2904,28 @@ auto DiagnoseCppSumTypeNotMapped(Context& context, SemIR::LocId loc_id,
   builder.Emit();
 }
 
-// Returns whether a branching conversion can be built at `loc_id`. It cannot
-// outside a function body -- a file-scope initializer (W-036's limit, which
-// every branching expression shares) or a conversion that a template defers to
-// its instantiation, which is performed outside any function body -- nor where
-// the conversion has no source expression to attribute its blocks to. When
-// `diagnose` is true, emits a TODO for the failure. A non-diagnosing caller
-// tests this too, so an `overload fn` probe rejects exactly what the committed
-// call could not build.
-static auto CanBuildBranches(Context& context, SemIR::LocId loc_id,
-                             bool diagnose) -> bool {
+// Returns whether a branching conversion can be built at `loc_id`, and emits a
+// TODO when it cannot. It cannot outside a function body -- a file-scope
+// initializer (W-036's limit, which every branching expression shares) or a
+// conversion that a template defers to its instantiation, which is performed
+// outside any function body -- nor where the conversion has no source
+// expression to attribute its blocks to. These are limits of the toolchain, not
+// of the types, so a non-diagnosing caller does not test them: an `overload fn`
+// probe accepts the pair, and the committed call emits the TODO, so which
+// member a call selects does not depend on where the call is.
+static auto CanBuildBranches(Context& context, SemIR::LocId loc_id) -> bool {
   if (!context.scope_stack().IsInFunctionScope()) {
-    if (diagnose) {
-      context.TODO(loc_id,
-                   "conversion of a C++ `std::optional` or `std::variant` "
-                   "outside a function body (at file scope, or deferred to a "
-                   "template's instantiation)");
-    }
+    context.TODO(loc_id,
+                 "conversion of a C++ `std::optional` or `std::variant` "
+                 "outside a function body (at file scope, or deferred to a "
+                 "template's instantiation)");
     return false;
   }
   if (context.insts().GetCanonicalLocId(loc_id).kind() !=
       SemIR::LocId::Kind::NodeId) {
-    if (diagnose) {
-      context.TODO(loc_id,
-                   "conversion of a C++ `std::optional` or `std::variant` "
-                   "with no source expression");
-    }
+    context.TODO(loc_id,
+                 "conversion of a C++ `std::optional` or `std::variant` "
+                 "with no source expression");
     return false;
   }
   return true;
@@ -2757,7 +2936,7 @@ static auto CanBuildBranches(Context& context, SemIR::LocId loc_id,
 // branch (`CanBuildBranches`).
 static auto GetNodeIdForBranches(Context& context, SemIR::LocId loc_id)
     -> Parse::NodeId {
-  if (!CanBuildBranches(context, loc_id, /*diagnose=*/true)) {
+  if (!CanBuildBranches(context, loc_id)) {
     return Parse::NodeId::None;
   }
   return context.insts().GetCanonicalLocId(loc_id).node_id();
@@ -3256,11 +3435,11 @@ static auto ConvertToCppSumClass(Context& context, SemIR::LocId loc_id,
     }
     return SemIR::ErrorInst::InstId;
   }
-  if (!CanBuildBranches(context, loc_id, diagnose)) {
-    return SemIR::ErrorInst::InstId;
-  }
   if (!diagnose) {
     return MakeTestedConversion(context, loc_id, target_type_id);
+  }
+  if (!CanBuildBranches(context, loc_id)) {
+    return SemIR::ErrorInst::InstId;
   }
   if (value_type_id != sum_type_id) {
     // A `Core.Optional(T)`: through the prelude's bridge to its view first.
@@ -3322,11 +3501,11 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
       }
       return SemIR::ErrorInst::InstId;
     }
-    if (!CanBuildBranches(context, loc_id, diagnose)) {
-      return SemIR::ErrorInst::InstId;
-    }
     if (!diagnose) {
       return MakeTestedConversion(context, loc_id, target_type_id);
+    }
+    if (!CanBuildBranches(context, loc_id)) {
+      return SemIR::ErrorInst::InstId;
     }
     auto sum_id = ConvertCppSumToCarbon(context, loc_id, value_id, sum_type);
     if (!to_core_optional || sum_id == SemIR::ErrorInst::InstId) {
@@ -3856,15 +4035,17 @@ already depends on, and clang's AST and Sema):
 
 ### §2.11 Conformance programs and golden sources
 
-The six programs of §1.13 are reproduced in Appendix A and the golden sources
-of §1.12, without CHECK lines, in Appendix B; both are byte copies of the
-files v4 ran (`$X/final/progs/`, `$X/final/goldens-src/`, whose fills are
-`$X/final/goldens-filled/`), and the implementer copies them, never retypes
-them (amended 2026-10-20, review fold: all findings). At rev 3 the golden
-sources and fills are `$Z/final/goldens-src/` and `$Z/final/goldens-filled/`
-(v5; the programs are unchanged and v5 runs them, §0.6), and the M-VA split's
-fill is `$Z/final/goldens-filled-M/` (amended 2026-10-20, review fold: RR-B1 /
-RR-M1).
+The six programs of §1.13 are reproduced in Appendix A and the golden sources of
+§1.12, without CHECK lines, in Appendix B; both are byte copies of the files v4
+ran (`$X/final/progs/`, `$X/final/goldens-src/`, whose fills are
+`$X/final/goldens-filled/`), and the implementer copies them, never retypes them
+(amended 2026-10-20, review fold: all findings). At rev 3 the golden sources and
+fills are `$Z/final/goldens-src/` and `$Z/final/goldens-filled/` (v5; the
+programs are unchanged and v5 runs them, §0.6), and the M-VA split's fill is
+`$Z/final/goldens-filled-M/` (amended 2026-10-20, review fold: RR-B1 / RR-M1).
+At rev 4 they are `$W/final/goldens-src/`, `$W/final/goldens-filled/` and
+`$W/final/goldens-filled-M/` (v6 and vav6g; amended 2026-10-20, review fold:
+RR3-B1 / RR3-M1 / RR3-m4).
 
 ## §3 Commits
 
@@ -3875,11 +4056,13 @@ no crash. Commit messages end with the session trailers; `--author` and the
 committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
 (review fold: all findings).
 
-0.  **Plan.** Rev 1, "SV-1 plan (rev 1): std::optional and std::variant
-    interop mapping" (3287b1072); rev 2 (4d85d14fe) folds the two plan reviews
-    (R29(c)); rev 3 (this file) folds the focused re-review of rev 2 (REJECT,
-    six findings; amended 2026-10-20, review fold: all RR findings), and a
-    re-review of rev 3 decides the sign-off.
+0.  **Plan.** Rev 1, "SV-1 plan (rev 1): std::optional and std::variant interop
+    mapping" (3287b1072); rev 2 (4d85d14fe) folds the two plan reviews (R29(c));
+    rev 3 (4eef66632) folds the focused re-review of rev 2 (REJECT, six
+    findings; amended 2026-10-20, review fold: all RR findings); rev 4 (this
+    file) folds the focused re-review of rev 3 (REJECT, six findings; amended
+    2026-10-20, review fold: all RR3 findings), and a re-review of rev 4 decides
+    the sign-off.
 1.  **C1** "SV-1 (1): Core.CppCompat sum types in the prelude; nullable
     pointer payloads; constant aggregates in lowering": core/prelude/types/cpp
     /sum.carbon, core/prelude/types.carbon, toolchain/check/type.cpp (D-SV-8),
@@ -3932,80 +4115,124 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     merge of trunk (never a rebase), resolving conflicts only by the rules of
     §0.7 (record files take trunk's text; the README table is regenerated);
     **M-VA** "SV-1: a sum-type conversion of a VA-1 pack element is a TODO"
-    (amended 2026-10-20, review fold: RR-M1), the hunk below
-    (`$Z/land/m-va-pack-element.diff`: `CanBuildBranches` also refuses a
-    `SemIR::PackElement` value, which names an instruction kind that exists only
-    once PR 59 has landed) and the `fail_todo_pack_element` split appended to
-    stdlib/fail_sum_types.carbon (Appendix B), filled by autoupdate; measured on
-    the PR 59 composition (vav5, vav5g, §0.6), it leaves VA-1's goldens
-    unchanged, and without it the split stops the compiler at VA-1's CHECK
-    (M19); if PR 59 has not landed at M, M-VA waits for it and is the first
-    commit after the merge that brings it;
+    (amended 2026-10-20, review fold: RR-M1; RR3-B1), the hunk below
+    (`$W/land/m-va-pack-element.diff`: `CanBuildBranches` takes the converted
+    value and refuses it when `IsPackElementOrProjection` walks it back, through
+    `TupleAccess`, `StructAccess`, `ArrayIndex`, `ClassElementAccess`,
+    `AsCompatible`, `AcquireValue` and `ValueAsRef`, to a `SemIR::PackElement`,
+    an instruction kind that exists only once PR 59 has landed; rev 3's hunk
+    tested a bare `PackElement`, which misses the element of a pack of tuples,
+    structs, arrays or classes) and the `fail_todo_pack_element` split appended
+    to stdlib/fail_sum_types.carbon (Appendix B), filled by autoupdate; measured
+    on the PR 59 composition (vav6g, §0.6), it leaves VA-1's goldens unchanged,
+    without it the split stops the compiler at VA-1's CHECK (M19), and with rev
+    3's bare test it stops there too (M21); M-VA files no record (W-284 is filed
+    at D, item 10; amended 2026-10-20, review fold: RR3-m1); if PR 59 has not
+    landed at M, M-VA waits for it and is the first commit after the merge that
+    brings it. The block below differs from the file only in two whitespace-only
+    context lines (blank in the block, one space in the file), and applies to
+    §2.4's sum_type.cpp as it stands, giving the file's result (measured);
 
     <!-- google-doc-style-ignore -->
 
     ```diff
     --- a/toolchain/check/cpp/sum_type.cpp
     +++ b/toolchain/check/cpp/sum_type.cpp
-    @@ -251,9 +251,9 @@
-     // the conversion has no source expression to attribute its blocks to. When
-     // `diagnose` is true, emits a TODO for the failure. A non-diagnosing caller
-     // tests this too, so an `overload fn` probe rejects exactly what the committed
-    -// call could not build.
-    +// call could not build. `value_id` is the value converted, if any.
-     static auto CanBuildBranches(Context& context, SemIR::LocId loc_id,
-    -                             bool diagnose) -> bool {
-    +                             SemIR::InstId value_id, bool diagnose) -> bool {
+    @@ -244,6 +244,36 @@
+       builder.Emit();
+     }
+
+    +// Returns whether `value_id` is a VA-1 pack element, or is projected from one
+    +// by the element, field and category steps of a conversion.
+    +static auto IsPackElementOrProjection(Context& context, SemIR::InstId value_id)
+    +    -> bool {
+    +  while (value_id.has_value()) {
+    +    auto inst = context.insts().Get(value_id);
+    +    if (inst.Is<SemIR::PackElement>()) {
+    +      return true;
+    +    }
+    +    if (auto access = inst.TryAs<SemIR::TupleAccess>()) {
+    +      value_id = access->tuple_id;
+    +    } else if (auto access = inst.TryAs<SemIR::StructAccess>()) {
+    +      value_id = access->struct_id;
+    +    } else if (auto index = inst.TryAs<SemIR::ArrayIndex>()) {
+    +      value_id = index->array_id;
+    +    } else if (auto access = inst.TryAs<SemIR::ClassElementAccess>()) {
+    +      value_id = access->base_id;
+    +    } else if (auto compat = inst.TryAs<SemIR::AsCompatible>()) {
+    +      value_id = compat->source_id;
+    +    } else if (auto acquire = inst.TryAs<SemIR::AcquireValue>()) {
+    +      value_id = acquire->value_id;
+    +    } else if (auto ref = inst.TryAs<SemIR::ValueAsRef>()) {
+    +      value_id = ref->value_id;
+    +    } else {
+    +      return false;
+    +    }
+    +  }
+    +  return false;
+    +}
+    +
+     // Returns whether a branching conversion can be built at `loc_id`, and emits a
+     // TODO when it cannot. It cannot outside a function body -- a file-scope
+     // initializer (W-036's limit, which every branching expression shares) or a
+    @@ -252,8 +282,10 @@
+     // expression to attribute its blocks to. These are limits of the toolchain, not
+     // of the types, so a non-diagnosing caller does not test them: an `overload fn`
+     // probe accepts the pair, and the committed call emits the TODO, so which
+    -// member a call selects does not depend on where the call is.
+    -static auto CanBuildBranches(Context& context, SemIR::LocId loc_id) -> bool {
+    +// member a call selects does not depend on where the call is. `value_id` is the
+    +// value converted, if any.
+    +static auto CanBuildBranches(Context& context, SemIR::LocId loc_id,
+    +                             SemIR::InstId value_id) -> bool {
        if (!context.scope_stack().IsInFunctionScope()) {
-         if (diagnose) {
-           context.TODO(loc_id,
-    @@ -272,6 +272,18 @@
-         }
+         context.TODO(loc_id,
+                      "conversion of a C++ `std::optional` or `std::variant` "
+    @@ -268,6 +300,17 @@
+                      "with no source expression");
          return false;
        }
     +  // A pack element (VA-1) is converted in a block that runs once per element
     +  // -- an expansion body, or convert.cpp `ConvertPackToPack` -- and is one
-    +  // straight-line block, which cannot hold branches.
-    +  if (value_id.has_value() &&
-    +      context.insts().Is<SemIR::PackElement>(value_id)) {
-    +    if (diagnose) {
-    +      context.TODO(loc_id,
-    +                   "conversion of a C++ `std::optional` or `std::variant` "
-    +                   "for a pack element");
-    +    }
+    +  // straight-line block, which cannot hold branches. The value is the element,
+    +  // or what a tuple, struct, array, class or adapter conversion projects from
+    +  // it.
+    +  if (IsPackElementOrProjection(context, value_id)) {
+    +    context.TODO(loc_id,
+    +                 "conversion of a C++ `std::optional` or `std::variant` "
+    +                 "for a pack element");
     +    return false;
     +  }
        return true;
      }
 
-    @@ -280,7 +292,8 @@
+    @@ -276,7 +319,7 @@
      // branch (`CanBuildBranches`).
      static auto GetNodeIdForBranches(Context& context, SemIR::LocId loc_id)
          -> Parse::NodeId {
-    -  if (!CanBuildBranches(context, loc_id, /*diagnose=*/true)) {
-    +  if (!CanBuildBranches(context, loc_id, SemIR::InstId::None,
-    +                        /*diagnose=*/true)) {
+    -  if (!CanBuildBranches(context, loc_id)) {
+    +  if (!CanBuildBranches(context, loc_id, SemIR::InstId::None)) {
          return Parse::NodeId::None;
        }
        return context.insts().GetCanonicalLocId(loc_id).node_id();
-    @@ -779,7 +792,7 @@
-         }
-         return SemIR::ErrorInst::InstId;
-       }
-    -  if (!CanBuildBranches(context, loc_id, diagnose)) {
-    +  if (!CanBuildBranches(context, loc_id, value_id, diagnose)) {
-         return SemIR::ErrorInst::InstId;
-       }
+    @@ -778,7 +821,7 @@
        if (!diagnose) {
-    @@ -845,7 +858,7 @@
-           }
-           return SemIR::ErrorInst::InstId;
-         }
-    -    if (!CanBuildBranches(context, loc_id, diagnose)) {
-    +    if (!CanBuildBranches(context, loc_id, value_id, diagnose)) {
-           return SemIR::ErrorInst::InstId;
-         }
+         return MakeTestedConversion(context, loc_id, target_type_id);
+       }
+    -  if (!CanBuildBranches(context, loc_id)) {
+    +  if (!CanBuildBranches(context, loc_id, value_id)) {
+         return SemIR::ErrorInst::InstId;
+       }
+       if (value_type_id != sum_type_id) {
+    @@ -844,7 +887,7 @@
          if (!diagnose) {
+           return MakeTestedConversion(context, loc_id, target_type_id);
+         }
+    -    if (!CanBuildBranches(context, loc_id)) {
+    +    if (!CanBuildBranches(context, loc_id, value_id)) {
+           return SemIR::ErrorInst::InstId;
+         }
+         auto sum_id = ConvertCppSumToCarbon(context, loc_id, value_id, sum_type);
     ```
 
     <!-- google-doc-style-resume -->
@@ -4024,22 +4251,25 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     amendment paragraph, with R31's counts and check_samples.py (§8 item 11).
 9.  **R** "SV-1 (7): gap row 68": the row and the header, by §1.17 and
     Appendix C.7, after M.
-10. **D** "SV-1 (8): discharge": the id re-scan of §8.7 first; W-011
-    DISCHARGED, W-177's narrowing note, W-275, W-276, W-277, W-279, W-280 and
-    W-281 filed (W-282 by its condition), the notes on W-036, W-047, W-049,
-    W-122 and W-252, the decision-log entry, fork/ORCHESTRATION.md's row and
-    Next actions item, verbatim from Appendix C with only the `<...>` values
-    substituted; after the two implementation reviews. The texts are frozen by
-    the plan reviews: a change to anything but a placeholder goes to a
-    document review first (§1.14).
+10. **D** "SV-1 (8): discharge": the id re-scan of §8.7 first; W-011 DISCHARGED,
+    W-177's narrowing note, W-275, W-276, W-277, W-279, W-280 and W-281 filed,
+    W-284 filed once M-VA has landed and held until it has (amended 2026-10-20,
+    review fold: RR3-m1), W-282 by its condition, W-278 and W-283 by the shrink
+    line's, the notes on W-036, W-047, W-049, W-122 and W-252, the decision-log
+    entry, fork/ORCHESTRATION.md's row and Next actions item, verbatim from
+    Appendix C with only the `<...>` values substituted; after the two
+    implementation reviews. The texts are frozen by the plan reviews: a change
+    to anything but a placeholder goes to a document review first (§1.14).
 
 ## §4 Testdata matrix
 
 Key lines each fill reproduces, measured on v4 (`$X/final/goldens-filled/`;
-rewritten 2026-10-20, review fold: all findings) and again on v5
+rewritten 2026-10-20, review fold: all findings), again on v5
 (`$Z/final/goldens-filled/`, byte-identical but for sum_type_overload.carbon;
-amended 2026-10-20, review fold: all RR findings): every diagnostic below is
-the final text, not a prototype TODO. Refills by name.
+amended 2026-10-20, review fold: all RR findings) and on v6
+(`$W/final/goldens-filled/`, byte-identical to v5's but for
+sum_type_overload.carbon; amended 2026-10-20, review fold: all RR3 findings):
+every diagnostic below is the final text, not a prototype TODO. Refills by name.
 
 | Golden | Key lines the fill must reproduce |
 | --- | --- |
@@ -4062,8 +4292,8 @@ the final text, not a prototype TODO. Refills by name.
 | `fail_todo_nested_by_value` | ``error: C++ type `std::variant<std::optional<int>, int>` has no Carbon sum type`` with ``note: alternative 0 has type `std::optional<int>`, which is not a choice payload type in 0.1`` |
 | `fail_index_out_of_range` | ``error: member name `Alt2` not found in `Core.CppCompat.StdVariant2(i32, f64)` [MemberNameNotFoundInSpecificScope]`` |
 | stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`: ``C++ type `std::optional<const int>` has no Carbon sum type`` with ``alternative 0 has qualified or reference type `const int` [CppSumTypeQualifiedAlternative]``; `fail_todo_non_trivial`: with ``note: `std::optional<NonTrivial>` is not trivially copyable and trivially destructible [CppSumTypeNotTriviallyCopyable]``; `fail_conversion_mismatch` and `fail_core_optional_mismatch`: ``C++ type `std::optional<int>` converts only to its own Carbon sum type `Core.CppCompat.StdOptional(i32)` or to the `Core.Optional` of its payload, not to `Core.CppCompat.StdOptional(i64)` [CppSumTypeMismatch]`` (and `` `Core.Optional(i64 as Core.OptionalStorage)` ``); `core_optional_argument_as`: no error; `fail_todo_export_sum_type`: the three existing export errors (`interop with non-identifier package name` at `{{.*}}/prelude/types/cpp/sum.carbon:30:1`, `failed to map Carbon return type to C++ type`, `no member named 'MakeView' in namespace 'Carbon'`); `fail_reverse_other_specialization` and `fail_reverse_converting_class`: `` `Core.CppCompat.StdOptional(i32)` converts to C++ only as the `std::optional` or `std::variant` whose Carbon sum type it is, not to `std::optional<long>` [CppSumTypeReverseMismatch]`` (and `` `Wrapper` ``), each with the `InCallToFunctionParam` note; `fail_todo_tuple_scrutinee`: ``semantics TODO: `match on unsupported scrutinee type` ``; `fail_todo_if_arm`: ``semantics TODO: `destroying temporaries of a conditionally evaluated operand whose value is not passed by copy` ``; `fail_todo_template_conversion`: ``unable to monomorphize specific `Pass(Cpp.std.__1.optional)` [ResolvingSpecificHere]`` with the outside-a-function-body TODO as its note |
-| stdlib/sum_type_overload.carbon (rev 2; rev 3: amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1) | fourteen splits, no diagnostic (measured on v5); the mutants M12 and M17 stop file_test on it with ``Built invalid semantics IR: No terminator in block``, and M18 turns `file_scope` red with the file-scope TODO |
-| stdlib/fail_sum_types.carbon `fail_todo_pack_element` (at M-VA; rev 3, amended 2026-10-20, review fold: RR-M1) | ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]`` twice, at `Each(... each c)` and `TakeEach(... each o)`, each with the `InCallToFunctionParam` note (measured on vav5g, `$Z/final/goldens-filled-M/`); the file's other splits unchanged |
+| stdlib/sum_type_overload.carbon (rev 2; rev 3: amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1; rev 4: amended 2026-10-20, review fold: RR3-M1 / RR3-m4) | sixteen splits: the fourteen that are not `fail_` have no diagnostic, `scalar_tuple_mismatch_first` included (trunk gives it ``cannot implicitly convert expression of type `bool` to `i32` ``, z01); `fail_todo_file_scope`: ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]`` at `Pick(Cpp.MakeOptional(7))` with the `InCallToFunctionParam` note naming the first member's parameter; `fail_todo_template_overload`: ``error: unable to monomorphize specific `Call(Cpp.std.__1.optional)` [ResolvingSpecificHere]`` with that TODO as its note at `Pick(x)` and the same `InCallToFunctionParam` note (measured on v6, and unchanged on tpv6 and vav6g); the mutants M12 and M17 stop file_test on it with ``Built invalid semantics IR: No terminator in block``, and M20 (rev 3's rule) turns both `fail_todo_` splits red, each compiling with no diagnostic |
+| stdlib/fail_sum_types.carbon `fail_todo_pack_element` (at M-VA; rev 3, amended 2026-10-20, review fold: RR-M1; rev 4, amended 2026-10-20, review fold: RR3-B1) | ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]`` ten times, at the calls of `Forward`, `Back`, `ForwardTuple`, `BackTuple`, `ForwardStruct`, `BackStruct`, `ForwardArray`, `BackArray`, `ForwardClass` and `BackClass`, each with the `InCallToFunctionParam` note (measured on vav6g, `$W/final/goldens-filled-M/`); the file's other splits unchanged; M19 and M21 stop the compiler at VA-1's CHECK on it |
 | choice/optional_pointer_payload.carbon | `pointer`: no error, the payload `Core.Optional(i32*)` in the alternative's parameter; `fail_todo_non_pointer_optional`, `fail_todo_nullptr_payload`, `fail_todo_maybe_unformed_payload`: ``error: semantics TODO: `choice alternative payload that is not trivially copyable and destructible` [SemanticsTodo]`` |
 | match/core_optional_view.carbon | `concrete`: the bridge's `Convert` call on the scrutinee, then the choice dispatch on `StdOptional(i32)`; `pointer`: no error; `fail_todo_generic`: ``error: cannot match `Core.Optional(T as Core.OptionalStorage)` in 0.1: its payload type is symbolic [CoreOptionalNotMatchable]``; `fail_todo_aggregate`: ``... `Core.Optional((i32, i32) as Core.OptionalStorage)` in 0.1: its payload type is not a choice payload type [CoreOptionalNotMatchable]``; `fail_todo_ref_binding`: the `ConversionFailureNonRefToRef` error; `fail_unknown_alternative`: ``member name `Ok` not found in `Core.CppCompat.StdOptional(i32)` `` |
 | exceptions/fail_catching.carbon `fail_nullptr_return` (rev 2) | ``error: catching import of `may_throw_null` requires a scalar success type in 0.1; `Cpp.nullptr_t` is not one [CppCatchingImportNonScalarSuccess]``; the file's other splits unchanged |
@@ -4100,9 +4330,10 @@ The prediction above is met exactly.
 ## §6 Churn and collisions
 
 Recounted 2026-10-20 from `$X/final/final.diff` (rev 1 said "nine changed" and
-listed ten; erratum, review fold: B-m-8), and at rev 3 from
-`$Z/final/final.diff` (amended 2026-10-20, review fold: all RR findings).
-Toolchain: two new files (cpp/sum_type.h, 142 lines, and cpp/sum_type.cpp, 939
+listed ten; erratum, review fold: B-m-8), at rev 3 from `$Z/final/final.diff`
+(amended 2026-10-20, review fold: all RR findings), and at rev 4 from
+`$W/final/final.diff` (amended 2026-10-20, review fold: all RR3 findings).
+Toolchain: two new files (cpp/sum_type.h, 143 lines, and cpp/sum_type.cpp, 935
 lines, formatted) and ten changed: custom_type_mapping.h +28,
 custom_type_mapping.cpp +53, convert.cpp +22/-7 (the hook, and
 `ConvertAggregateElement`'s `diagnose` parameter with its four callers),
@@ -4111,12 +4342,12 @@ cpp/type_mapping.h +7, cpp/type_mapping.cpp +13/-2, type.cpp +27/-1,
 lower/constant.cpp +28, diagnostics/kind.def +8, check/BUILD +2. Core: one new
 file (sum.carbon, 129 lines) and one line. Testdata: eight new goldens, one
 split appended to interop/cpp/exceptions/fail_catching.carbon, four refills (and
-seven more at F-M, §3 item 8); at M-VA, sum_type.cpp's land-time hunk (+18/-5)
-and one split appended to stdlib/fail_sum_types.carbon. Conformance: one changed
-program, five new (one a directory of three files), four new `.diff.cpp` oracles
-and one `main.diff.cpp`, the README table. Docs: sum_types.md, unions.md (one
-link), optional.md after M. Records at R and D. Collisions and their rules:
-§0.7; the land-time order: §3 item 8.
+seven more at F-M, §3 item 8); at M-VA, sum_type.cpp's land-time hunk (+47/-5;
+rev 3's was +18/-5) and one split appended to stdlib/fail_sum_types.carbon.
+Conformance: one changed program, five new (one a directory of three files),
+four new `.diff.cpp` oracles and one `main.diff.cpp`, the README table. Docs:
+sum_types.md, unions.md (one link), optional.md after M. Records at R and D.
+Collisions and their rules: §0.7; the land-time order: §3 item 8.
 
 ## §7 Risks and rejected alternatives
 
@@ -4174,19 +4405,36 @@ link), optional.md after M. Records at R and D. Collisions and their rules:
     non-constant result, or by an element conversion reached with
     `diagnose` true inside a probe (mutant M17's shape); then D-SV-4's
     break condition applies.
--   **R-9, TP-1's template `match`** (added 2026-10-20, review fold: A-M1):
-    X-1 (pattern_match.cpp:1409 on TP-1's head) is TP-1's; if it is still
-    there at M, a template `match` on a sum type stops the compiler on the
-    merged trunk without any SV-1 code in the path, and W-282 is filed.
+-   **R-9, TP-1's template `match`** (added 2026-10-20, review fold: A-M1;
+    amended 2026-10-20, review fold: RR3-m3): X-1 (pattern_match.cpp:1409 on
+    TP-1's pushed head) is TP-1's, and TP-1's round-10 head eafca5cb9 fixes it
+    (x19 compiles and prints 0 on tpv6), so W-282 is predicted unused. Falsified
+    if x19 still stops the merged trunk at D (a template `match` on a sum type
+    would then stop the compiler without any SV-1 code in the path), and then
+    W-282 is filed. The round-10 fix also edits refutable_binding.cpp, beside
+    SV-1's scrutinee hook (§0.7); its first hunk applies with fuzz 1, and tpv6
+    gates clean.
 -   **R-10, compositions with held PRs that convert in single-block regions**
-    (added 2026-10-20, review fold: RR-M1). VA-1 converts pack elements in
-    one straight-line block and CHECKs it; M-VA keeps SV-1's conversion out
-    of it by recognizing `SemIR::PackElement`. Falsified if a held PR or a
-    later slice converts a value that is not a `PackElement` in such a block
-    (another single-block region, or a pack element wrapped before it
-    reaches the hook): the PR 59 mirror's probes (v02 to v07) and the M-VA
-    split detect the wrapped case; a new region needs its own test in
-    `CanBuildBranches`.
+    (added 2026-10-20, review fold: RR-M1; rewritten 2026-10-20, review fold:
+    RR3-B1). VA-1 converts pack elements in one straight-line block and CHECKs
+    it; M-VA keeps SV-1's conversion out of it by walking the converted value
+    back through the projections a conversion takes of an element
+    (`TupleAccess`, `StructAccess`, `ArrayIndex`, `ClassElementAccess`,
+    `AsCompatible`, `AcquireValue`, `ValueAsRef`) to a `SemIR::PackElement`.
+    Rev 3's test recognized only a bare `PackElement`, and the re-review of
+    rev 3 measured that its stated detector (v02 to v07) held no aggregate
+    element: n01 to n05, a pack of tuples, structs, arrays or classes holding a
+    sum type, crashed vav5g. The walk was chosen over marking the region in
+    VA-1's code (a flag that `ConvertPackToPack` and the expansion bodies set
+    and `CanBuildBranches` reads), which is more general but edits VA-1's
+    convert.cpp, handle_pack_expansion.cpp and `Context` at land time; the walk
+    is local to SV-1's file and measured. Falsified if a held PR or a later
+    slice converts, in such a block, a value that the walk does not reach
+    (another single-block region, or a pack element projected through another
+    instruction kind): the PR 59 mirror's probes (`$W/probes/va/`, `vn/` and
+    `vn4/`: v02 to v07, n01 to n10 and n13 to n22) and the M-VA split's ten
+    calls detect it, and mutant M21 shows that the split catches rev 3's
+    narrower test; then the region is marked instead (§1.4's break condition).
 
 ### §7.2 Rejected alternatives
 
@@ -4233,20 +4481,20 @@ link), optional.md after M. Records at R and D. Collisions and their rules:
 -   **R-J, widening SF-6 to trivially copyable structs here**: it changes every
     choice's payload rule and its `Copy`/`Destroy` witnesses (W-010's
     residue); out of this slice.
--   **R-K, one synthesized Carbon function per specialization** (D-SV-4's
-    break condition, offered by both reviews for B1; added 2026-10-20, review
-    fold: A-B1 / B-B-1). It would make every conversion one call, which a
-    probe can discard and a file-scope initializer and a template instantiation
-    can hold. Not adopted now: the fork has no checker-built function with a
-    body of its own (thunk.cpp's deferred definitions forward one call to an
-    existing callee), so it is a new definition mechanism with its own
-    identity and linkage rules across files, while the measured local fix
-    (§1.4: every conversion a probe performs, element conversions included,
-    has `diagnose` false, and the non-diagnosing path accepts only what the
-    commit can build) removes every crash the three reviews found, measured
-    on v5 (§0.6); it stays the break condition (amended 2026-10-20, review
-    fold: RR-B1 / RR-B-1: rev 2 claimed the same of a fix that left the
-    aggregate element conversions diagnosing).
+-   **R-K, one synthesized Carbon function per specialization** (D-SV-4's break
+    condition, offered by both reviews for B1; added 2026-10-20, review fold:
+    A-B1 / B-B-1). It would make every conversion one call, which a probe can
+    discard and a file-scope initializer and a template instantiation can hold.
+    Not adopted now: the fork has no checker-built function with a body of its
+    own (thunk.cpp's deferred definitions forward one call to an existing
+    callee), so it is a new definition mechanism with its own identity and
+    linkage rules across files, while the measured local fix (§1.4: every
+    conversion a probe performs, element conversions included, has `diagnose`
+    false, and the non-diagnosing path decides from the types alone) removes
+    every crash the four reviews found, measured on v6 and, for a pack element,
+    on vav6g with M-VA (§0.6); it stays the break condition (amended 2026-10-20,
+    review fold: RR-B1 / RR-B-1: rev 2 claimed the same of a fix that left the
+    aggregate element conversions diagnosing; RR3-B1 / RR3-M1).
 -   **R-L, loading sum.carbon only for a file that imports `Cpp`** (A-M4's
     suggestion; added 2026-10-20). The prelude is one import:
     core/prelude/types.carbon exports every `types/cpp/` library for every
@@ -4279,9 +4527,10 @@ scripts are
     third wrote nothing).
 3.  **Gate**: `$CB/gate.sh /home/user/carbon-sv`: predicted 1950 tests (1942 +
     the eight new goldens), all passing after F1 to F3, 0
-    autoupdate-would-change marks (measured on v4, and on v5 with
-    sum_type_overload.carbon's fourteen splits: 1950 of 1950 after the four
-    refills; amended 2026-10-20, review fold: RR-B1).
+    autoupdate-would-change marks (measured on v4, on v5 with
+    sum_type_overload.carbon's fourteen splits, and on v6 with its sixteen: 1950
+    of 1950 after the four refills; amended 2026-10-20, review fold: RR-B1;
+    RR3-M1 / RR3-m4).
 4.  **Conformance**: `XDG_CACHE_HOME=... $CB/conformance.sh /home/user/carbon-sv
     <out>`: predicted §5's totals; then `python3 fork/conformance/runner.py
     --update-readme-table` and `--self-test` (R7).
@@ -4307,15 +4556,17 @@ scripts are
     | M14 (rev 2): the view admitted for any payload | core_optional_view.carbon `fail_todo_generic` and `fail_todo_aggregate` |
     | M15 (rev 2): D-SV-8's name test widened back to rev 1's walk | optional_pointer_payload.carbon `fail_todo_nullptr_payload` and `fail_todo_maybe_unformed_payload`; fail_catching.carbon `fail_nullptr_return` |
     | M16 (rev 2): the template-dependence test removed | fail_sum_types.carbon `fail_todo_template_conversion` (rev 1's definition-time mismatch, measured by review A on the TP-1 composition) |
-    | M17 (rev 3): `ConvertAggregateElement` no longer passes `diagnose` (trunk's line 393 restored) | sum_type_overload.carbon stops file_test, ``Built invalid semantics IR: No terminator in block`` (MEASURED on v5, `$Z/runs/mut-m17.log`) |
-    | M18 (rev 3): the non-diagnosing path no longer calls `CanBuildBranches` | sum_type_overload.carbon `file_scope`: the file-scope TODO (MEASURED, `$Z/runs/mut-m18.log`) |
-    | M19 (rev 3, on the PR 59 mirror after M-VA): the pack-element test removed | fail_sum_types.carbon `fail_todo_pack_element` stops the compiler at VA-1's ``Control flow in a pack element conversion`` CHECK (MEASURED on vav5n, `$Z/runs/mut-m19-va.log`) |
+    | M17 (rev 3): `ConvertAggregateElement` no longer passes `diagnose` (trunk's line 393 restored) | sum_type_overload.carbon stops file_test, ``Built invalid semantics IR: No terminator in block`` (MEASURED on v5, `$Z/runs/mut-m17.log`, and on v6, `$W/runs/mut-m17.log`); with no sum type in the path, `scalar_tuple_mismatch_first` gets trunk's spurious ``cannot implicitly convert expression of type `bool` to `i32` `` (z01 on m17 and trunk; amended 2026-10-20, review fold: RR3-m4) |
+    | M18 (rev 3, retired at rev 4): the non-diagnosing path no longer calls `CanBuildBranches` | rev 3: `file_scope` red with the file-scope TODO (MEASURED, `$Z/runs/mut-m18.log`); rev 4's code is M18, by design (RR3-M1), so M20 replaces it |
+    | M19 (rev 3, on the PR 59 mirror after M-VA): the pack-element test removed | fail_sum_types.carbon `fail_todo_pack_element` stops the compiler at VA-1's ``Control flow in a pack element conversion`` CHECK (MEASURED on vav5n, `$Z/runs/mut-m19-va.log`, and with rev 4's split on vav6n, `$W/runs/mut-m19-va.log`) |
+    | M20 (rev 4): the non-diagnosing path calls `CanBuildBranches` again (rev 3's rule; built from `$Z/final/src/`'s sum_type.{h,cpp}) | sum_type_overload.carbon `fail_todo_file_scope` and `fail_todo_template_overload` compile with no diagnostic, the second member silently selected (MEASURED on v6's tree, `$W/runs/mut-m20.log`; f01 and t7 print 1 2) |
+    | M21 (rev 4, on the PR 59 mirror after M-VA): the walk reduced to rev 3's bare `PackElement` test (`$W/land/mut-m21-bare.diff`) | fail_sum_types.carbon `fail_todo_pack_element` stops the compiler at VA-1's CHECK, at `ForwardTuple` (MEASURED on vav6r, `$W/runs/mut-m21-va.log`) |
 
 6.  **Composition mirrors** (TP-1's §0.9 shape; rewritten 2026-10-20, review
     fold: B-m-11): with kind.def changed every translation unit recompiles, so
     each mirror is a FULL build, one at a time: for each of PR 57, PR 60, PR 59
-    and PR 61, `git archive <head> | tar -x -C /dev/shm/sv1-impl/mirror-<b>`
-    (a scratch worktree; `MODULE.bazel` included), `patch -p1 <
+    and PR 61, `git archive <head> | tar -x -C /dev/shm/sv1-impl/mirror-<b>` (a
+    scratch worktree; `MODULE.bazel` included), `patch -p1 <
     $X/final/final.diff` (§0.7: applies to every head), the golden sources of
     Appendix B added and the manifest regenerated by the build, then
     `CB_BUILD_ROOT=/dev/shm/sv1-impl/build $CB/build.sh
@@ -4323,21 +4574,29 @@ scripts are
     programs, and the deletion of the mirror and its build before the next.
     Budget, from the carbonbuild README's records: about 10 to 17 minutes of
     wall time per build on 4 cores and under 1 GB per mirror with its build in
-    `/dev/shm`, so about an hour in all. Predicted, from op2v4 and tpv4
-    (§0.6): PR 57's mirror fails exactly the seven goldens of F-M (§3 item 8);
-    PR 61's the four function-pointer goldens; PR 60's and PR 59's the four
+    `/dev/shm`, so about an hour in all. Predicted, from op2v4 and tpv4 (§0.6):
+    PR 57's mirror fails exactly the seven goldens of F-M (§3 item 8); PR 61's
+    the four function-pointer goldens; PR 60's and PR 59's the four
     function-pointer goldens and none of their own; on PR 57's mirror `o04`
     prints 5 6 -1 9 and `s05` 42 0 -1; on PR 61's, h2 and h3 give W-279's TODO
-    at instantiation and h1 and x19 reach X-1 unless TP-1 has fixed it.
-    Repeated at M against that day's heads. Rev 3 (amended 2026-10-20, review
-    fold: RR-M1): `$Z/final/final.diff` replaces `$X/final/final.diff`; PR
-    59's mirror also applies the M-VA hunk and appends the
-    `fail_todo_pack_element` split, and runs the PR 59 probes
-    (`$Z/probes/va/`: v02, v03 and v04 give the pack-element TODO, v00 1 2,
-    v01 7 -1, v05 VA-1's control-flow TODO, v06 7 -1, v07 4 -1); predicted,
-    from the relinked compositions of §0.6 (tpv5, op2v5, scv5, vav5g): the
-    same failures as above, and on PR 59's mirror the four function-pointer
-    refills only.
+    at instantiation and h1 and x19 reach X-1 unless TP-1 has fixed it. Repeated
+    at M against that day's heads. Rev 3 (amended 2026-10-20, review fold:
+    RR-M1): `$Z/final/final.diff` replaces `$X/final/final.diff`; PR 59's mirror
+    also applies the M-VA hunk and appends the `fail_todo_pack_element` split,
+    and runs the PR 59 probes (`$Z/probes/va/`: v02, v03 and v04 give the
+    pack-element TODO, v00 1 2, v01 7 -1, v05 VA-1's control-flow TODO, v06 7
+    -1, v07 4 -1); predicted, from the relinked compositions of §0.6 (tpv5,
+    op2v5, scv5, vav5g): the same failures as above, and on PR 59's mirror the
+    four function-pointer refills only. Rev 4 (amended 2026-10-20, review fold:
+    RR3-B1 / RR3-M1 / RR3-m3): `$W/final/final.diff` replaces
+    `$Z/final/final.diff` and `$W/land/` replaces `$Z/land/`; PR 59's mirror
+    also runs the aggregate pack probes (`$W/probes/vn/` and `vn4/`: n01 to n08
+    and n13, n14, n16 to n21 give the pack-element TODO, n15 and n22 VA-1's own
+    TODOs, n09 prints 7 1 -1 2 and n10 8 1); PR 61's mirror, at PR 61's head of
+    the day, runs `$W/probes/tp/` (on tpv6: t4 and t7 give W-279's TODO, x19
+    prints 0) and re-measures §0.7's PR 61 row, refutable_binding.cpp's hunk and
+    X-1; predicted, from tpv6, op2v6, scv6 and vav6g (§0.6): the same failures
+    as above.
 7.  **Id re-scan** (before D; run 2026-10-20 for §1.16; widened 2026-10-20,
     review fold: B-m-7):
 
@@ -4358,10 +4617,13 @@ scripts are
     <!-- google-doc-style-resume -->
 
     Expected: no output (no id of the block filed anywhere, on a pushed or a
-    local ref or in an unpushed worktree ledger). Run on 2026-10-20 over 82
-    refs and 15 worktree ledgers: no output; the highest filed id is W-274.
-    Re-run at rev 3 (2026-10-20, amended 2026-10-20, review fold: RR-M1):
-    the same; W-284 joins the planned filings (§1.16).
+    local ref or in an unpushed worktree ledger). Run on 2026-10-20 over 82 refs
+    and 15 worktree ledgers: no output; the highest filed id is W-274. Re-run at
+    rev 3 (2026-10-20, amended 2026-10-20, review fold: RR-M1): the same; W-284
+    joins the planned filings (§1.16). Re-run at rev 4 over 83 refs and 15
+    worktree ledgers (amended 2026-10-20, review fold: all RR3 findings): no
+    output; with the pattern widened to W-299, TP-1's W-295 on TP-1's local
+    branch and in the carbon-tp worktree, TP-1's own block (§1.16).
 8.  **clang-tidy** (rewritten 2026-10-20, review fold: B-m-4): the carbonbuild
     builds write no compile database, so after item 1, `ninja -C
     /home/user/carbon-build/carbon-sv -t compdb >
@@ -4411,37 +4673,47 @@ scripts are
 
 Rewritten 2026-10-20 (review fold: all findings).
 
--   Start from `$Z/final/final.diff` (the measured rev-3 prototype v5, with
-    kind.def at its final position and BUILD) and `$Z/final/src/` (the
-    formatted files); copy, do not retype (amended 2026-10-20, review fold:
-    all RR findings). Rev 2's `$X/final/` is superseded: it crashes in an
-    `overload fn` set whose member takes a tuple, struct or array holding a
-    sum type. Rev 1's `$P/proto/v3.diff` and `$P/final/` are superseded too:
-    they crash in `overload fn` sets and on C++ converting constructors.
--   The land-time hunk M-VA (`$Z/land/m-va-pack-element.diff`) and its split
-    (`$Z/land/fail_todo_pack_element.split`, filled in
-    `$Z/final/goldens-filled-M/`) go in after M, once PR 59 has landed;
-    `$Z/bin/comp.sh` shows how they were measured on the PR 59 composition.
--   The diagnostics are final: v4 and v5 emitted them with the kinds appended
-    to kind.def (§0.0); the full build places them as §2.10 shows. The
-    goldens' first fill reproduces `$Z/final/goldens-filled/` exactly.
+-   Start from `$W/final/final.diff` (the measured rev-4 prototype v6, with
+    kind.def at its final position and BUILD) and `$W/final/src/` (the formatted
+    files); copy, do not retype (amended 2026-10-20, review fold: all RR3
+    findings). Rev 3's `$Z/final/` is superseded: its probe skips an `overload
+    fn` member at file scope and at a template's instantiation, silently calling
+    a later one. Rev 2's `$X/final/` is superseded: it crashes in an `overload
+    fn` set whose member takes a tuple, struct or array holding a sum type.
+    Rev 1's `$P/proto/v3.diff` and `$P/final/` are superseded too: they crash in
+    `overload fn` sets and on C++ converting constructors.
+-   The land-time hunk M-VA (`$W/land/m-va-pack-element.diff`) and its split
+    (`$W/land/fail_todo_pack_element.split`, filled in
+    `$W/final/goldens-filled-M/`) go in after M, once PR 59 has landed;
+    `$W/bin/comp.sh` shows how they were measured on the PR 59 composition.
+    Rev 3's `$Z/land/` hunk is superseded: it misses a pack of aggregates
+    (amended 2026-10-20, review fold: RR3-B1).
+-   The diagnostics are final: v4, v5 and v6 emitted them with the kinds
+    appended to kind.def (§0.0); the full build places them as §2.10 shows. The
+    goldens' first fill reproduces `$W/final/goldens-filled/` exactly.
 -   Link prototypes with trunk's `carbon link` (§0.0); the full build of §8.1
     removes the need.
 -   The goldens mock `std::optional`/`std::variant` (Appendix B,
-    `$Z/final/goldens-src/`); the programs use real libc++ (Appendix A,
+    `$W/final/goldens-src/`); the programs use real libc++ (Appendix A,
     `$X/final/progs/`). Keep both.
 -   The arbiter's body loses its `default` arm; its header says why
     (R16(b)), and no other existing program is edited.
 -   Records and docs texts are Appendix C, verbatim, after M; only the `<...>`
     placeholders are filled (§1.14). W-177 is narrowed, not discharged.
 -   Probe programs that pin every measured number of this plan are in
-    `$P/probes/` (rev 1: m*, n*, a*, t*, x*: trunk; v1/, w/, o/: the
-    prototype), `$X/probes/` (rev 2: rA/ and rB/, the two reviews' probes;
-    x/, the fixer's) and `$Z/probes/` (rev 3: rr/ and va/, the focused
-    re-review's; y/, the fixer's); `$X/bin/probe.sh <variant> <file>` or
-    `$Z/bin/runall.sh <variant> <dir>` re-runs them.
--   X-1 (TP-1's pattern_match.cpp:1409 on a template-dependent choice
-    `match`) is TP-1's; check x19 on the merged trunk before D (§1.16).
+    `$P/probes/` (rev 1: m*, n*, a*, t*, x*: trunk; v1/, w/, o/: the prototype),
+    `$X/probes/` (rev 2: rA/ and rB/, the two reviews' probes; x/, the fixer's),
+    `$Z/probes/` (rev 3: rr/ and va/, the focused re-review's; y/, the fixer's)
+    and `$W/probes/` (rev 4: copies of the focused re-review of rev 3's f/, h/,
+    tp/, vn/, vn2/ and the rest; vn4/ and z/, the fixer's); `$X/bin/probe.sh
+    <variant> <file>` or `$W/bin/runall.sh <variant> <dir>` re-runs them.
+-   X-1 (TP-1's pattern_match.cpp:1409 on a template-dependent choice `match`)
+    is TP-1's, fixed on its round-10 head; check x19 on the merged trunk before
+    D (§1.16).
+-   A limit on where the conversion can be built (file scope, a template's
+    instantiation, a pack element) is the committed conversion's TODO, never a
+    reason for an `overload fn` probe to skip a member (§1.4, RR3-M1); keep
+    `CanBuildBranches` out of the non-diagnosing path.
 -   clang-tidy: §8 item 8's database recipe works on the carbonbuild build
     (measured on v4); keep the `modernize-use-trailing-return-type` exclusion.
 
@@ -5579,13 +5851,17 @@ auto main() -> int {
 
 The AUTOUPDATE sources of §1.12 without their CHECK lines
 (`$X/final/goldens-src/`; `$X/final/goldens-filled/` holds them filled by v4).
-Paths relative to toolchain/. Rewritten 2026-10-20 (review fold: all
-findings): every listing is v4's; stdlib/sum_type_overload.carbon is new, and
+Paths relative to toolchain/. Rewritten 2026-10-20 (review fold: all findings):
+every listing is v4's; stdlib/sum_type_overload.carbon is new, and
 fail_catching.carbon's appended split is listed as its diff hunk. At rev 3
 (amended 2026-10-20, review fold: all RR findings) the sources are
 `$Z/final/goldens-src/`, filled by v5 in `$Z/final/goldens-filled/`:
 sum_type_overload.carbon gains eight splits, and fail_sum_types.carbon gains a
-split at M-VA, listed after it.
+split at M-VA, listed after it. At rev 4 (amended 2026-10-20, review fold:
+RR3-B1 / RR3-M1 / RR3-m4) they are `$W/final/goldens-src/`, filled by v6 in
+`$W/final/goldens-filled/` (and the M-VA split by vav6g in
+`$W/final/goldens-filled-M/`): sum_type_overload.carbon renames one split and
+gains two, and the M-VA split gains eight calls.
 
 ### B: check/testdata/interop/cpp/stdlib/optional.carbon
 
@@ -6421,7 +6697,9 @@ fn U() {
 At M-VA (§3 item 8; added 2026-10-20, review fold: RR-M1), after PR 59 has
 landed, this split is appended to the file (VA-1's `...` and `each` syntax
 exists only then); its fill on the PR 59 composition is
-`$Z/final/goldens-filled-M/`:
+`$W/final/goldens-filled-M/`. Rev 4 adds the tuple, struct, array and class
+forms in both directions (amended 2026-10-20, review fold: RR3-B1); rev 3's two
+functions are unchanged:
 
 <!-- google-doc-style-ignore -->
 
@@ -6434,7 +6712,9 @@ import Cpp library "sum.h";
 
 // A pack element is converted in one straight-line block per element, which
 // cannot hold the conversion's branches (§1.11, the land-time rule of §3 item
-// 8): forwarding a pack of C++ optionals to a pack of their sum type, and back.
+// 8): forwarding a pack of C++ optionals to a pack of their sum type, and back;
+// and the same for a pack whose element is a tuple, struct, array or class
+// holding one, whose conversion converts what it projects from the element.
 fn Each(... unused each o: Core.CppCompat.StdOptional(i32)) {}
 
 fn Forward(... each c: Cpp.std.optional(i32)) {
@@ -6446,6 +6726,62 @@ fn TakeEach(... unused each c: Cpp.std.optional(i32)) {}
 fn Back(... each o: Core.CppCompat.StdOptional(i32)) {
   TakeEach(... each o);
 }
+
+fn EachTuple(... unused each t: (Core.CppCompat.StdOptional(i32), i32)) {}
+
+fn ForwardTuple(... each t: (Cpp.std.optional(i32), i32)) {
+  EachTuple(... each t);
+}
+
+fn TakeEachTuple(... unused each t: (Cpp.std.optional(i32), i32)) {}
+
+fn BackTuple(... each t: (Core.CppCompat.StdOptional(i32), i32)) {
+  TakeEachTuple(... each t);
+}
+
+fn EachStruct(... unused each s: {.o: Core.CppCompat.StdOptional(i32)}) {}
+
+fn ForwardStruct(... each s: {.o: Cpp.std.optional(i32)}) {
+  EachStruct(... each s);
+}
+
+fn TakeEachStruct(... unused each s: {.o: Cpp.std.optional(i32)}) {}
+
+fn BackStruct(... each s: {.o: Core.CppCompat.StdOptional(i32)}) {
+  TakeEachStruct(... each s);
+}
+
+fn EachArray(... unused each a: array(Core.CppCompat.StdOptional(i32), 1)) {}
+
+fn ForwardArray(... each t: (Cpp.std.optional(i32),)) {
+  EachArray(... each t);
+}
+
+fn TakeEachArray(... unused each a: array(Cpp.std.optional(i32), 1)) {}
+
+fn BackArray(... each t: (Core.CppCompat.StdOptional(i32),)) {
+  TakeEachArray(... each t);
+}
+
+class SumHolder {
+  var o: Core.CppCompat.StdOptional(i32);
+}
+
+fn EachSumHolder(... unused each h: SumHolder) {}
+
+fn ForwardClass(... each s: {.o: Cpp.std.optional(i32)}) {
+  EachSumHolder(... each s);
+}
+
+class CppHolder {
+  var o: Cpp.std.optional(i32);
+}
+
+fn EachCppHolder(... unused each h: CppHolder) {}
+
+fn BackClass(... each s: {.o: Core.CppCompat.StdOptional(i32)}) {
+  EachCppHolder(... each s);
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -6453,8 +6789,11 @@ fn Back(... each o: Core.CppCompat.StdOptional(i32)) {
 ### B: check/testdata/interop/cpp/stdlib/sum_type_overload.carbon
 
 Rev 3 appends eight splits, from `tuple_member` to `file_scope`, and two
-sentences to the header comment (amended 2026-10-20, review fold: RR-B1 /
-RR-B-1 / RR-m1).
+sentences to the header comment (amended 2026-10-20, review fold: RR-B1 / RR-B-1
+/ RR-m1). Rev 4 adds `scalar_tuple_mismatch_first` (amended 2026-10-20, review
+fold: RR3-m4), renames `file_scope` to `fail_todo_file_scope`, which the call's
+TODO now fails, adds `fail_todo_template_overload`, and rewrites the header's
+last sentence (amended 2026-10-20, review fold: RR3-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -6478,8 +6817,10 @@ RR-B-1 / RR-m1).
 // nothing, so a member that does not accept the argument is skipped and the
 // member that does is called, in either direction and for a generic member.
 // The element conversions of a tuple, struct or array argument are probed the
-// same way, and at file scope the probe rejects a member whose conversion the
-// call could not build there.
+// same way, scalar elements included. A member whose parameter the argument
+// converts to is accepted even where the call cannot build the conversion (at
+// file scope, or at a template's instantiation), and the call reports that
+// limit, so the member a call selects does not depend on where the call is.
 
 // --- sum.h
 
@@ -6793,7 +7134,21 @@ fn F() -> i32 {
   return Pick(1 as i32, (Cpp.MakeOptional(7), 1));
 }
 
-// --- file_scope.carbon
+// --- scalar_tuple_mismatch_first.carbon
+
+library "[[@TEST_NAME]]";
+
+// No sum type: the first member's tuple elements are probed without
+// diagnosing, so it is skipped with no error, and the second is called, as the
+// return type shows.
+overload fn Pick(unused t: (i32, i32)) -> i32 { return 1; }
+overload fn Pick(unused t: (bool, bool)) -> bool { return true; }
+
+fn F() -> bool {
+  return Pick((true, false));
+}
+
+// --- fail_todo_file_scope.carbon
 
 library "[[@TEST_NAME]]";
 
@@ -6804,9 +7159,35 @@ overload fn Pick(unused o: Core.CppCompat.StdOptional(i32)) -> i32 {
 }
 overload fn Pick(unused o: Cpp.std.optional(i32)) -> i32 { return 2; }
 
-// At file scope the sum-type conversion cannot be built, so the probe rejects
-// the first member and the second, which takes the C++ class, is called.
+// At file scope the sum-type conversion cannot be built (W-036). The argument
+// converts to the first member's parameter, so the probe accepts that member,
+// and the call reports the limit rather than calling the second member.
 let x: i32 = Pick(Cpp.MakeOptional(7));
+
+// --- fail_todo_template_overload.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+overload fn Pick(unused o: Core.CppCompat.StdOptional(i32)) -> i32 {
+  return 1;
+}
+overload fn Pick[T: Core.Copy & Core.Destroy](unused x: T) -> i32 {
+  return 2;
+}
+
+// A template performs the call's conversion at its instantiation, where the
+// sum-type conversion cannot be built either (§1.10): the probe accepts the
+// first member, and the instantiation reports the limit rather than calling
+// the generic member.
+fn Call[template T: type](x: T) -> i32 {
+  return Pick(x);
+}
+
+fn F() -> i32 {
+  return Call(Cpp.MakeOptional(7));
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -7456,10 +7837,12 @@ does not change (item 6 replaces one bullet by one).
 
 ### C.4 fork/inventory/work-items.json: the filed items
 
-Appended to `items` after the merged trunk's last item, in id order. W-282 only
-under its condition (§1.16); W-278 and W-283 only if the shrink line of §3
-item 7 is taken (texts at the end); W-284 with M-VA (§3 item 8; amended
-2026-10-20, review fold: RR-M1).
+Appended to `items` after the merged trunk's last item, in id order, at D (§3
+item 10; records go in R and D only). W-282 only under its condition (§1.16);
+W-278 and W-283 only if the shrink line of §3 item 7 is taken (texts at the
+end); W-284 at D once M-VA (§3 item 8) has landed, and held until it has (added
+2026-10-20, review fold: RR-M1; amended 2026-10-20, review fold: RR3-m1: rev 3
+said "with M-VA", which read as filing it in the M-VA commit).
 
 <!-- google-doc-style-ignore -->
 
@@ -7519,11 +7902,11 @@ item 7 is taken (texts at the end); W-284 with M-VA (§3 item 8; amended
   "bullet": "Generics: Integrated templates",
   "evidence": [
     "toolchain/check/cpp/sum_type.cpp `CanBuildBranches` (``conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)``; ``... with no source expression``)",
-    "toolchain/check/testdata/interop/cpp/stdlib/fail_sum_types.carbon `fail_todo_template_conversion`",
-    "fork/sumtype-interop/plan.md §1.4, §1.10 (review A's h2 and h3 on the TP-1 composition)"
+    "toolchain/check/testdata/interop/cpp/stdlib/fail_sum_types.carbon `fail_todo_template_conversion`, stdlib/sum_type_overload.carbon `fail_todo_template_overload`",
+    "fork/sumtype-interop/plan.md §1.4, §1.10 (review A's h2 and h3 on the TP-1 composition; t4 and t7, the focused re-review of rev 3's RR3-M1)"
   ],
   "blocked_by": [],
-  "notes": "Filed at the SV-1 discharge (YYYY-MM-DD, fork/sumtype-interop/plan.md §1.16). The conversion branches (one arm per alternative) and needs a function body for its blocks; TP-1 performs a template's deferred conversion at instantiation, outside any function body, so the conversion gives this TODO under `unable to monomorphize specific`. The same TODO at file scope rides W-036. No measured program reaches the no-source-expression form. Not bounding row 68: every non-template form converts, and the template form is diagnosed. Break condition: TP-1 can emit control flow into an instantiation, or the conversion becomes one call to a synthesized function per specialization (plan §7.2 R-K), which also lifts the file-scope case."
+  "notes": "Filed at the SV-1 discharge (YYYY-MM-DD, fork/sumtype-interop/plan.md §1.16). The conversion branches (one arm per alternative) and needs a function body for its blocks; TP-1 performs a template's deferred conversion at instantiation, outside any function body, so the conversion gives this TODO under `unable to monomorphize specific`. An `overload fn` call there whose member takes the sum type gets the same TODO: the member is the one the argument converts to, so it is selected rather than skipped for a later one, and lifting this item does not change which member a program calls. The same TODO at file scope rides W-036. No measured program reaches the no-source-expression form. Not bounding row 68: every non-template form converts, and the template form is diagnosed. Break condition: TP-1 can emit control flow into an instantiation, or the conversion becomes one call to a synthesized function per specialization (plan §7.2 R-K), which also lifts the file-scope case."
 }
 {
   "id": "W-280",
@@ -7559,18 +7942,18 @@ item 7 is taken (texts at the end); W-284 with M-VA (§3 item 8; amended
 {
   "id": "W-284",
   "kind": "todo-stub",
-  "title": "SV-1 residue: a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack forwarded to a pack of another element type) is a semantics TODO",
+  "title": "SV-1 residue: a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack converted to a pack of another element type), the element being the C++ class, the sum type, a `Core.Optional`, or a tuple, struct, array or class holding one, is a semantics TODO",
   "subsystem": "toolchain/check/cpp (sum_type.cpp `CanBuildBranches`) + toolchain/check (convert.cpp `ConvertPackToPack`, handle_pack_expansion.cpp)",
   "size": "M",
   "bullet": "Generics: Definition-checked variadics",
   "evidence": [
-    "toolchain/check/cpp/sum_type.cpp `CanBuildBranches` (``conversion of a C++ `std::optional` or `std::variant` for a pack element``)",
+    "toolchain/check/cpp/sum_type.cpp `CanBuildBranches` and `IsPackElementOrProjection` (``conversion of a C++ `std::optional` or `std::variant` for a pack element``)",
     "toolchain/check/convert.cpp `ConvertPackToPack` (the CHECK ``Control flow in a pack element conversion``, which the TODO keeps the conversion from reaching)",
-    "toolchain/check/testdata/interop/cpp/stdlib/fail_sum_types.carbon `fail_todo_pack_element`",
-    "fork/sumtype-interop/plan.md §1.4, §1.11, §3 item 8 (M-VA), focused re-review fold record RR-M1"
+    "toolchain/check/testdata/interop/cpp/stdlib/fail_sum_types.carbon `fail_todo_pack_element` (the bare element and the tuple, struct, array and class forms, both directions)",
+    "fork/sumtype-interop/plan.md §1.4, §1.11, §3 item 8 (M-VA), focused re-review fold record RR-M1 and RR3-B1"
   ],
   "blocked_by": ["W-219"],
-  "notes": "Filed at the SV-1 discharge (YYYY-MM-DD, fork/sumtype-interop/plan.md §1.16). VA-1 converts a pack element in one straight-line block run once per element, and the sum-type conversion branches (one arm per alternative), so the hook refuses a `SemIR::PackElement` value; without the refusal the conversion stopped the compiler at VA-1's CHECK (the focused re-review's v02 and v04). A pack of the C++ class, or of the sum type, forwarded unchanged works. Not bounding row 68: every non-pack form converts, and the shape is diagnosed. Break condition: W-219 lets an expansion body hold control flow, or the conversion becomes one call to a synthesized function per specialization (plan §7.2 R-K)."
+  "notes": "Filed at the SV-1 discharge (YYYY-MM-DD, fork/sumtype-interop/plan.md §1.16), after M-VA. VA-1 converts a pack element in one straight-line block run once per element, and the sum-type conversion branches (one arm per alternative), so the hook refuses a value that is a `SemIR::PackElement` or that a tuple, struct, array, class or adapter conversion projects from one; without the refusal the conversion stopped the compiler at VA-1's CHECK (the focused re-review's v02 and v04, and, for a pack of aggregates, the re-review of rev 3's n01 to n05). A pack of the C++ class, of the sum type or of an aggregate holding either, forwarded unchanged, works, and so does a pack literal. Not bounding row 68: every non-pack form converts, and the shape is diagnosed. Break condition: W-219 lets an expansion body hold control flow, or the conversion becomes one call to a synthesized function per specialization (plan §7.2 R-K)."
 }
 {
   "id": "W-282",
@@ -7663,12 +8046,17 @@ Appended to W-177's `notes`, and its `evidence` gains
     match_core_optional_diff, cpp_sum_type_roundtrip_diff and
     cpp_sum_type_library PASS against C++ oracles (container-built,
     <PASS>/<FAIL>/<SKIP> over <programs>, expected, not of record). Residues
-    W-275, W-276, W-277, W-279, W-280, W-281; W-177 narrowed, open."
+    W-275, W-276, W-277, W-279, W-280, W-281<, W-284><, W-282><, W-278><,
+    W-283>; W-177 narrowed, open." (The placeholders are filled from C.4's
+    filing rules; amended 2026-10-20, review fold: RR3-m1 / RR3-m2.)
 -   **W-036**, `notes` appended: "SV-1 (YYYY-MM-DD): a conversion to or from a
     C++ `std::optional`/`std::variant` in a file-scope initializer gives the
     TODO `conversion of a C++ std::optional or std::variant outside a function
-    body` (fork/sumtype-interop/plan.md §1.4; optional.carbon
-    `fail_todo_outside_function`); it lifts with this item."
+    body`, an `overload fn` call there whose member takes the sum type included
+    (that member is selected, not skipped) (fork/sumtype-interop/plan.md §1.4;
+    optional.carbon `fail_todo_outside_function`, sum_type_overload.carbon
+    `fail_todo_file_scope`); it lifts with this item." (amended 2026-10-20,
+    review fold: RR3-M1)
 -   **W-047**, `notes` appended: "SV-1 (YYYY-MM-DD): a Carbon library whose API
     names `Cpp.std.optional(...)` reaches an importer without a direct C++
     import of the header through this TODO; an API in
@@ -7742,7 +8130,13 @@ Doc-M appends, after the merged trunk's OP-1 / F-015 entry's last paragraph:
 > fork/sumtype-interop/plan.md Appendix C.3 lists. W-177 stays open, narrowed.
 > Veto-able with F-020.
 
-D appends a new entry at the end of the log:
+D appends a new entry at the end of the log; its placeholders follow C.4's
+filing rules: `<, W-284>` once M-VA has landed, `<, W-282>` under its condition,
+`<, W-278>` and `<, W-283>` only if the shrink line's first and second steps are
+taken, and `<W-278 withdrawn unfiled; >` and `<W-283 and >` only if they are not
+(amended 2026-10-20, review fold: RR3-m1 / RR3-m2: rev 3 froze "W-278 withdrawn
+unfiled; W-283 unused" and "W-284" into the text, which the shrink line or a
+late M-VA would contradict):
 
 > ### SV-1 / F-020: `std::optional` and `std::variant` interop mapping (YYYY-MM-DD)
 >
@@ -7755,8 +8149,9 @@ D appends a new entry at the end of the log:
 > <bullets>/56 bullets, container-built and not of record (Actions disabled,
 > R9, R28). Landed on claude/carbon-fork-0-1-sv in the commits
 > fork/sumtype-interop/plan.md §3 fixes: <C1> ... <D>, after the plan's
-> 3287b1072 (rev 1), 4d85d14fe (rev 2, reviews A and B folded) and <rev-3
-> commit> (rev 3, the focused re-review folded) <and any later revision>.
+> 3287b1072 (rev 1), 4d85d14fe (rev 2, reviews A and B folded), 4eef66632
+> (rev 3, the focused re-review of rev 2 folded) and <rev-4 commit> (rev 4,
+> the focused re-review of rev 3 folded) <and any later revision>.
 >
 > **Veto digest** (R29(a), for the owner):
 >
@@ -7783,9 +8178,12 @@ D appends a new entry at the end of the log:
 > -   **D-SV-4**: conversion in `PerformBuiltinConversion` and the scrutinee
 >     gate; a conversion a caller only tests (an `overload fn` probe, its
 >     aggregate element conversions included, which `ConvertAggregateElement`
->     now marks non-diagnosing too) builds nothing and accepts only what the
->     committed conversion can build; a template-dependent side is left to
->     instantiation; a pack element is a TODO (W-284).
+>     now marks non-diagnosing too) builds nothing and is decided from the
+>     types alone, so a point where the conversion cannot be built (file
+>     scope, a template's instantiation) is the call's TODO and never selects
+>     another member; a template-dependent side is left to instantiation; a
+>     pack element, or what a conversion projects from one, is a TODO<
+>     (W-284)>.
 > -   **D-SV-5**: Carbon to C++ only to the class whose sum type the value is
 >     (`CppSumTypeReverseMismatch` otherwise).
 > -   **D-SV-6**: the shared scrutinee gate converts; `ref` bindings (W-280)
@@ -7809,8 +8207,8 @@ D appends a new entry at the end of the log:
 > (upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
 > Two divergences are disclosed: the sum types are fork prelude names, and the
 > view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
-> W-280, W-281, W-284 <and W-282>; W-278 withdrawn unfiled; W-283 and W-285
-> to W-294 unused.
+> W-280, W-281<, W-284><, W-282><, W-278><, W-283>; <W-278 withdrawn
+> unfiled; ><W-283 and >W-285 to W-294 unused.
 
 ### C.9 fork/ORCHESTRATION.md (D)
 
@@ -7819,16 +8217,18 @@ A Branches row after TP-1's:
 > | `claude/carbon-fork-0-1-sv` | IMPLEMENTED, PR <n> — SV-1
 > `std::optional`/`std::variant` interop mapping (W-011 discharged; gap row 68
 > stays PARTIAL on W-177, narrowed), plan rev <n> signed off, head <head>;
-> W-275..W-277, W-279..W-281 and W-284 filed<, W-282>; W-278 withdrawn, W-283
-> and W-285..W-294 unused; F-020 minted; gate <passed>/<total> and conformance
-> <PASS>/<FAIL>/<SKIP> over <programs> on the container toolchain. |
+> W-275..W-277 and W-279..W-281 filed<, W-284><, W-282><, W-278><, W-283>;
+> <W-278 withdrawn, ><W-283 and >W-285..W-294 unused; F-020 minted; gate
+> <passed>/<total> and conformance <PASS>/<FAIL>/<SKIP> over <programs> on the
+> container toolchain. |
 
-Held wording (while PR 51 to PR 61 are held): "IMPLEMENTED AND HELD, no PR —
-SV-1 ... at <head>; lands after PR 61 by the land-time items in Next actions",
-and Next actions gains: "SV-1 at land time (fork/sumtype-interop/plan.md §3
-item 8): M over the trunk that holds PR 51 to PR 61; M-VA (the pack-element
-rule and its split); F-M (seven refills, predicted); Doc-M; R; the id
-re-scan; D with Appendix C's texts."
+The placeholders follow C.8's rule (amended 2026-10-20, review fold: RR3-m1 /
+RR3-m2). Held wording (while PR 51 to PR 61 are held): "IMPLEMENTED AND HELD, no
+PR — SV-1 ... at <head>; lands after PR 61 by the land-time items in Next
+actions", and Next actions gains: "SV-1 at land time
+(fork/sumtype-interop/plan.md §3 item 8): M over the trunk that holds PR 51 to
+PR 61; M-VA (the pack-element rule and its split); F-M (seven refills,
+predicted); Doc-M; R; the id re-scan; D with Appendix C's texts."
 
 ## Review fold record (rev 2, 2026-10-20)
 
@@ -7957,6 +8357,85 @@ folds resolve them.
 7269 lines; rev 3's counts and their differences are in the rev-3 commit
 message. The one new heading is this record's.
 
+### Re-review of rev 3, folded in rev 4 (2026-10-20)
+
+The focused re-review of rev 3 (4eef66632) returned **REJECT**: one BLOCKER,
+RR3-B1 (RR-M1 NOT RESOLVED), one MAJOR, RR3-M1, and four MINORs, RR3-m1 to
+RR3-m4. It found RR-B1, RR-B-1, RR-m2 and RR-m3 RESOLVED, and RR-m1 RESOLVED
+as stated, its fold being the cause of RR3-M1. Every finding about a
+measurement was reproduced in the rev-4 fixer's scratch `$W` before it was
+folded: rev 3's probe rule as mutant M20 (v6 with `$Z/final/src/`'s
+sum_type.{h,cpp}, which is v5's code over the same trunk build), rev 3's
+M-VA test as mutant M21 on the PR 59 composition (vav6r), trunk's spurious
+error on the sum-free z01, and TP-1's round-10 head as tpv6; each fold is
+measured on v6 and its compositions (§0.6). All six are folded; none is
+rejected. The marks "(amended 2026-10-20, review fold: RR3-...)" name them.
+
+**The re-review, as returned** (its claims, abridged; its probes and logs are
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-rr3/`,
+`probes/` and `runs/`):
+
+-   **Method.** The 14 §2 code blocks extracted and applied to a `git
+    archive` of 5674fe88b: byte-identical to `$Z/final/src/` but for
+    kind.def's relink-only position; the §3 item 8 block equal to
+    `$Z/land/m-va-pack-element.diff` but for one whitespace-only context
+    line; Appendix A and B equal to their sources. v5 relinked; the nine
+    golden sources refilled to a fixpoint in three passes, byte-identical to
+    `$Z/final/goldens-filled/`.
+-   **B1 and B-1 RESOLVED** on SV-1's own head: p06 8, q04 8, q05 8, q06 5,
+    q07 8, q09 7, p15 8, t01 2, y01 8, y02 6, y03 9 -1; the 120 probes of
+    rA, rB, x, rr and y as on the fixer's v5, no crash. RR-m1 resolved as
+    stated (p05 prints 2), RR-m2 resolved (deduce.cpp:343-357 and :568-584),
+    RR-m3 resolved (k01 to k03 give trunk's own TODO).
+-   **RR-M1 NOT RESOLVED (RR3-B1).** On vav5g (PR 59 with the §2 code and
+    M-VA), v02 to v04 and n06 to n08 give the pack-element TODO, n09 runs,
+    but n01 to n05, a pack whose element is a tuple, struct, array or class
+    holding a sum type, stop at VA-1's CHECK (convert.cpp:587): the hook sees
+    a `TupleAccess` or `StructAccess` of the `PackElement`. The vav5g gate
+    (1964 of 1968) cannot see it, and M-VA lands after the implementation
+    reviews.
+-   **Probe-safety hunt on v5**: pointer, class-holding-sum, default
+    argument and template-deduction members, 18 unusual alternative types,
+    an imported overload set, user `ImplicitAs`/`As` impls and a VA-1
+    variadic member: no crash, no spurious diagnostic. On TP-1's round-10
+    head every template probe gives W-279's TODO, x19 compiles, and the gate
+    is 1961 of 1965. The one real problem is MAJOR-1 (RR3-M1): the probe's
+    `CanBuildBranches` test made f01 print 1 2 (member 1 inside a function,
+    member 2 at file scope) and t7 print 1 2 on the TP-1 composition, and t4
+    get ``no member of overload set `P` accepts this call`` instead of
+    W-279's TODO.
+-   **Gate, conformance, records.** Gate 1946 of 1950 (the four refills);
+    conformance 134 / 0 / 21 over 155, every program as on v5; the
+    `--self-test` passes once the README table is regenerated; R31 counts as
+    the rev-3 commit message says; the id re-scan (83 refs, 15 worktree
+    ledgers) finds no W-275 to W-299 and no F-020.
+-   **Scope.** Row 68 PARTIAL, W-011 DISCHARGED, W-177 OPEN and narrowed,
+    F-020's statement and break condition coherent; false were §1.11's
+    pack-element row and W-284's text (aggregate packs), and the summary's
+    "never a crash, never a silent wrong value". MINORs: W-284's filing
+    commit inconsistent across §1.14, §3 item 10 and C.4 (RR3-m1); C.8 and
+    C.9 hard-code W-278 and W-283 (RR3-m2); PR 61's round-10 head touches
+    refutable_binding.cpp/.h and fixes X-1 (RR3-m3); the trunk change of
+    passing `diagnose` has no sum-free golden (RR3-m4).
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR3-B1: RR-M1 not resolved: M-VA misses a pack element reached through an aggregate projection, so the land-time state crashes on valid programs | BLOCKER | yes: n01 to n05 stop at VA-1's CHECK (convert.cpp:587) on vav6r (v6 with rev 3's bare `PackElement` test), and the extended split stops there at `ForwardTuple` (mutant M21) | folded with the reviewer's measured option: `CanBuildBranches` takes the converted value and `IsPackElementOrProjection` walks it back through `TupleAccess`, `StructAccess`, `ArrayIndex`, `ClassElementAccess`, `AsCompatible`, `AcquireValue` and `ValueAsRef` to a `PackElement` (vav6g: n01 to n08, n13, n14, n16 to n21 and v02 to v04 give the TODO, n09, n10, v00, v01, v06 and v07 run, n15 and n22 get VA-1's own TODOs, no crash; gate 1964 of 1968, the four refills, with the extended split filled). The region option (VA-1's code marks the straight-line region) is recorded as the break condition: it is more general but edits VA-1's files and `Context` at land time. `fail_todo_pack_element` gains the tuple, struct, array and class forms in both directions (ten calls); M19 and M21 measured red; §1.4, §1.11, W-284, R-10 and the summary restated | §0.6, §0.7, §1.4, §1.11, §1.12, §1.16, §1.18, §3 item 8, §4, §6, §7.1 R-10, §8 items 5 and 6, Appendix B, C.4, C.8 |
+| RR3-M1: the RR-m1 fold makes overload selection depend on where the conversion can be built | MAJOR | yes: f01 and t7 print 1 2 on m20 (rev 3's rule on trunk's build), and t4 gets ``no member of overload set `P` accepts this call`` there | folded with the reviewer's first option: the non-diagnosing path decides from the types alone and no longer calls `CanBuildBranches` (rev 2's behavior for the limits, rev 3's skip kept for genuine mismatches, y01), which loses its `diagnose` parameter; the committed call emits the TODO (f01 on v6: the file-scope TODO; t4 and t7 on v6 and tpv6: W-279's TODO under ``unable to monomorphize specific``); `file_scope` becomes `fail_todo_file_scope`, `fail_todo_template_overload` added (it passes unchanged on tpv6 and vav6g); M18 retired, M20 measured red on both splits | Summary, §1.4, §1.10, §1.11, §1.12, §1.18, §2.3, §2.4, §4, §8 item 5, Appendix B, C.4 (W-279), C.6 (W-036), C.8 |
+| RR3-m1: the commit that files W-284 is inconsistent across sections | MINOR | yes (text): §1.14 and §3 item 10 omitted W-284; C.4 said "with M-VA" | folded: W-284 is filed at D once M-VA has landed and held until then, in §1.14, §1.16, §3 items 8 and 10 and C.4's header; C.6, C.8 and C.9 put it behind a placeholder | §1.14, §1.16, §3 items 8 and 10, C.4, C.6, C.8, C.9 |
+| RR3-m2: C.8 and C.9 hard-code "W-278 withdrawn unfiled; W-283 unused" | MINOR | yes (text) | folded: W-278, W-283 and W-284 behind placeholders, with C.8's rule for filling them | C.6, C.8, C.9 |
+| RR3-m3: PR 61 has moved: TP-1's round-10 fix touches refutable_binding.cpp/.h and fixes X-1 | MINOR | yes: numstat on eafca5cb9 (refutable_binding.cpp +18/-5, refutable_binding.h +17, handle_match.cpp +2/-5); the dry run on 74e16c4de applies refutable_binding.cpp's first hunk with fuzz 1; tpv6 (relinked over a snapshot of the carbon-tp build) passes 1961 of 1965; x19 prints 0, h1 to h3, t2, t4 to t7 and x20 give W-279's TODO | folded: §0.7's PR 61 row, §1.11's last row, R-9 and W-282's condition updated (W-282 predicted unused); at M the row is re-measured against PR 61's head of that day (§8 item 6) | §0.7, §1.10, §1.11, §1.16, §7.1 R-9, §8 item 6 |
+| RR3-m4: the trunk behavior change from passing `diagnose` through `ConvertAggregateElement` has no golden | MINOR | yes: z01 (t01's members with a `bool` second return) gives trunk's ``cannot implicitly convert expression of type `bool` to `i32` `` on trunk and on m17, and prints 2 on v6 | folded: split `scalar_tuple_mismatch_first` in sum_type_overload.carbon, no sum type, whose second member returns `bool` so the call's type pins the member; it fails on M17 without the sum-type splits | §1.12, §4, §8 item 5, Appendix B |
+
+**Verdict handling.** The re-review's verdict is REJECT, on RR3-B1, so the
+Status line reads "rev 4 -- NOT signed off: RR3-B1" and this revision has no
+Sign-off section; a re-review of rev 4 decides whether the folds resolve it.
+
+**R31 counts** (`$X/bin/r31.py`, outside code blocks): rev 3 had headings
+{level 1: 1, level 2: 16, level 3: 72}, 139 bullets and 47 numbered items in
+7987 lines; rev 4's counts and their differences are in the rev-4 commit
+message. The one new heading is this subsection's.
+
 ## Revision record
 
 -   Rev 1 (2026-10-20): first revision, for the two plan reviews of R29(c).
@@ -7984,3 +8463,16 @@ message. The one new heading is this record's.
     composition; the compositions with PR 57, PR 59, PR 60 and PR 61 are
     relinked and gated. Not signed off: the Status line names the open
     BLOCKERs, pending a re-review of rev 3.
+-   Rev 4 (2026-10-20): the focused re-review of rev 3 (REJECT: RR3-B1,
+    RR3-M1, RR3-m1 to RR3-m4) folded, none rejected (the
+    [re-review of rev 3](#re-review-of-rev-3-folded-in-rev-4-2026-10-20)).
+    The prototype v6 (§0.6) replaces v5: the non-diagnosing path decides
+    from the types alone, so a toolchain limit is the call's TODO and never
+    selects another `overload fn` member; the land-time hunk M-VA walks a
+    converted value back through a conversion's projections to a pack
+    element; sum_type_overload.carbon gains `scalar_tuple_mismatch_first`
+    and `fail_todo_template_overload` and renames `file_scope`, and the
+    M-VA split gains the aggregate pack forms; §2.3, §2.4 and §3 item 8 are
+    regenerated from it; W-284's filing and the land-time placeholders are
+    made consistent; TP-1's round-10 head is measured (tpv6). Not signed
+    off: the Status line names RR3-B1, pending a re-review of rev 4.

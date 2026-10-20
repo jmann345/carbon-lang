@@ -249,6 +249,74 @@ fn Use(h: Holder) -> i32 {
   return Make(h);
 }
 
+// --- fail_todo_class_template_literal_with_produced_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32) -> i32 {
+  var d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(3);
+}
+
+// --- fail_todo_class_template_value_with_produced_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32) -> i32 {
+  let d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(3);
+}
+
+// --- class_template_concrete_value_with_produced_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32) -> i32 {
+  let d: D(3) = {.a = N};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(5);
+}
+
+// --- class_template_value_with_parameter_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N;
+}
+
+fn Make(template N: i32) -> i32 {
+  let d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(3);
+}
+
 // CHECK:STDOUT: --- holder.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

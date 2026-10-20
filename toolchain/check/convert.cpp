@@ -1479,8 +1479,11 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   // field `T.Item` of a class template `D(T)` initialized from `{.c = 4}`,
   // whose conversion here would not be resolved in this generic's specifics.
   // Such an initializer is deferred too when it omits only fields that have a
-  // default initializer. On instantiation, a literal that is not constant takes
-  // their defaults, but a constant literal is no longer a literal there, so its
+  // default initializer, and so is one of a class whose fields hold no such
+  // part when such an omitted field's default is produced, such as
+  // `var k: i32 = N + 1;` in a class template `D(N)` initialized from
+  // `{.a = 4}`. On instantiation, a literal that is not constant takes their
+  // defaults, but a constant literal is no longer a literal there, so its
   // omitted fields are diagnosed as missing (see `get_default`).
   const auto& dest_class_scope =
       context.name_scopes().Get(dest_class_info.scope_id);
@@ -1490,14 +1493,53 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
                              .Get(field_decl->field_id)
                              .initializer_id.has_value();
   };
+  // Returns whether a field that the source omits has a default initializer
+  // that splices in the result of a template action of the class's generic,
+  // such as `N + 1` or `T.N` in a class template. The specifics of another
+  // generic that forms the class type do not perform that action, so a default
+  // taken here would not be resolved in them. A default whose value in the
+  // class's specific does not depend on a template parameter, as in `D(3)`, or
+  // that splices in nothing, such as `N`, is taken here.
+  auto omits_produced_default = [&] {
+    auto src_fields = context.struct_type_fields().Get(src_type.fields_id);
+    for (auto dest_field :
+         context.struct_type_fields().Get(dest_struct_type.fields_id)) {
+      if (llvm::any_of(src_fields, [&](const SemIR::StructTypeField& field) {
+            return field.name_id == dest_field.name_id;
+          })) {
+        continue;
+      }
+      auto field_decl =
+          TryGetFieldDecl(context, dest_class_scope, dest_field.name_id);
+      if (!field_decl) {
+        continue;
+      }
+      auto initializer_id =
+          context.fields().Get(field_decl->field_id).initializer_id;
+      if (!initializer_id.has_value()) {
+        continue;
+      }
+      auto const_id = GetConstantValueInSpecific(
+          context.sem_ir(), dest_type.specific_id, initializer_id);
+      if (const_id.is_symbolic() &&
+          context.constant_values().GetSymbolicConstant(const_id).dependence ==
+              SemIR::ConstantDependence::Template &&
+          TemplateSpliceWalk(&context).Run(initializer_id)) {
+        return true;
+      }
+    }
+    return false;
+  };
   // Returns whether the source names the class's fields, but for fields with
-  // a default initializer, and the class's fields hold a part that is known
-  // only in each specific, so that converting the source here would fail.
+  // a default initializer, and either the class's fields hold a part that is
+  // known only in each specific or an omitted field's default is produced, so
+  // that converting the source here would fail.
   auto defers_with_defaults = [&] {
     return HasSameFieldNames(context, src_type, dest_struct_type,
                              is_defaulted) &&
-           HoldsPerInstantiationPart(context, SemIR::LocId(value_id),
-                                     object_repr_id);
+           (HoldsPerInstantiationPart(context, SemIR::LocId(value_id),
+                                      object_repr_id) ||
+            omits_produced_default());
   };
   if (target.is_initializer() && defers_with_defaults()) {
     return value_id;
@@ -1507,9 +1549,10 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   // initializer. A template-dependent source whose fields are exactly the
   // class's is converted for each instantiation instead, as is one that omits
   // only fields with a default initializer of a class that holds a part known
-  // only in each specific, as for an initializer above. Any other source is
-  // converted here, so that a missing or unexpected field is diagnosed where
-  // the function is defined and an omitted field takes its default here.
+  // only in each specific, or one whose omitted field's default is produced, as
+  // for an initializer above. Any other source is converted here, so that a
+  // missing or unexpected field is diagnosed where the function is defined and
+  // an omitted field takes its default here.
   if (!target.is_initializer()) {
     if (IsTemplateDependentValueTemporary(context, value_id, target.type_id) &&
         (HasSameFieldNames(context, src_type, dest_struct_type) ||

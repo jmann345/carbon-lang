@@ -354,6 +354,11 @@ fn G(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
+  // CHECK:STDERR: fail_todo_let_class_value_of_nested_literal_with_field_default.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `G(3)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return G(3);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_todo_let_class_value_of_nested_literal_with_field_default.carbon: note: cannot convert from struct type `{.a: i32}` to `Inner`: missing field `b` in source type [StructInitMissingFieldInConversion]
+  // CHECK:STDERR:
   return G(3);
 }
 
@@ -371,6 +376,11 @@ fn G(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
+  // CHECK:STDERR: fail_todo_let_array_value_of_class_literal_with_field_default.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `G(3)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return G(3);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_todo_let_array_value_of_class_literal_with_field_default.carbon: note: cannot convert from struct type `{.a: i32}` to `C`: missing field `b` in source type [StructInitMissingFieldInConversion]
+  // CHECK:STDERR:
   return G(3);
 }
 

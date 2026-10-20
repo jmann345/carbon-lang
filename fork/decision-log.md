@@ -3700,12 +3700,14 @@ with trunk limited, W-263's new forms, the plan's stale key line and round-7
 records corrected) and 1a9fbb6de (one sentence of the plan's D-TP-24 corrected);
 none rejected. One residue filed, W-274: a checked generic that calls a template
 converting a literal to a class template whose object representation depends on
-a type parameter, `var k: T = 7;`, still stops at the same CHECK, from the
-object representation read before any default, as on trunk and the nightly;
-W-250..W-274 are all filed. Review 2's alternative, a field with no default when
-the specific cannot be resolved, was not taken: it reports a missing field for a
-default the class has. D-TP-24 is amended in the plan (§1.2, §1.14) and here.
-Measured at 813804758 on its own toolchain, container-built, EXPECTED and not of
+a type parameter, `var k: T = 7;` (since round 9's records also an array bound
+or a class-template field type; amended 2026-10-15, focused re-review of the
+fold: RR9r2-m1), still stops at the same CHECK, from the object representation
+read before any default, as on trunk and the nightly; W-250..W-274 are all
+filed. Review 2's alternative, a field with no default when the specific cannot
+be resolved, was not taken: it reports a missing field for a default the class
+has. D-TP-24 is amended in the plan (§1.2, §1.14) and here. Measured at
+813804758 on its own toolchain, container-built, EXPECTED and not of
 record: file_test 1955 passed, 0 failed, "Ran 1955 tests in 26424 ms wall time",
 0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0,
 RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets
@@ -3731,6 +3733,50 @@ hand six paragraphs that kept a short line in the middle, re-runs the id re-scan
 and `git merge-tree` with the same results, and re-measures 1a9fbb6de (file_test
 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets; EXPECTED, not of
 record) (amended 2026-10-15, records: re-review round 8).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 9 (amended 2026-10-15). Two fresh reviews
+of the round-8 fixer's commits 1572d4d65..1a9fbb6de and the records commit
+c08623fc6, at c08623fc6: review 1 (adversarial correctness) APPROVE-WITH-FIXES,
+dry, two findings, both MINOR and records only (RR9-1-m1: a template's `let` of
+a class template value from a constant literal that leaves a constant default,
+called from a checked generic with a symbolic argument, is rejected with the
+`<bound method>` note, as trunk rejects it, where its twin with a checked `Make`
+runs, while the plan's D-TP-24 and TR-4 say the form runs; RR9-1-m2: since round
+7 a checked generic whose types are `eval fn` results runs a constant literal
+that omits a default and never destroys its temporary, outside the template-only
+wording of W-267, TR-4 and D-TP-24); review 2 (strictness, records, tests,
+discharge and the PR body) APPROVE-WITH-FIXES, dry, three findings, all MINOR
+and records only (RR9r2-m1: the CHECK that W-274 records for a type parameter
+fires for an array bound and a class-template field type too, on trunk and the
+nightly as well; RR9r2-m2: round 8 moved convert.cpp's lines and left W-256's,
+W-272's and one D-TP-24 cite at their old lines, where the round-8 records said
+they were exact; RR9r2-m3: deduce_class_args.carbon's three `fail_` splits of
+round 8 pin trunk's limit for a symbolic argument to a template parameter as if
+it were a correct rejection). A separate fixer reproduced every finding on the
+installed toolchain, on trunk and on the nightly, and review 2's partial removal
+of W-274 on a relinked variant, and folded all five in the round's records
+commit, which changes no toolchain, golden or program file: the plan's §1.1
+gains TR-22, a symbolic constant passed to a template parameter (p002200:91-93;
+leads issue 2153), OUT and unchanged from trunk; TR-4 and D-TP-24 say where the
+constant literal runs and where it is TR-22's rejection, and that the three
+splits pin that limit and the absence of the crash, not a correct rejection;
+W-267 and W-274 are widened in the ledger, the plan's §1.8 and §1.13, Appendix E
+and the gap row, W-274's notes recording the second shape and the measured
+partial removal; and W-256, W-272 and D-TP-24 are re-cited to the head's
+convert.cpp lines. None rejected, no residue filed; the optional rename of the
+three splits to `fail_todo_` is not made, as the round changes no golden.
+Measured at c08623fc6, whose toolchain is 813804758's and which the records
+commit leaves unchanged, container-built, EXPECTED and not of record: file_test
+1955 passed, 0 failed, "Ran 1955 tests in 28097 ms wall time", 0 `!` and 0 `?`
+marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56. Across the
+twenty-three reviews: 108 findings, 102 distinct (6 BLOCKER, 34 MAJOR and 68
+MINOR, counted over all 108), none rejected whole. The per-finding table is the
+plan's "Focused re-review of the fold (2026-10-15)", round 9. Both reviews
+judged the branch dry, no finding is BLOCKER or MAJOR, and the round's fixer
+changed no toolchain file, so no round 10 is owed, and the PR opens against
+trunk and is held open (amended 2026-10-15, focused re-review of the fold: all
+round-9 findings).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

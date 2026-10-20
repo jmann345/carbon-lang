@@ -4002,3 +4002,108 @@ fn Use(h: Holder) -> i32 {
 // CHECK:STDOUT: !1214 = !DILocation(line: 22, column: 3, scope: !1204)
 // CHECK:STDOUT: !1215 = !{!1205}
 // CHECK:STDOUT:
+
+// --- var_class_template_literal_with_associated_field_default.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32 = 5;
+}
+
+fn G[template T: HasItem](unused x: T) -> i32 {
+  var b: Box(T) = {.item = 4};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return G(h);
+}
+
+// --- let_class_template_value_with_associated_field_default.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Box(template T: HasItem) {
+  var item: T.Item;
+  var n: i32 = 5;
+}
+
+fn G[template T: HasItem](unused x: T) -> i32 {
+  let b: Box(T) = {.item = 4};
+  return b.n;
+}
+
+fn Use(h: Holder) -> i32 {
+  return G(h);
+}
+
+// --- var_class_template_literal_with_produced_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32) -> i32 {
+  var d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(3);
+}
+
+// --- let_class_template_value_with_type_parameter_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D(template T: type) {
+  var a: i32;
+  var k: T = 7;
+}
+
+fn Make(template T: type) -> i32 {
+  let d: D(T) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(i32);
+}
+
+// --- let_class_value_of_nested_literal_with_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class Inner {
+  var a: i32;
+  var b: i32 = 2;
+}
+
+class Outer {
+  var inner: Inner;
+}
+
+fn G(template N: i32) -> i32 {
+  let o: Outer = {.inner = {.a = N}};
+  return o.inner.a + o.inner.b;
+}
+
+fn Use() -> i32 {
+  return G(3);
+}

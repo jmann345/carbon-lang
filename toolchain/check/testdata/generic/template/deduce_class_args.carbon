@@ -189,7 +189,7 @@ fn Make(template N: i32) -> i32 {
   return c.n;
 }
 
-// --- fail_todo_class_template_literal_with_associated_field_default_on_instantiation.carbon
+// --- class_template_literal_with_associated_field_default_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
 interface HasItem {
@@ -219,7 +219,7 @@ fn Use(h: Holder) -> i32 {
   return Make(h);
 }
 
-// --- fail_todo_class_template_value_with_associated_field_default_on_instantiation.carbon
+// --- class_template_value_with_associated_field_default_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
 interface HasItem {
@@ -249,7 +249,7 @@ fn Use(h: Holder) -> i32 {
   return Make(h);
 }
 
-// --- fail_todo_class_template_literal_with_produced_field_default_on_instantiation.carbon
+// --- class_template_literal_with_produced_field_default_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
 class D(template N: i32) {
@@ -271,7 +271,7 @@ fn Use() -> i32 {
   return Make(3);
 }
 
-// --- fail_todo_class_template_value_with_produced_field_default_on_instantiation.carbon
+// --- class_template_value_with_produced_field_default_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
 class D(template N: i32) {
@@ -325,6 +325,57 @@ fn Make(template N: i32) -> i32 {
 
 fn Use() -> i32 {
   return Make(3);
+}
+
+// --- class_template_literal_with_type_parameter_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class D(template T: type) {
+  var a: i32;
+  var k: T = 7;
+}
+
+fn Make(template T: type) -> i32 {
+  var d: D(T) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(i32);
+}
+
+// --- class_template_value_with_type_parameter_field_default_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class D(template T: type) {
+  var a: i32;
+  var k: T = 7;
+}
+
+fn Make(template T: type) -> i32 {
+  let d: D(T) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn Use() -> i32 {
+  return Make(i32);
+}
+
+// --- class_template_method_literal_with_produced_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+
+  fn Make() -> Self {
+    return {.a = 4};
+  }
+}
+
+fn Use() -> i32 {
+  var d: D(3) = D(3).Make();
+  return d.a + d.k;
 }
 
 // --- fail_todo_class_template_field_of_where_alias.carbon

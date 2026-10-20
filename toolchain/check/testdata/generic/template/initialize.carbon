@@ -336,7 +336,7 @@ fn Use() -> i32 {
   return G(0 as i32);
 }
 
-// --- fail_todo_let_class_value_of_nested_literal_with_field_default.carbon
+// --- let_class_value_of_nested_literal_with_field_default.carbon
 library "[[@TEST_NAME]]";
 
 class Inner {
@@ -362,7 +362,7 @@ fn Use() -> i32 {
   return G(3);
 }
 
-// --- fail_todo_let_array_value_of_class_literal_with_field_default.carbon
+// --- let_array_value_of_class_literal_with_field_default.carbon
 library "[[@TEST_NAME]]";
 
 class C {

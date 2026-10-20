@@ -39,7 +39,6 @@ fn G(generic B: bool) {
   let unused n: F(B) = ({}, {});
 }
 
-// TODO: Provide a location for the "cannot initialize" error message.
 fn H() {
   // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE+5]]:3: error: unable to monomorphize specific `G(true)` [ResolvingSpecificHere]
   // CHECK:STDERR:   G(true);

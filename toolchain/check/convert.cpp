@@ -1482,9 +1482,10 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   // default initializer, and so is one of a class whose fields hold no such
   // part when such an omitted field's default is produced, such as
   // `var k: i32 = N + 1;` in a class template `D(N)` initialized from
-  // `{.a = 4}`. On instantiation, a literal that is not constant takes their
-  // defaults, but a constant literal is no longer a literal there, so its
-  // omitted fields are diagnosed as missing (see `get_default`).
+  // `{.a = 4}`. On instantiation the literal takes their defaults in the
+  // class's concrete specific, whether it is constant or not, because the
+  // action keeps a literal as its operand (eval.cpp) and `get_default` gives
+  // defaults to a literal.
   const auto& dest_class_scope =
       context.name_scopes().Get(dest_class_info.scope_id);
   auto is_defaulted = [&](SemIR::NameId name_id) {
@@ -1495,11 +1496,14 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   };
   // Returns whether a field that the source omits has a default initializer
   // that splices in the result of a template action of the class's generic,
-  // such as `N + 1` or `T.N` in a class template. The specifics of another
-  // generic that forms the class type do not perform that action, so a default
-  // taken here would not be resolved in them. A default whose value in the
-  // class's specific does not depend on a template parameter, as in `D(3)`, or
-  // that splices in nothing, such as `N`, is taken here.
+  // such as `N + 1` or `T.N`, or `7` converted to `T`, in a class template.
+  // That action is performed in the class's specifics, not in those of
+  // another generic that forms the class type, so a default taken here can
+  // name a result that the forming generic's specifics never compute, as
+  // `N + 1` does; the literal takes the default of the class's concrete
+  // specific on instantiation instead. A default whose value in the class's
+  // specific does not depend on a template parameter, as in `D(3)`, or that
+  // splices in nothing, such as `N`, is taken here.
   auto omits_produced_default = [&] {
     auto src_fields = context.struct_type_fields().Get(src_type.fields_id);
     for (auto dest_field :
@@ -1569,7 +1573,8 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   // default is available, or `ErrorInst::InstId` if a diagnosed error
   // occurs.
   auto get_default = [&](SemIR::NameId name_id) {
-    // A deferred conversion refers to the literal through a `SpecificInst`.
+    // A deferred conversion refers to the literal itself, or through a
+    // `SpecificInst` when the literal depends on the specific.
     if (!GetAggregateLiteralElements<SemIR::StructLiteral>(context, value_id)
              .has_value()) {
       return SemIR::InstId::None;

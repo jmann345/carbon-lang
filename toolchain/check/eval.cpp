@@ -508,8 +508,21 @@ static auto GetConstantValue(EvalContext& eval_context,
           GetConstantValue(eval_context, SemIR::InstId(inst_id), &inner_phase);
       const_inst_id.has_value()) {
     // The instruction has a constant value. Use that as the operand of the
-    // action.
+    // action, unless the instruction is a struct or tuple literal. A literal
+    // is its own operand, as it is when it is not constant, because converting
+    // a struct literal to a class gives the fields that it omits their default
+    // initializers (`ConvertStructToClass`) and converting its constant value,
+    // a struct value, does not. So a constant literal that is converted for
+    // each instantiation, such as `{.a = 4}` for a class template `D(N)` with
+    // the field `var k: i32 = N + 1;`, or a tuple or struct literal that holds
+    // one, takes the defaults of the class's specific, as it does without a
+    // template. The action refers to the literal's elements in the specific
+    // (`AddSpecificInst`).
     *phase = LatestPhase(*phase, inner_phase);
+    if (eval_context.insts().IsOneOf<SemIR::StructLiteral, SemIR::TupleLiteral>(
+            inst_id)) {
+      return inst_id;
+    }
     return const_inst_id;
   }
 

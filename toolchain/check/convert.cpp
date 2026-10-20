@@ -1422,6 +1422,29 @@ static auto TryGetFieldDecl(Context& context,
   return context.insts().TryGetAs<SemIR::FieldDecl>(field_inst_id);
 }
 
+// Returns the constant value of the default initializer `initializer_id` of a
+// field of a class in the class's specific `specific_id`. A value that depends
+// on the specific is read from its resolved definition. `Convert` completes the
+// class type first, which resolves that definition (`TypeCompleter`), but a
+// template action that converts to the class on instantiation does not: it
+// relies on the eval block's completion of the class type, which is deferred
+// when the class type is symbolic, as `D(M)` is when a checked generic with the
+// parameter `M` calls a template that converts `{.a = 4}` to `D(N)`. So the
+// definition is resolved here, as `TypeCompleter` would resolve it, and a
+// default that cannot be formed in the specific, such as `N + 1` for a symbolic
+// `N`, is diagnosed there.
+static auto GetFieldInitializerInSpecific(Context& context, SemIR::LocId loc_id,
+                                          SemIR::SpecificId specific_id,
+                                          SemIR::InstId initializer_id)
+    -> SemIR::ConstantId {
+  if (specific_id.has_value() &&
+      context.constant_values().GetAttached(initializer_id).is_symbolic()) {
+    ResolveSpecificDefinition(context, loc_id, specific_id);
+  }
+  return GetConstantValueInSpecific(context.sem_ir(), specific_id,
+                                    initializer_id);
+}
+
 // Performs a conversion from a struct to a class type. This function only
 // converts the type, and does not perform a final conversion to the requested
 // expression category.
@@ -1523,8 +1546,9 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
       if (!initializer_id.has_value()) {
         continue;
       }
-      auto const_id = GetConstantValueInSpecific(
-          context.sem_ir(), dest_type.specific_id, initializer_id);
+      auto const_id =
+          GetFieldInitializerInSpecific(context, SemIR::LocId(value_id),
+                                        dest_type.specific_id, initializer_id);
       if (const_id.is_symbolic() &&
           context.constant_values().GetSymbolicConstant(const_id).dependence ==
               SemIR::ConstantDependence::Template &&
@@ -1592,8 +1616,9 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
       return SemIR::InstId::None;
     }
     SemIR::ConstantId const_id = SemIR::ConstantId::NotConstant;
-    const_id = GetConstantValueInSpecific(
-        context.sem_ir(), dest_type.specific_id, field.initializer_id);
+    const_id = GetFieldInitializerInSpecific(context, SemIR::LocId(value_id),
+                                             dest_type.specific_id,
+                                             field.initializer_id);
     if (const_id == SemIR::ConstantId::NotConstant) {
       context.TODO(field.initializer_id, "field initializer is not constant");
       return SemIR::ErrorInst::InstId;

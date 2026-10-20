@@ -36,3 +36,19 @@ fn GoodCalls(x: X) {
   F(TakeX, x);
   F(AlsoTakeX, x);
 }
+
+// --- dependent_call_struct_literal_arg_with_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D {
+  var a: ();
+  var b: () = ();
+}
+class K {
+  fn Take(unused d: D) {}
+}
+fn F(template T: type) {
+  T.Take({.a = ()});
+}
+
+fn GoodCall() { F(K); }

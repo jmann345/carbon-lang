@@ -360,6 +360,57 @@ fn Use() -> i32 {
   return d.a + d.k;
 }
 
+// --- fail_checked_generic_calls_template_with_class_template_literal.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32) -> i32 {
+  var d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn H(generic M: i32) -> i32 {
+  return Make(M);
+}
+
+// --- fail_checked_generic_calls_template_with_class_template_value.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32) -> i32 {
+  let d: D(N) = {.a = 4};
+  return d.a + d.k;
+}
+
+fn H(generic M: i32) -> i32 {
+  return Make(M);
+}
+
+// --- fail_checked_generic_calls_template_with_class_template_runtime_literal.carbon
+library "[[@TEST_NAME]]";
+
+class D(template N: i32) {
+  var a: i32;
+  var k: i32 = N + 1;
+}
+
+fn Make(template N: i32, x: i32) -> i32 {
+  var d: D(N) = {.a = x};
+  return d.a + d.k;
+}
+
+fn H(generic M: i32, x: i32) -> i32 {
+  return Make(M, x);
+}
+
 // --- fail_todo_class_template_field_of_where_alias.carbon
 library "[[@TEST_NAME]]";
 

@@ -50,6 +50,26 @@ fn H() {
   G(true);
 }
 
+// --- fail_symbolic_call_to_eval_fn_non_literal_invalid_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+eval fn F(generic B: bool) -> type {
+  if (B) { return (); }
+  return ({}, {});
+}
+
+eval fn MakePair() -> ({}, {}) { return ({}, {}); }
+
+fn G(generic B: bool) {
+  let unused n: F(B) = MakePair();
+}
+
+// TODO: Provide a location for the "cannot initialize" error message when the
+// initializer is a constant that is not a literal.
+fn H() {
+  G(true);
+}
+
 // --- dependent_symbolic_instruction.carbon
 library "[[@TEST_NAME]]";
 

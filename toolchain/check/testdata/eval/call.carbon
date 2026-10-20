@@ -162,6 +162,26 @@ fn H() {
   //@dump-sem-ir-end
 }
 
+// --- symbolic_eval_fn_class_literal_with_field_default.carbon
+
+library "[[@TEST_NAME]]";
+
+class C {
+  var a: i32;
+  var b: i32 = 5;
+}
+
+eval fn F(_: i32) -> type { return C; }
+
+fn G(generic X: i32) -> i32 {
+  var v: F(X) = {.a = 1};
+  return v.a + v.b;
+}
+
+fn H() -> i32 {
+  return G(3);
+}
+
 // CHECK:STDOUT: --- dependent_call_type.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

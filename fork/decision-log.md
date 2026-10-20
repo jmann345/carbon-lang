@@ -2874,8 +2874,9 @@ APPROVE-WITH-FIXES with seven findings, neither dry; round 3, amended
 2026-10-15: two APPROVE-WITH-FIXES with four findings, neither dry; round 4,
 amended 2026-10-15: REJECT with one finding, APPROVE-WITH-FIXES with three,
 neither dry; round 5, amended 2026-10-15: two APPROVE-WITH-FIXES with two and
-three findings, neither dry, round 6 owed; plan's focused re-review fold
-record). Every decision
+three findings, neither dry; round 6, amended 2026-10-15: two
+APPROVE-WITH-FIXES with three and two findings, neither dry, round 7 owed;
+plan's focused re-review fold record). Every decision
 auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options considered (plan
 §7.2): turning crashes into TODOs (rejected as Goodhart), cherry-picking
 947c1eb52 or 4a8993af2, inserting the storage block at the action (rev 1),
@@ -2908,13 +2909,13 @@ converted whole for each instantiation; D-TP-25, a constant splice lowers the
 storage its block holds; D-TP-26, a runtime operand where a specific needs a
 constant, an array bound or a type, is an error at that operand (amended
 2026-10-15, focused re-review of the fold). Consequences: row PARTIAL;
-W-250..W-266 filed at the discharge and W-267..W-272 by the focused re-review of
-the fold (W-271 by its round 2 and W-272 by its round 4), W-273..W-274 unused
-(TP-1 reserved W-250..W-274); W-127, W-183 (for an operand whose type is the
-parameter; W-266 for a field), W-192, W-193 discharged at land time, by the
-records commit after the repeated merge of trunk, because PR 51 and PR 58, which
-file them, are held and the four items are not yet in the ledger (the plan's
-landed notes hold their texts).
+W-250..W-266 filed at the discharge and W-267..W-273 by the focused re-review of
+the fold (W-271 by its round 2, W-272 by its round 4 and W-273 by its round 6),
+W-274 unused (TP-1 reserved W-250..W-274); W-127, W-183 (for an operand whose
+type is the parameter; W-266 for a field), W-192, W-193 discharged at land time,
+by the records commit after the repeated merge of trunk, because PR 51 and
+PR 58, which file them, are held and the four items are not yet in the ledger
+(the plan's landed notes hold their texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3161,7 +3162,14 @@ literal omits only fields with a default initializer is deferred as one that
 names them all ((amended 2026-10-15, focused re-review of the fold: RR2-1-M2 /
 RR4-1-B1)); of any other class, such a literal is converted where the function
 is defined and takes the defaults there ((amended 2026-10-15, focused re-review
-of the fold: RR5-1-M1 / RR5-1-m1 / RR5r2-M1)). _Break:_ above.
+of the fold: RR5-1-M1 / RR5-1-m1 / RR5r2-M1)), unless an omitted field's
+default initializer splices in a template action of the class's generic, such
+as `var k: i32 = N + 1;` in `class D(template N: i32)`, when it is deferred too
+((amended 2026-10-15, focused re-review of the fold: RR6-1-M1)); a constant
+literal nested in a class value, array value or argument that is deferred whole
+loses its defaults on instantiation and is rejected with "missing field"
+(W-272; (amended 2026-10-15, focused re-review of the fold: RR6r2-M1)).
+_Break:_ above.
 
 **D-TP-25.** A constant splice lowers the instructions of its block that are not
 constant, where the splice is (§1.2; added 2026-10-14, implementation-review
@@ -3528,6 +3536,61 @@ clause name the classes that W-272's title names, re-runs the id re-scan and
 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets; EXPECTED, not of
 record) (amended 2026-10-15, records: re-review round 5).
 
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 6 (amended 2026-10-15). Two fresh reviews
+of the round-5 fixer's commits 0bd0756c8..82ab5f78a and the records commit
+d50052bde, at d50052bde: review 1 (adversarial correctness)
+APPROVE-WITH-FIXES, three findings (RR6-1-M1: 0bd0756c8's per-instantiation
+test never looks at the default initializers of the fields a literal omits, so
+a class template whose omitted default splices in a template action, such as
+`var k: i32 = N + 1;`, was converted where the function is defined and stopped
+lowering on programs that pass checking, where trunk and the nightly reject
+them, and round 5 had turned the `let` forms from 7dd4e1e7c's rejection into
+that abort; RR6-1-m1: the round-4 mutants M70 and M72 were a missing golden,
+not an unreachable path; RR6-1-m2: M75 is reachable through a class-scope
+alias of a `where` facet type, and M76's reason was unstated); review 2
+(strictness and records) APPROVE-WITH-FIXES, two findings (RR6r2-M1: a constant
+class literal that leaves a field to its default, nested in a class value,
+array value or argument converted on instantiation whole, is rejected with
+"missing field", where the twins without a template run and the records said
+such literals run; RR6r2-m1, records only: ORCHESTRATION's round-5 paragraph
+gave only one of the survivors' reasons). A separate fixer reproduced every
+finding on the installed toolchain, on trunk and on the nightly, and the mutant
+findings with M70, M72, M75 and M76 rebuilt, before changing anything, and
+folded all of them: 4d015cf18 with its fill 464eca298 (the deferral of a
+literal that omits defaulted fields also holds when an omitted field's default
+is produced, review 1's candidate, so such a literal is rejected on
+instantiation as on trunk, or reaches W-265 when it is not constant; four
+deduce_class_args.carbon splits and mutants M83 to M85 pin it), 1d4e7419c with
+its fill 873a6b70a (two lower splits that kill M70 and M72), 080963a68 with its
+fill 8b94adb03 (a check split that kills M75 and pins W-273, the rejection of a
+concrete specific whose field type names such an alias, where trunk and the
+nightly stop the compiler), 2dfd39e63 with its fill e193865fc (two check splits
+that pin the nested constant literal as W-272's, widened, by review 2's option
+(b)), and the records commit after them; none rejected, one residue filed,
+W-273, W-274 unused. The root fix for the nested literal, review 2's option
+(a), is W-272's removal, which would change how eval.cpp gives every action its
+operands, and stays filed; converting such a constant source where the function
+is defined, as 0bd0756c8 does for a literal that is not nested, was not made,
+as a second workaround of that mechanism for one more shape. M76 is
+legitimately untestable: every splice in a constant's type is also reached as
+an action's operand. D-TP-24 is amended in the plan (§1.2, §1.14) and here.
+Measured at e193865fc on 4d015cf18's toolchain, container-built, EXPECTED and
+not of record: file_test 1955 passed, 0 failed, "Ran 1955 tests in 22206 ms
+wall time", 0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0,
+LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)",
+bullets 48/56; every round-6 mutant killed but M76; clang-tidy 0 diagnostics on
+the round's changed lines; a sweep of 1281 earlier single-file probes at
+`--phase=lower` changes only the round's own shapes. Across the seventeen
+reviews: 92 findings, 88 distinct (6 BLOCKER, 31 MAJOR and 55 MINOR, counted
+over all 92), none rejected whole. The per-finding table is the plan's
+"Focused re-review of the fold (2026-10-15)", round 6. Neither review judged
+the branch dry. Round 6 had two MAJOR findings and its fixer changed one
+toolchain source file and three goldens, so round 7 of the focused re-review is
+owed, over the round-6 fixer's commits 4d015cf18..e193865fc and its records
+commit, and the records commit after them that records round 6's reviews; the
+PR opens and is held after a dry round (amended 2026-10-15, focused re-review
+of the fold: all round-6 findings).
+
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
 row reproduced, the check and lower initialize.carbon fills equal, but for TIP
@@ -3750,14 +3813,17 @@ D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a
 constraint method is an error; SC-1's requirements defer to the type; through a
 field it is W-266), D-TP-14 (cross-library templates are a TODO, not
 implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
-twenty-two residues, six filed by the focused re-review of the fold), D-TP-23
+twenty-three residues, seven filed by the focused re-review of the fold),
+D-TP-23
 (the redeclaration split flips by a diagnostic fix), D-TP-26 (a runtime value
 where a specific needs a type is an error, as outside a template), D-TP-24 (a
 class value is deferred only when its fields match, but for fields with a
 default initializer when its class's fields hold a part known only per
-instantiation, so a missing or unknown field is still reported where the
-function is defined; amended 2026-10-15, focused re-review of the fold: RR4-1-B1
-/ RR5-1-M1), W-256 (q07c's template crash traded for the miscompile the same
+instantiation or an omitted field's default is produced, so a missing or unknown
+field is still reported where the function is defined, while a constant literal
+nested in a value deferred whole loses its defaults (W-272); amended 2026-10-15,
+focused re-review of the fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1),
+W-256 (q07c's template crash traded for the miscompile the same
 code has without templates), and the held state (the four discharges wait for
 land time).
 

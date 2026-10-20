@@ -3707,21 +3707,21 @@ read before any default, as on trunk and the nightly; W-250..W-274 are all
 filed. Review 2's alternative, a field with no default when the specific cannot
 be resolved, was not taken: it reports a missing field for a default the class
 has. D-TP-24 is amended in the plan (§1.2, §1.14) and here. Measured at
-813804758 on its own toolchain, container-built, EXPECTED and not of
-record: file_test 1955 passed, 0 failed, "Ran 1955 tests in 26424 ms wall time",
-0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0,
-RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets
-48/56; every round-8 mutant killed; clang-tidy 0 diagnostics on the round's
-changed lines; a sweep of 1902 earlier single-file probes at `--phase=lower`
-changes only the seven forms that stopped and are rejected now. Across the
-twenty-one reviews: 103 findings, 97 distinct (6 BLOCKER, 34 MAJOR and 63 MINOR,
-counted over all 103), none rejected whole. The per-finding table is the plan's
-"Focused re-review of the fold (2026-10-15)", round 8. Neither review judged the
-branch dry, and the round's fixer changed one toolchain source file and four
-goldens, so round 9 of the focused re-review is owed, over the round-8 fixer's
-commits 1572d4d65..1a9fbb6de (the fix commits 1572d4d65..813804758 and the
-records commits 3a4176711 and 1a9fbb6de) and the records commit after them that
-records round 8's reviews; the PR opens and is held after a dry round (amended
+813804758 on its own toolchain, container-built, EXPECTED and not of record:
+file_test 1955 passed, 0 failed, "Ran 1955 tests in 26424 ms wall time", 0 `!`
+and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56; every
+round-8 mutant killed; clang-tidy 0 diagnostics on the round's changed lines; a
+sweep of 1902 earlier single-file probes at `--phase=lower` changes only the
+seven forms that stopped and are rejected now. Across the twenty-one reviews:
+103 findings, 97 distinct (6 BLOCKER, 34 MAJOR and 63 MINOR, counted over all
+103), none rejected whole. The per-finding table is the plan's "Focused
+re-review of the fold (2026-10-15)", round 8. Neither review judged the branch
+dry, and the round's fixer changed one toolchain source file and four goldens,
+so round 9 of the focused re-review is owed, over the round-8 fixer's commits
+1572d4d65..1a9fbb6de (the fix commits 1572d4d65..813804758 and the records
+commits 3a4176711 and 1a9fbb6de) and the records commit after them that records
+round 8's reviews; the PR opens and is held after a dry round (amended
 2026-10-15, focused re-review of the fold: all round-8 findings; records:
 re-review round 8). The records commit after 1a9fbb6de adds to the plan's
 round-8 record the reviews' runs it left out (among them review 1's reading of
@@ -3754,8 +3754,8 @@ they were exact; RR9r2-m3: deduce_class_args.carbon's three `fail_` splits of
 round 8 pin trunk's limit for a symbolic argument to a template parameter as if
 it were a correct rejection). A separate fixer reproduced every finding on the
 installed toolchain, on trunk and on the nightly, and review 2's partial removal
-of W-274 on a relinked variant, and folded all five in the round's records
-commit, which changes no toolchain, golden or program file: the plan's §1.1
+of W-274 on a relinked variant, and folded all five in the records commit
+b31a62d62, which changes no toolchain, golden or program file: the plan's §1.1
 gains TR-22, a symbolic constant passed to a template parameter (p002200:91-93;
 leads issue 2153), OUT and unchanged from trunk; TR-4 and D-TP-24 say where the
 constant literal runs and where it is TR-22's rejection, and that the three
@@ -3765,18 +3765,30 @@ and the gap row, W-274's notes recording the second shape and the measured
 partial removal; and W-256, W-272 and D-TP-24 are re-cited to the head's
 convert.cpp lines. None rejected, no residue filed; the optional rename of the
 three splits to `fail_todo_` is not made, as the round changes no golden.
-Measured at c08623fc6, whose toolchain is 813804758's and which the records
-commit leaves unchanged, container-built, EXPECTED and not of record: file_test
-1955 passed, 0 failed, "Ran 1955 tests in 28097 ms wall time", 0 `!` and 0 `?`
-marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
-OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56. Across the
-twenty-three reviews: 108 findings, 102 distinct (6 BLOCKER, 34 MAJOR and 68
-MINOR, counted over all 108), none rejected whole. The per-finding table is the
-plan's "Focused re-review of the fold (2026-10-15)", round 9. Both reviews
-judged the branch dry, no finding is BLOCKER or MAJOR, and the round's fixer
-changed no toolchain file, so no round 10 is owed, and the PR opens against
-trunk and is held open (amended 2026-10-15, focused re-review of the fold: all
-round-9 findings).
+Measured at c08623fc6, whose toolchain is 813804758's and which b31a62d62 leaves
+unchanged, container-built, EXPECTED and not of record: file_test 1955 passed, 0
+failed, "Ran 1955 tests in 28097 ms wall time", 0 `!` and 0 `?` marks;
+conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH
+0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48/56. Across the twenty-three
+reviews: 108 findings, 102 distinct (6 BLOCKER, 34 MAJOR and 68 MINOR, counted
+over all 108), none rejected whole. The per-finding table is the plan's "Focused
+re-review of the fold (2026-10-15)", round 9. Both reviews judged the branch
+dry, no finding is BLOCKER or MAJOR, and the round's fixer changed no toolchain
+file, so no round 10 is owed, and the PR opens against trunk and is held open
+(amended 2026-10-15, focused re-review of the fold: all round-9 findings). The
+records commit after b31a62d62 adds to the plan's round-9 record the reviews'
+runs it left out (among them review 1's kill sites of M21, M24 and M25, its
+judgment of 813804758 and its x04 runs on the two relinked variants, and review
+2's hand-derived values and its trace of W-274's stop), names b31a62d62 where
+the records said "the round's records commit", re-cites W-264's class value
+temporary in the ledger to convert.cpp:1590 (the line was :1564 at aff28da43 and
+moved at c4d609c8d and 1572d4d65), corrects D-TP-24's closing sentence on what
+deduce_class_args.carbon's three splits pin, rewraps by hand four paragraphs
+that kept a short line in the middle, re-runs the id re-scan and
+`git merge-tree` with the same results, and re-measures b31a62d62 (file_test
+1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets; EXPECTED, not of
+record), with no toolchain, golden or program file changed (amended 2026-10-15,
+records: re-review round 9).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

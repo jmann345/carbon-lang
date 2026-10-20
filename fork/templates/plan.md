@@ -117,15 +117,17 @@ PR opens and is held after a dry round (amended 2026-10-15, focused re-review of
 the fold: all round-8 findings; records: re-review round 8).
 
 Round 9 (two APPROVE-WITH-FIXES reviews of 1572d4d65..c08623fc6, five findings,
-all distinct, all MINOR and all records only) is folded by the round's records
-commit, which the same record tables and which changes no toolchain, golden or
-program file, with no residue filed and W-267 and W-274 widened (amended
-2026-10-15, focused re-review of the fold: all round-9 findings). Both reviews
-judged the branch dry, no finding is BLOCKER or MAJOR, and the round's fixer
-changed no toolchain file, so round 9 is the dry round that each earlier round
-waited for: no round 10 is owed, and the PR opens against trunk and is held
-open, as PR 51 to PR 60 are (amended 2026-10-15, focused re-review of the fold:
-all round-9 findings).
+all distinct, all MINOR and all records only) is folded by the records commit
+b31a62d62, which the same record tables and which changes no toolchain, golden
+or program file, with no residue filed and W-267 and W-274 widened (amended
+2026-10-15, focused re-review of the fold: all round-9 findings; records:
+re-review round 9). Both reviews judged the branch dry, no finding is BLOCKER or
+MAJOR, and the round's fixer changed no toolchain file, so round 9 is the dry
+round that each earlier round waited for: no round 10 is owed, and the PR opens
+against trunk and is held open, as PR 51 to PR 60 are (amended 2026-10-15,
+focused re-review of the fold: all round-9 findings). The records commit after
+b31a62d62, which records round 9's reviews, changes records only too (amended
+2026-10-15, records: re-review round 9).
 
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
@@ -319,15 +321,15 @@ type in the definition is the parameter; an access through a field whose
 declared type is the parameter is W-266, (amended 2026-10-14,
 implementation-review fold: IR1-M3)), deduction through a class's arguments
 (W-193), with a class template's literal whose array field has a
-template-dependent bound converted on instantiation, as it was on
-trunk, where `C(N)` was a deferred call ((amended 2026-10-15, focused re-review
-of the fold: RR2-1-M2)), and so is one whose field type is produced, such as
-`T.Item`, `T.Item*` or a class `C(M + 1)` ((amended 2026-10-15, focused
-re-review of the fold: RR4-1-B1)), and W-127's deferred impl lookup (§1.5 to
-§1.7); the definition-time half of proposal 2200's simple member access and the
-type-level `T.F` are not (TR-8 is PARTIAL, W-260 to W-262). (e) All four
-`fail_todo` splits under generic/template/ flip: three by the dependent forms,
-and `member_out_of_line.carbon` `fail_todo_basic` because the redeclaration it
+template-dependent bound converted on instantiation, as it was on trunk, where
+`C(N)` was a deferred call ((amended 2026-10-15, focused re-review of the fold:
+RR2-1-M2)), and so is one whose field type is produced, such as `T.Item`,
+`T.Item*` or a class `C(M + 1)` ((amended 2026-10-15, focused re-review of the
+fold: RR4-1-B1)), and W-127's deferred impl lookup (§1.5 to §1.7); the
+definition-time half of proposal 2200's simple member access and the type-level
+`T.F` are not (TR-8 is PARTIAL, W-260 to W-262). (e) All four `fail_todo` splits
+under generic/template/ flip: three by the dependent forms, and
+`member_out_of_line.carbon` `fail_todo_basic` because the redeclaration it
 rejects does differ (p3763) and only its diagnostic text was wrong, which C2
 fixes (D-TP-23); W-014's first arbiter clause is met for the four `fail_todo`
 splits present when W-014 was filed, and TP-1's own thirty-four `fail_todo`
@@ -473,12 +475,14 @@ commits, 3a4176711 and the correction after it, 1a9fbb6de (amended 2026-10-15,
 focused re-review of the fold: all round-8 findings), and the records commit
 after 1a9fbb6de that records round 8's reviews names none either (amended
 2026-10-15, records: re-review round 8). Round 9 files none and widens W-267 and
-W-274; its records commit names none (amended 2026-10-15, focused re-review of
-the fold: all round-9 findings). History is not rewritten, so if the re-scan
-before L re-allocates an id, D's landed notes record the new id against each
-commit that names it; later commit messages describe a residue instead of naming
-its reserved id ((amended 2026-10-14, implementation-review fold: IR2-MINOR-4)).
-The three commands are re-run twice: immediately before L, the first commit that
+W-274; its records commit b31a62d62 names none (amended 2026-10-15, focused
+re-review of the fold: all round-9 findings), and the records commit after
+b31a62d62 that records round 9's reviews names none either (amended 2026-10-15,
+records: re-review round 9). History is not rewritten, so if the re-scan before
+L re-allocates an id, D's landed notes record the new id against each commit
+that names it; later commit messages describe a residue instead of naming its
+reserved id ((amended 2026-10-14, implementation-review fold: IR2-MINOR-4)). The
+three commands are re-run twice: immediately before L, the first commit that
 publishes an id outside this plan, and immediately before D writes the ledger.
 Any output other than the expected one above that names W-250..W-274 or F-019
 means another workstream took the id (amended 2026-10-15, focused re-review of
@@ -1954,9 +1958,10 @@ round-9 second review's a19 and a08), or a field of class-template type,
 `var e: E(N)` or `var inner: Inner(N)` (a02 and h06), still stops at the same
 CHECK, from `GetObjectRepr` (convert.cpp:1464-1465) before a default is read, as
 on trunk and the nightly (W-274; the array and field forms amended 2026-10-15,
-focused re-review of the fold: RR9r2-m1). Check deduce_class_args.carbon's
-three `fail_checked_generic_calls_template_with_class_template_` splits pin it,
-with the mutant M89.
+focused re-review of the fold: RR9r2-m1). Check deduce_class_args.carbon's three
+`fail_checked_generic_calls_template_with_class_template_` splits pin the
+diagnosed forms above and kill the mutant M89; W-274's stop has no split
+(amended 2026-10-15, records: re-review round 9).
 
 **D-TP-4 (A2): an action that replays an initializing conversion supplies its
 own storage access block.** `PerformAction(ConvertAction)` and
@@ -2768,12 +2773,12 @@ round 2: RR2r2-M1 / RR2-1-M2, items 1, 4 and 22; round 4: RR4-1-B1 / RR4r2-M1,
 items 1, 4, 15, 16, 22 and 23; round 6: RR6-1-M1 / RR6-1-m2 / RR6r2-M1, items 23
 and 24; round 7: RR7r2-M1 / RR7-1-m2, items 21 and 23; round 8: RR8-1-M1 /
 RR8r2-M1 / RR8-1-m2 / RR8r2-m3, items 14, 18 and 25; round 9: RR9-1-m1 /
-RR9-1-m2 / RR9r2-m1, items 18 and 25). Each item's full ledger
-text, with kind, size, subsystem, evidence and break condition, is in Appendix
-E; D files W-250 to W-266, and the focused re-review of the fold files W-267 to
-W-270, in its round 2 W-271, in its round 4 W-272 and in its round 6 W-273, and
-its round 7 discharges W-272 within TP-1, and its round 8 files W-274, and its
-round 9 widens W-267 and W-274.
+RR9-1-m2 / RR9r2-m1, items 18 and 25). Each item's full ledger text, with kind,
+size, subsystem, evidence and break condition, is in Appendix E; D files W-250
+to W-266, and the focused re-review of the fold files W-267 to W-270, in its
+round 2 W-271, in its round 4 W-272 and in its round 6 W-273, and its round 7
+discharges W-272 within TP-1, and its round 8 files W-274, and its round 9
+widens W-267 and W-274.
 
 1.  W-250 (TR-17). A generic whose definition or declaration is resolved per
     instantiation (an eval block that holds an action or a splice: a
@@ -4984,9 +4989,10 @@ commit's files, which merges the two.
     and the records commits 3a4176711 and 1a9fbb6de that record the round, by
     the eighth dated note (amended 2026-10-15, focused re-review of the fold:
     all round-8 findings; records: re-review round 8). At its round 9, whose
-    five findings are records only: the round's records commit alone, with no
-    fix commit and no budget note (amended 2026-10-15, focused re-review of the
-    fold: all round-9 findings).
+    five findings are records only: the records commit b31a62d62 alone, and the
+    records commit after it that records the round's reviews, with no fix commit
+    and no budget note (amended 2026-10-15, focused re-review of the fold: all
+    round-9 findings; records: re-review round 9).
 11. **L** "TP-1: integration with PR 58" (§2.9, Appendix C), then its
     document review and fold commits; `check_samples.py` with and without
     `--toolchain` on every one of them. The id re-scan of the front matter
@@ -6733,13 +6739,13 @@ focused re-review of the fold: all round-9 findings).** In `$F`, which for this
 round is `.../tp1-rr/fixer-r9`: `p/` for the reviews' probes and the fixer's
 twins, `sem/` for x04d's SemIR, `mut/` for the variant R2V and `conf/` for
 conformance. Container-built, EXPECTED, not of record (Actions disabled). The
-round's records commit changes no toolchain, golden or program file, so these
-are the measurements of c08623fc6, whose toolchain sources, goldens and programs
-equal the round's head.
+round's records commit, b31a62d62, changes no toolchain, golden or program file,
+so these are the measurements of c08623fc6, whose toolchain sources, goldens and
+programs equal b31a62d62's (amended 2026-10-15, records: re-review round 9).
 
 -   Build (item 1): none. The install of record is still 0.0.0-0.dev+813804758,
     and `git log -1 --format=%h -- toolchain ':!toolchain/*/testdata/*' core`
-    prints 813804758 at c08623fc6 and at the round's head.
+    prints 813804758 at c08623fc6 and at b31a62d62.
 
 -   Gate (items 2 and 3): at c08623fc6, with a private `TEST_TMPDIR` and cache
     (`$F/bin/gate_private.sh`): 1955 passed, 0 failed, "Ran 1955 tests in 28097
@@ -6807,6 +6813,28 @@ equal the round's head.
     widened pattern; and `git merge-tree` of the round's records tree (a
     `git stash create` commit of the edited files) with trunk and each held PR's
     head, each equal to `git ls-remote`: the PR body's conflict table unchanged.
+
+-   Re-measured at b31a62d62 by the records commit that records round 9's
+    reviews (amended 2026-10-15, records: re-review round 9), in
+    `.../tp1-rr/records-r9`, container-built, EXPECTED, not of record. The
+    install printed 0.0.0-0.dev+813804758, and `git log -1 --format=%h --
+    toolchain ':!toolchain/*/testdata/*' core` prints 813804758. The gate, run
+    with a private `TEST_TMPDIR` and cache: 1955 passed, 0 failed, "Ran 1955
+    tests in 27407 ms wall time, 105966 ms across threads", 1955 `.` marks and
+    no `!` or `?` (`gate.log`). Conformance into `conf/`, with a private cache:
+    "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets 48 PASS / 0 FAIL / 8 SKIP / 0
+    NOT-WRITTEN of 56, scoreboard generated 2026-10-20T12:22:04Z in 74.0 s,
+    every program's status and detail equal to `$F/conf`'s, the nine TP-1
+    programs the only movers from fork/conformance/out/scoreboard.json;
+    `runner.py --self-test`: "self-test: 159 programs parsed, 56 bullets in
+    table, OK". The id re-scan, after `git fetch origin` at 2026-10-20 12:21 UTC
+    (origin/trunk f3156a375): 81 refs, 79 after TP-1's two, and the same three
+    outputs, also with the second command's widened pattern. `git merge-tree` of
+    b31a62d62, and of this records commit's tree (a `git stash create` commit of
+    the edited files), with trunk and each held PR's head, each equal to
+    `git ls-remote`: the PR body's conflict table, with convert.cpp conflicting
+    with PR 60 in the two `PerformAction` hunks only.
 
 ## Hand-off notes for the implementer
 
@@ -7391,10 +7419,11 @@ reviews (amended 2026-10-15, focused re-review of the fold: all round-8
 findings; records: re-review round 8).
 
 Round 9, after round 8 below, had no BLOCKER or MAJOR finding: its five findings
-are MINOR and records only, both reviews judged the branch dry, and its fixer
-changed no toolchain, golden or program file, so no round 10 is owed, and the PR
-opens and is held (amended 2026-10-15, focused re-review of the fold: all
-round-9 findings).
+are MINOR and records only, both reviews judged the branch dry, and its fixer's
+records commit b31a62d62 changes no toolchain, golden or program file, nor does
+the records commit after it that records round 9's reviews, so no round 10 is
+owed, and the PR opens and is held (amended 2026-10-15, focused re-review of the
+fold: all round-9 findings; records: re-review round 9).
 
 ### Round 1: the fold's commits, at bf8e1b4cc
 
@@ -9236,9 +9265,9 @@ the id paragraph's list of the round's commit messages that name a reserved id
 (none; 3a4176711 names only W-014, which is not one); the implementation-review
 fold record, still byte-identical since aa57bfe1c; the fixer's gate logs of the
 fix commits alone, 1952 of 1955 for 1572d4d65 and 1953 for 6e08becbc
-(`$F/gate_1572d4d65_alone.log` and `$F/gate_6e08becbc_alone.log`),
-and its mutant summaries (`$F/mut/*.gate.sum`: M89 and M83 abort, M84 is red on
-two goldens, M85 on one and M86 on seven, and M90 passes 1955 of 1955); and its
+(`$F/gate_1572d4d65_alone.log` and `$F/gate_6e08becbc_alone.log`), and its
+mutant summaries (`$F/mut/*.gate.sum`: M89 and M83 abort, M84 is red on two
+goldens, M85 on one and M86 on seven, and M90 passes 1955 of 1955); and its
 scoreboard (`$F/conf2/out`, generated 2026-10-20T09:51:04Z in 74.1 s), which
 every program of this commit's run equals. The fixer's whole-gate runs at
 6983fc5ca, 813804758 and 3a4176711 wrote the arbiter's shared log, which later
@@ -9258,11 +9287,11 @@ is `.../tp1-rr/fixer-r9` in this round) reproduced every finding before changing
 anything, on the installed toolchain, version 0.0.0-0.dev+813804758, whose
 toolchain sources equal the head's, on trunk 0bdce60a5 and on the nightly, and
 review 2's measured partial removal of W-274 on a relinked variant, and folded
-all five in the round's records commit, which changes no toolchain, golden or
+all five in the records commit b31a62d62, which changes no toolchain, golden or
 program file. No finding is rejected, and no residue is filed: W-267 and W-274
 are widened, and §1.1 gains TR-22. The records commit carries the container
 clock's date, 2026-10-20 UTC; this record is dated 2026-10-15, the re-review's
-date.
+date (amended 2026-10-15, records: re-review round 9).
 
 Both reviews found that `git log -1 --format=%h -- toolchain
 ':!toolchain/*/testdata/*' core` prints 813804758, which the install prints in
@@ -9428,13 +9457,14 @@ removal. For RR9r2-m2, W-256 is re-cited as convert.cpp:2590 and W-272 as
 :1575-1603 at c4d609c8d and :1597-1626 at 813804758, and the round-8 records
 sentence is narrowed to the cites it checked, with a dated note.
 
-Commit: the round's records commit, "TP-1 re-review fix: round 9 folded into the
-records" (plan.md, work-items.json, decision-log.md, gap-analysis.md and
-ORCHESTRATION.md), which also refreshes the PR description and its first comment
-and moves the description's summaries of rounds 1 to 4 to the comment, to keep
-the description under GitHub's 65,536-character limit. It changes no toolchain,
-golden or program file, so it needs no fill, build or mutant run, and §3's
-budget is unchanged.
+Commit: the round's records commit, b31a62d62, "TP-1 re-review fix: round 9
+folded into the records" (plan.md, work-items.json, decision-log.md,
+gap-analysis.md and ORCHESTRATION.md), which also refreshes the PR description
+and its first comment and moves the description's summaries of rounds 1 to 4 to
+the comment, to keep the description under GitHub's 65,536-character limit. It
+changes no toolchain, golden or program file, so it needs no fill, build or
+mutant run, and §3's budget is unchanged (amended 2026-10-15, records: re-review
+round 9).
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
@@ -9452,19 +9482,93 @@ toolchain file changes; the probes as §8 gives them. After `git fetch origin` a
 8's runs printed (81 refs, 79 after TP-1's two; `W-274`, `W-275` and `W-294`;
 trunk's ORCHESTRATION.md on three refs; nothing), and `git merge-tree` of the
 round's records tree with trunk and each held PR's head, each equal to
-`git ls-remote`, gives the PR body's conflict table unchanged. The R31 counts of
-each markdown file before and after prek are in the round's commit message. Not
-run, as §8 item 8 says: hosted CI, Bazel and its tests, ASan, macOS and Windows,
-LLVM with assertions and the owner's runner; and the land-time items, which wait
-until PR 51 to PR 60 land.
+`git ls-remote`, gives the PR body's conflict table unchanged; the records
+commit after b31a62d62 re-measures b31a62d62 with the same results (§8,
+"Re-measured at b31a62d62"; amended 2026-10-15, records: re-review round 9). The
+R31 counts of each markdown file before and after prek are in the round's commit
+message. Not run, as §8 item 8 says: hosted CI, Bazel and its tests, ASan, macOS
+and Windows, LLVM with assertions and the owner's runner; and the land-time
+items, which wait until PR 51 to PR 60 land.
 
 Round 9's status: both reviews judged the branch dry, no finding is BLOCKER or
 MAJOR, and its fixer changed no toolchain, golden or program file
 (`git diff --stat c08623fc6 -- toolchain core fork/conformance/programs` is
-empty at the round's head), so this is the dry round that every earlier round's
-status waited for. No round 10 is owed: the PR opens against trunk and is held
-open, as PR 51 to PR 60 are, and fork/ORCHESTRATION.md's TP-1 Branches row reads
-"IMPLEMENTED AND HELD, RE-REVIEW DRY AT ROUND 9, PR TO OPEN AND HOLD".
+empty at the round's head, b31a62d62, and at the records commit after it, which
+records the round's reviews), so this is the dry round that every earlier
+round's status waited for. No round 10 is owed: the PR opens against trunk and
+is held open, as PR 51 to PR 60 are, and fork/ORCHESTRATION.md's TP-1 Branches
+row reads "IMPLEMENTED AND HELD, RE-REVIEW DRY AT ROUND 9, PR TO OPEN AND HOLD"
+(amended 2026-10-15, records: re-review round 9).
+
+The reviews' runs that the round's records left out (amended 2026-10-15,
+records: re-review round 9). Both reviews found the head equal to origin and to
+`git ls-remote` and the worktree clean, review 2 before and after its review. In
+review 1, M21 also fails lower template/merging.carbon, M24 prints
+`<cannot stringify ...>` for a `TupleIndexAction` and a `CallAction`, and M25's
+index.carbon and pointer.carbon failures are deref_const_param and
+tuple_index_associated_type erroring where the function is defined;
+templates_constant_elements prints its nine values three times on the head; and
+V7, V8 and every mutant are deleted from `/dev/shm`. Review 1 judged 813804758
+the root fix of the default reads, which happened on a specific whose definition
+was never resolved, the fix adding the resolution step that `TypeCompleter`
+performs, and named the broader cause, that a template action does not complete
+its target type, as W-274's recorded removal, n01i still stopping trunk and the
+nightly. It found x04 rejected the same way on V8 and V7, its twins a02t and d10
+running on all four toolchains, the same `Make` with a concrete argument running
+on the head (a02w prints 7, d01 `1 2 405 9`), and the `var` form running when
+called from `H` (a01 prints 7, n01b 9, d08 `405 9`); e05's twin prints
+`1 2 35 5` on V7 too. Its D-TP-25 probes c01 to c07 cover recursion, two types,
+a template calling a template, a destructor element, an array argument, struct
+assignment and a template value, and its probes of round 7's literal operand
+lower to one memcpy from a constant and one store per runtime element, with no
+duplicate store. Review 2 read the round's diff in full,
+`GetFieldInitializerInSpecific`, the six new splits and the round-8 records in
+plan.md, decision-log.md, ORCHESTRATION.md, gap-analysis.md and work-items.json;
+found clang-format clean inside prek, templates_constant_elements under its
+bullet and its nine EXPECT lines equal to its own derivation; derived its new
+probes' values by hand (among them 34/111/34, 105/205, 104/128, 17, `6 6` and,
+across libraries, `6 8 8`) and found no new crash where trunk does not stop;
+traced RR9r2-m1's stop through `Class::GetObjectRepr`, `ConvertStructToClass`,
+`PerformAction`, `TryEvalBlockForSpecific` and `CheckRequiredDefinitions` on
+813804758, c4d609c8d, trunk and the nightly; measured its partial removal of
+W-274 at 1955 of 1955, n01i, a02, a08 and a19 rejected (a08 and a19 with W-253's
+diagnostic) and h06 stopping at the variant's convert.cpp:3178; and deleted
+every variant and its clone from `/dev/shm`.
+
+The records commit that records round 9's reviews, the one after b31a62d62
+(amended 2026-10-15, records: re-review round 9), changes records only. It adds
+the paragraph above and this one; names b31a62d62 where the round's records said
+"the round's records commit", in the front matter and its id paragraph, §3's
+item 10, §8's round-9 block, this section's introduction, the round's
+introduction, commit paragraph and status, the decision-log entry "TP-1",
+W-014's ledger notes and ORCHESTRATION's round-9 paragraph and Branches row,
+which reads PR TO OPEN AND HOLD; re-cites W-264's class value temporary in the
+ledger, convert.cpp:1564, which was exact at aff28da43 and is :1568 since
+c4d609c8d's comments and :1590 since 1572d4d65, as :1590 with the earlier lines
+beside it, a cite that neither round 8's records nor this round's re-check of
+convert.cpp reached; corrects D-TP-24's closing sentence, which said after the
+sentence on W-274's stop that deduce_class_args.carbon's three splits "pin it",
+to say that they pin the diagnosed forms and kill M89 and that W-274's stop has
+no split; rewraps by hand the four paragraphs that b31a62d62 left with a short
+line in the middle, plan.md:322, :2771 and :9239 and decision-log.md:3710 at
+b31a62d62; re-runs, on 2026-10-20 at 12:21 UTC (the container clock) after
+`git fetch origin` (origin/trunk still f3156a375), the id re-scan, which prints
+the same three outputs over 79 of the 81 refs, also with the second command's
+widened pattern, and `git merge-tree`, which gives the PR body's conflict table;
+re-measures b31a62d62, with the results §8 records ("Re-measured at b31a62d62");
+and refreshes the PR body and its first comment. It finds the round's records
+otherwise exact against the tree: the cites into convert.cpp at the head
+(W-253's, W-256's, W-272's, W-274's and D-TP-24's) and the table's cites at
+c08623fc6; the ledger's 150 items, with W-250..W-274 after W-125, and Appendix
+E's second block equal to the ledger; the counts across the twenty-three reviews
+(108 findings, 102 distinct; 6 BLOCKER, 34 MAJOR, 68 MINOR); `git diff --stat
+b2576f6c3 813804758 -- toolchain core` (52 files, 14482 lines added and 569
+removed) and `git diff --stat bf8e1b4cc b31a62d62 -- toolchain core` (18 files,
+6826 added and 1070 removed); the fixer's gate logs (`$F/gate_head.log`,
+`$F/gate_final.log` and `$F/mut/R2V.gate.log`), its scoreboard (`$F/conf`,
+generated 2026-10-20T11:53:27Z in 74.2 s), which every program of this commit's
+run equals, and its R31 counts; and b31a62d62's message, which names no reserved
+id.
 
 ## Appendix A: golden sources
 

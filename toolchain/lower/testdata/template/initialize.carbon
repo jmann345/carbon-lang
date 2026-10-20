@@ -382,6 +382,40 @@ fn Use() -> i32 {
   return M(3, 1);
 }
 
+// --- let_class_value_with_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class Box(T: type) {
+  var item: i32;
+  var n: i32 = 5;
+}
+
+fn Get[template T: type](unused x: T) -> i32 {
+  let b: Box(T) = {.item = 4};
+  return b.item + b.n;
+}
+
+fn Use() -> i32 {
+  return Get(3 as i32);
+}
+
+// --- let_class_value_with_field_default_from_template_value.carbon
+library "[[@TEST_NAME]]";
+
+class C {
+  var a: i32;
+  var b: i32 = 5;
+}
+
+fn G(template N: i32) -> i32 {
+  let c: C = {.a = N};
+  return c.a + c.b;
+}
+
+fn Use() -> i32 {
+  return G(3);
+}
+
 // --- var_class_template_associated_field.carbon
 library "[[@TEST_NAME]]";
 

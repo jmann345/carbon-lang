@@ -327,6 +327,32 @@ fn Use() -> i32 {
   return Make(3);
 }
 
+// --- fail_todo_class_template_field_of_where_alias.carbon
+library "[[@TEST_NAME]]";
+
+interface HasItem {
+  let Item: type;
+}
+
+class Holder {
+  impl as HasItem where .Item = i32 {}
+}
+
+class Tag(U: type) {
+  var x: i32;
+}
+
+class D(template T: HasItem) {
+  alias FT = HasItem where .Item = T.Item;
+  var c: Tag({.a: FT});
+  var k: i32;
+}
+
+fn G() -> i32 {
+  var d: D(Holder) = {.c = {.x = 1}, .k = 2};
+  return d.c.x + d.k;
+}
+
 // CHECK:STDOUT: --- holder.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

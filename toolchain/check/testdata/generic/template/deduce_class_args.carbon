@@ -189,7 +189,7 @@ fn Make(template N: i32) -> i32 {
   return c.n;
 }
 
-// --- fail_class_template_literal_with_associated_field_default_on_instantiation.carbon
+// --- fail_todo_class_template_literal_with_associated_field_default_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
 interface HasItem {
@@ -219,7 +219,7 @@ fn Use(h: Holder) -> i32 {
   return Make(h);
 }
 
-// --- fail_class_template_value_with_associated_field_default_on_instantiation.carbon
+// --- fail_todo_class_template_value_with_associated_field_default_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 
 interface HasItem {

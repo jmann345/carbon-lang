@@ -2876,21 +2876,22 @@ amended 2026-10-15: REJECT with one finding, APPROVE-WITH-FIXES with three,
 neither dry; round 5, amended 2026-10-15: two APPROVE-WITH-FIXES with two and
 three findings, neither dry; round 6, amended 2026-10-15: two
 APPROVE-WITH-FIXES with three and two findings, neither dry; round 7, amended
-2026-10-15: two APPROVE-WITH-FIXES with two findings each, one of them dry,
-round 8 owed; plan's focused re-review fold record). Every decision
-auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options considered (plan
-§7.2): turning crashes into TODOs (rejected as Goodhart), cherry-picking
-947c1eb52 or 4a8993af2, inserting the storage block at the action (rev 1),
-deferring every form, a definition-only W-183, accepting the deferred witness
-only, deferring every template-dependent query, canonical action constants for
-W-254, a template form-parameter guard, a `semantics TODO` for RC-10's shape,
-and deferring every class value whatever its fields. Decisions: D-TP-1, crashes
-first, with a template crash that exposes the same code's non-template
-miscompile recorded rather than diagnosed; D-TP-2, same-type dependent
-initialization is a storage-carrying `InitializeAction`; D-TP-3, the action
-carries a copy of its storage access chain that each specific places; D-TP-4,
-replayed conversions get a storage access block; D-TP-5, storage arguments are
-found in the specific; D-TP-6, dependent value conversions are
+2026-10-15: two APPROVE-WITH-FIXES with two findings each, one of them dry;
+round 8, amended 2026-10-15: two APPROVE-WITH-FIXES with three and four
+findings, neither dry, round 9 owed; plan's focused re-review fold record).
+Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
+considered (plan §7.2): turning crashes into TODOs (rejected as Goodhart),
+cherry-picking 947c1eb52 or 4a8993af2, inserting the storage block at the action
+(rev 1), deferring every form, a definition-only W-183, accepting the deferred
+witness only, deferring every template-dependent query, canonical action
+constants for W-254, a template form-parameter guard, a `semantics TODO` for
+RC-10's shape, and deferring every class value whatever its fields. Decisions:
+D-TP-1, crashes first, with a template crash that exposes the same code's
+non-template miscompile recorded rather than diagnosed; D-TP-2, same-type
+dependent initialization is a storage-carrying `InitializeAction`; D-TP-3, the
+action carries a copy of its storage access chain that each specific places;
+D-TP-4, replayed conversions get a storage access block; D-TP-5, storage
+arguments are found in the specific; D-TP-6, dependent value conversions are
 `ConvertToValueAction`s, and a spliced tuple element converts in each specific;
 D-TP-7, lowering reads the specific; D-TP-8, the `for` cursor pointer is
 completed; D-TP-9, four actions for opaque template-dependent operands; D-TP-10,
@@ -2910,14 +2911,14 @@ converted whole for each instantiation; D-TP-25, a constant splice lowers the
 storage its block holds; D-TP-26, a runtime operand where a specific needs a
 constant, an array bound or a type, is an error at that operand (amended
 2026-10-15, focused re-review of the fold). Consequences: row PARTIAL;
-W-250..W-266 filed at the discharge and W-267..W-273 by the focused re-review of
-the fold (W-271 by its round 2, W-272 by its round 4 and W-273 by its round 6),
-W-272 discharged within TP-1 by its round 7, W-274 unused (TP-1 reserved
-W-250..W-274); W-127, W-183 (for an operand whose type is the parameter; W-266
-for a field), W-192, W-193 discharged at land time, by the records commit after
-the repeated merge of trunk, because PR 51 and PR 58, which file them, are held
-and the four items are not yet in the ledger (the plan's landed notes hold their
-texts).
+W-250..W-266 filed at the discharge and W-267..W-274 by the focused re-review of
+the fold (W-271 by its round 2, W-272 by its round 4, W-273 by its round 6 and
+W-274 by its round 8), W-272 discharged within TP-1 by its round 7 (TP-1
+reserved W-250..W-274); W-127, W-183 (for an operand whose type is the
+parameter; W-266 for a field), W-192, W-193 discharged at land time, by the
+records commit after the repeated merge of trunk, because PR 51 and PR 58, which
+file them, are held and the four items are not yet in the ledger (the plan's
+landed notes hold their texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3666,6 +3667,60 @@ re-measures 2b58312ea (file_test 1955 of 1955; conformance 137/0/22 over 159,
 48/56 bullets; EXPECTED, not of record) (amended 2026-10-15, records: re-review
 round 7).
 
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 8 (amended 2026-10-15). Two fresh reviews
+of the round-7 fixer's commits c4d609c8d..2b58312ea and the records commit
+9bf11355d, at 9bf11355d: review 1 (adversarial correctness) APPROVE-WITH-FIXES,
+not dry, three findings (RR8-1-M1: a checked generic that calls a template whose
+constant literal omits a class template's produced default, `let d: D(N) = {.a =
+4};` with `var k: i32 = N + 1;`, with a symbolic argument stops the compiler at
+sem_ir/generic.cpp:96 where trunk and the nightly reject it, since c4d609c8d for
+the `let` form and since round 6 for the `var` form; RR8-1-m1, records only: the
+plan's key line for a deduce_class_args.carbon split predates round 7's changed
+note; RR8-1-m2, records only: W-267's "as on trunk" does not hold for
+constant-literal forms that trunk rejects); review 2 (strictness and records)
+APPROVE-WITH-FIXES, not dry, four findings (RR8r2-M1, the same abort, which
+falsifies a round-7 record; RR8r2-m1: eval/symbolic.carbon's dropped upstream
+TODO still holds for a constant initializer that is not a literal; RR8r2-m2:
+round 7's reach to checked generics whose types are `eval fn` results and to
+template-dependent call arguments is neither recorded nor pinned; RR8r2-m3,
+records only: the same stale key line, and W-263's notes miss round 7's new
+forms). A separate fixer reproduced every finding on the installed toolchain,
+on trunk and on the nightly before changing anything, and folded all of them:
+1572d4d65 (review 1's first option: a conversion reads a class template's field
+default from the class specific's resolved definition, resolving it first as
+type completion does, so the checked generic's call is rejected on instantiation
+with the note ``value of type `<bound method>` is not callable``, which trunk
+gives when such a template computes `N + 1` itself; three check splits pin it,
+two more pin round 7's reach and one, with the upstream TODO restored and
+narrowed, a constant that is not a literal), 6e08becbc (one split's source
+corrected, no toolchain change) and their fill 6983fc5ca, 813804758 (the
+resolution for every default read, dropping a test that no probe observes; no
+golden change), and the round's records commit (TR-4's and W-267's comparison
+with trunk limited, W-263's new forms, the plan's stale key line and round-7
+records corrected); none rejected. One residue filed, W-274: a checked generic
+that calls a template converting a literal to a class template whose object
+representation depends on a type parameter, `var k: T = 7;`, still stops at the
+same CHECK, from the object representation read before any default, as on trunk
+and the nightly; W-250..W-274 are all filed. Review 2's alternative, a field
+with no default when the specific cannot be resolved, was not taken: it reports
+a missing field for a default the class has. D-TP-24 is amended in the plan
+(§1.2, §1.14) and here. Measured at 813804758 on its own toolchain,
+container-built, EXPECTED and not of record: file_test 1955 passed, 0 failed,
+"Ran 1955 tests in 26424 ms wall time", 0 `!` and 0 `?` marks; conformance "PASS
+137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH
+0, SKIP 22 (of 159)", bullets 48/56; every round-8 mutant killed; clang-tidy 0
+diagnostics on the round's changed lines; a sweep of 1902 earlier single-file
+probes at `--phase=lower` changes only the seven forms that stopped and are
+rejected now. Across the twenty-one reviews: 103 findings, 97 distinct (6
+BLOCKER, 34 MAJOR and 63 MINOR, counted over all 103), none rejected whole. The
+per-finding table is the plan's "Focused re-review of the fold (2026-10-15)",
+round 8. Neither review judged the branch dry, and the round's fixer changed one
+toolchain source file and four goldens, so round 9 of the focused re-review is
+owed, over the round-8 fixer's commits from 1572d4d65 on (the fix commits
+1572d4d65..813804758 and the round's records commit) and the records commit
+after them that records round 8's reviews; the PR opens and is held after a dry
+round (amended 2026-10-15, focused re-review of the fold: all round-8 findings).
+
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
 row reproduced, the check and lower initialize.carbon fills equal, but for TIP
@@ -3888,17 +3943,18 @@ D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a
 constraint method is an error; SC-1's requirements defer to the type; through a
 field it is W-266), D-TP-14 (cross-library templates are a TODO, not
 implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
-twenty-two open residues, six filed by the focused re-review of the fold, whose
-round 7 discharges a seventh), D-TP-23 (the redeclaration split flips by a
+twenty-three open residues, seven filed by the focused re-review of the fold,
+whose round 7 discharges an eighth), D-TP-23 (the redeclaration split flips by a
 diagnostic fix), D-TP-26 (a runtime value where a specific needs a type is an
 error, as outside a template), D-TP-24 (a class value is deferred only when its
 fields match, but for fields with a default initializer when its class's fields
 hold a part known only per instantiation or an omitted field's default is
 produced, so a missing or unknown field is still reported where the function is
 defined, and a deferred literal, constant or not and nested or not, takes its
-defaults on instantiation because an action keeps a literal as its operand;
-amended 2026-10-15, focused re-review of the fold: RR4-1-B1 / RR5-1-M1 /
-RR6-1-M1 / RR6r2-M1 / RR7r2-M1), W-256 (q07c's template crash traded for the
+defaults on instantiation because an action keeps a literal as its operand,
+reading them from the class specific's resolved definition; amended 2026-10-15,
+focused re-review of the fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1 /
+RR7r2-M1 / RR8-1-M1), W-256 (q07c's template crash traded for the
 miscompile the same code has without templates), and the held state (the four
 discharges wait for land time).
 

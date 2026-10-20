@@ -3695,31 +3695,42 @@ two more pin round 7's reach and one, with the upstream TODO restored and
 narrowed, a constant that is not a literal), 6e08becbc (one split's source
 corrected, no toolchain change) and their fill 6983fc5ca, 813804758 (the
 resolution for every default read, dropping a test that no probe observes; no
-golden change), and the round's records commit (TR-4's and W-267's comparison
+golden change), and the records commits 3a4176711 (TR-4's and W-267's comparison
 with trunk limited, W-263's new forms, the plan's stale key line and round-7
-records corrected); none rejected. One residue filed, W-274: a checked generic
-that calls a template converting a literal to a class template whose object
-representation depends on a type parameter, `var k: T = 7;`, still stops at the
-same CHECK, from the object representation read before any default, as on trunk
-and the nightly; W-250..W-274 are all filed. Review 2's alternative, a field
-with no default when the specific cannot be resolved, was not taken: it reports
-a missing field for a default the class has. D-TP-24 is amended in the plan
-(§1.2, §1.14) and here. Measured at 813804758 on its own toolchain,
-container-built, EXPECTED and not of record: file_test 1955 passed, 0 failed,
-"Ran 1955 tests in 26424 ms wall time", 0 `!` and 0 `?` marks; conformance "PASS
-137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH
-0, SKIP 22 (of 159)", bullets 48/56; every round-8 mutant killed; clang-tidy 0
-diagnostics on the round's changed lines; a sweep of 1902 earlier single-file
-probes at `--phase=lower` changes only the seven forms that stopped and are
-rejected now. Across the twenty-one reviews: 103 findings, 97 distinct (6
-BLOCKER, 34 MAJOR and 63 MINOR, counted over all 103), none rejected whole. The
-per-finding table is the plan's "Focused re-review of the fold (2026-10-15)",
-round 8. Neither review judged the branch dry, and the round's fixer changed one
-toolchain source file and four goldens, so round 9 of the focused re-review is
-owed, over the round-8 fixer's commits from 1572d4d65 on (the fix commits
-1572d4d65..813804758 and the round's records commit) and the records commit
-after them that records round 8's reviews; the PR opens and is held after a dry
-round (amended 2026-10-15, focused re-review of the fold: all round-8 findings).
+records corrected) and 1a9fbb6de (one sentence of the plan's D-TP-24 corrected);
+none rejected. One residue filed, W-274: a checked generic that calls a template
+converting a literal to a class template whose object representation depends on
+a type parameter, `var k: T = 7;`, still stops at the same CHECK, from the
+object representation read before any default, as on trunk and the nightly;
+W-250..W-274 are all filed. Review 2's alternative, a field with no default when
+the specific cannot be resolved, was not taken: it reports a missing field for a
+default the class has. D-TP-24 is amended in the plan (§1.2, §1.14) and here.
+Measured at 813804758 on its own toolchain, container-built, EXPECTED and not of
+record: file_test 1955 passed, 0 failed, "Ran 1955 tests in 26424 ms wall time",
+0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0,
+RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets
+48/56; every round-8 mutant killed; clang-tidy 0 diagnostics on the round's
+changed lines; a sweep of 1902 earlier single-file probes at `--phase=lower`
+changes only the seven forms that stopped and are rejected now. Across the
+twenty-one reviews: 103 findings, 97 distinct (6 BLOCKER, 34 MAJOR and 63 MINOR,
+counted over all 103), none rejected whole. The per-finding table is the plan's
+"Focused re-review of the fold (2026-10-15)", round 8. Neither review judged the
+branch dry, and the round's fixer changed one toolchain source file and four
+goldens, so round 9 of the focused re-review is owed, over the round-8 fixer's
+commits 1572d4d65..1a9fbb6de (the fix commits 1572d4d65..813804758 and the
+records commits 3a4176711 and 1a9fbb6de) and the records commit after them that
+records round 8's reviews; the PR opens and is held after a dry round (amended
+2026-10-15, focused re-review of the fold: all round-8 findings; records:
+re-review round 8). The records commit after 1a9fbb6de adds to the plan's
+round-8 record the reviews' runs it left out (among them review 1's reading of
+the refills, its sweep of 1257 earlier probes and its R17 judgment of c4d609c8d,
+and review 2's sweep of 1291 programs without `template`, the shape M76 guards
+and its records checks), names 3a4176711 and 1a9fbb6de in round 9's scope, adds
+round 8 to the introduction of the plan's focused re-review record, rewraps by
+hand six paragraphs that kept a short line in the middle, re-runs the id re-scan
+and `git merge-tree` with the same results, and re-measures 1a9fbb6de (file_test
+1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets; EXPECTED, not of
+record) (amended 2026-10-15, records: re-review round 8).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
@@ -3954,9 +3965,9 @@ defined, and a deferred literal, constant or not and nested or not, takes its
 defaults on instantiation because an action keeps a literal as its operand,
 reading them from the class specific's resolved definition; amended 2026-10-15,
 focused re-review of the fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1 /
-RR7r2-M1 / RR8-1-M1), W-256 (q07c's template crash traded for the
-miscompile the same code has without templates), and the held state (the four
-discharges wait for land time).
+RR7r2-M1 / RR8-1-M1), W-256 (q07c's template crash traded for the miscompile the
+same code has without templates), and the held state (the four discharges wait
+for land time).
 
 ### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
 

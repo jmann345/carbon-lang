@@ -22,7 +22,7 @@
 // pattern_match.cpp:1409. Operations on payloads of the template parameter's
 // type run on instantiation. A scrutinee whose type is not known in the
 // definition, such as the template parameter itself (proposal 2200's `match`
-// on a dependent value, TR-13), stays a `semantics TODO` (W-252).
+// on a dependent value, TR-13), stays a `semantics TODO`.
 
 // --- designator_arm.carbon
 library "[[@TEST_NAME]]";
@@ -275,6 +275,40 @@ fn InLetElse[template T: type](s: Opt(T)) -> i32 {
   // CHECK:STDERR:
   let .Nope = s else { return 0; }
   return 1;
+}
+
+// --- fail_unknown_alternative_class_template.carbon
+library "[[@TEST_NAME]]";
+
+// A choice declared in a class template declares its alternatives once for
+// every specific, so an unknown name is diagnosed in the definition, as for a
+// checked generic class, though nothing instantiates the class (TR-13). Trunk
+// accepts the pattern condition and the `let` ... `else` here, and stops at
+// pattern_match.cpp:1409 on the `match` arm.
+class Outer(template T: type) {
+  choice C {
+    A(n: T),
+    B
+  }
+
+  fn InMatch(c: C) -> i32 {
+    match (c) {
+      case .Nope => { return 0; }
+      default => { return 1; }
+    }
+  }
+
+  fn InIfLet(c: C) -> i32 {
+    if (let .Nope = c) {
+      return 0;
+    }
+    return 1;
+  }
+
+  fn InLetElse(c: C) -> i32 {
+    let .Nope = c else { return 0; }
+    return 1;
+  }
 }
 
 // --- fail_nonexhaustive.carbon

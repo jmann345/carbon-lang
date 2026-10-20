@@ -3566,30 +3566,40 @@ fill 8b94adb03 (a check split that kills M75 and pins W-273, the rejection of a
 concrete specific whose field type names such an alias, where trunk and the
 nightly stop the compiler), 2dfd39e63 with its fill e193865fc (two check splits
 that pin the nested constant literal as W-272's, widened, by review 2's option
-(b)), and the records commit after them; none rejected, one residue filed,
-W-273, W-274 unused. The root fix for the nested literal, review 2's option
-(a), is W-272's removal, which would change how eval.cpp gives every action its
-operands, and stays filed; converting such a constant source where the function
-is defined, as 0bd0756c8 does for a literal that is not nested, was not made,
-as a second workaround of that mechanism for one more shape. M76 is
-legitimately untestable: every splice in a constant's type is also reached as
-an action's operand. D-TP-24 is amended in the plan (§1.2, §1.14) and here.
+(b)), and the records commit 2cb6bfec0 after them; none rejected, one residue
+filed, W-273, W-274 unused. The root fix for the nested literal, review 2's
+option (a), is W-272's removal, which would change how eval.cpp gives every
+action its operands, and stays filed; converting such a constant source where
+the function is defined, as 0bd0756c8 does for a literal that is not nested, was
+not made, as a second workaround of that mechanism for one more shape. M76 is
+legitimately untestable: every splice in a constant's type is also reached as an
+action's operand. D-TP-24 is amended in the plan (§1.2, §1.14) and here.
 Measured at e193865fc on 4d015cf18's toolchain, container-built, EXPECTED and
-not of record: file_test 1955 passed, 0 failed, "Ran 1955 tests in 22206 ms
-wall time", 0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0,
-LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)",
-bullets 48/56; every round-6 mutant killed but M76; clang-tidy 0 diagnostics on
-the round's changed lines; a sweep of 1281 earlier single-file probes at
+not of record: file_test 1955 passed, 0 failed, "Ran 1955 tests in 22206 ms wall
+time", 0 `!` and 0 `?` marks; conformance "PASS 137, COMPILE-FAIL 0, LINK-FAIL
+0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 159)", bullets
+48/56; every round-6 mutant killed but M76; clang-tidy 0 diagnostics on the
+round's changed lines; a sweep of 1281 earlier single-file probes at
 `--phase=lower` changes only the round's own shapes. Across the seventeen
 reviews: 92 findings, 88 distinct (6 BLOCKER, 31 MAJOR and 55 MINOR, counted
-over all 92), none rejected whole. The per-finding table is the plan's
-"Focused re-review of the fold (2026-10-15)", round 6. Neither review judged
-the branch dry. Round 6 had two MAJOR findings and its fixer changed one
-toolchain source file and three goldens, so round 7 of the focused re-review is
-owed, over the round-6 fixer's commits 4d015cf18..e193865fc and its records
-commit, and the records commit after them that records round 6's reviews; the
-PR opens and is held after a dry round (amended 2026-10-15, focused re-review
-of the fold: all round-6 findings).
+over all 92), none rejected whole. The per-finding table is the plan's "Focused
+re-review of the fold (2026-10-15)", round 6. Neither review judged the branch
+dry. Round 6 had two MAJOR findings and its fixer changed one toolchain source
+file and three goldens, so round 7 of the focused re-review is owed, over the
+round-6 fixer's commits 4d015cf18..2cb6bfec0 (the fix commits
+4d015cf18..e193865fc and the records commit 2cb6bfec0) and the records commit
+after them that records round 6's reviews; the PR opens and is held after a dry
+round (amended 2026-10-15, focused re-review of the fold: all round-6 findings;
+records: re-review round 6). The records commit after 2cb6bfec0 adds to the
+plan's round-6 record the reviews' runs it left out (among them review 1's
+D-TP-25 shapes, its five-toolchain results for the MAJOR's controls and its k01
+and k03, which do not reach the class arm, and review 2's passing forms of the
+nested literal and its m01 to m09), records that review 2's classification of
+the four surviving mutants as defensive checks is not taken, because review 1's
+probes reach and kill three of them, names 2cb6bfec0 in round 7's scope, re-runs
+the id re-scan and `git merge-tree` with the same results, and re-measures
+2cb6bfec0 (file_test 1955 of 1955; conformance 137/0/22 over 159, 48/56 bullets;
+EXPECTED, not of record) (amended 2026-10-15, records: re-review round 6).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

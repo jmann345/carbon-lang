@@ -79,15 +79,15 @@ round (amended 2026-10-15, records: re-review round 5).
 
 Round 6 (two APPROVE-WITH-FIXES reviews of 0bd0756c8..d50052bde, five findings,
 all distinct: two MAJOR and three MINOR, one of them records only) is folded by
-the fix commits 4d015cf18..e193865fc and the records commit after them, which
-the same record tables, with one residue filed, W-273, and W-272 widened
-(amended 2026-10-15, focused re-review of the fold: all round-6 findings).
-Neither review judged the branch dry, and the round's fixer changed one
-toolchain source file and three goldens, so round 7 is owed, over the round-6
-fixer's commits 4d015cf18..e193865fc and its records commit, and the records
-commit after them that records round 6's reviews; the PR opens and is held after
-a dry round (amended 2026-10-15, focused re-review of the fold: all round-6
-findings).
+the fix commits 4d015cf18..e193865fc and the records commit 2cb6bfec0, which the
+same record tables, with one residue filed, W-273, and W-272 widened (amended
+2026-10-15, focused re-review of the fold: all round-6 findings; records:
+re-review round 6). Neither review judged the branch dry, and the round's fixer
+changed one toolchain source file and three goldens, so round 7 is owed, over
+the round-6 fixer's commits 4d015cf18..2cb6bfec0 (the fix commits
+4d015cf18..e193865fc and the records commit 2cb6bfec0) and the records commit
+after them that records round 6's reviews; the PR opens and is held after a dry
+round (amended 2026-10-15, records: re-review round 6).
 
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
@@ -392,18 +392,20 @@ round 5). Round 6 files W-273 and leaves W-274 unused; its first fix commit
 4d015cf18 names W-272 and W-265 in its body and its fill 464eca298 names W-272,
 its second fix commit 1d4e7419c and that commit's fill 873a6b70a name none, its
 third fix commit 080963a68 and that commit's fill 8b94adb03 name W-273, its
-fourth fix commit 2dfd39e63 and that commit's fill e193865fc name W-272, and
-its records commit names none (amended 2026-10-15, focused re-review of the
-fold: all round-6 findings). History is not rewritten, so if the re-scan before
-L re-allocates an id, D's landed notes record the new id against each commit
-that names it; later commit messages describe a residue instead of naming its
-reserved id ((amended 2026-10-14, implementation-review fold: IR2-MINOR-4)). The
-three commands are re-run twice: immediately before L, the first commit that
-publishes an id outside this plan, and immediately before D writes the ledger.
-Any output other than the expected one above that names W-250..W-274 or F-019
-means another workstream took the id (amended 2026-10-15, focused re-review of
-the fold: RR2r2-m2). Before L, the residues re-allocate from the maximum plus
-one, skipping every reserved block, and L, R and D are written with the new ids.
+fourth fix commit 2dfd39e63 and that commit's fill e193865fc name W-272, and its
+records commit 2cb6bfec0 names none (amended 2026-10-15, focused re-review of
+the fold: all round-6 findings); the records commit after 2cb6bfec0, which
+records round 6's reviews, names none (amended 2026-10-15, records: re-review
+round 6). History is not rewritten, so if the re-scan before L re-allocates an
+id, D's landed notes record the new id against each commit that names it; later
+commit messages describe a residue instead of naming its reserved id ((amended
+2026-10-14, implementation-review fold: IR2-MINOR-4)). The three commands are
+re-run twice: immediately before L, the first commit that publishes an id
+outside this plan, and immediately before D writes the ledger. Any output other
+than the expected one above that names W-250..W-274 or F-019 means another
+workstream took the id (amended 2026-10-15, focused re-review of the fold:
+RR2r2-m2). Before L, the residues re-allocate from the maximum plus one,
+skipping every reserved block, and L, R and D are written with the new ids.
 Before D, the same re-allocation also rewrites the ids that L's page and fixture
 texts and R's row already published, in a commit before D. D records both
 outcomes in fork/ORCHESTRATION.md and in the plan's landed notes. From the
@@ -4597,8 +4599,9 @@ commit's files, which merges the two.
     lower splits, no toolchain change) with its fill 873a6b70a, 080963a68 (one
     check split, no toolchain change) with its fill 8b94adb03, 2dfd39e63 (two
     check splits, no toolchain change) with its fill e193865fc, and the records
-    commit that records the round, by the sixth dated note (amended 2026-10-15,
-    focused re-review of the fold: all round-6 findings).
+    commit 2cb6bfec0 that records the round, by the sixth dated note (amended
+    2026-10-15, focused re-review of the fold: all round-6 findings; records:
+    re-review round 6).
 11. **L** "TP-1: integration with PR 58" (§2.9, Appendix C), then its
     document review and fold commits; `check_samples.py` with and without
     `--toolchain` on every one of them. The id re-scan of the front matter
@@ -5988,6 +5991,27 @@ disabled).
     ls-remote`, gives the PR body's conflict table unchanged: 4d015cf18's hunk
     in `ConvertStructToClass` merges cleanly, and convert.cpp still conflicts
     with PR 60 in the two `PerformAction` hunks only.
+-   Re-measured at 2cb6bfec0 by the records commit that records round 6's
+    reviews (amended 2026-10-15, records: re-review round 6), in
+    `.../tp1-rr/records-r6`, container-built, EXPECTED, not of record. The
+    install printed 0.0.0-0.dev+4d015cf18, and `git log -1 --format=%h --
+    toolchain ':!toolchain/*/testdata/*' core` prints 4d015cf18. The gate, run
+    with a private cache: 1955 passed, 0 failed, "Ran 1955 tests in 24391 ms
+    wall time, 93829 ms across threads", 1955 `.` marks and no `!` or `?`
+    (`gate.log`), as the fixer's own run at 2cb6bfec0 gave
+    (`$F/logs/gate_head_2cb6bfec0.log`, "Ran 1955 tests in 25441 ms wall time").
+    Conformance into `conf/`, with a private cache: "PASS 137, COMPILE-FAIL 0,
+    LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of
+    159)", bullets 48 PASS / 0 FAIL / 8 SKIP / 0 NOT-WRITTEN of 56, scoreboard
+    generated 2026-10-20T05:24:42Z in 68.1 s, every program's status and detail
+    equal to `$F/conf`'s, the nine TP-1 programs the only movers from
+    fork/conformance/out/scoreboard.json; `runner.py --self-test`: "self-test:
+    159 programs parsed, 56 bullets in table, OK". The id re-scan, after `git
+    fetch origin` at 2026-10-20 05:25 UTC (origin/trunk f3156a375): 81 refs, 79
+    after TP-1's two, and the same three outputs. `git merge-tree` of 2cb6bfec0
+    with trunk and each held PR's head, each equal to `git ls-remote`: the PR
+    body's conflict table, with convert.cpp conflicting with PR 60 in the two
+    `PerformAction` hunks only.
 
 | Mutant | Named killer | Measured at round 6 of the focused re-review of the fold |
 | --- | --- | --- |
@@ -6558,9 +6582,10 @@ records commit after them that records round 5's reviews (amended 2026-10-15,
 focused re-review of the fold: all round-5 findings; records: re-review
 round 5). Round 6, after round 5 below, had two MAJOR findings, and its fixer
 changed one toolchain source file and three goldens, so round 7 is owed, over
-the round-6 fixer's commits 4d015cf18..e193865fc, its records commit included,
-and the records commit after them that records round 6's reviews (amended
-2026-10-15, focused re-review of the fold: all round-6 findings).
+the round-6 fixer's commits 4d015cf18..2cb6bfec0, its records commit 2cb6bfec0
+included, and the records commit after them that records round 6's reviews
+(amended 2026-10-15, focused re-review of the fold: all round-6 findings;
+records: re-review round 6).
 
 ### Round 1: the fold's commits, at bf8e1b4cc
 
@@ -7624,20 +7649,24 @@ type" (lower initialize.carbon's two splits; no toolchain change) and its fill
 names a where alias" (deduce_class_args.carbon's one split; no toolchain
 change) and its fill 8b94adb03; 2dfd39e63 "TP-1 re-review fix: pin a nested
 constant literal that leaves a field to its default" (check initialize.carbon's
-two splits; no toolchain change) and its fill e193865fc; and the records commit
-that adds this section, which also refreshes the PR description and its first
-comment and moves the description's sub-bullets of each round's re-measurement
-by its reviews and of each records pass, and its FILL-CAUGHT MISSES list, into
-the comment, because with round 6 the description would pass GitHub's
-65,536-character limit. Each fix commit was gated alone, red exactly on the
-golden it changes, with no crash, and then with its fill at the autoupdate
-fixpoint (§8 "Measured at the focused re-review of the fold, round 6"). §3's
-budget is exceeded by the sixth dated note there, for the root-cause reason it
-gives. Since the cut, TP-1 changes 29 toolchain source files and adds 13
-goldens and refills 8 (`git diff --stat b2576f6c3 e193865fc -- toolchain core`:
-50 files, 13626 lines added and 561 removed); the round's own `git diff --stat
-d50052bde e193865fc -- toolchain core` gives 4 files, 621 lines added and 9
-removed, no earlier split's lines among them.
+two splits; no toolchain change) and its fill e193865fc; the records commit that
+adds this section, 2cb6bfec0, which also refreshes the PR description and its
+first comment and moves the description's sub-bullets of each round's
+re-measurement by its reviews and of each records pass, and its FILL-CAUGHT
+MISSES list, into the comment, because with round 6 the description would pass
+GitHub's 65,536-character limit; and the records commit after it, which records
+round 6's reviews: the runs this record left out, the classification of the
+surviving mutants that review 2 proposed and that this record does not take, and
+a re-measurement of 2cb6bfec0 (the round's last two paragraphs; amended
+2026-10-15, records: re-review round 6). Each fix commit was gated alone, red
+exactly on the golden it changes, with no crash, and then with its fill at the
+autoupdate fixpoint (§8 "Measured at the focused re-review of the fold, round
+6"). §3's budget is exceeded by the sixth dated note there, for the root-cause
+reason it gives. Since the cut, TP-1 changes 29 toolchain source files and adds
+13 goldens and refills 8 (`git diff --stat b2576f6c3 e193865fc -- toolchain
+core`: 50 files, 13626 lines added and 561 removed); the round's own `git diff
+--stat d50052bde e193865fc -- toolchain core` gives 4 files, 621 lines added and
+9 removed, no earlier split's lines among them.
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
@@ -7645,7 +7674,7 @@ removed, no earlier split's lines among them.
 | RR6-1-m1: M70 (the class arm's walk) and M72 (a specific's arguments) were recorded as surviving because C4 defers a call of a class template whose argument is a splice, but a field whose class argument holds a produced type inside a pointer or struct type, `var c: Tag(T.Item*);` or `Tag({.a: T.Item})`, reaches both (the review's k04 and k05, which print 3 on the branch, trunk and the nightly and stop lowering at function_context.cpp:264 under M70 and M72) | MINOR | Fixed in 1d4e7419c with its fill 873a6b70a: lower initialize.carbon's `var_class_template_field_of_class_of_associated_pointer` and `var_class_template_field_of_class_of_associated_struct`, filled by the autoupdater, kill M70 and M72; the records' reason is corrected | §1.2 D-TP-24, §2.7, §4, §8 (item 5 and the round-4, round-5 and round-6 mutant records), Appendix A |
 | RR6-1-m2: M75 (no facet-type operand counts as a splice) is reachable through a class-scope alias of a `where` facet type, `alias FT = HasItem where .Item = T.Item;` with `var c: Tag({.a: FT});` (k12, k13; k14 in a function that is not a template), which the head rejects with ``cannot implicitly convert ... to `D(Holder as HasItem)` `` because even the concrete specific's object representation stays template dependent, where trunk and the nightly stop the compiler and M75 lets it stop lowering at file_context.h:187; M76's reason was unstated | MINOR | Fixed in 080963a68 with its fill 8b94adb03: deduce_class_args.carbon's `fail_todo_class_template_field_of_where_alias`, k14's shape with its current diagnostic, kills M75, and M70 and M72 too; the underlying defect is filed as W-273. M76 stays, legitimately untestable: every splice in a constant's type is also reached as an action's operand, and a class binding's type is the forming generic's own argument, so the step only completes the walk; §8 records it | §1.2 D-TP-24, §1.8, §1.13 item 24, §2.7, §4, §8, Appendix A, Appendix E, ledger W-273 |
 | RR6r2-M1: a constant class literal that leaves a field to its default, nested in a class value (convert.cpp:1514-1517 at d50052bde), an array value (:669-672) or an argument converted on instantiation whole, is rejected with "missing field", because `get_default` (:1528-1533) gives a default only to a literal and the nested literal arrives as its constant struct value: a01, a21 and a03 (`let o: Outer = {.inner = {.a = N}};`, with a second field, and `let t: array(C, 2) = ({.a = N}, {.a = 1});`), whose twins print 5, 6 and 6 and on which trunk and the nightly segfault, and a20 (`{.a = 4 as T}`), which the nightly prints 6 and trunk stops at the verifier; a07 (an argument) and a08 (class templates) are rejected the same way by trunk and the nightly; it predates round 5, but round 5's records newly said such literals run | MAJOR | Folded by review 2's option (b), with no toolchain change: W-272's title and notes are widened to the nested forms, which are its mechanism (a deferred constant literal is its constant value on instantiation), with a01, a03, a07, a08, a20 and a21 and trunk's results as measured forms, and 2dfd39e63 with its fill e193865fc pins the shape in check initialize.carbon's `fail_todo_let_class_value_of_nested_literal_with_field_default` and `fail_todo_let_array_value_of_class_literal_with_field_default`. The root fix, review 2's option (a), is W-272's removal, which changes the operand eval.cpp:503-513 gives every action, so it stays filed; converting such a constant source where the function is defined instead, as 0bd0756c8 does for a literal that is not nested, would be a second workaround of that mechanism for one more shape and was not made | TR-4, §0 (a), §1.2 D-TP-24, §1.8, §1.13 item 23, §1.14, §2.7, §4, Appendix A, Appendix E, decision log, gap row 54, ledger W-014 and W-272, PR body |
-| RR6r2-m1 (records only): ORCHESTRATION's round-5 paragraph (fork/ORCHESTRATION.md:374) gave the survivors' reason as "whose paths others cover", where the plan's (:7034 at d50052bde) adds "or no measured shape reaches" | MINOR | Folded: the paragraph reads "whose paths others cover or that no measured shape reaches", and §8's round-5 mutant table records round 6's classification of M70, M72, M75 and M76 as final (the first three missing goldens, which round 6 adds; M76 a defensive completion of the walk) | fork/ORCHESTRATION.md, §8 |
+| RR6r2-m1 (records only): ORCHESTRATION's round-5 paragraph (fork/ORCHESTRATION.md:374) gave the survivors' reason as "whose paths others cover", where the plan's (:7034 at d50052bde) adds "or no measured shape reaches" | MINOR | Folded: the paragraph reads "whose paths others cover or that no measured shape reaches", and §8's round-5 mutant table records round 6's classification of M70, M72, M75 and M76 as final (the first three missing goldens, which round 6 adds; M76 a defensive completion of the walk); review 2's own wording, that all four are defensive checks, is not taken, because review 1's k04, k05 and k14 reach and kill M70, M72 and M75 (the paragraph after the round's status; amended 2026-10-15, records: re-review round 6) | fork/ORCHESTRATION.md, §8 |
 
 Measured at the round's last fix commit (§8 "Measured at the focused re-review
 of the fold, round 6"), container-built, EXPECTED, not of record: gate 1955 of
@@ -7669,12 +7698,87 @@ source file (check/convert.cpp) and three goldens (check generic/template's
 deduce_class_args.carbon and initialize.carbon and lower
 template/initialize.carbon; `git diff --stat d50052bde e193865fc -- toolchain
 core fork/conformance/programs`). Round 7 is owed: two fresh reviews of the
-round-6 fixer's commits 4d015cf18..e193865fc and the records commit that adds
-this section, and the records commit after them that records round 6's
-reviews. The PR opens and is held after a round with no BLOCKER or MAJOR
-finding whose fixer changes no toolchain file. fork/ORCHESTRATION.md's TP-1
-Branches row reads "IMPLEMENTED AND HELD, RE-REVIEW ROUND 7 OWED" until a round
-is dry.
+round-6 fixer's commits 4d015cf18..2cb6bfec0 (the fix commits
+4d015cf18..e193865fc and the records commit 2cb6bfec0, which changes records
+only) and the records commit after them that records round 6's reviews (amended
+2026-10-15, records: re-review round 6). The PR opens and is held after a round
+with no BLOCKER or MAJOR finding whose fixer changes no toolchain file.
+fork/ORCHESTRATION.md's TP-1 Branches row reads "IMPLEMENTED AND HELD, RE-REVIEW
+ROUND 7 OWED" until a round is dry.
+
+The reviews' runs that the paragraphs above leave out (amended 2026-10-15,
+records: re-review round 6). Review 1's eight D-TP-25 pairs c01 to c08 were an
+array of structs, a class with a default beside a dependent element, a class
+template's default beside one, tuple destructuring, a method template of a class
+template, a struct holding a class with a destructor, a class template with a
+destructor, and two instantiations; in the four pairs whose IR it compared only
+the array-index `getelementptr`s are recomputed, with no duplicate store and no
+missing initialization, and r06 and r16 carry the `Core.Copy` note, as their
+twins do on the fork, trunk and the nightly. Its bound probes add n09t and n10t,
+twins without a template that fail LLVM verification on all three toolchains
+(W-263), and its opaque-type and stringification probes match round 5's record.
+For RR6-1-M1 it ran each probe on the head, on 7dd4e1e7c's convert.cpp relinked
+over the head's objects (exactly the round-4 toolchain), on f3f99c1c1's
+convert.cpp relinked the same way, on trunk 0bdce60a5 and on the nightly:
+f3f99c1c1 stops the `let` forms s20, s23, s25 and s32 as d50052bde does, where
+7dd4e1e7c rejects them with ``unable to monomorphize specific `G(3)` `` and the
+missing-field note, as trunk and the nightly do but for s32, on which they stop;
+s27, a checked class `C(T: HasN)` with `= T.N` in a template function, prints 10
+on the head, where 7dd4e1e7c, trunk and the nightly reject it; s35 prints 16 and
+s28, s37 and s38, whose literals provide the field, run on all five; and s34, a
+runtime literal, stops all five, d50052bde at value_store.h:284 and the others
+at W-265's expr_info.cpp FATAL. For RR6-1-m1 its k01 and k03, whose class
+argument is `(T.Item, i32)` or `I(T.Item)` and so is itself a deferred splice,
+do not reach the class arm, which is the case the records described; k04 and k05
+reach it and print 3 under M75 and M76 too; and no golden under check
+generic/template or lower template held such a field. For RR6-1-m2 trunk stops
+at generic_region_stack.h:98 and at custom_witness.cpp:487, the `CanDestroyType`
+FATAL, the nightly stops too, and no probe of k01 to k14 changes under M76.
+Review 2 found the differences of its 1011 earlier-round probes from f3f99c1c1's
+convert.cpp to be the recorded round-4 improvements only, and M82 stopping at
+context.cpp:86 on `let_class_value_of_call`. For RR6r2-M1 its `var`, `return`
+and array `var` forms a05, a18 and a19 print 5, 5 and 6, and a06, whose outer
+literal leaves out its own defaulted field, prints 15; and f3f99c1c1's and
+7dd4e1e7c's convert.cpp relinked over the head's build reject a01 as the head
+does, so the defect predates round 5. Its m01 to m09 were deduced class
+arguments, value bindings typed by a splice, facet-typed fields used and unused
+with a wrong value, `C(T.Item*)`, computed arguments with a checked parameter, a
+`let` value, a pointer field and a nested class in a template class. Review 2
+judged M70, M72, M75 and M76 defensive checks, none a missing golden and none a
+guard R17 would remove, and its RR6r2-m1 fix proposed that wording for §8; the
+record does not take it, because review 1's k04, k05 and k14 reach and kill M70,
+M72 and M75 (§8, round 6), where m01 to m09 give the same result under all four;
+no probe of either review changes under M76.
+
+The records commit that records round 6's reviews, the one after 2cb6bfec0
+(amended 2026-10-15, records: re-review round 6), changes records only. It adds
+the paragraph above and the note on review 2's classification in the RR6r2-m1
+row; names 2cb6bfec0 where the round's records said "the records commit after
+them", "its records commit" or "the records commit that adds this section", in
+the front matter and its id paragraph, §3's item 10, this section's
+introduction, the round's commits paragraph and status, the decision-log entry
+"TP-1", W-014's ledger notes and ORCHESTRATION's round-6 paragraph and Branches
+row, which still reads RE-REVIEW ROUND 7 OWED; re-runs, on 2026-10-20 at 05:25
+UTC (the container clock) after `git fetch origin` (origin/trunk still
+f3156a375), the id re-scan, which prints the same three outputs over 79 of the
+81 refs, and `git merge-tree` of 2cb6bfec0 with trunk and each held PR's head,
+each equal to `git ls-remote`, which gives the PR body's conflict table,
+convert.cpp conflicting with PR 60 in the two `PerformAction` hunks only;
+re-measures 2cb6bfec0, with the results §8 records ("Re-measured at 2cb6bfec0");
+and refreshes the PR body and its first comment. It finds the round's records
+exact against the tree: the rows' cites into convert.cpp at d50052bde
+(:1496-1501, :1514-1517, :1528-1533, :1547 and :669-672),
+function_context.cpp:261-264, ORCHESTRATION.md:374 and plan.md:7034 at
+d50052bde; the ledger's convert.cpp:1571-1576, :2562 and :634-645 at the head;
+W-014's forty `fail_todo` splits (thirty-two for W-250, one for W-266, six for
+W-272 and one for W-273, five of them added by the round) and the round's nine
+split names; `git diff --stat b2576f6c3 e193865fc -- toolchain core` (50 files,
+13626 lines added and 561 removed) and `git diff --stat d50052bde e193865fc --
+toolchain core` (4 files, 621 and 9, convert.cpp's nine the only lines removed);
+the counts across the seventeen reviews (92 findings, 88 distinct; 6 BLOCKER, 31
+MAJOR, 55 MINOR); the id paragraph's list of the round's commit messages that
+name an id; and 2cb6bfec0's R31 counts (plan.md gains one h3 heading, eight list
+items, one numbered item and three tables).
 
 ## Appendix A: golden sources
 

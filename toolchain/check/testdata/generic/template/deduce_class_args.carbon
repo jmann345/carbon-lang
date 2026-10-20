@@ -263,6 +263,11 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
+  // CHECK:STDERR: fail_todo_class_template_literal_with_produced_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(3);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_todo_class_template_literal_with_produced_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.a: Core.IntLiteral}` to `D(3)`: missing field `k` in source type [StructInitMissingFieldInConversion]
+  // CHECK:STDERR:
   return Make(3);
 }
 
@@ -280,6 +285,11 @@ fn Make(template N: i32) -> i32 {
 }
 
 fn Use() -> i32 {
+  // CHECK:STDERR: fail_todo_class_template_value_with_produced_field_default_on_instantiation.carbon:[[@LINE+5]]:10: error: unable to monomorphize specific `Make(3)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(3);
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_todo_class_template_value_with_produced_field_default_on_instantiation.carbon: note: cannot convert from struct type `{.a: Core.IntLiteral}` to `D(3)`: missing field `k` in source type [StructInitMissingFieldInConversion]
+  // CHECK:STDERR:
   return Make(3);
 }
 

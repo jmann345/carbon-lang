@@ -20,6 +20,10 @@
 library "[[@TEST_NAME]]";
 
 fn F(o: Core.Optional(i32)) -> i32 {
+  // CHECK:STDERR: fail_todo_match.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
+  // CHECK:STDERR:   match (o) {
+  // CHECK:STDERR:         ^~~
+  // CHECK:STDERR:
   match (o) {
     case .Some(value: i32) => {
       return value;
@@ -36,6 +40,10 @@ fn F(o: Core.Optional(i32)) -> i32 {
 library "[[@TEST_NAME]]";
 
 fn G(p: Core.Optional(i32*)) -> i32 {
+  // CHECK:STDERR: fail_todo_if_let.carbon:[[@LINE+4]]:28: error: semantics TODO: `refutable pattern binding on unsupported scrutinee type` [SemanticsTodo]
+  // CHECK:STDERR:   if (let .Some(q: i32*) = p) {
+  // CHECK:STDERR:                            ^
+  // CHECK:STDERR:
   if (let .Some(q: i32*) = p) {
     return *q;
   }

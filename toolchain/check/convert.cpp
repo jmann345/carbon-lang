@@ -3060,10 +3060,15 @@ auto PerformAction(Context& context, SemIR::SpecificId specific_id,
           return;
         }
         if (!result_ids[next_result_index].has_value()) {
+          // The storage argument is an instruction of the generic, whose
+          // type can be symbolic there, such as a Carbon generic call's `T`
+          // result stored into a member of `Cpp.Box(T)`; the temporary has
+          // its type in this specific.
           result_ids[next_result_index] =
               AddInstInNoBlock<SemIR::TemporaryStorage>(
                   context, SemIR::LocId(storage_arg_id),
-                  {.type_id = context.insts().Get(storage_arg_id).type_id()});
+                  {.type_id = SemIR::GetTypeOfInstInSpecific(
+                       context.sem_ir(), specific_id, storage_arg_id)});
         }
         ++next_result_index;
       });
@@ -3160,7 +3165,20 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
       }
       return SemIR::ErrorInst::InstId;
     }
-    expr_id = sem_ir.insts().GetAs<SemIR::RefTagExpr>(expr_id).expr_id;
+    if (auto specific_inst =
+            sem_ir.insts().TryGetAs<SemIR::SpecificInst>(expr_id)) {
+      // A `ref`-tagged argument of a C++ call deferred to a specific is the
+      // generic's `RefTagExpr` in that specific: its operand is taken in the
+      // same specific.
+      expr_id =
+          AddSpecificInst(context,
+                          sem_ir.insts()
+                              .GetAs<SemIR::RefTagExpr>(specific_inst->inst_id)
+                              .expr_id,
+                          specific_inst->specific_id);
+    } else {
+      expr_id = sem_ir.insts().GetAs<SemIR::RefTagExpr>(expr_id).expr_id;
+    }
     starting_category = SemIR::GetExprCategory(sem_ir, expr_id);
   } else if (target.kind == ConversionTarget::RefParam) {
     if (target.diagnose) {

@@ -25,6 +25,7 @@
 #include "toolchain/check/type_completion.h"
 #include "toolchain/check/type_structure.h"
 #include "toolchain/sem_ir/declared_facet_type.h"
+#include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/identified_facet_type.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/impl.h"
@@ -618,6 +619,20 @@ static auto NamesTemplateBinding(Context& context, SemIR::InstId inst_id)
     // template: the specialization it names is formed only on instantiation.
     if (inst.Is<SemIR::TemplateInst>()) {
       return true;
+    }
+    // A call to a C++ template name or an imported C++ function, which waits
+    // for concrete arguments (`ActionIsPerformable`): a class template's
+    // specific formed for a checked generic's `U`, `C(U).B` for `alias B =
+    // Cpp.Box(T);`, holds `U` itself, not wrapped in a `TemplateInst`.
+    if (auto call = inst.TryAs<SemIR::CallAction>()) {
+      auto inst_ids = context.inst_blocks().Get(call->inst_block_id);
+      if (!inst_ids.empty() &&
+          (context.types().Is<SemIR::CppTemplateNameType>(
+               context.insts().Get(inst_ids.front()).type_id()) ||
+           std::holds_alternative<SemIR::CalleeCppOverloadSet>(
+               SemIR::GetCallee(context.sem_ir(), inst_ids.front())))) {
+        return true;
+      }
     }
     for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
       if (auto id = arg.TryAs<SemIR::InstId>()) {

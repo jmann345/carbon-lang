@@ -124,6 +124,28 @@ static auto GetExprCategoryImpl(const File* ir, InstId inst_id,
         // `SpecificConstant` belongs to the generic of its specific, and its
         // category can be known only there: `C(X).A` names an alias whose value
         // is template dependent in `C`, and a value in the specific `C(X)`.
+        if constexpr (std::same_as<TypedInstT, SpecificConstant>) {
+          // A `SpecificConstant` of the generic being walked for one of its
+          // specifics, `C(T).A` in `class E(T: type) { alias B = C(T).A; }`
+          // read as `E(i64).B`, has a symbolic specific of its own: its
+          // constant in the walked specific, when concrete, is what it names.
+          auto attached_id = ir->constant_values().GetAttached(inst_id);
+          if (specific_id.has_value() && specific_ir == ir &&
+              attached_id.is_symbolic() &&
+              ir->constant_values()
+                      .GetSymbolicConstant(attached_id)
+                      .generic_id ==
+                  ir->specifics().Get(specific_id).generic_id) {
+            auto [const_ir, const_id] = GetConstantValueInSpecific(
+                *specific_ir, specific_id, *ir, inst_id);
+            if (const_id.is_concrete()) {
+              ir = const_ir;
+              inst_id = ir->constant_values().GetInstId(const_id);
+              specific_id = SpecificId::None;
+              return std::nullopt;
+            }
+          }
+        }
         inst_id = inst.inst_id;
         specific_id = inst.specific_id;
         specific_ir = ir;

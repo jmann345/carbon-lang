@@ -184,9 +184,9 @@ library "[[@TEST_NAME]]";
 
 import Cpp library "loud.h";
 
-// TODO: the temporary that a C++ call deferred to the specific returns
-// is not destroyed when it is discarded: the specific of `DiscardDeferred` has
-// no call to `Loud<int>`'s destructor, where `DiscardConcrete` has one.
+// TODO: a temporary that a C++ call deferred to the specific returns is not
+// destroyed when discarded, `let`-bound, read for a member or passed by value:
+// the specific of `DiscardDeferred` calls no destructor of `Loud<int>`.
 fn DiscardDeferred[T: type](v: T) {
   Cpp.MakeLoud(v);
 }
@@ -198,6 +198,45 @@ fn DiscardConcrete(v: i32) {
 fn Use() {
   DiscardDeferred(1 as i32);
   DiscardConcrete(2);
+}
+
+// --- store_generic_call_result.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "templates.h";
+
+fn Mk[T: Core.Copy](x: T) -> T { return x; }
+
+interface Container {
+  let Elem: type;
+  fn First(self) -> Elem;
+}
+
+class IntBox {
+  var x: i32;
+  impl as Container where .Elem = i32 {
+    fn First(self) -> i32 { return self.x; }
+  }
+}
+
+// A Carbon call's result of a symbolic type stored into a member of a
+// specialization, for a checked `T` and for an associated type: the call's
+// storage has the specific's type.
+fn StoreT[T: Core.Copy](x: T) -> T {
+  var b: Cpp.Box(T);
+  b.value = Mk(x);
+  return b.value;
+}
+
+fn StoreElem[C: Container](c: C) -> C.Elem {
+  var b: Cpp.Box(C.Elem);
+  b.value = c.First();
+  return b.value;
+}
+
+fn Use() -> i32 {
+  return StoreT(9 as i32) + StoreElem({.x = 4} as IntBox);
 }
 
 // CHECK:STDOUT: ; ---

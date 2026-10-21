@@ -107,6 +107,30 @@ fn SizeOfType[T: type](unused v: T) -> i32 {
 
 fn G() -> i32 { return Explicit(21 as i32) + SizeOfType(1 as i64); }
 
+// --- cpp_call_ref_argument.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> void Inc(T& x) { x = x + 1; }
+''';
+
+// A C++ call with a `ref` argument of a checked generic's symbolic type, and
+// of a template's: the argument is the generic's `ref` tag in each specific.
+fn Checked[T: Core.Copy & Core.Destroy](x: T) -> T {
+  var v: T = x;
+  Cpp.Inc(ref v);
+  return v;
+}
+
+fn Template[template T: Core.Copy & Core.Destroy](x: T) -> T {
+  var v: T = x;
+  Cpp.Inc(ref v);
+  return v;
+}
+
+fn G() -> i32 { return Checked(5 as i32) + Template(6 as i32); }
+
 // --- template_called_from_checked_generic.carbon
 
 library "[[@TEST_NAME]]";
@@ -227,6 +251,78 @@ fn G() -> i32 {
   return Take(Template(i16).Size) + a;
 }
 //@dump-sem-ir-end
+
+// --- nested_alias_through_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> struct Traits { static constexpr int size = sizeof(T); };
+''';
+
+// An alias of another class's alias of a template-dependent C++ constant,
+// named through a concrete specific from a function that is not generic: the
+// inner class's specific is symbolic in the outer class, and the use is the
+// outer specific's constant. The inner class is a checked generic class and a
+// class template.
+class Inner(T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class Outer(T: type) {
+  alias Size = Inner(T).Size;
+}
+
+class InnerTemplate(template T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class OuterOfTemplate(T: type) {
+  alias Size = InnerTemplate(T).Size;
+}
+
+fn Take(n: i32) -> i32 { return n; }
+
+//@dump-sem-ir-begin
+fn G() -> i32 {
+  let a: i32 = Outer(i64).Size;
+  return Take(OuterOfTemplate(i16).Size) + a;
+}
+//@dump-sem-ir-end
+
+// --- class_template_alias_through_symbolic_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// A class template's alias of a specialization, named through the class's
+// specific for a checked generic's `U`, and a checked class's alias of another
+// class's alias of a specialization: each `var` without an initializer is
+// looked up for each specific, not where `G` is defined.
+class C(template T: type) {
+  alias B = Cpp.Box(T);
+}
+
+fn G[U: type](u: U) -> U {
+  var b: C(U).B;
+  b.value = u;
+  return b.value;
+}
+
+class Inner(T: type) {
+  alias B = Cpp.Box(T);
+}
+
+class Outer(T: type) {
+  alias B = Inner(T).B;
+}
+
+fn H() -> i32 {
+  var b: Outer(i32).B;
+  b.value = 5;
+  return G(4 as i32) + b.value;
+}
 
 // --- member_missing_uncalled.carbon
 
@@ -637,6 +733,21 @@ fn G() -> i32 {
   // CHECK:STDERR:
   return Direct(s) + Compound(s) + Simple(s);
 }
+
+// --- fail_todo_returned_var_specialization.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// A `returned var` of a specialization: the return type's `Cpp.Box(T)` and the
+// variable's are two actions whose types differ where `F` is defined.
+fn F[template T: type](v: T) -> Cpp.Box(T) {
+  returned var r: Cpp.Box(T) = Cpp.MakeBox(v);
+  return var;
+}
+
+fn G() -> i32 { return F(9 as i32).value; }
 
 // CHECK:STDOUT: --- uninitialized_var.carbon
 // CHECK:STDOUT:

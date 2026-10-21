@@ -31,7 +31,7 @@ library "[[@TEST_NAME]]";
 class TrivialRange {
   impl as Core.Iterate where .CursorType = () and .ElementType = () {
     fn NewCursor(unused self) {}
-    fn Next(unused self, unused cursor: ()*) -> Core.Optional(()) {
+    fn Next(unused self, unused ref cursor: ()) -> Core.Optional(()) {
       return Core.Optional(()).None();
     }
   }

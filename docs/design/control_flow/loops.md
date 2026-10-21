@@ -14,7 +14,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -   [Details](#details)
     -   [`while`](#while)
     -   [`for`](#for)
-        -   [Ranged-for for user-defined types](#ranged-for-for-user-defined-types)
+        -   [`Iterate` interface](#iterate-interface)
+        -   [Loop desugaring](#loop-desugaring)
     -   [`break`](#break)
     -   [`continue`](#continue)
 -   [Alternatives considered](#alternatives-considered)
@@ -83,35 +84,70 @@ for (var name: strbuf in names) {
 Temporary entities on the right-hand side of `in` remain alive during the
 execution of the `for` loop to prevent invalid memory access.
 
-#### Ranged-for for user-defined types
+#### `Iterate` interface
 
-User types can enable support for ranged-for loops by implementing the `Iterate`
-interface:
+The `Core.Iterate` interface is defined as:
 
 ```carbon
 interface Iterate {
-  let ElementType: type;
-  let CursorType: type;
+  let ElementType: Copy & Destroy;
+  let CursorType: Destroy;
   fn NewCursor(self) -> CursorType;
   fn Next(self, ref cursor: CursorType) -> Optional(ElementType);
 }
 ```
 
-The cursor tracks progression, and the `Next` method advances the cursor and
-returns an `Optional` value. An empty `Optional` indicates that we have reached
-the end.
+-   **`CursorType`**: A type that represents the current position in the
+    iteration.
+-   **`ElementType`**: The type of the elements returned by the iteration.
+-   **`NewCursor`**: Returns a new cursor initialized to the start of iteration.
+-   **`Next`**: Advances the cursor and returns the next element, or `None` if
+    the end of iteration has been reached. It takes the cursor by reference
+    (`ref cursor: CursorType`), allowing the method to modify the cursor
+    in-place.
 
-A `for` loop on a container of a type that implements `Iterate` behaves
-conceptually as (though an API for `Optional` has not been approved):
+> **TODO:** Update this interface to be extended type generic once suitable
+> language facilities exist.
+
+#### Loop desugaring
+
+A `for` loop of the form:
 
 ```carbon
-var cursor: range.(Iterate.CursorType) = range.(Iterate.NewCursor)();
-var iter: Optional(range.(Iterate.ElementType)) = range.(Iterate.Next)(&cursor);
-while (iter.HasValue()) {
-  ExecuteForBlock(iter.Get());
-  iter = container.(Iterate.Next)(ref cursor);
+for (<pattern> in <range>) {
+  <statements>
 }
 ```
+
+is desugared to a loop that manages the cursor and checks the optional return
+values:
+
+```carbon
+{
+  let range:? auto = <range>;
+  var cursor: auto = range.(Iterate.NewCursor)();
+  while (true) {
+    match (range.(Iterate.Next)(cursor)) {
+      case .Some(<pattern>) => { <statements> }
+      default => { break; }
+    }
+  }
+}
+```
+
+> **TODO:** The above uses the deduced extended type syntax `:? auto` from
+> in-progress proposal
+> [#5389](https://github.com/carbon-language/carbon-lang/pull/5389), and should
+> be updated to match the final state of that proposal.
+
+> **Note:** Any temporaries in `<range>` will remain live until the end of the
+> loop.
+
+> **Fork amendment (2026-10-21, DR-1a).** The fork's `Core.Iterate.Next` takes
+> `ref cursor` as above (W-321). Its `for` calls `Core.Optional`'s `HasValue()`
+> and `Get()` in place of the `match`, as upstream's own checker does under its
+> TODO (toolchain/check/handle_loop_statement.cpp), until `Core.Optional` is
+> matchable (W-320, waiting on W-324).
 
 ### `break`
 

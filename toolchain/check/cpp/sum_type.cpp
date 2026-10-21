@@ -674,6 +674,27 @@ static auto ClassifyCarbonSumType(Context& context, SemIR::TypeId type_id)
   return name->starts_with("StdVariant") ? 2 : 0;
 }
 
+// The `Core.CppCompat.StdOptional(T)` bridge of a `Core.Optional(T)` (SV-1,
+// F-020): the choice that a `Core.Optional(T)` converts through to and from a
+// C++ `std::optional<T'>`, by value, through `HasValue()` and `Get()`. It is
+// not a `match` view (DR-1 D-DR-15, W-322: retired under R32 (d)).
+struct CoreOptionalView {
+  enum Status : uint8_t {
+    // The type is not a `Core.Optional` specific.
+    NotCoreOptional,
+    // `view_type_id` is the bridge type.
+    Mapped,
+    // Its payload type is symbolic: the bridge's payload check would happen
+    // only at monomorphization, so it is not formed.
+    SymbolicPayload,
+    // Its payload type is not a 0.1 choice payload type (SF-6).
+    PayloadNotAdmitted,
+  };
+  Status status = NotCoreOptional;
+  SemIR::TypeId payload_type_id = SemIR::TypeId::None;
+  SemIR::TypeId view_type_id = SemIR::TypeId::None;
+};
+
 // Returns whether `type_id` is a `Core.Optional(T)` specific, and sets
 // `payload_type_id` to `T` (from the argument `T as OptionalStorage`) when the
 // argument is concrete. Adds no instruction.
@@ -724,15 +745,17 @@ static auto ClassifyCoreOptional(Context& context, SemIR::LocId loc_id,
              !IsInSliceChoicePayloadType(context, payload_type_id)) {
     view.status = CoreOptionalView::PayloadNotAdmitted;
   } else {
-    view.status = CoreOptionalView::Matchable;
+    view.status = CoreOptionalView::Mapped;
   }
   return view;
 }
 
-auto GetCoreOptionalView(Context& context, SemIR::LocId loc_id,
-                         SemIR::TypeId type_id) -> CoreOptionalView {
+// Classifies `type_id`; forms the bridge type only when it is `Mapped`. Emits
+// no diagnostic.
+static auto GetCoreOptionalView(Context& context, SemIR::LocId loc_id,
+                                SemIR::TypeId type_id) -> CoreOptionalView {
   auto view = ClassifyCoreOptional(context, loc_id, type_id);
-  if (view.status != CoreOptionalView::Matchable) {
+  if (view.status != CoreOptionalView::Mapped) {
     return view;
   }
   // The payload is admitted, so forming `StdOptional(T)` cannot fail SF-6's
@@ -744,17 +767,6 @@ auto GetCoreOptionalView(Context& context, SemIR::LocId loc_id,
     view.status = CoreOptionalView::PayloadNotAdmitted;
   }
   return view;
-}
-
-auto DiagnoseCoreOptionalNotMatchable(Context& context, SemIR::LocId loc_id,
-                                      SemIR::TypeId type_id,
-                                      const CoreOptionalView& view) -> void {
-  CARBON_DIAGNOSTIC(CoreOptionalNotMatchable, Error,
-                    "cannot match {0} in 0.1: its payload type {1:is "
-                    "symbolic|is not a choice payload type}",
-                    SemIR::TypeId, Diagnostics::BoolAsSelect);
-  context.emitter().Emit(loc_id, CoreOptionalNotMatchable, type_id,
-                         view.status == CoreOptionalView::SymbolicPayload);
 }
 
 static auto IsTemplateDependent(Context& context, SemIR::TypeId type_id)
@@ -852,11 +864,11 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
         target_is_sum_type
             ? CoreOptionalView()
             : ClassifyCoreOptional(context, loc_id, target_type_id);
-    // A `Core.Optional` whose payload is not matchable -- in particular one
+    // A `Core.Optional` whose payload is not mapped -- in particular one
     // whose payload is the C++ class itself -- is left to `Core.Optional`'s
     // own conversions.
     if (!target_is_sum_type &&
-        target_optional.status != CoreOptionalView::Matchable) {
+        target_optional.status != CoreOptionalView::Mapped) {
       return SemIR::InstId::None;
     }
     auto sum_type = GetCppSumType(context, loc_id, value_type_id);
@@ -896,7 +908,7 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
   }
 
   // Carbon to C++: a sum type, or a `Core.Optional(T')` whose payload is
-  // matchable and not a pointer (a `Core.Optional(T*)` keeps the nullable
+  // mapped and not a pointer (a `Core.Optional(T*)` keeps the nullable
   // pointer mapping), converts only to the C++ class whose sum type it is.
   if (!GetCppClassDecl(context, target_type_id)) {
     return SemIR::InstId::None;
@@ -906,7 +918,7 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
                                 value_type_id, target_type_id, diagnose);
   }
   auto value_optional = ClassifyCoreOptional(context, loc_id, value_type_id);
-  if (value_optional.status == CoreOptionalView::Matchable &&
+  if (value_optional.status == CoreOptionalView::Mapped &&
       !context.types().Is<SemIR::PointerType>(value_optional.payload_type_id)) {
     auto view = GetCoreOptionalView(context, loc_id, value_type_id);
     return ConvertToCppSumClass(context, loc_id, value_id, value_type_id,
@@ -931,11 +943,11 @@ auto MapCarbonSumTypeToCpp(Context& context, SemIR::LocId loc_id,
           context.constant_values().Get(arg_id)));
     }
   } else {
-    // A `Core.Optional(T)` whose payload is matchable and not a pointer is
+    // A `Core.Optional(T)` whose payload is mapped and not a pointer is
     // offered as `std::optional<T'>`; a `Core.Optional(T*)` keeps the nullable
     // pointer mapping of `MapToCppType`.
     auto view = ClassifyCoreOptional(context, loc_id, carbon_type_id);
-    if (view.status != CoreOptionalView::Matchable ||
+    if (view.status != CoreOptionalView::Mapped ||
         context.types().Is<SemIR::PointerType>(view.payload_type_id)) {
       return clang::QualType();
     }

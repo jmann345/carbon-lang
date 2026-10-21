@@ -2294,18 +2294,18 @@
     {
       "id": "W-280",
       "kind": "missing-feature",
-      "title": "SV-1 residue: a `ref` payload binding is rejected on a `match`, `if let`, `while let` or `let ... else` scrutinee that is a C++ `std::optional`/`std::variant` or a `Core.Optional`, which is matched as a by-value conversion",
+      "title": "SV-1 residue: a `ref` payload binding is rejected on a `match`, `if let`, `while let` or `let ... else` scrutinee that is a C++ `std::optional`/`std::variant`, which is matched as a by-value conversion",
       "subsystem": "toolchain/check (refutable_binding.cpp, handle_binding_pattern.cpp)",
       "size": "M",
       "bullet": "Control flow: matching — sum-type consumption incl. std::variant/std::optional interop",
       "evidence": [
-        "toolchain/check/refutable_binding.cpp (the scrutinee is converted to its `Core.CppCompat` sum type or view before the shape gate)",
+        "toolchain/check/refutable_binding.cpp (the scrutinee is converted to its `Core.CppCompat` sum type before the shape gate)",
         "toolchain/check/handle_binding_pattern.cpp:518-528 (a `ref` binding needs a durable reference)",
-        "toolchain/check/testdata/interop/cpp/stdlib/optional.carbon and match/core_optional_view.carbon `fail_todo_ref_binding` (ConversionFailureNonRefToRef)",
+        "toolchain/check/testdata/interop/cpp/stdlib/optional.carbon `fail_todo_ref_binding` (ConversionFailureNonRefToRef)",
         "fork/sumtype-interop/plan.md §1.6, §7.1 R-5"
       ],
       "blocked_by": [],
-      "notes": "Filed at the SV-1 discharge (2026-10-21, fork/sumtype-interop/plan.md §1.16). A native `choice` `var` scrutinee binds `case .Some(ref n)` into the object; a mapped scrutinee is a converted copy, so the existing `cannot bind durable reference to non-reference value` error is given, and a `var` binding copies, as for any choice. For `Core.Optional` this is part of W-177's open scope (SAFE-1's EX-M-5 matches `case .Some(ref s)`). Not bounding row 68 for the C++ classes: the payload is a scalar or pointer copy, reads agree with C++, and a mutation goes through the class's own API (`emplace`). Break condition: the `Match` interface, or a by-reference view of the C++ object."
+      "notes": "Filed at the SV-1 discharge (2026-10-21, fork/sumtype-interop/plan.md §1.16). A native `choice` `var` scrutinee binds `case .Some(ref n)` into the object; a mapped scrutinee is a converted copy, so the existing `cannot bind durable reference to non-reference value` error is given, and a `var` binding copies, as for any choice. For `Core.Optional` this is part of W-177's open scope (SAFE-1's EX-M-5 matches `case .Some(ref s)`). Not bounding row 68 for the C++ classes: the payload is a scalar or pointer copy, reads agree with C++, and a mutation goes through the class's own API (`emplace`). Break condition: the `Match` interface, or a by-reference view of the C++ object. Amended 2026-10-21 (DR-1 D-DR-15, W-322): the `Core.Optional` half is moot, the view being retired; a `ref` payload binding on `Core.Optional` is W-177's scope, which closes with W-320."
     },
     {
       "id": "W-281",

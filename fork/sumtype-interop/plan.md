@@ -1761,7 +1761,8 @@ A-m5). The scrutinee is a converted copy, so:
     p05, the fixer's x14), where a native `choice` `var` scrutinee binds into
     the object; a `var` binding copies, as for any choice (b3 prints 9 7).
     Pinned by `fail_todo_ref_binding` in stdlib/optional.carbon and
-    match/core_optional_view.carbon; filed as W-280 (break condition: the
+    match/core_optional_view.carbon (moot since W-322's commit, 2026-10-21: the
+    view is retired); filed as W-280 (break condition: the
     `Match` interface, or a by-reference view);
 -   a C++ sum class nested in a tuple or struct scrutinee, `match (t)` with
     `t: (Cpp.std.optional(i32), i32)`, is not converted: the gate converts a
@@ -1814,6 +1815,9 @@ _Break condition:_ if the `Match` interface is implemented, the gate calls it
 instead of converting (F-020's break condition).
 
 ### §1.7 D-SV-7: `Core.Optional`: the bridge, the one-step conversions, the view
+
+**The view, retired.** Retired 2026-10-21 by W-322's commit (DR-1 D-DR-15, R32
+(d), (e)); F-020's bridge kept.
 
 **The bridge.** sum.carbon declares, after the choices:
 
@@ -1951,6 +1955,13 @@ read, then converted back in one step to a C++ function taking
 which prints that on PR 57's composition and a wrong pointer, a different value
 per run, on SV-1's own tree, so the leg can only be added at land time, as the
 `bool` leg is).
+
+Amended 2026-10-21 (DR-1 D-DR-15, W-322): the `bool` payload for
+core_optional_view.carbon's `concrete` split and the `bool` leg for
+match_core_optional_diff and its oracle are withdrawn, the golden being deleted
+and the program SKIPped; F-M refills match/fail_todo_core_optional.carbon in
+their place only if PR 57's merge changes it, as autoupdate decides (R16). The
+nested-pointer leg of cpp_sum_type_roundtrip_diff stays.
 
 _Break condition:_ if W-058's design or the owner wants `Core.Optional`
 matched without a copy, by reference or generically, the `Match` interface or
@@ -2444,7 +2455,7 @@ are unused. Planned filings:
 | W-277 | a cv-qualified or reference alternative has no Carbon sum type; this fires on real libc++ classes, `std::variant<const int, double>` being trivially copyable (rationale corrected 2026-10-20, review fold: A-m4 / B-m-3) | this bullet | no: such a class still imports and its members work, the rule keeps the sum-type-to-class mapping one-to-one (§1.3), and the shape is diagnosed |
 | W-278 | WITHDRAWN at rev 2, never filed: rev 1's "one-step `Core.Optional` conversion" is implemented (§1.7); the id stays unused | none | none |
 | W-279 | a conversion to or from a C++ sum type that a template defers to its instantiation (TP-1's `PerformAction`), where no control flow can be built (amended 2026-10-20, review fold: RR4-M1: rev 4's row also held the conversion with no source expression, now W-285, and said every non-template form converts) | Generics: Integrated templates | no: the shape is a template's, the same conversion outside a template converts, and it is diagnosed at instantiation |
-| W-280 | a `ref` payload binding on a mapped C++ or `Core.Optional` scrutinee is rejected, because the scrutinee is a by-value conversion | this bullet | no for the C++ classes: the payload is a scalar or pointer copy, `var` bindings work, and mutating the C++ object goes through its own API; for `Core.Optional` it is part of W-177's remaining scope (below) |
+| W-280 | a `ref` payload binding on a mapped C++ or `Core.Optional` scrutinee is rejected, because the scrutinee is a by-value conversion | this bullet | no for the C++ classes: the payload is a scalar or pointer copy, `var` bindings work, and mutating the C++ object goes through its own API; for `Core.Optional` it is part of W-177's remaining scope (below) (moot since W-322's commit, 2026-10-21: the view is retired) |
 | W-281 | a C++ sum class nested in a tuple or struct scrutinee is not converted (`match on unsupported scrutinee type`) | this bullet | no: the whole-value scrutinee and every nesting through a Carbon sum type work, and the shape is the existing TODO |
 | W-284 | (from M-VA, filed at D once M-VA has landed) a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack converted to a pack of another element type), whose element is the C++ class, the sum type, a `Core.Optional`, or a tuple, struct, array or class holding one, is a semantics TODO; blocked by VA-1's W-219 (control flow inside an expansion body) (amended 2026-10-20, review fold: RR3-B1 / RR3-m1) | Generics: Definition-checked variadics | no: every non-pack form converts, a pack of the C++ class, of the sum type or of an aggregate holding either is forwarded unchanged (v06, v07, n10) and a pack literal converts element by element (v01, n09), and the shape is diagnosed |
 | W-285 | (rev 5) a Carbon sum value or `Core.Optional(T')` passed as an initializing expression to a C++ non-`const` rvalue reference parameter `T&&`, alone or the member C++ prefers to a `const T&` sibling (`std::vector::push_back`), is a semantics TODO (``... with no source expression``): the parameter's initialization is located at its C++ declaration, which gives the conversion's branches no parse node (amended 2026-10-20, review fold: RR4-M1) | this bullet | no: the row's arbiter is the consumption of C++ values by `match`, which the shape does not touch, and Carbon to C++ converts by value, `const&` and `const&&` (w14, x01), a value argument reaches the `const T&` member of a pair (x14, x16), a C++ call's result binds the `T&&` (r1, x08), and the shape is diagnosed |
@@ -2460,6 +2471,10 @@ EX-M-5, EX-M-6 and the D-OP-4 divergence still wait on it. **It bounds row 68**
 (one sentence, R17): OP-1's own row text names `Core.Optional`'s matchability
 as part of the row's missing half, and generic and by-reference matching of
 `Core.Optional` is still missing, so DONE would claim more than SV-1 delivers.
+Amended 2026-10-21 (DR-1 D-DR-15, W-322): not narrowed. The view is retired,
+so no `.Some`/`.None` pattern matches a `Core.Optional(T)`; W-177 stays OPEN,
+unnarrowed, closes with W-320 and still bounds row 68, and its evidence gains
+match/fail_todo_core_optional.carbon.
 
 Riding existing items (a note each, no new id; Appendix C.6): W-036 (the
 conversion at file scope, or in a parameter's default value; amended 2026-10-20,
@@ -4789,6 +4804,14 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     (its first four hunks) and 39 (its last two), measured with
     `patch --dry-run`; the fold adds no `CanBuildBranches` call, so M-VA's test
     still guards every branching conversion.
+
+    **At W-322's commit** (amended 2026-10-21, DR-1 D-DR-15). F-M's refill of
+    match/core_optional_view.carbon, the `bool` payload added to its `concrete`
+    split and the `bool` leg added to match_core_optional_diff and its oracle
+    are withdrawn, the golden being deleted and the program SKIPped. F-M
+    refills match/fail_todo_core_optional.carbon in their place only if PR 57's
+    merge changes it, as autoupdate decides (R16), and stdlib/optional.carbon's
+    refill is unchanged.
 9.  **R** "SV-1 (7): gap row 68": the row and the header, by §1.17 and
     Appendix C.7, after M.
 10. **D** "SV-1 (8): discharge": the id re-scan of §8.7 first; W-011 DISCHARGED,
@@ -9207,6 +9230,13 @@ Shrink-line texts (§3 item 7), filed only if that line is taken:
 <!-- google-doc-style-resume -->
 
 ### C.5 W-177: the narrowing note (OPEN)
+
+Amended 2026-10-21 (DR-1 D-DR-15, W-322): withdrawn. The note below is not
+appended at land time, and neither evidence path is added
+(match/core_optional_view.carbon is deleted, match_core_optional_diff is
+SKIPped); at land time W-177's `evidence` gains
+toolchain/check/testdata/match/fail_todo_core_optional.carbon only, and its
+`notes` keep W-323's correction (fork/direction/plan.md C.7).
 
 Appended to W-177's `notes`, and its `evidence` gains
 `toolchain/check/testdata/match/core_optional_view.carbon` and

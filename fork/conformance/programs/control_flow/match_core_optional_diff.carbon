@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Control flow: matching — sum-type consumption incl. std::variant/std::optional interop
+// SKIP: W-320 (blocked on W-324): `Core.Optional` is matchable only once it implements `Core.Match` as docs/design/sum_types.md designs it for classes; PR 62's D-SV-7 `StdOptional` view, which this program was written against, is retired as a second spelling of that route (fork/rulebook.md R32 (d), DR-1 D-DR-15, W-322), so the toolchain refuses the scrutinee with `semantics TODO: match on unsupported scrutinee type`. The empty arms are spelled `.None()` for the `Match` route (`None` is a function, docs/design/sum_types.md:214-222). Un-SKIP when W-320 lands.
 // EXPECT-EXIT: 0
 
 // SV-1 (fork/sumtype-interop/plan.md D-SV-7, W-177): a `Core.Optional(T)`
@@ -33,7 +34,7 @@ fn Show(o: Core.Optional(i32)) {
     case .Some(value: i32) => {
       Core.Print(value);
     }
-    case .None => {
+    case .None() => {
       Core.Print(-1);
     }
   }
@@ -44,7 +45,7 @@ fn ShowPointer(p: Core.Optional(i32*)) {
     case .Some(q: i32*) => {
       Core.Print(*q);
     }
-    case .None => {
+    case .None() => {
       Core.Print(0);
     }
   }
@@ -62,7 +63,7 @@ fn CountSome(o: Core.Optional(i64)) -> i32 {
     case .Some(unused value: i64) => {
       return 1;
     }
-    case .None => {
+    case .None() => {
       return 0;
     }
   }

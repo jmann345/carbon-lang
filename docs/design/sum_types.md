@@ -332,6 +332,16 @@ In 0.1, each of these is diagnosed and recorded as a fork work item:
 -   a `Core.Optional(T)` scrutinee whose `T` is generic or not a scalar or
     pointer type (W-177).
 
+> **Fork amendment (2026-10-21, DR-1 D-DR-15).** The view described above, which
+> matched a `Core.Optional(T)` scrutinee as `Core.CppCompat.StdOptional(T)`,
+> is retired: it was a second spelling of the `Match` route this page
+> designs for classes (fork/rulebook.md R32 (d)). A `Core.Optional(T)`
+> scrutinee is not matched until `Core.Optional` implements `Match` (W-320),
+> which waits on a conflict in upstream's own pages over how `Match` declares
+> `Continuation` (W-324). A `std::optional` scrutinee is still matched as
+> `StdOptional(T)` (`.Some(<pattern>)`, `.None`), and a `Core.Optional(T)`
+> still converts to and from a C++ `std::optional<T'>` as described above.
+
 ## Alternatives considered
 
 -   [Providing `choice` types only](/proposals/p000157-design-direction-for-sum-types.md#choice-types-only),

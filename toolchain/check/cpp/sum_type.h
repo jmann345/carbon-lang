@@ -65,7 +65,7 @@ auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
 // C++ overload resolution: for a `Core.CppCompat.StdOptional` or
 // `StdVariant<N>` specific, the `std::optional` or `std::variant`
 // specialization of the mapped argument types; for a `Core.Optional(T)` whose
-// payload is matchable (`GetCoreOptionalView`) and not a pointer type,
+// payload is a concrete 0.1 choice payload type and not a pointer type,
 // `std::optional<T'>`. The specialization is instantiated. A null type
 // otherwise, or if the TU has no matching C++ template or the specialization
 // cannot be instantiated.
@@ -94,8 +94,9 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
 // The conversion hook of `PerformBuiltinConversion`. Converts `value_id` by
 // value when it is a C++ `std::optional`/`std::variant` and the target is its
 // Carbon sum type or, for `std::optional<T>`, a `Core.Optional(T')` whose
-// payload is matchable; or when it is a `Core.CppCompat` sum type or such a
-// `Core.Optional(T')` and the target is a C++ class. Returns `None` when
+// payload is mapped (a concrete 0.1 choice payload type); or when it is a
+// `Core.CppCompat` sum type or such a `Core.Optional(T')` and the target is a
+// C++ class. Returns `None` when
 // neither side is involved, or either side is template-dependent (the
 // conversion is then deferred to instantiation), and `ErrorInst` for a
 // mismatch, which is diagnosed when `diagnose` is true. When `diagnose` is
@@ -108,37 +109,6 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
 auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
                           SemIR::InstId value_id, SemIR::TypeId target_type_id,
                           bool diagnose) -> SemIR::InstId;
-
-// The `match` view of a `Core.Optional(T)` scrutinee (SV-1, D-SV-7): the
-// docs/design/sum_types.md `Optional(T)` choice
-// `Core.CppCompat.StdOptional(T)`, which the prelude's `ImplicitAs` impl
-// converts it to by value through `HasValue()` and `Get()`.
-struct CoreOptionalView {
-  enum Status : uint8_t {
-    // The type is not a `Core.Optional` specific.
-    NotCoreOptional,
-    // `view_type_id` is the view.
-    Matchable,
-    // Its payload type is symbolic: the view's payload check would happen
-    // only at monomorphization, so it is not formed.
-    SymbolicPayload,
-    // Its payload type is not a 0.1 choice payload type (SF-6).
-    PayloadNotAdmitted,
-  };
-  Status status = NotCoreOptional;
-  SemIR::TypeId payload_type_id = SemIR::TypeId::None;
-  SemIR::TypeId view_type_id = SemIR::TypeId::None;
-};
-
-// Classifies `type_id`; forms the view only when it is `Matchable`. Emits no
-// diagnostic.
-auto GetCoreOptionalView(Context& context, SemIR::LocId loc_id,
-                         SemIR::TypeId type_id) -> CoreOptionalView;
-
-// Diagnoses a `Core.Optional` scrutinee that is not `Matchable`.
-auto DiagnoseCoreOptionalNotMatchable(Context& context, SemIR::LocId loc_id,
-                                      SemIR::TypeId type_id,
-                                      const CoreOptionalView& view) -> void;
 
 }  // namespace Carbon::Check
 

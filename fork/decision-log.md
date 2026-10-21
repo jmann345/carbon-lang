@@ -6969,7 +6969,9 @@ implementation-review fold).
 -   **D-SV-6**: the shared scrutinee gate converts; `ref` bindings (W-280)
     and nested C++ classes (W-281) are not consumed.
 -   **D-SV-7**: the `Core.Optional` bridge, the one-step conversions, and
-    the view for concrete scalar and pointer payloads; W-177 narrowed.
+    the view for concrete scalar and pointer payloads; W-177 narrowed. The
+    view: retired 2026-10-21 by W-322's commit (DR-1 D-DR-15, R32 (d), (e));
+    F-020's bridge kept.
 -   **D-SV-8**: `Core.Optional(T*)` admitted as a choice payload by name;
     nothing else changes at the predicate's four sites.
 -   **D-SV-9**: a constant GEP into a value constant uses

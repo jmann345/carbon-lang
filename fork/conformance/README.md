@@ -243,9 +243,11 @@ fails if this table is stale):
 | `control_flow/choice_generic_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/choice_payload_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
+| `control_flow/cpp_sum_type_library` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | multi-unit (2 units), differential |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | run |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
 | `control_flow/match_bool.carbon` | Control flow: matching — good switch equivalents | run |
+| `control_flow/match_core_optional_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/match_global_runtime_let.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
@@ -255,8 +257,10 @@ fails if this table is stale):
 | `control_flow/match_payload_literal.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_position.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_single_alternative.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
+| `control_flow/match_std_optional_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
+| `control_flow/match_std_variant_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/match_struct_destructure.carbon` | Control flow: matching — good switch equivalents | run |
-| `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP |
+| `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_switch.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_switch_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_tuple_case_diff.carbon` | Control flow: matching — good switch equivalents | differential |
@@ -321,6 +325,7 @@ fails if this table is stale):
 | `interop/cpp_range_member_begin_end_iterate.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | run |
 | `interop/cpp_span_roundtrip_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
 | `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
+| `interop/cpp_sum_type_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |

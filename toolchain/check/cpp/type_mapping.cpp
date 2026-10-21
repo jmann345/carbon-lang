@@ -588,7 +588,7 @@ static auto InventPrimitiveClangArg(Context& context, SemIR::FormInfo form)
   }
 
   // Fork (SV-1, F-020): a `Core.CppCompat` sum type argument, or a
-  // `Core.Optional(T)` with a matchable non-pointer payload, is offered to
+  // `Core.Optional(T)` with a mapped non-pointer payload, is offered to
   // overload resolution as the C++ class it converts to; the argument is
   // converted by value when the call converts it to the parameter's type,
   // which must be that class. Before `MapToCppType`, which would try, and

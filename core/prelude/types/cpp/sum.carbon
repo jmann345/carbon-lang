@@ -99,9 +99,9 @@ choice CppCompat.StdVariant8(
 // `StdOptional(T)` and `Core.Optional(T)` convert to each other by value,
 // through `Optional`'s public API (`Some`, `None`, `HasValue`, `Get`); neither
 // representation is assumed (the pointer niche and the storage are
-// prelude/types/optional.carbon's). The toolchain also matches a
-// `Core.Optional(T)` scrutinee as its `StdOptional(T)` view, through the
-// second impl (fork/sumtype-interop/plan.md §1.7).
+// prelude/types/optional.carbon's). The toolchain converts a C++
+// `std::optional<T'>` to and from `Core.Optional(T)` through these impls and
+// matches no `Core.Optional(T)` scrutinee (fork/sumtype-interop/plan.md §1.7).
 impl forall [T: Copy & Destroy]
     CppCompat.StdOptional(T) as ImplicitAs(Optional(T)) {
   fn Convert(self) -> Optional(T) {

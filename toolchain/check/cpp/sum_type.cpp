@@ -731,7 +731,7 @@ static auto GetCoreOptionalPayload(Context& context, SemIR::TypeId type_id,
   return true;
 }
 
-// Classifies a `Core.Optional` specific without forming its view.
+// Classifies a `Core.Optional` specific without forming its bridge type.
 static auto ClassifyCoreOptional(Context& context, SemIR::LocId loc_id,
                                  SemIR::TypeId type_id) -> CoreOptionalView {
   auto payload_type_id = SemIR::TypeId::None;
@@ -810,7 +810,7 @@ static auto DiagnoseCppSumTypeReverseMismatch(Context& context,
 
 // Converts a value of a C++ class or Carbon type to the C++ class target
 // `target_type_id`, given the Carbon sum type `sum_type_id` the value converts
-// to first (itself, or the view of a `Core.Optional`).
+// to first (itself, or the bridge type of a `Core.Optional`).
 static auto ConvertToCppSumClass(Context& context, SemIR::LocId loc_id,
                                  SemIR::InstId value_id,
                                  SemIR::TypeId value_type_id,
@@ -833,7 +833,7 @@ static auto ConvertToCppSumClass(Context& context, SemIR::LocId loc_id,
     return SemIR::ErrorInst::InstId;
   }
   if (value_type_id != sum_type_id) {
-    // A `Core.Optional(T)`: through the prelude's bridge to its view first.
+    // A `Core.Optional(T)`: through the prelude's impl to its bridge type.
     value_id = ConvertToValueOfType(context, loc_id, value_id, sum_type_id);
     if (value_id == SemIR::ErrorInst::InstId) {
       return value_id;

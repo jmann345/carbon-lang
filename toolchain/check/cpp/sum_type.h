@@ -96,16 +96,15 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
 // Carbon sum type or, for `std::optional<T>`, a `Core.Optional(T')` whose
 // payload is mapped (a concrete 0.1 choice payload type); or when it is a
 // `Core.CppCompat` sum type or such a `Core.Optional(T')` and the target is a
-// C++ class. Returns `None` when
-// neither side is involved, or either side is template-dependent (the
-// conversion is then deferred to instantiation), and `ErrorInst` for a
-// mismatch, which is diagnosed when `diagnose` is true. When `diagnose` is
-// false -- a conversion that the caller only tests: an `overload fn` candidate
-// probe, the element conversions of an aggregate argument included, or
-// deduction -- it decides from the types alone, emits nothing and builds no
-// control flow; its result is never a constant. Where the committed conversion
-// cannot be built (at file scope, at a template's instantiation), that
-// conversion emits the TODO.
+// C++ class. Returns `None` when neither side is involved, or either side is
+// template-dependent (the conversion is then deferred to instantiation), and
+// `ErrorInst` for a mismatch, which is diagnosed when `diagnose` is true. When
+// `diagnose` is false -- a conversion that the caller only tests: an
+// `overload fn` candidate probe, the element conversions of an aggregate
+// argument included, or deduction -- it decides from the types alone, emits
+// nothing and builds no control flow; its result is never a constant. Where the
+// committed conversion cannot be built (at file scope, at a template's
+// instantiation), that conversion emits the TODO.
 auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
                           SemIR::InstId value_id, SemIR::TypeId target_type_id,
                           bool diagnose) -> SemIR::InstId;

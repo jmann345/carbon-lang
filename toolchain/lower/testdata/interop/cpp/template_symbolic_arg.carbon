@@ -239,6 +239,41 @@ fn Use() -> i32 {
   return StoreT(9 as i32) + StoreElem({.x = 4} as IntBox);
 }
 
+// --- nested_alias_through_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> struct Traits { static constexpr int size = sizeof(T); };
+''';
+
+class Inner(T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class InnerTemplate(template T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+// An alias of another class's alias of a template-dependent C++ constant,
+// named through a concrete specific from a function that is not generic, is
+// lowered as the outer specific's constant: the load of `Traits<long>::size`
+// and of `Traits<short>::size`.
+class Outer(T: type) {
+  alias Size = Inner(T).Size;
+}
+
+class OuterOfTemplate(T: type) {
+  alias Size = InnerTemplate(T).Size;
+}
+
+fn Take(n: i32) -> i32 { return n; }
+
+fn Use() -> i32 {
+  let a: i32 = Outer(i64).Size;
+  return Take(OuterOfTemplate(i16).Size) + a;
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'two_specifics.carbon'
 // CHECK:STDOUT: source_filename = "two_specifics.carbon"

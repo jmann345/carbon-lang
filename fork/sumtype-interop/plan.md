@@ -47,6 +47,14 @@ holds) and 254b935b2 (TP-1 is PR 61, held open); neither touches `toolchain/` or
 Ids: fork design decision **F-020** is minted here (the mapping targets, §1.1);
 SV-1 reserves **W-275 to W-294** for its residues (§1.16).
 
+Implemented on the branch (2026-10-21): C1 to Doc, M and the held-state
+measurements; the two implementation reviews of 6efb8345b (review 1 REJECT on
+RV1-B1 and RV1-M1, with RV1-m1; review 2 APPROVE-WITH-FIXES, m1 to m10) are
+folded in the fix commit a4d979619, its fill a0669750a and the records fix
+commit, listed in the [implementation review fold
+record](#implementation-review-fold-record-2026-10-21) (amended 2026-10-21,
+implementation-review fold: all findings).
+
 **Summary.** A C++ `std::optional<T>` or `std::variant<T0, ..., Tn>`
 specialization stays the C++ class the import makes of it today, so its member
 functions keep working, and gains a Carbon sum type: a specific of one of nine
@@ -893,7 +901,7 @@ trunk: SV-1 always, since every PR lands first, by the rule in the last column.
 | PR, branch head | Files shared with SV-1 (numstat) | Nature | Rule at M (owner: SV-1) |
 | --- | --- | --- | --- |
 | PR 56, OP-1, 379f20f67 | core/prelude/types/optional.carbon (+73/-2); docs/design/optional.md (+582, new) | SV-1 does not edit optional.carbon; sum.carbon imports it and calls `Optional(T).Some`, `.None()`, `HasValue()`, `Get()` only. optional.md is new on PR 56, and SV-1 amends it after M (Doc-M, §3) | none textual; optional.md takes PR 57's text, and Doc-M edits it by Appendix C's anchored edits |
-| PR 57, OP-2, 628273444 (build `/home/user/carbon-build/carbon-op2`, toolchain-identical to the head) | optional.carbon (+111/-8); docs/design/optional.md (+614); convert.cpp (+5/-2, the `MaybeUnformed` value-representation check at :1690-1700); function/import/decayed_param.carbon (+13/-85), pointer.carbon and void_pointer.carbon (not SV-1's) | the bridge calls `Get()` only after `HasValue()`; D-SV-8's name test and walk reach `T*` through OP-2's `MaybeUnformed(T*)` (op2v4, as v4: `$P/probes/v1/s05_ptr` prints 42 0 -1, `d04_carbon_optptr` 3, and `$P/probes/o/o04_bridge_stdoptional` 5 6 -1 9); OP-2's convert.cpp hunk is 100 lines above SV-1's hook (the dry run applies it at offset 3) | measured on op2v4 (§0.6): 1951 of 1958 pass; the seven failures are the four function-pointer refills and three of SV-1's goldens, stdlib/optional.carbon, choice/optional_pointer_payload.carbon and match/core_optional_view.carbon, whose SemIR gains OP-2's `%Destroy.lookup_impl_witness` / `%Destroy.facet` entries and reorders imports (12, 387 and 18 changed lines, no diagnostic line changed); F-M refills the seven (§3) |
+| PR 57, OP-2, 628273444 (build `/home/user/carbon-build/carbon-op2`, toolchain-identical to the head) | optional.carbon (+111/-8); docs/design/optional.md (+614); convert.cpp (+5/-2, the `MaybeUnformed` value-representation check at :1690-1700); function/import/decayed_param.carbon (+13/-85), pointer.carbon and void_pointer.carbon (not SV-1's) | the bridge calls `Get()` only after `HasValue()`; D-SV-8's name test and walk reach `T*` through OP-2's `MaybeUnformed(T*)` (op2v4, as v4: `$P/probes/v1/s05_ptr` prints 42 0 -1, `d04_carbon_optptr` 3, and `$P/probes/o/o04_bridge_stdoptional` 5 6 -1 9); OP-2's convert.cpp hunk is 100 lines above SV-1's hook (the dry run applies it at offset 3) | measured on op2v4 (§0.6): 1951 of 1958 pass; the seven failures are the four function-pointer refills and three of SV-1's goldens, stdlib/optional.carbon, choice/optional_pointer_payload.carbon and match/core_optional_view.carbon, whose SemIR gains OP-2's `%Destroy.lookup_impl_witness` / `%Destroy.facet` entries and reorders imports (387, 12 and 18 changed lines, no diagnostic line changed; rev 5 gave the counts in another order, 12, 387 and 18; amended 2026-10-21, implementation-review fold: m9); F-M refills the seven (§3), eight from the implementation-review fold on, stdlib/variant.carbon joining them (§8 item 6; amended 2026-10-21, implementation-review fold: RV1-M1) |
 | PR 60, SC-1, 40a76ab81 | convert.cpp (+94/-7); type.cpp (+8, a new function); toolchain/diagnostics/kind.def (+13); toolchain/check/BUILD (+2) | SV-1's convert.cpp hunk applies at offset 14, its type.cpp hunks at offset 8; kind.def: SC-1's 13 kinds are a separate hunk from SV-1's 8 after `CppExportResultNeedsExpectedHeader`; BUILD: SV-1's two lines apply at offset 1 beside SC-1's `structural_conformance.{cpp,h}` | dry run applies (`$X/runs/dry-sc.log`); the mirror of §8.6 |
 | PR 59, VA-1, b0822a744 (build `/home/user/carbon-build/carbon-va`, toolchain-identical to the head) | convert.cpp (+114, a pack-conversion block 11 lines above SV-1's hook); type.cpp (+5); kind.def (+19, its hunk about 15 lines above SV-1's) | textually separate hunks; semantic as well (amended 2026-10-20, review fold: RR-M1): VA-1 converts a pack element in one straight-line block run once per element, an expansion body or `ConvertPackToPack`, and CHECKs that the element conversion made no control flow (convert.cpp:581-583 on the head, ``Control flow in a pack element conversion``), so a sum-type conversion of a pack element stops the compiler (the focused re-review's v02 and v04 on vav4) | dry run applies (convert.cpp at offsets 98 and 114, type.cpp at 5, kind.def at 15; `$Z/runs/dry-va.log`); at M, the land-time hunk M-VA of §3 item 8: the hook refuses a `SemIR::PackElement` value, or what a tuple, struct, array, class or adapter conversion projects from one, with a TODO (W-284), measured on vav6g (§0.6; rev 3's hunk refused only a bare `PackElement`, and a pack of tuples, structs, arrays or classes holding a sum type still stopped at the CHECK, n01 to n05; amended 2026-10-20, review fold: RR3-B1) |
 | PR 61, TP-1, e408ad4d6 (build `/home/user/carbon-build/carbon-tp`, stamp 813804758); round-10 head eafca5cb9, pushed with its fill 74e16c4de and records 3d88e6a60 before rev 4's commit, which said not yet pushed; pushed head at rev 5 281292d8f, records only past 74e16c4de, so its toolchain/ and core/ are eafca5cb9's (amended 2026-10-20, review fold: RR3-m3; RR4-m3) | convert.cpp (+560/-29); kind.def (+1); on eafca5cb9 also refutable_binding.cpp (+18/-5) and refutable_binding.h (+17, not SV-1's) and handle_match.cpp (+2/-5, not SV-1's) | semantic as well as textual (amended 2026-10-20, review fold: A-M1): TP-1 defers a conversion whose type is template-dependent and performs it at instantiation (`PerformAction`), outside any function body, so SV-1's hook leaves a template-dependent side to TP-1 and the instantiation-time conversion is W-279's TODO (§1.10); measured on tpv4: 1959 of 1963 pass (the four function-pointer refills only); h2 and h3 give W-279's TODO at instantiation; h1, a `match` on `StdOptional(T)` for a template `T`, stops at TP-1's own pattern_match.cpp:1409 CHECK, which TP-1's head reaches with no C++ at all (x19, a pure-Carbon generic choice: TP-1's toolchain stops, trunk gives W-252's TODO), finding X-1 of the fold record, routed to TP-1; on the round-10 head X-1 is fixed (x19 compiles and prints 0, and h1 gets W-279's TODO at instantiation for its `let`'s conversion; measured on tpv6, which passes 1961 of 1965, the four function-pointer refills only, at rev 5 over 281292d8f's tree as well) | dry run applies, the include hunk with fuzz 1 and the hook at offset 378 (`$X/runs/dry-tp.log`); on 74e16c4de (eafca5cb9's fill) convert.cpp's include hunk and refutable_binding.cpp's first hunk need fuzz 1, and convert.cpp's other hunks apply at offsets 2 to 378 (`$W/runs/dry-summary.txt`), and the same on 281292d8f (`$Y/runs/patch-tpv6.log`); at M, the row is re-measured against PR 61's head of that day (§8 item 6) |
@@ -937,6 +945,19 @@ RR4-m3).** The toolchain diff is rev 4's; the compositions are rebuilt and gated
 with the extended fail_sum_types.carbon (§0.6), PR 61's at its pushed head
 281292d8f, whose toolchain/ and core/ equal 74e16c4de's (3d88e6a60 and 281292d8f
 add records only), with every hunk applying as on 74e16c4de.
+
+**PR 57 at the implementation-review fold** (amended 2026-10-21,
+implementation-review fold: RV1-m1). Two payload kinds depend on PR 57 beyond
+the bridge: on SV-1's own tree a `Core.Optional(bool)` view or one-step
+conversion reaches trunk's `Core.Optional(bool).Get()`, which stops lowering at
+lower.cpp:48 (review 1's g04, pure Carbon, on trunk and the nightly too), and a
+`Core.Optional(Core.Optional(i32*))` reads a wrong pointer, a different value
+per run (v02 and v03, pure Carbon, on trunk and the nightly too; the one-step
+f07 prints such a value on SV-1's tree); with PR 57 both work (g01 with `bool`
+DIFF-PASS, v02 and v03 print 9, on PR 57's build and its composition, §8
+item 6). PR 57 merges before SV-1, so the landed state is correct, and F-M pins
+`bool` (§3 item 8). The composition is re-measured with the fold's changes in §8
+item 6.
 
 Records shared with every held PR: fork/gap-analysis.md,
 fork/inventory/work-items.json, fork/decision-log.md, fork/ORCHESTRATION.md and
@@ -1029,20 +1050,20 @@ choice CppCompat.StdVariant2(T0: type, T1: type) {
 
 <!-- google-doc-style-resume -->
 
-`std::optional<T>` has the sum type `StdOptional(T')` and
-`std::variant<T0, ..., Tn-1>`, for 1 <= n <= 8, has `StdVariant<n>(T0', ...,
-Tn-1')`, where `A'` is the Carbon type the existing C++ import gives `A`,
-except that `std::monostate` maps to `()`. The C++ class and its sum type
-convert into each other implicitly and by value at the boundary (§1.4, §1.5),
-and a refutable-pattern scrutinee of the C++ class converts to its sum type
-(§1.6). `StdOptional(T)` is the docs/design/sum_types.md `Optional(T)`
-declaration (sum_types.md:63-66; unions.md:617-620), names and order
-unchanged. For `std::optional<T>` with a non-pointer payload, the C++ class
-also converts in one implicit step to and from `Core.Optional(T')`, through
-the sum type and the prelude's `ImplicitAs` bridge; and a `Core.Optional(T)`
-scrutinee whose payload is a concrete choice payload type is matched as its
-`StdOptional(T)` view (§1.7) (amended 2026-10-20, review fold: B-M-5 / A-M4 /
-A-M2 / B-M-1).
+`std::optional<T>` has the sum type `StdOptional(T')` and `std::variant<T0, ...,
+Tn-1>`, for 1 <= n <= 8, has `StdVariant<n>(T0', ..., Tn-1')`, where `A'` is the
+Carbon type the existing C++ import gives `A`, except that `std::monostate` maps
+to `()`. The C++ class and its sum type convert into each other implicitly and
+by value at the boundary (§1.4, §1.5), and a refutable-pattern scrutinee of the
+C++ class converts to its sum type (§1.6). `StdOptional(T)` is the
+docs/design/sum_types.md `Optional(T)` declaration (sum_types.md:64-67, :63-66
+before Doc's table-of-contents line; unions.md:617-620; amended 2026-10-21,
+implementation-review fold: m9), names and order unchanged. For
+`std::optional<T>` with a non-pointer payload, the C++ class also converts in
+one implicit step to and from `Core.Optional(T')`, through the sum type and the
+prelude's `ImplicitAs` bridge; and a `Core.Optional(T)` scrutinee whose payload
+is a concrete choice payload type is matched as its `StdOptional(T)` view (§1.7)
+(amended 2026-10-20, review fold: B-M-5 / A-M4 / A-M2 / B-M-1).
 
 **What a user sees** (added 2026-10-20, review fold: B-M-2 / A-M4 / B-m-10).
 "Transparent", W-011's word, holds for consumption and for the boundary, not
@@ -1525,6 +1546,54 @@ to export the `Core` type and hit the export TODO. A non-`const` lvalue
 reference parameter rejects the temporary, by C++'s own rule (`w08`: `no
 matching function for call to 'Reset'`).
 
+**The offered class is instantiated** (added 2026-10-21, implementation-review
+fold: RV1-B1). `MapCarbonSumTypeToCpp` instantiates the specialization it forms
+(`Sema::isCompleteType`) and returns a null type if it cannot, as a C++ caller
+passing it by value would instantiate it: overload resolution and the
+parameter's passing mode (overload_resolution.cpp `IsMoveEquivalentToCopy`)
+query its definition, and a C++ function declared, not defined, with a by-value
+parameter of a specialization nothing else instantiates
+(`int TakeS(std::optional<short>);`, the usual header and source split) is the
+only mention of it in the translation unit. Rev 5's code returned the
+uninstantiated type, and such a call aborted clang (``queried property of class
+with no definition``, DeclCXX.h:464) for a sum value and for a
+`Core.Optional(T)` argument (review 1's q03, q11 and q13, on SV-1's tree and on
+the PR 57 and PR 61 compositions; trunk and the nightly give an error), while a
+`const&` parameter compiled. `GetCppSumType` also completes the class before it
+queries the definition, and leaves one that cannot be completed to the
+conversion's own diagnostics; no measured shape reaches that test with an
+incomplete class (mutant M25, §8 item 5), so it is defensive. Pinned by
+optional.carbon's and variant.carbon's `declared_by_value` splits, over a
+`declared.h` with a declared-only function, and by mutant M23.
+
+**A pointer alternative converts back** (added 2026-10-21, implementation-review
+fold: RV1-M1). The payload of a C++ pointer alternative is the nullable
+`Core.Optional(T*)` (D-SV-8), but `emplace` deduces its parameter
+(`emplace(Args&&...)`, `emplace<I>(Args&&...)`), and a pointer type that C++
+substituted for a template parameter imports as the non-null `T*`
+(cpp/import.cpp `MapObjectPointerType`, trunk's rule). Deduction drops
+nullability sugar, so `emplace<int*>` is one specialization for a `_Nullable`
+and a `_Nonnull` argument and no attribute on the invented argument could reach
+it (measured with clang's AST dump: `f(T&&)` called with an `int * _Nullable`
+deduces `T = int *`, and the call with an `int * _Nonnull` names the same
+specialization). So the arm of a pointer alternative tests the payload's
+`HasValue()` and calls `emplace(payload.Get())` with the non-null pointer, or
+`emplace()` with no argument, which value-initializes the pointer to null.
+Rev 5's code passed the payload itself, and no class with a pointer alternative
+converted back (``cannot implicitly convert expression of type
+`Core.Optional(i32* as Core.OptionalStorage)` to `i32*` `` inside libc++'s
+`emplace`: review 1's f01 to f08 and e01, `std::optional<int*>` engaged, null
+and empty, `std::optional<const int*>`, `std::variant<int, int*>` even when it
+holds its `int`, and the one-step `Core.Optional(Core.Optional(i32*))`); the
+goldens hid it, because their mock's `emplace` took its arguments by value. The
+mocks now forward as libc++'s do (§1.12), optional.carbon's and variant.carbon's
+`pointer_reverse` splits pin both arms, cpp_sum_type_roundtrip_diff gains a
+pointer leg (six lines, DIFF-PASS), and mutant M24 restores the failure. A
+Carbon call of a C++ template `template <class T> int F(T&&)` with a
+`Core.Optional(i32*)` fails the same way on trunk and the nightly (h03, h04):
+that is trunk's deduction rule, not this mapping's, and it is not changed here
+(the C++ twin is valid).
+
 A non-`const` rvalue reference parameter `T&&` (added 2026-10-20, review fold:
 RR4-M1) takes such an argument when it is an initializing expression
 (`.Some(5)`), which C++ sees as an rvalue of the class and prefers to a
@@ -1550,7 +1619,7 @@ function that takes `Cpp.std.optional(i32)` and matches it works too (`s21`:
 | --- | --- |
 | C++ to Carbon: returns, arguments, `let`/`var` initializers, `as`, scrutinees | IN |
 | C++ `std::optional<T>` to `Core.Optional(T')`, non-pointer payload, implicitly | IN (rev 2; x01) |
-| Carbon to C++: a sum value, or a `Core.Optional(T')` with a matchable non-pointer payload, passed by value, `const&` or `const&&`; assigned or returned where the C++ class is expected | IN (rev 2 for `Core.Optional`; x03; `const&&` measured at rev 5, x01) |
+| Carbon to C++: a sum value, or a `Core.Optional(T')` with a matchable non-pointer payload, passed by value, `const&` or `const&&`; assigned or returned where the C++ class is expected | IN (rev 2 for `Core.Optional`; x03; `const&&` measured at rev 5, x01; a pointer alternative, and a by-value parameter whose specialization nothing else instantiates, from the implementation-review fold: RV1-M1, RV1-B1, §1.5 above) |
 | A C++ caller of a Carbon function whose signature names the C++ class | IN (existing export) |
 | A sum value to any other C++ class (another specialization, a converting constructor) | OUT, `CppSumTypeReverseMismatch` (rev 2) |
 | A Carbon function whose signature names a `Core.CppCompat` sum type, called from C++ | OUT: the existing export TODO for `Core` package entities, "interop with non-identifier package name" (export.cpp:139-141; `s16`), W-049's |
@@ -1776,6 +1845,18 @@ payload bindings and copy-free matching, so EX-M-5 and EX-M-6 (a
 `Core.Optional(Core.Buf(i32))` matched with `case .Some(ref s)`) still wait on
 it -- with its break condition unchanged.
 
+**`bool` and nested pointer payloads need PR 57** (added 2026-10-21,
+implementation-review fold: RV1-m1). The bridge and the view call `Get()`, so on
+SV-1's own tree a `Core.Optional(bool)` scrutinee or one-step conversion stops
+lowering at lower.cpp:48 (`ret ptr` in an `i1` function), as trunk's own
+`Core.Optional(bool).Get()` does with no SV-1 code (review 1's g04, on trunk and
+the nightly), and a `Core.Optional(Core.Optional(i32*))` reads a wrong pointer,
+as trunk's does (v02 and v03). PR 57 (OP-2), which merges before SV-1, fixes
+both: on its composition g01 with `bool` is DIFF-PASS and v02 and v03 print 9
+(§0.7, §8 item 6). F-M adds a `bool` payload to core_optional_view.carbon's
+`concrete` split and a `bool` leg to match_core_optional_diff, filled by
+autoupdate (§3 item 8).
+
 _Break condition:_ if W-058's design or the owner wants `Core.Optional`
 matched without a copy, by reference or generically, the `Match` interface or
 a choice-based `Optional` replaces the view (F-020's break conditions), and
@@ -1836,6 +1917,10 @@ choice/optional_pointer_payload.carbon `pointer`,
 `fail_todo_non_pointer_optional`, `fail_todo_nullptr_payload` and
 `fail_todo_maybe_unformed_payload`, and
 interop/cpp/exceptions/fail_catching.carbon `fail_nullptr_return` (new split).
+
+The reverse conversion of a pointer payload passes the payload's `Get()`, or no
+argument when it is null, to `emplace` (§1.5) (amended 2026-10-21,
+implementation-review fold: RV1-M1).
 
 _Break condition:_ if PR 57's representation makes the walk reach something
 other than the pointer for `Core.Optional(T*)` (measured on op2v4: it reaches
@@ -1930,6 +2015,16 @@ golden's refill.
     (t4, and t7 with a generic second member, on tpv6 and on trunk's build;
     `fail_todo_template_overload` in stdlib/sum_type_overload.carbon, which
     passes unchanged on tpv6).
+    The template-dependence test is defensive (amended 2026-10-21,
+    implementation-review fold: m10): mutant M16, which removes it, changes
+    nothing on SV-1's tree or on PR 61's mirror (§8 item 5): in every measured
+    shape, h1 included, a conversion with a template-dependent side either does
+    not reach the hook (TP-1 defers it first) or reaches tests that leave it
+    alone anyway (a symbolic type is no C++ class and no `Core.CppCompat`
+    specific, and a `Core.Optional` of a symbolic payload is not matchable).
+    Rev 1's definition-time mismatch (h1) is the reason the test exists; it
+    stays as protection for a path that reaches the hook with such a type, and
+    such a shape gets a golden split as soon as one is found.
 -   **Through a Carbon library.** A library may traffic in the sum types
     (`Fetch(n: i32) -> Core.CppCompat.StdOptional(i32)`), and an importer that
     imports no C++ matches them (`xlib`, and the multi-unit program of
@@ -2036,10 +2131,32 @@ file's eight rev-3 splits; amended 2026-10-20, review fold: RR-B1; RR3-M1 /
 RR3-m4). Rev-2 changes are marked (amended 2026-10-20, review fold: A-B1 / B-B-1
 / A-B2 / A-M2 / B-M-1 / A-M3 / B-M-2 / B-M-5 / A-m3 / A-m5 / B-m-1).
 
+Two comments cite a W-id, as §2.4 and Appendix B specified them (amended
+2026-10-21, implementation-review fold: m4): `CanBuildBranches` in sum_type.cpp
+and sum_type_overload.carbon's `fail_todo_file_scope` cite W-036, an item filed
+on trunk. The rule is therefore: a golden or source comment cites no SV-1 id,
+and only an item filed on the trunk it lands on, as trunk's own sources do
+(refutable_binding.cpp cites W-008, W-068 and W-077). Program headers cite
+items, as every program under fork/conformance/programs does: W-047
+(cpp_sum_type_library/main.carbon), W-049 (cpp_sum_type_roundtrip_diff), W-078a
+(match_sum_type_payload, a part of W-078) and W-177 (match_core_optional_diff).
+W-177 is OP-1's, on PR 56's and PR 57's branches only, so its cite resolves on
+the merged trunk, a land-time check (§3 item 8).
+
+The mocks' `emplace` forwards its arguments (`A&&...`), as libc++'s does
+(amended 2026-10-21, implementation-review fold: RV1-M1): taking them by value,
+it hid the failure of a pointer alternative's reverse conversion (§1.5), so by
+the break condition below the mock follows libc++ and its goldens refill:
+optional.carbon, variant.carbon and std_sum_types.carbon;
+fail_sum_types.carbon's and sum_type_overload.carbon's fills do not change.
+optional.carbon and variant.carbon gain two splits each, `pointer_reverse` and
+`declared_by_value` (RV1-B1), with a `declared.h` header split that includes
+`sum.h`.
+
 | Golden (new unless stated) | Splits |
 | --- | --- |
-| check/testdata/interop/cpp/stdlib/optional.carbon | `match`, `if_let`, `convert` (both directions, by value and `const&`), `pointer_payload`, `bridge`, `one_step_core_optional` (rev 2), `monostate_payload` (rev 2), `fail_todo_struct_payload`, `fail_dead_default`, `fail_unknown_alternative`, `fail_todo_outside_function`, `fail_todo_ref_binding` (rev 2) |
-| check/testdata/interop/cpp/stdlib/variant.carbon | `match`, `monostate`, `duplicate`, `fail_todo_too_many_alternatives`, `fail_todo_nested_by_value`, `fail_index_out_of_range` |
+| check/testdata/interop/cpp/stdlib/optional.carbon | `match`, `if_let`, `convert` (both directions, by value and `const&`), `pointer_payload`, `bridge`, `one_step_core_optional` (rev 2), `monostate_payload` (rev 2), `fail_todo_struct_payload`, `fail_dead_default`, `fail_unknown_alternative`, `fail_todo_outside_function`, `fail_todo_ref_binding` (rev 2); `pointer_reverse` and `declared_by_value` (amended 2026-10-21, implementation-review fold: RV1-M1 / RV1-B1) |
+| check/testdata/interop/cpp/stdlib/variant.carbon | `match`, `monostate`, `duplicate`, `fail_todo_too_many_alternatives`, `fail_todo_nested_by_value`, `fail_index_out_of_range`; `pointer_reverse` and `declared_by_value` (amended 2026-10-21, implementation-review fold: RV1-M1 / RV1-B1) |
 | check/testdata/interop/cpp/stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`, `fail_todo_non_trivial` (listed at rev 2; it was in rev 1's source, B-m-1), `fail_conversion_mismatch`, `fail_core_optional_mismatch` (rev 2, replaces rev 1's `fail_todo_core_optional_argument`, now IN), `core_optional_argument_as`, `fail_todo_export_sum_type`, `fail_reverse_other_specialization` (rev 2), `fail_reverse_converting_class` (rev 2), `fail_todo_tuple_scrutinee` (rev 2), `fail_todo_if_arm` (rev 2), `fail_todo_template_conversion` (rev 2), `fail_todo_rvalue_ref_param` (rev 5, after a `sink.h` header split that includes `sum.h`; amended 2026-10-20, review fold: RR4-M1: a sum value to a lone C++ `T&&`, a `Core.Optional` to the `T&&` member of a `const T&`/`T&&` pair, and a value that selects the `const T&` member); the mock's `optional` gains a converting constructor from `optional<U>` (libc++'s shape) so the reverse splits reach it |
 | check/testdata/interop/cpp/stdlib/sum_type_overload.carbon (rev 2; eight splits added at rev 3, amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1; three at rev 4, amended 2026-10-20, review fold: RR3-M1 / RR3-m4) | `convert_first`, `convert_second`, `mismatch_first`, `not_mapped_first`, `reverse`, `generic_member`; rev 3: `tuple_member`, `tuple_mismatch_first`, `struct_member`, `array_member`, `tuple_reverse`, `tuple_core_optional`, `generic_tuple_member`; rev 4: `scalar_tuple_mismatch_first` (no sum type: the element probe of trunk's `ConvertAggregateElement`, whose second member returns `bool` so the call's type pins the member), `fail_todo_file_scope` (rev 3's `file_scope`, renamed: the first member is selected and the call gets the file-scope TODO), `fail_todo_template_overload` (the same at a template's instantiation, under ``unable to monomorphize specific``): the fourteen non-`fail_` splits compile with no diagnostic |
 | check/testdata/interop/cpp/stdlib/fail_sum_types.carbon, at M-VA (rev 3; amended 2026-10-20, review fold: RR-M1; RR3-B1) | `fail_todo_pack_element` appended (VA-1's syntax exists only after M): the pack-element TODO, forward and reverse, for a pack of the C++ class or the sum type and, from rev 4, of a tuple, struct, array or class holding one (ten calls) |
@@ -2123,12 +2240,16 @@ values of the merged tree into the `<...>` placeholders Appendix C marks. Any
 other change to an Appendix C text goes through a document review (both
 reviewers of R29(c)) before the PR lands.
 
--   **docs/design/sum_types.md** gains a dated section "C++ `std::optional`
-    and `std::variant` (fork, SV-1, YYYY-MM-DD)" after "User-defined sum
-    types" (:91) and before "Alternatives considered" (:248), and one bullet
-    in "Alternatives considered" for the rejected identity mapping
-    (Appendix C.1). This is the page the fork's `choice` design lives on, as
-    SL-2's span mapping was recorded beside `Slice`.
+-   **docs/design/sum_types.md** gains a section "C++ `std::optional` and
+    `std::variant`" after "User-defined sum types" (:91) and before
+    "Alternatives considered" (:248), and one bullet in "Alternatives
+    considered" for the rejected identity mapping (Appendix C.1). The heading is
+    C.1's, undated, which C.2's anchor `#c-stdoptional-and-stdvariant` needs,
+    and the date is in the section's fork-addition note (amended 2026-10-21,
+    implementation-review fold: m8): rev 5 called it a dated section, with
+    "(fork, SV-1, YYYY-MM-DD)" in the heading). This is the page the fork's
+    `choice` design lives on, as SL-2's span mapping was recorded beside
+    `Slice`.
 -   **docs/design/unions.md**: the sentence ending "the `std::variant` interop
     mapping built on choice." (:626-627) gains a link to that section
     (Appendix C.2).
@@ -2630,6 +2751,11 @@ conversion's TODO, not a rejection (amended 2026-10-20, review fold: RR-m2: its
 stand-in is never a constant; RR3-M1: rev 3 also rejected where
 `CanBuildBranches` fails).
 
+The listing is the file at the implementation-review fold (a4d979619) (amended
+2026-10-21, implementation-review fold: RV1-B1): the comments of `GetCppSumType`
+and `MapCarbonSumTypeToCpp` state that the class is completed first and that the
+specialization is instantiated.
+
 <!-- google-doc-style-ignore -->
 
 ```cpp
@@ -2689,9 +2815,10 @@ struct CppSumType {
   clang::QualType bad_alternative_type;
 };
 
-// Classifies `type_id`. Forms and completes the Carbon sum type when the C++
-// type is mapped. Emits no diagnostic, except where the prelude itself is
-// broken (no `Core.CppCompat`): see `CppSumType::AlreadyDiagnosed`.
+// Classifies `type_id`, completing the C++ class of a specialization first.
+// Forms and completes the Carbon sum type when the C++ type is mapped. Emits no
+// diagnostic, except where the prelude itself is broken (no `Core.CppCompat`):
+// see `CppSumType::AlreadyDiagnosed`.
 auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
     -> CppSumType;
 
@@ -2700,8 +2827,9 @@ auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
 // `StdVariant<N>` specific, the `std::optional` or `std::variant`
 // specialization of the mapped argument types; for a `Core.Optional(T)` whose
 // payload is matchable (`GetCoreOptionalView`) and not a pointer type,
-// `std::optional<T'>`. A null type otherwise, or if the TU has no matching C++
-// template.
+// `std::optional<T'>`. The specialization is instantiated. A null type
+// otherwise, or if the TU has no matching C++ template or the specialization
+// cannot be instantiated.
 auto MapCarbonSumTypeToCpp(Context& context, SemIR::LocId loc_id,
                            SemIR::TypeId carbon_type_id) -> clang::QualType;
 
@@ -2807,6 +2935,14 @@ through `ConvertAggregateElement`, §2.5); (7) a Carbon sum value converts only
 to the C++ class whose sum type it is (amended 2026-10-20, review fold: RR-B1 /
 RR-B-1 / RR-m2 / RR-m3 / RR-M1).
 
+The listing is the file at the implementation-review fold (a4d979619, 983 lines;
+rev 5's was 935) (amended 2026-10-21, implementation-review fold: RV1-B1 /
+RV1-M1): `GetCppSumType` completes the class before it queries the definition,
+and `MapCarbonSumTypeToCpp` instantiates the specialization it forms (RV1-B1);
+`ConvertCarbonSumToCpp`'s arm for a pointer alternative branches on the
+payload's `HasValue()` and emplaces its `Get()` or nothing, in nested arms that
+keep invariant (3) (RV1-M1).
+
 <!-- google-doc-style-ignore -->
 
 ```cpp
@@ -2827,6 +2963,7 @@ RR-B-1 / RR-m2 / RR-m3 / RR-M1).
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/cpp/custom_type_mapping.h"
 #include "toolchain/check/cpp/import.h"
+#include "toolchain/check/cpp/location.h"
 #include "toolchain/check/cpp/overload_resolution.h"
 #include "toolchain/check/cpp/type_mapping.h"
 #include "toolchain/check/inst.h"
@@ -2937,6 +3074,14 @@ auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
     result.reason = CppSumType::TooManyAlternatives;
     result.num_alternatives = num_alternatives;
     return result;
+  }
+  // The class is completed before its definition is queried: a specialization
+  // that nothing in the C++ translation unit has instantiated is instantiated
+  // here, as C++ does before copying it. One that cannot be completed is left
+  // to the conversion's own incomplete-type diagnostics.
+  if (!TryToCompleteType(context, type_id, loc_id) ||
+      !record_decl->hasDefinition()) {
+    return {};
   }
   // The C++ class must itself be trivially copyable and destructible: the
   // reverse conversion builds a C++ object that no destructor call ends, and
@@ -3125,7 +3270,8 @@ static auto CallCppWithIndexTemplateArg(Context& context, SemIR::LocId loc_id,
                                /*is_desugared=*/true);
 }
 
-// Calls the C++ member function `name` of `object_id`.
+// Calls the member function `name` of `object_id`: a C++ method, or a
+// `Core.Optional` method (`HasValue`, `Get`).
 static auto CallCppMethod(Context& context, SemIR::LocId loc_id,
                           SemIR::InstId object_id, llvm::StringRef name,
                           llvm::ArrayRef<SemIR::InstId> arg_ids = {})
@@ -3357,6 +3503,8 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
       context.types().GetAs<SemIR::ClassType>(sum_type.cpp_type_id).class_id);
   auto alternatives = GetAlternativesInOrder(context, sum_type.carbon_type_id);
   int n = alternatives.size();
+  auto mapping =
+      GetCppSumTypeMapping(GetCppClassDecl(context, sum_type.cpp_type_id));
 
   // Default-construct the C++ object -- an empty `std::optional`, or a
   // `std::variant` holding a value-initialized first alternative -- then
@@ -3400,20 +3548,47 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
           // `None`: the default-constructed `std::optional` is empty.
           return;
         }
-        llvm::SmallVector<SemIR::InstId, 1> args;
-        if (auto payload_id = payload_of(alternative); payload_id.has_value()) {
-          args.push_back(payload_id);
-        }
-        if (sum_type.is_optional) {
-          ok &= CallCppMethod(context, loc_id, result.storage_id(), "emplace",
-                              args) != SemIR::ErrorInst::InstId;
+        // `emplace(args)`, or `emplace<i>(args)` for a `std::variant`.
+        auto emplace = [&](llvm::ArrayRef<SemIR::InstId> args) {
+          if (sum_type.is_optional) {
+            ok &= CallCppMethod(context, loc_id, result.storage_id(), "emplace",
+                                args) != SemIR::ErrorInst::InstId;
+            return;
+          }
+          auto emplace_id =
+              PerformMemberAccess(context, loc_id, result.storage_id(),
+                                  AddIdentifierName(context, "emplace"));
+          ok &=
+              CallCppWithIndexTemplateArg(context, loc_id, node_id, emplace_id,
+                                          i, args) != SemIR::ErrorInst::InstId;
+        };
+        auto payload_id = payload_of(alternative);
+        if (!payload_id.has_value()) {
+          emplace({});
           return;
         }
-        auto emplace_id =
-            PerformMemberAccess(context, loc_id, result.storage_id(),
-                                AddIdentifierName(context, "emplace"));
-        ok &= CallCppWithIndexTemplateArg(context, loc_id, node_id, emplace_id,
-                                          i, args) != SemIR::ErrorInst::InstId;
+        if (!mapping.alternative_types[i]->isObjectPointerType()) {
+          emplace({payload_id});
+          return;
+        }
+        // A C++ pointer alternative's payload is the nullable
+        // `Core.Optional(T*)`, but `emplace` deduces its parameter, and a
+        // pointer type that C++ deduced imports as the non-null `T*`
+        // (cpp/import.cpp `MapObjectPointerType`). So the payload is passed as
+        // its non-null `Get()` when it holds a pointer, and otherwise nothing
+        // is passed: `emplace()` value-initializes the pointer to null.
+        auto has_value_id = ConvertToBoolValue(
+            context, loc_id,
+            CallCppMethod(context, loc_id, payload_id, "HasValue"));
+        EmitArms(
+            context, node_id, 2, [&](int) { return has_value_id; },
+            [&](int j) {
+              if (j == 0) {
+                emplace({CallCppMethod(context, loc_id, payload_id, "Get")});
+              } else {
+                emplace({});
+              }
+            });
       });
   if (!ok) {
     return SemIR::ErrorInst::InstId;
@@ -3738,10 +3913,19 @@ auto MapCarbonSumTypeToCpp(Context& context, SemIR::LocId loc_id,
         ast_context.getTrivialTypeSourceInfo(cpp_arg_type)));
   }
   clang::TemplateName template_name(template_decl);
-  return context.clang_sema().CheckTemplateIdType(
+  auto type = context.clang_sema().CheckTemplateIdType(
       clang::ElaboratedTypeKeyword::None, template_name,
       /*TemplateLoc=*/clang::SourceLocation(), arg_list,
       /*Scope=*/nullptr, /*ForNestedNameSpecifier=*/false);
+  // The specialization is instantiated, as a C++ caller passing it by value
+  // would instantiate it: overload resolution and the parameter's passing mode
+  // query its definition, and a C++ function declared with a by-value
+  // parameter of it may be the only mention of it in the translation unit.
+  if (type.isNull() || !context.clang_sema().isCompleteType(
+                           GetCppLocation(context, loc_id), type)) {
+    return clang::QualType();
+  }
+  return type;
 }
 
 }  // namespace Carbon::Check
@@ -4237,13 +4421,28 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     stdlib/variant.carbon, stdlib/fail_sum_types.carbon without
     `fail_core_optional_mismatch`,
     stdlib/sum_type_overload.carbon, lower/interop/cpp/std_sum_types.carbon.
-    **F2**.
+    **F2**. As implemented (amended 2026-10-21, implementation-review fold: m7),
+    C2 (089b30191) also leaves out sum_type_overload.carbon's
+    `tuple_core_optional` and `generic_tuple_member` splits, which need C3's
+    `Core.Optional` branch (before it each gives ``no member of overload set
+    `Pick` accepts this call``, a `fail_` prefix failure that autoupdate cannot
+    repair), so C2 has fourteen of the file's sixteen splits; it drops
+    `MapCarbonSumTypeToCpp`'s `loc_id` parameter, which only the `Core.Optional`
+    branch uses (the build's `-Wunused-parameter` is an error), and
+    `ConvertToCppSumClass`'s `sum_type_id`, redundant without the bridge; and it
+    carves the `Core.Optional` parenthetical out of convert.cpp's comment, which
+    is false before C3. `CppSumTypeMismatch` keeps its final text, which names
+    the `Core.Optional` target one commit early.
 3.  **C3** "SV-1 (3): Core.Optional converts to and from std::optional in one
     step, and a Core.Optional scrutinee is matched as its StdOptional view":
     the `Core.Optional` parts of sum_type.{h,cpp} and type_mapping.cpp, the
     `CoreOptionalNotMatchable` kind, refutable_binding.cpp's second branch; new
     golden match/core_optional_view.carbon and the two splits C2 left out.
-    **F3**.
+    **F3**. As implemented (amended 2026-10-21, implementation-review fold: m7),
+    C3 (ab0b4951a) restores both parameters, the two splits and convert.cpp's
+    comment, so it also touches convert.cpp; four goldens are red at C3,
+    sum_type_overload.carbon among them, and the fill eb0488e70 equals
+    `$Y/final/goldens-filled/` byte for byte.
 4.  **P** "SV-1 (4): conformance programs for the sum-type interop mapping":
     match_sum_type_payload.carbon un-SKIPped with its intended body (the
     `default` removal stated in its header), the five new programs, the
@@ -4262,6 +4461,11 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     leave, and W-283 is filed for "Carbon to C++"). Row 68 stays PARTIAL in
     both cases, as predicted anyway (§1.17). Nothing else is cut: the forward
     conversion, the probe-safe hook and the scrutinee gate are the arbiter.
+    As implemented (amended 2026-10-21, implementation-review fold: all
+    findings), the implementation-review fold takes two of the three: the fix
+    commit a4d979619 with its fill a0669750a (RV1-B1 and RV1-M1, §1.5) and the
+    records fix commit (RV1-m1 and m1 to m10, this plan). The shrink line is not
+    taken, so W-278 and W-283 stay unfiled.
 8.  **Held state (the land-time commits, specified now; amended 2026-10-20,
     review fold: A-m1 / B-M-3 / B-M-4).** While the queue is held, nothing
     merges; the compositions of §8.6 are measured on scratch mirrors at
@@ -4428,6 +4632,35 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     W-294 stay held. _Break condition:_ if a held PR lands before R, M is
     repeated as a merge of that trunk (never a rebase) and §8 items 6 and 7
     are re-run against it.
+
+    **At the implementation-review fold** (2026-10-21; amended 2026-10-21,
+    implementation-review fold: m2 / m3 / RV1-m1 / RV1-B1 / RV1-M1). Trunk moved
+    after M to d9f346f53, records only (fork/ORCHESTRATION.md, SV-1's own row
+    among its lines), so a second merge, dff9f756b "SV-1 (M): merge of trunk
+    d9f346f53 (held state: records only)", brings it in before R and D, with
+    trunk's side on any conflict (there was none, and no toolchain, core or
+    testdata file changed). The break condition widens: M is repeated, as a
+    merge of trunk, whenever trunk moves past the last M by a commit that
+    touches a file R or D edits, or a held PR lands. Owed at land time as well,
+    because their targets are not on the merged trunk while the PRs are held:
+    C.5's W-177 note and evidence (W-177 is on PR 56's and PR 57's branches
+    only), C.8's references to F-015 and Doc-M's F-015 paragraph (F-015 is
+    OP-1's, not in trunk's decision log), W-284's `blocked_by` W-219 (VA-1's, on
+    PR 59's branch only), the notes on W-252 and W-263 (TP-1's), the W-177 cite
+    in match_core_optional_diff.carbon's header (§1.12) and C.7's fallback.
+    Decided now, so that C.6's, C.8's and C.9's placeholders resolve at D with
+    no decision left: W-282 stays unused (X-1 is fixed on PR 61's head, and the
+    trunk the last M merged holds no TP-1 code, so its condition fails either
+    way), and W-278 and W-283 stay unfiled (the shrink line is not taken). F-M
+    refills eight goldens, not seven: the fold's variant.carbon joins them (§8
+    item 6). F-M also adds, once PR 57 is merged in, a `bool` payload to
+    core_optional_view.carbon's `concrete` split and a `bool` leg to
+    match_core_optional_diff and its oracle, filled by autoupdate (§1.7: on
+    SV-1's own tree both stop lowering at trunk's `Core.Optional(bool).Get()`).
+    The M-VA block applies to the folded sum_type.cpp (a4d979619) at offsets 9
+    (its first four hunks) and 39 (its last two), measured with
+    `patch --dry-run`; the fold adds no `CanBuildBranches` call, so M-VA's test
+    still guards every branching conversion.
 9.  **R** "SV-1 (7): gap row 68": the row and the header, by §1.17 and
     Appendix C.7, after M.
 10. **D** "SV-1 (8): discharge": the id re-scan of §8.7 first; W-011 DISCHARGED,
@@ -4455,6 +4688,16 @@ for fail_sum_types.carbon's two new splits; amended 2026-10-20, review fold:
 RR4-M1): every diagnostic below is the final text, not a prototype TODO. Refills
 by name.
 
+At the implementation-review fold (amended 2026-10-21, implementation-review
+fold: RV1-B1 / RV1-M1) the fills are the worktree's (a0669750a), a fixpoint on
+the full build of a4d979619: the mocks' forwarding `emplace` changes
+optional.carbon's, variant.carbon's and std_sum_types.carbon's SemIR and IR (the
+`emplace` thunks take their argument by address,
+`@_ZNSt3__18optionalIiE7emplaceIJiEEERiDpOT_.carbon_thunk._v` where rev 5's was
+`...EEERiDpT_.carbon_thunk.__`), every key line below still appears, and no
+`CHECK:STDERR` line of an earlier split changes. The four rows marked "(fold)"
+are the new splits.
+
 | Golden | Key lines the fill must reproduce |
 | --- | --- |
 | stdlib/optional.carbon `match` | `%has_value__carbon_thunk.call`, `if ... br ... else br`, `%value__carbon_thunk.call`, `%StdOptional.Some.call`, the `%StdOptional.val` constant copied in the other arm, `class_type @StdOptional, @StdOptional(%i32)`; no `default`, no error |
@@ -4469,12 +4712,16 @@ by name.
 | `fail_unknown_alternative` | ``error: member name `Ok` not found in `Core.CppCompat.StdOptional(i32)` [MemberNameNotFoundInSpecificScope]`` |
 | `fail_todo_outside_function` | ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]`` |
 | `fail_todo_ref_binding` (rev 2) | ``error: cannot bind durable reference to non-reference value of type `i32` [ConversionFailureNonRefToRef]`` |
+| `pointer_reverse` (fold; amended 2026-10-21, implementation-review fold: RV1-M1) | `%optional__carbon_thunk.call` (default construction); in `Some`'s arm `%Optional.HasValue.call` on the payload, `if ... br ... else br`, `%Optional.Get.call` feeding an `%emplace__carbon_thunk.call`, and in the other arm an `%emplace__carbon_thunk.call` with the object only; `%TakePointer__carbon_thunk.call`; no error |
+| `declared_by_value` (fold; amended 2026-10-21, implementation-review fold: RV1-B1) | no error (the split dumps no SemIR) |
 | stdlib/variant.carbon `match` | `%index__carbon_thunk.call` once, `%get__carbon_thunk.call` per arm, `%StdVariant2.Alt0.call` / `%StdVariant2.Alt1.call` |
 | `monostate` | the `()` payload `tuple_value ()` in arm 0; `StdVariant2((), i32)` |
 | `duplicate` | `class_type @StdVariant2, @StdVariant2(%i32, %i32)` |
 | `fail_todo_too_many_alternatives` | ``error: C++ type `std::variant<int, int, int, int, int, int, int, int, int>` has no Carbon sum type`` with ``note: `std::variant` with 9 alternatives; at most 8 have a Carbon sum type [CppSumTypeTooManyAlternatives]`` |
 | `fail_todo_nested_by_value` | ``error: C++ type `std::variant<std::optional<int>, int>` has no Carbon sum type`` with ``note: alternative 0 has type `std::optional<int>`, which is not a choice payload type in 0.1`` |
 | `fail_index_out_of_range` | ``error: member name `Alt2` not found in `Core.CppCompat.StdVariant2(i32, f64)` [MemberNameNotFoundInSpecificScope]`` |
+| `pointer_reverse` (fold; amended 2026-10-21, implementation-review fold: RV1-M1) | arm 0's `emplace<0>` call; in arm 1 `%Optional.HasValue.call`, `%Optional.Get.call` feeding `emplace<1>`'s `%emplace__carbon_thunk.call` (a `ref %Optional.5b3` result), and `emplace<1>` with the object only; `%TakeIntOrPointer__carbon_thunk.call`; no error |
+| `declared_by_value` (fold; amended 2026-10-21, implementation-review fold: RV1-B1) | no error |
 | stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`: ``C++ type `std::optional<const int>` has no Carbon sum type`` with ``alternative 0 has qualified or reference type `const int` [CppSumTypeQualifiedAlternative]``; `fail_todo_non_trivial`: with ``note: `std::optional<NonTrivial>` is not trivially copyable and trivially destructible [CppSumTypeNotTriviallyCopyable]``; `fail_conversion_mismatch` and `fail_core_optional_mismatch`: ``C++ type `std::optional<int>` converts only to its own Carbon sum type `Core.CppCompat.StdOptional(i32)` or to the `Core.Optional` of its payload, not to `Core.CppCompat.StdOptional(i64)` [CppSumTypeMismatch]`` (and `` `Core.Optional(i64 as Core.OptionalStorage)` ``); `core_optional_argument_as`: no error; `fail_todo_export_sum_type`: the three existing export errors (`interop with non-identifier package name` at `{{.*}}/prelude/types/cpp/sum.carbon:30:1`, `failed to map Carbon return type to C++ type`, `no member named 'MakeView' in namespace 'Carbon'`); `fail_reverse_other_specialization` and `fail_reverse_converting_class`: `` `Core.CppCompat.StdOptional(i32)` converts to C++ only as the `std::optional` or `std::variant` whose Carbon sum type it is, not to `std::optional<long>` [CppSumTypeReverseMismatch]`` (and `` `Wrapper` ``), each with the `InCallToFunctionParam` note; `fail_todo_tuple_scrutinee`: ``semantics TODO: `match on unsupported scrutinee type` ``; `fail_todo_if_arm`: ``semantics TODO: `destroying temporaries of a conditionally evaluated operand whose value is not passed by copy` ``; `fail_todo_template_conversion`: ``unable to monomorphize specific `Pass(Cpp.std.__1.optional)` [ResolvingSpecificHere]`` with the outside-a-function-body TODO as its note; `fail_todo_rvalue_ref_param` (rev 5; amended 2026-10-20, review fold: RR4-M1): ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` with no source expression` [SemanticsTodo]`` twice, at `./sink.h:4:45` and `./sink.h:12:38` (the `T&&` parameters of `TakeRvalue` and of `Put`), each with the `InCallToFunctionParam` note there and ``in file included here [InCppInclude]`` at the split's `import Cpp`; `V`, whose value argument selects `Put`'s `const&` member, has none; mutant M22 removes the first |
 | stdlib/sum_type_overload.carbon (rev 2; rev 3: amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1; rev 4: amended 2026-10-20, review fold: RR3-M1 / RR3-m4) | sixteen splits: the fourteen that are not `fail_` have no diagnostic, `scalar_tuple_mismatch_first` included (trunk gives it ``cannot implicitly convert expression of type `bool` to `i32` ``, z01); `fail_todo_file_scope`: ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]`` at `Pick(Cpp.MakeOptional(7))` with the `InCallToFunctionParam` note naming the first member's parameter; `fail_todo_template_overload`: ``error: unable to monomorphize specific `Call(Cpp.std.__1.optional)` [ResolvingSpecificHere]`` with that TODO as its note at `Pick(x)` and the same `InCallToFunctionParam` note (measured on v6, and unchanged on tpv6 and vav6g); the mutants M12 and M17 stop file_test on it with ``Built invalid semantics IR: No terminator in block``, and M20 (rev 3's rule) turns both `fail_todo_` splits red, each compiling with no diagnostic |
 | stdlib/fail_sum_types.carbon `fail_todo_pack_element` (at M-VA; rev 3, amended 2026-10-20, review fold: RR-M1; rev 4, amended 2026-10-20, review fold: RR3-B1) | ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]`` ten times, at the calls of `Forward`, `Back`, `ForwardTuple`, `BackTuple`, `ForwardStruct`, `BackStruct`, `ForwardArray`, `BackArray`, `ForwardClass` and `BackClass`, each with the `InCallToFunctionParam` note (measured on vav6g, `$W/final/goldens-filled-M/`); the file's other splits unchanged; M19 and M21 stop the compiler at VA-1's CHECK on it |
@@ -4511,6 +4758,13 @@ and every other non-SKIP program passes, so no other program changed status
 (a SKIP is declared in its program's header, not decided by the toolchain).
 The prediction above is met exactly.
 
+**Measured at the implementation-review fold** (amended 2026-10-21,
+implementation-review fold: RV1-M1): on the full build of a4d979619 with its
+fill, 134 PASS, 0 FAIL, 21 SKIP over 155, bullets 48 PASS, 0 FAIL, 8 SKIP of 56,
+every status as at C3; cpp_sum_type_roundtrip_diff prints six more lines (15 0
+-1 12 30 -9), DIFF-PASS on three runs; `runner.py --self-test` passes and
+`--update-readme-table` changes nothing (`$F/conf-fix1/`, §8 item 5's `$F`).
+
 ## §6 Churn and collisions
 
 Recounted 2026-10-20 from `$X/final/final.diff` (rev 1 said "nine changed" and
@@ -4519,7 +4773,8 @@ listed ten; erratum, review fold: B-m-8), at rev 3 from `$Z/final/final.diff`
 `$W/final/final.diff` (amended 2026-10-20, review fold: all RR3 findings).
 Toolchain: two new files (cpp/sum_type.h, 143 lines, and cpp/sum_type.cpp, 935
 lines, formatted) and ten changed: custom_type_mapping.h +28,
-custom_type_mapping.cpp +53, convert.cpp +22/-7 (the hook, and
+custom_type_mapping.cpp +53, convert.cpp +23/-7 (rev 5 said +22/-7; amended
+2026-10-21, implementation-review fold: m9; the hook, and
 `ConvertAggregateElement`'s `diagnose` parameter with its four callers),
 refutable_binding.cpp +38 (its include moved to sorted order),
 cpp/type_mapping.h +7, cpp/type_mapping.cpp +13/-2, type.cpp +27/-1,
@@ -4533,6 +4788,12 @@ four new `.diff.cpp` oracles and one `main.diff.cpp`, the README table. Docs:
 sum_types.md, unions.md (one link), optional.md after M. Records at R and D.
 Collisions and their rules: §0.7; the land-time order: §3 item 8.
 
+At the implementation-review fold (amended 2026-10-21, implementation-review
+fold: RV1-B1 / RV1-M1): sum_type.cpp is 983 lines (+61/-13 over rev 5's 935) and
+sum_type.h 145 (+7/-5); the five mocks change two lines each; optional.carbon
+and variant.carbon gain a header and two splits each (+50/-2 each in their
+sources); cpp_sum_type_roundtrip_diff.carbon changes +30/-2 and its oracle +21.
+
 ## §7 Risks and rejected alternatives
 
 ### §7.1 Risks (each falsifiable)
@@ -4541,6 +4802,10 @@ Collisions and their rules: §0.7; the land-time order: §3 item 8.
     and `std::variant`; the programs use the toolchain's libc++ 24.0. A
     divergence that matters shows as a program failure against its oracle,
     which is real libc++ on the C++ side too.
+    Realized at the implementation-review fold (amended 2026-10-21,
+    implementation-review fold: RV1-M1): the mock's by-value `emplace` hid
+    RV1-M1, which no program covered; the mocks now forward as libc++'s do, and
+    cpp_sum_type_roundtrip_diff's pointer leg covers the shape with real libc++.
 -   **R-2, cost.** Prelude: +5% check time at p10 on a trivial file
     (measured, §0.6); every full-prelude compile pays it, programs without C++
     included. Code: one internal thunk per accessor per specialization and
@@ -4766,7 +5031,7 @@ scripts are
 
     | Mutant | Measured (2026-10-21) | Killed |
     | --- | --- | --- |
-    | M1 | red: optional.carbon (`convert`, `one_step_core_optional`, `monostate_payload`, `fail_unknown_alternative`, `fail_todo_outside_function`), variant.carbon `duplicate`, fail_sum_types.carbon (eight splits), sum_type_overload.carbon (all sixteen), std_sum_types.carbon; match_std_optional_diff, cpp_sum_type_roundtrip_diff and cpp_sum_type_library COMPILE-FAIL; match_std_variant_diff and match_core_optional_diff PASS, as they reach the sum types only through the scrutinee gate and the view's prelude bridge, which do not call `TryConvertCppSumType` | yes (three of the five predicted programs) |
+    | M1 | red: optional.carbon (`convert`, `one_step_core_optional`, `monostate_payload`, `fail_unknown_alternative`, `fail_todo_outside_function`), variant.carbon `duplicate`, fail_sum_types.carbon (eight splits), sum_type_overload.carbon (fourteen of its sixteen splits, all but `not_mapped_first` and `scalar_tuple_mismatch_first`; rev 5's record said all sixteen; amended 2026-10-21, implementation-review fold: m6), std_sum_types.carbon; match_std_optional_diff, cpp_sum_type_roundtrip_diff and cpp_sum_type_library COMPILE-FAIL; match_std_variant_diff and match_core_optional_diff PASS, as they reach the sum types only through the scrutinee gate and the view's prelude bridge, which do not call `TryConvertCppSumType` | yes (three of the five predicted programs) |
     | M2 | red: optional.carbon's SemIR in `match`, `if_let`, `convert`, `pointer_payload` and `one_step_core_optional`, std_sum_types.carbon; match_std_optional_diff, match_std_variant_diff and cpp_sum_type_library RUN-FAIL (exit -6, ``C++ exception escaped into Carbon through `std::__optional_storage_base<int>::value` ``: the fenced `bad_optional_access`), match_sum_type_payload RUN-FAIL (exit 1); the runner reports RUN-FAIL, not DIFF-MISMATCH, because the Carbon side's exit code is checked first | yes |
     | M3 | red: variant.carbon (`match`, `monostate`, `duplicate`, `fail_index_out_of_range`), std_sum_types.carbon; match_std_variant_diff, cpp_sum_type_roundtrip_diff and cpp_sum_type_library COMPILE-FAIL: the last arm's `std::get<N>` fails libc++'s ``Index out of bounds in std::variant_alternative<>`` static assertion | yes (COMPILE-FAIL, not the predicted DIFF-MISMATCH) |
     | M4 | red: fail_sum_types.carbon `fail_todo_non_trivial` only (its note becomes `CppSumTypeAlternativeNotAdmitted`); programs unchanged | yes |
@@ -4797,6 +5062,35 @@ scripts are
     MINOR; the test stays, as §1.10 states it. _Break condition:_ a shape that
     reaches the hook with a template-dependent type gets a golden split, and M16
     is re-run on it.
+
+    **Measured at the implementation-review fold, 2026-10-21** (amended
+    2026-10-21, implementation-review fold: RV1-B1 / RV1-M1 / m6). `$F` is the
+    fixer's scratch directory,
+    `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-impl/fixer`:
+    `edit/mkmut2.py` holds the fold's mutant edits and `mut/<n>/` each one's
+    diff, relink, gate, conformance, attribution and probe logs, with item 5's
+    recipe over the full build of a4d979619. M4, M9 and M10, whose code the fix
+    touches, are re-run, and three new mutants test the fix itself (the probe
+    sets: `$F/probes/b1/`, review 1's q03, q11 to q15 and the fixer's u01 to
+    u04; `$F/probes/m1/`, review 1's f01 to f08 and e05, review 1's e01 without
+    its struct literal, which trunk rejects for any C++ class):
+
+    | Mutant | Measured (2026-10-21, at the fold) | Killed |
+    | --- | --- | --- |
+    | M4 | red: fail_sum_types.carbon `fail_todo_non_trivial` only; programs unchanged | yes |
+    | M9 | red: fail_sum_types.carbon (the six splits of its run at implementation), optional.carbon (`convert`, `one_step_core_optional`, `monostate_payload`, `pointer_reverse`, `declared_by_value`), variant.carbon (`duplicate`, `pointer_reverse`, `declared_by_value`), std_sum_types.carbon; cpp_sum_type_roundtrip_diff COMPILE-FAIL | yes |
+    | M10 (its edit moved into the `emplace` helper of the fold) | red: variant.carbon `pointer_reverse` and `duplicate`, std_sum_types.carbon (the variant's IR); cpp_sum_type_roundtrip_diff COMPILE-FAIL, ``no matching function for call to 'emplace'``; f03, f04 and e05 COMPILE-FAIL, the optional probes run | yes |
+    | M23 (fold): `MapCarbonSumTypeToCpp` does not instantiate the specialization (RV1-B1 restored) | optional.carbon and variant.carbon stop file_test at `declared_by_value` (``queried property of class with no definition``, rc 134); q03, q11 and q13 abort the same way; programs unchanged | yes |
+    | M24 (fold): a pointer payload passed to `emplace` as it is (RV1-M1 restored) | red: optional.carbon and variant.carbon `pointer_reverse` (``cannot implicitly convert expression of type `Core.Optional(i32* as Core.OptionalStorage)` to `i32*` ``); cpp_sum_type_roundtrip_diff COMPILE-FAIL; f01 to f08 and e05 COMPILE-FAIL | yes |
+    | M25 (fold): `GetCppSumType` does not complete the class first | nothing: 1950 of 1950, conformance unchanged, the b1 probes compile (their link fails only on the declared-only functions, as on the fold's build) | no: survives |
+
+    Five of the six are killed. M25 survives: every shape measured completes the
+    class before `GetCppSumType` queries it (a Carbon value, binding or
+    parameter of the class requires it, and M23's instantiation covers the one
+    path that queried an uninstantiated class), so the test is defensive, as
+    M16's is; MINOR, recorded. _Break condition:_ a shape that reaches
+    `GetCppSumType` with an incomplete class gets a golden split, and M25 is
+    re-run on it.
 6.  **Composition mirrors** (TP-1's §0.9 shape; rewritten 2026-10-20, review
     fold: B-m-11): with kind.def changed every translation unit recompiles, so
     each mirror is a FULL build, one at a time: for each of PR 57, PR 60, PR 59
@@ -4874,6 +5168,31 @@ scripts are
     at `ForwardTuple`, as do n01 to n05, while v02 to v04 and n06 to n08 keep
     the pack-element TODO. Both are killed, as predicted. M16 on PR 61's mirror
     is item 5's row.
+
+    **Re-measured at the implementation-review fold** (2026-10-21; amended
+    2026-10-21, implementation-review fold: RV1-B1 / RV1-M1 / RV1-m1); logs in
+    `$F/mirror/op2/`, item 5's `$F`). The fold changes stdlib/optional.carbon, a
+    golden §0.7 lists for PR 57, so PR 57's mirror is rebuilt at 628273444 with
+    `$F/mirror/sv1-toolchain.diff` (`git diff 30153bbc2..a0669750a -- toolchain
+    core ':!toolchain/*/testdata/*'`, 14 files; every hunk exact but
+    convert.cpp's hook, at offset 3, as before) and the nine goldens and six
+    programs of a0669750a: the full build took 6m38s with 0 warnings; the gate
+    passes 1950 of 1958, red on eight goldens, all SemIR with no `CHECK:STDERR`
+    line: the four function-pointer goldens (4, 4, 18 and 8 changed lines,
+    `clang_function_pointer_type<N>` only),
+    choice/optional_pointer_payload.carbon (12, `pointer`),
+    stdlib/optional.carbon (563: `pointer_payload`, `one_step_core_optional` and
+    the new `pointer_reverse`), stdlib/variant.carbon (198, the new
+    `pointer_reverse`) and match/core_optional_view.carbon (18, `concrete`);
+    refilled, 1958 of 1958. So F-M refills eight goldens, not seven: the fold's
+    `pointer_reverse` splits call `Core.Optional`'s `HasValue()` and `Get()`,
+    whose SemIR gains OP-2's `Destroy` entries as `pointer_payload`'s does.
+    Conformance is 145 PASS, 0 FAIL, 21 SKIP over 166, and SV-1's six programs
+    PASS, cpp_sum_type_roundtrip_diff's pointer leg included. Review 1's probes
+    on the mirror: g01 with `bool` DIFF-PASS (81 lines) and g02 to g09 run; v01
+    prints 9 9 9, and v02 and v03 print 9; f01 to f08 and e05 run, f07 printing
+    9; q03, q11 to q15 and u01, u03 and u04 compile, and their links fail only
+    on the declared-only functions. The mirror and its build were deleted after.
 7.  **Id re-scan** (before D; run 2026-10-20 for §1.16; widened 2026-10-20,
     review fold: B-m-7):
 
@@ -4952,9 +5271,11 @@ scripts are
     blocks (`$X/bin/r31.py <file>`) and `git diff -U0 <file> | grep -E
     '^\+\s*#{1,6} [0-9]'` (no numbered heading introduced by a reflow), each
     difference accounted for in the commit message; and R27's spelling diff:
-    sum.carbon's `StdOptional` declaration against sum_types.md:63-66's
-    `Optional(T)` (identical but for the name and `CppCompat.`), and every
-    code sample of Appendix C.1 against the toolchain's spelling, compiled.
+    sum.carbon's `StdOptional` declaration against sum_types.md:64-67's
+    `Optional(T)` (identical but for the name and `CppCompat.`; :63-66 before
+    Doc's table-of-contents line, amended 2026-10-21, implementation-review
+    fold: m9), and every code sample of Appendix C.1 against the toolchain's
+    spelling, compiled.
 11. **Design-doc samples** (added 2026-10-20, review fold: B-M-4): after M and
     after Doc-M, `python3 -I fork/designdocs/check_samples.py` and the same
     with `--toolchain /home/user/carbon-build/carbon-sv/install/bin/carbon`
@@ -5046,6 +5367,11 @@ Amended 2026-10-20 (review fold: A-M2 / B-M-1 / B-M-5 / A-m7): the listings
 of match_std_optional_diff.carbon, match_core_optional_diff.carbon and its
 oracle, and cpp_sum_type_roundtrip_diff.carbon and its oracle changed; the
 other seven are rev 1's, byte for byte.
+
+Amended 2026-10-21 (implementation-review fold: RV1-M1 / m5):
+cpp_sum_type_roundtrip_diff.carbon and its oracle are the committed files: the
+oracle as prek's clang-format wrapped its 81-column `Print(TakeVariant(...))`
+line at P, and both with the pointer leg of the fold (§1.5).
 
 ### A: control_flow/match_sum_type_payload.carbon
 
@@ -5806,8 +6132,11 @@ auto main() -> int {
 // and the plan's residue list): it returns a `std::optional<int>` built from
 // the Carbon sum type on each of two paths, and it takes a `std::variant`
 // and matches it. A `Core.Optional(i32)` argument reaches the same
-// parameters in one implicit step (D-SV-7). Every payload is computed at run
-// time from a seed (R16d).
+// parameters in one implicit step (D-SV-7). A pointer alternative's payload,
+// the nullable `Core.Optional(i32*)` (D-SV-8), converts back as the pointer it
+// holds or as null, in a `std::optional<int*>` and in a `std::variant` that
+// holds its other alternative too. Every scalar payload is computed at run
+// time from a seed (R16d); a pointer payload is a local's address or null.
 // Differential pair: cpp_sum_type_roundtrip_diff.diff.cpp (DIFF-1).
 
 import Core library "io";
@@ -5834,6 +6163,17 @@ inline auto TakePair(const std::variant<int, int>& v) -> int {
 
 inline auto TakeEmpty(std::variant<std::monostate, int> v) -> int {
   return v.index() == 0 ? -7 : std::get<1>(v);
+}
+
+inline auto TakePointer(std::optional<int*> o) -> int {
+  return o.has_value() ? (*o != nullptr ? **o : 0) : -1;
+}
+
+inline auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
+  if (v.index() == 0) {
+    return std::get<0>(v);
+  }
+  return std::get<1>(v) != nullptr ? *std::get<1>(v) * 2 : -9;
 }
 ''';
 
@@ -5896,6 +6236,20 @@ fn Run() -> i32 {
   Core.Print(Cpp.UseMakeOptional(Seed(-8)));
   Core.Print(Cpp.UseInspectVariant(Seed(2)));
   Core.Print(Cpp.UseInspectVariant(Seed(-7)));
+  var cell: i32 = Seed(10);
+  let no_cell: Core.Optional(i32*) = Core.Optional(i32*).None();
+  Core.Print(Cpp.TakePointer(
+      Core.CppCompat.StdOptional(Core.Optional(i32*)).Some(&cell)));
+  Core.Print(Cpp.TakePointer(
+      Core.CppCompat.StdOptional(Core.Optional(i32*)).Some(no_cell)));
+  Core.Print(
+      Cpp.TakePointer(Core.CppCompat.StdOptional(Core.Optional(i32*)).None));
+  Core.Print(Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt0(Seed(7))));
+  Core.Print(Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(&cell)));
+  Core.Print(Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(no_cell)));
   return 0;
 }
 ```
@@ -5943,6 +6297,17 @@ static auto TakeEmpty(std::variant<std::monostate, int> v) -> int {
   return v.index() == 0 ? -7 : std::get<1>(v);
 }
 
+static auto TakePointer(std::optional<int*> o) -> int {
+  return o.has_value() ? (*o != nullptr ? **o : 0) : -1;
+}
+
+static auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
+  if (v.index() == 0) {
+    return std::get<0>(v);
+  }
+  return std::get<1>(v) != nullptr ? *std::get<1>(v) * 2 : -9;
+}
+
 static auto Seed(int x) -> int { return x + 5; }
 
 static auto SeedF(double x) -> double { return x + x; }
@@ -5986,7 +6351,8 @@ auto main() -> int {
   Print(TakeOptionalRef(std::nullopt));
   double half = SeedF(1.25);
   Print(TakeVariant(std::variant<int, double>(std::in_place_index<1>, half)));
-  Print(TakeVariant(std::variant<int, double>(std::in_place_index<0>, Seed(4))));
+  Print(
+      TakeVariant(std::variant<int, double>(std::in_place_index<0>, Seed(4))));
   Print(TakePair(std::variant<int, int>(std::in_place_index<1>, Seed(2))));
   Print(TakePair(std::variant<int, int>(std::in_place_index<0>, Seed(3))));
   Print(TakeEmpty(std::variant<std::monostate, int>(std::monostate())));
@@ -5995,6 +6361,16 @@ auto main() -> int {
   Print(UseMakeOptional(Seed(-8)));
   Print(UseInspectVariant(Seed(2)));
   Print(UseInspectVariant(Seed(-7)));
+  int cell = Seed(10);
+  Print(TakePointer(std::optional<int*>(&cell)));
+  Print(TakePointer(std::optional<int*>(static_cast<int*>(nullptr))));
+  Print(TakePointer(std::nullopt));
+  Print(TakeIntOrPointer(
+      std::variant<int, int*>(std::in_place_index<0>, Seed(7))));
+  Print(
+      TakeIntOrPointer(std::variant<int, int*>(std::in_place_index<1>, &cell)));
+  Print(TakeIntOrPointer(std::variant<int, int*>(std::in_place_index<1>,
+                                                 static_cast<int*>(nullptr))));
   return 0;
 }
 ```
@@ -6184,6 +6560,12 @@ RR3-B1 / RR3-M1 / RR3-m4) they are `$W/final/goldens-src/`, filled by v6 in
 `$W/final/goldens-filled-M/`): sum_type_overload.carbon renames one split and
 gains two, and the M-VA split gains eight calls.
 
+At the implementation-review fold (amended 2026-10-21, implementation-review
+fold: RV1-B1 / RV1-M1) the sources are the worktree's at a4d979619: the five
+mocks' `emplace` forwards (`A&&...`), and optional.carbon and variant.carbon
+gain a `declared.h` header split and the `pointer_reverse` and
+`declared_by_value` splits; their fills are a0669750a's (§4).
+
 ### B: check/testdata/interop/cpp/stdlib/optional.carbon
 
 <!-- google-doc-style-ignore -->
@@ -6227,7 +6609,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -6246,7 +6628,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -6301,6 +6683,18 @@ inline auto MakeMono(int n) -> std::optional<std::monostate> {
 inline auto TakeMono(std::optional<std::monostate> o) -> bool {
   return o.has_value();
 }
+
+inline auto TakePointer(std::optional<int*> o) -> int {
+  return o.has_value() ? (o.value() ? *o.value() : 0) : -1;
+}
+
+// --- declared.h
+
+#include "sum.h"
+
+// Declared and not defined: nothing in the translation unit instantiates
+// `std::optional<short>`.
+auto TakeShort(std::optional<short> o) -> int;
 
 // --- match.carbon
 
@@ -6431,6 +6825,42 @@ fn M(n: i32) -> bool {
     }
   }
   return false;
+}
+
+// --- pointer_reverse.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+// A `StdOptional(Core.Optional(i32*))` converts back to `std::optional<int*>`.
+// `emplace` deduces its parameter, and a deduced C++ pointer imports as the
+// non-null `i32*`, so the nullable payload is passed as its `Get()` when it
+// holds a pointer and as no argument when it is null, which value-initializes
+// the pointer (fork/sumtype-interop/plan.md §1.5).
+//@dump-sem-ir-begin
+fn R(p: Core.Optional(i32*)) -> i32 {
+  return Cpp.TakePointer(
+      Core.CppCompat.StdOptional(Core.Optional(i32*)).Some(p));
+}
+//@dump-sem-ir-end
+
+fn N() -> i32 {
+  return Cpp.TakePointer(Core.CppCompat.StdOptional(Core.Optional(i32*)).None);
+}
+
+// --- declared_by_value.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "declared.h";
+
+// A by-value parameter whose specialization nothing else instantiates: the
+// class offered to overload resolution is instantiated first, as a C++ caller
+// passing it would instantiate it (fork/sumtype-interop/plan.md §1.5).
+fn D() -> i32 {
+  return Cpp.TakeShort(Core.CppCompat.StdOptional(i16).Some(2)) +
+         Cpp.TakeShort(Core.Optional(i16).Some(3));
 }
 
 // --- fail_todo_struct_payload.carbon
@@ -6568,7 +6998,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -6587,7 +7017,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -6637,6 +7067,19 @@ inline auto MakeNine() -> Nine { return Nine(); }
 inline auto Nested() -> std::variant<std::optional<int>, int> {
   return std::variant<std::optional<int>, int>();
 }
+
+inline auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
+  if (v.index() == 0) return std::get<0>(v);
+  return std::get<1>(v) ? *std::get<1>(v) : -1;
+}
+
+// --- declared.h
+
+#include "sum.h"
+
+// Declared and not defined: nothing in the translation unit instantiates
+// `std::variant<int, short>`.
+auto TakeIntOrShort(std::variant<int, short> v) -> int;
 
 // --- match.carbon
 
@@ -6702,6 +7145,41 @@ fn D(n: i32) -> i32 {
   return -1;
 }
 //@dump-sem-ir-end
+
+// --- pointer_reverse.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+// A pointer alternative converts back through `emplace<1>` with the payload's
+// `Get()`, or with no argument when the payload is null; every arm is built,
+// so a variant holding its `int` alternative reaches it too
+// (fork/sumtype-interop/plan.md §1.5).
+//@dump-sem-ir-begin
+fn R(p: Core.Optional(i32*)) -> i32 {
+  return Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(p));
+}
+//@dump-sem-ir-end
+
+fn I(n: i32) -> i32 {
+  return Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt0(n));
+}
+
+// --- declared_by_value.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "declared.h";
+
+// A by-value parameter whose specialization nothing else instantiates: the
+// class offered to overload resolution is instantiated first
+// (fork/sumtype-interop/plan.md §1.5).
+fn D(n: i32) -> i32 {
+  return Cpp.TakeIntOrShort(Core.CppCompat.StdVariant2(i32, i16).Alt0(n));
+}
 
 // --- fail_todo_too_many_alternatives.carbon
 
@@ -6803,7 +7281,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -6822,7 +7300,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -7205,7 +7683,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -7224,7 +7702,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -7789,7 +8267,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -7808,7 +8286,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -7988,11 +8466,14 @@ and C.9, in that order, after M. `YYYY-MM-DD` is the date of the commit that
 writes the text, and `<...>` marks a value D measures on the merged tree;
 nothing else in a text changes without a document review (§1.14).
 
-**Held state.** While PR 51 to PR 61 are held, SV-1 writes no records commit
-and no Doc-M: its branch carries the plan, C1 to C3, P, Doc and any fix
-commits, and every record file stays trunk's. If the orchestrator records
-SV-1's state on trunk meanwhile, it uses C.9's row with the held wording given
-there.
+**Held state** (rewritten 2026-10-21, implementation-review fold: m1). While
+PR 51 to PR 61 are held, the branch carries the plan, C1 to C3, P, Doc, the fix
+commits, M (repeated as a merge of each later trunk, §3 item 8) and R and D,
+composed over the trunk the last M merged and over C.7's predicted row text; it
+writes no Doc-M, which needs PR 56's optional.md. A text whose target is not on
+that trunk is written at land time (§3 item 8 lists them), and C.9's held
+Next-actions item lists what remains. Rev 5 said SV-1 writes no records commit
+while the PRs are held; §3 item 8 as implemented puts R and D on the branch.
 
 ### C.1 docs/design/sum_types.md: the new section and one alternative
 
@@ -8634,11 +9115,15 @@ A Branches row after TP-1's:
 The placeholders follow C.8's rule (amended 2026-10-20, review fold: RR3-m1 /
 RR3-m2; W-285 added 2026-10-20, review fold: RR4-M1). Held wording (while PR 51
 to PR 61 are held): "IMPLEMENTED AND HELD, no PR — SV-1 ... at <head>; lands
-after PR 61 by the land-time items in Next actions", and Next actions gains:
-"SV-1 at land time (fork/sumtype-interop/plan.md §3 item 8): M over the trunk
-that holds PR 51 to PR 61; M-VA (the pack-element rule and its split); F-M
-(seven refills, predicted); Doc-M; R; the id re-scan; D with Appendix C's
-texts."
+after PR 61 by the land-time items in Next actions", and Next actions gains
+(rewritten 2026-10-21, implementation-review fold: m1: rev 5 listed R and D,
+which go on the branch now): "SV-1 at land time (fork/sumtype-interop/plan.md §3
+item 8): M repeated over the trunk that holds PR 51 to PR 61; M-VA (the
+pack-element rule and its split); F-M (the refills, and the `bool` payload split
+and program leg); Doc-M; the second id re-scan; §8 item 11 on the merged trunk;
+C.7's fallback check; and the texts whose targets land with the held PRs: C.5's
+W-177 note, C.8's F-015 references, W-284 with its `blocked_by` W-219, and the
+notes on W-252 and W-263."
 
 ## Review fold record (rev 2, 2026-10-20)
 
@@ -8914,6 +9399,59 @@ table rows and 23 indented table rows in 8479 lines, and 47 code blocks, all
 between markers; rev 5's counts and their differences are in the rev-5 commit
 message. The new headings are this subsection's and the sign-off's.
 
+## Implementation review fold record (2026-10-21)
+
+Two implementation reviews of the branch at 6efb8345b (§3 item 6): review 1
+returned REJECT with 1 BLOCKER, 1 MAJOR and 1 MINOR (RV1-B1, RV1-M1, RV1-m1),
+review 2 APPROVE-WITH-FIXES with 10 MINORs (m1 to m10, nine of them records
+only): 13 findings. Every one was reproduced in the fixer's scratch `$F` (§8
+item 5) before it was folded, on the SV-1 install, on trunk and on the nightly
+where it is about behavior; all 13 are folded and none is rejected. The commits:
+a4d979619 "SV-1 fix: the reverse conversion instantiates the C++ class it offers
+and emplaces a pointer payload as its non-null pointer or as nothing", its fill
+a0669750a, the second merge of trunk dff9f756b (m3), and the records fix commit
+that writes this record; one of the three fix commits of §3 item 7 is left, and
+the shrink line is not taken. The marks "(amended 2026-10-21,
+implementation-review fold: ...)" name the findings.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RV1-B1: a sum value or `Core.Optional(T)` passed by value to a C++ function declared with a parameter of a specialization nothing else instantiates aborts clang | BLOCKER | yes: q03, q11 and q13 abort the SV-1 install (rc 134, ``queried property of class with no definition``, DeclCXX.h:464, from `IsMoveEquivalentToCopy`), where trunk and the nightly give an error; q12, q14 and q15 (`const&`) compile | fixed: `MapCarbonSumTypeToCpp` instantiates the specialization it offers, and `GetCppSumType` completes the class before querying it (defensive: mutant M25 survives); `declared_by_value` splits in optional.carbon and variant.carbon; mutant M23 restores the crash; q03, q11 to q15 and u01 to u04 compile | §1.5, §1.12, §2.3, §2.4, §4, §6, §8 item 5, Appendix B |
+| RV1-M1: no class with a pointer alternative converts back to C++ | MAJOR | yes: f01 to f08 fail in libc++'s `emplace` (``cannot implicitly convert ... Core.Optional(i32*) ... to i32*``); e01 fails on that and on a struct literal that trunk rejects for any C++ class (e04, trunk too); the Carbon twins h03 and h04 fail on trunk and the nightly | fixed in SV-1's code, not in import.cpp: the review's root fix (a `_Nullable` invented argument) cannot reach the deduced parameter, because deduction drops nullability sugar (measured: `f(T&&)` with an `int * _Nullable` deduces `int *`); the pointer arm emplaces `Get()` or nothing; the mocks forward as libc++'s do; `pointer_reverse` splits; cpp_sum_type_roundtrip_diff's pointer leg (DIFF-PASS); mutant M24 restores the failure; f01 to f06, f08 and e05 print their oracles' values, and f07 prints a wrong value as trunk's own nested `Core.Optional(Core.Optional(i32*))` does (v02, v03), which PR 57 fixes (RV1-m1's row) | §1.5, §1.8, §1.12, §2.4, §4, §5, §6, §7.1 R-1, §8 items 5 and 6, Appendices A and B |
+| RV1-m1: `Core.Optional(bool)`'s view and one-step conversion stop lowering on SV-1's tree; PR 57 fixes it | MINOR | yes: g01 (with `bool`) stops the SV-1 install at lower.cpp:48 and g04 (pure Carbon) stops trunk and the nightly; while reproducing RV1-M1 the fixer found the same kind of dependency for a nested `Core.Optional(Core.Optional(i32*))`, which reads a wrong pointer on trunk and the nightly (v02, v03) | folded: the PR 57 dependency recorded for both; F-M adds a `bool` payload split and program leg at land time; measured on the PR 57 mirror (g01 with `bool`, v02, v03) | §0.7, §1.7, §3 item 8, §8 item 6, C.9 |
+| m1: Appendix C and C.9 contradict §3 item 8 on R and D while the PRs are held | MINOR | yes | folded: Appendix C's held-state paragraph and C.9's held Next-actions item rewritten | Appendix C, C.9 |
+| m2: the land-time list omits records whose targets are not on the merged trunk | MINOR | yes: W-177 has no entry on trunk or the branch; F-015 is in no decision log on trunk; W-219 is not on trunk | folded: the list extended (C.5, C.8's F-015 references, W-284's `blocked_by`, the W-177 cite); W-282 unused and W-278 and W-283 unfiled, decided now | §3 item 8 |
+| m3: trunk moved after M | MINOR | yes: d9f346f53, fork/ORCHESTRATION.md only | folded: the second merge dff9f756b; the break condition widened | §3 item 8 |
+| m4: W-ids in a golden, a source comment and program headers, against §1.12 | MINOR | yes: W-036 at sum_type.cpp:258 (:249 before the fold) and sum_type_overload.carbon:362; W-177, W-047, W-078a and W-049 in program headers | folded with the review's first option: §1.12 amended (cites of items filed on the landing trunk; W-177's resolves at land time), no file changed | §1.12, §3 item 8 |
+| m5: Appendix A's oracle listing differs from the committed, wrapped oracle | MINOR | yes | folded: both roundtrip listings are the committed files | Appendix A |
+| m6: M1's row says all sixteen overload splits | MINOR | yes: `$V/mut/M1/attr.txt` lists fourteen | folded | §8 item 5 |
+| m7: §3 items 2 and 3 not amended for the C2/C3 split as implemented | MINOR | yes: the commit messages of 089b30191 and ab0b4951a | folded | §3 items 2 and 3 |
+| m8: §1.14 says the heading is dated | MINOR | yes: docs/design/sum_types.md:249 | folded | §1.14 |
+| m9: stale counts and cites | MINOR | yes: convert.cpp +23/-7; the PR 57 counts are 387, 12 and 18 in §0.7's order; sum_types.md:64-67 | folded in place | §0.7, §1.1, §6, §8 item 10 |
+| m10: the template-dependence test has no coverage (M16 survives) | MINOR | yes: stage 4's M16 run | folded: §1.10 calls the test defensive and cites M16; the break condition stays | §1.10 |
+
+**Verification of the fold** (expected, not of record, R9). The full build of
+a4d979619 (2 steps after the uncommitted build of the same sources, 0 warnings;
+`carbon version` 0.0.0-0.dev+a4d979619); autoupdate of the five changed goldens
+to a fixpoint on its second pass, byte-identical to the uncommitted build's
+fill; the gate 1947 of 1950 at a4d979619 (optional.carbon, variant.carbon and
+std_sum_types.carbon "Autoupdate would make changes", no crash) and 1950 of 1950
+after the fill and on the merged head, with no autoupdate-would-change mark;
+conformance 134 PASS, 0 FAIL, 21 SKIP over 155, every status as at C3 (§5); the
+213 probes of `$Y/probes/` and `$W/probes/` (rx, rt, cr, cz, w; f, h, rA, rB,
+rr, x, y) print what they printed at C3; review 1's a01, b01, d01, e03 and g06
+DIFF-PASS against their oracles, its e01 (less the struct literal) as e05, and
+q03, q11 to q15 compile; the mutants of §8 item 5; the PR 57 mirror of §8
+item 6; clang-format 21.1.8 and prek on every changed path, and
+`prek run --all-files`, at a fixpoint. M-VA's block applies to the folded
+sum_type.cpp (§3 item 8). No new residue: W-286 to W-294 stay held.
+
+**R31 counts** (`$Y/bin/r31.py`, outside code blocks): before the fold, headings
+{level 1: 1, level 2: 17, level 3: 74}, 174 bullets, 47 numbered items, 212
+table rows and 51 indented table rows in 8991 lines, and 47 code blocks, all
+between markers; the fold's counts and their differences are in the records fix
+commit's message. The new heading is this section's.
+
 ## Sign-off
 
 Rev 5 (2026-10-20) is SIGNED OFF FOR IMPLEMENTATION: the focused re-review of
@@ -8937,6 +9475,11 @@ re-review fold record](#focused-re-review-fold-record-rev-3-2026-10-20). What
 stays open is filed (§1.16) or is a land-time step (§3 item 8); the
 implementation reviews of §3 item 6 judge the implementation against this
 revision.
+
+The two implementation reviews of 6efb8345b and their fold are the
+[implementation review fold
+record](#implementation-review-fold-record-2026-10-21) (added 2026-10-21,
+implementation-review fold: all findings).
 
 ## Revision record
 
@@ -8988,3 +9531,14 @@ revision.
     parameter default values and the user page's pack-element line are listed;
     PR 61's facts are brought to its pushed head 281292d8f and every composition
     is gated again. SIGNED OFF FOR IMPLEMENTATION (the [sign-off](#sign-off)).
+-   Implementation-review fold (2026-10-21): the two implementation reviews of
+    the branch at 6efb8345b (review 1 REJECT: RV1-B1, RV1-M1, RV1-m1; review 2
+    APPROVE-WITH-FIXES: m1 to m10) folded, none rejected (the [implementation
+    review fold record](#implementation-review-fold-record-2026-10-21)): the fix
+    commit a4d979619 and its fill a0669750a change sum_type.{h,cpp} (the offered
+    class is instantiated, and a pointer alternative converts back through
+    `Get()` or no argument), the five mocks, two splits in each of
+    optional.carbon and variant.carbon, and cpp_sum_type_roundtrip_diff;
+    dff9f756b merges trunk d9f346f53; the records fix commit amends §0.7, §1.1,
+    §1.5, §1.7, §1.8, §1.10, §1.12, §1.14, §2.3, §2.4, §3, §4, §5, §6, §7.1, §8
+    and Appendices A to C.

@@ -807,19 +807,15 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 ### Next actions (dependency order)
 
-1.  **DR-1, direction realignment (R32; decision log DR-0)**, after CT-1's
-    implementation and before UA-3, on trunk's base with the held PRs composed
-    on mirrors: slice 1, `Match` for classes and `Core.Optional`'s `impl as
-    Match` (`.Some(<pattern>)` and `.None` patterns, `match`, `if let`, `while
-    let`, the `for` desugaring, the `Try` body; `HasValue`/`Get` kept; W-320,
-    closing W-177); slice 2, `Core.Iterate.Next`'s `ref cursor` signature with
-    its 11 pointer-cursor sites and the loop checker (W-321); slice 3,
-    `Core.Slice`'s element access writable through `IndirectIndexWith`'s `Ref`
-    (W-109). The plan's reviews decide the order and may split slices into PRs.
-    It owes PR 56 a new commit, before PR 56 lands, rewriting loops.md:116-118's
-    Fork amendment and correcting OP-1's V-3 paragraph (W-323), and PR 62 a new
-    commit retiring D-SV-7's view when slice 1 lands (W-322); neither PR is
-    rewritten.
+1.  **DR-1 (fork/direction/plan.md, rev 3, signed off)**: two PRs after
+    CT-1, DR-1a the `ref` cursor (W-321) and DR-1b `IndirectIndexWith` (W-109,
+    stacked on DR-1a); now, W-322's removal-only commit on PR 62's branch and
+    W-323's records commit on PR 56's branch, merged into PR 57's; W-320
+    (`Core.Optional` matchable by `Match`) stopped at the plan on upstream's own
+    conflict, watched by W-324 at each weekly upstream check. W-322's commit
+    gets one focused review once its run is green (R29(c)); after it and
+    W-323's commit, PR 62's, PR 56's and PR 57's descriptions and first
+    comments are refreshed and re-posted, and their rows stamped.
 2.  A W-008 slice (tuple/var/ref/compile-time case patterns,
     non-binding payload subpatterns — unblocks W-066's usefulness
     diagnostics) or conformance depth (differential pairs for flipped

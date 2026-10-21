@@ -244,7 +244,14 @@ under V-3b each entry is a drift and carries its work item. (i) PR 62's D-SV-7
 read-only `Core.Slice`, registered at SL-1, against upstream's
 `IndirectIndexWith` and its `Ref` (6d80ceb58, 309d3d63c; W-109, DR-1 slice 3).
 (iii) The pointer cursor of `Core.Iterate.Next` at 11 sites against upstream's
-`ref cursor` (df3cf9294; W-321, DR-1 slice 2).
+`ref cursor` (df3cf9294; W-321, DR-1 slice 2). (iv) `Core.Optional` is not
+matchable because upstream's pages conflict on `Match.Continuation`
+(docs/design/sum_types.md:113 against README.md:1076-1078 and :3064-3067,
+generics/terminology.md:100-103 and the parser at ac31fd198); work items W-320
+(blocked) and W-324, owner DR-1, checked at each weekly upstream check (added
+2026-10-21, DR-1 plan). (v) D-SL-17's literal-subscript rule, a fork spelling
+of indexing.md's `like i64`; work item W-326, blocked on `like` (added
+2026-10-21, DR-1 plan).
 
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened
@@ -258,6 +265,59 @@ records corrections owed on PR 56's branch; owner DR-1). W-109 (SL-1's residue,
 on trunk) gains a dated note naming D-DR-1 slice 3 and R32, and no new id.
 W-324..W-329 are reserved and unused. The trunk ledger holds W-001..W-125 and
 these four; the ids between live on the held PRs' branches.
+
+### DR-1: direction realignment: the ref cursor, IndirectIndexWith, D-SV-7 retired, Match stopped on upstream's conflict (2026-10-21)
+
+The workstream D-DR-1 scheduled (fork/direction/plan.md, rev 3, signed off
+2026-10-21). Upstream's direction was read at upstream/trunk bc45989b2, the tip
+at sign-off (rev 2 read ac31fd198). Decisions D-DR-5..D-DR-22, auto-adopted
+under R29(a), each with its break condition in the plan: two PRs, DR-1a (the
+`ref` cursor) on trunk's base and DR-1b (`IndirectIndexWith`) stacked on it
+(D-DR-5); the `ref` cursor as df3cf9294 (D-DR-6); `IndirectIndexWith` as
+6d80ceb58 and 309d3d63c with 230227264's code and upstream's tests,
+`Core.Slice` and `Core.Buf` writable through `Ref` (indexing.md's `std::span`
+category, D-SL-6's by-value writes), D-SL-3 retired by its own break condition,
+D-SL-17 filed as a drift (W-326) (D-DR-7); none of rev 1's language
+prerequisites for sum_types.md's `Match` (D-DR-8): a template associated
+constant contradicts docs/design/README.md:1076-1078 and :3064-3067,
+generics/terminology.md:100-103 and upstream's parser, and an impl member giving
+an associated constant its value is what accepted proposal p001013 removed, so
+D-DR-22's stop rule fired at the plan and W-320 waits on upstream's resolution
+(W-324); D-DR-9..D-DR-14 withdrawn with slice 1, their resumption bound by the
+plan's RC-1..RC-12, and the `Try` body kept on `HasValue()`/`Get()` (D-DR-13
+withdrawn: its sketch is the fork's own page); D-SV-7's view removed now by a
+removal-only commit on PR 62's branch, F-020's bridge kept (D-DR-15); no new
+diagnostic kind (D-DR-16); goldens, programs, docs and records
+(D-DR-17..D-DR-19); merge after CT-1 by merge commits with a composition commit
+that indexes a template-dependent operand per specific (D-DR-20); W-324..W-327
+and W-329 filed, W-328 reserved, no F-022 (D-DR-21).
+
+Amendments of DR-0, dated 2026-10-21: D-DR-1's slice 1 is stopped at DR-1's
+plan by D-DR-22, not re-spelled; its "`.Some(<pattern>)` and `.None` patterns"
+reads `.None()` for `Core.Optional` while the prelude's `None` is a function
+(docs/design/sum_types.md:214-222), and its "the `Try` body rewritten" is
+withdrawn (D-DR-13); its "on trunk's base" holds for both PRs. D-DR-2's
+retirement of the view no longer waits for W-320: R32 (e) removes it before PR
+62 lands (D-DR-15).
+
+V-3a register, at this entry's plan state: (ii) D-SL-3 is resolved by DR-1b,
+(iii) the pointer cursor by DR-1a and (i) D-SV-7 by W-322's commit on PR 62's
+branch, each sha recorded here at its discharge; (iv) added: `Core.Optional`
+not matchable because upstream's pages conflict on `Match.Continuation`, W-320
+(blocked) and W-324; (v) added: D-SL-17's literal-subscript rule, a fork
+spelling of `like i64`, W-326.
+
+_Ids._ The re-scan at this entry's records commit (2026-10-21, after a fetch;
+the command in CT-1's fork/cpp-templates/plan.md §0.11 widened to
+`W-3[2-9][0-9]`; 87 origin refs, 17 worktrees) found W-320..W-323 (DR-0's) and
+no higher W-3xx id in any ledger. W-324..W-327 and W-329 are filed now; W-328
+stays reserved and unused for W-320's resumption.
+
+Measured at planning (container-local, EXPECTED, not of record): slice 2 gate
+1942 of 1942 and conformance 128/0/22 over 150; slices 2 and 3 gate 1946 of
+1946 and conformance 130/0/22 over 152; composed on CT-1's head 1963 of 1963
+and 149/0/20 over 169; PR 62 with W-322's commit 1950 of 1950 and 133/0/22 over
+155; at discharge: each PR's own runs, recorded by its discharge commit.
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

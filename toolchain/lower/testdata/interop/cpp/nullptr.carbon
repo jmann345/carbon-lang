@@ -57,6 +57,7 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: @0 = private unnamed_addr constant [58 x i8] c"carbon: Core.Optional.Get on an empty value; terminating\0A\00", align 1
 // CHECK:STDOUT: @.str = private unnamed_addr constant [74 x i8] c"carbon: C++ exception escaped into Carbon through `TakePtr`; terminating\0A\00", align 1
 // CHECK:STDOUT: @.str.1 = private unnamed_addr constant [78 x i8] c"carbon: C++ exception escaped into Carbon through `TakeNullptr`; terminating\0A\00", align 1
 // CHECK:STDOUT: @.str.2 = private unnamed_addr constant [80 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnNullptr`; terminating\0A\00", align 1
@@ -88,14 +89,26 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT:   ret void, !dbg !25
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core"(ptr %self) #0 !dbg !27 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !29
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.729fca203337f92a:core.Destroy.Core"(ptr %self) #0 !dbg !31 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !33
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal void @_Z7TakePtrPi.carbon_thunk._(ptr noundef %p) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %p.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
 // CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
-// CHECK:STDOUT:   store ptr %p, ptr %p.addr, align 8, !tbaa !101
-// CHECK:STDOUT:   %0 = load ptr, ptr %p.addr, align 8, !tbaa !101
+// CHECK:STDOUT:   store ptr %p, ptr %p.addr, align 8, !tbaa !103
+// CHECK:STDOUT:   %0 = load ptr, ptr %p.addr, align 8, !tbaa !103
 // CHECK:STDOUT:   invoke void @_Z7TakePtrPi(ptr noundef %0)
 // CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
@@ -133,18 +146,6 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core"(ptr %self) #0 !dbg !27 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !29
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.729fca203337f92a:core.Destroy.Core"(ptr %self) #0 !dbg !31 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !33
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.5b309895020f658e:core.Destroy.Core"(ptr %self) #0 !dbg !35 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !37
@@ -156,8 +157,8 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT:   %n.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
 // CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
-// CHECK:STDOUT:   store ptr %n, ptr %n.addr, align 8, !tbaa !104
-// CHECK:STDOUT:   %0 = load ptr, ptr %n.addr, align 8, !tbaa !104
+// CHECK:STDOUT:   store ptr %n, ptr %n.addr, align 8, !tbaa !106
+// CHECK:STDOUT:   %0 = load ptr, ptr %n.addr, align 8, !tbaa !106
 // CHECK:STDOUT:   invoke void @_Z11TakeNullptrDn(ptr null)
 // CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
@@ -252,13 +253,13 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
 // CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
-// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !104
-// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !104
+// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !106
+// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !106
 // CHECK:STDOUT:   %call = invoke ptr @_Z13ReturnNullptrv()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   store ptr %call, ptr %0, align 8, !tbaa !105
+// CHECK:STDOUT:   store ptr %call, ptr %0, align 8, !tbaa !107
 // CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
 // CHECK:STDOUT: lpad:                                             ; preds = %entry
@@ -322,9 +323,11 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT: declare ptr @_CMake.NullptrT.CppCompat.Core()
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @_CNone.Optional.Core.6e9e957697159b53() #0 !dbg !91 {
-// CHECK:STDOUT:   ret ptr null, !dbg !95
+// CHECK:STDOUT: define linkonce_odr ptr @_CNone.Optional.Core.6e9e957697159b53() #0 !dbg !93 {
+// CHECK:STDOUT:   ret ptr null, !dbg !97
 // CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_CSelfDestruct.48e0adf639fe7af4:core.Destroy.Core"(ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_Z7TakePtrPi(ptr noundef) #3
 // CHECK:STDOUT:
@@ -369,8 +372,8 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!5}
-// CHECK:STDOUT: !llvm.module.flags = !{!106, !107, !108, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!110}
+// CHECK:STDOUT: !llvm.module.flags = !{!108, !109, !110, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!112}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -396,13 +399,13 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT: !24 = !DILocalVariable(arg: 1, scope: !23, type: !9)
 // CHECK:STDOUT: !25 = !DILocation(line: 189, column: 19, scope: !23)
 // CHECK:STDOUT: !26 = !{!24}
-// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core", scope: null, file: !4, line: 12, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !30)
+// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core", scope: null, file: !22, line: 189, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !30)
 // CHECK:STDOUT: !28 = !DILocalVariable(arg: 1, scope: !27, type: !9)
-// CHECK:STDOUT: !29 = !DILocation(line: 12, column: 15, scope: !27)
+// CHECK:STDOUT: !29 = !DILocation(line: 189, column: 19, scope: !27)
 // CHECK:STDOUT: !30 = !{!28}
-// CHECK:STDOUT: !31 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.729fca203337f92a:core.Destroy.Core", scope: null, file: !4, line: 12, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !34)
+// CHECK:STDOUT: !31 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.729fca203337f92a:core.Destroy.Core", scope: null, file: !22, line: 189, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !34)
 // CHECK:STDOUT: !32 = !DILocalVariable(arg: 1, scope: !31, type: !9)
-// CHECK:STDOUT: !33 = !DILocation(line: 12, column: 15, scope: !31)
+// CHECK:STDOUT: !33 = !DILocation(line: 189, column: 19, scope: !31)
 // CHECK:STDOUT: !34 = !{!32}
 // CHECK:STDOUT: !35 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.5b309895020f658e:core.Destroy.Core", scope: null, file: !4, line: 12, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !38)
 // CHECK:STDOUT: !36 = !DILocalVariable(arg: 1, scope: !35, type: !9)
@@ -444,21 +447,21 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT: !87 = !DILocation(line: 52, column: 14, scope: !82)
 // CHECK:STDOUT: !88 = !DILocation(line: 52, column: 7, scope: !82)
 // CHECK:STDOUT: !89 = !{!83}
-// CHECK:STDOUT: !91 = distinct !DISubprogram(name: "None", linkageName: "_CNone.Optional.Core.6e9e957697159b53", scope: null, file: !22, line: 31, type: !15, spFlags: DISPFlagDefinition, unit: !5)
-// CHECK:STDOUT: !95 = !DILocation(line: 32, column: 5, scope: !91)
-// CHECK:STDOUT: !96 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !97 = !{!"omnipotent char", !96, i64 0}
-// CHECK:STDOUT: !98 = !{!"int", !97, i64 0}
-// CHECK:STDOUT: !99 = !{!"any pointer", !97, i64 0}
-// CHECK:STDOUT: !100 = !{!"p1 int", !99, i64 0}
-// CHECK:STDOUT: !101 = !{!100, !100, i64 0}
-// CHECK:STDOUT: !102 = !{!"std::nullptr_t", !97, i64 0}
-// CHECK:STDOUT: !103 = !{!"p1 std::nullptr_t", !99, i64 0}
-// CHECK:STDOUT: !104 = !{!103, !103, i64 0}
-// CHECK:STDOUT: !105 = !{!102, !102, i64 0}
-// CHECK:STDOUT: !106 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !107 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !108 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !109 = !{!"__libc_errno", !98, i64 0}
-// CHECK:STDOUT: !110 = !{!109, !98, i64 0}
+// CHECK:STDOUT: !93 = distinct !DISubprogram(name: "None", linkageName: "_CNone.Optional.Core.6e9e957697159b53", scope: null, file: !22, line: 31, type: !15, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !97 = !DILocation(line: 32, column: 5, scope: !93)
+// CHECK:STDOUT: !98 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !99 = !{!"omnipotent char", !98, i64 0}
+// CHECK:STDOUT: !100 = !{!"int", !99, i64 0}
+// CHECK:STDOUT: !101 = !{!"any pointer", !99, i64 0}
+// CHECK:STDOUT: !102 = !{!"p1 int", !101, i64 0}
+// CHECK:STDOUT: !103 = !{!102, !102, i64 0}
+// CHECK:STDOUT: !104 = !{!"std::nullptr_t", !99, i64 0}
+// CHECK:STDOUT: !105 = !{!"p1 std::nullptr_t", !101, i64 0}
+// CHECK:STDOUT: !106 = !{!105, !105, i64 0}
+// CHECK:STDOUT: !107 = !{!104, !104, i64 0}
+// CHECK:STDOUT: !108 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !109 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !110 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !111 = !{!"__libc_errno", !100, i64 0}
+// CHECK:STDOUT: !112 = !{!111, !100, i64 0}
 // CHECK:STDOUT:

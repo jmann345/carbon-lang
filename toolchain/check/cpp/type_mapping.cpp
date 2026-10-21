@@ -587,13 +587,14 @@ static auto InventPrimitiveClangArg(Context& context, SemIR::FormInfo form)
     }
   }
 
-  // Fork (SV-1, F-020): a `Core.CppCompat` sum type argument is offered to
+  // Fork (SV-1, F-020): a `Core.CppCompat` sum type argument, or a
+  // `Core.Optional(T)` with a matchable non-pointer payload, is offered to
   // overload resolution as the C++ class it converts to; the argument is
   // converted by value when the call converts it to the parameter's type,
   // which must be that class. Before `MapToCppType`, which would try, and
   // diagnose, exporting the prelude type itself.
   if (arg_cpp_type.isNull()) {
-    arg_cpp_type = MapCarbonSumTypeToCpp(context, form.type_id);
+    arg_cpp_type = MapCarbonSumTypeToCpp(context, form.loc_id, form.type_id);
   }
 
   if (arg_cpp_type.isNull()) {

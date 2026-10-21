@@ -635,6 +635,89 @@ static auto ClassifyCarbonSumType(Context& context, SemIR::TypeId type_id)
   return name->starts_with("StdVariant") ? 2 : 0;
 }
 
+// Returns whether `type_id` is a `Core.Optional(T)` specific, and sets
+// `payload_type_id` to `T` (from the argument `T as OptionalStorage`) when the
+// argument is concrete. Adds no instruction.
+static auto GetCoreOptionalPayload(Context& context, SemIR::TypeId type_id,
+                                   SemIR::TypeId& payload_type_id) -> bool {
+  payload_type_id = SemIR::TypeId::None;
+  auto class_type = context.types().TryGetAs<SemIR::ClassType>(
+      context.types().GetUnqualifiedType(type_id));
+  if (!class_type || !class_type->specific_id.has_value()) {
+    return false;
+  }
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (class_info.is_choice ||
+      !context.name_scopes().IsCorePackage(class_info.parent_scope_id) ||
+      context.names().GetAsStringIfIdentifier(class_info.name_id) !=
+          "Optional") {
+    return false;
+  }
+  auto args = context.inst_blocks().GetOrEmpty(
+      context.specifics().Get(class_type->specific_id).args_id);
+  if (args.size() != 1) {
+    return false;
+  }
+  auto arg_const_id = context.constant_values().Get(args[0]);
+  if (context.constant_values().GetDependence(arg_const_id) !=
+      SemIR::ConstantDependence::None) {
+    return true;
+  }
+  auto arg_inst_id = context.constant_values().GetInstId(arg_const_id);
+  if (auto facet = context.insts().TryGetAs<SemIR::FacetValue>(arg_inst_id)) {
+    arg_const_id = context.constant_values().Get(facet->type_inst_id);
+  }
+  payload_type_id = context.types().TryGetTypeIdForTypeConstantId(arg_const_id);
+  return true;
+}
+
+// Classifies a `Core.Optional` specific without forming its view.
+static auto ClassifyCoreOptional(Context& context, SemIR::LocId loc_id,
+                                 SemIR::TypeId type_id) -> CoreOptionalView {
+  auto payload_type_id = SemIR::TypeId::None;
+  if (!GetCoreOptionalPayload(context, type_id, payload_type_id)) {
+    return {};
+  }
+  CoreOptionalView view = {.payload_type_id = payload_type_id};
+  if (!payload_type_id.has_value()) {
+    view.status = CoreOptionalView::SymbolicPayload;
+  } else if (!TryToCompleteType(context, payload_type_id, loc_id) ||
+             !IsInSliceChoicePayloadType(context, payload_type_id)) {
+    view.status = CoreOptionalView::PayloadNotAdmitted;
+  } else {
+    view.status = CoreOptionalView::Matchable;
+  }
+  return view;
+}
+
+auto GetCoreOptionalView(Context& context, SemIR::LocId loc_id,
+                         SemIR::TypeId type_id) -> CoreOptionalView {
+  auto view = ClassifyCoreOptional(context, loc_id, type_id);
+  if (view.status != CoreOptionalView::Matchable) {
+    return view;
+  }
+  // The payload is admitted, so forming `StdOptional(T)` cannot fail SF-6's
+  // per-specific check.
+  view.view_type_id = FormCarbonSumType(
+      context, loc_id, GetCarbonSumTypeName(/*is_optional=*/true, 1),
+      {context.types().GetTypeInstId(view.payload_type_id)});
+  if (view.view_type_id == SemIR::ErrorInst::TypeId) {
+    view.status = CoreOptionalView::PayloadNotAdmitted;
+  }
+  return view;
+}
+
+auto DiagnoseCoreOptionalNotMatchable(Context& context, SemIR::LocId loc_id,
+                                      SemIR::TypeId type_id,
+                                      const CoreOptionalView& view) -> void {
+  CARBON_DIAGNOSTIC(CoreOptionalNotMatchable, Error,
+                    "cannot match {0} in 0.1: its payload type {1:is "
+                    "symbolic|is not a choice payload type}",
+                    SemIR::TypeId, Diagnostics::BoolAsSelect);
+  context.emitter().Emit(loc_id, CoreOptionalNotMatchable, type_id,
+                         view.status == CoreOptionalView::SymbolicPayload);
+}
+
 static auto IsTemplateDependent(Context& context, SemIR::TypeId type_id)
     -> bool {
   return context.constant_values().GetDependence(context.types().GetConstantId(
@@ -674,16 +757,18 @@ static auto DiagnoseCppSumTypeReverseMismatch(Context& context,
                          GetCppTypeSpelling(context, target_type_id));
 }
 
-// Converts a value of the Carbon sum type `value_type_id` to the C++ class
-// target `target_type_id`.
+// Converts a value of a C++ class or Carbon type to the C++ class target
+// `target_type_id`, given the Carbon sum type `sum_type_id` the value converts
+// to first (itself, or the view of a `Core.Optional`).
 static auto ConvertToCppSumClass(Context& context, SemIR::LocId loc_id,
                                  SemIR::InstId value_id,
                                  SemIR::TypeId value_type_id,
+                                 SemIR::TypeId sum_type_id,
                                  SemIR::TypeId target_type_id, bool diagnose)
     -> SemIR::InstId {
   auto sum_type = GetCppSumType(context, loc_id, target_type_id);
   if (sum_type.status != CppSumType::Mapped ||
-      sum_type.carbon_type_id != value_type_id) {
+      sum_type.carbon_type_id != sum_type_id) {
     if (diagnose) {
       DiagnoseCppSumTypeReverseMismatch(context, loc_id, value_type_id,
                                         target_type_id);
@@ -695,6 +780,13 @@ static auto ConvertToCppSumClass(Context& context, SemIR::LocId loc_id,
   }
   if (!CanBuildBranches(context, loc_id)) {
     return SemIR::ErrorInst::InstId;
+  }
+  if (value_type_id != sum_type_id) {
+    // A `Core.Optional(T)`: through the prelude's bridge to its view first.
+    value_id = ConvertToValueOfType(context, loc_id, value_id, sum_type_id);
+    if (value_id == SemIR::ErrorInst::InstId) {
+      return value_id;
+    }
   }
   return ConvertCarbonSumToCpp(context, loc_id, value_id, sum_type);
 }
@@ -712,10 +804,20 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
     return SemIR::InstId::None;
   }
 
-  // C++ to Carbon: to the sum type itself. Any other target is left to the
-  // other conversions.
+  // C++ to Carbon: to the sum type itself, or for `std::optional<T>` to
+  // `Core.Optional(T')` through it.
   if (GetCppClassDecl(context, value_type_id)) {
-    if (ClassifyCarbonSumType(context, target_type_id) == 0) {
+    bool target_is_sum_type =
+        ClassifyCarbonSumType(context, target_type_id) != 0;
+    auto target_optional =
+        target_is_sum_type
+            ? CoreOptionalView()
+            : ClassifyCoreOptional(context, loc_id, target_type_id);
+    // A `Core.Optional` whose payload is not matchable -- in particular one
+    // whose payload is the C++ class itself -- is left to `Core.Optional`'s
+    // own conversions.
+    if (!target_is_sum_type &&
+        target_optional.status != CoreOptionalView::Matchable) {
       return SemIR::InstId::None;
     }
     auto sum_type = GetCppSumType(context, loc_id, value_type_id);
@@ -728,7 +830,12 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
       }
       return SemIR::ErrorInst::InstId;
     }
-    if (sum_type.carbon_type_id != target_type_id) {
+    bool to_core_optional = false;
+    if (!target_is_sum_type && sum_type.is_optional) {
+      auto view = GetCoreOptionalView(context, loc_id, target_type_id);
+      to_core_optional = view.view_type_id == sum_type.carbon_type_id;
+    }
+    if (sum_type.carbon_type_id != target_type_id && !to_core_optional) {
       if (diagnose) {
         DiagnoseCppSumTypeMismatch(context, loc_id, sum_type, target_type_id);
       }
@@ -740,37 +847,61 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
     if (!CanBuildBranches(context, loc_id)) {
       return SemIR::ErrorInst::InstId;
     }
-    return ConvertCppSumToCarbon(context, loc_id, value_id, sum_type);
+    auto sum_id = ConvertCppSumToCarbon(context, loc_id, value_id, sum_type);
+    if (!to_core_optional || sum_id == SemIR::ErrorInst::InstId) {
+      return sum_id;
+    }
+    // Through the prelude's bridge,
+    // `StdOptional(T) as ImplicitAs(Optional(T))`.
+    return ConvertToValueOfType(context, loc_id, sum_id, target_type_id);
   }
 
-  // Carbon to C++: a sum type converts only to the C++ class whose sum type it
-  // is.
+  // Carbon to C++: a sum type, or a `Core.Optional(T')` whose payload is
+  // matchable and not a pointer (a `Core.Optional(T*)` keeps the nullable
+  // pointer mapping), converts only to the C++ class whose sum type it is.
   if (!GetCppClassDecl(context, target_type_id)) {
     return SemIR::InstId::None;
   }
   if (ClassifyCarbonSumType(context, value_type_id) != 0) {
     return ConvertToCppSumClass(context, loc_id, value_id, value_type_id,
-                                target_type_id, diagnose);
+                                value_type_id, target_type_id, diagnose);
+  }
+  auto value_optional = ClassifyCoreOptional(context, loc_id, value_type_id);
+  if (value_optional.status == CoreOptionalView::Matchable &&
+      !context.types().Is<SemIR::PointerType>(value_optional.payload_type_id)) {
+    auto view = GetCoreOptionalView(context, loc_id, value_type_id);
+    return ConvertToCppSumClass(context, loc_id, value_id, value_type_id,
+                                view.view_type_id, target_type_id, diagnose);
   }
   return SemIR::InstId::None;
 }
 
-auto MapCarbonSumTypeToCpp(Context& context, SemIR::TypeId carbon_type_id)
-    -> clang::QualType {
+auto MapCarbonSumTypeToCpp(Context& context, SemIR::LocId loc_id,
+                           SemIR::TypeId carbon_type_id) -> clang::QualType {
   carbon_type_id = context.types().GetUnqualifiedType(carbon_type_id);
   int kind = ClassifyCarbonSumType(context, carbon_type_id);
-  if (kind == 0) {
-    return clang::QualType();
-  }
   llvm::SmallVector<SemIR::TypeId> arg_type_ids;
-  auto class_type = context.types().GetAs<SemIR::ClassType>(carbon_type_id);
-  for (auto arg_id : context.inst_blocks().GetOrEmpty(
-           context.specifics().Get(class_type.specific_id).args_id)) {
-    if (auto facet = context.insts().TryGetAs<SemIR::FacetValue>(arg_id)) {
-      arg_id = facet->type_inst_id;
+  if (kind != 0) {
+    auto class_type = context.types().GetAs<SemIR::ClassType>(carbon_type_id);
+    for (auto arg_id : context.inst_blocks().GetOrEmpty(
+             context.specifics().Get(class_type.specific_id).args_id)) {
+      if (auto facet = context.insts().TryGetAs<SemIR::FacetValue>(arg_id)) {
+        arg_id = facet->type_inst_id;
+      }
+      arg_type_ids.push_back(context.types().GetTypeIdForTypeConstantId(
+          context.constant_values().Get(arg_id)));
     }
-    arg_type_ids.push_back(context.types().GetTypeIdForTypeConstantId(
-        context.constant_values().Get(arg_id)));
+  } else {
+    // A `Core.Optional(T)` whose payload is matchable and not a pointer is
+    // offered as `std::optional<T'>`; a `Core.Optional(T*)` keeps the nullable
+    // pointer mapping of `MapToCppType`.
+    auto view = ClassifyCoreOptional(context, loc_id, carbon_type_id);
+    if (view.status != CoreOptionalView::Matchable ||
+        context.types().Is<SemIR::PointerType>(view.payload_type_id)) {
+      return clang::QualType();
+    }
+    kind = 1;
+    arg_type_ids.push_back(view.payload_type_id);
   }
   auto* template_decl = LookupCppClassTemplate(
       context, {"std", kind == 1 ? "optional" : "variant"});

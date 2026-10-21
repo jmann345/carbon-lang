@@ -305,6 +305,35 @@ fn F() -> i32 {
   return Pick((Core.CppCompat.StdOptional(i32).Some(4), 1));
 }
 
+// --- tuple_core_optional.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+overload fn Pick(unused t: (Core.Optional(i32), i32)) -> i32 { return 1; }
+overload fn Pick(unused b: bool) -> i32 { return 100; }
+
+fn F() -> i32 {
+  return Pick((Cpp.MakeOptional(7), 1));
+}
+
+// --- generic_tuple_member.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+overload fn Pick[T: Core.Copy & Core.Destroy](
+    unused x: T, unused t: (Core.Optional(i32), i32)) -> i32 {
+  return 1;
+}
+overload fn Pick(unused x: bool, unused y: bool) -> i32 { return 0; }
+
+fn F() -> i32 {
+  return Pick(1 as i32, (Cpp.MakeOptional(7), 1));
+}
+
 // --- scalar_tuple_mismatch_first.carbon
 
 library "[[@TEST_NAME]]";
@@ -333,13 +362,6 @@ overload fn Pick(unused o: Cpp.std.optional(i32)) -> i32 { return 2; }
 // At file scope the sum-type conversion cannot be built (W-036). The argument
 // converts to the first member's parameter, so the probe accepts that member,
 // and the call reports the limit rather than calling the second member.
-// CHECK:STDERR: fail_todo_file_scope.carbon:[[@LINE+7]]:19: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]
-// CHECK:STDERR: let x: i32 = Pick(Cpp.MakeOptional(7));
-// CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_todo_file_scope.carbon:[[@LINE-11]]:25: note: initializing function parameter [InCallToFunctionParam]
-// CHECK:STDERR: overload fn Pick(unused o: Core.CppCompat.StdOptional(i32)) -> i32 {
-// CHECK:STDERR:                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 let x: i32 = Pick(Cpp.MakeOptional(7));
 
 // --- fail_todo_template_overload.carbon
@@ -364,15 +386,5 @@ fn Call[template T: type](x: T) -> i32 {
 }
 
 fn F() -> i32 {
-  // CHECK:STDERR: fail_todo_template_overload.carbon:[[@LINE+10]]:10: error: unable to monomorphize specific `Call(Cpp.std.__1.optional)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   return Call(Cpp.MakeOptional(7));
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR: fail_todo_template_overload.carbon:[[@LINE-7]]:15: note: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]
-  // CHECK:STDERR:   return Pick(x);
-  // CHECK:STDERR:               ^
-  // CHECK:STDERR: fail_todo_template_overload.carbon:[[@LINE-22]]:25: note: initializing function parameter [InCallToFunctionParam]
-  // CHECK:STDERR: overload fn Pick(unused o: Core.CppCompat.StdOptional(i32)) -> i32 {
-  // CHECK:STDERR:                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   return Call(Cpp.MakeOptional(7));
 }

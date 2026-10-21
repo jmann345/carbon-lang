@@ -1802,9 +1802,9 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
   }
 
   // Fork (SV-1, F-020): a C++ `std::optional` or `std::variant` converts by
-  // value to its `Core.CppCompat` sum type, and the sum type back to it. A
-  // non-diagnosing conversion, which the caller only tests, builds no control
-  // flow.
+  // value to its `Core.CppCompat` sum type (and a `std::optional` to the
+  // `Core.Optional` of its payload), and those back to it. A non-diagnosing
+  // conversion, which the caller only tests, builds no control flow.
   if (auto sum_id = TryConvertCppSumType(context, loc_id, value_id,
                                          target.type_id, target.diagnose);
       sum_id.has_value()) {

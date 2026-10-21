@@ -309,6 +309,15 @@ fn G() -> i32 { return F({.x = 8} as NoCopy).value.x; }
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_cpp_error_on_instantiation.carbon:[[@LINE+9]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./box.h:8:46: error: invalid operands to binary expression ('Carbon::Point' and 'Carbon::Point') [CppInteropParseError]
+// CHECK:STDERR:     8 | template<typename T> T Twice(T x) { return x + x; }
+// CHECK:STDERR:       |                                            ~ ^ ~
+// CHECK:STDERR: fail_cpp_error_on_instantiation.carbon:[[@LINE+5]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./box.h:8:24: note: in instantiation of function template specialization 'Twice<Carbon::Point>' requested here [CppInteropParseNote]
+// CHECK:STDERR:     8 | template<typename T> T Twice(T x) { return x + x; }
+// CHECK:STDERR:       |                        ^
+// CHECK:STDERR:
 import Cpp library "box.h";
 
 class Point {
@@ -331,6 +340,17 @@ import Cpp library "box.h";
 // `Core.Copy` or `Core.Destroy`, whatever initializes the `var`.
 fn F[T: type](v: T) -> T {
   var r: T = Cpp.Twice(v);
+  // CHECK:STDERR: fail_copy_symbolic_value_in_definition.carbon:[[@LINE+11]]:10: error: cannot copy value of type `T` [CopyOfUncopyableType]
+  // CHECK:STDERR:   return r;
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_copy_symbolic_value_in_definition.carbon:[[@LINE+8]]:10: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return r;
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_copy_symbolic_value_in_definition.carbon:[[@LINE-8]]:3: error: cannot access member of interface `Core.Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   var r: T = Cpp.Twice(v);
+  // CHECK:STDERR:   ^~~~~~~~
+  // CHECK:STDERR:
   return r;
 }
 
@@ -344,6 +364,14 @@ import Cpp library "box.h";
 // defined, so the call is resolved there and its error reported there, as on
 // a function that is never instantiated.
 fn F(generic N: i32) -> i32 {
+  // CHECK:STDERR: fail_symbolic_value_cpp_call_in_definition.carbon:[[@LINE+8]]:26: error: no matching function for call to 'TakeInt' [CppInteropParseError]
+  // CHECK:STDERR:    18 |   return Cpp.TakeInt(N, N);
+  // CHECK:STDERR:       |                          ^
+  // CHECK:STDERR: fail_symbolic_value_cpp_call_in_definition.carbon:[[@LINE-9]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./box.h:12:12: note: candidate function not viable: requires single argument 'x', but 2 arguments were provided [CppInteropParseNote]
+  // CHECK:STDERR:    12 | inline int TakeInt(int x) { return x + 100; }
+  // CHECK:STDERR:       |            ^       ~~~~~
+  // CHECK:STDERR:
   return Cpp.TakeInt(N, N);
 }
 
@@ -376,6 +404,16 @@ fn F[T: type](x: T) -> i32 {
   return if b then 1 else 0;
 }
 
+// CHECK:STDERR: fail_cpp_result_contagion_on_instantiation.carbon:[[@LINE+10]]:24: error: unable to monomorphize specific `F(i32)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn H() -> i32 { return F(1 as i32); }
+// CHECK:STDERR:                        ^
+// CHECK:STDERR: fail_cpp_result_contagion_on_instantiation.carbon:[[@LINE-7]]:17: note: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
+// CHECK:STDERR:   let b: bool = G(Cpp.TakeInt(Cpp.Twice(x)));
+// CHECK:STDERR:                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_cpp_result_contagion_on_instantiation.carbon:[[@LINE-10]]:17: note: type `i32` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR:   let b: bool = G(Cpp.TakeInt(Cpp.Twice(x)));
+// CHECK:STDERR:                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn H() -> i32 { return F(1 as i32); }
 
 // --- fail_alias_of_template_call_on_instantiation.carbon
@@ -431,6 +469,10 @@ import Core library "prelude/types/form";
 import Cpp library "box.h";
 
 fn F(generic Fm: Core.Form, x:? Fm) -> i32 {
+  // CHECK:STDERR: fail_todo_form_dependent_arg.carbon:[[@LINE+4]]:22: error: semantics TODO: `Support passing form-dependent args to C++ functions.` [SemanticsTodo]
+  // CHECK:STDERR:   return Cpp.TakeInt(x);
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
   return Cpp.TakeInt(x);
 }
 
@@ -1013,6 +1055,151 @@ fn G() -> i32 {
 // CHECK:STDOUT:   %.loc8_3.11 => constants.%inst.call
 // CHECK:STDOUT:   %.loc8_3.12 => constants.%empty_tuple.type
 // CHECK:STDOUT:   %.loc8_3.13 => <not constant>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- function_template_call.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt.3a0: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %pattern_type.51d1c4.1: type = pattern_type %T.67d [symbolic]
+// CHECK:STDOUT:   %v.param_patt.4a6: %pattern_type.51d1c4.1 = value_param_pattern [symbolic]
+// CHECK:STDOUT:   %v.patt.0d3: %pattern_type.51d1c4.1 = wrapper_binding_pattern v, %v.param_patt.4a6 [symbolic]
+// CHECK:STDOUT:   %.184347.1: Core.Form = init_form %T.67d [symbolic]
+// CHECK:STDOUT:   %return.param_patt.41d2d9.1: %pattern_type.51d1c4.1 = out_param_pattern [symbolic]
+// CHECK:STDOUT:   %return.patt.b39: %pattern_type.51d1c4.1 = return_slot_pattern %return.param_patt.41d2d9.1, %T.67d [symbolic]
+// CHECK:STDOUT:   %F.type: type = fn_type @F [concrete]
+// CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
+// CHECK:STDOUT:   %require_complete.9443dd.1: <witness> = require_complete_type %T.67d [symbolic]
+// CHECK:STDOUT:   %Twice.cpp_overload_set.type: type = cpp_overload_set_type @Twice.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %Twice.cpp_overload_set.value: %Twice.cpp_overload_set.type = cpp_overload_set_value @Twice.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %.e16: type = type_of_inst @F.%.loc8_21.3 [template]
+// CHECK:STDOUT:   %.275: %.e16 = splice_inst @F.%.loc8_21.3 [template]
+// CHECK:STDOUT:   %tuple.type: type = tuple_type (<instruction>) [concrete]
+// CHECK:STDOUT:   %.38e: %T.67d = splice_inst @F.%tuple.elem0 [template]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
+// CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
+// CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
+// CHECK:STDOUT:   %complete_type.f8a: <witness> = complete_type_witness %i32.builtin [concrete]
+// CHECK:STDOUT:   %v.param_patt.733: %pattern_type.6b6 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %v.patt.808: %pattern_type.6b6 = wrapper_binding_pattern v, %v.param_patt.733 [concrete]
+// CHECK:STDOUT:   %Twice__carbon_thunk.type: type = fn_type @Twice__carbon_thunk [concrete]
+// CHECK:STDOUT:   %Twice__carbon_thunk: %Twice__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.73d: init %i32 = splice_block %Twice__carbon_thunk.call {
+// CHECK:STDOUT:       %.aa3: %i32 = specific_inst @F.%v.ref, @F(%i32)
+// CHECK:STDOUT:       %Twice__carbon_thunk.call: init %i32 = call imports.%Twice__carbon_thunk.decl(%.aa3)
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.284: init %i32 = splice_block %.73d {}
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %tuple: %tuple.type = tuple_value (%inst.splice_block.426619.2) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .Twice = %Twice.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Twice.cpp_overload_set.value: %Twice.cpp_overload_set.type = cpp_overload_set_value @Twice.cpp_overload_set [concrete = constants.%Twice.cpp_overload_set.value]
+// CHECK:STDOUT:   %Twice__carbon_thunk.decl: %Twice__carbon_thunk.type = fn_decl @Twice__carbon_thunk [concrete = constants.%Twice__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
+// CHECK:STDOUT:     %T.patt.loc7_7.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc7_7.2 (constants.%T.patt.3a0)]
+// CHECK:STDOUT:     %v.param_patt.loc7_16.1: @F.%pattern_type (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %v.param_patt.loc7_16.2 (constants.%v.param_patt.4a6)]
+// CHECK:STDOUT:     %v.patt.loc7_16.1: @F.%pattern_type (%pattern_type.51d1c4.1) = wrapper_binding_pattern v, %v.param_patt.loc7_16.1 [symbolic = %v.patt.loc7_16.2 (constants.%v.patt.0d3)]
+// CHECK:STDOUT:     %return.param_patt.loc7_24.1: @F.%pattern_type (%pattern_type.51d1c4.1) = out_param_pattern [symbolic = %return.param_patt.loc7_24.2 (constants.%return.param_patt.41d2d9.1)]
+// CHECK:STDOUT:     %return.patt.loc7_21.1: @F.%pattern_type (%pattern_type.51d1c4.1) = return_slot_pattern %return.param_patt.loc7_24.1, %T.ref.loc7_24 [symbolic = %return.patt.loc7_21.2 (constants.%return.patt.b39)]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %T.ref.loc7_24: type = name_ref T, %T.loc7_7.2 [symbolic = %T.loc7_7.1 (constants.%T.67d)]
+// CHECK:STDOUT:     %.loc7_24.2: Core.Form = init_form %T.ref.loc7_24 [symbolic = %.loc7_24.1 (constants.%.184347.1)]
+// CHECK:STDOUT:     %.loc7_9.1: type = splice_block %.loc7_9.2 [concrete = type] {
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.loc7_9.2: type = type_literal type [concrete = type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc7_7.2: type = symbolic_binding T, 0 [symbolic = %T.loc7_7.1 (constants.%T.67d)]
+// CHECK:STDOUT:     %v.param: @F.%T.loc7_7.1 (%T.67d) = value_param call_param0
+// CHECK:STDOUT:     %T.ref.loc7_18: type = name_ref T, %T.loc7_7.2 [symbolic = %T.loc7_7.1 (constants.%T.67d)]
+// CHECK:STDOUT:     %v: @F.%T.loc7_7.1 (%T.67d) = wrapper_binding v, %v.param
+// CHECK:STDOUT:     %return.param: ref @F.%T.loc7_7.1 (%T.67d) = out_param call_param1
+// CHECK:STDOUT:     %return: ref @F.%T.loc7_7.1 (%T.67d) = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic fn @F(%T.loc7_7.2: type) {
+// CHECK:STDOUT:   %T.patt.loc7_7.2: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc7_7.2 (constants.%T.patt.3a0)]
+// CHECK:STDOUT:   %T.loc7_7.1: type = symbolic_binding T, 0 [symbolic = %T.loc7_7.1 (constants.%T.67d)]
+// CHECK:STDOUT:   %pattern_type: type = pattern_type %T.loc7_7.1 [symbolic = %pattern_type (constants.%pattern_type.51d1c4.1)]
+// CHECK:STDOUT:   %v.param_patt.loc7_16.2: @F.%pattern_type (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %v.param_patt.loc7_16.2 (constants.%v.param_patt.4a6)]
+// CHECK:STDOUT:   %v.patt.loc7_16.2: @F.%pattern_type (%pattern_type.51d1c4.1) = wrapper_binding_pattern v, %v.param_patt.loc7_16.2 [symbolic = %v.patt.loc7_16.2 (constants.%v.patt.0d3)]
+// CHECK:STDOUT:   %.loc7_24.1: Core.Form = init_form %T.loc7_7.1 [symbolic = %.loc7_24.1 (constants.%.184347.1)]
+// CHECK:STDOUT:   %return.param_patt.loc7_24.2: @F.%pattern_type (%pattern_type.51d1c4.1) = out_param_pattern [symbolic = %return.param_patt.loc7_24.2 (constants.%return.param_patt.41d2d9.1)]
+// CHECK:STDOUT:   %return.patt.loc7_21.2: @F.%pattern_type (%pattern_type.51d1c4.1) = return_slot_pattern %return.param_patt.loc7_24.2, %T.loc7_7.1 [symbolic = %return.patt.loc7_21.2 (constants.%return.patt.b39)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %T.loc7_7.1 [symbolic = %require_complete (constants.%require_complete.9443dd.1)]
+// CHECK:STDOUT:   %.loc8_21.3: <instruction> = call_action (%Twice.ref, %v.ref), false [template]
+// CHECK:STDOUT:   %.loc8_21.4: type = type_of_inst %.loc8_21.3 [template = %.loc8_21.4 (constants.%.e16)]
+// CHECK:STDOUT:   %.loc8_21.5: @F.%.loc8_21.4 (%.e16) = splice_inst %.loc8_21.3 [template = %.loc8_21.5 (constants.%.275)]
+// CHECK:STDOUT:   %.loc8_22.2: %tuple.type = initialize_action %.loc8_21.2, %T.loc7_7.1, %return.param, false [template]
+// CHECK:STDOUT:   %tuple.elem0: <instruction> = tuple_access %.loc8_22.2, element0 [template]
+// CHECK:STDOUT:   %.loc8_22.3: @F.%T.loc7_7.1 (%T.67d) = splice_inst %tuple.elem0 [template = %.loc8_22.3 (constants.%.38e)]
+// CHECK:STDOUT:
+// CHECK:STDOUT:   fn(%v.param: @F.%T.loc7_7.1 (%T.67d)) -> out %return.param: @F.%T.loc7_7.1 (%T.67d) {
+// CHECK:STDOUT:   !entry:
+// CHECK:STDOUT:     %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:     %Twice.ref: %Twice.cpp_overload_set.type = name_ref Twice, imports.%Twice.cpp_overload_set.value [concrete = constants.%Twice.cpp_overload_set.value]
+// CHECK:STDOUT:     %v.ref: @F.%T.loc7_7.1 (%T.67d) = name_ref v, %v
+// CHECK:STDOUT:     %.loc8_21.1: type = type_of_inst %.loc8_21.3 [template = %.loc8_21.4 (constants.%.e16)]
+// CHECK:STDOUT:     %.loc8_21.2: @F.%.loc8_21.4 (%.e16) = splice_inst %.loc8_21.3 [template = %.loc8_21.5 (constants.%.275)]
+// CHECK:STDOUT:     %.loc8_22.1: @F.%T.loc7_7.1 (%T.67d) = splice_inst %tuple.elem0 [template = %.loc8_22.3 (constants.%.38e)]
+// CHECK:STDOUT:     return %.loc8_22.1 to %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @F(constants.%T.67d) {
+// CHECK:STDOUT:   %T.patt.loc7_7.2 => constants.%T.patt.3a0
+// CHECK:STDOUT:   %T.loc7_7.1 => constants.%T.67d
+// CHECK:STDOUT:   %pattern_type => constants.%pattern_type.51d1c4.1
+// CHECK:STDOUT:   %v.param_patt.loc7_16.2 => constants.%v.param_patt.4a6
+// CHECK:STDOUT:   %v.patt.loc7_16.2 => constants.%v.patt.0d3
+// CHECK:STDOUT:   %.loc7_24.1 => constants.%.184347.1
+// CHECK:STDOUT:   %return.param_patt.loc7_24.2 => constants.%return.param_patt.41d2d9.1
+// CHECK:STDOUT:   %return.patt.loc7_21.2 => constants.%return.patt.b39
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @F(constants.%i32) {
+// CHECK:STDOUT:   %T.patt.loc7_7.2 => constants.%T.patt.3a0
+// CHECK:STDOUT:   %T.loc7_7.1 => constants.%i32
+// CHECK:STDOUT:   %pattern_type => constants.%pattern_type.6b6
+// CHECK:STDOUT:   %v.param_patt.loc7_16.2 => constants.%v.param_patt.733
+// CHECK:STDOUT:   %v.patt.loc7_16.2 => constants.%v.patt.808
+// CHECK:STDOUT:   %.loc7_24.1 => constants.%.795
+// CHECK:STDOUT:   %return.param_patt.loc7_24.2 => constants.%return.param_patt.a9a
+// CHECK:STDOUT:   %return.patt.loc7_21.2 => constants.%return.patt.e1b
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete => constants.%complete_type.f8a
+// CHECK:STDOUT:   %.loc8_21.3 => constants.%inst.splice_block.426619.1
+// CHECK:STDOUT:   %.loc8_21.4 => constants.%i32
+// CHECK:STDOUT:   %.loc8_21.5 => <not constant>
+// CHECK:STDOUT:   %.loc8_22.2 => constants.%tuple
+// CHECK:STDOUT:   %tuple.elem0 => constants.%inst.splice_block.426619.2
+// CHECK:STDOUT:   %.loc8_22.3 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- alias_of_constant_through_specific.carbon

@@ -10,9 +10,12 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-19 (weekly check fired again: the cut HOLDS at 85 upstream
-commits with 96 conflicting files and GitHub Actions on the repository is still
-DISABLED, see the paragraph dated 2026-10-19 below; the 2026-10-12 text
+Last updated: 2026-10-21 (SV-1's plan signed off at rev 5 and its implementation
+started; TP-1's round 10 fixed an externally found crash at the root and round
+11 is under review; see the paragraph dated 2026-10-21 below; the 2026-10-19
+text follows). 2026-10-19 (weekly check fired again: the cut HOLDS at 85
+upstream commits with 96 conflicting files and GitHub Actions on the repository
+is still DISABLED, see the paragraph dated 2026-10-19 below; the 2026-10-12 text
 follows). 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on the
 repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
 verification` returns "Actions has been disabled for this repository", the
@@ -237,6 +240,40 @@ plan.md rev 1 under way; W-275 to W-294 and F-020 reserved). Merge order: PR
 integration commit, PR 59, PR 61 through its land-time commits (M over the
 merged trunk, S over SC-1, F6, the id re-scan, L with its document review,
 the records commit), then SV-1. None is merged.
+
+Later on 2026-10-21 (00:10 UTC): SV-1's plan (fork/sumtype-interop/plan.md on
+claude/carbon-fork-0-1-sv) is SIGNED OFF FOR IMPLEMENTATION at rev 5,
+30153bbc2, after five reviews (A REJECT with 13 findings, B REJECT with 17, the
+focused re-review of rev 2 REJECT with 6, of rev 3 REJECT with 6, of rev 4
+APPROVE-WITH-AMENDMENTS with 4; 46 findings, every one folded, none rejected;
+the plan's own prototype crashes in overload sets and on a VA-1 pack element
+were found and fixed by the reviews). F-020 is minted by the plan: a C++
+std::optional or std::variant keeps its imported class and converts by value,
+through its accessors, to and from a specific of a prelude generic choice in
+Core.CppCompat (StdOptional(T), StdVariant1 to StdVariant8, alternatives by C++
+index), which match and the other refutable contexts consume; the departure
+from SF-8's default lean is recorded for veto. W-275 to W-285 are used by the
+plan (W-278 withdrawn; W-282, W-283 and W-284 conditional) and W-286 to W-294
+held; row 68 is predicted PARTIAL on W-177 narrowed, W-011 discharged. The
+implementation workflow started at 00:00 UTC (C1 to C3 with fills, P, Doc, the
+held-state measurements on mirrors over PR 57, PR 60, PR 59 and PR 61, two
+implementation reviews, the fixer, R and D; M-VA, F-M and Doc-M are land-time
+commits after PR 61). TP-1: after PR 61 opened, SV-1's fixer found X-1, a match
+on a template-dependent choice that stopped the TP-1 compiler at
+pattern_match.cpp:1409 where trunk reports a TODO; round 10 fixed it at the
+root (eafca5cb9: the alternative pattern's name is resolved through the
+member-access action in the choice's definition, so a template-dependent
+specific's designator has the scrutinee's type and the program runs), both
+round-10 reviews found only MINORs (review 1 four, records only; review 2
+seven, one test-only), round 11 folds the test-only finding and is under
+review, and PR 61's description and first comment are re-posted from the
+branch when a round is dry. W-295 to W-299 are reserved to TP-1 for its
+round-10 and later residues: W-295 to W-297 are filed on its branch (crashes
+shared with trunk and the nightly, found by round 10 and its reviews), W-298
+and W-299 held. Merge order unchanged: PR 53, PR 51, PR 52, PR 60, PR 54, PR
+55, PR 56, PR 57, PR 58 through its state L integration commit, PR 59, PR 61
+through its land-time commits, then SV-1 through its land-time commits M,
+M-VA, F-M, Doc-M, R and D. None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -580,8 +617,8 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at 40a76ab81 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54. |
-| `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
-| `claude/carbon-fork-0-1-sv` | PLANNING — SV-1 std::optional and std::variant interop mapping (W-011's open half, W5 slice 4, gap row 68), cut from 5674fe88b; fork/sumtype-interop/plan.md rev 1 under way; W-275..W-294 and F-020 reserved; PR after plan sign-off, implementation and reviews, held open after PR 61. |
+| `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs, round 11 under review; W-295..W-299 reserved to TP-1's later residues (W-295..W-297 filed on the branch); the description and first comment are re-posted when a round is dry; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
+| `claude/carbon-fork-0-1-sv` | IMPLEMENTING — SV-1 std::optional and std::variant interop mapping (W-011's open half, W5 slice 4, gap row 68), cut from 5674fe88b; fork/sumtype-interop/plan.md rev 5 (30153bbc2) SIGNED OFF after five reviews (46 findings folded); F-020 minted; W-275..W-285 used by the plan, W-286..W-294 held; implementation under way (C1..C3 with fills, P, Doc, held-state measurements, two implementation reviews, fixer, R, D); PR after the reviews, held open after PR 61. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

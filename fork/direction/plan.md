@@ -4,7 +4,7 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-# DR-1: direction realignment (plan, rev 2)
+# DR-1: direction realignment (plan, rev 3)
 
 Workstream DR-1 of decision-log entry DR-0 (D-DR-1..D-DR-4) under rulebook R32
 and decision-log V-3b: `Core.Iterate.Next`'s `ref cursor` (W-321),
@@ -18,18 +18,40 @@ upstream trunk`; FETCH_HEAD and upstream/trunk both name
 ac31fd198582a29347ded6155b0d03d562d6fb01, "Give IdentifiedFacetType a more
 foolproof API (PR 8008)", 2026-10-21 18:32 UTC); rev 1 read fb7eff130, and the
 three commits since (c3877cf70, its revert 70c696e78, and ac31fd198) change no
-design page, proposal or prelude file (§0.10). Every measurement below is
+design page, proposal or prelude file (§0.10). Rev 3, the signed-off revision,
+read upstream/trunk bc45989b2 (fetched 2026-10-21 by `git fetch upstream
+trunk`; FETCH_HEAD and upstream/trunk both name
+bc45989b28cfa53131d140c37fb01ae541df45e3, "Reply to document requests for
+unknown Carbon files (#7853)", 2026-10-21 19:10 UTC), whose one commit since
+ac31fd198 changes toolchain/language_server only, so every quote taken at
+ac31fd198 is the text at bc45989b2 (§0.10; amended 2026-10-21, review fold:
+RR1-m4). Every measurement below is
 container-local and EXPECTED, not of record (R9); the arbiter is the carbonbuild
 scripts (R28), never the owner's runner, and the upstream nightly 2026.10.12 is
 an oracle only (R30).
 
-Rev 1, 2026-10-21. Rev 2, 2026-10-21: reviews A and B folded (31 findings; the
-record is "Review fold record (rev 2, 2026-10-21)" at the end). Decisions
+Rev 1, 2026-10-21. Rev 2, 2026-10-21: reviews A and B folded (31 findings).
+Rev 3, 2026-10-21: the focused re-review of rev 2 folded
+(APPROVE-WITH-AMENDMENTS, 6 findings: 1 MAJOR, 5 MINOR) and the plan signed
+off; the records are "Review fold record" and "Sign-off" at the end. Decisions
 D-DR-5..D-DR-22 are DR-1's (D-DR-1..D-DR-4 are DR-0's); they are auto-adopted
 under R29(a), recorded in the decision log by the plan's records commit, and
 each carries a break condition.
 
-Status: rev 2, not signed off (the re-review decides).
+Status: rev 3, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION
+
+What rev 3 changes (amended 2026-10-21, review fold: RR1-M1 / RR1-m1 / RR1-m2 /
+RR1-m3 / RR1-m4 / RR1-m5). W-322's commit on PR 62's branch writes no ledger
+entry that branch lacks: it withdraws PR 62's own land-time W-177 narrowing
+record (its plan's §1.16 paragraph and Appendix C.5) and the land-time items
+that name the deleted golden, and marks W-280's `Core.Optional` half moot,
+while W-177's correction moves to PR 56's ledger in W-323's commit (§1.11, C.6,
+C.7). §0.8 records PR 59's and PR 60's call.cpp and convert.cpp overlap, the
+dry runs of 230227264's hunks and CT-1's moved head; W-328 stays reserved for
+W-320 alone (§3 item 9); a focused review of W-322's commit and the re-posting
+of PR 62's, PR 56's and PR 57's texts are scheduled (§1.16, §3 item 2, C.5);
+§8 item 9 re-runs the composition on CT-1's final head with DR-1a alone and
+with both PRs before M-a.
 
 What rev 2 changes (amended 2026-10-21, review fold: A-B1 / B-B1). Upstream's
 own pages disagree on how `Match` declares its continuation:
@@ -61,7 +83,8 @@ removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
 -   Appendix A: golden sources
 -   Appendix B: programs and oracles
 -   Appendix C: records texts
--   Review fold record (rev 2, 2026-10-21)
+-   Review fold record (rev 2 and rev 3)
+-   Sign-off
 
 ## §0 Audit: measurements with file:line evidence
 
@@ -69,12 +92,16 @@ removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
 
 `$X` below is
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1/planner
-(rev 1's probes, logs and diffs) and `$Y` is
+(rev 1's probes, logs and diffs), `$Y` is
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1/fixer
-(rev 2's); both are deleted with the session. Every probe was compiled, linked
-and run by `runprobe.sh <carbon> <file> <outdir>` (`$X/bin`, `$Y/bin`), which
-prints COMPILE-FAIL with the first `error:` text, LINK-FAIL, or RUN with the
-program's standard output; `XDG_CACHE_HOME` was `$X/xdg` or `$Y/xdg` throughout.
+(rev 2's) and `$Z` is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1/fixer1
+(rev 3's ledger reads and dry runs; amended 2026-10-21, review fold: RR1-M1 /
+RR1-m1 / RR1-m4); all three are deleted with the session. Every probe was
+compiled, linked and run by `runprobe.sh <carbon> <file> <outdir>` (`$X/bin`,
+`$Y/bin`), which prints COMPILE-FAIL with the first `error:` text, LINK-FAIL, or
+RUN with the program's standard output; `XDG_CACHE_HOME` was `$X/xdg` or
+`$Y/xdg` throughout.
 
 | Name | What | Version string | State |
 | --- | --- | --- | --- |
@@ -576,9 +603,18 @@ Each held PR's own diff (merge-base with trunk to its head) over the files DR-1
 changes, from `git diff --numstat`; then the source hunks of v3, which v4 keeps
 byte for byte (prelude, the six toolchain files, min_prelude, the program;
 `$X/dry_src.diff`), dry-run with `git apply --cached --check` into a temporary
-index of each head. Rev 2 re-checked the heads on 2026-10-21 (CT-1's is now
+index of each head. Rev 2 re-checked the heads on 2026-10-21 (CT-1's was then
 79740957a) and the new test and program paths of v4, which no held PR has
-(amended 2026-10-21, review fold: B-M6 / B-M10 / B-M12):
+(amended 2026-10-21, review fold: B-M6 / B-M10 / B-M12). Rev 3 re-checked them
+(amended 2026-10-21, review fold: RR1-m1 / RR1-m4): CT-1's head is now
+5c78c4086, past the mirror's 79740957a by 224ee2f8f and its fill (by `git
+diff --numstat 79740957a 5c78c4086`, convert.cpp +20/-2, in `PerformAction` and
+`Convert`, for a deferred `ref` argument and a temporary's specific type;
+impl_lookup.cpp +15; sem_ir/expr_info.cpp +22; two goldens), and 230227264's
+call.cpp and convert.cpp hunks (`$Z/c230_src.diff`, byte-identical in their
+changed lines to v4's) dry-run clean with `git apply --cached --check` onto
+b0822a744, 40a76ab81, 5661a35c8, 79740957a, 5c78c4086 and 3a6531157
+(`$Z/logs/rr1_m1_m4_dryrun.txt`):
 
 | Held PR (head) | DR-1 files it touches (numstat) | v4's source hunks onto it | Rule at DR-1's merge |
 | --- | --- | --- | --- |
@@ -589,9 +625,9 @@ index of each head. Rev 2 re-checked the heads on 2026-10-21 (CT-1's is now
 | PR 56 OP-1 (379f20f67) | core/prelude/types/optional.carbon +73/-2, docs/design/control_flow/loops.md +4 (the F-015 amendment after the cut's desugaring block, :116-118), docs/design/error_handling.md +8, docs/design/optional.md +582 | apply | W-323's new commit lands on PR 56's branch now (C.7, C.8); at DR-1a's merge, loops.md takes DR-1a's restored upstream subsections and C.9's amendment, and drops PR 56's amendment as C.7 corrected it, whose "The desugaring above is the text this page had at the fork's cut" is then false (§1.16); error_handling.md keeps both sides' amendments in date order |
 | PR 57 OP-2 (628273444), stacked on PR 56 | optional.carbon +111/-8, loops.md +4, error_handling.md +8, optional.md +614 (PR 56's plus OP-2's), its check/testdata/slice/basic.carbon refill; gap row 78 moved to DONE | apply | PR 57's branch takes W-323's commit by a merge of PR 56's branch (a new merge commit, R32 (e)); its slice/basic.carbon is refilled at DR-1's merge; row 78's DONE text keeps trunk's DR-0 sentence as C.3 amends it (§1.16) |
 | PR 58 DD-1 (fcee90d9b) | docs/design/pattern_matching.md +258/-4 | n/a | none: rev 2 edits no pattern_matching.md text (rev 1's amendment belonged to the stopped slice 1) |
-| PR 59 VA-1 (b0822a744) | check/pattern_match.cpp +25, context.h +41, handle_binding_pattern.cpp +76, kind.def +19 | apply | none: rev 2 touches none of these files |
-| PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13 | apply | none: rev 2 touches none of these files |
-| PR 61 TP-1 (5661a35c8) and CT-1 (79740957a, stacked on it) | handle_index.cpp +42/-13 (`PerformIndex` on a `LocId`, the `IndexAction` deferral), handle_loop_statement.cpp +10/-2 (a `RequireCompleteType` on the cursor's POINTER type for a template-dependent cursor), call.cpp and convert.cpp (TP-1's deferred conversions, in other functions than 230227264's), handle_match.cpp +2/-5, refutable_binding.{h,cpp} +35/-5, context.h +20, kind.def +1; goldens generic/template/for_range.carbon, generic/template/index.carbon (check), template/for_range.carbon (lower), interop/cpp/range_for.carbon | handle_index.cpp and handle_loop_statement.cpp conflict (both regions rewritten by TP-1); call.cpp and convert.cpp apply with a three-way fallback | resolved in DR-1a's and DR-1b's merge commits exactly as §2.1 and §2.2 spell them, then one composition commit (the template-dependent index deferral, §2.2) and the refill commits; measured on the mct mirror (§0.8.1) |
+| PR 59 VA-1 (b0822a744) | check/pattern_match.cpp +25, context.h +41, handle_binding_pattern.cpp +76, kind.def +19; call.cpp +194 and convert.cpp +114 (merge-base 3eb7f36f0 to the head; amended 2026-10-21, review fold: RR1-m1: rev 2 omitted these two) | apply; 230227264's call.cpp and convert.cpp hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction: VA-1's added lines create no `TemporaryStorage` return argument, pass no `return_arg_id` and add no `ConvertCallArgs` call, so 230227264's `return_size() > 0` test and its new `CARBON_CHECK` see no new caller; the other four files: none, DR-1 touches none of them |
+| PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13; call.cpp +14 and convert.cpp +94/-7 (merge-base 8068151ed to the head; amended 2026-10-21, review fold: RR1-m1) | apply; 230227264's hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction, by the same test of SC-1's added lines; the other four files: none |
+| PR 61 TP-1 (5661a35c8) and CT-1 (79740957a at the mirror, 5c78c4086 at rev 3, stacked on it) | handle_index.cpp +42/-13 (`PerformIndex` on a `LocId`, the `IndexAction` deferral), handle_loop_statement.cpp +10/-2 (a `RequireCompleteType` on the cursor's POINTER type for a template-dependent cursor), call.cpp and convert.cpp (TP-1's deferred conversions, in other functions than 230227264's), handle_match.cpp +2/-5, refutable_binding.{h,cpp} +35/-5, context.h +20, kind.def +1; goldens generic/template/for_range.carbon, generic/template/index.carbon (check), template/for_range.carbon (lower), interop/cpp/range_for.carbon | handle_index.cpp and handle_loop_statement.cpp conflict (both regions rewritten by TP-1); call.cpp and convert.cpp apply clean onto 5661a35c8, 79740957a and 5c78c4086 (rev 3's dry runs; rev 2's "with a three-way fallback" overstated it; CT-1's 224ee2f8f changes other functions of convert.cpp than 230227264's `ConvertCallArgs`) | resolved in DR-1a's and DR-1b's merge commits exactly as §2.1 and §2.2 spell them, then one composition commit (the template-dependent index deferral, §2.2) and the refill commits; measured on the mct mirror (§0.8.1) |
 | PR 62 SV-1 (3a6531157) | refutable_binding.cpp +38 (the `std::optional`/`std::variant` conversion and the D-SV-7 `GetCoreOptionalView` branch), cpp/sum_type.{h,cpp} +1128, kind.def +8 (`CppSumType*` and `CoreOptionalNotMatchable`), core/prelude/types.carbon +1 (`prelude/types/cpp/sum`), docs/design/sum_types.md +91, convert.cpp elsewhere than 230227264's hunk | apply | W-322's removal-only commit lands on PR 62's branch now (§1.11, measured on the m62 mirror, §0.8.2); DR-1's own diff touches none of PR 62's files |
 
 No held PR touches core/prelude/iterate.carbon, range.carbon,
@@ -601,10 +637,11 @@ core_identifier.def or cpp/operators.cpp, and none has a file at v4's new paths
 
 #### §0.8.1 The composition mirror on CT-1's head, measured
 
-(Amended 2026-10-21, review fold: B-M6 / B-M2 / A-B3.) `git worktree add
---detach $Y/mct 79740957a`, `git apply --3way $Y/v4_full.diff`: three files
-conflicted. handle_loop_statement.cpp and handle_index.cpp were resolved as §2.1
-and §2.2 spell it; interop/cpp/range_for.carbon's 25 conflict blocks were all
+(Amended 2026-10-21, review fold: B-M6 / B-M2 / A-B3; rewrapped, RR1-m3.) The
+mirror is `git worktree add --detach $Y/mct 79740957a` then `git apply --3way
+$Y/v4_full.diff`: three files conflicted. handle_loop_statement.cpp and
+handle_index.cpp were resolved as §2.1 and §2.2 spell it;
+interop/cpp/range_for.carbon's 25 conflict blocks were all
 CHECK lines (no source line in a block) and took CT-1's side for the refill.
 A full build (CB_BUILD_ROOT=/dev/shm/dr1-fixer, 322 steps, -Werror, no other
 ninja running at its start) and install.sh gave 0.0.0-0.dev+79740957a.dirty.
@@ -634,6 +671,14 @@ choice made per specific, the literal-subscript rule sees the concrete type.
 Trunk and v4 cannot deduce `T` from `Vec(T)` or `Core.Slice(T)` at all
 (`` cannot deduce value for generic parameter `T` ``), so the deferral exists
 only on TP-1's base and lands with DR-1b's merge.
+
+What the mirror does not show (amended 2026-10-21, review fold: RR1-m4). It is
+CT-1's head of rev 2, 79740957a; CT-1 has since moved to 5c78c4086, in
+convert.cpp among other files (§0.8), and 230227264's hunks still apply there.
+It merged DR-1a and DR-1b at once, so L-a's refills above are the two PRs'
+joint result, and DR-1a's merge onto CT-1 alone, the tree trunk has between
+M-a and M-b, is unmeasured. §8 item 9 measures both shapes on CT-1's final head
+before M-a.
 
 #### §0.8.2 W-322's removal-only commit on a PR 62 mirror, measured
 
@@ -679,9 +724,15 @@ a cited reason (§1.11, B.3), and nothing else changes an existing program
 ### §0.10 Upstream's direction register and the V-3 check (audit item 7, R32)
 
 (Amended 2026-10-21, review fold: A-m1 / B-m2 / A-B1 / B-B1 / B-M7.) Upstream's
-tip is ac31fd198 (2026-10-21 18:32 UTC); the plan's sign-off revision names the
-tip it reads, and DR-1's implementation re-reads it at each PR's opening. The
-register is selected by design page, as R32 (c) asks: first every upstream
+tip was ac31fd198 (2026-10-21 18:32 UTC) at rev 2 and is bc45989b2 (2026-10-21
+19:10 UTC) at rev 3, the signed-off revision, which names it (amended
+2026-10-21, review fold: RR1-m4). bc45989b2 changes toolchain/language_server
+only (5 files, 35 lines added), and the command `git diff --shortstat
+ac31fd198 bc45989b2 -- docs proposals core toolchain/check toolchain/parse
+toolchain/lower toolchain/sem_ir` prints nothing, so every quote below, taken
+at ac31fd198, is the text at bc45989b2. DR-1's implementation re-reads the tip
+at each PR's opening. The register is selected by design page, as R32 (c)
+asks: first every upstream
 commit in c1e83b0b7..ac31fd198 that touches docs/design/, proposals/ or
 core/prelude/ (`git log --format='%h %ad %s' c1e83b0b7..ac31fd198 -- docs/design
 proposals core`, eight commits, all listed), then every commit touching a
@@ -1151,11 +1202,21 @@ carrying the drift. The commit, measured on the m62 mirror (§0.8.2):
     .None()` for the `Match` route (RC-6); the conformance README's generated
     table follows (`runner.py --update-readme-table`). PR 62's conformance moves
     from 134/0/21 to 133/0/22 over 155 (§0.8.2).
--   **Records on PR 62's branch, in the same commit.** PR 62's sum_types.md
-    section on the view gains Appendix C.6's dated amendment; its gap row 68
-    text, its plan's §1.7 and the decision log's SV-1 entry gain the dated notes
-    of C.6; its ledger's W-322 entry is discharged there and W-177's narrowing
-    note is corrected.
+-   **Records on PR 62's branch, in the same commit (amended 2026-10-21,
+    review fold: RR1-M1).** PR 62's sum_types.md section on the view gains
+    Appendix C.6's dated amendment; its gap row 68 text, its plan's §1.7 and the
+    decision log's SV-1 entry gain the dated notes of C.6. PR 62's ledger has no
+    W-177 and no W-320..W-323 (its branch predates DR-0: fd290b6e6 is not an
+    ancestor of 3a6531157), so the commit writes neither there: W-322 is
+    discharged in trunk's ledger only (C.2), and W-177's correction is made in
+    PR 56's ledger by W-323's commit (C.7). What it amends instead are PR 62's
+    own records that would land false: its plan's §1.16 W-177 paragraph and
+    Appendix C.5, the land-time narrowing note that would append the view to
+    W-177 with the deleted golden and the SKIPped program as evidence; its §3
+    item 8 land-time F-M items that refill the deleted golden and add a `bool`
+    payload to it and a `bool` leg to the SKIPped program; and W-280, whose
+    `Core.Optional` half is moot and whose evidence names the deleted golden
+    (C.6).
 
 Break condition: D-DR-2's (upstream designs a view-based route for matching
 `Core.Optional`); or PR 62 is closed without merging, and the removal then
@@ -1218,8 +1279,9 @@ docs/design/error_handling.md at the records commit R0: C.11's dated amendment
 corrects the EH-A amendment's "the `match` body above applies verbatim once
 W-058 makes `Optional` a choice" (DR-0 rejected the choice route; the route is
 W-320's `Match`, with `.None()`). On other branches (§1.16): PR 56's
-loops.md and fork/optional/plan.md (C.7) and optional.md (C.8), PR 62's
-sum_types.md (C.6). Records: the decision-log entry "DR-1" (C.1, which records
+loops.md, fork/optional/plan.md and W-177's ledger note (C.7) and optional.md
+(C.8), PR 62's sum_types.md, plan and W-280 (C.6; amended 2026-10-21, review
+fold: RR1-M1). Records: the decision-log entry "DR-1" (C.1, which records
 the amendments to D-DR-1 and D-DR-2), the ledger (C.2: W-321 and W-109
 discharged by the PRs; W-322 and W-323 by their commits; W-320's and W-322's
 dated notes; W-324..W-327 and W-329 filed), the gap rows (C.3), the V-3a
@@ -1251,7 +1313,8 @@ are distinct: M-a on DR-1a's branch, M-b on DR-1b's.
     C.9 says the rest. Records keep both sides. Then L-a, the refill commit:
     check generic/template/for_range, lower template/for_range,
     interop/cpp/range_for (measured on the mct mirror, which merged both PRs
-    at once) and PR 57's slice/basic.
+    at once; DR-1a alone onto CT-1's final head is measured before M-a, §8 item
+    9, amended 2026-10-21, review fold: RR1-m4) and PR 57's slice/basic.
 -   **M-b.** handle_index.cpp resolves onto TP-1's `PerformIndex` (§2.2), then
     C-b, the composition commit that indexes a template-dependent operand per
     specific (§1.3, §2.2), then L-b: check generic/template/index (measured),
@@ -1262,7 +1325,19 @@ are distinct: M-a on DR-1a's branch, M-b on DR-1b's.
     branch (C.7), which also carries C.8's optional.md amendment (records and
     docs only). PR 57, stacked on PR 56, takes that commit by merging PR 56's
     branch into its own (a new merge commit): optional.md and loops.md take
-    both sides, PR 57's text plus the amendments.
+    both sides, PR 57's text plus the amendments, and the ledger carries
+    W-177's correction (C.7; amended 2026-10-21, review fold: RR1-M1). Then
+    (amended 2026-10-21, review fold: RR1-m5): W-322's commit changes
+    toolchain code on a PR whose review loop was dry, so it gets one focused
+    review once its run (build, autoupdate fixpoint, gate and conformance on
+    PR 62's head with the commit, §0.8.2's rows) is green (R29(c)), its
+    findings folded by new commits on PR 62's branch. After that review, and
+    after W-323's commit and PR 57's merge of it, the descriptions and first
+    comments of PR 62 (which advertise D-SV-7's matching of `Core.Optional`),
+    PR 56 and PR 57 (where they state the loops.md amendment, W-177's scope or
+    `.Some`/`.None` matchability) are refreshed and re-posted, each verified
+    through the API, and ORCHESTRATION's rows for the three PRs are stamped,
+    as was done for PR 61.
 -   **Gap row 78.** Trunk's row 78 (PARTIAL) carries DR-0's drift sentence;
     PR 57's row 78 (DONE) does not. PR 57's merge into trunk keeps trunk's
     sentence, as C.3 rewrites it at R0, appended to PR 57's DONE text; DR-1 does
@@ -1828,11 +1903,13 @@ say "mapped"; cpp/sum_type.cpp gains the struct (status `Mapped` for
 `CoreOptionalNotMatchable`; match/core_optional_view.carbon is deleted and
 match/fail_todo_core_optional.carbon (Appendix A.3) added and filled; the
 program of Appendix B.3 is SKIPped and the conformance README table
-regenerated; PR 62's sum_types.md section, gap row 68, plan §1.7, decision-log
-SV-1 entry and ledger take C.6's texts. PR 56's commit (W-323): loops.md:116-118
-and fork/optional/plan.md:192-214 as C.7, and docs/design/optional.md as C.8.
-PR 57's merge of PR 56's branch: optional.md, loops.md and the gap table keep
-both sides.
+regenerated; PR 62's sum_types.md section, gap row 68, plan (§1.7, §1.16, §3
+item 8 and Appendix C.5), decision-log SV-1 entry and ledger entry W-280 take
+C.6's texts, and its ledger gains no W-177 or W-322 entry (amended 2026-10-21,
+review fold: RR1-M1). PR 56's commit (W-323): loops.md:116-118,
+fork/optional/plan.md:192-214 and W-177's ledger note as C.7, and
+docs/design/optional.md as C.8. PR 57's merge of PR 56's branch: optional.md,
+loops.md, the gap table and the ledger keep both sides.
 
 ## §3 Commits and PRs
 
@@ -1842,9 +1919,10 @@ message ending with the session's two trailers after a blank line; explicit
 paths only (R20); dates the commit's UTC date. Fill commits come from
 `autoupdate.sh` to a fixpoint (R26: a second pass that changes nothing).
 
-1.  **P0, P1** "DR-1 plan (rev 1)" and "DR-1 plan (rev 2): reviews A and B
-    folded" (this file); later revisions each their own commit; implementation
-    starts at the signed-off revision.
+1.  **P0, P1, P2** "DR-1 plan (rev 1)", "DR-1 plan (rev 2): reviews A and B
+    folded" and "DR-1 plan (rev 3): focused re-review folded, sign-off" (this
+    file); implementation starts at P2, the signed-off revision (amended
+    2026-10-21, review fold: RR1-m4).
 2.  **R0** "DR-1 records: plan decisions" on claude/carbon-fork-0-1-dr: the
     decision-log entry DR-1 at its plan state (C.1), the V-3a register's (iv)
     and (v) (C.4), W-324..W-327 and W-329 filed and W-320's and W-322's dated
@@ -1852,18 +1930,22 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
     error_handling.md's amendment (C.11), ORCHESTRATION's Next actions (C.5).
     With it, on the other branches, made now (§1.16): W-323's commit on PR 56's
     branch (C.7, C.8), PR 57's merge of it, and W-322's commit on PR 62's branch
-    (§1.11, C.6, A.3, B.3), each measured or records-only.
+    (§1.11, C.6, A.3, B.3), each measured or records-only. Then one focused
+    review of W-322's commit once its run is green (R29(c)), and the refreshed
+    descriptions and first comments of PR 62, PR 56 and PR 57 re-posted, with
+    ORCHESTRATION stamped (§1.16; amended 2026-10-21, review fold: RR1-m5).
 3.  **A1** "DR-1a: `Core.Iterate.Next` takes `ref cursor`" (§2.1's source files,
     the four test sources, the program, loops.md with C.9). A1F "DR-1a fill":
     the nine goldens of §0.6, predicted exactly as measured on v2.
 4.  **A-R** "DR-1a records": W-321 discharged, gap row :66 (C.3), the register's
     (iii) resolved. One implementation review once the run is green (R29(c));
     DR-1a is opened held.
-5.  **B0** on claude/carbon-fork-0-1-dr-idx (cut from A-R): `git cherry-pick -x
-    -n 230227264`, the two form.carbon goldens restored to the fork's and given
-    Appendix A.0's split sources, committed with upstream's subject and body,
-    the `-x` line and "Upstream author: David Blaikie, PR 7886" (§1.3). B0F: the
-    two goldens refilled (+172, +103 lines on v4).
+5.  **B0** on claude/carbon-fork-0-1-dr-idx (cut from A-R): the command `git
+    cherry-pick -x -n 230227264`, the two form.carbon goldens restored to the
+    fork's and given Appendix A.0's split sources, committed with upstream's
+    subject and body, the `-x` line and "Upstream author: David Blaikie,
+    PR 7886" (§1.3; rewrapped, RR1-m3). B0F: the two goldens refilled (+172
+    and +103 lines on v4).
 6.  **B1** "DR-1b: subscripting prefers `IndirectIndexWith`; `Core.Slice` and
     `Core.Buf` write through `Ref`" (§2.2's files, `fail_write_through` deleted,
     upstream's two tests, A.1, A.2, slices.md C.10). B1F "DR-1b fill": the
@@ -1875,10 +1957,12 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
     DR-1b is opened held, stacked on DR-1a.
 9.  **Fix commits**: at most three per PR, each with its fill. The shrink line
     (D-DR-22): a finding that needs a fourth shrinks the PR instead, the shape
-    at issue going OUT with a residue in W-328 or the next free id after the
-    re-scan, its split renamed `fail_todo_`, never a guard that hides an IN
-    form (R17). Break condition: a finding that no shrink can answer without
-    breaking a measured row of §0.6.2; the PR stops and the plan is amended.
+    at issue going OUT with a residue in the next free id after the re-scan
+    (W-328 stays reserved for W-320's resumption, §1.17; amended 2026-10-21,
+    review fold: RR1-m2), its split renamed `fail_todo_`, never a guard that
+    hides an IN form (R17). Break condition: a finding that no shrink can
+    answer without breaking a measured row of §0.6.2; the PR stops and the plan
+    is amended.
 10. **At merge, after CT-1** (§1.16): M-a then L-a on DR-1a's branch; M-b, C-b
     "DR-1b: index a template-dependent operand per specific (TP-1's
     `IndexAction`)" and L-b on DR-1b's. Their resolution and fills were measured
@@ -1928,7 +2012,7 @@ its other ten programs.
 | DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 | 9 refills, 569/628 lines | 1 (3/3) | loops.md, ledger, row :66 |
 | DR-1b | index.carbon 18/0, slice.carbon 7/2, buf.carbon 7/2, handle_index.cpp 39/17, core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines) | 2 and an oracle | slices.md, ledger, row :79 |
 | M-a, M-b, C-b at merge | handle_loop_statement.cpp (TP-1's 10 lines dropped), handle_index.cpp (C-b +16) | 4 refills measured, 4 predicted | none | merge records |
-| PR 62's W-322 commit | refutable_binding.cpp 0/19, cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1 | 1 deleted (681), 1 new (51) | 1 SKIPped | sum_types.md, row 68, plan, decision log, ledger |
+| PR 62's W-322 commit | refutable_binding.cpp 0/19, cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1 | 1 deleted (681), 1 new (51) | 1 SKIPped | sum_types.md, row 68, plan (§1.7, §1.16, §3 item 8, C.5), decision log, ledger entry W-280 (amended 2026-10-21, review fold: RR1-M1) |
 
 Collisions: §0.8. The rules at merge: §1.16.
 
@@ -2025,7 +2109,13 @@ Collisions: §0.8. The rules at merge: §1.16.
 9.  The composition mirrors were built at planning (§0.8.1, §0.8.2); at
     implementation each PR re-runs them on the then-current heads before it is
     opened, and DR-1b also on PR 51 (buf_field), PR 55 (string_indexing) and
-    PR 57 (slice/basic).
+    PR 57 (slice/basic). The mct mirror was built on CT-1's 79740957a, which
+    CT-1 has since passed (5c78c4086 at rev 3, §0.8): before M-a, the
+    composition is re-run on CT-1's final head twice, once with DR-1a alone
+    (M-a and L-a, the tree trunk has between DR-1a's merge and DR-1b's) and
+    once with both PRs (M-b, C-b and L-b), each to a gate with 0 failed and a
+    conformance run recorded beside §5's mct row (amended 2026-10-21, review
+    fold: RR1-m4).
 10. The id re-scan for `W-32[4-9]` across every origin ref and worktree at the
     records commit.
 
@@ -2045,8 +2135,11 @@ probes (where_cont, copy_slot, nested_choice, tmpl_for, tmpl_match_dep).
 Not measured, and why: the mutants of §8 item 5 (each is a relink of one
 translation unit at implementation, against goldens §4 names); clang-tidy;
 the predicted refills of PR 51's, PR 55's and PR 57's goldens at merge (§8 item
-9 runs them on the then-current heads); an optimized build (the carbonbuild
-scripts build fastbuild only); the nightly on slice 3 (it predates 6d80ceb58).
+9 runs them on the then-current heads); DR-1a merged onto CT-1 without DR-1b,
+and any composition on a CT-1 head after 79740957a (§8 item 9 runs both
+before M-a; amended 2026-10-21, review fold: RR1-m4); an optimized build (the
+carbonbuild scripts build fastbuild only); the nightly on slice 3 (it predates
+6d80ceb58).
 
 ## Hand-off notes
 
@@ -2483,10 +2576,11 @@ Placed after DR-0 in "Decided":
 ```markdown
 ### DR-1: direction realignment: the ref cursor, IndirectIndexWith, D-SV-7 retired, Match stopped on upstream's conflict (<date>)
 
-The workstream D-DR-1 scheduled (fork/direction/plan.md, rev <n>, signed off
-<date>). Upstream's direction was read at upstream/trunk <sha at sign-off>
-(rev 2 read ac31fd198). Decisions D-DR-5..D-DR-22, auto-adopted under R29(a),
-each with its break condition in the plan: two PRs, DR-1a (the `ref` cursor)
+The workstream D-DR-1 scheduled (fork/direction/plan.md, rev 3, signed off
+2026-10-21). Upstream's direction was read at upstream/trunk bc45989b2, the
+tip at sign-off (rev 2 read ac31fd198). Decisions D-DR-5..D-DR-22,
+auto-adopted under R29(a), each with its break condition in the plan: two PRs,
+DR-1a (the `ref` cursor)
 on trunk's base and DR-1b (`IndirectIndexWith`) stacked on it (D-DR-5); the
 `ref` cursor as df3cf9294 (D-DR-6); `IndirectIndexWith` as 6d80ceb58 and
 309d3d63c with 230227264's code and upstream's tests, `Core.Slice` and
@@ -2659,7 +2753,10 @@ cursor (W-321) and DR-1b `IndirectIndexWith` (W-109, stacked on DR-1a); now,
 W-322's removal-only commit on PR 62's branch and W-323's records commit on PR
 56's branch, merged into PR 57's; W-320 (`Core.Optional` matchable by `Match`)
 stopped at the plan on upstream's own conflict, watched by W-324 at each weekly
-upstream check."
+upstream check. W-322's commit gets one focused review once its run is green
+(R29(c)); after it and W-323's commit, PR 62's, PR 56's and PR 57's
+descriptions and first comments are refreshed and re-posted, and their rows
+stamped." (Amended 2026-10-21, review fold: RR1-m5: the last sentence.)
 
 ### C.6 PR 62's commit (W-322)
 
@@ -2683,21 +2780,66 @@ D-DR-15, W-322)". sum_types.md amendment, after PR 62's section on
 
 <!-- google-doc-style-resume -->
 
-On PR 62's branch, in the same commit: gap row 68's "Still PARTIAL on W-177,
-narrowed: `Core.Optional(T)` is matched for a concrete scalar or pointer `T`
-only, by value; generic and aggregate payloads, `ref` bindings and copy-free
-matching stay open." becomes "`Core.Optional(T)` itself is not matched: D-SV-7's
-view was retired (W-322, R32 (d)), and W-320 waits on W-324."; its "11
-conformance programs PASS (... match_core_optional_diff ...)" becomes 10, with
-match_core_optional_diff named as SKIP; its plan's §1.7 and the decision log's
-SV-1 entry gain "Retired <date> by W-322's commit (DR-1 D-DR-15, R32 (d), (e));
-F-020's bridge kept."; its ledger's W-322 is discharged and W-177's "narrowed"
-note becomes "not narrowed: the view is retired; W-177 closes with W-320".
+On PR 62's branch, in the same commit (amended 2026-10-21, review fold:
+RR1-M1): gap row 68's "Still PARTIAL on W-177, narrowed: `Core.Optional(T)` is
+matched for a concrete scalar or pointer `T` only, by value; generic and
+aggregate payloads, `ref` bindings and copy-free matching stay open." becomes
+"`Core.Optional(T)` itself is not matched: D-SV-7's view was retired (W-322,
+R32 (d)), and W-320 waits on W-324."; its "11 conformance programs PASS (...
+match_core_optional_diff ...)" becomes 10, with match_core_optional_diff named
+as SKIP, and its "SV-1: container-built, 134/0/21 over 155" becomes "133/0/22
+over 155" (§0.8.2); its plan's §1.7 and the decision log's SV-1 entry gain
+"Retired <date> by W-322's commit (DR-1 D-DR-15, R32 (d), (e)); F-020's bridge
+kept."
+
+PR 62's ledger holds no W-177 and no W-320..W-323: fd290b6e6, which filed
+W-320..W-323, is not an ancestor of 3a6531157, and W-177 is OP-1's, on PR 56's
+and PR 57's branches only (`$Z/logs/rr1_m1.txt`; PR 62's own ledger header
+calls W-177's narrowing note a land-time record "because those items are not
+in this ledger"). The commit therefore adds no entry to that ledger: W-322 is
+discharged in trunk's ledger alone (C.2), and W-177's correction is W-323's
+commit's, in PR 56's ledger (C.7). It amends instead PR 62's own records that
+the retirement makes false, each by a dated note:
+
+-   **PR 62's plan §1.16, the W-177 paragraph** ("**W-177 (OP-1's, on row
+    68's bullet) stays OPEN** with a dated narrowing note (Appendix C.5 ..."),
+    gains: "Amended <date> (DR-1 D-DR-15, W-322): not narrowed. The view is
+    retired, so no `.Some`/`.None` pattern matches a `Core.Optional(T)`; W-177
+    stays OPEN, unnarrowed, closes with W-320 and still bounds row 68, and its
+    evidence gains match/fail_todo_core_optional.carbon."
+-   **PR 62's plan Appendix C.5** ("W-177: the narrowing note (OPEN)"), which
+    PR 62's land-time records commit appends to W-177 on the merged trunk (its
+    §3 item 8 list: "C.5's W-177 note and evidence"), gains under its heading:
+    "Amended <date> (DR-1 D-DR-15, W-322): withdrawn. The note below is not
+    appended at land time, and neither evidence path is added
+    (match/core_optional_view.carbon is deleted, match_core_optional_diff is
+    SKIPped); at land time W-177's `evidence` gains
+    toolchain/check/testdata/match/fail_todo_core_optional.carbon only, and its
+    `notes` keep W-323's correction (fork/direction/plan.md C.7)."
+-   **PR 62's plan §3 item 8, F-M, and §1.7's paragraph that repeats it.** The
+    refill of match/core_optional_view.carbon, the `bool` payload added to its
+    `concrete` split and the `bool` leg added to match_core_optional_diff and
+    its oracle are withdrawn by a dated note, the golden being deleted and the
+    program SKIPped; F-M refills match/fail_todo_core_optional.carbon in their
+    place only if PR 57's merge changes it, as autoupdate decides (R16), and
+    stdlib/optional.carbon's refill is unchanged.
+-   **W-280, in PR 62's ledger and in its plan's §1.16 table.** Its
+    `Core.Optional` half is moot: no `Core.Optional` scrutinee is matched, so
+    none reaches a `ref` payload binding. Its title loses " or a
+    `Core.Optional`"; its first evidence string's "sum type or view" becomes
+    "sum type"; its third loses "and match/core_optional_view.carbon"; its
+    `notes` gain "Amended <date> (DR-1 D-DR-15, W-322): the `Core.Optional`
+    half is moot, the view being retired; a `ref` payload binding on
+    `Core.Optional` is W-177's scope, which closes with W-320."; and the plan
+    row's "for `Core.Optional` it is part of W-177's remaining scope (below)"
+    and §1.6's citation of match/core_optional_view.carbon for W-280 gain
+    "(moot since W-322's commit, <date>: the view is retired)".
 
 ### C.7 PR 56's records commit (W-323, D-DR-3), verbatim
 
-Message: "OP-1 records: correct the loops.md amendment, the V-3 paragraph and
-optional.md's matchability text (R32 (a), (e); DR-0 D-DR-3, W-323; DR-1)".
+Message: "OP-1 records: correct the loops.md amendment, the V-3 paragraph,
+optional.md's matchability text and W-177's route (R32 (a), (e); DR-0 D-DR-3,
+W-323; DR-1)" (amended 2026-10-21, review fold: RR1-M1).
 docs/design/control_flow/loops.md:116-118 on PR 56's branch, the block
 
 <!-- google-doc-style-ignore -->
@@ -2745,6 +2887,26 @@ loops.md:109-122), so `HasValue()`/`Get()` were no longer upstream's text when
 this check was made. The fork's `for` keeps calling them until W-320 lands;
 under R32 the comparison is made against upstream's tip by sha, quoting the
 page.
+```
+
+<!-- google-doc-style-resume -->
+
+fork/inventory/work-items.json on PR 56's branch, in the same commit (amended
+2026-10-21, review fold: RR1-M1): W-177's `notes` gain, after its break
+condition, the text below, and its `evidence` gains "fork/direction/plan.md
+§1.4, §1.11". PR 57's ledger takes both by its merge of PR 56's branch.
+
+<!-- google-doc-style-ignore -->
+
+```text
+Amended <date> by DR-1 (W-323; R32, DR-0 D-DR-1): this item closes with W-320,
+`Core.Optional` implementing docs/design/sum_types.md's `Match` for classes;
+the break condition's `choice` alternative is withdrawn, DR-0 having rejected
+the `choice` conversion. The patterns are `.Some(<pattern>)` and `.None()`,
+`None` being a function (sum_types.md:214-222). W-320 waits on W-324, a
+conflict in upstream's own pages over how `Match` declares `Continuation`.
+PR 62's D-SV-7 view does not narrow this item: it is retired before PR 62
+lands (W-322), whose commit withdraws PR 62's land-time narrowing note.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2820,7 +2982,9 @@ docs/design/error_handling.md:414-435 and :437-444), a dated paragraph:
 
 <!-- google-doc-style-resume -->
 
-## Review fold record (rev 2, 2026-10-21)
+## Review fold record
+
+### Rev 2: reviews A and B of rev 1 (2026-10-21)
 
 Reviews A and B of rev 1 (commit 1e46ffd94), both REJECT, read upstream at
 70c696e78; rev 2 read ac31fd198, whose only commit since 70c696e78 touches no
@@ -2874,3 +3038,48 @@ for the full prelude (corrected); (4) PR 61 and CT-1 touch call.cpp and
 convert.cpp too, where 230227264's hunks apply with a three-way fallback (§0.8);
 (5) PR 51's buf_field goldens and PR 57's slice/basic refill at DR-1's merges
 (§0.8, §1.13).
+
+### Rev 3: the focused re-review of rev 2 (2026-10-21)
+
+The focused re-review RR1 read rev 2 (35fa2f0ef) against upstream/trunk
+bc45989b2 and returned APPROVE-WITH-AMENDMENTS: every BLOCKER and MAJOR of
+reviews A and B RESOLVED, every MINOR folded, its slice-3 probes on the v4
+install as predicted, and 6 new findings (0 BLOCKER, 1 MAJOR, 5 MINOR). Each
+was reproduced in `$Z` where it is a measurement, and folded; none is
+rejected.
+
+| Finding | Disposition | Where |
+| --- | --- | --- |
+| RR1-M1 W-322's records half targets ledger entries PR 62 lacks, and PR 62's land-time W-177 narrowing note would land false | Folded: reproduced (`$Z/logs/rr1_m1.txt`: fd290b6e6 is not an ancestor of 3a6531157; PR 62's ledger has W-280 and no W-177 or W-320..W-323; PR 56's and PR 57's have W-177); "its ledger's W-322 is discharged" dropped, C.2 alone discharging it; PR 62's plan §1.16 W-177 paragraph and Appendix C.5 withdrawn by dated notes, W-177's land-time evidence re-pointed to match/fail_todo_core_optional.carbon; W-280's `Core.Optional` half marked moot and its evidence re-cited; W-177's correction moved to PR 56's ledger in W-323's commit, carried to PR 57 by its merge | §1.11, §1.15, §1.16, §2.5, §6, C.6, C.7 |
+| RR1-m1 §0.8 omits PR 59's and PR 60's call.cpp and convert.cpp | Folded: numstat added (VA-1 +194 and +114; SC-1 +14 and +94/-7) with the dry runs onto both heads (`$Z/logs/rr1_m1_m4_dryrun.txt`); rule: a three-way merge with no semantic interaction, by a test of each PR's added lines (no `TemporaryStorage` return argument, no `return_arg_id`, no `ConvertCallArgs` call) | §0.8 |
+| RR1-m2 W-328 reserved for two purposes | Folded: §3 item 9's shrink residue takes the next free id after the re-scan; W-328 stays W-320's | §3 item 9 |
+| RR1-m3 two prose lines start with '-' | Folded: both rewrapped by hand; a lint of every line outside code blocks (`$Z/bin/hazard.py`) finds no prose line starting with `#`, `*`, `+`, `-` or a digit-period; R31 counts taken before and after | §0.8.1, §3 item 5 |
+| RR1-m4 the tip and CT-1's head moved | Folded: bc45989b2 named at sign-off (the header, §0.10, C.1), its delta read (toolchain/language_server only); CT-1's 5c78c4086 recorded with 224ee2f8f's numstat (convert.cpp measured +20/-2, where the finding said +22/-5) and 230227264's hunks dry-run onto it; §0.8.1 states what the mirror does not show; §8 item 9 re-runs the composition on CT-1's final head with DR-1a alone and with both PRs before M-a | header, §0.8, §0.8.1, §0.10, §1.16, §8 item 9, §8.1, C.1 |
+| RR1-m5 no review and no description refresh for the commits on PR 62 and PR 56 | Folded: one focused review of W-322's commit once its run is green (R29(c)); PR 62's, PR 56's and PR 57's descriptions and first comments refreshed and re-posted after the commits, ORCHESTRATION stamped | §1.16, §3 item 2, C.5 |
+
+Found by the fixer while folding: (1) PR 62's land-time F-M also names the
+deleted golden (its refill and a `bool` payload for its `concrete` split) and
+a `bool` leg for the SKIPped program, the class RR1-M1 describes; C.6
+withdraws them. (2) PR 62's row 68 quotes 134/0/21 over 155, which W-322's
+commit makes 133/0/22 (§0.8.2); C.6 rewrites it. (3) §0.8's PR 61 and CT-1 row
+said 230227264's call.cpp and convert.cpp hunks apply "with a three-way
+fallback"; they apply clean with `git apply --cached --check` onto every held
+head that has those files, corrected.
+
+## Sign-off
+
+Rev 3, 2026-10-21, is SIGNED OFF FOR IMPLEMENTATION: the focused re-review's
+verdict is not REJECT, every finding of every review is folded and none is
+rejected, and upstream's direction is read at bc45989b2 (R32 (a)).
+Implementation starts from this revision's commit with R0 (§3 item 2) and
+follows §3; a measurement that contradicts a measured row of this plan stops
+the PR and amends the plan (D-DR-22). Every figure in this plan is
+container-local, EXPECTED, not of record (R9); the arbiter at implementation is
+the carbonbuild scripts (R28).
+
+| Review | Of | Upstream read | Verdict | Findings (BLOCKER / MAJOR / MINOR) | Folded | Rejected | Folded in |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Review A | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 12 (3 / 5 / 4) | 12 | 0 | rev 2 (35fa2f0ef) |
+| Review B | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 19 (2 / 13 / 4) | 19 | 0 | rev 2 (35fa2f0ef) |
+| Focused re-review RR1 | rev 2 (35fa2f0ef) | bc45989b2 | APPROVE-WITH-AMENDMENTS | 6 (0 / 1 / 5) | 6 | 0 | rev 3 (this commit) |
+| Total | | | | 37 (5 / 19 / 13) | 37 | 0 | |

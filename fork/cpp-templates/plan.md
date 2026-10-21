@@ -10,8 +10,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 through P (65fc0d394) with the held-state measurements (79740957a); the
 implementation reviews 1 (REJECT) and 2 (APPROVE-WITH-FIXES) of that head are
 folded by the fix commits 224ee2f8f and ccd6a80a8, each with its fill
-(5c78c4086 and ffde90904), and by the records commit that adds this line; the
-focused re-review loop of §3 item 9 is next (amended 2026-10-21,
+(5c78c4086 and ffde90904), and by the records commit that adds this line
+(98a82cc4f); the records commits R (59f7b0258) and D are written, and the
+"Landed notes (CT-1, 2026-10-21)" after the Sign-off section record what they
+wrote, the measurements and every land-time item (amended 2026-10-21,
+discharge); the focused re-review loop of §3 item 9 is next (amended 2026-10-21,
 implementation-review fold: IR2-m3)
 
 The focused re-review RR2 of rev 3 approved it with amendments, one MAJOR
@@ -3343,9 +3346,19 @@ B-m6).
     revision, and it is pushed, so it stays as it is (amended 2026-10-21,
     implementation-review fold: IR2-m3).
 11. **R** "CT-1 records: gap rows 56 and 42": Appendix C.4.
+
+    Done 2026-10-21 (amended 2026-10-21, discharge): 59f7b0258 replaces rows 56
+    and 42 at their lines on this branch, 56 and 42, each found by its bullet
+    text first, with C.4's text dated 2026-10-21; both stay PARTIAL. The
+    land-time records commit replaces them again by bullet text after M.
 12. **D** "CT-1 discharge": the ledger (Appendix C.2, C.3, C.5), the TP-1
     record lines (C.11), the decision log (C.7), fork/ORCHESTRATION.md (C.8),
     the re-scan's result; last on the branch.
+
+    Done 2026-10-21 (amended 2026-10-21, discharge): the commit that adds this
+    paragraph, after the id re-scan (§8 item 10), which re-allocates nothing;
+    the "Landed notes (CT-1, 2026-10-21)" record what it wrote. Commits of the
+    focused re-review loop (item 9), if any, follow it.
 13. **Land-time** (after PR 62), each its own commit: M (records only:
     W-043's entry taken from DD-1, rows and decision log keeping both sides,
     C-1's program merge); S-VA (code: Appendix C.11's call.cpp hunk and its
@@ -4094,6 +4107,15 @@ is not a difference.
     reserving W-300..W-319 for CT-1, not a filed id. The highest id in any
     ledger is W-298, and no worktree's or origin ref's fork/decision-log.md
     holds `F-02[1-9]` (the highest is F-020); `$X/logs/rescan.log`.
+
+    Before D (amended 2026-10-21, discharge), after a fetch of origin at
+    2026-10-21T21:55Z (69 origin refs, 18 local branches, 17 worktrees; trunk
+    e0769c178): the first command prints no ledger count, so no ledger holds any
+    of W-300..W-319; `git grep` finds the range in this plan (135 lines) and, as
+    CT-1's reservation, in trunk's and DR-1's fork/ORCHESTRATION.md,
+    fork/decision-log.md and the ledger's `source`; the highest ledger ids are
+    DR-1's (W-320 to W-323 on trunk, W-324 to W-327 and W-329 on its branch),
+    and no decision log holds F-021. No id is re-allocated (the landed notes).
 11. **Not run, and why** (recorded in the PR's first comment): the hosted
     gate and conformance (GitHub Actions is disabled on the fork); bazel
     targets (bazel is not installed, and is not to be). The arbiter's LLVM
@@ -4467,6 +4489,160 @@ run or a probe of §0.13 differs from rev 4's predictions at implementation
 (§8's stop-and-amend rule), or an implementation review finds a BLOCKER in a
 decision of this plan; the plan is then amended in a new revision, reviewed
 under §3 item 9's loop, before the step is committed.
+
+## Landed notes (CT-1, 2026-10-21)
+
+Written by the discharge commit D, "CT-1 discharge", after the row commit R
+(59f7b0258, "CT-1 records: gap rows 56 and 42"), both dated 2026-10-21, the UTC
+date of their commits, on this branch, stacked on PR 61 (TP-1's head 5661a35c8)
+with no merge of trunk (§3 item 10). In the held state no PR of PR 51 to PR 62
+is on trunk (e0769c178 at D), so these notes record what R and D wrote, the ids,
+the measurements and their heads, what moved after the mirrors, and every
+land-time item in order; the land-time records commit adds the merged tree's
+runs here. Everything measured is EXPECTED and not of record (R9). `$D` is the
+records writer's scratch directory,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/ct1-impl/records`
+(its `logs/`, `r31/` and `msg-*.txt`).
+
+-   **What R and D write** (Appendix C, only the `<...>` placeholders filled, §3
+    items 11 and 12). R: rows 56 and 42 of fork/gap-analysis.md, each found by
+    its bullet text at its line, replaced by C.4's text dated 2026-10-21; both
+    stay PARTIAL and the header does not move. D: the ledger (W-043 DISCHARGED
+    with C.2's title, its six evidence entries after the original seven and its
+    note after the original notes, the gate and conformance filled, and one
+    held-state sentence saying that the land-time records commit reapplies the
+    text over DD-1's entry; TP-1's W-268 narrowed as C.5 writes it, W-273
+    discharged and one dated line in W-274's notes as C.11 writes them, and no
+    other TP-1 item; W-300 to W-311 appended after W-298, verbatim from C.3 with
+    the date; a dated sentence on the ledger's `source`; 166 items, the last
+    W-311); fork/templates/plan.md's two dated lines, after D-TP-12's paragraph
+    and at the end of TR-22's item (C.11); the decision-log entry "CT-1: C++
+    templates on symbolic Carbon type arguments (2026-10-21)" from C.7 at the
+    end of fork/decision-log.md, its placeholders filled, its paragraphs
+    rewrapped by hand with the words unchanged, and one dated held-state
+    paragraph (the commits, the scoreboard, the filed and unused ids, R32)
+    before its V-3a line; in fork/ORCHESTRATION.md, the Branches row in C.8's
+    held wording, a dated paragraph, the expected scoreboard and Next actions
+    item 6; in this plan, the status line, §3 items 11 and 12, §8 item 10 and
+    these notes.
+-   **The id re-scan before D** (§0.11's command after a fetch of origin,
+    2026-10-21T21:55Z; `$D/logs/rescan.log` and `rescan_lines.txt`). Over the 69
+    origin refs, the 18 local branches and the ledgers of the 17 worktrees, the
+    first command prints no count: no ledger files any of W-300..W-319. `git
+    grep` finds the range in this plan (135 lines on this branch's ref) and, as
+    CT-1's reservation only, in trunk e0769c178's fork/ORCHESTRATION.md (lines
+    355, 402 and 782), fork/decision-log.md (:252, in DR-0) and
+    fork/inventory/work-items.json (:4, its `source`), the same on
+    claude/carbon-fork-0-1-7mwfb7 (the same commit) and on DR-1's branch (lines
+    355, 402 and 750, :259 and :4). The highest ledger ids are DR-1's, outside
+    CT-1's range: W-320 to W-323 on trunk, and W-324 to W-327 and W-329 on its
+    branch (W-328 reserved). No decision log on any ref or worktree holds F-021
+    (DR-1's says that it mints no F-022). No id is re-allocated.
+-   **Ids.** Filed: W-300 to W-309 (Appendix C.3) and W-310 and W-311 (the
+    implementation-review fold's, from the reserve, §1.12). Unused: W-312 to
+    W-319, never reused. Minted: F-021 (D-CT-16).
+-   **Measured for R and D.** On 98a82cc4f, the head before R, whose toolchain
+    is 224ee2f8f's (the install prints 0.0.0-0.dev+224ee2f8f): "file_test test
+    mode on /home/user/carbon-ct: 1959 passed, 0 failed (exit 0, 27s)"
+    (`$D/logs/gate_pre.log`); conformance with a private `XDG_CACHE_HOME`, "PASS
+    147, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 20 (of 167)", bullets 48 PASS, 0 FAIL, 8 SKIP of 56,
+    row 56's bullet holding ten programs and row 42's three, all PASS
+    (`$D/logs/conf_pre.log`, `$D/conf-pre/scoreboard.json`, generated
+    2026-10-21T21:57:30Z). R and D change records only; D's runner.py
+    `--self-test`, the ledger's `json.load` and the prek runs are in its commit
+    message.
+-   **Measurement heads.** CT-1's build /home/user/carbon-build/carbon-ct, built
+    in full at 62530b76e (the baseline: 1957 of 1957 and 138 / 0 / 22 over 160)
+    and at C1 3a4fa82d0, and incrementally at C2 d5d7c6580 and at the fix
+    224ee2f8f (its install now); gates on F1 378cffa2e, F2 c7635b14a, the fold's
+    fills 5c78c4086 and ffde90904, and 98a82cc4f; conformance on P 65fc0d394, at
+    the fold and on 98a82cc4f; the 403 probes on C2's install and at the fold;
+    the mutants over d5d7c6580's objects and over 224ee2f8f's (§8 item 5); the
+    mirrors of §8 item 9 from 65fc0d394 (PR 51 f96fe8a7a as 71f05a861, PR 57
+    628273444 as 60ae83d45, PR 59 b0822a744 as e24519a39 with S-VA, PR 60
+    40a76ab81 as f5af4cdde and 1ae750478, TP-1 with PR 60 as ed209fa07, PR 62
+    3a6531157 as a2d9af566) and from ffde90904 (PR 57 as b256186e7, TP-1 with PR
+    57 as 08fda91e0, PR 59 as 71aadfb8e, PR 60 as 2bf903427, PR 62 as
+    9aa3b5ce4); trunk 3b4a24fff through the fold, and e0769c178 at R and D.
+-   **What moved after the mirrors** (R29: decided and recorded). Trunk moved
+    from 3b4a24fff to e0769c178 by records only (fd290b6e6, f68681114 and
+    e0769c178: R32, V-3b, DR-0 and DR-1's plan stamp), and three held heads
+    moved by DR-1's new commits: PR 56 to 894139b34 and PR 57 to a080c7886,
+    records and design pages only (docs/design/control_flow/loops.md,
+    docs/design/optional.md, fork/optional/plan.md and the ledger), and PR 62 to
+    0ef8a0334, W-322's removal of SV-1's D-SV-7 view in eight toolchain and
+    prelude files (cpp/sum_type.cpp and .h, cpp/type_mapping.cpp,
+    refutable_binding.cpp, core/prelude/types/cpp/sum.carbon, kind.def and two
+    goldens) with one program SKIPped. §3 item 10's break condition fires for PR
+    62: its mirror is owed again at 0ef8a0334 before M. PR 57's code composition
+    is unchanged, so its mirror stands, and PR 56's code is in PR 57's. _Break
+    condition:_ a held head that moves again re-runs its mirror at that head.
+-   **R32 at landing.** Trunk records R32 and V-3b at fd290b6e6 (2026-10-21
+    17:23 UTC), after this plan's sign-off (62530b76e, 15:54 UTC); they reach
+    this branch at M. F-021's V-3 comparison (§0.10, §1.17) is then repeated
+    against upstream's tip by sha, quoting the design pages at that tip (R32
+    (a)), and recorded by the land-time records commit. _Break condition:_ that
+    tip records a rule for a checked generic's C++ calls, which is F-021's own
+    break condition, re-decided then.
+-   **Next on the branch.** The focused re-review loop of §3 item 9 reads the
+    fix commits 224ee2f8f and ccd6a80a8, their fills and these records, with the
+    gate, the mutants that cover the functions they touch and the §0.12 probes
+    re-run; a fixer folds each round under item 8's shrink line; the PR opens
+    held after the last round.
+-   **Land-time items, in order after PR 62** (§2.11, §3 item 13;
+    fork/ORCHESTRATION.md Next actions item 6). (a) M, a records-only merge
+    commit of the trunk that holds PR 51 to PR 62 (never a rebase; if PR 61
+    changes first, its new head is merged the same way and refilled, §1.16),
+    after §0.9's dry runs against that day's heads and the PR 62 mirror at its
+    head, resolved by §0.9's rules: offsets only for PR 55, PR 57, PR 59 and PR
+    62, PR 60's convert.cpp and member_access.cpp as TP-1's M resolves them, C-1
+    for the two programs (PR 51's header, Appendix C.6's paragraph dated with
+    M's date, CT-1's body), W-043's ledger entry taken whole from DD-1's side,
+    every other ledger entry, the gap rows and the decision log keeping both
+    sides with CT-1's after the others, the conformance README table regenerated
+    with runner.py's `--update-readme-table` (stale by
+    templates_dependent_member's row on PR 51's mirror), and trunk's stale CT-1
+    Branches row dropped. (b) S-VA, the only land-time code: Appendix C.11's
+    call.cpp hunk and its split `fail_pack_expansion_cpp_call_in_definition`
+    appended to A.1, built in full, filled to a fixpoint and gated; predicted
+    from PR 59's mirror: the hunk at its own lines, one fill pass of 17 lines
+    with ``pack expansion argument is not matched by a pack expansion parameter
+    [PackExpansionArgWithoutPackParam]`` at column 22, va1, va2 and va5
+    reporting it where `F` is defined, va3 and va4 printing 7 and 42; M18 run
+    again. (c) L-F, the refill of what M and S-VA change: S-VA's split; PR 51's
+    `fail_todo_unformed_dependent_var` renamed `unformed_dependent_var` and
+    refilled (C-2), or, if PR 61 landed its F6 rename, that split refilled with
+    CT-1's toolchain (§1.16's fallback, H-1); any held PR's golden the merged
+    toolchain changes, of which the mirrors predict none for CT-1 (PR 57's
+    for_range.carbon and SC-1's two goldens are TP-1's F6 refills, §0.9); then
+    the gate, conformance and the mutants on the merged build. (d) L:
+    docs/design/interoperability/README.md's "Using C++ templates" over PR 58's
+    text, its "One limit in 0.1:" sentence replaced by Appendix C.1's paragraph
+    dated with L's date, fixture X37_cpp_template_symbolic_uninit.carbon with
+    its `SAMPLES` entry after X09's and X09's comment updated, checked by PR
+    58's fork/designdocs/check_samples.py with and without `--toolchain`
+    (measured for rev 2 on a PR 58 mirror: X37 passes with CT-1's code and fails
+    on TP-1), with R27's spelling diff and R31's counts. (e) The second id
+    re-scan (§0.11) on the merged trunk, immediately before the records commit's
+    ledger edit; a collision re-allocates from the maximum plus one, skipping
+    every reserved block (DR-1's W-320..W-329 among them), and is recorded here.
+    (f) The land-time records commit: rows 56 and 42 replaced on the merged
+    tree, each found by its bullet text after M (DD-1 shifts the table by six
+    and the held PRs' rows land at 60 to 63), row 42's interop goldens counted
+    again; W-043's discharge (C.2) reapplied over the entry M took from DD-1,
+    DD-1's evidence after the original seven and DD-1's notes after the original
+    notes, then CT-1's additions; W-127's sentence (C.10, PR 51's item), naming
+    CT-1 for the checked shape; the merged tree's gate, conformance (the
+    absolute count re-quoted from its scoreboard, never derived: CT-1 adds nine
+    PASS and seven programs and removes two SKIP) and check_samples.py runs in
+    these notes; R32's comparison; the ORCHESTRATION row and the decision-log
+    entry's held-state paragraph brought up to date. (g) C.7's fallback:
+    Appendix C.7 states none; decided here (R29): if the merged decision log
+    already holds a CT-1 entry, M keeps both sides and the records commit merges
+    them into this one, and otherwise the records commit only brings the
+    held-state paragraph up to date. _Break condition:_ a review names a
+    fallback clause of C.7 that this reading misses.
 
 ## Appendix A: golden sources
 

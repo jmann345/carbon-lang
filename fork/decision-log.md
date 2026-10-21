@@ -6933,6 +6933,17 @@ re-review of rev 4 folded, signed off) and the amendments at implementation
 in 6efb8345b (the held-state measurements) and fbe2a55f7 (the
 implementation-review fold).
 
+Amended 2026-10-21 (DR-1 D-DR-15, W-322; its focused review, m1): D-SV-7's
+view is retired by W-322's commit (22fe50ff8; the D-SV-7 bullet below), so the
+row stays PARTIAL on W-177 not narrowed, and on the merged trunk on W-320 as
+well, which DR-0 filed on this bullet; match_core_optional_diff is SKIPped
+until W-320, W-011's arbiter stays met by match_sum_type_payload, three
+differential programs and the library program, and the expected scoreboard
+is now 133 / 0 / 22 over 155, 48/56 bullets, container-built and not of
+record. The veto digest's "bounded by the one-step conversions and the view"
+and the V-3 paragraph's second divergence, "the view matches `Core.Optional`
+by copy", no longer hold: no `Core.Optional(T)` scrutinee is matched.
+
 **Veto digest** (R29(a), for the owner):
 
 -   **F-020** (minted here): a C++ `std::optional`/`std::variant` keeps its

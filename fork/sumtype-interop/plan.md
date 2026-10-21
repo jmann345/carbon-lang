@@ -2508,6 +2508,13 @@ PARTIAL. The row's new third column, composed over PR 56's row
 (fork/gap-analysis.md:70 on 379f20f67, the same text at :75 on PR 57's head
 628273444), with the fallback rule if the merged row differs, is Appendix C.7.
 
+Amended 2026-10-21 (DR-1 D-DR-15, W-322; its focused review, m1): the DONE
+case is withdrawn. W-320 (`Core.Optional` matchable by `Match`, filed on trunk
+by DR-0 on this row's bullet) bounds the row by condition 4 as W-177 does,
+because with the view retired no `Core.Optional(T)` scrutinee is matched; so
+row 68 stays PARTIAL at R whether or not PR 56 has landed, and the header
+does not move. Break condition: W-320 discharged before R.
+
 ### §1.18 Decision index
 
 Amended 2026-10-20 (review fold: all findings; B-m-6 for the two break
@@ -4811,7 +4818,16 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     are withdrawn, the golden being deleted and the program SKIPped. F-M
     refills match/fail_todo_core_optional.carbon in their place only if PR 57's
     merge changes it, as autoupdate decides (R16), and stdlib/optional.carbon's
-    refill is unchanged.
+    refill is unchanged. F-M therefore refills seven goldens, not eight: the
+    four function-pointer goldens, choice/optional_pointer_payload.carbon,
+    stdlib/optional.carbon and stdlib/variant.carbon, with
+    match/fail_todo_core_optional.carbon only if autoupdate changes it. The
+    M-VA block applies to 22fe50ff8's sum_type.cpp, and to 4a9c18b07's, at
+    offsets of 9 lines (its first four hunks) and 51 (its last two), measured
+    with `patch --dry-run` (`dr1-impl/fixw/logs/mva_dry_22fe.log` and
+    `mva_dry_4a9c.log`, beside `$Y`; amended 2026-10-21, W-322's focused
+    review: m4). Appendix C.6's W-011 sentence, and C.7's land-time sentence
+    and its fallback, follow their dated notes (m1).
 9.  **R** "SV-1 (7): gap row 68": the row and the header, by §1.17 and
     Appendix C.7, after M.
 10. **D** "SV-1 (8): discharge": the id re-scan of §8.7 first; W-011 DISCHARGED,
@@ -9256,6 +9272,23 @@ Appended to W-177's `notes`, and its `evidence` gains
 
 ### C.6 Notes on existing items, and W-011's discharge
 
+Amended 2026-10-21 (DR-1 D-DR-15, W-322; its focused review, m1): W-011's
+SV-1 sentence below, as D wrote it, names match_core_optional_diff among the
+programs that PASS and ends "W-177 narrowed, open."; since W-322's commit
+(22fe50ff8) the program is SKIPped and W-177 is not narrowed. The sentence
+stays as written, and W-011's `notes` gain, in the records commit of that
+review's fold, the sentence "Amended 2026-10-21 (DR-1 D-DR-15, W-322):
+D-SV-7's view is retired as a second spelling of the `Match` route (R32 (d)),
+so match_core_optional_diff is SKIPped until W-320, and the arbiter is met by
+match_sum_type_payload, match_std_optional_diff, match_std_variant_diff,
+cpp_sum_type_roundtrip_diff and cpp_sum_type_library (container-built, the
+held tree at 133/0/22 over 155, expected, not of record); W-177 is not
+narrowed: `Core.Optional(T)` itself is not matched, and W-320 waits on
+W-324."; its `evidence` string for that program gains "(SKIP since W-322's
+commit)". The land-time records commit re-quotes the absolute count in the
+SV-1 sentence only, as below, and leaves the dated sentence's held-tree count
+as measured.
+
 -   **W-011**, `kind` `implemented`, title "W5b (DISCHARGED at SV-1,
     YYYY-MM-DD): match destructuring of choice payloads (landed at re-platform
     S2c) + transparent std::variant/std::optional interop (landed at SV-1)";
@@ -9329,6 +9362,21 @@ Appended to W-177's `notes`, and its `evidence` gains
     run-time elements lower (fork/sumtype-interop/plan.md §1.9, §1.11)."
 
 ### C.7 fork/gap-analysis.md: row 68 (commit R)
+
+Amended 2026-10-21 (DR-1 D-DR-15, W-322; its focused review, m1): the sentence
+below is what R appended on this branch before W-322's commit (22fe50ff8). At
+land time R appends it as row 68 reads on this branch since that commit
+(fork/gap-analysis.md:68): its "11 conformance programs PASS (...
+match_core_optional_diff ...)" reads "10 conformance programs PASS (the 5
+above, match_sum_type_payload, match_std_optional_diff,
+match_std_variant_diff, cpp_sum_type_roundtrip_diff and cpp_sum_type_library,
+against C++ oracles; match_core_optional_diff SKIP since W-322's commit)", and
+its closing "Still PARTIAL on W-177, narrowed: ... stay open." reads
+"`Core.Optional(T)` itself is not matched: D-SV-7's view was retired (W-322,
+R32 (d)), and W-320 waits on W-324.". The fallback's DONE case is withdrawn
+(§1.17's dated note): W-320 bounds the row whether or not W-177 is on the
+merged trunk, so the status stays PARTIAL, the header does not move and the
+sentence keeps its closing clause; the evidence cell's clause is unchanged.
 
 R composes over PR 56's row (379f20f67, fork/gap-analysis.md:70; the same text
 at :75 on PR 57's head 628273444), which the merge order puts on trunk before

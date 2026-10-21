@@ -6987,5 +6987,24 @@ V-3 holds: no accepted proposal or leads' direction is contradicted
 (upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
 Two divergences are disclosed: the sum types are fork prelude names, and the
 view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
-W-280, W-281, W-285; W-278 withdrawn unfiled; W-283 and W-286 to W-294
-unused.
+W-280, W-281, W-285; W-284 held until M-VA lands; W-282 unused (X-1 fixed by
+TP-1 at eafca5cb9); W-278 withdrawn unfiled; W-283 and W-286 to W-294 unused.
+
+**Focused re-review of the fold, round 1** (2026-10-21). Two fresh reviews of
+the fold's commits and of R and D, at 21060cef4, both APPROVE-WITH-FIXES with
+no BLOCKER or MAJOR: review 1 (soundness) three MINORs, all records only, dry;
+review 2 (strictness) six MINORs, one of them not records only, so the round
+is not dry. Eight distinct findings (the nested
+`Core.Optional(Core.Optional(i32*))` pin is in both). The records commit that
+records the round folds the seven records-only ones in the plan, this entry's
+id list (the W-282 and W-284 clauses above, with C.8's new slots), W-011's
+note and fork/ORCHESTRATION.md: F-M gains a nested-pointer program leg at land
+time, W-282 stays conditional on x19 at land time, the land-time records
+commit is listed in full, and the PR texts gain the merge-tree conflict table.
+The eighth, RR1r2-m1, needs a golden split: no golden pins the branch of the
+RV1-B1 fix that a class which cannot be instantiated takes, and a mutant that
+ignores the instantiation's result brings the clang abort back; it goes to
+round 2's fixer, and round 2 is owed (fork/sumtype-interop/plan.md, "Focused
+re-review of the fold, round 1 (2026-10-21)"). No id filed; W-286 to W-294
+stay held. Measured on the records commit's tree, EXPECTED and not of record:
+file_test 1950 of 1950, conformance 134/0/21 over 155, 48 of 56 bullets.

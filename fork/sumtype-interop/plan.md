@@ -62,6 +62,17 @@ entry with F-020's veto digest; the [landed
 notes](#landed-notes-sv-1-2026-10-21) list what they wrote, the ids left unfiled
 and every land-time item.
 
+Re-reviewed (2026-10-21): round 1 of the focused re-review of the fold, two
+fresh reviews of the fold's commits and of R and D at 21060cef4, found no
+BLOCKER and no MAJOR. Review 1 (soundness) returned APPROVE-WITH-FIXES with
+three MINORs, all records only, and judged the round dry; review 2 (strictness)
+returned APPROVE-WITH-FIXES with six MINORs and judged it not dry, because one
+of them, RR1r2-m1 (no golden pins the branch of the RV1-B1 fix that a class
+which cannot be instantiated takes), needs a golden split. The records-only
+findings are folded in the records commit that records the round, RR1r2-m1 goes
+to round 2's fixer, and round 2 is owed (the [record of round
+1](#focused-re-review-of-the-fold-round-1-2026-10-21)).
+
 **Summary.** A C++ `std::optional<T>` or `std::variant<T0, ..., Tn>`
 specialization stays the C++ class the import makes of it today, so its member
 functions keep working, and gains a Carbon sum type: a specific of one of nine
@@ -963,8 +974,12 @@ per run (v02 and v03, pure Carbon, on trunk and the nightly too; the one-step
 f07 prints such a value on SV-1's tree); with PR 57 both work (g01 with `bool`
 DIFF-PASS, v02 and v03 print 9, on PR 57's build and its composition, §8
 item 6). PR 57 merges before SV-1, so the landed state is correct, and F-M pins
-`bool` (§3 item 8). The composition is re-measured with the fold's changes in §8
-item 6.
+`bool` and the nested pointer payload (§3 item 8; the nested pointer amended
+2026-10-21, focused re-review round 1: RR1-1-m1 / RR1r2-m6: the
+implementation-review fold pinned `bool` only, so nothing in the landed tree
+would have caught a regression of the one-step `std::optional<int*>` to
+`Core.Optional(Core.Optional(i32*))` conversion, which SV-1 makes reachable
+from C++). The composition is re-measured with the fold's changes in §8 item 6.
 
 Records shared with every held PR: fork/gap-analysis.md,
 fork/inventory/work-items.json, fork/decision-log.md, fork/ORCHESTRATION.md and
@@ -1626,7 +1641,7 @@ function that takes `Cpp.std.optional(i32)` and matches it works too (`s21`:
 | --- | --- |
 | C++ to Carbon: returns, arguments, `let`/`var` initializers, `as`, scrutinees | IN |
 | C++ `std::optional<T>` to `Core.Optional(T')`, non-pointer payload, implicitly | IN (rev 2; x01) |
-| Carbon to C++: a sum value, or a `Core.Optional(T')` with a matchable non-pointer payload, passed by value, `const&` or `const&&`; assigned or returned where the C++ class is expected | IN (rev 2 for `Core.Optional`; x03; `const&&` measured at rev 5, x01; a pointer alternative, and a by-value parameter whose specialization nothing else instantiates, from the implementation-review fold: RV1-M1, RV1-B1, §1.5 above) |
+| Carbon to C++: a sum value, or a `Core.Optional(T')` with a matchable non-pointer payload, passed by value, `const&` or `const&&`; assigned or returned where the C++ class is expected | IN (rev 2 for `Core.Optional`; x03; `const&&` measured at rev 5, x01; a pointer alternative, and a by-value parameter whose specialization nothing else instantiates, amended 2026-10-21, implementation-review fold: RV1-M1 / RV1-B1, §1.5 above; the date mark added 2026-10-21, focused re-review round 1: RR1r2-m5) |
 | A C++ caller of a Carbon function whose signature names the C++ class | IN (existing export) |
 | A sum value to any other C++ class (another specialization, a converting constructor) | OUT, `CppSumTypeReverseMismatch` (rev 2) |
 | A Carbon function whose signature names a `Core.CppCompat` sum type, called from C++ | OUT: the existing export TODO for `Core` package entities, "interop with non-identifier package name" (export.cpp:139-141; `s16`), W-049's |
@@ -1862,7 +1877,16 @@ as trunk's does (v02 and v03). PR 57 (OP-2), which merges before SV-1, fixes
 both: on its composition g01 with `bool` is DIFF-PASS and v02 and v03 print 9
 (§0.7, §8 item 6). F-M adds a `bool` payload to core_optional_view.carbon's
 `concrete` split and a `bool` leg to match_core_optional_diff, filled by
-autoupdate (§3 item 8).
+autoupdate (§3 item 8). F-M also adds a nested-pointer leg to
+cpp_sum_type_roundtrip_diff and its oracle (amended 2026-10-21, focused
+re-review round 1: RR1-1-m1 / RR1r2-m6): a C++ `std::optional<int*>` empty,
+engaged with a null pointer and engaged with the address of a C++ global whose
+value is 81, converted in one step to `Core.Optional(Core.Optional(i32*))` and
+read, then converted back in one step to a C++ function taking
+`std::optional<int*>`, hand-derived `-10 -20 81 -1 -2 81` (round 1's probe w1,
+which prints that on PR 57's composition and a wrong pointer, a different value
+per run, on SV-1's own tree, so the leg can only be added at land time, as the
+`bool` leg is).
 
 _Break condition:_ if W-058's design or the owner wants `Core.Optional`
 matched without a copy, by reference or generically, the `Match` interface or
@@ -1965,9 +1989,9 @@ lowering stops at lower.cpp:48 when the module is verified
 trunk's own `((1, 2), 3)` and a user generic choice's `(G(i32).A, 0)` do without
 SV-1: the failure is W-263's, TP-1's residue on PR 61 (z1, z7 and y11 on v6; z5,
 z8 and z9 on trunk; amended 2026-10-20, review fold: RR4-m1; §1.11). Measured on
-v4: `r03` runs (-1), review A's `r05` (two constants in one function) prints -1
--2 5, the reverse conversion of a constant runs (`s18`, and the roundtrip
-program), and lower/match/constant_choice_scrutinee.carbon pins
+v4: `r03` runs (-1), review A's `r05` (two constants in one function)
+prints -1 -2 5, the reverse conversion of a constant runs (`s18`, and the
+roundtrip program), and lower/match/constant_choice_scrutinee.carbon pins
 `@uninit.060.anon = internal constant [4 x i8] zeroinitializer` and
 `load i32, ptr @uninit.060.anon`.
 
@@ -2144,9 +2168,12 @@ and sum_type_overload.carbon's `fail_todo_file_scope` cite W-036, an item filed
 on trunk. The rule is therefore: a golden or source comment cites no SV-1 id,
 and only an item filed on the trunk it lands on, as trunk's own sources do
 (refutable_binding.cpp cites W-008, W-068 and W-077). Program headers cite
-items, as every program under fork/conformance/programs does: W-047
-(cpp_sum_type_library/main.carbon), W-049 (cpp_sum_type_roundtrip_diff), W-078a
-(match_sum_type_payload, a part of W-078) and W-177 (match_core_optional_diff).
+items, as 31 of the 163 `.carbon` files under fork/conformance/programs do
+(amended 2026-10-21, focused re-review round 1: RR1r2-m5: the fold said "as
+every program ... does"; counted at 21060cef4 with `grep -lE 'W-[0-9]{3}'`):
+W-047 (cpp_sum_type_library/main.carbon), W-049 (cpp_sum_type_roundtrip_diff),
+W-078a (match_sum_type_payload, a part of W-078) and W-177
+(match_core_optional_diff).
 W-177 is OP-1's, on PR 56's and PR 57's branches only, so its cite resolves on
 the merged trunk, a land-time check (§3 item 8).
 
@@ -2321,7 +2348,10 @@ W-299), on TP-1's pushed branch at 3d88e6a60, its local branch and the carbon-tp
 worktree's ledger (rev 4 named the last two only; amended 2026-10-20, review
 fold: RR4-m3); F-020 in no decision log. W-284 is filed at D once M-VA has
 landed, and held until then (§3 items 8 and 10; amended 2026-10-20, review fold:
-RR3-m1). Re-run at rev 5 (2026-10-20, the same command over 83 refs and 15
+RR3-m1); in the held state D ran before M-VA, so W-284 is held at D and the
+land-time records commit files it, with its `blocked_by` W-219 (§3 item 8, the
+landed notes' item (g); amended 2026-10-21, focused re-review round 1:
+RR1r2-m2). Re-run at rev 5 (2026-10-20, the same command over 83 refs and 15
 worktree ledgers, `$Y/runs/ids-refs.txt`, `ids-worktrees.txt`; amended
 2026-10-20, review fold: all RR4 findings): no id of SV-1's block anywhere;
 TP-1's W-295 to W-297 on its pushed branch at 281292d8f, its local branch and
@@ -2341,7 +2371,7 @@ review fold: RR4-M1). Planned filings:
 | W-281 | a C++ sum class nested in a tuple or struct scrutinee is not converted (`match on unsupported scrutinee type`) | this bullet | no: the whole-value scrutinee and every nesting through a Carbon sum type work, and the shape is the existing TODO |
 | W-284 | (from M-VA, filed at D once M-VA has landed) a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack converted to a pack of another element type), whose element is the C++ class, the sum type, a `Core.Optional`, or a tuple, struct, array or class holding one, is a semantics TODO; blocked by VA-1's W-219 (control flow inside an expansion body) (amended 2026-10-20, review fold: RR3-B1 / RR3-m1) | Generics: Definition-checked variadics | no: every non-pack form converts, a pack of the C++ class, of the sum type or of an aggregate holding either is forwarded unchanged (v06, v07, n10) and a pack literal converts element by element (v01, n09), and the shape is diagnosed |
 | W-285 | (rev 5) a Carbon sum value or `Core.Optional(T')` passed as an initializing expression to a C++ non-`const` rvalue reference parameter `T&&`, alone or the member C++ prefers to a `const T&` sibling (`std::vector::push_back`), is a semantics TODO (``... with no source expression``): the parameter's initialization is located at its C++ declaration, which gives the conversion's branches no parse node (amended 2026-10-20, review fold: RR4-M1) | this bullet | no: the row's arbiter is the consumption of C++ values by `match`, which the shape does not touch, and Carbon to C++ converts by value, `const&` and `const&&` (w14, x01), a value argument reaches the `const T&` member of a pair (x14, x16), a C++ call's result binds the `T&&` (r1, x08), and the shape is diagnosed |
-| W-282 | (conditional) TP-1-origin: a `match` on a template-dependent `choice` value stops the compiler at pattern_match.cpp:1409, where trunk gives W-252's TODO (X-1; x19) | Generics: Integrated templates | filed by SV-1 at D only if TP-1 has not filed it and x19 still stops the merged trunk; otherwise unused. Predicted unused: TP-1's round-10 head eafca5cb9 fixes X-1 (x19 compiles and prints 0 on tpv6; amended 2026-10-20, review fold: RR3-m3) |
+| W-282 | (conditional) TP-1-origin: a `match` on a template-dependent `choice` value stops the compiler at pattern_match.cpp:1409, where trunk gives W-252's TODO (X-1; x19) | Generics: Integrated templates | filed by SV-1 at D only if TP-1 has not filed it and x19 still stops the merged trunk; otherwise unused. Predicted unused: TP-1's round-10 head eafca5cb9 fixes X-1 (x19 compiles and prints 0 on tpv6; amended 2026-10-20, review fold: RR3-m3). In the held state it is unused at D (the trunk D merged holds no TP-1 code, and x19 prints 0 on PR 61's mirror), and the land-time records commit checks x19 once more on the merged trunk and files it with C.4's text only if it stops there (R-9's falsifier; amended 2026-10-21, focused re-review round 1: RR1r2-m2) |
 
 **W-177 (OP-1's, on row 68's bullet) stays OPEN** with a dated narrowing note
 (Appendix C.5; amended 2026-10-20, review fold: A-M2 / B-M-1): since SV-1,
@@ -4656,14 +4686,25 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     PR 59's branch only), the notes on W-252 and W-263 (TP-1's), the W-177 cite
     in match_core_optional_diff.carbon's header (§1.12) and C.7's fallback.
     Decided now, so that C.6's, C.8's and C.9's placeholders resolve at D with
-    no decision left: W-282 stays unused (X-1 is fixed on PR 61's head, and the
-    trunk the last M merged holds no TP-1 code, so its condition fails either
-    way), and W-278 and W-283 stay unfiled (the shrink line is not taken). F-M
-    refills eight goldens, not seven: the fold's variant.carbon joins them (§8
-    item 6). F-M also adds, once PR 57 is merged in, a `bool` payload to
-    core_optional_view.carbon's `concrete` split and a `bool` leg to
-    match_core_optional_diff and its oracle, filled by autoupdate (§1.7: on
-    SV-1's own tree both stop lowering at trunk's `Core.Optional(bool).Get()`).
+    no decision left: W-282 is unused at D (X-1 is fixed on PR 61's head, and
+    the trunk the last M merged holds no TP-1 code, so its condition fails on
+    both), and the land-time records commit checks x19 once more on the merged
+    trunk and files W-282 with C.4's text only if it stops there (R-9's
+    falsifier; amended 2026-10-21, focused re-review round 1: RR1r2-m2: the
+    fold said the condition "fails either way", against §1.16, R-9 and the
+    landed notes, which keep that check); W-278 and W-283 stay unfiled (the
+    shrink line is not taken). F-M refills eight goldens, not seven: the fold's
+    variant.carbon joins them (§8 item 6). F-M also adds, once PR 57 is merged
+    in, a `bool` payload to core_optional_view.carbon's `concrete` split and a
+    `bool` leg to match_core_optional_diff and its oracle, filled by autoupdate
+    (§1.7: on SV-1's own tree both stop lowering at trunk's
+    `Core.Optional(bool).Get()`), and a nested-pointer leg to
+    cpp_sum_type_roundtrip_diff and its oracle (§1.7: a `std::optional<int*>`
+    empty, engaged with a null pointer and engaged, converted in one step to
+    `Core.Optional(Core.Optional(i32*))` and back, hand-derived as
+    `-10 -20 81 -1 -2 81` for a C++ global whose value is 81; on SV-1's own
+    tree it reads a wrong pointer, as trunk's nested `Core.Optional` does;
+    amended 2026-10-21, focused re-review round 1: RR1-1-m1 / RR1r2-m6).
     The M-VA block applies to the folded sum_type.cpp (a4d979619) at offsets 9
     (its first four hunks) and 39 (its last two), measured with
     `patch --dry-run`; the fold adds no `CanBuildBranches` call, so M-VA's test
@@ -4680,7 +4721,12 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     entry, fork/ORCHESTRATION.md's row and Next actions item, verbatim from
     Appendix C with only the `<...>` values substituted; after the two
     implementation reviews. The texts are frozen by the plan reviews: a change
-    to anything but a placeholder goes to a document review first (§1.14).
+    to anything but a placeholder goes to a document review first (§1.14). In
+    the held state D wrote all of these but W-177's narrowing note, the notes
+    on W-252 and W-263 and W-284, whose targets are not on the trunk D merged
+    or whose condition (M-VA) has not landed; the land-time records commit
+    writes them (item 8, the landed notes' item (g); amended 2026-10-21,
+    focused re-review round 1: RR1r2-m2).
 
 ## §4 Testdata matrix
 
@@ -4768,9 +4814,11 @@ The prediction above is met exactly.
 **Measured at the implementation-review fold** (amended 2026-10-21,
 implementation-review fold: RV1-M1): on the full build of a4d979619 with its
 fill, 134 PASS, 0 FAIL, 21 SKIP over 155, bullets 48 PASS, 0 FAIL, 8 SKIP of 56,
-every status as at C3; cpp_sum_type_roundtrip_diff prints six more lines (15 0
--1 12 30 -9), DIFF-PASS on three runs; `runner.py --self-test` passes and
+every status as at C3; cpp_sum_type_roundtrip_diff prints six more lines
+(15 0 -1 12 30 -9), DIFF-PASS on three runs; `runner.py --self-test` passes and
 `--update-readme-table` changes nothing (`$F/conf-fix1/`, §8 item 5's `$F`).
+(Rewrapped 2026-10-21, focused re-review round 1: RR1r2-m5, so that no line
+starts with a dash, R31.)
 
 ## §6 Churn and collisions
 
@@ -4788,8 +4836,12 @@ cpp/type_mapping.h +7, cpp/type_mapping.cpp +13/-2, type.cpp +27/-1,
 lower/constant.cpp +28, diagnostics/kind.def +8, check/BUILD +2. Core: one new
 file (sum.carbon, 129 lines) and one line. Testdata: eight new goldens, one
 split appended to interop/cpp/exceptions/fail_catching.carbon, four refills (and
-seven more at F-M, §3 item 8); at M-VA, sum_type.cpp's land-time hunk (+47/-5;
-rev 3's was +18/-5) and one split appended to stdlib/fail_sum_types.carbon.
+eight more at F-M, §3 item 8, where rev 5 said seven: the implementation-review
+fold's `pointer_reverse` split makes stdlib/variant.carbon join them; amended
+2026-10-21, focused re-review round 1: RR1-1-m2; F-M also adds a `bool` payload
+to one split and two program legs with their oracles, §1.7); at M-VA,
+sum_type.cpp's land-time hunk (+47/-5; rev 3's was +18/-5) and one split
+appended to stdlib/fail_sum_types.carbon.
 Conformance: one changed program, five new (one a directory of three files),
 four new `.diff.cpp` oracles and one `main.diff.cpp`, the README table. Docs:
 sum_types.md, unions.md (one link), optional.md after M. Records at R and D.
@@ -4991,8 +5043,9 @@ scripts are
     RR3-M1 / RR3-m4; at rev 5 with fail_sum_types.carbon's new splits, 1946 of
     1950 before the refills, as before: RR4-M1).
 4.  **Conformance**: `XDG_CACHE_HOME=... $CB/conformance.sh /home/user/carbon-sv
-    <out>`: predicted §5's totals; then `python3 fork/conformance/runner.py
-    --update-readme-table` and `--self-test` (R7).
+    <out>`: predicted §5's totals; then
+    `python3 fork/conformance/runner.py --update-readme-table` and
+    `--self-test` (R7).
 5.  **Mutants**, each relinked over the worktree's build (`$X/bin/mutant.sh`
     shows the recipe) and run against the goldens and the programs; each must
     turn something red, and the record names what:
@@ -5243,10 +5296,10 @@ scripts are
     builds write no compile database, so after item 1, `ninja -C
     /home/user/carbon-build/carbon-sv -t compdb >
     /dev/shm/sv1-impl/compile_commands.json`, then LLVM 21.1.8's clang-tidy
-    (`/home/user/llvm/bin/clang-tidy -p /dev/shm/sv1-impl
-    --checks=-modernize-use-trailing-return-type <file>`, the exclusion TP-1
-    needed: with it this container's clang-tidy stops every file at
-    ``missing '(' after '__has_feature'``) on sum_type.cpp,
+    (`/home/user/llvm/bin/clang-tidy -p
+    /dev/shm/sv1-impl --checks=-modernize-use-trailing-return-type <file>`,
+    the exclusion TP-1 needed: with it this container's clang-tidy stops every
+    file at ``missing '(' after '__has_feature'``) on sum_type.cpp,
     custom_type_mapping.cpp, convert.cpp, refutable_binding.cpp,
     type_mapping.cpp, type.cpp and lower/constant.cpp; no new finding on a
     changed line. Measured on v4's sources with a database derived from the
@@ -8707,7 +8760,10 @@ end); W-284 at D once M-VA (§3 item 8) has landed, and held until it has (added
 2026-10-20, review fold: RR-M1; amended 2026-10-20, review fold: RR3-m1: rev 3
 said "with M-VA", which read as filing it in the M-VA commit); W-285 at D with
 the others (added 2026-10-20, review fold: RR4-M1, which also narrows W-279 to
-the template form).
+the template form). In the held state D ran before M-VA and on a trunk with no
+TP-1 code, so D filed the seven, and the land-time records commit files W-284
+once M-VA has landed and W-282 only if x19 stops the merged trunk (§1.16, §3
+item 8; amended 2026-10-21, focused re-review round 1: RR1r2-m2).
 
 <!-- google-doc-style-ignore -->
 
@@ -9031,7 +9087,13 @@ taken, and `<W-278 withdrawn unfiled; >` and `<W-283 and >` only if they are not
 (amended 2026-10-20, review fold: RR3-m1 / RR3-m2: rev 3 froze "W-278 withdrawn
 unfiled; W-283 unused" and "W-284" into the text, which the shrink line or a
 late M-VA would contradict); `<rev-5 commit>` is the hash of the plan's rev-5
-commit (amended 2026-10-20, review fold: all RR4 findings):
+commit (amended 2026-10-20, review fold: all RR4 findings); and
+`<W-284 held until M-VA lands; >` while W-284 is not filed and
+`<W-282 unused (X-1 fixed by TP-1 at <commit>); >` while W-282 is not, so
+that the list says what became of every id of the block (added 2026-10-21,
+focused re-review round 1: RR1-1-m3: the list had no slot for an id held or
+unused by its condition, so the entry D wrote in the held state named neither
+W-282 nor W-284; the land-time records commit rewrites both clauses):
 
 > ### SV-1 / F-020: `std::optional` and `std::variant` interop mapping (YYYY-MM-DD)
 >
@@ -9104,7 +9166,8 @@ commit (amended 2026-10-20, review fold: all RR4 findings):
 > (upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
 > Two divergences are disclosed: the sum types are fork prelude names, and the
 > view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
-> W-280, W-281, W-285<, W-284><, W-282><, W-278><, W-283>; <W-278 withdrawn
+> W-280, W-281, W-285<, W-284><, W-282><, W-278><, W-283>; <W-284 held until
+> M-VA lands; ><W-282 unused (X-1 fixed by TP-1 at <commit>); ><W-278 withdrawn
 > unfiled; ><W-283 and >W-286 to W-294 unused.
 
 ### C.9 fork/ORCHESTRATION.md (D)
@@ -9115,22 +9178,33 @@ A Branches row after TP-1's:
 > `std::optional`/`std::variant` interop mapping (W-011 discharged; gap row 68
 > stays PARTIAL on W-177, narrowed), plan rev <n> signed off, head <head>;
 > W-275..W-277, W-279..W-281 and W-285 filed<, W-284><, W-282><, W-278><,
-> W-283>; <W-278 withdrawn, ><W-283 and >W-286..W-294 unused; F-020 minted; gate
+> W-283>; <W-284 held until M-VA lands; ><W-282 unused; ><W-278
+> withdrawn, ><W-283 and >W-286..W-294 unused; F-020 minted; gate
 > <passed>/<total> and conformance <PASS>/<FAIL>/<SKIP> over <programs> on the
 > container toolchain. |
 
 The placeholders follow C.8's rule (amended 2026-10-20, review fold: RR3-m1 /
-RR3-m2; W-285 added 2026-10-20, review fold: RR4-M1). Held wording (while PR 51
-to PR 61 are held): "IMPLEMENTED AND HELD, no PR — SV-1 ... at <head>; lands
-after PR 61 by the land-time items in Next actions", and Next actions gains
-(rewritten 2026-10-21, implementation-review fold: m1: rev 5 listed R and D,
-which go on the branch now): "SV-1 at land time (fork/sumtype-interop/plan.md §3
-item 8): M repeated over the trunk that holds PR 51 to PR 61; M-VA (the
-pack-element rule and its split); F-M (the refills, and the `bool` payload split
-and program leg); Doc-M; the second id re-scan; §8 item 11 on the merged trunk;
-C.7's fallback check; and the texts whose targets land with the held PRs: C.5's
-W-177 note, C.8's F-015 references, W-284 with its `blocked_by` W-219, and the
-notes on W-252 and W-263."
+RR3-m2; W-285 added 2026-10-20, review fold: RR4-M1; the W-284 and W-282
+clauses added 2026-10-21, focused re-review round 1: RR1-1-m3). Held wording
+(while PR 51 to PR 61 are held): "IMPLEMENTED AND HELD, no PR — SV-1 ... at
+<head>; lands after PR 61 by the land-time items in Next actions", with
+"; ROUND <n> DRY" or "; ROUND <n + 1> OWED" after "no PR" once round <n> of the
+focused re-review of the fold has been recorded (added 2026-10-21, focused
+re-review round 1), and Next actions gains (rewritten 2026-10-21,
+implementation-review fold: m1: rev 5 listed R and D, which go on the branch
+now; extended 2026-10-21, focused re-review round 1: RR1r2-m2 / RR1-1-m1 /
+RR1r2-m6: the land-time records commit and the nested-pointer leg were
+missing): "SV-1 at land time (fork/sumtype-interop/plan.md §3 item 8 and its
+landed notes): M repeated over the trunk that holds PR 51 to PR 61; M-VA (the
+pack-element rule and its split); F-M (the refills, the `bool` payload split
+and program leg, and the nested-pointer program leg); Doc-M; the second id
+re-scan; §8 item 11 on the merged trunk; and the land-time records commit (the
+landed notes' item (g)): the absolute conformance count re-quoted into row 68,
+W-011's note and the decision-log entry, W-284 filed with its `blocked_by`
+W-219, x19 checked for W-282, the id lists of the decision-log entry and this
+row completed, C.5's W-177 note and evidence, C.8's F-015 references, the notes
+on W-252 and W-263, evidence re-cited to the merged tree, and C.7's fallback
+check."
 
 ## Review fold record (rev 2, 2026-10-20)
 
@@ -9486,7 +9560,10 @@ revision.
 The two implementation reviews of 6efb8345b and their fold are the
 [implementation review fold
 record](#implementation-review-fold-record-2026-10-21) (added 2026-10-21,
-implementation-review fold: all findings).
+implementation-review fold: all findings). The focused re-review of the fold's
+commits and of R and D is recorded round by round after the landed notes, from
+the [record of round 1](#focused-re-review-of-the-fold-round-1-2026-10-21)
+(added 2026-10-21, focused re-review round 1).
 
 ## Landed notes (SV-1, 2026-10-21)
 
@@ -9562,8 +9639,15 @@ the records writer's scratch directory,
     paragraph Doc-M writes after the OP-1 / F-015 entry) and W-011's note, and
     the W-177 cite in match_core_optional_diff.carbon's header (§1.12).
 -   **Measurement heads.** The SV-1 build /home/user/carbon-build/carbon-sv,
-    fully built at C1 eeb7ce662, C2 089b30191, C3 ab0b4951a and the fix
-    a4d979619 (its install now 0.0.0-0.dev+a4d979619); gates on the fills
+    built in full (322 steps) at the baseline 30153bbc2 and then incrementally
+    at C1 eeb7ce662 (9 steps), C2 089b30191 (274 steps on its sources before
+    the commit, 2 at it), C3 ab0b4951a (274 steps) and the fix a4d979619 (7
+    steps on its sources before the commit, 2 at it), each with 0 warnings
+    (`sv1-impl/stage1/build0.log` and `build1.log`, `stage2/build-pre.log` and
+    `build-c2.log`, `stage3/build-c3.log`, `fixer/runs/build-fix1-pre.log` and
+    `build-fix1.log`; amended 2026-10-21, focused re-review round 1: RR1r2-m5:
+    these notes said "fully built at C1, C2, C3 and the fix"), whose install
+    now prints 0.0.0-0.dev+a4d979619; gates on the fills
     f4aa7e941, d31ee257a and eb0488e70, on the merged heads f30429458 and
     dff9f756b, and on fbe2a55f7; conformance on C3's install (P, 8243dbe97), on
     f30429458, at the fold and on fbe2a55f7; trunk 481f05612 at the first M and
@@ -9581,8 +9665,12 @@ the records writer's scratch directory,
     a sum-type conversion of a VA-1 pack element is a TODO": the hunk of §3 item
     8 (it applies to the folded sum_type.cpp at offsets 9 and 39), the
     `fail_todo_pack_element` split appended to stdlib/fail_sum_types.carbon and
-    filled by autoupdate (predicted byte-identical to
-    `$Y/final/goldens-filled-M/`'s, the pack-element TODO ten times), and C.1's
+    filled by autoupdate (the split's CHECK lines predicted byte-identical to
+    those of `$Y/final/goldens-filled-M/`'s copy, the pack-element TODO ten
+    times; that file as a whole is not, because it holds rev 5's by-value
+    mocks, `emplace(A... args)` at its lines 39 and 58, where the fold's
+    forward, `emplace(A&&... args)`; amended 2026-10-21, focused re-review
+    round 1: RR1r2-m5), and C.1's
     pack-element line in docs/design/sum_types.md's list of 0.1 limits, with
     R31's counts; mutants M19 and M21 re-run. (c) F-M, the refills of what the
     merge changes, predicted from the mirrors (§8 item 6): the four
@@ -9592,7 +9680,11 @@ the records writer's scratch directory,
     entries; SemIR only, no `CHECK:STDERR` line), none of SC-1's, VA-1's or
     TP-1's goldens; and the `bool` payload of core_optional_view.carbon's
     `concrete` split and match_core_optional_diff's `bool` leg with its oracle,
-    filled by autoupdate (§1.7). (d) Doc-M, "SV-1 (6): design: optional.md
+    filled by autoupdate (§1.7), and cpp_sum_type_roundtrip_diff's
+    nested-pointer leg with its oracle, a `std::optional<int*>` converted in
+    one step to `Core.Optional(Core.Optional(i32*))` and back, hand-derived as
+    `-10 -20 81 -1 -2 81` (§1.7; amended 2026-10-21, focused re-review round
+    1: RR1-1-m1 / RR1r2-m6). (d) Doc-M, "SV-1 (6): design: optional.md
     amended for the std::optional mapping": C.3's seven anchored edits of
     docs/design/optional.md (an OLD text not found verbatim stops Doc-M and goes
     to a document review) and C.8's F-015 amendment paragraph after the OP-1 /
@@ -9604,10 +9696,184 @@ the records writer's scratch directory,
     note and the decision-log entry (never derived: SV-1's delta is +6 PASS, -1
     SKIP and +5 programs over whatever that scoreboard reads); W-284 filed and
     its clauses written; C.5's W-177 note and evidence; the notes on W-252 and,
-    under its condition, W-263; x19 checked for W-282; evidence re-cited to the
-    merged tree; and C.7's fallback, which recomposes the row over the merged
-    row text and gives DONE, +1 DONE and -1 PARTIAL, only if W-177 is not on the
-    merged trunk.
+    under its condition, W-263; x19 checked for W-282; the id lists of the
+    decision-log entry and of fork/ORCHESTRATION.md's SV-1 row rewritten by
+    C.8's rule (W-284 filed, W-282 filed or unused; added 2026-10-21, focused
+    re-review round 1: RR1-1-m3); evidence re-cited to the merged tree; and
+    C.7's fallback, which recomposes the row over the merged row text and gives
+    DONE, +1 DONE and -1 PARTIAL, only if W-177 is not on the merged trunk.
+-   **The focused re-review of the fold, round 1** (added 2026-10-21, focused
+    re-review round 1). Two fresh reviews at 21060cef4 found no BLOCKER and no
+    MAJOR: review 1 (soundness) APPROVE-WITH-FIXES with three MINORs, records
+    only, dry; review 2 (strictness) APPROVE-WITH-FIXES with six MINORs, not
+    dry, because RR1r2-m1 (no golden pins the branch `MapCarbonSumTypeToCpp`
+    takes for a class that cannot be instantiated; mutant M26 survives and
+    brings the RV1-B1 abort back) needs a golden split. The records commit that
+    records the round folds the seven records-only findings (eight in the
+    reviews' numbering, RR1-1-m1 and RR1r2-m6 being one): the nested-pointer F-M
+    leg, the F-M count, W-282's land-time check, the held-state amendments of
+    §1.16, §3 item 10 and C.4, the id lists of the decision-log entry, C.8 and
+    C.9 and the SV-1 Branches row, C.9's and Next actions item 5's land-time
+    records commit, fork/ORCHESTRATION.md's "Last updated" line, the PR texts'
+    conflict table and mirror heads, and five precision fixes. RR1r2-m1 goes to
+    round 2's fixer; round 2 is owed (the [record of round
+    1](#focused-re-review-of-the-fold-round-1-2026-10-21)).
+
+## Focused re-review of the fold, round 1 (2026-10-21)
+
+Two fresh reviews (R29(c)) of `git log 6efb8345b..21060cef4`, the seven commits
+after the held-state measurements: the fix a4d979619, its fill a0669750a, the
+second merge dff9f756b with trunk's d9f346f53, the fold's records fbe2a55f7, R
+c00beaf60 and D 21060cef4 (14 files, +3389/-749), and the two PR texts. Review
+1 (soundness) and review 2 (strictness) both returned **APPROVE-WITH-FIXES** at
+the head 21060cef4, with no BLOCKER and no MAJOR. Review 1 found three MINORs,
+all records only, and judged the round dry. Review 2 found six MINORs, five of
+them records only, and judged it not dry, because its first, a missing golden
+for a reachable path, needs a golden split. By the severity rule of the brief
+(a missing golden for a reachable path is MINOR) neither review has a finding
+above MINOR, but one finding needs a golden change, so **the round is not dry
+and round 2 is owed**. This record names review 1's findings RR1-1-m1 to
+RR1-1-m3, as it returned them, and review 2's, which it returned as m1 to m6,
+RR1r2-m1 to RR1r2-m6, as TP-1's records name a round's second review; RR1-1-m1
+and RR1r2-m6 are one finding, so there are eight distinct. (Both reviews noted
+that the scratch files of the implementation reviews, `sv1-rr/reports/`'s
+review1.json and review2.json, hold the strictness and the soundness review in
+that order, the reverse of the numbering of the [implementation review fold
+record](#implementation-review-fold-record-2026-10-21); nothing in the tree
+cites those files, and the numbering here and there is the fold record's.)
+Every measurement is container-built, EXPECTED and not of record (R9, R28).
+
+**Review 1's runs** (soundness; probes in `sv1-rr/rev1-r1/`). The toolchain
+diff since 6efb8345b is sum_type.cpp (+61/-13) and sum_type.h (+7/-5) only,
+and SV-1's toolchain diff is the same over 30153bbc2 and over origin/trunk.
+RV1-B1 reproduced and checked: q03 and q13 abort clang (rc 134, DeclCXX.h:464)
+on a relink of 6efb8345b's sum_type.cpp and compile on the head, where trunk
+and the nightly give errors; the fix calls `Sema::isCompleteType`, the
+instantiation a C++ by-value caller triggers. RV1-M1: p1 fails in libc++'s
+`emplace` on the previous binary and runs on the head; h03 and h04 fail alike
+on the head, trunk and the nightly (trunk's deduction rule). RV1-m1: g03, g07,
+g09 and g01 stop at lower.cpp:48 on the head, and pure-Carbon g04 on all three.
+The hunt for what the fix misses (declared-only functions by value, `const&`
+and `const&&`, variant parameters and returns, templates deduced or explicitly
+instantiated, extern templates, monostate and `bool` variants, a class first
+seen through a pointer; C++ calling exported Carbon functions; pointer
+alternatives in both directions, `_Nonnull` arguments, several pointer
+alternatives, runtime-null payloads at three optimization levels; generics,
+overload sets, deduced C++ templates, aggregates and libraries) matches every
+hand-derived expectation, gives W-285's TODO for a non-`const` `T&&` (b03),
+W-049's for an exported `Core.CppCompat` signature (e2), CppSumTypeNotMapped
+for a function pointer (p9) and the precise TODOs at file scope and in a
+template (c3, c4); the one-step `Core.Optional(Core.Optional(i32*))` reads
+wrong values in both directions (w1, f07), as the pure-Carbon v02 and v03 do on
+trunk and the nightly (RR1-1-m1). The full SemIR of 327 check and lower
+goldens (interop/cpp, match and choice, less SV-1's five) is byte-identical
+between the head and the 6efb8345b relink; conformance has no status or detail
+difference from stage 4's scoreboard; the `GetCppSumType` completion returns
+`NotSumType` only for a class that cannot be completed (i1 to i4: the same
+clang errors on the head, the previous binary and M25). The 13 goldens SV-1
+touches, CHECK-stripped and autoupdated, come back byte-identical on the first
+pass and the second. Gate 1950 of 1950; conformance 134/0/21 over 155, 48 PASS,
+0 FAIL, 8 SKIP and 0 NOT-WRITTEN of 56 bullets. M23 aborts file_test (rc 134),
+M24 turns optional.carbon and variant.carbon red and the roundtrip program
+COMPILE-FAIL, M25 survives as recorded; the M-VA hunk applies at offsets 9
+and 39. A full PR 57 composition at 628273444 (0 warnings): gate 1950 of 1958,
+the eight predicted goldens red, all SemIR, 0 `CHECK:STDERR` lines; 1958 of 1958
+after the refill; conformance 145/0/21 over 166; g01 with `bool` passes its
+oracle, w1 prints `-10 -20 81 -1 -2 81`, and v02, v03 and f07 print 9. §2.3,
+§2.4 and Appendices A and B equal the committed files; no model identifier
+outside the accepted trailers.
+
+**Review 2's runs** (strictness; `sv1-rr/rev2-r1/`). Every file of the diff and
+both PR texts read. On a `git archive` copy of the head: a full autoupdate of
+the 1950 tests changed nothing, and the gate passed 1950 of 1950; a4d979619
+adds no CHECK line and a0669750a changes only CHECK lines (R16). Conformance
+134/0/21 over 155, bullets 48/0/8/0, row 68's bullet 11 programs, all PASS;
+cpp_sum_type_roundtrip_diff 22 lines on three runs, equal to its oracle, the
+pointer leg `15 0 -1 12 30 -9` derived by hand; `runner.py --self-test` OK and
+`--update-readme-table` changes nothing. clang-format 21.1.8 clean on the 15
+changed C++ files; clang-tidy finds nothing in sum_type.{h,cpp} with the
+documented exclusion; `prek --all-files` on a clone passes with no change; the
+R31 counts at each records commit match its message; the M-VA hunk applies at
+offsets 9 and 39; the §2.3, §2.4 and Appendix A and B listings are byte-equal;
+the fold's four new §4 rows are present; R's row is PR 56's row text plus C.7's
+sentence and the evidence sentence, the seven ledger items JSON-equal to C.4,
+W-011 and the four notes as C.6, the decision-log entry word for word C.8's
+but for its placeholders, ORCHESTRATION's row C.9's held template; the id
+re-scan over 83 refs and 15 worktrees finds W-275 to W-294 on SV-1's branch and
+worktree only. The PR texts' hashes, titles, diffstat and review counts are
+exact. `git merge-tree` of the head against trunk and each held PR conflicts in
+record files only. A new PR 61 composition at the head (0 warnings): gate 1961
+of 1965, red on the four function-pointer goldens only, 1965 of 1965 after
+their refill, conformance 144/0/21 over 165. A relinked mutant M26, which keeps
+`isCompleteType`'s call and ignores its result, passes the gate 1950 of 1950,
+and under it p03, p05 and p06 abort clang (rc 134, DeclCXX.h:464): RR1r2-m1.
+
+**Reproduced by the records writer before folding** (`sv1-rr/records-r1/`, its
+`repro-*.txt`; the SV-1 install 0.0.0-0.dev+a4d979619, trunk's driver
+(0.0.0-0.dev+0bdce60a5) and the nightly 2026.10.12). Probe w1 prints
+`-10 0 <garbage> -1 0 <garbage>` on SV-1, a different value on each of two runs
+(-1864103092, -2014565556), where `-10 -20 81 -1 -2 81` is derived by hand;
+trunk and the nightly reject w1 and f07 (no mapping); v02 and v03 print a
+different wrong value on each run of each toolchain, and f07 on SV-1. p03, p05
+and p06 give ``call argument of type ... is not supported`` (with the export
+TODO) on SV-1; trunk and the nightly reject p03 and p05 because `StdOptional`
+and `StdVariant2` are not in `Core.CppCompat` and give p06 the same error as
+SV-1; sum_type.cpp:976-979 holds the branch, and no golden forward-declares
+`std::optional`. M26 is not relinked here: it is a toolchain variant for round
+2's fixer to measure. The records findings, at 21060cef4's line numbers: §6's
+"seven more at F-M" (plan.md:4791); fork/decision-log.md:6989-6991; §3 item 8's
+"fails either way" (:4658-4661) against §1.16, R-9 and the landed notes; §1.16's
+"filed at D" (:2322-2323, :2344), §3 item 10 (:4673-4683) and C.4 (:8706); C.9's
+held item and fork/ORCHESTRATION.md item 5 without the land-time records commit;
+fork/ORCHESTRATION.md:13-16's "the two paragraphs dated 2026-10-21", where there
+are three (00:10, 02:33 and 04:40 UTC); a write-tree, name-only
+`git merge-tree` of 21060cef4 against origin/trunk d9f346f53 and the eleven held
+heads, each equal to `git ls-remote origin`, run at 05:52 UTC
+(`merge-tree-21060cef4.txt`), the reviewer's table exactly; the C1 build log's 9
+steps, `$Y/final/goldens-filled-M/`'s `emplace(A... args)` at its lines 39 and
+58, 31 of the 163 `.carbon` files under fork/conformance/programs citing a W-id,
+§1.5's IN cell without a date mark (:1629) and :4772's line-initial dash. A scan
+of the plan for the same R31 hazard outside code blocks finds four older lines
+too, :1969 (§1.9), :4995, :5124 and :5247 (§8 items 4, 6 and 8). Three are
+rewrapped by hand with :4772; the fourth, :5124's indented "-1, v07 4 -1);"
+in §8 item 6, is the wrap rumdl's MD013 reflow writes (a hand rewrap of it
+makes the hook reflow the whole item back), so it stays, as it has since
+66deca5ce. No heading or list count changed.
+
+| Finding | Severity | Records only | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR1r2-m1: the "cannot be instantiated" branch of RV1-B1's fix (sum_type.cpp:976-979) is reachable, a forward-declared `std::optional` or `std::variant` or a specialization declared and not defined, and no golden pins it: mutant M26 (the result of `isCompleteType` ignored) passes the gate and brings RV1-B1's clang abort back on p03, p05 and p06 | MINOR | no: a golden split | **to round 2's fixer**: a split of stdlib/fail_sum_types.carbon (the review proposes `fail_incomplete_specialization`, over its own inline header that forward-declares `std::optional` and `std::variant` and declares `int Take(std::optional<int>)` and `int TakeV(std::variant<int, short>)`, called with a `StdOptional` value, a `Core.Optional(i32)` and a `StdVariant2` value), filled by autoupdate to a fixpoint (R26); M26 in §8 item 5's fold table, killed by it; the shape and its diagnostic in §1.5 and §1.11's OUT table; a §4 row; the gate and conformance again | §1.5, §1.11, §4, §8 item 5, Appendix B (round 2) |
+| RR1-1-m1 = RR1r2-m6: F-M pins `bool` but not the one-step `std::optional<int*>` to `Core.Optional(Core.Optional(i32*))` conversion, which reads a wrong pointer on SV-1's tree (trunk's nested `Core.Optional`, fixed by PR 57) | MINOR | yes | folded: F-M adds a nested-pointer leg to cpp_sum_type_roundtrip_diff and its oracle once PR 57 is merged in, hand-derived `-10 -20 81 -1 -2 81`, the values w1 prints on PR 57's composition; added at land time, as the `bool` leg is, because SV-1's own tree prints wrong values for it | §0.7, §1.7, §3 item 8, landed notes item (c), C.9, fork/ORCHESTRATION.md item 5 |
+| RR1-1-m2: §6 says F-M refills seven goldens; the fold made it eight | MINOR | yes | folded: "eight more at F-M", with the reason and the program legs | §6 |
+| RR1-1-m3: the decision-log entry's id list does not say what became of W-282 and W-284; C.8's template had no slot for an id held or unused by its condition | MINOR | yes | folded: C.8 and C.9 gain the slots `<W-284 held until M-VA lands; >` and `<W-282 unused (X-1 fixed by TP-1 at <commit>); >`; the entry and the SV-1 Branches row on the branch name both; the land-time records commit rewrites them (W-284 filed, W-282 by x19) | C.8, C.9, landed notes item (g), fork/decision-log.md, fork/ORCHESTRATION.md |
+| RR1r2-m2: W-282's disposition contradicts itself (§3 item 8 "decided now ... fails either way" against the landed notes' land-time x19 check); C.9's and ORCHESTRATION's held item omit the land-time records commit; §1.16, §3 item 10 and C.4 still put W-284, C.5's note and the W-252 note at D | MINOR | yes | folded with the review's second option: W-282 stays conditional, unused at D and checked once more on the merged trunk at land time (§3 item 8, §1.16's row and C.4 say so, as R-9 and the landed notes did); §1.16, §3 item 10 and C.4 amended for a D that ran in the held state; C.9's held Next-actions item and fork/ORCHESTRATION.md item 5 list the land-time records commit (the absolute count re-quoted, W-284, x19, the id lists, C.5's note, the F-015 references, the W-252 and W-263 notes, re-cited evidence, C.7's fallback). These amend C.4, C.8 and C.9, Appendix C texts, so round 2's two reviews are their document review (§1.14) | §1.16, §3 items 8 and 10, C.4, C.9, fork/ORCHESTRATION.md |
+| RR1r2-m3: fork/ORCHESTRATION.md's "Last updated" line says SV-1's implementation is under way and points at two paragraphs dated 2026-10-21, where D added a third; the departure was recorded nowhere | MINOR | yes | folded with the review's first option: the line names SV-1 implemented and held, round 1 recorded and round 2 owed, and the four paragraphs dated 2026-10-21, this round's included | fork/ORCHESTRATION.md |
+| RR1r2-m4: the PR texts have no `git merge-tree` conflict table, their mirror rows do not say which SV-1 diff each composed, and they end at the implementation reviews with 21060cef4 as the head | MINOR | yes | folded in the PR texts (scratch files, not in the tree): a "Conflicts" subsection with the table reproduced above, the trunk and head hashes and the date; the PR 60, PR 59 and PR 61 rows marked as composed with 6efb8345b's SV-1 diff, PR 57's as re-measured at the fold, and review 2's PR 61 mirror of the head added; the review table gains this round's two reviews, and the head, gate and conformance lines move to the records commit that records the round | PR body and first comment |
+| RR1r2-m5: five imprecisions: "fully built at C1" (an incremental build of 9 steps), M-VA's split predicted byte-identical to a file that holds rev 5's mocks, "as every program ... does" (31 of 163 files cite a W-id), §1.5's IN cell without a date mark, and a prose line starting with "-1 12 30 -9)," | MINOR | yes | folded: the landed notes give each build's steps from its log; the prediction is for the split's CHECK lines, and the file's two mock lines are named; "as 31 of the 163 `.carbon` files ... do"; the date mark added; §5's line rewrapped, and three of the four older hazard lines with it (the fourth is rumdl's own wrap) | landed notes, §1.5, §1.9, §1.12, §5, §8 items 4 and 8 |
+
+**Measured on the records commit's tree** (EXPECTED, not of record, R9). The
+commit changes records only (this plan, fork/decision-log.md,
+fork/ORCHESTRATION.md and W-011's note in fork/inventory/work-items.json), so
+the toolchain is a4d979619's (`carbon version` 0.0.0-0.dev+a4d979619, the
+hash `git log -1 --format=%h -- toolchain ':!toolchain/*/testdata/*' core`
+prints). Gate, with a private `TEST_TMPDIR`: "file_test test mode on
+/home/user/carbon-sv: 1950 passed, 0 failed (exit 0, 28s)"; conformance, with
+a private `XDG_CACHE_HOME` and output directory: "PASS 134, COMPILE-FAIL 0,
+LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of
+155)" in 67.3 s, bullets 48 PASS, 0 FAIL, 8 SKIP, 0 NOT-WRITTEN of 56, no
+status different from D's run (`sv1-impl/records/conf-final/`);
+`runner.py --self-test`: "155 programs parsed, 56 bullets in table, OK"
+(`sv1-rr/records-r1/gate.log`, `conf.log`, `conf/scoreboard.json`,
+`selftest.log`). The R31 counts of the three markdown files before and after
+prek are in the commit's message.
+
+**Round 1's status: not dry.** No finding is BLOCKER or MAJOR, and seven of
+the eight are records only and folded here; RR1r2-m1 needs a golden split.
+Round 2 is owed: a fixer folds RR1r2-m1 (a split and its fill, with M26
+relinked and killed), then two fresh reviews of its commits and of this records
+commit. No id is filed or re-allocated in this round: W-286 to W-294 stay held,
+and the branch's SV-1 row reads "IMPLEMENTED AND HELD, no PR; ROUND 2 OWED"
+until a round is dry.
 
 ## Revision record
 
@@ -9674,3 +9940,11 @@ the records writer's scratch directory,
     the ledger, the decision-log entry and fork/ORCHESTRATION.md from Appendix
     C, and add the [landed notes](#landed-notes-sv-1-2026-10-21) and the front
     matter's pointer to them; no other section changes.
+-   Focused re-review round 1 (2026-10-21): two fresh reviews of 21060cef4,
+    both APPROVE-WITH-FIXES with no BLOCKER or MAJOR (review 1 three MINORs,
+    dry; review 2 six MINORs, not dry), recorded in the [record of round
+    1](#focused-re-review-of-the-fold-round-1-2026-10-21); the records commit
+    that records it folds the seven records-only findings, amending the front
+    matter, §0.7, §1.5, §1.7, §1.9, §1.12, §1.16, §3 items 8 and 10, §5, §6, §8
+    items 4 and 8 (rewraps only), C.4, C.8, C.9, the sign-off's pointer and the
+    landed notes, and leaves RR1r2-m1, a golden split, to round 2's fixer.

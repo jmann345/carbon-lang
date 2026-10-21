@@ -2972,6 +2972,18 @@ B-m6).
 10. **Held-state measurements** (not commits): §8's mutants, the composition
     mirrors over PR 51, PR 57, PR 59, PR 60 and PR 62 with the predicted red
     sets, clang-tidy, the id re-scan.
+
+    Implemented 2026-10-21 (amended 2026-10-21, implementation: held state):
+    the measurements ran on the branch head after P, 65fc0d394 (R and D are
+    records only, so the compositions are this head's), and are recorded in
+    §8 items 5, 6, 9, 10 and 11, EXPECTED and not of record. The held state
+    has no merge of trunk: trunk 3b4a24fff holds none of PR 51 to PR 62, and
+    each composition (PR 51, PR 57, PR 59, PR 60 and PR 62) was measured on a
+    scratch mirror at the heads item 9 names and never committed. M, S-VA,
+    L-F, L and the land-time records commit stay owed at land time (item 13,
+    §2.11), S-VA's hunk and split having been measured early on PR 59's
+    mirror. _Break condition:_ a held PR's head moves before CT-1 lands, which
+    re-runs its mirror at the new head.
 11. **R** "CT-1 records: gap rows 56 and 42": Appendix C.4.
 12. **D** "CT-1 discharge": the ledger (Appendix C.2, C.3, C.5), the TP-1
     record lines (C.11), the decision log (C.7), fork/ORCHESTRATION.md (C.8),
@@ -3368,6 +3380,58 @@ is not a difference.
     | M21 | D-CT-17's unconverted value (the `Dependent` case converts again, the check kept) | A.5 stops at `class_alias_field_name`: FATAL convert.cpp:2547 (``Unexpected expression ... after builtin conversions``) | yes |
     | M22 | D-CT-17's use rule (`SpecificConstant` back to `SameAsFirstOperand` and its expr_info.cpp case removed: v13's code) | red: A.1's `alias_of_constant_through_specific` and A.5's `alias_constant_through_specific` fail, each dumping `splice_inst <unexpected>` in the function that is not generic; the other splits pass | yes |
 
+    Measured at implementation (amended 2026-10-21, implementation: held state;
+    EXPECTED, not of record). Each mutant is the edit of the scripts above,
+    re-applied to the committed sixteen files (C1's clang-format layout moved
+    the text of M6 and M19, whose edits are unchanged otherwise; M5 substitutes
+    every action operand by making `IsSubstitutedActionOperand` return true, and
+    M7 adds the specific storage whatever `has_storage` is, which then reaches
+    the conversion's kind only), compiled over CT-1's own build
+    (/home/user/carbon-build/carbon-ct, the toolchain of d5d7c6580) with only
+    the translation units it edits recompiled (M22 recompiles typed_insts.h's
+    two readers of a kind's category, sem_ir/inst_kind.cpp and
+    sem_ir/expr_info.cpp), relinked into /dev/shm and deleted after its record.
+    Each ran the whole gate (1959 goldens: a golden that stops file_test is
+    excluded and the run repeated, so every other golden is measured too) and
+    the 167 programs through its own install; the logs are `$X/logs/mut_<m>.sum`
+    and `mut_<m>_gate<N>.log`, `$X` the implementer's scratch
+    (scratchpad/ct1-impl/stage4). M7 and M18 were run for the first time; M10
+    stays not run.
+
+    | Mutant | Measured on CT-1's build (2026-10-21) | Killed | Against the prediction |
+    | --- | --- | --- | --- |
+    | M1 | A.1 stops file_test: FATAL custom_witness.cpp:487 ``Unexpected type for CanDestroyType: SpliceInst`` at generic_class_field.carbon:16 (`return`); with A.1 excluded, generic_call.carbon and A.2 (`two_specifics` fails) are red; five programs COMPILE-FAIL (cpp_template_symbolic_arg, cpp_template_on_carbon_generic, cpp_template_nested_symbolic, cpp_template_carbon_generic_spec, cpp_template_two_specifics) | yes | as predicted; also kills generic_call.carbon and A.2, which the v12g run, stopped at A.1, did not reach |
+    | M2 | the same stop; also red: default_init.carbon (`class_alias_var_uninit` and `var_uninit_associated_type` fail), generic_call.carbon and A.2 (`alias_of_member_type` and `two_specifics` fail); the same five programs | yes | as predicted; also kills A.5, generic_call.carbon and A.2 |
+    | M3 | A.1 stops: CHECK generic_region_stack.h:98 (`!Empty()`) at template_called_from_checked_generic; nothing else red; every program passes | yes | as predicted |
+    | M4 | A.1 stops: CHECK sem_ir/generic.cpp:84 (``Given a specific for the wrong generic``) at alias_of_specialization.carbon:12 (`-> B`); A.2 stops the same at alias_of_member_type.carbon:12; default_init.carbon red; cpp_template_carbon_generic_spec COMPILE-FAIL | yes | as predicted; also kills A.2 and A.5 |
+    | M5 | no stop; 23 goldens red: array/init_dependent_bound, basics/raw_sem_ir/bundle, class/destroy_calls, eval/call, function/call/form, generic/template/ convert, deduce_class_args, default_init, dependence, for_range, index, initialize, match_choice, member_access, member_out_of_line, operator, pointer, template_access_assoc_const and unimplemented, interop/cpp/class/import/template, generic_call.carbon, A.1, and lower template/initialize; templates_return_aggregates_diff COMPILE-FAIL | yes | killed; 23 goldens, where rev 1 measured 25 on v9 |
+    | M6 | A.2 stops: CHECK lower/handle_call.cpp:984 (``Argument mismatch``) at narrow_return_template.carbon:7; cpp_template_symbolic_diff COMPILE-FAIL | yes | as predicted |
+    | M7 | the same stop as M6, at narrow_return_template.carbon:7; cpp_template_symbolic_diff COMPILE-FAIL | yes | first measurement; the prediction named class_return or narrow_return_template: narrow_return_template |
+    | M8 | red: non_type_param.carbon, var_template.carbon (`fail_non_inline_static_member_template` succeeds), globals.carbon and A.2; cpp_var_template_runtime LINK-FAIL | yes | as predicted |
+    | M9 | A.2 stops: the clang assertion `DD && "queried property of class with no definition"` at exported_class_argument.carbon:14; every program passes | yes | as predicted |
+    | M10 | not run (defensive, as recorded) | no (defensive) | as recorded |
+    | M11 | whole gate: red A.1 and A.2 only; ``call argument of type `T` is not supported`` at A.1's function_template_call, explicit_type_argument, generic_class_field, fail_cpp_error_on_instantiation, fail_copy_symbolic_value_in_definition, cpp_result_contagion_uncalled and fail_cpp_result_contagion_on_instantiation and A.2's class_return, narrow_return_checked and todo_discarded_temporary_not_destroyed; cpp_template_fn_symbolic, cpp_template_spec_roundtrip and cpp_template_symbolic_diff COMPILE-FAIL | yes | as predicted, with the C2 splits added since v12g also red |
+    | M12 | nothing red: 1959 of 1959, every program passes | no: survives | as predicted (kept for upstream parity) |
+    | M13 | three stops, CHECK sem_ir/generic.cpp:84 (``Given a specific for the wrong generic``): A.5 at class_alias_var_uninit.carbon:10, A.1 at alias_of_specialization.carbon:11 and A.2 at alias_of_member_type.carbon:12; also red deduce_class_args.carbon (`class_template_field_of_where_alias` fails) and range_for.carbon; every program passes | yes | killed; A.2 stops in check, not at lower/file_context.h:187, and A.1 and A.5 stop where v13g reported changed splits |
+    | M14 | A.1 stops: CHECK sem_ir/generic.cpp:84 at alias_of_specialization.carbon:12 (`-> B`); A.2 stops the same at alias_of_member_type.carbon:12; every program passes | yes | as predicted; also kills A.2 |
+    | M15 | red A.1 only: `alias_of_specialization` reports ``cannot convert type `B` into type implementing `Core.DefaultOrUnformed` `` at alias_of_specialization.carbon:14 (`var b: B;`) | yes | as predicted |
+    | M16 | red A.1 only: `fail_symbolic_value_cpp_call_in_definition` succeeds | yes | as predicted |
+    | M17 | red A.1 only: `fail_todo_form_dependent_arg` succeeds | yes | as predicted |
+    | M18 | on PR 59's mirror after S-VA (item 9): S-VA's split `fail_pack_expansion_cpp_call_in_definition` succeeds; va1 and va2 are E-MONO again and va5 compiles | yes | as predicted; measured early, owed again at land time |
+    | M19 | no stop: A.1's and A.5's `fail_alias_of_template_call_on_instantiation` succeed (every diagnostic of the two splits is gone); every program passes | yes | killed; the predicted CHECK sem_ir/generic.cpp:84 stop does not occur on CT-1's code |
+    | M20 | no stop: A.1 and A.5 red, each `fail_alias_of_template_call_on_instantiation` losing its use's ``unable to monomorphize specific `F()` `` error and note (A.5 at :30, A.1 at :42); every program passes | yes | killed; no stop, as for M19 |
+    | M21 | A.5 stops: FATAL convert.cpp:2547 (``Unexpected expression {kind: FieldDecl, ...} after builtin conversions``) at class_alias_field_name.carbon:15; nothing else red | yes | as predicted |
+    | M22 | red A.1 and A.5 only, each dumping four `splice_inst <unexpected>` lines in the function that is not generic; every program passes | yes | as predicted |
+
+    So every mutant but M12 (kept) and M10 (not run) turns something red. Three
+    differ in kind from the table: M13 stops in check at sem_ir/generic.cpp:84
+    in three goldens, and M19 and M20 change their two splits without a stop,
+    because v14's alias rule no longer reaches the wrong-generic check; and M5
+    turns 23 goldens red, not 25. None of these is a fill, the gate or P
+    (mutants are measurements of the gate's power), so §8's stop-and-amend rule
+    does not apply. _Break condition:_ a mutant that turns nothing red other
+    than M12, or an edit that kills only by stopping the compiler where the
+    table says it reports a diagnostic.
 6.  **clang-tidy**: the carbonbuild builds write no compile database, so
     after item 1 `ninja -C /home/user/carbon-build/carbon-ct -t compdb >
     $X/compile_commands.json`, then `/home/user/llvm/bin/clang-tidy -p $X
@@ -3375,6 +3439,18 @@ is not a difference.
     exclusion) on the sixteen files; no new finding on a changed line. If the
     database cannot be generated, the step moves to item 11's not-run list
     with that reason.
+
+    Measured at implementation (amended 2026-10-21, implementation: held
+    state; EXPECTED, not of record): `ninja -t compdb` over CT-1's build wrote
+    323 entries, and clang-tidy 21.1.8 with the repository's .clang-tidy and
+    `--checks=-modernize-use-trailing-return-type` reported no finding in any
+    of the sixteen files (each run exits 0; every warning it counts is in
+    non-user code or under NOLINT; the three headers ran as their own main
+    file), so there is none on a changed line and no comparison with
+    5661a35c8's files was needed. A scratch file with `NULL` and a C-style
+    cast, run with the same configuration, reports both, so the run checks
+    what it should. `clang-format --dry-run --Werror` (21.1.8) on the sixteen
+    files is clean (R18).
 7.  **prek** on every changed path, to a fixpoint, with R31's heading and
     list-item counts before and after each markdown edit, and, in each plan
     revision, `git apply --check` of every diff block against this branch's
@@ -3409,12 +3485,173 @@ is not a difference.
     PR 57 (628273444), none; PR 51 (f96fe8a7a), its
     `fail_todo_unformed_dependent_var` red (it now succeeds: C-2's rename) and
     the two programs passing with C-1's merged text.
+
+    Measured at implementation (amended 2026-10-21, implementation: held
+    state; EXPECTED, not of record). Each mirror is a `git clone --shared` of
+    the head after P, 65fc0d394 (R and D are records only), with the held
+    PR's head fetched from origin, its sha checked, and merged; a conflict in
+    a fork/ record takes CT-1's side. Each was built and installed by
+    carbonbuild under /dev/shm/ct1-impl/builds (no warning in any build),
+    gated, run over the conformance programs through its own install with a
+    private runtimes cache, and run over the 403 probes of §0.13 (the §0.12
+    and §0.13 rows and every row of rev 3's and rev 4's matrices) with the
+    rev 4 fixer's result codes, compared row by row with CT-1's own build
+    (stage 2's `mx_ct.tsv`); then its clone and build were deleted. The logs
+    are `$X/out-m-<pr>/` and `$X/logs/m<pr>_*`, `$X` the implementer's
+    scratch (scratchpad/ct1-impl/stage4).
+
+    PR 57 (OP-2, 628273444): mirror head 60ae83d45, whose `carbon version`
+    prints 0.0.0-0.dev+60ae83d45; conflicts only in fork/ORCHESTRATION.md,
+    fork/decision-log.md and fork/inventory/work-items.json, and convert.cpp
+    merged with offsets. The gate passes 1966 of 1967, against the predicted
+    none red: toolchain/lower/testdata/template/for_range.carbon, a TP-1
+    golden CT-1 does not refill, whose autoupdate (+138/-109 lines) is OP-2's
+    prelude only, `Core.Optional.Get`'s new fail-stop path (the ``carbon:
+    Core.Optional.Get on an empty value; terminating`` constant, `@write`,
+    `@abort`), a `_CSelfDestruct` declaration and the debug metadata numbered
+    after them, so it is PR 57 composed with PR 61's golden (the refill
+    TP-1's land-time F6 owes for any held PR's change), not CT-1's.
+    Programs: 158 PASS, 20 SKIP of 178 (PR 57's eleven new programs, ten
+    PASS and optional_pointer_compare SKIP; optional_missing_ops, SKIP on
+    CT-1, passes); the 403 probes print or report what they do on CT-1's
+    build.
+
+    PR 59 (VA-1, b0822a744): mirror head e24519a39, 0.0.0-0.dev+e24519a39;
+    conflicts only in fork/ORCHESTRATION.md, fork/decision-log.md,
+    fork/gap-analysis.md and fork/inventory/work-items.json; the code merged
+    with offsets, and the merged call.cpp is byte-identical to the rev 4
+    fixer's measured merge (`sva/toolchain/check/call.cpp` in its scratch;
+    its `pr59.cpp` is PR 59's own call.cpp and `base.cpp` the merge base's).
+    Before S-VA the gate passes 1977 of 1977 (predicted: none red); programs
+    156 PASS, 19 SKIP of 175 (VA-1's eight new programs pass, and
+    variadics_each, SKIP on CT-1, passes); 400 of the 403 probes print or
+    report what they do on CT-1's build, and the other three are the same
+    CHECK at lower/function_context.cpp:287, not :264, because PR 59 adds 23
+    lines above it (gen2/t_class_member_template, gen4/s5 and s6); va1 and va2
+    are E-MONO with the note ``call argument of type `«i32; 2»` is not
+    supported`` (va2's is `«i32; 1»`) at the call in `F`'s body, va5
+    (uncalled) compiles and prints 5, va3 prints 7 and va4 42, as §0.9 lists
+    for mva.
+    S-VA, measured early (the land-time code commit; EXPECTED): Appendix
+    C.11's hunk applies to the merged call.cpp at its own lines (1120, no
+    offset) and is clang-format clean; the incremental build recompiled
+    check/call.cpp only (0.0.0-0.dev+e24519a39.dirty); C.11's split, appended
+    to A.1 on the mirror, filled to a fixpoint in one pass, 17 lines added
+    (A.1 then 1331 lines), with ``pack expansion argument is not matched by a
+    pack expansion parameter [PackExpansionArgWithoutPackParam]`` at `...
+    each x` (column 22), as predicted; the gate then passes 1977 of 1977;
+    va1, va2 and va5 report that diagnostic where `F` is defined, and va3 and
+    va4 still print 7 and 42. M18 (the refusal removed, the split kept): the
+    split succeeds, so file_test fails A.1, and va1, va2 and va5 return to
+    their state before S-VA (item 5).
+
+    PR 62 (SV-1, 3a6531157): mirror head a2d9af566, 0.0.0-0.dev+a2d9af566;
+    conflicts only in fork/ORCHESTRATION.md and fork/inventory/work-items.json;
+    the code merged with offsets. The gate passes 1967 of 1967 (predicted:
+    none red); programs 153 PASS, 19 SKIP of 172 (SV-1's five new programs
+    pass, and match_sum_type_payload, SKIP on CT-1, passes); the 403 probes
+    print or report what they do on CT-1's build. sv1 prints 1, sv2 0, sv5 1
+    and sv6 1; sv8 (uncalled) compiles and prints 8; sv3 is rejected where it
+    is written (``cannot convert type `T` into type implementing
+    `Core.OptionalStorage` ``); sv3b and sv3c are E-MONO with SV-1's note
+    ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant`
+    outside a function body (at file scope, or deferred to a template's
+    instantiation)` `` (W-279); sv4 is ``semantics TODO: `match on
+    unsupported scrutinee type` `` (W-252): every value §0.9 lists for msv.
+
+    PR 60 (SC-1, 40a76ab81): mirror head f5af4cdde, 0.0.0-0.dev+f5af4cdde.
+    Conflicts: the four records files (CT-1's side), and TP-1's own three
+    with SC-1, two in convert.cpp (`PerformAction(ConvertAction)` and
+    `PerformAction(ConvertToCategoryAction)`) and the include block of
+    member_access.cpp, resolved by TP-1's M rule (fork/templates/plan.md
+    §0.9: SC-1's `CheckConversionIsNotOfStructuralRequirement` first, then
+    TP-1's `PendingBlock`; both includes), `PerformTupleAccess` merging
+    cleanly in that rule's order; then TP-1's commit S (its §2.5 snippet in
+    `LookupMemberInTemplateConstraint`); CT-1's own hunks merged at their
+    offsets. The gate passes 1974 of 1976, red
+    named_constraint/fail_template_constraint_requirement_call.carbon
+    (autoupdate +36/-26: SC-1's `StructuralRequirementUsed` notes gain their
+    location and source line) and lower template/template_constraint.carbon
+    (+10/-10: two LLVM constant names and a call's value names). A second
+    mirror without CT-1, TP-1's 5661a35c8 merged with 40a76ab81 the same way
+    (head ed209fa07, 0.0.0-0.dev+ed209fa07), is red on the same two goldens
+    with byte-identical autoupdate diffs, so both are TP-1's composition with
+    SC-1 (TP-1's F6 at its M) and CT-1 changes no golden of SC-1, as
+    predicted. Programs: 149 PASS, 19 SKIP of 168 (cpp_structural_conformance
+    passes, and structural_conformance, SKIP on CT-1, passes); the 403
+    probes, t08, t09, t13 and t14 among them (47, 48, and the incomplete-class
+    diagnostic for `C(i32)` twice), print or report what they do on CT-1's
+    build. The template-constraint probes (`$X/probes/tc`, `template
+    constraint HasGet { fn Get(self) -> i32; }` and `fn F[template T:
+    HasGet](x: T)`): with the uninitialized `var b: Cpp.Box(T);`, tc1
+    (`b.value = x; return x.Get();`) prints 7, tc2 (`b.value.Get()`) 8 and
+    tc3 (never called) runs, where the mirror without CT-1 rejects all three
+    where `F` is defined with ``cannot convert type `Box(T)` into type
+    implementing `Core.DefaultOrUnformed` `` (E-DU). That meets §0.9's break
+    condition, a probe that behaves differently from TP-1 plus SC-1 without
+    CT-1, and the difference is CT-1's own: TP-1 alone rejects the same body
+    with an unconstrained `template T: type` (tc4, E-DU) where CT-1 prints 7,
+    because D-CT-5 defers the impl lookup that reaches the `TemplateInst`
+    whatever the binding's constraint. With the box initialized (tc5,
+    `var b: Cpp.Box(T) = Cpp.Box(T).Box();`), and with no C++ at all (tc6,
+    `return x.Get();`), both mirrors print the same, 8 and 7, so CT-1 leaves
+    SC-1's constraint lookup and TP-1's commit S unchanged (tc5 and tc6 ran
+    on a rebuild of the CT-1 mirror, head 1ae750478, whose merged convert.cpp
+    and member_access.cpp are byte-identical to f5af4cdde's).
+
+    PR 51 (UA-2, f96fe8a7a): mirror head 71f05a861, 0.0.0-0.dev+71f05a861.
+    Conflicts: the two programs, merged by C-1's rule (PR 51's header, the
+    paragraph of Appendix C.6 dated 2026-10-21 after it, CT-1's body: 96 and
+    98 lines), fork/conformance/README.md, fork/gap-analysis.md and
+    fork/inventory/work-items.json (CT-1's side); no toolchain conflict. The
+    gate passes 1961 of 1962, red exactly as predicted:
+    dependent_var_full_prelude.carbon, whose `fail_todo_unformed_dependent_var`
+    now succeeds (autoupdate removes its four STDERR lines and nothing else),
+    the split C-2 renames at L-F. Programs: 148 PASS, 19 SKIP of 167; both
+    merged programs pass with C-1's text (7 each), and
+    templates_dependent_member, SKIP on CT-1, passes. The README table taken
+    from CT-1's side is stale by that one row, which the runner's
+    `--update-readme-table` changes from SKIP to run, so M regenerates it.
+    The 403 probes print or report what they do on CT-1's build.
+
+    Against §0.9's predictions: PR 59, PR 62 and PR 51 are as predicted.
+    PR 60's two red goldens are red without CT-1 too, so CT-1 changes no
+    golden of SC-1, as predicted, but §0.9's break condition for PR 60 fires
+    on its probe, which behaves differently from TP-1 plus SC-1 without
+    CT-1; the difference is CT-1's own uninitialized-`var` rule, not SC-1's
+    constraint (tc4 to tc6). PR 57 has one red golden against the predicted
+    none, PR 57's prelude in a TP-1 golden, so the red-set clause of
+    D-CT-15's break condition fires for PR 57; its other clause does not, as
+    no merge changed one of CT-1's sixteen files' hunks beyond offsets. Both
+    are recorded here with the predictions kept; neither is a fill, the gate
+    or P, so §8's stop-and-amend rule does not apply to them.
 10. **Id re-scan** (§0.11) before D and at land time.
+
+    At implementation (amended 2026-10-21, implementation: held state), after
+    `git fetch -q origin` (68 origin refs, 16 worktrees), the command of §0.11
+    prints no ledger count: no ledger holds any of W-300..W-319. `git grep`
+    finds the range in this plan (105 lines, on this branch's ref) and in
+    fork/ORCHESTRATION.md lines 353 and 706 of trunk 3b4a24fff (also
+    claude/carbon-fork-0-1-7mwfb7, the same commit): the orchestrator's stamp
+    reserving W-300..W-319 for CT-1, not a filed id. The highest id in any
+    ledger is W-298, and no worktree's or origin ref's fork/decision-log.md
+    holds `F-02[1-9]` (the highest is F-020); `$X/logs/rescan.log`.
 11. **Not run, and why** (recorded in the PR's first comment): the hosted
     gate and conformance (GitHub Actions is disabled on the fork); bazel
     targets (bazel is not installed, and is not to be). The arbiter's LLVM
     is built with assertions (R6's stop is a clang assertion), so every
     measurement here already ran under them.
+
+    At implementation (amended 2026-10-21, implementation: held state), not
+    run: the hosted gate and conformance and bazel, for the reasons above;
+    M10 (defensive, item 5); a TP-1 plus PR 57 mirror without CT-1, so PR 57's
+    one red golden is classified from its autoupdate diff (item 9) and not by
+    a second build; the land-time commits themselves (M, S-VA, L-F, L and the
+    land-time records commit) and their fills, of which S-VA's hunk and split
+    and M18 were measured early on PR 59's mirror only; fixture X37 under
+    PR 58's check_samples.py (measured for rev 2 on a PR 58 mirror,
+    Appendix C.1); PR 51's split renamed by C-2 (the mirror runs it under its
+    PR 51 name, red because it succeeds).
 
 ### §8.1 What this plan measured and what it did not
 
@@ -3463,6 +3700,17 @@ v14, and the 387 probes of rev 3's matrices and the re-review's on v13 and v14
 held PRs' and upstream's sem_ir files and the dry-run of rev 4's hunks; the id
 re-scan after a fetch; `git apply --check` of every diff block, and C.11's
 hunk against the merged call.cpp again.
+
+Measured at implementation (2026-10-21, EXPECTED, not of record; amended
+2026-10-21, implementation: held state): full builds of the branch at C1 and
+C2 and the gate after each fill (stages 1 and 2 of the implementation); the
+403 probes on CT-1's own build; conformance after P; the mutants M1 to M9,
+M11 to M17 and M19 to M22 over CT-1's objects, each over the whole gate and the
+programs, and M18 on PR 59's mirror (§8 item 5); clang-tidy and clang-format
+on the sixteen files (item 6); full builds of the PR 51, PR 57, PR 59, PR 60
+and PR 62 compositions, and of TP-1 composed with PR 60 without CT-1, each gated
+and run over the programs and the probes, with S-VA on PR 59's (item 9); the
+id re-scan after a fetch (item 10).
 
 Not measured: a full build.sh/install.sh of this branch's own state (relinks of
 the changed objects over TP-1's build for v12, v13 and v14, and full builds of

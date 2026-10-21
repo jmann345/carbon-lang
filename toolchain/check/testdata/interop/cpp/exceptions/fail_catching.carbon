@@ -169,3 +169,21 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:
   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
 }
+
+// --- fail_nullptr_return.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+decltype(nullptr) may_throw_null();
+''';
+
+// `Cpp.nullptr_t` adapts `MaybeUnformed(VoidBase*)`, a qualified adapter that
+// the SF-6 predicate does not admit, so it is not a scalar success type
+// (fork/sumtype-interop/plan.md D-SV-8 admits only `Core.Optional(T*)`).
+fn F() -> Core.Result(i32, Cpp.Exception) {
+  Cpp.may_throw_null()?;
+  return Core.Result(i32, Cpp.Exception).Ok(0);
+}

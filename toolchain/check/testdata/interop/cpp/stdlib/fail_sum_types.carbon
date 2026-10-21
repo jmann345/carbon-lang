@@ -369,3 +369,265 @@ fn P() -> i32 {
 fn V(o: Core.CppCompat.StdOptional(i32)) -> i32 {
   return Cpp.Put(o);
 }
+
+// --- incomplete.h
+
+// `std::optional` and `std::variant` declared and not defined. The functions
+// are `noexcept`, so a call's thunk needs no exception fence.
+namespace std {
+  template <typename T>
+  class optional;
+
+  template <typename... Ts>
+  class variant;
+}
+
+auto Take(std::optional<int> o) noexcept -> int;
+auto TakeRef(const std::optional<int>& o) noexcept -> int;
+auto TakeVariant(std::variant<int, short> v) noexcept -> int;
+
+// --- fail_incomplete_specialization.carbon
+
+library "[[@TEST_NAME]]";
+
+// CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+8]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./incomplete.h:12:6: error: implicit instantiation of undefined template 'std::optional<int>' [CppInteropParseError]
+// CHECK:STDERR:    12 | auto Take(std::optional<int> o) noexcept -> int;
+// CHECK:STDERR:       |      ^
+// CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+4]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./incomplete.h:6:9: note: template is declared here [CppInteropParseNote]
+// CHECK:STDERR:     6 |   class optional;
+// CHECK:STDERR:       |         ^
+import Cpp library "incomplete.h";
+
+// No specialization of a template that C++ declares and does not define can be
+// instantiated, so C++ cannot pass a value of one (`Twin`), a sum value or
+// `Core.Optional` is not offered to C++ as one (§1.5), and a C++ value of one
+// has no Carbon sum type (§1.11).
+fn Twin(p: Cpp.std.optional(i32)*) -> i32 {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+20]]:10: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   return Cpp.Take(*p);
+  // CHECK:STDERR:          ^~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+16]]:19: error: forming value of incomplete type `Cpp.std.optional` [IncompleteTypeInValueConversion]
+  // CHECK:STDERR:   return Cpp.Take(*p);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE-14]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./incomplete.h:6:9: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR:   class optional;
+  // CHECK:STDERR:         ^
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE-18]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./incomplete.h:12:30: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: auto Take(std::optional<int> o) noexcept -> int;
+  // CHECK:STDERR:                              ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdOptional(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.Take(*p);
+}
+
+fn F() -> i32 {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+8]]:19: error: call argument of type `Core.CppCompat.StdOptional(i32)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.Take(Core.CppCompat.StdOptional(i32).Some(1));
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: class Optional(T: OptionalStorage) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.Take(Core.CppCompat.StdOptional(i32).Some(1));
+}
+
+fn G() -> i32 {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+8]]:19: error: call argument of type `Core.Optional(i32 as Core.OptionalStorage)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.Take(Core.Optional(i32).Some(2));
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdOptional(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.Take(Core.Optional(i32).Some(2));
+}
+
+fn H() -> i32 {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+8]]:22: error: call argument of type `Core.CppCompat.StdOptional(i32)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.TakeRef(Core.CppCompat.StdOptional(i32).Some(3));
+  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:39:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdVariant2(T0: type, T1: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeRef(Core.CppCompat.StdOptional(i32).Some(3));
+}
+
+fn V() -> i32 {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+8]]:26: error: call argument of type `Core.CppCompat.StdVariant2(i32, i16)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.TakeVariant(Core.CppCompat.StdVariant2(i32, i16).Alt0(4));
+  // CHECK:STDERR:                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdOptional(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeVariant(Core.CppCompat.StdVariant2(i32, i16).Alt0(4));
+}
+
+fn Back(p: Cpp.std.optional(i32)*) -> Core.CppCompat.StdOptional(i32) {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+19]]:3: error: argument to C++ call has incomplete type `Cpp.std.optional` [IncompleteTypeInCopyWitness]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE-82]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./incomplete.h:6:9: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR:   class optional;
+  // CHECK:STDERR:         ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+11]]:3: error: cannot implicitly convert expression of type `Cpp.std.optional` to `Core.CppCompat.StdOptional(i32)` [ConversionFailure]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+8]]:3: note: type `Cpp.std.optional` does not implement interface `Core.ImplicitAs(Core.CppCompat.StdOptional(i32))` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:39:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdVariant2(T0: type, T1: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return *p;
+}
+
+fn BackVariant(p: Cpp.std.variant(i32, i16)*)
+    -> Core.CppCompat.StdVariant2(i32, i16) {
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+15]]:3: error: argument to C++ call has incomplete type `Cpp.std.variant` [IncompleteTypeInCopyWitness]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE-106]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./incomplete.h:9:9: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR:   class variant;
+  // CHECK:STDERR:         ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `Cpp.std.variant` to `Core.CppCompat.StdVariant2(i32, i16)` [ConversionFailure]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_specialization.carbon:[[@LINE+4]]:3: note: type `Cpp.std.variant` does not implement interface `Core.ImplicitAs(Core.CppCompat.StdVariant2(i32, i16))` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR:
+  return *p;
+}
+
+// --- declared_specialization.h
+
+#include "sum.h"
+
+// Explicit specializations declared and not defined.
+namespace std {
+  inline namespace __1 {
+    template <>
+    class optional<short>;
+
+    template <>
+    class variant<int, short>;
+  }
+}
+
+auto TakeShort(std::optional<short> o) noexcept -> int;
+auto TakeIntOrShort(std::variant<int, short> v) noexcept -> int;
+
+// --- fail_undefined_explicit_specialization.carbon
+
+library "[[@TEST_NAME]]";
+
+// CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+8]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./declared_specialization.h:15:6: error: argument type 'std::optional<short>' is incomplete [CppInteropParseError]
+// CHECK:STDERR:    15 | auto TakeShort(std::optional<short> o) noexcept -> int;
+// CHECK:STDERR:       |      ^~~~~~~~~
+// CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+4]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./declared_specialization.h:8:11: note: forward declaration of 'std::optional<short>' [CppInteropParseNote]
+// CHECK:STDERR:     8 |     class optional<short>;
+// CHECK:STDERR:       |           ^
+import Cpp library "declared_specialization.h";
+
+// The same for a specialization of a defined template that C++ declares and
+// does not define (§1.5, §1.11).
+fn Twin(p: Cpp.std.optional(i16)*) -> i32 {
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+20]]:10: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   return Cpp.TakeShort(*p);
+  // CHECK:STDERR:          ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+16]]:24: error: forming value of incomplete type `Cpp.std.__1.optional` [IncompleteTypeInValueConversion]
+  // CHECK:STDERR:   return Cpp.TakeShort(*p);
+  // CHECK:STDERR:                        ^~
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE-12]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./declared_specialization.h:8:11: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR:     class optional<short>;
+  // CHECK:STDERR:           ^
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE-16]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./declared_specialization.h:15:37: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: auto TakeShort(std::optional<short> o) noexcept -> int;
+  // CHECK:STDERR:                                     ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdOptional(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeShort(*p);
+}
+
+fn F() -> i32 {
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+8]]:24: error: call argument of type `Core.CppCompat.StdOptional(i16)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.TakeShort(Core.CppCompat.StdOptional(i16).Some(1));
+  // CHECK:STDERR:                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: class Optional(T: OptionalStorage) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeShort(Core.CppCompat.StdOptional(i16).Some(1));
+}
+
+fn G() -> i32 {
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+8]]:24: error: call argument of type `Core.Optional(i16 as Core.OptionalStorage)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.TakeShort(Core.Optional(i16).Some(2));
+  // CHECK:STDERR:                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:39:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdVariant2(T0: type, T1: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeShort(Core.Optional(i16).Some(2));
+}
+
+fn V() -> i32 {
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+8]]:29: error: call argument of type `Core.CppCompat.StdVariant2(i32, i16)` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   return Cpp.TakeIntOrShort(Core.CppCompat.StdVariant2(i32, i16).Alt1(3));
+  // CHECK:STDERR:                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdOptional(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeIntOrShort(Core.CppCompat.StdVariant2(i32, i16).Alt1(3));
+}
+
+fn Back(p: Cpp.std.optional(i16)*) -> Core.CppCompat.StdOptional(i16) {
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+15]]:3: error: argument to C++ call has incomplete type `Cpp.std.__1.optional` [IncompleteTypeInCopyWitness]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE-68]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./declared_specialization.h:8:11: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR:     class optional<short>;
+  // CHECK:STDERR:           ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `Cpp.std.__1.optional` to `Core.CppCompat.StdOptional(i16)` [ConversionFailure]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR: fail_undefined_explicit_specialization.carbon:[[@LINE+4]]:3: note: type `Cpp.std.__1.optional` does not implement interface `Core.ImplicitAs(Core.CppCompat.StdOptional(i16))` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return *p;
+  // CHECK:STDERR:   ^~~~~~~~~~
+  // CHECK:STDERR:
+  return *p;
+}

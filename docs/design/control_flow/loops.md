@@ -62,9 +62,6 @@ is:
 
 > `for (` _pattern_ `in` _expression_ `) {` _statements_ `}`
 
-For consistency with function parameters and other pattern matching contexts,
-the pattern defaults to value (immutable) bindings, like `let`.
-
 For example, this prints all names in `names`:
 
 ```carbon
@@ -73,16 +70,13 @@ for (name: strbuf in names) {
 }
 ```
 
-This default can be overridden by adding the `var` keyword:
+> **Note:** A name binding in the pattern of a `for` loop is a value binding by
+> default. If a mutable loop variable is desired, the pattern can use `var`. For
+> example: `for (var x: T in range)`.
 
-```carbon
-for (var name: strbuf in names) {
-  // `name` can be modified, but this will not modify the underlying `names` container.
-}
-```
-
-Temporary entities on the right-hand side of `in` remain alive during the
-execution of the `for` loop to prevent invalid memory access.
+To support iterating over user-defined types, the `for` loop is defined in terms
+of the `Core.Iterate` interface. A container type can implement the
+`Core.Iterate` interface to make it iterable with `for`.
 
 #### `Iterate` interface
 
@@ -216,3 +210,5 @@ while (!f.EOF()) {
     [#623: Require braces](https://github.com/carbon-language/carbon-lang/pull/623)
 -   Proposal
     [#1885: `for` statement and user types](https://github.com/carbon-language/carbon-lang/pull/1885)
+-   Proposal
+    [#7381: Adopt `ref` in `Core.Iterate.Next`](https://github.com/carbon-language/carbon-lang/pull/7381)

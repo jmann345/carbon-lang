@@ -1270,10 +1270,12 @@ EXPECT; the EXPECT is re-derived from the design, never from the toolchain (R16
 
 (Rewritten 2026-10-21, review fold: B-M9 / B-M10 / B-M12 / A-m3 / B-M8.)
 Design pages, each edit a dated amendment block, never a rewrite of upstream
-text. docs/design/control_flow/loops.md at DR-1a: upstream's ac31fd198 text
-for the "`Iterate` interface" and "Loop desugaring" subsections replaces the
-fork's "Ranged-for for user-defined types" subsection (§2.1), keeping the
-fork's `while let` amendment, and C.9's amendment follows the desugaring block.
+text. docs/design/control_flow/loops.md at DR-1a: upstream's ac31fd198 page,
+df3cf9294's whole edit with the "`Iterate` interface" and "Loop desugaring"
+subsections in place of the fork's "Ranged-for for user-defined types"
+subsection (§2.1), keeping the fork's `while let` amendment, and C.9's
+amendment follows the desugaring block (amended 2026-10-21,
+implementation-review fold: DR1A-m1).
 docs/design/slices.md at DR-1b: C.10 replaces the read-only 0.1-limits bullet.
 docs/design/error_handling.md at the records commit R0: C.11's dated amendment
 corrects the EH-A amendment's "the `match` body above applies verbatim once
@@ -1310,7 +1312,12 @@ are distinct: M-a on DR-1a's branch, M-b on DR-1b's.
     F-015 amendment in the corrected form C.7 gives it: once the subsection it
     follows is upstream's `match` desugaring, its first sentence ("The
     desugaring above is the text this page had at the fork's cut") is false, and
-    C.9 says the rest. Records keep both sides. Then L-a, the refill commit:
+    C.9 says the rest. Measured with `git merge-file` against trunk's page and
+    PR 56's and PR 57's heads 894139b34 and a080c7886 (amended 2026-10-21,
+    implementation-review fold: DR1A-m1): the page conflicts in one block, the
+    desugaring region, before and after the fold took the rest of df3cf9294's
+    edit, and DR-1a's side of that block gives DR-1a's page. Records keep both
+    sides. Then L-a, the refill commit:
     check generic/template/for_range, lower template/for_range,
     interop/cpp/range_for (measured on the mct mirror, which merged both PRs
     at once; DR-1a alone onto CT-1's final head is measured before M-a, §8 item
@@ -1548,12 +1555,23 @@ fork/conformance/programs/stdlib/iterate_interface.carbon:34-37 becomes:
 
 <!-- google-doc-style-resume -->
 
-docs/design/control_flow/loops.md: the "`Iterate` interface" and "Loop
-desugaring" subsections of upstream's ac31fd198 page (its :75-131) replace the
-fork's "Ranged-for for user-defined types" subsection (the fork's :87-114), the
-table of contents follows, and the fork's `while let` amendment (:38-44) and
-`for` pattern-default text (:64-65) stay; after the desugaring block, the
-amendment of Appendix C.9.
+docs/design/control_flow/loops.md: upstream's ac31fd198 page (the same text
+at bc45989b2 and 503f09037, df3cf9294 being its last change) with the fork's
+`while let` amendment (:38-44), the fork's only own text on the page, and,
+after the desugaring block, the amendment of Appendix C.9. That is the whole of
+df3cf9294's page edit: the table of contents; the note on value bindings and
+the `Core.Iterate` paragraph in place of the pattern-default sentence, the
+`var` example and the temporaries paragraph (the fork's :64-65 and :75-84);
+the "`Iterate` interface" and "Loop desugaring" subsections (upstream's
+:74-131) in place of the "Ranged-for for user-defined types" subsection (the
+fork's :86-114); and the References entry for proposal p007381 (amended
+2026-10-21, implementation-review fold: DR1A-m1 / DR1A-m3). Rev 3 called the
+sentence at :64-65 the fork's pattern-default text and cited upstream's :75-131
+and the fork's :87-114; `git show df3cf9294~1:docs/design/control_flow/loops.md`
+has the sentence verbatim (its :57-58), so it is upstream's text before
+df3cf9294, and the two headings are at upstream's :74 and the fork's :86 (line
+numbers at a9943e467). A1 took the two subsections and the table of contents
+only; the first DR-1a fix commit takes the rest.
 
 M-a's resolution of handle_loop_statement.cpp on CT-1's head (measured on the
 mct mirror, §0.8.1; amended 2026-10-21, review fold: B-M6): the conflict block

@@ -251,7 +251,8 @@ generics/terminology.md:100-103 and the parser at ac31fd198); work items W-320
 (blocked) and W-324, owner DR-1, checked at each weekly upstream check (added
 2026-10-21, DR-1 plan). (v) D-SL-17's literal-subscript rule, a fork spelling
 of indexing.md's `like i64`; work item W-326, blocked on `like` (added
-2026-10-21, DR-1 plan).
+2026-10-21, DR-1 plan). (iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its
+fill c1cc72a09.
 
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened
@@ -309,15 +310,35 @@ spelling of `like i64`, W-326.
 
 _Ids._ The re-scan at this entry's records commit (2026-10-21, after a fetch;
 the command in CT-1's fork/cpp-templates/plan.md §0.11 widened to
-`W-3[2-9][0-9]`; 87 origin refs, 17 worktrees) found W-320..W-323 (DR-0's) and
-no higher W-3xx id in any ledger. W-324..W-327 and W-329 are filed now; W-328
-stays reserved and unused for W-320's resumption.
+`W-3[2-9][0-9]`; 87 refs, 69 origin refs and 18 local heads, and 17 worktrees;
+the ref count corrected 2026-10-21 by the DR-1a records) found W-320..W-323
+(DR-0's) and no higher W-3xx id in any ledger. W-324..W-327 and W-329 are filed
+now; W-328 stays reserved and unused for W-320's resumption.
 
 Measured at planning (container-local, EXPECTED, not of record): slice 2 gate
 1942 of 1942 and conformance 128/0/22 over 150; slices 2 and 3 gate 1946 of
 1946 and conformance 130/0/22 over 152; composed on CT-1's head 1963 of 1963
 and 149/0/20 over 169; PR 62 with W-322's commit 1950 of 1950 and 133/0/22 over
 155; at discharge: each PR's own runs, recorded by its discharge commit.
+
+_DR-1a records (2026-10-21)._ The V-3a register's (iii), the pointer cursor,
+is resolved by DR-1a: d0cfe8082 ("DR-1a: `Core.Iterate.Next` takes `ref
+cursor`", upstream df3cf9294 re-expressed at the 11 sites and in the loop
+checker, loops.md's upstream subsections restored with the plan's C.9
+amendment) and its fill c1cc72a09 (the nine goldens of the plan's §0.6, their
+numstat line for line; autoupdate `!!!!!!.!!`, then a fixpoint). Measured on
+DR-1a's own build (container-local, EXPECTED, not of record): gate 1942 of
+1942; conformance 128/0/22 over 150, bullets 48/0/8 of 56, no status change
+against the scoreboard of record; the §0.6 probes as planned. The mutant of
+§8 item 5 (the loop checker passing `AddrOf` again) fails eight of the nine
+goldens, each one with a `for` (check for/actual.carbon has none: its lines
+move with `Next`'s signature), and every `for` over a range whose `Next` takes
+`ref` fails at the argument conversion. DR-1a alone merged onto CT-1's head
+118fc1bc8 as M-a resolves it (§8 item 9): before refill 1956 passed and 3
+failed, the three goldens L-a names; refilled to a fixpoint, their numstat
+against CT-1's head is 12/17, 137/137 and 17/103, the L-a row the plan
+measured with both PRs; then 1959 of 1959, and conformance 147/0/20 over 167
+with no status change against CT-1's own run; review A's tmpl_for prints 6.
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

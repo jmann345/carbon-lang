@@ -2882,9 +2882,10 @@ findings, neither dry, round 9 owed; round 9, amended 2026-10-15: two
 APPROVE-WITH-FIXES with two and three findings, both dry; round 10, amended
 2026-10-20: owed by no review, opened on an external BLOCKER, X-1, fixed at the
 root, then two fresh reviews, APPROVE-WITH-FIXES with four and seven MINOR
-findings, one of them dry, the round dry; round 11, amended 2026-10-20:
-round 10's two test-only items folded, a comment edit and a split in one
-golden, two fresh reviews owed; plan's focused re-review fold record).
+findings, one of them dry, the round dry; round 11, amended 2026-10-20: round
+10's two test-only items folded, a comment edit and a split in one golden, then,
+amended 2026-10-21, two fresh reviews, APPROVE-WITH-FIXES with one and five
+MINOR findings, both dry, the round dry; plan's focused re-review fold record).
 Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
 considered (plan §7.2): turning crashes into TODOs (rejected as Goodhart),
 cherry-picking 947c1eb52 or 4a8993af2, inserting the storage block at the action
@@ -2921,14 +2922,17 @@ the fold). Consequences: row PARTIAL; W-250..W-266 filed at the discharge and
 W-267..W-274 by the focused re-review of the fold (W-271 by its round 2, W-272
 by its round 4, W-273 by its round 6 and W-274 by its round 8) and W-295 by its
 round 10 (amended 2026-10-20, round 10: X-1) and W-296 and W-297 by the records
-commit that records its reviews (amended 2026-10-20, records: round 10), W-272
-discharged within TP-1 by its round 7 (TP-1 reserved W-250..W-274, and
-W-295..W-299 for round 10's residues, of which W-298 and W-299 stay unused;
-amended 2026-10-20, records: round 10); W-127, W-183 (for an operand whose type
-is the parameter; W-266 for a field), W-192, W-193 discharged at land time, by
-the records commit after the repeated merge of trunk, because PR 51 and PR 58,
-which file them, are held and the four items are not yet in the ledger (the
-plan's landed notes hold their texts).
+commit that records its reviews (amended 2026-10-20, records: round 10) and
+W-298 by the records commit that records its round 11's reviews (amended
+2026-10-21, records: round 11), W-272 discharged within TP-1 by its round 7
+(TP-1 reserved W-250..W-274, and W-295..W-299 for round 10's and later residues,
+of which W-298 and W-299 stayed unused until round 11's reviews and W-299 stays
+unused; amended 2026-10-20, records: round 10; amended 2026-10-21, records:
+round 11); W-127, W-183 (for an operand whose type is the parameter; W-266 for a
+field), W-192, W-193 discharged at land time, by the records commit after the
+repeated merge of trunk, because PR 51 and PR 58, which file them, are held and
+the four items are not yet in the ledger (the plan's landed notes hold their
+texts).
 
 Implementation, review and verification, in the held state (GitHub Actions is
 disabled, so none of PR 51 to PR 59 is on trunk and there is no merged tree):
@@ -3909,46 +3913,82 @@ DRY". The per-finding table is the plan's "Focused re-review of the fold, round
 10 (2026-10-20)", its reviews (amended 2026-10-20, records: round 10).
 
 FOCUSED RE-REVIEW OF THE FOLD, ROUND 11 (amended 2026-10-20). Owed by
-round 10's reviews only for the two test-only items that the records
-commit after 3d88e6a60, 281292d8f, left to the next round's fixer,
-both in check generic/template/match_choice.carbon. A separate fixer
-reproduced both at 281292d8f on the installed toolchain
-(0.0.0-0.dev+eafca5cb9), on trunk 0bdce60a5 and on the nightly.
-RR10r2-m1: the golden's header comment ended with a work-item id, the
-only one on a line that TP-1 adds to a toolchain source, a golden or
-a program, against the invariant that a reserved id, which can be
-re-allocated before L, appears in no such file; the fix commit
-06f61260c deletes it, the rest of the comment line kept, so no CHECK
-line moves. RR10-1-m1's optional split: no golden pinned the plan's
-TR-13 departure from trunk for an unknown alternative name on the
-choice of a class template that nothing instantiates, which the
-branch diagnoses in the definition, as the checked twin is diagnosed
-on every toolchain, where trunk compiles the pattern condition and
-the `let` ... `else` and stops at check/pattern_match.cpp:1409 on the
-`match` arm (twelve probes, four checked twins and two controls among
-them, on the three toolchains); 06f61260c adds the split
-`fail_unknown_alternative_class_template`, with the three forms and
-its three errors predicted by hand, and its fill b412e602b writes
-them as predicted. Neither item is a toolchain defect, and no
-toolchain source or program changes. Decision, auto-adopted under
-V-2/V-3 and open to veto: the departure stays, as round 10's reviews
-recorded it, and TR-13 names the pin; D-TP-13 and D-TP-24 are not
-touched. _Break:_ the scan of TP-1's added lines finds a W-id, or a
-mutant that reverts either lane of `PerformAlternativeAccess` passes
-the new split; round 10's three mutants, relinked, each fail it
-alone. No residue is filed, and W-298 and W-299 stay unused. Measured
-on b412e602b's tree, container-built, EXPECTED and not of record: an
-autoupdate of every testdata file that changes only the new split's
-CHECK lines; file_test 1957 passed, 0 failed, "Ran 1957 tests in
-24588 ms wall time", 0 `!` and 0 `?` marks; conformance "PASS 138,
-COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
-DIFF-MISMATCH 0, SKIP 22 (of 160)", bullets 48/56. The round changes
-a golden and records, so two fresh reviews of 06f61260c, b412e602b
-and the records commit after them are owed, and PR 61 stays held
-open; the TP-1 Branches row of fork/ORCHESTRATION.md reads "PR 61
-HELD OPEN, ROUND 11 FIX UNDER REVIEW". The per-finding table is the
-plan's "Focused re-review of the fold, round 11 (2026-10-20)"
-(amended 2026-10-20, round 11: RR10r2-m1 / RR10-1-m1).
+round 10's reviews only for the two test-only items that the records commit
+after 3d88e6a60, 281292d8f, left to the next round's fixer, both in check
+generic/template/match_choice.carbon. A separate fixer reproduced both
+at 281292d8f on the installed toolchain (0.0.0-0.dev+eafca5cb9), on trunk
+0bdce60a5 and on the nightly. RR10r2-m1: the golden's header comment ended
+with a work-item id, the only one on a line that TP-1 adds to a toolchain
+source, a golden or a program, against the invariant that a reserved id,
+which can be re-allocated before L, appears in no such file; the fix commit
+06f61260c deletes it, the rest of the comment line kept, so no CHECK line
+moves. RR10-1-m1's optional split: no golden pinned the plan's TR-13 departure
+from trunk for an unknown alternative name on the choice of a class template
+that nothing instantiates, which the branch diagnoses in the definition, as
+the checked twin is diagnosed on the head and on trunk (amended 2026-10-21,
+records: round 11: RR11r2-m5), where trunk compiles the pattern condition and
+the `let` ... `else` and stops at check/pattern_match.cpp:1409 on the `match`
+arm (twelve probes, four checked twins and two controls among them, on the three
+toolchains); 06f61260c adds the split `fail_unknown_alternative_class_template`,
+with the three forms and its three errors predicted by hand, and its fill
+b412e602b writes them as predicted. Neither item is a toolchain defect, and
+no toolchain source or program changes. Decision, auto-adopted under V-2/V-3
+and open to veto: the departure stays, as round 10's reviews recorded it, and
+TR-13 names the pin; D-TP-13 and D-TP-24 are not touched. _Break:_ the scan
+of TP-1's added lines finds a W-id, or a mutant that reverts either lane of
+`PerformAlternativeAccess` passes the new split; round 10's three mutants,
+relinked, each fail it alone. No residue is filed, and W-298 and W-299
+stay unused (the records commit after fe52530a4 files W-298 for round 11's
+reviews; amended 2026-10-21, records: round 11). Measured on b412e602b's tree,
+container-built, EXPECTED and not of record: a single-file autoupdate of the
+golden over 06f61260c that writes only the split's twelve CHECK lines, then a
+full autoupdate (1957 files) that changes nothing (amended 2026-10-21, records:
+round 11: RR11r2-m4); file_test 1957 passed, 0 failed, "Ran 1957 tests in 24588
+ms wall time", 0 `!` and 0 `?` marks; conformance "PASS 138, COMPILE-FAIL 0,
+LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 160)",
+bullets 48/56. The round changes a golden and records, so two fresh reviews of
+06f61260c, b412e602b and the records commit after them are owed, and PR 61 stays
+held open; the TP-1 Branches row of fork/ORCHESTRATION.md reads "PR 61 HELD
+OPEN, ROUND 11 FIX UNDER REVIEW". The per-finding table is the plan's "Focused
+re-review of the fold, round 11 (2026-10-20)" (amended 2026-10-20, round 11:
+RR10r2-m1 / RR10-1-m1).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 11'S REVIEWS (amended 2026-10-21). Two
+fresh reviews of 06f61260c, b412e602b and fe52530a4, at fe52530a4: review
+1 (adversarial correctness) APPROVE-WITH-FIXES, dry, one finding, MINOR and
+records only (RR11-1-m1: a choice alternative whose parameter type a template
+action forms, a member of a template parameter or a template array bound, in a
+class template or a generic choice with a template parameter, stops the compiler
+at sem_ir/generic.cpp:84 while the choice's definition is checked, on trunk too,
+where the checked twin compiles, and no record named the limit beside TR-13's
+claim that a class template's choice is IN); review 2 (strictness, records,
+tests, the PR texts and landability) APPROVE-WITH-FIXES, dry, five findings, all
+MINOR and records only (RR11r2-m1: trunk moved to 481f05612 after the round's
+records commit, so the PR texts' trunk and the id re-scan's outputs were stale;
+RR11r2-m2: three short lines in the middle of paragraphs; RR11r2-m3: the rounds
+named for the added-line id check; RR11r2-m4: a full autoupdate named where
+a single-file one wrote the split's lines; RR11r2-m5: two "every toolchain"
+statements and an overtaken one). No finding is BLOCKER or MAJOR and none needs
+a toolchain or golden change, so round 11 is dry. The records commit after
+fe52530a4 folds all six, none rejected: W-298 is filed from W-295..W-299 for
+RR11-1-m1, a stop that the branch, e408ad4d6 and trunk share (_Break:_ g13
+compiles and h02 prints `0 3`), with a row in the plan's §1.8, a sentence in
+TR-13's amendment and a clause in gap row 54's residue list, the row staying
+PARTIAL, and W-299 stays unused; the id re-scan and `git merge-tree`, re-run
+against trunk 481f05612, give the PR body's conflict sets unchanged and, from
+the first command, `W-297`, `W-298` and `W-299`, TP-1's own reservation as trunk
+records it. Measured at fe52530a4 by both reviews and on the records commit's
+tree, whose toolchain, goldens and programs are fe52530a4's, container-built,
+EXPECTED and not of record: file_test 1957 passed, 0 failed, "Ran 1957 tests
+in 50135 ms wall time" in the records writer's run, 0 `!` and 0 `?` marks;
+conformance "PASS 138, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH
+0, DIFF-MISMATCH 0, SKIP 22 (of 160)", bullets 48/56. Across the twenty-seven
+reviews: 125 findings, 119 distinct (6 BLOCKER, 34 MAJOR and 85 MINOR,
+counted over all 125), none rejected whole; X-1, external, is not among them.
+PR 61 stays held open, as PR 51 to PR 60 are, and the TP-1 Branches row of
+fork/ORCHESTRATION.md reads "PR 61 HELD OPEN, ROUND 11 DRY". The per-finding
+table is the plan's "Focused re-review of the fold, round 11 (2026-10-20)", its
+reviews (amended 2026-10-21, records: round 11).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2
@@ -4173,19 +4213,20 @@ constraint method is an error; SC-1's requirements defer to the type; through a
 field it is W-266), D-TP-14 (cross-library templates are a TODO, not
 implemented), D-TP-15 (form parameters left alone), D-TP-18 (PARTIAL with
 twenty-three open residues, seven filed by the focused re-review of the fold,
-whose round 7 discharges an eighth), D-TP-23 (the redeclaration split flips by a
-diagnostic fix), D-TP-26 (a runtime value where a specific needs a type is an
-error, as outside a template), D-TP-24 (a class value is deferred only when its
-fields match, but for fields with a default initializer when its class's fields
-hold a part known only per instantiation or an omitted field's default is
-produced, so a missing or unknown field is still reported where the function is
-defined, and a deferred literal, constant or not and nested or not, takes its
-defaults on instantiation because an action keeps a literal as its operand,
-reading them from the class specific's resolved definition; amended 2026-10-15,
-focused re-review of the fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1 /
-RR7r2-M1 / RR8-1-M1), W-256 (q07c's template crash traded for the miscompile the
-same code has without templates), and the held state (the four discharges wait
-for land time).
+whose round 7 discharges an eighth; twenty-four, eight so filed, since the
+records commit of its round 11's reviews files W-298, amended 2026-10-21,
+records: round 11), D-TP-23 (the redeclaration split flips by a diagnostic fix),
+D-TP-26 (a runtime value where a specific needs a type is an error, as outside a
+template), D-TP-24 (a class value is deferred only when its fields match, but
+for fields with a default initializer when its class's fields hold a part known
+only per instantiation or an omitted field's default is produced, so a missing
+or unknown field is still reported where the function is defined, and a deferred
+literal, constant or not and nested or not, takes its defaults on instantiation
+because an action keeps a literal as its operand, reading them from the class
+specific's resolved definition; amended 2026-10-15, focused re-review of the
+fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1 / RR7r2-M1 / RR8-1-M1), W-256
+(q07c's template crash traded for the miscompile the same code has without
+templates), and the held state (the four discharges wait for land time).
 
 ### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
 

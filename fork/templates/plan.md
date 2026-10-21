@@ -174,6 +174,16 @@ toolchain source or program changes and no residue is filed. Two fresh reviews
 of the round's commits are owed, and PR 61 stays held open, as PR 51 to PR 60
 are (amended 2026-10-20, round 11: RR10r2-m1 / RR10-1-m1).
 
+Round 11's two fresh reviews of 06f61260c, b412e602b and fe52530a4, at
+fe52530a4, returned APPROVE-WITH-FIXES with one finding and APPROVE-WITH-FIXES
+with five, both dry: six distinct findings, all MINOR and records only, none
+of them needing a toolchain or golden change, so round 11 is dry and no further
+toolchain change is owed. The records commit after fe52530a4 folds all six,
+which the same record tables, and files from W-295..W-299 one residue that is
+not a TP-1 regression, W-298, a stop in checking a choice whose payload type a
+template action forms, which trunk shares; W-299 stays unused. PR 61 stays held
+open, as PR 51 to PR 60 are (amended 2026-10-21, records: round 11).
+
 Rev 1 (6245f8687) was the planner's draft. Reviews A (architecture and design
 fidelity) and B (concreteness, process and cross-workstream) of rev 1 were
 folded into rev 2 (1b26e8c32) by a separate fixer (R11): 27 findings, none
@@ -361,7 +371,12 @@ in lowering that trunk and the nightly share and that are not template defects:
 a checked generic's `Core.Int(N)` compared with a literal (W-295), an `if`
 expression whose result is a class or choice value (W-296) and a generic class's
 method defined out of line (W-297; §1.13 items 26 to 28; (amended 2026-10-20,
-records: round 10)). (b) The dependent forms of proposal 2200's "Use of
+records: round 10)); and the records commit that records its round 11's reviews
+files one that trunk shares: a choice alternative whose parameter type a
+template action forms, such as `A(x: T.Inner)` in `class Outer(template T:
+type)`, stops the compiler while the choice's definition is checked, before any
+refutable form on it (W-298; §1.13 item 29; (amended 2026-10-21, records: round
+11: RR11-1-m1)). (b) The dependent forms of proposal 2200's "Use of
 dependent value is dependent" that trunk rejects where the function is
 defined -- `*`, `->`, `&`, tuple element access, calls of a value whose type is
 a template parameter, struct copies and array indexing -- are deferred to
@@ -470,47 +485,50 @@ findings)) and W-273 (filed by its round 6; (amended 2026-10-15, focused
 re-review of the fold: all round-6 findings)) and W-274 (filed by its round 8;
 (amended 2026-10-15, focused re-review of the fold: all round-8 findings)) and
 W-295, W-296 and W-297 (filed by its round 10 and by the records commit that
-records round 10's reviews; (amended 2026-10-20, records: round 10)); W-272 is
-discharged within TP-1 by its round 7, which files none ((amended 2026-10-15,
-focused re-review of the fold: all round-7 findings)), so no id of W-250..W-274
-is left unused, W-298 and W-299 stay unused ((amended 2026-10-20, records:
-round 10)), and an unused reserved id would stay unused and never be reused.
-**No fork design id is minted** (D-TP-17): F-019 stays unallocated unless a
-review shows that the slice decides a rule proposal 2200 leaves open, in which
-case F-019 is minted with a dated amendment to docs/design/templates.md. F-017
-and F-018 stay with OX-1 and VA-1. The ids appear only in this plan and in three
-commits: the page and fixture texts of the land-time integration L (Appendix C),
-the row of R (§2.8), and the records of the discharge commit D (amended
-2026-10-14, review fold: RR-m4), and in the records commits after D that record
-the focused re-review of the fold (c874c270f, 764e55445, its round 2's bdc1f62d7
-and aa57bfe1c, its round 3's records commits, its round 4's, its round 5's, its
+records round 10's reviews; (amended 2026-10-20, records: round 10)) and
+W-298 (filed by the records commit that records round 11's reviews; (amended
+2026-10-21, records: round 11: RR11-1-m1)); W-272 is discharged within TP-1
+by its round 7, which files none ((amended 2026-10-15, focused re-review of
+the fold: all round-7 findings)), so no id of W-250..W-274 is left unused,
+W-298 and W-299 stay unused ((amended 2026-10-20, records: round 10)) until the
+records commit that records round 11's reviews files W-298, and W-299 stays
+unused ((amended 2026-10-21, records: round 11: RR11-1-m1)), and an
+unused reserved id would stay unused and never be reused. **No fork design id
+is minted** (D-TP-17): F-019 stays unallocated unless a review shows that the
+slice decides a rule proposal 2200 leaves open, in which case F-019 is minted
+with a dated amendment to docs/design/templates.md. F-017 and F-018 stay with
+OX-1 and VA-1. The ids appear only in this plan and in three commits: the
+page and fixture texts of the land-time integration L (Appendix C), the row
+of R (§2.8), and the records of the discharge commit D (amended 2026-10-14,
+review fold: RR-m4), and in the records commits after D that record the focused
+re-review of the fold (c874c270f, 764e55445, its round 2's bdc1f62d7 and
+aa57bfe1c, its round 3's records commits, its round 4's, its round 5's, its
 round 6's, its round 7's, its round 8's and its round 9's; (amended 2026-10-15,
 focused re-review of the fold: RR2r2-m2; records: re-review round 2; focused
 re-review of the fold: all round-3 findings; focused re-review of the fold: all
 round-4 findings; focused re-review of the fold: all round-5 findings; focused
-re-review of the fold: all round-6 findings; focused re-review of the fold: all
-round-7 findings; focused re-review of the fold: all round-8 findings; focused
-re-review of the fold: all round-9 findings)); no source file, golden or program
-header names one, but for one golden comment line since round 10, check
+re-review of the fold: all round-6 findings; focused re-review of the fold:
+all round-7 findings; focused re-review of the fold: all round-8 findings;
+focused re-review of the fold: all round-9 findings)); no source file, golden or
+program header names one, but for one golden comment line since round 10, check
 generic/template/match_choice.carbon:25, which ends `(W-252)` and which the
 re-allocation before L rewrites with L's and R's texts until the next round's
 fixer deletes the id (round 10's reviews: RR10r2-m1; (amended 2026-10-20,
 records: round 10)), and since round 11's fix commit 06f61260c, which deletes
 it, none names one ((amended 2026-10-20, round 11: RR10r2-m1)). Three pushed
-commit messages already name W-250: C2's
-(637e3efaf, "the latter stays in the code (W-250)"), the second fix commit's
-(12bd6d67a, "W-250's `semantics TODO`") and the records commit of the focused
-re-review's round 1 (764e55445, "n8 stops it after W-250's TODO"; (amended
-2026-10-15, focused re-review of the fold: RR2r2-m2)). The plan's commits and D
-name ids in their messages too: rev 1 (6245f8687: W-250 and W-269), rev 3
-(aaf43d5a4: W-256, W-264 and W-265) and D (bf8e1b4cc: W-250, W-266, W-267 and
-W-269), as the round-2 fixer's scan of every message since the cut found; the
-round-2 fix commits and both records commits of round 2 name none (amended
-2026-10-15, focused re-review of the fold: RR2r2-m2; records: re-review
-round 2), and neither do round 3's fix commits, while its records commit
-9923c79fc names W-250 and W-271 in its summary of the ledger edits (amended
-2026-10-15, focused re-review of the fold: all round-3 findings; records:
-re-review round 3); the records commits after it, 3afd3ec92 and the one
+commit messages already name W-250: C2's (637e3efaf, "the latter stays in the
+code (W-250)"), the second fix commit's (12bd6d67a, "W-250's `semantics TODO`")
+and the records commit of the focused re-review's round 1 (764e55445, "n8 stops
+it after W-250's TODO"; (amended 2026-10-15, focused re-review of the fold:
+RR2r2-m2)). The plan's commits and D name ids in their messages too: rev 1
+(6245f8687: W-250 and W-269), rev 3 (aaf43d5a4: W-256, W-264 and W-265) and D
+(bf8e1b4cc: W-250, W-266, W-267 and W-269), as the round-2 fixer's scan of every
+message since the cut found; the round-2 fix commits and both records commits of
+round 2 name none (amended 2026-10-15, focused re-review of the fold: RR2r2-m2;
+records: re-review round 2), and neither do round 3's fix commits, while its
+records commit 9923c79fc names W-250 and W-271 in its summary of the ledger
+edits (amended 2026-10-15, focused re-review of the fold: all round-3 findings;
+records: re-review round 3); the records commits after it, 3afd3ec92 and the one
 that records round 3's reviews, name none (amended 2026-10-15, records:
 re-review round 3). Of round 4's fix commits only b0501358f names one, W-250
 ("report W-250's TODO twice at 0f2002243"), and its records commit 9db2fbb12
@@ -557,39 +575,53 @@ W-297, names none either (amended 2026-10-20, records: round 10). Round 11 files
 none and leaves W-298 and W-299 unused; its fix commit 06f61260c, its fill
 b412e602b and the records commit after them name none, and the id re-scan re-run
 for them on 2026-10-20 at 23:47 UTC, after `git fetch origin` (origin/trunk
-254b935b2), over the same 80 refs, gives the outputs of the 22:55 UTC run below
-(amended 2026-10-20, round 11: RR10r2-m1 / RR10-1-m1). History is not
-rewritten, so if the re-scan before L re-allocates an id, D's landed notes
-record the new id against each commit that names it; later commit messages
-describe a residue instead of naming its reserved id ((amended 2026-10-14,
-implementation-review fold: IR2-MINOR-4)). The three commands are re-run twice:
-immediately before L, the first commit that publishes an id outside this plan,
-and immediately before D writes the ledger. Any output other than the expected
-one above that names W-250..W-274 or F-019 means another workstream took the id
-(amended 2026-10-15, focused re-review of the fold: RR2r2-m2). Before L, the
-residues re-allocate from the maximum plus one, skipping every reserved block,
-and L, R and D are written with the new ids. Before D, the same re-allocation
-also rewrites the ids that L's page and fixture texts and R's row already
-published, in a commit before D. D records both outcomes in
-fork/ORCHESTRATION.md and in the plan's landed notes. From the focused re-review
-of the fold on, the second command's pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`;
-its run on 2026-10-15's records (the [focused re-review fold
-record](#focused-re-review-of-the-fold-2026-10-15)) finds the ids only in
-trunk's own reservation sentence (amended 2026-10-15, focused re-review of the
-fold: RR2-M2). From round 10 on it is `W-(25[0-9]|26[0-9]|27[0-4]|29[5-9])\b`;
-its run after `git fetch origin` on 2026-10-20 at 21:21 UTC (origin/trunk
-254b935b2, which records PR 61), over the 80 refs, finds the ids only in trunk's
-fork/ORCHESTRATION.md, on three refs, and in SV-1's plan, on two, which cite
-TP-1's W-250, W-252 and W-274; the first command prints `W-284`, `W-285` and
-`W-294`, and the third prints trunk's ORCHESTRATION.md sentence that F-019 is
-not minted; no ref names W-295 to W-299 (amended 2026-10-20, round 10: X-1). Its
-run after `git fetch origin` on 2026-10-20 at 22:55 UTC (origin/trunk
-254b935b2), for the records commit after 3d88e6a60, over the same 80 refs: the
-first command prints `W-294`, `W-295` and `W-299`, because SV-1's local branch,
-at 66deca5ce, now cites TP-1's W-295 and the end of its block, W-299; the second
-gives the same five hits and the third the same sentence; no ref names W-296,
-W-297 or W-298, so W-296 and W-297 are TP-1's (amended 2026-10-20, records:
-round 10).
+254b935b2), over the same 80 refs, gives the outputs of the 22:55 UTC run
+below (amended 2026-10-20, round 11: RR10r2-m1 / RR10-1-m1). The records commit
+after fe52530a4, which records round 11's reviews, files W-298 for the first
+review's finding, leaves W-299 unused and names none (amended 2026-10-21,
+records: round 11: RR11-1-m1). History is not rewritten, so if the re-scan
+before L re-allocates an id, D's landed notes record the new id against each
+commit that names it; later commit messages describe a residue instead of
+naming its reserved id ((amended 2026-10-14, implementation-review fold:
+IR2-MINOR-4)). The three commands are re-run twice: immediately before L, the
+first commit that publishes an id outside this plan, and immediately before
+D writes the ledger. Any output other than the expected one above that names
+W-250..W-274 or F-019 means another workstream took the id (amended 2026-10-15,
+focused re-review of the fold: RR2r2-m2). Before L, the residues re-allocate
+from the maximum plus one, skipping every reserved block, and L, R and D are
+written with the new ids. Before D, the same re-allocation also rewrites the
+ids that L's page and fixture texts and R's row already published, in a commit
+before D. D records both outcomes in fork/ORCHESTRATION.md and in the plan's
+landed notes. From the focused re-review of the fold on, the second command's
+pattern is `W-(25[0-9]|26[0-9]|27[0-4])\b`; its run on 2026-10-15's records
+(the [focused re-review fold record](#focused-re-review-of-the-fold-2026-10-15))
+finds the ids only in trunk's own reservation sentence (amended
+2026-10-15, focused re-review of the fold: RR2-M2). From round 10 on it is
+`W-(25[0-9]|26[0-9]|27[0-4]|29[5-9])\b`; its run after `git fetch origin` on
+2026-10-20 at 21:21 UTC (origin/trunk 254b935b2, which records PR 61), over
+the 80 refs, finds the ids only in trunk's fork/ORCHESTRATION.md, on three
+refs, and in SV-1's plan, on two, which cite TP-1's W-250, W-252 and W-274; the
+first command prints `W-284`, `W-285` and `W-294`, and the third prints trunk's
+ORCHESTRATION.md sentence that F-019 is not minted; no ref names W-295 to
+W-299 (amended 2026-10-20, round 10: X-1). Its run after `git fetch origin` on
+2026-10-20 at 22:55 UTC (origin/trunk 254b935b2), for the records commit after
+3d88e6a60, over the same 80 refs: the first command prints `W-294`, `W-295` and
+`W-299`, because SV-1's local branch, at 66deca5ce, now cites TP-1's W-295 and
+the end of its block, W-299; the second gives the same five hits and the third
+the same sentence; no ref names W-296, W-297 or W-298, so W-296 and W-297 are
+TP-1's (amended 2026-10-20, records: round 10). Its run after `git fetch origin`
+on 2026-10-21 at 00:42 UTC (origin/trunk 481f05612, which the orchestrator
+pushed at 00:05 UTC), for the records commit after fe52530a4, over the same 80
+refs: the first command prints `W-297`, `W-298` and `W-299`, from trunk's
+fork/ORCHESTRATION.md:270-273, which records W-295 to W-299 as reserved to TP-1,
+W-295 to W-297 filed on its branch and W-298 and W-299 held, and from SV-1's
+plan, which cites TP-1's W-295 to W-297 and the end of its block, W-299: TP-1's
+own reservation as trunk records it, not an allocation by another workstream;
+the second gives five hits, SV-1's plan on its two refs and trunk's
+fork/ORCHESTRATION.md on refs/heads/trunk, refs/remotes/origin/trunk and
+refs/remotes/origin/claude/carbon-fork-0-1-7mwfb7, each at 481f05612; the third
+prints the same sentence; no ref names W-298 or W-299 but as TP-1's, so W-298 is
+TP-1's (amended 2026-10-21, records: round 11: RR11r2-m1).
 
 **Design authority** (each cited where used):
 
@@ -1649,10 +1681,20 @@ the existing diagnostic or a new `semantics TODO` with a golden) and filed.
     `fail_unknown_alternative_class_template` pins the departure: `.Nope` in a
     `match` arm, an `if` pattern condition and a `let` ... `else` on the choice
     of a class template that nothing instantiates, each diagnosed in the
-    definition (amended 2026-10-20, round 11: RR10-1-m1). _Break
-    condition:_ a choice whose alternatives differ between its specifics (none
-    can: a choice declares them once), or a case that is selected differently
-    for different instantiations of a scrutinee type known in the definition.
+    definition (amended 2026-10-20, round 11: RR10-1-m1). Such a choice cannot
+    yet be declared when an alternative's parameter type is formed by a template
+    action, a member of a template parameter (`A(x: T.Inner)`) or a template
+    array bound (`A(x: array(i32, N))`), in a class template or in a generic
+    choice with a template parameter: the alternative's generated constructor
+    evaluates the action in its own specific, which stops the compiler while the
+    choice's definition is checked (sem_ir/generic.cpp:84, from
+    handle_choice.cpp:398), on trunk 0bdce60a5 too and before any refutable form
+    on it, while `A(o: Outer(T)*)` and `A(x: Core.Int(N))`, which D-TP-11 forms
+    in the definition, run since C4 (W-298; amended 2026-10-21, records: round
+    11: RR11-1-m1). _Break condition:_ a choice whose alternatives differ
+    between its specifics (none can: a choice declares them once), or a case
+    that is selected differently for different instantiations of a scrutinee
+    type known in the definition.
 14. TR-14. `auto` and template `let` bindings (:327-347, :232-270). **OUT**
     (W-039, W-031; unchanged).
 15. TR-15. Template constraints (:348-432). **OUT** of this slice (SC-1,
@@ -2771,6 +2813,7 @@ Amended 2026-10-14 (review fold: A-M2 / A-M3 / A-m2 / A-m3 / B-M2 / B-M3).
 | a `match`, a pattern condition or `let` ... `else` on a template-dependent choice value, of a generic choice applied to a template parameter such as `Opt(T)` (X-1) or of a choice declared in a class template, or on `Core.Int(N)` or `Core.UInt(N)` for a template `N` (added 2026-10-20, round 10: X-1) | `semantics TODO` at the scrutinee for `Opt(T)` and `Core.Int(N)`; for a class template's choice the forms run, but a `case .Name` arm, naming a payload-free alternative or an unknown name, stops at pattern_match.cpp:1409 (for an unknown name, round 10's reviews' v07 and h15), and an unknown name in a pattern condition or `let` ... `else` of a class template that nothing instantiates is accepted (h14; amended 2026-10-20, round 10's reviews: RR10r2-m5 / RR10-1-m1) | runs, checked in the definition as a checked generic's is (TR-13's amendment): X-1's `.None` arm, exhaustiveness and dead-arm diagnostics, guards, nested matches, payload bindings of type `T`, the pattern conditions, `let` ... `else` and integer arms; an unknown alternative name is diagnosed in the definition, also where nothing instantiates the template (TR-13's departure from trunk), and a payload literal, a guard or a payload type that the instantiation rejects is diagnosed on instantiation; until eafca5cb9 the `case .Name` arm stopped at pattern_match.cpp:1409; the unknown name on a class template's choice that nothing instantiates is pinned by match_choice.carbon's `fail_unknown_alternative_class_template` (amended 2026-10-20, round 11: RR10-1-m1) | none |
 | an `if` expression whose result is a value of a class or choice type, with or without a template: `match (if c then a else b)` or `let s: Opt(T) = if c then a else b;` for `a: Opt(T)` and `b: Opt(T)` in `fn F[template T: type]`, and `let s: Box(i32) = if c then a else b;` without one (added 2026-10-20, round 10's reviews: RR10-1-m2) | without a template, LLVM's PHI assertion while lowering (the block argument's PHI typed with the value's type, lower/function_context.cpp:220, given the pointer that lower/handle.cpp:206 adds), lower/lower.cpp:48's verifier CHECK on the nightly; in a template, the scrutinee TODO or ``cannot deduce value for generic parameter `T` `` | unchanged without a template; the template forms pass checking since C4 (D-TP-11) and stop at the same assertion, at e408ad4d6 as at eafca5cb9 (h13, i01, i04 to i08); over struct values, `i32` or a template `T` it runs | W-296 |
 | a method of a generic class, checked or template, defined out of line and called: `fn Outer(template T: type).Get(t: T, full: bool) -> i32 { return 5; }` or `fn Outer(T: type).Get() -> i32` (added 2026-10-20, round 10's reviews: RR10-1-m3) | CHECK at sem_ir/generic.cpp:84 (``Given a specific for the wrong generic``) while the specific is lowered, on the nightly too; with X-1's class in the body (h06), trunk and e408ad4d6 stop in checking at pattern_match.cpp:1409 first | unchanged; h06 passes checking since eafca5cb9 and stops at the same CHECK; the same method of a class that is not generic prints 5 | W-297 |
+| a choice alternative whose parameter type is formed by a template action, in a class template or in a generic choice with a template parameter: `choice C { A(x: T.Inner), B }` in `class Outer(template T: type)`, `choice C { A(x: array(i32, N)), B }` in `class Outer(template N: i32)`, and `choice C(template T: type) { A(x: T.Inner), B }` (added 2026-10-21, records: round 11: RR11-1-m1) | CHECK at sem_ir/generic.cpp:84 (``Given a specific for the wrong generic``) while the choice's definition is checked, from its payload alternative's generated constructor (handle_choice.cpp:398), also where nothing matches on the choice; the nightly rejects every payload alternative with its TODO; the checked twin compiles | unchanged, at e408ad4d6 as at eafca5cb9 (round 11's first review's g01, g02, g09, g13, h02 and h11, and the records writer's w298b); `A(o: Outer(T)*)` (h16) and `A(x: Core.Int(N))` (g12), which C4 forms in the definition (D-TP-11), run since C4, `0 1` and `3 0`, where trunk stops at the same CHECK; the same types as a class template method's parameter run on every toolchain (g06, g07) | W-298 |
 | an array with a dependent bound from a list | error, golden `fail_todo_init_template_dependent_bound` | unchanged directly and in a struct or tuple literal; in a class template's literal, `var c: C(N) = {.a = (1, 2, 3), .b = N}` and the same returned from `-> C(N)`, which C4 made an error where trunk compiles them, converted on instantiation (D-TP-24), deduce_class_args.carbon's and lower initialize.carbon's `_dependent_array_bound` splits (amended 2026-10-15, focused re-review of the fold: RR2-1-M2) | W-253 |
 | an out-of-line redeclaration naming `T.U`, token-identical | rejected (`$P/probes/mool.carbon`), message printed `<cannot stringify ...>` | still rejected; the message now prints `T.U` on both sides (D-TP-23) | W-254 |
 | a form parameter, `template` or `generic` | lowering fatal (RC-9) | unchanged | W-255 |
@@ -2923,15 +2966,17 @@ items 1, 4, 15, 16, 22 and 23; round 6: RR6-1-M1 / RR6-1-m2 / RR6r2-M1, items 23
 and 24; round 7: RR7r2-M1 / RR7-1-m2, items 21 and 23; round 8: RR8-1-M1 /
 RR8r2-M1 / RR8-1-m2 / RR8r2-m3, items 14, 18 and 25; round 9: RR9-1-m1 /
 RR9-1-m2 / RR9r2-m1, items 18 and 25) and 2026-10-20 (round 10: X-1, items 3 and
-26; round 10's reviews: RR10-1-m2 / RR10-1-m3, items 27 and 28). Each item's
-full ledger text, with kind, size, subsystem, evidence and break condition, is
-in Appendix E; D files W-250 to W-266, and the focused re-review of the fold
-files W-267 to W-270, in its round 2 W-271, in its round 4 W-272 and in its
-round 6 W-273, and its round 7 discharges W-272 within TP-1, and its round 8
-files W-274, and its round 9 widens W-267 and W-274, and its round 10, on an
-external finding, narrows W-252 and files W-295 (amended 2026-10-20, round 10:
-X-1), and the records commit that records its round 10's reviews files W-296 and
-W-297 (amended 2026-10-20, records: round 10).
+26; round 10's reviews: RR10-1-m2 / RR10-1-m3, items 27 and 28) and 2026-10-21
+(records: round 11: RR11-1-m1, item 29). Each item's full ledger text, with
+kind, size, subsystem, evidence and break condition, is in Appendix E; D files
+W-250 to W-266, and the focused re-review of the fold files W-267 to W-270, in
+its round 2 W-271, in its round 4 W-272 and in its round 6 W-273, and its round
+7 discharges W-272 within TP-1, and its round 8 files W-274, and its round 9
+widens W-267 and W-274, and its round 10, on an external finding, narrows W-252
+and files W-295 (amended 2026-10-20, round 10: X-1), and the records commit that
+records its round 10's reviews files W-296 and W-297 (amended 2026-10-20,
+records: round 10), and the records commit that records its round 11's reviews
+files W-298 (amended 2026-10-21, records: round 11: RR11-1-m1).
 
 1.  W-250 (TR-17). A generic whose definition or declaration is resolved per
     instantiation (an eval block that holds an action or a splice: a
@@ -3333,6 +3378,32 @@ W-297 (amended 2026-10-20, records: round 10).
     a generic class. Removal: give the qualifier's binding a specific of its own
     generic, which the CHECK requires; the mechanism was not investigated beyond
     the stack. j02 printing 5 is the break condition.
+29. W-298 (TR-13; added 2026-10-21, records: round 11: RR11-1-m1). A choice
+    alternative whose parameter type is formed by a template action, a member
+    of a template parameter or a template array bound, stops the compiler while
+    the choice's definition is checked, at the CHECK ``Given a specific for the
+    wrong generic`` (sem_ir/generic.cpp:84, from `GetConstantValueInSpecific`
+    while `BuildGenericDecl` evaluates the generated constructor's
+    `ConvertToValueAction`): `choice C { A(x: array(i32, N)), B }` in `class
+    Outer(template N: i32)` (g01), `choice C { A(x: T.Inner), B }` in `class
+    Outer(template T: type)` (g02, and g13, which no `match` uses), `choice
+    C(template T: type) { A(x: T.Inner), B }` (g09), the records writer's
+    `choice C(template N: i32) { A(x: array(i32, N)), B }` (w298b) and the
+    matches h02 and h11 on such choices stop the branch, e408ad4d6 and trunk
+    0bdce60a5; the nightly 62f1cc6 rejects every payload alternative with
+    its TODO; the checked twins g01c and w298c compile, and the same types
+    as a class template method's parameter run on every toolchain (g06,
+    g07). The payload alternative's constructor (handle_choice.cpp:398,
+    `MakeGeneratedFunctionDecl` with the alternative's parameter types and
+    `build_generic` set for a generic choice) is a generic of its own whose eval
+    block holds the enclosing template's action, which is then evaluated in the
+    constructor's specific. Not a TP-1 regression: TP-1 moves two neighbors,
+    `A(o: Outer(T)*)` (h16) and `A(x: Core.Int(N))` in `class Outer(template
+    N: Core.IntLiteral)` (g12), which C4 forms in the definition (D-TP-11) and
+    which print `0 1` and `3 0` where trunk stops at the same CHECK; W-270 and
+    W-297 are other shapes of the same CHECK. Removal: build the constructor's
+    parameter types in the specific of the generic they belong to, as W-270's
+    removal does. g13 compiling and h02 printing `0 3` are the break condition.
 
 ### §1.14 Decision index (auto-adopted under V-2/V-3; each has a break condition above or here)
 
@@ -5220,7 +5291,9 @@ commit's files, which merges the two.
     whose two items are test only: 06f61260c (a golden's header comment and
     one split, no toolchain change) with its fill b412e602b, and the
     records commit after them, by the tenth dated note (amended 2026-10-20,
-    round 11: RR10r2-m1 / RR10-1-m1).
+    round 11: RR10r2-m1 / RR10-1-m1), and the records commit after fe52530a4
+    that records the round's reviews, with no fix commit and no budget note
+    (amended 2026-10-21, records: round 11).
 11. **L** "TP-1: integration with PR 58" (§2.9, Appendix C), then its
     document review and fold commits; `check_samples.py` with and without
     `--toolchain` on every one of them. The id re-scan of the front matter
@@ -5424,7 +5497,9 @@ and a records commit, and no toolchain fix commit. Its two items are the
 test-only ones that round 10's reviews left to the next round's fixer: a
 work-item id deleted from a golden's header comment and a split that pins
 TR-13's departure from trunk for a class template's choice. Neither is a
-toolchain defect or a wider slice, and nothing is shrunk.
+toolchain defect or a wider slice, and nothing is shrunk. The records commit
+after fe52530a4, which records the round's reviews, changes records only, so the
+budget does not change (amended 2026-10-21, records: round 11).
 
 ## §4 Testdata matrix (autoupdate fills; the fill must reproduce these lines)
 
@@ -7300,7 +7375,57 @@ record (Actions disabled).
     at 23:47 UTC, with the outputs of the 22:55 UTC run, and `git
     merge-tree --write-tree --name-only` of b412e602b with trunk and each
     held PR's head, each equal to `git ls-remote`: the PR body's conflict
-    table (`$F/merge_tree_b412.txt`).
+    table (`$F/merge_tree_b412.txt`). After the round's records commit,
+    the orchestrator pushed trunk 481f05612 (2026-10-21 00:05 UTC,
+    fork/ORCHESTRATION.md only); after `git fetch origin` at 00:42 UTC,
+    the id re-scan gives the outputs that the front matter records for
+    that run, `W-297`, `W-298` and `W-299` from the first command, because
+    trunk now records TP-1's own reservation, and `git merge-tree` of
+    fe52530a4 with 481f05612 and each held PR's head gives the same
+    conflict sets, trunk conflicting only in fork/ORCHESTRATION.md
+    (`.../tp1-x1/records-r11/out/idscan.txt` and `merge_tree_fe52_481f.txt`;
+    amended 2026-10-21, records: round 11: RR11r2-m1).
+
+**Measured at round 11's reviews (amended 2026-10-21, records: round 11).**
+At fe52530a4 by the two reviews, each with a private cache, `TEST_TMPDIR` and
+output directory, and each leaving the worktree unchanged; the round-11 record
+gives their runs in full. Container-built, EXPECTED, not of record (Actions
+disabled).
+
+-   Review 1: gate 1957 of 1957, "Ran 1957 tests in 37277 ms wall time, 146167
+    ms across threads"; conformance 138/0/22 over 160, 48 PASS / 0 FAIL / 8
+    SKIP / 0 NOT-WRITTEN of 56 bullets, every program equal to the fixer's and
+    the ten TP-1 programs the only movers; `prev` (e408ad4d6's two .cpp files
+    relinked) passing the 1955 earlier goldens with 1955 `.` marks; 108 goldens
+    autoupdated with `--dump-sem-ir-ranges=ignore` on the head and on `prev`,
+    byte-identical; M1, M2 and M3 relinked under `/dev/shm` and killed, each by
+    the new split alone too; 49 single-file probes and three cross-library sets
+    on the head, `prev`, trunk and the nightly.
+
+-   Review 2: gate 1957 of 1957, "Ran 1957 tests in 33270 ms wall time", 1957
+    `.` marks; a full autoupdate of a `git archive` export of the head with no
+    change, and a single-file autoupdate of 06f61260c's golden that reproduces
+    the head and is a fixpoint; conformance 138/0/22 over 160, 48 of 56 bullets,
+    every program equal to the fixer's; `--self-test` with 160 programs and
+    56 bullets; `prek --all-files` on a shared clone, 28 hooks passed and 4
+    skipped, no change; clang-format 21.1.8 clean on the PR's 30 C++ files; 20
+    probes on the head, trunk and the nightly.
+
+-   The records writer, on the worktree at fe52530a4 before this commit's
+    records edits, whose toolchain, goldens and programs this commit
+    leaves unchanged, with a private cache and output directory under
+    `.../tp1-x1/records-r11`: `gate.sh`, "1957 passed, 0 failed (exit 0, 51s)",
+    "Ran 1957 tests in 50135 ms wall time, 196615 ms across threads", 1957 `.`
+    marks and no `!` or `?` (`gate.log`); `conformance.sh` into `conf_out/`:
+    "PASS 138, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 22 (of 160)", bullets 48 PASS and 8 SKIP of 56,
+    scoreboard generated 2026-10-21T00:45:42Z in 50.1 s, every program's status
+    and detail equal to `$F/conf_out`'s and the ten TP-1 programs the only
+    movers from fork/conformance/out/scoreboard.json; `runner.py --self-test`:
+    "self-test: 160 programs parsed, 56 bullets in table, OK"; the findings'
+    probes and its own (`probes/`, `out/`), as the round-11 record gives them;
+    and the id re-scan and `git merge-tree` at 00:42 UTC, as the front matter
+    and the bullet above give them.
 
 ## Hand-off notes for the implementer
 
@@ -7841,8 +7966,10 @@ two id re-scans.
     the row reads "PR 61 HELD OPEN, ROUND 10 DRY" (amended 2026-10-20, records:
     round 10). Round 11 folds round 10's two test-only items and changes
     no toolchain file, and two fresh reviews of it are owed, so the row
-    reads "PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW" (amended
-    2026-10-20, round 11: RR10r2-m1 / RR10-1-m1).
+    reads "PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW" (amended 2026-10-20,
+    round 11: RR10r2-m1 / RR10-1-m1). Round 11's two reviews found no BLOCKER or
+    MAJOR finding and no further toolchain change owed, so the row reads "PR 61
+    HELD OPEN, ROUND 11 DRY" (amended 2026-10-21, records: round 11).
 
 ## Focused re-review of the fold (2026-10-15)
 
@@ -7918,8 +8045,12 @@ Round 11 folds those two items: its fix commit 06f61260c and its fill
 b412e602b change one golden, check generic/template/match_choice.carbon, and
 no toolchain source or program, and the records commit after them records the
 round. Two fresh reviews of the three commits are owed, then a fixer for what
-they find; the PR stays held, as PR 51 to PR 60 are (amended 2026-10-20,
-round 11: RR10r2-m1 / RR10-1-m1).
+they find; the PR stays held, as PR 51 to PR 60 are (amended 2026-10-20, round
+11: RR10r2-m1 / RR10-1-m1). Those two reviews had no BLOCKER or MAJOR finding,
+none of their six findings needs a toolchain or golden change, and the records
+commit after fe52530a4 that folds them changes no toolchain, golden or program
+file, so round 11 is dry and no further toolchain change is owed (amended
+2026-10-21, records: round 11).
 
 ### Round 1: the fold's commits, at bf8e1b4cc
 
@@ -10398,7 +10529,7 @@ column 0, the measure that the fixer's plan.md counts use.
 | RR10-1-m2 (records only): the sweep never probed an `if` expression scrutinee: `match (if c then a else b)` on `Opt(T)` (h13) stops lowering `F(i32)` at LLVM's PHI assertion (Instructions.h:2805), where trunk reports its scrutinee TODO; the cause is upstream's, a block argument's PHI typed with the value's type (lower/function_context.cpp:220) that a pointer-represented class or choice value reaches (lower/handle.cpp:206), and the twins without a template or with a checked parameter (n01 to n03, i02, i03) stop trunk at the same assertion and the nightly at lower/lower.cpp:48 | MINOR | Folded: the sweep table gains the row (h13, i01 to i09, n01 to n03, w296k, w296s, w296m), §1.8 gains a row, and W-296 is filed from W-295..W-299: an `if` expression whose result is a class or choice value stops lowering, with or without generics, on trunk and the nightly too; break condition n01 prints 1. Recorded with it: the template forms h13, i01 and i04 to i08 pass checking since C4 (D-TP-11), so they stop where trunk rejects them with its scrutinee TODO or ``cannot deduce value for generic parameter `T` ``, at e408ad4d6 as at eafca5cb9, while the same programs without a template stop trunk; no TP-1 toolchain change | §1.8, §1.13 item 27, Appendix E, ledger W-296 |
 | RR10-1-m3 (records only): the sweep never probed a class template's method defined out of line: h06, X-1's class in `fn Outer(template T: type).Get`, passes checking and stops lowering `Get(i32)` at sem_ir/generic.cpp:84, where e408ad4d6 and trunk stop in checking at pattern_match.cpp:1409; j01 to j05 (no `match`, a pattern condition, a payload arm only, a checked twin, and j02 with no choice) stop the head, e408ad4d6 and trunk at generic.cpp:84, j02 the nightly too | MINOR | Folded: the sweep table gains the row (h06, j01 to j05, w297c, w297d, w297n), §1.8 gains a row, and W-297 is filed: a method of a generic class, checked or template, defined out of line stops lowering at sem_ir/generic.cpp:84 when a specific of it is lowered, on trunk and the nightly too; break condition j02 prints 5. Round 10 moves h06's stop from checking to lowering and adds or removes no crash; no TP-1 toolchain change | §1.8, §1.13 item 28, Appendix E, ledger W-297 |
 | RR10-1-m4 (records only): the round's residue paragraph (plan.md:9927 at 3d88e6a60) said a nested designator is ``name `.Self` not found`` on every toolchain, while the sweep's row (:9835) records trunk's scrutinee TODO for p12 and p13 and the nightly's own TODOs | MINOR | Folded: the sentence says what the row records | this record |
-| RR10r2-m1 (test only): check generic/template/match_choice.carbon:25, a header comment, ends "stays a `semantics TODO` (W-252).", the only W-id in TP-1's goldens, programs and toolchain sources, against the invariant each round checked (plan.md:8039, :8187, :8426 and :9430 at 3d88e6a60) that no such file names one, since a reserved id can be re-allocated before L | MINOR | To the next round's fixer: delete " (W-252)" from line 25 and from Appendix A's copy (plan.md:13464 at 3d88e6a60), one comment line that moves no CHECK line or `[[@LINE]]` offset, then autoupdate (no change expected) and gate. Until then the id paragraph records the line as the one exception, which the re-allocation before L rewrites with L's and R's texts if W-252 is re-allocated (review 2's records-only alternative, taken as the interim); folded by round 11 (06f61260c; amended 2026-10-20, round 11: RR10r2-m1) | front matter (the id paragraph), Appendix A |
+| RR10r2-m1 (test only): check generic/template/match_choice.carbon:25, a header comment, ends "stays a `semantics TODO` (W-252).", the only W-id in TP-1's goldens, programs and toolchain sources, against the invariant that the reviews of rounds 3 to 8 checked (plan.md:8039, :8187, :8426, :8683, :8920 and :9430 at 3d88e6a60; amended 2026-10-21, records: round 11: RR11r2-m3) that no such file names one, since a reserved id can be re-allocated before L | MINOR | To the next round's fixer: delete " (W-252)" from line 25 and from Appendix A's copy (plan.md:13464 at 3d88e6a60), one comment line that moves no CHECK line or `[[@LINE]]` offset, then autoupdate (no change expected) and gate. Until then the id paragraph records the line as the one exception, which the re-allocation before L rewrites with L's and R's texts if W-252 is re-allocated (review 2's records-only alternative, taken as the interim); folded by round 11 (06f61260c; amended 2026-10-20, round 11: RR10r2-m1) | front matter (the id paragraph), Appendix A |
 | RR10r2-m2 (records only): the PR description still listed TR-13 as wholly OUT (pr_tp1.md:242) and its summary (:5) left out round 10's capability | MINOR | Folded in the PR description: TR-13 is PARTIAL, IN for a scrutinee whose type is known in the definition and template-dependent only through its arguments, checked in the definition with its payload operations performed on instantiation, and OUT with trunk's TODO for one whose type is not (W-252); the summary names the capability | PR description |
 | RR10r2-m3 (records only): the first comment's FILL-CAUGHT MISSES list (pr_tp1_comment.md:219-261) had no round-10 entry, while the description (pr_tp1.md:367) says it lists every later layer's catch: X-1 was caught by another layer while every gate and program was green, and the fill 74e16c4de is missing | MINOR | Folded in the first comment: round 10's fill, none against §4, and X-1 under the other layers | PR first comment |
 | RR10r2-m4 (records only): the first comment's round 8 and round 9 items (pr_tp1_comment.md:209 and :212) still said "the description keeps the round's counts and status", which round 10's records commit moved to the comment | MINOR | Folded: both items point to the summaries above them in the comment | PR first comment |
@@ -10472,7 +10603,11 @@ where trunk reports its scrutinee TODO, and class_template_choice names only the
 alternatives its choice declares.
 
 The class, swept before the change (`$F/probes`, run by `$F/bin/run3.sh` into
-`$F/out/repro.txt` and `$F/out/repro_checked.txt`): each probe compiled on the
+`$F/out/repro.txt` and `$F/out/repro_checked.txt`, whose rows for
+s05 to s08 supersede repro.txt's, which a first draft of those twins
+with a parse error gave; s12's results are its three compile logs,
+`$F/out/s12_split_as_written.{tp,trunk,nightly}.compile.log`; amended
+2026-10-21, records: round 11: RR11r2-m4): each probe compiled on the
 head's toolchain, on trunk and on the nightly, and linked and run where it has a
 `Run`, its value derived by hand first. By shape:
 
@@ -10484,20 +10619,24 @@ head's toolchain, on trunk and on the nightly, and linked and run where it has a
 | Each form alone: the `match` arm (s02), the pattern condition (s03) and the `let` ... `else` (s04); 3 probes | one error each, the same diagnostic | s02 stops at pattern_match.cpp:1409; s03 and s04 compile | its own TODOs and parse errors |
 | The checked twins, `class Outer(T: type)`: the three forms (s05) and each alone (s06 to s08); 4 probes | the same errors as their template forms | the same as on the head | its own TODOs and parse errors |
 | Controls: the same class instantiated with names its choice declares, `case .B`, `if (let .A(n: T) = c)` and `let .B = c else` (s10, hand-derived `0 5 1`), and its checked twin (s11); 2 probes | s10 prints `0 5 1`; s11 is rejected with ``cannot implicitly convert expression of type `T` to `i32` ``, the checked return of a payload of type `T` | s10 stops at pattern_match.cpp:1409 on its `.B` arm; s11 as on the head | its own TODOs and parse errors |
+| Round 11's first review and the records writer (added 2026-10-21, records: round 11: RR11-1-m1): a payload type that a template action forms, in a class template's choice, `A(x: array(i32, N))` (g01) or `A(x: T.Inner)` (g02, and g13, which no `match` uses), or in a generic choice with a template parameter, `A(x: T.Inner)` (g09) or `A(x: array(i32, N))` (the records writer's w298b), and matches on such choices (h02, h11); and the checked twins g01c and w298c; 9 probes | each template form stops at sem_ir/generic.cpp:84 while the choice's definition is checked (W-298); g01c and w298c compile | the same; review 1's `prev` (e408ad4d6's toolchain) the same | every payload alternative rejected with its TODO |
+| The same types elsewhere, the controls: as a class template method's parameter (g06, g07, hand-derived `2` and `3`), `A(o: Outer(T)*)` (h16, `0 1`), `A(x: Core.Int(N))` in `class Outer(template N: Core.IntLiteral)` (g12, `3 0`), and a payload-free choice in a class template with a `T.Inner` field (the records writer's w298d, `0`); 5 probes | each prints its hand-derived value | g06, g07 and w298d print theirs; h16 and g12 stop at sem_ir/generic.cpp:84 | g06 and g07 print theirs; h16 and g12 rejected with its TODOs; w298d stops at lower/function_context.cpp:201 |
+| The records writer's aggregate payloads of the template parameter, recorded and not filed: `A(x: array(T, 2))` (w298a, and w298e, which only constructs it) and `A(x: (T, T))` (w298f), their checked twins (w298ac, w298ec, w298fc) and their twins without generics (w298an, w298fn); 8 probes | the template forms rejected as their checked twins are, with ``member access into incomplete class `C` `` (``binding pattern has incomplete type `C` `` for w298e) and ``unable to monomorphize specific `A(i32)` ``; the twins without generics report ``choice alternative payload that is not trivially copyable and destructible``, upstream's `semantics TODO` | w298a and w298f stop at pattern_match.cpp:1409; the other six as on the head | every payload alternative rejected with its TODO |
 
 <!-- google-doc-style-resume -->
 
 Root cause. Neither item is a toolchain defect. RR10r2-m1: round 10's fixer
 wrote the header comment from the residue's text, and none of round 10's own
 checks scanned TP-1's added toolchain, golden and program lines for an id, the
-check that the reviews of rounds 2, 3, 4 and 8 made (plan.md:8039, :8187, :8426
-and :9430 at 3d88e6a60; the id re-scan reads only fork records), so the line
-stayed until round 10's second review found it. RR10-1-m1: eafca5cb9's
-`PerformAlternativeAccess` diagnoses an unknown alternative name in the
-definition for every template-dependent choice, and that departs from trunk only
-for a choice declared in a class template, because for `Opt(T)` trunk reports
-its scrutinee TODO; round 10 pinned the diagnostic only through `Opt(T)`, so no
-golden held trunk's two behaviors for the class template's choice, a program it
+check that the reviews of rounds 3 to 8 made (plan.md:8039, :8187, :8426, :8683,
+:8920 and :9430 at 3d88e6a60; amended 2026-10-21, records: round 11: RR11r2-m3;
+the id re-scan reads only fork records), so the line stayed until round 10's
+second review found it. RR10-1-m1: eafca5cb9's `PerformAlternativeAccess`
+diagnoses an unknown alternative name in the definition for every
+template-dependent choice, and that departs from trunk only for a choice
+declared in a class template, because for `Opt(T)` trunk reports its scrutinee
+TODO; round 10 pinned the diagnostic only through `Opt(T)`, so no golden held
+trunk's two behaviors for the class template's choice, a program it
 accepts and a stop. D-TP-13 (constraint lookup) and D-TP-24 (template-dependent
 value conversions) are not touched: an alternative's name is looked up in the
 choice's own scope, never in a constraint, and no conversion changes.
@@ -10526,12 +10665,18 @@ header and the new split (§8): M1 and M3 abort at pattern_match.cpp:1409, and M
 fails it with the pattern condition's and the `let` ... `else`'s errors missing,
 trunk's behavior, so the split alone kills all three.
 
-Residue and observations: none filed, and W-298 and W-299 stay unused. The id
-re-scan, re-run at 23:47 UTC after `git fetch origin` (origin/trunk
-254b935b2), gives the 22:55 UTC outputs that the front matter records, and
-`git merge-tree --write-tree --name-only` of b412e602b with trunk and each
-held PR's head, each equal to `git ls-remote`, gives the PR body's conflict
-table unchanged (`$F/merge_tree_b412.txt`).
+Residue and observations: none filed by the round's fixer, and W-298 and W-299
+stayed unused until the records commit after fe52530a4 filed W-298 for round
+11's first review's finding (below; amended 2026-10-21, records: round 11:
+RR11-1-m1). The id re-scan, re-run at 23:47 UTC after `git fetch origin`
+(origin/trunk 254b935b2), gives the 22:55 UTC outputs that the front
+matter records (after trunk moved to 481f05612, the re-run at 00:42 UTC
+on 2026-10-21 prints `W-297`, `W-298` and `W-299` from the first command,
+TP-1's own reservation as trunk records it, as the front matter records;
+amended 2026-10-21, records: round 11: RR11r2-m1), and `git merge-tree
+--write-tree --name-only` of b412e602b with trunk and each held PR's head,
+each equal to `git ls-remote`, gives the PR body's conflict table unchanged
+(`$F/merge_tree_b412.txt`).
 
 Commits: 06f61260c, "TP-1 round-11 fix: pin an unknown alternative of a class
 template's choice and drop the work-item id from match_choice's header" (the
@@ -10545,18 +10690,19 @@ changes, before and after prek.
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
-| RR10r2-m1 (test only, round 10's second review): check generic/template/match_choice.carbon:25 at 281292d8f ended "stays a `semantics TODO` (W-252).", the only W-id on a line that TP-1 adds to a toolchain source, golden or program, against the invariant that the reviews of rounds 2, 3, 4 and 8 checked (plan.md:8039, :8187, :8426 and :9430 at 3d88e6a60), since a reserved id can be re-allocated before L | MINOR | Fixed in 06f61260c: " (W-252)" deleted, the rest of the comment line kept, so no CHECK line or `[[@LINE]]` offset moves, and b412e602b's autoupdate changes nothing else in the file; Appendix A's copy follows, and the id paragraph no longer records the line as an exception | front matter (the id paragraph), Appendix A, this record |
+| RR10r2-m1 (test only, round 10's second review): check generic/template/match_choice.carbon:25 at 281292d8f ended "stays a `semantics TODO` (W-252).", the only W-id on a line that TP-1 adds to a toolchain source, golden or program, against the invariant that the reviews of rounds 3 to 8 checked (plan.md:8039, :8187, :8426, :8683, :8920 and :9430 at 3d88e6a60; amended 2026-10-21, records: round 11: RR11r2-m3), since a reserved id can be re-allocated before L | MINOR | Fixed in 06f61260c: " (W-252)" deleted, the rest of the comment line kept, so no CHECK line or `[[@LINE]]` offset moves, and b412e602b's autoupdate changes nothing else in the file; Appendix A's copy follows, and the id paragraph no longer records the line as an exception | front matter (the id paragraph), Appendix A, this record |
 | RR10-1-m1's optional split (test only, round 10's first review): no golden pinned TR-13's departure from trunk for an unknown alternative name on the choice of a class template that nothing instantiates, where trunk accepts the pattern condition and the `let` ... `else` and stops on the `match` arm | MINOR | Fixed in 06f61260c and b412e602b: the split `fail_unknown_alternative_class_template` names `.Nope` in a `match` arm, an `if` pattern condition and a `let` ... `else` of three functions of `class Outer(template T: type)`, whose choice is `C { A(n: T), B }`, and the autoupdater writes its three errors in the definition; M1, M2 and M3 each fail it alone; TR-13 and §1.8's row name the pin | §1.1 TR-13, §1.8, §3, §4, §8, Appendix A, this record |
 
 Measured on b412e602b's tree (§8 "Measured at round 11"), container-built,
-EXPECTED, not of record: an autoupdate of every testdata file that changes only
-the new split's CHECK lines, and a second run over the golden that changes
-nothing; gate 1957 of 1957 files, with no `!` or `?` mark; conformance 138/0/22
-over 160, 48 of 56 bullets PASS, every program's status and detail equal to the
-round-10 records writer's run; the three mutants killed by the new split. Not
-run, as §8 item 8 says: hosted CI, Bazel and its tests, ASan, macOS and Windows,
-LLVM with assertions and the owner's runner; and the land-time items, which wait
-until PR 51 to PR 60 land.
+EXPECTED, not of record: a single-file autoupdate of the golden over 06f61260c
+that writes only the split's twelve CHECK lines, then a full autoupdate (1957
+files) and a second run over the golden that change nothing (amended 2026-10-21,
+records: round 11: RR11r2-m4); gate 1957 of 1957 files, with no `!` or `?` mark;
+conformance 138/0/22 over 160, 48 of 56 bullets PASS, every program's status and
+detail equal to the round-10 records writer's run; the three mutants killed by
+the new split. Not run, as §8 item 8 says: hosted CI, Bazel and its tests, ASan,
+macOS and Windows, LLVM with assertions and the owner's runner; and the
+land-time items, which wait until PR 51 to PR 60 land.
 
 Round 11's status: the round's fixer changed one golden and no toolchain source
 file or program (`git diff --stat 281292d8f b412e602b` lists only check
@@ -10564,7 +10710,193 @@ generic/template/match_choice.carbon, with 47 insertions and one deletion) and
 filed no residue. Two fresh reviews (R29(c)) of 06f61260c, b412e602b and the
 records commit after them are owed, then a fixer for what they find; PR 61 stays
 held open, as PR 51 to PR 60 are, and fork/ORCHESTRATION.md's TP-1 Branches row
-reads "PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW".
+reads "PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW". Round 11's reviews, below,
+are both dry, and so is the round (amended 2026-10-21, records: round 11).
+
+Round 11's reviews (added 2026-10-21, records: round 11). Two fresh reviews
+(R29(c)) of 06f61260c, b412e602b and fe52530a4, at the head fe52530a4,
+which both found equal to origin's and to `refs/pull/61/head`, with
+3d88e6a60 and e408ad4d6 its ancestors, so no history was rewritten: review 1
+(RR11-1, adversarial correctness, probes in `.../tp1-x1/rev1-r11`) returned
+APPROVE-WITH-FIXES, dry, with one MINOR finding, records only; review 2 (RR11r2,
+strictness, records, tests, the PR texts and landability, `.../tp1-x1/rev2-r11`)
+returned APPROVE-WITH-FIXES, dry, with five MINOR findings, all records only.
+The six are distinct. No finding is BLOCKER or MAJOR, and none needs a toolchain
+or golden change: under the round's rule a round is dry when no finding needs
+a toolchain change, so round 11 is dry, and its fixer's one golden change is
+reviewed. Both reviews found the installed driver at 0.0.0-0.dev+eafca5cb9,
+which `git log -1 --format=%h -- toolchain ':!toolchain/*/testdata/*' core`
+prints, and the worktree clean before and after; neither changed it. Across the
+twenty-seven reviews: 125 findings, 119 distinct (6 BLOCKER, 34 MAJOR and 85
+MINOR, counted over all 125), none rejected whole; X-1, external, is not among
+them.
+
+Review 1 read `git diff 3d88e6a60..fe52530a4 -- toolchain/` in full, one file,
+check generic/template/match_choice.carbon, +47/-1 (line 25's id deleted and
+the split added by 06f61260c, its twelve CHECK:STDERR lines by b412e602b),
+and re-read round 10's code fix. X-1 (x19) prints 0 on the head and stops
+`prev`, e408ad4d6's handle_match.cpp and refutable_binding.cpp relinked, at
+pattern_match.cpp:1409 (exit 134), where trunk gives its scrutinee TODO and
+the nightly its own TODOs; the fixer's s01 to s12 reproduce exactly (s12
+at 16:12, 22:13 and 29:9, s10 `0 5 1`). It confirmed round 10's root cause
+in the code and the SemIR: `PerformMemberAccess` with a required result is
+`HandleAction<AccessMemberAction>` (member_access.cpp:505-517), which splices
+a template-dependent base (action.h:160-171 and :182-201), so the designator
+failed the type check at pattern_match.cpp:1407-1409; on the head the `.None`
+arm is `name_ref None` of type `Opt(T)`, the scrutinee's, and only the
+initializer `Opt(T).None` keeps its `access_member_action` and splice; the
+scrutinee gate (refutable_binding.cpp:83-135, pattern_match.cpp:499-510) is
+unchanged. Its hunt, 49 single-file probes of its own besides the fixer's s01
+to s12 and x19 (its report counts 41 new ones) and three cross-library sets
+(`probes/k`), each beside trunk, the nightly and twins, runs with hand-derived
+values a `T*` payload in a class template, a choice with a template parameter,
+a choice declared in a function template, tuple and struct scrutinees
+holding `Opt(T)`, if-let with payload arithmetic, while-let with state,
+three specifics, a recursive `Outer(T)*` payload (`0 1`, where trunk stops
+at sem_ir/generic.cpp:84), an else-if-let chain, a guard in a method template
+(`10 20 30`, where trunk stops at :1409), generic classes nested in a class
+template, a `Core.Int(N)` payload (`3 0`, where trunk stops at generic.cpp:84),
+a payload conversion from `i32` to `i64`, a while-let designator and a
+template that uses `Opt(T)` across libraries in two layouts (`0 1`); it
+diagnoses as their twins are `.Nope` and `.Get` naming members of the enclosing
+class, `.Self`, `auto` bindings, the qualified payload's parse error and
+`Opt(Opt(i32))` and `Opt(array(i32, 2))` as incomplete; it gives an imported
+class template's choice W-250's TODO, where trunk stops at import_ref.cpp:1086;
+and it compiles a template that nothing instantiates. Nothing changed without
+templates: `prev` passes the 1955 earlier goldens with 1955 `.` marks, and 108
+goldens (every check golden with a refutable pattern, and generic/template/)
+autoupdated with `--dump-sem-ir-ranges=ignore` on the head and on `prev` are
+byte-identical (175,206 CHECK:STDOUT lines). Its R17 judgment: round 10 is a
+correct implementation, not a guard; W-252's OUT forms keep trunk's TODO; no
+IN form became a TODO; round 11 changes no toolchain source. Of the fill: an
+autoupdate of a mirror of both match_choice goldens is byte-identical to the
+tree, the split's three errors sit where 06f61260c predicted them, Appendix
+A equals the golden without its CHECK and TIP lines, and the golden has 24
+splits, 8 that succeed, 9 `fail_` and 7 `fail_todo_`. Its runs: §8 "Measured
+at round 11's reviews". M1 and `prev` (M3) abort at pattern_match.cpp:1409 on
+both match_choice goldens and on a mirror that holds only the header and the
+new split, and M2 fails the full golden, and the split alone with exactly the
+pattern condition's and the `let` ... `else`'s errors missing, so all three are
+killed. The PR texts and the round's diff hold no model identifier beyond the
+accepted trailers, and the commits are authored by jmann345 and committed by
+Claude. It kept about 2 MB of logs and probes.
+
+Review 2 read `git diff 3d88e6a60..fe52530a4` in full, 5 files, +1123/-198,
+over 281292d8f, 06f61260c, b412e602b and fe52530a4, whose only change outside
+the records is the golden. Its goldens checks: a full `--autoupdate` on a
+`git archive` export of the head changes nothing; a single-file autoupdate
+of 06f61260c's golden reproduces the head byte for byte and a second run
+is a fixpoint, so b412e602b adds exactly twelve CHECK:STDERR lines and
+none by hand; 24 splits; no line that TP-1 adds under toolchain, core or
+fork/conformance/programs (254b935b2...fe52530a4) names a W-id or F-id, where
+at 281292d8f line 25 did; and Appendix A equals the golden's source. Its 20
+probes (`probes/`, t00 to t12 and u01 to u06), on the TP-1 driver, trunk and
+the nightly: X-1 prints 0; the split as written is diagnosed at 16:12, 22:13
+and 29:9, where trunk aborts at pattern_match.cpp:1409, compiles the pattern
+condition alone and the `let` ... `else` alone, and aborts on the `match`
+form alone; the checked twin gets the same three errors on TP-1 and on trunk;
+an instantiated class, a nested class, a value-parameter class, `while let`,
+parenthesized names, two template parameters and a template method of a checked
+class are each diagnosed once in the definition, where trunk compiles, aborts
+or reports ``unable to monomorphize``; the controls print `0 5 1 2`, `3 7` and
+`1 2 3`, where trunk aborts on each; and nothing stops the TP-1 compiler. Its
+records checks: the ledger holds 153 items, TP-1's ids exactly W-250..W-274 and
+W-295..W-297, with W-014's and W-252's notes changed and W-296 and W-297 added
+since 3d88e6a60, their evidence cites exact (lower/function_context.cpp:220,
+lower/handle.cpp:205-206 and sem_ir/generic.cpp:84); the decision-log
+and ORCHESTRATION paragraphs are present, and gap row 54 is unchanged and
+PARTIAL; every cite it spot-checked at 3d88e6a60 is exact (plan.md:1556-1576,
+:2692, :7025-7027, :7421, :9827-9873, :9927, :9939-9940 and :13464, and
+match_choice.carbon:25), but for its finding RR11r2-m3; plan.md's R31
+counts reproduce at 3d88e6a60, 281292d8f and fe52530a4 (1/20/114/0, 235, 94,
+45, 562, 194; 1/20/115/0, 239, 96, 46, 580, 196; 1/20/116/0, 247, 96, 49,
+593, 196), decision-log.md's and ORCHESTRATION.md's unchanged; the diffstat
+figures reproduce (74 files, +38066/-581; toolchain 57 files, +16929/-579;
+bf8e1b4cc..fe52530a4 23 files, +9273/-1080; round 10's 5 files, +2401/-10;
+round 11's one file, +47/-1; 32 sources, 15 new and 10 refilled goldens, 17
+fork files, plan.md 18097 lines and 41 `fail_todo` splits); and `git merge-tree`
+of fe52530a4 against 254b935b2 and every held PR head from `git ls-remote`
+gives the PR body's table exactly, and the same against trunk 481f05612. The
+PR texts are 64,863 and 64,606 characters, with no model identifier and no
+number-sign reference, and the round-9 "dry" statements are corrected. Its runs:
+§8 "Measured at round 11's reviews". It kept its logs, and its `/dev/shm` copies
+are deleted.
+
+The records writer (R11; `.../tp1-x1/records-r11`), before writing, re-ran
+on the installed toolchain (0.0.0-0.dev+eafca5cb9), on trunk 0bdce60a5
+and on the nightly 62f1cc6 review 1's g01, g01c, g02, g06, g07, g09,
+g12, g13, h02, h11 and h16, each as the review gives it (`out/repro.txt`;
+the CHECK and its stack, through `HandleParseNode(ChoiceDefinition)`,
+`MakeGeneratedFunctionDecl`, `BuildGenericDecl`, `TryEvalBlockForSpecific`
+and `TryEvalTypedInst<ConvertToValueAction>` to `GetConstantValueInSpecific`,
+in `out/g13_choice_def_member_nopayload_use.tp.compile.log`), and added
+eleven probes (`probes/w298*`, `out/repro2.txt` and `out/repro3.txt`): w298b,
+a generic choice with a template array bound outside any class, stops the
+head and trunk at sem_ir/generic.cpp:84, and its checked twin w298c compiles
+on both; w298d, a payload-free choice in a class template with a `T.Inner`
+field, prints 0 on the head and on trunk, so the stop needs a payload type
+that an action forms; and the aggregate payloads of the template parameter,
+w298a, w298e and w298f, are rejected on the head as their checked twins
+w298ac, w298ec and w298fc are on the head and on trunk, where trunk stops
+w298a and w298f at pattern_match.cpp:1409, while their twins without generics,
+w298an and w298fn, report upstream's TODO for a payload that is not trivially
+copyable and destructible on both, an upstream limit that the template forms
+meet as the checked ones do, so they are recorded and not filed. It found
+review 1's cites exact at fe52530a4 (handle_choice.cpp:398, plan.md:1618 and
+:2771) and review 2's, the PR texts' as fe52530a4's records left them
+(plan.md:500, :10493, :10548, :10551-10553 and :18062, decision-log.md:3925-3926
+and :3939-3942, ORCHESTRATION.md:991, pr_tp1.md:181, :373, :378, :429, :433
+and :449, and pr_tp1_comment.md:69, :146, :213 and :265), the headings of the
+cited lines at 3d88e6a60 (plan.md:7919, :8120, :8362, :8589, :8838 and :9194
+head the sections of rounds 3 to 8, which hold :8039, :8187, :8426, :8683,
+:8920 and :9430), and the fixer's logs as review 2 reads them (`$F/au1.log`,
+written at 23:37:19, one test marked `!`; `$F/au_full.log`, at 23:37:53,
+1957 `.` marks; `$F/au2.log`, `.`); and after `git fetch origin` at 00:42
+UTC on 2026-10-21 it re-ran the id re-scan, whose outputs the front matter
+records, and `git merge-tree --write-tree --name-only` of fe52530a4 against
+trunk 481f05612 and each held PR head, each equal to `git ls-remote`, which
+gives the PR body's table with only trunk's head changed (`out/idscan.txt`,
+`out/merge_tree_fe52_481f.txt`).
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR11-1-m1 (records only, review 1): a choice alternative whose parameter type a template action forms, a member of a template parameter (`A(x: T.Inner)`) or a template array bound (`A(x: array(i32, N))`), in a class template or in a generic choice with a template parameter, stops the compiler while the choice's definition is checked, at sem_ir/generic.cpp:84 (g01, g02, g09, g13, h02, h11), on e408ad4d6 and trunk 0bdce60a5 too, where the checked twin g01c compiles and the nightly rejects every payload alternative; no record named the limit beside §1.8's row (plan.md:2771 at fe52530a4) and TR-13's amendment (:1618), which make a class template's choice IN | MINOR | Folded: W-298 is filed from W-295..W-299 (§1.13 item 29, Appendix E, the ledger), with the removal and the break condition the review gives (g13 compiles, h02 prints `0 3`); §1.8 gains a row; TR-13's amendment names the limit and the two neighbors that run since C4 (h16, g12); the sweep table gains three rows of the reviews' and the records writer's probes; gap row 54's residue list and W-014's notes name it. No toolchain change: it is neither a TP-1 regression nor within the round's change | §1.1 TR-13, §1.8, §1.13 item 29, Appendix E, ledger W-298, gap row 54, this record |
+| RR11r2-m1 (records only, review 2): the orchestrator pushed trunk 481f05612 at 00:05 UTC on 2026-10-21, after fe52530a4, and the PR texts to be re-posted still named 254b935b2 and the 23:47 UTC re-scan's outputs (pr_tp1.md:181, :378, :429, :433 and :449, and pr_tp1_comment.md:146, as fe52530a4's records left them), while the id re-scan's first command now prints `W-297`, `W-298` and `W-299` | MINOR | Folded: the re-scan and `git merge-tree` re-run after `git fetch origin` at 00:42 UTC: the conflict sets do not change, trunk conflicting only in fork/ORCHESTRATION.md, and the first command's new ids are TP-1's own reservation as trunk records it (fork/ORCHESTRATION.md:270-273 at 481f05612), not an allocation; the id paragraph and §8 "Measured at round 11" gain dated amendments, and the PR description and its first comment name 481f05612, its row and the re-run | front matter (the id paragraph), §8, PR description, PR first comment |
+| RR11r2-m2 (records only): fe52530a4's hand-wraps left three short lines in the middle of paragraphs (plan.md:500 and :18062 and ORCHESTRATION.md:991 at fe52530a4) | MINOR | Folded: the three paragraphs are rewrapped so that no line in their middle is short; the R31 counts before and after prek are in the commit message | front matter (the id paragraph), Appendix E, fork/ORCHESTRATION.md |
+| RR11r2-m3 (records only): the round-11 record (plan.md:10493 and :10548 at fe52530a4) gave the added-line id checks as "the reviews of rounds 2, 3, 4 and 8", where the cited lines sit in the sections of rounds 3, 4, 5 and 8, and left out rounds 6 and 7 (:8683, :8920) | MINOR | Folded: both places, and the round-10 row of RR10r2-m1, say "the reviews of rounds 3 to 8" and cite plan.md:8039, :8187, :8426, :8683, :8920 and :9430 at 3d88e6a60 | this record, the round-10 record |
+| RR11r2-m4 (records only): four places (plan.md:10551-10553 and decision-log.md:3939-3942 at fe52530a4, pr_tp1.md:373 and pr_tp1_comment.md:69) said that an autoupdate of every testdata file wrote the split's CHECK lines, where a single-file autoupdate over 06f61260c's golden wrote them (`$F/au1.log`) and the full autoupdate over b412e602b's content changed nothing (`$F/au_full.log`), as §8 says; and the sweep's provenance did not say that `repro_checked.txt` supersedes `repro.txt`'s rows for s05 to s08 or where s12's results are | MINOR | Folded: the four places say what §8 says, and the sweep's provenance names both | this record, fork/decision-log.md, PR description, PR first comment |
+| RR11r2-m5 (records only): the first comment kept round 10's "on every toolchain" for the `.Self` designator (pr_tp1_comment.md:213 as fe52530a4's records left it), which 281292d8f corrected in the plan, and "the split is owed" (:265), which round 11 pins; the decision log's round-11 paragraph said "on every toolchain" (decision-log.md:3925-3926 at fe52530a4), where the nightly rejects the checked twins with its own TODOs and parse errors | MINOR | Folded: "on the branch, and on trunk for p38 and p40"; "pinned by round 11's 06f61260c"; "on the head and on trunk" | PR first comment, fork/decision-log.md |
+
+The fold, records only: the records commit after fe52530a4, "TP-1 records:
+round 11 recorded", changes plan.md, work-items.json, decision-log.md,
+gap-analysis.md and ORCHESTRATION.md and no toolchain, golden or program file,
+so it needs no build, fill or mutant run, and §3's budget is unchanged; it
+refreshes the PR description and its first comment, which the orchestrator
+re-posts. Besides the rows above, it brings up to date what the new residue and
+the round's reviews leave stale and neither review named: the front matter's
+round paragraphs and the id paragraph's allocation sentence, Outcome (a),
+§1.13's introduction, §3 item 10 and the budget note, the landed notes and the
+re-review introduction, W-014's notes in the ledger and in Appendix E, Appendix
+E's W-295 introduction, decision-log text and stamp, and D-TP-18's count in the
+decision log's veto digest and in Appendix E's. The R31 counts of each markdown
+file it changes, before and after prek, are in its message.
+
+Measured at fe52530a4 by both reviews and on this commit's tree by the records
+writer (§8 "Measured at round 11's reviews"), container-built, EXPECTED, not of
+record: gate 1957 of 1957 files; conformance 138/0/22 over 160, 48 of 56 bullets
+PASS; the mutants M1, M2 and M3 killed by review 1. Not run, as §8 item 8 says:
+hosted CI, Bazel and its tests, ASan, macOS and Windows, LLVM with assertions
+and the owner's runner; and the land-time items, which wait until PR 51 to PR 60
+land.
+
+Round 11's status after its reviews (amended 2026-10-21, records: round 11):
+its fixer's change, one golden, has two fresh reviews; neither found a BLOCKER
+or MAJOR finding, none of the six needs a toolchain or golden change, and the
+records commit after fe52530a4 folds all six and changes no toolchain, golden
+or program file. So round 11 is dry, no further toolchain change is owed and
+nothing is owed to a next round's fixer. PR 61 stays held open, as PR 51 to
+PR 60 are, and fork/ORCHESTRATION.md's TP-1 Branches row reads "PR 61 HELD OPEN,
+ROUND 11 DRY".
 
 ## Appendix A: golden sources
 
@@ -17475,10 +17807,11 @@ tree's values.
 > is met, as it was on trunk by templates_type_param and templates_value_param,
 > and TP-1's ten generics/templates_* programs extend it to every form TP-1
 > implements. W-014 stays OPEN for W-250, W-255 (the pattern splices of the
-> title) and W-264, and the row stays PARTIAL with W-251 to W-271, W-273 and
-> W-274 (W-267 to W-270 filed by the focused re-review of the fold, W-271 by its
-> round 2, W-273 by its round 6 and W-274 by its round 8; W-272, filed by its
-> round 4, discharged by its round 7, 2026-10-15). Next slice: W-250, the import
+> title) and W-264, and the row stays PARTIAL with W-251 to W-271, W-273, W-274
+> and W-298 (W-267 to W-270 filed by the focused re-review of the fold, W-271 by
+> its round 2, W-273 by its round 6, W-274 by its round 8 and W-298 by the
+> records commit of its round 11's reviews; W-272, filed by its round 4,
+> discharged by its round 7, 2026-10-15). Next slice: W-250, the import
 > of action and splice instructions and cross-file template lowering, which the
 > second clause needs; then W-255 and W-264, and W-254 and W-259, which with
 > them are D-TP-18's condition for re-grading the row. Merged tree:
@@ -17489,11 +17822,11 @@ Amended 2026-10-14 (implementation-review fold: IR2-MINOR-6 / IR1-M3) and
 2026-10-15 (focused re-review of the fold: RR1-B1 / RR1-M1 / RR2-M1 / RR1-M2 /
 RR1-m3 / RR1-m4 / RR1-m5 / RR2-1-M2 / RR2r2-M1 / RR3-1-M1 / RR4-1-B1 /
 RR4r2-M1 / RR4r2-m1 / RR5-1-M1 / RR5r2-m1 / RR6-1-M1 / RR6-1-m2 / RR6r2-M1 /
-RR7r2-M1 / RR8-1-M1 / RR8r2-M1) and 2026-10-20 (records: round 10). The text is
-the ledger's W-014 notes from "TP-1 (" on, with `YYYY-MM-DD` for the date and
-the last sentence in place of the held-state text and the status sentences that
-the held-state bullet above gives; compared sentence by sentence, the two are
-otherwise equal.
+RR7r2-M1 / RR8-1-M1 / RR8r2-M1) and 2026-10-20 (records: round 10) and
+2026-10-21 (records: round 11). The text is the ledger's W-014 notes from "TP-1
+(" on, with `YYYY-MM-DD` for the date and the last sentence in place of the
+held-state text and the status sentences that the held-state bullet above gives;
+compared sentence by sentence, the two are otherwise equal.
 
 Evidence is re-cited to the merged tree's lines in the same commit (D comes
 after M, so the lines exist).
@@ -17908,7 +18241,8 @@ and notes are the ledger's, in full.
 
 One new item, appended after W-274 by the records commit of round 10, 3d88e6a60,
 as written there; W-296 and W-297 follow it, below, and W-298 and W-299 stay
-unused (amended 2026-10-20, round 10: X-1; records: round 10):
+unused (amended 2026-10-20, round 10: X-1; records: round 10) until W-298
+follows them, and W-299 stays unused (amended 2026-10-21, records: round 11):
 
 <!-- google-doc-style-ignore -->
 
@@ -17970,6 +18304,36 @@ round 10):
   ],
   "blocked_by": [],
   "notes": "Filed by the records commit that records round 10's reviews of TP-1's fold (2026-10-20, fork/templates/plan.md §1.13 item 28), from W-295..W-299, which the orchestrator reserved to TP-1 for the round's residues; the round's first review found it (RR10-1-m3). Not a template defect and not a TP-1 regression: every toolchain stops a checked generic class's out-of-line method the same way, whatever its body holds. Round 10 moves h06, X-1's class in such a body, from the stop in checking at check/pattern_match.cpp:1409 that trunk and e408ad4d6 have to this one, and adds or removes no crash; no golden lowers an out-of-line member of a generic class. W-270 records a stop at the same CHECK for a class whose later parameter's type depends on a template parameter. Removal: give the qualifier's binding a specific of its own generic, which the CHECK requires. Break condition: j02 prints 5."
+ }
+]
+```
+
+<!-- google-doc-style-resume -->
+
+### E: residue W-298 (round 11's reviews)
+
+One new item, appended after W-297 by the records commit after fe52530a4,
+which records round 11's reviews, as written there (added 2026-10-21,
+records: round 11):
+
+<!-- google-doc-style-ignore -->
+
+```json
+[
+ {
+  "id": "W-298",
+  "kind": "toolchain-defect",
+  "title": "Found by TP-1's round 11 reviews: a choice alternative whose parameter type is formed by a template action (a member of a template parameter, `T.Inner`, or a template array bound, `array(i32, N)`), in a class template or in a generic choice with a template parameter, stops the compiler while the choice's definition is checked, as on trunk",
+  "subsystem": "toolchain/check (handle_choice.cpp, the generated alternative constructor's generic) + toolchain/sem_ir (generic.cpp `GetConstantValueInSpecific`: the enclosing template's action is evaluated in the constructor's own specific)",
+  "size": "M",
+  "bullet": "Generics: Integrated templates",
+  "evidence": [
+   "toolchain/sem_ir/generic.cpp:84 (CHECK `&specific_ir != &const_ir || specific.generic_id == symbolic.generic_id`: `Given a specific for the wrong generic`, from `GetConstantValueInSpecific` in `TryEvalTypedInst<ConvertToValueAction>`, `TryEvalBlockForSpecific` and `BuildGenericDecl` under `MakeGeneratedFunctionDecl` and `HandleParseNode(ChoiceDefinition)`, while `Checking ChoiceDefinition`)",
+   "toolchain/check/handle_choice.cpp:398 (`BuildAlternativeConstructor` calls `MakeGeneratedFunctionDecl` with `.param_type_ids = alt.param_type_ids` and `.build_generic = choice_info.is_generic`)",
+   "fork/templates/plan.md focused re-review of the fold, round 11 (the sweep table's rows for a payload type that a template action forms) and §1.13 item 29 (g01, `choice C { A(x: array(i32, N)), B }` in `class Outer(template N: i32)`; g02 and g13, `choice C { A(x: T.Inner), B }` in `class Outer(template T: type)`, g13 used only as `Outer(W).C.B` with no `match`; g09, `choice C(template T: type) { A(x: T.Inner), B }`; the records writer's w298b, `choice C(template N: i32) { A(x: array(i32, N)), B }`; h02 and h11, matches on such choices: each stops the branch at eafca5cb9, e408ad4d6 and trunk 0bdce60a5; the nightly 62f1cc6 rejects every payload alternative with its TODO; the checked twins g01c and w298c compile)"
+  ],
+  "blocked_by": [],
+  "notes": "Filed by the records commit that records round 11's reviews of TP-1's fold (2026-10-21, fork/templates/plan.md §1.13 item 29), from W-295..W-299, which the orchestrator reserved to TP-1 for its round-10 and later residues; the round's first review found it (RR11-1-m1). Not a TP-1 regression: the branch, e408ad4d6 and trunk stop the same programs the same way, and the checked twins compile. The payload alternative's generated constructor is a generic of its own whose parameter types hold the enclosing template's action, which is then evaluated in the constructor's specific. TP-1 already moves two neighbors through C4 (D-TP-11), which forms their types in the definition: `A(o: Outer(T)*)` (h16) prints `0 1` and `A(x: Core.Int(N))` in `class Outer(template N: Core.IntLiteral)` (g12) prints `3 0` on the branch, where trunk stops at the same CHECK; the same types as a class template method's parameter run on every toolchain (g06, g07). TR-13's amendment names the limit. W-270 and W-297 record stops at the same CHECK for other shapes. Removal: build the constructor's parameter types in the specific of the generic they belong to, as W-270's removal does. Break condition: g13 compiles, and h02 prints `0 3`."
  }
 ]
 ```
@@ -18059,7 +18423,10 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 > clauses and the consequences; amended 2026-10-20, records: round 10. Its
 > round 11 added "FOCUSED RE-REVIEW OF THE FOLD, ROUND 11" after them,
 > filed nothing and amended the context; amended 2026-10-20, round 11:
-> RR10r2-m1 / RR10-1-m1.)
+> RR10r2-m1 / RR10-1-m1. Its round 11's reviews added "FOCUSED RE-REVIEW OF THE
+> FOLD, ROUND 11'S REVIEWS" after them, filed W-298 from W-295..W-299, and
+> amended the context, the round-11 paragraph, the consequences and the veto
+> digest's D-TP-18 clause as below; amended 2026-10-21, records: round 11.)
 > <Implementation, review and merged-tree verification paragraph, as VA-1's
 > entry has.>
 >
@@ -18071,7 +18438,9 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 > sixteen residues; twenty since the focused re-review of the fold, twenty-one
 > since its round 2, twenty-two since its round 4, twenty-three since its round
 > 6, twenty-two open since its round 7, which discharges W-272, and twenty-three
-> open since its round 8, which files W-274), D-TP-23 (the redeclaration split
+> open since its round 8, which files W-274, and twenty-four open since the
+> records commit of its round 11's reviews, which files W-298; amended
+> 2026-10-21, records: round 11), D-TP-23 (the redeclaration split
 > flips by a diagnostic fix), D-TP-24 (a class value is deferred only when its
 > fields match, but for fields with a default initializer when its class's
 > fields hold a part known only per instantiation or, since round 6, an omitted
@@ -18094,4 +18463,6 @@ it is re-anchored above whatever entry then follows "Full autonomy" (amended
 > conformance <merged counts>, check_samples 0 errors; row "Generics: Integrated
 > templates" PARTIAL. W-295, W-296 and W-297 (residues outside templates, which
 > trunk and the nightly share) filed by round 10 (amended 2026-10-20, round 10:
-> X-1; records: round 10).
+> X-1; records: round 10). W-298 (a choice's payload type formed by a template
+> action, which trunk shares) filed by the records commit of round 11's reviews
+> (amended 2026-10-21, records: round 11).

@@ -591,6 +591,32 @@ round's toolchain change is reviewed and no further toolchain change is owed, so
 round 10 is dry and PR 61 stays held open, as PR 51 to PR 60 are. The merge
 order does not change.
 
+Later on 2026-10-20 (TP-1's round 11, round 10's two test-only items folded;
+pushed; PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW): a separate fixer
+reproduced both items at 281292d8f and folded them in check
+generic/template/match_choice.carbon, with no toolchain source or program
+change (fork/templates/plan.md, "Focused re-review of the fold, round 11
+(2026-10-20)"). The fix commit 06f61260c deletes the W-id from the golden's
+header comment (RR10r2-m1), so no line that TP-1 adds to a toolchain source,
+golden or program names a W-id, and adds the split
+`fail_unknown_alternative_class_template` (RR10-1-m1's optional split): an
+unknown alternative name in a `match` arm, a pattern condition and a `let` ...
+`else` on the choice of a class template that nothing instantiates, diagnosed
+in the definition as the checked twin is, where trunk compiles the last two and
+stops at check/pattern_match.cpp:1409 on the first; its fill b412e602b writes
+the three hand-predicted errors, and round 10's three mutants each fail the
+split alone. No residue is filed, and W-298 and W-299 stay unused. Verification
+is container-built and NOT of record (Actions disabled): at b412e602b, on
+eafca5cb9's toolchain, file_test 1957/1957 and the expected scoreboard 138 PASS
+/ 0 FAIL / 22 SKIP over 160, 48/56 bullets (scoreboard generated
+2026-10-20T23:40:12Z by the container clock), every program equal to round 10's
+runs. The id re-scan at 23:47 UTC (origin/trunk 254b935b2) gives the outputs of
+the 22:55 UTC run, and `git merge-tree` of b412e602b against trunk and each
+held PR gives the PR body's conflict table unchanged. The round changes a
+golden, so two fresh reviews (R29(c)) of 06f61260c, b412e602b and the records
+commit after them are owed, then a fixer for what they find, and PR 61 stays
+held open, as PR 51 to PR 60 are. The merge order does not change.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -931,7 +957,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
-| `claude/carbon-fork-0-1-tp` | PR 61 HELD OPEN, ROUND 10 DRY -- TP-1 integrated templates, toolchain at eafca5cb9 (splits through 74e16c4de) after round 10 of the focused re-review of the fold, records through the records commit that records round 10's reviews; round 9 was dry and the PR opened as PR 61 and was held, and round 10 opened on an external finding (X-1, a BLOCKER: a `match` on a template-dependent choice stopped the compiler where trunk reports a TODO; fixed at the root, W-295 filed); its two reviews found eleven MINOR findings, none needing a toolchain change, every records-only part folded, W-296 and W-297 filed from W-295..W-299 (W-298 and W-299 unused) and two test-only items owed to the next round's fixer, so round 10 is dry and PR 61 stays held (W-014 OPEN; W-250..W-274 and W-295 to W-297 filed, W-272 discharged within TP-1; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1957/1957 and conformance 138/0/22 over 160 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
+| `claude/carbon-fork-0-1-tp` | PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW -- TP-1 integrated templates, toolchain at eafca5cb9 (splits through b412e602b) after round 11 of the focused re-review of the fold, records through the records commit that records round 11; round 9 was dry and the PR opened as PR 61 and was held, and round 10 opened on an external finding (X-1, a BLOCKER: a `match` on a template-dependent choice stopped the compiler where trunk reports a TODO; fixed at the root, W-295 filed); its two reviews found eleven MINOR findings, none needing a toolchain change, every records-only part folded, W-296 and W-297 filed from W-295..W-299 (W-298 and W-299 unused) and two test-only items owed to the next round's fixer, so round 10 is dry; round 11 folds those two items, the W-id deleted from a golden's header comment and a split that pins TR-13's departure for a class template's choice, in one golden and no toolchain file, its two fresh reviews owed, and PR 61 stays held (W-014 OPEN; W-250..W-274 and W-295 to W-297 filed, W-272 discharged within TP-1; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1957/1957 and conformance 138/0/22 over 160 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -960,7 +986,9 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 Expected at TP-1, NOT of record: 138 PASS / 22 SKIP / 0 FAIL over 160, 48/56
 bullets (a container run on the carbonbuild toolchain of eafca5cb9 at TP-1's
-head 74e16c4de, scoreboard generated 2026-10-20T21:09:24Z; at 824f29c4e, before
+head 74e16c4de, scoreboard generated 2026-10-20T21:09:24Z, and the same at
+b412e602b, generated 2026-10-20T23:40:12Z (amended 2026-10-20, round 11:
+RR10r2-m1 / RR10-1-m1); at 824f29c4e, before
 round 10, 137 over 159 (amended 2026-10-20, round 10: X-1); ten programs, the
 tenth from round 10, join the "Generics: Integrated templates" bullet, already
 PASS, and its gap row stays PARTIAL), from the floor of record 128 PASS / 22

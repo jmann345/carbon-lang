@@ -2882,7 +2882,9 @@ findings, neither dry, round 9 owed; round 9, amended 2026-10-15: two
 APPROVE-WITH-FIXES with two and three findings, both dry; round 10, amended
 2026-10-20: owed by no review, opened on an external BLOCKER, X-1, fixed at the
 root, then two fresh reviews, APPROVE-WITH-FIXES with four and seven MINOR
-findings, one of them dry, the round dry; plan's focused re-review fold record).
+findings, one of them dry, the round dry; round 11, amended 2026-10-20:
+round 10's two test-only items folded, a comment edit and a split in one
+golden, two fresh reviews owed; plan's focused re-review fold record).
 Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto. Options
 considered (plan §7.2): turning crashes into TODOs (rejected as Goodhart),
 cherry-picking 947c1eb52 or 4a8993af2, inserting the storage block at the action
@@ -3905,6 +3907,48 @@ external, is not among them. PR 61 stays held open, as PR 51 to PR 60 are, and
 the TP-1 Branches row of fork/ORCHESTRATION.md reads "PR 61 HELD OPEN, ROUND 10
 DRY". The per-finding table is the plan's "Focused re-review of the fold, round
 10 (2026-10-20)", its reviews (amended 2026-10-20, records: round 10).
+
+FOCUSED RE-REVIEW OF THE FOLD, ROUND 11 (amended 2026-10-20). Owed by
+round 10's reviews only for the two test-only items that the records
+commit after 3d88e6a60, 281292d8f, left to the next round's fixer,
+both in check generic/template/match_choice.carbon. A separate fixer
+reproduced both at 281292d8f on the installed toolchain
+(0.0.0-0.dev+eafca5cb9), on trunk 0bdce60a5 and on the nightly.
+RR10r2-m1: the golden's header comment ended with a work-item id, the
+only one on a line that TP-1 adds to a toolchain source, a golden or
+a program, against the invariant that a reserved id, which can be
+re-allocated before L, appears in no such file; the fix commit
+06f61260c deletes it, the rest of the comment line kept, so no CHECK
+line moves. RR10-1-m1's optional split: no golden pinned the plan's
+TR-13 departure from trunk for an unknown alternative name on the
+choice of a class template that nothing instantiates, which the
+branch diagnoses in the definition, as the checked twin is diagnosed
+on every toolchain, where trunk compiles the pattern condition and
+the `let` ... `else` and stops at check/pattern_match.cpp:1409 on the
+`match` arm (twelve probes, four checked twins and two controls among
+them, on the three toolchains); 06f61260c adds the split
+`fail_unknown_alternative_class_template`, with the three forms and
+its three errors predicted by hand, and its fill b412e602b writes
+them as predicted. Neither item is a toolchain defect, and no
+toolchain source or program changes. Decision, auto-adopted under
+V-2/V-3 and open to veto: the departure stays, as round 10's reviews
+recorded it, and TR-13 names the pin; D-TP-13 and D-TP-24 are not
+touched. _Break:_ the scan of TP-1's added lines finds a W-id, or a
+mutant that reverts either lane of `PerformAlternativeAccess` passes
+the new split; round 10's three mutants, relinked, each fail it
+alone. No residue is filed, and W-298 and W-299 stay unused. Measured
+on b412e602b's tree, container-built, EXPECTED and not of record: an
+autoupdate of every testdata file that changes only the new split's
+CHECK lines; file_test 1957 passed, 0 failed, "Ran 1957 tests in
+24588 ms wall time", 0 `!` and 0 `?` marks; conformance "PASS 138,
+COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+DIFF-MISMATCH 0, SKIP 22 (of 160)", bullets 48/56. The round changes
+a golden and records, so two fresh reviews of 06f61260c, b412e602b
+and the records commit after them are owed, and PR 61 stays held
+open; the TP-1 Branches row of fork/ORCHESTRATION.md reads "PR 61
+HELD OPEN, ROUND 11 FIX UNDER REVIEW". The per-finding table is the
+plan's "Focused re-review of the fold, round 11 (2026-10-20)"
+(amended 2026-10-20, round 11: RR10r2-m1 / RR10-1-m1).
 
 FILL-CAUGHT MISSES (R28(d)): every key line of plan §4 that the first fill of
 its commit did not reproduce, with its cause. F1 and F2: none; every C1 and C2

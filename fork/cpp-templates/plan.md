@@ -6,7 +6,13 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 4, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION
+**Status:** rev 4, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION; implemented
+through P (65fc0d394) with the held-state measurements (79740957a); the
+implementation reviews 1 (REJECT) and 2 (APPROVE-WITH-FIXES) of that head are
+folded by the fix commits 224ee2f8f and ccd6a80a8, each with its fill
+(5c78c4086 and ffde90904), and by the records commit that adds this line; the
+focused re-review loop of §3 item 9 is next (amended 2026-10-21,
+implementation-review fold: IR2-m3)
 
 The focused re-review RR2 of rev 3 approved it with amendments, one MAJOR
 (RR2-M1), and rev 4 folds that finding at its root (§1.18); the fold records
@@ -27,22 +33,28 @@ interop/cpp_template_on_carbon_generic.carbon, names row 42's bullet
 Branch claude/carbon-fork-0-1-ct, cut from PR 61's head 5661a35c8 (TP-1,
 integrated templates, held open after its dry round 11). CT-1 is stacked on
 PR 61 and merges after PR 62 (SV-1), last of the held PRs (§1.16). It reserves
-W-300..W-319 (§0.11), files W-300 to W-309, and mints fork design id F-021,
+W-300..W-319 (§0.11), files W-300 to W-309 and, since the implementation-review
+fold, W-310 and W-311 (§1.12), and mints fork design id F-021,
 the checked-generic C++ rule (D-CT-16; amended 2026-10-21, review fold: A-M1).
 
 The one-sentence summary: upstream already defers a C++ template named with a
 symbolic argument to each specific (a `CallAction` over `TemplateInst`-wrapped
-arguments, check/call.cpp:741-768), and eleven defects in and around that
-path keep it from working on this branch; CT-1 fixes the eleven at their roots
-and defers a C++ call whose argument has a checked generic's symbolic type
-(F-021), in sixteen files and 388 added lines (33 removed), measured on a
-prototype (v14) over 403 probes, the 1957 goldens and the 160 conformance
-programs, and on two full-build composition mirrors of rev 2's v12 (amended
-2026-10-21, review fold: RR2-M1; rev 3 said ten defects, fourteen files and
-the numstat +381/-30 on v13 over 347 probes, review fold: RR1-N-B1; rev 2 said
-nine defects, ten files and +265/-13, review fold: A-B1 / A-B2 / A-B3 / B-m1;
-rev 1 said seven defects, seven files and 163 lines, whose numstat was in
-fact +167/-11).
+arguments, check/call.cpp:741-768), and eleven defects in and around that path
+keep it from working on this branch; CT-1 fixes the eleven at their roots and
+defers a C++ call whose argument has a checked generic's symbolic type (F-021),
+in sixteen files and 388 added lines (33 removed; 386 and 36 as committed in
+clang-format's layout, amended 2026-10-21, implementation-review fold: IR2-m1),
+measured on a prototype (v14) over 403 probes, the 1957 goldens and the 160
+conformance programs, and on two full-build composition mirrors of rev 2's v12
+(amended 2026-10-21, review fold: RR2-M1; rev 3 said ten defects, fourteen files
+and the numstat +381/-30 on v13 over 347 probes, review fold: RR1-N-B1; rev 2
+said nine defects, ten files and +265/-13, review fold: A-B1 / A-B2 / A-B3 /
+B-m1; rev 1 said seven defects, seven files and 163 lines, whose numstat was in
+fact +167/-11). The implementation reviews found four more defects on the same
+path, a deferred store's temporary, a deferred call's `ref` argument, a nested
+alias's category and a class template's alias lookup, each fixed at its root in
+three of the sixteen files, with 57 lines added and 2 removed (§2.13; amended
+2026-10-21, implementation-review fold: IR1-B1 / IR1-M1 / IR1-M2 / IR1-M3).
 
 ## §0 Audit: measurements with file:line evidence
 
@@ -651,7 +663,7 @@ below), the red set exactly:
 | check/interop/cpp/template/var_template.carbon | D-CT-9: `struct Wrap { template<typename T> static T var = {}; };` is ill-formed C++ once instantiated (clang++ rejects it identically, §0.3) | the header becomes `static inline T var = {};` (valid C++, the test's intent: read a static member template), and a new split pins the ill-formed form (Appendix A.3); +25/-1 lines (rev 1 said +18/-1) |
 | lower/interop/cpp/globals.carbon | D-CT-9: the variable template specializations are defined | the header's `static T static_tmpl = T();` becomes `static inline T static_tmpl = T();` for the same reason; `@_Z4tmplIiE` and `@_Z4tmplI1YE` change from `external global` to `linkonce_odr dso_local global` with a guard variable and `__cxx_global_var_init`, and the same for `StaticTmplX::static_tmpl`; debug metadata numbers shift; +220/-160 lines |
 | check/generic/template/deduce_class_args.carbon | D-CT-17: the class-scope alias `alias FT = HasItem where .Item = T.Item;` of `class D(template T: HasItem)` is attached to `D`, so `D(Holder)`'s object representation is concrete and the literal converts; TP-1's W-273 | the split `fail_todo_class_template_field_of_where_alias` succeeds, so its source line is renamed `class_template_field_of_where_alias` (Appendix A.6) and the fill drops its seven STDERR lines; +1/-8 lines |
-| check/interop/cpp/range_for.carbon | D-CT-17: the prelude's `alias ValueType = Self.(Iterator).(CppIterator.ValueType);` (core/prelude/iterate.carbon:63) is attached to its interface, so the deleted-`begin` and deleted-`end` notes it reaches on instantiation are located at the expression, column 25, not at the alias's name, column 9 | four notes move from `iterate.carbon:63:9` to `:63:25` and their carets from `^~~~~~~~~` to `^`; no diagnostic is added or removed; +8/-8 lines |
+| check/interop/cpp/range_for.carbon | D-CT-17: the prelude's `alias ValueType = Self.(Iterator).(CppIterator.ValueType);` (core/prelude/iterate.carbon:63) is attached to its interface, so the deleted-`begin` and deleted-`end` notes it reaches on instantiation are located at the expression, column 25, not at the alias's name, column 9 | four notes move from `iterate.carbon:63:9` to `:63:25`, and two of their carets from `^~~~~~~~~` to `^` (the other two were already `^`; amended 2026-10-21, implementation-review fold: IR2-m6); no diagnostic is added or removed; +8/-8 lines |
 
 The two new goldens (Appendix A.1 and A.2) and the two default_init.carbon
 splits of Appendix A.5 were filled the same way, with a file_test relinked over
@@ -804,6 +816,28 @@ changes in that mirror, or a probe of a template constraint over `Cpp.Box(T)`
 (`fn F[template T: C](x: T)` with `C` a template constraint and `var b:
 Cpp.Box(T);`) behaves differently on the mirror from TP-1 plus SC-1 without CT-1
 (§8 item 9 measures both).
+
+**Re-decided at implementation** (amended 2026-10-21, implementation-review
+fold: IR2-m4; R29). Two of the predictions above met their break conditions
+on the measured mirrors (§8 item 9), and are decided again here, each with
+its own break condition. PR 57: the composition is red on one golden,
+TP-1's lower/template/for_range.carbon, whose refill (138 lines added and
+109 removed) is OP-2's prelude in TP-1's golden; a TP-1 plus PR 57 mirror
+without CT-1 (head 08fda91e0) is red on the same golden alone with a
+byte-identical autoupdate diff, so the prediction is that golden red and
+refilled by TP-1's land-time F6 at its M, and CT-1's own red set with PR 57
+empty. _Break condition:_ a golden other than for_range.carbon red on the
+composition, or a for_range.carbon refill that differs from the mirror's
+without CT-1. PR 60: the probe of a template constraint over `Cpp.Box(T)` is
+the initialized box, tc5 (`var b: Cpp.Box(T) = Cpp.Box(T).Box();` in `fn
+F[template T: HasGet](x: T)`), which prints 8 on the composition and on TP-1
+plus SC-1 alike, with tc6 (no C++) printing 7 on both; the uninitialized
+box's tc1 to tc3, and tc4's unconstrained `template T: type`, run with CT-1
+where TP-1 rejects them with E-DU, which is D-CT-5's intended effect (the
+lookup that reaches the `TemplateInst` is deferred whatever the binding's
+constraint), not a change to SC-1's constraint check. _Break condition:_ tc5
+or tc6 behaves differently on the two mirrors, or a golden of SC-1 changes on
+the composition other than the two that TP-1 plus SC-1 refills identically.
 
 No held PR touches the six goldens CT-1 refills or the two whose sources CT-1
 edits (default_init.carbon, deduce_class_args.carbon). Three content
@@ -964,9 +998,11 @@ merge rule of each entry is what the merge does when upstream's side lands):
 
 CT-1 reserves W-300..W-319 and files W-300..W-309 (§1.12), leaving W-310..W-319
 unused and never reused (rev 1 filed W-300..W-306; amended 2026-10-21, review
-fold: A-M4 / B-M1). The re-scan, run before writing this plan and again
-before the discharge commit D (and at land time), over every origin ref's and
-every worktree's ledger, widened to W-319:
+fold: A-M4 / B-M1); the implementation-review fold files W-310 and W-311 from
+the reserve, leaving W-312..W-319 unused (amended 2026-10-21,
+implementation-review fold: IR1-m2). The re-scan, run before writing this plan
+and again before the discharge commit D (and at land time), over every origin
+ref's and every worktree's ledger, widened to W-319:
 
 <!-- google-doc-style-ignore -->
 
@@ -1159,6 +1195,55 @@ member `N`, so the template's alias is rejected where `D` is defined, as on
 v12 and v13. The probes that still stop on v14 have no alias (W-304's three,
 TP-1's w274_n01i).
 
+The implementation-review fold's rows (added 2026-10-21, implementation-review
+fold: IR1-B1 / IR1-M1 / IR1-M2 / IR1-M3 / IR1-m1 / IR1-m2 / IR1-m3 /
+IR1-m4). The first implementation review's probes (its scratch
+`ct1-impl/rev1/probes`, copied to `$X/probes/r1`, `$X` the fold's scratch,
+scratchpad/ct1-impl/fixer; 250 single-file probes) were compiled, linked and
+run by `$X/bin/one.sh` on TP-1, trunk, the nightly, CT-1's build at P
+(the toolchain of d5d7c6580) and CT-1's build of the fix commit 224ee2f8f
+(`$X/logs/r1_tp.tsv`, `r1_trunk.tsv`, `r1_nightly.tsv`, `r1_ct.tsv` and
+`r1_fix.tsv`). On the fix commit's build the 403 probes of rev 4 print or
+report what they do at P (`$X/logs/mx_fix.tsv`), and of the review's 250 only
+the rows below change, besides a/c_uncopyable_unbox, which reads an
+uninitialized field and prints a different number on each run.
+
+<!-- google-doc-style-ignore -->
+
+| Probe (what it is) | TP-1 | trunk | nightly | CT-1 at P | CT-1 after the fix |
+| --- | --- | --- | --- | --- | --- |
+| d/c_assign_from_generic_call_box_field, b/as3, c/c_assoc_type (a Carbon generic call's `T` result, or `c.First()` for `C.Elem`, stored into `var b: Cpp.Box(T)` or `Cpp.Box(C.Elem)`, checked) | E-DU | E-DU | E-DU | STOP lower/file_context.h:187 | 9, 4, 8 |
+| b/as1, as6, as8 (the same stores, the function returning a constant) | E-DU | E-DU | E-DU | STOP lower/file_context.h:187 | run (1, exit 1, exit 1) |
+| b/as11, as12 (`b.value = Mk(x);` into `Cpp.Box(U)`, and `y = Mk(x);` with no C++, in `F[template U: ..., T: Core.Copy]`) | STOP lower/file_context.h:187 | the same | STOP lower/file_context.h:127 | STOP lower/file_context.h:187 | run (exit 4) |
+| c/c_ref_param, b/rp2 (`Cpp.Inc(ref v);` for `v: T`, checked and template) | E-ARG, STOP sem_ir/inst.h:249 | the same | the same | STOP sem_ir/inst.h:249 (both) | 6, 6 |
+| c/z_ref_param (the concrete twin) | 6 | 6 | 6 | 6 | 6 |
+| f/aa1, aa5, aa6 (`alias S2 = C(T).S;` in `class E(T: type)` for `alias S = Cpp.Traits(T).size;` in a checked `C` or a class template `C`, read by `Core.Print(E(i64).S2)` or `let`-bound in `Run`) | run, print nothing (aa6: STOP lower/function_context.cpp:264) | the same (aa6: :223) | the same (aa6: :201) | STOP lower/function_context.cpp:264 | 8, 8, 8 |
+| e/c_alias_of_alias_specific (aa1's alias read in `Run` and through `E(U)` in `G[U: type]`) | FATAL lower/handle.cpp:407 | FATAL :405 | STOP function_context.cpp:201 | STOP function_context.cpp:264 | ``8 2`` |
+| f/aa2, aa3, aa4 (the nested alias read only in `G[U: type]`, checked and template classes; a template `E` over a checked `C`) | FATAL lower/handle.cpp:407 (aa4: runs, prints nothing) | FATAL :405 (aa4: the same) | STOP function_context.cpp:201 (aa4: the same) | 2, 2, 8 | 2, 2, 8 |
+| f/aa8 (`var b: E(i32).B2;` for `alias B2 = C(T).B;` of `alias B = Cpp.Box(T);`, checked) | E-DU | E-DU | E-DU | E-DU | 5 |
+| f/du4, du5 (`var b: C(U).B;` in `G[U: type]` for `alias B = Cpp.Box(T);` in `class C(template T: type)`, called and uncalled) | E-DU | E-DU | E-DU | E-DU | 4, compiles |
+| e/c_alias_specific_in_generic_decl (`-> C(U).B` and `var b: C(U).B;`) | E-DU | E-DU | E-DU | E-DU | 4 |
+| f/du3, du2, du1 (a checked `C`; the concrete `C(i32).B`; `C(U).B` initialized by `Cpp.MakeBox(u)`) | E-DU, E-DU, E-ARG | the same | the same | 4, 4, 4 | 4, 4, 4 |
+| d/c_du_T_definition (`var unused y: T;` in `F[T: type]`, no C++) | E-DU | E-DU | E-DU | E-DU | E-DU |
+| a/c_loud_member, c_loud_byval (`Cpp.MakeLoud(v).v` and `Cpp.TakeLoud(Cpp.MakeLoud(v))` in `F[T: type]`; result, made, destroyed) | E-ARG | E-ARG | E-ARG | ``4 1 0``, ``4 2 1`` | the same (W-309) |
+| a/t_loud_member, t_loud_byval (the template forms) | ``4 1 0``, ``4 2 1`` | the same | the same | the same | the same |
+| a/z_loud_member, z_loud_byval (the concrete twins) | ``4 1 1``, ``4 2 2`` | the same | the same | the same | the same |
+| c/t_returned_var_box, a/c_returned_var_box (`returned var r: Cpp.Box(T) = Cpp.MakeBox(v); return var;`, template and checked) | ``type `Box(T)` of `returned var` does not match return type of enclosing function`` (checked: the type as `Box(<cannot stringify inst...: {kind: TemplateInst, ...}>)`) | the same, the types as splices | the same as trunk | the same as TP-1 | the same (W-310) |
+| c/z_returned_var_box (the concrete twin) | 9 | 9 | 9 | 9 | 9 |
+| a/c_returned_var_i32, b/rv1, b/rv0 (`returned var r: T = Cpp.Twice(v);`, checked; and `returned var r: T = v;`, no C++) | E-ARG, E-ARG, STOP lower/lower.cpp:48 | the same | the same | STOP lower/lower.cpp:48 (all three) | the same (W-311) |
+| b/rv2 (`return Cpp.Twice(v);`) | E-ARG | E-ARG | E-ARG | exit 8 | exit 8 |
+| a/c_bad_inst (`var unused b: Cpp.Bad(T);` with a `static_assert` in `Bad`) | E-DU, the type as `Bad(<cannot stringify inst...: {kind: TemplateInst, ...}>)` | E-DU, a splice | E-DU, a splice | E-MONO with ``note: `Bad(<cannot stringify inst...: {kind: TemplateInst, ...}>)` evaluates to incomplete type `Cpp.Bad` `` and Clang's `static_assert` notes | the same (W-306) |
+| d/t_alias_member_missing (`alias S = T.nope;` in a class template, the class used) | 1 | 1 | 1 | ``binding pattern has incomplete type `C(Point)` `` with ``note: member name `nope` not found in `Point` `` | the same (§1.4) |
+| e/t_alias_runtime_via_alias (`alias N2 = C(T).N;` for `alias N = Cpp.Traits(T).Count();`, two class templates) | runs, prints nothing | the same | the same | ``member access into incomplete class `E(i64)` `` with ``note: member access into incomplete class `C(i64)` `` | the same (§1.4) |
+
+<!-- google-doc-style-resume -->
+
+So the fix runs every form of the four toolchain findings with its concrete
+twin's value, and a template form that stops on TP-1, trunk and the nightly
+with two of them (as11, as12, rp2); it changes none of the other rows,
+which are the records findings: W-309's two more shapes, W-310, W-311, W-306's
+unstringified type and the two template-lane rejections of §1.4.
+
 ## §1 Design
 
 Every decision is auto-adopted under V-2/V-3 (R29(a)) and open to veto; each
@@ -1217,8 +1302,10 @@ G(Cpp.TakeInt(Cpp.Twice(x)));` is reported on instantiation, n11, where its
 concrete twin n12 is rejected where it is written), and that a C++ temporary
 that such a call returns is not destroyed when it is discarded or `let`-bound
 (W-309, which the rule makes reachable from a checked generic and D-CT-18
-ships pinned; amended 2026-10-21, review fold: RR1-N-M1). Each operation and
-the rule it rides:
+ships pinned; amended 2026-10-21, review fold: RR1-N-M1), nor when its member
+is read or it is passed by value to another C++ function (amended
+2026-10-21, implementation-review fold: IR1-m1). Each operation and the rule
+it rides:
 
 | Operation (on `b: Cpp.Box(T)` or a C++ call's result, `T` checked) | Checked | TP-1 rule it rides | Pinned by |
 | --- | --- | --- | --- |
@@ -1226,6 +1313,7 @@ the rule it rides:
 | declare without an initializer, `var b: Cpp.Box(T);` | per specific: the `Core.DefaultOrUnformed` lookup is deferred (D-CT-5) | TR-10 (D-TP-12 as amended) | A.1 `uninitialized_var` |
 | initialize from, assign, copy or pass a value of the same specialization (`var c: Cpp.Box(T) = b;`, `a = b;`, a parameter `b: Cpp.Box(T)`) | per specific | TR-4 (`InitializeAction`, D-TP-2) | probes c_assign_spec 28, c_param_copy 10, g_eval_order 51 |
 | store a `T` into a member, `b.value = v;` | per specific, the copy of `T` included: a `T` without `Core.Copy` is E-MONO with ``cannot copy value of type `NoCopy` `` | TR-4, TR-8 (`value` found in `Box<T>` on instantiation) | A.1 `copy_into_specialization_uncalled`, `fail_copy_into_specialization_on_instantiation` |
+| store a Carbon call's result of a symbolic type into a member, `b.value = Mk(x);`, `b.value = c.First();` for `C.Elem` (added 2026-10-21, implementation-review fold: IR1-B1) | per specific, the call's temporary storage typed in the specific (§2.13) | TR-4 (`InitializeAction`'s storage arguments) | A.2 `store_generic_call_result` |
 | simple member access, `b.value`, `b.Get()` | per specific; a missing member is E-MONO | TR-8 (the IN half: a value whose type in the definition is template dependent), TR-7 for the call of `b.Get` | A.1 `member_missing_uncalled`, `fail_member_missing_on_instantiation` |
 | a member found only through `T`'s constraint on a member's value, `b.value.Get()` for `T: Show` | OUT (W-305) | TR-8's OUT half (TP-1's W-266 shape) | A.1 `fail_todo_member_through_constraint` |
 | compound member access, `b.value.(Show.Get)()` | per specific | TR-9 | A.1 `fail_todo_member_through_constraint`'s `Compound` |
@@ -1233,8 +1321,9 @@ the rule it rides:
 | pass to and return from C++ functions whose signatures name the specialization, `Cpp.Unbox(b)`, `return Cpp.MakeBox(v);` | per specific | D-CT-3 (F-021); TR-7 and D-TP-11 (`IsCallPerformable`) when an argument is template dependent | A.1 `generic_class_field`, A.2 `class_return`; probes c_pass_to_cpp 9, c_return_spec 11 |
 | return the specialization, `return b;` | per specific; the return slot only for an in-place type (D-CT-8) | TR-4 (D-TP-2/D-TP-3's return storage) | A.2 `class_return`, `narrow_return_template`, `narrow_return_checked` |
 | destroy a `var` at the end of its scope | per specific | TR-4 (the destroy's deferred member access) | gen2/c_destroy 25, cpp_template_two_specifics |
-| destroy a temporary of such a type, discarded or `let`-bound | never: the destructor does not run, as in a template (W-309; D-CT-18 ships it, amended 2026-10-21, review fold: RR1-N-M1) | TP-1's lane, unchanged | A.2 `todo_discarded_temporary_not_destroyed`; probes w2, w3, w6, w7, w9 (§0.12, §0.13) |
+| destroy a temporary of such a type, discarded or `let`-bound, or whose member is read or that is passed by value, `Cpp.MakeLoud(v).v`, `Cpp.TakeLoud(Cpp.MakeLoud(v))` | never: the destructor does not run, as in a template (W-309; D-CT-18 ships it, amended 2026-10-21, review fold: RR1-N-M1; the last two shapes amended 2026-10-21, implementation-review fold: IR1-m1) | TP-1's lane, unchanged | A.2 `todo_discarded_temporary_not_destroyed`; probes w2, w3, w6, w7, w9 (§0.12, §0.13), a/c_loud_member and a/c_loud_byval (§0.13's fold rows) |
 | call a C++ function with an argument of type `T`, `Cpp.Twice(v)`, or with `T`, `Cpp.Twice(T, v)` | per specific (D-CT-3) | F-021; the call action is TP-1's `CallAction`, performed under D-CT-6 | A.1 `function_template_call`, `explicit_type_argument` |
+| pass a `T` to a C++ reference parameter, `Cpp.Inc(ref v)` (added 2026-10-21, implementation-review fold: IR1-M1) | per specific (D-CT-3), the `ref` tag taken in the specific (§2.13) | F-021 | A.1 `cpp_call_ref_argument` |
 | a Carbon operation on such a call's result, `G(Cpp.Twice(x))` | per specific (the contagion) | TR-4 | A.1 `cpp_result_contagion_uncalled`, `fail_cpp_result_contagion_on_instantiation` |
 | a Carbon operation on `T` or `x: T` that involves none of the above, `var r: T = v;` | where the generic is defined | TR-2 | A.1 `fail_copy_symbolic_value_in_definition` |
 | a C++ call whose arguments' types are concrete, `Cpp.TakeInt(N)` for `generic N: i32` | where the generic is defined | TR-2 | A.1 `fail_symbolic_value_cpp_call_in_definition` |
@@ -1269,32 +1358,42 @@ to 'TakeInt'`` (review A's b01 to b03, an uncalled body compiling on v11); a
 value of a concrete type is now resolved where the generic is defined, as on
 TP-1 (b01 to b03 report TP-1's diagnostics on v12, n09 prints 113; amended
 2026-10-21, review fold: A-B3). A form-dependent argument has no form a specific
-could give it either (expr_info.cpp:406-417), so rev 1's deferral only moved
-type_mapping.cpp:733-736's TODO into an instantiation note and let an uncalled
-body compile (n01 to n03); the call is left to `PerformCallHelper`, which
-reports the TODO where the call is written, W-307 (amended 2026-10-21, review
-fold: B-M1). A pack expansion argument has no C++ parameter to match, and VA-1
-reports that in `PerformCallHelper` (D-VA-5); deferring it skipped the report
-(va1, va2, va5 on mva), so S-VA refuses it the same way at PR 59's merge
-(amended 2026-10-21, review fold: B-M3). A call whose arguments are all
-concrete, or template-dependent (TP-1's lane, which already defers on
-`IsCallPerformable`), is unchanged. Measured: the 22 E-ARG probes run
-(`Cpp.Twice(v)` 42, `Cpp.Twice(T, v)` 42, `Cpp.Max(a, b)` 9, `Cpp.Unbox(b)` 9, a
-member call `b.Get()` 8, `Cpp.SameBox(b, b)` 12), c_sizeof, whose explicit type
-argument TP-1 dropped (E-NOMATCH), prints 35, a non-template overload set is
-resolved per specific (`Cpp.Over(x)` prints 1 2 3 for `i32`, `f64`, `i64`,
-review A's a03), and a callee that is not a template (`Cpp.UnboxInt(b)` for
-`Box<int>`, c_param_unbox_int 24) is unchanged. A non-type argument of a
-function template, `Cpp.GetN(N)` for `template<int N> int GetN()`, is E-NOMATCH
-on every toolchain, concrete or not (n07, n08), and is not a D-CT-3 form. The
-`TemplateInst` wrapping of a facet-typed argument changes no measured result:
-its mutant M12 passes the nine changed or new goldens and prints what v12 prints
-on all 243 probes of §0.3 and §0.12 (`$X/mx_m12.tsv`), because a type argument
-`T` already makes the call deferred and its action waits for `T` in the specific
-(D-CT-6). It is kept as the form upstream gives a symbolic argument of a C++
-template name (call.cpp:749-750), so that both deferred C++ calls have the same
-operands (amended 2026-10-21, found by the fold's mutants). _Break condition:_ a
-C++ call whose arguments' types are all concrete changes (falsifiers: A.1's
+could give it either (expr_info.cpp:406-417 at 5661a35c8, :432-443 at the
+implementation-review fold's head; amended 2026-10-21, implementation-review
+fold: IR2-m6), so rev 1's deferral only moved type_mapping.cpp:733-736's TODO
+into an instantiation note and let an uncalled body compile (n01 to n03); the
+call is left to `PerformCallHelper`, which reports the TODO where the call is
+written, W-307 (amended 2026-10-21, review fold: B-M1). A pack expansion
+argument has no C++ parameter to match, and VA-1 reports that in
+`PerformCallHelper` (D-VA-5); deferring it skipped the report (va1, va2, va5 on
+mva), so S-VA refuses it the same way at PR 59's merge (amended 2026-10-21,
+review fold: B-M3). A call whose arguments are all concrete, or
+template-dependent (TP-1's lane, which already defers on `IsCallPerformable`),
+is unchanged. Measured: the 22 E-ARG probes run (`Cpp.Twice(v)` 42,
+`Cpp.Twice(T, v)` 42, `Cpp.Max(a, b)` 9, `Cpp.Unbox(b)` 9, a member call
+`b.Get()` 8, `Cpp.SameBox(b, b)` 12), c_sizeof, whose explicit type argument
+TP-1 dropped (E-NOMATCH), prints 35, a non-template overload set is resolved per
+specific (`Cpp.Over(x)` prints 1 2 3 for `i32`, `f64`, `i64`, review A's a03),
+and a callee that is not a template (`Cpp.UnboxInt(b)` for `Box<int>`,
+c_param_unbox_int 24) is unchanged. A non-type argument of a function template,
+`Cpp.GetN(N)` for `template<int N> int GetN()`, is E-NOMATCH on every toolchain,
+concrete or not (n07, n08), and is not a D-CT-3 form. The `TemplateInst`
+wrapping of a facet-typed argument changes no measured result: its mutant M12
+passes the nine changed or new goldens and prints what v12 prints on all 243
+probes of §0.3 and §0.12 (`$X/mx_m12.tsv`), because a type argument `T` already
+makes the call deferred and its action waits for `T` in the specific (D-CT-6).
+It is kept as the form upstream gives a symbolic argument of a C++ template name
+(call.cpp:749-750), so that both deferred C++ calls have the same operands
+(amended 2026-10-21, found by the fold's mutants). A `ref` argument,
+`Cpp.Inc(ref v)` with `v: T`, reaches the call in each specific as the generic's
+`RefTagExpr` wrapped in a `SpecificInst`, whose operand `Convert` now takes in
+the same specific (§2.13): c/c_ref_param prints 6, as its concrete twin
+c/z_ref_param does, where CT-1 at P stopped at sem_ir/inst.h:249 and TP-1
+reports E-ARG, and the template form b/rp2, which stops there on TP-1, trunk and
+the nightly, prints 6 too; A.1's `cpp_call_ref_argument` pins both and mutant
+M24 (the step reverted) stops on it (amended 2026-10-21, implementation-review
+fold: IR1-M1). _Break condition:_ a C++ call whose arguments' types are all
+concrete changes (falsifiers: A.1's
 `fail_symbolic_value_cpp_call_in_definition`, any golden of a concrete C++ call;
 the gate shows none), a call with an argument of a checked-symbolic type is
 still diagnosed where the generic is defined, a form-dependent or pack expansion
@@ -1340,14 +1439,27 @@ function that is not generic read a template's constant alias through a
 concrete specific, which TP-1 drops silently or stops on (z6, z7b, z8, f07;
 amended 2026-10-21, review fold: RR2-M1). _Break condition:_ a golden of
 TP-1's template lane changes other than the six of §0.7, a TR-22 form of
-TP-1's own changes, or a template-lane form other than an alias of a runtime
-value is rejected on v13 or v14 where TP-1 runs it.
+TP-1's own changes, or a template-lane form other than an alias whose value is
+not a constant in the specific is rejected on v13, v14 or CT-1's build where
+TP-1 runs it (rev 4 named only an alias of a runtime value; amended
+2026-10-21, implementation-review fold: IR1-m4). Two such forms besides a
+runtime value were measured by the first implementation review, each rejected
+as its concrete twin is where TP-1, trunk and the nightly compile it: an alias
+of a member the argument does not have, `alias S = T.nope;` in a class
+template, which leaves the class incomplete (``binding pattern has incomplete
+type `C(Point)` `` with ``note: member name `nope` not found in `Point` ``,
+d/t_alias_member_missing, where TP-1 prints 1), and an alias of another class
+template's alias of a runtime value, `alias N2 = C(T).N;` for `alias N =
+Cpp.Traits(T).Count();` (``member access into incomplete class `E(i64)` ``,
+e/t_alias_runtime_via_alias, where TP-1 drops the statement).
 
 ### §1.5 Deferred impl lookup on a C++ specialization (D-CT-5, amends D-TP-12)
 
 **D-CT-5. An impl lookup whose query reaches a `TemplateInst`, or an action's
 operand that names a template binding, is deferred to the specific:
-`NamesTemplateBinding` returns true at a `TemplateInst`, follows `MetaInstId`
+`NamesTemplateBinding` returns true at a `TemplateInst` and at a call action
+of a C++ template name or an imported C++ function (D-CT-6's predicate;
+amended 2026-10-21, implementation-review fold: IR1-M3), follows `MetaInstId`
 and `MetaInstBlockId` operands as it follows `InstId` and `InstBlockId`, and
 follows each symbolic operand's constant value as well as its operands.**
 D-TP-12 (fork/templates/plan.md §1.7) deferred only queries that name a
@@ -1374,11 +1486,26 @@ not one, so W-268 is narrowed to that shape and stays open, not discharged
 (Appendix C.5; amended 2026-10-21, review fold: A-M5 / B-M2). D-TP-12's named
 falsifier changes as intended: generic_call.carbon's `require_specific_def`
 leaves the definition (§0.7); facet/period_self.carbon, its other falsifier,
-is unchanged. PR 51's W-127 split shape runs (C-2). The dated line that records
-the amendment in TP-1's D-TP-12 is Appendix C.11's. _Break condition:_
+is unchanged. PR 51's W-127 split shape runs (C-2). The call-action step is the
+implementation-review fold's (amended 2026-10-21, implementation-review fold:
+IR1-M3): a class template's specific formed for a checked generic's `U`,
+`C(U).B` for `alias B = Cpp.Box(T);` in `class C(template T: type)`,
+substitutes `U` for the template binding in the specialization's call action,
+where it stands without a `TemplateInst`, so the walk found neither and `var
+b: C(U).B;` was rejected with E-DU where `G` is defined, called or not (f/du4,
+f/du5; TP-1, trunk and the nightly the same), though a checked class's
+`C(U).B` (f/du3) and the concrete `C(i32).B` (f/du2) run on CT-1. Such an
+action is performed only when its arguments are concrete in the specific
+(D-CT-6), so a query that reaches one can be decided only there: du4 prints
+4, du5 compiles, `-> C(U).B` (e/c_alias_specific_in_generic_decl) prints 4,
+and `var y: T;` with no C++ (d/c_du_T_definition) is still E-DU where it is
+written; A.1's `class_template_alias_through_symbolic_specific` pins it and
+mutant M26 (the step reverted) turns it red. The dated line that records the
+amendment in TP-1's D-TP-12 is Appendix C.11's. _Break condition:_
 facet/period_self.carbon changes, or a checked generic's query that reaches
-neither a `TemplateInst` nor a template binding, by operands or constant
-values, is deferred.
+neither a `TemplateInst`, a template binding nor a C++ callee's call action,
+by operands or constant values, is deferred (the call action added
+2026-10-21, implementation-review fold: IR1-M3).
 
 ### §1.6 C++ callee performability (D-CT-6)
 
@@ -1514,7 +1641,16 @@ concrete specific in a function that is not generic: read, `let`-bound,
 `var`-initialized and assigned, as a condition, as a type and through a nested
 alias, in a class template, a checked class and an interface (z2, z4 7; z7b,
 z8 5; z6 7; i3 ``3 7``; f01 5; f02, f03 ``9 3``; f05 3; f07 1; f10 ``8 2``;
-f13 ``8 8``).
+f13 ``8 8``). On CT-1's build after the implementation-review fold's fix
+(amended 2026-10-21, implementation-review fold: IR1-B1 / IR1-M1 / IR1-M2 /
+IR1-M3; §0.13's fold rows): a Carbon generic call's result stored into a
+member of the specialization, for `T` and for an associated type
+(d/c_assign_from_generic_call_box_field 9, b/as3 4, c/c_assoc_type 8), a `ref`
+argument to a C++ function (c/c_ref_param 6), an alias of another class's
+alias named through a concrete specific (f/aa1, f/aa5, f/aa6 8,
+e/c_alias_of_alias_specific ``8 2``, f/aa8 5) and a class template's alias
+named through a checked generic's specific (f/du4 4,
+e/c_alias_specific_in_generic_decl 4).
 
 | OUT form | Measured on v12 (TP-1, trunk, nightly; v11 where it differs) | Filed |
 | --- | --- | --- |
@@ -1529,7 +1665,9 @@ f13 ``8 8``).
 | a C++ function call with a form-dependent argument (`Cpp.TakeInt(x)` for `x:? Fm`; added 2026-10-21, review fold: B-M1) | ``semantics TODO: `Support passing form-dependent args to C++ functions.` `` where the call is written (type_mapping.cpp:733-736), as on TP-1, trunk and the nightly; v11 moved it into an E-MONO note and compiled an uncalled body (new/n01 to n03) | W-307 |
 | a specialization as a choice alternative's payload (`choice Ch(T: type) { A(b: Cpp.Box(T)), B }`; added 2026-10-21, review fold: A-M4) | the declaration compiles (e02e 2); a use is E-MONO with ``choice alternative payload type `Cpp.Box` is not trivially copyable and destructible in this specific`` (eval_inst.cpp:265, e02, e02f), the concrete payload's TODO ``choice alternative payload that is not trivially copyable and destructible`` (handle_choice.cpp:762, e02b) on every toolchain; TP-1, trunk and v11 stop at sem_ir/generic.cpp:84 on the declaration, the nightly reports a choice TODO | W-308 |
 | an impl for every specialization, `impl forall [T: type] Cpp.Box(T) as Size` (added 2026-10-21, review fold: A-M4) | `` `impl` with unused generic binding `` at `T`: `T` cannot be deduced through `Box<T>`; TP-1, trunk, the nightly and v11 stop at sem_ir/generic.cpp:84 (c09) | W-303 (its impl shape) |
-| a discarded or `let`-bound temporary of a C++ class with a destructor that a deferred C++ call returns (`Cpp.MakeLoud(v);` with `v: T`; added 2026-10-21, found by the fold) | the destructor does not run: w7 prints 0 where the concrete twin w5 prints 1, w2 and w3 print 0 and ``3 0`` (amended 2026-10-21, review fold: RR1-N-M1); the same in a template on TP-1 and the nightly (w6, w9); a `var` of it is destroyed (w10 ``3 1``); pinned by A.2's `todo_discarded_temporary_not_destroyed` and shipped by D-CT-18 | W-309 |
+| a discarded or `let`-bound temporary of a C++ class with a destructor that a deferred C++ call returns (`Cpp.MakeLoud(v);` with `v: T`; added 2026-10-21, found by the fold), or one whose member is read or that is passed by value to another C++ function (`Cpp.MakeLoud(v).v`, `Cpp.TakeLoud(Cpp.MakeLoud(v))`; added 2026-10-21, implementation-review fold: IR1-m1) | the destructor does not run: w7 prints 0 where the concrete twin w5 prints 1, w2 and w3 print 0 and ``3 0`` (amended 2026-10-21, review fold: RR1-N-M1); the same in a template on TP-1 and the nightly (w6, w9); a `var` of it is destroyed (w10 ``3 1``); the member read and the by-value argument print made and destroyed counts ``1 0`` and ``2 1`` (a/c_loud_member, a/c_loud_byval) where their concrete twins print ``1 1`` and ``2 2``, as their template forms do on TP-1, trunk and the nightly; no object is destroyed twice; pinned by A.2's `todo_discarded_temporary_not_destroyed` and shipped by D-CT-18 | W-309 |
+| a `returned var` of the specialization, `returned var r: Cpp.Box(T) = Cpp.MakeBox(v); return var;` (added 2026-10-21, implementation-review fold: IR1-m2) | ``type `Box(T)` of `returned var` does not match return type of enclosing function`` where the function is defined, with ``note: return type of function is `Box(T)` `` (c/t_returned_var_box, a template; the checked a/c_returned_var_box prints the type unstringified, W-306), on CT-1 and TP-1 alike (trunk and the nightly print splices): the return type's `Cpp.Box(T)` and the variable's are two call actions, so two types, where the generic is defined; the concrete twin c/z_returned_var_box prints 9; pinned by A.1's `fail_todo_returned_var_specialization` | W-310 |
+| a `returned var` of a symbolic type initialized by a deferred C++ call, `returned var r: T = Cpp.Twice(v);` (added 2026-10-21, implementation-review fold: IR1-m2) | STOP lower/lower.cpp:48 (a/c_returned_var_i32; TP-1, trunk and the nightly: E-ARG); the same stop with no C++, `returned var r: T = v;` (b/rv0), on TP-1, trunk and the nightly, so the defect is upstream's `returned var` of a symbolic type, which F-021 makes reachable through a C++ call; `return Cpp.Twice(v);` runs (b/rv2, 8) | W-311 (upstream's defect, tracked) |
 | a tuple, struct or array of the specialization as an uninitialized `var` (`var t: (Cpp.Box(T), i32);`; added 2026-10-21, review fold: A-m4) | E-MONO at the specific, the note that the aggregate does not implement `Core.DefaultOrUnformed` (a06, c06, c07); the concrete twin `(Cpp.Box(i32), i32)` is E-DU on every toolchain (c01), so "an uninitialized `var` of the specialization" in §1.2 means the specialization itself, not an aggregate holding it | none: the concrete form's own limit, unchanged |
 | converting a `Cpp.std.optional(T)` to a Carbon type, or matching on it (with PR 62, measured on msv; added 2026-10-21, review fold: A-M3 / B-M3) | E-MONO with SV-1's ``conversion of a C++ `std::optional` or `std::variant` outside a function body`` TODO (sv3b, sv3c; an uncalled body compiles, sv8), and TP-1's ``match on unsupported scrutinee type`` TODO where the generic is defined (sv4) | W-279 (SV-1's), W-252 (TP-1's); no new id |
 | a pack expansion argument to a C++ function, `Cpp.Sum(... each x)` (with PR 59, measured on mva; added 2026-10-21, review fold: B-M3) | after S-VA, VA-1's ``pack expansion argument is not matched by a pack expansion parameter`` where the call is written, as on VA-1 (va1, va2, va5); without S-VA it was deferred, an uncalled body compiled and a call was E-MONO | VA-1's D-VA-5; no new id |
@@ -1548,7 +1686,9 @@ and E-PARSE. _Break condition:_ an IN form that a probe shows rejected or
 stopped,
 or an OUT form whose filed diagnostic changes without a decision (the OUT
 table's last eight rows were added by the fold, so a form the reviews did not
-probe may still stop; §8's re-review loop is the check).
+probe may still stop; §8's re-review loop is the check). The two `returned var`
+rows are the implementation-review fold's; W-311's stop is upstream's and is
+not fixed here (amended 2026-10-21, implementation-review fold: IR1-m2).
 
 ### §1.12 Residues filed (W-300..W-309)
 
@@ -1573,7 +1713,14 @@ and in a checked generic (added 2026-10-21, found by the fold's probes;
 shipped by D-CT-18 and pinned by A.2's
 `todo_discarded_temporary_not_destroyed`, amended 2026-10-21, review fold:
 RR1-N-M1).
-W-310..W-319 are unused. Review A's other two compiler stops are not filed
+The implementation-review fold files two more from the reserve (amended
+2026-10-21, implementation-review fold: IR1-m2): W-310, a `returned var` of a
+C++ specialization of a symbolic argument rejected as a type mismatch where
+the generic is defined, pinned by A.1's `fail_todo_returned_var_specialization`;
+and W-311, a `returned var` of a symbolic type that stops lowering at
+lower/lower.cpp:48, upstream's (b/rv0 stops on every toolchain without C++)
+and reachable through a deferred C++ call since F-021 (a/c_returned_var_i32).
+W-312..W-319 are unused. Review A's other two compiler stops are not filed
 because v12 fixes them: the alias as a parameter's type (d03, d04, R9) and the
 generic choice's declaration (e02e, which v12 compiles and whose use is
 W-308's).
@@ -1607,8 +1754,15 @@ review fold: RR1-N-B1 / RR1-N-M1). Rev 2 adds to A.1 the splits
 splits A.2's `narrow_return` into `narrow_return_template` (C1) and
 `narrow_return_checked` (C2), and adds A.2's `alias_of_member_type` (amended
 2026-10-21, review fold: A-B1 / A-B2 / A-B3 / A-M1 / A-M4 / A-M5 / B-M1 / B-M6
-/ B-m6 / B-m7). _Break condition:_ a golden whose change is not explained by a
-decision above.
+/ B-m6 / B-m7). The implementation-review fold adds A.1's
+`cpp_call_ref_argument`, `nested_alias_through_specific`,
+`class_template_alias_through_symbolic_specific` and
+`fail_todo_returned_var_specialization` (W-310), and A.2's
+`store_generic_call_result` and `nested_alias_through_specific`, and names the
+member-read and by-value shapes in the comment of A.2's W-309 split (amended
+2026-10-21, implementation-review fold: IR1-B1 / IR1-M1 / IR1-M2 / IR1-M3 /
+IR1-m1 / IR1-m2). _Break condition:_ a golden whose change is not explained
+by a decision above.
 
 ### §1.14 Conformance programs (D-CT-13)
 
@@ -1653,8 +1807,9 @@ W-043 with its residues filed, discharge TP-1's W-273, narrow TP-1's W-268,
 add one dated line each to TP-1's D-TP-12 and TR-22 in fork/templates/plan.md
 and one to W-274's notes in the ledger, keep rows 56 and 42 PARTIAL with
 corrected text, and add the decision-log entry "CT-1" with F-021.** The texts
-are Appendix C. Row 56 stays PARTIAL on W-300..W-303, W-305 and W-307 to
-W-309 (the OUT kinds) and on the one-library limit (W-250), and
+are Appendix C. Row 56 stays PARTIAL on W-300..W-303, W-305, W-307 to W-309
+and W-310 (the OUT kinds; W-310 amended 2026-10-21, implementation-review
+fold: IR1-m2) and on the one-library limit (W-250), and
 row 42 on its own export cases (its template clause is replaced, qualified by
 W-300); W-043's disposition is DISCHARGED because its blocker, a symbolic
 Carbon type as a C++ template argument, is IN, and what remains of its
@@ -1856,6 +2011,29 @@ constant in a specific is rejected, or a use of it through a specific has
 another category than the value's in that specific; or one whose value is a
 runtime value compiles in a specific that the program completes or calls.
 
+The nested use is the implementation-review fold's (amended 2026-10-21,
+implementation-review fold: IR1-M2). An alias of another class's alias,
+`alias S2 = C(T).S;` in `class E(T: type)` for `alias S =
+Cpp.Traits(T).size;` in `C`, named as `E(i64).S2` in `Run`, reaches a
+`specific_constant` of `C(T)` while the walk is in `E(i64)`; switching to that
+constant's own specific, symbolic in `E`, gave the use the generic's category,
+and lowering stopped at lower/function_context.cpp:264 (f/aa1, f/aa5 with a
+class template `C`, f/aa6 `let`-bound; TP-1, trunk and the nightly drop the
+statement, or stop on the `let`), and `var b: E(i32).B2;` for a nested
+`Cpp.Box(T)` alias was E-DU, its type left symbolic (f/aa8, on every
+toolchain). A `specific_constant` of the walked specific's own generic is now
+taken in that specific when its value there is concrete, and the walk goes on
+from that value (sem_ir/expr_info.cpp, §2.13): aa1, aa5 and aa6 print 8,
+e/c_alias_of_alias_specific ``8 2``, aa8 5, and the uses in a generic function
+(f/aa2, f/aa3, 2) are unchanged. A.2's `nested_alias_through_specific` pins
+the lowered uses and A.1's `nested_alias_through_specific` their SemIR, and
+mutant M25 (the step reverted) turns A.1's
+`class_template_alias_through_symbolic_specific` red at its nested `var` and
+stops lowering in A.2's split (§8 item 5). The alias rule also rejects, in a
+template, an alias of a member the argument lacks and an alias of another
+template's alias of a runtime value, each as its concrete twin is rejected
+(§1.4; amended 2026-10-21, implementation-review fold: IR1-m4).
+
 ### §1.19 Decision index
 
 Amended 2026-10-21 (review fold: A-B1 / A-B2 / A-B3 / A-M1 / A-M5 / B-M1 /
@@ -1873,7 +2051,9 @@ D-CT-12 and D-CT-17).
     expansion argument are not.
 -   D-CT-4, the template lane rides TP-1; TR-22 amended for its C++ forms.
 -   D-CT-5, impl lookup on a C++ specialization is deferred, the walk following
-    constant values too (D-TP-12 amended, W-268 narrowed).
+    constant values too and stopping at a C++ callee's call action (D-TP-12
+    amended, W-268 narrowed; the call action amended 2026-10-21,
+    implementation-review fold: IR1-M3).
 -   D-CT-6, a C++ callee's action waits for concrete arguments.
 -   D-CT-7, action operands that are constants or belong to another generic
     are substituted.
@@ -1893,7 +2073,8 @@ D-CT-12 and D-CT-17).
     generic (TP-1's W-273 discharged), its template-dependent value is
     checked to be a constant for each specific, not converted where it is
     written, and a use through a specific takes its category from that
-    specific (rev 4).
+    specific (rev 4), a nested alias's use included (amended 2026-10-21,
+    implementation-review fold: IR1-M2).
 -   D-CT-18, F-021 ships W-309's undestroyed temporary in the checked lane,
     pinned and stated as its cost.
 
@@ -1902,7 +2083,8 @@ D-CT-12 and D-CT-17).
 Added 2026-10-21 (review fold: RR1-N-M1). **D-CT-18. F-021 ships with W-309 in
 the checked lane, recorded as its cost and pinned: a temporary of a C++ class
 with a destructor that a C++ call deferred to the specific returns is not
-destroyed when it is discarded or `let`-bound, in a checked generic as in a
+destroyed when it is discarded or `let`-bound, or when its member is read or
+it is passed by value to another C++ function, in a checked generic as in a
 template (w2, w3 and w7 print 0, ``3 0`` and 0 on v12 and v13 where their
 concrete twins w5 and w8 print 1 and ``3 1``; the template forms w6 and w9 print
 0 and ``3 0`` on TP-1, trunk, the nightly and v13); a `var` of the result is
@@ -1910,35 +2092,41 @@ destroyed (w10 ``3 1``). A.2's `todo_discarded_temporary_not_destroyed` pins the
 omission: the specific of `DiscardDeferred[T: type]` materializes `Loud<int>`
 and calls no destructor, where `DiscardConcrete` calls `Loud<int>`'s through
 `Core.Destroy`, so a fix shows in that golden. F-021's text (C.7), the design
-page (C.1) and row 56 (C.4) state the limit.** F-021 makes the omission newly
-reachable from checked generics (w2, w3 and w7 are E-ARG on TP-1), so the
-question is whether to ship it, and three options were weighed. The root is
-where destruction is scheduled: `MaybeAddCleanupForInst`
-(control_flow.cpp:143-149) registers a temporary's cleanup only in a cleanup
-scope, while the definition is checked, and a deferred call's result is
-materialized only when the specific is evaluated, by the conversion that TP-1's
-action performs there, with no cleanup scope open, so the registration is
-dropped. A root fix gives the discarded or `let`-bound result storage where the
-generic is defined, as a `var` has (TP-1's storage-carrying `InitializeAction`,
-D-TP-2 and D-TP-3), so that its cleanup is registered there and TR-4's deferred
-destroy runs it for each specific, as it does for w10. That changes every
-discarded or `let`-bound template-dependent initializer, in the template lane
-too, where TP-1's own goldens discard such calls; fixing it for the checked lane
-only would be the second mechanism D-CT-4 rules out, so it is TP-1-lane work,
-not measured here, and W-309's removal (Appendix C.3). Rejecting the forms where
-a checked generic is defined would reject correct ones: the call's result type
-is unknown there, so `Cpp.MakeLoud(v);` cannot be told from a discarded
-`Cpp.Twice(T, v);` (w1 prints 1; R17). Diagnosing them for each specific needs
-the same hook as the fix, in the conversion that has no scope, and would reject
-in the checked lane what the template lane compiles. The cost shipped: a
-destructor's side effects do not happen, so what the object owns is leaked or a
-count it keeps is not updated; the temporary's storage is the frame's, so
-nothing is freed twice or read after its destruction, and the workaround is a
-`var`. _Break condition:_ a probe in which the omission does more than skip the
-destructor (a double destruction, a read of a destroyed object, or a `var` of
-the result not destroyed), or a review that rejects the trade; the deferred
-cleanup then moves into CT-1 as a C2 change (a plan amendment, measured on the
-template lane's goldens), and A.2's split loses its `todo_` prefix.
+page (C.1) and row 56 (C.4) state the limit.** The member-read and by-value
+shapes are the first implementation review's (amended 2026-10-21,
+implementation-review fold: IR1-m1): a/c_loud_member and a/c_loud_byval print
+made and destroyed counts ``1 0`` and ``2 1`` where their concrete twins print
+``1 1`` and ``2 2``, and their template forms print the same on TP-1, trunk and
+the nightly.
+F-021 makes the omission newly reachable from checked generics (w2, w3 and w7
+are E-ARG on TP-1), so the question is whether to ship it, and three options
+were weighed. The root is where destruction is scheduled:
+`MaybeAddCleanupForInst` (control_flow.cpp:143-149) registers a temporary's
+cleanup only in a cleanup scope, while the definition is checked, and a deferred
+call's result is materialized only when the specific is evaluated, by the
+conversion that TP-1's action performs there, with no cleanup scope open, so the
+registration is dropped. A root fix gives the discarded or `let`-bound result
+storage where the generic is defined, as a `var` has (TP-1's storage-carrying
+`InitializeAction`, D-TP-2 and D-TP-3), so that its cleanup is registered there
+and TR-4's deferred destroy runs it for each specific, as it does for w10. That
+changes every discarded or `let`-bound template-dependent initializer, in the
+template lane too, where TP-1's own goldens discard such calls; fixing it for
+the checked lane only would be the second mechanism D-CT-4 rules out, so it is
+TP-1-lane work, not measured here, and W-309's removal (Appendix C.3). Rejecting
+the forms where a checked generic is defined would reject correct ones: the
+call's result type is unknown there, so `Cpp.MakeLoud(v);` cannot be told from a
+discarded `Cpp.Twice(T, v);` (w1 prints 1; R17). Diagnosing them for each
+specific needs the same hook as the fix, in the conversion that has no scope,
+and would reject in the checked lane what the template lane compiles. The cost
+shipped: a destructor's side effects do not happen, so what the object owns is
+leaked or a count it keeps is not updated; the temporary's storage is the
+frame's, so nothing is freed twice or read after its destruction, and the
+workaround is a `var`. _Break condition:_ a probe in which the omission does
+more than skip the destructor (a double destruction, a read of a destroyed
+object, or a `var` of the result not destroyed), or a review that rejects the
+trade; the deferred cleanup then moves into CT-1 as a C2 change (a plan
+amendment, measured on the template lane's goldens), and A.2's split loses its
+`todo_` prefix.
 
 ## §2 Spec, file by file
 
@@ -1964,7 +2152,14 @@ files total 388 lines added and 33 removed (rev 3's fourteen: +381/-30; rev
 before, review fold: A-B1 / A-B2 / A-B3 / B-M1 / A-m3 / B-m1). Every diff
 block of this plan passes `git apply --check` against this branch's head, and
 C.11's land-time hunk against the merged call.cpp (§8 item 7; review fold:
-RR1-N-m1).
+RR1-N-m1). The blocks of §2.4, §2.5, §2.6 and §2.12's generic.cpp, eval.cpp
+and member_access.cpp are given as C1 committed them, in the layout that
+clang-format 21.1.8 (R18) and prek's hook gave v14's text, the same tokens
+rewrapped: the sixteen files then total 386 lines added and 36 removed, and
+each of the thirteen blocks still applies to this branch's head (amended
+2026-10-21, implementation-review fold: IR2-m1). §2.13's block is the
+implementation-review fold's fix commit, against the files as C2 left them
+(d5d7c6580).
 
 ### §2.1 toolchain/check/impl_lookup.cpp (C1, D-CT-5)
 
@@ -2199,14 +2394,16 @@ the target type might be initialized in place; otherwise the target is
 same type builds. Review points: `target_type_id` was computed in the
 initializer of `ConversionTarget` and is hoisted, not changed; the
 `InPlaceInitializing` kind now also requires storage. +18 / -6 lines (rev 1
-said +16 / -4; the diff is unchanged; amended 2026-10-21, review fold: B-m1).
+said +16 / -4; the diff is unchanged; amended 2026-10-21, review fold: B-m1);
+20 added and 10 removed in the committed layout below (amended 2026-10-21,
+implementation-review fold: IR2-m1).
 
 <!-- google-doc-style-ignore -->
 
 ```diff
 --- a/toolchain/check/convert.cpp
 +++ b/toolchain/check/convert.cpp
-@@ -3017,14 +3017,26 @@
+@@ -3017,17 +3017,27 @@
      }
      storage_id = splice_block.result_id;
    }
@@ -2216,29 +2413,34 @@ said +16 / -4; the diff is unchanged; amended 2026-10-21, review fold: B-m1).
 +  // slot (`InitializeExisting`), which a specific has only when the returned
 +  // type is initialized in place; for any other type the initializer makes its
 +  // own storage, as the same `return` does where the type is not dependent.
-+  bool has_storage =
-+      !context.insts().Is<SemIR::OutParam>(storage_id) ||
-+      SemIR::InitRepr::ForType(context.sem_ir(), target_type_id)
-+          .MightBeInPlace();
++  bool has_storage = !context.insts().Is<SemIR::OutParam>(storage_id) ||
++                     SemIR::InitRepr::ForType(context.sem_ir(), target_type_id)
++                         .MightBeInPlace();
    auto specific_storage_id =
 -      AddSpecificInstToPendingBlock(target_block, storage_id, specific_id);
-+      has_storage
-+          ? AddSpecificInstToPendingBlock(target_block, storage_id, specific_id)
-+          : SemIR::InstId::None;
-   ConversionTarget target = {
+-  ConversionTarget target = {
 -      .kind = ConversionTarget::Kind(target_bundle.in_place.ToBool()
 -                                         ? ConversionTarget::InPlaceInitializing
 -                                         : ConversionTarget::Initializing),
 -      .type_id = context.types().GetTypeIdForTypeInstId(
 -          target_bundle.target_type_inst_id),
-+      .kind = ConversionTarget::Kind(
-+          target_bundle.in_place.ToBool() && has_storage
-+              ? ConversionTarget::InPlaceInitializing
-+              : ConversionTarget::Initializing),
-+      .type_id = target_type_id,
-       .storage_id = specific_storage_id,
-       .storage_access_block = &target_block,
-       .template_storage_args = result_ids};
+-      .storage_id = specific_storage_id,
+-      .storage_access_block = &target_block,
+-      .template_storage_args = result_ids};
++      has_storage
++          ? AddSpecificInstToPendingBlock(target_block, storage_id, specific_id)
++          : SemIR::InstId::None;
++  ConversionTarget target = {.kind = ConversionTarget::Kind(
++                                 target_bundle.in_place.ToBool() && has_storage
++                                     ? ConversionTarget::InPlaceInitializing
++                                     : ConversionTarget::Initializing),
++                             .type_id = target_type_id,
++                             .storage_id = specific_storage_id,
++                             .storage_access_block = &target_block,
++                             .template_storage_args = result_ids};
+
+   // Form a specific initializer and initialize from it.
+   auto expr_id = AddSpecificInst(context, action.init_id, specific_id);
 ```
 
 <!-- google-doc-style-resume -->
@@ -2279,8 +2481,8 @@ because `CheckVarTemplateId` returns a variable declaration. +14 / -5 lines.
 +    // makes never instantiates its definition.
 +    auto* var_decl = cast<clang::VarDecl>(decl_result.get());
 +    if (!var_decl->getTemplateSpecializationKind()) {
-+      var_decl->setTemplateSpecializationKind(
-+          clang::TSK_ImplicitInstantiation, loc);
++      var_decl->setTemplateSpecializationKind(clang::TSK_ImplicitInstantiation,
++                                              loc);
 +    }
 +    return ImportCppDecl(context, loc_id,
 +                         SemIR::ClangDeclKey::ForNonFunctionDecl(var_decl));
@@ -2307,14 +2509,15 @@ the check with an incomplete record (its mutant M10 is expected to survive,
 §8), so the narrower completion plus the check states the precondition. Review
 points: only an exported Carbon class has external lexical storage
 (export.cpp:94, :215); C++ classes are complete or not by C++'s rules and reach
-the unchanged code. +12 lines.
+the unchanged code. +12 lines (11 in the committed layout below; amended
+2026-10-21, implementation-review fold: IR2-m1).
 
 <!-- google-doc-style-ignore -->
 
 ```diff
 --- a/toolchain/check/cpp/overload_resolution.cpp
 +++ b/toolchain/check/cpp/overload_resolution.cpp
-@@ -161,6 +161,18 @@
+@@ -161,6 +161,17 @@
    if (!record_decl) {
      return true;
    }
@@ -2323,8 +2526,7 @@ the unchanged code. +12 lines.
 +  // resolution, so complete it before reading its special members.
 +  if (!record_decl->hasDefinition() &&
 +      record_decl->hasExternalLexicalStorage()) {
-+    record_decl->getASTContext().getExternalSource()->CompleteType(
-+        record_decl);
++    record_decl->getASTContext().getExternalSource()->CompleteType(record_decl);
 +  }
 +  // The argument is an xvalue of the class type, which a class without a
 +  // definition cannot have.
@@ -2481,7 +2683,7 @@ SKIP, seven rows are added; Appendix C.9) and runs `--self-test`.
 
 Appendix C holds the records texts with `<...>` placeholders for what the
 discharge measures: the ledger (W-043's discharge, W-268's narrowing, W-273's
-discharge, W-300 to W-309), TP-1's dated record lines (C.11), gap rows 56 and
+discharge, W-300 to W-311), TP-1's dated record lines (C.11), gap rows 56 and
 42, the decision-log entry "CT-1" with F-021, the ORCHESTRATION paragraph and
 branch row, and the land-time texts (the design page paragraph and fixture X37,
 the merged program header, W-127's sentence, S-VA's hunk).
@@ -2575,7 +2777,10 @@ block the walk reads exists; in a generic the specific is symbolic and the
 `splice_inst`'s value there is not concrete, so the category is the action's,
 as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
 (handle_alias.cpp), +6 (eval.h), +21 (eval.cpp), +2 (inst.cpp), +9 / -7
-(member_access.cpp), +6 / -2 (expr_info.cpp), +1 / -1 (typed_insts.h).
+(member_access.cpp), +6 / -2 (expr_info.cpp), +1 / -1 (typed_insts.h); in the
+committed layout below generic.cpp adds 70 lines, eval.cpp 20 and
+member_access.cpp 8 with 6 removed (amended 2026-10-21, implementation-review
+fold: IR2-m1).
 
 <!-- google-doc-style-ignore -->
 
@@ -2624,7 +2829,7 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
  #include "toolchain/sem_ir/generic.h"
  #include "toolchain/sem_ir/ids.h"
  #include "toolchain/sem_ir/inst.h"
-@@ -464,6 +465,76 @@
+@@ -464,6 +465,75 @@
    context.generic_region_stack().Pop();
  }
 
@@ -2644,8 +2849,7 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
 +      // A template action, or an element of its result: its own constant
 +      // (`AddTemplateConstantInstToEvalBlock`).
 +      AttachDependentInstToCurrentGeneric(
-+          context,
-+          {.inst_id = inst_id, .kind = DependentInstKind::Template});
++          context, {.inst_id = inst_id, .kind = DependentInstKind::Template});
 +      continue;
 +    }
 +    DependentInstKind kind = DependentInstKind::None;
@@ -2820,7 +3024,7 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
  // Gets a constant value for an `inst_id`, diagnosing when the input is not a
  // constant value.
  static auto RequireConstantValue(EvalContext& eval_context,
-@@ -3769,6 +3776,20 @@
+@@ -3769,6 +3776,19 @@
                                           context.insts().Get(inst_id));
      CARBON_CHECK(const_id.has_value(), "Failed to evaluate {0} in eval block",
                   context.insts().Get(inst_id));
@@ -2830,8 +3034,7 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
 +      // as `alias` requires where the value is known: a runtime value, such as
 +      // a call to a non-constant function, is diagnosed the same way, and its
 +      // uses in the specific are errors.
-+      if (auto alias =
-+              context.insts().TryGetAs<SemIR::AliasBinding>(inst_id)) {
++      if (auto alias = context.insts().TryGetAs<SemIR::AliasBinding>(inst_id)) {
 +        DiagnoseAliasRequiresConstantValue(
 +            context, eval_context.GetDiagnosticLoc({alias->value_id, inst_id}));
 +        MakeSpecificValueAnError(eval_context, alias->value_id);
@@ -2861,13 +3064,6 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
        specific_value_id = wrapper->value_id;
      }
      if (specific_value_id.has_value()) {
--      result.scope_result = SemIR::ScopeLookupResult::MakeFound(
--          GetOrAddInst<SemIR::SpecificConstant>(
--              context, loc_id,
--              {.type_id = type_id,
--               .inst_id = specific_value_id,
--               .specific_id = result.specific_id}),
--          SemIR::AccessKind::Public);
 +      auto use_id = GetOrAddInst<SemIR::SpecificConstant>(
 +          context, loc_id,
 +          {.type_id = type_id,
@@ -2875,8 +3071,14 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
 +           .specific_id = result.specific_id});
 +      AddAliasUseCheckToCurrentGeneric(context, loc_id, specific_value_id,
 +                                       use_id);
-+      result.scope_result =
-+          SemIR::ScopeLookupResult::MakeFound(use_id, SemIR::AccessKind::Public);
+       result.scope_result = SemIR::ScopeLookupResult::MakeFound(
+-          GetOrAddInst<SemIR::SpecificConstant>(
+-              context, loc_id,
+-              {.type_id = type_id,
+-               .inst_id = specific_value_id,
+-               .specific_id = result.specific_id}),
+-          SemIR::AccessKind::Public);
++          use_id, SemIR::AccessKind::Public);
      }
    }
 
@@ -2909,6 +3111,145 @@ as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
         .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
         .is_lowered = false});
 
+```
+
+<!-- google-doc-style-resume -->
+
+### §2.13 toolchain/check: convert, impl_lookup; toolchain/sem_ir: expr_info (fix commit 224ee2f8f, D-CT-3, D-CT-5, D-CT-17)
+
+Added 2026-10-21 (implementation-review fold: IR1-B1 / IR1-M1 / IR1-M2 /
+IR1-M3). The first implementation review's four toolchain findings, each
+fixed at its root in the fix commit 224ee2f8f; the block applies to the three
+files as C2 left them (d5d7c6580) and gives the fix commit's files.
+`PerformAction(InitializeAction)` gives the temporary storage of a storage
+argument it did not initialize the argument's type in the specific
+(`SemIR::GetTypeOfInstInSpecific`), not its type in the generic, which is
+symbolic for a Carbon generic call's `T` result stored into a member of
+`Cpp.Box(T)` (IR1-B1; upstream's TODO there says the storage should be
+mapped into the specific). `Convert`'s `ref`-tag branch unwraps a
+`SpecificInst` of a `RefTagExpr`, a deferred C++ call's `ref` argument in a
+specific, and wraps the tag's operand for the same specific (IR1-M1).
+`GetExprCategoryImpl` takes a `specific_constant` of the walked specific's
+own generic in that specific when its value there is concrete, and goes on
+from that value (IR1-M2). `NamesTemplateBinding` returns true at a call
+action of a C++ template name or an imported C++ function, the predicate of
+`ActionIsPerformable` (D-CT-6), whose arguments a class template's specific
+formed for a checked generic's `U` leaves unwrapped (IR1-M3). Review points:
+the storage argument is an instruction of the generic, so its type in the
+specific is the type the conversion's result has there; the `SpecificInst`
+names the generic's tag, whose operand is an instruction of the same generic;
+the category step applies only when the walk already holds a specific of the
+same IR whose generic owns the `specific_constant`, and a symbolic value there
+keeps rev 4's switch to the constant's own specific; the call action reached
+by the walk is symbolic, so a concrete one is never deferred. 57 lines added
+and 2 removed: convert.cpp 20 and 2, impl_lookup.cpp 15, expr_info.cpp 22.
+
+<!-- google-doc-style-ignore -->
+
+```diff
+--- a/toolchain/check/convert.cpp
++++ b/toolchain/check/convert.cpp
+@@ -3060,10 +3060,15 @@
+           return;
+         }
+         if (!result_ids[next_result_index].has_value()) {
++          // The storage argument is an instruction of the generic, whose
++          // type can be symbolic there, such as a Carbon generic call's `T`
++          // result stored into a member of `Cpp.Box(T)`; the temporary has
++          // its type in this specific.
+           result_ids[next_result_index] =
+               AddInstInNoBlock<SemIR::TemporaryStorage>(
+                   context, SemIR::LocId(storage_arg_id),
+-                  {.type_id = context.insts().Get(storage_arg_id).type_id()});
++                  {.type_id = SemIR::GetTypeOfInstInSpecific(
++                       context.sem_ir(), specific_id, storage_arg_id)});
+         }
+         ++next_result_index;
+       });
+@@ -3160,7 +3165,20 @@
+       }
+       return SemIR::ErrorInst::InstId;
+     }
+-    expr_id = sem_ir.insts().GetAs<SemIR::RefTagExpr>(expr_id).expr_id;
++    if (auto specific_inst =
++            sem_ir.insts().TryGetAs<SemIR::SpecificInst>(expr_id)) {
++      // A `ref`-tagged argument of a C++ call deferred to a specific is the
++      // generic's `RefTagExpr` in that specific: its operand is taken in the
++      // same specific.
++      expr_id =
++          AddSpecificInst(context,
++                          sem_ir.insts()
++                              .GetAs<SemIR::RefTagExpr>(specific_inst->inst_id)
++                              .expr_id,
++                          specific_inst->specific_id);
++    } else {
++      expr_id = sem_ir.insts().GetAs<SemIR::RefTagExpr>(expr_id).expr_id;
++    }
+     starting_category = SemIR::GetExprCategory(sem_ir, expr_id);
+   } else if (target.kind == ConversionTarget::RefParam) {
+     if (target.diagnose) {
+--- a/toolchain/check/impl_lookup.cpp
++++ b/toolchain/check/impl_lookup.cpp
+@@ -25,6 +25,7 @@
+ #include "toolchain/check/type_completion.h"
+ #include "toolchain/check/type_structure.h"
+ #include "toolchain/sem_ir/declared_facet_type.h"
++#include "toolchain/sem_ir/function.h"
+ #include "toolchain/sem_ir/identified_facet_type.h"
+ #include "toolchain/sem_ir/ids.h"
+ #include "toolchain/sem_ir/impl.h"
+@@ -619,6 +620,20 @@
+     if (inst.Is<SemIR::TemplateInst>()) {
+       return true;
+     }
++    // A call to a C++ template name or an imported C++ function, which waits
++    // for concrete arguments (`ActionIsPerformable`): a class template's
++    // specific formed for a checked generic's `U`, `C(U).B` for `alias B =
++    // Cpp.Box(T);`, holds `U` itself, not wrapped in a `TemplateInst`.
++    if (auto call = inst.TryAs<SemIR::CallAction>()) {
++      auto inst_ids = context.inst_blocks().Get(call->inst_block_id);
++      if (!inst_ids.empty() &&
++          (context.types().Is<SemIR::CppTemplateNameType>(
++               context.insts().Get(inst_ids.front()).type_id()) ||
++           std::holds_alternative<SemIR::CalleeCppOverloadSet>(
++               SemIR::GetCallee(context.sem_ir(), inst_ids.front())))) {
++        return true;
++      }
++    }
+     for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+       if (auto id = arg.TryAs<SemIR::InstId>()) {
+         push(*id);
+--- a/toolchain/sem_ir/expr_info.cpp
++++ b/toolchain/sem_ir/expr_info.cpp
+@@ -124,6 +124,28 @@
+         // `SpecificConstant` belongs to the generic of its specific, and its
+         // category can be known only there: `C(X).A` names an alias whose value
+         // is template dependent in `C`, and a value in the specific `C(X)`.
++        if constexpr (std::same_as<TypedInstT, SpecificConstant>) {
++          // A `SpecificConstant` of the generic being walked for one of its
++          // specifics, `C(T).A` in `class E(T: type) { alias B = C(T).A; }`
++          // read as `E(i64).B`, has a symbolic specific of its own: its
++          // constant in the walked specific, when concrete, is what it names.
++          auto attached_id = ir->constant_values().GetAttached(inst_id);
++          if (specific_id.has_value() && specific_ir == ir &&
++              attached_id.is_symbolic() &&
++              ir->constant_values()
++                      .GetSymbolicConstant(attached_id)
++                      .generic_id ==
++                  ir->specifics().Get(specific_id).generic_id) {
++            auto [const_ir, const_id] = GetConstantValueInSpecific(
++                *specific_ir, specific_id, *ir, inst_id);
++            if (const_id.is_concrete()) {
++              ir = const_ir;
++              inst_id = ir->constant_values().GetInstId(const_id);
++              specific_id = SpecificId::None;
++              return std::nullopt;
++            }
++          }
++        }
+         inst_id = inst.inst_id;
+         specific_id = inst.specific_id;
+         specific_ir = ir;
 ```
 
 <!-- google-doc-style-resume -->
@@ -2959,6 +3300,18 @@ B-m6).
     dropping the form at issue to OUT with a residue in W-310..W-319 and its
     golden split renamed `fail_todo_`, never by a guard that hides an IN form
     (R17).
+
+    Done 2026-10-21 (amended 2026-10-21, implementation-review fold): the
+    implementation reviews 1 (REJECT: one BLOCKER, three MAJOR, four MINOR)
+    and 2 (APPROVE-WITH-FIXES: six MINOR) of 79740957a are folded in three
+    fix commits, within the budget: "CT-1 fix: a deferred store's temporary,
+    a ref argument, a nested alias and a class template's alias, for each
+    specific" (224ee2f8f, §2.13, with its fill 5c78c4086), "CT-1 fix: a
+    nested alias's lowered use through a specific" (ccd6a80a8, a lower split,
+    with its fill ffde90904) and the records commit that adds this paragraph.
+    Nothing is shrunk; two residues are filed from the reserve (W-310 and
+    W-311, §1.12), and the fold record before the Sign-off tables each
+    finding.
 9.  **Focused re-review loop** (added 2026-10-21, review fold: B-m6): CT-1
     edits the machinery TP-1 needed eleven review rounds to settle (actions,
     substitution, impl lookup, generic regions), so after the fix commits two
@@ -2983,7 +3336,12 @@ B-m6).
     L-F, L and the land-time records commit stay owed at land time (item 13,
     §2.11), S-VA's hunk and split having been measured early on PR 59's
     mirror. _Break condition:_ a held PR's head moves before CT-1 lands, which
-    re-runs its mirror at the new head.
+    re-runs its mirror at the new head. The commit that records these
+    measurements, 79740957a, is titled "CT-1: held-state measurements:
+    mutants, composition mirrors, clang-tidy, id re-scan", not item 1's
+    "CT-1 plan (rev N)" form: it amends rev 4 with dated marks and is no new
+    revision, and it is pushed, so it stays as it is (amended 2026-10-21,
+    implementation-review fold: IR2-m3).
 11. **R** "CT-1 records: gap rows 56 and 42": Appendix C.4.
 12. **D** "CT-1 discharge": the ledger (Appendix C.2, C.3, C.5), the TP-1
     record lines (C.11), the decision log (C.7), fork/ORCHESTRATION.md (C.8),
@@ -3007,7 +3365,9 @@ C1 splits, which fill identically (§0.7); rev 3's splits are v13g's and rev
 2026-10-21, review fold: RR2-M1).
 
 check/testdata/interop/cpp/template/symbolic_arg.carbon (A.1), under the full
-prelude, twenty-five splits:
+prelude, twenty-nine splits (twenty-five, and the four the implementation-review
+fold's fix commit adds, marked "fix"; amended 2026-10-21, implementation-review
+fold: IR1-M1 / IR1-M2 / IR1-M3 / IR1-m2):
 
 | Split | Commit | Pins | Fill (measured on v12g; on c1v12g for C1 splits) |
 | --- | --- | --- | --- |
@@ -3015,10 +3375,13 @@ prelude, twenty-five splits:
 | nested_and_generic_class_args | C1 | D-CT-11: `Cpp.Pair(Cpp.Box(T))`, `Cpp.Box(List(T))`, `Cpp.Apply(Cpp.Box, T)` | no diagnostic |
 | function_template_call | C2 | R7, D-CT-3: `Cpp.Twice(v)` | no diagnostic; the dump of `F` holds the deferred `call_action` over `Twice`'s overload set; the specific `F(i32)` calls `Twice__carbon_thunk` |
 | explicit_type_argument | C2 | D-CT-3: `Cpp.Twice(T, v)`, `Cpp.SizeOfFn(T)`, the variable template `Cpp.Plain(T)` | no diagnostic |
+| cpp_call_ref_argument | fix | IR1-M1, D-CT-3: `Cpp.Inc(ref v)` with `v: T`, in a checked generic and in a template | no diagnostic (CT-1 at P: the file_test process stops at sem_ir/inst.h:249; TP-1: E-ARG for the checked form, the same stop for the template form) |
 | template_called_from_checked_generic | C1 | R2, D-CT-6: a template with `Cpp.Box(T)` and one with `Cpp.Twice(v)`, each called from a checked generic with its symbolic `U` | no diagnostic (TP-1: STOP generic_region_stack.h:98) |
 | generic_class_field | C2 | R3, D-CT-7: `Holder(T)` with a `Cpp.Box(T)` field, read in `Get` and made in `Make` (which calls `Cpp.MakeBox(v)`) | no diagnostic |
 | alias_of_specialization | C1 | R8, R9, R10, D-CT-17, D-CT-7's other-generic case, D-CT-5's constant-value step: `alias B = Cpp.Box(T);` in a checked class (a field, `fn Get(b: B) -> T`, `fn Make(v: T) -> B` with `var b: B;`), in a class template and in a checked function's body | no diagnostic (TP-1: E-DU at `var b: B;`) |
 | alias_of_constant_through_specific | C1 | R12, D-CT-17's use rule (rev 4, RR2-M1): `alias Size = Cpp.Traits(T).size;` of a `static constexpr int` in a checked class and in a class template, named as `Checked(f64).Size` and `Template(i16).Size` in `G`, which is not generic, `let`-bound and passed to `Take` | no diagnostic; the dump of `G` shows each use as ``ref %const.6a8 = specific_constant @Checked.%Size.loc13_9.1, @Checked(constants.%f64) [concrete = imports.%size.var.3b6528.1]`` (and `@Template(constants.%i16)`), converted and acquired as `constants.%int_8` and `constants.%int_2`, with no `splice_inst` (v13: two `splice_inst <unexpected>` in `G`) |
+| nested_alias_through_specific | fix | IR1-M2, D-CT-17's use rule for a nested alias: `alias Size = Inner(T).Size;` in `class Outer(T: type)` and `alias Size = InnerTemplate(T).Size;` in `class OuterOfTemplate(T: type)`, named as `Outer(i64).Size` (`let`-bound) and `OuterOfTemplate(i16).Size` in `G` | no diagnostic; the dump of `G` shows each use as ``ref %const.6a8 = specific_constant @Outer.%Size.loc18_9.1, @Outer(constants.%i64) [concrete = imports.%size.var.3b6528.1]`` (and `@OuterOfTemplate.%Size.loc26_9.1, @OuterOfTemplate(constants.%i16)`), acquired as `constants.%int_8` and `constants.%int_2`, with no `splice_inst`; the same text with the fix's step reverted (M25), whose lowering then stops, so A.2's split of the same name is the pin of the lowered use |
+| class_template_alias_through_symbolic_specific | fix | IR1-M3, D-CT-5's call-action step: `var b: C(U).B;` in `G[U: type]` for `alias B = Cpp.Box(T);` in `class C(template T: type)`; and IR1-M2: `var b: Outer(i32).B;` for `alias B = Inner(T).B;` in a checked class | no diagnostic (CT-1 at P: ``cannot convert type `B` into type implementing `Core.DefaultOrUnformed` `` at `var b: C(U).B;`, and at `var b: Outer(i32).B;`, each turned back by its mutant, M26 and M25) |
 | member_missing_uncalled | C1 | D-CT-2: an uninstantiated body is not diagnosed | no diagnostic |
 | copy_into_specialization_uncalled | C1 | D-CT-2's copy row: `b.value = v;` with `v: T` and no `Core.Copy` | no diagnostic |
 | fail_member_missing_on_instantiation | C1 | D-CT-2 | ``unable to monomorphize specific `F(i32)` [ResolvingSpecificHere]`` at the call, ``note: member name `nope` not found in `Cpp.Box` [MemberNameNotFoundInInstScope]`` at `b.nope` |
@@ -3035,6 +3398,7 @@ prelude, twenty-five splits:
 | fail_todo_deduce_through_specialization | C1 | W-303 | ``cannot deduce value for generic parameter `T` [DeductionIncomplete]`` with ``note: while deducing parameters of generic declared here [DeductionGenericHere]`` |
 | fail_todo_impl_forall_specialization | C1 | W-303's impl shape: `impl forall [T: type] Cpp.Box(T) as Size` | `` `impl` with unused generic binding [ImplUnusedBinding]`` at `T` (TP-1, trunk and the nightly: STOP sem_ir/generic.cpp:84) |
 | fail_todo_choice_payload_specialization | C1 | W-308: `choice Holder(T: type) { Full(b: Cpp.Box(T)), Empty }`, used in `F(i32)` | two ``unable to monomorphize specific `F(i32)` `` (W-306's repetition): the first with ``note: `Holder(T)` evaluates to incomplete type `Holder(i32)` [IncompleteTypeInMonomorphization]`` and ``note: choice alternative payload type `Cpp.Box` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]`` at the choice, the second with the same payload note at `Holder(T).Empty` (TP-1: STOP sem_ir/generic.cpp:84 at the declaration) |
+| fail_todo_returned_var_specialization | fix | W-310, IR1-m2: `returned var r: Cpp.Box(T) = Cpp.MakeBox(v); return var;` in `F[template T: type]` | ``type `Box(T)` of `returned var` does not match return type of enclosing function [ReturnedVarWrongType]`` at the variable's type, with ``note: return type of function is `Box(T)` [ReturnTypeHereNote]`` at the return type, seven STDERR lines, as on TP-1 |
 | fail_todo_member_through_constraint | C1 | W-305; `Direct` and `Compound` compile | ``unable to monomorphize specific `Simple(S as Show)` `` with ``note: member name `Get` not found in `S` [MemberNameNotFoundInInstScope]`` |
 
 box.h gains `inline int TakeInt(int x) { return x + 100; }` for the three
@@ -3042,7 +3406,8 @@ box.h gains `inline int TakeInt(int x) { return x + 100; }` for the three
 { return sizeof(T); } };` for the alias split (rev 3).
 
 lower/testdata/interop/cpp/template_symbolic_arg.carbon (A.2), under the full
-prelude, nine splits:
+prelude, eleven splits (nine, and the implementation-review fold's two, marked
+"fix"; amended 2026-10-21, implementation-review fold: IR1-B1 / IR1-M2):
 
 | Split | Commit | Pins | Fill (measured) |
 | --- | --- | --- | --- |
@@ -3054,7 +3419,9 @@ prelude, nine splits:
 | generic_class_field | C1 | R3, D-CT-7 | `i32 @_CGet.Main.<hash>(ptr %h)` |
 | var_template | C1 | R5, D-CT-9 | `@_Z5PlainIiE = linkonce_odr dso_local global i32 5` and `@_Z5PlainIlE = linkonce_odr dso_local global i32 9` |
 | exported_class_argument | C1 | R6, D-CT-10 | `@_Z2IdIN6Carbon5PointEET_S2_` and its thunk (TP-1: the clang assertion) |
-| todo_discarded_temporary_not_destroyed | C2 | W-309, D-CT-18 (rev 3, RR1-N-M1): `Cpp.MakeLoud(v);` discarded in `DiscardDeferred[T: type]` and in the concrete `DiscardConcrete`, with loud.h | `@_CDiscardDeferred.Main.<hash>(i32 %v)` allocates `%.bc2.temp`, calls `@_Z8MakeLoudIiE4LoudIT_ES1_.carbon_thunk._` and returns, with no destructor call; `@_CDiscardConcrete.Main(i32 %v)` calls the thunk and then `@"_CSelfDestruct.<hash>:core.Destroy.Core"`, which calls `@_ZN4LoudIiED2Ev` |
+| todo_discarded_temporary_not_destroyed | C2 | W-309, D-CT-18 (rev 3, RR1-N-M1): `Cpp.MakeLoud(v);` discarded in `DiscardDeferred[T: type]` and in the concrete `DiscardConcrete`, with loud.h | `@_CDiscardDeferred.Main.<hash>(i32 %v)` allocates `%.bc2.temp`, calls `@_Z8MakeLoudIiE4LoudIT_ES1_.carbon_thunk._` and returns, with no destructor call; `@_CDiscardConcrete.Main(i32 %v)` calls the thunk and then `@"_CSelfDestruct.<hash>:core.Destroy.Core"`, which calls `@_ZN4LoudIiED2Ev`; since the implementation-review fold its comment names the member-read and by-value shapes, three lines as before (IR1-m1) |
+| store_generic_call_result | fix | IR1-B1, `PerformAction(InitializeAction)`'s storage arguments: `b.value = Mk(x);` into `var b: Cpp.Box(T)` with `Mk[T: Core.Copy]` a Carbon generic, and `b.value = c.First();` into `var b: Cpp.Box(C.Elem)` for `C: Container` | `i32 @_CStoreT.Main.<hash>(i32 %x)` and `i32 @_CStoreElem.Main.<hash>(ptr %c)` each allocate the temporary as `alloca i32` and store the call's result into the box's `value` (CT-1 at P: STOP lower/file_context.h:187, ``Lowering symbolic type``) |
+| nested_alias_through_specific | fix (ccd6a80a8) | IR1-M2, the lowered use of A.1's split of the same name | no diagnostic; the module defines `@_ZN6TraitsIlE4sizeE` and `@_ZN6TraitsIsE4sizeE` as `linkonce_odr dso_local constant i32 8` and `i32 2`, and `i32 @_CUse.Main()` calls `@_CTake.Main(i32 2)` and adds 8 (with the step reverted, M25: STOP lower/function_context.cpp:264 at the `let`'s `wrapper_binding`) |
 
 check/testdata/generic/template/default_init.carbon (A.5), five new splits in
 C1, all pure Carbon. Three have no diagnostic or dump:
@@ -3088,7 +3455,10 @@ lower/interop/cpp/globals.carbon (C1's source change, F1's fill),
 check/generic/template/deduce_class_args.carbon (A.6's rename in C1, F1 drops
 the split's seven STDERR lines) and check/interop/cpp/range_for.carbon (F1:
 four notes move to the alias's expression). No other golden changes; the gate
-after F1 and after F2 is 1959 of 1959.
+after F1 and after F2 is 1959 of 1959, and after each fix commit's fill too
+(the fills of the implementation-review fold: A.1 to 1542 lines and A.2 to
+2093, then A.2 to 2186; amended 2026-10-21, implementation-review
+fold).
 
 ## §5 Conformance delta (from 138 / 0 / 22 over 160)
 
@@ -3101,11 +3471,17 @@ after F1 and after F2 is 1959 of 1959.
 The +9 PASS are the two un-SKIPped programs and the seven new ones; no program
 changes status otherwise (the runner's scoreboards on TP-1 and v12 differ only
 in those nine rows). Relative to trunk the tree is +19 PASS, -2 SKIP and +17
-programs, TP-1's ten programs included.
+programs, TP-1's ten programs included. The implementation-review fold's fix
+changes no program's status: 147 / 0 / 20 over 167 and 48 of 56 bullets on
+CT-1's build of the fix commit (amended 2026-10-21, implementation-review
+fold).
 
 ## §6 Churn and collisions
 
-Sixteen toolchain files, 388 lines added and 33 removed (rev 3: fourteen files,
+Sixteen toolchain files, 388 lines added and 33 removed as planned, 386 and 36
+as committed in clang-format's layout, and 443 and 38 with the
+implementation-review fold's fix (amended 2026-10-21, implementation-review
+fold: IR2-m1 / IR1-B1 / IR1-M1 / IR1-M2 / IR1-M3; rev 3: fourteen files,
 381 added and 30 removed; rev 2: ten files, 265 added and 13 removed; rev 1:
 seven files, 167 added and 11 removed, which rev 1 misstated as 163 and 11;
 amended 2026-10-21, review fold: B-m1 / RR1-N-B1 / RR2-M1); two new goldens
@@ -3432,6 +3808,53 @@ is not a difference.
     does not apply. _Break condition:_ a mutant that turns nothing red other
     than M12, or an edit that kills only by stopping the compiler where the
     table says it reports a diagnostic.
+
+    Measured by the implementation-review fold (amended 2026-10-21,
+    implementation-review fold: IR1-B1 / IR1-M1 / IR1-M2 / IR1-M3 / IR2-m5;
+    EXPECTED, not of record), the same way over CT-1's build of the fix commit
+    224ee2f8f, each also over the first implementation review's 250 probes
+    (`$X/mut/defs.py`, `$X/logs/mut_<m>.sum` and `mut_<m>_r1.tsv`, `$X` the
+    fold's scratch, scratchpad/ct1-impl/fixer). M23 to M26 revert the fold's
+    four steps (§2.13); M1, M2, M6, M7, M15 and M22, the mutants of the
+    functions the fix touches, are re-run; M1c reverts M1's and M26's steps
+    together; TP-1's M75 (the second review's m5) is run, with M75r, whose
+    facet-type count stops the compiler, to find any input that reaches the
+    count.
+
+    <!-- google-doc-style-ignore -->
+
+    | Mutant | Reverts | Measured on the fix's build (2026-10-21) | Killed |
+    | --- | --- | --- | --- |
+    | M23 | IR1-B1's storage type | A.2 stops: CHECK lower/file_context.h:187 (``Lowering symbolic type``) at store_generic_call_result.carbon:25; every program passes; the review's as1, as3, as6, as8, as11, as12, c_assoc_type and c_assign_from_generic_call_box_field stop again | yes |
+    | M24 | IR1-M1's `ref`-tag step | A.1 stops: CHECK sem_ir/inst.h:249 (casting a `SpecificInst` to `RefTagExpr`) at cpp_call_ref_argument; c_ref_param and rp2 stop again | yes |
+    | M25 | IR1-M2's category step | red A.1: class_template_alias_through_symbolic_specific, ``cannot convert type `B` into type implementing `Core.DefaultOrUnformed` `` at its nested `var b: Outer(i32).B;`; A.1's nested_alias_through_specific dumps the same text; aa1, aa5, aa6 and c_alias_of_alias_specific stop at lower/function_context.cpp:264 and aa8 is E-DU; relinked again after ccd6a80a8, file_test stops on A.2's nested_alias_through_specific.carbon:31 at the same CHECK | yes |
+    | M26 | IR1-M3's call-action step | red A.1: class_template_alias_through_symbolic_specific, E-DU at `var b: C(U).B;`; du4, du5 and c_alias_specific_in_generic_decl are E-DU again | yes |
+    | M1 | D-CT-5's `TemplateInst` clause | nothing red: 1959 of 1959, every program passes, the 250 probes unchanged; the walk meets the C++ call action whose argument a `TemplateInst` is before the argument, and the call-action step returns true there | no: survives, subsumed by M26's step |
+    | M1c | M1's and M26's steps together | A.1 stops: FATAL custom_witness.cpp:487 at generic_class_field.carbon:16, as M1 did at P; generic_call.carbon and A.2 (two_specifics, store_generic_call_result) red; the five programs of M1's row COMPILE-FAIL | yes |
+    | M2 | D-CT-5's `MetaInstId` walk | the same stop; also red default_init.carbon, generic_call.carbon and A.2 (alias_of_member_type, two_specifics, store_generic_call_result); the same five programs | yes |
+    | M6, M7 | D-CT-8 | A.2 stops: CHECK lower/handle_call.cpp:984 at narrow_return_template.carbon:7; cpp_template_symbolic_diff COMPILE-FAIL | yes |
+    | M15 | D-CT-5's constant-value step | red A.1: alias_of_specialization and class_template_alias_through_symbolic_specific | yes |
+    | M22 | D-CT-17's use rule | red default_init.carbon (four `splice_inst <unexpected>`) and A.1 (the dumps of alias_of_constant_through_specific and nested_alias_through_specific lose `ref`; class_template_alias_through_symbolic_specific fails) | yes |
+    | M75 | TP-1's facet-type operand counted as a splice (convert.cpp's walk) | nothing red: 1959 of 1959, every program, the 403 and the 250 probes unchanged, as the second review measured on 79740957a (k14 prints 3) | no: survives |
+    | M75r | the count replaced by a `CARBON_FATAL` | no stop and nothing red over the gate, the 167 programs, the 403 probes and the 250: no measured input reaches the count | reach only |
+
+    <!-- google-doc-style-resume -->
+
+    So each of the fold's steps is pinned by a split its mutant turns red.
+    M1 now survives: since the fold, `NamesTemplateBinding` returns true at
+    the call action of which every `TemplateInst` is an argument, so the
+    clause is kept as upstream's statement that such an argument is treated
+    as a template, and M1c pins the two together. M75 survives because
+    A.6's rename made its only killer succeed (D-CT-17 attaches the alias's
+    region, so `D(Holder)`'s representation is no longer template
+    dependent), and M75r shows that no golden, program or probe reaches the
+    count on CT-1's build: the count is defensive there, and no golden can be
+    added for a shape the measurements do not have (C.11's W-273 line).
+    The break condition above is amended (amended 2026-10-21,
+    implementation-review fold: IR1-M3 / IR2-m5): a mutant that turns nothing
+    red other than M12, M1 (subsumed, with M1c killed) and M75 (defensive on
+    CT-1), or an edit that kills only by stopping the compiler where the
+    table says it reports a diagnostic.
 6.  **clang-tidy**: the carbonbuild builds write no compile database, so
     after item 1 `ninja -C /home/user/carbon-build/carbon-ct -t compdb >
     $X/compile_commands.json`, then `/home/user/llvm/bin/clang-tidy -p $X
@@ -3450,7 +3873,13 @@ is not a difference.
     5661a35c8's files was needed. A scratch file with `NULL` and a C-style
     cast, run with the same configuration, reports both, so the run checks
     what it should. `clang-format --dry-run --Werror` (21.1.8) on the sixteen
-    files is clean (R18).
+    files is clean (R18). After the implementation-review fold's fix
+    (amended 2026-10-21, implementation-review fold): a fresh `ninja -t
+    compdb` (323 entries) and the same clang-tidy run on the three files it
+    changes, convert.cpp, impl_lookup.cpp and sem_ir/expr_info.cpp, report
+    no finding (each exits 0, every counted warning in non-user code or
+    under NOLINT), clang-format is clean on them, and prek's hooks pass on
+    them at the first pass (`$X/tidy`, `$X/logs/prek_code_1.log`).
 7.  **prek** on every changed path, to a fixpoint, with R31's heading and
     list-item counts before and after each markdown edit, and, in each plan
     revision, `git apply --check` of every diff block against this branch's
@@ -3625,6 +4054,35 @@ is not a difference.
     no merge changed one of CT-1's sixteen files' hunks beyond offsets. Both
     are recorded here with the predictions kept; neither is a fill, the gate
     or P, so §8's stop-and-amend rule does not apply to them.
+
+    Measured again at the implementation-review fold's head, ffde90904
+    (amended 2026-10-21, implementation-review fold: IR2-m4; EXPECTED, not of
+    record), for the held PRs whose heads touch a file the fix changes
+    (convert.cpp: PR 57, PR 59, PR 60 and PR 62; impl_lookup.cpp: PR 60; no
+    held PR touches sem_ir/expr_info.cpp), each mirror a `git clone --shared`
+    merged by sha, records conflicts taken from CT-1's side, built in full
+    under /dev/shm/ct1-impl/builds with no warning, gated, run over the
+    programs, the 403 probes and the 27 rows of review 1's probes that the
+    fix changes, and deleted (`$X/bin/mirror.sh`, `$X/out-m-<pr>/`, `$X` the
+    fold's scratch). PR 57 (head b256186e7): conflicts in the three records
+    files only; 1966 of 1967, for_range.carbon red with the same changed lines
+    as before; programs 158 PASS, 20 SKIP of 178, every status as at stage 4.
+    TP-1 plus PR 57 without CT-1 (head 08fda91e0, 5661a35c8 merged with
+    628273444): 1964 of 1965, for_range.carbon red with a byte-identical
+    autoupdate diff, so the golden is TP-1's F6 refill (§0.9, re-decided).
+    PR 59 (head 71aadfb8e): conflicts in the four records files; 1977 of
+    1977; programs 156 PASS, 19 SKIP of 175; va1 and va2 E-MONO, va3 7, va4
+    42, va5 5, as before; S-VA was not measured again, because the fix does
+    not touch call.cpp and C.11's hunk still applies to the measured merge.
+    PR 60 (head 2bf903427, TP-1's M resolution as before, the conflict
+    markers named by the merged sha): 1974 of 1976, the same two goldens red
+    with autoupdate diffs byte-identical to stage 4's; programs 149 PASS, 19
+    SKIP of 168; tc1 7, tc2 8, tc3 3, tc4 7, tc5 8 and tc6 7. PR 62 (head
+    9aa3b5ce4): conflicts in two records files; 1967 of 1967; programs 153
+    PASS, 19 SKIP of 172; sv1 to sv8 as before. On every mirror the 403
+    probes print or report what they do on CT-1's build (PR 59's three
+    W-304 stops at lower/function_context.cpp:287, its offset), and so do the
+    27 rows. No merge changed one of the fold's hunks beyond offsets.
 10. **Id re-scan** (§0.11) before D and at land time.
 
     At implementation (amended 2026-10-21, implementation: held state), after
@@ -3652,6 +4110,13 @@ is not a difference.
     PR 58's check_samples.py (measured for rev 2 on a PR 58 mirror,
     Appendix C.1); PR 51's split renamed by C-2 (the mirror runs it under its
     PR 51 name, red because it succeeds).
+
+    At the implementation-review fold (amended 2026-10-21,
+    implementation-review fold: IR2-m4): the TP-1 plus PR 57 mirror without
+    CT-1 is measured now (item 9), so PR 57's red golden is classified by a
+    build; not run again: the PR 51 mirror, whose PR touches none of the
+    fold's files, and S-VA on PR 59's mirror, whose call.cpp the fold does not
+    touch; M10 stays not run.
 
 ### §8.1 What this plan measured and what it did not
 
@@ -3702,17 +4167,35 @@ re-scan after a fetch; `git apply --check` of every diff block, and C.11's
 hunk against the merged call.cpp again.
 
 Measured at implementation (2026-10-21, EXPECTED, not of record; amended
-2026-10-21, implementation: held state): full builds of the branch at C1 and
-C2 and the gate after each fill (stages 1 and 2 of the implementation); the
-403 probes on CT-1's own build; conformance after P; the mutants M1 to M9,
-M11 to M17 and M19 to M22 over CT-1's objects, each over the whole gate and the
-programs, and M18 on PR 59's mirror (§8 item 5); clang-tidy and clang-format
-on the sixteen files (item 6); full builds of the PR 51, PR 57, PR 59, PR 60
-and PR 62 compositions, and of TP-1 composed with PR 60 without CT-1, each gated
-and run over the programs and the probes, with S-VA on PR 59's (item 9); the
-id re-scan after a fetch (item 10).
+2026-10-21, implementation: held state): a full build of the branch at C1 and an
+incremental build.sh at C2, which recompiled check/call.cpp only because C2
+changes no header (amended 2026-10-21, implementation-review fold: IR2-m3), and
+the gate after each fill (stages 1 and 2 of the implementation); the 403 probes
+on CT-1's own build; conformance after P; the mutants M1 to M9, M11 to M17 and
+M19 to M22 over CT-1's objects, each over the whole gate and the programs, and
+M18 on PR 59's mirror (§8 item 5); clang-tidy and clang-format on the sixteen
+files (item 6); full builds of the PR 51, PR 57, PR 59, PR 60 and PR 62
+compositions, and of TP-1 composed with PR 60 without CT-1, each gated and run
+over the programs and the probes, with S-VA on PR 59's (item 9); the id re-scan
+after a fetch (item 10).
 
-Not measured: a full build.sh/install.sh of this branch's own state (relinks of
+Measured by the implementation-review fold (2026-10-21, EXPECTED, not of
+record; amended 2026-10-21, implementation-review fold): the reviews' findings
+on CT-1's build at P, TP-1, trunk and the nightly (the first review's 250
+probes, §0.13's fold rows); the fix commit built incrementally by build.sh
+(three translation units) and installed, its two fills to a fixpoint, the gate
+after each (1959 of 1959), conformance (147 / 0 / 20 over 167), the 403
+probes and the 250; mutants M23 to M26, M1c, M75 and M75r and the re-run M1,
+M2, M6, M7, M15 and M22 (item 5); clang-tidy, clang-format and prek on the
+three changed files (item 6); the PR 57, PR 59, PR 60 and PR 62 compositions
+built in full at the fold's head, and TP-1 composed with PR 57 without CT-1
+(item 9); every diff block applied with `git apply --check` to its base, and
+C1's and C2's blocks reproducing 3a4fa82d0's and d5d7c6580's files.
+
+Not measured before implementation (this paragraph is rev 4's; superseded at
+implementation, which built the branch in full at C1 and incrementally after
+it; amended 2026-10-21, implementation-review fold: IR2-m3): a full
+build.sh/install.sh of this branch's own state (relinks of
 the changed objects over TP-1's build for v12, v13 and v14, and full builds of
 the two mirrors, which compiled v12's ten files and generic.h's includers, not
 v13's or v14's; v14's typed_insts.h field reached only the three translation
@@ -3739,7 +4222,10 @@ split's fill; hosted CI.
     `git apply --check` against this branch's head (rev 2's §2.7 and A.5 did
     not: each lacked its last blank context line; amended 2026-10-21, review
     fold: RR1-N-m1). If a reviewer asks for a different structure, measure it
-    against the same gate before changing the plan.
+    against the same gate before changing the plan. C1's commit gave six of
+    the files clang-format's layout (R18), the same tokens; the blocks are
+    now that committed text, and §2.13's applies to the files as C2 left them
+    (amended 2026-10-21, implementation-review fold: IR2-m1).
 -   **H-3.** New goldens are listed in file_test's manifest by the full build
     (`$CB/build.sh` regenerates it from the globs); the relinked manifest copy
     of §0.7 was the prototype's workaround, not a step.
@@ -3901,12 +4387,61 @@ first to compile it everywhere; C.11's land-time hunk was checked again
 against the merged call.cpp; the Status line and the Sign-off section below
 record the sign-off.
 
+## Implementation review fold record (2026-10-21)
+
+The implementation reviews 1 and 2 (§3 item 7, R29(c)) read the head after P
+and the held-state measurements, 79740957a. Review 1 returned REJECT with one
+BLOCKER, three MAJOR and four MINOR findings, and its measured fixes for the
+four toolchain findings; review 2 returned APPROVE-WITH-FIXES with six MINOR
+findings, all records. Their probes and logs are in scratchpad/ct1-impl/rev1
+and rev2. The fixer reproduced each finding on CT-1's install at P, TP-1's
+toolchain, trunk and the nightly before folding it (its scratch
+scratchpad/ct1-impl/fixer, `$X` below; mutants and mirrors under
+/dev/shm/ct1-impl, deleted after use; EXPECTED, not of record, R9), and
+folded all fourteen; none is rejected. The four toolchain findings are fixed
+at their roots in the fix commit 224ee2f8f (§2.13) with its fill 5c78c4086,
+the second fix commit ccd6a80a8 adds the lowered pin of one of them with its
+fill ffde90904, and this records commit folds the rest: three fix commits,
+the budget of §3 item 8, and nothing is shrunk. After the fold the gate passes
+1959 of 1959, conformance is 147 / 0 / 20 over 167 with no status change, the
+403 probes of rev 4 are unchanged, and every mutant of item 5 but M12, M1
+(subsumed) and M75 (defensive on CT-1) turns something red.
+
+<!-- google-doc-style-ignore -->
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| IR1-B1 | BLOCKER | yes: d/c_assign_from_generic_call_box_field and b/as3 stop at lower/file_context.h:187 on CT-1 at P, where TP-1, trunk and the nightly report E-DU; the mixed forms b/as11 and as12 (as12 without C++) stop there on TP-1 and trunk and at :127 on the nightly | Folded at the root, the review's fix: `PerformAction(InitializeAction)` types the temporary of a storage argument it did not initialize in the specific, as upstream's TODO there asks; the probes print 9 and 4 and the mixed forms run; pinned by A.2's `store_generic_call_result`, a lower split because the stop is in lowering, which M23 stops | §0.13; §1.2; §1.11; §2.13; §4; §8 item 5; A.2; C.2 |
+| IR1-M1 | MAJOR | yes: c/c_ref_param stops at sem_ir/inst.h:249 on CT-1 at P (E-ARG on TP-1, trunk and the nightly), the template form b/rp2 stops there on all four, and the concrete twin prints 6 | Folded at the root, the review's fix: `Convert`'s `ref`-tag branch takes the tag's operand in the `SpecificInst`'s specific; both forms print 6; pinned by A.1's `cpp_call_ref_argument`, which M24 stops | §0.13; §1.2; §1.3; §1.11; §2.13; §4; §8 item 5; A.1; C.2 |
+| IR1-M2 | MAJOR | yes: f/aa1, aa5, aa6 and e/c_alias_of_alias_specific stop at lower/function_context.cpp:264 on CT-1 at P; TP-1, trunk and the nightly drop the statement or stop (aa6 at :264, :223 and :201); f/aa8 is E-DU on all four | Folded at the root, the review's fix: a `specific_constant` of the walked specific's own generic is taken in that specific when its value there is concrete; the forms print 8, 8, 8, ``8 2`` and 5, and the generic uses (aa2, aa3) are unchanged; D-CT-17's break condition (any stop in a probe with an alias) is met by the fix; pinned by A.1's and A.2's `nested_alias_through_specific` and the nested `var` of A.1's `class_template_alias_through_symbolic_specific`; M25 turns A.1 red and stops A.2 | §0.13; §1.11; §1.18; §1.19; §2.13; §4; §8 item 5; A.1; A.2; C.2 |
+| IR1-M3 | MAJOR | yes: f/du4 and du5 are E-DU where `G` is defined on CT-1 at P, TP-1, trunk and the nightly, as is e/c_alias_specific_in_generic_decl; the checked du3 and the concrete du2 run | Folded at the root, the review's fix: `NamesTemplateBinding` returns true at a C++ callee's call action, D-CT-6's predicate, and D-CT-5 and its break condition name it; du4 prints 4, du5 compiles, `var y: T;` stays E-DU; wrapping the substituted argument in `TemplateInst` in `SubstInst` is rejected, a second statement of what D-CT-6 decides that would change every substituted action; pinned by A.1's `class_template_alias_through_symbolic_specific`, which M26 turns red; M1 now survives, subsumed, and M1c kills the pair | §0.13; §1.5; §1.11; §1.19; §2.13; §4; §8 item 5; A.1; C.2; C.7 |
+| IR1-m1 | MINOR | yes: a/c_loud_member and a/c_loud_byval print ``4 1 0`` and ``4 2 1`` where their twins print ``4 1 1`` and ``4 2 2``, and the template forms do the same on TP-1, trunk and the nightly; nothing is destroyed twice | Folded as records: W-309's title, evidence and notes, §1.2's text and table, §1.11's row, D-CT-18, C.1's clause, C.7's cost and A.2's comment (still three lines) name both shapes | §1.2; §1.11; §1.20; §4; A.2; C.1; C.3; C.7 |
+| IR1-m2 | MINOR | yes: the `returned var` of `Cpp.Box(T)` is the type mismatch on CT-1 and TP-1 in both lanes (trunk and the nightly print splices) and its twin prints 9; `returned var r: T = Cpp.Twice(v);` fails the LLVM verifier's CHECK at lower/lower.cpp:48 on CT-1 (E-ARG on TP-1), and b/rv0 without C++ on all four | Folded: W-310 filed for the first form and pinned by A.1's `fail_todo_returned_var_specialization`; the second recorded in §1.11 as upstream's and filed as W-311, because F-021 makes the stop reachable through a C++ call and an OUT form that stops is tracked, as W-304 is (break condition: b/rv0 runs on the nightly) | §0.11; §1.11; §1.12; §1.15; §4; A.1; C.2; C.3; C.4; C.7; C.8 |
+| IR1-m3 | MINOR | yes: a/c_bad_inst's E-MONO note prints `Bad(<cannot stringify inst...: {kind: TemplateInst, ...}>)`, as TP-1's E-DU does | Folded as records, the review's first remedy: W-306's title, evidence and removal; a `TemplateInst` step in sem_ir/stringify.cpp would change TP-1's lane's messages too and is W-306's removal (break condition: a golden prints the form) | §0.13; C.3 |
+| IR1-m4 | MINOR | yes: d/t_alias_member_missing prints 1 and e/t_alias_runtime_via_alias runs on TP-1, trunk and the nightly; CT-1 rejects both as their twins are rejected | Folded as records: both forms in §1.4 and §1.18, and D-CT-4's break condition names an alias whose value is not a constant in the specific | §1.4; §1.18 |
+| IR2-m1 | MINOR | yes: clang-format 21.1.8 of the six blocks equals the tree, and the sixteen files are 386 added and 36 removed against 5661a35c8 | Folded: the six blocks are the committed text (`diff -u` from 5661a35c8 to d5d7c6580), every block applies to its base, C1's and C2's blocks give 3a4fa82d0's and d5d7c6580's files exactly, and the counts are corrected | preamble; §2.0; §2.4 to §2.6; §2.12; §6; H-2 |
+| IR2-m2 | MINOR | yes: the committed A.1 and A.2 drop the W-303 and W-309 ids, `loud.h` moved to C2, and gm14c1's default_init.carbon predates rev 4 | Folded: A.1 and A.2 are the committed sources without CHECK lines, the fold's splits included, and Appendix A's introduction records the three | Appendix A; A.1; A.2 |
+| IR2-m3 | MINOR | yes | Folded: the Status line; §8.1 says a full build at C1 and an incremental build at C2 and supersedes rev 4's "Not measured" sentence; §3 item 10 records the measurement commit's title, which is pushed and stays | Status; §3 item 10; §8.1 |
+| IR2-m4 | MINOR | yes: §0.9's PR 57 and PR 60 break conditions fired and were only recorded | Folded (R29): §0.9 re-decides both, PR 57 measured on a TP-1 plus PR 57 mirror without CT-1 and PR 60 based on the initialized box | §0.9; §8 items 9 and 11 |
+| IR2-m5 | MINOR | yes: M75 passes 1959 of 1959 on the fix's build too | Folded: M75 survives and M75r shows no measured input reaches the count, so it is recorded as defensive on CT-1 in §8 item 5 and C.11's W-273 line; no golden can pin a shape no measurement has | §8 item 5; C.11 |
+| IR2-m6 | MINOR | yes | Folded: W-307 cites expr_info.cpp:432-443 (the fold's head; 406-417 at 5661a35c8), C.4's row 42 counts 164 and 56, and §0.7's range_for row says two carets changed | §0.7; C.3; C.4 |
+
+<!-- google-doc-style-resume -->
+
+Also changed by the fold, outside the findings: the composition mirrors of
+PR 57, PR 59, PR 60 and PR 62, whose heads touch convert.cpp or
+impl_lookup.cpp, were built again at the fold's head (§8 item 9); the fold's
+new splits and residues are in §1.13, §1.12 and §4; C.2's discharge text
+counts fifteen defects; the status line and §3 item 8 name the fix commits.
+
 ## Sign-off
 
 Rev 4 is signed off for implementation on 2026-10-21: the last review, the
 focused re-review RR2 of rev 3, is not a REJECT, and its one finding is folded
 at its root above. Every review of this plan, with its verdict and its counts
-(EXPECTED, not of record, R9, where a review measured):
+(EXPECTED, not of record, R9, where a review measured), and since the
+implementation-review fold the two implementation reviews whose findings
+amend it (amended 2026-10-21, implementation-review fold):
 
 <!-- google-doc-style-ignore -->
 
@@ -3916,7 +4451,9 @@ at its root above. Every review of this plan, with its verdict and its counts
 | Plan review B | rev 1 (7865787a7) | APPROVE-WITH-AMENDMENTS | 0 | 6 (B-M1 to B-M6) | 7 (B-m1 to B-m7) | 13 | 13, in rev 2 | 0 |
 | Focused re-review RR1 | rev 2 (e2d525091) | REJECT | 1 (RR1-N-B1) | 1 (RR1-N-M1) | 2 (RR1-N-m1, RR1-N-m2) | 4 | 4, in rev 3 | 0 |
 | Focused re-review RR2 | rev 3 (bd97af1cc) | APPROVE-WITH-AMENDMENTS (all four of RR1's resolved) | 0 | 1 (RR2-M1) | 0 | 1 | 1, in rev 4 | 0 |
-| Total | | | 4 | 13 | 13 | 30 | 30 | 0 |
+| Implementation review 1 | the head after P and the held-state measurements (79740957a) | REJECT | 1 (IR1-B1) | 3 (IR1-M1 to IR1-M3) | 4 (IR1-m1 to IR1-m4) | 8 | 8, in the fix commits and this records commit | 0 |
+| Implementation review 2 | the same head (79740957a) | APPROVE-WITH-FIXES | 0 | 0 | 6 (IR2-m1 to IR2-m6) | 6 | 6, in this records commit | 0 |
+| Total | | | 5 | 16 | 23 | 44 | 44 | 0 |
 
 <!-- google-doc-style-resume -->
 
@@ -3947,6 +4484,24 @@ A-M5 / B-M1 / B-M6 / B-m6 / B-m7): A.1 gains nine splits and `TakeInt` in box.h
 and renames `fail_template_template_carbon_generic`; A.2 splits `narrow_return`
 and gains `alias_of_member_type`; A.3's second hunk header is the exact one (rev
 1's `@@ -34,4 +34,20 @@` applied only with fuzz); A.5 and A.6 are new.
+
+A.1 and A.2 below are the committed sources, the goldens of the branch's head
+with their CHECK lines removed (amended 2026-10-21, implementation-review fold:
+IR2-m2 / IR1-B1 / IR1-M1 / IR1-M2 / IR1-M3 / IR1-m1 / IR1-m2). They differ
+from rev 4's text in three ways. The committed goldens name no ledger id, so
+the comment that rev 4 wrote with ``(W-303)`` in A.1's
+`fail_todo_impl_forall_specialization` drops it, and A.2's
+`todo_discarded_temporary_not_destroyed` comment begins ``TODO:``; C1 left out
+`loud.h` with the one C2 split that includes it, as c1v14g's measured source
+had, so `loud.h` arrived with C2. The implementation-review fold's fix
+commits add A.1's `cpp_call_ref_argument`, `nested_alias_through_specific`,
+`class_template_alias_through_symbolic_specific` and
+`fail_todo_returned_var_specialization`, now twenty-nine splits, and A.2's
+`store_generic_call_result` and `nested_alias_through_specific`, now eleven
+splits besides its two headers, and rewrite A.2's W-309
+comment in three lines that name the member-read and by-value shapes. The
+measured c1v14g copy of default_init.carbon (811 lines) predates rev 4's two
+A.5 splits, so F1 was compared with v14g's 938 lines, which it matched.
 
 ### A.1 toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon
 
@@ -4061,6 +4616,30 @@ fn SizeOfType[T: type](unused v: T) -> i32 {
 }
 
 fn G() -> i32 { return Explicit(21 as i32) + SizeOfType(1 as i64); }
+
+// --- cpp_call_ref_argument.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> void Inc(T& x) { x = x + 1; }
+''';
+
+// A C++ call with a `ref` argument of a checked generic's symbolic type, and
+// of a template's: the argument is the generic's `ref` tag in each specific.
+fn Checked[T: Core.Copy & Core.Destroy](x: T) -> T {
+  var v: T = x;
+  Cpp.Inc(ref v);
+  return v;
+}
+
+fn Template[template T: Core.Copy & Core.Destroy](x: T) -> T {
+  var v: T = x;
+  Cpp.Inc(ref v);
+  return v;
+}
+
+fn G() -> i32 { return Checked(5 as i32) + Template(6 as i32); }
 
 // --- template_called_from_checked_generic.carbon
 
@@ -4182,6 +4761,78 @@ fn G() -> i32 {
   return Take(Template(i16).Size) + a;
 }
 //@dump-sem-ir-end
+
+// --- nested_alias_through_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> struct Traits { static constexpr int size = sizeof(T); };
+''';
+
+// An alias of another class's alias of a template-dependent C++ constant,
+// named through a concrete specific from a function that is not generic: the
+// inner class's specific is symbolic in the outer class, and the use is the
+// outer specific's constant. The inner class is a checked generic class and a
+// class template.
+class Inner(T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class Outer(T: type) {
+  alias Size = Inner(T).Size;
+}
+
+class InnerTemplate(template T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class OuterOfTemplate(T: type) {
+  alias Size = InnerTemplate(T).Size;
+}
+
+fn Take(n: i32) -> i32 { return n; }
+
+//@dump-sem-ir-begin
+fn G() -> i32 {
+  let a: i32 = Outer(i64).Size;
+  return Take(OuterOfTemplate(i16).Size) + a;
+}
+//@dump-sem-ir-end
+
+// --- class_template_alias_through_symbolic_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// A class template's alias of a specialization, named through the class's
+// specific for a checked generic's `U`, and a checked class's alias of another
+// class's alias of a specialization: each `var` without an initializer is
+// looked up for each specific, not where `G` is defined.
+class C(template T: type) {
+  alias B = Cpp.Box(T);
+}
+
+fn G[U: type](u: U) -> U {
+  var b: C(U).B;
+  b.value = u;
+  return b.value;
+}
+
+class Inner(T: type) {
+  alias B = Cpp.Box(T);
+}
+
+class Outer(T: type) {
+  alias B = Inner(T).B;
+}
+
+fn H() -> i32 {
+  var b: Outer(i32).B;
+  b.value = 5;
+  return G(4 as i32) + b.value;
+}
 
 // --- member_missing_uncalled.carbon
 
@@ -4404,7 +5055,7 @@ interface Size {
   fn Get(self) -> i32;
 }
 
-// `T` cannot be deduced through `Box<T>` (W-303), so the impl's parameter is
+// `T` cannot be deduced through `Box<T>`, so the impl's parameter is
 // not used in a way that identifies it.
 impl forall [T: type] Cpp.Box(T) as Size {
   fn Get(self) -> i32 { return self.value * 0 + 5; }
@@ -4468,6 +5119,21 @@ fn G() -> i32 {
   let s: S = {.v = 49};
   return Direct(s) + Compound(s) + Simple(s);
 }
+
+// --- fail_todo_returned_var_specialization.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// A `returned var` of a specialization: the return type's `Cpp.Box(T)` and the
+// variable's are two actions whose types differ where `F` is defined.
+fn F[template T: type](v: T) -> Cpp.Box(T) {
+  returned var r: Cpp.Box(T) = Cpp.MakeBox(v);
+  return var;
+}
+
+fn G() -> i32 { return F(9 as i32).value; }
 ```
 
 <!-- google-doc-style-resume -->
@@ -4663,9 +5329,9 @@ library "[[@TEST_NAME]]";
 
 import Cpp library "loud.h";
 
-// TODO(W-309): the temporary that a C++ call deferred to the specific returns
-// is not destroyed when it is discarded: the specific of `DiscardDeferred` has
-// no call to `Loud<int>`'s destructor, where `DiscardConcrete` has one.
+// TODO: a temporary that a C++ call deferred to the specific returns is not
+// destroyed when discarded, `let`-bound, read for a member or passed by value:
+// the specific of `DiscardDeferred` calls no destructor of `Loud<int>`.
 fn DiscardDeferred[T: type](v: T) {
   Cpp.MakeLoud(v);
 }
@@ -4677,6 +5343,80 @@ fn DiscardConcrete(v: i32) {
 fn Use() {
   DiscardDeferred(1 as i32);
   DiscardConcrete(2);
+}
+
+// --- store_generic_call_result.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "templates.h";
+
+fn Mk[T: Core.Copy](x: T) -> T { return x; }
+
+interface Container {
+  let Elem: type;
+  fn First(self) -> Elem;
+}
+
+class IntBox {
+  var x: i32;
+  impl as Container where .Elem = i32 {
+    fn First(self) -> i32 { return self.x; }
+  }
+}
+
+// A Carbon call's result of a symbolic type stored into a member of a
+// specialization, for a checked `T` and for an associated type: the call's
+// storage has the specific's type.
+fn StoreT[T: Core.Copy](x: T) -> T {
+  var b: Cpp.Box(T);
+  b.value = Mk(x);
+  return b.value;
+}
+
+fn StoreElem[C: Container](c: C) -> C.Elem {
+  var b: Cpp.Box(C.Elem);
+  b.value = c.First();
+  return b.value;
+}
+
+fn Use() -> i32 {
+  return StoreT(9 as i32) + StoreElem({.x = 4} as IntBox);
+}
+
+// --- nested_alias_through_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> struct Traits { static constexpr int size = sizeof(T); };
+''';
+
+class Inner(T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class InnerTemplate(template T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+// An alias of another class's alias of a template-dependent C++ constant,
+// named through a concrete specific from a function that is not generic, is
+// lowered as the outer specific's constant: the load of `Traits<long>::size`
+// and of `Traits<short>::size`.
+class Outer(T: type) {
+  alias Size = Inner(T).Size;
+}
+
+class OuterOfTemplate(T: type) {
+  alias Size = InnerTemplate(T).Size;
+}
+
+fn Take(n: i32) -> i32 { return n; }
+
+fn Use() -> i32 {
+  let a: i32 = Outer(i64).Size;
+  return Take(OuterOfTemplate(i16).Size) + a;
 }
 ```
 
@@ -5528,8 +6268,8 @@ A Carbon struct or tuple type cannot yet be a template argument (W-300), nor a
 Carbon generic class a template template argument (W-301), a member found
 only through `T`'s constraint, as `b.value.Get()` for `T: Show`, is not found
 on instantiation (W-305), and a C++ object that such a call returns is not
-destroyed when it is discarded or bound with `let` (W-309), though a `var`
-holding it is.
+destroyed when it is discarded, bound with `let`, read for a member or passed
+by value (W-309), though a `var` holding it is.
 ```
 
 <!-- google-doc-style-resume -->
@@ -5547,7 +6287,10 @@ because check_samples.py matches a QUOTE case-sensitively after collapsing
 whitespace (:743-750; amended 2026-10-21, review fold: RR1-N-m2: rev 2 called
 it the whole sentence); its generic parameter is `[T: type]`, as the programs'
 is (D-CT-13). Rev 3 appends the W-309 clause to the paragraph's last sentence
-(review fold: RR1-N-M1); the QUOTE and the fixture are unchanged by it.
+(review fold: RR1-N-M1); the QUOTE and the fixture are unchanged by it. The
+implementation-review fold adds the clause's member-read and by-value shapes
+(amended 2026-10-21, implementation-review fold: IR1-m1); the QUOTE and the
+fixture are unchanged by that too.
 fork/designdocs/check_samples.py's `SAMPLES` gains, right after X09's entry:
 
 <!-- google-doc-style-ignore -->
@@ -5636,14 +6379,14 @@ after the original notes, and this text's additions follow them.
  "title": "C++ templates instantiated on Carbon types / symbolic Carbon generic parameters as C++ template arguments (DISCHARGED at CT-1, <YYYY-MM-DD>)",
  "evidence": [
   "<the original seven entries, kept, then DD-1's at land time>",
-  "toolchain/check/impl_lookup.cpp `NamesTemplateBinding` (D-CT-5: a `TemplateInst` names a template binding; `MetaInstId`/`MetaInstBlockId` operands and symbolic operands' constant values are followed)",
-  "toolchain/check/action.cpp `ActionIsPerformable` (D-CT-6), toolchain/check/subst.cpp `PushOperand`/`PopOperand` and `IsSubstitutedActionOperand` (D-CT-7), toolchain/check/convert.cpp `PerformAction(InitializeAction)` (D-CT-8), toolchain/check/cpp/call.cpp `BuildTemplateId` (D-CT-9), toolchain/check/cpp/overload_resolution.cpp `IsMoveEquivalentToCopy` (D-CT-10), toolchain/check/generic.cpp `DiscardGenericDeclIntoEnclosingGeneric`, `AddAliasCheckToCurrentGeneric` and `AddAliasUseCheckToCurrentGeneric`, toolchain/check/handle_alias.cpp and toolchain/check/eval.cpp `TryEvalBlockForSpecific` (D-CT-17), toolchain/sem_ir/expr_info.cpp `GetExprCategoryImpl` and toolchain/sem_ir/typed_insts.h `SpecificConstant` (D-CT-17's use rule), toolchain/check/call.cpp `DeferCppCallOnSymbolicArgs` (D-CT-3)",
+  "toolchain/check/impl_lookup.cpp `NamesTemplateBinding` (D-CT-5: a `TemplateInst` and a C++ callee's call action name a template binding; `MetaInstId`/`MetaInstBlockId` operands and symbolic operands' constant values are followed)",
+  "toolchain/check/action.cpp `ActionIsPerformable` (D-CT-6), toolchain/check/subst.cpp `PushOperand`/`PopOperand` and `IsSubstitutedActionOperand` (D-CT-7), toolchain/check/convert.cpp `PerformAction(InitializeAction)` (D-CT-8), toolchain/check/cpp/call.cpp `BuildTemplateId` (D-CT-9), toolchain/check/cpp/overload_resolution.cpp `IsMoveEquivalentToCopy` (D-CT-10), toolchain/check/generic.cpp `DiscardGenericDeclIntoEnclosingGeneric`, `AddAliasCheckToCurrentGeneric` and `AddAliasUseCheckToCurrentGeneric`, toolchain/check/handle_alias.cpp and toolchain/check/eval.cpp `TryEvalBlockForSpecific` (D-CT-17), toolchain/sem_ir/expr_info.cpp `GetExprCategoryImpl` and toolchain/sem_ir/typed_insts.h `SpecificConstant` (D-CT-17's use rule, a nested alias's use included), toolchain/check/call.cpp `DeferCppCallOnSymbolicArgs` (D-CT-3), toolchain/check/convert.cpp `PerformAction(InitializeAction)`'s temporary storage and `Convert`'s `ref` tag in a specific (the implementation-review fold)",
   "toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon, toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon and toolchain/check/testdata/generic/template/default_init.carbon (`var_uninit_associated_type`, `class_alias_var_uninit`, `class_alias_field_name`, `fail_alias_of_template_call_on_instantiation`, `alias_constant_through_specific`)",
   "fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon and cpp_template_on_carbon_generic.carbon (un-SKIPped, PASS), cpp_template_fn_symbolic, cpp_template_spec_roundtrip, cpp_template_nested_symbolic, cpp_template_carbon_generic_spec, cpp_template_two_specifics, cpp_template_symbolic_diff (differential), cpp_var_template_runtime",
   "fork/designdocs/samples/X37_cpp_template_symbolic_uninit.carbon (at land time)",
   "fork/cpp-templates/plan.md; fork/decision-log.md \"CT-1\" (F-021)"
  ],
- "notes": "<the original notes, kept, then DD-1's at land time>. DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md): the blocker the item names, a symbolic Carbon type as a C++ template argument, had been lifted upstream (PRs 7673, 7689 and 7700: a deferred `CallAction` over `TemplateInst`-wrapped arguments); eleven defects in and around that path kept it from working (impl lookup on the specialization resolved where the generic is defined, so an uninitialized `var` of it was rejected; C++ actions performed for a symbolic specific; action operands not substituted; a narrow scalar `return` given a return slot; variable template specializations never instantiated; an exported Carbon class queried before it was complete; an alias's value detached from its enclosing generic; an enclosing generic's operand kept in a member's action; an alias's name reference not followed to its value; an alias's template-dependent value converted and checked where it is written, not in each specific; a use of such an alias through a concrete specific given the generic's category, not the specific's), each fixed at its root, and a C++ call with a checked generic's symbolic argument is deferred to each specific, a fork rule (F-021). The two SKIP programs run without their SKIP lines and with the `Core.Copy` impl each needs, keeping the uninitialized `var b: Cpp.Box(T);`. Measured in the container (EXPECTED, not of record, R9): <gate N of N>, conformance <P / F / S over N>. The evidence's type_mapping.cpp TODO (:560 when filed, :733-736 at CT-1) is live and filed as W-307, and call.cpp:252's non-type restriction as W-302. Residues: W-300 (struct, tuple and unexportable class types), W-301 (Carbon generics as template template arguments), W-302 (non-type argument kinds), W-303 (deduction through a C++ specialization, in a parameter's type or an impl's self), W-304 (a concrete C++ class `var` in a template's body stops lowering), W-305 (interface member access through a constraint on a specialization's member), W-306 (instantiation notes without a line, repeated E-MONO), W-307 (form-dependent arguments to C++ functions), W-308 (C++ classes as choice payloads), W-309 (a deferred call's C++ temporary not destroyed); CT-1's forms work within one library, and a use from another library stays W-250's."
+ "notes": "<the original notes, kept, then DD-1's at land time>. DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md): the blocker the item names, a symbolic Carbon type as a C++ template argument, had been lifted upstream (PRs 7673, 7689 and 7700: a deferred `CallAction` over `TemplateInst`-wrapped arguments); fifteen defects in and around that path kept it from working (impl lookup on the specialization resolved where the generic is defined, so an uninitialized `var` of it was rejected; C++ actions performed for a symbolic specific; action operands not substituted; a narrow scalar `return` given a return slot; variable template specializations never instantiated; an exported Carbon class queried before it was complete; an alias's value detached from its enclosing generic; an enclosing generic's operand kept in a member's action; an alias's name reference not followed to its value; an alias's template-dependent value converted and checked where it is written, not in each specific; a use of such an alias through a concrete specific given the generic's category, not the specific's, a nested alias's use included; a deferred store's temporary typed in the generic, not the specific; a deferred C++ call's `ref` argument not unwrapped in the specific; a class template's specialization formed for a checked generic's argument not deferring its impl lookup), each fixed at its root, and a C++ call with a checked generic's symbolic argument is deferred to each specific, a fork rule (F-021). The two SKIP programs run without their SKIP lines and with the `Core.Copy` impl each needs, keeping the uninitialized `var b: Cpp.Box(T);`. Measured in the container (EXPECTED, not of record, R9): <gate N of N>, conformance <P / F / S over N>. The evidence's type_mapping.cpp TODO (:560 when filed, :733-736 at CT-1) is live and filed as W-307, and call.cpp:252's non-type restriction as W-302. Residues: W-300 (struct, tuple and unexportable class types), W-301 (Carbon generics as template template arguments), W-302 (non-type argument kinds), W-303 (deduction through a C++ specialization, in a parameter's type or an impl's self), W-304 (a concrete C++ class `var` in a template's body stops lowering), W-305 (interface member access through a constraint on a specialization's member), W-306 (instantiation notes without a line, repeated E-MONO), W-307 (form-dependent arguments to C++ functions), W-308 (C++ classes as choice payloads), W-309 (a deferred call's C++ temporary not destroyed), W-310 (a `returned var` of a specialization), W-311 (a `returned var` of a symbolic type stops lowering, upstream's); CT-1's forms work within one library, and a use from another library stays W-250's."
 }
 ```
 
@@ -5745,17 +6488,18 @@ after the original notes, and this text's additions follow them.
  {
   "id": "W-306",
   "kind": "toolchain-defect",
-  "title": "CT-1 residue: a note from a C++ template argument converted for a specific has no line, and a type argument that fails in two deferred actions reports E-MONO twice",
+  "title": "CT-1 residue: a note from a C++ template argument converted for a specific has no line, a type argument that fails in two deferred actions reports E-MONO twice, and a specialization of a checked generic's argument prints its argument as an unstringified `TemplateInst`",
   "subsystem": "toolchain/check (cpp/call.cpp, eval of a specific)",
   "size": "S",
   "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
   "evidence": [
    "toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon `fail_todo_struct_arg` (``fail_todo_struct_arg.carbon: note: semantics TODO: ...``, no line)",
    "fork/cpp-templates/plan.md \u00a71.11 (probes gen4/g_nontype_i64, ox/nested_generic_scope)",
-   "upstream 7beb29f8b (upstream PR 7967, `GetInstLocationOrFallback` for diagnostics on canonical instructions, after the fork's cut)"
+   "upstream 7beb29f8b (upstream PR 7967, `GetInstLocationOrFallback` for diagnostics on canonical instructions, after the fork's cut)",
+   "fork/cpp-templates/plan.md \u00a70.13's implementation-review fold rows (a/c_bad_inst: the E-MONO note for `Cpp.Bad(T)` with a `static_assert` reads ``Bad(<cannot stringify inst...: {kind: TemplateInst, ...}>)` evaluates to incomplete type``; a/c_returned_var_box prints the same type in W-310's mismatch; toolchain/sem_ir/stringify.cpp has no `TemplateInst` step)"
   ],
   "blocked_by": [],
-  "notes": "Filed at CT-1's discharge (<YYYY-MM-DD>). The argument is a canonical constant in the specific and has no location; removal: take upstream's fallback location at the next upstream merge and pass the action's location to `ConvertArgToTemplateArg`."
+  "notes": "Filed at CT-1's discharge (<YYYY-MM-DD>). The argument is a canonical constant in the specific and has no location; removal: take upstream's fallback location at the next upstream merge and pass the action's location to `ConvertArgToTemplateArg`; give the stringifier a `TemplateInst` step that prints its operand (implementation-review fold, its first review's m3)."
  },
  {
   "id": "W-307",
@@ -5766,7 +6510,7 @@ after the original notes, and this text's additions follow them.
   "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
   "evidence": [
    "toolchain/check/cpp/type_mapping.cpp:733-736 (``semantics TODO: `Support passing form-dependent args to C++ functions.` ``; W-043's type_mapping.cpp:560 evidence when W-043 was filed)",
-   "toolchain/sem_ir/expr_info.cpp:406-417 (a form-dependent reference's category is `Dependent`)",
+   "toolchain/sem_ir/expr_info.cpp:432-443 at CT-1's head, :406-417 at 5661a35c8 (a form-dependent reference's category is `Dependent`)",
    "toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon `fail_todo_form_dependent_arg`",
    "fork/cpp-templates/plan.md \u00a70.12 (probes new/n01 to n03)"
   ],
@@ -5792,17 +6536,45 @@ after the original notes, and this text's additions follow them.
  {
   "id": "W-309",
   "kind": "toolchain-defect",
-  "title": "Found by CT-1's plan review fold: a temporary of a C++ class with a non-trivial destructor that a deferred C++ call returns is not destroyed when it is discarded or `let`-bound, in a template and in a checked generic",
+  "title": "Found by CT-1's plan review fold: a temporary of a C++ class with a non-trivial destructor that a deferred C++ call returns is not destroyed when it is discarded or `let`-bound, or when its member is read or it is passed by value to another C++ function, in a template and in a checked generic",
   "subsystem": "toolchain/check (the cleanup of a template action's result temporary)",
   "size": "M",
   "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
   "evidence": [
-   "fork/cpp-templates/plan.md \u00a70.12 and \u00a70.13 (probes w/w6 and w/w9 in a template print 0 and `3 0` on TP-1 and the nightly; w/w7, w/w2 and w/w3 in a checked generic print 0, 0 and `3 0` with CT-1; their concrete twins w/w5 and w/w8 print 1 and `3 1`; a `var` of it, w/w10, prints `3 1`)",
+   "fork/cpp-templates/plan.md \u00a70.12 and \u00a70.13 (probes w/w6 and w/w9 in a template print 0 and `3 0` on TP-1 and the nightly; w/w7, w/w2 and w/w3 in a checked generic print 0, 0 and `3 0` with CT-1; their concrete twins w/w5 and w/w8 print 1 and `3 1`; a `var` of it, w/w10, prints `3 1`; \u00a70.13's implementation-review fold rows: `Cpp.MakeLoud(v).v` and `Cpp.TakeLoud(Cpp.MakeLoud(v))` print made and destroyed counts `1 0` and `2 1` in a checked generic (a/c_loud_member, a/c_loud_byval) and in a template on TP-1, trunk and the nightly, where their concrete twins print `1 1` and `2 2`)",
    "toolchain/check/control_flow.cpp `MaybeAddCleanupForInst` (a temporary's cleanup is registered only in a cleanup scope, and a deferred call's result is materialized when the specific is evaluated, with none open)",
    "toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon `todo_discarded_temporary_not_destroyed`"
   ],
   "blocked_by": [],
-  "notes": "Filed at CT-1's discharge (<YYYY-MM-DD>). `Cpp.MakeLoud(v);` for `template<typename T> Loud<T> MakeLoud(T)` whose destructor counts: the counter stays 0. TP-1 and the nightly behave the same in a template; CT-1's F-021 makes the form reachable from a checked generic, and D-CT-18 ships it there, pinned by the lower golden's split and stated in F-021's cost. Removal: give a discarded or `let`-bound template-dependent initializer storage where the generic is defined, as a `var` has, so that its cleanup is registered there and the deferred destroy runs it in each specific, in both lanes; the split then calls `Loud<int>`'s destructor in `DiscardDeferred` and loses its `todo_` prefix. Break condition: w6 and w7 print 1."
+  "notes": "Filed at CT-1's discharge (<YYYY-MM-DD>). `Cpp.MakeLoud(v);` for `template<typename T> Loud<T> MakeLoud(T)` whose destructor counts: the counter stays 0. TP-1 and the nightly behave the same in a template; CT-1's F-021 makes the form reachable from a checked generic, and D-CT-18 ships it there, pinned by the lower golden's split and stated in F-021's cost. Removal: give a discarded or `let`-bound template-dependent initializer storage where the generic is defined, as a `var` has, so that its cleanup is registered there and the deferred destroy runs it in each specific, in both lanes; the split then calls `Loud<int>`'s destructor in `DiscardDeferred` and loses its `todo_` prefix. The member-read and by-value shapes were found by CT-1's first implementation review and are the same omission. Break condition: w6 and w7 print 1."
+ },
+ {
+  "id": "W-310",
+  "kind": "missing-feature",
+  "title": "Found by CT-1's implementation review: a `returned var` of a C++ specialization of a symbolic argument is rejected where the generic is defined, because the return type's `Cpp.Box(T)` and the variable's are two call actions and so two types",
+  "subsystem": "toolchain/check (return.cpp's `ReturnedVarWrongType` check; TP-1's template actions)",
+  "size": "M",
+  "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
+  "evidence": [
+   "toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon `fail_todo_returned_var_specialization` (``type `Box(T)` of `returned var` does not match return type of enclosing function [ReturnedVarWrongType]``)",
+   "fork/cpp-templates/plan.md \u00a70.13's implementation-review fold rows (c/t_returned_var_box in a template and a/c_returned_var_box in a checked generic are rejected on CT-1 and TP-1, trunk and the nightly printing the types as splices; the concrete twin c/z_returned_var_box prints 9)"
+  ],
+  "blocked_by": [],
+  "notes": "Filed at CT-1's discharge (<YYYY-MM-DD>; implementation-review fold, its first review's m2). `fn F[T: type](v: T) -> Cpp.Box(T) { returned var r: Cpp.Box(T) = Cpp.MakeBox(v); return var; }`; `return Cpp.MakeBox(v);` runs, so the workaround is a `return` of the expression. Removal: give two spellings of a template-dependent type that form the same specialization one type where the generic is defined, or compare them in each specific; the split loses its `fail_todo_` prefix."
+ },
+ {
+  "id": "W-311",
+  "kind": "toolchain-defect",
+  "title": "Found by CT-1's implementation review: a `returned var` of a symbolic type is lowered to a module that fails the LLVM verifier (the CHECK at lower/lower.cpp:48), with or without C++, and F-021 makes it reachable through a deferred C++ call's initializer",
+  "subsystem": "toolchain/check and toolchain/lower (a generic's `returned var` storage)",
+  "size": "M",
+  "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
+  "evidence": [
+   "fork/cpp-templates/plan.md \u00a70.13's implementation-review fold rows (b/rv0, `fn F[T: Core.Copy](v: T) -> T { returned var r: T = v; return var; }`, stops at lower/lower.cpp:48 on TP-1, trunk, the nightly and CT-1; a/c_returned_var_i32, `returned var r: T = Cpp.Twice(v);`, stops there on CT-1 where TP-1 reports E-ARG)",
+   "fork/cpp-templates/plan.md \u00a71.11 (the OUT row)"
+  ],
+  "blocked_by": [],
+  "notes": "Filed at CT-1's discharge (<YYYY-MM-DD>; implementation-review fold, its first review's m2). Upstream's defect, tracked because CT-1's F-021 reaches it from a C++ call; `return Cpp.Twice(v);` runs (b/rv2). Removal: an upstream fix of a generic's `returned var` lowering, taken at an upstream merge, or the fork's own; b/rv0 then runs, and a split pins the C++ form. Break condition: b/rv0 runs on the nightly."
  }
 ]
 ```
@@ -5818,13 +6590,17 @@ TP-1's D commit did).
 Rewritten 2026-10-21 (review fold: B-M5 / B-m4). Commit R replaces the two rows
 at their line numbers on this branch; the land-time records commit replaces
 them again on the merged trunk, finding each by its bullet text (the first
-cell), because the held PRs between move them.
+cell), because the held PRs between move them. Row 42's test counts are this
+branch's head's, 164 check and 56 lower interop goldens, where the row's
+earlier text counted 125 and 38; the land-time commit counts them again on the
+merged tree (amended 2026-10-21, implementation-review fold: IR2-m6). Row 56
+names W-310 (amended 2026-10-21, implementation-review fold: IR1-m2).
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-| Generics: C++ interop — importing C++ templates, instantiating on Carbon types | PARTIAL | Class/function/alias/variable templates import and instantiate on C++ types, Carbon builtins and Carbon classes, concrete or a checked generic's or a template's symbolic arguments, each specialization and C++ call formed for each specific, within one library (CT-1, <YYYY-MM-DD>; a use from another library is W-250); struct and tuple types as arguments (W-300), Carbon generics as template template arguments (W-301), some non-type argument kinds (W-302), deduction through a specialization (W-303), member access through a constraint on a specialization's member (W-305), form-dependent arguments to C++ functions (W-307) and C++ classes as choice payloads (W-308) are missing, and a deferred call's C++ temporary is not destroyed (W-309). |
-| Type system: C++ interop — importing C++ types / exporting Carbon types | PARTIAL | Classes/enums/unions/templates import and Carbon classes export (125 check + 38 lower interop tests), C++ templates instantiate on Carbon class types, symbolic ones included (struct and tuple types not yet, W-300; CT-1, <YYYY-MM-DD>), but several export cases are fail_todo. |
+| Generics: C++ interop — importing C++ templates, instantiating on Carbon types | PARTIAL | Class/function/alias/variable templates import and instantiate on C++ types, Carbon builtins and Carbon classes, concrete or a checked generic's or a template's symbolic arguments, each specialization and C++ call formed for each specific, within one library (CT-1, <YYYY-MM-DD>; a use from another library is W-250); struct and tuple types as arguments (W-300), Carbon generics as template template arguments (W-301), some non-type argument kinds (W-302), deduction through a specialization (W-303), member access through a constraint on a specialization's member (W-305), form-dependent arguments to C++ functions (W-307), C++ classes as choice payloads (W-308) and a `returned var` of a specialization (W-310) are missing, and a deferred call's C++ temporary is not destroyed (W-309). |
+| Type system: C++ interop — importing C++ types / exporting Carbon types | PARTIAL | Classes/enums/unions/templates import and Carbon classes export (164 check + 56 lower interop tests), C++ templates instantiate on Carbon class types, symbolic ones included (struct and tuple types not yet, W-300; CT-1, <YYYY-MM-DD>), but several export cases are fail_todo. |
 ```
 
 <!-- google-doc-style-resume -->
@@ -5892,8 +6668,10 @@ attaching every discarded generic region, converting an alias's
 template-dependent value where it is written, detaching an alias's region for
 a call, destroying a deferred call's temporary in this slice, rejecting a
 discarded deferred call in a checked generic, narrowing the admitted alias
-uses instead of fixing a specific constant's category, and following a
-specific constant's concrete value for its category. Decisions: D-CT-1,
+uses instead of fixing a specific constant's category, following a
+specific constant's concrete value for its category, wrapping a class
+template's substituted C++ argument in `TemplateInst` instead of deferring at
+the call action, and stringifying a `TemplateInst` in this slice. Decisions: D-CT-1,
 upstream's deferred `CallAction` over `TemplateInst`, performed per specific, no
 new SemIR; D-CT-2 and D-CT-3, F-021 (below); D-CT-4, the template lane rides
 TP-1, TR-22 stays OUT for Carbon forms while its C++ forms run; D-CT-5, impl
@@ -5929,14 +6707,14 @@ checked generic's use of a template to future work (p002200:1089-1096, leads
 issue 2153), so the rule is the fork's. Its costs: an error in a deferred
 expression, and in a Carbon operation on its result, is seen only when a
 caller instantiates the generic; and a C++ temporary that a deferred call
-returns is not destroyed when it is discarded or `let`-bound (W-309, as in a
-template; D-CT-18). Break condition: upstream lands a rule for a checked
+returns is not destroyed when it is discarded, `let`-bound, read for a member or
+passed by value (W-309, as in a template; D-CT-18). Break condition: upstream lands a rule for a checked
 generic's C++ calls that differs, re-decided at that upstream merge; or W-309
 is shown to do more than skip the destructor (D-CT-18's break condition).
 
 Consequences: rows 56 and 42 stay PARTIAL with corrected text; W-043
-discharged, W-268 narrowed, TP-1's W-273 discharged; W-300 to W-309 filed (CT-1
-reserved W-300..W-319; W-310 to W-319 unused); F-021 minted; the TP-1 records
+discharged, W-268 narrowed, TP-1's W-273 discharged; W-300 to W-311 filed (CT-1
+reserved W-300..W-319; W-312 to W-319 unused); F-021 minted; the TP-1 records
 CT-1 edits are one dated line each on D-TP-12 and TR-22 in
 fork/templates/plan.md, and W-268, W-273 and one dated line in W-274's notes in
 the ledger.
@@ -5952,7 +6730,7 @@ nine of plan §0.10, with their merge rules. Veto-able.
 <!-- google-doc-style-ignore -->
 
 ```markdown
-| `claude/carbon-fork-0-1-ct` | <state, e.g. HELD OPEN as PR NN> -- CT-1 C++ templates on symbolic Carbon type arguments at <head>, stacked on PR 61 (W-043 and TP-1's W-273 discharged, W-268 narrowed; W-300..W-309 filed, W-310..W-319 unused; F-021 minted; expected <gate> and <P / F / S over N>, not of record; rows 56 and 42 PARTIAL); merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
+| `claude/carbon-fork-0-1-ct` | <state, e.g. HELD OPEN as PR NN> -- CT-1 C++ templates on symbolic Carbon type arguments at <head>, stacked on PR 61 (W-043 and TP-1's W-273 discharged, W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; expected <gate> and <P / F / S over N>, not of record; rows 56 and 42 PARTIAL); merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
 ```
 
 <!-- google-doc-style-resume -->
@@ -6004,13 +6782,14 @@ after TR-22's item (§1.1, "TR-22. Passing a symbolic constant"):
 
 <!-- google-doc-style-resume -->
 
-In fork/inventory/work-items.json, W-273 and W-274:
+In fork/inventory/work-items.json, W-273 and W-274 (W-273's last sentence added
+2026-10-21, implementation-review fold: IR2-m5):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 W-273 title: <the title> (DISCHARGED at CT-1, <YYYY-MM-DD>)
-W-273 notes, appended: DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md D-CT-17): the class-scope alias's dependent instructions are attached to `D`, so `D(Holder)`'s field type is concrete and the literal converts; k14 (CT-1's n13) prints 3, and deduce_class_args.carbon's split is renamed `class_template_field_of_where_alias`.
+W-273 notes, appended: DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md D-CT-17): the class-scope alias's dependent instructions are attached to `D`, so `D(Holder)`'s field type is concrete and the literal converts; k14 (CT-1's n13) prints 3, and deduce_class_args.carbon's split is renamed `class_template_field_of_where_alias`. TP-1's mutant M75 (no facet-type operand counted as a splice) survives on CT-1's build, because that split was its only killer, and no golden, program or probe of CT-1's reaches the count (fork/cpp-templates/plan.md §8 item 5, M75r), so the count is defensive since CT-1.
 W-274 notes, appended: <YYYY-MM-DD>, CT-1 (fork/cpp-templates/plan.md D-CT-6): unchanged on CT-1's toolchain (n01i stops at sem_ir/generic.cpp:96 and x04 is E-MONO, as on TP-1); CT-1 runs TR-22's C++ forms, not this Carbon form.
 ```
 

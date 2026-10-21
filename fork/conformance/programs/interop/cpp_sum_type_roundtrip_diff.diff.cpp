@@ -34,6 +34,17 @@ static auto TakeEmpty(std::variant<std::monostate, int> v) -> int {
   return v.index() == 0 ? -7 : std::get<1>(v);
 }
 
+static auto TakePointer(std::optional<int*> o) -> int {
+  return o.has_value() ? (*o != nullptr ? **o : 0) : -1;
+}
+
+static auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
+  if (v.index() == 0) {
+    return std::get<0>(v);
+  }
+  return std::get<1>(v) != nullptr ? *std::get<1>(v) * 2 : -9;
+}
+
 static auto Seed(int x) -> int { return x + 5; }
 
 static auto SeedF(double x) -> double { return x + x; }
@@ -87,5 +98,15 @@ auto main() -> int {
   Print(UseMakeOptional(Seed(-8)));
   Print(UseInspectVariant(Seed(2)));
   Print(UseInspectVariant(Seed(-7)));
+  int cell = Seed(10);
+  Print(TakePointer(std::optional<int*>(&cell)));
+  Print(TakePointer(std::optional<int*>(static_cast<int*>(nullptr))));
+  Print(TakePointer(std::nullopt));
+  Print(TakeIntOrPointer(
+      std::variant<int, int*>(std::in_place_index<0>, Seed(7))));
+  Print(
+      TakeIntOrPointer(std::variant<int, int*>(std::in_place_index<1>, &cell)));
+  Print(TakeIntOrPointer(std::variant<int, int*>(std::in_place_index<1>,
+                                                 static_cast<int*>(nullptr))));
   return 0;
 }

@@ -15,8 +15,11 @@
 // and the plan's residue list): it returns a `std::optional<int>` built from
 // the Carbon sum type on each of two paths, and it takes a `std::variant`
 // and matches it. A `Core.Optional(i32)` argument reaches the same
-// parameters in one implicit step (D-SV-7). Every payload is computed at run
-// time from a seed (R16d).
+// parameters in one implicit step (D-SV-7). A pointer alternative's payload,
+// the nullable `Core.Optional(i32*)` (D-SV-8), converts back as the pointer it
+// holds or as null, in a `std::optional<int*>` and in a `std::variant` that
+// holds its other alternative too. Every scalar payload is computed at run
+// time from a seed (R16d); a pointer payload is a local's address or null.
 // Differential pair: cpp_sum_type_roundtrip_diff.diff.cpp (DIFF-1).
 
 import Core library "io";
@@ -43,6 +46,17 @@ inline auto TakePair(const std::variant<int, int>& v) -> int {
 
 inline auto TakeEmpty(std::variant<std::monostate, int> v) -> int {
   return v.index() == 0 ? -7 : std::get<1>(v);
+}
+
+inline auto TakePointer(std::optional<int*> o) -> int {
+  return o.has_value() ? (*o != nullptr ? **o : 0) : -1;
+}
+
+inline auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
+  if (v.index() == 0) {
+    return std::get<0>(v);
+  }
+  return std::get<1>(v) != nullptr ? *std::get<1>(v) * 2 : -9;
 }
 ''';
 
@@ -105,5 +119,19 @@ fn Run() -> i32 {
   Core.Print(Cpp.UseMakeOptional(Seed(-8)));
   Core.Print(Cpp.UseInspectVariant(Seed(2)));
   Core.Print(Cpp.UseInspectVariant(Seed(-7)));
+  var cell: i32 = Seed(10);
+  let no_cell: Core.Optional(i32*) = Core.Optional(i32*).None();
+  Core.Print(Cpp.TakePointer(
+      Core.CppCompat.StdOptional(Core.Optional(i32*)).Some(&cell)));
+  Core.Print(Cpp.TakePointer(
+      Core.CppCompat.StdOptional(Core.Optional(i32*)).Some(no_cell)));
+  Core.Print(
+      Cpp.TakePointer(Core.CppCompat.StdOptional(Core.Optional(i32*)).None));
+  Core.Print(Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt0(Seed(7))));
+  Core.Print(Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(&cell)));
+  Core.Print(Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(no_cell)));
   return 0;
 }

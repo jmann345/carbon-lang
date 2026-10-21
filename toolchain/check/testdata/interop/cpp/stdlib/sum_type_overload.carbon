@@ -40,7 +40,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -59,7 +59,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);

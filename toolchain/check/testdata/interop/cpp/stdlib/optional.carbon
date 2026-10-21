@@ -36,7 +36,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -55,7 +55,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -110,6 +110,18 @@ inline auto MakeMono(int n) -> std::optional<std::monostate> {
 inline auto TakeMono(std::optional<std::monostate> o) -> bool {
   return o.has_value();
 }
+
+inline auto TakePointer(std::optional<int*> o) -> int {
+  return o.has_value() ? (o.value() ? *o.value() : 0) : -1;
+}
+
+// --- declared.h
+
+#include "sum.h"
+
+// Declared and not defined: nothing in the translation unit instantiates
+// `std::optional<short>`.
+auto TakeShort(std::optional<short> o) -> int;
 
 // --- match.carbon
 
@@ -240,6 +252,42 @@ fn M(n: i32) -> bool {
     }
   }
   return false;
+}
+
+// --- pointer_reverse.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+// A `StdOptional(Core.Optional(i32*))` converts back to `std::optional<int*>`.
+// `emplace` deduces its parameter, and a deduced C++ pointer imports as the
+// non-null `i32*`, so the nullable payload is passed as its `Get()` when it
+// holds a pointer and as no argument when it is null, which value-initializes
+// the pointer (fork/sumtype-interop/plan.md §1.5).
+//@dump-sem-ir-begin
+fn R(p: Core.Optional(i32*)) -> i32 {
+  return Cpp.TakePointer(
+      Core.CppCompat.StdOptional(Core.Optional(i32*)).Some(p));
+}
+//@dump-sem-ir-end
+
+fn N() -> i32 {
+  return Cpp.TakePointer(Core.CppCompat.StdOptional(Core.Optional(i32*)).None);
+}
+
+// --- declared_by_value.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "declared.h";
+
+// A by-value parameter whose specialization nothing else instantiates: the
+// class offered to overload resolution is instantiated first, as a C++ caller
+// passing it would instantiate it (fork/sumtype-interop/plan.md §1.5).
+fn D() -> i32 {
+  return Cpp.TakeShort(Core.CppCompat.StdOptional(i16).Some(2)) +
+         Cpp.TakeShort(Core.Optional(i16).Some(3));
 }
 
 // --- fail_todo_struct_payload.carbon

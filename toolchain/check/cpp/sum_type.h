@@ -54,9 +54,10 @@ struct CppSumType {
   clang::QualType bad_alternative_type;
 };
 
-// Classifies `type_id`. Forms and completes the Carbon sum type when the C++
-// type is mapped. Emits no diagnostic, except where the prelude itself is
-// broken (no `Core.CppCompat`): see `CppSumType::AlreadyDiagnosed`.
+// Classifies `type_id`, completing the C++ class of a specialization first.
+// Forms and completes the Carbon sum type when the C++ type is mapped. Emits no
+// diagnostic, except where the prelude itself is broken (no `Core.CppCompat`):
+// see `CppSumType::AlreadyDiagnosed`.
 auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
     -> CppSumType;
 
@@ -65,8 +66,9 @@ auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
 // `StdVariant<N>` specific, the `std::optional` or `std::variant`
 // specialization of the mapped argument types; for a `Core.Optional(T)` whose
 // payload is matchable (`GetCoreOptionalView`) and not a pointer type,
-// `std::optional<T'>`. A null type otherwise, or if the TU has no matching C++
-// template.
+// `std::optional<T'>`. The specialization is instantiated. A null type
+// otherwise, or if the TU has no matching C++ template or the specialization
+// cannot be instantiated.
 auto MapCarbonSumTypeToCpp(Context& context, SemIR::LocId loc_id,
                            SemIR::TypeId carbon_type_id) -> clang::QualType;
 

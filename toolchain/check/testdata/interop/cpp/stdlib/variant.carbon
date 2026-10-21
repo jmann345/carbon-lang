@@ -35,7 +35,7 @@ namespace std {
       bool has_value() const { return engaged_; }
       const T& value() const { return value_; }
       template <typename... A>
-      T& emplace(A... args) {
+      T& emplace(A&&... args) {
         value_ = T(args...);
         engaged_ = true;
         return value_;
@@ -54,7 +54,7 @@ namespace std {
       variant() : index_(0) { emplace<0>(); }
       size_t index() const { return index_; }
       template <size_t I, typename... A>
-      __type_pack_element<I, Ts...>& emplace(A... args) {
+      __type_pack_element<I, Ts...>& emplace(A&&... args) {
         index_ = I;
         auto* p = reinterpret_cast<__type_pack_element<I, Ts...>*>(storage_);
         *p = __type_pack_element<I, Ts...>(args...);
@@ -104,6 +104,19 @@ inline auto MakeNine() -> Nine { return Nine(); }
 inline auto Nested() -> std::variant<std::optional<int>, int> {
   return std::variant<std::optional<int>, int>();
 }
+
+inline auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
+  if (v.index() == 0) return std::get<0>(v);
+  return std::get<1>(v) ? *std::get<1>(v) : -1;
+}
+
+// --- declared.h
+
+#include "sum.h"
+
+// Declared and not defined: nothing in the translation unit instantiates
+// `std::variant<int, short>`.
+auto TakeIntOrShort(std::variant<int, short> v) -> int;
 
 // --- match.carbon
 
@@ -169,6 +182,41 @@ fn D(n: i32) -> i32 {
   return -1;
 }
 //@dump-sem-ir-end
+
+// --- pointer_reverse.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+// A pointer alternative converts back through `emplace<1>` with the payload's
+// `Get()`, or with no argument when the payload is null; every arm is built,
+// so a variant holding its `int` alternative reaches it too
+// (fork/sumtype-interop/plan.md §1.5).
+//@dump-sem-ir-begin
+fn R(p: Core.Optional(i32*)) -> i32 {
+  return Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(p));
+}
+//@dump-sem-ir-end
+
+fn I(n: i32) -> i32 {
+  return Cpp.TakeIntOrPointer(
+      Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt0(n));
+}
+
+// --- declared_by_value.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "declared.h";
+
+// A by-value parameter whose specialization nothing else instantiates: the
+// class offered to overload resolution is instantiated first
+// (fork/sumtype-interop/plan.md §1.5).
+fn D(n: i32) -> i32 {
+  return Cpp.TakeIntOrShort(Core.CppCompat.StdVariant2(i32, i16).Alt0(n));
+}
 
 // --- fail_todo_too_many_alternatives.carbon
 

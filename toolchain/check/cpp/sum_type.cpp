@@ -15,6 +15,7 @@
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/cpp/custom_type_mapping.h"
 #include "toolchain/check/cpp/import.h"
+#include "toolchain/check/cpp/location.h"
 #include "toolchain/check/cpp/overload_resolution.h"
 #include "toolchain/check/cpp/type_mapping.h"
 #include "toolchain/check/inst.h"
@@ -125,6 +126,14 @@ auto GetCppSumType(Context& context, SemIR::LocId loc_id, SemIR::TypeId type_id)
     result.reason = CppSumType::TooManyAlternatives;
     result.num_alternatives = num_alternatives;
     return result;
+  }
+  // The class is completed before its definition is queried: a specialization
+  // that nothing in the C++ translation unit has instantiated is instantiated
+  // here, as C++ does before copying it. One that cannot be completed is left
+  // to the conversion's own incomplete-type diagnostics.
+  if (!TryToCompleteType(context, type_id, loc_id) ||
+      !record_decl->hasDefinition()) {
+    return {};
   }
   // The C++ class must itself be trivially copyable and destructible: the
   // reverse conversion builds a C++ object that no destructor call ends, and
@@ -313,7 +322,8 @@ static auto CallCppWithIndexTemplateArg(Context& context, SemIR::LocId loc_id,
                                /*is_desugared=*/true);
 }
 
-// Calls the C++ member function `name` of `object_id`.
+// Calls the member function `name` of `object_id`: a C++ method, or a
+// `Core.Optional` method (`HasValue`, `Get`).
 static auto CallCppMethod(Context& context, SemIR::LocId loc_id,
                           SemIR::InstId object_id, llvm::StringRef name,
                           llvm::ArrayRef<SemIR::InstId> arg_ids = {})
@@ -545,6 +555,8 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
       context.types().GetAs<SemIR::ClassType>(sum_type.cpp_type_id).class_id);
   auto alternatives = GetAlternativesInOrder(context, sum_type.carbon_type_id);
   int n = alternatives.size();
+  auto mapping =
+      GetCppSumTypeMapping(GetCppClassDecl(context, sum_type.cpp_type_id));
 
   // Default-construct the C++ object -- an empty `std::optional`, or a
   // `std::variant` holding a value-initialized first alternative -- then
@@ -588,20 +600,47 @@ auto ConvertCarbonSumToCpp(Context& context, SemIR::LocId loc_id,
           // `None`: the default-constructed `std::optional` is empty.
           return;
         }
-        llvm::SmallVector<SemIR::InstId, 1> args;
-        if (auto payload_id = payload_of(alternative); payload_id.has_value()) {
-          args.push_back(payload_id);
-        }
-        if (sum_type.is_optional) {
-          ok &= CallCppMethod(context, loc_id, result.storage_id(), "emplace",
-                              args) != SemIR::ErrorInst::InstId;
+        // `emplace(args)`, or `emplace<i>(args)` for a `std::variant`.
+        auto emplace = [&](llvm::ArrayRef<SemIR::InstId> args) {
+          if (sum_type.is_optional) {
+            ok &= CallCppMethod(context, loc_id, result.storage_id(), "emplace",
+                                args) != SemIR::ErrorInst::InstId;
+            return;
+          }
+          auto emplace_id =
+              PerformMemberAccess(context, loc_id, result.storage_id(),
+                                  AddIdentifierName(context, "emplace"));
+          ok &=
+              CallCppWithIndexTemplateArg(context, loc_id, node_id, emplace_id,
+                                          i, args) != SemIR::ErrorInst::InstId;
+        };
+        auto payload_id = payload_of(alternative);
+        if (!payload_id.has_value()) {
+          emplace({});
           return;
         }
-        auto emplace_id =
-            PerformMemberAccess(context, loc_id, result.storage_id(),
-                                AddIdentifierName(context, "emplace"));
-        ok &= CallCppWithIndexTemplateArg(context, loc_id, node_id, emplace_id,
-                                          i, args) != SemIR::ErrorInst::InstId;
+        if (!mapping.alternative_types[i]->isObjectPointerType()) {
+          emplace({payload_id});
+          return;
+        }
+        // A C++ pointer alternative's payload is the nullable
+        // `Core.Optional(T*)`, but `emplace` deduces its parameter, and a
+        // pointer type that C++ deduced imports as the non-null `T*`
+        // (cpp/import.cpp `MapObjectPointerType`). So the payload is passed as
+        // its non-null `Get()` when it holds a pointer, and otherwise nothing
+        // is passed: `emplace()` value-initializes the pointer to null.
+        auto has_value_id = ConvertToBoolValue(
+            context, loc_id,
+            CallCppMethod(context, loc_id, payload_id, "HasValue"));
+        EmitArms(
+            context, node_id, 2, [&](int) { return has_value_id; },
+            [&](int j) {
+              if (j == 0) {
+                emplace({CallCppMethod(context, loc_id, payload_id, "Get")});
+              } else {
+                emplace({});
+              }
+            });
       });
   if (!ok) {
     return SemIR::ErrorInst::InstId;
@@ -926,10 +965,19 @@ auto MapCarbonSumTypeToCpp(Context& context, SemIR::LocId loc_id,
         ast_context.getTrivialTypeSourceInfo(cpp_arg_type)));
   }
   clang::TemplateName template_name(template_decl);
-  return context.clang_sema().CheckTemplateIdType(
+  auto type = context.clang_sema().CheckTemplateIdType(
       clang::ElaboratedTypeKeyword::None, template_name,
       /*TemplateLoc=*/clang::SourceLocation(), arg_list,
       /*Scope=*/nullptr, /*ForNestedNameSpecifier=*/false);
+  // The specialization is instantiated, as a C++ caller passing it by value
+  // would instantiate it: overload resolution and the parameter's passing mode
+  // query its definition, and a C++ function declared with a by-value
+  // parameter of it may be the only mention of it in the translation unit.
+  if (type.isNull() || !context.clang_sema().isCompleteType(
+                           GetCppLocation(context, loc_id), type)) {
+    return clang::QualType();
+  }
+  return type;
 }
 
 }  // namespace Carbon::Check

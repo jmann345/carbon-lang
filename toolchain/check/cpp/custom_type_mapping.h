@@ -7,6 +7,7 @@
 
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/Type.h"
+#include "llvm/ADT/SmallVector.h"
 
 namespace Carbon::Check {
 
@@ -37,6 +38,33 @@ struct CustomCppTypeMapping {
 // a mapping whose kind is `None`.
 auto GetCustomCppTypeMapping(const clang::CXXRecordDecl* record_decl)
     -> CustomCppTypeMapping;
+
+// A C++ sum type that maps by value to a Carbon `choice`
+// (docs/design/sum_types.md, "C++ `std::optional` and `std::variant`"): the
+// C++ class stays imported as a class, and its alternatives are listed here in
+// C++ order -- `std::optional<T>` has the single `T` (its `Some` alternative;
+// `None` carries nothing), `std::variant<Ts...>` has `Ts...`.
+struct CppSumTypeMapping {
+  enum Kind : uint8_t {
+    None,
+    // A `std::optional<T>` specialization.
+    Optional,
+    // A `std::variant<Ts...>` specialization.
+    Variant,
+  };
+
+  Kind kind = None;
+  // The C++ alternative types, in C++ order.
+  llvm::SmallVector<clang::QualType, 4> alternative_types;
+};
+
+// Determines whether `record_decl` is a `std::optional` or `std::variant`
+// specialization, and if so returns its alternatives.
+auto GetCppSumTypeMapping(const clang::CXXRecordDecl* record_decl)
+    -> CppSumTypeMapping;
+
+// Returns whether `type` is the unqualified `std::monostate`.
+auto IsStdMonostate(clang::QualType type) -> bool;
 
 }  // namespace Carbon::Check
 

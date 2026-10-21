@@ -120,6 +120,28 @@ static auto StdSpan(const clang::CXXRecordDecl* record_decl) -> bool {
       "span", TemplateArgumentsAre(
                   {TypeTemplateArgument(AnyType), DynamicExtent}))(record_decl);
 }
+// A matcher for a `std::optional<T>` specialization: one type argument.
+static auto StdOptional(const clang::CXXRecordDecl* record_decl) -> bool {
+  return StdClassTemplate(
+      "optional",
+      TemplateArgumentsAre({TypeTemplateArgument(AnyType)}))(record_decl);
+}
+
+// A matcher for a `std::variant<Ts...>` specialization: its single template
+// argument is the pack of alternative types, each a type.
+static auto StdVariant(const clang::CXXRecordDecl* record_decl) -> bool {
+  return StdClassTemplate(
+      "variant", [](const clang::TemplateArgumentList& args) -> bool {
+        if (args.size() != 1 ||
+            args[0].getKind() != clang::TemplateArgument::Pack) {
+          return false;
+        }
+        return llvm::all_of(
+            args[0].pack_elements(), [](const clang::TemplateArgument& arg) {
+              return arg.getKind() == clang::TemplateArgument::Type;
+            });
+      })(record_decl);
+}
 }  // end namespace Matchers
 
 auto GetCustomCppTypeMapping(const clang::CXXRecordDecl* record_decl)
@@ -138,6 +160,37 @@ auto GetCustomCppTypeMapping(const clang::CXXRecordDecl* record_decl)
   }
 
   return {.kind = CustomCppTypeMapping::None};
+}
+
+auto GetCppSumTypeMapping(const clang::CXXRecordDecl* record_decl)
+    -> CppSumTypeMapping {
+  if (Matchers::StdOptional(record_decl)) {
+    const auto& args = cast<clang::ClassTemplateSpecializationDecl>(record_decl)
+                           ->getTemplateArgs();
+    return {.kind = CppSumTypeMapping::Optional,
+            .alternative_types = {args[0].getAsType()}};
+  }
+  if (Matchers::StdVariant(record_decl)) {
+    const auto& args = cast<clang::ClassTemplateSpecializationDecl>(record_decl)
+                           ->getTemplateArgs();
+    CppSumTypeMapping mapping = {.kind = CppSumTypeMapping::Variant};
+    for (const auto& arg : args[0].pack_elements()) {
+      mapping.alternative_types.push_back(arg.getAsType());
+    }
+    return mapping;
+  }
+  return {.kind = CppSumTypeMapping::None};
+}
+
+auto IsStdMonostate(clang::QualType type) -> bool {
+  const auto* record_decl = type->getAsCXXRecordDecl();
+  if (type.hasQualifiers() || !record_decl ||
+      isa<clang::ClassTemplateSpecializationDecl>(record_decl)) {
+    return false;
+  }
+  const auto* identifier = record_decl->getIdentifier();
+  return identifier && identifier->isStr("monostate") &&
+         record_decl->isInStdNamespace();
 }
 
 }  // namespace Carbon::Check

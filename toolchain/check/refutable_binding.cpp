@@ -10,6 +10,7 @@
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
+#include "toolchain/check/cpp/sum_type.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/literal.h"
 #include "toolchain/check/member_access.h"
@@ -194,6 +195,24 @@ auto CheckRefutableScrutinee(Context& context, Parse::NodeId node_id,
     // The incomplete-type error was diagnosed above; abort checking the
     // form, the same way the scrutinee-shape TODO below does.
     return SemIR::InstId::None;
+  }
+
+  // Fork (SV-1, F-020): a C++ `std::optional` or `std::variant` scrutinee is
+  // matched as its `Core.CppCompat` sum type, converted by value through the
+  // C++ accessors; one with no sum type in 0.1 is diagnosed here.
+  if (auto sum_type =
+          GetCppSumType(context, SemIR::LocId(node_id), scrutinee_type_id);
+      sum_type.status != CppSumType::NotSumType) {
+    if (sum_type.status == CppSumType::NotMapped) {
+      DiagnoseCppSumTypeNotMapped(context, SemIR::LocId(node_id), sum_type);
+      return SemIR::InstId::None;
+    }
+    scrutinee_id = ConvertCppSumToCarbon(context, SemIR::LocId(node_id),
+                                         scrutinee_id, sum_type);
+    if (scrutinee_id == SemIR::ErrorInst::InstId) {
+      return SemIR::InstId::None;
+    }
+    scrutinee_type_id = sum_type.carbon_type_id;
   }
 
   if (!IsSupportedScrutineeType(context, scrutinee_type_id)) {

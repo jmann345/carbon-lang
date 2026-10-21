@@ -743,6 +743,13 @@ import Cpp library "box.h";
 // A `returned var` of a specialization: the return type's `Cpp.Box(T)` and the
 // variable's are two actions whose types differ where `F` is defined.
 fn F[template T: type](v: T) -> Cpp.Box(T) {
+  // CHECK:STDERR: fail_todo_returned_var_specialization.carbon:[[@LINE+7]]:19: error: type `Box(T)` of `returned var` does not match return type of enclosing function [ReturnedVarWrongType]
+  // CHECK:STDERR:   returned var r: Cpp.Box(T) = Cpp.MakeBox(v);
+  // CHECK:STDERR:                   ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_returned_var_specialization.carbon:[[@LINE-4]]:33: note: return type of function is `Box(T)` [ReturnTypeHereNote]
+  // CHECK:STDERR: fn F[template T: type](v: T) -> Cpp.Box(T) {
+  // CHECK:STDERR:                                 ^~~~~~~~~~
+  // CHECK:STDERR:
   returned var r: Cpp.Box(T) = Cpp.MakeBox(v);
   return var;
 }
@@ -1420,6 +1427,116 @@ fn G() -> i32 { return F(9 as i32).value; }
 // CHECK:STDOUT:   %.loc25_33.1: %i32.f58524.1 = value_of_initializer %Take.call
 // CHECK:STDOUT:   %.loc25_33.2: %i32.f58524.1 = converted %Take.call, %.loc25_33.1
 // CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32.f58524.1 = call %bound_method.loc25_35.2(%.loc25_33.2, %a.ref)
+// CHECK:STDOUT:   return %Int.as.AddWith.impl.Op.call
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- nested_alias_through_specific.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %Outer.type: type = generic_class_type @Outer [concrete]
+// CHECK:STDOUT:   %Outer.generic: %Outer.type = struct_value () [concrete]
+// CHECK:STDOUT:   %OuterOfTemplate.type: type = generic_class_type @OuterOfTemplate [concrete]
+// CHECK:STDOUT:   %OuterOfTemplate.generic: %OuterOfTemplate.type = struct_value () [concrete]
+// CHECK:STDOUT:   %int_32.be027e.1: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
+// CHECK:STDOUT:   %i32.f58524.1: type = class_type @Int, @Int(%int_32.be027e.1) [concrete]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32.f58524.1 [concrete]
+// CHECK:STDOUT:   %.795: Core.Form = init_form %i32.f58524.1 [concrete]
+// CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32.f58524.1 [concrete]
+// CHECK:STDOUT:   %Take.type: type = fn_type @Take [concrete]
+// CHECK:STDOUT:   %Take: %Take.type = struct_value () [concrete]
+// CHECK:STDOUT:   %G.type: type = fn_type @G [concrete]
+// CHECK:STDOUT:   %G: %G.type = struct_value () [concrete]
+// CHECK:STDOUT:   %a.patt: %pattern_type.6b6 = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
+// CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
+// CHECK:STDOUT:   %Outer.bcd: type = class_type @Outer, @Outer(%i64) [concrete]
+// CHECK:STDOUT:   %const.6a8: type = const_type %i32.f58524.1 [concrete]
+// CHECK:STDOUT:   %pattern_type.ed1: type = pattern_type %const.6a8 [concrete]
+// CHECK:STDOUT:   %size.patt.ad75ef.1: %pattern_type.ed1 = ref_binding_pattern size [concrete]
+// CHECK:STDOUT:   %size.var_patt.8a2fe5.1: %pattern_type.ed1 = var_pattern %size.patt.ad75ef.1 [concrete]
+// CHECK:STDOUT:   %size.var.644297.1: ref %i32.f58524.1 = var_storage imports.%size.var_patt.8a2fe5.1 [concrete]
+// CHECK:STDOUT:   %int_8: %i32.f58524.1 = int_value 8 [concrete]
+// CHECK:STDOUT:   %int_16: Core.IntLiteral = int_value 16 [concrete]
+// CHECK:STDOUT:   %i16: type = class_type @Int, @Int(%int_16) [concrete]
+// CHECK:STDOUT:   %OuterOfTemplate.803: type = class_type @OuterOfTemplate, @OuterOfTemplate(%i16) [concrete]
+// CHECK:STDOUT:   %size.patt.ad75ef.2: %pattern_type.ed1 = ref_binding_pattern size [concrete]
+// CHECK:STDOUT:   %size.var_patt.8a2fe5.2: %pattern_type.ed1 = var_pattern %size.patt.ad75ef.2 [concrete]
+// CHECK:STDOUT:   %size.var.644297.2: ref %i32.f58524.1 = var_storage imports.%size.var_patt.8a2fe5.2 [concrete]
+// CHECK:STDOUT:   %int_2: %i32.f58524.1 = int_value 2 [concrete]
+// CHECK:STDOUT:   %AddWith.type.be9: type = facet_type <@AddWith, @AddWith(%i32.f58524.1)> [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.type.610: type = fn_type @Int.as.AddWith.impl.Op.1, @Int.as.AddWith.impl.3af(%N) [symbolic]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.732: %Int.as.AddWith.impl.Op.type.610 = struct_value () [symbolic]
+// CHECK:STDOUT:   %AddWith.impl_witness.833: <witness> = impl_witness imports.%AddWith.impl_witness_table.6b4, @Int.as.AddWith.impl.3af(%int_32.be027e.1) [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.type.056: type = fn_type @Int.as.AddWith.impl.Op.1, @Int.as.AddWith.impl.3af(%int_32.be027e.1) [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.365: %Int.as.AddWith.impl.Op.type.056 = struct_value () [concrete]
+// CHECK:STDOUT:   %AddWith.facet.76a: %AddWith.type.be9 = facet_value %i32.f58524.1, (%AddWith.impl_witness.833) [concrete]
+// CHECK:STDOUT:   %AddWith.WithSelf.Op.type.02a: type = fn_type @AddWith.WithSelf.Op, @AddWith.WithSelf(%i32.f58524.1, %AddWith.facet.76a) [concrete]
+// CHECK:STDOUT:   %.d47: type = fn_type_with_self_type %AddWith.WithSelf.Op.type.02a, %AddWith.facet.76a [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.specific_fn.f25: <specific function> = specific_function %Int.as.AddWith.impl.Op.365, @Int.as.AddWith.impl.Op.1(%int_32.be027e.1) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %size.patt.ad75ef.1: %pattern_type.ed1 = ref_binding_pattern size [concrete = constants.%size.patt.ad75ef.1]
+// CHECK:STDOUT:   %size.var_patt.8a2fe5.1: %pattern_type.ed1 = var_pattern %size.patt.ad75ef.1 [concrete = constants.%size.var_patt.8a2fe5.1]
+// CHECK:STDOUT:   %size.var.3b6528.1: ref %const.6a8 = var_storage %size.var_patt.8a2fe5.1 [concrete]
+// CHECK:STDOUT:   %size.patt.ad75ef.2: %pattern_type.ed1 = ref_binding_pattern size [concrete = constants.%size.patt.ad75ef.2]
+// CHECK:STDOUT:   %size.var_patt.8a2fe5.2: %pattern_type.ed1 = var_pattern %size.patt.ad75ef.2 [concrete = constants.%size.var_patt.8a2fe5.2]
+// CHECK:STDOUT:   %size.var.3b6528.2: ref %const.6a8 = var_storage %size.var_patt.8a2fe5.2 [concrete]
+// CHECK:STDOUT:   %Core.import_ref.b4fd3a.1 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.684: @Int.as.AddWith.impl.3af.%Int.as.AddWith.impl.Op.type (%Int.as.AddWith.impl.Op.type.610) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.AddWith.impl.3af.%Int.as.AddWith.impl.Op (constants.%Int.as.AddWith.impl.Op.732)]
+// CHECK:STDOUT:   %AddWith.impl_witness_table.6b4 = impl_witness_table (%Core.import_ref.b4fd3a.1, %Core.import_ref.684), @Int.as.AddWith.impl.3af [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %G.decl: %G.type = fn_decl @G [concrete = constants.%G] {
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
+// CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc32 [concrete = constants.%return.patt.e1b]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %i32.loc32: type = type_literal constants.%i32.f58524.1 [concrete = constants.%i32.f58524.1]
+// CHECK:STDOUT:     %.loc32: Core.Form = init_form %i32.loc32 [concrete = constants.%.795]
+// CHECK:STDOUT:     %return.param: ref %i32.f58524.1 = out_param call_param0
+// CHECK:STDOUT:     %return: ref %i32.f58524.1 = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @G() -> out %return.param: %i32.f58524.1 {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Outer.ref: %Outer.type = name_ref Outer, file.%Outer.decl [concrete = constants.%Outer.generic]
+// CHECK:STDOUT:   %i64: type = type_literal constants.%i64 [concrete = constants.%i64]
+// CHECK:STDOUT:   %Outer: type = class_type @Outer, @Outer(constants.%i64) [concrete = constants.%Outer.bcd]
+// CHECK:STDOUT:   %.loc33_26.1: ref %const.6a8 = specific_constant @Outer.%Size.loc18_9.1, @Outer(constants.%i64) [concrete = imports.%size.var.3b6528.1]
+// CHECK:STDOUT:   %Size.ref.loc33: ref %const.6a8 = name_ref Size, %.loc33_26.1 [concrete = imports.%size.var.3b6528.1]
+// CHECK:STDOUT:   %.loc33_26.2: ref %i32.f58524.1 = as_compatible %Size.ref.loc33 [concrete = constants.%size.var.644297.1]
+// CHECK:STDOUT:   %.loc33_26.3: ref %i32.f58524.1 = converted %Size.ref.loc33, %.loc33_26.2 [concrete = constants.%size.var.644297.1]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %.loc33_26.4: %i32.f58524.1 = acquire_value %.loc33_26.3 [concrete = constants.%int_8]
+// CHECK:STDOUT:   %i32.loc33: type = type_literal constants.%i32.f58524.1 [concrete = constants.%i32.f58524.1]
+// CHECK:STDOUT:   %a: %i32.f58524.1 = wrapper_binding a, %.loc33_26.4
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %a.patt: %pattern_type.6b6 = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Take.ref: %Take.type = name_ref Take, file.%Take.decl [concrete = constants.%Take]
+// CHECK:STDOUT:   %OuterOfTemplate.ref: %OuterOfTemplate.type = name_ref OuterOfTemplate, file.%OuterOfTemplate.decl [concrete = constants.%OuterOfTemplate.generic]
+// CHECK:STDOUT:   %i16: type = type_literal constants.%i16 [concrete = constants.%i16]
+// CHECK:STDOUT:   %OuterOfTemplate: type = class_type @OuterOfTemplate, @OuterOfTemplate(constants.%i16) [concrete = constants.%OuterOfTemplate.803]
+// CHECK:STDOUT:   %.loc34_35.1: ref %const.6a8 = specific_constant @OuterOfTemplate.%Size.loc26_9.1, @OuterOfTemplate(constants.%i16) [concrete = imports.%size.var.3b6528.2]
+// CHECK:STDOUT:   %Size.ref.loc34: ref %const.6a8 = name_ref Size, %.loc34_35.1 [concrete = imports.%size.var.3b6528.2]
+// CHECK:STDOUT:   %.loc34_35.2: ref %i32.f58524.1 = as_compatible %Size.ref.loc34 [concrete = constants.%size.var.644297.2]
+// CHECK:STDOUT:   %.loc34_35.3: ref %i32.f58524.1 = converted %Size.ref.loc34, %.loc34_35.2 [concrete = constants.%size.var.644297.2]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %.loc34_35.4: %i32.f58524.1 = acquire_value %.loc34_35.3 [concrete = constants.%int_2]
+// CHECK:STDOUT:   %Take.call: init %i32.f58524.1 = call %Take.ref(%.loc34_35.4)
+// CHECK:STDOUT:   %a.ref: %i32.f58524.1 = name_ref a, %a
+// CHECK:STDOUT:   %impl.elem1: %.d47 = impl_witness_access constants.%AddWith.impl_witness.833, element1 [concrete = constants.%Int.as.AddWith.impl.Op.365]
+// CHECK:STDOUT:   %bound_method.loc34_42.1: <bound method> = bound_method %Take.call, %impl.elem1
+// CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem1, @Int.as.AddWith.impl.Op.1(constants.%int_32.be027e.1) [concrete = constants.%Int.as.AddWith.impl.Op.specific_fn.f25]
+// CHECK:STDOUT:   %bound_method.loc34_42.2: <bound method> = bound_method %Take.call, %specific_fn
+// CHECK:STDOUT:   %.loc34_40.1: %i32.f58524.1 = value_of_initializer %Take.call
+// CHECK:STDOUT:   %.loc34_40.2: %i32.f58524.1 = converted %Take.call, %.loc34_40.1
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32.f58524.1 = call %bound_method.loc34_42.2(%.loc34_40.2, %a.ref)
 // CHECK:STDOUT:   return %Int.as.AddWith.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

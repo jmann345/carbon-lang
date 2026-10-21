@@ -4406,6 +4406,28 @@ committer are the workstream's (R20: explicit paths only). Amended 2026-10-20
     std::optional mapping": docs/design/optional.md's anchored edits and the
     decision log's F-015 amendment, verbatim from Appendix C.3 and C.8's
     amendment paragraph, with R31's counts and check_samples.py (§8 item 11).
+
+    **Held state, as implemented** (2026-10-21; amended 2026-10-21,
+    implementation: held state). No PR of PR 51 to PR 61 is on trunk (Actions
+    disabled, R28), so M is the merge of trunk as it stands: f30429458 merges
+    origin/trunk 481f05612 (f3156a375, 254b935b2 and 481f05612 over
+    5674fe88b), which changes fork/ORCHESTRATION.md and fork/decision-log.md
+    only, with no conflict and no toolchain, core or testdata file, so the
+    build stays C3's and nothing is rebuilt; on the merged head the gate passes
+    1950 of 1950 with no autoupdate-would-change mark, conformance is 134 PASS,
+    0 FAIL and 21 SKIP over 155 (bullets 48 PASS, 0 FAIL, 8 SKIP of 56, every
+    status C3's) and `runner.py --self-test` passes. The compositions with
+    PR 57, PR 60, PR 59 and PR 61 were measured on scratch mirrors at
+    628273444, 40a76ab81, b0822a744 and 5661a35c8 and are not committed (§8
+    item 6). M-VA, F-M and Doc-M, the second id re-scan of §8 item 7, §8 item
+    11's run on the merged trunk, Appendix C.7's land-time fallback and D's
+    notes on items that are not on the merged trunk (W-252 and W-263, TP-1's,
+    on PR 61's branch only) stay owed at land time, in the merge order of
+    fork/ORCHESTRATION.md; R composes over PR 56's row text as Appendix C.7
+    gives it. No new residue was found during implementation, so W-286 to
+    W-294 stay held. _Break condition:_ if a held PR lands before R, M is
+    repeated as a merge of that trunk (never a rebase) and §8 items 6 and 7
+    are re-run against it.
 9.  **R** "SV-1 (7): gap row 68": the row and the header, by §1.17 and
     Appendix C.7, after M.
 10. **D** "SV-1 (8): discharge": the id re-scan of §8.7 first; W-011 DISCHARGED,
@@ -4728,6 +4750,53 @@ scripts are
     | M21 (rev 4, on the PR 59 mirror after M-VA): the walk reduced to rev 3's bare `PackElement` test (`$W/land/mut-m21-bare.diff`) | fail_sum_types.carbon `fail_todo_pack_element` stops the compiler at VA-1's CHECK, at `ForwardTuple` (MEASURED on vav6r, `$W/runs/mut-m21-va.log`) |
     | M22 (rev 5): W-285 lifted by attributing the conversion's blocks to the converted value's parse node where its location is not one (`$Y/exp/srcnode.diff`, v6s) | fail_sum_types.carbon `fail_todo_rvalue_ref_param`: `R` compiles with no diagnostic (MEASURED on v6s, `$Y/runs/mut-m22.log`; r2, r4, r5, y02, x07, x09, x13 and x20 run, and the `Core.Optional` forms r3 and x19 keep the TODO; amended 2026-10-20, review fold: RR4-M1) |
 
+    **Measured at implementation, 2026-10-21** (amended 2026-10-21,
+    implementation: held state). `$V` is the implementer's scratch directory,
+    `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-impl/stage4`:
+    `edit/mkmut.py` holds every mutant's edit and `mut/<n>/` its diff, relink,
+    gate, conformance and attribution logs. Each mutant is the full build of C3
+    (/home/user/carbon-build/carbon-sv) relinked into /dev/shm with the
+    translation units it edits recompiled (for M20, sum_type.h's four includers,
+    so no mirror build is needed); its file_test ran over all 1950 goldens (a
+    golden that stops file_test excluded and run alone), each red golden was
+    autoupdated in a scratch tree and its changed lines attributed to splits,
+    and the full conformance suite ran through a link wrapper (carbon-sv's own
+    `carbon link`). M19 and M21 ran on PR 59's mirror and M16 also on PR 61's
+    (item 6); M18 is retired.
+
+    | Mutant | Measured (2026-10-21) | Killed |
+    | --- | --- | --- |
+    | M1 | red: optional.carbon (`convert`, `one_step_core_optional`, `monostate_payload`, `fail_unknown_alternative`, `fail_todo_outside_function`), variant.carbon `duplicate`, fail_sum_types.carbon (eight splits), sum_type_overload.carbon (all sixteen), std_sum_types.carbon; match_std_optional_diff, cpp_sum_type_roundtrip_diff and cpp_sum_type_library COMPILE-FAIL; match_std_variant_diff and match_core_optional_diff PASS, as they reach the sum types only through the scrutinee gate and the view's prelude bridge, which do not call `TryConvertCppSumType` | yes (three of the five predicted programs) |
+    | M2 | red: optional.carbon's SemIR in `match`, `if_let`, `convert`, `pointer_payload` and `one_step_core_optional`, std_sum_types.carbon; match_std_optional_diff, match_std_variant_diff and cpp_sum_type_library RUN-FAIL (exit -6, ``C++ exception escaped into Carbon through `std::__optional_storage_base<int>::value` ``: the fenced `bad_optional_access`), match_sum_type_payload RUN-FAIL (exit 1); the runner reports RUN-FAIL, not DIFF-MISMATCH, because the Carbon side's exit code is checked first | yes |
+    | M3 | red: variant.carbon (`match`, `monostate`, `duplicate`, `fail_index_out_of_range`), std_sum_types.carbon; match_std_variant_diff, cpp_sum_type_roundtrip_diff and cpp_sum_type_library COMPILE-FAIL: the last arm's `std::get<N>` fails libc++'s ``Index out of bounds in std::variant_alternative<>`` static assertion | yes (COMPILE-FAIL, not the predicted DIFF-MISMATCH) |
+    | M4 | red: fail_sum_types.carbon `fail_todo_non_trivial` only (its note becomes `CppSumTypeAlternativeNotAdmitted`); programs unchanged | yes |
+    | M5 | red: `fail_todo_qualified_alternative` only; programs unchanged | yes |
+    | M6 | red: optional_pointer_payload.carbon `pointer`, optional.carbon `pointer_payload`; match_std_optional_diff and match_std_variant_diff COMPILE-FAIL | yes |
+    | M7 | constant_choice_scrutinee.carbon stops file_test at lower.cpp:48 (``!llvm::verifyModule``); cpp_sum_type_roundtrip_diff COMPILE-FAIL (the compiler aborts) | yes |
+    | M8 | red: core_optional_view.carbon (all six splits); match_core_optional_diff COMPILE-FAIL | yes |
+    | M9 | red: optional.carbon (`convert`, `one_step_core_optional`, `monostate_payload`), fail_sum_types.carbon (`core_optional_argument_as`, `fail_todo_export_sum_type`, both `fail_reverse_` splits, `fail_todo_template_conversion`, `fail_todo_rvalue_ref_param`), variant.carbon `duplicate`, std_sum_types.carbon; cpp_sum_type_roundtrip_diff COMPILE-FAIL | yes |
+    | M10 | red: variant.carbon `duplicate` (SemIR), std_sum_types.carbon (the variant's IR); cpp_sum_type_roundtrip_diff COMPILE-FAIL, ``no matching function for call to 'emplace'`` where alternative 0's type does not take the payload | yes (COMPILE-FAIL, not the predicted DIFF-MISMATCH) |
+    | M11 | red: variant.carbon `monostate` (``C++ type `std::variant<std::monostate, int>` has no Carbon sum type [CppSumTypeNotMapped]``), optional.carbon `monostate_payload`; match_std_variant_diff and cpp_sum_type_roundtrip_diff COMPILE-FAIL | yes |
+    | M12 | sum_type_overload.carbon stops file_test at `convert_first.carbon`, ``Built invalid semantics IR: No terminator in block``; programs unchanged | yes |
+    | M13 | red: fail_sum_types.carbon `fail_reverse_other_specialization` and `fail_reverse_converting_class` compile (`fail_` prefix failures); programs unchanged | yes |
+    | M14 | red: core_optional_view.carbon `fail_todo_generic` compiles, `fail_todo_aggregate` gets ``forming value of incomplete type `Core.CppCompat.StdOptional((i32, i32))` `` with SF-6's per-specific note instead; programs unchanged | yes |
+    | M15 | red: optional_pointer_payload.carbon `fail_todo_nullptr_payload` compiles and `fail_todo_maybe_unformed_payload` changes, fail_catching.carbon `fail_nullptr_return` compiles; programs unchanged | yes |
+    | M16 | nothing: 1950 of 1950, conformance unchanged, and the twelve probes of `$W/probes/tp/` and four template-dependent shapes of `$V/probes-m16/` (a `StdOptional(T)` return, an `as`, a `StdOptional(T)` argument to C++, a `Core.Optional(T)` target) print what C3 prints; on PR 61's mirror also 1965 of 1965 and the tp probes unchanged | no: survives |
+    | M17 | sum_type_overload.carbon stops file_test at `tuple_member.carbon`, ``No terminator in block``; z01 gets ``cannot implicitly convert expression of type `bool` to `i32` `` | yes |
+    | M20 | red: sum_type_overload.carbon `fail_todo_file_scope` and `fail_todo_template_overload` compile with no diagnostic; f01 and t7 print 1 2, t4 gets ``no member of overload set `P` accepts this call`` | yes |
+    | M22 | red: fail_sum_types.carbon `fail_todo_rvalue_ref_param` (the `TakeRvalue` TODO gone); r2 5, r4 4, r5 5, y02 5, x07 205, x09 205, x13 1, x20 1; r3 and x19 keep the TODO | yes |
+
+    Eighteen of the nineteen mutants run here are killed: fourteen as the table
+    predicts (some with further splits or programs red, each listed), M2, M3 and
+    M10 by another status than the predicted DIFF-MISMATCH (M2 RUN-FAIL, M3 and
+    M10 COMPILE-FAIL), and M1 by three of the five programs it names. M16
+    survives on SV-1's tree and on PR 61's mirror: in every shape measured, h1
+    included (rev 1 diagnosed its symbolic target at definition, §1.10), no
+    conversion reaches the hook with a template-dependent type, so §1.10's test
+    is exercised by no golden, program or probe here. Both are plan records,
+    MINOR; the test stays, as §1.10 states it. _Break condition:_ a shape that
+    reaches the hook with a template-dependent type gets a golden split, and M16
+    is re-run on it.
 6.  **Composition mirrors** (TP-1's §0.9 shape; rewritten 2026-10-20, review
     fold: B-m-11): with kind.def changed every translation unit recompiles, so
     each mirror is a FULL build, one at a time: for each of PR 57, PR 60, PR 59
@@ -4767,6 +4836,44 @@ scripts are
     every mirror also runs `$Y/probes/rx/`, `rt/`, `cr/`, `cz/` and `w/`, which
     print on tpv6, op2v6, scv6 and vav6 what they print on v6 (§0.6), and its
     gate includes fail_sum_types.carbon's `fail_todo_rvalue_ref_param`.
+
+    **Measured at implementation, 2026-10-21** (amended 2026-10-21,
+    implementation: held state; logs in `$V/mirror/<b>/`, item 5's `$V`). Each
+    mirror is a `git archive` of the head fetched that day, in
+    /dev/shm/sv1-impl/mirror-<b>, with SV-1's toolchain and core diff applied by
+    `patch -p1` (`$V/mirror/sv1-toolchain.diff`, 14 files, kind.def at its final
+    position and BUILD included, from `git diff 30153bbc2..HEAD -- toolchain
+    core ':!toolchain/*/testdata/*'`), SV-1's nine goldens (filled, from the
+    worktree) and six programs copied in, a full build and install with
+    `CB_BUILD_ROOT=/dev/shm/sv1-impl/build` (6m38s to 11m20s, 0 warnings;
+    `carbon version` prints `0.0.0-0.dev+unknown`, as an export has no git
+    stamp), the gate, every red golden autoupdated to a fixpoint and its diff
+    classified, the gate again, the mirror's own full conformance run and the
+    probes; each mirror and its build were deleted before the next. Every hunk
+    applied with no reject, so none was resolved by hand. On every mirror the 44
+    programs of `$Y/probes/` rx, rt, cr, cz and w print what they print on C3
+    (the stage-3 run over the worktree's install), the only stops being the six
+    W-263 shapes (y11, z1, z5, z7, z8, z9 at lower.cpp:48), and SV-1's six
+    programs PASS.
+
+    | Mirror | Head | Patch | Gate | Conformance | Probes beyond the 44 |
+    | --- | --- | --- | --- | --- | --- |
+    | PR 57 (OP-2) | 628273444 | convert.cpp's hook at offset 3, every other hunk exact | 1951 of 1958; red exactly F-M's seven: the four function-pointer goldens (4, 4, 18 and 8 changed lines, all `clang_function_pointer_type<N>`), choice/optional_pointer_payload.carbon (12 lines, `pointer`), stdlib/optional.carbon (387, `pointer_payload` and `one_step_core_optional`) and match/core_optional_view.carbon (18, `concrete`), all SemIR (OP-2's `Destroy` facet and witness entries, import order), no `CHECK:STDERR` line; refilled, 1958 of 1958 | 145 PASS, 0 FAIL, 21 SKIP over 166 | o04 prints 5 6 -1 9, s05 42 0 -1 |
+    | PR 60 (SC-1) | 40a76ab81 | BUILD and convert.cpp at offset 1, the hook at 14, type.cpp at 8, kind.def exact | 1963 of 1967; red the four function-pointer goldens only (34 lines, all `clang_function_pointer_type<N>`), none of SC-1's; refilled, 1967 of 1967 | 136 PASS, 0 FAIL, 20 SKIP over 156 | none |
+    | PR 59 (VA-1) | b0822a744 | convert.cpp at offset 98, the hook at 114, type.cpp at 5, kind.def at 15; then M-VA (`$Y/land/m-va-pack-element.diff`) exact | fail_sum_types.carbon with `fail_todo_pack_element` (`$Y/land/fail_sum_types.M.carbon`) filled on the mirror's install, a fixpoint on the second pass, byte-identical to `$Y/final/goldens-filled-M/` (the pack-element TODO ten times); then 1964 of 1968, red the four function-pointer goldens only, none of VA-1's; refilled, 1968 of 1968 | 143 PASS, 0 FAIL, 20 SKIP over 163 | v02, v03, v04, n01 to n08, n13, n14 and n16 to n21 give the pack-element TODO; n15 and n22 VA-1's own TODOs, v05 ``control flow in a pack expansion``; v00 1 2, v01 7 -1, v06 7 -1, v07 4 -1, n09 7 1 -1 2, n10 8 1 |
+    | PR 61 (TP-1) | 5661a35c8 (round 11's records head; its toolchain/ and core/ are 281292d8f's but for one golden) | §0.7's row re-measured: convert.cpp's include hunk and refutable_binding.cpp's first hunk at fuzz 1, convert.cpp's other hunks at offsets 2 to 378 | 1961 of 1965; red the four function-pointer goldens only, none of TP-1's; refilled, 1965 of 1965 | 144 PASS, 0 FAIL, 21 SKIP over 165 | h1, h2, h3, t2, t4, t5, t6, t7 and x20 give W-279's TODO under ``unable to monomorphize specific``; q05 prints 5, t3 3 4, x19 0 (X-1 stays fixed) |
+
+    Every prediction above holds. The PR 57 counts are §0.7's, which list the
+    three files in another order than their counts (MINOR). On PR 59's mirror,
+    with sum_type.cpp relinked over the mirror's build (`$V/mirror/va/M19/`,
+    `M21/`): M19 (the M-VA test disabled) stops the compiler on
+    `fail_todo_pack_element` at VA-1's convert.cpp:587 CHECK ``Control flow in a
+    pack element conversion``, at `Forward`, and v02, v04 and n01 to n07 stop
+    there too (v03 and n08 get VA-1's ``pack expansion element that needs a
+    cleanup``); M21 (`$Y/land/mut-m21-bare.diff` in place of M-VA) stops there
+    at `ForwardTuple`, as do n01 to n05, while v02 to v04 and n06 to n08 keep
+    the pack-element TODO. Both are killed, as predicted. M16 on PR 61's mirror
+    is item 5's row.
 7.  **Id re-scan** (before D; run 2026-10-20 for §1.16; widened 2026-10-20,
     review fold: B-m-7):
 
@@ -4798,6 +4905,14 @@ scripts are
     fold: RR4-m3). Re-run at rev 5 over 83 refs and 15 worktree ledgers: no
     output; widened, TP-1's W-295 to W-297 on its pushed branch at 281292d8f,
     its local branch and the carbon-tp worktree.
+    Re-run at implementation (2026-10-21; amended 2026-10-21, implementation:
+    held state; `$V/ids-*.txt`), after `git fetch origin`, over 83 refs and 15
+    worktree ledgers: no output; widened to W-299, TP-1's W-295 to W-298 on
+    its pushed branch at 5661a35c8, its local branch at 5661a35c8 and the
+    carbon-tp worktree, and no other id of W-275 to W-299 anywhere; the
+    highest id filed anywhere is W-298, and F-020 is in no decision log on any
+    ref or worktree. The re-scan before D, on the merged trunk, stays a
+    land-time item (§3 item 8).
 8.  **clang-tidy** (rewritten 2026-10-20, review fold: B-m-4): the carbonbuild
     builds write no compile database, so after item 1, `ninja -C
     /home/user/carbon-build/carbon-sv -t compdb >
@@ -4816,6 +4931,17 @@ scripts are
     `misc-no-recursion` errors are trunk's own (the same four, one line
     earlier, on 0bdce60a5's file). If the database cannot be generated, the
     step moves to item 12's not-run list with that reason.
+    Run at implementation (2026-10-21; amended 2026-10-21, implementation:
+    held state; `$V/tidy/`): the database is generated (`ninja -t compdb` over
+    /home/user/carbon-build/carbon-sv, 324 entries), and clang-tidy 21.1.8 with
+    the exclusion finds nothing in sum_type.cpp, custom_type_mapping.cpp,
+    convert.cpp, refutable_binding.cpp, type.cpp or lower/constant.cpp;
+    type_mapping.cpp's four `misc-no-recursion` errors, at :157, :197, :391 and
+    :505, are trunk's own, at :156, :196, :390 and :504 on 0bdce60a5's file
+    (the same database entry with trunk's header first and the repository's
+    .clang-tidy), none on a changed line (:30, :135-136 and :590-599).
+    `clang-format --dry-run --Werror` (21.1.8) on the 15 changed C++ files, the
+    ten toolchain files and the five oracles: no output.
 9.  **prek** on every changed path to a fixpoint:
     `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
     uvx prek run --files <paths>`, including check-toolchain-diagnostics (each
@@ -4842,6 +4968,15 @@ scripts are
     container's LLVM is Release); macOS and Windows (another libc++ ABI or the
     MSVC STL); libstdc++ (not shipped with the toolchain); opt-mode
     conformance.
+    At implementation (2026-10-21; amended 2026-10-21, implementation: held
+    state), also not run: M-VA, F-M, Doc-M and the re-scan before D, which are
+    land-time (§3 item 8); item 11 on the merged trunk, which lacks PR 58's
+    checker, so it ran over PR 58's head fcee90d9b with the merged head's
+    sum_types.md and unions.md overlaid (`$V/dd-sim-*.log`: 19 program
+    blocks, 67 fixtures, 3 W2 hits, 0 errors, with and without `--toolchain`);
+    M18 (retired); full mirror builds for M16, M19 and M21, which edit
+    sum_type.cpp only and were relinked over the mirror's full build; and the
+    hosted run of any mirror (R28).
 
 ## Hand-off notes for the implementer
 

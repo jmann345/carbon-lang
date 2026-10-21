@@ -849,4 +849,8 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     (R25); user is commit author, Claude co-author.
 -   Upstream alignment is a veto criterion, not a permission gate (V-3a):
     contradicting accepted upstream direction is vetoed; ambiguity permits
-    creative fork design at full speed.
+    creative fork design at full speed. Amended 2026-10-21 (V-3b, R32, decision
+    log DR-0): direction drifts are not permitted. The override clause is
+    withdrawn: where upstream's recorded direction, read at upstream's tip, and
+    a fork design diverge, the fork realigns. A second spelling of a mechanism
+    upstream has designed is a drift even before upstream implements it.

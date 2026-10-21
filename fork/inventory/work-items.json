@@ -1958,7 +1958,7 @@
         "fork/slices/plan.md D-SL-3, §8.5; fork/decision-log.md 'SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)'"
       ],
       "blocked_by": [],
-      "notes": "Filed at the SL-1 discharge (fork/slices/plan.md §8.5). indexing.md's target shape is a `Span` implementing `IndirectIndexWith` whose `Ref` returns `ref T`; the toolchain has neither `IndirectIndexWith` nor `ref`-returning methods and the prelude's `IndexWith` has only `At`, so `s[i]` is a value expression and writes to owned storage go through `Buf.Set`. There is deliberately no `Slice.Set` either: a `Slice(const T)` over C++ read-only memory would compile its store against the unqualified symbolic `T` and fault at runtime. Mechanism: indexing.md's rewrite rules in handle_index.cpp (choose `IndirectIndexWith.Ref` for a durable-reference operand, `At` otherwise), a `Ref` member on `IndexWith` or a sibling `IndirectIndexWith` interface in index.carbon, and `ref` returns; `Core.Slice` then takes the `Span` shape, the `fail_write_through` pin is deleted and the literal-subscript rule (D-SL-17) yields to the specified rewrite. Dated 2026-10-21 (DR-0, R32): upstream added `IndirectIndexWith` with `fn Ref(self, subscript: SubscriptType) -> ref ElementType` (6d80ceb58, 2026-10-16, PR 7974, extracted from the `Core.Slice` proposal PR 7536; upstream core/prelude/operators/index.carbon:14-16) and prefers it for subscripting (309d3d63c, 2026-10-17, PR 7975), the landing D-SL-3's break condition names, so far in upstream's toolchain and not yet the fork's; the 2026-10-19 weekly tied both to this item (fork/decision-log.md:6780-6782). Under R32 that is a drift, not a note: it is scheduled as D-DR-1 slice 3 (DR-1, after CT-1's implementation and before UA-3), `Core.Slice`'s element access made writable through `IndirectIndexWith`'s `Ref` as upstream spells it."
+      "notes": "Filed at the SL-1 discharge (fork/slices/plan.md §8.5). indexing.md's target shape is a `Span` implementing `IndirectIndexWith` whose `Ref` returns `ref T`; the toolchain has neither `IndirectIndexWith` nor `ref`-returning methods and the prelude's `IndexWith` has only `At`, so `s[i]` is a value expression and writes to owned storage go through `Buf.Set`. There is deliberately no `Slice.Set` either: a `Slice(const T)` over C++ read-only memory would compile its store against the unqualified symbolic `T` and fault at runtime. Mechanism: indexing.md's rewrite rules in handle_index.cpp (choose `IndirectIndexWith.Ref` for a durable-reference operand, `At` otherwise), a `Ref` member on `IndexWith` or a sibling `IndirectIndexWith` interface in index.carbon, and `ref` returns; `Core.Slice` then takes the `Span` shape, the `fail_write_through` pin is deleted and the literal-subscript rule (D-SL-17) yields to the specified rewrite. Dated 2026-10-21 (DR-0, R32): upstream added `IndirectIndexWith` with `fn Ref(self, subscript: SubscriptType) -> ref ElementType` (6d80ceb58, 2026-10-16, PR 7974, extracted from the `Core.Slice` proposal PR 7536; upstream core/prelude/operators/index.carbon:14-16) and prefers it for subscripting (309d3d63c, 2026-10-17, PR 7975), the landing D-SL-3's break condition names, so far in upstream's toolchain and not yet the fork's; the 2026-10-19 weekly tied both to this item (fork/decision-log.md:6791-6793). Under R32 that is a drift, not a note: it is scheduled as D-DR-1 slice 3 (DR-1, after CT-1's implementation and before UA-3), `Core.Slice`'s element access made writable through `IndirectIndexWith`'s `Ref` as upstream spells it."
     },
     {
       "id": "W-110",
@@ -2230,10 +2230,10 @@
         "upstream docs/design/sum_types.md:108 (`interface Match`), :135-146 (`Optional` defined as a class with `impl as Match`) and :52-55 (`choice Optional`) at fb7eff130",
         "upstream docs/design/pattern_matching.md:500-503, :526-527 at fb7eff130",
         "toolchain/check/handle_loop_statement.cpp:269-272 (`TODO: Instead, form a .Some(pattern_id) pattern and pattern-match against that`; upstream :235-238)",
-        "core/prelude/types/optional.carbon:27-28 (upstream's placeholder class, unchanged from the cut c1e83b0b7 to upstream fb7eff130)",
+        "upstream core/prelude/types/optional.carbon:27-28 at fb7eff130 (trunk's copy :28-29; upstream's placeholder class, unchanged from the cut c1e83b0b7 to fb7eff130)",
         "toolchain/check/type.cpp:337-354 (SF-6's payload gate: integer, float, bool, pointer and `()` only, so a choice `Optional` cannot carry a class payload)",
         "fork/w5-choice/plan.md:92-93 and :740-744 (R-8: `Match` out of the whole W5 workstream), :608-629 (SF-9, Recommend (a)); fork/match-replatform/plan.md:39, :102-103",
-        "fork/decision-log.md:5873-5890 (EH-A, D-EH-1: the class kept, break condition keyed on a choice); fork/decision-log.md:5926-5927 (the SF-9 ask package never written)",
+        "fork/decision-log.md:5884-5901 (EH-A, D-EH-1: the class kept, break condition keyed on a choice); fork/decision-log.md:5937-5938 (the SF-9 ask package never written)",
         "fork/eh/plan.md:135-137 (D-EH-1's break condition); PR 56's fork/optional/plan.md:868-869 (D-OP-7's)",
         "PR 56 (claude/carbon-fork-0-1-op) fork/inventory/work-items.json:2336-2350 (W-177) and docs/design/optional.md:179-200, :425-441 (D-OP-7, the class kept, not matchable)",
         "fork/decision-log.md DR-0 (D-DR-1, option (a)); fork/rulebook.md R32"
@@ -2256,8 +2256,8 @@
         "toolchain/check/testdata/for/actual.carbon:25, basic.carbon:34, pattern.carbon:24; toolchain/lower/testdata/for/bindings.carbon:18 (impls)",
         "toolchain/check/handle_loop_statement.cpp:256, :267 (`cursor_addr_id`, an `AddrOf` of the cursor, passed to `Next`; upstream passes `cursor_var_id`)",
         "upstream core/prelude/iterate.carbon:17, :24, :74 and core/prelude/range.carbon:20 at fb7eff130 (`ref cursor`, since df3cf9294, 2026-10-07, PR 7381; upstream proposals/p007381-adopt-ref-in-core-iterate-next.md)",
-        "docs/design/control_flow/loops.md:96 (the fork's own copy declares `fn Next(self, ref cursor: CursorType)`, from 7134e23f2, 2026-09-29, before the cut)",
-        "fork/decision-log.md:6812 and fork/decision-log.md:6758 (the weekly entries of 2026-10-12 and 2026-10-19; neither names PR 7381)",
+        "docs/design/control_flow/loops.md:96 (the fork's own copy declares `fn Next(self, ref cursor: CursorType)`, from upstream cbd79529b, 2026-06-18, PR 7350, before the cut)",
+        "fork/decision-log.md:6823 and fork/decision-log.md:6769 (the weekly entries of 2026-10-12 and 2026-10-19; neither names PR 7381)",
         "fork/decision-log.md DR-0 (D-DR-1 slice 2); fork/rulebook.md R32 (d)"
       ],
       "blocked_by": [],
@@ -2276,7 +2276,7 @@
         "proposals/p000157-design-direction-for-sum-types.md:854 (\"Pattern matching proxies\", under Alternatives considered at :782)",
         "PR 62 toolchain/check/refutable_binding.cpp:216-235 (the scrutinee gate's `Core.Optional` view case) and toolchain/diagnostics/kind.def:267 (`CoreOptionalNotMatchable`)",
         "upstream docs/design/sum_types.md:108, :135-146 at fb7eff130 (`Match`; `Optional` as a class with `impl as Match`)",
-        "fork/decision-log.md DR-0 (D-DR-2, this divergence's register line); fork/rulebook.md R32 (b), (d), (e)"
+        "fork/decision-log.md DR-0 (D-DR-2; its V-3a register block, entry (i), is this divergence's register entry); fork/rulebook.md R32 (b), (d), (e)"
       ],
       "blocked_by": ["W-320"],
       "notes": "Filed 2026-10-21 at DR-0. PR 62 is held open; its D-SV-7 converts a `Core.Optional(T)` scrutinee through the prelude's `ImplicitAs` bridge (`HasValue()`, `Get()`) into `Core.CppCompat.StdOptional(T)` and matches it as that view for a concrete SF-6 payload, otherwise diagnosing `CoreOptionalNotMatchable`. Its §0.9 found no contradiction with accepted upstream direction and the view never entered the V-3a register; under R32 (d) a second spelling of a mechanism upstream has designed is a drift even while upstream's toolchain has not implemented it, so DR-0 records it as a V-3a divergence now (D-DR-2) and this item is that register entry's work item. Retirement: when DR-1 lands W-320's `Match` route, PR 62 is amended by a new commit on its branch that matches `Core.Optional(T)` through `Match` and removes the view case from the scrutinee gate; PR 62 is never rewritten (R32 (e)). The `std::optional` mapping itself (F-020) and the one-step conversions are not the drift and stay. Owner: DR-1. Break condition: upstream designs a view-based route for matching `Core.Optional`, or D-DR-1's break condition replaces W-320's route, and the view is then retired by what replaces it."
@@ -2290,7 +2290,7 @@
       "bullet": "none",
       "evidence": [
         "PR 56 (claude/carbon-fork-0-1-op, head 379f20f67) docs/design/control_flow/loops.md:116-118 (\"Fork amendment (2026-10-13, F-015) ... `HasValue()` and `Get()` above are that API\")",
-        "PR 56 fork/optional/plan.md:192-202 (OP-1's V-3: compares optional.carbon against upstream-trunk 62f1cc6a3 and asserts loops.md's `HasValue()`/`Get()` are kept, :194-197)",
+        "PR 56 fork/optional/plan.md:192-214 (OP-1's V-3: compares optional.carbon against upstream-trunk 62f1cc6a3 and asserts loops.md's `HasValue()`/`Get()` are kept, :194-197)",
         "upstream docs/design/control_flow/loops.md:117-120 at fb7eff130 and at 62f1cc6a3 (`case .Some(<pattern>)`; df3cf9294, 2026-10-07, is an ancestor of 62f1cc6a3)",
         "fork/decision-log.md DR-0 (D-DR-3); fork/rulebook.md R32 (a), (e)"
       ],

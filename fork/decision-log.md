@@ -49,10 +49,11 @@ queue whose entries each carry a work item (fork/rulebook.md R32 (b)).
 
 ### DR-0: direction drifts are not permitted; the Optional, iteration and slice drifts (2026-10-21)
 
-Placed here, first in Decided and beside V-3, because it amends V-3 (as V-3b,
-above); the log groups entries by workstream, not by date. Line cites into this
-log are to the file as committed with this entry. Records only: no toolchain,
-prelude, golden or program file changes with it.
+Placed here, in Decided directly after V-1..3 and beside V-3, because it amends
+V-3 (as V-3b, above); the log groups entries by workstream, not by date. Line
+cites into this log are to the file as committed with this entry's verifier fold
+(2026-10-21). Records only: no toolchain, prelude, golden or program file
+changes with it.
 
 _The directive._ The owner, 2026-10-21, verbatim: "Direction drifts are not
 permitted", asked with the question "why didn't the fork have matchable optional
@@ -67,8 +68,9 @@ _The question and its answer._ The fork inherited upstream's placeholder
 type matchable, and no record caught that upstream's design moved to matching it
 two days after the cut. The answer was established on 2026-10-21 by three
 readers and two adversarial verifiers, and follows their claim-by-claim verdicts
-(two of the draft's claims were refuted and are corrected below: the fork's own
-loops.md already spelled `ref cursor` at the cut, and the pointer cursor has 11
+(nine of the draft's claims were refuted by one or both verifiers; this entry
+states only their corrected forms, among them that the fork's own loops.md
+already spelled `ref cursor` at the cut and that the pointer cursor has 11
 sites, not 9). The chain, in record order, with sum_types.md,
 pattern_matching.md and loops.md cited at upstream's tip fb7eff130 (the fork's
 copies differ):
@@ -77,16 +79,16 @@ copies differ):
     interface/Continuation mechanism out of scope for the whole W5 workstream
     (fork/w5-choice/plan.md:92-93, risk R-8 at :740-744; this log's entry
     "W5-S1: scope trades in choice-payload slice 1 (2026-07-19)"), so the only
-    match path the fork built is a choice's discriminant dispatch.
+    sum-type match path the fork built is a choice's discriminant dispatch.
 -   **SF-9 was never asked, and KEEP was auto-adopted.** W5 queued SF-9,
     `Core.Optional`'s identity, for an owner question and recommended option
     (a), replacing the class by the generic choice
     (fork/w5-choice/plan.md:608-629); the ask package for that question was
-    never written (decision-log.md:5926-5927). On 2026-09-27, the day R29(a)'s
+    never written (decision-log.md:5937-5938). On 2026-09-27, the day R29(a)'s
     "no more questions" took effect (fork/rulebook.md:274-278), EH-A
     auto-adopted the opposite, KEEP, as D-EH-1, with a break condition keyed
     only on W-058's design making `Optional` a choice
-    (decision-log.md:5873-5890).
+    (decision-log.md:5884-5901).
 -   **The match re-platform quoted the TODO and excluded `Match`.**
     fork/match-replatform/plan.md (PR 34, 2026-09-25) quoted upstream's loop
     TODO "form a `.Some(pattern_id)` pattern" (:102-103) and adopted its engine
@@ -96,7 +98,8 @@ copies differ):
     gate, `IsInSliceChoicePayloadType` (toolchain/check/type.cpp:337-354),
     admits only integer, float, bool and pointer types and `()`, so a choice
     `Optional` could not carry a class payload; no record named this as a reason
-    (the only SF-6/SF-9 link in this log is W-070's, decision-log.md:5922).
+    (the only SF-6/SF-9 link in this log before this entry is W-070's,
+    decision-log.md:5933).
 -   **OP-1 kept the class and filed matchability as residue.** OP-1 / F-015 (PR
     56, 2026-10-13) kept the class by D-OP-7, because its names and layout are
     load-bearing (`for` calls `HasValue`/`Get`, the C++ mapping's name and `T*`
@@ -134,9 +137,9 @@ copies differ):
     desugaring does not excuse either: the check named a tip and did not read
     the page at it.
 -   **The weekly checks did not name it.** The weekly entry of 2026-10-12
-    (decision-log.md:6812), whose window contained df3cf9294, lists the
+    (decision-log.md:6823), whose window contained df3cf9294, lists the
     conflicting files and the week's rename; the entry of 2026-10-19
-    (decision-log.md:6758) lists that week's commits by subject; neither names
+    (decision-log.md:6769) lists that week's commits by subject; neither names
     PR 7381, though the V-3a register is "reviewed at each upstream merge"
     (decision-log.md:39-41).
 -   **D-SV-7 is a fourth spelling.** PR 62's D-SV-7 matches a `Core.Optional(T)`
@@ -157,16 +160,16 @@ copies differ):
     (309d3d63c, 2026-10-17, PR 7975), against D-SL-3's read-only `Slice`
     (fork/slices/plan.md:223-237; docs/design/slices.md:358), whose break
     condition names exactly this; the 2026-10-19 weekly tied PRs 7974 and 7975
-    to W-109 (decision-log.md:6780-6782), so this drift was on record and
+    to W-109 (decision-log.md:6791-6793), so this drift was on record and
     scheduled nowhere. Iteration: df3cf9294 changed `Core.Iterate.Next` to `fn
     Next(self, ref cursor: CursorType)` with the array, `IntRange` and C++ range
     impls (upstream core/prelude/iterate.carbon:17, :24, :74;
     core/prelude/range.carbon:20), while the fork's own
     docs/design/control_flow/loops.md:96 already spelled `ref cursor` at the cut
-    (from 7134e23f2, 2026-09-29) and no record weighed it; the fork's prelude,
-    tests and one program keep a pointer cursor at 11 sites (2 interface
-    declarations and 9 impls), and the 8 free `fn Next` helpers in 6 files are
-    unaffected.
+    (from upstream cbd79529b, 2026-06-18, PR 7350, in the fork's tree since
+    before UA-1) and no record weighed it; the fork's prelude, tests and one
+    program keep a pointer cursor at 11 sites (2 interface declarations and 9
+    impls), and the 8 free `fn Next` helpers in 6 files are unaffected.
 
 _Realignment options considered, with their recorded costs._
 
@@ -185,7 +188,7 @@ _Realignment options considered, with their recorded costs._
     (sum_types.md:52-55). Cost: a pointer niche for a choice, designed nowhere;
     SF-6 widened to class and aggregate payloads; `HasValue`/`Get` gone, so
     `Try`, the loop checker, PR 62's bridge and trunk programs change. Rejected
-    on record by D-EH-1 (decision-log.md:5873-5890), D-OP-7 (PR 56's
+    on record by D-EH-1 (decision-log.md:5884-5901), D-OP-7 (PR 56's
     docs/design/optional.md:179-200) and PR 62's option (d) (its
     fork/sumtype-interop/plan.md:1201-1204); rejected again here, since
     upstream's loops.md names neither a choice nor `Match` and sum_types.md also
@@ -212,19 +215,19 @@ first (slice 1 then copies it); slices 2 and 3 follow any later upstream change
 to `Iterate.Next` or any `Core.Slice` proposal upstream accepts (PR 7536).
 
 _D-DR-2 — PR 62's D-SV-7 view is a V-3a divergence._ It is recorded as one now
-(this entry is its register line, W-322 its work item) and is retired by DR-1
-slice 1: when DR-1 lands its `Match` route, PR 62 is amended by a new commit on
-its branch that matches `Core.Optional(T)` through it and removes the view; PR
-62 is never rewritten. The `std::optional` mapping itself (F-020) is not the
-drift and stays. Break condition: upstream designs a view-based route for
-matching `Core.Optional`, or D-DR-1's break condition replaces slice 1's route,
-and the view is then retired by what replaces it.
+(the register block below carries it, W-322 its work item) and is retired by
+DR-1 slice 1: when DR-1 lands its `Match` route, PR 62 is amended by a new
+commit on its branch that matches `Core.Optional(T)` through it and removes the
+view; PR 62 is never rewritten. The `std::optional` mapping itself (F-020) is
+not the drift and stays. Break condition: upstream designs a view-based route
+for matching `Core.Optional`, or D-DR-1's break condition replaces slice 1's
+route, and the view is then retired by what replaces it.
 
 _D-DR-3 — corrections owed on PR 56's branch, by a new commit._ The Fork
 amendment in PR 56's docs/design/control_flow/loops.md:116-118 is rewritten to
 state upstream's current desugaring (a `match` with `case .Some(<pattern>)`) and
 that the fork's `for` calls `HasValue`/`Get` until W-320 lands; OP-1's V-3
-paragraph (PR 56's fork/optional/plan.md:192-202) gains a dated correction
+paragraph (PR 56's fork/optional/plan.md:192-214) gains a dated correction
 naming df3cf9294 and quoting loops.md at 62f1cc6a3. W-323 carries both; the
 commit lands before PR 56 merges (R32 (e)). Break condition: PR 56 is closed
 without merging, and the corrections then go wherever F-015 lands.
@@ -234,6 +237,14 @@ quotes the design page's text at that tip; the weekly check lists
 mechanism-changing upstream commits by subject; drifts become work items owned
 by a named workstream and scheduled in ORCHESTRATION's Next actions. This is
 R32. Break condition: an owner directive that reinstates V-3's override clause.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+under V-3b each entry is a drift and carries its work item. (i) PR 62's D-SV-7
+`Core.Optional(T)` view (W-322, retired by DR-1 slice 1). (ii) D-SL-3's
+read-only `Core.Slice`, registered at SL-1, against upstream's
+`IndirectIndexWith` and its `Ref` (6d80ceb58, 309d3d63c; W-109, DR-1 slice 3).
+(iii) The pointer cursor of `Core.Iterate.Next` at 11 sites against upstream's
+`ref cursor` (df3cf9294; W-321, DR-1 slice 2).
 
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened

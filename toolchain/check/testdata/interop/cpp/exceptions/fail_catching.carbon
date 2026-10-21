@@ -184,6 +184,10 @@ decltype(nullptr) may_throw_null();
 // the SF-6 predicate does not admit, so it is not a scalar success type
 // (fork/sumtype-interop/plan.md D-SV-8 admits only `Core.Optional(T*)`).
 fn F() -> Core.Result(i32, Cpp.Exception) {
+  // CHECK:STDERR: fail_nullptr_return.carbon:[[@LINE+4]]:3: error: catching import of `may_throw_null` requires a scalar success type in 0.1; `Cpp.nullptr_t` is not one [CppCatchingImportNonScalarSuccess]
+  // CHECK:STDERR:   Cpp.may_throw_null()?;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Cpp.may_throw_null()?;
   return Core.Result(i32, Cpp.Exception).Ok(0);
 }

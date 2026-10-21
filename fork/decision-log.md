@@ -340,6 +340,31 @@ against CT-1's head is 12/17, 137/137 and 17/103, the L-a row the plan
 measured with both PRs; then 1959 of 1959, and conformance 147/0/20 over 167
 with no status change against CT-1's own run; review A's tmpl_for prints 6.
 
+_DR-1a discharge (2026-10-21)._ DR-1a's implementation review (the plan's §3
+item 4, R29(c)) read 0ac137d9d against upstream/trunk 503f09037 and returned
+APPROVE-WITH-FIXES: no BLOCKER, no MAJOR and three MINOR findings, all
+records. Each was reproduced and folded, none rejected, by two of §3 item 9's
+three fix commits, and nothing is shrunk: 2481ed8f2 (DR1A-m1, loops.md is
+upstream's page with the `while let` amendment and C.9, df3cf9294's whole page
+edit; the §2.1 cites of DR1A-m3) and 851bd5d03 (DR1A-m2, W-321's landed-site
+evidence; the rest of DR1A-m3, the plan's §6 and §8 item 5 errata; the plan's
+"Implementation review fold record, DR-1a"). Neither changes a toolchain,
+golden or program file. Measured on the fold's tree, with the install at
+version 0.0.0-0.dev+d0cfe8082 (container-local, EXPECTED, not of record): gate
+1942 of 1942; conformance 128/0/22 over 150, bullets 48/0/8 of 56, no status
+change; `runner.py --self-test` OK over 150 programs. The id re-scan before this
+discharge (2026-10-21T23:22Z, after a fetch; 87 refs, 69 origin refs and 18
+local heads, and 17 worktrees; widened to `W-3[2-9][0-9]`) finds W-324..W-327
+and W-329 in this branch's ledger only, W-328 nowhere and no id above W-329;
+no id is filed. Held state: GitHub Actions is disabled (R28) and none of PR 51
+to PR 62 is on trunk (e0769c178), so DR-1a is held with no PR yet; it merges
+after CT-1 (whose head is 118fc1bc8 at this commit) through M-a, the merge of
+trunk that resolves handle_loop_statement.cpp and loops.md to DR-1a's side
+(the plan's §1.16), then L-a, the refill of check generic/template/for_range,
+lower template/for_range and check interop/cpp/range_for (12/17, 137/137 and
+17/103, measured) and PR 57's check/slice/basic (predicted). DR-1b, stacked
+on this branch, is next.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

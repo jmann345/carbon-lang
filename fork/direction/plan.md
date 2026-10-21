@@ -38,7 +38,10 @@ D-DR-5..D-DR-22 are DR-1's (D-DR-1..D-DR-4 are DR-0's); they are auto-adopted
 under R29(a), recorded in the decision log by the plan's records commit, and
 each carries a break condition.
 
-Status: rev 3, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION
+Status: rev 3, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION. DR-1a is
+implemented and held, 2026-10-21: its records are "Implementation review fold
+record, DR-1a (2026-10-21)" and "Landed notes (DR-1a, 2026-10-21)" at the end;
+DR-1b is next.
 
 What rev 3 changes (amended 2026-10-21, review fold: RR1-M1 / RR1-m1 / RR1-m2 /
 RR1-m3 / RR1-m4 / RR1-m5). W-322's commit on PR 62's branch writes no ledger
@@ -3146,3 +3149,82 @@ the carbonbuild scripts (R28).
 | Review B | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 19 (2 / 13 / 4) | 19 | 0 | rev 2 (35fa2f0ef) |
 | Focused re-review RR1 | rev 2 (35fa2f0ef) | bc45989b2 | APPROVE-WITH-AMENDMENTS | 6 (0 / 1 / 5) | 6 | 0 | rev 3 (this commit) |
 | Total | | | | 37 (5 / 19 / 13) | 37 | 0 | |
+
+## Landed notes (DR-1a, 2026-10-21)
+
+Written by DR-1a's discharge commit D, "DR-1 discharge (DR-1a)" (§3 item 11),
+dated 2026-10-21, the UTC date of its commit, on claude/carbon-fork-0-1-dr,
+whose PR base is trunk. In the held state none of PR 51 to PR 62 is on trunk
+(GitHub Actions is disabled, R28; trunk e0769c178 at D, records only after this
+branch's cut f68681114) and CT-1 is not merged, so these notes record what D
+wrote, the commits, the ids, the measurements and their heads, and the land-time
+items in order; the merge records add the merged tree's runs here. Everything
+measured is container-local, EXPECTED and not of record (R9). The scratch is
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1-impl`
+(stage0, stageA, revA and fixA, each with its `logs/`).
+
+-   **What D writes.** fork/decision-log.md: the dated note "_DR-1a discharge
+    (2026-10-21)._" in entry DR-1, after the A-R note (the review and its fold,
+    the runs on the fold's tree, the re-scan, the held state and the land-time
+    items). fork/inventory/work-items.json: one dated sentence on the ledger's
+    `source`; no item changes (W-321 was discharged at A-R and re-pinned by the
+    fold). fork/ORCHESTRATION.md: the dr row of the Branches table in the held
+    wording. This plan: the status line and these notes. Gap row 66 stays as
+    A-R wrote it (DONE, C.3's DR-1a sentence); the V-3a register's (iii) stays
+    as A-R resolved it.
+-   **The commits.** R0 f14ec0d3b "DR-1 records: plan decisions" (shared by
+    DR-1a and DR-1b); A1 d0cfe8082 "DR-1a: `Core.Iterate.Next` takes `ref
+    cursor`"; A1F c1cc72a09 "DR-1a fill"; A-R 0ac137d9d "DR-1a records"; the
+    fold's 2481ed8f2 "DR-1a fix: loops.md takes the rest of df3cf9294's page
+    edit" and 851bd5d03 "DR-1a fix: W-321's landed-site evidence and the
+    plan's errata"; then D. Two fix commits of §3 item 9's three; no fill
+    commit after A1F, because no fix changes a toolchain, golden or program
+    file.
+-   **The id re-scan before D** (§8 item 10; CT-1's §0.11 command widened to
+    `W-3[2-9][0-9]`, after `git fetch -q origin` at 2026-10-21T23:22Z;
+    fixA/logs/rescan.log). Over 69 origin refs, 18 local heads and the ledgers
+    of 17 worktrees: W-320..W-323 in nine ledgers (trunk's, this branch's and
+    claude/carbon-fork-0-1-7mwfb7's, each as its local head and its origin
+    ref, and the worktrees carbon-lang, carbon-dr and carbon-trunk),
+    W-324..W-327 and W-329 in this branch's three (its local head, its origin
+    ref and /home/user/carbon-dr) and nowhere else, W-328 nowhere, and no id
+    from W-330 to W-399. Other trees name W-32x only in text: the W-177 notes
+    of PR 56 and PR 57, PR 62's W-280 notes and its SKIPped program, and
+    CT-1's ledger `source`.
+-   **Ids.** Filed at R0: W-324..W-327 and W-329. Discharged: W-321 (A-R).
+    Reserved and unused: W-328, for W-320's resumption. Blocked: W-320 on
+    W-324. No id is filed by the fold or by D.
+-   **Measurement heads.** Upstream's direction read at upstream/trunk
+    503f09037 (fetched at the fold; its two commits since bc45989b2 touch no
+    file of DR-1a's). DR-1a's build /home/user/carbon-build/carbon-dr, rebuilt
+    incrementally at A1 d0cfe8082 from the planner's prototype objects (110
+    steps, no warning), its install printing 0.0.0-0.dev+d0cfe8082, which is
+    still the toolchain state at D. Gates: A1 1934 passed and 8 failed (the
+    red set §0.6 implies once A1 carries the four sources); A1F and the fold's
+    tree 1942 of 1942. Conformance on A1F and on the fold's tree: PASS 128,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 22 of 150, bullets 48/0/8 of 56
+    (fixA/conf/scoreboard.json). The mutant of §8 item 5, relinked over that
+    build: 1934 passed and 8 failed. The mirror of §8 item 9 with DR-1a alone,
+    on CT-1's 118fc1bc8 (still CT-1's head at D): before refill 1956 passed
+    and 3 failed, refilled 1959 of 1959, conformance 147/0/20 over 167
+    (stageA/logs). The held heads at D: PR 56 at 894139b34, PR 57 at
+    a080c7886, PR 62 at 0ef8a0334 (W-322's commit and its review's fixes)
+    and PR 61 at 5661a35c8.
+-   **At land time, in order (§1.16, §3 item 10).** Before M-a, §8 item 9's
+    composition is re-run on CT-1's final head if it has moved from
+    118fc1bc8, with DR-1a alone, and with both PRs once DR-1b exists. M-a,
+    the merge of trunk (with PR 51 to PR 62 and CT-1) into this branch, never
+    a rebase: handle_loop_statement.cpp takes DR-1a's side and drops TP-1's
+    pointer `RequireCompleteType` and its type_completion.h include (§2.1);
+    loops.md takes DR-1a's page, which drops PR 56's F-015 amendment in C.7's
+    form (one conflict block, measured by the fold, §1.16); records keep both
+    sides. Then L-a, the refill commit: check generic/template/for_range
+    (12/17), lower template/for_range (137/137) and check
+    interop/cpp/range_for (17/103), measured on the mct mirror and again with
+    DR-1a alone, and PR 57's check/slice/basic, predicted. Then the gate and
+    conformance on the merged tree, a second id re-scan, and the merged runs
+    recorded here.
+-   **DR-1b.** Stacked on this branch (§3 items 5 to 8, B0 first on
+    claude/carbon-fork-0-1-dr-idx); it merges after DR-1a through M-b, C-b
+    and L-b.

@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -   [Overview](#overview)
 -   [`choice` declarations](#choice-declarations)
 -   [User-defined sum types](#user-defined-sum-types)
+-   [C++ `std::optional` and `std::variant`](#c-stdoptional-and-stdvariant)
 -   [Alternatives considered](#alternatives-considered)
 -   [References](#references)
 
@@ -245,6 +246,92 @@ contain the code in the `case` body (or whatever code is in the scope of the
 pattern). For example, they might only store the parameter values and then
 return an index that identifies the `case` body to be executed.
 
+## C++ `std::optional` and `std::variant`
+
+> **Fork addition 2026-10-21 (F-020; fork/sumtype-interop/plan.md).** Upstream
+> has no mapping of these C++ types; this section records the fork's.
+
+A C++ `std::optional<T>` or `std::variant<T0, ..., Tn>` imported into Carbon
+stays a C++ class, and its member functions work as for any imported class.
+When its alternatives qualify, it also has a Carbon sum type: a specific of a
+`choice` that the prelude declares in `Core.CppCompat`.
+
+```carbon
+choice CppCompat.StdOptional(T: type) {
+  Some(value: T),
+  None
+}
+
+choice CppCompat.StdVariant2(T0: type, T1: type) {
+  Alt0(value: T0),
+  Alt1(value: T1)
+}
+```
+
+`StdOptional(T)` is the `Optional(T)` declaration of
+[`choice` declarations](#choice-declarations). `StdVariant1` to `StdVariant8`
+name a variant's alternatives by C++ index, because C++ gives them no names: a
+value with `index() == 1` is `.Alt1`. A `std::monostate` alternative has the
+payload `()`. Two alternatives of the same type are told apart by index.
+
+A `match`, `if let`, `while let` or `let ... else` scrutinee of the C++ class is
+converted to its sum type, so alternative patterns consume it, with the
+coverage rules of any `choice`: a `match` that names every alternative needs no
+`default`. A C++ `std::optional<T>` also converts in one implicit step to and
+from `Core.Optional(T)` when `T` is not a pointer type, and a `Core.Optional(T)`
+is matched as `StdOptional(T)` when `T` is a scalar or pointer type:
+
+```carbon
+import Core library "io";
+import Cpp inline '''c++
+#include <optional>
+#include <variant>
+inline auto MaybeSeven() -> std::optional<int> { return 7; }
+inline auto Measure() -> std::variant<int, double> { return 2.5; }
+inline auto Take(std::optional<int> o) -> int { return o ? *o : -1; }
+''';
+
+fn Run() -> i32 {
+  match (Cpp.MaybeSeven()) {
+    case .Some(n: i32) => { Core.Print(n); }
+    case .None => { return 1; }
+  }
+  match (Cpp.Measure()) {
+    case .Alt0(i: i32) => { Core.Print(i); }
+    case .Alt1(_: f64) => { Core.Print(-1); }
+  }
+  let o: Core.Optional(i32) = Cpp.MaybeSeven();
+  Core.Print(Cpp.Take(o));
+  return 0;
+}
+```
+
+The conversions copy by value, through the class's own accessors
+(`has_value()` and `value()`, `index()` and `std::get<I>()`) in one direction
+and its default constructor and `emplace` in the other. They never
+reinterpret the object's bytes: a standard library lays these classes out
+differently from the discriminant-first layout of a `choice`
+([Relationship to choice types](unions.md#relationship-to-choice-types)). A
+Carbon sum value converts to C++ only as the class whose sum type it is, so no
+C++ converting constructor can narrow its payload.
+
+In 0.1, each of these is diagnosed and recorded as a fork work item:
+
+-   a class that is not trivially copyable and destructible, or an alternative
+    that is a class, such as a struct or a nested `std::optional`, by value
+    (W-275);
+-   a `std::variant` of more than eight alternatives (W-276);
+-   a `const`, `volatile` or reference alternative (W-277);
+-   a conversion that a template defers to its instantiation (W-279), or one
+    in a file-scope initializer or a parameter's default value (W-036);
+-   a Carbon sum value passed to a C++ `T&&` parameter, alone or preferred to
+    a `const T&` overload such as `std::vector::push_back` (W-285);
+-   a `ref` payload binding, since the scrutinee is a copy (W-280);
+-   a C++ `std::optional` or `std::variant` nested in a tuple or struct
+    scrutinee (W-281);
+-   a `Core.Optional(T)` scrutinee whose `T` is generic or not a scalar or
+    pointer type (W-177).
+
 ## Alternatives considered
 
 -   [Providing `choice` types only](/proposals/p000157-design-direction-for-sum-types.md#choice-types-only),
@@ -256,6 +343,10 @@ return an index that identifies the `case` body to be executed.
     rather than callbacks.
 -   Implementing user-defined sum types in terms of invertible
     [pattern functions](/proposals/p000157-design-direction-for-sum-types.md#pattern-functions).
+-   Replacing an imported `std::optional` or `std::variant` by a Carbon
+    `choice`, as `std::span` is replaced by `Core.Slice`: the layouts differ,
+    and a pointer or reference to the C++ object could not be represented
+    (fork decision F-020).
 
 ## References
 

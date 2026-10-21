@@ -77,6 +77,36 @@ fn G() -> i32 {
   return Nested(14 as i32) + OfGenericClass(15 as i32);
 }
 
+// --- function_template_call.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+//@dump-sem-ir-begin
+fn F[T: type](v: T) -> T {
+  return Cpp.Twice(v);
+}
+//@dump-sem-ir-end
+
+fn G() -> i32 { return F(21 as i32); }
+
+// --- explicit_type_argument.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+fn Explicit[T: type](v: T) -> T {
+  return Cpp.Twice(T, v);
+}
+
+fn SizeOfType[T: type](unused v: T) -> i32 {
+  return Cpp.SizeOfFn(T) + Cpp.Plain(T);
+}
+
+fn G() -> i32 { return Explicit(21 as i32) + SizeOfType(1 as i64); }
+
 // --- template_called_from_checked_generic.carbon
 
 library "[[@TEST_NAME]]";
@@ -102,6 +132,30 @@ fn DoubleCaller[U: type](u: U) -> U {
 }
 
 fn G() -> i32 { return Caller(31 as i32) + DoubleCaller(15 as i32); }
+
+// --- generic_class_field.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+class Holder(T: type) {
+  var b: Cpp.Box(T);
+}
+
+fn Get[T: type](h: Holder(T)) -> T {
+  return h.b.value;
+}
+
+fn Make[T: type](v: T) -> T {
+  var h: Holder(T) = {.b = Cpp.MakeBox(v)};
+  return h.b.value;
+}
+
+fn G() -> i32 {
+  var h: Holder(i32) = {.b = Cpp.MakeBox(60 as i32)};
+  return Get(h) + Make(54 as i32);
+}
 
 // --- alias_of_specialization.carbon
 
@@ -251,6 +305,79 @@ fn F[T: type](v: T) -> Cpp.Box(T) {
 // CHECK:STDERR:
 fn G() -> i32 { return F({.x = 8} as NoCopy).value.x; }
 
+// --- fail_cpp_error_on_instantiation.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+class Point {
+  var x: i32;
+}
+
+fn F[T: type](v: T) -> T {
+  return Cpp.Twice(v);
+}
+
+fn G() -> i32 { return F({.x = 1} as Point).x; }
+
+// --- fail_copy_symbolic_value_in_definition.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// The checked generic's own rules still apply where it is defined: `T` has no
+// `Core.Copy` or `Core.Destroy`, whatever initializes the `var`.
+fn F[T: type](v: T) -> T {
+  var r: T = Cpp.Twice(v);
+  return r;
+}
+
+// --- fail_symbolic_value_cpp_call_in_definition.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// A symbolic value of a concrete type maps to C++ where the generic is
+// defined, so the call is resolved there and its error reported there, as on
+// a function that is never instantiated.
+fn F(generic N: i32) -> i32 {
+  return Cpp.TakeInt(N, N);
+}
+
+// --- cpp_result_contagion_uncalled.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+fn G(n: i32) -> i32 { return n; }
+
+// The result of a C++ call deferred to each specific has no type where `F`
+// is defined, so the Carbon operations on it are checked on instantiation
+// too; this one is never instantiated and not diagnosed.
+fn F[T: type](x: T) -> i32 {
+  let b: bool = G(Cpp.TakeInt(Cpp.Twice(x)));
+  return if b then 1 else 0;
+}
+
+// --- fail_cpp_result_contagion_on_instantiation.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+fn G(n: i32) -> i32 { return n; }
+
+fn F[T: type](x: T) -> i32 {
+  let b: bool = G(Cpp.TakeInt(Cpp.Twice(x)));
+  return if b then 1 else 0;
+}
+
+fn H() -> i32 { return F(1 as i32); }
+
 // --- fail_alias_of_template_call_on_instantiation.carbon
 
 library "[[@TEST_NAME]]";
@@ -294,6 +421,17 @@ fn G() -> i32 {
   // CHECK:STDERR:                          ^
   // CHECK:STDERR:
   return Checked(i32).F();
+}
+
+// --- fail_todo_form_dependent_arg.carbon
+
+library "[[@TEST_NAME]]";
+
+import Core library "prelude/types/form";
+import Cpp library "box.h";
+
+fn F(generic Fm: Core.Form, x:? Fm) -> i32 {
+  return Cpp.TakeInt(x);
 }
 
 // --- fail_todo_struct_arg.carbon

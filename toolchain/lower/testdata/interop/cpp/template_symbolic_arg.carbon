@@ -68,6 +68,34 @@ fn Use() -> i16 {
   return Template(8 as i16);
 }
 
+// --- narrow_return_checked.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "templates.h";
+
+fn Checked[T: type](v: T) -> T {
+  return Cpp.Twice(v);
+}
+
+fn Use() -> i16 {
+  return Checked(7 as i16);
+}
+
+// --- class_return.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "templates.h";
+
+fn Make[T: type](v: T) -> Cpp.Box(T) {
+  return Cpp.MakeBox(v);
+}
+
+fn Use() -> i32 {
+  return Make(11 as i32).value;
+}
+
 // --- alias_of_member_type.carbon
 
 library "[[@TEST_NAME]]";
@@ -139,6 +167,37 @@ class Point {
 
 fn Use() -> i32 {
   return Cpp.Id({.x = 6} as Point).x;
+}
+
+// --- loud.h
+
+inline int destroyed = 0;
+template<typename T> struct Loud {
+  T value;
+  ~Loud() { ++destroyed; }
+};
+template<typename T> Loud<T> MakeLoud(T v) { return {v}; }
+
+// --- todo_discarded_temporary_not_destroyed.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "loud.h";
+
+// TODO: the temporary that a C++ call deferred to the specific returns
+// is not destroyed when it is discarded: the specific of `DiscardDeferred` has
+// no call to `Loud<int>`'s destructor, where `DiscardConcrete` has one.
+fn DiscardDeferred[T: type](v: T) {
+  Cpp.MakeLoud(v);
+}
+
+fn DiscardConcrete(v: i32) {
+  Cpp.MakeLoud(v);
+}
+
+fn Use() {
+  DiscardDeferred(1 as i32);
+  DiscardConcrete(2);
 }
 
 // CHECK:STDOUT: ; ---

@@ -73,6 +73,16 @@ findings are folded in the records commit that records the round, RR1r2-m1 goes
 to round 2's fixer, and round 2 is owed (the [record of round
 1](#focused-re-review-of-the-fold-round-1-2026-10-21)).
 
+Round 2 (2026-10-21): the round's fixer folds RR1r2-m1 with two golden splits
+and no toolchain change. stdlib/fail_sum_types.carbon's
+`fail_incomplete_specialization` and `fail_undefined_explicit_specialization`
+pin a `std::optional` or `std::variant` that cannot be instantiated, in both
+directions, and kill mutants M23, M25 and M26 (M25 survived the fold); the
+fixer's probes also found a trunk crash on invalid programs, the `Destroy`
+witness of an incomplete C++ class, filed as W-286. Two fresh reviews of the
+round's commits are owed (the [record of round
+2](#focused-re-review-of-the-fold-round-2-2026-10-21)).
+
 **Summary.** A C++ `std::optional<T>` or `std::variant<T0, ..., Tn>`
 specialization stays the C++ class the import makes of it today, so its member
 functions keep working, and gains a Carbon sum type: a specific of one of nine
@@ -1583,10 +1593,36 @@ with no definition``, DeclCXX.h:464) for a sum value and for a
 the PR 57 and PR 61 compositions; trunk and the nightly give an error), while a
 `const&` parameter compiled. `GetCppSumType` also completes the class before it
 queries the definition, and leaves one that cannot be completed to the
-conversion's own diagnostics; no measured shape reaches that test with an
-incomplete class (mutant M25, §8 item 5), so it is defensive. Pinned by
+conversion's own diagnostics; at the fold no measured shape reached that test
+with an incomplete class (mutant M25, §8 item 5), so the fold recorded it as
+defensive, and round 2 of the focused re-review found one (the next paragraph;
+amended 2026-10-21, focused re-review round 2: RR1r2-m1). Pinned by
 optional.carbon's and variant.carbon's `declared_by_value` splits, over a
 `declared.h` with a declared-only function, and by mutant M23.
+
+**A specialization that cannot be instantiated** (added 2026-10-21, focused
+re-review round 2: RR1r2-m1): the template declared and not defined, or an
+explicit specialization declared and not defined. `MapCarbonSumTypeToCpp`
+offers no class for it, and the argument takes trunk's path: the export TODO
+``interop with non-identifier package name`` at the prelude type, then
+``call argument of type `Core.CppCompat.StdOptional(i32)` is not supported
+[CppCallArgTypeNotSupported]``, which trunk gives a `Core.Optional(i32)`
+argument there too. C++ cannot pass such a value either (clang 21.1.8: ``no
+matching function for call to 'Take'`` for the template, ``argument type
+'std::optional<short>' is incomplete`` for the specialization; the C++ class's
+own value passed from Carbon gets trunk's ``implicit instantiation of undefined
+template``), so the shape is OUT by C++'s rules. A C++ value of such a class
+converted to its sum type reaches `GetCppSumType`, whose completion test
+answers `NotSumType`, and trunk's conversion diagnoses it (``argument to C++
+call has incomplete type `Cpp.std.optional` [IncompleteTypeInCopyWitness]``,
+then [ConversionFailure]); without the test the compiler stops in
+`CXXRecordDecl::isTriviallyCopyable`, so the test is load-bearing. Pinned by
+fail_sum_types.carbon's `fail_incomplete_specialization` and
+`fail_undefined_explicit_specialization` and by mutants M26 (the
+instantiation's result ignored, which brings back the abort at DeclCXX.h:464
+and which round 1's review 2 found surviving the gate), M23 and M25 (§8 item
+5). The same value converted to `Core.Optional(T)` stops trunk's own `Destroy`
+witness lookup, on trunk, the nightly and SV-1 alike (W-286, §1.11).
 
 **A pointer alternative converts back** (added 2026-10-21, implementation-review
 fold: RV1-M1). The payload of a C++ pointer alternative is the nullable
@@ -1644,6 +1680,7 @@ function that takes `Cpp.std.optional(i32)` and matches it works too (`s21`:
 | Carbon to C++: a sum value, or a `Core.Optional(T')` with a matchable non-pointer payload, passed by value, `const&` or `const&&`; assigned or returned where the C++ class is expected | IN (rev 2 for `Core.Optional`; x03; `const&&` measured at rev 5, x01; a pointer alternative, and a by-value parameter whose specialization nothing else instantiates, amended 2026-10-21, implementation-review fold: RV1-M1 / RV1-B1, §1.5 above; the date mark added 2026-10-21, focused re-review round 1: RR1r2-m5) |
 | A C++ caller of a Carbon function whose signature names the C++ class | IN (existing export) |
 | A sum value to any other C++ class (another specialization, a converting constructor) | OUT, `CppSumTypeReverseMismatch` (rev 2) |
+| A sum value or `Core.Optional(T')` passed where C++ takes a `std::optional` or `std::variant` specialization that cannot be instantiated (the template, or the specialization, declared and not defined; added 2026-10-21, focused re-review round 2: RR1r2-m1) | OUT by C++'s rules: trunk's ``call argument of type ... is not supported`` after the export TODO, as above (`fail_incomplete_specialization`, `fail_undefined_explicit_specialization`) |
 | A Carbon function whose signature names a `Core.CppCompat` sum type, called from C++ | OUT: the existing export TODO for `Core` package entities, "interop with non-identifier package name" (export.cpp:139-141; `s16`), W-049's |
 | A sum value passed to a non-`const` lvalue reference parameter | OUT by C++'s rules |
 | A sum value or `Core.Optional(T')` passed as an initializing expression to a non-`const` `T&&` parameter, alone or the `T&&` member of a `const T&`/`T&&` pair (rev 5; amended 2026-10-20, review fold: RR4-M1) | OUT: ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` with no source expression` `` at the C++ parameter (W-285); a value argument selects the `const T&` member, and a lone `T&&` refuses a value by C++'s rules |
@@ -2112,6 +2149,8 @@ on v4, which emits the real kinds (§0.0), and pinned by the `fail_` splits of
 | a `std::variant` of more than eight alternatives | the same error with ``note: `std::variant` with 9 alternatives; at most 8 have a Carbon sum type [CppSumTypeTooManyAlternatives]`` | W-276 |
 | a cv-qualified or reference alternative (libc++'s `std::variant<const int, double>`) | the same error with ``note: alternative 0 has qualified or reference type `const int` [CppSumTypeQualifiedAlternative]`` | W-277 |
 | a sum type that cannot be completed (not reached by an admitted class; B-m-9) | the same error with no note | none |
+| a C++ `std::optional` or `std::variant` that cannot be instantiated (the template, or an explicit specialization, declared and not defined): a C++ value of it converted to its sum type, or a sum value or `Core.Optional(T')` passed where C++ takes it (added 2026-10-21, focused re-review round 2: RR1r2-m1) | not the mapping's: the class has no sum type and is not offered, so trunk's paths diagnose it, each after the export TODO ``interop with non-identifier package name`` at the prelude type: ``error: argument to C++ call has incomplete type `Cpp.std.optional` [IncompleteTypeInCopyWitness]`` and ``error: cannot implicitly convert expression of type `Cpp.std.optional` to `Core.CppCompat.StdOptional(i32)` [ConversionFailure]``; ``error: call argument of type `Core.CppCompat.StdOptional(i32)` is not supported [CppCallArgTypeNotSupported]``; a `match` on it gets trunk's ``matching on value of incomplete type`` (p04, p11); pinned by fail_sum_types.carbon's `fail_incomplete_specialization` and `fail_undefined_explicit_specialization` (mutants M23, M25 and M26, §8 item 5) | none: OUT by C++'s rules |
+| a C++ value of a class that cannot be completed converted to `Core.Optional(T)`, or any other use that asks for its `Destroy` witness, a plain `struct S;` included (added 2026-10-21, focused re-review round 2: found while reproducing RR1r2-m1) | not the mapping's, and a trunk crash: the compiler stops (SIGSEGV) in `Sema::LookupSpecialMember` from impl_lookup.cpp's `BuildCppDestroyWitness`, which looks up the destructor with no completeness test, on trunk 0bdce60a5, the nightly, the PR builds in /home/user/carbon-build/carbon-op2, -tp, -va and -sc, and SV-1 alike (t03, t06, t10, t11, p10b, p12); every such program is invalid, and the same value converted to a Carbon class gets trunk's ``cannot implicitly convert`` (t04, t05); not pinned, as a golden cannot hold a crash | W-286 (trunk-origin, filed at round 2) |
 | a C++ sum value converted to another sum type or `Core.Optional` (`StdOptional(i64)`, `Core.Optional(i64)` from `std::optional<int>`) | ``error: C++ type `std::optional<int>` converts only to its own Carbon sum type `Core.CppCompat.StdOptional(i32)` or to the `Core.Optional` of its payload, not to `Core.CppCompat.StdOptional(i64)` [CppSumTypeMismatch]`` (a `std::variant` omits the `Core.Optional` clause) | none: a type error |
 | a C++ sum value converted to a `Core.Optional` whose payload is not matchable (`Core.Optional(Cpp.std.optional(i32))`, whose payload is the value's own class; amended 2026-10-20, review fold: RR-m3) | not the mapping's: `Core.Optional`'s own conversion from its payload, which on trunk gives ``semantics TODO: `interop with non-identifier package name` `` at optional.carbon:30 (k01 to k03 on trunk and v5); `Core.Optional(...).Some(Cpp.V())` works (k04) | none: trunk's own path, pinned by the probes only (a golden split would pin trunk's TODO at a prelude line PR 57 changes, and autoupdate files a diagnostic located in the prelude under the preceding split) |
 | a Carbon sum value or `Core.Optional(T')` converted to any C++ class but its own (another specialization, a converting constructor) | ``error: `Core.CppCompat.StdOptional(i32)` converts to C++ only as the `std::optional` or `std::variant` whose Carbon sum type it is, not to `std::optional<long>` [CppSumTypeReverseMismatch]`` | none: a type error |
@@ -2191,7 +2230,7 @@ optional.carbon and variant.carbon gain two splits each, `pointer_reverse` and
 | --- | --- |
 | check/testdata/interop/cpp/stdlib/optional.carbon | `match`, `if_let`, `convert` (both directions, by value and `const&`), `pointer_payload`, `bridge`, `one_step_core_optional` (rev 2), `monostate_payload` (rev 2), `fail_todo_struct_payload`, `fail_dead_default`, `fail_unknown_alternative`, `fail_todo_outside_function`, `fail_todo_ref_binding` (rev 2); `pointer_reverse` and `declared_by_value` (amended 2026-10-21, implementation-review fold: RV1-M1 / RV1-B1) |
 | check/testdata/interop/cpp/stdlib/variant.carbon | `match`, `monostate`, `duplicate`, `fail_todo_too_many_alternatives`, `fail_todo_nested_by_value`, `fail_index_out_of_range`; `pointer_reverse` and `declared_by_value` (amended 2026-10-21, implementation-review fold: RV1-M1 / RV1-B1) |
-| check/testdata/interop/cpp/stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`, `fail_todo_non_trivial` (listed at rev 2; it was in rev 1's source, B-m-1), `fail_conversion_mismatch`, `fail_core_optional_mismatch` (rev 2, replaces rev 1's `fail_todo_core_optional_argument`, now IN), `core_optional_argument_as`, `fail_todo_export_sum_type`, `fail_reverse_other_specialization` (rev 2), `fail_reverse_converting_class` (rev 2), `fail_todo_tuple_scrutinee` (rev 2), `fail_todo_if_arm` (rev 2), `fail_todo_template_conversion` (rev 2), `fail_todo_rvalue_ref_param` (rev 5, after a `sink.h` header split that includes `sum.h`; amended 2026-10-20, review fold: RR4-M1: a sum value to a lone C++ `T&&`, a `Core.Optional` to the `T&&` member of a `const T&`/`T&&` pair, and a value that selects the `const T&` member); the mock's `optional` gains a converting constructor from `optional<U>` (libc++'s shape) so the reverse splits reach it |
+| check/testdata/interop/cpp/stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`, `fail_todo_non_trivial` (listed at rev 2; it was in rev 1's source, B-m-1), `fail_conversion_mismatch`, `fail_core_optional_mismatch` (rev 2, replaces rev 1's `fail_todo_core_optional_argument`, now IN), `core_optional_argument_as`, `fail_todo_export_sum_type`, `fail_reverse_other_specialization` (rev 2), `fail_reverse_converting_class` (rev 2), `fail_todo_tuple_scrutinee` (rev 2), `fail_todo_if_arm` (rev 2), `fail_todo_template_conversion` (rev 2), `fail_todo_rvalue_ref_param` (rev 5, after a `sink.h` header split that includes `sum.h`; amended 2026-10-20, review fold: RR4-M1: a sum value to a lone C++ `T&&`, a `Core.Optional` to the `T&&` member of a `const T&`/`T&&` pair, and a value that selects the `const T&` member); the mock's `optional` gains a converting constructor from `optional<U>` (libc++'s shape) so the reverse splits reach it; `fail_incomplete_specialization` and `fail_undefined_explicit_specialization` (added 2026-10-21, focused re-review round 2: RR1r2-m1), after the header splits `incomplete.h` (`std::optional` and `std::variant` declared and not defined) and `declared_specialization.h` (`sum.h` with `optional<short>` and `variant<int, short>` explicitly specialized and not defined): a `std::optional` or `std::variant` that cannot be instantiated, in both directions |
 | check/testdata/interop/cpp/stdlib/sum_type_overload.carbon (rev 2; eight splits added at rev 3, amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1; three at rev 4, amended 2026-10-20, review fold: RR3-M1 / RR3-m4) | `convert_first`, `convert_second`, `mismatch_first`, `not_mapped_first`, `reverse`, `generic_member`; rev 3: `tuple_member`, `tuple_mismatch_first`, `struct_member`, `array_member`, `tuple_reverse`, `tuple_core_optional`, `generic_tuple_member`; rev 4: `scalar_tuple_mismatch_first` (no sum type: the element probe of trunk's `ConvertAggregateElement`, whose second member returns `bool` so the call's type pins the member), `fail_todo_file_scope` (rev 3's `file_scope`, renamed: the first member is selected and the call gets the file-scope TODO), `fail_todo_template_overload` (the same at a template's instantiation, under ``unable to monomorphize specific``): the fourteen non-`fail_` splits compile with no diagnostic |
 | check/testdata/interop/cpp/stdlib/fail_sum_types.carbon, at M-VA (rev 3; amended 2026-10-20, review fold: RR-M1; RR3-B1) | `fail_todo_pack_element` appended (VA-1's syntax exists only after M): the pack-element TODO, forward and reverse, for a pack of the C++ class or the sum type and, from rev 4, of a tuple, struct, array or class holding one (ten calls) |
 | check/testdata/choice/optional_pointer_payload.carbon | `pointer`, `fail_todo_non_pointer_optional`, `fail_todo_nullptr_payload` (rev 2), `fail_todo_maybe_unformed_payload` (rev 2) |
@@ -2320,7 +2359,7 @@ records commits come after M, so they extend the merged trunk's record files.
 _Break condition:_ if the merge order changes, the dry runs of §8.6 are
 repeated against whatever has landed, and only the textual rules change.
 
-### §1.16 Residues filed (W-275 to W-281, W-284, W-285; W-278 withdrawn; W-282, W-283 conditional; W-286 to W-294 held)
+### §1.16 Residues filed (W-275 to W-281, W-284 to W-286; W-278 withdrawn; W-282, W-283 conditional; W-287 to W-294 held)
 
 SV-1 reserves W-275 to W-294 (fork/ORCHESTRATION.md on trunk 254b935b2). The
 re-scan of 2026-10-20 at rev 2 (command in §8.7, which now scans local branches
@@ -2358,7 +2397,14 @@ TP-1's W-295 to W-297 on its pushed branch at 281292d8f, its local branch and
 the carbon-tp worktree; F-020 in no decision log. W-285, the `T&&` parameter
 shape that rev 4 filed under W-279 as "no source expression", takes the next
 free id of the block, and W-279 keeps the template form (amended 2026-10-20,
-review fold: RR4-M1). Planned filings:
+review fold: RR4-M1). Re-run at round 2 of the focused re-review (2026-10-21,
+the same command over 83 refs and 15 worktree ledgers after `git fetch
+origin`, widened to W-299; `sv1-rr/fixer-r2/logs/ids-refs.txt`, `ids-wt.txt`;
+added 2026-10-21, focused re-review round 2): SV-1's seven filed items on its
+branch, local and pushed, and its worktree, TP-1's W-295 to W-298 on its own,
+and no other id of W-275 to W-299 anywhere; W-286 is filed in the held state,
+the next free id of the block, for the trunk crash the round's fixer found
+(its row below, Appendix C.4). Planned filings:
 
 | Id | Title | Bullet | Bounds row 68? |
 | --- | --- | --- | --- |
@@ -2371,6 +2417,7 @@ review fold: RR4-M1). Planned filings:
 | W-281 | a C++ sum class nested in a tuple or struct scrutinee is not converted (`match on unsupported scrutinee type`) | this bullet | no: the whole-value scrutinee and every nesting through a Carbon sum type work, and the shape is the existing TODO |
 | W-284 | (from M-VA, filed at D once M-VA has landed) a conversion to or from a C++ `std::optional`/`std::variant` for a VA-1 pack element (in an expansion body, or a pack converted to a pack of another element type), whose element is the C++ class, the sum type, a `Core.Optional`, or a tuple, struct, array or class holding one, is a semantics TODO; blocked by VA-1's W-219 (control flow inside an expansion body) (amended 2026-10-20, review fold: RR3-B1 / RR3-m1) | Generics: Definition-checked variadics | no: every non-pack form converts, a pack of the C++ class, of the sum type or of an aggregate holding either is forwarded unchanged (v06, v07, n10) and a pack literal converts element by element (v01, n09), and the shape is diagnosed |
 | W-285 | (rev 5) a Carbon sum value or `Core.Optional(T')` passed as an initializing expression to a C++ non-`const` rvalue reference parameter `T&&`, alone or the member C++ prefers to a `const T&` sibling (`std::vector::push_back`), is a semantics TODO (``... with no source expression``): the parameter's initialization is located at its C++ declaration, which gives the conversion's branches no parse node (amended 2026-10-20, review fold: RR4-M1) | this bullet | no: the row's arbiter is the consumption of C++ values by `match`, which the shape does not touch, and Carbon to C++ converts by value, `const&` and `const&&` (w14, x01), a value argument reaches the `const T&` member of a pair (x14, x16), a C++ call's result binds the `T&&` (r1, x08), and the shape is diagnosed |
+| W-286 | (round 2, trunk-origin; added 2026-10-21, focused re-review round 2: found while reproducing RR1r2-m1) a `Destroy` constraint on a C++ class of incomplete type, as converting a value of it to `Core.Optional(T)` checks, stops the compiler in impl_lookup.cpp's `BuildCppDestroyWitness` (:253-281, `Sema::LookupDestructor` at :270 with no completeness test, where `BuildCopyWitness` requires the class complete at :151-160); filed in the held state by the records commit of round 2 | Type system: C++ interop — importing C++ types / exporting Carbon types | no: not the mapping's (a plain `struct S;` reaches it on trunk and the nightly), and every program that reaches it is invalid |
 | W-282 | (conditional) TP-1-origin: a `match` on a template-dependent `choice` value stops the compiler at pattern_match.cpp:1409, where trunk gives W-252's TODO (X-1; x19) | Generics: Integrated templates | filed by SV-1 at D only if TP-1 has not filed it and x19 still stops the merged trunk; otherwise unused. Predicted unused: TP-1's round-10 head eafca5cb9 fixes X-1 (x19 compiles and prints 0 on tpv6; amended 2026-10-20, review fold: RR3-m3). In the held state it is unused at D (the trunk D merged holds no TP-1 code, and x19 prints 0 on PR 61's mirror), and the land-time records commit checks x19 once more on the merged trunk and files it with C.4's text only if it stops there (R-9's falsifier; amended 2026-10-21, focused re-review round 1: RR1r2-m2) |
 
 **W-177 (OP-1's, on row 68's bullet) stays OPEN** with a dated narrowing note
@@ -4776,6 +4823,7 @@ are the new splits.
 | `pointer_reverse` (fold; amended 2026-10-21, implementation-review fold: RV1-M1) | arm 0's `emplace<0>` call; in arm 1 `%Optional.HasValue.call`, `%Optional.Get.call` feeding `emplace<1>`'s `%emplace__carbon_thunk.call` (a `ref %Optional.5b3` result), and `emplace<1>` with the object only; `%TakeIntOrPointer__carbon_thunk.call`; no error |
 | `declared_by_value` (fold; amended 2026-10-21, implementation-review fold: RV1-B1) | no error |
 | stdlib/fail_sum_types.carbon | `fail_todo_qualified_alternative`: ``C++ type `std::optional<const int>` has no Carbon sum type`` with ``alternative 0 has qualified or reference type `const int` [CppSumTypeQualifiedAlternative]``; `fail_todo_non_trivial`: with ``note: `std::optional<NonTrivial>` is not trivially copyable and trivially destructible [CppSumTypeNotTriviallyCopyable]``; `fail_conversion_mismatch` and `fail_core_optional_mismatch`: ``C++ type `std::optional<int>` converts only to its own Carbon sum type `Core.CppCompat.StdOptional(i32)` or to the `Core.Optional` of its payload, not to `Core.CppCompat.StdOptional(i64)` [CppSumTypeMismatch]`` (and `` `Core.Optional(i64 as Core.OptionalStorage)` ``); `core_optional_argument_as`: no error; `fail_todo_export_sum_type`: the three existing export errors (`interop with non-identifier package name` at `{{.*}}/prelude/types/cpp/sum.carbon:30:1`, `failed to map Carbon return type to C++ type`, `no member named 'MakeView' in namespace 'Carbon'`); `fail_reverse_other_specialization` and `fail_reverse_converting_class`: `` `Core.CppCompat.StdOptional(i32)` converts to C++ only as the `std::optional` or `std::variant` whose Carbon sum type it is, not to `std::optional<long>` [CppSumTypeReverseMismatch]`` (and `` `Wrapper` ``), each with the `InCallToFunctionParam` note; `fail_todo_tuple_scrutinee`: ``semantics TODO: `match on unsupported scrutinee type` ``; `fail_todo_if_arm`: ``semantics TODO: `destroying temporaries of a conditionally evaluated operand whose value is not passed by copy` ``; `fail_todo_template_conversion`: ``unable to monomorphize specific `Pass(Cpp.std.__1.optional)` [ResolvingSpecificHere]`` with the outside-a-function-body TODO as its note; `fail_todo_rvalue_ref_param` (rev 5; amended 2026-10-20, review fold: RR4-M1): ``semantics TODO: `conversion of a C++ `std::optional` or `std::variant` with no source expression` [SemanticsTodo]`` twice, at `./sink.h:4:45` and `./sink.h:12:38` (the `T&&` parameters of `TakeRvalue` and of `Put`), each with the `InCallToFunctionParam` note there and ``in file included here [InCppInclude]`` at the split's `import Cpp`; `V`, whose value argument selects `Put`'s `const&` member, has none; mutant M22 removes the first |
+| stdlib/fail_sum_types.carbon `fail_incomplete_specialization` and `fail_undefined_explicit_specialization` (round 2; added 2026-10-21, focused re-review round 2: RR1r2-m1) | `Twin`, the C++ class's own value passed by value: trunk's ``implicit instantiation of undefined template 'std::optional<int>' [CppInteropParseError]`` at `./incomplete.h:12:6` (``argument type 'std::optional<short>' is incomplete`` at `./declared_specialization.h:15:6`) and ``forming value of incomplete type `Cpp.std.optional` [IncompleteTypeInValueConversion]``; `F`, `G`, `H` and `V`: ``call argument of type `Core.CppCompat.StdOptional(i32)` is not supported [CppCallArgTypeNotSupported]`` (`Core.Optional(i32 as Core.OptionalStorage)`, `Core.CppCompat.StdVariant2(i32, i16)`; `i16` in the second split), each after the export TODO ``interop with non-identifier package name`` at `{{.*}}/prelude/types/cpp/sum.carbon:30:1` or `:39:1` or `{{.*}}/prelude/types/optional.carbon:30:1`, which autoupdate files under the preceding diagnostic, so each function's TODO sits in the block before its own; `Back` and `BackVariant`: ``argument to C++ call has incomplete type `Cpp.std.optional` [IncompleteTypeInCopyWitness]`` with the `ClassForwardDeclaredHere` note, then ``cannot implicitly convert expression of type `Cpp.std.optional` to `Core.CppCompat.StdOptional(i32)` [ConversionFailure]``; the file's other splits unchanged; mutants M23 and M26 stop file_test at `F`, `G` and `V` (DeclCXX.h:464), M25 at `Back` and `BackVariant` (`isTriviallyCopyable`) |
 | stdlib/sum_type_overload.carbon (rev 2; rev 3: amended 2026-10-20, review fold: RR-B1 / RR-B-1 / RR-m1; rev 4: amended 2026-10-20, review fold: RR3-M1 / RR3-m4) | sixteen splits: the fourteen that are not `fail_` have no diagnostic, `scalar_tuple_mismatch_first` included (trunk gives it ``cannot implicitly convert expression of type `bool` to `i32` ``, z01); `fail_todo_file_scope`: ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]`` at `Pick(Cpp.MakeOptional(7))` with the `InCallToFunctionParam` note naming the first member's parameter; `fail_todo_template_overload`: ``error: unable to monomorphize specific `Call(Cpp.std.__1.optional)` [ResolvingSpecificHere]`` with that TODO as its note at `Pick(x)` and the same `InCallToFunctionParam` note (measured on v6, and unchanged on tpv6 and vav6g); the mutants M12 and M17 stop file_test on it with ``Built invalid semantics IR: No terminator in block``, and M20 (rev 3's rule) turns both `fail_todo_` splits red, each compiling with no diagnostic |
 | stdlib/fail_sum_types.carbon `fail_todo_pack_element` (at M-VA; rev 3, amended 2026-10-20, review fold: RR-M1; rev 4, amended 2026-10-20, review fold: RR3-B1) | ``error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]`` ten times, at the calls of `Forward`, `Back`, `ForwardTuple`, `BackTuple`, `ForwardStruct`, `BackStruct`, `ForwardArray`, `BackArray`, `ForwardClass` and `BackClass`, each with the `InCallToFunctionParam` note (measured on vav6g, `$W/final/goldens-filled-M/`); the file's other splits unchanged; M19 and M21 stop the compiler at VA-1's CHECK on it |
 | choice/optional_pointer_payload.carbon | `pointer`: no error, the payload `Core.Optional(i32*)` in the alternative's parameter; `fail_todo_non_pointer_optional`, `fail_todo_nullptr_payload`, `fail_todo_maybe_unformed_payload`: ``error: semantics TODO: `choice alternative payload that is not trivially copyable and destructible` [SemanticsTodo]`` |
@@ -4852,6 +4900,11 @@ fold: RV1-B1 / RV1-M1): sum_type.cpp is 983 lines (+61/-13 over rev 5's 935) and
 sum_type.h 145 (+7/-5); the five mocks change two lines each; optional.carbon
 and variant.carbon gain a header and two splits each (+50/-2 each in their
 sources); cpp_sum_type_roundtrip_diff.carbon changes +30/-2 and its oracle +21.
+
+At round 2 of the focused re-review (added 2026-10-21, focused re-review round
+2: RR1r2-m1): stdlib/fail_sum_types.carbon gains two header splits and two
+splits, 101 source lines (288 to 389 without its CHECK lines) and 262 lines in
+all (371 to 633, 161 of them CHECK lines); no other file changes.
 
 ## §7 Risks and rejected alternatives
 
@@ -5151,6 +5204,28 @@ scripts are
     M16's is; MINOR, recorded. _Break condition:_ a shape that reaches
     `GetCppSumType` with an incomplete class gets a golden split, and M25 is
     re-run on it.
+
+    **Measured at round 2 of the focused re-review, 2026-10-21** (added
+    2026-10-21, focused re-review round 2: RR1r2-m1). `$R2` is the round's
+    fixer's scratch directory,
+    `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-rr/fixer-r2`:
+    `bin/mkmut.py` holds the edits and `mut/` each one's diff, relink and gate
+    logs, relinked from the worktree's objects under `/dev/shm`;
+    `runs/split-matrix.txt` attributes each kill to the functions of the two new
+    splits of fail_sum_types.carbon, one probe per function (`p/split/`), on the
+    SV-1 install, trunk, the nightly and the three mutants. M23 and M25 are
+    re-run because the splits test what they remove, and M26 is round 1's review
+    2's mutant. The break condition above holds: `Back` reaches `GetCppSumType`
+    with a class that cannot be completed, so M25 is killed:
+
+    | Mutant | Measured (2026-10-21, round 2) | Killed |
+    | --- | --- | --- |
+    | M23 | fail_sum_types.carbon stops file_test (rc 134, DeclCXX.h:464, the full gate too) at `F`, `G` and `V` of both new splits, as optional.carbon's and variant.carbon's `declared_by_value` do; `H` (`const&`) gets ``forming value of incomplete type `Cpp.std.optional` `` instead of the call-argument error | yes |
+    | M25 | fail_sum_types.carbon stops file_test (rc 139 alone, rc 134 in the full gate, `CXXRecordDecl::isTriviallyCopyable`) at `Back` of both new splits and at `BackVariant`; the fixer's p09 and p10a stop the same way | yes (it survived at the fold) |
+    | M26 (round 2): `MapCarbonSumTypeToCpp` instantiates the specialization and ignores the result | fail_sum_types.carbon stops file_test (rc 134, DeclCXX.h:464, the full gate too) at `F`, `G` and `V` of both new splits; `H` as under M23; round 1's p02, p03, p05 and p06 abort the same way | yes |
+
+    All three are killed; of the plan's mutants only M16 survives (its row
+    above).
 6.  **Composition mirrors** (TP-1's §0.9 shape; rewritten 2026-10-20, review
     fold: B-m-11): with kind.def changed every translation unit recompiles, so
     each mirror is a FULL build, one at a time: for each of PR 57, PR 60, PR 59
@@ -5253,6 +5328,29 @@ scripts are
     prints 9 9 9, and v02 and v03 print 9; f01 to f08 and e05 run, f07 printing
     9; q03, q11 to q15 and u01, u03 and u04 compile, and their links fail only
     on the declared-only functions. The mirror and its build were deleted after.
+
+    **Re-measured at round 2 of the focused re-review** (2026-10-21; added
+    2026-10-21, focused re-review round 2: RR1r2-m1; logs in `$R2/mirror/<b>/`,
+    item 5's `$R2`). Round 2 changes stdlib/fail_sum_types.carbon, a file of
+    SV-1's that §0.7 lists, so the four mirrors are rebuilt, one at a time, from
+    a `git archive` of the same heads with `$R2/mirror/sv1-toolchain-head.diff`
+    (SV-1's toolchain and core diff over origin/trunk without testdata, 14
+    files, byte-identical to the one round 1's reviews composed) and the nine
+    goldens and six programs of 0a74af898; every patch applies as before, each
+    full build took 7m22s to 8m38s with 0 warnings, and each mirror and its
+    build were deleted after. On every mirror the round-2 splits pass as
+    committed: PR 57 at 628273444 gives 1950 of 1958, red on F-M's eight goldens
+    with the fold's changed-line counts (4, 4, 18 and 8; 12, 563, 198 and 18;
+    SemIR only), 1958 of 1958 refilled, conformance 145/0/21 over 166; PR 61 at
+    5661a35c8 gives 1961 of 1965, the four function-pointer goldens only, 1965
+    of 1965 refilled, 144/0/21 over 165; PR 59 at b0822a744, with M-VA (offsets
+    9 and 39) and `fail_todo_pack_element` appended after the round-2 splits,
+    fills that file at a fixpoint on the first pass, its first 633 lines the
+    committed file and the pack split's CHECK lines byte-identical to
+    `$Y/final/goldens-filled-M/`'s, then gives 1964 of 1968, the four
+    function-pointer goldens only, 1968 of 1968 refilled, 143/0/20 over 163; PR
+    60 at 40a76ab81 gives 1963 of 1967, the four function-pointer goldens only,
+    1967 of 1967 refilled, 136/0/20 over 156. SV-1's six programs PASS on each.
 7.  **Id re-scan** (before D; run 2026-10-20 for §1.16; widened 2026-10-20,
     review fold: B-m-7):
 
@@ -7299,6 +7397,10 @@ fn R(n: i32) -> i32 {
 
 Rev 5 appends the `sink.h` header split and `fail_todo_rvalue_ref_param`
 (amended 2026-10-20, review fold: RR4-M1); the file's other splits are rev 4's.
+Round 2 of the focused re-review appends the header splits `incomplete.h` and
+`declared_specialization.h` and the splits `fail_incomplete_specialization`
+and `fail_undefined_explicit_specialization` (added 2026-10-21, focused
+re-review round 2: RR1r2-m1).
 
 <!-- google-doc-style-ignore -->
 
@@ -7590,6 +7692,107 @@ fn P() -> i32 {
 // A value, such as a parameter, selects the `const&` member, which converts.
 fn V(o: Core.CppCompat.StdOptional(i32)) -> i32 {
   return Cpp.Put(o);
+}
+
+// --- incomplete.h
+
+// `std::optional` and `std::variant` declared and not defined. The functions
+// are `noexcept`, so a call's thunk needs no exception fence.
+namespace std {
+  template <typename T>
+  class optional;
+
+  template <typename... Ts>
+  class variant;
+}
+
+auto Take(std::optional<int> o) noexcept -> int;
+auto TakeRef(const std::optional<int>& o) noexcept -> int;
+auto TakeVariant(std::variant<int, short> v) noexcept -> int;
+
+// --- fail_incomplete_specialization.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "incomplete.h";
+
+// No specialization of a template that C++ declares and does not define can be
+// instantiated, so C++ cannot pass a value of one (`Twin`), a sum value or
+// `Core.Optional` is not offered to C++ as one (§1.5), and a C++ value of one
+// has no Carbon sum type (§1.11).
+fn Twin(p: Cpp.std.optional(i32)*) -> i32 {
+  return Cpp.Take(*p);
+}
+
+fn F() -> i32 {
+  return Cpp.Take(Core.CppCompat.StdOptional(i32).Some(1));
+}
+
+fn G() -> i32 {
+  return Cpp.Take(Core.Optional(i32).Some(2));
+}
+
+fn H() -> i32 {
+  return Cpp.TakeRef(Core.CppCompat.StdOptional(i32).Some(3));
+}
+
+fn V() -> i32 {
+  return Cpp.TakeVariant(Core.CppCompat.StdVariant2(i32, i16).Alt0(4));
+}
+
+fn Back(p: Cpp.std.optional(i32)*) -> Core.CppCompat.StdOptional(i32) {
+  return *p;
+}
+
+fn BackVariant(p: Cpp.std.variant(i32, i16)*)
+    -> Core.CppCompat.StdVariant2(i32, i16) {
+  return *p;
+}
+
+// --- declared_specialization.h
+
+#include "sum.h"
+
+// Explicit specializations declared and not defined.
+namespace std {
+  inline namespace __1 {
+    template <>
+    class optional<short>;
+
+    template <>
+    class variant<int, short>;
+  }
+}
+
+auto TakeShort(std::optional<short> o) noexcept -> int;
+auto TakeIntOrShort(std::variant<int, short> v) noexcept -> int;
+
+// --- fail_undefined_explicit_specialization.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "declared_specialization.h";
+
+// The same for a specialization of a defined template that C++ declares and
+// does not define (§1.5, §1.11).
+fn Twin(p: Cpp.std.optional(i16)*) -> i32 {
+  return Cpp.TakeShort(*p);
+}
+
+fn F() -> i32 {
+  return Cpp.TakeShort(Core.CppCompat.StdOptional(i16).Some(1));
+}
+
+fn G() -> i32 {
+  return Cpp.TakeShort(Core.Optional(i16).Some(2));
+}
+
+fn V() -> i32 {
+  return Cpp.TakeIntOrShort(Core.CppCompat.StdVariant2(i32, i16).Alt1(3));
+}
+
+fn Back(p: Cpp.std.optional(i16)*) -> Core.CppCompat.StdOptional(i16) {
+  return *p;
 }
 ```
 
@@ -8763,7 +8966,10 @@ the others (added 2026-10-20, review fold: RR4-M1, which also narrows W-279 to
 the template form). In the held state D ran before M-VA and on a trunk with no
 TP-1 code, so D filed the seven, and the land-time records commit files W-284
 once M-VA has landed and W-282 only if x19 stops the merged trunk (§1.16, §3
-item 8; amended 2026-10-21, focused re-review round 1: RR1r2-m2).
+item 8; amended 2026-10-21, focused re-review round 1: RR1r2-m2). W-286, a
+trunk-origin crash found by round 2's fixer, is filed in the held state by the
+records commit that folds round 2, after W-285 (added 2026-10-21, focused
+re-review round 2: RR1r2-m1).
 
 <!-- google-doc-style-ignore -->
 
@@ -8890,6 +9096,21 @@ item 8; amended 2026-10-21, focused re-review round 1: RR1r2-m2).
   ],
   "blocked_by": [],
   "notes": "Filed at the SV-1 discharge (YYYY-MM-DD, fork/sumtype-interop/plan.md §1.16). C++ overload resolution sees a Carbon sum value or `Core.Optional(T)` given as an initializing expression, such as `.Some(5)`, as an rvalue of its C++ class, so it binds a `T&&` parameter and prefers the `T&&` member of a `const T&`/`T&&` pair such as `std::vector::push_back`; the parameter's initialization is located at its C++ declaration, which gives the conversion's branches no parse node, so the conversion gives this TODO there. By value, `const&` and `const&&` parameters convert; a value (a `let` or parameter binding, a constant such as `.None`, or `as` the C++ class) is offered as an lvalue, selects the `const T&` member of a pair, and is refused by a lone `T&&` by C++'s rule, as a value of the C++ class is on trunk; a C++ call's result binds the `T&&`. Not bounding row 68: the row's arbiter is the consumption of C++ values by `match`, which this shape does not touch, and the other parameter forms convert. Removal: attribute the blocks to the argument's own parse node where the parameter's location is not one (mutant M22 of the plan runs the sum-type forms that way; the `Core.Optional` form needs the node of the value before its bridge). Break condition: that removal lands, or the conversion becomes one call to a synthesized function per specialization (plan §7.2 R-K)."
+}
+{
+  "id": "W-286",
+  "kind": "toolchain-defect",
+  "title": "SV-1 finding (trunk-origin): a `Destroy` constraint on a C++ class of incomplete type, as converting a value of it to `Core.Optional(T)` checks, stops the compiler: the C++ `Destroy` witness looks up the destructor of a class with no definition",
+  "subsystem": "toolchain/check/cpp (impl_lookup.cpp `BuildCppDestroyWitness`)",
+  "size": "S",
+  "bullet": "Type system: C++ interop — importing C++ types / exporting Carbon types",
+  "evidence": [
+    "toolchain/check/cpp/impl_lookup.cpp:253-281 `BuildCppDestroyWitness` calls `Sema::LookupDestructor` (:270) with no completeness test, where `BuildCopyWitness` requires the class complete and diagnoses `IncompleteTypeInCopyWitness` (:151-160)",
+    "fork/sumtype-interop/plan.md, the record of round 2 of the focused re-review of the fold: t11 (`struct S;` and `fn G[T: Core.Destroy](unused x: T*) {}` called with a `Cpp.S*`), t10 (a Carbon `impl forall [T: Core.Destroy] T as Core.ImplicitAs(Box(T))`), t03 and t06 (`*p` of a `Cpp.S*` or of a declared-only class template's specialization returned as `Core.Optional(i32)`), p12 and p10b (the same for a declared-only `std::optional` and for a declared-only explicit specialization of libc++'s) stop in `clang::Sema::LookupSpecialMember` (SIGSEGV) on trunk 0bdce60a5, the nightly 2026.10.12, the SV-1 install a4d979619 and the PR builds in /home/user/carbon-build/carbon-op2, -tp, -va and -sc; t04 and t05 (the same values returned as a Carbon class with no conversion) get `cannot implicitly convert`",
+    "fork/sumtype-interop/plan.md §1.11, §1.16"
+  ],
+  "blocked_by": [],
+  "notes": "Filed at round 2 of SV-1's focused re-review of the fold (YYYY-MM-DD, fork/sumtype-interop/plan.md §1.16), in the held state, by the records commit of the round, whose fixer's probes of the shapes RR1r2-m1 names found it. Not SV-1's code and not changed by it: a plain forward-declared C++ struct reaches it with no SV-1 name, and SV-1's mapping answers `NotSumType` for a class that cannot be completed, so a C++ value of a `std::optional` that cannot be instantiated converted to `Core.Optional(T)` reaches trunk's `Core.Optional` conversion and stops there, while the same value converted to its sum type gets `IncompleteTypeInCopyWitness` and `ConversionFailure` (stdlib/fail_sum_types.carbon `fail_incomplete_specialization`). Every program that reaches it is invalid (a value of an incomplete type can be neither copied nor destroyed), so the fix is a diagnostic: `BuildCppDestroyWitness` requires the class complete before `LookupDestructor`, as `BuildCopyWitness` does, and returns the error witness. Not bounding row 68. Break condition: that check lands; the `Core.Optional(T)` legs of the two round-2 splits can then be pinned."
 }
 {
   "id": "W-282",
@@ -9093,7 +9314,10 @@ commit (amended 2026-10-20, review fold: all RR4 findings); and
 that the list says what became of every id of the block (added 2026-10-21,
 focused re-review round 1: RR1-1-m3: the list had no slot for an id held or
 unused by its condition, so the entry D wrote in the held state named neither
-W-282 nor W-284; the land-time records commit rewrites both clauses):
+W-282 nor W-284; the land-time records commit rewrites both clauses); W-286,
+filed at round 2 of the focused re-review, joins the filed list, and the unused
+range starts at W-287 (amended 2026-10-21, focused re-review round 2:
+RR1r2-m1):
 
 > ### SV-1 / F-020: `std::optional` and `std::variant` interop mapping (YYYY-MM-DD)
 >
@@ -9166,9 +9390,9 @@ W-282 nor W-284; the land-time records commit rewrites both clauses):
 > (upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
 > Two divergences are disclosed: the sum types are fork prelude names, and the
 > view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
-> W-280, W-281, W-285<, W-284><, W-282><, W-278><, W-283>; <W-284 held until
-> M-VA lands; ><W-282 unused (X-1 fixed by TP-1 at <commit>); ><W-278 withdrawn
-> unfiled; ><W-283 and >W-286 to W-294 unused.
+> W-280, W-281, W-285, W-286<, W-284><, W-282><, W-278><, W-283>; <W-284 held
+> until M-VA lands; ><W-282 unused (X-1 fixed by TP-1 at <commit>); ><W-278
+> withdrawn unfiled; ><W-283 and >W-287 to W-294 unused.
 
 ### C.9 fork/ORCHESTRATION.md (D)
 
@@ -9177,20 +9401,23 @@ A Branches row after TP-1's:
 > | `claude/carbon-fork-0-1-sv` | IMPLEMENTED, PR <n> — SV-1
 > `std::optional`/`std::variant` interop mapping (W-011 discharged; gap row 68
 > stays PARTIAL on W-177, narrowed), plan rev <n> signed off, head <head>;
-> W-275..W-277, W-279..W-281 and W-285 filed<, W-284><, W-282><, W-278><,
-> W-283>; <W-284 held until M-VA lands; ><W-282 unused; ><W-278
-> withdrawn, ><W-283 and >W-286..W-294 unused; F-020 minted; gate
+> W-275..W-277, W-279..W-281, W-285 and W-286 filed<, W-284><, W-282><,
+> W-278><, W-283>; <W-284 held until M-VA lands; ><W-282 unused; ><W-278
+> withdrawn, ><W-283 and >W-287..W-294 unused; F-020 minted; gate
 > <passed>/<total> and conformance <PASS>/<FAIL>/<SKIP> over <programs> on the
 > container toolchain. |
 
 The placeholders follow C.8's rule (amended 2026-10-20, review fold: RR3-m1 /
 RR3-m2; W-285 added 2026-10-20, review fold: RR4-M1; the W-284 and W-282
-clauses added 2026-10-21, focused re-review round 1: RR1-1-m3). Held wording
+clauses added 2026-10-21, focused re-review round 1: RR1-1-m3; W-286 added
+2026-10-21, focused re-review round 2: RR1r2-m1). Held wording
 (while PR 51 to PR 61 are held): "IMPLEMENTED AND HELD, no PR — SV-1 ... at
 <head>; lands after PR 61 by the land-time items in Next actions", with
 "; ROUND <n> DRY" or "; ROUND <n + 1> OWED" after "no PR" once round <n> of the
 focused re-review of the fold has been recorded (added 2026-10-21, focused
-re-review round 1), and Next actions gains (rewritten 2026-10-21,
+re-review round 1), or "; ROUND <n> FIX UNDER REVIEW" once round <n>'s fixer
+has committed and its two reviews are owed (added 2026-10-21, focused re-review
+round 2), and Next actions gains (rewritten 2026-10-21,
 implementation-review fold: m1: rev 5 listed R and D, which go on the branch
 now; extended 2026-10-21, focused re-review round 1: RR1r2-m2 / RR1-1-m1 /
 RR1r2-m6: the land-time records commit and the nested-pointer leg were
@@ -9628,7 +9855,9 @@ the records writer's scratch directory,
     (rev 2) and W-283 unfiled: the shrink line of §3 item 7 was not taken, so
     the one-step conversions and the reverse direction landed. W-286 to W-294
     are unused: no new residue was found during implementation, its reviews or
-    their fold.
+    their fold. Since round 2 of the focused re-review, W-286 is filed (a
+    trunk-origin crash the round's fixer found, §1.16) and W-287 to W-294 are
+    unused (amended 2026-10-21, focused re-review round 2: RR1r2-m1).
 -   **Texts whose targets are not on the merged trunk** (§3 item 8). Not written
     at D: C.5's narrowing note and evidence for W-177 (OP-1's item, on PR 56's
     and PR 57's branches only); the W-252 note (TP-1's), whose placeholder reads
@@ -9718,6 +9947,22 @@ the records writer's scratch directory,
     conflict table and mirror heads, and five precision fixes. RR1r2-m1 goes to
     round 2's fixer; round 2 is owed (the [record of round
     1](#focused-re-review-of-the-fold-round-1-2026-10-21)).
+-   **The focused re-review of the fold, round 2** (added 2026-10-21, focused
+    re-review round 2). Round 2's fixer folds RR1r2-m1 in 0a74af898, two splits
+    of stdlib/fail_sum_types.carbon (`fail_incomplete_specialization` and
+    `fail_undefined_explicit_specialization`, over their own header splits) that
+    pin a `std::optional` or `std::variant` that cannot be instantiated, in both
+    directions, and kill mutants M23, M25 and M26; no toolchain, core or program
+    file changes, so the measurement heads above stand for the toolchain, and
+    the gate and conformance are re-run on 0a74af898 (1950 of 1950; 134/0/21
+    over 155). The records commit of the round files W-286, a trunk-origin crash
+    on invalid programs that the fixer's probes found (the `Destroy` witness of
+    an incomplete C++ class), and W-287 to W-294 stay unused. M-VA's
+    `fail_todo_pack_element` split is now appended after the round-2 splits,
+    which it leaves unchanged; on the round-2 PR 59 mirror its CHECK lines fill
+    byte-identical to `$Y/final/goldens-filled-M/`'s (§8 item 6). Two fresh
+    reviews of round 2 are owed (the [record of round
+    2](#focused-re-review-of-the-fold-round-2-2026-10-21)).
 
 ## Focused re-review of the fold, round 1 (2026-10-21)
 
@@ -9875,6 +10120,143 @@ commit. No id is filed or re-allocated in this round: W-286 to W-294 stay held,
 and the branch's SV-1 row reads "IMPLEMENTED AND HELD, no PR; ROUND 2 OWED"
 until a round is dry.
 
+## Focused re-review of the fold, round 2 (2026-10-21)
+
+Round 2's fixer (R11: its own agent, given round 1's findings as data) folds the
+one finding of round 1 that needs more than records, RR1r2-m1 (MINOR, not
+records only), over round 1's records commit f73e8f436, in two new commits:
+0a74af898, "SV-1 re-review fix: golden splits pin a std::optional or
+std::variant that cannot be instantiated", and the records commit that writes
+this section. No toolchain, core or program file changes, so the toolchain is
+still a4d979619's: `carbon version` prints 0.0.0-0.dev+a4d979619, the hash that
+`git log -1 --format=%h -- toolchain ':!toolchain/*/testdata/*' core` prints.
+`$R2` is the fixer's scratch directory, §8 item 5's; trunk is still d9f346f53
+(`git log 5674fe88b..origin/trunk` after `git fetch origin` names no newer
+commit). Every measurement is container-built, EXPECTED and not of record (R9,
+R28).
+
+**Reproduced first** (`$R2/p/`, `$R2/runs/`; the SV-1 install, trunk's driver,
+version 0.0.0-0.dev+0bdce60a5, and the nightly 2026.10.12). Review 2's p03, p05
+and p06 give ``call argument of type ... is not supported`` after the export
+TODO on SV-1; trunk and the nightly reject p03 and p05 (`StdOptional` and
+`StdVariant2` are not in `Core.CppCompat`) and give p06 SV-1's error (the
+nightly's TODO at optional.carbon:29). A relinked M26 (`$R2/mut/M26.diff`: the
+instantiation attempted and its result ignored) aborts clang on p02, p03, p05
+and p06 (rc 134, ``queried property of class with no definition``,
+DeclCXX.h:464), and so does a relinked M23. The C++ twins, compiled with the
+host clang++ (version 21.1.8; `$R2/twin/`), are ill-formed: ``no matching
+function for call to 'Take'`` and ``'TakeV'`` for the declared templates,
+``'std::optional<short>' is an incomplete type`` and ``argument type
+'std::optional<short>' is incomplete`` for libc++'s template with a declared
+explicit specialization. So the shapes are OUT by C++'s rules, keep trunk's
+diagnostics, and need a golden, not a toolchain change.
+
+**The class probed beyond the finding** (each on the SV-1 install, trunk and the
+nightly, and on the three mutants). A `const&` parameter (p08) gets the same
+error, and under M26 ``forming value of incomplete type`` instead. In the other
+direction a C++ value of such a class, `*p` returned as its sum type (p09, a
+declared template; p10a, libc++'s with a declared explicit specialization), gets
+``argument to C++ call has incomplete type`` [IncompleteTypeInCopyWitness] and
+[ConversionFailure] after the export TODO, and under M25 the compiler stops (rc
+139, `CXXRecordDecl::isTriviallyCopyable`): the break condition §8 item 5 set
+for M25 is met, so the splits pin that direction too. A `match` on such a value
+(p04, p11) gets trunk's ``matching on value of incomplete type`` on SV-1 and
+trunk, and that error ends the file's checking on both (t07: a later type error
+goes unreported), so no split holds a `match`. The same value returned as
+`Core.Optional(i32)` (p12, p10b), and a plain forward-declared struct or class
+template so returned, converted through a Carbon `impl forall [T: Core.Destroy]`
+or deduced for `T: Core.Destroy` (t03, t06, t10, t11), stop the compiler
+(SIGSEGV) in `clang::Sema::LookupSpecialMember` on the SV-1 install, trunk, the
+nightly and the PR builds in /home/user/carbon-build/carbon-op2, carbon-tp,
+carbon-va and carbon-sc (stamps 9f9ccd768, eafca5cb9, 88b1b5bd2, 866468cba):
+trunk's `BuildCppDestroyWitness` (impl_lookup.cpp:253-281) calls
+`LookupDestructor` (:270) with no completeness test, where `BuildCopyWitness`
+requires the class complete (:151-160). Those programs are invalid, the same
+values converted to a Carbon class get ``cannot implicitly convert`` (t04, t05),
+and no SV-1 name or code is involved, so the crash is trunk's, not changed by
+SV-1; it is filed as W-286 (§1.16, C.4), not fixed here, because the fix belongs
+in a trunk file SV-1 does not touch and the finding asks for a golden.
+
+**The fix**, 0a74af898 (stdlib/fail_sum_types.carbon only; §1.5, §1.11,
+§1.12, §4, Appendix B). Two splits, each over its own header split:
+`fail_incomplete_specialization` (`incomplete.h`: `std::optional` and
+`std::variant` declared and not defined, three `noexcept` functions taking
+`std::optional<int>`, `const std::optional<int>&` and `std::variant<int,
+short>`) and `fail_undefined_explicit_specialization`
+(`declared_specialization.h`: `sum.h` with `optional<short>` and `variant<int,
+short>` explicitly specialized and not defined). Each holds `Twin` (the C++
+class's own value passed by value, trunk's errors), `F`, `G` and `V` (a
+`StdOptional`, a `Core.Optional` and a `StdVariant2` value passed by value),
+`Back` (a C++ value converted to its sum type), and the first split also `H`
+(`const&`) and `BackVariant`. `Twin` comes first so that its in-split
+diagnostic precedes the prelude-located export TODOs, which autoupdate files
+under the preceding diagnostic: no CHECK line of an earlier split changes. The
+CHECK lines are autoupdate's (R16): written without them, pass 1 filled them and
+pass 2 changed nothing, and a copy with every CHECK line stripped refills
+byte-identically at its second pass. prek passes on the file.
+
+**Mutants** (§8 item 5's round-2 table; `$R2/runs/split-matrix.txt`): M23 and
+M26 stop file_test at `F`, `G` and `V` of both splits (rc 134, DeclCXX.h:464),
+M25 at `Back` of both and at `BackVariant` (rc 139 alone, rc 134 under the full
+gate, `isTriviallyCopyable`); all three were also run over the full gate, which
+each stops at fail_sum_types.carbon. M25, recorded as surviving at the fold, is
+killed: `GetCppSumType`'s completion test is load-bearing (§1.5). The M-VA hunk
+still applies to sum_type.cpp at offsets 9 and 39 (unchanged file).
+
+**Measured on 0a74af898** (the records commit adds records only): "file_test
+test mode on /home/user/carbon-sv: 1950 passed, 0 failed (exit 0, 27s)", with
+a private `TEST_TMPDIR`; conformance with a private `XDG_CACHE_HOME` and output
+directory, "PASS 134, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH
+0, DIFF-MISMATCH 0, SKIP 21 (of 155)" in 69.2 s, bullets 48 PASS, 0 FAIL, 8
+SKIP, 0 NOT-WRITTEN of 56, no status or detail different from round 1's
+records run; `runner.py --self-test`: "155 programs parsed, 56 bullets in
+table, OK" (`$R2/logs/gate-fix.log`, `conf.log`, `selftest.log`,
+`$R2/conf/out/scoreboard.json`).
+
+**Composition mirrors** (§0.7 lists stdlib/fail_sum_types.carbon, so §8 item
+6's mirrors are rebuilt; `$R2/bin/mirror.sh`, logs in `$R2/mirror/<b>/`, each
+mirror and its build deleted after). Each is a full build of a `git archive` of
+the held head with SV-1's toolchain and core diff
+(`$R2/mirror/sv1-toolchain-head.diff`, `git diff origin/trunk HEAD -- toolchain
+core ':(exclude)toolchain/*/testdata/*'`, 14 files, byte-identical to round 1's)
+and SV-1's nine goldens and the programs of 0a74af898 copied in; PR 59's also
+takes M-VA's hunk and the `fail_todo_pack_element` split appended after the
+round-2 splits, filled by autoupdate before the gate:
+
+| Mirror | Head | Patch | Gate before refill | Gate after | Conformance | fail_sum_types.carbon |
+| --- | --- | --- | --- | --- | --- | --- |
+| PR 57 (OP-2) | 628273444 | every hunk exact but convert.cpp's hook, at offset 3 | 1950 of 1958: F-M's eight, SemIR only (4, 4, 18 and 8 function-pointer lines; optional_pointer_payload 12, stdlib/optional 563, stdlib/variant 198, core_optional_view 18) | 1958 of 1958 | 145/0/21 over 166 | green, as committed |
+| PR 61 (TP-1) | 5661a35c8 | convert.cpp's include hunk and refutable_binding.cpp's first hunk at fuzz 1, convert.cpp's other hunks at offsets 2 to 378 | 1961 of 1965: the four function-pointer goldens only | 1965 of 1965 | 144/0/21 over 165 | green, as committed |
+| PR 59 (VA-1), with M-VA | b0822a744 | convert.cpp at offsets 98 and 114, type.cpp at 5, kind.def at 15; M-VA at 9 and 39 | 1964 of 1968: the four function-pointer goldens only | 1968 of 1968 | 143/0/20 over 163 | with `fail_todo_pack_element` appended: a fixpoint at pass 1, the first 633 lines the committed file, the pack split byte-identical to `$Y/final/goldens-filled-M/`'s (the pack-element TODO ten times) |
+| PR 60 (SC-1) | 40a76ab81 | BUILD and convert.cpp at offset 1, the hook at 14, type.cpp at 8, kind.def exact | 1963 of 1967: the four function-pointer goldens only | 1967 of 1967 | 136/0/20 over 156 | green, as committed |
+
+Each full build took 7m22s to 8m38s with 0 warnings, and each mirror and its
+build were deleted after it. The red sets, their changed-line counts and the
+conformance totals are those of the fold's and round 1's mirrors; SV-1's six
+programs PASS on every mirror; none of OP-2's, SC-1's, VA-1's or TP-1's own
+goldens changes. The round-2 splits pass on all four as committed, so F-M
+gains nothing from them.
+
+**Ids.** The re-scan of §8 item 7, widened to W-299 and run after `git fetch
+origin` over 83 refs and 15 worktree ledgers (`$R2/logs/ids-refs.txt`,
+`ids-wt.txt`), finds SV-1's seven filed items on its branch, local and pushed,
+and its worktree, TP-1's W-295 to W-298 on its own, and nothing else in W-275
+to W-299; W-286 is filed by this records commit, appended after W-285 with
+C.4's text (133 items), and W-287 to W-294 stay unused. No F-id is minted.
+
+| Finding | Severity | Records only | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR1r2-m1: the "cannot be instantiated" branch of RV1-B1's fix (sum_type.cpp:976-979) is reachable and no golden pins it; M26 passes the gate and brings back the clang abort | MINOR | no: a golden split | folded: reproduced on SV-1, trunk and the nightly, and with M26 and M23 relinked; two splits of stdlib/fail_sum_types.carbon, `fail_incomplete_specialization` (the review's proposal, with a `const&` call, the C++ class's own value and the C++-to-Carbon direction added) and `fail_undefined_explicit_specialization` (the review's p06 shape), filled by autoupdate at a fixpoint; M26 killed, with M23; the shape and its diagnostics in §1.5 (a paragraph and an exportability row) and in §1.11's OUT table; §1.12, §4, §6 and Appendix B; the gate, conformance and the four mirrors again | 0a74af898; §1.5, §1.11, §1.12, §4, §6, §8 items 5 and 6, Appendix B |
+| Found while folding: a C++ value of a class that cannot be completed, converted to its sum type, reaches `GetCppSumType`, and M25, recorded as surviving at the fold, stops the compiler there | MINOR (a plan record) | no: the same splits | folded by §8 item 5's break condition: `Back` and `BackVariant` in both splits; M25 killed; §1.5's "defensive" amended | 0a74af898; §1.5, §8 item 5 |
+| Found while folding: a `Destroy` constraint on a C++ class of incomplete type, as converting a value of it to `Core.Optional(T)` checks, stops the compiler (trunk's `BuildCppDestroyWitness`) on SV-1, trunk, the nightly and the held PRs' builds alike | trunk's crash on invalid programs; not SV-1's | yes | filed as W-286 (trunk-origin), not fixed: the fix is trunk's impl_lookup.cpp, which SV-1 does not touch; §1.11's OUT table names it, and no golden can pin a crash | §1.11, §1.16, C.4, C.8, C.9, the landed notes, the ledger |
+
+**Round 2's status: fix under review.** The fold changes a golden and the
+records, no toolchain, core or program file, and no finding of round 1 is left.
+Two fresh reviews (R29(c)) of 0a74af898 and of this records commit are owed;
+fork/ORCHESTRATION.md's SV-1 row reads "IMPLEMENTED AND HELD, no PR; ROUND 2
+FIX UNDER REVIEW" until they are recorded, and SV-1's PR opens, held, when a
+round is dry.
+
 ## Revision record
 
 -   Rev 1 (2026-10-20): first revision, for the two plan reviews of R29(c).
@@ -9948,3 +10330,10 @@ until a round is dry.
     matter, §0.7, §1.5, §1.7, §1.9, §1.12, §1.16, §3 items 8 and 10, §5, §6, §8
     items 4 and 8 (rewraps only), C.4, C.8, C.9, the sign-off's pointer and the
     landed notes, and leaves RR1r2-m1, a golden split, to round 2's fixer.
+-   Focused re-review round 2 (2026-10-21): round 2's fixer folds RR1r2-m1 in
+    0a74af898 (two splits of stdlib/fail_sum_types.carbon, no toolchain change;
+    mutants M23, M25 and M26 killed) and files W-286, a trunk-origin crash, in
+    the records commit that writes the [record of round
+    2](#focused-re-review-of-the-fold-round-2-2026-10-21), amending the front
+    matter, §1.5, §1.11, §1.12, §1.16, §4, §6, §8 items 5 and 6, Appendix B,
+    C.4, C.8, C.9 and the landed notes; two fresh reviews of round 2 are owed.

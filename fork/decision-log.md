@@ -6987,8 +6987,9 @@ V-3 holds: no accepted proposal or leads' direction is contradicted
 (upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
 Two divergences are disclosed: the sum types are fork prelude names, and the
 view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
-W-280, W-281, W-285; W-284 held until M-VA lands; W-282 unused (X-1 fixed by
-TP-1 at eafca5cb9); W-278 withdrawn unfiled; W-283 and W-286 to W-294 unused.
+W-280, W-281, W-285, W-286; W-284 held until M-VA lands; W-282 unused (X-1
+fixed by TP-1 at eafca5cb9); W-278 withdrawn unfiled; W-283 and W-287 to W-294
+unused.
 
 **Focused re-review of the fold, round 1** (2026-10-21). Two fresh reviews of
 the fold's commits and of R and D, at 21060cef4, both APPROVE-WITH-FIXES with
@@ -7007,4 +7008,26 @@ ignores the instantiation's result brings the clang abort back; it goes to
 round 2's fixer, and round 2 is owed (fork/sumtype-interop/plan.md, "Focused
 re-review of the fold, round 1 (2026-10-21)"). No id filed; W-286 to W-294
 stay held. Measured on the records commit's tree, EXPECTED and not of record:
+file_test 1950 of 1950, conformance 134/0/21 over 155, 48 of 56 bullets.
+
+**Focused re-review of the fold, round 2** (2026-10-21). Round 2's fixer folds
+RR1r2-m1 with no toolchain, core or program change: two splits of
+stdlib/fail_sum_types.carbon, `fail_incomplete_specialization` and
+`fail_undefined_explicit_specialization`, pin a `std::optional` or
+`std::variant` that cannot be instantiated (the template, or an explicit
+specialization, declared and not defined) in both directions, with trunk's
+diagnostics, since C++ cannot pass such a value either. They kill the mutant
+that ignores the instantiation's result (M26) with M23, and M25, which the
+implementation-review fold recorded as surviving: a C++ value of such a class
+converted to its sum type reaches the completion test that M25 removes, so that
+test is load-bearing. The fixer's probes also found a trunk crash on invalid
+programs, the `Destroy` witness of an incomplete C++ class (impl_lookup.cpp's
+`BuildCppDestroyWitness`, which a conversion to `Core.Optional(T)` reaches), on
+trunk, the nightly, the held PRs' builds and SV-1 alike; it is filed as W-286
+(trunk-origin; the id list above), not fixed in SV-1. The four composition
+mirrors (PR 57, PR 61, PR 59 with M-VA, PR 60), rebuilt with the round's
+goldens, are red only on the refills predicted at the fold, and the round-2
+splits pass on each. Two fresh reviews of the round's commits are owed
+(fork/sumtype-interop/plan.md, "Focused re-review of the fold, round 2
+(2026-10-21)"). Measured on the fix commit's tree, EXPECTED and not of record:
 file_test 1950 of 1950, conformance 134/0/21 over 155, 48 of 56 bullets.

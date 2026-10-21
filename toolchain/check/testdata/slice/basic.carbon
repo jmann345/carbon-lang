@@ -1393,7 +1393,6 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Slice.as.Iterate.impl.NewCursor.322: %Slice.as.Iterate.impl.NewCursor.type.5f1 = struct_value () [symbolic]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.2: type = fn_type @Destroy.WithSelf.SelfDestruct.2 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.2: %Destroy.WithSelf.SelfDestruct.type.fbceb5.2 = struct_value () [concrete]
-// CHECK:STDOUT:   %ptr.643: type = ptr_type %i64 [concrete]
 // CHECK:STDOUT:   %Iterate.impl_witness.e83: <witness> = impl_witness imports.%Iterate.impl_witness_table.d36, @Slice.as.Iterate.impl(%facet_value.178) [concrete]
 // CHECK:STDOUT:   %Slice.as.Iterate.impl.NewCursor.type.f11: type = fn_type @Slice.as.Iterate.impl.NewCursor, @Slice.as.Iterate.impl(%facet_value.178) [concrete]
 // CHECK:STDOUT:   %Slice.as.Iterate.impl.NewCursor.864: %Slice.as.Iterate.impl.NewCursor.type.f11 = struct_value () [concrete]
@@ -1721,13 +1720,12 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   br !for.next
 // CHECK:STDOUT:
 // CHECK:STDOUT: !for.next:
-// CHECK:STDOUT:   %addr: %ptr.643 = addr_of %var
 // CHECK:STDOUT:   %impl.elem3: %.6d4 = impl_witness_access constants.%Iterate.impl_witness.e83, element3 [concrete = constants.%Slice.as.Iterate.impl.Next.9d0]
 // CHECK:STDOUT:   %bound_method.loc9_19.3: <bound method> = bound_method %s.ref, %impl.elem3
 // CHECK:STDOUT:   %specific_fn.loc9_19.2: <specific function> = specific_function %impl.elem3, @Slice.as.Iterate.impl.Next(constants.%facet_value.178) [concrete = constants.%Slice.as.Iterate.impl.Next.specific_fn]
 // CHECK:STDOUT:   %bound_method.loc9_19.4: <bound method> = bound_method %s.ref, %specific_fn.loc9_19.2
 // CHECK:STDOUT:   %.loc9_19.1: ref %Optional.0ac = temporary_storage
-// CHECK:STDOUT:   %Slice.as.Iterate.impl.Next.call: init %Optional.0ac to %.loc9_19.1 = call %bound_method.loc9_19.4(%s.ref, %addr)
+// CHECK:STDOUT:   %Slice.as.Iterate.impl.Next.call: init %Optional.0ac to %.loc9_19.1 = call %bound_method.loc9_19.4(%s.ref, %var)
 // CHECK:STDOUT:   %.loc9_19.2: ref %Optional.0ac = temporary %.loc9_19.1, %Slice.as.Iterate.impl.Next.call
 // CHECK:STDOUT:   %.loc9_19.3: %Optional.HasValue.type.dbd = specific_constant imports.%Core.import_ref.bb6, @Optional(constants.%OptionalStorage.facet.6c5) [concrete = constants.%Optional.HasValue.ed9]
 // CHECK:STDOUT:   %HasValue.ref: %Optional.HasValue.type.dbd = name_ref HasValue, %.loc9_19.3 [concrete = constants.%Optional.HasValue.ed9]

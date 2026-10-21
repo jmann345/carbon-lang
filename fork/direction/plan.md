@@ -4,25 +4,47 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-# DR-1: direction realignment (plan, rev 1)
+# DR-1: direction realignment (plan, rev 2)
 
 Workstream DR-1 of decision-log entry DR-0 (D-DR-1..D-DR-4) under rulebook R32
-and decision-log V-3b: `Match` for classes and `Core.Optional`'s `impl as Match`
-(W-320, with W-322's retirement of PR 62's D-SV-7 view and W-323's corrections
-on PR 56's branch), `Core.Iterate.Next`'s `ref cursor` (W-321), and
-`Core.Slice`'s element access through `IndirectIndexWith` (W-109). Branch
-claude/carbon-fork-0-1-dr, cut from trunk f68681114 (toolchain state 0bdce60a5).
-Upstream's recorded direction is read at upstream/trunk fb7eff130 (fetched
-2026-10-21 by `git fetch upstream trunk`; FETCH_HEAD and upstream/trunk both
-name fb7eff130db358269913e1003ae39d259d3d1f55, "Move IdentifiedFacetType to
-check (PR 8004)", 2026-10-21 13:20 UTC). Every measurement below is
+and decision-log V-3b: `Core.Iterate.Next`'s `ref cursor` (W-321),
+`Core.Slice`'s element access through `IndirectIndexWith` (W-109), the
+retirement of PR 62's D-SV-7 view (W-322), the corrections owed on PR 56's
+branch (W-323), and `Core.Optional` matchable by sum_types.md's `Match` (W-320),
+which this revision stops at the plan (§1.4). Branch claude/carbon-fork-0-1-dr,
+cut from trunk f68681114 (toolchain state 0bdce60a5). Upstream's recorded
+direction is read at upstream/trunk ac31fd198 (fetched 2026-10-21 by `git fetch
+upstream trunk`; FETCH_HEAD and upstream/trunk both name
+ac31fd198582a29347ded6155b0d03d562d6fb01, "Give IdentifiedFacetType a more
+foolproof API (PR 8008)", 2026-10-21 18:32 UTC); rev 1 read fb7eff130, and the
+three commits since (c3877cf70, its revert 70c696e78, and ac31fd198) change no
+design page, proposal or prelude file (§0.10). Every measurement below is
 container-local and EXPECTED, not of record (R9); the arbiter is the carbonbuild
 scripts (R28), never the owner's runner, and the upstream nightly 2026.10.12 is
 an oracle only (R30).
 
-Rev 1, 2026-10-21. Decisions D-DR-5..D-DR-22 are new here (D-DR-1..D-DR-4 are
-DR-0's); they are auto-adopted under R29(a), recorded in the decision log by the
-plan's records commit, and each carries a break condition.
+Rev 1, 2026-10-21. Rev 2, 2026-10-21: reviews A and B folded (31 findings; the
+record is "Review fold record (rev 2, 2026-10-21)" at the end). Decisions
+D-DR-5..D-DR-22 are DR-1's (D-DR-1..D-DR-4 are DR-0's); they are auto-adopted
+under R29(a), recorded in the decision log by the plan's records commit, and
+each carries a break condition.
+
+Status: rev 2, not signed off (the re-review decides).
+
+What rev 2 changes (amended 2026-10-21, review fold: A-B1 / B-B1). Upstream's
+own pages disagree on how `Match` declares its continuation:
+docs/design/sum_types.md:113 writes `let template Continuation: type;`, while
+docs/design/README.md:1076-1078 and :3064-3067 and
+docs/design/generics/terminology.md:100-103 state that an associated constant is
+always a checked generic binding and cannot be made `template`, and upstream's
+parser refuses the keyword. Rev 1's slice 1 rested on implementing the template
+associated constant (L1) and on impl members giving an associated constant its
+value (L2, which accepted proposal p001013 removed). Both are new drifts under
+R32, so rev 2 implements neither: D-DR-22's stop rule fires at the plan, slice 1
+(W-320) waits on upstream's resolution (W-324 watches it), and DR-1 is two PRs,
+DR-1a (slice 2) and DR-1b (slice 3). W-322's view is still a drift and is still
+removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
+62 mirror (§1.11). F-022 is not minted: DR-1 adopts no fork design (§1.17).
 
 ## Contents
 
@@ -39,6 +61,7 @@ plan's records commit, and each carries a break condition.
 -   Appendix A: golden sources
 -   Appendix B: programs and oracles
 -   Appendix C: records texts
+-   Review fold record (rev 2, 2026-10-21)
 
 ## §0 Audit: measurements with file:line evidence
 
@@ -46,10 +69,12 @@ plan's records commit, and each carries a break condition.
 
 `$X` below is
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1/planner
-(probes, logs and diffs; deleted with the session). Every probe was compiled,
-linked and run by `$X/bin/runprobe.sh <carbon> <file> <outdir>`, which prints
-COMPILE-FAIL with the first `error:` text, LINK-FAIL, or RUN with the program's
-standard output; `XDG_CACHE_HOME` was `$X/xdg` throughout.
+(rev 1's probes, logs and diffs) and `$Y` is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1/fixer
+(rev 2's); both are deleted with the session. Every probe was compiled, linked
+and run by `runprobe.sh <carbon> <file> <outdir>` (`$X/bin`, `$Y/bin`), which
+prints COMPILE-FAIL with the first `error:` text, LINK-FAIL, or RUN with the
+program's standard output; `XDG_CACHE_HOME` was `$X/xdg` or `$Y/xdg` throughout.
 
 | Name | What | Version string | State |
 | --- | --- | --- | --- |
@@ -60,13 +85,17 @@ standard output; `XDG_CACHE_HOME` was `$X/xdg` throughout.
 | tp | PR 61 install | +eafca5cb9 | to head 5661a35c8: two goldens only |
 | st | PR 55 install | +84ff63560 | to head 21307851a: ten goldens only |
 | v2 | slice 2's prototype: trunk plus §2.1's files | relinked over trunk's objects into /dev/shm/dr1-planner/carbon-dr (handle_loop_statement.cpp the one translation unit) | gate and conformance in §0.6 |
-| v3 | slices 2 and 3: trunk plus §2.1's and §2.2's files | full build.sh/install.sh of this worktree into /home/user/carbon-build/carbon-dr (core_identifier.def is an X-macro: every includer of context.h recompiles) | gate and conformance in §0.6 |
+| v3 | rev 1's slices 2 and 3: trunk plus §2.1's and §2.2's files | full build.sh/install.sh of this worktree into /home/user/carbon-build/carbon-dr (core_identifier.def is an X-macro: every includer of context.h recompiles) | gate and conformance in §0.6.1 |
+| v4 | rev 2's slices 2 and 3 (amended 2026-10-21, review fold: A-M5 / B-M13 / A-m2 / B-M7) | v3's objects (the six C++ files restored byte-identical to v3's sources with their pre-build mtimes, so ninja rebuilt only the file_test manifest and the version stamp), then install.sh: 0.0.0-0.dev+1e46ffd94.dirty | gate and conformance in §0.6.2 |
+| mct | the composition mirror: CT-1's head 79740957a (stacked on PR 61) plus v4's diff, merged as §2.1 and §2.2 resolve it (amended 2026-10-21, review fold: B-M6 / B-M2) | full build into /dev/shm/dr1-fixer/mct, a `git worktree` at `$Y/mct` | §0.8.1 |
+| m62 | PR 62's head 3a6531157 plus W-322's removal-only commit (amended 2026-10-21, review fold: A-M3 / B-B2) | full build into /dev/shm/dr1-fixer/m62, a `git worktree` at `$Y/m62` | §0.8.2 |
 
 The relink of v2 was produced by `$X/bin/relink.py`, which rewrites trunk's
 build.ninja so that the changed translation units compile from this worktree
 with trunk's flags (this worktree's include root first) and the three binaries
 link over trunk's read-only objects (absolute paths), then
-`CB_BUILD_ROOT=/dev/shm/dr1-planner` install.sh. No build directory was copied.
+`CB_BUILD_ROOT=/dev/shm/dr1-planner` install.sh. No build directory was copied;
+the mirrors are git worktrees of their heads in `$Y`, removed after measuring.
 
 ### §0.2 The directive and the work items
 
@@ -76,14 +105,17 @@ research_verdicts.json and research_evidence.json; this plan does not restate
 them. The five work items, on trunk's fork/inventory/work-items.json: W-320
 (`Core.Optional` matchable by `Match`, XL), W-321 (the `ref` cursor at 11 sites,
 M), W-322 (PR 62's D-SV-7 view, a V-3a divergence, S, blocked by W-320), W-323
-(records corrections on PR 56's branch, S) and W-109 (SL-1's write-through
-residue, L, its notes dated by DR-0). DR-1 reserves W-324..W-329 (all unused on
-every ref at DR-0's re-scan) and may mint F-022 (§1.17 decides not to).
+(records corrections on PR 56's branch, S) and W-109 (SL-1's residue, L, its
+notes dated by DR-0). DR-1 reserves W-324..W-329 (all unused on every ref at
+DR-0's re-scan) and may mint F-022 (§1.17 decides not to). Rev 2 (amended
+2026-10-21, review fold: A-B1 / B-B1 / A-M3): W-322 loses its `blocked_by` on
+W-320, because the view is a drift that R32 (e) removes before PR 62 lands
+whether or not W-320 can land (§1.11); W-320 gains `blocked_by` W-324 (§1.4).
 
 ### §0.3 The probe matrix (audit item 1)
 
 Sources: `$X/a1/*.carbon` (Appendix B.0 lists each body). The `match` probes
-write `case .None()` because the prelude's `None` is a function (§1.6);
+write `case .None()` because the prelude's `None` is a function (§1.4);
 `m_match_bare_none` writes `case .None`. `c_exh_return` is a two-alternative
 `choice` whose two arms both `return`, the control for the "missing `return`"
 row.
@@ -122,10 +154,15 @@ range, an array, a slice and a hand-written C++ range runs on every toolchain;
 same facet-identification message: an upstream limitation, outside DR-1. (d) The
 PR 62 `m_match_bare_none` failure is not D-SV-7's: `c_exh_return` reproduces it
 on trunk with a plain choice, so reachability after an exhaustive `match` whose
-arms all diverge is a fork gap of its own (filed W-329, §1.17); DR-1's programs
-keep a statement after such a `match`.
+arms all diverge is a fork gap of its own (filed W-329, §1.17). The `.None()`
+spelling of these probes is §1.4's reading for W-320's resumption (amended
+2026-10-21, review fold: A-m3 / B-M8).
 
 ### §0.4 The match path on trunk and where a `Match` class enters (audit item 2)
+
+Slice 1's audit, kept as the starting point of W-320's resumption (§1.4); rev 2
+implements none of the right-hand column (amended 2026-10-21, review fold: A-B1
+/ B-B1).
 
 The refutable engine is one driver for four forms
 (toolchain/check/handle_match.cpp:32-46). Its steps, the SemIR each emits today,
@@ -133,17 +170,17 @@ and where a scrutinee whose type implements `Core.Match` enters:
 
 | Step | Trunk code | SemIR emitted today | A `Match` class |
 | --- | --- | --- | --- |
-| Scrutinee gate | refutable_binding.cpp:137-208 `CheckRefutableScrutinee`: `ConvertToValueOrRefExpr`, `RequireCompleteType`, `IsSupportedScrutineeType` (:83-135: int, bool, matchable choice, tuples and structs of those), else `context.TODO(node_id, todo_string)`, the strings `match on unsupported scrutinee type` and `refutable pattern binding on unsupported scrutinee type` | the scrutinee's conversion insts; `RequireCompleteType`'s `require_complete_type` witness when symbolic | enters here: a type that is none of the five shapes and implements `Core.Match` (impl lookup) is admitted, and the continuation and the `Op` call are emitted once (§1.5) |
-| Alternative pattern | handle_match.cpp:248-470 `AlternativePattern`: `ResolvePendingAlternative` (refutable_binding.cpp:210-293) refuses a non-choice scrutinee with the W4 TODO `` match `case` pattern other than an integer literal, or a case guard `` (:216-224), looks the name up in `Class::choice_alternatives` (pattern_match.cpp:512-528), applies the parens rule (`MatchAlternativeUnexpectedParens` :236, `MatchAlternativeMissingParens` :252, `MatchAlternativeArgCountMismatch` :275), and wraps the payload subpatterns in a synthesized `TuplePattern` | `TuplePattern` (synthesized), `ExprPattern` for the bare constant spelling; a pending alternative for `if let`, `while let`, `let`-`else` (resolved by `ResolveDeferredAlternative`, :296-337) | the name resolves against the methods of the impl's `Continuation` interface instead of `choice_alternatives`; the parens rule reads the class's factory member (§1.6) |
+| Scrutinee gate | refutable_binding.cpp:137-208 `CheckRefutableScrutinee`: `ConvertToValueOrRefExpr`, `RequireCompleteType`, `IsSupportedScrutineeType` (:83-135: int, bool, matchable choice, tuples and structs of those), else `context.TODO(node_id, todo_string)`, the strings `match on unsupported scrutinee type` and `refutable pattern binding on unsupported scrutinee type` | the scrutinee's conversion insts; `RequireCompleteType`'s `require_complete_type` witness when symbolic | enters here: a type that is none of the five shapes and implements `Core.Match` (impl lookup) is admitted, and the continuation and the `Op` call are emitted once (rev 1 §1.5) |
+| Alternative pattern | handle_match.cpp:248-470 `AlternativePattern`: `ResolvePendingAlternative` (refutable_binding.cpp:210-293) refuses a non-choice scrutinee with the W4 TODO `` match `case` pattern other than an integer literal, or a case guard `` (:216-224), looks the name up in `Class::choice_alternatives` (pattern_match.cpp:512-528), applies the parens rule (`MatchAlternativeUnexpectedParens` :236, `MatchAlternativeMissingParens` :252, `MatchAlternativeArgCountMismatch` :275), and wraps the payload subpatterns in a synthesized `TuplePattern` | `TuplePattern` (synthesized), `ExprPattern` for the bare constant spelling; a pending alternative for `if let`, `while let`, `let`-`else` (resolved by `ResolveDeferredAlternative`, :296-337) | the name resolves against the methods of the impl's `Continuation` interface instead of `choice_alternatives`; the parens rule reads the class's factory member (rev 1 §1.6) |
 | Test pass | refutable_binding.cpp:339-487 `EmitRefutableBindingTest` classifies the arm; `MatchCaseAlternativePatternMatch` (pattern_match.cpp:597-694) tests the discriminant (`EmitChoiceDiscriminantTest`, :573-595) and, dominated by it, the payload's refutable subpatterns | `NameBindingDecl`; `ClassElementAccess` (element 0, the `.discriminant`), an `EqWith(disc).Equal` call through `BuildBinaryOperator`, `BranchIf`, `BranchWithArg`, `BlockArg` | the discriminant read becomes the `Op` call's result (an `i32` value) and the payload read becomes the continuation's slot; the same `EqWith` test and the same dominance structure |
 | Bind pass | refutable_binding.cpp:489-603 `EmitRefutableBindingBind`; `EmitChoicePayloadFieldAccess` (pattern_match.cpp:1048-1078) reads the payload tuple out of field 1's `CustomLayoutType` region | `ClassElementAccess` (field 1), the payload tuple's element reads, binding insts (`ValueBinding`, `RefBinding`, `VarStorage` for `var`) | the payload tuple is the slot's tuple, read through `ClassElementAccess` on the continuation object and an `AsCompatible` from `MaybeUnformed(P)` to `P` |
 | Exhaustiveness and usefulness | handle_match.cpp:122-174 and the key machinery (pattern_match.cpp:762-971) | none (diagnostics) | the alternatives are a closed set (sum_types.md:99-101), keyed by the `Continuation` method index |
-| `for` | handle_loop_statement.cpp:204-295: `NewCursor`, an `AddrOf` of the cursor (:255-259), `Next`, then `CallOptionalAccessor` `HasValue` (:280) and `Get` (:290) under upstream's TODO (:269-272) | `VarStorage`, `AddrOf`, two `Call`s per iteration through `PerformMemberAccess` | slice 2 removes the `AddrOf` (§1.2); slice 1 replaces the two accessor calls by the while-let engine on `Next`'s result with the root `.Some(<pattern>)` (§1.8) |
+| `for` | handle_loop_statement.cpp:204-295: `NewCursor`, an `AddrOf` of the cursor (:255-259), `Next`, then `CallOptionalAccessor` `HasValue` (:280) and `Get` (:290) under upstream's TODO (:269-272) | `VarStorage`, `AddrOf`, two `Call`s per iteration through `PerformMemberAccess` | slice 2 removes the `AddrOf` (§1.2); W-320's resumption replaces the two accessor calls by matching `Next`'s result against `.Some(<pattern>)` (§1.4) |
 | Lowering | no lower/handle_match*.cpp exists: `match` lowers through the branch instructions above | n/a | nothing new: the continuation class, its impls and functions are ordinary SemIR, lowered per specific |
 
-Upstream's handle_match.cpp at fb7eff130 checks nothing: every handler at :11-76
-is `context.TODO(...)` (for example `HandleMatchIntroducer`), and its loop
-checker keeps the `.Some(pattern_id)` TODO (upstream
+Upstream's handle_match.cpp at ac31fd198 (as at fb7eff130) checks nothing: every
+handler at :11-76 is `context.TODO(...)` (for example `HandleMatchIntroducer`),
+and its loop checker keeps the `.Some(pattern_id)` TODO (upstream
 handle_loop_statement.cpp:235-238). So the fork's engine is the only code to
 extend, and the mechanism follows sum_types.md and p000157 (§0.10).
 
@@ -189,7 +226,7 @@ is the thunk's canonical-inst location; upstream 7beb29f8b ("Use a fallback loc
 for diagnostics generated on canonical insts", 2026-10-15) addresses that class
 and is UA-3's, not DR-1's.
 
-`IndirectIndexWith`. Upstream's prelude at fb7eff130,
+`IndirectIndexWith`. Upstream's prelude at ac31fd198 (as at fb7eff130),
 core/prelude/operators/index.carbon:7-28:
 
 <!-- google-doc-style-ignore -->
@@ -329,9 +366,12 @@ other ninja before it started) and `install.sh` produced
     temporary on `callee.call_param_ranges.return_size() > 0` and convert.cpp's
     `ConvertCallArgs` asserts the same property. Its two code hunks apply to
     trunk with `git apply` unchanged (call.cpp +4/-1, convert.cpp +4) and remove
-    the crash; slice 3 therefore cherry-picks 230227264's code with its two
-    goldens (check and lower testdata/function/call/form.carbon), which is the
-    root fix (R17), not a guard in pattern_match.cpp.
+    the crash; slice 3 therefore takes 230227264's code, which is the root fix
+    (R17), not a guard in pattern_match.cpp. Its two goldens are not new files:
+    the fork already has check and lower testdata/function/call/form.carbon,
+    `git apply --check` of the whole commit fails at the check file's :262 and
+    the lower file's :86, and v3 never ran upstream's three new splits; §0.6.2
+    measures them (amended 2026-10-21, review fold: A-M5 / B-M13).
 2.  **Private members.** The fork's `Slice` and `Buf` impls are declared outside
     their classes, so a `Ref` body cannot read the private `ptr` and `size` (``
     cannot access private member `size` of type `Buf(T)` ``); the bodies use the
@@ -380,11 +420,81 @@ reaches it through `s[i] = v` as `*p = v` already does, and it is filed as W-327
 a `str` crashes trunk's lowering (`GEP indexes must be integers`), unchanged by
 slice 3 and outside DR-1 (ST-1's string indexing is PR 55's).
 
+#### §0.6.2 v4: rev 2's re-measure of slices 2 and 3
+
+(Amended 2026-10-21, review fold: A-M5 / B-M13 / A-m2 / B-M7 / B-m4.) v4 is v3
+plus: upstream 230227264's three new split sources added to the fork's two
+existing function/call/form.carbon goldens (check: `ref_return_class`,
+`val_return_class`, `ref_return_class_generic`, before
+`fail_return_form_not_form`; lower: the same three after `val_return_form`;
+Appendix A.0); upstream's two `IndirectIndexWith` tests from 6d80ceb58 and
+309d3d63c as of ac31fd198, their CHECK lines removed by `$Y/bin/strip_checks.py`
+and refilled by this tree's autoupdate
+(check/testdata/operators/overloaded/indirect_index_with.carbon and
+lower/testdata/index/indirect_index_with.carbon); A.1 and A.2 as rev 2 writes
+them (with the W-327 pin split); and programs B.1 and B.2. The C++ sources are
+v3's byte for byte, so v4 is v3's binaries with a relinked file_test (1946
+manifest entries).
+
+| Step | Result |
+| --- | --- |
+| gate before refill | 1938 passed, 8 failed: the two form.carbon goldens, the two upstream tests, check and lower slice/buf (reset to trunk's text for the `Buf` measurement below), and A.1, A.2 |
+| autoupdate, pass 1 | `!!!!!!!!` (all 8 rewritten) |
+| autoupdate, pass 2 | `........` (fixpoint; md5 of the 8 files unchanged) |
+| gate | 1946 passed, 0 failed (41 s) |
+| conformance | PASS 130, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 of 152; bullets 48/0/8 of 56 (63.6 s; `$Y/out/conf-v4`) |
+
+The fill against upstream's own lines. check/testdata/function/call/form.carbon
+gains 172 lines, as 230227264's hunk does; 169 of them are byte-identical to
+upstream's, and the 3 that differ are the `-> ref C` return pattern, where the
+fork emits `ref_tag` then `ref_form` and upstream emits `ref_form` then
+`type_component_of`: upstream 059ee7b9e ("Parse `-> ref T` as a primitive
+return form", 2026-10-07), which the fork does not have (§0.10). The lower
+file gains 103 lines (upstream's hunk is 158 because upstream's file has a
+preceding split the fork lacks). The upstream `IndirectIndexWith` tests fill
+to 620 and 164 lines (upstream's 618 and 164): the differences are the
+prelude-dependent hash suffixes and one diagnostic rendered with a source
+snippet instead of upstream's column range (upstream 2c9739799, UA-3's). Their
+`ref_non_copyable` and `subscript_non_copyable` splits check a `ref` return of
+a non-`Copy` element and `subscript_assign` writes through `c[s]`.
+
+`Buf` and `IndexWith` (B-M7), measured on v4's binaries with prelude-only
+changes and `install.sh`:
+
+| `Buf(T)`'s impl | Result |
+| --- | --- |
+| `final impl ... Buf(T) as IndexWith(i64)` (trunk's, kept beside upstream's index.carbon) | every program importing the prelude fails: `` `final impl` overlaps with `final impl` from another file [FinalImplOverlapsDifferentFile] `` at buf.carbon:72, the note at index.carbon:19 (the blanket `final impl forall [..., T: IndirectIndexWith(SubscriptType) where .ElementType impls Copy] T as IndexWith(SubscriptType)`); gate 1615 of 1946 |
+| the same without `final` | the prelude compiles; `buf_generic_read` (`fn First[T: Core.Copy & Core.Destroy](b: Core.Buf(T)) -> T { return b[0]; }`) regresses from trunk's RUN `6` to `` cannot implicitly convert expression of type `Core.Buf(T).(Core.IndexWith(i64).ElementType)` to `T` `` (D-SL-18's reason for `final`) |
+| `final impl ... Buf(T) as IndirectIndexWith(i64)` (rev 1's, kept) | `buf_generic_read` RUN `6`; `buf_let_write` (`fn W(b: Core.Buf(i32)) { b[1] = 5; }` through a by-value `Buf`) RUN `5`, as `Set(self, ...)` already writes through a by-value `Buf` (buf.carbon:46-53) |
+
+The slice-3 probes on v4 (`$X/s3` and `$Y/probes`):
+
+| Probe | trunk | v4 |
+| --- | --- | --- |
+| s_write | `expression is not assignable` | RUN `1 20 21` |
+| s_buf_write | `expression is not assignable` | RUN `15` |
+| s_const | `expression is not assignable` | `expression is not assignable` |
+| s_generic_write | `expression is not assignable` | RUN `27` |
+| s_generic_const2 (`Fill(c, c[1])` with `c: Core.Slice(const i32)`) | `expression is not assignable` (at the definition) | RUN `2` (W-327) |
+| s_generic_assign_const (`Set[T](p: T*, v: T)` at `T = const i32`) | RUN `1` | RUN `1` |
+| s_generic_const (`Fill(c, 5 as const i32)`) | `expression is not assignable` (at the definition) | lowering FATAL `Missing constant value for call to comptime-only function` (toolchain/lower/handle_call.cpp:638), from `5 as const i32` |
+| const_literal_plain (`let x: const i32 = 5 as const i32;`) | the same FATAL | the same FATAL; the nightly FATALs at its handle_call.cpp:598 |
+| s_oob_write | `expression is not assignable` | `carbon: Core.Slice index out of bounds; terminating`, SIGABRT |
+| s_read | RUN `10 4` | RUN `10 4` |
+| s_span_write | `expression is not assignable` | RUN `18` |
+| buf_generic_read, buf_let_write | RUN `6`; `expression is not assignable` | RUN `6`; RUN `5` |
+| B.1 slices_write_through.carbon, B.2 cpp_span_write_through_diff.carbon | not run | PASS (`1 20 21 15 27`; `18`, its C++17 oracle agreeing) |
+
+`5 as const i32` aborts lowering on trunk and on upstream's nightly with no
+slice involved, so it is a pre-existing crash that slice 3 only makes reachable
+in s_generic_const (trunk refuses the generic body earlier); it is filed W-325
+(§1.17), found by this audit, not caused by it.
+
 ### §0.7 The language prerequisites of sum_types.md's `Match`, measured
 
-sum_types.md at fb7eff130 declares the interface (:107-117) and the class
-example (:137-165). Each construct, probed alone on trunk and on the nightly
-(`$X/probes`):
+sum_types.md at ac31fd198 (unchanged since the cut) declares the interface
+(:107-117) and the class example (:137-165). Each construct, probed alone on
+trunk and on the nightly (`$X/probes`):
 
 | Construct (sum_types.md) | Probe | trunk | nightly |
 | --- | --- | --- | --- |
@@ -395,53 +505,154 @@ example (:137-165). Each construct, probed alone on trunk and on the nightly
 | an impl-scope `let R: type = i32;` giving a constant its value (indexing.md:105-109's form) | impl_let.carbon | `associated constant R not given a value in impl of interface I` | the same |
 | `extend Match.BaseContinuation;` in an interface (:148) | ext_iface.carbon | `unrecognized declaration introducer` | the same |
 | its current spelling `extend require impls Base;` (details.md:1485-1497, p5337) with `-> R` naming the extended interface's constant | ext_req.carbon, ext_req2.carbon (`Self.(Base.R)` spelled out) | `` cannot convert type `Self` that implements `Cont` into type implementing `Base` `` | the same |
-| an interface nested in a class, the continuation class implementing it, a class member `Op[C: OptCont](self, continuation: C*) -> i32` calling `continuation->Some(...)` | iface_in_class.carbon, v2.carbon | accepted; v2 runs | accepted |
+| `impl as M where .Continuation = OptCont {}` with `OptCont` an interface declared in the class (review A's where_cont.carbon, re-run by rev 2) | where_cont.carbon | accepted, runs | accepted, runs |
+| a slot store of a non-`Copy` generic payload (`self.slot0 unsafe as T = value;` with `T: Core.Destroy`; review A's copy_slot.carbon) | copy_slot.carbon | `` cannot copy value of type `T` `` | not run |
 
-So the class example cannot be written on either toolchain today, for three
-reasons that are each a language feature upstream's design states and upstream's
-toolchain does not implement: L1 template associated constants
-(sum_types.md:113, with details.md:4341-4354's `let template` semantics, "Uses
-of `T` are then template constants"), L2 an impl member that gives an associated
-constant its value (the nested `interface Continuation` of :146-151;
-indexing.md:105-109's `let ElementType: type = T;`), and L3 member access
-through `extend require impls` to the extended interface's associated constants
-(details.md:1452-1545; the `ReturnType` of :149-150 and the `C.ReturnType` of
-:153). The mechanism itself (L4: the compiler-generated continuation, its `Op`
-call and the dispatch) is ordinary SemIR, as p1 measured (§0.6). Upstream's
-sources disagree on L1: sum_types.md:113 writes `let template` and upstream's
-parser refuses any phase keyword on an associated constant; no accepted proposal
-speaks to template associated constants (a `git grep "let template"` over
-proposals/ and docs/design/ at fb7eff130 finds sum_types.md:113 as the only
-interface member; the others are function- or class-scope `let template`,
-p002200 among them). §1.4 decides.
+So the class example cannot be written on either toolchain today. Rev 1 read
+that as three missing language features and planned them (L1 template
+associated constants, L2 impl members that give an associated constant its
+value, L3 member access through `extend require impls`). Rev 2 reads upstream's
+pages at ac31fd198 on each, quoting them (amended 2026-10-21, review fold: A-B1
+/ B-B1):
+
+-   **L1 is ruled out by upstream's explicit text elsewhere.**
+    docs/design/README.md:1076-1078: "Associated constants are always checked
+    generic bindings. This is not a contextual default: no other phase is
+    possible for an associated constant, and so no phase keyword is allowed
+    there." :3064-3067: "Since an interface is a compile-time entity, the
+    binding is a checked generic binding by context; no phase keyword is
+    allowed, so an associated constant cannot be made `template`."
+    docs/design/generics/terminology.md:100-103 repeats it ("always checked
+    generic bindings ... no other phase is possible for an associated constant,
+    and so no phase keyword is allowed there"), in the section that ends "The
+    syntax for checked and template parameters was decided in leads issue 6932"
+    (:105-106; the link text, with its number). Upstream's parser implements
+    exactly this: toolchain/parse/handle_let.cpp's `HandleAssociatedConstant`
+    ("The binding is a checked generic by context, so no phase keyword is
+    used.") diagnoses `generic`, `runtime` and `template` alike with
+    `PhaseKeywordInAssociatedConstant`. Only sum_types.md:113 writes `let
+    template Continuation: type;`, in a section transcribed from proposal
+    p000157 (2020), whose own example passes the continuation interface as an
+    interface parameter, `impl Matchable(MatchContinuation)`
+    (p000157-design-direction-for-sum-types.md:408), under syntax it calls
+    "**placeholder**" (:452-457: "This proposal assumes that Carbon will have
+    support for defining and implementing generic interfaces, including
+    interfaces that take interface parameters, and uses `interface`, `impl`,
+    `method` etc. as **placeholder** syntax"). Rev 1's grep covered only the
+    string "let template" and so missed README.md and terminology.md; and the
+    details.md:4341-4354 text rev 1 cited for L1 ("Uses of `T` are then template
+    constants") describes a function-scope `let template`, not an associated
+    constant.
+-   **L2 is a second spelling of a removed mechanism.** Accepted proposal
+    p001013 ("Generics: Set associated constants using `where` constraints"),
+    :79-82: "use a `where` clause as part of an `impl` declaration to specify
+    associated constants and types instead of `let` declarations inside of the
+    `impl` definition. In effect, it removes `let` declarations from `impl`
+    blocks". details.md:2412-2413 spells it `extend impl as StackAssociatedFacet
+    where .ElementType = T {`, and sum_types.md's own compiler-generated
+    continuation does too (`extend impl as Optional.(Match.Continuation) where
+    .ReturnType = ()`, :173). indexing.md:103-109's `let ElementType: type = T;`
+    inside an impl, which rev 1 cited for L2, is the form p001013 removed, in an
+    example the page has not rewritten (it also spells `like i64` and `bound
+    self`, neither implemented). L2 is also unnecessary: where_cont.carbon
+    (an interface declared in the class, `impl as M where .Continuation =
+    OptCont {}`) runs on trunk and on the nightly. Rev 1's
+    `ImplAssociatedConstantSetTwice` would also have duplicated upstream
+    2b5f90cd7's `AssociatedConstantGivenDifferentValues` (2026-10-19).
+-   **Without L1 the interface cannot be declared.** With a checked `let
+    Continuation: type;`, `Continuation` names a type, not a facet type, so `fn
+    Op[C: Continuation](self, continuation: C*)` makes `C` a value of an unknown
+    type: v1.carbon's two errors. No spelling of `Match` satisfies both
+    sum_types.md:113 and README.md:3064-3067 at ac31fd198, so upstream's own
+    recorded direction for matching a class is, today, internally inconsistent.
+    §1.4 decides what DR-1 does about it (stop, D-DR-22) and §1.17 why that is
+    not an F-022 fork design.
+-   **L3 is unaffected but moot.** `extend require impls` (details.md:1485-1497,
+    p5337) is current syntax; with L1 out, nothing in DR-1 needs it.
 
 ### §0.8 Collisions with the held PRs (audit item 5)
 
 Each held PR's own diff (merge-base with trunk to its head) over the files DR-1
-changes, from `git diff --numstat`; then the source hunks of v3 (prelude, the
-six toolchain files, min_prelude, the program; `$X/dry_src.diff`) dry-run with
-`git apply --cached --check` into a temporary index of each head:
+changes, from `git diff --numstat`; then the source hunks of v3, which v4 keeps
+byte for byte (prelude, the six toolchain files, min_prelude, the program;
+`$X/dry_src.diff`), dry-run with `git apply --cached --check` into a temporary
+index of each head. Rev 2 re-checked the heads on 2026-10-21 (CT-1's is now
+79740957a) and the new test and program paths of v4, which no held PR has
+(amended 2026-10-21, review fold: B-M6 / B-M10 / B-M12):
 
-| Held PR (head) | DR-1 files it touches (numstat) | v3's source hunks onto it | Rule at DR-1's merge |
+| Held PR (head) | DR-1 files it touches (numstat) | v4's source hunks onto it | Rule at DR-1's merge |
 | --- | --- | --- | --- |
-| PR 51 UA-2 (f96fe8a7a) | docs/design/slices.md +14/-6; records | apply | slices.md: both sides' text, the 0.1-limits bullet D-DR-7 removes is UA-2-independent; records keep both sides |
+| PR 51 UA-2 (f96fe8a7a) | docs/design/slices.md +14/-6; records; new goldens check and lower slice/buf_field.carbon, which dump `Core.Buf` | apply | slices.md: both sides' text, the 0.1-limits bullet D-DR-7 replaces is UA-2-independent; the two buf_field goldens are refilled at DR-1b's merge (`Buf`'s impl changes); records keep both sides |
 | PR 52 CM-1 (ea573f672), PR 54 EV-1 | records only | apply | none |
 | PR 53 SAFE-1 (adaae4e35) | docs/design/slices.md +7; records | apply | slices.md both sides |
-| PR 55 ST-1 (21307851a) | records; its operators/overloaded/string_indexing.carbon refill (+112 on its branch) | apply | string_indexing.carbon refilled at DR-1's merge (both moved it) |
-| PR 56 OP-1 (379f20f67) | core/prelude/types/optional.carbon +73/-2, docs/design/control_flow/loops.md +4, docs/design/error_handling.md +8, docs/design/optional.md +582 | apply | slice 1's optional.carbon hunk is a different region (the `impl as Match` block and the `Try` body); W-323's new commit lands on PR 56's branch first (D-DR-3) |
-| PR 57 OP-2 (628273444) | optional.carbon +111/-8 (Destroy, checked `Get`, the `MaybeUnformed` fix), loops.md +4, error_handling.md +8, optional.md +614 | apply | slice 1 composes with OP-2's `Destroy` (the continuation's slot destroy uses it) on a PR 57 mirror |
-| PR 58 DD-1 (fcee90d9b) | docs/design/pattern_matching.md +258/-4 | n/a | pattern_matching.md's amendment (§1.15) is taken onto DD-1's text at merge: the land-time rule D-DR-20 |
-| PR 59 VA-1 (b0822a744) | check/pattern_match.cpp +25, context.h +41, handle_binding_pattern.cpp +76, kind.def +19 | apply | slice 1's pattern_match.cpp hunks and VA-1's touch different functions (VA-1's pack bindings); composed on a mirror at slice 1 |
-| PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13 | apply | L1's handle_let_and_var.cpp hunk (associated constants) and SC-1's (template constraints) are in different functions; measured on a mirror at slice 1 |
-| PR 61 TP-1 (5661a35c8) and CT-1 (65fc0d394, stacked on it) | handle_index.cpp +42/-13 (`PerformIndex` on a `LocId`, the `IndexAction` deferral), handle_loop_statement.cpp +10/-2 (a `RequireCompleteType` on the cursor's POINTER type for a template-dependent cursor), handle_match.cpp +2/-5, refutable_binding.{h,cpp} +35/-5 (`PerformAlternativeAccess`), context.h +20, kind.def +1; goldens generic/template/for_range.carbon (check), template/for_range.carbon (lower), interop/cpp/range_for.carbon | handle_index.cpp and handle_loop_statement.cpp FAIL to apply (both regions rewritten by TP-1) | resolved by hand in DR-1's merge commit M (D-DR-20): slice 2 removes the `AddrOf`, so TP-1's pointer completeness requirement has no pointer to complete and is dropped, keeping TP-1's include only if still used; slice 3's `PerformIndexOperator` pair is re-expressed inside TP-1's `PerformIndex(context, loc_id, ...)` (its `node_id` parameter becomes `loc_id`); then the three TP-1 `for` goldens and the index goldens are refilled |
-| PR 62 SV-1 (3a6531157) | refutable_binding.cpp +38 (the `std::optional`/`std::variant` conversion and the D-SV-7 `GetCoreOptionalView` branch), cpp/sum_type.{h,cpp} +1128, kind.def +8 (`CppSumType*` and `CoreOptionalNotMatchable`), core/prelude/types.carbon +1 (`prelude/types/cpp/sum`), docs/design/sum_types.md +91 | apply | W-322's new commit on PR 62's branch removes the D-SV-7 branch (D-DR-15); DR-1's `CheckRefutableScrutinee` hunk is placed after SV-1's `GetCppSumType` conversion, so a `std::optional` scrutinee still becomes `StdOptional` and a `Core.Optional` scrutinee reaches the `Match` lane |
+| PR 55 ST-1 (21307851a) | records; its operators/overloaded/string_indexing.carbon refill (+112 on its branch) | apply | string_indexing.carbon refilled at DR-1b's merge (both moved it) |
+| PR 56 OP-1 (379f20f67) | core/prelude/types/optional.carbon +73/-2, docs/design/control_flow/loops.md +4 (the F-015 amendment after the cut's desugaring block, :116-118), docs/design/error_handling.md +8, docs/design/optional.md +582 | apply | W-323's new commit lands on PR 56's branch now (C.7, C.8); at DR-1a's merge, loops.md takes DR-1a's restored upstream subsections and C.9's amendment, and drops PR 56's amendment as C.7 corrected it, whose "The desugaring above is the text this page had at the fork's cut" is then false (§1.16); error_handling.md keeps both sides' amendments in date order |
+| PR 57 OP-2 (628273444), stacked on PR 56 | optional.carbon +111/-8, loops.md +4, error_handling.md +8, optional.md +614 (PR 56's plus OP-2's), its check/testdata/slice/basic.carbon refill; gap row 78 moved to DONE | apply | PR 57's branch takes W-323's commit by a merge of PR 56's branch (a new merge commit, R32 (e)); its slice/basic.carbon is refilled at DR-1's merge; row 78's DONE text keeps trunk's DR-0 sentence as C.3 amends it (§1.16) |
+| PR 58 DD-1 (fcee90d9b) | docs/design/pattern_matching.md +258/-4 | n/a | none: rev 2 edits no pattern_matching.md text (rev 1's amendment belonged to the stopped slice 1) |
+| PR 59 VA-1 (b0822a744) | check/pattern_match.cpp +25, context.h +41, handle_binding_pattern.cpp +76, kind.def +19 | apply | none: rev 2 touches none of these files |
+| PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13 | apply | none: rev 2 touches none of these files |
+| PR 61 TP-1 (5661a35c8) and CT-1 (79740957a, stacked on it) | handle_index.cpp +42/-13 (`PerformIndex` on a `LocId`, the `IndexAction` deferral), handle_loop_statement.cpp +10/-2 (a `RequireCompleteType` on the cursor's POINTER type for a template-dependent cursor), call.cpp and convert.cpp (TP-1's deferred conversions, in other functions than 230227264's), handle_match.cpp +2/-5, refutable_binding.{h,cpp} +35/-5, context.h +20, kind.def +1; goldens generic/template/for_range.carbon, generic/template/index.carbon (check), template/for_range.carbon (lower), interop/cpp/range_for.carbon | handle_index.cpp and handle_loop_statement.cpp conflict (both regions rewritten by TP-1); call.cpp and convert.cpp apply with a three-way fallback | resolved in DR-1a's and DR-1b's merge commits exactly as §2.1 and §2.2 spell them, then one composition commit (the template-dependent index deferral, §2.2) and the refill commits; measured on the mct mirror (§0.8.1) |
+| PR 62 SV-1 (3a6531157) | refutable_binding.cpp +38 (the `std::optional`/`std::variant` conversion and the D-SV-7 `GetCoreOptionalView` branch), cpp/sum_type.{h,cpp} +1128, kind.def +8 (`CppSumType*` and `CoreOptionalNotMatchable`), core/prelude/types.carbon +1 (`prelude/types/cpp/sum`), docs/design/sum_types.md +91, convert.cpp elsewhere than 230227264's hunk | apply | W-322's removal-only commit lands on PR 62's branch now (§1.11, measured on the m62 mirror, §0.8.2); DR-1's own diff touches none of PR 62's files |
 
 No held PR touches core/prelude/iterate.carbon, range.carbon,
-operators/index.carbon, types/slice.carbon, types/buf.carbon, call.cpp's or
-convert.cpp's 230227264 lines (PR 59 and PR 62 touch convert.cpp elsewhere; the
-hunk applies to both), core_identifier.def or cpp/operators.cpp. PR 61's own
-`for` goldens are the composition's red set for slice 2, predicted, not measured
-(no PR 61 mirror was built for this revision; §8 item 9).
+operators/index.carbon, types/slice.carbon, types/buf.carbon,
+core_identifier.def or cpp/operators.cpp, and none has a file at v4's new paths
+(the two upstream `IndirectIndexWith` tests, A.1, A.2, B.1, B.2).
+
+#### §0.8.1 The composition mirror on CT-1's head, measured
+
+(Amended 2026-10-21, review fold: B-M6 / B-M2 / A-B3.) `git worktree add
+--detach $Y/mct 79740957a`, `git apply --3way $Y/v4_full.diff`: three files
+conflicted. handle_loop_statement.cpp and handle_index.cpp were resolved as §2.1
+and §2.2 spell it; interop/cpp/range_for.carbon's 25 conflict blocks were all
+CHECK lines (no source line in a block) and took CT-1's side for the refill.
+A full build (CB_BUILD_ROOT=/dev/shm/dr1-fixer, 322 steps, -Werror, no other
+ninja running at its start) and install.sh gave 0.0.0-0.dev+79740957a.dirty.
+
+| Step | Result |
+| --- | --- |
+| gate before refill | 1959 passed, 4 failed: check generic/template/for_range, generic/template/index, interop/cpp/range_for, lower template/for_range |
+| autoupdate | `generic/template/index.carbon` split `index_class_with_index_with` FAILED: `` unable to monomorphize specific `Get(bool)` `` with the note `` cannot access member of interface `Core.IndirectIndexWith(i32)` in type `Vec(bool)` that does not implement that interface `` |
+| root cause | `fn Get[template T: type](v: Vec(T), i: i32) -> i32 { return v[i]; }`: `Vec(T)` is not opaque, so TP-1 indexes it at the definition, where the `IndirectIndexWith(i32)` lookup depends on the template parameter and is deferred to monomorphization; there, the probe's failure is an error, not the fallback to `IndexWith`. The choice between the two interfaces is per specific. |
+| root fix (§2.2, the composition commit) | in the non-array arm, an operand or subscript of template-dependent type is indexed when the template is instantiated, through TP-1's own `AddDependentActionSplice<SemIR::IndexAction>`, as an opaque operand already is; one translation unit rebuilt |
+| gate before refill, again | 1960 passed, 3 failed (the three goldens above but range_for) |
+| autoupdate, pass 1 and pass 2 | `!!!`, then fixpoint |
+| gate | 1963 passed, 0 failed (CT-1's head has 1959 manifest entries; plus v4's 4) |
+| conformance | PASS 149, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 20 of 169 (115.2 s; CT-1's head has 167 programs, 20 SKIP); generics/templates_for_dependent_range and templates_dependent_index PASS |
+
+The refills (numstat against CT-1's head): check generic/template/for_range
+12/17 and lower template/for_range 137/137 (TP-1's pointer type and its
+`require_complete_type` leave with the `AddrOf`, as rev 1 predicted), check
+generic/template/index 16/41 (`v[i]` becomes an `IndexAction` splice resolved
+to `Vec.as.IndexWith.impl.At(bool)` per specific), check interop/cpp/range_for
+17/103. Probes on the mirror: tmpl_for (review A's) RUN `6`; tmpl_index_vec
+(the split above as a program) RUN `7`, as on PR 61's install; tmpl_index_slice
+(`fn First[template T: type](s: Core.Slice(T)) -> T { return s[0]; }`) RUN `4`,
+where PR 61's install fails at monomorphization (`` cannot access member of
+interface `Core.IndexWith(Core.IntLiteral)` `` in `Core.Slice(i32)`): with the
+choice made per specific, the literal-subscript rule sees the concrete type.
+Trunk and v4 cannot deduce `T` from `Vec(T)` or `Core.Slice(T)` at all
+(`` cannot deduce value for generic parameter `T` ``), so the deferral exists
+only on TP-1's base and lands with DR-1b's merge.
+
+#### §0.8.2 W-322's removal-only commit on a PR 62 mirror, measured
+
+(Amended 2026-10-21, review fold: A-M3 / B-B2.) `git worktree add --detach
+$Y/m62 3a6531157`, then `$Y/bin/w322_removal.py` and the test and program edits
+of §2.5 (`$Y/m62_w322.diff`, numstat: refutable_binding.cpp 0/19,
+cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1,
+match/core_optional_view.carbon 0/681 deleted,
+match/fail_todo_core_optional.carbon 51 new, the SKIPped program 4/3,
+conformance README 1/1). A full build (-j3, 323 steps, no warnings) and
+install.sh gave 0.0.0-0.dev+3a6531157.dirty.
+
+| Step | Result |
+| --- | --- |
+| gate before refill | 1949 passed, 1 failed: the new match/fail_todo_core_optional.carbon only; every std golden (interop/cpp/stdlib/optional, variant, fail_sum_types, sum_type_overload, lower interop/cpp/std_sum_types) passes unchanged, so F-020's bridge is intact |
+| autoupdate, two passes | `!`, then fixpoint: its two splits pin `` semantics TODO: `match on unsupported scrutinee type` `` and `` semantics TODO: `refutable pattern binding on unsupported scrutinee type` `` |
+| gate | 1950 passed, 0 failed (PR 62's head has 1950: one golden deleted, one added) |
+| conformance | PASS 133, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 of 155 (70.3 s): PR 62's 134/0/21 with control_flow/match_core_optional_diff moved from PASS to a SKIP whose reason cites the removal (R16 (b)) |
+| probes | sv_view (a `std::optional<int>` converted to `Core.Optional(i32)` and matched) and m_iflet now give the scrutinee TODOs, as on trunk; a `std::optional` scrutinee matched with `.Some(x: i32)` and `.None` (StdOptional's constant) RUN `5`, as on PR 62's install |
 
 ### §0.9 Conformance programs touched (audit item 6)
 
@@ -459,39 +670,62 @@ the slice programs are 5 (interop/cpp_span_roundtrip_diff, cpp_span_view,
 stdlib/slices_basic, slices_bounds_fail_stop, slices_heap_buf). Of these, only
 stdlib/iterate_interface.carbon declares a `Next` (pointer cursor, :34) and
 changes in slice 2 (§2.1); every other program passed unchanged on v2 and v3
-(128/0/22 over 150 both). Slice 1 changes no existing program's text:
-`HasValue`/`Get` stay, and the programs' `for` loops are desugared differently
-but print the same. The new programs and their oracles are in §1.14 and Appendix
-B.
+(128/0/22 over 150 both), and on v4 (130/0/22 over 152, with B.1 and B.2).
+The new programs and their oracles are in §1.14 and Appendix B; W-322's commit
+on PR 62's branch SKIPs that branch's control_flow/match_core_optional_diff with
+a cited reason (§1.11, B.3), and nothing else changes an existing program
+(amended 2026-10-21, review fold: B-B2).
 
 ### §0.10 Upstream's direction register and the V-3 check (audit item 7, R32)
 
-Every upstream commit in c1e83b0b7..fb7eff130 that touches the pages and files
-DR-1 changes or follows (`git log --format='%h %ad %s' c1e83b0b7..fb7eff130 --
-<the files>`, the files being the three design pages, indexing.md, slices.md,
-the loop, match, index and pattern checkers, thunk.cpp, impl.cpp, the iterate,
-range, index and optional prelude files and proposals/):
+(Amended 2026-10-21, review fold: A-m1 / B-m2 / A-B1 / B-B1 / B-M7.) Upstream's
+tip is ac31fd198 (2026-10-21 18:32 UTC); the plan's sign-off revision names the
+tip it reads, and DR-1's implementation re-reads it at each PR's opening. The
+register is selected by design page, as R32 (c) asks: first every upstream
+commit in c1e83b0b7..ac31fd198 that touches docs/design/, proposals/ or
+core/prelude/ (`git log --format='%h %ad %s' c1e83b0b7..ac31fd198 -- docs/design
+proposals core`, eight commits, all listed), then every commit touching a
+toolchain file DR-1 changes or follows (handle_loop_statement.cpp,
+handle_index.cpp, call.cpp, convert.cpp, core_identifier.def, cpp/operators.cpp,
+refutable_binding.cpp, handle_match.cpp, pattern_match.cpp, thunk.cpp,
+parse/handle_let.cpp and min_prelude), then the rest by subject. 98 commits are
+in the range.
 
 | Commit | Date | Subject | Mechanism change for DR-1 |
 | --- | --- | --- | --- |
-| df3cf9294 | 2026-10-07 | Adopt `ref` in `Core.Iterate.Next` (PR 7381) | yes: `Next(self, ref cursor: CursorType)`, the loop checker passes the cursor variable, loops.md's desugaring through `match ... case .Some(<pattern>)`, proposal p007381; slice 2 and §1.8 |
-| 230227264 | 2026-10-09 | Only allocate return storage when the callee has a return parameter (PR 7886) | yes, for slice 3: calls to `ref`-return functions in generic code (§0.6.1 item 1) |
-| 6d80ceb58 | 2026-10-16 | Add the `IndirectIndexWith` interface to the prelude (PR 7974) | yes: slice 3 |
-| 309d3d63c | 2026-10-17 | Use `IndirectIndexWith.Ref` for subscripting when available (PR 7975) | yes: slice 3 |
-| 947c1eb52 | 2026-10-06 | Add a `Core.Array` class type, and make `array` refer to it. (PR 7892) | no for DR-1 (handle_index.cpp's array arm; UA-3's) |
-| 1b0a5709e | 2026-10-06 | Initial support for fn expressions. (PR 7893) | no |
-| a50feb64c | 2026-10-06 | Simplify proposal labels and fix GitHub label workflows (PR 7904) | no |
-| 59d53ab0a | 2026-10-09 | Use ASCII quotes in character literal examples in p1964 (PR 7938) | no |
-| 62f1cc6a3 | 2026-10-11 | Rename `GenericClassType` to `ParameterizedClassType` (PR 7953) | no (a rename UA-3 takes) |
-| 6a0a1f3e8, b1de0e037, 24766e213, f0bae9637, e41862d55, 2b5f90cd7, fb7eff130 | 2026-10-13..21 | the `IdentifiedFacetType` and impl-checking series (PRs 7924, 7926, 7930, 7937, 7943, 7996, 8004) | no direction change; L3 (`extend require impls` lookup, §1.4) lives in this machinery and is the area of highest merge risk at UA-3 (§7) |
-| bf5d2a2ac, 3af25cc1b | 2026-10-15 | `-> auto` deduced return types (PRs 7931, 7977) | no |
-| 2c9739799, 7beb29f8b, d87891f3a | 2026-10-15 | diagnostics rendering, fallback locs, style (PRs 7683, 7967, 7982) | no |
+| df3cf9294 | 2026-10-07 | Adopt `ref` in `Core.Iterate.Next` (PR 7381) | design (loops.md), proposal p007381, prelude (iterate.carbon, range.carbon), loop checker, min_prelude: `Next(self, ref cursor: CursorType)` and loops.md's desugaring through `match ... case .Some(<pattern>)`; slice 2, and the `match` half is W-320's |
+| 6d80ceb58 | 2026-10-16 | Add the `IndirectIndexWith` interface to the prelude (PR 7974) | prelude (index.carbon) and tests: slice 3 |
+| 947c1eb52 | 2026-10-06 | Add a `Core.Array` class type, and make `array` refer to it. (PR 7892) | prelude and handle_index.cpp's array arm; UA-3's, not DR-1's (§1.3) |
+| db87a84b6 | 2026-10-20 | Improve tests and clarify design for observe equivalence chains (PR 7987) | design (generics/details.md:3337-3349, `observe` inside an interface); no DR-1 mechanism: DR-1 declares no `observe` |
+| f21c62524 | 2026-10-19 | Interface as base class use case supported (PR 8002) | design (classes.md, two lines); none for DR-1 |
+| a045da8e6 | 2026-10-13 | Document the discrepancy between checking and execution for variadics (PR 7963) | design (variadics.md); none for DR-1 (VA-1's) |
+| 59d53ab0a | 2026-10-09 | Use ASCII quotes in character literal examples in p1964 (PR 7938) | proposal text; none |
+| a50feb64c | 2026-10-06 | Simplify proposal labels and fix GitHub label workflows (PR 7904) | proposal metadata; none |
+| 309d3d63c | 2026-10-17 | Use `IndirectIndexWith.Ref` for subscripting when available (PR 7975) | handle_index.cpp, core_identifier.def, cpp/operators.cpp: slice 3 |
+| 230227264 | 2026-10-09 | Only allocate return storage when the callee has a return parameter (PR 7886) | call.cpp, convert.cpp: calls to `ref`-return functions whose type might be initialized in place (§0.6.1 item 1); slice 3's B0 |
+| 059ee7b9e | 2026-10-07 | Parse `-> ref T` as a primitive return form (PR 7911) | parse and convert.cpp: a `-> ref T` return is a primitive form, so its SemIR is `ref_form` then `type_component_of` where the fork emits `ref_tag` then `ref_form`; slice 3's `Ref` returns and 230227264's splits show the fork's form (§0.6.2), and behave the same; UA-3's |
+| 0d3b606a5 | 2026-10-16 | Support calls to generic functions with deduced return types. (PR 7981) | call.cpp, sem_ir/expr_info.cpp; `-> auto` only, which DR-1 does not use; UA-3's |
+| 4a8993af2 | 2026-10-07 | Fix "<unexpected>" inst when creating an InitializeAction (PR 7900) | formatter and typed_insts.h for template actions; no DR-1 mechanism; UA-3's |
+| 3af25cc1b, bf5d2a2ac | 2026-10-15 | `-> auto` and `-> ref/var/val auto` deduced return types (PRs 7931, 7977) | none for DR-1 |
+| 2c9739799, 7beb29f8b | 2026-10-15 | Render diagnostics through the terminal library; fallback loc for diagnostics on canonical insts (PRs 7683, 7967) | rendering only (the snippet difference of §0.6.2; the thunk's file-only location of §0.5); UA-3's |
+| 62f1cc6a3 | 2026-10-11 | Rename `GenericClassType` to `ParameterizedClassType` (PR 7953) | a rename UA-3 takes |
+| 1b0a5709e | 2026-10-06 | Initial support for fn expressions. (PR 7893) | none |
+| 2b5f90cd7 | 2026-10-19 | Diagnose a witness table entry being set to multiple different values (PR 7996) | impl witness checking; rev 1's L2 would have duplicated it (§0.7); none for rev 2 |
+| 6a0a1f3e8, b1de0e037, 24766e213, f0bae9637, e41862d55, fb7eff130, ac31fd198 | 2026-10-13..21 | the `IdentifiedFacetType` and impl-checking series (PRs 7924, 7926, 7930, 7937, 7943, 8004, 8008) | facet identification; none for rev 2 (rev 1's L3 lived here) |
+| c3877cf70, 70c696e78 | 2026-10-21 | Extend plan-based definition synthesis with class-typed locals and destructuring (PR 8001), and its revert (PR 8009) | net zero |
+| d87891f3a | 2026-10-15 | style (PR 7982) | none |
 
-sum_types.md, pattern_matching.md, indexing.md and
-core/prelude/types/optional.carbon are unchanged from the cut to fb7eff130 (`git
-diff --shortstat c1e83b0b7 fb7eff130` empty for each); loops.md changed only in
-df3cf9294. The V-3 check of R32 (a), with each page's current text quoted at
-fb7eff130:
+The texts that bear on `Match` and that rev 1's register missed are not in the
+range: docs/design/README.md:1076-1078 and :3064-3067 and
+generics/terminology.md:100-106 were in the tree before the cut (they blame to
+7134e23f2, 2026-09-29, the boundary commit of this repository's history, which
+also carries the parser rule), so a file-and-range filter could not find them;
+R32 (a) asks for the page's current text at the tip, which §0.7 now quotes.
+sum_types.md, pattern_matching.md, indexing.md, README.md,
+generics/terminology.md and core/prelude/types/optional.carbon are unchanged
+from the cut to ac31fd198 (`git diff --shortstat c1e83b0b7 ac31fd198` empty for
+each); loops.md changed only in df3cf9294, details.md only in db87a84b6. The
+V-3 check of R32 (a), with each page's current text quoted at ac31fd198:
 
 -   **`Match` for classes.** sum_types.md:119-130: "`Continuation` must itself
     be an interface that extends `Match.BaseContinuation`, and its definition
@@ -509,9 +743,11 @@ fb7eff130:
     values and then return an index that identifies the `case` body to be
     executed." :132-133: "**TODO:** if Carbon has explicit support for tail
     calls, we should probably require that `Match.Op` invoke the continuation as
-    a tail call." (Carbon has no tail calls; DR-1 states no tail-call rule,
-    §1.5.) p000157:497-503 adds: "`Match`'s continuation parameter type must be
-    generic rather than templated". DR-1 follows these: §1.5.
+    a tail call." p000157:496-502 adds: "`Match`'s continuation parameter type
+    must be generic rather than templated" (amended 2026-10-21, review fold:
+    B-m1). And :107-117 declares the interface with `let template
+    Continuation: type;`, which README.md:3064-3067 rules out (§0.7). DR-1
+    implements none of this section: §1.4.
 -   **Alternative patterns and expression patterns.** sum_types.md:189-199: "An
     expression pattern of type `T` has the form of an alternative pattern if `T`
     implements `Match`, and the expression consists of an optional expression
@@ -524,14 +760,20 @@ fb7eff130:
     pattern syntax is the same as its expression syntax ... If we had defined
     `Optional.None` as a factory function instead of a constant, `case
     Optional(i32).None() => ...` would be well-formed but `case
-    Optional(i32).None => ...` would not be." §1.6 follows this for
-    `Core.Optional`, whose factory is the function `fn None() -> Self` (upstream
-    core/prelude/types/optional.carbon:31-33 at fb7eff130).
+    Optional(i32).None => ...` would not be." For `Core.Optional`, whose
+    factory is the function `fn None() -> Self` (upstream
+    core/prelude/types/optional.carbon:30-32 at ac31fd198; the fork's :31-33),
+    the empty alternative's pattern is therefore `.None()`, the reading §1.4
+    records for W-320's resumption (amended 2026-10-21, review fold: B-m1 /
+    A-m3).
 -   **The `for` desugaring.** loops.md:109-122: "is desugared to a loop that
     manages the cursor and checks the optional return values:" followed by
     `while (true) { match (range.(Iterate.Next)(cursor)) { case .Some(<pattern>)
     => { <statements> } default => { break; } } }`, and :83 `fn Next(self, ref
-    cursor: CursorType) -> Optional(ElementType);`. §1.2 and §1.8 follow these.
+    cursor: CursorType) -> Optional(ElementType);`. §1.2 follows the `ref`
+    cursor; the `match` desugaring is W-320's and waits with it (§1.4), as
+    upstream's own checker still calls `HasValue`/`Get` under its TODO (upstream
+    toolchain/check/handle_loop_statement.cpp:237-238 at ac31fd198).
 -   **Indexing.** indexing.md:36-41: "`IndirectIndexWith` is a subtype of
     `IndexWith`, and subscript expressions are rewritten to method calls on
     `IndirectIndexWith` if the type is known to implement that interface, or to
@@ -543,10 +785,21 @@ fb7eff130:
     `IndexWith`) and upstream's prelude (index.carbon:9-28: `IndexWith` with
     `At` only, `IndirectIndexWith` with its own `ElementType`, a blanket impl
     restricted to `Copy` elements) differ, DR-1 follows the prelude and the
-    checker at fb7eff130, which are later (6d80ceb58's message: "differs
+    checker at ac31fd198, which are later (6d80ceb58's message: "differs
     slightly from the design wording, which doesn't account for the copyability
     requirement"), carrying upstream's TODO "Use `IndexWith.Ref` when the
-    operand is a durable reference" verbatim.
+    operand is a durable reference" verbatim. indexing.md:29-34 sorts types by
+    what subscripting a value expression yields: "If subscripting a value
+    expression produces a value expression, as with an array, the type should
+    implement `IndexWith`. If subscripting a value expression produces a
+    durable reference expression, as with C++'s `std::span`, the type should
+    implement `IndirectIndexWith`." `Core.Slice` is the second kind. So is
+    `Core.Buf` as D-SL-6 already defines it: its storage is the heap block, not
+    the `Buf` value, and `Set(self, i, v)` writes through a by-value `Buf`
+    (buf.carbon:46-53); and with upstream's blanket `final` impl in the
+    prelude, a `final` `IndexWith` impl for `Buf` no longer compiles while a
+    non-`final` one regresses generic `b[i]` (§0.6.2). §1.3 keeps `Buf` on
+    `IndirectIndexWith` (amended 2026-10-21, review fold: B-M7).
 -   **Where upstream's design pages disagree among themselves on `Optional`.**
     loops.md:117-118 names neither a choice nor `Match`; sum_types.md:52-55
     declares `choice Optional(T: type)` and :135-165 shows "how `Optional` can
@@ -554,7 +807,7 @@ fb7eff130:
     declares `choice Optional(T: Type) { None, Some(T) }` and :526-527 says "a
     pattern of the form `Optional(T).None` is an expression pattern and is
     compared using `==`". DR-1 follows sum_types.md's class route, because it is
-    the only text that keeps upstream's prelude identity at fb7eff130 (`class
+    the only text that keeps upstream's prelude identity at ac31fd198 (`class
     Optional(T: OptionalStorage)`, the placeholder, unchanged since the cut)
     while making `.Some(<pattern>)` work as loops.md requires; the two choice
     declarations are examples of `choice` (sum_types.md:46-56 introduces its
@@ -562,21 +815,30 @@ fb7eff130:
     types"), and converting the prelude's class to a choice would be a second
     identity (DR-0's option (b), rejected there). pattern_matching.md:526-527's
     `==` sentence is the expression-pattern half of sum_types.md:197-199's "both
-    possible implementations must be well-formed"; §1.6 records which half DR-1
-    enforces.
+    possible implementations must be well-formed". The class route is still the
+    one DR-1 follows; rev 2 records that the route cannot be expressed today
+    (§0.7) and waits for upstream's resolution (§1.4).
 -   **The V-3a register state.** Entering DR-1: (i) D-SV-7, (ii) D-SL-3, (iii)
-    the pointer cursor (DR-0's block). Leaving it: (ii) and (iii) are resolved
-    by slices 3 and 2; (i) by slice 1's land-time commit on PR 62; and one entry
-    is added, (iv) template associated constants (L1): the fork accepts `let
-    template` on an associated constant, which sum_types.md:113 uses and
-    upstream's parser refuses (handle_let.cpp:37-42), work item W-324 (§1.4,
-    §1.17).
+    the pointer cursor (DR-0's block). Leaving it: (i) is resolved by W-322's
+    removal-only commit on PR 62's branch (§1.11), (ii) and (iii) by DR-1b and
+    DR-1a; two entries are added (amended 2026-10-21, review fold: A-B1 / B-B1 /
+    B-M8): (iv) `Core.Optional` is not matchable, because upstream's own pages
+    conflict on `Match.Continuation` (sum_types.md:113 against
+    README.md:1076-1078 and :3064-3067, terminology.md:100-103 and upstream's
+    parser, toolchain/parse/handle_let.cpp:27-46), work items W-320 (blocked)
+    and W-324 (watching upstream's resolution at each weekly check); and (v)
+    D-SL-17's literal-subscript rule, a fork spelling of indexing.md's `like
+    i64` subscript (:103-121), work item W-326, blocked on `like` (§1.3). Rev
+    1's (iv), "the fork accepts `let template`", is not added: rev 2 does not
+    accept it.
 
 ### §0.11 Ids
 
 The trunk ledger's highest id is W-125 plus W-320..W-323 (DR-0). DR-1 allocates
-W-324..W-329 below (§1.17) on the reservation DR-0 recorded; the re-scan of
-every origin ref's and worktree's ledger for `W-32[4-9]` is repeated at the
+from the W-324..W-329 reservation DR-0 recorded (§1.17): rev 2 files W-324,
+W-325, W-326, W-327 and W-329, and leaves W-328 reserved and unused for W-320's
+resumption (amended 2026-10-21, review fold: A-B1 / B-B1 / B-M8). The re-scan
+of every origin ref's and worktree's ledger for `W-32[4-9]` is repeated at the
 records commit, the CT-1 §0.11 command widened to that pattern, and recorded
 there. F-022 is not minted (§1.17).
 
@@ -588,34 +850,29 @@ fact; each states the upstream text it follows and its break condition.
 
 ### §1.1 Slice order and PR shape (D-DR-5)
 
-Four PRs, in this order, each one milestone feature (R29(b)):
+(Amended 2026-10-21, review fold: A-M4 / B-M5 / A-B1 / B-B1.) Two PRs, each
+one milestone feature (R29(b)), each on its own branch with one base:
 
-| PR | Slice | Work items | Branch and base | Size, measured or estimated |
+| PR | Slice | Work items | Branch and base | Size, measured |
 | --- | --- | --- | --- | --- |
-| DR-1a | slice 2: the `ref` cursor | W-321 | claude/carbon-fork-0-1-dr from trunk f68681114 | measured (v2): 5 source files, 4 test sources, 1 program, 9 goldens |
-| DR-1b | slice 3: element access through `IndirectIndexWith` | W-109 | the same branch, after DR-1a | measured (v3): 6 toolchain and prelude files plus 230227264's two, 11 goldens plus 2 new from 230227264 |
-| DR-1c | slice 1a: the language prerequisites of `Match` (L1, L2, L3 of §0.7) | W-324 (filed by this plan) | claude/carbon-fork-0-1-dr-match, cut from this branch's head after DR-1b, then a merge commit M of CT-1's head (records-only resolution in the CT-1/TP-1 shape) | estimated: parse/handle_let.cpp, check handle_let_and_var.cpp, impl.cpp, member_access.cpp, facet/impl lookup; not prototyped (§8.1) |
-| DR-1d | slice 1b: `Match` for classes, `Core.Optional`'s impl, the refutable forms, the `for` desugaring, the `Try` body | W-320; W-322 and W-323 by land-time commits on PR 62 and PR 56 | the same branch as DR-1c, after it | estimated; the generated code's shape measured by hand (p1) |
+| DR-1a | slice 2: the `ref` cursor | W-321 | claude/carbon-fork-0-1-dr (this branch), cut from trunk f68681114; PR base trunk | v2: 5 source files, 4 test sources, 1 program, 9 goldens |
+| DR-1b | slice 3: element access through `IndirectIndexWith` | W-109 | claude/carbon-fork-0-1-dr-idx, cut from DR-1a's branch head after its records commit A-R; PR base claude/carbon-fork-0-1-dr (stacked, as PR 57 is on PR 56) | v4: 230227264's code (2 files), 6 prelude and toolchain files, 13 refills, 4 new goldens, 2 programs |
 
-The order follows dependency and risk: slice 2 is the base slice 1's `for`
-desugaring stands on (loops.md:83 and :117 come from one upstream commit,
-df3cf9294) and is fully measured; slice 3 is independent and fully measured;
-slice 1 is XL and starts with its prerequisites, the step most likely to stop
-(§3's shrink line). DR-1a and DR-1b are cut from trunk as the worktree is; DR-1c
-and DR-1d sit on CT-1's head because L1 makes uses of a template associated
-constant template-dependent, which is TP-1's machinery
-(`IsOpaqueTemplateDependentType`, `AddDependentActionSplice`, the dependent
-actions; PR 61's toolchain/check/action.cpp), absent from trunk, and because
-DR-1 merges after CT-1 in ORCHESTRATION's order anyway. Break condition: if
-DR-1c's first prototype (§3 item 9) shows L1 needs no TP-1 machinery, DR-1c and
-DR-1d are re-cut onto DR-1b alone and the merge commit M moves to land time; if
-any of L1..L3 cannot land within slice 1's fix budget, DR-1d does not start and
-W-320 is narrowed (§3's shrink line), never respelled.
+Both are on trunk's base, as D-DR-1 says. Slice 2 goes first because it is the
+smaller, fully measured change and DR-1b's fill was measured on top of it (v4
+contains both; check/testdata/slice/basic.carbon moves in both). DR-1b is
+stacked rather than cut from trunk so that the shared golden is filled once,
+in order. W-322's and W-323's commits are not DR-1 PRs: they are new commits on
+PR 62's and PR 56's branches, made now (§1.11, §1.16). Slice 1 (W-320) has no
+PR: §1.4. Rev 1's DR-1c and DR-1d, and its branch
+claude/carbon-fork-0-1-dr-match, are withdrawn with it. Break condition: a
+review finds DR-1b needs a change to DR-1a's files; DR-1b is then re-cut from
+trunk with DR-1a merged into it by a merge commit, never a rebase.
 
 ### §1.2 Slice 2: the `ref` cursor (D-DR-6)
 
 `Core.Iterate.Next` becomes `fn Next(self, ref cursor: CursorType) ->
-Optional(ElementType);` (upstream core/prelude/iterate.carbon:17 at fb7eff130),
+Optional(ElementType);` (upstream core/prelude/iterate.carbon:17 at ac31fd198),
 its nine impls take `ref cursor` with `*cursor` read as `cursor` and `cursor->0`
 as `cursor.0` (upstream :24-31, :74-81, range.carbon:20-28), min_prelude's
 declaration likewise (upstream
@@ -629,30 +886,72 @@ context the fork has already renamed (§0.6's table); the toolchain lines are
 upstream's byte for byte. The thunk failure of §0.5 needs no thunk.cpp change:
 it is the interface/impl mismatch this slice removes. Break condition: upstream
 changes `Core.Iterate.Next`'s signature again (proposal 5389's extended-type
-rework, loops.md:96-97's TODO); the slice follows it.
+rework, loops.md:96-97's TODO); the slice follows it. At DR-1a's merge after
+CT-1, handle_loop_statement.cpp takes this side: TP-1's `RequireCompleteType`
+on the cursor's pointer type, and its `type_completion.h` include, leave with
+the `AddrOf` they served, since the cursor variable itself is what `Next` now
+binds; measured on the mct mirror (§0.8.1: TP-1's template `for` goldens
+refill, its template `for` programs pass, review A's tmpl_for prints `6`;
+amended 2026-10-21, review fold: B-M6 / A-B3).
 
 ### §1.3 Slice 3: `IndirectIndexWith` and `Slice`/`Buf` (D-DR-7)
 
-The prelude's index.carbon becomes upstream's at fb7eff130 verbatim (§0.5);
-subscripting tries `IndirectIndexWith(I).Ref` without diagnosing and falls back
-to `IndexWith(I).At` with diagnostics, under upstream's TODO "Use
-`IndexWith.Ref` when the operand is a durable reference" (309d3d63c,
-re-expressed in the fork's `default:` arm, because upstream's handle_index.cpp
-also carries 947c1eb52's `Core.Array` arm, which UA-3 brings);
+The prelude's index.carbon becomes upstream's at ac31fd198 verbatim (§0.5;
+unchanged since 6d80ceb58); subscripting tries `IndirectIndexWith(I).Ref`
+without diagnosing and falls back to `IndexWith(I).At` with diagnostics, under
+upstream's TODO "Use `IndexWith.Ref` when the operand is a durable reference"
+(309d3d63c, re-expressed in the fork's `default:` arm, because upstream's
+handle_index.cpp also carries 947c1eb52's `Core.Array` arm, which UA-3 brings);
 `IndirectIndexWith` and `Ref` join core_identifier.def and cpp/operators.cpp
-maps `IndirectIndexWith` to no C++ operator (309d3d63c verbatim). 230227264 is
-cherry-picked with its goldens (§0.6.1 item 1). `Core.Slice(T)` and
-`Core.Buf(T)` implement `final ... as IndirectIndexWith(i64) where .ElementType
-= T` with a bounds-checked `Ref` returning `ref T` (indexing.md:113-121's `Span`
-shape), and their `IndexWith(i64)` comes from the blanket `final` impl (their
-`T` is `Copy`), so `s[i]` and `b[i]` are durable references: `s[i] = v` writes
-through (W-109), reads are unchanged (`s_read`: `10 4`), and a C++ `std::span`
-sees the write (`s_span_write`: `18`). The fork's literal-subscript rule
-(D-SL-17, handle_index.cpp:107-157) probes `IndirectIndexWith(i64)` before
-`IndexWith(i64)`, so a type with only `IndirectIndexWith(i64)` and a non-`Copy`
-element still converts a literal subscript. `Buf.Set` (buf.carbon:48-53) stays:
-it is a method, not a second spelling of an upstream mechanism, and existing
-programs call it. D-SL-3 is retired by its own break condition
+maps `IndirectIndexWith` to no C++ operator (309d3d63c verbatim).
+
+230227264 (amended 2026-10-21, review fold: A-M5 / B-M13). Its code is taken by
+`git cherry-pick -x -n 230227264`, after which its two goldens are restored to
+the fork's (`git checkout HEAD --` on check and lower
+testdata/function/call/form.carbon), upstream's three new split sources are
+added to each (Appendix A.0) and autoupdate refills them; no CHECK line is
+resolved by hand (R16). The commit keeps upstream's subject and body and the
+`(cherry picked from commit 2302272643c11437c56e27d74ab06739ebb03c78)` line,
+names upstream's author in its body ("Upstream author: David Blaikie, PR
+7886"), and is authored and committed under the fork's rule (author jmann345,
+committer Claude, the session trailers). Measured fill: §0.6.2.
+
+Upstream's tests come with the mechanism (amended 2026-10-21, review fold:
+A-m2): check/testdata/operators/overloaded/indirect_index_with.carbon and
+lower/testdata/index/indirect_index_with.carbon, their sources taken from
+ac31fd198 and their CHECK lines this tree's autoupdate's (§0.6.2), including
+the `ref` return of a non-`Copy` element.
+
+`Core.Slice(T)` and `Core.Buf(T)` implement `final ... as IndirectIndexWith(i64)
+where .ElementType = T` with a bounds-checked `Ref` returning `ref T`
+(indexing.md:113-121's `Span` shape), and their `IndexWith(i64)` comes from the
+blanket `final` impl (their `T` is `Copy`), so `s[i]` and `b[i]` are durable
+references: `s[i] = v` and `b[i] = v` write through (W-109), reads are
+unchanged (`s_read`: `10 4`), and a C++ `std::span` sees the write
+(`s_span_write`: `18`). `Buf` takes `IndirectIndexWith`, not `IndexWith`
+(amended 2026-10-21, review fold: B-M7), because indexing.md:29-34 sorts a type
+by what subscripting a VALUE expression of it yields, and D-SL-6 already makes a
+`Buf` value name storage outside itself: `Set(self, i, v)` writes through a
+by-value `Buf` (buf.carbon:46-53, "`self` is by value: the storage is the heap
+block, not the `Buf` object"), which is indexing.md's `std::span` category, not
+its array category. The array category's write path, `IndexWith.Ref` on a
+durable reference, is upstream's TODO, and the alternatives were measured
+(§0.6.2): a `final` `IndexWith` impl for `Buf` beside upstream's blanket
+`final` impl fails every prelude compile with `FinalImplOverlapsDifferentFile`,
+and a non-`final` one regresses generic `b[i]`, which D-SL-18 made `final` for.
+`Buf.Set` (buf.carbon:48-53) stays: a method, not a second spelling of an
+upstream mechanism, and existing programs call it.
+
+The fork's literal-subscript rule (D-SL-17, handle_index.cpp:107-157) probes
+`IndirectIndexWith(i64)` before `IndexWith(i64)`, so a type with only
+`IndirectIndexWith(i64)` and a non-`Copy` element still converts a literal
+subscript. D-SL-17 is itself a fork spelling of indexing.md's `like i64`
+subscript (`impl as IndirectIndexWith(like i64)`, indexing.md:113-121), which
+upstream's toolchain does not implement (no `like`, PR 56's W-178). W-109's
+notes said it "yields to the specified rewrite" when W-109 lands; it cannot
+yield before `like` exists, so rev 2 files it as V-3a register entry (v) with
+work item W-326, blocked on `like`, before W-109 is discharged (amended
+2026-10-21, review fold: B-M8). D-SL-3 is retired by its own break condition
 ("`IndirectIndexWith`/`ref`-returning methods land in the toolchain;
 `Core.Slice` then switches to indexing.md's `Span` shape and the pin is
 deleted"; fork/slices/plan.md:233-236), its pin `fail_write_through` deleted
@@ -661,489 +960,368 @@ deleted"; fork/slices/plan.md:233-236), its pin `fail_write_through` deleted
 instantiated at a `const` element writes (`s_generic_const2`), as a generic `*p
 = v` does through `const T*` on trunk and on upstream's nightly
 (`s_ptr_const_write`: `7` on both): the root is the per-specific `const` check
-that the language's implementation lacks, filed W-327, and it is not a reason to
-keep `Slice` read-only (R32 (d) names "a read-only index where upstream added
-IndirectIndexWith" as a drift). Break condition: upstream's `Core.Slice`
-proposal (PR 7536) or proposal 5389 reworks these interfaces; slice 3 follows.
+that the language's implementation lacks, filed W-327 and pinned by A.1's
+`generic_write_const_element` split (amended 2026-10-21, review fold: B-m4), and
+it is not a reason to keep `Slice` read-only (R32 (d) names "a read-only index
+where upstream added IndirectIndexWith" as a drift).
 
-### §1.4 Slice 1a: the language prerequisites (D-DR-8)
+At DR-1b's merge after CT-1 (amended 2026-10-21, review fold: B-M6):
+handle_index.cpp's conflict is resolved onto TP-1's `PerformIndex(context,
+loc_id, ...)` (`PerformIndexOperator` takes a `SemIR::LocId`, and the default
+arm returns its result instead of pushing it), and one composition commit then
+makes the IndirectIndexWith-or-IndexWith choice per specific for an operand or
+subscript of template-dependent type, through TP-1's `IndexAction`: a lookup
+that depends on a template parameter is resolved at monomorphization, where a
+failed `IndirectIndexWith` probe is an error, not the fallback (§0.8.1, the
+root cause of PR 61's `index_class_with_index_with` failing on the mirror). §2.2
+spells both. Break condition: upstream's `Core.Slice` proposal (PR 7536) or
+proposal 5389 reworks these interfaces, or upstream implements `IndexWith.Ref`
+for durable operands; slice 3 follows, and `Buf` moves to whichever category
+upstream's own owning buffer takes.
 
-The three features of §0.7, each implemented as upstream's design text states it
-and nowhere else used by DR-1 than sum_types.md requires:
+### §1.4 Slice 1: stopped at the plan (D-DR-8, D-DR-22)
 
--   **L1, template associated constants.** `let template N: T;` in an interface
-    body declares an associated constant whose uses inside the interface are
-    template constants (details.md:4341-4354: "Uses of `T` are then template
-    constants"), so `fn Op[C: Continuation](self, continuation: C*) ->
-    C.(BaseContinuation.ReturnType);` (sum_types.md:114-115) declares `Op` with
-    a template-dependent deduced binding: its signature is checked per impl,
-    after the impl's value for `Continuation` is substituted, the way TP-1
-    checks a template-dependent signature per specific. Parse:
-    toolchain/parse/handle_let.cpp:37-42 accepts the `template` keyword before
-    an associated constant's name (`generic` and `runtime` stay refused with the
-    same diagnostic). Check: handle_let_and_var.cpp's associated-constant path
-    records the binding as a template binding (`is_template` on the
-    `SymbolicBinding`, the flag function-scope template bindings already carry),
-    and impl.cpp's signature matching substitutes the impl's constant value
-    before matching a member whose declaration is template-dependent. This
-    contradicts upstream's parser (handle_let.cpp's comment "The binding is a
-    checked generic by context, so no phase keyword is used.") and follows
-    upstream's design page; DR-1 records the conflict as V-3a register entry
-    (iv) with W-324 and the break condition: if upstream decides associated
-    constants are never templates (a proposal, or a change to sum_types.md:113),
-    DR-1's `Match` follows upstream's revised declaration and L1 is removed.
--   **L2, impl members that give an associated constant its value.** In `impl as
-    I { ... }`, a member declaration whose name is an associated constant of `I`
-    and which declares a value of that constant's type (an `interface`
-    declaration for a `type` constant, sum_types.md:146-151; a `let N: T = v;`,
-    indexing.md:105-109) sets the impl witness's entry for the constant, as
-    `where .N = v` does today, and is diagnosed as a conflict if a `where`
-    clause sets it too. Check: impl.cpp (witness completion, where `associated
-    constant ... not given a value in impl of interface` is diagnosed) and the
-    nested-declaration scope of an impl.
--   **L3, `extend require impls` member access.** In an interface `J { extend
-    require impls I; ... }`, the names of `I`'s members are found in `J`
-    (details.md:1489-1497's equivalence with `alias`), and a facet of type `J`
-    converts to a facet of type `I` through the requirement, so `fn Some(ref
-    self, value: T) -> ReturnType;` (sum_types.md:149) and `C.ReturnType` (:153)
-    resolve. The design page's `extend Match.BaseContinuation;` (:148) is
-    spelled `extend require impls Match.BaseContinuation;`, the spelling p5337
-    adopted (details.md:1485-1488 records the TODO to update older text): the
-    same mechanism in current syntax, not a second spelling. Check:
-    name_lookup.cpp's extended-scope lookup for interfaces, facet conversion
-    (facet_type.cpp, impl_lookup.cpp) for the require. This is the machinery
-    upstream's `IdentifiedFacetType` series (PRs 7924 to 8004) is reworking; §7
-    R-3 carries the merge risk.
+(Rewritten 2026-10-21, review fold: A-B1 / B-B1.) Rev 1's D-DR-8 planned three
+language features so that sum_types.md's `Match` could be written: L1 template
+associated constants, L2 impl members that give an associated constant its
+value, L3 member access through `extend require impls`. §0.7 reads upstream at
+ac31fd198 on each. L1 contradicts docs/design/README.md:1076-1078 and
+:3064-3067, generics/terminology.md:100-103 and upstream's parser; L2 is the
+mechanism accepted proposal p001013 removed, and is not needed (`where
+.Continuation = ...` works today). Implementing either would be a new drift
+under R32: the V-3a register is a queue of drifts to fix, not a licence for new
+ones, and V-3 (as amended by V-3a) already vetoes a decision that contradicts
+upstream's accepted proposals or recorded leads' direction. Without L1,
+sum_types.md:107-117's interface cannot be declared at all (§0.7, v1.carbon),
+and no spelling satisfies both sum_types.md:113 and README.md:3064-3067: on
+`Match`, upstream's recorded direction is internally inconsistent today.
 
-Break condition for D-DR-8 as a whole: any of L1..L3 lands upstream first (DR-1
-takes upstream's code at UA-3 and drops its own), or is decided against upstream
-(DR-1 follows the decision).
+D-DR-8 (rev 2): DR-1 implements none of L1, L2, L3. D-DR-22's stop rule ("if L1,
+L2 or L3 cannot land, slice 1 stops and is never re-spelled") fires at the plan,
+before any slice-1 code: W-320 is blocked on W-324, which watches upstream's
+resolution of the conflict and is checked at each weekly upstream check (R32
+(b)); `Core.Optional` stays as trunk has it, unmatchable, with `HasValue`/`Get`
+and `?`; the `for` loop keeps calling `HasValue`/`Get`, which is also what
+upstream's own checker does under its `.Some(pattern_id)` TODO (upstream
+handle_loop_statement.cpp:237-238 at ac31fd198), so the fork's toolchain is
+not a second spelling there. What the stop does not leave in place is the
+fork-local spelling that already exists: PR 62's D-SV-7 view is still removed
+before PR 62 merges (§1.11), and PR 56's records are still corrected (§1.16).
+Not implementing upstream's design is not a drift under R32 (d); a fork
+mechanism that respells it is, and DR-1 adds none. Break condition (the
+resumption): upstream resolves the conflict, by changing sum_types.md's `Match`
+declaration, by admitting a template associated constant (README.md,
+terminology.md or the parser), or by implementing `Match` or its loop TODO by
+any mechanism; W-320 is then re-planned from upstream's resolution, starting
+from rev 1's §1.5-§1.12 (commit 1e46ffd94) under the constraints RC-1..RC-12
+below, which carry the reviews' slice-1 findings so that the re-plan does not
+repeat them.
+
+-   **RC-1 (A-B1, B-B1).** No `let template` on an associated constant and no
+    impl member that sets one; an impl sets `Match.Continuation` by `where`
+    (where_cont.carbon, §0.7). F-022 is minted only if upstream's resolution
+    leaves a surface rule open.
+-   **RC-2 (A-B2, B-M3).** A continuation that stores an alternative's parameter
+    by copy needs `Copy`: copy_slot.carbon on trunk gives `` cannot copy value
+    of type `T` `` for `T: Core.Destroy`, and the `Try` impl's bound `T:
+    Destroy & OptionalStorage` (optional.carbon:69) does not imply `Copy`. A
+    `match`-bodied `Try` must bind without a copy or change that bound, and a
+    bound change amends DR-0's "signature kept" by a dated record. D-DR-13 is
+    withdrawn now: DR-1 does not rewrite the `Try` body, since the sketch it
+    followed is the fork's own page (docs/design/error_handling.md has no
+    upstream copy at ac31fd198), not upstream direction.
+-   **RC-3 (A-B3, B-M2).** Routing `for` through `Match` must keep TP-1's
+    template `for` loops: a `Next` result of opaque template-dependent type
+    needs a dependent refutable form. Measured: review A's tmpl_for prints `6`
+    on PR 61's install and on the mct mirror, while tmpl_match_dep gives the
+    scrutinee TODO on both; PR 61's generic/template/for_range goldens and
+    generics/templates_for_dependent_range are the regression set, and §5
+    counts from CT-1's head (167 programs, §0.8.1).
+-   **RC-4 (A-M1, B-M1).** The min_prelude has no `Match` and its `Optional`
+    (toolchain/testing/testdata/min_prelude/parts/optional.carbon:19) no `impl
+    as Match`; a `for` desugaring through `Match` first gives the min_prelude
+    both, and the eight min_prelude `for` goldens (check for/basic and pattern,
+    interop/cpp/range_for, slice/basic; lower array/iterate, for/for,
+    break_continue, bindings) are its predicted refills.
+-   **RC-5 (A-M2, B-M4).** A nested alternative pattern on a `Match` payload
+    (`case .Some(.Some(x: i32))`) needs a continuation per sub-scrutinee, built
+    in the dominated payload block, and its own exhaustiveness keys; trunk has
+    no lane for an alternative pattern on a payload (review A's
+    nested_choice.carbon: `` semantics TODO: `choice alternative payload that is
+    not trivially copyable and destructible` ``). Unspecified, it is OUT with a
+    residue.
+-   **RC-6 (A-m3, B-M8).** The empty alternative's pattern is `.None()` while
+    the prelude's `None` is the function `fn None() -> Self`
+    (sum_types.md:214-222; upstream optional.carbon:30-32); D-DR-1's and W-320's
+    "`.None`" carry a dated amendment saying so (C.1, C.2).
+-   **RC-7 (A-m4).** The continuation's slot is destroyed per evaluation,
+    including on `break` and `continue` out of a `for` or `while let`; the extra
+    copy per iteration is measured; rev 1's "a class with no member of that
+    name" parens case is dropped: sum_types.md:197-198 has the compiler enforce
+    that the expression half is well-formed, which it is not without the
+    member, and :210-212 says such a type's expression patterns "will fail to
+    compile".
+-   **RC-8 (B-m3).** Qualified alternative patterns
+    (`Core.Optional(i32).Some(x: i32)`, pattern_matching.md:518-523) are decided
+    IN or OUT.
+-   **RC-9 (B-M11).** Every program is written out in full, with a counting
+    `Copy` program for the slot copy and a null-pointer call, and every new
+    mechanism has a mutant that a named golden or program catches.
+-   **RC-10 (B-M12).** The doc texts are written out: sum_types.md's
+    amendment, error_handling.md's `case .None` and "applies verbatim once W-058
+    makes `Optional` a choice" (C.11 corrects the latter now), optional.md's
+    `.None` passages (C.8 now).
+-   **RC-11 (B-B2).** Land-time commits assume nothing about whether PR 56 or
+    PR 62 has merged; they target whichever branch holds the text.
+-   **RC-12 (A-M4, B-M5).** One branch and one base per PR; a language
+    prerequisite lands with its first consumer (R29(b)); a base other than
+    trunk's is recorded as an amendment to D-DR-1.
 
 ### §1.5 The `Match` mechanism and its SemIR (D-DR-9)
 
-The prelude gains library `prelude/match` (core/prelude/match.carbon, exported
-by core/prelude.carbon beside `prelude/iterate` and imported by
-core/prelude/types/optional.carbon) with sum_types.md:108-116 verbatim:
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-interface Match {
-  interface BaseContinuation {
-    let ReturnType: type;
-  }
-
-  let template Continuation: type;
-  fn Op[C: Continuation](self, continuation: C*)
-    -> C.(BaseContinuation.ReturnType);
-}
-```
-
-<!-- google-doc-style-resume -->
-
-A refutable form (a `match` statement, `if let`, `while let`, `let`-`else`, and
-the `for` desugaring of §1.8) whose scrutinee type `S` is none of the five
-existing shapes and implements `Core.Match` is matched through `S`'s `Match`
-impl, exactly once per evaluation of the scrutinee (once per `while let` and
-`for` iteration), in these steps:
-
-1.  **Admission** (refutable_binding.cpp `CheckRefutableScrutinee`, after SV-1's
-    `std::optional` conversion when PR 62 is composed): `LookupImplWitness(S,
-    Core.Match)` succeeds without diagnosing. The impl's `Continuation` value,
-    read from the witness (`ImplWitnessAccess` of the `Continuation` element,
-    then `GetConstantValueInSpecific`), must be a facet type naming one
-    interface `K`; its methods, in declaration order, are the alternatives,
-    method k's explicit parameters after `ref self` its parameter types `P_k`,
-    all with `S`'s specific substituted. A `Continuation` that is not an
-    interface, or a `K` with a method that is not of the form `fn Name(ref self,
-    params...) -> ReturnType`, is diagnosed at the scrutinee
-    (`MatchContinuationNotInterface`, `MatchContinuationMethodShape`; §1.12) and
-    the form is aborted, as the scrutinee TODO aborts today.
-2.  **The continuation class** (new file toolchain/check/match_continuation.cpp,
-    `BuildMatchContinuation`): an anonymous local class in the current
-    function's scope (the measured `local_class_generic` shape: generic exactly
-    when the function is), declared through the same entity path
-    handle_choice.cpp uses to synthesize a choice's class (`ClassDecl`,
-    `ClassType`, a `CompleteTypeWitness`), with fields `.index: i32` and one
-    `.slot<k>: MaybeUnformed((P_k...))` per alternative with parameters; an
-    `impl as Match.BaseContinuation where .ReturnType = i32`; an `impl as K`
-    whose method k is a synthesized `FunctionDecl` with a body that initializes
-    `self.slot<k> unsafe as (P_k...)` from its parameters (a copy: each `P_k`
-    must be `Copy`, else `MatchContinuationParamNotCopy` at the alternative's
-    use, W-328), assigns `self.index = k` and returns `k`; and an `impl as
-    Destroy` whose `Op` destroys `slot<index>` when `index >= 0` (one `if` per
-    alternative with parameters, each `BuildSelfDestructCall` on the slot's
-    `unsafe as` view), so a `Core.String` payload is destroyed once, at the
-    owning scope's end. The class, its impls and functions are created once per
-    refutable form, as sum_types.md:171-187's `__MatchStatementImpl` is ("the
-    actual generated class will be anonymous", :186-187).
-3.  **The call** (the same function): a `VarStorage` of the continuation class
-    with `.index` initialized to `-1` and the slots unformed (`UnformedInit`),
-    then `Op` called once: `ImplWitnessAccess` of `Op` in `S`'s `Match` witness,
-    a `SpecificImplFunction` with `C` deduced as the continuation class's facet
-    `FacetValue` (its witness for `K`), the scrutinee as `self`, and an `AddrOf`
-    of the storage as `continuation`, through `PerformCall`. The call's `i32`
-    result is the form's discriminant value. `Op` is required to call exactly
-    one method exactly once (sum_types.md:127-129); the compiler does not verify
-    it (as the `Try` laws are documented, not verified); a misbehaving `Op`
-    leaves `.index` at `-1` or a slot reassigned, and the dispatch takes no arm
-    (W-325 records the unchecked contract, §1.17).
-4.  **The arms** (pattern_match.cpp, through the choice lane's code with two
-    hooks): an alternative pattern's name resolves against the alternatives of
-    step 1 (a new `LookupMatchAlternative` beside `LookupChoiceAlternative`),
-    its parens rule against the class's factory member (§1.6), its arity against
-    `P_k`; its test is `EqWith(i32).Equal` of the discriminant value and `k`
-    (`EmitChoiceDiscriminantTest`'s body with the value in place of the
-    `.discriminant` field read), and its payload tuple, read only under that
-    test (the W-008 dominance rule, pattern_match.cpp:639-648), is
-    `ClassElementAccess` of `.slot<k>` on the storage converted `unsafe as
-    (P_k...)` (an `AsCompatible`); the payload subpatterns then go through the
-    existing payload machinery unchanged (`MatchCasePatternMatch`,
-    `MatchCaseBindPatternMatch`, `LocalPatternMatch`).
-5.  **Exhaustiveness and usefulness** reuse SF-7's choice machinery with the
-    alternative count of step 1: the alternatives "are a closed set" because
-    "the compiler can ... determine whether any `case`s are missing"
-    (sum_types.md:99-101).
-
-SemIR: no new instruction kind. Reused: `LookupImplWitness`,
-`ImplWitnessAccess`, `FacetValue`, `SpecificImplFunction`, `ClassDecl`,
-`ClassType`, `FieldDecl`, `ImplDecl`, `ImplWitness`, `ImplWitnessTable`,
-`FunctionDecl`, `StructValue`, `VarStorage`, `AddrOf`, `Call`,
-`ClassElementAccess`, `AsCompatible`, `Assign`, `ReturnExpr`, `IntValue`
-(through `MakeIntLiteral` and conversion), the `EqWith` call, `BranchIf`,
-`Branch`, `BranchWithArg`, `BlockArg`, `NameBindingDecl` and the binding
-instructions. Lowering: nothing new; the continuation's functions are lowered
-per specific like any local class's, as `desugar_*` and `local_class_generic`
-measured. Break condition: upstream implements `Match` (DR-1 takes its mechanism
-at UA-3), or adds tail calls and the TODO at sum_types.md:132-133 becomes a
-requirement (the store-and-index continuation is unaffected: its methods do not
-call back).
+Withdrawn with slice 1 (§1.4); rev 1's text (commit 1e46ffd94) is the
+resumption's starting point, under RC-1, RC-2, RC-5 and RC-7.
 
 ### §1.6 `Core.Optional`'s `impl as Match` and the `.None()` spelling (D-DR-10)
 
-core/prelude/types/optional.carbon keeps the class `Optional(T:
-OptionalStorage)`, its `adapt T.Type` storage with the `T*` null niche
-(p006357's pointer ABI; optional.carbon:186-204), `None()`, `Some(value: T)`,
-`HasValue()`, `Get()`, the conversions and the `Try` signature, and gains,
-inside the class, sum_types.md:146-160 with only the storage reads changed (the
-example's `self.has_value` and `self.value` are its own illustrative fields; the
-prelude's are behind `OptionalStorage`):
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-  impl as Match {
-    interface Continuation {
-      extend require impls Match.BaseContinuation;
-      fn Some(ref self, value: T) -> ReturnType;
-      fn None(ref self) -> ReturnType;
-    }
-
-    fn Op[C: Continuation](self, continuation: C*) -> C.ReturnType {
-      if (self.HasValue()) {
-        return continuation->Some(self.Get());
-      } else {
-        return continuation->None();
-      }
-    }
-  }
-```
-
-<!-- google-doc-style-resume -->
-
-`argv: Core.Optional(char*)*` (the entry signature) is untouched: the class and
-its layout do not change, and no `match` is involved in passing it. The empty
-alternative's pattern is `.None()`, not `.None`: sum_types.md:214-222 makes an
-alternative pattern without arguments take its expression's syntax, and
-`Optional(T).None` is the function `fn None() -> Self` in upstream's prelude at
-fb7eff130 (optional.carbon:31-33, the placeholder unchanged since the cut) and
-in the fork's; PR 56's F-015 froze the same function (its
-fork/optional/plan.md:212-214). The parens rule therefore reads the scrutinee
-class's member named like the alternative: a function member requires
-parentheses (`MatchAlternativeMissingParens` reused, its text unchanged:
-"alternative `None` is declared with a parameter list, so its pattern requires
-parentheses"), a non-function member forbids them
-(`MatchAlternativeUnexpectedParens`), and a class with no member of that name
-takes parentheses iff the `Continuation` method has parameters. "Both possible
-implementations must be well-formed (and this is enforced by the compiler)"
-(sum_types.md:197-198) is enforced for the expression half's well-formedness of
-the factory call or constant (the expression `S.Name(args)` or `S.Name` must
-check and convert to `S`, in a discarded block) and not for the `==` half, which
-the fork's choice lane does not enforce either (pattern_matching.md:526-527):
-W-326. Break condition: upstream's prelude makes `None` a constant (`let None:
-Self`), and the pattern becomes `.None`; or upstream makes `Optional` a choice
-(D-DR-1's break condition).
+Withdrawn with slice 1 (§1.4), except the reading RC-6 records: `.None()` while
+`None` is a function.
 
 ### §1.7 Refutable forms on a `Match` class (D-DR-11)
 
-`match`, `if let`, `while let` and `let`-`else` share the engine, so the four
-admit and gate the same shapes (handle_match.cpp:41-46): `.Some(<subpatterns>)`
-with bindings (value and `var`), constant expressions and nested tuples, struct
-patterns and nested alternative patterns on `Match` or choice payloads (`case
-.Some(.Some(x: i32))`, o_nested), guards, and `default`. `ref` subpatterns on a
-`Match` alternative are OUT: the alternative's parameter is a value (`value: T`,
-sum_types.md:149) and the slot is the continuation's copy, so a `ref` binding
-would alias the copy, not the scrutinee; diagnosed `MatchAlternativeRefBinding`
-(§1.12), W-328. A pattern condition's or `let`-`else`'s deferred alternative
-(refutable_binding.cpp:296-337) resolves against the `Match` alternatives once
-its scrutinee is checked, as for a choice. The irrefutable-pattern warning fires
-for a `Match` alternative only when the `Continuation` has exactly one method
-(the single-alternative choice rule, refutable_binding.cpp:470-480). Break
-condition: upstream specifies `ref` bindings into a continuation parameter.
+Withdrawn with slice 1 (§1.4); RC-5 and RC-8 bind its resumption.
 
 ### §1.8 The `for` desugaring through `Match` (D-DR-12)
 
-handle_loop_statement.cpp's `ForHeader` keeps the range conversion, `NewCursor`
-and the cursor `VarStorage`, calls `Next` with the cursor by `ref` (slice 2),
-and then, in place of
-`CallOptionalAccessor(HasValue)`/`CallOptionalAccessor(Get)` (:269-291), runs
-the while-let engine on the `Next` call's result with a root alternative
-`.Some(<pattern>)` built from the loop's pattern (the `Some` alternative of
-`Core.Optional`'s `Continuation`, resolved by name through
-`LookupMatchAlternative`), the loop's body entered when that arm's test holds
-and the loop exited otherwise: loops.md:116-120's `match
-(range.(Iterate.Next)(cursor)) { case .Some(<pattern>) => { <statements> }
-default => { break; } }` (the `default => break` is the exit edge of
-`BranchAndStartLoopBody`). Upstream's TODO (:235-238 there, :269-272 here) is
-removed by this change, its comment replaced by the loops.md citation.
-`CallOptionalAccessor` (:191-202) is deleted with its two calls. The thirteen
-programs that use `for` (§0.9) are the regression set; they print the same.
-Break condition: upstream implements its TODO by another mechanism.
+Withdrawn with slice 1 (§1.4); RC-3 and RC-4 bind its resumption. DR-1's `for`
+change is slice 2's alone.
 
 ### §1.9 The `Try` body (D-DR-13)
 
-`final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where
-.ContinueType = T and .BreakType = ()` (optional.carbon:69-70) keeps its
-signature; `Branch`'s body becomes error_handling.md's sketch
-(docs/design/error_handling.md:392-405), with `.None()` for §1.6's reason and
-the sketch's own unreachable trailing return, which §0.3's `c_exh_return` shows
-is still needed:
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-  fn Branch(self) -> ControlFlow(T, ()) {
-    match (self) {
-      case .Some(v: T) => { return ControlFlow(T, ()).Continue(v); }
-      case .None() => { return ControlFlow(T, ()).Break(()); }
-    }
-    // Unreachable trailing return: reachability doesn't consult match
-    // exhaustiveness; under `final` the recursive call type-collapses.
-    return self.(Try.Branch)();
-  }
-```
-
-<!-- google-doc-style-resume -->
-
-The `impl as Match` block precedes the `Try` impl in the file so that the
-`match` finds it. The comment block at optional.carbon:56-68 is rewritten to
-cite D-DR-13. `o_try` (`2 -1`) and
-fork/conformance/programs/error_handling/optional_try.carbon are the regression
-set. Break condition: none beyond D-DR-1's; this is the new decision D-DR-1
-names.
+Withdrawn (§1.4, RC-2): the `Try` body keeps `HasValue()`/`Get()`.
 
 ### §1.10 Templates and generics (D-DR-14)
 
-A `Core.Optional(T)` scrutinee with `T` a checked generic binding (o_generic) is
-matched in the generic's definition: its `Match` impl is found for the symbolic
-specific, the alternatives' parameter types are symbolic, and the continuation
-is a local class of the generic function, monomorphized per specific (the
-measured `local_class_generic` and `desugar_generic` shapes, `4 7` and `4 7 9`).
-A scrutinee `Core.Optional(T)` with `T` a template binding (o_template) is the
-same case: the scrutinee's type is a specific of `Optional`, not an opaque
-template-dependent type, and p000157:497-503 requires the continuation to be
-generic, not templated. A scrutinee whose own type is opaque and
-template-dependent (a `template U: type` value matched directly) keeps TP-1's
-disposition, the scrutinee TODO measured on PR 61's install (`match on
-unsupported scrutinee type`), because the alternatives and the `Match` impl are
-unknown until instantiation and the refutable form has no deferred action: part
-of W-325 (§1.17). A scrutinee of a facet type `U: Core.Match` (a generic binding
-constrained by `Match` alone) is OUT: its `Continuation` is a template
-associated constant of an unknown impl, so its alternatives are unknown in the
-definition; diagnosed `MatchScrutineeSymbolicMatch` (§1.12), part of W-325.
-Break condition: upstream specifies matching on a symbolic `Match` type.
+Withdrawn with slice 1 (§1.4); RC-3 binds its resumption.
 
 ### §1.11 C++ interop and D-SV-7's retirement (D-DR-15)
 
-The `std::optional` and `std::variant` mapping (F-020:
-`Core.CppCompat.StdOptional(T)` and `StdVariant<N>` choices, converted by value
-through the C++ accessors, and the conversions between `StdOptional(T)` and
-`Core.Optional(T)`) is not the drift and stays: a `std::optional` scrutinee is
-still converted to `StdOptional` and matched as that choice, with `.None` (its
-constant). A `Core.Optional(T)` scrutinee, including one converted from a
-`std::optional` argument (sv_view), is matched through `Match` directly, with
-`.None()`. W-322's land-time commit on PR 62's branch (§3 item 15) removes, from
-PR 62's head: the `else if (auto view = GetCoreOptionalView(...))` branch of
-`CheckRefutableScrutinee` (its refutable_binding.cpp hunk's second half, 21
-lines); `GetCoreOptionalPayload`, `ClassifyCoreOptional`, `GetCoreOptionalView`,
-`DiagnoseCoreOptionalNotMatchable` and the `CoreOptionalView` struct from
-cpp/sum_type.cpp (its :653-758 region, the functions at :680, :714, :732, :749)
-and cpp/sum_type.h; `CARBON_DIAGNOSTIC_KIND(CoreOptionalNotMatchable)` from
-kind.def; and toolchain/check/testdata/match/core_optional_view.carbon, whose
-four splits are re-sourced under match/core_optional.carbon's Match-route splits
-(`concrete`, `pointer`, the generic split now succeeding, the aggregate split
-now succeeding). It keeps `GetCppSumType`, `ConvertCppSumToCarbon`,
-`ConvertCarbonSumToCpp`, the `CppSumType*` diagnostics and every std goldens.
-The measured size of the removal on a PR 62 mirror is §8 item 9's; the composed
-probes sv_view and sv_std_match are predicted to print `5 -1` each with
-`.None()` and `.None` respectively. PR 62's sum_types.md section that describes
-the view gains a dated amendment (Appendix C.6). Break condition: D-DR-2's.
+(Rewritten 2026-10-21, review fold: A-M3 / B-B2.) The `std::optional` and
+`std::variant` mapping (F-020: `Core.CppCompat.StdOptional(T)` and
+`StdVariant<N>` choices, converted by value through the C++ accessors, and the
+one-step conversions between a C++ `std::optional<T>` and `Core.Optional(T')`)
+is not the drift and stays: a `std::optional` scrutinee is still converted to
+`StdOptional` and matched as that choice, with `.None` (its constant). D-SV-7,
+the view that matches a `Core.Optional(T)` scrutinee as `StdOptional(T)`, is a
+second spelling of the `Match` route (R32 (d)) and is removed by a new commit
+on PR 62's branch, made now and before PR 62 merges (R32 (e)); with slice 1
+stopped, nothing replaces it, so a `Core.Optional(T)` scrutinee gets the
+scrutinee TODOs, as on trunk. This amends DR-0's D-DR-2 ("retired by DR-1 slice
+1 ... matches `Core.Optional(T)` through it and removes the view"): the removal
+no longer waits for a replacement, because R32 (e) does not let PR 62 land
+carrying the drift. The commit, measured on the m62 mirror (§0.8.2):
 
-### §1.12 Diagnostics for the OUT shapes (D-DR-16)
+-   **Removed.** `CheckRefutableScrutinee`'s `else if (auto view =
+    GetCoreOptionalView(...))` branch (refutable_binding.cpp, 19 lines);
+    `DiagnoseCoreOptionalNotMatchable` (cpp/sum_type.cpp and its declaration);
+    `CARBON_DIAGNOSTIC_KIND(CoreOptionalNotMatchable)` (kind.def); and
+    match/core_optional_view.carbon, replaced by
+    match/fail_todo_core_optional.carbon (Appendix A.3), whose two splits pin
+    the scrutinee TODOs for `match` and `if let` on `Core.Optional` until W-320.
+-   **Kept for F-020's bridge.** `GetCoreOptionalPayload`,
+    `ClassifyCoreOptional`, the `CoreOptionalView` struct and
+    `GetCoreOptionalView`, which `TryConvertCppSumType` (PR 62's
+    cpp/sum_type.cpp:854, :874, :908-911) and `MapCarbonSumTypeToCpp` (:937)
+    call. They move from cpp/sum_type.h into cpp/sum_type.cpp (no other file
+    uses them once the branch is gone), `GetCoreOptionalView` becomes `static`,
+    and the status `Matchable` is renamed `Mapped`, with the comments that said
+    "matchable" saying "mapped".
+-   **The `std::optional` mapping gate, re-derived.** It is unchanged in
+    substance: a `Core.Optional(T)` converts to and from a C++
+    `std::optional<T'>`, and is offered to C++ overload resolution as one,
+    exactly when `T` is concrete, complete and an SF-6 choice payload type (so
+    that `StdOptional(T)` can be formed) and, for the Carbon-to-C++ direction,
+    not a pointer (a `Core.Optional(T*)` keeps the nullable-pointer mapping).
+    That was D-SV-7's "matchable" condition because the view and the bridge
+    shared one type; it is now named for the bridge alone. Every std golden
+    passes unchanged on the mirror.
+-   **PR 62's program.** control_flow/match_core_optional_diff.carbon, written
+    against the view, gets a `// SKIP:` line citing the removal and W-320
+    (Appendix B.3, R16 (b)), and its three empty arms are respelled `case
+    .None()` for the `Match` route (RC-6); the conformance README's generated
+    table follows (`runner.py --update-readme-table`). PR 62's conformance moves
+    from 134/0/21 to 133/0/22 over 155 (§0.8.2).
+-   **Records on PR 62's branch, in the same commit.** PR 62's sum_types.md
+    section on the view gains Appendix C.6's dated amendment; its gap row 68
+    text, its plan's §1.7 and the decision log's SV-1 entry gain the dated notes
+    of C.6; its ledger's W-322 entry is discharged there and W-177's narrowing
+    note is corrected.
 
-| Kind (new unless marked) | Text | Where |
-| --- | --- | --- |
-| `MatchContinuationNotInterface` | "`Match.Continuation` of {0} is not an interface, so {0} cannot be matched" | scrutinee |
-| `MatchContinuationMethodShape` | "method `{1}` of {0}'s `Match.Continuation` is not an alternative: it must take `ref self` and return `ReturnType`" | scrutinee, note at the method |
-| `MatchContinuationParamNotCopy` | "alternative `{0}`'s parameter of type {1} is not copyable; matching it is not supported in 0.1" | the alternative pattern |
-| `MatchAlternativeRefBinding` | "a `ref` binding cannot bind a parameter of alternative `{0}`, which is passed by value" | the `ref` binding |
-| `MatchScrutineeSymbolicMatch` | "cannot match a value of type {0} in its generic definition: its `Match` alternatives are not known" | scrutinee |
-| `MatchAlternativeMissingParens`, `MatchAlternativeUnexpectedParens`, `MatchAlternativeArgCountMismatch` (reused, texts unchanged) | as refutable_binding.cpp:236-279 | the alternative pattern |
-| `PhaseKeywordInAssociatedConstant` (narrowed, text unchanged) | "phase keyword is not allowed on an associated constant", now for `generic` and `runtime` only | parse |
-| the scrutinee TODOs (unchanged) | `match on unsupported scrutinee type`, `refutable pattern binding on unsupported scrutinee type` | an opaque template-dependent scrutinee, and every type that is none of the six shapes |
+Break condition: D-DR-2's (upstream designs a view-based route for matching
+`Core.Optional`); or PR 62 is closed without merging, and the removal then
+applies to wherever D-SV-7 lands.
 
-Break condition: an implementation review finds a text that misdescribes its
-rule; the text is corrected, the kind kept.
+### §1.12 Diagnostics (D-DR-16)
+
+(Amended 2026-10-21, review fold: A-B1 / B-B1.) DR-1 adds no diagnostic kind:
+rev 1's five new kinds, three reused texts and the narrowed
+`PhaseKeywordInAssociatedConstant` belonged to slice 1 and are withdrawn with it
+(rev 1's `ImplAssociatedConstantSetTwice` would have duplicated upstream
+2b5f90cd7's `AssociatedConstantGivenDifferentValues`). W-322's commit removes
+PR 62's `CoreOptionalNotMatchable`. Slices 2 and 3 change no diagnostic text;
+the existing `MissingImplInMemberAccess` and `AssignmentToNonAssignable` cover
+their failure splits. Break condition: none.
 
 ### §1.13 Goldens (D-DR-17)
 
-All CHECK lines come from autoupdate (R16); the sources are Appendix A. DR-1a:
-the nine refills of §0.6 and no new file. DR-1b: the eleven refills of §0.6.1,
-`fail_write_through` deleted, 230227264's
-check/testdata/function/call/form.carbon and
-lower/testdata/function/call/form.carbon added as upstream wrote them (the CHECK
-lines then refilled by this tree's autoupdate), and new:
-check/testdata/slice/write_through.carbon (A.1) and
-lower/testdata/slice/write_through.carbon (A.2). DR-1c:
-check/testdata/interface/template_assoc_const.carbon (A.3),
-impl/assoc_const_member.carbon (A.4), interface/extend_require_member.carbon
-(A.5), parse/testdata/let/template_assoc_const.carbon (A.6). DR-1d:
-check/testdata/match/core_optional.carbon (A.7), match/user_sum_type.carbon
-(A.8), match/fail_match_class.carbon (A.9, the OUT rows of §1.12),
-if/if_let_optional.carbon, while/while_let_optional.carbon,
-let/let_else_optional.carbon (A.10), lower/testdata/match/core_optional.carbon
-(A.11); predicted refills: the nine `for` goldens again (the accessor calls
-become the `Op` call, the continuation class and the arm), every golden that
-dumps `Core.Optional`'s imports (the class scope gains the `Match` impl; at most
-the 36 files that mention `Optional` or `HasValue`), and every golden that dumps
-the prelude's library list (the new `prelude/match` library). The predicted set
-is measured at DR-1d's first fill and recorded then (§3 item 11).
+(Amended 2026-10-21, review fold: A-M5 / B-M13 / A-m2 / B-m4 / A-M4.) All CHECK
+lines come from autoupdate (R16); the sources are Appendix A. DR-1a: the nine
+refills of §0.6 and no new file. DR-1b: B0F refills the two existing
+function/call/form.carbon goldens after their three new splits are added (+172
+and +103 lines measured on v4; not "2 new" as rev 1 said); B1F refills the
+eleven of §0.6.1 with check and lower slice/buf (25/22 and 402/341), deletes
+`fail_write_through`, and fills four new files: upstream's two
+`IndirectIndexWith` tests and A.1 (with the W-327 pin split) and A.2. Each
+golden is added in the commit whose code makes it pass (rev 1's A.3, which
+needed later commits, is withdrawn with slice 1). At the merges after CT-1: the
+refill commits of §1.16 (check generic/template/for_range and index,
+interop/cpp/range_for, lower template/for_range, measured on the mct mirror;
+PR 51's buf_field goldens, PR 55's string_indexing, PR 57's slice/basic,
+predicted). Break condition: a fill that does not reach a fixpoint in two
+passes, or that changes a golden this section does not name; the plan is
+amended with the measured set before the commit.
 
 ### §1.14 Programs (D-DR-18)
 
-Hand-derived EXPECTs, Appendix B. DR-1a: stdlib/iterate_interface.carbon
-rewritten (§0.9). DR-1b: stdlib/slices_write_through.carbon (B.1: write, read
-back, a generic fill, a `Buf` write, the bounds fail-stop in a separate program
-is not added: slices_bounds_fail_stop already pins the message) and
-interop/cpp_span_write_through_diff.carbon with its `.diff.cpp` (B.2, DIFF-1:
-the C++ twin writes through `std::span<int>` and prints the same lines). DR-1d:
-control_flow/match_core_optional.carbon (B.3: `match`, `if let`, `while let`,
-`let`-`else` over `Optional(i32)`, `Optional(i32*)` with a null,
-`Optional(Core.String)`, nested `Optional`, a generic),
-control_flow/match_core_optional_diff.carbon with its `.diff.cpp` (B.4: the C++
-twin is the same logic over `std::optional`),
-control_flow/match_user_sum_type.carbon (B.5: a user class with `impl as Match`
-and three alternatives, sum_types.md:135-165's shape), and
-error_handling/optional_try_match.carbon is not added: optional_try.carbon
-already covers the `Try` body's behavior. No SKIP moves: the 22 SKIPs' reasons
-are unrelated (§5).
+(Amended 2026-10-21, review fold: B-M11 / A-m4.) Hand-derived EXPECTs, Appendix
+B. DR-1a: stdlib/iterate_interface.carbon rewritten (§0.9). DR-1b:
+stdlib/slices_write_through.carbon (B.1: slice writes, a `Buf` write through
+`b[i]` and through `Set`, a generic fill; the bounds fail-stop is already pinned
+by slices_bounds_fail_stop) and interop/cpp_span_write_through_diff.carbon with
+its `.diff.cpp` (B.2, DIFF-1), both PASS on v4 and on the mct mirror. No SKIP
+moves on trunk; on PR 62's branch W-322's commit turns one PASS into a cited
+SKIP (B.3). Rev 1's `Match` programs (its B.3 to B.5) are withdrawn with
+slice 1. Break condition: a program whose output differs from its hand-derived
+EXPECT; the EXPECT is re-derived from the design, never from the toolchain (R16
+(d)).
 
 ### §1.15 Docs and records (D-DR-19)
 
+(Rewritten 2026-10-21, review fold: B-M9 / B-M10 / B-M12 / A-m3 / B-M8.)
 Design pages, each edit a dated amendment block, never a rewrite of upstream
-text: docs/design/control_flow/loops.md takes upstream's fb7eff130 text for the
-`Iterate` interface and the loop desugaring (it is the fork's copy of an
-upstream page; DR-1a restores the two sections df3cf9294 rewrote, keeping the
-fork's `while let` amendment), plus an amendment at DR-1a that the fork's `for`
-calls `HasValue()`/`Get()` until DR-1d (W-320), removed by DR-1d's amendment;
-docs/design/sum_types.md gains an amendment at DR-1d recording that the
-toolchain implements `Match` as specified, the `extend require impls` spelling
-(§1.4 L3), the store-and-index continuation (:224-227) and the 0.1 limits
-(W-325, W-326, W-328); docs/design/slices.md's 0.1-limits bullet "Slices are
-read-only; `s[i] = v` is an error." is replaced at DR-1b by a dated amendment
-stating `IndirectIndexWith`; docs/design/error_handling.md's EH-A amendment
-(:416-435) gains a dated paragraph at DR-1d; docs/design/optional.md exists only
-on PR 56's branch, so its edit (D-OP-7's "not matchable" paragraph, W-177) is a
-land-time commit (§3 item 16). Records: the decision-log entry "DR-1" (Appendix
-C.1), the ledger (W-320 and W-321 discharged, W-109 discharged, W-322 and W-323
-by their land-time commits, W-324..W-329 filed; C.2), the gap rows (C.3), the
-V-3a register (C.4), ORCHESTRATION's Next actions (C.5). Gap rows, with their
-current text quoted in C.3 and moved only as that text justifies: Control flow:
-loops (:66) keeps DONE and loses its DR-0 drift sentence at DR-1a and DR-1d;
-Stdlib: Slices (:79) stays PARTIAL (its other limits remain) and loses the
-read-only sentence at DR-1b; Control flow: matching sum-type consumption (:68)
-stays PARTIAL (std::variant/std::optional interop is PR 62's) and gains the
-`Match` sentence at DR-1d; Stdlib: Optional (:78) stays PARTIAL on trunk
-(OP-1/OP-2 decide DONE) and loses its DR-0 drift sentence at DR-1d.
+text. docs/design/control_flow/loops.md at DR-1a: upstream's ac31fd198 text
+for the "`Iterate` interface" and "Loop desugaring" subsections replaces the
+fork's "Ranged-for for user-defined types" subsection (§2.1), keeping the
+fork's `while let` amendment, and C.9's amendment follows the desugaring block.
+docs/design/slices.md at DR-1b: C.10 replaces the read-only 0.1-limits bullet.
+docs/design/error_handling.md at the records commit R0: C.11's dated amendment
+corrects the EH-A amendment's "the `match` body above applies verbatim once
+W-058 makes `Optional` a choice" (DR-0 rejected the choice route; the route is
+W-320's `Match`, with `.None()`). On other branches (§1.16): PR 56's
+loops.md and fork/optional/plan.md (C.7) and optional.md (C.8), PR 62's
+sum_types.md (C.6). Records: the decision-log entry "DR-1" (C.1, which records
+the amendments to D-DR-1 and D-DR-2), the ledger (C.2: W-321 and W-109
+discharged by the PRs; W-322 and W-323 by their commits; W-320's and W-322's
+dated notes; W-324..W-327 and W-329 filed), the gap rows (C.3), the V-3a
+register (C.4), ORCHESTRATION's Next actions (C.5). Gap rows, each moved only
+as its own text says: Control flow: loops (:66) keeps DONE, its DR-0 sentence
+rewritten at DR-1a; Stdlib: Slices (:79) moves to DONE at DR-1b, because its
+text says it "stays PARTIAL until write-through indexing lands (W-109)" and
+names no other condition, its remaining 0.1 limits staying listed as filed
+items; Control flow: matching sum-type consumption (:68) keeps PARTIAL, its
+DR-0 sentence rewritten at R0; Stdlib: Optional (:78) keeps its status
+(PARTIAL on trunk, DONE on PR 57, whose merge decides it), its DR-0 sentence
+rewritten at R0 and carried by PR 57's merge (§1.16). Break condition: a gap row
+whose own criterion this section misreads; the row follows its text.
 
 ### §1.16 Merge position and the held state (D-DR-20)
 
-DR-1a and DR-1b merge after CT-1 (ORCHESTRATION's order: PR 53, 51, 52, 60, 54,
-55, 56, 57, 58, 59, 61, 62, CT-1), then DR-1c and DR-1d. At each DR-1 PR's
-merge, a merge commit M brings trunk (with those PRs merged) into the DR-1
-branch, never a rebase: conflicts in records keep both sides; handle_index.cpp
-and handle_loop_statement.cpp are resolved as §0.8's PR 61 row states; the
-refill commit L-F after M refills every golden M's resolution moves (the three
-TP-1 `for` goldens, PR 55's string_indexing.carbon, the index goldens).
-Land-time commits on other PRs' branches, each a new commit, never a rewrite
-(R32 (e)): W-323's on PR 56's branch, before PR 56 merges (now, at DR-1's plan
-sign-off, since it corrects records only; Appendix C.7); W-322's on PR 62's
-branch, after DR-1d is implemented and before PR 62 merges, or, if PR 62 has
-merged first, as a commit on DR-1d's branch (Appendix C.6); the optional.md
-amendment on PR 56's branch when DR-1d is implemented (C.8). Break condition:
-ORCHESTRATION's merge order changes; the rules follow the new order.
+(Rewritten 2026-10-21, review fold: B-B2 / B-M6 / B-M10 / B-M9.) DR-1a and then
+DR-1b merge after CT-1 (ORCHESTRATION's order: PR 53, 51, 52, 60, 54, 55, 56,
+57, 58, 59, 61, 62, CT-1). At each one's merge, a merge commit brings trunk
+(with those PRs merged) into the PR's branch, never a rebase, and the names
+are distinct: M-a on DR-1a's branch, M-b on DR-1b's.
+
+-   **M-a.** handle_loop_statement.cpp takes DR-1a's side and drops TP-1's
+    pointer completeness requirement and its include (§1.2, §2.1). loops.md
+    takes DR-1a's restored upstream subsections and C.9, and drops PR 56's
+    F-015 amendment in the corrected form C.7 gives it: once the subsection it
+    follows is upstream's `match` desugaring, its first sentence ("The
+    desugaring above is the text this page had at the fork's cut") is false, and
+    C.9 says the rest. Records keep both sides. Then L-a, the refill commit:
+    check generic/template/for_range, lower template/for_range,
+    interop/cpp/range_for (measured on the mct mirror, which merged both PRs
+    at once) and PR 57's slice/basic.
+-   **M-b.** handle_index.cpp resolves onto TP-1's `PerformIndex` (§2.2), then
+    C-b, the composition commit that indexes a template-dependent operand per
+    specific (§1.3, §2.2), then L-b: check generic/template/index (measured),
+    PR 55's string_indexing and PR 51's buf_field goldens (predicted).
+-   **Commits on other PRs' branches, each new, never a rewrite (R32 (e)), made
+    now, at the records commit R0, independent of DR-1's code.** W-322's on PR
+    62's branch (§1.11, C.6), measured on the m62 mirror. W-323's on PR 56's
+    branch (C.7), which also carries C.8's optional.md amendment (records and
+    docs only). PR 57, stacked on PR 56, takes that commit by merging PR 56's
+    branch into its own (a new merge commit): optional.md and loops.md take
+    both sides, PR 57's text plus the amendments.
+-   **Gap row 78.** Trunk's row 78 (PARTIAL) carries DR-0's drift sentence;
+    PR 57's row 78 (DONE) does not. PR 57's merge into trunk keeps trunk's
+    sentence, as C.3 rewrites it at R0, appended to PR 57's DONE text; DR-1 does
+    not move row 78's status (D-OP-13 as PR 57 amends it decides it).
+
+Break condition: ORCHESTRATION's merge order changes; the rules follow the new
+order, and a commit on another PR's branch targets whichever branch holds the
+text at that time (RC-11).
 
 ### §1.17 Residues and F-022 (D-DR-21)
 
+(Amended 2026-10-21, review fold: A-B1 / B-B1 / B-M8 / B-m4.)
+
 | Id | Title |
 | --- | --- |
-| W-324 | V-3a register entry (iv): template associated constants (`let template` on an associated constant) are accepted by the fork for sum_types.md:113's `Match` and refused by upstream's parser (toolchain/parse/handle_let.cpp:37-42); follow upstream's resolution |
-| W-325 | `Match` scrutinees outside 0.1: an opaque template-dependent scrutinee (needs a deferred refutable form), a symbolic facet scrutinee `U: Core.Match`, and the unchecked "exactly one method exactly once" contract of `Match.Op` (sum_types.md:127-129) |
-| W-326 | "Both possible implementations must be well-formed" (sum_types.md:197-198): the `==` half is not enforced for expression-form alternative patterns, on `Match` classes or choices (pattern_matching.md:526-527) |
-| W-327 | A generic assignment whose specific's target is `const` writes: `*p = v` through `const T*` (trunk and the nightly print `7`) and `s[i] = v` through `Slice(const T)` (v3 prints `2`); the per-specific `const` check |
-| W-328 | `Match` alternatives with a non-`Copy` parameter (the continuation's slot is a copy) and `ref` subpatterns on an alternative's parameter |
-| W-329 | Reachability after an exhaustive `match` whose arms all diverge (`c_exh_return`: "missing `return`" on trunk with a choice; the `Try` body's trailing return) |
+| W-324 | V-3a register entry (iv): upstream's pages conflict on how `Match` declares `Continuation` (sum_types.md:113's `let template Continuation: type;` against README.md:1076-1078 and :3064-3067, generics/terminology.md:100-103 and upstream's parser, toolchain/parse/handle_let.cpp:27-46); W-320 waits on upstream's resolution; checked at each weekly upstream check |
+| W-325 | `5 as const i32` (an integer literal converted to a `const` integer type) aborts lowering: `Missing constant value for call to comptime-only function` (toolchain/lower/handle_call.cpp:638 on trunk; :598 on the upstream nightly) |
+| W-326 | V-3a register entry (v): D-SL-17's literal-subscript rule (check/handle_index.cpp) is a fork spelling of indexing.md's `like i64` subscript; retire it when `like` lands (PR 56's W-178), declaring the impls `IndirectIndexWith(like i64)` |
+| W-327 | A generic assignment whose specific's target is `const` writes: `*p = v` through `const T*` (trunk and the nightly print `7`) and `s[i] = v` through `Slice(const T)` (v4 prints `2`); the per-specific `const` check; pinned by A.1's `generic_write_const_element` split |
+| W-329 | Reachability after an exhaustive `match` whose arms all diverge (`c_exh_return`: "missing `return`" on trunk with a choice) |
 
-F-022 is not minted: every surface rule DR-1 adopts is upstream text
-(sum_types.md, loops.md, indexing.md, index.carbon) or its implementation
-latitude (sum_types.md:224-227), and the one point where upstream's sources
-conflict (L1) is a register entry, not a fork design. Break condition: a review
-finds a surface rule here that no upstream text determines; F-022 is minted for
-it.
+W-328 stays reserved and unused, for W-320's resumption. F-022 is not minted:
+DR-1 adopts no fork design. The one point where upstream's sources conflict
+(`Match.Continuation`) is not decided by the fork in either direction; it is a
+register entry with a work item (W-324) and a blocked work item (W-320), and
+choosing sum_types.md:113 over README.md would contradict upstream's explicit,
+leads-cited text (§1.4). Break condition: a review finds a surface rule here
+that no upstream text determines; F-022 is minted for it.
 
 ### §1.18 Decision index
 
 | Id | Decision | Section |
 | --- | --- | --- |
-| D-DR-5 | four PRs, slice 2, slice 3, slice 1a, slice 1b; 1a and 1b on CT-1's head | §1.1 |
-| D-DR-6 | `ref cursor` as df3cf9294, re-expressed | §1.2 |
-| D-DR-7 | `IndirectIndexWith` as 6d80ceb58 and 309d3d63c, re-expressed, with 230227264 cherry-picked; `Slice` and `Buf` writable; D-SL-3 retired | §1.3 |
-| D-DR-8 | L1 template associated constants, L2 impl members giving constants, L3 `extend require impls` lookup | §1.4 |
-| D-DR-9 | the per-form local continuation class, store and index, one `Op` call, the choice lane keyed by the index; no new SemIR kind | §1.5 |
-| D-DR-10 | `Core.Optional`'s `impl as Match` (sum_types.md:146-160 over `HasValue`/`Get`); `.None()` by sum_types.md:214-222 | §1.6 |
-| D-DR-11 | the four refutable forms; `ref` subpatterns OUT | §1.7 |
-| D-DR-12 | `for` through the while-let engine with root `.Some(<pattern>)` | §1.8 |
-| D-DR-13 | the `Try` body as error_handling.md's sketch with `.None()` | §1.9 |
-| D-DR-14 | generic and template-argument `Optional(T)` matched in the definition; opaque template-dependent and `U: Core.Match` scrutinees OUT | §1.10 |
-| D-DR-15 | D-SV-7's view removed by a commit on PR 62; F-020's mapping kept | §1.11 |
-| D-DR-16 | five new diagnostic kinds, three reused, one narrowed | §1.12 |
+| D-DR-5 | two PRs on two branches: DR-1a (slice 2) on trunk's base, DR-1b (slice 3) stacked on it | §1.1 |
+| D-DR-6 | `ref cursor` as df3cf9294, re-expressed; TP-1's pointer requirement dropped at M-a | §1.2 |
+| D-DR-7 | `IndirectIndexWith` as 6d80ceb58 and 309d3d63c, re-expressed, with 230227264's code and upstream's tests; `Slice` and `Buf` writable through `Ref`; D-SL-3 retired; D-SL-17 filed as W-326; per-specific choice for template-dependent operands at M-b | §1.3 |
+| D-DR-8 | L1, L2 and L3 not implemented: L1 and L2 contradict upstream (README.md, terminology.md, the parser; p001013) | §1.4 |
+| D-DR-9..D-DR-14 | withdrawn with slice 1; RC-1..RC-12 bind the resumption; D-DR-13 withdrawn outright (the `Try` body keeps `HasValue`/`Get`) | §1.4..§1.10 |
+| D-DR-15 | D-SV-7's view removed now by a removal-only commit on PR 62; F-020's bridge kept; amends DR-0's D-DR-2 | §1.11 |
+| D-DR-16 | no new diagnostic kind | §1.12 |
 | D-DR-17 | goldens | §1.13 |
 | D-DR-18 | programs | §1.14 |
 | D-DR-19 | docs and records | §1.15 |
-| D-DR-20 | merge after CT-1 by merge commits; land-time commits on PR 56 and PR 62 | §1.16 |
-| D-DR-21 | W-324..W-329; no F-022 | §1.17 |
-| D-DR-22 | the shrink line and the stop rule for slice 1 | §3 |
+| D-DR-20 | merge after CT-1 by merge commits M-a and M-b, with refill commits; commits on PR 62, PR 56 and PR 57 now | §1.16 |
+| D-DR-21 | W-324..W-327 and W-329 filed; W-328 reserved; no F-022 | §1.17 |
+| D-DR-22 | the stop rule fires at the plan for slice 1; the fix budget for DR-1a and DR-1b | §1.4, §3 |
 
 ## §2 Spec, file by file
 
 ### §2.0 Conventions
 
 Diffs are against trunk f68681114. "Measured" means the hunk is the one built
-and gated in v2 or v3 (§0.6); "specified" means it is this plan's code, not yet
-compiled, with the invariant it must keep stated. CHECK lines are never written
-by hand (R16): goldens appear here only by name, their sources in Appendix A.
-The full measured diff, goldens included, is kept at `$X/v3_full.diff` (2337
-lines for slice 2 alone at `$X/slice2_full.diff`).
+and gated in v2, v3, v4 or a mirror (§0.6, §0.8); nothing in rev 2's two PRs is
+only specified. CHECK lines are never written by hand (R16): goldens appear here
+only by name, their sources in Appendix A. The full measured diff, goldens
+included, is kept at `$Y/v4_full.diff` (`$X/v3_full.diff` for rev 1's v3; 2337
+lines for slice 2 alone at `$X/slice2_full.diff`); the mirrors' resolutions at
+`$Y/logs/mct_resolution.diff` and `$Y/m62_w322.diff` (amended 2026-10-21,
+review fold: B-M6 / A-M3).
 
 ### §2.1 Slice 2 (DR-1a): measured
 
@@ -1296,15 +1474,39 @@ fork/conformance/programs/stdlib/iterate_interface.carbon:34-37 becomes:
 <!-- google-doc-style-resume -->
 
 docs/design/control_flow/loops.md: the "`Iterate` interface" and "Loop
-desugaring" subsections of upstream's fb7eff130 page (its :75-131) replace the
+desugaring" subsections of upstream's ac31fd198 page (its :75-131) replace the
 fork's "Ranged-for for user-defined types" subsection (the fork's :87-114), the
 table of contents follows, and the fork's `while let` amendment (:38-44) and
 `for` pattern-default text (:64-65) stay; after the desugaring block, the
 amendment of Appendix C.9.
 
+M-a's resolution of handle_loop_statement.cpp on CT-1's head (measured on the
+mct mirror, §0.8.1; amended 2026-10-21, review fold: B-M6): the conflict block
+takes DR-1a's side above, which drops TP-1's lines
+
+<!-- google-doc-style-ignore -->
+
+```cpp
+  auto cursor_ptr_type_id = GetPointerType(context, cursor_type_inst_id);
+  // The code that forms an instruction enforces its type's completeness
+  // (type_completion.h): for a template-dependent cursor type, this records
+  // the requirement, so that each specific completes the pointer type its
+  // `Next` call passes. A pointer type is always complete, so the
+  // diagnostic context adds nothing.
+  RequireCompleteType(context, cursor_ptr_type_id, SemIR::LocId(node_id),
+                      [](auto& /*builder*/) {});
+```
+
+<!-- google-doc-style-resume -->
+
+with the `AddrOf` they completed, and the `#include
+"toolchain/check/type_completion.h"` TP-1 added, which nothing else in the file
+uses. The cursor variable, whose own type TP-1 completes where the `VarStorage`
+is formed, is what `Next` binds.
+
 ### §2.2 Slice 3 (DR-1b): measured
 
-core/prelude/operators/index.carbon becomes upstream's fb7eff130 file (§0.5's
+core/prelude/operators/index.carbon becomes upstream's ac31fd198 file (§0.5's
 listing, byte-identical; the license header and `package` line unchanged).
 core/prelude/types/slice.carbon and buf.carbon (the invariant: `Ref` returns a
 durable reference to the element storage the view or buffer owns or names, after
@@ -1475,8 +1677,10 @@ diff --git a/toolchain/check/handle_index.cpp b/toolchain/check/handle_index.cpp
 
 toolchain/check/core_identifier.def, toolchain/check/cpp/operators.cpp
 (309d3d63c's lines) and 230227264's call.cpp and convert.cpp hunks (applied
-unchanged by `git apply`; at implementation 230227264 is cherry-picked whole,
-its message kept by the `-x` form, its two goldens refilled):
+unchanged; at implementation they come by `git cherry-pick -x -n 230227264`,
+the commit's two goldens are then restored to the fork's and receive the three
+split sources of Appendix A.0, and autoupdate refills them, §1.3; amended
+2026-10-21, review fold: A-M5 / B-M13):
 
 <!-- google-doc-style-ignore -->
 
@@ -1553,276 +1757,178 @@ diff --git a/toolchain/check/cpp/operators.cpp b/toolchain/check/cpp/operators.c
 <!-- google-doc-style-resume -->
 
 toolchain/check/testdata/slice/fail_basic.carbon: the `fail_write_through` split
-(:16-30) is deleted. docs/design/slices.md: Appendix C.10's amendment replaces
-the 0.1-limits bullet. A known edge, not changed: when `Core` lacks
-`IndirectIndexWith` (the fake-`Core` splits of
+(:16-30) is deleted. Upstream's two `IndirectIndexWith` tests are added with
+their ac31fd198 sources (Appendix A.0b). docs/design/slices.md: Appendix C.10's
+amendment replaces the 0.1-limits bullet. A known edge, not changed: when `Core`
+lacks `IndirectIndexWith` (the fake-`Core` splits of
 operators/overloaded/index.carbon), `HasIndexWithImpl` returns `nullopt` for it
 and the literal rule does not fall back to `IndexWith(i64)`; only fake-`Core`
 tests reach it, and the measured fill pins their output.
 
-### §2.3 Slice 1a (DR-1c): specified
-
-1.  **toolchain/parse/handle_let.cpp** `HandleAssociatedConstant`: before the
-    identifier, consume an optional `Lex::TokenKind::Template` and record it on
-    the node (a new parse node kind `AssociatedConstantTemplate`, mirroring how
-    `TemplateBindingName` marks a `template` binding in parameter lists, added
-    to parse/node_kind.def and typed_nodes.h); `generic` and `runtime` keep
-    `PhaseKeywordInAssociatedConstant`. Invariant: a tree without the keyword is
-    unchanged (every existing parse golden byte-identical).
-2.  **toolchain/check/handle_let_and_var.cpp** (associated-constant path,
-    :88-460): a `template` associated constant's `SymbolicBinding` carries
-    `is_template = true`; its `AssociatedConstantDecl` is otherwise unchanged.
-    In the interface's later member declarations, a name reference to it is a
-    template constant (TP-1's `IsOpaqueTemplateDependentType` is true for a type
-    expression naming it), so `fn Op[C: Continuation]` declares a binding whose
-    type is template-dependent and `C.(BaseContinuation.ReturnType)` is a
-    dependent member access (TP-1's `AccessMemberAction`).
-3.  **toolchain/check/impl.cpp** (member matching against the interface): for an
-    interface member whose signature is template-dependent on a template
-    associated constant, substitute the impl's value for that constant (from the
-    witness, after L2 has set it) into the interface member's signature before
-    `CheckFunctionTypeMatches` and the thunk machinery compare it with the
-    impl's member. Invariant: an interface with no template associated constant
-    checks byte-identically.
-4.  **toolchain/check/impl.cpp and the impl scope** (L2): when an impl's body
-    declares a member whose name is an associated constant of the implemented
-    interface (an `InterfaceDecl` for a `type` constant; a `let` with an
-    initializer), the impl witness's entry for that constant is set to the
-    member's constant value at the impl's definition completion, before the
-    `ImplAssociatedConstantNeedsValue` check (the diagnostic "associated
-    constant ... not given a value in impl of interface ..."); a constant set
-    both by `where` and by a member is diagnosed
-    `ImplAssociatedConstantSetTwice` (new, "associated constant `{0}` is given a
-    value both by the `where` clause and by a member").
-5.  **toolchain/check/name_lookup.cpp and facet conversion** (L3): lookup in an
-    interface scope continues into the interfaces its `extend require impls`
-    declarations name (the alias equivalence of details.md:1489-1497);
-    `ConvertToFacet` (facet_type.cpp) of a facet whose type requires `I` through
-    `extend require impls` to `I`'s facet type uses the requirement's witness.
-    Invariant: an interface without `extend require impls` looks up and converts
-    as before.
-6.  Goldens A.3 to A.6. Measured at implementation by the §0.7 probes, which
-    must then compile: template_assoc, iface_in_impl (with `extend require
-    impls`), impl_let, ext_req and ext_req2; and by sum_types.md:137-165 written
-    verbatim modulo `extend require impls` (a positive split in A.3).
-
-### §2.4 Slice 1b (DR-1d): specified
-
-core/prelude/match.carbon (new; §1.5's listing after the license header and
-`package Core library "prelude/match";`); core/prelude.carbon gains `export
-import library "prelude/match";`; core/prelude/types/optional.carbon gains
-`import library "prelude/match";`, §1.6's `impl as Match` block inside the class
-after `Get`, and §1.9's `Branch` body.
-toolchain/check/match_continuation.{h,cpp} (new; BUILD's `check` library lists
-them):
+M-b's resolution of handle_index.cpp on CT-1's head, and the composition commit
+C-b after it (measured on the mct mirror, §0.8.1; amended 2026-10-21, review
+fold: B-M6). The resolution is mechanical: TP-1 renamed the parse-node
+parameters of the helpers to `SemIR::LocId loc_id` and made the default arm
+return its result from `PerformIndex`, so `PerformIndexOperator` takes `loc_id`
+and passes it to `BuildBinaryOperator`, and the arm ends in `return elem_id;`
+where trunk's pushed it. C-b then adds, at the head of `PerformIndex`'s default
+arm (before the literal-subscript probe, whose `index_type_id` it hoists):
 
 <!-- google-doc-style-ignore -->
 
 ```cpp
-// The alternatives of a scrutinee type that implements `Core.Match`
-// (docs/design/sum_types.md:119-130): one per method of the impl's
-// `Continuation` interface, in declaration order.
-struct MatchAlternative {
-  SemIR::NameId name_id;
-  // The method's explicit parameter types after `ref self`, in the
-  // scrutinee's specific.
-  llvm::SmallVector<SemIR::TypeId> param_type_ids;
-};
-
-struct MatchScrutineeInfo {
-  SemIR::InstId witness_id;        // `S as Core.Match`
-  SemIR::InterfaceId continuation_interface_id;
-  SemIR::SpecificId continuation_specific_id;
-  llvm::SmallVector<MatchAlternative> alternatives;
-};
-
-// Returns the alternatives when `type_id` implements `Core.Match` and its
-// `Continuation` is an interface whose methods are alternatives; nullopt,
-// without diagnosing, when it does not implement `Core.Match`; diagnoses and
-// returns an error marker for a malformed `Continuation` (§1.12).
-auto GetMatchScrutineeInfo(Context& context, SemIR::LocId loc_id,
-                           SemIR::TypeId type_id)
-    -> std::optional<MatchScrutineeInfo>;
-
-// Emits, at the scrutinee: the anonymous continuation class (fields
-// `.index: i32` and `.slot<k>: MaybeUnformed((P_k...))`), its impls of
-// `Match.BaseContinuation` (`.ReturnType = i32`), of the `Continuation`
-// interface and of `Destroy`, its `VarStorage` with `.index = -1`, and the
-// one `Op` call. Returns the storage and the call's `i32` result.
-struct MatchContinuationResult {
-  SemIR::InstId storage_id;
-  SemIR::InstId index_id;
-};
-auto BuildMatchContinuation(Context& context, SemIR::LocId loc_id,
-                            SemIR::InstId scrutinee_id,
-                            const MatchScrutineeInfo& info)
-    -> MatchContinuationResult;
-
-// The payload tuple of alternative `k`: `.slot<k>` of the storage viewed
-// `unsafe as (P_k...)`. Only valid where `index == k` has been tested.
-auto EmitMatchSlotAccess(Context& context, SemIR::LocId loc_id,
-                         const MatchContinuationResult& cont, int32_t k,
-                         const MatchScrutineeInfo& info) -> SemIR::InstId;
+    default: {
+      // Fork (DR-1 D-DR-7, composed with TP-1): whether a template-dependent
+      // operand implements `IndirectIndexWith(I)`, and so which interface
+      // subscripting uses, is known only per specific. An impl lookup that
+      // depends on a template parameter is resolved at monomorphization, where
+      // a failed `IndirectIndexWith` probe is an error rather than a fallback,
+      // so such an index is performed when the template is instantiated, as an
+      // opaque operand's is.
+      auto index_type_id = context.insts().Get(index_inst_id).type_id();
+      if (OperandDependence(context, operand_type_id) ==
+              SemIR::ConstantDependence::Template ||
+          OperandDependence(context, index_type_id) ==
+              SemIR::ConstantDependence::Template) {
+        return AddDependentActionSplice<SemIR::IndexAction>(
+            context, loc_id,
+            {.type_id = SemIR::InstType::TypeId,
+             .operand_id = operand_inst_id,
+             .index_id = index_inst_id},
+            SemIR::TypeInstId::None);
+      }
 ```
 
 <!-- google-doc-style-resume -->
 
-Invariants: `BuildMatchContinuation` runs once per evaluation of the scrutinee
-(once per `while let` and `for` iteration, in the loop header block), so `Op` is
-called exactly once per evaluation; every slot read is dominated by the `index
-== k` test of the arm reading it (the W-008 dominance rule); the storage's
-`Destroy` runs once, at the owning scope's end, and destroys only the slot `Op`
-filled.
+Invariant: an operand and subscript of non-template-dependent type are indexed
+exactly as DR-1b indexes them on trunk; a template-dependent one makes the
+choice in its specific, where `PerformAction` calls `PerformIndex` with
+concrete types. The predicate is TP-1's own `OperandDependence` (action.h), the
+action TP-1's `IndexAction`; no new instruction kind. C-b has no trunk
+counterpart: trunk cannot deduce a template parameter from `Vec(T)` at all
+(§0.8.1), so it lands with M-b.
 
-toolchain/check/context.h, `MatchCaseContext`: `scrutinee_type_id` is joined by
-an optional `MatchScrutineeInfo` (set at the scrutinee gate) and the
-`MatchContinuationResult` (set after the call); `Alternative` gains
-`match_param_count` beside `payload_field_index`.
-toolchain/check/refutable_binding.cpp:
+### §2.3 Slice 1a (DR-1c) and §2.4 Slice 1b (DR-1d)
 
--   `IsSupportedScrutineeType` (:83-135) is unchanged; `CheckRefutableScrutinee`
-    (:137-208), after `RequireCompleteType` and, with PR 62 composed, after
-    `GetCppSumType`'s conversion, tries `GetMatchScrutineeInfo` when
-    `IsSupportedScrutineeType` fails; on success it calls
-    `BuildMatchContinuation`, records both on the case context and returns the
-    scrutinee; on `nullopt` the existing TODO stands.
--   `ResolvePendingAlternative` (:210-293): a scrutinee with a
-    `MatchScrutineeInfo` resolves the name against `info.alternatives`
-    (`LookupMatchAlternative`), the parens rule against the class's member of
-    that name (§1.6), and the arity against `param_type_ids.size()`; a choice
-    resolves as now; anything else keeps the W4 TODO.
--   `EmitRefutableBindingTest` (:339-487) and `EmitRefutableBindingBind`
-    (:489-603): `is_alternative_payload_arm` on a `Match` scrutinee calls
-    `MatchCaseAlternativePatternMatch` and `EmitMatchSlotAccess` where the
-    choice lane calls `EmitChoicePayloadFieldAccess`; the `is_irrefutable`
-    predicate uses `info.alternatives.size() == 1`.
+Withdrawn with slice 1 (§1.4); rev 1's §2.3 and §2.4 (commit 1e46ffd94) are
+the resumption's starting point under RC-1..RC-12 (amended 2026-10-21, review
+fold: A-B1 / B-B1).
 
-toolchain/check/pattern_match.cpp: `MatchCaseAlternativePatternMatch` (:597-694)
-takes its discriminant value and payload access from the case context's
-`MatchContinuationResult` when present (a 30-line branch at its head; the
-dominated payload block below is shared). toolchain/check/handle_match.cpp:
-`AlternativePattern` (:283-470) resolves against `Match` alternatives through
-`ResolvePendingAlternative` as above; exhaustiveness (`MatchStatement`, the SF-7
-analysis) reads the alternative count from the context.
-toolchain/check/handle_loop_statement.cpp: §1.8 (the `CallOptionalAccessor`
-function and its two calls deleted; the while-let driver's test and bind with a
-synthesized `.Some` root; the TODO at :269-272 deleted).
-toolchain/diagnostics/kind.def: the five kinds of §1.12. Lowering: no file.
+### §2.5 Commits on other PRs' branches
 
-### §2.5 Land-time files
-
-PR 62's commit (W-322, D-DR-15): refutable_binding.cpp (the
-`GetCoreOptionalView` branch), cpp/sum_type.cpp and cpp/sum_type.h (the
-`CoreOptionalView` machinery), kind.def (`CoreOptionalNotMatchable`),
-match/core_optional_view.carbon deleted, PR 62's sum_types.md section amended
-(C.6), its plan's §1.7 and the decision log's SV-1 entry gaining a dated note.
-PR 56's commits: W-323's (loops.md:116-118 and fork/optional/plan.md:192-214,
-C.7) and, at DR-1d, optional.md's (C.8).
+(Rewritten 2026-10-21, review fold: A-M3 / B-B2 / B-M10 / B-M12.) PR 62's commit
+(W-322, D-DR-15), as measured on the m62 mirror (`$Y/m62_w322.diff`):
+refutable_binding.cpp loses the D-SV-7 branch; cpp/sum_type.h loses the
+`CoreOptionalView` struct and the declarations of `GetCoreOptionalView` and
+`DiagnoseCoreOptionalNotMatchable`, and its two comments that said "matchable"
+say "mapped"; cpp/sum_type.cpp gains the struct (status `Mapped` for
+`Matchable`) before `GetCoreOptionalPayload`, makes `GetCoreOptionalView`
+`static`, and loses `DiagnoseCoreOptionalNotMatchable`; kind.def loses
+`CoreOptionalNotMatchable`; match/core_optional_view.carbon is deleted and
+match/fail_todo_core_optional.carbon (Appendix A.3) added and filled; the
+program of Appendix B.3 is SKIPped and the conformance README table
+regenerated; PR 62's sum_types.md section, gap row 68, plan §1.7, decision-log
+SV-1 entry and ledger take C.6's texts. PR 56's commit (W-323): loops.md:116-118
+and fork/optional/plan.md:192-214 as C.7, and docs/design/optional.md as C.8.
+PR 57's merge of PR 56's branch: optional.md, loops.md and the gap table keep
+both sides.
 
 ## §3 Commits and PRs
 
-Author `jmann345 <jerrymannstan@gmail.com>`, committer Claude, each message
-ending with the session's two trailers after a blank line; explicit paths only
-(R20); dates the commit's UTC date. Fill commits come from `autoupdate.sh` to a
-fixpoint (R26: a second pass, as §0.6.1 needed).
+(Rewritten 2026-10-21, review fold: A-M4 / B-M5 / A-M5 / B-M13 / B-M6 / A-m4 /
+B-m4.) Author `jmann345 <jerrymannstan@gmail.com>`, committer Claude, each
+message ending with the session's two trailers after a blank line; explicit
+paths only (R20); dates the commit's UTC date. Fill commits come from
+`autoupdate.sh` to a fixpoint (R26: a second pass that changes nothing).
 
-1.  **P0** "DR-1 plan (rev 1): direction realignment: Match for classes and
-    Core.Optional, the ref cursor, slice element access through
-    IndirectIndexWith" (this file); later revisions each their own commit;
-    implementation starts at the signed-off revision.
-2.  **R0** "DR-1 records: plan decisions" (decision-log entry DR-1 as Appendix
-    C.1 at its plan state, the V-3a register (iv), W-324..W-329 filed,
-    ORCHESTRATION's Next actions; C.2, C.4, C.5). With it, W-323's commit on PR
-    56's branch (C.7), records only: it does not wait for any code (D-DR-3).
+1.  **P0, P1** "DR-1 plan (rev 1)" and "DR-1 plan (rev 2): reviews A and B
+    folded" (this file); later revisions each their own commit; implementation
+    starts at the signed-off revision.
+2.  **R0** "DR-1 records: plan decisions" on claude/carbon-fork-0-1-dr: the
+    decision-log entry DR-1 at its plan state (C.1), the V-3a register's (iv)
+    and (v) (C.4), W-324..W-327 and W-329 filed and W-320's and W-322's dated
+    notes (C.2), gap rows :68 and :78's DR-0 sentences (C.3),
+    error_handling.md's amendment (C.11), ORCHESTRATION's Next actions (C.5).
+    With it, on the other branches, made now (§1.16): W-323's commit on PR 56's
+    branch (C.7, C.8), PR 57's merge of it, and W-322's commit on PR 62's branch
+    (§1.11, C.6, A.3, B.3), each measured or records-only.
 3.  **A1** "DR-1a: `Core.Iterate.Next` takes `ref cursor`" (§2.1's source files,
-    the four test sources, the program, loops.md, C.9's first amendment). A1F
-    "DR-1a fill": the nine goldens of §0.6 (predicted exactly as measured on v2:
-    the table's numstat).
-4.  **A-R** "DR-1a records": W-321 discharged, gap row :66's first half (C.2,
-    C.3), the register's (iii) resolved. DR-1a is reviewed (two implementation
-    reviews, R29(c)) and opened held.
-5.  **B1** "DR-1b: subscripting prefers `IndirectIndexWith`; `Core.Slice` and
-    `Core.Buf` write through `Ref`" (§2.2, A.1 and A.2's sources,
-    `fail_write_through` deleted, slices.md C.10) with B0 before it: `git
-    cherry-pick -x 230227264` (its own commit, upstream's message kept, the
-    trailers added). B1F "DR-1b fill": the eleven goldens of §0.6.1 plus
-    230227264's two and A.1, A.2 (two passes).
-6.  **B-P** "DR-1b programs": B.1, B.2 and the `.diff.cpp`; predicted 130 / 0 /
-    22 over 152.
-7.  **B-R** "DR-1b records": W-109 discharged, gap row :79, the register's (ii)
-    resolved, W-327 evidence. Reviews, held.
-8.  **M** (DR-1c's branch) merge of CT-1's head into
-    claude/carbon-fork-0-1-dr-match, records-only conflicts; then the
-    composition gate.
-9.  **C1** "DR-1c (1): template associated constants" (§2.3 items 1-3, A.3,
-    A.6), C1F; C2 "DR-1c (2): impl members give associated constants their
-    values" (item 4, A.4), C2F; C3 "DR-1c (3): `extend require impls` member
-    access" (item 5, A.5), C3F. Stop-and-amend after C1's first build: if L1
-    needs a change outside §2.3's files, the plan is amended before C2.
-10. **C-R** "DR-1c records": W-324's evidence, the register's (iv). Reviews,
-    held.
-11. **D1** "DR-1d (1): `Core.Match`, the continuation, and alternative patterns
-    on a `Match` class" (match.carbon, match_continuation.{h,cpp}, context.h,
-    refutable_binding.cpp, pattern_match.cpp, handle_match.cpp, kind.def, A.7 to
-    A.10), D1F (predicted set of §1.13, measured and recorded here); D2 "DR-1d
-    (2): `Core.Optional` implements `Match`; `Try` matches" (optional.carbon),
-    D2F; D3 "DR-1d (3): `for` matches `.Some(<pattern>)`"
-    (handle_loop_statement.cpp, A.11), D3F.
-12. **D-P** "DR-1d programs": B.3 to B.5; predicted 134 / 0 / 22 over 156 on
-    DR-1d's base (DR-1b's 130 / 0 / 22 over 152, plus four).
-13. **Implementation reviews A and B** on each PR's head (R29(c)); not commits.
-14. **Fix commits**: at most three per PR, each with its fill. The shrink line
-    (D-DR-22): a finding that needs a fourth fix commit shrinks the PR instead:
-    the form at issue goes OUT with a residue in the remaining W-32x reservation
-    (or the next free id after the re-scan), its split renamed `fail_todo_`,
-    never a guard that hides an IN form (R17). For DR-1c, a prerequisite (L1, L2
-    or L3) that cannot be made to work within the budget stops slice 1: DR-1c
-    lands only the prerequisites that work, DR-1d does not start, W-320 is
-    narrowed with the measured blocker, and no fork-local respelling of `Match`
-    is introduced (R32 (d)).
-15. **Land-time commits**, each new, on the other PR's branch (R32 (e)): W-322's
-    on PR 62 (§2.5, C.6), after DR-1d's reviews; optional.md's on PR 56 (C.8),
-    after DR-1d's reviews.
-16. **R** "DR-1 records" and D "DR-1 discharge" (each PR's own, last on its
-branch): the ledger, the gap rows, the decision log's dated notes,
-ORCHESTRATION, the id re-scan's result.
+    the four test sources, the program, loops.md with C.9). A1F "DR-1a fill":
+    the nine goldens of §0.6, predicted exactly as measured on v2.
+4.  **A-R** "DR-1a records": W-321 discharged, gap row :66 (C.3), the register's
+    (iii) resolved. One implementation review once the run is green (R29(c));
+    DR-1a is opened held.
+5.  **B0** on claude/carbon-fork-0-1-dr-idx (cut from A-R): `git cherry-pick -x
+    -n 230227264`, the two form.carbon goldens restored to the fork's and given
+    Appendix A.0's split sources, committed with upstream's subject and body,
+    the `-x` line and "Upstream author: David Blaikie, PR 7886" (§1.3). B0F: the
+    two goldens refilled (+172, +103 lines on v4).
+6.  **B1** "DR-1b: subscripting prefers `IndirectIndexWith`; `Core.Slice` and
+    `Core.Buf` write through `Ref`" (§2.2's files, `fail_write_through` deleted,
+    upstream's two tests, A.1, A.2, slices.md C.10). B1F "DR-1b fill": the
+    eleven goldens of §0.6.1 and the four new files, two passes, measured on v4.
+7.  **B-P** "DR-1b programs": B.1, B.2 and the `.diff.cpp`, the README table
+    regenerated; 130 / 0 / 22 over 152, measured on v4.
+8.  **B-R** "DR-1b records": W-109 discharged, gap row :79 to DONE (C.3), the
+    register's (ii) resolved. One implementation review once green (R29(c));
+    DR-1b is opened held, stacked on DR-1a.
+9.  **Fix commits**: at most three per PR, each with its fill. The shrink line
+    (D-DR-22): a finding that needs a fourth shrinks the PR instead, the shape
+    at issue going OUT with a residue in W-328 or the next free id after the
+    re-scan, its split renamed `fail_todo_`, never a guard that hides an IN
+    form (R17). Break condition: a finding that no shrink can answer without
+    breaking a measured row of §0.6.2; the PR stops and the plan is amended.
+10. **At merge, after CT-1** (§1.16): M-a then L-a on DR-1a's branch; M-b, C-b
+    "DR-1b: index a template-dependent operand per specific (TP-1's
+    `IndexAction`)" and L-b on DR-1b's. Their resolution and fills were measured
+    together on the mct mirror (§0.8.1).
+11. **D** "DR-1 discharge" (each PR's own, last on its branch): the ledger, the
+    gap rows, the decision log's dated notes, ORCHESTRATION, the id re-scan.
 
 ## §4 Testdata matrix (autoupdate fills; the fill must reproduce these lines)
 
-| Golden | PR | Kind | Predicted |
-| --- | --- | --- | --- |
-| check/for/actual, basic, pattern; check/interop/cpp/range_for; check/slice/basic; lower/array/iterate; lower/for/bindings, break_continue, for | DR-1a | refill | §0.6's numstat exactly (measured on v2) |
-| check/index/fail_invalid_base, fail_non_tuple_access; check/operators/overloaded/index, index_with_prelude, string_indexing; check/slice/basic, buf, fail_basic; lower/interop/cpp/span; lower/slice/basic, buf | DR-1b | refill | `$X/v3_numstat.txt` exactly (measured on v3; overloaded/index.carbon converges on the second pass) |
-| check/function/call/form.carbon, lower/function/call/form.carbon | DR-1b | new (230227264) | upstream's sources; this tree's fill |
-| check/slice/write_through.carbon, lower/slice/write_through.carbon | DR-1b | new | A.1, A.2: writes through a slice, a `Buf`, a generic `Fill`, a `Slice(const i32)` failure split, a `std::span` mock write |
-| check/interface/template_assoc_const.carbon; check/impl/assoc_const_member.carbon; check/interface/extend_require_member.carbon; parse/let/template_assoc_const.carbon | DR-1c | new | A.3 to A.6 |
-| check/match/core_optional.carbon, user_sum_type.carbon, fail_match_class.carbon; check/if/if_let_optional.carbon; check/while/while_let_optional.carbon; check/let/let_else_optional.carbon; lower/match/core_optional.carbon | DR-1d | new | A.7 to A.11 |
-| the nine `for` goldens; the files dumping `Core.Optional`'s imports or the prelude's library list | DR-1d | refill | predicted, measured at D1F and D3F |
-| check/generic/template/for_range.carbon, lower/template/for_range.carbon (PR 61's) | M at DR-1's merge | refill | predicted: the `AddrOf` and the pointer completeness requirement leave |
+(Rewritten 2026-10-21, review fold: A-M5 / B-M13 / A-m2 / B-m4 / B-M6.)
 
-## §5 Conformance delta (from trunk's 128 / 0 / 22 over 150)
+| Golden | PR | Kind | Measured |
+| --- | --- | --- | --- |
+| check/for/actual, basic, pattern; check/interop/cpp/range_for; check/slice/basic; lower/array/iterate; lower/for/bindings, break_continue, for | DR-1a | refill | §0.6's numstat (v2) |
+| check/function/call/form.carbon, lower/function/call/form.carbon | DR-1b (B0F) | three splits added from 230227264, refill | +172/0 and +103/0 (v4); 169 of the 172 check lines byte-identical to upstream's |
+| check/index/fail_invalid_base, fail_non_tuple_access; check/operators/overloaded/index, index_with_prelude, string_indexing; check/slice/basic, buf, fail_basic; lower/interop/cpp/span; lower/slice/basic, buf | DR-1b (B1F) | refill | `$Y/v4_numstat.txt` (v4; overloaded/index.carbon converges on the second pass) |
+| check/operators/overloaded/indirect_index_with.carbon, lower/index/indirect_index_with.carbon | DR-1b (B1F) | new, upstream's sources | 620 and 164 lines (v4) |
+| check/slice/write_through.carbon (A.1), lower/slice/write_through.carbon (A.2) | DR-1b (B1F) | new | 692 and 166 lines (v4) |
+| check/generic/template/for_range, lower/template/for_range, check/interop/cpp/range_for | L-a | refill | 12/17, 137/137, 17/103 (mct) |
+| check/generic/template/index | L-b, after C-b | refill | 16/41 (mct) |
+| PR 51's check and lower slice/buf_field; PR 55's string_indexing; PR 57's check/slice/basic | L-a, L-b | refill | predicted: `Buf`'s impl, the subscript calls and the cursor change move them |
+| match/core_optional_view.carbon (deleted), match/fail_todo_core_optional.carbon (A.3) | PR 62's W-322 commit | delete, new | 0/681 and 51 lines (m62) |
+
+## §5 Conformance delta
+
+(Rewritten 2026-10-21, review fold: B-M2 / A-m4.)
 
 | After | PASS | FAIL | SKIP | Total | Change |
 | --- | --- | --- | --- | --- | --- |
+| trunk | 128 | 0 | 22 | 150 | |
 | DR-1a | 128 | 0 | 22 | 150 | measured on v2: iterate_interface rewritten, same output |
-| DR-1b | 130 | 0 | 22 | 152 | measured base (v3: 128/0/22 over 150) plus B.1 and B.2, predicted PASS |
-| DR-1c | 130 | 0 | 22 | 152 | no program |
-| DR-1d | 134 | 0 | 22 | 156 | B.3, B.4 (with its `.diff.cpp`), B.5 and the `if let` program of B.3's sibling, predicted PASS |
+| DR-1b | 130 | 0 | 22 | 152 | measured on v4: B.1 and B.2 PASS |
+| CT-1's head with DR-1a and DR-1b merged | 149 | 0 | 20 | 169 | measured on mct: CT-1's 167 programs (20 SKIP) and B.1, B.2; templates_for_dependent_range and templates_dependent_index PASS |
+| PR 62 with W-322's commit | 133 | 0 | 22 | 155 | measured on m62: PR 62's 134/0/21 with match_core_optional_diff SKIPped |
 
-Bullets: no bullet changes status (48 PASS / 0 FAIL / 8 SKIP of 56): Stdlib:
-Slices and Control flow: matching sum-type consumption are already PASS by their
-existing programs; the new programs add evidence, not status. No SKIP moves:
-optional_missing_ops is OP-1's (comparisons), match_sum_type_payload's interop
-SKIP is PR 62's.
+Bullets: no bullet changes status (48 PASS / 0 FAIL / 8 SKIP of 56 on v4):
+Stdlib: Slices is already PASS by its existing programs, and the new programs
+add evidence. On PR 62's branch the sum-type consumption bullet stays PASS by
+its other ten programs.
 
 ## §6 Churn and collisions
 
+(Rewritten 2026-10-21, review fold: A-M5 / B-M13.)
+
 | PR | Toolchain and prelude (+/-) | Goldens | Programs | Records and docs |
 | --- | --- | --- | --- | --- |
-| DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 (measured) | 9 refills, 569/628 lines | 1 (3/3) | loops.md, ledger, row :66 |
-| DR-1b | index.carbon 18/0, slice.carbon 7/2, buf.carbon 7/2, handle_index.cpp 39/17, core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 (measured) | 11 refills (948/709 lines measured), 4 new | 2 and an oracle | slices.md, ledger, row :79 |
-| DR-1c | estimated 400 to 900 lines over parse/handle_let.cpp, parse node kinds, check handle_let_and_var.cpp, impl.cpp, name_lookup.cpp, facet_type.cpp, kind.def | 4 new | none | ledger |
-| DR-1d | estimated 900 to 1500: match_continuation.{h,cpp} new (500 to 800), refutable_binding.cpp, pattern_match.cpp, handle_match.cpp, handle_loop_statement.cpp, context.h, kind.def, match.carbon, optional.carbon | 7 new, predicted refills | 3 and an oracle | sum_types.md, error_handling.md, loops.md, ledger, rows :68 :78 :66 |
+| DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 | 9 refills, 569/628 lines | 1 (3/3) | loops.md, ledger, row :66 |
+| DR-1b | index.carbon 18/0, slice.carbon 7/2, buf.carbon 7/2, handle_index.cpp 39/17, core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines) | 2 and an oracle | slices.md, ledger, row :79 |
+| M-a, M-b, C-b at merge | handle_loop_statement.cpp (TP-1's 10 lines dropped), handle_index.cpp (C-b +16) | 4 refills measured, 4 predicted | none | merge records |
+| PR 62's W-322 commit | refutable_binding.cpp 0/19, cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1 | 1 deleted (681), 1 new (51) | 1 SKIPped | sum_types.md, row 68, plan, decision log, ledger |
 
 Collisions: §0.8. The rules at merge: §1.16.
 
@@ -1830,150 +1936,248 @@ Collisions: §0.8. The rules at merge: §1.16.
 
 ### §7.1 Risks
 
--   **R-1, L1 needs more than TP-1's machinery.** If a template-dependent
-    deduced binding in an interface function (`fn Op[C: Continuation]`) cannot
-    be checked by TP-1's dependent forms, DR-1c's C1 stops at its stop-and-amend
-    point. Falsified by C1's first build compiling A.3's positive split.
--   **R-2, the continuation's copy semantics observably differ from the
-    design.** sum_types.md:149's `value: T` is a value parameter; the slot
-    copies it once. A `Copy` impl with side effects runs once more than a
-    by-reference design would. Falsified by B.3's counting `Copy` (Appendix B.3
-    prints the copy count; the EXPECT is the hand-derived count with the slot
-    copy).
--   **R-3, UA-3 conflict in L3's machinery.** Upstream's `IdentifiedFacetType`
-    series (PRs 7924 to 8004) reworks facet identification; DR-1c's
-    facet-conversion hunk will conflict at the next advance. Mitigation: the
-    hunk is confined to one function; UA-3 takes upstream's code and re-measures
-    A.5. Falsified when UA-3's merge is clean.
--   **R-4, golden churn in DR-1d is larger than §1.13 predicts.** The new
-    prelude library and `Optional`'s impl move every full-prelude golden that
-    dumps imports. Measured at D1F; the prediction is replaced by the
-    measurement there.
--   **R-5, the `Op` call adds per-iteration cost to `for`.** One `Op` call, one
-    continuation method call and one slot copy per iteration where
-    `HasValue`/`Get` made two calls and one copy. The fastbuild arbiter does not
-    optimize, so the cost is not measured; lower/match/core_optional.carbon
-    (A.11) pins the unoptimized call shape, and an optimized comparison is
-    recorded as not run (§8.1).
+(Rewritten 2026-10-21, review fold: A-B1 / B-B1 / B-M6 / B-M7.)
+
+-   **R-1, the stop leaves the owner's question open.** `Core.Optional` stays
+    unmatchable until upstream resolves its conflict. Mitigation: W-324 is
+    checked at each weekly upstream check and W-320 is re-planned the week the
+    conflict resolves, from rev 1's design and RC-1..RC-12. Falsified when the
+    weekly check after a resolving upstream commit schedules W-320.
+-   **R-2, the composition at M-b moves more template goldens than the mirror
+    showed.** C-b defers every template-dependent index, not only class types.
+    Measured on CT-1's head: one golden moved (check generic/template/index);
+    falsified if a later held PR's template test moves at L-b.
+-   **R-3, `Buf` on `IndirectIndexWith` disagrees with upstream's owning
+    buffer.** If upstream gives an owning buffer `IndexWith` with `Ref` on
+    durable operands, `Buf` follows (D-DR-7's break condition). Falsified by
+    upstream's first owning-buffer type in the prelude.
+-   **R-4, 059ee7b9e's return form.** Upstream's `-> ref T` SemIR differs
+    (§0.6.2); UA-3 refills the two form goldens and slice 3's `Ref` dumps.
+    Falsified when UA-3's fill moves only those lines.
+-   **R-5, W-322's removal surprises a PR 62 user.** A `Core.Optional` scrutinee
+    that matched on PR 62's install no longer does. This is the measured cost
+    of R32 (e) and is recorded in PR 62's sum_types.md amendment and SKIP
+    reason. Falsified if a program other than match_core_optional_diff on PR
+    62's branch depended on the view: none did (m62: 133/0/22).
 
 ### §7.2 Rejected alternatives
 
+-   **Implementing L1 and following sum_types.md:113 over README.md, with
+    F-022.** Rejected (amended 2026-10-21, review fold: A-B1 / B-B1): it accepts
+    syntax upstream's README.md, terminology.md and parser explicitly refuse,
+    a contradiction V-3 vetoes and R32 forbids; F-022 cannot license it.
+    Falsifiable claim: upstream's pages at the sign-off tip still say "an
+    associated constant cannot be made `template`".
+-   **L2, or a fork-local `Match` without `let template`.** Rejected: L2 is
+    what p001013 removed; a fork `Match` declared another way is a second
+    spelling of sum_types.md's interface (R32 (d)). v1.carbon shows a checked
+    constant cannot type `Op[C: Continuation]`.
 -   **The choice conversion** (`Core.Optional` as `choice Optional(T)`,
     sum_types.md:52-55). Rejected by DR-0 option (b): it changes the prelude's
-    identity at fb7eff130 and loses the `T*` niche and `HasValue`/`Get`.
-    Falsifiable claim: no upstream text after fb7eff130 makes `Optional` a
-    choice (D-DR-1's break condition watches it).
--   **The toolchain special case** (accept `Core.Optional` at the gate and lower
-    `.Some`/`.None` to `HasValue`/`Get`). Rejected by DR-0 option (c): a second
-    spelling of `Match`, R32 (d). Falsifiable claim: §1.5's mechanism handles a
-    user class (B.5), which the special case could not.
--   **Keeping D-SV-7's view.** A scrutinee view where upstream designs `Match`
-    (R32 (d)'s own example) that refuses symbolic, aggregate, string and nested
-    payloads (§0.3: o_generic, o_string, o_nested on PR 62's install). Falsified
-    if the `Match` route fails any shape the view matched: B.4 composes both on
-    a PR 62 mirror.
--   **A pointer-cursor shim** (keeping `cursor: CursorType*` beside `ref`, or an
-    adapter impl). Rejected: two signatures of one upstream interface; the thunk
-    failure shows the interface admits one form. Falsified if a user `ref` impl
-    compiles against a pointer interface (it does not on trunk, §0.5).
--   **A fork-local `Match` without `let template`** (`let Continuation: type;`
-    with the impl naming its interface in a `where` clause). Rejected: a second
-    spelling of sum_types.md's interface; v1.carbon also shows the non-template
-    constant cannot type `Op[C: Continuation]`. Falsifiable claim: the probe's
-    two errors (§0.7).
+    identity at ac31fd198 and loses the `T*` niche and `HasValue`/`Get`.
+-   **The toolchain special case** (accept `Core.Optional` at the gate and
+    lower `.Some`/`.None` to `HasValue`/`Get`). Rejected by DR-0 option (c): a
+    second spelling of `Match`, R32 (d).
+-   **Keeping D-SV-7's view until W-320 lands.** Rejected: R32 (e) amends a
+    held PR that carries a drift before it lands, and W-320 has no date.
+-   **`Buf` on `IndexWith` (review B's M7 primary fix).** Rejected with
+    measurement (§0.6.2): a `final` impl does not compile beside upstream's
+    blanket impl, a non-`final` one regresses generic `b[i]`, and D-SL-6
+    already places `Buf` in indexing.md's `std::span` category.
+-   **A pointer-cursor shim** (keeping `cursor: CursorType*` beside `ref`).
+    Rejected: two signatures of one upstream interface; the thunk failure
+    shows the interface admits one form.
 -   **Copying upstream's handle_index.cpp wholesale.** Rejected: it carries
     947c1eb52's `Core.Array` arm, an advance's worth of prerequisites (UA-3's).
     The re-expression keeps 309d3d63c's lines exactly.
+-   **Resolving 230227264's golden conflicts by hand.** Rejected (R16): the
+    fork's goldens are kept and refilled (§1.3).
 
 ## §8 Verification
 
+(Rewritten 2026-10-21, review fold: B-M11 / A-m4 / B-M6.)
+
 1.  `build.sh` and `install.sh` of each PR's head, after `pgrep -fa ninja` shows
     no other build; a header or X-macro change (core_identifier.def, kind.def,
-    context.h, typed_insts.h, node_kind.def) means a full build, never a relink.
+    context.h) means a full build, never a relink.
 2.  `autoupdate.sh` to a fixpoint: the fill's second pass changes nothing (R26).
-3.  `gate.sh`: every golden passes (1942 on DR-1a's base; 1942 plus the new
-    files after).
+3.  `gate.sh`: every golden passes (1942 on DR-1a, 1946 on DR-1b).
 4.  `conformance.sh <wt> <out>` with `XDG_CACHE_HOME` set under the scratch:
-    §5's predictions exactly.
+    §5's measured rows exactly.
 5.  Mutants, each relinked over the PR's build with one translation unit
     changed, each expected to fail named goldens: DR-1a: the loop checker
-    passing `AddrOf` again (the nine goldens and every `for` program fail to
-    compile); DR-1b: `diagnose=true` on the `IndirectIndexWith` probe
-    (operators/overloaded/index and every type without `IndirectIndexWith`
-    diagnose twice), the fallback removed (string_indexing, index_with_prelude
-    fail), 230227264's call.cpp line reverted (every program importing the
-    prelude CHECK-fails, §0.6.1); DR-1d: the `index == k` test made constant
-    `true` (match/core_optional's runtime splits print the wrong alternative),
-    the slot destroy removed (B.3's `Core.String` counting program's EXPECT
-    fails), the parens rule inverted (fail_match_class's `.None` split stops
-    failing).
+    passing `AddrOf` again (the nine goldens fail, and every `for` over a range
+    whose `Next` takes `ref` fails to compile through the thunk); DR-1b:
+    `diagnose=true` on the `IndirectIndexWith` probe (operators/overloaded/index
+    and index_with_prelude diagnose twice), the fallback to `IndexWith` removed
+    (string_indexing and index_with_prelude fail), 230227264's call.cpp line
+    reverted (every program importing the prelude CHECK-fails, §0.6.1); C-b at
+    merge: the dependence check removed (generic/template/index's
+    `index_class_with_index_with` fails as on the mirror before C-b). Each
+    mutant names its catching golden, so none is vacuous.
 6.  clang-tidy on the changed translation units, as CT-1 ran it.
 7.  prek:
     `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
     uvx prek run --files <paths>` to a fixpoint with `XDG_CACHE_HOME` under the
     scratch, and the R31 counts before and after every markdown edit.
 8.  `python3 fork/conformance/runner.py --self-test` after the programs are
-    added: every program parses, names a bullet in the gap table and has its
-    oracle sibling.
-9.  The composition mirrors, full builds on scratch mirrors, never on the held
-    branches: DR-1a and DR-1b over PR 61 and CT-1 (the M resolution of §0.8; the
-    three TP-1 `for` goldens and the index goldens refilled and gated), over PR
-    55 (string_indexing), over PR 62 (convert.cpp); DR-1d over PR 62 (W-322's
-    commit applied: sv_view and sv_std_match run, `CoreOptionalNotMatchable`
-    gone, the std goldens unchanged), over PR 56 and PR 57 (optional.carbon's
-    three regions compose; OP-2's `Destroy` runs for the slot), over PR 59 and
-    PR 60 (pattern_match.cpp and handle_let_and_var.cpp).
+    added.
+9.  The composition mirrors were built at planning (§0.8.1, §0.8.2); at
+    implementation each PR re-runs them on the then-current heads before it is
+    opened, and DR-1b also on PR 51 (buf_field), PR 55 (string_indexing) and
+    PR 57 (slice/basic).
 10. The id re-scan for `W-32[4-9]` across every origin ref and worktree at the
     records commit.
 
 ### §8.1 What this plan measured and what it did not
 
-Measured (container-local, EXPECTED, not of record): the probe matrix of §0.3 on
-seven toolchains; slice 2 relinked and gated (1942 of 1942 after the fill) with
-conformance 128/0/22; slices 2 and 3 fully built and gated (1942 of 1942 after a
-two-pass fill) with conformance 128/0/22 and the nine slice-3 probes; the root
-cause of the thunk failure (the interface signature) and of the slice-3 crash
-(230227264); the hand-desugared `Match` continuation on trunk in four shapes;
-the language gaps L1..L3 on trunk and the nightly; the dry-run of v3's source
-hunks onto all twelve held heads and CT-1's.
+Measured (container-local, EXPECTED, not of record): the probe matrix of §0.3
+on seven toolchains; slice 2 relinked and gated (1942 of 1942) with conformance
+128/0/22; v3 and v4 built and gated (v4: 1946 of 1946 after a two-pass fill,
+conformance 130/0/22 over 152) with the slice-3 and `Buf` probes; 230227264's
+splits and upstream's `IndirectIndexWith` tests filled; the composition on
+CT-1's head (1963 of 1963, 149/0/20 over 169) after its root-caused template
+fix; W-322's removal on PR 62's head (1950 of 1950, 133/0/22 over 155); the
+root causes of the thunk failure, the slice-3 crash and the template index
+failure; the `5 as const i32` crash on trunk and the nightly; review A's
+probes (where_cont, copy_slot, nested_choice, tmpl_for, tmpl_match_dep).
 
-Not measured, and why: DR-1c and DR-1d's toolchain code (its prerequisites do
-not exist, and a prototype of L1..L3 plus the mechanism is the XL work this plan
-schedules, not a planning step); the goldens DR-1d moves (they depend on that
-code); any composition mirror (each is a full build of a held PR plus DR-1's
-diff, 10 to 25 minutes each on this machine shared with CT-1's mutants; §8 item
-9 runs them at implementation); B.1 to B.5 (written in Appendix B, not run:
-B.1's and B.2's bodies were run as the probes s_write, s_buf_write,
-s_generic_write and s_span_write, whose outputs their EXPECTs reproduce);
-clang-tidy; the nightly's behavior on slice 3 (it predates 6d80ceb58).
+Not measured, and why: the mutants of §8 item 5 (each is a relink of one
+translation unit at implementation, against goldens §4 names); clang-tidy;
+the predicted refills of PR 51's, PR 55's and PR 57's goldens at merge (§8 item
+9 runs them on the then-current heads); an optimized build (the carbonbuild
+scripts build fastbuild only); the nightly on slice 3 (it predates 6d80ceb58).
 
 ## Hand-off notes
 
--   Restore before measuring: this plan's prototypes were made in this worktree
-    and reverted after (`git checkout --` of every file in `$X/v3_numstat.txt`,
-    `$X/v3_full.diff` kept); DR-1a's implementer re-applies §2.1 from the plan,
-    not from the scratch diff.
--   The full build of v3 left /home/user/carbon-build/carbon-dr at the
-    prototype's state (`0.0.0-0.dev+f68681114.dirty`); DR-1a's first `build.sh`
-    rebuilds incrementally from it.
--   /dev/shm/dr1-planner (v2) is deleted with this plan's commit.
--   DR-1b's cherry-pick B0 comes before B1, so B1's fill does not run into the
-    crash of §0.6.1.
--   W-323's commit on PR 56's branch is records only and lands with R0, before
-    PR 56's merge.
--   Never write `.None` for `Core.Optional` in a fork page or program after
-    DR-1d: §1.6. `StdOptional`'s `.None` stays.
+-   Restore before measuring: rev 2's v4 state was made in this worktree and
+    reverted after (`$Y/v4_full.diff` and `$Y/v4_numstat.txt` kept); DR-1a's
+    implementer re-applies §2.1 from the plan, not from the scratch diff.
+-   /home/user/carbon-build/carbon-dr holds v3's objects with v4's relinked
+    file_test (0.0.0-0.dev+1e46ffd94.dirty); DR-1a's first `build.sh` rebuilds
+    incrementally from it.
+-   The mirrors (`$Y/mct`, `$Y/m62`) and /dev/shm/dr1-fixer are removed with
+    this revision's commit.
+-   B0 comes before B1, so B1's fill does not run into the crash of §0.6.1.
+-   W-322's and W-323's commits do not wait for DR-1's code: they are made at
+    R0 (§1.16).
+-   Never write `.None` for `Core.Optional` in a fork page or program: RC-6.
+    `StdOptional`'s `.None` stays.
 
 ## Appendix A: golden sources
 
-Each file starts with the license header and `// AUTOUPDATE` and the two `//
-TIP:` lines file_test writes; the full-prelude goldens carry no `INCLUDE-FILE`,
-the min_prelude ones `// INCLUDE-FILE:
-toolchain/testing/testdata/min_prelude/full.carbon`. Splits are `// ---
+(Amended 2026-10-21, review fold: A-M5 / B-M13 / A-m2 / B-m4 / A-M3.) Each file
+starts with the license header, `// INCLUDE-FILE:
+toolchain/testing/testdata/min_prelude/full.carbon` (which selects the full
+production prelude, as every slice golden on trunk does; rev 1 had this
+backwards), `// AUTOUPDATE` and the two `// TIP:` lines. Splits are `// ---
 name.carbon`; `//@dump-sem-ir-begin`/`-end` bracket the dumped region; no CHECK
-line is written here.
+line is written here. Every source below was filled and gated on v4 or m62.
 
-### A.1 toolchain/check/testdata/slice/write_through.carbon (DR-1b, full prelude)
+### A.0 230227264's three splits (DR-1b, B0)
+
+Added to check/testdata/function/call/form.carbon before its
+`fail_return_form_not_form` split, verbatim from 230227264:
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// --- ref_return_class.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+//@dump-sem-ir-begin
+fn F() -> ref C;
+//@dump-sem-ir-end
+
+fn G() {
+  //@dump-sem-ir-begin
+  F();
+  //@dump-sem-ir-end
+}
+
+// --- val_return_class.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+//@dump-sem-ir-begin
+fn F() ->? form(val C);
+//@dump-sem-ir-end
+
+fn G() {
+  //@dump-sem-ir-begin
+  F();
+  //@dump-sem-ir-end
+}
+
+// --- ref_return_class_generic.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+interface I {
+  fn F(self) -> ref C;
+}
+
+fn G[T: I](x: T) {
+  //@dump-sem-ir-begin
+  x.F();
+  //@dump-sem-ir-end
+}
+```
+
+<!-- google-doc-style-resume -->
+
+and to lower/testdata/function/call/form.carbon after its `val_return_form`
+split, the same three without the dump markers (230227264's lower hunk).
+
+### A.0b Upstream's `IndirectIndexWith` tests (DR-1b, B1)
+
+check/testdata/operators/overloaded/indirect_index_with.carbon is upstream's
+file at ac31fd198 with its CHECK lines removed by `$Y/bin/strip_checks.py`
+(splits `types`, `ref_copyable`, `ref_non_copyable`, `at_from_blanket_impl`,
+`fail_at_non_copyable`, `subscript_copyable`, `subscript_non_copyable`,
+`subscript_assign`). lower/testdata/index/indirect_index_with.carbon likewise:
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+class Span {
+  var ptr: i32*;
+}
+
+impl Span as Core.IndirectIndexWith(i32) where .ElementType = i32 {
+  fn Ref(self, unused subscript: i32) -> ref i32 {
+    return *self.ptr;
+  }
+}
+
+fn Store(s: Span, v: i32) {
+  s.(Core.IndirectIndexWith(i32).Ref)(0) = v;
+}
+
+fn Load(s: Span) -> i32 {
+  return s.(Core.IndirectIndexWith(i32).Ref)(0);
+}
+
+fn LoadViaAt(s: Span) -> i32 {
+  return s.(Core.IndexWith(i32).At)(0);
+}
+
+fn StoreSubscript(s: Span, i: i32, v: i32) {
+  s[i] = v;
+}
+
+fn LoadSubscript(s: Span, i: i32) -> i32 {
+  return s[i];
+}
+```
+
+<!-- google-doc-style-resume -->
+
+### A.1 toolchain/check/testdata/slice/write_through.carbon (DR-1b)
 
 <!-- google-doc-style-ignore -->
 
@@ -1987,13 +2191,6 @@ fn Write(s: Core.Slice(i32), i: i64) {
 }
 //@dump-sem-ir-end
 
-// --- buf_write.carbon
-library "[[@TEST_NAME]]";
-
-fn BufWrite(b: Core.Buf(i32)) {
-  b[0] = 7;
-}
-
 // --- generic_write.carbon
 library "[[@TEST_NAME]]";
 
@@ -2003,17 +2200,39 @@ fn Fill[T: Core.Copy & Core.Destroy](s: Core.Slice(T), v: T) {
 }
 //@dump-sem-ir-end
 
+// --- generic_write_const_element.carbon
+library "[[@TEST_NAME]]";
+
+// W-327's current behavior, pinned: the generic body writes through
+// `Slice(T)`, and the specific at `T = const i32` is not diagnosed.
+fn Fill[T: Core.Copy & Core.Destroy](s: Core.Slice(T), v: T) {
+  s[0] = v;
+}
+
+fn G(c: Core.Slice(const i32)) {
+  Fill(c, c[1]);
+}
+
 // --- fail_const_element.carbon
 library "[[@TEST_NAME]]";
 
 fn W(s: Core.Slice(const i32)) {
   s[0] = 1;
 }
+
+// --- buf_write.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn BufWrite(b: Core.Buf(i32)) {
+  b[0] = 7;
+}
+//@dump-sem-ir-end
 ```
 
 <!-- google-doc-style-resume -->
 
-### A.2 toolchain/lower/testdata/slice/write_through.carbon (DR-1b, full prelude)
+### A.2 toolchain/lower/testdata/slice/write_through.carbon (DR-1b)
 
 <!-- google-doc-style-ignore -->
 
@@ -2029,184 +2248,34 @@ fn Read(s: Core.Slice(i32)) -> i32 {
 
 <!-- google-doc-style-resume -->
 
-### A.3 toolchain/check/testdata/interface/template_assoc_const.carbon (DR-1c, min_prelude)
+### A.3 toolchain/check/testdata/match/fail_todo_core_optional.carbon (PR 62's W-322 commit)
 
 <!-- google-doc-style-ignore -->
 
 ```carbon
-// --- template_constant.carbon
+// Fork (DR-1 D-DR-15, W-322): `Core.Optional(T)` is not matched until it
+// implements `Core.Match` as docs/design/sum_types.md designs it for classes
+// (W-320, which waits on W-324). D-SV-7's `StdOptional` view, a second
+// spelling of that route, is retired (R32 (d)).
+
+// --- fail_todo_match.carbon
+
 library "[[@TEST_NAME]]";
 
-//@dump-sem-ir-begin
-interface Match {
-  interface BaseContinuation {
-    let ReturnType: type;
-  }
-  let template Continuation: type;
-  fn Op[C: Continuation](self, continuation: C*)
-    -> C.(BaseContinuation.ReturnType);
-}
-//@dump-sem-ir-end
-
-// --- sum_types_optional.carbon
-library "[[@TEST_NAME]]";
-
-// docs/design/sum_types.md:137-165, with `extend require impls` for :148's
-// `extend` (p5337) and i32 for `T`.
-interface Match {
-  interface BaseContinuation {
-    let ReturnType: type;
-  }
-  let template Continuation: type;
-  fn Op[C: Continuation](self, continuation: C*)
-    -> C.(BaseContinuation.ReturnType);
-}
-
-class OptionalI32 {
-  private var has_value: bool;
-  private var value: i32;
-
-  impl as Match {
-    interface Continuation {
-      extend require impls Match.BaseContinuation;
-      fn Some(ref self, value: i32) -> ReturnType;
-      fn None(ref self) -> ReturnType;
-    }
-
-    fn Op[C: Continuation](self, continuation: C*) -> C.ReturnType {
-      if (self.has_value) {
-        return continuation->Some(self.value);
-      } else {
-        return continuation->None();
-      }
-    }
-  }
-}
-
-// --- fail_generic_assoc_const.carbon
-library "[[@TEST_NAME]]";
-
-interface I {
-  let generic N: type;
-}
-```
-
-<!-- google-doc-style-resume -->
-
-### A.4 toolchain/check/testdata/impl/assoc_const_member.carbon (DR-1c, min_prelude)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-// --- let_member.carbon
-library "[[@TEST_NAME]]";
-
-interface I { let R: type; fn F() -> R; }
-class C {
-  impl as I {
-    let R: type = i32;
-    fn F() -> i32 { return 1; }
-  }
-}
-
-// --- interface_member.carbon
-library "[[@TEST_NAME]]";
-
-interface M { let Continuation: type; }
-class C {
-  impl as M {
-    interface Continuation {
-      fn Some(ref self, v: i32) -> i32;
-    }
-  }
-}
-
-// --- fail_set_twice.carbon
-library "[[@TEST_NAME]]";
-
-interface I { let R: type; }
-class C {
-  impl as I where .R = i32 {
-    let R: type = bool;
-  }
-}
-```
-
-<!-- google-doc-style-resume -->
-
-### A.5 toolchain/check/testdata/interface/extend_require_member.carbon (DR-1c, min_prelude)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-// --- unqualified.carbon
-library "[[@TEST_NAME]]";
-
-interface Base { let R: type; }
-interface Cont {
-  extend require impls Base;
-  fn Some(ref self, v: i32) -> R;
-}
-
-// --- qualified.carbon
-library "[[@TEST_NAME]]";
-
-interface Base { let R: type; }
-interface Cont {
-  extend require impls Base;
-  fn Some(ref self, v: i32) -> Self.(Base.R);
-}
-
-// --- facet_member.carbon
-library "[[@TEST_NAME]]";
-
-interface Base { let R: type; }
-interface Cont {
-  extend require impls Base;
-}
-fn F[C: Cont](unused c: C*) -> C.R;
-```
-
-<!-- google-doc-style-resume -->
-
-### A.6 toolchain/parse/testdata/let/template_assoc_const.carbon (DR-1c)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-// --- template.carbon
-interface I {
-  let template C: type;
-}
-
-// --- fail_generic.carbon
-interface I {
-  let generic C: type;
-}
-```
-
-<!-- google-doc-style-resume -->
-
-### A.7 toolchain/check/testdata/match/core_optional.carbon (DR-1d, full prelude)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-// --- match.carbon
-library "[[@TEST_NAME]]";
-
-//@dump-sem-ir-begin
 fn F(o: Core.Optional(i32)) -> i32 {
-  var result: i32 = -1;
   match (o) {
-    case .Some(x: i32) => { result = x; }
-    case .None() => { result = 0; }
+    case .Some(value: i32) => {
+      return value;
+    }
+    default => {
+      return -1;
+    }
   }
-  return result;
+  return -2;
 }
-//@dump-sem-ir-end
 
-// --- pointer.carbon
+// --- fail_todo_if_let.carbon
+
 library "[[@TEST_NAME]]";
 
 fn G(p: Core.Optional(i32*)) -> i32 {
@@ -2215,222 +2284,17 @@ fn G(p: Core.Optional(i32*)) -> i32 {
   }
   return 0;
 }
-
-// --- string.carbon
-library "[[@TEST_NAME]]";
-
-fn S(o: Core.Optional(Core.String)) -> i64 {
-  let .Some(s: Core.String) = o else { return -1; }
-  return s.Size();
-}
-
-// --- nested.carbon
-library "[[@TEST_NAME]]";
-
-fn N(o: Core.Optional(Core.Optional(i32))) -> i32 {
-  var result: i32 = -1;
-  match (o) {
-    case .Some(.Some(x: i32)) => { result = x; }
-    case .Some(.None()) => { result = -2; }
-    case .None() => {}
-  }
-  return result;
-}
-
-// --- generic.carbon
-library "[[@TEST_NAME]]";
-
-//@dump-sem-ir-begin
-fn H[T: Core.Copy & Core.Destroy](o: Core.Optional(T), d: T) -> T {
-  if (let .Some(x: T) = o) {
-    return x;
-  }
-  return d;
-}
-//@dump-sem-ir-end
-
-// --- exhaustive.carbon
-library "[[@TEST_NAME]]";
-
-fn E(o: Core.Optional(i32)) -> bool {
-  var b: bool = false;
-  match (o) {
-    case .Some(_: i32) => { b = true; }
-    case .None() => {}
-  }
-  return b;
-}
-```
-
-<!-- google-doc-style-resume -->
-
-### A.8 toolchain/check/testdata/match/user_sum_type.carbon (DR-1d, full prelude)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-// --- three.carbon
-library "[[@TEST_NAME]]";
-
-// A user class with three alternatives (docs/design/sum_types.md:135-165's
-// shape): `Ok(i32)`, `Err(bool)` and `Cancelled()`.
-class Status {
-  fn Ok(v: i32) -> Self { return {.tag = 0, .v = v, .e = false}; }
-  fn Err(e: bool) -> Self { return {.tag = 1, .v = 0, .e = e}; }
-  fn Cancelled() -> Self { return {.tag = 2, .v = 0, .e = false}; }
-
-  impl as Core.Match {
-    interface Continuation {
-      extend require impls Core.Match.BaseContinuation;
-      fn Ok(ref self, v: i32) -> ReturnType;
-      fn Err(ref self, e: bool) -> ReturnType;
-      fn Cancelled(ref self) -> ReturnType;
-    }
-    fn Op[C: Continuation](self, continuation: C*) -> C.ReturnType {
-      if (self.tag == 0) { return continuation->Ok(self.v); }
-      if (self.tag == 1) { return continuation->Err(self.e); }
-      return continuation->Cancelled();
-    }
-  }
-
-  private var tag: i32;
-  private var v: i32;
-  private var e: bool;
-}
-
-//@dump-sem-ir-begin
-fn F(s: Status) -> i32 {
-  var r: i32 = 0;
-  match (s) {
-    case .Ok(v: i32) => { r = v; }
-    case .Err(true) => { r = -1; }
-    case .Err(false) => { r = -2; }
-    case .Cancelled() => { r = -3; }
-  }
-  return r;
-}
-//@dump-sem-ir-end
-
-// --- fail_missing.carbon
-library "[[@TEST_NAME]]";
-// (Status as above, then a match with no `.Cancelled()` arm and no default:
-// MatchNonexhaustive names the missing alternative.)
-```
-
-<!-- google-doc-style-resume -->
-
-### A.9 toolchain/check/testdata/match/fail_match_class.carbon (DR-1d, full prelude)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-// --- fail_bare_none.carbon
-library "[[@TEST_NAME]]";
-fn F(o: Core.Optional(i32)) {
-  match (o) {
-    case .None => {}
-    default => {}
-  }
-}
-
-// --- fail_ref_binding.carbon
-library "[[@TEST_NAME]]";
-fn F(o: Core.Optional(i32)) {
-  if (let .Some(ref x: i32) = o) {}
-}
-
-// --- fail_unknown_alternative.carbon
-library "[[@TEST_NAME]]";
-fn F(o: Core.Optional(i32)) {
-  match (o) {
-    case .Other() => {}
-    default => {}
-  }
-}
-
-// --- fail_arity.carbon
-library "[[@TEST_NAME]]";
-fn F(o: Core.Optional(i32)) {
-  match (o) {
-    case .Some(a: i32, b: i32) => {}
-    default => {}
-  }
-}
-
-// --- fail_symbolic_match.carbon
-library "[[@TEST_NAME]]";
-fn F[U: Core.Match](u: U) {
-  match (u) {
-    default => {}
-  }
-}
-
-// --- fail_not_copy.carbon
-library "[[@TEST_NAME]]";
-class NoCopy {}
-// (A class with `impl as Core.Match` whose alternative takes a `NoCopy`.)
-```
-
-<!-- google-doc-style-resume -->
-
-### A.10 the pattern-condition goldens (DR-1d, full prelude)
-
-toolchain/check/testdata/if/if_let_optional.carbon,
-while/while_let_optional.carbon and let/let_else_optional.carbon each hold the
-m_iflet, m_whilelet and m_letelse probes of §0.3 (Appendix B.0) as one split
-with a `//@dump-sem-ir` region around the form, and a `fail_` split with `.None`
-(the parens rule).
-
-### A.11 toolchain/lower/testdata/match/core_optional.carbon (DR-1d, full prelude)
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-fn F(o: Core.Optional(i32)) -> i32 {
-  var result: i32 = -1;
-  match (o) {
-    case .Some(x: i32) => { result = x; }
-    case .None() => { result = 0; }
-  }
-  return result;
-}
-
-fn Loop(a: array(i32, 3)) -> i32 {
-  var s: i32 = 0;
-  for (x: i32 in a) { s += x; }
-  return s;
-}
 ```
 
 <!-- google-doc-style-resume -->
 
 ## Appendix B: programs and oracles
 
-### B.0 the audit probes
-
-`$X/a1` holds the probe bodies of §0.3 verbatim; m_match is:
-
-<!-- google-doc-style-ignore -->
-
-```carbon
-import Core library "io";
-fn F(o: Core.Optional(i32)) -> i32 {
-  match (o) {
-    case .Some(x: i32) => { return x; }
-    case .None() => { return -1; }
-  }
-}
-fn Run() -> i32 {
-  Core.Print(F(Core.Optional(i32).Some(5)));
-  Core.Print(F(Core.Optional(i32).None()));
-  return 0;
-}
-```
-
-<!-- google-doc-style-resume -->
-
-(Its arms both return, so after DR-1d it still needs W-329's reachability or a
-trailing statement; A.7 and B.3 use a result variable.)
+(Amended 2026-10-21, review fold: B-M11 / B-B2.) Each program starts with the
+license header. B.1 and B.2 PASS on v4 and on the mct mirror (§0.6.2, §0.8.1);
+their EXPECTs are hand-derived in their comments, and B.1's `Buf` lines now
+write both through `b[i]` and through `Set` (rev 1's text, unchanged in
+output). Rev 1's B.0 and B.3 to B.5 belonged to slice 1 and are withdrawn.
 
 ### B.1 fork/conformance/programs/stdlib/slices_write_through.carbon (DR-1b)
 
@@ -2446,11 +2310,12 @@ trailing statement; A.7 and B.3 use a result variable.)
 //   15
 //   27
 //
-// Writes through `Core.Slice` and `Core.Buf` subscripts (D-DR-7: `Ref`
+// Writes through `Core.Slice` and `Core.Buf` subscripts (DR-1 D-DR-7: `Ref`
 // returns `ref T`, upstream 6d80ceb58 and 309d3d63c). Hand-derived: `a` is
 // (1, 2, 3); `s[1] = 20` makes it (1, 20, 3); `s[2] = s[0] + s[1]` makes it
-// (1, 20, 21); the `Buf` gets 7 at 0 and 8 at 1, and `b[2] = 7 + 8` = 15;
-// `Fill` writes 9 into all three elements of `c`, whose sum is 27.
+// (1, 20, 21); the `Buf` gets 7 at 0 by `b[0] = 7` and 8 at 1 by `Set`, and
+// `b[2] = b[0] + b[1]` stores 15; `Fill` writes 9 into all three elements of
+// `c`, whose sum is 27.
 
 import Core library "io";
 
@@ -2497,8 +2362,9 @@ fn Run() -> i32 {
 //   18
 //
 // A write through `s[0]` is seen by C++ through the `std::span<int>` the
-// slice maps to (D-DR-7, SL-2's mapping). Hand-derived: (1, 2, 3) becomes
-// (10, 2, 3); `Bump` adds one to each element, (11, 3, 4); `Sum` is 18.
+// slice maps to (DR-1 D-DR-7, SL-2's mapping). Hand-derived: (1, 2, 3)
+// becomes (10, 2, 3); `Bump` adds one to each element, (11, 3, 4); `Sum` is
+// 18. Differential pair: cpp_span_write_through_diff.diff.cpp (DIFF-1).
 
 import Core library "io";
 import Cpp inline '''
@@ -2526,6 +2392,7 @@ fn Run() -> i32 {
 ```cpp
 // Differential C++17 equivalent of cpp_span_write_through_diff.carbon: the
 // span is a pointer and a size (no <span> under -std=c++17).
+
 #include <cstdio>
 
 auto Sum(int* p, long long n) -> int {
@@ -2533,6 +2400,7 @@ auto Sum(int* p, long long n) -> int {
   for (long long i = 0; i < n; ++i) t += p[i];
   return t;
 }
+
 auto Bump(int* p, long long n) -> void {
   for (long long i = 0; i < n; ++i) p[i] += 1;
 }
@@ -2548,147 +2416,63 @@ auto main() -> int {
 
 <!-- google-doc-style-resume -->
 
-### B.3 fork/conformance/programs/control_flow/match_core_optional.carbon (DR-1d)
+### B.3 PR 62's control_flow/match_core_optional_diff.carbon (W-322's commit)
+
+The SKIP line and the respelled empty arms, measured on m62 (the program then
+SKIPs with this reason; its `.diff.cpp` is unchanged):
 
 <!-- google-doc-style-ignore -->
 
-```carbon
-// CONFORMANCE-BULLET: Control flow: matching — sum-type consumption incl. std::variant/std::optional interop
-// EXPECT-EXIT: 0
-// EXPECT-STDOUT:
-//   5
-//   0
-//   7
-//   1
-//   2
-//   3
-//   9
-//   -1
-//   3
-//   4
-//   4
-//   -2
-//   4
-//   7
-//
-// `Core.Optional` matched through `Match` (D-DR-9, D-DR-10): `match`,
-// `if let`, `while let`, `let`-`else`, a null pointer, a string, a nested
-// `Optional` and a generic. Hand-derived line by line in the comments of
-// `Run`.
+```diff
+diff --git a/fork/conformance/programs/control_flow/match_core_optional_diff.carbon b/fork/conformance/programs/control_flow/match_core_optional_diff.carbon
+index ddd5de264..384f6d57c 100644
+--- a/fork/conformance/programs/control_flow/match_core_optional_diff.carbon
++++ b/fork/conformance/programs/control_flow/match_core_optional_diff.carbon
+@@ -3,6 +3,7 @@
+ // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import Core library "io";
+ // CONFORMANCE-BULLET: Control flow: matching — sum-type consumption incl. std::variant/std::optional interop
++// SKIP: W-320 (blocked on W-324): `Core.Optional` is matchable only once it implements `Core.Match` as docs/design/sum_types.md designs it for classes; PR 62's D-SV-7 `StdOptional` view, which this program was written against, is retired as a second spelling of that route (fork/rulebook.md R32 (d), DR-1 D-DR-15, W-322), so the toolchain refuses the scrutinee with `semantics TODO: match on unsupported scrutinee type`. The empty arms are spelled `.None()` for the `Match` route (`None` is a function, docs/design/sum_types.md:214-222). Un-SKIP when W-320 lands.
+ // EXPECT-EXIT: 0
 
-fn M(o: Core.Optional(i32)) -> i32 {
-  var r: i32 = -1;
-  match (o) {
-    case .Some(x: i32) => { r = x; }
-    case .None() => { r = 0; }
-  }
-  return r;
-}
-
-fn Next(n: i32) -> Core.Optional(i32) {
-  if (n < 3) { return Core.Optional(i32).Some(n + 1); }
-  return Core.Optional(i32).None();
-}
-
-fn LetElse(o: Core.Optional(i32)) -> i32 {
-  let .Some(x: i32) = o else { return -1; }
-  return x;
-}
-
-fn Deref(p: Core.Optional(i32*)) -> i32 {
-  if (let .Some(q: i32*) = p) { return *q; }
-  return -2;
-}
-
-fn Len(o: Core.Optional(Core.String)) -> i64 {
-  let .Some(s: Core.String) = o else { return -1; }
-  return s.Size();
-}
-
-fn Nested(o: Core.Optional(Core.Optional(i32))) -> i32 {
-  var r: i32 = -1;
-  match (o) {
-    case .Some(.Some(x: i32)) => { r = x; }
-    case .Some(.None()) => { r = -2; }
-    case .None() => {}
-  }
-  return r;
-}
-
-fn Or[T: Core.Copy & Core.Destroy](o: Core.Optional(T), d: T) -> T {
-  if (let .Some(x: T) = o) { return x; }
-  return d;
-}
-
-fn Run() -> i32 {
-  Core.Print(M(Core.Optional(i32).Some(5)));            // 5
-  Core.Print(M(Core.Optional(i32).None()));             // 0
-  if (let .Some(x: i32) = Core.Optional(i32).Some(7)) { // 7
-    Core.Print(x);
-  }
-  var n: i32 = 0;
-  while (let .Some(m: i32) = Next(n)) {                 // 1 2 3
-    Core.Print(m);
-    n = m;
-  }
-  Core.Print(LetElse(Core.Optional(i32).Some(9)));      // 9
-  Core.Print(LetElse(Core.Optional(i32).None()));       // -1
-  var v: i32 = 3;
-  Core.Print(Deref(Core.Optional(i32*).Some(&v)));      // 3
-  Core.Print(Len(Core.Optional(Core.String).Some("abcd")) as i32);  // 4
-  Core.Print(Nested(Core.Optional(Core.Optional(i32)).Some(
-      Core.Optional(i32).Some(4))));                    // 4
-  Core.Print(Nested(Core.Optional(Core.Optional(i32)).Some(
-      Core.Optional(i32).None())));                     // -2
-  Core.Print(Or(Core.Optional(i32).Some(4), 0 as i32)); // 4
-  Core.Print(Or(Core.Optional(i32).None(), 7 as i32));  // 7
-  return 0;
-}
+ // SV-1 (fork/sumtype-interop/plan.md D-SV-7, W-177): a `Core.Optional(T)`
+@@ -33,7 +34,7 @@ fn Show(o: Core.Optional(i32)) {
+     case .Some(value: i32) => {
+       Core.Print(value);
+     }
+-    case .None => {
++    case .None() => {
+       Core.Print(-1);
+     }
+   }
+@@ -44,7 +45,7 @@ fn ShowPointer(p: Core.Optional(i32*)) {
+     case .Some(q: i32*) => {
+       Core.Print(*q);
+     }
+-    case .None => {
++    case .None() => {
+       Core.Print(0);
+     }
+   }
+@@ -62,7 +63,7 @@ fn CountSome(o: Core.Optional(i64)) -> i32 {
+     case .Some(unused value: i64) => {
+       return 1;
+     }
+-    case .None => {
++    case .None() => {
+       return 0;
+     }
+   }
 ```
 
 <!-- google-doc-style-resume -->
-
-### B.4 fork/conformance/programs/control_flow/match_core_optional_diff.carbon and .diff.cpp (DR-1d)
-
-The Carbon side is B.3's `M`, `LetElse` and `Or` over the inputs 5, none, 9,
-none, 4 and none-with-7 (EXPECT `5 0 9 -1 4 7`, one per line); the C++17 twin is
-the same logic over `std::optional<int>`:
-
-<!-- google-doc-style-ignore -->
-
-```cpp
-#include <cstdio>
-#include <optional>
-
-auto M(std::optional<int> o) -> int { return o ? *o : 0; }
-auto LetElse(std::optional<int> o) -> int { return o ? *o : -1; }
-auto Or(std::optional<int> o, int d) -> int { return o.value_or(d); }
-
-auto main() -> int {
-  std::printf("%d\n", M(5));
-  std::printf("%d\n", M(std::nullopt));
-  std::printf("%d\n", LetElse(9));
-  std::printf("%d\n", LetElse(std::nullopt));
-  std::printf("%d\n", Or(4, 0));
-  std::printf("%d\n", Or(std::nullopt, 7));
-  return 0;
-}
-```
-
-<!-- google-doc-style-resume -->
-
-### B.5 fork/conformance/programs/control_flow/match_user_sum_type.carbon (DR-1d)
-
-A.8's `Status` and `F`, run over `Status.Ok(4)`, `Status.Err(true)`,
-`Status.Err(false)` and `Status.Cancelled()`: EXPECT `4 -1 -2 -3`, one per line
-(hand-derived from `F`'s four arms).
 
 ## Appendix C: records texts
 
 Placeholders are `<...>`; every date is the commit's UTC date. Each block below
 is pasted as written, then R31's counts are taken on the file it lands in.
+(Rewritten 2026-10-21, review fold: A-B1 / B-B1 / A-m3 / B-M8 / B-M9 / B-M10 /
+B-M12 / A-M3 / B-B2.)
 
 ### C.1 Decision-log entry (R0, then completed at each discharge)
 
@@ -2697,40 +2481,51 @@ Placed after DR-0 in "Decided":
 <!-- google-doc-style-ignore -->
 
 ```markdown
-### DR-1: direction realignment: Match for classes, the ref cursor, IndirectIndexWith (<date>)
+### DR-1: direction realignment: the ref cursor, IndirectIndexWith, D-SV-7 retired, Match stopped on upstream's conflict (<date>)
 
 The workstream D-DR-1 scheduled (fork/direction/plan.md, rev <n>, signed off
-<date>). Upstream's direction was read at upstream/trunk fb7eff130. Decisions
-D-DR-5..D-DR-22, auto-adopted under R29(a), each with its break condition in the
-plan: four PRs in the order slice 2, slice 3, slice 1a, slice 1b (D-DR-5); the
+<date>). Upstream's direction was read at upstream/trunk <sha at sign-off>
+(rev 2 read ac31fd198). Decisions D-DR-5..D-DR-22, auto-adopted under R29(a),
+each with its break condition in the plan: two PRs, DR-1a (the `ref` cursor)
+on trunk's base and DR-1b (`IndirectIndexWith`) stacked on it (D-DR-5); the
 `ref` cursor as df3cf9294 (D-DR-6); `IndirectIndexWith` as 6d80ceb58 and
-309d3d63c with 230227264 cherry-picked, `Core.Slice` and `Core.Buf` writable
-through `Ref`, D-SL-3 retired by its own break condition (D-DR-7); template
-associated constants, impl members that give associated constants their values,
-and `extend require impls` member access, the language sum_types.md's `Match`
-needs (D-DR-8); a per-form local continuation class that stores the
-alternative's parameters and returns its index (sum_types.md:224-227), one
-`Op` call, the choice lane keyed by the index, no new SemIR kind (D-DR-9);
-`Core.Optional`'s `impl as Match`, with `.None()` because the prelude's `None`
-is a function (sum_types.md:214-222) (D-DR-10); the four refutable forms, `ref`
-subpatterns OUT (D-DR-11); `for` through the while-let engine with the root
-`.Some(<pattern>)` (D-DR-12); the `Try` body as error_handling.md's sketch
-(D-DR-13); generic and template-argument `Optional(T)` matched in the
-definition (D-DR-14); D-SV-7's view removed by a new commit on PR 62, F-020's
-mapping kept (D-DR-15); diagnostics (D-DR-16); goldens, programs, docs and
-records (D-DR-17..D-DR-19); merge after CT-1 by merge commits, land-time
-commits on PR 56 and PR 62 (D-DR-20); residues W-324..W-329, no F-022
-(D-DR-21); the shrink line and the stop rule for slice 1 (D-DR-22).
+309d3d63c with 230227264's code and upstream's tests, `Core.Slice` and
+`Core.Buf` writable through `Ref` (indexing.md's `std::span` category, D-SL-6's
+by-value writes), D-SL-3 retired by its own break condition, D-SL-17 filed as a
+drift (W-326) (D-DR-7); none of rev 1's language prerequisites for
+sum_types.md's `Match` (D-DR-8): a template associated constant contradicts
+docs/design/README.md:1076-1078 and :3064-3067, generics/terminology.md:100-103
+and upstream's parser, and an impl member giving an associated constant its
+value is what accepted proposal p001013 removed, so D-DR-22's stop rule fired at
+the plan and W-320 waits on upstream's resolution (W-324); D-DR-9..D-DR-14
+withdrawn with slice 1, their resumption bound by the plan's RC-1..RC-12, and
+the `Try` body kept on `HasValue()`/`Get()` (D-DR-13 withdrawn: its sketch is
+the fork's own page); D-SV-7's view removed now by a removal-only commit on PR
+62's branch, F-020's bridge kept (D-DR-15); no new diagnostic kind (D-DR-16);
+goldens, programs, docs and records (D-DR-17..D-DR-19); merge after CT-1 by
+merge commits with a composition commit that indexes a template-dependent
+operand per specific (D-DR-20); W-324..W-327 and W-329 filed, W-328 reserved, no
+F-022 (D-DR-21).
+
+Amendments of DR-0, dated <date>: D-DR-1's slice 1 is stopped at DR-1's plan by
+D-DR-22, not re-spelled; its "`.Some(<pattern>)` and `.None` patterns" reads
+`.None()` for `Core.Optional` while the prelude's `None` is a function
+(docs/design/sum_types.md:214-222), and its "the `Try` body rewritten" is
+withdrawn (D-DR-13); its "on trunk's base" holds for both PRs. D-DR-2's
+retirement of the view no longer waits for W-320: R32 (e) removes it before PR
+62 lands (D-DR-15).
 
 V-3a register: (ii) D-SL-3 resolved by DR-1b (<sha>); (iii) the pointer cursor
 resolved by DR-1a (<sha>); (i) D-SV-7 resolved by PR 62's commit <sha>; (iv)
-added: template associated constants (W-324), accepted by the fork for
-sum_types.md:113 and refused by upstream's parser
-(toolchain/parse/handle_let.cpp:37-42 at fb7eff130).
+added: `Core.Optional` not matchable because upstream's pages conflict on
+`Match.Continuation`, W-320 (blocked) and W-324; (v) added: D-SL-17's
+literal-subscript rule, a fork spelling of `like i64`, W-326.
 
 Measured at planning (container-local, EXPECTED, not of record): slice 2 gate
-1942 of 1942 and conformance 128/0/22 over 150; slices 2 and 3 gate 1942 of
-1942 and conformance 128/0/22 over 150; at discharge: <the PR's own runs>.
+1942 of 1942 and conformance 128/0/22 over 150; slices 2 and 3 gate 1946 of
+1946 and conformance 130/0/22 over 152; composed on CT-1's head 1963 of 1963
+and 149/0/20 over 169; PR 62 with W-322's commit 1950 of 1950 and 133/0/22 over
+155; at discharge: <the PR's own runs>.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2742,51 +2537,57 @@ New items, R0 (each with `"blocked_by": []` unless stated; `"bullet"` as named):
 <!-- google-doc-style-ignore -->
 
 ```json
-{"id": "W-324", "kind": "todo-stub", "size": "S", "bullet": "none",
- "title": "V-3a register entry (iv): template associated constants (`let template` on an associated constant) are accepted by the fork for sum_types.md:113's `Match` and refused by upstream's parser (toolchain/parse/handle_let.cpp:37-42 at fb7eff130); follow upstream's resolution",
- "subsystem": "toolchain/parse (handle_let.cpp) + toolchain/check (handle_let_and_var.cpp, impl.cpp)",
- "evidence": ["upstream docs/design/sum_types.md:113 at fb7eff130", "upstream toolchain/parse/handle_let.cpp:37-42 at fb7eff130", "fork/direction/plan.md §0.7, §1.4"],
- "notes": "Filed <date> by DR-1 (D-DR-8, D-DR-21). Break condition: upstream decides template associated constants (a proposal, or a change to sum_types.md:113 or to the parser); the fork follows."}
-{"id": "W-325", "kind": "missing-feature", "size": "M", "bullet": "Control flow: matching — sum-type consumption incl. std::variant/std::optional interop",
- "title": "DR-1 residue: `Match` scrutinees outside 0.1 -- an opaque template-dependent scrutinee (a deferred refutable form), a symbolic facet scrutinee `U: Core.Match`, and the unchecked \"exactly one method exactly once\" contract of `Match.Op` (sum_types.md:127-129)",
- "subsystem": "toolchain/check (refutable_binding.cpp, match_continuation.cpp)",
- "evidence": ["fork/direction/plan.md §1.5 step 3, §1.10", "check/testdata/match/fail_match_class.carbon fail_symbolic_match"], "notes": "Filed <date> by DR-1."}
-{"id": "W-326", "kind": "missing-feature", "size": "S", "bullet": "Control flow: matching — good switch equivalents",
- "title": "DR-1 residue: \"both possible implementations must be well-formed\" (sum_types.md:197-198) -- the `==` half is not enforced for expression-form alternative patterns, on `Match` classes or choices (pattern_matching.md:526-527)",
- "subsystem": "toolchain/check (refutable_binding.cpp)", "evidence": ["fork/direction/plan.md §1.6"], "notes": "Filed <date> by DR-1."}
+{"id": "W-324", "kind": "todo-stub", "size": "S", "bullet": "Control flow: matching — sum-type consumption incl. std::variant/std::optional interop",
+ "title": "V-3a register entry (iv): upstream's pages conflict on how `Match` declares `Continuation` -- docs/design/sum_types.md:113 writes `let template Continuation: type;`, while docs/design/README.md:1076-1078 and :3064-3067 and docs/design/generics/terminology.md:100-103 say an associated constant is always a checked generic binding and cannot be made `template`, as upstream's parser enforces (toolchain/parse/handle_let.cpp:27-46); W-320 waits on upstream's resolution",
+ "subsystem": "upstream design (docs/design/sum_types.md, README.md, generics/terminology.md) + toolchain/parse",
+ "evidence": ["upstream docs/design/sum_types.md:107-117 at ac31fd198", "upstream docs/design/README.md:1076-1078, :3064-3067 at ac31fd198", "upstream docs/design/generics/terminology.md:100-106 at ac31fd198 (leads issue 6932)", "upstream proposals/p001013-generics-set-associated-constants-using-where-constraints.md:79-82", "fork/direction/plan.md §0.7, §1.4"],
+ "notes": "Filed <date> by DR-1 (D-DR-8, D-DR-21). Checked at each weekly upstream check (R32 (b)). Break condition: upstream changes sum_types.md's `Match` declaration, admits template associated constants, or implements `Match` or its loop TODO; W-320 is then re-planned from fork/direction/plan.md §1.4's RC-1..RC-12."}
+{"id": "W-325", "kind": "missing-feature", "size": "S", "bullet": "none",
+ "title": "`5 as const i32` (an integer literal converted to a `const` integer type) aborts lowering: `Missing constant value for call to comptime-only function` (toolchain/lower/handle_call.cpp:638; upstream's nightly 2026.10.12 at its :598)",
+ "subsystem": "toolchain/lower (handle_call.cpp) + toolchain/check (as conversion of a literal)",
+ "evidence": ["fork/direction/plan.md §0.6.2 (const_literal_plain, s_generic_const)"], "notes": "Filed <date> by DR-1; found by its audit, not caused by it: it reproduces on trunk and on upstream's nightly with no slice involved."}
+{"id": "W-326", "kind": "todo-stub", "size": "S", "bullet": "Stdlib: Slices",
+ "title": "V-3a register entry (v): D-SL-17's literal-subscript rule (toolchain/check/handle_index.cpp: an integer literal subscript converts to `i64` when the operand implements `IndirectIndexWith(i64)` or `IndexWith(i64)` and not `IndexWith(Core.IntLiteral)`) is a fork spelling of indexing.md's `like i64` subscript; retire it when `like` lands, declaring the impls `IndirectIndexWith(like i64)`",
+ "subsystem": "toolchain/check (handle_index.cpp) + core/prelude (types/slice.carbon, types/buf.carbon)",
+ "evidence": ["upstream docs/design/expressions/indexing.md:103-121 at ac31fd198", "fork/slices/plan.md D-SL-17", "fork/direction/plan.md §1.3"],
+ "notes": "Filed <date> by DR-1 (D-DR-7) before W-109's discharge: W-109's notes said D-SL-17 yields to the specified rewrite, which needs `like`; blocked on `like` (W-178, OP-1's ledger on PR 56, not yet on trunk, so not a `blocked_by` id here)."}
 {"id": "W-327", "kind": "missing-feature", "size": "M", "bullet": "none",
  "title": "A generic assignment whose specific's target is `const` writes: `*p = v` through `const T*` (trunk and the upstream nightly print 7) and `s[i] = v` through `Core.Slice(const T)` (DR-1b prints 2); the per-specific `const` check",
  "subsystem": "toolchain/check (handle_operator.cpp assignment, specific checking)",
- "evidence": ["fork/direction/plan.md §0.6.1 (s_ptr_const_write, s_generic_const2)"], "notes": "Filed <date> by DR-1 (D-DR-7). Not a reason for a read-only Slice (R32 (d))."}
-{"id": "W-328", "kind": "missing-feature", "size": "S", "bullet": "Control flow: matching — sum-type consumption incl. std::variant/std::optional interop",
- "title": "DR-1 residue: `Match` alternatives with a non-`Copy` parameter (the continuation's slot is a copy) and `ref` subpatterns on an alternative's parameter",
- "subsystem": "toolchain/check (match_continuation.cpp)", "evidence": ["fork/direction/plan.md §1.5 step 2, §1.7"], "notes": "Filed <date> by DR-1."}
+ "evidence": ["fork/direction/plan.md §0.6.1, §0.6.2 (s_ptr_const_write, s_generic_const2)", "toolchain/check/testdata/slice/write_through.carbon generic_write_const_element"], "notes": "Filed <date> by DR-1 (D-DR-7). Not a reason for a read-only Slice (R32 (d))."}
 {"id": "W-329", "kind": "missing-feature", "size": "S", "bullet": "Control flow: matching — good switch equivalents",
- "title": "Reachability after an exhaustive `match` whose arms all diverge: \"missing `return` at end of function with declared return type\" (a two-alternative choice on trunk; the `Try` body's trailing return)",
+ "title": "Reachability after an exhaustive `match` whose arms all diverge: \"missing `return` at end of function with declared return type\" (a two-alternative choice on trunk)",
  "subsystem": "toolchain/check (handle_match.cpp, control_flow.cpp)", "evidence": ["fork/direction/plan.md §0.3 (c_exh_return)"], "notes": "Filed <date> by DR-1; found by its audit, not caused by it."}
 ```
 
 <!-- google-doc-style-resume -->
 
-Discharge notes, each appended to the item's `notes` at the PR's D commit: W-321
-"DISCHARGED <date> by DR-1a (<sha>): `Core.Iterate.Next` takes `ref cursor` at
-the 11 sites, the loop checker passes the cursor variable (upstream df3cf9294
-re-expressed); the thunk failure was the interface/impl signature mismatch and
-needed no thunk change; gate <n> of <n>, conformance <p>/<f>/<s> over <t>."
-W-109 "DISCHARGED <date> by DR-1b (<sha>): subscripting prefers
-`IndirectIndexWith(I).Ref` (309d3d63c), the prelude interface and its blanket
-`IndexWith` impl (6d80ceb58), 230227264 cherry-picked; `Core.Slice` and
-`Core.Buf` write through `Ref`; D-SL-3's pin deleted; the generic const write
-filed W-327." W-320 "DISCHARGED <date> by DR-1d (<sha>) on DR-1c's prerequisites
-(<sha>): `Core.Match` as sum_types.md:108-116, `Core.Optional`'s `impl as
-Match`, `.Some(<pattern>)` and `.None()` in `match`, `if let`, `while let`,
-`let`-`else` and the `for` desugaring; the `Try` body matches; closes PR 56's
-W-177 at PR 56's land-time commit (C.8)." W-322 "DISCHARGED <date> by PR 62's
-commit <sha> (C.6)." W-323 "DISCHARGED <date> by PR 56's commit <sha> (C.7)."
+Dated notes at R0. W-320: `"blocked_by": ["W-324"]`, and appended to `notes`:
+"Stopped <date> at DR-1's plan (fork/direction/plan.md rev <n>, §1.4, D-DR-22):
+sum_types.md's `Match` needs a template associated constant, which upstream's
+README.md and generics/terminology.md rule out and its parser refuses, and
+implementing it would be a new drift (R32); W-324 watches upstream's resolution.
+Amended reading: the empty alternative's pattern is `.None()` while the
+prelude's `None` is a function (sum_types.md:214-222); the `Try` body is not
+rewritten (D-DR-13 withdrawn)." W-322: `"blocked_by": []`, and "Amended <date>
+by DR-1 (D-DR-15): removed now by a removal-only commit on PR 62's branch (R32
+(e)), not when W-320 lands; F-020's bridge kept." Discharge notes, each appended
+at the PR's D commit: W-321 "DISCHARGED <date> by DR-1a (<sha>):
+`Core.Iterate.Next` takes `ref cursor` at the 11 sites, the loop checker passes
+the cursor variable (upstream df3cf9294 re-expressed); the thunk failure was the
+interface/impl signature mismatch and needed no thunk change; gate <n> of <n>,
+conformance <p>/<f>/<s> over <t>." W-109 "DISCHARGED <date> by DR-1b (<sha>):
+subscripting prefers `IndirectIndexWith(I).Ref` (309d3d63c), the prelude
+interface and its blanket `IndexWith` impl (6d80ceb58), 230227264's code with
+upstream's tests; `Core.Slice` and `Core.Buf` write through `Ref`; D-SL-3's pin
+deleted; D-SL-17's rule does not yield yet and is filed W-326; the generic const
+write filed W-327." W-322 "DISCHARGED <date> by PR 62's commit <sha> (C.6)."
+W-323 "DISCHARGED <date> by PR 56's commit <sha> (C.7, C.8)."
 
 ### C.3 Gap rows (fork/gap-analysis.md)
 
-Each row keeps its status; only the DR-0 sentence quoted is replaced.
+Each row keeps its status unless its own text says otherwise; only the
+sentences quoted are replaced.
 
 -   **Control flow: loops (:66), DONE.** Current sentence: "Direction drift
     (R32, DR-0, 2026-10-21): upstream's `Core.Iterate.Next` takes `ref cursor`
@@ -2794,60 +2595,77 @@ Each row keeps its status; only the DR-0 sentence quoted is replaced.
     program take a pointer at 11 sites, and upstream's loops.md desugars `for`
     through `case .Some(<pattern>)`; W-321 (DR-1 slice 2) owns the signature and
     W-320 the desugaring." At DR-1a: "`Core.Iterate.Next` takes `ref cursor` as
-    upstream does (DR-1a, <date>, W-321 discharged); the `for` desugaring
-    through `case .Some(<pattern>)` is W-320's (DR-1d)." At DR-1d:
-    "`Core.Iterate.Next` takes `ref cursor` and `for` is desugared through
-    `match` with `case .Some(<pattern>)` as upstream's loops.md specifies (DR-1a
-    and DR-1d, W-321 and W-320 discharged)."
+    upstream does (DR-1a, <date>, W-321 discharged). The `for` desugaring
+    through `case .Some(<pattern>)` is W-320's, which waits on upstream's own
+    conflict over `Match` (W-324); until then the toolchain calls `HasValue()`
+    and `Get()`, as upstream's checker does under its TODO."
 -   **Control flow: matching sum-type consumption (:68), PARTIAL.** Current
     sentence: "Direction drift (R32, DR-0, 2026-10-21): `.Some`/`.None` patterns
     over `Core.Optional` are upstream's designed route (sum_types.md's `Match`
     for classes; loops.md since df3cf9294), and the held PR 62's D-SV-7
     scrutinee view is a second spelling, recorded as a V-3a divergence; W-320
-    (DR-1 slice 1) owns the route and W-322 the view's retirement." At DR-1d:
-    "User-defined sum types: a class implementing `Core.Match` (sum_types.md) is
-    matched by `.Alternative(<pattern>)` in every refutable form (DR-1d, W-320);
-    `Core.Optional` implements it (`.Some(<pattern>)`, `.None()`); 0.1 limits
-    W-325, W-326, W-328."
--   **Stdlib: Optional (:78), PARTIAL.** Current sentence: "Direction drift
-    (R32, DR-0, 2026-10-21): the class KEPT by D-EH-1 and by the held PR 56's
-    D-OP-7 is not matchable, while upstream's loops.md matches it by `case
-    .Some(<pattern>)` (df3cf9294) and sum_types.md designs a class with `impl as
-    Match`; W-320 (DR-1 slice 1) owns it, keeping the class, the niche and the
-    `Try` signature." At DR-1d: "`Core.Optional` is matchable through
-    `Core.Match` (DR-1d, W-320): the class, the `T*` niche, `HasValue`/`Get` and
-    the `Try` signature kept; `Try`'s body matches."
--   **Stdlib: Slices (:79), PARTIAL.** Current sentences: "Direction drift (R32,
-    DR-0, 2026-10-21): upstream added `IndirectIndexWith` with a `ref`-returning
-    `Ref` (6d80ceb58, PR 7974) and prefers it for subscripting (309d3d63c, PR
-    7975), which D-SL-3's break condition names; W-109 owns it as D-DR-1
-    slice 3." and, in its 0.1-limits list, "slices are read-only (`s[i] = v`
-    diagnoses; no `IndirectIndexWith`/`ref` returns, W-109);". At DR-1b: the
-    first replaced by "`s[i]` and `b[i]` are durable references through
-    `IndirectIndexWith(i64).Ref` (DR-1b, W-109 discharged; upstream 6d80ceb58
-    and 309d3d63c), so `s[i] = v` writes through;" and the limits entry deleted.
+    (DR-1 slice 1) owns the route and W-322 the view's retirement." At R0:
+    "Direction drift (R32, DR-0): matching `Core.Optional` is upstream's
+    `Match` route (sum_types.md), which upstream's own pages cannot currently
+    express (a template associated constant that README.md and
+    generics/terminology.md rule out); W-320 waits on W-324, and the held PR
+    62's D-SV-7 view, a second spelling, is removed by a commit on its branch
+    (W-322, <date>)." On PR 62's branch, C.6 edits the SV-1 sentence of the same
+    row.
+-   **Stdlib: Optional (:78), PARTIAL on trunk, DONE on PR 57.** Current
+    sentence: "Direction drift (R32, DR-0, 2026-10-21): the class KEPT by D-EH-1
+    and by the held PR 56's D-OP-7 is not matchable, while upstream's loops.md
+    matches it by `case .Some(<pattern>)` (df3cf9294) and sum_types.md designs a
+    class with `impl as Match`; W-320 (DR-1 slice 1) owns it, keeping the class,
+    the niche and the `Try` signature." At R0: "Direction drift (R32, DR-0): the
+    class KEPT by D-EH-1 and D-OP-7 is not matchable, while upstream's loops.md
+    matches it by `case .Some(<pattern>)` and sum_types.md designs a class with
+    `impl as Match`, a design upstream's own README.md and
+    generics/terminology.md cannot currently admit; W-320 waits on W-324, and
+    the pattern for the empty alternative will be `.None()`." The status is not
+    DR-1's to move; PR 57's merge keeps this sentence beside its DONE text
+    (§1.16).
+-   **Stdlib: Slices (:79), PARTIAL to DONE at DR-1b.** Its own criterion: "this
+    row stays PARTIAL until write-through indexing lands (W-109)". At DR-1b the
+    status becomes DONE; "`s[i]` reads by value through a `final impl ... as
+    IndexWith(i64)`" becomes "`s[i]` and `b[i]` are durable references through
+    `final` impls of `IndirectIndexWith(i64)` whose `Ref` returns `ref T`
+    (DR-1b, W-109 discharged; upstream 6d80ceb58 and 309d3d63c), so `s[i] = v`
+    writes through"; the 0.1-limits entry "slices are read-only (`s[i] = v`
+    diagnoses; no `IndirectIndexWith`/`ref` returns, W-109);" is deleted and
+    "the literal-subscript rule is a fork spelling of `like i64` (W-326);"
+    added; "this row stays PARTIAL until write-through indexing lands (W-109)"
+    becomes "write-through indexing landed at DR-1b, which was this row's
+    remaining condition; the 0.1 limits above stay filed items"; the DR-0 drift
+    sentence is replaced by "DR-1b resolved the drift DR-0 recorded (V-3a
+    (ii))." The conformance figures are the PR's own.
 
 ### C.4 The V-3a register (decision log, DR-0's block)
 
-At R0, appended to DR-0's register paragraph as a dated line: "(iv) template
-associated constants for sum_types.md:113's `Match`, which upstream's parser
-refuses (toolchain/parse/handle_let.cpp:37-42 at fb7eff130); work item W-324,
-owner DR-1 (DR-1c) (added <date>, DR-1 plan)." At each discharge: "(<n>)
-resolved <date> by <PR, sha>."
+At R0, appended to DR-0's register paragraph as dated lines: "(iv)
+`Core.Optional` is not matchable because upstream's pages conflict on
+`Match.Continuation` (docs/design/sum_types.md:113 against README.md:1076-1078
+and :3064-3067, generics/terminology.md:100-103 and the parser at ac31fd198);
+work items W-320 (blocked) and W-324, owner DR-1, checked at each weekly
+upstream check (added <date>, DR-1 plan)." "(v) D-SL-17's literal-subscript
+rule, a fork spelling of indexing.md's `like i64`; work item W-326, blocked on
+`like` (added <date>, DR-1 plan)." At each discharge: "(<n>) resolved <date>
+by <PR, sha>."
 
 ### C.5 ORCHESTRATION (Next actions)
 
-"DR-1 (fork/direction/plan.md, rev <n>): four PRs after CT-1: DR-1a the `ref`
-cursor (W-321), DR-1b `IndirectIndexWith` (W-109), DR-1c the language
-prerequisites of `Match` (W-324), DR-1d `Match` for classes and `Core.Optional`
-(W-320); W-323's records commit on PR 56's branch now; W-322's commit on PR 62's
-branch after DR-1d."
+"DR-1 (fork/direction/plan.md, rev <n>): two PRs after CT-1, DR-1a the `ref`
+cursor (W-321) and DR-1b `IndirectIndexWith` (W-109, stacked on DR-1a); now,
+W-322's removal-only commit on PR 62's branch and W-323's records commit on PR
+56's branch, merged into PR 57's; W-320 (`Core.Optional` matchable by `Match`)
+stopped at the plan on upstream's own conflict, watched by W-324 at each weekly
+upstream check."
 
-### C.6 PR 62's land-time commit (W-322)
+### C.6 PR 62's commit (W-322)
 
-Message: "SV-1: retire the D-SV-7 `Core.Optional` view; `Core.Optional` is
-matched through `Match` (R32 (e), DR-1 D-DR-15, W-322)". sum_types.md amendment,
-after PR 62's section on `std::optional`:
+Message: "SV-1: retire the D-SV-7 `Core.Optional` view (R32 (d), (e); DR-1
+D-DR-15, W-322)". sum_types.md amendment, after PR 62's section on
+`std::optional`:
 
 <!-- google-doc-style-ignore -->
 
@@ -2856,18 +2674,31 @@ after PR 62's section on `std::optional`:
 > matched a `Core.Optional(T)` scrutinee as `Core.CppCompat.StdOptional(T)`,
 > is retired: it was a second spelling of the `Match` route this page
 > designs for classes (fork/rulebook.md R32 (d)). A `Core.Optional(T)`
-> scrutinee is matched through its `impl as Match` (`.Some(<pattern>)`,
-> `.None()`); a `std::optional` scrutinee is still matched as
-> `StdOptional(T)` (`.Some(<pattern>)`, `.None`).
+> scrutinee is not matched until `Core.Optional` implements `Match` (W-320),
+> which waits on a conflict in upstream's own pages over how `Match` declares
+> `Continuation` (W-324). A `std::optional` scrutinee is still matched as
+> `StdOptional(T)` (`.Some(<pattern>)`, `.None`), and a `Core.Optional(T)`
+> still converts to and from a C++ `std::optional<T'>` as described above.
 ```
 
 <!-- google-doc-style-resume -->
 
+On PR 62's branch, in the same commit: gap row 68's "Still PARTIAL on W-177,
+narrowed: `Core.Optional(T)` is matched for a concrete scalar or pointer `T`
+only, by value; generic and aggregate payloads, `ref` bindings and copy-free
+matching stay open." becomes "`Core.Optional(T)` itself is not matched: D-SV-7's
+view was retired (W-322, R32 (d)), and W-320 waits on W-324."; its "11
+conformance programs PASS (... match_core_optional_diff ...)" becomes 10, with
+match_core_optional_diff named as SKIP; its plan's §1.7 and the decision log's
+SV-1 entry gain "Retired <date> by W-322's commit (DR-1 D-DR-15, R32 (d), (e));
+F-020's bridge kept."; its ledger's W-322 is discharged and W-177's "narrowed"
+note becomes "not narrowed: the view is retired; W-177 closes with W-320".
+
 ### C.7 PR 56's records commit (W-323, D-DR-3), verbatim
 
-Message: "OP-1 records: correct the loops.md amendment and the V-3 paragraph
-(R32 (a), (e); DR-0 D-DR-3, W-323)". docs/design/control_flow/loops.md:116-118
-on PR 56's branch, the block
+Message: "OP-1 records: correct the loops.md amendment, the V-3 paragraph and
+optional.md's matchability text (R32 (a), (e); DR-0 D-DR-3, W-323; DR-1)".
+docs/design/control_flow/loops.md:116-118 on PR 56's branch, the block
 
 <!-- google-doc-style-ignore -->
 
@@ -2889,10 +2720,10 @@ is replaced by
 > page, since df3cf9294 (2026-10-07, proposal p007381), desugars `for` to
 > `match (range.(Iterate.Next)(cursor)) { case .Some(<pattern>) => { ... }
 > default => { break; } }` with a `ref` cursor (upstream loops.md:116-120 at
-> fb7eff130). The fork's toolchain calls `Core.Optional`'s `HasValue()` and
-> `Get()` (designed in [Optional](../optional.md)) until DR-1 lands the
-> `Match` route (W-320); those calls are an implementation stage, not the
-> design.
+> ac31fd198). The fork's toolchain calls `Core.Optional`'s `HasValue()` and
+> `Get()` (designed in [Optional](../optional.md)), as upstream's checker does
+> under its TODO, until `Core.Optional` is matchable (W-320); those calls are
+> an implementation stage, not the design.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2911,37 +2742,49 @@ reads "is desugared to a loop that manages the cursor and checks the optional
 return values:" followed by `match (range.(Iterate.Next)(cursor)) { case
 .Some(<pattern>) => { <statements> } default => { break; } }` (upstream
 loops.md:109-122), so `HasValue()`/`Get()` were no longer upstream's text when
-this check was made. The fork's `for` keeps calling them until W-320 (DR-1)
-lands `Match` for classes; under R32 the comparison is made against upstream's
-tip by sha, quoting the page.
+this check was made. The fork's `for` keeps calling them until W-320 lands;
+under R32 the comparison is made against upstream's tip by sha, quoting the
+page.
 ```
 
 <!-- google-doc-style-resume -->
 
-### C.8 optional.md on PR 56's branch (at DR-1d)
+### C.8 optional.md on PR 56's branch (in W-323's commit)
 
-After D-OP-7's paragraph (PR 56's docs/design/optional.md:179-200) and in its
-"Not matchable" limit (:425-441):
+(Amended 2026-10-21, review fold: B-M12 / B-B2 / A-m3.) After the "Pattern
+matching" section's second paragraph (PR 56's docs/design/optional.md:425-441;
+PR 57's :444-458 after its merge of PR 56's branch), one amendment that covers
+each passage naming `.Some` and `.None` patterns (PR 56's :98, :182, :427-430,
+:495-497; PR 57's :101, :187, :444-447, :501-503):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-> **Fork amendment (<date>, DR-1 D-DR-10).** `Core.Optional` is matchable: it
-> implements `Core.Match` as docs/design/sum_types.md designs it for classes,
-> with the alternatives `Some(value: T)` and `None()` (`None` is a function,
-> so its pattern takes parentheses, sum_types.md:214-222). W-177 is closed by
-> W-320.
+> **Fork amendment (<date>, DR-0 D-DR-1, DR-1).** Under fork/rulebook.md R32,
+> matchability is not a fork limit chosen here: upstream designs `Optional`'s
+> matching as a class implementing `Match` (docs/design/sum_types.md), and the
+> fork takes that route, not a `choice` (DR-0 rejected the `choice`
+> conversion). Its patterns are `.Some(<pattern>)` and, because `None` is a
+> function here, `.None()` (sum_types.md:214-222); where this page says "`.Some`
+> and `.None` patterns" it means those. W-177 closes with W-320, which waits on a
+> conflict in upstream's own pages over how `Match` declares `Continuation`
+> (W-324), and the examples that match on `Optional` wait with it.
 ```
 
 <!-- google-doc-style-resume -->
 
-### C.9 loops.md (this branch)
+PR 57's merge of PR 56's branch keeps this block and PR 57's text on both sides.
 
-At DR-1a, after the restored desugaring block: "> **Fork amendment (<date>,
-DR-1a).** The fork's `Core.Iterate.Next` takes `ref cursor` as above (W-321).
-Its `for` still calls `Core.Optional`'s `HasValue()` and `Get()` in place of the
-`match` until W-320 lands." At DR-1d, that amendment's second sentence is
-replaced by "Its `for` is desugared as above (DR-1d, W-320)."
+### C.9 loops.md (DR-1a)
+
+After the restored desugaring block: "> **Fork amendment (<date>, DR-1a).** The
+fork's `Core.Iterate.Next` takes `ref cursor` as above (W-321). Its `for` calls
+`Core.Optional`'s `HasValue()` and `Get()` in place of the `match`, as
+upstream's own checker does under its TODO
+(toolchain/check/handle_loop_statement.cpp), until `Core.Optional` is matchable
+(W-320, waiting on W-324)." At M-a, PR 56's F-015 amendment (in C.7's corrected
+form) is dropped: its first sentence describes the cut's desugaring block, which
+DR-1a replaced, and this amendment says the rest (§1.16).
 
 ### C.10 slices.md (DR-1b)
 
@@ -2950,6 +2793,84 @@ replaced by: "> **Fork amendment (<date>, DR-1b, D-DR-7).** Slices are writable:
 `Core.Slice(T)` implements `IndirectIndexWith(i64)`, whose `Ref` returns `ref T`
 (upstream core/prelude/operators/index.carbon:14-16;
 docs/design/expressions/indexing.md), so `s[i]` is a durable reference and `s[i]
-= v` writes through; `Core.Buf(T)` likewise. A `Slice(const T)` is not writable
-where `T` is known; a generic body's write instantiated at a `const` element is
-W-327's."
+= v` writes through; `Core.Buf(T)` likewise, its storage being the heap block a
+by-value `Buf` names (D-SL-6). A `Slice(const T)` is not writable where `T` is
+known; a generic body's write instantiated at a `const` element is W-327's. The
+literal-subscript rule stands in for `like i64` until `like` lands (W-326)."
+
+### C.11 error_handling.md (R0)
+
+After the paragraph that follows the EH-A amendment (trunk's
+docs/design/error_handling.md:414-435 and :437-444), a dated paragraph:
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+> **Amendment (<date>, DR-1; R32, DR-0).** "The `match` body above applies
+> verbatim once W-058 makes `Optional` a choice", and the paragraph above's
+> "Rebuilding `Core.Optional` as a choice type", no longer hold: W-058 kept
+> the class (F-015), and DR-0 rejected the `choice` conversion. The route is
+> `Core.Optional` implementing `Match` (W-320), under which the empty arm is
+> `case .None()`, because the prelude's `None` is a function
+> (docs/design/sum_types.md:214-222). W-320 waits on a conflict in upstream's
+> own pages over how `Match` declares `Continuation` (W-324); until then the
+> `Optional` impl's body keeps `HasValue()`/`Get()`, and this page, which has no
+> upstream copy, is the fork's.
+```
+
+<!-- google-doc-style-resume -->
+
+## Review fold record (rev 2, 2026-10-21)
+
+Reviews A and B of rev 1 (commit 1e46ffd94), both REJECT, read upstream at
+70c696e78; rev 2 read ac31fd198, whose only commit since 70c696e78 touches no
+DR-1 page or prelude file. Every finding was reproduced in `$Y` where it is a
+measurement (where_cont, copy_slot, nested_choice, tmpl_for, tmpl_match_dep;
+230227264's `git apply --check`; the `Buf` alternatives; the merge onto CT-1's
+head; W-322's removal on PR 62's head) and folded; none is rejected. 31
+findings: review A 12 (3 BLOCKER, 5 MAJOR, 4 MINOR), review B 19 (2 BLOCKER, 13
+MAJOR, 4 MINOR).
+
+| Finding | Disposition | Where |
+| --- | --- | --- |
+| A-B1 L1 and L2 contradict upstream; register; F-022 | Folded: README.md, terminology.md, p001013, details.md and the parser quoted; L1, L2, L3 not implemented; slice 1 stopped by D-DR-22; rev 1's register (iv) replaced by the conflict entry with W-320 and W-324; F-022 not minted, because DR-1 adopts no design on the conflict | §0.7, §0.10, §1.4, §1.17, §7.2, C.1, C.2, C.4 |
+| A-B2 `Try` body against the Copy rule | Folded: reproduced (copy_slot); D-DR-13 withdrawn, the `Try` body keeps `HasValue`/`Get`; the constraint recorded for the resumption | §1.4 RC-2, §1.9, C.1 |
+| A-B3 `for` through `Match` regresses template `for` | Folded: reproduced (tmpl_for `6`, tmpl_match_dep TODO on PR 61 and on the mct mirror); no `for` change beyond slice 2, measured on CT-1's head; RC-3 | §0.8.1, §1.2, §1.4 RC-3 |
+| A-M1 min_prelude `for` goldens | Folded: moot for rev 2 (no `Match` `for`); RC-4 names the eight goldens | §1.4 RC-4 |
+| A-M2 nested `Match` alternatives | Folded: reproduced (nested_choice); RC-5 | §1.4 RC-5 |
+| A-M3 W-322 list breaks F-020's bridge | Folded: the kept and removed pieces listed, the mapping gate re-derived, measured on the m62 mirror (std goldens unchanged, 1950 of 1950) | §0.8.2, §1.11, §2.5 |
+| A-M4 commit and PR slicing | Folded: two PRs, two named branches, each golden in the commit that makes it pass | §1.1, §1.13, §3 |
+| A-M5 230227264's goldens and conflicts | Folded: code by `cherry-pick -x -n`, fork goldens kept, three splits added and refilled (+172, +103; 169 of 172 lines upstream's) | §0.6.1, §0.6.2, §1.3, §3 item 5, A.0 |
+| A-m1 register incomplete | Folded: 059ee7b9e, 0d3b606a5, 4a8993af2, db87a84b6 added with their impact; tip ac31fd198 | §0.10 |
+| A-m2 upstream's `IndirectIndexWith` tests | Folded: both brought, filled by this tree's autoupdate | §0.6.2, §1.3, A.0b |
+| A-m3 `.None()` amends D-DR-1; error_handling.md is fork-only | Folded: dated amendments of D-DR-1 and W-320 written; the sketch called the fork's page | §1.4 RC-2, RC-6, C.1, C.2, C.11 |
+| A-m4 spec gaps (cleanup scope, missing member, extra copy, counts, review count) | Folded: the first three into RC-7; §5's counts are measured rows; one implementation review once green (R29(c)) | §1.4 RC-7, §3 items 4 and 8, §5 |
+| B-B1 L1 contradicts README.md | Folded with A-B1 | as A-B1 |
+| B-B2 W-322 and C.8 cannot run in merge order | Folded: both commits made now, independent of DR-1's code; PR 62's program SKIPped with a cited reason and respelled; B.4 withdrawn; PR 57 takes C.8 by a merge | §1.11, §1.16, §2.5, B.3, C.6, C.8 |
+| B-M1 min_prelude without `Match` | Folded with A-M1 | §1.4 RC-4 |
+| B-M2 regressions on CT-1's base | Folded: the composition measured on CT-1's head (1963 of 1963; 149/0/20 over 169, the template programs PASS); §5 has a CT-1 row | §0.8.1, §5 |
+| B-M3 `Try` body against the Copy rule | Folded with A-B2 | §1.4 RC-2 |
+| B-M4 nested alternatives | Folded with A-M2 | §1.4 RC-5 |
+| B-M5 PR and branch shape | Folded with A-M4; DR-1c removed with slice 1; both PRs on trunk's base as D-DR-1 says | §1.1 |
+| B-M6 merge M conflicts in code | Folded: the resolution spelled out and measured on the mct mirror, which found a real template defect (`index_class_with_index_with`), root-caused and fixed by the composition commit C-b; refill commits L-a, L-b | §0.8.1, §1.3, §1.16, §2.1, §2.2, §3 item 10 |
+| B-M7 `Buf` by way of `IndirectIndexWith` | Folded by the finding's second fix (quote and justify): indexing.md:29-34 quoted; D-SL-6 puts `Buf` in the `std::span` category; the first fix measured infeasible (`FinalImplOverlapsDifferentFile` for `final`, a generic `b[i]` regression without) | §0.6.2, §0.10, §1.3, §7.1 R-3 |
+| B-M8 W-320 and W-109 discharge text | Folded: `.None()` amendments of W-320 and D-DR-1; D-SL-17 filed as register (v) and W-326 before W-109's discharge | §1.3, §1.4 RC-6, C.1, C.2, C.4 |
+| B-M9 gap rows 79 and 78 | Folded: row 79 to DONE by its own criterion; row 78's merge rule with PR 57 | §1.15, §1.16, C.3 |
+| B-M10 loops.md collision | Folded: M-a drops PR 56's corrected amendment and keeps C.9 | §0.8, §1.16, C.9 |
+| B-M11 vacuous verification, placeholders | Folded: the slice-1 placeholders withdrawn with it (RC-9 for the resumption); every mutant of §8 names its catching golden; B.1 and B.2 run | §1.4 RC-9, §8 item 5, Appendix B |
+| B-M12 doc texts missing or stale | Folded: error_handling.md (C.11), optional.md's `.None` passages on PR 56 and PR 57 (C.8), PR 62's sum_types.md (C.6); no pattern_matching.md edit remains | §1.15, C.6, C.8, C.11 |
+| B-M13 230227264's goldens unmeasured; authorship | Folded with A-M5; authorship stated | §1.3, §3 item 5 |
+| B-m1 citations | Folded: upstream optional.carbon:30-32, p000157:496-502; rev 1's A.3 withdrawn | §0.10 |
+| B-m2 register selection rule | Folded: selected by design page, then by file, all 98 commits accounted; db87a84b6 listed; the sign-off names its tip | §0.10 |
+| B-m3 third parens case, qualified patterns | Folded: RC-7 drops the case, RC-8 decides the qualified forms at resumption | §1.4 RC-7, RC-8 |
+| B-m4 break conditions; W-327 pin | Folded: D-DR-17..D-DR-19 and D-DR-22 have break conditions; A.1's `generic_write_const_element` pins W-327 (filled on v4) | §1.13..§1.15, §3 item 9, A.1 |
+
+Found by the fixer while folding: (1) the template index defect of B-M6 and
+its root fix C-b, which also makes PR 61's failing template `s[0]` on
+`Core.Slice(T)` work (§0.8.1); (2) `5 as const i32` aborts lowering on trunk and
+the nightly, filed W-325 (§0.6.2); (3) Appendix A's header said full-prelude
+goldens carry no `INCLUDE-FILE`, while min_prelude/full.carbon is how they ask
+for the full prelude (corrected); (4) PR 61 and CT-1 touch call.cpp and
+convert.cpp too, where 230227264's hunks apply with a three-way fallback (§0.8);
+(5) PR 51's buf_field goldens and PR 57's slice/basic refill at DR-1's merges
+(§0.8, §1.13).

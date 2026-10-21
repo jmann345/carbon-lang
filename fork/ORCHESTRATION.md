@@ -10,12 +10,12 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-21 (the owner's direction-drift directive is recorded as
-R32 and DR-0, with DR-1 scheduled after CT-1's implementation; CT-1's plan is
-signed off at rev 4 and its implementation has started, stacked on PR 61; SV-1
-is implemented, reviewed and held open as PR 62; TP-1's round 11 is dry and PR
-61's texts are re-posted; see the five paragraphs dated 2026-10-21 below; the
-2026-10-19 text follows).
+Last updated: 2026-10-21 (DR-1's plan is signed off at rev 3, with slice 1
+stopped on upstream's own conflict, and its implementation has started; the
+owner's direction-drift directive is recorded as R32 and DR-0; CT-1's
+implementation is in its review fold, stacked on PR 61; SV-1 is held open as
+PR 62; TP-1's round 11 is dry; see the six paragraphs dated 2026-10-21 below;
+the 2026-10-19 text follows).
 2026-10-19 (weekly check fired again: the cut HOLDS at 85 upstream commits with
 96 conflicting files and GitHub Actions on the repository is still DISABLED, see
 the paragraph dated 2026-10-19 below; the 2026-10-12 text follows). 2026-10-12
@@ -403,6 +403,38 @@ W-109 gains a dated note naming slice 3; CT-1 keeps W-300..W-319; a re-scan of
 68 origin refs and 16 worktrees found no other W-3xx id. Schedule: DR-1 is the
 first of the Next actions below. Twelve PRs are held open; none is merged.
 
+Later on 2026-10-21 (20:34 UTC): DR-1's plan is SIGNED OFF at rev 3
+(fork/direction/plan.md on claude/carbon-fork-0-1-dr, a9943e467, cut from trunk
+f68681114): two adversarial reviews, both REJECT with twelve and nineteen
+findings, a fold to rev 2, a focused re-review (APPROVE-WITH-AMENDMENTS, six)
+and a fold to rev 3; thirty-seven findings, all folded, none rejected. Its
+central finding: upstream's own pages conflict on how the Match interface
+declares its Continuation (sum_types.md writes a template associated constant;
+README.md, generics/terminology.md and upstream's parser forbid any phase
+keyword on an associated constant; the impl-scope let the class example relies
+on was removed by proposal p001013), so the Match route for Core.Optional
+cannot be written on either toolchain without a fork spelling, which R32
+forbids. Slice 1 (W-320) therefore stops at the plan, blocked on W-324, a
+register entry that watches upstream's resolution at each weekly check; no
+F-022 is minted. DR-1 is two PRs on trunk's base: DR-1a, Core.Iterate.Next's
+ref cursor (W-321; measured, EXPECTED and not of record: nine goldens refilled,
+gate 1942 of 1942, conformance 128/0/22), and DR-1b, stacked on it, element
+access through IndirectIndexWith with Core.Slice and Core.Buf writing through
+Ref and upstream 230227264 cherry-picked (W-109; gate 1946 of 1946, conformance
+130/0/22 over 152); both compose on CT-1's head (1963 of 1963, 149/0/20 over
+169, after a per-specific index deferral for template-dependent operands). Made
+now, by new commits on the held PRs' branches: W-322 retires PR 62's D-SV-7
+view (measured on a mirror: gate 1950 of 1950, conformance 133/0/22 over 155,
+the view's program SKIPped) and W-323 corrects PR 56's loops.md amendment and
+V-3 paragraph, merged into PR 57. Residues W-324..W-327 and W-329 are filed at
+R0; W-328 is reserved for W-320's resumption. The implementation workflow has
+started. CT-1's implementation review 1 found one BLOCKER (a lowering stop when
+a Carbon generic call's result is stored into a C++ specialization member in a
+checked generic) and three MAJORs, and review 2 six records-only MINORs; the
+fixer is folding them at the root (224ee2f8f and its fill so far); the records
+and the focused re-review loop follow. Twelve PRs are held open; none is
+merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -748,6 +780,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
 | `claude/carbon-fork-0-1-sv` | HELD OPEN as PR 62 — SV-1 std::optional and std::variant interop mapping at 3a6531157 (toolchain a4d979619; W-011 DISCHARGED; gap row 68 stays PARTIAL on W-177, narrowed; F-020 minted; W-275..W-277, W-279..W-281, W-285 and W-286 filed, W-284 held for M-VA, W-282 conditional at land time, W-283 and W-287..W-294 unused, W-278 withdrawn; expected 134/0/21 over 155; gate 1950 of 1950); plan rev 5 signed off after five reviews, two implementation reviews folded in two fix commits, focused re-review round 2 dry; merges last, after PR 61, through its land-time items M, M-VA, F-M, Doc-M and the records commit. |
 | `claude/carbon-fork-0-1-ct` | PLANNED, implementation under way — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific (W-043; gap rows 56 and 42); plan signed off at rev 4 (62530b76e) after two reviews and two focused re-reviews (thirty findings folded, none rejected); the branch is cut from PR 61's head 5661a35c8 and stacked on PR 61; W-300..W-319 reserved (W-300..W-309 to be filed), F-021 minted; predicted, not of record: gate 1959 of 1959, conformance 147/0/20 over 167; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
+| `claude/carbon-fork-0-1-dr` | PLANNED, implementation under way — DR-1 direction realignment under R32 (W-321, W-109, W-322, W-323; W-320 stopped at the plan, blocked on W-324); plan signed off at rev 3 (a9943e467) after two reviews and one focused re-review (thirty-seven findings folded, none rejected); two PRs: DR-1a the ref cursor (this branch, base trunk) and DR-1b IndirectIndexWith (claude/carbon-fork-0-1-dr-idx, stacked on DR-1a); predicted, not of record: 1942 of 1942 and 128/0/22, then 1946 of 1946 and 130/0/22 over 152; merge after CT-1 through M-a, L-a, M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -807,34 +840,30 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 ### Next actions (dependency order)
 
-1.  **DR-1, direction realignment (R32; decision log DR-0)**, after CT-1's
-    implementation and before UA-3, on trunk's base with the held PRs composed
-    on mirrors: slice 1, `Match` for classes and `Core.Optional`'s `impl as
-    Match` (`.Some(<pattern>)` and `.None` patterns, `match`, `if let`, `while
-    let`, the `for` desugaring, the `Try` body; `HasValue`/`Get` kept; W-320,
-    closing W-177); slice 2, `Core.Iterate.Next`'s `ref cursor` signature with
-    its 11 pointer-cursor sites and the loop checker (W-321); slice 3,
-    `Core.Slice`'s element access writable through `IndirectIndexWith`'s `Ref`
-    (W-109). The plan's reviews decide the order and may split slices into PRs.
-    It owes PR 56 a new commit, before PR 56 lands, rewriting loops.md:116-118's
-    Fork amendment and correcting OP-1's V-3 paragraph (W-323), and PR 62 a new
-    commit retiring D-SV-7's view when slice 1 lands (W-322); neither PR is
-    rewritten.
+1.  **DR-1 (fork/direction/plan.md, rev 3, signed off)**: two PRs after
+    CT-1, DR-1a the `ref` cursor (W-321) and DR-1b `IndirectIndexWith` (W-109,
+    stacked on DR-1a); now, W-322's removal-only commit on PR 62's branch and
+    W-323's records commit on PR 56's branch, merged into PR 57's; W-320
+    (`Core.Optional` matchable by `Match`) stopped at the plan on upstream's own
+    conflict, watched by W-324 at each weekly upstream check. W-322's commit
+    gets one focused review once its run is green (R29(c)); after it and
+    W-323's commit, PR 62's, PR 56's and PR 57's descriptions and first
+    comments are refreshed and re-posted, and their rows stamped.
 2.  A W-008 slice (tuple/var/ref/compile-time case patterns,
     non-binding payload subpatterns — unblocks W-066's usefulness
     diagnostics) or conformance depth (differential pairs for flipped
     bullets lacking one). W-066 stays blocked on W-008.
 3.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-4.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
-    (default (c) DEFER; carries W72c Try.FromContinue + the
-    `final`-spelling recurrence flag); W5-S4 (std::variant mapping)
-    rides its deferred planning decision. Residues: W-067
-    (default-clause guards), W-068 (fewer-than-two-alternative
-    choices), W-069 (cross-file runtime let), W-070 (unit break types,
-    SF-9-blocked), choice `Core.Copy` construction gap,
-    tuple/var/ref/compile-time case patterns, non-binding payload
-    subpatterns (W-008).
+4.  W5-S3p (prelude Result/Optional) is no longer gated: SF-9 was decided by
+    D-EH-1 (2026-09-27, the class identity kept) and EH-A landed Core.Result and
+    Optional's Try impl (W72c Try.FromContinue and the `final`-spelling
+    recurrence flag rode with it); W5-S4 (std::variant mapping) landed as SV-1,
+    held open as PR 62. Residues: W-067 (default-clause guards), W-068
+    (fewer-than-two-alternative choices), W-069 (cross-file runtime let), W-070
+    (unit break types, discharged at EH-A by D-EH-2), choice `Core.Copy`
+    construction gap, tuple/var/ref/compile-time case patterns, non-binding
+    payload subpatterns (W-008).
 5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 

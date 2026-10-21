@@ -380,3 +380,29 @@ here.
     heading; second occurrence of the class after the R25 rumdl miss, so a rule.
     Scope, probe nuance and attribution corrected by the rev-3 re-review of that
     plan, 2026-10-05.)
+-   **R32. No direction drift (owner directive 2026-10-21: "Direction drifts are
+    not permitted").** V-3's override clause ('upstream intent is the default
+    preference, overridable with stated good reason') is withdrawn as V-3b:
+    where upstream's recorded direction and a fork design diverge, the fork
+    realigns; a stated good reason records the cost of realignment, it does not
+    license the divergence. Upstream's recorded direction is read at upstream's
+    tip at the time of the check (the fetched upstream/trunk, named by its sha
+    in the check) in all of: accepted proposals, the design pages at that tip
+    (never the fork's copy of a page), prelude identities and signatures, and
+    toolchain TODOs that name a mechanism. (a) Every V-3 check in a plan
+    compares against that tip and quotes the design page's current text for each
+    mechanism the plan touches. (b) A drift found by a weekly upstream check, a
+    V-3 check or a review is filed as a work item owned by a named workstream
+    and scheduled in ORCHESTRATION's Next actions, not recorded as a register
+    note; the V-3a register is a work queue reviewed at each weekly check, each
+    entry carrying its work item. (c) The weekly check lists every upstream
+    commit since the cut that changes a design page's stated mechanism or a
+    prelude signature, by subject, not only the files that conflict. (d) A fork
+    mechanism that is a second spelling of a mechanism upstream has designed is
+    a drift under (b) even while upstream's toolchain has not implemented its
+    design: a scrutinee view where upstream designs Match, a pointer cursor
+    where upstream adopted ref, a read-only index where upstream added
+    IndirectIndexWith. (e) A held PR found to carry a drift is amended before it
+    lands by a new commit on its branch, never by rewriting it. (Origin: owner
+    directive 2026-10-21; decision-log entry DR-0, which records why
+    Core.Optional was left unmatchable.)

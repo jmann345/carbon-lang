@@ -10,10 +10,12 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-21 (CT-1's plan is signed off at rev 4 and its
-implementation has started, stacked on PR 61; SV-1 is implemented, reviewed and
-held open as PR 62; TP-1's round 11 is dry and PR 61's texts are re-posted; see
-the four paragraphs dated 2026-10-21 below; the 2026-10-19 text follows).
+Last updated: 2026-10-21 (the owner's direction-drift directive is recorded as
+R32 and DR-0, with DR-1 scheduled after CT-1's implementation; CT-1's plan is
+signed off at rev 4 and its implementation has started, stacked on PR 61; SV-1
+is implemented, reviewed and held open as PR 62; TP-1's round 11 is dry and PR
+61's texts are re-posted; see the five paragraphs dated 2026-10-21 below; the
+2026-10-19 text follows).
 2026-10-19 (weekly check fired again: the cut HOLDS at 85 upstream commits with
 96 conflicting files and GitHub Actions on the repository is still DISABLED, see
 the paragraph dated 2026-10-19 below; the 2026-10-12 text follows). 2026-10-12
@@ -358,6 +360,48 @@ implementation workflow has started (C1, F1, C2, F2, P, the held-state
 measurements with five composition mirrors, two implementation reviews, the
 fixer, R and D, then the focused re-review loop capped at three rounds); the PR
 opens held when the loop is dry. Twelve PRs are held open; none is merged.
+
+Later on 2026-10-21 (17:21 UTC): the owner's directive "Direction drifts are not
+permitted", asked with the question "why didn't the fork have matchable optional
+types in the first place?", is recorded as R32 (fork/rulebook.md) and as V-3b
+and entry DR-0 (fork/decision-log.md); it withdraws V-3's override clause
+('upstream intent is the default preference, overridable with stated good
+reason'). The answer, in four sentences. W5 put the `Match` interface out of
+scope (W5-S1, R-8) and recommended replacing the class by a choice for SF-9, but
+that owner question was never asked, and on 2026-09-27, the day R29(a) took
+effect, EH-A auto-adopted KEEP as D-EH-1 with a break condition keyed only on
+making `Optional` a choice. SF-6's scalar-only payload gate could not have
+carried a choice `Optional` of a class anyway, and OP-1 (PR 56) kept the class
+by D-OP-7 and filed matchability as W-177. Upstream's loops.md began desugaring
+`for` through `case .Some(<pattern>)` on 2026-10-07 (df3cf9294, PR 7381,
+proposal p007381, two days after the cut), and the fork missed it: OP-1's V-3
+compared the prelude against upstream 62f1cc6a3 but read loops.md from the
+fork's copy, PR 56 wrote a Fork amendment into loops.md pinning
+`HasValue`/`Get`, and neither weekly check named PR 7381. PR 62's D-SV-7
+scrutinee view is a fourth spelling, and two more drifts stand: upstream's
+`IndirectIndexWith` with a `ref`-returning `Ref` (PRs 7974, 7975) against
+D-SL-3's read-only `Slice`, and upstream's `ref cursor` `Iterate.Next` against
+the fork's pointer cursor at 11 sites. Decisions, auto-adopted under R29(a),
+each with its break condition in DR-0: D-DR-1 schedules the realignment
+workstream DR-1 after CT-1's implementation and before UA-3, on trunk's base
+with the held PRs composed on mirrors, in three slices (`Match` for classes and
+`Core.Optional`'s `impl as Match`, with `.Some`/`.None` patterns, `match`, `if
+let`, `while let`, the `for` desugaring and the `Try` body, `HasValue`/`Get`
+kept; `Iterate.Next`'s `ref cursor` with every impl and the loop checker;
+`Core.Slice`'s element access writable through `IndirectIndexWith`'s `Ref`),
+ordered and split by the plan's reviews; D-DR-2 records PR 62's D-SV-7 view as a
+V-3a divergence, retired by slice 1 through a new commit on PR 62's branch;
+D-DR-3 owes PR 56 a new commit rewriting the loops.md Fork amendment (:116-118)
+to upstream's current desugaring and adding a dated correction naming df3cf9294
+to OP-1's V-3 paragraph; D-DR-4 makes every V-3 check compare against upstream's
+tip by sha and quote the page at that tip, and every weekly check list
+mechanism-changing commits by subject (R32). Ids: DR-1 reserves W-320..W-329 and
+files W-320 (`Core.Optional` matchable by `Match`, closes W-177; slice 1), W-321
+(the `ref cursor` signature, 11 sites; slice 2), W-322 (retire D-SV-7's view)
+and W-323 (PR 56's record corrections); W-324..W-329 are reserved and unused;
+W-109 gains a dated note naming slice 3; CT-1 keeps W-300..W-319; a re-scan of
+68 origin refs and 16 worktrees found no other W-3xx id. Schedule: DR-1 is the
+first of the Next actions below. Twelve PRs are held open; none is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -763,13 +807,26 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 ### Next actions (dependency order)
 
-1.  A W-008 slice (tuple/var/ref/compile-time case patterns,
+1.  **DR-1, direction realignment (R32; decision log DR-0)**, after CT-1's
+    implementation and before UA-3, on trunk's base with the held PRs composed
+    on mirrors: slice 1, `Match` for classes and `Core.Optional`'s `impl as
+    Match` (`.Some(<pattern>)` and `.None` patterns, `match`, `if let`, `while
+    let`, the `for` desugaring, the `Try` body; `HasValue`/`Get` kept; W-320,
+    closing W-177); slice 2, `Core.Iterate.Next`'s `ref cursor` signature with
+    its 11 pointer-cursor sites and the loop checker (W-321); slice 3,
+    `Core.Slice`'s element access writable through `IndirectIndexWith`'s `Ref`
+    (W-109). The plan's reviews decide the order and may split slices into PRs.
+    It owes PR 56 a new commit, before PR 56 lands, rewriting loops.md:116-118's
+    Fork amendment and correcting OP-1's V-3 paragraph (W-323), and PR 62 a new
+    commit retiring D-SV-7's view when slice 1 lands (W-322); neither PR is
+    rewritten.
+2.  A W-008 slice (tuple/var/ref/compile-time case patterns,
     non-binding payload subpatterns — unblocks W-066's usefulness
     diagnostics) or conformance depth (differential pairs for flipped
     bullets lacking one). W-066 stays blocked on W-008.
-2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
+3.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
+4.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
     (default (c) DEFER; carries W72c Try.FromContinue + the
     `final`-spelling recurrence flag); W5-S4 (std::variant mapping)
     rides its deferred planning decision. Residues: W-067
@@ -778,7 +835,7 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     SF-9-blocked), choice `Core.Copy` construction gap,
     tuple/var/ref/compile-time case patterns, non-binding payload
     subpatterns (W-008).
-4.  Conformance depth: differential pair per flipped bullet; scoreboard in
+5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 
 ### Standing user directives

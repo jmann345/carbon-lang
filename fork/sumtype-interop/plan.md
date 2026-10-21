@@ -55,6 +55,13 @@ commit, listed in the [implementation review fold
 record](#implementation-review-fold-record-2026-10-21) (amended 2026-10-21,
 implementation-review fold: all findings).
 
+Recorded in the held state (2026-10-21): R c00beaf60 composes gap row 68 over
+PR 56's row text, PARTIAL on W-177 narrowed, and D discharges W-011, files
+W-275, W-276, W-277, W-279, W-280, W-281 and W-285, and appends the decision-log
+entry with F-020's veto digest; the [landed
+notes](#landed-notes-sv-1-2026-10-21) list what they wrote, the ids left unfiled
+and every land-time item.
+
 **Summary.** A C++ `std::optional<T>` or `std::variant<T0, ..., Tn>`
 specialization stays the C++ class the import makes of it today, so its member
 functions keep working, and gains a Carbon sum type: a specific of one of nine
@@ -9481,6 +9488,127 @@ The two implementation reviews of 6efb8345b and their fold are the
 record](#implementation-review-fold-record-2026-10-21) (added 2026-10-21,
 implementation-review fold: all findings).
 
+## Landed notes (SV-1, 2026-10-21)
+
+Written by the discharge commit D, "SV-1 (8): discharge", after the row commit R
+(c00beaf60, "SV-1 (7): gap row 68"), both dated 2026-10-21, the UTC date of
+their commits, on the branch whose last merge of trunk is dff9f756b (trunk
+d9f346f53). In the held state (§3 item 8) no PR of PR 51 to PR 61 is on that
+trunk, so these notes record what R and D wrote, the ids they left unfiled with
+each one's condition, the measurements and their heads, and every land-time item
+in order; the land-time records commit adds the merged tree's runs here. `$D` is
+the records writer's scratch directory,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-impl/records`
+(its `ids-*.txt`, `gate-*.log`, `conf-*` and `msg-*.txt`).
+
+-   **What R and D write** (Appendix C, only the `<...>` placeholders filled).
+    R: row 68's third column composed over PR 56's row text (379f20f67,
+    fork/gap-analysis.md:70), the predicted merged text, with C.7's dated
+    sentence less its W-284 clause and the evidence sentence "SV-1:
+    container-built, 134/0/21 over 155, expected, not of record (Actions
+    disabled)"; the status stays PARTIAL and the header does not move. D: the
+    ledger, fork/inventory/work-items.json (W-011 DISCHARGED as C.6 writes it:
+    kind `implemented`, the dated title, C.6's evidence, and its note with
+    "134/0/21 over 155" and the residues W-275, W-276, W-277, W-279, W-280,
+    W-281 and W-285; C.6's notes appended to W-036, W-047, W-049 and W-122;
+    W-275, W-276, W-277, W-279, W-280, W-281 and W-285 appended after W-125 in
+    id order, verbatim from C.4 with the date; a dated sentence on the ledger's
+    `source`; 132 items in all); the decision-log entry "SV-1 / F-020:
+    `std::optional` and `std::variant` interop mapping (2026-10-21)" from C.8 at
+    the end of fork/decision-log.md, with the commits of §3 and without the
+    F-015 amendment paragraph, which is Doc-M's; in fork/ORCHESTRATION.md, the
+    SV-1 Branches row in C.9's held wording, a dated paragraph and Next actions
+    item 5, C.9's held item; and these notes.
+-   **The id re-scan before D** (§8 item 7's commands widened to W-299, run from
+    /home/user/carbon-sv at 2026-10-21T04:30Z after `git fetch origin`;
+    origin/trunk d9f346f53, TP-1's pushed and local head 5661a35c8;
+    `$D/ids-refs.txt`, `ids-worktrees.txt` and their `-w299` and `-all`
+    companions): over the 83 refs under refs/remotes/origin/ and refs/heads/ and
+    the ledgers of the 15 worktrees, no output; widened to W-299, TP-1's W-295
+    to W-298 only, on its pushed branch, its local branch and the carbon-tp
+    worktree; the highest id named anywhere is W-298, and F-020 is in no
+    decision log on any ref or worktree (`$D/f020-*.txt`). No id is re-allocated
+    (§1.16).
+-   **Measured for R and D** (EXPECTED, not of record, R9). On fbe2a55f7, the
+    head before R, whose toolchain/ and core/ equal a4d979619's (the install
+    prints 0.0.0-0.dev+a4d979619): "file_test test mode on /home/user/carbon-sv:
+    1950 passed, 0 failed (exit 0, 24s)" (`$D/gate-pre.log`); conformance with a
+    private `XDG_CACHE_HOME`, "PASS 134, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL
+    0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 155)", bullets 48 PASS, 0
+    FAIL, 8 SKIP, 0 NOT-WRITTEN of 56, row 68's bullet holding its 11 programs,
+    all PASS (`$D/conf-pre.log`, `$D/conf-pre/scoreboard.json`). R and D change
+    records only; D's gate, `runner.py --self-test` and the ledger's JSON load
+    are in its commit message.
+-   **Ids not filed, each with its condition.** W-284 is held: the land-time
+    records commit files it once M-VA has landed, with C.4's text and its
+    `blocked_by` W-219 (VA-1's item, on PR 59's branch only), and writes its
+    `<...>` clauses in C.1 (by M-VA), C.6, C.7, C.8 and C.9. W-282 is unused:
+    its condition, x19 still stopping the merged trunk with TP-1 not having
+    filed it, fails, because TP-1's round-10 head eafca5cb9 fixes X-1 (x19
+    prints 0 on PR 61's mirror, §8 item 6) and the trunk merged at D holds no
+    TP-1 code; x19 is checked once more on the merged trunk at land time, and
+    only if it stops there is W-282 filed with C.4's text. W-278 is withdrawn
+    (rev 2) and W-283 unfiled: the shrink line of §3 item 7 was not taken, so
+    the one-step conversions and the reverse direction landed. W-286 to W-294
+    are unused: no new residue was found during implementation, its reviews or
+    their fold.
+-   **Texts whose targets are not on the merged trunk** (§3 item 8). Not written
+    at D: C.5's narrowing note and evidence for W-177 (OP-1's item, on PR 56's
+    and PR 57's branches only); the W-252 note (TP-1's), whose placeholder reads
+    "fixed by TP-1 at eafca5cb9" unless W-282 is filed; the W-263 note (TP-1's),
+    only if W-263 is on the merged trunk and open; W-284 with its `blocked_by`
+    W-219. Written at D, resolving at land time: the references to W-177 and
+    F-015 in R's row text, C.8's entry (its "It amends F-015 (above)" names the
+    paragraph Doc-M writes after the OP-1 / F-015 entry) and W-011's note, and
+    the W-177 cite in match_core_optional_diff.carbon's header (§1.12).
+-   **Measurement heads.** The SV-1 build /home/user/carbon-build/carbon-sv,
+    fully built at C1 eeb7ce662, C2 089b30191, C3 ab0b4951a and the fix
+    a4d979619 (its install now 0.0.0-0.dev+a4d979619); gates on the fills
+    f4aa7e941, d31ee257a and eb0488e70, on the merged heads f30429458 and
+    dff9f756b, and on fbe2a55f7; conformance on C3's install (P, 8243dbe97), on
+    f30429458, at the fold and on fbe2a55f7; trunk 481f05612 at the first M and
+    d9f346f53 at the second and at R and D; the mirrors of §8 item 6 at PR 57's
+    628273444 (again at the fold), PR 60's 40a76ab81, PR 59's b0822a744 and
+    PR 61's 5661a35c8 (its toolchain/ and core/ equal 281292d8f's but for one
+    golden; the same head at D); PR 58's checker at fcee90d9b (§8 item 12); and
+    PR 56's row text at 379f20f67 (R).
+-   **Land-time items, in order after PR 61** (fork/ORCHESTRATION.md Next
+    actions item 5). (a) M, repeated as a merge of the trunk that holds PR 51 to
+    PR 61 (never a rebase), after §8 item 6's dry runs against that day's heads,
+    resolving conflicts only by §0.7's rules: the record files take trunk's text
+    with SV-1's blocks re-appended after the PRs', and the conformance README
+    table is regenerated by `runner.py --update-readme-table`. (b) M-VA, "SV-1:
+    a sum-type conversion of a VA-1 pack element is a TODO": the hunk of §3 item
+    8 (it applies to the folded sum_type.cpp at offsets 9 and 39), the
+    `fail_todo_pack_element` split appended to stdlib/fail_sum_types.carbon and
+    filled by autoupdate (predicted byte-identical to
+    `$Y/final/goldens-filled-M/`'s, the pack-element TODO ten times), and C.1's
+    pack-element line in docs/design/sum_types.md's list of 0.1 limits, with
+    R31's counts; mutants M19 and M21 re-run. (c) F-M, the refills of what the
+    merge changes, predicted from the mirrors (§8 item 6): the four
+    function-pointer goldens, once over PR 57's and SV-1's changes together, and
+    choice/optional_pointer_payload.carbon, stdlib/optional.carbon,
+    stdlib/variant.carbon and match/core_optional_view.carbon (PR 57's `Destroy`
+    entries; SemIR only, no `CHECK:STDERR` line), none of SC-1's, VA-1's or
+    TP-1's goldens; and the `bool` payload of core_optional_view.carbon's
+    `concrete` split and match_core_optional_diff's `bool` leg with its oracle,
+    filled by autoupdate (§1.7). (d) Doc-M, "SV-1 (6): design: optional.md
+    amended for the std::optional mapping": C.3's seven anchored edits of
+    docs/design/optional.md (an OLD text not found verbatim stops Doc-M and goes
+    to a document review) and C.8's F-015 amendment paragraph after the OP-1 /
+    F-015 entry, with R31's counts. (e) §8 item 11 on the merged trunk:
+    `check_samples.py` with and without `--toolchain`, after M and after Doc-M.
+    (f) The second id re-scan (§8 item 7), on the merged trunk, before any
+    land-time filing. (g) The land-time records commit: the absolute conformance
+    count re-quoted from the merged trunk's scoreboard into the row, W-011's
+    note and the decision-log entry (never derived: SV-1's delta is +6 PASS, -1
+    SKIP and +5 programs over whatever that scoreboard reads); W-284 filed and
+    its clauses written; C.5's W-177 note and evidence; the notes on W-252 and,
+    under its condition, W-263; x19 checked for W-282; evidence re-cited to the
+    merged tree; and C.7's fallback, which recomposes the row over the merged
+    row text and gives DONE, +1 DONE and -1 PARTIAL, only if W-177 is not on the
+    merged trunk.
+
 ## Revision record
 
 -   Rev 1 (2026-10-20): first revision, for the two plan reviews of R29(c).
@@ -9542,3 +9670,7 @@ implementation-review fold: all findings).
     dff9f756b merges trunk d9f346f53; the records fix commit amends §0.7, §1.1,
     §1.5, §1.7, §1.8, §1.10, §1.12, §1.14, §2.3, §2.4, §3, §4, §5, §6, §7.1, §8
     and Appendices A to C.
+-   Records (2026-10-21): R c00beaf60 and D, in the held state, write row 68,
+    the ledger, the decision-log entry and fork/ORCHESTRATION.md from Appendix
+    C, and add the [landed notes](#landed-notes-sv-1-2026-10-21) and the front
+    matter's pointer to them; no other section changes.

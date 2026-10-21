@@ -253,6 +253,51 @@ fn G() {
   //@dump-sem-ir-end
 }
 
+// --- ref_return_class.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+//@dump-sem-ir-begin
+fn F() -> ref C;
+//@dump-sem-ir-end
+
+fn G() {
+  //@dump-sem-ir-begin
+  F();
+  //@dump-sem-ir-end
+}
+
+// --- val_return_class.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+//@dump-sem-ir-begin
+fn F() ->? form(val C);
+//@dump-sem-ir-end
+
+fn G() {
+  //@dump-sem-ir-begin
+  F();
+  //@dump-sem-ir-end
+}
+
+// --- ref_return_class_generic.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+interface I {
+  fn F(self) -> ref C;
+}
+
+fn G[T: I](x: T) {
+  //@dump-sem-ir-begin
+  x.F();
+  //@dump-sem-ir-end
+}
+
 // --- fail_return_form_not_form.carbon
 library "[[@TEST_NAME]]";
 

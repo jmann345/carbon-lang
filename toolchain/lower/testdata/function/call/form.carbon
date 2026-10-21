@@ -65,6 +65,41 @@ fn G() {
   let unused x: i32 = F();
 }
 
+// --- ref_return_class.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+fn F() -> ref C;
+
+fn G() {
+  F();
+}
+
+// --- val_return_class.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+fn F() ->? form(val C);
+
+fn G() {
+  F();
+}
+
+// --- ref_return_class_generic.carbon
+library "[[@TEST_NAME]]";
+
+class C {}
+
+interface I {
+  fn F(self) -> ref C;
+}
+
+fn G[T: I](x: T) {
+  x.F();
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'ref_form_param.carbon'
 // CHECK:STDOUT: source_filename = "ref_form_param.carbon"

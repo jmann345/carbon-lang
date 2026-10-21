@@ -6,10 +6,12 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 3 -- NOT signed off: N-B1, N-M1 (2026-10-21; the focused
-re-review RR1 of rev 2 rejected it with one BLOCKER, one MAJOR and two MINORs,
-and rev 3 folds all four; the next focused re-review decides; the fold records
-are the last sections before the appendices)
+**Status:** rev 4, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION
+
+The focused re-review RR2 of rev 3 approved it with amendments, one MAJOR
+(RR2-M1), and rev 4 folds that finding at its root (§1.18); the fold records
+and the Sign-off section, which tables every review of this plan, are the last
+sections before the appendices (amended 2026-10-21, review fold: RR2-M1).
 
 Workstream CT-1 takes ledger item W-043 ("C++ templates instantiated on Carbon
 types / symbolic Carbon generic parameters as C++ template arguments"), whose
@@ -30,15 +32,17 @@ the checked-generic C++ rule (D-CT-16; amended 2026-10-21, review fold: A-M1).
 
 The one-sentence summary: upstream already defers a C++ template named with a
 symbolic argument to each specific (a `CallAction` over `TemplateInst`-wrapped
-arguments, check/call.cpp:741-768), and ten defects in and around that path
-keep it from working on this branch; CT-1 fixes the ten at their roots and
-defers a C++ call whose argument has a checked generic's symbolic type (F-021),
-in fourteen files and 381 added lines (30 removed), measured on a prototype
-(v13) over 347 probes, the 1957 goldens and the 160 conformance programs, and
-on two full-build composition mirrors of rev 2's v12 (amended 2026-10-21,
-review fold: RR1-N-B1; rev 2 said nine defects, ten files and +265/-13, review
-fold: A-B1 / A-B2 / A-B3 / B-m1; rev 1 said seven defects, seven files and 163
-lines, whose numstat was in fact +167/-11).
+arguments, check/call.cpp:741-768), and eleven defects in and around that
+path keep it from working on this branch; CT-1 fixes the eleven at their roots
+and defers a C++ call whose argument has a checked generic's symbolic type
+(F-021), in sixteen files and 388 added lines (33 removed), measured on a
+prototype (v14) over 403 probes, the 1957 goldens and the 160 conformance
+programs, and on two full-build composition mirrors of rev 2's v12 (amended
+2026-10-21, review fold: RR2-M1; rev 3 said ten defects, fourteen files and
+the numstat +381/-30 on v13 over 347 probes, review fold: RR1-N-B1; rev 2 said
+nine defects, ten files and +265/-13, review fold: A-B1 / A-B2 / A-B3 / B-m1;
+rev 1 said seven defects, seven files and 163 lines, whose numstat was in
+fact +167/-11).
 
 ## §0 Audit: measurements with file:line evidence
 
@@ -54,6 +58,7 @@ Every probe was compiled, linked and run on four toolchains:
 | v11 | rev 1's prototype: TP-1 plus seven files | relinked over TP-1's objects into /dev/shm, deleted after use |
 | v12 | rev 2's prototype: TP-1 plus the ten files of §2 (amended 2026-10-21, review fold: A-B1 / A-B2 / A-B3 / B-M1 / A-m3) | relinked over TP-1's objects into /dev/shm/ct1-fixer, deleted after use |
 | v13 | rev 3's prototype: TP-1 plus the fourteen files of §2, v12 with D-CT-17's alias check (amended 2026-10-21, review fold: RR1-N-B1) | relinked over TP-1's objects into /dev/shm/ct1-fixer1, deleted after use |
+| v14 | rev 4's prototype: TP-1 plus the sixteen files of §2, v13 with D-CT-17's use rule, a `specific_constant`'s category taken in its own specific (amended 2026-10-21, review fold: RR2-M1) | relinked over TP-1's objects into /dev/shm/ct1-fixer2, deleted after use |
 | mva | PR 61's head merged with PR 59 (VA-1, b0822a744), records conflicts taken from this branch, plus v12 (review fold: B-M3) | a scratch clone, built and installed by carbonbuild with `CB_BUILD_ROOT` in /dev/shm, deleted after use |
 | msv | the same with PR 62 (SV-1, 3a6531157) (review fold: A-M3 / B-M3) | the same |
 
@@ -65,7 +70,10 @@ manifest lists the two new goldens (§0.7; the rev 2 states are v12g and
 c1v12g). Rev 3's commit C1 is c1v13, v13 without check/call.cpp; v13g and
 c1v13g carry that manifest, and so does a v12g rebuilt from rev 2's sources to
 run rev 3's new splits on rev 2's code (amended 2026-10-21, review fold:
-RR1-N-B1).
+RR1-N-B1). Rev 4's commit C1 is c1v14, v14 without check/call.cpp; v14g and
+c1v14g carry the manifest, v13 and v12 were relinked again from rev 3's and
+rev 2's sources for rev 4's probes, and M22 is v13's code with v14g's manifest
+(amended 2026-10-21, review fold: RR2-M1).
 
 The probes are generated from one C++ header and two Carbon classes (Appendix
 D): each form is written once in a checked generic (`c_` prefix, `[T: type]`)
@@ -344,7 +352,7 @@ Both reappear in goldens (§0.7).
 ### §0.4 The code path and its hook points
 
 A use of `Cpp.Box(T)` with `T` symbolic goes through these steps, with the hook
-points CT-1 touches marked **(H1)** to **(H10)**:
+points CT-1 touches marked **(H1)** to **(H11)**:
 
 1.  `PerformCall` (check/call.cpp:899-927) asks `IsCallPerformable`
     (:821-849, TP-1's D-TP-11 rule) and, for a callee whose type is
@@ -466,13 +474,32 @@ points CT-1 touches marked **(H1)** to **(H10)**:
     alias's value through a specific, inst.cpp `WrapInstForSpecific`
     (:273-290) and member_access.cpp `LookupMemberNameInScope` (:322-408)
     (added 2026-10-21, review fold: RR1-N-B1).
+11. A use of such an alias through a concrete specific in a function that is
+    not generic, `Core.Print(C(X).A)` or `let a: i32 = C(X).A;` in `Run`.
+    `LookupMemberNameInScope` names the alias binding with a
+    `specific_constant` whose constant is the specific's (`int_5` for `alias
+    A = T.N;` with `X.N` 5), but `GetExprCategory` computes a
+    `specific_constant`'s category from the instruction it names in the
+    generic, without the specific (`SameAsFirstOperand`,
+    sem_ir/typed_insts.h:2054-2065): the alias's value is a `splice_inst`
+    there, whose category is `Dependent`, so `Convert` in a function with no
+    generic builds a TP-1 action that no specific performs. Rev 3's v13 stops
+    lowering at lower/function_context.cpp:264 (``Missing value: SpliceInst
+    in specific<none> has non-concrete value``); TP-1, trunk and the nightly
+    compile the read and drop its statement (TP-1's LLVM IR for z7b's entry
+    point is `ret i32 0`), and stop on the `let` at the same CHECK (:223 on
+    trunk, :201 on the nightly). **(H11)**: sem_ir/expr_info.cpp
+    `GetExprCategoryImpl`'s `SpecificInst` case (:120-126) and
+    `SpecificConstant`'s kind definition (added 2026-10-21, review fold:
+    RR2-M1).
 
 The SemIR of a specialization in a checked generic, from generic_call.carbon's
 dump on TP-1 (the shape v11 keeps, §0.7): `%.loc8_25.N: <instruction> =
 call_action (...)`, `type_of_inst`, `splice_inst`, then `initialize_action`
 over the spliced type, all `[template]`, and in the specific `%.loc8_25.N =>
 constants.%inst.splice_block...` with the instantiated `S<X>` as the splice's
-value. No instruction kind is added or changed (D-CT-1).
+value. No instruction kind is added; rev 4 changes one kind's expression
+category, `SpecificConstant`'s (H11; amended 2026-10-21, review fold: RR2-M1).
 
 ### §0.5 Root causes, measured
 
@@ -490,10 +517,12 @@ note that has no line, W-306), 2 E-UNMAPPED (W-300), 5 E-CXX (the right
 answer), 1 E-TT (W-301), 1 E-COPY (the checked generic's own rule), 2 E-AS and
 2 E-PARSE (the probes' own errors), and the 3 stops.
 
-Eleven root causes, each fixed where it is (R17), with the probes it stops on
+Twelve root causes, each fixed where it is (R17), with the probes it stops on
 TP-1 and the state that first runs them (R8 to R10 added 2026-10-21, review
 fold: A-B1 / A-B2; R11 added 2026-10-21, review fold: RR1-N-B1, which rev 2's
 v12 turned from a stop of the used forms into a stop of compiling programs;
+R12 added 2026-10-21, review fold: RR2-M1, which TP-1 hides as a silently
+dropped statement and rev 3's v13 turned into a stop;
 v11's deferral of a C++ call whose argument is a symbolic value of a concrete
 type, `Cpp.TakeInt(N)` for `generic N: i32`, was rev 1's own defect, not
 TP-1's, and D-CT-3's narrowed predicate removes it, review fold: A-B3):
@@ -511,6 +540,7 @@ TP-1's, and D-CT-3's narrowed predicate removes it, review fold: A-B3):
 | R9 | H9 | an action formed in an enclosing generic and rebuilt in a member's eval block keeps an operand that belongs to the enclosing generic, which the member's specific cannot evaluate (added 2026-10-21, review fold: A-B1 / A-B2) | STOP lower/file_context.h:187 or lower/type.cpp:459 on TP-1, trunk and the nightly for an alias in a member's signature (ret_alias, n15, d03, d04); after D-CT-17 alone, STOP sem_ir/generic.cpp:84 (c04, d01, a11) | D-CT-7 (amended) | v12 |
 | R10 | H2 | a name reference to an alias is a body instruction whose operands do not reach what the alias names, so `NamesTemplateBinding` does not see the specialization's `TemplateInst` through `var b: B;` for `alias B = Cpp.Box(T)` in a checked class (added 2026-10-21, review fold: A-B2) | E-DU on every toolchain and on v11 (a11, cls_alias_var) | D-CT-5 (amended) | v12 |
 | R11 | H10 | an alias's template-dependent value is converted to a value or reference and checked to be a constant where the alias is written (handle_alias.cpp:59-84), where only the template's symbolic constant is known, which passes; the value's category and constness are known only in a specific, and once R8's fix attaches the region, the conversion and a call it converts run in each specific's eval block (added 2026-10-21, review fold: RR1-N-B1) | the used class-scope forms STOP lower/handle.cpp:407 (t06, t13, t14, t19; trunk :405, the nightly lower/function_context.cpp:201) and the unused ones compile (t12, t16, t17, t20, al1, u3, x05), where the concrete twins are ``alias refers to a runtime value`` (t11, t22, k10); with R8 fixed alone (v12) the unused forms are FATAL check/context.cpp:86, the field's name FATAL convert.cpp:2547, the used forms STOP sem_ir/generic.cpp:84, and a function's alias of a runtime value, which stops on TP-1 by R8 (t10, t23, t24, k08, k09, e3, e4 at sem_ir/generic.cpp:84), runs as if it were a constant (50, 1, 4, 3, 1, 1, 3) | D-CT-17 (amended) | v13 |
+| R12 | H11 | a `specific_constant`'s expression category is computed from the instruction it names in the generic, without its specific (`SameAsFirstOperand`), so a use of an alias whose value is template dependent, named through a concrete specific in a function that is not generic, is `Dependent` though its constant is concrete, and `Convert` builds an action in a function that has no generic (added 2026-10-21, review fold: RR2-M1) | the read compiles and its statement is dropped on TP-1, trunk and the nightly (z2, z4, z7b, i3, f01; z1 and z3 too), and a `let`, a `var`, a condition or a type stops lowering (z6, z8, f02, f03, f07, f10 at lower/function_context.cpp:264, trunk :223, the nightly :201; f05 at lower/file_context.h:187); with R11 fixed (v13) every one of them stops at lower/function_context.cpp:264 but f05 (file_context.h:187), z1 and z3 (45 and 3) | D-CT-17 (amended, rev 4) | v14 |
 
 The forms with a template binding (`t_`) already run on TP-1 wherever their
 checked twin's only problem is R7: TP-1's template lane defers every operation
@@ -548,7 +578,37 @@ Three requirements were checked:
     cpp_template_carbon_generic_spec 6), and the differential program's
     `Acc<short>` (a `short` total and an `int` count) matches its C++ oracle.
 
-### §0.7 Prototypes v12 and v13 and their gate
+### §0.7 Prototypes v12, v13 and v14 and their gate
+
+Amended 2026-10-21 for rev 4 (review fold: RR2-M1). v14 is v13 with D-CT-17's
+use rule (§1.18): `SpecificConstant`'s expression category is computed as
+`SpecificInst`'s is, in the constant's own specific (sem_ir/expr_info.cpp and
+the kind's definition in sem_ir/typed_insts.h), sixteen files, +388/-33. It was
+relinked over TP-1's objects with v13's twelve translation units and
+sem_ir/expr_info.cpp and sem_ir/inst_kind.cpp recompiled: a kind's category is
+read at run time only through inst_kind.cpp's `definition_info` table, and at
+compile time only by expr_info.cpp's dispatch and static assertion and by
+eval.cpp's `TryExecTypedInst`, which compares it with `NotExpr` and is among
+the twelve, so for this change the relink compiles every reader (§8 item 1's
+full build is still the first of the branch's own state). Its gate and
+c1v14's are v13's exactly, 1951 of 1957 with the six red rows below
+(`$X/logs/gate_v14.log` and `gate_c1v14.log`, `$X` here the rev 4 fixer's
+scratch, scratchpad/ct1/fixer2). On v14g every check and lower golden of rev
+3's filled mirror passes unchanged (1478 of 1478, `$X/logs/gm14_pre_all.log`),
+so v14 changes no fill of rev 3. With rev 4's two splits, A.1's
+`alias_of_constant_through_specific` and A.5's
+`alias_constant_through_specific`, the fill reaches its fixpoint on v14g in
+one pass (`$X/gm14`; a second and a third pass write nothing): A.1 1314 lines
+(rev 3's 1175) and default_init.carbon 938 (rev 3's 829, its new split's 28
+source lines and its dump's 81 STDOUT lines), each dump showing the use as the
+specific's constant, ``specific_constant @C.%A.loc16_9.1, @C(constants.%X)
+[concrete = constants.%int_5.eef]`` in default_init.carbon, with no
+`splice_inst`; A.2 is unchanged (1813). On c1v14g the C1 subset of A.1
+(sixteen splits, 989 lines, `$X/gm14c1`) reaches the same fixpoint and fills
+each split as v14g's full file does, A.2's C1 subset is unchanged (1211), and
+default_init.carbon and the six refills pass unchanged. On M22, v13's code
+with v14g's manifest, both new splits fail, each dumping `splice_inst
+<unexpected>` in the function that is not generic (§8 item 5).
 
 Amended 2026-10-21 for rev 3 (review fold: RR1-N-B1 / RR1-N-M1). v13 is v12
 with D-CT-17's alias check (§1.18): four more files (eval.h, eval.cpp, inst.cpp
@@ -642,7 +702,9 @@ of 56 bullets; on v12, with the differential program's values changed to wrap in
 of 56 bullets (re-run 2026-10-21, `$X/conf_out_v12`), the differential pair
 printing `60000`, `-5536`, `3` on both sides; on v13 the same 147 / 0 / 20
 over 167, 48 of 56 bullets, every program with v12's result (`$X/conf_out_v13`,
-`$X` the rev 3 fixer's scratch; amended 2026-10-21, review fold: RR1-N-B1).
+`$X` the rev 3 fixer's scratch; amended 2026-10-21, review fold: RR1-N-B1);
+on v14 the same 147 / 0 / 20 over 167 and 48 of 56 bullets (`$X/conf_out_v14`,
+`$X` the rev 4 fixer's scratch; amended 2026-10-21, review fold: RR2-M1).
 Both bullets were already PASS (a SKIP does not count against a bullet) and
 stay PASS; their program lists grow:
 
@@ -687,7 +749,13 @@ The two mirrors were built with v12. v13 changes no hunk in a file that PR 59
 or PR 62 touches (their numstats above): it differs from v12 only in the seven
 files of §2.12, which neither touches, so §8 item 9 re-gates both compositions
 with v13's code at implementation (amended 2026-10-21, review fold:
-RR1-N-B1).
+RR1-N-B1). Rev 4's two sem_ir files: no held PR touches sem_ir/expr_info.cpp;
+PR 59 and PR 60 add instruction kinds to sem_ir/typed_insts.h, none on
+`SpecificConstant`'s lines, and PR 62 touches neither file. Rev 4's two hunks
+apply to the heads of PR 59 and PR 60 and to trunk 6978a506e with offsets only
+(typed_insts.h at 85 lines on PR 59 and at -40 on PR 60 and trunk;
+`$X/dry`, `$X` the rev 4 fixer's scratch; amended 2026-10-21, review fold:
+RR2-M1), so §8 item 9's mirrors take them as textual offsets.
 
 **PR 59 (VA-1), measured on mva** (`$X/probes/va`; TP-1 and v12 do not parse
 the pack syntax, ``expected identifier or `Self` after `.` ``, so the
@@ -808,6 +876,7 @@ and that only two touch CT-1's code; both claims were false (amended
 | check/eval.cpp, eval.h (D-CT-17, rev 3) | eval.cpp: 4441c5340, eb66bebc3, b766aa4d1, 0d3b606a5, d87891f3a, 2c9739799, 24766e213, d4f1ec203, 71af20740, 4a8993af2, 947c1eb52; eval.h: none | adjacent: 24766e213 and d4f1ec203 change `TryEvalBlockForSpecific`'s setup (a save and restore of global lookup state), not the loop where CT-1 diagnoses an alias's runtime value; a textual conflict is possible |
 | check/inst.cpp (D-CT-17, rev 3) | 7beb29f8b, e1c8c1f85 (PR 7936) | overlapping: e1c8c1f85 rewrites `WrapInstForSpecific`, the function CT-1's use check is called from, to wrap a non-constant dependent name in a new `specific_inst` and to fix crashes from "specifics for the wrong generic", H9's class |
 | check/member_access.cpp (D-CT-17, rev 3) | 2c9739799, 5fed32a9a | adjacent: neither touches `LookupMemberNameInScope` |
+| sem_ir/expr_info.cpp, sem_ir/typed_insts.h (D-CT-17, rev 4; amended 2026-10-21, review fold: RR2-M1) | expr_info.cpp: 0d3b606a5 (PR 7981), 559602b9e (PR 7920); typed_insts.h: none touches `SpecificConstant` | adjacent: upstream keeps `SpecificConstant`'s `SameAsFirstOperand` at 0546b48a7; 0d3b606a5 rewrites the call case just above the `SpecificInst` case, so rev 4's expr_info.cpp hunk does not apply to upstream's file (its context), a textual conflict; typed_insts.h's applies at offset -45 |
 | testdata interop/cpp/template | 2c9739799 (argument_count, non_type_param, template_template_param, type_param), 24766e213 (argument_count, concept, generic_call, non_type_param, template_template_param, type_param), 62f1cc6a3 (concept, non_type_param), 4a8993af2 (generic_call) | overlapping: generic_call.carbon and non_type_param.carbon are CT-1 refills; var_template.carbon is not touched |
 | testdata interop/cpp/range_for.carbon | 4441c5340 (PR 8005, 214 lines), 7beb29f8b, 2c9739799, 5402b4c56, 24766e213, 62f1cc6a3, df3cf9294 | overlapping: a CT-1 refill; 4441c5340 also rewrites eval.cpp's `GetConstantValue`, whose `MetaInstId` overload TP-1's actions and CT-1 rely on |
 | lower testdata interop/cpp/globals.carbon | none | none |
@@ -870,6 +939,17 @@ merge rule of each entry is what the merge does when upstream's side lands):
     branch (an alias's dependent value is a constant instruction), and
     re-measure mutants M14 and M20, whose kills its "wrong generic" fix may
     take over.
+-   `SpecificConstant`'s expression category, computed in its own specific
+    (D-CT-17's use rule, rev 4; added 2026-10-21, review fold: RR2-M1), a fix
+    to upstream code: upstream's `SameAsFirstOperand` ignores the specific,
+    and trunk and the nightly drop `Core.Print(C(X).A)` silently (z2, z7b,
+    i3). Merge rule: if upstream changes how a `specific_constant`'s category
+    is computed, keep upstream's and re-measure A.1's
+    `alias_of_constant_through_specific`, A.5's
+    `alias_constant_through_specific`, mutant M22 and §0.13's rev 4 rows; at
+    the merge that brings 0d3b606a5 (upstream PR 7981), take upstream's call
+    case and re-apply rev 4's two-line condition to the `SpecificInst` case
+    after it.
 -   The source edits of two upstream goldens, the `static inline` headers of
     check/interop/cpp/template/var_template.carbon (A.3, with its new split
     `fail_non_inline_static_member_template`) and
@@ -909,7 +989,10 @@ highest id in any ledger is W-298 (TP-1's, PR 61), W-299 being TP-1's reserved
 and unused id. Rev 3 files no new id: its decisions D-CT-17 (amended) and
 D-CT-18 use W-309. F-021 is not used in any tree's fork/decision-log.md (a
 grep of every worktree's log for `F-02[1-9]` finds none); rev 2 mints it
-(D-CT-16).
+(D-CT-16). Rev 4's re-scan on 2026-10-21 after a fetch (67 origin
+refs, 16 worktrees) finds the same, the highest ledger id W-298 and no
+`F-02[1-9]` in any worktree's decision log; rev 4 files no new id, because
+RR2-M1 is fixed in CT-1 (D-CT-17; amended 2026-10-21, review fold: RR2-M1).
 
 ### §0.12 Rev 2's probes (the plan reviews' and the fold's)
 
@@ -987,7 +1070,7 @@ W-309 (§1.11); F-021 makes it newly reachable from checked generics, where w2,
 w3 and w7 are E-ARG on TP-1, and D-CT-18 ships it pinned (amended 2026-10-21,
 review fold: RR1-N-M1).
 
-### §0.13 Rev 3's probes (the focused re-review's and the fold's)
+### §0.13 Rev 3's and rev 4's probes (the focused re-reviews' and the folds')
 
 Added 2026-10-21 (review fold: RR1-N-B1 / RR1-N-M1). Each probe was compiled,
 linked and run on TP-1, trunk, the nightly and v13 by `$X/bin/one.sh` (`$X` the
@@ -1025,8 +1108,56 @@ value [AliasRequiresConstantValue]`` at the alias's expression.
 So rev 2's v12 made seven programs that compile on TP-1, trunk and the nightly
 stop the compiler (t12, t16, t17, t20, al1, u3, x05), and left three used forms
 stopping (t06, t13, t14) and one stopping anew (t19), which meets §7.1 item
-7's falsifier; v13 compiles every constant alias, and rejects every alias of a
-runtime value on instantiation with its concrete twin's diagnostic (§1.18).
+7's falsifier; v13 compiles every constant alias used in its class, in a member
+and in a generic function, and rejects every alias of a runtime value on
+instantiation with its concrete twin's diagnostic (§1.18). It does not compile
+a constant alias named through a concrete specific in a function that is not
+generic: the rows below (amended 2026-10-21, review fold: RR2-M1).
+
+Rev 4's rows (added 2026-10-21, review fold: RR2-M1). The second re-review's
+probes (its scratch `probes/n`, copied to `$X/probes/n`, `$X` the rev 4
+fixer's scratch) and the fold's (`$X/probes/f`) were compiled, linked and run
+by `$X/bin/one.sh` on TP-1, trunk, the nightly, v12 and v13 (each relinked
+again from rev 2's and rev 3's sources) and v14 (`$X/logs/repro_v13.tsv`,
+`repro_v14.tsv`, `v12_new.tsv` and `f_v14.tsv`); D.9 holds the sources. The
+387 distinct probes of rev 3's matrices and the re-review's 46 n probes were
+run on v13 and v14 (`$X/mx_v14.tsv`): 380 print or report the same on both,
+and the seven others are rows below whose v13 entry is a stop (z2, z4, z6, z7,
+z7b, z8, i3). With the fold's 16 the probes run on v14 are 403.
+
+<!-- google-doc-style-ignore -->
+
+| Probe (what it is) | TP-1 | trunk | nightly | v12 | v13 | v14 |
+| --- | --- | --- | --- | --- | --- | --- |
+| n/z2, z4 (`alias A = Cpp.S(T).v;` of a `static constexpr int` in a class template and in a checked class, read by `Core.Print(C(f64).A)` in `Run`) | run, print nothing | the same | the same | STOP lower/function_context.cpp:264 | STOP lower/function_context.cpp:264 | 7, 7 |
+| n/z7b (pure Carbon: `alias A = T.N;` of an associated constant, `Core.Print(C(X).A)`) | runs, prints nothing (LLVM IR `ret i32 0`) | the same | the same | STOP :264 | STOP :264 | 5 |
+| n/i3 (`alias N = Cpp.S(T).v;` in `interface I(T: type)`, `Core.Print(I(f64).N)` after `Core.Print(X.F())`) | 3 (the alias's statement dropped) | 3 | 3 | STOP :264 | STOP :264 | ``3 7`` |
+| n/z6, z8 (`let a: i32 = C(f64).A;` and `let a: i32 = C(X).A;`) | STOP lower/function_context.cpp:264 | STOP :223 | STOP :201 | STOP :264 | STOP :264 | 7, 5 |
+| n/z7 (z7b's alias read in a member, then through the specific) | STOP lower/handle.cpp:407 | STOP :405 | STOP function_context.cpp:201 | STOP function_context.cpp:264 | STOP function_context.cpp:264 | ``5 5`` |
+| n/z1, z3 (`C(X).M()` for `alias M = T.Make;`, `x.(C(X).N)` for `alias N = T.n;`) | run, print nothing | the same | the same | 45, FATAL convert.cpp:2547 | 45, 3 | 45, 3 |
+| n/z7a (z7b's alias read only in a member) | STOP lower/handle.cpp:407 | STOP :405 | STOP function_context.cpp:201 | 5 | 5 | 5 |
+| n/z2c, z8c (the concrete twins, `alias A = Cpp.S(f64).v;` and `alias A = X.N;`) | 7, ``5 5`` | the same | the same | the same | the same | the same |
+| f/f01 (a nested alias, `alias B = C(U).A;` in `class D(template U: type)`, read by `Core.Print(D(X).B)`) | runs, prints nothing | the same | the same | STOP function_context.cpp:264 | STOP :264 | 5 |
+| f/f02, f03 (`alias A = Cpp.S(T).Count();` of a `constexpr` static call, class template and checked class, read and `let`-bound in `Run`) | STOP function_context.cpp:264 | STOP :223 | STOP :201 | STOP :264 | STOP :264 | ``9 3``, ``9 3`` |
+| f/f05 (`var b: C(X).B = 3;` for `alias B = T.Inner;`) | STOP lower/file_context.h:187 | the same | STOP file_context.h:127 | STOP file_context.h:187 | STOP file_context.h:187 | 3 |
+| f/f07 (`if (C(X).B)` for `alias B = T.B;` of a `bool` associated constant) | STOP function_context.cpp:264 | STOP :223 | STOP :201 | STOP :264 | STOP :264 | 1 |
+| f/f10 (`var v: i32 = C(f64).A;`, then `v = C(i16).A;`) | STOP function_context.cpp:264 | STOP :223 | STOP :201 | STOP :264 | STOP :264 | ``8 2`` |
+| f/f13 (z2's alias read in `Get(template T: type)` and in `Run`) | STOP lower/handle.cpp:407 | STOP :405 | STOP function_context.cpp:201 | STOP function_context.cpp:264 | STOP :264 | ``8 8`` |
+| f/f06, f08, f09, f14, f15, f16 (`C(X).A` in a checked generic function; a nested alias in a template function and in a member; `let m: i32 = C(X).M();`; a checked class's C++ alias in a checked and in a template function) | STOP lower/handle.cpp:407 (f14, f16: function_context.cpp:264) | STOP handle.cpp:405 (f14, f16: function_context.cpp:223) | STOP function_context.cpp:201 | 5, 5, 5, 1, 8, 2 | the same | the same |
+| f/f04, f11 (an alias of a runtime value through a specific from `Run`: `T.Make()`, and a C++ static call that is not `constexpr`) | run, print nothing | the same | the same | FATAL check/context.cpp:86 | ``member access into incomplete class `C(X)` `` (f11: `C(f64)`) with the note | the same as v13 |
+| f/f12 (`alias B = C(T).A;` in a checked `class D(T: type)`, for z7b's `C`) | runs, prints nothing | the same | the same | ``member access into incomplete class `C(T)` `` with ``note: type `type` does not support qualified expressions`` | the same | the same |
+
+<!-- google-doc-style-resume -->
+
+So v14 runs every constant alias that v13 stopped on with its concrete twin's
+value (z2c, z8c), a nested alias, a `constexpr` call, a type, a condition and
+a `var` included, and changes no other probe; it rejects an alias of a
+runtime value named through a specific with the twin's note, as v13 does (f04,
+f11), where TP-1, trunk and the nightly drop the statement. f12 is right: a
+checked class names `C(T)` with its checked `T`, whose type `type` has no
+member `N`, so the template's alias is rejected where `D` is defined, as on
+v12 and v13. The probes that still stop on v14 have no alias (W-304's three,
+TP-1's w274_n01i).
 
 ## §1 Design
 
@@ -1048,8 +1179,11 @@ symbolic type that C++ itself declared). The SemIR is the one §0.4 shows:
 `[template]`; each specific's block holds the instantiated specialization as
 the splice's value. Two specifics form two specializations (`Loud<int>` and
 `Loud<Point>`, cpp_template_two_specifics prints `5`, `12` and a destructor
-count of `2`). _Break condition:_ a form of the admitted kinds (§1.11) that
-needs a new instruction kind or SemIR field to be formed per specific.
+count of `2`). Rev 4 changes one existing kind's expression category,
+`SpecificConstant`'s (D-CT-17's use rule, H11), which adds no instruction,
+field or action (amended 2026-10-21, review fold: RR2-M1). _Break condition:_
+a form of the admitted kinds (§1.11) that needs a new instruction kind or
+SemIR field to be formed per specific.
 
 ### §1.2 The checked-generic rule (D-CT-2, F-021)
 
@@ -1200,10 +1334,14 @@ with monomorphization errors) and is the one change rev 3 makes to TP-1's own
 lane: an alias of a runtime value in a template, which TP-1 compiles when it
 is unused (t12, t17, t20, al1, u3) and stops on when it is used (t06, t13), is
 rejected on instantiation as its concrete twin is where it is written (§1.18;
-amended 2026-10-21, review fold: RR1-N-B1). _Break condition:_ a golden of
+amended 2026-10-21, review fold: RR1-N-B1). D-CT-17's use rule (rev 4) is no
+TP-1 rule: it is the category a `specific_constant` has, and it lets a
+function that is not generic read a template's constant alias through a
+concrete specific, which TP-1 drops silently or stops on (z6, z7b, z8, f07;
+amended 2026-10-21, review fold: RR2-M1). _Break condition:_ a golden of
 TP-1's template lane changes other than the six of §0.7, a TR-22 form of
 TP-1's own changes, or a template-lane form other than an alias of a runtime
-value is rejected on v13 where TP-1 runs it.
+value is rejected on v13 or v14 where TP-1 runs it.
 
 ### §1.5 Deferred impl lookup on a C++ specialization (D-CT-5, amends D-TP-12)
 
@@ -1370,7 +1508,13 @@ specialization (e02e 2), whose use is OUT below. On v13 (amended 2026-10-21,
 review fold: RR1-N-B1), an alias of a template-dependent constant in a class
 template or a checked class: a C++ `constexpr` static member or static call
 (k01, k02 4; x01, x02 8), a static member function's or a member function's
-name (k05 4, k07 45, t15 4) and a field's name (t19 53, x04 7).
+name (k05 4, k07 45, t15 4) and a field's name (t19 53, x04 7). On v14
+(amended 2026-10-21, review fold: RR2-M1), the same aliases named through a
+concrete specific in a function that is not generic: read, `let`-bound,
+`var`-initialized and assigned, as a condition, as a type and through a nested
+alias, in a class template, a checked class and an interface (z2, z4 7; z7b,
+z8 5; z6 7; i3 ``3 7``; f01 5; f02, f03 ``9 3``; f05 3; f07 1; f10 ``8 2``;
+f13 ``8 8``).
 
 | OUT form | Measured on v12 (TP-1, trunk, nightly; v11 where it differs) | Filed |
 | --- | --- | --- |
@@ -1396,9 +1540,11 @@ error in the instantiated C++), g_nontype_i64 (an `i64` does not implicitly
 convert to the parameter's `int`; the concrete `Cpp.Array(i32, 49 as i64)` is
 rejected the same way), c_result_in_var (D-CT-2), the aliases of a runtime
 value in a generic (§0.13: t06, t10, t12 to t14, t16, t17, t20, t23, t24, k08,
-k09, e3, e4, al1, u3), which their concrete twins show the language rejects
-(t11, t22, k10; added 2026-10-21, review fold: RR1-N-B1), and the probes' own
-E-AS and E-PARSE. _Break condition:_ an IN form that a probe shows rejected or
+k09, e3, e4, al1, u3, and through a specific f04, f11), which their concrete
+twins show the language rejects (t11, t22, k10; added 2026-10-21, review fold:
+RR1-N-B1 / RR2-M1), f12 (a checked class names a template's alias with its
+checked `T`, whose type has no member `N`; rev 4), and the probes' own E-AS
+and E-PARSE. _Break condition:_ an IN form that a probe shows rejected or
 stopped,
 or an OUT form whose filed diagnostic changes without a decision (the OUT
 table's last eight rows were added by the fold, so a form the reviews did not
@@ -1440,8 +1586,11 @@ golden interop/cpp/template_symbolic_arg.carbon pin the IN forms, the OUT
 forms' diagnostics and the stops fixed; the six goldens of §0.7 are refilled,
 two of them with the header fixes D-CT-9 requires and one,
 deduce_class_args.carbon, with TP-1's W-273 split renamed now that it succeeds;
-generic/template/default_init.carbon gains four splits (A.5); every CHECK line
-comes from autoupdate (R16(a)).** Rev 3 adds A.1's and A.5's
+generic/template/default_init.carbon gains five splits (A.5); every CHECK line
+comes from autoupdate (R16(a)).** Rev 4 adds A.1's
+`alias_of_constant_through_specific` and A.5's
+`alias_constant_through_specific` (D-CT-17's use rule; amended 2026-10-21,
+review fold: RR2-M1). Rev 3 adds A.1's and A.5's
 `fail_alias_of_template_call_on_instantiation` (a C++ call and a pure-Carbon
 call as an alias's value, D-CT-17), A.5's `class_alias_field_name` (a field's
 name as an alias's value, not converted) and A.2's
@@ -1551,7 +1700,7 @@ rename of PR 51's split unchanged (H-1 not taken), the split
 toolchain: CT-1's L-F then refills it with CT-1's toolchain, which makes it
 pass, and the C-2 rule shrinks to that refill and W-127's sentence (added
 2026-10-21, review fold: B-m6). _Break condition:_ a held PR's merge changes
-one of CT-1's fourteen files' hunks beyond the offsets of §0.9, or a composition
+one of CT-1's sixteen files' hunks beyond the offsets of §0.9, or a composition
 mirror's red set differs from §0.9's.
 
 ### §1.17 F-021, the checked-generic C++ rule (D-CT-16)
@@ -1604,7 +1753,11 @@ through a specific in a nested generic, a member function of the class, adds
 the same check to its own generic (`AddAliasUseCheckToCurrentGeneric`, called
 from inst.cpp's `WrapInstForSpecific` and member_access.cpp's
 `LookupMemberNameInScope`), because the nested generic evaluates its own copy
-of the alias's value.** An
+of the alias's value; and a use of such an alias through a specific has the
+category of the alias's value in that specific: a `specific_constant`'s
+expression category is computed from the instruction it names in its own
+specific, as a `specific_inst`'s is (sem_ir/expr_info.cpp, typed_insts.h;
+amended 2026-10-21, review fold: RR2-M1).** An
 alias is never generic, but its value is an expression of the enclosing
 generic, evaluated for each specific of it, as a field's type is; the upstream
 code discards the region because the alias has no generic of its own, and
@@ -1665,18 +1818,49 @@ and the member that reads the alias) and A.5's `class_alias_field_name` (a
 field's name, which a conversion rejects); mutants M13 (the attachment
 reverted), M19 (the specific's check removed), M20 (the nested generic's check
 removed) and M21 (the value converted again, the check kept) each turn them
-red (§8 item 5). _Break condition:_ a golden whose alias is not template
-dependent changes beyond a diagnostic's location; an alias's instruction is
-attached to a generic whose specific cannot evaluate it (a stop at
-sem_ir/generic.cpp:84 or check/context.cpp:86 in a probe with an alias); a
-template-dependent alias whose value is a constant in a specific is rejected;
-or one whose value is a runtime value compiles in a specific that the program
-completes or calls.
+red (§8 item 5).
+
+The use rule is rev 4's (review fold: RR2-M1). With the value left
+unconverted, a use of the alias named through a concrete specific in a
+function that is not generic, `Core.Print(C(X).A)` or `let a: i32 = C(X).A;`
+in `Run`, took its category from the alias's value in the generic, where it is
+a `splice_inst` of category `Dependent`, though the `specific_constant`'s
+constant is the specific's concrete value (v13's SemIR for z7b: `name_ref A,
+specific_constant ... [concrete = int_5]`, then `splice_inst <unexpected>` in
+`Run`); `Convert` then built a TP-1 action in a function that has no generic,
+which no specific performs, and lowering stopped at
+lower/function_context.cpp:264 (z2, z4, z6, z7, z7b, z8, i3; §0.13). TP-1,
+trunk and the nightly convert the value where the alias is written and still
+drop the statement that reads it, or stop on a `let` (R12, H11). The root is
+the category, not the alias rule: `GetExprCategory` treats a
+`specific_constant` as `SameAsFirstOperand` and walks the generic's
+instruction with the caller's specific, which outside a generic is none.
+Rev 4 gives `specific_constant` `SpecificInst`'s existing rule, switching the
+walk to the constant's own specific, so a splice reached there yields the
+specific's value and its category (a value, or a reference for a C++ static
+member); in a generic the specific is symbolic and the category stays the
+generic's, which TP-1's actions perform for each specific as before (n04,
+n05, f06, f08, f13, f15, f16). Measured on v14 (§0.13): the seven stops and the
+fold's nested, `constexpr`-call, type, condition and `var` forms run with the
+concrete twins' values; no other of the 387 probes, no golden fill of rev 3
+(1478 of 1478) and no conformance program changes. Pinned by A.1's
+`alias_of_constant_through_specific` (a C++ `constexpr` static member, a
+checked class and a class template) and A.5's
+`alias_constant_through_specific` (pure Carbon), whose dumps show the use as
+the specific's constant; mutant M22 (the rule reverted) turns both red (§8
+item 5). _Break condition:_ a golden whose alias is not template dependent
+changes beyond a diagnostic's location; any stop in a probe with an alias (rev
+3 named only sem_ir/generic.cpp:84 and check/context.cpp:86; amended
+2026-10-21, review fold: RR2-M1); a template-dependent alias whose value is a
+constant in a specific is rejected, or a use of it through a specific has
+another category than the value's in that specific; or one whose value is a
+runtime value compiles in a specific that the program completes or calls.
 
 ### §1.19 Decision index
 
 Amended 2026-10-21 (review fold: A-B1 / A-B2 / A-B3 / A-M1 / A-M5 / B-M1 /
-B-M2 / B-M3; and RR1-N-B1 / RR1-N-M1 for D-CT-17 and D-CT-18).
+B-M2 / B-M3; and RR1-N-B1 / RR1-N-M1 for D-CT-17 and D-CT-18; and RR2-M1 for
+D-CT-12 and D-CT-17).
 
 -   D-CT-1, the deferral model: upstream's `CallAction` over `TemplateInst`,
     performed per specific, no new SemIR.
@@ -1699,16 +1883,17 @@ B-M2 / B-M3; and RR1-N-B1 / RR1-N-M1 for D-CT-17 and D-CT-18).
     it, and checked complete.
 -   D-CT-11, the admitted kinds and the OUT table.
 -   D-CT-12, goldens: two new files, six refills, two header fixes, a renamed
-    TP-1 split, four default_init.carbon splits.
+    TP-1 split, five default_init.carbon splits.
 -   D-CT-13, nine programs.
 -   D-CT-14, docs at land time with fixture X37, records, the TP-1 record
     edits.
 -   D-CT-15, stacked on PR 61, merged after PR 62, with S-VA after M.
 -   D-CT-16, F-021 minted.
 -   D-CT-17, an alias's dependent instructions belong to the enclosing
-    generic (TP-1's W-273 discharged), and its template-dependent value is
+    generic (TP-1's W-273 discharged), its template-dependent value is
     checked to be a constant for each specific, not converted where it is
-    written.
+    written, and a use through a specific takes its category from that
+    specific (rev 4).
 -   D-CT-18, F-021 ships W-309's undestroyed temporary in the checked lane,
     pinned and stated as its cost.
 
@@ -1759,22 +1944,27 @@ template lane's goldens), and A.2's split loses its `todo_` prefix.
 
 ### §2.0 Conventions
 
-The diffs are v13's, against this branch's head (TP-1's 5661a35c8), as
+The diffs are v14's, against this branch's head (TP-1's 5661a35c8), as
 measured; the implementer applies them as written, and a change to them is a
 plan amendment. Commit C1 holds §2.1 to §2.6 and §2.12, commit C2 §2.7 (§3).
-Line numbers are this branch's. No X-macro, `inst_kind.def`, `typed_insts.h` or
-diagnostic kind changes, so no generated file changes and no new diagnostic
-kind is added (D-CT-1, D-CT-11: the OUT forms keep their existing messages;
+Line numbers are this branch's. No X-macro, `inst_kind.def` or diagnostic kind
+changes, so no generated file changes and no new diagnostic kind is added;
+`typed_insts.h` changes one field of an existing kind's definition,
+`SpecificConstant`'s `expr_category` (rev 4, §2.12; amended 2026-10-21, review
+fold: RR2-M1) (D-CT-1, D-CT-11: the OUT forms keep their existing messages;
 D-CT-17 moves the existing `AliasRequiresConstantValue` from handle_alias.cpp
 to eval.cpp). generic.h gains three function declarations and eval.h one; v12's
 one generic.h declaration was compiled by the full builds of the mva and msv
-mirrors (§0.1), and v13's by the relink of the twelve changed translation
-units only, so §8 item 1's full build is their first. Rev 3's fourteen files
-total 381 lines added and 30 removed (rev 2's ten: +265/-13; amended
-2026-10-21, review fold: RR1-N-B1; before, review fold: A-B1 / A-B2 / A-B3 /
-B-M1 / A-m3 / B-m1). Every diff block of this plan passes `git apply --check`
-against this branch's head, and C.11's land-time hunk against the merged
-call.cpp (§8 item 7; review fold: RR1-N-m1).
+mirrors (§0.1), v13's by the relink of the twelve changed translation units
+only, and v14's typed_insts.h field by the relink of those twelve with
+sem_ir/expr_info.cpp and sem_ir/inst_kind.cpp, the readers of a kind's
+category (§0.7), so §8 item 1's full build is their first. Rev 4's sixteen
+files total 388 lines added and 33 removed (rev 3's fourteen: +381/-30; rev
+2's ten: +265/-13; amended 2026-10-21, review fold: RR2-M1 / RR1-N-B1;
+before, review fold: A-B1 / A-B2 / A-B3 / B-M1 / A-m3 / B-m1). Every diff
+block of this plan passes `git apply --check` against this branch's head, and
+C.11's land-time hunk against the merged call.cpp (§8 item 7; review fold:
+RR1-N-m1).
 
 ### §2.1 toolchain/check/impl_lookup.cpp (C1, D-CT-5)
 
@@ -2332,18 +2522,19 @@ PR 62 merges, in this order, each its own commit:
     DD-1's W-043 notes into the discharge text of Appendix C.2; adds W-127's
     sentence (C.10); and re-runs the id re-scan.
 
-### §2.12 toolchain/check: generic, handle_alias, eval, inst, member_access (C1, D-CT-17)
+### §2.12 toolchain/check: generic, handle_alias, eval, inst, member_access; toolchain/sem_ir: expr_info, typed_insts (C1, D-CT-17)
 
 Added 2026-10-21 (review fold: A-B1 / A-B2); amended 2026-10-21 (review fold:
-RR1-N-B1). generic.h declares `DiscardGenericDeclIntoEnclosingGeneric` after
-`DiscardGenericDecl` (:67-68), and `AddAliasCheckToCurrentGeneric` and
-`AddAliasUseCheckToCurrentGeneric` after it; generic.cpp defines them after
-`DiscardGenericDecl` (:453-465). The first copies the region's dependent
-instructions (`PeekDependentInsts`, generic_region_stack.h:84) before discarding
-the region, and, when an enclosing generic region remains (`Empty`, :54),
-attaches each to it with `AttachDependentInstToCurrentGeneric` (:333) in the
-order the region added them, re-deriving the kind: `Template` for an instruction
-that is its own constant (`AddTemplateConstantInstToEvalBlock`'s result),
+RR1-N-B1 / RR2-M1). generic.h declares
+`DiscardGenericDeclIntoEnclosingGeneric` after `DiscardGenericDecl` (:67-68),
+and `AddAliasCheckToCurrentGeneric` and `AddAliasUseCheckToCurrentGeneric`
+after it; generic.cpp defines them after `DiscardGenericDecl` (:453-465). The
+first copies the region's dependent instructions (`PeekDependentInsts`,
+generic_region_stack.h:84) before discarding the region, and, when an
+enclosing generic region remains (`Empty`, :54), attaches each to it with
+`AttachDependentInstToCurrentGeneric` (:333) in the order the region added
+them, re-deriving the kind: `Template` for an instruction that is its own
+constant (`AddTemplateConstantInstToEvalBlock`'s result),
 otherwise `SymbolicType` and `SymbolicConstant` from the instruction's type and
 value. `AddAliasCheckToCurrentGeneric` adds a copy of the alias binding, in no
 block, to the eval block of the current generic's definition region (a
@@ -2369,9 +2560,22 @@ check. Review points: the copy of the dependent instructions is needed because
 with diagnosed parameters the alias's value is an error and its bindings must
 not enter the enclosing generic; at file scope nothing is attached, and a
 `Dependent` value is converted and checked as before; the check copy is in no
-block, so only the specific's evaluation reads it. +25 lines (generic.h), +71
-(generic.cpp), +36 / -11 (handle_alias.cpp), +6 (eval.h), +21 (eval.cpp), +2
-(inst.cpp), +9 / -7 (member_access.cpp).
+block, so only the specific's evaluation reads it. Rev 4's use rule
+(review fold: RR2-M1): typed_insts.h's `SpecificConstant` (:2054-2065) declares
+`ComputedExprCategory::DependsOnOperands` instead of `SameAsFirstOperand`, and
+expr_info.cpp's `GetExprCategoryImpl` handles it in the `SpecificInst` case
+(:120-126), which switches the walk to the named instruction and the
+constant's own specific and IR; the static assertion that every
+`DependsOnOperands` kind has a case (:172-175) requires the two together.
+Review points: the walk reads the specific's value of a `splice_inst` only
+through `GetConstantValueInSpecific`, as for a `specific_inst`, and a
+`specific_constant`'s evaluation resolves the specific's definition when it
+names a definition-region instruction (eval_inst.cpp:833-865), so the value
+block the walk reads exists; in a generic the specific is symbolic and the
+`splice_inst`'s value there is not concrete, so the category is the action's,
+as before. +25 lines (generic.h), +71 (generic.cpp), +36 / -11
+(handle_alias.cpp), +6 (eval.h), +21 (eval.cpp), +2 (inst.cpp), +9 / -7
+(member_access.cpp), +6 / -2 (expr_info.cpp), +1 / -1 (typed_insts.h).
 
 <!-- google-doc-style-ignore -->
 
@@ -2676,6 +2880,35 @@ block, so only the specific's evaluation reads it. +25 lines (generic.h), +71
      }
    }
 
+--- a/toolchain/sem_ir/expr_info.cpp
++++ b/toolchain/sem_ir/expr_info.cpp
+@@ -117,9 +117,13 @@
+             return ExprCategory::ReprInitializing;
+           }
+         }
+-      } else if constexpr (std::same_as<TypedInstT, SpecificInst>) {
++      } else if constexpr (std::same_as<TypedInstT, SpecificInst> ||
++                           std::same_as<TypedInstT, SpecificConstant>) {
+         // Switch to looking at the inner instruction and its specific, which is
+-        // known to be from the current IR.
++        // known to be from the current IR. The inner instruction of a
++        // `SpecificConstant` belongs to the generic of its specific, and its
++        // category can be known only there: `C(X).A` names an alias whose value
++        // is template dependent in `C`, and a value in the specific `C(X)`.
+         inst_id = inst.inst_id;
+         specific_id = inst.specific_id;
+         specific_ir = ir;
+--- a/toolchain/sem_ir/typed_insts.h
++++ b/toolchain/sem_ir/typed_insts.h
+@@ -2055,7 +2055,7 @@
+   // TODO: Can we make Parse::NodeId more specific?
+   static constexpr auto Kind = InstKind::SpecificConstant.Define<Parse::NodeId>(
+       {.ir_name = "specific_constant",
+-       .expr_category = ComputedExprCategory::SameAsFirstOperand,
++       .expr_category = ComputedExprCategory::DependsOnOperands,
+        .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
+        .is_lowered = false});
+
 ```
 
 <!-- google-doc-style-resume -->
@@ -2690,31 +2923,33 @@ B-m6).
 1.  **P0** "CT-1 plan (rev 1): C++ templates on symbolic Carbon type
     arguments, instantiated per specific" (this file), then "CT-1 plan (rev
     2): reviews A and B folded, 25 findings", "CT-1 plan (rev 3): focused
-    re-review folded, NOT signed off" and each later revision in its own
-    commit; implementation starts at the revision the re-review signs off.
+    re-review folded, NOT signed off", "CT-1 plan (rev 4): focused re-review
+    folded, sign-off" and each later revision in its own commit;
+    implementation starts at rev 4, which the Sign-off section records.
 2.  **C1** "CT-1 (1): C++ specializations of symbolic arguments are formed and
     used for each specific": impl_lookup.cpp, action.cpp, subst.cpp,
     convert.cpp, cpp/call.cpp, cpp/overload_resolution.cpp, generic.h,
-    generic.cpp, handle_alias.cpp, eval.h, eval.cpp, inst.cpp and
-    member_access.cpp (§2.1 to §2.6 and §2.12, the c1v13 state); the fifteen
-    C1 splits of A.1 and the six of A.2 (§4's Commit column marks them); A.3's
-    and A.4's header changes and A.3's new split; A.5's four
-    default_init.carbon splits; A.6's rename of TP-1's W-273 split (amended
-    2026-10-21, review fold: RR1-N-B1).
+    generic.cpp, handle_alias.cpp, eval.h, eval.cpp, inst.cpp,
+    member_access.cpp, sem_ir/expr_info.cpp and sem_ir/typed_insts.h (§2.1 to
+    §2.6 and §2.12, the c1v14 state); the sixteen C1 splits of A.1 and the six
+    of A.2 (§4's Commit column marks them); A.3's and A.4's header changes and
+    A.3's new split; A.5's five default_init.carbon splits; A.6's rename of
+    TP-1's W-273 split (amended 2026-10-21, review fold: RR1-N-B1 / RR2-M1).
 3.  **F1** "CT-1 (1) fill": autoupdate to a fixpoint. Predicted exactly, as
-    measured on c1v13g: the six refills of §0.7 (generic_call, non_type_param,
+    measured on c1v14g: the six refills of §0.7 (generic_call, non_type_param,
     var_template, globals, deduce_class_args, range_for) and the C1 subsets of
-    A.1 (850 lines, fifteen splits) and A.2 (1211 lines, six splits);
+    A.1 (989 lines, sixteen splits) and A.2 (1211 lines, six splits);
     default_init.carbon gains the 14 STDERR lines of its
-    `fail_alias_of_template_call_on_instantiation` (its other three new splits
-    succeed and are not dumped); the gate passes all 1959 goldens.
+    `fail_alias_of_template_call_on_instantiation` and the 81 STDOUT lines of
+    `alias_constant_through_specific`'s dump of `Use` (its other three new
+    splits succeed and are not dumped); the gate passes all 1959 goldens.
 4.  **C2** "CT-1 (2): C++ calls with a checked generic's symbolic arguments are
     deferred to each specific": call.cpp (§2.7); the nine C2 splits of A.1 and
     A.2's `narrow_return_checked`, `class_return` and
     `todo_discarded_temporary_not_destroyed` (W-309's pin, D-CT-18).
-5.  **F2** "CT-1 (2) fill": autoupdate; predicted: A.1 to 1175 lines and A.2
-    to 1813, nothing else (c1v13g's fill of the other seven goldens is
-    byte-identical to v13g's); the gate 1959 of 1959.
+5.  **F2** "CT-1 (2) fill": autoupdate; predicted: A.1 to 1314 lines and A.2
+    to 1813, nothing else (c1v14g's fill of the other seven goldens is
+    byte-identical to v14g's); the gate 1959 of 1959.
 6.  **P** "CT-1 (3): conformance programs": the two un-SKIPs, seven programs,
     the oracle, the README table; predicted 147 / 0 / 20 over 167.
 7.  **Implementation reviews A and B** (R29(c)), on the head after P; not
@@ -2755,10 +2990,12 @@ B-m6).
 
 Rewritten 2026-10-21 for rev 2 (review fold: A-B1 / A-B2 / A-B3 / A-M1 / A-M4 /
 A-M5 / B-M1 / B-M6 / B-m6 / B-m7). The fills are v12g's, and c1v12g's for the
-C1 splits, which fill identically (§0.7).
+C1 splits, which fill identically (§0.7); rev 3's splits are v13g's and rev
+4's v14g's, and v14g fills every earlier split as v13g does (amended
+2026-10-21, review fold: RR2-M1).
 
 check/testdata/interop/cpp/template/symbolic_arg.carbon (A.1), under the full
-prelude, twenty-four splits:
+prelude, twenty-five splits:
 
 | Split | Commit | Pins | Fill (measured on v12g; on c1v12g for C1 splits) |
 | --- | --- | --- | --- |
@@ -2769,6 +3006,7 @@ prelude, twenty-four splits:
 | template_called_from_checked_generic | C1 | R2, D-CT-6: a template with `Cpp.Box(T)` and one with `Cpp.Twice(v)`, each called from a checked generic with its symbolic `U` | no diagnostic (TP-1: STOP generic_region_stack.h:98) |
 | generic_class_field | C2 | R3, D-CT-7: `Holder(T)` with a `Cpp.Box(T)` field, read in `Get` and made in `Make` (which calls `Cpp.MakeBox(v)`) | no diagnostic |
 | alias_of_specialization | C1 | R8, R9, R10, D-CT-17, D-CT-7's other-generic case, D-CT-5's constant-value step: `alias B = Cpp.Box(T);` in a checked class (a field, `fn Get(b: B) -> T`, `fn Make(v: T) -> B` with `var b: B;`), in a class template and in a checked function's body | no diagnostic (TP-1: E-DU at `var b: B;`) |
+| alias_of_constant_through_specific | C1 | R12, D-CT-17's use rule (rev 4, RR2-M1): `alias Size = Cpp.Traits(T).size;` of a `static constexpr int` in a checked class and in a class template, named as `Checked(f64).Size` and `Template(i16).Size` in `G`, which is not generic, `let`-bound and passed to `Take` | no diagnostic; the dump of `G` shows each use as ``ref %const.6a8 = specific_constant @Checked.%Size.loc13_9.1, @Checked(constants.%f64) [concrete = imports.%size.var.3b6528.1]`` (and `@Template(constants.%i16)`), converted and acquired as `constants.%int_8` and `constants.%int_2`, with no `splice_inst` (v13: two `splice_inst <unexpected>` in `G`) |
 | member_missing_uncalled | C1 | D-CT-2: an uninstantiated body is not diagnosed | no diagnostic |
 | copy_into_specialization_uncalled | C1 | D-CT-2's copy row: `b.value = v;` with `v: T` and no `Core.Copy` | no diagnostic |
 | fail_member_missing_on_instantiation | C1 | D-CT-2 | ``unable to monomorphize specific `F(i32)` [ResolvingSpecificHere]`` at the call, ``note: member name `nope` not found in `Cpp.Box` [MemberNameNotFoundInInstScope]`` at `b.nope` |
@@ -2806,7 +3044,7 @@ prelude, nine splits:
 | exported_class_argument | C1 | R6, D-CT-10 | `@_Z2IdIN6Carbon5PointEET_S2_` and its thunk (TP-1: the clang assertion) |
 | todo_discarded_temporary_not_destroyed | C2 | W-309, D-CT-18 (rev 3, RR1-N-M1): `Cpp.MakeLoud(v);` discarded in `DiscardDeferred[T: type]` and in the concrete `DiscardConcrete`, with loud.h | `@_CDiscardDeferred.Main.<hash>(i32 %v)` allocates `%.bc2.temp`, calls `@_Z8MakeLoudIiE4LoudIT_ES1_.carbon_thunk._` and returns, with no destructor call; `@_CDiscardConcrete.Main(i32 %v)` calls the thunk and then `@"_CSelfDestruct.<hash>:core.Destroy.Core"`, which calls `@_ZN4LoudIiED2Ev` |
 
-check/testdata/generic/template/default_init.carbon (A.5), four new splits in
+check/testdata/generic/template/default_init.carbon (A.5), five new splits in
 C1, all pure Carbon. Three have no diagnostic or dump:
 `var_uninit_associated_type` (W-268's function shape, `var e: T.Elem;` in `fn
 F[template T: Container]`; TP-1: E-DU at the `var`), `class_alias_var_uninit`
@@ -2819,7 +3057,14 @@ C(template T: type)`, read in `F`), fills ``member access into incomplete class
 `C(X)` [QualifiedExprInIncompleteClassScope]`` and ``unable to monomorphize
 specific `F()` [ResolvingSpecificHere]`` at `C(X).F()`, with ``note: alias
 refers to a runtime value [AliasRequiresConstantValue]`` at `T.Make()` and at
-`A` in `F` (14 STDERR lines; amended 2026-10-21, review fold: RR1-N-B1).
+`A` in `F` (14 STDERR lines; amended 2026-10-21, review fold: RR1-N-B1). The
+fifth, `alias_constant_through_specific` (`alias A = T.N;` of an associated
+constant in `class C(template T: type)`, named as `C(X).A` in `Use`, which is
+not generic, `let`-bound and passed to `Take`), has no diagnostic and dumps
+`Use` (81 STDOUT lines): each use is ``specific_constant @C.%A.loc16_9.1,
+@C(constants.%X) [concrete = constants.%int_5.eef]`` and its `name_ref`, with
+no `splice_inst` (v13: two `splice_inst <unexpected>`; amended 2026-10-21,
+review fold: RR2-M1).
 
 Refills (§0.7): check/interop/cpp/template/generic_call.carbon (F1),
 non_type_param.carbon (F1), var_template.carbon (C1's source change, F1's fill:
@@ -2848,18 +3093,21 @@ programs, TP-1's ten programs included.
 
 ## §6 Churn and collisions
 
-Fourteen toolchain files, 381 lines added and 30 removed (rev 2: ten files, 265
-added and 13 removed; rev 1: seven files, 167 added and 11 removed, which rev 1
-misstated as 163 and 11; amended 2026-10-21, review fold: B-m1 / RR1-N-B1); two
-new goldens (2988 lines filled, 687 of them source; rev 2's 2707 and 631); six
-refills (+290/-207 CHECK and source lines) and default_init.carbon's 82 source
-lines and 14 STDERR lines; nine programs and an oracle; the records. At land
-time S-VA adds 4 and removes 2 lines of call.cpp with one split. No generated
-file, X-macro or diagnostic kind changes. Collisions are §0.9's: textual offsets
-with PR 57, PR 59, PR 60 (TP-1's own two convert.cpp hunks, resolved by TP-1's
-M) and PR 62; the semantic compositions with PR 59 (S-VA) and PR 62 (OUT rows);
-the content rules C-1 (PR 51's programs), C-2 (PR 51's split and TP-1's F6) and
-C-3 (PR 58's page and records).
+Sixteen toolchain files, 388 lines added and 33 removed (rev 3: fourteen files,
+381 added and 30 removed; rev 2: ten files, 265 added and 13 removed; rev 1:
+seven files, 167 added and 11 removed, which rev 1 misstated as 163 and 11;
+amended 2026-10-21, review fold: B-m1 / RR1-N-B1 / RR2-M1); two new goldens
+(3127 lines filled, 716 of them source; rev 3's 2988 and 687, rev 2's 2707 and
+631); six refills (+290/-207 CHECK and source lines) and default_init.carbon's
+110 source lines, 14 STDERR lines and 81 STDOUT lines; nine programs and an
+oracle; the records. At land time S-VA adds 4 and removes 2 lines of call.cpp
+with one split. No generated file, X-macro, instruction kind or diagnostic
+kind is added; one kind's expression category changes (typed_insts.h, rev 4).
+Collisions are §0.9's: textual offsets with PR 57, PR 59 (typed_insts.h too),
+PR 60 (TP-1's own two convert.cpp hunks, resolved by TP-1's M, and
+typed_insts.h) and PR 62; the semantic compositions with PR 59 (S-VA) and PR
+62 (OUT rows); the content rules C-1 (PR 51's programs), C-2 (PR 51's split
+and TP-1's F6) and C-3 (PR 58's page and records).
 
 ## §7 Risks and rejected alternatives (falsifiable)
 
@@ -2917,11 +3165,20 @@ C-3 (PR 58's page and records).
     either place, and the risk that remains is the rule's own, rejecting an
     alias of a runtime value that upstream compiles when it is unused (nine
     programs, §0.10's register; amended 2026-10-21, review fold: RR1-N-B1).
+    The re-review RR2 met the falsifier's class again on rev 3's v13: a stop
+    at lower/function_context.cpp:264 when a function that is not generic
+    names such an alias through a concrete specific (z2, z4, z6, z7, z7b, z8,
+    i3). Rev 4's use rule removes that root (R12): on v14 no probe with an
+    alias stops, and the falsifier is any stop in a probe with an alias
+    (amended 2026-10-21, review fold: RR2-M1).
 8.  The fold added eight OUT rows to §1.11 from the reviews' probes; a form
     neither review probed may still stop (the class of A-M4). Mitigation: the
     focused re-review loop (§3 item 9) re-runs the §0.12 probes and asks each
     reviewer for new probes in the slice's domain; falsified by a stop that a
-    re-review finds in an IN form.
+    re-review finds in an IN form. RR2 found one (RR2-M1, an IN form of
+    §1.11's v13 sentence used through a specific), folded at its root in rev
+    4; the implementation reviews and their loop (§3 items 7 and 9) remain
+    the check (amended 2026-10-21, review fold: RR2-M1).
 
 ### §7.2 Rejected alternatives
 
@@ -3027,6 +3284,17 @@ C-3 (PR 58's page and records).
     type is unknown where the generic is defined, so the rule would reject a
     discarded `Cpp.Twice(T, v);` (w1, correct, prints 1) with the
     `Cpp.MakeLoud(v);` it means (R17). Rejected.
+23. **Narrow D-CT-11's IN sentence to uses in the class and in generic
+    functions, and file the stop** (RR2-M1's fallback; added 2026-10-21,
+    review fold: RR2-M1): it would ship an IN form's stop (z2, z6, z7b) and
+    TP-1's silent drop of the read as a residue in W-310, when the root is two
+    lines of an upstream rule that a `specific_inst` already has. Rejected
+    for the use rule (R17).
+24. **Follow a `specific_constant`'s concrete constant for its category**
+    (RR2-M1's other wording; added 2026-10-21, review fold: RR2-M1): it
+    would add a second rule beside `SpecificInst`'s existing one and still
+    leave a symbolic `specific_constant` to the generic's walk; not built.
+    Rejected for `SpecificInst`'s rule, whose break condition is §1.18's.
 
 ## §8 Verification and discharge
 
@@ -3069,9 +3337,11 @@ is not a difference.
     gate and the programs; each must turn something red, and the record names
     what. Measured for rev 2 on v12g over the nine changed or new goldens
     (EXPECTED, not of record; `$X/mut/<m>.py` holds each edit and
-    `$X/logs/mut_<m>.log` its run, `$X` here the fixer's scratch), and for rev 3
-    on v13g (M13 again, M19 to M21; the rev 3 fixer's `$X/mut/<m>.diff` and
-    `$X/logs/mut2_<m>_<golden>.log`; amended 2026-10-21, review fold: RR1-N-B1):
+    `$X/logs/mut_<m>.log` its run, `$X` here the fixer's scratch), for rev 3 on
+    v13g (M13 again, M19 to M21; the rev 3 fixer's `$X/mut/<m>.diff` and
+    `$X/logs/mut2_<m>_<golden>.log`; amended 2026-10-21, review fold: RR1-N-B1),
+    and for rev 4 on v14g's mirror (M22; the rev 4 fixer's
+    `$X/logs/m22_<golden>.log`; amended 2026-10-21, review fold: RR2-M1):
 
     | Mutant | Reverts | Measured on v12g (2026-10-21) | Killed |
     | --- | --- | --- | --- |
@@ -3096,12 +3366,13 @@ is not a difference.
     | M19 | D-CT-17's check in the specific (`TryEvalBlockForSpecific` accepts an alias's runtime value) | A.1 and A.5 stop at their `fail_alias_of_template_call_on_instantiation`: CHECK sem_ir/generic.cpp:84 (``Given a specific for the wrong generic``) | yes |
     | M20 | D-CT-17's use check in a nested generic (inst.cpp and member_access.cpp no longer call it) | the same stop at the same two splits | yes |
     | M21 | D-CT-17's unconverted value (the `Dependent` case converts again, the check kept) | A.5 stops at `class_alias_field_name`: FATAL convert.cpp:2547 (``Unexpected expression ... after builtin conversions``) | yes |
+    | M22 | D-CT-17's use rule (`SpecificConstant` back to `SameAsFirstOperand` and its expr_info.cpp case removed: v13's code) | red: A.1's `alias_of_constant_through_specific` and A.5's `alias_constant_through_specific` fail, each dumping `splice_inst <unexpected>` in the function that is not generic; the other splits pass | yes |
 
 6.  **clang-tidy**: the carbonbuild builds write no compile database, so
     after item 1 `ninja -C /home/user/carbon-build/carbon-ct -t compdb >
     $X/compile_commands.json`, then `/home/user/llvm/bin/clang-tidy -p $X
     --checks=-modernize-use-trailing-return-type <file>` (TP-1's and SV-1's
-    exclusion) on the fourteen files; no new finding on a changed line. If the
+    exclusion) on the sixteen files; no new finding on a changed line. If the
     database cannot be generated, the step moves to item 11's not-run list
     with that reason.
 7.  **prek** on every changed path, to a fixpoint, with R31's heading and
@@ -3109,7 +3380,9 @@ is not a difference.
     revision, `git apply --check` of every diff block against this branch's
     head, and of C.11's land-time hunk against call.cpp after C2 is merged with
     PR 59's call.cpp by git merge-file; rev 3 checks its thirteen blocks so, and
-    all apply (added 2026-10-21, review fold: RR1-N-m1):
+    all apply (added 2026-10-21, review fold: RR1-N-m1), and rev 4 its thirteen
+    again, §2.12's and A.5's regenerated, all applying (amended 2026-10-21,
+    review fold: RR2-M1):
 
     <!-- google-doc-style-ignore -->
 
@@ -3177,10 +3450,26 @@ member_access.cpp dry-run; the upstream log over the four new files; the id
 re-scan after a fetch; `git apply --check` of every diff block, and C.11's
 hunk against the merged call.cpp.
 
+Measured for rev 4 (2026-10-21, EXPECTED, not of record; review fold:
+RR2-M1): v14, v14g, c1v14, c1v14g and the mutant M22 relinked over TP-1's
+objects, and v13 and v12 relinked again; v14's and c1v14's gates (1951 of
+1957, §0.7's six rows); every check and lower golden of rev 3's filled mirror
+on v14g (1478 of 1478); A.1 and A.5 with rev 4's splits filled to a fixpoint
+on v14g from Appendix A's sources, and A.1's C1 subset on c1v14g; the six
+refills and default_init.carbon on c1v14g; M22 on the two new splits; the
+re-review's probes and the fold's on TP-1, trunk, the nightly, v12, v13 and
+v14, and the 387 probes of rev 3's matrices and the re-review's on v13 and v14
+(§0.13); conformance on v14 (147 / 0 / 20 over 167, 48 of 56 bullets); the
+held PRs' and upstream's sem_ir files and the dry-run of rev 4's hunks; the id
+re-scan after a fetch; `git apply --check` of every diff block, and C.11's
+hunk against the merged call.cpp again.
+
 Not measured: a full build.sh/install.sh of this branch's own state (relinks of
-the changed objects over TP-1's build for v12 and v13, and full builds of the
-two mirrors, which compiled v12's ten files and generic.h's includers, not
-v13's); the mva and msv compositions with v13's code; M7, M10 and M18;
+the changed objects over TP-1's build for v12, v13 and v14, and full builds of
+the two mirrors, which compiled v12's ten files and generic.h's includers, not
+v13's or v14's; v14's typed_insts.h field reached only the three translation
+units that read it, §0.7); the mva and msv compositions with v13's or v14's
+code; M7, M10 and M18;
 clang-tidy; prek on anything but this file; runner.py --self-test with
 the new README table; the PR 51, PR 57 and PR 60 mirrors (PR 60 predicted,
 §0.9); the C-2 rename on PR 51's own golden (its split could not be run here:
@@ -3228,7 +3517,12 @@ split's fill; hosted CI.
     toolchain/diagnostics/kind.def, so no generated file changes. The full
     build of §8 item 1 is the first to compile eval.h's and generic.h's new
     declarations into every includer; v13 was a relink (added 2026-10-21,
-    review fold: RR1-N-B1).
+    review fold: RR1-N-B1). Rev 4 changes typed_insts.h, which nearly every
+    translation unit includes; v14's relink recompiled the readers of a kind's
+    category only (§0.7), so the full build is the first to compile the field
+    everywhere, and a golden or probe that differs from §0.7's and §0.13's v14
+    results there is a stop-and-amend (amended 2026-10-21, review fold:
+    RR2-M1).
 
 ## Review fold record (rev 2, 2026-10-21)
 
@@ -3319,13 +3613,85 @@ the id re-scan was repeated after a fetch (§0.11); and §0.7 records that the
 C1 subsets' lower fills also differ from the full file's in LLVM struct-name
 suffixes, as rev 2's did.
 
+## Review fold record (rev 4, 2026-10-21)
+
+The focused re-review RR2 of rev 3 (bd97af1cc) returned
+APPROVE-WITH-AMENDMENTS. It rebuilt v13 from the plan's own diff blocks
+(byte-identical to the rev 3 fixer's sources, fourteen files, +381/-30),
+relinked v13, c1v13 and v12, and found all four of RR1's findings resolved:
+N-B1 (the original probes give the twin's note or E-MONO with it, t19 prints
+53, t21 runs, the twins t11 and t22 are rejected, the constant forms print
+41, 42, 44, 46, 47, 48 and 4, the 41 q, r and s probes match, and A.1's new
+split stops on v12 and gives three errors and three notes on c1v13 and v13),
+N-M1 (w1 to w10 as §0.13 says, D-CT-18's break condition and pin, W-309 named
+in C.1, C.3, C.4 and C.7, and its probes d1 to d3 show no double
+destruction), N-m1 (every block applies, and C.11's hunk on the merged
+call.cpp) and N-m2 (one list everywhere). It also checked the id re-scan, the
+fences and their markers, and 101 headings. Its hunt found one new MAJOR,
+RR2-M1. Its probes and logs are in scratchpad/ct1/rr2.
+
+The fixer reproduced RR2-M1 in its own scratch (scratchpad/ct1/fixer2, `$X`
+below; binaries under /dev/shm/ct1-fixer2, deleted after use; EXPECTED, not
+of record, R9) before folding it, and folded it at its root, the finding's
+first remedy; nothing is rejected. The prototype changed from v13 to v14
+(sixteen files, +388/-33), and every measurement the change touches was
+re-run on v14 (§0.7's gates, mirror and fills, §0.8's conformance, the 387
+probes of rev 3's matrices and the re-review's, §0.13, §8 item 5).
+
+<!-- google-doc-style-ignore -->
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR2-M1 | MAJOR | yes: on v13, relinked again from rev 3's sources, z2, z4, z6, z7, z7b, z8 and i3 stop at CHECK lower/function_context.cpp:264 (``Missing value: SpliceInst in specific<none> has non-concrete value``), and v12 stops on all seven; on TP-1, trunk and the nightly z2, z4, z7b and i3 compile and drop the statement that reads the alias (TP-1's LLVM IR for z7b's entry point is `ret i32 0`; i3 prints only `3`), and z6 and z8 stop at the same CHECK (:223 on trunk, :201 on the nightly); z1 and z3 print nothing there and 45 and 3 on v13; the root is a `specific_constant`'s expression category, computed from the alias's value in the generic without the specific (`SameAsFirstOperand`) | Folded at the root, the finding's first remedy: `SpecificConstant`'s category is `DependsOnOperands` and computed as `SpecificInst`'s is, from the named instruction in the constant's own specific (sem_ir/expr_info.cpp, typed_insts.h; D-CT-17's use rule, R12, H11). v14: z2, z4, z6, z7, z7b, z8 and i3 print 7, 7, 7, ``5 5``, 5, 5 and ``3 7``, as their twins z2c and z8c print 7 and ``5 5``; z1 and z3 print 45 and 3; the fold's nested, `constexpr`-call, type, condition and `var` forms run (f01, f02, f03, f05, f07, f10, f13); the other 380 of the 387 probes, the gates, the mirror's 1478 goldens, the C1 state and conformance are unchanged. Pinned by A.1's `alias_of_constant_through_specific` and A.5's `alias_constant_through_specific`, which mutant M22 (the rule reverted) turns red; D-CT-17's break condition names any stop in a probe with an alias; z1 to z8, i3 and the fold's probes are §0.13's rev 4 rows; the narrowing fallback and the constant-following wording are rejected alternatives 23 and 24 | Status; preamble; §0.1; §0.4 item 11; §0.5 R12; §0.7; §0.8; §0.9; §0.10; §0.11; §0.13; §1.1; §1.4; §1.11; §1.13; §1.16; §1.18; §1.19; §2.0; §2.12; §3; §4; §6; §7.1 items 7, 8; §7.2 items 23, 24; §8 items 5 to 7; §8.1; H-9; Appendix A; A.1; A.5; C.2; C.7; D.9 |
+
+<!-- google-doc-style-resume -->
+
+Also changed by the fold, outside the finding: §0.4's last sentence and
+D-CT-1 now say that one existing kind's expression category changes; §2.0
+says that typed_insts.h changes one field, and H-9 that the full build is the
+first to compile it everywhere; C.11's land-time hunk was checked again
+against the merged call.cpp; the Status line and the Sign-off section below
+record the sign-off.
+
+## Sign-off
+
+Rev 4 is signed off for implementation on 2026-10-21: the last review, the
+focused re-review RR2 of rev 3, is not a REJECT, and its one finding is folded
+at its root above. Every review of this plan, with its verdict and its counts
+(EXPECTED, not of record, R9, where a review measured):
+
+<!-- google-doc-style-ignore -->
+
+| Review | Of | Verdict | BLOCKER | MAJOR | MINOR | Findings | Folded | Rejected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Plan review A | rev 1 (7865787a7) | REJECT | 3 (A-B1 to A-B3) | 5 (A-M1 to A-M5) | 4 (A-m1 to A-m4) | 12 | 12, in rev 2 | 0 |
+| Plan review B | rev 1 (7865787a7) | APPROVE-WITH-AMENDMENTS | 0 | 6 (B-M1 to B-M6) | 7 (B-m1 to B-m7) | 13 | 13, in rev 2 | 0 |
+| Focused re-review RR1 | rev 2 (e2d525091) | REJECT | 1 (RR1-N-B1) | 1 (RR1-N-M1) | 2 (RR1-N-m1, RR1-N-m2) | 4 | 4, in rev 3 | 0 |
+| Focused re-review RR2 | rev 3 (bd97af1cc) | APPROVE-WITH-AMENDMENTS (all four of RR1's resolved) | 0 | 1 (RR2-M1) | 0 | 1 | 1, in rev 4 | 0 |
+| Total | | | 4 | 13 | 13 | 30 | 30 | 0 |
+
+<!-- google-doc-style-resume -->
+
+Implementation starts at rev 4 (§3 item 1) and follows §3 and §8: each code
+commit is built in full, filled to a fixpoint and gated, the implementation
+reviews A and B read the head after P (§3 item 7), and the focused re-review
+loop (§3 item 9) ends the review. Rev 4's own fold (RR2-M1) is reviewed there
+with the code, not in a further plan round: its code is §2.12's two sem_ir
+hunks, measured above. _Break condition:_ a fill, the gate, the conformance
+run or a probe of §0.13 differs from rev 4's predictions at implementation
+(§8's stop-and-amend rule), or an implementation review finds a BLOCKER in a
+decision of this plan; the plan is then amended in a new revision, reviewed
+under §3 item 9's loop, before the step is committed.
+
 ## Appendix A: golden sources
 
 Every new or changed golden source, without CHECK lines (R16(a)). A.1 and A.2
-are new files; their C2 splits (§4: nine of A.1's twenty-four, three of A.2's
+are new files; their C2 splits (§4: nine of A.1's twenty-five, three of A.2's
 nine) are added by commit C2 and the rest by C1, so C1's files are these with
-the C2 splits left out (measured as c1v13g's sources; amended 2026-10-21, review
-fold: RR1-N-B1 / RR1-N-M1: A.1 gains
+the C2 splits left out (measured as c1v14g's sources; amended 2026-10-21, review
+fold: RR2-M1: A.1 gains `alias_of_constant_through_specific`, with its own
+inline C++, and A.5 `alias_constant_through_specific`; amended 2026-10-21,
+review fold: RR1-N-B1 / RR1-N-M1: A.1 gains
 `fail_alias_of_template_call_on_instantiation` and `Static` in box.h, A.2 gains
 `loud.h` and `todo_discarded_temporary_not_destroyed`, and A.5 two splits).
 Rewritten 2026-10-21 for rev 2 (review fold: A-B1 / A-B2 / A-B3 / A-M1 / A-M4 /
@@ -3539,6 +3905,35 @@ fn G() -> i32 {
   return c.b.value + Checked(i32).Get(Checked(i32).Make(2)) +
          Template(i32).Make(3) + InFunction(4 as i32);
 }
+
+// --- alias_of_constant_through_specific.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp inline '''
+template<typename T> struct Traits { static constexpr int size = sizeof(T); };
+''';
+
+// An alias of a template-dependent C++ constant, named through a concrete
+// specific from a function that is not generic, in a checked generic class and
+// in a class template: the use's category is the category of the alias's value
+// in that specific, a constant.
+class Checked(T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+class Template(template T: type) {
+  alias Size = Cpp.Traits(T).size;
+}
+
+fn Take(n: i32) -> i32 { return n; }
+
+//@dump-sem-ir-begin
+fn G() -> i32 {
+  let a: i32 = Checked(f64).Size;
+  return Take(Template(i16).Size) + a;
+}
+//@dump-sem-ir-end
 
 // --- member_missing_uncalled.carbon
 
@@ -4110,7 +4505,7 @@ autoupdate places the CHECK lines.
 The refills of generic_call.carbon, non_type_param.carbon and range_for.carbon
 change no source line.
 
-### A.5 toolchain/check/testdata/generic/template/default_init.carbon (C1, four splits)
+### A.5 toolchain/check/testdata/generic/template/default_init.carbon (C1, five splits)
 
 Added 2026-10-21 (review fold: A-M5 / B-M2 / A-B1): W-268's function shape and
 the class shape of review A's B1, both pure Carbon, inserted before
@@ -4118,16 +4513,19 @@ the class shape of review A's B1, both pure Carbon, inserted before
 (amended 2026-10-21, review fold: RR1-N-B1 / RR1-N-m1):
 `class_alias_field_name`, an alias of a field's name in a class template, read
 as `x.(N)`, and `fail_alias_of_template_call_on_instantiation`, the pure-Carbon
-form of N-B1. The first three have no diagnostic and no dump; F1 adds the
-fourth's 14 STDERR lines (§4). Rev 2's hunk lacked its last blank context line,
-so `git apply` reported a corrupt patch; this one is the measured diff.
+form of N-B1. Rev 4 adds `alias_constant_through_specific` after them, the
+pure-Carbon form of RR2-M1 (amended 2026-10-21, review fold: RR2-M1). The
+first three have no diagnostic and no dump; F1 adds the fourth's 14 STDERR
+lines and the fifth's 81 STDOUT lines (§4). Rev 2's hunk lacked its last blank
+context line, so `git apply` reported a corrupt patch; this one is the
+measured diff, regenerated for rev 4.
 
 <!-- google-doc-style-ignore -->
 
 ```diff
 --- a/toolchain/check/testdata/generic/template/default_init.carbon
 +++ b/toolchain/check/testdata/generic/template/default_init.carbon
-@@ -41,6 +41,88 @@
+@@ -41,6 +41,116 @@
    return s.Peek();
  }
 
@@ -4212,6 +4610,34 @@ so `git apply` reported a corrupt patch; this one is the measured diff.
 +fn Use() -> i32 {
 +  return C(X).F();
 +}
++
++// --- alias_constant_through_specific.carbon
++library "[[@TEST_NAME]]";
++
++interface HasN {
++  let N: i32;
++}
++
++class X {
++  extend impl as HasN where .N = 5 {}
++}
++
++// An alias of a template-dependent constant, named through a concrete
++// specific from a function that is not generic: the use's category is the
++// category of the alias's value in that specific, a constant, and not the
++// template's, whose value is known only for each specific.
++class C(template T: type) {
++  alias A = T.N;
++}
++
++fn Take(n: i32) -> i32 { return n; }
++
++//@dump-sem-ir-begin
++fn Use() -> i32 {
++  let a: i32 = C(X).A;
++  return Take(C(X).A) + a;
++}
++//@dump-sem-ir-end
 +
  // --- fail_var_uninit_tuple_on_instantiation.carbon
  library "[[@TEST_NAME]]";
@@ -4963,13 +5389,13 @@ after the original notes, and this text's additions follow them.
  "evidence": [
   "<the original seven entries, kept, then DD-1's at land time>",
   "toolchain/check/impl_lookup.cpp `NamesTemplateBinding` (D-CT-5: a `TemplateInst` names a template binding; `MetaInstId`/`MetaInstBlockId` operands and symbolic operands' constant values are followed)",
-  "toolchain/check/action.cpp `ActionIsPerformable` (D-CT-6), toolchain/check/subst.cpp `PushOperand`/`PopOperand` and `IsSubstitutedActionOperand` (D-CT-7), toolchain/check/convert.cpp `PerformAction(InitializeAction)` (D-CT-8), toolchain/check/cpp/call.cpp `BuildTemplateId` (D-CT-9), toolchain/check/cpp/overload_resolution.cpp `IsMoveEquivalentToCopy` (D-CT-10), toolchain/check/generic.cpp `DiscardGenericDeclIntoEnclosingGeneric`, `AddAliasCheckToCurrentGeneric` and `AddAliasUseCheckToCurrentGeneric`, toolchain/check/handle_alias.cpp and toolchain/check/eval.cpp `TryEvalBlockForSpecific` (D-CT-17), toolchain/check/call.cpp `DeferCppCallOnSymbolicArgs` (D-CT-3)",
-  "toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon, toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon and toolchain/check/testdata/generic/template/default_init.carbon (`var_uninit_associated_type`, `class_alias_var_uninit`, `class_alias_field_name`, `fail_alias_of_template_call_on_instantiation`)",
+  "toolchain/check/action.cpp `ActionIsPerformable` (D-CT-6), toolchain/check/subst.cpp `PushOperand`/`PopOperand` and `IsSubstitutedActionOperand` (D-CT-7), toolchain/check/convert.cpp `PerformAction(InitializeAction)` (D-CT-8), toolchain/check/cpp/call.cpp `BuildTemplateId` (D-CT-9), toolchain/check/cpp/overload_resolution.cpp `IsMoveEquivalentToCopy` (D-CT-10), toolchain/check/generic.cpp `DiscardGenericDeclIntoEnclosingGeneric`, `AddAliasCheckToCurrentGeneric` and `AddAliasUseCheckToCurrentGeneric`, toolchain/check/handle_alias.cpp and toolchain/check/eval.cpp `TryEvalBlockForSpecific` (D-CT-17), toolchain/sem_ir/expr_info.cpp `GetExprCategoryImpl` and toolchain/sem_ir/typed_insts.h `SpecificConstant` (D-CT-17's use rule), toolchain/check/call.cpp `DeferCppCallOnSymbolicArgs` (D-CT-3)",
+  "toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon, toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon and toolchain/check/testdata/generic/template/default_init.carbon (`var_uninit_associated_type`, `class_alias_var_uninit`, `class_alias_field_name`, `fail_alias_of_template_call_on_instantiation`, `alias_constant_through_specific`)",
   "fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon and cpp_template_on_carbon_generic.carbon (un-SKIPped, PASS), cpp_template_fn_symbolic, cpp_template_spec_roundtrip, cpp_template_nested_symbolic, cpp_template_carbon_generic_spec, cpp_template_two_specifics, cpp_template_symbolic_diff (differential), cpp_var_template_runtime",
   "fork/designdocs/samples/X37_cpp_template_symbolic_uninit.carbon (at land time)",
   "fork/cpp-templates/plan.md; fork/decision-log.md \"CT-1\" (F-021)"
  ],
- "notes": "<the original notes, kept, then DD-1's at land time>. DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md): the blocker the item names, a symbolic Carbon type as a C++ template argument, had been lifted upstream (PRs 7673, 7689 and 7700: a deferred `CallAction` over `TemplateInst`-wrapped arguments); ten defects in and around that path kept it from working (impl lookup on the specialization resolved where the generic is defined, so an uninitialized `var` of it was rejected; C++ actions performed for a symbolic specific; action operands not substituted; a narrow scalar `return` given a return slot; variable template specializations never instantiated; an exported Carbon class queried before it was complete; an alias's value detached from its enclosing generic; an enclosing generic's operand kept in a member's action; an alias's name reference not followed to its value; an alias's template-dependent value converted and checked where it is written, not in each specific), each fixed at its root, and a C++ call with a checked generic's symbolic argument is deferred to each specific, a fork rule (F-021). The two SKIP programs run without their SKIP lines and with the `Core.Copy` impl each needs, keeping the uninitialized `var b: Cpp.Box(T);`. Measured in the container (EXPECTED, not of record, R9): <gate N of N>, conformance <P / F / S over N>. The evidence's type_mapping.cpp TODO (:560 when filed, :733-736 at CT-1) is live and filed as W-307, and call.cpp:252's non-type restriction as W-302. Residues: W-300 (struct, tuple and unexportable class types), W-301 (Carbon generics as template template arguments), W-302 (non-type argument kinds), W-303 (deduction through a C++ specialization, in a parameter's type or an impl's self), W-304 (a concrete C++ class `var` in a template's body stops lowering), W-305 (interface member access through a constraint on a specialization's member), W-306 (instantiation notes without a line, repeated E-MONO), W-307 (form-dependent arguments to C++ functions), W-308 (C++ classes as choice payloads), W-309 (a deferred call's C++ temporary not destroyed); CT-1's forms work within one library, and a use from another library stays W-250's."
+ "notes": "<the original notes, kept, then DD-1's at land time>. DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md): the blocker the item names, a symbolic Carbon type as a C++ template argument, had been lifted upstream (PRs 7673, 7689 and 7700: a deferred `CallAction` over `TemplateInst`-wrapped arguments); eleven defects in and around that path kept it from working (impl lookup on the specialization resolved where the generic is defined, so an uninitialized `var` of it was rejected; C++ actions performed for a symbolic specific; action operands not substituted; a narrow scalar `return` given a return slot; variable template specializations never instantiated; an exported Carbon class queried before it was complete; an alias's value detached from its enclosing generic; an enclosing generic's operand kept in a member's action; an alias's name reference not followed to its value; an alias's template-dependent value converted and checked where it is written, not in each specific; a use of such an alias through a concrete specific given the generic's category, not the specific's), each fixed at its root, and a C++ call with a checked generic's symbolic argument is deferred to each specific, a fork rule (F-021). The two SKIP programs run without their SKIP lines and with the `Core.Copy` impl each needs, keeping the uninitialized `var b: Cpp.Box(T);`. Measured in the container (EXPECTED, not of record, R9): <gate N of N>, conformance <P / F / S over N>. The evidence's type_mapping.cpp TODO (:560 when filed, :733-736 at CT-1) is live and filed as W-307, and call.cpp:252's non-type restriction as W-302. Residues: W-300 (struct, tuple and unexportable class types), W-301 (Carbon generics as template template arguments), W-302 (non-type argument kinds), W-303 (deduction through a C++ specialization, in a parameter's type or an impl's self), W-304 (a concrete C++ class `var` in a template's body stops lowering), W-305 (interface member access through a constraint on a specialization's member), W-306 (instantiation notes without a line, repeated E-MONO), W-307 (form-dependent arguments to C++ functions), W-308 (C++ classes as choice payloads), W-309 (a deferred call's C++ temporary not destroyed); CT-1's forms work within one library, and a use from another library stays W-250's."
 }
 ```
 
@@ -5216,26 +5642,29 @@ on a deferred call's result, deferring form-dependent arguments,
 `Sema::isCompleteType`, extending the lookup walk to runtime operands,
 attaching every discarded generic region, converting an alias's
 template-dependent value where it is written, detaching an alias's region for
-a call, destroying a deferred call's temporary in this slice, and rejecting a
-discarded deferred call in a checked generic. Decisions: D-CT-1, upstream's
-deferred `CallAction` over `TemplateInst`, performed per specific, no new
-SemIR; D-CT-2 and D-CT-3, F-021 (below); D-CT-4, the template lane rides TP-1,
-TR-22 stays OUT for Carbon forms while its C++ forms run; D-CT-5, impl lookup
-on a C++ specialization is deferred, the walk following action operands and
-constant values (D-TP-12 amended, W-268 narrowed); D-CT-6, a C++ callee's
+a call, destroying a deferred call's temporary in this slice, rejecting a
+discarded deferred call in a checked generic, narrowing the admitted alias
+uses instead of fixing a specific constant's category, and following a
+specific constant's concrete value for its category. Decisions: D-CT-1,
+upstream's deferred `CallAction` over `TemplateInst`, performed per specific, no
+new SemIR; D-CT-2 and D-CT-3, F-021 (below); D-CT-4, the template lane rides
+TP-1, TR-22 stays OUT for Carbon forms while its C++ forms run; D-CT-5, impl
+lookup on a C++ specialization is deferred, the walk following action operands
+and constant values (D-TP-12 amended, W-268 narrowed); D-CT-6, a C++ callee's
 action waits for concrete arguments; D-CT-7, constant action operands and
-another generic's operands are substituted; D-CT-8, a deferred `return` uses
-the return slot only in place; D-CT-9, variable template specializations are
-implicitly instantiated; D-CT-10, an exported class is completed before
-overload resolution reads it, and checked complete; D-CT-11, the admitted
-kinds and the OUT table; D-CT-12, goldens; D-CT-13, nine programs; D-CT-14,
-docs at land time with fixture X37, records and TP-1's dated lines; D-CT-15,
-stacked on PR 61, merged after PR 62, with S-VA after M; D-CT-16, F-021
-minted; D-CT-17, an alias's dependent instructions belong to the enclosing
-generic (TP-1's W-273 discharged), and its template-dependent value is
-checked to be a constant for each specific, with the concrete twin's
-diagnostic, instead of being converted where it is written; D-CT-18, F-021
-ships W-309's undestroyed temporary in the checked lane, pinned and stated.
+another generic's operands are substituted; D-CT-8, a deferred `return` uses the
+return slot only in place; D-CT-9, variable template specializations are
+implicitly instantiated; D-CT-10, an exported class is completed before overload
+resolution reads it, and checked complete; D-CT-11, the admitted kinds and the
+OUT table; D-CT-12, goldens; D-CT-13, nine programs; D-CT-14, docs at land time
+with fixture X37, records and TP-1's dated lines; D-CT-15, stacked on PR 61,
+merged after PR 62, with S-VA after M; D-CT-16, F-021 minted; D-CT-17, an
+alias's dependent instructions belong to the enclosing generic (TP-1's W-273
+discharged), and its template-dependent value is checked to be a constant for
+each specific, with the concrete twin's diagnostic, instead of being converted
+where it is written, and a use of it through a specific takes the category of
+its value in that specific; D-CT-18, F-021 ships W-309's undestroyed temporary
+in the checked lane, pinned and stated.
 
 **F-021 (the checked-generic C++ rule).** In a checked generic, a C++
 template's specialization of a symbolic argument, a call to a C++ function
@@ -6837,6 +7266,255 @@ import Core library "io";
 class X { var n: i32; }
 class C { alias N = X.n; fn Get(x: X) -> i32 { return x.(N); } }
 fn Run() -> i32 { Core.Print(C.Get({.n = 7})); return 0; }
+```
+
+<!-- google-doc-style-resume -->
+
+### D.9 Rev 4's probes (the second re-review's n probes and the fold's f probes)
+
+Added 2026-10-21 (review fold: RR2-M1). The second re-review's probes of
+§0.13's rev 4 rows (its scratch `probes/n`, copied to `$X/probes/n`, `$X` the
+rev 4 fixer's scratch) and the fold's (`$X/probes/f`), each a whole file; the
+re-review's other 34 n probes are its own and print the same on v13 and v14
+(§0.13). `Run` is the program's entry point, as in D.4.
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// === n/z1.carbon
+import Core library "io";
+class X { fn Make() -> i32 { return 45; } }
+class C(template T: type) { alias M = T.Make; }
+fn Run() -> i32 { Core.Print(C(X).M()); return 0; }
+
+// === n/z2.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = 7; static int Count() { return 5; } };
+template<> struct S<int> { static inline int v = 9; static int Count() { return 6; } };
+template<typename T> struct Box { using value_type = T; T value; };
+''';
+class C(template T: type) { alias A = Cpp.S(T).v; }
+fn Run() -> i32 { Core.Print(C(f64).A); return 0; }
+
+// === n/z2c.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = 7; static int Count() { return 5; } };
+template<> struct S<int> { static inline int v = 9; static int Count() { return 6; } };
+template<typename T> struct Box { using value_type = T; T value; };
+''';
+alias A = Cpp.S(f64).v;
+fn Run() -> i32 { Core.Print(A); return 0; }
+
+// === n/z3.carbon
+import Core library "io";
+class X { var n: i32; }
+class C(template T: type) { alias N = T.n; }
+fn Run() -> i32 { var x: X = {.n = 3}; Core.Print(x.(C(X).N)); return 0; }
+
+// === n/z4.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = 7; static int Count() { return 5; } };
+template<> struct S<int> { static inline int v = 9; static int Count() { return 6; } };
+template<typename T> struct Box { using value_type = T; T value; };
+''';
+class C(T: type) { alias A = Cpp.S(T).v; }
+fn Run() -> i32 { Core.Print(C(f64).A); return 0; }
+
+// === n/z6.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = 7; static int Count() { return 5; } };
+template<> struct S<int> { static inline int v = 9; static int Count() { return 6; } };
+template<typename T> struct Box { using value_type = T; T value; };
+''';
+class C(template T: type) { alias A = Cpp.S(T).v; }
+fn Run() -> i32 { let a: i32 = C(f64).A; Core.Print(a); return 0; }
+
+// === n/z7.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+class X { extend impl as HasN where .N = 5 {} }
+class C(template T: type) { alias A = T.N; fn F() -> i32 { return A; } }
+fn Run() -> i32 { Core.Print(C(X).F()); Core.Print(C(X).A); return 0; }
+
+// === n/z7a.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+class X { extend impl as HasN where .N = 5 {} }
+class C(template T: type) { alias A = T.N; fn F() -> i32 { return A; } }
+fn Run() -> i32 { Core.Print(C(X).F()); return 0; }
+
+// === n/z7b.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+class X { extend impl as HasN where .N = 5 {} }
+class C(template T: type) { alias A = T.N; }
+fn Run() -> i32 { Core.Print(C(X).A); return 0; }
+
+// === n/z8.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+class X { extend impl as HasN where .N = 5 {} }
+class C(template T: type) { alias A = T.N; }
+fn Run() -> i32 { let a: i32 = C(X).A; Core.Print(a); return 0; }
+
+// === n/z8c.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+class X { extend impl as HasN where .N = 5 {} }
+alias A = X.N;
+fn Run() -> i32 { let a: i32 = A; Core.Print(a); Core.Print(A); return 0; }
+
+// === n/i3.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = 7; static int Count() { return 5; } };
+template<> struct S<int> { static inline int v = 9; static int Count() { return 6; } };
+template<typename T> struct Box { using value_type = T; T value; };
+''';
+interface I(T: type) { alias N = Cpp.S(T).v; fn F() -> i32; }
+class X { extend impl as I(f64) { fn F() -> i32 { return 3; } } }
+fn Run() -> i32 { Core.Print(X.F()); Core.Print(I(f64).N); return 0; }
+
+// === f/f01.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias A = T.N; }
+class D(template U: type) { alias B = C(U).A; }
+fn Run() -> i32 { Core.Print(D(X).B); return 0; }
+
+// === f/f02.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(template T: type) { alias A = Cpp.S(T).Count(); }
+fn Run() -> i32 { Core.Print(C(f64).A); let a: i32 = C(i16).A; Core.Print(a); return 0; }
+
+// === f/f03.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(T: type) { alias A = Cpp.S(T).Count(); }
+fn Run() -> i32 { Core.Print(C(f64).A); let a: i32 = C(i16).A; Core.Print(a); return 0; }
+
+// === f/f04.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias A = T.Make(); }
+fn Run() -> i32 { Core.Print(C(X).A); return 0; }
+
+// === f/f05.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias B = T.Inner; }
+fn Run() -> i32 { var b: C(X).B = 3; Core.Print(b); return 0; }
+
+// === f/f06.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias A = T.N; }
+fn G[U: type](unused u: U) -> i32 { return C(X).A; }
+fn Run() -> i32 { Core.Print(G(true)); return 0; }
+
+// === f/f07.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias B = T.B; }
+fn Run() -> i32 { if (C(X).B) { Core.Print(1); } else { Core.Print(0); } return 0; }
+
+// === f/f08.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias A = T.N; }
+class D(template U: type) { alias B = C(U).A; }
+fn G(template U: type) -> i32 { return D(U).B; }
+fn Run() -> i32 { Core.Print(G(X)); return 0; }
+
+// === f/f09.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias A = T.N; }
+class D(template U: type) { alias B = C(U).A; fn F() -> i32 { return B; } }
+fn Run() -> i32 { Core.Print(D(X).F()); return 0; }
+
+// === f/f10.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(template T: type) { alias A = Cpp.S(T).v; }
+fn Run() -> i32 { var v: i32 = C(f64).A; Core.Print(v); v = C(i16).A; Core.Print(v); return 0; }
+
+// === f/f11.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(template T: type) { alias A = Cpp.S(T).Run(); }
+fn Run() -> i32 { Core.Print(C(f64).A); return 0; }
+
+// === f/f12.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias A = T.N; }
+class D(T: type) { alias B = C(T).A; }
+fn Run() -> i32 { Core.Print(D(X).B); return 0; }
+
+// === f/f13.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(template T: type) { alias A = Cpp.S(T).v; }
+fn Get(template T: type) -> i32 { return C(T).A; }
+fn Run() -> i32 { Core.Print(Get(f64)); Core.Print(C(f64).A); return 0; }
+
+// === f/f14.carbon
+import Core library "io";
+interface HasN { let N: i32; }
+interface HasB { let B: bool; }
+class X { extend impl as HasN where .N = 5 {} extend impl as HasB where .B = true {} fn Make() -> i32 { return 1; } alias Inner = i32; }
+class C(template T: type) { alias M = T.Make; }
+fn Run() -> i32 { let m: i32 = C(X).M(); Core.Print(m); return 0; }
+
+// === f/f15.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(T: type) { alias A = Cpp.S(T).v; }
+fn G[T: type](unused x: T) -> i32 { return C(T).A; }
+fn Run() -> i32 { Core.Print(G(1.0 as f64)); return 0; }
+
+// === f/f16.carbon
+import Core library "io";
+import Cpp inline '''
+template<typename T> struct S { static constexpr int v = sizeof(T); static constexpr int Count() { return sizeof(T) + 1; } static int Run() { return 3; } };
+''';
+class C(T: type) { alias A = Cpp.S(T).v; }
+fn G(template T: type) -> i32 { let a: i32 = C(T).A; return a; }
+fn Run() -> i32 { Core.Print(G(i16)); return 0; }
 ```
 
 <!-- google-doc-style-resume -->

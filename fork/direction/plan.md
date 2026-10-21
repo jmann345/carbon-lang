@@ -2027,7 +2027,7 @@ its other ten programs.
 
 | PR | Toolchain and prelude (+/-) | Goldens | Programs | Records and docs |
 | --- | --- | --- | --- | --- |
-| DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 | 9 refills, 569/628 lines | 1 (3/3) | loops.md, ledger, row :66 |
+| DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 | 9 refills, 554/628 lines (amended 2026-10-21, implementation-review fold: DR1A-m3; rev 3 read 569/628) | 1 (3/3) | loops.md, ledger, row :66 |
 | DR-1b | index.carbon 18/0, slice.carbon 7/2, buf.carbon 7/2, handle_index.cpp 39/17, core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines) | 2 and an oracle | slices.md, ledger, row :79 |
 | M-a, M-b, C-b at merge | handle_loop_statement.cpp (TP-1's 10 lines dropped), handle_index.cpp (C-b +16) | 4 refills measured, 4 predicted | none | merge records |
 | PR 62's W-322 commit | refutable_binding.cpp 0/19, cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1 | 1 deleted (681), 1 new (51) | 1 SKIPped | sum_types.md, row 68, plan (§1.7, §1.16, §3 item 8, C.5), decision log, ledger entry W-280 (amended 2026-10-21, review fold: RR1-M1) |
@@ -2108,8 +2108,15 @@ Collisions: §0.8. The rules at merge: §1.16.
     §5's measured rows exactly.
 5.  Mutants, each relinked over the PR's build with one translation unit
     changed, each expected to fail named goldens: DR-1a: the loop checker
-    passing `AddrOf` again (the nine goldens fail, and every `for` over a range
-    whose `Next` takes `ref` fails to compile through the thunk); DR-1b:
+    passing `AddrOf` again (measured on DR-1a's build: 1934 passed and 8
+    failed, the eight of the nine goldens that hold a `for`, check
+    for/actual.carbon having none, its lines moving with `Next`'s signature;
+    and every `for` over a range whose `Next` takes `ref` fails to compile at
+    the argument conversion, "cannot implicitly convert expression of type
+    `i32*` to `i32`" with the note "initializing function parameter" at the
+    impl's `ref cursor`, and no thunk note; rev 3 predicted the nine goldens
+    and a failure through the thunk; amended 2026-10-21, implementation-review
+    fold: DR1A-m3); DR-1b:
     `diagnose=true` on the `IndirectIndexWith` probe (operators/overloaded/index
     and index_with_prelude diagnose twice), the fallback to `IndexWith` removed
     (string_indexing and index_with_prelude fail), 230227264's call.cpp line
@@ -3083,6 +3090,44 @@ commit makes 133/0/22 (§0.8.2); C.6 rewrites it. (3) §0.8's PR 61 and CT-1 row
 said 230227264's call.cpp and convert.cpp hunks apply "with a three-way
 fallback"; they apply clean with `git apply --cached --check` onto every held
 head that has those files, corrected.
+
+## Implementation review fold record, DR-1a (2026-10-21)
+
+DR-1a's implementation review (§3 item 4, R29(c)) read the head after A-R,
+0ac137d9d, against upstream/trunk 503f09037 and returned APPROVE-WITH-FIXES:
+no BLOCKER, no MAJOR and three MINOR findings, all records only. Its probes
+and logs are in scratchpad/dr1-impl/revA. The fixer reproduced each finding
+against the tree, upstream/trunk 503f09037 (fetched 2026-10-21, unchanged
+since the review) and the stage logs before folding it (its scratch
+scratchpad/dr1-impl/fixA; EXPECTED, not of record, R9), and folded all
+three; none is rejected. Two fix commits, within §3 item 9's budget of three,
+and nothing is shrunk: 2481ed8f2 "DR-1a fix: loops.md takes the rest of
+df3cf9294's page edit" (DR1A-m1 and DR1A-m3's §2.1 cites) and "DR-1a fix:
+W-321's landed-site evidence and the plan's errata" (DR1A-m2, the rest of
+DR1A-m3 and this record). Neither changes a toolchain, golden or program file,
+so no fill commit is owed and stage A's build, fill, mutant and mirror stand;
+on the fold's tree, with the install at 0.0.0-0.dev+d0cfe8082: "file_test
+test mode on /home/user/carbon-dr: 1942 passed, 0 failed (exit 0, 44s)";
+conformance "PASS 128, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 150)", bullets 48 PASS, 0
+FAIL, 8 SKIP of 56; `runner.py --self-test`: 150 programs parsed, OK.
+
+<!-- google-doc-style-ignore -->
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| DR1A-m1 loops.md realigns only the two subsections | MINOR | yes: `git diff df3cf9294~1 a9943e467 -- docs/design/control_flow/loops.md` is the 7-line `while let` amendment alone, so the sentence at the plan state's :64-65, the `var` example and the temporaries paragraph (:75-84) were upstream's pre-df3cf9294 text, and the References list lacked proposal p007381 | Folded by the first fix commit: the page is upstream/trunk 503f09037's (unchanged since df3cf9294) with the `while let` amendment and C.9, 13 lines added against upstream and none removed; M-a's loops.md conflict is still one block, and DR-1a's side of it gives DR-1a's page (`git merge-file` against PR 56's and PR 57's heads, before and after the fold) | §1.15; §1.16 M-a; §2.1 |
+| DR1A-m2 W-321's evidence quotes the pointer-form sites after its discharge | MINOR | yes: the entries cite `fn Next(self, cursor: CursorType*)` at iterate.carbon:17 and the `AddrOf` at handle_loop_statement.cpp:256 and :267, while the tree has `ref cursor` at :17 and the call at :254-263 | Folded by the second fix commit: three landed-site entries appended (the 11 sites, the checker's call with `cursor_var_id` at :262, and loops.md:90) and a dated note marking the first ten entries as the sites at filing (toolchain 0bdce60a5) | C.2's W-321 as committed |
+| DR1A-m3 plan errata in §6, §8 item 5 and §2.1 | MINOR | yes: §0.6's numstat sums to 554/628; the mutant's log (stageA/logs/mut_a_nine.log) ran 9 tests with 1 passed, check for/actual.carbon, which has no `for` statement; the headings are at upstream's :74 and the fork's :86 at a9943e467 | Folded: §6 reads 554/628; §8 item 5 states the measured mutant (8 of 9 goldens, failing at the argument conversion with no thunk note); §2.1's cites corrected in the first fix commit, where rev 3's :64-65 is kept, being the plan state's line numbers | §2.1; §6; §8 item 5 |
+
+<!-- google-doc-style-resume -->
+
+Also recorded by the fold, outside the findings: A1's own gate was 1934
+passed and 8 failed, not §0.6's 1933 and 9 of v2, because A1 carries the four
+test sources (§3 item 3) and lower for/bindings changes only its source line;
+the four sources at f14ec0d3b fail on A1's build, bindings among them
+(stageA/logs/gate_preedit.log), which is §0.6's state before the sources were
+edited.
 
 ## Sign-off
 

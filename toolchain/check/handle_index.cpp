@@ -30,20 +30,22 @@ auto HandleParseNode(Context& /*context*/, Parse::IndexExprStartId /*node_id*/)
   return true;
 }
 
-// Performs an index with base expression `operand_inst_id` and
-// `operand_type_id` for types that are not an array. This checks if
-// the base expression implements the `IndexWith` interface; if so, uses the
-// `At` associative method, otherwise prints a diagnostic.
-static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
-                             SemIR::InstId operand_inst_id,
-                             SemIR::InstId index_inst_id) -> SemIR::InstId {
+// Performs an index with base expression `operand_inst_id` for types that are
+// not an array, using the `op_name` method of the interface `interface_name`.
+// On failure, returns an `ErrorInst`, and diagnoses unless `diagnose` is false.
+static auto PerformIndexOperator(Context& context, Parse::NodeId node_id,
+                                 CoreIdentifier interface_name,
+                                 CoreIdentifier op_name,
+                                 SemIR::InstId operand_inst_id,
+                                 SemIR::InstId index_inst_id, bool diagnose)
+    -> SemIR::InstId {
   SemIR::InstId args[] = {context.types().GetTypeInstId(
       context.insts().Get(index_inst_id).type_id())};
-  Operator op{.interface_name = CoreIdentifier::IndexWith,
+  Operator op{.interface_name = interface_name,
               .interface_args_ref = args,
-              .op_name = CoreIdentifier::At};
+              .op_name = op_name};
   return BuildBinaryOperator(context, node_id, op, operand_inst_id,
-                             index_inst_id);
+                             index_inst_id, diagnose);
 }
 
 // Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05). Returns whether
@@ -61,11 +63,11 @@ static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
 // up (never for an erroneous operand, which `BuildBinaryOperator` rejects
 // before any lookup).
 static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
+                             CoreIdentifier interface_name,
                              SemIR::TypeId operand_type_id,
                              SemIR::TypeId subscript_type_id)
     -> std::optional<bool> {
-  auto interface_inst_id =
-      TryLookupNameInCore(context, loc_id, CoreIdentifier::IndexWith);
+  auto interface_inst_id = TryLookupNameInCore(context, loc_id, interface_name);
   if (!interface_inst_id.has_value()) {
     return std::nullopt;
   }
@@ -123,7 +125,8 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
     -> std::optional<SemIR::TypeId> {
   auto loc_id = SemIR::LocId(node_id);
   auto has_literal_impl =
-      HasIndexWithImpl(context, loc_id, operand_type_id, literal_type_id);
+      HasIndexWithImpl(context, loc_id, CoreIdentifier::IndexWith,
+                       operand_type_id, literal_type_id);
   if (!has_literal_impl || *has_literal_impl) {
     return std::nullopt;
   }
@@ -146,8 +149,16 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
                                  context.ints().Add(64));
   context.inst_block_stack().PopAndDiscard();
+  // `IndexWith(i64)` is also implemented by `IndirectIndexWith`'s blanket
+  // `final` impl when the element is `Copy`; probe `IndirectIndexWith(i64)`
+  // first so that a non-`Copy` element is admitted too.
   auto has_i64_impl =
-      HasIndexWithImpl(context, loc_id, operand_type_id, i64_type_id);
+      HasIndexWithImpl(context, loc_id, CoreIdentifier::IndirectIndexWith,
+                       operand_type_id, i64_type_id);
+  if (has_i64_impl && !*has_i64_impl) {
+    has_i64_impl = HasIndexWithImpl(context, loc_id, CoreIdentifier::IndexWith,
+                                    operand_type_id, i64_type_id);
+  }
   if (!has_i64_impl || !*has_i64_impl) {
     return std::nullopt;
   }
@@ -212,8 +223,18 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
                                    index_inst_id, *target_type_id);
         }
       }
-      auto elem_id =
-          PerformIndexWith(context, node_id, operand_inst_id, index_inst_id);
+      // Per the design, prefer `IndirectIndexWith` if the type implements it,
+      // otherwise fall back to `IndexWith`.
+      // TODO: Use `IndexWith.Ref` when the operand is a durable reference.
+      auto elem_id = PerformIndexOperator(
+          context, node_id, CoreIdentifier::IndirectIndexWith,
+          CoreIdentifier::Ref, operand_inst_id, index_inst_id,
+          /*diagnose=*/false);
+      if (elem_id == SemIR::ErrorInst::InstId) {
+        elem_id = PerformIndexOperator(
+            context, node_id, CoreIdentifier::IndexWith, CoreIdentifier::At,
+            operand_inst_id, index_inst_id, /*diagnose=*/true);
+      }
       context.node_stack().Push(node_id, elem_id);
       return true;
     }

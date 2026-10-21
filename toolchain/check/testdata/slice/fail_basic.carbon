@@ -13,21 +13,6 @@
 // Fork (SL-1, fork/slices/plan.md §4.A): the pinned 0.1 limits of
 // `Core.Slice(T)`.
 
-// --- fail_write_through.carbon
-
-library "[[@TEST_NAME]]";
-
-// D-SL-3's pin: `s[i]` is a value expression (`IndexWith.At`), so a write
-// through a slice diagnoses `AssignmentToNonAssignable` "expression is not
-// assignable". The pin is deleted when `IndirectIndexWith`/`ref` returns land.
-fn W(s: Core.Slice(i32)) {
-  // CHECK:STDERR: fail_write_through.carbon:[[@LINE+4]]:3: error: expression is not assignable [AssignmentToNonAssignable]
-  // CHECK:STDERR:   s[0] = 5;
-  // CHECK:STDERR:   ^~~~
-  // CHECK:STDERR:
-  s[0] = 5;
-}
-
 // --- fail_subscript_i32.carbon
 
 library "[[@TEST_NAME]]";

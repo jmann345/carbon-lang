@@ -355,16 +355,16 @@ pointer-then-size layout so they stay hermetic (D-SL-14).
 Each limit is a deviation from the target design, with the condition under
 which it is removed:
 
--   **Slices are read-only; `s[i] = v` is an error.**
-    [Indexing](expressions/indexing.md) specifies a `Span` that implements
-    `IndirectIndexWith` with a `Ref` method returning `ref T`. The toolchain has
-    neither `IndirectIndexWith` nor `ref`-returning methods, and the prelude's
-    `IndexWith` has only `At`, so `s[i]` is a value expression and a write
-    through it diagnoses `AssignmentToNonAssignable`. There is also no
-    `Slice.Set`: a `Core.Slice(const T)` over C++ read-only memory would compile
-    its store against the unqualified symbolic `T` and fault at runtime. Removed
-    when `IndirectIndexWith` and `ref` returns land; `Core.Slice` then takes the
-    `Span` shape.
+> **Fork amendment (2026-10-21, DR-1b, D-DR-7).** Slices are writable:
+> `Core.Slice(T)` implements `IndirectIndexWith(i64)`, whose `Ref` returns
+> `ref T` (upstream core/prelude/operators/index.carbon:14-16;
+> docs/design/expressions/indexing.md), so `s[i]` is a durable reference and
+> `s[i] = v` writes through; `Core.Buf(T)` likewise, its storage being the heap
+> block a by-value `Buf` names (D-SL-6). A `Slice(const T)` is not writable
+> where `T` is known; a generic body's write instantiated at a `const` element
+> is W-327's. The literal-subscript rule stands in for `like i64` until `like`
+> lands (W-326).
+
 -   **`i32` subscripts need `as i64`.** Only an integer literal converts to the
     `i64` subscript type implicitly. Removed when integer subscript widening is
     specified (an `IndexWith(i32)` impl, or a subscript rule for all integer

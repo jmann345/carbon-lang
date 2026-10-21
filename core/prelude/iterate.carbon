@@ -81,8 +81,8 @@ impl forall [T: CppRange where .ValueType impls Copy]
   }
 }
 
-// `final`, as `Slice(T)`'s `IndexWith(i64)` impl is: iterating a `Slice(T)` in
-// a generic body yields `T`, not the abstract `Slice(T).(Iterate.ElementType)`.
+// `final`, as `Slice(T)`'s `IndirectIndexWith(i64)` impl is (D-DR-7): a generic
+// body iterating a `Slice(T)` gets `T`, not `Slice(T).(Iterate.ElementType)`.
 final impl forall [T: Copy & Destroy]
     Slice(T) as Iterate
     where .ElementType = T and .CursorType = i64 {

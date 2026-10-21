@@ -213,6 +213,18 @@ p002188:488-489 and pattern_matching.md:527-528 spell the empty value
 prelude declares and the toolchain's callers use, beside the choice identity
 those examples assume (W-177).
 
+Correction (2026-10-21, DR-0 D-DR-3, W-323): the sentence "p006357's ABI
+constraint and loops.md's `HasValue()`/`Get()` are kept" compared against the
+fork's copy of loops.md, not upstream's. At upstream-trunk 62f1cc6a3, which the
+paragraph names and which contains df3cf9294 (2026-10-07, proposal p007381),
+loops.md reads "is desugared to a loop that manages the cursor and checks the
+optional return values:" followed by `match (range.(Iterate.Next)(cursor)) {
+case .Some(<pattern>) => { <statements> } default => { break; } }` (upstream
+loops.md:109-122), so `HasValue()`/`Get()` were no longer upstream's text when
+this check was made. The fork's `for` keeps calling them until W-320 lands;
+under R32 the comparison is made against upstream's tip by sha, quoting the
+page.
+
 ## §0 Audit: what exists, what was measured, what is stale
 
 ### §0.1 Sub-feature table (verified in-tree at 9d3ca60a3)

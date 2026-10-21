@@ -457,6 +457,17 @@ safety design's examples EX-M-5 and EX-M-6, wait on W-177, which may close by
 [A class, not a choice](#a-class-not-a-choice); no redesign of `Core.Optional`
 as a choice comes from this design.
 
+> **Fork amendment (2026-10-21, DR-0 D-DR-1, DR-1).** Under fork/rulebook.md
+> R32, matchability is not a fork limit chosen here: upstream designs
+> `Optional`'s matching as a class implementing `Match`
+> (docs/design/sum_types.md), and the fork takes that route, not a `choice`
+> (DR-0 rejected the `choice` conversion). Its patterns are `.Some(<pattern>)`
+> and, because `None` is a function here, `.None()` (sum_types.md:214-222);
+> where this page says "`.Some` and `.None` patterns" it means those. W-177
+> closes with W-320, which waits on a conflict in upstream's own pages over how
+> `Match` declares `Continuation` (W-324), and the examples that match on
+> `Optional` wait with it.
+
 ## C++ interoperability
 
 A nullable C++ `T*` imports as `Core.Optional(T*)`, and `Core.Optional(T*)`

@@ -113,9 +113,15 @@ while (iter.HasValue()) {
 }
 ```
 
-> **Fork amendment (2026-10-13, F-015).** In the fork, `Core.Optional`'s API is
-> designed in [Optional](../optional.md): `HasValue()` and `Get()` above are
-> that API, and the toolchain's `for` calls them by name.
+> **Fork amendment (2026-10-13, F-015; corrected 2026-10-21, DR-0 D-DR-3).** The
+> desugaring above is the text this page had at the fork's cut. Upstream's
+> page, since df3cf9294 (2026-10-07, proposal p007381), desugars `for` to
+> `match (range.(Iterate.Next)(cursor)) { case .Some(<pattern>) => { ... }
+> default => { break; } }` with a `ref` cursor (upstream loops.md:116-120 at
+> ac31fd198). The fork's toolchain calls `Core.Optional`'s `HasValue()` and
+> `Get()` (designed in [Optional](../optional.md)), as upstream's checker does
+> under its TODO, until `Core.Optional` is matchable (W-320); those calls are
+> an implementation stage, not the design.
 
 ### `break`
 

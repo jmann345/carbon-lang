@@ -6547,6 +6547,60 @@ upstream lands its own (upstream's `TryMergeRedecl<Function>` growing a
 member-targeted entry point retires `MergeOverloadMemberRedecl`; upstream
 conditionalizing arm cleanups retires the W-122 guard). Veto-able.
 
+### Weekly upstream merge 2026-10-19: cut HOLDS a second post-advance week at 85 commits; a dry-run merge conflicts in 96 files; GitHub Actions on the fork is still DISABLED (2026-10-19)
+
+Measured from the main checkout with `git merge-tree --write-tree` against
+trunk 5674fe88b (no worktree is checked out or modified by that command;
+no staging branch was created or pushed): upstream trunk 3056e7e31
+(2026-10-19, "nvim: Only enable the integration in the carbon repository", PR
+7995) is 85 commits past the c1e83b0b7 cut, 49 of them since last week's
+62f1cc6a3; 1794 upstream files are touched since the cut, 791 files are
+modified by the fork since the cut, and 194 are in both sets; the dry-run
+merge conflicts in 96 files, 30 sources, X-macro definitions and editor
+grammars (check/call.cpp, core_identifier.def, cpp/import.cpp,
+cpp/thunk.cpp, custom_witness.cpp, eval_inst.cpp, handle_class.cpp,
+handle_function.cpp, handle_index.cpp, import_ref.cpp, node_stack.h,
+pattern_match.cpp, return.cpp, type_completion.cpp, diagnostics/kind.def,
+lower/file_context.cpp, lower/handle.cpp, lower/type.cpp, parse/node_ids.h,
+parse/state.def, sem_ir/function.h, inst_kind.def, inst_namer.cpp,
+mangler.cpp, stringify.cpp, type_info.cpp, type_iterator.cpp,
+typed_insts.h, and the two TextMate grammars) and 66 goldens, up from last
+week's 70 (22 and 48). The week's upstream commits that touch the fork's
+own ground, by subject: terse `=>` function bodies (PR 7895; W-037 lists
+them as stubbed in check), `-> auto` and `-> ref/var/val auto` deduced
+return types and calls to such generics (PRs 7931, 7977, 7981), the
+`IndirectIndexWith` prelude interface and its use for subscripting (PRs
+7974, 7975; SL-1's residue W-109 names that interface for write-through
+slice indexing), the fix for destroying function-local `var`s of choice
+types (PR 7941; the fork's choice payloads carry their own destroy
+synthesis from W5-S1), importing `CustomLayoutType` (PR 7958), the C++
+export fixes after a lookup failure and the Carbon package name in the
+exported C++ namespace (PRs 7933, 7984, 7935), diagnostics rendered
+through the terminal library (PR 7683), the variadics checking-versus-
+execution note (PR 7963, already cherry-picked by VA-1 on PR 59), and the
+`Carbon::` name-leakage fix across files (PR 7973). Each is a candidate to
+retire or re-express a fork mechanism at the next advance and is recorded
+here for that planning, not acted on.
+
+The cut holds. Merging 85 commits with a rename across sem_ir and the
+thunk, import and custom_witness re-expressions is a UA-1-shaped planned
+flow (two plan reviews, a focused re-review, an implementation review,
+fills), not a weekly-sized merge, and it cannot be verified of record:
+a `workflow_dispatch` of `Fork: hosted verification` (mode autoupdate, ref
+claude/carbon-fork-0-1-ua2) at 2026-10-19 14:10 UTC still returned
+"Actions has been disabled for this repository", the eleventh day of that
+state. The container-built arbiter that landed in the sessions since
+2026-10-12 (the carbonbuild scripts: a ninja build of the fork toolchain
+against the pinned llvm-project, file_test and the conformance runner) can
+measure such a merge but is not of record (R9), and ten PRs (PR 51 to PR
+60) are held open on trunk in the land order, each of which an advance
+would force onto a new base; so the advance (UA-3) is scheduled after the
+held PRs land, under the UA-1 flow, and this entry's conflict list is its
+starting audit. The daily Actions re-test routine, armed on 2026-10-12 to
+re-arm itself while Actions stayed disabled, stops with this weekly firing
+as its prompt provided; the weekly Routine's prompt is unchanged (D-UA-13)
+and its next firing re-measures and re-tests the Actions state.
+
 ### Weekly upstream merge 2026-10-12: first post-advance check; cut HOLDS one week at 36 commits; GitHub Actions on the fork is DISABLED (2026-10-12)
 
 Measured in a throwaway worktree off trunk 8068151ed: upstream trunk

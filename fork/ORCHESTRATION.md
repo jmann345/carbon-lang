@@ -10,43 +10,48 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
-the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
+Last updated: 2026-10-21 (SV-1's plan signed off at rev 5 and its implementation
+started; TP-1's round 10 fixed an externally found crash at the root and round
+11 is under review; see the paragraph dated 2026-10-21 below; the 2026-10-19
+text follows). 2026-10-19 (weekly check fired again: the cut HOLDS at 85
+upstream commits with 96 conflicting files and GitHub Actions on the repository
+is still DISABLED, see the paragraph dated 2026-10-19 below; the 2026-10-12 text
+follows). 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on the
+repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
 verification` returns "Actions has been disabled for this repository", the
 repository's own scheduled workflows last ran 2026-10-08, the repository is
 public, and this session has no access to repository settings — so under R28
-there is no autoupdate, gate or conformance arbiter at all. The session was
-also out of usage credits from 2026-10-06 04:30 UTC until this firing, and
-the container was recreated in between (worktrees, the clang-19 syntax
-harness and the bazel cache were lost; rebuilt: worktrees only). STATE: UA-2
-reconciliation on claude/carbon-fork-0-1-ua2 at ace101b0d is complete —
-three probes un-SKIPped and PASSING (templates_dependent_member,
-cpp_template_symbolic_arg, cpp_template_on_carbon_generic; the two Box(T)
-programs needed a constructor-initialized dependent `var` and a declared
-`Core.Copy`, root cause an upstream limitation of the REAL prelude's
-constrained `DefaultOrUnformed` impl, pinned by
-check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon),
-W-108 DISCHARGED on the fill (a `Core.Buf` field is freed through the
-owner's synthesized SubobjectDestroy; an owner with its own `impl as Destroy`
-still leaks — the 0.1 limit), ledger and gap re-cites done, of-record
-conformance run 37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56
-bullets — but its gate never ran: implementation review APPROVE-WITH-FIXES
-(nine findings, all folded in round 3, 05a5c30f7: of-record runs recorded,
-W-126 declared-owner leak and W-127 real-prelude `DefaultOrUnformed` limit
-filed, the prelude pin's failing split retriaged to `fail_todo_` with its
-CHECK lines cleared for the next refill); PR #51 is OPEN and HELD, not
-merged — land sequence once Actions returns: autoupdate (one split) → gate →
-conformance → merge. SC-1 (template structural conformance,
-W-027) plan rev 2 signed off at e612aebc6 on claude/carbon-fork-0-1-sc after
-two reviews (both APPROVE-WITH-AMENDMENTS); the commit-1 implementer died
-with the credits and is NOT relaunched: new toolchain code cannot be filled
-or gated. Weekly: upstream 62f1cc6a3 is 36 commits past the cut with 70
-conflicting files (a tree-wide `ParameterizedClassType` rename); the cut
-HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29: recorded,
-not asked): re-enable Actions on the repository, or permit the session's
-container to install bazelisk + LLVM 21.1.8 and build against upstream's
-public read-only bazel cache (the tool-permission layer declined that setup
-when attempted) — until one of these, no code lands. Next cron Monday
+there is no autoupdate, gate or conformance arbiter at all. The session was also
+out of usage credits from 2026-10-06 04:30 UTC until this firing, and the
+container was recreated in between (worktrees, the clang-19 syntax harness and
+the bazel cache were lost; rebuilt: worktrees only). STATE: UA-2 reconciliation
+on claude/carbon-fork-0-1-ua2 at ace101b0d is complete — three probes un-SKIPped
+and PASSING (templates_dependent_member, cpp_template_symbolic_arg,
+cpp_template_on_carbon_generic; the two Box(T) programs needed a
+constructor-initialized dependent `var` and a declared `Core.Copy`, root cause
+an upstream limitation of the REAL prelude's constrained `DefaultOrUnformed`
+impl, pinned by
+check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon), W-108
+DISCHARGED on the fill (a `Core.Buf` field is freed through the owner's
+synthesized SubobjectDestroy; an owner with its own `impl as Destroy` still
+leaks — the 0.1 limit), ledger and gap re-cites done, of-record conformance run
+37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56 bullets — but its gate
+never ran: implementation review APPROVE-WITH-FIXES (nine findings, all folded
+in round 3, 05a5c30f7: of-record runs recorded, W-126 declared-owner leak and
+W-127 real-prelude `DefaultOrUnformed` limit filed, the prelude pin's failing
+split retriaged to `fail_todo_` with its CHECK lines cleared for the next
+refill); PR #51 is OPEN and HELD, not merged — land sequence once Actions
+returns: autoupdate (one split) → gate → conformance → merge. SC-1 (template
+structural conformance, W-027) plan rev 2 signed off at e612aebc6 on
+claude/carbon-fork-0-1-sc after two reviews (both APPROVE-WITH-AMENDMENTS); the
+commit-1 implementer died with the credits and is NOT relaunched: new toolchain
+code cannot be filled or gated. Weekly: upstream 62f1cc6a3 is 36 commits past
+the cut with 70 conflicting files (a tree-wide `ParameterizedClassType` rename);
+the cut HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29:
+recorded, not asked): re-enable Actions on the repository, or permit the
+session's container to install bazelisk + LLVM 21.1.8 and build against
+upstream's public read-only bazel cache (the tool-permission layer declined that
+setup when attempted) — until one of these, no code lands. Next cron Monday
 2026-10-19; the owner's machine is never used.
 
 Later on 2026-10-12 (after the weekly stamp above): three PRs are OPEN and HELD
@@ -186,6 +191,89 @@ its implementation review pushed at 824f29c4e; its discharge is in progress
 and its PR opens after a focused re-review of the fix commits. Merge order: PR
 53, PR 51, PR 52, PR 60, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
 integration commit, PR 59, then TP-1. None is merged.
+
+Later on 2026-10-19 (14:10 UTC, weekly check fired): upstream trunk 3056e7e31
+is 85 commits past the c1e83b0b7 cut (49 since last week); a `git merge-tree`
+dry run against trunk 5674fe88b conflicts in 96 files, 30 sources and
+grammars and 66 goldens (decision-log entry "Weekly upstream merge
+2026-10-19"); the cut HOLDS, no staging branch was pushed, and the advance
+(UA-3) is scheduled after the held PRs land, under the UA-1 flow. A
+`workflow_dispatch` of `Fork: hosted verification` still returns "Actions
+has been disabled for this repository", so nothing is of record and the ten
+held PRs stay open; the daily Actions re-test routine ends with this firing
+as its prompt provided, and the weekly Routine re-tests. TP-1's focused
+re-review (round 1: review 1 APPROVE-WITH-FIXES with 2 MAJOR and 4 MINOR,
+review 2 REJECT with 1 BLOCKER, 2 MAJOR and 5 MINOR, both on bf8e1b4cc) is
+being folded by its fixer; its PR opens when a round is dry. SV-1 (the
+std::optional and std::variant interop mapping, W-011's open half, gap row
+68) is the next workstream, branch claude/carbon-fork-0-1-sv cut from
+5674fe88b, W-275 to W-294 and F-020 reserved; W-267 to W-274 are held for
+TP-1's re-review residues. Merge order unchanged: PR 53, PR 51, PR 52, PR
+60, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L integration
+commit, PR 59, then TP-1, then SV-1. None is merged.
+
+Later on 2026-10-20 (13:00 UTC): PR 61 (TP-1, claude/carbon-fork-0-1-tp, head
+e408ad4d6, 97 commits over 8bfd78ae3, its merge base with trunk: integrated
+templates, the W-014 slice with DD-1's W-183, W-192 and W-193 and UA-2's
+W-127, which land-time records discharge; template-dependent initializers,
+for loops, dereference, indexing and calls checked on instantiation,
+class-argument deduction, constraint lookup; toolchain at 813804758; W-250 to
+W-274 filed, W-272 discharged within TP-1; F-019 not minted; expected
+137/0/22 over 159, 48/56; gap row 54 stays PARTIAL) is OPEN and HELD,
+verified on the container-built toolchain (gate 1955/1955). Its
+implementation review REJECTed on a lowering crash; the fold's fix commits
+then had a focused re-review of nine rounds, each round two fresh reviews, a
+fixer and a records pass, every fix at its root cause (the last three: an
+action keeps a struct or tuple literal as its operand, so a deferred literal
+takes its class's defaults on instantiation; a class specific is resolved
+before a field default is read in it); round 9 was dry (both reviews, no
+MAJOR or BLOCKER, no toolchain change), so the PR opened. The description is
+the summary and the full verification record is its first comment (GitHub's
+description limit). `git merge-tree` of e408ad4d6 against trunk f3156a375
+conflicts in fork/ORCHESTRATION.md only (this file's TP-1 row and status
+paragraphs); against the held PRs in the record files, and with PR 60 in
+convert.cpp and member_access.cpp, each with its resolution in the PR body.
+SV-1 (the std::optional and std::variant interop mapping, W-011's open half,
+gap row 68) is planning on claude/carbon-fork-0-1-sv (fork/sumtype-interop/
+plan.md rev 1 under way; W-275 to W-294 and F-020 reserved). Merge order: PR
+53, PR 51, PR 52, PR 60, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
+integration commit, PR 59, PR 61 through its land-time commits (M over the
+merged trunk, S over SC-1, F6, the id re-scan, L with its document review,
+the records commit), then SV-1. None is merged.
+
+Later on 2026-10-21 (00:10 UTC): SV-1's plan (fork/sumtype-interop/plan.md on
+claude/carbon-fork-0-1-sv) is SIGNED OFF FOR IMPLEMENTATION at rev 5,
+30153bbc2, after five reviews (A REJECT with 13 findings, B REJECT with 17, the
+focused re-review of rev 2 REJECT with 6, of rev 3 REJECT with 6, of rev 4
+APPROVE-WITH-AMENDMENTS with 4; 46 findings, every one folded, none rejected;
+the plan's own prototype crashes in overload sets and on a VA-1 pack element
+were found and fixed by the reviews). F-020 is minted by the plan: a C++
+std::optional or std::variant keeps its imported class and converts by value,
+through its accessors, to and from a specific of a prelude generic choice in
+Core.CppCompat (StdOptional(T), StdVariant1 to StdVariant8, alternatives by C++
+index), which match and the other refutable contexts consume; the departure
+from SF-8's default lean is recorded for veto. W-275 to W-285 are used by the
+plan (W-278 withdrawn; W-282, W-283 and W-284 conditional) and W-286 to W-294
+held; row 68 is predicted PARTIAL on W-177 narrowed, W-011 discharged. The
+implementation workflow started at 00:00 UTC (C1 to C3 with fills, P, Doc, the
+held-state measurements on mirrors over PR 57, PR 60, PR 59 and PR 61, two
+implementation reviews, the fixer, R and D; M-VA, F-M and Doc-M are land-time
+commits after PR 61). TP-1: after PR 61 opened, SV-1's fixer found X-1, a match
+on a template-dependent choice that stopped the TP-1 compiler at
+pattern_match.cpp:1409 where trunk reports a TODO; round 10 fixed it at the
+root (eafca5cb9: the alternative pattern's name is resolved through the
+member-access action in the choice's definition, so a template-dependent
+specific's designator has the scrutinee's type and the program runs), both
+round-10 reviews found only MINORs (review 1 four, records only; review 2
+seven, one test-only), round 11 folds the test-only finding and is under
+review, and PR 61's description and first comment are re-posted from the
+branch when a round is dry. W-295 to W-299 are reserved to TP-1 for its
+round-10 and later residues: W-295 to W-297 are filed on its branch (crashes
+shared with trunk and the nightly, found by round 10 and its reviews), W-298
+and W-299 held. Merge order unchanged: PR 53, PR 51, PR 52, PR 60, PR 54, PR
+55, PR 56, PR 57, PR 58 through its state L integration commit, PR 59, PR 61
+through its land-time commits, then SV-1 through its land-time commits M,
+M-VA, F-M, Doc-M, R and D. None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -529,7 +617,8 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at 40a76ab81 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54. |
-| `claude/carbon-fork-0-1-tp` | IMPLEMENTED on the container toolchain, discharge in progress — TP-1 integrated templates (W-014, gap row 54), plan rev 3 signed off, commits C1 to C5, P and M pushed, the implementation review's fold pushed at 824f29c4e; PR after a focused re-review of the fix commits. |
+| `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs, round 11 under review; W-295..W-299 reserved to TP-1's later residues (W-295..W-297 filed on the branch); the description and first comment are re-posted when a round is dry; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
+| `claude/carbon-fork-0-1-sv` | IMPLEMENTING — SV-1 std::optional and std::variant interop mapping (W-011's open half, W5 slice 4, gap row 68), cut from 5674fe88b; fork/sumtype-interop/plan.md rev 5 (30153bbc2) SIGNED OFF after five reviews (46 findings folded); F-020 minted; W-275..W-285 used by the plan, W-286..W-294 held; implementation under way (C1..C3 with fills, P, Doc, held-state measurements, two implementation reviews, fixer, R, D); PR after the reviews, held open after PR 61. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

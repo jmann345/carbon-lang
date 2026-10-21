@@ -133,7 +133,7 @@ fn ReadVarTemplateWithConstructor() -> Cpp.Y* {
 // --- static_template.h
 
 struct StaticTmplX {
-  template<typename T> static T static_tmpl = T();
+  template<typename T> static inline T static_tmpl = T();
 };
 
 struct Y {

@@ -456,6 +456,13 @@ static auto DiagnoseNonConstantValue(Context& context, SemIR::LocId loc_id)
   context.emitter().Emit(loc_id, EvalRequiresConstantValue);
 }
 
+auto DiagnoseAliasRequiresConstantValue(Context& context, SemIR::LocId loc_id)
+    -> void {
+  CARBON_DIAGNOSTIC(AliasRequiresConstantValue, Error,
+                    "alias refers to a runtime value");
+  context.emitter().Emit(loc_id, AliasRequiresConstantValue);
+}
+
 // Gets a constant value for an `inst_id`, diagnosing when the input is not a
 // constant value.
 static auto RequireConstantValue(EvalContext& eval_context,
@@ -3769,6 +3776,19 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
                                          context.insts().Get(inst_id));
     CARBON_CHECK(const_id.has_value(), "Failed to evaluate {0} in eval block",
                  context.insts().Get(inst_id));
+    if (!const_id.is_constant()) {
+      // An alias of a template-dependent value is evaluated for each specific
+      // (`AddAliasCheckToCurrentGeneric`), where its value must be a constant,
+      // as `alias` requires where the value is known: a runtime value, such as
+      // a call to a non-constant function, is diagnosed the same way, and its
+      // uses in the specific are errors.
+      if (auto alias = context.insts().TryGetAs<SemIR::AliasBinding>(inst_id)) {
+        DiagnoseAliasRequiresConstantValue(
+            context, eval_context.GetDiagnosticLoc({alias->value_id, inst_id}));
+        MakeSpecificValueAnError(eval_context, alias->value_id);
+        const_id = SemIR::ErrorInst::ConstantId;
+      }
+    }
     if (const_id == SemIR::ErrorInst::ConstantId) {
       specific.SetHasError(region);
     }

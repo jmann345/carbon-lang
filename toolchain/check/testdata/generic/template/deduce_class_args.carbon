@@ -432,7 +432,7 @@ fn H(generic M: i32, x: i32) -> i32 {
   return Make(M, x);
 }
 
-// --- fail_todo_class_template_field_of_where_alias.carbon
+// --- class_template_field_of_where_alias.carbon
 library "[[@TEST_NAME]]";
 
 interface HasItem {

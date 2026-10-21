@@ -41,6 +41,116 @@ fn Use(s: Stack(i32)) -> i32 {
   return s.Peek();
 }
 
+// --- var_uninit_associated_type.carbon
+library "[[@TEST_NAME]]";
+
+interface Container {
+  let Elem: type;
+  fn Get(self) -> Elem;
+}
+
+class Ints {
+  var n: i32;
+  impl as Container where .Elem = i32 {
+    fn Get(self) -> i32 { return self.n; }
+  }
+}
+
+fn F[template T: Container](x: T) -> i32 {
+  var e: T.Elem;
+  e = x.Get();
+  return e + 1;
+}
+
+fn Use(n: Ints) -> i32 {
+  return F(n);
+}
+
+// --- class_alias_var_uninit.carbon
+library "[[@TEST_NAME]]";
+
+class X {
+  alias Inner = i32;
+}
+
+class C(template T: type) {
+  alias B = T.Inner;
+  fn Make() -> i32 {
+    var b: B;
+    b = 5;
+    return b;
+  }
+}
+
+fn Use() -> i32 {
+  return C(X).Make();
+}
+
+// --- class_alias_field_name.carbon
+library "[[@TEST_NAME]]";
+
+class X {
+  var n: i32;
+}
+
+// An alias of a name the template parameter declares, here a field, is not
+// converted to a value: its category is the field name's in each specific.
+class C(template T: type) {
+  alias N = T.n;
+  fn Get(x: T) -> i32 { return x.(N); }
+}
+
+fn Use() -> i32 {
+  return C(X).Get({.n = 7});
+}
+
+// --- fail_alias_of_template_call_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class X {
+  fn Make() -> i32 { return 1; }
+}
+
+// `alias A = X.Make();` is rejected where it is written, because the call is a
+// runtime value; the template's alias is rejected the same way for each
+// specific, in the class and in the member function that uses it.
+class C(template T: type) {
+  alias A = T.Make();
+  fn F() -> i32 { return A; }
+}
+
+fn Use() -> i32 {
+  return C(X).F();
+}
+
+// --- alias_constant_through_specific.carbon
+library "[[@TEST_NAME]]";
+
+interface HasN {
+  let N: i32;
+}
+
+class X {
+  extend impl as HasN where .N = 5 {}
+}
+
+// An alias of a template-dependent constant, named through a concrete
+// specific from a function that is not generic: the use's category is the
+// category of the alias's value in that specific, a constant, and not the
+// template's, whose value is known only for each specific.
+class C(template T: type) {
+  alias A = T.N;
+}
+
+fn Take(n: i32) -> i32 { return n; }
+
+//@dump-sem-ir-begin
+fn Use() -> i32 {
+  let a: i32 = C(X).A;
+  return Take(C(X).A) + a;
+}
+//@dump-sem-ir-end
+
 // --- fail_var_uninit_tuple_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 

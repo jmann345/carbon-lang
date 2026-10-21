@@ -18,7 +18,7 @@ struct B {};
 template<typename T> T var = {};
 
 struct Wrap {
-  template<typename T> static T var = {};
+  template<typename T> static inline T var = {};
 };
 
 // --- use_var_template.carbon
@@ -33,6 +33,22 @@ let pb: Cpp.B* = &Cpp.r#var(Cpp.B);
 let pwa: Cpp.A* = &Cpp.Wrap.r#var(Cpp.A);
 let pwb: Cpp.B* = &Cpp.Wrap.r#var(Cpp.B);
 //@dump-sem-ir-end
+
+// --- non_inline_static.h
+
+struct A {};
+
+struct Wrap {
+  template<typename T> static T var = {};
+};
+
+// --- fail_non_inline_static_member_template.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "non_inline_static.h";
+
+let pwa: Cpp.A* = &Cpp.Wrap.r#var(Cpp.A);
 
 // CHECK:STDOUT: --- use_var_template.carbon
 // CHECK:STDOUT:

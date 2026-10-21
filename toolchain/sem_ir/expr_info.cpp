@@ -117,9 +117,13 @@ static auto GetExprCategoryImpl(const File* ir, InstId inst_id,
             return ExprCategory::ReprInitializing;
           }
         }
-      } else if constexpr (std::same_as<TypedInstT, SpecificInst>) {
+      } else if constexpr (std::same_as<TypedInstT, SpecificInst> ||
+                           std::same_as<TypedInstT, SpecificConstant>) {
         // Switch to looking at the inner instruction and its specific, which is
-        // known to be from the current IR.
+        // known to be from the current IR. The inner instruction of a
+        // `SpecificConstant` belongs to the generic of its specific, and its
+        // category can be known only there: `C(X).A` names an alias whose value
+        // is template dependent in `C`, and a value in the specific `C(X)`.
         inst_id = inst.inst_id;
         specific_id = inst.specific_id;
         specific_ir = ir;

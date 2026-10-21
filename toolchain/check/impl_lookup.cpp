@@ -583,11 +583,20 @@ static auto NamesTemplateBinding(Context& context, SemIR::InstId inst_id)
     if (!id.has_value() || llvm::is_contained(visited, id)) {
       return;
     }
-    if (!context.constant_values().Get(id).is_symbolic()) {
+    auto const_id = context.constant_values().Get(id);
+    if (!const_id.is_symbolic()) {
       return;
     }
     visited.push_back(id);
     worklist.push_back(id);
+    // An instruction of a generic's body, such as a name reference to an
+    // alias, `B` for `alias B = Cpp.Box(T);`, reaches what it names through
+    // its constant value, not through its operands.
+    auto const_inst_id = context.constant_values().GetInstId(const_id);
+    if (!llvm::is_contained(visited, const_inst_id)) {
+      visited.push_back(const_inst_id);
+      worklist.push_back(const_inst_id);
+    }
   };
   auto push_specific = [&](SemIR::SpecificId specific_id) {
     if (specific_id.has_value()) {
@@ -604,12 +613,28 @@ static auto NamesTemplateBinding(Context& context, SemIR::InstId inst_id)
         return true;
       }
     }
+    // A symbolic argument of a C++ template name, which
+    // `PerformCallToNonFunction` (call.cpp) wraps so that it is evaluated as a
+    // template: the specialization it names is formed only on instantiation.
+    if (inst.Is<SemIR::TemplateInst>()) {
+      return true;
+    }
     for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
       if (auto id = arg.TryAs<SemIR::InstId>()) {
+        push(*id);
+      } else if (auto id = arg.TryAs<SemIR::MetaInstId>()) {
+        // An action's operand: a type that an action forms, such as a C++
+        // template's specialization or a member of a template parameter.
         push(*id);
       } else if (auto id = arg.TryAs<SemIR::TypeInstId>()) {
         push(*id);
       } else if (auto id = arg.TryAs<SemIR::InstBlockId>()) {
+        if (id->has_value()) {
+          for (auto elem_id : context.inst_blocks().Get(*id)) {
+            push(elem_id);
+          }
+        }
+      } else if (auto id = arg.TryAs<SemIR::MetaInstBlockId>()) {
         if (id->has_value()) {
           for (auto elem_id : context.inst_blocks().Get(*id)) {
             push(elem_id);

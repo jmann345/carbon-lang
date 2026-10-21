@@ -3017,17 +3017,27 @@ auto PerformAction(Context& context, SemIR::SpecificId specific_id,
     }
     storage_id = splice_block.result_id;
   }
+  auto target_type_id =
+      context.types().GetTypeIdForTypeInstId(target_bundle.target_type_inst_id);
+  // A `return` of a template-dependent type initializes the function's return
+  // slot (`InitializeExisting`), which a specific has only when the returned
+  // type is initialized in place; for any other type the initializer makes its
+  // own storage, as the same `return` does where the type is not dependent.
+  bool has_storage = !context.insts().Is<SemIR::OutParam>(storage_id) ||
+                     SemIR::InitRepr::ForType(context.sem_ir(), target_type_id)
+                         .MightBeInPlace();
   auto specific_storage_id =
-      AddSpecificInstToPendingBlock(target_block, storage_id, specific_id);
-  ConversionTarget target = {
-      .kind = ConversionTarget::Kind(target_bundle.in_place.ToBool()
-                                         ? ConversionTarget::InPlaceInitializing
-                                         : ConversionTarget::Initializing),
-      .type_id = context.types().GetTypeIdForTypeInstId(
-          target_bundle.target_type_inst_id),
-      .storage_id = specific_storage_id,
-      .storage_access_block = &target_block,
-      .template_storage_args = result_ids};
+      has_storage
+          ? AddSpecificInstToPendingBlock(target_block, storage_id, specific_id)
+          : SemIR::InstId::None;
+  ConversionTarget target = {.kind = ConversionTarget::Kind(
+                                 target_bundle.in_place.ToBool() && has_storage
+                                     ? ConversionTarget::InPlaceInitializing
+                                     : ConversionTarget::Initializing),
+                             .type_id = target_type_id,
+                             .storage_id = specific_storage_id,
+                             .storage_access_block = &target_block,
+                             .template_storage_args = result_ids};
 
   // Form a specific initializer and initialize from it.
   auto expr_id = AddSpecificInst(context, action.init_id, specific_id);

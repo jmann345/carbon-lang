@@ -114,6 +114,13 @@ import Cpp library "sum.h";
 // The mock `optional<const int>` is trivially copyable, so the qualified
 // alternative is the rule that fails (§1.3 rule 3).
 fn F() {
+  // CHECK:STDERR: fail_todo_qualified_alternative.carbon:[[@LINE+7]]:9: error: C++ type `std::optional<const int>` has no Carbon sum type [CppSumTypeNotMapped]
+  // CHECK:STDERR:   match (Cpp.MakeConst()) {
+  // CHECK:STDERR:         ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_qualified_alternative.carbon:[[@LINE+4]]:9: note: alternative 0 has qualified or reference type `const int` [CppSumTypeQualifiedAlternative]
+  // CHECK:STDERR:   match (Cpp.MakeConst()) {
+  // CHECK:STDERR:         ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   match (Cpp.MakeConst()) {
     default => {}
   }
@@ -127,6 +134,13 @@ import Cpp library "sum.h";
 
 // A class with a non-trivial destructor (§1.3 rule 1).
 fn N() {
+  // CHECK:STDERR: fail_todo_non_trivial.carbon:[[@LINE+7]]:9: error: C++ type `std::optional<NonTrivial>` has no Carbon sum type [CppSumTypeNotMapped]
+  // CHECK:STDERR:   match (Cpp.MakeNonTrivial()) {
+  // CHECK:STDERR:         ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_non_trivial.carbon:[[@LINE+4]]:9: note: `std::optional<NonTrivial>` is not trivially copyable and trivially destructible [CppSumTypeNotTriviallyCopyable]
+  // CHECK:STDERR:   match (Cpp.MakeNonTrivial()) {
+  // CHECK:STDERR:         ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   match (Cpp.MakeNonTrivial()) {
     default => {}
   }
@@ -140,6 +154,10 @@ import Cpp library "sum.h";
 
 // A C++ sum type converts only to its own Carbon sum type.
 fn G() {
+  // CHECK:STDERR: fail_conversion_mismatch.carbon:[[@LINE+4]]:51: error: C++ type `std::optional<int>` converts only to its own Carbon sum type `Core.CppCompat.StdOptional(i32)` or to the `Core.Optional` of its payload, not to `Core.CppCompat.StdOptional(i64)` [CppSumTypeMismatch]
+  // CHECK:STDERR:   let unused s: Core.CppCompat.StdOptional(i64) = Cpp.MakeOptional(1);
+  // CHECK:STDERR:                                                   ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused s: Core.CppCompat.StdOptional(i64) = Cpp.MakeOptional(1);
 }
 
@@ -151,6 +169,14 @@ import Cpp library "sum.h";
 
 // A `std::optional<int>` converts in one step to `Core.Optional(i32)` only.
 fn H() {
+  // CHECK:STDERR: fail_core_optional_mismatch.carbon:[[@LINE+8]]:38: error: C++ type `std::optional<int>` converts only to its own Carbon sum type `Core.CppCompat.StdOptional(i32)` or to the `Core.Optional` of its payload, not to `Core.Optional(i64 as Core.OptionalStorage)` [CppSumTypeMismatch]
+  // CHECK:STDERR:   let unused o: Core.Optional(i64) = Cpp.MakeOptional(1);
+  // CHECK:STDERR:                                      ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/cpp/sum.carbon:30:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: choice CppCompat.StdOptional(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused o: Core.Optional(i64) = Cpp.MakeOptional(1);
 }
 
@@ -172,11 +198,19 @@ import Cpp library "sum.h";
 
 // A `Core.CppCompat` sum type in a signature that C++ calls is not exported;
 // the C++ class is the exportable spelling.
+// CHECK:STDERR: fail_todo_export_sum_type.carbon:[[@LINE+4]]:1: error: semantics TODO: `failed to map Carbon return type to C++ type` [SemanticsTodo]
+// CHECK:STDERR: fn MakeView(x: i32) -> Core.CppCompat.StdOptional(i32) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn MakeView(x: i32) -> Core.CppCompat.StdOptional(i32) {
   return Core.CppCompat.StdOptional(i32).Some(x);
 }
 
 inline Cpp '''
+// CHECK:STDERR: fail_todo_export_sum_type.carbon:[[@LINE+4]]:28: error: no member named 'MakeView' in namespace 'Carbon' [CppInteropParseError]
+// CHECK:STDERR:    21 | inline int Use() { Carbon::MakeView(3); return 1; }
+// CHECK:STDERR:       |                            ^~~~~~~~
+// CHECK:STDERR:
 inline int Use() { Carbon::MakeView(3); return 1; }
 ''';
 
@@ -190,6 +224,14 @@ import Cpp library "sum.h";
 // to another specialization through C++'s converting constructor, which would
 // narrow or widen the payload silently (§1.5).
 fn L() -> i64 {
+  // CHECK:STDERR: fail_reverse_other_specialization.carbon:[[@LINE+8]]:23: error: `Core.CppCompat.StdOptional(i32)` converts to C++ only as the `std::optional` or `std::variant` whose Carbon sum type it is, not to `std::optional<long>` [CppSumTypeReverseMismatch]
+  // CHECK:STDERR:   return Cpp.TakeLong(Core.CppCompat.StdOptional(i32).Some(3));
+  // CHECK:STDERR:                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_reverse_other_specialization.carbon:[[@LINE-9]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./sum.h:80:42: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: inline auto TakeLong(std::optional<long> o) -> long {
+  // CHECK:STDERR:                                          ^
+  // CHECK:STDERR:
   return Cpp.TakeLong(Core.CppCompat.StdOptional(i32).Some(3));
 }
 
@@ -201,6 +243,14 @@ import Cpp library "sum.h";
 
 // Nor to a class with a converting constructor from that class.
 fn W() -> i32 {
+  // CHECK:STDERR: fail_reverse_converting_class.carbon:[[@LINE+8]]:26: error: `Core.CppCompat.StdOptional(i32)` converts to C++ only as the `std::optional` or `std::variant` whose Carbon sum type it is, not to `Wrapper` [CppSumTypeReverseMismatch]
+  // CHECK:STDERR:   return Cpp.TakeWrapper(Core.CppCompat.StdOptional(i32).Some(3));
+  // CHECK:STDERR:                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_reverse_converting_class.carbon:[[@LINE-7]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./sum.h:89:33: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: inline auto TakeWrapper(Wrapper w) -> int { return w.n; }
+  // CHECK:STDERR:                                 ^
+  // CHECK:STDERR:
   return Cpp.TakeWrapper(Core.CppCompat.StdOptional(i32).Some(3));
 }
 
@@ -213,6 +263,10 @@ import Cpp library "sum.h";
 // A C++ sum class inside a tuple scrutinee is not converted (§1.11).
 fn T() {
   let t: (Cpp.std.optional(i32), i32) = (Cpp.MakeOptional(1), 2);
+  // CHECK:STDERR: fail_todo_tuple_scrutinee.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
+  // CHECK:STDERR:   match (t) {
+  // CHECK:STDERR:         ^~~
+  // CHECK:STDERR:
   match (t) {
     default => {}
   }
@@ -229,6 +283,10 @@ import Cpp library "sum.h";
 // existing conditional-operand cleanup TODO (§1.11).
 fn I(c: bool) {
   let unused s: Core.CppCompat.StdOptional(i32) =
+      // CHECK:STDERR: fail_todo_if_arm.carbon:[[@LINE+4]]:12: error: semantics TODO: `destroying temporaries of a conditionally evaluated operand whose value is not passed by copy` [SemanticsTodo]
+      // CHECK:STDERR:       if c then Cpp.MakeOptional(1) else Cpp.MakeOptional(0);
+      // CHECK:STDERR:            ^~~~~~~~~~~~~~~~~~~~~~~~
+      // CHECK:STDERR:
       if c then Cpp.MakeOptional(1) else Cpp.MakeOptional(0);
 }
 
@@ -245,6 +303,13 @@ fn Pass[template T: type](x: T) -> Core.CppCompat.StdOptional(i32) {
 }
 
 fn U() {
+  // CHECK:STDERR: fail_todo_template_conversion.carbon:[[@LINE+7]]:51: error: unable to monomorphize specific `Pass(Cpp.std.__1.optional)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   let unused s: Core.CppCompat.StdOptional(i32) = Pass(Cpp.MakeOptional(1));
+  // CHECK:STDERR:                                                   ^~~~
+  // CHECK:STDERR: fail_todo_template_conversion.carbon:[[@LINE-7]]:3: note: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` outside a function body (at file scope, or deferred to a template's instantiation)` [SemanticsTodo]
+  // CHECK:STDERR:   return x;
+  // CHECK:STDERR:   ^~~~~~~~~
+  // CHECK:STDERR:
   let unused s: Core.CppCompat.StdOptional(i32) = Pass(Cpp.MakeOptional(1));
 }
 
@@ -268,6 +333,24 @@ inline auto Put(std::optional<int>&& o) -> int {
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_rvalue_ref_param.carbon:[[@LINE+18]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./sink.h:4:45: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` with no source expression` [SemanticsTodo]
+// CHECK:STDERR: inline auto TakeRvalue(std::optional<int>&& o) -> int {
+// CHECK:STDERR:                                             ^
+// CHECK:STDERR: fail_todo_rvalue_ref_param.carbon:[[@LINE+14]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./sink.h:4:45: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: inline auto TakeRvalue(std::optional<int>&& o) -> int {
+// CHECK:STDERR:                                             ^
+// CHECK:STDERR:
+// CHECK:STDERR: fail_todo_rvalue_ref_param.carbon:[[@LINE+9]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./sink.h:12:38: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` with no source expression` [SemanticsTodo]
+// CHECK:STDERR: inline auto Put(std::optional<int>&& o) -> int {
+// CHECK:STDERR:                                      ^
+// CHECK:STDERR: fail_todo_rvalue_ref_param.carbon:[[@LINE+5]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./sink.h:12:38: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: inline auto Put(std::optional<int>&& o) -> int {
+// CHECK:STDERR:                                      ^
+// CHECK:STDERR:
 import Cpp library "sink.h";
 
 // A sum value or `Core.Optional` passed to a C++ `T&&` parameter, alone or the

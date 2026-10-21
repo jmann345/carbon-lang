@@ -6909,3 +6909,137 @@ User approved adding `carbon-language/carbon-lang` to the session to
 download the nightly prebuilt toolchain tarball (Linux x86_64). This
 arbitrates _language behavior_ while our fork's tree equals upstream
 trunk; it cannot execute fork-local compiler changes — see OPEN F-005.
+
+### SV-1 / F-020: `std::optional` and `std::variant` interop mapping (2026-10-21)
+
+Gap row 68 ("Control flow: matching — sum-type consumption incl.
+std::variant/std::optional interop") stays PARTIAL on W-177 (narrowed); W-011
+is DISCHARGED: its arbiter, a Carbon match over an imported std::optional or
+std::variant, runs in match_sum_type_payload (un-SKIPped) and in four
+differential programs and a library program against C++ oracles. The
+expected conformance scoreboard is 134 / 0 / 21 over 155, 48/56 bullets,
+container-built and not of record (Actions disabled, R9, R28). Landed on
+claude/carbon-fork-0-1-sv in the commits fork/sumtype-interop/plan.md §3
+fixes: eeb7ce662 (C1), f4aa7e941 (F1), 089b30191 (C2), d31ee257a (F2),
+ab0b4951a (C3), eb0488e70 (F3), 129a6f50b (P), 8243dbe97 (Doc), f30429458
+(M, the merge of trunk 481f05612), 6efb8345b (the held-state measurements),
+a4d979619 and a0669750a (the implementation-review fix and its fill),
+dff9f756b (M again, the merge of trunk d9f346f53), fbe2a55f7 (the fold's
+records), c00beaf60 (R) and D, the commit that writes this entry, after the
+plan's 3287b1072 (rev 1), 4d85d14fe (rev 2, reviews A and B folded),
+4eef66632 (rev 3, the focused re-review of rev 2 folded), 66deca5ce (rev 4,
+the focused re-review of rev 3 folded) and 30153bbc2 (rev 5, the focused
+re-review of rev 4 folded, signed off) and the amendments at implementation
+in 6efb8345b (the held-state measurements) and fbe2a55f7 (the
+implementation-review fold).
+
+**Veto digest** (R29(a), for the owner):
+
+-   **F-020** (minted here): a C++ `std::optional`/`std::variant` keeps its
+    class and maps by value to a specific of a prelude generic `choice` in
+    `Core.CppCompat` (`StdOptional(T)`, `StdVariant1..8`, `.Alt<i>` by
+    index). This **departs from SF-8's default lean** (the anonymous,
+    synthesized-choice mapping): the types are nameable, and a variant built
+    in Carbon or carried by a Carbon library API spells one, which is SF-8's
+    option (b) in substance. Justification: no `choice` exists without a
+    source declaration, a specific is one type across files and libraries
+    where an anonymous entity could not appear in a library signature, and
+    upstream's own sketch is a per-arity generic choice (p0157). It adopts
+    SF-9's option (b) cost, a second Optional beside the class, bounded by
+    the one-step conversions and the view. It amends F-015 (above). Break
+    condition: the owner's veto of nameable sum types (they then move to a
+    namespace user code cannot name), variadic choices, the `Match`
+    interface, a choice-based `Core.Optional`, or an upstream mapping.
+-   **D-SV-2**: alternatives named by C++ index; `std::monostate` is `()`;
+    1 to 8 alternatives; nesting by pointer only.
+-   **D-SV-3**: admitted = a trivially copyable and destructible class whose
+    alternatives are unqualified and SF-6 payloads; else
+    `CppSumTypeNotMapped` with a note.
+-   **D-SV-4**: conversion in `PerformBuiltinConversion` and the scrutinee
+    gate; a conversion a caller only tests (an `overload fn` probe, its
+    aggregate element conversions included, which `ConvertAggregateElement`
+    now marks non-diagnosing too) builds nothing and is decided from the
+    types alone, so a point where the conversion cannot be built (file
+    scope, a template's instantiation) is the call's TODO and never selects
+    another member; a template-dependent side is left to instantiation; a
+    pack element, or what a conversion projects from one, is a TODO.
+-   **D-SV-5**: Carbon to C++ only to the class whose sum type the value is
+    (`CppSumTypeReverseMismatch` otherwise); a fresh value passed to a C++
+    `T&&` parameter is a TODO (W-285).
+-   **D-SV-6**: the shared scrutinee gate converts; `ref` bindings (W-280)
+    and nested C++ classes (W-281) are not consumed.
+-   **D-SV-7**: the `Core.Optional` bridge, the one-step conversions, and
+    the view for concrete scalar and pointer payloads; W-177 narrowed.
+-   **D-SV-8**: `Core.Optional(T*)` admitted as a choice payload by name;
+    nothing else changes at the predicate's four sites.
+-   **D-SV-9**: a constant GEP into a value constant uses
+    `FileContext::GetConstant`'s cached global (fixes a lowering crash on
+    every constant choice scrutinee).
+-   **D-SV-10**: generics, libraries, constants and overload sets work;
+    deduction does not see through the conversion; template conversions are
+    W-279.
+-   **D-SV-11** to **D-SV-16**: eight diagnostic kinds; eight goldens and
+    one split; one un-SKIP and five programs; the sum_types.md section,
+    unions.md link and optional.md amendment; merge after PR 61; the row
+    rule (PARTIAL predicted on W-177).
+
+V-3 holds: no accepted proposal or leads' direction is contradicted
+(upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
+Two divergences are disclosed: the sum types are fork prelude names, and the
+view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
+W-280, W-281, W-285, W-286; W-284 held until M-VA lands; W-282 unused (X-1
+fixed by TP-1 at eafca5cb9); W-278 withdrawn unfiled; W-283 and W-287 to W-294
+unused.
+
+**Focused re-review of the fold, round 1** (2026-10-21). Two fresh reviews of
+the fold's commits and of R and D, at 21060cef4, both APPROVE-WITH-FIXES with
+no BLOCKER or MAJOR: review 1 (soundness) three MINORs, all records only, dry;
+review 2 (strictness) six MINORs, one of them not records only, so the round
+is not dry. Eight distinct findings (the nested
+`Core.Optional(Core.Optional(i32*))` pin is in both). The records commit that
+records the round folds the seven records-only ones in the plan, this entry's
+id list (the W-282 and W-284 clauses above, with C.8's new slots), W-011's
+note and fork/ORCHESTRATION.md: F-M gains a nested-pointer program leg at land
+time, W-282 stays conditional on x19 at land time, the land-time records
+commit is listed in full, and the PR texts gain the merge-tree conflict table.
+The eighth, RR1r2-m1, needs a golden split: no golden pins the branch of the
+RV1-B1 fix that a class which cannot be instantiated takes, and a mutant that
+ignores the instantiation's result brings the clang abort back; it goes to
+round 2's fixer, and round 2 is owed (fork/sumtype-interop/plan.md, "Focused
+re-review of the fold, round 1 (2026-10-21)"). No id filed; W-286 to W-294
+stay held. Measured on the records commit's tree, EXPECTED and not of record:
+file_test 1950 of 1950, conformance 134/0/21 over 155, 48 of 56 bullets.
+
+**Focused re-review of the fold, round 2** (2026-10-21). Round 2's fixer folds
+RR1r2-m1 with no toolchain, core or program change: two splits of
+stdlib/fail_sum_types.carbon, `fail_incomplete_specialization` and
+`fail_undefined_explicit_specialization`, pin a `std::optional` or
+`std::variant` that cannot be instantiated (one with no definition: the
+template, an explicit or a partial specialization declared and not defined) in
+both directions, with trunk's diagnostics, since C++ cannot pass such a value
+either. They kill the mutant that ignores the instantiation's result (M26) with
+M23, and M25, which the implementation-review fold recorded as surviving: a C++
+value of such a class converted to its sum type reaches the test that M25
+removes, whose definition half is load-bearing (the completion call before it is
+defensive: M27, which removes that call alone, survives). The fixer's probes
+also found a trunk crash on invalid programs, the `Destroy` witness of an
+incomplete C++ class (impl_lookup.cpp's `BuildCppDestroyWitness`, which a
+conversion to `Core.Optional(T)` reaches), on trunk, the nightly, every held
+PR's toolchain and SV-1 alike; it is filed as W-286 (trunk-origin; the id list
+above), not fixed in SV-1: an incomplete type does not satisfy `Core.Destroy`,
+as the Carbon twin's diagnostic shows, and the fix, measured on a relinked
+variant, returns no witness for such a class. The four composition mirrors (PR
+57, PR 61, PR 59 with M-VA, PR 60), rebuilt with the round's goldens, are red
+only on the refills predicted at the fold, and the round-2 splits pass on each.
+The round's two fresh reviews, of the fix and of its records commit, both
+returned APPROVE-WITH-FIXES with no BLOCKER or MAJOR: review 1 (soundness) three
+MINORs and review 2 (strictness) five, all records only, both dry. The records
+commit that records them folds all eight: a specialization whose instantiation
+fails with an error is recorded as offered, with clang's error first; W-286's
+reason, twin, fix and evidence (the held PRs' heads) are corrected; the
+per-round sentences of W-011's notes and these per-round paragraphs gain their
+Appendix C rule; and the plan, the SV-1 Branches row and the PR texts are made
+consistent. **Round 2 is dry** (fork/sumtype-interop/plan.md, "Focused re-review
+of the fold, round 2 (2026-10-21)"). Measured on the fix commit's tree and again
+on the records commit's, EXPECTED and not of record: file_test 1950 of 1950,
+conformance 134/0/21 over 155, 48 of 56 bullets.

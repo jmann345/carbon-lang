@@ -11,8 +11,9 @@ branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
 Last updated: 2026-10-21 (TP-1's round 11 is dry and PR 61's description and
-first comment are re-posted at 5661a35c8; SV-1's plan signed off at rev 5 and
-its implementation under way; see the two paragraphs dated 2026-10-21 below; the
+first comment are re-posted at 5661a35c8; SV-1 is implemented and held with no
+PR, round 2 of its focused re-review dry; see the six paragraphs dated
+2026-10-21 below; the
 2026-10-19 text follows). 2026-10-19 (weekly check fired again: the cut HOLDS at
 85 upstream commits with 96 conflicting files and GitHub Actions on the
 repository is still DISABLED, see the paragraph dated 2026-10-19 below; the
@@ -297,6 +298,101 @@ and Doc pushed at 8243dbe97: gate 1950 of 1950, conformance 134/0/21 over 155
 as predicted; M, the records-only merge of trunk 481f05612, at f30429458; the
 mutants and the composition mirrors under way). Merge order unchanged. None
 is merged.
+
+Later on 2026-10-21 (04:40 UTC): SV-1 (claude/carbon-fork-0-1-sv,
+fork/sumtype-interop/plan.md rev 5 30153bbc2, W-011's open half, gap row 68) is
+IMPLEMENTED AND HELD, no PR yet. The commits: C1 eeb7ce662 (the nine
+`Core.CppCompat` choices and two bridge impls in the prelude, nullable pointer
+payloads, constant aggregates in lowering), C2 089b30191 (the by-value
+conversions both ways and the scrutinee gate), C3 ab0b4951a (the one-step
+`Core.Optional` conversions and its `StdOptional` view), each with its
+autoupdate fill (f4aa7e941, d31ee257a, eb0488e70), P 129a6f50b (one un-SKIP,
+five programs against C++ oracles), Doc 8243dbe97 (sum_types.md and unions.md),
+M f30429458 (trunk 481f05612, records only), 6efb8345b (the held-state
+measurements: 18 of the 19 mutants run on the tree killed, M16 surviving as a
+defensive test, M19 and M21 killed on PR 59's mirror; the composition mirrors
+over PR 57, PR 60, PR 59 and PR 61, each red only on the predicted refills), the
+implementation-review fold (review 1 REJECT on RV1-B1, a clang abort on a
+by-value parameter of an uninstantiated specialization, and RV1-M1, no pointer
+alternative converting back, with RV1-m1; review 2 APPROVE-WITH-FIXES with ten
+MINORs; all 13 folded, none rejected; mutants M23 and M24 killed, M25 surviving
+as a defensive test) in a4d979619 with its fill a0669750a and the records
+fbe2a55f7, a second M dff9f756b (trunk d9f346f53), R c00beaf60 (row 68 stays
+PARTIAL on W-177, composed over PR 56's row text, the predicted merged text) and
+D (W-011 DISCHARGED; W-275, W-276, W-277, W-279, W-280, W-281 and W-285 filed
+after W-125; W-278 withdrawn, W-282 and W-283 unused, W-284 held until M-VA
+lands, W-286 to W-294 unused; the notes on W-036, W-047, W-049 and W-122; the
+decision-log entry "SV-1 / F-020" with its veto digest; F-020 minted). The id
+re-scan before D, over 83 refs and 15 worktree ledgers, found no id of W-275 to
+W-294 anywhere and F-020 in no decision log; TP-1's W-295 to W-298 are on its
+branch only. The container measurements at the head, EXPECTED and not of record:
+file_test 1950 of 1950, conformance 134/0/21 over 155 with 48 of 56 bullets.
+Land-time items, after PR 61: Next actions item 5. Merge order unchanged. None
+is merged.
+
+Later on 2026-10-21 (06:05 UTC): SV-1's focused re-review of the fold, round 1,
+is recorded and is NOT dry; round 2 is owed. Two fresh reviews of the fold's
+commits and of R and D at 21060cef4 both returned APPROVE-WITH-FIXES with no
+BLOCKER or MAJOR: review 1 (soundness) three MINORs, all records only, dry;
+review 2 (strictness) six MINORs, one of which needs a golden split (RR1r2-m1:
+no golden pins the branch of the RV1-B1 fix that a forward-declared or
+declared-only specialization takes, and a mutant that ignores the
+instantiation's result, M26, passes the gate and brings back the clang abort).
+The records commit "SV-1 records: re-review round 1 recorded" folds the seven
+records-only findings (fork/sumtype-interop/plan.md's "Focused re-review of the
+fold, round 1 (2026-10-21)"): F-M gains a nested
+`Core.Optional(Core.Optional(i32*))` program leg at land time, F-M's refill
+count is eight, W-282 stays conditional on x19 at land time, the decision-log
+entry and the SV-1 row name W-282 and W-284, Next actions item 5 lists the
+land-time records commit in full, this file's Last updated line is current,
+and the PR texts gain the merge-tree conflict table (record files only:
+work-items.json with every held PR, ORCHESTRATION.md with all but PR 51,
+decision-log.md with PR 52 to PR 59, gap-analysis.md with PR 56 to PR 58,
+conformance/README.md with PR 60; none with trunk d9f346f53). RR1r2-m1 goes to
+round 2's fixer. No id filed; W-286 to W-294 stay held. The container
+measurements on the records commit's tree, EXPECTED and not of record:
+file_test 1950 of 1950, conformance 134/0/21 over 155 with 48 of 56 bullets.
+SV-1's PR opens, held, when a round is dry. Merge order unchanged. None is
+merged.
+
+Later on 2026-10-21 (07:26 UTC): SV-1's round 2 fix is committed and under
+review. The commit "SV-1 re-review fix: golden splits pin a std::optional or
+std::variant that cannot be instantiated" folds RR1r2-m1 with two splits of
+stdlib/fail_sum_types.carbon and no toolchain, core or program change; they kill
+mutants M23, M25 and M26 (M25 had survived the implementation-review fold). The
+records commit "SV-1 re-review fix: round 2 folded into the records" writes
+fork/sumtype-interop/plan.md's "Focused re-review of the fold, round 2
+(2026-10-21)" and files W-286, a trunk-origin crash the fixer's probes found (a
+`Destroy` witness of an incomplete C++ class, reached by converting such a value
+to `Core.Optional(T)`, stops trunk, the nightly, the held PRs' builds and SV-1
+alike); W-287 to W-294 stay unused. The four composition mirrors (PR 57, PR 61,
+PR 59 with M-VA, PR 60), rebuilt with the round's goldens, are red only on the
+refills predicted at the fold, and the round-2 splits pass on each. The
+container measurements on the fix commit's tree, EXPECTED and not of record:
+file_test 1950 of 1950, conformance 134/0/21 over 155 with 48 of 56 bullets. Two
+fresh reviews of round 2 are owed; SV-1's PR opens, held, when a round is dry.
+Merge order unchanged. None is merged.
+
+Later on 2026-10-21 (08:34 UTC): SV-1's focused re-review of the fold, round 2,
+is recorded and is DRY. Two fresh reviews of the round's commits (0a74af898, the
+golden fix, and c03cf9153, its records) both returned APPROVE-WITH-FIXES with no
+BLOCKER or MAJOR: review 1 (soundness) three MINORs and review 2 (strictness)
+five, all records only, both dry. The records commit "SV-1 records: re-review
+round 2 recorded" folds all eight (fork/sumtype-interop/plan.md's "Focused
+re-review of the fold, round 2 (2026-10-21)", extended): two OUT shapes recorded
+(an undefined partial specialization takes the recorded path; a specialization
+whose instantiation fails is offered and gets clang's error first), mutant M27
+recorded as surviving (the completion call before the definition test is
+defensive), W-286's reason, Carbon twin, measured fix and evidence corrected in
+the ledger and the plan's C.4 (the held PRs' heads, not container paths), §3
+item 8 and §1.16's heading consistent with the filed W-286, this file's SV-1 row
+trimmed to C.9's held template, a per-round rule added to C.6 and C.8 with
+W-011's note and the decision-log entry carrying the round's outcome, and the PR
+texts mended (the merge-tree conflict table re-run: record files only, as
+before). No id filed; W-287 to W-294 stay unused. The container measurements on
+the records commit's tree, EXPECTED and not of record: file_test 1950 of 1950,
+conformance 134/0/21 over 155 with 48 of 56 bullets. The round is dry, so SV-1's
+PR opens, held, as the next step. Merge order unchanged. None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -641,7 +737,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at 40a76ab81 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54. |
 | `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
-| `claude/carbon-fork-0-1-sv` | IMPLEMENTING — SV-1 std::optional and std::variant interop mapping (W-011's open half, W5 slice 4, gap row 68), cut from 5674fe88b; fork/sumtype-interop/plan.md rev 5 (30153bbc2) SIGNED OFF after five reviews (46 findings folded); F-020 minted; W-275..W-285 used by the plan, W-286..W-294 held; implementation under way (C1..C3 with fills, P, Doc, held-state measurements, two implementation reviews, fixer, R, D); PR after the reviews, held open after PR 61. |
+| `claude/carbon-fork-0-1-sv` | IMPLEMENTED AND HELD, no PR; ROUND 2 DRY — SV-1 `std::optional`/`std::variant` interop mapping (W-011 discharged; gap row 68 stays PARTIAL on W-177, narrowed), plan rev 5 signed off, head the records commit that records round 2 of the focused re-review of the fold, after round 2's fix 0a74af898 and its records c03cf9153 (D 21060cef4, R c00beaf60; toolchain a4d979619); W-275..W-277, W-279..W-281, W-285 and W-286 filed; W-284 held until M-VA lands; W-282 unused; W-278 withdrawn, W-283 and W-287..W-294 unused; F-020 minted; gate 1950/1950 and conformance 134/0/21 over 155 on the container toolchain; lands after PR 61 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -718,6 +814,17 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     subpatterns (W-008).
 4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
+5.  SV-1 at land time (fork/sumtype-interop/plan.md §3 item 8 and its landed
+    notes): M repeated over the trunk that holds PR 51 to PR 61; M-VA (the
+    pack-element rule and its split); F-M (the refills, the `bool` payload
+    split and program leg, and the nested-pointer program leg); Doc-M; the
+    second id re-scan; §8 item 11 on the merged trunk; and the land-time
+    records commit (the landed notes' item (g)): the absolute conformance count
+    re-quoted into row 68, W-011's note and the decision-log entry, W-284 filed
+    with its `blocked_by` W-219, x19 checked for W-282, the id lists of the
+    decision-log entry and this row completed, C.5's W-177 note and evidence,
+    C.8's F-015 references, the notes on W-252 and W-263, evidence re-cited to
+    the merged tree, and C.7's fallback check.
 
 ### Standing user directives
 

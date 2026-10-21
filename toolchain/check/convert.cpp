@@ -18,6 +18,7 @@
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/cpp/export.h"
 #include "toolchain/check/cpp/import.h"
+#include "toolchain/check/cpp/sum_type.h"
 #include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/check/eval.h"
 #include "toolchain/check/impl_lookup.h"
@@ -364,7 +365,8 @@ static auto ConvertAggregateElement(
     ConversionTarget::Kind kind, SemIR::InstId target_id,
     SemIR::TypeInstId target_elem_type_inst, PendingBlock* target_block,
     llvm::MutableArrayRef<SemIR::InstId> template_storage_args,
-    size_t src_field_index, size_t target_field_index) -> SemIR::InstId {
+    size_t src_field_index, size_t target_field_index, bool diagnose)
+    -> SemIR::InstId {
   auto src_elem_type =
       context.types().GetTypeIdForTypeInstId(src_elem_type_inst);
   auto target_elem_type =
@@ -389,8 +391,11 @@ static auto ConvertAggregateElement(
   }
 
   // If we're performing a conversion rather than an initialization, we won't
-  // have or need a target.
-  ConversionTarget target = {.kind = kind, .type_id = target_elem_type};
+  // have or need a target. Fork (SV-1): the element conversion inherits the
+  // aggregate conversion's `diagnose`, so that a conversion a caller only tests
+  // (an `overload fn` probe) tests its elements without diagnosing either.
+  ConversionTarget target = {
+      .kind = kind, .type_id = target_elem_type, .diagnose = diagnose};
   if (!target.is_initializer()) {
     return Convert(context, loc_id, src_elem_id, target);
   }
@@ -487,7 +492,7 @@ static auto ConvertTupleToArray(Context& context, SemIR::TupleType tuple_type,
             context, value_loc_id, value_id, src_type_inst_id, literal,
             ConversionTarget::InPlaceInitializing, return_slot_arg_id,
             array_type.element_type_inst_id, target_block,
-            target.template_storage_args, i, i);
+            target.template_storage_args, i, i, target.diagnose);
     if (init_id == SemIR::ErrorInst::InstId) {
       return SemIR::ErrorInst::InstId;
     }
@@ -577,7 +582,8 @@ static auto ConvertTupleToTuple(Context& context, SemIR::TupleType src_type,
         ConvertAggregateElement<SemIR::TupleAccess, SemIR::TupleAccess>(
             context, value_loc_id, value_id, src_type_inst_id, literal,
             inner_kind, target.storage_id, dest_type_inst_id,
-            target.storage_access_block, target.template_storage_args, i, i);
+            target.storage_access_block, target.template_storage_args, i, i,
+            target.diagnose);
     if (init_id == SemIR::ErrorInst::InstId) {
       return SemIR::ErrorInst::InstId;
     }
@@ -972,7 +978,7 @@ static auto ConvertStructToStructOrClass(
           context, value_loc_id, value_id, src_field.type_inst_id, literal,
           inner_kind, target.storage_id, dest_field_type_inst_id,
           target.storage_access_block, target.template_storage_args,
-          src_field_index, dest_field_index);
+          src_field_index, dest_field_index, target.diagnose);
     } else {
       init_id = get_default(dest_field.name_id);
     }
@@ -1136,7 +1142,7 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
           context, value_loc_id, value_id, src_field.type_inst_id, literal,
           inner_kind, target.storage_id, dest_field.type_inst_id,
           target.storage_access_block, target.template_storage_args,
-          /*src_field_index=*/0, dest_field_index);
+          /*src_field_index=*/0, dest_field_index, target.diagnose);
   if (init_id == SemIR::ErrorInst::InstId) {
     return SemIR::ErrorInst::InstId;
   }
@@ -1793,6 +1799,16 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       return ConvertFunctionToCppPointer(context, loc_id, *src_fn_type,
                                          *fn_ptr_type, value_id, target);
     }
+  }
+
+  // Fork (SV-1, F-020): a C++ `std::optional` or `std::variant` converts by
+  // value to its `Core.CppCompat` sum type (and a `std::optional` to the
+  // `Core.Optional` of its payload), and those back to it. A non-diagnosing
+  // conversion, which the caller only tests, builds no control flow.
+  if (auto sum_id = TryConvertCppSumType(context, loc_id, value_id,
+                                         target.type_id, target.diagnose);
+      sum_id.has_value()) {
+    return sum_id;
   }
 
   // Split the qualifiers off the target type.

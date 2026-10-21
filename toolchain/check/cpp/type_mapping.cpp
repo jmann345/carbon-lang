@@ -27,6 +27,7 @@
 #include "toolchain/check/cpp/export.h"
 #include "toolchain/check/cpp/import.h"
 #include "toolchain/check/cpp/location.h"
+#include "toolchain/check/cpp/sum_type.h"
 #include "toolchain/check/literal.h"
 #include "toolchain/sem_ir/class.h"
 #include "toolchain/sem_ir/expr_info.h"
@@ -131,8 +132,8 @@ static auto LookupCppDecl(
 // or a null type if lookup fails. `name_components` is the full path of the
 // type, including any namespaces or nested types, separated into separate
 // strings.
-static auto LookupCppType(
-    Context& context, std::initializer_list<llvm::StringRef> name_components)
+auto LookupCppType(Context& context,
+                   std::initializer_list<llvm::StringRef> name_components)
     -> clang::QualType {
   auto* type_decl = dyn_cast_or_null<clang::TypeDecl>(
       LookupCppDecl(context, name_components));
@@ -584,6 +585,16 @@ static auto InventPrimitiveClangArg(Context& context, SemIR::FormInfo form)
       arg_cpp_type = context.ast_context().getIntTypeForBitwidth(
           bit_width_id.AsValue(), true);
     }
+  }
+
+  // Fork (SV-1, F-020): a `Core.CppCompat` sum type argument, or a
+  // `Core.Optional(T)` with a matchable non-pointer payload, is offered to
+  // overload resolution as the C++ class it converts to; the argument is
+  // converted by value when the call converts it to the parameter's type,
+  // which must be that class. Before `MapToCppType`, which would try, and
+  // diagnose, exporting the prelude type itself.
+  if (arg_cpp_type.isNull()) {
+    arg_cpp_type = MapCarbonSumTypeToCpp(context, form.loc_id, form.type_id);
   }
 
   if (arg_cpp_type.isNull()) {

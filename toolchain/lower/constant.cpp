@@ -63,6 +63,17 @@ class ConstantContext {
     return file_context_->GetFunction(function_id);
   }
 
+  // Returns the address of the value constant `const_id`, as function lowering
+  // forms it when the value representation is a pointer (a cached internal
+  // global), or null when the value representation is not a pointer, so no
+  // element of the value has an address.
+  auto GetValueConstantAddress(SemIR::ConstantId const_id) -> llvm::Constant* {
+    auto* address = file_context_->GetConstant(const_id, SemIR::InstId::None);
+    return address->getType()->isPointerTy()
+               ? llvm::cast<llvm::Constant>(address)
+               : nullptr;
+  }
+
   auto GetVtable(SemIR::VtableId vtable_id, SemIR::SpecificId specific_id)
       -> llvm::Constant* {
     return file_context_->GetVtable(vtable_id, specific_id);
@@ -248,6 +259,23 @@ static auto EmitAsConstant(ConstantContext& context,
   }
   auto* aggr_type = context.GetType(
       context.sem_ir().insts().Get(inst.aggregate_id).type_id());
+
+  // Fork (SV-1, D-SV-9): an element access is a reference into its aggregate,
+  // but a `ClassElementAccess` on a constant class VALUE folds to the
+  // element's value constant (eval of a value-category base), and a further
+  // access into that folded constant -- the payload tuple of a constant
+  // `choice` alternative, `match (Opt(i32).None) { case .Some(v: i32) ... }`
+  // -- then finds a value representation where it needs an address. Address
+  // it the way function lowering addresses a value constant whose value
+  // representation is a pointer: the cached internal global of
+  // `FileContext::GetConstant`.
+  if (!aggr_addr->getType()->isPointerTy()) {
+    aggr_addr = context.GetValueConstantAddress(
+        context.sem_ir().constant_values().Get(inst.aggregate_id));
+    if (!aggr_addr) {
+      return nullptr;
+    }
+  }
 
   auto* i32_type = llvm::Type::getInt32Ty(context.llvm_context());
   // For now, we rely on the LLVM type's GEP indexes matching the SemIR

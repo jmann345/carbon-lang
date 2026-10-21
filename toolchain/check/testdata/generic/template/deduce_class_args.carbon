@@ -454,13 +454,6 @@ class D(template T: HasItem) {
 }
 
 fn G() -> i32 {
-  // CHECK:STDERR: fail_todo_class_template_field_of_where_alias.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `{.c: {.x: Core.IntLiteral}, .k: Core.IntLiteral}` to `D(Holder as HasItem)` [ConversionFailure]
-  // CHECK:STDERR:   var d: D(Holder) = {.c = {.x = 1}, .k = 2};
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_todo_class_template_field_of_where_alias.carbon:[[@LINE+4]]:3: note: type `{.c: {.x: Core.IntLiteral}, .k: Core.IntLiteral}` does not implement interface `Core.ImplicitAs(D(Holder as HasItem))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   var d: D(Holder) = {.c = {.x = 1}, .k = 2};
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   var d: D(Holder) = {.c = {.x = 1}, .k = 2};
   return d.c.x + d.k;
 }

@@ -120,6 +120,20 @@ class C(template T: type) {
 }
 
 fn Use() -> i32 {
+  // CHECK:STDERR: fail_alias_of_template_call_on_instantiation.carbon:[[@LINE+14]]:10: error: member access into incomplete class `C(X)` [QualifiedExprInIncompleteClassScope]
+  // CHECK:STDERR:   return C(X).F();
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR: fail_alias_of_template_call_on_instantiation.carbon:[[@LINE-8]]:13: note: alias refers to a runtime value [AliasRequiresConstantValue]
+  // CHECK:STDERR:   alias A = T.Make();
+  // CHECK:STDERR:             ^~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_alias_of_template_call_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `F()` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return C(X).F();
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR: fail_alias_of_template_call_on_instantiation.carbon:[[@LINE-14]]:26: note: alias refers to a runtime value [AliasRequiresConstantValue]
+  // CHECK:STDERR:   fn F() -> i32 { return A; }
+  // CHECK:STDERR:                          ^
+  // CHECK:STDERR:
   return C(X).F();
 }
 
@@ -545,6 +559,87 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %.loc5_3.11 => constants.%inst.call
 // CHECK:STDOUT:   %.loc5_3.12 => constants.%empty_tuple.type
 // CHECK:STDOUT:   %.loc5_3.13 => <not constant>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- alias_constant_through_specific.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %X: type = class_type @X [concrete]
+// CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
+// CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %int_5.eef: %i32 = int_value 5 [concrete]
+// CHECK:STDOUT:   %C.type: type = generic_class_type @C [concrete]
+// CHECK:STDOUT:   %C.generic: %C.type = struct_value () [concrete]
+// CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
+// CHECK:STDOUT:   %Take.type: type = fn_type @Take [concrete]
+// CHECK:STDOUT:   %Take: %Take.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Use.type: type = fn_type @Use [concrete]
+// CHECK:STDOUT:   %Use: %Use.type = struct_value () [concrete]
+// CHECK:STDOUT:   %a.patt: %pattern_type.6b6 = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %C.a43: type = class_type @C, @C(%X) [concrete]
+// CHECK:STDOUT:   %AddWith.type.be9: type = facet_type <@AddWith, @AddWith(%i32)> [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.type.610: type = fn_type @Int.as.AddWith.impl.Op.1, @Int.as.AddWith.impl.3af(%N) [symbolic]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.732: %Int.as.AddWith.impl.Op.type.610 = struct_value () [symbolic]
+// CHECK:STDOUT:   %AddWith.impl_witness.833: <witness> = impl_witness imports.%AddWith.impl_witness_table.6b4, @Int.as.AddWith.impl.3af(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.type.056: type = fn_type @Int.as.AddWith.impl.Op.1, @Int.as.AddWith.impl.3af(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.365: %Int.as.AddWith.impl.Op.type.056 = struct_value () [concrete]
+// CHECK:STDOUT:   %AddWith.facet.76a: %AddWith.type.be9 = facet_value %i32, (%AddWith.impl_witness.833) [concrete]
+// CHECK:STDOUT:   %AddWith.WithSelf.Op.type.02a: type = fn_type @AddWith.WithSelf.Op, @AddWith.WithSelf(%i32, %AddWith.facet.76a) [concrete]
+// CHECK:STDOUT:   %.d47: type = fn_type_with_self_type %AddWith.WithSelf.Op.type.02a, %AddWith.facet.76a [concrete]
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.specific_fn.f25: <specific function> = specific_function %Int.as.AddWith.impl.Op.365, @Int.as.AddWith.impl.Op.1(%int_32) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Core.import_ref.b4fd3a.1 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.684: @Int.as.AddWith.impl.3af.%Int.as.AddWith.impl.Op.type (%Int.as.AddWith.impl.Op.type.610) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.AddWith.impl.3af.%Int.as.AddWith.impl.Op (constants.%Int.as.AddWith.impl.Op.732)]
+// CHECK:STDOUT:   %AddWith.impl_witness_table.6b4 = impl_witness_table (%Core.import_ref.b4fd3a.1, %Core.import_ref.684), @Int.as.AddWith.impl.3af [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %Use.decl: %Use.type = fn_decl @Use [concrete = constants.%Use] {
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
+// CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc22 [concrete = constants.%return.patt.e1b]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %i32.loc22: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     %.loc22: Core.Form = init_form %i32.loc22 [concrete = constants.%.795f]
+// CHECK:STDOUT:     %return.param: ref %i32 = out_param call_param0
+// CHECK:STDOUT:     %return: ref %i32 = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Use() -> out %return.param: %i32 {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %C.ref.loc23: %C.type = name_ref C, file.%C.decl [concrete = constants.%C.generic]
+// CHECK:STDOUT:   %X.ref.loc23: type = name_ref X, file.%X.decl [concrete = constants.%X]
+// CHECK:STDOUT:   %C.loc23: type = class_type @C, @C(constants.%X) [concrete = constants.%C.a43]
+// CHECK:STDOUT:   %.loc23: %i32 = specific_constant @C.%A.loc16_9.1, @C(constants.%X) [concrete = constants.%int_5.eef]
+// CHECK:STDOUT:   %A.ref.loc23: %i32 = name_ref A, %.loc23 [concrete = constants.%int_5.eef]
+// CHECK:STDOUT:   %i32.loc23: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   %a: %i32 = wrapper_binding a, %A.ref.loc23
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %a.patt: %pattern_type.6b6 = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Take.ref: %Take.type = name_ref Take, file.%Take.decl [concrete = constants.%Take]
+// CHECK:STDOUT:   %C.ref.loc24: %C.type = name_ref C, file.%C.decl [concrete = constants.%C.generic]
+// CHECK:STDOUT:   %X.ref.loc24: type = name_ref X, file.%X.decl [concrete = constants.%X]
+// CHECK:STDOUT:   %C.loc24: type = class_type @C, @C(constants.%X) [concrete = constants.%C.a43]
+// CHECK:STDOUT:   %.loc24_19: %i32 = specific_constant @C.%A.loc16_9.1, @C(constants.%X) [concrete = constants.%int_5.eef]
+// CHECK:STDOUT:   %A.ref.loc24: %i32 = name_ref A, %.loc24_19 [concrete = constants.%int_5.eef]
+// CHECK:STDOUT:   %Take.call: init %i32 = call %Take.ref(%A.ref.loc24)
+// CHECK:STDOUT:   %a.ref: %i32 = name_ref a, %a
+// CHECK:STDOUT:   %impl.elem1: %.d47 = impl_witness_access constants.%AddWith.impl_witness.833, element1 [concrete = constants.%Int.as.AddWith.impl.Op.365]
+// CHECK:STDOUT:   %bound_method.loc24_23.1: <bound method> = bound_method %Take.call, %impl.elem1
+// CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem1, @Int.as.AddWith.impl.Op.1(constants.%int_32) [concrete = constants.%Int.as.AddWith.impl.Op.specific_fn.f25]
+// CHECK:STDOUT:   %bound_method.loc24_23.2: <bound method> = bound_method %Take.call, %specific_fn
+// CHECK:STDOUT:   %.loc24_21.1: %i32 = value_of_initializer %Take.call
+// CHECK:STDOUT:   %.loc24_21.2: %i32 = converted %Take.call, %.loc24_21.1
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32 = call %bound_method.loc24_23.2(%.loc24_21.2, %a.ref)
+// CHECK:STDOUT:   return %Int.as.AddWith.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- template_interface_concrete_self.carbon

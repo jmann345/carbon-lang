@@ -2126,3 +2126,61 @@ fn Use() -> i32 {
 // CHECK:STDOUT: !424 = !DILocation(line: 6, column: 34, scope: !418)
 // CHECK:STDOUT: !425 = !{!419}
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'nested_alias_through_specific.carbon'
+// CHECK:STDOUT: source_filename = "nested_alias_through_specific.carbon"
+// CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+// CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZN6TraitsIlE4sizeE = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZN6TraitsIsE4sizeE = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @_ZN6TraitsIlE4sizeE = linkonce_odr dso_local constant i32 8, comdat, align 4
+// CHECK:STDOUT: @_ZN6TraitsIsE4sizeE = linkonce_odr dso_local constant i32 2, comdat, align 4
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CTake.Main(i32 %n) #0 !dbg !428 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 %n, !dbg !434
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !436 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Take.call = call i32 @_CTake.Main(i32 2), !dbg !441
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %Take.call, 8, !dbg !441
+// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call, !dbg !443
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!427}
+// CHECK:STDOUT: !llvm.module.flags = !{!116, !117, !118, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!120}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !10 = !{!6}
+// CHECK:STDOUT: !11 = !DISubroutineType(types: !10)
+// CHECK:STDOUT: !35 = !{!6, !6}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !107 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !108 = !{!"omnipotent char", !107, i64 0}
+// CHECK:STDOUT: !112 = !{!"int", !108, i64 0}
+// CHECK:STDOUT: !116 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !117 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !118 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !119 = !{!"__libc_errno", !112, i64 0}
+// CHECK:STDOUT: !120 = !{!119, !112, i64 0}
+// CHECK:STDOUT: !426 = !DIFile(filename: "nested_alias_through_specific.carbon", directory: "")
+// CHECK:STDOUT: !427 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !426, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !428 = distinct !DISubprogram(name: "Take", linkageName: "_CTake.Main", scope: null, file: !426, line: 28, type: !36, spFlags: DISPFlagDefinition, unit: !427, retainedNodes: !435)
+// CHECK:STDOUT: !429 = !DILocalVariable(arg: 1, scope: !428, type: !6)
+// CHECK:STDOUT: !434 = !DILocation(line: 28, column: 26, scope: !428)
+// CHECK:STDOUT: !435 = !{!429}
+// CHECK:STDOUT: !436 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !426, line: 30, type: !11, spFlags: DISPFlagDefinition, unit: !427)
+// CHECK:STDOUT: !441 = !DILocation(line: 32, column: 10, scope: !436)
+// CHECK:STDOUT: !443 = !DILocation(line: 32, column: 3, scope: !436)
+// CHECK:STDOUT:

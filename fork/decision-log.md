@@ -472,6 +472,34 @@ head 4a3220c11) and DR-1a through M-b (handle_index.cpp onto TP-1's
 PR 55's string_indexing 2/2), each measured. The focused re-review of the fold
 comes next.
 
+_DR-1b focused re-review, round 1 (2026-10-22)._ Two reviews read the fold and
+D, 45294ea90..f774ee836, at f774ee836 (toolchain fddfcf42a; upstream/trunk
+ebc155734, unchanged at 04:41Z) and returned APPROVE-WITH-FIXES, no BLOCKER or
+MAJOR: review 1 eight MINOR findings, six of them rev 4's RR4-m1..m6 still
+open, all records only; review 2 eight, two of which need a comment-only edit
+of a toolchain or golden file, the footprint comment at handle_index.cpp:141-150
+(R1R2-m1) and the W-327 comment line of check slice/write_through.carbon
+(R1R2-m2). The round is not dry, so round 2 is owed: its fixer makes both edits
+as DR-1b's fix commit 2 of the plan's §3 item 9's three; nothing is shrunk and
+no id is filed. The rest is folded, none rejected, by c1b19da06 on
+claude/carbon-fork-0-1-dr (the plan's round 1 record and RR4's fold, which
+also carries on DR-1a's branch the dated correction of the DR-1a discharge
+note's land-time items), its merge a0ea3347e (this entry keeping one
+correction, the DR-1b records note's) and this branch's records commit: a
+blanket `IndirectIndexWith(U)` literal subscript reaches W-325's lowering FATAL
+as the `IndexWith(U)` analog does on trunk and the nightly, not a regression;
+an `IndirectIndexWith(Core.IntLiteral)`-only operand's file gains the
+`Core.IndexWith` and `Core.Int` import_refs; slices.md's last read-only lines;
+the PR body's merge-tree Conflicts table, with PR 55's string_indexing taking
+trunk's side at M-b and the conformance README regenerated; clang-tidy rc 0 on
+handle_index.cpp with `modernize-use-trailing-return-type` excluded; and RR4's
+verdict recorded as APPROVE-WITH-AMENDMENTS. The round's runs on the head
+(container-local, EXPECTED, not of record): gate 1946 of 1946; conformance
+130/0/22 over 152, bullets 48/0/8; `runner.py --self-test` OK over 152; a full
+autoupdate on a copy changing nothing; the mutants as before; mct-b on CT-1's
+4a3220c11 rebuilt in full, 1963 of 1963 and 149/0/20 over 169 after C-b and the
+refills, line for line the fold's.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

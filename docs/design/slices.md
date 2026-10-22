@@ -240,8 +240,9 @@ A `Core.Buf(T)` owns one `malloc` block of `Size()` elements:
     fails-stop.
 -   `Set(self, i, value)` writes through the shared heap block, so it takes
     `self` by value: the storage being mutated is the block, not the `Buf`
-    object. Writes to owned storage go through `Set`; `Core.Slice(T)` has no
-    `Set` (see [0.1 limits](#01-limits)).
+    object. Writes to owned storage go through `b[i] = v`, which is
+    `IndirectIndexWith.Ref`, or through `Set`; a `Core.Slice(T)` has no `Set`
+    and writes through `s[i] = v` (see [`Core.Slice(T)`](#coreslicet)).
 -   `AsSlice()` views the block; the view is valid while the `Buf` lives.
 -   The in-class `impl as Destroy` frees the block when the `Buf` goes out of
     scope: the toolchain's destroy lookup selects a class's own declared
@@ -370,7 +371,9 @@ which it is removed:
 > is W-327's. The literal-subscript rule stands in for `like i64` until `like`
 > lands (W-326). The interface listings, the indexing paragraph and the bounds
 > and iteration sentences above state this design (rewritten on 2026-10-22,
-> DR-1b implementation-review fold: DR1B-m2).
+> DR-1b implementation-review fold: DR1B-m2), as do the Heap buffers bullet on
+> `Set` and the rejected alternative "A `Slice.Set`" (rewritten on 2026-10-22,
+> DR-1b focused re-review, round 1: R1R2-m3).
 
 -   **`i32` subscripts need `as i64`.** Only an integer literal converts to the
     `i64` subscript type implicitly. Removed when integer subscript widening is
@@ -431,7 +434,9 @@ which it is removed:
     message can be written.
 -   `exit(1)` instead of `abort`: not a fail-stop — it runs `atexit` handlers
     and flushes buffers.
--   A `Slice.Set`: the `const` element hazard above.
+-   A `Slice.Set`: not needed, because `s[i] = v` writes through
+    `IndirectIndexWith.Ref`; the generic body's write instantiated at a
+    `const` element is W-327's, as the 0.1-limits amendment says.
 -   Running element destructors in `Buf`'s `Destroy` with an explicit
     `Destroy.Op` loop: no precedent for an explicit destroy call in Carbon
     source; left as a limit.

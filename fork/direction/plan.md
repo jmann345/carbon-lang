@@ -3961,7 +3961,10 @@ measurements and their heads, and the land-time items in order; the merge
 records add the merged tree's runs here. Everything measured is container-local,
 EXPECTED and not of record (R9). The scratch is
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1-impl`
-(stageB, amend4, stageBR, revB and fixB, each with its `logs/`).
+(stageB, amend4, stageBR, revB and fixB, each with its `logs/`). The records of
+the fold's focused re-review, round 1 (amended 2026-10-22; their scratch is
+scratchpad/dr1b-rr), add the bullet "Re-review round 1" and amend the commits
+and the land-time items.
 
 -   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
     (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
@@ -3982,7 +3985,11 @@ EXPECTED and not of record (R9). The scratch is
     and its fill bcd9ba06f "DR-1b fix fill"; 2a4264056 "DR-1 plan:
     implementation-review fold, DR-1b" on claude/carbon-fork-0-1-dr and its
     merge adec21b5e; then D. One fix commit of §3 item 9's three, shared with
-    the focused re-review loop that follows.
+    the focused re-review loop that follows. Then round 1's records
+    (amended 2026-10-22, re-review round 1): c1b19da06 "DR-1 plan: focused
+    re-review of DR-1b's fold, round 1 recorded" on
+    claude/carbon-fork-0-1-dr, its merge a0ea3347e, and "DR-1b records:
+    re-review round 1 recorded".
 -   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
     `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
     refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
@@ -4011,12 +4018,34 @@ EXPECTED and not of record (R9). The scratch is
     §5's rows state. The held heads at D: PR 56 at 894139b34, PR 57 at
     a080c7886, PR 62 at 0ef8a0334, PR 61 at 5661a35c8, CT-1 (PR 64)
     at 4a3220c11, DR-1a (PR 63) at 2a4264056.
+-   **Re-review round 1 (2026-10-22).** Two reviews of f774ee836 (toolchain
+    fddfcf42a, upstream/trunk ebc155734), both APPROVE-WITH-FIXES with no
+    BLOCKER or MAJOR: review 1 eight MINOR findings, six of them rev 4's
+    RR4-m1..m6 still open, review 2 eight. Not dry: R1R2-m1 (the footprint
+    comment at handle_index.cpp:141-150) and R1R2-m2 (the W-327 comment line
+    at check slice/write_through.carbon:34) are owed to round 2's fixer as fix
+    commit 2 of 3, with RR1-1-F1's comment and A.1's line. Folded by the
+    records: RR4-m1..m6, RR1-1-F1's and R1R2-m1's disclosures (§1.3, §2.2,
+    W-325 and W-326), RR1-1-F8 and R1R2-m8, R1R2-m3 (slices.md:241-244 and
+    :434), R1R2-m4, R1R2-m5 (the PR body's Conflicts table, M-b), R1R2-m6 (a
+    dated amendment of PR 63's description, as text for the orchestrator)
+    and R1R2-m7 (clang-tidy rc 0 with `modernize-use-trailing-return-type`
+    excluded). Runs of the round, on the head: gate 1946 of 1946; conformance
+    130/0/22 over 152, bullets 48/0/8; `--self-test` OK over 152; a full
+    autoupdate on a copy changing nothing; the four mutants as §8 item 5
+    states; mct-b on CT-1's 4a3220c11 as §5 states. DR-1a (PR 63) is at
+    c1b19da06 after this round's plan commit, the other held heads as at D.
 -   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
     through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
     CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk
     (with PR 51 to PR 62, CT-1 and DR-1a) into this branch, never a rebase:
     handle_index.cpp resolves onto TP-1's `PerformIndex(context, loc_id, ...)`
-    (§2.2, as measured on mct-b); records keep both sides. C-b, "DR-1b: index a
+    (§2.2, as measured on mct-b); PR 55's string_indexing takes trunk's side,
+    PR 55's text, in its two CHECK-only conflict blocks;
+    fork/conformance/README.md is regenerated with `runner.py
+    --update-readme-table` (its table conflicts with PR 60's and PR 62's);
+    records keep both sides (amended 2026-10-22, re-review round 1: R1R2-m5).
+    C-b, "DR-1b: index a
     template-dependent operand per specific (TP-1's `IndexAction`)", +19/-1, its
     added lines measured on mct-b at the fold. L-b, the refill commit: check
     generic/template/index (16/41, after C-b) and PR 55's

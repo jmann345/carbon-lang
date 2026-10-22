@@ -104,6 +104,13 @@ class V {
   var x: i32;
 }
 
+// CHECK:STDERR: fail_final_index_with_overlap.carbon:[[@LINE+7]]:1: error: `final impl` overlaps with `final impl` from another file [FinalImplOverlapsDifferentFile]
+// CHECK:STDERR: final impl V as Core.IndexWith(i64) where .ElementType = i32 {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: {{.*}}/prelude/operators/index.carbon:19:1: note: imported `final impl` here [FinalImplOverlapsDifferentFileNote]
+// CHECK:STDERR: final impl forall [
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 final impl V as Core.IndexWith(i64) where .ElementType = i32 {
   fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
 }
@@ -735,5 +742,58 @@ final impl V as Core.IndexWith(i64) where .ElementType = i32 {
 // CHECK:STDOUT:   %.loc5_8: init %i32 = converted %int_7, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc5_8 [concrete = constants.%int_7.690]
 // CHECK:STDOUT:   assign %Buf.as.IndirectIndexWith.impl.Ref.call, %.loc5_8
 // CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- literal_subscript_literal_impl.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %NC: type = class_type @NC [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %NC.elem: type = unbound_element_type %NC, %i32 [concrete]
+// CHECK:STDOUT:   %H: type = class_type @H [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.e30: type = facet_type <@IndirectIndexWith, @IndirectIndexWith(Core.IntLiteral)> [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness.155: <witness> = impl_witness @H.as.IndirectIndexWith.impl.a53.%IndirectIndexWith.impl_witness_table [concrete]
+// CHECK:STDOUT:   %H.as.IndirectIndexWith.impl.Ref.type.22a2d7.1: type = fn_type @H.as.IndirectIndexWith.impl.Ref.loc18 [concrete]
+// CHECK:STDOUT:   %H.as.IndirectIndexWith.impl.Ref.b111e7.1: %H.as.IndirectIndexWith.impl.Ref.type.22a2d7.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.facet.28a: %IndirectIndexWith.type.e30 = facet_value %H, (%IndirectIndexWith.impl_witness.155) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.WithSelf.Ref.type.59f: type = fn_type @IndirectIndexWith.WithSelf.Ref, @IndirectIndexWith.WithSelf(Core.IntLiteral, %IndirectIndexWith.facet.28a) [concrete]
+// CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %.1c0: type = fn_type_with_self_type %IndirectIndexWith.WithSelf.Ref.type.59f, %IndirectIndexWith.facet.28a [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.3f6: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.4f6: %Int.as.Copy.impl.Op.type.3f6 = struct_value () [concrete]
+// CHECK:STDOUT:   %Copy.facet.1e1: %Copy.type = facet_value %i32, (%Copy.impl_witness.b51) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.381: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.1e1) [concrete]
+// CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet.1e1 [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%h.param: %H) -> out %return.param: %i32 {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %h.ref: %H = name_ref h, %h
+// CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
+// CHECK:STDOUT:   %impl.elem1: %.1c0 = impl_witness_access constants.%IndirectIndexWith.impl_witness.155, element1 [concrete = constants.%H.as.IndirectIndexWith.impl.Ref.b111e7.1]
+// CHECK:STDOUT:   %bound_method.loc27_13: <bound method> = bound_method %h.ref, %impl.elem1
+// CHECK:STDOUT:   %H.as.IndirectIndexWith.impl.Ref.call: ref %NC = call %bound_method.loc27_13(%h.ref, %int_0)
+// CHECK:STDOUT:   %v.ref: %NC.elem = name_ref v, @NC.%field_decl [concrete = @NC.%field_decl]
+// CHECK:STDOUT:   %.loc27_14.1: ref %i32 = class_element_access %H.as.IndirectIndexWith.impl.Ref.call, element0
+// CHECK:STDOUT:   %.loc27_14.2: %i32 = acquire_value %.loc27_14.1
+// CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
+// CHECK:STDOUT:   %bound_method.loc27_14.1: <bound method> = bound_method %.loc27_14.2, %impl.elem0
+// CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc27_14.2: <bound method> = bound_method %.loc27_14.2, %specific_fn
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc27_14.2(%.loc27_14.2)
+// CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

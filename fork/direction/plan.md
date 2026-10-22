@@ -4301,7 +4301,8 @@ the fold's focused re-review, round 1 (amended 2026-10-22; their scratch is
 scratchpad/dr1b-rr), add the bullet "Re-review round 1" and amend the commits
 and the land-time items; round 2's records add the bullet "Re-review round 2"
 and amend the commits and the measurement heads (amended 2026-10-22, re-review
-round 2).
+round 2), and the records of round 2's reviews extend that bullet and the
+commits (amended 2026-10-22, re-review round 2: the reviews).
 
 -   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
     (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
@@ -4331,8 +4332,12 @@ round 2).
     footprint and blanket-impl comments; the const-element split's comment
     without a ledger id", fix commit 2 of the three, with no fill commit
     because autoupdate changed nothing; 1c8cc5e38 "DR-1 plan: focused re-review
-    of DR-1b's fold, round 2 recorded" on claude/carbon-fork-0-1-dr; its merge
-    53ff93c60; and "DR-1b re-review fix: round 2 folded into the records".
+    of DR-1b's fold, round 2 recorded" on claude/carbon-fork-0-1-dr; its
+    merge 53ff93c60; and "DR-1b re-review fix: round 2 folded into the records".
+    Then the records of round 2's reviews (amended 2026-10-22, re-review
+    round 2: the reviews): 2abee5635 "DR-1 plan: focused re-review of DR-1b's
+    fold, round 2 recorded (the reviews)" on claude/carbon-fork-0-1-dr, its
+    merge 1aaa46bbf, and "DR-1b records: re-review round 2 recorded".
 -   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
     `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
     refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
@@ -4367,8 +4372,10 @@ round 2).
     fddfcf42a, upstream/trunk ebc155734), both APPROVE-WITH-FIXES with no
     BLOCKER or MAJOR: review 1 eight MINOR findings, six of them rev 4's
     RR4-m1..m6 still open, review 2 eight. Not dry: R1R2-m1 (the footprint
-    comment at handle_index.cpp:141-150) and R1R2-m2 (the W-327 comment line
-    at check slice/write_through.carbon:34) are owed to round 2's fixer as fix
+    comment at handle_index.cpp:142-150 at f774ee836; the cite read :141-150
+    until corrected 2026-10-22, re-review round 2: R2R2-m1) and R1R2-m2 (the
+    W-327 comment line at check slice/write_through.carbon:34) are owed to
+    round 2's fixer as fix
     commit 2 of 3, with RR1-1-F1's comment and A.1's line. Folded by the
     records: RR4-m1..m6, RR1-1-F1's and R1R2-m1's disclosures (§1.3, §2.2,
     W-325 and W-326), RR1-1-F8 and R1R2-m8, R1R2-m3 (slices.md:241-244 and
@@ -4401,8 +4408,24 @@ round 2).
     over 169; m51 1949 of 1949, no refill, 133/0/19 over 152; m55 the 2/2
     refill, then 1954 of 1954 and 135/0/21 over 156; m57 the
     refills 186/186, 183/183 and 185/185, then 1954 of 1954 and 141/0/22
-    over 163. Round 2's reviews follow; DR-1a (PR 63) is at 1c8cc5e38 after
-    round 2's plan commit, the other held heads as at D.
+    over 163. DR-1a (PR 63) was then at 1c8cc5e38, after round 2's plan commit,
+    the other held heads as at D. Round 2's reviews (amended 2026-10-22,
+    re-review round 2: the reviews): two reviews of f0004ba9a
+    (toolchain 8deb75262, upstream/trunk ebc155734), both APPROVE-WITH-FIXES
+    with no BLOCKER or MAJOR, review 1 one MINOR finding, RR2-1-m1 (the
+    footprint comment at handle_index.cpp:149-155 gives the diagnosing
+    dispatch's file the `Core.IndexWith` import_ref as the rule's, which that
+    dispatch loads itself), and review 2 four, R2R2-m1..m4, records only. Not
+    dry: RR2-1-m1's comment is owed to round 3's fixer as fix commit 3 of 3, the
+    last. Folded by the records: RR2-1-m1's records half (§1.3, §2.2, the
+    decision log, W-326 and the PR body), R2R2-m1 (the cite :142-150 at
+    f774ee836), R2R2-m2 (PR 63's prepared amendment, as text for the
+    orchestrator), R2R2-m3 (§3 item 11) and R2R2-m4 (the PR body's wording and
+    ORCHESTRATION's row). The reviews' runs, on the head: gate 1946 of 1946;
+    conformance 130/0/22 over 152, bullets 48/0/8; a full autoupdate on a copy
+    changing nothing; review 1's three handle_index.cpp mutants and mct-b on
+    CT-1's 4a3220c11 as §5 and §8 item 5 state. DR-1a (PR 63) is at 2abee5635
+    after the reviews' plan commit, the other held heads as at D.
 -   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
     through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
     CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk

@@ -507,7 +507,8 @@ on the head, trunk 0bdce60a5, DR-1a and the nightly: handle_index.cpp's
 footprint comment (:146-158) now says an operand's file gains the
 `Core.IndexWith` and `Core.Int` import_refs whether the dispatch then diagnoses
 or succeeds as written through an `IndirectIndexWith(Core.IntLiteral)` impl
-(R1R2-m1); the rule's statement (:108-128) names a blanket
+(R1R2-m1; for the diagnosing case an overstatement, RR2-1-m1 below); the rule's
+statement (:108-128) names a blanket
 `IndirectIndexWith(U)` impl beside `IndexWith(U)` and the lowering abort a
 run-time use of its subscript reaches (RR1-1-F1); and check
 slice/write_through.carbon's generic_write_const_element comment names no ledger
@@ -524,7 +525,29 @@ refills 186/186, 183/183 and 185/185, then 1954 of 1954 and 141/0/22 over 163.
 Recorded by 1c8cc5e38 on claude/carbon-fork-0-1-dr (the plan's round 2 record
 and A.1's line), its merge 53ff93c60 and this branch's records commit (W-109's
 re-pinned cites and W-326's note, the DR-1b landed notes, ORCHESTRATION).
-Round 2's reviews follow.
+Round 2's reviews (2026-10-22): two reviews read 8deb75262 and its records at
+f0004ba9a (toolchain 8deb75262; upstream/trunk ebc155734, unchanged at 06:41Z;
+the held heads unchanged) and returned APPROVE-WITH-FIXES, no BLOCKER or MAJOR.
+Review 1 found one MINOR, RR2-1-m1: the reworded footprint comment
+(handle_index.cpp:149-155) says the file gains the `Core.IndexWith` import_ref
+even when the dispatch diagnoses, where that dispatch loads it itself, so the
+rule's own residue there is `Core.Int` alone (fp1_noimpl's own import_refs:
+`IndexWith`, `IndirectIndexWith` and `Int` on the head, `IndexWith` and `Int` on
+trunk and DR-1a, `IndexWith` on the nightly, none without the subscript).
+Review 2 found four, records only: the cite handle_index.cpp:141-150 in this
+entry's round 1 note, which is :142-150 at f774ee836 (R2R2-m1); PR 63's prepared
+description amendment stopping at c1b19da06 (R2R2-m2); the plan's §3 item 11
+calling D last on its branch (R2R2-m3); and wording in the PR body and
+ORCHESTRATION (R2R2-m4). The round is not dry: RR2-1-m1 is a comment in a
+toolchain file, owed to round 3's fixer as DR-1b's fix commit 3 of 3, the last;
+nothing is shrunk and no id is filed. Everything else, RR2-1-m1's records half
+included, is folded, none rejected, by 2abee5635 on claude/carbon-fork-0-1-dr
+(the plan's "Round 2's reviews"), its merge 1aaa46bbf and this branch's records
+commit. The reviews' runs (container-local, EXPECTED, not of record): gate 1946
+of 1946 and conformance 130/0/22 over 152, bullets 48/0/8, on both; a full
+autoupdate on a copy changing nothing; review 1's three handle_index.cpp mutants
+as recorded, and mct-b rebuilt in full on CT-1's 4a3220c11, 1963 of 1963
+and 149/0/20 over 169 after C-b and the refills, line for line the fold's.
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

@@ -31,8 +31,8 @@ fn Fill[T: Core.Copy & Core.Destroy](s: Core.Slice(T), v: T) {
 // --- generic_write_const_element.carbon
 library "[[@TEST_NAME]]";
 
-// W-327's current behavior, pinned: the generic body writes through
-// `Slice(T)`, and the specific at `T = const i32` is not diagnosed.
+// The generic const-element write's current behavior, pinned: the body
+// writes through `Slice(T)`; the specific at `T = const i32` is not diagnosed.
 fn Fill[T: Core.Copy & Core.Destroy](s: Core.Slice(T), v: T) {
   s[0] = v;
 }

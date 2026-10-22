@@ -112,13 +112,17 @@ static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
 // converts to `i64` before dispatch — the array arm's hardcoded subscript
 // conversion below, decided by impl lookup. Returns the target type, or
 // `nullopt` to dispatch the literal as written. A blanket `impl forall [U:
-// ImplicitAs(i64)] ... as IndexWith(U)` cannot serve literals instead:
-// `IntLiteral`'s `ImplicitAs(Int(To)).Convert` is compile-time only
-// (`int.convert_checked`), and a runtime `subscript: U` has no constant in
-// the `U = IntLiteral` specific, so that specific cannot lower
+// ImplicitAs(i64)] ... as IndexWith(U)`, or `as IndirectIndexWith(U)`, cannot
+// serve literals instead: `IntLiteral`'s `ImplicitAs(Int(To)).Convert` is
+// compile-time only (`int.convert_checked`), and a runtime `subscript: U` has
+// no constant in the `U = IntLiteral` specific, so that specific cannot lower
 // (lower/handle_call.cpp, "Missing constant value for call to comptime-only
 // function"); `Core.String`'s blanket impl lowers only because its `At` is
-// itself a builtin, lowered at the call site. An operand with its own
+// itself a builtin, lowered at the call site. Such a blanket impl still
+// answers one of this rule's literal probes, so the literal is dispatched as
+// written to that specific, as upstream's dispatch, which has no literal rule,
+// does, and an `At` or `Ref` that uses its subscript at run time aborts
+// lowering there. An operand with its own
 // `IndirectIndexWith(Core.IntLiteral)` or `IndexWith(Core.IntLiteral)` impl,
 // and one with no impl for either subscript type, dispatch as written, so
 // their results and diagnostics are unchanged.
@@ -143,11 +147,15 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   // discarded. What cannot be discarded is the `Core.Int` import_ref the
   // name lookup loads into this file (and the `Int` generic's constants): a
   // file whose only integer-typed expression is a literal subscript on a
-  // type with no `IndexWith` impl for the literal gains exactly that
-  // import_ref in its SemIR dump (`import_ref Core//prelude/types/int, Int,
-  // loaded`). Its semantics are unchanged — the dispatch still diagnoses
-  // `Core.IndexWith(Core.IntLiteral)` — and there is no way to name `i64`
-  // without it; disclosed in fork/slices/plan.md R-5 (round 4).
+  // type with no `IndexWith` impl for the literal gains that import_ref in
+  // its SemIR dump (`import_ref Core//prelude/types/int, Int, loaded`), and
+  // the `Core.IndexWith` one the probe above loads. The dispatch then either
+  // diagnoses `Core.IndexWith(Core.IntLiteral)` (no impl for either subscript
+  // type) or succeeds as written (an operand whose only literal impl is the
+  // `IndirectIndexWith(Core.IntLiteral)` one the probe below finds); its
+  // semantics are unchanged either way, and there is no way to name `i64`
+  // without the import_ref. Disclosed in fork/slices/plan.md R-5 (round 4)
+  // and, for the second case, fork/direction/plan.md sections 1.3 and 2.2.
   context.inst_block_stack().Push();
   auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
                                  context.ints().Add(64));

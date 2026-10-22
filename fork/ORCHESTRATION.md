@@ -10,12 +10,12 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-21 (DR-1's plan is signed off at rev 3, with slice 1
-stopped on upstream's own conflict, and its implementation has started; the
-owner's direction-drift directive is recorded as R32 and DR-0; CT-1's
-implementation is in its review fold, stacked on PR 61; SV-1 is held open as
-PR 62; TP-1's round 11 is dry; see the six paragraphs dated 2026-10-21 below;
-the 2026-10-19 text follows).
+Last updated: 2026-10-22 (CT-1 is held open as PR 64 after a dry focused
+re-review, stacked on PR 61, and DR-1a as PR 63; DR-1b is under implementation;
+PR 62, PR 56 and PR 57 carry DR-1's realignment commits; the owner's
+direction-drift directive is R32 and DR-0, with DR-1's slice 1 stopped on
+upstream's own conflict; see the paragraph dated 2026-10-22 and the six dated
+2026-10-21 below; the 2026-10-19 text follows).
 2026-10-19 (weekly check fired again: the cut HOLDS at 85 upstream commits with
 96 conflicting files and GitHub Actions on the repository is still DISABLED, see
 the paragraph dated 2026-10-19 below; the 2026-10-12 text follows). 2026-10-12
@@ -435,6 +435,40 @@ fixer is folding them at the root (224ee2f8f and its fill so far); the records
 and the focused re-review loop follow. Twelve PRs are held open; none is
 merged.
 
+Later on 2026-10-22 (00:07 UTC): CT-1 is IMPLEMENTED, REVIEWED AND HELD OPEN AS
+PR 64 (claude/carbon-fork-0-1-ct, head 4a3220c11, base
+claude/carbon-fork-0-1-tp, stacked on PR 61; toolchain 224ee2f8f). The
+implementation followed the signed-off plan with no stop-and-amend revision: C1,
+F1, C2, F2 and P reproduced every predicted fill, gate and total; the held-state
+measurements ran the mutants and five full composition mirrors (PR 51, 57, 59,
+60 and 62). Two implementation reviews (review 1 REJECT: a BLOCKER, a lowering
+stop when a Carbon generic call's result is stored into a C++ specialization
+member in a checked generic, three MAJORs and four MINORs; review 2
+APPROVE-WITH-FIXES, six records-only MINORs) were folded by a separate fixer at
+the root in the three fix commits the plan allows, each with its fill and a
+mutant pinning it; then R (gap rows 56 and 42 stay PARTIAL with corrected text)
+and D (W-043 DISCHARGED; TP-1's W-273 discharged and W-268 narrowed;
+W-300..W-311 filed, W-312..W-319 unused; F-021 minted). The focused re-review's
+round 1 (two fresh reviews, both APPROVE-WITH-FIXES with twelve records-only
+MINORs, folded in 4a3220c11; both re-ran the PR 62 mirror at its moved head
+0ef8a0334) is dry. Expected, not of record: file_test 1959 of 1959, conformance
+147/0/20 over 167 with 48 of 56 bullets. The description and first comment were
+posted from the branch's texts and verified byte-exact through the public API
+apart from the posting tool's footer. CT-1 merges after PR 62 through M, S-VA,
+L-F, L and the land-time records commit. DR-1a is HELD OPEN AS PR 63
+(claude/carbon-fork-0-1-dr, head 18a7e8934, base trunk; toolchain d0cfe8082):
+Core.Iterate.Next takes a ref cursor as upstream's p007381 adopted, nine goldens
+refilled, gate 1942 of 1942, conformance unchanged at 128/0/22; its one
+implementation review found three records-only MINORs, folded. DR-1b
+(IndirectIndexWith; W-109) is under implementation on
+claude/carbon-fork-0-1-dr-idx, stacked on PR 63. DR-1's held-PR commits are made
+and pushed: W-322 on PR 62 (head 0ef8a0334: the D-SV-7 Core.Optional view
+retired under R32 (d), gate 1950 of 1950, conformance 133/0/22 over 155, its
+focused review's four MINORs folded), W-323 on PR 56 (894139b34) and PR 57's
+merge of it (a080c7886); the three descriptions were refreshed with dated
+amendments and verified through the API. Fourteen PRs are held open (PR 51 to PR
+64); none is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -771,16 +805,16 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
-| `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 379f20f67 (W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
-| `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
+| `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 894139b34 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
+| `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at a080c7886 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at 40a76ab81 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54. |
 | `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
-| `claude/carbon-fork-0-1-sv` | HELD OPEN as PR 62 — SV-1 std::optional and std::variant interop mapping at 3a6531157 (toolchain a4d979619; W-011 DISCHARGED; gap row 68 stays PARTIAL on W-177, narrowed; F-020 minted; W-275..W-277, W-279..W-281, W-285 and W-286 filed, W-284 held for M-VA, W-282 conditional at land time, W-283 and W-287..W-294 unused, W-278 withdrawn; expected 134/0/21 over 155; gate 1950 of 1950); plan rev 5 signed off after five reviews, two implementation reviews folded in two fix commits, focused re-review round 2 dry; merges last, after PR 61, through its land-time items M, M-VA, F-M, Doc-M and the records commit. |
-| `claude/carbon-fork-0-1-ct` | PLANNED, implementation under way — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific (W-043; gap rows 56 and 42); plan signed off at rev 4 (62530b76e) after two reviews and two focused re-reviews (thirty findings folded, none rejected); the branch is cut from PR 61's head 5661a35c8 and stacked on PR 61; W-300..W-319 reserved (W-300..W-309 to be filed), F-021 minted; predicted, not of record: gate 1959 of 1959, conformance 147/0/20 over 167; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
-| `claude/carbon-fork-0-1-dr` | PLANNED, implementation under way — DR-1 direction realignment under R32 (W-321, W-109, W-322, W-323; W-320 stopped at the plan, blocked on W-324); plan signed off at rev 3 (a9943e467) after two reviews and one focused re-review (thirty-seven findings folded, none rejected); two PRs: DR-1a the ref cursor (this branch, base trunk) and DR-1b IndirectIndexWith (claude/carbon-fork-0-1-dr-idx, stacked on DR-1a); predicted, not of record: 1942 of 1942 and 128/0/22, then 1946 of 1946 and 130/0/22 over 152; merge after CT-1 through M-a, L-a, M-b, C-b and L-b. |
+| `claude/carbon-fork-0-1-sv` | HELD OPEN as PR 62 — SV-1 std::optional and std::variant interop mapping at 0ef8a0334 (toolchain 4a9c18b07; first held at 3a6531157, then amended 2026-10-21 by DR-1's W-322 commit, which retires the D-SV-7 Core.Optional view under R32 (d), and its focused review's four MINORs folded, the description and first comment refreshed; W-011 DISCHARGED; gap row 68 stays PARTIAL, W-177 not narrowed; F-020 minted; W-275..W-277, W-279..W-281, W-285 and W-286 filed, W-284 held for M-VA, W-282 conditional at land time, W-283 and W-287..W-294 unused, W-278 withdrawn; expected 133/0/22 over 155 with the view's program SKIPped; gate 1950 of 1950); plan rev 5 signed off after five reviews, two implementation reviews folded in two fix commits, focused re-review round 2 dry; merges last, after PR 61, through its land-time items M, M-VA, F-M, Doc-M and the records commit. |
+| `claude/carbon-fork-0-1-ct` | HELD OPEN as PR 64 — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific, at 4a3220c11 (toolchain 224ee2f8f; base claude/carbon-fork-0-1-tp, stacked on PR 61; W-043 DISCHARGED, TP-1's W-273 discharged and W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; gap rows 56 and 42 stay PARTIAL; expected 1959 of 1959 and 147/0/20 over 167); plan rev 4 signed off after four reviews, two implementation reviews folded in three fix commits, focused re-review round 1 dry; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
+| `claude/carbon-fork-0-1-dr` | HELD OPEN as PR 63 — DR-1a Core.Iterate.Next takes a ref cursor (R32; W-321 discharged) at 18a7e8934 (toolchain d0cfe8082; base trunk; expected 1942 of 1942 and 128/0/22 over 150); DR-1's plan rev 3 signed off with slice 1 (W-320, Match for Core.Optional) stopped on upstream's own conflict and blocked on W-324; W-324..W-327 and W-329 filed, W-328 reserved; one implementation review (three records-only MINORs) folded; DR-1b (IndirectIndexWith, W-109) under implementation on claude/carbon-fork-0-1-dr-idx, stacked on this branch; merges after CT-1 through M-a and L-a, then DR-1b through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -840,15 +874,15 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 ### Next actions (dependency order)
 
-1.  **DR-1 (fork/direction/plan.md, rev 3, signed off)**: two PRs after
-    CT-1, DR-1a the `ref` cursor (W-321) and DR-1b `IndirectIndexWith` (W-109,
-    stacked on DR-1a); now, W-322's removal-only commit on PR 62's branch and
-    W-323's records commit on PR 56's branch, merged into PR 57's; W-320
-    (`Core.Optional` matchable by `Match`) stopped at the plan on upstream's own
-    conflict, watched by W-324 at each weekly upstream check. W-322's commit
-    gets one focused review once its run is green (R29(c)); after it and
-    W-323's commit, PR 62's, PR 56's and PR 57's descriptions and first
-    comments are refreshed and re-posted, and their rows stamped.
+1.  **DR-1 (fork/direction/plan.md, rev 3, signed off)**: DR-1a, the `ref`
+    cursor (W-321), is held open as PR 63; DR-1b, `IndirectIndexWith` (W-109,
+    stacked on DR-1a), is under implementation and opens held when its review
+    and discharge are done; W-322's removal-only commit on PR 62's branch
+    (0ef8a0334, reviewed) and W-323's records commit on PR 56's branch
+    (894139b34), merged into PR 57's (a080c7886), are made, and the three
+    descriptions are re-posted; W-320 (`Core.Optional` matchable by `Match`)
+    stopped at the plan on upstream's own conflict, watched by W-324 at each
+    weekly upstream check. Both DR-1 PRs merge after CT-1 (PR 64).
 2.  A W-008 slice (tuple/var/ref/compile-time case patterns,
     non-binding payload subpatterns — unblocks W-066's usefulness
     diagnostics) or conformance depth (differential pairs for flipped

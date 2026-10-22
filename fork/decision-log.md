@@ -431,6 +431,47 @@ PR 51's check and lower slice/buf_field goldens are not refilled. DR-1b is held,
 stacked on DR-1a (PR 63) with base claude/carbon-fork-0-1-dr; its implementation
 review (R29(c)) comes next.
 
+_DR-1b discharge (2026-10-22)._ DR-1b's implementation review (the plan's §3
+item 8, R29(c)) read 45294ea90 against upstream/trunk 9319bb036 and returned
+APPROVE-WITH-FIXES: no BLOCKER, one MAJOR and six MINOR findings, three of them
+records only. Each was reproduced and folded, none rejected, by one of §3
+item 9's three fix commits with its fill, and nothing is shrunk: fddfcf42a
+(DR1B-M1: the literal-subscript rule also asks
+`IndirectIndexWith(Core.IntLiteral)`, so `h[0]` on a type with that impl and a
+non-`Copy` element calls it as written, where it had called the `i64` impl, the
+result now independent of whether the element is `Copy`; DR1B-m1, upstream's
+`class D` and `fn H` restored in the lower form split; DR1B-m2, slices.md's
+read-only text rewritten; DR1B-m3's pin; DR1B-m4's comments; W-326's title,
+W-109's landed cites, a dated note on W-116 and row 79's parenthetical) and its
+fill bcd9ba06f (check slice/write_through +60, lower
+function/call/form +44, +158 against DR-1a as upstream's hunk is; no other
+golden); the plan's amendments and its "Implementation review fold record,
+DR-1b" are 2a4264056 on claude/carbon-fork-0-1-dr, merged into this branch by
+adec21b5e. A behavior change inherited from upstream is recorded (DR1B-m3): with
+upstream's index.carbon, whose blanket `final` impl implements `IndexWith` for
+every `IndirectIndexWith` type with a `Copy` element, a user's `final impl X as
+Core.IndexWith(...)`, which trunk accepts, is rejected with
+`FinalImplOverlapsDifferentFile`, as upstream rejects it; it is not a drift, is
+not worked around (R32) and is pinned. Measured on the fold's tree, with the
+install at version 0.0.0-0.dev+fddfcf42a (container-local, EXPECTED, not of
+record): gate 1946 of 1946; conformance 130/0/22 over 152, bullets 48/0/8 of 56,
+no status change; `runner.py --self-test` OK over 152 programs; the mutants of
+§8 item 5 with their red sets unchanged and the fold's own, its probe removed,
+failing check slice/write_through alone (1945 passed); and the mirrors mct-b,
+m51, m55 and m57, re-measured on the same heads because the fix touches
+handle_index.cpp, with the same red sets, refills, gates and conformance totals
+as the DR-1b records note above. The id re-scan before this discharge
+(2026-10-22T03:44Z, after a fetch; 90 refs (70 origin refs and 20 local heads)
+and 19 worktrees' ledgers; widened to `W-3[2-9][0-9]`) finds W-324..W-327 and
+W-329 in DR-1a's and DR-1b's ledgers only, W-328 nowhere and no id above W-329;
+no id is filed. Held state: GitHub Actions is disabled (R28) and none of PR 51
+to PR 64 is on trunk (563135b40), so DR-1b is held with no PR yet, stacked on
+DR-1a (PR 63, base claude/carbon-fork-0-1-dr); it merges after CT-1 (PR 64,
+head 4a3220c11) and DR-1a through M-b (handle_index.cpp onto TP-1's
+`PerformIndex`), C-b (+19/-1) and L-b (check generic/template/index 16/41 and
+PR 55's string_indexing 2/2), each measured. The focused re-review of the fold
+comes next.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

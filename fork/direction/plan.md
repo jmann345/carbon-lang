@@ -3737,3 +3737,79 @@ measured is container-local, EXPECTED and not of record (R9). The scratch is
 -   **DR-1b.** Stacked on this branch (§3 items 5 to 8, B0 first on
     claude/carbon-fork-0-1-dr-idx); it merges after DR-1a through M-b, C-b
     and L-b.
+
+## Landed notes (DR-1b, 2026-10-22)
+
+Written by DR-1b's discharge commit D, "DR-1 discharge (DR-1b)" (§3 item 11),
+dated 2026-10-22, the UTC date of its commit, on claude/carbon-fork-0-1-dr-idx,
+whose PR base is claude/carbon-fork-0-1-dr (DR-1a, PR 63). In the held state
+none of PR 51 to PR 64 is on trunk (GitHub Actions is disabled, R28; trunk at D
+is 563135b40, records only after f68681114), and CT-1 (PR 64) and DR-1a are not
+merged, so these notes record what D wrote, the commits, the ids, the
+measurements and their heads, and the land-time items in order; the merge
+records add the merged tree's runs here. Everything measured is container-local,
+EXPECTED and not of record (R9). The scratch is
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/dr1-impl`
+(stageB, amend4, stageBR, revB and fixB, each with its `logs/`).
+
+-   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
+    (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
+    its fold, the runs on the fold's tree, the behavior change DR1B-m3 records,
+    the re-scan, the held state and the land-time items).
+    fork/inventory/work-items.json: one dated sentence on the ledger's `source`;
+    no item changes. fork/gap-analysis.md: row 82's dated conformance sentence
+    (DR1B-m5). fork/ORCHESTRATION.md: the dr-idx row of the Branches table in
+    the held wording. This plan: these notes. Row 79 stays DONE as B-R and the
+    fold wrote it; the V-3a register's (ii) stays as B-R resolved it.
+-   **The commits.** B0 cdaa15710 (230227264 cherry-picked with `-x`, PR 7886,
+    by David Blaikie); B0F 06b6479d0 "DR-1b: cherry-pick fill"; B1 3c54754bc
+    "DR-1b: subscripting prefers `IndirectIndexWith`; `Core.Slice` and
+    `Core.Buf` write through `Ref`"; B1F cf4904138 "DR-1b fill"; B-P 4c358f94b
+    "DR-1b programs"; 1b2ddcb87, the merge of rev 4; B-R 45294ea90 "DR-1b
+    records"; the fold's fddfcf42a "DR-1b fix: literal subscripts honour an
+    `IndirectIndexWith(Core.IntLiteral)` impl; the review's splits and records"
+    and its fill bcd9ba06f "DR-1b fix fill"; 2a4264056 "DR-1 plan:
+    implementation-review fold, DR-1b" on claude/carbon-fork-0-1-dr and its
+    merge adec21b5e; then D. One fix commit of §3 item 9's three, shared with
+    the focused re-review loop that follows.
+-   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
+    `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
+    refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
+    W-320..W-323 in twelve ledgers (trunk's, claude/carbon-fork-0-1-7mwfb7's,
+    DR-1a's and this branch's, each as its local head and its origin ref, and
+    the worktrees carbon-lang, carbon-dr, carbon-dr-idx and carbon-trunk),
+    W-324..W-327 and W-329 in DR-1a's and this branch's six (local head, origin
+    ref and worktree each) and nowhere else, W-328 nowhere, and no id from W-330
+    to W-399.
+-   **Ids.** Discharged: W-109 (B-R). Filed by DR-1 at R0 and unchanged here:
+    W-324..W-327 and W-329; W-326's title amended by the fold (DR1B-M1).
+    Reserved and unused: W-328, for W-320's resumption. No id is filed by the
+    fold or by D.
+-   **Measurement heads.** Upstream's direction read at upstream/trunk ebc155734
+    (fetched at the fold; its one commit since 9319bb036 touches no file of
+    DR-1b's). DR-1b's build /home/user/carbon-build/carbon-dr-idx, its install
+    printing 0.0.0-0.dev+fddfcf42a after the fold's rebuild. Gates: B0 1940
+    passed and 2 failed, 1942 of 1942 after B0F; B1 1932 passed and 14
+    failed, 1946 of 1946 after B1F; the fold's tree 1946 of 1946. Conformance on
+    B-P and on the fold's tree: PASS 130, COMPILE-FAIL 0, LINK-FAIL 0,
+    RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 of 152,
+    bullets 48/0/8 of 56 (fixB/conf/scoreboard.json). The mutants of §8 item 5,
+    as that item states. The mirrors of §8 item 9, re-measured at the fold on
+    the heads fetched 2026-10-22: mct-b on CT-1's 4a3220c11, m51 on PR 51's
+    f96fe8a7a, m55 on PR 55's 21307851a and m57 on PR 57's a080c7886, each as
+    §5's rows state. The held heads at D: PR 56 at 894139b34, PR 57 at
+    a080c7886, PR 62 at 0ef8a0334, PR 61 at 5661a35c8, CT-1 (PR 64)
+    at 4a3220c11, DR-1a (PR 63) at 2a4264056.
+-   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
+    through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
+    CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk
+    (with PR 51 to PR 62, CT-1 and DR-1a) into this branch, never a rebase:
+    handle_index.cpp resolves onto TP-1's `PerformIndex(context, loc_id, ...)`
+    (§2.2, as measured on mct-b); records keep both sides. C-b, "DR-1b: index a
+    template-dependent operand per specific (TP-1's `IndexAction`)", +19/-1, its
+    added lines measured on mct-b at the fold. L-b, the refill commit: check
+    generic/template/index (16/41, after C-b) and PR 55's
+    check/operators/overloaded/string_indexing (2/2), measured on mct-b and m55;
+    PR 51's buf_field goldens and PR 57's check/slice/basic are not refilled, as
+    measured. Then the gate and conformance on the merged tree, a second id
+    re-scan, and the merged runs recorded here.

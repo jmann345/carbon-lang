@@ -585,7 +585,38 @@ m57 the refills 186/186, 183/183 and 185/185, then 1954 of 1954 and 141/0/22
 over 163. Recorded by c11738fab on claude/carbon-fork-0-1-dr (the plan's round 3
 record), its merge 707e407bb and this branch's records commit (W-109's re-pinned
 cites, W-116's re-pinned rule cite and W-326's note, the ledger's source, the
-DR-1b landed notes, ORCHESTRATION).
+DR-1b landed notes, ORCHESTRATION). Round 3's reviews (2026-10-22): two reviews
+read 7a442f632 and its records at d85c033fd (toolchain 7a442f632;
+upstream/trunk 57ba07a97, unchanged at 09:01Z; the held heads unchanged) and
+returned APPROVE-WITH-FIXES. Review 1 found one MAJOR, RR3-1-M1, present since
+B1 3c54754bc: on DR-1b's own tree a subscript of template-dependent type on a
+type that implements only `IndexWith`
+(`fn G[template T: type](x: T, i: i64) -> i32 { return x[i]; }` with `V`
+implementing only `IndexWith(i64)`, and three variants) fails with
+`unable to monomorphize specific`, because the non-diagnosing
+`IndirectIndexWith` attempt (handle_index.cpp:265-268) is deferred as a splice
+and the `IndexWith` fallback (:269-273) never runs, where trunk 0bdce60a5,
+DR-1a, the nightly and the TP-1 and CT-1 installs print 7, 8, 9 and 6, as mct-b
+does with C-b; these records reproduced all four on those six toolchains. The
+lines are 309d3d63c's, so upstream has the same defect by code reading, and the
+plan's statements that the deferral exists only on TP-1's base are contradicted,
+which the plan now marks. Review 2 found four MINOR, records only: the PR texts,
+ORCHESTRATION and the plan saying round 3's reviews were pending (RR3-2-m1); the
+plan's §3 items 1 and 11 lacking hashes and counts (RR3-2-m2); its Contents
+lacking the Landed notes (RR3-2-m3); and PR 63's posted description stale, its
+prepared amendment lacking a comma (RR3-2-m4). The round is not dry: RR3-1-M1 is
+a valid program rejected, owed to round 4's fixer, who, all three fix commits
+being used, takes the plan's shrink line (the shape OUT on DR-1b's own tree with
+a residue at the next free id and a `fail_todo_` split, discharged by C-b at
+M-b), or its break condition if no shrink answers it; nothing is shrunk and no
+id is filed here. Review 2's four are folded, none rejected, by 77c3b8b40 on
+claude/carbon-fork-0-1-dr (the plan's "Round 3's reviews"), its merge e76426593
+and this branch's records commit. The reviews' runs (container-local, EXPECTED,
+not of record): gate 1946 of 1946 and conformance 130/0/22 over 152,
+bullets 48/0/8, on both; a full autoupdate on a copy changing nothing;
+review 1's three handle_index.cpp mutants as recorded, and mct-b rebuilt in full
+on CT-1's 4a3220c11, 1963 of 1963 and 149/0/20 over 169 after C-b and the
+refills; review 2's prek `--all-files` clean.
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

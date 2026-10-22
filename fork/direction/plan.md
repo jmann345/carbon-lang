@@ -144,7 +144,7 @@ removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
 -   Focused re-review of the fold, DR-1b, rounds 1 to 3 (round 1 with RR4's
     fold, round 3 with its reviews)
 -   Sign-off
--   Landed notes (DR-1a)
+-   Landed notes (DR-1a, DR-1b)
 
 (Amended 2026-10-22, re-review round 3: the reviews: RR3-2-m3. The lines are in
 the order of the headings, and the Landed notes line is added; DR-1b's Landed
@@ -4678,7 +4678,9 @@ and amend the commits and the measurement heads (amended 2026-10-22, re-review
 round 2), and the records of round 2's reviews extend that bullet and the
 commits (amended 2026-10-22, re-review round 2: the reviews). Round 3's records
 add the bullet "Re-review round 3" and amend the commits and the measurement
-heads (amended 2026-10-22, re-review round 3).
+heads (amended 2026-10-22, re-review round 3), and the records of round 3's
+reviews extend that bullet and the list of commits (amended 2026-10-22,
+re-review round 3: the reviews).
 
 -   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
     (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
@@ -4720,7 +4722,11 @@ heads (amended 2026-10-22, re-review round 3).
     commit because autoupdate changed nothing; c11738fab "DR-1 plan: focused
     re-review of DR-1b's fold, round 3 recorded" on claude/carbon-fork-0-1-dr;
     its merge 707e407bb; and "DR-1b re-review fix: round 3 folded into the
-    records".
+    records". Then the records of round 3's reviews (amended 2026-10-22,
+    re-review round 3: the reviews): 77c3b8b40 "DR-1 plan: focused re-review of
+    DR-1b's fold, round 3 recorded" on claude/carbon-fork-0-1-dr, its merge
+    e76426593, and "DR-1b records: re-review round 3 recorded". At d85c033fd ten
+    first-parent commits followed D (a0ea3347e to d85c033fd; RR3-2-m2).
 -   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
     `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
     refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
@@ -4833,7 +4839,27 @@ heads (amended 2026-10-22, re-review round 3).
     over 169; m51 1949 of 1949, no refill, 133/0/19 over 152; m55 the 2/2
     refill, then 1954 of 1954 and 135/0/21 over 156; m57 the refills 186/186,
     183/183 and 185/185, then 1954 of 1954 and 141/0/22 over 163. DR-1a (PR 63)
-    is at c11738fab after round 3's plan commit, the other held heads as at D.
+    was then at c11738fab, after round 3's plan commit, the other held heads as
+    at D. Round 3's reviews (amended 2026-10-22, re-review round 3: the
+    reviews): two reviews of d85c033fd (toolchain 7a442f632,
+    upstream/trunk 57ba07a97), both APPROVE-WITH-FIXES, review 1 with one MAJOR
+    finding, RR3-1-M1, and review 2 with four MINOR, RR3-2-m1..m4, records only.
+    RR3-1-M1: on this tree a subscript of template-dependent type on a type that
+    implements only `IndexWith` fails at monomorphization, the non-diagnosing
+    `IndirectIndexWith` attempt (handle_index.cpp:265-268) being deferred as a
+    splice so that the fallback (:269-273) never runs, where trunk, DR-1a, the
+    nightly and the TP-1 and CT-1 installs run t10, t15, t16 and t18 (`7`, `8`,
+    `9`, `6`), as mct-b does with C-b. Not dry: RR3-1-M1 is owed to round 4's
+    fixer under §3 item 9's shrink line, all three fix commits being used.
+    Folded by the records: RR3-2-m1 (the PR texts, ORCHESTRATION's row and the
+    Sign-off), RR3-2-m2 (§3 items 1 and 11), RR3-2-m3 (the Contents, with this
+    branch's Landed notes line) and RR3-2-m4 (PR 63's prepared amendment, as
+    text for the orchestrator). The reviews' runs, on the head: gate 1946
+    of 1946; conformance 130/0/22 over 152, bullets 48/0/8; a full autoupdate on
+    a copy changing nothing; review 1's three handle_index.cpp mutants and mct-b
+    on CT-1's 4a3220c11 as §5 and §8 item 5 state; review 2's prek `--all-files`
+    clean. DR-1a (PR 63) is at 77c3b8b40 after the reviews' plan commit, the
+    other held heads as at D.
 -   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
     through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
     CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk

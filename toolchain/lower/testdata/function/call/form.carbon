@@ -100,6 +100,17 @@ fn G[T: I](x: T) {
   x.F();
 }
 
+class D {
+  var p: C*;
+  impl as I {
+    fn F(self) -> ref C { return *self.p; }
+  }
+}
+
+fn H(d: D) {
+  G(d);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'ref_form_param.carbon'
 // CHECK:STDOUT: source_filename = "ref_form_param.carbon"

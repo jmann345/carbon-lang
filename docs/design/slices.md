@@ -111,27 +111,32 @@ class Slice(T: Copy & Destroy) {
 
 impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 
-final impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+final impl forall [T: Copy & Destroy] Slice(T) as IndirectIndexWith(i64)
     where .ElementType = T;
 
 impl forall [T: Copy & Destroy] Slice(T) as ImplicitAs(Slice(const T));
 ```
 
-`s[i]` is `IndexWith.At`, so it is a _value expression_: it reads the element
-out by value through its `Copy` witness, after the bounds check of `Get`. The
+`s[i]` is `IndirectIndexWith.Ref`, so it is a _durable reference_ to the
+element, after the bounds check `Get` also makes: `s[i] = v` writes through, and
+a read copies the element out through its `Copy` witness. Subscripting tries
+`IndirectIndexWith` first and falls back to `IndexWith`, and `IndexWith(i64)`
+comes from the prelude's blanket `final` impl for every `IndirectIndexWith` type
+with a `Copy` element (upstream's core/prelude/operators/index.carbon). The
 subscript type is `i64`. An integer literal subscript converts to `i64` first
-(fork rule, SL-1): the index expression applies that conversion when the
-container implements `IndexWith(i64)` and has no `IndexWith(Core.IntLiteral)`
-impl — the array indexing rule's hardcoded subscript conversion, decided by impl
-lookup instead — so `s[1]` and `s[i]` with `i: i64` work, while an `i32`
-subscript must be written `s[i as i64]` (see [0.1 limits](#01-limits)). A
-container with its own `IndexWith(Core.IntLiteral)` impl, such as `Core.String`,
-is dispatched as written. The `IndexWith(i64)` impls of `Slice` and `Buf` are
-`final`, so in a generic body `s[i]` on a `Core.Slice(T)` has type `T`: a
-symbolic impl lookup resolves only final impls, and through a non-final impl the
-element type would stay the abstract
-`Core.Slice(T).(Core.IndexWith(i64).ElementType)`. `Slice` deliberately does not
-copy `String`'s blanket `IndexWith(U: ImplicitAs(i64))` impl: for `U =
+(fork rule, SL-1, amended by DR-1b): the index expression applies that
+conversion when the container implements `IndirectIndexWith(i64)` or
+`IndexWith(i64)` and has no `IndirectIndexWith(Core.IntLiteral)` or
+`IndexWith(Core.IntLiteral)` impl — the array indexing rule's hardcoded
+subscript conversion, decided by impl lookup instead — so `s[1]` and `s[i]` with
+`i: i64` work, while an `i32` subscript must be written `s[i as i64]` (see
+[0.1 limits](#01-limits)). A container with its own impl for `Core.IntLiteral`,
+such as `Core.String`, is dispatched as written. The `IndirectIndexWith(i64)`
+impls of `Slice` and `Buf` are `final`, so in a generic body `s[i]` on a
+`Core.Slice(T)` has type `T`: a symbolic impl lookup resolves only final impls,
+and through a non-final impl the element type would stay the abstract
+`Core.Slice(T).(Core.IndirectIndexWith(i64).ElementType)`. `Slice` deliberately
+does not copy `String`'s blanket `IndexWith(U: ImplicitAs(i64))` impl: for `U =
 Core.IntLiteral` its `At` would apply a compile-time-only conversion to a
 runtime `subscript`, which cannot be lowered; `String`'s works only because its
 `At` is itself a builtin, lowered at the call site. A `Core.Slice(T)` is `Copy`
@@ -158,7 +163,7 @@ class Buf(T: Copy & Destroy) {
   impl as Destroy;  // frees the block
 }
 
-final impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+final impl forall [T: Copy & Destroy] Buf(T) as IndirectIndexWith(i64)
     where .ElementType = T;
 ```
 
@@ -187,7 +192,7 @@ the requirement is checked — per specific, for a symbolic pointee.
 
 ## Bounds behavior
 
-Every read through a slice and every write through a buffer is
+Every read and every write through a slice or a buffer is
 bounds-checked, and a violation is a **fail-stop**: one line on stderr naming
 the operation, then `abort()`. The process dies with `SIGABRT`; nothing is
 unwound and no further program logic runs
@@ -269,7 +274,7 @@ for (x: i32 in s) {
 ```
 
 reads each element by value in order. The impl is `final`, like the
-`IndexWith(i64)` impl, so `for (x: T in s)` in a generic body binds `T`.
+`IndirectIndexWith(i64)` impl, so `for (x: T in s)` in a generic body binds `T`.
 `Core.Buf(T)` has no `Iterate` impl of
 its own: `for (x: T in b.AsSlice())` is the idiom. The impl lives in
 `core/prelude/iterate.carbon`, next to the array and C++ range impls.
@@ -363,7 +368,9 @@ which it is removed:
 > block a by-value `Buf` names (D-SL-6). A `Slice(const T)` is not writable
 > where `T` is known; a generic body's write instantiated at a `const` element
 > is W-327's. The literal-subscript rule stands in for `like i64` until `like`
-> lands (W-326).
+> lands (W-326). The interface listings, the indexing paragraph and the bounds
+> and iteration sentences above state this design (rewritten on 2026-10-22,
+> DR-1b implementation-review fold: DR1B-m2).
 
 -   **`i32` subscripts need `as i64`.** Only an integer literal converts to the
     `i64` subscript type implicitly. Removed when integer subscript widening is

@@ -48,20 +48,21 @@ static auto PerformIndexOperator(Context& context, Parse::NodeId node_id,
                              index_inst_id, diagnose);
 }
 
-// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05). Returns whether
-// `operand_type_id` implements `Core.IndexWith(subscript_type_id)`, from a
-// non-diagnosing impl lookup, or `nullopt` when the question cannot be asked
-// without diagnosing: no `Core.IndexWith`, or one that is not a generic
-// interface over a single `type` parameter (the shapes
-// operators/overloaded/index.carbon pins), which the ordinary dispatch then
-// reports exactly once. The probe emits nothing and leaves no instructions:
-// the facet type is built from the interface and a specific (a constant), and
-// the lookup's scratch instructions are discarded. It does share the
-// dispatch's file-level footprint — the `Core.IndexWith` name lookup loads
-// (or poisons) that name in the `Core` scope exactly as `GetOperatorOpFunction`
-// does — so callers probe only where the dispatch itself would look the name
-// up (never for an erroneous operand, which `BuildBinaryOperator` rejects
-// before any lookup).
+// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05; DR-1, amended
+// 2026-10-22). Returns whether `operand_type_id` implements
+// `Core.<interface_name>(subscript_type_id)`, where `interface_name` is
+// `IndexWith` or `IndirectIndexWith`, from a non-diagnosing impl lookup, or
+// `nullopt` when the question cannot be asked without diagnosing: no such
+// interface in `Core`, or one that is not a generic interface over a single
+// `type` parameter (the shapes operators/overloaded/index.carbon pins), which
+// the ordinary dispatch then reports exactly once. The probe emits nothing
+// and leaves no instructions: the facet type is built from the interface and
+// a specific (a constant), and the lookup's scratch instructions are
+// discarded. It does share the dispatch's file-level footprint — the name
+// lookup loads (or poisons) that name in the `Core` scope exactly as
+// `GetOperatorOpFunction` does — so callers probe only where the dispatch
+// itself would look the name up (never for an erroneous operand, which
+// `BuildBinaryOperator` rejects before any lookup).
 static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
                              CoreIdentifier interface_name,
                              SemIR::TypeId operand_type_id,
@@ -104,9 +105,10 @@ static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
   return result.has_value() && !result.has_error_value();
 }
 
-// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05): the
-// literal-subscript rule. An integer literal subscript on an operand that
-// implements `IndexWith(i64)` and has no `IndexWith(Core.IntLiteral)` impl
+// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05; DR-1, amended
+// 2026-10-22): the literal-subscript rule. An integer literal subscript on an
+// operand that implements `IndirectIndexWith(i64)` or `IndexWith(i64)` and has
+// no `IndirectIndexWith(Core.IntLiteral)` or `IndexWith(Core.IntLiteral)` impl
 // converts to `i64` before dispatch — the array arm's hardcoded subscript
 // conversion below, decided by impl lookup. Returns the target type, or
 // `nullopt` to dispatch the literal as written. A blanket `impl forall [U:
@@ -117,8 +119,9 @@ static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
 // (lower/handle_call.cpp, "Missing constant value for call to comptime-only
 // function"); `Core.String`'s blanket impl lowers only because its `At` is
 // itself a builtin, lowered at the call site. An operand with its own
-// `IndexWith(Core.IntLiteral)` impl, and one with neither impl, dispatch as
-// written, so their results and diagnostics are unchanged.
+// `IndirectIndexWith(Core.IntLiteral)` or `IndexWith(Core.IntLiteral)` impl,
+// and one with no impl for either subscript type, dispatch as written, so
+// their results and diagnostics are unchanged.
 static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
                                        SemIR::TypeId operand_type_id,
                                        SemIR::TypeId literal_type_id)
@@ -140,15 +143,27 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   // discarded. What cannot be discarded is the `Core.Int` import_ref the
   // name lookup loads into this file (and the `Int` generic's constants): a
   // file whose only integer-typed expression is a literal subscript on a
-  // type with neither `IndexWith` impl gains exactly that import_ref in its
-  // SemIR dump (`import_ref Core//prelude/types/int, Int, loaded`). Its
-  // semantics are unchanged — the dispatch still diagnoses
+  // type with no `IndexWith` impl for the literal gains exactly that
+  // import_ref in its SemIR dump (`import_ref Core//prelude/types/int, Int,
+  // loaded`). Its semantics are unchanged — the dispatch still diagnoses
   // `Core.IndexWith(Core.IntLiteral)` — and there is no way to name `i64`
   // without it; disclosed in fork/slices/plan.md R-5 (round 4).
   context.inst_block_stack().Push();
   auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
                                  context.ints().Add(64));
   context.inst_block_stack().PopAndDiscard();
+  // A non-`Copy` element's `IndirectIndexWith(Core.IntLiteral)` impl is not
+  // covered by the blanket `IndexWith` impl, so it is asked separately. Both
+  // literal impls must be absent, so the order of the probes does not change
+  // the result; this one follows the `Core.Int` lookup so that the names the
+  // rule loads into `Core` keep their order (`IndexWith`, `Int`,
+  // `IndirectIndexWith`), and with it every SemIR dump's `imports`.
+  auto has_literal_ref_impl =
+      HasIndexWithImpl(context, loc_id, CoreIdentifier::IndirectIndexWith,
+                       operand_type_id, literal_type_id);
+  if (!has_literal_ref_impl || *has_literal_ref_impl) {
+    return std::nullopt;
+  }
   // `IndexWith(i64)` is also implemented by `IndirectIndexWith`'s blanket
   // `final` impl when the element is `Copy`; probe `IndirectIndexWith(i64)`
   // first so that a non-`Copy` element is admitted too.
@@ -208,11 +223,12 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
     }
 
     default: {
-      // The literal-subscript probe runs only where `PerformIndexWith` would
-      // itself look `Core.IndexWith` up: `BuildBinaryOperator` exits before
-      // any lookup for an erroneous operand (a namespace or function used as
-      // a value, an unresolved name), and probing there would load or poison
-      // the name in the `Core` scope where the dispatch never does.
+      // The literal-subscript probe runs only where `PerformIndexOperator`
+      // would itself look `Core.IndirectIndexWith` and `Core.IndexWith` up:
+      // `BuildBinaryOperator` exits before any lookup for an erroneous
+      // operand (a namespace or function used as a value, an unresolved
+      // name), and probing there would load or poison the names in the
+      // `Core` scope where the dispatch never does.
       auto index_type_id = context.insts().Get(index_inst_id).type_id();
       if (operand_inst_id != SemIR::ErrorInst::InstId &&
           context.types().Is<SemIR::IntLiteralType>(index_type_id)) {

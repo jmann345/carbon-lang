@@ -61,6 +61,53 @@ fn BufWrite(b: Core.Buf(i32)) {
 }
 //@dump-sem-ir-end
 
+// --- literal_subscript_literal_impl.carbon
+library "[[@TEST_NAME]]";
+
+// The literal-subscript rule converts a literal to `i64` only for an operand
+// with no impl for the literal itself. `H` has its own
+// `IndirectIndexWith(Core.IntLiteral)` impl, and its element is not `Copy`, so
+// the blanket `IndexWith` impl does not cover it: `h[0]` calls that impl's
+// `Ref`, as written, not the `i64` impl's.
+class NC {
+  var v: i32;
+}
+
+class H {
+  var p: NC*;
+  var q: NC*;
+}
+
+impl H as Core.IndirectIndexWith(Core.IntLiteral) where .ElementType = NC {
+  fn Ref(self, unused i: Core.IntLiteral) -> ref NC { return *self.p; }
+}
+
+impl H as Core.IndirectIndexWith(i64) where .ElementType = NC {
+  fn Ref(self, unused i: i64) -> ref NC { return *self.q; }
+}
+
+fn F(h: H) -> i32 {
+  //@dump-sem-ir-begin
+  return h[0].v;
+  //@dump-sem-ir-end
+}
+
+// --- fail_final_index_with_overlap.carbon
+library "[[@TEST_NAME]]";
+
+// The prelude's index.carbon is upstream's: its blanket `final` impl
+// implements `IndexWith` for every `IndirectIndexWith` type with a `Copy`
+// element, and its type structure overlaps any other `final` impl of
+// `IndexWith` in another file. So this impl, which the prelude accepted before
+// it took upstream's `IndirectIndexWith`, is rejected, as upstream rejects it.
+class V {
+  var x: i32;
+}
+
+final impl V as Core.IndexWith(i64) where .ElementType = i32 {
+  fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
+}
+
 // CHECK:STDOUT: --- write.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

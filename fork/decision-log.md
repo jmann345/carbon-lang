@@ -362,8 +362,23 @@ after CT-1 (whose head is 118fc1bc8 at this commit) through M-a, the merge of
 trunk that resolves handle_loop_statement.cpp and loops.md to DR-1a's side
 (the plan's §1.16), then L-a, the refill of check generic/template/for_range,
 lower template/for_range and check interop/cpp/range_for (12/17, 137/137 and
-17/103, measured) and PR 57's check/slice/basic (predicted). DR-1b, stacked
-on this branch, is next.
+17/103, measured) and PR 57's check/slice/basic (predicted; corrected 2026-10-22
+below, plan rev 4). DR-1b, stacked on this branch, is next.
+
+Correction (2026-10-22, plan rev 4 f551057ea and its Stop-and-amend record) of
+the DR-1a discharge note's land-time items: L-a refills check
+generic/template/for_range, lower template/for_range and check
+interop/cpp/range_for (12/17, 137/137 and 17/103) and lower array/iterate,
+for/break_continue and for/for (186/186, 183/183 and 185/185 against PR 57's
+text, after their CHECK-only conflict blocks take trunk's side at M-a); L-b
+refills check generic/template/index (16/41, after C-b) and PR 55's
+check/operators/overloaded/string_indexing (2/2); PR 57's check/slice/basic and
+PR 51's check and lower slice/buf_field goldens are not refilled. Carried on
+this branch on 2026-10-22 by the records of round 1 of DR-1b's focused
+re-review (the plan's RR4-m3), as DR-1b's records note on
+claude/carbon-fork-0-1-dr-idx first wrote it; range_for's 17/103 is against
+CT-1's text, and its L-a count is recorded at L-a against trunk's merged text
+(the plan's R-6 and RR4-m1).
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

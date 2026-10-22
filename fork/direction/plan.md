@@ -49,6 +49,11 @@ is implemented through B-P (cdaa15710 to 4c358f94b on
 claude/carbon-fork-0-1-dr-idx, pushed) and stopped before B-R at the mirrors
 of §8 item 9; rev 4 amends merge-time predictions only, and DR-1b resumes at
 B-R after rev 4's focused re-review, as its Stop-and-amend record instructs.
+DR-1b resumed on 2026-10-22 and is implemented through B-R (45294ea90) and its
+implementation-review fold (amended 2026-10-22, implementation-review fold:
+DR1B-m6): the records are "Implementation review fold record, DR-1b
+(2026-10-22)" before the Sign-off and the landed notes that DR-1b's discharge D
+writes on claude/carbon-fork-0-1-dr-idx.
 
 What rev 4 changes (amended 2026-10-22, implementation: stop-and-amend: the
 m51 and m57 red sets). DR-1b's mirrors of §8 item 9 found two merge-time
@@ -106,6 +111,7 @@ removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
 -   Appendix C: records texts
 -   Review fold record (rev 2 and rev 3)
 -   Stop-and-amend record (rev 4)
+-   Implementation review fold records (DR-1a, DR-1b)
 -   Sign-off
 
 ## §0 Audit: measurements with file:line evidence
@@ -500,7 +506,12 @@ fork emits `ref_tag` then `ref_form` and upstream emits `ref_form` then
 `type_component_of`: upstream 059ee7b9e ("Parse `-> ref T` as a primitive
 return form", 2026-10-07), which the fork does not have (§0.10). The lower
 file gains 103 lines (upstream's hunk is 158 because upstream's file has a
-preceding split the fork lacks). The upstream `IndirectIndexWith` tests fill
+preceding split the fork lacks). Corrected 2026-10-22 (implementation-review
+fold: DR1B-m1): the fork lacked no preceding split. v4 and B0 left out the
+last 11 lines of upstream's third lower split, `class D` with its `impl as I`
+and `fn H(d: D) { G(d); }`, so no specific of `G` was lowered; restored, the
+golden gains 158 lines, as upstream's hunk does, its lines upstream's but for
+the metadata numbers. The upstream `IndirectIndexWith` tests fill
 to 620 and 164 lines (upstream's 618 and 164): the differences are the
 prelude-dependent hash suffixes and one diagnostic rendered with a source
 snippet instead of upstream's column range (upstream 2c9739799, UA-3's). Their
@@ -1043,10 +1054,28 @@ and a non-`final` one regresses generic `b[i]`, which D-SL-18 made `final` for.
 `Buf.Set` (buf.carbon:48-53) stays: a method, not a second spelling of an
 upstream mechanism, and existing programs call it.
 
+A behavior change inherited from upstream (amended 2026-10-22,
+implementation-review fold: DR1B-m3). Under upstream's index.carbon a user's
+`final impl X as Core.IndexWith(...)`, which trunk 0bdce60a5 accepts (the DR-1b
+implementation review's p15 prints `6`), is rejected with
+`FinalImplOverlapsDifferentFile` and the note at index.carbon:19: the blanket
+`final` impl's type structure overlaps every other `final` `IndexWith` impl,
+`Buf`'s above being one instance. Upstream rejects it the same way and
+index.carbon is upstream's byte for byte, so it is not a drift, and the
+toolchain does not work around it (R32); a non-`final` user impl is unaffected
+(that review's p09 runs). A.1's `fail_final_index_with_overlap` split pins it,
+and §7.1's R-7 records it.
+
 The fork's literal-subscript rule (D-SL-17, handle_index.cpp:107-157) probes
 `IndirectIndexWith(i64)` before `IndexWith(i64)`, so a type with only
 `IndirectIndexWith(i64)` and a non-`Copy` element still converts a literal
-subscript. D-SL-17 is itself a fork spelling of indexing.md's `like i64`
+subscript. It also leaves a literal as written for an operand with its own
+`IndirectIndexWith(Core.IntLiteral)` impl, which the blanket `IndexWith` impl
+does not cover for a non-`Copy` element, so the impl a literal subscript calls
+no longer depends on whether the element is `Copy` (amended 2026-10-22,
+implementation-review fold: DR1B-M1; handle_index.cpp:155-166 at the fold, the
+probe placed after the `Core.Int` lookup so that no existing golden moves).
+D-SL-17 is itself a fork spelling of indexing.md's `like i64`
 subscript (`impl as IndirectIndexWith(like i64)`, indexing.md:113-121), which
 upstream's toolchain does not implement (no `like`, PR 56's W-178). W-109's
 notes said it "yields to the specified rewrite" when W-109 lands; it cannot
@@ -1330,6 +1359,9 @@ subsection (§2.1), keeping the fork's `while let` amendment, and C.9's
 amendment follows the desugaring block (amended 2026-10-21,
 implementation-review fold: DR1A-m1).
 docs/design/slices.md at DR-1b: C.10 replaces the read-only 0.1-limits bullet.
+The page's own interface listings, indexing paragraph and bounds and iteration
+sentences are rewritten to the same design, and the amendment block says so in
+a dated sentence (amended 2026-10-22, implementation-review fold: DR1B-m2).
 docs/design/error_handling.md at the records commit R0: C.11's dated amendment
 corrects the EH-A amendment's "the `match` body above applies verbatim once
 W-058 makes `Optional` a choice" (DR-0 rejected the choice route; the route is
@@ -1842,7 +1874,13 @@ diff --git a/toolchain/check/handle_index.cpp b/toolchain/check/handle_index.cpp
 As committed at B1 (3c54754bc; amended 2026-10-22, implementation:
 stop-and-amend: stage B errata), clang-format 21.1.8 wraps three of the
 block's statements differently, with the same tokens: handle_index.cpp is
-37/16 against the block's 39/17.
+37/16 against the block's 39/17. The implementation-review fold's fix commit
+(amended 2026-10-22, implementation-review fold: DR1B-M1 / DR1B-m4) adds the
+`IndirectIndexWith(Core.IntLiteral)` probe of §1.3 after the `Core.Int` lookup
+and rewords three comments (`HasIndexWithImpl`'s, the rule's statement and the
+`default:` arm's), making handle_index.cpp 80/43 against f68681114; C-b's 19
+added lines are unchanged, their context at merge the reworded comment
+(measured on mct-b at the fold).
 
 toolchain/check/core_identifier.def, toolchain/check/cpp/operators.cpp
 (309d3d63c's lines) and 230227264's call.cpp and convert.cpp hunks (applied
@@ -2076,10 +2114,10 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 | Golden | PR | Kind | Measured |
 | --- | --- | --- | --- |
 | check/for/actual, basic, pattern; check/interop/cpp/range_for; check/slice/basic; lower/array/iterate; lower/for/bindings, break_continue, for | DR-1a | refill | §0.6's numstat (v2) |
-| check/function/call/form.carbon, lower/function/call/form.carbon | DR-1b (B0F) | three splits added from 230227264, refill | +172/0 and +103/0 (v4); 169 of the 172 check lines byte-identical to upstream's |
+| check/function/call/form.carbon, lower/function/call/form.carbon | DR-1b (B0F) | three splits added from 230227264, refill | +172/0 and +103/0 (v4); 169 of the 172 check lines byte-identical to upstream's; the lower golden +158/0 after the implementation-review fold restored upstream's `D` and `H` (amended 2026-10-22, implementation-review fold: DR1B-m1) |
 | check/index/fail_invalid_base, fail_non_tuple_access; check/operators/overloaded/index, index_with_prelude, string_indexing; check/slice/basic, buf, fail_basic; lower/interop/cpp/span; lower/slice/basic, buf | DR-1b (B1F) | refill | `$Y/v4_numstat.txt` (v4; overloaded/index.carbon converges on the second pass) |
 | check/operators/overloaded/indirect_index_with.carbon, lower/index/indirect_index_with.carbon | DR-1b (B1F) | new, upstream's sources | 620 and 164 lines (v4) |
-| check/slice/write_through.carbon (A.1), lower/slice/write_through.carbon (A.2) | DR-1b (B1F) | new | 692 and 166 lines (v4) |
+| check/slice/write_through.carbon (A.1), lower/slice/write_through.carbon (A.2) | DR-1b (B1F) | new | 692 and 166 lines (v4); the check golden 799 lines after the implementation-review fold's two splits (amended 2026-10-22, implementation-review fold: DR1B-M1 / DR1B-m3) |
 | check/generic/template/for_range, lower/template/for_range, check/interop/cpp/range_for | L-a | refill, range_for's CHECK-only blocks on trunk's side first | 12/17, 137/137, 17/103 (mct; the same on mct-b at CT-1's 4a3220c11 and with DR-1a alone at 118fc1bc8; amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets) |
 | check/generic/template/index | L-b, after C-b | refill | 16/41 (mct; the same on mct-b) |
 | lower/array/iterate, lower/for/break_continue, lower/for/for (PR 57's text) | L-a | the CHECK-only conflict blocks (three in each) take trunk's side, then refill | 186/186, 183/183, 185/185 against a080c7886, `!dbg` renumbering only (m57 with DR-1b and m57a with DR-1a alone, the same changed lines; amended 2026-10-22, implementation: stop-and-amend: the m57 red set) |
@@ -2111,6 +2149,12 @@ stop-and-amend): Stdlib: Slices is already PASS by its existing programs, and
 the new programs add evidence. On PR 62's branch the sum-type consumption
 bullet stays PASS by its other ten programs.
 
+The mct-b, m51, m55 and m57 rows were re-measured at DR-1b's
+implementation-review fold on the same heads, because its fix commit changes
+handle_index.cpp: each red set, refill, gate and total as above, the refills'
+changed lines identical to stage B's (amended 2026-10-22, implementation-review
+fold: DR1B-M1; the fold record before the Sign-off).
+
 ## §6 Churn and collisions
 
 (Rewritten 2026-10-21, review fold: A-M5 / B-M13.)
@@ -2118,7 +2162,7 @@ bullet stays PASS by its other ten programs.
 | PR | Toolchain and prelude (+/-) | Goldens | Programs | Records and docs |
 | --- | --- | --- | --- | --- |
 | DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 | 9 refills, 554/628 lines (amended 2026-10-21, implementation-review fold: DR1A-m3; rev 3 read 569/628) | 1 (3/3) | loops.md, ledger, row :66 |
-| DR-1b | index.carbon 18/0, slice.carbon 17/12, buf.carbon 10/5 and iterate.carbon 2/2 (with the comments §2.2 has rewritten), handle_index.cpp 37/16 (clang-format's wrapping of §2.2's block), measured at B1 (amended 2026-10-22, implementation: stop-and-amend: stage B errata; rev 3 read v4's 7/2, 7/2 and 39/17), core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines) | 2 and an oracle | slices.md, ledger, row :79 |
+| DR-1b | index.carbon 18/0, slice.carbon 17/12, buf.carbon 10/5 and iterate.carbon 2/2 (with the comments §2.2 has rewritten), handle_index.cpp 37/16 (clang-format's wrapping of §2.2's block), measured at B1 (amended 2026-10-22, implementation: stop-and-amend: stage B errata; rev 3 read v4's 7/2, 7/2 and 39/17), core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines); after the implementation-review fold 330 and 1749 lines, and handle_index.cpp 80/43 (amended 2026-10-22, implementation-review fold: DR1B-m1 / DR1B-M1) | 2 and an oracle | slices.md, ledger, row :79 |
 | M-a, M-b, C-b at merge | handle_loop_statement.cpp (TP-1's 10 lines dropped), handle_index.cpp (C-b +19/-1 on mct-b; rev 3 read +16) | 8 refills, each measured on a pairwise mirror (L-a six, L-b two); PR 51's buf_field and PR 57's slice/basic not refilled (amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets) | none | merge records |
 | PR 62's W-322 commit | refutable_binding.cpp 0/19, cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1 | 1 deleted (681), 1 new (51) | 1 SKIPped | sum_types.md, row 68, plan (§1.7, §1.16, §3 item 8, C.5), decision log, ledger entry W-280 (amended 2026-10-21, review fold: RR1-M1) |
 
@@ -2160,6 +2204,15 @@ Collisions: §0.8. The rules at merge: §1.16.
     against trunk's text, not mct's 17/103. Falsified if the gate after L-a's
     or L-b's fill has a red golden that no pairwise mirror named, or a conflict
     block in a golden holds a source line.
+-   **R-7, a user's `final` `IndexWith` impl that trunk accepts is rejected.**
+    (Added 2026-10-22, implementation-review fold: DR1B-m3.) Upstream's
+    blanket `final` impl in index.carbon overlaps every other `final`
+    `IndexWith` impl, so such a program fails with
+    `FinalImplOverlapsDifferentFile` (the note at index.carbon:19) as it does
+    on upstream, while trunk 0bdce60a5 runs it (§1.3). The cost is upstream's
+    and is recorded, not worked around (R32). Falsified if a held PR's program
+    or golden declares a `final` `IndexWith` impl outside the prelude: none
+    does on the mirrors of §5, whose gates are green.
 
 ### §7.2 Rejected alternatives
 
@@ -2233,7 +2286,15 @@ Collisions: §0.8. The rules at merge: §1.16.
     before §0.6.1's pattern_match.cpp:2207; C-b at
     merge: the dependence check removed (generic/template/index's
     `index_class_with_index_with` fails as on the mirror before C-b). Each
-    mutant names its catching golden, so none is vacuous.
+    mutant names its catching golden, so none is vacuous. Re-run on the
+    implementation-review fold's build (amended 2026-10-22,
+    implementation-review fold: DR1B-M1): the first gives 1916 passed and 30
+    failed, the same 30; the second, one file at a time, 1937 passed, the
+    same 8 failed and the same crash; the third, on the two form goldens and
+    check slice/write_through, crashes in each at convert.cpp:2838; and a
+    fourth, the fold's `IndirectIndexWith(Core.IntLiteral)` probe removed,
+    gives 1945 passed and 1 failed, check slice/write_through, whose
+    `literal_subscript_literal_impl` split catches it.
 6.  clang-tidy on the changed translation units, as CT-1 ran it.
 7.  prek:
     `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2365,7 +2426,11 @@ fn G[T: I](x: T) {
 <!-- google-doc-style-resume -->
 
 and to lower/testdata/function/call/form.carbon after its `val_return_form`
-split, the same three without the dump markers (230227264's lower hunk).
+split, the same three without the dump markers (230227264's lower hunk),
+the third followed, as upstream's is, by `class D` (a `C*` field and an
+`impl as I` whose `F` returns `*self.p`) and `fn H(d: D) { G(d); }`, which
+B0 left out and the implementation-review fold restored (amended 2026-10-22,
+implementation-review fold: DR1B-m1).
 
 ### A.0b Upstream's `IndirectIndexWith` tests (DR-1b, B1)
 
@@ -2462,9 +2527,61 @@ fn BufWrite(b: Core.Buf(i32)) {
   b[0] = 7;
 }
 //@dump-sem-ir-end
+
+// --- literal_subscript_literal_impl.carbon
+library "[[@TEST_NAME]]";
+
+// The literal-subscript rule converts a literal to `i64` only for an operand
+// with no impl for the literal itself. `H` has its own
+// `IndirectIndexWith(Core.IntLiteral)` impl, and its element is not `Copy`, so
+// the blanket `IndexWith` impl does not cover it: `h[0]` calls that impl's
+// `Ref`, as written, not the `i64` impl's.
+class NC {
+  var v: i32;
+}
+
+class H {
+  var p: NC*;
+  var q: NC*;
+}
+
+impl H as Core.IndirectIndexWith(Core.IntLiteral) where .ElementType = NC {
+  fn Ref(self, unused i: Core.IntLiteral) -> ref NC { return *self.p; }
+}
+
+impl H as Core.IndirectIndexWith(i64) where .ElementType = NC {
+  fn Ref(self, unused i: i64) -> ref NC { return *self.q; }
+}
+
+fn F(h: H) -> i32 {
+  //@dump-sem-ir-begin
+  return h[0].v;
+  //@dump-sem-ir-end
+}
+
+// --- fail_final_index_with_overlap.carbon
+library "[[@TEST_NAME]]";
+
+// The prelude's index.carbon is upstream's: its blanket `final` impl
+// implements `IndexWith` for every `IndirectIndexWith` type with a `Copy`
+// element, and its type structure overlaps any other `final` impl of
+// `IndexWith` in another file. So this impl, which the prelude accepted before
+// it took upstream's `IndirectIndexWith`, is rejected, as upstream rejects it.
+class V {
+  var x: i32;
+}
+
+final impl V as Core.IndexWith(i64) where .ElementType = i32 {
+  fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
+}
 ```
 
 <!-- google-doc-style-resume -->
+
+The implementation-review fold added the last two splits (DR1B-M1 and DR1B-m3,
+amended 2026-10-22); the fill gives the first a dump whose call is the
+`Core.IntLiteral` impl's `Ref` with the literal as written, and the second
+`FinalImplOverlapsDifferentFile` with the note at index.carbon:19.
 
 ### A.2 toolchain/lower/testdata/slice/write_through.carbon (DR-1b)
 
@@ -2791,10 +2908,10 @@ New items, R0 (each with `"blocked_by": []` unless stated; `"bullet"` as named):
  "subsystem": "toolchain/lower (handle_call.cpp) + toolchain/check (as conversion of a literal)",
  "evidence": ["fork/direction/plan.md §0.6.2 (const_literal_plain, s_generic_const)"], "notes": "Filed <date> by DR-1; found by its audit, not caused by it: it reproduces on trunk and on upstream's nightly with no slice involved."}
 {"id": "W-326", "kind": "todo-stub", "size": "S", "bullet": "Stdlib: Slices",
- "title": "V-3a register entry (v): D-SL-17's literal-subscript rule (toolchain/check/handle_index.cpp: an integer literal subscript converts to `i64` when the operand implements `IndirectIndexWith(i64)` or `IndexWith(i64)` and not `IndexWith(Core.IntLiteral)`) is a fork spelling of indexing.md's `like i64` subscript; retire it when `like` lands, declaring the impls `IndirectIndexWith(like i64)`",
+ "title": "V-3a register entry (v): D-SL-17's literal-subscript rule (toolchain/check/handle_index.cpp: an integer literal subscript converts to `i64` when the operand implements `IndirectIndexWith(i64)` or `IndexWith(i64)` and has no `IndirectIndexWith(Core.IntLiteral)` or `IndexWith(Core.IntLiteral)` impl) is a fork spelling of indexing.md's `like i64` subscript; retire it when `like` lands, declaring the impls `IndirectIndexWith(like i64)`",
  "subsystem": "toolchain/check (handle_index.cpp) + core/prelude (types/slice.carbon, types/buf.carbon)",
  "evidence": ["upstream docs/design/expressions/indexing.md:103-121 at ac31fd198", "fork/slices/plan.md D-SL-17", "fork/direction/plan.md §1.3"],
- "notes": "Filed <date> by DR-1 (D-DR-7) before W-109's discharge: W-109's notes said D-SL-17 yields to the specified rewrite, which needs `like`; blocked on `like` (W-178, OP-1's ledger on PR 56, not yet on trunk, so not a `blocked_by` id here)."}
+ "notes": "Filed <date> by DR-1 (D-DR-7) before W-109's discharge: W-109's notes said D-SL-17 yields to the specified rewrite, which needs `like`; blocked on `like` (W-178, OP-1's ledger on PR 56, not yet on trunk, so not a `blocked_by` id here). Title amended 2026-10-22 (DR-1b implementation-review fold, DR1B-M1): the rule also leaves a literal as written when the operand has its own `IndirectIndexWith(Core.IntLiteral)` impl, which a non-`Copy` element's blanket `IndexWith` does not cover (toolchain/check/handle_index.cpp:155-166, pinned by toolchain/check/testdata/slice/write_through.carbon's literal_subscript_literal_impl split)."}
 {"id": "W-327", "kind": "missing-feature", "size": "M", "bullet": "none",
  "title": "A generic assignment whose specific's target is `const` writes: `*p = v` through `const T*` (trunk and the upstream nightly print 7) and `s[i] = v` through `Core.Slice(const T)` (DR-1b prints 2); the per-specific `const` check",
  "subsystem": "toolchain/check (handle_operator.cpp assignment, specific checking)",
@@ -3109,6 +3226,17 @@ docs/design/expressions/indexing.md), so `s[i]` is a durable reference and `s[i]
 by-value `Buf` names (D-SL-6). A `Slice(const T)` is not writable where `T` is
 known; a generic body's write instantiated at a `const` element is W-327's. The
 literal-subscript rule stands in for `like i64` until `like` lands (W-326)."
+
+Amended 2026-10-22 (implementation-review fold: DR1B-m2). C.10 named the
+limits bullet only, which left the page's `final impl ... as IndexWith(i64)`
+listings for `Slice` and `Buf`, the paragraph calling `s[i]` a value
+expression, the bounds sentence and the iteration sentence stating the
+read-only design. The fold rewrites those lines, the page's own, to
+`IndirectIndexWith(i64)` with `Ref` returning `ref T`, `s[i]` a durable
+reference, and `IndexWith(i64)` from the blanket impl, and appends to the
+amendment: "The interface listings, the indexing paragraph and the bounds and
+iteration sentences above state this design (rewritten on 2026-10-22, DR-1b
+implementation-review fold: DR1B-m2)."
 
 ### C.11 error_handling.md (R0)
 
@@ -3425,6 +3553,77 @@ conflict block in a golden that holds a source line, or a mirror head that
 moves in toolchain/ or core/ before its PR opens; the stage stops again and
 the plan is amended.
 
+## Implementation review fold record, DR-1b (2026-10-22)
+
+DR-1b's implementation review (§3 item 8, R29(c)) read the head after
+B-R, 45294ea90, against upstream/trunk 9319bb036 and returned
+APPROVE-WITH-FIXES: no BLOCKER, one MAJOR (DR1B-M1, a wrong result from the
+literal-subscript rule DR-1b extended) and six MINOR findings, three of them
+records only. Its probes and logs are in scratchpad/dr1-impl/revB. The fixer
+reproduced each finding against the tree, the stage logs and upstream/trunk
+ebc155734 (fetched 2026-10-22 by `git fetch upstream trunk`; FETCH_HEAD and
+upstream/trunk both name ebc1557345468cf3a37e0c2e616550c79ad5ae8c, "Switch the
+field types to a separate type pool (PR 7999)", 2026-10-22 02:07 UTC, whose one
+commit since 9319bb036 changes no file under docs, proposals or core and none of
+DR-1's toolchain files) before folding it (its scratch scratchpad/dr1-impl/fixB;
+EXPECTED, not of record, R9), and folded all seven; none is rejected. One fix
+commit of §3 item 9's three, with its fill, and nothing is shrunk: the budget is
+shared with the focused re-review loop that follows, so the records ride in the
+same commit. The fix commit is fddfcf42a "DR-1b fix: literal subscripts honour
+an `IndirectIndexWith(Core.IntLiteral)` impl; the review's splits and records"
+and its fill bcd9ba06f "DR-1b fix fill"; this record and the plan's amendments
+are the commit "DR-1 plan: implementation-review fold, DR-1b" on
+claude/carbon-fork-0-1-dr, merged into claude/carbon-fork-0-1-dr-idx by a merge
+commit; D follows.
+
+<!-- google-doc-style-ignore -->
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| DR1B-M1 the literal-subscript rule ignores an `IndirectIndexWith(Core.IntLiteral)` impl | MAJOR | yes: on DR-1b's install (3c54754bc) revB's p17 (non-`Copy` element, `IndirectIndexWith(Core.IntLiteral)` and `IndirectIndexWith(i64)` impls) prints 2, the `i64` impl's element, while p17b (an `i32` element) and p17c (the literal impl alone) print 1; trunk 0bdce60a5 and the nightly have no `IndirectIndexWith` (`member name IndirectIndexWith not found in Core`), and upstream's 309d3d63c dispatch, which has no literal rule, calls the literal impl (hand-derived: 1). Root cause: `LiteralSubscriptTargetType` asked only `IndexWith(Core.IntLiteral)`, which the blanket impl supplies only for a `Copy` element | Folded by the fix commit: the rule also asks `IndirectIndexWith(Core.IntLiteral)` (handle_index.cpp:155-166), after the `Core.Int` lookup, so that the names the rule loads keep their order and no existing golden moves. Measured: the reviewer's order, `IndirectIndexWith` first, reorders the `imports` lines of six goldens (index/fail_invalid_base and fail_non_tuple_access, operators/overloaded/index and index_with_prelude, slice/basic and buf), and asking it right after `IndexWith(Core.IntLiteral)` reorders three; the placed probe changes only the new split. Pinned by A.1's `literal_subscript_literal_impl` split (the call is the literal impl's `Ref` with the literal as written). p17 prints 1 on the fix, as p17b and p17c do; revB's other 30 probes print what 45294ea90's binaries print. W-326's title, row :79's parenthetical, slices.md's indexing paragraph and the rule's comment updated | §1.3; §2.2; §8 item 5; A.1; C.2; handle_index.cpp:108-181 |
+| DR1B-m1 lower form.carbon drops upstream's instantiation of `ref_return_class_generic` | MINOR | yes: 230227264's lower hunk adds `class D` and `fn H(d: D) { G(d); }` (11 lines) after `G`; B0 and v4 left them out, so no specific of `G` was lowered; the full split compiles on DR-1b and CHECK-fails at pattern_match.cpp:2207 on trunk (0bdce60a5) and on DR-1a (d0cfe8082) | Folded by the fix commit and its fill: the 11 lines restored, the split's source byte-identical to upstream's; the fill adds 55 lines, the golden +158/0 against DR-1a as upstream's hunk is, its lines upstream's with the metadata numbers normalized (two `!DIFile` and `!DICompileUnit` lines sort differently by their numbers). §0.6.2's "a preceding split the fork lacks" was wrong and is corrected | §0.6.2; §4; §6; A.0 |
+| DR1B-m2 slices.md still states the read-only `IndexWith` design | MINOR | yes: slices.md:114-115, :120-136, :161-162, :190 and :271-272 at 45294ea90 | Folded by the fix commit: those lines, the page's own, rewritten to `IndirectIndexWith(i64)` impls whose `Ref` returns `ref T`, `s[i]` a durable reference, `IndexWith(i64)` from the blanket impl, and the amendment block gains a dated sentence; the scope change is noted in §1.15 and C.10 | §1.15; C.10 |
+| DR1B-m3 a user's `final impl X as Core.IndexWith(...)` that trunk accepts is now rejected | MINOR | yes: revB's p15 prints 6 on trunk and fails on DR-1b with `FinalImplOverlapsDifferentFile` and the note at index.carbon:19; index.carbon is upstream's byte for byte, so upstream rejects it the same way and it is not a drift | Folded: recorded as a behavior change inherited from upstream (§1.3, §7.1's R-7, the decision log's DR-1b discharge note, the PR body) and pinned by A.1's `fail_final_index_with_overlap` split. The split is in the fork's own check/slice/write_through.carbon, not a new file in upstream's operators/overloaded directory, so the manifest stays at 1946 and every merge-time total rev 4 measured stands (R29: decided and recorded; break condition: a reviewer requires a file of its own, which then moves the gate counts, recorded) | §1.3; §7.1; A.1 |
+| DR1B-m4 stale comments in handle_index.cpp | MINOR | yes: :50-56, :105-110 and :211-212 at 45294ea90 | Folded by the fix commit, comment-only: `HasIndexWithImpl` names `Core.<interface_name>` (:51-65), the rule's statement names both literal impls and both `i64` impls (:108-124) and its footprint sentence the `IndexWith` literal impl, and the `default:` arm's comment names `PerformIndexOperator` and both interfaces (:226-231) | §2.2 |
+| DR1B-m5 gap row :82 omits B.2 | MINOR, records only | yes: row :82 reads "2/2 programs PASS" while cpp_span_write_through_diff carries its bullet | Folded by D: a dated sentence, 3/3 programs PASS with B.2 and its C++17 oracle, on DR-1b's own 130/0/22 over 152 | gap row :82 |
+| DR1B-m6 the plan's status line and Sign-off are stale after B-R | MINOR, records only | yes: the status line said DR-1b stopped before B-R; the Sign-off had no row for rev 4's focused re-review | Folded: the status line, the Sign-off's rev 4 sentence and row, and this record; D writes the landed notes | header; Sign-off |
+
+<!-- google-doc-style-resume -->
+
+Measured on the fold's tree (the fix commit and its fill), with the install
+built from it and printing 0.0.0-0.dev+fddfcf42a (container-local, EXPECTED, not
+of record): the build incremental, handle_index.cpp alone; autoupdate `!!` and
+then a fixpoint; "file_test test mode on /home/user/carbon-dr-idx: 1946
+passed, 0 failed"; conformance "PASS 130, COMPILE-FAIL 0, LINK-FAIL 0,
+RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 152)", bullets 48
+PASS, 0 FAIL, 8 SKIP of 56; `runner.py --self-test` OK over 152 programs. The
+mutants of §8 item 5, relinked over that build and deleted after: as §8 item 5
+states, the fold's own fourth catching the removal of its probe. The mirrors of
+§8 item 9, re-measured because the fix commit touches handle_index.cpp, on the
+heads stage B measured (fetched 2026-10-22: PR 51 f96fe8a7a, PR 55 21307851a,
+PR 57 a080c7886, CT-1 4a3220c11), each a worktree of the held head with the
+fold's tree merged, built in full in /dev/shm and deleted after: mct-b, its
+conflicts and their resolution stage B's (handle_index.cpp equal to stage B's
+resolution before the fix's hunks, which apply with offsets only), 1959 passed
+and 4 failed before and after C-b, C-b +19/-1 with its added lines
+byte-identical to stage B's and its context the fold's reworded comment, the
+refills 12/17, 16/41, 17/103 and 137/137 with their changed lines identical to
+stage B's, then 1963 of 1963, conformance 149/0/20 over 169, bullets 48/0/8, and
+tmpl_index_vec 7, tmpl_index_slice 4, tmpl_for 6, f_slice 15 and p17 1;
+m55, 1953 passed and 1 failed (string_indexing), the refill 2/2 identical to
+stage B's, then 1954 of 1954 and 135/0/21 over 156, bullets 48/0/8; m51,
+conflicts in the gap analysis and the ledger only, 1949 of 1949 with no refill
+and 133/0/19 over 152, bullets 48/0/8; and m57, check/slice/basic auto-merged,
+lower array/iterate, for/break_continue and for/for conflicting in CHECK lines
+only and the gate's three failures (1951 passed), refilled 186/186, 183/183
+and 185/185 with the changed lines identical to stage B's, then 1954 of 1954
+and 141/0/22 over 163, bullets 48/0/8, B.1 and B.2 passing. Every mirror row of
+§5 stands. Not run by the fold: clang-tidy (§8 item 6), which stops at a
+frontend error with no location, `missing '(' after '__has_feature'`, on
+handle_index.cpp and on the untouched cpp/operators.cpp alike over the build's
+compile database, so the failure is the environment's, not the change's; stage
+B's run (rc 0) predates it.
+
 ## Sign-off
 
 Rev 3, 2026-10-21, is SIGNED OFF FOR IMPLEMENTATION: the focused re-review's
@@ -3440,14 +3639,20 @@ Rev 4, 2026-10-22 (amended 2026-10-22, implementation: stop-and-amend), is a
 stop-and-amend of merge-time predictions, recorded in the section above; it
 changes no code, decision or measured row of DR-1b's own tree, so this
 sign-off still covers DR-1b's code, and rev 4's amendments stand once their
-focused re-review returns a verdict other than REJECT, recorded here.
+focused re-review returns a verdict other than REJECT, recorded here. Recorded
+on 2026-10-22 (implementation-review fold: DR1B-m6): rev 4's focused re-review
+returned a verdict other than REJECT, with six findings, RR4-m1..m6, all MINOR,
+which it left to the focused re-review loop of DR-1b's implementation-review
+fold, whose first records commit folds them; stage B resumed at B-R on that
+verdict.
 
 | Review | Of | Upstream read | Verdict | Findings (BLOCKER / MAJOR / MINOR) | Folded | Rejected | Folded in |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Review A | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 12 (3 / 5 / 4) | 12 | 0 | rev 2 (35fa2f0ef) |
 | Review B | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 19 (2 / 13 / 4) | 19 | 0 | rev 2 (35fa2f0ef) |
 | Focused re-review RR1 | rev 2 (35fa2f0ef) | bc45989b2 | APPROVE-WITH-AMENDMENTS | 6 (0 / 1 / 5) | 6 | 0 | rev 3 (this commit) |
-| Total | | | | 37 (5 / 19 / 13) | 37 | 0 | |
+| Focused re-review RR4 | rev 4 (f551057ea) | 9319bb036 | not REJECT | 6 (0 / 0 / 6) | open | 0 | the first records commit of DR-1b's focused re-review loop (added 2026-10-22, implementation-review fold: DR1B-m6) |
+| Total | | | | 43 (5 / 19 / 19) | 37, and 6 open | 0 | |
 
 ## Landed notes (DR-1a, 2026-10-21)
 

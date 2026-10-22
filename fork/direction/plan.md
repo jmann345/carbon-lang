@@ -4,7 +4,7 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-# DR-1: direction realignment (plan, rev 3)
+# DR-1: direction realignment (plan, rev 4)
 
 Workstream DR-1 of decision-log entry DR-0 (D-DR-1..D-DR-4) under rulebook R32
 and decision-log V-3b: `Core.Iterate.Next`'s `ref cursor` (W-321),
@@ -33,15 +33,33 @@ an oracle only (R30).
 Rev 1, 2026-10-21. Rev 2, 2026-10-21: reviews A and B folded (31 findings).
 Rev 3, 2026-10-21: the focused re-review of rev 2 folded
 (APPROVE-WITH-AMENDMENTS, 6 findings: 1 MAJOR, 5 MINOR) and the plan signed
-off; the records are "Review fold record" and "Sign-off" at the end. Decisions
+off; the records are "Review fold record" and "Sign-off" at the end.
+Rev 4, 2026-10-22: a stop-and-amend at DR-1b's mirrors (amended 2026-10-22,
+implementation: stop-and-amend: the m51 and m57 red sets), recorded in
+"Stop-and-amend record (rev 4, 2026-10-22)" before the Sign-off. Decisions
 D-DR-5..D-DR-22 are DR-1's (D-DR-1..D-DR-4 are DR-0's); they are auto-adopted
 under R29(a), recorded in the decision log by the plan's records commit, and
 each carries a break condition.
 
 Status: rev 3, 2026-10-21 -- SIGNED OFF FOR IMPLEMENTATION. DR-1a is
 implemented and held, 2026-10-21: its records are "Implementation review fold
-record, DR-1a (2026-10-21)" and "Landed notes (DR-1a, 2026-10-21)" at the end;
-DR-1b is next.
+record, DR-1a (2026-10-21)" and "Landed notes (DR-1a, 2026-10-21)" at the end.
+Rev 4, 2026-10-22 (amended 2026-10-22, implementation: stop-and-amend): DR-1b
+is implemented through B-P (cdaa15710 to 4c358f94b on
+claude/carbon-fork-0-1-dr-idx, pushed) and stopped before B-R at the mirrors
+of §8 item 9; rev 4 amends merge-time predictions only, and DR-1b resumes at
+B-R after rev 4's focused re-review, as its Stop-and-amend record instructs.
+
+What rev 4 changes (amended 2026-10-22, implementation: stop-and-amend: the
+m51 and m57 red sets). DR-1b's mirrors of §8 item 9 found two merge-time
+predictions wrong. PR 51's buf_field goldens do not move with DR-1b: they dump
+only functions that call `Make` and `Get`, never a `Buf` subscript. PR 57's
+merge moves three of DR-1a's lower goldens (array/iterate, for/break_continue
+and for/for), whose `!dbg` lines PR 57's own refill and DR-1a's fill both
+renumbered, while PR 57's check/slice/basic auto-merges and passes. §0.8,
+§0.8.1, §1.13, §1.16, §3, §4, §5, §6, §7.1, §8, §8.1, Appendix B.2 and the
+Landed notes now carry the measured sets and stage B's errata; no D-DR
+decision, no §2 code block and no measured row of DR-1b's own tree changes.
 
 What rev 3 changes (amended 2026-10-21, review fold: RR1-M1 / RR1-m1 / RR1-m2 /
 RR1-m3 / RR1-m4 / RR1-m5). W-322's commit on PR 62's branch writes no ledger
@@ -87,6 +105,7 @@ removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
 -   Appendix B: programs and oracles
 -   Appendix C: records texts
 -   Review fold record (rev 2 and rev 3)
+-   Stop-and-amend record (rev 4)
 -   Sign-off
 
 ## §0 Audit: measurements with file:line evidence
@@ -621,12 +640,12 @@ b0822a744, 40a76ab81, 5661a35c8, 79740957a, 5c78c4086 and 3a6531157
 
 | Held PR (head) | DR-1 files it touches (numstat) | v4's source hunks onto it | Rule at DR-1's merge |
 | --- | --- | --- | --- |
-| PR 51 UA-2 (f96fe8a7a) | docs/design/slices.md +14/-6; records; new goldens check and lower slice/buf_field.carbon, which dump `Core.Buf` | apply | slices.md: both sides' text, the 0.1-limits bullet D-DR-7 replaces is UA-2-independent; the two buf_field goldens are refilled at DR-1b's merge (`Buf`'s impl changes); records keep both sides |
+| PR 51 UA-2 (f96fe8a7a) | docs/design/slices.md +14/-6; records; new goldens check and lower slice/buf_field.carbon, which dump `Core.Buf` | apply | slices.md: both sides' text, the 0.1-limits bullet D-DR-7 replaces is UA-2-independent; the two buf_field goldens are not refilled: on m51 the gate was 1949 of 1949 before any refill, because they dump only `F` and `G`, which call `Make`, `Get` and the destroy witness and never subscript a `Buf` (amended 2026-10-22, implementation: stop-and-amend: the m51 red set; rev 3 predicted a refill, `Buf`'s impl changing); records keep both sides |
 | PR 52 CM-1 (ea573f672), PR 54 EV-1 | records only | apply | none |
 | PR 53 SAFE-1 (adaae4e35) | docs/design/slices.md +7; records | apply | slices.md both sides |
 | PR 55 ST-1 (21307851a) | records; its operators/overloaded/string_indexing.carbon refill (+112 on its branch) | apply | string_indexing.carbon refilled at DR-1b's merge (both moved it) |
 | PR 56 OP-1 (379f20f67) | core/prelude/types/optional.carbon +73/-2, docs/design/control_flow/loops.md +4 (the F-015 amendment after the cut's desugaring block, :116-118), docs/design/error_handling.md +8, docs/design/optional.md +582 | apply | W-323's new commit lands on PR 56's branch now (C.7, C.8); at DR-1a's merge, loops.md takes DR-1a's restored upstream subsections and C.9's amendment, and drops PR 56's amendment as C.7 corrected it, whose "The desugaring above is the text this page had at the fork's cut" is then false (§1.16); error_handling.md keeps both sides' amendments in date order |
-| PR 57 OP-2 (628273444), stacked on PR 56 | optional.carbon +111/-8, loops.md +4, error_handling.md +8, optional.md +614 (PR 56's plus OP-2's), its check/testdata/slice/basic.carbon refill; gap row 78 moved to DONE | apply | PR 57's branch takes W-323's commit by a merge of PR 56's branch (a new merge commit, R32 (e)); its slice/basic.carbon is refilled at DR-1's merge; row 78's DONE text keeps trunk's DR-0 sentence as C.3 amends it (§1.16) |
+| PR 57 OP-2 (628273444), stacked on PR 56 | optional.carbon +111/-8, loops.md +4, error_handling.md +8, optional.md +614 (PR 56's plus OP-2's), its check/testdata/slice/basic.carbon refill; gap row 78 moved to DONE; and (amended 2026-10-22, implementation: stop-and-amend: the m57 red set; rev 3 named slice/basic alone) convert.cpp +5/-2 and, in its refill 189baa262, six of DR-1a's nine goldens: check interop/cpp/range_for 583/1983, check slice/basic 49/224, lower array/iterate 237/240, for/bindings 161/164, for/break_continue 252/254 and for/for 254/256 | apply | PR 57's branch takes W-323's commit by a merge of PR 56's branch (a new merge commit, R32 (e)); at M-a, lower array/iterate, for/break_continue and for/for conflict in CHECK lines only, take trunk's side and are refilled at L-a, while check slice/basic, interop/cpp/range_for and lower for/bindings auto-merge and pass (measured on m57 and m57a, §1.16; amended 2026-10-22, implementation: stop-and-amend: the m57 red set); row 78's DONE text keeps trunk's DR-0 sentence as C.3 amends it (§1.16) |
 | PR 58 DD-1 (fcee90d9b) | docs/design/pattern_matching.md +258/-4 | n/a | none: rev 2 edits no pattern_matching.md text (rev 1's amendment belonged to the stopped slice 1) |
 | PR 59 VA-1 (b0822a744) | check/pattern_match.cpp +25, context.h +41, handle_binding_pattern.cpp +76, kind.def +19; call.cpp +194 and convert.cpp +114 (merge-base 3eb7f36f0 to the head; amended 2026-10-21, review fold: RR1-m1: rev 2 omitted these two) | apply; 230227264's call.cpp and convert.cpp hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction: VA-1's added lines create no `TemporaryStorage` return argument, pass no `return_arg_id` and add no `ConvertCallArgs` call, so 230227264's `return_size() > 0` test and its new `CARBON_CHECK` see no new caller; the other four files: none, DR-1 touches none of them |
 | PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13; call.cpp +14 and convert.cpp +94/-7 (merge-base 8068151ed to the head; amended 2026-10-21, review fold: RR1-m1) | apply; 230227264's hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction, by the same test of SC-1's added lines; the other four files: none |
@@ -637,6 +656,18 @@ No held PR touches core/prelude/iterate.carbon, range.carbon,
 operators/index.carbon, types/slice.carbon, types/buf.carbon,
 core_identifier.def or cpp/operators.cpp, and none has a file at v4's new paths
 (the two upstream `IndirectIndexWith` tests, A.1, A.2, B.1, B.2).
+
+The overlap re-swept at DR-1b's stop (amended 2026-10-22, implementation:
+stop-and-amend: the m51 and m57 red sets; amend4/logs/overlap_sweep.txt): the
+44 paths DR-1a and DR-1b change (`git diff --name-only f68681114 4c358f94b`
+over toolchain, core, docs and the programs), against each held head's own
+diff from its merge-base with origin/trunk, fetched 2026-10-22. PR 57 touches
+eight of them (loops.md, error_handling.md, convert.cpp and the six goldens of
+its row above), PR 55 one (string_indexing), PR 51 and PR 53 slices.md, PR 56
+at 894139b34 loops.md and error_handling.md, PR 59 and PR 60 call.cpp and
+convert.cpp, PR 62 at 0ef8a0334 convert.cpp, PR 61 and CT-1 at 4a3220c11 the
+files of their row, and PR 52, PR 54 and PR 58 none; PR 51's buf_field
+goldens are new files outside the 44.
 
 #### §0.8.1 The composition mirror on CT-1's head, measured
 
@@ -682,6 +713,22 @@ It merged DR-1a and DR-1b at once, so L-a's refills above are the two PRs'
 joint result, and DR-1a's merge onto CT-1 alone, the tree trunk has between
 M-a and M-b, is unmeasured. §8 item 9 measures both shapes on CT-1's final head
 before M-a.
+
+Re-measured at implementation (amended 2026-10-22, implementation:
+stop-and-amend: the mirrors' red sets). DR-1a alone on CT-1's 118fc1bc8, at
+stage A: the gate 1956 passed and 3 failed, then 1959 of 1959; conformance
+147/0/20 over 167. mct-b, DR-1b's 4c358f94b (which contains DR-1a) on CT-1's
+4a3220c11 (records only over 118fc1bc8): handle_index.cpp resolved onto
+`PerformIndex`, handle_loop_statement.cpp to DR-1a's side and range_for's
+CHECK-only blocks to CT-1's; the gate 1959 passed and 4 failed, the four
+goldens of the table's first row, since no autoupdate ran before C-b (the
+table's 1960 and 3 came after an autoupdate had refilled range_for); C-b as
+§2.2's block (+19/-1, `index_type_id` hoisted) left the same four;
+autoupdate `!!!!`, then a fixpoint; the refills 12/17, 16/41, 17/103 and
+137/137 as above; the gate 1963 of 1963; conformance 149/0/20 over 169,
+bullets 48/0/8; the probes tmpl_index_vec `7`, tmpl_index_slice `4`, tmpl_for
+`6` and f_slice `15` (stageB/logs). The pairwise mirrors on PR 51, PR 55 and
+PR 57 are in §1.16 and §5.
 
 #### §0.8.2 W-322's removal-only commit on a PR 62 mirror, measured
 
@@ -1250,8 +1297,11 @@ golden is added in the commit whose code makes it pass (rev 1's A.3, which
 needed later commits, is withdrawn with slice 1). At the merges after CT-1: the
 refill commits of §1.16 (check generic/template/for_range and index,
 interop/cpp/range_for, lower template/for_range, measured on the mct mirror;
-PR 51's buf_field goldens, PR 55's string_indexing, PR 57's slice/basic,
-predicted). Break condition: a fill that does not reach a fixpoint in two
+PR 55's string_indexing and PR 57's lower array/iterate, for/break_continue
+and for/for, measured on the pairwise mirrors at DR-1b's stop, where PR 51's
+buf_field goldens and PR 57's check/slice/basic did not move; amended
+2026-10-22, implementation: stop-and-amend: the m51 and m57 red sets). Break
+condition: a fill that does not reach a fixpoint in two
 passes, or that changes a golden this section does not name; the plan is
 amended with the measured set before the commit.
 
@@ -1324,11 +1374,29 @@ are distinct: M-a on DR-1a's branch, M-b on DR-1b's.
     check generic/template/for_range, lower template/for_range,
     interop/cpp/range_for (measured on the mct mirror, which merged both PRs
     at once; DR-1a alone onto CT-1's final head is measured before M-a, §8 item
-    9, amended 2026-10-21, review fold: RR1-m4) and PR 57's slice/basic.
+    9, amended 2026-10-21, review fold: RR1-m4), and lower array/iterate,
+    for/break_continue and for/for (amended 2026-10-22, implementation:
+    stop-and-amend: the m57 red set; rev 3 named PR 57's slice/basic). Their
+    M-a conflict blocks are CHECK lines only, three in each, because DR-1a's
+    A1F and PR 57's refill 189baa262 renumber the same `!dbg` lines; they take
+    trunk's side, and the refill is that renumbering again: 186/186, 183/183
+    and 185/185 against PR 57's a080c7886 text, the same changed lines on m57
+    (with DR-1b) and on m57a (DR-1a alone). PR 57's check/slice/basic,
+    interop/cpp/range_for and lower for/bindings auto-merge with DR-1a and
+    pass, so none is refilled for PR 57; a golden that several merged PRs
+    change (range_for: PR 57, PR 61 and CT-1) is refilled against trunk's
+    merged text (§7.1, R-6).
 -   **M-b.** handle_index.cpp resolves onto TP-1's `PerformIndex` (§2.2), then
     C-b, the composition commit that indexes a template-dependent operand per
-    specific (§1.3, §2.2), then L-b: check generic/template/index (measured),
-    PR 55's string_indexing and PR 51's buf_field goldens (predicted).
+    specific (§1.3, §2.2), then L-b: check generic/template/index (16/41,
+    measured on mct and mct-b) and PR 55's string_indexing (2/2, measured on
+    m55). PR 51's buf_field goldens are not refilled (amended 2026-10-22,
+    implementation: stop-and-amend: the m51 red set; rev 3 predicted it): on
+    m51 the gate was 1949 of 1949 before any refill, because both dump only
+    `F` and `G`, which call `Core.Buf(i32).Make`, `.Get(0)` and the destroy
+    witness and never subscript a `Buf`, and the one trace of the prelude
+    change in their dumps, buf.carbon's shifted `import_ref` instruction ids,
+    is matched as `inst{{[0-9A-F]+}}`.
 -   **Commits on other PRs' branches, each new, never a rewrite (R32 (e)), made
     now, at the records commit R0, independent of DR-1's code.** W-322's on PR
     62's branch (§1.11, C.6), measured on the m62 mirror. W-323's on PR 56's
@@ -1771,6 +1839,11 @@ diff --git a/toolchain/check/handle_index.cpp b/toolchain/check/handle_index.cpp
 
 <!-- google-doc-style-resume -->
 
+As committed at B1 (3c54754bc; amended 2026-10-22, implementation:
+stop-and-amend: stage B errata), clang-format 21.1.8 wraps three of the
+block's statements differently, with the same tokens: handle_index.cpp is
+37/16 against the block's 39/17.
+
 toolchain/check/core_identifier.def, toolchain/check/cpp/operators.cpp
 (309d3d63c's lines) and 230227264's call.cpp and convert.cpp hunks (applied
 unchanged; at implementation they come by `git cherry-pick -x -n 230227264`,
@@ -1974,8 +2047,11 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 7.  **B-P** "DR-1b programs": B.1, B.2 and the `.diff.cpp`, the README table
     regenerated; 130 / 0 / 22 over 152, measured on v4.
 8.  **B-R** "DR-1b records": W-109 discharged, gap row :79 to DONE (C.3), the
-    register's (ii) resolved. One implementation review once green (R29(c));
-    DR-1b is opened held, stacked on DR-1a.
+    register's (ii) resolved; its decision-log note also records the mirror
+    runs of §5 and corrects DR-1a's land-time items as rev 4's Stop-and-amend
+    record says (amended 2026-10-22, implementation: stop-and-amend). One
+    implementation review once green (R29(c)); DR-1b is opened held, stacked
+    on DR-1a.
 9.  **Fix commits**: at most three per PR, each with its fill. The shrink line
     (D-DR-22): a finding that needs a fourth shrinks the PR instead, the shape
     at issue going OUT with a residue in the next free id after the re-scan
@@ -1987,7 +2063,9 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 10. **At merge, after CT-1** (§1.16): M-a then L-a on DR-1a's branch; M-b, C-b
     "DR-1b: index a template-dependent operand per specific (TP-1's
     `IndexAction`)" and L-b on DR-1b's. Their resolution and fills were measured
-    together on the mct mirror (§0.8.1).
+    together on the mct mirror (§0.8.1), again on mct-b, and pairwise with
+    PR 51, PR 55 and PR 57 at DR-1b's stop (§1.16, §4; amended 2026-10-22,
+    implementation: stop-and-amend: the mirrors' red sets).
 11. **D** "DR-1 discharge" (each PR's own, last on its branch): the ledger, the
     gap rows, the decision log's dated notes, ORCHESTRATION, the id re-scan.
 
@@ -2002,9 +2080,11 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 | check/index/fail_invalid_base, fail_non_tuple_access; check/operators/overloaded/index, index_with_prelude, string_indexing; check/slice/basic, buf, fail_basic; lower/interop/cpp/span; lower/slice/basic, buf | DR-1b (B1F) | refill | `$Y/v4_numstat.txt` (v4; overloaded/index.carbon converges on the second pass) |
 | check/operators/overloaded/indirect_index_with.carbon, lower/index/indirect_index_with.carbon | DR-1b (B1F) | new, upstream's sources | 620 and 164 lines (v4) |
 | check/slice/write_through.carbon (A.1), lower/slice/write_through.carbon (A.2) | DR-1b (B1F) | new | 692 and 166 lines (v4) |
-| check/generic/template/for_range, lower/template/for_range, check/interop/cpp/range_for | L-a | refill | 12/17, 137/137, 17/103 (mct) |
-| check/generic/template/index | L-b, after C-b | refill | 16/41 (mct) |
-| PR 51's check and lower slice/buf_field; PR 55's string_indexing; PR 57's check/slice/basic | L-a, L-b | refill | predicted: `Buf`'s impl, the subscript calls and the cursor change move them |
+| check/generic/template/for_range, lower/template/for_range, check/interop/cpp/range_for | L-a | refill, range_for's CHECK-only blocks on trunk's side first | 12/17, 137/137, 17/103 (mct; the same on mct-b at CT-1's 4a3220c11 and with DR-1a alone at 118fc1bc8; amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets) |
+| check/generic/template/index | L-b, after C-b | refill | 16/41 (mct; the same on mct-b) |
+| lower/array/iterate, lower/for/break_continue, lower/for/for (PR 57's text) | L-a | the CHECK-only conflict blocks (three in each) take trunk's side, then refill | 186/186, 183/183, 185/185 against a080c7886, `!dbg` renumbering only (m57 with DR-1b and m57a with DR-1a alone, the same changed lines; amended 2026-10-22, implementation: stop-and-amend: the m57 red set) |
+| PR 55's check/operators/overloaded/string_indexing | L-b | refill | 2/2 against 21307851a (m55) |
+| PR 51's check and lower slice/buf_field; PR 57's check/slice/basic, check/interop/cpp/range_for, lower/for/bindings | none | unchanged: buf_field dumps no `Buf` subscript; PR 57's three auto-merge and pass | m51: 1949 of 1949 before any refill; m57 and m57a: not in the red set (amended 2026-10-22, implementation: stop-and-amend: the m51 and m57 red sets; rev 3 predicted refills of buf_field and slice/basic) |
 | match/core_optional_view.carbon (deleted), match/fail_todo_core_optional.carbon (A.3) | PR 62's W-322 commit | delete, new | 0/681 and 51 lines (m62) |
 
 ## §5 Conformance delta
@@ -2017,12 +2097,19 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 | DR-1a | 128 | 0 | 22 | 150 | measured on v2: iterate_interface rewritten, same output |
 | DR-1b | 130 | 0 | 22 | 152 | measured on v4: B.1 and B.2 PASS |
 | CT-1's head with DR-1a and DR-1b merged | 149 | 0 | 20 | 169 | measured on mct: CT-1's 167 programs (20 SKIP) and B.1, B.2; templates_for_dependent_range and templates_dependent_index PASS |
+| CT-1's 4a3220c11 with DR-1b (mct-b) | 149 | 0 | 20 | 169 | measured at DR-1b's stop, after C-b and the refills (amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets; the rows below likewise) |
+| CT-1's 118fc1bc8 with DR-1a alone | 147 | 0 | 20 | 167 | measured at DR-1a's stage A, after L-a's three CT-1 refills |
+| PR 51's f96fe8a7a with DR-1b (m51) | 133 | 0 | 19 | 152 | measured, no refill; PR 51's own programs carry 19 SKIPs |
+| PR 55's 21307851a with DR-1b (m55) | 135 | 0 | 21 | 156 | measured, after the string_indexing refill |
+| PR 57's a080c7886 with DR-1b (m57) | 141 | 0 | 22 | 163 | measured, after the three lower refills; B.1 and B.2 PASS |
+| PR 57's a080c7886 with DR-1a alone (m57a) | 139 | 0 | 22 | 161 | measured by rev 4's amender (a relink over PR 57's build), after the same three refills |
 | PR 62 with W-322's commit | 133 | 0 | 22 | 155 | measured on m62: PR 62's 134/0/21 with match_core_optional_diff SKIPped |
 
-Bullets: no bullet changes status (48 PASS / 0 FAIL / 8 SKIP of 56 on v4):
-Stdlib: Slices is already PASS by its existing programs, and the new programs
-add evidence. On PR 62's branch the sum-type consumption bullet stays PASS by
-its other ten programs.
+Bullets: no bullet changes status (48 PASS / 0 FAIL / 8 SKIP of 56 on v4,
+and on each mirror row of rev 4, amended 2026-10-22, implementation:
+stop-and-amend): Stdlib: Slices is already PASS by its existing programs, and
+the new programs add evidence. On PR 62's branch the sum-type consumption
+bullet stays PASS by its other ten programs.
 
 ## §6 Churn and collisions
 
@@ -2031,8 +2118,8 @@ its other ten programs.
 | PR | Toolchain and prelude (+/-) | Goldens | Programs | Records and docs |
 | --- | --- | --- | --- | --- |
 | DR-1a | iterate.carbon 13/13, range.carbon 3/3, handle_loop_statement.cpp 4/9, min_prelude 1/1 | 9 refills, 554/628 lines (amended 2026-10-21, implementation-review fold: DR1A-m3; rev 3 read 569/628) | 1 (3/3) | loops.md, ledger, row :66 |
-| DR-1b | index.carbon 18/0, slice.carbon 7/2, buf.carbon 7/2, handle_index.cpp 39/17, core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines) | 2 and an oracle | slices.md, ledger, row :79 |
-| M-a, M-b, C-b at merge | handle_loop_statement.cpp (TP-1's 10 lines dropped), handle_index.cpp (C-b +16) | 4 refills measured, 4 predicted | none | merge records |
+| DR-1b | index.carbon 18/0, slice.carbon 17/12, buf.carbon 10/5 and iterate.carbon 2/2 (with the comments §2.2 has rewritten), handle_index.cpp 37/16 (clang-format's wrapping of §2.2's block), measured at B1 (amended 2026-10-22, implementation: stop-and-amend: stage B errata; rev 3 read v4's 7/2, 7/2 and 39/17), core_identifier.def 2/0, cpp/operators.cpp 6/0, call.cpp 4/1, convert.cpp 4/0 | 13 refills (275 lines added to the two form goldens; 948/709 in the eleven), 4 new (1642 lines) | 2 and an oracle | slices.md, ledger, row :79 |
+| M-a, M-b, C-b at merge | handle_loop_statement.cpp (TP-1's 10 lines dropped), handle_index.cpp (C-b +19/-1 on mct-b; rev 3 read +16) | 8 refills, each measured on a pairwise mirror (L-a six, L-b two); PR 51's buf_field and PR 57's slice/basic not refilled (amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets) | none | merge records |
 | PR 62's W-322 commit | refutable_binding.cpp 0/19, cpp/sum_type.cpp 33/21, cpp/sum_type.h 2/33, kind.def 0/1 | 1 deleted (681), 1 new (51) | 1 SKIPped | sum_types.md, row 68, plan (§1.7, §1.16, §3 item 8, C.5), decision log, ledger entry W-280 (amended 2026-10-21, review fold: RR1-M1) |
 
 Collisions: §0.8. The rules at merge: §1.16.
@@ -2064,6 +2151,15 @@ Collisions: §0.8. The rules at merge: §1.16.
     of R32 (e) and is recorded in PR 62's sum_types.md amendment and SKIP
     reason. Falsified if a program other than match_core_optional_diff on PR
     62's branch depended on the view: none did (m62: 133/0/22).
+-   **R-6, a golden that several held PRs change is refilled against trunk's
+    merged text.** (Added 2026-10-22, implementation: stop-and-amend: the m57
+    red set.) The mirrors are pairwise: check interop/cpp/range_for is changed
+    by PR 57 (583/1983), PR 61 (34/0), CT-1 (8/8 over PR 61) and DR-1a
+    (17/69), and only its mct and m57 pairs are measured; at M-a its CHECK-only
+    blocks take trunk's side and autoupdate refills it, so its L-a numstat is
+    against trunk's text, not mct's 17/103. Falsified if the gate after L-a's
+    or L-b's fill has a red golden that no pairwise mirror named, or a conflict
+    block in a golden holds a source line.
 
 ### §7.2 Rejected alternatives
 
@@ -2120,10 +2216,21 @@ Collisions: §0.8. The rules at merge: §1.16.
     impl's `ref cursor`, and no thunk note; rev 3 predicted the nine goldens
     and a failure through the thunk; amended 2026-10-21, implementation-review
     fold: DR1A-m3); DR-1b:
-    `diagnose=true` on the `IndirectIndexWith` probe (operators/overloaded/index
-    and index_with_prelude diagnose twice), the fallback to `IndexWith` removed
-    (string_indexing and index_with_prelude fail), 230227264's call.cpp line
-    reverted (every program importing the prelude CHECK-fails, §0.6.1); C-b at
+    `diagnose=true` on the `IndirectIndexWith` probe, the fallback to
+    `IndexWith` removed, and 230227264's call.cpp line reverted, measured on
+    DR-1b's build (amended 2026-10-22, implementation: stop-and-amend: stage B
+    errata; rev 3 predicted operators/overloaded/index diagnosing twice and the
+    crash of §0.6.1): the first gives 1916 passed and 30 failed, among them
+    index_with_prelude, string_indexing, fail_invalid_base and
+    fail_non_tuple_access, each golden that imports io failing at
+    core/io.impl.carbon:14:15 (a `str` subscript), while
+    operators/overloaded/index does not catch it (its fake-`Core` splits
+    already report `CoreNameNotFound`); the second aborts the full gate, and
+    one file at a time gives 1937 passed, 8 failed (string_indexing and
+    index_with_prelude among them) and lower operators/string_indexing crashed
+    at lower/handle.cpp:405; the third gives 331 crashed and 1615 passed, each
+    at 230227264's own `CARBON_CHECK` in convert.cpp:2838, which now fires
+    before §0.6.1's pattern_match.cpp:2207; C-b at
     merge: the dependence check removed (generic/template/index's
     `index_class_with_index_with` fails as on the mirror before C-b). Each
     mutant names its catching golden, so none is vacuous.
@@ -2136,14 +2243,18 @@ Collisions: §0.8. The rules at merge: §1.16.
     added.
 9.  The composition mirrors were built at planning (§0.8.1, §0.8.2); at
     implementation each PR re-runs them on the then-current heads before it is
-    opened, and DR-1b also on PR 51 (buf_field), PR 55 (string_indexing) and
-    PR 57 (slice/basic). The mct mirror was built on CT-1's 79740957a, which
-    CT-1 has since passed (5c78c4086 at rev 3, §0.8): before M-a, the
-    composition is re-run on CT-1's final head twice, once with DR-1a alone
-    (M-a and L-a, the tree trunk has between DR-1a's merge and DR-1b's) and
-    once with both PRs (M-b, C-b and L-b), each to a gate with 0 failed and a
-    conformance run recorded beside §5's mct row (amended 2026-10-21, review
-    fold: RR1-m4).
+    opened, and DR-1b also on PR 51 (no golden moves), PR 55 (string_indexing)
+    and PR 57 (lower array/iterate, for/break_continue and for/for), all
+    measured at DR-1b's stop (§5; amended 2026-10-22, implementation:
+    stop-and-amend: the m51 and m57 red sets; rev 3 named buf_field and
+    slice/basic). A mirror whose two heads have not moved in toolchain/ or
+    core/ since it was measured is not re-run. The mct mirror was built on
+    CT-1's 79740957a, which CT-1 has since passed (5c78c4086 at rev 3, §0.8):
+    before M-a, the composition is re-run on CT-1's final head twice, once
+    with DR-1a alone (M-a and L-a, the tree trunk has between DR-1a's merge
+    and DR-1b's) and once with both PRs (M-b, C-b and L-b), each to a gate
+    with 0 failed and a conformance run recorded beside §5's mct row
+    (amended 2026-10-21, review fold: RR1-m4).
 10. The id re-scan for `W-32[4-9]` across every origin ref and worktree at the
     records commit.
 
@@ -2162,12 +2273,14 @@ probes (where_cont, copy_slot, nested_choice, tmpl_for, tmpl_match_dep).
 
 Not measured, and why: the mutants of §8 item 5 (each is a relink of one
 translation unit at implementation, against goldens §4 names); clang-tidy;
-the predicted refills of PR 51's, PR 55's and PR 57's goldens at merge (§8 item
-9 runs them on the then-current heads); DR-1a merged onto CT-1 without DR-1b,
-and any composition on a CT-1 head after 79740957a (§8 item 9 runs both
-before M-a; amended 2026-10-21, review fold: RR1-m4); an optimized build (the
-carbonbuild scripts build fastbuild only); the nightly on slice 3 (it predates
-6d80ceb58).
+the joint merge of every held PR with DR-1a or DR-1b, of which the mirrors
+measure each pair (R-6; rev 3 listed PR 51's, PR 55's and PR 57's predicted
+refills here, measured at DR-1b's stop, amended 2026-10-22, implementation:
+stop-and-amend: the m51 and m57 red sets); DR-1a merged onto CT-1 without
+DR-1b, and any composition on a CT-1 head after 79740957a (§8 item 9 runs
+both before M-a; amended 2026-10-21, review fold: RR1-m4); an optimized build
+(the carbonbuild scripts build fastbuild only); the nightly on slice 3 (it
+predates 6d80ceb58).
 
 ## Hand-off notes
 
@@ -2473,6 +2586,11 @@ fn Run() -> i32 {
 
 ### B.2 fork/conformance/programs/interop/cpp_span_write_through_diff.carbon and .diff.cpp (DR-1b)
 
+(Amended 2026-10-22, implementation: stop-and-amend: stage B errata.) The
+`.diff.cpp` below is the file as committed at B-P (4c358f94b) without its
+license header: prek's clang-format 21.1.8 (`InsertBraces`) braced the two
+one-line `for` bodies rev 3 wrote, so the file is 30 lines.
+
 <!-- google-doc-style-ignore -->
 
 ```carbon
@@ -2518,12 +2636,16 @@ fn Run() -> i32 {
 
 auto Sum(int* p, long long n) -> int {
   int t = 0;
-  for (long long i = 0; i < n; ++i) t += p[i];
+  for (long long i = 0; i < n; ++i) {
+    t += p[i];
+  }
   return t;
 }
 
 auto Bump(int* p, long long n) -> void {
-  for (long long i = 0; i < n; ++i) p[i] += 1;
+  for (long long i = 0; i < n; ++i) {
+    p[i] += 1;
+  }
 }
 
 auto main() -> int {
@@ -3132,6 +3254,177 @@ the four sources at f14ec0d3b fail on A1's build, bindings among them
 (stageA/logs/gate_preedit.log), which is §0.6's state before the sources were
 edited.
 
+## Stop-and-amend record (rev 4, 2026-10-22)
+
+The stop. DR-1b's implementer stopped at stage B's step 5, the mirrors of §8
+item 9, with B0 cdaa15710, B0F 06b6479d0 "DR-1b: cherry-pick fill", B1
+3c54754bc, B1F cf4904138 "DR-1b fill" and B-P 4c358f94b "DR-1b programs"
+committed and pushed on claude/carbon-fork-0-1-dr-idx (cut from DR-1a's D,
+18a7e8934), and B-R not made. Every fill, gate and conformance total of
+DR-1b's own tree was as predicted: B0's gate 1940 passed and 2 failed, B0F's
+fills +172/0 and +103/0, B1's gate 1932 passed and 14 failed, B1F's numstat
+equal to `$Y/v4_numstat.txt` line for line, the four new files 620, 164, 692
+and 166 lines, the final gate 1946 of 1946, conformance 130/0/22 over 152 with
+bullets 48/0/8 of 56, and `runner.py --self-test` OK over 152 programs; mct-b
+and m55 matched §0.8.1 and §1.16. Two mirrors' red sets did not. The
+implementer's logs are scratchpad/dr1-impl/stageB/logs and this amendment's
+scratchpad/dr1-impl/amend4, both under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b;
+every figure is container-local, EXPECTED, not of record (R9).
+
+<!-- google-doc-style-ignore -->
+
+| Mirror | Predicted (rev 3) | Measured |
+| --- | --- | --- |
+| m51: 4c358f94b merged with PR 51's f96fe8a7a (merge 363562322; conflicts in gap-analysis.md and the ledger only) | check and lower slice/buf_field.carbon refilled at L-b (§0.8, §1.13, §1.16 M-b, §4, §8 item 9) | gate 1949 passed, 0 failed before any refill: neither golden moves; conformance 133/0/19 over 152, bullets 48/0/8 (m51_merge.log, gate_m51_1.log, conf_m51.log) |
+| m57: 4c358f94b merged with PR 57's a080c7886 (merge ce44f2a1e) | PR 57's check/slice/basic refilled at L-a (§0.8, §1.13, §1.16 M-a, §4, §8 item 9) | check/slice/basic auto-merges and passes; lower array/iterate, for/break_continue and for/for conflict in CHECK lines only and, on PR 57's side, are the gate's three failures (1951 passed, 3 failed); autoupdate `!!!`, then a fixpoint; refills 186/186, 183/183 and 185/185 against PR 57's text; gate 1954 of 1954; conformance 141/0/22 over 163, bullets 48/0/8, B.1 and B.2 PASS (m57_merge.log, gate_m57_1.log, m57_refill.diff, gate_m57_2.log, conf_m57.log) |
+
+<!-- google-doc-style-resume -->
+
+Reproduced by the amender (amend4/logs). The heads, fetched 2026-10-22:
+PR 51 f96fe8a7a, PR 55 21307851a, PR 57 a080c7886, CT-1 4a3220c11, DR-1a
+18a7e8934, DR-1b 4c358f94b; upstream/trunk 9319bb036 (`git fetch upstream
+trunk`; FETCH_HEAD and upstream/trunk both name
+9319bb0369b714529d80fb6fde4e9680ebf5db5e, "Add more complex function
+definition generation and an `impl`-file benchmark (PR 7998)", 2026-10-21 23:02
+UTC), whose three commits since bc45989b2 change no file under docs,
+proposals or core and none of DR-1's toolchain files.
+
+-   **m51.** `git merge-tree --write-tree` of 4c358f94b, and of 18a7e8934,
+    with f96fe8a7a conflicts in fork/gap-analysis.md and the ledger only
+    (m51_mergetree.txt). PR 51's two buf_field sources, split and compiled
+    by trunk's install (0bdce60a5), DR-1b's (3c54754bc) and PR 51's
+    (carbon-ua2) with `--dump-sem-ir-ranges=only` and `--dump-llvm-ir`
+    (amend4/m51dump): DR-1b's check dumps differ from trunk's only in the
+    instruction id of `import_ref` lines of `Core//prelude/types/buf` (three
+    in synthesized_owner, one in declared_owner: `inst6200039B` against
+    `inst6200039C`), which the goldens match as `inst{{[0-9A-F]+}}`; the LLVM
+    IR differs only in the install path of `DIFile` lines, which the goldens
+    match as `{{.*}}/prelude/...`; PR 51's check dumps equal trunk's.
+-   **m57 and m57a.** `git merge-tree` of 18a7e8934, DR-1a alone, with
+    a080c7886 gives the same three golden conflicts, three blocks in each
+    and no source line in any block, and auto-merges check/slice/basic. m57a,
+    DR-1a alone on PR 57's head: that merge with the three goldens taken from
+    PR 57's side; handle_loop_statement.cpp compiled from it and relinked over
+    PR 57's build objects (/home/user/carbon-build/carbon-op2, whose toolchain
+    state is a080c7886's: `git diff --shortstat 9f9ccd768 a080c7886 --
+    toolchain core ':!toolchain/*/testdata/*'` prints nothing) into
+    /dev/shm/dr1-amend, the install built from the merged tree's core/. The
+    gate gave 1947 passed and 3 failed, the same three; autoupdate `!!!`, then
+    `...` twice (a fixpoint); the refill's changed lines are byte-identical to
+    m57's, 186/186, 183/183 and 185/185, and with `!N` normalized each removed
+    line equals an added one (m57a_refill.diff); the gate 1950 of 1950;
+    conformance 139/0/22 over 161, bullets 48/0/8 (gate_m57a_1.log,
+    gate_m57a_2.log, conf_m57a.log). The worktree and /dev/shm/dr1-amend were
+    removed after measuring.
+
+Root causes:
+
+-   **m51: the prediction read the goldens' subject, not their dump ranges.**
+    Both buf_field.carbon files bracket only `F` and `G` with
+    `//@dump-sem-ir-begin` and `-end`; both bodies call
+    `Core.Buf(i32).Make(n, 7)` and `o.b.Get(0)` and end in the owner's
+    destroy, and neither subscripts a `Buf`. DR-1b turns `Buf`'s
+    `IndexWith(i64)` impl into `IndirectIndexWith(i64)` with a `Ref` (§2.2),
+    which only a subscript reaches: nothing in the dumped region changes,
+    lowering emits only the functions reached, so `Ref` is never emitted, and
+    the instruction ids the prelude edit shifts are matched by pattern.
+-   **m57: §0.8's PR 57 row was transcribed from DR-1b's golden list.** PR
+    57's refill commit 189baa262 (2026-10-14, already in the 628273444 rev 3
+    read) changes six of DR-1a's nine goldens, not one: check
+    interop/cpp/range_for 583/1983, check slice/basic 49/224, lower
+    array/iterate 237/240, for/bindings 161/164, for/break_continue 252/254
+    and for/for 254/256; the row named slice/basic alone, the golden DR-1b
+    also refills. PR 57's `Optional` ownership changes (optional.carbon,
+    lower/handle.cpp, convert.cpp) move the lowering of every `for` loop over
+    the full prelude. The two kinds of golden compose differently. A check
+    golden names a constant by a content-derived suffix (`%ptr.643`), so
+    DR-1's and PR 57's edits touch disjoint lines, merge cleanly and stay
+    true together (slice/basic; range_for; bindings, whose DR-1a change is
+    its one source line). A lower golden numbers its metadata in order
+    (`!54`), so DR-1a's A1F, which renumbered the `!dbg` lines of
+    array/iterate, for/break_continue and for/for (137/137, 134/134 and
+    136/136, no instruction changed), and PR 57's refill rewrite the same
+    lines; the three-way merge conflicts though no instruction differs, and a
+    refill against PR 57's text renumbers them again.
+
+Neither needs a toolchain, prelude, test-source or program change: both are
+merge-time predictions, and both measured outcomes are correct composed
+outputs. Rev 4 changes no §2 code block and no measured row of DR-1b's own
+tree, and no D-DR decision: D-DR-17's and D-DR-20's refill lists are their
+content, now measured, and their break conditions are kept; D-DR-17's own
+break condition ("changes a golden this section does not name; the plan is
+amended with the measured set before the commit") is the rule this record
+follows.
+
+The amendment. Each place carries "amended 2026-10-22, implementation:
+stop-and-amend": the header, the status line and the contents; §0.8 (the PR 51
+and PR 57 rows, the overlap re-sweep); §0.8.1 (the re-measures); §1.13; §1.16
+(M-a's L-a, M-b's L-b); §2.2 (a note after the handle_index.cpp block); §3
+items 8 and 10; §4 (the merge-time rows); §5 (the mirror rows); §6; §7.1
+(R-6); §8 items 5 and 9; §8.1; Appendix B.2's `.diff.cpp`; the Landed notes'
+L-a item; the Sign-off. Rev 2's fold record keeps its finding (5) as it was
+written; rev 4 corrects it here.
+
+Stage B errata, folded with it. None is a fill, gate or conformance
+difference (the implementer's deviations 1 to 6): clang-format wraps three
+statements of §2.2's handle_index.cpp block differently, with the same tokens
+(a whitespace-free comparison of the block applied to f68681114 with
+3c54754bc's file), 37/16 against 39/17; the prelude comments §2.2 asks to
+rewrite make slice.carbon 17/12, buf.carbon 10/5 and iterate.carbon 2/2,
+where §6 read v4's 7/2 and 7/2; prek's clang-format (`InsertBraces`) braces
+B.2's `.diff.cpp` loop bodies, 30 lines as committed; §8 item 5's DR-1b
+mutants are restated as measured (stageB/logs mut_b_* and mut2_b_*); C-b's
+count is +19/-1, not +16; and mct-b ran no autoupdate before C-b, so four
+goldens were red after it, not §0.8.1's three, with the same final refills.
+
+Instructions to the implementer (stage B, re-run from step 5):
+
+1.  Reset nothing. B0 to B-P are pushed and correct: `git -C
+    /home/user/carbon-dr-idx branch -r --contains 4c358f94b` lists
+    origin/claude/carbon-fork-0-1-dr-idx; no fill is redone and no commit is
+    rewritten.
+2.  Rev 4 is the commit "DR-1 plan (rev 4): stop-and-amend: the m51 and m57
+    mirrors' red sets" on claude/carbon-fork-0-1-dr (/home/user/carbon-dr),
+    the plan file only, not pushed. After its focused re-review, and any fold
+    commit on the same branch, push it: `git -C /home/user/carbon-dr push
+    origin claude/carbon-fork-0-1-dr`.
+3.  In /home/user/carbon-dr-idx, merge that branch by a new merge commit,
+    never a rebase: `git -C /home/user/carbon-dr-idx merge --no-ff
+    claude/carbon-fork-0-1-dr`, titled "DR-1b: merge the plan's rev 4 from
+    claude/carbon-fork-0-1-dr", with the session trailers; `git diff --stat
+    HEAD^1 HEAD` must name fork/direction/plan.md alone. No file under
+    toolchain/ or core/ changes, so the build and the install
+    (0.0.0-0.dev+3c54754bc) stand and no build, fill or gate is owed for it;
+    push the branch.
+4.  Fetch, then compare the heads. If PR 51, PR 55, PR 57 and CT-1 are still
+    f96fe8a7a, 21307851a, a080c7886 and 4a3220c11, step 5's mirrors stand as
+    measured (stageB/logs; amend4/logs for m57a) and are not re-run. For a
+    head that moved with `git diff --shortstat <measured> <new> -- toolchain
+    core` not empty, re-run that mirror (§8 item 9) against rev 4's §4 and §5;
+    a difference there is a new stop.
+5.  Then B-R as §3 item 8 says, its decision-log note in entry DR-1 also
+    recording the mirror runs of §5's rev 4 rows (mct-b, m51, m55, m57, m57a)
+    and a dated correction of the DR-1a discharge note's land-time items: L-a
+    refills check generic/template/for_range, lower template/for_range, check
+    interop/cpp/range_for and lower array/iterate, for/break_continue and
+    for/for; L-b refills check generic/template/index and PR 55's
+    string_indexing; PR 57's check/slice/basic and PR 51's buf_field goldens
+    are not refilled (plan rev 4). Then the implementation review (R29(c)),
+    the fix commits of §3 item 9, D and the held PR as §3 says.
+
+The new predictions (§4, §5, each measured). At M-a, the CHECK-only
+conflict blocks of lower array/iterate, for/break_continue and for/for take
+trunk's side, and L-a refills them with the `!dbg` renumbering, 186/186,
+183/183 and 185/185 against PR 57's text, beside mct's three refills; at M-b,
+L-b refills generic/template/index (16/41) and string_indexing (2/2); PR 51's
+buf_field goldens and PR 57's slice/basic are not refilled; a golden that
+several merged PRs change is refilled against trunk's merged text (R-6). Break
+condition: a gate after L-a or L-b with a red golden that no row names, a
+conflict block in a golden that holds a source line, or a mirror head that
+moves in toolchain/ or core/ before its PR opens; the stage stops again and
+the plan is amended.
+
 ## Sign-off
 
 Rev 3, 2026-10-21, is SIGNED OFF FOR IMPLEMENTATION: the focused re-review's
@@ -3142,6 +3435,12 @@ follows §3; a measurement that contradicts a measured row of this plan stops
 the PR and amends the plan (D-DR-22). Every figure in this plan is
 container-local, EXPECTED, not of record (R9); the arbiter at implementation is
 the carbonbuild scripts (R28).
+
+Rev 4, 2026-10-22 (amended 2026-10-22, implementation: stop-and-amend), is a
+stop-and-amend of merge-time predictions, recorded in the section above; it
+changes no code, decision or measured row of DR-1b's own tree, so this
+sign-off still covers DR-1b's code, and rev 4's amendments stand once their
+focused re-review returns a verdict other than REJECT, recorded here.
 
 | Review | Of | Upstream read | Verdict | Findings (BLOCKER / MAJOR / MINOR) | Folded | Rejected | Folded in |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -3222,7 +3521,12 @@ measured is container-local, EXPECTED and not of record (R9). The scratch is
     sides. Then L-a, the refill commit: check generic/template/for_range
     (12/17), lower template/for_range (137/137) and check
     interop/cpp/range_for (17/103), measured on the mct mirror and again with
-    DR-1a alone, and PR 57's check/slice/basic, predicted. Then the gate and
+    DR-1a alone; and lower array/iterate, for/break_continue and for/for
+    (186/186, 183/183 and 185/185 against PR 57's text, once their CHECK-only
+    conflict blocks take trunk's side), measured on m57 and m57a, while PR
+    57's check/slice/basic is not refilled (amended 2026-10-22,
+    implementation: stop-and-amend: the m57 red set; this note predicted its
+    refill). Then the gate and
     conformance on the merged tree, a second id re-scan, and the merged runs
     recorded here.
 -   **DR-1b.** Stacked on this branch (§3 items 5 to 8, B0 first on

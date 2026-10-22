@@ -53,7 +53,13 @@ DR-1b resumed on 2026-10-22 and is implemented through B-R (45294ea90) and its
 implementation-review fold (amended 2026-10-22, implementation-review fold:
 DR1B-m6): the records are "Implementation review fold record, DR-1b
 (2026-10-22)" before the Sign-off and the landed notes that DR-1b's discharge D
-writes on claude/carbon-fork-0-1-dr-idx.
+writes on claude/carbon-fork-0-1-dr-idx. DR-1b's discharge is f774ee836, and
+round 1 of the focused re-review of its fold read it (amended 2026-10-22,
+re-review round 1): two reviews, no BLOCKER or MAJOR, eight MINOR findings
+each, six of review 1's being rev 4's still-open RR4-m1..m6; two of review 2's
+need a comment-only toolchain or golden edit, so round 1 is not dry and round 2
+is owed. The record is "Focused re-review of the fold, DR-1b, round 1
+(2026-10-22)" before the Sign-off, which also folds RR4-m1..m6.
 
 What rev 4 changes (amended 2026-10-22, implementation: stop-and-amend: the
 m51 and m57 red sets). DR-1b's mirrors of §8 item 9 found two merge-time
@@ -112,6 +118,7 @@ removed before PR 62 merges (R32 (e)), by a removal-only commit measured on a PR
 -   Review fold record (rev 2 and rev 3)
 -   Stop-and-amend record (rev 4)
 -   Implementation review fold records (DR-1a, DR-1b)
+-   Focused re-review of the fold, DR-1b, round 1 (with RR4's fold)
 -   Sign-off
 
 ## §0 Audit: measurements with file:line evidence
@@ -654,14 +661,14 @@ b0822a744, 40a76ab81, 5661a35c8, 79740957a, 5c78c4086 and 3a6531157
 | PR 51 UA-2 (f96fe8a7a) | docs/design/slices.md +14/-6; records; new goldens check and lower slice/buf_field.carbon, which dump `Core.Buf` | apply | slices.md: both sides' text, the 0.1-limits bullet D-DR-7 replaces is UA-2-independent; the two buf_field goldens are not refilled: on m51 the gate was 1949 of 1949 before any refill, because they dump only `F` and `G`, which call `Make`, `Get` and the destroy witness and never subscript a `Buf` (amended 2026-10-22, implementation: stop-and-amend: the m51 red set; rev 3 predicted a refill, `Buf`'s impl changing); records keep both sides |
 | PR 52 CM-1 (ea573f672), PR 54 EV-1 | records only | apply | none |
 | PR 53 SAFE-1 (adaae4e35) | docs/design/slices.md +7; records | apply | slices.md both sides |
-| PR 55 ST-1 (21307851a) | records; its operators/overloaded/string_indexing.carbon refill (+112 on its branch) | apply | string_indexing.carbon refilled at DR-1b's merge (both moved it) |
+| PR 55 ST-1 (21307851a) | records; its operators/overloaded/string_indexing.carbon refill (+112 on its branch) | apply | string_indexing.carbon refilled at DR-1b's merge (both moved it): at M-b its two conflict blocks, CHECK lines only (`git merge-tree` of f774ee836 with 21307851a), take trunk's side, which is PR 55's text, and L-b refills it 2/2 (m55; amended 2026-10-22, re-review round 1: R1R2-m5) |
 | PR 56 OP-1 (379f20f67) | core/prelude/types/optional.carbon +73/-2, docs/design/control_flow/loops.md +4 (the F-015 amendment after the cut's desugaring block, :116-118), docs/design/error_handling.md +8, docs/design/optional.md +582 | apply | W-323's new commit lands on PR 56's branch now (C.7, C.8); at DR-1a's merge, loops.md takes DR-1a's restored upstream subsections and C.9's amendment, and drops PR 56's amendment as C.7 corrected it, whose "The desugaring above is the text this page had at the fork's cut" is then false (§1.16); error_handling.md keeps both sides' amendments in date order |
 | PR 57 OP-2 (628273444), stacked on PR 56 | optional.carbon +111/-8, loops.md +4, error_handling.md +8, optional.md +614 (PR 56's plus OP-2's), its check/testdata/slice/basic.carbon refill; gap row 78 moved to DONE; and (amended 2026-10-22, implementation: stop-and-amend: the m57 red set; rev 3 named slice/basic alone) convert.cpp +5/-2 and, in its refill 189baa262, six of DR-1a's nine goldens: check interop/cpp/range_for 583/1983, check slice/basic 49/224, lower array/iterate 237/240, for/bindings 161/164, for/break_continue 252/254 and for/for 254/256 | apply | PR 57's branch takes W-323's commit by a merge of PR 56's branch (a new merge commit, R32 (e)); at M-a, lower array/iterate, for/break_continue and for/for conflict in CHECK lines only, take trunk's side and are refilled at L-a, while check slice/basic, interop/cpp/range_for and lower for/bindings auto-merge and pass (measured on m57 and m57a, §1.16; amended 2026-10-22, implementation: stop-and-amend: the m57 red set); row 78's DONE text keeps trunk's DR-0 sentence as C.3 amends it (§1.16) |
 | PR 58 DD-1 (fcee90d9b) | docs/design/pattern_matching.md +258/-4 | n/a | none: rev 2 edits no pattern_matching.md text (rev 1's amendment belonged to the stopped slice 1) |
 | PR 59 VA-1 (b0822a744) | check/pattern_match.cpp +25, context.h +41, handle_binding_pattern.cpp +76, kind.def +19; call.cpp +194 and convert.cpp +114 (merge-base 3eb7f36f0 to the head; amended 2026-10-21, review fold: RR1-m1: rev 2 omitted these two) | apply; 230227264's call.cpp and convert.cpp hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction: VA-1's added lines create no `TemporaryStorage` return argument, pass no `return_arg_id` and add no `ConvertCallArgs` call, so 230227264's `return_size() > 0` test and its new `CARBON_CHECK` see no new caller; the other four files: none, DR-1 touches none of them |
-| PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13; call.cpp +14 and convert.cpp +94/-7 (merge-base 8068151ed to the head; amended 2026-10-21, review fold: RR1-m1) | apply; 230227264's hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction, by the same test of SC-1's added lines; the other four files: none |
+| PR 60 SC-1 (40a76ab81) | context.h +17, handle_binding_pattern.cpp +27/-3, handle_let_and_var.cpp +14, kind.def +13; call.cpp +14 and convert.cpp +94/-7 (merge-base 8068151ed to the head; amended 2026-10-21, review fold: RR1-m1) | apply; 230227264's hunks dry-run clean | call.cpp and convert.cpp: a three-way merge with no semantic interaction, by the same test of SC-1's added lines; the other four files: none; fork/conformance/README.md's generated table conflicts in one block and is regenerated with `runner.py --update-readme-table` after the merge (amended 2026-10-22, re-review round 1: R1R2-m5) |
 | PR 61 TP-1 (5661a35c8) and CT-1 (79740957a at the mirror, 5c78c4086 at rev 3, stacked on it) | handle_index.cpp +42/-13 (`PerformIndex` on a `LocId`, the `IndexAction` deferral), handle_loop_statement.cpp +10/-2 (a `RequireCompleteType` on the cursor's POINTER type for a template-dependent cursor), call.cpp and convert.cpp (TP-1's deferred conversions, in other functions than 230227264's), handle_match.cpp +2/-5, refutable_binding.{h,cpp} +35/-5, context.h +20, kind.def +1; goldens generic/template/for_range.carbon, generic/template/index.carbon (check), template/for_range.carbon (lower), interop/cpp/range_for.carbon | handle_index.cpp and handle_loop_statement.cpp conflict (both regions rewritten by TP-1); call.cpp and convert.cpp apply clean onto 5661a35c8, 79740957a and 5c78c4086 (rev 3's dry runs; rev 2's "with a three-way fallback" overstated it; CT-1's 224ee2f8f changes other functions of convert.cpp than 230227264's `ConvertCallArgs`) | resolved in DR-1a's and DR-1b's merge commits exactly as §2.1 and §2.2 spell them, then one composition commit (the template-dependent index deferral, §2.2) and the refill commits; measured on the mct mirror (§0.8.1) |
-| PR 62 SV-1 (3a6531157) | refutable_binding.cpp +38 (the `std::optional`/`std::variant` conversion and the D-SV-7 `GetCoreOptionalView` branch), cpp/sum_type.{h,cpp} +1128, kind.def +8 (`CppSumType*` and `CoreOptionalNotMatchable`), core/prelude/types.carbon +1 (`prelude/types/cpp/sum`), docs/design/sum_types.md +91, convert.cpp elsewhere than 230227264's hunk | apply | W-322's removal-only commit lands on PR 62's branch now (§1.11, measured on the m62 mirror, §0.8.2); DR-1's own diff touches none of PR 62's files |
+| PR 62 SV-1 (3a6531157) | refutable_binding.cpp +38 (the `std::optional`/`std::variant` conversion and the D-SV-7 `GetCoreOptionalView` branch), cpp/sum_type.{h,cpp} +1128, kind.def +8 (`CppSumType*` and `CoreOptionalNotMatchable`), core/prelude/types.carbon +1 (`prelude/types/cpp/sum`), docs/design/sum_types.md +91, convert.cpp elsewhere than 230227264's hunk | apply | W-322's removal-only commit lands on PR 62's branch now (§1.11, measured on the m62 mirror, §0.8.2); convert.cpp (23/7 on PR 62 at 0ef8a0334, the re-sweep below): a three-way merge with no semantic interaction, by PR 59's test of SV-1's added lines, which, in `ConvertAggregateElement`'s `diagnose` and `PerformBuiltinConversion`'s sum-type branch, create no `TemporaryStorage` return argument, pass no `return_arg_id` and add no `ConvertCallArgs` call (`git merge-tree` of f774ee836 with 0ef8a0334 merges the file clean); fork/conformance/README.md regenerated as for PR 60; the other files: none (amended 2026-10-22, re-review round 1: RR4-m5 / R1R2-m5; rev 3 read "DR-1's own diff touches none of PR 62's files") |
 
 No held PR touches core/prelude/iterate.carbon, range.carbon,
 operators/index.carbon, types/slice.carbon, types/buf.carbon,
@@ -1075,6 +1082,24 @@ does not cover for a non-`Copy` element, so the impl a literal subscript calls
 no longer depends on whether the element is `Copy` (amended 2026-10-22,
 implementation-review fold: DR1B-M1; handle_index.cpp:155-166 at the fold, the
 probe placed after the `Core.Int` lookup so that no existing golden moves).
+Two consequences, recorded by round 1 of the fold's focused re-review (amended
+2026-10-22, re-review round 1: RR1-1-F1 / R1R2-m1). A blanket `impl forall [U:
+Core.ImplicitAs(i64)] X as Core.IndirectIndexWith(U)` now answers the literal
+probe, so `h[0]` dispatches its `U = Core.IntLiteral` specific as written, as
+upstream's dispatch, which has no literal rule, does; a `Ref` that converts its
+subscript at run time then aborts lowering with W-325's FATAL, "Missing
+constant value for call to comptime-only function" at lower/handle_call.cpp:638
+(that round's q08, a non-`Copy` element, and its `Copy` twin q08b). No
+reference toolchain accepts the program: trunk and the nightly have no
+`IndirectIndexWith`, and they abort the same way on the `IndexWith(U)` analog
+q07, as DR-1a does, and on q09, a generic call deduced at `Core.IntLiteral`. And
+an operand whose only literal impl is `IndirectIndexWith(Core.IntLiteral)`
+dispatches as written and succeeds, while its file's SemIR gains the
+`Core.IndexWith` and `Core.Int` import_refs that the rule's first probe and its
+`Core.Int` lookup load (that round's fp.carbon, which has neither without the
+subscript); upstream loads neither. The rule's comment at
+handle_index.cpp:141-150, which says the dispatch then still diagnoses, is
+reworded by round 2's fixer.
 D-SL-17 is itself a fork spelling of indexing.md's `like i64`
 subscript (`impl as IndirectIndexWith(like i64)`, indexing.md:113-121), which
 upstream's toolchain does not implement (no `like`, PR 56's W-178). W-109's
@@ -1362,6 +1387,10 @@ docs/design/slices.md at DR-1b: C.10 replaces the read-only 0.1-limits bullet.
 The page's own interface listings, indexing paragraph and bounds and iteration
 sentences are rewritten to the same design, and the amendment block says so in
 a dated sentence (amended 2026-10-22, implementation-review fold: DR1B-m2).
+Round 1 of the fold's focused re-review found two more lines (amended
+2026-10-22, re-review round 1: R1R2-m3): the Heap buffers bullet on `Set`
+(slices.md:241-244 at f774ee836) and the rejected alternative "A `Slice.Set`"
+(:434); both are rewritten and the dated sentence names them (C.10).
 docs/design/error_handling.md at the records commit R0: C.11's dated amendment
 corrects the EH-A amendment's "the `match` body above applies verbatim once
 W-058 makes `Optional` a choice" (DR-0 rejected the choice route; the route is
@@ -1417,18 +1446,23 @@ are distinct: M-a on DR-1a's branch, M-b on DR-1b's.
     interop/cpp/range_for and lower for/bindings auto-merge with DR-1a and
     pass, so none is refilled for PR 57; a golden that several merged PRs
     change (range_for: PR 57, PR 61 and CT-1) is refilled against trunk's
-    merged text (§7.1, R-6).
+    merged text (§7.1, R-6), so range_for's L-a count is recorded at L-a, not
+    predicted (amended 2026-10-22, re-review round 1: RR4-m1).
 -   **M-b.** handle_index.cpp resolves onto TP-1's `PerformIndex` (§2.2), then
     C-b, the composition commit that indexes a template-dependent operand per
     specific (§1.3, §2.2), then L-b: check generic/template/index (16/41,
     measured on mct and mct-b) and PR 55's string_indexing (2/2, measured on
-    m55). PR 51's buf_field goldens are not refilled (amended 2026-10-22,
-    implementation: stop-and-amend: the m51 red set; rev 3 predicted it): on
-    m51 the gate was 1949 of 1949 before any refill, because both dump only
-    `F` and `G`, which call `Core.Buf(i32).Make`, `.Get(0)` and the destroy
-    witness and never subscript a `Buf`, and the one trace of the prelude
-    change in their dumps, buf.carbon's shifted `import_ref` instruction ids,
-    is matched as `inst{{[0-9A-F]+}}`.
+    m55), whose two conflict blocks at M-b are CHECK lines only and take
+    trunk's side, PR 55's text, before the refill; fork/conformance/README.md,
+    whose generated table conflicts with PR 60's and PR 62's, is regenerated
+    with `runner.py --update-readme-table` (amended 2026-10-22, re-review
+    round 1: R1R2-m5). PR 51's buf_field goldens are not refilled (amended
+    2026-10-22, implementation: stop-and-amend: the m51 red set; rev 3
+    predicted it): on m51 the gate was 1949 of 1949 before any refill,
+    because both dump only `F` and `G`, which call `Core.Buf(i32).Make`,
+    `.Get(0)` and the destroy witness and never subscript a `Buf`, and the
+    one trace of the prelude change in their dumps, buf.carbon's shifted
+    `import_ref` instruction ids, is matched as `inst{{[0-9A-F]+}}`.
 -   **Commits on other PRs' branches, each new, never a rewrite (R32 (e)), made
     now, at the records commit R0, independent of DR-1's code.** W-322's on PR
     62's branch (§1.11, C.6), measured on the m62 mirror. W-323's on PR 56's
@@ -1970,7 +2004,15 @@ amendment replaces the 0.1-limits bullet. A known edge, not changed: when `Core`
 lacks `IndirectIndexWith` (the fake-`Core` splits of
 operators/overloaded/index.carbon), `HasIndexWithImpl` returns `nullopt` for it
 and the literal rule does not fall back to `IndexWith(i64)`; only fake-`Core`
-tests reach it, and the measured fill pins their output.
+tests reach it, and the measured fill pins their output. Two more edges
+(amended 2026-10-22, re-review round 1: RR1-1-F1 / R1R2-m1; §1.3): a blanket
+`IndirectIndexWith(U)` impl with `U: ImplicitAs(i64)` answers the literal
+probe, so a literal subscript reaches its `U = Core.IntLiteral` specific as
+upstream's dispatch does, and a `Ref` that converts the subscript at run time
+aborts lowering at lower/handle_call.cpp:638 (W-325's FATAL; q07, q08, q08b and
+q09); and an operand whose only literal impl is
+`IndirectIndexWith(Core.IntLiteral)` dispatches as written while its file gains
+the `Core.IndexWith` and `Core.Int` import_refs (fp.carbon).
 
 M-b's resolution of handle_index.cpp on CT-1's head, and the composition commit
 C-b after it (measured on the mct mirror, §0.8.1; amended 2026-10-21, review
@@ -2054,7 +2096,15 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 1.  **P0, P1, P2** "DR-1 plan (rev 1)", "DR-1 plan (rev 2): reviews A and B
     folded" and "DR-1 plan (rev 3): focused re-review folded, sign-off" (this
     file); implementation starts at P2, the signed-off revision (amended
-    2026-10-21, review fold: RR1-m4).
+    2026-10-21, review fold: RR1-m4). P3 f551057ea "DR-1 plan (rev 4):
+    stop-and-amend: the m51 and m57 mirrors' red sets"; then, on the same
+    branch, 2a4264056 "DR-1 plan: implementation-review fold, DR-1b" and "DR-1
+    plan: focused re-review of DR-1b's fold, round 1 recorded", each merged
+    into claude/carbon-fork-0-1-dr-idx by a merge commit: 1b2ddcb87 (rev 4,
+    between B-P and B-R), adec21b5e (the fold's, between its fill and D) and
+    round 1's. None of them is a fix commit under D-DR-22 (item 9); each
+    changes the plan, and round 1's also the decision log (amended 2026-10-22,
+    re-review round 1: RR4-m4).
 2.  **R0** "DR-1 records: plan decisions" on claude/carbon-fork-0-1-dr: the
     decision-log entry DR-1 at its plan state (C.1), the V-3a register's (iv)
     and (v) (C.4), W-324..W-327 and W-329 filed and W-320's and W-322's dated
@@ -2097,7 +2147,13 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
     review fold: RR1-m2), its split renamed `fail_todo_`, never a guard that
     hides an IN form (R17). Break condition: a finding that no shrink can
     answer without breaking a measured row of §0.6.2; the PR stops and the plan
-    is amended.
+    is amended. DR-1a used two and DR-1b one with its fill. Round 1 of DR-1b's
+    focused re-review (2026-10-22) is not dry: R1R2-m1 and R1R2-m2 need
+    comment-only edits of handle_index.cpp and of check
+    slice/write_through.carbon's source, owed to round 2's fixer as DR-1b's
+    fix commit 2 of 3, with RR1-1-F1's comment and A.1's line, an autoupdate
+    run expected to change nothing, and a gate (amended 2026-10-22, re-review
+    round 1).
 10. **At merge, after CT-1** (§1.16): M-a then L-a on DR-1a's branch; M-b, C-b
     "DR-1b: index a template-dependent operand per specific (TP-1's
     `IndexAction`)" and L-b on DR-1b's. Their resolution and fills were measured
@@ -2118,7 +2174,7 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 | check/index/fail_invalid_base, fail_non_tuple_access; check/operators/overloaded/index, index_with_prelude, string_indexing; check/slice/basic, buf, fail_basic; lower/interop/cpp/span; lower/slice/basic, buf | DR-1b (B1F) | refill | `$Y/v4_numstat.txt` (v4; overloaded/index.carbon converges on the second pass) |
 | check/operators/overloaded/indirect_index_with.carbon, lower/index/indirect_index_with.carbon | DR-1b (B1F) | new, upstream's sources | 620 and 164 lines (v4) |
 | check/slice/write_through.carbon (A.1), lower/slice/write_through.carbon (A.2) | DR-1b (B1F) | new | 692 and 166 lines (v4); the check golden 799 lines after the implementation-review fold's two splits (amended 2026-10-22, implementation-review fold: DR1B-M1 / DR1B-m3) |
-| check/generic/template/for_range, lower/template/for_range, check/interop/cpp/range_for | L-a | refill, range_for's CHECK-only blocks on trunk's side first | 12/17, 137/137, 17/103 (mct; the same on mct-b at CT-1's 4a3220c11 and with DR-1a alone at 118fc1bc8; amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets) |
+| check/generic/template/for_range, lower/template/for_range, check/interop/cpp/range_for | L-a | refill, range_for's CHECK-only blocks on trunk's side first | 12/17 and 137/137 (mct; the same on mct-b at CT-1's 4a3220c11 and with DR-1a alone at 118fc1bc8; amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets); range_for's count is recorded at L-a against trunk's merged text, not predicted (R-6): 17/103 is its count against CT-1's text on those mirrors (amended 2026-10-22, re-review round 1: RR4-m1) |
 | check/generic/template/index | L-b, after C-b | refill | 16/41 (mct; the same on mct-b) |
 | lower/array/iterate, lower/for/break_continue, lower/for/for (PR 57's text) | L-a | the CHECK-only conflict blocks (three in each) take trunk's side, then refill | 186/186, 183/183, 185/185 against a080c7886, `!dbg` renumbering only (m57 with DR-1b and m57a with DR-1a alone, the same changed lines; amended 2026-10-22, implementation: stop-and-amend: the m57 red set) |
 | PR 55's check/operators/overloaded/string_indexing | L-b | refill | 2/2 against 21307851a (m55) |
@@ -2137,7 +2193,7 @@ paths only (R20); dates the commit's UTC date. Fill commits come from
 | CT-1's head with DR-1a and DR-1b merged | 149 | 0 | 20 | 169 | measured on mct: CT-1's 167 programs (20 SKIP) and B.1, B.2; templates_for_dependent_range and templates_dependent_index PASS |
 | CT-1's 4a3220c11 with DR-1b (mct-b) | 149 | 0 | 20 | 169 | measured at DR-1b's stop, after C-b and the refills (amended 2026-10-22, implementation: stop-and-amend: the mirrors' red sets; the rows below likewise) |
 | CT-1's 118fc1bc8 with DR-1a alone | 147 | 0 | 20 | 167 | measured at DR-1a's stage A, after L-a's three CT-1 refills |
-| PR 51's f96fe8a7a with DR-1b (m51) | 133 | 0 | 19 | 152 | measured, no refill; PR 51's own programs carry 19 SKIPs |
+| PR 51's f96fe8a7a with DR-1b (m51) | 133 | 0 | 19 | 152 | measured, no refill; 19 SKIPs, not trunk's 22, because PR 51 un-SKIPs three programs (amended 2026-10-22, re-review round 1: RR4-m6; rev 4 read "PR 51's own programs carry 19 SKIPs") |
 | PR 55's 21307851a with DR-1b (m55) | 135 | 0 | 21 | 156 | measured, after the string_indexing refill |
 | PR 57's a080c7886 with DR-1b (m57) | 141 | 0 | 22 | 163 | measured, after the three lower refills; B.1 and B.2 PASS |
 | PR 57's a080c7886 with DR-1a alone (m57a) | 139 | 0 | 22 | 161 | measured by rev 4's amender (a relink over PR 57's build), after the same three refills |
@@ -2295,7 +2351,13 @@ Collisions: §0.8. The rules at merge: §1.16.
     fourth, the fold's `IndirectIndexWith(Core.IntLiteral)` probe removed,
     gives 1945 passed and 1 failed, check slice/write_through, whose
     `literal_subscript_literal_impl` split catches it.
-6.  clang-tidy on the changed translation units, as CT-1 ran it.
+6.  clang-tidy on the changed translation units, as CT-1 ran it. Over the
+    build's compile database one check, `modernize-use-trailing-return-type`,
+    stops clang-tidy 21.1.8 at `missing '(' after '__has_feature'`; with it
+    excluded and named (`--checks=-modernize-use-trailing-return-type`, the
+    repository's .clang-tidy otherwise), handle_index.cpp at f774ee836
+    returns rc 0 with no user warning (amended 2026-10-22, re-review round 1:
+    R1R2-m7).
 7.  prek:
     `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
     uvx prek run --files <paths>` to a fixpoint with `XDG_CACHE_HOME` under the
@@ -2308,8 +2370,9 @@ Collisions: §0.8. The rules at merge: §1.16.
     and PR 57 (lower array/iterate, for/break_continue and for/for), all
     measured at DR-1b's stop (§5; amended 2026-10-22, implementation:
     stop-and-amend: the m51 and m57 red sets; rev 3 named buf_field and
-    slice/basic). A mirror whose two heads have not moved in toolchain/ or
-    core/ since it was measured is not re-run. The mct mirror was built on
+    slice/basic). A mirror whose two heads have not moved in toolchain/,
+    core/ or fork/conformance/ since it was measured is not re-run (amended
+    2026-10-22, re-review round 1: RR4-m2). The mct mirror was built on
     CT-1's 79740957a, which CT-1 has since passed (5c78c4086 at rev 3, §0.8):
     before M-a, the composition is re-run on CT-1's final head twice, once
     with DR-1a alone (M-a and L-a, the tree trunk has between DR-1a's merge
@@ -3238,6 +3301,15 @@ amendment: "The interface listings, the indexing paragraph and the bounds and
 iteration sentences above state this design (rewritten on 2026-10-22, DR-1b
 implementation-review fold: DR1B-m2)."
 
+Amended 2026-10-22 (re-review round 1: R1R2-m3). Two more lines stated the
+read-only design: the Heap buffers bullet "Writes to owned storage go through
+`Set`; `Core.Slice(T)` has no `Set`" (slices.md:241-244 at f774ee836) and the
+rejected alternative "A `Slice.Set`: the `const` element hazard above" (:434),
+whose hazard text the page no longer has. Both are rewritten, writes going
+through `b[i] = v` or `Set` and, for a `Core.Slice(T)`, through `s[i] = v`, and
+a `Slice.Set` being unneeded beside `IndirectIndexWith.Ref` (the generic
+`const`-element write is W-327's); the dated sentence names them.
+
 ### C.11 error_handling.md (R0)
 
 After the paragraph that follows the EH-A amendment (trunk's
@@ -3529,8 +3601,9 @@ Instructions to the implementer (stage B, re-run from step 5):
     f96fe8a7a, 21307851a, a080c7886 and 4a3220c11, step 5's mirrors stand as
     measured (stageB/logs; amend4/logs for m57a) and are not re-run. For a
     head that moved with `git diff --shortstat <measured> <new> -- toolchain
-    core` not empty, re-run that mirror (§8 item 9) against rev 4's §4 and §5;
-    a difference there is a new stop.
+    core fork/conformance` not empty, re-run that mirror (§8 item 9) against
+    rev 4's §4 and §5; a difference there is a new stop (fork/conformance
+    added 2026-10-22, re-review round 1: RR4-m2).
 5.  Then B-R as §3 item 8 says, its decision-log note in entry DR-1 also
     recording the mirror runs of §5's rev 4 rows (mct-b, m51, m55, m57, m57a)
     and a dated correction of the DR-1a discharge note's land-time items: L-a
@@ -3550,8 +3623,10 @@ buf_field goldens and PR 57's slice/basic are not refilled; a golden that
 several merged PRs change is refilled against trunk's merged text (R-6). Break
 condition: a gate after L-a or L-b with a red golden that no row names, a
 conflict block in a golden that holds a source line, or a mirror head that
-moves in toolchain/ or core/ before its PR opens; the stage stops again and
-the plan is amended.
+moves in toolchain/, core/ or fork/conformance/ before its PR opens; the stage
+stops again and the plan is amended. Not a difference: range_for's L-a
+numstat, which is recorded at L-a against trunk's merged text, not predicted
+(R-6; amended 2026-10-22, re-review round 1: RR4-m1 / RR4-m2).
 
 ## Implementation review fold record, DR-1b (2026-10-22)
 
@@ -3580,7 +3655,7 @@ commit; D follows.
 
 | Finding | Severity | Reproduced | Disposition | Where |
 | --- | --- | --- | --- | --- |
-| DR1B-M1 the literal-subscript rule ignores an `IndirectIndexWith(Core.IntLiteral)` impl | MAJOR | yes: on DR-1b's install (3c54754bc) revB's p17 (non-`Copy` element, `IndirectIndexWith(Core.IntLiteral)` and `IndirectIndexWith(i64)` impls) prints 2, the `i64` impl's element, while p17b (an `i32` element) and p17c (the literal impl alone) print 1; trunk 0bdce60a5 and the nightly have no `IndirectIndexWith` (`member name IndirectIndexWith not found in Core`), and upstream's 309d3d63c dispatch, which has no literal rule, calls the literal impl (hand-derived: 1). Root cause: `LiteralSubscriptTargetType` asked only `IndexWith(Core.IntLiteral)`, which the blanket impl supplies only for a `Copy` element | Folded by the fix commit: the rule also asks `IndirectIndexWith(Core.IntLiteral)` (handle_index.cpp:155-166), after the `Core.Int` lookup, so that the names the rule loads keep their order and no existing golden moves. Measured: the reviewer's order, `IndirectIndexWith` first, reorders the `imports` lines of six goldens (index/fail_invalid_base and fail_non_tuple_access, operators/overloaded/index and index_with_prelude, slice/basic and buf), and asking it right after `IndexWith(Core.IntLiteral)` reorders three; the placed probe changes only the new split. Pinned by A.1's `literal_subscript_literal_impl` split (the call is the literal impl's `Ref` with the literal as written). p17 prints 1 on the fix, as p17b and p17c do; revB's other 30 probes print what 45294ea90's binaries print. W-326's title, row :79's parenthetical, slices.md's indexing paragraph and the rule's comment updated | §1.3; §2.2; §8 item 5; A.1; C.2; handle_index.cpp:108-181 |
+| DR1B-M1 the literal-subscript rule ignores an `IndirectIndexWith(Core.IntLiteral)` impl | MAJOR | yes: on DR-1b's install (3c54754bc) revB's p17 (non-`Copy` element, `IndirectIndexWith(Core.IntLiteral)` and `IndirectIndexWith(i64)` impls) prints 2, the `i64` impl's element, while p17b (an `i32` element) and p17c (the literal impl alone) print 1; trunk 0bdce60a5 and the nightly have no `IndirectIndexWith` (`member name IndirectIndexWith not found in Core`), and upstream's 309d3d63c dispatch, which has no literal rule, calls the literal impl (hand-derived: 1). Root cause: `LiteralSubscriptTargetType` asked only `IndexWith(Core.IntLiteral)`, which the blanket impl supplies only for a `Copy` element | Folded by the fix commit: the rule also asks `IndirectIndexWith(Core.IntLiteral)` (handle_index.cpp:155-166), after the `Core.Int` lookup, so that the names the rule loads keep their order and no existing golden moves. Measured: the reviewer's order, `IndirectIndexWith` first, reorders the `imports` lines of six goldens (index/fail_invalid_base and fail_non_tuple_access, operators/overloaded/index and index_with_prelude, slice/basic and buf), and asking it right after `IndexWith(Core.IntLiteral)` reorders three; the placed probe changes only the new split. Pinned by A.1's `literal_subscript_literal_impl` split (the call is the literal impl's `Ref` with the literal as written). p17 prints 1 on the fix, as p17b and p17c do; of revB's other 30 probes, 29 give 45294ea90's outcome (the same output, or the same first error for a refused program), and rrcg, compile-only, compiles where trunk and DR-1a CHECK-fail at pattern_match.cpp:2207 (corrected 2026-10-22, re-review round 1: RR1-1-F8 / R1R2-m8: the fold's log names no 45294ea90 binary for 20 of the 30, and round 1's relink of B-R's rule measures the 29). W-326's title, row :79's parenthetical, slices.md's indexing paragraph and the rule's comment updated | §1.3; §2.2; §8 item 5; A.1; C.2; handle_index.cpp:108-181 |
 | DR1B-m1 lower form.carbon drops upstream's instantiation of `ref_return_class_generic` | MINOR | yes: 230227264's lower hunk adds `class D` and `fn H(d: D) { G(d); }` (11 lines) after `G`; B0 and v4 left them out, so no specific of `G` was lowered; the full split compiles on DR-1b and CHECK-fails at pattern_match.cpp:2207 on trunk (0bdce60a5) and on DR-1a (d0cfe8082) | Folded by the fix commit and its fill: the 11 lines restored, the split's source byte-identical to upstream's; the fill adds 55 lines, the golden +158/0 against DR-1a as upstream's hunk is, its lines upstream's with the metadata numbers normalized (two `!DIFile` and `!DICompileUnit` lines sort differently by their numbers). §0.6.2's "a preceding split the fork lacks" was wrong and is corrected | §0.6.2; §4; §6; A.0 |
 | DR1B-m2 slices.md still states the read-only `IndexWith` design | MINOR | yes: slices.md:114-115, :120-136, :161-162, :190 and :271-272 at 45294ea90 | Folded by the fix commit: those lines, the page's own, rewritten to `IndirectIndexWith(i64)` impls whose `Ref` returns `ref T`, `s[i]` a durable reference, `IndexWith(i64)` from the blanket impl, and the amendment block gains a dated sentence; the scope change is noted in §1.15 and C.10 | §1.15; C.10 |
 | DR1B-m3 a user's `final impl X as Core.IndexWith(...)` that trunk accepts is now rejected | MINOR | yes: revB's p15 prints 6 on trunk and fails on DR-1b with `FinalImplOverlapsDifferentFile` and the note at index.carbon:19; index.carbon is upstream's byte for byte, so upstream rejects it the same way and it is not a drift | Folded: recorded as a behavior change inherited from upstream (§1.3, §7.1's R-7, the decision log's DR-1b discharge note, the PR body) and pinned by A.1's `fail_final_index_with_overlap` split. The split is in the fork's own check/slice/write_through.carbon, not a new file in upstream's operators/overloaded directory, so the manifest stays at 1946 and every merge-time total rev 4 measured stands (R29: decided and recorded; break condition: a reviewer requires a file of its own, which then moves the gate counts, recorded) | §1.3; §7.1; A.1 |
@@ -3622,7 +3697,131 @@ and 141/0/22 over 163, bullets 48/0/8, B.1 and B.2 passing. Every mirror row of
 frontend error with no location, `missing '(' after '__has_feature'`, on
 handle_index.cpp and on the untouched cpp/operators.cpp alike over the build's
 compile database, so the failure is the environment's, not the change's; stage
-B's run (rc 0) predates it.
+B's run (rc 0) predates it. Round 1 of the focused re-review ran it with that
+check, `modernize-use-trailing-return-type`, excluded and named: rc 0 on
+handle_index.cpp, no user warning (§8 item 6; amended 2026-10-22, re-review
+round 1: R1R2-m7).
+
+## Focused re-review of the fold, DR-1b, round 1 (2026-10-22)
+
+Round 1 of §3 item 9's focused re-review loop read the implementation-review
+fold and the discharge, 45294ea90..f774ee836 (the fix commit fddfcf42a and its
+fill bcd9ba06f, the fold's plan commit 2a4264056 with its merge adec21b5e, and
+D f774ee836; nine files), at the head f774ee836, whose toolchain is
+fddfcf42a's, with upstream's direction at upstream/trunk ebc155734 (re-fetched
+by this record at 2026-10-22T04:41Z; unchanged). Two fresh reviews, each in its
+own scratch (scratchpad/dr1b-rr/rev1-r1 and rev2-r1), and this record's
+reproductions (scratchpad/dr1b-rr/rec-r1), all under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b;
+every figure is container-local, EXPECTED, not of record (R9).
+
+-   **Review 1: APPROVE-WITH-FIXES, judged dry.** No BLOCKER or MAJOR; eight
+    MINOR findings, all records only: RR1-1-F1, RR1-1-F8 and rev 4's
+    RR4-m1..m6, restated as still open. Its runs: gate 1946 of 1946;
+    conformance 130/0/22 over 152, bullets 48/0/8, no program changing status
+    against B-P; `--self-test` OK over 152; a full autoupdate on a `git
+    archive` copy changing no file; the four mutants of §8 item 5, relinked
+    and deleted (1916/30 with the same red set; the second aborting the full
+    gate at lower/handle.cpp:405, and 1937/8 with that test excluded; the
+    third at convert.cpp:2838 on both form goldens and write_through; the
+    fourth 1945/1), and two placement mutants that confirm the fold record
+    (`IndirectIndexWith` asked first, 1939/7: the six goldens it names and
+    write_through; the probe right after the `IndexWith` literal probe,
+    1942/4: the three and write_through); mct-b rebuilt in full on CT-1's
+    4a3220c11 (the same five conflicts and handle_index.cpp resolution,
+    1959/4 before and after C-b, C-b +19/-1, the refills 12/17, 16/41, 17/103
+    and 137/137 line for line the fixer's, then 1963 of 1963 and 149/0/20
+    over 169, bullets 48/0/8; tmpl_index_vec 7, tmpl_index_slice 4, tmpl_for
+    6, f_slice 15, p17 1); and 52 probes on the head, DR-1a, trunk, the
+    nightly and a relink of B-R's rule, the head differing from the relink
+    only on p17 (2 to 1) and q03 (`2 2` to `1 2`), the intended fix, and on
+    q08 (RR1-1-F1). Upstream fidelity: index.carbon identical to ac31fd198's
+    and ebc155734's; 309d3d63c's lines present in the `default:` arm; the
+    three lower form split sources byte-identical to 230227264's, check +172
+    and lower +158 as upstream's hunks. Outside DR-1b's scope, for PR 61 and
+    PR 64: a template `v[0] = 5` on a by-value type with only `IndexWith`
+    stops at a CHECK at lower.cpp:48 on CT-1's install and on the mirror,
+    where trunk reports that it cannot monomorphize.
+-   **Review 2: APPROVE-WITH-FIXES, judged not dry.** No BLOCKER or MAJOR;
+    eight MINOR findings, R1R2-m1..m8, of which R1R2-m1 (a comment in
+    handle_index.cpp) and R1R2-m2 (a comment line in a golden's source) are
+    not records only. Its runs, on the install 0.0.0-0.dev+fddfcf42a: a full
+    autoupdate on a clone ran 1946 tests and rewrote nothing; conformance
+    130/0/22 over 152, bullets 48/0/8, the two new programs PASS and nothing
+    else differing from the scoreboard of record; `--self-test` OK over 152
+    programs and the regenerated README table without a diff; prek
+    `--all-files` twice on a clone, rc 0 and no change; clang-format clean;
+    the R31 counts of D's message; the id re-scan (70 origin refs, 20 heads,
+    19 worktrees) agreeing with the decision log; every figure of the PR body
+    exact. p17 prints `1 10 2` (trunk and DR-1a: `IndirectIndexWith` not
+    found in `Core`); a relink without the probe, 1945/1;
+    `ref_return_class_generic` byte-identical to upstream's in both form
+    goldens, compiling on the head and the nightly and CHECK-failing at
+    pattern_match.cpp:2207 on trunk and DR-1a; DR1B-m3's probe
+    `FinalImplOverlapsDifferentFile` on the head where trunk prints 6, and no
+    held head declaring a `final` `IndexWith` impl in its tests or programs
+    (R-7 holds); `git merge-tree` of f774ee836 against trunk and each held
+    head, which this record re-ran (the PR body's Conflicts table).
+
+The dry judgment. A round is dry when no finding is MAJOR or BLOCKER and none
+needs a toolchain, golden or program change. R1R2-m1 rewords a comment in
+toolchain/check/handle_index.cpp and R1R2-m2 a comment line in the source of
+toolchain/check/testdata/slice/write_through.carbon, so round 1 is NOT DRY and
+round 2 is owed: its fixer makes both edits, with RR1-1-F1's comment, which
+that finding defers to whichever fix commit another finding forces, as DR-1b's
+fix commit 2 of §3 item 9's three, comment only, then an autoupdate run
+expected to change nothing and a gate. Nothing is shrunk, no residue is filed
+and no id is minted. Every other finding is records only and is folded here,
+each reproduced against the tree first; none is rejected.
+
+<!-- google-doc-style-ignore -->
+
+| Finding | Review | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- | --- |
+| RR1-1-F1 the fold routes a blanket `IndirectIndexWith(U)` literal subscript into the known comptime-only lowering FATAL, unrecorded | 1 | MINOR, records only | yes: q08 (`impl forall [U: Core.ImplicitAs(i64)] H as Core.IndirectIndexWith(U)`, a `Ref` that converts `i` at run time, a non-`Copy` element) aborts on the head with "FATAL failure at .../lower/handle_call.cpp:638: Missing constant value for call to comptime-only function", and its `Copy` twin q08b likewise; trunk and the nightly refuse both (`IndirectIndexWith` not in `Core`) and abort the same way on the `IndexWith(U)` analog q07 (the nightly at its :598, DR-1a at :638) and on q09, a plain generic call deduced at `Core.IntLiteral` | Folded: §1.3's DR1B-M1 paragraph and §2.2's known-edge paragraph name the blanket case and the FATAL with q07, q08, q08b and q09; W-325 gains a dated note (the same FATAL, a new trigger). No reference toolchain accepts q08, so it is not a regression. The two comments it names (handle_index.cpp:114-124 and :145-150) are reworded with R1R2-m1 by round 2's fixer | §1.3; §2.2; W-325 (dr-idx) |
+| RR1-1-F8, and R1R2-m8 the same, the fold record's probe claim | 1 and 2 | MINOR, records only | yes: dr1-impl/fixB/logs/probes_revB_rerun.txt has "no old bin" on 20 of its 31 lines, all among the 30 probes other than p17 | Folded: the DR1B-M1 row states the measured figures with a dated mark (29 give 45294ea90's outcome, p17 changed, rrcg compile-only), as the PR body did | fold record, DR1B-M1 row |
+| R1R2-m1 the footprint comment says the dispatch still diagnoses, false for an `IndirectIndexWith(Core.IntLiteral)`-only operand | 2 | MINOR | yes: fp.carbon (a non-`Copy` `NC`, only an `IndirectIndexWith(Core.IntLiteral)` impl, `return h[0].v;`) checked on the head with the prelude excluded from the dump: `%Core.IndexWith` and `%Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded` appear, neither without the subscript (fp_nosub), and the dispatch succeeds through `Ref` | To round 2's fixer (a toolchain file): handle_index.cpp:141-150 reworded, comment only. Its records half is folded here: §1.3, §2.2 and W-326's notes disclose the case (the rule's first probe and its `Core.Int` lookup load the two names; upstream, with no literal rule, loads neither) | handle_index.cpp:141-150 (round 2); §1.3; §2.2; W-326 (dr-idx) |
+| R1R2-m2 ledger id W-327 in a golden's source comment | 2 | MINOR | yes: write_through.carbon:34, "// W-327's current behavior, pinned: ...", since B1 3c54754bc, and A.1's same line. Neither the rulebook (R1..R32) nor this plan forbids a W-id in a golden (112 files under toolchain/ and core/ name one), so the edit is the reviewer's wording choice; it is still a golden file | To round 2's fixer: the line reworded on the same single line, as the review gives it, so no `[[@LINE]]` offset or CHECK line moves (an autoupdate no-op), and A.1's line with it on claude/carbon-fork-0-1-dr | write_through.carbon:34; A.1 (round 2) |
+| R1R2-m3 slices.md still states the read-only design at :241-244 and :434 | 2 | MINOR, records only | yes, at f774ee836: "Writes to owned storage go through `Set`; `Core.Slice(T)` has no `Set`" and "A `Slice.Set`: the `const` element hazard above", with no hazard text above | Folded on claude/carbon-fork-0-1-dr-idx: both rewritten to the write-through design, the amendment's dated sentence names them; §1.15 and C.10 record it | slices.md; §1.15; C.10 |
+| R1R2-m4 RR4-m1..m6 still open; RR4's verdict recorded as "not REJECT" | 2 | MINOR, records only | yes: each RR4 cite below at f774ee836; the Sign-off and the PR body read "not REJECT" where RR4 returned APPROVE-WITH-AMENDMENTS | Folded: the RR4 table below, with each finding's text; the verdict in the Sign-off and the PR body; §3 item 1 names f551057ea, 1b2ddcb87, 2a4264056 and adec21b5e and this round's commits; decision-log.md's DR-1a parenthetical resolved to one dated correction at the merge into dr-idx | Sign-off; §3 item 1; decision log |
+| R1R2-m5 no Conflicts table in the PR body; M-b omits string_indexing's CHECK-only conflict | 2 | MINOR, records only | yes: `git merge-tree --write-tree --name-only` of f774ee836 against origin/trunk and each held head after `git fetch -q origin` at 2026-10-22T04:32Z gives review 2's list path for path; string_indexing's two blocks hold CHECK lines only; fork/conformance/README.md conflicts with PR 60 and PR 62 in one block of the generated table each | Folded: the PR body's Conflicts table; M-b, §0.8's PR 55, PR 60 and PR 62 rows and the DR-1b landed notes give string_indexing trunk's side, PR 55's text, before L-b's 2/2 refill, and README.md regenerated with `runner.py --update-readme-table` | §0.8; §1.16; landed notes (dr-idx); PR body |
+| R1R2-m6 PR 63's description stale after f551057ea and 2a4264056 | 2 | MINOR, records only | yes: review 2's copy of the description (updated 2026-10-22T03:44:21Z) ends its commit table at 18a7e8934, and its L-a item and NOT-run bullet name PR 57's check/slice/basic as predicted | Folded as text, not posted (the review says report only): a dated amendment of PR 63's description in scratchpad/pr_dr1a_amended.md (the plan commits after 18a7e8934; the L-a item and the NOT-run bullet as rev 4 measured them); posting it and stamping trunk's ORCHESTRATION dr row are the orchestrator's | scratchpad/pr_dr1a_amended.md |
+| R1R2-m7 clang-tidy runs with one check excluded | 2 | MINOR, records only | yes: over review 2's compile database, `clang-tidy -p <db> --checks=-modernize-use-trailing-return-type` on handle_index.cpp at f774ee836 returns rc 0 (91580 warnings in non-user code and 150 NOLINT suppressed), and with every check, rc 1 at `missing '(' after '__has_feature'` (clang-tidy 21.1.8) | Folded: §8 item 6, the DR-1b fold record and the PR body record the run with the check named; clang-tidy leaves NOT run | §8 item 6; fold record; PR body |
+
+<!-- google-doc-style-resume -->
+
+### RR4's fold (rev 4's focused re-review)
+
+RR4, the focused re-review of rev 4 (f551057ea, read against upstream/trunk
+9319bb036), returned APPROVE-WITH-AMENDMENTS with six MINOR findings, which the
+Sign-off left open for this loop's first records commit. Both reviews of round
+1 found them still open at f774ee836, review 1 restating each and review 2 as
+R1R2-m4. They are folded here, each reproduced against the tree first; none is
+rejected.
+
+<!-- google-doc-style-ignore -->
+
+| Finding, as RR4 gave it | Reproduced | Disposition | Where |
+| --- | --- | --- | --- |
+| RR4-m1 range_for's L-a count is still given as 17/103 while R-6 says it will differ; fix: §4, §1.16's L-a and the Landed notes state it as recorded at L-a against trunk's merged text, not predicted, and the Stop-and-amend record's break condition lists it among the non-differences | yes: §4's L-a row and the DR-1a landed notes' L-a item gave 17/103 for range_for; R-6 says its L-a numstat is against trunk's text | Folded: the three places state it as recorded at L-a, 17/103 being its count against CT-1's text on mct and mct-b; the break condition lists it as not a difference | §4; §1.16; Stop-and-amend record; Landed notes (DR-1a) |
+| RR4-m2 the no-re-run test ignores fork/conformance: a held head that adds or edits a conformance program or runner.py changes a mirror's conformance prediction without a re-run; fix: add fork/conformance to the pathspec of instruction 4 and of §8 item 9 | yes: both read toolchain and core only | Folded: both, and the break condition that repeats the test, add fork/conformance | Stop-and-amend record; §8 item 9 |
+| RR4-m3 DR-1a's own decision-log note stays wrong on DR-1a's branch ("and PR 57's check/slice/basic (predicted)"), the dated correction being only on DR-1b's branch while DR-1a merges first; fix: carry it on claude/carbon-fork-0-1-dr in a new plan or records commit, merged into dr-idx | yes: fork/decision-log.md:365 at 2a4264056 | Folded by this commit on claude/carbon-fork-0-1-dr: the parenthetical points to a dated correction after the DR-1a discharge note, B-R's text. At the merge into dr-idx, where B-R had rewritten the parenthetical in place and written the same correction in its records note, the resolution keeps dr-idx's text, one correction, and drops the dr side's copy | decision log (both branches) |
+| RR4-m4 §3 lists neither rev 4's commit nor the dr-idx merge commit (item 1 names P0..P2 only); fix: add P3, the merge between B-P and B-R, not a fix commit under D-DR-22, and 2a4264056 and adec21b5e | yes: §3 item 1 at f774ee836 | Folded: item 1 names P3 f551057ea, 2a4264056 and this round's plan commit, and their merges 1b2ddcb87, adec21b5e and this round's, none a fix commit under D-DR-22 | §3 item 1 |
+| RR4-m5 PR 62's row contradicts the overlap re-sweep on convert.cpp ("DR-1's own diff touches none of PR 62's files" against overlap_sweep.txt's 0ef8a0334 convert.cpp 23/7, a file 230227264's hunk also changes); fix: the rule as PR 59's and PR 60's rows give it, without "touches none" | yes: `git diff --numstat` from PR 62's merge-base gives convert.cpp 23/7; none of its added lines creates a `TemporaryStorage` return argument, passes a `return_arg_id` or calls `ConvertCallArgs`; `git merge-tree` merges it clean | Folded: the row's rule is PR 59's, by that test | §0.8 |
+| RR4-m6 two wording errors: f551057ea's message and the Sign-off's rev 4 paragraph say no code block or no code changed, while Appendix B.2's `.diff.cpp` block did (§2's did not); and §5's m51 row says "PR 51's own programs carry 19 SKIPs" where PR 51 un-SKIPs three programs, 22 to 19; fix: "no §2 code block" in the Sign-off and in this fold, the commit message noted here, the m51 note rephrased | yes: f551057ea's message ends "No code block, D-DR decision or measured row of DR-1b's own tree changes"; the Sign-off read "it changes no code"; PR 51's diff removes three `// SKIP:` headers (templates_dependent_member, cpp_template_on_carbon_generic and cpp_template_symbolic_arg) | Folded: the Sign-off reads "no §2 code block" and names B.2's block; f551057ea's message is pushed and is never rewritten, so this record states that its "No code block" means no §2 code block, Appendix B.2's `.diff.cpp` block having changed to prek's braces (the Stop-and-amend record's errata); §5's m51 note rephrased | Sign-off; §5 |
+
+<!-- google-doc-style-resume -->
+
+Also recorded by the round, outside the findings: review 1's out-of-scope
+crash (a template `v[0] = 5` on a by-value type with only `IndexWith`, CHECK at
+lower.cpp:48 on CT-1's install, where trunk diagnoses) belongs to PR 61's and
+CT-1's records and is passed to them; DR-1b changes neither the shape's
+lowering nor its check. This record's commits are "DR-1 plan: focused re-review
+of DR-1b's fold, round 1 recorded" on claude/carbon-fork-0-1-dr (this plan and
+the decision log), its merge into claude/carbon-fork-0-1-dr-idx, and "DR-1b
+records: re-review round 1 recorded" there (the decision log's DR-1 entry, the
+ledger, slices.md, the DR-1b landed notes and ORCHESTRATION); no toolchain,
+golden or program file changes.
 
 ## Sign-off
 
@@ -3636,23 +3835,32 @@ container-local, EXPECTED, not of record (R9); the arbiter at implementation is
 the carbonbuild scripts (R28).
 
 Rev 4, 2026-10-22 (amended 2026-10-22, implementation: stop-and-amend), is a
-stop-and-amend of merge-time predictions, recorded in the section above; it
-changes no code, decision or measured row of DR-1b's own tree, so this
+stop-and-amend of merge-time predictions, recorded in its own section above;
+it changes no §2 code block (Appendix B.2's `.diff.cpp` block alone changed, to
+prek's braces; corrected 2026-10-22, re-review round 1: RR4-m6), no decision
+and no measured row of DR-1b's own tree, so this
 sign-off still covers DR-1b's code, and rev 4's amendments stand once their
 focused re-review returns a verdict other than REJECT, recorded here. Recorded
 on 2026-10-22 (implementation-review fold: DR1B-m6): rev 4's focused re-review
-returned a verdict other than REJECT, with six findings, RR4-m1..m6, all MINOR,
-which it left to the focused re-review loop of DR-1b's implementation-review
-fold, whose first records commit folds them; stage B resumed at B-R on that
-verdict.
+returned APPROVE-WITH-AMENDMENTS (so recorded 2026-10-22, re-review round 1:
+R1R2-m4; this paragraph read "a verdict other than REJECT"), with six findings,
+RR4-m1..m6, all MINOR, which it left to the focused re-review loop of DR-1b's
+implementation-review fold, whose first records commit folds them; stage B
+resumed at B-R on that verdict. Recorded on 2026-10-22 (re-review round 1):
+that commit, "DR-1 plan: focused re-review of DR-1b's fold, round 1 recorded",
+folds RR4-m1..m6 ("RR4's fold" above); round 1's two reviews and their
+findings are in "Focused re-review of the fold, DR-1b, round 1 (2026-10-22)";
+round 1 is not dry and round 2 is owed.
 
 | Review | Of | Upstream read | Verdict | Findings (BLOCKER / MAJOR / MINOR) | Folded | Rejected | Folded in |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Review A | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 12 (3 / 5 / 4) | 12 | 0 | rev 2 (35fa2f0ef) |
 | Review B | rev 1 (1e46ffd94) | 70c696e78 | REJECT | 19 (2 / 13 / 4) | 19 | 0 | rev 2 (35fa2f0ef) |
 | Focused re-review RR1 | rev 2 (35fa2f0ef) | bc45989b2 | APPROVE-WITH-AMENDMENTS | 6 (0 / 1 / 5) | 6 | 0 | rev 3 (this commit) |
-| Focused re-review RR4 | rev 4 (f551057ea) | 9319bb036 | not REJECT | 6 (0 / 0 / 6) | open | 0 | the first records commit of DR-1b's focused re-review loop (added 2026-10-22, implementation-review fold: DR1B-m6) |
-| Total | | | | 43 (5 / 19 / 19) | 37, and 6 open | 0 | |
+| Focused re-review RR4 | rev 4 (f551057ea) | 9319bb036 | APPROVE-WITH-AMENDMENTS | 6 (0 / 0 / 6) | 6 | 0 | the first records commit of DR-1b's focused re-review loop, round 1 (added 2026-10-22, implementation-review fold: DR1B-m6; folded and the verdict corrected 2026-10-22, re-review round 1: R1R2-m4) |
+| Fold re-review, round 1, review 1 | DR-1b's fold and D (f774ee836) | ebc155734 | APPROVE-WITH-FIXES | 8 (0 / 0 / 8), six of them RR4-m1..m6 restated and counted on RR4's row | 2 | 0 | round 1's records (added 2026-10-22, re-review round 1) |
+| Fold re-review, round 1, review 2 | DR-1b's fold and D (f774ee836) | ebc155734 | APPROVE-WITH-FIXES | 8 (0 / 0 / 8) | 6, and 2 to round 2's fixer | 0 | round 1's records; R1R2-m1 and R1R2-m2 in round 2 (added 2026-10-22, re-review round 1) |
+| Total | | | | 53 (5 / 19 / 29) | 51, and 2 to round 2 | 0 | |
 
 ## Landed notes (DR-1a, 2026-10-21)
 
@@ -3726,7 +3934,10 @@ measured is container-local, EXPECTED and not of record (R9). The scratch is
     sides. Then L-a, the refill commit: check generic/template/for_range
     (12/17), lower template/for_range (137/137) and check
     interop/cpp/range_for (17/103), measured on the mct mirror and again with
-    DR-1a alone; and lower array/iterate, for/break_continue and for/for
+    DR-1a alone (range_for's 17/103 is against CT-1's text: at L-a its count
+    is recorded against trunk's merged text, not predicted, R-6; amended
+    2026-10-22, re-review round 1: RR4-m1); and lower array/iterate,
+    for/break_continue and for/for
     (186/186, 183/183 and 185/185 against PR 57's text, once their CHECK-only
     conflict blocks take trunk's side), measured on m57 and m57a, while PR
     57's check/slice/basic is not refilled (amended 2026-10-22,

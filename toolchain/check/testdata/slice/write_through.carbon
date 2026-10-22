@@ -115,6 +115,38 @@ final impl V as Core.IndexWith(i64) where .ElementType = i32 {
   fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
 }
 
+// --- fail_todo_template_index_with_only.carbon
+library "[[@TEST_NAME]]";
+
+// The current behavior, pinned: for a template-dependent operand, the
+// non-diagnosing `IndirectIndexWith` attempt is deferred to monomorphization,
+// so the `IndexWith` fallback does not run, and the deferred lookup's failure
+// there is an error. `V` implements only `IndexWith(i64)`, so `G(V)` is
+// rejected. Choosing between the two interfaces per specific, when the
+// template is instantiated, makes this valid.
+fn G[template T: type](x: T, i: i64) -> i32 {
+  return x[i];
+}
+
+class V {
+  var x: i32;
+}
+
+impl V as Core.IndexWith(i64) where .ElementType = i32 {
+  fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
+}
+
+fn F(v: V) -> i32 {
+  // CHECK:STDERR: fail_todo_template_index_with_only.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `G(V)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return G(v, 2);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_todo_template_index_with_only.carbon:[[@LINE-15]]:10: note: cannot access member of interface `Core.IndirectIndexWith(i64)` in type `V` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return x[i];
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
+  return G(v, 2);
+}
+
 // CHECK:STDOUT: --- write.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

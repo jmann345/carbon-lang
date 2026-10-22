@@ -282,9 +282,11 @@ auto WrapInstForSpecific(Context& context, SemIR::LocId loc_id,
   // specific too.
   if (specific_id.has_value() &&
       context.constant_values().Get(inst_id).is_symbolic()) {
+    auto target_id = inst_id;
     inst_id = AddInst<SemIR::SpecificConstant>(
         context, loc_id,
         {.type_id = type_id, .inst_id = inst_id, .specific_id = specific_id});
+    AddAliasUseCheckToCurrentGeneric(context, loc_id, target_id, inst_id);
   }
   return {.inst_id = inst_id, .type_id = type_id};
 }

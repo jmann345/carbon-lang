@@ -6,14 +6,17 @@
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   7
-// SKIP: a symbolic checked-generic type parameter as a C++ template argument still fails to compile on nightly 2026.07.19: "error: semantics TODO: `unsupported type used as template argument`" at `var b: Cpp.Box(T);` — the exact TODO tracked in toolchain/check/testdata/interop/cpp/template/generic_call.carbon (fail_todo_generic_call); enable when template instantiation is deferred to monomorphization.
 //
-// The known-missing slice of this PARTIAL bullet: using a Carbon checked
-// generic's symbolic type parameter T as an argument to an imported C++
-// template (Cpp.Box(T)) inside the generic's body. Concrete Carbon types in
-// the same position work (cpp_template_builtins.carbon,
-// cpp_template_carbon_class.carbon); the symbolic case requires deferring
-// C++ template instantiation until monomorphization.
+// A Carbon checked generic's symbolic type parameter T as the argument of an
+// imported C++ class template, Cpp.Box(T), in the generic's body: the
+// specialization is formed for each specific when T is known (here Box<Point>,
+// Point exported to C++), and its default initialization, the assignment to
+// its field and its copy on return are performed there (CT-1,
+// fork/cpp-templates/plan.md). Wrap({.x = 7} as Point).value.x reads back 7.
+// Point implements Core.Copy because `b.value = v` copies a Point value: the
+// same body without the generic, with Cpp.Box(Point), is rejected by every
+// toolchain without it ("cannot copy value of type `Point`"), so the program
+// before CT-1 could not have passed for that reason either.
 
 import Core library "io";
 import Cpp inline '''
@@ -24,6 +27,9 @@ template<typename T> struct Box {
 
 class Point {
   var x: i32;
+  impl as Core.Copy {
+    fn Op(self) -> Self { return {.x = self.x}; }
+  }
 }
 
 fn Wrap[T: type](v: T) -> Cpp.Box(T) {

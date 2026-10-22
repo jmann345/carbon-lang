@@ -89,6 +89,30 @@ class Worklist {
 
 }  // namespace
 
+// Returns whether an action's operand is substituted into: only an operand
+// that is itself a constant instruction is, such as the C++ template call
+// that an action formed while another generic's eval block was evaluated for
+// a symbolic specific. An instruction of a generic's body or eval block is
+// the operand the action refers to in each specific, and stays.
+static auto IsSubstitutedActionOperand(Context& context, SemIR::InstId inst_id)
+    -> bool {
+  if (context.constant_values().GetConstantInstId(inst_id) == inst_id) {
+    return true;
+  }
+  // An instruction of another generic, such as an enclosing class's
+  // `T.Inner` that an alias of the class names, is not evaluated in this
+  // generic's specifics, so it is substituted with this generic's constant
+  // when the action is added to this generic's eval block.
+  auto const_id = context.constant_values().GetAttached(inst_id);
+  if (!const_id.is_symbolic() ||
+      !context.constant_values().IsAttached(const_id) ||
+      context.generic_region_stack().Empty()) {
+    return false;
+  }
+  return context.constant_values().GetSymbolicConstant(const_id).generic_id !=
+         context.generic_region_stack().PeekPendingGeneric().generic_id;
+}
+
 // Pushes the specified operand onto the worklist.
 static auto PushOperand(Context& context, Worklist& worklist,
                         SemIR::IdAndKind arg) -> void {
@@ -120,6 +144,20 @@ static auto PushOperand(Context& context, Worklist& worklist,
     }
     case CARBON_KIND(SemIR::InstBlockId inst_block_id): {
       push_block(inst_block_id);
+      break;
+    }
+    case CARBON_KIND(SemIR::MetaInstId inst_id): {
+      if (inst_id.has_value()) {
+        worklist.Push(inst_id,
+                      /*skip=*/!IsSubstitutedActionOperand(context, inst_id));
+      }
+      break;
+    }
+    case CARBON_KIND(SemIR::MetaInstBlockId inst_block_id): {
+      for (auto inst_id : context.inst_blocks().Get(inst_block_id)) {
+        worklist.Push(inst_id,
+                      /*skip=*/!IsSubstitutedActionOperand(context, inst_id));
+      }
       break;
     }
     case CARBON_KIND(SemIR::StructTypeFieldsId fields_id): {
@@ -221,6 +259,15 @@ static auto PopOperand(Context& context, Worklist& worklist,
       return worklist.Pop().index;
     }
     case CARBON_KIND(SemIR::InstBlockId inst_block_id): {
+      return pop_block_id(inst_block_id).index;
+    }
+    case CARBON_KIND(SemIR::MetaInstId inst_id): {
+      if (!inst_id.has_value()) {
+        return arg.value();
+      }
+      return worklist.Pop().index;
+    }
+    case CARBON_KIND(SemIR::MetaInstBlockId inst_block_id): {
       return pop_block_id(inst_block_id).index;
     }
     case CARBON_KIND(SemIR::StructTypeFieldsId old_fields_id): {

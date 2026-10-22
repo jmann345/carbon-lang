@@ -12,6 +12,7 @@
 #include "toolchain/check/type.h"
 #include "toolchain/sem_ir/constant.h"
 #include "toolchain/sem_ir/copy_on_write_block.h"
+#include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/generic.h"
 #include "toolchain/sem_ir/id_kind.h"
 #include "toolchain/sem_ir/inst.h"
@@ -201,6 +202,26 @@ auto ActionIsPerformable(Context& context, SemIR::Inst action_inst,
         return true;
       default:
         return false;
+    }
+  }
+
+  // A call to an imported C++ function or a C++ template name is resolved by
+  // Clang, which needs the arguments, or their types, to be concrete: it waits
+  // for them even when they are only symbolic, as a checked generic's `T` and
+  // `x: T` are (`PerformCall`, `PerformCallToNonFunction`).
+  if (auto call = action_inst.TryAs<SemIR::CallAction>()) {
+    auto inst_ids = context.inst_blocks().Get(call->inst_block_id);
+    if (context.types().Is<SemIR::CppTemplateNameType>(
+            context.insts().Get(inst_ids.front()).type_id()) ||
+        std::holds_alternative<SemIR::CalleeCppOverloadSet>(
+            SemIR::GetCallee(context.sem_ir(), inst_ids.front()))) {
+      for (auto arg_id : inst_ids.drop_front()) {
+        if (OperandDependenceInSpecific(context, specific_id,
+                                        SemIR::MetaInstId(arg_id)) >
+            SemIR::ConstantDependence::None) {
+          return false;
+        }
+      }
     }
   }
 

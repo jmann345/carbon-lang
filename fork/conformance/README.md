@@ -333,14 +333,21 @@ fails if this table is stale):
 | `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
-| `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
-| `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | SKIP |
+| `interop/cpp_template_carbon_generic_spec.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_fn_symbolic.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_nested_symbolic.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `interop/cpp_template_spec_roundtrip.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_symbolic_diff.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | differential |
+| `interop/cpp_template_two_specifics.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_condvar_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_mutex_raii.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
 | `interop/cpp_threading_atomics.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
 | `interop/cpp_type_export_carbon_class.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
 | `interop/cpp_type_import_class_enum.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `interop/cpp_var_template_runtime.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/inherit_carbon_extends_cpp.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | run |
 | `interop/inherit_cpp_extends_carbon.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | run |
 | `interop/inherit_multiple_bases.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | SKIP |

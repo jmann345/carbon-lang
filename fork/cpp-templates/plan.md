@@ -11,11 +11,16 @@ through P (65fc0d394) with the held-state measurements (79740957a); the
 implementation reviews 1 (REJECT) and 2 (APPROVE-WITH-FIXES) of that head are
 folded by the fix commits 224ee2f8f and ccd6a80a8, each with its fill
 (5c78c4086 and ffde90904), and by the records commit that adds this line
-(98a82cc4f); the records commits R (59f7b0258) and D are written, and the
-"Landed notes (CT-1, 2026-10-21)" after the Sign-off section record what they
-wrote, the measurements and every land-time item (amended 2026-10-21,
-discharge); the focused re-review loop of §3 item 9 is next (amended 2026-10-21,
-implementation-review fold: IR2-m3)
+(98a82cc4f); the records commits R (59f7b0258) and D (118fc1bc8) are written,
+and the "Landed notes (CT-1, 2026-10-21)" after the Sign-off section record what
+they wrote, the measurements and every land-time item (amended 2026-10-21,
+discharge); the focused re-review loop of §3 item 9 came next
+(amended 2026-10-21, implementation-review fold: IR2-m3), and its round 1, of
+the head 118fc1bc8, is dry: both reviews return APPROVE-WITH-FIXES with twelve
+MINOR findings, all records, folded by the records commit that adds this clause,
+so the loop ends and the PR opens held, stacked on PR 61 ("Focused re-review of
+the fold, round 1 (2026-10-22)" before the Sign-off section; amended 2026-10-22,
+focused re-review round 1: RR1r2-m1)
 
 The focused re-review RR2 of rev 3 approved it with amendments, one MAJOR
 (RR2-M1), and rev 4 folds that finding at its root (§1.18); the fold records
@@ -123,15 +128,16 @@ specialization a deferred `CallAction` whose symbolic arguments are wrapped in
 "Wrap symbolic template args in a `TemplateInst` so that all symbolic arguments
 are treated as templates"), and call.cpp:133 is reached only for a concrete type
 that `MapToCppType` cannot map. Of W-043's other evidence, call.cpp:127 is
-stale in the same way, call.cpp:252's non-type restriction is live (W-302),
-and type_mapping.cpp:560's TODO is live at :733-736 (``Support passing
-form-dependent args to C++ functions.``): a C++ call with a `:?`
-form-dependent argument, `fn F(generic Fm: Core.Form, x:? Fm) -> i32 { return
-Cpp.TakeInt(x); }`, reports it where `F` is defined on TP-1, v11's deferral
-moves it to an instantiation note (E-MONO for `F(form(val i32), v)`, and an
-uncalled `F` compiles), and v12 keeps it where `F` is defined (new/n01 to n03,
-§0.12; W-307; amended 2026-10-21, review fold: B-M1). Measured with each SKIP
-line removed and nothing else changed:
+stale in the same way, call.cpp:252's non-type restriction is live (W-302; the
+TODO at :246 and :256-259 at CT-1's head, amended 2026-10-22, focused re-review
+round 1: RR1r2-m5), and type_mapping.cpp:560's TODO is live at :733-736
+(``Support passing form-dependent args to C++ functions.``): a C++ call with a
+`:?` form-dependent argument, `fn F(generic Fm: Core.Form, x:? Fm) -> i32 {
+return Cpp.TakeInt(x); }`, reports it where `F` is defined on TP-1, v11's
+deferral moves it to an instantiation note (E-MONO for `F(form(val i32), v)`,
+and an uncalled `F` compiles), and v12 keeps it where `F` is defined (new/n01 to
+n03, §0.12; W-307; amended 2026-10-21, review fold: B-M1). Measured with each
+SKIP line removed and nothing else changed:
 
 | Program | TP-1 | trunk | nightly | v11 |
 | --- | --- | --- | --- | --- |
@@ -1238,6 +1244,7 @@ uninitialized field and prints a different number on each run.
 | a/c_bad_inst (`var unused b: Cpp.Bad(T);` with a `static_assert` in `Bad`) | E-DU, the type as `Bad(<cannot stringify inst...: {kind: TemplateInst, ...}>)` | E-DU, a splice | E-DU, a splice | E-MONO with ``note: `Bad(<cannot stringify inst...: {kind: TemplateInst, ...}>)` evaluates to incomplete type `Cpp.Bad` `` and Clang's `static_assert` notes | the same (W-306) |
 | d/t_alias_member_missing (`alias S = T.nope;` in a class template, the class used) | 1 | 1 | 1 | ``binding pattern has incomplete type `C(Point)` `` with ``note: member name `nope` not found in `Point` `` | the same (§1.4) |
 | e/t_alias_runtime_via_alias (`alias N2 = C(T).N;` for `alias N = Cpp.Traits(T).Count();`, two class templates) | runs, prints nothing | the same | the same | ``member access into incomplete class `E(i64)` `` with ``note: member access into incomplete class `C(i64)` `` | the same (§1.4) |
+| t/t_carbon_generic_ref_arg_template (`IncG(ref v, x);` for `fn IncG[U: Core.Copy](ref n: U, v: U)` in `F[template T: Core.Copy & Core.Destroy]`, no C++; added 2026-10-22, focused re-review round 1: RR1-1-m3) | STOP sem_ir/inst.h:249 | the same | the same | STOP sem_ir/inst.h:249 (review 1's p0) | 5 |
 
 <!-- google-doc-style-resume -->
 
@@ -1246,6 +1253,12 @@ twin's value, and a template form that stops on TP-1, trunk and the nightly
 with two of them (as11, as12, rp2); it changes none of the other rows,
 which are the records findings: W-309's two more shapes, W-310, W-311, W-306's
 unstringified type and the two template-lane rejections of §1.4.
+The last row is the focused re-review's (its round 1, review 1's
+`$RR/rev1-r1/probes/t`, `$RR` the round's scratch, scratchpad/ct1-rr; run again
+by the round's records writer on CT-1's install, TP-1, trunk and the nightly,
+`$RR/rec/logs/m3_probe.tsv`): a template form with no C++ that IR1-M1's
+`ref`-tag step runs, as IR1-B1's step runs as12 (§1.3, §1.4; added 2026-10-22,
+focused re-review round 1: RR1-1-m3).
 
 ## §1 Design
 
@@ -1395,8 +1408,14 @@ c/z_ref_param does, where CT-1 at P stopped at sem_ir/inst.h:249 and TP-1
 reports E-ARG, and the template form b/rp2, which stops there on TP-1, trunk and
 the nightly, prints 6 too; A.1's `cpp_call_ref_argument` pins both and mutant
 M24 (the step reverted) stops on it (amended 2026-10-21, implementation-review
-fold: IR1-M1). _Break condition:_ a C++ call whose arguments' types are all
-concrete changes (falsifiers: A.1's
+fold: IR1-M1). The same step runs a template form with no C++, as IR1-B1's runs
+as12: `IncG(ref v, x);` for `fn IncG[U: Core.Copy](ref n: U, v: U)` in `fn
+F[template T: Core.Copy & Core.Destroy](x: T)`
+(t/t_carbon_generic_ref_arg_template, §0.13) prints 5, where TP-1, trunk, the
+nightly and CT-1 at P stop at sem_ir/inst.h:249; it reaches the `Convert` branch
+that A.1's `cpp_call_ref_argument` `Template` reaches, so no golden is added
+(amended 2026-10-22, focused re-review round 1: RR1-1-m3). _Break condition:_ a
+C++ call whose arguments' types are all concrete changes (falsifiers: A.1's
 `fail_symbolic_value_cpp_call_in_definition`, any golden of a concrete C++ call;
 the gate shows none), a call with an argument of a checked-symbolic type is
 still diagnosed where the generic is defined, a form-dependent or pack expansion
@@ -1455,6 +1474,14 @@ d/t_alias_member_missing, where TP-1 prints 1), and an alias of another class
 template's alias of a runtime value, `alias N2 = C(T).N;` for `alias N =
 Cpp.Traits(T).Count();` (``member access into incomplete class `E(i64)` ``,
 e/t_alias_runtime_via_alias, where TP-1 drops the statement).
+Two template-lane forms with no C++, each of which stops on TP-1, trunk and the
+nightly, run since the implementation-review fold, by two of its steps that
+change no rule of TP-1's: as12 (`y = Mk(x);` in `F[template U: ..., T:
+Core.Copy]`, IR1-B1's storage type in the specific, §0.13) runs, and
+t_carbon_generic_ref_arg_template (`IncG(ref v, x);` in `F[template T: ...]`,
+IR1-M1's `ref`-tag step, §1.3) prints 5 where TP-1, trunk, the nightly and CT-1
+at P stop at sem_ir/inst.h:249 (amended 2026-10-22, focused re-review round 1:
+RR1-1-m3).
 
 ### §1.5 Deferred impl lookup on a C++ specialization (D-CT-5, amends D-TP-12)
 
@@ -1693,10 +1720,13 @@ probe may still stop; §8's re-review loop is the check). The two `returned var`
 rows are the implementation-review fold's; W-311's stop is upstream's and is
 not fixed here (amended 2026-10-21, implementation-review fold: IR1-m2).
 
-### §1.12 Residues filed (W-300..W-309)
+### §1.12 Residues filed (W-300..W-311)
 
-Ten items, filed in the discharge commit D, each a `missing-feature` or
-`toolchain-defect` entry with the evidence above (Appendix C.3 holds the texts):
+Twelve items, W-300 to W-309 and the implementation-review fold's W-310 and
+W-311, filed in the discharge commit D, each a `missing-feature` or
+`toolchain-defect` entry with the evidence above (Appendix C.3 holds the texts;
+the heading and this count amended 2026-10-22, focused re-review round 1:
+RR1r2-m6, rev 4 said W-300..W-309 and ten):
 W-300 unmappable Carbon types as template arguments; W-301 Carbon generics as
 template template arguments; W-302 non-type template argument kinds; W-303
 deduction through a C++ specialization, a parameter's type and an impl's
@@ -1816,10 +1846,11 @@ fold: IR1-m2) and on the one-library limit (W-250), and
 row 42 on its own export cases (its template clause is replaced, qualified by
 W-300); W-043's disposition is DISCHARGED because its blocker, a symbolic
 Carbon type as a C++ template argument, is IN, and what remains of its
-evidence is filed: call.cpp:252 as W-302 and type_mapping.cpp:560's TODO, now
-:733-736, as W-307 (amended 2026-10-21, review fold: B-M1 / B-M5 / B-M2 /
-B-m2). The TP-1 records CT-1 edits are exactly these: in
-fork/templates/plan.md, one dated line on D-TP-12 and one on TR-22; in
+evidence is filed: call.cpp:252 (when filed; the TODO at :246 and :256-259 at
+CT-1's head, amended 2026-10-22, focused re-review round 1: RR1r2-m5) as W-302
+and type_mapping.cpp:560's TODO, now :733-736, as W-307 (amended 2026-10-21,
+review fold: B-M1 / B-M5 / B-M2 / B-m2). The TP-1 records CT-1 edits are exactly
+these: in fork/templates/plan.md, one dated line on D-TP-12 and one on TR-22; in
 fork/inventory/work-items.json, W-268 (narrowed), W-273 (discharged) and one
 dated line in W-274's notes (Appendix C.5, C.11); nothing else of TP-1's
 changes (amended 2026-10-21, review fold: RR1-N-m2; rev 2 placed W-274's line
@@ -3325,6 +3356,15 @@ B-m6).
     or MAJOR) and is capped at three rounds: if the third is not dry, every
     form a remaining finding names goes OUT under the shrink line and the loop
     ends. The PR opens held after the last round.
+
+    Round 1 done 2026-10-22 (amended 2026-10-22, focused re-review round 1): two
+    fresh reviews read 79740957a..118fc1bc8, the fix commits, their fills, the
+    fold's records, R and D, at the head 118fc1bc8; both return
+    APPROVE-WITH-FIXES, with no BLOCKER or MAJOR and twelve MINOR findings, all
+    records only, which the records commit "CT-1 records: re-review round 1
+    recorded" folds, with no fix commit. The round is dry, so the loop ends
+    after it and the PR opens held, stacked on PR 61; the section "Focused
+    re-review of the fold, round 1 (2026-10-22)" before the Sign-off records it.
 10. **Held-state measurements** (not commits): §8's mutants, the composition
     mirrors over PR 51, PR 57, PR 59, PR 60 and PR 62 with the predicted red
     sets, clang-tidy, the id re-scan.
@@ -3847,7 +3887,7 @@ is not a difference.
     | M2 | D-CT-5's `MetaInstId` walk | the same stop; also red default_init.carbon, generic_call.carbon and A.2 (alias_of_member_type, two_specifics, store_generic_call_result); the same five programs | yes |
     | M6, M7 | D-CT-8 | A.2 stops: CHECK lower/handle_call.cpp:984 at narrow_return_template.carbon:7; cpp_template_symbolic_diff COMPILE-FAIL | yes |
     | M15 | D-CT-5's constant-value step | red A.1: alias_of_specialization and class_template_alias_through_symbolic_specific | yes |
-    | M22 | D-CT-17's use rule | red default_init.carbon (four `splice_inst <unexpected>`) and A.1 (the dumps of alias_of_constant_through_specific and nested_alias_through_specific lose `ref`; class_template_alias_through_symbolic_specific fails) | yes |
+    | M22 | D-CT-17's use rule | red default_init.carbon (four `splice_inst <unexpected>`) and A.1 (the dumps of alias_of_constant_through_specific and nested_alias_through_specific lose `ref`; class_template_alias_through_symbolic_specific fails); relinked again after ccd6a80a8 (expr_info.cpp and inst_kind.cpp, the focused re-review's round 1, review 1), file_test first stops on A.2's nested_alias_through_specific.carbon:31 at CHECK lower/function_context.cpp:264 (``Lowering wrapper_binding``), and with A.2 excluded default_init.carbon and A.1 are red as above (amended 2026-10-22, focused re-review round 1: RR1-1-m4) | yes |
     | M75 | TP-1's facet-type operand counted as a splice (convert.cpp's walk) | nothing red: 1959 of 1959, every program, the 403 and the 250 probes unchanged, as the second review measured on 79740957a (k14 prints 3) | no: survives |
     | M75r | the count replaced by a `CARBON_FATAL` | no stop and nothing red over the gate, the 167 programs, the 403 probes and the 250: no measured input reaches the count | reach only |
 
@@ -4096,6 +4136,30 @@ is not a difference.
     probes print or report what they do on CT-1's build (PR 59's three
     W-304 stops at lower/function_context.cpp:287, its offset), and so do the
     27 rows. No merge changed one of the fold's hunks beyond offsets.
+
+    Measured again by the focused re-review's round 1 (amended 2026-10-22,
+    focused re-review round 1: RR1-1-m1 / RR1r2-m4; EXPECTED, not of record),
+    for PR 62 at its moved head 0ef8a0334 (DR-1's W-322 in eight toolchain and
+    prelude files, §3 item 10's break condition, the landed notes): each review
+    merged 0ef8a0334 into a `git clone --shared` of 118fc1bc8, records conflicts
+    only (fork/ORCHESTRATION.md, fork/decision-log.md and the ledger) taken from
+    CT-1's side, and built it in full under /dev/shm/ct1-rr-rev1 or ct1-rr-rev2
+    with no warning, then deleted it (review 1's merge head 7c66ddb8b,
+    `$RR/rev1-r1/out-m-pr62/summary.txt`; review 2's 88f926512,
+    `$RR/rev2-r1/out-m-pr62`; `$RR` the round's scratch, scratchpad/ct1-rr).
+    Both: the gate passes 1967 of 1967 with no `!` mark; programs 152 PASS, 0
+    FAIL, 20 SKIP of 172, 48 of 56 bullets, the one change from the 3a6531157
+    mirror control_flow/match_core_optional_diff going PASS to SKIP, PR 62's own
+    W-322 SKIP; the 403 probes print or report what they do on CT-1's build, 4
+    rows differing only in their CHECK message's path prefix; the 27 fold rows
+    are equal; sv1 1, sv2 0, sv3 rejected, sv3b and sv3c E-MONO, sv4 W-252's
+    TODO, sv5 1, sv6 1 and sv8 8, as before. Review 1 also built PR 59 at
+    b0822a744 again (merge head fcb7f7006): 1977 of 1977; programs 156 PASS, 19
+    SKIP of 175 (49 of 56 bullets), as at stage 4 and at the fold; the 403
+    probes with the 3 recorded line shifts of W-304's stops; va1 and va2 E-MONO,
+    va3 7, va4 42 and va5 5. PR 62's mirror is no longer owed. _Break condition_
+    (kept): a held head that moves again re-runs its mirror at that head, and
+    M's §0.9 dry runs against that day's heads stay.
 10. **Id re-scan** (§0.11) before D and at land time.
 
     At implementation (amended 2026-10-21, implementation: held state), after
@@ -4456,14 +4520,152 @@ impl_lookup.cpp, were built again at the fold's head (§8 item 9); the fold's
 new splits and residues are in §1.13, §1.12 and §4; C.2's discharge text
 counts fifteen defects; the status line and §3 item 8 name the fix commits.
 
+## Focused re-review of the fold, round 1 (2026-10-22)
+
+Round 1 of §3 item 9's loop (R29(c)): two fresh reviews read the fold and the
+records after it, 79740957a..118fc1bc8 (eleven files: the fix commits 224ee2f8f
+and ccd6a80a8 with their fills 5c78c4086 and ffde90904, the fold's records
+98a82cc4f, R 59f7b0258 and D 118fc1bc8), with every function of §2 that the fix
+commits touch, at the head 118fc1bc8, whose toolchain is 224ee2f8f's. They ran
+on 2026-10-21 and did not modify or rebuild the worktree: each variant binary
+was relinked from its objects, and each mirror built, under /dev/shm/ct1-rr-rev1
+or /dev/shm/ct1-rr-rev2, deleted after use. Their probes and logs are in
+`$RR/rev1-r1` and `$RR/rev2-r1`, `$RR` the round's scratch,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/ct1-rr`
+(the records writer's runs in `$RR/rec`). Everything measured is EXPECTED and
+not of record (R9).
+
+**Review 1**, APPROVE-WITH-FIXES: no BLOCKER or MAJOR and five MINOR findings,
+all records only, so the round is dry by its judgment. Its runs:
+
+-   The 27 fold rows of §0.13 give the recorded results on the head, byte-equal
+    to the fixer's run, and on TP-1, trunk and the nightly the recorded E-ARG,
+    E-DU and stops (lower/file_context.h:187, sem_ir/inst.h:249,
+    lower/function_context.cpp:264, lower/handle.cpp:405 and :407); the four
+    root causes read sound (convert.cpp's `PerformAction(InitializeAction)` and
+    `Convert`'s `ref`-tag branch, impl_lookup.cpp's `NamesTemplateBinding`, the
+    same predicate as action.cpp:212-217, and expr_info.cpp's `SpecificConstant`
+    step).
+-   About 210 neighbouring probes, each run on the head, on p0 (the state before
+    the fold, relinked from 79740957a's three fixed files), TP-1, trunk and the
+    nightly: for IR1-B1, other specializations, a pointer, a variable template,
+    a template template argument, an associated type, a method, a nested
+    generic, the template lane, a loop and an `if`, a C++ default argument; for
+    IR1-M1, a field, an array or tuple element, a `ref` parameter, two `ref`
+    arguments, a member function, an overload set, both lanes, a Clang error at
+    the specific, a missing or misplaced `ref` (precise E-MONO notes); for
+    IR1-M2, three levels, a file-scope `var` and `let`, statics, mutable,
+    address-of and `ref` uses, a generic function or method, an interface, an
+    impl, field and method names; for IR1-M3, parameter, return and field types,
+    initialized, copied, paired and nested uses, a failing specialization, an
+    array or a tuple (E-MONO as the direct form); D-CT-5's boundary (`var y: U`
+    and Carbon-only aliases stay E-DU where they are written); and uses from
+    another library (W-250's TODO on every form). No regression and no new stop.
+    The stops that remain are upstream's: a struct or tuple literal of a C++
+    `constexpr` static member at lower/constant.cpp:161 on every toolchain, its
+    concrete form included, and W-311's template twin, `returned var r: T =
+    Cpp.Twice(v);`, at lower/lower.cpp:48 on TP-1, trunk and the nightly. One
+    probe has no C++ and runs only since the fold (RR1-1-m3).
+-   p0's file_test passes 1957 of 1957 with A.1 and A.2 excluded, and 95 sample
+    goldens (generic/template, alias, class/generic, generic, impl/lookup and
+    interop/cpp/template) turned into full SemIR dumps
+    (`--dump-sem-ir-ranges=ignore`, 150,002 CHECK lines) and filled by the head
+    pass on p0: the fold changes no SemIR outside its forms.
+-   R17: each fix is a short root fix and none is a guard. A note the review
+    gives as non-blocking, not as a finding: the C++-callee predicate is written
+    twice, impl_lookup.cpp:627-633 and action.cpp:212-217.
+-   The fill: autoupdate on a clone is a no-op; with CHECK lines stripped, A.1
+    (1542 lines) and A.2 (2186) regenerate byte-identically after two passes,
+    and the new splits assert what the records say (A.2's temporaries are
+    `alloca i32`; the `Traits` constants are 8 and 2).
+-   The gate passes 1959 of 1959 with no `!` mark; conformance, with a private
+    cache and out directory, "PASS 147, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+    OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 20 (of 167)", 48 of 56 bullets.
+-   Mutants of §8 item 5, relinked from the head's objects and deleted after:
+    M23, M24, M25 (A.2 stops at :31 and A.1 is red), M26, M1c, M2 (five programs
+    COMPILE-FAIL), M6, M7 (lower/handle_call.cpp:984) and M15 are killed as
+    recorded; M22 is killed, but not as its row read (RR1-1-m4); M1 survives, as
+    recorded.
+-   Probe matrices: the 403 rows equal the fixer's run on the head, P's run at
+    stage 4 and v14 on the 387 rows they share; the first implementation
+    review's 250 rows equal the fixer's run, a/c_uncopyable_unbox varying run to
+    run as §0.13 records.
+-   Mirrors: PR 62 at its moved head 0ef8a0334 and PR 59 at b0822a744 (§8
+    item 9, measured again at this round).
+
+**Review 2**, APPROVE-WITH-FIXES: no BLOCKER or MAJOR and seven MINOR findings,
+all records, so the round is dry by its judgment. Its runs:
+
+-   The gate passes 1959 of 1959 with no `!` mark; conformance 147 / 0 / 20
+    over 167, 48 of 56 bullets; runner.py `--self-test` OK; autoupdate of the
+    nine changed goldens on a clone and `--update-readme-table` are no-ops; prek
+    `--all-files` is clean on a clone and R31's counts equal D's stated
+    after-counts; clang-format 21.1.8 and clang-tidy are clean on the three
+    fixed files.
+-   The records against their sources: the ledger's W-300 to W-311 byte-equal to
+    C.3; W-043 C.2's text plus the held-state sentence; W-268, W-273 and W-274
+    as C.5 and C.11 write them, and no TP-1 item that H-8 does not name; the
+    decision-log entry C.7's, at the end of the log; rows 42 and 56 C.4's; A.1
+    and A.2 the committed sources; §2.13's block the fix's diff.
+-   Mutants M25 (stops on A.2's nested_alias_through_specific.carbon:31) and M26
+    (A.1 red), relinked, as recorded.
+-   40 adversarial probes on CT-1, TP-1, trunk and the nightly: stores of
+    generic results (a class and a 24-byte type among them), nested members,
+    `ref` arguments on fields, in nested generics and in a template inside a
+    checked generic, aliases nested three deep, mixed template and checked
+    aliases, class templates' aliases as return types and in interface uses, and
+    operations on a deferred result. Each runs with its twin's value or gives a
+    precise E-MONO, and none stops on CT-1 where the others do not; W-311 is
+    upstream's, its template form with C++ and its form without C++ stopping at
+    lower/lower.cpp:48 on all four.
+-   The PR 62 mirror at 0ef8a0334 (§8 item 9), and `git merge-tree` of the head
+    against trunk and every held head after a fetch at 22:39 UTC, every head
+    equal to `ls-remote` (RR1r2-m2).
+
+**Dry judgment.** Neither review has a BLOCKER or MAJOR finding, and none of the
+twelve needs a toolchain, golden or program change: RR1r2-m7's golden comment is
+no form, and by the review's own remedy it is reworded at L-F, so this round
+edits no golden. Round 1 is DRY (§3 item 9) and the loop ends after it: the PR
+opens held, stacked on PR 61. Item 8's budget is spent (three fix commits) and
+nothing is shrunk; no residue is filed, so W-312..W-319 stay unused, and no id
+is minted. The records commit "CT-1 records: re-review round 1 recorded"
+(2026-10-22, the UTC date of its commit) folds the twelve findings, each
+reproduced against the tree first:
+
+<!-- google-doc-style-ignore -->
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR1-1-m1 | MINOR | yes: the landed notes, §8 item 9, ORCHESTRATION's paragraph and both PR texts called PR 62's mirror at 0ef8a0334 owed; both reviews' mirror logs hold the measurement (`$RR/rev1-r1/out-m-pr62/summary.txt`, `$RR/rev2-r1/out-m-pr62`) | Folded with RR1r2-m4: §8 item 9 records both mirrors and review 1's PR 59 mirror; the landed notes, ORCHESTRATION and the PR texts say measured, not owed, and keep the break condition and M's dry runs | §8 item 9; landed notes; ORCHESTRATION; PR texts |
+| RR1-1-m2 | MINOR | yes: C.11's D-TP-12 line and its copy at fork/templates/plan.md:2792-2797 name the `TemplateInst`, `MetaInstId` and constant-value steps only, while §1.5 says the call-action step is recorded there | Folded with RR1r2-m3: one dated clause in C.11's line and in its copy, which stays one line (H-8) | C.11; fork/templates/plan.md D-TP-12 |
+| RR1-1-m3 | MINOR | yes: t/t_carbon_generic_ref_arg_template prints 5 on CT-1's install (0.0.0-0.dev+224ee2f8f) and stops at sem_ir/inst.h:249 on TP-1, trunk and the nightly (`$RR/rec/logs/m3_probe.tsv`); review 1's p0 stops there too | Folded as records: §1.3's IR1-M1 sentence, D-CT-4 (with IR1-B1's as12) and a §0.13 fold row; no golden, since A.1's `cpp_call_ref_argument` `Template` reaches the same branch | §0.13; §1.3; §1.4 |
+| RR1-1-m4 | MINOR | yes: §8 item 5's M22 row named only red goldens; review 1's M22 logs (`$RR/rev1-r1/logs/mut_m22_gate1.log` and `mut_m22_gate2.log`) stop on A.2's nested_alias_through_specific.carbon:31 first | Folded: the M22 row records the A.2 stop after ccd6a80a8, as the M25 row does | §8 item 5; PR comment |
+| RR1-1-m5 | MINOR | yes: fork/ORCHESTRATION.md:649 said 22:10 UTC; D's commit date is 22:09:19 UTC | Folded: 22:09 UTC | ORCHESTRATION |
+| RR1r2-m1 | MINOR | yes: the status line, the landed notes' "Next on the branch", the decision-log entry, ORCHESTRATION's row and paragraph and both PR texts said the loop had not run, the Sign-off table had no row for it, and the Branches row added two clauses to C.8's wording | Folded: this section; two Sign-off rows; the status line, §3 item 9 and the landed notes; the decision-log entry's context and held-state paragraph; one sentence in the ledger's W-043 notes; the Branches row in C.8's wording with ROUND 1 DRY (C.8 amended to say where the round goes) and a dated paragraph in ORCHESTRATION; both PR texts | here; Sign-off; Status; §3 item 9; landed notes; C.8; decision log; ledger; ORCHESTRATION; PR texts |
+| RR1r2-m2 | MINOR | yes: `git merge-tree --write-tree --name-only` of 118fc1bc8 after a fetch at 2026-10-21T23:29Z gives review 2's table, every held head unchanged and DR-1's branch moved from c1cc72a09 to 18a7e8934 with the same two code conflicts | Folded: a Conflicts section in the PR body with the heads and the time, and a pointer in the comment | PR texts |
+| RR1r2-m3 | MINOR | yes, as RR1-1-m2 | Folded with RR1-1-m2 | C.11; fork/templates/plan.md D-TP-12 |
+| RR1r2-m4 | MINOR | yes, as RR1-1-m1 (review 2's merge head 88f926512) | Folded with RR1-1-m1 | as RR1-1-m1 |
+| RR1r2-m5 | MINOR | yes: at the head and at 5661a35c8, cpp/call.cpp:252 is `return clang::TemplateArgumentLoc(template_arg, template_loc);`, and the restriction is the TODO at :246 and :256-259, which W-302 cites | Folded: C.2, §1.15, §0.2 and the ledger's W-043 notes say :252 when filed and :246 and :256-259 at CT-1's head | §0.2; §1.15; C.2; ledger |
+| RR1r2-m6 | MINOR | yes: §1.12's heading said W-300..W-309 and its text ten items; ORCHESTRATION said 22:10 UTC, and its Next actions item 6 named neither R32's comparison nor C.7's fallback; the PR body's item 6 omitted the fallback | Folded: §1.12 retitled W-300..W-311 with twelve items; 22:09 UTC; item 6 and the PR body's item 6 name both | §1.12; ORCHESTRATION; PR body |
+| RR1r2-m7 | MINOR | yes: toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon:260-261 says "the load of `Traits<long>::size` and of `Traits<short>::size`", while `@_CUse.Main` (its CHECK at :2151) calls `@_CTake.Main(i32 2)` and adds 8, as §4's A.2 row says | Folded as records, the review's remedy: no golden is edited now (item 8's budget is spent and the comment is no form); the landed notes' L-F item and ORCHESTRATION's item 6 reword it at L-F to "the constants 8 and 2 of `Traits<long>::size` and `Traits<short>::size`", the same line count, checked by an autoupdate no-op | landed notes (c); ORCHESTRATION item 6 |
+
+<!-- google-doc-style-resume -->
+
+Also changed by the round's records commit, outside the findings: the PR texts
+(the review record through this round, the Conflicts table, the heads and the
+counts), and C.2's introduction, which says that the ledger's W-043 keeps one
+dated sentence per re-review round.
+
 ## Sign-off
 
 Rev 4 is signed off for implementation on 2026-10-21: the last review, the
 focused re-review RR2 of rev 3, is not a REJECT, and its one finding is folded
 at its root above. Every review of this plan, with its verdict and its counts
 (EXPECTED, not of record, R9, where a review measured), and since the
-implementation-review fold the two implementation reviews whose findings
-amend it (amended 2026-10-21, implementation-review fold):
+implementation-review fold the two implementation reviews whose findings amend
+it (amended 2026-10-21, implementation-review fold) and since the focused
+re-review's round 1 its two reviews (amended 2026-10-22, focused re-review
+round 1):
 
 <!-- google-doc-style-ignore -->
 
@@ -4475,7 +4677,9 @@ amend it (amended 2026-10-21, implementation-review fold):
 | Focused re-review RR2 | rev 3 (bd97af1cc) | APPROVE-WITH-AMENDMENTS (all four of RR1's resolved) | 0 | 1 (RR2-M1) | 0 | 1 | 1, in rev 4 | 0 |
 | Implementation review 1 | the head after P and the held-state measurements (79740957a) | REJECT | 1 (IR1-B1) | 3 (IR1-M1 to IR1-M3) | 4 (IR1-m1 to IR1-m4) | 8 | 8, in the fix commits and this records commit | 0 |
 | Implementation review 2 | the same head (79740957a) | APPROVE-WITH-FIXES | 0 | 0 | 6 (IR2-m1 to IR2-m6) | 6 | 6, in this records commit | 0 |
-| Total | | | 5 | 16 | 23 | 44 | 44 | 0 |
+| Focused re-review of the fold, round 1, review 1 | the fold and its records (118fc1bc8) | APPROVE-WITH-FIXES (dry) | 0 | 0 | 5 (RR1-1-m1 to RR1-1-m5) | 5 | 5, in the round's records commit | 0 |
+| Focused re-review of the fold, round 1, review 2 | the same head (118fc1bc8) | APPROVE-WITH-FIXES (dry) | 0 | 0 | 7 (RR1r2-m1 to RR1r2-m7) | 7 | 7, in the round's records commit | 0 |
+| Total | | | 5 | 16 | 35 | 56 | 56 | 0 |
 
 <!-- google-doc-style-resume -->
 
@@ -4502,7 +4706,9 @@ land-time item in order; the land-time records commit adds the merged tree's
 runs here. Everything measured is EXPECTED and not of record (R9). `$D` is the
 records writer's scratch directory,
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/ct1-impl/records`
-(its `logs/`, `r31/` and `msg-*.txt`).
+(its `logs/`, `r31/` and `msg-*.txt`). The records commit of the focused
+re-review's round 1 (2026-10-22) amends three of these items with dated marks
+(what moved after the mirrors, next on the branch, and L-F).
 
 -   **What R and D write** (Appendix C, only the `<...>` placeholders filled, §3
     items 11 and 12). R: rows 56 and 42 of fork/gap-analysis.md, each found by
@@ -4574,10 +4780,16 @@ records writer's scratch directory,
     0ef8a0334, W-322's removal of SV-1's D-SV-7 view in eight toolchain and
     prelude files (cpp/sum_type.cpp and .h, cpp/type_mapping.cpp,
     refutable_binding.cpp, core/prelude/types/cpp/sum.carbon, kind.def and two
-    goldens) with one program SKIPped. §3 item 10's break condition fires for PR
-    62: its mirror is owed again at 0ef8a0334 before M. PR 57's code composition
-    is unchanged, so its mirror stands, and PR 56's code is in PR 57's. _Break
-    condition:_ a held head that moves again re-runs its mirror at that head.
+    goldens) with one program SKIPped. §3 item 10's break condition fires for
+    PR 62: its mirror was owed again at 0ef8a0334, and both reviews of the
+    focused re-review's round 1 measured it (§8 item 9: 1967 of 1967
+    and 152 / 0 / 20 over 172, the one change PR 62's own W-322 SKIP, the 403
+    probes, the 27 fold rows and sv1 to sv8 as before; amended 2026-10-22,
+    focused re-review round 1: RR1-1-m1 / RR1r2-m4), so it is no longer owed,
+    and M's §0.9 dry runs still build it at that day's head. PR 57's code
+    composition is unchanged, so its mirror stands, and PR 56's code is in
+    PR 57's. _Break condition:_ a held head that moves again re-runs its mirror
+    at that head.
 -   **R32 at landing.** Trunk records R32 and V-3b at fd290b6e6 (2026-10-21
     17:23 UTC), after this plan's sign-off (62530b76e, 15:54 UTC); they reach
     this branch at M. F-021's V-3 comparison (§0.10, §1.17) is then repeated
@@ -4585,11 +4797,15 @@ records writer's scratch directory,
     (a)), and recorded by the land-time records commit. _Break condition:_ that
     tip records a rule for a checked generic's C++ calls, which is F-021's own
     break condition, re-decided then.
--   **Next on the branch.** The focused re-review loop of §3 item 9 reads the
-    fix commits 224ee2f8f and ccd6a80a8, their fills and these records, with the
-    gate, the mutants that cover the functions they touch and the §0.12 probes
-    re-run; a fixer folds each round under item 8's shrink line; the PR opens
-    held after the last round.
+-   **Next on the branch.** The focused re-review loop of §3 item 9 read the fix
+    commits 224ee2f8f and ccd6a80a8, their fills and these records in its
+    round 1, at 118fc1bc8, with the gate, conformance, the mutants that cover
+    the functions they touch, the probe matrices and the PR 59 and PR 62 mirrors
+    re-run; the round is dry, and its records commit folds the twelve MINOR
+    findings ("Focused re-review of the fold, round 1 (2026-10-22)"), so the
+    loop ends and the PR opens held, stacked on PR 61, from the PR texts that
+    commit refreshes (amended 2026-10-22, focused re-review round 1: RR1r2-m1;
+    before the round this item said that the loop came next).
 -   **Land-time items, in order after PR 62** (§2.11, §3 item 13;
     fork/ORCHESTRATION.md Next actions item 6). (a) M, a records-only merge
     commit of the trunk that holds PR 51 to PR 62 (never a rebase; if PR 61
@@ -4615,8 +4831,15 @@ records writer's scratch directory,
     refilled (C-2), or, if PR 61 landed its F6 rename, that split refilled with
     CT-1's toolchain (§1.16's fallback, H-1); any held PR's golden the merged
     toolchain changes, of which the mirrors predict none for CT-1 (PR 57's
-    for_range.carbon and SC-1's two goldens are TP-1's F6 refills, §0.9); then
-    the gate, conformance and the mutants on the merged build. (d) L:
+    for_range.carbon and SC-1's two goldens are TP-1's F6 refills, §0.9); A.2's
+    `nested_alias_through_specific` comment
+    (template_symbolic_arg.carbon:260-261, "the load of `Traits<long>::size` and
+    of `Traits<short>::size`", though `@_CUse.Main` calls `@_CTake.Main(i32 2)`
+    and adds 8) reworded to "the constants 8 and 2 of `Traits<long>::size` and
+    `Traits<short>::size`", the same line count, checked by an autoupdate no-op
+    (amended 2026-10-22, focused re-review round 1: RR1r2-m7; no golden is
+    edited on the branch, item 8's budget being spent and the comment no form);
+    then the gate, conformance and the mutants on the merged build. (d) L:
     docs/design/interoperability/README.md's "Using C++ templates" over PR 58's
     text, its "One limit in 0.1:" sentence replaced by Appendix C.1's paragraph
     dated with L's date, fixture X37_cpp_template_symbolic_uninit.carbon with
@@ -6546,6 +6769,11 @@ Rewritten 2026-10-21 (review fold: B-M1 / B-M5 / B-m4 / B-m5). At the land-time
 records commit, the entry M took from DD-1 (PR 58's notes and evidence) is the
 base: DD-1's evidence entries are kept after the original seven, DD-1's notes
 after the original notes, and this text's additions follow them.
+On the branch the notes also keep one dated sentence per round of the focused
+re-review after the held-state sentence, and the land-time records commit keeps
+them after this text (added 2026-10-22, focused re-review round 1: RR1r2-m1);
+the cite of call.cpp's non-type restriction is qualified (amended 2026-10-22,
+focused re-review round 1: RR1r2-m5).
 
 <!-- google-doc-style-ignore -->
 
@@ -6562,7 +6790,7 @@ after the original notes, and this text's additions follow them.
   "fork/designdocs/samples/X37_cpp_template_symbolic_uninit.carbon (at land time)",
   "fork/cpp-templates/plan.md; fork/decision-log.md \"CT-1\" (F-021)"
  ],
- "notes": "<the original notes, kept, then DD-1's at land time>. DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md): the blocker the item names, a symbolic Carbon type as a C++ template argument, had been lifted upstream (PRs 7673, 7689 and 7700: a deferred `CallAction` over `TemplateInst`-wrapped arguments); fifteen defects in and around that path kept it from working (impl lookup on the specialization resolved where the generic is defined, so an uninitialized `var` of it was rejected; C++ actions performed for a symbolic specific; action operands not substituted; a narrow scalar `return` given a return slot; variable template specializations never instantiated; an exported Carbon class queried before it was complete; an alias's value detached from its enclosing generic; an enclosing generic's operand kept in a member's action; an alias's name reference not followed to its value; an alias's template-dependent value converted and checked where it is written, not in each specific; a use of such an alias through a concrete specific given the generic's category, not the specific's, a nested alias's use included; a deferred store's temporary typed in the generic, not the specific; a deferred C++ call's `ref` argument not unwrapped in the specific; a class template's specialization formed for a checked generic's argument not deferring its impl lookup), each fixed at its root, and a C++ call with a checked generic's symbolic argument is deferred to each specific, a fork rule (F-021). The two SKIP programs run without their SKIP lines and with the `Core.Copy` impl each needs, keeping the uninitialized `var b: Cpp.Box(T);`. Measured in the container (EXPECTED, not of record, R9): <gate N of N>, conformance <P / F / S over N>. The evidence's type_mapping.cpp TODO (:560 when filed, :733-736 at CT-1) is live and filed as W-307, and call.cpp:252's non-type restriction as W-302. Residues: W-300 (struct, tuple and unexportable class types), W-301 (Carbon generics as template template arguments), W-302 (non-type argument kinds), W-303 (deduction through a C++ specialization, in a parameter's type or an impl's self), W-304 (a concrete C++ class `var` in a template's body stops lowering), W-305 (interface member access through a constraint on a specialization's member), W-306 (instantiation notes without a line, repeated E-MONO), W-307 (form-dependent arguments to C++ functions), W-308 (C++ classes as choice payloads), W-309 (a deferred call's C++ temporary not destroyed), W-310 (a `returned var` of a specialization), W-311 (a `returned var` of a symbolic type stops lowering, upstream's); CT-1's forms work within one library, and a use from another library stays W-250's."
+ "notes": "<the original notes, kept, then DD-1's at land time>. DISCHARGED at CT-1 (<YYYY-MM-DD>, fork/cpp-templates/plan.md): the blocker the item names, a symbolic Carbon type as a C++ template argument, had been lifted upstream (PRs 7673, 7689 and 7700: a deferred `CallAction` over `TemplateInst`-wrapped arguments); fifteen defects in and around that path kept it from working (impl lookup on the specialization resolved where the generic is defined, so an uninitialized `var` of it was rejected; C++ actions performed for a symbolic specific; action operands not substituted; a narrow scalar `return` given a return slot; variable template specializations never instantiated; an exported Carbon class queried before it was complete; an alias's value detached from its enclosing generic; an enclosing generic's operand kept in a member's action; an alias's name reference not followed to its value; an alias's template-dependent value converted and checked where it is written, not in each specific; a use of such an alias through a concrete specific given the generic's category, not the specific's, a nested alias's use included; a deferred store's temporary typed in the generic, not the specific; a deferred C++ call's `ref` argument not unwrapped in the specific; a class template's specialization formed for a checked generic's argument not deferring its impl lookup), each fixed at its root, and a C++ call with a checked generic's symbolic argument is deferred to each specific, a fork rule (F-021). The two SKIP programs run without their SKIP lines and with the `Core.Copy` impl each needs, keeping the uninitialized `var b: Cpp.Box(T);`. Measured in the container (EXPECTED, not of record, R9): <gate N of N>, conformance <P / F / S over N>. The evidence's type_mapping.cpp TODO (:560 when filed, :733-736 at CT-1) is live and filed as W-307, and call.cpp:252's non-type restriction (:252 when filed, the TODO at :246 and :256-259 at CT-1's head) as W-302. Residues: W-300 (struct, tuple and unexportable class types), W-301 (Carbon generics as template template arguments), W-302 (non-type argument kinds), W-303 (deduction through a C++ specialization, in a parameter's type or an impl's self), W-304 (a concrete C++ class `var` in a template's body stops lowering), W-305 (interface member access through a constraint on a specialization's member), W-306 (instantiation notes without a line, repeated E-MONO), W-307 (form-dependent arguments to C++ functions), W-308 (C++ classes as choice payloads), W-309 (a deferred call's C++ temporary not destroyed), W-310 (a `returned var` of a specialization), W-311 (a `returned var` of a symbolic type stops lowering, upstream's); CT-1's forms work within one library, and a use from another library stays W-250's."
 }
 ```
 
@@ -6903,6 +7131,11 @@ nine of plan §0.10, with their merge rules. Veto-able.
 
 ### C.8 fork/ORCHESTRATION.md (commit D; the held-state stamp on trunk is the orchestrator's)
 
+The `<state>` names a re-review round's verdict (for example "IMPLEMENTED AND
+HELD, no PR; ROUND 1 DRY"), and `<head>` the commit with its toolchain; nothing
+else is added to the row (added 2026-10-22, focused re-review round 1:
+RR1r2-m1).
+
 <!-- google-doc-style-ignore -->
 
 ```markdown
@@ -6945,13 +7178,16 @@ Added 2026-10-21 (review fold: B-m2 / B-M3 / A-B1 / A-M1). These, with W-268
 (C.5), are the only TP-1 records CT-1 edits: in fork/templates/plan.md, the
 D-TP-12 and TR-22 lines below; in fork/inventory/work-items.json, W-268, W-273
 and the W-274 line below (amended 2026-10-21, review fold: RR1-N-m2). In
-fork/templates/plan.md, one dated line is appended to each of two paragraphs:
+fork/templates/plan.md, one dated line is appended to each of two paragraphs
+(D-TP-12's line gains the call-action clause, D-CT-5's since the
+implementation-review fold, in the same line; amended 2026-10-22, focused
+re-review round 1: RR1-1-m2 / RR1r2-m3):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 after D-TP-12's paragraph (§1.7, "**D-TP-12 (rewritten 2026-10-14).**"):
-  Amended <YYYY-MM-DD> by CT-1 (fork/cpp-templates/plan.md D-CT-5): a checked generic's query that reaches a `TemplateInst`, or a template binding through an action's `MetaInstId` operands or a symbolic operand's constant value, is deferred too, so generic_call.carbon's `require_specific_def` moves to the specific; facet/period_self.carbon is unchanged.
+  Amended <YYYY-MM-DD> by CT-1 (fork/cpp-templates/plan.md D-CT-5): a checked generic's query that reaches a `TemplateInst`, or a template binding through an action's `MetaInstId` operands or a symbolic operand's constant value, or a call action of a C++ template name or an imported C++ function (D-CT-5's call-action step; amended 2026-10-22, focused re-review round 1), is deferred too, so generic_call.carbon's `require_specific_def` moves to the specific; facet/period_self.carbon is unchanged.
 after TR-22's item (§1.1, "TR-22. Passing a symbolic constant"):
   Amended <YYYY-MM-DD> by CT-1 (fork/cpp-templates/plan.md D-CT-4, D-CT-6, F-021): TR-22 stays OUT for its Carbon forms; a template's C++ specialization or C++ call performed for a checked generic's symbolic argument now runs in the specific that names a concrete argument.
 ```

@@ -8229,16 +8229,18 @@ trunk; it cannot execute fork-local compiler changes — see OPEN F-005.
 Context: W-043 (gap row 56, "Generics: C++ interop — importing C++ templates,
 instantiating on Carbon types", PARTIAL, with its second program under row 42),
 fork/cpp-templates/plan.md, rev 4 (62530b76e, signed off; amended in place with
-dated marks by 79740957a and 98a82cc4f, no later revision and no stop-and-amend)
-after plan reviews A (REJECT, twelve findings) and B (APPROVE-WITH-AMENDMENTS,
-thirteen) of rev 1 and the focused re-reviews RR1 of rev 2 (REJECT, four) and
-RR2 of rev 3 (APPROVE-WITH-AMENDMENTS, one), thirty findings folded and none
-rejected, implemented and folded with two implementation reviews (review 1
-REJECT, eight findings: one BLOCKER, three MAJOR, four MINOR; review 2
-APPROVE-WITH-FIXES, six MINOR; all fourteen folded, none rejected) and no
-focused re-review round yet (plan §3 item 9's loop reviews the fix commits after
-this entry, and its rounds' verdicts and finding counts are added here when they
-run). Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto.
+dated marks by 79740957a, 98a82cc4f and the records commit of the focused
+re-review's round 1, no later revision and no stop-and-amend) after plan reviews
+A (REJECT, twelve findings) and B (APPROVE-WITH-AMENDMENTS, thirteen) of rev 1
+and the focused re-reviews RR1 of rev 2 (REJECT, four) and RR2 of rev 3
+(APPROVE-WITH-AMENDMENTS, one), thirty findings folded and none rejected,
+implemented and folded with two implementation reviews (review 1 REJECT, eight
+findings: one BLOCKER, three MAJOR, four MINOR; review 2 APPROVE-WITH-FIXES, six
+MINOR; all fourteen folded, none rejected) and one round of plan §3 item 9's
+focused re-review of the fold (round 1, recorded 2026-10-22: reviews 1 and 2
+both APPROVE-WITH-FIXES, five and seven MINOR findings, all records, folded and
+none rejected; the round is dry, so the loop ends). Every decision auto-adopted
+under V-2/V-3 (R29(a)) and open to veto.
 Options considered (plan §7.2): instantiating eagerly on every possible
 argument, treating C++ templates as Carbon templates only, requiring `template
 T` for all uses, diagnosing member access where a checked generic is defined, a
@@ -8310,21 +8312,31 @@ _Held state (2026-10-21)._ Landed on claude/carbon-fork-0-1-ct, stacked on PR 61
 (C1) and 378cffa2e (F1), d5d7c6580 (C2) and c7635b14a (F2), 65fc0d394 (P),
 79740957a (the held-state measurements), 224ee2f8f and 5c78c4086 (the first fix
 commit and its fill), ccd6a80a8 and ffde90904 (the second and its fill),
-98a82cc4f (the fold's records), 59f7b0258 (R) and D, the commit that writes this
-entry. The expected scoreboard, container-built and not of record (Actions
-disabled, R9, R28), on 98a82cc4f, whose toolchain is 224ee2f8f's: file_test 1959
-of 1959 and conformance 147 / 0 / 20 over 167, 48 of 56 bullets, tree-relative
-to TP-1's 138 / 0 / 22 over 160 and to trunk's floor of record 128 / 0 / 22 over
-150 (TP-1's ten programs included); the absolute count is re-quoted from the
-merged trunk at landing. Filed: W-300 to W-311 (W-310 and W-311 by the
-implementation-review fold); W-312 to W-319 unused. The land-time items (plan
-§2.11, its landed notes) are M, S-VA, L-F, L and the land-time records commit,
-which reapplies W-043's discharge over DD-1's entry and finds rows 56 and 42 by
-their bullet text. R32 and V-3b, recorded on trunk at fd290b6e6 after this
-plan's sign-off, reach this branch at M: F-021's V-3 comparison (plan §0.10,
-§1.17) is then repeated against upstream's tip by sha, quoting the design pages
-at that tip (R32 (a)); break condition: that tip records a rule for a checked
-generic's C++ calls, which is F-021's own break condition.
+98a82cc4f (the fold's records), 59f7b0258 (R), 118fc1bc8 (D, which wrote this
+entry) and the records commit of the focused re-review's round 1, which brings
+it up to date. The expected scoreboard, container-built and not of record
+(Actions disabled, R9, R28), on 98a82cc4f, whose toolchain is 224ee2f8f's:
+file_test 1959 of 1959 and conformance 147 / 0 / 20 over 167, 48 of 56 bullets,
+tree-relative to TP-1's 138 / 0 / 22 over 160 and to trunk's floor of record
+128 / 0 / 22 over 150 (TP-1's ten programs included); the absolute count is
+re-quoted from the merged trunk at landing. Filed: W-300 to W-311 (W-310 and
+W-311 by the implementation-review fold); W-312 to W-319 unused. The land-time
+items (plan §2.11, its landed notes) are M, S-VA, L-F, L and the land-time
+records commit, which reapplies W-043's discharge over DD-1's entry and finds
+rows 56 and 42 by their bullet text. R32 and V-3b, recorded on trunk at
+fd290b6e6 after this plan's sign-off, reach this branch at M: F-021's V-3
+comparison (plan §0.10, §1.17) is then repeated against upstream's tip by sha,
+quoting the design pages at that tip (R32 (a)); break condition: that tip
+records a rule for a checked generic's C++ calls, which is F-021's own break
+condition. Round 1 of the focused re-review (2026-10-22) read
+79740957a..118fc1bc8, the fold and the records: both reviews APPROVE-WITH-FIXES,
+no BLOCKER or MAJOR, twelve MINOR findings, all records only, folded by its
+records commit with no fix commit, so the round is dry and the PR opens held;
+the reviews re-ran the gate (1959 of 1959), conformance (147 / 0 / 20 over 167)
+and the mutants and probe matrices on the head, and measured PR 62's mirror at
+its moved head 0ef8a0334 (1967 of 1967, 152 / 0 / 20 over 172, PR 62's own W-322
+SKIP the one change), which was owed; no residue is filed and W-312 to W-319
+stay unused.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
 nine of plan §0.10, with their merge rules. Veto-able.

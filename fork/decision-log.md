@@ -549,6 +549,44 @@ autoupdate on a copy changing nothing; review 1's three handle_index.cpp mutants
 as recorded, and mct-b rebuilt in full on CT-1's 4a3220c11, 1963 of 1963
 and 149/0/20 over 169 after C-b and the refills, line for line the fold's.
 
+_DR-1b focused re-review, round 3 (2026-10-22)._ Round 3's fixer folded RR2-1-m1
+in 7a442f632, DR-1b's fix commit 3 of the plan's §3 item 9's three, the last,
+comments only, after reproducing it on the head (toolchain 8deb75262), trunk
+0bdce60a5, DR-1a and the nightly: fp1_noimpl's own import_refs are `IndexWith`,
+`IndirectIndexWith` and `Int` on the head, `IndexWith` and `Int` on trunk and
+DR-1a, and `IndexWith` on the nightly, and fp1_var, the same class subscripted
+by an `i64`, loads the same import_refs of index.carbon, so the diagnosing
+dispatch looks `Core.IndexWith` up itself. Reproducing it widened it: the first
+probe's `Core.IndexWith` load, with the blanket `final` `IndexWith` impl its
+lookup imports, is the rule's own wherever the dispatch does not look that name
+up itself, which is where its `IndirectIndexWith` attempt succeeds (fp; fpc, a
+`Copy` element's `IndirectIndexWith(Core.IntLiteral)` impl; `Core.Slice` and
+`Core.Buf` with a literal converted to `i64`, s1_lit and b_lit against s1_var
+and b_var) and where its `IndexWith` attempt finds a C++ `operator[]` (cpp_lit
+against cpp_var, on the head as on trunk and DR-1a). So `HasIndexWithImpl`'s and
+the `default:` arm's comments, which said the probes run only where the dispatch
+looks the names up, are reworded with the footprint comment
+(handle_index.cpp:51-67, :148-167 and :243-251; the file 107/50 against
+f68681114). Autoupdate changed nothing, so the fix has no fill commit; all three
+fix commits are used; nothing is shrunk and no id is filed. Upstream's
+direction: upstream/trunk ebc155734 at the fixer's start (07:04Z), and 57ba07a97
+when these records re-fetched it (07:47Z), its one newer commit changing four
+toolchain/benchmarking files and nothing DR-1 reads or changes; the held heads
+unchanged. The round's runs on 7a442f632 (container-local, EXPECTED, not of
+record): gate 1946 of 1946; conformance 130/0/22 over 152, bullets 48/0/8;
+clang-format clean and clang-tidy rc 0 with one check excluded, as §8 item 6
+runs it; the three handle_index.cpp mutants as recorded (1916/30, 1937/8 with
+string_indexing's abort isolated, 1945/1); the 16 probes' loaded names unchanged
+from 8deb75262's; the four mirrors rebuilt in full on the unchanged heads, mct-b
+1959/4 before and after C-b (+19/-1), its refills 12/17, 16/41, 17/103 and
+137/137, then 1963 of 1963 and 149/0/20 over 169; m51 1949 of 1949, no refill,
+133/0/19 over 152; m55 the 2/2 refill, then 1954 of 1954 and 135/0/21 over 156;
+m57 the refills 186/186, 183/183 and 185/185, then 1954 of 1954 and 141/0/22
+over 163. Recorded by c11738fab on claude/carbon-fork-0-1-dr (the plan's round 3
+record), its merge 707e407bb and this branch's records commit (W-109's re-pinned
+cites, W-116's re-pinned rule cite and W-326's note, the ledger's source, the
+DR-1b landed notes, ORCHESTRATION).
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

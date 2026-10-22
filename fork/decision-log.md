@@ -618,6 +618,43 @@ review 1's three handle_index.cpp mutants as recorded, and mct-b rebuilt in full
 on CT-1's 4a3220c11, 1963 of 1963 and 149/0/20 over 169 after C-b and the
 refills; review 2's prek `--all-files` clean.
 
+_DR-1b focused re-review, round 4 (2026-10-22)._ Round 4's fixer answered
+RR3-1-M1 under the plan's §3 item 9 shrink line, as the orchestrator ruled
+(R29), all three fix commits (fddfcf42a, 8deb75262 and 7a442f632) being used: no
+toolchain change, no trunk-base guard and no second dispatch (R17, R32). It
+reproduced the finding first on the install 0.0.0-0.dev+7a442f632, DR-1a,
+trunk 0bdce60a5, the nightly and the TP-1 and CT-1 installs: t10, t15, t16 and
+t18 are rejected on DR-1b's head with `unable to monomorphize specific` and
+print 7, 8, 9 and 6 on the other five, and upstream 57ba07a97's dispatch is the
+same prefer-then-fall-back block. 0cd4e5d2e, the shrink and not a fourth fix
+commit, adds check slice/write_through.carbon's
+`fail_todo_template_index_with_only` split (t10's shape, :118-148), its seven
+STDERR lines filled by autoupdate. W-340 is filed (bullet Stdlib: Slices), the
+next free id after a `W-3[2-9][0-9]` re-scan at 2026-10-22T09:38:59Z (90 refs
+and 19 worktrees' ledgers; no id from W-330 up): W-320..W-329 are DR-1's, W-328
+reserved for W-320's resumption, and W-330..W-339 are reserved by VA-2's plan
+(fork/variadics/va2-plan.md on claude/carbon-fork-0-1-va2), planned and not yet
+filed; gap row 79 names W-340. The plan's statements that the deferral exists
+only on TP-1's base are corrected (§0.8.1, §1.3, §2.2), and its §7.1 gains R-8,
+DR-1b never landing before TP-1's `IndexAction` and C-b. The round's runs
+(container-local, EXPECTED, not of record): a full autoupdate rewriting nothing;
+gate 1946 of 1946, a split in an existing file adding no manifest entry, so not
+the 1947 the ruling expected; conformance 130/0/22 over 152, bullets 48/0/8; the
+`IndirectIndexWith(Core.IntLiteral)`-probe mutant 1945/1 (check
+slice/write_through); mct-b rebuilt in full on CT-1's 4a3220c11
+with 0cd4e5d2e, 1958 passed and 5 failed before and after C-b, check
+slice/write_through red with the four goldens because TP-1 already indexes an
+operand of template type when the template is instantiated, so the split
+succeeds after M-b; the refills 12/17, 16/41, 17/103, 137/137 and
+write_through's 0/7, L-b's rename 1/1, then 1963 of 1963 and 149/0/20 over 169;
+there t10, t15, t16 and t18 print 7, 8, 9 and 6, t10, t15 and t18 before C-b too
+and t16 only after it. m51, m55 and m57 were not rebuilt: no toolchain file
+changed, and none of the three PRs touches the dispatch. The break condition did
+not fire. Recorded by f163a2bde on claude/carbon-fork-0-1-dr (the plan's round 4
+record), its merge d18acfccc and this branch's records commit (W-340, the
+ledger's source and W-109's note, gap row 79, the DR-1b landed notes and
+ORCHESTRATION). Round 4's reviews are next.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

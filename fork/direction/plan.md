@@ -4953,7 +4953,9 @@ commits (amended 2026-10-22, re-review round 2: the reviews). Round 3's records
 add the bullet "Re-review round 3" and amend the commits and the measurement
 heads (amended 2026-10-22, re-review round 3), and the records of round 3's
 reviews extend that bullet and the list of commits (amended 2026-10-22,
-re-review round 3: the reviews).
+re-review round 3: the reviews). Round 4's records add the bullet "Re-review
+round 4" and amend the commits, the ids, the measurement heads and the land-time
+items (amended 2026-10-22, re-review round 4).
 
 -   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
     (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
@@ -4999,7 +5001,15 @@ re-review round 3: the reviews).
     re-review round 3: the reviews): 77c3b8b40 "DR-1 plan: focused re-review of
     DR-1b's fold, round 3 recorded" on claude/carbon-fork-0-1-dr, its merge
     e76426593, and "DR-1b records: re-review round 3 recorded". At d85c033fd ten
-    first-parent commits followed D (a0ea3347e to d85c033fd; RR3-2-m2).
+    first-parent commits followed D (a0ea3347e to d85c033fd; RR3-2-m2), and
+    at 0c193f138 twelve. Then round 4's (amended 2026-10-22, re-review
+    round 4): 0cd4e5d2e "DR-1b re-review fix: the template-dependent subscript
+    on an IndexWith-only type goes OUT under the shrink line, pinned by a
+    fail_todo_ split", §3 item 9's shrink, not a fix commit, its split filled by
+    autoupdate in the same commit; f163a2bde "DR-1 plan: focused re-review of
+    DR-1b's fold, round 4 recorded" on claude/carbon-fork-0-1-dr; its merge
+    d18acfccc; and "DR-1b re-review fix: round 4 folded into the records". The
+    fix commits stay three, fddfcf42a, 8deb75262 and 7a442f632.
 -   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
     `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
     refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
@@ -5012,14 +5022,18 @@ re-review round 3: the reviews).
 -   **Ids.** Discharged: W-109 (B-R). Filed by DR-1 at R0 and unchanged here:
     W-324..W-327 and W-329; W-326's title amended by the fold (DR1B-M1).
     Reserved and unused: W-328, for W-320's resumption. No id is filed by the
-    fold or by D.
+    fold or by D. Filed by re-review round 4's records (amended 2026-10-22,
+    re-review round 4: RR3-1-M1): W-340, the shrink line's residue for RR3-1-M1,
+    after the round 4 bullet's re-scan; W-330..W-339 are VA-2's reservation,
+    planned and not yet filed.
 -   **Measurement heads.** Upstream's direction read at upstream/trunk ebc155734
     (fetched at the fold; its one commit since 9319bb036 touches no file of
     DR-1b's). DR-1b's build /home/user/carbon-build/carbon-dr-idx, its install
     printing 0.0.0-0.dev+fddfcf42a after the fold's rebuild
     (0.0.0-0.dev+8deb75262 after round 2's; amended 2026-10-22, re-review
     round 2; 0.0.0-0.dev+7a442f632 after round 3's, amended 2026-10-22,
-    re-review round 3). Gates: B0 1940
+    re-review round 3, and still at round 4, whose 0cd4e5d2e changes a golden
+    only, amended 2026-10-22, re-review round 4). Gates: B0 1940
     passed and 2 failed, 1942 of 1942 after B0F; B1 1932 passed and 14
     failed, 1946 of 1946 after B1F; the fold's tree 1946 of 1946. Conformance on
     B-P and on the fold's tree: PASS 130, COMPILE-FAIL 0, LINK-FAIL 0,
@@ -5133,6 +5147,32 @@ re-review round 3: the reviews).
     on CT-1's 4a3220c11 as §5 and §8 item 5 state; review 2's prek `--all-files`
     clean. DR-1a (PR 63) is at 77c3b8b40 after the reviews' plan commit, the
     other held heads as at D.
+-   **Re-review round 4 (2026-10-22).** Its fixer reproduced RR3-1-M1 on the
+    install 0.0.0-0.dev+7a442f632, DR-1a, trunk, the nightly and the TP-1 and
+    CT-1 installs (t10, t15, t16 and t18: rejected here, `7`, `8`, `9` and `6`
+    there) and, all three fix commits being used, took §3 item 9's shrink line
+    with no toolchain change, as the orchestrator ruled: 0cd4e5d2e adds check
+    slice/write_through.carbon's `fail_todo_template_index_with_only` split
+    (:118-148, t10's shape, its seven STDERR lines filled by autoupdate), and
+    the records commit files W-340 after the `W-3[2-9][0-9]` re-scan
+    (2026-10-22T09:38:59Z, after `git fetch -q origin`; fix-r4/logs/rescan.log):
+    over 90 refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers,
+    W-320..W-323 in twelve ledgers, W-324..W-327 and W-329 in DR-1a's and this
+    branch's six, W-328 nowhere and no id from W-330 to W-399; W-330..W-339 are
+    VA-2's reservation (fork/variadics/va2-plan.md on the local branch
+    claude/carbon-fork-0-1-va2), which no ledger shows. Runs on the install: a
+    full autoupdate rewriting nothing; gate 1946 of 1946 (a split adds no
+    manifest entry); conformance 130/0/22 over 152, bullets 48/0/8; the
+    `IndirectIndexWith(Core.IntLiteral)`-probe mutant 1945/1, check
+    slice/write_through; mct-b rebuilt in full on 0cd4e5d2e, 1958 passed and 5
+    failed before and after C-b (check slice/write_through red with the four,
+    its split already succeeding after M-b), the
+    refills 12/17, 16/41, 17/103, 137/137 and write_through's 0/7, L-b's
+    rename 1/1, then 1963 of 1963 and 149/0/20 over 169, bullets 48/0/8, its
+    probes as before and t10, t15, t16 and t18 printing `7`, `8`, `9` and `6`
+    (t10, t15 and t18 already before C-b). m51, m55 and m57 were not rebuilt (§8
+    item 9). DR-1a (PR 63) is at f163a2bde after the round's plan commit, the
+    other held heads as at D.
 -   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
     through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
     CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk
@@ -5146,8 +5186,13 @@ re-review round 3: the reviews).
     C-b, "DR-1b: index a
     template-dependent operand per specific (TP-1's `IndexAction`)", +19/-1, its
     added lines measured on mct-b at the fold. L-b, the refill commit: check
-    generic/template/index (16/41, after C-b) and PR 55's
+    generic/template/index (16/41, after C-b), check slice/write_through, its
+    `fail_todo_template_index_with_only` split renamed
+    `template_index_with_only`, its comment reworded and its STDERR lines
+    dropped (1/8 on mct-b with the comment as written; W-340 discharged;
+    amended 2026-10-22, re-review round 4: RR3-1-M1), and PR 55's
     check/operators/overloaded/string_indexing (2/2), measured on mct-b and m55;
+    after C-b, t10, t15, t16 and t18 print `7`, `8`, `9` and `6`;
     PR 51's buf_field goldens and PR 57's check/slice/basic are not refilled, as
     measured. Then the gate and conformance on the merged tree, a second id
     re-scan, and the merged runs recorded here.

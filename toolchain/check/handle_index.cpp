@@ -61,8 +61,10 @@ static auto PerformIndexOperator(Context& context, Parse::NodeId node_id,
 // discarded. It does share the dispatch's file-level footprint — the name
 // lookup loads (or poisons) that name in the `Core` scope exactly as
 // `GetOperatorOpFunction` does — so callers probe only where the dispatch
-// itself would look the name up (never for an erroneous operand, which
-// `BuildBinaryOperator` rejects before any lookup).
+// itself looks names up in `Core` (never for an erroneous operand, which
+// `BuildBinaryOperator` rejects before any lookup). A name probed there that
+// the dispatch then does not look up stays loaded all the same; the literal
+// rule's footprint comment below says where for its `Core.IndexWith` probe.
 static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
                              CoreIdentifier interface_name,
                              SemIR::TypeId operand_type_id,
@@ -149,13 +151,20 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   // file whose only integer-typed expression is a literal subscript on a
   // type with no `IndexWith` impl for the literal gains that import_ref in
   // its SemIR dump (`import_ref Core//prelude/types/int, Int, loaded`), and
-  // the `Core.IndexWith` one the probe above loads. The dispatch then either
-  // diagnoses `Core.IndexWith(Core.IntLiteral)` (no impl for either subscript
-  // type) or succeeds as written (an operand whose only literal impl is the
-  // `IndirectIndexWith(Core.IntLiteral)` one the probe below finds); its
-  // semantics are unchanged either way, and there is no way to name `i64`
-  // without the import_ref. Disclosed in fork/slices/plan.md R-5 (round 4)
-  // and, for the second case, fork/direction/plan.md sections 1.3 and 2.2.
+  // there is no way to name `i64` without it. A literal the rule then leaves
+  // as written dispatches as it does without the rule, for example to the
+  // `IndirectIndexWith(Core.IntLiteral)` impl the probe below finds, to a C++
+  // `operator[]`, or to the `Core.IndexWith(Core.IntLiteral)` diagnostic.
+  // Likewise the `Core.IndexWith` import_ref the probe above loads
+  // (`import_ref Core//prelude/operators/index, IndexWith, loaded`), with the
+  // blanket `final` `IndexWith` impl its lookup imports, is the rule's own
+  // wherever the dispatch does not look that name up itself: where its
+  // `IndirectIndexWith` attempt succeeds, with the literal as written or
+  // converted to `i64` (`Core.Slice`, `Core.Buf`), and where its `IndexWith`
+  // attempt finds a C++ `operator[]`. A dispatch that diagnoses
+  // `Core.IndexWith(Core.IntLiteral)` looks the name up itself. Disclosed in
+  // fork/slices/plan.md R-5 (round 4) and fork/direction/plan.md sections 1.3
+  // and 2.2.
   context.inst_block_stack().Push();
   auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
                                  context.ints().Add(64));
@@ -232,11 +241,14 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
 
     default: {
       // The literal-subscript probe runs only where `PerformIndexOperator`
-      // would itself look `Core.IndirectIndexWith` and `Core.IndexWith` up:
-      // `BuildBinaryOperator` exits before any lookup for an erroneous
-      // operand (a namespace or function used as a value, an unresolved
-      // name), and probing there would load or poison the names in the
-      // `Core` scope where the dispatch never does.
+      // itself looks `Core.IndirectIndexWith` up, which its first attempt
+      // does for every operand but an erroneous one: `BuildBinaryOperator`
+      // exits before any lookup for an erroneous operand (a namespace or
+      // function used as a value, an unresolved name), and probing there
+      // would load or poison the names in the `Core` scope where the dispatch
+      // never does. The dispatch looks `Core.IndexWith` up only when that
+      // attempt fails and no C++ `operator[]` is found; elsewhere the probe's
+      // load of it is the rule's own (the rule's footprint comment).
       auto index_type_id = context.insts().Get(index_inst_id).type_id();
       if (operand_inst_id != SemIR::ErrorInst::InstId &&
           context.types().Is<SemIR::IntLiteralType>(index_type_id)) {

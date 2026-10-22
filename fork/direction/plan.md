@@ -4093,7 +4093,9 @@ EXPECTED and not of record (R9). The scratch is
 (stageB, amend4, stageBR, revB and fixB, each with its `logs/`). The records of
 the fold's focused re-review, round 1 (amended 2026-10-22; their scratch is
 scratchpad/dr1b-rr), add the bullet "Re-review round 1" and amend the commits
-and the land-time items.
+and the land-time items; round 2's records add the bullet "Re-review round 2"
+and amend the commits and the measurement heads (amended 2026-10-22, re-review
+round 2).
 
 -   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
     (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
@@ -4118,7 +4120,13 @@ and the land-time items.
     (amended 2026-10-22, re-review round 1): c1b19da06 "DR-1 plan: focused
     re-review of DR-1b's fold, round 1 recorded" on
     claude/carbon-fork-0-1-dr, its merge a0ea3347e, and "DR-1b records:
-    re-review round 1 recorded".
+    re-review round 1 recorded". Then round 2's (amended 2026-10-22,
+    re-review round 2): 8deb75262 "DR-1b re-review fix: the literal rule's
+    footprint and blanket-impl comments; the const-element split's comment
+    without a ledger id", fix commit 2 of the three, with no fill commit
+    because autoupdate changed nothing; 1c8cc5e38 "DR-1 plan: focused re-review
+    of DR-1b's fold, round 2 recorded" on claude/carbon-fork-0-1-dr; its merge
+    53ff93c60; and "DR-1b re-review fix: round 2 folded into the records".
 -   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
     `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
     refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
@@ -4135,7 +4143,9 @@ and the land-time items.
 -   **Measurement heads.** Upstream's direction read at upstream/trunk ebc155734
     (fetched at the fold; its one commit since 9319bb036 touches no file of
     DR-1b's). DR-1b's build /home/user/carbon-build/carbon-dr-idx, its install
-    printing 0.0.0-0.dev+fddfcf42a after the fold's rebuild. Gates: B0 1940
+    printing 0.0.0-0.dev+fddfcf42a after the fold's rebuild
+    (0.0.0-0.dev+8deb75262 after round 2's; amended 2026-10-22, re-review
+    round 2). Gates: B0 1940
     passed and 2 failed, 1942 of 1942 after B0F; B1 1932 passed and 14
     failed, 1946 of 1946 after B1F; the fold's tree 1946 of 1946. Conformance on
     B-P and on the fold's tree: PASS 130, COMPILE-FAIL 0, LINK-FAIL 0,
@@ -4164,6 +4174,29 @@ and the land-time items.
     autoupdate on a copy changing nothing; the four mutants as §8 item 5
     states; mct-b on CT-1's 4a3220c11 as §5 states. DR-1a (PR 63) is at
     c1b19da06 after this round's plan commit, the other held heads as at D.
+-   **Re-review round 2 (2026-10-22).** Its fixer made the two edits round 1
+    left to it, comments only, in 8deb75262, each reproduced first on the head,
+    trunk, DR-1a and the nightly: handle_index.cpp's footprint comment
+    (:146-158) names the case where the dispatch succeeds as written through an
+    `IndirectIndexWith(Core.IntLiteral)` impl (R1R2-m1), the rule's statement
+    (:108-128) the blanket `IndirectIndexWith(U)` case and its lowering abort
+    (RR1-1-F1), and check slice/write_through.carbon:34-35 reads "The generic
+    const-element write's current behavior, pinned: ...", its two lines
+    rewrapped within themselves (R1R2-m2), with A.1's copy on
+    claude/carbon-fork-0-1-dr. W-109's landed handle_index.cpp cites are
+    re-pinned (:250-261, :175-184, :163-174), which the comments moved by 8
+    lines. Runs on 8deb75262's install: a full autoupdate rewriting nothing (no
+    fill commit); gate 1946 of 1946; conformance 130/0/22 over 152,
+    bullets 48/0/8; clang-format clean; the three mutants of §8 item 5 in
+    handle_index.cpp, 1916/30, 1937/8 with string_indexing's abort isolated,
+    and 1945/1, each set as before; the four mirrors rebuilt in full on the
+    unchanged heads, mct-b 1959/4 before and after C-b (+19/-1), its
+    refills 12/17, 16/41, 17/103 and 137/137, then 1963 of 1963 and 149/0/20
+    over 169; m51 1949 of 1949, no refill, 133/0/19 over 152; m55 the 2/2
+    refill, then 1954 of 1954 and 135/0/21 over 156; m57 the
+    refills 186/186, 183/183 and 185/185, then 1954 of 1954 and 141/0/22
+    over 163. Round 2's reviews follow; DR-1a (PR 63) is at 1c8cc5e38 after
+    round 2's plan commit, the other held heads as at D.
 -   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
     through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
     CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk

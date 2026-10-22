@@ -500,6 +500,32 @@ autoupdate on a copy changing nothing; the mutants as before; mct-b on CT-1's
 4a3220c11 rebuilt in full, 1963 of 1963 and 149/0/20 over 169 after C-b and the
 refills, line for line the fold's.
 
+_DR-1b focused re-review, round 2 (2026-10-22)._ Round 2's fixer made the two
+edits round 1 left to it, with RR1-1-F1's comment, in 8deb75262, DR-1b's fix
+commit 2 of the plan's §3 item 9's three, comments only, each reproduced first
+on the head, trunk 0bdce60a5, DR-1a and the nightly: handle_index.cpp's
+footprint comment (:146-158) now says an operand's file gains the
+`Core.IndexWith` and `Core.Int` import_refs whether the dispatch then diagnoses
+or succeeds as written through an `IndirectIndexWith(Core.IntLiteral)` impl
+(R1R2-m1); the rule's statement (:108-128) names a blanket
+`IndirectIndexWith(U)` impl beside `IndexWith(U)` and the lowering abort a
+run-time use of its subscript reaches (RR1-1-F1); and check
+slice/write_through.carbon's generic_write_const_element comment names no ledger
+id, its two lines rewrapped within themselves (R1R2-m2). Autoupdate changed
+nothing, so the fix has no fill commit; one fix commit remains, nothing is
+shrunk and no id is filed. The round's runs on 8deb75262 (container-local,
+EXPECTED, not of record): gate 1946 of 1946; conformance 130/0/22 over 152,
+bullets 48/0/8; the three mutants of §8 item 5 in handle_index.cpp as recorded;
+the four mirrors rebuilt in full on the unchanged heads, mct-b 1959/4 before and
+after C-b (+19/-1), its refills 12/17, 16/41, 17/103 and 137/137, then 1963
+of 1963 and 149/0/20 over 169; m51 1949 of 1949, no refill, 133/0/19 over 152;
+m55 the 2/2 refill, then 1954 of 1954 and 135/0/21 over 156; m57 the
+refills 186/186, 183/183 and 185/185, then 1954 of 1954 and 141/0/22 over 163.
+Recorded by 1c8cc5e38 on claude/carbon-fork-0-1-dr (the plan's round 2 record
+and A.1's line), its merge 53ff93c60 and this branch's records commit (W-109's
+re-pinned cites and W-326's note, the DR-1b landed notes, ORCHESTRATION).
+Round 2's reviews follow.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

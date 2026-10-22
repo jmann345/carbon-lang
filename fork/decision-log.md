@@ -252,7 +252,8 @@ generics/terminology.md:100-103 and the parser at ac31fd198); work items W-320
 2026-10-21, DR-1 plan). (v) D-SL-17's literal-subscript rule, a fork spelling
 of indexing.md's `like i64`; work item W-326, blocked on `like` (added
 2026-10-21, DR-1 plan). (iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its
-fill c1cc72a09.
+fill c1cc72a09. (ii) resolved 2026-10-22 by DR-1b, 3c54754bc and its fill
+cf4904138, with 230227264's code by cdaa15710 and its fill 06b6479d0.
 
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened
@@ -362,8 +363,73 @@ after CT-1 (whose head is 118fc1bc8 at this commit) through M-a, the merge of
 trunk that resolves handle_loop_statement.cpp and loops.md to DR-1a's side
 (the plan's §1.16), then L-a, the refill of check generic/template/for_range,
 lower template/for_range and check interop/cpp/range_for (12/17, 137/137 and
-17/103, measured) and PR 57's check/slice/basic (predicted). DR-1b, stacked
-on this branch, is next.
+17/103, measured) and PR 57's check/slice/basic (predicted; corrected 2026-10-22
+by the DR-1b records below, plan rev 4). DR-1b, stacked on this branch, is next.
+
+_DR-1b records (2026-10-22)._ The V-3a register's (ii), D-SL-3's read-only
+`Core.Slice`, is resolved by DR-1b on claude/carbon-fork-0-1-dr-idx, cut from
+DR-1a's discharge 18a7e8934: cdaa15710, upstream's 230227264 (PR 7886, by David
+Blaikie) cherry-picked with `-x`, its two form.carbon goldens kept as the fork's
+with the plan's Appendix A.0 splits, and its fill 06b6479d0; 3c54754bc ("DR-1b:
+subscripting prefers `IndirectIndexWith`; `Core.Slice` and `Core.Buf` write
+through `Ref`": upstream's `IndirectIndexWith` and its blanket `IndexWith` impl
+as 6d80ceb58 wrote them, index.carbon byte-identical to upstream's at bc45989b2;
+subscripting preferring `IndirectIndexWith(I).Ref` with the fallback to
+`IndexWith(I).At` as 309d3d63c; `final` `Ref` impls returning `ref T` on
+`Core.Slice` and `Core.Buf`; D-SL-3's `fail_write_through` pin deleted;
+upstream's two `IndirectIndexWith` tests and the plan's A.1 and A.2; slices.md
+with C.10) and its fill cf4904138 (the eleven refills of the plan's §0.6.1,
+their numstat equal to the v4 prototype's line for line, and the four new
+goldens at 620, 164, 692 and 166 lines); 4c358f94b, the programs B.1 and B.2
+with B.2's `.diff.cpp`; and 1b2ddcb87, the merge of the plan's rev 4. W-109 is
+discharged; D-SL-17's literal-subscript rule does not yield yet (W-326) and the
+generic `const` write is W-327. Measured on DR-1b's build, its install printing
+version 0.0.0-0.dev+3c54754bc (container-local, EXPECTED, not of record): B0's
+gate 1940 passed and 2 failed (the two form.carbon goldens), 1942 of 1942 after
+its fill; B1's gate 1932 passed and 14 failed (ten of §0.6.1's eleven goldens,
+slice/fail_basic passing once B1 deletes its pin, and the four new goldens),
+1946 of 1946 after its fill; conformance 130/0/22 over 152, bullets 48/0/8 of
+56, B.1 printing 1 20 21 15 27 and B.2 printing 18 as its clang++ oracle does;
+`runner.py --self-test` OK over 152 programs. The DR-1b mutants of §8 item 5,
+each relinked over that build: `diagnose=true` on the `IndirectIndexWith` probe
+fails 30 goldens (1916 passed); the fallback to `IndexWith` removed fails 8 and
+crashes lower operators/string_indexing, run file by file (1937 passed); and
+230227264's call.cpp line reverted crashes 331 at 230227264's own `CARBON_CHECK`
+in convert.cpp:2838 (1615 passed). The mirror runs of §8 item 9 (the plan's §5
+rows of rev 4), each a `git clone --shared` of DR-1b's 4c358f94b with the held
+head merged, records keeping both sides, built in full: mct-b on CT-1's
+4a3220c11, handle_loop_statement.cpp and handle_index.cpp resolved as M-a and
+M-b say, then C-b (19 lines added and 1 removed: a template-dependent operand
+indexed per specific through TP-1's `IndexAction`), 1959 passed and 4 failed
+both before and after C-b (L-a's three and generic/template/index), refilled to
+a fixpoint (12/17, 137/137, 17/103 and 16/41), then 1963 of 1963 and conformance
+149/0/20 over 169, with tmpl_index_vec printing 7, tmpl_index_slice 4, tmpl_for
+6 and f_slice 15; m51 on PR 51's f96fe8a7a, conflicts in the gap analysis and
+the ledger only, 1949 of 1949 with no refill (neither buf_field golden moves)
+and 133/0/19 over 152; m55 on PR 55's 21307851a, 1953 passed and 1 failed
+(string_indexing), refilled 2/2, then 1954 of 1954 and 135/0/21 over 156; m57 on
+PR 57's a080c7886, check/slice/basic auto-merged and passing, lower
+array/iterate, for/break_continue and for/for conflicting in CHECK lines only
+and, on PR 57's side, the three failures (1951 passed), refilled 186/186,
+183/183 and 185/185 (`!dbg` renumbering only), then 1954 of 1954 and 141/0/22
+over 163 with B.1 and B.2 passing; and m57a, rev 4's amender's relink of DR-1a
+alone over PR 57's build, 1947 passed and 3 failed on the same three, the same
+refill lines, then 1950 of 1950 and 139/0/22 over 161. Bullets are 48/0/8 of 56
+on every mirror. Fetched 2026-10-22, PR 51, PR 55, PR 57 and CT-1 are still at
+those heads and upstream/trunk is 9319bb036, so no mirror is re-run (rev 4's
+instruction 4).
+
+Correction (2026-10-22, plan rev 4 f551057ea and its Stop-and-amend record) of
+the DR-1a discharge note's land-time items: L-a refills check
+generic/template/for_range, lower template/for_range and check
+interop/cpp/range_for (12/17, 137/137 and 17/103) and lower array/iterate,
+for/break_continue and for/for (186/186, 183/183 and 185/185 against PR 57's
+text, after their CHECK-only conflict blocks take trunk's side at M-a); L-b
+refills check generic/template/index (16/41, after C-b) and PR 55's
+check/operators/overloaded/string_indexing (2/2); PR 57's check/slice/basic and
+PR 51's check and lower slice/buf_field goldens are not refilled. DR-1b is held,
+stacked on DR-1a (PR 63) with base claude/carbon-fork-0-1-dr; its implementation
+review (R29(c)) comes next.
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

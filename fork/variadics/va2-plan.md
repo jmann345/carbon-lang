@@ -6,16 +6,33 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 7, 2026-10-26 -- the implementation's second stop-and-amend, at
-stage 2 (C1 and F1), which the "Stop-and-amend record (rev 7, 2026-10-26)"
-before the Sign-off section records. C1, split from Appendix B as §2.1 and §2.2
-assigned its hunks, made `... each T` of a compile-time pack the pack itself but
-left in C2 the two hunks that take such a pack as a tuple's element, so C1's
-gate aborted in `TypeIterator` on the first `(... each T)` in a type position;
-four of C1's golden splits called a generic function that has only a
-declaration, which upstream rejects with `use of undefined generic function`;
-and two lower rows of §4 described lowerings that VA-1's code does not perform.
-Two hunks of Appendix B, type_iterator.cpp's `PackType` case and
+**Status:** rev 8, 2026-10-26 -- the fold of the focused re-review of rev 7
+(e0038734f, on F0 8a7395cf1), whose verdict was APPROVE-WITH-AMENDMENTS on four
+MAJORs and one MINOR, recorded in the rev 8 part of the "Stop-and-amend record
+(rev 7, 2026-10-26)". Rev 7's gate before C1's fill, 1956 passed and 10 failed,
+was measured on the saved sources before §A.11's four definitions; on the tree
+rev 7 hands over it is 1957 passed and 9 failed, since generic_pack.carbon has
+no CHECK lines and passes before F1, which changes nine files (RR7-M1). F1's
+`toolchain` tree is computed over all ten fill paths (RR7-M2). Upstream's tip is
+57bf903ef, which changes check/check_unit.cpp and check/generic.cpp, where C1's
+`TryEvalPackIterationsForSpecific` call sits, so §6.2 and §6.3 gain its land
+rule (RR7-M3). Rev 7's C1 accepted a pack in an impl's implicit parameter list
+whose type structure only C2 completes, and so selected another impl without a
+diagnostic where PR 59 reports a TODO; since rev 8 C1 refuses that pack with
+`semantics TODO: each-name binding in an impl's implicit parameter list`, which
+C2 removes (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (RR7-M4). C2's message
+cites its decisions (RR7-m1). Only D-VA2-19 changes, every finding is folded
+and none is rejected (amended 2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M3
+/ RR7-M4 / RR7-m1). Rev 7 (e0038734f, 2026-10-26) is the implementation's second
+stop-and-amend, at stage 2 (C1 and F1), which the "Stop-and-amend record (rev 7,
+2026-10-26)" before the Sign-off section records. C1, split from Appendix B as
+§2.1 and §2.2 assigned its hunks, made `... each T` of a compile-time pack the
+pack itself but left in C2 the two hunks that take such a pack as a tuple's
+element, so C1's gate aborted in `TypeIterator` on the first `(... each T)` in a
+type position; four of C1's golden splits called a generic function that has
+only a declaration, which upstream rejects with `use of undefined generic
+function`; and two lower rows of §4 described lowerings that VA-1's code does
+not perform. Two hunks of Appendix B, type_iterator.cpp's `PackType` case and
 `ConvertTupleToType`'s pack segment, move from C2 to C1 (§2.2's block); those
 four splits, and three of C2's of the same form, define their functions; §4's
 rows are the measured fill's; Appendix B's code is unchanged, and the one
@@ -153,7 +170,12 @@ the implementer's stage 2 directory
 (`$N`), and the scratch directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend7`
 (`$M` below) (amended 2026-10-26, implementation: stop-and-amend: C1's split and
-golden sources).
+golden sources). Rev 8's were taken by the plan amender of the re-review of rev
+7 with rev 7's C1 and rev 8's C1 relinked over the implementer's C1 objects
+under /dev/shm/va2-impl/amend8 (deleted when rev 8 was committed) and the
+scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend8`
+(`$P` below) (amended 2026-10-26, review fold: RR7-M1 / RR7-M4).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -1189,14 +1211,18 @@ each reproduced by the amender:
     check/convert.cpp and sem_ir/type_iterator.cpp (`$M/bin/relink.sh`,
     `$M/logs/relink_v1b.log`). The gate before the fill: 1956 passed and 10
     failed, the ten files of §3 item 3, with no crash
-    (`$M/logs/v1b_gate_pre.log`). clang-format 21.1.8 `--dry-run --Werror` and
-    both §8.6 clang-tidy passes on the two files exit 0 with no diagnostic
-    (`$M/tidy`), and prek with the hooks §8.6 runs passes on C1's 33 files and
-    changes none (`$M/logs/prek_c1_1.log`). The split that crashed fills to §4's
-    line, `unable to monomorphize specific `F(⟬i32, i64, bool⟭)`` at the call
-    with the note `semantics TODO: `unsupported type used as template argument``
-    once, and f03, r02, r02b, p04, ctF and ctF2 print rev 4's outputs
-    (`$M/sets`, against `$H/r/rr2set_rev4.txt` and `probesall_rev4.txt`).
+    (`$M/logs/v1b_gate_pre.log`). That gate ran on the saved sources, before
+    §A.11's four definitions; on `$M/c1_rev7.patch`, the tree rev 7 hands
+    over, it is 1957 passed and 9 failed, generic_pack.carbon passing before
+    its fill (M-22) (amended 2026-10-26, review fold: RR7-M1). clang-format
+    21.1.8 `--dry-run --Werror` and both §8.6 clang-tidy passes on the two files
+    exit 0 with no diagnostic (`$M/tidy`), and prek with the hooks §8.6 runs
+    passes on C1's 33 files and changes none (`$M/logs/prek_c1_1.log`). The
+    split that crashed fills to §4's line, `unable to monomorphize specific
+    `F(⟬i32, i64, bool⟭)`` at the call with the note `semantics TODO:
+    `unsupported type used as template argument`` once, and f03, r02, r02b, p04,
+    ctF and ctF2 print rev 4's outputs (`$M/sets`, against
+    `$H/r/rr2set_rev4.txt` and `probesall_rev4.txt`).
 -   D2, four splits of C1's goldens. Autoupdate asks for a `fail_` prefix on
     check `hetero_pack`'s `type_pack`, `forward` and `method` splits and on
     `generic_pack`'s `call` split (`$N/au_pre1.log`; on C1 with the block,
@@ -1267,11 +1293,17 @@ TODO (`$N/va1_churn_c1_vs_rev4.txt`); fail_todo_va2 is the implementer's fill
 plus the split it could not fill, as its own relink of the block filled it
 (`$N/preview/fail_todo_va2_v1b_filled.carbon`); check hetero_pack and
 generic_pack differ from the implementer's by the four definitions and their
-dumps. The whole of C1, the saved state with the block and rev 7's four sources,
-is `$M/c1_rev7.patch` (33 files, 1491 insertions and 118 deletions on 8a7395cf1;
-27 non-test files, 996 and 109; the paths in `$M/c1_rev7_files.txt`), whose
-`toolchain` tree is 57d89a880239dee5283f1a69b5ca6a9e2a8bc32d, and
-913a132b474be56f16581c9ff3b022b35473ff4f with the fill. Conformance on C1 with
+dumps; generic_pack.carbon, which has no dump range, is C1's source unchanged,
+so the fill changes nine of the ten (M-22) (amended 2026-10-26, review fold:
+RR7-M1). The whole of C1, the saved state with the block and rev 7's four
+sources, is `$M/c1_rev7.patch` (33 files, 1491 insertions and 118 deletions on
+8a7395cf1; 27 non-test files, 996 and 109; the paths in `$M/c1_rev7_files.txt`),
+whose `toolchain` tree is 57d89a880239dee5283f1a69b5ca6a9e2a8bc32d, and
+aad2cd31e6bd4c7d0eeffe565b3fbaee8b4ec69b with the fill, computed over the ten
+fill paths; rev 7 wrote 913a132b474be56f16581c9ff3b022b35473ff4f, the tree with
+only C1's 33 paths filled, which leaves out the four VA-1 refills (M-22)
+(amended 2026-10-26, review fold: RR7-M2). Since rev 8 C1 is `$P/c1_rev8.patch`
+(M-22) (amended 2026-10-26, review fold: RR7-M4). Conformance on C1 with
 the block: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
 DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0
 NOT-WRITTEN of 56 (`$M/logs/conf_v1b.log`). M-20's 36 probes and d01 to d04
@@ -1288,18 +1320,112 @@ impl's structure a 1-tuple's: a query of another arity finds no candidate
 for p24, r09, x06, a1 and the other variadic-impl probes) or, beside a blanket
 impl, selects the blanket one (x05 and x05b print 1 3 1 1 where rev 4 printed 1
 3 2 2, r01 and r01b 1 1 where it printed 2 1, v06 5 5 where it printed 4 5).
-These are C2's forms (§3 item 5, R-14). C1 with C2's built half: the scratch
-worktree /dev/shm/va2-amend/wt2, the saved state with `$N/c2_proto.patch`, whose
-toolchain files are C1 with the block plus `$M/c2_rest_after_v1b.patch` (9
-files, 24 hunks, 381 insertions and 11 deletions, applying with `git
-apply --check` on C1 with the block), built in full with
-`CB_BUILD_ROOT=/dev/shm/va2-amend/builds` (324 steps, 0 warnings,
+These are C2's forms (§3 item 5, R-14); since rev 8 C1 reports each
+as `semantics TODO: each-name binding in an impl's implicit parameter list`
+(M-22) (amended 2026-10-26, review fold: RR7-M4). C1 with C2's built half: the
+scratch worktree /dev/shm/va2-amend/wt2, the saved state with
+`$N/c2_proto.patch`, whose toolchain files are C1 with the block plus
+`$M/c2_rest_after_v1b.patch` (9 files, 24 hunks, 381 insertions and 11
+deletions, applying with `git apply --check` on C1 with the block), built in
+full with `CB_BUILD_ROOT=/dev/shm/va2-amend/builds` (324 steps, 0 warnings,
 `$M/logs/build_wt2.log`); there `run_rr2.sh`, `run_set.sh` and `probes_all.sh`
 print rev 4's outputs line for line but k3, p05, p18 and x03, which print C1's
 own TODOs (the relabel's, F-3's, the relabel's and F-7's), and M-20's probes
 with d01 to d04 print stage 1's, a19's and a20's CHECK at :2361
 (`$M/sets/rr2set_wt2.txt`, `set_wt2.txt`, `probesall_wt2.txt`,
 `$M/probes_wt2.txt`).
+
+M-22. The re-review of rev 7 and C1's refusal of an impl's pack (amended
+2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M3 / RR7-M4). The plan amender
+applied `$M/c1_rev7.patch` in the scratch worktree /dev/shm/va2-impl/amend8/wt
+at 8a7395cf1 (the scratch commit d8fa8112d, whose `toolchain` tree is rev 7's
+57d89a880) and relinked check/convert.cpp and sem_ir/type_iterator.cpp over the
+implementer's C1 objects into /dev/shm/va2-impl/amend8/c1r7 (`$P/bin/relink.sh`,
+`$P/logs/relink_c1r7.log`):
+
+-   RR7-M1, C1's gate before the fill: 1957 passed and 9 failed, with no crash
+    (`$P/logs/gate_c1r7_pre.txt`). The nine are check/variadics' each_param,
+    fail_hetero_pack, fail_todo_slice, fail_todo_va2, forward, hetero_pack and
+    import, and lower/variadics' hetero_pack and pack_expansion.
+    generic_pack.carbon passes: with `F` defined its splits print nothing, and
+    the file has no dump range, so it has no CHECK lines to fill. Rev 7's 1956
+    and 10 (`$M/logs/v1b_gate_pre.log`) were taken on the saved sources, before
+    §A.11's four definitions.
+-   RR7-M2, F1's tree: `$M/fill_rev7_p2`'s ten files written over 57d89a880
+    give the `toolchain` tree aad2cd31e6bd4c7d0eeffe565b3fbaee8b4ec69b; nine of
+    them change, generic_pack.carbon being byte-identical to C1's, and rev 7's
+    913a132b4 is that tree without the four VA-1 refills (each_param, forward,
+    import and the lower pack_expansion).
+-   RR7-M4, a pack in an impl's implicit list on C1: rev 7's C1 accepts it, but
+    the type structure's run is C2's, so there x05 prints 1 3 1 1, r01 1 1 and
+    v06 5 5, where the slice's results are 1 3 2 2, 2 1 and 4 5, and the other
+    variadic-impl probes find no candidate, while PR 59 reports `pack expansion
+    pattern outside an explicit parameter list` for all of them
+    (`$P/sets/probesall_va.txt`, `$P/sets/out_va_imp`, `$H/r/rr2set_va.txt`).
+    The fix: C1 refuses a compile-time each-name in an impl's implicit list with
+    `context.TODO(name_node, "each-name binding in an impl's implicit parameter
+    list")`, after its class and interface check (§2.2's rev 8 block, 10
+    lines), and C2 removes the refusal (§2.3's rev 8 block). C1 rev 8 is
+    `$P/c1_rev8.patch`, 33 files, 1501 insertions and 118 deletions on
+    8a7395cf1 (27 non-test files, 1006 and 109; the paths of rev 7,
+    `$P/c1_rev8_files.txt`), the scratch commit ca23d0695, whose `toolchain`
+    tree is 2ec40431dad02ac27ac2cffaaf7889e03b2643bd. Relinked with
+    check/handle_binding_pattern.cpp too, into /dev/shm/va2-impl/amend8/c1r8
+    (`$P/logs/relink_c1r8.log`): the gate before the fill is 1957 passed and 9
+    failed, the same nine, with no crash (`$P/logs/gate_c1r8_pre.txt`); the
+    fill (`$P/fill_rev8_p1`, `$P/fill_rev8_p2`) reaches its fixpoint in one
+    pass, the second changing nothing (`$P/logs/au_c1r8_2.log`), and is
+    byte-identical to `$M/fill_rev7_p2`; the gate after it is 1966 passed and 0
+    failed (`$P/logs/gate_c1r8_filled.txt`), and the `toolchain` tree with it
+    4f2180492dfcb9bf303bb219d8b5bc8aed85a243 (nine files, 2147 insertions and
+    142 deletions); conformance is PASS 137, COMPILE-FAIL 0, LINK-FAIL 0,
+    RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49
+    PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56, every program as on rev 7's C1
+    (`$P/logs/conf_c1r8.log`); clang-format 21.1.8 `--dry-run --Werror` and
+    both §8.6 clang-tidy passes on handle_binding_pattern.cpp exit 0 with no
+    diagnostic (`$P/tidy`), and prek with §8.6's SKIP list passes on the 33
+    files and changes none (`$P/logs/prek_c1r8.log`).
+-   The probes on C1 rev 8, run by copies of the re-review's scripts that write
+    to `$P` (`$P/bin`): M-20's 36 and d01 to d04 print `$M/probes_v1b.txt` but
+    for a03's indeterminate value and the paths, a19's and a20's CHECK still at
+    check/convert.cpp:2348 (`$P/probes_c1r8.txt`). Of the sets
+    (`$P/sets/rr2set_c1r8.txt`, `set_c1r8.txt`, `probesall_c1r8.txt`), 51 lines
+    differ from rev 7's C1, each a probe that declares an impl with a
+    compile-time each-name: 49 now report the TODO at that each-name and
+    nothing else (a1, b1, d1, k7, a2 and b2; i1, i3, same3, f10 and v13; and 38
+    of probes_all's 131, x05, x05b, r01, r01b, v06, p19, p24 and p24b among
+    them), and pl0 and pl1 with the scratch prelude proxy report the TODO in
+    the proxied comparison.carbon and then the names that file declares,
+    `EqWith` and `OrderedWith`, as not found where other prelude files use
+    them. Every other line is rev 7's, and nothing crashes.
+-   C2's built half is then `$P/c2_rest_after_rev8.patch`,
+    `$M/c2_rest_after_v1b.patch` with the reverse of §2.2's rev 8 block: 10
+    files, 25 hunks, 381 insertions and 21 deletions, applying on C1 rev 8. C1
+    rev 8 with it is the tree da80b87d88f64c1949acb17cbef43ecc7f802356, the
+    tree of rev 7's C1 with `$M/c2_rest_after_v1b.patch`, so M-21's
+    measurements of C1 with C2's built half (wt2) stand for rev 8 unchanged.
+-   RR7-M3, upstream: `git fetch upstream trunk` and `git ls-remote upstream
+    refs/heads/trunk` give 57bf903ef ("Keep resolving generics and templates
+    until they're all resolved", 2026-10-26 20:52 UTC), two commits past
+    600fd55ba, the other, dd30c7655, changing utils/vscode only. Since
+    600fd55ba it changes toolchain/check/check_unit.cpp and .h,
+    check/generic.cpp and .h, check/function.cpp, check/cpp/generate_ast.cpp
+    and .h and two interop goldens, and none of docs, proposals, core,
+    toolchain/lower and toolchain/sem_ir. `ResolveSpecificDefinition` returns a
+    `DefinitionResolution` (check/generic.h:126-142 and generic.cpp:766-788 at
+    57bf903ef); D2's rule is the `NotDefinedYet` arm of
+    `CheckRequiredDefinitions` (check/check_unit.cpp:521-533, "use of undefined
+    generic function"); and `FinishRun` repeats `FinalizeCppAstFragment` and
+    `CheckRequiredDefinitions` until no definition is newly resolved
+    (check_unit.cpp:643-652), the path of
+    `fail_todo_cpp_template_on_tuple_of_pack`'s `unable to monomorphize`. `git
+    merge-tree --write-tree --name-only` gives 106 conflicted paths for
+    b0822a744, ca939ee19, 90c34dbaa and C1 rev 8's ca23d0695 alike, the same
+    set (`$P/mt_up_57bf.txt`): rev 7's 104 with check/check_unit.cpp and
+    check/generic.cpp, which conflict at b0822a744 already, by the fork's own
+    hunks there (OV-2's in check_unit.cpp, the upstream merge 3d4c0e37a's in
+    generic.cpp); C1's `TryEvalPackIterationsForSpecific` call is inside
+    generic.cpp's second conflict. §6.2's rule 4 and §6.3 resolve it.
 
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
@@ -1579,6 +1705,12 @@ since rev 2 added `variadics_strcat`, amended 2026-10-22, review fold: B-M3).
     the two hunks such a type needs; and four of §A.11's C1 splits, parsed but
     never compiled, called a generic function that has only a declaration. Both
     are measured and corrected by rev 7 (M-21).
+-   F-11 (amended 2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M4). Rev 7's
+    gate before C1's fill, 1956 passed and 10 failed, and its F1 tree,
+    913a132b4, were not measured on the tree rev 7 handed over (1957 and 9;
+    aad2cd31e over the ten fill paths), and rev 7's C1 accepted a pack in an
+    impl's implicit list that only C2 can select by. All three are measured and
+    corrected by rev 8 (M-22).
 
 ## §1 Design
 
@@ -2466,7 +2598,7 @@ review fold: B-M8).
 | D-VA2-16 | ten programs, three differential (`*_diff`) | a program passes a mutant |
 | D-VA2-17 | records; no design edit; W-212 and W-225 discharged, W-213 narrowed; both rows stay PARTIAL with narrower open text | VA-2 decides an open rule without a register entry |
 | D-VA2-18 | one PR on PR 59, merging last, land-time M, S-CT (tests only since rev 3), F-M, L-F, L, simulated on the full-stack mirror | an unresolvable conflict at land time, or a land simulation's red set other than predicted |
-| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed |
+| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); since rev 8 C1 refuses an impl's pack with a TODO that C2 removes (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold: RR7-M4) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed; since rev 8 also a commit that would select or compute otherwise than its base without a diagnostic because a later commit completes the form, which then refuses the form with a precise TODO until that commit (amended 2026-10-26, review fold: RR7-M4) |
 
 ## §2 Spec, file by file
 
@@ -2501,7 +2633,11 @@ and `ConvertTupleToType`'s pack segment, are C1's: C1 makes `... each T` the
 pack, and without them C1's gate aborts on `(... each T)` (M-21). They are
 §2.2's rev 7 block, Appendix B's text verbatim, and Appendix B itself does not
 change (amended 2026-10-26, implementation: stop-and-amend: C1's split and
-golden sources).
+golden sources). Since rev 8 C1 also refuses a pack in an impl's implicit
+parameter list, §2.2's rev 8 block, against 8a7395cf1 with `$M/c1_rev7.patch`,
+and C2 removes the refusal, §2.3's rev 8 block, against C1; neither is in
+Appendix B, whose code holds neither (M-22) (amended 2026-10-26, review fold:
+RR7-M4).
 
 ### §2.1 C1, SemIR (built)
 
@@ -2617,7 +2753,11 @@ golden sources).
     `impl`), any other compile-time each-name being `context.TODO(name_node,
     "each-name binding of a class, interface or explicit compile-time
     parameter")` before an arity is added (D-VA2-4, M-19; amended 2026-10-26,
-    review fold: RR2-M1); the arity added by the binding; `⟬each T⟭` for an
+    review fold: RR2-M1); since rev 8 C1 also refuses an impl's, with
+    `context.TODO(name_node, "each-name binding in an impl's implicit parameter
+    list")`, because C2 completes the impl's type structure, and C2 removes the
+    refusal (the rev 8 block below, §2.3, R-14, M-22) (amended 2026-10-26,
+    review fold: RR7-M4); the arity added by the binding; `⟬each T⟭` for an
     each-name type; the pack's arity registered for the binding and for its
     constant; an invalid element type keeps VA-1's `pack_type invalid, %arity`
     (the prototype's last fix, VA-1's `fail_invalid_element_type`). Before it
@@ -2663,7 +2803,9 @@ and golden sources): the two hunks C1 takes from §2.3, verbatim from Appendix B
 (`$M/c1_moved_hunks_block.patch`, 2 files, 15 insertions). `git apply --check`
 passes on 8a7395cf1 (F0) and on 8a7395cf1 with the stopped run's saved split
 (`$N/c1_uncommitted_source_state.patch`), and with them C1's gate is red on its
-ten files with no crash (M-21). The `PackType` case's comment names
+ten files with no crash (M-21); with them and §A.11's sources it is red on nine,
+generic_pack.carbon passing before its fill (M-22) (amended 2026-10-26, review
+fold: RR7-M1). The `PackType` case's comment names
 type_structure.cpp's run, C2's hunk, which is true from C2 on. The block,
 against 8a7395cf1:
 
@@ -2707,6 +2849,43 @@ index 5d6dc9141..84f0d09bc 100644
        // TODO: This call recurses back into conversion. Switch to an
        // iterative approach.
        type_inst_ids.push_back(
+```
+
+<!-- google-doc-style-resume -->
+
+The rev 8 block (amended 2026-10-26, review fold: RR7-M4): C1's refusal of a
+compile-time each-name in an impl's implicit parameter list, after the class and
+interface check, so that a variadic impl is C1's TODO rather than an impl that
+C1's type structure, without C2's run entry, selects as a 1-tuple's (R-14,
+M-22). It is C1's own change, not Appendix B's, 10 lines, and C2 removes it
+(§2.3's rev 8 block). `git apply --check` passes on 8a7395cf1 with
+`$M/c1_rev7.patch` (`$P/c1_rev8_delta.patch`; with it, C1 is
+`$P/c1_rev8.patch`). The block, against 8a7395cf1 with `$M/c1_rev7.patch`:
+
+<!-- google-doc-style-ignore -->
+
+```diff
+diff --git a/toolchain/check/handle_binding_pattern.cpp b/toolchain/check/handle_binding_pattern.cpp
+index 549402d82..c5d240ff8 100644
+--- a/toolchain/check/handle_binding_pattern.cpp
++++ b/toolchain/check/handle_binding_pattern.cpp
+@@ -391,6 +391,16 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
+                             "each-name binding of a class, interface or "
+                             "explicit compile-time parameter");
+       }
++      // Fork (VA-2, D-VA2-19): impl lookup selects an impl by its self type's
++      // type structure, which does not yet record a pack segment as a run of
++      // the query's elements ("deleting deduced parameters and replacing type
++      // parameters by a `?`", docs/design/generics/details.md, "Type structure
++      // of an impl declaration"), so an impl's pack is not implemented yet.
++      if (introducer_kind == Lex::TokenKind::Impl) {
++        return context.TODO(name_node,
++                            "each-name binding in an impl's implicit "
++                            "parameter list");
++      }
+     }
+     if (pack_scope->each_binding_pattern_id.has_value()) {
+       return context.TODO(name_node,
 ```
 
 <!-- google-doc-style-resume -->
@@ -2776,6 +2955,42 @@ index 5d6dc9141..84f0d09bc 100644
     keeps its ranking against the query, and the candidates sort by
     `IsBetterRanking` instead of by their own type structures; without
     segments the order is the same (M-6's rev 2 line).
+-   check/handle_binding_pattern.cpp, since rev 8 (amended 2026-10-26, review
+    fold: RR7-M4): C2 removes C1's refusal of an impl's each-name (§2.2's rev 8
+    block), since its type structure and ranking select a variadic impl, so an
+    impl's implicit list takes a compile-time each-name as a function's does
+    (D-VA2-4). C2's built half is `$P/c2_rest_after_rev8.patch`, 10 files: rev
+    7's `$M/c2_rest_after_v1b.patch` and this block, which with C1 give rev 7's
+    tree of C1 and C2's built half (M-22). `git apply --check` passes on C1 rev
+    8 (8a7395cf1 with `$P/c1_rev8.patch`). The block, against C1:
+
+<!-- google-doc-style-ignore -->
+
+```diff
+diff --git a/toolchain/check/handle_binding_pattern.cpp b/toolchain/check/handle_binding_pattern.cpp
+index c5d240ff8..549402d82 100644
+--- a/toolchain/check/handle_binding_pattern.cpp
++++ b/toolchain/check/handle_binding_pattern.cpp
+@@ -391,16 +391,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
+                             "each-name binding of a class, interface or "
+                             "explicit compile-time parameter");
+       }
+-      // Fork (VA-2, D-VA2-19): impl lookup selects an impl by its self type's
+-      // type structure, which does not yet record a pack segment as a run of
+-      // the query's elements ("deleting deduced parameters and replacing type
+-      // parameters by a `?`", docs/design/generics/details.md, "Type structure
+-      // of an impl declaration"), so an impl's pack is not implemented yet.
+-      if (introducer_kind == Lex::TokenKind::Impl) {
+-        return context.TODO(name_node,
+-                            "each-name binding in an impl's implicit "
+-                            "parameter list");
+-      }
+     }
+     if (pack_scope->each_binding_pattern_id.has_value()) {
+       return context.TODO(name_node,
+```
+
+<!-- google-doc-style-resume -->
 
 ### §2.4 C2, tuple values with a pack segment and `let` (specified, not built)
 
@@ -3540,7 +3755,13 @@ M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
 sources). _Break condition:_ a commit cannot build without a later commit's
 files, which merges the two and is recorded in the landed notes; and, since rev
 7, a commit whose gate crashes without a later commit's hunk takes that hunk, by
-a plan revision before it is committed, which the landed notes record too.
+a plan revision before it is committed, which the landed notes record too. Since
+rev 8, also: a commit that would select or compute otherwise than its base
+without a diagnostic, because a later commit completes the form, refuses the
+form with a precise TODO that the later commit removes, and the landed notes
+record it; C1 so refuses a pack in an impl's implicit parameter list until C2
+(§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold:
+RR7-M4).
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
 B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
@@ -3633,7 +3854,10 @@ The commits, in order:
     2026-10-26, review fold: RR1-B-M5); the lower files but file_context.cpp),
     plus C1's own changes: the implicit-list TODO of F-3, the relabeled
     each-name binding TODO, the computed-element-type TODO, the DR-17 TODO of
-    F-7. New goldens: check `hetero_pack`, `fail_hetero_pack`, `generic_pack`,
+    F-7, and since rev 8 the refusal of a pack in an impl's implicit list,
+    `each-name binding in an impl's implicit parameter list`, until C2
+    (§2.2's rev 8 block, R-14) (amended 2026-10-26, review fold: RR7-M4). New
+    goldens: check `hetero_pack`, `fail_hetero_pack`, `generic_pack`,
     `fail_todo_va2` (its C1 splits), lower `hetero_pack`, with since rev 3 lower
     `hetero_pack`'s `lib` and `use` splits, check `hetero_pack`'s
     `cpp_template_outer` and `fail_todo_va2`'s
@@ -3645,15 +3869,21 @@ The commits, in order:
     `fail_todo_cpp_template_on_tuple_of_pack` (amended 2026-10-26, review fold:
     RR2-M1 / RR2-m1 / RR2-m2); refilled: each_param, forward, import,
     fail_todo_slice (`fail_todo_generic_pack` removed, `fail_todo_ref_pack`
-    relabeled) and the lower pack_expansion. Expected gate: red on exactly these
-    10 files, with no crash: 1956 passed and 10 failed, measured on C1 with
-    §2.2's block, where rev 6's split aborted (M-21) (amended 2026-10-26,
-    implementation: stop-and-amend: C1's split and golden sources); the four
-    splits of `hetero_pack` and `generic_pack` that call a generic define it
-    since rev 7 (§A.11).
+    relabeled) and the lower pack_expansion. Expected gate: red on nine of these
+    10 files, with no crash: 1957 passed and 9 failed, measured on C1 with
+    §2.2's rev 7 block and §A.11's sources, where rev 6's split aborted (M-21);
+    generic_pack.carbon, which has no CHECK lines, passes before its fill, and
+    the nine are the other files, the same with the rev 8 block (M-22; rev 7
+    said red on these 10 files, 1956 passed and 10 failed, measured before
+    §A.11's four definitions) (amended 2026-10-26, review fold: RR7-M1); the
+    four splits of `hetero_pack` and `generic_pack` that call a generic define
+    it since rev 7 (§A.11).
 4.  **F1.** Autoupdate of those 10 files to the fixpoint: one pass, and the gate
     1966 passed (measured, M-21: the fill is `$M/fill_rev7_p2`) (amended
     2026-10-26, implementation: stop-and-amend: C1's split and golden sources).
+    The fill changes nine of them, generic_pack.carbon being C1's source
+    unchanged, and F1 commits those nine; on C1 rev 8 it is the same fill
+    (M-22) (amended 2026-10-26, review fold: RR7-M1 / RR7-M4).
 5.  **C2, tuples with a pack segment** (§2.3 built, §2.4 specified): `TupleType`
     and `TupleValue` conditional, the tuple deduction, the dependent
     representation, the run entry and the ranking of the type structure
@@ -3661,7 +3891,10 @@ The commits, in order:
     type_iterator.cpp's `PackType` case and `ConvertTupleToType`'s pack segment
     are C1's, and C2's built half is `$M/c2_rest_after_v1b.patch`, M-21)
     (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
-    sources), tuple literals with one segment,
+    sources), and since rev 8 the removal of C1's refusal of an impl's pack,
+    the built half being `$P/c2_rest_after_rev8.patch` (§2.3's rev 8 block,
+    M-22) (amended 2026-10-26, review fold: RR7-M4), tuple literals with one
+    segment,
     `PackSegmentInit`, `let` with a fixed-arity pack expansion pattern, the
     tuple TODOs, and since rev 3 handle_pack_expansion.cpp's `specific_constant`
     reference to an enclosing generic's arity, which only a function of a
@@ -3744,7 +3977,13 @@ stop-and-amend: nested constant initialization); C0b's title has C0's form,
 review fold: RR5-m1); since rev 7 C1's says what `(... each T)` is as a type,
 and the `specific_constant` that names an enclosing generic's arity, a hunk §2.2
 gives C2, is in C2's, where rev 4 put it in C1's (amended 2026-10-26,
-implementation: stop-and-amend: C1's split and golden sources)):
+implementation: stop-and-amend: C1's split and golden sources); since rev 8
+C1's says that a function, not an impl, declares the pack and lists the impl's
+pack among its TODOs, and C2's says that an impl may declare it and cites
+D-VA2-4, M-17, M-21 and M-22, the decisions and measurements of its
+`specific_constant` sentence and of its split (amended 2026-10-26, review fold:
+RR7-M4 / RR7-m1); M's names §6.2's rule 4 in a `<...>` field for a trunk that
+holds upstream's 57bf903ef (amended 2026-10-26, review fold: RR7-M3)):
 
 <!-- google-doc-style-ignore -->
 
@@ -3784,8 +4023,8 @@ fork/variadics/va2-plan.md §2.7, M-20, the stop-and-amend record (rev 5).
 ```text
 VA-2 C1: packs of different types in implicit parameter lists
 
-A function or impl may declare `[... each T: I]` in its implicit
-parameter list and take `... each x: each T`; a call deduces the pack of
+A function may declare `[... each T: I]` in its implicit parameter
+list and take `... each x: each T`; a call deduces the pack of
 argument types and their arity, checks each element's `I` by impl
 lookup, and the body is checked once with `each x` of the symbolic type
 `each T`. The pack index is a symbolic constant, so a specific of a
@@ -3801,11 +4040,13 @@ second pack arity in a generic, a computed element type, forwarding
 between a pack of different types and a pack of one type, an expansion
 without each-names in a binding's type, a template each-name, a
 compile-time each-name of a class, an interface or an explicit `generic`
-parameter, and a C++ or template-dependent action whose operand depends
-on the pack index are semantics TODOs. VA-1's goldens are refilled by
-the next commit.
+parameter or in an impl's implicit parameter list, whose tuple segment
+impl lookup does not match yet, and a C++ or template-dependent action
+whose operand depends on the pack index are semantics TODOs. VA-1's
+goldens are refilled by the next commit.
 
-fork/variadics/va2-plan.md §2.1, §2.2, D-VA2-2 to D-VA2-7, D-VA2-13, M-21.
+fork/variadics/va2-plan.md §2.1, §2.2, D-VA2-2 to D-VA2-7, D-VA2-13,
+D-VA2-19, M-21, M-22.
 ```
 
 ```text
@@ -3815,17 +4056,20 @@ VA-2 C2: tuples with one pack segment, `let` pack bindings, variadic impls
 segment's arity is known, deduced from a tuple argument, and represented
 as the specific's until then. Impl lookup keeps the tuple in the type
 structure, `(...?)`, the segment matching a run of the query's elements,
-and ranks impls by the overlap rule along the query, so `impl forall
-[... each T: I] (... each T) as I` is selected for tuples of every arity
-beside blanket and fixed-arity impls; an expansion in a variadic impl's
-function over the impl's pack names the impl's arity by a
-specific_constant of its self specific, as a name from an enclosing
-generic is named. `(... each x)` initializes a tuple element by element,
-and `let (... each x: each T) = t;` binds a pack to a tuple's elements
-without copying. More than one segment, a segment beside other elements
-and initializing expansion elements are semantics TODOs.
+and ranks impls by the overlap rule along the query, so an impl may
+declare a pack in its implicit parameter list, a semantics TODO until
+now, and `impl forall [... each T: I] (... each T) as I` is selected for
+tuples of every arity beside blanket and fixed-arity impls; an expansion
+in a variadic impl's function over the impl's pack names the impl's
+arity by a specific_constant of its self specific, as a name from an
+enclosing generic is named. `(... each x)` initializes a tuple element
+by element, and `let (... each x: each T) = t;` binds a pack to a
+tuple's elements without copying. More than one segment, a segment
+beside other elements and initializing expansion elements are semantics
+TODOs.
 
-fork/variadics/va2-plan.md §2.3, §2.4, D-VA2-8 to D-VA2-10.
+fork/variadics/va2-plan.md §2.3, §2.4, D-VA2-4, D-VA2-8 to D-VA2-10,
+M-17, M-21, M-22.
 ```
 
 ```text
@@ -3903,8 +4147,11 @@ Merges trunk at <sha>, which holds every PR before VA-2 in
 fork/ORCHESTRATION.md's merge order, into claude/carbon-fork-0-1-va2.
 Conflicts resolved by fork/variadics/va2-plan.md §6.2's rules:
 convert.cpp's ConvertTupleToType and eval.cpp's EvalContext members keep
-both sides, PR 61's first; the records and fork/conformance/README.md's
-table are taken from trunk and rewritten by L-F and L. No other conflict.
+both sides, PR 61's first; <generic.cpp's ResolveSpecificDefinition
+takes upstream's DefinitionResolution arms, the pack-iteration call in
+NewlyResolved, when trunk holds upstream's 57bf903ef;> the records and
+fork/conformance/README.md's table are taken from trunk and rewritten by
+L-F and L. No other conflict.
 ```
 
 ```text
@@ -3953,7 +4200,9 @@ prefixes: `check/` is toolchain/check/testdata/variadics/, `lower/` is
 toolchain/lower/testdata/variadics/. Since rev 7 the C1 rows are measured: C1
 with §2.2's block fills to each of them as rev 7 states them, and rev 7 amends
 the four that the fill contradicted (M-21) (amended 2026-10-26, implementation:
-stop-and-amend: C1's split and golden sources).
+stop-and-amend: C1's split and golden sources). C1 rev 8, with its refusal of an
+impl's pack, fills to the same rows byte for byte, since no C1 split declares an
+impl with a pack (M-22) (amended 2026-10-26, review fold: RR7-M4).
 
 | File (commit) | Split | Predicted key output |
 | --- | --- | --- |
@@ -3970,7 +4219,7 @@ stop-and-amend: C1's split and golden sources).
 | (same) | `fail_each_type_not_pack` | `error: `each T` does not name a pack [EachNameNotPack]` (VA-1's diagnostic, unchanged) |
 | (same) | `fail_two_explicit_packs` | `error: parameter list can contain at most one pack expansion pattern [MultiplePackExpansionPatterns]` with the `previous pack expansion pattern is here` note: the explicit list is a tuple pattern (:333-334) |
 | check/generic_pack.carbon (C1) | `declaration` | VA-1's `fail_todo_generic_pack` source, now without a diagnostic (M-6: "succeeded; if success is expected, remove the `fail_` prefix") |
-| (same) | `call` | `F(1 as i64, true, 2 as i32)` deduces `T` = `⟬%i64, bool, %i32⟭`; no diagnostic, `F` defined since rev 7, as `hetero_pack`'s `Count`; the file has no dump range, so its golden holds the sources and no SemIR, and `type_pack` shows the deduction (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `call` | `F(1 as i64, true, 2 as i32)` deduces `T` = `⟬%i64, bool, %i32⟭`; no diagnostic, `F` defined since rev 7, as `hetero_pack`'s `Count`; the file has no dump range, so its golden holds the sources and no SemIR, and `type_pack` shows the deduction (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); so the file has no CHECK lines, C1's gate passes it before F1, and F1 leaves it as C1 writes it (M-22) (amended 2026-10-26, review fold: RR7-M1) |
 | check/fail_todo_va2.carbon (C1) | `fail_todo_two_implicit_packs` | `semantics TODO: `more than one pack expansion pattern in an implicit parameter list`` at the second `...`, and nothing for `U` |
 | (same) | `fail_todo_computed_element_type` | `semantics TODO: `pack expansion pattern whose binding type is computed from an each-name`` at `Box(each T)` |
 | (same) | `fail_todo_template_each` | `semantics TODO: `each-name binding that is ref, var or template`` |
@@ -4185,7 +4434,16 @@ and by every mirror (§8.7):
     fork/decision-log.md, fork/ORCHESTRATION.md) and
     fork/conformance/README.md's table: regenerated or rewritten from the
     merged tree (`runner.py --update-readme-table`), never merged by hand.
-4.  Any other conflict is a stop: the merge is redone on a scratch branch and
+4.  check/generic.cpp and check/check_unit.cpp, when the trunk that M merges
+    holds upstream's 57bf903ef (an upstream advance landed before VA-2; M-22)
+    (amended 2026-10-26, review fold: RR7-M3): `ResolveSpecificDefinition`
+    takes upstream's `DefinitionResolution` arms, and C1's
+    `TryEvalPackIterationsForSpecific` call goes in the `NewlyResolved` arm,
+    after `TryEvalBlockForSpecific` and before its `return`; check_unit.cpp
+    keeps the advance's resolution of the fork's own hunks; F-M refills
+    `fail_todo_cpp_template_on_tuple_of_pack` if `FinishRun`'s loop changes its
+    output, and L's records name the refill.
+5.  Any other conflict is a stop: the merge is redone on a scratch branch and
     reported, never resolved by taking one side of a toolchain file.
 
 The semantic touch points, which no textual merge shows, each with the mirror
@@ -4234,7 +4492,16 @@ set, for b0822a744, ca939ee19 and 90c34dbaa (`$J/mt_up_8779.txt`,
 `$K/mt_up_56d9.txt`) (amended 2026-10-26, review fold: RR5-m3), and rev 7 at
 600fd55ba, one commit past 56d9bbc40 that changes toolchain/benchmarking only,
 the same 104 paths for the same three (`$M/mt_up_600f.txt`) (amended 2026-10-26,
-implementation: stop-and-amend: C1's split and golden sources).
+implementation: stop-and-amend: C1's split and golden sources). Rev 8 at
+57bf903ef measured 106 paths, the same set, for b0822a744, ca939ee19, 90c34dbaa
+and C1 rev 8's scratch commit ca23d0695: rev 7's 104 with check/check_unit.cpp
+and check/generic.cpp, which conflict at b0822a744 already by the fork's own
+hunks, and C1's `TryEvalPackIterationsForSpecific` call is inside generic.cpp's
+second conflict. The advance resolves it by §6.2's rule 4, upstream's
+`DefinitionResolution` with the call in its `NewlyResolved` arm, and re-runs
+C1's fill, since `FinishRun` now repeats `CheckRequiredDefinitions` after
+`FinalizeCppAstFragment`, the path of `fail_todo_cpp_template_on_tuple_of_pack`
+(`$P/mt_up_57bf.txt`, M-22) (amended 2026-10-26, review fold: RR7-M3).
 Two upstream commits change how rev 3's mechanisms sit at the advance, and
 the advance re-runs M-17's probes for both: e1c8c1f85 makes name lookup pair
 every name of an enclosing generic with that generic's self specific, so a
@@ -4394,19 +4661,30 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     anything but 101 and 1.
 -   **R-14. A split commit accepts a form whose other half is a later commit's**
     (added by rev 7) (amended 2026-10-26, implementation: stop-and-amend: C1's
-    split and golden sources). C1 forms `(... each T)` as a type and accepts a
-    pack in an impl's implicit list, but the type structure's run entry, the
-    ranking, the tuple deduction and the tuple values are C2's, so on C1 alone a
-    variadic impl's structure is a 1-tuple's: a query of another arity finds no
-    candidate or, beside a blanket impl, the blanket one (M-21's x05, r01 and
-    v06). No golden of C1 declares a variadic impl, C1 lands only with C2, in
-    one PR (D-VA2-18), and C1 with C2's built half selects as rev 4 measured
-    (M-21). Detected by each split commit's gate (§8.3: no crash) and the probe
-    sets every stage re-runs after its build; falsified by a crash in a split
-    commit's gate or by a C2 probe that prints other than rev 4's on C2's
-    install. If a review requires each commit to give the slice's result for
-    every form it accepts, C1 takes C2's type-structure, ranking and
-    tuple-deduction hunks too, by D-VA2-19's break condition.
+    split and golden sources). C1 forms `(... each T)` as a type, but the type
+    structure's run entry, the ranking, the tuple deduction and the tuple values
+    are C2's, so on C1 alone a variadic impl's structure would be a 1-tuple's.
+    Rev 7's C1 accepted a pack in an impl's implicit list anyway, and there a
+    query of another arity found no candidate or, beside a blanket impl, the
+    blanket one: x05 printed 1 3 1 1, r01 1 1 and v06 5 5, where the slice's
+    results are 1 3 2 2, 2 1 and 4 5 and PR 59 reports a TODO, a silent
+    different selection in a commit that stays in history (M-21, RR7-M4). Since
+    rev 8 C1 refuses that pack with `semantics TODO: each-name binding in an
+    impl's implicit parameter list` at the each-name, R17's precise diagnostic
+    for a form the commit does not implement, and C2, which completes the form,
+    removes the refusal: on C1 every variadic-impl probe reports that TODO,
+    and but for the prelude proxy's pl0 and pl1 nothing else, and C1 with C2's
+    built half is the tree rev 7 measured (M-22)
+    (amended 2026-10-26, review fold: RR7-M4). No golden of C1 declares a
+    variadic impl, and C1 lands only with C2, in one PR (D-VA2-18). Detected by
+    each split commit's gate (§8.3: no crash) and the probe sets every stage
+    re-runs after its build; falsified by a crash in a split commit's gate, by
+    a probe on C1 that selects an impl or prints a value without a diagnostic
+    where PR 59 reports one, or by a C2 probe that prints other than rev 4's on
+    C2's install. If a review requires the refusal to be pinned by a golden, C1
+    adds a `fail_todo_va2` split for it and C2 deletes that split, by a plan
+    revision; §7.2's A-13 rejects taking C2's type-structure hunks into C1
+    instead, rev 7's break condition here.
 
 ### §7.2 Rejected alternatives
 
@@ -4513,7 +4791,22 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     all change or move to C2, where §2.2's block is 15 lines of Appendix B that
     change no golden of C1 but that split, which they make fill as §4 says.
     Falsified as a rejection if a review finds a C1 golden that the two hunks
-    change otherwise, or rejects R-14's partial variadic impls on C1.
+    change otherwise. Rev 7 also named a review that rejects R-14's partial
+    variadic impls on C1; RR7-M4 is that review, and rev 8 answers it with C1's
+    refusal of an impl's pack (R-14), which changes no golden and no fill of C1
+    (M-22), not with this alternative, which would move a C1 split, a stringify
+    case, four probes and C1's message to C2 and would still leave the impl's
+    each-name binding accepted on C1 (amended 2026-10-26, review fold: RR7-M4).
+-   **A-13. C1 takes C2's type-structure, ranking and tuple-deduction hunks**
+    (rejected; added by rev 8) (amended 2026-10-26, review fold: RR7-M4).
+    R-14's rev 7 break condition: C1 would then select a variadic impl as the
+    slice does, but it would take type_structure.h and .cpp, impl_lookup.cpp's
+    ranking and deduce.cpp's `TupleType` case, 4 of C2's 10 built files and 267
+    of its 381 inserted lines, without C2's `impl` and `fail_impl` goldens that
+    exercise them, or with them, leaving C2 little but the tuple values.
+    Rejected: C1's refusal is 10 lines that C2 removes, changes no golden and
+    no fill (M-22), and keeps §3's split by feature. Falsified as a rejection if
+    a review requires C1 to accept a variadic impl.
 
 ## §8 Verification and discharge
 
@@ -4650,6 +4943,20 @@ fill; the block checked in /dev/shm/va2-amend/wt4; and upstream's tip,
 600fd55ba, with `git merge-tree` against it (`mt_up_600f.txt`). The worktrees,
 the relinked binaries and the build were removed when rev 7 was committed.
 
+Rev 8's are the plan amender's of the re-review of rev 7 (amended 2026-10-26,
+review fold: RR7-M1 / RR7-M2 / RR7-M3 / RR7-M4), with `$P` the directory the
+header names and every rev 8 number in `$P` (M-22): `$M/c1_rev7.patch` in the
+scratch worktree /dev/shm/va2-impl/amend8/wt at 8a7395cf1, relinked over the
+implementer's C1 objects into /dev/shm/va2-impl/amend8/c1r7, with its gate;
+F1's tree over the ten fill paths; C1 rev 8 (`$P/c1_rev8.patch`) there,
+relinked into /dev/shm/va2-impl/amend8/c1r8, with its gates, both fill passes,
+conformance (`$P/conf`), clang-format, clang-tidy (`$P/tidy`), prek and M-20's
+probes with d01 to d04 and the earlier sets (`$P/sets`), run by copies of the
+re-review's scripts (`$P/bin`); C2's built half for rev 8 and the tree it gives;
+and upstream's tip, 57bf903ef, with `git merge-tree` against it
+(`mt_up_57bf.txt`). The worktree and the relinked binaries were removed when rev
+8 was committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -4689,10 +4996,12 @@ and nothing else, with no crash. The gate's wall time is compared with M-5's
 25 seconds (R-1). A shrink's expected counts are §3's. C0 alone and C0b alone
 are each red on exactly that new file, with no crash (M-20) (amended 2026-10-26,
 implementation: stop-and-amend: nested constant initialization).
-C1 alone, with §2.2's block, is 1956 passed and 10 failed, the ten files of §3
-item 3, with no crash, and 1966 passed after F1, both measured; rev 6's split
-aborted it (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's
-split and golden sources).
+C1 alone, with §2.2's block, is 1957 passed and 9 failed, nine of the ten files
+of §3 item 3, generic_pack.carbon passing before its fill, with no crash, and
+1966 passed after F1, both measured on rev 7's C1 and on rev 8's (M-22; rev 7
+wrote 1956 and 10, measured before §A.11's four definitions) (amended
+2026-10-26, review fold: RR7-M1); rev 6's split aborted it (M-21) (amended
+2026-10-26, implementation: stop-and-amend: C1's split and golden sources).
 
 ### §8.4 Conformance (implementer)
 
@@ -4713,7 +5022,8 @@ precondition, and a d01 that does not is a stop at C4, not a failure at C5
 (amended 2026-10-26, review fold: RR5-M1). C1 with §2.2's block, too: 137 / 0 /
 21 over 158 and bullets 49 / 0 / 7 of 56, measured (M-21), and the stage 2
 re-run repeats it (amended 2026-10-26, implementation: stop-and-amend: C1's
-split and golden sources).
+split and golden sources); C1 rev 8 too, every program as on rev 7's C1 (M-22)
+(amended 2026-10-26, review fold: RR7-M4).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -4891,7 +5201,11 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     removed when rev 7 was committed; C1 is reproducible from `$M/c1_rev7.patch`
     on 8a7395cf1 and C1 with C2's built half from it and
     `$M/c2_rest_after_v1b.patch` (amended 2026-10-26, implementation:
-    stop-and-amend: C1's split and golden sources).
+    stop-and-amend: C1's split and golden sources). Rev 8's
+    (/dev/shm/va2-impl/amend8: wt, c1r7 and c1r8) were removed when rev 8 was
+    committed; C1 rev 8 is reproducible from `$P/c1_rev8.patch` on 8a7395cf1
+    and C1 with C2's built half from it and `$P/c2_rest_after_rev8.patch`
+    (amended 2026-10-26, review fold: RR7-M4).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -4945,7 +5259,10 @@ ids are renumbered in D's commit, never in source.
     stopped run's C1 with that block and §A.11's four amended splits is
     `$M/c1_rev7.patch`, C2's built half `$M/c2_rest_after_v1b.patch` (M-21)
     (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
-    sources).
+    sources). Since rev 8 C1 also refuses an impl's pack, §2.2's rev 8 block,
+    and is `$P/c1_rev8.patch`; C2 removes the refusal, and its built half is
+    `$P/c2_rest_after_rev8.patch` (M-22) (amended 2026-10-26, review fold:
+    RR7-M4).
 2.  **What to run first after each build:** C0: reviewer A's r16, r16g, r16h and
     x07; C0b, and after every later build, M-20's 36 probes, each with
     `$H/r/run_probe.sh <carbon> <probe> <outdir>`, expecting M-20's last column,
@@ -4977,7 +5294,12 @@ ids are renumbered in D's commit, never in source.
     every earlier set prints `$M/sets/*_v1b.txt` and M-20's with d01 to d04
     `$M/probes_v1b.txt` (M-21), the variadic-impl probes there being C2's forms
     (R-14) (amended 2026-10-26, implementation: stop-and-amend: C1's split and
-    golden sources).
+    golden sources). Since rev 8, on C1 the sets print `$P/sets/*_c1r8.txt` and
+    M-20's with d01 to d04 `$P/probes_c1r8.txt`: every variadic-impl probe
+    reports `each-name binding in an impl's implicit parameter list` and nothing
+    else (pl0 and pl1 with the prelude proxy also the names the proxied file
+    then fails to provide), and from C2 on each prints rev 4's again (M-22)
+    (amended 2026-10-26, review fold: RR7-M4).
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4.
 4.  **Watch-outs.** A variadic impl is a candidate for every tuple query
     (R-4), so a non-tuple argument must fail deduction, never walk a tuple's
@@ -5525,74 +5847,151 @@ of this amendment:
     commits since F0, and `git -C /home/user/carbon-va2 status --short` is
     empty. Read upstream's tip (`git -C /home/user/carbon-va2 fetch upstream
     trunk` and `git -C /home/user/carbon-va2 ls-remote upstream
-    refs/heads/trunk`) and record it in the stage's log: rev 7 read 600fd55ba; a
-    later tip is listed with the files it changes since 600fd55ba, and it is a
-    difference if it changes check/check_unit.cpp, check/convert.cpp,
-    check/handle_pack_expansion.cpp, sem_ir/type_iterator.cpp,
-    lower/handle_pack_expansion.cpp, a file that M-20, §2.7 or §7.2's A-11
-    cites, or a design page of the header's list.
-2.  Apply `$M/c1_rev7.patch` (`git -C /home/user/carbon-va2 apply --check`, then
-    `git apply`): 33 files, 1491 insertions and 118 deletions against 8a7395cf1,
-    the paths of `$M/c1_rev7_files.txt`. It is the stopped run's saved state
-    (C1's hunks by §2.1 and §2.2, C1's own changes, clang-format's re-wrapping
-    and §A.11's C1 sources), §2.2's rev 7 block and §A.11's four amended C1
-    splits. Check it against this plan first: §2.2's block, extracted, applies
-    with `git apply --check` on 8a7395cf1 with the saved state, and the five new
-    goldens are §A.11's text, fail_todo_va2.carbon with its first fourteen
-    splits and traits.h; a mismatch is a difference.
+    refs/heads/trunk`) and record it in the stage's log: rev 8 read 57bf903ef,
+    where rev 7 read 600fd55ba (M-22); a later tip is listed with the files it
+    changes since 57bf903ef, and it is a difference if it changes
+    check/check_unit.cpp, check/generic.cpp or generic.h, check/convert.cpp,
+    check/handle_pack_expansion.cpp, check/handle_binding_pattern.cpp,
+    sem_ir/type_iterator.cpp, lower/handle_pack_expansion.cpp, a file that
+    M-20, §2.7 or §7.2's A-11 cites, or a design page of the header's list
+    (amended 2026-10-26, review fold: RR7-M3).
+2.  Apply `$P/c1_rev8.patch` (`git -C /home/user/carbon-va2 apply --check`, then
+    `git apply`): 33 files, 1501 insertions and 118 deletions against 8a7395cf1,
+    the paths of `$P/c1_rev8_files.txt`, which are `$M/c1_rev7_files.txt`'s
+    (rev 7 named `$M/c1_rev7.patch`, 1491 and 118) (amended 2026-10-26, review
+    fold: RR7-M4). It is the stopped run's saved state (C1's hunks by §2.1 and
+    §2.2, C1's own changes, clang-format's re-wrapping and §A.11's C1 sources),
+    §2.2's rev 7 block, §A.11's four amended C1 splits and, since rev 8, §2.2's
+    rev 8 block. Check it against this plan first: §2.2's rev 7 block,
+    extracted, applies with `git apply --check` on 8a7395cf1 with the saved
+    state, §2.2's rev 8 block on 8a7395cf1 with `$M/c1_rev7.patch`, and the
+    five new goldens are §A.11's text, fail_todo_va2.carbon with its first
+    fourteen splits and traits.h; a mismatch is a difference.
 3.  `/home/user/llvm/bin/clang-format --dry-run --Werror` on C1's .cpp and .h
     files exits 0, and prek with a private `XDG_CACHE_HOME` and §8.6's SKIP list
     on the 33 files passes and changes nothing (measured,
-    `$M/logs/prek_c1_1.log`).
+    `$M/logs/prek_c1_1.log`, and on rev 8's `$P/logs/prek_c1r8.log`) (amended
+    2026-10-26, review fold: RR7-M4).
 4.  clang-tidy, §8.6's two passes, over C1's 21 .cpp files
     (`$N/c1_cpp_files.txt`) with the build's flags, the second line-filtered to
     the lines changed since b0822a744: exit 0 and no diagnostic (the stopped
-    run's `$N/tidy`, and `$M/tidy` for the two files the block changes).
+    run's `$N/tidy`, `$M/tidy` for the two files the rev 7 block changes, and
+    `$P/tidy` for handle_binding_pattern.cpp, which the rev 8 block changes)
+    (amended 2026-10-26, review fold: RR7-M4).
 5.  Commit C1 with the 33 explicit paths, §3's title "VA-2 C1: packs of
-    different types in implicit parameter lists" and its message as rev 7 amends
+    different types in implicit parameter lists" and its message as rev 8 amends
     it, §3's author and committer, and the two session trailers after a blank
     line; `git -C /home/user/carbon-va2 rev-parse HEAD:toolchain` prints
-    57d89a880239dee5283f1a69b5ca6a9e2a8bc32d.
+    2ec40431dad02ac27ac2cffaaf7889e03b2643bd (rev 7's C1, without the rev 8
+    block, gives 57d89a880239dee5283f1a69b5ca6a9e2a8bc32d) (amended 2026-10-26,
+    review fold: RR7-M4).
 6.  `build.sh` and `install.sh`: a full build (typed_insts.h changes) with 0
     warnings, replacing the stopped run's install; `carbon version` prints C1's
     short hash.
-7.  `gate.sh`: "1956 passed, 10 failed", the ten files of §3 item 3, with no
-    crash.
+7.  `gate.sh`: "1957 passed, 9 failed", with no crash, the nine being
+    check/variadics' each_param, fail_hetero_pack, fail_todo_slice,
+    fail_todo_va2, forward, hetero_pack and import and lower/variadics'
+    hetero_pack and pack_expansion; generic_pack.carbon passes before its fill
+    (M-22; rev 7 wrote "1956 passed, 10 failed", measured before §A.11's four
+    definitions) (amended 2026-10-26, review fold: RR7-M1).
 8.  Probes: M-20's 36 and d01 to d04, as stage 1 ran them, print
     `$M/probes_v1b.txt` line for line but for a03's indeterminate value, the
     line of a19's and a20's CHECK failure in check/convert.cpp (:2348 there) and
     the paths; the sets of hand-off note 2 (`$H/r/run_rr2.sh`,
     `$G/r/run_set.sh`, `$G/r/probes_all.sh`, or stage 2's copies in `$N/bin`)
-    print `$M/sets/rr2set_v1b.txt`, `set_v1b.txt` and `probesall_v1b.txt` line
-    for line but for paths and that convert.cpp line: rev 4's outputs for C1's
-    probes, and R-14's for C2's forms.
+    print `$P/sets/rr2set_c1r8.txt`, `set_c1r8.txt` and `probesall_c1r8.txt`
+    line for line but for paths and that convert.cpp line: rev 4's outputs for
+    C1's probes, and C1's TODO `each-name binding in an impl's implicit
+    parameter list` for every variadic impl (M-22; rev 7 named
+    `$M/sets/*_v1b.txt`, where those printed RR7-M4's selections), and M-20's
+    with d01 to d04 print `$P/probes_c1r8.txt`, the lines of
+    `$M/probes_v1b.txt` (amended 2026-10-26, review fold: RR7-M4).
 9.  F1: `autoupdate.sh /home/user/carbon-va2` on the ten files, then the same
     again, which changes nothing; each file is byte-identical to
     `$M/fill_rev7_p2/<its path>` and is reviewed against §4's C1 rows as rev 7
-    states them.
+    states them. The fill changes nine files; generic_pack.carbon stays as C1
+    wrote it (M-22) (amended 2026-10-26, review fold: RR7-M1).
 10. `gate.sh`: "1966 passed, 0 failed".
 11. `conformance.sh` with a private cache into a private directory: PASS 137,
     COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
     SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
 12. Commit F1, "Autoupdate testdata goldens on the container arbiter", with the
-    ten paths and the trailers (`git -C /home/user/carbon-va2 rev-parse
-    HEAD:toolchain` prints 913a132b474be56f16581c9ff3b022b35473ff4f), then `git
-    push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan commits
-    since F0, C1 and F1.
+    nine paths the fill changes and the trailers (`git -C /home/user/carbon-va2
+    rev-parse HEAD:toolchain` prints 4f2180492dfcb9bf303bb219d8b5bc8aed85a243,
+    the tree over the ten fill paths on C1 rev 8; rev 7 wrote the ten paths and
+    913a132b474be56f16581c9ff3b022b35473ff4f, a tree without the four VA-1
+    refills, where rev 7's C1 with its fill gives
+    aad2cd31e6bd4c7d0eeffe565b3fbaee8b4ec69b) (amended 2026-10-26, review fold:
+    RR7-M1 / RR7-M2 / RR7-M4), then `git push -u origin
+    claude/carbon-fork-0-1-va2`, which pushes the plan commits since F0, C1 and
+    F1.
 13. Stage 3 (C2) as §3 item 5 says: its built half is
-    `$M/c2_rest_after_v1b.patch` (9 files, applying on C1), with §2.4's code and
-    C2's sources of §A.11 as rev 7 amends them; M-21 records what C1 with C2's
-    built half prints.
+    `$P/c2_rest_after_rev8.patch` (10 files, applying on C1: rev 7's
+    `$M/c2_rest_after_v1b.patch`, 9 files, and §2.3's rev 8 block, which removes
+    C1's refusal) (amended 2026-10-26, review fold: RR7-M4), with §2.4's code
+    and C2's sources of §A.11 as rev 7 amends them; M-21 records what C1 with
+    C2's built half prints, the same tree since rev 8 (M-22).
 
-Predictions, EXPECTED, not of record: the gate 1956 passed and 10 failed after
-C1 and 1966 after F1, then §8.3's 1971, 1973 and 1975; conformance 137/0/21 over
+Predictions, EXPECTED, not of record: the gate 1957 passed and 9 failed after
+C1, where rev 7 predicted 1956 and 10 (amended 2026-10-26, review fold: RR7-M1),
+and 1966 after F1, then §8.3's 1971, 1973 and 1975; conformance 137/0/21 over
 158 after C1 and after C4 alone, and 147/0/21 over 168 after C5, bullets 49/0/7
 of 56; the fill of item 9, the probes of item 8, §4's rows as rev 7 states them,
 and §5's and Appendix A's outputs and C4's predicted churn as rev 4 states them.
 A difference from these is a stop, as §8 says; a03's indeterminate value and the
 convert.cpp line of a19's and a20's CHECK failure are not predictions.
 
+**Rev 8: the re-review of this amendment (2026-10-26).** The focused re-review
+of rev 7 (e0038734f on F0 8a7395cf1) returned APPROVE-WITH-AMENDMENTS with four
+MAJORs and one MINOR; it edited no repository file, kept its logs, sets and
+probes in the directory `amendrr7` beside `$M`, and relinked under
+/dev/shm/va2-amendrr, since deleted. It reproduced D1 (the stopped install
+aborting at type_iterator.cpp:312) and its root cause; extracted §2.2's block
+byte-identical to `$M/c1_moved_hunks_block.patch`, applying on 8a7395cf1 and on
+the saved state; found `$M/c1_rev7.patch` to be the saved state with the block
+and the four definitions (33 files, 1491 insertions and 118 deletions,
+`toolchain` tree 57d89a880), its five goldens §A.11's, and C1 with C2's built
+half the saved state with `$N/c2_proto.patch`; confirmed D2's rule at
+b0822a744:564-581 and 600fd55ba:507-523, D4's cite and §4's D3 and D4 rows; and
+measured conformance 137/0/0/0/0/0/21 of 158 with bullets 49/0/7/0, the two-pass
+fill byte-identical to `$M/fill_rev7_p2` with a second pass that changes
+nothing, M-20's probes with d01 to d04 and the three sets line for line but
+a03's value, clang-format clean, the R31 counts unchanged, and that only
+D-VA2-19 changes and no spelling. Five findings, all folded, none rejected, each
+amended sentence marked "(amended 2026-10-26, review fold: RR7-<finding>)":
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR7-M1 C1's pre-fill gate is 1957 passed and 9 failed, not 1956 and 10 | MAJOR | folded: reproduced on `$M/c1_rev7.patch` relinked (`$P/logs/gate_c1r7_pre.txt`): the nine files, no crash; generic_pack.carbon has no CHECK lines and passes before its fill, so F1 changes nine files and commits nine paths; rev 7's 1956 and 10 were taken on the saved sources before §A.11's four definitions | header, M-21, M-22, F-11, §3 items 3 and 4, §4, §8.3, items 7, 9 and 12 and the predictions |
+| RR7-M2 F1's tree 913a132b4 omits the four VA-1 refills | MAJOR | folded: `$M/fill_rev7_p2`'s ten files over 57d89a880 give aad2cd31e6bd4c7d0eeffe565b3fbaee8b4ec69b, the tree over the ten fill paths; on C1 rev 8 the same fill gives 4f2180492dfcb9bf303bb219d8b5bc8aed85a243, which item 12 checks | M-21, M-22, F-11, item 12 |
+| RR7-M3 upstream's tip 57bf903ef changes check_unit.cpp and generic.cpp | MAJOR | folded: the tip and its files recorded; 106 conflicted paths, the same set, for b0822a744, ca939ee19, 90c34dbaa and C1 rev 8's ca23d0695; D2's rule at check_unit.cpp:521-533; §6.2's new rule 4 puts C1's call in the `NewlyResolved` arm, and F-M refills `fail_todo_cpp_template_on_tuple_of_pack` if its output changes (the finding said L-F, but in §3's names a golden's land-time refill is F-M's and L-F regenerates the table and the program counts); item 1 compares against 57bf903ef | header, M-22, §6.2, §6.3, item 1, R32 below |
+| RR7-M4 R-14 accepts a silent wrong impl selection on C1 where PR 59 reports a TODO | MAJOR | folded by the finding's fix, not R-14's rev 7 break condition (A-13): C1 refuses a compile-time each-name in an impl's implicit list with `semantics TODO: each-name binding in an impl's implicit parameter list` (§2.2's rev 8 block), and C2 removes the refusal (§2.3's rev 8 block); measured on C1 rev 8: the gate 1957 and 9, the fill byte-identical, 1966 after it, conformance unchanged, clang-format, both clang-tidy passes and prek clean, every variadic-impl probe the TODO alone (49 lines of the sets) and every other line rev 7's; C1 rev 8 with C2's built half is rev 7's tree; R-14 rewritten, A-12's falsifier answered, A-13 added; no golden pins the TODO, which only C1 has (R-14's break condition says when one would) | header, M-21, M-22, F-11, D-VA2-19, §2.0, §2.2, §2.3, §3, §4, §7.1, §7.2, §8.0, §8.4, §8.9, hand-off notes 1 and 2, items 2 to 5, 8 and 13 |
+| RR7-m1 C2's message cites no decision for its `specific_constant` sentence | MINOR | folded: C2's cite line names D-VA2-4, M-17, M-21 and M-22 | §3 |
+
+R32 at rev 8: upstream's tip 57bf903ef changes no design page, proposal or
+prelude file since 600fd55ba, so rev 7's reading stands; its check_unit.cpp
+keeps D2's rule, in the `NotDefinedYet` arm (:521-533), which the goldens
+follow. C1's refusal adds no mechanism and no spelling: it is a `semantics TODO`
+for a form whose type structure, the design's "deleting deduced parameters and
+replacing type parameters by a `?`" (docs/design/generics/details.md
+:4688-4689, unchanged at 57bf903ef), C1 does not yet build for a pack segment,
+and C2 removes it (amended 2026-10-26, review fold: RR7-M3 / RR7-M4). The
+instructions above are amended in items 1 to 5, 7 to 9, 12 and 13 and in the
+predictions, each marked, and the stage 2 re-run follows them as they now
+stand. One decision changes, D-VA2-19 again, by the refusal and its break
+condition; D-VA2-1 to D-VA2-18 hold as written, Appendix B and every count of
+§8.3 and §8.4 stand but C1's gate before its fill, now 1957 and 9, and no W id
+is minted (M-22 numbers a measurement).
+
 ## Sign-off
+
+Rev 8 (2026-10-26) folds the focused re-review of rev 7 (RR7,
+APPROVE-WITH-AMENDMENTS: four MAJORs and one MINOR, all folded, none rejected),
+as the rev 8 part of the "Stop-and-amend record (rev 7, 2026-10-26)" states
+(amended 2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M3 / RR7-M4 / RR7-m1):
+the verdict is not REJECT, so rev 4's sign-off, as amended by rev 5 to rev 8,
+stands, the table's RR7 row names rev 7's commit, e0038734f, and stage 2
+re-runs with the record's instructions as rev 8 amends them.
 
 Rev 7 (2026-10-26) amends rev 6 for the implementation's stop-and-amend at stage
 2, which the record above states (amended 2026-10-26, implementation:
@@ -5629,11 +6028,14 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review 1 (RR1) | rev 2 (78524522b) | REJECT | 1 | 1 | 3 | 5 | rev 3 (8d377a06d): all folded, none rejected |
 | Focused re-review 2 (RR2) | rev 3 (8d377a06d) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 4 (7188540ca): all folded, none rejected |
 | Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (4d5388af2): all folded, none rejected |
-| Total | | | 6 | 13 | 19 | 38 | 38 folded, 0 rejected (37 distinct) |
+| Focused re-review of the amendment (RR7) | rev 7 (e0038734f) | APPROVE-WITH-AMENDMENTS | 0 | 4 | 1 | 5 | rev 8 (this revision): all folded, none rejected |
+| Total | | | 6 | 17 | 20 | 43 | 43 folded, 0 rejected (42 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
-38 findings as reported are 37 distinct ones (34 and 33 before rev 6 (amended
-2026-10-26, review fold: RR5-M1 / RR5-m1 / RR5-m2 / RR5-m3)); rev 2's record
+43 findings as reported are 42 distinct ones (38 and 37 before rev 8 (amended
+2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M3 / RR7-M4 / RR7-m1), 34 and 33
+before rev 6 (amended 2026-10-26, review fold: RR5-M1 / RR5-m1 / RR5-m2 /
+RR5-m3)); rev 2's record
 counts two of reviews A's and B's 25 as folded in part, with evidence (B-m5 is
 one). The records of each fold are the "Review fold record" sections above and
 the stop-and-amend record.

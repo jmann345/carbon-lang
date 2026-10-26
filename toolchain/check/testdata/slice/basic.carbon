@@ -151,6 +151,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %To: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%To) [symbolic]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.845: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.a2a: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.1aa, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_32) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ba: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_32) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ba = struct_value () [concrete]
@@ -194,6 +195,8 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N.fe9) [symbolic]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.3f6: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.4f6: %Int.as.Copy.impl.Op.type.3f6 = struct_value () [concrete]
 // CHECK:STDOUT:   %self.param_patt.705: %pattern_type.6b6 = ref_param_pattern [concrete]
 // CHECK:STDOUT:   %self.patt.70d: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt.705 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc13_24 [concrete]
@@ -216,22 +219,28 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Slice.FromArray.specific_fn: <specific function> = specific_function %Slice.FromArray.671, @Slice.FromArray(%facet_value, %int_4.0c1) [concrete]
 // CHECK:STDOUT:   %IndexWith.type.df6: type = generic_interface_type @IndexWith [concrete]
 // CHECK:STDOUT:   %IndexWith.generic: %IndexWith.type.df6 = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.type.3ea: type = facet_type <@IndexWith, @IndexWith(%i64)> [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.type.b97: type = fn_type @Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl(%T.dc4) [symbolic]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.6f3: %Slice.as.IndexWith.impl.At.type.b97 = struct_value () [symbolic]
-// CHECK:STDOUT:   %IndexWith.impl_witness.825: <witness> = impl_witness imports.%IndexWith.impl_witness_table, @Slice.as.IndexWith.impl(%facet_value) [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.type.b04: type = fn_type @Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl(%facet_value) [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.e56: %Slice.as.IndexWith.impl.At.type.b04 = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.841: type = generic_interface_type @IndirectIndexWith [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.generic: %IndirectIndexWith.type.841 = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.fb1: type = facet_type <@IndirectIndexWith, @IndirectIndexWith(%i64)> [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.type.202: type = fn_type @Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.baf: %Slice.as.IndirectIndexWith.impl.Ref.type.202 = struct_value () [symbolic]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness.365: <witness> = impl_witness imports.%IndirectIndexWith.impl_witness_table, @Slice.as.IndirectIndexWith.impl(%facet_value) [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.type.e1d: type = fn_type @Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl(%facet_value) [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.517: %Slice.as.IndirectIndexWith.impl.Ref.type.e1d = struct_value () [concrete]
 // CHECK:STDOUT:   %ImplicitAs.facet.235: %ImplicitAs.type.221 = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.227) [concrete]
 // CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.da7: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%i64, %ImplicitAs.facet.235) [concrete]
 // CHECK:STDOUT:   %.03f: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.da7, %ImplicitAs.facet.235 [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.89f: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.c5e: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.f33 [concrete]
 // CHECK:STDOUT:   %int_1.d98: %i64 = int_value 1 [concrete]
-// CHECK:STDOUT:   %IndexWith.facet: %IndexWith.type.3ea = facet_value %Slice.079, (%IndexWith.impl_witness.825) [concrete]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.type.14a: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(%i64, %IndexWith.facet) [concrete]
-// CHECK:STDOUT:   %.195: type = fn_type_with_self_type %IndexWith.WithSelf.At.type.14a, %IndexWith.facet [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Slice.as.IndexWith.impl.At.e56, @Slice.as.IndexWith.impl.At(%facet_value) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.facet.3cf: %IndirectIndexWith.type.fb1 = facet_value %Slice.079, (%IndirectIndexWith.impl_witness.365) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.WithSelf.Ref.type.5f5: type = fn_type @IndirectIndexWith.WithSelf.Ref, @IndirectIndexWith.WithSelf(%i64, %IndirectIndexWith.facet.3cf) [concrete]
+// CHECK:STDOUT:   %.fd1: type = fn_type_with_self_type %IndirectIndexWith.WithSelf.Ref.type.5f5, %IndirectIndexWith.facet.3cf [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.specific_fn: <specific function> = specific_function %Slice.as.IndirectIndexWith.impl.Ref.517, @Slice.as.IndirectIndexWith.impl.Ref(%facet_value) [concrete]
+// CHECK:STDOUT:   %Copy.facet.1e1: %Copy.type = facet_value %i32, (%Copy.impl_witness.b51) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.381: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.1e1) [concrete]
+// CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet.1e1 [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.f00: type = pattern_type %ptr.d08 [concrete]
 // CHECK:STDOUT:   %self.param_patt.af0: %pattern_type.f00 = ref_param_pattern [concrete]
 // CHECK:STDOUT:   %self.patt.954: %pattern_type.f00 = wrapper_binding_pattern self, %self.param_patt.af0 [concrete]
@@ -280,6 +289,8 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:     .ImplicitAs = %Core.ImplicitAs
 // CHECK:STDOUT:     .Slice = %Core.Slice
 // CHECK:STDOUT:     .IndexWith = %Core.IndexWith
+// CHECK:STDOUT:     .IndirectIndexWith = %Core.IndirectIndexWith
+// CHECK:STDOUT:     .Copy = %Core.Copy
 // CHECK:STDOUT:     .Destroy = %Core.Destroy
 // CHECK:STDOUT:     import Core//prelude
 // CHECK:STDOUT:     import Core//prelude/...
@@ -296,8 +307,10 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT:   %Core.IndexWith: %IndexWith.type.df6 = import_ref Core//prelude/operators/index, IndexWith, loaded [concrete = constants.%IndexWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.ef4 = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.d81: @Slice.as.IndexWith.impl.%Slice.as.IndexWith.impl.At.type (%Slice.as.IndexWith.impl.At.type.b97) = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, loaded [symbolic = @Slice.as.IndexWith.impl.%Slice.as.IndexWith.impl.At (constants.%Slice.as.IndexWith.impl.At.6f3)]
-// CHECK:STDOUT:   %IndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.ef4, %Core.import_ref.d81), @Slice.as.IndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.78b: @Slice.as.IndirectIndexWith.impl.%Slice.as.IndirectIndexWith.impl.Ref.type (%Slice.as.IndirectIndexWith.impl.Ref.type.202) = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, loaded [symbolic = @Slice.as.IndirectIndexWith.impl.%Slice.as.IndirectIndexWith.impl.Ref (constants.%Slice.as.IndirectIndexWith.impl.Ref.baf)]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.ef4, %Core.import_ref.78b), @Slice.as.IndirectIndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.IndirectIndexWith: %IndirectIndexWith.type.841 = import_ref Core//prelude/operators/index, IndirectIndexWith, loaded [concrete = constants.%IndirectIndexWith.generic]
+// CHECK:STDOUT:   %Core.Copy: type = import_ref Core//prelude/copy, Copy, loaded [concrete = constants.%Copy.type]
 // CHECK:STDOUT:   %Core.Destroy: type = import_ref Core//prelude/destroy, Destroy, loaded [concrete = constants.%Destroy.type]
 // CHECK:STDOUT:   %Core.import_ref.9cc = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %field_decl.96e: @Slice.%Slice.elem.2 (%Slice.elem.756) = field_decl size, element1, %Core.import_ref.9cc in [concrete] {}
@@ -494,23 +507,29 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %s.ref: %Slice.079 = name_ref s, %s
 // CHECK:STDOUT:   %int_1.loc14: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
-// CHECK:STDOUT:   %impl.elem0.loc14: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
-// CHECK:STDOUT:   %bound_method.loc14_12.1: <bound method> = bound_method %int_1.loc14, %impl.elem0.loc14 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.89f]
-// CHECK:STDOUT:   %specific_fn.loc14_12: <specific function> = specific_function %impl.elem0.loc14, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.f33]
+// CHECK:STDOUT:   %impl.elem0.loc14_12: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
+// CHECK:STDOUT:   %bound_method.loc14_12.1: <bound method> = bound_method %int_1.loc14, %impl.elem0.loc14_12 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.89f]
+// CHECK:STDOUT:   %specific_fn.loc14_12: <specific function> = specific_function %impl.elem0.loc14_12, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.f33]
 // CHECK:STDOUT:   %bound_method.loc14_12.2: <bound method> = bound_method %int_1.loc14, %specific_fn.loc14_12 [concrete = constants.%bound_method.c5e]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc14: init %i64 = call %bound_method.loc14_12.2(%int_1.loc14) [concrete = constants.%int_1.d98]
 // CHECK:STDOUT:   %.loc14_12.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc14 [concrete = constants.%int_1.d98]
 // CHECK:STDOUT:   %.loc14_12.2: %i64 = converted %int_1.loc14, %.loc14_12.1 [concrete = constants.%int_1.d98]
-// CHECK:STDOUT:   %impl.elem1: %.195 = impl_witness_access constants.%IndexWith.impl_witness.825, element1 [concrete = constants.%Slice.as.IndexWith.impl.At.e56]
+// CHECK:STDOUT:   %impl.elem1: %.fd1 = impl_witness_access constants.%IndirectIndexWith.impl_witness.365, element1 [concrete = constants.%Slice.as.IndirectIndexWith.impl.Ref.517]
 // CHECK:STDOUT:   %bound_method.loc14_13.1: <bound method> = bound_method %s.ref, %impl.elem1
-// CHECK:STDOUT:   %specific_fn.loc14_13: <specific function> = specific_function %impl.elem1, @Slice.as.IndexWith.impl.At(constants.%facet_value) [concrete = constants.%Slice.as.IndexWith.impl.At.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc14_13.2: <bound method> = bound_method %s.ref, %specific_fn.loc14_13
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.call: init %i32 = call %bound_method.loc14_13.2(%s.ref, %.loc14_12.2)
+// CHECK:STDOUT:   %specific_fn.loc14_13.1: <specific function> = specific_function %impl.elem1, @Slice.as.IndirectIndexWith.impl.Ref(constants.%facet_value) [concrete = constants.%Slice.as.IndirectIndexWith.impl.Ref.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc14_13.2: <bound method> = bound_method %s.ref, %specific_fn.loc14_13.1
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.call: ref %i32 = call %bound_method.loc14_13.2(%s.ref, %.loc14_12.2)
+// CHECK:STDOUT:   %.loc14_13: %i32 = acquire_value %Slice.as.IndirectIndexWith.impl.Ref.call
+// CHECK:STDOUT:   %impl.elem0.loc14_13: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
+// CHECK:STDOUT:   %bound_method.loc14_13.3: <bound method> = bound_method %.loc14_13, %impl.elem0.loc14_13
+// CHECK:STDOUT:   %specific_fn.loc14_13.2: <specific function> = specific_function %impl.elem0.loc14_13, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc14_13.4: <bound method> = bound_method %.loc14_13, %specific_fn.loc14_13.2
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc14_13.4(%.loc14_13)
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc13: <bound method> = bound_method %.loc13_56.4, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.5
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc13: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc13(%.loc13_56.4)
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc12: <bound method> = bound_method %a.var, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.6
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc12: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc12(%a.var)
-// CHECK:STDOUT:   return %Slice.as.IndexWith.impl.At.call
+// CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc13_24(%self.param: ref %i32) = "no_op";
@@ -630,6 +649,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
 // CHECK:STDOUT:   %N.fe9: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %facet_type: type = facet_type <@Destroy & @Copy> [concrete]
 // CHECK:STDOUT:   %T.283: %facet_type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
@@ -650,6 +670,8 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N.fe9) [symbolic]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.3f6: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.4f6: %Int.as.Copy.impl.Op.type.3f6 = struct_value () [concrete]
 // CHECK:STDOUT:   %facet_value: %facet_type = facet_value %i32, (%custom_witness.f8f, %Copy.impl_witness.b51) [concrete]
 // CHECK:STDOUT:   %Slice.649: type = class_type @Slice, @Slice(%facet_value) [concrete]
 // CHECK:STDOUT:   %pattern_type.bbd: type = pattern_type %Slice.649 [concrete]
@@ -660,25 +682,30 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %G.type: type = fn_type @G [concrete]
 // CHECK:STDOUT:   %G: %G.type = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.type.df6: type = generic_interface_type @IndexWith [concrete]
-// CHECK:STDOUT:   %IndexWith.generic: %IndexWith.type.df6 = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.type.3ea: type = facet_type <@IndexWith, @IndexWith(%i64)> [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.type.e30: type = fn_type @Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl(%T.283) [symbolic]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.09b: %Slice.as.IndexWith.impl.At.type.e30 = struct_value () [symbolic]
-// CHECK:STDOUT:   %IndexWith.impl_witness.689: <witness> = impl_witness imports.%IndexWith.impl_witness_table, @Slice.as.IndexWith.impl(%facet_value) [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.type.b83: type = fn_type @Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl(%facet_value) [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.3a6: %Slice.as.IndexWith.impl.At.type.b83 = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.facet: %IndexWith.type.3ea = facet_value %Slice.649, (%IndexWith.impl_witness.689) [concrete]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.type.aaa: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(%i64, %IndexWith.facet) [concrete]
-// CHECK:STDOUT:   %.9ae: type = fn_type_with_self_type %IndexWith.WithSelf.At.type.aaa, %IndexWith.facet [concrete]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Slice.as.IndexWith.impl.At.3a6, @Slice.as.IndexWith.impl.At(%facet_value) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.841: type = generic_interface_type @IndirectIndexWith [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.generic: %IndirectIndexWith.type.841 = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.fb1: type = facet_type <@IndirectIndexWith, @IndirectIndexWith(%i64)> [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.type.ef1: type = fn_type @Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl(%T.283) [symbolic]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.a92: %Slice.as.IndirectIndexWith.impl.Ref.type.ef1 = struct_value () [symbolic]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness.9b2: <witness> = impl_witness imports.%IndirectIndexWith.impl_witness_table, @Slice.as.IndirectIndexWith.impl(%facet_value) [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.type.08d: type = fn_type @Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl(%facet_value) [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.00b: %Slice.as.IndirectIndexWith.impl.Ref.type.08d = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.facet: %IndirectIndexWith.type.fb1 = facet_value %Slice.649, (%IndirectIndexWith.impl_witness.9b2) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.WithSelf.Ref.type.ae1: type = fn_type @IndirectIndexWith.WithSelf.Ref, @IndirectIndexWith.WithSelf(%i64, %IndirectIndexWith.facet) [concrete]
+// CHECK:STDOUT:   %.ed2: type = fn_type_with_self_type %IndirectIndexWith.WithSelf.Ref.type.ae1, %IndirectIndexWith.facet [concrete]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.specific_fn: <specific function> = specific_function %Slice.as.IndirectIndexWith.impl.Ref.00b, @Slice.as.IndirectIndexWith.impl.Ref(%facet_value) [concrete]
+// CHECK:STDOUT:   %Copy.facet.1e1: %Copy.type = facet_value %i32, (%Copy.impl_witness.b51) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.381: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.1e1) [concrete]
+// CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet.1e1 [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core: <namespace> = namespace file.%Core.import, [concrete] {
 // CHECK:STDOUT:     .Slice = %Core.Slice
 // CHECK:STDOUT:     .Int = %Core.Int
-// CHECK:STDOUT:     .IndexWith = %Core.IndexWith
+// CHECK:STDOUT:     .IndirectIndexWith = %Core.IndirectIndexWith
+// CHECK:STDOUT:     .Copy = %Core.Copy
 // CHECK:STDOUT:     import Core//prelude
 // CHECK:STDOUT:     import Core//prelude/...
 // CHECK:STDOUT:   }
@@ -686,10 +713,11 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
 // CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
 // CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
-// CHECK:STDOUT:   %Core.IndexWith: %IndexWith.type.df6 = import_ref Core//prelude/operators/index, IndexWith, loaded [concrete = constants.%IndexWith.generic]
+// CHECK:STDOUT:   %Core.IndirectIndexWith: %IndirectIndexWith.type.841 = import_ref Core//prelude/operators/index, IndirectIndexWith, loaded [concrete = constants.%IndirectIndexWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.ef4 = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.868: @Slice.as.IndexWith.impl.%Slice.as.IndexWith.impl.At.type (%Slice.as.IndexWith.impl.At.type.e30) = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, loaded [symbolic = @Slice.as.IndexWith.impl.%Slice.as.IndexWith.impl.At (constants.%Slice.as.IndexWith.impl.At.09b)]
-// CHECK:STDOUT:   %IndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.ef4, %Core.import_ref.868), @Slice.as.IndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.440: @Slice.as.IndirectIndexWith.impl.%Slice.as.IndirectIndexWith.impl.Ref.type (%Slice.as.IndirectIndexWith.impl.Ref.type.ef1) = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, loaded [symbolic = @Slice.as.IndirectIndexWith.impl.%Slice.as.IndirectIndexWith.impl.Ref (constants.%Slice.as.IndirectIndexWith.impl.Ref.a92)]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.ef4, %Core.import_ref.440), @Slice.as.IndirectIndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.Copy: type = import_ref Core//prelude/copy, Copy, loaded [concrete = constants.%Copy.type]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: generated {
@@ -753,12 +781,18 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %s.ref: %Slice.649 = name_ref s, %s
 // CHECK:STDOUT:   %i.ref: %i64 = name_ref i, %i
-// CHECK:STDOUT:   %impl.elem1: %.9ae = impl_witness_access constants.%IndexWith.impl_witness.689, element1 [concrete = constants.%Slice.as.IndexWith.impl.At.3a6]
+// CHECK:STDOUT:   %impl.elem1: %.ed2 = impl_witness_access constants.%IndirectIndexWith.impl_witness.9b2, element1 [concrete = constants.%Slice.as.IndirectIndexWith.impl.Ref.00b]
 // CHECK:STDOUT:   %bound_method.loc9_13.1: <bound method> = bound_method %s.ref, %impl.elem1
-// CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem1, @Slice.as.IndexWith.impl.At(constants.%facet_value) [concrete = constants.%Slice.as.IndexWith.impl.At.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc9_13.2: <bound method> = bound_method %s.ref, %specific_fn
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.call: init %i32 = call %bound_method.loc9_13.2(%s.ref, %i.ref)
-// CHECK:STDOUT:   return %Slice.as.IndexWith.impl.At.call
+// CHECK:STDOUT:   %specific_fn.loc9_13.1: <specific function> = specific_function %impl.elem1, @Slice.as.IndirectIndexWith.impl.Ref(constants.%facet_value) [concrete = constants.%Slice.as.IndirectIndexWith.impl.Ref.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc9_13.2: <bound method> = bound_method %s.ref, %specific_fn.loc9_13.1
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.call: ref %i32 = call %bound_method.loc9_13.2(%s.ref, %i.ref)
+// CHECK:STDOUT:   %.loc9: %i32 = acquire_value %Slice.as.IndirectIndexWith.impl.Ref.call
+// CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
+// CHECK:STDOUT:   %bound_method.loc9_13.3: <bound method> = bound_method %.loc9, %impl.elem0
+// CHECK:STDOUT:   %specific_fn.loc9_13.2: <specific function> = specific_function %impl.elem0, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc9_13.4: <bound method> = bound_method %.loc9, %specific_fn.loc9_13.2
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc9_13.4(%.loc9)
+// CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- subslice_and_size.carbon
@@ -2170,7 +2204,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %.Self.frozen.e58: type = symbolic_binding .Self [symbolic_self]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
 // CHECK:STDOUT:   %BitAndWith.type.a06: type = generic_interface_type @BitAndWith [concrete]
@@ -2210,6 +2244,12 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b, @Core.IntLiteral.as.ImplicitAs.impl.Convert(%int_64) [concrete]
 // CHECK:STDOUT:   %require_complete.dda: <witness> = require_complete_type %Slice [symbolic]
 // CHECK:STDOUT:   %.273: Core.Form = init_form %T.as_type.5d6 [symbolic]
+// CHECK:STDOUT:   %Copy.lookup_impl_witness.fd8: <witness> = lookup_impl_witness %T.dc4, @Copy [symbolic]
+// CHECK:STDOUT:   %Copy.facet.40c: %Copy.type = facet_value %T.as_type.5d6, (%Copy.lookup_impl_witness.fd8) [symbolic]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.39e: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.40c) [symbolic]
+// CHECK:STDOUT:   %.843: type = fn_type_with_self_type %Copy.WithSelf.Op.type.39e, %Copy.facet.40c [symbolic]
+// CHECK:STDOUT:   %impl.elem0.f20: %.843 = impl_witness_access %Copy.lookup_impl_witness.fd8, element0 [symbolic]
+// CHECK:STDOUT:   %specific_impl_fn.6a5: <specific function> = specific_impl_function %impl.elem0.f20, @Copy.WithSelf.Op(%Copy.facet.40c) [symbolic]
 // CHECK:STDOUT:   %require_complete.091: <witness> = require_complete_type %T.as_type.5d6 [symbolic]
 // CHECK:STDOUT:   %s.param_patt: %pattern_type.f90 = value_param_pattern [symbolic]
 // CHECK:STDOUT:   %s.patt: %pattern_type.f90 = wrapper_binding_pattern s, %s.param_patt [symbolic]
@@ -2219,21 +2259,23 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %int_0.5c6: Core.IntLiteral = int_value 0 [concrete]
 // CHECK:STDOUT:   %IndexWith.type.df6: type = generic_interface_type @IndexWith [concrete]
 // CHECK:STDOUT:   %IndexWith.generic: %IndexWith.type.df6 = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.type.3ea: type = facet_type <@IndexWith, @IndexWith(%i64)> [concrete]
-// CHECK:STDOUT:   %IndexWith.impl_witness: <witness> = impl_witness imports.%IndexWith.impl_witness_table, @Slice.as.IndexWith.impl(%T.dc4) [symbolic]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.type: type = fn_type @Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl(%T.dc4) [symbolic]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At: %Slice.as.IndexWith.impl.At.type = struct_value () [symbolic]
-// CHECK:STDOUT:   %.b7e: require_specific_def_type = require_specific_def @Slice.as.IndexWith.impl(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %IndirectIndexWith.type.841: type = generic_interface_type @IndirectIndexWith [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.generic: %IndirectIndexWith.type.841 = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.fb1: type = facet_type <@IndirectIndexWith, @IndirectIndexWith(%i64)> [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness: <witness> = impl_witness imports.%IndirectIndexWith.impl_witness_table, @Slice.as.IndirectIndexWith.impl(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.type: type = fn_type @Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref: %Slice.as.IndirectIndexWith.impl.Ref.type = struct_value () [symbolic]
+// CHECK:STDOUT:   %.d34: require_specific_def_type = require_specific_def @Slice.as.IndirectIndexWith.impl(%T.dc4) [symbolic]
 // CHECK:STDOUT:   %ImplicitAs.facet: %ImplicitAs.type.221 = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.227) [concrete]
 // CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.da7: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%i64, %ImplicitAs.facet) [concrete]
 // CHECK:STDOUT:   %.03f: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.da7, %ImplicitAs.facet [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.0a3: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.0c1: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_0.2e4: %i64 = int_value 0 [concrete]
-// CHECK:STDOUT:   %IndexWith.facet: %IndexWith.type.3ea = facet_value %Slice, (%IndexWith.impl_witness) [symbolic]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.type.8f4: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(%i64, %IndexWith.facet) [symbolic]
-// CHECK:STDOUT:   %.4ff: type = fn_type_with_self_type %IndexWith.WithSelf.At.type.8f4, %IndexWith.facet [symbolic]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl.At(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %IndirectIndexWith.facet.c9c: %IndirectIndexWith.type.fb1 = facet_value %Slice, (%IndirectIndexWith.impl_witness) [symbolic]
+// CHECK:STDOUT:   %IndirectIndexWith.WithSelf.Ref.type.03f: type = fn_type @IndirectIndexWith.WithSelf.Ref, @IndirectIndexWith.WithSelf(%i64, %IndirectIndexWith.facet.c9c) [symbolic]
+// CHECK:STDOUT:   %.dd7: type = fn_type_with_self_type %IndirectIndexWith.WithSelf.Ref.type.03f, %IndirectIndexWith.facet.c9c [symbolic]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.specific_fn: <specific function> = specific_function %Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl.Ref(%T.dc4) [symbolic]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -2244,6 +2286,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:     .Slice = %Core.Slice
 // CHECK:STDOUT:     .IndexWith = %Core.IndexWith
 // CHECK:STDOUT:     .Int = %Core.Int
+// CHECK:STDOUT:     .IndirectIndexWith = %Core.IndirectIndexWith
 // CHECK:STDOUT:     .ImplicitAs = %Core.ImplicitAs
 // CHECK:STDOUT:     import Core//prelude
 // CHECK:STDOUT:     import Core//prelude/...
@@ -2259,9 +2302,10 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.717), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
 // CHECK:STDOUT:   %Core.IndexWith: %IndexWith.type.df6 = import_ref Core//prelude/operators/index, IndexWith, loaded [concrete = constants.%IndexWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.ef4 = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.d81: @Slice.as.IndexWith.impl.%Slice.as.IndexWith.impl.At.type (%Slice.as.IndexWith.impl.At.type) = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, loaded [symbolic = @Slice.as.IndexWith.impl.%Slice.as.IndexWith.impl.At (constants.%Slice.as.IndexWith.impl.At)]
-// CHECK:STDOUT:   %IndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.ef4, %Core.import_ref.d81), @Slice.as.IndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.78b: @Slice.as.IndirectIndexWith.impl.%Slice.as.IndirectIndexWith.impl.Ref.type (%Slice.as.IndirectIndexWith.impl.Ref.type) = import_ref Core//prelude/types/slice, loc{{\d+_\d+}}, loaded [symbolic = @Slice.as.IndirectIndexWith.impl.%Slice.as.IndirectIndexWith.impl.Ref (constants.%Slice.as.IndirectIndexWith.impl.Ref)]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.ef4, %Core.import_ref.78b), @Slice.as.IndirectIndexWith.impl [concrete]
 // CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
+// CHECK:STDOUT:   %Core.IndirectIndexWith: %IndirectIndexWith.type.841 = import_ref Core//prelude/operators/index, IndirectIndexWith, loaded [concrete = constants.%IndirectIndexWith.generic]
 // CHECK:STDOUT:   %Core.ImplicitAs: %ImplicitAs.type.0ff = import_ref Core//prelude/operators/as, ImplicitAs, loaded [concrete = constants.%ImplicitAs.generic]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2278,7 +2322,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:     %.loc13_60.3: type = converted %T.ref.loc13_60, %T.as_type.loc13_60.2 [symbolic = %T.as_type.loc13_60.1 (constants.%T.as_type.5d6)]
 // CHECK:STDOUT:     %.loc13_60.4: Core.Form = init_form %.loc13_60.3 [symbolic = %.loc13_60.2 (constants.%.273)]
 // CHECK:STDOUT:     %.loc13_23.1: type = splice_block %.loc13_23.3 [concrete = constants.%facet_type.a1a] {
-// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.e58]
 // CHECK:STDOUT:       %Core.ref.loc13_13: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
 // CHECK:STDOUT:       %Copy.ref: type = name_ref Copy, imports.%Core.Copy [concrete = constants.%Copy.type]
 // CHECK:STDOUT:       %Core.ref.loc13_25: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
@@ -2319,33 +2363,49 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete.loc13_40: <witness> = require_complete_type %Slice.loc13_54.1 [symbolic = %require_complete.loc13_40 (constants.%require_complete.dda)]
 // CHECK:STDOUT:   %require_complete.loc13_57: <witness> = require_complete_type %T.as_type.loc13_60.1 [symbolic = %require_complete.loc13_57 (constants.%require_complete.091)]
-// CHECK:STDOUT:   %.loc14_13.1: require_specific_def_type = require_specific_def @Slice.as.IndexWith.impl(%T.loc13_11.1) [symbolic = %.loc14_13.1 (constants.%.b7e)]
-// CHECK:STDOUT:   %IndexWith.impl_witness: <witness> = impl_witness imports.%IndexWith.impl_witness_table, @Slice.as.IndexWith.impl(%T.loc13_11.1) [symbolic = %IndexWith.impl_witness (constants.%IndexWith.impl_witness)]
-// CHECK:STDOUT:   %IndexWith.facet: %IndexWith.type.3ea = facet_value %Slice.loc13_54.1, (%IndexWith.impl_witness) [symbolic = %IndexWith.facet (constants.%IndexWith.facet)]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.type: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(constants.%i64, %IndexWith.facet) [symbolic = %IndexWith.WithSelf.At.type (constants.%IndexWith.WithSelf.At.type.8f4)]
-// CHECK:STDOUT:   %.loc14_13.2: type = fn_type_with_self_type %IndexWith.WithSelf.At.type, %IndexWith.facet [symbolic = %.loc14_13.2 (constants.%.4ff)]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.type: type = fn_type @Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl(%T.loc13_11.1) [symbolic = %Slice.as.IndexWith.impl.At.type (constants.%Slice.as.IndexWith.impl.At.type)]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At: @First.%Slice.as.IndexWith.impl.At.type (%Slice.as.IndexWith.impl.At.type) = struct_value () [symbolic = %Slice.as.IndexWith.impl.At (constants.%Slice.as.IndexWith.impl.At)]
-// CHECK:STDOUT:   %Slice.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Slice.as.IndexWith.impl.At, @Slice.as.IndexWith.impl.At(%T.loc13_11.1) [symbolic = %Slice.as.IndexWith.impl.At.specific_fn (constants.%Slice.as.IndexWith.impl.At.specific_fn)]
+// CHECK:STDOUT:   %.loc14_13.4: require_specific_def_type = require_specific_def @Slice.as.IndirectIndexWith.impl(%T.loc13_11.1) [symbolic = %.loc14_13.4 (constants.%.d34)]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness: <witness> = impl_witness imports.%IndirectIndexWith.impl_witness_table, @Slice.as.IndirectIndexWith.impl(%T.loc13_11.1) [symbolic = %IndirectIndexWith.impl_witness (constants.%IndirectIndexWith.impl_witness)]
+// CHECK:STDOUT:   %IndirectIndexWith.facet: %IndirectIndexWith.type.fb1 = facet_value %Slice.loc13_54.1, (%IndirectIndexWith.impl_witness) [symbolic = %IndirectIndexWith.facet (constants.%IndirectIndexWith.facet.c9c)]
+// CHECK:STDOUT:   %IndirectIndexWith.WithSelf.Ref.type: type = fn_type @IndirectIndexWith.WithSelf.Ref, @IndirectIndexWith.WithSelf(constants.%i64, %IndirectIndexWith.facet) [symbolic = %IndirectIndexWith.WithSelf.Ref.type (constants.%IndirectIndexWith.WithSelf.Ref.type.03f)]
+// CHECK:STDOUT:   %.loc14_13.5: type = fn_type_with_self_type %IndirectIndexWith.WithSelf.Ref.type, %IndirectIndexWith.facet [symbolic = %.loc14_13.5 (constants.%.dd7)]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.type: type = fn_type @Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl(%T.loc13_11.1) [symbolic = %Slice.as.IndirectIndexWith.impl.Ref.type (constants.%Slice.as.IndirectIndexWith.impl.Ref.type)]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref: @First.%Slice.as.IndirectIndexWith.impl.Ref.type (%Slice.as.IndirectIndexWith.impl.Ref.type) = struct_value () [symbolic = %Slice.as.IndirectIndexWith.impl.Ref (constants.%Slice.as.IndirectIndexWith.impl.Ref)]
+// CHECK:STDOUT:   %Slice.as.IndirectIndexWith.impl.Ref.specific_fn: <specific function> = specific_function %Slice.as.IndirectIndexWith.impl.Ref, @Slice.as.IndirectIndexWith.impl.Ref(%T.loc13_11.1) [symbolic = %Slice.as.IndirectIndexWith.impl.Ref.specific_fn (constants.%Slice.as.IndirectIndexWith.impl.Ref.specific_fn)]
+// CHECK:STDOUT:   %Copy.lookup_impl_witness: <witness> = lookup_impl_witness %T.loc13_11.1, @Copy [symbolic = %Copy.lookup_impl_witness (constants.%Copy.lookup_impl_witness.fd8)]
+// CHECK:STDOUT:   %Copy.facet.loc14_13.3: %Copy.type = facet_value %T.as_type.loc13_60.1, (%Copy.lookup_impl_witness) [symbolic = %Copy.facet.loc14_13.3 (constants.%Copy.facet.40c)]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.loc14_13.3) [symbolic = %Copy.WithSelf.Op.type (constants.%Copy.WithSelf.Op.type.39e)]
+// CHECK:STDOUT:   %.loc14_13.6: type = fn_type_with_self_type %Copy.WithSelf.Op.type, %Copy.facet.loc14_13.3 [symbolic = %.loc14_13.6 (constants.%.843)]
+// CHECK:STDOUT:   %impl.elem0.loc14_13.2: @First.%.loc14_13.6 (%.843) = impl_witness_access %Copy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc14_13.2 (constants.%impl.elem0.f20)]
+// CHECK:STDOUT:   %specific_impl_fn.loc14_13.2: <specific function> = specific_impl_function %impl.elem0.loc14_13.2, @Copy.WithSelf.Op(%Copy.facet.loc14_13.3) [symbolic = %specific_impl_fn.loc14_13.2 (constants.%specific_impl_fn.6a5)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%s.param: @First.%Slice.loc13_54.1 (%Slice)) -> out %return.param: @First.%T.as_type.loc13_60.1 (%T.as_type.5d6) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %s.ref: @First.%Slice.loc13_54.1 (%Slice) = name_ref s, %s
 // CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
-// CHECK:STDOUT:     %impl.elem0: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
-// CHECK:STDOUT:     %bound_method.loc14_12.1: <bound method> = bound_method %int_0, %impl.elem0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.0a3]
-// CHECK:STDOUT:     %specific_fn.loc14_12: <specific function> = specific_function %impl.elem0, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
+// CHECK:STDOUT:     %impl.elem0.loc14_12: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
+// CHECK:STDOUT:     %bound_method.loc14_12.1: <bound method> = bound_method %int_0, %impl.elem0.loc14_12 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.0a3]
+// CHECK:STDOUT:     %specific_fn.loc14_12: <specific function> = specific_function %impl.elem0.loc14_12, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
 // CHECK:STDOUT:     %bound_method.loc14_12.2: <bound method> = bound_method %int_0, %specific_fn.loc14_12 [concrete = constants.%bound_method.0c1]
 // CHECK:STDOUT:     %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i64 = call %bound_method.loc14_12.2(%int_0) [concrete = constants.%int_0.2e4]
 // CHECK:STDOUT:     %.loc14_12.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.2e4]
 // CHECK:STDOUT:     %.loc14_12.2: %i64 = converted %int_0, %.loc14_12.1 [concrete = constants.%int_0.2e4]
-// CHECK:STDOUT:     %impl.elem1.loc14: @First.%.loc14_13.2 (%.4ff) = impl_witness_access constants.%IndexWith.impl_witness, element1 [symbolic = %Slice.as.IndexWith.impl.At (constants.%Slice.as.IndexWith.impl.At)]
+// CHECK:STDOUT:     %impl.elem1.loc14: @First.%.loc14_13.5 (%.dd7) = impl_witness_access constants.%IndirectIndexWith.impl_witness, element1 [symbolic = %Slice.as.IndirectIndexWith.impl.Ref (constants.%Slice.as.IndirectIndexWith.impl.Ref)]
 // CHECK:STDOUT:     %bound_method.loc14_13.1: <bound method> = bound_method %s.ref, %impl.elem1.loc14
-// CHECK:STDOUT:     %specific_fn.loc14_13: <specific function> = specific_function %impl.elem1.loc14, @Slice.as.IndexWith.impl.At(constants.%T.dc4) [symbolic = %Slice.as.IndexWith.impl.At.specific_fn (constants.%Slice.as.IndexWith.impl.At.specific_fn)]
+// CHECK:STDOUT:     %specific_fn.loc14_13: <specific function> = specific_function %impl.elem1.loc14, @Slice.as.IndirectIndexWith.impl.Ref(constants.%T.dc4) [symbolic = %Slice.as.IndirectIndexWith.impl.Ref.specific_fn (constants.%Slice.as.IndirectIndexWith.impl.Ref.specific_fn)]
 // CHECK:STDOUT:     %bound_method.loc14_13.2: <bound method> = bound_method %s.ref, %specific_fn.loc14_13
+// CHECK:STDOUT:     %Slice.as.IndirectIndexWith.impl.Ref.call: ref @First.%T.as_type.loc13_60.1 (%T.as_type.5d6) = call %bound_method.loc14_13.2(%s.ref, %.loc14_12.2)
+// CHECK:STDOUT:     %.loc14_13.1: @First.%T.as_type.loc13_60.1 (%T.as_type.5d6) = acquire_value %Slice.as.IndirectIndexWith.impl.Ref.call
+// CHECK:STDOUT:     %impl.elem0.loc14_13.1: @First.%.loc14_13.6 (%.843) = impl_witness_access constants.%Copy.lookup_impl_witness.fd8, element0 [symbolic = %impl.elem0.loc14_13.2 (constants.%impl.elem0.f20)]
+// CHECK:STDOUT:     %bound_method.loc14_13.3: <bound method> = bound_method %.loc14_13.1, %impl.elem0.loc14_13.1
+// CHECK:STDOUT:     %Copy.facet.loc14_13.1: %Copy.type = facet_value constants.%T.as_type.5d6, (constants.%Copy.lookup_impl_witness.fd8) [symbolic = %Copy.facet.loc14_13.3 (constants.%Copy.facet.40c)]
+// CHECK:STDOUT:     %.loc14_13.2: %Copy.type = converted constants.%T.as_type.5d6, %Copy.facet.loc14_13.1 [symbolic = %Copy.facet.loc14_13.3 (constants.%Copy.facet.40c)]
+// CHECK:STDOUT:     %Copy.facet.loc14_13.2: %Copy.type = facet_value constants.%T.as_type.5d6, (constants.%Copy.lookup_impl_witness.fd8) [symbolic = %Copy.facet.loc14_13.3 (constants.%Copy.facet.40c)]
+// CHECK:STDOUT:     %.loc14_13.3: %Copy.type = converted constants.%T.as_type.5d6, %Copy.facet.loc14_13.2 [symbolic = %Copy.facet.loc14_13.3 (constants.%Copy.facet.40c)]
+// CHECK:STDOUT:     %specific_impl_fn.loc14_13.1: <specific function> = specific_impl_function %impl.elem0.loc14_13.1, @Copy.WithSelf.Op(constants.%Copy.facet.40c) [symbolic = %specific_impl_fn.loc14_13.2 (constants.%specific_impl_fn.6a5)]
+// CHECK:STDOUT:     %bound_method.loc14_13.4: <bound method> = bound_method %.loc14_13.1, %specific_impl_fn.loc14_13.1
 // CHECK:STDOUT:     %.loc13_60.1: ref @First.%T.as_type.loc13_60.1 (%T.as_type.5d6) = splice_block %return.param {}
-// CHECK:STDOUT:     %Slice.as.IndexWith.impl.At.call: init @First.%T.as_type.loc13_60.1 (%T.as_type.5d6) to %.loc13_60.1 = call %bound_method.loc14_13.2(%s.ref, %.loc14_12.2)
-// CHECK:STDOUT:     return %Slice.as.IndexWith.impl.At.call to %return.param
+// CHECK:STDOUT:     %Copy.WithSelf.Op.call: init @First.%T.as_type.loc13_60.1 (%T.as_type.5d6) to %.loc13_60.1 = call %bound_method.loc14_13.4(%.loc14_13.1)
+// CHECK:STDOUT:     return %Copy.WithSelf.Op.call to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

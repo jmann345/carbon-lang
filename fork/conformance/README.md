@@ -321,6 +321,7 @@ fails if this table is stale):
 | `interop/cpp_range_member_begin_end_iterate.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | run |
 | `interop/cpp_span_roundtrip_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
 | `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
+| `interop/cpp_span_write_through_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
@@ -360,6 +361,7 @@ fails if this table is stale):
 | `stdlib/slices_basic.carbon` | Stdlib: Slices | run |
 | `stdlib/slices_bounds_fail_stop.carbon` | Stdlib: Slices | run |
 | `stdlib/slices_heap_buf.carbon` | Stdlib: Slices | run |
+| `stdlib/slices_write_through.carbon` | Stdlib: Slices | run |
 | `stdlib/string_basic.carbon` | Stdlib: String and string-literal types | run |
 | `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | SKIP |
 | `stdlib/tuples_arrays_structs.carbon` | Stdlib: tuple/array library parts | run |

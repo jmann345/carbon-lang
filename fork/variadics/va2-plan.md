@@ -6,17 +6,24 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 3 -- NOT signed off: NB-1. Rev 3, 2026-10-26, is the fixer's
-fold of the focused re-review of rev 2 (78524522b), whose verdict was REJECT
-on one new BLOCKER, NB-1 (a generic with a pack of different types, used from
-another library, crashed in lowering, and C4's prelude impls have that shape),
-with the MAJOR B-M5 still open and three MINORs. Every finding is folded and
-none is rejected (the "Review fold record (rev 3, 2026-10-26)" after rev 2's);
-NB-1's and B-M5's folds change the prototype's code, so only the next focused
-re-review can sign rev 3 off. Rev 2 (78524522b) folded the two plan reviews
-of R29(c) (review A and review B, both REJECT on rev 1), recorded in the
-"Review fold record (rev 2, 2026-10-22)"; rev 1 (51c6cfb10) was the
-planner's draft. Nothing in it is implemented on this branch. Branch
+**Status:** rev 4, 2026-10-26 -- SIGNED OFF FOR IMPLEMENTATION. Rev 4 is the
+fixer's fold of the second focused re-review, of rev 3 (8d377a06d), whose
+verdict was APPROVE-WITH-AMENDMENTS on one MAJOR, RR2-M1 (a compile-time
+each-name was accepted in every parameter list, so packs among a class's, an
+interface's or explicit `generic` parameters, OUT in this slice, compiled or
+failed with arity errors where PR 59 reports a TODO), and three MINORs. Every
+finding is folded and none is rejected (the "Review fold record (rev 4,
+2026-10-26)" after rev 3's); the verdict is not REJECT, so rev 4 is signed off,
+and the "Sign-off" section tables every review of this plan. Rev 3
+(8d377a06d, 2026-10-26) folded the focused re-review of rev 2 (78524522b),
+whose verdict was REJECT on one new BLOCKER, NB-1 (a generic with a pack of
+different types, used from another library, crashed in lowering, and C4's
+prelude impls have that shape), with the MAJOR B-M5 still open and three
+MINORs, recorded in the "Review fold record (rev 3, 2026-10-26)". Rev 2
+(78524522b) folded the two plan reviews of R29(c) (review A and review B, both
+REJECT on rev 1), recorded in the "Review fold record (rev 2, 2026-10-22)";
+rev 1 (51c6cfb10) was the planner's draft. Nothing in it is implemented on
+this branch. Branch
 `claude/carbon-fork-0-1-va2`, worktree /home/user/carbon-va2, cut from PR 59's
 head b0822a744 (`claude/carbon-fork-0-1-va`, VA-1, held open, never merged),
 whose toolchain is the carbonbuild toolchain of 88b1b5bd2. Every line number
@@ -61,7 +68,21 @@ included). It is reachable as the dangling scratch commit 80f1ec825 (tree
 91dd88f60; its parent a9ba91569, an interrupted attempt's state that named the
 arity by a `name_ref`, is superseded), which §0.6's `git merge-tree` and the PR
 64 mirror use; Appendix B is its diff verbatim (amended 2026-10-26, review fold:
-RR1-NB-1 / RR1-B-M5 / RR1-Nm-3).
+RR1-NB-1 / RR1-B-M5 / RR1-Nm-3). Rev 4's were taken by the fixer of the second
+re-review with builds under /dev/shm/va2-fixer2 (the rev 3 prototype rebuilt
+from 80f1ec825, its rev 4 state, and the PR 64 mirror with it; deleted when rev
+4 was committed) and the scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2/fixer2`
+(`$H` below), whose subdirectory `$H/r` holds every rev 4 number (§8.0). Since
+rev 4 the prototype is `$H/r/va2_prototype_rev4.patch` (31 files, 1399
+insertions, 122 deletions against b0822a744): rev 3's and the rev 4 corrections
+of §2 (`$H/r/rev4_fixes.patch`, 3 files, 60 insertions and 29 deletions against
+80f1ec825: check/handle_binding_pattern.cpp, sem_ir/stringify.cpp and
+check/eval.cpp, clang-format's re-wrapping of rev 3's lines in those files
+included). It is reachable as the dangling scratch commit ca939ee19 (tree
+f023437c2, on 80f1ec825), which §0.6's `git merge-tree` and the PR 64 mirror
+use; Appendix B is its diff verbatim (amended 2026-10-26, review fold: RR2-M1 /
+RR2-m1).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -124,9 +145,13 @@ commands widened to `W-3[3-9][0-9]`, and again for rev 2 on 2026-10-22 with
 from W-330 to W-399" in DR-1's fork/direction/plan.md (:4238 on the dr and
 dr-idx refs and worktrees, and :4348 on dr-idx), and no id of W-330..W-339 is
 filed anywhere. W-320..W-329 are DR-1's (W-328 reserved for W-320's
-resumption). The discharge re-runs the scan (§8.10) and re-allocates from the
-maximum plus one, skipping reserved blocks, if any of W-330..W-339 is taken by
-then.
+resumption). Re-scanned for rev 4 on 2026-10-26 with §8.10's commands (89
+refs, after `git fetch origin`; the highest id filed is W-344): the new hits
+name W-330..W-339 only as VA-2's reservation, in DR-1b's records (which file
+W-340) and in the weekly upstream check's entry of 2026-10-26 (which files
+W-341 to W-344) (amended 2026-10-26, review fold: RR2-m3). The discharge
+re-runs the scan (§8.10) and re-allocates from the maximum plus one, skipping
+reserved blocks, if any of W-330..W-339 is taken by then.
 
 **Design authority**, read at upstream's tip 57ba07a97 (`git fetch upstream
 trunk`, by the fixer on 2026-10-22; "Switch inline function definition
@@ -137,7 +162,11 @@ toolchain/sem_ir` is empty and every line number below holds at both (amended
 2026-10-22, review fold: B-m1), and again by the fixer of the re-review at
 21c825a3f on 2026-10-26, whose 13 further commits change none of these pages
 and none of the toolchain files quoted (M-1) (amended 2026-10-26, review fold:
-RR1-Nm-3), each quoted where used (R32(a)):
+RR1-Nm-3), and by the fixer of the second re-review on 2026-10-26, for whom
+`git fetch upstream trunk` and `git ls-remote upstream refs/heads/trunk` gave
+21c825a3f again, with check/handle_binding_pattern.cpp, check/eval.cpp and
+sem_ir/stringify.cpp, rev 4's files, unchanged there since 57ba07a97 (amended
+2026-10-26, review fold: RR2-m3), each quoted where used (R32(a)):
 
 -   docs/design/variadics.md (p002240): "Packs and each-names" (:84-102), "Pack
     expansions" (:104-158), "Pack expansion expressions and statements"
@@ -785,6 +814,85 @@ SKIP 19 of 175 (`$G/r/conf_m64r3.log`): every program that passes on PR 64's
 own install (147 of 167, `$G/r/conf_ct.log`) or on the rev 3 prototype passes,
 and VA-1's `variadics_each`, a SKIP on PR 64, passes.
 
+M-19. Compile-time packs outside a function's or an impl's implicit list, the
+pack of types in a specific's name, and template actions on elements of packs
+of different types (amended 2026-10-26, review fold: RR2-M1 / RR2-m1 /
+RR2-m2). The fixer of the second re-review rebuilt the rev 3 prototype
+(80f1ec825) under /dev/shm/va2-fixer2 and reproduced the re-review's cases
+with `$H/r/run_rr2.sh` over the re-review's probes (`$S/rr2/probes`) and the
+fixer's (`$H/probes`): `$H/r/rr2set_rev3.txt`, with PR 59's outcomes in
+`rr2set_va.txt`. On rev 3, `class Tup(... each T: type) {}` (v3) compiles,
+`Tup(i32, bool)` (v7) reports `2 arguments passed to generic class expecting
+1 argument`, `Tup(i32)` (v8) `cannot deduce value for generic parameter
+<pack arity>`, `interface I(... each T: type)` (v6, vA, vF) and `class C(...
+each n: i32)` (vC) the same arity errors, and `fn Count(... generic each T:
+type)` (vB, vD, vH) `cannot deduce value for generic parameter T`, where PR
+59 reports `semantics TODO: each-name binding that is not a value binding` at
+`each T` for each; the fixer's k1, k2 and k6, a pack in a class's or an
+interface's implicit list, compile on rev 3. ctF (`return
+Cpp.Traits((... each T)).size;`) reports `unable to monomorphize specific
+F(<cannot stringify inst...: {kind: PackValue, ...}>)` with PR 59's note
+`semantics TODO: unsupported type used as template argument` (ctF0, without
+packs, reports `F(i32)` and the note once), and then that TODO three more
+times without a location, once per element: `TryEvalPackIterationsForSpecific`
+evaluated the failed definition block again in each iteration, outside
+`TryEvalBlockForSpecific`'s monomorphization context. The re-review's tp1,
+tp3, tp4 and tp5 (upstream's `[template U: type, ... each T: I]` with
+`u.Get(each x)`, `u[each x]`, `u as each T` and `Sink(each x, u)`) report
+C1's `C++ or template-dependent action on an element of a pack of different
+types`, and tp2 (`u.n + each x.V()`) prints 211.
+
+Rev 4's three corrections (`$H/r/rev4_fixes.patch`, the scratch commit
+ca939ee19): check/handle_binding_pattern.cpp accepts a compile-time each-name
+only when the full pattern is an implicit parameter list and the
+declaration's introducer is `fn` or `impl`, and otherwise reports `semantics
+TODO: each-name binding of a class, interface or explicit compile-time
+parameter` before any arity binding is added (D-VA2-4); sem_ir/stringify.cpp
+prints a `PackValue` as its pack literal, which the concrete pack type now
+reuses (§2.1); and `TryEvalPackIterationsForSpecific` returns at once for a
+specific whose eval blocks have an error (§2.2). On rev 4
+(`$H/r/rr2set_rev4.txt`), v2, v3, v5 to vH and the fixer's k1, k2, k4
+(`... generic each T: type` before a value pack), k5 (a variadic method of a
+variadic class) and k6 report the new TODO at the each-name, each with PR
+59's count of diagnostics; v4 (`... each T: type`, a value pack in an explicit
+list) keeps `argument for generic parameter is not a compile-time constant`,
+as on PR 59 and rev 3, and k3 (a template each-name of a class) keeps
+`each-name binding that is not a value binding`, the text C1 relabels. ctF
+reports `unable to monomorphize specific F(⟬i32, i64, bool⟭)` with the note,
+once, and the fixer's ctF2 `F(⟬i32⟭)`. tp1, tp3, tp4, tp5 and ctG to ctJ are
+unchanged and tp2 prints 211, tp6 5, a1 46 0, a2 46, b1 4046, b2 4046 10346
+10300, c1 1014 1010, c2 1014, d1 1046 1080, and the fixer's k7 (an impl's and
+a function's implicit packs, the control) 46 43. The fixer's tpG (a template
+callee that fails for one element's type) reports, on rev 3 and rev 4 alike,
+`unable to monomorphize specific G(each T)` and `G(i32)`, as upstream reports
+`G(T)` and `G(i32)` for tpG0 without packs, and `G(each ⟬Has, i32⟭)` (rev 3:
+`each <cannot stringify ...>`) for the specific's symbolic iteration, the
+same upstream report of a template specific of a symbolic argument once more;
+no golden pins tpG. The six new splits of §A.11 check as §4 says
+(`$H/r/goldens_rev4.txt`; on rev 3, `goldens_rev3.txt`, the class, interface
+and `generic` splits check without a diagnostic and the C++ split prints the
+`<cannot stringify ...>` name and the three repeats). The re-review's other
+sets give rev 3's outcomes line for line on rev 4, and rev 3's are the
+re-review's own: `$H/r/run_set.sh` (i1 16 9, i2 16, i3 46, i5 3, i6 8 2, i8
+116 0, same3 46, f10 3 0, pl1 1, ct1 to ctE) and the 131 probes and programs
+of `$H/r/probes_all.sh` (`set_rev3.txt` against `set_rev4.txt`,
+`probesall_rev3.txt` against `probesall_rev4.txt`). The gate is 1955 passed
+and 5 failed (VA-1's five, M-6), whose autoupdate is rev 3's 125 insertions
+and 145 deletions line for line (`$H/r/va1_churn_rev4.diff`), and conformance
+is PASS 137, 0 failures, SKIP 21 of 158 (`$H/r/gate_rev4_raw.log`,
+`conf_rev4.log`). On PR 64 merged with rev 4 (5499d8dd9: rev 3's mirror
+4234cdb6f merged with ca939ee19, which merges without a conflict; no
+land-time code; `$H/r/set_m64r4.txt`, `rr2set_m64r4.txt` and
+`goldens_m64r4.txt`), every case of the re-review's mirror set prints the
+re-review's mirror outcome (ct1, ct2, ct4 to ct8 and ctD the TODO, ct3 7, ctA
+8 8 1 1, ctB 8 1, ctC and ctE 19, and M-17's probes as above), the second
+re-review's probes print rev 4's outcomes but ctH (VA-1's `pack expansion
+does not use any each-name`) and ctJ (333), which CT-1's deferral changes as
+the re-review measured, S-CT's three splits report the TODO once each, the
+gate is 1972 passed and 5 failed (VA-1's five; `$H/r/gate_m64r4_raw.log`),
+and conformance is PASS 156, 0 failures, SKIP 19 of 175
+(`$H/r/conf_m64r4.log`), rev 3's mirror's counts.
+
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
 VA-1's §1.4 built one path for a pack of one element type `«E; N»`
@@ -800,7 +908,14 @@ generalized in place by the prototype rather than forked:
 2.  The each-name binding (handle_binding_pattern.cpp:369-377 refused a
     compile-time `each T: I` with `each-name binding that is not a value
     binding`): VA-2 accepts a `CompileTimeBindingPattern`, whose binding `T`
-    has the type `«I; N»`, a pack of facets.
+    has the type `«I; N»`, a pack of facets, when its expansion is an element
+    of a function's or an impl's implicit parameter list; any other
+    compile-time each-name, among a class's or an interface's parameters
+    (`class C(... each T: type)`, W-222), in a class's or an interface's
+    implicit list, or after an explicit `generic` (W-221), is the `semantics
+    TODO: each-name binding of a class, interface or explicit compile-time
+    parameter`, where rev 3 accepted every one (M-19) (amended 2026-10-26,
+    review fold: RR2-M1).
 3.  The binding's type (handle_binding_pattern.cpp:384-394 always wrapped the
     declared type `E` in `«E; N»`): VA-2 recognizes `each T` and types the
     value pack `⟬each T⟭`, `PackType{element = T, arity = T's arity}`.
@@ -859,8 +974,12 @@ The rev 2 prototype (`$F/r3/va2_prototype_rev2.patch`) implements the central
 mechanism and was built, gated and run (M-6, §0.2's proto column, M-12 to
 M-16) (amended 2026-10-22, review fold: A-B-1 / A-B-2 / A-B-3 / A-M-1), and
 since rev 3 the prototype is its successor (`$G/r/va2_prototype_rev3.patch`,
-Appendix B), built, gated and run the same way (M-17, M-18, M-9's last
-bullet) (amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5):
+Appendix B until rev 4), built, gated and run the same way (M-17, M-18, M-9's
+last bullet) (amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5), and since
+rev 4 the prototype is the rev 4 one (`$H/r/va2_prototype_rev4.patch`,
+Appendix B), which corrects three of rev 3's measured defects and is built,
+gated and run the same way (M-19) (amended 2026-10-26, review fold: RR2-M1 /
+RR2-m1):
 
 -   heterogeneous packs end to end: `[... each T: I]`, `... each x: each T`,
     deduction of the pack of types, per-element impl lookup, the body checked
@@ -877,6 +996,10 @@ bullet) (amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5):
     (M-17) (amended 2026-10-26, review fold: RR1-NB-1);
 -   the refusal of a dependent action whose operand depends on the pack
     index (M-18) (amended 2026-10-26, review fold: RR1-B-M5);
+-   since rev 4, the refusal of a compile-time each-name outside a
+    function's or an impl's implicit list, the pack literal of a specific's
+    pack of types in diagnostics, and one evaluation of a failed specific
+    (M-19) (amended 2026-10-26, review fold: RR2-M1 / RR2-m1);
 -   the lowering of nested aggregate constants (M-12, C0's hunk).
 
 Rev 1's measured defects (M-9, M-12 to M-15) are corrected in it: the
@@ -886,7 +1009,9 @@ nested constants (M-12) and the stringification of packs (M-16); rev 2's
 measured defects (M-17, M-18) are corrected in the rev 3 prototype
 (`$G/r/rev3_fixes.patch`, 4 files, 150 insertions and 25 deletions against
 rev 2's tree, clang-format's re-wrapping of rev 2's lines in those files
-included) (amended 2026-10-26, review fold: RR1-NB-1).
+included) (amended 2026-10-26, review fold: RR1-NB-1); rev 3's measured
+defects (M-19) are corrected in the rev 4 prototype (`$H/r/rev4_fixes.patch`)
+(amended 2026-10-26, review fold: RR2-M1 / RR2-m1).
 
 It does not implement, and so §8.9 lists as unmeasured: tuple values with a
 runtime pack segment (`(... each x)` as an initializer; the prototype reports
@@ -899,8 +1024,10 @@ diagnostics and the goldens, and the programs of Appendix A except
 ### §0.6 Collisions with the held PRs (numstat, then `git merge-tree`)
 
 For each held head, the files changed since its merge base with b0822a744
-intersected with VA-2's files (the prototype's 30 and the 14 that C2 to C4 add,
-§6.2), then `git merge-tree --write-tree --name-only` of the rev 2 prototype
+intersected with VA-2's files (the prototype's 31 and the 10 that C2 to C4 add
+beyond them, §6.2; rev 3 said 30 and 14, counting four files the prototype
+already changes among the added ones (amended 2026-10-26, review fold:
+RR2-m3)), then `git merge-tree --write-tree --name-only` of the rev 2 prototype
 commit 413968218 against the head, minus the conflicts b0822a744 already has
 with that head (VA-1's §6.2 method). Re-measured for rev 2 at the heads of
 2026-10-22 (`$F/r3/collisions_rev2.txt`): rev 1 used the earlier
@@ -914,7 +1041,12 @@ rev 2's ranking hunk, which rev 2's table omitted, and those of PR 61 and
 PR 64 check/action.cpp, rev 3's refusal (D-VA2-14), both merging cleanly; PR
 63 and DR-1b are at f163a2bde and 1dd904216, whose changes since rev 2's heads
 are fork/ records and one DR-1b golden (amended 2026-10-26, review fold:
-RR1-NB-1 / RR1-B-M5):
+RR1-NB-1 / RR1-B-M5). Re-measured for rev 4 with the rev 4 prototype commit
+ca939ee19 (`$H/r/collisions_rev4.txt`, made by `$H/r/collisions.sh`, whose
+trunk row reads origin/trunk): every count and file list is rev 3's; PR 63 is
+at 89aabd125, DR-1b (PR 65 since 2026-10-26) at fee0ef31c and trunk at
+449fecdd7, each moved since rev 3's heads by fork/ records only (amended
+2026-10-26, review fold: RR2-m3):
 
 | PR (branch, head) | Shared files | Conflicts b0822a744 has | Conflicts with the prototype | New |
 | --- | --- | --- | --- | --- |
@@ -930,9 +1062,9 @@ RR1-NB-1 / RR1-B-M5):
 | PR 61 tp (5661a35c8) | check/action.cpp, context.h, convert.cpp, eval.cpp, impl_lookup.cpp, import_ref.cpp; lower/file_context.cpp, function_context.cpp; sem_ir/inst_kind.def, stringify.cpp, typed_insts.h | 4 | 6 | convert.cpp, eval.cpp |
 | PR 62 sv (0ef8a0334) | check/convert.cpp, type.cpp; lower/constant.cpp | 3 | 3 | 0 |
 | PR 64 ct (4a3220c11) | as PR 61, plus check/eval.h, generic.cpp | 4 | 6 | convert.cpp, eval.cpp |
-| PR 63 dr (f163a2bde) | none | 3 | 3 | 0 |
-| DR-1b dr-idx (1dd904216) | check/convert.cpp | 3 | 3 | 0 |
-| trunk (563135b40, OV-1 and the records) | none | 3 | 3 | 0 |
+| PR 63 dr (89aabd125) | none | 3 | 3 | 0 |
+| PR 65 DR-1b dr-idx (fee0ef31c) | check/convert.cpp | 3 | 3 | 0 |
+| trunk (449fecdd7, OV-1 and the records) | none | 3 | 3 | 0 |
 
 "None" means the head shares no toolchain or prelude file with VA-2: its
 conflicts with b0822a744 are the records, fork/gap-analysis.md,
@@ -1196,10 +1328,24 @@ VA-1's `MultiplePackExpansionPatterns`, because the rule "A tuple pattern can
 contain no more than one subpattern of the form `...` _operand_" (:333-334)
 does not govern the implicit list and the design's own TupleConcat has two
 there (:289; F-3). A template or `ref` each-name binding stays a `semantics
-TODO` (W-221), relabeled `each-name binding that is ref, var or template`.
-_Break condition:_ upstream allows several deduced arities per full pattern
-before W-222 lands, or reads `[... each T1, ... each T2]` otherwise, or a
-generic with two arities reaches a specific without the TODO.
+TODO` (W-221), relabeled `each-name binding that is ref, var or template`. A
+compile-time each-name is accepted only in a function's or an impl's implicit
+parameter list (the full pattern's kind is `ImplicitParamList` and the
+declaration's introducer `fn` or `impl`); anywhere else it is the `semantics
+TODO: each-name binding of a class, interface or explicit compile-time
+parameter`, reported before any arity binding is added: W-222's for a pack
+among a class's or an interface's parameters, the design's own `class C(...
+each T: type)` (variadics.md :538 at 21c825a3f, whose member expansions have
+fixed arity, DR-35), and for a pack in a class's or an interface's implicit
+list, and W-221's for an explicit `generic` each-name, which VA-1's W-221
+names ("each-name bindings that are `ref`, `var`, `template` or `generic`").
+Rev 3 accepted every compile-time each-name, so those forms, OUT in this
+slice, compiled or failed with arity and deduction errors where PR 59 reports
+a TODO (M-19) (amended 2026-10-26, review fold: RR2-M1). _Break condition:_
+upstream allows several deduced arities per full pattern before W-222 lands,
+or reads `[... each T1, ... each T2]` otherwise, or a generic with two
+arities reaches a specific without the TODO, or a compile-time each-name
+outside a function's or an impl's implicit list checks without the TODO.
 
 ### §1.4 Deduction, checking and lowering of a pack of types (D-VA2-5..D-VA2-7)
 
@@ -1475,6 +1621,7 @@ golden split (§4), each in check, each filed:
 | an initializing expansion element in a tuple literal | `pack expansion of initializing expressions in a tuple literal` | W-331 |
 | a statement other than an expression or `if` statement | `pack expansion of a statement other than an expression or if statement` (relabeled) | W-218 |
 | a `ref`, `var` or `template` each-name binding | `each-name binding that is ref, var or template` (relabeled) | W-221 |
+| a compile-time each-name among a class's or an interface's parameters, in a class's or an interface's implicit list, or after an explicit `generic` (M-19) | `each-name binding of a class, interface or explicit compile-time parameter` (built since rev 4; amended 2026-10-26, review fold: RR2-M1) | W-222 (classes, interfaces), W-221 (`generic`) |
 | a C++ call, a C++ class template or a template-dependent action whose operand or operand's type depends on the pack index, in C1 at `AddDependentActionInst` (D-VA2-14) | `C++ or template-dependent action on an element of a pack of different types` (amended 2026-10-22, review fold: B-M5; amended 2026-10-26, review fold: RR1-B-M5) | W-224 |
 | `...expand` | upstream's `HandlePrefixOperatorExpand` (unchanged) | W-217 |
 | `each x: auto` | `HandleAutoTypeLiteral` (unchanged, upstream's) | W-333 (amended 2026-10-22, review fold: B-M2) |
@@ -1495,20 +1642,30 @@ variadics" (2ec4bab59), so the fork stops at the text (R32(d)). _Break
 condition:_ one of these forms is reached by an arbiter of §1.8, or upstream
 settles `...expand`'s typechecking (W-217 then implements upstream's text).
 
-**D-VA2-14 (templates and C++ interop).** Templates: PR 61 is not stacked on PR
-59, so no install composes templates with packs (§0.2); VA-1's `pack expansion
-argument in a template-dependent call` (W-224) and VA-2's template each-name
-TODO (W-221) keep packs and templates apart, and the PR 59 plus PR 61 mirror
-(§8.7) is the composition's check. CT-1 (PR 64) defers a C++ call whose argument
-is symbolic to each specific (`DeferCppCallOnSymbolicArgs`, call.cpp), which
-composes with packs of one type (CT-1's va3, `... Cpp.Add(each x)` with `x: T`,
-prints 7 on PR 64 merged with the rev 2 prototype, as on CT-1's own mirror), but
-not with packs of different types: the deferred action is resolved once per
-specific, not once per iteration with the iteration's pack index, so on that
-mirror `... Cpp.Add(each x)` with `each x: each T` compiles and runs but calls
-nothing (ct1: prints 0 where the per-element instantiations Add<int>, Add<long>
-and Add<bool> would print 308040101), and a C++ call whose result is used aborts
-in lowering, "CHECK failure at toolchain/lower/function_context.cpp:287:
+**D-VA2-14 (templates and C++ interop).** Templates: upstream's own templates
+already compose with packs of different types on this branch, without PR 61: on
+the rev 3 and rev 4 prototypes alone, a template-dependent action on an element
+of such a pack in `fn F[template U: type, ... each T: I](u: U, ... each x: each
+T)` (`u.Get(each x)`, `u[each x]`, `u as each T`, `Sink(each x, u)`, the
+re-review's tp1, tp3, tp4 and tp5) reaches C1's refusal below, and one whose
+operands do not depend on the pack index (`u.n + each x.V()`, tp2) runs and
+prints 211; C1 pins both, with `fail_todo_va2`'s
+`fail_todo_template_action_on_hetero_element` and `hetero_pack`'s
+`template_outer` (M-19). Rev 3 said no install composed templates with packs
+(amended 2026-10-26, review fold: RR2-m2). PR 61's template-dependent forms,
+which it adds beside upstream's, meet packs only on the PR 59 plus PR 61 mirror
+(§8.7, m61), where VA-1's `pack expansion argument in a template-dependent call`
+(W-224), VA-2's template each-name TODO (W-221) and C1's refusal keep packs and
+templates apart. CT-1 (PR 64) defers a C++ call whose argument is symbolic to
+each specific (`DeferCppCallOnSymbolicArgs`, call.cpp), which composes with
+packs of one type (CT-1's va3, `... Cpp.Add(each x)` with `x: T`, prints 7 on PR
+64 merged with the rev 2 prototype, as on CT-1's own mirror), but not with packs
+of different types: the deferred action is resolved once per specific, not once
+per iteration with the iteration's pack index, so on that mirror
+`... Cpp.Add(each x)` with `each x: each T` compiles and runs but calls nothing
+(ct1: prints 0 where the per-element instantiations Add<int>, Add<long> and
+Add<bool> would print 308040101), and a C++ call whose result is used aborts in
+lowering, "CHECK failure at toolchain/lower/function_context.cpp:287:
 const_id.is_concrete(): Missing value: ... SpliceInst ... has non-concrete
 value" (ct4) (amended 2026-10-22, review fold: B-M5). Rev 2's answer, a
 land-time hunk in CT-1's `DeferCppCallOnSymbolicArgs` that tested whether an
@@ -1768,24 +1925,32 @@ rev 2 files all ten ids, and a shrink of §3 needs no new id (amended
     2026-10-22, review fold: A-m-2 / B-M8).
 
 Narrowed by notes, no new id: W-214 (only `var`, `match` and nested tuple
-patterns, and a `let` expansion of deduced arity, remain; its note also
-carries register entry (iv)), W-218 (only declarations, loops, `break`,
-`continue` and `match` remain), W-219 (only control flow in expression bodies
-and the "Type versus execution semantics" example remain), W-222 (only
-independent arities, including a second pack arity in a generic and a second
-implicit-list pack, tuples of several segments and class parameter packs
-remain), W-229 (its note gains p002274's variadic indexing interfaces,
-:250-257, which W-212's note named: the proposal defers them "once we have a
-design for variadics" as an alternative, not a rule, and they need packs in
-interface functions, which is W-229), W-213 (tuples of one segment done; what
-remains is its arbiters', §1.9). Notes, no narrowing (amended 2026-10-22,
-review fold: B-B1 / B-M3 / B-M5): W-220 (StrCat over `String` is its arbiter,
-x01), W-223 (a heterogeneous-pack member of an overload set, or such a pack
-forwarded to one, is its TODO too, x16, x17), W-224 (S-CT's TODO for a C++ call
-on an element of a pack of different types, until deferred actions are
-resolved per iteration, D-VA2-14), W-226 (Apply's `F: Call(... each T)` is its
-arbiter), W-230 (register entry (iii)). W-212 and W-225 discharged (§1.9),
-W-212's `each x: auto` moving to W-333.
+patterns, and a `let` expansion of deduced arity, remain; its note also carries
+register entry (iv)), W-218 (only declarations, loops, `break`, `continue` and
+`match` remain), W-219 (only control flow in expression bodies and the "Type
+versus execution semantics" example remain), W-222 (only independent arities,
+including a second pack arity in a generic and a second implicit-list pack,
+tuples of several segments, and class and interface parameter packs remain, the
+last the TODO `each-name binding of a class, interface or explicit compile-time
+parameter` since rev 4 (amended 2026-10-26, review fold: RR2-M1)), W-229 (its
+note gains p002274's variadic indexing interfaces, :250-257, which W-212's note
+named: the proposal defers them "once we have a design for variadics" as an
+alternative, not a rule, and they need packs in interface functions, which is
+W-229), W-213 (tuples of one segment done; what remains is its arbiters', §1.9).
+Notes, no narrowing (amended 2026-10-22, review fold: B-B1 / B-M3 / B-M5): W-220
+(StrCat over `String` is its arbiter, x01), W-221 (an explicit `generic`
+each-name is the TODO `each-name binding of a class, interface or explicit
+compile-time parameter`, split `fail_todo_explicit_generic_pack`, and the `ref`,
+`var` and `template` forms the relabeled `each-name binding that is ref, var or
+template`; amended 2026-10-26, review fold: RR2-M1), W-223 (a heterogeneous-pack
+member of an overload set, or such a pack forwarded to one, is its TODO too,
+x16, x17), W-224 (C1's TODO for a C++ or template-dependent action on an element
+of a pack of different types, reached by upstream's templates on this branch and
+by CT-1's deferred C++ calls after M, until deferred actions are resolved per
+iteration, D-VA2-14; rev 3 still named S-CT's TODO here (amended 2026-10-26,
+review fold: RR2-m2)), W-226 (Apply's `F: Call(... each T)` is its arbiter),
+W-230 (register entry (iii)). W-212 and W-225 discharged (§1.9), W-212's
+`each x: auto` moving to W-333.
 
 ### §1.12 The V-3a register (DR-0) and decision index
 
@@ -1877,8 +2042,9 @@ review fold: B-M8).
 
 ### §2.0 Conventions
 
-The built part of the spec is Appendix B, the rev 2 prototype's diff verbatim
-(`$F/r3/va2_prototype_rev2.patch`), measured as §0.2, M-6 and M-12 to M-16
+The built part of the spec is Appendix B, the rev 4 prototype's diff verbatim
+(`$H/r/va2_prototype_rev4.patch`; rev 3 still named rev 2's here, amended
+2026-10-26, review fold: RR2-m3), measured as §0.2, M-6 and M-12 to M-19
 say; §2.1 to §2.3 and §2.7 say, file by file, what each hunk does and the
 invariant it keeps, and which commit takes it: C0 takes the
 lower/file_context.cpp hunk (§2.7), C1 the hunks §2.1 and §2.2 list, and C2
@@ -1929,7 +2095,12 @@ before this plan's commit, amended 2026-10-22, review fold: B-m5).
     r19 read "cannot copy value of type `«T; <pack arity>»`" for `⟬each T⟭`;
     rev 2's prototype has them (measured: f01 names `each T`, f03 `(... each
     T)`), so §4's predicted diagnostics are now its measured strings (amended
-    2026-10-22, review fold: A-m-5).
+    2026-10-22, review fold: A-m-5). Since rev 4 a `PackValue`, such as the
+    pack of types `T` holds in a specific's name, prints as its pack literal,
+    `F(⟬i32, i64, bool⟭)`, and the concrete pack type prints its `PackValue`
+    the same way; rev 3 printed `<cannot stringify inst...: {kind:
+    PackValue, ...}>` there (M-19's ctF; amended 2026-10-26, review fold:
+    RR2-m1).
 
 ### §2.2 C1, check and lower of packs of different types (built)
 
@@ -1945,7 +2116,12 @@ before this plan's commit, amended 2026-10-22, review fold: B-m5).
     when an eval block holds a `PackIndex`), each binding read through its
     constant value (`GetConstantInstId`), because the bindings of a generic
     imported from another library are import references whose constant values
-    are the bindings (M-17; amended 2026-10-26, review fold: RR1-NB-1).
+    are the bindings (M-17; amended 2026-10-26, review fold: RR1-NB-1). Since
+    rev 4 it returns at once for a specific whose eval blocks have an error,
+    which `TryEvalBlockForSpecific` diagnosed once under its `unable to
+    monomorphize specific` context; rev 3 evaluated them again in each
+    iteration and repeated a failed action's diagnostic once per element,
+    without a location (M-19's ctF; amended 2026-10-26, review fold: RR2-m1).
     check/eval.h declares it.
 -   check/eval_inst.cpp: `EvalConstantInst(Context&, SemIR::PackElement)`.
 -   check/generic.cpp: `ResolveSpecificDefinition` calls
@@ -1986,18 +2162,23 @@ before this plan's commit, amended 2026-10-22, review fold: B-m5).
     error instead of a splice (D-VA2-14, M-18). Invariant: an action none of
     whose operands or operand types contains the pack index is added exactly as
     before, so no existing golden changes (M-17's gate).
--   check/handle_binding_pattern.cpp: compile-time each-name bindings; the
-    arity added by the binding; `⟬each T⟭` for an each-name type; the pack's
-    arity registered for the binding and for its constant; an invalid element
-    type keeps VA-1's `pack_type invalid, %arity` (the prototype's last fix,
-    VA-1's `fail_invalid_element_type`). Before it adds an arity binding, it
-    looks for one already on `scope_stack().compile_time_binding_stack()`
-    (`NameId::PackArity`), which holds this generic's bindings and those of
-    the generics that enclose it, and if there is one reports
-    `context.TODO(name_node, "more than one pack arity in a generic")`
-    (D-VA2-4, M-14; amended 2026-10-22, review fold: A-B-1). C1 also makes the
-    VA-1 error for an expansion without each-names in a binding's type
-    position the `semantics TODO: pack expansion without an each-name in a
+-   check/handle_binding_pattern.cpp: compile-time each-name bindings, in a
+    function's or an impl's implicit parameter list only (the full pattern's
+    kind `ImplicitParamList`, the innermost declaration introducer `fn` or
+    `impl`), any other compile-time each-name being `context.TODO(name_node,
+    "each-name binding of a class, interface or explicit compile-time
+    parameter")` before an arity is added (D-VA2-4, M-19; amended 2026-10-26,
+    review fold: RR2-M1); the arity added by the binding; `⟬each T⟭` for an
+    each-name type; the pack's arity registered for the binding and for its
+    constant; an invalid element type keeps VA-1's `pack_type invalid, %arity`
+    (the prototype's last fix, VA-1's `fail_invalid_element_type`). Before it
+    adds an arity binding, it looks for one already on
+    `scope_stack().compile_time_binding_stack()` (`NameId::PackArity`), which
+    holds this generic's bindings and those of the generics that enclose it, and
+    if there is one reports `context.TODO(name_node, "more than one pack arity
+    in a generic")` (D-VA2-4, M-14; amended 2026-10-22, review fold: A-B-1). C1
+    also makes the VA-1 error for an expansion without each-names in a binding's
+    type position the `semantics TODO: pack expansion without an each-name in a
     binding's type` (W-337, D-VA2-13; amended 2026-10-22, review fold: A-m-5 /
     B-M2); the statement and expression forms keep VA-1's error.
 -   check/deduce.cpp: the heterogeneous branch of the `PackType` case
@@ -2363,8 +2544,10 @@ cannot build without a later commit's files, which merges the two and is
 recorded in the landed notes.
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
-B-M6). The rev 2 prototype, which is C0, C1 and the built half of C2, is 30
-non-test toolchain files with 1242 insertions and 121 deletions; VA-1's
+B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
+non-test toolchain files with 1399 insertions and 122 deletions (rev 2's,
+which this sentence measured until rev 4: 30, 1242 and 121; amended
+2026-10-26, review fold: RR2-m3); VA-1's
 non-test toolchain change from its C2 to its head is 43 files, 1682
 insertions and 41 deletions (`git diff --shortstat 663a29df6 b0822a744 --
 toolchain ':!toolchain/*/testdata/*'`). VA-2 adds two instruction kinds
@@ -2417,10 +2600,13 @@ The commits, in order:
 
 0.  **P, the plan.** Rev 1 (51c6cfb10), "VA-2 plan (rev 1): generic and
     heterogeneous packs, tuples with pack segments, variadic impls with the
-    prelude tuple Copy, Eq and Ordered"; rev 2 (this commit) folds the two
-    plan reviews of R29(c); a sign-off revision follows a dry re-review; each
-    later revision is a new commit, each amended sentence marked "(amended
-    <date>, review fold: <finding>)".
+    prelude tuple Copy, Eq and Ordered"; rev 2 (78524522b) folds the two plan
+    reviews of R29(c); rev 3 (8d377a06d) folds the focused re-review of rev
+    2; rev 4 (this commit) folds the second focused re-review, of rev 3, and
+    is the sign-off revision (the Sign-off section); rev 3 still called rev 2
+    "this commit" (amended 2026-10-26, review fold: RR2-m3). Each later
+    revision is a new commit, each amended sentence marked "(amended <date>,
+    review fold: <finding>)".
 1.  **C0, nested aggregate constants** (§2.7: Appendix B's
     lower/file_context.cpp hunk). New golden: lower `tuple/nested_constant`.
     Expected gate: red on exactly that 1 file (amended 2026-10-22, review
@@ -2442,9 +2628,15 @@ The commits, in order:
     `hetero_pack`'s `lib` and `use` splits, check `hetero_pack`'s
     `cpp_template_outer` and `fail_todo_va2`'s
     `fail_todo_cpp_template_on_hetero_element` (amended 2026-10-26, review fold:
-    RR1-NB-1 / RR1-B-M5); refilled: each_param, forward, import, fail_todo_slice
-    (`fail_todo_generic_pack` removed, `fail_todo_ref_pack` relabeled) and the
-    lower pack_expansion. Expected gate: red on exactly these 10 files.
+    RR1-NB-1 / RR1-B-M5), and since rev 4 `hetero_pack`'s `template_outer` and
+    `fail_todo_va2`'s `fail_todo_class_pack`, `fail_todo_interface_pack`,
+    `fail_todo_explicit_generic_pack`,
+    `fail_todo_template_action_on_hetero_element` and
+    `fail_todo_cpp_template_on_tuple_of_pack` (amended 2026-10-26, review fold:
+    RR2-M1 / RR2-m1 / RR2-m2); refilled: each_param, forward, import,
+    fail_todo_slice (`fail_todo_generic_pack` removed, `fail_todo_ref_pack`
+    relabeled) and the lower pack_expansion. Expected gate: red on exactly these
+    10 files.
 4.  **F1.** Autoupdate of those 10 files to the fixpoint.
 5.  **C2, tuples with a pack segment** (§2.3 built, §2.4 specified): `TupleType`
     and `TupleValue` conditional, the tuple deduction, the dependent
@@ -2492,8 +2684,9 @@ The commits, in order:
     EXPECTED, not of record; both stay PARTIAL, so the header's counts do not
     move (§1.9).
 14. **D, discharge** (§A.12): the ledger (W-212 and W-225 discharged, W-213
-    narrowed; W-214, W-218, W-219, W-222 narrowed; W-220, W-223, W-224, W-226,
-    W-229, W-230 and W-013 noted; W-330 to W-339 filed, W-335 as
+    narrowed; W-214, W-218, W-219, W-222 narrowed; W-220, W-221 (since rev 4,
+    amended 2026-10-26, review fold: RR2-M1), W-223, W-224, W-226, W-229,
+    W-230 and W-013 noted; W-330 to W-339 filed, W-335 as
     DISCHARGED), the decision-log entry, fork/ORCHESTRATION.md (with the Next
     actions of W-332, W-338 and W-339), the W6 sentence of
     fork/gap-analysis.md, after §8.10's id re-scan.
@@ -2520,7 +2713,9 @@ trailers after a blank line, which this plan does not spell out because a
 repository file names no model. A problem found after a commit exists is fixed
 by a new commit (AGENTS.md). Fill commits, F-M included, are "Autoupdate
 testdata goldens on the container arbiter". The other messages, verbatim but
-for `<...>` fields:
+for `<...>` fields (S-CT's last sentence, which rev 3 left singular for a file
+of three splits, is plural since rev 4, amended 2026-10-26, review fold:
+RR2-m3; C1's names the TODO of RR2-M1 and the pack literal of RR2-m1):
 
 <!-- google-doc-style-ignore -->
 
@@ -2544,21 +2739,24 @@ VA-2 C1: packs of different types in implicit parameter lists
 
 A function or impl may declare `[... each T: I]` in its implicit
 parameter list and take `... each x: each T`; a call deduces the pack of
-argument types and their arity, checks each element's `I` by impl lookup,
-and the body is checked once with `each x` of the symbolic type `each T`.
-The pack index is a symbolic constant, so a specific of a variadic generic
-evaluates its eval blocks once per element and lowers each iteration with
-that element's types and callees; a pack of different types is laid out
-as a tuple, and diagnostics name `each T`, `⟬each T⟭` and `(... each T)`.
-A specific of a variadic generic imported from another library gets the
+argument types and their arity, checks each element's `I` by impl
+lookup, and the body is checked once with `each x` of the symbolic type
+`each T`. The pack index is a symbolic constant, so a specific of a
+variadic generic evaluates its eval blocks once per element and lowers
+each iteration with that element's types and callees; a pack of
+different types is laid out as a tuple, and diagnostics name `each T`,
+`⟬each T⟭`, `(... each T)` and a specific's pack of types `⟬A, B⟭`. A
+specific of a variadic generic imported from another library gets the
 same per-iteration values, and an expansion over a pack of an enclosing
 generic names that generic's arity by a specific_constant of its self
 specific, as a name from an enclosing generic is named. A second
 implicit-list pack, a second pack arity in a generic, a computed element
-type, forwarding between a pack of different types and a pack of one type,
-an expansion without each-names in a binding's type, a template each-name,
-and a C++ or template-dependent action whose operand depends on the pack
-index are semantics TODOs. VA-1's goldens are refilled by the next commit.
+type, forwarding between a pack of different types and a pack of one
+type, an expansion without each-names in a binding's type, a template
+each-name, a compile-time each-name of a class, an interface or an
+explicit `generic` parameter, and a C++ or template-dependent action
+whose operand depends on the pack index are semantics TODOs. VA-1's
+goldens are refilled by the next commit.
 
 fork/variadics/va2-plan.md §2.1, §2.2, D-VA2-2 to D-VA2-7, D-VA2-13.
 ```
@@ -2640,8 +2838,8 @@ header's counts do not move.
 VA-2 discharge: W-212 and W-225 discharged, W-213 narrowed, W-330 to W-339 filed
 
 W-013 stays open with slice 2 in its notes; W-213, W-214, W-218, W-219
-and W-222 are narrowed and W-220, W-223, W-224, W-226, W-229 and W-230
-noted; W-330 to W-339 are filed from fork/variadics/va2-plan.md §1.11,
+and W-222 are narrowed and W-220, W-221, W-223, W-224, W-226, W-229 and
+W-230 noted; W-330 to W-339 are filed from fork/variadics/va2-plan.md §1.11,
 W-335 as discharged by C0. The decision-log entry "VA-2" records D-VA2-1
 to D-VA2-19, the rejected alternatives and the V-3a register entries;
 ORCHESTRATION records the PR and the Next actions of W-332, W-338 and
@@ -2668,8 +2866,8 @@ an element of a pack of different types, a value or a type, now stops at
 VA-2's `semantics TODO: C++ or template-dependent action on an element of
 a pack of different types` where it is written, because CT-1's deferral
 adds its CallAction through AddDependentActionSplice, and so through
-AddDependentActionInst, where VA-2's C1 refuses it. The new split pins
-that; it is filled by the next commit. No code changes.
+AddDependentActionInst, where VA-2's C1 refuses it. The new splits pin
+that; they are filled by the next commit. No code changes.
 
 fork/variadics/va2-plan.md D-VA2-14.
 ```
@@ -2711,6 +2909,7 @@ toolchain/lower/testdata/variadics/.
 | (same) | `forward` | `ForEach(... each y)`: a `pack_expansion_expr` of type `⟬%U⟭`, deducing `T` = `%U` and the arity from `U`'s; no `require_complete_type` diagnostic |
 | (same) | `method` | `c.F(a, a)` with the bound `self` first and a 2-element `pack_literal`; `T` = `⟬%A, %A⟭` |
 | (same) | `qualified_member` | as `call`'s body, with `.(Code.Get)` as the compound member access on the symbolic `each T` |
+| (same) | `template_outer` | `F`'s body holds `splice_inst`s for the template-dependent `u.n` and for the `Consume` call that takes it, whose operands (that splice and the run-time result of `each x.V()`, called through `HasV`'s witness for `pack_element %T, %pack_index`) contain no pack index as constants, so no diagnostic; `Call` deduces `T` = `⟬%i64, bool⟭` (M-19, measured on rev 3 and rev 4, `$H/r/gw_rev4/template_outer_ranges.out`; the re-review's tp2 prints 211; amended 2026-10-26, review fold: RR2-m2) |
 | (same) | `cpp_template_outer` | `F`'s body holds a `call_action` for `Cpp.Traits(%U)` and a deferred call of `Consume` whose operands are that splice and `One(each x)`, of type `i32`, neither depending on the pack index, so no diagnostic; `Call` deduces `T` = `⟬bool, %i32⟭` (M-18's ctE; amended 2026-10-26, review fold: RR1-B-M5) |
 | check/fail_hetero_pack.carbon (C1) | `fail_missing_impl` | `error: cannot convert type `C` into type implementing `Code` [ConversionFailureTypeToFacet]` at `ForEach(a, c)`, with the generic parameter note; nothing else |
 | (same) | `fail_missing_member` | `error: member name `Missing` not found in `Code`` at `each x.Missing`, at the definition (no call exists) |
@@ -2722,12 +2921,15 @@ toolchain/lower/testdata/variadics/.
 | check/fail_todo_va2.carbon (C1) | `fail_todo_two_implicit_packs` | `semantics TODO: `more than one pack expansion pattern in an implicit parameter list`` at the second `...`, and nothing for `U` |
 | (same) | `fail_todo_computed_element_type` | `semantics TODO: `pack expansion pattern whose binding type is computed from an each-name`` at `Box(each T)` |
 | (same) | `fail_todo_template_each` | `semantics TODO: `each-name binding that is ref, var or template`` |
+| (same) | `fail_todo_class_pack`, `fail_todo_interface_pack`, `fail_todo_explicit_generic_pack` | `semantics TODO: `each-name binding of a class, interface or explicit compile-time parameter`` at `each T` of `class Tup(... each T: type) {}`, `interface I(... each T: type) {}` and `fn Count(... generic each T: type) -> i64;`, once each and nothing else (M-19, measured on rev 4; on rev 3 all three check without a diagnostic; amended 2026-10-26, review fold: RR2-M1) |
 | (same) | `fail_todo_each_auto` | `semantics TODO: `HandleAutoTypeLiteral`` (upstream's, unchanged) |
 | (same) | `fail_todo_two_arities` | `semantics TODO: `more than one pack arity in a generic`` at `each n` of `fn F[... each T: type](... each n: i64);`, §A.11's source, the re-review's v02 (measured on rev 2 and rev 3), the C1 form of reviewer A's r02 shape (M-14's text; amended 2026-10-22, review fold: A-B-1); rev 2's description, `t: T` in place of the tuple, is the re-review's v01, which reports VA-1's `use of a pack's name without `each`` (W-230) first and so pins W-230's TODO, not this one (amended 2026-10-26, review fold: RR1-Nm-1) |
 | (same) | `fail_todo_forward_hetero_to_homo` | `semantics TODO: `forwarding a pack of different types to a pack of one type, or the reverse`` at `H(... each x)` (M-16, measured; amended 2026-10-22, review fold: A-M-2) |
 | (same) | `fail_todo_expansion_without_each_name` | `semantics TODO: `pack expansion without an each-name in a binding's type`` at `(... i64)` (C1's change; PR 59 and the prototype give VA-1's error there, x03; amended 2026-10-22, review fold: A-m-5 / B-M2) |
 | (same) | `fail_todo_overload_hetero_member` | VA-1's `semantics TODO: `variadic member of an overload set``, twice, at the member and at the call (x16, measured; amended 2026-10-22, review fold: A-M-2) |
 | (same) | `fail_todo_cpp_template_on_hetero_element` | `semantics TODO: `C++ or template-dependent action on an element of a pack of different types`` at `Cpp.Traits(each T)`, once (M-18's ct6, measured on rev 3; amended 2026-10-26, review fold: RR1-B-M5) |
+| (same) | `fail_todo_template_action_on_hetero_element` | `semantics TODO: `C++ or template-dependent action on an element of a pack of different types`` at `u.Get(each x)`, once: upstream's template member call on an element of the pack (M-19's tp1 shape, measured on rev 3 and rev 4; amended 2026-10-26, review fold: RR2-m2) |
+| (same) | `fail_todo_cpp_template_on_tuple_of_pack` | `error: unable to monomorphize specific `F(⟬i32, i64, bool⟭)`` at the call in `Call`, naming the specific's pack of types by C1's `PackValue` case, with PR 59's note `semantics TODO: `unsupported type used as template argument`` (ctF0 gives it without packs), once and not repeated per iteration (M-19's ctF, measured on rev 4; on rev 3 `<cannot stringify ...>` and three more copies of the TODO without a location; amended 2026-10-26, review fold: RR2-m1) |
 | (same, C2) | `fail_todo_initializing_element` | `semantics TODO: `pack expansion of initializing expressions in a tuple literal`` at the `...` of `(... each x.(Core.Copy.Op)())` |
 | (same, C2) | `fail_todo_var_pattern` | `semantics TODO: `pack expansion pattern in a pattern other than a parameter list or let`` |
 | (same, C2) | `fail_todo_enclosing_arity` | `semantics TODO: `more than one pack arity in a generic`` at `each n` of a function with a pack in a variadic impl (the fixer's f04, measured; amended 2026-10-22, review fold: A-B-1) |
@@ -2795,7 +2997,12 @@ Totals: 15 new files (10 check, 5 lower: C0's one, C1 to C3's twelve, C4's
 two), whose split count rev 3 raises by eight (`cpp_template_outer`,
 `fail_todo_cpp_template_on_hetero_element`, the lower `lib` and `use`,
 `body_expansion`, `impl_body`, `impl_lib`, `impl_use`; amended 2026-10-26,
-review fold: RR1-NB-1 / RR1-B-M5), and 5 refills; S-CT adds a sixteenth file
+review fold: RR1-NB-1 / RR1-B-M5) and rev 4 by six more (`template_outer`,
+`fail_todo_class_pack`, `fail_todo_interface_pack`,
+`fail_todo_explicit_generic_pack`,
+`fail_todo_template_action_on_hetero_element`,
+`fail_todo_cpp_template_on_tuple_of_pack`; amended 2026-10-26, review fold:
+RR2-M1 / RR2-m1 / RR2-m2), and 5 refills; S-CT adds a sixteenth file
 at land time; fail_todo_va2 and fail_todo_slice change in C1, C2 and C3; C4
 changes M-9's predicted 44 full-prelude goldens, 43 of them only by
 renamed SemIR names, a lower bound; no other golden changes (§6.1) (amended
@@ -2880,13 +3087,16 @@ changed it and listed, with its cause, in the implementation review (§7 R-5).
 
 §0.6's table is the measurement for the prototype's files at the current heads.
 The files C2 to C4 add beyond the prototype (check/handle_tuple_literal.cpp,
-pattern_match.cpp, handle_let.cpp, control_flow.cpp, sem_ir/dominance.cpp,
-inst_kind.def, inst_namer.cpp, formatter.cpp, lower/function_context.*,
-lower/handle_pack_expansion.cpp, core/prelude/copy.carbon,
-core/prelude/operators/comparison.carbon) were intersected with every held
+handle_let.cpp, control_flow.cpp, control_flow.h, sem_ir/dominance.cpp,
+inst_kind.def, inst_namer.cpp, formatter.cpp, core/prelude/copy.carbon,
+core/prelude/operators/comparison.carbon; rev 3 also listed pattern_match.cpp,
+lower/function_context.* and lower/handle_pack_expansion.cpp, which Appendix
+B already changes and C2 and C3 change further, so they are in §0.6's table,
+amended 2026-10-26, review fold: RR2-m3) were intersected with every held
 head's changes since its merge base with b0822a744 (`git diff --name-only`):
-only sem_ir/inst_kind.def (PR 60, PR 61, PR 64), inst_namer.cpp (PR 60) and
-lower/function_context.cpp (PR 61, PR 64) are shared. inst_kind.def is
+only sem_ir/inst_kind.def (PR 60, PR 61, PR 64) and inst_namer.cpp (PR 60)
+are shared, and of the prototype files C3 changes further,
+lower/function_context.cpp (PR 61, PR 64). inst_kind.def is
 alphabetical and their kinds (`StructuralRequirementType`, `AddrOfAction`,
 `IndexAction`, `PointerDereferenceAction`, `TupleIndexAction`) are not adjacent
 to `PackExpansionNext` (after :132) or `PackSegmentInit` (after :136);
@@ -3065,9 +3275,12 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     pack index, at `AddDependentActionInst`, which every action passes through
     (check/inst.cpp:46-50); ct6 and ctD on this branch, and ct1, ct2, ct4 to ct8
     and ctD on the PR 64 mirror, report the TODO, and ctE, ctC, ctB, ct3 and ctA
-    run (M-18). Falsified by a dependent action of any kind (a C++ call, a C++
-    class or function template, a TP-1 template action) whose operand depends on
-    the pack index and that reaches a specific without the TODO, or by an action
+    run (M-18); upstream's template actions on an element (tp1, tp3, tp4, tp5)
+    report it on this branch too, and tp2, whose operands do not depend on the
+    pack index, runs (M-19; amended 2026-10-26, review fold: RR2-m2). Falsified
+    by a dependent action of any kind (a C++ call, a C++ class or function
+    template, an upstream or TP-1 template action) whose operand depends on the
+    pack index and that reaches a specific without the TODO, or by an action
     whose operands do not depend on it being refused.
 -   **R-12. The ranking's reading** (added by rev 2; amended 2026-10-22,
     review fold: A-M-1 / B-B2). The overlap rule does not name segments
@@ -3199,7 +3412,26 @@ with `set_m64r2.txt`, `set_m64r3.txt`, `goldens_m64r3.txt` and `gate_m64r3.log`,
 §0.6's collisions (`collisions_rev3.txt`), M-1's commit lists (`m1_all.txt`,
 `m1_rest.txt`), and the prototype itself (`va2_prototype_rev3.patch`,
 `rev3_fixes.patch`) (amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5 /
-RR1-Nm-3).
+RR1-Nm-3). Rev 4's are the fixer's of the second re-review, with `$H` the
+scratch directory `$S/fixer2` and every rev 4 number in `$H/r`: the rev 3
+prototype rebuilt from 80f1ec825 in a scratch worktree
+(/dev/shm/va2-fixer2/proto; `$H/r/build_rev3.log`) and the re-review's cases on
+it (`rr2set_rev3.txt`, made by `$H/r/run_rr2.sh`; `set_rev3.txt` and
+`probesall_rev3.txt`, made by `$H/r/run_set.sh` and `$H/r/probes_all.sh`, rev
+3's scripts with their outputs moved to `$H/r`), PR 59's outcomes
+(`rr2set_va.txt`, `goldens_va.txt`), the rev 4 prototype built incrementally
+from it (`build_rev4.log`, ca939ee19 by `$H/r/rev4_edit.py`) with the same runs
+(`rr2set_rev4.txt`, `set_rev4.txt`, `probesall_rev4.txt`), the six new golden
+splits compiled as the file_test compiles them (`$H/r/run_goldens.sh`,
+`goldens_rev3.txt`, `goldens_rev4.txt`), its gate, VA-1 churn and conformance
+(`gate_rev4_raw.log`, `va1_churn_rev4.diff`, `conf_rev4.log`), the PR 64 mirror
+5499d8dd9 built under /dev/shm/va2-fixer2/m64 (`build_m64r4.log`,
+`set_m64r4.txt`, `rr2set_m64r4.txt`, `goldens_m64r4.txt`, `gate_m64r4_raw.log`,
+`conf_m64r4.log`), §0.6's collisions (`collisions_rev4.txt`), `git merge-tree`
+against upstream's 21c825a3f (`mt_up.txt`: 104 conflicted paths for b0822a744,
+80f1ec825 and ca939ee19 alike, so §6.3's claim holds for rev 4), and the
+prototype itself (`va2_prototype_rev4.patch`, `rev4_fixes.patch`) (amended
+2026-10-26, review fold: RR2-M1 / RR2-m1 / RR2-m2 / RR2-m3).
 
 ### §8.1 Build (implementer)
 
@@ -3315,8 +3547,12 @@ fills, plus the set named below, and its programs are both sides' (amended
     passed and 5 failed (VA-1's five goldens, M-6); conformance PASS 156, 0
     failures, SKIP 19 of 175; ct1, ct2, ct4 to ct8 and ctD report C1's TODO, ct3
     prints 7, ctA to ctC and ctE run, and M-17's probes print their rev 3
-    outputs. The implementer re-runs it with VA-2's head, expecting the same
-    plus S-CT's split, filled (amended 2026-10-26, review fold: RR1-B-M5).
+    outputs. Measured again for the rev 4 prototype by the fixer of the second
+    re-review (5499d8dd9, M-19): the same gate, conformance and outcomes, and
+    the second re-review's probes as on rev 4 but ctH and ctJ, CT-1's (amended
+    2026-10-26, review fold: RR2-M1 / RR2-m1). The implementer re-runs it with
+    VA-2's head, expecting the same plus S-CT's split, filled (amended
+    2026-10-26, review fold: RR1-B-M5).
 -   m55, PR 55 (st, 21307851a): `Core.String`'s operations and impls beside
     the variadic tuple impls in the production prelude. Expected: ST-1's
     goldens and programs and VA-2's pass after the fill; the full-prelude
@@ -3325,10 +3561,12 @@ fills, plus the set named below, and its programs are both sides' (amended
     894139b34): `Optional`'s comparisons and storage beside the tuple impls.
     Expected: OP-1's and OP-2's programs and VA-2's pass; a probe of
     `Optional((i32, i32))` built, compared with `==` and copied runs.
--   mdr, PR 63 and DR-1b (dr-idx, 7a442f632, stacked on PR 63's 2abee5635):
-    the `ref` cursor, `IndirectIndexWith` and the prelude files they change.
-    Expected: DR-1's programs and VA-2's pass; a `for` loop over a slice of
-    tuples whose elements are compared with `==` runs.
+-   mdr, PR 63 and PR 65, DR-1b (dr-idx, fee0ef31c, stacked on PR 63's
+    89aabd125; rev 3 named the heads 7a442f632 and 2abee5635, from which they
+    moved by fork/ records and one DR-1b golden, amended 2026-10-26, review
+    fold: RR2-m3): the `ref` cursor, `IndirectIndexWith` and the prelude files
+    they change. Expected: DR-1's programs and VA-2's pass; a `for` loop over a
+    slice of tuples whose elements are compared with `==` runs.
 -   mall, the land simulation (D-VA2-18): trunk 563135b40 with every held PR
     merged in fork/ORCHESTRATION.md's order (each PR's head as its scratch
     merge, each conflict resolved by that PR's own land rules, the way CT-1's §8
@@ -3383,12 +3621,14 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
 -   p25 and p26 on PR 59, trunk and the nightly: they need packs of
     different types, which only the prototypes check.
 -   The builds (`/dev/shm/va2-planner`, `/dev/shm/va2-fixer`,
-    `/dev/shm/va2-fixer1`) were deleted when rev 1, rev 2 and rev 3 were
-    written, and so were rev 3's PR 64 mirrors (/dev/shm/va2-fixer1/m64);
-    the rev 3 prototype is reproducible from Appendix B (or
-    `$G/r/va2_prototype_rev3.patch`) on b0822a744, and the mirrors from the
-    scratch commits 0084da002 and 4234cdb6f (amended 2026-10-26, review fold:
-    RR1-NB-1 / RR1-B-M5).
+    `/dev/shm/va2-fixer1`, `/dev/shm/va2-fixer2`) were deleted when rev 1, rev
+    2, rev 3 and rev 4 were written, and so were rev 3's and rev 4's PR 64
+    mirrors (/dev/shm/va2-fixer1/m64, /dev/shm/va2-fixer2/m64) and rev 4's
+    scratch worktrees; the rev 4 prototype is reproducible from Appendix B (or
+    `$H/r/va2_prototype_rev4.patch`) on b0822a744, and the mirrors from the
+    scratch commits 0084da002, 4234cdb6f and 5499d8dd9 (amended 2026-10-26,
+    review fold: RR1-NB-1 / RR1-B-M5; amended 2026-10-26, review fold: RR2-M1
+    / RR2-m1).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -3424,9 +3664,11 @@ ids are renumbered in D's commit, never in source.
 ## Hand-off notes for the implementer
 
 1.  **Start from the prototype.** `git apply` of Appendix B (or of
-    `$G/r/va2_prototype_rev3.patch`) on b0822a744 reproduces §0.5's rev 3
-    tree (91dd88f60, the scratch commit 80f1ec825; measured by
-    `$G/r/check_appb.sh`) (amended 2026-10-26, review fold: RR1-NB-1); split
+    `$H/r/va2_prototype_rev4.patch`) on b0822a744 reproduces §0.5's rev 4
+    tree (f023437c2, the scratch commit ca939ee19; measured by
+    `$H/r/check_appb.sh`; rev 3's was 91dd88f60, 80f1ec825) (amended
+    2026-10-26, review fold: RR1-NB-1; amended 2026-10-26, review fold:
+    RR2-M1 / RR2-m1); split
     it into C0, C1 and C2's built half by §2.1 to §2.3 and §2.7,
     then add C1's own changes (F-3's TODO, F-7's TODO, the relabels) before
     C1's fill, and keep in C2 M-9's deduction correction (§2.3), the
@@ -3437,8 +3679,13 @@ ids are renumbered in D's commit, never in source.
     and x07; C1: §0.2's p02, p12, p14, p15, reviewer A's r02 and the fixer's
     f01, f03, f06, the import probes i2, i5, i6 and i8 (16, 3, 8 2 and 116 0)
     and ct6, ctD, ctB, ctC and ctE (the TODO twice, then 8 1, 19 and 19)
-    (M-17, M-18); C2: i1 (16 9), i3 and same3 (46 each), f10 (3 0) and pl1 (1,
-    with `$G/imp/pl1_proxy.txt` appended to the install's comparison.carbon),
+    (M-17, M-18), and the second re-review's v3, v6 and vB (the TODO
+    `each-name binding of a class, interface or explicit compile-time
+    parameter`), ctF (`F(⟬i32, i64, bool⟭)`, once), tp1 (the action TODO) and
+    tp2 (211), all run by `$H/r/run_rr2.sh <tag> <install>` (M-19; amended
+    2026-10-26, review fold: RR2-M1 / RR2-m1 / RR2-m2); C2: i1 (16 9), i3 and
+    same3 (46 each), f10 (3 0) and pl1 (1, with `$G/imp/pl1_proxy.txt` appended
+    to the install's comparison.carbon),
     then p19, p24, p24b, p25, p26, r01, r01b, r14, r17, x05, x05b, x06, x06b,
     x12 and the `tuple_segment` golden; `$G/r/run_set.sh <tag> <install>` runs
     the import, C++ and proxy probes in one go, and `$G/r/probes_all.sh` the
@@ -3599,6 +3846,106 @@ prototype's code in C1 and C2, as B-M5's moves a refusal into upstream's
 `AddDependentActionInst`; the next focused re-review decides, and should
 re-run `$G/r/run_set.sh` on the rev 3 prototype and on a PR 64 mirror and
 re-read e1c8c1f85 against D-VA2-4.
+
+## Review fold record (rev 4, 2026-10-26)
+
+The second focused re-review, of rev 3 (8d377a06d), APPROVE-WITH-AMENDMENTS,
+folded by the fixer of the second re-review on 2026-10-26 against upstream's
+21c825a3f, which `git fetch upstream trunk` and `git ls-remote upstream
+refs/heads/trunk` gave again that day, with no commit past rev 3's read. An
+earlier attempt at this fold was interrupted by a container restart; its saved
+patch (`$S/fixer-r2-partial.patch`) does not exist, so nothing of it was
+reused, and the worktree was at rev 3 when this fold began. Every finding
+that is a measurement was reproduced on the rev 3 prototype rebuilt from
+80f1ec825 (M-19), every rev 4 number comes from this fold's own builds and
+runs (`$H/r`, §8.0), and each amended sentence above carries "(amended
+2026-10-26, review fold: RR2-<finding>)".
+
+The re-review, as received (verdict APPROVE-WITH-AMENDMENTS; its own setup and
+logs are `$S/rr2`): it fetched upstream (21c825a3f, no new commits), found the
+design pages, the prelude and handle_pack_expansion.cpp unchanged against
+b0822a744 and 57ba07a97, and only 2ec4bab59, a045da8e6, 947c1eb52, df3cf9294
+and 6d80ceb58 touching variadics, tuples or the prelude since the cut, all in
+M-1; it applied Appendix B to b0822a744 (tree 91dd88f60, 80f1ec825's), built
+it under /dev/shm/va2-rr2, built the PR 64 mirror 4234cdb6f after checking it
+is a plain keep-both merge of 4a3220c11 and 80f1ec825, and deleted both
+builds. On rev 3 the gate was 1955 passed and 5 failed (VA-1's five),
+conformance 137/0/21 and the 131 earlier probes the fixer's line for line; on
+the mirror the gate was 1972 passed and 5 failed. It found rev 3's findings
+resolved: NB-1 (i1 16 9, i2 16, i3 46, i5 3, i6 8 2, i8 116 0, same3 46, f10
+3 0 and pl1 1 on rev 3 and on the mirror; its adversarial a1 46 0, a2 46, b1
+4046, b2 4046 10346 10300, c1 1014 1010, c2 1014 and d1 1046 1080; every
+§A.11 rev 3 split checking and lowering), B-M5 (on the mirror ct1, ct2, ct4 to
+ct8 and ctD the TODO, ct3 7, ctA 8 8 1 1, ctB 8 1, ctC and ctE 19, S-CT's
+three splits the TODO once each, ctG and tp1, tp3, tp4 and tp5 the TODO, ctJ
+333, tp2 211 and tp6 5), Nm-1, Nm-2 (§A.9 re-derived, 21 and 22, MV-11
+consistent) and Nm-3 (`git merge-tree` 104 = 104 at 21c825a3f). Its findings:
+
+-   RR2-M1 (MAJOR): compile-time each-name bindings outside an implicit list
+    are accepted, so variadic classes, interfaces and explicit `generic` packs
+    regress from VA-1's TODO to wrong diagnostics. The binding handler accepts
+    any `CompileTimeBindingPattern` each-name, and `PackExpansionStart` lets
+    `...` into every explicit list, class and interface lists included: v3
+    (`class Tup(... each T: type) {}`) compiles; v7, vE, v6, vA, vF and vC give
+    arity errors, v8 cannot deduce `<pack arity>`, and vB, vD and vH cannot
+    deduce `T`; each gave PR 59's TODO. Fix: accept a compile-time each-name
+    only when its expansion starts an implicit parameter list, keep a relabeled
+    TODO (W-222 for classes and interfaces, W-221 for `generic`), keep
+    `generic` in W-221's text, add `fail_todo_va2` splits for v3, v6 and vB,
+    and correct §0.3 item 2 and D-VA2-13's table.
+-   RR2-m1 (MINOR): a concrete `PackValue` in a specific's name is not
+    stringified: ctF (`return Cpp.Traits((... each T)).size;`) reports
+    `unable to monomorphize specific F(<cannot stringify ...PackValue...>)` on
+    rev 3 and the mirror; the underlying error is PR 59's (ctF0). Fix:
+    `StringifyInst(PackValue)` printing `⟬i32, i64, bool⟭`, and a split that
+    names such a specific.
+-   RR2-m2 (MINOR): Carbon template actions in expansions over a pack of
+    different types are unpinned, and D-VA2-14's "no install composes
+    templates with packs" is stale: rev 3 alone composes upstream's
+    `[template U: type, ... each T: ...]` (tp1, tp3, tp4, tp5 the TODO; tp2
+    211). Fix: a `fail_todo_va2` split with tp1's shape, a passing
+    `hetero_pack` split with tp2's, and D-VA2-14 reworded.
+-   RR2-m3 (MINOR): stale counts, heads and wording: §3 item 0's "rev 2 (this
+    commit)", §0.6's "the prototype's 30" (31), §6.2's list of files beyond
+    the prototype that Appendix B already changes, §8.7's mdr heads (live:
+    89aabd125 and fee0ef31c, moved by fork/ records only), and S-CT's "The new
+    split" for a file of three splits. Fix: update each.
+
+Four findings, all folded, none rejected:
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR2-M1 compile-time each-names outside an implicit list accepted | MAJOR | folded: reproduced on rev 3 (v3 compiles; v6, v7, vA, vC, vE and vF arity errors; v8 `<pack arity>` and vB, vD, vH `T` not deduced; the fixer's k1, k2 and k6, a pack in a class's or an interface's implicit list, compile); C1 accepts a compile-time each-name only in a function's or an impl's implicit list (full pattern `ImplicitParamList`, introducer `fn` or `impl`) and otherwise reports `each-name binding of a class, interface or explicit compile-time parameter` before any arity is added (W-222 for classes and interfaces, W-221, whose text keeps `generic`, for an explicit `generic`), built and measured on rev 4 and the mirror: every v and k probe but v4 and k3 (unchanged) reports it with PR 59's count of diagnostics, and the gate, VA-1's churn, conformance and the 131 earlier probes are rev 3's; `fail_todo_va2` gains `fail_todo_class_pack`, `fail_todo_interface_pack` and `fail_todo_explicit_generic_pack`; W-221 is noted by D | header, M-19, §0.3, §0.5, D-VA2-4, D-VA2-13, §1.11, §2.2, §3 C1 and D, §4, §A.11, §A.12, hand-off notes, Appendix B |
+| RR2-m1 a specific's `PackValue` not stringified | MINOR | folded: reproduced (ctF names `F(<cannot stringify ...>)`), with three more copies of the TODO without a location, one per element, because `TryEvalPackIterationsForSpecific` evaluated a failed specific's blocks again in each iteration; `StringifyInst(PackValue)` prints the pack literal and the concrete pack type reuses it, and the per-iteration evaluation returns for a specific with an error; ctF now reports `F(⟬i32, i64, bool⟭)` and the note once; split `fail_todo_cpp_template_on_tuple_of_pack` added | M-19, §0.5, §2.1, §2.2, §3 C1, §4, §A.11, Appendix B |
+| RR2-m2 Carbon template actions unpinned; D-VA2-14 stale | MINOR | folded: reproduced on rev 3 and rev 4 (tp1, tp3, tp4, tp5 the TODO; tp2 211); `fail_todo_template_action_on_hetero_element` (tp1's shape) and `hetero_pack`'s `template_outer` (tp2's) added and compiled; D-VA2-14's opening, R-11, §1.11's W-224 note and §A.12's W-224 sentence, which still named S-CT's TODO, rewritten | M-19, D-VA2-14, R-11, §1.11, §3 C1, §4, §A.11, §A.12 |
+| RR2-m3 stale counts, heads and wording | MINOR | folded: §3 item 0 names revs 2 to 4; §0.6 counts 31 and 10; §6.2's list keeps only the files beyond the prototype; mdr names fee0ef31c on 89aabd125, re-read, and §0.6's table is re-measured at them and at trunk 449fecdd7 (`collisions_rev4.txt`: every row rev 3's); S-CT's last sentence plural; also stale and corrected: §2.0's "rev 2 prototype", the shrink line's prototype counts (now 31 files, 1399 and 122), the id re-scan and the upstream re-read | header, §0.6, §2.0, §3, §6.2, §8.7 |
+
+Rev 4 is SIGNED OFF FOR IMPLEMENTATION: the verdict is APPROVE-WITH-AMENDMENTS,
+not REJECT; every finding is folded; and the code the folds change (three
+files, `$H/r/rev4_fixes.patch`) was built, gated, run through conformance and
+the earlier probe sets, and measured on the PR 64 mirror, with no earlier
+outcome changed but the ones the findings name (M-19).
+
+## Sign-off
+
+Rev 4 (2026-10-26) is SIGNED OFF FOR IMPLEMENTATION. The implementation
+follows §3 from Appendix B (the hand-off notes), with its own two
+implementation reviews (§3 item 12); a fill or a run that contradicts a
+prediction of this plan is a finding for those reviews, never an edit to a
+golden (§4, §8.2). Every review of this plan:
+
+| Review | Of | Verdict | BLOCKER | MAJOR | MINOR | Findings | Folded by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Review A (R29(c)) | rev 1 (51c6cfb10) | REJECT | 3 | 2 | 5 | 10 | rev 2 (78524522b): all folded, none rejected |
+| Review B (R29(c)) | rev 1 (51c6cfb10) | REJECT | 2 | 8 | 5 | 15 | rev 2 (78524522b): all folded, none rejected |
+| Focused re-review 1 (RR1) | rev 2 (78524522b) | REJECT | 1 | 1 | 3 | 5 | rev 3 (8d377a06d): all folded, none rejected |
+| Focused re-review 2 (RR2) | rev 3 (8d377a06d) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 4 (this revision): all folded, none rejected |
+| Total | | | 6 | 12 | 16 | 34 | 34 folded, 0 rejected (33 distinct) |
+
+RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so
+the 34 findings as reported are 33 distinct ones; rev 2's record counts two of
+reviews A's and B's 25 as folded in part, with evidence (B-m5 is one). The
+records of each fold are the "Review fold record" sections above.
 
 ## Appendix A. Conformance programs, golden sources and records
 
@@ -4682,8 +5029,11 @@ fn Run() -> i32 {
 ### §A.11 Golden sources (AUTOUPDATE, no CHECK lines; R15, R16(a))
 
 Each file is written by the commit named, verbatim, and filled only by
-autoupdate; `fail_todo_va2.carbon` is written by C1 with its first eight
-splits, and C2 and C3 append theirs (three and two) before their fills. Every
+autoupdate; `fail_todo_va2.carbon` is written by C1 with its first fourteen
+splits and its `traits.h` (rev 3 said eight, which its own ninth split had
+already made stale, and rev 4 adds five; amended 2026-10-26, review fold:
+RR2-M1 / RR2-m1 / RR2-m2), and C2 and C3 append theirs (three and two) before
+their fills. Every
 split of rev 1 was parsed by the planner with PR 59's install (`carbon compile
 --phase=parse` on each split as its own file: 52 splits, all parse), and every
 split rev 2 adds by the fixer the same way (21 more, all parse, `$F/r3/splits`);
@@ -4807,6 +5157,37 @@ fn ForEach[... each T: Code](... each x: each T) {
   ... Consume(each x.(Code.Get)());
 }
 //@dump-sem-ir-end
+
+// --- template_outer.carbon
+library "[[@TEST_NAME]]";
+
+interface HasV {
+  fn V(self) -> i64;
+}
+
+class G {
+  var n: i64;
+}
+
+impl i64 as HasV {
+  fn V(self) -> i64 { return self; }
+}
+
+impl bool as HasV {
+  fn V(unused self) -> i64 { return 10; }
+}
+
+fn Consume(n: i64, v: i64);
+
+//@dump-sem-ir-begin
+fn F[template U: type, ... each T: HasV](u: U, ... each x: each T) {
+  ... Consume(u.n, each x.V());
+}
+//@dump-sem-ir-end
+
+fn Call(g: G) {
+  F(g, 1 as i64, true);
+}
 
 // --- traits.h
 
@@ -4974,6 +5355,21 @@ library "[[@TEST_NAME]]";
 
 fn F[... template each T: type](... each x: each T);
 
+// --- fail_todo_class_pack.carbon
+library "[[@TEST_NAME]]";
+
+class Tup(... each T: type) {}
+
+// --- fail_todo_interface_pack.carbon
+library "[[@TEST_NAME]]";
+
+interface I(... each T: type) {}
+
+// --- fail_todo_explicit_generic_pack.carbon
+library "[[@TEST_NAME]]";
+
+fn Count(... generic each T: type) -> i64;
+
 // --- fail_todo_each_auto.carbon
 library "[[@TEST_NAME]]";
 
@@ -5023,6 +5419,26 @@ fn Consume(x: i32);
 
 fn F[... each T: type](... unused each x: each T) {
   ... Consume(Cpp.Traits(each T).size);
+}
+
+// --- fail_todo_cpp_template_on_tuple_of_pack.carbon
+library "[[@TEST_NAME]]";
+
+import Cpp library "traits.h";
+
+fn F[... each T: type](... unused each x: each T) -> i32 {
+  return Cpp.Traits((... each T)).size;
+}
+
+fn Call() {
+  F(1 as i32, 2 as i64, true);
+}
+
+// --- fail_todo_template_action_on_hetero_element.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
+  ... u.Get(each x);
 }
 
 // --- fail_todo_initializing_element.carbon
@@ -6225,7 +6641,7 @@ Row "Generics: Definition-checked variadics" (replaces line 59):
 <!-- google-doc-style-ignore -->
 
 ```text
-| Generics: Definition-checked variadics | PARTIAL | Slice 1 landed by VA-1 (fork/variadics/plan.md) and slice 2 by VA-2 (fork/variadics/va2-plan.md; W-013 stays open), EXPECTED, not of record: `...` (upstream's 2ec4bab59, cherry-picked) and `each` lex and parse; a function may take one pack `... each x: T` of one element type or, with a compile-time pack `[... each T: I]` in its implicit parameter list, a pack `... each x: each T` of different types, binding its arguments' values without copying them, expand them in expression statements and `if` statements and pass them on as call arguments (`... e`, evaluated where written); a tuple type of one pack segment, `(... each T)`, is a parameter, return or impl self type, `(... each x)` is a tuple, and `let (... each x: each T) = t;` binds a tuple's elements; the arity and the pack of types are deduced at each call, the body is checked once against the element type or the symbolic `each T`, and each specific is lowered once per element with that element's types and callees; a variadic impl is selected for tuples of every arity and ranked beside blanket and fixed-arity impls by the overlap rule. generics/variadics_each.carbon and fourteen more programs PASS in the container run <run> (<counts>). Not yet: two pack arities in one generic, a second implicit-list pack and class parameter packs (W-222); element types computed from an each-name (W-330); tuples of several segments (W-222) and segments merged with other elements or arguments, default values beside a pack (W-215); the design's Zip, Apply and TupleConcat (W-213); `let` expansions of deduced arity and pack patterns in `var`, `match` and nested tuple patterns (W-214); `...and` and `...or` (W-216); `...expand` (W-217); declarations, loops, `break`, `continue` and `match` in expansions (W-218); control flow inside expression bodies (W-219); per-element cleanups (W-220); `ref`, `var` and phase-qualified each-names (W-221); variadic overload-set members (W-223); packs in templates and C++ calls on elements of packs of different types (W-224); a variadic `Core.Call` (W-226); C++ variadic templates (W-227) and export (W-228); variadic interface functions (W-229); a pack's bare name (W-230); initializing expansion elements in tuple literals (W-331); `each x: auto` (W-333); forwarding between packs of different types and packs of one type (W-336); expansions without each-names in a binding's type (W-337); the termination rule of impl selection (W-332). |
+| Generics: Definition-checked variadics | PARTIAL | Slice 1 landed by VA-1 (fork/variadics/plan.md) and slice 2 by VA-2 (fork/variadics/va2-plan.md; W-013 stays open), EXPECTED, not of record: `...` (upstream's 2ec4bab59, cherry-picked) and `each` lex and parse; a function may take one pack `... each x: T` of one element type or, with a compile-time pack `[... each T: I]` in its implicit parameter list, a pack `... each x: each T` of different types, binding its arguments' values without copying them, expand them in expression statements and `if` statements and pass them on as call arguments (`... e`, evaluated where written); a tuple type of one pack segment, `(... each T)`, is a parameter, return or impl self type, `(... each x)` is a tuple, and `let (... each x: each T) = t;` binds a tuple's elements; the arity and the pack of types are deduced at each call, the body is checked once against the element type or the symbolic `each T`, and each specific is lowered once per element with that element's types and callees; a variadic impl is selected for tuples of every arity and ranked beside blanket and fixed-arity impls by the overlap rule. generics/variadics_each.carbon and fourteen more programs PASS in the container run <run> (<counts>). Not yet: two pack arities in one generic, a second implicit-list pack, and class and interface parameter packs (W-222); element types computed from an each-name (W-330); tuples of several segments (W-222) and segments merged with other elements or arguments, default values beside a pack (W-215); the design's Zip, Apply and TupleConcat (W-213); `let` expansions of deduced arity and pack patterns in `var`, `match` and nested tuple patterns (W-214); `...and` and `...or` (W-216); `...expand` (W-217); declarations, loops, `break`, `continue` and `match` in expansions (W-218); control flow inside expression bodies (W-219); per-element cleanups (W-220); `ref`, `var` and phase-qualified each-names (W-221); variadic overload-set members (W-223); packs in templates and C++ calls on elements of packs of different types (W-224); a variadic `Core.Call` (W-226); C++ variadic templates (W-227) and export (W-228); variadic interface functions (W-229); a pack's bare name (W-230); initializing expansion elements in tuple literals (W-331); `each x: auto` (W-333); forwarding between packs of different types and packs of one type (W-336); expansions without each-names in a binding's type (W-337); the termination rule of impl selection (W-332). |
 ```
 
 <!-- google-doc-style-resume -->
@@ -6241,12 +6657,12 @@ Row "Stdlib: tuple/array library parts" (replaces line 80):
 <!-- google-doc-style-resume -->
 
 fork/inventory/work-items.json, commit D: W-212 and W-225 are replaced by
-these entries; W-213, W-214, W-215, W-218, W-219, W-220, W-222, W-223, W-224,
-W-226, W-229, W-230 and W-013 gain the sentences below at the end of their
-`notes`; W-330 to W-339 are appended after W-230, in id order. The file's
+these entries; W-213, W-214, W-215, W-218, W-219, W-220, W-221, W-222, W-223,
+W-224, W-226, W-229, W-230 and W-013 gain the sentences below at the end of
+their `notes`; W-330 to W-339 are appended after W-230, in id order. The file's
 `source` string gains "Updated <date> by the VA-2 discharge: W-212 and W-225
-discharged; W-213, W-214, W-215, W-218, W-219, W-220, W-222, W-223, W-224,
-W-226, W-229, W-230 and W-013 noted; W-330 to W-339 added, W-335 as
+discharged; W-213, W-214, W-215, W-218, W-219, W-220, W-221, W-222, W-223,
+W-224, W-226, W-229, W-230 and W-013 noted; W-330 to W-339 added, W-335 as
 discharged."
 
 <!-- google-doc-style-ignore -->
@@ -6302,9 +6718,10 @@ W-215: VA-2 (<date>): upstream's 503f09037 adds default values for non-generic p
 W-218: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-11): statement expansions whose body is an `if` statement, with `else if`, `else` and `return`, are checked and lowered; only declarations, `while`, `for`, `break`, `continue` and `match` in a body remain (`pack expansion of a statement other than an expression or if statement`).
 W-219: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-11): control flow at the statement level (`... if`) is implemented; only control flow inside an expression body and the "Type versus execution semantics" example remain.
 W-220: VA-2 (<date>): the design's StrCat with a `String`-typed `ToString` is this item's arbiter: its `... result.Append(each param.ToString());` destroys a temporary per element (fork/variadics/va2-plan.md M-16, x01).
-W-222: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-4): every pack of a function or impl shares one deduced arity, and a second arity in a generic or an enclosing one is `semantics TODO: more than one pack arity in a generic`; only independent arities (including that second arity and a second implicit-list pack, `more than one pack expansion pattern in an implicit parameter list`), tuples of more than one segment and class parameter packs remain.
+W-221: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-4): an explicit `generic` each-name is `semantics TODO: each-name binding of a class, interface or explicit compile-time parameter`, a text it shares with W-222's class and interface parameter packs (`fail_todo_explicit_generic_pack`); the `ref`, `var` and `template` forms are `semantics TODO: each-name binding that is ref, var or template`.
+W-222: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-4): every pack of a function or impl shares one deduced arity, and a second arity in a generic or an enclosing one is `semantics TODO: more than one pack arity in a generic`; only independent arities (including that second arity and a second implicit-list pack, `more than one pack expansion pattern in an implicit parameter list`), tuples of more than one segment and class and interface parameter packs remain, the last `semantics TODO: each-name binding of a class, interface or explicit compile-time parameter` (`fail_todo_class_pack`, `fail_todo_interface_pack`).
 W-223: VA-2 (<date>): a member of an overload set with a pack of different types, and such a pack forwarded to an overload set, are this item's TODOs too (fork/variadics/va2-plan.md M-16, x16, x17); OV-1's `GetExplicitArityRange` is not reached with a pack.
-W-224: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-14): a C++ call on an element of a pack of different types (CT-1's deferred call inside an expansion over `each T`) is `semantics TODO: C++ call on an element of a pack of different types` from VA-2's land-time commit S-CT; this item resolves deferred actions once per iteration.
+W-224: VA-2 (<date>, fork/variadics/va2-plan.md D-VA2-14): a C++ call, a C++ class template or a template-dependent action whose operand depends on an element of a pack of different types is `semantics TODO: C++ or template-dependent action on an element of a pack of different types`, refused by C1 at `AddDependentActionInst` for upstream's templates (`fail_todo_template_action_on_hetero_element`) and C++ templates (`fail_todo_cpp_template_on_hetero_element`) and, after the land-time merge, for CT-1's deferred calls (S-CT's splits); this item resolves deferred actions once per iteration.
 W-226: VA-2 (<date>): the design's Apply (`F: Call(... each T)`, variadics.md :275) is this item's arbiter, with W-213.
 W-229: VA-2 (<date>): p002274's variadic indexing interfaces (:250-257), named by W-212's note, are deferred by that proposal "once we have a design for variadics" as an alternative, not a rule, and need packs in interface functions; they are tracked here.
 W-230: VA-2 (<date>): V-3a register entry (iii): a pack's bare name has no meaning in the design (p002240 "Omit each-names", :555, an alternative not adopted); re-read at each weekly upstream check, and implement the meaning or the error the design or upstream gives it.
@@ -6551,7 +6968,7 @@ segment's rank against a `?` (W-338); comparisons of orderings that are not
 total (W-339).
 
 Records: W-212 and W-225 discharged, W-213 narrowed; W-214, W-215, W-218,
-W-219, W-220, W-222, W-223, W-224, W-226, W-229, W-230 and W-013 noted;
+W-219, W-220, W-221, W-222, W-223, W-224, W-226, W-229, W-230 and W-013 noted;
 W-330 to W-339 filed, W-335 as discharged by C0. Both rows stay PARTIAL with
 narrower open text, expected, not of record, on the container run <run>.
 ```
@@ -6594,21 +7011,27 @@ p002240's "Omit each-names".
 
 ## Appendix B. The prototype, verbatim
 
-`$G/r/va2_prototype_rev3.patch`, the diff of the rev 3 prototype against
-b0822a744 (31 files, 1368 insertions, 122 deletions; the scratch commit
-80f1ec825, tree 91dd88f60), which §2.1 to §2.3 and §2.7 describe hunk by hunk
+`$H/r/va2_prototype_rev4.patch`, the diff of the rev 4 prototype against
+b0822a744 (31 files, 1399 insertions, 122 deletions; the scratch commit
+ca939ee19, tree f023437c2), which §2.1 to §2.3 and §2.7 describe hunk by hunk
 and C0, C1 and C2 split: the planner's rev 1 patch, M-9's correction to its
 `TupleType` deduction (`if (!arg_tuple) { break; }` before the segment test,
 R-4), the rev 2 corrections of §2 (amended 2026-10-22, review fold: A-B-1 /
-A-B-2 / A-B-3 / A-M-1 / A-m-5 / B-m5), and the rev 3 corrections
+A-B-2 / A-B-3 / A-M-1 / A-m-5 / B-m5), the rev 3 corrections
 (`$G/r/rev3_fixes.patch`: the bindings read through their constant values
 and the one arity in check/eval.cpp, the enclosing arity's
 `specific_constant` in check/handle_pack_expansion.cpp, the refusal in
 check/action.cpp and its `InitializeAction` site in check/convert.cpp)
-(amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5 / RR1-Nm-3). The
-repository's trailing-whitespace hook strips the single space of the diff's
-blank context lines; `git apply` reads those empty lines as blank context
-lines, so this copy applies as it stands (§2.0, F-9).
+(amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5 / RR1-Nm-3), and the
+rev 4 corrections (`$H/r/rev4_fixes.patch`: the compile-time each-name
+accepted only in a function's or an impl's implicit list in
+check/handle_binding_pattern.cpp, the `PackValue` case in
+sem_ir/stringify.cpp, and no per-iteration evaluation of a failed specific in
+check/eval.cpp, with clang-format's re-wrapping of rev 3's lines in those
+files) (amended 2026-10-26, review fold: RR2-M1 / RR2-m1). The repository's
+trailing-whitespace hook strips the single space of the diff's blank context
+lines; `git apply` reads those empty lines as blank context lines, so this
+copy applies as it stands (§2.0, F-9), which `$H/r/check_appb.sh` checks.
 
 <!-- google-doc-style-ignore -->
 
@@ -7004,7 +7427,7 @@ index 805ba2beb..a3df57b28 100644
        }
 
 diff --git a/toolchain/check/eval.cpp b/toolchain/check/eval.cpp
-index d632afebd..11aa4cb2f 100644
+index d632afebd..4530e49f4 100644
 --- a/toolchain/check/eval.cpp
 +++ b/toolchain/check/eval.cpp
 @@ -169,14 +169,32 @@ class EvalContext {
@@ -7088,14 +7511,16 @@ index d632afebd..11aa4cb2f 100644
  template <>
  auto TryEvalTypedInst<SemIR::Temporary>(EvalContext& eval_context,
                                          SemIR::InstId inst_id, SemIR::Inst inst)
-@@ -3592,6 +3637,84 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
+@@ -3592,6 +3637,86 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
    }
  }
 
 +auto TryEvalPackIterationsForSpecific(Context& context, SemIR::LocId loc_id,
 +                                      SemIR::SpecificId specific_id) -> void {
 +  auto& specific = context.specifics().Get(specific_id);
-+  if (specific.pack_iteration_block_id.has_value()) {
++  // A specific whose eval blocks failed was diagnosed once and is not lowered;
++  // evaluating them again per iteration would repeat its diagnostics.
++  if (specific.pack_iteration_block_id.has_value() || specific.HasError()) {
 +    return;
 +  }
 +  const auto& generic = context.generics().Get(specific.generic_id);
@@ -7315,10 +7740,10 @@ index 8112df8b2..b1b08aed6 100644
    return true;
  }
 diff --git a/toolchain/check/handle_binding_pattern.cpp b/toolchain/check/handle_binding_pattern.cpp
-index 8a2f4cb9a..148b59a34 100644
+index 8a2f4cb9a..b931ff531 100644
 --- a/toolchain/check/handle_binding_pattern.cpp
 +++ b/toolchain/check/handle_binding_pattern.cpp
-@@ -366,9 +366,12 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
+@@ -366,12 +366,32 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
      context.emitter().Emit(name_node, PackExpansionBindingWithoutEach, name_id);
      return false;
    } else if (is_each) {
@@ -7334,7 +7759,27 @@ index 8a2f4cb9a..148b59a34 100644
        return context.TODO(name_node,
                            "each-name binding that is not a value binding");
      }
-@@ -382,15 +385,67 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
++    // Fork (VA-2, D-VA2-4): a compile-time pack is declared by "an implicit
++    // parameter list element of the form `...` pattern" of a function or an
++    // impl. A pack among a class's or an interface's parameters, whose
++    // expansions in the members have fixed arity, and an explicit `generic`
++    // pack are not implemented.
++    if (node_kind == Parse::NodeKind::CompileTimeBindingPattern) {
++      auto introducer_kind =
++          context.decl_introducer_state_stack().innermost().kind;
++      if (context.full_pattern_stack().CurrentKind() !=
++              FullPatternStack::Kind::ImplicitParamList ||
++          (introducer_kind != Lex::TokenKind::Fn &&
++           introducer_kind != Lex::TokenKind::Impl)) {
++        return context.TODO(name_node,
++                            "each-name binding of a class, interface or "
++                            "explicit compile-time parameter");
++      }
++    }
+     if (pack_scope->each_binding_pattern_id.has_value()) {
+       return context.TODO(name_node,
+                           "pack expansion pattern declaring more than one "
+@@ -382,15 +402,68 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
    // element type `E` and the pack's deduced arity `N`: "each X: T" becomes
    // "each X: «T; __N»" (docs/design/variadics.md, "Explicit deduced
    // arities"). A value of that type holds the elements' values (fork VA-1,
@@ -7354,15 +7799,16 @@ index 8a2f4cb9a..148b59a34 100644
 +  if (is_each) {
 +    bool is_error = type_expr.type_component_id == SemIR::ErrorInst::TypeId;
 +    SemIR::TypeId pack_type_id = SemIR::TypeId::None;
-+    if (auto each_pack =
-+            is_error ? std::nullopt
-+                     : GetEachNameTypePack(context,
-+                                           type_expr.type_component_inst_id)) {
++    if (auto each_pack = is_error
++                             ? std::nullopt
++                             : GetEachNameTypePack(
++                                   context, type_expr.type_component_inst_id)) {
 +      pack_type_id = GetPackType(context, each_pack->first, each_pack->second);
 +      // The each-name's pack is a binding of this generic, whose arity binding
 +      // the pack's expansions use.
 +      pack_scope->arity_binding_id = each_pack->second;
-+      if (auto arity = context.pack_binding_arities().Lookup(each_pack->first)) {
++      if (auto arity =
++              context.pack_binding_arities().Lookup(each_pack->first)) {
 +        pack_scope->arity_binding_id = arity.value();
 +      }
 +    } else {
@@ -7386,21 +7832,21 @@ index 8a2f4cb9a..148b59a34 100644
 +      auto arity_entity_name_id = AddBindingEntityName(
 +          context, SemIR::NameId::PackArity, SemIR::TypeInstId::None,
 +          SemIR::InstId::None, /*is_unused=*/false, BindingPhase::Symbolic);
-+      auto arity = AddBindingPattern(
-+          context, pack_scope->start_node_id, SemIR::ExprRegionId::None,
-+          arity_type_id,
-+          {.kind = SemIR::SymbolicBindingPattern::Kind,
-+           .type_id = GetPatternType(context, arity_type_id),
-+           .entity_name_id = arity_entity_name_id,
-+           .subpattern_id = SemIR::InstId::None});
++      auto arity =
++          AddBindingPattern(context, pack_scope->start_node_id,
++                            SemIR::ExprRegionId::None, arity_type_id,
++                            {.kind = SemIR::SymbolicBindingPattern::Kind,
++                             .type_id = GetPatternType(context, arity_type_id),
++                             .entity_name_id = arity_entity_name_id,
++                             .subpattern_id = SemIR::InstId::None});
 +      pack_scope->arity_pattern_id = arity.pattern_id;
 +      pack_scope->arity_binding_id = arity.bind_id;
 +      // An invalid element type was diagnosed; the pack keeps its arity, as
 +      // in VA-1, and the binding its error type.
-+      pack_type_id = GetPackType(context,
-+                                 is_error ? SemIR::InstId::None
-+                                          : type_expr.type_component_inst_id,
-+                                 arity.bind_id);
++      pack_type_id = GetPackType(
++          context,
++          is_error ? SemIR::InstId::None : type_expr.type_component_inst_id,
++          arity.bind_id);
 +    }
 +    pack_scope->pack_type_id = pack_type_id;
 +    if (!is_error) {
@@ -7411,7 +7857,7 @@ index 8a2f4cb9a..148b59a34 100644
    }
 
    const DeclIntroducerState& introducer =
-@@ -568,7 +623,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
+@@ -568,7 +641,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
              // Record the pack for its pack expansion pattern, and for name
              // lookup of its each-name.
              pack_scope->each_binding_pattern_id = result_inst_id;
@@ -7419,7 +7865,7 @@ index 8a2f4cb9a..148b59a34 100644
              context.pack_binding_arities().Insert(context.bind_name_map()
                                                        .Lookup(result_inst_id)
                                                        .value()
-@@ -583,6 +637,19 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
+@@ -583,6 +655,21 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
          case Parse::NodeKind::CompileTimeBindingPattern:
            result_inst_id =
                make_binding_pattern(SemIR::SymbolicBindingPattern::Kind);
@@ -7428,8 +7874,10 @@ index 8a2f4cb9a..148b59a34 100644
 +            // `T` of `[... each T: I]`, which the types of later bindings
 +            // name by its constant value.
 +            pack_scope->each_binding_pattern_id = result_inst_id;
-+            auto bind_id =
-+                context.bind_name_map().Lookup(result_inst_id).value().bind_name_id;
++            auto bind_id = context.bind_name_map()
++                               .Lookup(result_inst_id)
++                               .value()
++                               .bind_name_id;
 +            context.pack_binding_arities().Insert(bind_id,
 +                                                  pack_scope->arity_binding_id);
 +            context.pack_binding_arities().Insert(
@@ -8739,10 +9187,10 @@ index cf5aa9cf6..8e85546e5 100644
  // does not perform substitution, and will return `None` if the substituted type
  // is not yet known.
 diff --git a/toolchain/sem_ir/stringify.cpp b/toolchain/sem_ir/stringify.cpp
-index 450d36921..856627de5 100644
+index 450d36921..3924b6f04 100644
 --- a/toolchain/sem_ir/stringify.cpp
 +++ b/toolchain/sem_ir/stringify.cpp
-@@ -876,8 +876,35 @@ class Stringifier {
+@@ -876,8 +876,43 @@ class Stringifier {
    }
 
    auto StringifyInst(InstId /*inst_id*/, PackType inst) -> void {
@@ -8752,14 +9200,8 @@ index 450d36921..856627de5 100644
 +    // (docs/design/variadics.md, "Tuples, packs, segments, and shapes").
 +    if (sem_ir_->types().Is<PackType>(
 +            sem_ir_->insts().Get(inst.element_id).type_id())) {
-+      if (auto types = sem_ir_->insts().TryGetAs<PackValue>(inst.element_id)) {
-+        *out_ << "⟬";
-+        step_stack_->PushString("⟭");
-+        llvm::ListSeparator sep;
-+        for (auto ref :
-+             llvm::reverse(sem_ir_->inst_blocks().Get(types->elements_id))) {
-+          step_stack_->Push(ref, &sep);
-+        }
++      if (sem_ir_->insts().Is<PackValue>(inst.element_id)) {
++        step_stack_->PushInstId(inst.element_id);
 +        return;
 +      }
 +      *out_ << "⟬each ";
@@ -8771,6 +9213,20 @@ index 450d36921..856627de5 100644
 +    step_stack_->Push(inst.element_id, "; ", inst.arity_id, "»");
 +  }
 +
++  // Fork (VA-2, D-VA2-3): a concrete pack, such as the pack of types that a
++  // specific of `[... each T: I]` gives `T`, prints as the pack literal of its
++  // elements, `⟬A, B⟭` (docs/design/variadics.md, "Tuples, packs, segments,
++  // and shapes").
++  auto StringifyInst(InstId /*inst_id*/, PackValue inst) -> void {
++    *out_ << "⟬";
++    step_stack_->PushString("⟭");
++    llvm::ListSeparator sep;
++    for (auto ref :
++         llvm::reverse(sem_ir_->inst_blocks().Get(inst.elements_id))) {
++      step_stack_->Push(ref, &sep);
++    }
++  }
++
 +  // Fork (VA-2, D-VA2-6): the scalar component of a pack of types at the pack
 +  // index, which the source spells `each T`.
 +  auto StringifyInst(InstId /*inst_id*/, PackElement inst) -> void {
@@ -8779,7 +9235,7 @@ index 450d36921..856627de5 100644
    }
 
    auto StringifyInst(InstId /*inst_id*/, PartialType inst) -> void {
-@@ -963,12 +990,22 @@ class Stringifier {
+@@ -963,12 +998,23 @@ class Stringifier {
      *out_ << "(";
      step_stack_->PushString(")");
      // A tuple of one element has a comma to disambiguate from an
@@ -8795,8 +9251,9 @@ index 450d36921..856627de5 100644
 +      // spells it (docs/design/variadics.md, "Tuples, packs, segments, and
 +      // shapes").
 +      if (auto pack = sem_ir_->insts().TryGetAs<PackType>(ref);
-+          pack && sem_ir_->types().Is<PackType>(
-+                      sem_ir_->insts().Get(pack->element_id).type_id()) &&
++          pack &&
++          sem_ir_->types().Is<PackType>(
++              sem_ir_->insts().Get(pack->element_id).type_id()) &&
 +          !sem_ir_->insts().Is<PackValue>(pack->element_id)) {
 +        step_stack_->Push("... each ", pack->element_id, &sep);
 +        continue;

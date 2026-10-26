@@ -10,7 +10,11 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-26 (DR-1b is held open as PR 65, stacked on PR 63, after
+Last updated: 2026-10-26 (VA-2's plan, definition-checked variadics slice 2, is
+signed off at rev 4 and its implementation has started on
+claude/carbon-fork-0-1-va2, stacked on PR 59; see the third paragraph dated
+2026-10-26 below; the earlier 2026-10-26 text follows).
+2026-10-26 (DR-1b is held open as PR 65, stacked on PR 63, after
 its implementation review and a focused re-review of four rounds (rounds 1 to 3
 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR,
 RR3-1-M1; round 4 dry after the shrink line); fifteen PRs are held open; VA-2,
@@ -529,6 +533,29 @@ TODO and accepted design spell it; its plan workflow runs on
 claude/carbon-fork-0-1-va2. Fifteen PRs are held open (PR 51 to PR 65); none is
 merged.
 
+Later on 2026-10-26 (17:05 UTC): VA-2's plan is SIGNED OFF at rev 4
+(fork/variadics/va2-plan.md on claude/carbon-fork-0-1-va2, 7188540ca, cut from
+PR 59's head b0822a744, toolchain 88b1b5bd2): two adversarial reviews, both
+REJECT with ten and fifteen findings, a fold to rev 2, a focused re-review
+(REJECT: one BLOCKER, a generic with a pack of different types defined in
+another library crashed in lowering, the shape of the planned prelude impls)
+and a fold to rev 3 fixing it at the root, a second focused re-review
+(APPROVE-WITH-AMENDMENTS: one MAJOR, compile-time each-names accepted outside
+implicit parameter lists, and three MINORs) and a fold to rev 4; thirty-four
+findings as reported, thirty-three distinct, all folded, none rejected. VA-2
+takes W-212 (packs of different types in implicit parameter lists), W-213
+(tuples with one pack segment, narrowed) and W-225 (the prelude's tuple Copy,
+EqWith and OrderedWith as variadic impls), with a prerequisite lowering fix
+for nested aggregate constants (a defect on every toolchain since the cut,
+upstream's tip included); it was chosen under R32 because upstream's own
+prelude TODO and the accepted design p002240 spell it, and its V-3 check reads
+upstream at 21c825a3f. The plan predicts, EXPECTED and not of record: gate
+1975 of 1975 and conformance 147/0/21 over 168 from PR 59's 1960 of 1960 and
+137/0/21 over 158; both gap rows stay PARTIAL by their bullet texts. One PR,
+stacked on PR 59, merging last after PR 65 through M, S-CT, F-M, L-F and L;
+W-330..W-339 are its ids. The implementation workflow has started. Fifteen
+PRs are held open (PR 51 to PR 65); none is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -876,6 +903,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ct` | HELD OPEN as PR 64 — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific, at 4a3220c11 (toolchain 224ee2f8f; base claude/carbon-fork-0-1-tp, stacked on PR 61; W-043 DISCHARGED, TP-1's W-273 discharged and W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; gap rows 56 and 42 stay PARTIAL; expected 1959 of 1959 and 147/0/20 over 167); plan rev 4 signed off after four reviews, two implementation reviews folded in three fix commits, focused re-review round 1 dry; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
 | `claude/carbon-fork-0-1-dr` | HELD OPEN as PR 63 — DR-1a Core.Iterate.Next takes a ref cursor (R32; W-321 discharged) at 18a7e8934 (toolchain d0cfe8082; base trunk; expected 1942 of 1942 and 128/0/22 over 150); DR-1's plan rev 3 signed off with slice 1 (W-320, Match for Core.Optional) stopped on upstream's own conflict and blocked on W-324; W-324..W-327 and W-329 filed, W-328 reserved; one implementation review (three records-only MINORs) folded; plan rev 4 (f551057ea) records DR-1b's stop-and-amend; DR-1b (IndirectIndexWith, W-109) is HELD OPEN as PR 65 on claude/carbon-fork-0-1-dr-idx, stacked on this branch; merges after CT-1 through M-a and L-a, then DR-1b through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-dr-idx` | HELD OPEN as PR 65 — DR-1b element access through `IndirectIndexWith`, `Core.Slice` and `Core.Buf` writing through `Ref`, upstream 230227264 cherry-picked (R32; W-109 DISCHARGED) at fee0ef31c (toolchain 7a442f632; base claude/carbon-fork-0-1-dr, stacked on PR 63; expected 1946 of 1946 and 130/0/22 over 152); one stop-and-amend (plan rev 4), one implementation review folded at the root (fddfcf42a and its fill bcd9ba06f, the comment commits 8deb75262 and 7a442f632, and round 4's shrink-line split 0cd4e5d2e with W-340 filed), a focused re-review of four rounds (rounds 1 to 3 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR, RR3-1-M1; round 4 dry after the shrink line); merges after DR-1a through M-b, C-b and L-b. |
+| `claude/carbon-fork-0-1-va2` | PLANNED, implementation under way — VA-2 definition-checked variadics slice 2 (W-212, W-213 narrowed, W-225; gap rows 53 and 74 stay PARTIAL) at 7188540ca (plan rev 4 signed off 2026-10-26 after two reviews and two focused re-reviews, thirty-four findings folded, none rejected; cut from PR 59's b0822a744, stacked on PR 59; predicted, not of record: 1975 of 1975 and 147/0/21 over 168); one PR, merges last after PR 65 through M, S-CT, F-M, L-F and L. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

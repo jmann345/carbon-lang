@@ -6,7 +6,22 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 6, 2026-10-26 -- the fold of the focused re-review of rev 5
+**Status:** rev 7, 2026-10-26 -- the implementation's second stop-and-amend, at
+stage 2 (C1 and F1), which the "Stop-and-amend record (rev 7, 2026-10-26)"
+before the Sign-off section records. C1, split from Appendix B as §2.1 and §2.2
+assigned its hunks, made `... each T` of a compile-time pack the pack itself but
+left in C2 the two hunks that take such a pack as a tuple's element, so C1's
+gate aborted in `TypeIterator` on the first `(... each T)` in a type position;
+four of C1's golden splits called a generic function that has only a
+declaration, which upstream rejects with `use of undefined generic function`;
+and two lower rows of §4 described lowerings that VA-1's code does not perform.
+Two hunks of Appendix B, type_iterator.cpp's `PackType` case and
+`ConvertTupleToType`'s pack segment, move from C2 to C1 (§2.2's block); those
+four splits, and three of C2's of the same form, define their functions; §4's
+rows are the measured fill's; Appendix B's code is unchanged, and the one
+decision that changes is D-VA2-19's split (M-21) (amended 2026-10-26,
+implementation: stop-and-amend: C1's split and golden sources). Rev 6
+(4d5388af2, 2026-10-26) is the fold of the focused re-review of rev 5
 (ef58cf5dd, on C0 d92a9c709), whose verdict was APPROVE-WITH-AMENDMENTS on one
 MAJOR, RR5-M1: rev 5 said that upstream's defect in a one-element aggregate
 whose element initializes in place is reached by no form or program of this
@@ -127,7 +142,18 @@ with C0b (the scratch commit 90c34dbaa) built in full under
 /dev/shm/va2-impl/builds (all deleted when rev 6 was committed), and the scratch
 directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend6`
-(`$K` below) (amended 2026-10-26, review fold: RR5-M1).
+(`$K` below) (amended 2026-10-26, review fold: RR5-M1). Rev 7's were taken by
+the plan amender of the implementation's second stop-and-amend with the
+implementer's C1 install (/home/user/carbon-build/carbon-va2, built from
+8a7395cf1 with the uncommitted split), §2.2's rev 7 block relinked over its
+objects under /dev/shm/va2-amend/v1b, C1 with C2's built half built in full
+under /dev/shm/va2-amend/builds (all deleted when rev 7 was committed), beside
+the implementer's stage 2 directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/stage2`
+(`$N`), and the scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend7`
+(`$M` below) (amended 2026-10-26, implementation: stop-and-amend: C1's split and
+golden sources).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -1114,6 +1140,167 @@ other workstreams', so no id is minted for the class here; §7.1's R-13 records
 it with a break condition, and the stage that writes D's PR text names it for
 the next allocation.
 
+M-21. C1's split and its golden sources (amended 2026-10-26, implementation:
+stop-and-amend: C1's split and golden sources). The implementer split Appendix
+B, less its file_context.cpp hunk, by §2.1 to §2.3 (`$N/c1`, 27 files and 65
+hunks, each passing `git apply --check` on F0's 8a7395cf1, and C2's built half,
+`$N/c2_proto.patch`, 10 files; the two together give Appendix B less that hunk),
+added C1's own changes and §A.11's C1 sources
+(`$N/c1_uncommitted_source_state.patch`, 33 files, 1476 insertions and 118
+deletions on 8a7395cf1), built it in full with 0 warnings (`$N/build_pre.log`)
+and ran the gate before committing anything. Four differences from this plan,
+each reproduced by the amender:
+
+-   D1, the gate. file_test aborts, "0 passed, 0 failed" (exit 134), with `FATAL
+    failure at toolchain/sem_ir/type_iterator.cpp:312: Unhandled type
+    instruction {kind: PackType, ...}` in check/variadics/fail_todo_va2.carbon's
+    split `fail_todo_cpp_template_on_tuple_of_pack` (`$N/gate_pre.log`; the
+    amender's `$M/logs/d1_c1_gate.log`, the implementer's install on the saved
+    state in the scratch worktree /dev/shm/va2-amend/wt), where §3 item 3 and
+    §8.3 predict red on exactly ten files with no crash; with that split removed
+    the gate is 1956 passed and 10 failed, the ten (`$N/gate_pre2.log`). The
+    stack runs `ConvertArgsToTemplateArgs` of `Cpp.Traits((... each T))` >
+    `ExprAsType` > `ConvertTupleToType` > `ExprAsType` >
+    `PerformUserDefinedConversion` > `LookupImplWitness` > `TypeIterator::Next`,
+    and the probes f03, r02, r02b, p04, ctF and ctF2, each with `(... each T)`
+    in a type position, abort the same way, as do 60 compiles of the earlier
+    probe sets in all, each with a tuple type that holds `... each T`
+    (`$N/probes_c1pre.txt`, `$N/sets`). Root cause, read from the split's
+    check/handle_pack_expansion.cpp, check/convert.cpp and
+    sem_ir/type_iterator.cpp: §2.2 gives C1 the hunk of
+    `HandleParseNode(PackExpansionExprId)` that makes `... each T` of a
+    compile-time pack that pack (its constant), so `(... each T)` is a tuple
+    literal whose one element is a value of a `PackType`, but §2.3 gave C2 the
+    two hunks that take such an element as a segment: `ConvertTupleToType`'s,
+    which makes it the segment `GetPackType(element, arity)`, and
+    `TypeIterator::ProcessType`'s `PackType` case. Without them
+    `ConvertTupleToType` calls `ExprAsType` on the pack, whose type is not
+    `type`, the conversion looks up an `ImplicitAs(type)` impl for the pack
+    type, and the type iterator's `default:` is `CARBON_FATAL` (:309-312 of the
+    split). The split had never been built alone (§8.1 left that check to the
+    implementer; every earlier build was of the whole prototype), so this is a
+    defect of the plan's assignment of hunks to commits: not of Appendix B's
+    code, not a header a relink missed (the implementer's build was a full one)
+    and not a golden the manifest missed.
+-   The fix of D1, measured: the two hunks, verbatim from Appendix B (§2.2's rev
+    7 block, `$M/c1_moved_hunks_block.patch`, 2 files and 15 insertions; `git
+    apply --check` passes on 8a7395cf1 and on it with the saved split), applied
+    in /dev/shm/va2-amend/wt and relinked over the implementer's C1 objects with
+    check/convert.cpp and sem_ir/type_iterator.cpp (`$M/bin/relink.sh`,
+    `$M/logs/relink_v1b.log`). The gate before the fill: 1956 passed and 10
+    failed, the ten files of §3 item 3, with no crash
+    (`$M/logs/v1b_gate_pre.log`). clang-format 21.1.8 `--dry-run --Werror` and
+    both §8.6 clang-tidy passes on the two files exit 0 with no diagnostic
+    (`$M/tidy`), and prek with the hooks §8.6 runs passes on C1's 33 files and
+    changes none (`$M/logs/prek_c1_1.log`). The split that crashed fills to §4's
+    line, `unable to monomorphize specific `F(⟬i32, i64, bool⟭)`` at the call
+    with the note `semantics TODO: `unsupported type used as template argument``
+    once, and f03, r02, r02b, p04, ctF and ctF2 print rev 4's outputs
+    (`$M/sets`, against `$H/r/rr2set_rev4.txt` and `probesall_rev4.txt`).
+-   D2, four splits of C1's goldens. Autoupdate asks for a `fail_` prefix on
+    check `hetero_pack`'s `type_pack`, `forward` and `method` splits and on
+    `generic_pack`'s `call` split (`$N/au_pre1.log`; on C1 with the block,
+    `$M/logs/au_v1b_asis_1.log`), each reporting `error: use of undefined
+    generic function [MissingGenericFunctionDefinition]` at the call with the
+    note `generic function declared here`, where §4 predicts no diagnostic. Root
+    cause: §A.11's sources declare the called generic function of those splits,
+    `Count`, `ForEach`, `C.F` and `F`, without a definition, and upstream
+    requires the definition of a generic function that a call uses
+    (check/check_unit.cpp:564-581 at b0822a744 and :507-523 at upstream's tip
+    600fd55ba: `definitions_required_by_use`, "use of undefined generic
+    function"), from a generic's body too (`forward`'s `ForEach(... each y)`);
+    PR 59, trunk and C1 report it for the same shapes without packs
+    (`$M/probes/ctl`, `$M/logs/ctl_undefined_generic.txt`: `fn F[T: type](x:
+    T);` called from a function and from a generic). Rev 1 parsed these splits
+    and no revision compiled them (rev 4's `$H/r/run_goldens.sh` compiled the
+    six splits rev 4 added), so the defect is the sources' and §4's, not the
+    code's. Three of C2's splits have the same form, `tuple_segment`'s `param`,
+    `tuple_value` and `elements_around_segment`; no other split of §A.11 and no
+    program of Appendix A calls a generic declared without a definition
+    (`$M/bin/scan_decl.py`), but `fail_hetero_pack`'s `fail_missing_impl`, whose
+    call fails its conversion first, as §4 says.
+-   The fix of D2, measured: each such function gets the empty definition VA-1's
+    goldens give a callee, `{}` with `unused` parameters (`fn ForEach(... unused
+    each n: i64) {}` in VA-1's forward.carbon). On C1 with the block the four C1
+    splits fill without a diagnostic (`$M/logs/au_v1b_rev7_1.log`):
+    `type_pack`'s two specifics of `Count` take `%int_2` with the `pack_value
+    (%i64, bool)` and `%int_0` with the empty `pack_value ()`, each specific's
+    definition completing its `require_complete_type`. On C1 with C2's built
+    half (below), `param` deduces `⟬%i64, bool⟭` and `⟬⟭` and
+    `elements_around_segment` `⟬%i32, bool⟭` and `⟬⟭`, both without a
+    diagnostic, where the sources as they were report the error twice each
+    (`$M/src/ts_c2`: `asis_filled.carbon`, `defined_filled.carbon`);
+    `tuple_value`'s call takes a tuple literal with a segment, §2.4 item 1,
+    which C2 has yet to write, and reports VA-1's `pack expansion in a tuple
+    literal outside a call's argument list` either way, so its definition is a
+    prediction until C2.
+-   D3, lower `hetero_pack`'s `layout`. §4 predicts that the caller "stores an
+    `i64`, an `i1` and an `i32` into a `{ i64, i1, i32 }` alloca and passes its
+    address"; the fill passes the address of an internal constant,
+    `@.7fc.loc14_18.5 = internal constant { i64, i1, i32 } { i64 1, i1 true, i32
+    2 }`, with no alloca, and the specific reads the three elements at constant
+    GEPs (an `i64` load, an `i8` load truncated to `i1`, an `i32` load) and
+    calls `One`'s three specifics in order, as predicted. Root cause: the row
+    predates C1's `EmitAsConstant(PackValue)` (lower/constant.cpp, §2.2), which
+    makes a pack value of constants a global constant, M-6's class for VA-1's
+    refilled pack_expansion.carbon ("the per-call stores of constant packs
+    disappear"); a wrong prediction, not a defect.
+-   D4, lower `hetero_pack`'s `forward`. §4 predicts that `Forward`'s `⟬A, B⟭`
+    specific "passes its own pack's address"; the fill allocas a `{ ptr, ptr }`,
+    loads each element of `%y`, stores it into that pack and passes the new pack
+    to `ForEach`'s `⟬A, B⟭` specific. Root cause: `ForEach(... each y)` is a
+    `PackExpansionExpr` argument, which VA-1 lowers by allocating a pack and
+    storing each iteration's result into it
+    (lower/handle_pack_expansion.cpp:69-84 at b0822a744, `CreatePackStorage` and
+    `StorePackElement`), for a pack of one type and of different types alike;
+    passing the pack through would be an optimization that neither VA-1 nor this
+    slice makes, so this too is a wrong prediction, not a defect.
+
+The fill on C1 with the block and rev 7's sources (`$M/fill_rev7_p2`, the ten
+files at their fixpoint; the second pass changes nothing,
+`$M/logs/au_v1b_rev7_2.log`; the gate after it 1966 passed and 0 failed,
+`$M/logs/v1b_gate_filled.log`): each_param, forward, import, fail_todo_slice,
+the lower pack_expansion, fail_hetero_pack and the lower hetero_pack are the
+implementer's fill (`$N/preview/p2`) byte for byte, the five refills rev 4's
+VA-1 churn line for line but for fail_todo_slice's removed split and relabeled
+TODO (`$N/va1_churn_c1_vs_rev4.txt`); fail_todo_va2 is the implementer's fill
+plus the split it could not fill, as its own relink of the block filled it
+(`$N/preview/fail_todo_va2_v1b_filled.carbon`); check hetero_pack and
+generic_pack differ from the implementer's by the four definitions and their
+dumps. The whole of C1, the saved state with the block and rev 7's four sources,
+is `$M/c1_rev7.patch` (33 files, 1491 insertions and 118 deletions on 8a7395cf1;
+27 non-test files, 996 and 109; the paths in `$M/c1_rev7_files.txt`), whose
+`toolchain` tree is 57d89a880239dee5283f1a69b5ca6a9e2a8bc32d, and
+913a132b474be56f16581c9ff3b022b35473ff4f with the fill. Conformance on C1 with
+the block: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0
+NOT-WRITTEN of 56 (`$M/logs/conf_v1b.log`). M-20's 36 probes and d01 to d04
+print what stage 1 recorded but a03's indeterminate value and a19's and a20's
+CHECK line, check/convert.cpp:2348 there (`$M/probes_v1b.txt`).
+
+C2's forms on C1 with the block (`$M/sets/rr2set_v1b.txt`, `set_v1b.txt`,
+`probesall_v1b.txt`): no probe of the sets crashes, where 60 compiles aborted on
+the split without the block. A variadic impl declares, but until C2's
+type_structure.cpp hunks the structure of `(... each T)` has no run entry, so
+the type iterator's `SymbolicType` step for the segment is one `?` and the
+impl's structure a 1-tuple's: a query of another arity finds no candidate
+(`cannot access member of interface ... that does not implement that interface`
+for p24, r09, x06, a1 and the other variadic-impl probes) or, beside a blanket
+impl, selects the blanket one (x05 and x05b print 1 3 1 1 where rev 4 printed 1
+3 2 2, r01 and r01b 1 1 where it printed 2 1, v06 5 5 where it printed 4 5).
+These are C2's forms (§3 item 5, R-14). C1 with C2's built half: the scratch
+worktree /dev/shm/va2-amend/wt2, the saved state with `$N/c2_proto.patch`, whose
+toolchain files are C1 with the block plus `$M/c2_rest_after_v1b.patch` (9
+files, 24 hunks, 381 insertions and 11 deletions, applying with `git
+apply --check` on C1 with the block), built in full with
+`CB_BUILD_ROOT=/dev/shm/va2-amend/builds` (324 steps, 0 warnings,
+`$M/logs/build_wt2.log`); there `run_rr2.sh`, `run_set.sh` and `probes_all.sh`
+print rev 4's outputs line for line but k3, p05, p18 and x03, which print C1's
+own TODOs (the relabel's, F-3's, the relabel's and F-7's), and M-20's probes
+with d01 to d04 print stage 1's, a19's and a20's CHECK at :2361
+(`$M/sets/rr2set_wt2.txt`, `set_wt2.txt`, `probesall_wt2.txt`,
+`$M/probes_wt2.txt`).
+
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
 VA-1's §1.4 built one path for a pack of one element type `«E; N»`
@@ -1241,9 +1428,10 @@ It does not implement, and so §8.9 lists as unmeasured: tuple values with a
 runtime pack segment (`(... each x)` as an initializer; the prototype reports
 the placeholder `semantics TODO: initializing a tuple with a pack segment`
 where C2's `PackSegmentInit` goes, r19), `let` with a pack expansion pattern,
-statement expansions of `if`, the prelude rewrite, C1's relabeled TODO
-diagnostics and the goldens, and the programs of Appendix A except
-§A.1 to §A.3 and §A.10, which it runs.
+statement expansions of `if`, the prelude rewrite, the goldens but C1's (whose
+fill, with C1's relabeled TODO diagnostics, rev 7 measured on C1, M-21) (amended
+2026-10-26, implementation: stop-and-amend: C1's split and golden sources), and
+the programs of Appendix A except §A.1 to §A.3 and §A.10, which it runs.
 
 ### §0.6 Collisions with the held PRs (numstat, then `git merge-tree`)
 
@@ -1384,6 +1572,13 @@ since rev 2 added `variadics_strcat`, amended 2026-10-22, review fold: B-M3).
     Appendix B, extracted verbatim, against b0822a744's tree succeeds, plain
     and with `--ignore-whitespace`: git reads an empty line in a hunk as a
     blank context line), and §2.0 gives the command.
+-   F-10 (amended 2026-10-26, implementation: stop-and-amend: C1's split and
+    golden sources). §3 item 3 and §8.3 said C1 alone is red on its ten files
+    with no crash, and hand-off note 2 named f03, r02 and ctF, whose sources
+    hold `(... each T)` as a type, as C1's probes, but §2.2 and §2.3 left in C2
+    the two hunks such a type needs; and four of §A.11's C1 splits, parsed but
+    never compiled, called a generic function that has only a declaration. Both
+    are measured and corrected by rev 7 (M-21).
 
 ## §1 Design
 
@@ -2271,7 +2466,7 @@ review fold: B-M8).
 | D-VA2-16 | ten programs, three differential (`*_diff`) | a program passes a mutant |
 | D-VA2-17 | records; no design edit; W-212 and W-225 discharged, W-213 narrowed; both rows stay PARTIAL with narrower open text | VA-2 decides an open rule without a register entry |
 | D-VA2-18 | one PR on PR 59, merging last, land-time M, S-CT (tests only since rev 3), F-M, L-F, L, simulated on the full-stack mirror | an unresolvable conflict at land time, or a land simulation's red set other than predicted |
-| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3) | a commit cannot build without a later one |
+| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed |
 
 ## §2 Spec, file by file
 
@@ -2301,6 +2496,12 @@ against C0's commit d92a9c709, where `git apply --check` passes, and Appendix B
 without its file_context.cpp hunk, which is C0's, applies on C0 plus C0b (M-20)
 (amended 2026-10-26, implementation: stop-and-amend: nested constant
 initialization).
+Since rev 7 two of the hunks §2.3 gave C2, type_iterator.cpp's `PackType` case
+and `ConvertTupleToType`'s pack segment, are C1's: C1 makes `... each T` the
+pack, and without them C1's gate aborts on `(... each T)` (M-21). They are
+§2.2's rev 7 block, Appendix B's text verbatim, and Appendix B itself does not
+change (amended 2026-10-26, implementation: stop-and-amend: C1's split and
+golden sources).
 
 ### §2.1 C1, SemIR (built)
 
@@ -2321,10 +2522,15 @@ initialization).
     specific without per-iteration values, a lookup is VA-1's.
 -   toolchain/sem_ir/type_iterator.cpp: `PackElement` is a symbolic type like a
     symbolic `TupleAccess` (C1); a `PackType` is a `SymbolicType` step whose
-    facet is the pack type, so the type structure records it as a run inside
-    its tuple, and a `TupleType` with a `PackType` element is a tuple like any
-    other (C2, D-VA2-8; rev 1 made the whole tuple a hole, amended 2026-10-22,
-    review fold: A-M-1 / B-B2).
+    facet is the pack type, so the type structure records it as a run inside its
+    tuple (C2's type_structure.cpp), and a `TupleType` with a `PackType` element
+    is a tuple like any other (D-VA2-8; rev 1 made the whole tuple a hole,
+    amended 2026-10-22, review fold: A-M-1 / B-B2). The `PackType` case is C1's
+    since rev 7, where rev 4 gave it to C2: C1's `(... each T)` reaches impl
+    lookup, and without the case the iterator's `default:` aborts (§2.2's block,
+    M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and
+    golden sources); on C1 alone the step is one `?` of a tuple's structure,
+    C2's run entry the run (R-14).
 -   toolchain/sem_ir/stringify.cpp: `PackType` prints `«E; N»` for a pack of one
     element type, the pack literal `⟬A, B⟭` of a concrete pack of types, and
     `⟬each T⟭` while the pack of types is symbolic; `PackElement` prints `each
@@ -2376,7 +2582,10 @@ initialization).
     (D-VA2-4); no arity at the `...`; the each-name of a pack in a pattern's
     type position; the element type through `GetPackElementType`; an
     expansion whose body is the each-name of a compile-time pack is the pack
-    (C2's use); the expression expansion's pack type through
+    (taken as a tuple's segment by `ConvertTupleToType` and the type iterator,
+    whose hunks are C1's since rev 7, M-21) (amended 2026-10-26, implementation:
+    stop-and-amend: C1's split and golden sources); the expression expansion's
+    pack type through
     `GetPackTypeForElementType`; a `PackExpansionStatement` whose arity is
     a binding of an enclosing generic (its symbolic constant's `generic_id`
     is not the pending generic's) names it by
@@ -2429,7 +2638,9 @@ initialization).
     (C2's, built).
 -   check/convert.cpp: per-element target types in `ConvertPackLiteralToPack`;
     per-iteration types in `ConvertPackToPack`; the `PackValue` element-wise
-    branch; `ConvertTupleToType`'s pack segment (C2's, built); the
+    branch; `ConvertTupleToType`'s pack segment (C1's since rev 7, where rev 4
+    gave it to C2: §2.2's block, M-21) (amended 2026-10-26, implementation:
+    stop-and-amend: C1's split and golden sources); the
     template-dependent `InitializeAction` site returns the error instruction
     when `AddDependentActionInst` refuses the action (amended 2026-10-26, review
     fold: RR1-B-M5).
@@ -2446,6 +2657,59 @@ initialization).
 -   lower/type.cpp: `⟬A, B⟭` laid out by `BuildStructType`.
 -   lower/constant.cpp: `EmitAsConstant(PackValue)` (null for a pack of types
     or facets).
+
+The rev 7 block (amended 2026-10-26, implementation: stop-and-amend: C1's split
+and golden sources): the two hunks C1 takes from §2.3, verbatim from Appendix B
+(`$M/c1_moved_hunks_block.patch`, 2 files, 15 insertions). `git apply --check`
+passes on 8a7395cf1 (F0) and on 8a7395cf1 with the stopped run's saved split
+(`$N/c1_uncommitted_source_state.patch`), and with them C1's gate is red on its
+ten files with no crash (M-21). The `PackType` case's comment names
+type_structure.cpp's run, C2's hunk, which is true from C2 on. The block,
+against 8a7395cf1:
+
+<!-- google-doc-style-ignore -->
+
+```diff
+diff --git a/toolchain/sem_ir/type_iterator.cpp b/toolchain/sem_ir/type_iterator.cpp
+index a0ca5337e..57ef9de16 100644
+--- a/toolchain/sem_ir/type_iterator.cpp
++++ b/toolchain/sem_ir/type_iterator.cpp
+@@ -230,6 +233,13 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
+       PushInstId(pointer_type.pointee_id);
+       return Step::PointerStart();
+     }
++    // Fork (VA-2): a pack type is a tuple's pack segment, `... each T`, which
++    // matches a run of the tuple's elements; it is symbolic, and the type
++    // structure records it as a run (type_structure.cpp).
++    case PackType::Kind: {
++      return Step::SymbolicType{.entity_name_id = EntityNameId::None,
++                                .facet = inst_id};
++    }
+     case CARBON_KIND(TupleType tuple_type): {
+       auto inner_types =
+           sem_ir_->inst_blocks().Get(tuple_type.type_elements_id);
+diff --git a/toolchain/check/convert.cpp b/toolchain/check/convert.cpp
+index 5d6dc9141..84f0d09bc 100644
+--- a/toolchain/check/convert.cpp
++++ b/toolchain/check/convert.cpp
+@@ -718,6 +734,14 @@ static auto ConvertTupleToType(Context& context, SemIR::LocId loc_id,
+               value_const_id)) {
+     for (auto tuple_inst_id :
+          context.inst_blocks().Get(tuple_value->elements_id)) {
++      // Fork (VA-2): a segment that is a compile-time pack of types or
++      // facets, `... each T`, is the type segment `...⟬each T⟭`.
++      if (auto pack_type = context.types().TryGetAs<SemIR::PackType>(
++              context.insts().Get(tuple_inst_id).type_id())) {
++        type_inst_ids.push_back(context.types().GetTypeInstId(
++            GetPackType(context, tuple_inst_id, pack_type->arity_id)));
++        continue;
++      }
+       // TODO: This call recurses back into conversion. Switch to an
+       // iterative approach.
+       type_inst_ids.push_back(
+```
+
+<!-- google-doc-style-resume -->
 
 ### §2.3 C2, tuple types with pack segments (built)
 
@@ -2482,7 +2746,10 @@ initialization).
 <!-- google-doc-style-resume -->
 
 -   check/convert.cpp, `ConvertTupleToType`: a pack-typed element becomes the
-    segment `GetPackType(element, arity)`. The prototype also reports the
+    segment `GetPackType(element, arity)`, a hunk that is C1's since rev 7
+    (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend:
+    C1's split and golden sources), so C2 keeps the rest of this bullet. The
+    prototype also reports the
     placeholder `semantics TODO: initializing a tuple with a pack segment`
     where a tuple with a segment is initialized element by element, which
     §2.4 item 5's `PackSegmentInit` replaces in C2; no commit keeps it.
@@ -3267,9 +3534,13 @@ practice since ST-1: an implementation commit alone is red on exactly its new
 goldens and its listed refills, with no crash, and on nothing else. The split
 of the prototype's one diff into C0, C1 and C2 is by file and by function, as
 §2.1 to §2.3 and §2.7 assign each hunk; the implementer checks that C1 builds
-without C2's hunks before writing C2 (§8.1). _Break condition:_ a commit
-cannot build without a later commit's files, which merges the two and is
-recorded in the landed notes.
+without C2's hunks before writing C2 (§8.1). Rev 6's split built but its gate
+aborted, so since rev 7 C1 takes two of the hunks §2.3 gave C2 (§2.2's block,
+M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
+sources). _Break condition:_ a commit cannot build without a later commit's
+files, which merges the two and is recorded in the landed notes; and, since rev
+7, a commit whose gate crashes without a later commit's hunk takes that hunk, by
+a plan revision before it is committed, which the landed notes record too.
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
 B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
@@ -3349,11 +3620,15 @@ The commits, in order:
     2026-10-26, implementation: stop-and-amend: nested constant initialization).
 3.  **C1, packs of different types** (§2.1, §2.2: Appendix B's hunks in
     sem_ir/typed_insts.h, generic.h, generic.cpp, stringify.cpp,
-    type_iterator.cpp's `PackElement` case; check/eval.cpp, eval.h,
+    type_iterator.cpp's `PackElement` case and, since rev 7, its `PackType`
+    case; check/eval.cpp, eval.h,
     eval_inst.cpp's `PackElement` case, generic.cpp, type.h, type.cpp,
     context.h, handle_pack_expansion.cpp, handle_binding_pattern.cpp,
-    deduce.cpp's `PackType` branch, convert.cpp's pack conversions and its
-    `InitializeAction` site, type_completion.cpp's pack case, import_ref.cpp,
+    deduce.cpp's `PackType` branch, convert.cpp's pack conversions, its
+    `InitializeAction` site and, since rev 7, `ConvertTupleToType`'s pack
+    segment (§2.2's block, M-21) (amended 2026-10-26, implementation:
+    stop-and-amend: C1's split and golden sources), type_completion.cpp's pack
+    case, import_ref.cpp,
     merge.cpp, pattern_match.cpp, and since rev 3 action.cpp (amended
     2026-10-26, review fold: RR1-B-M5); the lower files but file_context.cpp),
     plus C1's own changes: the implicit-list TODO of F-3, the relabeled
@@ -3371,13 +3646,22 @@ The commits, in order:
     RR2-M1 / RR2-m1 / RR2-m2); refilled: each_param, forward, import,
     fail_todo_slice (`fail_todo_generic_pack` removed, `fail_todo_ref_pack`
     relabeled) and the lower pack_expansion. Expected gate: red on exactly these
-    10 files.
-4.  **F1.** Autoupdate of those 10 files to the fixpoint.
+    10 files, with no crash: 1956 passed and 10 failed, measured on C1 with
+    §2.2's block, where rev 6's split aborted (M-21) (amended 2026-10-26,
+    implementation: stop-and-amend: C1's split and golden sources); the four
+    splits of `hetero_pack` and `generic_pack` that call a generic define it
+    since rev 7 (§A.11).
+4.  **F1.** Autoupdate of those 10 files to the fixpoint: one pass, and the gate
+    1966 passed (measured, M-21: the fill is `$M/fill_rev7_p2`) (amended
+    2026-10-26, implementation: stop-and-amend: C1's split and golden sources).
 5.  **C2, tuples with a pack segment** (§2.3 built, §2.4 specified): `TupleType`
     and `TupleValue` conditional, the tuple deduction, the dependent
     representation, the run entry and the ranking of the type structure
-    (type_structure.h, type_structure.cpp, impl_lookup.cpp, type_iterator.cpp's
-    `PackType` case), `ConvertTupleToType`, tuple literals with one segment,
+    (type_structure.h, type_structure.cpp, impl_lookup.cpp; since rev 7
+    type_iterator.cpp's `PackType` case and `ConvertTupleToType`'s pack segment
+    are C1's, and C2's built half is `$M/c2_rest_after_v1b.patch`, M-21)
+    (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
+    sources), tuple literals with one segment,
     `PackSegmentInit`, `let` with a fixed-arity pack expansion pattern, the
     tuple TODOs, and since rev 3 handle_pack_expansion.cpp's `specific_constant`
     reference to an enclosing generic's arity, which only a function of a
@@ -3457,7 +3741,10 @@ follows C0's since rev 5, and C0's last sentence, committed before C0b existed,
 means the fill that follows C0b (amended 2026-10-26, implementation:
 stop-and-amend: nested constant initialization); C0b's title has C0's form,
 `VA-2 C0b:`, since rev 6, where rev 5 wrote `VA-2 (0b):` (amended 2026-10-26,
-review fold: RR5-m1)):
+review fold: RR5-m1); since rev 7 C1's says what `(... each T)` is as a type,
+and the `specific_constant` that names an enclosing generic's arity, a hunk §2.2
+gives C2, is in C2's, where rev 4 put it in C1's (amended 2026-10-26,
+implementation: stop-and-amend: C1's split and golden sources)):
 
 <!-- google-doc-style-ignore -->
 
@@ -3507,18 +3794,18 @@ each iteration with that element's types and callees; a pack of
 different types is laid out as a tuple, and diagnostics name `each T`,
 `⟬each T⟭`, `(... each T)` and a specific's pack of types `⟬A, B⟭`. A
 specific of a variadic generic imported from another library gets the
-same per-iteration values, and an expansion over a pack of an enclosing
-generic names that generic's arity by a specific_constant of its self
-specific, as a name from an enclosing generic is named. A second
-implicit-list pack, a second pack arity in a generic, a computed element
-type, forwarding between a pack of different types and a pack of one
-type, an expansion without each-names in a binding's type, a template
-each-name, a compile-time each-name of a class, an interface or an
-explicit `generic` parameter, and a C++ or template-dependent action
-whose operand depends on the pack index are semantics TODOs. VA-1's
-goldens are refilled by the next commit.
+same per-iteration values. `(... each T)` in a type position is the
+tuple type whose one element is the pack type `⟬each T⟭`, which the type
+iterator visits as a symbolic type. A second implicit-list pack, a
+second pack arity in a generic, a computed element type, forwarding
+between a pack of different types and a pack of one type, an expansion
+without each-names in a binding's type, a template each-name, a
+compile-time each-name of a class, an interface or an explicit `generic`
+parameter, and a C++ or template-dependent action whose operand depends
+on the pack index are semantics TODOs. VA-1's goldens are refilled by
+the next commit.
 
-fork/variadics/va2-plan.md §2.1, §2.2, D-VA2-2 to D-VA2-7, D-VA2-13.
+fork/variadics/va2-plan.md §2.1, §2.2, D-VA2-2 to D-VA2-7, D-VA2-13, M-21.
 ```
 
 ```text
@@ -3528,12 +3815,15 @@ VA-2 C2: tuples with one pack segment, `let` pack bindings, variadic impls
 segment's arity is known, deduced from a tuple argument, and represented
 as the specific's until then. Impl lookup keeps the tuple in the type
 structure, `(...?)`, the segment matching a run of the query's elements,
-and ranks impls by the overlap rule along the query, so `impl forall [...
-each T: I] (... each T) as I` is selected for tuples of every arity beside
-blanket and fixed-arity impls. `(... each x)` initializes a tuple element
-by element, and `let (... each x: each T) = t;` binds a pack to a tuple's
-elements without copying. More than one segment, a segment beside other
-elements and initializing expansion elements are semantics TODOs.
+and ranks impls by the overlap rule along the query, so `impl forall
+[... each T: I] (... each T) as I` is selected for tuples of every arity
+beside blanket and fixed-arity impls; an expansion in a variadic impl's
+function over the impl's pack names the impl's arity by a
+specific_constant of its self specific, as a name from an enclosing
+generic is named. `(... each x)` initializes a tuple element by element,
+and `let (... each x: each T) = t;` binds a pack to a tuple's elements
+without copying. More than one segment, a segment beside other elements
+and initializing expansion elements are semantics TODOs.
 
 fork/variadics/va2-plan.md §2.3, §2.4, D-VA2-8 to D-VA2-10.
 ```
@@ -3660,14 +3950,17 @@ SemIR names and diagnostic kinds in brackets are the fill's to decide, and a
 fill that contradicts a prediction is a finding for the implementation review,
 never a reason to edit a golden (R16(a)). Sources are §A.11's. Directory
 prefixes: `check/` is toolchain/check/testdata/variadics/, `lower/` is
-toolchain/lower/testdata/variadics/.
+toolchain/lower/testdata/variadics/. Since rev 7 the C1 rows are measured: C1
+with §2.2's block fills to each of them as rev 7 states them, and rev 7 amends
+the four that the fill contradicted (M-21) (amended 2026-10-26, implementation:
+stop-and-amend: C1's split and golden sources).
 
 | File (commit) | Split | Predicted key output |
 | --- | --- | --- |
 | check/hetero_pack.carbon (C1) | `call` | `ForEach`'s `fn_decl` with a `symbolic_binding_pattern T` of type `«%Code.type; %<pack arity>»` (a pack of facets), no second arity binding, and a value pack `x` of pattern type `⟬%T⟭` (printed by stringify as the pack type of `%T`); the body's `pack_expansion_statement` block holds `pack_index` (`[symbolic]`), `pack_element %T, %pack_index`, the facet access and the `Get` call through `%Code.lookup_impl_witness`; in `Call`, `ForEach(a, b, a)` passes a `pack_literal` of three converted to `⟬%A, %B, %A⟭`, and `ForEach()` an empty one; two specifics, `T` = `⟬%A, %B, %A⟭` (a `pack_value [concrete]`) and `⟬⟭` |
-| (same) | `type_pack` | `Count(1 as i64, true)` deduces `T` = `⟬%i64, bool⟭` and the arity 2; no diagnostic |
-| (same) | `forward` | `ForEach(... each y)`: a `pack_expansion_expr` of type `⟬%U⟭`, deducing `T` = `%U` and the arity from `U`'s; no `require_complete_type` diagnostic |
-| (same) | `method` | `c.F(a, a)` with the bound `self` first and a 2-element `pack_literal`; `T` = `⟬%A, %A⟭` |
+| (same) | `type_pack` | `Count(1 as i64, true)` deduces `T` = `⟬%i64, bool⟭` and the arity 2 (the dump's specific of `Count` for `%int_2` and the `pack_value (%i64, bool)`) and `Count()` the empty pack; no diagnostic, `Count` being defined, `{}`, since rev 7: declared only, both calls are upstream's `use of undefined generic function [MissingGenericFunctionDefinition]` (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `forward` | `ForEach(... each y)`: a `pack_expansion_expr` of type `⟬%U⟭`, deducing `T` = `%U` and the arity from `U`'s; no diagnostic, `ForEach` defined since rev 7, as `type_pack`'s `Count` (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `method` | `c.F(a, a)` with the bound `self` first and a 2-element `pack_literal`; `T` = `⟬%A, %A⟭`; no diagnostic, `C.F` defined since rev 7, as `type_pack`'s `Count` (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | (same) | `qualified_member` | as `call`'s body, with `.(Code.Get)` as the compound member access on the symbolic `each T` |
 | (same) | `template_outer` | `F`'s body holds `splice_inst`s for the template-dependent `u.n` and for the `Consume` call that takes it, whose operands (that splice and the run-time result of `each x.V()`, called through `HasV`'s witness for `pack_element %T, %pack_index`) contain no pack index as constants, so no diagnostic; `Call` deduces `T` = `⟬%i64, bool⟭` (M-19, measured on rev 3 and rev 4, `$H/r/gw_rev4/template_outer_ranges.out`; the re-review's tp2 prints 211; amended 2026-10-26, review fold: RR2-m2) |
 | (same) | `cpp_template_outer` | `F`'s body holds a `call_action` for `Cpp.Traits(%U)` and a deferred call of `Consume` whose operands are that splice and `One(each x)`, of type `i32`, neither depending on the pack index, so no diagnostic; `Call` deduces `T` = `⟬bool, %i32⟭` (M-18's ctE; amended 2026-10-26, review fold: RR1-B-M5) |
@@ -3677,7 +3970,7 @@ toolchain/lower/testdata/variadics/.
 | (same) | `fail_each_type_not_pack` | `error: `each T` does not name a pack [EachNameNotPack]` (VA-1's diagnostic, unchanged) |
 | (same) | `fail_two_explicit_packs` | `error: parameter list can contain at most one pack expansion pattern [MultiplePackExpansionPatterns]` with the `previous pack expansion pattern is here` note: the explicit list is a tuple pattern (:333-334) |
 | check/generic_pack.carbon (C1) | `declaration` | VA-1's `fail_todo_generic_pack` source, now without a diagnostic (M-6: "succeeded; if success is expected, remove the `fail_` prefix") |
-| (same) | `call` | `F(1 as i64, true, 2 as i32)` deduces `T` = `⟬%i64, bool, %i32⟭`; no diagnostic |
+| (same) | `call` | `F(1 as i64, true, 2 as i32)` deduces `T` = `⟬%i64, bool, %i32⟭`; no diagnostic, `F` defined since rev 7, as `hetero_pack`'s `Count`; the file has no dump range, so its golden holds the sources and no SemIR, and `type_pack` shows the deduction (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | check/fail_todo_va2.carbon (C1) | `fail_todo_two_implicit_packs` | `semantics TODO: `more than one pack expansion pattern in an implicit parameter list`` at the second `...`, and nothing for `U` |
 | (same) | `fail_todo_computed_element_type` | `semantics TODO: `pack expansion pattern whose binding type is computed from an each-name`` at `Box(each T)` |
 | (same) | `fail_todo_template_each` | `semantics TODO: `each-name binding that is ref, var or template`` |
@@ -3689,7 +3982,7 @@ toolchain/lower/testdata/variadics/.
 | (same) | `fail_todo_overload_hetero_member` | VA-1's `semantics TODO: `variadic member of an overload set``, twice, at the member and at the call (x16, measured; amended 2026-10-22, review fold: A-M-2) |
 | (same) | `fail_todo_cpp_template_on_hetero_element` | `semantics TODO: `C++ or template-dependent action on an element of a pack of different types`` at `Cpp.Traits(each T)`, once (M-18's ct6, measured on rev 3; amended 2026-10-26, review fold: RR1-B-M5) |
 | (same) | `fail_todo_template_action_on_hetero_element` | `semantics TODO: `C++ or template-dependent action on an element of a pack of different types`` at `u.Get(each x)`, once: upstream's template member call on an element of the pack (M-19's tp1 shape, measured on rev 3 and rev 4; amended 2026-10-26, review fold: RR2-m2) |
-| (same) | `fail_todo_cpp_template_on_tuple_of_pack` | `error: unable to monomorphize specific `F(⟬i32, i64, bool⟭)`` at the call in `Call`, naming the specific's pack of types by C1's `PackValue` case, with PR 59's note `semantics TODO: `unsupported type used as template argument`` (ctF0 gives it without packs), once and not repeated per iteration (M-19's ctF, measured on rev 4; on rev 3 `<cannot stringify ...>` and three more copies of the TODO without a location; amended 2026-10-26, review fold: RR2-m1) |
+| (same) | `fail_todo_cpp_template_on_tuple_of_pack` | `error: unable to monomorphize specific `F(⟬i32, i64, bool⟭)`` at the call in `Call`, naming the specific's pack of types by C1's `PackValue` case, with PR 59's note `semantics TODO: `unsupported type used as template argument`` (ctF0 gives it without packs), once and not repeated per iteration (M-19's ctF, measured on rev 4; on rev 3 `<cannot stringify ...>` and three more copies of the TODO without a location; amended 2026-10-26, review fold: RR2-m1); measured on C1 with §2.2's block, where rev 6's split aborted the gate here (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | (same, C2) | `fail_todo_initializing_element` | `semantics TODO: `pack expansion of initializing expressions in a tuple literal`` at the `...` of `(... each x.(Core.Copy.Op)())` |
 | (same, C2) | `fail_todo_var_pattern` | `semantics TODO: `pack expansion pattern in a pattern other than a parameter list or let`` |
 | (same, C2) | `fail_todo_enclosing_arity` | `semantics TODO: `more than one pack arity in a generic`` at `each n` of a function with a pack in a variadic impl (the fixer's f04, measured; amended 2026-10-22, review fold: A-B-1) |
@@ -3704,16 +3997,16 @@ toolchain/lower/testdata/variadics/.
 | (same, C2) | `fail_todo_tuple_literal` | `semantics TODO: `tuple pack segment matched with other segments`` at the conversion of `(... each n)` to `(i64, i64)` |
 | (same, C3) | `fail_todo_statement_kind` | `semantics TODO: `pack expansion of a statement other than an expression or if statement`` |
 | (same) | every other split | unchanged |
-| lower/hetero_pack.carbon (C1) | `call` | `ForEach`'s specific for `⟬A, B, A⟭` calls `A`'s `Get`, then `B`'s, then `A`'s, each on a constant GEP of a `{ ptr, ptr, ptr }` pack; the empty specific has no call |
-| (same) | `layout` | `Count(1 as i64, true, 2 as i32)`'s caller stores an `i64`, an `i1` and an `i32` into a `{ i64, i1, i32 }` alloca and passes its address; the specific calls `One`'s three specifics (`i64`, `bool`, `i32`) in order |
-| (same) | `forward` | `Forward`'s `⟬A, B⟭` specific passes its own pack's address to `ForEach`'s `⟬A, B⟭` specific |
-| (same) | `lib`, `use` | `use.carbon` lowers the imported `ForEach`'s `⟬A, B, A⟭` specific (A's `Get`, then B's, then A's) and the imported `Count`'s `⟬i64, bool, i32⟭` specific (`One`'s three specifics in order) from `lib.carbon`'s bodies, as `call` and `layout` do in one file (measured: the split compiled on rev 3 with `--optimize=none`, `$G/r/gw_rev3/lower_use_O0.out`; M-17's i2 and i5 print 16 and 3; amended 2026-10-26, review fold: RR1-NB-1) |
+| lower/hetero_pack.carbon (C1) | `call` | `ForEach`'s specific for `⟬A, B, A⟭` calls `A`'s `Get`, then `B`'s, then `A`'s, each on a constant GEP of a `{ ptr, ptr, ptr }` pack; the empty specific has no call, and `ForEach()` passes the address of an internal constant `{}` (measured, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `layout` | `Count(1 as i64, true, 2 as i32)`'s caller passes the address of an internal constant `{ i64, i1, i32 } { i64 1, i1 true, i32 2 }`, with no alloca and no store, the pack value of constants lowered by C1's `EmitAsConstant(PackValue)` as M-6's class lowers pack_expansion's; the specific reads the three elements at constant GEPs (an `i64` load, an `i8` load truncated to `i1`, an `i32` load) and calls `One`'s three specifics (`i64`, `bool`, `i32`) in order (measured, M-21; rev 6 predicted a `{ i64, i1, i32 }` alloca and three stores) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `forward` | `Call` stores `%a` and `%b` into a `{ ptr, ptr }` alloca for `Forward`'s `⟬A, B⟭` specific, which allocas a second `{ ptr, ptr }`, loads each element of `%y` and stores it there, and passes that pack to `ForEach`'s `⟬A, B⟭` specific, VA-1's lowering of a `PackExpansionExpr` argument (lower/handle_pack_expansion.cpp:69-84 at b0822a744); `ForEach` calls `A`'s `Get`, then `B`'s (measured, M-21; rev 6 predicted that `Forward` passes its own pack's address) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `lib`, `use` | `use.carbon` lowers the imported `ForEach`'s `⟬A, B, A⟭` specific (A's `Get`, then B's, then A's) and the imported `Count`'s `⟬i64, bool, i32⟭` specific (`One`'s three specifics in order) from `lib.carbon`'s bodies, as `call` and `layout` do in one file (measured: the split compiled on rev 3 with `--optimize=none`, `$G/r/gw_rev3/lower_use_O0.out`; M-17's i2 and i5 print 16 and 3; amended 2026-10-26, review fold: RR1-NB-1); measured on C1 with §2.2's block, `Count`'s argument the address of an internal constant as in `layout` (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | lower/pack_expansion.carbon (C1, refill) | `sum`, `generic_element`, `class_element`, `arg_order`, `forward_converted_field`, `lib`, `use` | M-6's classes: a `pack_value` of constants becomes a global constant (the `llvm.lifetime.start` declarations and per-call stores of constant packs disappear); every call and every iteration as before |
-| check/tuple_segment.carbon (C2) | `param` | `F`'s parameter of type `(⟬%T⟭)`, a `tuple_type` whose one element is a pack type; `F((1 as i64, true))` deduces `T` = `⟬%i64, bool⟭`, and the specific's parameter type is `(%i64, bool)` |
+| check/tuple_segment.carbon (C2) | `param` | `F`'s parameter of type `(⟬%T⟭)`, a `tuple_type` whose one element is a pack type; `F((1 as i64, true))` deduces `T` = `⟬%i64, bool⟭`, and the specific's parameter type is `(%i64, bool)`; no diagnostic, `F` defined, `{}`, since rev 7: declared only, both calls are `use of undefined generic function` (measured on C1 with C2's built half, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | (same) | `return` | `MakeTuple`'s `return (... each x)` is a `pack_segment_init` into the return slot whose block holds `pack_index`, two `pack_element`s and the element's `Copy` initialization; `Call` returns the specific's result of type `(%i64, bool)` with no conversion |
 | (same) | `let` | `let (... each x: each T) = t;` binds a `pack_expansion_expr` of `pack_element %t, %pack_index`, no copy, no arity binding; the statement expansion calls `Get` |
-| (same) | `tuple_value` | `Take((... each x))` passes the pack value as a value of `(⟬%T⟭)`, deducing `U` = `%T` |
-| (same) | `elements_around_segment` | `F((1 as i64, 2 as i32, false, true))` deduces `T` = `⟬%i32, bool⟭` (the run between `i64` and the last `bool`), and `F((1 as i64, true))` deduces `T` = `⟬⟭` |
+| (same) | `tuple_value` | `Take((... each x))` passes the pack value as a value of `(⟬%T⟭)`, deducing `U` = `%T`; `Take` defined since rev 7, as `param`'s `F` (M-21; on C1 with C2's built half, before §2.4 item 1, the call is VA-1's `pack expansion in a tuple literal outside a call's argument list`) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
+| (same) | `elements_around_segment` | `F((1 as i64, 2 as i32, false, true))` deduces `T` = `⟬%i32, bool⟭` (the run between `i64` and the last `bool`), and `F((1 as i64, true))` deduces `T` = `⟬⟭`; no diagnostic, `F` defined since rev 7, as `param`'s (measured on C1 with C2's built half, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | check/fail_todo_tuple_segment.carbon (C2) | `fail_todo_two_segments` | `semantics TODO: `tuple with more than one pack segment`` |
 | (same) | `fail_todo_elements_beside_segment` | `semantics TODO: `tuple pack segment matched with other segments`` at the `return` |
 | (same) | `fail_todo_segment_to_elements` | the same TODO at the `let` |
@@ -3821,7 +4114,9 @@ Existing goldens that change, by commit:
     fail_todo_slice.carbon and the lower pack_expansion.carbon, in exactly
     M-6's three classes (measured: the prototype's autoupdate,
     `$Q/proto_golden_churn.diff`, 125 insertions and 145 deletions), plus
-    fail_todo_slice's moved split and relabeled TODO.
+    fail_todo_slice's moved split and relabeled TODO; measured again on C1 with
+    §2.2's block, rev 4's churn line for line (M-21) (amended 2026-10-26,
+    implementation: stop-and-amend: C1's split and golden sources).
 -   C2 (F2) and C3 (F3): fail_todo_slice.carbon (two and one relabeled
     splits) and C1's new fail_todo_va2.carbon (two splits each).
 -   C0 and C0b (F0): none (§2.7's invariants; M-6's rev 2 line; for C0b
@@ -3936,7 +4231,10 @@ paths against b0822a744, 413968218 and 80f1ec825 alike, the same set, so rev 3's
 hunks add no conflicted path (the re-review's 104 at 57ba07a97, too). Rev 5 at
 8779d15e1 (M-20) and rev 6 at 56d9bbc40 measured the same 104 paths, the same
 set, for b0822a744, ca939ee19 and 90c34dbaa (`$J/mt_up_8779.txt`,
-`$K/mt_up_56d9.txt`) (amended 2026-10-26, review fold: RR5-m3).
+`$K/mt_up_56d9.txt`) (amended 2026-10-26, review fold: RR5-m3), and rev 7 at
+600fd55ba, one commit past 56d9bbc40 that changes toolchain/benchmarking only,
+the same 104 paths for the same three (`$M/mt_up_600f.txt`) (amended 2026-10-26,
+implementation: stop-and-amend: C1's split and golden sources).
 Two upstream commits change how rev 3's mechanisms sit at the advance, and
 the advance re-runs M-17's probes for both: e1c8c1f85 makes name lookup pair
 every name of an enclosing generic with that generic's self specific, so a
@@ -4094,6 +4392,21 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     requires, and does not wait for §A.6 to fail at C5. Falsified for the class
     by d01, d02 or d03 failing at C4 or after, or by §A.6's `Dup(one)` printing
     anything but 101 and 1.
+-   **R-14. A split commit accepts a form whose other half is a later commit's**
+    (added by rev 7) (amended 2026-10-26, implementation: stop-and-amend: C1's
+    split and golden sources). C1 forms `(... each T)` as a type and accepts a
+    pack in an impl's implicit list, but the type structure's run entry, the
+    ranking, the tuple deduction and the tuple values are C2's, so on C1 alone a
+    variadic impl's structure is a 1-tuple's: a query of another arity finds no
+    candidate or, beside a blanket impl, the blanket one (M-21's x05, r01 and
+    v06). No golden of C1 declares a variadic impl, C1 lands only with C2, in
+    one PR (D-VA2-18), and C1 with C2's built half selects as rev 4 measured
+    (M-21). Detected by each split commit's gate (§8.3: no crash) and the probe
+    sets every stage re-runs after its build; falsified by a crash in a split
+    commit's gate or by a C2 probe that prints other than rev 4's on C2's
+    install. If a review requires each commit to give the slice's result for
+    every form it accepts, C1 takes C2's type-structure, ranking and
+    tuple-deduction hunks too, by D-VA2-19's break condition.
 
 ### §7.2 Rejected alternatives
 
@@ -4188,6 +4501,19 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     Falsified as a rejection if upstream fixes `GetConstant` or `CopyValue`
     itself, and §2.7 then takes upstream's fix, or if a review finds a copy that
     the element-by-element copy gets wrong and the memcpy gets right.
+-   **A-12. C2 takes the pack collapse instead** (rejected; added by rev 7)
+    (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
+    sources). M-21's crash could also go by moving to C2 the hunk of
+    handle_pack_expansion.cpp that makes `... each T` the pack, beside the two
+    hunks that consume it; `(... each T)` on C1 would then be VA-1's `pack
+    expansion in a tuple literal outside a call's argument list`, as on PR 59.
+    Rejected: C1's stringify case for `(... each T)` (§2.1), the split
+    `fail_todo_cpp_template_on_tuple_of_pack` that rev 4 gave C1 for RR2-m1,
+    C1's probes f03, r02, r02b and ctF (hand-off note 2) and C1's message would
+    all change or move to C2, where §2.2's block is 15 lines of Appendix B that
+    change no golden of C1 but that split, which they make fill as §4 says.
+    Falsified as a rejection if a review finds a C1 golden that the two hunks
+    change otherwise, or rejects R-14's partial variadic impls on C1.
 
 ## §8 Verification and discharge
 
@@ -4302,6 +4628,28 @@ and `git ls-remote upstream refs/heads/trunk`, 2026-10-26), with `git
 merge-tree` against it (`mt_up_56d9.txt`). The worktrees, the relinked binaries
 and the build were removed when rev 6 was committed.
 
+Rev 7's are the plan amender's of stage 2's stop-and-amend (amended 2026-10-26,
+implementation: stop-and-amend: C1's split and golden sources), with `$M` and
+`$N` the directories the header names and every rev 7 number in `$M` (M-21): the
+implementer's stage 2 logs, split and saved state (`$N`); the implementer's C1
+install, on the saved state in the scratch worktree /dev/shm/va2-amend/wt
+(`$M/logs/d1_c1_gate.log`); §2.2's block applied there and relinked over that
+install's objects into /dev/shm/va2-amend/v1b (`$M/bin/relink.sh`,
+`relink_v1b.log`), with its gates, both fills (`$M/fill_asis_p1`,
+`$M/fill_rev7_p1`, `$M/fill_rev7_p2`), conformance (`$M/conf_v1b`), clang-format
+and clang-tidy (`$M/tidy`), M-20's probes with d01 to d04 (`$M/probes_v1b.txt`)
+and the earlier sets, run by copies of the implementer's scripts that write to
+`$M/sets` (`$M/bin`); the controls of upstream's rule on PR 59, trunk and C1
+(`$M/probes/ctl`); the scan of §A.11 and Appendix A (`$M/bin/scan_decl.py`,
+`$M/bin/a11.py`); C1 with C2's built half in /dev/shm/va2-amend/wt2, built in
+full with `CB_BUILD_ROOT=/dev/shm/va2-amend/builds` (`build_wt2.log`,
+`install_wt2.log`), with C2's three splits (`$M/src/ts_c2`) and the same sets
+(`*_wt2.txt`); `$M/c1_rev7.patch` applied in /dev/shm/va2-amend/wt3 at
+8a7395cf1, with prek (`prek_c1_1.log`) and the `toolchain` trees of C1 and its
+fill; the block checked in /dev/shm/va2-amend/wt4; and upstream's tip,
+600fd55ba, with `git merge-tree` against it (`mt_up_600f.txt`). The worktrees,
+the relinked binaries and the build were removed when rev 7 was committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -4311,8 +4659,11 @@ sem_ir/typed_insts.h or inst_kind.def, which most objects include, so each is
 a full build (M-8: about 6 minutes on 4 cores when the
 machine is otherwise idle); C4 and C5 change no C++ and need only
 `install.sh`, which copies core/ into the install (install.py :100-110).
-Before C2 is written, C1's tree alone is built (§3's split check); 0
-warnings with the build's `-Werror` set. C0b changes lower/file_context.cpp,
+Before C2 is written, C1's tree alone is built (§3's split check); 0 warnings
+with the build's `-Werror` set. Rev 6's split passed that check and failed its
+gate, so since rev 7 the split check is the build and the gate, both before C1
+is committed (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's
+split and golden sources). C0b changes lower/file_context.cpp,
 function_context.cpp and the two headers they are declared in, so its
 incremental build recompiles the 13 lower objects that include those headers and
 relinks (amended 2026-10-26, implementation: stop-and-amend: nested constant
@@ -4338,6 +4689,10 @@ and nothing else, with no crash. The gate's wall time is compared with M-5's
 25 seconds (R-1). A shrink's expected counts are §3's. C0 alone and C0b alone
 are each red on exactly that new file, with no crash (M-20) (amended 2026-10-26,
 implementation: stop-and-amend: nested constant initialization).
+C1 alone, with §2.2's block, is 1956 passed and 10 failed, the ten files of §3
+item 3, with no crash, and 1966 passed after F1, both measured; rev 6's split
+aborted it (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's
+split and golden sources).
 
 ### §8.4 Conformance (implementer)
 
@@ -4355,7 +4710,10 @@ of 56, measured on the relinked C0b and on the rev 4 prototype with C0b (M-20)
 initialization). §A.6's 101 and 1 for `Dup(one)`, and with them the 147 after
 C5, rest on R-13's class at C4: d01 printing 101 1 on C4's install is their
 precondition, and a d01 that does not is a stop at C4, not a failure at C5
-(amended 2026-10-26, review fold: RR5-M1).
+(amended 2026-10-26, review fold: RR5-M1). C1 with §2.2's block, too: 137 / 0 /
+21 over 158 and bullets 49 / 0 / 7 of 56, measured (M-21), and the stage 2
+re-run repeats it (amended 2026-10-26, implementation: stop-and-amend: C1's
+split and golden sources).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -4479,8 +4837,10 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
 -   The unbuilt half of the slice: tuple values with a run-time pack segment
     (`PackSegmentInit`), `let` with a pack expansion pattern, statement
     expansions of `if` (`PackExpansionNext`, the per-iteration blocks), the
-    prelude's real bodies, the fifteen new goldens and C1's relabeled TODO
-    texts, and the programs of Appendix A other than §A.1 to §A.3 and §A.10.
+    prelude's real bodies, the new goldens of C2 to C4 (rev 7 filled C1's five,
+    its refills and its relabeled TODO texts on C1, M-21) (amended 2026-10-26,
+    implementation: stop-and-amend: C1's split and golden sources), and the
+    programs of Appendix A other than §A.1 to §A.3 and §A.10.
     §0.2's proto column, M-9 and M-12 to M-16 measure what the prototype does;
     every other output in this plan is a prediction (§4) or a hand derivation
     (§A).
@@ -4527,7 +4887,11 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     (amended 2026-10-26, implementation: stop-and-amend: nested constant
     initialization). Rev 6's (/dev/shm/va2-impl/c0b, wt-c0b, wt6 and builds)
     were removed when rev 6 was committed (amended 2026-10-26, review fold:
-    RR5-M1).
+    RR5-M1). Rev 7's (/dev/shm/va2-amend/v1b, wt, wt2, wt3, wt4 and builds) were
+    removed when rev 7 was committed; C1 is reproducible from `$M/c1_rev7.patch`
+    on 8a7395cf1 and C1 with C2's built half from it and
+    `$M/c2_rest_after_v1b.patch` (amended 2026-10-26, implementation:
+    stop-and-amend: C1's split and golden sources).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -4577,6 +4941,11 @@ ids are renumbered in D's commit, never in source.
     F0; Appendix B's file_context.cpp hunk is C0's and is not applied again, and
     its other hunks apply on C0 plus C0b (M-20) (amended 2026-10-26,
     implementation: stop-and-amend: nested constant initialization).
+    Since rev 7 C1 also takes two hunks rev 4 gave C2, §2.2's block, and the
+    stopped run's C1 with that block and §A.11's four amended splits is
+    `$M/c1_rev7.patch`, C2's built half `$M/c2_rest_after_v1b.patch` (M-21)
+    (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden
+    sources).
 2.  **What to run first after each build:** C0: reviewer A's r16, r16g, r16h and
     x07; C0b, and after every later build, M-20's 36 probes, each with
     `$H/r/run_probe.sh <carbon> <probe> <outdir>`, expecting M-20's last column,
@@ -4602,7 +4971,13 @@ ids are renumbered in D's commit, never in source.
     d04 (`$K/probes_d`), expecting through C3 d01's, d02's and d03's `CHECK
     failure` at toolchain/lower/lower.cpp:48 (the verifier) and d04's 1 2 3, and
     from C4 on 101 1, 1 2, 1 2 and 1 2 3, a d01, d02 or d03 that fails at C4
-    being R-13's stop (amended 2026-10-26, review fold: RR5-M1).
+    being R-13's stop (amended 2026-10-26, review fold: RR5-M1). Since rev 7
+    C1's f03 prints `cannot implicitly convert expression of type `(... each T)`
+    to `i32``, r02 and r02b `more than one pack arity in a generic`, and on C1
+    every earlier set prints `$M/sets/*_v1b.txt` and M-20's with d01 to d04
+    `$M/probes_v1b.txt` (M-21), the variadic-impl probes there being C2's forms
+    (R-14) (amended 2026-10-26, implementation: stop-and-amend: C1's split and
+    golden sources).
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4.
 4.  **Watch-outs.** A variadic impl is a candidate for every tuple query
     (R-4), so a non-tuple argument must fail deduction, never walk a tuple's
@@ -5051,7 +5426,181 @@ follows them as they now stand. No decision changes: D-VA2-1 to D-VA2-19 hold as
 rev 5 states them, C0b's block, Appendix B and every count of §8.3 and §8.4
 stand, and no id is minted.
 
+## Stop-and-amend record (rev 7, 2026-10-26)
+
+Stage 2 of the implementation (C1 and F1, §3 items 3 and 4) stopped before
+committing C1 on 2026-10-26 and returned the differences below; the plan amender
+reproduced them, found their root causes and wrote this revision (amended
+2026-10-26, implementation: stop-and-amend: C1's split and golden sources). The
+stage's state at the stop: the branch holds the plan's revisions and C0, C0b and
+F0, all on origin (head 8a7395cf1, F0; `git branch -r --contains 8a7395cf1`
+prints `origin/claude/carbon-fork-0-1-va2`); nothing of stage 2 was committed or
+pushed; the worktree is clean; the stopped run's C1 is saved as
+`$N/c1_uncommitted_source_state.patch`; and the install
+/home/user/carbon-build/carbon-va2 holds that uncommitted state and
+prints 0.0.0-0.dev+8a7395cf1.dirty.
+
+The differences, as the implementer recorded them (`$N/stage.log`), each
+detailed with its measurement in M-21:
+
+-   D1: C1's gate, predicted red on exactly ten files with no crash (§3 item 3,
+    §8.3), aborts with `Unhandled type instruction {kind: PackType, ...}` at
+    sem_ir/type_iterator.cpp:312 in fail_todo_va2's
+    `fail_todo_cpp_template_on_tuple_of_pack` (`$N/gate_pre.log`); every probe
+    with `(... each T)` as a type aborts the same way, C1's f03, r02 and ctF
+    among them.
+-   D2: `hetero_pack`'s `type_pack`, `forward` and `method` and `generic_pack`'s
+    `call`, predicted without a diagnostic, report `use of undefined generic
+    function` (`$N/au_pre1.log`).
+-   D3: lower `hetero_pack`'s `layout` passes an internal constant where §4
+    predicts an alloca and three stores.
+-   D4: lower `hetero_pack`'s `forward` re-packs `Forward`'s pack element by
+    element where §4 predicts that it passes its own pack's address.
+-   And an inconsistency: §3's C1 message named the `specific_constant`
+    reference to an enclosing generic's arity, which §2.2 and §3 item 5 give C2.
+
+Root causes (M-21). D1 is the plan's assignment of hunks to commits: §2.2 gave
+C1 the hunk that makes `... each T` of a compile-time pack the pack itself, and
+§2.3 gave C2 the two hunks that take that pack as a tuple's segment,
+`ConvertTupleToType`'s and the type iterator's `PackType` case; the split had
+never been built and gated alone. D2 is in the golden sources: they call generic
+functions that have no definition, which upstream's check/check_unit.cpp rejects
+for every generic function, and they had been parsed, never compiled. D3 and D4
+are wrong predictions in §4, which C1's own `EmitAsConstant(PackValue)` and
+VA-1's lowering of a `PackExpansionExpr` argument contradict. None is a header a
+relink missed (the implementer built in full), a golden the manifest missed (the
+red set is the ten predicted files) or an upstream design rule misread (D2's
+rule is upstream's toolchain rule, which the sources now follow), and none is a
+defect of Appendix B's code.
+
+The amendment:
+
+-   §2.2's rev 7 block: type_iterator.cpp's `PackType` case and
+    `ConvertTupleToType`'s pack segment move from C2 to C1, verbatim from
+    Appendix B, which does not change; C2's built half is then
+    `$M/c2_rest_after_v1b.patch`. Measured on C1 (gate, fill, conformance,
+    probes, clang-format, clang-tidy, prek) and on C1 with C2's built half (a
+    full build, the probe sets, C2's three amended splits), as M-21 records.
+-   §A.11: the four C1 splits and the three C2 splits of D2's form define their
+    functions, `{}` with `unused` parameters, and §A.11's lead says why.
+-   §4: the measured fill's rows for `type_pack`, `forward`, `method`,
+    `generic_pack`'s `call`, `fail_todo_cpp_template_on_tuple_of_pack`, the
+    lower `call`, `layout`, `forward`, `lib` and `use`, and C2's `param`,
+    `tuple_value` and `elements_around_segment`; its totals are unchanged.
+-   §3: D-VA2-19's paragraph and break condition, items 3, 4 and 5, the note
+    before the messages, and C1's and C2's messages, C2's taking the
+    `specific_constant` sentence from C1's.
+-   The header, M-21 (new), §0.5, §0.8's F-10 (new), §1.12's D-VA2-19, §2.0,
+    §2.1, §2.2, §2.3, §6.1, §6.3, §7.1's R-14 (new), §7.2's A-12 (new), §8.0,
+    §8.1, §8.3, §8.4, §8.9 and the hand-off notes 1 and 2 carry the amendment,
+    each marked.
+-   One decision changes, D-VA2-19, the commit split: two hunks move from C2 to
+    C1, because C1 accepts the form they complete and its gate aborts without
+    them, and moving them is the smallest change that keeps every rev 4
+    prediction for C1 (A-12 rejects moving the collapse to C2 instead); its
+    break condition gains the case of a gate that crashes. C1 is committed only
+    after its build and gate, so no commit is reset or rewritten. No design
+    decision changes: D-VA2-1 to D-VA2-18 hold as written, every count of §8.3
+    and §8.4 stands, and no id is minted.
+
+R32: upstream's tip is 600fd55ba (`git fetch upstream trunk` and `git ls-remote
+upstream refs/heads/trunk`, 2026-10-26), one commit past 56d9bbc40, "Add a
+realistic header compile benchmark", which changes toolchain/benchmarking only,
+so none of docs/design, proposals, core, toolchain/check, toolchain/lower and
+toolchain/sem_ir; `git merge-tree` gives the same 104 conflicted paths for
+b0822a744, ca939ee19 and 90c34dbaa (`$M/mt_up_600f.txt`). D2's rule is
+upstream's (check/check_unit.cpp:507-523 at 600fd55ba: "use of undefined generic
+function"), the amendment follows it as VA-1's goldens do, and it adds no
+mechanism and no spelling: it moves two hunks of Appendix B between commits and
+gives seven test functions an empty body.
+
+Instructions to the implementer, for stage 2 re-run after the focused re-review
+of this amendment:
+
+1.  Start at the rev 7 commit, or the commit that folds its re-review, on F0
+    (8a7395cf1). Nothing of stage 2 is in the history, so nothing is reset:
+    `git -C /home/user/carbon-va2 branch -r --contains 8a7395cf1` prints
+    `origin/claude/carbon-fork-0-1-va2`, `git -C /home/user/carbon-va2
+    log --oneline origin/claude/carbon-fork-0-1-va2..HEAD` prints only the plan
+    commits since F0, and `git -C /home/user/carbon-va2 status --short` is
+    empty. Read upstream's tip (`git -C /home/user/carbon-va2 fetch upstream
+    trunk` and `git -C /home/user/carbon-va2 ls-remote upstream
+    refs/heads/trunk`) and record it in the stage's log: rev 7 read 600fd55ba; a
+    later tip is listed with the files it changes since 600fd55ba, and it is a
+    difference if it changes check/check_unit.cpp, check/convert.cpp,
+    check/handle_pack_expansion.cpp, sem_ir/type_iterator.cpp,
+    lower/handle_pack_expansion.cpp, a file that M-20, §2.7 or §7.2's A-11
+    cites, or a design page of the header's list.
+2.  Apply `$M/c1_rev7.patch` (`git -C /home/user/carbon-va2 apply --check`, then
+    `git apply`): 33 files, 1491 insertions and 118 deletions against 8a7395cf1,
+    the paths of `$M/c1_rev7_files.txt`. It is the stopped run's saved state
+    (C1's hunks by §2.1 and §2.2, C1's own changes, clang-format's re-wrapping
+    and §A.11's C1 sources), §2.2's rev 7 block and §A.11's four amended C1
+    splits. Check it against this plan first: §2.2's block, extracted, applies
+    with `git apply --check` on 8a7395cf1 with the saved state, and the five new
+    goldens are §A.11's text, fail_todo_va2.carbon with its first fourteen
+    splits and traits.h; a mismatch is a difference.
+3.  `/home/user/llvm/bin/clang-format --dry-run --Werror` on C1's .cpp and .h
+    files exits 0, and prek with a private `XDG_CACHE_HOME` and §8.6's SKIP list
+    on the 33 files passes and changes nothing (measured,
+    `$M/logs/prek_c1_1.log`).
+4.  clang-tidy, §8.6's two passes, over C1's 21 .cpp files
+    (`$N/c1_cpp_files.txt`) with the build's flags, the second line-filtered to
+    the lines changed since b0822a744: exit 0 and no diagnostic (the stopped
+    run's `$N/tidy`, and `$M/tidy` for the two files the block changes).
+5.  Commit C1 with the 33 explicit paths, §3's title "VA-2 C1: packs of
+    different types in implicit parameter lists" and its message as rev 7 amends
+    it, §3's author and committer, and the two session trailers after a blank
+    line; `git -C /home/user/carbon-va2 rev-parse HEAD:toolchain` prints
+    57d89a880239dee5283f1a69b5ca6a9e2a8bc32d.
+6.  `build.sh` and `install.sh`: a full build (typed_insts.h changes) with 0
+    warnings, replacing the stopped run's install; `carbon version` prints C1's
+    short hash.
+7.  `gate.sh`: "1956 passed, 10 failed", the ten files of §3 item 3, with no
+    crash.
+8.  Probes: M-20's 36 and d01 to d04, as stage 1 ran them, print
+    `$M/probes_v1b.txt` line for line but for a03's indeterminate value, the
+    line of a19's and a20's CHECK failure in check/convert.cpp (:2348 there) and
+    the paths; the sets of hand-off note 2 (`$H/r/run_rr2.sh`,
+    `$G/r/run_set.sh`, `$G/r/probes_all.sh`, or stage 2's copies in `$N/bin`)
+    print `$M/sets/rr2set_v1b.txt`, `set_v1b.txt` and `probesall_v1b.txt` line
+    for line but for paths and that convert.cpp line: rev 4's outputs for C1's
+    probes, and R-14's for C2's forms.
+9.  F1: `autoupdate.sh /home/user/carbon-va2` on the ten files, then the same
+    again, which changes nothing; each file is byte-identical to
+    `$M/fill_rev7_p2/<its path>` and is reviewed against §4's C1 rows as rev 7
+    states them.
+10. `gate.sh`: "1966 passed, 0 failed".
+11. `conformance.sh` with a private cache into a private directory: PASS 137,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
+    SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
+12. Commit F1, "Autoupdate testdata goldens on the container arbiter", with the
+    ten paths and the trailers (`git -C /home/user/carbon-va2 rev-parse
+    HEAD:toolchain` prints 913a132b474be56f16581c9ff3b022b35473ff4f), then `git
+    push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan commits
+    since F0, C1 and F1.
+13. Stage 3 (C2) as §3 item 5 says: its built half is
+    `$M/c2_rest_after_v1b.patch` (9 files, applying on C1), with §2.4's code and
+    C2's sources of §A.11 as rev 7 amends them; M-21 records what C1 with C2's
+    built half prints.
+
+Predictions, EXPECTED, not of record: the gate 1956 passed and 10 failed after
+C1 and 1966 after F1, then §8.3's 1971, 1973 and 1975; conformance 137/0/21 over
+158 after C1 and after C4 alone, and 147/0/21 over 168 after C5, bullets 49/0/7
+of 56; the fill of item 9, the probes of item 8, §4's rows as rev 7 states them,
+and §5's and Appendix A's outputs and C4's predicted churn as rev 4 states them.
+A difference from these is a stop, as §8 says; a03's indeterminate value and the
+convert.cpp line of a19's and a20's CHECK failure are not predictions.
+
 ## Sign-off
+
+Rev 7 (2026-10-26) amends rev 6 for the implementation's stop-and-amend at stage
+2, which the record above states (amended 2026-10-26, implementation:
+stop-and-amend: C1's split and golden sources): rev 4's sign-off, as amended by
+rev 5 and rev 6, stands for every part the amendment does not touch, and the
+focused re-review of the amendment, which the orchestrator runs next, decides
+the rest; its row joins the table below when it reports, and the table's rev 6
+row names its commit, 4d5388af2, where rev 6 wrote "this revision".
 
 Rev 6 (2026-10-26) folds the focused re-review of rev 5 (RR5,
 APPROVE-WITH-AMENDMENTS: one MAJOR and three MINORs, all folded, none rejected),
@@ -5079,7 +5628,7 @@ golden (§4, §8.2). Every review of this plan:
 | Review B (R29(c)) | rev 1 (51c6cfb10) | REJECT | 2 | 8 | 5 | 15 | rev 2 (78524522b): all folded, none rejected |
 | Focused re-review 1 (RR1) | rev 2 (78524522b) | REJECT | 1 | 1 | 3 | 5 | rev 3 (8d377a06d): all folded, none rejected |
 | Focused re-review 2 (RR2) | rev 3 (8d377a06d) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 4 (7188540ca): all folded, none rejected |
-| Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (this revision): all folded, none rejected |
+| Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (4d5388af2): all folded, none rejected |
 | Total | | | 6 | 13 | 19 | 38 | 38 folded, 0 rejected (37 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
@@ -6186,6 +6735,14 @@ the outcomes §4 quotes as measured (amended 2026-10-22, review fold: A-B-1 /
 A-B-2 / A-B-3 / A-M-1 / B-B2 / B-m4). The refills of VA-1's goldens change no
 source except fail_todo_slice.carbon, whose `fail_todo_generic_pack` split is
 deleted by C1 (its source is `generic_pack.carbon`'s `declaration` split).
+Rev 1's splits were parsed, not compiled, and four of C1's (`hetero_pack`'s
+`type_pack`, `forward` and `method`, `generic_pack`'s `call`) and three of C2's
+(`tuple_segment`'s `param`, `tuple_value` and `elements_around_segment`) called
+a generic function that has only a declaration, which upstream rejects with `use
+of undefined generic function` (M-21). Since rev 7 each of those functions has
+the empty definition `{}`, its parameters `unused`, as VA-1's goldens give a
+callee, and every C1 split has been compiled and filled on C1 (M-21) (amended
+2026-10-26, implementation: stop-and-amend: C1's split and golden sources).
 
 toolchain/check/testdata/variadics/hetero_pack.carbon (C1):
 
@@ -6240,7 +6797,7 @@ fn Call(a: A, b: B) {
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
-fn Count[... each T: type](... each x: each T);
+fn Count[... each T: type](... unused each x: each T) {}
 //@dump-sem-ir-end
 
 fn Call() {
@@ -6257,7 +6814,7 @@ interface Code {
   fn Get(self) -> i64;
 }
 
-fn ForEach[... each T: Code](... each x: each T);
+fn ForEach[... each T: Code](... unused each x: each T) {}
 
 //@dump-sem-ir-begin
 fn Forward[... each U: Code](... each y: each U) {
@@ -6278,7 +6835,7 @@ impl A as Code {
 }
 
 class C {
-  fn F[... each T: Code](self, ... each x: each T);
+  fn F[... each T: Code](unused self, ... unused each x: each T) {}
 }
 
 fn Call(c: C, a: A) {
@@ -6456,7 +7013,7 @@ fn F[... each T: type](... each x: each T);
 // --- call.carbon
 library "[[@TEST_NAME]]";
 
-fn F[... each T: type](... each x: each T);
+fn F[... each T: type](... unused each x: each T) {}
 
 fn G() {
   F(1 as i64, true, 2 as i32);
@@ -6790,7 +7347,7 @@ toolchain/check/testdata/variadics/tuple_segment.carbon (C2):
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
-fn F[... each T: type](t: (... each T));
+fn F[... each T: type](unused t: (... each T)) {}
 //@dump-sem-ir-end
 
 fn Call() {
@@ -6834,7 +7391,7 @@ fn ForEach[... each T: Code](t: (... each T)) {
 // --- tuple_value.carbon
 library "[[@TEST_NAME]]";
 
-fn Take[... each U: type](t: (... each U));
+fn Take[... each U: type](unused t: (... each U)) {}
 
 //@dump-sem-ir-begin
 fn Pass[... each T: type](... each x: each T) {
@@ -6845,7 +7402,7 @@ fn Pass[... each T: type](... each x: each T) {
 // --- elements_around_segment.carbon
 library "[[@TEST_NAME]]";
 
-fn F[... each T: type](t: (i64, ... each T, bool));
+fn F[... each T: type](unused t: (i64, ... each T, bool)) {}
 
 fn Call() {
   //@dump-sem-ir-begin

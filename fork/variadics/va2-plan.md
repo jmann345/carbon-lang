@@ -6,7 +6,20 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 4, 2026-10-26 -- SIGNED OFF FOR IMPLEMENTATION. Rev 4 is the
+**Status:** rev 5, 2026-10-26 -- rev 4's sign-off for implementation stands,
+amended by the implementation's first stop-and-amend, at stage 1 (C0 and F0),
+which the "Stop-and-amend record (rev 5, 2026-10-26)" before the Sign-off
+section records. C0's fill showed that a nested aggregate constant copied into
+storage (a `var`, an in-place `return`, an assignment, a file-scope `var`, a
+constant element of a run-time tuple) is copied from its value representation as
+if that were its object, and the amender found that a one-element aggregate of
+such a value, which PR 59 and trunk copy correctly, aborts on C0, and that C0's
+two functions form a recursive call chain that clang-tidy rejects. A new commit
+C0b, built and measured on C0 and on the rev 4 prototype, copies such a constant
+into storage element by element and builds C0's elementwise values with a
+worklist; nothing else in the slice changes, and a focused re-review of the
+amendment decides before stage 1 re-runs (amended 2026-10-26, implementation:
+stop-and-amend: nested constant initialization). Rev 4 (7188540ca) is the
 fixer's fold of the second focused re-review, of rev 3 (8d377a06d), whose
 verdict was APPROVE-WITH-AMENDMENTS on one MAJOR, RR2-M1 (a compile-time
 each-name was accepted in every parameter list, so packs among a class's, an
@@ -82,7 +95,17 @@ check/eval.cpp, clang-format's re-wrapping of rev 3's lines in those files
 included). It is reachable as the dangling scratch commit ca939ee19 (tree
 f023437c2, on 80f1ec825), which §0.6's `git merge-tree` and the PR 64 mirror
 use; Appendix B is its diff verbatim (amended 2026-10-26, review fold: RR2-M1 /
-RR2-m1).
+RR2-m1). Rev 5's were taken by the plan amender of the implementation's
+stop-and-amend with the implementer's C0 install, binaries relinked over its
+objects under /dev/shm/va2-amend/c0b, the rev 4 prototype with C0b built in full
+under /dev/shm/va2-amend/builds (all deleted when rev 5 was committed), and the
+scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend5`
+(`$J` below), beside the implementer's stage 1 directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/stage1`
+(`$L`). C0b is not part of the prototype: its block is in §2.7, measured against
+C0's commit d92a9c709, and Appendix B stays rev 4's (M-20) (amended 2026-10-26,
+implementation: stop-and-amend: nested constant initialization).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -125,10 +148,12 @@ tuple `EqWith(Self)` and `OrderedWith(Self)` are added in
 core/prelude/operators/comparison.carbon in the same shape, their bodies
 statement expansions of `if` statements; impl lookup's type structure keeps
 the tuple, `(...?)`, as the design's rule does (amended 2026-10-22, review
-fold: A-M-1 / B-B2). A prerequisite commit fixes the lowering of nested
-aggregate constants, an upstream defect that three of the programs reach
-(amended 2026-10-22, review fold: A-B-3). The row "Stdlib: tuple/array library
-parts" stays PARTIAL with W-334's mixed-operand comparisons and W-339's
+fold: A-M-1 / B-B2). Two prerequisite commits, C0 and C0b, fix the lowering of
+nested aggregate constants, an upstream defect that three of the programs reach
+(amended 2026-10-22, review fold: A-B-3), the second added by rev 5 (amended
+2026-10-26, implementation: stop-and-amend: nested constant initialization). The
+row "Stdlib: tuple/array library parts" stays PARTIAL with W-334's mixed-operand
+comparisons and W-339's
 comparison semantics for orderings that are not total open (§1.9), and
 "Generics: Definition-checked variadics" stays PARTIAL with a narrower Not-yet
 list.
@@ -644,6 +669,10 @@ prototype builds the elementwise value representation of a constant tuple or
 struct value from its elements' constants (§2.0's C0): r16 prints 3 2, r16g 3,
 r16h 3 and x07 2 5 9, and no existing golden or program changes (M-6's rev 2
 line). A run-time nested tuple was never affected (r16c).
+Those probes lower values only: none copies the constant into storage (r16h's
+`var` reads `.1`, at offset 8 in both layouts), and C0 alone copies a nested
+constant into storage wrong, which C0b corrects (M-20) (amended 2026-10-26,
+implementation: stop-and-amend: nested constant initialization).
 
 M-13. A tuple type with a pack segment returned in place (amended 2026-10-22,
 review fold: A-B-2). Reviewer A's r17, a variadic impl's `fn Op(self) -> Self
@@ -893,6 +922,138 @@ gate is 1972 passed and 5 failed (VA-1's five; `$H/r/gate_m64r4_raw.log`),
 and conformance is PASS 156, 0 failures, SKIP 19 of 175
 (`$H/r/conf_m64r4.log`), rev 3's mirror's counts.
 
+M-20. Copies of nested aggregate constants into storage (amended 2026-10-26,
+implementation: stop-and-amend: nested constant initialization). The implementer
+built C0 (d92a9c709, on this branch, not pushed) and filled its golden
+(`$L/nc_pass1.carbon`, not committed), and the fill contradicted §4's `var` row:
+`var v: ((i32, i32), i32) = ((4, 5), 6);` lowers to a 12-byte memcpy into
+`%v.var` from `@tuple.c42.loc4_3 = internal constant <{ ptr, i32 }> <{ ptr
+@tuple.8a1.loc4_3, i32 6 }>`, the value representation, so `v.0` receives the
+inner tuple's address; and the value splits hold a packed `<{ ptr, i32 }>` where
+§4 wrote `{ ptr, i32 }`, because the Carbon layout of `(ptr, i32)` has no tail
+padding and lower/type.cpp's `BuildStructType` packs every such type. The gate
+was red on that golden alone, with no crash (`$L/gate1.log`), and conformance
+was unchanged, 137/0/21 of 158 (`$L/conf-c0.log`). The amender reproduced it
+with 36 probes, `$J/probes` (a01 to a20) and `$J/probes_impl` (the implementer's
+v01 to v04, reviewer A's r16, r16g and r16h, the rev 2 fixer's x07 and RR1's c01
+to c08), each compiled, linked and run by `$H/r/run_probe.sh` through
+`$J/run_set.sh`: a01 to a20 on PR 59, trunk and the nightly 2026.10.12
+(`$J/set_va_probes.txt`, `set_trunk.txt`, `set_nightly.txt`), the other 16 on PR
+59 (`set_va.txt`), all 36 on C0's install (`set_c0_probes.txt`, `set_c0.txt`)
+and on C0 with C0b relinked over its objects (`set_c0b2.txt`). "Indeterminate"
+is a value that changes from run to run:
+
+| Probe | PR 59, trunk and the nightly | C0 | C0 and C0b |
+| --- | --- | --- | --- |
+| v01, `var v: ((i32, i32), i32) = ((4, 5), 6);` printing every element (PR 59 only) | verifier abort ("Global variable initializer type does not match global variable type!") | two indeterminate values, then 6 | 4 5 6 |
+| v02, a nested struct constant in a `var` (PR 59 only) | the same abort | two indeterminate values, then 3 | 1 2 3 |
+| v04, `return ((4, 5), 6);` into the return slot (PR 59 only) | the same abort | two indeterminate values, then 6 | 4 5 6 |
+| a04, `(((1, 2), 3), Id(4))` into a `var`: a constant element of a run-time tuple, initialized in place | the same abort | two indeterminate values, then 3 4 | 1 2 3 4 |
+| a05, `v = ((7, 8), 9);` | the same abort | two indeterminate values, then 9 | 7 8 9 |
+| a07, `((i64, i32), i64)` with tail padding, in a `var` and passed as a value | the same abort | the `var`'s three elements wrong, two of them indeterminate; the value's 5 6 right | 1 2 3 5 6 |
+| a08, a file-scope `var g: ((i32, i32), i32) = ((1, 2), 3);` | the same abort | two indeterminate values, then 3 | 1 2 3 |
+| a10, a11, a12, a14, a15 and a17: a struct of a tuple, `bool`, `i8` beside `i64`, an array element, a class element and three levels, each in a `var` | the same abort | wrong: a11 prints 1 and skips its 7, the others print wrong values, most of them indeterminate | 4 5 6; 7 1; 1 2 3; 1 2 3 4; 1 2 3; 1 2 3 4 |
+| a18, a nested constant returned by two specifics of a generic | the same abort | indeterminate values | 1 2 3 1 3 |
+| a01, `var v: ((i32, i32),) = ((1, 2),);`, and a16, `var s: {.a: (i32, i32)} = {.a = (1, 2)};` | 1 2 | `CHECK failure` at lower/function_context.cpp:522, `value->getType() == llvm_type` in `StoreObject` | 1 2 |
+| a02, that 1-tuple bound by `let` and passed | `CHECK failure` at lower/handle_call.cpp:984 (the nightly :783), an argument mismatch | 1 2 | 1 2 |
+| a06, a09 and a13: a class field, an array of tuples, an empty inner tuple | 1 2 3 4; 1 2 3 4; 5 6 7 | the same | the same |
+| v03, r16, r16g, r16h, x07 and c01 to c08 (PR 59 only) | the verifier abort, but c04 (5 6 7) | 7 8 9; 3 2; 3; 3; 2 5 9; RR1's outputs (7 1, 2 3, 2 3 4, 5 6 7, 1 2 4 5, 2 4, 1 3, 5 3) | the same |
+| a03, `var v: ((i32, i32),) = ((Id(1), Id(2)),);`, and a19 and a20, a function returning such a 1-tuple | 1 and an indeterminate value; `CHECK failure` at check/convert.cpp:2313, `new_storage_id.has_value()` (trunk :2199, the nightly :2066) | the same | the same |
+
+Root cause, read from lower/function_context.cpp, lower/aggregate.cpp and
+sem_ir/type_info.cpp at d92a9c709. `InitializeStorage` (:433-459) copies a
+constant source with `CopyValue`, in its in-place arm (`if
+(IsConstant(source_id))`) and in its by-copy arm (always). `CopyValue`'s
+contract is upstream's (function_context.h:318-320 at 8779d15e1: "`source_id`
+must produce a value representation for `type`, and `dest_id` must be a pointer
+to a `type` object"), but its arms assume that value representation is the
+object representation (`Copy`: `StoreObject`) or its address (`Pointer`:
+`CopyObject`, a memcpy of the object's size), and for a type whose value
+representation holds its elements' value representations
+(`ValueRepr::ValueAggregate`: a tuple or struct with a tuple, struct, array or
+class element) neither holds. Before C0, `GetConstant` served such a constant's
+object representation, in a global of the value representation's type for a
+pointer representation (the verifier's abort) and as the value itself for a
+one-element aggregate (so a01 and a16 ran and a02 aborted); C0 serves the value
+representation, as upstream's comment says it must (file_context.cpp:213-215 at
+8779d15e1: "the value produced by a constant instruction is a value
+representation of the constant. For initializing expressions, `FinishInit` will
+perform a copy if needed"), which made every value use right and every copy into
+storage wrong. An initializing expression that is not a constant never reaches
+it: an in-place one initializes its storage itself, and a by-copy one produces
+the object representation by value (type_info.h:253-254 at 8779d15e1: "An
+initializing expression produces an object representation by value, which is
+copied into the initialized object"). So it is a defect of the measured diff,
+not a header the relink missed (C0 changes one .cpp file), not a golden the
+manifest missed (no existing golden copies such a constant), and not a design
+rule misread (R32: lowering is internal, and the mechanism is upstream's
+contract above); rev 2's probes lowered values only, and §4's `var` row
+described the right result without a run.
+
+A second defect of C0's diff, found by the amender: its
+`BuildElementwiseConstantValueRepr` lowers each element through `GetConstant`,
+which calls it back, so clang-tidy 21.1.8's `misc-no-recursion`, which §8.6's
+first pass runs with warnings as errors and the repository's .clang-tidy enables
+(`misc-*`), reports both functions "within a recursive call chain" (two errors;
+`$J/tidy_norec_c0_file_context.log`, `tidy_repo_c0_file_context.log`); §8.6 runs
+it on implementation and fix commits, and C0 was neither, so no step before the
+implementation reviews would have caught it.
+
+C0b, §2.7's block, measured on the scratch worktree /dev/shm/va2-amend/wt at
+d92a9c709 with the block applied and the binaries relinked over the C0 build's
+objects with C0b's two .cpp files (`$J/bin/relink.sh`):
+
+-   The gate before the fill: "1960 passed, 1 failed", the golden alone, with no
+    crash (`$J/gate_c0b2_unfilled.log`). Autoupdate reaches its fixpoint after
+    one pass (the second changes nothing) and adds 415 lines to the 68-line
+    source, 483 in all (`$J/nested_constant_c0b2_filled.carbon`); the gate after
+    it: "1961 passed, 0 failed" (`$J/gate_c0b2_filled.log`). The fill's `tuple`,
+    `pass`, `struct` and `struct_of_tuple` splits are the implementer's C0 fill
+    line for line; `var`'s 12-byte memcpy becomes six lines (a load of the inner
+    tuple's address, a GEP, a load of `6`, a GEP, an 8-byte memcpy into `v.0`
+    and a store into `v.1`); `return` and `one_element` are new (§4).
+-   Conformance: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+    OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0
+    FAIL, 7 SKIP, 0 NOT-WRITTEN of 56 (`$J/conf-c0b2.log`).
+-   The probes: the last column of the table above.
+-   clang-tidy: both §8.6 passes over C0b's file_context.cpp and
+    function_context.cpp, the second line-filtered to the lines changed since
+    b0822a744, which are C0's and C0b's, exit 0 with no diagnostic
+    (`$J/tidy_norec_c0b_*.log`, `tidy_repo_c0b_*.log`); `misc-no-recursion` over
+    the prototype's other 22 .cpp files, on the composition tree below and on
+    b0822a744, exits 0 for every file (`$J/tidy_proto.txt`).
+-   With the rev 4 prototype: the scratch worktree /dev/shm/va2-amend/wt5 at
+    d92a9c709 with C0b's block, C0b's fill and Appendix B without its
+    file_context.cpp hunk, which is C0's (that remainder applies with `git
+    apply --check` on C0 plus C0b), committed as the dangling scratch commit
+    90c34dbaa (tree ec0d23d6c, on ca939ee19; 32 files, 1623 insertions and 120
+    deletions against b0822a744, lower/file_context.h the new one) and built in
+    full under /dev/shm/va2-amend/builds (0 warnings). Its gate is 1956 passed
+    and 5 failed, VA-1's five (M-6), so C1's and C2's built hunks leave F0's
+    fill as it is (`$J/gate_wt5.log`); VA-1's churn is rev 4's 125 insertions
+    and 145 deletions line for line (`$J/va1_churn_c0b.diff`); conformance is
+    PASS 137, 0 failures, SKIP 21 of 158 (`$J/conf-wt5.log`); and
+    `$H/r/run_set.sh`, `run_rr2.sh` and `probes_all.sh` (M-17 to M-19's sets
+    with the proxy prelude, and the 131 earlier probes and programs) print rev
+    4's outputs line for line (`$J/sets`, against `$H/r/set_rev4.txt`,
+    `rr2set_rev4.txt` and `probesall_rev4.txt`); M-20's 36 probes print the
+    last column of the table above, but for a03's indeterminate value and a19's
+    and a20's CHECK failure, at check/convert.cpp:2361 there, moved by C1's and
+    C2's convert.cpp hunks (`$J/set_wt5.txt`).
+-   §0.6's collisions with 90c34dbaa are rev 4's (`$J/collisions_c0b2.txt`), and
+    `git merge-tree` against upstream's 8779d15e1 gives 104 conflicted paths for
+    b0822a744, ca939ee19 and 90c34dbaa alike, the same set
+    (`$J/mt_up_8779.txt`).
+
+Not changed and not filed: a03, a19 and a20 are upstream's defects in a run-time
+one-element aggregate whose element is initialized in place (its by-copy
+initializer, lower/aggregate.cpp `EmitAggregateInitializer`, wraps the element's
+in-place `poison`, and a `return` of one stops in check), the same on every
+toolchain above and reached by no form or program of this slice. VA-2's ids
+W-330 to W-339 are all filed and W-340 to W-344 are other workstreams', so no id
+is minted for them here; §7.1's R-13 records them with a break condition, and
+the stage that writes D's PR text names them for the next allocation.
+
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
 VA-1's §1.4 built one path for a pack of one element type `«E; N»`
@@ -1000,7 +1161,10 @@ RR2-m1):
     function's or an impl's implicit list, the pack literal of a specific's
     pack of types in diagnostics, and one evaluation of a failed specific
     (M-19) (amended 2026-10-26, review fold: RR2-M1 / RR2-m1);
--   the lowering of nested aggregate constants (M-12, C0's hunk).
+-   the lowering of nested aggregate constants (M-12, C0's hunk), and since rev
+    5, outside the prototype, C0b's copies of them into storage (M-20, §2.7)
+    (amended 2026-10-26, implementation: stop-and-amend: nested constant
+    initialization).
 
 Rev 1's measured defects (M-9, M-12 to M-15) are corrected in it: the
 `TupleType` deduction's fallback (§2.3), the representation of a segment tuple
@@ -1089,6 +1253,14 @@ variadic impls are candidates for every tuple's `Copy`, `EqWith` and
 `OrderedWith` query (`Optional((i32, i32))` needs `(i32, i32) as Copy` through
 `OptionalStorage`), so §8.7 gives each of those PRs, and DR-1a and DR-1b, a
 mirror of its own (amended 2026-10-22, review fold: A-M-2 / B-M4).
+
+Re-measured for rev 5 with the rev 4 prototype plus C0b, the dangling scratch
+commit 90c34dbaa (`$J/collisions_c0b2.txt`, made by `$H/r/collisions.sh`): every
+count and shared file list is rev 4's; the lower/function_context.cpp that PR 61
+and PR 64 share merges cleanly with C0b's hunks too, no held PR changes
+lower/file_context.h, and trunk is ad2e45a66, moved since 449fecdd7 by fork/
+records only (amended 2026-10-26, implementation: stop-and-amend: nested
+constant initialization).
 
 ### §0.7 Conformance programs touched
 
@@ -1892,12 +2064,15 @@ rev 2 files all ten ids, and a shrink of §3 needs no new id (amended
     :504-505), needing `EqWith((... each U))` over two packs of one arity and a
     per-element requirement. Bullet "Stdlib: tuple/array library parts".
     Evidence: p23 after C4.
-6.  W-335: nested aggregate constants lowered with their object
-    representation where their value representation is elementwise, an
-    upstream defect on PR 59, trunk, the nightly and upstream's tip (M-12),
-    fixed by C0 and filed DISCHARGED by D. Bullet "Stdlib: tuple/array library
-    parts". Evidence: C0's lower golden `tuple/nested_constant.carbon`, r16,
-    r16g, r16h, x07 (amended 2026-10-22, review fold: A-B-3).
+6.  W-335: nested aggregate constants lowered with their object representation
+    where their value representation is elementwise, and, once lowered so,
+    copied into storage as if that were their object, an upstream defect on PR
+    59, trunk, the nightly and upstream's tip (M-12, M-20), fixed by C0 and C0b
+    and filed DISCHARGED by D. Bullet "Stdlib: tuple/array library parts".
+    Evidence: C0's lower golden `tuple/nested_constant.carbon` with C0b's
+    splits, r16, r16g, r16h, x07, and M-20's v01, v02, v04, a01, a04, a05, a08
+    and a16 (amended 2026-10-22, review fold: A-B-3) (amended 2026-10-26,
+    implementation: stop-and-amend: nested constant initialization).
 7.  W-336: forwarding between a pack of different types and a pack of one
     type, the design's "Expansion convertibility" (:835-837) beyond one
     segment's types (DR-41). Evidence: `fail_todo_va2` split
@@ -2036,7 +2211,7 @@ review fold: B-M8).
 | D-VA2-16 | ten programs, three differential (`*_diff`) | a program passes a mutant |
 | D-VA2-17 | records; no design edit; W-212 and W-225 discharged, W-213 narrowed; both rows stay PARTIAL with narrower open text | VA-2 decides an open rule without a register entry |
 | D-VA2-18 | one PR on PR 59, merging last, land-time M, S-CT (tests only since rev 3), F-M, L-F, L, simulated on the full-stack mirror | an unresolvable conflict at land time, or a land simulation's red set other than predicted |
-| D-VA2-19 | C0 and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3) | a commit cannot build without a later one |
+| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3) | a commit cannot build without a later one |
 
 ## §2 Spec, file by file
 
@@ -2061,6 +2236,11 @@ a file and run `git apply` on it in a worktree at b0822a744 (`git apply
 empty lines that the trailing-whitespace hook leaves in place of blank context
 lines as blank context lines; checked for rev 1's copy, F-9, and for rev 2's
 before this plan's commit, amended 2026-10-22, review fold: B-m5).
+C0b, since rev 5, is not part of Appendix B: its block is in §2.7, measured
+against C0's commit d92a9c709, where `git apply --check` passes, and Appendix B
+without its file_context.cpp hunk, which is C0's, applies on C0 plus C0b (M-20)
+(amended 2026-10-26, implementation: stop-and-amend: nested constant
+initialization).
 
 ### §2.1 C1, SemIR (built)
 
@@ -2525,10 +2705,491 @@ changed since the cut; it is a defect fix, not a second spelling. C0's golden
 is toolchain/lower/testdata/tuple/nested_constant.carbon (§A.11), and W-335
 records it.
 
+**C0b** (added by rev 5) (amended 2026-10-26, implementation: stop-and-amend:
+nested constant initialization). C0's invariant held, but C0 left two defects
+that its probes, which lower values only, could not see (M-20): a copy of such a
+constant into storage read the value representation as the object, and its
+helper and `GetConstant` call each other, which clang-tidy's `misc-no-recursion`
+rejects. C0b is a new commit on C0, before F0:
+
+-   toolchain/lower/function_context.cpp and .h: `CopyValue`, for a type whose
+    value representation is `ValueAggregate` and a constant source
+    (`IsConstant`, fingerprinted as `AcquireValue` fingerprints a folded
+    operand), copies the value representation into the object with the new
+    `CopyValueReprToObject`, a worklist over the elements: an element whose
+    value representation is its object is stored (`StoreObject`), one held by
+    address is copied (`CopyObject`), an elementwise one is expanded in turn,
+    and an empty one is skipped; each level reads its elements' values and finds
+    their destinations before copying them. Every other type and every other
+    source keeps upstream's two arms, so the IR changes only where such a
+    constant is copied into storage, and a by-copy initializing expression that
+    is not a constant still stores its object representation by value (a03's
+    upstream defect, M-20, is not touched).
+-   toolchain/lower/file_context.cpp and .h: C0's static helper becomes the
+    private `GetElementwiseConstantValueRepr`, which builds the same elementwise
+    values, nested ones first, with a worklist instead of calling `GetConstant`;
+    upstream's tail of `GetConstant`, which finds or makes the global of a
+    pointer value representation, moves unchanged into the private
+    `GetOrCreateConstantGlobal`, which both use, so the globals, their names and
+    their order are C0's (the fill's value splits are C0's line for line).
+-   toolchain/lower/testdata/tuple/nested_constant.carbon gains the splits
+    `return` (v04's shape, a constant returned in place) and `one_element`
+    (a01's, a by-copy one-element aggregate of a tuple), filled by F0 with C0's.
+
+Invariants: no existing golden changes (the gate before the fill is red on the
+new golden alone, M-20); a constant whose value representation is its object
+representation, or the address of it, is copied exactly as before; the static
+call graph of both files has no cycle. The defect is upstream's: `CopyValue` at
+8779d15e1 (function_context.cpp:393-411) has the same two arms, unreached there
+for a pointer representation because `GetConstant` aborts first, so the next
+advance keeps both hunks unless upstream fixes `GetConstant` and `CopyValue`
+itself, and then takes upstream's. The block, against d92a9c709 (`git
+apply --check` passes there and at the rev 5 commit; 5 files, 292 insertions and
+51 deletions: file_context.cpp 140 and 50, file_context.h 17 and 0,
+function_context.cpp 112 and 1, function_context.h 8 and 0, the golden
+15 and 0):
+
+<!-- google-doc-style-ignore -->
+
+```diff
+diff --git a/toolchain/lower/file_context.cpp b/toolchain/lower/file_context.cpp
+index feec811df..da195d675 100644
+--- a/toolchain/lower/file_context.cpp
++++ b/toolchain/lower/file_context.cpp
+@@ -223,52 +223,6 @@ auto FileContext::Finalize() -> void {
+                                          specific_functions_);
+ }
+
+-// Fork (VA-2): builds the elementwise value representation of a constant
+-// tuple or struct value whose value representation differs from its object
+-// representation, such as `((1, 2), 3)`, whose value holds a pointer to the
+-// value of `(1, 2)` where its object holds `(1, 2)` itself. The lowered
+-// constant `const_value` is the object representation. Returns nullptr if the
+-// constant is not a tuple or struct value.
+-static auto BuildElementwiseConstantValueRepr(FileContext& context,
+-                                              SemIR::InstId const_inst_id,
+-                                              SemIR::ValueRepr value_rep,
+-                                              SemIR::InstId use_inst_id)
+-    -> llvm::Constant* {
+-  const auto& sem_ir = context.sem_ir();
+-  auto inst = sem_ir.insts().Get(const_inst_id);
+-  SemIR::InstBlockId elements_id = SemIR::InstBlockId::None;
+-  if (auto tuple = inst.TryAs<SemIR::TupleValue>()) {
+-    elements_id = tuple->elements_id;
+-  } else if (auto struct_value = inst.TryAs<SemIR::StructValue>()) {
+-    elements_id = struct_value->elements_id;
+-  } else {
+-    return nullptr;
+-  }
+-  auto repr_type_id = value_rep.kind == SemIR::ValueRepr::Pointer
+-                          ? sem_ir.GetPointeeType(value_rep.type_id)
+-                          : value_rep.type_id;
+-  auto* llvm_type = dyn_cast<llvm::StructType>(context.GetType(repr_type_id));
+-  if (!llvm_type) {
+-    return nullptr;
+-  }
+-  llvm::SmallVector<llvm::Constant*> elements;
+-  for (auto [index, element_id] :
+-       llvm::enumerate(sem_ir.inst_blocks().Get(elements_id))) {
+-    auto* element = cast<llvm::Constant>(context.GetConstant(
+-        sem_ir.constant_values().Get(element_id), use_inst_id));
+-    auto* element_type = llvm_type->getElementType(index);
+-    if (element->getType() != element_type) {
+-      // A tail-padded element, `<{T, [N x i8]}>`.
+-      auto* padded = cast<llvm::StructType>(element_type);
+-      element = llvm::ConstantStruct::get(
+-          padded, element,
+-          llvm::Constant::getNullValue(padded->getElementType(1)));
+-    }
+-    elements.push_back(element);
+-  }
+-  return llvm::ConstantStruct::get(llvm_type, elements);
+-}
+-
+ auto FileContext::GetConstant(SemIR::ConstantId const_id,
+                               SemIR::InstId use_inst_id) -> llvm::Value* {
+   auto const_inst_id = sem_ir().constant_values().GetInstId(const_id);
+@@ -311,14 +265,29 @@ auto FileContext::GetConstant(SemIR::ConstantId const_id,
+       const_value) {
+     // Fork (VA-2): the value representation is elementwise and is not the
+     // object representation that `const_value` holds.
+-    if (auto* elementwise = BuildElementwiseConstantValueRepr(
+-            *this, const_inst_id, value_rep, use_inst_id)) {
+-      const_value = elementwise;
++    if (auto* elementwise =
++            GetElementwiseConstantValueRepr(const_inst_id, use_inst_id)) {
++      return elementwise;
+     }
+   }
+   if (value_rep.kind != SemIR::ValueRepr::Pointer) {
+     return const_value;
+   }
++  return GetOrCreateConstantGlobal(const_inst_id, value_rep, const_value,
++                                   use_inst_id);
++}
++
++// Fork (VA-2): the global variable that `GetConstant` makes for a constant
++// whose value representation is a pointer, split out so that
++// `GetElementwiseConstantValueRepr` makes the same globals for the elements.
++auto FileContext::GetOrCreateConstantGlobal(SemIR::InstId const_inst_id,
++                                            SemIR::ValueRepr value_rep,
++                                            llvm::Constant* value,
++                                            SemIR::InstId use_inst_id)
++    -> llvm::GlobalVariable* {
++  if (auto result = global_variables().Lookup(const_inst_id)) {
++    return result.value();
++  }
+
+   // Include both the name of the constant, if any, and the point of use in
+   // the name of the variable.
+@@ -343,13 +312,134 @@ auto FileContext::GetConstant(SemIR::ConstantId const_id,
+
+   auto* global_variable = new llvm::GlobalVariable(
+       llvm_module(), GetType(sem_ir().GetPointeeType(value_rep.type_id)),
+-      /*isConstant=*/true, llvm::GlobalVariable::InternalLinkage, const_value,
++      /*isConstant=*/true, llvm::GlobalVariable::InternalLinkage, value,
+       const_name + sep + use_name);
+
+   global_variables_.Insert(const_inst_id, global_variable);
+   return global_variable;
+ }
+
++// Fork (VA-2): builds the value representation of the constant tuple or
++// struct value `const_inst_id` whose value representation holds its elements'
++// value representations (`ValueRepr::ValueAggregate`), such as `((1, 2), 3)`,
++// whose value holds the address of the value of `(1, 2)` where its object holds
++// `(1, 2)` itself, from the elements' constants: the value itself, or the
++// address of a global that holds it if the value representation is a pointer.
++// An element of the same kind is built first, by a worklist rather than by
++// recursion. Returns nullptr if the constant is not such a value.
++auto FileContext::GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
++                                                  SemIR::InstId use_inst_id)
++    -> llvm::Value* {
++  struct Aggregate {
++    llvm::ArrayRef<SemIR::InstId> elements;
++    SemIR::ValueRepr value_rep;
++    llvm::StructType* llvm_type;
++  };
++  // Returns the elements of `inst_id` if it is a lowered constant tuple or
++  // struct value whose value representation is elementwise.
++  auto get_aggregate = [&](SemIR::InstId inst_id) -> std::optional<Aggregate> {
++    auto inst = sem_ir().insts().Get(inst_id);
++    auto value_rep = SemIR::ValueRepr::ForType(sem_ir(), inst.type_id());
++    if (value_rep.aggregate_kind != SemIR::ValueRepr::ValueAggregate ||
++        !constants_.Get(inst_id)) {
++      return std::nullopt;
++    }
++    SemIR::InstBlockId elements_id = SemIR::InstBlockId::None;
++    if (auto tuple = inst.TryAs<SemIR::TupleValue>()) {
++      elements_id = tuple->elements_id;
++    } else if (auto struct_value = inst.TryAs<SemIR::StructValue>()) {
++      elements_id = struct_value->elements_id;
++    } else {
++      return std::nullopt;
++    }
++    auto repr_type_id = value_rep.kind == SemIR::ValueRepr::Pointer
++                            ? sem_ir().GetPointeeType(value_rep.type_id)
++                            : value_rep.type_id;
++    auto* llvm_type = dyn_cast<llvm::StructType>(GetType(repr_type_id));
++    if (!llvm_type) {
++      return std::nullopt;
++    }
++    return Aggregate{.elements = sem_ir().inst_blocks().Get(elements_id),
++                     .value_rep = value_rep,
++                     .llvm_type = llvm_type};
++  };
++  auto get_element_inst_id = [&](SemIR::InstId element_id) {
++    return sem_ir().constant_values().GetInstId(
++        sem_ir().constant_values().Get(element_id));
++  };
++
++  if (!get_aggregate(const_inst_id)) {
++    return nullptr;
++  }
++  // Each aggregate is popped once to push its elements of the same kind that
++  // are not built yet, and again, after them, to be built.
++  struct Pending {
++    SemIR::InstId inst_id;
++    bool elements_pushed;
++  };
++  llvm::SmallVector<Pending> worklist = {
++      {.inst_id = const_inst_id, .elements_pushed = false}};
++  // The value representations of the elements built so far.
++  Map<SemIR::InstId, llvm::Value*> built;
++  while (true) {
++    auto [inst_id, elements_pushed] = worklist.back();
++    auto aggregate = *get_aggregate(inst_id);
++    if (!elements_pushed) {
++      worklist.back().elements_pushed = true;
++      for (auto element_id : aggregate.elements) {
++        auto element_inst_id = get_element_inst_id(element_id);
++        if (get_aggregate(element_inst_id) &&
++            !built.Contains(element_inst_id) &&
++            !global_variables().Lookup(element_inst_id)) {
++          worklist.push_back(
++              {.inst_id = element_inst_id, .elements_pushed = false});
++        }
++      }
++      continue;
++    }
++    worklist.pop_back();
++
++    llvm::SmallVector<llvm::Constant*> elements;
++    for (auto [index, element_id] : llvm::enumerate(aggregate.elements)) {
++      auto element_inst_id = get_element_inst_id(element_id);
++      llvm::Value* element_value = nullptr;
++      if (auto nested = built.Lookup(element_inst_id)) {
++        element_value = nested.value();
++      } else {
++        // As `GetConstant` lowers an element of any other kind.
++        auto element_value_rep = SemIR::ValueRepr::ForType(
++            sem_ir(), sem_ir().insts().Get(element_inst_id).type_id());
++        auto* element_constant = constants_.Get(element_inst_id);
++        element_value =
++            element_value_rep.kind == SemIR::ValueRepr::Pointer
++                ? GetOrCreateConstantGlobal(element_inst_id, element_value_rep,
++                                            element_constant, use_inst_id)
++                : element_constant;
++      }
++      auto* element = cast<llvm::Constant>(element_value);
++      auto* element_type = aggregate.llvm_type->getElementType(index);
++      if (element->getType() != element_type) {
++        // A tail-padded element, `<{T, [N x i8]}>`.
++        auto* padded = cast<llvm::StructType>(element_type);
++        element = llvm::ConstantStruct::get(
++            padded, element,
++            llvm::Constant::getNullValue(padded->getElementType(1)));
++      }
++      elements.push_back(element);
++    }
++    auto* value = llvm::ConstantStruct::get(aggregate.llvm_type, elements);
++    llvm::Value* result =
++        aggregate.value_rep.kind == SemIR::ValueRepr::Pointer
++            ? GetOrCreateConstantGlobal(inst_id, aggregate.value_rep, value,
++                                        use_inst_id)
++            : value;
++    if (worklist.empty()) {
++      return result;
++    }
++    built.Insert(inst_id, result);
++  }
++}
++
+ auto FileContext::GetOrCreateFunctionInfo(
+     SemIR::FunctionId function_id, SemIR::SpecificId specific_id,
+     FileContext* fallback_file, SemIR::FunctionId fallback_function_id,
+diff --git a/toolchain/lower/file_context.h b/toolchain/lower/file_context.h
+index 64d018bb3..f7add6d4a 100644
+--- a/toolchain/lower/file_context.h
++++ b/toolchain/lower/file_context.h
+@@ -362,6 +362,23 @@ class FileContext {
+   auto BuildVtable(const SemIR::Vtable& vtable, SemIR::SpecificId specific_id)
+       -> llvm::Constant*;
+
++  // Fork (VA-2): returns the global variable holding `value`, the constant
++  // `const_inst_id` in the pointee type of its pointer value representation
++  // `value_rep`, made on first use. Used by `GetConstant`.
++  auto GetOrCreateConstantGlobal(SemIR::InstId const_inst_id,
++                                 SemIR::ValueRepr value_rep,
++                                 llvm::Constant* value,
++                                 SemIR::InstId use_inst_id)
++      -> llvm::GlobalVariable*;
++
++  // Fork (VA-2): returns the value representation of a constant tuple or
++  // struct value whose value representation holds its elements' value
++  // representations, or nullptr for any other constant. Used by
++  // `GetConstant`.
++  auto GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
++                                       SemIR::InstId use_inst_id)
++      -> llvm::Value*;
++
+   // Records a specific that was lowered for a generic. These are added one
+   // by one while lowering their definitions.
+   auto AddLoweredSpecificForGeneric(SemIR::GenericId generic_id,
+diff --git a/toolchain/lower/function_context.cpp b/toolchain/lower/function_context.cpp
+index c19fafaa9..4c8659720 100644
+--- a/toolchain/lower/function_context.cpp
++++ b/toolchain/lower/function_context.cpp
+@@ -535,7 +535,23 @@ auto FunctionContext::StoreObject(TypeInFile type, llvm::Value* value,
+
+ auto FunctionContext::CopyValue(TypeInFile type, SemIR::InstId source_id,
+                                 SemIR::InstId dest_id) -> void {
+-  switch (GetValueRepr(type).repr.kind) {
++  auto value_repr = GetValueRepr(type).repr;
++  if (value_repr.aggregate_kind == SemIR::ValueRepr::ValueAggregate) {
++    // Fork (VA-2): a constant is lowered to its value representation
++    // (`FileContext::GetConstant`), which for this type holds its elements'
++    // value representations, such as the address of the value of `(1, 2)` in
++    // the value of `((1, 2), 3)`, so it is neither the object representation
++    // nor its address, as the copies below assume. Any other source keeps
++    // them: for this type, an initializing expression that is not a constant
++    // produces the object representation by value (`InitRepr::ByCopy`).
++    bool is_constant = IsConstant(source_id);
++    AddIntToCurrentFingerprint(is_constant);
++    if (is_constant) {
++      CopyValueReprToObject(type, GetValue(source_id), GetValue(dest_id));
++      return;
++    }
++  }
++  switch (value_repr.kind) {
+     case SemIR::ValueRepr::Unknown:
+       CARBON_FATAL("Attempt to copy incomplete type");
+     case SemIR::ValueRepr::Dependent:
+@@ -570,6 +586,101 @@ auto FunctionContext::CopyObject(TypeInFile type, llvm::Value* source_addr,
+                          layout.getTypeAllocSize(llvm_type));
+ }
+
++auto FunctionContext::CopyValueReprToObject(TypeInFile type, llvm::Value* value,
++                                            llvm::Value* dest_addr) -> void {
++  // A worklist of copies rather than recursion over the elements.
++  struct PendingCopy {
++    TypeInFile type;
++    llvm::Value* value;
++    llvm::Value* dest_addr;
++  };
++  llvm::SmallVector<PendingCopy> worklist = {
++      {.type = type, .value = value, .dest_addr = dest_addr}};
++  while (!worklist.empty()) {
++    auto copy = worklist.pop_back_val();
++    auto value_repr = GetValueRepr(copy.type);
++    llvm::SmallVector<SemIR::TypeId> element_type_ids;
++    bool elementwise = false;
++    if (value_repr.repr.aggregate_kind == SemIR::ValueRepr::ValueAggregate) {
++      const auto& file = *copy.type.file;
++      auto type_inst = file.types().GetAsInst(copy.type.type_id);
++      if (auto tuple_type = type_inst.TryAs<SemIR::TupleType>()) {
++        elementwise = true;
++        for (auto element_type_id : file.types().GetBlockAsTypeIds(
++                 file.inst_blocks().Get(tuple_type->type_elements_id))) {
++          element_type_ids.push_back(element_type_id);
++        }
++      } else if (auto struct_type = type_inst.TryAs<SemIR::StructType>()) {
++        elementwise = true;
++        for (auto field :
++             file.struct_type_fields().Get(struct_type->fields_id)) {
++          element_type_ids.push_back(
++              file.types().GetTypeIdForTypeInstId(field.type_inst_id));
++        }
++      }
++    }
++    if (!elementwise) {
++      // The value representation is the object representation or its
++      // address.
++      switch (value_repr.repr.kind) {
++        case SemIR::ValueRepr::None:
++          break;
++        case SemIR::ValueRepr::Copy:
++          StoreObject(copy.type, copy.value, copy.dest_addr);
++          break;
++        case SemIR::ValueRepr::Pointer:
++          CopyObject(copy.type, copy.value, copy.dest_addr);
++          break;
++        case SemIR::ValueRepr::Unknown:
++        case SemIR::ValueRepr::Dependent:
++        case SemIR::ValueRepr::Custom:
++          CARBON_FATAL(
++              "Attempt to copy a value of type {0} with value "
++              "representation {1}",
++              copy.type.file->types().GetAsInst(copy.type.type_id),
++              value_repr.repr);
++      }
++      continue;
++    }
++
++    // The value representation is a struct of the elements' value
++    // representations, held by value or by address. Each element's value is
++    // read, and its destination found, before any element is copied.
++    auto value_repr_type = value_repr.type();
++    if (value_repr.repr.kind == SemIR::ValueRepr::Pointer) {
++      value_repr_type.type_id =
++          value_repr_type.file->GetPointeeType(value_repr_type.type_id);
++    }
++    auto* llvm_value_repr_type = GetType(value_repr_type);
++    auto* llvm_object_type = GetType(
++        {.file = copy.type.file,
++         .type_id = copy.type.file->types().GetObjectRepr(copy.type.type_id)});
++    llvm::SmallVector<PendingCopy> element_copies;
++    for (auto [index, element_type_id] : llvm::enumerate(element_type_ids)) {
++      TypeInFile element_type = {.file = copy.type.file,
++                                 .type_id = element_type_id};
++      auto element_value_repr = GetValueRepr(element_type);
++      if (element_value_repr.repr.kind == SemIR::ValueRepr::None) {
++        continue;
++      }
++      llvm::Value* element_value = nullptr;
++      if (value_repr.repr.kind == SemIR::ValueRepr::Pointer) {
++        element_value = LoadObject(
++            element_value_repr.type(),
++            builder().CreateStructGEP(llvm_value_repr_type, copy.value, index));
++      } else {
++        element_value = builder().CreateExtractValue(copy.value, index);
++      }
++      element_copies.push_back({.type = element_type,
++                                .value = element_value,
++                                .dest_addr = builder().CreateStructGEP(
++                                    llvm_object_type, copy.dest_addr, index)});
++    }
++    // Copied in order: the worklist is a stack.
++    worklist.append(element_copies.rbegin(), element_copies.rend());
++  }
++}
++
+ auto FunctionContext::Inserter::InsertHelper(
+     llvm::Instruction* inst, const llvm::Twine& name,
+     llvm::BasicBlock::iterator insert_pt) const -> void {
+diff --git a/toolchain/lower/function_context.h b/toolchain/lower/function_context.h
+index 9436dd706..a11c4b1bd 100644
+--- a/toolchain/lower/function_context.h
++++ b/toolchain/lower/function_context.h
+@@ -387,6 +387,14 @@ class FunctionContext {
+   auto CopyObject(TypeInFile type, SemIR::InstId source_id,
+                   SemIR::InstId dest_id) -> void;
+
++  // Fork (VA-2): emits a copy of `value`, a value representation of `type`,
++  // into the object at `dest_addr`: element by element for a tuple or struct
++  // type whose value representation holds its elements' value
++  // representations (`ValueRepr::ValueAggregate`), and otherwise as a store
++  // or an object copy.
++  auto CopyValueReprToObject(TypeInFile type, llvm::Value* value,
++                             llvm::Value* dest_addr) -> void;
++
+   // Serves a reference to a file-scope `let` binding whose bound value is a
+   // runtime value (W-069): `inst_id` is either such a binding of the current
+   // file (or its bound value), or an imported instruction whose canonical
+diff --git a/toolchain/lower/testdata/tuple/nested_constant.carbon b/toolchain/lower/testdata/tuple/nested_constant.carbon
+index 606a51464..ada23d40c 100644
+--- a/toolchain/lower/testdata/tuple/nested_constant.carbon
++++ b/toolchain/lower/testdata/tuple/nested_constant.carbon
+@@ -51,3 +51,18 @@ fn Read() -> i32 {
+   let m: {.t: (i32, i32), .u: i32} = {.t = (4, 5), .u = 6};
+   return m.t.1;
+ }
++
++// --- return.carbon
++library "[[@TEST_NAME]]";
++
++fn Make() -> ((i32, i32), i32) {
++  return ((4, 5), 6);
++}
++
++// --- one_element.carbon
++library "[[@TEST_NAME]]";
++
++fn Read() -> i32 {
++  var v: ((i32, i32),) = ((1, 2),);
++  return v.0.1;
++}
+```
+
+<!-- google-doc-style-resume -->
+
 ## §3 Commits (one PR, "VA-2: definition-checked variadics, slice 2", R29(b))
 
-**D-VA2-19.** A prerequisite commit C0 and five implementation commits, C1
-to C5, each followed, when it adds or changes goldens, by its own fill commit,
+**D-VA2-19.** A prerequisite commit C0, followed since rev 5 by its
+stop-and-amend commit C0b before its fill (amended 2026-10-26, implementation:
+stop-and-amend: nested constant initialization), and five implementation
+commits, C1 to C5, each followed, when it adds or changes goldens, by its own
+fill commit,
 then the row commit R and, after the two implementation reviews and their fix
 commits, the discharge D; at land time the commits M, S-CT, F-M, L-F and L
 (D-VA2-18) (amended 2026-10-22, review fold: A-B-3 / B-M5); S-CT has been a
@@ -2611,7 +3272,14 @@ The commits, in order:
     lower/file_context.cpp hunk). New golden: lower `tuple/nested_constant`.
     Expected gate: red on exactly that 1 file (amended 2026-10-22, review
     fold: A-B-3).
-2.  **F0.** Autoupdate of that file to the fixpoint.
+    Since rev 5 C0 is followed by **C0b, nested aggregate constants copied into
+    storage** (§2.7's block): lower/file_context.cpp and .h,
+    lower/function_context.cpp and .h, and the golden's `return` and
+    `one_element` splits; expected gate: red on exactly that 1 file, with no
+    crash (M-20) (amended 2026-10-26, implementation: stop-and-amend: nested
+    constant initialization).
+2.  **F0.** Autoupdate of that file to the fixpoint, after C0b (amended
+    2026-10-26, implementation: stop-and-amend: nested constant initialization).
 3.  **C1, packs of different types** (§2.1, §2.2: Appendix B's hunks in
     sem_ir/typed_insts.h, generic.h, generic.cpp, stringify.cpp,
     type_iterator.cpp's `PackElement` case; check/eval.cpp, eval.h,
@@ -2715,7 +3383,10 @@ by a new commit (AGENTS.md). Fill commits, F-M included, are "Autoupdate
 testdata goldens on the container arbiter". The other messages, verbatim but
 for `<...>` fields (S-CT's last sentence, which rev 3 left singular for a file
 of three splits, is plural since rev 4, amended 2026-10-26, review fold:
-RR2-m3; C1's names the TODO of RR2-M1 and the pack literal of RR2-m1):
+RR2-m3; C1's names the TODO of RR2-M1 and the pack literal of RR2-m1; C0b's
+follows C0's since rev 5, and C0's last sentence, committed before C0b existed,
+means the fill that follows C0b (amended 2026-10-26, implementation:
+stop-and-amend: nested constant initialization)):
 
 <!-- google-doc-style-ignore -->
 
@@ -2732,6 +3403,24 @@ builds the elementwise value representation from the elements' constants.
 The new lower golden is filled by the next commit.
 
 fork/variadics/va2-plan.md §2.7, M-12.
+```
+
+```text
+VA-2 (0b): copy nested aggregate constants into storage element by element
+
+C0 lowers a constant tuple or struct value whose value representation
+holds its elements' value representations, such as `((1, 2), 3)`, to
+that value representation, but copying such a constant into storage
+still read it as the object representation:
+`var v: ((i32, i32), i32) = ((4, 5), 6);` copied the inner tuple's
+address into `v.0`, and a one-element aggregate of such a value, such as
+`((1, 2),)`, which PR 59 and trunk copy correctly, aborted in
+StoreObject. CopyValue now copies such a constant into the object
+element by element, and GetConstant builds the elementwise value with a
+worklist instead of a recursive call chain. The golden gains the splits
+return and one_element and is filled, with C0's, by the next commit.
+
+fork/variadics/va2-plan.md §2.7, M-20, the stop-and-amend record (rev 5).
 ```
 
 ```text
@@ -2840,8 +3529,8 @@ VA-2 discharge: W-212 and W-225 discharged, W-213 narrowed, W-330 to W-339 filed
 W-013 stays open with slice 2 in its notes; W-213, W-214, W-218, W-219
 and W-222 are narrowed and W-220, W-221, W-223, W-224, W-226, W-229 and
 W-230 noted; W-330 to W-339 are filed from fork/variadics/va2-plan.md §1.11,
-W-335 as discharged by C0. The decision-log entry "VA-2" records D-VA2-1
-to D-VA2-19, the rejected alternatives and the V-3a register entries;
+W-335 as discharged by C0 and C0b. The decision-log entry "VA-2" records
+D-VA2-1 to D-VA2-19, the rejected alternatives and the V-3a register entries;
 ORCHESTRATION records the PR and the Next actions of W-332, W-338 and
 W-339.
 ```
@@ -2986,9 +3675,12 @@ toolchain/lower/testdata/variadics/.
 | (same) | `nested` | the inner `if`'s blocks are in the same region |
 | lower/expansion_if.carbon (C3) | `first` | `First`'s arity-3 specific has three copies of the condition, branch and merge blocks, each iteration's merge branching to the next iteration's condition, the `return 1` block of each returning; the last merge branches to `return 0` |
 | (same) | `min` | `Min`'s arity-2 specific compares and stores twice, in order |
-| lower/../tuple/nested_constant.carbon (C0) | `tuple` | `((1, 2), 3)`'s value is a constant `{ ptr, i32 }` whose first field is the address of the inner tuple's constant `{ i32, i32 }`, and the element read is a load from it (M-12; amended 2026-10-22, review fold: A-B-3) |
-| (same) | `pass`, `var` | the same constant passed by its value representation's address, and copied into a `var`'s alloca by its object representation, element by element |
-| (same) | `struct`, `struct_of_tuple` | the struct constants, by the same rule |
+| lower/../tuple/nested_constant.carbon (C0, C0b) | `tuple` | `((1, 2), 3)`'s value is a constant `<{ ptr, i32 }>` (packed: the Carbon layout of `(ptr, i32)` has no tail padding, lower/type.cpp `BuildStructType`) whose first field is the address of the inner tuple's constant `{ i32, i32 }`, and the element read is a load from it (M-12; amended 2026-10-22, review fold: A-B-3; rev 4 wrote `{ ptr, i32 }`, measured by the implementer's C0 fill and again on C0b, M-20) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
+| (same) | `pass` | the same constant passed by its value representation's address (M-20) |
+| (same) | `var` | the alloca of `{ { i32, i32 }, i32 }` initialized element by element from that constant: a load of the inner tuple's address and an 8-byte memcpy from it into `v.0`, a load of `6` and a store into `v.1` (C0b, measured, M-20; on C0 alone a 12-byte memcpy of the value representation itself, the stop-and-amend) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
+| (same) | `struct`, `struct_of_tuple` | the struct constants, by the same rule, as packed `<{ ptr, i32 }>` globals (M-20) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
+| (same) | `return` | `Make`'s `return ((4, 5), 6);` initializes its `sret` slot as `var` initializes its alloca (C0b, measured, M-20's v04) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
+| (same) | `one_element` | `var v: ((i32, i32),) = ((1, 2),);` is initialized by an 8-byte memcpy of the inner tuple's constant `{ i32, i32 }` into `v.0`, and no global holds the outer by-copy value (C0b, measured; on C0 alone a CHECK failure in `StoreObject`, M-20's a01) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
 | check/prelude_tuple_impls.carbon (C4) | `copy`, `eq`, `ordered` | on the production prelude, `Dup((1, 2, 3, 4))` deduces `T` = `(i32, i32, i32, i32)` whose `Copy` witness is the variadic impl's with `T` = `⟬i32, i32, i32, i32⟭`; `a == b` and `a < b` on `(i32, i64)` use the `EqWith` and `OrderedWith` impls (amended 2026-10-22, review fold: B-m4) |
 | lower/prelude_tuple_impls.carbon (C4) | `copy_op`, `eq` | the 4-tuple's `Op` calls each element's `Copy` in order into the return slot; `==` on `(i32, i64)` compares the first elements and branches on the result before the second |
 | check/../interop/cpp/template/fail_todo_cpp_call_on_hetero_element.carbon (S-CT, land time, after M) | `fail_todo_value_arg`, `fail_todo_type_arg`, `fail_todo_facet_type_arg` | the C1 TODO, `C++ or template-dependent action on an element of a pack of different types`, at `Cpp.Add(each x)`, `Cpp.SizeOfFn(each T)` with `each T: type` and the same with `each T: I` (M-18's ct1, ct5 and ct7 on the PR 64 mirror merged with rev 3; before M they are upstream's "call argument of type `each T` is not supported" and "no matching function"; amended 2026-10-26, review fold: RR1-B-M5) |
@@ -3002,7 +3694,9 @@ review fold: RR1-NB-1 / RR1-B-M5) and rev 4 by six more (`template_outer`,
 `fail_todo_explicit_generic_pack`,
 `fail_todo_template_action_on_hetero_element`,
 `fail_todo_cpp_template_on_tuple_of_pack`; amended 2026-10-26, review fold:
-RR2-M1 / RR2-m1 / RR2-m2), and 5 refills; S-CT adds a sixteenth file
+RR2-M1 / RR2-m1 / RR2-m2) and rev 5 by two more (`nested_constant`'s `return`
+and `one_element`) (amended 2026-10-26, implementation: stop-and-amend: nested
+constant initialization), and 5 refills; S-CT adds a sixteenth file
 at land time; fail_todo_va2 and fail_todo_slice change in C1, C2 and C3; C4
 changes M-9's predicted 44 full-prelude goldens, 43 of them only by
 renamed SemIR names, a lower bound; no other golden changes (§6.1) (amended
@@ -3058,7 +3752,10 @@ Existing goldens that change, by commit:
     fail_todo_slice's moved split and relabeled TODO.
 -   C2 (F2) and C3 (F3): fail_todo_slice.carbon (two and one relabeled
     splits) and C1's new fail_todo_va2.carbon (two splits each).
--   C0 (F0): none (§2.7's invariant; M-6's rev 2 line).
+-   C0 and C0b (F0): none (§2.7's invariants; M-6's rev 2 line; for C0b
+    measured, M-20: before the fill the gate is red on the new golden alone)
+    (amended 2026-10-26, implementation: stop-and-amend: nested constant
+    initialization).
 -   C4 (F4): M-9's 44 full-prelude goldens (43 by renamed SemIR names,
     toolchain/lower/testdata/for/bindings.carbon by its lowered copy of an
     `(i32, i32)`), measured with C4's declarations and proxy bodies on rev 1
@@ -3100,7 +3797,9 @@ lower/function_context.cpp (PR 61, PR 64). inst_kind.def is
 alphabetical and their kinds (`StructuralRequirementType`, `AddrOfAction`,
 `IndexAction`, `PointerDereferenceAction`, `TupleIndexAction`) are not adjacent
 to `PackExpansionNext` (after :132) or `PackSegmentInit` (after :136);
-function_context.cpp merged cleanly with the prototype's hunks (§0.6), and C3's
+function_context.cpp merged cleanly with the prototype's hunks (§0.6), and with
+C0b's (M-20) (amended 2026-10-26, implementation: stop-and-amend: nested
+constant initialization), and C3's
 hunk is inside VA-1's `LowerPackExpansionBody`, which no held PR touches. Rev
 3's check/action.cpp hunk (`AddDependentActionInst` and
 `AddDependentActionSplice`) and its convert.cpp hunk at the `InitializeAction`
@@ -3288,6 +3987,24 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     rule, impls that tie or rank otherwise under it change selection.
     Detected at the weekly upstream check by W-338; falsified by upstream's
     text or toolchain ranking `(T, U)` and `(... each T)` otherwise.
+-   **R-13. A constant's value representation is not its object representation**
+    (added by rev 5) (amended 2026-10-26, implementation: stop-and-amend: nested
+    constant initialization). For a tuple or struct whose elements' value
+    representations are not their objects, C0 lowers a constant to its value
+    representation and C0b copies it into storage element by element; another
+    lowering path that takes a constant's lowered value as an object, or a held
+    PR or upstream advance that adds one, would read the value representation as
+    one. Detected by `nested_constant`'s `var`, `return` and `one_element`
+    splits, M-20's probes (which every later stage re-runs after its build,
+    hand-off notes) and the programs; falsified by a run-time difference between
+    a constant and the same value computed at run time, or by a CHECK failure in
+    `StoreObject` or `CopyObject` for such a type. A run-time one-element
+    aggregate whose element initializes in place (a03) and the return of one
+    (a19, a20) are upstream's defects outside the slice, unchanged by C0 and C0b
+    and filed by no one: VA-2's ids are all taken and the next free ones are not
+    VA-2's to mint, so the stage that writes D's PR text names them for the next
+    allocation; their break condition is a form or program of this slice that
+    reaches either.
 
 ### §7.2 Rejected alternatives
 
@@ -3433,6 +4150,26 @@ against upstream's 21c825a3f (`mt_up.txt`: 104 conflicted paths for b0822a744,
 prototype itself (`va2_prototype_rev4.patch`, `rev4_fixes.patch`) (amended
 2026-10-26, review fold: RR2-M1 / RR2-m1 / RR2-m2 / RR2-m3).
 
+Rev 5's are the plan amender's (amended 2026-10-26, implementation:
+stop-and-amend: nested constant initialization), with `$J` and `$L` the
+directories the header names and every rev 5 number in `$J` (M-20): the
+implementer's C0 install (/home/user/carbon-build/carbon-va2, built from
+d92a9c709) and logs (`$L`); the 36 probes (`$J/probes`, `$J/probes_impl`) on C0,
+PR 59, trunk and the nightly; C0b in the scratch worktree /dev/shm/va2-amend/wt
+at d92a9c709, relinked over the C0 build's objects into /dev/shm/va2-amend/c0b
+(`$J/bin/relink.sh`, `relink_c0b_v2.log`), with its gate run by `$J/bin/ft.sh`
+over the carbon-va2 runfiles, its fill, conformance, probes and clang-tidy
+(`$J/bin/tidy_norec.sh`, `tidy_repo.sh`); the rev 4 prototype with C0b in the
+scratch worktree /dev/shm/va2-amend/wt5, built in full with
+`CB_BUILD_ROOT=/dev/shm/va2-amend/builds` (`$J/build_wt5_v2.log`), its gate,
+VA-1's churn, conformance and the rev 4 probe sets, rerun from copies of
+`$H/r`'s scripts that write to `$J/sets`; §0.6's collisions and upstream's `git
+merge-tree` for the scratch commit 90c34dbaa; and C0b's block
+(`$J/c0b_block.patch`). A first draft of C0b, recursive, was measured the same
+way and replaced (`$J/set_c0b.txt`, the dangling 3b800ae9d); only the block of
+§2.7 is of rev 5. The worktrees, the relinked binaries and the build were
+removed when rev 5 was committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -3443,7 +4180,11 @@ a full build (M-8: about 6 minutes on 4 cores when the
 machine is otherwise idle); C4 and C5 change no C++ and need only
 `install.sh`, which copies core/ into the install (install.py :100-110).
 Before C2 is written, C1's tree alone is built (§3's split check); 0
-warnings with the build's `-Werror` set.
+warnings with the build's `-Werror` set. C0b changes lower/file_context.cpp,
+function_context.cpp and the two headers they are declared in, so its
+incremental build recompiles the 13 lower objects that include those headers and
+relinks (amended 2026-10-26, implementation: stop-and-amend: nested constant
+initialization).
 
 ### §8.2 Autoupdate to its fixpoint (implementer)
 
@@ -3462,7 +4203,9 @@ C0; 1961 after F0 (one new file); 1966 after F1 (five more); 1971 after F2
 predicted 44 refills) and after C5 (amended 2026-10-22, review fold: A-B-3 /
 B-m4). Each implementation commit alone is red on exactly §3's listed files
 and nothing else, with no crash. The gate's wall time is compared with M-5's
-25 seconds (R-1). A shrink's expected counts are §3's.
+25 seconds (R-1). A shrink's expected counts are §3's. C0 alone and C0b alone
+are each red on exactly that new file, with no crash (M-20) (amended 2026-10-26,
+implementation: stop-and-amend: nested constant initialization).
 
 ### §8.4 Conformance (implementer)
 
@@ -3474,7 +4217,10 @@ ten programs of §5 PASS with §A's outputs, and the three `.diff.cpp` oracles
 compile with the toolchain's own clang++ and agree (amended 2026-10-22, review
 fold: B-M3). Also after C0 alone and after C4 alone (before C5): 137 / 0 / 21
 over 158, unchanged (R-10). Commit R quotes the C5 run, EXPECTED, not of
-record.
+record. After C0b, before F0, too: 137 / 0 / 21 over 158 and bullets 49 / 0 / 7
+of 56, measured on the relinked C0b and on the rev 4 prototype with C0b (M-20)
+(amended 2026-10-26, implementation: stop-and-amend: nested constant
+initialization).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -3517,7 +4263,12 @@ commit, none suppressed by a new `NOLINT`. Before C5's commit and before each
 fix commit that touches programs: `python3 fork/conformance/runner.py
 --self-test`, expected "168 programs parsed, 56 bullets in table, OK" (158 on
 this branch before C5; 168 since rev 2 added `variadics_strcat`, amended
-2026-10-22, review fold: B-M3).
+2026-10-22, review fold: B-M3). C0b is a code commit too: both passes run on its
+file_context.cpp and function_context.cpp, and the second's line filter, the
+lines changed since b0822a744, takes in C0's lines, which no pass had covered
+and which fail `misc-no-recursion` on C0 alone; on C0b both passes are clean
+(M-20) (amended 2026-10-26, implementation: stop-and-amend: nested constant
+initialization).
 
 ### §8.7 Composition mirrors (implementer, before the implementation reviews)
 
@@ -3612,7 +4363,12 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     prototype (amended 2026-10-26, review fold: RR1-B-M5).
 -   The mutants of §8.5: they need C5's tree.
 -   clang-tidy: the prototypes were built with `-Werror` (0 warnings, M-8 and
-    rev 2's builds) but not run through clang-tidy.
+    rev 2's builds) but not run through clang-tidy, except, since rev 5,
+    `misc-no-recursion` over the rev 4 prototype's 24 .cpp files with C0b and
+    both passes over C0b's two, all clean but C0's file_context.cpp alone
+    (M-20); the second pass over C1's and C2's files is the implementer's
+    (amended 2026-10-26, implementation: stop-and-amend: nested constant
+    initialization).
 -   Bazel-only tests (gtest unit tests, the diagnostics coverage test, lit
     tests, fuzzers): not part of the container gate; they run only on hosted
     CI, which is disabled on the fork.
@@ -3628,7 +4384,11 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     `$H/r/va2_prototype_rev4.patch`) on b0822a744, and the mirrors from the
     scratch commits 0084da002, 4234cdb6f and 5499d8dd9 (amended 2026-10-26,
     review fold: RR1-NB-1 / RR1-B-M5; amended 2026-10-26, review fold: RR2-M1
-    / RR2-m1).
+    / RR2-m1). Rev 5's relinked binaries, scratch worktrees and composition
+    build were removed when rev 5 was committed; C0b is reproducible from §2.7's
+    block on d92a9c709, and the composition from the scratch commit 90c34dbaa
+    (amended 2026-10-26, implementation: stop-and-amend: nested constant
+    initialization).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -3674,24 +4434,31 @@ ids are renumbered in D's commit, never in source.
     C1's fill, and keep in C2 M-9's deduction correction (§2.3), the
     dependent representation and the ranking with the `fail_impl` and `impl`
     splits that exercise them (amended 2026-10-22, review fold: A-B-1 /
-    A-B-2 / A-B-3 / A-M-1 / B-m5).
-2.  **What to run first after each build:** C0: reviewer A's r16, r16g, r16h
-    and x07; C1: §0.2's p02, p12, p14, p15, reviewer A's r02 and the fixer's
-    f01, f03, f06, the import probes i2, i5, i6 and i8 (16, 3, 8 2 and 116 0)
-    and ct6, ctD, ctB, ctC and ctE (the TODO twice, then 8 1, 19 and 19)
-    (M-17, M-18), and the second re-review's v3, v6 and vB (the TODO
+    A-B-2 / A-B-3 / A-M-1 / B-m5). C0 is followed by C0b, §2.7's block, before
+    F0; Appendix B's file_context.cpp hunk is C0's and is not applied again, and
+    its other hunks apply on C0 plus C0b (M-20) (amended 2026-10-26,
+    implementation: stop-and-amend: nested constant initialization).
+2.  **What to run first after each build:** C0: reviewer A's r16, r16g, r16h and
+    x07; C0b, and after every later build, M-20's 36 probes, each with
+    `$H/r/run_probe.sh <carbon> <probe> <outdir>`, expecting M-20's last column,
+    but for a03's indeterminate value and the convert.cpp line of a19's and
+    a20's CHECK failure (amended 2026-10-26, implementation: stop-and-amend:
+    nested constant initialization); C1: §0.2's p02, p12, p14, p15, reviewer A's
+    r02 and the fixer's f01, f03, f06, the import probes i2, i5, i6 and i8 (16,
+    3, 8 2 and 116 0) and ct6, ctD, ctB, ctC and ctE (the TODO twice, then 8 1,
+    19 and 19) (M-17, M-18), and the second re-review's v3, v6 and vB (the TODO
     `each-name binding of a class, interface or explicit compile-time
     parameter`), ctF (`F(⟬i32, i64, bool⟭)`, once), tp1 (the action TODO) and
     tp2 (211), all run by `$H/r/run_rr2.sh <tag> <install>` (M-19; amended
     2026-10-26, review fold: RR2-M1 / RR2-m1 / RR2-m2); C2: i1 (16 9), i3 and
     same3 (46 each), f10 (3 0) and pl1 (1, with `$G/imp/pl1_proxy.txt` appended
-    to the install's comparison.carbon),
-    then p19, p24, p24b, p25, p26, r01, r01b, r14, r17, x05, x05b, x06, x06b,
-    x12 and the `tuple_segment` golden; `$G/r/run_set.sh <tag> <install>` runs
-    the import, C++ and proxy probes in one go, and `$G/r/probes_all.sh` the
-    rest (amended 2026-10-26, review fold: RR1-NB-1 / RR1-B-M5); C3: the
-    design's Min (§A.5); C4: p20, p20c, p09, p10 (now compiling and running)
-    and p23 (still an error, W-334); then every program of Appendix A.
+    to the install's comparison.carbon), then p19, p24, p24b, p25, p26, r01,
+    r01b, r14, r17, x05, x05b, x06, x06b, x12 and the `tuple_segment` golden;
+    `$G/r/run_set.sh <tag> <install>` runs the import, C++ and proxy probes in
+    one go, and `$G/r/probes_all.sh` the rest (amended 2026-10-26, review fold:
+    RR1-NB-1 / RR1-B-M5); C3: the design's Min (§A.5); C4: p20, p20c, p09, p10
+    (now compiling and running) and p23 (still an error, W-334); then every
+    program of Appendix A.
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4.
 4.  **Watch-outs.** A variadic impl is a candidate for every tuple query
     (R-4), so a non-tuple argument must fail deduction, never walk a tuple's
@@ -3926,7 +4693,161 @@ files, `$H/r/rev4_fixes.patch`) was built, gated, run through conformance and
 the earlier probe sets, and measured on the PR 64 mirror, with no earlier
 outcome changed but the ones the findings name (M-19).
 
+## Stop-and-amend record (rev 5, 2026-10-26)
+
+Stage 1 of the implementation (C0 and F0, §3 items 1 and 2) stopped before
+committing F0 on 2026-10-26 and returned the difference below; the plan amender
+reproduced it, found its root cause and wrote this revision (amended 2026-10-26,
+implementation: stop-and-amend: nested constant initialization). The stage's
+state at the stop: the branch holds C0 (d92a9c709, "VA-2 C0: lower nested
+aggregate constants in their value representation", committed and not pushed;
+`git branch -r --contains d92a9c709` prints nothing), the fill is uncommitted
+and saved (`$L/nc_pass1.carbon`, `$L/f0_fill_uncommitted.diff`), the worktree is
+clean and the install is C0's.
+
+The difference, as the implementer recorded it (`$L`): the F0 fill of
+toolchain/lower/testdata/tuple/nested_constant.carbon contradicts §4. Split
+`var`: predicted "copied into a `var`'s alloca by its object representation,
+element by element"; measured a 12-byte memcpy into `%v.var` from the value
+representation's global `@tuple.c42.loc4_3 = internal constant <{ ptr, i32 }> <{
+ptr @tuple.8a1.loc4_3, i32 6 }>`, so the inner tuple's address is copied into
+the `{ { i32, i32 }, i32 }` object, which is wrong code: a `var` of
+`((4, 5), 6)` prints two indeterminate values and 6, a nested struct `var` two
+and 3, and an in-place `return` of `((4, 5), 6)` two and 6. Splits `tuple`,
+`struct` and `struct_of_tuple`: predicted a constant `{ ptr, i32 }`, measured a
+packed `<{ ptr, i32 }>`, the address and the load as predicted. The gate before
+the fill was red on exactly that file, with no crash; with the fill 1961 of
+1961; the fixpoint after one pass; the probes r16 3 2, r16g 3, r16h 3, x07 2 5 9
+and c03 2 3 4 as recorded (r16h hides the defect: it reads `.1`, at offset 8 in
+both layouts); conformance after C0 alone 137/0/21 of 158, unchanged.
+
+Root cause (M-20): `InitializeStorage` copies a constant into its storage with
+`CopyValue`, whose arms take the source's lowered value as the object
+representation or its address; C0 made a constant of a type whose value
+representation holds its elements' value representations lower to that value
+representation, as upstream's `GetConstant` comment requires, so every copy of
+such a constant into storage read a value as an object, and a one-element
+aggregate of such a value, which before C0 was served as its object and so ran
+on PR 59 and trunk, now aborts in `StoreObject` (a01, a16). C0's helper and
+`GetConstant` also form a recursive call chain that `misc-no-recursion` rejects.
+Neither is a header the relink missed, a golden the manifest missed or an
+upstream rule misread: both are defects of the measured diff, which rev 2's
+probes, lowering values only, could not see, and §4's `var` row predicted the
+right result without a run.
+
+The amendment:
+
+-   C0b, a new code commit on C0 before F0 (§2.7's block, §3 item 1 and its
+    message in §3): `CopyValue` copies a constant of such a type into the object
+    element by element, `GetConstant` builds the elementwise value with a
+    worklist, and the golden gains `return` and `one_element`. It is measured on
+    C0 (gate, fill, conformance, probes, clang-tidy) and on the rev 4 prototype
+    (gate, VA-1's churn, conformance, every earlier probe set, collisions), all
+    as M-20 records.
+-   §4's `nested_constant` rows are the measured fill's (the packed type,
+    `var`'s element-by-element copy, two new rows); its totals gain two splits.
+-   The header, M-12, M-20 (new), §0.5, §0.6, §1.11's W-335, §1.12's D-VA2-19,
+    §2.0, §2.7, §3, §6.1, §6.2, §7.1's R-13 (new), §8.0, §8.1, §8.3, §8.4, §8.6,
+    §8.9, the hand-off notes 1 and 2, §A.11 and §A.12 carry the amendment, each
+    marked.
+-   One decision changes, D-VA2-19: C0 is followed by C0b before its fill,
+    because C0 alone miscopies such constants and aborts on a case PR 59 runs,
+    and C0 is kept rather than reset away and re-committed with the fix, because
+    keeping it rewrites no history (AGENTS.md: "Ask before rewriting history in
+    any case"; R29 decides without asking, so the decision is not to rewrite);
+    C0's message says the next commit fills its golden, which since this
+    revision means the fill after C0b, and C0b's message says so. Its break
+    condition, a commit that cannot build without a later one, is unchanged. No
+    other decision changes: D-VA2-1 to D-VA2-18 hold as written, Appendix B is
+    still the rev 4 prototype, and every count of §8.3 and §8.4 stands.
+
+R32: upstream's tip is 8779d15e1 (`git fetch upstream trunk`, 2026-10-26), three
+commits past 21c825a3f, c7de72757 (check/cpp/export.cpp and one golden),
+e9d8d06f9 (comments in toolchain/base) and 8779d15e1 (toolchain/lex), none
+touching docs/design, proposals, core, toolchain/lower or toolchain/sem_ir, and
+`git merge-tree` against it gives the same 104 conflicted paths (M-20). C0b adds
+no mechanism: it implements upstream's own contract for these copies
+(function_context.h:318-320, file_context.cpp:213-215 and type_info.h:253-254 at
+8779d15e1, quoted in M-20), lowering is internal representation, and no design
+page is touched.
+
+Instructions to the implementer, for stage 1 re-run after the focused re-review
+of this amendment:
+
+1.  Start at the rev 5 commit, which sits on C0. C0 (d92a9c709) stays: do not
+    reset it and do not amend it. Check that `git -C /home/user/carbon-va2
+    branch -r --contains d92a9c709` prints nothing and that `git -C
+    /home/user/carbon-va2 status --short` is empty; the stopped run's
+    uncommitted fill is not reused.
+2.  Extract §2.7's C0b block, the lines between the `diff` fence after "The
+    block, against d92a9c709" and its closing fence, into a file under the stage
+    directory, then `git -C /home/user/carbon-va2 apply --check <file>` and
+    `git -C /home/user/carbon-va2 apply <file>`: five files change, with §2.7's
+    numstat.
+3.  `/home/user/llvm/bin/clang-format --dry-run --Werror` on
+    toolchain/lower/file_context.cpp, file_context.h, function_context.cpp and
+    function_context.h exits 0; prek with a private `XDG_CACHE_HOME` on the five
+    files reaches its fixpoint.
+4.  clang-tidy, §8.6's two passes, over toolchain/lower/file_context.cpp and
+    function_context.cpp with the build's flags, the second line-filtered to the
+    lines changed since b0822a744: exit 0 and no diagnostic (M-20).
+5.  Commit C0b with explicit paths (the five files), §3's C0b message verbatim
+    (title "VA-2 (0b): copy nested aggregate constants into storage element by
+    element"), §3's author and committer, and the two session trailers after a
+    blank line.
+6.  `build.sh` and `install.sh`: an incremental build of the 13 lower objects
+    and the links, with 0 warnings; `carbon version` prints the development
+    version with C0b's short hash, since the harness stamps `git
+    rev-parse --short HEAD` (the stopped run's finding, which no prediction of
+    this plan contradicts).
+7.  `gate.sh`: "1960 passed, 1 failed", red only on
+    toolchain/lower/testdata/tuple/nested_constant.carbon ("Autoupdate would
+    make changes"), with no crash.
+8.  M-20's 36 probes (`$J/probes/*.carbon` and `$J/probes_impl/*.carbon`), each
+    with `$H/r/run_probe.sh <install>/bin/carbon <probe> <outdir>` into the
+    stage directory: a01 1 2, a02 1 2, a04 1 2 3 4, a05 7 8 9, a06 1 2 3 4, a07
+    1 2 3 5 6, a08 1 2 3, a09 1 2 3 4, a10 4 5 6, a11 7 1, a12 1 2 3, a13 5 6 7,
+    a14 1 2 3 4, a15 1 2 3, a16 1 2, a17 1 2 3 4, a18 1 2 3 1 3, c01 7 1, c02 2
+    3, c03 2 3 4, c04 5 6 7, c05 1 2 4 5, c06 2 4, c07 1 3, c08 5 3, r16 3 2,
+    r16g 3, r16h 3, v01 4 5 6, v02 1 2 3, v03 7 8 9, v04 4 5 6 and x07 2 5 9;
+    a03 prints 1 and an indeterminate value, and a19 and a20 stop in check with
+    `new_storage_id.has_value()` at check/convert.cpp:2313, as on every
+    toolchain (M-20); neither is a difference.
+9.  F0: `autoupdate.sh /home/user/carbon-va2
+    toolchain/lower/testdata/tuple/nested_constant.carbon`, then the same again,
+    which changes nothing; the file is 483 lines, 415 more than C0b's 68-line
+    source, byte-identical to `$J/nested_constant_c0b2_filled.carbon`, and is
+    reviewed against §4's six rows.
+10. `gate.sh`: "1961 passed, 0 failed".
+11. `conformance.sh` with a private cache into a private directory: PASS 137,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
+    SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
+12. Commit F0, "Autoupdate testdata goldens on the container arbiter", with the
+    golden's path only and the trailers, then `git push -u origin
+    claude/carbon-fork-0-1-va2`, which pushes C0, this revision, C0b and F0.
+13. Stage 2 (C1) as §3 item 3 and the hand-off notes say, its hunks taken from
+    Appendix B by file and function (they apply on C0 plus C0b, M-20); after
+    C1's build and after every later stage's, M-20's probes again, expecting the
+    same outputs (R-13), but for a03's indeterminate value and the line of a19's
+    and a20's CHECK failure, which moves with convert.cpp's hunks (:2361 on the
+    rev 4 prototype with C0b, `$J/set_wt5.txt`) and is not a prediction.
+
+Predictions, EXPECTED, not of record: the gate 1960 passed and 1 failed after
+C0b and 1961 after F0, then §8.3's 1966, 1971, 1973 and 1975; conformance
+137/0/21 over 158 after C0b and after C4 alone, and 147/0/21 over 168 after C5,
+bullets 49/0/7 of 56; §5's and Appendix A's outputs and C4's predicted churn as
+rev 4 states them. A difference from these is a stop, as §8 says; the
+indeterminate values in M-20 are not predictions. a03, a19 and a20 are
+upstream's and outside the slice (R-13), and no id is minted for them.
+
 ## Sign-off
+
+Rev 5 (2026-10-26) amends rev 4 for the implementation's stop-and-amend at stage
+1, which the record above states (amended 2026-10-26, implementation:
+stop-and-amend: nested constant initialization): rev 4's sign-off stands for
+every part the amendment does not touch, and the focused re-review of the
+amendment, which the orchestrator runs next, decides the rest; its row joins the
+table below when it reports.
 
 Rev 4 (2026-10-26) is SIGNED OFF FOR IMPLEMENTATION. The implementation
 follows §3 from Appendix B (the hand-off notes), with its own two
@@ -6416,8 +7337,10 @@ fn Call() -> i64 {
 
 toolchain/lower/testdata/tuple/nested_constant.carbon (C0; amended
 2026-10-22, review fold: A-B-3), on min_prelude's int.carbon like its
-neighbors in that directory; its splits are reviewer A's r16, r16g and r16h
-and the fixer's x07 (M-12):
+neighbors in that directory; its splits are reviewer A's r16, r16g and r16h and
+the fixer's x07 (M-12), and since rev 5 C0b's `return` and `one_element`, v04's
+and a01's shapes (M-20) (amended 2026-10-26, implementation: stop-and-amend:
+nested constant initialization):
 
 <!-- google-doc-style-ignore -->
 
@@ -6474,6 +7397,21 @@ library "[[@TEST_NAME]]";
 fn Read() -> i32 {
   let m: {.t: (i32, i32), .u: i32} = {.t = (4, 5), .u = 6};
   return m.t.1;
+}
+
+// --- return.carbon
+library "[[@TEST_NAME]]";
+
+fn Make() -> ((i32, i32), i32) {
+  return ((4, 5), 6);
+}
+
+// --- one_element.carbon
+library "[[@TEST_NAME]]";
+
+fn Read() -> i32 {
+  var v: ((i32, i32),) = ((1, 2),);
+  return v.0.1;
 }
 ```
 
@@ -6628,8 +7566,10 @@ fn F[... each T: I](... unused each x: each T) {
 Commit R writes the two rows of fork/gap-analysis.md (lines 59 and 80 on this
 branch; records refer to rows by bullet text, R7); commit D writes the rest.
 `<date>` is the UTC date of the commit (`date -u +%F`), `<run>` the container
-run's scoreboard time and log path, `<counts>` its totals, and `<C0>` to `<F4>`,
-`<fixes>` and `<R>` the commits' short hashes. Rev 2 rewrites W-212's title
+run's scoreboard time and log path, `<counts>` its totals, and `<C0>` to `<F4>`
+(`<C0b>` among them since rev 5 (amended 2026-10-26, implementation:
+stop-and-amend: nested constant initialization)), `<fixes>` and `<R>` the
+commits' short hashes. Rev 2 rewrites W-212's title
 and notes, keeps W-213 open with a note instead of replacing it, lists every
 open form with its id in both rows, adds W-335 to W-339 and the notes of
 W-213, W-215, W-220, W-223, W-224, W-226 and W-230, and places the
@@ -6823,12 +7763,14 @@ W-013: VA-2 slice 2 (<date>, fork/variadics/va2-plan.md): packs of different typ
   "size": "S",
   "bullet": "Stdlib: tuple/array library parts",
   "evidence": [
-    "toolchain/lower/file_context.cpp `GetConstant` (<C0>); upstream's `GetConstant` at 57ba07a97 has the same defect",
-    "toolchain/lower/testdata/tuple/nested_constant.carbon (new in <C0>, filled in <F0>)",
+    "toolchain/lower/file_context.cpp `GetConstant` (<C0>, <C0b>); upstream's `GetConstant` at 57ba07a97 has the same defect",
+    "toolchain/lower/function_context.cpp `CopyValue` (<C0b>); upstream's `CopyValue` at 8779d15e1 has the same two arms",
+    "toolchain/lower/testdata/tuple/nested_constant.carbon (new in <C0>, splits added in <C0b>, filled in <F0>)",
+    "fork/variadics/va2-plan.md M-20: on <C0> alone `var v: ((i32, i32), i32) = ((4, 5), 6);` copied the inner tuple's address into `v.0` and `var v: ((i32, i32),) = ((1, 2),);` aborted in `StoreObject`; on <C0b> both run",
     "fork/variadics/va2-plan.md M-12: \"Global variable initializer type does not match global variable type!\" on PR 59, trunk and the nightly 2026.10.12 before <C0>"
   ],
   "blocked_by": [],
-  "notes": "Filed and DISCHARGED at the VA-2 discharge (fork/variadics/va2-plan.md §2.7). A constant tuple or struct value whose value holds an inner aggregate's value by pointer was given a global initialized with its object representation; the elementwise value representation is now built from the elements' constants. Keep the hunk at the next upstream advance unless upstream fixes `GetConstant` itself, and then take upstream's."
+  "notes": "Filed and DISCHARGED at the VA-2 discharge (fork/variadics/va2-plan.md §2.7). A constant tuple or struct value whose value holds an inner aggregate's value by pointer was given a global initialized with its object representation; the elementwise value representation is now built from the elements' constants, and a copy of such a constant into storage copies it element by element. Keep the hunks at the next upstream advance unless upstream fixes `GetConstant` and `CopyValue` itself, and then take upstream's."
 }
 ```
 
@@ -6947,8 +7889,8 @@ variadic impl selection, terminating by subterm requirements; D-VA2-11
 statement expansions of `if`; D-VA2-12 the prelude's tuple impls; D-VA2-13
 and D-VA2-14 the TODO texts, templates unchanged and C++ calls on elements
 of packs of different types a land-time TODO; D-VA2-15 to D-VA2-19 goldens,
-programs, records, merge position and commits, with C0's fix of nested
-aggregate constants.
+programs, records, merge position and commits, with C0's and C0b's fix of
+nested aggregate constants.
 
 Options considered (plan §7.2): a second checking path (A-1); hand-written
 impls to a larger fixed arity (A-2); a pack-to-tuple shim (A-3); two packs
@@ -6969,8 +7911,9 @@ total (W-339).
 
 Records: W-212 and W-225 discharged, W-213 narrowed; W-214, W-215, W-218,
 W-219, W-220, W-221, W-222, W-223, W-224, W-226, W-229, W-230 and W-013 noted;
-W-330 to W-339 filed, W-335 as discharged by C0. Both rows stay PARTIAL with
-narrower open text, expected, not of record, on the container run <run>.
+W-330 to W-339 filed, W-335 as discharged by C0 and C0b. Both rows stay
+PARTIAL with narrower open text, expected, not of record, on the container run
+<run>.
 ```
 
 <!-- google-doc-style-resume -->

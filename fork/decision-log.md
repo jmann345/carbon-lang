@@ -653,7 +653,47 @@ changed, and none of the three PRs touches the dispatch. The break condition did
 not fire. Recorded by f163a2bde on claude/carbon-fork-0-1-dr (the plan's round 4
 record), its merge d18acfccc and this branch's records commit (W-340, the
 ledger's source and W-109's note, gap row 79, the DR-1b landed notes and
-ORCHESTRATION). Round 4's reviews are next.
+ORCHESTRATION). Round 4's reviews (2026-10-26): two reviews read the shrink and
+its records at 1dd904216 (toolchain 7a442f632; the held heads unchanged;
+upstream/trunk re-read at 21c825a3f, 13 commits past 57ba07a97, none of them
+touching a file DR-1b changes) and returned APPROVE-WITH-FIXES with no BLOCKER
+or MAJOR and seven MINOR findings, all records only. Review 1 found W-340's
+class wider than its four probes (n06, a dereferenced template pointer; n15, a
+type implementing only `IndexWith(Core.IntLiteral)`; n32, a generic class; n13,
+t10's function called with a slice and then a `V`), each rejected on DR-1b's
+head and run on trunk, DR-1a and the TP-1 and CT-1 installs, the first three on
+the nightly too, and on mct-b before and after C-b (RR4-1-m1); upstream's tip
+past the recorded 57ba07a97, with an empty diff over the realigned files
+(RR4-1-m2); and round 1's note to PR 61 and CT-1 saying trunk diagnoses a
+template write on an `IndexWith`-only type, which holds for `x[0] = 5`, while
+`x[i] = 5` CHECK-fails at lower/lower.cpp:48 on trunk, DR-1a, the nightly and
+the TP-1 and CT-1 installs and is diagnosed on DR-1b's head, and `s[i] = 5` on a
+`Core.Slice` or `Core.Buf` through a template CHECK-fails there on trunk and
+runs on DR-1b (RR4-1-m3). Review 2 found that W-340's discharge had no land-time
+records step and was worded as already done (RR4-2-m1); that its note said the
+nightly cannot run the probes and then listed the nightly among those that run
+them (RR4-2-m2); that the plan's §3 item 11 counted three commits for two
+(RR4-2-m3); and that the PR body and ORCHESTRATION kept earlier rounds' "is
+owed" (RR4-2-m4). Both judged the round dry, and it is: no finding is MAJOR or
+BLOCKER and none needs a toolchain, golden or program change. These records
+reproduced each finding first, the probes compiled, linked and run on the six
+toolchains, and fold all seven, none rejected: the plan's C.2 gains W-340's
+discharge text, and its §1.16 and the DR-1b landed notes the land-time records
+step; W-340's note and gap row 79 read "to be discharged at M-b with C-b";
+W-340's note, §1.16 and §8 item 9 name the wider probes, which M-b and L-b
+re-check; round 1's note is amended and passed to PR 61's and CT-1's records
+again; the counts and tenses are corrected. No fix commit is made and no id is
+filed; DR-1b's fix commits stay three, with one shrink. The reviews' runs
+(container-local, EXPECTED, not of record): gate 1946 of 1946 and
+conformance 130/0/22 over 152, bullets 48/0/8, on both; a full autoupdate on a
+clone changing nothing; review 1's four mutants as recorded and mct-b rebuilt in
+full on CT-1's 4a3220c11 with 1dd904216, 1963 of 1963 and 149/0/20 over 169
+after C-b, the refills and L-b's rename; review 2's prek `--all-files` clean.
+Recorded by 89aabd125 on claude/carbon-fork-0-1-dr (the plan's "Round 4's
+reviews"), its merge 83bddfa0d and this branch's records commit (W-109's and
+W-340's notes, the ledger's source, gap row 79, the DR-1b landed notes and
+ORCHESTRATION). Round 4 is dry; DR-1b is to be opened held, stacked on DR-1a
+(PR 63).
 
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

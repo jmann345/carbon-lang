@@ -5198,7 +5198,9 @@ heads (amended 2026-10-22, re-review round 3), and the records of round 3's
 reviews extend that bullet and the list of commits (amended 2026-10-22,
 re-review round 3: the reviews). Round 4's records add the bullet "Re-review
 round 4" and amend the commits, the ids, the measurement heads and the land-time
-items (amended 2026-10-22, re-review round 4).
+items (amended 2026-10-22, re-review round 4). The records of round 4's reviews
+(amended 2026-10-26, re-review round 4: the reviews) extend that bullet, the
+commits, the ids and the land-time items.
 
 -   **What D writes.** fork/decision-log.md: the dated note "_DR-1b discharge
     (2026-10-22)._" in entry DR-1, after the DR-1b records note (the review and
@@ -5252,7 +5254,12 @@ items (amended 2026-10-22, re-review round 4).
     autoupdate in the same commit; f163a2bde "DR-1 plan: focused re-review of
     DR-1b's fold, round 4 recorded" on claude/carbon-fork-0-1-dr; its merge
     d18acfccc; and "DR-1b re-review fix: round 4 folded into the records". The
-    fix commits stay three, fddfcf42a, 8deb75262 and 7a442f632.
+    fix commits stay three, fddfcf42a, 8deb75262 and 7a442f632. Then the records
+    of round 4's reviews (amended 2026-10-26, re-review round 4: the
+    reviews): 89aabd125 "DR-1 plan: focused re-review of DR-1b's fold, round 4
+    recorded" on claude/carbon-fork-0-1-dr, its merge 83bddfa0d, and "DR-1b
+    records: re-review round 4 recorded". At 1dd904216 fifteen first-parent
+    commits followed D, and these records add two.
 -   **The id re-scan before D** (§8 item 10; widened to `W-3[2-9][0-9]`, after
     `git fetch -q origin` at 2026-10-22T03:44Z; fixB/logs/rescan.log). Over 90
     refs (70 origin refs and 20 local heads) and 19 worktrees' ledgers:
@@ -5268,7 +5275,9 @@ items (amended 2026-10-22, re-review round 4).
     fold or by D. Filed by re-review round 4's records (amended 2026-10-22,
     re-review round 4: RR3-1-M1): W-340, the shrink line's residue for RR3-1-M1,
     after the round 4 bullet's re-scan; W-330..W-339 are VA-2's reservation,
-    planned and not yet filed.
+    planned and not yet filed. W-340 is to be discharged with L-b's records, as
+    the land-time items say (amended 2026-10-26, re-review round 4: the reviews:
+    RR4-2-m1).
 -   **Measurement heads.** Upstream's direction read at upstream/trunk ebc155734
     (fetched at the fold; its one commit since 9319bb036 touches no file of
     DR-1b's). DR-1b's build /home/user/carbon-build/carbon-dr-idx, its install
@@ -5415,7 +5424,28 @@ items (amended 2026-10-22, re-review round 4).
     probes as before and t10, t15, t16 and t18 printing `7`, `8`, `9` and `6`
     (t10, t15 and t18 already before C-b). m51, m55 and m57 were not rebuilt (§8
     item 9). DR-1a (PR 63) is at f163a2bde after the round's plan commit, the
-    other held heads as at D.
+    other held heads as at D. Round 4's reviews (amended 2026-10-26, re-review
+    round 4: the reviews): two reviews of 1dd904216 (toolchain 7a442f632;
+    upstream/trunk re-read at 21c825a3f, 13 commits past 57ba07a97, none of them
+    touching a file DR-1b changes), both APPROVE-WITH-FIXES with no BLOCKER or
+    MAJOR, review 1 with three MINOR findings, RR4-1-m1..m3, and review 2 with
+    four, RR4-2-m1..m4, all records only, so the round is dry. Folded by the
+    records: RR4-1-m1 (W-340's wider class, n06, n15, n32 and n13, with
+    review 2's a4, rejected here and run on trunk, DR-1a and the TP-1 and CT-1
+    installs, the first four on mct-b too, re-checked at M-b and L-b); RR4-1-m2
+    (the re-read tip and its empty diff over the files DR-1b realigns); RR4-1-m3
+    (round 1's note to PR 61 and CT-1: `x[i] = 5` on an `IndexWith`-only type
+    CHECK-fails at lower/lower.cpp:48 on trunk too, which this tree diagnoses,
+    and `s[i] = 5` on a `Core.Slice` or `Core.Buf` through a template, which
+    CHECK-fails there on trunk, runs here); RR4-2-m1 (W-340's discharge text and
+    land-time records step, its note and gap row 79 worded as still to come);
+    RR4-2-m2 (W-340's nightly sentence); RR4-2-m3 (§3 item 11's count); RR4-2-m4
+    (the PR body's and ORCHESTRATION's tenses). No fix commit, shrink or id. The
+    reviews' runs, on the head: gate 1946 of 1946; conformance 130/0/22
+    over 152, bullets 48/0/8; a full autoupdate on a clone changing nothing;
+    review 1's four mutants as §8 item 5 states and mct-b rebuilt in full as §8
+    item 9 states; review 2's prek `--all-files` clean. DR-1a (PR 63) is
+    at 89aabd125 after the reviews' plan commit, the other held heads as at D.
 -   **At land time, in order (§1.16, §3 item 10).** After DR-1a has merged
     through M-a and L-a, and before M-b, §8 item 9's composition is re-run on
     CT-1's final head if it has moved from 4a3220c11. M-b, the merge of trunk
@@ -5435,7 +5465,13 @@ items (amended 2026-10-22, re-review round 4).
     dropped (1/8 on mct-b with the comment as written; W-340 discharged;
     amended 2026-10-22, re-review round 4: RR3-1-M1), and PR 55's
     check/operators/overloaded/string_indexing (2/2), measured on mct-b and m55;
-    after C-b, t10, t15, t16 and t18 print `7`, `8`, `9` and `6`;
+    after C-b, t10, t15, t16 and t18 print `7`, `8`, `9` and `6`, n06, n15, n32
+    and n13 `8`, `5`, `7` and `3 7`, as on mct-b, and a4, which no mirror has
+    run, `9` (added 2026-10-26, re-review round 4: the reviews: RR4-1-m1);
     PR 51's buf_field goldens and PR 57's check/slice/basic are not refilled, as
     measured. Then the gate and conformance on the merged tree, a second id
-    re-scan, and the merged runs recorded here.
+    re-scan, and the merged runs recorded here. With L-b's records W-340 is
+    discharged: its ledger note takes C.2's discharge text with the hashes of
+    M-b, C-b and L-b, gap row 79's W-340 sentence is put in the past tense, and
+    the decision log's DR-1 entry gains a dated note (added 2026-10-26,
+    re-review round 4: the reviews: RR4-2-m1).

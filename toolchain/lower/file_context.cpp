@@ -223,6 +223,52 @@ auto FileContext::Finalize() -> void {
                                          specific_functions_);
 }
 
+// Fork (VA-2): builds the elementwise value representation of a constant
+// tuple or struct value whose value representation differs from its object
+// representation, such as `((1, 2), 3)`, whose value holds a pointer to the
+// value of `(1, 2)` where its object holds `(1, 2)` itself. The lowered
+// constant `const_value` is the object representation. Returns nullptr if the
+// constant is not a tuple or struct value.
+static auto BuildElementwiseConstantValueRepr(FileContext& context,
+                                              SemIR::InstId const_inst_id,
+                                              SemIR::ValueRepr value_rep,
+                                              SemIR::InstId use_inst_id)
+    -> llvm::Constant* {
+  const auto& sem_ir = context.sem_ir();
+  auto inst = sem_ir.insts().Get(const_inst_id);
+  SemIR::InstBlockId elements_id = SemIR::InstBlockId::None;
+  if (auto tuple = inst.TryAs<SemIR::TupleValue>()) {
+    elements_id = tuple->elements_id;
+  } else if (auto struct_value = inst.TryAs<SemIR::StructValue>()) {
+    elements_id = struct_value->elements_id;
+  } else {
+    return nullptr;
+  }
+  auto repr_type_id = value_rep.kind == SemIR::ValueRepr::Pointer
+                          ? sem_ir.GetPointeeType(value_rep.type_id)
+                          : value_rep.type_id;
+  auto* llvm_type = dyn_cast<llvm::StructType>(context.GetType(repr_type_id));
+  if (!llvm_type) {
+    return nullptr;
+  }
+  llvm::SmallVector<llvm::Constant*> elements;
+  for (auto [index, element_id] :
+       llvm::enumerate(sem_ir.inst_blocks().Get(elements_id))) {
+    auto* element = cast<llvm::Constant>(context.GetConstant(
+        sem_ir.constant_values().Get(element_id), use_inst_id));
+    auto* element_type = llvm_type->getElementType(index);
+    if (element->getType() != element_type) {
+      // A tail-padded element, `<{T, [N x i8]}>`.
+      auto* padded = cast<llvm::StructType>(element_type);
+      element = llvm::ConstantStruct::get(
+          padded, element,
+          llvm::Constant::getNullValue(padded->getElementType(1)));
+    }
+    elements.push_back(element);
+  }
+  return llvm::ConstantStruct::get(llvm_type, elements);
+}
+
 auto FileContext::GetConstant(SemIR::ConstantId const_id,
                               SemIR::InstId use_inst_id) -> llvm::Value* {
   auto const_inst_id = sem_ir().constant_values().GetInstId(const_id);
@@ -254,14 +300,24 @@ auto FileContext::GetConstant(SemIR::ConstantId const_id,
 
   auto value_rep = SemIR::ValueRepr::ForType(
       sem_ir(), sem_ir().insts().Get(const_inst_id).type_id());
+  if (value_rep.kind == SemIR::ValueRepr::Pointer) {
+    // The value representation is a pointer. Find and reuse an existing
+    // variable holding the value, or generate one below.
+    if (auto result = global_variables().Lookup(const_inst_id)) {
+      return result.value();
+    }
+  }
+  if (value_rep.aggregate_kind == SemIR::ValueRepr::ValueAggregate &&
+      const_value) {
+    // Fork (VA-2): the value representation is elementwise and is not the
+    // object representation that `const_value` holds.
+    if (auto* elementwise = BuildElementwiseConstantValueRepr(
+            *this, const_inst_id, value_rep, use_inst_id)) {
+      const_value = elementwise;
+    }
+  }
   if (value_rep.kind != SemIR::ValueRepr::Pointer) {
     return const_value;
-  }
-
-  // The value representation is a pointer. Generate a variable to hold the
-  // value, or find and reuse an existing one.
-  if (auto result = global_variables().Lookup(const_inst_id)) {
-    return result.value();
   }
 
   // Include both the name of the constant, if any, and the point of use in

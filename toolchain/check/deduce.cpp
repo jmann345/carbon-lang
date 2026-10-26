@@ -443,10 +443,23 @@ auto DeductionContext::Deduce() -> bool {
       case CARBON_KIND(SemIR::PackType pack_type): {
         if (auto arg_pack_type =
                 context().insts().TryGetAs<SemIR::PackType>(arg_id)) {
+          // Fork (VA-2, D-VA2-5): forwarding a pack of different types to a
+          // pack of one element type, or the reverse, needs the design's
+          // "Expansion convertibility" between a pack of types and an arity
+          // coercion `«E; N»` (docs/design/variadics.md, "Reduction rules").
+          if (IsHeterogeneousPackType(context(), pack_type) !=
+              IsHeterogeneousPackType(context(), *arg_pack_type)) {
+            if (diagnose_) {
+              context().TODO(loc_id_,
+                             "forwarding a pack of different types to a pack "
+                             "of one type, or the reverse");
+            }
+            return false;
+          }
           Add(pack_type.arity_id, arg_pack_type->arity_id,
               /*want_value=*/true);
-          Add(pack_type.element_type_inst_id,
-              arg_pack_type->element_type_inst_id, /*want_value=*/true);
+          Add(pack_type.element_id, arg_pack_type->element_id,
+              /*want_value=*/true);
           continue;
         }
         auto arg_tuple_type =
@@ -463,8 +476,22 @@ auto DeductionContext::Deduce() -> bool {
              .int_id = context().ints().Add(
                  static_cast<int64_t>(element_ids.size()))});
         Add(pack_type.arity_id, arity_id, /*want_value=*/true);
+        // Fork (VA-2): for `⟬each T⟭`, the pack of types `T` is deduced as the
+        // pack of the arguments' types, `⟬A1, ..., Ak⟭`, which deduction then
+        // converts to `T`'s type, such as `«I; k»`.
+        if (IsHeterogeneousPackType(context(), pack_type)) {
+          auto types_type_id =
+              GetPackType(context(), SemIR::TypeType::TypeInstId, arity_id);
+          auto types_id = GetOrAddInst<SemIR::PackValue>(
+              context(), loc_id_,
+              {.type_id = types_type_id,
+               .elements_id = context().inst_blocks().AddCanonical(
+                   llvm::SmallVector<SemIR::InstId>(element_ids))});
+          Add(pack_type.element_id, types_id, /*want_value=*/true);
+          continue;
+        }
         for (auto element_id : llvm::reverse(element_ids)) {
-          Add(pack_type.element_type_inst_id, element_id, /*want_value=*/true);
+          Add(pack_type.element_id, element_id, /*want_value=*/true);
         }
         continue;
       }

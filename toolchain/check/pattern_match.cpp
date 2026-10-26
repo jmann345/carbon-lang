@@ -2314,7 +2314,9 @@ auto MatchContext::DoPreWork(State state,
   AddWork({.pattern_id = pack_pattern.subpattern_id,
            .work = PreWork{.scrutinee_id = scrutinee_id},
            .allow_unmarked_ref = entry.allow_unmarked_ref});
-  if (std::holds_alternative<CalleeState*>(state)) {
+  // Fork (VA-2): a pack whose type is an each-name has no arity of its own.
+  if (std::holds_alternative<CalleeState*>(state) &&
+      pack_pattern.arity_pattern_id.has_value()) {
     AddWork({.pattern_id = pack_pattern.arity_pattern_id,
              .work = PreWork{.scrutinee_id = SemIR::InstId::None}});
   }

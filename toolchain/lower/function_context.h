@@ -118,6 +118,12 @@ class FunctionContext {
       llvm::function_ref<auto(uint64_t index)->void> finish_iteration = {})
       -> void;
 
+  // Fork (VA-2): returns the pack index of the current iteration of the pack
+  // expansion being lowered, if any.
+  auto current_pack_index() const -> std::optional<uint64_t> {
+    return pack_index_;
+  }
+
   // Returns the pack index of the current iteration of the pack expansion
   // being lowered.
   auto pack_index() const -> uint64_t {

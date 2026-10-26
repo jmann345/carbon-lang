@@ -5,6 +5,7 @@
 #include "toolchain/check/type.h"
 
 #include "toolchain/check/control_flow.h"
+#include "toolchain/check/convert.h"
 #include "toolchain/check/eval.h"
 #include "toolchain/check/facet_type.h"
 #include "toolchain/check/inst.h"
@@ -116,9 +117,78 @@ static auto GetCompleteTypeImpl(Context& context, EachArgT... each_arg)
   return type_id;
 }
 
-auto GetPackType(Context& context, SemIR::TypeInstId element_type_id,
+auto GetPackType(Context& context, SemIR::InstId element_id,
                  SemIR::InstId arity_id) -> SemIR::TypeId {
-  return GetTypeImpl<SemIR::PackType>(context, element_type_id, arity_id);
+  return GetTypeImpl<SemIR::PackType>(context, element_id, arity_id);
+}
+
+auto IsHeterogeneousPackType(Context& context, SemIR::PackType pack_type)
+    -> bool {
+  return context.types().Is<SemIR::PackType>(
+      context.insts().Get(pack_type.element_id).type_id());
+}
+
+auto GetEachNameTypePack(Context& context, SemIR::TypeInstId type_inst_id)
+    -> std::optional<std::pair<SemIR::InstId, SemIR::InstId>> {
+  auto inst_id = context.constant_values().GetConstantInstId(type_inst_id);
+  if (!inst_id.has_value()) {
+    return std::nullopt;
+  }
+  if (auto access = context.insts().TryGetAs<SemIR::FacetAccessType>(inst_id)) {
+    inst_id = context.constant_values().GetConstantInstId(
+        access->facet_value_inst_id);
+  }
+  auto element = context.insts().TryGetAs<SemIR::PackElement>(inst_id);
+  if (!element ||
+      !context.insts().Is<SemIR::PackIndex>(
+          context.constant_values().GetConstantInstId(element->index_id))) {
+    return std::nullopt;
+  }
+  auto pack_id = context.constant_values().GetConstantInstId(element->pack_id);
+  auto pack_type = context.types().TryGetAs<SemIR::PackType>(
+      context.insts().Get(pack_id).type_id());
+  if (!pack_type) {
+    return std::nullopt;
+  }
+  return std::pair{pack_id, pack_type->arity_id};
+}
+
+auto GetPackTypeForElementType(Context& context,
+                               SemIR::TypeInstId element_type_inst_id,
+                               SemIR::InstId arity_id) -> SemIR::TypeId {
+  if (auto each_pack = GetEachNameTypePack(context, element_type_inst_id)) {
+    return GetPackType(context, each_pack->first, each_pack->second);
+  }
+  return GetPackType(context, element_type_inst_id, arity_id);
+}
+
+auto GetPackElementType(Context& context, SemIR::LocId loc_id,
+                        SemIR::PackType pack_type) -> SemIR::TypeId {
+  auto element_type_id = context.insts().Get(pack_type.element_id).type_id();
+  auto element_pack_type =
+      context.types().TryGetAs<SemIR::PackType>(element_type_id);
+  if (!element_pack_type) {
+    return context.types().GetTypeIdForTypeInstId(
+        context.constant_values().GetConstantTypeInstId(
+            SemIR::TypeInstId::UnsafeMake(pack_type.element_id)));
+  }
+  // The element's type is the each-name of the pack of types: the pack's
+  // element at the pack index, as a type.
+  auto index_id = AddInst<SemIR::PackIndex>(
+      context, loc_id,
+      {.type_id =
+           GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
+  auto element_id = AddInst<SemIR::PackElement>(
+      context, loc_id,
+      {.type_id = context.types().GetTypeIdForTypeInstId(
+           context.constant_values().GetConstantTypeInstId(
+               element_pack_type->element_id.has_value()
+                   ? SemIR::TypeInstId::UnsafeMake(
+                         element_pack_type->element_id)
+                   : SemIR::TypeInstId::None)),
+       .pack_id = pack_type.element_id,
+       .index_id = index_id});
+  return ExprAsType(context, loc_id, element_id).type_id;
 }
 
 auto GetStructType(Context& context, SemIR::StructTypeFieldsId fields_id)

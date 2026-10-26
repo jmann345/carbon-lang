@@ -223,6 +223,28 @@ static auto EmitAsConstant(ConstantContext& context, SemIR::TupleValue inst)
       cast<llvm::StructType>(context.GetType(inst.type_id)));
 }
 
+// Fork (VA-2): a constant pack value, such as a specific's pack of types, is
+// laid out as its pack type is.
+static auto EmitAsConstant(ConstantContext& context, SemIR::PackValue inst)
+    -> llvm::Constant* {
+  auto* llvm_type = context.GetType(inst.type_id);
+  // A compile-time pack of types or facets has no run-time content.
+  auto elements = context.sem_ir().inst_blocks().Get(inst.elements_id);
+  if (llvm::all_of(elements, [&](SemIR::InstId element_id) {
+        auto type_id = context.sem_ir().insts().Get(element_id).type_id();
+        return type_id == SemIR::TypeType::TypeId ||
+               context.sem_ir().types().Is<SemIR::FacetType>(type_id);
+      })) {
+    return llvm::Constant::getNullValue(llvm_type);
+  }
+  if (auto* array_type = dyn_cast<llvm::ArrayType>(llvm_type)) {
+    return EmitAggregateConstant<llvm::ConstantArray>(context, inst.elements_id,
+                                                      array_type);
+  }
+  return EmitAggregateConstant<llvm::ConstantStruct>(
+      context, inst.elements_id, cast<llvm::StructType>(llvm_type));
+}
+
 static auto EmitAsConstant(ConstantContext& context, SemIR::AddrOf inst)
     -> llvm::Constant* {
   // A constant reference expression is lowered as a pointer, so `AddrOf` is a

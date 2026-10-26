@@ -22,15 +22,16 @@ namespace Carbon::Lower {
 // of type `pack_type`.
 static auto GetPackElementAddr(FunctionContext& context,
                                FunctionContext::TypeInFile pack_type,
-                               llvm::Value* storage, llvm::Value* index)
+                               llvm::Value* storage, uint64_t index)
     -> llvm::Value* {
   auto value_repr = context.GetValueRepr(pack_type);
   CARBON_CHECK(value_repr.repr.kind == SemIR::ValueRepr::Pointer,
                "Pack value not passed by address");
-  auto* zero = llvm::ConstantInt::get(index->getType(), 0);
-  return context.builder().CreateInBoundsGEP(
-      context.GetType(value_repr.type().GetPointeeType()), storage,
-      {zero, index}, "pack.elem");
+  // Fork (VA-2): the index is a constant in each iteration, so this also
+  // indexes the tuple-like storage of a pack of different types.
+  return context.builder().CreateConstInBoundsGEP2_32(
+      context.GetType(value_repr.type().GetPointeeType()), storage, 0, index,
+      "pack.elem");
 }
 
 // Allocates the storage of a value of the pack type `pack_type`.
@@ -50,15 +51,15 @@ static auto StorePackElement(FunctionContext& context,
   context.StoreObject(
       context.GetValueRepr(context.GetTypeIdOfInst(value_id)).type(),
       context.GetValue(value_id),
-      GetPackElementAddr(context, pack_type, storage,
-                         context.builder().getInt64(index)));
+      GetPackElementAddr(context, pack_type, storage, index));
 }
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::PackElement inst) -> void {
-  auto* addr = GetPackElementAddr(
-      context, context.GetTypeIdOfInst(inst.pack_id),
-      context.GetValue(inst.pack_id), context.GetValue(inst.index_id));
+  // The element is always the one at the current pack index.
+  auto* addr =
+      GetPackElementAddr(context, context.GetTypeIdOfInst(inst.pack_id),
+                         context.GetValue(inst.pack_id), context.pack_index());
   context.SetLocal(
       inst_id,
       context.LoadObject(

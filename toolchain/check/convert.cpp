@@ -521,11 +521,13 @@ static auto ConvertPackLiteralToPack(Context& context,
       context.sem_ir().GetZExtIntValue(pack_type.arity_id) == elements.size(),
       "Pack literal of {0} elements converted to {1}", elements.size(),
       target.type_id);
-  auto element_type_id =
-      context.types().GetTypeIdForTypeInstId(pack_type.element_type_inst_id);
   llvm::SmallVector<SemIR::InstId> value_ids;
   value_ids.reserve(elements.size());
-  for (auto element_id : elements) {
+  for (auto [index, element_id] : llvm::enumerate(elements)) {
+    // Fork (VA-2): the `index`th element of a pack of different types has the
+    // `index`th type of its pack of types.
+    auto element_type_id =
+        SemIR::GetPackElementTypeId(context.sem_ir(), pack_type, index);
     auto converted_id = Convert(context, SemIR::LocId(element_id), element_id,
                                 {.kind = ConversionTarget::Value,
                                  .type_id = element_type_id,
@@ -566,17 +568,18 @@ static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
       context, value_loc_id,
       {.type_id =
            GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
+  // Fork (VA-2): the element types of a pack of different types depend on
+  // the pack index.
   auto element_id = AddInst<SemIR::PackElement>(
       context, value_loc_id,
-      {.type_id = context.types().GetTypeIdForTypeInstId(
-           src_type.element_type_inst_id),
+      {.type_id = GetPackElementType(context, value_loc_id, src_type),
        .pack_id = value_id,
        .index_id = index_id});
-  auto result_id = Convert(context, value_loc_id, element_id,
-                           {.kind = ConversionTarget::Value,
-                            .type_id = context.types().GetTypeIdForTypeInstId(
-                                target_type.element_type_inst_id),
-                            .diagnose = target.diagnose});
+  auto result_id = Convert(
+      context, value_loc_id, element_id,
+      {.kind = ConversionTarget::Value,
+       .type_id = GetPackElementType(context, value_loc_id, target_type),
+       .diagnose = target.diagnose});
   CARBON_CHECK(context.inst_block_stack().is_current_block_reachable() &&
                    context.inst_block_stack().PeekOrAdd() == body_block_id,
                "Control flow in a pack element conversion");
@@ -718,6 +721,14 @@ static auto ConvertTupleToType(Context& context, SemIR::LocId loc_id,
               value_const_id)) {
     for (auto tuple_inst_id :
          context.inst_blocks().Get(tuple_value->elements_id)) {
+      // Fork (VA-2): a segment that is a compile-time pack of types or
+      // facets, `... each T`, is the type segment `...⟬each T⟭`.
+      if (auto pack_type = context.types().TryGetAs<SemIR::PackType>(
+              context.insts().Get(tuple_inst_id).type_id())) {
+        type_inst_ids.push_back(context.types().GetTypeInstId(
+            GetPackType(context, tuple_inst_id, pack_type->arity_id)));
+        continue;
+      }
       // TODO: This call recurses back into conversion. Switch to an
       // iterative approach.
       type_inst_ids.push_back(
@@ -1891,6 +1902,30 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       return ConvertPackLiteralToPack(context, *literal, *target_pack_type,
                                       value_id, target);
     }
+    // Fork (VA-2): a pack value of known arity, such as a compile-time pack of
+    // types deduced for `T` in `[... each T: I]`, converts element by
+    // element, so that a pack of constants converts to a pack of constants.
+    if (auto pack_value = value.TryAs<SemIR::PackValue>();
+        pack_value && sem_ir.GetZExtIntValue(target_pack_type->arity_id)) {
+      auto elements = sem_ir.inst_blocks().Get(pack_value->elements_id);
+      llvm::SmallVector<SemIR::InstId> converted_ids;
+      converted_ids.reserve(elements.size());
+      for (auto [index, element_id] : llvm::enumerate(elements)) {
+        auto converted_id = Convert(context, loc_id, element_id,
+                                    {.kind = ConversionTarget::Value,
+                                     .type_id = SemIR::GetPackElementTypeId(
+                                         sem_ir, *target_pack_type, index),
+                                     .diagnose = target.diagnose});
+        if (converted_id == SemIR::ErrorInst::InstId) {
+          return SemIR::ErrorInst::InstId;
+        }
+        converted_ids.push_back(converted_id);
+      }
+      return AddInst<SemIR::PackValue>(
+          context, loc_id,
+          {.type_id = target.type_id,
+           .elements_id = context.inst_blocks().Add(converted_ids)});
+    }
     if (auto src_pack_type =
             sem_ir.types().TryGetAs<SemIR::PackType>(value_type_id)) {
       return ConvertPackToPack(context, *src_pack_type, *target_pack_type,
@@ -2469,6 +2504,10 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
                  .storage_id = target.storage_id,
                  .in_place = SemIR::BoolValue::From(
                      target.kind == ConversionTarget::InPlaceInitializing)})});
+    // Fork (VA-2, D-VA2-14): the action was refused.
+    if (action_id == SemIR::ErrorInst::InstId) {
+      return action_id;
+    }
 
     // Extract the first result: this is the instruction that performs the
     // initialization and produces the result.

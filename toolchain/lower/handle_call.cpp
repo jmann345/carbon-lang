@@ -888,9 +888,11 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   // Map to the callee in the specific. This might be in a different file than
   // the one we're currently lowering.
   if (context.specific_id().has_value()) {
+    // Fork (VA-2): within an iteration of a pack expansion, the callee is the
+    // one of that iteration.
     auto [const_file, const_id] = GetConstantValueInSpecific(
         context.specific_sem_ir(), context.specific_id(), context.sem_ir(),
-        callee.inst_id);
+        callee.inst_id, context.current_pack_index());
     callee.file = const_file;
     callee.inst_id = const_file->constant_values().GetInstIdIfValid(const_id);
     CARBON_CHECK(callee.inst_id.has_value(),

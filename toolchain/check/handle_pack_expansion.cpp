@@ -55,12 +55,19 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
                               .start_node_id = node_id};
   switch (scope.kind) {
     case PackExpansionScope::Kind::Pattern: {
-      // Fork (VA-1, D-VA-5): a pack expansion pattern is supported directly
-      // in a function's explicit parameter list.
-      if (!context.node_stack().PeekIs(
-              Parse::NodeKind::ExplicitParamListStart) ||
-          context.full_pattern_stack().CurrentKind() !=
-              FullPatternStack::Kind::ExplicitParamList) {
+      // Fork (VA-1, D-VA-5; VA-2): a pack expansion pattern is supported
+      // directly in a function's explicit parameter list and in an implicit
+      // parameter list ("An implicit parameter list element of the form `...`
+      // pattern", docs/design/variadics.md, "Pack expansions").
+      bool in_explicit_list = context.node_stack().PeekIs(
+                                  Parse::NodeKind::ExplicitParamListStart) &&
+                              context.full_pattern_stack().CurrentKind() ==
+                                  FullPatternStack::Kind::ExplicitParamList;
+      bool in_implicit_list = context.node_stack().PeekIs(
+                                  Parse::NodeKind::ImplicitParamListStart) &&
+                              context.full_pattern_stack().CurrentKind() ==
+                                  FullPatternStack::Kind::ImplicitParamList;
+      if (!in_explicit_list && !in_implicit_list) {
         return context.TODO(node_id,
                             "pack expansion pattern outside an explicit "
                             "parameter list");
@@ -87,6 +94,16 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
                               "expansion pattern");
         }
         if (context.insts().Is<SemIR::PackExpansionPattern>(param_id)) {
+          // Fork (VA-2, D-VA2-4): that rule is the tuple pattern's, and an
+          // implicit parameter list is not one: the design's TupleConcat
+          // declares `[... each T1: type, ... each T2: type]`
+          // (docs/design/variadics.md, "Additional examples"), packs of
+          // independent arities, which are not implemented.
+          if (in_implicit_list) {
+            return context.TODO(node_id,
+                                "more than one pack expansion pattern in an "
+                                "implicit parameter list");
+          }
           CARBON_DIAGNOSTIC(MultiplePackExpansionPatterns, Error,
                             "parameter list can contain at most one pack "
                             "expansion pattern");
@@ -99,21 +116,10 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
           return false;
         }
       }
-      // The arity of the pack is a deduced parameter of the enclosing full
-      // pattern (docs/design/variadics.md, "Explicit deduced arities").
-      auto arity_type_id =
-          GetSingletonType(context, SemIR::IntLiteralType::TypeInstId);
-      auto entity_name_id = AddBindingEntityName(
-          context, SemIR::NameId::PackArity, SemIR::TypeInstId::None,
-          SemIR::InstId::None, /*is_unused=*/false, BindingPhase::Symbolic);
-      auto arity = AddBindingPattern(
-          context, node_id, SemIR::ExprRegionId::None, arity_type_id,
-          {.kind = SemIR::SymbolicBindingPattern::Kind,
-           .type_id = GetPatternType(context, arity_type_id),
-           .entity_name_id = entity_name_id,
-           .subpattern_id = SemIR::InstId::None});
-      scope.arity_pattern_id = arity.pattern_id;
-      scope.arity_binding_id = arity.bind_id;
+      // Fork (VA-2): the arity of the pack, a deduced parameter of the
+      // enclosing full pattern, is added by the operand's each-name binding,
+      // once its type shows whether it is an arity coercion
+      // (docs/design/variadics.md, "Explicit deduced arities").
       break;
     }
     case PackExpansionScope::Kind::Statement:
@@ -173,6 +179,19 @@ static auto FinishPackExpansionBody(Context& context, Parse::NodeId node_id,
   // expression in the type position of a binding pattern"
   // (docs/design/variadics.md, "Pack expansions").
   if (!scope.arity_id.has_value()) {
+    // Fork (VA-2, D-VA2-13): such an expression, as in `t: (... i32)`, takes
+    // its arity from the scrutinee, which is not implemented.
+    auto& node_stack = context.node_stack();
+    if (scope.kind == PackExpansionScope::Kind::Expr &&
+        node_stack.PeekIs(Parse::NodeKind::TupleLiteralStart) &&
+        node_stack.size() >= 2 &&
+        (node_stack.PeekNextIs(Parse::NodeKind::BindingPatternTypeStart) ||
+         node_stack.PeekNextIs(
+             Parse::NodeKind::CompileTimeBindingPatternTypeStart))) {
+      context.TODO(node_stack.PeekNodeId(),
+                   "pack expansion without an each-name in a binding's type");
+      return std::nullopt;
+    }
     CARBON_DIAGNOSTIC(PackExpansionWithoutEachName, Error,
                       "pack expansion does not use any each-name");
     context.emitter().Emit(scope.start_node_id, PackExpansionWithoutEachName);
@@ -221,6 +240,25 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
   auto& stack = context.pack_expansion_stack();
   CARBON_CHECK(stack.back().kind == PackExpansionScope::Kind::Expr);
 
+  // Fork (VA-2): `... each T` for a compile-time pack `T` is a segment whose
+  // elements are `T`'s: its value is the pack `T` itself, as in the tuple
+  // type `(... each T)` (docs/design/variadics.md, "Tuples, packs, segments,
+  // and shapes").
+  if (auto element = context.insts().TryGetAs<SemIR::PackElement>(result_id)) {
+    auto pack_const_id = context.constant_values().Get(element->pack_id);
+    if (pack_const_id.is_constant() &&
+        context.types().Is<SemIR::PackType>(
+            context.insts().Get(element->pack_id).type_id())) {
+      auto scope = stack.pop_back_val();
+      if (!FinishPackExpansionBody(context, node_id, scope)) {
+        return false;
+      }
+      context.node_stack().Push(
+          node_id, context.constant_values().GetInstId(pack_const_id));
+      return true;
+    }
+  }
+
   // Each iteration's element is a value: a pack holds its elements' values
   // (fork VA-1, D-VA-3). The conversion is part of the body, so that an
   // element whose value needs a temporary gets one per iteration.
@@ -243,7 +281,7 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
   // "The type of a pack expansion expression or pattern is `...B`, where `B`
   // is the type of its body" (docs/design/variadics.md, "Typing and shaping
   // rules"): a pack of the body's type, with the arity of its each-names.
-  auto pack_type_id = GetPackType(
+  auto pack_type_id = GetPackTypeForElementType(
       context, context.types().GetTypeInstId(result_type_id), scope.arity_id);
   // Lowering reads the pack type's value representation in every specific, so
   // each specific's pack type must be complete, even when nothing else requires
@@ -296,9 +334,9 @@ auto HandleParseNode(Context& context, Parse::PackExpansionPatternId node_id)
 
   // The scrutinee of the pattern is the run of arguments that it matches, of
   // type `«E; N»` for the element type `E` and the deduced arity `N`
-  // (docs/design/variadics.md, "Explicit deduced arities").
-  auto pack_type_id =
-      GetPackType(context, scope.element_type_inst_id, scope.arity_binding_id);
+  // (docs/design/variadics.md, "Explicit deduced arities"), or of type
+  // `⟬each T⟭` when the operand's type is the each-name `each T`.
+  auto pack_type_id = scope.pack_type_id;
   context.node_stack().Push(
       node_id, AddInst<SemIR::PackExpansionPattern>(
                    context, node_id,
@@ -338,7 +376,12 @@ auto HandleParseNode(Context& context, Parse::EachNameExprId node_id) -> bool {
     return true;
   }
   auto& stack = context.pack_expansion_stack();
-  if (stack.empty() || stack.back().kind == PackExpansionScope::Kind::Pattern) {
+  // "The binding pattern's type expression may contain an each-name"
+  // (docs/design/variadics.md, "Pack expansion patterns"): an each-name in a
+  // pattern expansion is in the type of the binding it declares.
+  bool in_pattern =
+      !stack.empty() && stack.back().kind == PackExpansionScope::Kind::Pattern;
+  if (stack.empty()) {
     CARBON_DIAGNOSTIC(EachNameOutsidePackExpansion, Error,
                       "each-name `each {0}` is not inside a pack expansion",
                       SemIR::NameId);
@@ -352,7 +395,11 @@ auto HandleParseNode(Context& context, Parse::EachNameExprId node_id) -> bool {
   // D-VA-5): a function has at most one pack, so this only fails for an
   // each-name of an enclosing function's pack.
   auto& scope = stack.back();
-  if (!scope.arity_id.has_value()) {
+  if (in_pattern) {
+    // The pattern's arity is the pack's, set by its binding, which reads
+    // `arity_id` to tell whether its type names a pack.
+    scope.arity_id = arity.value();
+  } else if (!scope.arity_id.has_value()) {
     scope.arity_id = arity.value();
   } else if (scope.arity_id != arity.value() &&
              scope.arity_id != SemIR::ErrorInst::InstId) {
@@ -378,13 +425,14 @@ auto HandleParseNode(Context& context, Parse::EachNameExprId node_id) -> bool {
       context, node_id,
       {.type_id =
            GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
+  // Fork (VA-2): for a pack of different types, the element's type is the
+  // each-name of the pack of types, which depends on the pack index.
+  auto element_type_id = GetPackElementType(context, node_id, *pack_type);
   context.node_stack().Push(
-      node_id, AddInst<SemIR::PackElement>(
-                   context, node_id,
-                   {.type_id = context.types().GetTypeIdForTypeInstId(
-                        pack_type->element_type_inst_id),
-                    .pack_id = pack_ref_id,
-                    .index_id = index_id}));
+      node_id, AddInst<SemIR::PackElement>(context, node_id,
+                                           {.type_id = element_type_id,
+                                            .pack_id = pack_ref_id,
+                                            .index_id = index_id}));
   return true;
 }
 

@@ -823,6 +823,28 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
   return ConstantEvalResult::NewSamePhase(inst);
 }
 
+// Fork (VA-2): an each-name of a compile-time pack, such as `each T` of
+// `[... each T: I]`, is the `$I`th element of the pack once the pack and the
+// pack index are known (docs/design/variadics.md, "Execution Semantics": "An
+// each-name evaluates to the `$I`th value of the pack it refers to").
+auto EvalConstantInst(Context& context, SemIR::PackElement inst)
+    -> ConstantEvalResult {
+  if (auto pack = context.insts().TryGetAs<SemIR::PackValue>(inst.pack_id)) {
+    if (auto index = context.sem_ir().GetZExtIntValue(inst.index_id)) {
+      auto elements = context.inst_blocks().Get(pack->elements_id);
+      CARBON_CHECK(*index < elements.size(), "Pack index {0} out of range",
+                   *index);
+      return ConstantEvalResult::Existing(
+          context.constant_values().Get(elements[*index]));
+    }
+  }
+  if (context.constant_values().Get(inst.pack_id).is_concrete() &&
+      context.constant_values().Get(inst.index_id).is_concrete()) {
+    return ConstantEvalResult::NotConstant;
+  }
+  return ConstantEvalResult::NewSamePhase(inst);
+}
+
 auto EvalConstantInst(Context& context, SemIR::RequireSpecificDefinition inst)
     -> ConstantEvalResult {
   // This can return false, we just need to try it.

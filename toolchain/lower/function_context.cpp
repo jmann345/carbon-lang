@@ -206,7 +206,7 @@ auto FunctionContext::GetBlockArg(SemIR::InstBlockId block_id, TypeInFile type)
 
 auto FunctionContext::IsConstant(SemIR::InstId inst_id) -> bool {
   return GetConstantValueInSpecific(specific_sem_ir(), specific_id_, sem_ir(),
-                                    inst_id)
+                                    inst_id, pack_index_)
       .second.is_constant();
 }
 
@@ -228,7 +228,7 @@ auto FunctionContext::GetValue(SemIR::InstId inst_id, bool require_value)
   }
 
   auto [const_ir, const_id] = GetConstantValueInSpecific(
-      specific_sem_ir(), specific_id_, sem_ir(), inst_id);
+      specific_sem_ir(), specific_id_, sem_ir(), inst_id, pack_index_);
   CARBON_CHECK(const_ir == &sem_ir() || const_ir == &specific_sem_ir());
   if (!const_id.is_concrete()) {
     // A file-scope `let` bound to a runtime value has no constant and no
@@ -339,7 +339,7 @@ auto FunctionContext::GetValueServesConstantValueRep(SemIR::InstId inst_id)
     return false;
   }
   auto [const_ir, const_id] = GetConstantValueInSpecific(
-      specific_sem_ir(), specific_id_, sem_ir(), inst_id);
+      specific_sem_ir(), specific_id_, sem_ir(), inst_id, pack_index_);
   if (!const_id.is_concrete()) {
     // The promoted file-scope `let` path (W-069) serves an address-derived
     // value per its disposition, never a folded constant.
@@ -465,8 +465,10 @@ auto FunctionContext::InitializeStorage(SemIR::InstId init_id) -> void {
 }
 
 auto FunctionContext::GetTypeIdOfInst(SemIR::InstId inst_id) -> TypeInFile {
+  // Fork (VA-2): within an iteration of a pack expansion, an instruction has
+  // its type in that iteration.
   auto [file, type_id] = SemIR::GetTypeOfInstInSpecific(
-      specific_sem_ir(), specific_id(), sem_ir(), inst_id);
+      specific_sem_ir(), specific_id(), sem_ir(), inst_id, pack_index_);
   return {.file = file, .type_id = type_id};
 }
 

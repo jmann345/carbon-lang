@@ -366,11 +366,41 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
     context.emitter().Emit(name_node, PackExpansionBindingWithoutEach, name_id);
     return false;
   } else if (is_each) {
-    // Fork (VA-1, D-VA-5): a pack's elements are values of a type that does
-    // not depend on the pack, and the operand declares one each-name.
-    if (node_kind != Parse::NodeKind::LetBindingPattern || is_ref) {
+    // Fork (VA-1, D-VA-5; VA-2): a pack's elements are values or compile-time
+    // bindings, such as `... each T: I` in an implicit parameter list, and the
+    // operand declares one each-name.
+    if ((node_kind != Parse::NodeKind::LetBindingPattern &&
+         node_kind != Parse::NodeKind::CompileTimeBindingPattern) ||
+        is_ref || is_template) {
       return context.TODO(name_node,
-                          "each-name binding that is not a value binding");
+                          "each-name binding that is ref, var or template");
+    }
+    // Fork (VA-2, D-VA2-4): a compile-time pack is declared by "an implicit
+    // parameter list element of the form `...` pattern" of a function or an
+    // impl. A pack among a class's or an interface's parameters, whose
+    // expansions in the members have fixed arity, and an explicit `generic`
+    // pack are not implemented.
+    if (node_kind == Parse::NodeKind::CompileTimeBindingPattern) {
+      auto introducer_kind =
+          context.decl_introducer_state_stack().innermost().kind;
+      if (context.full_pattern_stack().CurrentKind() !=
+              FullPatternStack::Kind::ImplicitParamList ||
+          (introducer_kind != Lex::TokenKind::Fn &&
+           introducer_kind != Lex::TokenKind::Impl)) {
+        return context.TODO(name_node,
+                            "each-name binding of a class, interface or "
+                            "explicit compile-time parameter");
+      }
+      // Fork (VA-2, D-VA2-19): impl lookup selects an impl by its self type's
+      // type structure, which does not yet record a pack segment as a run of
+      // the query's elements ("deleting deduced parameters and replacing type
+      // parameters by a `?`", docs/design/generics/details.md, "Type structure
+      // of an impl declaration"), so an impl's pack is not implemented yet.
+      if (introducer_kind == Lex::TokenKind::Impl) {
+        return context.TODO(name_node,
+                            "each-name binding in an impl's implicit "
+                            "parameter list");
+      }
     }
     if (pack_scope->each_binding_pattern_id.has_value()) {
       return context.TODO(name_node,
@@ -382,15 +412,76 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
   // element type `E` and the pack's deduced arity `N`: "each X: T" becomes
   // "each X: «T; __N»" (docs/design/variadics.md, "Explicit deduced
   // arities"). A value of that type holds the elements' values (fork VA-1,
-  // D-VA-3).
-  auto element_type_inst_id = SemIR::TypeInstId::None;
-  if (is_each && type_expr.type_component_id != SemIR::ErrorInst::TypeId) {
-    element_type_inst_id = type_expr.type_component_inst_id;
-    auto pack_type_id = GetPackType(context, element_type_inst_id,
-                                    pack_scope->arity_binding_id);
-    type_expr.type_component_id = pack_type_id;
-    type_expr.type_component_inst_id =
-        context.types().GetTypeInstId(pack_type_id);
+  // D-VA-3). Fork (VA-2): "if `T` does not contain an each-name"; when `T` is
+  // the each-name `each U` of a compile-time pack, the binding's type is the
+  // pack `⟬each U⟭` and its arity is `U`'s, so no arity is introduced ("If this
+  // does not introduce any usages of `__N`, we remove its declaration").
+  if (is_each) {
+    bool is_error = type_expr.type_component_id == SemIR::ErrorInst::TypeId;
+    SemIR::TypeId pack_type_id = SemIR::TypeId::None;
+    if (auto each_pack = is_error
+                             ? std::nullopt
+                             : GetEachNameTypePack(
+                                   context, type_expr.type_component_inst_id)) {
+      pack_type_id = GetPackType(context, each_pack->first, each_pack->second);
+      // The each-name's pack is a binding of this generic, whose arity binding
+      // the pack's expansions use.
+      pack_scope->arity_binding_id = each_pack->second;
+      if (auto arity =
+              context.pack_binding_arities().Lookup(each_pack->first)) {
+        pack_scope->arity_binding_id = arity.value();
+      }
+    } else if (!is_error && pack_scope->arity_id.has_value()) {
+      // Fork (VA-2, D-VA2-3): a binding type computed from an each-name, such
+      // as `Optional(each T)`, is a different type in each iteration, which
+      // needs the design's "Pack expanding" reduction
+      // (docs/design/variadics.md, "Reduction rules").
+      return context.TODO(type_expr.node_id,
+                          "pack expansion pattern whose binding type is "
+                          "computed from an each-name");
+    } else {
+      // Fork (VA-2, D-VA2-4): every pack of a generic, and of the generics
+      // that enclose it, shares one deduced arity, so the pack index of a
+      // specific has one range; an expansion pattern that would add a second
+      // arity ("each pack expansion pattern introduces a deduced arity") is a
+      // TODO until packs of independent arities are implemented.
+      for (auto bind_id :
+           context.scope_stack().compile_time_binding_stack().PeekAllValues()) {
+        if (auto bind =
+                context.insts().TryGetAs<SemIR::SymbolicBinding>(bind_id);
+            bind && context.entity_names().Get(bind->entity_name_id).name_id ==
+                        SemIR::NameId::PackArity) {
+          return context.TODO(name_node,
+                              "more than one pack arity in a generic");
+        }
+      }
+      auto arity_type_id =
+          GetSingletonType(context, SemIR::IntLiteralType::TypeInstId);
+      auto arity_entity_name_id = AddBindingEntityName(
+          context, SemIR::NameId::PackArity, SemIR::TypeInstId::None,
+          SemIR::InstId::None, /*is_unused=*/false, BindingPhase::Symbolic);
+      auto arity =
+          AddBindingPattern(context, pack_scope->start_node_id,
+                            SemIR::ExprRegionId::None, arity_type_id,
+                            {.kind = SemIR::SymbolicBindingPattern::Kind,
+                             .type_id = GetPatternType(context, arity_type_id),
+                             .entity_name_id = arity_entity_name_id,
+                             .subpattern_id = SemIR::InstId::None});
+      pack_scope->arity_pattern_id = arity.pattern_id;
+      pack_scope->arity_binding_id = arity.bind_id;
+      // An invalid element type was diagnosed; the pack keeps its arity, as
+      // in VA-1, and the binding its error type.
+      pack_type_id = GetPackType(
+          context,
+          is_error ? SemIR::InstId::None : type_expr.type_component_inst_id,
+          arity.bind_id);
+    }
+    pack_scope->pack_type_id = pack_type_id;
+    if (!is_error) {
+      type_expr.type_component_id = pack_type_id;
+      type_expr.type_component_inst_id =
+          context.types().GetTypeInstId(pack_type_id);
+    }
   }
 
   const DeclIntroducerState& introducer =
@@ -568,7 +659,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
             // Record the pack for its pack expansion pattern, and for name
             // lookup of its each-name.
             pack_scope->each_binding_pattern_id = result_inst_id;
-            pack_scope->element_type_inst_id = element_type_inst_id;
             context.pack_binding_arities().Insert(context.bind_name_map()
                                                       .Lookup(result_inst_id)
                                                       .value()
@@ -583,6 +673,21 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
         case Parse::NodeKind::CompileTimeBindingPattern:
           result_inst_id =
               make_binding_pattern(SemIR::SymbolicBindingPattern::Kind);
+          if (is_each) {
+            // Fork (VA-2): a compile-time pack, such as the pack of types
+            // `T` of `[... each T: I]`, which the types of later bindings
+            // name by its constant value.
+            pack_scope->each_binding_pattern_id = result_inst_id;
+            auto bind_id = context.bind_name_map()
+                               .Lookup(result_inst_id)
+                               .value()
+                               .bind_name_id;
+            context.pack_binding_arities().Insert(bind_id,
+                                                  pack_scope->arity_binding_id);
+            context.pack_binding_arities().Insert(
+                context.constant_values().GetConstantInstId(bind_id),
+                pack_scope->arity_binding_id);
+          }
           break;
         default:
           CARBON_FATAL("Unexpected node kind {0}", node_kind);

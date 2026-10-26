@@ -732,6 +732,11 @@ static auto BuildTypeForInst(FileContext& context, SemIR::PointerType /*inst*/)
           nullptr};
 }
 
+static auto BuildStructType(FileContext& context,
+                            llvm::MutableArrayRef<llvm::Type*> subtypes,
+                            llvm::ArrayRef<SemIR::ObjectLayout> layouts)
+    -> LoweredTypes;
+
 // Fork (VA-1, D-VA-3): a pack type `«E; N»` is laid out as `N` objects of type
 // `E`. A value of a pack type is the address of a pack of its elements' value
 // representations, whose type is lowered the same way.
@@ -739,9 +744,23 @@ static auto BuildTypeForInst(FileContext& context, SemIR::PackType inst)
     -> LoweredTypes {
   auto arity = context.sem_ir().GetZExtIntValue(inst.arity_id);
   CARBON_CHECK(arity, "Lowering pack type of unknown arity");
+  // Fork (VA-2): a pack of different types is laid out as a tuple of them.
+  if (context.sem_ir().types().Is<SemIR::PackType>(
+          context.sem_ir().insts().Get(inst.element_id).type_id())) {
+    llvm::SmallVector<llvm::Type*> subtypes;
+    llvm::SmallVector<SemIR::ObjectLayout> layouts;
+    for (auto index : llvm::seq(*arity)) {
+      auto type_id = SemIR::GetPackElementTypeId(context.sem_ir(), inst, index);
+      subtypes.push_back(context.GetType(type_id));
+      layouts.push_back(
+          context.sem_ir().types().GetCompleteTypeInfo(type_id).object_layout);
+    }
+    return BuildStructType(context, subtypes, layouts);
+  }
   return {llvm::ArrayType::get(
               context.GetType(context.sem_ir().types().GetTypeIdForTypeInstId(
-                  inst.element_type_inst_id)),
+                  context.sem_ir().constant_values().GetConstantTypeInstId(
+                      SemIR::TypeInstId::UnsafeMake(inst.element_id)))),
               *arity),
           nullptr};
 }

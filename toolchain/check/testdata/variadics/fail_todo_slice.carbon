@@ -10,15 +10,6 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/variadics/fail_todo_slice.carbon
 
-// --- fail_todo_generic_pack.carbon
-library "[[@TEST_NAME]]";
-
-// CHECK:STDERR: fail_todo_generic_pack.carbon:[[@LINE+4]]:6: error: semantics TODO: `pack expansion pattern outside an explicit parameter list` [SemanticsTodo]
-// CHECK:STDERR: fn F[... each T: type](... each x: each T);
-// CHECK:STDERR:      ^~~
-// CHECK:STDERR:
-fn F[... each T: type](... each x: each T);
-
 // --- fail_todo_tuple_pattern.carbon
 library "[[@TEST_NAME]]";
 

@@ -6,9 +6,24 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 5, 2026-10-26 -- rev 4's sign-off for implementation stands,
-amended by the implementation's first stop-and-amend, at stage 1 (C0 and F0),
-which the "Stop-and-amend record (rev 5, 2026-10-26)" before the Sign-off
+**Status:** rev 6, 2026-10-26 -- the fold of the focused re-review of rev 5
+(ef58cf5dd, on C0 d92a9c709), whose verdict was APPROVE-WITH-AMENDMENTS on one
+MAJOR, RR5-M1: rev 5 said that upstream's defect in a one-element aggregate
+whose element initializes in place is reached by no form or program of this
+slice, but §A.6's `Dup(one)` reaches it today, through PR 59's hand-written
+`(T,)` impl, and aborts in lowering on PR 59, trunk, the nightly, C0 and C0b,
+and from C4 on it reaches C2's unbuilt `PackSegmentInit` for a by-copy
+`(Loud,)`; so C4's stage decides, the re-review's probes d01 to d03, with the
+control d04, join the probes every stage re-runs after its build, and a d probe
+that fails at C4 is a stop at C4. Three MINORs give C0b's commit title C0's
+form, `VA-2 C0b:`, record the rejected alternative to C0b's copy (§7.2's A-11)
+and re-read upstream's tip, 56d9bbc40, which changes none of the directories R32
+covers. Every finding is folded and none is rejected (the rev 6 part of the
+"Stop-and-amend record (rev 5, 2026-10-26)"); C0b's block, Appendix B and every
+count of rev 5 stand (amended 2026-10-26, review fold: RR5-M1 / RR5-m1 / RR5-m2
+/ RR5-m3). Rev 5 (ef58cf5dd, 2026-10-26): rev 4's sign-off for implementation
+stands, amended by the implementation's first stop-and-amend, at stage 1 (C0 and
+F0), which the "Stop-and-amend record (rev 5, 2026-10-26)" before the Sign-off
 section records. C0's fill showed that a nested aggregate constant copied into
 storage (a `var`, an in-place `return`, an assignment, a file-scope `var`, a
 constant element of a run-time tuple) is copied from its value representation as
@@ -105,7 +120,14 @@ scratch directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/stage1`
 (`$L`). C0b is not part of the prototype: its block is in §2.7, measured against
 C0's commit d92a9c709, and Appendix B stays rev 4's (M-20) (amended 2026-10-26,
-implementation: stop-and-amend: nested constant initialization).
+implementation: stop-and-amend: nested constant initialization). Rev 6's were
+taken by the plan amender of the re-review with the implementer's C0 install,
+C0b relinked over its objects under /dev/shm/va2-impl/c0b, the rev 4 prototype
+with C0b (the scratch commit 90c34dbaa) built in full under
+/dev/shm/va2-impl/builds (all deleted when rev 6 was committed), and the scratch
+directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend6`
+(`$K` below) (amended 2026-10-26, review fold: RR5-M1).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -649,7 +671,9 @@ them (amended 2026-10-22, review fold: A-B-3). Rev 2's new and changed
 sources (§A.7 to §A.10, `$F/r3/programs`) parse on PR 59's install, and its
 three changed stdlib programs check there with errors only at their tuple impl
 lookups, as before (amended 2026-10-22, review fold: A-m-1 / A-m-2 / B-M1 /
-B-M3).
+B-M3). Nor could it see R-13's class: §A.6's `Dup(one)` checks on PR 59 and
+aborts in its lowering there, on trunk, on the nightly, on C0 and on C0b (M-20's
+d01) (amended 2026-10-26, review fold: RR5-M1).
 
 M-12. Nested aggregate constants (amended 2026-10-22, review fold: A-B-3).
 `let t: ((i32, i32), i32) = ((1, 2), 3);` followed by any use (reviewer A's
@@ -959,6 +983,24 @@ is a value that changes from run to run:
 | a06, a09 and a13: a class field, an array of tuples, an empty inner tuple | 1 2 3 4; 1 2 3 4; 5 6 7 | the same | the same |
 | v03, r16, r16g, r16h, x07 and c01 to c08 (PR 59 only) | the verifier abort, but c04 (5 6 7) | 7 8 9; 3 2; 3; 3; 2 5 9; RR1's outputs (7 1, 2 3, 2 3 4, 5 6 7, 1 2 4 5, 2 4, 1 3, 5 3) | the same |
 | a03, `var v: ((i32, i32),) = ((Id(1), Id(2)),);`, and a19 and a20, a function returning such a 1-tuple | 1 and an indeterminate value; `CHECK failure` at check/convert.cpp:2313, `new_storage_id.has_value()` (trunk :2199, the nightly :2066) | the same | the same |
+| d01 (rev 6), §A.6's `Loud`, `Dup` and `let one: (Loud,) = (l1,); Core.Print(Dup(one).0.a);` verbatim: the `(Loud,)` is copied by PR 59's hand-written `(T,)` impl, whose `Op` returns `(self.0.Op(),)` by copy | `CHECK failure` at lower/lower.cpp:48, the verifier's "Invalid InsertValueInst operands!" for `%tuple.init = insertvalue { { i32 } } poison, void <badref>, 0` | the same | the same |
+| d02 (rev 6), `Dup` of a run-time `((Id(1), Id(2)),)` | the same abort, for `{ { i32, i32 } }` | the same | the same |
+| d03 (rev 6), `Dup` of the constant `((1, 2),)` | `CHECK failure` at lower/handle_call.cpp:984 (the nightly :783), an argument mismatch, as a02 | d02's abort | the same |
+| d04 (rev 6), `Dup` of the constant `((1, 2), 3)`, §A.6's `Dup(n)` shape, copied by the hand-written `(T, U)` impl | v01's verifier abort | 1 2 3 | 1 2 3 |
+
+The four d rows are rev 6's (amended 2026-10-26, review fold: RR5-M1): the
+re-review's probes, copied from its directory `amendrr5/probes2` beside `$J` to
+`$K/probes_d`, and run by `$K/bin/run_set.sh` on PR 59, trunk, the nightly, C0's
+install and C0 with C0b relinked over its objects (`$K/set_va_d.txt`,
+`set_trunk_d.txt`, `set_nightly_d.txt`, `set_c0_d.txt`, `set_c0b_d.txt`; the
+re-review's outcomes line for line), and on the rev 4 prototype with C0b,
+90c34dbaa, built in full (`$K/set_wt6_d.txt`): there too d01, d02 and d03 stop
+at the verifier with the same `insertvalue` and d04 prints 1 2 3
+(`$K/verifier_msgs.txt`). On the same relinked C0b and on that prototype, M-20's
+36 probes print the last column again, but for a03's indeterminate value and
+a19's and a20's CHECK line, :2313 on C0b and :2361 on the prototype
+(`$K/set_c0b_probes.txt`, `set_c0b_impl.txt`, `set_wt6_probes.txt`,
+`set_wt6_impl.txt`).
 
 Root cause, read from lower/function_context.cpp, lower/aggregate.cpp and
 sem_ir/type_info.cpp at d92a9c709. `InitializeStorage` (:433-459) copies a
@@ -1045,14 +1087,32 @@ objects with C0b's two .cpp files (`$J/bin/relink.sh`):
     b0822a744, ca939ee19 and 90c34dbaa alike, the same set
     (`$J/mt_up_8779.txt`).
 
-Not changed and not filed: a03, a19 and a20 are upstream's defects in a run-time
+Not changed by C0b and not filed: a03, a19 and a20 are upstream's defects in a
 one-element aggregate whose element is initialized in place (its by-copy
-initializer, lower/aggregate.cpp `EmitAggregateInitializer`, wraps the element's
-in-place `poison`, and a `return` of one stops in check), the same on every
-toolchain above and reached by no form or program of this slice. VA-2's ids
-W-330 to W-339 are all filed and W-340 to W-344 are other workstreams', so no id
-is minted for them here; §7.1's R-13 records them with a break condition, and
-the stage that writes D's PR text names them for the next allocation.
+initializer, lower/aggregate.cpp `EmitAggregateInitializer`'s `ByCopy` arm,
+:240-250 at d92a9c709, wraps the element's in-place result, `poison` or the
+`void` of a call that returns in place, and a `return` of one stops in check),
+the same on every toolchain above. Rev 5 said that no form or program of this
+slice reaches them; that was unmeasured, and it is wrong (amended 2026-10-26,
+review fold: RR5-M1). §A.6's `Dup(one)` (d01) reaches the class today through PR
+59's hand-written `impl forall [T: Copy] (T,) as Copy`
+(core/prelude/copy.carbon:55-59), whose `Op` returns `(self.0.Op(),)`, a by-copy
+`(Loud,)` whose element is `Loud`'s `Copy.Op` call, which returns in place; d02
+and d03 reach it for a run-time and a constant `((i32, i32),)`; M-11 checked
+§A.6 only, so it could not see this. From C4 on, `Dup(one)` goes through the
+variadic impl's `return (... each x);` with `Self` = `(Loud,)`, a
+`PackSegmentInit` of a by-copy 1-tuple whose element initializes in place (§2.4
+items 5 and 7), which nothing has built or measured: C2's lower `one_tuple`
+split has an `i64` element, which is by copy. So C4's stage decides. d01 to d04
+are in the probe set that every stage re-runs after its build (the hand-off
+notes), expected as the last column above through C3 and, from C4 on, to print
+101 1, 1 2, 1 2 and 1 2 3; if C4's impl still reaches the class, C4 stops and
+amends, with a fix of the lowering or with a plan revision that makes the form
+OUT with the precise TODO R17 requires, never at C5 and never with a guard that
+hides an IN form. VA-2's ids W-330 to W-339 are all filed and W-340 to W-344 are
+other workstreams', so no id is minted for the class here; §7.1's R-13 records
+it with a break condition, and the stage that writes D's PR text names it for
+the next allocation.
 
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
@@ -2527,7 +2587,14 @@ struct PackSegmentInit {
 7.  lower/handle_pack_expansion.cpp: `HandleInst(PackSegmentInit)` gets the
     arity from the tuple type's segment in the specific, lowers the body once
     per element through `LowerPackExpansionBody`, and sets the result to the
-    destination, as `TupleInit` does for in-place elements.
+    destination, as `TupleInit` does for in-place elements. A specific in which
+    the tuple is a 1-tuple, whose initializing representation is by copy
+    (check/type_completion.cpp:585-592, `BuildStructOrTupleValueRepr`, and
+    sem_ir/type_info.cpp:82-85), and whose element initializes in place (a
+    class, or a tuple of two or more elements), such as `Self` = `(Loud,)` in
+    §A.6's `Dup(one)`, is R-13's upstream class: no split of C2 has that shape
+    (`one_tuple`'s element is an `i64`, by copy), so d01 to d03 at C4 are its
+    first measurement (amended 2026-10-26, review fold: RR5-M1).
 
 ### §2.5 C3, statement expansions of `if` (specified, not built)
 
@@ -3336,7 +3403,9 @@ The commits, in order:
     predicted 44 full-prelude goldens (43 check goldens by renamed SemIR names,
     toolchain/lower/testdata/for/bindings.carbon by its lowered tuple copy), a
     lower bound (M-9), and on nothing that includes a `min_prelude` other than
-    `full.carbon`.
+    `full.carbon`. Before F4, d01 to d03 (M-20) print 101 1, 1 2 and 1 2 on C4's
+    install; one that does not is R-13's stop at C4 (amended 2026-10-26, review
+    fold: RR5-M1).
 10. **F4.** Autoupdate of those files; a full-prelude golden outside M-9's 44
     is listed with its cause in the implementation review, and one that
     changes by more than renamed names or C4's lowered copies is a finding
@@ -3386,7 +3455,9 @@ of three splits, is plural since rev 4, amended 2026-10-26, review fold:
 RR2-m3; C1's names the TODO of RR2-M1 and the pack literal of RR2-m1; C0b's
 follows C0's since rev 5, and C0's last sentence, committed before C0b existed,
 means the fill that follows C0b (amended 2026-10-26, implementation:
-stop-and-amend: nested constant initialization)):
+stop-and-amend: nested constant initialization); C0b's title has C0's form,
+`VA-2 C0b:`, since rev 6, where rev 5 wrote `VA-2 (0b):` (amended 2026-10-26,
+review fold: RR5-m1)):
 
 <!-- google-doc-style-ignore -->
 
@@ -3406,7 +3477,7 @@ fork/variadics/va2-plan.md §2.7, M-12.
 ```
 
 ```text
-VA-2 (0b): copy nested aggregate constants into storage element by element
+VA-2 C0b: copy nested aggregate constants into storage element by element
 
 C0 lowers a constant tuple or struct value whose value representation
 holds its elements' value representations, such as `((1, 2), 3)`, to
@@ -3736,8 +3807,9 @@ FAIL, 7 SKIP of 56. No existing program is predicted to move: none requires
 M-9 runs the whole set against both prototypes with C4's declarations
 (137/0/21 each time). The held PRs ahead of VA-2 move the totals before it
 lands (each states its own expected count), so commit R quotes §8.4's run on
-this branch and commit L quotes §8.8's run on the merge commit, not this
-table's arithmetic.
+this branch and commit L quotes §8.8's run on the merge commit, not this table's
+arithmetic. `tuple_copy_variadic`'s 101 and 1 for `Dup(one)` rest on R-13's
+class at C4 (d01) (amended 2026-10-26, review fold: RR5-M1).
 
 ## §6 Churn and collisions
 
@@ -3860,8 +3932,11 @@ region goes, and 24766e213 and 6c1d2a86e change impl_lookup.cpp beside rev 2's
 ranking hunk; each is a textual conflict at the advance, resolved by keeping
 both (amended 2026-10-22, review fold: A-m-4 / B-m1). Rev 3 re-measured at
 21c825a3f: `git merge-tree --write-tree --name-only` gives 104 conflicted
-paths against b0822a744, 413968218 and 80f1ec825 alike, the same set, so
-rev 3's hunks add no conflicted path (the re-review's 104 at 57ba07a97, too).
+paths against b0822a744, 413968218 and 80f1ec825 alike, the same set, so rev 3's
+hunks add no conflicted path (the re-review's 104 at 57ba07a97, too). Rev 5 at
+8779d15e1 (M-20) and rev 6 at 56d9bbc40 measured the same 104 paths, the same
+set, for b0822a744, ca939ee19 and 90c34dbaa (`$J/mt_up_8779.txt`,
+`$K/mt_up_56d9.txt`) (amended 2026-10-26, review fold: RR5-m3).
 Two upstream commits change how rev 3's mechanisms sit at the advance, and
 the advance re-runs M-17's probes for both: e1c8c1f85 makes name lookup pair
 every name of an enclosing generic with that generic's self specific, so a
@@ -3957,7 +4032,10 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
 -   **R-9. The 1-tuple's value representation.** A tuple of one element may
     be passed by copy where a pack of one is passed by address; D-VA2-9
     loads element 0 in that case, and the lower split `one_tuple` and
-    `tuple_copy_variadic`'s `(Loud,)` case detect a mismatch.
+    `tuple_copy_variadic`'s `(Loud,)` case detect a mismatch. The `(Loud,)` case
+    also initializes a by-copy 1-tuple whose element initializes in place,
+    R-13's class, which d01 measures from C4 on (amended 2026-10-26, review
+    fold: RR5-M1).
 -   **R-10. A prelude defect breaks every program.** C4 changes files every
     program compiles. Mitigated by C4's being the last toolchain-facing
     commit, by M-9's run of the whole conformance set against the prelude's
@@ -3998,13 +4076,24 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     splits, M-20's probes (which every later stage re-runs after its build,
     hand-off notes) and the programs; falsified by a run-time difference between
     a constant and the same value computed at run time, or by a CHECK failure in
-    `StoreObject` or `CopyObject` for such a type. A run-time one-element
-    aggregate whose element initializes in place (a03) and the return of one
-    (a19, a20) are upstream's defects outside the slice, unchanged by C0 and C0b
-    and filed by no one: VA-2's ids are all taken and the next free ones are not
-    VA-2's to mint, so the stage that writes D's PR text names them for the next
-    allocation; their break condition is a form or program of this slice that
-    reaches either.
+    `StoreObject` or `CopyObject` for such a type. A one-element aggregate whose
+    element initializes in place is upstream's defect, unchanged by C0 and C0b
+    and filed by no one, whether it is copied into storage (a03), returned (a19,
+    a20) or returned by copy from a `Copy.Op` (d01 to d03): VA-2's ids are all
+    taken and the next free ones are not VA-2's to mint, so the stage that
+    writes D's PR text names it for the next allocation. Rev 5 put the class
+    outside the slice with the break condition "a form or program of this slice
+    that reaches either", and that condition is met (amended 2026-10-26, review
+    fold: RR5-M1): §A.6's `Dup(one)` reaches the class today, through PR 59's
+    hand-written `(T,)` impl (core/prelude/copy.carbon:55-59), and from C4 on it
+    reaches the variadic impl's `PackSegmentInit` for `Self` = `(Loud,)` (§2.4
+    items 5 and 7), which nothing has built or measured. C4's stage decides: d01
+    to d03 are re-run after every build and must print 101 1, 1 2 and 1 2 from
+    C4 on; if C4's impl still reaches the class, C4 stops and amends, with a fix
+    or with a plan revision that makes the form OUT with the precise TODO R17
+    requires, and does not wait for §A.6 to fail at C5. Falsified for the class
+    by d01, d02 or d03 failing at C4 or after, or by §A.6's `Dup(one)` printing
+    anything but 101 and 1.
 
 ### §7.2 Rejected alternatives
 
@@ -4073,6 +4162,32 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     same-arity rule across packs), which the slice's arbiters do not need;
     the TODO of D-VA2-4 keeps the one-arity invariant honest instead.
     Falsified if an arbiter of §1.8 needs two arities in one generic.
+-   **A-11. One memcpy of a constant's object representation for C0b**
+    (rejected; added by rev 6, amended 2026-10-26, review fold: RR5-m2).
+    `CopyValue` could copy a constant of a `ValueAggregate` type into storage
+    with one memcpy from a global that holds its object representation, which
+    `FileContext`'s `constants_` already holds as the lowered constant
+    (file_context.h:301 at 8779d15e1), as upstream copies a constant whose value
+    representation is its object's address, by `CopyObject`'s memcpy from that
+    global, under `InitializeStorage`'s "TODO: If the type is small, emit a
+    store rather than a memcpy." (function_context.cpp:299 at 8779d15e1).
+    Rejected for two reasons. It needs a second global per such constant, beside
+    the one its value uses need: `global_variables_` (file_context.h:304 at
+    8779d15e1) maps a constant to the one global of its value representation,
+    the `<{ ptr, i32 }>` of `((4, 5), 6)` (M-20), so the object's global needs a
+    second map and a second name and holds once more the data the elements'
+    globals hold (the `{ i32, i32 }` of `@tuple.8a1.loc4_3` again inside a `{ {
+    i32, i32 }, i32 }`), in every module that copies one, where C0b adds no
+    global (the fill's `var`, `return` and `one_element` splits). And
+    `CopyValue` would reach past its source, which upstream's contract makes a
+    value representation (function_context.h:318-320 at 8779d15e1) and
+    `InitializeStorage`'s comment the constant's value ("Copy the constant value
+    instead.", function_context.cpp:298 at 8779d15e1), into `FileContext`'s
+    private constant table; C0b copies from that value alone, the value every
+    other use of the constant reads, so a copy and a use cannot disagree.
+    Falsified as a rejection if upstream fixes `GetConstant` or `CopyValue`
+    itself, and §2.7 then takes upstream's fix, or if a review finds a copy that
+    the element-by-element copy gets wrong and the memcpy gets right.
 
 ## §8 Verification and discharge
 
@@ -4170,6 +4285,23 @@ way and replaced (`$J/set_c0b.txt`, the dangling 3b800ae9d); only the block of
 §2.7 is of rev 5. The worktrees, the relinked binaries and the build were
 removed when rev 5 was committed.
 
+Rev 6's are the plan amender's of the re-review (amended 2026-10-26, review
+fold: RR5-M1 / RR5-m3), with `$K` the directory the header names and every rev 6
+number in `$K`: the re-review's d01 to d04 (`$K/probes_d`) on PR 59, trunk, the
+nightly and C0's install; C0b's block extracted from §2.7 (`$K/c0b_block.patch`,
+byte-identical to `$J/c0b_block_final.patch`), applied in the scratch worktree
+/dev/shm/va2-impl/wt-c0b at d92a9c709 with §2.7's numstat and relinked over the
+C0 build's objects into /dev/shm/va2-impl/c0b (`$K/bin/relink.sh`,
+`relink_c0b.log`), with d01 to d04 and M-20's 36 probes on it (`set_c0b_d.txt`,
+`set_c0b_probes.txt`, `set_c0b_impl.txt`); the rev 4 prototype with C0b,
+90c34dbaa in the scratch worktree /dev/shm/va2-impl/wt6, built in full with
+`CB_BUILD_ROOT=/dev/shm/va2-impl/builds` (`build_wt6.log`, `install_wt6.log`, 0
+warnings), with the same probes (`set_wt6_d.txt`, `set_wt6_probes.txt`,
+`set_wt6_impl.txt`); and upstream's tip, 56d9bbc40 (`git fetch upstream trunk`
+and `git ls-remote upstream refs/heads/trunk`, 2026-10-26), with `git
+merge-tree` against it (`mt_up_56d9.txt`). The worktrees, the relinked binaries
+and the build were removed when rev 6 was committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -4220,7 +4352,10 @@ over 158, unchanged (R-10). Commit R quotes the C5 run, EXPECTED, not of
 record. After C0b, before F0, too: 137 / 0 / 21 over 158 and bullets 49 / 0 / 7
 of 56, measured on the relinked C0b and on the rev 4 prototype with C0b (M-20)
 (amended 2026-10-26, implementation: stop-and-amend: nested constant
-initialization).
+initialization). §A.6's 101 and 1 for `Dup(one)`, and with them the 147 after
+C5, rest on R-13's class at C4: d01 printing 101 1 on C4's install is their
+precondition, and a d01 that does not is a stop at C4, not a failure at C5
+(amended 2026-10-26, review fold: RR5-M1).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -4356,7 +4491,9 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     and links every program that reaches one (no crash, no verifier failure,
     rev 2), but the proxy body calls itself, so their runtime outputs (§A.6,
     §A.9 and p20) are derivations until C2 to C4 exist (amended 2026-10-22,
-    review fold: A-B-2 / B-M6).
+    review fold: A-B-2 / B-M6). Among them is §A.6's `Dup(one)`, R-13's class,
+    which the hand-written impl aborts on today (d01) (amended 2026-10-26,
+    review fold: RR5-M1).
 -   The mirrors m55, m57, m60, m61, m62, mdr and mall of §8.7, and m64 with
     VA-2's head: they need C5's tree; m64 was measured with the rev 2
     prototype (amended 2026-10-22, review fold: A-M-2 / B-M4) and the rev 3
@@ -4388,7 +4525,9 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     build were removed when rev 5 was committed; C0b is reproducible from §2.7's
     block on d92a9c709, and the composition from the scratch commit 90c34dbaa
     (amended 2026-10-26, implementation: stop-and-amend: nested constant
-    initialization).
+    initialization). Rev 6's (/dev/shm/va2-impl/c0b, wt-c0b, wt6 and builds)
+    were removed when rev 6 was committed (amended 2026-10-26, review fold:
+    RR5-M1).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -4457,8 +4596,13 @@ ids are renumbered in D's commit, never in source.
     `$G/r/run_set.sh <tag> <install>` runs the import, C++ and proxy probes in
     one go, and `$G/r/probes_all.sh` the rest (amended 2026-10-26, review fold:
     RR1-NB-1 / RR1-B-M5); C3: the design's Min (§A.5); C4: p20, p20c, p09, p10
-    (now compiling and running) and p23 (still an error, W-334); then every
-    program of Appendix A.
+    (now compiling and running), p23 (still an error, W-334) and d01 to d03 (101
+    1, 1 2 and 1 2; R-13); then every program of Appendix A. Since rev 6, after
+    C0b's build and after every later one, M-20's 36 probes are joined by d01 to
+    d04 (`$K/probes_d`), expecting through C3 d01's, d02's and d03's `CHECK
+    failure` at toolchain/lower/lower.cpp:48 (the verifier) and d04's 1 2 3, and
+    from C4 on 101 1, 1 2, 1 2 and 1 2 3, a d01, d02 or d03 that fails at C4
+    being R-13's stop (amended 2026-10-26, review fold: RR5-M1).
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4.
 4.  **Watch-outs.** A variadic impl is a candidate for every tuple query
     (R-4), so a non-tuple argument must fail deduction, never walk a tuple's
@@ -4774,11 +4918,21 @@ page is touched.
 Instructions to the implementer, for stage 1 re-run after the focused re-review
 of this amendment:
 
-1.  Start at the rev 5 commit, which sits on C0. C0 (d92a9c709) stays: do not
-    reset it and do not amend it. Check that `git -C /home/user/carbon-va2
+1.  Start at the rev 6 commit, which sits on rev 5 and C0 (rev 5 said "the rev 5
+    commit" (amended 2026-10-26, review fold: RR5-M1)). C0 (d92a9c709) stays: do
+    not reset it and do not amend it. Check that `git -C /home/user/carbon-va2
     branch -r --contains d92a9c709` prints nothing and that `git -C
     /home/user/carbon-va2 status --short` is empty; the stopped run's
-    uncommitted fill is not reused.
+    uncommitted fill is not reused. Read upstream's tip (`git -C
+    /home/user/carbon-va2 fetch upstream trunk` and `git -C
+    /home/user/carbon-va2 ls-remote upstream refs/heads/trunk`) and record its
+    sha in the stage's log: rev 6 read 56d9bbc40; a later tip is listed with the
+    files it changes since 56d9bbc40, and it is a difference if it changes a
+    file that M-20, §2.7 or §7.2's A-11 cites
+    (toolchain/lower/function_context.h and .cpp, file_context.h and .cpp,
+    aggregate.cpp, sem_ir/type_info.h and .cpp, check/type_completion.cpp,
+    core/prelude/copy.carbon) or a design page of the header's list (amended
+    2026-10-26, review fold: RR5-m3).
 2.  Extract §2.7's C0b block, the lines between the `diff` fence after "The
     block, against d92a9c709" and its closing fence, into a file under the stage
     directory, then `git -C /home/user/carbon-va2 apply --check <file>` and
@@ -4792,8 +4946,9 @@ of this amendment:
     function_context.cpp with the build's flags, the second line-filtered to the
     lines changed since b0822a744: exit 0 and no diagnostic (M-20).
 5.  Commit C0b with explicit paths (the five files), §3's C0b message verbatim
-    (title "VA-2 (0b): copy nested aggregate constants into storage element by
-    element"), §3's author and committer, and the two session trailers after a
+    (title "VA-2 C0b: copy nested aggregate constants into storage element by
+    element", where rev 5 wrote "VA-2 (0b):" (amended 2026-10-26, review fold:
+    RR5-m1)), §3's author and committer, and the two session trailers after a
     blank line.
 6.  `build.sh` and `install.sh`: an incremental build of the 13 lower objects
     and the links, with 0 warnings; `carbon version` prints the development
@@ -4812,7 +4967,11 @@ of this amendment:
     r16g 3, r16h 3, v01 4 5 6, v02 1 2 3, v03 7 8 9, v04 4 5 6 and x07 2 5 9;
     a03 prints 1 and an indeterminate value, and a19 and a20 stop in check with
     `new_storage_id.has_value()` at check/convert.cpp:2313, as on every
-    toolchain (M-20); neither is a difference.
+    toolchain (M-20); neither is a difference. Since rev 6, also d01 to d04
+    (`$K/probes_d`, M-20), the same way, into the same directory: d01, d02 and
+    d03 stop in lowering with `CHECK failure` at toolchain/lower/lower.cpp:48
+    (`!llvm::verifyModule(...)`, "Invalid InsertValueInst operands!"), and d04
+    prints 1 2 3 (amended 2026-10-26, review fold: RR5-M1).
 9.  F0: `autoupdate.sh /home/user/carbon-va2
     toolchain/lower/testdata/tuple/nested_constant.carbon`, then the same again,
     which changes nothing; the file is 483 lines, 415 more than C0b's 68-line
@@ -4824,13 +4983,21 @@ of this amendment:
     SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
 12. Commit F0, "Autoupdate testdata goldens on the container arbiter", with the
     golden's path only and the trailers, then `git push -u origin
-    claude/carbon-fork-0-1-va2`, which pushes C0, this revision, C0b and F0.
+    claude/carbon-fork-0-1-va2`, which pushes C0, rev 5, rev 6, C0b and F0 (rev
+    5 said "C0, this revision, C0b and F0" (amended 2026-10-26, review fold:
+    RR5-M1)).
 13. Stage 2 (C1) as §3 item 3 and the hand-off notes say, its hunks taken from
     Appendix B by file and function (they apply on C0 plus C0b, M-20); after
     C1's build and after every later stage's, M-20's probes again, expecting the
     same outputs (R-13), but for a03's indeterminate value and the line of a19's
     and a20's CHECK failure, which moves with convert.cpp's hunks (:2361 on the
-    rev 4 prototype with C0b, `$J/set_wt5.txt`) and is not a prediction.
+    rev 4 prototype with C0b, `$J/set_wt5.txt`) and is not a prediction. d01 to
+    d04 are re-run with them: through C3 as item 8 says (measured on the rev 4
+    prototype with C0b, `$K/set_wt6_d.txt`), and from C4 on d01 prints 101 1,
+    d02 1 2, d03 1 2 and d04 1 2 3; a d01, d02 or d03 that does not print its
+    line on C4's install is a stop at C4, before F4, whose amendment brings a
+    fix or a plan revision that makes the form OUT with R17's precise TODO
+    (R-13) (amended 2026-10-26, review fold: RR5-M1).
 
 Predictions, EXPECTED, not of record: the gate 1960 passed and 1 failed after
 C0b and 1961 after F0, then §8.3's 1966, 1971, 1973 and 1975; conformance
@@ -4838,9 +5005,60 @@ C0b and 1961 after F0, then §8.3's 1966, 1971, 1973 and 1975; conformance
 bullets 49/0/7 of 56; §5's and Appendix A's outputs and C4's predicted churn as
 rev 4 states them. A difference from these is a stop, as §8 says; the
 indeterminate values in M-20 are not predictions. a03, a19 and a20 are
-upstream's and outside the slice (R-13), and no id is minted for them.
+upstream's (R-13), and no id is minted for them; rev 5 also called them outside
+the slice, which d01 to d03 refute, and since rev 6 the predictions hold d01 to
+d04's lines in items 8 and 13 (amended 2026-10-26, review fold: RR5-M1).
+
+**Rev 6: the re-review of this amendment (2026-10-26).** The focused re-review
+of rev 5 (ef58cf5dd on C0 d92a9c709) returned APPROVE-WITH-AMENDMENTS with one
+MAJOR and three MINORs; it edited no repository file and kept its logs and
+probes in the directory `amendrr5` beside `$J`. It reproduced the stop on C0's
+install (v01 and v04 printing two indeterminate values and 6, a01 and a16
+stopping in `StoreObject` at function_context.cpp:522), the root cause and its
+citations at 8779d15e1; extracted §2.7's block byte-identical to
+`$J/c0b_block_final.patch` with the stated numstat, applying at ef58cf5dd, with
+Appendix B less its file_context.cpp hunk applying on C0 plus C0b; found
+clang-format 21.1.8 and both §8.6 clang-tidy passes clean on C0b's two .cpp
+files and 13 lower objects including the two headers; relinked C0b over the C0
+build, where the gate was 1960 passed and 1 failed before the fill, the fill 483
+lines at its fixpoint after one pass, byte-identical to
+`$J/nested_constant_c0b2_filled.carbon` and matching §4's six rows, the gate
+1961 passed after it, conformance 137/0/21 of 158 with bullets 49/0/7 of 56, and
+M-20's 36 probes as predicted; and ran 14 probes of its own (a `var` parameter,
+a var pattern, the assignment of a 1-tuple, a 1-tuple in a pair, a 1-tuple of a
+1-tuple, a mixed struct, duplicate elements, a constant imported from another
+library copied into a `var`, two specifics of a generic), all right on C0b,
+three of them (n03, n09, n16) stopping in `StoreObject` on C0 and running on
+PR 59. It found no IN form hidden or weakened (R17), D-VA2-19's one change
+justified with its break condition kept, §3's order (C0, C0b, F0, C1) kept, no
+history rewritten, nothing pushed and the R31 counts unchanged. Four findings,
+all folded, none rejected, each amended sentence marked "(amended 2026-10-26,
+review fold: RR5-<finding>)":
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR5-M1 a program of the slice reaches the a03 class, against M-20 and R-13 | MAJOR | folded: reproduced (`$K/set_*_d.txt`): d01 (§A.6's `Dup(one)` verbatim), d02 and d03 abort in lowering on PR 59, trunk, the nightly, C0 and C0b and on the rev 4 prototype with C0b, d01 and d02 at the verifier with the `insertvalue ... void <badref>` of the hand-written `(T,)` impl's by-copy `Op`, d03 at lower/handle_call.cpp:984 on PR 59 and trunk (:783 on the nightly) and at the verifier from C0 on; d04, a control, aborts on PR 59, trunk and the nightly and prints 1 2 3 from C0 on; M-20's paragraph and R-13 now say that the class is reached today through core/prelude/copy.carbon:55-59 (the finding cited :54-58) and from C4 on through the unbuilt `PackSegmentInit` of a by-copy `(Loud,)`, that C4's stage decides, and that a d probe failing at C4 is a stop at C4 with a fix or a plan revision that makes the form OUT with R17's precise TODO; d01 to d04 join the probes every stage re-runs | header, M-11, M-20, R-9, R-13, §2.4 item 7, §3 item 9, §5, §8.0, §8.4, §8.9, hand-off note 2, §A.6, this record's items 8, 12 and 13 and its predictions |
+| RR5-m1 C0b's title breaks §3's convention | MINOR | folded: "VA-2 C0b: copy nested aggregate constants into storage element by element" in §3's message and item 5; rev 5 recorded no reason for the `(0b)` form | §3, item 5 |
+| RR5-m2 no rejected alternative for C0b's mechanism | MINOR | folded: §7.2's A-11, one memcpy from a global of the constant's object representation, rejected for its second global, map and name per constant and for reaching past `CopyValue`'s value into `FileContext`'s constant table, with the break condition that upstream fixes `GetConstant` or `CopyValue` (§2.7 then takes upstream's) or that a review finds a copy C0b gets wrong and the memcpy gets right | §7.2 |
+| RR5-m3 upstream's tip has moved | MINOR | folded: `git fetch upstream trunk` and `git ls-remote upstream refs/heads/trunk` give 56d9bbc40 ("Support C++ friend declarations for Carbon generic classes", 2026-10-26 17:09 UTC), one commit past 8779d15e1, changing only toolchain/check/cpp/import.cpp and toolchain/check/testdata/interop/cpp/class/import/access.carbon, so none of docs/design, proposals, core, toolchain/lower and toolchain/sem_ir, and every citation at 8779d15e1 holds at 56d9bbc40; `git merge-tree` gives the same 104 conflicted paths, the same set, for b0822a744, ca939ee19 and 90c34dbaa (`$K/mt_up_56d9.txt`); item 1 has the implementer read and record the tip | this record, item 1, §6.3 |
+
+R32 at rev 6: no design page, proposal or prelude file changed between 8779d15e1
+and 56d9bbc40, so rev 5's reading stands, and rev 6 adds no mechanism: it
+records measurements, a stop condition at C4 and a rejected alternative (amended
+2026-10-26, review fold: RR5-m3). The instructions above are amended in items 1,
+5, 8, 12 and 13 and in the predictions, each marked, and the stage 1 re-run
+follows them as they now stand. No decision changes: D-VA2-1 to D-VA2-19 hold as
+rev 5 states them, C0b's block, Appendix B and every count of §8.3 and §8.4
+stand, and no id is minted.
 
 ## Sign-off
+
+Rev 6 (2026-10-26) folds the focused re-review of rev 5 (RR5,
+APPROVE-WITH-AMENDMENTS: one MAJOR and three MINORs, all folded, none rejected),
+as the rev 6 part of the stop-and-amend record states (amended 2026-10-26,
+review fold: RR5-M1 / RR5-m1 / RR5-m2 / RR5-m3): the verdict is not REJECT, so
+rev 4's sign-off, as amended by rev 5 and rev 6, stands, and stage 1 re-runs
+with the record's instructions.
 
 Rev 5 (2026-10-26) amends rev 4 for the implementation's stop-and-amend at stage
 1, which the record above states (amended 2026-10-26, implementation:
@@ -4860,13 +5078,16 @@ golden (§4, §8.2). Every review of this plan:
 | Review A (R29(c)) | rev 1 (51c6cfb10) | REJECT | 3 | 2 | 5 | 10 | rev 2 (78524522b): all folded, none rejected |
 | Review B (R29(c)) | rev 1 (51c6cfb10) | REJECT | 2 | 8 | 5 | 15 | rev 2 (78524522b): all folded, none rejected |
 | Focused re-review 1 (RR1) | rev 2 (78524522b) | REJECT | 1 | 1 | 3 | 5 | rev 3 (8d377a06d): all folded, none rejected |
-| Focused re-review 2 (RR2) | rev 3 (8d377a06d) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 4 (this revision): all folded, none rejected |
-| Total | | | 6 | 12 | 16 | 34 | 34 folded, 0 rejected (33 distinct) |
+| Focused re-review 2 (RR2) | rev 3 (8d377a06d) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 4 (7188540ca): all folded, none rejected |
+| Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (this revision): all folded, none rejected |
+| Total | | | 6 | 13 | 19 | 38 | 38 folded, 0 rejected (37 distinct) |
 
-RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so
-the 34 findings as reported are 33 distinct ones; rev 2's record counts two of
-reviews A's and B's 25 as folded in part, with evidence (B-m5 is one). The
-records of each fold are the "Review fold record" sections above.
+RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
+38 findings as reported are 37 distinct ones (34 and 33 before rev 6 (amended
+2026-10-26, review fold: RR5-M1 / RR5-m1 / RR5-m2 / RR5-m3)); rev 2's record
+counts two of reviews A's and B's 25 as folded in part, with evidence (B-m5 is
+one). The records of each fold are the "Review fold record" sections above and
+the stop-and-amend record.
 
 ## Appendix A. Conformance programs, golden sources and records
 
@@ -5347,7 +5568,9 @@ prototype); rev 1 cited p22, which copies with `var` (amended 2026-10-22, review
 fold: B-m5); every printed copy is the impl's. On PR 59's install the program
 fails exactly at the four `Dup` calls of tuples of arity 4, 5, 13 and of the
 nested tuple (`cannot convert type ... into type implementing Core.Copy`), and
-nowhere else (M-11).
+nowhere else (M-11). That is its check; in lowering, `Dup(one)` aborts on PR 59,
+trunk, the nightly, C0 and C0b (M-20's d01), and its 101 and 1 rest on C4 (R-13)
+(amended 2026-10-26, review fold: RR5-M1).
 
 <!-- google-doc-style-ignore -->
 

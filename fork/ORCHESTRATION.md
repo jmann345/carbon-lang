@@ -504,7 +504,7 @@ branches. No build, no merge, no dispatch; Actions is still disabled (the newest
 run is of 2026-10-08), so nothing is of record. Fourteen PRs are held open; none
 is merged.
 
-Later on 2026-10-26 (15:52 UTC): DR-1b is IMPLEMENTED, REVIEWED AND HELD OPEN AS
+Later on 2026-10-26 (15:35 UTC): DR-1b is IMPLEMENTED, REVIEWED AND HELD OPEN AS
 PR 65 (claude/carbon-fork-0-1-dr-idx, head fee0ef31c, base
 claude/carbon-fork-0-1-dr, stacked on PR 63; toolchain 7a442f632): element
 access through IndirectIndexWith as upstream's index.carbon defines it, with

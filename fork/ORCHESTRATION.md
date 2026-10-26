@@ -10,7 +10,11 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-22 (CT-1 is held open as PR 64 after a dry focused
+Last updated: 2026-10-26 (weekly check fired under R32: the cut HOLDS at 117
+upstream commits with 97 conflicting files, one drift is filed as W-341 and
+three register work items as W-342 to W-344; see the paragraph dated 2026-10-26
+below; the 2026-10-22 text follows).
+2026-10-22 (CT-1 is held open as PR 64 after a dry focused
 re-review, stacked on PR 61, and DR-1a as PR 63; DR-1b is under implementation;
 PR 62, PR 56 and PR 57 carry DR-1's realignment commits; the owner's
 direction-drift directive is R32 and DR-0, with DR-1's slice 1 stopped on
@@ -434,6 +438,32 @@ checked generic) and three MAJORs, and review 2 six records-only MINORs; the
 fixer is folding them at the root (224ee2f8f and its fill so far); the records
 and the focused re-review loop follow. Twelve PRs are held open; none is
 merged.
+
+Later on 2026-10-26 (14:44 UTC, weekly check fired): the first weekly check
+under R32. Upstream trunk 21c825a3f is 117 commits past the c1e83b0b7 cut (32
+since last week's 3056e7e31); a `git merge-tree` dry run against trunk 563135b40
+conflicts in 97 files, 31 sources and grammars and 66 goldens (last week 96, 30
+and 66; the one new file is toolchain/driver/compile_options.cpp); 1846 upstream
+files are touched since the cut, 791 are fork-modified and 197 are in both
+(decision-log entry "Weekly upstream check 2026-10-26 (R32 direction
+register)"). The cut HOLDS and UA-3 stays scheduled after the held PRs land. Of
+the window's 32 commits, 20 touch the design, prelude or toolchain paths: one
+drift, twelve advances for UA-3's audit, seven unrelated; no prelude signature
+changed. The drift: 503f09037 extends upstream's positional default parameter
+values, which trunk has carried since UA-1, while F-009j says there are no
+Carbon-native default arguments and an overload set's arity step is exact, so a
+member called with a defaulted argument omitted is rejected; it is filed as
+W-341, owner OV-4, after VA-2 and before UA-3, and no held PR is amended. The
+V-3a register at the tip: (i) to (iii) are resolved on PR 62, DR-1b and PR 63;
+(iv) and (v) HOLD with W-324's and W-326's break conditions not fired; VA-2's
+six plan-state entries are unchanged; trunk's eleven pre-DR-0 blocks, the ten
+held-branch blocks and OP-1's block HOLD but carry no work item, so W-342, W-343
+(SAFE-1's departures on PR 53 first) and W-344 are filed for RG-1, the register
+classification. The dated notes for W-324 and W-326 and the (i) sha stamp are
+routed to DR-1's workflow, since those items live on PR 63's and DR-1b's
+branches. No build, no merge, no dispatch; Actions is still disabled (the newest
+run is of 2026-10-08), so nothing is of record. Fourteen PRs are held open; none
+is merged.
 
 Later on 2026-10-22 (00:07 UTC): CT-1 is IMPLEMENTED, REVIEWED AND HELD OPEN AS
 PR 64 (claude/carbon-fork-0-1-ct, head 4a3220c11, base
@@ -900,6 +930,16 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     payload subpatterns (W-008).
 5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
+6.  **R32 work from the 2026-10-26 weekly check**: W-341 (OV-4: an `overload fn`
+    member with Carbon default parameter values called with a defaulted argument
+    omitted; the arity step and the overload probe follow `default_value_arity`,
+    and F-009j is rewritten) after VA-2 lands and before UA-3, on trunk's base;
+    W-342, W-343 and W-344 (RG-1: the V-3a register entries that carry no work
+    item, trunk's pre-DR-0 blocks, the held-branch blocks with SAFE-1's
+    departures on PR 53 first, and OP-1's entries) records-first and runnable
+    now, each drift found filed as its own work item and a held PR carrying one
+    amended by a new commit on its branch before it lands (R32 (e)). UA-3
+    follows W-341.
 
 ### Standing user directives
 

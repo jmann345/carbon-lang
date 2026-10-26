@@ -246,6 +246,21 @@ read-only `Core.Slice`, registered at SL-1, against upstream's
 (iii) The pointer cursor of `Core.Iterate.Next` at 11 sites against upstream's
 `ref cursor` (df3cf9294; W-321, DR-1 slice 2).
 
+_V-3a register re-check, weekly upstream check 2026-10-26 (upstream 21c825a3f;
+the entry "Weekly upstream check 2026-10-26 (R32 direction register)" has the
+quotes):_ (i) resolved on PR 62's branch by 22fe50ff8 and its fill f4660e409
+(D-DR-15), D-DR-2's break condition not fired; the sha stamp on PR 63's and
+DR-1b's copies of this block and W-322's discharge note are routed to DR-1. (ii)
+resolved on DR-1b's branch (3c54754bc with its fill cf4904138; cdaa15710 with
+its fill 06b6479d0); upstream's index.carbon, handle_index.cpp and indexing.md
+unchanged since bc45989b2, slice 3's break condition not fired. (iii) resolved
+on PR 63 (d0cfe8082 with its fill c1cc72a09); iterate.carbon, range.carbon and
+loops.md unchanged since fb7eff130, W-321's break condition not fired. (iv) and
+(v), on PR 63's and DR-1b's copies of this block, HOLD: every page they cite is
+unchanged since ac31fd198, and W-324's and W-326's break conditions did not
+fire. The register's other blocks were re-checked the same day and carry no work
+item; W-342 to W-344 are filed for them, and W-341 for this check's one drift.
+
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened
 to `W-3[0-9][0-9]`; 68 origin refs, 16 worktrees), found no W-3xx id anywhere.
@@ -6765,6 +6780,147 @@ each marked "Fork (D-UA-n)" in code, each a V-3a convergence candidate when
 upstream lands its own (upstream's `TryMergeRedecl<Function>` growing a
 member-targeted entry point retires `MergeOverloadMemberRedecl`; upstream
 conditionalizing arm cleanups retires the W-122 guard). Veto-able.
+
+### Weekly upstream check 2026-10-26 (R32 direction register): cut HOLDS at 117 commits; a dry-run merge conflicts in 97 files; one drift filed as W-341; GitHub Actions on the fork is still DISABLED (2026-10-26)
+
+The first weekly check under R32, placed directly before the 2026-10-19 entry
+because this log runs its weekly entries newest first. Measured in the records
+worktree of branch weekly-20261026 (cut from trunk 563135b40) after `git fetch
+upstream trunk` at 2026-10-26 14:44 UTC, with `git merge-tree --write-tree`
+against trunk 563135b40 and against each held head (no worktree of a held branch
+was touched; no staging branch was created or pushed): upstream trunk 21c825a3f
+(2026-10-26, "Hot-path optimizations for `(Canonical)ValueStore::Add`", PR 8031)
+is 117 commits past the c1e83b0b7 cut, 32 past last week's 3056e7e31 and 13 past
+57ba07a97, the tip DR-1's re-review last read. 1846 upstream files are touched
+since the cut (1794 last week), 791 files are modified by the fork since the
+cut, and 197 are in both sets (194); this week alone upstream touched 139 files,
+39 of them fork-modified. The dry-run merge conflicts in 97 files, 31 sources
+(with the X-macro definitions and the two TextMate grammars) and 66 goldens, up
+from 96 (30 and 66); the one new file is toolchain/driver/compile_options.cpp
+(0546b48a7's `--target-cpu` flags beside EH's `--cpp-exceptions`). Against each
+held head the same file is the one new conflict, except that PR 59 also gains
+check/deduce.cpp (503f09037, in the include block) and PR 64 also gains
+check/impl_lookup.cpp (from fb7eff130, not ac31fd198); PR 60's two
+sem_ir/identified_facet_type files were content conflicts last week and are
+modify/delete conflicts now, after fb7eff130 moved the type to check/.
+Conflicting files per head, at 3056e7e31 then at the tip: 96 then 97 for PR 51,
+PR 52, PR 53, PR 54, PR 58 and PR 62; 97 then 98 for PR 55 and PR 56; 99 then
+100 for PR 57 and PR 63; 102 then 104 for PR 59; 105 then 106 for PR 60; 111
+then 112 for PR 61; 113 then 115 for PR 64; 106 then 107 for DR-1b.
+
+R32 (c), the window's commits: every one of the 32 was read, 20 touch
+docs/design, proposals, core/prelude or toolchain/check, sem_ir, lower, parse or
+lex, and none touches core/prelude, proposals, parse or lex, so no prelude
+signature changed. One is a drift, twelve are advances that UA-3 absorbs (two
+design-text changes, five mechanisms, five fixes) and seven are unrelated; with
+the twelve commits outside those paths, 19 are unrelated. Commits are listed by
+sha and subject only; fork touchpoints are trunk 563135b40's unless a PR is
+named.
+
+| Commit | Subject | Fork touchpoint | Class |
+| --- | --- | --- | --- |
+| f21c62524 | Interface as base class use case supported (PR 8002) | docs/design/classes.md:124-126 at the tip adds "interface as base class" to the use cases addressed; the fork's copy names two; PR 57's hunk (:1801) and trunk's (:2386) merge clean | advance, design text |
+| 2b5f90cd7 | Diagnose a witness table entry being set to multiple different values (PR 7996) | upstream's `AssociatedConstantGivenDifferentValues` (diagnostics/kind.def:361, check/impl.cpp:618-623) replaces the `CARBON_CHECK` that trunk keeps at impl.cpp:507 (PR 60 :524); the fork stops where upstream diagnoses; no second spelling | advance, mechanism |
+| 505c4ae30 | Fix crash building impl witness thunks for constrained generic methods (PR 7956) | check/interface.cpp, which no fork branch modifies | advance, fix |
+| 9799a2326 | Export function default values to C++ (PR 7988) | upstream check/cpp/export.cpp:1209 `BuildDefaultValueExpr` and :1379; trunk exports no default; lower/file_context.cpp and the raw_sem_ir cpp_interop golden conflict; shares W-341's mechanism | advance, mechanism |
+| 2e2125585 | Partial support for a generic class inheriting from a virtual C++ class (PR 8007) | retires trunk check/class.cpp:554's TODO (pinned by interop/cpp/class/export/override.carbon:73); upstream's narrower TODO is at cpp/generate_ast.cpp:568; gap row 45 is updated after the merge | advance, mechanism |
+| eb66bebc3 | New specifics formed during identify need to be marked `identified` (PR 8003) | check/type_completion.cpp, an existing trunk conflict; its generic.cpp and subst.cpp changes merge clean with PR 64 | advance, fix |
+| db87a84b6 | Improve tests and clarify design for observe equivalence chains (PR 7987) | generics/details.md:3340-3348 at the tip restricts "at most one unrelated value" to inside an `interface`; the fork has no `observe` mechanism of its own (PR 61 and PR 64 only walk `observe` blocks on import; PR 60's hunk at :1077 merges clean) | advance, design text |
+| 04f456ddd | Handle `SpecificConstant` in `FindStorageArgForInitializer` (PR 8010) | upstream sem_ir/expr_info.cpp `FindStorageArgForInitializerInSpecific` (:262); PR 61's `specific_id` parameter (expr_info.h:47-53) is a parallel internal API, not a language drift; UA-3 moves PR 61's callers onto upstream's function | advance, fix |
+| 503f09037 | Add support for default values for non-generic parameters of generic functions. (PR 8011) | upstream check/deduce.cpp:640 and pattern.cpp:363 `ExtractParameterDefault`; trunk check/call.cpp:420-432 (an exact arity range, "Carbon has no default arguments" at :422), :498 and :655-660; docs/design/functions_overloading.md:570-576 and :1022-1023 (F-009j) | DRIFT, R32 (d): W-341 |
+| 3dbf76af0 | Add some support for exporting constrained generic types to C++ (PR 8017) | upstream check/cpp/export.cpp:364 (`IsConstrainedFacetType`, then the facet access type); no fork spelling (CT-1 maps types in the import direction) | advance, mechanism |
+| 434c564a9 | Fix crash when diagnosing an invalid qualified name access (PR 8012) | check/name_lookup.cpp merges clean; it needs 62f1cc6a3's `ParameterizedClassType` | advance, fix |
+| 6f6a01f85 | Support C++ friend declarations for Carbon classes (PR 8018) | upstream check/cpp/import.cpp:1018; trunk imports no friends; the fork's union import goes through the same class-definition path, so unions take the friend loop after the merge | advance, mechanism |
+| 8fdc8ebc3 | Fix use-after-free of var name in BuildDefaultValueExpr (PR 8025) | follows 9799a2326 | advance, fix |
+
+Unrelated (19): 4441c5340 (`GetConstantValue` simplified, eval.cpp across 15
+files; textually clean with PR 61's and PR 64's eval.cpp hunks, whose behaviour
+UA-3 re-verifies), 0546b48a7 (the one new trunk conflict, above), fb7eff130 and
+ac31fd198 (`IdentifiedFacetType` moved to check/ and given a new API; PR 60's
+and PR 64's conflict effects above), 2c39bd57d, bcb236e6c and 427c448dc (a test,
+comments, a test), and the twelve outside those paths: c3877cf70, 70c696e78,
+9319bb036, ebc155734, 57ba07a97, 5aa7f35a1, c50e21695 and 789f582eb
+(toolchain/benchmarking), bc45989b2 (the language server), 7601be966 and
+224a22ef3 (dependency bumps) and 21c825a3f (common/ and toolchain/base). Since
+the cut (R32 (c)'s full window), eight upstream commits touch docs/design,
+proposals or core/prelude: a50feb64c and 59d53ab0a (proposal labels; ASCII
+quotes in p1964; no mechanism), 947c1eb52 (a `Core.Array` class type that
+`array` refers to, PR 7892; UA-3 absorbs it; until this entry it was named only
+in DR-1's fork/direction/plan.md:375, :874, :1091 and :2573 on PR 63's and
+DR-1b's branches), df3cf9294 (`ref` in `Core.Iterate.Next`, PR 7381; W-321,
+DR-1a, PR 63), a045da8e6 (the variadics checking-versus-execution note, PR 7963;
+cherry-picked by VA-1 on PR 59), 6d80ceb58 (`IndirectIndexWith`, PR 7974; W-109,
+DR-1b, with 309d3d63c, PR 7975, and 230227264's code), and this week's f21c62524
+and db87a84b6.
+
+_V-3a register re-check at 21c825a3f (R32 (b)), entry by entry._ Each cited page
+was re-read at the tip; "unchanged" means `git log <sha read>..21c825a3f` is
+empty for the entry's files. The quotes, with their lines at the tip, are in
+each row.
+
+| Entry | Recorded at | Upstream text at 21c825a3f | Break condition | State |
+| --- | --- | --- | --- | --- |
+| (i) PR 62's D-SV-7 `Core.Optional(T)` view (W-322) | DR-0's block (trunk :242-243; PR 63 and DR-1b :242-243) | sum_types.md:105-130 (`interface Match`, with `let template Continuation: type;` at :113) and :135-153 (`Optional` defined as a class with `impl as Match`); unchanged since fb7eff130; no view-based route designed upstream | D-DR-2's: not fired | RESOLVED on PR 62 by 22fe50ff8 and its fill f4660e409 (D-DR-15), ancestors of its head 0ef8a0334, whose toolchain/ has no `CoreOptionalNotMatchable` left. Records gap: PR 63's and DR-1b's copies of the block still say "retired by DR-1 slice 1" with no sha, and W-322 has no discharge note on trunk, PR 63 or DR-1b |
+| (ii) D-SL-3's read-only `Core.Slice` (W-109) | DR-0's block (:243-245) | core/prelude/operators/index.carbon:14-17 (`interface IndirectIndexWith`, with `fn Ref(self, subscript: SubscriptType) -> ref ElementType;`) and :19-28 (the final blanket `IndexWith` impl); expressions/indexing.md:61-78; unchanged since bc45989b2; no upstream slices.md and no accepted `Core.Slice` proposal (PR 7536) | DR-1 slice 3's: not fired | RESOLVED on DR-1b (3c54754bc with its fill cf4904138; cdaa15710 with its fill 06b6479d0); index.carbon is identical at the tip and on DR-1b 1dd904216 |
+| (iii) the pointer cursor of `Core.Iterate.Next` (W-321) | DR-0's block (:246-247) | core/prelude/iterate.carbon:17 (`fn Next(self, ref cursor: CursorType) -> Optional(ElementType);`), :24, :74; range.carbon:20; control_flow/loops.md:83 and :109-122 (the `match` with `case .Some(<pattern>)` at :118); unchanged since fb7eff130 | W-321's (`Next` changes again): not fired | RESOLVED on PR 63 (d0cfe8082 and its fill c1cc72a09) |
+| (iv) `Core.Optional` not matchable: upstream's pages conflict on `Match.Continuation` (W-320 blocked on W-324) | PR 63's and DR-1b's copies of DR-0's block only (:247-252) | sum_types.md:113 against README.md:1076-1078 and :3064-3067 ("no phase keyword is allowed, so an associated constant cannot be made `template`") and generics/terminology.md:100-106 (leads issue 6932 at :105-106); parse/handle_let.cpp:27-46 (`PhaseKeywordInAssociatedConstant`); p001013:79-83; check/handle_loop_statement.cpp:235-238 (the `.Some(pattern_id)` TODO); check/handle_match.cpp:11-76 (14 TODO handlers); types/optional.carbon:27-28 and :114; unchanged since ac31fd198 | W-324's: not fired (the `Match` declaration is unchanged, the parser still refuses a template associated constant, no `Match` or `Continuation` exists in upstream core/ or toolchain/, the loop TODO is unchanged; 2b5f90cd7's diagnostic does not touch the phase rule) | HOLDS; W-320 stays blocked on W-324 |
+| (v) D-SL-17's literal-subscript rule, a fork spelling of indexing.md's `like i64` (W-326) | PR 63's and DR-1b's copies of DR-0's block only (:252-254) | expressions/indexing.md:101-121 (`impl as IndexWith(like i64)` at :105, `impl as IndirectIndexWith(like i64)` at :117); lex/token_kind.def:208 (a `Like` keyword token only: no `TokenKind::Like` in parse, check or sem_ir, no `like` in core/prelude); check/handle_index.cpp:88-99 (`IndirectIndexWith(I).Ref`, then `IndexWith(I).At`, no literal rule); unchanged since ac31fd198 | W-326's (`like` lands): not fired | HOLDS; the fork's rule is DR-1b's `LiteralSubscriptTargetType` (check/handle_index.cpp:110-198 at 1dd904216, its helper `HasIndexWithImpl` at :51-108, the call at :252-261); W-326 stays blocked on `like` (PR 56's W-178) |
+| VA-2's six plan-state entries (W-217, W-334, W-230, W-214, W-338, W-339) | fork/variadics/va2-plan.md §1.12 (:1491-1547) on the local branch at 78524522b, not pushed and not of record | variadics.md:121-133 (`...expand`), :152-153, :219-221, :493, :532-534, :750; generics/details.md:4921-4928; with comparison_operators.md, check/type_structure.cpp, check/handle_pack_expansion.cpp, operators/comparison.carbon and p002240 unchanged since 57ba07a97 | each entry's next action: not fired | HOLDS; the entries enter a register block when VA-2's records land |
+| Trunk's eleven pre-DR-0 blocks | F-006 :742, SL-2 :3671, OV-3 :4010, SL-1 :4406, OV-2 :4703, OV-1 :4956, UN-2 :5164, UN-1 :5461, EH-B :5581, EH-A :5946, UA-1's watch list :6753; F-006a, F-007 and F-009 reviewed at UA-1 (:6582-6639) | README.md:3164-3166 (`choice Result(T: type, Error: type)` with `Success` and `Failure`) against F-006a's `Ok`/`Err`; p002875:481-485 (`overloaded fn`, introduced as "placeholder syntax") against F-009's `overload fn`; no window commit adds a conflict in a file these blocks name | each block's own: not fired | HOLDS, but no entry carries a work item, which V-3b requires: W-342 |
+| The ten blocks that exist only on held branches | SAFE-1 (PR 53 :3920-3938), CM-1 (PR 52 :3119), EV-1 (PR 54 :3538), ST-1 (PR 55 :3503), OP-2 (PR 57 :3779), DD-1 (PR 58 :4114), VA-1 (PR 59 :3609), SC-1 (PR 60 :4187), TP-1 (PR 61 :4185), CT-1 (PR 64 :8341) | SAFE-1's departures from accepted text: p005434:83, :663 and :831-832, expressions/arithmetic.md:155-158, safety/README.md:260-262, p005914:206-208, and README.md:2147, which cites PR 53's own copy (upstream's passage is at :2131-2132); all unchanged since the cut; VA-1's `each` is still not an upstream token | each block's own: not fired | HOLDS, no work item: W-343, SAFE-1's departures first because PR 53 lands first |
+| OP-1's block | PR 56 :3529-3540 and PR 57 :4460-4472 | expressions/comparison_operators.md:316 and :434 ("should have no observable side-effects"); p002188:489-490 and pattern_matching.md:526-527 (`Optional(T).None` an expression pattern compared using `==`), which the block cites as :488-489 and :527-528, the latter PR 56's own copy; upstream types/optional.carbon:30 (`fn None() -> Self`) | D-OP-4's (W-177, now W-320, or a by-reference accessor): not fired | HOLDS, no work item; now gated on W-320 and so on W-324: W-344 |
+
+W-324 and W-326, and the register's entries (iv) and (v), live only on PR 63's
+and DR-1b's branches, which DR-1's workflow owns and whose worktrees this check
+does not touch. Their dated notes for this check (HOLDS at 21c825a3f, no break
+condition fired) and the records fix for (i) ("(i) resolved 2026-10-21 by
+W-322's 22fe50ff8 and its fill f4660e409 on PR 62", with a discharge note on
+W-322's ledger entry) are routed to DR-1's workflow as one new commit on its
+branch after DR-1b's re-review round 4, never a rewrite (R32 (e)). Trunk's own
+block records this check in the dated paragraph that follows it in DR-0.
+
+The cut HOLDS, and UA-3 stays scheduled after the held PRs land, under the UA-1
+flow; the per-head figures and the table above join its starting audit, with
+three tasks named: move PR 61's callers of its `specific_id` parameter onto
+upstream's `FindStorageArgForInitializerInSpecific`, re-verify PR 61's and PR
+64's eval.cpp behaviour after 4441c5340, and absorb 947c1eb52. One drift is
+verified: W-341, an `overload fn` member with Carbon default parameter values
+cannot be called with a defaulted argument omitted, because the overload set's
+arity step is exact and F-009j says "no Carbon-native default arguments in 0.1",
+while upstream's positional default values, which trunk has carried since UA-1's
+merge 14801f14a (2026-10-05) and which 503f09037 and 9799a2326 extend to generic
+functions and to C++ export, are honored by the plain call path (call.cpp:310).
+Neither UA-1's audit nor the 2026-10-12 and 2026-10-19 weeklies named it. Owner:
+OV-4, the overload workstream's default-value slice, on trunk's base after VA-2
+lands and before UA-3; it is trunk code and text only (no held branch adds a
+no-default-arguments statement, and PR 59's call.cpp keeps the exact range), so
+no held PR is amended. Three register work items are filed for RG-1, the R32
+register classification, records-first and runnable now: W-342 (trunk's pre-DR-0
+blocks), W-343 (the held-branch blocks, SAFE-1's departures first) and W-344
+(OP-1's entries); a drift any of them finds becomes its own work item, and a
+held PR carrying it is amended by a new commit on its branch before it lands
+(R32 (e)). All four are in ORCHESTRATION's Next actions. Auto-adopted under
+R29(a) and veto-able; each item carries its break condition, W-341's being an
+upstream design that picks another optional-parameter mechanism
+(classes.md:2186-2205 lists struct field defaults, struct destructuring and a
+named-parameter syntax as candidates) or removes positional defaults.
+
+_Ids._ The re-scan (CT-1's fork/cpp-templates/plan.md §0.11 command widened to
+`W-3[2-9][0-9]`, after a fetch, over 70 origin refs, 21 local branches and 22
+worktrees) finds W-320 to W-327, W-329 and W-340 in ledgers and no id from W-341
+up anywhere; W-328 is DR-1's reserved id and W-330..W-339 are VA-2's reservation
+(fork/variadics/va2-plan.md:93 on the local branch claude/carbon-fork-0-1-va2 at
+78524522b), so W-341 to W-344 are filed. They are appended after W-323, where PR
+63's and DR-1b's ledgers append W-324 onward; those merges keep both, in id
+order. This entry and the dated paragraph in DR-0 move the lines after them, so
+the line cites into this log in DR-0 (to the file at its verifier fold) and in
+W-109, W-320 and W-321 refer to the file at trunk 563135b40.
+
+Not run: no build (no merge is due, so none was started), no merge, no staging
+branch and no workflow dispatch (R28). GitHub Actions on the repository is still
+disabled: its newest workflow run is the 2026-10-08 08:19 UTC Nightly Release (a
+read-only listing of the repository's runs), so nothing is of record (R9), and
+the fourteen PRs (PR 51 to PR 64) and DR-1b stay held.
 
 ### Weekly upstream merge 2026-10-19: cut HOLDS a second post-advance week at 85 commits; a dry-run merge conflicts in 96 files; GitHub Actions on the fork is still DISABLED (2026-10-19)
 

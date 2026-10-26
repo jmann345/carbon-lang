@@ -2296,6 +2296,76 @@
       ],
       "blocked_by": [],
       "notes": "Filed 2026-10-21 at DR-0. Both are errors of the fork's process, not of upstream: the V-3 check named a tip and read the design page from the fork's copy. Correction (D-DR-3), one new commit on PR 56's branch before PR 56 lands (R32 (e)), never a rewrite: the loops.md Fork amendment is rewritten to state upstream's current desugaring (a `match` with `case .Some(<pattern>)`) and that the fork's `for` calls `HasValue`/`Get` until W-320 lands; OP-1's V-3 paragraph gains a dated correction naming df3cf9294 and quoting loops.md at 62f1cc6a3. Owner: DR-1. Break condition: PR 56 is closed without merging, and the corrections then go wherever F-015 lands."
+    },
+    {
+      "id": "W-341",
+      "kind": "missing-feature",
+      "title": "OV-4 (R32 (b), (d); weekly upstream check 2026-10-26): an `overload fn` member with Carbon default parameter values cannot be called with a defaulted argument omitted -- the overload set's arity step is exact (\"Carbon has no default arguments\") and its probe checks one argument per parameter pattern, while the plain call path honors upstream's `default_value_arity`; F-009j's \"no Carbon-native default arguments\" is a second spelling of a mechanism upstream implements",
+      "subsystem": "toolchain/check (call.cpp) + docs/design (functions_overloading.md)",
+      "size": "M",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/call.cpp:420-432 (`GetExplicitArityRange`: an exact range; its comment at :420-423 says \"Carbon has no default arguments\" and claims to compute the count exactly as `ResolveCalleeInCall` does), :655-660 (the arity step: a member called with fewer arguments is rejected, then `OverloadNoMatch` with the note \"takes a different number of arguments\", :693-702), :498 (`ProbeOverloadCandidateInScratchScope`: `CARBON_CHECK(param_pattern_ids.size() == arg_ids.size())`, so widening the range alone would stop at that check), :310 (the plain call path passes `function.default_value_arity` to `ResolveCalleeInCall`)",
+        "docs/design/functions_overloading.md:570-576 (\"CLOSED (fork amendment 2026-09-27) by D-OV-4 step 2(b): no Carbon-native default arguments in 0.1, so the arity step above stays exact ... Carbon has no default-argument design\") and :1022-1023 (F-009j)",
+        "toolchain/check/testdata/function/overload/ (no split declares a member with a defaulted parameter)",
+        "upstream c1e83b0b7 toolchain/check/call.cpp (`default_value_arity` at the cut); the UA-1 merge 14801f14a (2026-10-05, PR 50) is the first trunk tree with `DefaultValuePattern`; OV-1's 495b58274 (2026-09-28) has none",
+        "upstream 21c825a3f: 503f09037 (PR 8011, default values for non-generic parameters of generic functions; toolchain/check/deduce.cpp:640, pattern.cpp:363 `ExtractParameterDefault`), 9799a2326 and 8fdc8ebc3 (PRs 7988 and 8025, export to C++; check/cpp/export.cpp:1209 `BuildDefaultValueExpr`)",
+        "upstream docs/design/classes.md:2186-2205 at 21c825a3f (\"Optional named parameters\": struct field defaults, struct destructuring in patterns, or a dedicated optional named parameter syntax, an open question)",
+        "fork/decision-log.md 'Weekly upstream check 2026-10-26 (R32 direction register)'; fork/rulebook.md R32 (b), (d)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), its reader's claim as corrected by its verifier. Provenance: F-009j (D-OV-4 step 2(b), OV-1, 2026-09-28) was true of OV-1's tree and became false when UA-1 brought upstream's positional default values on 2026-10-05; neither UA-1's audit nor the 2026-10-12 and 2026-10-19 weeklies named it (the 2026-09-21 weekly named upstream PR 7737 on default values). 503f09037 and 9799a2326 only extend defaults to generic functions and to C++ export. The call is diagnosed, not miscompiled (read from the code; no build this week): the defect is that an overload set rejects a call the plain path accepts. Mechanism: the arity step accepts from n minus `default_value_arity` to n explicit arguments, and `ProbeOverloadCandidateInScratchScope` probes only the supplied arguments against their parameter patterns (the commit already runs the plain path, which fills the defaulted tail); the comment at :420-423 is rewritten; goldens pin a defaulted member called with the argument omitted and supplied, and a set in which a default makes two members accept one call (first match wins, D-OV-4); functions_overloading.md:570-576 and :1022-1023 are rewritten to name upstream's default values. Generic overload members with defaults take 503f09037's deduce support at UA-3, whose audit re-checks this item. No held PR carries the drift (no held branch adds a no-default-arguments statement; PR 59's call.cpp keeps the exact range at :574-587), so no held PR is amended under R32 (e); PR 59's W-215 already treats default values beside a pack as a Carbon feature. Owner: OV-4, the overload workstream's default-value slice, on trunk's base, after VA-2 lands and before UA-3 (ORCHESTRATION Next actions item 6). Break condition: upstream's design picks a different optional-parameter mechanism (classes.md:2186-2205's candidates) or removes positional defaults; the item then follows that mechanism."
+    },
+    {
+      "id": "W-342",
+      "kind": "infra",
+      "title": "RG-1 (R32 (b), V-3b; weekly upstream check 2026-10-26): trunk's eleven pre-DR-0 V-3a register blocks carry no work item -- classify each entry at upstream's tip, filing a work item for each drift (a second spelling, R32 (d)) or recording the quote that shows it is none",
+      "subsystem": "fork records (fork/decision-log.md register blocks)",
+      "size": "M",
+      "bullet": "none",
+      "evidence": [
+        "fork/decision-log.md at trunk 563135b40, the register blocks: F-006 :742, SL-2 :3671, OV-3 :4010, SL-1 :4406, OV-2 :4703, OV-1 :4956, UN-2 :5164, UN-1 :5461, EH-B :5581, EH-A :5946, UA-1's watch list :6753; F-006a, F-007 and F-009, reviewed together at UA-1 (:6582-6639)",
+        "fork/decision-log.md V-3 (:31-41: F-006a's `Ok`/`Err` against the README's illustrative `Success`/`Failure` entered the register) and V-3b (:43-48: the register is a work queue whose entries each carry a work item)",
+        "upstream docs/design/README.md:3164-3166 at 21c825a3f (`choice Result(T: type, Error: type)` with `Success(value: T)` and `Failure(error: Error)`)",
+        "upstream proposals/p002875-functions-function-types-and-function-calls.md:481-485 at 21c825a3f (`overloaded fn`, introduced as \"placeholder syntax\")",
+        "fork/decision-log.md 'Weekly upstream check 2026-10-26 (R32 direction register)'; fork/rulebook.md R32 (a), (b), (d)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), from its verifier's finding. Each block predates V-3b (2026-10-21) and records its entries as divergence notes, veto-able under V-3's withdrawn override clause; R32 (b) makes the register a work queue whose entries each carry a work item, and none of these does. At the tip every block HOLDS: no commit of the window adds a conflict in a file these blocks name (the one new conflict is toolchain/driver/compile_options.cpp). Work: for each entry, quote upstream's text at the tip for its mechanism (R32 (a)); a second spelling of an upstream-designed mechanism is a drift (R32 (d)) and gets its own work item owned by the entry's workstream, scheduled before UA-3; a fork-local implementation surface with no upstream counterpart is recorded as none, with the quote that shows upstream's silence. F-006a's `Ok`/`Err` (against README.md:3164-3166) and F-009's `overload fn` (against p002875:481-485's placeholder `overloaded fn`) are each decided with a break condition (R29). Owner: RG-1, the R32 register classification, records-first and runnable now (ORCHESTRATION Next actions item 6). Break condition: an owner directive that reinstates V-3's override clause (D-DR-4's), or an accepted upstream proposal for an entry's mechanism, which then decides that entry."
+    },
+    {
+      "id": "W-343",
+      "kind": "infra",
+      "title": "RG-1 (R32 (b), (e); weekly upstream check 2026-10-26): the ten V-3a register blocks that exist only on held branches carry no work item -- SAFE-1's departures from accepted text on PR 53 first, then CM-1, EV-1, ST-1, OP-2, DD-1, VA-1, SC-1, TP-1 and CT-1; a drift found is amended by a new commit on its PR's branch before that PR lands",
+      "subsystem": "fork records (held branches' fork/decision-log.md) + docs/design (PR 53)",
+      "size": "M",
+      "bullet": "none",
+      "evidence": [
+        "PR 53 (claude/carbon-fork-0-1-safe, head adaae4e35) fork/decision-log.md:3920-3938 (SAFE-1's block: the fork spellings, and the dated narrowings and departures from accepted text at p005434:83, :663 and :831-832, expressions/arithmetic.md:155-158, safety README.md:260-262, docs/design/README.md:2147 and p005914:206-208, and the `import Cpp` asymmetry)",
+        "docs/design/README.md:2147 in that block is PR 53's own copy of the page; upstream's passage (unformed integers set to `0` in the hardened build mode) is at :2131-2132 at 21c825a3f",
+        "git log c1e83b0b7..21c825a3f is empty for proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md, proposals/p005914-updating-carbon-s-safety-strategy.md, docs/design/expressions/arithmetic.md, docs/design/safety/README.md and docs/design/README.md",
+        "fork/decision-log.md register blocks on the held heads: CM-1 (PR 52, ea573f672) :3119, EV-1 (PR 54, cb3ef2e74) :3538, ST-1 (PR 55, 21307851a) :3503, OP-2 (PR 57, a080c7886) :3779, DD-1 (PR 58, fcee90d9b) :4114, VA-1 (PR 59, b0822a744) :3609 (`each` is a keyword, which upstream's lexer still lacks at 21c825a3f), SC-1 (PR 60, 40a76ab81) :4187, TP-1 (PR 61, 5661a35c8) :4185, CT-1 (PR 64, 4a3220c11) :8341",
+        "fork/decision-log.md 'Weekly upstream check 2026-10-26 (R32 direction register)'; fork/rulebook.md R32 (a), (b), (d), (e); fork/ORCHESTRATION.md merge order (PR 53 lands first)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), from its verifier's finding. After V-3b SAFE-1's departures from accepted text are drift candidates, and PR 53 lands first. Work, in merge order (SAFE-1 first): classify each entry against upstream's tip with the page's text quoted (R32 (a)), never the fork's copy; a drift gets its own work item owned by that PR's workstream, and the PR is amended by a new commit on its branch before it lands, never rewritten (R32 (e)); a cite of the fork's own copy of a page (README.md:2147 in SAFE-1's block) is corrected in the same commit. Nothing lands while Actions is disabled, so no landing waits on this yet; from then on it gates each held PR's landing. OP-1's block, on PR 56 and PR 57, is W-344. Owner: RG-1, records-first and runnable now (ORCHESTRATION Next actions item 6). Break condition: a held PR closed without merging (its entries go wherever its design lands), or upstream accepts the memory-safety proposals p005914 defers to (SAFE-1 then re-bases every D-SAFE, as its block says)."
+    },
+    {
+      "id": "W-344",
+      "kind": "infra",
+      "title": "RG-1 (R32 (b); weekly upstream check 2026-10-26): OP-1's register entries on PR 56 and PR 57 -- the comparisons' `T.Copy`/`T.Destroy` against comparison_operators.md's \"should have no observable side-effects\" has no work item and is now gated on W-320, blocked on W-324; the block's `None` cites are stale, one of them to PR 56's own copy of pattern_matching.md",
+      "subsystem": "fork records + docs (PR 56's branch, merged into PR 57's)",
+      "size": "S",
+      "bullet": "Stdlib: Optional",
+      "evidence": [
+        "PR 56 (claude/carbon-fork-0-1-op, head 894139b34) fork/decision-log.md:3529-3540 and PR 57 (claude/carbon-fork-0-1-op2, head a080c7886) :4460-4472 (OP-1's block)",
+        "upstream docs/design/expressions/comparison_operators.md:316 and :434 at 21c825a3f (\"should have no observable side-effects\")",
+        "upstream proposals/p002188-pattern-matching-syntax-and-semantics.md:489-490 and docs/design/pattern_matching.md:526-527 at 21c825a3f (`Optional(T).None` is an expression pattern compared using `==`); the block cites :488-489 and :527-528, the latter PR 56's own copy; upstream core/prelude/types/optional.carbon:30 (`fn None() -> Self`)",
+        "PR 56 fork/inventory/work-items.json W-177 (`Core.Optional` not matchable), which W-320 closes when it lands; W-320 is blocked on W-324 (PR 63's and DR-1b's ledgers)",
+        "fork/decision-log.md 'Weekly upstream check 2026-10-26 (R32 direction register)'; fork/rulebook.md R32 (a), (b), (e)"
+      ],
+      "blocked_by": ["W-320"],
+      "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), from its verifier's finding. The side-effects entry closes when W-177, now W-320, or a by-reference accessor lands (D-OP-4); W-320 is blocked on W-324, so the entry is re-checked with W-324 at each weekly check. Records: the cites are corrected to p002188:489-490 and upstream pattern_matching.md:526-527 by a new commit on PR 56's branch, merged into PR 57's, before PR 56 lands (R32 (e)). Owner: RG-1 for the records (ORCHESTRATION Next actions item 6); DR-1, W-320's owner, for the closure. Break condition: a by-reference accessor lands on `Core.Optional` (D-OP-4's route), or D-DR-1's break condition re-plans W-320."
     }
   ]
 }

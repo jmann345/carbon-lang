@@ -362,6 +362,23 @@ class FileContext {
   auto BuildVtable(const SemIR::Vtable& vtable, SemIR::SpecificId specific_id)
       -> llvm::Constant*;
 
+  // Fork (VA-2): returns the global variable holding `value`, the constant
+  // `const_inst_id` in the pointee type of its pointer value representation
+  // `value_rep`, made on first use. Used by `GetConstant`.
+  auto GetOrCreateConstantGlobal(SemIR::InstId const_inst_id,
+                                 SemIR::ValueRepr value_rep,
+                                 llvm::Constant* value,
+                                 SemIR::InstId use_inst_id)
+      -> llvm::GlobalVariable*;
+
+  // Fork (VA-2): returns the value representation of a constant tuple or
+  // struct value whose value representation holds its elements' value
+  // representations, or nullptr for any other constant. Used by
+  // `GetConstant`.
+  auto GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
+                                       SemIR::InstId use_inst_id)
+      -> llvm::Value*;
+
   // Records a specific that was lowered for a generic. These are added one
   // by one while lowering their definitions.
   auto AddLoweredSpecificForGeneric(SemIR::GenericId generic_id,

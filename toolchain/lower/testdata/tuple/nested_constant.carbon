@@ -51,3 +51,18 @@ fn Read() -> i32 {
   let m: {.t: (i32, i32), .u: i32} = {.t = (4, 5), .u = 6};
   return m.t.1;
 }
+
+// --- return.carbon
+library "[[@TEST_NAME]]";
+
+fn Make() -> ((i32, i32), i32) {
+  return ((4, 5), 6);
+}
+
+// --- one_element.carbon
+library "[[@TEST_NAME]]";
+
+fn Read() -> i32 {
+  var v: ((i32, i32),) = ((1, 2),);
+  return v.0.1;
+}

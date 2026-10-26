@@ -387,6 +387,14 @@ class FunctionContext {
   auto CopyObject(TypeInFile type, SemIR::InstId source_id,
                   SemIR::InstId dest_id) -> void;
 
+  // Fork (VA-2): emits a copy of `value`, a value representation of `type`,
+  // into the object at `dest_addr`: element by element for a tuple or struct
+  // type whose value representation holds its elements' value
+  // representations (`ValueRepr::ValueAggregate`), and otherwise as a store
+  // or an object copy.
+  auto CopyValueReprToObject(TypeInFile type, llvm::Value* value,
+                             llvm::Value* dest_addr) -> void;
+
   // Serves a reference to a file-scope `let` binding whose bound value is a
   // runtime value (W-069): `inst_id` is either such a binding of the current
   // file (or its bound value), or an imported instruction whose canonical

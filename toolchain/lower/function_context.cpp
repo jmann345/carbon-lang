@@ -535,7 +535,23 @@ auto FunctionContext::StoreObject(TypeInFile type, llvm::Value* value,
 
 auto FunctionContext::CopyValue(TypeInFile type, SemIR::InstId source_id,
                                 SemIR::InstId dest_id) -> void {
-  switch (GetValueRepr(type).repr.kind) {
+  auto value_repr = GetValueRepr(type).repr;
+  if (value_repr.aggregate_kind == SemIR::ValueRepr::ValueAggregate) {
+    // Fork (VA-2): a constant is lowered to its value representation
+    // (`FileContext::GetConstant`), which for this type holds its elements'
+    // value representations, such as the address of the value of `(1, 2)` in
+    // the value of `((1, 2), 3)`, so it is neither the object representation
+    // nor its address, as the copies below assume. Any other source keeps
+    // them: for this type, an initializing expression that is not a constant
+    // produces the object representation by value (`InitRepr::ByCopy`).
+    bool is_constant = IsConstant(source_id);
+    AddIntToCurrentFingerprint(is_constant);
+    if (is_constant) {
+      CopyValueReprToObject(type, GetValue(source_id), GetValue(dest_id));
+      return;
+    }
+  }
+  switch (value_repr.kind) {
     case SemIR::ValueRepr::Unknown:
       CARBON_FATAL("Attempt to copy incomplete type");
     case SemIR::ValueRepr::Dependent:
@@ -568,6 +584,101 @@ auto FunctionContext::CopyObject(TypeInFile type, llvm::Value* source_addr,
   // type we actually need to copy and which are padding.
   builder().CreateMemCpy(dest_addr, align, source_addr, align,
                          layout.getTypeAllocSize(llvm_type));
+}
+
+auto FunctionContext::CopyValueReprToObject(TypeInFile type, llvm::Value* value,
+                                            llvm::Value* dest_addr) -> void {
+  // A worklist of copies rather than recursion over the elements.
+  struct PendingCopy {
+    TypeInFile type;
+    llvm::Value* value;
+    llvm::Value* dest_addr;
+  };
+  llvm::SmallVector<PendingCopy> worklist = {
+      {.type = type, .value = value, .dest_addr = dest_addr}};
+  while (!worklist.empty()) {
+    auto copy = worklist.pop_back_val();
+    auto value_repr = GetValueRepr(copy.type);
+    llvm::SmallVector<SemIR::TypeId> element_type_ids;
+    bool elementwise = false;
+    if (value_repr.repr.aggregate_kind == SemIR::ValueRepr::ValueAggregate) {
+      const auto& file = *copy.type.file;
+      auto type_inst = file.types().GetAsInst(copy.type.type_id);
+      if (auto tuple_type = type_inst.TryAs<SemIR::TupleType>()) {
+        elementwise = true;
+        for (auto element_type_id : file.types().GetBlockAsTypeIds(
+                 file.inst_blocks().Get(tuple_type->type_elements_id))) {
+          element_type_ids.push_back(element_type_id);
+        }
+      } else if (auto struct_type = type_inst.TryAs<SemIR::StructType>()) {
+        elementwise = true;
+        for (auto field :
+             file.struct_type_fields().Get(struct_type->fields_id)) {
+          element_type_ids.push_back(
+              file.types().GetTypeIdForTypeInstId(field.type_inst_id));
+        }
+      }
+    }
+    if (!elementwise) {
+      // The value representation is the object representation or its
+      // address.
+      switch (value_repr.repr.kind) {
+        case SemIR::ValueRepr::None:
+          break;
+        case SemIR::ValueRepr::Copy:
+          StoreObject(copy.type, copy.value, copy.dest_addr);
+          break;
+        case SemIR::ValueRepr::Pointer:
+          CopyObject(copy.type, copy.value, copy.dest_addr);
+          break;
+        case SemIR::ValueRepr::Unknown:
+        case SemIR::ValueRepr::Dependent:
+        case SemIR::ValueRepr::Custom:
+          CARBON_FATAL(
+              "Attempt to copy a value of type {0} with value "
+              "representation {1}",
+              copy.type.file->types().GetAsInst(copy.type.type_id),
+              value_repr.repr);
+      }
+      continue;
+    }
+
+    // The value representation is a struct of the elements' value
+    // representations, held by value or by address. Each element's value is
+    // read, and its destination found, before any element is copied.
+    auto value_repr_type = value_repr.type();
+    if (value_repr.repr.kind == SemIR::ValueRepr::Pointer) {
+      value_repr_type.type_id =
+          value_repr_type.file->GetPointeeType(value_repr_type.type_id);
+    }
+    auto* llvm_value_repr_type = GetType(value_repr_type);
+    auto* llvm_object_type = GetType(
+        {.file = copy.type.file,
+         .type_id = copy.type.file->types().GetObjectRepr(copy.type.type_id)});
+    llvm::SmallVector<PendingCopy> element_copies;
+    for (auto [index, element_type_id] : llvm::enumerate(element_type_ids)) {
+      TypeInFile element_type = {.file = copy.type.file,
+                                 .type_id = element_type_id};
+      auto element_value_repr = GetValueRepr(element_type);
+      if (element_value_repr.repr.kind == SemIR::ValueRepr::None) {
+        continue;
+      }
+      llvm::Value* element_value = nullptr;
+      if (value_repr.repr.kind == SemIR::ValueRepr::Pointer) {
+        element_value = LoadObject(
+            element_value_repr.type(),
+            builder().CreateStructGEP(llvm_value_repr_type, copy.value, index));
+      } else {
+        element_value = builder().CreateExtractValue(copy.value, index);
+      }
+      element_copies.push_back({.type = element_type,
+                                .value = element_value,
+                                .dest_addr = builder().CreateStructGEP(
+                                    llvm_object_type, copy.dest_addr, index)});
+    }
+    // Copied in order: the worklist is a stack.
+    worklist.append(element_copies.rbegin(), element_copies.rend());
+  }
 }
 
 auto FunctionContext::Inserter::InsertHelper(

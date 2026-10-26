@@ -72,7 +72,7 @@ fn F(... each n: i64) {
 // --- fail_todo_ref_pack.carbon
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_todo_ref_pack.carbon:[[@LINE+4]]:19: error: semantics TODO: `each-name binding that is not a value binding` [SemanticsTodo]
+// CHECK:STDERR: fail_todo_ref_pack.carbon:[[@LINE+4]]:19: error: semantics TODO: `each-name binding that is ref, var or template` [SemanticsTodo]
 // CHECK:STDERR: fn F(... ref each n: i64);
 // CHECK:STDERR:                   ^
 // CHECK:STDERR:

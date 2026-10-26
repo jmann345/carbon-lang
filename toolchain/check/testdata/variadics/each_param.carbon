@@ -149,6 +149,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %ForEach.type: type = fn_type @ForEach [concrete]
 // CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.241: <witness> = require_complete_type %pack_type.5d5 [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %int_2.ecc: Core.IntLiteral = int_value 2 [concrete]
 // CHECK:STDOUT:   %int_3.1ba: Core.IntLiteral = int_value 3 [concrete]
@@ -179,6 +180,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.e9c: <bound method> = bound_method %int_3.1ba, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.740: <bound method> = bound_method %int_3.1ba, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_3.bd2: %i64 = int_value 3 [concrete]
+// CHECK:STDOUT:   %.f83: %pack_type.1ff = pack_value (%int_1.d98, %int_2.405, %int_3.bd2) [concrete]
 // CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete]
 // CHECK:STDOUT:   %pack_type.71f: type = pack_type %i64, %int_0 [concrete]
 // CHECK:STDOUT:   %pattern_type.02a: type = pattern_type %pack_type.71f [concrete]
@@ -186,6 +188,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %n.patt.6be: %pattern_type.02a = wrapper_binding_pattern n, %n.param_patt.2b7 [concrete]
 // CHECK:STDOUT:   %.864: %pattern_type.02a = pack_expansion_pattern %n.patt.6be, %arity.patt [symbolic]
 // CHECK:STDOUT:   %ForEach.specific_fn.61e: <specific function> = specific_function %ForEach, @ForEach(%int_0) [concrete]
+// CHECK:STDOUT:   %.92b: %pack_type.71f = pack_value () [concrete]
 // CHECK:STDOUT:   %complete_type.50f: <witness> = complete_type_witness %pack_type.1ff [concrete]
 // CHECK:STDOUT:   %complete_type.f3b: <witness> = complete_type_witness %pack_type.71f [concrete]
 // CHECK:STDOUT: }
@@ -220,13 +223,14 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %pack_type [symbolic = %require_complete (constants.%require_complete.241)]
+// CHECK:STDOUT:   %.loc7_15.3: Core.IntLiteral = pack_index [symbolic = %.loc7_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%n.param: @ForEach.%pack_type (%pack_type.5d5)) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     pack_expansion_statement %arity.loc6_12.2 {
 // CHECK:STDOUT:       %Consume.ref: %Consume.type = name_ref Consume, file.%Consume.decl [concrete = constants.%Consume]
 // CHECK:STDOUT:       %n.ref: @ForEach.%pack_type (%pack_type.5d5) = name_ref n, %n
-// CHECK:STDOUT:       %.loc7_15.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc7_15.1: Core.IntLiteral = pack_index [symbolic = %.loc7_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc7_15.2: %i64 = pack_element %n.ref, %.loc7_15.1
 // CHECK:STDOUT:       %Consume.call: init %empty_tuple.type = call %Consume.ref(%.loc7_15.2)
 // CHECK:STDOUT:     }
@@ -265,16 +269,16 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13_17: init %i64 = call %bound_method.loc13_17.2(%int_3.loc13_17) [concrete = constants.%int_3.bd2]
 // CHECK:STDOUT:   %.loc13_17.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13_17 [concrete = constants.%int_3.bd2]
 // CHECK:STDOUT:   %.loc13_17.2: %i64 = converted %int_3.loc13_17, %.loc13_17.1 [concrete = constants.%int_3.bd2]
-// CHECK:STDOUT:   %.loc13_11.4: %pack_type.1ff = pack_value (%.loc13_11.3, %.loc13_14.2, %.loc13_17.2)
-// CHECK:STDOUT:   %.loc13_11.5: %pack_type.1ff = converted %.loc13_11.1, %.loc13_11.4
+// CHECK:STDOUT:   %.loc13_11.4: %pack_type.1ff = pack_value (%.loc13_11.3, %.loc13_14.2, %.loc13_17.2) [concrete = constants.%.f83]
+// CHECK:STDOUT:   %.loc13_11.5: %pack_type.1ff = converted %.loc13_11.1, %.loc13_11.4 [concrete = constants.%.f83]
 // CHECK:STDOUT:   %ForEach.call.loc13: init %empty_tuple.type = call %ForEach.specific_fn.loc13(%.loc13_11.5)
 // CHECK:STDOUT:   %ForEach.ref.loc14: %ForEach.type = name_ref ForEach, file.%ForEach.decl [concrete = constants.%ForEach]
 // CHECK:STDOUT:   %.loc14_11.1: %empty_tuple.type = pack_literal ()
 // CHECK:STDOUT:   %int_0.loc14_11.1: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
 // CHECK:STDOUT:   %int_0.loc14_11.2: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc14: <specific function> = specific_function %ForEach.ref.loc14, @ForEach(constants.%int_0) [concrete = constants.%ForEach.specific_fn.61e]
-// CHECK:STDOUT:   %.loc14_11.2: %pack_type.71f = pack_value ()
-// CHECK:STDOUT:   %.loc14_11.3: %pack_type.71f = converted %.loc14_11.1, %.loc14_11.2
+// CHECK:STDOUT:   %.loc14_11.2: %pack_type.71f = pack_value () [concrete = constants.%.92b]
+// CHECK:STDOUT:   %.loc14_11.3: %pack_type.71f = converted %.loc14_11.1, %.loc14_11.2 [concrete = constants.%.92b]
 // CHECK:STDOUT:   %ForEach.call.loc14: init %empty_tuple.type = call %ForEach.specific_fn.loc14(%.loc14_11.3)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
@@ -300,6 +304,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.50f
+// CHECK:STDOUT:   %.loc7_15.3 => constants.%.4ee
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @ForEach(constants.%int_0) {
@@ -313,6 +318,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.f3b
+// CHECK:STDOUT:   %.loc7_15.3 => constants.%.4ee
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- fixed_params.carbon
@@ -343,6 +349,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b, @Core.IntLiteral.as.ImplicitAs.impl.Convert(%int_64) [concrete]
 // CHECK:STDOUT:   %bound_method.c5e: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_1.d98: %i64 = int_value 1 [concrete]
+// CHECK:STDOUT:   %.92b: %pack_type.71f = pack_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.5d4: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.c9c: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_2.405: %i64 = int_value 2 [concrete]
@@ -354,6 +361,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.e9c: <bound method> = bound_method %int_3.1ba, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.740: <bound method> = bound_method %int_3.1ba, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_3.bd2: %i64 = int_value 3 [concrete]
+// CHECK:STDOUT:   %.a00: %pack_type.f7c = pack_value (%int_2.405, %int_3.bd2) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.b50: <bound method> = bound_method %int_4.0c1, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.912: <bound method> = bound_method %int_4.0c1, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_4.825: %i64 = int_value 4 [concrete]
@@ -380,8 +388,8 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13_10: init %i64 = call %bound_method.loc13_10.2(%int_1.loc13) [concrete = constants.%int_1.d98]
 // CHECK:STDOUT:   %.loc13_10.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13_10 [concrete = constants.%int_1.d98]
 // CHECK:STDOUT:   %.loc13_10.2: %i64 = converted %int_1.loc13, %.loc13_10.1 [concrete = constants.%int_1.d98]
-// CHECK:STDOUT:   %.loc13_14.2: %pack_type.71f = pack_value ()
-// CHECK:STDOUT:   %.loc13_14.3: %pack_type.71f = converted %.loc13_14.1, %.loc13_14.2
+// CHECK:STDOUT:   %.loc13_14.2: %pack_type.71f = pack_value () [concrete = constants.%.92b]
+// CHECK:STDOUT:   %.loc13_14.3: %pack_type.71f = converted %.loc13_14.1, %.loc13_14.2 [concrete = constants.%.92b]
 // CHECK:STDOUT:   %impl.elem0.loc13_13: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
 // CHECK:STDOUT:   %bound_method.loc13_13.1: <bound method> = bound_method %int_2.loc13, %impl.elem0.loc13_13 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.5d4]
 // CHECK:STDOUT:   %specific_fn.loc13_13: <specific function> = specific_function %impl.elem0.loc13_13, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
@@ -420,8 +428,8 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc14_16: init %i64 = call %bound_method.loc14_16.2(%int_3) [concrete = constants.%int_3.bd2]
 // CHECK:STDOUT:   %.loc14_16.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc14_16 [concrete = constants.%int_3.bd2]
 // CHECK:STDOUT:   %.loc14_16.2: %i64 = converted %int_3, %.loc14_16.1 [concrete = constants.%int_3.bd2]
-// CHECK:STDOUT:   %.loc14_13.4: %pack_type.f7c = pack_value (%.loc14_13.3, %.loc14_16.2)
-// CHECK:STDOUT:   %.loc14_13.5: %pack_type.f7c = converted %.loc14_13.1, %.loc14_13.4
+// CHECK:STDOUT:   %.loc14_13.4: %pack_type.f7c = pack_value (%.loc14_13.3, %.loc14_16.2) [concrete = constants.%.a00]
+// CHECK:STDOUT:   %.loc14_13.5: %pack_type.f7c = converted %.loc14_13.1, %.loc14_13.4 [concrete = constants.%.a00]
 // CHECK:STDOUT:   %impl.elem0.loc14_19: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
 // CHECK:STDOUT:   %bound_method.loc14_19.1: <bound method> = bound_method %int_4, %impl.elem0.loc14_19 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.b50]
 // CHECK:STDOUT:   %specific_fn.loc14_19: <specific function> = specific_function %impl.elem0.loc14_19, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
@@ -460,6 +468,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.d90: <witness> = require_complete_type %pack_type.2fb [symbolic]
 // CHECK:STDOUT:   %Consume.specific_fn.86b: <specific function> = specific_function %Consume, @Consume(%T) [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
@@ -497,6 +506,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %next.patt.228: %pattern_type.a38 = wrapper_binding_pattern next, %next.param_patt.c0d [concrete]
 // CHECK:STDOUT:   %.87e: %pattern_type.a38 = pack_expansion_pattern %next.patt.228, %arity.patt [symbolic]
 // CHECK:STDOUT:   %ForEach.specific_fn.b11: <specific function> = specific_function %ForEach, @ForEach(%i64, %int_2.ecc) [concrete]
+// CHECK:STDOUT:   %.a00: %pack_type.f7c = pack_value (%int_2.405, %int_3.bd2) [concrete]
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete]
 // CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
@@ -508,6 +518,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %next.patt.f92: %pattern_type.9b0 = wrapper_binding_pattern next, %next.param_patt.e27 [concrete]
 // CHECK:STDOUT:   %.469: %pattern_type.9b0 = pack_expansion_pattern %next.patt.f92, %arity.patt [symbolic]
 // CHECK:STDOUT:   %ForEach.specific_fn.370: <specific function> = specific_function %ForEach, @ForEach(bool, %int_0) [concrete]
+// CHECK:STDOUT:   %.306: %pack_type.8ed = pack_value () [concrete]
 // CHECK:STDOUT:   %complete_type.46f: <witness> = complete_type_witness %pack_type.f7c [concrete]
 // CHECK:STDOUT:   %Consume.specific_fn.e83: <specific function> = specific_function %Consume, @Consume(%i64) [concrete]
 // CHECK:STDOUT:   %complete_type.127: <witness> = complete_type_witness bool [concrete]
@@ -563,6 +574,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %require_complete.loc6_26: <witness> = require_complete_type %T.loc6_13.1 [symbolic = %require_complete.loc6_26 (constants.%require_complete.944)]
 // CHECK:STDOUT:   %require_complete.loc6_44: <witness> = require_complete_type %pack_type [symbolic = %require_complete.loc6_44 (constants.%require_complete.d90)]
 // CHECK:STDOUT:   %Consume.specific_fn.loc7_3.2: <specific function> = specific_function constants.%Consume, @Consume(%T.loc6_13.1) [symbolic = %Consume.specific_fn.loc7_3.2 (constants.%Consume.specific_fn.86b)]
+// CHECK:STDOUT:   %.loc8_15.3: Core.IntLiteral = pack_index [symbolic = %.loc8_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%first.param: @ForEach.%T.loc6_13.1 (%T), %next.param: @ForEach.%pack_type (%pack_type.2fb)) {
 // CHECK:STDOUT:   !entry:
@@ -573,7 +585,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:     pack_expansion_statement %arity.loc6_31.2 {
 // CHECK:STDOUT:       %Consume.ref.loc8: %Consume.type = name_ref Consume, file.%Consume.decl [concrete = constants.%Consume]
 // CHECK:STDOUT:       %next.ref: @ForEach.%pack_type (%pack_type.2fb) = name_ref next, %next
-// CHECK:STDOUT:       %.loc8_15.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc8_15.1: Core.IntLiteral = pack_index [symbolic = %.loc8_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc8_15.2: @ForEach.%T.loc6_13.1 (%T) = pack_element %next.ref, %.loc8_15.1
 // CHECK:STDOUT:       %Consume.specific_fn.loc8: <specific function> = specific_function %Consume.ref.loc8, @Consume(constants.%T) [symbolic = %Consume.specific_fn.loc7_3.2 (constants.%Consume.specific_fn.86b)]
 // CHECK:STDOUT:       %Consume.call.loc8: init %empty_tuple.type = call %Consume.specific_fn.loc8(%.loc8_15.2)
@@ -616,8 +628,8 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %int_2.loc14_39.1: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:   %int_2.loc14_39.2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc14: <specific function> = specific_function %ForEach.ref.loc14, @ForEach(constants.%i64, constants.%int_2.ecc) [concrete = constants.%ForEach.specific_fn.b11]
-// CHECK:STDOUT:   %.loc14_23.4: %pack_type.f7c = pack_value (%.loc14_23.2, %.loc14_33.2)
-// CHECK:STDOUT:   %.loc14_23.5: %pack_type.f7c = converted %.loc14_23.3, %.loc14_23.4
+// CHECK:STDOUT:   %.loc14_23.4: %pack_type.f7c = pack_value (%.loc14_23.2, %.loc14_33.2) [concrete = constants.%.a00]
+// CHECK:STDOUT:   %.loc14_23.5: %pack_type.f7c = converted %.loc14_23.3, %.loc14_23.4 [concrete = constants.%.a00]
 // CHECK:STDOUT:   %ForEach.call.loc14: init %empty_tuple.type = call %ForEach.specific_fn.loc14(%.loc14_13.2, %.loc14_23.5)
 // CHECK:STDOUT:   %ForEach.ref.loc15: %ForEach.type = name_ref ForEach, file.%ForEach.decl [concrete = constants.%ForEach]
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete = constants.%true]
@@ -625,8 +637,8 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %int_0.loc15_15.1: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
 // CHECK:STDOUT:   %int_0.loc15_15.2: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc15: <specific function> = specific_function %ForEach.ref.loc15, @ForEach(bool, constants.%int_0) [concrete = constants.%ForEach.specific_fn.370]
-// CHECK:STDOUT:   %.loc15_15.2: %pack_type.8ed = pack_value ()
-// CHECK:STDOUT:   %.loc15_15.3: %pack_type.8ed = converted %.loc15_15.1, %.loc15_15.2
+// CHECK:STDOUT:   %.loc15_15.2: %pack_type.8ed = pack_value () [concrete = constants.%.306]
+// CHECK:STDOUT:   %.loc15_15.3: %pack_type.8ed = converted %.loc15_15.1, %.loc15_15.2 [concrete = constants.%.306]
 // CHECK:STDOUT:   %ForEach.call.loc15: init %empty_tuple.type = call %ForEach.specific_fn.loc15(%true, %.loc15_15.3)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
@@ -664,6 +676,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %require_complete.loc6_26 => constants.%complete_type.4a1
 // CHECK:STDOUT:   %require_complete.loc6_44 => constants.%complete_type.46f
 // CHECK:STDOUT:   %Consume.specific_fn.loc7_3.2 => constants.%Consume.specific_fn.e83
+// CHECK:STDOUT:   %.loc8_15.3 => constants.%.4ee
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @ForEach(bool, constants.%int_0) {
@@ -684,6 +697,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %require_complete.loc6_26 => constants.%complete_type.127
 // CHECK:STDOUT:   %require_complete.loc6_44 => constants.%complete_type.db7
 // CHECK:STDOUT:   %Consume.specific_fn.loc7_3.2 => constants.%Consume.specific_fn.272
+// CHECK:STDOUT:   %.loc8_15.3 => constants.%.4ee
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- method.carbon
@@ -718,6 +732,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.5d4: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.c9c: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_2.405: %i64 = int_value 2 [concrete]
+// CHECK:STDOUT:   %.041: %pack_type.f7c = pack_value (%int_1.d98, %int_2.405) [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -751,8 +766,8 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13_16: init %i64 = call %bound_method.loc13_16.2(%int_2.loc13_16) [concrete = constants.%int_2.405]
 // CHECK:STDOUT:   %.loc13_16.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13_16 [concrete = constants.%int_2.405]
 // CHECK:STDOUT:   %.loc13_16.2: %i64 = converted %int_2.loc13_16, %.loc13_16.1 [concrete = constants.%int_2.405]
-// CHECK:STDOUT:   %.loc13_13.4: %pack_type.f7c = pack_value (%.loc13_13.3, %.loc13_16.2)
-// CHECK:STDOUT:   %.loc13_13.5: %pack_type.f7c = converted %.loc13_13.1, %.loc13_13.4
+// CHECK:STDOUT:   %.loc13_13.4: %pack_type.f7c = pack_value (%.loc13_13.3, %.loc13_16.2) [concrete = constants.%.041]
+// CHECK:STDOUT:   %.loc13_13.5: %pack_type.f7c = converted %.loc13_13.1, %.loc13_13.4 [concrete = constants.%.041]
 // CHECK:STDOUT:   %C.ForEach.call: init %empty_tuple.type = call %bound_method.loc13_17(%c.ref, %.loc13_13.5)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
@@ -776,6 +791,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:   %ForEach.type: type = fn_type @ForEach [concrete]
 // CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.2e6: <witness> = require_complete_type %pack_type.164 [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %tuple.type.748: type = tuple_type (%C, %C) [concrete]
 // CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete]
 // CHECK:STDOUT:   %pack_type.b0a: type = pack_type %C, %int_2 [concrete]
@@ -812,13 +828,14 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %pack_type [symbolic = %require_complete (constants.%require_complete.2e6)]
+// CHECK:STDOUT:   %.loc11_15.3: Core.IntLiteral = pack_index [symbolic = %.loc11_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%c.param: @ForEach.%pack_type (%pack_type.164)) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     pack_expansion_statement %arity.loc10_12.2 {
 // CHECK:STDOUT:       %Consume.ref: %Consume.type = name_ref Consume, file.%Consume.decl [concrete = constants.%Consume]
 // CHECK:STDOUT:       %c.ref: @ForEach.%pack_type (%pack_type.164) = name_ref c, %c
-// CHECK:STDOUT:       %.loc11_15.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc11_15.1: Core.IntLiteral = pack_index [symbolic = %.loc11_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc11_15.2: %C = pack_element %c.ref, %.loc11_15.1
 // CHECK:STDOUT:       %Consume.call: init %empty_tuple.type = call %Consume.ref(%.loc11_15.2)
 // CHECK:STDOUT:     }
@@ -862,6 +879,7 @@ fn Twice[U: type](a: U) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.b46
+// CHECK:STDOUT:   %.loc11_15.3 => constants.%.4ee
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- generic_caller.carbon

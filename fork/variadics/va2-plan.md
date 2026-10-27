@@ -117,6 +117,24 @@ id is filed, and the ledger, the gap rows and §A.12's texts do not change. The
 record is "Focused re-review of the fold, VA-2, round 3 (2026-10-27)" before
 the Sign-off section.
 
+Round 3's two reviews read rev 16 at dd61722d9 (amended 2026-10-27, re-review
+round 3: the reviews). Both return REJECT for the head, whose toolchain is still
+fix 3's fill, and both find §2.11's block sound, so rev 16's break condition is
+not met and no shrink is taken. Review 1 finds two BLOCKERs: RR3-1-B1, RR2-1-B1
+aborting in 19 more file-scope `let` shapes than recorded; and RR3-1-B2, C1's
+collapse of `G(... each T)` passing the pack as one argument, so that a callee
+that deduces its pack runs with the wrong arity and no diagnostic and a
+template-dependent callee aborts, where PR 59 refuses each with a VA-1 TODO; and
+one records-only MINOR, RR3-1-m1. Review 2 finds RR3r2-B1, the same miscompile
+for a deduced callee, and three records-only MINORs. Fix 4's block answers the
+three BLOCKERs as specified, so round 3 is not dry and round 4 is owed: its
+fixer commits fix 4 and its fill by hand-off note 8 unchanged, and fix 4's
+records commit carries the records parts that §2.11's last paragraph lists. The
+four records-only findings, and the BLOCKERs' records parts that state the
+head's behavior, are folded by the round's records commit, "VA-2 records:
+re-review round 3 recorded". The record is the reviews' part of "Focused
+re-review of the fold, VA-2, round 3 (2026-10-27)".
+
 Rev 14 (c6e523472, 2026-10-27) was the fold of the focused re-review of rev 13
 (76071383a, on F4 1a9a0a11b), whose verdict was APPROVE-WITH-AMENDMENTS on
 three MINORs, recorded in the rev 14 part of the "Stop-and-amend
@@ -838,7 +856,7 @@ and runs a probe that defines `Run`. Outcomes, verbatim but shortened:
 | p01 StrCat verbatim (:250-260) | TODO `pack expansion pattern outside an explicit parameter list` | parse error `expected identifier or Self after .` | `expected pattern` | name `ConvertibleToString` not found (the design's names do not exist in Core) |
 | p02 StrCat over a local `Digit` interface | same TODO | parse error | `expected pattern` | runs: 1 20 1 4 0 |
 | p03 Zip verbatim (:67-82) | same TODO, then `expected expression` at `...and` | parse error | `expected pattern` | name `Vector` not found |
-| p04 Apply verbatim (:273-279) | same TODO | parse error | `expected pattern` | name `Call` not found, then TODO `HandleAutoTypeLiteral` |
+| p04 Apply verbatim (:273-279) | same TODO | parse error | `expected pattern` | name `Call` not found, then TODO `HandleAutoTypeLiteral`; with fix 4 (§2.11) the second diagnostic is W-345's TODO at 2:36 instead, and `Core.Call(... each T)` adds it at 1:41 after its NameNotFound, so once `Call` resolves Apply needs W-345 too (amended 2026-10-27, re-review round 3: RR3-1-m1) |
 | p05 TupleConcat verbatim (:287-293) | same TODO | parse error | `expected pattern` | error `parameter list can contain at most one pack expansion pattern` (§0.8 F-3) |
 | p06 Min with `Core.Ordered & Core.Copy` (:262-271) | TODO `pack expansion of a statement other than an expression statement` | parse error | `expected pattern` | same TODO; from C3 on, "cannot access member of interface `Core.Destroy` in type `T` that does not implement that interface" at `var result: T` (4:3), the bound lacking `Core.Destroy`, as a pack-free analog reports on va, trunk and the nightly (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); the requirement is upstream's at 4c5734a8c and the text the base's, whose `BuildSelfDestructCall` forms `Core.Destroy`'s `SelfDestruct` member where upstream's calls the free function `Core.SelfDestruct[T: Destroy]` (M-25) (amended 2026-10-27, review fold: RR11-m2) |
 | p07 Type versus execution (:512-518) | TODO `pack expansion pattern declaring more than one each-name`, then `expected ( after if` | parse error | `expected pattern` | same |
@@ -2613,12 +2631,15 @@ fill, whose toolchain the head 45213d1c1 holds), PR 59's
     prints 1 2 4 5 7 and k04 1 in three runs on the head, and PR 59 refuses
     both with VA-1's TODO. The IN form f04, a `let` of a tuple of one segment
     and an expanded `if` in a generic, prints 3 0 as its twin.
--   The re-scan (`rescan.txt`, `rescan_refs.txt`, `rescan_wt.txt`): after `git
-    fetch origin` at 2026-10-27T17:51Z, `W-3[3-9][0-9]` over 164 refs and the
-    `fork/` trees of 20 worktrees names W-345 only in this branch's plan and
-    decision log, as round 1's and round 2's candidate, and W-399 only as DR-1's
-    range bound; W-340 to W-344 are filed elsewhere, so W-345 is the next free
-    id (§1.11).
+-   The re-scan (`rescan_refs.txt` and `rescan_wt.txt`, the per-id counts;
+    `rescan.txt`'s `refs=0` and `worktrees=0` are a counter bug, and the 164
+    refs, 23 local heads and 141 remote-tracking, and the 20 worktrees are
+    counted again in `scratchpad/va2-rr/rec-r3/logs/rescan_counts.txt`; amended
+    2026-10-27, re-review round 3: RR3r2-m3): after `git fetch origin` at
+    2026-10-27T17:51Z, `W-3[3-9][0-9]` over 164 refs and the `fork/` trees of 20
+    worktrees names W-345 only in this branch's plan and decision log, as round
+    1's and round 2's candidate, and W-399 only as DR-1's range bound; W-340 to
+    W-344 are filed elsewhere, so W-345 is the next free id (§1.11).
 -   The block (§2.11), in a worktree detached at 45213d1c1 under
     /dev/shm/va2-rr-fixer3, relinked over the head build's objects
     (`$F3/bin/relink.sh`, the amenders' recipe; 0 warnings,
@@ -2667,6 +2688,17 @@ fill, whose toolchain the head 45213d1c1 holds), PR 59's
     for it (§8.9).
 -   Upstream: `git ls-remote upstream refs/heads/trunk` gives 33863ed07
     at 2026-10-27T18:19Z, rev 15's reading.
+-   Round 3's reviews (amended 2026-10-27, re-review round 3: RR3-1-B1 /
+    RR3-1-B2 / RR3r2-B1), reproduced in `scratchpad/va2-rr/rec-r3` on the head's
+    install, fix 4's block relinked, PR 59's, trunk's and the nightly: 19 more
+    file-scope `let` shapes abort on the head, n01, n03 to n06, n08, n09, n16,
+    n17, n22, n24 to n30, n32 and n33, each reporting a diagnostic with the
+    block; and RR2-1-m2's form is a miscompile for a callee that deduces its
+    pack, m01b printing 1 1 1 (its twin 3 0 1), m06b 1 1 1 (its twin 3 1), m19 1
+    1 and q19 1 (its twin 3), and an abort for a template-dependent callee, t02
+    at check/convert.cpp:523, each W-345's TODO with the block. Fix 4's records
+    commit re-measures them on the branch with this record's other forms
+    (§2.11).
 
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
@@ -3024,39 +3056,39 @@ and is recorded for after-the-fact veto in the decision-log entry "VA-2"
     one impl and tuple `EqWith(Self)` and `OrderedWith(Self)` in
     core/prelude/operators/comparison.carbon (W-225).
 
-That is everything the design's Min (:262-271, §A.5), StrCat's text with
-Core's missing names declared locally and a `ToString` whose result needs no
-per-element cleanup (:250-260, §A.10), StrCat's shape over an interface the
-fork has (§A.1), the tuple-typed parameter and return of Apply's and
-TupleConcat's signatures (:273-293, §A.4) and the prelude's tuple impls need.
-It is not everything W-213's and W-212's arbiters need (amended 2026-10-22,
-review fold: B-B1 / B-M3): StrCat's text with a `String`-typed `ToString`
-needs per-element cleanups of the temporaries (W-220, x01); Zip's signature
-needs element types computed from an each-name (W-330) and its body `...and`
-(W-216); Apply needs p002875's variadic `Core.Call` (W-226), `...expand`
-(W-217) and `-> auto`, which upstream's bf5d2a2ac adds and the next advance
-brings; TupleConcat needs a second implicit-list pack and a tuple of two
-segments (W-222) and `...expand` (W-217). So W-212 and W-213 are narrowed,
-not discharged, W-212's substitution recorded (§1.9); rev 1 to rev 14
-discharged W-212 with it (amended 2026-10-27, implementation-review fold:
-MAJOR-1). It is one deduced arity per generic: every pack of a function or
-impl has the arity of its first pack expansion pattern, so the same-arity
-rule ("All each-names in a given expansion must refer to packs with the same
-arity", :147-148) holds; rev 1 said "by construction", but a second
-each-name binding whose type names no pack added a second arity silently, and
-its specific read the shorter pack out of range (M-14), so rev 2 makes that
-binding the `semantics TODO: more than one pack arity in a generic` (D-VA2-4),
-and W-222's independent arities stay filed (amended 2026-10-22, review fold:
-A-B-1). _Break condition:_ a form inside this boundary is mis-checked or
-lowered with another iteration's type or callee, or an arbiter of §1.8 needs a
-form outside it. Round 1 of the focused re-review of the fold found the first
-half met by RR1-1-M1, a pack of facets not converted to a narrower facet type,
-which rejects IN forms whose fixed-arity twins run; round 2's fold answers it,
-by the root fix or by a TODO that narrows the slice (amended 2026-10-27,
-re-review round 1: RR1-1-M1). Round 2's fold answers it by the root fix, so the
-slice is unchanged: a compile-time pack of facets converts to a pack of a
-narrower facet type element by element (D-VA2-5, §2.10, M-28) (amended
-2026-10-27, re-review round 2: RR1-1-M1).
+That is everything the design's Min (:262-271, §A.5), StrCat's text with Core's
+missing names declared locally and a `ToString` whose result needs no
+per-element cleanup (:250-260, §A.10), StrCat's shape over an interface the fork
+has (§A.1), the tuple-typed parameter and return of Apply's and TupleConcat's
+signatures (:273-293, §A.4) and the prelude's tuple impls need. It is not
+everything W-213's and W-212's arbiters need (amended 2026-10-22, review fold:
+B-B1 / B-M3): StrCat's text with a `String`-typed `ToString` needs per-element
+cleanups of the temporaries (W-220, x01); Zip's signature needs element types
+computed from an each-name (W-330) and its body `...and` (W-216); Apply needs
+p002875's variadic `Core.Call` (W-226), `...expand` (W-217) and `-> auto`, which
+upstream's bf5d2a2ac adds and the next advance brings, and, since fix 4 refuses
+`Call(... each T)` with a TODO, W-345 (amended 2026-10-27, re-review round 3:
+RR3-1-m1); TupleConcat needs a second implicit-list pack and a tuple of two
+segments (W-222) and `...expand` (W-217). So W-212 and W-213 are narrowed, not
+discharged, W-212's substitution recorded (§1.9); rev 1 to rev 14 discharged
+W-212 with it (amended 2026-10-27, implementation-review fold: MAJOR-1). It is
+one deduced arity per generic: every pack of a function or impl has the arity of
+its first pack expansion pattern, so the same-arity rule ("All each-names in a
+given expansion must refer to packs with the same arity", :147-148) holds; rev 1
+said "by construction", but a second each-name binding whose type names no pack
+added a second arity silently, and its specific read the shorter pack out of
+range (M-14), so rev 2 makes that binding the `semantics TODO: more than one
+pack arity in a generic` (D-VA2-4), and W-222's independent arities stay filed
+(amended 2026-10-22, review fold: A-B-1). _Break condition:_ a form inside this
+boundary is mis-checked or lowered with another iteration's type or callee, or
+an arbiter of §1.8 needs a form outside it. Round 1 of the focused re-review of
+the fold found the first half met by RR1-1-M1, a pack of facets not converted to
+a narrower facet type, which rejects IN forms whose fixed-arity twins run; round
+2's fold answers it, by the root fix or by a TODO that narrows the slice
+(amended 2026-10-27, re-review round 1: RR1-1-M1). Round 2's fold answers it by
+the root fix, so the slice is unchanged: a compile-time pack of facets converts
+to a pack of a narrower facet type element by element (D-VA2-5, §2.10, M-28)
+(amended 2026-10-27, re-review round 2: RR1-1-M1).
 
 ### §1.2 The design's rules, VA-1's DR-1..DR-42 table extended
 
@@ -3551,7 +3583,7 @@ golden split (§4), each in check, each filed:
 | a binding type computed from an each-name | `pack expansion pattern whose binding type is computed from an each-name` | W-330 |
 | an expansion without each-names in a binding's type, `t: (... i32)` (DR-17; VA-1's error `pack expansion does not use any each-name` there, F-7) | `pack expansion without an each-name in a binding's type` (amended 2026-10-22, review fold: A-m-5 / B-M2) | W-337 |
 | forwarding a pack of different types to a pack of one type, or the reverse (M-16) | `forwarding a pack of different types to a pack of one type, or the reverse` (amended 2026-10-22, review fold: A-M-2) | W-336 |
-| a compile-time pack expanded as a call's arguments, `G(... each T)` (RR2-1-m2; fix 4's, specified by rev 16 and measured on its scratch tree, M-29) | `pack expansion of a compile-time pack in a call's argument list` (amended 2026-10-27, re-review round 3: RR2-1-m2) | W-345 (reserved, §1.11) |
+| a compile-time pack expanded as a call's arguments, `G(... each T)` (RR2-1-m2; fix 4's, specified by rev 16 and measured on its scratch tree, M-29; on the head a wrong arity with no diagnostic for a callee that deduces its pack and an abort for a template-dependent one, amended 2026-10-27, re-review round 3: RR3-1-B2 / RR3r2-B1) | `pack expansion of a compile-time pack in a call's argument list` (amended 2026-10-27, re-review round 3: RR2-1-m2) | W-345 (reserved, §1.11) |
 | a tuple with more than one pack segment | `tuple with more than one pack segment` | W-222 |
 | a segment merged with other elements in a deduction | `tuple pack segment matched with other segments` | W-215 |
 | an integer tuple index at or after a pack segment, `t.0` with `t: (... each T)` (RV1-B3) | `tuple index at or after a pack segment` (since the fix, measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B3) | W-215 |
@@ -3975,6 +4007,25 @@ Id(each T))`, which takes the expansion's per-element path, does on the head
 split `fail_todo_type_pack_call_args`, after a re-scan; until then no ledger
 files it.
 
+Round 3's reviews re-grade W-345's form (amended 2026-10-27, re-review round 3:
+RR3-1-B2 / RR3r2-B1 / RR3-1-m1 / RR3r2-m3). On the head it is not only a wrong
+diagnostic: C1's collapse passes the pack as one argument, so that a callee that
+deduces its pack runs with a pack of one element and no diagnostic (m01b and q19
+print 1 where their fixed-arity twins print 3), a template-dependent callee
+aborts at check/convert.cpp:523 (t02), and only another callee gets the
+conversion error with no location; W-345's notes, which fix 4's records commit
+writes, say so. The rejected alternative (§2.11), the collapse skipped outside a
+tuple literal, measured on a relink by round 3's review 1 and again by its
+records writer, is W-345's break-condition data: e02, e06, e07, e08, e12, m02,
+m03, m09 and m16 run as their twins; e09 reports "cannot implicitly convert
+expression of type `type` to `i32`" at its argument; e01 `semantics TODO:
+conversion of runtime facet value`; and m01 and m01b W-336's TODO. The re-scan's
+per-id counts are `$F3/logs/rescan_refs.txt` and `rescan_wt.txt`; its 164 refs
+(23 local heads and 141 remote-tracking) and 20 worktrees are counted again in
+`scratchpad/va2-rr/rec-r3/logs/rescan_counts.txt`, `rescan.txt`'s `refs=0` and
+`worktrees=0` being a counter bug; fix 4's records commit logs its own re-scan's
+counts with it.
+
 ### §1.12 The V-3a register (DR-0) and decision index
 
 Register entries VA-2 adds, each an open question of the design at
@@ -4059,7 +4110,7 @@ review fold: B-M8).
 | D-VA2-16 | ten programs, three differential (`*_diff`) | a program passes a mutant |
 | D-VA2-17 | records; no design edit; W-225 discharged, W-212 and W-213 narrowed (amended 2026-10-27, implementation-review fold: MAJOR-1); both rows stay PARTIAL with narrower open text | VA-2 decides an open rule without a register entry |
 | D-VA2-18 | one PR on PR 59, merging last, land-time M, S-CT (tests only since rev 3), F-M, L-F, L, simulated on the full-stack mirror | an unresolvable conflict at land time, or a land simulation's red set other than predicted, the second met at stage 7 with no unresolvable conflict (amended 2026-10-27, implementation-review fold: MAJOR-2) |
-| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); since rev 8 C1 refuses an impl's pack with a TODO that C2 removes (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold: RR7-M4); since rev 11 C3 is followed by C3b, the lowering of packs of aggregates that C3's `... if` reaches (§2.8, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); since rev 12 §2.8's hunks are C3's and C3b is not a commit (M-25) (amended 2026-10-27, review fold: RR11-M1) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed; since rev 8 also a commit that would select or compute otherwise than its base without a diagnostic because a later commit completes the form, which then refuses the form with a precise TODO until that commit (amended 2026-10-26, review fold: RR7-M4); since rev 12, replacing rev 11's clause (a later commit fixing it before the stage's fill), also a defect that a stage's review finds the stage's commit reaching, which that commit takes, fixed at the root, by a plan revision before it is committed, as rev 7's rule moves a hunk, so that no commit aborts on a form its base refuses with a diagnostic (amended 2026-10-27, review fold: RR11-M1) |
+| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, since rev 16 four, the fourth (fix 4, §2.11) by D-VA2-19's break condition for RR2-1-B1, RR2-1-m1 and RR2-1-m2 only (amended 2026-10-27, re-review round 3: RR3r2-m1), a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); since rev 8 C1 refuses an impl's pack with a TODO that C2 removes (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold: RR7-M4); since rev 11 C3 is followed by C3b, the lowering of packs of aggregates that C3's `... if` reaches (§2.8, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); since rev 12 §2.8's hunks are C3's and C3b is not a commit (M-25) (amended 2026-10-27, review fold: RR11-M1) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed; since rev 8 also a commit that would select or compute otherwise than its base without a diagnostic because a later commit completes the form, which then refuses the form with a precise TODO until that commit (amended 2026-10-26, review fold: RR7-M4); since rev 12, replacing rev 11's clause (a later commit fixing it before the stage's fill), also a defect that a stage's review finds the stage's commit reaching, which that commit takes, fixed at the root, by a plan revision before it is committed, as rev 7's rule moves a hunk, so that no commit aborts on a form its base refuses with a diagnostic (amended 2026-10-27, review fold: RR11-M1) |
 
 ## §2 Spec, file by file
 
@@ -5755,7 +5806,13 @@ Each hunk, with its finding:
     (D-VA2-4), or "name `T` not found". Invariant: every other `let` takes the
     path it took, but one in an interface's default function body, which the
     check refused as `pack expansion pattern in an interface function`, now
-    reports the deduced-arity TODO, also an OUT form's TODO (f02).
+    reports the deduced-arity TODO, also an OUT form's TODO (f02). Round 3's
+    review 1 found 19 more file-scope shapes that abort on the head, with
+    `auto`, `private`, `export`, `ref` or `var`, an initializer or none, a
+    trailing comma, a qualified name, a parse error's recovery, or after a
+    choice or an interface (n01, n03 to n06, n08, n09, n16, n17, n22, n24 to
+    n30, n32, n33); with the block each reports a diagnostic and none aborts
+    (amended 2026-10-27, re-review round 3: RR3-1-B1).
 -   The second hunk (RR2-1-m2). C1's collapse of `... each T`, for a
     compile-time pack, to the pack itself is a tuple literal's segment (D-VA2-3,
     D-VA2-8); in a call's argument list, the other context of an expression
@@ -5763,20 +5820,34 @@ Each hunk, with its finding:
     call converted whole to the parameter's element type, reporting "cannot
     implicitly convert non-type value of type `«type; <pack arity>»` to `type`"
     with no location, the pack's canonical constant having none (e01, e02, e06
-    to e09, e12). With the block the form is `semantics TODO: pack expansion of
-    a compile-time pack in a call's argument list` at the `...`, an OUT form's
-    TODO (§1.1, D-VA2-13), filed as W-345 by fix 4's records commit. Invariant:
-    a tuple literal's `(... each T)`, as a type, an argument or an impl's self
-    type, keeps C1's segment (e10 prints 8 8 as its twin), and an expansion
-    whose body is not exactly an each-name of a compile-time pack, such as
-    `G(... Id(each T))`, keeps VA-1's per-element expansion (e13 prints 6).
+    to e09, e12). That is one of three consequences (amended 2026-10-27,
+    re-review round 3: RR3-1-B2 / RR3r2-B1): a callee that deduces its pack
+    takes the one argument as a pack of one element and runs with no diagnostic,
+    a silent wrong arity (m01b and q19 print 1 where their fixed-arity twins
+    print 3; m06b and m19 likewise), and a template-dependent callee, `T.G(...
+    each U)`, aborts at check/convert.cpp:523 (t02). With the block the form is
+    `semantics TODO: pack expansion of a compile-time pack in a call's argument
+    list` at the `...`, an OUT form's TODO (§1.1, D-VA2-13), filed as W-345 by
+    fix 4's records commit. Invariant: a tuple literal's `(... each T)`, as a
+    type, an argument or an impl's self type, keeps C1's segment (e10 prints 8 8
+    as its twin), and an expansion whose body is not exactly an each-name of a
+    compile-time pack, such as `G(... Id(each T))`, keeps VA-1's per-element
+    expansion (e13 prints 6). Each of the three consequences becomes the TODO,
+    as PR 59 refuses the form with a VA-1 TODO (m01b, m06b, m19, q19 and t02;
+    amended 2026-10-27, re-review round 3: RR3-1-B2 / RR3r2-B1).
 -   Rejected for the second hunk: dropping the collapse in a call's argument
     list, so that `G(... each T)` takes the per-element path as `G(... Id(each
     T))` does. It would admit a form outside §1.1's IN list with no golden and
     no program, so the TODO is taken, and the alternative is W-345's break
-    condition (§1.11).
+    condition (§1.11). Measured on a relink by round 3's review 1 and by its
+    records writer (amended 2026-10-27, re-review round 3: RR3-1-m1): e02, e06,
+    e07, e08, e12, m02, m03, m09 and m16 run as their twins (6, 6, 6, 6, 10, 12,
+    13, 18 and 20); e09 reports "cannot implicitly convert expression of type
+    `type` to `i32`" at 3:55; e01 `semantics TODO: conversion of runtime facet
+    value` at 3:75; and m01 and m01b W-336's TODO.
 -   The import split (RR2-1-m1) is a test of fix 3's code, import_ref.cpp's
-    `TryResolveTypedInst` for a `PackFacetValue` (:2525-2536 and :5080-5082),
+    `TryResolveTypedInst` for a `PackFacetValue` (:2523-2536 and :5080-5082;
+    the first range amended 2026-10-27, re-review round 3: RR3r2-m3),
     which no golden reached: `F`'s eval block in another library holds the
     `pack_facet_value` of its forwarding to `G`, imported when the main file
     calls `F` concretely and from a generic.
@@ -5892,9 +5963,17 @@ re-measured on the branch; the ledger files W-345 after a re-scan, and W-214's
 notes gain the file-scope `let`; the decision log's landed notes, §A.12's text
 and the PR text gain the clause "C2 3af0471b6 to the commit before fix 4 abort
 on a pack expansion pattern in a file-scope `let`, and C1 0aa8dd347 to the
-commit before fix 4 diagnose a compile-time pack expanded as call arguments with
-no location, until fix 4 (the plan's §2.11)", with fix 4's hash and its parent's
-in place of the words; and this heading says "built". _Break condition:_ a fill
+commit before fix 4 pass a compile-time pack expanded as call arguments as one
+argument, so that a callee that deduces its pack gets the wrong arity with no
+diagnostic, a template-dependent callee aborts and any other callee gets a
+conversion error with no location, until fix 4 (the plan's §2.11)", with fix 4's
+hash and its parent's in place of the words (the clause amended 2026-10-27,
+re-review round 3: RR3-1-B1 / RR3-1-B2 / RR3r2-B1); and this heading says
+"built". Since round 3's reviews (amended 2026-10-27, re-review round 3: the
+reviews), the records commit also re-measures M-29's last bullet on the branch,
+files W-345 with §1.11's re-grade and the rejected alternative's outcomes in its
+notes, and logs its re-scan's ref and worktree counts with the re-scan
+(RR3r2-m3). _Break condition:_ a fill
 that differs from `$F3/fx4_filled.patch`, a red golden outside the four, a moved
 conformance count or a probe line of M-29 that differs stops fix 4's fixer
 before any commit, and the plan is amended again.
@@ -5982,7 +6061,9 @@ needs a toolchain, prelude, golden or program change beyond it; the PR
 then stops again, and the next revision, reviewed before any commit,
 takes the shrink line through shrink 2 with its expected counts
 re-derived on the tree that holds fixes 1 to 4, or narrows the slice by a
-TODO that a review finds hides no IN form.
+TODO that a review finds hides no IN form. Round 3's two reviews find
+the block sound and no finding that needs code beyond it, so the break condition
+is not met (amended 2026-10-27, re-review round 3: the reviews).
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
 B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
@@ -6232,7 +6313,11 @@ The commits, in order:
     type", the third fix commit after 1ad7c9b5e and bdd7b2424, and its fill
     903a0c321, "VA-2 fix fill: autoupdate fix 3's splits on the container
     arbiter"; no commit of the budget is left and no shrink is taken (amended
-    2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
+    2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1). Since rev 16 the budget
+    is four, the fourth, fix 4 (§2.11), with its fill, by D-VA2-19's break
+    condition for RR2-1-B1, RR2-1-m1 and RR2-1-m2 only; round 3's reviews find
+    its block sound, and round 4's fixer commits it (amended 2026-10-27,
+    re-review round 3: RR3r2-m1).
 13. **R, the rows.** §A.12's text for "Generics: Definition-checked variadics"
     and "Stdlib: tuple/array library parts", quoting §8.4's container run,
     EXPECTED, not of record; both stay PARTIAL, so the header's counts do not
@@ -8445,7 +8530,11 @@ W-344 (trunk), and no id is re-allocated (amended 2026-10-27, discharge).
     conformance (147 / 0 / 21 of 168, three runs), MV-24 to MV-26 and M-29's
     probes on the four toolchains, and then writes the records commit that
     §2.11 lists, after a re-scan, filing W-345. A difference from §2.11's
-    predictions stops it before any commit, and the plan is amended again.
+    predictions stops it before any commit, and the plan is amended again. Round
+    3's two reviews (amended 2026-10-27, re-review round 3: the reviews) find
+    the block sound, so round 4's fixer takes this note unchanged, and its
+    records commit also carries the records parts that §2.11's last paragraph
+    lists since round 3's reviews.
 
 ## Review fold record (rev 2, 2026-10-22)
 
@@ -10117,9 +10206,9 @@ reviewed before any commit.
 
 | Finding | Review | Severity | Reproduced | Disposition | Where |
 | --- | --- | --- | --- | --- | --- |
-| RR2-1-B1 a pack expansion pattern in a file-scope `let` aborts the compiler | round 2, review 1 | BLOCKER | yes (M-29, `$F3/logs/base_single.txt`, `base_new.txt`): d12, d15, f05, f09 and f10 (a file-scope `let` pack pattern alone, after `namespace N;`, after a class, with an unknown each-name and in a named package) and d07 and d18 (`Missing` as its binding type) abort with rc 134 at SmallVector.h:322's `!empty()` under `DeclNameStack::PeekParentScopeId`; d13, d14, d19, f03 and f08 (in a function, a class, an impl, a namespace's function and a class's function) report the deduced-arity TODO; PR 59 reports VA-1's TODO for each, and trunk and the nightly reject each at parse; the root cause, C2's `in_let` admitting a `let` at file scope, where VA-1's interface check reads an empty declaration-name stack | Answered by D-VA2-19's break condition, rev 16 (above): fix 4's first hunk, the review's fix, `!in_let &&` before the interface check (§2.11), measured on the scratch tree: d12, d15, f05 and f10 report the deduced-arity TODO at their `...`, d07 and d18 NameNotFound alone, f09 "name `T` not found", every other `let` as before but f02, an interface's default function body, whose TODO becomes the deduced-arity one; the splits `fail_todo_let_file_scope` (check fail_todo_slice) and `fail_let_file_scope_binding_type_error` (check fail_hetero_pack), on which the head's file_test aborts, pin it, MV-24 killing it; not committed in round 3 | handle_pack_expansion.cpp:76-91; D-VA2-9, D-VA2-19, §2.11, §3, §4, §8.5, M-29, hand-off note 8 |
-| RR2-1-m1 importing a `PackFacetValue` is reachable but pinned by no golden | round 2, review 1 | MINOR | yes: `pack_facet_value` occurs in check prelude_tuple_impls alone, whose splits are each one library; xlib prints 1 2 4 5 7 and k04 1 in three runs on the head; PR 59 refuses both with VA-1's TODO | Answered by rev 16: fix 4's two-file split `import_forward_wider_facet` (check prelude_tuple_impls, §2.11's source, the review's shape: `G[... each U: Core.Copy]` and `F[... each T: Core.Copy & Core.Destroy]` returning `G(t)` in the lib, `F` called from a concrete function and from a generic in the main file), filled on the scratch tree with no diagnostic; the dump shows the main file's own `pack_facet_value` and the imported `F`'s specifics, and MV-26, review 1's MX-5b, aborts file_test there at check/generic.cpp:242, so the split pins the import as a test; not committed in round 3, and RR2r2-m4's record stands until fix 4 | import_ref.cpp:2525-2536 and :5080-5082; §2.10, §2.11, §4, §8.5, M-29 |
-| RR2-1-m2 a compile-time pack expanded as call arguments gets a wrong diagnostic with no location | round 2, review 1 | MINOR | yes: e01, e02, e06, e07, e08, e09 and e12 report a conversion of the whole pack ("cannot implicitly convert non-type value of type `«type; <pack arity>»` to `type`", or its facet or `i32` variant) with no location; e01's twin prints 5 5 on the four toolchains; PR 59 reports VA-1's TODO, trunk and the nightly reject each at parse; the root cause, C1's collapse of `... each T` to the pack (0aa8dd347), a tuple literal's segment, taken in a call's argument list too | Answered by rev 16: fix 4's second hunk, the review's TODO, `semantics TODO: pack expansion of a compile-time pack in a call's argument list` at the `...` when the expansion is not a tuple literal's element (§2.11), with W-345 reserved after a re-scan (§1.11) and filed by fix 4's records commit; measured: the seven report the TODO at their `...`, e10 (a tuple type argument) prints 8 8 and e13 (`G(... Id(each T))`) 6 as on the head; the split `fail_todo_type_pack_call_args` (check fail_todo_va2) pins it, MV-25 killing it; the review's fallback, a known OUT diagnostic in the records, is not taken, and dropping the collapse in a call, which would admit the form, is rejected as outside §1.1 (W-345's break condition); not committed in round 3 | handle_pack_expansion.cpp:330-344; D-VA2-13, §1.1, §1.11, §2.11, §4, §8.5, M-29 |
+| RR2-1-B1 a pack expansion pattern in a file-scope `let` aborts the compiler | round 2, review 1 | BLOCKER | yes (M-29, `$F3/logs/base_single.txt`, `base_new.txt`): d12, d15, f05, f09 and f10 (a file-scope `let` pack pattern alone, after `namespace N;`, after a class, with an unknown each-name and in a named package) and d07 and d18 (`Missing` as its binding type) abort with rc 134 at SmallVector.h:322's `!empty()` under `DeclNameStack::PeekParentScopeId`; d13, d14, d19, f03 and f08 (in a function, a class, an impl, a namespace's function and a class's function) report the deduced-arity TODO; PR 59 reports VA-1's TODO for each, and trunk and the nightly reject each at parse; the root cause, C2's `in_let` admitting a `let` at file scope, where VA-1's interface check reads an empty declaration-name stack; round 3's review 1 adds 19 more file-scope shapes (RR3-1-B1; amended 2026-10-27, re-review round 3: RR3-1-B1) | Answered by D-VA2-19's break condition, rev 16 (above): fix 4's first hunk, the review's fix, `!in_let &&` before the interface check (§2.11), measured on the scratch tree: d12, d15, f05 and f10 report the deduced-arity TODO at their `...`, d07 and d18 NameNotFound alone, f09 "name `T` not found", every other `let` as before but f02, an interface's default function body, whose TODO becomes the deduced-arity one; the splits `fail_todo_let_file_scope` (check fail_todo_slice) and `fail_let_file_scope_binding_type_error` (check fail_hetero_pack), on which the head's file_test aborts, pin it, MV-24 killing it; not committed in round 3 | handle_pack_expansion.cpp:76-91; D-VA2-9, D-VA2-19, §2.11, §3, §4, §8.5, M-29, hand-off note 8 |
+| RR2-1-m1 importing a `PackFacetValue` is reachable but pinned by no golden | round 2, review 1 | MINOR | yes: `pack_facet_value` occurs in check prelude_tuple_impls alone, whose splits are each one library; xlib prints 1 2 4 5 7 and k04 1 in three runs on the head; PR 59 refuses both with VA-1's TODO | Answered by rev 16: fix 4's two-file split `import_forward_wider_facet` (check prelude_tuple_impls, §2.11's source, the review's shape: `G[... each U: Core.Copy]` and `F[... each T: Core.Copy & Core.Destroy]` returning `G(t)` in the lib, `F` called from a concrete function and from a generic in the main file), filled on the scratch tree with no diagnostic; the dump shows the main file's own `pack_facet_value` and the imported `F`'s specifics, and MV-26, review 1's MX-5b, aborts file_test there at check/generic.cpp:242, so the split pins the import as a test; not committed in round 3, and RR2r2-m4's record stands until fix 4 | import_ref.cpp:2523-2536 (amended 2026-10-27, re-review round 3: RR3r2-m3) and :5080-5082; §2.10, §2.11, §4, §8.5, M-29 |
+| RR2-1-m2 a compile-time pack expanded as call arguments gets a wrong diagnostic with no location | round 2, review 1 | MINOR | yes: e01, e02, e06, e07, e08, e09 and e12 report a conversion of the whole pack ("cannot implicitly convert non-type value of type `«type; <pack arity>»` to `type`", or its facet or `i32` variant) with no location; e01's twin prints 5 5 on the four toolchains; PR 59 reports VA-1's TODO, trunk and the nightly reject each at parse; the root cause, C1's collapse of `... each T` to the pack (0aa8dd347), a tuple literal's segment, taken in a call's argument list too; re-graded by round 3's reviews: a callee that deduces its pack runs with the wrong arity and no diagnostic, and a template-dependent callee aborts (RR3-1-B2 / RR3r2-B1; amended 2026-10-27, re-review round 3: RR3-1-B2 / RR3r2-B1) | Answered by rev 16: fix 4's second hunk, the review's TODO, `semantics TODO: pack expansion of a compile-time pack in a call's argument list` at the `...` when the expansion is not a tuple literal's element (§2.11), with W-345 reserved after a re-scan (§1.11) and filed by fix 4's records commit; measured: the seven report the TODO at their `...`, e10 (a tuple type argument) prints 8 8 and e13 (`G(... Id(each T))`) 6 as on the head; the split `fail_todo_type_pack_call_args` (check fail_todo_va2) pins it, MV-25 killing it; the review's fallback, a known OUT diagnostic in the records, is not taken, and dropping the collapse in a call, which would admit the form, is rejected as outside §1.1 (W-345's break condition); not committed in round 3 | handle_pack_expansion.cpp:330-344; D-VA2-13, §1.1, §1.11, §2.11, §4, §8.5, M-29 |
 
 Also recorded by the round, outside the findings: the head's own gate and
 conformance, unchanged by the round, are 1977 passed and 0 failed and
@@ -10131,7 +10220,174 @@ golden; and the landed notes' bisection clause for RR2-1-B1 and RR2-1-m2
 is added by fix 4's records commit, which knows fix 4's hash (§2.11). The
 PR body (`pr_va2.md` in the scratchpad) is refreshed.
 
+Round 3's two reviews (amended 2026-10-27, re-review round 3: the reviews) read
+rev 16 at the head dd61722d9, the records commit "VA-2 re-review fix: round 3
+folded into the records" (the plan +502 / -3, the decision log +23 and
+fork/ORCHESTRATION.md +28 / -7), whose `toolchain` tree is d33d478d1, fix 3's
+fill's, and whose install prints 0.0.0-0.dev+903a0c321; `git diff
+53460373d..dd61722d9 -- toolchain core` is empty. Each judged the head, and rev
+16's break-condition judgment and §2.11's block. Upstream's tip is still
+33863ed07 (this record's `git ls-remote upstream refs/heads/trunk` at
+2026-10-27T19:21:15Z), origin/trunk is ad2e45a66, and the fifteen held heads are
+the landed notes' (this record's `git fetch origin` at 2026-10-27T19:21:16Z).
+Two fresh reviews, each in its own scratch (`scratchpad/va2-rr/rev1-r3` and
+`rev2-r3`), and this record's reproductions (`$RR3`, `scratchpad/va2-rr/rec-r3`,
+its `probes/`, `probes_alt/` and `logs/`), all under
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b`;
+every figure is container-local, EXPECTED, not of record (R9). This record ran
+each single-file probe it cites on the head's install; on fix 4's block relinked
+over the head build's objects (`/dev/shm/va2-rr-rec3/fx4`, from
+`$F3/fx4_code.patch`, md5 12462492984a2be7c1716f13da16a9f1, deleted after); on
+review 1's rejected alternative relinked the same way (`fx4b`, from
+`rev1-r3/fx4bsrc`, deleted after); on PR 59's (0.0.0-0.dev+88b1b5bd2); on
+trunk's (0.0.0-0.dev+0bdce60a5); and on the nightly of 2026.10.12 (R30), trunk
+and the nightly rejecting every pack form at parse.
+
+-   **Review 1: REJECT, judged not dry.** Two BLOCKERs, RR3-1-B1 and RR3-1-B2,
+    and one MINOR, RR3-1-m1, records only. The REJECT is the head's, which still
+    aborts on RR2-1-B1's forms and miscompiles RR2-1-m2's; review 1 does not
+    reject §2.11's block and finds no code beyond it, so rev 16's break
+    condition is not met. Its runs: `git log -L` of
+    handle_pack_expansion.cpp:76-94 and :330-346 naming only C1 0aa8dd347 and C2
+    3af0471b6, so that shrink 1 reaches neither hunk; d01 to d03 printing 101 1,
+    1 2 and 1 2 on the head, where PR 59 and trunk abort (lower.cpp:48 for d01
+    and d02, handle_call.cpp:984 for d03), the shrink-2 premise, whose revert it
+    did not re-derive; §2.11's diff byte-equal to `$F3/fx4_code.patch` and to
+    the code part of `fx4_unfilled.patch`, both applying to the head; its own
+    fill of the block on a scratch copy, content-identical to `fx4_filled.patch`
+    but for abbreviated `index` hashes, at its fixpoint in one pass; the gate
+    with the block, 1977 passed and 0 failed with the code alone, 1973 and 4
+    with the sources unfilled, no crash, and 1977 and 0 after the fill; the
+    head's file_test aborting on the filled fail_hetero_pack and
+    fail_todo_slice, failing fail_todo_va2 and passing prelude_tuple_impls;
+    clang-format 21.1.8 clean; the head's gate, 1977 passed and 0 failed, and
+    conformance, PASS 147, 0 failures, SKIP 21 of 168, bullets 49 / 0 / 7 / 0 of
+    56, the block's install giving the same per-program statuses; a full
+    autoupdate of a copy of the head changing nothing; MV-24 aborting file_test
+    in fail_todo_slice, MV-25 1976 passed and 1 failed (fail_todo_va2), MV-26
+    aborting in import_forward_wider_facet, and its MX-A, import_ref.cpp's
+    `PackFacetValue` case deleted, aborting there too, under each the 19 VA
+    programs PASS; a sweep of 727 earlier probes on the head and the block,
+    every difference a targeted form (15 aborts become diagnostics; 16 stderr
+    changes, the e-forms, f02 and p04; 13 crashes the same on both, recorded
+    upstream classes at lower.cpp:48, convert.cpp:2497 and IntLiteral; 50 object
+    differences in prelude-path strings only, the disassembly identical); VA-1's
+    goldens and every tuple, impl, template and overload golden unchanged, the
+    code-alone gate being 1977 and 0; the template-dependent `T.G(... each x)`
+    with a run-time pack giving TP-1's TODO on the head, the block and PR 59;
+    R17 and R32 holding (hunk 1 skips a check that no `let` can need, hunk 2 is
+    an OUT form's TODO, no mechanism gains a second spelling); and the mirror
+    mall, T* 814d788ef with dd61722d9 merged by §6.2 (rule 1 convert.cpp, rule 2
+    eval.cpp, rule 3 the records, two goldens refilled) and `fx4_unfilled.patch`
+    applied: 326 steps, 0 warnings, 594 s; 2013 passed and 29 failed before its
+    fill, no crash (T*'s 17, VA-2's 8, the seven renames and lower for/bindings,
+    and fix 4's 4); the fill at its fixpoint in one pass (+1693 / -1632), fix
+    4's four fills equal to the scratch fill line for line, so fix 4 adds no
+    land-time refill; 2039 passed and 3 failed after it, the held side's known
+    three (dependent_var_full_prelude, template_constraint's SC-1 × OP-2 split
+    and write_through); PASS 222, 0 failures, SKIP 14 of 236, the measurements
+    stage's; one probe line differing from the block's (m17 loses a second
+    error, the held side's recovery); the worktree and build deleted.
+-   **Review 2: REJECT, judged not dry.** One BLOCKER, RR3r2-B1, and three
+    MINORs, RR3r2-m1 to RR3r2-m3, records only. Its REJECT is the head's too: it
+    approves §2.11's block as sound, so rev 16's break condition is not met and
+    the next fixer follows hand-off note 8 without the shrink line, and it names
+    the carried RR2-1-B1 still aborting at the head (`let (... unused each y:
+    i32) = (1, 2);` at file scope, rc 134). Its runs: 53460373d..dd61722d9 read
+    in full, three records files, origin equal to the head, the worktree clean
+    and the authors, committers and trailers right; the gate on a `git archive`
+    copy, 1977 passed and 0 failed, and a full autoupdate on it a no-op; §2.11's
+    block relinked under /dev/shm, the patches' md5s matching and the block
+    equal to `fx4_code.patch` byte for byte: the code alone 1977 and 0, with the
+    four sources 1973 and 4 with no crash, its autoupdate reproducing
+    `fx4_filled.patch` byte for byte at a fixpoint after one pass, then 1977 and
+    0; the head's file_test aborting on fail_hetero_pack and fail_todo_slice,
+    failing fail_todo_va2 and passing prelude_tuple_impls; MV-24 aborting, MV-25
+    1976 passed and 1 failed, MV-26 aborting at check/generic.cpp:242 in
+    import_forward_wider_facet; conformance on the head and on the block, each
+    PASS 147, 0 failures, SKIP 21 of 168, bullets 49 / 0 / 7 / 0 of 56;
+    clang-format 21.1.8 clean on the block, and clang-tidy (`misc-no-recursion`
+    and the repository config minus `modernize-use-trailing-return-type`,
+    line-filtered to 89-93 and 341-348) exit 0 with no warning; `runner.py
+    --self-test` OK over 168 programs and 56 bullets, and
+    `--update-readme-table` changing nothing; the three oracles built with
+    `-std=c++17 -Wall -Wextra -Werror` printing §5's lines; the JSON loading,
+    154 items, the last W-339, and no W-id in VA-2's added source lines; the
+    landed notes identical in the decision log and the PR body; `git merge-tree`
+    after a fresh fetch against trunk ad2e45a66 and PR 51 to PR 65, the heads
+    and conflict sets the PR body's table's, no held head changing fix 4's five
+    paths; prek `--all-files` on a git copy with the same tree changing nothing,
+    and the R31 counts the fixer's; upstream's tip still 33863ed07; the PR body
+    53467 characters without its title of 203, no hash-number or model id, the
+    footer last; the break-condition judgment sound (d01 to d03 print on the
+    head and with the block and abort on PR 59, trunk and the nightly at
+    lower.cpp:48 and handle_call.cpp, so shrink 2 brings crashes back on
+    ordinary tuples, and no shrink reaches C1's branch or fix 3's import path);
+    and adversarial probes of the block (method calls, impl functions, nested
+    calls, an interface default body, a file-scope `let` with values), none
+    regressing an IN form; its scratch deleted.
+
+The dry judgment. A round is dry when no finding is MAJOR or BLOCKER and none
+needs a toolchain, prelude, golden or program change. RR3-1-B1, RR3-1-B2 and
+RR3r2-B1 are BLOCKERs of the head, a crash and a silent wrong result on forms
+that the base, PR 59, refuses with a TODO, and each needs fix 4's toolchain
+and golden change, so round 3 is NOT DRY and round 4 is owed. Neither review
+rejects §2.11's block, and neither finds a code finding beyond it: hunk 1
+answers every file-scope shape (RR3-1-B1), and hunk 2 every compile-time pack in
+a call's argument list before the callee is examined (RR3-1-B2, RR3r2-B1), which
+`fail_todo_type_pack_call_args` and MV-25 already pin. So rev 16's break
+condition is not met, no shrink is taken, and round 4's fixer follows hand-off
+note 8 unchanged: fix 4 with its fill, reproducing `$F3/fx4_filled.patch` byte
+for byte, then its records commit, which also carries the records parts that
+§2.11's last paragraph now lists (R29). The optional second `fail_todo_` split
+with a deduced callee, which both reviews name as not required, is not taken: it
+takes the branch that MV-25 kills, and a fill that differs from
+`fx4_filled.patch` is hand-off note 8's stop; _break condition:_ a review names
+a golden for a deduced callee as owed, which a later test-only owner then adds
+after fix 4. Every records-only finding is folded here, each reproduced against
+the tree first, none rejected; the BLOCKERs' records parts that state the head's
+behavior are folded here too, and those that need fix 4's hash or its
+measurement on the branch go to fix 4's records commit (§2.11). Nothing is
+committed to the toolchain, goldens or programs, no id is filed (W-345 stays
+reserved, §1.11), and the ledger, the gap rows and §A.12's texts do not change.
+
+| Finding | Review | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- | --- |
+| RR3-1-B1 RR2-1-B1 still aborts at the head, in more file-scope shapes than recorded | round 3, review 1 | BLOCKER | yes (`$RR3/logs/probes.txt` and `summary.txt`): the seven recorded (d07, d12, d15, d18, f05, f09, f10) and 19 more file-scope shapes abort with rc 134 on the head at SmallVector.h:322's `!empty()` on a `DeclNameStack::NameContext`: n01 (`:!`, a parse error's recovery), n03 (`auto`), n04 (an initializer of two elements), n05 (no initializer), n06 (`each _`), n08 (`private`), n09 (`ref`), n16 (`var`), n17 (a trailing comma), n22 (`each T` of an alias), n24 (a function after it), n25 (a qualified name), n26, n27 (`export`), n28 to n30, n32 (after a choice) and n33 (after an interface); review 1 counted 23 and listed 18, and its log `rev1-r3/logs/new_n.txt` holds the 19; PR 59 reports VA-1's TODO for each, and trunk and the nightly reject each at parse; with the block each reports a diagnostic and none aborts: the deduced-arity TODO at the `...` (n04, n05, n08, n17, n24, n26 to n30, n32, n33), "`each T` does not name a pack" (n22), `each-name binding that is ref, var or template` (n09, n16), `HandleAutoTypeLiteral` (n03) or the parse error's diagnostics alone (n01, n06, n25); the `let`s in a function, a class, an impl, a namespace's function, a class's function, an impl's method, a derived class and an inline impl (d13, d14, d19, f03, f08, n13, n31, n34) print the head's lines with the block, and f02 changes its TODO as §2.11 records | To round 4's fixer (toolchain and golden files): fix 4's hunk 1 committed verbatim by hand-off note 8, with no code beyond the block; folded here, records only: §2.11's hunk-1 bullet and M-29's last bullet name the 19 shapes, and §2.11's bisection clause covers a pack expansion pattern in any file-scope `let` (amended 2026-10-27, re-review round 3: RR3-1-B1); fix 4's records commit re-measures them on the branch | handle_pack_expansion.cpp:90-91; §2.11, M-29, hand-off note 8 |
+| RR3-1-B2 C1's collapse of `... each T` in a call's arguments miscompiles, and can abort, at the head; the records understate it | round 3, review 1 | BLOCKER | yes, three runs each: m01b (`G[... each U: type](... each u: each U)` counting its elements by `... if`, called as `G(... each T)` from `F[... each T: type]`) prints 1 1 1 on the head, where its fixed-arity twin prints 3 0 1 on the head and with the block, as review 1's C++ oracle `rev1-r3/oracle/m01b.cpp` does; m06b (`G[U: type](... each u: U)`) prints 1 1 1, its twin 3 1; m19 (the same call in a variadic impl's method) 1 1; t02 (a template-dependent `T.G(... each U)`) aborts with rc 134 at check/convert.cpp:523, "Pack literal of 1 elements converted to type", in `ConvertPackLiteralToPack`; PR 59 refuses all four with a VA-1 TODO (m06b with the statement-expansion TODO at 5:3), and trunk and the nightly reject them at parse; with the block all four report `semantics TODO: pack expansion of a compile-time pack in a call's argument list` at the `...` (8:69, 8:69, 9:88 and 3:88), while m14 and m22 (tuple-literal paths), e10 and e13 print the head's lines; the root cause, the pack constant passed as one argument (handle_pack_expansion.cpp:334-345, C1 0aa8dd347), so that a callee that deduces its pack takes a pack of one element | To round 4's fixer (toolchain and golden files): fix 4's hunk 2 committed as specified, with no code beyond the block; folded here, records only: RR2-1-m2's form re-graded as a miscompile and an abort in §2.11's hunk-2 bullet and its Invariant, §1.11 (W-345), §1.7's D-VA2-13 row, M-29's last bullet and the round 3 table above, and §2.11's bisection clause rewritten (amended 2026-10-27, re-review round 3: RR3-1-B2 / RR3r2-B1); fix 4's records commit files W-345 with that note and adds the clause with fix 4's hash; the optional deduced-callee split is not taken (above) | handle_pack_expansion.cpp:334-345; D-VA2-13, §1.11, §2.11, M-29 |
+| RR3r2-B1 the head silently miscompiles `G(... each T)` when G's pack is deduced; RR2-1-m2 was under-graded | round 3, review 2 | BLOCKER | yes, with RR3-1-B2: q19 (`G[... each U: type]` counting `... if (Yes(each u))`, `F[... each T: type]` returning `G(... each T)`) prints 1 for `F(1 as i32, true, 2 as i64)` in three runs on the head with no diagnostic, where its fixed-arity twin, returning `G(T, U, V)`, prints 3 on the head and with the block, the direct `G(1 as i32, true)` printing 2 on both; q15 and q18, deduced callees whose output does not depend on the arity, compile and run (15 and 36), as m01 (11 11) and m06 (16) do; PR 59 gives VA-1's TODO, and trunk and the nightly reject them at parse; with the block q19, q15 and q18 report W-345's TODO at the `...` (q19 at 8:69) | As RR3-1-B2, which it restates for a deduced callee (counted once, Sign-off) | as RR3-1-B2 |
+| RR3-1-m1 M-29 and §1.1 miss two of hunk 2's effects | round 3, review 1 | MINOR, records only | yes: (a) the design's Apply verbatim (the planner's p04, `F: Call(... each T)`) reports "name `Call` not found" at 2:31 and then `HandleAutoTypeLiteral` at 3:35 on the head, and with the block the same NameNotFound and then W-345's TODO at 2:36; p05 (`Core.Call(... each T)`) reports "member name `Call` not found in `Core`" at 1:31 alone on the head, and with the block W-345's TODO at 1:41 too; (b) the rejected alternative, the collapse skipped outside a tuple literal (`rev1-r3/fx4bsrc`), relinked again by this record (`$RR3/logs/alt.txt`): e02, e06, e07, e08, e12, m02, m03, m09 and m16 run as their twins (6, 6, 6, 6, 10, 12, 13, 18 and 20), e09 reports "cannot implicitly convert expression of type `type` to `i32`" at 3:55, e01 `semantics TODO: conversion of runtime facet value` at 3:75, and m01 and m01b W-336's TODO (3:53 and 8:67), as review 1 measured | Folded: §1.1's list of Apply's needs gains W-345, §0.2's p04 row a note, and §2.11's Rejected bullet and §1.11's W-345 paragraph the alternative's measured outcomes as W-345's break-condition data, which fix 4's records commit copies into W-345's notes (amended 2026-10-27, re-review round 3: RR3-1-m1) | §0.2, §1.1, §1.11, §2.11 |
+| RR3r2-m1 §3 item 12 and §1.12's D-VA2-19 row still state a budget of three | round 3, review 2 | MINOR, records only | yes: §3 item 12 ends "no commit of the budget is left and no shrink is taken", and §1.12's D-VA2-19 row reads "fix budget three", where rev 16's D-VA2-19 paragraph and "Fix commits and the shrink line" budget four | Folded: both carry the dated mark review 2 proposes, the budget four since rev 16, the fourth fix 4 (§2.11) by D-VA2-19's break condition for RR2-1-B1, RR2-1-m1 and RR2-1-m2 only (amended 2026-10-27, re-review round 3: RR3r2-m1) | §1.12, §3 item 12 |
+| RR3r2-m2 the Sign-off table lists round 2's three code findings as open to round 3's fixer | round 3, review 2 | MINOR, records only | yes: the round 2 review 1 row reads "RR2-1-B1, RR2-1-m1 and RR2-1-m2 open, to round 3's fixer", and the Total row "88 folded, 3 open", where rev 16 answers the three by §2.11 and the Sign-off paragraph says so | Folded: the row adds "answered by rev 16's §2.11 (fix 4, specified, not committed), open until fix 4", the two round 3 rows are added, and the totals are 98 findings, 92 folded, 6 open and 0 rejected, 95 distinct (amended 2026-10-27, re-review round 3: RR3r2-m2) | Sign-off |
+| RR3r2-m3 M-29 cites rescan.txt for counts it does not hold, and the import_ref.cpp range differs between sections | round 3, review 2 | MINOR, records only | yes: `$F3/logs/rescan.txt` reads `refs=0` and `worktrees=0`, a counter bug, while `rescan_refs.txt` and `rescan_wt.txt` hold the per-id counts (17 lines each); this record's count (`$RR3/logs/rescan_counts.txt`, 2026-10-27T19:21:05Z) gives 23 local heads and 141 remote-tracking refs, 164, and 20 worktrees, the figures M-29 and §1.11 cite; §2.10 and round 2's table cite import_ref.cpp:2523-2536 for `TryResolveTypedInst`'s `PackFacetValue` overload, and §2.11 and the round 3 table :2525-2536, 2523 being its comment's first line | Folded: M-29 and §1.11 cite `rescan_refs.txt`, `rescan_wt.txt` and `$RR3/logs/rescan_counts.txt` for the counts, with `rescan.txt`'s counter bug noted, and §2.11 and the round 3 table cite :2523-2536 (amended 2026-10-27, re-review round 3: RR3r2-m3); fix 4's records commit logs its re-scan's ref and worktree counts with the re-scan and cites that log (§2.11) | M-29, §1.11, §2.11 |
+
+Also recorded by the reviews, outside the findings: review 1's mall at dd61722d9
+with fix 4's block applied re-measures the land simulation, its four fix 4 fills
+equal to the scratch fill line for line, so that fix 4 adds no land-time refill;
+review 2's `git merge-tree` and this record's
+(`$RR3/logs/merge_tree_dd61722d9.txt`, after the fetch above) give the PR body's
+conflict table exactly; and m01 (11 11), m06 (16), q15 (15) and q18 (36),
+deduced callees whose output does not depend on the arity, run on the head and
+report W-345's TODO with the block, an OUT form refused. This record's commit,
+"VA-2 records: re-review round 3 recorded", changes the plan, the decision log
+and fork/ORCHESTRATION.md only, and the PR body is refreshed in the scratchpad.
+
 ## Sign-off
+
+Round 3's two reviews (2026-10-27) read rev 16 at dd61722d9: review 1, REJECT,
+two BLOCKERs of the head, RR3-1-B1 (19 more file-scope `let` shapes abort) and
+RR3-1-B2 (C1's collapse of `G(... each T)` gives a callee that deduces its pack
+the wrong arity with no diagnostic, and aborts for a template-dependent one),
+and one MINOR, records only; review 2, REJECT, one BLOCKER, RR3r2-B1, the same
+miscompile, and three MINORs, records only. Both find §2.11's block sound, so
+rev 16's break condition is not met. The four records-only findings and the
+BLOCKERs' records parts are folded by the round's records commit, "VA-2 records:
+re-review round 3 recorded", none rejected, and the three BLOCKERs, with round
+2's RR2-1-B1, RR2-1-m1 and RR2-1-m2, are open until fix 4, to round 4's fixer by
+hand-off note 8; the "Focused re-review of the fold, VA-2, round 3 (2026-10-27)"
+above states them (amended 2026-10-27, re-review round 3: the reviews). Round 3
+is not dry, and round 4 is owed. Rev 4's sign-off, as amended by rev 5 to rev 16
+and by the rounds' records, stands for every part that fix 4 does not touch.
 
 Round 3 (2026-10-27) is rev 16, the stop-and-amend of D-VA2-19's break
 condition: round 2's RR2-1-B1, RR2-1-m1 and RR2-1-m2 are answered by fix 4's
@@ -10300,15 +10556,20 @@ golden (§4, §8.2). Every review of this plan:
 | Implementation review 2 (R29(c)) | C5 (4b7ca618e) | APPROVE-WITH-FIXES | 0 | 3 | 8 | 11 | the fix 1ad7c9b5e and rev 15: all folded, none rejected |
 | Focused re-review of the fold, round 1, review 1 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 1 | 1 | 2 | fix 3 ee6144ad9, its fill 903a0c321 and round 2's records commit: all folded, none rejected (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1) |
 | Focused re-review of the fold, round 1, review 2 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 0 | 4 | 4 | round 1's records commit: all folded, none rejected |
-| Focused re-review of the fold, round 2, review 1 | round 2's fold (53460373d) | REJECT | 1 | 0 | 3 | 4 | RR2-1-m3 by the records commit "VA-2 records: re-review round 2 recorded"; RR2-1-B1, RR2-1-m1 and RR2-1-m2 open, to round 3's fixer (amended 2026-10-27, re-review round 2: the reviews) |
+| Focused re-review of the fold, round 2, review 1 | round 2's fold (53460373d) | REJECT | 1 | 0 | 3 | 4 | RR2-1-m3 by the records commit "VA-2 records: re-review round 2 recorded"; RR2-1-B1, RR2-1-m1 and RR2-1-m2 open, to round 3's fixer (amended 2026-10-27, re-review round 2: the reviews), answered by rev 16's §2.11 (fix 4, specified, not committed), open until fix 4 (amended 2026-10-27, re-review round 3: RR3r2-m2) |
 | Focused re-review of the fold, round 2, review 2 | round 2's fold (53460373d) | APPROVE-WITH-FIXES | 0 | 0 | 5 | 5 | the records commit "VA-2 records: re-review round 2 recorded": all folded, none rejected |
-| Total | | | 10 | 23 | 58 | 91 | 88 folded, 3 open, 0 rejected (89 distinct) |
+| Focused re-review of the fold, round 3, review 1 | rev 16 and fix 4's block (dd61722d9) | REJECT | 2 | 0 | 1 | 3 | RR3-1-m1 and the BLOCKERs' records parts by the records commit "VA-2 records: re-review round 3 recorded"; RR3-1-B1 and RR3-1-B2 open until fix 4, to round 4's fixer (amended 2026-10-27, re-review round 3: the reviews) |
+| Focused re-review of the fold, round 3, review 2 | rev 16 and fix 4's block (dd61722d9) | REJECT | 1 | 0 | 3 | 4 | RR3r2-m1 to RR3r2-m3 by the records commit "VA-2 records: re-review round 3 recorded"; RR3r2-B1 open until fix 4, to round 4's fixer |
+| Total | | | 13 | 23 | 62 | 98 | 92 folded, 6 open, 0 rejected (95 distinct) (amended 2026-10-27, re-review round 3: RR3r2-m2) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, and
-implementation review 2's MINOR-1 restates review 1's RV1-m4, so the 91
-findings as reported are 89 distinct ones, round 2's RR2r2-m1 widening
-RR2-1-m3 with §5's row and RR2r2-m4 widening RR2-1-m1 to three paths, each
-counted as the fold counted a widening (82 and 80 before round 2's reviews
+implementation review 2's MINOR-1 restates review 1's RV1-m4, and round 3's
+RR3r2-B1 restates RR3-1-B2 for a deduced callee (amended 2026-10-27, re-review
+round 3: RR3r2-m2), so the 98 findings as reported are 95 distinct ones, round
+3's RR3-1-B1 and RR3-1-B2 widening round 2's RR2-1-B1 and RR2-1-m2, and round
+2's RR2r2-m1 widening RR2-1-m3 with §5's row and RR2r2-m4 widening RR2-1-m1 to
+three paths, each counted as the fold counted a widening (91 and 89 before round
+3's reviews, 82 and 80 before round 2's reviews
 (amended 2026-10-27, re-review round 2: the reviews), 76 and 74 before
 round 1 of the
 focused re-review of the fold (amended 2026-10-27, re-review round 1: the
@@ -10489,6 +10750,16 @@ writer's scratch directory,
     compile-time pack expanded as call arguments with no location (C1 0aa8dd347
     to fix 4's parent) ("Focused re-review of the fold, VA-2, round 3
     (2026-10-27)").
+    Round 3's reviews (amended 2026-10-27, re-review round 3: the reviews): both
+    REJECT the head and find §2.11's block sound; review 1's RR3-1-B1 (19 more
+    file-scope `let` shapes abort) and RR3-1-B2 and review 2's RR3r2-B1 (C1 to
+    fix 4's parent pass `G(... each T)`'s pack as one argument, so that a callee
+    that deduces its pack gets the wrong arity with no diagnostic and a
+    template-dependent one aborts) need fix 4, so round 3 is not dry and round 4
+    is owed, its fixer following hand-off note 8; the clause that these notes
+    gain from fix 4's records commit is §2.11's as round 3's reviews amend it,
+    and the four records-only MINORs are folded by "VA-2 records: re-review
+    round 3 recorded", which is not a fix commit.
 -   **Round 1's records** (R29: decided and recorded). The decision-log entry
     gains a dated paragraph for the round after its held-state paragraph,
     which §A.12's text does not have, as it does not have the held-state

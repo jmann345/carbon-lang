@@ -3796,6 +3796,34 @@ the head's toolchain, goldens and programs do not change, no id is filed, and
 the ledger and the gap rows do not change (the plan's "Focused re-review of
 the fold, VA-2, round 3 (2026-10-27)").
 
+Focused re-review of the fold, round 3, the reviews (2026-10-27, records only):
+two fresh reviews of dd61722d9 (plan rev 16), each REJECT for the head, whose
+toolchain is still fix 3's fill, and each finding the plan's §2.11 block sound,
+so rev 16's break condition is not met and no shrink is taken. Review 1 found
+two BLOCKERs: RR3-1-B1 (19 more file-scope `let` pack pattern shapes abort the
+compiler, `auto`, `private`, `export`, `ref`, `var` and a `let` after a choice
+or an interface among them, where PR 59 reports VA-1's TODO) and RR3-1-B2 (C1's
+collapse of `G(... each T)` passes a compile-time pack as one argument: a callee
+that deduces its pack runs with a pack of one element and no diagnostic,
+printing 1 where its fixed-arity twin prints 3, and a template-dependent callee
+aborts, where PR 59 refuses both); and one records-only MINOR, RR3-1-m1 (the
+design's Apply also needs W-345, and the rejected alternative's outcomes are
+W-345's break-condition data). Review 2 found RR3r2-B1, the same miscompile for
+a deduced callee, and three records-only MINORs: the plan's §3 item 12 and its
+D-VA2-19 index row still stating a budget of three; the Sign-off table listing
+round 2's code findings as open to round 3's fixer; and M-29's re-scan cite and
+an import_ref.cpp range. Fix 4's block answers the three BLOCKERs, so round 3 is
+not dry and round 4 is owed: its fixer commits fix 4 and its fill by the plan's
+hand-off note 8 unchanged, and fix 4's records commit files W-345 with the
+re-grade and adds the landed notes' bisection clause as the plan's §2.11 now
+words it. The four records-only MINORs and the BLOCKERs' records parts are
+folded by the records commit "VA-2 records: re-review round 3 recorded". Both
+reviews measured the head's gate at 1977 passed and 0 failed and conformance at
+PASS 147, 0 failures, SKIP 21 of 168, and fix 4's relinked block the same after
+its fill; nothing is committed to the toolchain, goldens or programs, no id is
+filed (W-345 stays reserved), and the ledger and the gap rows do not change (the
+plan's "Focused re-review of the fold, VA-2, round 3 (2026-10-27)").
+
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks
 that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a

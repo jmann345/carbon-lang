@@ -606,3 +606,95 @@ fn Call(a: (i32, bool), b: (i32, bool)) -> bool {
 // CHECK:STDOUT: !243 = !DILocation(line: 53, column: 5, scope: !232)
 // CHECK:STDOUT: !244 = !{!233}
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'eq_wider_facet.carbon'
+// CHECK:STDOUT: source_filename = "eq_wider_facet.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i1 @_CCall.Main(ptr %a, ptr %b) #0 !dbg !247 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Same.call = call i1 @_CSame.Main.5938b3525f112417(ptr %a, ptr %b), !dbg !256
+// CHECK:STDOUT:   ret i1 %Same.call, !dbg !257
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i1 @_CSame.Main.5938b3525f112417(ptr %a, ptr %b) #0 !dbg !259 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.call = call i1 @"_CEqual.4239cb399c0b0701:EqWith.5008e993efea257a.Core.219c0eb2ad471ada"(ptr %a, ptr %b), !dbg !266
+// CHECK:STDOUT:   ret i1 %EqWith.WithSelf.Equal.call, !dbg !268
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i1 @"_CEqual.4239cb399c0b0701:EqWith.5008e993efea257a.Core.219c0eb2ad471ada"(ptr %self, ptr %other) #0 !dbg !270 {
+// CHECK:STDOUT:   %pack.elem = getelementptr inbounds <{ i32, i1 }>, ptr %self, i32 0, i32 0, !dbg !286
+// CHECK:STDOUT:   %pack.elem.load = load i32, ptr %pack.elem, align 4, !dbg !286
+// CHECK:STDOUT:   %pack.elem1 = getelementptr inbounds <{ i32, i1 }>, ptr %other, i32 0, i32 0, !dbg !287
+// CHECK:STDOUT:   %pack.elem.load2 = load i32, ptr %pack.elem1, align 4, !dbg !287
+// CHECK:STDOUT:   %1 = icmp eq i32 %pack.elem.load, %pack.elem.load2, !dbg !286
+// CHECK:STDOUT:   %2 = xor i1 %1, true, !dbg !288
+// CHECK:STDOUT:   br i1 %2, label %3, label %4, !dbg !289
+// CHECK:STDOUT:
+// CHECK:STDOUT: 3:                                                ; preds = %0
+// CHECK:STDOUT:   ret i1 false, !dbg !290
+// CHECK:STDOUT:
+// CHECK:STDOUT: 4:                                                ; preds = %0
+// CHECK:STDOUT:   br label %pack.next, !dbg !285
+// CHECK:STDOUT:
+// CHECK:STDOUT: pack.next:                                        ; preds = %4
+// CHECK:STDOUT:   %pack.elem4 = getelementptr inbounds <{ i32, i1 }>, ptr %self, i32 0, i32 1, !dbg !286
+// CHECK:STDOUT:   %pack.elem.load5 = load i8, ptr %pack.elem4, align 1, !dbg !286
+// CHECK:STDOUT:   %5 = trunc i8 %pack.elem.load5 to i1, !dbg !286
+// CHECK:STDOUT:   %pack.elem6 = getelementptr inbounds <{ i32, i1 }>, ptr %other, i32 0, i32 1, !dbg !287
+// CHECK:STDOUT:   %pack.elem.load7 = load i8, ptr %pack.elem6, align 1, !dbg !287
+// CHECK:STDOUT:   %6 = trunc i8 %pack.elem.load7 to i1, !dbg !287
+// CHECK:STDOUT:   %7 = icmp eq i1 %5, %6, !dbg !286
+// CHECK:STDOUT:   %8 = xor i1 %7, true, !dbg !288
+// CHECK:STDOUT:   br i1 %8, label %9, label %10, !dbg !289
+// CHECK:STDOUT:
+// CHECK:STDOUT: 9:                                                ; preds = %pack.next
+// CHECK:STDOUT:   ret i1 false, !dbg !290
+// CHECK:STDOUT:
+// CHECK:STDOUT: 10:                                               ; preds = %pack.next
+// CHECK:STDOUT:   br label %pack.next3, !dbg !285
+// CHECK:STDOUT:
+// CHECK:STDOUT: pack.next3:                                       ; preds = %10
+// CHECK:STDOUT:   ret i1 true, !dbg !291
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!246}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !35 = !{!7, !7, !7}
+// CHECK:STDOUT: !36 = !DISubroutineType(types: !35)
+// CHECK:STDOUT: !48 = !DIFile(filename: "{{.*}}/prelude/operators/comparison.carbon", directory: "")
+// CHECK:STDOUT: !245 = !DIFile(filename: "eq_wider_facet.carbon", directory: "")
+// CHECK:STDOUT: !246 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !245, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !247 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !245, line: 8, type: !36, spFlags: DISPFlagDefinition, unit: !246, retainedNodes: !258)
+// CHECK:STDOUT: !248 = !DILocalVariable(arg: 1, scope: !247, type: !7)
+// CHECK:STDOUT: !249 = !DILocalVariable(arg: 2, scope: !247, type: !7)
+// CHECK:STDOUT: !256 = !DILocation(line: 9, column: 10, scope: !247)
+// CHECK:STDOUT: !257 = !DILocation(line: 9, column: 3, scope: !247)
+// CHECK:STDOUT: !258 = !{!248, !249}
+// CHECK:STDOUT: !259 = distinct !DISubprogram(name: "Same", linkageName: "_CSame.Main.5938b3525f112417", scope: null, file: !245, line: 3, type: !36, spFlags: DISPFlagDefinition, unit: !246, retainedNodes: !269)
+// CHECK:STDOUT: !260 = !DILocalVariable(arg: 1, scope: !259, type: !7)
+// CHECK:STDOUT: !261 = !DILocalVariable(arg: 2, scope: !259, type: !7)
+// CHECK:STDOUT: !266 = !DILocation(line: 5, column: 10, scope: !259)
+// CHECK:STDOUT: !268 = !DILocation(line: 5, column: 3, scope: !259)
+// CHECK:STDOUT: !269 = !{!260, !261}
+// CHECK:STDOUT: !270 = distinct !DISubprogram(name: "Equal", linkageName: "_CEqual.4239cb399c0b0701:EqWith.5008e993efea257a.Core.219c0eb2ad471ada", scope: null, file: !48, line: 68, type: !36, spFlags: DISPFlagDefinition, unit: !246, retainedNodes: !292)
+// CHECK:STDOUT: !271 = !DILocalVariable(arg: 1, scope: !270, type: !7)
+// CHECK:STDOUT: !272 = !DILocalVariable(arg: 2, scope: !270, type: !7)
+// CHECK:STDOUT: !285 = !DILocation(line: 71, column: 5, scope: !270)
+// CHECK:STDOUT: !286 = !DILocation(line: 71, column: 18, scope: !270)
+// CHECK:STDOUT: !287 = !DILocation(line: 71, column: 28, scope: !270)
+// CHECK:STDOUT: !288 = !DILocation(line: 71, column: 13, scope: !270)
+// CHECK:STDOUT: !289 = !DILocation(line: 71, column: 12, scope: !270)
+// CHECK:STDOUT: !290 = !DILocation(line: 72, column: 7, scope: !270)
+// CHECK:STDOUT: !291 = !DILocation(line: 74, column: 5, scope: !270)
+// CHECK:STDOUT: !292 = !{!271, !272}
+// CHECK:STDOUT:

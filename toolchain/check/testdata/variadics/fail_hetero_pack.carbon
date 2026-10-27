@@ -126,5 +126,9 @@ library "[[@TEST_NAME]]";
 interface Code {}
 
 fn F[... each T: Code](t: (... each T)) {
+  // CHECK:STDERR: fail_let_binding_type_error.carbon:[[@LINE+4]]:27: error: name `Missing` not found [NameNotFound]
+  // CHECK:STDERR:   let (... unused each y: Missing(each T)) = t;
+  // CHECK:STDERR:                           ^~~~~~~
+  // CHECK:STDERR:
   let (... unused each y: Missing(each T)) = t;
 }

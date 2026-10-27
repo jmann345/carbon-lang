@@ -483,6 +483,25 @@ static auto CanDestroyType(Context& context, SemIR::LocId loc_id,
       return has_witness ? DestroyFormat::NonTrivial : DestroyFormat::NoDestroy;
     }
 
+    case CARBON_KIND(SemIR::PackType pack_type): {
+      // Fork (VA-2, D-VA2-8): a pack segment of a tuple type whose arity a
+      // specific knows, such as the one element `⟬each T⟭` of `(... each T)`.
+      // Its elements are the tuple's elements, each destroyed by its own type,
+      // so it can be destroyed when an element of the scalar component's type
+      // can be: `each T`, a symbolic facet of the pack's facet type
+      // (docs/design/variadics.md, "Iterative typechecking of pack
+      // expansions"). The pack index and element this forms are in the
+      // discarded block of `PrepareForHasWitness`.
+      auto query_facet_type_const_id =
+          PrepareForHasWitness(context, loc_id, query_specific_interface);
+      auto element_type_id = GetPackElementType(context, loc_id, pack_type);
+      bool has_witness = HasWitnessForRepeatedField(
+          context, loc_id, context.types().GetTypeInstId(element_type_id),
+          query_facet_type_const_id);
+      CleanupAfterHasWitness(context);
+      return has_witness ? DestroyFormat::NonTrivial : DestroyFormat::NoDestroy;
+    }
+
     default:
       CARBON_FATAL("Unexpected type for CanDestroyType: {0}", inst.kind());
   }

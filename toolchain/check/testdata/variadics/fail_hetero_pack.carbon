@@ -91,3 +91,20 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR:                        ^~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn F[... each T: type](... each x: each T, ... each y: each T);
+
+// --- fail_binding_type_error.carbon
+library "[[@TEST_NAME]]";
+
+interface Code {}
+interface Other {}
+
+class Box(unused T: Other) {}
+
+fn F[... each T: Code](... unused each x: Box(each T)) {}
+
+// --- fail_binding_type_name_error.carbon
+library "[[@TEST_NAME]]";
+
+interface Code {}
+
+fn F[... each T: Code](... unused each x: Missing(each T)) {}

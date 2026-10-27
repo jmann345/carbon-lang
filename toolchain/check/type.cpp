@@ -191,6 +191,21 @@ auto GetPackElementType(Context& context, SemIR::LocId loc_id,
   return ExprAsType(context, loc_id, element_id).type_id;
 }
 
+auto GetPackElementTypeId(Context& context, SemIR::PackType pack_type,
+                          uint64_t index) -> SemIR::TypeId {
+  if (auto pack_value =
+          context.insts().TryGetAs<SemIR::PackValue>(pack_type.element_id)) {
+    auto element_id = context.inst_blocks().Get(pack_value->elements_id)[index];
+    auto element_type_id = context.insts().Get(element_id).type_id();
+    if (element_type_id != SemIR::TypeType::TypeId &&
+        element_type_id != SemIR::ErrorInst::TypeId &&
+        !context.insts().Is<SemIR::FacetValue>(element_id)) {
+      return GetFacetAccessType(context, element_id);
+    }
+  }
+  return SemIR::GetPackElementTypeId(context.sem_ir(), pack_type, index);
+}
+
 auto GetStructType(Context& context, SemIR::StructTypeFieldsId fields_id)
     -> SemIR::TypeId {
   return GetTypeImpl<SemIR::StructType>(context, fields_id);

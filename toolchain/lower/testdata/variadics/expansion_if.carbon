@@ -93,6 +93,25 @@ fn Call() {
   Each((1 as i64, 2 as i64), {.a = 3 as i64, .b = true});
 }
 
+// --- and_condition.carbon
+library "[[@TEST_NAME]]";
+
+fn Consume(x: i64);
+
+fn Small(x: i64) -> bool;
+
+fn Odd(x: i64) -> bool;
+
+fn Each(... each x: i64) {
+  ... if (Small(each x) and Odd(each x)) {
+    Consume(each x);
+  }
+}
+
+fn Call() {
+  Each(1, 2);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'first.carbon'
 // CHECK:STDOUT: source_filename = "first.carbon"

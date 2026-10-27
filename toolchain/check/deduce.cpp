@@ -528,7 +528,7 @@ auto DeductionContext::Deduce() -> bool {
             })) {
           // A tuple type with a pack segment in the same position, such as the
           // impl's own self type, matches segment by segment; merging a pack
-          // segment with other elements is not supported (DR-37, W-215).
+          // segment with other elements is not supported (DR-37).
           if (arg_elements.size() != param_elements.size() ||
               !context().insts().Is<SemIR::PackType>(
                   arg_elements[num_before])) {

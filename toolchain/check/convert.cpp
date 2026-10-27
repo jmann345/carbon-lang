@@ -526,8 +526,7 @@ static auto ConvertPackLiteralToPack(Context& context,
   for (auto [index, element_id] : llvm::enumerate(elements)) {
     // Fork (VA-2): the `index`th element of a pack of different types has the
     // `index`th type of its pack of types.
-    auto element_type_id =
-        SemIR::GetPackElementTypeId(context.sem_ir(), pack_type, index);
+    auto element_type_id = GetPackElementTypeId(context, pack_type, index);
     auto converted_id = Convert(context, SemIR::LocId(element_id), element_id,
                                 {.kind = ConversionTarget::Value,
                                  .type_id = element_type_id,
@@ -2040,11 +2039,11 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       llvm::SmallVector<SemIR::InstId> converted_ids;
       converted_ids.reserve(elements.size());
       for (auto [index, element_id] : llvm::enumerate(elements)) {
-        auto converted_id = Convert(context, loc_id, element_id,
-                                    {.kind = ConversionTarget::Value,
-                                     .type_id = SemIR::GetPackElementTypeId(
-                                         sem_ir, *target_pack_type, index),
-                                     .diagnose = target.diagnose});
+        auto converted_id = Convert(
+            context, loc_id, element_id,
+            {.kind = ConversionTarget::Value,
+             .type_id = GetPackElementTypeId(context, *target_pack_type, index),
+             .diagnose = target.diagnose});
         if (converted_id == SemIR::ErrorInst::InstId) {
           return SemIR::ErrorInst::InstId;
         }

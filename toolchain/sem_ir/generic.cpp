@@ -173,6 +173,14 @@ auto GetPackElementTypeId(const File& sem_ir, PackType pack_type,
     auto element_id = sem_ir.inst_blocks().Get(pack_value->elements_id)[index];
     if (auto facet = sem_ir.insts().TryGetAs<FacetValue>(element_id)) {
       element_id = facet->type_inst_id;
+    } else {
+      // A symbolic facet element has no type instruction here; check's
+      // `GetPackElementTypeId` forms its facet access type.
+      auto element_type_id = sem_ir.insts().Get(element_id).type_id();
+      CARBON_CHECK(element_type_id == TypeType::TypeId ||
+                       element_type_id == ErrorInst::TypeId,
+                   "Pack element {0} is neither a type nor a facet value",
+                   sem_ir.insts().Get(element_id));
     }
     return sem_ir.types().GetTypeIdForTypeInstId(
         sem_ir.constant_values().GetConstantTypeInstId(

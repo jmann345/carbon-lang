@@ -78,6 +78,15 @@ fn Call() {
   //@dump-sem-ir-end
 }
 
+// --- index_before_segment.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn First[... each T: type](t: (i64, ... each T)) -> i64 {
+  return t.0;
+}
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- param.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

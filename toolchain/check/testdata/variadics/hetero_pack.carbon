@@ -164,6 +164,25 @@ fn Call() {
   F(1 as i64, true, 2 as i32);
 }
 
+// --- generic_caller.carbon
+library "[[@TEST_NAME]]";
+
+interface Code {
+  fn Get(self) -> i64;
+}
+
+fn Consume(x: i64);
+
+fn ForEach[... each T: Code](... each x: each T) {
+  ... Consume(each x.Get());
+}
+
+//@dump-sem-ir-begin
+fn Caller[T: Code, U: Code](x: T, y: U) {
+  ForEach(x, y, x);
+}
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- call.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

@@ -39,6 +39,24 @@ fn Call(a: (i32, i64), b: (i32, i64)) -> bool {
   //@dump-sem-ir-end
 }
 
+// --- generic_elements.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn Dup[T: Core.Copy](x: T) -> (T, T) {
+  let p: (T, T) = (x, x);
+  return p.(Core.Copy.Op)();
+}
+
+fn Same[T: Core.Eq](a: (T, T), b: (T, T)) -> bool {
+  return a == b;
+}
+
+fn Before[T: Core.Ordered, U: Core.Ordered](a: (T, U), b: (T, U)) -> bool {
+  return a < b;
+}
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- copy.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

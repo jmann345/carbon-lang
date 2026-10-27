@@ -24,6 +24,41 @@ fn Call(a: (i32, i64), b: (i32, i64)) -> bool {
   return a == b;
 }
 
+// --- generic_elements.carbon
+library "[[@TEST_NAME]]";
+
+fn Dup[T: Core.Copy](x: T) -> (T, T) {
+  let p: (T, T) = (x, x);
+  return p.(Core.Copy.Op)();
+}
+
+fn Before[T: Core.Ordered, U: Core.Ordered](a: (T, U), b: (T, U)) -> bool {
+  return a < b;
+}
+
+fn Call(a: (i32, i64), b: (i32, i64)) -> bool {
+  return Before(Dup(a.0), Dup(b.0)) and Before(a, b);
+}
+
+// --- copy_class_element.carbon
+library "[[@TEST_NAME]]";
+
+fn Sink(n: i32);
+
+class C {
+  var n: i32;
+  impl as Core.Copy {
+    fn Op(self) -> Self {
+      Sink(self.n);
+      return {.n = self.n};
+    }
+  }
+}
+
+fn Call(t: (C, i32)) -> (C, i32) {
+  return t.(Core.Copy.Op)();
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'copy_op.carbon'
 // CHECK:STDOUT: source_filename = "copy_op.carbon"

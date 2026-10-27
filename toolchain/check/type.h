@@ -5,6 +5,8 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_TYPE_H_
 #define CARBON_TOOLCHAIN_CHECK_TYPE_H_
 
+#include <cstdint>
+
 #include "llvm/ADT/ArrayRef.h"
 #include "toolchain/check/context.h"
 #include "toolchain/sem_ir/ids.h"
@@ -160,6 +162,14 @@ auto GetPackTypeForElementType(Context& context,
 // (docs/design/variadics.md, "Iterative typechecking of pack expansions").
 auto GetPackElementType(Context& context, SemIR::LocId loc_id,
                         SemIR::PackType pack_type) -> SemIR::TypeId;
+
+// Fork (VA-2, D-VA2-3): returns the type of the element at `index` of a value
+// of the pack type `pack_type`, whose arity is known. An element of a pack of
+// facets is the type that the facet is: a symbolic facet whose facet type is
+// exactly the pack's, such as `T` deduced for `each U: I` from `x: T` with
+// `T: I`, is not a `FacetValue`, so its type is its facet access type.
+auto GetPackElementTypeId(Context& context, SemIR::PackType pack_type,
+                          uint64_t index) -> SemIR::TypeId;
 
 // Returns a struct type with the given fields.
 auto GetStructType(Context& context, SemIR::StructTypeFieldsId fields_id)

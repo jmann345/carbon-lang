@@ -458,7 +458,7 @@ auto TypeCompleter::AddNestedIncompleteTypes(SemIR::Inst type_inst) -> bool {
       if (IsHeterogeneousPackType(*context_, inst)) {
         if (auto arity = context_->sem_ir().GetZExtIntValue(inst.arity_id)) {
           for (auto index : llvm::seq(*arity)) {
-            Push(SemIR::GetPackElementTypeId(context_->sem_ir(), inst, index));
+            Push(GetPackElementTypeId(*context_, inst, index));
           }
         }
         break;
@@ -748,7 +748,7 @@ auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
       layout = SemIR::ObjectLayout::Empty();
       for (auto index : llvm::seq(*arity)) {
         auto element_type_id =
-            SemIR::GetPackElementTypeId(context_->sem_ir(), pack_type, index);
+            GetPackElementTypeId(*context_, pack_type, index);
         auto element_info = GetNestedInfo(element_type_id);
         same_as_object_rep &= element_info.value_repr.IsCopyOfObjectRepr(
             context_->sem_ir(), element_type_id);

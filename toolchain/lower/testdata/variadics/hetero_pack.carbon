@@ -129,6 +129,37 @@ fn Call(a: A, b: B) -> i64 {
   return Count(1 as i64, true, 2 as i32);
 }
 
+// --- generic_caller.carbon
+library "[[@TEST_NAME]]";
+
+interface Code {
+  fn Get(self) -> i64;
+}
+
+class A {}
+impl A as Code {
+  fn Get(unused self) -> i64 { return 1; }
+}
+
+class B {}
+impl B as Code {
+  fn Get(unused self) -> i64 { return 2; }
+}
+
+fn Consume(x: i64);
+
+fn ForEach[... each T: Code](... each x: each T) {
+  ... Consume(each x.Get());
+}
+
+fn Caller[T: Code, U: Code](x: T, y: U) {
+  ForEach(x, y, x);
+}
+
+fn Call(a: A, b: B) {
+  Caller(a, b);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call.carbon'
 // CHECK:STDOUT: source_filename = "call.carbon"

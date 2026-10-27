@@ -854,7 +854,7 @@ auto EvalConstantInst(Context& context, SemIR::TupleType inst)
     }
     for (auto index : llvm::seq(*arity)) {
       flat_ids.push_back(context.types().GetTypeInstId(
-          SemIR::GetPackElementTypeId(context.sem_ir(), *pack, index)));
+          GetPackElementTypeId(context, *pack, index)));
     }
   }
   return ConstantEvalResult::Existing(

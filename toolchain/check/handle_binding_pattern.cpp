@@ -443,36 +443,47 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       // specific has one range; an expansion pattern that would add a second
       // arity ("each pack expansion pattern introduces a deduced arity") is a
       // TODO until packs of independent arities are implemented.
+      auto arity_bind_id = SemIR::InstId::None;
       for (auto bind_id :
            context.scope_stack().compile_time_binding_stack().PeekAllValues()) {
         if (auto bind =
                 context.insts().TryGetAs<SemIR::SymbolicBinding>(bind_id);
             bind && context.entity_names().Get(bind->entity_name_id).name_id ==
                         SemIR::NameId::PackArity) {
-          return context.TODO(name_node,
-                              "more than one pack arity in a generic");
+          if (!is_error) {
+            return context.TODO(name_node,
+                                "more than one pack arity in a generic");
+          }
+          // The binding's type was diagnosed, and may have named the pack
+          // whose arity this is, as `Optional(each T)` does: the pack keeps
+          // that arity, with no second diagnostic.
+          arity_bind_id = bind_id;
+          break;
         }
       }
-      auto arity_type_id =
-          GetSingletonType(context, SemIR::IntLiteralType::TypeInstId);
-      auto arity_entity_name_id = AddBindingEntityName(
-          context, SemIR::NameId::PackArity, SemIR::TypeInstId::None,
-          SemIR::InstId::None, /*is_unused=*/false, BindingPhase::Symbolic);
-      auto arity =
-          AddBindingPattern(context, pack_scope->start_node_id,
-                            SemIR::ExprRegionId::None, arity_type_id,
-                            {.kind = SemIR::SymbolicBindingPattern::Kind,
-                             .type_id = GetPatternType(context, arity_type_id),
-                             .entity_name_id = arity_entity_name_id,
-                             .subpattern_id = SemIR::InstId::None});
-      pack_scope->arity_pattern_id = arity.pattern_id;
-      pack_scope->arity_binding_id = arity.bind_id;
+      if (!arity_bind_id.has_value()) {
+        auto arity_type_id =
+            GetSingletonType(context, SemIR::IntLiteralType::TypeInstId);
+        auto arity_entity_name_id = AddBindingEntityName(
+            context, SemIR::NameId::PackArity, SemIR::TypeInstId::None,
+            SemIR::InstId::None, /*is_unused=*/false, BindingPhase::Symbolic);
+        auto arity = AddBindingPattern(
+            context, pack_scope->start_node_id, SemIR::ExprRegionId::None,
+            arity_type_id,
+            {.kind = SemIR::SymbolicBindingPattern::Kind,
+             .type_id = GetPatternType(context, arity_type_id),
+             .entity_name_id = arity_entity_name_id,
+             .subpattern_id = SemIR::InstId::None});
+        pack_scope->arity_pattern_id = arity.pattern_id;
+        arity_bind_id = arity.bind_id;
+      }
+      pack_scope->arity_binding_id = arity_bind_id;
       // An invalid element type was diagnosed; the pack keeps its arity, as
       // in VA-1, and the binding its error type.
       pack_type_id = GetPackType(
           context,
           is_error ? SemIR::InstId::None : type_expr.type_component_inst_id,
-          arity.bind_id);
+          arity_bind_id);
     }
     pack_scope->pack_type_id = pack_type_id;
     if (!is_error) {

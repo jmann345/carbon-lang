@@ -40,3 +40,27 @@ fn F[... each T: Core.Copy](... each x: each T) {
   // CHECK:STDERR:
   let unused t: (i64, i64) = (... each x);
 }
+
+// --- fail_todo_index_segment.carbon
+library "[[@TEST_NAME]]";
+
+fn F[... each T: Core.Copy](t: (... each T)) {
+  let unused a: i64 = t.0;
+}
+
+// --- fail_todo_index_past_segment.carbon
+library "[[@TEST_NAME]]";
+
+fn F[... each T: Core.Copy](t: (i64, ... each T)) {
+  let unused a: i64 = t.1;
+  let unused b: i64 = t.7;
+}
+
+// --- fail_todo_index_rewrap.carbon
+library "[[@TEST_NAME]]";
+
+fn G[... each T: Core.Copy](unused t: (... each T)) {}
+
+fn F[... each T: Core.Copy](t: (... each T)) {
+  G((t.0,));
+}

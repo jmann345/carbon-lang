@@ -25,7 +25,7 @@ fn F() {
 library "[[@TEST_NAME]]";
 
 fn F(... each n: i64) {
-  // CHECK:STDERR: fail_todo_statement_kind.carbon:[[@LINE+4]]:3: error: semantics TODO: `pack expansion of a statement other than an expression statement` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_statement_kind.carbon:[[@LINE+4]]:3: error: semantics TODO: `pack expansion of a statement other than an expression or if statement` [SemanticsTodo]
   // CHECK:STDERR:   ... var x: i64 = each n;
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:

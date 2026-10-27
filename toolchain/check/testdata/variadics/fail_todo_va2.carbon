@@ -227,6 +227,10 @@ fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
 library "[[@TEST_NAME]]";
 
 fn F(... each b: bool) {
+  // CHECK:STDERR: fail_todo_if_with_declaration.carbon:[[@LINE+4]]:3: error: semantics TODO: `pack expansion of a statement other than an expression or if statement` [SemanticsTodo]
+  // CHECK:STDERR:   ... if (each b) {
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   ... if (each b) {
     let unused y: i64 = 0;
   }
@@ -236,5 +240,9 @@ fn F(... each b: bool) {
 library "[[@TEST_NAME]]";
 
 fn F(... each b: bool) {
+  // CHECK:STDERR: fail_todo_while.carbon:[[@LINE+4]]:3: error: semantics TODO: `pack expansion of a statement other than an expression or if statement` [SemanticsTodo]
+  // CHECK:STDERR:   ... while (each b) {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   ... while (each b) {}
 }

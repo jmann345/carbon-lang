@@ -3773,6 +3773,29 @@ order or by D-VA2-19's break condition, a plan amendment that the reviews see
 first; nothing is shrunk, no id is filed, and the ledger and the gap rows do not
 change (the plan's "Focused re-review of the fold, VA-2, round 2 (2026-10-27)").
 
+Focused re-review of the fold, round 3 (2026-10-27, records only): with the
+fix budget used up, round 3's fixer takes D-VA2-19's break condition, since no
+shrink of the plan's §3 answers RR2-1-B1, RR2-1-m1 and RR2-1-m2 without
+breaking the plan's §0.2 measured rows: shrink 1 does not reach C2's `let`
+hunk; shrink 2, which includes it, would revert C3, C4 and C2's tuple-value
+and `let` hunks, taking back C3's Min, fix 3's forms through the prelude and
+C4's d01 to d03, which abort on PR 59, trunk and the nightly; and no shrink
+reaches C1's call-argument branch or fix 3's import path. The PR stops, and
+plan rev 16 budgets a fourth fix commit, fix 4, for exactly those three
+findings (the plan's §2.11), which the reviews of rev 16 read before it is
+committed: VA-1's interface check skipped for a `let`, so a file-scope `let`
+pack pattern reports the deduced-arity TODO, or its binding type's diagnostic
+alone, where the head aborts; `G(... each T)` in a call's argument list the
+`semantics TODO: pack expansion of a compile-time pack in a call's argument
+list`, W-345 reserved after a re-scan; and a two-library split importing a
+`PackFacetValue`. Measured on a scratch tree relinked over the head's objects,
+not of record: file_test 1977 passed, 0 failed after its fill, at its fixpoint
+in one pass; 147 PASS / 0 FAIL / 21 SKIP over 168 in three runs; MV-24 to
+MV-26 killed; of 145 probe lines, 22 change, each a targeted form. In round 3
+the head's toolchain, goldens and programs do not change, no id is filed, and
+the ledger and the gap rows do not change (the plan's "Focused re-review of
+the fold, VA-2, round 3 (2026-10-27)").
+
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks
 that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a

@@ -6,7 +6,24 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 13, 2026-10-27 -- the implementation's fifth stop-and-amend,
+**Status:** rev 14, 2026-10-27 -- the fold of the focused re-review of rev 13
+(76071383a, on F4 1a9a0a11b), whose verdict was APPROVE-WITH-AMENDMENTS on
+three MINORs, recorded in the rev 14 part of the "Stop-and-amend
+record (rev 13, 2026-10-27)". prek prints Passed and exits 0 when a hook
+rewrites a file that git does not track, as every file a commit adds is until
+`git add`, so the stopped run found the rewrap by its md5 lists, not by prek's
+status; since rev 14 R-18, §3 and §8.6 check each prek pass by content, the
+md5 of each of the commit's paths before and after it, and stage 6's
+instruction 4 compares the two lists (RR13-m1). M-26's root cause says that
+rev 2's rename rewrapped §A.7's and §A.8's first lines and missed §A.1's
+(RR13-m2). §A.12's texts, every field unfilled, pass the hooks of their four
+destinations unchanged in a scratch repository, fork/ORCHESTRATION.md's
+paragraph and Next actions items included, which the re-review did not
+simulate (RR13-m3). No code, golden, program, count, prediction or D-VA2
+decision changes, no commit is reset, and stage 6 re-runs from the rev 14
+commit with the record's instructions as rev 14 restates them (amended
+2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3). Rev 13 (76071383a,
+2026-10-27) is the implementation's fifth stop-and-amend,
 at stage 6 (C5, §3 item 11), which the "Stop-and-amend record (rev 13,
 2026-10-27)" before the Sign-off section records. The stopped run wrote
 Appendix A's 13 files verbatim and reproduced every prediction of C5: the ten
@@ -363,7 +380,13 @@ after use; beside the implementer's stage 6 directory
 (`$E`), and the scratch directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend13`
 (`$T` below) (amended 2026-10-27, implementation: stop-and-amend: the §A.1
-oracle's comment wrap).
+oracle's comment wrap). Rev 14's were taken by the plan amender of the re-review
+of rev 13 in a scratch git repository under /dev/shm/va2-impl/amend14 (rev 13's
+root files and its fork, scripts, docs, proposals, core and website directories,
+with rev 13's `fork` tree 10b9afa52), deleted when rev 14 was committed, beside
+the re-review's directory `amendrr13` beside `$T`, and the scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend14`
+(`$O` below) (amended 2026-10-27, review fold: RR13-m1 / RR13-m3).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -2141,10 +2164,13 @@ branch):
     variadics_hetero_digits.carbon: each Carbon`, was 79 columns (`git show
     51c6cfb10:fork/variadics/va2-plan.md`); rev 2 renamed the pair to
     `*_diff` (B-m3), which lengthened the line by five without a rewrap, where
-    §A.8's sentence was rewrapped. M-10 compiled and ran the oracles, no
-    revision formatted them, and prek on the plan does not format a fence. A
-    plan text that was never formatted: not a header a relink missed, a golden
-    the manifest missed, a defect of a measured diff or a misread rule.
+    the same rename rewrapped §A.7's and §A.8's first lines, 75 and 78 columns
+    at rev 1 and 78 and 74 at rev 2 (`$O/logs/oracle_first_lines.txt`)
+    (amended 2026-10-27, review fold: RR13-m2). M-10 compiled and ran the
+    oracles, no revision formatted them, and prek on the plan does not format
+    a fence. A plan text that was never formatted: not a header a relink
+    missed, a golden the manifest missed, a defect of a measured diff or a
+    misread rule.
 -   The fix. clang-format's output,
     `$T/cf/variadics_hetero_digits_diff.diff.cpp` (66 lines, md5
     2c58c3bce1bf0385a745d04414ab2f9e), moves `Carbon` from the fifth line to
@@ -2173,9 +2199,47 @@ branch):
     the patch has the `fork/conformance` tree
     84418c0de08eb81bd94195159d36b54afdc4e838 and F4's `toolchain` and `core`
     trees. The worktree was restored with explicit paths.
+-   prek's status (amended 2026-10-27, review fold: RR13-m1). In the scratch
+    repository of rev 13's files that the header names, prek with §8.6's SKIP
+    list on rev 12's oracle, untracked (md5
+    0c378409c2dec2612385f28ab814debe), prints Passed for clang-format and
+    exits 0, and the file's md5 becomes 2c58c3bce1bf0385a745d04414ab2f9e, rev
+    13's text; the same file staged prints Failed for clang-format with "files
+    were modified by this hook" and exits 1, and so does a tracked oracle,
+    control_flow/choice_generic_roundtrip_diff.diff.cpp, given a fifth line of
+    160 columns (`$O/logs/m1_*`). So prek finds a hook's rewrite only in a
+    file that git tracks or has staged, and every file a commit adds is
+    untracked until `git add`: the stopped run found the rewrap only by
+    `$E/pre_prek.md5` against `$E/post_prek1.md5`, its `prek_1.log` reading
+    Passed for clang-format. Since rev 14 a prek pass is checked by content,
+    `md5sum` of each of the commit's paths before and after it, the two lists
+    equal (§3, §8.6, R-18).
+-   §A.12's texts through their destinations' hooks (amended 2026-10-27,
+    review fold: RR13-m3). In the same repository `$O/bin/sim_d.py` writes
+    commit D's texts where §A.12 places them, every `<...>` field unfilled:
+    in fork/inventory/work-items.json the 12 JSON fences (W-212 and W-225
+    replaced, W-330 to W-339 after W-230), the 14 sentences at the end of
+    their items' `notes` and the `source` sentence; in fork/gap-analysis.md
+    the two rows and the §W6 paragraph; in fork/decision-log.md the entry
+    after VA-1's; and in fork/ORCHESTRATION.md the paragraph, appended to the
+    one that records VA-1's discharge, and the three Next actions items after
+    item 5, as items 6 to 8 with the list's numbered marker and a four-space
+    continuation indent, which §A.12 leaves to commit D (no line over 80
+    columns). prek with §8.6's SKIP list on the four files passes, 15 hooks
+    passed and 17 skipped, prettier, both rumdl passes, the doc style check,
+    codespell and the link check among them, and every md5 is unchanged;
+    R31's counts of the three markdown files are the same before and after
+    (`$O/logs/sim_d.txt`, `m3_prek_1.log`, `m3_pre.md5`, `m3_post1.md5`,
+    `m3_r31_pre.txt` and `m3_r31_post.txt`). The re-review measured the same
+    without the ORCHESTRATION texts (`amendrr13/logs/prek_wi_sim.log` and
+    `prek_md_sim.log`). A filled field lengthens its line, so R-18's rule
+    stands: the stage that fills one wraps by hand each markdown line it
+    lengthens past 80 columns and checks each prek pass by content.
 -   Upstream: `git fetch upstream trunk` and `git ls-remote upstream
     refs/heads/trunk` give 4c5734a8c, rev 12's tip
-    (`$T/logs/upstream_tip.txt`).
+    (`$T/logs/upstream_tip.txt`), and at rev 14 too
+    (`$O/logs/upstream_tip.txt`) (amended 2026-10-27, review fold: RR13-m1 /
+    RR13-m2 / RR13-m3).
 
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
@@ -2498,6 +2562,14 @@ since rev 2 added `variadics_strcat`, amended 2026-10-22, review fold: B-M3).
     fifth line at 84 columns, and no revision formatted Appendix A's C++
     fences, so Appendix A's "verbatim" and the prek fixpoint of §3 and §8.6
     contradicted each other at C5. Measured and corrected by rev 13 (M-26).
+-   F-17 (amended 2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3).
+    Rev 13's R-18 and §8.6 named prek as the detector of a rewritten verbatim
+    text, though prek prints Passed and exits 0 when a hook rewrites a file
+    that git does not track, as every file a commit adds is before `git add`;
+    M-26's root cause said that rev 2 rewrapped §A.8's sentence, where the
+    rename rewrapped §A.7's and §A.8's first lines; and R-18 extended its
+    class to §A.12's records without measuring them. All are measured and
+    corrected by rev 14 (M-26).
 
 ## §1 Design
 
@@ -5195,7 +5267,9 @@ The commits, in order:
     the 13 files are Appendix A's fences as rev 13 states them, §A.1's oracle
     with clang-format's wrap, and prek on C5's 14 files passes and changes
     nothing in one pass (M-26) (amended 2026-10-27, implementation:
-    stop-and-amend: the §A.1 oracle's comment wrap).
+    stop-and-amend: the §A.1 oracle's comment wrap); since rev 14 "changes
+    nothing" is the md5 of the 14 paths, equal before and after the pass
+    (§8.6) (amended 2026-10-27, review fold: RR13-m1).
 12. **Implementation reviews** (two, R29(c)), then at most three fix commits
     by a separate fixer, each with its own fill, each named "VA-2 fix <n>:
     <subject>", or a shrink above.
@@ -5224,9 +5298,10 @@ The commits, in order:
 
 Every commit uses explicit paths (R20, never `git add -A`), runs `SKIP=
 fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
-uvx prek run --files <its files>` to a fixpoint first, with R31's heading and
-list-item counts before and after for each `.md`, and uses the author
-`jmann345 <jerrymannstan@gmail.com>`, the committer `Claude
+uvx prek run --files <its files>` to a fixpoint first, since rev 14 checked
+by content as §8.6 says (amended 2026-10-27, review fold: RR13-m1), with
+R31's heading and list-item counts before and after for each `.md`, and uses
+the author `jmann345 <jerrymannstan@gmail.com>`, the committer `Claude
 <noreply@anthropic.com>` (`GIT_COMMITTER_NAME=Claude
 GIT_COMMITTER_EMAIL=noreply@anthropic.com`) and the session's attribution
 trailers after a blank line, which this plan does not spell out because a
@@ -6094,9 +6169,15 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     columns, which prek's clang-format hook rewraps, so Appendix A's text and
     the prek fixpoint contradicted each other (M-26). Since rev 13 every C++
     fence of Appendix A is clang-format 21.1.8 clean, measured, and C5's 14
-    files pass prek unchanged in one pass. Detected by prek before every
-    commit (§8.6) and by `clang-format --dry-run --Werror` on any C++ fence a
-    revision adds or edits; falsified by a hook that changes a text of
+    files pass prek unchanged in one pass; since rev 14 §A.12's texts, every
+    field unfilled, pass their four destinations' hooks unchanged, measured
+    (M-26) (amended 2026-10-27, review fold: RR13-m3). Detected, since rev 14,
+    by content, not by prek's status: the md5 of each path a commit adds or
+    changes, before and after each prek pass (§8.6), the two lists equal,
+    since prek prints Passed and exits 0 when a hook rewrites a file that git
+    does not track, measured on rev 12's oracle (M-26) (amended 2026-10-27,
+    review fold: RR13-m1); and by `clang-format --dry-run --Werror` on any C++
+    fence a revision adds or edits; falsified by a hook that changes a text of
     Appendix A, or of §A.12 once its fields are filled and wrapped by hand,
     which is a stop and a plan revision that states the hook's output as the
     text.
@@ -6517,6 +6598,15 @@ worktree, prek, R31, the self-test, conformance on the C4 install and the
 gate; the `fork/conformance` tree from a private index; and upstream's tip.
 The worktree was restored with explicit paths and the binaries removed.
 
+Rev 14's are the plan amender's of the re-review of rev 13 (amended
+2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3), with `$O` the
+directory the header names and every rev 14 number in `$O` (M-26): the
+oracles' first lines at rev 1, rev 2, rev 4, rev 12 and rev 13; prek on the
+oracle of rev 12 untracked, staged and as a tracked file's edit, and on
+§A.12's texts written by `$O/bin/sim_d.py`, in the scratch repository that
+the header names; and upstream's tip. The scratch repository was removed when
+rev 14 was committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -6679,6 +6769,13 @@ gives verbatim is a difference, as at rev 12's stop (R-18); §A.12's texts are
 verbatim but for their `<...>` fields, and the stage that fills a field wraps by
 hand (R31) each markdown line that the field lengthens before prek (amended
 2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment wrap).
+Since rev 14 the fixpoint is checked by content, not by prek's status: `md5sum`
+of each of the commit's explicit paths before and after each pass, the two lists
+equal, since prek prints Passed and exits 0 when a hook rewrites a file that git
+does not track, which every file a commit adds is until `git add` (measured on
+rev 12's oracle, M-26); a stage that fills a field of §A.12 checks its files so,
+and §A.12's texts with every field unfilled pass their destinations' hooks
+unchanged (M-26) (amended 2026-10-27, review fold: RR13-m1 / RR13-m3).
 
 ### §8.7 Composition mirrors (implementer, before the implementation reviews)
 
@@ -8250,19 +8347,21 @@ clang-format 21.1.8 on every C++ file). No design page is read differently.
 Instructions to the implementer, for stage 6 re-run after the focused re-review
 of this amendment:
 
-1.  Start at the rev 13 commit, on F4 (1a9a0a11b). Nothing of stage 6 is in the
-    history, so nothing is reset: `git -C /home/user/carbon-va2 branch -r
-    --contains 1a9a0a11b` prints `origin/claude/carbon-fork-0-1-va2`, `git -C
-    /home/user/carbon-va2 log origin/claude/carbon-fork-0-1-va2..HEAD
-    --oneline` prints only the plan commits since F4 (rev 13's, and rev 14's
-    if the re-review's fold adds one), and `git -C /home/user/carbon-va2 status
-    --short` is empty. The install needs no build: its `carbon version` prints
-    `0.0.0-0.dev+b40003716`. Read upstream's tip (`git -C /home/user/carbon-va2
-    fetch upstream trunk` and `git -C /home/user/carbon-va2 ls-remote upstream
-    refs/heads/trunk`) and record it in the stage's log: rev 13 reads
-    4c5734a8c; a later tip is listed with the files it changes since
-    4c5734a8c, and it is a difference if it changes .clang-format,
-    .pre-commit-config.yaml or a design page of the header's list.
+1.  Start at the rev 14 commit, which is on rev 13's, on F4 (1a9a0a11b)
+    (amended 2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3). Nothing
+    of stage 6 is in the history, so nothing is reset: `git -C
+    /home/user/carbon-va2 branch -r --contains 1a9a0a11b` prints
+    `origin/claude/carbon-fork-0-1-va2`, `git -C /home/user/carbon-va2 log
+    origin/claude/carbon-fork-0-1-va2..HEAD --oneline` prints only the plan
+    commits since F4, rev 13's and rev 14's, and `git -C /home/user/carbon-va2
+    status --short` is empty. The install needs no build: its `carbon version`
+    prints `0.0.0-0.dev+b40003716`. Read upstream's tip (`git -C
+    /home/user/carbon-va2 fetch upstream trunk` and `git -C
+    /home/user/carbon-va2 ls-remote upstream refs/heads/trunk`) and record it
+    in the stage's log: rev 13 and rev 14 read 4c5734a8c; a later tip is
+    listed with the files it changes since 4c5734a8c, and it is a difference
+    if it changes .clang-format, .pre-commit-config.yaml or a design page of
+    the header's list.
 2.  Write the 13 files from rev 13's Appendix A, as stage 6 did: `python3 -I
     $T/bin/extract.py /home/user/carbon-va2/fork/variadics/va2-plan.md <a
     private directory>`, which lists the 13 files and skips §A.5's and §A.10's
@@ -8279,10 +8378,15 @@ of this amendment:
     and blocks 5 before, and rows 170 and lines 425 after, the rest the same.
     `python3 fork/conformance/runner.py --self-test` prints "self-test: 168
     programs parsed, 56 bullets in table, OK".
-4.  prek with a private `XDG_CACHE_HOME` and §8.6's SKIP list on the 14 paths
-    of `$T/files.txt`: every hook passes or is skipped, and the first pass
-    changes nothing, so it is the fixpoint; R31's README counts after it are
-    item 3's. Then `git -C /home/user/carbon-va2 apply -R --check
+4.  From /home/user/carbon-va2, `md5sum` of the 14 paths of `$T/files.txt`,
+    in its order, into a private file, then prek with a private
+    `XDG_CACHE_HOME` and §8.6's SKIP list on those paths, then `md5sum` of
+    them again: every hook passes or is skipped, and both lists equal
+    `$T/post_prek1.md5`, so the first pass changes nothing and is the
+    fixpoint. prek's Passed is not that check: it prints Passed when a hook
+    rewrites an untracked file, as at the stop (M-26) (amended 2026-10-27,
+    review fold: RR13-m1). R31's README counts after it are item 3's. Then
+    `git -C /home/user/carbon-va2 apply -R --check
     $E/c5_uncommitted_source_state_post_prek.patch` exits 0 and `git -C
     /home/user/carbon-va2 status --short` lists those 14 paths and no other.
 5.  `conformance.sh` with a private cache into a private directory: PASS 147,
@@ -8305,16 +8409,63 @@ of this amendment:
 8.  `git push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan
     commits since F4 and C5.
 9.  Then §3 items 12 to 14 and §8.5 to §8.10 as the plan states them, which
-    rev 13 does not change.
+    rev 13 does not change and rev 14 changes only by §8.6's check of each
+    prek pass by content, which each of their commits applies (amended
+    2026-10-27, review fold: RR13-m1).
 
 Predictions, EXPECTED, not of record: the 13 files and the README of items 2
-and 3; prek's fixpoint at its first pass; the self-test's 168 and 56;
+and 3; prek's fixpoint at its first pass, by content (amended 2026-10-27,
+review fold: RR13-m1); the self-test's 168 and 56;
 conformance 147 / 0 / 21 over 168 with bullets 49 / 0 / 7 / 0 of 56 and §5's
 and Appendix A's outputs; the three oracles' lines; the gate's 1975 passed and
 0 failed; and the trees of item 7. A difference from these is a stop, as §8
 says.
 
+**Rev 14: the re-review of this amendment (2026-10-27).** The focused
+re-review of rev 13 (76071383a on F4 1a9a0a11b) returned
+APPROVE-WITH-AMENDMENTS with three MINORs; it edited no repository file and
+kept its scratch and logs in the directory `amendrr13` beside `$T`. It
+reproduced the difference, rev 12's 13 files byte-identical to `$E/src` and
+`--dry-run --Werror` exiting 1 on §A.1's oracle only, at 5:78, 5:85 and 6:1;
+the root cause, the line 79 columns at rev 1 and 84 from rev 2 on; the fix,
+prek's clang-format hook on rev 12's oracle giving rev 13's fence (md5
+2c58c3bce1bf0385a745d04414ab2f9e); and the instructions in a scratch
+repository: the README's ten rows, R31's counts, the self-test, prek on the
+14 paths, `git apply -R --check`, the `fork/conformance` tree 84418c0de, the
+oracle with both compilers, and conformance on the C4 install, 147 / 0 / 21
+of 168 with bullets 49 / 0 / 7 / 0 of 56. It did not re-run the gate, C5
+changing only fork/conformance. Three findings, all folded, none rejected,
+each amended sentence marked "(amended 2026-10-27, review fold:
+RR13-<finding>)"; the instructions above are rev 14's:
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR13-m1 R-18 and §8.6 name prek as the detector, but prek reports Passed when a hook rewrites an untracked file | MINOR | folded by measuring it: in a scratch repository prek on rev 12's oracle untracked prints Passed and exits 0 while the file's md5 becomes rev 13's, and the same file staged, or a tracked oracle given a long comment line, prints Failed with "files were modified by this hook" and exits 1; R-18, §3 and §8.6 check every prek pass by content, the md5 of each of the commit's paths before and after it, and instruction 4 compares both lists with `$T/post_prek1.md5` | header, M-26, F-17, §3, §7.1's R-18, §8.0, §8.6, the instructions and predictions |
+| RR13-m2 The root cause says rev 2 rewrapped only §A.8's sentence; §A.7's first line was rewrapped too | MINOR | folded: M-26 says that the rename rewrapped §A.7's and §A.8's first lines (75 and 78 columns at rev 1, 78 and 74 at rev 2, measured from 51c6cfb10 and 78524522b) and missed §A.1's; the record's root-cause paragraph stands | header, M-26, F-17, §8.0 |
+| RR13-m3 R-18 extends the class to §A.12's verbatim records without a measurement | MINOR | folded by measuring it, the ORCHESTRATION texts included: with every field unfilled, §A.12's texts written into fork/inventory/work-items.json, fork/gap-analysis.md, fork/decision-log.md and fork/ORCHESTRATION.md pass prek with every md5 unchanged and R31's counts the same; R-18's rule for a stage that fills a field stands, checked by content | header, M-26, F-17, §7.1's R-18, §8.0, §8.6 |
+
+R32 at rev 14: upstream's tip is 4c5734a8c (`git fetch upstream trunk` and `git
+ls-remote upstream refs/heads/trunk`, 2026-10-27, `$O/logs/upstream_tip.txt`),
+rev 13's; .clang-format is the blob 37633fd72 there and at HEAD, and the
+clang-format hook block of .pre-commit-config.yaml is the same in both. The
+fold adds no mechanism, spelling or diagnostic: it changes how this plan checks
+a prek pass, a fork procedure, and records measurements of the fork's own
+records. No design page is read differently; no D-VA2 decision, code, golden,
+program, count or prediction of §4, §5, §6 or §8.3 changes; no W id is
+minted; and no commit is reset or rewritten, C5 never having been committed.
+
 ## Sign-off
+
+Rev 14 (2026-10-27) folds the focused re-review of rev 13 (RR13,
+APPROVE-WITH-AMENDMENTS: three MINORs, all folded, none rejected), as the rev
+14 part of the "Stop-and-amend record (rev 13, 2026-10-27)" states (amended
+2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3): the verdict is not
+REJECT, so rev 4's sign-off, as amended by rev 5 to rev 14, stands, the
+table's RR13 row names rev 13's commit, 76071383a, and stage 6 re-runs with
+the record's instructions as rev 14 restates them. The fold changes no code,
+program or golden, so it is seen by the focused re-review of rev 14 when the
+orchestrator runs one before the re-run, and in any case by the two
+implementation reviews of §3 item 12.
 
 Rev 13 (2026-10-27) amends rev 12 for the implementation's stop-and-amend at
 stage 6, which the "Stop-and-amend record (rev 13, 2026-10-27)" above states
@@ -8412,12 +8563,14 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review of the amendment (RR7) | rev 7 (e0038734f) | APPROVE-WITH-AMENDMENTS | 0 | 4 | 1 | 5 | rev 8 (4299f9765): all folded, none rejected |
 | Focused re-review of the amendment (RR9) | rev 9 (956b73ffc) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 10 (529729be1): all folded, none rejected |
 | Focused re-review of the amendment (RR11) | rev 11 (ea420acd6) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 6 | 7 | rev 12 (f336c5105): all folded, none rejected |
-| Total | | | 6 | 19 | 29 | 54 | 54 folded, 0 rejected (53 distinct) |
+| Focused re-review of the amendment (RR13) | rev 13 (76071383a) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 | 3 | rev 14 (this revision): all folded, none rejected |
+| Total | | | 6 | 19 | 32 | 57 | 57 folded, 0 rejected (56 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
-54 findings as reported are 53 distinct ones (47 and 46 before rev 12 (amended
-2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m2 / RR11-m3 / RR11-m4 /
-RR11-m5 / RR11-m6), 43 and 42 before rev 10 (amended
+57 findings as reported are 56 distinct ones (54 and 53 before rev 14 (amended
+2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3), 47 and 46 before rev 12
+(amended 2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m2 / RR11-m3 /
+RR11-m4 / RR11-m5 / RR11-m6), 43 and 42 before rev 10 (amended
 2026-10-27, review fold: RR9-M1 / RR9-m1 / RR9-m2 / RR9-m3), 38 and 37 before
 rev 8 (amended 2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M3 / RR7-M4 /
 RR7-m1), 34 and 33

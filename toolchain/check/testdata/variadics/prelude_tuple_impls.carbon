@@ -57,6 +57,46 @@ fn Before[T: Core.Ordered, U: Core.Ordered](a: (T, U), b: (T, U)) -> bool {
 }
 //@dump-sem-ir-end
 
+// --- eq_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn Same[... each T: Core.Eq & Core.Copy](a: (... each T), b: (... each T))
+    -> bool {
+  return a == b;
+}
+//@dump-sem-ir-end
+
+fn Call(a: (i32, bool), b: (i32, bool)) -> bool {
+  return Same(a, b);
+}
+
+// --- forward_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+fn TakeTuple[... each U: Core.Copy](unused u: (... each U)) {}
+fn TakeTypes[... each U: type](unused u: (... each U)) {}
+fn TakeOne[U: Core.Copy](unused u: U) {}
+
+//@dump-sem-ir-begin
+fn TakePack[... each U: Core.Copy](... unused each u: each U) {}
+
+fn ForwardTuple[... each T: Core.Copy & Core.Destroy](t: (... each T)) {
+  TakeTuple(t);
+  TakeTypes(t);
+  TakeOne(t);
+}
+
+fn ForwardPack[... each T: Core.Copy & Core.Destroy](... each x: each T) {
+  TakePack(... each x);
+}
+//@dump-sem-ir-end
+
+fn Call() {
+  ForwardTuple((1 as i32, true));
+  ForwardPack(2 as i32, false);
+}
+
 // CHECK:STDOUT: --- copy.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

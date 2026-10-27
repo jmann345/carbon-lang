@@ -1733,6 +1733,28 @@ struct PackExpansionStatement {
   AbsoluteInstBlockId body_block_id;
 };
 
+// Fork (VA-2, RR1-1-M1): the compile-time pack `pack_id`, a pack of types or
+// facets such as the pack `T` of `[... each T: I & J]`, converted element by
+// element to the facet type that `type_id` repeats: the pack whose `$I`th
+// element is the `$I`th element of `pack_id` as a facet of that type, as a
+// `FacetValue` is a facet converted to a facet type (docs/design/variadics.md,
+// "Expansion convertibility": "the scalar components of `T` are each
+// convertible to all scalar components of `U`"). Once `pack_id` is a pack
+// value of known arity, this is the pack value of the converted elements; a
+// pack type whose element is this pack is the pack type of `pack_id`, whose
+// elements are the same types.
+struct PackFacetValue {
+  static constexpr auto Kind = InstKind::PackFacetValue.Define<Parse::NodeId>(
+      {.ir_name = "pack_facet_value",
+       .constant_kind = InstConstantKind::SymbolicOnly,
+       .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
+       .is_lowered = false});
+
+  // Always a `PackType` `«F; N»` whose element `F` is a facet type.
+  TypeId type_id;
+  InstId pack_id;
+};
+
 // The pack index `$I` of the innermost enclosing pack expansion: the index of
 // the element that an each-name refers to on the current iteration
 // (docs/design/variadics.md, "Execution Semantics": "Although the value of
@@ -1792,12 +1814,14 @@ struct PackSegmentInit {
 // Fork (VA-2): `element_id` is either a type, for `«E; N»`, or a compile-time
 // pack of types or facets of arity `arity_id`, for the pack `⟬each T⟭` whose
 // `$I`th element has the `$I`th type of that pack, as the type of
-// `... each x: each T`.
+// `... each x: each T`. Fork (VA-2, RR1-1-M1): an element that is a
+// `PackFacetValue` is replaced by its source pack, whose elements have the
+// same types.
 struct PackType {
   static constexpr auto Kind = InstKind::PackType.Define<Parse::NodeId>(
       {.ir_name = "pack_type",
        .is_type = InstIsType::Always,
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
        .deduce_through = true});
 
   TypeId type_id;

@@ -548,11 +548,17 @@ static auto ConvertPackLiteralToPack(Context& context,
 // expansion whose body converts the source's element at the pack index; like
 // the argument's own expansion, it runs once per element. This only converts
 // the type, and produces a value.
-static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
+static auto ConvertPackToPack(Context& context, SemIR::LocId loc_id,
+                              SemIR::PackType src_type,
                               SemIR::PackType target_type,
                               SemIR::InstId value_id, ConversionTarget target)
     -> SemIR::InstId {
   SemIR::LocId value_loc_id(value_id);
+  // Fork (VA-2, RR1-1-M1): a compile-time pack that deduction converts is a
+  // constant with no location of its own; its conversion is the call's.
+  if (!context.insts().GetCanonicalLocId(value_id).has_value()) {
+    value_loc_id = loc_id;
+  }
 
   // Deduction made the target's arity the source's.
   CARBON_CHECK(context.constant_values().Get(src_type.arity_id) ==
@@ -569,16 +575,18 @@ static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
            GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
   // Fork (VA-2): the element types of a pack of different types depend on
   // the pack index.
-  auto element_id = AddInst<SemIR::PackElement>(
-      context, value_loc_id,
-      {.type_id = GetPackElementType(context, value_loc_id, src_type),
-       .pack_id = value_id,
-       .index_id = index_id});
-  auto result_id = Convert(
-      context, value_loc_id, element_id,
-      {.kind = ConversionTarget::Value,
-       .type_id = GetPackElementType(context, value_loc_id, target_type),
-       .diagnose = target.diagnose});
+  auto src_element_type_id =
+      GetPackElementType(context, value_loc_id, src_type);
+  auto target_element_type_id =
+      GetPackElementType(context, value_loc_id, target_type);
+  auto element_id = AddInst<SemIR::PackElement>(context, value_loc_id,
+                                                {.type_id = src_element_type_id,
+                                                 .pack_id = value_id,
+                                                 .index_id = index_id});
+  auto result_id = Convert(context, value_loc_id, element_id,
+                           {.kind = ConversionTarget::Value,
+                            .type_id = target_element_type_id,
+                            .diagnose = target.diagnose});
   CARBON_CHECK(context.inst_block_stack().is_current_block_reachable() &&
                    context.inst_block_stack().PeekOrAdd() == body_block_id,
                "Control flow in a pack element conversion");
@@ -596,6 +604,19 @@ static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
                    "pack element conversion that needs a cleanup");
     }
     return SemIR::ErrorInst::InstId;
+  }
+  // Fork (VA-2, RR1-1-M1): a compile-time pack of types or facets, such as
+  // the pack `T` of `[... each T: I & J]` that deduction converts to the type
+  // of a callee's or an impl's `[... each U: I]`, converts as a facet does to
+  // a facet type, to a compile-time pack: the pack of facets whose element is
+  // the element conversion checked above, which is a constant.
+  if (context.constant_values().Get(value_id).is_constant() &&
+      context.constant_values().Get(result_id).is_constant() &&
+      context.types().Is<SemIR::FacetType>(src_element_type_id) &&
+      context.types().Is<SemIR::FacetType>(target_element_type_id)) {
+    return AddInst<SemIR::PackFacetValue>(
+        context, value_loc_id,
+        {.type_id = target.type_id, .pack_id = value_id});
   }
   return AddInst<SemIR::PackExpansionExpr>(context, value_loc_id,
                                            {.type_id = target.type_id,
@@ -2056,8 +2077,8 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
     }
     if (auto src_pack_type =
             sem_ir.types().TryGetAs<SemIR::PackType>(value_type_id)) {
-      return ConvertPackToPack(context, *src_pack_type, *target_pack_type,
-                               value_id, target);
+      return ConvertPackToPack(context, loc_id, *src_pack_type,
+                               *target_pack_type, value_id, target);
     }
   }
 

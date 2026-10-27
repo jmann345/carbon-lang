@@ -434,9 +434,15 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       // Fork (VA-2, D-VA2-9): a `let`'s pack expansion pattern has the fixed
       // arity of the pack its binding's type names; a deduced arity, from
       // the scrutinee, is not implemented ("Typechecking patterns").
-      return context.TODO(pack_scope->start_node_id,
-                          "pack expansion pattern with deduced arity outside "
-                          "a parameter list");
+      if (!is_error) {
+        return context.TODO(pack_scope->start_node_id,
+                            "pack expansion pattern with deduced arity "
+                            "outside a parameter list");
+      }
+      // Fork (VA-2, RR1-1-m1): the binding's type was diagnosed, and may have
+      // named the pack whose arity the pattern would have: the pattern has
+      // the error type, with no second diagnostic (D-VA2-4).
+      pack_type_id = SemIR::ErrorInst::TypeId;
     } else {
       // Fork (VA-2, D-VA2-4): every pack of a generic, and of the generics
       // that enclose it, shares one deduced arity, so the pack index of a

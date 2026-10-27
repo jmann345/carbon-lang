@@ -59,6 +59,18 @@ fn Call(t: (C, i32)) -> (C, i32) {
   return t.(Core.Copy.Op)();
 }
 
+// --- eq_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+fn Same[... each T: Core.Eq & Core.Copy](a: (... each T), b: (... each T))
+    -> bool {
+  return a == b;
+}
+
+fn Call(a: (i32, bool), b: (i32, bool)) -> bool {
+  return Same(a, b);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'copy_op.carbon'
 // CHECK:STDOUT: source_filename = "copy_op.carbon"

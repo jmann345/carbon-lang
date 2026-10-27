@@ -908,6 +908,16 @@ class Stringifier {
     }
   }
 
+  // Fork (VA-2, RR1-1-M1): a compile-time pack of facets converted to another
+  // facet type prints as the pack literal of its converted element,
+  // `⟬each T as F⟭`.
+  auto StringifyInst(InstId /*inst_id*/, PackFacetValue inst) -> void {
+    *out_ << "⟬each ";
+    step_stack_->Push(inst.pack_id, " as ",
+                      sem_ir_->types().GetAs<PackType>(inst.type_id).element_id,
+                      "⟭");
+  }
+
   // Fork (VA-2, D-VA2-6): the scalar component of a pack of types at the pack
   // index, which the source spells `each T`.
   auto StringifyInst(InstId /*inst_id*/, PackElement inst) -> void {

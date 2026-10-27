@@ -119,3 +119,12 @@ interface Code {}
 // CHECK:STDERR:                                           ^~~~~~~
 // CHECK:STDERR:
 fn F[... each T: Code](... unused each x: Missing(each T)) {}
+
+// --- fail_let_binding_type_error.carbon
+library "[[@TEST_NAME]]";
+
+interface Code {}
+
+fn F[... each T: Code](t: (... each T)) {
+  let (... unused each y: Missing(each T)) = t;
+}

@@ -2520,6 +2520,21 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
        .index_id = index_id});
 }
 
+// Fork (VA-2, RR1-1-M1): a pack of facets converted to another facet type
+// appears in the eval block of an imported generic that forwards its pack.
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackFacetValue inst) -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  auto pack_id = GetLocalConstantInstId(resolver, inst.pack_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  return ResolveResult::Deduplicated<SemIR::PackFacetValue>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id),
+       .pack_id = pack_id});
+}
+
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::PackValue inst) -> ResolveResult {
   auto type_id = GetLocalConstantId(resolver, inst.type_id);
@@ -5060,6 +5075,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::PackElement inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::PackFacetValue inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::PackIndex inst): {

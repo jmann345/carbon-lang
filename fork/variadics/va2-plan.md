@@ -6,17 +6,45 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 11, 2026-10-27 -- the implementation's fourth stop-and-amend, at
-stage 4 (C3 and F3), which the "Stop-and-amend record (rev 11, 2026-10-27)"
-before the Sign-off section records. The stopped run's C3, written from §2.5,
+**Status:** rev 12, 2026-10-27 -- the fold of the focused re-review of rev 11
+(ea420acd6, on F2 1afda55f0), whose verdict was APPROVE-WITH-AMENDMENTS on one
+MAJOR and six MINORs, recorded in the rev 12 part of the "Stop-and-amend record
+(rev 11, 2026-10-27)". Rev 11 left C3 to be committed alone, with C3b after it,
+so that C3's commit aborts where C2 reports VA-1's statement TODO, on an
+expanded `if` over a pack of padded, aggregate or constant elements. Since
+rev 12 C3b is not a commit: §2.8's hunks are C3's, one commit of 19 paths whose
+gate is 1969 passed and 4 failed with no crash, and D-VA2-19 gives a fix that a
+stage's review finds one place, the stage's own commit before it is committed
+(RR11-M1). Defect B is C1's regression, not a form that C3 newly reaches: on
+mirrors of F1 and F2, C1 and C2 abort on e12, which PR 59 runs, and on e14, and
+R-17's detection probes padded, aggregate and constant elements at every stage,
+forms the base accepts included (RR11-m1). The `Core.Destroy` requirement of
+p06's line is upstream's at 4c5734a8c, where `Core.SelfDestruct[T: Destroy]` is
+a free function, and the diagnostic's text is the base's (RR11-m2). R-17 is
+scoped to forms whose pack-free analog lowers on trunk, the lowering abort of a
+comparison on `Core.IntLiteral` being upstream's class (RR11-m3). C3's check
+expansion_if gains the split `fail_question_body_position`, which pins `?` in a
+statement expansion's body as a body position, and the mutant MV-14, which
+reverts that rule, turns it red, where rev 11's goldens pass it (RR11-m4).
+§2.5's last two decisions gain break conditions (RR11-m5), and a hand-off note
+asks the orchestrator to decide whether PR 59 takes the array-stride layout of
+defect A (RR11-m6). C3 is `$Y/c3_rev12.patch` (`toolchain` tree aae17748f), F3's
+tree is a12dfbb2d, and the gate after F3 stays 1973 passed; no rule of the
+design pages changes (amended 2026-10-27, review fold: RR11-M1 / RR11-m1 /
+RR11-m2 / RR11-m3 / RR11-m4 / RR11-m5 / RR11-m6). Rev 11 (ea420acd6,
+2026-10-27) is the implementation's fourth stop-and-amend, at stage 4 (C3 and
+F3), which the "Stop-and-amend record (rev 11, 2026-10-27)" before the Sign-off
+section records. The stopped run's C3, written from §2.5,
 reproduced every §4 row, gate count and conformance count rev 10 predicts, but
 one probe line differed: p06, the design's Min with `Core.Ordered & Core.Copy`
-and no `Core.Destroy`, reports upstream's "cannot access member of interface
+and no `Core.Destroy`, reports "cannot access member of interface
 `Core.Destroy` in type `T` that does not implement that interface" at its `var
-result: T` (4:3), where C2 stopped at VA-1's statement TODO (5:3). The cause is
-a prediction the plan omitted, not a defect: VA-1's TODO ends checking, and once
-C3 accepts `... if` the function's cleanup of `result` needs `T: Core.Destroy`,
-as §A.5 says and as a pack-free analog shows on PR 59, trunk and the nightly.
+result: T` (4:3), the base's text for a requirement that is upstream's (amended
+2026-10-27, review fold: RR11-m2), where C2 stopped at VA-1's statement TODO
+(5:3). The cause is a prediction the plan omitted, not a defect: VA-1's TODO
+ends checking, and once C3 accepts `... if` the function's cleanup of `result`
+needs `T: Core.Destroy`, as §A.5 says and as a pack-free analog shows on PR 59,
+trunk and the nightly.
 Reviewing C3's code, which no §2 block holds, the amender found two lowering
 defects that C3's `... if` reaches: a pack of one type whose element has tail
 padding, such as `{.a: i64, .b: bool}` or `Core.Optional(i32)`, is laid out
@@ -288,7 +316,19 @@ implementer's stage 4 directory
 (`$W`), and the scratch directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend11`
 (`$Z` below) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line
-and packs of aggregates).
+and packs of aggregates). Rev 12's were taken by the plan amender of the
+re-review of rev 11 with C3's lower/type.cpp and lower/file_context.cpp from the
+scratch commit 278bd63fc relinked over the C3 install's objects under
+/dev/shm/va2-impl/amend12/bin_c3r12, and the mutant MV-14 relinked with them
+under /dev/shm/va2-impl/amend12/bin_mv14, whose file_test ran in the scratch
+worktrees /dev/shm/va2-impl/amend12/c3r12 (the scratch commits 4bc2a145a, C3 as
+rev 12 states it, and 525e95792, F3 over it) and /dev/shm/va2-impl/amend12/r11
+(be17f449b), and with mirrors of F2 1afda55f0 and F1 1a7c360e0 built in full
+under /dev/shm/va2-impl/builds, one at a time (all deleted when rev 12 was
+committed), beside the re-review's directory `amendrr11` beside `$Z`, and the
+scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend12`
+(`$Y` below) (amended 2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m4).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -626,7 +666,7 @@ and runs a probe that defines `Run`. Outcomes, verbatim but shortened:
 | p03 Zip verbatim (:67-82) | same TODO, then `expected expression` at `...and` | parse error | `expected pattern` | name `Vector` not found |
 | p04 Apply verbatim (:273-279) | same TODO | parse error | `expected pattern` | name `Call` not found, then TODO `HandleAutoTypeLiteral` |
 | p05 TupleConcat verbatim (:287-293) | same TODO | parse error | `expected pattern` | error `parameter list can contain at most one pack expansion pattern` (§0.8 F-3) |
-| p06 Min with `Core.Ordered & Core.Copy` (:262-271) | TODO `pack expansion of a statement other than an expression statement` | parse error | `expected pattern` | same TODO; from C3 on, upstream's "cannot access member of interface `Core.Destroy` in type `T` that does not implement that interface" at `var result: T` (4:3), the bound lacking `Core.Destroy`, as a pack-free analog reports on va, trunk and the nightly (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| p06 Min with `Core.Ordered & Core.Copy` (:262-271) | TODO `pack expansion of a statement other than an expression statement` | parse error | `expected pattern` | same TODO; from C3 on, "cannot access member of interface `Core.Destroy` in type `T` that does not implement that interface" at `var result: T` (4:3), the bound lacking `Core.Destroy`, as a pack-free analog reports on va, trunk and the nightly (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); the requirement is upstream's at 4c5734a8c and the text the base's, whose `BuildSelfDestructCall` forms `Core.Destroy`'s `SelfDestruct` member where upstream's calls the free function `Core.SelfDestruct[T: Destroy]` (M-25) (amended 2026-10-27, review fold: RR11-m2) |
 | p07 Type versus execution (:512-518) | TODO `pack expansion pattern declaring more than one each-name`, then `expected ( after if` | parse error | `expected pattern` | same |
 | p08 4-tuple `var u = t;` | runs: 4 | runs: 4 | runs: 4 | runs: 4 |
 | p20 4-tuple through `Dup[T: Core.Copy]` | `cannot convert type (i32, i32, i32, i32) into type implementing Core.Copy` | same | same | same (the prelude is unchanged in the prototype) |
@@ -1805,9 +1845,16 @@ version` 0.0.0-0.dev+1afda55f0.dirty), with the probes of `$Z/probes` run by
     last diagnostic. C3 accepts the `if` body, checking reaches `return
     result;`, and the return's cleanups destroy `result`: `AddCleanups`
     (check/control_flow.cpp:152-161 at 1afda55f0, :151-160 at upstream's
-    4c5734a8c) calls `BuildSelfDestructCall` (check/operator.cpp:106-112,
-    :107-113 upstream), which forms `Core.Destroy`'s `SelfDestruct` on `result`
-    at the variable's location, and `T`'s bound has no `Core.Destroy`. The
+    4c5734a8c) calls `BuildSelfDestructCall` (check/operator.cpp:106-112),
+    which in the base forms `Core.Destroy`'s `SelfDestruct` member on `result`
+    at the variable's location, and `T`'s bound has no `Core.Destroy`. Since
+    rev 12 (M-25) (amended 2026-10-27, review fold: RR11-m2): at 4c5734a8c
+    `BuildSelfDestructCall` (check/operator.cpp:107-113) calls the free
+    function `Core.SelfDestruct[T: Destroy]` through `PerformCall`
+    (core/prelude/destroy.carbon:36, where `Destroy` is a constraint, since
+    upstream's 05a7ecbd3, upstream PR 7942), so the requirement is upstream's
+    and the text, "cannot access member of interface", is the base's, as on
+    PR 59, trunk 0bdce60a5 and the nightly; it is no direction drift. The
     design's Min (docs/design/variadics.md :263-270) names `Comparable & Value`,
     which the prelude does not declare, and §A.5's program bounds `T` by
     `Core.Ordered & Core.Copy & Core.Destroy` for this reason. §0.2's p06 row,
@@ -1856,7 +1903,12 @@ version` 0.0.0-0.dev+1afda55f0.dirty), with the probes of `$Z/probes` run by
     do e14, a pack of different types `⟬(i32, i32), {.a: i32, .b: bool},
     (i32, i32)⟭` of constants, and e16, an expanded `if` over a pack of
     different types with a padded struct, on C3, where PR 59 reports its
-    TODO. The cause: C1's `EmitAsConstant(PackValue)`
+    TODO. Since rev 12 (M-25) (amended 2026-10-27, review fold: RR11-m1): e12
+    and e14 have no `if`, and C3 changes none of lower/constant.cpp,
+    file_context.cpp and type.cpp, so defect B is C1's regression in pushed
+    C1 and C2, not a form that C3 newly reaches; measured on mirrors of F1 and
+    F2, both abort there as on C3, and only e16 needs C3's `if`. The cause:
+    C1's `EmitAsConstant(PackValue)`
     (lower/constant.cpp:228) makes a pack of constants a constant, as
     M-21's D3 measured, laid out as its pack type, a pack of the elements'
     objects; an element whose value representation is a pointer gives the
@@ -1922,6 +1974,113 @@ version` 0.0.0-0.dev+1afda55f0.dirty), with the probes of `$Z/probes` run by
     F2. `git fetch upstream trunk` and `git ls-remote upstream refs/heads/trunk`
     give 4c5734a8c, rev 10's tip, and docs/design/variadics.md is unchanged
     there since 57ba07a97.
+
+M-25. The re-review of rev 11, folded (amended 2026-10-27, review fold: RR11-M1
+/ RR11-m1 / RR11-m2 / RR11-m3 / RR11-m4 / RR11-m6). With C3's lower/type.cpp
+and lower/file_context.cpp, §2.8's hunks, relinked over the C3 install's
+objects (`$Y/bin/relink.sh`, `$Y/logs/relink_c3r12.log`; its `carbon version`
+is 0.0.0-0.dev+1afda55f0.dirty), mirrors of F2 1afda55f0 and F1 1a7c360e0
+built in full (`$Y/logs/build_f2.log` and `build_f1.log`: 324 steps each, 0
+warnings; `carbon version` 0.0.0-0.dev+1afda55f0 and 0.0.0-0.dev+1a7c360e0),
+and the 37 probes of `$Y/probes` (rev 11's `$Z/probes/c3`, the re-review's p06,
+q, r, s and t probes, and u01) run by `$Y/bin/run_all.sh` with a private cache
+and summarized by `$Y/bin/summarize.py` (`$Y/logs/probes_summary.txt`, and on
+the F1 mirror `probes_c1_summary.txt`):
+
+-   C3 and C3b as one commit (RR11-M1). `$W/c3_uncommitted_source_state.patch`
+    and then `$Z/c3b/c3b.patch` apply on F2 and give the `toolchain` tree
+    c12c36b6f, 278bd63fc's. With the split of the fourth bullet C3 is
+    `$Y/c3_rev12.patch` (19 files, the paths of `$Y/c3_rev12_files.txt`, 564
+    insertions and 46 deletions on 1afda55f0; `git apply --check` passes on
+    F2), the scratch commit 4bc2a145a, whose `toolchain` tree is
+    aae17748fa5b373b1065c500e68ce0ac808cc975. Its gate before the fill is 1969
+    passed and 4 failed, §3 item 7's four, with no crash
+    (`$Y/logs/gate_c3r12_pre.log`); the fill of the four reaches its fixpoint
+    in one pass, the second changing nothing (`$Y/logs/au1.log`, `au2.log`,
+    `$Y/fill_p1`): the lower expansion_if.carbon, fail_todo_va2.carbon and
+    fail_todo_slice.carbon are byte-identical to `$Z/fill_c3b`'s, and the check
+    expansion_if.carbon is `$Z/fill_c3b`'s with the new split and its 14 CHECK
+    lines and nothing else; the gate after it is 1973 passed and 0 failed
+    (`$Y/logs/gate_c3r12_filled.log`); and C3 with its fill is the scratch
+    commit 525e95792 (the fill: 4 files, 1026 insertions and 1 deletion),
+    whose `toolchain` tree is a12dfbb2d0991b6dbe70773766585e706bf31941.
+    Conformance on the relink: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL
+    0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0
+    FAIL, 7 SKIP, 0 NOT-WRITTEN of 56 (`$Y/logs/conf_c3r12.log`); §A.5's
+    program prints 1 5 2 2 0 0 (`$Y/logs/min_c3r12.txt`); and M-20's 36 with
+    d01 to d04 and the four sets print the stopped run's `$W/sets/*_c3.txt`,
+    and rev 11's C3b files in `$Z/sets`, line for line but the paths, the
+    toolchain line and a03's value (`$Y/sets`, compared by
+    `$Y/bin/cmpsets.sh`).
+    clang-format 21.1.8 `--dry-run --Werror` exits 0 on the 15 code files
+    (`$Y/logs/clang_format_c3r12.log`), and prek with §8.6's SKIP list on the
+    19 files, in the scratch worktree at 4bc2a145a, passes and changes nothing
+    (`$Y/logs/prek_c3r12.log`); the code is the stopped run's and §2.8's, whose
+    clang-tidy passes stand (`$W/tidy`, `$Z/tidy`). `git merge-tree` of every
+    held head of §8.7, trunk 449fecdd7, origin's trunk and upstream's
+    4c5734a8c with 525e95792 gives the set it gives with F2, 120 paths for
+    upstream (`$Y/logs/mt_held_c3r12.txt`).
+-   What C3 alone would commit (RR11-M1). On the C3 install, the stopped run's
+    C3 without §2.8's hunks, e07, e09 to e11, e13, r01 to r03, s01, s03 and t03
+    abort at lower/type.cpp:955 (the layout check), and e12, e14, e16, r06,
+    s02, t01 and t02 in the verifier. On the F2 mirror e07, e10, e16, r01 to
+    r03, r06, s01 to s03 and t01 to t03 report VA-1's statement TODO (`pack
+    expansion of a statement other than an expression statement`), e09, e11
+    and e13 abort at the layout check as on PR 59, and e12 and e14 in the
+    verifier. On the folded C3's relink every one of them runs, each its
+    derivation: e07 `2 -1 0`, e09 and e10 2, e11 and e13 7, e12 14, e14 433,
+    e16 106, r01 301, r02 16, r03 `1 5 -1`, r05 1052, r06 44, s01 `2 -1`, s02
+    7, s03 8, t01 402, t02 332 and t03 149; every other probe prints as on C3.
+-   Defect B is C1's (RR11-m1). e12 and e14 have no `if`: on the F1 and F2
+    mirrors e12, which prints 14 on PR 59, and e14, W-212's own form, abort in
+    LLVM's verifier at lower/lower.cpp:48 ("Global variable initializer type
+    does not match global variable type!"), as on C3, so pushed C1 and C2 carry
+    the abort and C3 adds only e16's `if`; e09, e11 and e13 abort at the layout
+    check on F1 too. Stage 2's and stage 3's probe sets held no pack of
+    constant tuples or structs, so neither stage saw it.
+-   `?` in a statement expansion (RR11-m4). No golden of rev 11 holds `?` in a
+    pack expansion: MV-14, C3's binary with check/handle_question.cpp's
+    `++body_region_depth;` removed (`$Y/src/mv14.diff`, relinked with C3's two
+    lowering files, `$Y/logs/relink_mv14.log`), passes rev 11's filled tree,
+    1973 passed (`$Y/logs/gate_mv14_on_rev11_tree.log`). The split
+    `fail_question_body_position` of C3's check expansion_if (§A.11) puts `?`
+    in an expression body and in an expanded `if`'s condition of functions that
+    declare no return type, on the min prelude: on C3 both report
+    `QuestionNoDeclaredReturnType`, the pre-flight's next check after the
+    region depth, at `each x?` and at `each b?`, with the `there was no return
+    type provided` note; with MV-14 both report `QuestionInPatternContext`, and
+    the gate is 1972 passed and 1 failed, that file (`$Y/logs/gate_mv14.log`).
+    As a program, u01, it reports the two errors on C3 and on the folded C3,
+    and on PR 59 and the F1 and F2 mirrors the two errors and VA-1's statement
+    TODO at the `if`'s `...`, whose body is checked before the TODO. A `?`
+    checked and lowered per iteration, e07, needs a `Core.Try` impl, which no
+    min prelude of these files declares, so it stays a probe (§8.9).
+-   `Core.IntLiteral` (RR11-m3). q01 and q02, the pack-free `MinOne` and `Less`
+    on integer literals, abort in lowering on PR 59, the F2 mirror, C3, the
+    folded C3 and trunk at `cast<llvm::IntegerType>` while lowering the
+    comparison's call, and on the nightly, a build without LLVM's assertions,
+    in the verifier at lower/lower.cpp:48 ("SExt only operates on integer").
+    q03, VA-1's expression expansion over literals, aborts so on PR 59, the F2
+    mirror, C3 and the folded C3 (trunk and the nightly stop at its parse), and
+    q04 and the re-review's p06_destroy, an expanded `if` over literals, on C3
+    and the folded C3, where PR 59 and the F2 mirror report VA-1's statement
+    TODO. Upstream's class, not a VA-2 defect, so R-17 is scoped since rev 12.
+-   `Core.Destroy` (RR11-m2). At 4c5734a8c `BuildSelfDestructCall`
+    (check/operator.cpp:107-113) calls `Core.SelfDestruct` through
+    `PerformCall`, the free function `fn SelfDestruct[T: Destroy](ref t: T)`
+    (core/prelude/destroy.carbon:36, `constraint Destroy` at :27), since
+    upstream's 05a7ecbd3 (upstream PR 7942), which 5f1dd4941 and 4c5734a8c
+    hold and 1afda55f0 does not; the base's (check/operator.cpp:106-112 at
+    1afda55f0) forms `Core.Destroy`'s `SelfDestruct` member by
+    `BuildUnaryOperator`. The pack-free analog reports the base's text on PR
+    59, the F2 mirror, C3, the folded C3, trunk and the nightly.
+-   Defect A in PR 59 (RR11-m6). PR 59's install aborts at its layout check
+    (lower/type.cpp:936 there) on e09, e11 and e13, VA-1's forms without an
+    `if`. §2.8's lower/type.cpp hunk does not apply to b0822a744 (`git apply
+    --cached --check` on a private index: the hunk reads C1's `element_id`,
+    where PR 59's `PackType` has `element_type_inst_id`).
+-   Upstream: `git fetch upstream trunk` and `git ls-remote upstream
+    refs/heads/trunk` give 4c5734a8c, rev 11's tip.
 
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
@@ -2229,6 +2388,16 @@ since rev 2 added `variadics_strcat`, amended 2026-10-22, review fold: B-M3).
     C3 newly reaches over packs of padded, aggregate or constant elements, two
     of which abort, one since VA-1 and one since C1. All are measured and
     corrected by rev 11 (M-24).
+-   F-15 (amended 2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m3 /
+    RR11-m4 / RR11-m5 / RR11-m6). Rev 11 committed C3 before C3b, so C3's
+    commit would abort on forms that F2 refuses with VA-1's TODO, under a third
+    clause of D-VA2-19 that it did not reconcile with rev 7's and rev 8's; it
+    said that C3's `... if` reaches defect B, which pushed C1 and C2 reach
+    without an `if`; R-17's falsifier made upstream's `Core.IntLiteral` abort a
+    stop; it recorded `?` in an expansion as built with no golden that pins it
+    and a break condition that reads backwards; two of §2.5's decisions had no
+    break condition; and PR 59's abort on defect A was handed to no one. All
+    are measured and corrected by rev 12 (M-25).
 
 ## §1 Design
 
@@ -2486,7 +2655,8 @@ as upstream lays out an array (lower/type.cpp's `ArrayType` case, :595-617 at
 `ObjectLayout::ForArray`; and a constant pack whose value representation holds
 its elements' value representations is built element by element, an array for a
 pack of one type and a struct for a pack of different types, as C0 builds a
-tuple's (C3b, §2.8, M-24). _Break condition_, also: a pack whose LLVM type's
+tuple's (§2.8, M-24; since rev 12 in C3's own commit, M-25, amended 2026-10-27,
+review fold: RR11-M1). _Break condition_, also: a pack whose LLVM type's
 size differs from its layout's, or a constant pack whose global's type differs
 from its value representation's, which §8.5's MV-12 and MV-13 are built to
 detect (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and
@@ -2628,13 +2798,20 @@ branches (`SemIR::GetPackExpansionBodyBlocks`, in lexical order); `?`, the
 fork's operator, is a body position inside that region, so in an expanded `if`
 it is checked and lowered per iteration (e07) and in an expression body it keeps
 VA-1's cleanup TODO (e02); and the design's Min whose bound lacks `Core.Destroy`
-reports upstream's missing-`Destroy` error at its `var`, since checking now
-reaches the cleanup (amended 2026-10-27, implementation: stop-and-amend: C3's
-p06 line and packs of aggregates). _Break condition:_ a branch's block is
-lowered once for all iterations, or an iteration falls through to a block of
-another; since rev 11 also a region whose block order differs from checking's,
-or a golden that pins `?` inside an expansion (amended 2026-10-27,
-implementation: stop-and-amend: C3's p06 line and packs of aggregates).
+reports the missing-`Destroy` error at its `var`, since checking now reaches the
+cleanup (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and
+packs of aggregates), the requirement upstream's and the text the base's (M-25)
+(amended 2026-10-27, review fold: RR11-m2). Since rev 12 the split
+`fail_question_body_position` pins `?` in both bodies as a body position, and
+the mutant MV-14 breaks it (M-25) (amended 2026-10-27, review fold: RR11-m4).
+_Break condition:_ a branch's block is lowered once for all iterations, or an
+iteration falls through to a block of another; since rev 11 also a region whose
+block order differs from checking's (amended 2026-10-27, implementation:
+stop-and-amend: C3's p06 line and packs of aggregates); since rev 12 also `?` in
+a statement expansion's body diagnosed as in a captured region, which
+`fail_question_body_position` and MV-14 detect, where rev 11 wrote "a golden
+that pins `?` inside an expansion" (amended 2026-10-27, review fold:
+RR11-m4).
 
 **D-VA2-12 (the prelude, verbatim in §2.6).** core/prelude/copy.carbon:50-71
 (the TODO and four impls) becomes one impl, in place:
@@ -3167,11 +3344,11 @@ review fold: B-M8).
 | D-VA2-4 | `[... each T: I]`; arity added by the binding; a second implicit-list pack or a second arity is a TODO | upstream allows several arities, or reads the form otherwise, or two arities reach a specific |
 | D-VA2-5 | deduce the pack of types, convert element by element; hetero to homo forwarding a TODO | wrong order or a missing impl accepted |
 | D-VA2-6 | `each x` has the symbolic type `each T` | a body is accepted or rejected against the facet's members wrongly |
-| D-VA2-7 | lowering with per-iteration constants; tuple layout; since rev 11 a pack of one type at its element's array stride and a constant pack built element by element (C3b, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) | an iteration uses another's type or callee; since rev 11 a pack whose LLVM type's size differs from its layout's, or a constant pack's global typed otherwise than its value representation (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| D-VA2-7 | lowering with per-iteration constants; tuple layout; since rev 11 a pack of one type at its element's array stride and a constant pack built element by element (C3b, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates), in C3's own commit since rev 12 (M-25) (amended 2026-10-27, review fold: RR11-M1) | an iteration uses another's type or callee; since rev 11 a pack whose LLVM type's size differs from its layout's, or a constant pack's global typed otherwise than its value representation (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
 | D-VA2-8 | tuple types with one segment; flattening; deduction; dependent representation; `(...?)` in the type structure, ranked along the query | upstream canonicalizes or ranks segments otherwise, a match covers a wrong run, or a ranking depends on declaration order |
 | D-VA2-9 | `let` destructuring, initialization element by element, W-331 TODO | an element copied other than once |
 | D-VA2-10 | variadic impl selection; termination by subterm requirements | a requirement on a non-smaller type is needed |
-| D-VA2-11 | statement expansions of `if` with per-iteration blocks; since rev 11 the region found through the branches and `?` a body position, as built (§2.5, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) | a branch block shared by iterations; since rev 11 a region ordered otherwise than checking's, or a golden pinning `?` in an expansion (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| D-VA2-11 | statement expansions of `if` with per-iteration blocks; since rev 11 the region found through the branches and `?` a body position, as built (§2.5, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) | a branch block shared by iterations; since rev 11 a region ordered otherwise than checking's (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); since rev 12 `?` in a statement expansion's body diagnosed as in a captured region (`fail_question_body_position`, MV-14), where rev 11 wrote "a golden pinning `?` in an expansion" (amended 2026-10-27, review fold: RR11-m4) |
 | D-VA2-12 | the prelude impls, `==` by the elements' `==`, `!=` field-wise by the elements' `!=` (tuples.md :108-114; amended 2026-10-26, review fold: RR1-Nm-2), min_prelude unchanged | upstream lands its own, a tuple of more than three elements fails, a tuple's `==` calls an element's `!=`, or a tuple's `!=` calls an element's `==` |
 | D-VA2-13 | TODO texts and the `...expand` register entry | an arbiter reaches a TODO, or upstream settles `...expand` |
 | D-VA2-14 | templates unchanged; a dependent action (C++ call, C++ class template, template action) whose operand depends on the pack index is C1's TODO at `AddDependentActionInst`; S-CT a land-time test commit (amended 2026-10-26, review fold: RR1-B-M5); since rev 10 a dependent action on a run-time tuple literal with a pack segment is C2's TODO there (M-23) (amended 2026-10-27, review fold: RR9-m3) | a held PR maps tuples to C++ first, a C++ call on a pack element runs with another iteration's type, or a dependent action whose operand depends on the pack index reaches a specific without the TODO; since rev 10 also such an action on a tuple literal with a pack segment reaching a specific, or the refusal rejecting a form a specific performs correctly (amended 2026-10-27, review fold: RR9-m3) |
@@ -3179,7 +3356,7 @@ review fold: B-M8).
 | D-VA2-16 | ten programs, three differential (`*_diff`) | a program passes a mutant |
 | D-VA2-17 | records; no design edit; W-212 and W-225 discharged, W-213 narrowed; both rows stay PARTIAL with narrower open text | VA-2 decides an open rule without a register entry |
 | D-VA2-18 | one PR on PR 59, merging last, land-time M, S-CT (tests only since rev 3), F-M, L-F, L, simulated on the full-stack mirror | an unresolvable conflict at land time, or a land simulation's red set other than predicted |
-| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); since rev 8 C1 refuses an impl's pack with a TODO that C2 removes (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold: RR7-M4); since rev 11 C3 is followed by C3b, the lowering of packs of aggregates that C3's `... if` reaches (§2.8, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed; since rev 8 also a commit that would select or compute otherwise than its base without a diagnostic because a later commit completes the form, which then refuses the form with a precise TODO until that commit (amended 2026-10-26, review fold: RR7-M4); since rev 11 also a defect that a stage's review finds the stage's form newly reaching, which a commit after it fixes at the root before the stage's fill, by a plan revision (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| D-VA2-19 | C0, its stop-and-amend commit C0b (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) and five implementation commits with fills, fix budget three, a three-level shrink line by revert commits (§3); since rev 7 C1 takes two of the hunks rev 4 gave C2 (§2.2's block, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); since rev 8 C1 refuses an impl's pack with a TODO that C2 removes (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold: RR7-M4); since rev 11 C3 is followed by C3b, the lowering of packs of aggregates that C3's `... if` reaches (§2.8, M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); since rev 12 §2.8's hunks are C3's and C3b is not a commit (M-25) (amended 2026-10-27, review fold: RR11-M1) | a commit cannot build without a later one; since rev 7 also a commit whose gate crashes without a later commit's hunk, which then moves to it by a plan revision before it is committed; since rev 8 also a commit that would select or compute otherwise than its base without a diagnostic because a later commit completes the form, which then refuses the form with a precise TODO until that commit (amended 2026-10-26, review fold: RR7-M4); since rev 12, replacing rev 11's clause (a later commit fixing it before the stage's fill), also a defect that a stage's review finds the stage's commit reaching, which that commit takes, fixed at the root, by a plan revision before it is committed, as rev 7's rule moves a hunk, so that no commit aborts on a form its base refuses with a diagnostic (amended 2026-10-27, review fold: RR11-M1) |
 
 ## §2 Spec, file by file
 
@@ -3204,7 +3381,11 @@ stopped stage 4 run's
 lead records the decisions the implementer took under R29; C3b, which follows
 C3, is §2.8's block, measured against the scratch commit e43cecc6b (F2 with that
 patch), where `git apply --check` passes (M-24) (amended 2026-10-27,
-implementation: stop-and-amend: C3's p06 line and packs of aggregates).
+implementation: stop-and-amend: C3's p06 line and packs of aggregates). Since
+rev 12 §2.8's block is part of C3, which is the stopped run's patch, §2.8's
+block and §A.11's split `fail_question_body_position`, together
+`$Y/c3_rev12.patch` on F2 (M-25) (amended 2026-10-27, review fold: RR11-M1 /
+RR11-m4).
 Fork comments name the decision (`// Fork (VA-2, D-VA2-n): ...`), quote the
 design page they implement, and name no work item (VA-1's convention: ids live
 in records only). Appendix B applies to b0822a744 as it stands in this file:
@@ -3720,9 +3901,13 @@ struct PackSegmentInit {
 
 Built by the stopped stage 4 run as items 1 to 4 below say, its code the saved
 state `$W/c3_uncommitted_source_state.patch` (16 files, 455 insertions and 29
-deletions on F2; M-24), with these decisions taken under R29, each kept with its
-break condition (amended 2026-10-27, implementation: stop-and-amend: C3's p06
-line and packs of aggregates):
+deletions on F2; M-24), which since rev 12 C3's commit joins with §2.8's hunks
+and the split `fail_question_body_position` (`$Y/c3_rev12.patch`, 19 files,
+M-25) (amended 2026-10-27, review fold: RR11-M1 / RR11-m4), with these
+decisions taken under R29, each kept with its break condition (amended
+2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of
+aggregates; the break conditions of the last two since rev 12, amended
+2026-10-27, review fold: RR11-m5):
 
 -   sem_ir/function.h and function.cpp gain `SemIR::GetPackExpansionBodyBlocks`,
     the region's blocks from the entry through the branches in reverse
@@ -3744,8 +3929,13 @@ line and packs of aggregates):
     pattern, a `case` guard, or a binding's type expression" where it reports
     VA-1's TODO (e02, M-24); `?` in an expanded `if` is checked and lowered per
     iteration (e07). handle_question.cpp is the fork's, absent upstream at
-    4c5734a8c, and no held head changes it. _Break condition:_ a golden that
-    pins `?` inside an expansion.
+    4c5734a8c, and no held head changes it. Since rev 12 the check
+    expansion_if split `fail_question_body_position` pins the rule for both
+    bodies and MV-14 is built to break it (M-25). _Break condition:_ `?` in a
+    statement expansion's body diagnosed as in a captured region, or upstream
+    giving `?` in a pack expansion another meaning, a captured region or a
+    refusal; rev 11 wrote "a golden that pins `?` inside an expansion", which
+    reads backwards (amended 2026-10-27, review fold: RR11-m4).
 -   `IsExpandableIfStatement` walks the `if` statement's parse subtree,
     accepting expression, `if` and `return` statements, and refuses any other
     declaration or statement node, or an `if (let ...)` condition
@@ -3753,13 +3943,24 @@ line and packs of aggregates):
     ends the resumption block when it is reachable, so an `if` whose every
     branch returns ends none (e01); `FinishPackExpansionBody(...,
     body_is_region)` skips VA-1's control-flow check for an `if` body only and
-    keeps the cleanup TODO.
+    keeps the cleanup TODO. _Break condition:_ a node the walk accepts whose
+    expansion checks or lowers otherwise than once per element (a crash, a
+    block shared by iterations or a wrong result), or a refused node, an `if
+    (let ...)` condition among them, that upstream's statement expansion
+    accepts at a later tip; either is a stop and a plan revision that accepts
+    or refuses it with a golden (amended 2026-10-27, review fold: RR11-m5).
 -   Lowering keeps a per-iteration block map (`pack_iteration_blocks_`), filled
     lazily by `GetBlock` and `TryToReuseBlock` and cleared after each iteration;
     each iteration creates a `pack.next` block, lowers the region's entry where
     the iteration starts and moves its other blocks to the function's end in
     order; `PackExpansionNext` lowers to a branch to `pack.next`, where the next
     iteration, or after the last the code after the expansion, is lowered.
+    _Break condition:_ a block of one iteration that another iteration's
+    `GetBlock` or `TryToReuseBlock` returns, a map entry that outlives its
+    iteration, or an iteration's blocks out of the region's lexical order in
+    the function, which the lower expansion_if goldens `first`, `min` and
+    `padded_element` and §8.5's MV-6 detect (amended 2026-10-27, review fold:
+    RR11-m5).
 
 1.  check/handle_pack_expansion.cpp: at a statement `...`, after pushing the
     body block, `context.region_stack().PushRegion(body_block_id)`, so the
@@ -4413,9 +4614,14 @@ index 606a51464..ada23d40c 100644
 
 <!-- google-doc-style-resume -->
 
-### §2.8 C3b, packs of aggregates in lowering (built)
+### §2.8 C3's lowering of packs of aggregates (built; C3b in rev 11)
 
-C3b, since rev 11, fixes the two lowering defects M-24 measured, which C3's `...
+Since rev 12 these hunks are C3's: C3b is not a commit, and C3 is the stopped
+run's patch, this block and §A.11's `fail_question_body_position`, together
+`$Y/c3_rev12.patch` (19 files, 564 insertions and 46 deletions on F2), so that
+no commit aborts on the forms they fix (D-VA2-19, M-25); "C3b" below names
+these hunks as rev 11 did (amended 2026-10-27, review fold: RR11-M1). C3b, since
+rev 11, fixes the two lowering defects M-24 measured, which C3's `...
 if` reaches (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line
 and packs of aggregates). A pack of one type is laid out as upstream lays out an
 array, each element padded to its type's array stride by `BuildTailPaddedType`
@@ -4655,12 +4861,21 @@ without a diagnostic, because a later commit completes the form, refuses the
 form with a precise TODO that the later commit removes, and the landed notes
 record it; C1 so refuses a pack in an impl's implicit parameter list until C2
 (§2.2's and §2.3's rev 8 blocks, R-14, M-22) (amended 2026-10-26, review fold:
-RR7-M4). Since rev 11 C3 is followed by C3b before F3, the lowering of packs of
-aggregates that the review of C3's code found C3's `... if` reaching (§2.8,
-M-24). _Break condition_, also: a defect that a stage's review finds the stage's
-form newly reaching, which a commit after it fixes at the root before the
-stage's fill, by a plan revision (amended 2026-10-27, implementation:
-stop-and-amend: C3's p06 line and packs of aggregates).
+RR7-M4). Rev 11 had C3 followed by C3b before F3, the lowering of packs of
+aggregates that the review of C3's code found (§2.8, M-24) (amended 2026-10-27,
+implementation: stop-and-amend: C3's p06 line and packs of aggregates); since
+rev 12 C3 takes §2.8's hunks itself and C3b is not a commit, because C3 alone
+would abort where F2 reports VA-1's TODO (M-25). _Break condition_, also, in
+place of rev 11's, under which a later commit fixed it before the stage's fill:
+a defect that a stage's review finds the stage's commit reaching, whether the
+form is new or the base's, is fixed at the root in that commit, by a plan
+revision before it is committed, as rev 7's rule moves a hunk; rev 8's rule, a
+precise TODO until a later commit, is for a form that a later commit completes,
+not for a defect; so no commit aborts on a form that its base refuses with a
+diagnostic, and the landed notes record each such fold. C1 and C2, pushed
+before defect B was found, abort on e12 and e14 until C3, which history keeps
+(AGENTS.md) and the landed notes record (amended 2026-10-27, review fold:
+RR11-M1 / RR11-m1).
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
 B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
@@ -4693,10 +4908,13 @@ ones before it:
     PASS 144, 0 failures, SKIP 21 of 165. Records: W-218 and W-219 keep their
     titles; W-225 is narrowed, not discharged (the `Copy` rewrite done, `Eq`
     and `Ordered` remain in it); the stdlib row keeps "no tuple Eq/Ordered".
-    Since rev 11 it keeps C3b's code and moves C3b's two splits, their `if`s
-    made expression statements, to lower/variadics/hetero_pack.carbon, so the
-    counts stand (amended 2026-10-27, implementation: stop-and-amend: C3's p06
-    line and packs of aggregates).
+    Since rev 12 it keeps C3's §2.8 hunks by a partial revert, `git revert
+    --no-commit` of F3 and C3 and then `git checkout HEAD --
+    toolchain/lower/type.cpp toolchain/lower/file_context.cpp
+    toolchain/lower/file_context.h`, and moves the lower expansion_if's
+    `padded_element` and `aggregate_constants`, their `if`s made expression
+    statements, to lower/variadics/hetero_pack.carbon, so the counts stand;
+    rev 11 kept C3b's commit (amended 2026-10-27, review fold: RR11-M1).
 2.  **Shrink 2, tuple values with a pack segment** (C2's `PackSegmentInit` or
     `let` cannot be made to work). Also reverts C4 and F4 (the prelude
     untouched), C2's tuple-value hunks and their splits (`tuple_segment`'s
@@ -4838,18 +5056,25 @@ The commits, in order:
     run's saved state,
     `$W/c3_uncommitted_source_state.patch` (16 files; `toolchain` tree
     acceecde6), whose gate is 1969 passed and 4 failed, those four, with no
-    crash, measured; it is followed by **C3b, packs of aggregates in lowering**
-    (§2.8's block): lower/type.cpp, lower/file_context.cpp and .h, and the lower
-    expansion_if's `padded_element` and `aggregate_constants` splits; expected
-    gate: the same 1969 passed and 4 failed, with no crash, measured (M-24)
-    (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs
-    of aggregates).
+    crash, measured; rev 11 had it followed by C3b, §2.8's block (M-24)
+    (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and
+    packs of aggregates). Since rev 12 C3 also takes §2.8's hunks
+    (lower/type.cpp, lower/file_context.cpp and .h, and the lower
+    expansion_if's `padded_element` and `aggregate_constants` splits) and the
+    check expansion_if's `fail_question_body_position`: C3 is
+    `$Y/c3_rev12.patch` (19 files; `toolchain` tree aae17748f), whose gate is
+    the same 1969 passed and 4 failed, with no crash, measured (M-25) (amended
+    2026-10-27, review fold: RR11-M1 / RR11-m4).
 8.  **F3.** Autoupdate of those 4 files, after C3b since rev 11: one pass, the
     second changing nothing, and the gate 1973 passed (measured, M-24: the fill
     is `$Z/fill_c3b`, the stopped run's `$W/fill_p1` with the lower file's two
     new splits filled, and C3b with it has the `toolchain` tree 745bada75)
     (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs
-    of aggregates).
+    of aggregates). Since rev 12 F3 follows C3 itself: one pass, the second
+    changing nothing, and the gate 1973 passed (measured, M-25: the fill is
+    `$Y/fill_p1`, `$Z/fill_c3b` with the check file's new split filled, and C3
+    with it has the `toolchain` tree a12dfbb2d) (amended 2026-10-27, review
+    fold: RR11-M1 / RR11-m4).
 9.  **C4, the prelude** (§2.6): core/prelude/copy.carbon :50-71 and
     core/prelude/operators/comparison.carbon. New goldens: check and lower
     `variadics/prelude_tuple_impls` on the production prelude (amended
@@ -4926,7 +5151,10 @@ rev 9 C2's also cites M-23, the measurement of its `rank` splits (amended
 since rev 10 C2's names the TODO of a dependent action on a tuple literal with a
 pack segment and cites D-VA2-14 (amended 2026-10-27, review fold: RR9-m3);
 since rev 11 C3b's follows C3's, in C0b's form (amended 2026-10-27,
-implementation: stop-and-amend: C3's p06 line and packs of aggregates)):
+implementation: stop-and-amend: C3's p06 line and packs of aggregates); since
+rev 12 C3's takes in C3b's paragraph and a sentence on `?`, and C3b has no
+message, not being a commit (amended 2026-10-27, review fold: RR11-M1 /
+RR11-m4)):
 
 <!-- google-doc-style-ignore -->
 
@@ -5022,32 +5250,25 @@ VA-2 C3: statement expansions of `if` statements
 
 `... if (...) { ... } else ...` is checked once and lowered once per
 element, each iteration with its own blocks, falling through to the next
-iteration; `return` in a branch returns from the function. Declarations,
-loops, `break`, `continue` and `match` in an expansion body stay semantics
-TODOs.
+iteration; `return` in a branch returns from the function, and `?` in an
+expansion body is in a body position, as in the function's body.
+Declarations, loops, `break`, `continue` and `match` in an expansion
+body stay semantics TODOs.
 
-fork/variadics/va2-plan.md §2.5, D-VA2-11.
-```
+Expanded `if` statements over packs of padded or aggregate elements
+reach two lowering defects, fixed here at the root. A pack of one type
+whose element has tail padding, such as `{.a: i64, .b: bool}` or
+`Core.Optional(i32)`, was laid out as an LLVM array of the unpadded
+element, smaller than the pack's layout, and aborted lower/type.cpp's
+layout check, on PR 59 too; each element now sits at its array stride,
+as an array's does. Since C1 a constant pack of tuple or struct values,
+whose value holds its elements' value representations, was given a
+global of that type initialized with its object representation, which
+LLVM's verifier rejects where PR 59 lowers the pack at run time;
+GetConstant now builds it element by element, as C0 builds such a
+tuple. The new goldens are filled by the next commit.
 
-```text
-VA-2 C3b: pack elements at their array stride, constant packs elementwise
-
-A pack of one type whose element has tail padding, such as
-`{.a: i64, .b: bool}` or `Core.Optional(i32)`, was laid out as an LLVM
-array of the unpadded element, smaller than the pack's layout, and
-aborted lower/type.cpp's layout check, on PR 59 too; C3's `... if`
-reaches it where PR 59 stops at a TODO. Each element now sits at its
-array stride, as an array's does. Since C1 a constant pack of tuple or
-struct values, whose value holds its elements' value representations,
-was given a global of that type initialized with its object
-representation, which LLVM's verifier rejects where PR 59 lowers the
-pack at run time; GetConstant now builds it element by element, as C0
-builds such a tuple. The lower golden expansion_if gains the splits
-padded_element and aggregate_constants, filled with C3's by the next
-commit.
-
-fork/variadics/va2-plan.md §2.8, D-VA2-7, M-24, the stop-and-amend
-record (rev 11).
+fork/variadics/va2-plan.md §2.5, §2.8, D-VA2-7, D-VA2-11, M-24, M-25.
 ```
 
 ```text
@@ -5182,7 +5403,10 @@ RR9-M1 / RR9-m3). Since rev 11 the C3 rows are measured: the stopped stage 4
 run's fill reproduces
 each as rev 10 states it, `nested` included, and C3b's fill gives the same lines
 and the two C3b rows below (M-24) (amended 2026-10-27, implementation:
-stop-and-amend: C3's p06 line and packs of aggregates).
+stop-and-amend: C3's p06 line and packs of aggregates). Since rev 12 the two
+C3b rows are C3's, and C3's fill gives every C3 row as rev 11 states it and the
+row `fail_question_body_position` (M-25) (amended 2026-10-27, review fold:
+RR11-M1 / RR11-m4).
 
 | File (commit) | Split | Predicted key output |
 | --- | --- | --- |
@@ -5267,10 +5491,11 @@ stop-and-amend: C3's p06 line and packs of aggregates).
 | (same) | `else_if_return` | the region holds the `return` block, the `else if` blocks and the merge; the function's final `return 0` is outside it |
 | (same) | `generic` | `AnyLess`'s body checked once against `T`; `each next.Lt(first)` through `Less`'s witness |
 | (same) | `nested` | the inner `if`'s blocks are in the same region; since rev 10 `F` is between the dump markers, as `if_else`'s is, so the golden shows the `pack_expansion_statement`'s body region holding the outer `if`'s condition block, its then block with the inner `if`'s condition, the inner then block with the `Consume` call, the inner `if`'s merge block, and the outer merge block ending in `pack_expansion_next` (EXPECTED, not of record: predicted from §2.5 and the pack-free analog's five blocks, measured by F3; without the markers the golden held no SemIR, R-15, M-23) (amended 2026-10-27, review fold: RR9-M1) |
+| (same) | `fail_question_body_position` | "`?` requires the enclosing function to have a declared return type that implements `Core.Try`" [`QuestionNoDeclaredReturnType`] with the "there was no return type provided" note at the function, at `each x?` in `InExpression`'s expression body and at `each b?` in `InCondition`'s expanded `if` condition, and no `QuestionInPatternContext`; nothing else (measured, M-25; with MV-14 both are `QuestionInPatternContext`) (amended 2026-10-27, review fold: RR11-m4) |
 | lower/expansion_if.carbon (C3) | `first` | `First`'s arity-3 specific has three copies of the condition, branch and merge blocks, each iteration's merge branching to the next iteration's condition, the `return 1` block of each returning; the last merge branches to `return 0` |
 | (same) | `min` | `Min`'s arity-2 specific compares and stores twice, in order |
-| (same, C3b) | `padded_element` | `Each`'s arity-2 specific reads each `{.a: i64, .b: bool}` element's address from the value pack `[2 x ptr]`, branches on `.b` and calls `Consume` with `.a` in each iteration; `Call` stores `y`'s address twice into a `[2 x ptr]` alloca, and `CallConstants` passes an `internal constant [2 x ptr]` of the two struct constants' globals (measured, M-24; on C3 alone file_test aborts at this split, the layout check's "unexpected size 18, expected 32") (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
-| (same, C3b) | `aggregate_constants` | `Each`'s specific for `⟬(i64, i64), {.a: i64, .b: bool}⟭` reads its elements' addresses from `{ ptr, ptr }` and calls `Value` twice in each iteration, the tuple's in the first and the struct's in the second; `Call` passes an `internal constant { ptr, ptr }` of a tuple global and a struct global (measured, M-24; with lower/type.cpp's hunk alone the verifier rejects the module, MV-13) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| (same, C3 since rev 12, C3b in rev 11) | `padded_element` | `Each`'s arity-2 specific reads each `{.a: i64, .b: bool}` element's address from the value pack `[2 x ptr]`, branches on `.b` and calls `Consume` with `.a` in each iteration; `Call` stores `y`'s address twice into a `[2 x ptr]` alloca, and `CallConstants` passes an `internal constant [2 x ptr]` of the two struct constants' globals (measured, M-24; on C3 alone file_test aborts at this split, the layout check's "unexpected size 18, expected 32") (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| (same, C3 since rev 12, C3b in rev 11) | `aggregate_constants` | `Each`'s specific for `⟬(i64, i64), {.a: i64, .b: bool}⟭` reads its elements' addresses from `{ ptr, ptr }` and calls `Value` twice in each iteration, the tuple's in the first and the struct's in the second; `Call` passes an `internal constant { ptr, ptr }` of a tuple global and a struct global (measured, M-24; with lower/type.cpp's hunk alone the verifier rejects the module, MV-13) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
 | lower/../tuple/nested_constant.carbon (C0, C0b) | `tuple` | `((1, 2), 3)`'s value is a constant `<{ ptr, i32 }>` (packed: the Carbon layout of `(ptr, i32)` has no tail padding, lower/type.cpp `BuildStructType`) whose first field is the address of the inner tuple's constant `{ i32, i32 }`, and the element read is a load from it (M-12; amended 2026-10-22, review fold: A-B-3; rev 4 wrote `{ ptr, i32 }`, measured by the implementer's C0 fill and again on C0b, M-20) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
 | (same) | `pass` | the same constant passed by its value representation's address (M-20) |
 | (same) | `var` | the alloca of `{ { i32, i32 }, i32 }` initialized element by element from that constant: a load of the inner tuple's address and an 8-byte memcpy from it into `v.0`, a load of `6` and a store into `v.1` (C0b, measured, M-20; on C0 alone a 12-byte memcpy of the value representation itself, the stop-and-amend) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
@@ -5297,7 +5522,9 @@ constant initialization), and rev 10 by one more, C2's
 RR9-m3), and rev 11 by two more, C3b's `padded_element` and
 `aggregate_constants`
 (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of
-aggregates), and 5 refills; S-CT adds a sixteenth file at land time, with four
+aggregates), and rev 12 by one more, C3's `fail_question_body_position`, C3b's
+two being C3's since rev 12 (amended 2026-10-27, review fold: RR11-M1 /
+RR11-m4), and 5 refills; S-CT adds a sixteenth file at land time, with four
 splits since rev 10 (amended 2026-10-27, review fold: RR9-m3); fail_todo_va2 and
 fail_todo_slice change in C1, C2 and C3; C4 changes M-9's predicted 44
 full-prelude goldens, 43 of them only by renamed SemIR names, a lower bound; no
@@ -5419,8 +5646,10 @@ lower/file_context.cpp and .h) add no conflicted path for any held head, trunk
 or upstream's tip, though PR 60 changes lower/type.cpp and PR 61 and PR 64
 change lower/file_context.cpp and sem_ir/function.cpp (`$Z/logs/mt_held_c3.txt`,
 `mt_held_c3b.txt`, M-24) (amended 2026-10-27, implementation: stop-and-amend:
-C3's p06 line and packs of aggregates). Merge rules, applied by commit M and by
-every mirror (§8.7):
+C3's p06 line and packs of aggregates). Since rev 12 they are one commit's, and
+C3 with its fill and the new split, the scratch commit 525e95792, gives the same
+sets (`$Y/logs/mt_held_c3r12.txt`, M-25) (amended 2026-10-27, review fold:
+RR11-M1). Merge rules, applied by commit M and by every mirror (§8.7):
 
 1.  convert.cpp, `ConvertTupleToType` (PR 61, PR 64): keep both changes,
     PR 61's `SpliceInst` redirect first, then VA-2's pack segment, since a
@@ -5510,7 +5739,12 @@ changes, by the rule below (`$V/mt_up_5f1d.txt`, M-23) (amended 2026-10-27,
 implementation: stop-and-amend: the rank splits on the min prelude). Rev 10 at
 4c5734a8c, which changes toolchain/base/id_tag.h only, measured the same 120
 paths for b0822a744, 1a7c360e0, a5cebd9c0 and 492272573 (`$X/mt_4c57_*.txt`,
-M-23) (amended 2026-10-27, review fold: RR9-m1).
+M-23) (amended 2026-10-27, review fold: RR9-m1). At the advance that takes
+05a7ecbd3, p06's line and its pack-free analog report upstream's diagnostic for
+`Core.SelfDestruct[T: Destroy]`'s requirement in place of the base's
+member-access text, the requirement unchanged, and §0.2's p06 row and hand-off
+note 2's p06 line are re-measured then (M-25) (amended 2026-10-27, review fold:
+RR11-m2).
 Two upstream commits change how rev 3's mechanisms sit at the advance, and
 the advance re-runs M-17's probes for both: e1c8c1f85 makes name lookup pair
 every name of an enclosing generic with that generic's self specific, so a
@@ -5734,14 +5968,22 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     golden exercised** (added by rev 11) (amended 2026-10-27, implementation:
     stop-and-amend: C3's p06 line and packs of aggregates). C3's `... if`
     reaches a pack of a padded element, laid out without its padding since VA-1,
-    and a constant pack of aggregates, given an object-representation global
-    since C1, aborts that no golden, program or probe set exercised (M-24); C3b
-    fixes both at the root. Detected by the review of each stage's code with
-    probes of the forms it newly accepts over packs of padded, aggregate and
-    constant elements, and by C3b's splits and §8.5's MV-12 and MV-13; falsified
-    by an abort or a CHECK failure in lowering a pack of any element type that a
-    slice form accepts, which is a stop and a plan revision that fixes it, in a
-    commit after the one that newly reaches it.
+    and C1's own forms reach a constant pack of aggregates, given an
+    object-representation global since C1 (e12 and e14 abort on pushed C1 and C2
+    without an `if`, M-25) (amended 2026-10-27, review fold: RR11-m1), aborts
+    that no golden, program or probe set exercised (M-24); since rev 12 C3 fixes
+    both at the root (§2.8). Detected, since rev 12, by `$Y/probes`, rev 11's
+    and the re-review's probes of packs of padded, aggregate and constant
+    elements, run after every stage's build, forms the base already accepts
+    included, beside the review of each stage's code, and by §2.8's splits and
+    §8.5's MV-12 and MV-13 (amended 2026-10-27, review fold: RR11-m1);
+    falsified by an abort or a CHECK failure in lowering a pack of any element
+    type that a slice form accepts, where the form's pack-free analog lowers on
+    trunk, which is a stop and a plan revision that fixes it in the commit that
+    reaches it (amended 2026-10-27, review fold: RR11-M1); an abort that the
+    pack-free analog has on trunk too, such as the lowering of a comparison on
+    `Core.IntLiteral` (q01 to q04 and p06_destroy, M-25), is upstream's class,
+    recorded, not a stop (amended 2026-10-27, review fold: RR11-m3).
 
 ### §7.2 Rejected alternatives
 
@@ -5902,7 +6144,20 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     of tuple and struct types; and a later fix would leave C3 to C5 committed
     over two known aborts that §A's programs and C4's prelude impls, which take
     tuples of aggregates, can reach. Falsified as a rejection if the fix changes
-    a golden beyond C3b's two splits, which it does not (M-24's gate).
+    a golden beyond §2.8's two splits, which it does not (M-24's gate, and
+    M-25's, `fail_question_body_position` being RR11-m4's).
+-   **A-17. C3b as a commit after C3, or C3b's code before C3** (rejected;
+    added by rev 12) (amended 2026-10-27, review fold: RR11-M1). Rev 11
+    committed C3 and then C3b, which leaves C3 aborting on e07, e10, e16, r01
+    to r03, r06, s01 to s03 and t01 to t03, where F2 reports VA-1's statement
+    TODO (M-25); and §2.8's code could be committed before C3, as its code
+    hunks apply on F2. Rejected: the first leaves an abort window that
+    D-VA2-19 now forbids; the second needs §2.8's two splits rewritten without
+    `if`, as shrink 1 does, and measured again, for a commit that fixes forms
+    only C3 and C1 reach, while folding it into C3, which is uncommitted, is
+    free and measured (M-25). Falsified as a rejection if an implementation
+    review requires §2.8's fix as a commit of its own, which then comes after
+    the reviews by revert commits, never by a rewrite.
 
 ## §8 Verification and discharge
 
@@ -6106,6 +6361,23 @@ be17f449b; and `git merge-tree` of every held head, trunk and upstream's tip
 4c5734a8c with them (`$Z/logs/mt_held_c3.txt`, `mt_held_c3b.txt`). The scratch
 tree and the relinked binaries were removed when rev 11 was committed.
 
+Rev 12's are the plan amender's of the re-review of rev 11 (amended 2026-10-27,
+review fold: RR11-M1 / RR11-m1 / RR11-m3 / RR11-m4 / RR11-m6), with `$Y` the
+directory the header names and every rev 12 number in `$Y` (M-25): C3 with
+§2.8's hunks relinked over the C3 install's objects into
+/dev/shm/va2-impl/amend12/bin_c3r12 (`$Y/bin/relink.sh`) and MV-14 into
+bin_mv14; the gates and fills in the scratch worktrees c3r12 and r11
+(`$Y/bin/mgate.sh`, `$Y/bin/mau.sh`); the mirrors of F2 and F1, built in full
+under /dev/shm/va2-impl/builds one at a time; the probes of `$Y/probes` on PR
+59, the F1 and F2 mirrors, C3, the folded C3, trunk and the nightly
+(`$Y/bin/run_all.sh`, `$Y/bin/summarize.py`, `$Y/logs/probes_summary.txt`);
+conformance, §A.5's program and the probe sets (`$Y/bin/*_x.sh`, `$Y/sets`) on
+the folded C3; clang-format and prek; `git apply --cached --check` of §2.8's
+lower/type.cpp hunk on b0822a744; the scratch commits 4bc2a145a and 525e95792,
+written from private indexes; and `git merge-tree` of every held head, trunk and
+upstream's tip with 525e95792 (`$Y/logs/mt_held_c3r12.txt`). The worktrees, the
+mirrors and the relinked binaries were removed when rev 12 was committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -6127,7 +6399,9 @@ initialization). C3b changes lower/type.cpp, lower/file_context.cpp and
 file_context.h's comment,
 so its build is incremental and recompiles the lower objects that include
 file_context.h (amended 2026-10-27, implementation: stop-and-amend: C3's p06
-line and packs of aggregates).
+line and packs of aggregates). Since rev 12 those files are C3's, and C3's one
+build recompiles what its 15 code files reach (amended 2026-10-27, review fold:
+RR11-M1).
 
 ### §8.2 Autoupdate to its fixpoint (implementer)
 
@@ -6166,7 +6440,10 @@ alone, the stopped run's saved state, is 1969 passed and 4 failed, §3 item
 7's four, with no crash, and C3 with the stopped run's fill 1973 passed, both
 measured on its install; C3b alone is the same 1969 and 4, with no crash, and
 1973 passed after F3, measured on its relink (M-24) (amended 2026-10-27,
-implementation: stop-and-amend: C3's p06 line and packs of aggregates).
+implementation: stop-and-amend: C3's p06 line and packs of aggregates). Since
+rev 12 C3 holds §2.8's hunks and `fail_question_body_position`: 1969 passed and
+4 failed, the same four, with no crash, and 1973 passed after F3, measured on
+its relink (M-25) (amended 2026-10-27, review fold: RR11-M1 / RR11-m4).
 
 ### §8.4 Conformance (implementer)
 
@@ -6194,7 +6471,9 @@ install: 137 / 0 / 21 over 158 and bullets 49 / 0 / 7 of 56 (M-23) (amended
 C2 rev 10 too, on its relink (M-23) (amended 2026-10-27, review fold: RR9-m3).
 C3 too, on the stopped run's install, and C3b on its relink: 137 / 0 / 21 over
 158 and bullets 49 / 0 / 7 of 56 (M-24) (amended 2026-10-27, implementation:
-stop-and-amend: C3's p06 line and packs of aggregates).
+stop-and-amend: C3's p06 line and packs of aggregates); and C3 with §2.8's
+hunks, as rev 12 states it, on its relink (M-25) (amended 2026-10-27, review
+fold: RR11-M1).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -6219,8 +6498,9 @@ per program.
 | MV-9 | D-VA2-8 | check/type_structure.cpp: a `?`'s ranking key `4p + 2` becomes `4p` (below a segment's) | the `impl` golden's `rank` splits (`(i64, bool)` finds the variadic impl), and no program: the prelude has no fixed-arity tuple impl beside the variadic ones (amended 2026-10-22, review fold: A-M-1 / B-B2); measured on C2 since rev 9: impl.carbon fails, its `rank` and `rank_reversed` dumps then showing `p.(Count.N)()` calling the variadic impl's `N` with the arity 2, which needs the dump range rev 9 adds (without it the golden passes with MV-9, R-15) (M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
 | MV-10 | D-VA2-12 | comparison.carbon: `Equal`'s `not (each a == each b)` becomes `each a != each b` (rev 1's body) | tuple_impl_generic (21 and 22 where 11 and 12), tuple_eq_diff (the Counted lines, DIFF-MISMATCH) (amended 2026-10-22, review fold: A-m-1 / B-M1) |
 | MV-11 | D-VA2-12 | comparison.carbon: `NotEqual` removed, so `!=` is `EqWith`'s default `not Equal` (rev 2's reading) | tuple_impl_generic (`Differ(a, b)` prints 11 and 12 where 21 and 22); tuple_eq_diff is unaffected, its elements' `!=` being `not ==` (amended 2026-10-26, review fold: RR1-Nm-2) |
-| MV-12 | D-VA2-7 | lower/type.cpp: a pack of one type built from its element's unpadded LLVM type, C3b's hunk reverted | the lower expansion_if golden (`padded_element`: file_test aborts at the layout check, "unexpected size 18, expected 32"), and no program: none takes a pack of a padded element; measured as the C3 install's file_test on C3b's sources, which lacks both of C3b's hunks and aborts at this check first (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| MV-12 | D-VA2-7 | lower/type.cpp: a pack of one type built from its element's unpadded LLVM type, C3b's hunk reverted | the lower expansion_if golden (`padded_element`: file_test aborts at the layout check, "unexpected size 18, expected 32"), and no program: none takes a pack of a padded element; measured as the C3 install's file_test on C3b's sources, which lacks both of C3b's hunks and aborts at this check first (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates); measured precisely by the re-review of rev 11, with file_context.cpp's hunk alone relinked: the same abort at lower/type.cpp:955 (M-25) (amended 2026-10-27, review fold: RR11-M1) |
 | MV-13 | D-VA2-7 | lower/file_context.cpp: `GetElementwiseConstantValueRepr` without its `PackValue` case | the lower expansion_if golden (`padded_element`'s `CallConstants` and `aggregate_constants`: the verifier's abort at lower/lower.cpp:48), and no program; measured on a relink with lower/type.cpp's hunk alone (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and packs of aggregates) |
+| MV-14 | D-VA2-11 | check/handle_question.cpp: a statement expansion's region not counted as a body position (`++body_region_depth;` removed, `$Y/src/mv14.diff`) | the check expansion_if golden (`fail_question_body_position`: both `?`s report `QuestionInPatternContext`), and no program; measured on C3's relink: 1972 passed and 1 failed, where rev 11's filled tree passes it, 1973 (M-25) (amended 2026-10-27, review fold: RR11-m4) |
 
 ### §8.6 prek, clang-tidy and R31 (every agent, every commit)
 
@@ -6247,7 +6527,10 @@ and which fail `misc-no-recursion` on C0 alone; on C0b both passes are clean
 initialization). C3b is a code commit too: both passes on lower/type.cpp and
 lower/file_context.cpp are clean, the second line-filtered to their lines
 changed since b0822a744 (M-24) (amended 2026-10-27, implementation:
-stop-and-amend: C3's p06 line and packs of aggregates).
+stop-and-amend: C3's p06 line and packs of aggregates). Since rev 12 those are
+C3's files: C3's passes are the stopped run's over its 8 .cpp files (`$W/tidy`)
+and rev 11's over these two (`$Z/tidy`), which stand while C3's code is
+`$Y/c3_rev12.patch`'s (amended 2026-10-27, review fold: RR11-M1).
 
 ### §8.7 Composition mirrors (implementer, before the implementation reviews)
 
@@ -6340,6 +6623,12 @@ fills, plus the set named below, and its programs are both sides' (amended
     i6, i8, same3, f10 and pl1 as M-17 (amended 2026-10-26, review fold:
     RR1-NB-1); OV-1's overload goldens unchanged.
 
+Since rev 12 "C3b's" in the m61, m60 and m64 bullets names §2.8's hunks, which
+are C3's, and "C3b's lines" the `[c3b]` lines of `$Z/logs/probes_c3_review.txt`;
+every mirror also runs `$Y/probes` after its build, expecting the lines of
+`$Y/logs/probes_c3r12_summary.txt` but for what C4 and C5 change (R-17)
+(amended 2026-10-27, review fold: RR11-M1 / RR11-m1).
+
 A mirror is evidence for the implementation review, not a commit; a failure
 in one is a finding against whichever side the review assigns it to.
 
@@ -6351,6 +6640,14 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
 
 ### §8.9 Not run, and why
 
+-   Since rev 12 C3, with §2.8's hunks and `fail_question_body_position`, is
+    relinked over the C3 install's objects and gated and filled in a scratch
+    worktree, so its build is the implementer's. A `?` checked and lowered per
+    iteration, e07's form, has no golden: a `Core.Try` impl needs the full
+    prelude (min_prelude/full.carbon), which no golden of C3 includes, and a
+    new golden file for it would move §8.3's counts; e07 in `$Y/probes` pins
+    it, and `fail_question_body_position` with MV-14 pins the region rule
+    (M-25) (amended 2026-10-27, review fold: RR11-M1 / RR11-m4).
 -   Since rev 11 C3 is built, on the stopped run's install, and C3b relinked
     over its objects, so §2.5 and §2.8 are measured and the `nested` dump below
     is the stopped run's fill; C3b's full build, its incremental build on C3's
@@ -6438,7 +6735,12 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     `$W/c3_uncommitted_source_state.patch` on 1afda55f0, C3b from
     `$Z/c3b/c3b.patch` on C3, and MV-13 from C3b without its file_context.cpp
     hunk (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and
-    packs of aggregates).
+    packs of aggregates). Rev 12's (/dev/shm/va2-impl/amend12: bin_c3r12,
+    bin_mv14, the scratch worktrees c3r12 and r11, and the F1 and F2 mirrors
+    with their builds) were removed when rev 12 was committed; C3 is
+    reproducible from `$Y/c3_rev12.patch` on 1afda55f0, its fill from
+    `$Y/fill_p1`, and MV-14 from C3 with `$Y/src/mv14.diff` (amended
+    2026-10-27, review fold: RR11-M1 / RR11-m4).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -6547,18 +6849,29 @@ ids are renumbered in D's commit, never in source.
     and 5:75); C2 rev 10 prints the sets as rev 9's C2 does,
     `$X/sets/*_c2r10.txt` being `$U/sets/*_c2.txt` but a03's value (M-23)
     (amended 2026-10-27, review fold: RR9-m3). Since rev 11, on C3 and on C3b
-    the sets print `$U/sets/*_c2.txt` but p06,
-    which reports upstream's "cannot access member of interface `Core.Destroy`
-    in type `T` that does not implement that interface" at 4:3, the line the
-    stopped run measured; on both, M-20's 36 with d01 to d04 and the sets print
-    the stopped run's `$W/sets/*_c3.txt` line for line but the paths and a03's
-    value; and the probes of `$Z/probes/c3` join every later stage's, printing
-    on C3 the `[va2]` lines of `$Z/logs/probes_c3_review.txt` (e07, e09 to e11
-    and e13 abort at lower/type.cpp's layout check, e12, e14 and e16 in the
-    verifier) and from C3b on its `[c3b]` lines (e07 `2 -1 0`, e09 and e10 2,
-    e11 and e13 7, e12 14, e14 433, e16 106), any other line being a difference
-    (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line
-    and packs of aggregates).
+    the sets print `$U/sets/*_c2.txt` but p06, which reports "cannot access
+    member of interface `Core.Destroy` in type `T` that does not implement that
+    interface" at 4:3, the line the stopped run measured, the base's text for
+    upstream's requirement (M-25) (amended 2026-10-27, review fold: RR11-m2);
+    on both, M-20's 36 with d01 to d04 and the sets print the stopped run's
+    `$W/sets/*_c3.txt` line for line but the paths and a03's value; and the
+    probes of `$Z/probes/c3` join every later stage's, printing on C3 the
+    `[va2]` lines of `$Z/logs/probes_c3_review.txt` (e07, e09 to e11 and e13
+    abort at lower/type.cpp's layout check, e12, e14 and e16 in the verifier)
+    and from C3b on its `[c3b]` lines (e07 `2 -1 0`, e09 and e10 2, e11 and
+    e13 7, e12 14, e14 433, e16 106), any other line being a difference (M-24)
+    (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and
+    packs of aggregates). Since rev 12 C3 holds §2.8's hunks, so on C3 the
+    sets print `$W/sets/*_c3.txt` line for line but the paths, the toolchain
+    line and a03's value, p06 the `Core.Destroy` error at 4:3, and
+    `$Z/probes/c3` prints the `[c3b]` lines; the `[va2]` aborts are no
+    commit's prediction. After C3's build and every later one, `$Y/probes` runs
+    too, with a private `XDG_CACHE_HOME`: `$Y/bin/run_all.sh c3r12
+    <install>/bin/carbon <out> $Y/probes/*.carbon`, then `python3 -I
+    $Y/bin/summarize.py <out> c3r12`, which prints
+    `$Y/logs/probes_c3r12_summary.txt` line for line (R-17), but for what C4
+    and C5 change, which §4 or this note predicts; any other line is a
+    difference (amended 2026-10-27, review fold: RR11-M1 / RR11-m1).
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4. A §4
     row that reads SemIR is reviewed against its split's dump, and a split with
     no dump range dumps no SemIR (R-15) (amended 2026-10-27, review fold:
@@ -6584,6 +6897,22 @@ ids are renumbered in D's commit, never in source.
 6.  **R31.** Code in this plan and in any record text sits between
     `<!-- google-doc-style-ignore -->` and `<!-- google-doc-style-resume -->`
     lines.
+7.  **For the orchestrator: defect A on PR 59** (amended 2026-10-27, review
+    fold: RR11-m6). PR 59 (b0822a744) aborts at its lower/type.cpp layout check
+    on e09, e11 and e13 of `$Z/probes/c3`, VA-1's own forms without an `if`
+    (M-24, M-25), and trunk carries the abort from PR 59's merge, tenth in
+    fork/ORCHESTRATION.md's order, until VA-2's, last. The orchestrator decides
+    whether PR 59 takes the array-stride layout of §2.8's lower/type.cpp hunk,
+    rewritten for PR 59's `PackType`, whose element is `element_type_inst_id`
+    (the hunk as written reads C1's `element_id` and does not apply to
+    b0822a744), as a fix commit of PR 59 under its own review, with
+    `padded_element`'s run-time half as its golden, or records in
+    fork/ORCHESTRATION.md why not. Until it records one, the plan's decision
+    under R29 is that VA-2 does not change PR 59's branch, a held PR that no
+    VA-2 stage may push to, and the fix reaches trunk with VA-2; _break
+    condition:_ PR 59 landing on trunk before VA-2 is ready to land, or another
+    held PR's golden or program that reaches a padded pack, either of which
+    makes the PR 59 fix the orchestrator's next action.
 
 ## Review fold record (rev 2, 2026-10-22)
 
@@ -7514,10 +7843,12 @@ passed after it, §4's C3 rows, conformance 137 / 0 / 21 of 158 with bullets 49 
 Root cause (M-24). A prediction the plan omitted. VA-1's TODO ends checking, so
 on C2 checking never reached `return result;`; C3 accepts the `if` body, and the
 return's cleanup of `result` forms `Core.Destroy`'s `SelfDestruct` on `T`, whose
-bound lacks `Core.Destroy`: upstream's own diagnostic, which the pack-free
-analog gives on PR 59, trunk and the nightly, and the reason §A.5's program
-bounds its Min by `Core.Destroy`. It is not a header a relink missed, a golden
-the manifest missed, a defect of C3 or a misread rule.
+bound lacks `Core.Destroy`: the base's diagnostic for a requirement that is
+upstream's, where 4c5734a8c calls the free function `Core.SelfDestruct[T:
+Destroy]` (M-25) (amended 2026-10-27, review fold: RR11-m2), which the
+pack-free analog gives on PR 59, trunk and the nightly, and the reason §A.5's
+program bounds its Min by `Core.Destroy`. It is not a header a relink missed, a
+golden the manifest missed, a defect of C3 or a misread rule.
 
 The review of C3's code (M-24), which the implementer asked for because §2.5 has
 no block: the 16 files are §2.5's and sem_ir/function.h and function.cpp,
@@ -7566,7 +7897,10 @@ unchanged since 57ba07a97: Min (:263-270) names `Comparable & Value`, and "A
 statement of the form `...` _statement_ is evaluated by executing _statement_ N
 times" (:305-306) holds for the `if` and so for the cleanup its function then
 reaches, whose `Core.Destroy` requirement is upstream's (check/control_flow.cpp
-:151-160 and check/operator.cpp :107-113 at 4c5734a8c). C3b adds no mechanism
+:151-160 and check/operator.cpp :107-113 at 4c5734a8c, the latter calling the
+free function `Core.SelfDestruct[T: Destroy]` of core/prelude/destroy.carbon
+:36, while the diagnostic's text is the base's, M-25) (amended 2026-10-27,
+review fold: RR11-m2). C3b adds no mechanism
 and no spelling: its layout is upstream's array layout (lower/type.cpp :595-617
 and sem_ir/type_info.h :171-178 at 4c5734a8c), its constant C0's rule (W-335)
 applied to the fork's own constant packs, which upstream does not lower, and it
@@ -7574,99 +7908,147 @@ adds no diagnostic; its splits use the min prelude's names. `git merge-tree`
 with 4c5734a8c gives the 120 conflicted paths of rev 10's set (M-24).
 
 Instructions to the implementer, for stage 4 re-run after the focused re-review
-of this amendment:
+of this amendment, as rev 12 restates them (amended 2026-10-27, review fold:
+RR11-M1 / RR11-m1 / RR11-m4; rev 11's items 2 to 9 committed C3 and C3b as two
+commits, and rev 12's items 2 to 5 commit them as one, C3):
 
-1.  Start at the rev 11 commit, or the commit that folds its re-review, on F2
-    (1afda55f0). Nothing of stage 4 is in the history, so nothing is reset:
-    `git -C /home/user/carbon-va2 branch -r --contains 1afda55f0` prints
-    `origin/claude/carbon-fork-0-1-va2`, `git -C /home/user/carbon-va2 log
-    origin/claude/carbon-fork-0-1-va2..HEAD --oneline` prints only the plan
-    commits since F2, and `git -C /home/user/carbon-va2 status --short` is
-    empty. Read upstream's tip (`git -C /home/user/carbon-va2 fetch upstream
-    trunk` and `git -C /home/user/carbon-va2 ls-remote upstream
-    refs/heads/trunk`) and record it in the stage's log: rev 11 read 4c5734a8c;
-    a later tip is listed with the files it changes since 4c5734a8c, and it is
-    a difference if it changes a file of `$W/c3_files.txt`, lower/type.cpp,
-    lower/file_context.cpp or .h, check/control_flow.cpp, check/operator.cpp or
-    a design page of the header's list.
-2.  Apply `$W/c3_uncommitted_source_state.patch` (`git -C /home/user/carbon-va2
-    apply --check`, then `git apply`): 16 files, 455 insertions and 29 deletions
-    on 1afda55f0, the paths of `$W/c3_files.txt`, the stopped run's state
-    unchanged. Check it first: its two expansion_if sources and
-    fail_todo_va2.carbon's two C3 splits are §A.11's text, the lower one without
-    C3b's splits, and fail_todo_slice.carbon is F2's; a mismatch is a
-    difference. The stopped run's clang-format, prek (`$W/logs/prek_c3_1.log`)
-    and both clang-tidy passes (`$W/tidy`) stand, and are re-run if any file
-    differs from the patch.
-3.  Commit C3 with the 16 explicit paths, §3's title "VA-2 C3: statement
-    expansions of `if` statements" and its message (`$W/c3_msg.txt` holds it
-    with the trailers), §3's author and committer, and the two session trailers
-    after a blank line; `git -C /home/user/carbon-va2 rev-parse HEAD:toolchain`
-    prints acceecde61e19b5bc0209c09d384e55a98bbf941. Do not push yet.
-4.  `build.sh` and `install.sh` (incremental over the stopped run's build): 0
-    warnings, and `carbon version` prints C3's short hash; `gate.sh`: "1969
-    passed, 4 failed", the four of §3 item 7, with no crash.
-5.  Probes on C3, as hand-off note 2 says since rev 11: M-20's 36 with d01 to
+1.  Start at the rev 12 commit, on F2 (1afda55f0). Nothing of stage 4 is in the
+    history, so nothing is reset: `git -C /home/user/carbon-va2 branch -r
+    --contains 1afda55f0` prints `origin/claude/carbon-fork-0-1-va2`, `git -C
+    /home/user/carbon-va2 log origin/claude/carbon-fork-0-1-va2..HEAD
+    --oneline` prints only the plan commits since F2, rev 11's and rev 12's,
+    and `git -C /home/user/carbon-va2 status --short` is empty. Read
+    upstream's tip (`git -C /home/user/carbon-va2 fetch upstream trunk` and
+    `git -C /home/user/carbon-va2 ls-remote upstream refs/heads/trunk`) and
+    record it in the stage's log: rev 11 and rev 12 read 4c5734a8c; a later
+    tip is listed with the files it changes since 4c5734a8c, and it is a
+    difference if it changes a file of `$Y/c3_rev12_files.txt`,
+    check/control_flow.cpp, check/operator.cpp or a design page of the
+    header's list.
+2.  Apply `$Y/c3_rev12.patch` (`git -C /home/user/carbon-va2 apply --check`,
+    then `git apply`): 19 files, 564 insertions and 46 deletions on 1afda55f0,
+    the paths of `$Y/c3_rev12_files.txt`. Check it first: it is
+    `$W/c3_uncommitted_source_state.patch` and then `$Z/c3b/c3b.patch` (§2.8's
+    block) applied in turn, but for
+    check/testdata/variadics/expansion_if.carbon, which ends with §A.11's
+    `fail_question_body_position`, 15 lines after `nested`; its two
+    expansion_if sources and fail_todo_va2.carbon's two C3 splits are §A.11's
+    text, and fail_todo_slice.carbon is F2's; a mismatch is a difference.
+    `/home/user/llvm/bin/clang-format --dry-run --Werror` on its 15 `.cpp` and
+    `.h` files exits 0, and prek with a private `XDG_CACHE_HOME` and §8.6's
+    SKIP list on the 19 files passes and changes nothing; both §8.6
+    clang-tidy passes stand (`$W/tidy` over the stopped run's 8 `.cpp` files,
+    `$Z/tidy` over lower/type.cpp and lower/file_context.cpp) and are re-run
+    if any code file differs from the patch.
+3.  Commit C3 with the 19 explicit paths of `$Y/c3_rev12_files.txt`, §3's
+    title "VA-2 C3: statement expansions of `if` statements" and its message as
+    rev 12 states it (`$Y/c3_msg.txt` holds it with the trailers), §3's author
+    and committer, and the two session trailers after a blank line; `git -C
+    /home/user/carbon-va2 rev-parse HEAD:toolchain` prints
+    aae17748fa5b373b1065c500e68ce0ac808cc975. Do not push yet.
+4.  `build.sh` and `install.sh`: 0 warnings, and `carbon version` prints C3's
+    short hash; `gate.sh`: "1969 passed, 4 failed", the four of §3 item 7,
+    with no crash.
+5.  Probes on C3, as hand-off note 2 says since rev 12: M-20's 36 with d01 to
     d04 and the sets print `$W/sets/*_c3.txt` line for line but the paths, the
     toolchain line and a03's indeterminate value, p06 the `Core.Destroy` error
-    at 4:3; `$Z/probes/c3` prints the `[va2]` lines of
-    `$Z/logs/probes_c3_review.txt`, C3's known aborts among them; §A.5's program
-    prints 1 5 2 2 0 0.
-6.  Apply `$Z/c3b/c3b.patch` (`git apply --check`, then `git apply`; §2.8's
-    block is the same text): 4 files, 94 insertions and 17 deletions on C3.
-    `/home/user/llvm/bin/clang-format --dry-run --Werror` on lower/type.cpp,
-    lower/file_context.cpp and lower/file_context.h exits 0; prek with a private
-    `XDG_CACHE_HOME` and §8.6's SKIP list on the four files passes and changes
-    nothing; and both §8.6 clang-tidy passes on lower/type.cpp and
-    lower/file_context.cpp, the second line-filtered to their lines changed
-    since b0822a744, exit 0 with no diagnostic (`$Z/logs/prek_c3b.log`,
-    `$Z/tidy`).
-7.  Commit C3b with the 4 explicit paths, the title "VA-2 C3b: pack elements
-    at their array stride, constant packs elementwise" and §3's message, §3's
-    author and committer, and the two session trailers after a blank line;
-    `git -C /home/user/carbon-va2 rev-parse HEAD:toolchain` prints
-    c12c36b6f99fcacb5766e1c7c89f2237a253173b.
-8.  `build.sh` (incremental: file_context.h's comment recompiles its includers)
-    and `install.sh`: 0 warnings, and `carbon version` prints C3b's short hash;
-    `gate.sh`: "1969 passed, 4 failed", the same four, with no crash.
-9.  Probes on C3b: the sets as on C3 (item 5), and `$Z/probes/c3` prints the
-    `[c3b]` lines of `$Z/logs/probes_c3_review.txt` (e07 `2 -1 0`, e09 and e10
-    2, e11 and e13 7, e12 14, e14 433, e16 106); §A.5's program prints 1 5 2 2
-    0 0.
-10. F3: before the fill `python3 -I $X/bin/scan_dump.py
+    at 4:3; `$Z/probes/c3` prints the `[c3b]` lines of
+    `$Z/logs/probes_c3_review.txt` (e07 `2 -1 0`, e09 and e10 2, e11 and e13
+    7, e12 14, e14 433, e16 106); `$Y/probes`, run and summarized with the tag
+    `c3r12`, prints `$Y/logs/probes_c3r12_summary.txt` line for line; and
+    §A.5's program prints 1 5 2 2 0 0.
+6.  F3: before the fill `python3 -I $X/bin/scan_dump.py
     fork/variadics/va2-plan.md` lists generic_pack's `declaration` and `call`
     and impl's `lib` and nothing else; then `autoupdate.sh
     /home/user/carbon-va2` on the four files of §3 item 7
     (check/testdata/variadics/expansion_if.carbon, fail_todo_va2.carbon and
     fail_todo_slice.carbon, and lower/testdata/variadics/expansion_if.carbon),
     then the same again, which changes nothing; each file is byte-identical to
-    `$Z/fill_c3b/<its path>`, the three check files to `$W/fill_p1`'s, and the
-    fill is reviewed against §4's C3 and C3b rows.
-11. `gate.sh`: "1973 passed, 0 failed". `conformance.sh` with a private cache
-    into a private directory: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
-    OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0
-    FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
-12. Commit F3, "Autoupdate testdata goldens on the container arbiter", with the
-    four paths and the trailers (`git -C /home/user/carbon-va2 rev-parse
-    HEAD:toolchain` prints 745bada753c51f5ff6a7f522938fc6dc9d661767), then `git
-    push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan commits
-    since F2, C3, C3b and F3.
-13. Stage 5 (C4) as §3 item 9 says, with hand-off note 2's probes after its
-    build; from C4 on the sets and `$Z/probes/c3` print C3b's lines but for what
-    C4 itself changes, which the stage records as a difference unless §4 or
-    hand-off note 2 predicts it.
+    `$Y/fill_p1/<its path>`, which for the other three is `$Z/fill_c3b`'s and
+    for the check expansion_if.carbon `$Z/fill_c3b`'s with the new split and
+    its 14 CHECK lines, and the fill is reviewed against §4's C3 rows.
+7.  `gate.sh`: "1973 passed, 0 failed". `conformance.sh` with a private cache
+    into a private directory: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL
+    0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS,
+    0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
+8.  Commit F3, "Autoupdate testdata goldens on the container arbiter", with
+    the four paths and the trailers (`git -C /home/user/carbon-va2 rev-parse
+    HEAD:toolchain` prints a12dfbb2d0991b6dbe70773766585e706bf31941), then
+    `git push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan
+    commits since F2, C3 and F3.
+9.  Stage 5 (C4) as §3 item 9 says, with hand-off note 2's probes after its
+    build; from C4 on the sets, `$Z/probes/c3`'s `[c3b]` lines and `$Y/probes`'
+    summary print C3's but for what C4 itself changes, which the stage records
+    as a difference unless §4 or hand-off note 2 predicts it; an abort in
+    lowering whose pack-free analog lowers on trunk is R-17's stop.
 
-Predictions, EXPECTED, not of record: the gate 1969 passed and 4 failed after C3
-and after C3b, and 1973 passed after F3, then §8.3's 1975; conformance 137 / 0 /
-21 over 158 after C3, C3b and C4 alone, and 147 / 0 / 21 over 168 after C5,
-bullets 49 / 0 / 7 of 56; the trees of items 3, 7 and 12; the fill of item 10;
-the probes of items 5 and 9; §4's rows as rev 11 states them; MV-12 and MV-13
-red on the lower expansion_if golden at §8.5; and §5's and Appendix A's outputs
-and C4's predicted churn as rev 4 states them. A difference from these is a
-stop, as §8 says; a03's indeterminate value and the convert.cpp line of a19's
-and a20's CHECK failure are not predictions.
+Predictions, EXPECTED, not of record: the gate 1969 passed and 4 failed after
+C3, and 1973 passed after F3, then §8.3's 1975; conformance 137 / 0 / 21 over
+158 after C3 and after C4 alone, and 147 / 0 / 21 over 168 after C5, bullets 49
+/ 0 / 7 of 56; the trees of items 3 and 8; the fill of item 6; the probes of
+item 5; §4's rows as rev 12 states them; MV-12 and MV-13 red on the lower
+expansion_if golden and MV-14 on the check one at §8.5; and §5's and Appendix
+A's outputs and C4's predicted churn as rev 4 states them (amended 2026-10-27,
+review fold: RR11-M1 / RR11-m4). A difference from these is a stop, as §8 says;
+a03's indeterminate value and the convert.cpp line of a19's and a20's CHECK
+failure are not predictions.
+
+**Rev 12: the re-review of this amendment (2026-10-27).** The focused re-review
+of rev 11 (ea420acd6 on F2 1afda55f0) returned APPROVE-WITH-AMENDMENTS with one
+MAJOR and six MINORs; it edited no repository file, kept its probes, logs and
+extracted sources in the directory `amendrr11` beside `$Z`, and relinked under
+/dev/shm/va2-amendrr, since deleted. It reproduced p06's root cause on the C3
+install, PR 59, trunk and the nightly, and defects A and B and C3b's fix of
+both: every `[c3b]` line of `$Z/logs/probes_c3_review.txt` on its own C3b
+relink; the gate on 278bd63fc's tree, 1969 passed and 4 failed, and on
+be17f449b's, 1973 passed; the fill in one pass, byte-identical to
+`$Z/fill_c3b` and be17f449b; MV-12, built precisely, and MV-13 aborting; the
+trees acceecde6, c12c36b6f, f9f896f00 and 745bada75; clang-format; the
+merge-tree sets; R31's counts and scan_dump; and 15 more probes of C3b, each
+its derivation. Seven findings, all folded, none rejected, each amended
+sentence marked "(amended 2026-10-27, review fold: RR11-<finding>)"; the
+instructions above are rev 12's:
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR11-M1 C3 committed with known aborts in forms its base refuses with a TODO | MAJOR | folded by the preferred fix: C3 takes §2.8's hunks, one commit of 19 paths (`$Y/c3_rev12.patch`, with RR11-m4's split; tree aae17748f, and 278bd63fc's c12c36b6f without the split), measured: 1969 passed and 4 failed with no crash, the fill in one pass, 1973 passed, conformance 137/0/21 of 158, the probes and the sets; C3's message takes C3b's paragraph; the C3-alone `[va2]` lines are no commit's prediction; D-VA2-19's rev 11 clause is replaced by one rule that reconciles rev 7's and rev 8's (a defect that a stage's review finds goes in that stage's commit before it is committed); shrink 1 keeps the lowering hunks by a partial revert; A-17 records the two orders rejected | header, M-25, F-15, D-VA2-7, D-VA2-19, §1.12, §2.0, §2.5, §2.8, §3, §4, §6.2, §7.1, §7.2, §8.0, §8.1, §8.3 to §8.7, §8.9, hand-off note 2, §A.11, the instructions and predictions |
+| RR11-m1 Defect B is C1's regression, not a form C3 reaches | MINOR | folded by measuring it: on mirrors of F1 and F2, e12 and e14 abort in the verifier as on C3; M-24's defect B, D-VA2-19, R-17 and the header restate it; R-17's detection runs `$Y/probes`, packs of padded, aggregate and constant elements, after every stage, forms the base accepts included; stage 2's and stage 3's probe sets lacked such a pack (M-25) | header, M-24, M-25, F-15, D-VA2-19, §7.1, §8.7, hand-off note 2 |
+| RR11-m2 The upstream Destroy citation does not match the tip | MINOR | folded: the requirement is upstream's at 4c5734a8c (`Core.SelfDestruct[T: Destroy]`, core/prelude/destroy.carbon:36, since 05a7ecbd3, upstream PR 7942) and the text the base's; §6.3 re-measures p06 at the advance that takes 05a7ecbd3 | header, §0.2, M-24, M-25, D-VA2-11, §6.3, R32 below |
+| RR11-m3 R-17's falsifier catches upstream's Core.IntLiteral abort | MINOR | folded: q01 to q04 and p06_destroy measured on PR 59, the F2 mirror, C3, the folded C3, trunk and the nightly (the nightly in the verifier, its LLVM without assertions); R-17 is scoped to forms whose pack-free analog lowers on trunk, and the class is recorded as upstream's | header, M-25, F-15, §7.1 |
+| RR11-m4 The `?` change in C3 is pinned by no golden | MINOR | folded by a split and a mutant: C3's check expansion_if gains `fail_question_body_position` (`?` in an expression body and in an expanded `if`'s condition, on the min prelude, reaching `QuestionNoDeclaredReturnType`), and MV-14, the depth increment removed, turns it red, 1972 passed and 1 failed, where rev 11's tree passes it; the `?` per iteration of e07 needs the full prelude and stays a probe, recorded in §8.9; the break condition is restated | header, M-25, F-15, D-VA2-11, §1.12, §2.5, §3, §4, §8.5, §8.9, §A.11 |
+| RR11-m5 Two of §2.5's R29 decisions have no break condition | MINOR | folded: `IsExpandableIfStatement`'s walk and lowering's per-iteration block map each gain one | §2.5, F-15 |
+| RR11-m6 Defect A in PR 59 is not handed off | MINOR | folded: hand-off note 7 asks the orchestrator to decide whether PR 59 takes the array-stride layout, rewritten for PR 59's `PackType` (§2.8's hunk does not apply to b0822a744, measured), or to record why not, and states the plan's R29 decision with its break condition until then | hand-off note 7, M-25, F-15 |
+
+R32 at rev 12: upstream's tip is 4c5734a8c (`git fetch upstream trunk` and `git
+ls-remote upstream refs/heads/trunk`, 2026-10-27), rev 11's. The fold adds no
+mechanism, spelling or diagnostic: C3's commit holds rev 11's code; the split
+`fail_question_body_position` pins the fork's own `?` (check/handle_question.cpp
+is the fork's, absent upstream at 4c5734a8c) with its existing diagnostics; and
+§2.8's layout is upstream's `ArrayType` layout (lower/type.cpp:595-617 at
+4c5734a8c). The `Core.Destroy` requirement that p06 meets is upstream's at
+4c5734a8c, through the free function `Core.SelfDestruct[T: Destroy]`
+(core/prelude/destroy.carbon:36, check/operator.cpp:107-113), and
+docs/design/variadics.md is unchanged there since 57ba07a97. One decision
+changes, D-VA2-19, by its reconciled break condition, and D-VA2-7 and D-VA2-11
+gain sentences that place §2.8's hunks in C3 and pin `?`; no rule of the design
+pages changes; Appendix B and the counts of §8.3 and §8.4 stand; no commit is
+reset or rewritten, C3 never having been committed; and no W id is minted:
+defect A is VA-1's lowering of W-013's packs, handed to the orchestrator for
+PR 59 by hand-off note 7, and defect B C1's of W-212's, fixed in C3.
 
 ## Sign-off
+
+Rev 12 (2026-10-27) folds the focused re-review of rev 11 (RR11,
+APPROVE-WITH-AMENDMENTS: one MAJOR and six MINORs, all folded, none rejected),
+as the rev 12 part of the "Stop-and-amend record (rev 11, 2026-10-27)" states
+(amended 2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m2 / RR11-m3 /
+RR11-m4 / RR11-m5 / RR11-m6): the verdict is not REJECT, so rev 4's sign-off,
+as amended by rev 5 to rev 12, stands, the table's RR11 row names rev 11's
+commit, ea420acd6, and stage 4 re-runs with the record's instructions as rev 12
+restates them. RR11-M1 moves into C3 the code of §2.8, which RR11 reviewed, and
+RR11-m4 adds a golden split and no code, so the result is seen by the focused
+re-review of rev 12 when the orchestrator runs one before the re-run, and in
+any case by the two implementation reviews of §3 item 12.
 
 Rev 11 (2026-10-27) amends rev 10 for the implementation's stop-and-amend at
 stage 4, which the "Stop-and-amend record (rev 11, 2026-10-27)" above states
@@ -7742,10 +8124,13 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (4d5388af2): all folded, none rejected |
 | Focused re-review of the amendment (RR7) | rev 7 (e0038734f) | APPROVE-WITH-AMENDMENTS | 0 | 4 | 1 | 5 | rev 8 (4299f9765): all folded, none rejected |
 | Focused re-review of the amendment (RR9) | rev 9 (956b73ffc) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 10 (529729be1): all folded, none rejected |
-| Total | | | 6 | 18 | 23 | 47 | 47 folded, 0 rejected (46 distinct) |
+| Focused re-review of the amendment (RR11) | rev 11 (ea420acd6) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 6 | 7 | rev 12 (this revision): all folded, none rejected |
+| Total | | | 6 | 19 | 29 | 54 | 54 folded, 0 rejected (53 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
-47 findings as reported are 46 distinct ones (43 and 42 before rev 10 (amended
+54 findings as reported are 53 distinct ones (47 and 46 before rev 12 (amended
+2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m2 / RR11-m3 / RR11-m4 /
+RR11-m5 / RR11-m6), 43 and 42 before rev 10 (amended
 2026-10-27, review fold: RR9-M1 / RR9-m1 / RR9-m2 / RR9-m3), 38 and 37 before
 rev 8 (amended 2026-10-26, review fold: RR7-M1 / RR7-M2 / RR7-M3 / RR7-M4 /
 RR7-m1), 34 and 33
@@ -8881,7 +9266,11 @@ the PR 64 mirror (M-23) (amended 2026-10-27, review fold: RR9-m3). Since rev 11
 C3b appends two splits to the lower expansion_if.carbon that C3
 writes, below C3's text, and C3's and C3b's splits have been compiled and filled
 on C3b's relink (M-24) (amended 2026-10-27, implementation: stop-and-amend: C3's
-p06 line and packs of aggregates).
+p06 line and packs of aggregates). Since rev 12 C3 writes those two splits
+itself, and its check expansion_if.carbon ends with
+`fail_question_body_position` after `nested`; every C3 split has been compiled
+and filled on C3's relink (M-25) (amended 2026-10-27, review fold: RR11-M1 /
+RR11-m4).
 
 toolchain/check/testdata/variadics/hetero_pack.carbon (C1):
 
@@ -10223,6 +10612,21 @@ fn F(... each b: bool) {
   }
 }
 //@dump-sem-ir-end
+
+// --- fail_question_body_position.carbon
+library "[[@TEST_NAME]]";
+
+fn Consume(x: i64);
+
+fn InExpression(... each x: i64) {
+  ... Consume(each x?);
+}
+
+fn InCondition(... each b: bool) {
+  ... if (each b?) {
+    Consume(1);
+  }
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -10285,7 +10689,8 @@ fn Call() -> i64 {
 C3b appends, after a blank line, since rev 11, the splits `padded_element` (e09
 to e13's class with an expanded `if`) and `aggregate_constants` (e14's and
 e16's) (amended 2026-10-27, implementation: stop-and-amend: C3's p06 line and
-packs of aggregates):
+packs of aggregates); since rev 12 C3 appends them itself (amended 2026-10-27,
+review fold: RR11-M1):
 
 <!-- google-doc-style-ignore -->
 

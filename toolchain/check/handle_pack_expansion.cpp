@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "toolchain/check/context.h"
+#include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/handle.h"
 #include "toolchain/check/inst.h"
@@ -141,6 +142,12 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
       context.inst_block_stack().Push();
       scope.body_block_id = context.inst_block_stack().PeekOrAdd();
       scope.cleanup_depth = context.scope_stack().cleanup_scope_depth();
+      // Fork (VA-2, D-VA2-11): the blocks that a statement's control flow adds
+      // are the body's region, not the function's, and lowering runs the whole
+      // region once per element.
+      if (scope.kind == PackExpansionScope::Kind::Statement) {
+        context.region_stack().PushRegion(scope.body_block_id);
+      }
       break;
     }
   }
@@ -160,17 +167,21 @@ static auto InvalidateInnermostPackExpansion(Context& context) -> void {
 }
 
 // Finishes the body of a statement or expression pack expansion, popping its
-// block. Returns `nullopt` after diagnosing a body that this slice does not
-// support, which ends checking, or `InstBlockId::None` after diagnosing an
-// invalid body, which the caller recovers from.
+// block, or, when `body_is_region`, the last block of its region. Returns
+// `nullopt` after diagnosing a body that this slice does not support, which
+// ends checking, or `InstBlockId::None` after diagnosing an invalid body, which
+// the caller recovers from.
 static auto FinishPackExpansionBody(Context& context, Parse::NodeId node_id,
-                                    const PackExpansionScope& scope)
+                                    const PackExpansionScope& scope,
+                                    bool body_is_region = false)
     -> std::optional<SemIR::InstBlockId> {
   // Fork (VA-1, D-VA-6): the body runs as one straight-line block per element,
   // so control flow inside it, which would add blocks to the function, is not
-  // supported yet.
-  if (!context.inst_block_stack().is_current_block_reachable() ||
-      context.inst_block_stack().PeekOrAdd() != scope.body_block_id) {
+  // supported yet. Fork (VA-2, D-VA2-11): but for the body of an `if`
+  // statement, whose blocks are the expansion's region.
+  if (!body_is_region &&
+      (!context.inst_block_stack().is_current_block_reachable() ||
+       context.inst_block_stack().PeekOrAdd() != scope.body_block_id)) {
     context.TODO(node_id, "control flow in a pack expansion");
     return std::nullopt;
   }
@@ -180,7 +191,8 @@ static auto FinishPackExpansionBody(Context& context, Parse::NodeId node_id,
     context.TODO(node_id, "pack expansion element that needs a cleanup");
     return std::nullopt;
   }
-  auto body_block_id = context.inst_block_stack().Pop();
+  context.inst_block_stack().Pop();
+  auto body_block_id = scope.body_block_id;
   if (scope.arity_id == SemIR::ErrorInst::InstId) {
     // An each-name in the body was diagnosed.
     return SemIR::InstBlockId::None;
@@ -211,26 +223,68 @@ static auto FinishPackExpansionBody(Context& context, Parse::NodeId node_id,
   return body_block_id;
 }
 
+// Fork (VA-2, D-VA2-11): returns whether the `if` statement `if_id`, the body
+// of a statement expansion, holds only expression statements, `if` statements
+// and `return` statements, whose blocks the expansion's region holds. A
+// declaration would introduce a name, and so storage, per element, and a loop,
+// `break`, `continue` or `match` is control flow that the region does not
+// model yet.
+static auto IsExpandableIfStatement(Context& context, Parse::NodeId if_id)
+    -> bool {
+  for (auto node_id : context.parse_tree_and_subtrees().postorder(if_id)) {
+    auto kind = context.parse_tree().node_kind(node_id);
+    switch (kind) {
+      case Parse::NodeKind::ExprStatement:
+      case Parse::NodeKind::IfStatement:
+      case Parse::NodeKind::ReturnStatement:
+        break;
+      case Parse::NodeKind::PatternConditionIntroducer:
+        // `if (let pattern = expr)` declares the pattern's names.
+        return false;
+      default:
+        if (kind.category().HasAnyOf(Parse::NodeCategory::Decl |
+                                     Parse::NodeCategory::Statement)) {
+          return false;
+        }
+        break;
+    }
+  }
+  return true;
+}
+
 auto HandleParseNode(Context& context, Parse::PackExpansionStatementId node_id)
     -> bool {
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::PackExpansionStart>();
   auto scope = context.pack_expansion_stack().pop_back_val();
   CARBON_CHECK(scope.kind == PackExpansionScope::Kind::Statement);
+  // Lowering finds the blocks of the body's region through their branches.
+  context.region_stack().PopAndDiscardRegion();
 
-  // Fork (VA-1, D-VA-6): only an expression statement can be expanded yet. A
-  // declaration in the body would introduce a name, and so storage, per
-  // element, and the other statements are control flow.
+  // Fork (VA-1, D-VA-6; VA-2, D-VA2-11): only an expression statement and an
+  // `if` statement whose branches hold expression, `if` and `return`
+  // statements can be expanded yet.
   auto statement = context.parse_tree_and_subtrees()
                        .ExtractAs<Parse::PackExpansionStatement>(node_id);
-  if (!statement || context.parse_tree().node_kind(statement->body) !=
-                        Parse::NodeKind::ExprStatement) {
+  auto body_kind = statement ? context.parse_tree().node_kind(statement->body)
+                             : Parse::NodeKind::InvalidParse;
+  bool body_is_if = body_kind == Parse::NodeKind::IfStatement;
+  if (body_kind != Parse::NodeKind::ExprStatement &&
+      !(body_is_if && IsExpandableIfStatement(context, statement->body))) {
     return context.TODO(node_id,
                         "pack expansion of a statement other than an "
-                        "expression statement");
+                        "expression or if statement");
+  }
+  // Fork (VA-2, D-VA2-11): the `if` statement's resumption block, unless every
+  // branch returns, ends the iteration: the statement is "evaluated by
+  // executing _statement_ N times, with `$I` ranging from 0 to N - 1"
+  // (docs/design/variadics.md, "Execution Semantics").
+  if (body_is_if && IsCurrentPositionReachable(context)) {
+    AddInst<SemIR::PackExpansionNext>(context, node_id, {});
   }
 
-  auto body_block_id = FinishPackExpansionBody(context, node_id, scope);
+  auto body_block_id =
+      FinishPackExpansionBody(context, node_id, scope, body_is_if);
   if (!body_block_id) {
     return false;
   }

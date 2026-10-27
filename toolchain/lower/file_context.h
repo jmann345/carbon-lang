@@ -371,8 +371,8 @@ class FileContext {
                                  SemIR::InstId use_inst_id)
       -> llvm::GlobalVariable*;
 
-  // Fork (VA-2): returns the value representation of a constant tuple or
-  // struct value whose value representation holds its elements' value
+  // Fork (VA-2): returns the value representation of a constant tuple,
+  // struct or pack value whose value representation holds its elements' value
   // representations, or nullptr for any other constant. Used by
   // `GetConstant`.
   auto GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,

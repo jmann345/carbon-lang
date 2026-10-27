@@ -183,9 +183,14 @@ using DominatorTree = llvm::SmallVector<llvm::SmallVector<BlockIndex, 2>>;
 class DominatorTreeBuilder {
  public:
   explicit DominatorTreeBuilder(const File& file, const Function& function)
-      : file_(file),
-        function_(function),
-        body_blocks_(function.body_block_ids) {}
+      : DominatorTreeBuilder(file, function, function.body_block_ids) {}
+
+  // Fork (VA-2, D-VA2-11): builds the tree of a region of `function`'s body
+  // whose first block is the region's entry, such as the body of a statement
+  // pack expansion.
+  explicit DominatorTreeBuilder(const File& file, const Function& function,
+                                llvm::ArrayRef<InstBlockId> blocks)
+      : file_(file), function_(function), body_blocks_(blocks) {}
 
   // Returns the dominator tree of the function body, diagnosing a branch that
   // leaves the body and blocks that are unreachable from the entry block.
@@ -498,14 +503,29 @@ auto DominanceVerifier::VerifyAndRecordInst(InstId root_inst_id,
                                             BlockIndex block_index)
     -> ErrorOr<Success> {
   struct Step {
-    InstId inst_id;
+    InstId inst_id = InstId::None;
     // Whether to finish a `SpliceBlock` after its block has been evaluated.
     bool finish_splice_block = false;
     // For a pack expansion whose body has been evaluated, the size of
     // `evaluated_order_` before its body; otherwise -1. The body runs once per
     // element, so nothing it evaluates dominates the code after the expansion.
     int finish_pack_expansion_scope = -1;
+    // Fork (VA-2, D-VA2-11): for a step that enters a block of the body region
+    // of a statement pack expansion, the block's `BlockIndex` in the region;
+    // for a step that leaves one, `BlockIndex::None`, with the size of
+    // `evaluated_order_` when it was entered in `leave_region_block_scope`.
+    BlockIndex region_block_index = BlockIndex::None;
+    int leave_region_block_scope = -1;
   };
+
+  // Fork (VA-2, D-VA2-11): the blocks of the body region of the statement pack
+  // expansion being verified, if its body has control flow, and their
+  // dominator tree. The region is verified as a function body is, nested in
+  // the expansion: an evaluation in one of its blocks dominates the blocks
+  // below it in the region's tree, and nothing after the expansion. Pack
+  // expansions don't nest, so there is at most one region at a time.
+  llvm::SmallVector<InstBlockId> region_blocks;
+  DominatorTree region_dom_tree;
 
   // Schedules the body of a pack expansion to be evaluated in place, followed
   // by the step that ends its scope and records the expansion itself.
@@ -522,8 +542,31 @@ auto DominanceVerifier::VerifyAndRecordInst(InstId root_inst_id,
 
   llvm::SmallVector<Step> worklist = {{.inst_id = root_inst_id}};
   while (!worklist.empty()) {
-    auto [inst_id, finish_splice_block, finish_pack_expansion_scope] =
+    auto [inst_id, finish_splice_block, finish_pack_expansion_scope,
+          region_block_index, leave_region_block_scope] =
         worklist.pop_back_val();
+    if (leave_region_block_scope >= 0) {
+      for (InstId body_inst_id :
+           llvm::drop_begin(evaluated_order_, leave_region_block_scope)) {
+        evaluated_.Erase(body_inst_id);
+      }
+      evaluated_order_.truncate(leave_region_block_scope);
+      continue;
+    }
+    if (region_block_index.has_value()) {
+      // As in `VerifyBlocks`, the step that leaves the block is beneath the
+      // steps for the blocks it dominates, which are beneath its instructions.
+      worklist.push_back({.leave_region_block_scope =
+                              static_cast<int>(evaluated_order_.size())});
+      for (BlockIndex child : region_dom_tree[region_block_index.index]) {
+        worklist.push_back({.region_block_index = child});
+      }
+      for (InstId body_inst_id : llvm::reverse(file_.inst_blocks().Get(
+               region_blocks[region_block_index.index]))) {
+        worklist.push_back({.inst_id = body_inst_id});
+      }
+      continue;
+    }
     if (finish_pack_expansion_scope >= 0) {
       for (InstId body_inst_id :
            llvm::drop_begin(evaluated_order_, finish_pack_expansion_scope)) {
@@ -561,6 +604,21 @@ auto DominanceVerifier::VerifyAndRecordInst(InstId root_inst_id,
     if (auto statement = inst.TryAs<PackExpansionStatement>()) {
       CARBON_RETURN_IF_ERROR(
           VerifyOperand(inst_id, statement->arity_id, block_index));
+      // Fork (VA-2, D-VA2-11): a body with control flow is a region of
+      // blocks, whose dominator tree is walked from its entry.
+      auto body_blocks =
+          GetPackExpansionBodyBlocks(file_, statement->body_block_id);
+      if (body_blocks.size() > 1) {
+        region_blocks = std::move(body_blocks);
+        CARBON_ASSIGN_OR_RETURN(
+            region_dom_tree,
+            DominatorTreeBuilder(file_, function_, region_blocks).Build());
+        worklist.push_back({.inst_id = inst_id,
+                            .finish_pack_expansion_scope =
+                                static_cast<int>(evaluated_order_.size())});
+        worklist.push_back({.region_block_index = EntryBlockIndex});
+        continue;
+      }
       push_pack_expansion_body(worklist, inst_id, statement->body_block_id);
       continue;
     }

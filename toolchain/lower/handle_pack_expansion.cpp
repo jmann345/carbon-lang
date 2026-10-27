@@ -134,6 +134,14 @@ auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
   context.LowerPackExpansionBody(*arity, inst.body_block_id);
 }
 
+auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
+                SemIR::PackExpansionNext /*inst*/) -> void {
+  // Fork (VA-2, D-VA2-11): the iteration ends, and control continues where the
+  // next one starts, or after the expansion.
+  context.builder().CreateBr(context.pack_expansion_next_block());
+  context.builder().ClearInsertionPoint();
+}
+
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::PackSegmentInit inst) -> void {
   // Fork (VA-2, D-VA2-9): the body initializes the destination's element at

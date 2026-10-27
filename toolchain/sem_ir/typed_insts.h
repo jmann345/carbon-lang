@@ -1680,6 +1680,24 @@ struct PackExpansionExpr {
   InstId result_id;
 };
 
+// Fork (VA-2, D-VA2-11): the end of one iteration of a statement pack
+// expansion whose body has control flow, such as `... if (each b) { ... }`:
+// the blocks of the body after its first block are reached by its branches,
+// and each exit of the body that does not return from the function ends with
+// this instruction. Control continues with the next iteration, or after the
+// last one with the statement after the expansion (docs/design/variadics.md,
+// "Execution Semantics": a statement expansion is "evaluated by executing
+// _statement_ N times").
+struct PackExpansionNext {
+  static constexpr auto Kind =
+      InstKind::PackExpansionNext.Define<Parse::PackExpansionStatementId>(
+          {.ir_name = "pack_expansion_next",
+           .constant_kind = InstConstantKind::Never,
+           .terminator_kind = TerminatorKind::Terminator});
+
+  // This is a statement, so has no type.
+};
+
 // A pack expansion pattern, `... subpattern`, in a parameter list
 // (docs/design/variadics.md, "Pack expansion patterns"). `arity_pattern_id` is
 // the binding pattern of the pack's arity, a deduced parameter of the
@@ -1701,7 +1719,10 @@ struct PackExpansionPattern {
 
 // A pack expansion statement, `... body` (docs/design/variadics.md,
 // "Execution Semantics"): `body_block_id` is executed once for each element of
-// the packs its each-names name, `arity_id` times.
+// the packs its each-names name, `arity_id` times. Fork (VA-2, D-VA2-11): when
+// the body is an `if` statement, `body_block_id` is the first block of the
+// body's region, whose other blocks its branches reach and whose iterations
+// end at `PackExpansionNext`.
 struct PackExpansionStatement {
   static constexpr auto Kind =
       InstKind::PackExpansionStatement.Define<Parse::PackExpansionStatementId>(

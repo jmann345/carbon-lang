@@ -222,3 +222,19 @@ fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
   // CHECK:STDERR:
   u.Get((... each x));
 }
+
+// --- fail_todo_if_with_declaration.carbon
+library "[[@TEST_NAME]]";
+
+fn F(... each b: bool) {
+  ... if (each b) {
+    let unused y: i64 = 0;
+  }
+}
+
+// --- fail_todo_while.carbon
+library "[[@TEST_NAME]]";
+
+fn F(... each b: bool) {
+  ... while (each b) {}
+}

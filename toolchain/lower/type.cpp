@@ -757,12 +757,26 @@ static auto BuildTypeForInst(FileContext& context, SemIR::PackType inst)
     }
     return BuildStructType(context, subtypes, layouts);
   }
-  return {llvm::ArrayType::get(
-              context.GetType(context.sem_ir().types().GetTypeIdForTypeInstId(
-                  context.sem_ir().constant_values().GetConstantTypeInstId(
-                      SemIR::TypeInstId::UnsafeMake(inst.element_id)))),
-              *arity),
-          nullptr};
+  // Fork (VA-2, D-VA2-7): a pack of one type is laid out as an array of it,
+  // each element at the array stride of its type, as `BuildTypeForInst` for
+  // an `ArrayType` lays out its elements and `ObjectLayout::ForArray` computes
+  // the pack's size.
+  auto elem_type_id = context.sem_ir().types().GetTypeIdForTypeInstId(
+      context.sem_ir().constant_values().GetConstantTypeInstId(
+          SemIR::TypeInstId::UnsafeMake(inst.element_id)));
+  auto stride = context.sem_ir()
+                    .types()
+                    .GetCompleteTypeInfo(elem_type_id)
+                    .object_layout.ArrayStride();
+  auto* elem_type = context.GetType(elem_type_id);
+  auto elem_size = SemIR::ObjectSize::Bytes(
+      context.llvm_module().getDataLayout().getTypeAllocSize(elem_type));
+  if (elem_size != stride) {
+    CARBON_CHECK(elem_size < stride, "Pack element type too large");
+    elem_type =
+        BuildTailPaddedType(elem_type, stride.bytes() - elem_size.bytes());
+  }
+  return {llvm::ArrayType::get(elem_type, *arity), nullptr};
 }
 
 static auto BuildTypeForInst(FileContext& /*context*/,

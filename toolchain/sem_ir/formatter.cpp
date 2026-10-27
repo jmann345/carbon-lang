@@ -1303,7 +1303,25 @@ auto Formatter::FormatInstRhs(Inst inst) -> void {
 
     case CARBON_KIND(PackExpansionStatement statement): {
       FormatArgs(statement.arity_id);
-      FormatTrailingBlock(statement.body_block_id);
+      // Fork (VA-2, D-VA2-11): a body with control flow is a region of blocks,
+      // whose blocks after the first are labeled as a function body's are.
+      auto body_blocks =
+          GetPackExpansionBodyBlocks(*sem_ir_, statement.body_block_id);
+      if (body_blocks.size() == 1) {
+        FormatTrailingBlock(statement.body_block_id);
+        return;
+      }
+      out() << ' ';
+      OpenBrace();
+      for (auto [i, block_id] : llvm::enumerate(body_blocks)) {
+        if (i != 0) {
+          IndentLabel();
+          FormatLabel(block_id);
+          out() << ":\n";
+        }
+        FormatCodeBlock(block_id);
+      }
+      CloseBrace();
       return;
     }
 

@@ -4,9 +4,12 @@
 
 #include "toolchain/sem_ir/function.h"
 
+#include <algorithm>
 #include <optional>
+#include <utility>
 #include <variant>
 
+#include "common/set.h"
 #include "toolchain/base/canonical_value_store_impl.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/base/value_store_impl.h"
@@ -202,6 +205,45 @@ auto Function::GetDeclaredReturnForm(const File& file,
   auto return_form_constant_id =
       GetConstantValueInSpecific(file, specific_id, return_form_inst_id);
   return file.constant_values().GetInstId(return_form_constant_id);
+}
+
+auto GetPackExpansionBodyBlocks(const File& sem_ir, InstBlockId entry_block_id)
+    -> llvm::SmallVector<InstBlockId> {
+  auto get_successors = [&](InstBlockId block_id) {
+    llvm::SmallVector<InstBlockId, 2> successors;
+    for (auto inst_id : sem_ir.inst_blocks().Get(block_id)) {
+      if (auto branch = sem_ir.insts().TryGetAs<AnyBranch>(inst_id)) {
+        successors.push_back(branch->target_id);
+      }
+    }
+    return successors;
+  };
+
+  // A reverse post-order of the blocks reachable from the entry, visiting the
+  // successors of each block from its last branch to its first, lists each
+  // block of a structured statement before the blocks it branches to and a
+  // `then` block before its `else` block, which is the order in which
+  // checking adds them to their region.
+  llvm::SmallVector<InstBlockId> post_order;
+  Set<InstBlockId> visited;
+  // The blocks whose successors are being visited, each with the successors
+  // not visited yet, in branch order.
+  llvm::SmallVector<std::pair<InstBlockId, llvm::SmallVector<InstBlockId, 2>>>
+      stack;
+  visited.Insert(entry_block_id);
+  stack.push_back({entry_block_id, get_successors(entry_block_id)});
+  while (!stack.empty()) {
+    if (stack.back().second.empty()) {
+      post_order.push_back(stack.pop_back_val().first);
+      continue;
+    }
+    auto successor_id = stack.back().second.pop_back_val();
+    if (visited.Insert(successor_id).is_inserted()) {
+      stack.push_back({successor_id, get_successors(successor_id)});
+    }
+  }
+  std::reverse(post_order.begin(), post_order.end());
+  return post_order;
 }
 
 }  // namespace Carbon::SemIR

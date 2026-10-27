@@ -10,6 +10,7 @@
 #include "toolchain/sem_ir/diagnostic_loc_converter.h"
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/file.h"
+#include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/generic.h"
 #include "toolchain/sem_ir/import_ir.h"
 
@@ -41,19 +42,32 @@ FunctionContext::FunctionContext(
 
 auto FunctionContext::GetBlock(SemIR::InstBlockId block_id)
     -> llvm::BasicBlock* {
-  auto result = blocks_.Insert(block_id, [&] {
+  auto create_block = [&] {
     llvm::StringRef label_name;
     if (const auto* inst_namer = file_context_->inst_namer()) {
       label_name = inst_namer->GetUnscopedLabelFor(block_id);
     }
     return llvm::BasicBlock::Create(llvm_context(), label_name, function_);
-  });
-  return result.value();
+  };
+  // Fork (VA-2, D-VA2-11): a block of the body region of a pack expansion is
+  // lowered once per iteration, each time to a block of its own.
+  if (auto iteration_block = pack_iteration_blocks_.Lookup(block_id)) {
+    if (!iteration_block.value()) {
+      iteration_block.value() = create_block();
+    }
+    return iteration_block.value();
+  }
+  return blocks_.Insert(block_id, create_block).value();
 }
 
 auto FunctionContext::TryToReuseBlock(SemIR::InstBlockId block_id,
                                       llvm::BasicBlock* block) -> bool {
-  if (!blocks_.Insert(block_id, block).is_inserted()) {
+  if (auto iteration_block = pack_iteration_blocks_.Lookup(block_id)) {
+    if (iteration_block.value()) {
+      return false;
+    }
+    iteration_block.value() = block;
+  } else if (!blocks_.Insert(block_id, block).is_inserted()) {
     return false;
   }
   if (block == synthetic_block_) {
@@ -98,9 +112,31 @@ auto FunctionContext::LowerPackExpansionBody(
   // The arity is specific-dependent: two specifics whose bodies run a different
   // number of iterations must not be coalesced.
   AddIntToCurrentFingerprint(arity);
+  // Fork (VA-2, D-VA2-11): a body with control flow, such as an `if`
+  // statement, is a region of blocks, which each iteration lowers to blocks of
+  // its own. The first block is lowered where the iteration starts, and each
+  // `PackExpansionNext` branches to where the next iteration starts.
+  auto body_blocks = SemIR::GetPackExpansionBodyBlocks(sem_ir(), body_block_id);
+  auto region_blocks = llvm::ArrayRef(body_blocks).drop_front();
+  CARBON_CHECK(region_blocks.empty() || !finish_iteration,
+               "Pack expansion with a result has control flow");
   for (auto index : llvm::seq(arity)) {
     pack_index_ = index;
+    for (auto block_id : region_blocks) {
+      pack_iteration_blocks_.Insert(block_id, nullptr);
+    }
+    if (!region_blocks.empty()) {
+      pack_expansion_next_block_ =
+          llvm::BasicBlock::Create(llvm_context(), "pack.next", function_);
+    }
     LowerBlockContents(body_block_id);
+    for (auto block_id : region_blocks) {
+      auto* block = GetBlock(block_id);
+      // Keep the LLVM blocks in lexical order.
+      block->moveBefore(function_->end());
+      builder_.SetInsertPoint(block);
+      LowerBlockContents(block_id);
+    }
     if (finish_iteration) {
       finish_iteration(index);
     }
@@ -108,6 +144,12 @@ auto FunctionContext::LowerPackExpansionBody(
       locals_.Erase(inst_id);
     }
     pack_iteration_locals_.clear();
+    if (!region_blocks.empty()) {
+      pack_iteration_blocks_.Clear();
+      pack_expansion_next_block_->moveBefore(function_->end());
+      builder_.SetInsertPoint(pack_expansion_next_block_);
+      pack_expansion_next_block_ = nullptr;
+    }
   }
   pack_index_ = std::nullopt;
 }

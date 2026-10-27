@@ -319,8 +319,8 @@ auto FileContext::GetOrCreateConstantGlobal(SemIR::InstId const_inst_id,
   return global_variable;
 }
 
-// Fork (VA-2): builds the value representation of the constant tuple or
-// struct value `const_inst_id` whose value representation holds its elements'
+// Fork (VA-2): builds the value representation of the constant tuple, struct
+// or pack value `const_inst_id` whose value representation holds its elements'
 // value representations (`ValueRepr::ValueAggregate`), such as `((1, 2), 3)`,
 // whose value holds the address of the value of `(1, 2)` where its object holds
 // `(1, 2)` itself, from the elements' constants: the value itself, or the
@@ -333,10 +333,11 @@ auto FileContext::GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
   struct Aggregate {
     llvm::ArrayRef<SemIR::InstId> elements;
     SemIR::ValueRepr value_rep;
-    llvm::StructType* llvm_type;
+    // A struct type, or, for a pack of one type, an array type.
+    llvm::Type* llvm_type;
   };
-  // Returns the elements of `inst_id` if it is a lowered constant tuple or
-  // struct value whose value representation is elementwise.
+  // Returns the elements of `inst_id` if it is a lowered constant tuple,
+  // struct or pack value whose value representation is elementwise.
   auto get_aggregate = [&](SemIR::InstId inst_id) -> std::optional<Aggregate> {
     auto inst = sem_ir().insts().Get(inst_id);
     auto value_rep = SemIR::ValueRepr::ForType(sem_ir(), inst.type_id());
@@ -349,14 +350,19 @@ auto FileContext::GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
       elements_id = tuple->elements_id;
     } else if (auto struct_value = inst.TryAs<SemIR::StructValue>()) {
       elements_id = struct_value->elements_id;
+    } else if (auto pack = inst.TryAs<SemIR::PackValue>()) {
+      // Fork (VA-2, D-VA2-7): a constant pack of values, which
+      // `EmitAsConstant` lays out as its pack type, a pack of the elements'
+      // objects, while its value is a pack of their value representations.
+      elements_id = pack->elements_id;
     } else {
       return std::nullopt;
     }
     auto repr_type_id = value_rep.kind == SemIR::ValueRepr::Pointer
                             ? sem_ir().GetPointeeType(value_rep.type_id)
                             : value_rep.type_id;
-    auto* llvm_type = dyn_cast<llvm::StructType>(GetType(repr_type_id));
-    if (!llvm_type) {
+    auto* llvm_type = GetType(repr_type_id);
+    if (!isa<llvm::StructType, llvm::ArrayType>(llvm_type)) {
       return std::nullopt;
     }
     return Aggregate{.elements = sem_ir().inst_blocks().Get(elements_id),
@@ -417,7 +423,11 @@ auto FileContext::GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
                 : element_constant;
       }
       auto* element = cast<llvm::Constant>(element_value);
-      auto* element_type = aggregate.llvm_type->getElementType(index);
+      auto* element_type =
+          isa<llvm::StructType>(aggregate.llvm_type)
+              ? cast<llvm::StructType>(aggregate.llvm_type)
+                    ->getElementType(index)
+              : cast<llvm::ArrayType>(aggregate.llvm_type)->getElementType();
       if (element->getType() != element_type) {
         // A tail-padded element, `<{T, [N x i8]}>`.
         auto* padded = cast<llvm::StructType>(element_type);
@@ -427,7 +437,12 @@ auto FileContext::GetElementwiseConstantValueRepr(SemIR::InstId const_inst_id,
       }
       elements.push_back(element);
     }
-    auto* value = llvm::ConstantStruct::get(aggregate.llvm_type, elements);
+    llvm::Constant* value =
+        isa<llvm::StructType>(aggregate.llvm_type)
+            ? llvm::ConstantStruct::get(
+                  cast<llvm::StructType>(aggregate.llvm_type), elements)
+            : llvm::ConstantArray::get(
+                  cast<llvm::ArrayType>(aggregate.llvm_type), elements);
     llvm::Value* result =
         aggregate.value_rep.kind == SemIR::ValueRepr::Pointer
             ? GetOrCreateConstantGlobal(inst_id, aggregate.value_rep, value,

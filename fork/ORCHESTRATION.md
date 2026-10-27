@@ -10,7 +10,11 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-26 (VA-2's plan, definition-checked variadics slice 2, is
+Last updated: 2026-10-27 (VA-2, definition-checked variadics slice 2, is
+implemented, reviewed and held open as PR 66, stacked on PR 59; sixteen PRs
+are held open, PR 51 to PR 66, none merged; see the paragraph dated 2026-10-27
+below; the earlier 2026-10-26 text follows).
+2026-10-26 (VA-2's plan, definition-checked variadics slice 2, is
 signed off at rev 4 and its implementation has started on
 claude/carbon-fork-0-1-va2, stacked on PR 59; see the third paragraph dated
 2026-10-26 below; the earlier 2026-10-26 text follows).
@@ -556,6 +560,41 @@ stacked on PR 59, merging last after PR 65 through M, S-CT, F-M, L-F and L;
 W-330..W-339 are its ids. The implementation workflow has started. Fifteen
 PRs are held open (PR 51 to PR 65); none is merged.
 
+2026-10-27 (21:24 UTC): VA-2 is IMPLEMENTED, REVIEWED AND HELD OPEN as PR 66
+(claude/carbon-fork-0-1-va2 at 43c8ab476, base claude/carbon-fork-0-1-va, PR
+59's b0822a744; forty-two commits: plan rev 1 to rev 16, C0 and C0b with F0,
+C1 to C5 with F1 to F4, the implementation-review fold's fix and fill, R, D,
+and the focused re-review loop's four rounds with fix 3 and fix 4, their
+fills and their records). The implementation stopped five times on a
+difference from the plan's predictions and each time a plan amender, a
+focused re-review and a fold preceded the stage's re-run (rev 5 to rev 14).
+Twenty-one reviews in all (two plan reviews, two focused plan re-reviews,
+five stop-and-amend re-reviews, two implementation reviews and the loop's
+eight): 104 findings, 100 distinct, all folded, none rejected. The fix budget
+of three was spent by the fold's fix (destruction, facet packs and indexing
+of tuples with a pack segment), its records fold and round 2's fix 3 (packs
+of facets converted to a narrower facet type); round 2's three code findings
+(a file-scope `let` pack pattern aborting the compiler, an unpinned import,
+a compile-time pack expanded as call arguments passed as one argument, which
+ran a deduced callee with the wrong arity) were answered under D-VA2-19's
+break condition, no shrink line reaching them without breaking measured
+rows: plan rev 16 specified and measured fix 4, round 3's two reviews read
+it before it was committed and found it sound, and round 4 committed it with
+its fill and records; round 4's reviews were dry (six records-only MINORs,
+folded). Expected, not of record: gate 1977 of 1977, conformance 147/0/21
+over 168, bullets 49/0/7 of 56, from PR 59's 1960 and 137/0/21 over 158;
+twenty-six mutants killed; eight composition mirrors green, both sides'
+programs passing. Records: W-225 discharged, W-212 and W-213 narrowed,
+W-330..W-339 and W-345 filed (W-335 discharged); the gap rows "Generics:
+Definition-checked variadics" and "Stdlib: tuple/array library parts" stay
+PARTIAL. PR 66 merges last, after PR 65, through M, S-CT, F-M, L-F and L
+(the plan's section 3 item 15 and the branch's ORCHESTRATION item 6). The
+land simulation exposed two held-side defects, routed and not VA-2's: SC-1's
+`self_facet_in_signature_required` split failing against OP-2's storage, and
+PR 59's abort on a pack expansion pattern in a choice alternative's
+parameter list. Sixteen PRs are held open (PR 51 to PR 66); none is merged.
+Next: OV-4 (W-341) and RG-1 (W-342..W-344) per item 6 below, then UA-3.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -903,7 +942,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ct` | HELD OPEN as PR 64 — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific, at 4a3220c11 (toolchain 224ee2f8f; base claude/carbon-fork-0-1-tp, stacked on PR 61; W-043 DISCHARGED, TP-1's W-273 discharged and W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; gap rows 56 and 42 stay PARTIAL; expected 1959 of 1959 and 147/0/20 over 167); plan rev 4 signed off after four reviews, two implementation reviews folded in three fix commits, focused re-review round 1 dry; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
 | `claude/carbon-fork-0-1-dr` | HELD OPEN as PR 63 — DR-1a Core.Iterate.Next takes a ref cursor (R32; W-321 discharged) at 18a7e8934 (toolchain d0cfe8082; base trunk; expected 1942 of 1942 and 128/0/22 over 150); DR-1's plan rev 3 signed off with slice 1 (W-320, Match for Core.Optional) stopped on upstream's own conflict and blocked on W-324; W-324..W-327 and W-329 filed, W-328 reserved; one implementation review (three records-only MINORs) folded; plan rev 4 (f551057ea) records DR-1b's stop-and-amend; DR-1b (IndirectIndexWith, W-109) is HELD OPEN as PR 65 on claude/carbon-fork-0-1-dr-idx, stacked on this branch; merges after CT-1 through M-a and L-a, then DR-1b through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-dr-idx` | HELD OPEN as PR 65 — DR-1b element access through `IndirectIndexWith`, `Core.Slice` and `Core.Buf` writing through `Ref`, upstream 230227264 cherry-picked (R32; W-109 DISCHARGED) at fee0ef31c (toolchain 7a442f632; base claude/carbon-fork-0-1-dr, stacked on PR 63; expected 1946 of 1946 and 130/0/22 over 152); one stop-and-amend (plan rev 4), one implementation review folded at the root (fddfcf42a and its fill bcd9ba06f, the comment commits 8deb75262 and 7a442f632, and round 4's shrink-line split 0cd4e5d2e with W-340 filed), a focused re-review of four rounds (rounds 1 to 3 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR, RR3-1-M1; round 4 dry after the shrink line); merges after DR-1a through M-b, C-b and L-b. |
-| `claude/carbon-fork-0-1-va2` | PLANNED, implementation under way — VA-2 definition-checked variadics slice 2 (W-212, W-213 narrowed, W-225; gap rows 53 and 74 stay PARTIAL) at 7188540ca (plan rev 4 signed off 2026-10-26 after two reviews and two focused re-reviews, thirty-four findings folded, none rejected; cut from PR 59's b0822a744, stacked on PR 59; predicted, not of record: 1975 of 1975 and 147/0/21 over 168); one PR, merges last after PR 65 through M, S-CT, F-M, L-F and L. |
+| `claude/carbon-fork-0-1-va2` | HELD OPEN as PR 66 (stacked on PR 59, base claude/carbon-fork-0-1-va) — VA-2 definition-checked variadics slice 2 at 43c8ab476 (2026-10-27; forty-two commits over PR 59's b0822a744: plan rev 1 to rev 16, C0, C0b, C1 to C5 with their fills, the fold's fix and fill, R, D, the re-review loop's four rounds with fix 3, fix 4 by D-VA2-19's break condition, their fills and records; 104 findings over twenty-one reviews, all folded, none rejected, round 4 dry; W-225 discharged, W-212 and W-213 narrowed, W-330..W-339 and W-345 filed; gap rows 53 and 74 stay PARTIAL; expected, not of record: 1977 of 1977 and 147/0/21 over 168); merges last after PR 65 through M, S-CT, F-M, L-F and L. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -971,16 +1010,20 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     descriptions are re-posted; W-320 (`Core.Optional` matchable by `Match`)
     stopped at the plan on upstream's own conflict, watched by W-324 at each
     weekly upstream check. Both DR-1 PRs merge after CT-1 (PR 64).
-2.  **VA-2 (definition-checked variadics slice 2; fork/variadics/va2-plan.md on
-    claude/carbon-fork-0-1-va2, cut from PR 59's head)**: generic and
-    heterogeneous packs (W-212), tuples with pack segments (W-213) and variadic
-    impls with the prelude tuple `Copy`, `Eq` and `Ordered` (W-225; gap rows 53
-    and 74), chosen under R32 because upstream's prelude TODO and the accepted
-    design p002240 spell it; the plan is under review; one PR stacked on PR 59,
-    merging last. After it: the match residues W-076, W-078, W-079 and W-080
-    (W-066 was discharged 2026-09-26; W-008's open residues are those four),
-    the exception-interop residues W-083..W-085 and W-123, and the lowering
-    fatals W-041 with DR-1's audit residues W-325, W-327 and W-329.
+2.  **VA-2 (definition-checked variadics slice 2)** is held open as PR 66
+    (claude/carbon-fork-0-1-va2 at 43c8ab476, stacked on PR 59): generic and
+    heterogeneous packs (W-212, narrowed), tuples with one pack segment (W-213,
+    narrowed) and variadic impls with the prelude tuple `Copy`, `Eq` and
+    `Ordered` (W-225, discharged; gap rows 53 and 74 stay PARTIAL). It merges
+    last, after PR 65, through its land-time items M, S-CT, F-M, L-F and L
+    (fork/variadics/va2-plan.md section 3 item 15, D-VA2-18, section 6.2 and
+    section 8.8, and the branch's ORCHESTRATION Next actions item 6, which
+    spells each out); before M, item 10 below is decided and hand-off notes 7
+    (PR 59's array-stride layout) and 9 (item 13 below) are ruled. After it:
+    the match residues W-076, W-078, W-079 and W-080 (W-066 was discharged
+    2026-09-26; W-008's open residues are those four), the exception-interop
+    residues W-083..W-085 and W-123, and the lowering fatals W-041 with DR-1's
+    audit residues W-325, W-327 and W-329.
 3.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
 4.  W5-S3p (prelude Result/Optional) is no longer gated: SF-9 was decided by
@@ -1004,6 +1047,43 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     now, each drift found filed as its own work item and a held PR carrying one
     amended by a new commit on its branch before it lands (R32 (e)). UA-3
     follows W-341.
+7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
+    impl-lookup workstream; take upstream's implementation at each advance if it
+    lands first.
+8.  W-338 and W-339 (VA-2's V-3a register entries (v) and (vi)): at each weekly
+    upstream check, re-read generics/details.md "Overlap rule",
+    comparison_operators.md :311-316 and :457-464 and comparison.carbon's
+    Compare TODO, and upstream's type_structure.cpp; open the realignment if
+    upstream decides otherwise.
+9.  W-214, W-217, W-230 (VA-2's V-3a register entries (iv), (i), (iii)): at each
+    weekly upstream check, re-read variadics.md :219-221 with :532-546, :493 and
+    p002240's "Omit each-names".
+10. SC-1 (PR 60) with OP-2 (PR 57): on VA-2's land simulation and on the
+    simulated trunk without VA-2 (fork/variadics/va2-plan.md section 8.7, `mall`
+    and T*), SC-1's named_constraint/template_constraint.carbon split
+    `self_facet_in_signature_required` fails after the fill with `unable to
+    monomorphize specific <none>` at `fn Next(self) -> Core.Optional(Self);`,
+    against OP-2's `DefaultOptionalStorage`; no plan names it. SC-1's and OP-2's
+    owners decide which land-time fill or fix commit carries it, before either
+    lands.
+11. The a03, a19 and a20 class (upstream's defects; VA-2's M-20 and R-13): a
+    `var` of a one-element tuple of a tuple of run-time values gives an
+    indeterminate value (wrong code), and such a tuple initialized from a
+    run-time call or returned stops at the `CHECK` `new_storage_id.has_value()`
+    in check/convert.cpp, on PR 59, trunk and the nightly 2026.10.12. Request an
+    id for the class and file it with an owner; W-330 to W-339 are all filed.
+12. Core's `String.Reserve` and `String.Append`, which the design's StrCat over
+    `String` needs with W-220 (VA-2's W-212, narrowed): request an id and an
+    owner, the next Core.String workstream.
+13. A pack expansion pattern in a choice alternative's parameter list (PR 59's;
+    VA-2's RR4-1-m1 and the plan's hand-off note 9): `choice C { A(... each x:
+    i32) }` passes VA-1's check and aborts in lowering at
+    lower/file_context.h:187 ("Lowering symbolic type"), on PR 59, on VA-2 and
+    on VA-2's land simulation alike; trunk and the nightly 2026.10.12 reject it
+    at parse. Request an id for it and route the fix to PR 59 under its own
+    review: in handle_pack_expansion.cpp's `Pattern` case, a list whose
+    declaration is a choice alternative refused with a TODO, pinned by a
+    `fail_todo_` split. VA-2 changes no file for it.
 
 ### Standing user directives
 

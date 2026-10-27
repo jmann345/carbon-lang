@@ -58,3 +58,70 @@ impl IntLiteral as OrderedWith(Self) {
   fn Greater(self, other: Self) -> bool = "int.greater";
   fn GreaterOrEquivalent(self, other: Self) -> bool = "int.greater_eq";
 }
+
+// Equality and relational comparison for tuples, field-wise, with relational
+// comparison lexicographical (docs/design/tuples.md, "Operations performed
+// field-wise"; docs/design/expressions/comparison_operators.md, "Default
+// implementations for basic types"). These must be provided in this library
+// as tuples don't have any associated library of their own.
+impl forall [... each T: Eq] (... each T) as EqWith(Self) {
+  fn Equal(self, other: Self) -> bool {
+    let (... each a: each T) = self;
+    let (... each b: each T) = other;
+    ... if (not (each a == each b)) {
+      return false;
+    }
+    return true;
+  }
+  fn NotEqual(self, other: Self) -> bool {
+    let (... each a: each T) = self;
+    let (... each b: each T) = other;
+    ... if (each a != each b) {
+      return true;
+    }
+    return false;
+  }
+}
+
+impl forall [... each T: Ordered] (... each T) as OrderedWith(Self) {
+  fn Less(self, other: Self) -> bool {
+    let (... each a: each T) = self;
+    let (... each b: each T) = other;
+    ... if (each a < each b) {
+      return true;
+    } else if (each b < each a) {
+      return false;
+    }
+    return false;
+  }
+  fn LessOrEquivalent(self, other: Self) -> bool {
+    let (... each a: each T) = self;
+    let (... each b: each T) = other;
+    ... if (each a < each b) {
+      return true;
+    } else if (each b < each a) {
+      return false;
+    }
+    return true;
+  }
+  fn Greater(self, other: Self) -> bool {
+    let (... each a: each T) = self;
+    let (... each b: each T) = other;
+    ... if (each b < each a) {
+      return true;
+    } else if (each a < each b) {
+      return false;
+    }
+    return false;
+  }
+  fn GreaterOrEquivalent(self, other: Self) -> bool {
+    let (... each a: each T) = self;
+    let (... each b: each T) = other;
+    ... if (each b < each a) {
+      return true;
+    } else if (each a < each b) {
+      return false;
+    }
+    return true;
+  }
+}

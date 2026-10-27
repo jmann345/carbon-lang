@@ -1475,12 +1475,12 @@ fn F() {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %ConstNullableParamS: type = class_type @ConstNullableParamS [concrete]
 // CHECK:STDOUT:   %ptr.13b: type = ptr_type %ConstNullableParamS [concrete]
-// CHECK:STDOUT:   %pattern_type.550: type = pattern_type %ptr.13b [concrete]
+// CHECK:STDOUT:   %pattern_type.5501: type = pattern_type %ptr.13b [concrete]
 // CHECK:STDOUT:   %G.type: type = fn_type @G [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %G: %G.type = struct_value () [concrete]
-// CHECK:STDOUT:   %p.patt: %pattern_type.550 = ref_binding_pattern p [concrete]
-// CHECK:STDOUT:   %p.var_patt: %pattern_type.550 = var_pattern %p.patt [concrete]
+// CHECK:STDOUT:   %p.patt: %pattern_type.5501 = ref_binding_pattern p [concrete]
+// CHECK:STDOUT:   %p.var_patt: %pattern_type.5501 = var_pattern %p.patt [concrete]
 // CHECK:STDOUT:   %const_nullable_foo.cpp_overload_set.type: type = cpp_overload_set_type @const_nullable_foo.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %const_nullable_foo.cpp_overload_set.value: %const_nullable_foo.cpp_overload_set.type = cpp_overload_set_value @const_nullable_foo.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %OptionalStorage.type: type = facet_type <@OptionalStorage> [concrete]
@@ -1640,8 +1640,8 @@ fn F() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %p: ref %ptr.13b = wrapper_binding p, %p.var
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %p.patt: %pattern_type.550 = ref_binding_pattern p [concrete = constants.%p.patt]
-// CHECK:STDOUT:     %p.var_patt: %pattern_type.550 = var_pattern %p.patt [concrete = constants.%p.var_patt]
+// CHECK:STDOUT:     %p.patt: %pattern_type.5501 = ref_binding_pattern p [concrete = constants.%p.patt]
+// CHECK:STDOUT:     %p.var_patt: %pattern_type.5501 = var_pattern %p.patt [concrete = constants.%p.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Cpp.ref.loc11: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %const_nullable_foo.ref: %const_nullable_foo.cpp_overload_set.type = name_ref const_nullable_foo, imports.%const_nullable_foo.cpp_overload_set.value [concrete = constants.%const_nullable_foo.cpp_overload_set.value]

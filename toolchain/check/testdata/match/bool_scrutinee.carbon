@@ -175,7 +175,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.831 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.d80: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
@@ -186,10 +186,10 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %IsTrue: %IsTrue.type = struct_value () [concrete]
 // CHECK:STDOUT:   %false: bool = bool_literal false [concrete]
 // CHECK:STDOUT:   %EqWith.type.539: type = facet_type <@EqWith, @EqWith(bool)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.fb2: <witness> = impl_witness imports.%EqWith.impl_witness_table.5db [concrete]
+// CHECK:STDOUT:   %EqWith.facet.6a4: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness.fb2) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet.6a4) [concrete]
+// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet.6a4 [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.type: type = fn_type @bool.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal: %bool.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.bound.ed3: <bound method> = bound_method %false, %bool.as.EqWith.impl.Equal [concrete]
@@ -231,18 +231,18 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %bool.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %IsTrue.decl: %IsTrue.type = fn_decl @IsTrue [concrete = constants.%IsTrue] {
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.d80]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -265,7 +265,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %false: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc13_16: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc13_16: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc13_16: <bound method> = bound_method %false, %impl.elem0.loc13_16 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc13: init bool = call %bound_method.loc13_16(%false, %b.ref)
 // CHECK:STDOUT:   %.loc13_16.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc13
@@ -289,7 +289,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc14_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc14_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc14_15: <bound method> = bound_method %true, %impl.elem0.loc14_15 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc14: init bool = call %bound_method.loc14_15(%true, %b.ref)
 // CHECK:STDOUT:   %.loc14_15.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc14
@@ -331,7 +331,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.831 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.d80: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
@@ -342,10 +342,10 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete]
 // CHECK:STDOUT:   %EqWith.type.539: type = facet_type <@EqWith, @EqWith(bool)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.fb2: <witness> = impl_witness imports.%EqWith.impl_witness_table.5db [concrete]
+// CHECK:STDOUT:   %EqWith.facet.6a4: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness.fb2) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet.6a4) [concrete]
+// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet.6a4 [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.type: type = fn_type @bool.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal: %bool.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.bound: <bound method> = bound_method %true, %bool.as.EqWith.impl.Equal [concrete]
@@ -373,7 +373,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %bool.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
 // CHECK:STDOUT: }
@@ -381,7 +381,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.d80]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -404,7 +404,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc8_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc8_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc8_15: <bound method> = bound_method %true, %impl.elem0.loc8_15 [concrete = constants.%bool.as.EqWith.impl.Equal.bound]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc8_15(%true, %b.ref)
 // CHECK:STDOUT:   %.loc8_15.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call
@@ -438,7 +438,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.831 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.d80: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
@@ -508,15 +508,15 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a874b1.2, %Core.import_ref.e3a88b.2), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %G.decl: %G.type = fn_decl @G [concrete = constants.%G] {
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.d80]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -629,10 +629,10 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %false: bool = bool_literal false [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %EqWith.type.539: type = facet_type <@EqWith, @EqWith(bool)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.fb2: <witness> = impl_witness imports.%EqWith.impl_witness_table.5db [concrete]
+// CHECK:STDOUT:   %EqWith.facet.6a4: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness.fb2) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet.6a4) [concrete]
+// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet.6a4 [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.type: type = fn_type @bool.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal: %bool.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.bound.ed3: <bound method> = bound_method %false, %bool.as.EqWith.impl.Equal [concrete]
@@ -673,12 +673,12 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %bool.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -702,7 +702,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %false: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc9_16: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc9_16: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc9_16: <bound method> = bound_method %false, %impl.elem0.loc9_16 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc9: init bool = call %bound_method.loc9_16(%false, %true.loc8) [concrete = constants.%false]
 // CHECK:STDOUT:   %.loc9_16.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc9 [concrete = constants.%false]
@@ -726,7 +726,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %true.loc10: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc10_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc10_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc10_15: <bound method> = bound_method %true.loc10, %impl.elem0.loc10_15 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc10: init bool = call %bound_method.loc10_15(%true.loc10, %true.loc8) [concrete = constants.%true]
 // CHECK:STDOUT:   %.loc10_15.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc10 [concrete = constants.%true]
@@ -768,7 +768,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.831 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.d80: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %c.param_patt: %pattern_type.831 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %c.patt: %pattern_type.831 = wrapper_binding_pattern c, %c.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
@@ -781,10 +781,10 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %Compose: %Compose.type = struct_value () [concrete]
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete]
 // CHECK:STDOUT:   %EqWith.type.539: type = facet_type <@EqWith, @EqWith(bool)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.fb2: <witness> = impl_witness imports.%EqWith.impl_witness_table.5db [concrete]
+// CHECK:STDOUT:   %EqWith.facet.6a4: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness.fb2) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet.6a4) [concrete]
+// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet.6a4 [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.type: type = fn_type @bool.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal: %bool.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.bound: <bound method> = bound_method %true, %bool.as.EqWith.impl.Equal [concrete]
@@ -829,18 +829,18 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %bool.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Compose.decl: %Compose.type = fn_decl @Compose [concrete = constants.%Compose] {
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.d80]
 // CHECK:STDOUT:     %c.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%c.param_patt]
 // CHECK:STDOUT:     %c.patt: %pattern_type.831 = wrapper_binding_pattern c, %c.param_patt [concrete = constants.%c.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
@@ -868,7 +868,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %true.loc11: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc11_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc11_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc11_15: <bound method> = bound_method %true.loc11, %impl.elem0.loc11_15 [concrete = constants.%bool.as.EqWith.impl.Equal.bound]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc11_15(%true.loc11, %b.ref)
 // CHECK:STDOUT:   %.loc11_15.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call
@@ -1010,8 +1010,8 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %int_-1.4ef: %i32 = int_value -1 [concrete]
 // CHECK:STDOUT:   %RefBinding.type: type = fn_type @RefBinding [concrete]
 // CHECK:STDOUT:   %RefBinding: %RefBinding.type = struct_value () [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.831 = ref_binding_pattern x [concrete]
-// CHECK:STDOUT:   %x.var_patt: %pattern_type.831 = var_pattern %x.patt [concrete]
+// CHECK:STDOUT:   %x.patt.2ed: %pattern_type.831 = ref_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.var_patt: %pattern_type.831 = var_pattern %x.patt.2ed [concrete]
 // CHECK:STDOUT:   %bool.as.Copy.impl.Op.bound.1b3: <bound method> = bound_method %true, %bool.as.Copy.impl.Op [concrete]
 // CHECK:STDOUT:   %r.patt: %pattern_type.831 = ref_binding_pattern r [concrete]
 // CHECK:STDOUT: }
@@ -1162,7 +1162,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %.loc17: type = type_literal bool [concrete = bool]
 // CHECK:STDOUT:   %x: ref bool = wrapper_binding x, %x.var
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %x.patt: %pattern_type.831 = ref_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.831 = ref_binding_pattern x [concrete = constants.%x.patt.2ed]
 // CHECK:STDOUT:     %x.var_patt: %pattern_type.831 = var_pattern %x.patt [concrete = constants.%x.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %x.ref.loc18: ref bool = name_ref x, %x
@@ -1222,7 +1222,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.831 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.d80: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
@@ -1233,10 +1233,10 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:   %TrueFirst: %TrueFirst.type = struct_value () [concrete]
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete]
 // CHECK:STDOUT:   %EqWith.type.539: type = facet_type <@EqWith, @EqWith(bool)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.fb2: <witness> = impl_witness imports.%EqWith.impl_witness_table.5db [concrete]
+// CHECK:STDOUT:   %EqWith.facet.6a4: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness.fb2) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet.6a4) [concrete]
+// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet.6a4 [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.type: type = fn_type @bool.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal: %bool.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.bound.e7c: <bound method> = bound_method %true, %bool.as.EqWith.impl.Equal [concrete]
@@ -1278,18 +1278,18 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %bool.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %TrueFirst.decl: %TrueFirst.type = fn_decl @TrueFirst [concrete = constants.%TrueFirst] {
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.831 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.d80]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -1312,7 +1312,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %true: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc8_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc8_15: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc8_15: <bound method> = bound_method %true, %impl.elem0.loc8_15 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc8: init bool = call %bound_method.loc8_15(%true, %b.ref)
 // CHECK:STDOUT:   %.loc8_15.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc8
@@ -1336,7 +1336,7 @@ fn TrueFirst(b: bool) -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %false: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc9_16: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc9_16: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc9_16: <bound method> = bound_method %false, %impl.elem0.loc9_16 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc9: init bool = call %bound_method.loc9_16(%false, %b.ref)
 // CHECK:STDOUT:   %.loc9_16.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc9

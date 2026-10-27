@@ -823,6 +823,231 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
   return ConstantEvalResult::NewSamePhase(inst);
 }
 
+// Fork (VA-2): a tuple type's pack segment of known arity is replaced by the
+// pack's element types: `(A, ... «B; 2», ... ⟬C, D⟭)` is `(A, B, B, C, D)`
+// (docs/design/variadics.md, "Reduction rules": "Pack expansion splitting",
+// "Singular expansion removal").
+auto EvalConstantInst(Context& context, SemIR::TupleType inst)
+    -> ConstantEvalResult {
+  auto elements = context.inst_blocks().Get(inst.type_elements_id);
+  bool has_known_segment = false;
+  for (auto element_id : elements) {
+    if (auto pack = context.insts().TryGetAs<SemIR::PackType>(element_id);
+        pack && context.sem_ir().GetZExtIntValue(pack->arity_id) &&
+        (!IsHeterogeneousPackType(context, *pack) ||
+         context.insts().Is<SemIR::PackValue>(pack->element_id))) {
+      has_known_segment = true;
+    }
+  }
+  if (!has_known_segment) {
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+  llvm::SmallVector<SemIR::InstId> flat_ids;
+  for (auto element_id : elements) {
+    auto pack = context.insts().TryGetAs<SemIR::PackType>(element_id);
+    auto arity =
+        pack ? context.sem_ir().GetZExtIntValue(pack->arity_id) : std::nullopt;
+    if (!arity || (IsHeterogeneousPackType(context, *pack) &&
+                   !context.insts().Is<SemIR::PackValue>(pack->element_id))) {
+      flat_ids.push_back(element_id);
+      continue;
+    }
+    for (auto index : llvm::seq(*arity)) {
+      flat_ids.push_back(context.types().GetTypeInstId(
+          GetPackElementTypeId(context, *pack, index)));
+    }
+  }
+  return ConstantEvalResult::Existing(
+      context.types().GetConstantId(GetTupleType(context, flat_ids)));
+}
+
+// Fork (VA-2): a tuple value's pack segment that is a known pack value is
+// replaced by the pack's elements, as its type's segment is.
+auto EvalConstantInst(Context& context, SemIR::TupleValue inst)
+    -> ConstantEvalResult {
+  auto elements = context.inst_blocks().Get(inst.elements_id);
+  if (!llvm::any_of(elements, [&](SemIR::InstId id) {
+        return context.insts().Is<SemIR::PackValue>(id);
+      })) {
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+  llvm::SmallVector<SemIR::InstId> flat_ids;
+  for (auto element_id : elements) {
+    if (auto pack = context.insts().TryGetAs<SemIR::PackValue>(element_id)) {
+      auto pack_elements = context.inst_blocks().Get(pack->elements_id);
+      flat_ids.append(pack_elements.begin(), pack_elements.end());
+    } else {
+      flat_ids.push_back(element_id);
+    }
+  }
+  inst.elements_id = context.inst_blocks().AddCanonical(flat_ids);
+  return ConstantEvalResult::NewSamePhase(inst);
+}
+
+// Fork (VA-2, RR1-1-M1): the element type `E` of the pack type `«E; N»`, or
+// `None` for a pack of different types.
+static auto GetHomogeneousPackElementType(Context& context,
+                                          SemIR::PackType pack_type)
+    -> SemIR::TypeId {
+  if (context.types().Is<SemIR::PackType>(
+          context.insts().Get(pack_type.element_id).type_id())) {
+    return SemIR::TypeId::None;
+  }
+  return context.types().GetTypeIdForTypeInstId(
+      context.constant_values().GetConstantTypeInstId(
+          SemIR::TypeInstId::UnsafeMake(pack_type.element_id)));
+}
+
+// Fork (VA-2, RR1-1-M1): converts `element_id`, the constant element of a
+// compile-time pack of types or facets, to a facet of `facet_type_id`, as
+// `PerformBuiltinConversion` converts a type or facet to a facet type: to its
+// type for `type`, and otherwise to a `FacetValue` of that type, whose
+// witnesses impl lookup finds. Returns `None` if the element does not satisfy
+// the facet type.
+static auto ConvertPackElementToFacet(Context& context, SemIR::LocId loc_id,
+                                      SemIR::InstId element_id,
+                                      SemIR::TypeId facet_type_id)
+    -> SemIR::ConstantId {
+  auto type_const_id = context.constant_values().Get(element_id);
+  if (type_const_id == SemIR::ErrorInst::ConstantId) {
+    return type_const_id;
+  }
+  if (context.insts().Get(element_id).type_id() != SemIR::TypeType::TypeId) {
+    type_const_id = TryEvalInst(
+        context, SemIR::FacetAccessType{.type_id = SemIR::TypeType::TypeId,
+                                        .facet_value_inst_id = element_id});
+  }
+  if (facet_type_id == SemIR::TypeType::TypeId) {
+    return type_const_id;
+  }
+  auto witnesses = LookupImplWitness(
+      context, loc_id, type_const_id,
+      context.types().GetConstantId(facet_type_id), /*diagnose=*/false);
+  if (!witnesses.has_value()) {
+    return SemIR::ConstantId::None;
+  }
+  if (witnesses.has_error_value()) {
+    return SemIR::ErrorInst::ConstantId;
+  }
+  return TryEvalInst(
+      context,
+      SemIR::FacetValue{.type_id = facet_type_id,
+                        .type_inst_id = context.types().GetAsTypeInstId(
+                            context.constant_values().GetInstId(type_const_id)),
+                        .witnesses_block_id = witnesses.inst_block_id()});
+}
+
+// Fork (VA-2, RR1-1-M1): a compile-time pack of types or facets converted to a
+// pack of another facet type is, once the pack's elements are known, the pack
+// of its elements each converted to that facet type ("Expansion
+// convertibility", and the "Pack expanding" reduction of `⟬A, B⟭ as F` to
+// `⟬A as F, B as F⟭`, docs/design/variadics.md, "Reduction rules"). A pack
+// converted twice is its source converted once, and a pack converted to its
+// own type is itself.
+auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
+                      SemIR::PackFacetValue inst) -> ConstantEvalResult {
+  bool changed = false;
+  while (auto inner =
+             context.insts().TryGetAs<SemIR::PackFacetValue>(inst.pack_id)) {
+    inst.pack_id = inner->pack_id;
+    changed = true;
+  }
+  if (context.insts().Get(inst.pack_id).type_id() == inst.type_id) {
+    return ConstantEvalResult::Existing(
+        context.constant_values().Get(inst.pack_id));
+  }
+  auto pack = context.insts().TryGetAs<SemIR::PackValue>(inst.pack_id);
+  if (!pack) {
+    return changed ? ConstantEvalResult::NewAnyPhase(inst)
+                   : ConstantEvalResult::NewSamePhase(inst);
+  }
+  auto facet_type_id = GetHomogeneousPackElementType(
+      context, context.types().GetAs<SemIR::PackType>(inst.type_id));
+  CARBON_CHECK(facet_type_id.has_value(),
+               "Pack of facets converted to a pack of different types");
+  llvm::SmallVector<SemIR::InstId> element_ids;
+  for (auto element_id : context.inst_blocks().Get(pack->elements_id)) {
+    auto converted_id = ConvertPackElementToFacet(
+        context, SemIR::LocId(inst_id), element_id, facet_type_id);
+    if (!converted_id.has_value() ||
+        converted_id == SemIR::ErrorInst::ConstantId) {
+      return ConstantEvalResult::Error;
+    }
+    element_ids.push_back(context.constant_values().GetInstId(converted_id));
+  }
+  return ConstantEvalResult::Existing(TryEvalInst(
+      context,
+      SemIR::PackValue{
+          .type_id = inst.type_id,
+          .elements_id = context.inst_blocks().AddCanonical(element_ids)}));
+}
+
+// Fork (VA-2, RR1-1-M1): a pack type whose element is a pack of facets
+// converted to another facet type, `⟬each U⟭` for `U` the pack `T` as `F`, is
+// the pack type of the source pack, `⟬each T⟭`: converting a facet to a facet
+// type keeps its type, so each element has the same type.
+auto EvalConstantInst(Context& context, SemIR::PackType inst)
+    -> ConstantEvalResult {
+  if (!inst.element_id.has_value()) {
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+  bool changed = false;
+  while (auto conversion =
+             context.insts().TryGetAs<SemIR::PackFacetValue>(inst.element_id)) {
+    inst.element_id = conversion->pack_id;
+    changed = true;
+  }
+  return changed ? ConstantEvalResult::NewAnyPhase(inst)
+                 : ConstantEvalResult::NewSamePhase(inst);
+}
+
+// Fork (VA-2): an each-name of a compile-time pack, such as `each T` of
+// `[... each T: I]`, is the `$I`th element of the pack once the pack and the
+// pack index are known (docs/design/variadics.md, "Execution Semantics": "An
+// each-name evaluates to the `$I`th value of the pack it refers to").
+// Fork (VA-2, RR1-1-M1): the element of a pack of facets converted to a facet
+// type is the source pack's element converted to that facet type, so that
+// `each U` for `U` the pack `T` as `F` is `each T as F`.
+auto EvalConstantInst(Context& context, SemIR::PackElement inst)
+    -> ConstantEvalResult {
+  if (auto conversion =
+          context.insts().TryGetAs<SemIR::PackFacetValue>(inst.pack_id)) {
+    auto source_element_type_id = GetHomogeneousPackElementType(
+        context, context.types().GetAs<SemIR::PackType>(
+                     context.insts().Get(conversion->pack_id).type_id()));
+    auto element_const_id =
+        source_element_type_id.has_value()
+            ? TryEvalInst(context,
+                          SemIR::PackElement{.type_id = source_element_type_id,
+                                             .pack_id = conversion->pack_id,
+                                             .index_id = inst.index_id})
+            : SemIR::ConstantId::NotConstant;
+    if (element_const_id.is_constant()) {
+      auto converted_id = ConvertPackElementToFacet(
+          context, SemIR::LocId::None,
+          context.constant_values().GetInstId(element_const_id), inst.type_id);
+      if (converted_id.has_value()) {
+        return ConstantEvalResult::Existing(converted_id);
+      }
+    }
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+  if (auto pack = context.insts().TryGetAs<SemIR::PackValue>(inst.pack_id)) {
+    if (auto index = context.sem_ir().GetZExtIntValue(inst.index_id)) {
+      auto elements = context.inst_blocks().Get(pack->elements_id);
+      CARBON_CHECK(*index < elements.size(), "Pack index {0} out of range",
+                   *index);
+      return ConstantEvalResult::Existing(
+          context.constant_values().Get(elements[*index]));
+    }
+  }
+  if (context.constant_values().Get(inst.pack_id).is_concrete() &&
+      context.constant_values().Get(inst.index_id).is_concrete()) {
+    return ConstantEvalResult::NotConstant;
+  }
+  return ConstantEvalResult::NewSamePhase(inst);
+}
+
 auto EvalConstantInst(Context& context, SemIR::RequireSpecificDefinition inst)
     -> ConstantEvalResult {
   // This can return false, we just need to try it.

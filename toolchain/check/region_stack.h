@@ -84,7 +84,9 @@ class RegionStack {
   // region (see function.cpp), and every captured expression region — a
   // pattern's type expression, a `match` `case` pattern, or a `case` guard —
   // pushes above it, so a depth greater than 1 inside a function means
-  // checking is inside a captured region.
+  // checking is inside a captured region. Fork (VA-2, D-VA2-11): except that
+  // the body of a statement pack expansion also pushes a region, which is not
+  // a captured one (handle_pack_expansion.cpp).
   auto depth() const -> int { return stack_.size(); }
 
  private:

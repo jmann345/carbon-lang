@@ -61,6 +61,7 @@ fn Call() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.5d4: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.c9c: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_2.405: %i64 = int_value 2 [concrete]
+// CHECK:STDOUT:   %.041: %pack_type.f7c = pack_value (%int_1.d98, %int_2.405) [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -92,8 +93,8 @@ fn Call() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc7_14: init %i64 = call %bound_method.loc7_14.2(%int_2.loc7_14) [concrete = constants.%int_2.405]
 // CHECK:STDOUT:   %.loc7_14.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc7_14 [concrete = constants.%int_2.405]
 // CHECK:STDOUT:   %.loc7_14.2: %i64 = converted %int_2.loc7_14, %.loc7_14.1 [concrete = constants.%int_2.405]
-// CHECK:STDOUT:   %.loc7_11.4: %pack_type.f7c = pack_value (%.loc7_11.3, %.loc7_14.2)
-// CHECK:STDOUT:   %.loc7_11.5: %pack_type.f7c = converted %.loc7_11.1, %.loc7_11.4
+// CHECK:STDOUT:   %.loc7_11.4: %pack_type.f7c = pack_value (%.loc7_11.3, %.loc7_14.2) [concrete = constants.%.041]
+// CHECK:STDOUT:   %.loc7_11.5: %pack_type.f7c = converted %.loc7_11.1, %.loc7_11.4 [concrete = constants.%.041]
 // CHECK:STDOUT:   %ForEach.call: init %empty_tuple.type = call %ForEach.specific_fn(%.loc7_11.5)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }

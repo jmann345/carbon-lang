@@ -1757,7 +1757,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Cpp.long: type = class_type @Long32 [concrete]
 // CHECK:STDOUT:   %pattern_type.25e: type = pattern_type %Cpp.long [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.25e = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.b93: %pattern_type.25e = value_binding_pattern a [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.7eb: type = facet_type <@ImplicitAs, @ImplicitAs(%Cpp.long)> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.820: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.95b [concrete]
@@ -1768,7 +1768,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert [concrete]
 // CHECK:STDOUT:   %int_1.9ce: %Cpp.long = int_value 1 [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.25e = value_binding_pattern b [concrete]
+// CHECK:STDOUT:   %b.patt.21b: %pattern_type.25e = value_binding_pattern b [concrete]
 // CHECK:STDOUT:   %EqWith.type.54a: type = facet_type <@EqWith, @EqWith(%Cpp.long)> [concrete]
 // CHECK:STDOUT:   %EqWith.impl_witness.b5c: <witness> = impl_witness imports.%EqWith.impl_witness_table.cbc [concrete]
 // CHECK:STDOUT:   %EqWith.facet.59b: %EqWith.type.54a = facet_value %Cpp.long, (%EqWith.impl_witness.b5c) [concrete]
@@ -1832,7 +1832,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %Cpp.long = wrapper_binding a, %.loc8_21.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.25e = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.25e = value_binding_pattern a [concrete = constants.%a.patt.b93]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_1.loc9: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc9: %.63e = impl_witness_access constants.%ImplicitAs.impl_witness.820, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert]
@@ -1846,7 +1846,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %b: %Cpp.long = wrapper_binding b, %.loc9_21.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %b.patt: %pattern_type.25e = value_binding_pattern b [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.25e = value_binding_pattern b [concrete = constants.%b.patt.21b]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a.ref.loc10: %Cpp.long = name_ref a, %a
 // CHECK:STDOUT:   %b.ref.loc10: %Cpp.long = name_ref b, %b
@@ -1890,7 +1890,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %Cpp.long: type = class_type @Long32 [concrete]
 // CHECK:STDOUT:   %pattern_type.25e: type = pattern_type %Cpp.long [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.25e = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.b93: %pattern_type.25e = value_binding_pattern a [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.7eb: type = facet_type <@ImplicitAs, @ImplicitAs(%Cpp.long)> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.820: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.95b [concrete]
 // CHECK:STDOUT:   %ImplicitAs.facet.eac: %ImplicitAs.type.7eb = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.820) [concrete]
@@ -2048,9 +2048,9 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Core.import_ref.06c923.1: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.ae6 = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.3ce]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.95b = impl_witness_table (%Core.import_ref.06c923.1), @Core.IntLiteral.as.ImplicitAs.impl.94b [concrete]
-// CHECK:STDOUT:   %Core.import_ref.cd6: @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.Equal.type.2 (%Cpp.long.as.EqWith.impl.Equal.type.814973.1) = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [symbolic = @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.Equal.2 (constants.%Cpp.long.as.EqWith.impl.Equal.4a8971.1)]
+// CHECK:STDOUT:   %Core.import_ref.cd6b: @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.Equal.type.2 (%Cpp.long.as.EqWith.impl.Equal.type.814973.1) = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [symbolic = @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.Equal.2 (constants.%Cpp.long.as.EqWith.impl.Equal.4a8971.1)]
 // CHECK:STDOUT:   %Core.import_ref.40e: @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.NotEqual.type.2 (%Cpp.long.as.EqWith.impl.NotEqual.type.21e369.1) = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [symbolic = @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.NotEqual.2 (constants.%Cpp.long.as.EqWith.impl.NotEqual.385432.1)]
-// CHECK:STDOUT:   %EqWith.impl_witness_table.3b1 = impl_witness_table (%Core.import_ref.cd6, %Core.import_ref.40e), @Cpp.long.as.EqWith.impl.5b1 [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.3b1 = impl_witness_table (%Core.import_ref.cd6b, %Core.import_ref.40e), @Cpp.long.as.EqWith.impl.5b1 [concrete]
 // CHECK:STDOUT:   %Core.Equal.025: @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.Equal.type.1 (%Cpp.long.as.EqWith.impl.Equal.type.814973.2) = import_ref Core//prelude/types/cpp/int, Equal, loaded [symbolic = @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.Equal.1 (constants.%Cpp.long.as.EqWith.impl.Equal.4a8971.2)]
 // CHECK:STDOUT:   %Core.NotEqual.db5: @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.NotEqual.type.1 (%Cpp.long.as.EqWith.impl.NotEqual.type.21e369.2) = import_ref Core//prelude/types/cpp/int, NotEqual, loaded [symbolic = @Cpp.long.as.EqWith.impl.5b1.%Cpp.long.as.EqWith.impl.NotEqual.1 (constants.%Cpp.long.as.EqWith.impl.NotEqual.385432.2)]
 // CHECK:STDOUT:   %Core.import_ref.06c923.2: %i32.as.ImplicitAs.impl.Convert.type = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [concrete = constants.%i32.as.ImplicitAs.impl.Convert]
@@ -2081,7 +2081,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %Cpp.long = wrapper_binding a, %.loc9_21.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.25e = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.25e = value_binding_pattern a [concrete = constants.%a.patt.b93]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a.ref.loc10: %Cpp.long = name_ref a, %a
 // CHECK:STDOUT:   %b.ref.loc10: %i32 = name_ref b, %b
@@ -2347,7 +2347,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %Cpp.long: type = class_type @Long32 [concrete]
 // CHECK:STDOUT:   %pattern_type.25e: type = pattern_type %Cpp.long [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.25e = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.b93: %pattern_type.25e = value_binding_pattern a [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.7eb: type = facet_type <@ImplicitAs, @ImplicitAs(%Cpp.long)> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.820: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.95b [concrete]
 // CHECK:STDOUT:   %ImplicitAs.facet.eac: %ImplicitAs.type.7eb = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.820) [concrete]
@@ -2560,7 +2560,7 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %Cpp.long = wrapper_binding a, %.loc9_21.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.25e = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.25e = value_binding_pattern a [concrete = constants.%a.patt.b93]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %b.ref.loc10: %i32 = name_ref b, %b
 // CHECK:STDOUT:   %a.ref.loc10: %Cpp.long = name_ref a, %a
@@ -3249,8 +3249,8 @@ fn CopyUnsignedLong() {
 // CHECK:STDOUT:   %Core.Op.7fd: @Cpp.long.as.AddAssignWith.impl.%Cpp.long.as.AddAssignWith.impl.Op.type.1 (%Cpp.long.as.AddAssignWith.impl.Op.type.3959e4.2) = import_ref Core//prelude/types/cpp/int, Op, loaded [symbolic = @Cpp.long.as.AddAssignWith.impl.%Cpp.long.as.AddAssignWith.impl.Op.1 (constants.%Cpp.long.as.AddAssignWith.impl.Op.d1bf47.2)]
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Cpp.long.as.Copy.impl.Op.type = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [concrete = constants.%Cpp.long.as.Copy.impl.Op]
 // CHECK:STDOUT:   %Copy.impl_witness_table.6ef = impl_witness_table (%Core.import_ref.9c3), @Cpp.long.as.Copy.impl [concrete]
-// CHECK:STDOUT:   %Core.import_ref.720e: @Cpp.long.as.SubAssignWith.impl.%Cpp.long.as.SubAssignWith.impl.Op.type.2 (%Cpp.long.as.SubAssignWith.impl.Op.type.f4b2d1.1) = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [symbolic = @Cpp.long.as.SubAssignWith.impl.%Cpp.long.as.SubAssignWith.impl.Op.2 (constants.%Cpp.long.as.SubAssignWith.impl.Op.5a5f49.1)]
-// CHECK:STDOUT:   %SubAssignWith.impl_witness_table.4c9 = impl_witness_table (%Core.import_ref.720e), @Cpp.long.as.SubAssignWith.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.720: @Cpp.long.as.SubAssignWith.impl.%Cpp.long.as.SubAssignWith.impl.Op.type.2 (%Cpp.long.as.SubAssignWith.impl.Op.type.f4b2d1.1) = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [symbolic = @Cpp.long.as.SubAssignWith.impl.%Cpp.long.as.SubAssignWith.impl.Op.2 (constants.%Cpp.long.as.SubAssignWith.impl.Op.5a5f49.1)]
+// CHECK:STDOUT:   %SubAssignWith.impl_witness_table.4c9 = impl_witness_table (%Core.import_ref.720), @Cpp.long.as.SubAssignWith.impl [concrete]
 // CHECK:STDOUT:   %Core.Op.3ae: @Cpp.long.as.SubAssignWith.impl.%Cpp.long.as.SubAssignWith.impl.Op.type.1 (%Cpp.long.as.SubAssignWith.impl.Op.type.f4b2d1.2) = import_ref Core//prelude/types/cpp/int, Op, loaded [symbolic = @Cpp.long.as.SubAssignWith.impl.%Cpp.long.as.SubAssignWith.impl.Op.1 (constants.%Cpp.long.as.SubAssignWith.impl.Op.5a5f49.2)]
 // CHECK:STDOUT:   %Core.import_ref.c1e: @Cpp.long.as.MulAssignWith.impl.%Cpp.long.as.MulAssignWith.impl.Op.type.2 (%Cpp.long.as.MulAssignWith.impl.Op.type.b2e99c.1) = import_ref Core//prelude/types/cpp/int, loc{{\d+_\d+}}, loaded [symbolic = @Cpp.long.as.MulAssignWith.impl.%Cpp.long.as.MulAssignWith.impl.Op.2 (constants.%Cpp.long.as.MulAssignWith.impl.Op.ad1d2e.1)]
 // CHECK:STDOUT:   %MulAssignWith.impl_witness_table.510 = impl_witness_table (%Core.import_ref.c1e), @Cpp.long.as.MulAssignWith.impl [concrete]

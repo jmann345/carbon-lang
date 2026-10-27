@@ -343,8 +343,8 @@ fn Element(s: Core.Optional(str)) -> Core.Optional(str) {
 // CHECK:STDOUT:   %Core.import_ref.25e: @T.as_type.as.OptionalStorage.impl.%T.as_type.as.OptionalStorage.impl.Get.type (%T.as_type.as.OptionalStorage.impl.Get.type.a12) = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, loaded [symbolic = @T.as_type.as.OptionalStorage.impl.%T.as_type.as.OptionalStorage.impl.Get (constants.%T.as_type.as.OptionalStorage.impl.Get.d32)]
 // CHECK:STDOUT:   %Core.import_ref.e6b = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %OptionalStorage.impl_witness_table.460 = impl_witness_table (%Core.import_ref.5fb, %Core.import_ref.77c, %Core.import_ref.d06, %Core.import_ref.f08, %Core.import_ref.25e, %Core.import_ref.e6b), @T.as_type.as.OptionalStorage.impl [concrete]
-// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
-// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.cd63: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd63), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT:   %Core.Try: type = import_ref Core//prelude/try, Try, loaded [concrete = constants.%Try.type]
 // CHECK:STDOUT:   %Core.import_ref.0c7 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.f64 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
@@ -361,8 +361,8 @@ fn Element(s: Core.Optional(str)) -> Core.Optional(str) {
 // CHECK:STDOUT:   %Core.Destroy: type = import_ref Core//prelude/destroy, Destroy, loaded [concrete = constants.%Destroy.type]
 // CHECK:STDOUT:   %Core.AddWith: %AddWith.type.2ef = import_ref Core//prelude/operators/arithmetic, AddWith, loaded [concrete = constants.%AddWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.b4fd3a.2 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.8a3a: @Int.as.AddWith.impl.155.%Int.as.AddWith.impl.Op.type.2 (%Int.as.AddWith.impl.Op.type.1eac76.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.AddWith.impl.155.%Int.as.AddWith.impl.Op.2 (constants.%Int.as.AddWith.impl.Op.978dbc.1)]
-// CHECK:STDOUT:   %AddWith.impl_witness_table.b21 = impl_witness_table (%Core.import_ref.b4fd3a.2, %Core.import_ref.8a3a), @Int.as.AddWith.impl.155 [concrete]
+// CHECK:STDOUT:   %Core.import_ref.8a3: @Int.as.AddWith.impl.155.%Int.as.AddWith.impl.Op.type.2 (%Int.as.AddWith.impl.Op.type.1eac76.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.AddWith.impl.155.%Int.as.AddWith.impl.Op.2 (constants.%Int.as.AddWith.impl.Op.978dbc.1)]
+// CHECK:STDOUT:   %AddWith.impl_witness_table.b21 = impl_witness_table (%Core.import_ref.b4fd3a.2, %Core.import_ref.8a3), @Int.as.AddWith.impl.155 [concrete]
 // CHECK:STDOUT:   %Core.Op.410: @Int.as.AddWith.impl.155.%Int.as.AddWith.impl.Op.type.1 (%Int.as.AddWith.impl.Op.type.1eac76.2) = import_ref Core//prelude/types/int, Op, loaded [symbolic = @Int.as.AddWith.impl.155.%Int.as.AddWith.impl.Op.1 (constants.%Int.as.AddWith.impl.Op.978dbc.2)]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
@@ -819,7 +819,7 @@ fn Element(s: Core.Optional(str)) -> Core.Optional(str) {
 // CHECK:STDOUT:   %Try.WithSelf.Branch.type.068: type = fn_type @Try.WithSelf.Branch, @Try.WithSelf(%Try.facet.976) [concrete]
 // CHECK:STDOUT:   %.09f: type = fn_type_with_self_type %Try.WithSelf.Branch.type.068, %Try.facet.976 [concrete]
 // CHECK:STDOUT:   %ControlFlow.729: type = class_type @ControlFlow, @ControlFlow(%ptr.d08, %empty_tuple.type) [concrete]
-// CHECK:STDOUT:   %pattern_type.f66: type = pattern_type %ControlFlow.729 [concrete]
+// CHECK:STDOUT:   %pattern_type.f661: type = pattern_type %ControlFlow.729 [concrete]
 // CHECK:STDOUT:   %Optional.as.Try.impl.Branch.specific_fn: <specific function> = specific_function %Optional.as.Try.impl.Branch.44f, @Optional.as.Try.impl.Branch(%facet_value.fce) [concrete]
 // CHECK:STDOUT:   %tuple.type.581: type = tuple_type (%ptr.d08) [concrete]
 // CHECK:STDOUT:   %.293: type = custom_layout_type {size=8, align=8, .Continue@0: %tuple.type.581, .Break@0: %tuple.type.9fb} [concrete]
@@ -907,8 +907,8 @@ fn Element(s: Core.Optional(str)) -> Core.Optional(str) {
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.8: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.8 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.8: type = fn_type @Destroy.WithSelf.Op.loc6_37.6 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.8: %Destroy.WithSelf.Op.type.ef016f.8 = struct_value () [concrete]
-// CHECK:STDOUT:   %self.param_patt.9db: %pattern_type.f66 = ref_param_pattern [concrete]
-// CHECK:STDOUT:   %self.patt.f02: %pattern_type.f66 = wrapper_binding_pattern self, %self.param_patt.9db [concrete]
+// CHECK:STDOUT:   %self.param_patt.9db: %pattern_type.f661 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.f02: %pattern_type.f661 = wrapper_binding_pattern self, %self.param_patt.9db [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.9: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc6_37.7 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.9: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.9 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.9: type = fn_type @Destroy.WithSelf.Op.loc6_37.7 [concrete]
@@ -946,8 +946,8 @@ fn Element(s: Core.Optional(str)) -> Core.Optional(str) {
 // CHECK:STDOUT:   %Core.import_ref.008: @ptr.as.OptionalStorage.impl.%ptr.as.OptionalStorage.impl.Get.type (%ptr.as.OptionalStorage.impl.Get.type.015) = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, loaded [symbolic = @ptr.as.OptionalStorage.impl.%ptr.as.OptionalStorage.impl.Get (constants.%ptr.as.OptionalStorage.impl.Get.972)]
 // CHECK:STDOUT:   %Core.import_ref.3e3 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %OptionalStorage.impl_witness_table.110 = impl_witness_table (%Core.import_ref.509, %Core.import_ref.105, %Core.import_ref.c9a, %Core.import_ref.575, %Core.import_ref.008, %Core.import_ref.3e3), @ptr.as.OptionalStorage.impl [concrete]
-// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
-// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.cd63: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd63), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT:   %Core.Try: type = import_ref Core//prelude/try, Try, loaded [concrete = constants.%Try.type]
 // CHECK:STDOUT:   %Core.import_ref.0c7 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.f64 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
@@ -1064,15 +1064,15 @@ fn Element(s: Core.Optional(str)) -> Core.Optional(str) {
 // CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.735 = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.9: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.9 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc6_37.7 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.9] {
-// CHECK:STDOUT:     %self.param_patt: %pattern_type.f66 = ref_param_pattern [concrete = constants.%self.param_patt.9db]
-// CHECK:STDOUT:     %self.patt: %pattern_type.f66 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.f02]
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.f661 = ref_param_pattern [concrete = constants.%self.param_patt.9db]
+// CHECK:STDOUT:     %self.patt: %pattern_type.f661 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.f02]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %self.param: ref %ControlFlow.729 = ref_param call_param0
 // CHECK:STDOUT:     %self: ref %ControlFlow.729 = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.9: %Destroy.WithSelf.Op.type.ef016f.9 = fn_decl @Destroy.WithSelf.Op.loc6_37.7 [concrete = constants.%Destroy.WithSelf.Op.403171.9] {
-// CHECK:STDOUT:     %self.param_patt: %pattern_type.f66 = ref_param_pattern [concrete = constants.%self.param_patt.9db]
-// CHECK:STDOUT:     %self.patt: %pattern_type.f66 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.f02]
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.f661 = ref_param_pattern [concrete = constants.%self.param_patt.9db]
+// CHECK:STDOUT:     %self.patt: %pattern_type.f661 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.f02]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %self.param: ref %ControlFlow.729 = ref_param call_param0
 // CHECK:STDOUT:     %self: ref %ControlFlow.729 = wrapper_binding self, %self.param

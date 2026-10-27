@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "common/ostream.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallVector.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/scope_index.h"
@@ -45,8 +46,35 @@ class TypeStructure : public Printable<TypeStructure> {
 
   // Compares the structure of `this` and `other`, and returns whether the
   // structures match according to the specified test.
-  auto CompareStructure(CompareTest test, const TypeStructure& other) const
+  //
+  // Fork (VA-2, D-VA2-8): with `IsEqualToOrMoreSpecificThan` and a non-null
+  // `ranking`, `this` is a query and `other` an impl, and a match also
+  // computes the impl's ranking against the query (see `IsBetterRanking`).
+  auto CompareStructure(CompareTest test, const TypeStructure& other,
+                        llvm::SmallVectorImpl<int>* ranking = nullptr) const
       -> bool;
+
+  // Fork (VA-2, D-VA2-8): whether the impl ranked `lhs` against a query is a
+  // better, more specific, match than the impl ranked `rhs` against the same
+  // query. A ranking lists, in order, a key for each position `p` in the
+  // query's structure that the impl does not match by a concrete element:
+  // `4p + 2` for an element matched by a `?`, `4p + 1` for an element covered
+  // by a pack segment, and `4p + 3` for a pack segment that covers no element
+  // and sits before position `p`. The rule is the overlap rule ("We pick the
+  // type structure with a non-`?` at the first difference as most specific",
+  // docs/design/generics/details.md) taken position by position along the
+  // query, so that impls whose segments cover different runs of the query
+  // are compared where their coverage first differs; at one position, a
+  // segment that covers nothing is the most specific choice after a concrete
+  // element, and a `?`, which matches that element alone, is a more specific
+  // choice than a segment that covers it, which matches any run. Without pack
+  // segments, this orders impls as `operator<` does.
+  static auto IsBetterRanking(llvm::ArrayRef<int> lhs, llvm::ArrayRef<int> rhs)
+      -> bool {
+    return std::lexicographical_compare(
+        lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
+        [](int lhs_index, int rhs_index) { return rhs_index < lhs_index; });
+  }
 
   // Ordering of type structures. A lower value is a better match.
   // TODO: switch to operator<=> once we can depend on
@@ -90,6 +118,9 @@ class TypeStructure : public Printable<TypeStructure> {
         case Structural::ConcreteCloseParen:
           out << ')';
           break;
+        case Structural::SymbolicRun:
+          out << "...";
+          break;
       }
     }
   }
@@ -119,6 +150,15 @@ class TypeStructure : public Printable<TypeStructure> {
     // or `Symbolic`, or everything from a `ConcreteOpenParen` to its paired
     // `ConcreteCloseParen`.
     Symbolic,
+
+    // Fork (VA-2, D-VA2-8): a tuple's pack segment, `... each T`, whose type
+    // parameter the type structure replaces by `?` ("replacing type
+    // parameters by a `?`", generics/details.md) inside the tuple, `(...?)`.
+    // When matching type structures, it matches a run of zero or more
+    // elements of the enclosing tuple: as many as leave the elements after it
+    // to match the tuple's last elements. It ranks below a `Symbolic` at the
+    // same position, which matches exactly one element.
+    SymbolicRun,
   };
 
   // Marks a type of the named kind.
@@ -165,6 +205,26 @@ class TypeStructure : public Printable<TypeStructure> {
       : structure_(std::move(structure)),
         symbolic_type_indices_(std::move(symbolic_type_indices)),
         concrete_types_(std::move(concrete_types)) {}
+
+  // A helper for ConsumeSymbolicRun: counts the elements from `cursor` to the
+  // end of the enclosing tuple (or of the structure).
+  static auto CountElementsInGroup(
+      llvm::SmallVector<Structural>::const_iterator cursor,
+      llvm::SmallVector<Structural>::const_iterator end) -> int;
+
+  // A helper for CompareStructure: consumes the `SymbolicRun` at
+  // `run_cursor` and the run of elements at `elements_cursor` that it
+  // matches. Returns false if too few elements remain.
+  // If `ranking` is not null, the elements are the query's, starting at
+  // `elements_begin`, and the run's coverage is appended to it.
+  static auto ConsumeSymbolicRun(
+      llvm::SmallVector<Structural>::const_iterator& elements_cursor,
+      llvm::SmallVector<Structural>::const_iterator elements_end,
+      llvm::SmallVector<ConcreteType>::const_iterator& elements_concrete_cursor,
+      llvm::SmallVector<Structural>::const_iterator& run_cursor,
+      llvm::SmallVector<Structural>::const_iterator run_end,
+      llvm::SmallVector<Structural>::const_iterator elements_begin = {},
+      llvm::SmallVectorImpl<int>* ranking = nullptr) -> bool;
 
   // A helper for CompareStructure.
   static auto ConsumeRhsSymbolic(

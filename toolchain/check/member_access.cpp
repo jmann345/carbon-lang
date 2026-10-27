@@ -932,6 +932,20 @@ auto PerformTupleAccess(Context& context, SemIR::LocId loc_id,
   auto index_literal =
       context.constant_values().GetInstAs<SemIR::IntValue>(index_const_id);
   auto type_block = context.inst_blocks().Get(tuple_type->type_elements_id);
+  // Fork (VA-2, D-VA2-8): a pack segment whose arity only a specific knows,
+  // such as the one element of `(... each T)`, has no fixed position for the
+  // elements at and after it; indexing them needs the design's "Pack
+  // expansion splitting" and "Tuple indexing" reductions for an integer index
+  // (docs/design/variadics.md, "Reduction rules").
+  const auto* segment = llvm::find_if(type_block, [&](SemIR::InstId id) {
+    return context.insts().Is<SemIR::PackType>(id);
+  });
+  auto segment_index = static_cast<uint64_t>(segment - type_block.begin());
+  if (segment != type_block.end() &&
+      context.ints().Get(index_literal.int_id).uge(segment_index)) {
+    context.TODO(loc_id, "tuple index at or after a pack segment");
+    return SemIR::ErrorInst::InstId;
+  }
   std::optional<llvm::APInt> index_val = ValidateTupleIndex(
       context, loc_id, tuple_inst_id, index_literal, type_block.size());
   if (!index_val) {

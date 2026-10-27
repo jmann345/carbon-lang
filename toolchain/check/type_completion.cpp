@@ -454,7 +454,18 @@ auto TypeCompleter::AddNestedIncompleteTypes(SemIR::Inst type_inst) -> bool {
       break;
     }
     case CARBON_KIND(SemIR::PackType inst): {
-      Push(context_->types().GetTypeIdForTypeInstId(inst.element_type_inst_id));
+      // Fork (VA-2): a pack of different types needs each of its types.
+      if (IsHeterogeneousPackType(*context_, inst)) {
+        if (auto arity = context_->sem_ir().GetZExtIntValue(inst.arity_id)) {
+          for (auto index : llvm::seq(*arity)) {
+            Push(GetPackElementTypeId(*context_, inst, index));
+          }
+        }
+        break;
+      }
+      Push(context_->types().GetTypeIdForTypeInstId(
+          context_->constant_values().GetConstantTypeInstId(
+              SemIR::TypeInstId::UnsafeMake(inst.element_id))));
       break;
     }
     case CARBON_KIND(SemIR::StructType inst): {
@@ -651,6 +662,17 @@ auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
     return MakeEmptyTypeInfo();
   }
 
+  // Fork (VA-2, D-VA2-8): a tuple type with a pack segment, `(... each T)`,
+  // has as many elements as its segment's arity, which only a specific knows,
+  // so its value and initializing representations depend on the specific, as
+  // a symbolic binding's type does. (A segment of known arity and element
+  // types was already replaced by its elements, "Pack expansion splitting".)
+  if (llvm::any_of(elements, [&](SemIR::InstId element_id) {
+        return context_->insts().Is<SemIR::PackType>(element_id);
+      })) {
+    return MakeDependentTypeInfo(type_id);
+  }
+
   // Find the value representation for each element, and construct a tuple
   // of value representations.
   llvm::SmallVector<SemIR::InstId> value_rep_elements;
@@ -715,8 +737,45 @@ auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
 auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
                                      SemIR::PackType pack_type) const
     -> SemIR::CompleteTypeInfo {
-  auto element_type_id =
-      context_->types().GetTypeIdForTypeInstId(pack_type.element_type_inst_id);
+  // Fork (VA-2): a pack of different types holds each element's value
+  // representation, as a tuple value does.
+  if (IsHeterogeneousPackType(*context_, pack_type)) {
+    auto arity = context_->sem_ir().GetZExtIntValue(pack_type.arity_id);
+    bool same_as_object_rep = true;
+    llvm::SmallVector<SemIR::InstId> value_rep_type_ids;
+    SemIR::ObjectLayout layout;
+    if (arity) {
+      layout = SemIR::ObjectLayout::Empty();
+      for (auto index : llvm::seq(*arity)) {
+        auto element_type_id =
+            GetPackElementTypeId(*context_, pack_type, index);
+        auto element_info = GetNestedInfo(element_type_id);
+        same_as_object_rep &= element_info.value_repr.IsCopyOfObjectRepr(
+            context_->sem_ir(), element_type_id);
+        value_rep_type_ids.push_back(
+            context_->types().GetTypeInstId(element_info.value_repr.type_id));
+        layout.TryAppendField(element_info.object_layout);
+      }
+    }
+    auto value_rep_id = type_id;
+    if (arity && !same_as_object_rep) {
+      auto types_id = GetOrAddInst<SemIR::PackValue>(
+          *context_, loc_id_,
+          {.type_id = GetPackType(*context_, SemIR::TypeType::TypeInstId,
+                                  pack_type.arity_id),
+           .elements_id =
+               context_->inst_blocks().AddCanonical(value_rep_type_ids)});
+      value_rep_id = GetPackType(*context_, types_id, pack_type.arity_id);
+    }
+    return {.value_repr = MakePointerValueRepr(
+                value_rep_id, same_as_object_rep
+                                  ? SemIR::ValueRepr::ValueAndObjectAggregate
+                                  : SemIR::ValueRepr::ValueAggregate),
+            .object_layout = layout};
+  }
+  auto element_type_id = context_->types().GetTypeIdForTypeInstId(
+      context_->constant_values().GetConstantTypeInstId(
+          SemIR::TypeInstId::UnsafeMake(pack_type.element_id)));
   auto element_info = GetNestedInfo(element_type_id);
   bool same_as_object_rep = element_info.value_repr.IsCopyOfObjectRepr(
       context_->sem_ir(), element_type_id);

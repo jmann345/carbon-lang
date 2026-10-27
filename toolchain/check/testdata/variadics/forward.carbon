@@ -105,6 +105,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:   %ForEach.type: type = fn_type @ForEach [concrete]
 // CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.241: <witness> = require_complete_type %pack_type.5d5 [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %m.param_patt.e27: %pattern_type.b58 = value_param_pattern [symbolic]
 // CHECK:STDOUT:   %m.patt.223: %pattern_type.b58 = wrapper_binding_pattern m, %m.param_patt.e27 [symbolic]
 // CHECK:STDOUT:   %.1db: %pattern_type.b58 = pack_expansion_pattern %m.patt.223, %arity.patt [symbolic]
@@ -146,6 +147,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %pack_type [symbolic = %require_complete (constants.%require_complete.241)]
+// CHECK:STDOUT:   %.loc11_15.3: Core.IntLiteral = pack_index [symbolic = %.loc11_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc11_3.2: <specific function> = specific_function constants.%ForEach, @ForEach(%arity.loc10_12.1) [symbolic = %ForEach.specific_fn.loc11_3.2 (constants.%ForEach.specific_fn.6ad)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%m.param: @Forward.%pack_type (%pack_type.5d5)) {
@@ -153,7 +155,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:     %ForEach.ref: %ForEach.type = name_ref ForEach, file.%ForEach.decl [concrete = constants.%ForEach]
 // CHECK:STDOUT:     %.loc11_11: @Forward.%pack_type (%pack_type.5d5) = pack_expansion_expr %.loc11_15.2 {
 // CHECK:STDOUT:       %m.ref: @Forward.%pack_type (%pack_type.5d5) = name_ref m, %m
-// CHECK:STDOUT:       %.loc11_15.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc11_15.1: Core.IntLiteral = pack_index [symbolic = %.loc11_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc11_15.2: %i64 = pack_element %m.ref, %.loc11_15.1
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %ForEach.specific_fn.loc11_3.1: <specific function> = specific_function %ForEach.ref, @ForEach(constants.%arity) [symbolic = %ForEach.specific_fn.loc11_3.2 (constants.%ForEach.specific_fn.6ad)]
@@ -183,6 +185,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.46f
+// CHECK:STDOUT:   %.loc11_15.3 => constants.%.4ee
 // CHECK:STDOUT:   %ForEach.specific_fn.loc11_3.2 => constants.%ForEach.specific_fn.f93
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -203,6 +206,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:   %ForEach.type: type = fn_type @ForEach [concrete]
 // CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.241: <witness> = require_complete_type %pack_type [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %m.param_patt: %pattern_type.b58 = value_param_pattern [symbolic]
 // CHECK:STDOUT:   %m.patt: %pattern_type.b58 = wrapper_binding_pattern m, %m.param_patt [symbolic]
 // CHECK:STDOUT:   %.1db: %pattern_type.b58 = pack_expansion_pattern %m.patt, %arity.patt [symbolic]
@@ -236,6 +240,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %pack_type [symbolic = %require_complete (constants.%require_complete.241)]
+// CHECK:STDOUT:   %.loc12_22.3: Core.IntLiteral = pack_index [symbolic = %.loc12_22.3 (constants.%.4ee)]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc12_3.2: <specific function> = specific_function constants.%ForEach, @ForEach(%arity.loc11_19.1) [symbolic = %ForEach.specific_fn.loc12_3.2 (constants.%ForEach.specific_fn)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%m.param: @ForwardDoubled.%pack_type (%pack_type)) {
@@ -244,7 +249,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:     %.loc12_11: @ForwardDoubled.%pack_type (%pack_type) = pack_expansion_expr %.loc12_28.2 {
 // CHECK:STDOUT:       %Double.ref: %Double.type = name_ref Double, file.%Double.decl [concrete = constants.%Double]
 // CHECK:STDOUT:       %m.ref: @ForwardDoubled.%pack_type (%pack_type) = name_ref m, %m
-// CHECK:STDOUT:       %.loc12_22.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc12_22.1: Core.IntLiteral = pack_index [symbolic = %.loc12_22.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc12_22.2: %i64 = pack_element %m.ref, %.loc12_22.1
 // CHECK:STDOUT:       %Double.call: init %i64 = call %Double.ref(%.loc12_22.2)
 // CHECK:STDOUT:       %.loc12_28.1: %i64 = value_of_initializer %Double.call
@@ -287,6 +292,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:   %Outer.type: type = fn_type @Outer [concrete]
 // CHECK:STDOUT:   %Outer: %Outer.type = struct_value () [concrete]
 // CHECK:STDOUT:   %int_0.5c6: Core.IntLiteral = int_value 0 [concrete]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %int_9.988: Core.IntLiteral = int_value 9 [concrete]
 // CHECK:STDOUT:   %Middle.specific_fn: <specific function> = specific_function %Middle, @Middle(%arity) [symbolic]
 // CHECK:STDOUT:   %ImplicitAs.type.221: type = facet_type <@ImplicitAs, @ImplicitAs(%i64)> [concrete]
@@ -338,6 +344,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %pack_type [symbolic = %require_complete (constants.%require_complete.241)]
+// CHECK:STDOUT:   %.loc7_17.3: Core.IntLiteral = pack_index [symbolic = %.loc7_17.3 (constants.%.4ee)]
 // CHECK:STDOUT:   %Middle.specific_fn.loc7_3.2: <specific function> = specific_function constants.%Middle, @Middle(%arity.loc6_10.1) [symbolic = %Middle.specific_fn.loc7_3.2 (constants.%Middle.specific_fn)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%x.param: @Outer.%pack_type (%pack_type)) {
@@ -346,7 +353,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
 // CHECK:STDOUT:     %.loc7_13: @Outer.%pack_type (%pack_type) = pack_expansion_expr %.loc7_17.2 {
 // CHECK:STDOUT:       %x.ref: @Outer.%pack_type (%pack_type) = name_ref x, %x
-// CHECK:STDOUT:       %.loc7_17.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc7_17.1: Core.IntLiteral = pack_index [symbolic = %.loc7_17.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc7_17.2: %i64 = pack_element %x.ref, %.loc7_17.1
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %int_9: Core.IntLiteral = int_value 9 [concrete = constants.%int_9.988]
@@ -400,6 +407,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:   %ForEach.type: type = fn_type @ForEach [concrete]
 // CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.d90: <witness> = require_complete_type %pack_type [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %Forward.type: type = fn_type @Forward [concrete]
 // CHECK:STDOUT:   %Forward: %Forward.type = struct_value () [concrete]
 // CHECK:STDOUT:   %ForEach.specific_fn: <specific function> = specific_function %ForEach, @ForEach(%T, %arity) [symbolic]
@@ -438,6 +446,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %pack_type [symbolic = %require_complete (constants.%require_complete.d90)]
+// CHECK:STDOUT:   %.loc11_15.3: Core.IntLiteral = pack_index [symbolic = %.loc11_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc11_3.2: <specific function> = specific_function constants.%ForEach, @ForEach(%T.loc10_13.1, %arity.loc10_21.1) [symbolic = %ForEach.specific_fn.loc11_3.2 (constants.%ForEach.specific_fn)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%x.param: @Forward.%pack_type (%pack_type)) {
@@ -445,7 +454,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:     %ForEach.ref: %ForEach.type = name_ref ForEach, file.%ForEach.decl [concrete = constants.%ForEach]
 // CHECK:STDOUT:     %.loc11_11: @Forward.%pack_type (%pack_type) = pack_expansion_expr %.loc11_15.2 {
 // CHECK:STDOUT:       %x.ref: @Forward.%pack_type (%pack_type) = name_ref x, %x
-// CHECK:STDOUT:       %.loc11_15.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc11_15.1: Core.IntLiteral = pack_index [symbolic = %.loc11_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc11_15.2: @Forward.%T.loc10_13.1 (%T) = pack_element %x.ref, %.loc11_15.1
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %ForEach.specific_fn.loc11_3.1: <specific function> = specific_function %ForEach.ref, @ForEach(constants.%T, constants.%arity) [symbolic = %ForEach.specific_fn.loc11_3.2 (constants.%ForEach.specific_fn)]
@@ -495,6 +504,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:   %Unwrap.type: type = fn_type @Unwrap [concrete]
 // CHECK:STDOUT:   %Unwrap: %Unwrap.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.139: <witness> = require_complete_type %pack_type.761 [symbolic]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
 // CHECK:STDOUT:   %ForEach.specific_fn: <specific function> = specific_function %ForEach, @ForEach(%arity) [symbolic]
 // CHECK:STDOUT:   %.c3d: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.235, %ImplicitAs.facet [concrete]
 // CHECK:STDOUT: }
@@ -524,6 +534,7 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete.loc14: <witness> = require_complete_type %pack_type.loc14 [symbolic = %require_complete.loc14 (constants.%require_complete.139)]
+// CHECK:STDOUT:   %.loc15_15.3: Core.IntLiteral = pack_index [symbolic = %.loc15_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:   %ForEach.specific_fn.loc15_3.2: <specific function> = specific_function constants.%ForEach, @ForEach(%arity.loc14_11.1) [symbolic = %ForEach.specific_fn.loc15_3.2 (constants.%ForEach.specific_fn)]
 // CHECK:STDOUT:   %pack_type.loc15: type = pack_type constants.%i64, %arity.loc14_11.1 [symbolic = %pack_type.loc15 (constants.%pack_type.5d5)]
 // CHECK:STDOUT:   %require_complete.loc15: <witness> = require_complete_type %pack_type.loc15 [symbolic = %require_complete.loc15 (constants.%require_complete.241)]
@@ -533,12 +544,12 @@ fn Unwrap(... each w: Wrap) {
 // CHECK:STDOUT:     %ForEach.ref: %ForEach.type = name_ref ForEach, file.%ForEach.decl [concrete = constants.%ForEach]
 // CHECK:STDOUT:     %.loc15_11.1: @Unwrap.%pack_type.loc14 (%pack_type.761) = pack_expansion_expr %.loc15_15.2 {
 // CHECK:STDOUT:       %w.ref: @Unwrap.%pack_type.loc14 (%pack_type.761) = name_ref w, %w
-// CHECK:STDOUT:       %.loc15_15.1: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc15_15.1: Core.IntLiteral = pack_index [symbolic = %.loc15_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc15_15.2: %Wrap = pack_element %w.ref, %.loc15_15.1
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %ForEach.specific_fn.loc15_3.1: <specific function> = specific_function %ForEach.ref, @ForEach(constants.%arity) [symbolic = %ForEach.specific_fn.loc15_3.2 (constants.%ForEach.specific_fn)]
 // CHECK:STDOUT:     %.loc15_11.2: @Unwrap.%pack_type.loc15 (%pack_type.5d5) = pack_expansion_expr %.loc15_11.7 {
-// CHECK:STDOUT:       %.loc15_11.4: Core.IntLiteral = pack_index
+// CHECK:STDOUT:       %.loc15_11.4: Core.IntLiteral = pack_index [symbolic = %.loc15_15.3 (constants.%.4ee)]
 // CHECK:STDOUT:       %.loc15_11.5: %Wrap = pack_element %.loc15_11.1, %.loc15_11.4
 // CHECK:STDOUT:       %impl.elem0: %.c3d = impl_witness_access constants.%ImplicitAs.impl_witness.85a, element0 [concrete = constants.%Wrap.as.ImplicitAs.impl.Convert]
 // CHECK:STDOUT:       %bound_method: <bound method> = bound_method %.loc15_11.5, %impl.elem0

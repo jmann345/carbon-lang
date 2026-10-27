@@ -159,9 +159,12 @@ class RebuildGenericConstantInEvalBlockCallbacks : public SubstInstCallbacks {
     bool is_template =
         symbolic.dependence == SemIR::ConstantDependence::Template;
 
+    // Fork (VA-2): the pack index is symbolic without symbolic operands, like
+    // a binding.
     CARBON_CHECK(
-        is_template || (inst.IsOneOf<SemIR::SymbolicBinding,
-                                     SemIR::SymbolicBindingPattern>()),
+        is_template ||
+            (inst.IsOneOf<SemIR::SymbolicBinding, SemIR::SymbolicBindingPattern,
+                          SemIR::PackIndex>()),
         "Instruction {0} has symbolic constant value but no symbolic operands",
         inst);
 
@@ -758,6 +761,9 @@ auto ResolveSpecificDefinition(Context& context, SemIR::LocId loc_id,
     }
     TryEvalBlockForSpecific(context, loc_id, specific_id,
                             SemIR::GenericInstIndex::Definition);
+    // Fork (VA-2): a pack expansion over a heterogeneous pack has types and
+    // callees that differ between iterations.
+    TryEvalPackIterationsForSpecific(context, loc_id, specific_id);
   }
   return true;
 }

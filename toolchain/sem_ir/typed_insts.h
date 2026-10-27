@@ -1639,9 +1639,21 @@ struct OverloadSetValue {
 // "An each-name evaluates to the `$I`th value of the pack it refers to").
 // `pack_id` is a value of a `PackType`, which holds its elements' values, so
 // the element is read without copying it.
+//
+// Fork (VA-2): when `pack_id` is a compile-time pack, such as the pack `T` of
+// `[... each T: I]`, the element is a symbolic constant that depends on the
+// pack index, and is the `$I`th element of the pack once both are known.
+//
+// Fork (VA-2, D-VA2-9): `pack_id` may also be a tuple of one pack segment, a
+// value or a reference, whose element at the pack index this is
+// (docs/design/variadics.md, "Reduction rules": "Tuple indexing"), as a
+// `TupleAccess` is, so it has the tuple's category.
 struct PackElement {
   static constexpr auto Kind = InstKind::PackElement.Define<Parse::NodeId>(
-      {.ir_name = "pack_element", .constant_kind = InstConstantKind::Never});
+      {.ir_name = "pack_element",
+       .expr_category = ComputedExprCategory::SameAsFirstOperand,
+       .is_type = InstIsType::Maybe,
+       .constant_kind = InstConstantKind::SymbolicOnly});
 
   TypeId type_id;
   InstId pack_id;
@@ -1668,6 +1680,24 @@ struct PackExpansionExpr {
   InstId result_id;
 };
 
+// Fork (VA-2, D-VA2-11): the end of one iteration of a statement pack
+// expansion whose body has control flow, such as `... if (each b) { ... }`:
+// the blocks of the body after its first block are reached by its branches,
+// and each exit of the body that does not return from the function ends with
+// this instruction. Control continues with the next iteration, or after the
+// last one with the statement after the expansion (docs/design/variadics.md,
+// "Execution Semantics": a statement expansion is "evaluated by executing
+// _statement_ N times").
+struct PackExpansionNext {
+  static constexpr auto Kind =
+      InstKind::PackExpansionNext.Define<Parse::PackExpansionStatementId>(
+          {.ir_name = "pack_expansion_next",
+           .constant_kind = InstConstantKind::Never,
+           .terminator_kind = TerminatorKind::Terminator});
+
+  // This is a statement, so has no type.
+};
+
 // A pack expansion pattern, `... subpattern`, in a parameter list
 // (docs/design/variadics.md, "Pack expansion patterns"). `arity_pattern_id` is
 // the binding pattern of the pack's arity, a deduced parameter of the
@@ -1689,7 +1719,10 @@ struct PackExpansionPattern {
 
 // A pack expansion statement, `... body` (docs/design/variadics.md,
 // "Execution Semantics"): `body_block_id` is executed once for each element of
-// the packs its each-names name, `arity_id` times.
+// the packs its each-names name, `arity_id` times. Fork (VA-2, D-VA2-11): when
+// the body is an `if` statement, `body_block_id` is the first block of the
+// body's region, whose other blocks its branches reach and whose iterations
+// end at `PackExpansionNext`.
 struct PackExpansionStatement {
   static constexpr auto Kind =
       InstKind::PackExpansionStatement.Define<Parse::PackExpansionStatementId>(
@@ -1700,15 +1733,42 @@ struct PackExpansionStatement {
   AbsoluteInstBlockId body_block_id;
 };
 
+// Fork (VA-2, RR1-1-M1): the compile-time pack `pack_id`, a pack of types or
+// facets such as the pack `T` of `[... each T: I & J]`, converted element by
+// element to the facet type that `type_id` repeats: the pack whose `$I`th
+// element is the `$I`th element of `pack_id` as a facet of that type, as a
+// `FacetValue` is a facet converted to a facet type (docs/design/variadics.md,
+// "Expansion convertibility": "the scalar components of `T` are each
+// convertible to all scalar components of `U`"). Once `pack_id` is a pack
+// value of known arity, this is the pack value of the converted elements; a
+// pack type whose element is this pack is the pack type of `pack_id`, whose
+// elements are the same types.
+struct PackFacetValue {
+  static constexpr auto Kind = InstKind::PackFacetValue.Define<Parse::NodeId>(
+      {.ir_name = "pack_facet_value",
+       .constant_kind = InstConstantKind::SymbolicOnly,
+       .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
+       .is_lowered = false});
+
+  // Always a `PackType` `«F; N»` whose element `F` is a facet type.
+  TypeId type_id;
+  InstId pack_id;
+};
+
 // The pack index `$I` of the innermost enclosing pack expansion: the index of
 // the element that an each-name refers to on the current iteration
 // (docs/design/variadics.md, "Execution Semantics": "Although the value of
 // `$I` can vary during execution, it is nevertheless treated as a
 // constant"). Its type is `Core.IntLiteral`; lowering supplies its value as a
 // constant on each iteration.
+//
+// Fork (VA-2): the pack index is a symbolic constant, so that anything
+// computed from it inside an expansion body, such as the type of an each-name
+// of a heterogeneous pack, is evaluated once per iteration of each specific.
 struct PackIndex {
   static constexpr auto Kind = InstKind::PackIndex.Define<Parse::NodeId>(
-      {.ir_name = "pack_index", .constant_kind = InstConstantKind::Never});
+      {.ir_name = "pack_index",
+       .constant_kind = InstConstantKind::SymbolicOnly});
 
   TypeId type_id;
 };
@@ -1728,20 +1788,44 @@ struct PackLiteral {
   InstBlockId elements_id;
 };
 
+// Fork (VA-2): initializes the elements of a tuple of one pack segment at
+// `dest_id` by running `body_block_id` once per element, whose instructions
+// initialize the element at the pack index (docs/design/variadics.md,
+// "Pack expansion expressions and statements": "`...` in a tuple literal
+// behaves like a series of comma-separated tuple elements").
+struct PackSegmentInit {
+  static constexpr auto Kind = InstKind::PackSegmentInit.Define<Parse::NodeId>(
+      {.ir_name = "pack_segment_init",
+       .expr_category = ExprCategory::ReprInitializing,
+       .constant_kind = InstConstantKind::Never});
+
+  // A `TupleType` whose only element is a `PackType`.
+  TypeId type_id;
+  AbsoluteInstBlockId body_block_id;
+  DestInstId dest_id;
+};
+
 // The type `«E; N»` of a pack expansion segment: `arity_id` repetitions of
-// `element_type_inst_id` (docs/design/variadics.md, "Tuples, packs, segments,
-// and shapes"). A pack is a sequence of values, so a value of a pack type
-// holds the value representations of its elements, as a tuple value does,
-// and binding a pack never copies an element.
+// `element_id` (docs/design/variadics.md, "Tuples, packs, segments, and
+// shapes"). A pack is a sequence of values, so a value of a pack type holds
+// the value representations of its elements, as a tuple value does, and
+// binding a pack never copies an element.
+//
+// Fork (VA-2): `element_id` is either a type, for `«E; N»`, or a compile-time
+// pack of types or facets of arity `arity_id`, for the pack `⟬each T⟭` whose
+// `$I`th element has the `$I`th type of that pack, as the type of
+// `... each x: each T`. Fork (VA-2, RR1-1-M1): an element that is a
+// `PackFacetValue` is replaced by its source pack, whose elements have the
+// same types.
 struct PackType {
   static constexpr auto Kind = InstKind::PackType.Define<Parse::NodeId>(
       {.ir_name = "pack_type",
        .is_type = InstIsType::Always,
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
        .deduce_through = true});
 
   TypeId type_id;
-  TypeInstId element_type_inst_id;
+  InstId element_id;
   InstId arity_id;
 };
 
@@ -1750,9 +1834,13 @@ struct PackType {
 // initializes (docs/design/variadics.md, "Pattern matching": "the Nth
 // iteration of the pack expansion will initialize the Nth element of the
 // named pack from the Nth scrutinee").
+//
+// Fork (VA-2): a pack value whose elements are constants is a constant, such
+// as the value that a specific gives the pack `T` of `[... each T: I]`.
 struct PackValue {
   static constexpr auto Kind = InstKind::PackValue.Define<Parse::NodeId>(
-      {.ir_name = "pack_value", .constant_kind = InstConstantKind::Never});
+      {.ir_name = "pack_value",
+       .constant_kind = InstConstantKind::WheneverPossible});
 
   TypeId type_id;
   InstBlockId elements_id;
@@ -2477,9 +2565,13 @@ struct TupleType {
   static constexpr auto Kind = InstKind::TupleType.Define<Parse::NoneNodeId>(
       {.ir_name = "tuple_type",
        .is_type = InstIsType::Always,
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
        .deduce_through = true});
 
+  // Fork (VA-2): an element may be a pack type, `...«E; N»` or `...⟬each T⟭`,
+  // a segment of the tuple whose elements are the pack's
+  // (docs/design/variadics.md, "Tuples, packs, segments, and shapes"); a
+  // segment of known arity is replaced by its elements when evaluated.
   TypeId type_id;
   InstBlockId type_elements_id;
 };
@@ -2488,9 +2580,11 @@ struct TupleType {
 struct TupleValue {
   static constexpr auto Kind = InstKind::TupleValue.Define<Parse::NodeId>(
       {.ir_name = "tuple_value",
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
        .deduce_through = true});
 
+  // Fork (VA-2): an element may be a pack value of a pack segment, whose
+  // elements are spliced in when the pack is known.
   TypeId type_id;
   InstBlockId elements_id;
 };

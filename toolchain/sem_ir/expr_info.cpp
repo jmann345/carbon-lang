@@ -298,6 +298,9 @@ auto FindStorageArgForInitializer(const File& sem_ir, InstId init_id,
       case CARBON_KIND(TupleInit init): {
         return init.dest_id;
       }
+      case CARBON_KIND(PackSegmentInit init): {
+        return init.dest_id;
+      }
       case CARBON_KIND(InPlaceInit init): {
         return init.dest_id;
       }

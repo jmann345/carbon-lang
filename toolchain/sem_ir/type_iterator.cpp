@@ -119,6 +119,9 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
       return Step::TemplateType();
     }
 
+    // Fork (VA-2): an each-name of a compile-time pack, `each T`, is symbolic
+    // until the pack and the pack index are known, like a tuple access.
+    case PackElement::Kind:
     case TupleAccess::Kind: {
       // Tuple access of a concrete value would have evaluated to the accessed
       // value, so we only see TupleAccess in a type when it's a symbolic value.
@@ -229,6 +232,13 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
       Push(EndType());
       PushInstId(pointer_type.pointee_id);
       return Step::PointerStart();
+    }
+    // Fork (VA-2): a pack type is a tuple's pack segment, `... each T`, which
+    // matches a run of the tuple's elements; it is symbolic, and the type
+    // structure records it as a run (type_structure.cpp).
+    case PackType::Kind: {
+      return Step::SymbolicType{.entity_name_id = EntityNameId::None,
+                                .facet = inst_id};
     }
     case CARBON_KIND(TupleType tuple_type): {
       auto inner_types =

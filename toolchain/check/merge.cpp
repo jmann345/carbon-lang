@@ -340,8 +340,12 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
             prev_param_pattern.As<SemIR::PackExpansionPattern>();
         pattern_stack.push_back({.prev_id = prev_pack_pattern.subpattern_id,
                                  .new_id = new_pack_pattern.subpattern_id});
-        pattern_stack.push_back({.prev_id = prev_pack_pattern.arity_pattern_id,
-                                 .new_id = new_pack_pattern.arity_pattern_id});
+        if (prev_pack_pattern.arity_pattern_id.has_value() &&
+            new_pack_pattern.arity_pattern_id.has_value()) {
+          pattern_stack.push_back(
+              {.prev_id = prev_pack_pattern.arity_pattern_id,
+               .new_id = new_pack_pattern.arity_pattern_id});
+        }
         break;
       }
       case CARBON_KIND(SemIR::DefaultValuePattern new_default_value_pattern): {

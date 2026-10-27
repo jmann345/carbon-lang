@@ -138,6 +138,10 @@ fn Call() -> i64 {
 // CHECK:STDOUT: ; ModuleID = 'sum.carbon'
 // CHECK:STDOUT: source_filename = "sum.carbon"
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.f83.loc16_22.5 = internal constant [3 x i64] [i64 1, i64 2, i64 3]
+// CHECK:STDOUT: @.92b.loc16_36.3 = internal constant [0 x i64] zeroinitializer
+// CHECK:STDOUT: @.33d.loc16_53.5 = internal constant [2 x i64] [i64 4, i64 5]
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.5aacfd7dcc330b17:core.Destroy.Core"(ptr %self) #0 !dbg !39 {
 // CHECK:STDOUT: entry:
@@ -147,32 +151,13 @@ fn Call() -> i64 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i64 @_CCall.Main() #0 !dbg !43 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc16_22.4.pack = alloca [3 x i64], align 8, !dbg !46
-// CHECK:STDOUT:   %.loc16_36.2.pack = alloca [0 x i64], align 8, !dbg !51
-// CHECK:STDOUT:   %.loc16_53.4.pack = alloca [2 x i64], align 8, !dbg !53
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc16_22.4.pack), !dbg !46
-// CHECK:STDOUT:   %.loc16_22.4.pack.elem = getelementptr inbounds [3 x i64], ptr %.loc16_22.4.pack, i64 0, i64 0, !dbg !46
-// CHECK:STDOUT:   store i64 1, ptr %.loc16_22.4.pack.elem, align 8, !dbg !46
-// CHECK:STDOUT:   %.loc16_22.4.pack.elem1 = getelementptr inbounds [3 x i64], ptr %.loc16_22.4.pack, i64 0, i64 1, !dbg !46
-// CHECK:STDOUT:   store i64 2, ptr %.loc16_22.4.pack.elem1, align 8, !dbg !46
-// CHECK:STDOUT:   %.loc16_22.4.pack.elem2 = getelementptr inbounds [3 x i64], ptr %.loc16_22.4.pack, i64 0, i64 2, !dbg !46
-// CHECK:STDOUT:   store i64 3, ptr %.loc16_22.4.pack.elem2, align 8, !dbg !46
-// CHECK:STDOUT:   %Sum.call.loc16_29 = call i64 @_CSum.Main.935b24abbbc86de3(ptr %.loc16_22.4.pack), !dbg !47
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc16_36.2.pack), !dbg !51
-// CHECK:STDOUT:   %Sum.call.loc16_36 = call i64 @_CSum.Main.a950572c82f13f26(ptr %.loc16_36.2.pack), !dbg !51
+// CHECK:STDOUT:   %Sum.call.loc16_29 = call i64 @_CSum.Main.935b24abbbc86de3(ptr @.f83.loc16_22.5), !dbg !47
+// CHECK:STDOUT:   %Sum.call.loc16_36 = call i64 @_CSum.Main.a950572c82f13f26(ptr @.92b.loc16_36.3), !dbg !51
 // CHECK:STDOUT:   %Add.call.loc16_37 = add i64 %Sum.call.loc16_29, %Sum.call.loc16_36, !dbg !52
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc16_53.4.pack), !dbg !53
-// CHECK:STDOUT:   %.loc16_53.4.pack.elem = getelementptr inbounds [2 x i64], ptr %.loc16_53.4.pack, i64 0, i64 0, !dbg !53
-// CHECK:STDOUT:   store i64 4, ptr %.loc16_53.4.pack.elem, align 8, !dbg !53
-// CHECK:STDOUT:   %.loc16_53.4.pack.elem3 = getelementptr inbounds [2 x i64], ptr %.loc16_53.4.pack, i64 0, i64 1, !dbg !53
-// CHECK:STDOUT:   store i64 5, ptr %.loc16_53.4.pack.elem3, align 8, !dbg !53
-// CHECK:STDOUT:   %SumOfDoubles.call = call i64 @_CSumOfDoubles.Main.91a8a89714fbc21c(ptr %.loc16_53.4.pack), !dbg !54
+// CHECK:STDOUT:   %SumOfDoubles.call = call i64 @_CSumOfDoubles.Main.91a8a89714fbc21c(ptr @.33d.loc16_53.5), !dbg !54
 // CHECK:STDOUT:   %Add.call.loc16_58 = add i64 %Add.call.loc16_37, %SumOfDoubles.call, !dbg !55
 // CHECK:STDOUT:   ret i64 %Add.call.loc16_58, !dbg !56
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i64 @_CSum.Main.935b24abbbc86de3(ptr %n) #0 !dbg !57 {
@@ -180,17 +165,17 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %total.var = alloca i64, align 8, !dbg !62
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %total.var), !dbg !62
 // CHECK:STDOUT:   store i64 0, ptr %total.var, align 8, !dbg !62
-// CHECK:STDOUT:   %.loc7_26.2.pack.elem = getelementptr inbounds [3 x i64], ptr %n, i64 0, i64 0, !dbg !67
+// CHECK:STDOUT:   %.loc7_26.2.pack.elem = getelementptr inbounds [3 x i64], ptr %n, i32 0, i32 0, !dbg !67
 // CHECK:STDOUT:   %.loc7_26.2.pack.elem.load = load i64, ptr %.loc7_26.2.pack.elem, align 8, !dbg !67
 // CHECK:STDOUT:   %.loc7_19 = load i64, ptr %total.var, align 8, !dbg !66
 // CHECK:STDOUT:   %Add.call = add i64 %.loc7_19, %.loc7_26.2.pack.elem.load, !dbg !68
 // CHECK:STDOUT:   store i64 %Add.call, ptr %total.var, align 8, !dbg !65
-// CHECK:STDOUT:   %.loc7_26.2.pack.elem1 = getelementptr inbounds [3 x i64], ptr %n, i64 0, i64 1, !dbg !67
+// CHECK:STDOUT:   %.loc7_26.2.pack.elem1 = getelementptr inbounds [3 x i64], ptr %n, i32 0, i32 1, !dbg !67
 // CHECK:STDOUT:   %.loc7_26.2.pack.elem.load2 = load i64, ptr %.loc7_26.2.pack.elem1, align 8, !dbg !67
 // CHECK:STDOUT:   %.loc7_193 = load i64, ptr %total.var, align 8, !dbg !66
 // CHECK:STDOUT:   %Add.call4 = add i64 %.loc7_193, %.loc7_26.2.pack.elem.load2, !dbg !68
 // CHECK:STDOUT:   store i64 %Add.call4, ptr %total.var, align 8, !dbg !65
-// CHECK:STDOUT:   %.loc7_26.2.pack.elem5 = getelementptr inbounds [3 x i64], ptr %n, i64 0, i64 2, !dbg !67
+// CHECK:STDOUT:   %.loc7_26.2.pack.elem5 = getelementptr inbounds [3 x i64], ptr %n, i32 0, i32 2, !dbg !67
 // CHECK:STDOUT:   %.loc7_26.2.pack.elem.load6 = load i64, ptr %.loc7_26.2.pack.elem5, align 8, !dbg !67
 // CHECK:STDOUT:   %.loc7_197 = load i64, ptr %total.var, align 8, !dbg !66
 // CHECK:STDOUT:   %Add.call8 = add i64 %.loc7_197, %.loc7_26.2.pack.elem.load6, !dbg !68
@@ -216,23 +201,26 @@ fn Call() -> i64 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc12_14.pack = alloca [2 x i64], align 8, !dbg !88
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc12_14.pack), !dbg !88
-// CHECK:STDOUT:   %.loc12_22.2.pack.elem = getelementptr inbounds [2 x i64], ptr %m, i64 0, i64 0, !dbg !89
+// CHECK:STDOUT:   %.loc12_22.2.pack.elem = getelementptr inbounds [2 x i64], ptr %m, i32 0, i32 0, !dbg !89
 // CHECK:STDOUT:   %.loc12_22.2.pack.elem.load = load i64, ptr %.loc12_22.2.pack.elem, align 8, !dbg !89
-// CHECK:STDOUT:   %.loc12_30.2.pack.elem = getelementptr inbounds [2 x i64], ptr %m, i64 0, i64 0, !dbg !90
+// CHECK:STDOUT:   %.loc12_30.2.pack.elem = getelementptr inbounds [2 x i64], ptr %m, i32 0, i32 0, !dbg !90
 // CHECK:STDOUT:   %.loc12_30.2.pack.elem.load = load i64, ptr %.loc12_30.2.pack.elem, align 8, !dbg !90
 // CHECK:STDOUT:   %Add.call = add i64 %.loc12_22.2.pack.elem.load, %.loc12_30.2.pack.elem.load, !dbg !91
-// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x i64], ptr %.loc12_14.pack, i64 0, i64 0
+// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x i64], ptr %.loc12_14.pack, i32 0, i32 0
 // CHECK:STDOUT:   store i64 %Add.call, ptr %pack.elem, align 8
-// CHECK:STDOUT:   %.loc12_22.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %m, i64 0, i64 1, !dbg !89
+// CHECK:STDOUT:   %.loc12_22.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %m, i32 0, i32 1, !dbg !89
 // CHECK:STDOUT:   %.loc12_22.2.pack.elem.load2 = load i64, ptr %.loc12_22.2.pack.elem1, align 8, !dbg !89
-// CHECK:STDOUT:   %.loc12_30.2.pack.elem3 = getelementptr inbounds [2 x i64], ptr %m, i64 0, i64 1, !dbg !90
+// CHECK:STDOUT:   %.loc12_30.2.pack.elem3 = getelementptr inbounds [2 x i64], ptr %m, i32 0, i32 1, !dbg !90
 // CHECK:STDOUT:   %.loc12_30.2.pack.elem.load4 = load i64, ptr %.loc12_30.2.pack.elem3, align 8, !dbg !90
 // CHECK:STDOUT:   %Add.call5 = add i64 %.loc12_22.2.pack.elem.load2, %.loc12_30.2.pack.elem.load4, !dbg !91
-// CHECK:STDOUT:   %pack.elem6 = getelementptr inbounds [2 x i64], ptr %.loc12_14.pack, i64 0, i64 1
+// CHECK:STDOUT:   %pack.elem6 = getelementptr inbounds [2 x i64], ptr %.loc12_14.pack, i32 0, i32 1
 // CHECK:STDOUT:   store i64 %Add.call5, ptr %pack.elem6, align 8
 // CHECK:STDOUT:   %Sum.call = call i64 @_CSum.Main.91a8a89714fbc21c(ptr %.loc12_14.pack), !dbg !92
 // CHECK:STDOUT:   ret i64 %Sum.call, !dbg !93
 // CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i64 @_CSum.Main.91a8a89714fbc21c(ptr %n) #0 !dbg !95 {
@@ -240,12 +228,12 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %total.var = alloca i64, align 8, !dbg !100
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %total.var), !dbg !100
 // CHECK:STDOUT:   store i64 0, ptr %total.var, align 8, !dbg !100
-// CHECK:STDOUT:   %.loc7_26.2.pack.elem = getelementptr inbounds [2 x i64], ptr %n, i64 0, i64 0, !dbg !105
+// CHECK:STDOUT:   %.loc7_26.2.pack.elem = getelementptr inbounds [2 x i64], ptr %n, i32 0, i32 0, !dbg !105
 // CHECK:STDOUT:   %.loc7_26.2.pack.elem.load = load i64, ptr %.loc7_26.2.pack.elem, align 8, !dbg !105
 // CHECK:STDOUT:   %.loc7_19 = load i64, ptr %total.var, align 8, !dbg !104
 // CHECK:STDOUT:   %Add.call = add i64 %.loc7_19, %.loc7_26.2.pack.elem.load, !dbg !106
 // CHECK:STDOUT:   store i64 %Add.call, ptr %total.var, align 8, !dbg !103
-// CHECK:STDOUT:   %.loc7_26.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %n, i64 0, i64 1, !dbg !105
+// CHECK:STDOUT:   %.loc7_26.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %n, i32 0, i32 1, !dbg !105
 // CHECK:STDOUT:   %.loc7_26.2.pack.elem.load2 = load i64, ptr %.loc7_26.2.pack.elem1, align 8, !dbg !105
 // CHECK:STDOUT:   %.loc7_193 = load i64, ptr %total.var, align 8, !dbg !104
 // CHECK:STDOUT:   %Add.call4 = add i64 %.loc7_193, %.loc7_26.2.pack.elem.load2, !dbg !106
@@ -256,7 +244,7 @@ fn Call() -> i64 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
-// CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 0, 1, 2, 3, 6, 5, 4 }
+// CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 0, 3, 2, 1 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
@@ -278,14 +266,12 @@ fn Call() -> i64 {
 // CHECK:STDOUT: !41 = !DILocation(line: 6, column: 3, scope: !39)
 // CHECK:STDOUT: !42 = !{!40}
 // CHECK:STDOUT: !43 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !32, line: 15, type: !38, spFlags: DISPFlagDefinition, unit: !33)
-// CHECK:STDOUT: !46 = !DILocation(line: 16, column: 22, scope: !43)
 // CHECK:STDOUT: !47 = !DILocation(line: 16, column: 18, scope: !43)
 // CHECK:STDOUT: !48 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !49 = !{!34, !48}
 // CHECK:STDOUT: !50 = !DISubroutineType(types: !49)
 // CHECK:STDOUT: !51 = !DILocation(line: 16, column: 32, scope: !43)
 // CHECK:STDOUT: !52 = !DILocation(line: 16, column: 14, scope: !43)
-// CHECK:STDOUT: !53 = !DILocation(line: 16, column: 53, scope: !43)
 // CHECK:STDOUT: !54 = !DILocation(line: 16, column: 40, scope: !43)
 // CHECK:STDOUT: !55 = !DILocation(line: 16, column: 10, scope: !43)
 // CHECK:STDOUT: !56 = !DILocation(line: 16, column: 3, scope: !43)
@@ -329,35 +315,25 @@ fn Call() -> i64 {
 // CHECK:STDOUT: ; ModuleID = 'generic_element.carbon'
 // CHECK:STDOUT: source_filename = "generic_element.carbon"
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.7dd.loc10_11.3 = internal constant [2 x i1] [i1 true, i1 false]
+// CHECK:STDOUT: @.3b6.loc11_13.5 = internal constant [1 x i32] [i32 1]
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @main() #0 !dbg !115 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc10_11.2.pack = alloca [2 x i1], align 1, !dbg !116
-// CHECK:STDOUT:   %.loc11_13.4.pack = alloca [1 x i32], align 4, !dbg !120
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc10_11.2.pack), !dbg !116
-// CHECK:STDOUT:   %.loc10_11.2.pack.elem = getelementptr inbounds [2 x i1], ptr %.loc10_11.2.pack, i64 0, i64 0, !dbg !116
-// CHECK:STDOUT:   store i8 1, ptr %.loc10_11.2.pack.elem, align 1, !dbg !116
-// CHECK:STDOUT:   %.loc10_11.2.pack.elem1 = getelementptr inbounds [2 x i1], ptr %.loc10_11.2.pack, i64 0, i64 1, !dbg !116
-// CHECK:STDOUT:   store i8 0, ptr %.loc10_11.2.pack.elem1, align 1, !dbg !116
-// CHECK:STDOUT:   call void @_CForEach.Main.97c5540954fa3159(ptr %.loc10_11.2.pack), !dbg !117
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc11_13.4.pack), !dbg !120
-// CHECK:STDOUT:   %.loc11_13.4.pack.elem = getelementptr inbounds [1 x i32], ptr %.loc11_13.4.pack, i64 0, i64 0, !dbg !120
-// CHECK:STDOUT:   store i32 1, ptr %.loc11_13.4.pack.elem, align 4, !dbg !120
-// CHECK:STDOUT:   call void @_CForEach.Main.4f4322a22d1a1454(ptr %.loc11_13.4.pack), !dbg !121
+// CHECK:STDOUT:   call void @_CForEach.Main.97c5540954fa3159(ptr @.7dd.loc10_11.3), !dbg !117
+// CHECK:STDOUT:   call void @_CForEach.Main.4f4322a22d1a1454(ptr @.3b6.loc11_13.5), !dbg !121
 // CHECK:STDOUT:   ret i32 0, !dbg !122
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @_CForEach.Main.97c5540954fa3159(ptr %x) #0 !dbg !123 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc6_15.2.pack.elem = getelementptr inbounds [2 x i1], ptr %x, i64 0, i64 0, !dbg !127
+// CHECK:STDOUT:   %.loc6_15.2.pack.elem = getelementptr inbounds [2 x i1], ptr %x, i32 0, i32 0, !dbg !127
 // CHECK:STDOUT:   %.loc6_15.2.pack.elem.load = load i8, ptr %.loc6_15.2.pack.elem, align 1, !dbg !127
 // CHECK:STDOUT:   %.loc6_15.2 = trunc i8 %.loc6_15.2.pack.elem.load to i1, !dbg !127
 // CHECK:STDOUT:   call void @_CConsume.Main.a4c7fafe8a72cac4(i1 %.loc6_15.2), !dbg !128
-// CHECK:STDOUT:   %.loc6_15.2.pack.elem1 = getelementptr inbounds [2 x i1], ptr %x, i64 0, i64 1, !dbg !127
+// CHECK:STDOUT:   %.loc6_15.2.pack.elem1 = getelementptr inbounds [2 x i1], ptr %x, i32 0, i32 1, !dbg !127
 // CHECK:STDOUT:   %.loc6_15.2.pack.elem.load2 = load i8, ptr %.loc6_15.2.pack.elem1, align 1, !dbg !127
 // CHECK:STDOUT:   %.loc6_15.23 = trunc i8 %.loc6_15.2.pack.elem.load2 to i1, !dbg !127
 // CHECK:STDOUT:   call void @_CConsume.Main.a4c7fafe8a72cac4(i1 %.loc6_15.23), !dbg !128
@@ -367,7 +343,7 @@ fn Call() -> i64 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @_CForEach.Main.4f4322a22d1a1454(ptr %x) #0 !dbg !131 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc6_15.2.pack.elem = getelementptr inbounds [1 x i32], ptr %x, i64 0, i64 0, !dbg !135
+// CHECK:STDOUT:   %.loc6_15.2.pack.elem = getelementptr inbounds [1 x i32], ptr %x, i32 0, i32 0, !dbg !135
 // CHECK:STDOUT:   %.loc6_15.2.pack.elem.load = load i32, ptr %.loc6_15.2.pack.elem, align 4, !dbg !135
 // CHECK:STDOUT:   call void @_CConsume.Main.84588f41d61dafba(i32 %.loc6_15.2.pack.elem.load), !dbg !136
 // CHECK:STDOUT:   ret void, !dbg !139
@@ -386,11 +362,9 @@ fn Call() -> i64 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
-// CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @_CConsume.Main.a4c7fafe8a72cac4, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!111}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
@@ -404,11 +378,9 @@ fn Call() -> i64 {
 // CHECK:STDOUT: !113 = !{!112}
 // CHECK:STDOUT: !114 = !DISubroutineType(types: !113)
 // CHECK:STDOUT: !115 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !110, line: 9, type: !114, spFlags: DISPFlagDefinition, unit: !111)
-// CHECK:STDOUT: !116 = !DILocation(line: 10, column: 11, scope: !115)
 // CHECK:STDOUT: !117 = !DILocation(line: 10, column: 3, scope: !115)
 // CHECK:STDOUT: !118 = !{null, !48}
 // CHECK:STDOUT: !119 = !DISubroutineType(types: !118)
-// CHECK:STDOUT: !120 = !DILocation(line: 11, column: 11, scope: !115)
 // CHECK:STDOUT: !121 = !DILocation(line: 11, column: 3, scope: !115)
 // CHECK:STDOUT: !122 = !DILocation(line: 9, column: 1, scope: !115)
 // CHECK:STDOUT: !123 = distinct !DISubprogram(name: "ForEach", linkageName: "_CForEach.Main.97c5540954fa3159", scope: null, file: !110, line: 5, type: !119, spFlags: DISPFlagDefinition, unit: !111, retainedNodes: !130)
@@ -457,9 +429,9 @@ fn Call() -> i64 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc20_20.2.pack = alloca [2 x ptr], align 8, !dbg !174
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc20_20.2.pack), !dbg !174
-// CHECK:STDOUT:   %.loc20_20.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc20_20.2.pack, i64 0, i64 0, !dbg !174
+// CHECK:STDOUT:   %.loc20_20.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc20_20.2.pack, i32 0, i32 0, !dbg !174
 // CHECK:STDOUT:   store ptr %c, ptr %.loc20_20.2.pack.elem, align 8, !dbg !174
-// CHECK:STDOUT:   %.loc20_20.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %.loc20_20.2.pack, i64 0, i64 1, !dbg !174
+// CHECK:STDOUT:   %.loc20_20.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %.loc20_20.2.pack, i32 0, i32 1, !dbg !174
 // CHECK:STDOUT:   store ptr %d, ptr %.loc20_20.2.pack.elem1, align 8, !dbg !174
 // CHECK:STDOUT:   %SumFields.call = call i64 @_CSumFields.Main.91a8a89714fbc21c(ptr %.loc20_20.2.pack), !dbg !176
 // CHECK:STDOUT:   ret i64 %SumFields.call, !dbg !177
@@ -474,13 +446,13 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %total.var = alloca i64, align 8, !dbg !184
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %total.var), !dbg !184
 // CHECK:STDOUT:   store i64 0, ptr %total.var, align 8, !dbg !184
-// CHECK:STDOUT:   %.loc15_30.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %c, i64 0, i64 0, !dbg !189
+// CHECK:STDOUT:   %.loc15_30.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %c, i32 0, i32 0, !dbg !189
 // CHECK:STDOUT:   %.loc15_30.2.pack.elem.load = load ptr, ptr %.loc15_30.2.pack.elem, align 8, !dbg !189
 // CHECK:STDOUT:   %Get.call = call i64 @_CGet.Main(ptr %.loc15_30.2.pack.elem.load), !dbg !190
 // CHECK:STDOUT:   %.loc15_19 = load i64, ptr %total.var, align 8, !dbg !188
 // CHECK:STDOUT:   %Add.call = add i64 %.loc15_19, %Get.call, !dbg !191
 // CHECK:STDOUT:   store i64 %Add.call, ptr %total.var, align 8, !dbg !187
-// CHECK:STDOUT:   %.loc15_30.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %c, i64 0, i64 1, !dbg !189
+// CHECK:STDOUT:   %.loc15_30.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %c, i32 0, i32 1, !dbg !189
 // CHECK:STDOUT:   %.loc15_30.2.pack.elem.load2 = load ptr, ptr %.loc15_30.2.pack.elem1, align 8, !dbg !189
 // CHECK:STDOUT:   %Get.call3 = call i64 @_CGet.Main(ptr %.loc15_30.2.pack.elem.load2), !dbg !190
 // CHECK:STDOUT:   %.loc15_194 = load i64, ptr %total.var, align 8, !dbg !188
@@ -541,23 +513,16 @@ fn Call() -> i64 {
 // CHECK:STDOUT: ; ModuleID = 'arg_order.carbon'
 // CHECK:STDOUT: source_filename = "arg_order.carbon"
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.a00.loc14_16.5 = internal constant [2 x i64] [i64 2, i64 3]
+// CHECK:STDOUT:
 // CHECK:STDOUT: declare i64 @_CP.Main(i64)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i64 @_CCall.Main() #0 !dbg !199 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc14_16.4.pack = alloca [2 x i64], align 8, !dbg !202
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc14_16.4.pack), !dbg !202
-// CHECK:STDOUT:   %.loc14_16.4.pack.elem = getelementptr inbounds [2 x i64], ptr %.loc14_16.4.pack, i64 0, i64 0, !dbg !202
-// CHECK:STDOUT:   store i64 2, ptr %.loc14_16.4.pack.elem, align 8, !dbg !202
-// CHECK:STDOUT:   %.loc14_16.4.pack.elem1 = getelementptr inbounds [2 x i64], ptr %.loc14_16.4.pack, i64 0, i64 1, !dbg !202
-// CHECK:STDOUT:   store i64 3, ptr %.loc14_16.4.pack.elem1, align 8, !dbg !202
-// CHECK:STDOUT:   %Plain.call = call i64 @_CPlain.Main.91a8a89714fbc21c(ptr %.loc14_16.4.pack), !dbg !203
+// CHECK:STDOUT:   %Plain.call = call i64 @_CPlain.Main.91a8a89714fbc21c(ptr @.a00.loc14_16.5), !dbg !203
 // CHECK:STDOUT:   ret i64 %Plain.call, !dbg !204
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i64 @_CPlain.Main.91a8a89714fbc21c(ptr %x) #0 !dbg !205 {
@@ -565,20 +530,23 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %.loc10_23.pack = alloca [2 x i64], align 8, !dbg !211
 // CHECK:STDOUT:   %P.call.loc10_20 = call i64 @_CP.Main(i64 1), !dbg !210
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc10_23.pack), !dbg !211
-// CHECK:STDOUT:   %.loc10_29.2.pack.elem = getelementptr inbounds [2 x i64], ptr %x, i64 0, i64 0, !dbg !212
+// CHECK:STDOUT:   %.loc10_29.2.pack.elem = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 0, !dbg !212
 // CHECK:STDOUT:   %.loc10_29.2.pack.elem.load = load i64, ptr %.loc10_29.2.pack.elem, align 8, !dbg !212
 // CHECK:STDOUT:   %P.call.loc10_35 = call i64 @_CP.Main(i64 %.loc10_29.2.pack.elem.load), !dbg !213
-// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x i64], ptr %.loc10_23.pack, i64 0, i64 0
+// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x i64], ptr %.loc10_23.pack, i32 0, i32 0
 // CHECK:STDOUT:   store i64 %P.call.loc10_35, ptr %pack.elem, align 8
-// CHECK:STDOUT:   %.loc10_29.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %x, i64 0, i64 1, !dbg !212
+// CHECK:STDOUT:   %.loc10_29.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 1, !dbg !212
 // CHECK:STDOUT:   %.loc10_29.2.pack.elem.load2 = load i64, ptr %.loc10_29.2.pack.elem1, align 8, !dbg !212
 // CHECK:STDOUT:   %P.call.loc10_353 = call i64 @_CP.Main(i64 %.loc10_29.2.pack.elem.load2), !dbg !213
-// CHECK:STDOUT:   %pack.elem4 = getelementptr inbounds [2 x i64], ptr %.loc10_23.pack, i64 0, i64 1
+// CHECK:STDOUT:   %pack.elem4 = getelementptr inbounds [2 x i64], ptr %.loc10_23.pack, i32 0, i32 1
 // CHECK:STDOUT:   store i64 %P.call.loc10_353, ptr %pack.elem4, align 8
 // CHECK:STDOUT:   %P.call.loc10_41 = call i64 @_CP.Main(i64 9), !dbg !214
 // CHECK:STDOUT:   %Digits.call = call i64 @_CDigits.Main.91a8a89714fbc21c(i64 %P.call.loc10_20, ptr %.loc10_23.pack, i64 %P.call.loc10_41), !dbg !215
 // CHECK:STDOUT:   ret i64 %Digits.call, !dbg !218
 // CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i64 @_CDigits.Main.91a8a89714fbc21c(i64 %first, ptr %mid, i64 %last) #0 !dbg !220 {
@@ -603,7 +571,6 @@ fn Call() -> i64 {
 // CHECK:STDOUT: !195 = !DIFile(filename: "arg_order.carbon", directory: "")
 // CHECK:STDOUT: !196 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !195, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
 // CHECK:STDOUT: !199 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !195, line: 13, type: !38, spFlags: DISPFlagDefinition, unit: !196)
-// CHECK:STDOUT: !202 = !DILocation(line: 14, column: 16, scope: !199)
 // CHECK:STDOUT: !203 = !DILocation(line: 14, column: 10, scope: !199)
 // CHECK:STDOUT: !204 = !DILocation(line: 14, column: 3, scope: !199)
 // CHECK:STDOUT: !205 = distinct !DISubprogram(name: "Plain", linkageName: "_CPlain.Main.91a8a89714fbc21c", scope: null, file: !195, line: 9, type: !50, spFlags: DISPFlagDefinition, unit: !196, retainedNodes: !219)
@@ -648,9 +615,9 @@ fn Call() -> i64 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc28_18.2.pack = alloca [2 x ptr], align 8, !dbg !253
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc28_18.2.pack), !dbg !253
-// CHECK:STDOUT:   %.loc28_18.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc28_18.2.pack, i64 0, i64 0, !dbg !253
+// CHECK:STDOUT:   %.loc28_18.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc28_18.2.pack, i32 0, i32 0, !dbg !253
 // CHECK:STDOUT:   store ptr %h, ptr %.loc28_18.2.pack.elem, align 8, !dbg !253
-// CHECK:STDOUT:   %.loc28_18.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %.loc28_18.2.pack, i64 0, i64 1, !dbg !253
+// CHECK:STDOUT:   %.loc28_18.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %.loc28_18.2.pack, i32 0, i32 1, !dbg !253
 // CHECK:STDOUT:   store ptr %k, ptr %.loc28_18.2.pack.elem1, align 8, !dbg !253
 // CHECK:STDOUT:   %SumHeld.call = call i64 @_CSumHeld.Main.91a8a89714fbc21c(ptr %.loc28_18.2.pack), !dbg !255
 // CHECK:STDOUT:   ret i64 %SumHeld.call, !dbg !256
@@ -665,26 +632,26 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %.loc24_14.1.pack = alloca [2 x ptr], align 8, !dbg !263
 // CHECK:STDOUT:   %.loc24_14.2.pack = alloca [2 x i64], align 8, !dbg !263
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc24_14.1.pack), !dbg !263
-// CHECK:STDOUT:   %.loc24_18.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %h, i64 0, i64 0, !dbg !264
+// CHECK:STDOUT:   %.loc24_18.2.pack.elem = getelementptr inbounds [2 x ptr], ptr %h, i32 0, i32 0, !dbg !264
 // CHECK:STDOUT:   %.loc24_18.2.pack.elem.load = load ptr, ptr %.loc24_18.2.pack.elem, align 8, !dbg !264
 // CHECK:STDOUT:   %.loc24_24.1.w = getelementptr inbounds nuw { { i64 } }, ptr %.loc24_18.2.pack.elem.load, i32 0, i32 0, !dbg !264
-// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i64 0, i64 0
+// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i32 0, i32 0
 // CHECK:STDOUT:   store ptr %.loc24_24.1.w, ptr %pack.elem, align 8
-// CHECK:STDOUT:   %.loc24_18.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %h, i64 0, i64 1, !dbg !264
+// CHECK:STDOUT:   %.loc24_18.2.pack.elem1 = getelementptr inbounds [2 x ptr], ptr %h, i32 0, i32 1, !dbg !264
 // CHECK:STDOUT:   %.loc24_18.2.pack.elem.load2 = load ptr, ptr %.loc24_18.2.pack.elem1, align 8, !dbg !264
 // CHECK:STDOUT:   %.loc24_24.1.w3 = getelementptr inbounds nuw { { i64 } }, ptr %.loc24_18.2.pack.elem.load2, i32 0, i32 0, !dbg !264
-// CHECK:STDOUT:   %pack.elem4 = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i64 0, i64 1
+// CHECK:STDOUT:   %pack.elem4 = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i32 0, i32 1
 // CHECK:STDOUT:   store ptr %.loc24_24.1.w3, ptr %pack.elem4, align 8
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc24_14.2.pack), !dbg !263
-// CHECK:STDOUT:   %.loc24_14.5.pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i64 0, i64 0, !dbg !263
+// CHECK:STDOUT:   %.loc24_14.5.pack.elem = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i32 0, i32 0, !dbg !263
 // CHECK:STDOUT:   %.loc24_14.5.pack.elem.load = load ptr, ptr %.loc24_14.5.pack.elem, align 8, !dbg !263
 // CHECK:STDOUT:   %Wrap.as.ImplicitAs.impl.Convert.call = call i64 @"_CConvert.Wrap.Main:ImplicitAs.f249b435619a5146.Core"(ptr %.loc24_14.5.pack.elem.load), !dbg !263
-// CHECK:STDOUT:   %pack.elem5 = getelementptr inbounds [2 x i64], ptr %.loc24_14.2.pack, i64 0, i64 0
+// CHECK:STDOUT:   %pack.elem5 = getelementptr inbounds [2 x i64], ptr %.loc24_14.2.pack, i32 0, i32 0
 // CHECK:STDOUT:   store i64 %Wrap.as.ImplicitAs.impl.Convert.call, ptr %pack.elem5, align 8
-// CHECK:STDOUT:   %.loc24_14.5.pack.elem6 = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i64 0, i64 1, !dbg !263
+// CHECK:STDOUT:   %.loc24_14.5.pack.elem6 = getelementptr inbounds [2 x ptr], ptr %.loc24_14.1.pack, i32 0, i32 1, !dbg !263
 // CHECK:STDOUT:   %.loc24_14.5.pack.elem.load7 = load ptr, ptr %.loc24_14.5.pack.elem6, align 8, !dbg !263
 // CHECK:STDOUT:   %Wrap.as.ImplicitAs.impl.Convert.call8 = call i64 @"_CConvert.Wrap.Main:ImplicitAs.f249b435619a5146.Core"(ptr %.loc24_14.5.pack.elem.load7), !dbg !263
-// CHECK:STDOUT:   %pack.elem9 = getelementptr inbounds [2 x i64], ptr %.loc24_14.2.pack, i64 0, i64 1
+// CHECK:STDOUT:   %pack.elem9 = getelementptr inbounds [2 x i64], ptr %.loc24_14.2.pack, i32 0, i32 1
 // CHECK:STDOUT:   store i64 %Wrap.as.ImplicitAs.impl.Convert.call8, ptr %pack.elem9, align 8
 // CHECK:STDOUT:   %Sum.call = call i64 @_CSum.Main.91a8a89714fbc21c(ptr %.loc24_14.2.pack), !dbg !265
 // CHECK:STDOUT:   ret i64 %Sum.call, !dbg !266
@@ -696,12 +663,12 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %total.var = alloca i64, align 8, !dbg !273
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %total.var), !dbg !273
 // CHECK:STDOUT:   store i64 0, ptr %total.var, align 8, !dbg !273
-// CHECK:STDOUT:   %.loc19_26.2.pack.elem = getelementptr inbounds [2 x i64], ptr %n, i64 0, i64 0, !dbg !278
+// CHECK:STDOUT:   %.loc19_26.2.pack.elem = getelementptr inbounds [2 x i64], ptr %n, i32 0, i32 0, !dbg !278
 // CHECK:STDOUT:   %.loc19_26.2.pack.elem.load = load i64, ptr %.loc19_26.2.pack.elem, align 8, !dbg !278
 // CHECK:STDOUT:   %.loc19_19 = load i64, ptr %total.var, align 8, !dbg !277
 // CHECK:STDOUT:   %Add.call = add i64 %.loc19_19, %.loc19_26.2.pack.elem.load, !dbg !279
 // CHECK:STDOUT:   store i64 %Add.call, ptr %total.var, align 8, !dbg !276
-// CHECK:STDOUT:   %.loc19_26.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %n, i64 0, i64 1, !dbg !278
+// CHECK:STDOUT:   %.loc19_26.2.pack.elem1 = getelementptr inbounds [2 x i64], ptr %n, i32 0, i32 1, !dbg !278
 // CHECK:STDOUT:   %.loc19_26.2.pack.elem.load2 = load i64, ptr %.loc19_26.2.pack.elem1, align 8, !dbg !278
 // CHECK:STDOUT:   %.loc19_193 = load i64, ptr %total.var, align 8, !dbg !277
 // CHECK:STDOUT:   %Add.call4 = add i64 %.loc19_193, %.loc19_26.2.pack.elem.load2, !dbg !279
@@ -794,43 +761,29 @@ fn Call() -> i64 {
 // CHECK:STDOUT: ; ModuleID = 'use.carbon'
 // CHECK:STDOUT: source_filename = "use.carbon"
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.041.loc6_18.5 = internal constant [2 x i64] [i64 1, i64 2]
+// CHECK:STDOUT: @.43e.loc6_29.5 = internal constant [3 x i64] [i64 3, i64 4, i64 5]
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i64 @_CCall.Main() #0 !dbg !291 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc6_18.4.pack = alloca [2 x i64], align 8, !dbg !294
-// CHECK:STDOUT:   %.loc6_29.4.pack = alloca [3 x i64], align 8, !dbg !296
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc6_18.4.pack), !dbg !294
-// CHECK:STDOUT:   %.loc6_18.4.pack.elem = getelementptr inbounds [2 x i64], ptr %.loc6_18.4.pack, i64 0, i64 0, !dbg !294
-// CHECK:STDOUT:   store i64 1, ptr %.loc6_18.4.pack.elem, align 8, !dbg !294
-// CHECK:STDOUT:   %.loc6_18.4.pack.elem1 = getelementptr inbounds [2 x i64], ptr %.loc6_18.4.pack, i64 0, i64 1, !dbg !294
-// CHECK:STDOUT:   store i64 2, ptr %.loc6_18.4.pack.elem1, align 8, !dbg !294
-// CHECK:STDOUT:   %Sum.call.loc6_22 = call i64 @_CSum.Main.91a8a89714fbc21c(ptr %.loc6_18.4.pack), !dbg !295
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc6_29.4.pack), !dbg !296
-// CHECK:STDOUT:   %.loc6_29.4.pack.elem = getelementptr inbounds [3 x i64], ptr %.loc6_29.4.pack, i64 0, i64 0, !dbg !296
-// CHECK:STDOUT:   store i64 3, ptr %.loc6_29.4.pack.elem, align 8, !dbg !296
-// CHECK:STDOUT:   %.loc6_29.4.pack.elem2 = getelementptr inbounds [3 x i64], ptr %.loc6_29.4.pack, i64 0, i64 1, !dbg !296
-// CHECK:STDOUT:   store i64 4, ptr %.loc6_29.4.pack.elem2, align 8, !dbg !296
-// CHECK:STDOUT:   %.loc6_29.4.pack.elem3 = getelementptr inbounds [3 x i64], ptr %.loc6_29.4.pack, i64 0, i64 2, !dbg !296
-// CHECK:STDOUT:   store i64 5, ptr %.loc6_29.4.pack.elem3, align 8, !dbg !296
-// CHECK:STDOUT:   %Sum.call.loc6_36 = call i64 @_CSum.Main.935b24abbbc86de3(ptr %.loc6_29.4.pack), !dbg !297
+// CHECK:STDOUT:   %Sum.call.loc6_22 = call i64 @_CSum.Main.91a8a89714fbc21c(ptr @.041.loc6_18.5), !dbg !295
+// CHECK:STDOUT:   %Sum.call.loc6_36 = call i64 @_CSum.Main.935b24abbbc86de3(ptr @.43e.loc6_29.5), !dbg !297
 // CHECK:STDOUT:   %Add.call = add i64 %Sum.call.loc6_22, %Sum.call.loc6_36, !dbg !298
 // CHECK:STDOUT:   ret i64 %Add.call, !dbg !299
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i64 @_CSum.Main.91a8a89714fbc21c(ptr %n) #0 !dbg !300 {
 // CHECK:STDOUT:   %1 = alloca i64, align 8, !dbg !305
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %1), !dbg !305
 // CHECK:STDOUT:   store i64 0, ptr %1, align 8, !dbg !305
-// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x i64], ptr %n, i64 0, i64 0, !dbg !310
+// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [2 x i64], ptr %n, i32 0, i32 0, !dbg !310
 // CHECK:STDOUT:   %pack.elem.load = load i64, ptr %pack.elem, align 8, !dbg !310
 // CHECK:STDOUT:   %2 = load i64, ptr %1, align 8, !dbg !309
 // CHECK:STDOUT:   %3 = add i64 %2, %pack.elem.load, !dbg !311
 // CHECK:STDOUT:   store i64 %3, ptr %1, align 8, !dbg !308
-// CHECK:STDOUT:   %pack.elem1 = getelementptr inbounds [2 x i64], ptr %n, i64 0, i64 1, !dbg !310
+// CHECK:STDOUT:   %pack.elem1 = getelementptr inbounds [2 x i64], ptr %n, i32 0, i32 1, !dbg !310
 // CHECK:STDOUT:   %pack.elem.load2 = load i64, ptr %pack.elem1, align 8, !dbg !310
 // CHECK:STDOUT:   %4 = load i64, ptr %1, align 8, !dbg !309
 // CHECK:STDOUT:   %5 = add i64 %4, %pack.elem.load2, !dbg !311
@@ -845,17 +798,17 @@ fn Call() -> i64 {
 // CHECK:STDOUT:   %1 = alloca i64, align 8, !dbg !320
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %1), !dbg !320
 // CHECK:STDOUT:   store i64 0, ptr %1, align 8, !dbg !320
-// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [3 x i64], ptr %n, i64 0, i64 0, !dbg !325
+// CHECK:STDOUT:   %pack.elem = getelementptr inbounds [3 x i64], ptr %n, i32 0, i32 0, !dbg !325
 // CHECK:STDOUT:   %pack.elem.load = load i64, ptr %pack.elem, align 8, !dbg !325
 // CHECK:STDOUT:   %2 = load i64, ptr %1, align 8, !dbg !324
 // CHECK:STDOUT:   %3 = add i64 %2, %pack.elem.load, !dbg !326
 // CHECK:STDOUT:   store i64 %3, ptr %1, align 8, !dbg !323
-// CHECK:STDOUT:   %pack.elem1 = getelementptr inbounds [3 x i64], ptr %n, i64 0, i64 1, !dbg !325
+// CHECK:STDOUT:   %pack.elem1 = getelementptr inbounds [3 x i64], ptr %n, i32 0, i32 1, !dbg !325
 // CHECK:STDOUT:   %pack.elem.load2 = load i64, ptr %pack.elem1, align 8, !dbg !325
 // CHECK:STDOUT:   %4 = load i64, ptr %1, align 8, !dbg !324
 // CHECK:STDOUT:   %5 = add i64 %4, %pack.elem.load2, !dbg !326
 // CHECK:STDOUT:   store i64 %5, ptr %1, align 8, !dbg !323
-// CHECK:STDOUT:   %pack.elem3 = getelementptr inbounds [3 x i64], ptr %n, i64 0, i64 2, !dbg !325
+// CHECK:STDOUT:   %pack.elem3 = getelementptr inbounds [3 x i64], ptr %n, i32 0, i32 2, !dbg !325
 // CHECK:STDOUT:   %pack.elem.load4 = load i64, ptr %pack.elem3, align 8, !dbg !325
 // CHECK:STDOUT:   %6 = load i64, ptr %1, align 8, !dbg !324
 // CHECK:STDOUT:   %7 = add i64 %6, %pack.elem.load4, !dbg !326
@@ -867,9 +820,12 @@ fn Call() -> i64 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @"_CSelfDestruct.5aacfd7dcc330b17:core.Destroy.Core"(ptr)
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
-// CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 0, 1, 3, 2 }
 // CHECK:STDOUT: uselistorder ptr @"_CSelfDestruct.5aacfd7dcc330b17:core.Destroy.Core", { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
@@ -889,9 +845,7 @@ fn Call() -> i64 {
 // CHECK:STDOUT: !289 = !DIFile(filename: "use.carbon", directory: "")
 // CHECK:STDOUT: !290 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !289, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
 // CHECK:STDOUT: !291 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !289, line: 5, type: !38, spFlags: DISPFlagDefinition, unit: !290)
-// CHECK:STDOUT: !294 = !DILocation(line: 6, column: 18, scope: !291)
 // CHECK:STDOUT: !295 = !DILocation(line: 6, column: 14, scope: !291)
-// CHECK:STDOUT: !296 = !DILocation(line: 6, column: 29, scope: !291)
 // CHECK:STDOUT: !297 = !DILocation(line: 6, column: 25, scope: !291)
 // CHECK:STDOUT: !298 = !DILocation(line: 6, column: 10, scope: !291)
 // CHECK:STDOUT: !299 = !DILocation(line: 6, column: 3, scope: !291)

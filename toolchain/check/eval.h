@@ -77,6 +77,13 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
                              SemIR::SpecificId specific_id,
                              SemIR::GenericInstIndex::Region region) -> void;
 
+// Fork (VA-2): evaluates the eval block for the definition of a specific once
+// per iteration of its pack expansions, when the definition depends on the
+// pack index and the specific's pack arities are known. Writes the
+// per-iteration values to the specific.
+auto TryEvalPackIterationsForSpecific(Context& context, SemIR::LocId loc_id,
+                                      SemIR::SpecificId specific_id) -> void;
+
 }  // namespace Carbon::Check
 
 #endif  // CARBON_TOOLCHAIN_CHECK_EVAL_H_

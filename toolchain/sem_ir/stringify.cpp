@@ -876,8 +876,53 @@ class Stringifier {
   }
 
   auto StringifyInst(InstId /*inst_id*/, PackType inst) -> void {
+    // Fork (VA-2, D-VA2-3): a pack of different types prints as the pack
+    // literal of its types, `⟬A, B⟭`, or as `⟬each T⟭` while its pack of
+    // types `T` is symbolic; a pack of one element type prints as `«E; N»`
+    // (docs/design/variadics.md, "Tuples, packs, segments, and shapes").
+    if (sem_ir_->types().Is<PackType>(
+            sem_ir_->insts().Get(inst.element_id).type_id())) {
+      if (sem_ir_->insts().Is<PackValue>(inst.element_id)) {
+        step_stack_->PushInstId(inst.element_id);
+        return;
+      }
+      *out_ << "⟬each ";
+      step_stack_->Push(inst.element_id, "⟭");
+      return;
+    }
     *out_ << "«";
-    step_stack_->Push(inst.element_type_inst_id, "; ", inst.arity_id, "»");
+    step_stack_->Push(inst.element_id, "; ", inst.arity_id, "»");
+  }
+
+  // Fork (VA-2, D-VA2-3): a concrete pack, such as the pack of types that a
+  // specific of `[... each T: I]` gives `T`, prints as the pack literal of its
+  // elements, `⟬A, B⟭` (docs/design/variadics.md, "Tuples, packs, segments,
+  // and shapes").
+  auto StringifyInst(InstId /*inst_id*/, PackValue inst) -> void {
+    *out_ << "⟬";
+    step_stack_->PushString("⟭");
+    llvm::ListSeparator sep;
+    for (auto ref :
+         llvm::reverse(sem_ir_->inst_blocks().Get(inst.elements_id))) {
+      step_stack_->Push(ref, &sep);
+    }
+  }
+
+  // Fork (VA-2, RR1-1-M1): a compile-time pack of facets converted to another
+  // facet type prints as the pack literal of its converted element,
+  // `⟬each T as F⟭`.
+  auto StringifyInst(InstId /*inst_id*/, PackFacetValue inst) -> void {
+    *out_ << "⟬each ";
+    step_stack_->Push(inst.pack_id, " as ",
+                      sem_ir_->types().GetAs<PackType>(inst.type_id).element_id,
+                      "⟭");
+  }
+
+  // Fork (VA-2, D-VA2-6): the scalar component of a pack of types at the pack
+  // index, which the source spells `each T`.
+  auto StringifyInst(InstId /*inst_id*/, PackElement inst) -> void {
+    *out_ << "each ";
+    step_stack_->PushInstId(inst.pack_id);
   }
 
   auto StringifyInst(InstId /*inst_id*/, PartialType inst) -> void {
@@ -963,12 +1008,23 @@ class Stringifier {
     *out_ << "(";
     step_stack_->PushString(")");
     // A tuple of one element has a comma to disambiguate from an
-    // expression.
-    if (refs.size() == 1) {
+    // expression; a pack segment, `... each T`, needs none.
+    if (refs.size() == 1 && !sem_ir_->insts().Is<PackType>(refs.front())) {
       step_stack_->PushString(",");
     }
     llvm::ListSeparator sep;
     for (auto ref : llvm::reverse(refs)) {
+      // Fork (VA-2, D-VA2-8): a pack segment prints as the expansion that
+      // spells it (docs/design/variadics.md, "Tuples, packs, segments, and
+      // shapes").
+      if (auto pack = sem_ir_->insts().TryGetAs<PackType>(ref);
+          pack &&
+          sem_ir_->types().Is<PackType>(
+              sem_ir_->insts().Get(pack->element_id).type_id()) &&
+          !sem_ir_->insts().Is<PackValue>(pack->element_id)) {
+        step_stack_->Push("... each ", pack->element_id, &sep);
+        continue;
+      }
       step_stack_->Push(ref, &sep);
     }
   }

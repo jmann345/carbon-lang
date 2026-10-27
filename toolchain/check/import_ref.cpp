@@ -2492,11 +2492,67 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
        .arity_pattern_id = AddLoadedImportRef(resolver, arity_pattern)});
 }
 
+// Fork (VA-2): the pack index, an each-name of a compile-time pack and a pack
+// of constants appear in an imported variadic generic's eval blocks.
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackIndex inst) -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  return ResolveResult::Deduplicated<SemIR::PackIndex>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id)});
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackElement inst) -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  auto pack_id = GetLocalConstantInstId(resolver, inst.pack_id);
+  auto index_id = GetLocalConstantInstId(resolver, inst.index_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  return ResolveResult::Deduplicated<SemIR::PackElement>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id),
+       .pack_id = pack_id,
+       .index_id = index_id});
+}
+
+// Fork (VA-2, RR1-1-M1): a pack of facets converted to another facet type
+// appears in the eval block of an imported generic that forwards its pack.
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackFacetValue inst) -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  auto pack_id = GetLocalConstantInstId(resolver, inst.pack_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  return ResolveResult::Deduplicated<SemIR::PackFacetValue>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id),
+       .pack_id = pack_id});
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackValue inst) -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  auto elems = GetLocalInstBlockContents(resolver, inst.elements_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  return ResolveResult::Deduplicated<SemIR::PackValue>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id),
+       .elements_id =
+           GetLocalCanonicalInstBlockId(resolver, inst.elements_id, elems)});
+}
+
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::PackType inst) -> ResolveResult {
   CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
-  auto element_type_inst_id =
-      GetLocalTypeInstId(resolver, inst.element_type_inst_id);
+  auto element_id = GetLocalConstantInstId(resolver, inst.element_id);
   auto arity_id = GetLocalConstantInstId(resolver, inst.arity_id);
   if (resolver.HasNewWork()) {
     return ResolveResult::Retry();
@@ -2504,7 +2560,7 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
   return ResolveResult::Deduplicated<SemIR::PackType>(
       resolver, {.type_id = SemIR::TypeType::TypeId,
-                 .element_type_inst_id = element_type_inst_id,
+                 .element_id = element_id,
                  .arity_id = arity_id});
 }
 
@@ -5018,7 +5074,19 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
     case CARBON_KIND(SemIR::PackExpansionPattern inst): {
       return TryResolveTypedInst(resolver, inst);
     }
+    case CARBON_KIND(SemIR::PackElement inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::PackFacetValue inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::PackIndex inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
     case CARBON_KIND(SemIR::PackType inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::PackValue inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::PartialType inst): {

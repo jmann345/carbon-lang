@@ -1363,7 +1363,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert(%int_32) [concrete]
 // CHECK:STDOUT:   %bound_method.6e0: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_0.3c0: %i32 = int_value 0 [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = value_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.patt.939: %pattern_type.6b6 = value_binding_pattern x [concrete]
 // CHECK:STDOUT:   %Iterate.type: type = facet_type <@Iterate> [concrete]
 // CHECK:STDOUT:   %OptionalStorage.type: type = facet_type <@OptionalStorage> [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
@@ -1708,7 +1708,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:     %t.var_patt: %pattern_type.6b6 = var_pattern %t.patt [concrete = constants.%t.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = value_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = value_binding_pattern x [concrete = constants.%x.patt.939]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %s.ref: %Slice.649 = name_ref s, %s
 // CHECK:STDOUT:   %impl.elem2: %.6a8 = impl_witness_access constants.%Iterate.impl_witness.e83, element2 [concrete = constants.%Slice.as.Iterate.impl.NewCursor.864]
@@ -1880,7 +1880,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %U.type: type = fn_type @U [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
-// CHECK:STDOUT:   %U.815: %U.type = struct_value () [concrete]
+// CHECK:STDOUT:   %U: %U.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Slice.type: type = generic_class_type @Slice [concrete]
 // CHECK:STDOUT:   %Slice.generic: %Slice.type = struct_value () [concrete]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
@@ -2061,7 +2061,7 @@ fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
-// CHECK:STDOUT:   %U.decl: %U.type = fn_decl @U [concrete = constants.%U.815] {} {}
+// CHECK:STDOUT:   %U.decl: %U.type = fn_decl @U [concrete = constants.%U] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @U() {

@@ -169,12 +169,30 @@ class EvalContext {
       return const_id;
     }
 
+    if (pack_index_) {
+      return GetConstantValueInSpecific(sem_ir(), specific_id_, sem_ir(),
+                                        inst_id, pack_index_)
+          .second;
+    }
     return GetConstantValueInSpecific(sem_ir(), specific_id_, inst_id);
   }
 
   // Gets the type of the specified instruction in this context.
   auto GetTypeOfInst(SemIR::InstId inst_id) -> SemIR::TypeId {
+    if (pack_index_) {
+      return GetTypeOfInstInSpecific(sem_ir(), specific_id_, sem_ir(), inst_id,
+                                     pack_index_)
+          .second;
+    }
     return GetTypeOfInstInSpecific(sem_ir(), specific_id_, inst_id);
+  }
+
+  // Fork (VA-2): the pack index of the iteration being evaluated, when the
+  // eval block of a specific's definition is evaluated once per iteration of
+  // its pack expansions.
+  auto pack_index() const -> std::optional<uint64_t> { return pack_index_; }
+  auto set_pack_index(std::optional<uint64_t> pack_index) -> void {
+    pack_index_ = pack_index;
   }
 
   auto ints() -> SharedValueStores::IntStore& { return sem_ir().ints(); }
@@ -249,6 +267,8 @@ class EvalContext {
   // instructions that have already been evaluated. This is here rather than in
   // `FunctionEvalContext` so we can reference it from `GetConstantValue`.
   std::optional<LocalEvalInfo> local_eval_info_;
+  // Fork (VA-2): see `pack_index()`.
+  std::optional<uint64_t> pack_index_;
 };
 }  // namespace
 
@@ -1072,6 +1092,10 @@ auto AddImportedConstant(Context& context, SemIR::Inst inst)
   // We ignore the return value of ReplaceAllFieldsWithConstantValues and just
   // propagate runtime and error constant values into the resulting ConstantId.
   ReplaceAllFieldsWithConstantValues(eval_context, &inst, &phase);
+  // Fork (VA-2): the pack index is symbolic without symbolic operands.
+  if (inst.Is<SemIR::PackIndex>()) {
+    phase = LatestPhase(phase, Phase::CheckedSymbolic);
+  }
   return MakeConstantResult(context, inst, phase);
 }
 
@@ -3280,6 +3304,27 @@ auto TryEvalTypedInst<SemIR::SymbolicBinding>(EvalContext& eval_context,
   return MakeConstantResult(eval_context.context(), bind, phase);
 }
 
+// Fork (VA-2): the pack index `$I` is a constant within one iteration of a
+// pack expansion, and otherwise a symbolic constant that depends only on the
+// iteration (docs/design/variadics.md, "Execution Semantics": "Although the
+// value of `$I` can vary during execution, it is nevertheless treated as a
+// constant").
+template <>
+auto TryEvalTypedInst<SemIR::PackIndex>(EvalContext& eval_context,
+                                        SemIR::InstId /*inst_id*/,
+                                        SemIR::Inst inst) -> SemIR::ConstantId {
+  if (auto pack_index = eval_context.pack_index()) {
+    return MakeConstantResult(
+        eval_context.context(),
+        SemIR::IntValue{.type_id = inst.type_id(),
+                        .int_id = eval_context.ints().Add(
+                            static_cast<int64_t>(*pack_index))},
+        Phase::Concrete);
+  }
+  return MakeConstantResult(eval_context.context(), inst,
+                            Phase::CheckedSymbolic);
+}
+
 template <>
 auto TryEvalTypedInst<SemIR::Temporary>(EvalContext& eval_context,
                                         SemIR::InstId inst_id, SemIR::Inst inst)
@@ -3589,6 +3634,86 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
       specific.SetHasError(region);
     }
     result_id = context.constant_values().GetInstId(const_id);
+  }
+}
+
+auto TryEvalPackIterationsForSpecific(Context& context, SemIR::LocId loc_id,
+                                      SemIR::SpecificId specific_id) -> void {
+  auto& specific = context.specifics().Get(specific_id);
+  // A specific whose eval blocks failed was diagnosed once and is not lowered;
+  // evaluating them again per iteration would repeat its diagnostics.
+  if (specific.pack_iteration_block_id.has_value() || specific.HasError()) {
+    return;
+  }
+  const auto& generic = context.generics().Get(specific.generic_id);
+  auto decl_block = context.inst_blocks().Get(generic.decl_block_id);
+  auto definition_block =
+      context.inst_blocks().Get(generic.definition_block_id);
+  // Only a generic that depends on the pack index has values that differ
+  // between iterations.
+  auto is_pack_index = [&](SemIR::InstId inst_id) {
+    return context.insts().Is<SemIR::PackIndex>(inst_id);
+  };
+  if (!llvm::any_of(decl_block, is_pack_index) &&
+      !llvm::any_of(definition_block, is_pack_index)) {
+    return;
+  }
+  llvm::SmallVector<SemIR::InstId> eval_block(decl_block.begin(),
+                                              decl_block.end());
+  eval_block.append(definition_block.begin(), definition_block.end());
+  // Each pack expansion of the definition iterates over the elements of a pack
+  // of the generic, whose arity is one of the specific's arguments: the one
+  // pack arity of the generic (a second is diagnosed where it is declared, and
+  // adds no binding).
+  int64_t count = 0;
+  auto bindings = context.inst_blocks().Get(generic.bindings_id);
+  auto args = context.inst_blocks().Get(specific.args_id);
+  for (auto [binding_id, arg_id] : llvm::zip(bindings, args)) {
+    // The binding of a generic imported from another library is an import
+    // reference whose constant value is the binding.
+    auto binding = context.insts().TryGetAs<SemIR::SymbolicBinding>(
+        context.constant_values().GetConstantInstId(binding_id));
+    if (!binding ||
+        context.entity_names().Get(binding->entity_name_id).name_id !=
+            SemIR::NameId::PackArity) {
+      continue;
+    }
+    auto arity = context.sem_ir().GetZExtIntValue(arg_id);
+    if (!arity) {
+      // A symbolic specific is not lowered.
+      return;
+    }
+    count = static_cast<int64_t>(*arity);
+    break;
+  }
+  if (count == 0) {
+    return;
+  }
+
+  auto size = eval_block.size();
+  auto value_block_id = context.inst_blocks().AddUninitialized(size * count);
+  for (auto& inst_id : context.inst_blocks().GetMutable(value_block_id)) {
+    inst_id = SemIR::InstId::None;
+  }
+  specific.pack_iteration_block_id = value_block_id;
+  specific.pack_iteration_count = count;
+
+  llvm::SaveAndRestore access_context(context.access_context());
+  SetAccessContext(context, generic);
+  EvalContext eval_context(&context, loc_id, specific_id);
+  for (auto index : llvm::seq(count)) {
+    eval_context.set_pack_index(index);
+    for (auto [i, inst_id] : llvm::enumerate(eval_block)) {
+      auto const_id = TryEvalInstInContext(eval_context, inst_id,
+                                           context.insts().Get(inst_id));
+      if (const_id == SemIR::ErrorInst::ConstantId) {
+        context.specifics()
+            .Get(specific_id)
+            .SetHasError(SemIR::GenericInstIndex::Definition);
+      }
+      context.inst_blocks().GetMutable(value_block_id)[index * size + i] =
+          context.constant_values().GetInstId(const_id);
+    }
   }
 }
 

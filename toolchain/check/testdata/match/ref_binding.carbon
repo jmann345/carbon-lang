@@ -41,8 +41,8 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %F.type: type = fn_type @F [concrete]
 // CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = ref_binding_pattern x [concrete]
-// CHECK:STDOUT:   %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt [concrete]
+// CHECK:STDOUT:   %x.patt.aaf: %pattern_type.6b6 = ref_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt.aaf [concrete]
 // CHECK:STDOUT:   %int_5.64b: Core.IntLiteral = int_value 5 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
 // CHECK:STDOUT:   %To: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
@@ -134,7 +134,7 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %i32.loc22: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %x: ref %i32 = wrapper_binding x, %x.var
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = ref_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = ref_binding_pattern x [concrete = constants.%x.patt.aaf]
 // CHECK:STDOUT:     %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt [concrete = constants.%x.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %x.ref.loc23: ref %i32 = name_ref x, %x

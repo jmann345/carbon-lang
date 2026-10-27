@@ -2335,7 +2335,7 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.915 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.915 = wrapper_binding_pattern x, %x.param_patt [concrete]
+// CHECK:STDOUT:   %x.patt.b79: %pattern_type.915 = wrapper_binding_pattern x, %x.param_patt [concrete]
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %CopyShadowed.type: type = fn_type @CopyShadowed [concrete]
 // CHECK:STDOUT:   %CopyShadowed: %CopyShadowed.type = struct_value () [concrete]
@@ -2434,7 +2434,7 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %CopyShadowed.decl: %CopyShadowed.type = fn_decl @CopyShadowed [concrete = constants.%CopyShadowed] {
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.915 = value_param_pattern [concrete = constants.%x.param_patt]
-// CHECK:STDOUT:     %x.patt: %pattern_type.915 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.915 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt.b79]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -2549,7 +2549,7 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   %self.param_patt.453: %pattern_type.970 = ref_param_pattern [concrete]
 // CHECK:STDOUT:   %self.patt.e2e: %pattern_type.970 = wrapper_binding_pattern self, %self.param_patt.453 [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete]
+// CHECK:STDOUT:   %x.patt.e3b: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete]
 // CHECK:STDOUT:   %IntOrBytes.Set.type: type = fn_type @IntOrBytes.Set [concrete]
 // CHECK:STDOUT:   %IntOrBytes.Set: %IntOrBytes.Set.type = struct_value () [concrete]
 // CHECK:STDOUT:   %.e9a: type = custom_layout_type {size=4, align=4, .word@0: %i32, .bytes@0: %array_type} [concrete]
@@ -2776,7 +2776,7 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.970 = ref_param_pattern [concrete = constants.%self.param_patt.453]
 // CHECK:STDOUT:     %self.patt: %pattern_type.970 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.e2e]
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%x.param_patt]
-// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt.e3b]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %self.param: ref %IntOrBytes = ref_param call_param0
 // CHECK:STDOUT:     %Self.ref: type = name_ref Self, constants.%IntOrBytes [concrete = constants.%IntOrBytes]
@@ -3111,15 +3111,15 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %U.951: type = class_type @U [concrete]
+// CHECK:STDOUT:   %U: type = class_type @U [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
-// CHECK:STDOUT:   %U.elem: type = unbound_element_type %U.951, %i32 [concrete]
+// CHECK:STDOUT:   %U.elem: type = unbound_element_type %U, %i32 [concrete]
 // CHECK:STDOUT:   %.784: type = custom_layout_type {size=4, align=4, .a@0: %i32} [concrete]
 // CHECK:STDOUT:   %complete_type.b3f: <witness> = complete_type_witness %.784 [concrete]
-// CHECK:STDOUT:   %pattern_type.3db: type = pattern_type %U.951 [concrete]
+// CHECK:STDOUT:   %pattern_type.3db: type = pattern_type %U [concrete]
 // CHECK:STDOUT:   %u.param_patt: %pattern_type.3db = value_param_pattern [concrete]
 // CHECK:STDOUT:   %u.patt: %pattern_type.3db = wrapper_binding_pattern u, %u.param_patt [concrete]
 // CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
@@ -3145,8 +3145,8 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
-// CHECK:STDOUT:   %U.decl.loc6: type = class_decl @U [concrete = constants.%U.951] {} {}
-// CHECK:STDOUT:   %U.decl.loc8: type = class_decl @U [concrete = constants.%U.951] {} {}
+// CHECK:STDOUT:   %U.decl.loc6: type = class_decl @U [concrete = constants.%U] {} {}
+// CHECK:STDOUT:   %U.decl.loc8: type = class_decl @U [concrete = constants.%U] {} {}
 // CHECK:STDOUT:   %UseU.decl: %UseU.type = fn_decl @UseU [concrete = constants.%UseU] {
 // CHECK:STDOUT:     %u.param_patt: %pattern_type.3db = value_param_pattern [concrete = constants.%u.param_patt]
 // CHECK:STDOUT:     %u.patt: %pattern_type.3db = wrapper_binding_pattern u, %u.param_patt [concrete = constants.%u.patt]
@@ -3155,9 +3155,9 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %.loc12_18: Core.Form = init_form %i32 [concrete = constants.%.795]
-// CHECK:STDOUT:     %u.param: %U.951 = value_param call_param0
-// CHECK:STDOUT:     %U.ref: type = name_ref U, file.%U.decl.loc6 [concrete = constants.%U.951]
-// CHECK:STDOUT:     %u: %U.951 = wrapper_binding u, %u.param
+// CHECK:STDOUT:     %u.param: %U = value_param call_param0
+// CHECK:STDOUT:     %U.ref: type = name_ref U, file.%U.decl.loc6 [concrete = constants.%U]
+// CHECK:STDOUT:     %u: %U = wrapper_binding u, %u.param
 // CHECK:STDOUT:     %return.param: ref %i32 = out_param call_param1
 // CHECK:STDOUT:     %return: ref %i32 = return_slot %return.param
 // CHECK:STDOUT:   }
@@ -3172,13 +3172,13 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
-// CHECK:STDOUT:   .Self = constants.%U.951
+// CHECK:STDOUT:   .Self = constants.%U
 // CHECK:STDOUT:   .a = %field_decl
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @UseU(%u.param: %U.951) -> out %return.param: %i32 {
+// CHECK:STDOUT: fn @UseU(%u.param: %U) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %u.ref: %U.951 = name_ref u, %u
+// CHECK:STDOUT:   %u.ref: %U = name_ref u, %u
 // CHECK:STDOUT:   %a.ref: %U.elem = name_ref a, @U.%field_decl [concrete = @U.%field_decl]
 // CHECK:STDOUT:   %.loc12_32.1: ref %i32 = class_element_access %u.ref, element0
 // CHECK:STDOUT:   %.loc12_32.2: %i32 = acquire_value %.loc12_32.1
@@ -3297,15 +3297,15 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %U.e8a: type = class_type @U [concrete]
+// CHECK:STDOUT:   %U: type = class_type @U [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
-// CHECK:STDOUT:   %U.elem: type = unbound_element_type %U.e8a, %i32 [concrete]
+// CHECK:STDOUT:   %U.elem: type = unbound_element_type %U, %i32 [concrete]
 // CHECK:STDOUT:   %.784: type = custom_layout_type {size=4, align=4, .a@0: %i32} [concrete]
 // CHECK:STDOUT:   %complete_type.b3f: <witness> = complete_type_witness %.784 [concrete]
-// CHECK:STDOUT:   %pattern_type.0ab: type = pattern_type %U.e8a [concrete]
+// CHECK:STDOUT:   %pattern_type.0ab: type = pattern_type %U [concrete]
 // CHECK:STDOUT:   %u.param_patt: %pattern_type.0ab = value_param_pattern [concrete]
 // CHECK:STDOUT:   %u.patt: %pattern_type.0ab = wrapper_binding_pattern u, %u.param_patt [concrete]
 // CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
@@ -3331,7 +3331,7 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
-// CHECK:STDOUT:   %U.decl: type = class_decl @U [concrete = constants.%U.e8a] {} {}
+// CHECK:STDOUT:   %U.decl: type = class_decl @U [concrete = constants.%U] {} {}
 // CHECK:STDOUT:   %UseNU.decl: %UseNU.type = fn_decl @UseNU [concrete = constants.%UseNU] {
 // CHECK:STDOUT:     %u.param_patt: %pattern_type.0ab = value_param_pattern [concrete = constants.%u.param_patt]
 // CHECK:STDOUT:     %u.patt: %pattern_type.0ab = wrapper_binding_pattern u, %u.param_patt [concrete = constants.%u.patt]
@@ -3340,12 +3340,12 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %.loc10_21: Core.Form = init_form %i32 [concrete = constants.%.795]
-// CHECK:STDOUT:     %u.param: %U.e8a = value_param call_param0
-// CHECK:STDOUT:     %.loc10_14: type = splice_block %U.ref [concrete = constants.%U.e8a] {
+// CHECK:STDOUT:     %u.param: %U = value_param call_param0
+// CHECK:STDOUT:     %.loc10_14: type = splice_block %U.ref [concrete = constants.%U] {
 // CHECK:STDOUT:       %N.ref: <namespace> = name_ref N, file.%N [concrete = file.%N]
-// CHECK:STDOUT:       %U.ref: type = name_ref U, file.%U.decl [concrete = constants.%U.e8a]
+// CHECK:STDOUT:       %U.ref: type = name_ref U, file.%U.decl [concrete = constants.%U]
 // CHECK:STDOUT:     }
-// CHECK:STDOUT:     %u: %U.e8a = wrapper_binding u, %u.param
+// CHECK:STDOUT:     %u: %U = wrapper_binding u, %u.param
 // CHECK:STDOUT:     %return.param: ref %i32 = out_param call_param1
 // CHECK:STDOUT:     %return: ref %i32 = return_slot %return.param
 // CHECK:STDOUT:   }
@@ -3360,13 +3360,13 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
-// CHECK:STDOUT:   .Self = constants.%U.e8a
+// CHECK:STDOUT:   .Self = constants.%U
 // CHECK:STDOUT:   .a = %field_decl
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @UseNU(%u.param: %U.e8a) -> out %return.param: %i32 {
+// CHECK:STDOUT: fn @UseNU(%u.param: %U) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %u.ref: %U.e8a = name_ref u, %u
+// CHECK:STDOUT:   %u.ref: %U = name_ref u, %u
 // CHECK:STDOUT:   %a.ref: %U.elem = name_ref a, @U.%field_decl [concrete = @U.%field_decl]
 // CHECK:STDOUT:   %.loc10_35.1: ref %i32 = class_element_access %u.ref, element0
 // CHECK:STDOUT:   %.loc10_35.2: %i32 = acquire_value %.loc10_35.1
@@ -3384,14 +3384,14 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %U.951: type = class_type @U [concrete]
-// CHECK:STDOUT:   %U.elem: type = unbound_element_type %U.951, %i32 [concrete]
+// CHECK:STDOUT:   %U: type = class_type @U [concrete]
+// CHECK:STDOUT:   %U.elem: type = unbound_element_type %U, %i32 [concrete]
 // CHECK:STDOUT:   %.784: type = custom_layout_type {size=4, align=4, .a@0: %i32} [concrete]
 // CHECK:STDOUT:   %complete_type.b3f: <witness> = complete_type_witness %.784 [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
-// CHECK:STDOUT:   %U.decl: type = class_decl @U [concrete = constants.%U.951] {} {}
+// CHECK:STDOUT:   %U.decl: type = class_decl @U [concrete = constants.%U] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @U {
@@ -3403,7 +3403,7 @@ fn CopyOptPtr(p: OptPtr) -> i64 {
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
-// CHECK:STDOUT:   .Self = constants.%U.951
+// CHECK:STDOUT:   .Self = constants.%U
 // CHECK:STDOUT:   .a = %field_decl
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

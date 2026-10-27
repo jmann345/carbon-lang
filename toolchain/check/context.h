@@ -531,18 +531,22 @@ class Context {
     Parse::PackExpansionStartId start_node_id;
     // For a statement or expression: the block that holds the body, the
     // cleanup depth on entry, and the arity of the packs that the body's
-    // each-names refer to, which is `None` until the first each-name.
+    // each-names refer to, which is `None` until the first each-name. Fork
+    // (VA-2): for a pattern, `arity_id` is the arity of the packs that its
+    // binding's type names, if any.
     SemIR::InstBlockId body_block_id = SemIR::InstBlockId::None;
     ScopeStack::CleanupScopeDepth cleanup_depth =
         ScopeStack::CleanupScopeDepth::None;
     SemIR::InstId arity_id = SemIR::InstId::None;
     // For a pattern: the binding pattern and binding of the pack's deduced
-    // arity, and the each-name binding pattern that the body declares with its
-    // element type, once checked.
+    // arity, and the each-name binding pattern that the body declares with the
+    // pack's type, once checked. Fork (VA-2): a pattern whose binding's type
+    // is an each-name has that pack's arity and no arity binding of its own
+    // (docs/design/variadics.md, "Explicit deduced arities").
     SemIR::InstId arity_pattern_id = SemIR::InstId::None;
     SemIR::InstId arity_binding_id = SemIR::InstId::None;
     SemIR::InstId each_binding_pattern_id = SemIR::InstId::None;
-    SemIR::TypeInstId element_type_inst_id = SemIR::TypeInstId::None;
+    SemIR::TypeId pack_type_id = SemIR::TypeId::None;
   };
   auto pack_expansion_stack() -> llvm::SmallVector<PackExpansionScope>& {
     return pack_expansion_stack_;

@@ -1462,7 +1462,17 @@ auto InstNamer::NamingContext::NameInst() -> void {
       return;
     }
     case CARBON_KIND(PackExpansionStatement inst): {
+      // Fork (VA-2, D-VA2-11): a body with control flow is a region of blocks,
+      // whose labels its branches add.
+      for (auto block_id : llvm::reverse(
+               GetPackExpansionBodyBlocks(sem_ir(), inst.body_block_id))) {
+        PushBlockId(scope_id_, block_id);
+      }
+      return;
+    }
+    case CARBON_KIND(PackSegmentInit inst): {
       PushBlockId(scope_id_, inst.body_block_id);
+      AddInstName("");
       return;
     }
     case PackType::Kind: {

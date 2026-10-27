@@ -5,6 +5,8 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_TYPE_H_
 #define CARBON_TOOLCHAIN_CHECK_TYPE_H_
 
+#include <cstdint>
+
 #include "llvm/ADT/ArrayRef.h"
 #include "toolchain/check/context.h"
 #include "toolchain/sem_ir/ids.h"
@@ -129,9 +131,45 @@ auto GetArrayType(Context& context, SemIR::InstId bound_id,
                   SemIR::TypeInstId element_type_inst_id) -> SemIR::TypeId;
 
 // Gets the pack type `«element_type; arity»`: the type of a pack expansion
-// segment of `arity` elements of type `element_type`.
-auto GetPackType(Context& context, SemIR::TypeInstId element_type_id,
+// segment of `arity` elements of type `element_type`. Fork (VA-2):
+// `element_id` can instead be a compile-time pack of types or facets of arity
+// `arity_id`, for the pack type `⟬each T⟭`.
+auto GetPackType(Context& context, SemIR::InstId element_id,
                  SemIR::InstId arity_id) -> SemIR::TypeId;
+
+// Fork (VA-2): returns whether `pack_type` is the type of a pack whose
+// elements' types are the elements of a compile-time pack, `⟬each T⟭`.
+auto IsHeterogeneousPackType(Context& context, SemIR::PackType pack_type)
+    -> bool;
+
+// Fork (VA-2): if `type_inst_id` is an each-name of a compile-time pack of
+// types or facets, `each T`, returns that pack and its arity.
+auto GetEachNameTypePack(Context& context, SemIR::TypeInstId type_inst_id)
+    -> std::optional<std::pair<SemIR::InstId, SemIR::InstId>>;
+
+// Fork (VA-2): gets the type of a pack of `arity_id` elements of type
+// `element_type_inst_id`: `«E; N»`, or `⟬each T⟭` when the element type is the
+// each-name `each T`, whose arity is then `T`'s (docs/design/variadics.md,
+// "Explicit deduced arities": a binding whose type contains an each-name is
+// not rewritten to an arity coercion).
+auto GetPackTypeForElementType(Context& context,
+                               SemIR::TypeInstId element_type_inst_id,
+                               SemIR::InstId arity_id) -> SemIR::TypeId;
+
+// Fork (VA-2): gets the type of an element of a value of `pack_type` on the
+// current iteration of the enclosing pack expansion: the type of `each x`.
+// For `⟬each T⟭`, this is `each T`, a type that depends on the pack index
+// (docs/design/variadics.md, "Iterative typechecking of pack expansions").
+auto GetPackElementType(Context& context, SemIR::LocId loc_id,
+                        SemIR::PackType pack_type) -> SemIR::TypeId;
+
+// Fork (VA-2, D-VA2-3): returns the type of the element at `index` of a value
+// of the pack type `pack_type`, whose arity is known. An element of a pack of
+// facets is the type that the facet is: a symbolic facet whose facet type is
+// exactly the pack's, such as `T` deduced for `each U: I` from `x: T` with
+// `T: I`, is not a `FacetValue`, so its type is its facet access type.
+auto GetPackElementTypeId(Context& context, SemIR::PackType pack_type,
+                          uint64_t index) -> SemIR::TypeId;
 
 // Returns a struct type with the given fields.
 auto GetStructType(Context& context, SemIR::StructTypeFieldsId fields_id)

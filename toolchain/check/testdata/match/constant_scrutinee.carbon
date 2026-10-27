@@ -36,10 +36,10 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
 // CHECK:STDOUT:   %int_3: Core.IntLiteral = int_value 3 [concrete]
 // CHECK:STDOUT:   %EqWith.type.aee: type = facet_type <@EqWith, @EqWith(Core.IntLiteral)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.aee = facet_value Core.IntLiteral, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.4b8: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(Core.IntLiteral, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.afe: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.4b8, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.c83: <witness> = impl_witness imports.%EqWith.impl_witness_table.b85 [concrete]
+// CHECK:STDOUT:   %EqWith.facet.b07: %EqWith.type.aee = facet_value Core.IntLiteral, (%EqWith.impl_witness.c83) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.4b8: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(Core.IntLiteral, %EqWith.facet.b07) [concrete]
+// CHECK:STDOUT:   %.afe: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.4b8, %EqWith.facet.b07 [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.EqWith.impl.Equal.type: type = fn_type @Core.IntLiteral.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.EqWith.impl.Equal: %Core.IntLiteral.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.EqWith.impl.Equal.bound: <bound method> = bound_method %int_3, %Core.IntLiteral.as.EqWith.impl.Equal [concrete]
@@ -68,7 +68,7 @@ fn F() -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %Core.IntLiteral.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @Core.IntLiteral.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.b85 = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @Core.IntLiteral.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
 // CHECK:STDOUT: }
@@ -94,7 +94,7 @@ fn F() -> i32 {
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_3.loc18: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
-// CHECK:STDOUT:   %impl.elem0.loc18_12: %.afe = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%Core.IntLiteral.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc18_12: %.afe = impl_witness_access constants.%EqWith.impl_witness.c83, element0 [concrete = constants.%Core.IntLiteral.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc18_12: <bound method> = bound_method %int_3.loc18, %impl.elem0.loc18_12 [concrete = constants.%Core.IntLiteral.as.EqWith.impl.Equal.bound]
 // CHECK:STDOUT:   %Core.IntLiteral.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc18_12(%int_3.loc18, %int_3.loc17) [concrete = constants.%true]
 // CHECK:STDOUT:   %.loc18_12.1: bool = value_of_initializer %Core.IntLiteral.as.EqWith.impl.Equal.call [concrete = constants.%true]

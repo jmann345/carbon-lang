@@ -52,9 +52,9 @@ auto SpecificStore::CollectMemUsage(MemUsage& mem_usage,
                     lookup_table_, KeyContext(&specifics_));
 }
 
-static auto GetConstantInSpecific(const File& specific_ir,
-                                  SpecificId specific_id, const File& const_ir,
-                                  ConstantId const_id)
+static auto GetConstantInSpecific(
+    const File& specific_ir, SpecificId specific_id, const File& const_ir,
+    ConstantId const_id, std::optional<uint64_t> pack_index = std::nullopt)
     -> std::pair<const File*, ConstantId> {
   if (!const_id.is_symbolic()) {
     // The constant does not depend on a generic parameter.
@@ -99,6 +99,27 @@ static auto GetConstantInSpecific(const File& specific_ir,
     // specific.
     return {&const_ir, const_ir.constant_values().Get(symbolic.inst_id)};
   }
+  // Fork (VA-2): within an iteration of a pack expansion, a constant of the
+  // definition region has the value it has in that iteration.
+  if (pack_index && specific.pack_iteration_block_id.has_value() &&
+      *pack_index < static_cast<uint64_t>(specific.pack_iteration_count)) {
+    auto iteration_values =
+        specific_ir.inst_blocks().Get(specific.pack_iteration_block_id);
+    auto size = iteration_values.size() / specific.pack_iteration_count;
+    auto offset = symbolic.index.index();
+    if (symbolic.index.region() == GenericInstIndex::Definition) {
+      offset +=
+          specific_ir.inst_blocks()
+              .Get(
+                  specific_ir.generics().Get(specific.generic_id).decl_block_id)
+              .size();
+    }
+    auto value_id = iteration_values[*pack_index * size + offset];
+    return {&specific_ir, value_id.has_value()
+                              ? specific_ir.constant_values().Get(value_id)
+                              : SemIR::ConstantId::NotConstant};
+  }
+
   // TODO: Distinguish between parts of the instruction block that we've not
   // reached yet during eval and values that evaluated successfully to
   // ConstantId::NotConstant.
@@ -121,6 +142,53 @@ auto GetConstantValueInSpecific(const File& specific_ir, SpecificId specific_id,
     -> std::pair<const File*, ConstantId> {
   return GetConstantInSpecific(specific_ir, specific_id, inst_ir,
                                inst_ir.constant_values().GetAttached(inst_id));
+}
+
+auto GetConstantValueInSpecific(const File& specific_ir, SpecificId specific_id,
+                                const File& inst_ir, InstId inst_id,
+                                std::optional<uint64_t> pack_index)
+    -> std::pair<const File*, ConstantId> {
+  return GetConstantInSpecific(specific_ir, specific_id, inst_ir,
+                               inst_ir.constant_values().GetAttached(inst_id),
+                               pack_index);
+}
+
+auto GetTypeOfInstInSpecific(const File& specific_ir, SpecificId specific_id,
+                             const File& inst_ir, InstId inst_id,
+                             std::optional<uint64_t> pack_index)
+    -> std::pair<const File*, TypeId> {
+  auto type_id = inst_ir.insts().GetAttachedType(inst_id);
+  auto const_id = inst_ir.types().GetConstantId(type_id);
+  auto [result_ir, result_const_id] = GetConstantInSpecific(
+      specific_ir, specific_id, inst_ir, const_id, pack_index);
+  return {result_ir, TypeId::ForTypeConstant(result_const_id)};
+}
+
+auto GetPackElementTypeId(const File& sem_ir, PackType pack_type,
+                          uint64_t index) -> TypeId {
+  auto element_inst = sem_ir.insts().Get(pack_type.element_id);
+  if (auto pack_value = element_inst.TryAs<PackValue>()) {
+    // A pack of types or of facets: the element's type is the type that the
+    // pack's element at `index` is, or wraps.
+    auto element_id = sem_ir.inst_blocks().Get(pack_value->elements_id)[index];
+    if (auto facet = sem_ir.insts().TryGetAs<FacetValue>(element_id)) {
+      element_id = facet->type_inst_id;
+    } else {
+      // A symbolic facet element has no type instruction here; check's
+      // `GetPackElementTypeId` forms its facet access type.
+      auto element_type_id = sem_ir.insts().Get(element_id).type_id();
+      CARBON_CHECK(element_type_id == TypeType::TypeId ||
+                       element_type_id == ErrorInst::TypeId,
+                   "Pack element {0} is neither a type nor a facet value",
+                   sem_ir.insts().Get(element_id));
+    }
+    return sem_ir.types().GetTypeIdForTypeInstId(
+        sem_ir.constant_values().GetConstantTypeInstId(
+            TypeInstId::UnsafeMake(element_id)));
+  }
+  return sem_ir.types().GetTypeIdForTypeInstId(
+      sem_ir.constant_values().GetConstantTypeInstId(
+          TypeInstId::UnsafeMake(pack_type.element_id)));
 }
 
 auto GetTypeOfInstInSpecific(const File& sem_ir, SpecificId specific_id,

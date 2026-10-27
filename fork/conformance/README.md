@@ -298,8 +298,14 @@ fails if this table is stale):
 | `generics/variadics_fixed_params.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_forward.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_generic_element.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_hetero_digits_diff.carbon` | Generics: Definition-checked variadics | differential |
+| `generics/variadics_hetero_empty.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_hetero_forward.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_min.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_no_copy.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_strcat.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_sum_diff.carbon` | Generics: Definition-checked variadics | differential |
+| `generics/variadics_tuple_param.carbon` | Generics: Definition-checked variadics | run |
 | `interop/cpp_adl_swap_extension_point.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | SKIP |
 | `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_atomic_global_counter_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
@@ -370,6 +376,10 @@ fails if this table is stale):
 | `stdlib/slices_heap_buf.carbon` | Stdlib: Slices | run |
 | `stdlib/string_basic.carbon` | Stdlib: String and string-literal types | run |
 | `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | SKIP |
+| `stdlib/tuple_copy_variadic.carbon` | Stdlib: tuple/array library parts | run |
+| `stdlib/tuple_eq_diff.carbon` | Stdlib: tuple/array library parts | differential |
+| `stdlib/tuple_impl_generic.carbon` | Stdlib: tuple/array library parts | run |
+| `stdlib/tuple_ordered_diff.carbon` | Stdlib: tuple/array library parts | differential |
 | `stdlib/tuples_arrays_structs.carbon` | Stdlib: tuple/array library parts | run |
 | `types/choice_basic.carbon` | Type system: Sum types (discriminated unions) | run |
 | `types/choice_discriminant_diff.carbon` | Type system: Sum types (discriminated unions) | differential |

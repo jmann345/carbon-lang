@@ -118,11 +118,41 @@ class FunctionContext {
       llvm::function_ref<auto(uint64_t index)->void> finish_iteration = {})
       -> void;
 
+  // Fork (VA-2): returns the pack index of the current iteration of the pack
+  // expansion being lowered, if any.
+  auto current_pack_index() const -> std::optional<uint64_t> {
+    return pack_index_;
+  }
+
   // Returns the pack index of the current iteration of the pack expansion
   // being lowered.
   auto pack_index() const -> uint64_t {
     CARBON_CHECK(pack_index_, "Pack index used outside a pack expansion");
     return *pack_index_;
+  }
+
+  // Fork (VA-2, D-VA2-11): returns the block that the current iteration of the
+  // pack expansion being lowered continues in when its body ends with
+  // `PackExpansionNext`: the next iteration's first block, or after the last
+  // iteration the block in which the code after the expansion is lowered.
+  auto pack_expansion_next_block() const -> llvm::BasicBlock* {
+    CARBON_CHECK(
+        pack_expansion_next_block_,
+        "PackExpansionNext outside a pack expansion with control flow");
+    return pack_expansion_next_block_;
+  }
+
+  // Fork (VA-2, D-VA2-9): the storage that the elements of the destination
+  // `dest_id` of a `PackSegmentInit` are initialized in while its body is
+  // lowered, when its tuple is initialized by copy and so has no storage of
+  // its own, or null.
+  auto pack_segment_storage(SemIR::InstId dest_id) const -> llvm::Value* {
+    return dest_id == pack_segment_dest_id_ ? pack_segment_storage_ : nullptr;
+  }
+  auto set_pack_segment_storage(SemIR::InstId dest_id, llvm::Value* storage)
+      -> void {
+    pack_segment_dest_id_ = dest_id;
+    pack_segment_storage_ = storage;
   }
 
   // Returns a phi node corresponding to the block argument of the given basic
@@ -387,6 +417,14 @@ class FunctionContext {
   auto CopyObject(TypeInFile type, SemIR::InstId source_id,
                   SemIR::InstId dest_id) -> void;
 
+  // Fork (VA-2): emits a copy of `value`, a value representation of `type`,
+  // into the object at `dest_addr`: element by element for a tuple or struct
+  // type whose value representation holds its elements' value
+  // representations (`ValueRepr::ValueAggregate`), and otherwise as a store
+  // or an object copy.
+  auto CopyValueReprToObject(TypeInFile type, llvm::Value* value,
+                             llvm::Value* dest_addr) -> void;
+
   // Serves a reference to a file-scope `let` binding whose bound value is a
   // runtime value (W-069): `inst_id` is either such a binding of the current
   // file (or its bound value), or an imported instruction whose canonical
@@ -458,6 +496,20 @@ class FunctionContext {
   // current iteration.
   std::optional<uint64_t> pack_index_;
   llvm::SmallVector<SemIR::InstId> pack_iteration_locals_;
+
+  // See `pack_segment_storage`.
+  SemIR::InstId pack_segment_dest_id_ = SemIR::InstId::None;
+  llvm::Value* pack_segment_storage_ = nullptr;
+
+  // Fork (VA-2, D-VA2-11): while lowering the body of a pack expansion with
+  // control flow, the blocks of its region after the first, each mapped to
+  // the block lowered for it in the current iteration, or to null before the
+  // iteration reaches it. Each iteration lowers every block of the region
+  // afresh, so the map is reset after each iteration.
+  Map<SemIR::InstBlockId, llvm::BasicBlock*> pack_iteration_blocks_;
+
+  // See `pack_expansion_next_block`.
+  llvm::BasicBlock* pack_expansion_next_block_ = nullptr;
 };
 
 namespace Internal {

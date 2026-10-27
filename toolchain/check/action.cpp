@@ -8,6 +8,7 @@
 #include "toolchain/check/generic.h"
 #include "toolchain/check/generic_region_stack.h"
 #include "toolchain/check/inst.h"
+#include "toolchain/check/subst.h"
 #include "toolchain/check/type.h"
 #include "toolchain/sem_ir/constant.h"
 #include "toolchain/sem_ir/copy_on_write_block.h"
@@ -336,8 +337,153 @@ static auto RefineOperands(Context& context, SemIR::LocId loc_id,
   return action;
 }
 
+namespace {
+// Fork (VA-2, D-VA2-14): finds the pack index in a constant, without
+// substituting into it.
+class FindPackIndexCallbacks final : public SubstInstCallbacks {
+ public:
+  explicit FindPackIndexCallbacks(Context* context)
+      : SubstInstCallbacks(context) {}
+
+  auto Subst(SemIR::InstId& inst_id) -> SubstResult override {
+    if (found_ || !context().constant_values().Get(inst_id).is_symbolic()) {
+      return FullySubstituted;
+    }
+    if (context().insts().Is<SemIR::PackIndex>(inst_id)) {
+      found_ = true;
+      return FullySubstituted;
+    }
+    return SubstOperands;
+  }
+
+  auto Rebuild(SemIR::InstId orig_inst_id, SemIR::Inst /*new_inst*/)
+      -> SemIR::InstId override {
+    return orig_inst_id;
+  }
+
+  auto found() const -> bool { return found_; }
+
+ private:
+  bool found_ = false;
+};
+}  // namespace
+
+// Fork (VA-2, D-VA2-14): returns whether the value of `inst_id`, or its type,
+// depends on the pack index of an enclosing pack expansion, as an element of a
+// pack of different types does: `each T`, or `each x` of type `each T`, is a
+// different type or value in each iteration (docs/design/variadics.md,
+// "Iterative typechecking of pack expansions").
+static auto DependsOnPackIndex(Context& context, SemIR::InstId inst_id)
+    -> bool {
+  if (!inst_id.has_value()) {
+    return false;
+  }
+  auto uses_pack_index = [&](SemIR::ConstantId const_id) {
+    if (!const_id.is_symbolic()) {
+      return false;
+    }
+    FindPackIndexCallbacks callbacks(&context);
+    SubstInst(context, context.constant_values().GetInstId(const_id),
+              callbacks);
+    return callbacks.found();
+  };
+  auto type_id = context.insts().Get(inst_id).type_id();
+  return uses_pack_index(context.constant_values().Get(inst_id)) ||
+         (type_id.has_value() &&
+          uses_pack_index(context.types().GetConstantId(type_id)));
+}
+
+// Fork (VA-2, D-VA2-14): returns whether `pred` holds for an instruction
+// operand of `action` or for an instruction in an operand block.
+static auto AnyOperand(Context& context, SemIR::Inst action,
+                       llvm::function_ref<auto(SemIR::InstId)->bool> pred)
+    -> bool {
+  auto any = [&](SemIR::IdAndKind arg) {
+    return arg.Dispatch<bool>([&](auto id) {
+      using IdT = decltype(id);
+      if constexpr (std::derived_from<IdT, SemIR::InstId>) {
+        return pred(id);
+      } else if constexpr (std::derived_from<IdT, SemIR::InstBlockId>) {
+        return id.has_value() &&
+               llvm::any_of(context.inst_blocks().Get(id), pred);
+      } else {
+        return false;
+      }
+    });
+  };
+  return any(action.arg0_and_kind()) || any(action.arg1_and_kind());
+}
+
+// Fork (VA-2, D-VA2-14): returns whether an operand of `action` depends on the
+// pack index of an enclosing pack expansion. A dependent action is performed
+// once for each specific, but such an operand differs between the
+// expansion's iterations.
+static auto ActionDependsOnPackIndex(Context& context, SemIR::Inst action)
+    -> bool {
+  if (context.pack_expansion_stack().empty()) {
+    return false;
+  }
+  return AnyOperand(context, action, [&](SemIR::InstId inst_id) {
+    return DependsOnPackIndex(context, inst_id);
+  });
+}
+
+// Fork (VA-2, D-VA2-14): returns whether `inst_id` is a run-time tuple or
+// struct literal with a pack segment, such as `(... each x)`, directly or in a
+// nested literal. The segment is one element of the literal, of pack type,
+// but stands for the pack's elements in the tuple's type, so a specific that
+// performs an action on the literal as formed would find one element where
+// its tuple type has the segment's (docs/design/variadics.md, "Iterative
+// typechecking of pack expansions").
+static auto IsLiteralWithPackSegment(Context& context, SemIR::InstId inst_id)
+    -> bool {
+  llvm::SmallVector<SemIR::InstId> worklist = {inst_id};
+  while (!worklist.empty()) {
+    auto literal_id = worklist.pop_back_val();
+    if (!literal_id.has_value() ||
+        context.constant_values().Get(literal_id).is_constant()) {
+      continue;
+    }
+    auto literal = context.insts().Get(literal_id);
+    auto elements_id = SemIR::InstBlockId::None;
+    if (auto tuple_literal = literal.TryAs<SemIR::TupleLiteral>()) {
+      elements_id = tuple_literal->elements_id;
+    } else if (auto struct_literal = literal.TryAs<SemIR::StructLiteral>()) {
+      elements_id = struct_literal->elements_id;
+    } else {
+      continue;
+    }
+    for (auto element_id : context.inst_blocks().Get(elements_id)) {
+      if (context.types().Is<SemIR::PackType>(
+              context.insts().Get(element_id).type_id())) {
+        return true;
+      }
+      worklist.push_back(element_id);
+    }
+  }
+  return false;
+}
+
 auto AddDependentActionInst(Context& context, SemIR::LocIdAndInst action)
     -> SemIR::InstId {
+  // Fork (VA-2, D-VA2-14): an action on an element of a pack of different
+  // types would need to be performed once per iteration of the expansion.
+  if (ActionDependsOnPackIndex(context, action.inst)) {
+    context.TODO(action.loc_id,
+                 "C++ or template-dependent action on an element of a pack "
+                 "of different types");
+    return SemIR::ErrorInst::InstId;
+  }
+  // Fork (VA-2, D-VA2-14): so would an action on a literal with a pack
+  // segment, once per element of the segment.
+  if (AnyOperand(context, action.inst, [&](SemIR::InstId inst_id) {
+        return IsLiteralWithPackSegment(context, inst_id);
+      })) {
+    context.TODO(action.loc_id,
+                 "C++ or template-dependent action on a tuple literal with a "
+                 "pack segment");
+    return SemIR::ErrorInst::InstId;
+  }
   action.inst = RefineOperands(context, action.loc_id, action.inst);
   return AddTemplateConstantInstToEvalBlock(context, action);
 }
@@ -348,6 +494,10 @@ auto AddDependentActionSplice(Context& context, SemIR::LocIdAndInst action,
   action.inst = RefineOperands(context, action.loc_id, action.inst);
 
   auto inst_id = AddDependentActionInst(context, action);
+  // Fork (VA-2, D-VA2-14): the action was refused.
+  if (inst_id == SemIR::ErrorInst::InstId) {
+    return inst_id;
+  }
   return AddSpliceInst(context, inst_id, result_type_inst_id);
 }
 

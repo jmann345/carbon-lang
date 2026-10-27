@@ -3629,6 +3629,279 @@ The next advance's four added conflicts (plan M-16) resolve by taking the
 fork's side, which holds upstream's lines, except the golden of (v).
 Veto-able.
 
+### VA-2: definition-checked variadics, slice 2 (2026-10-27)
+
+Context: W-212, W-213 and W-225 (VA-1's residues; gap rows "Generics:
+Definition-checked variadics" and "Stdlib: tuple/array library parts", both
+PARTIAL); fork/variadics/va2-plan.md, rev 15 after two plan reviews and
+two focused re-reviews, five stop-and-amend revisions of the implementation,
+each with its focused re-review (rev 5, nested constant initialization; rev
+7, C1's split and golden sources; rev 9, the rank splits on the min prelude;
+rev 11, C3's p06 line and packs of aggregates; rev 13, the comment wrap of
+the plan's §A.1 oracle), and two implementation reviews of C5 and their fix,
+all folded; branch claude/carbon-fork-0-1-va2, one PR stacked on PR 59.
+Every decision auto-adopted under V-2 and V-3b, which R32 states (R29(a)),
+and open to veto.
+
+Decisions (plan §1, each with its break condition): D-VA2-1 the slice;
+D-VA2-2 a symbolic pack index and per-iteration values of a specific;
+D-VA2-3 one pack type whose element is a type or a pack of types; D-VA2-4
+`[... each T: I]` with one deduced arity per generic, a second a TODO;
+D-VA2-5 to D-VA2-7 deduction, definition checking against `each T`, and
+lowering per element; D-VA2-8 and D-VA2-9 tuples of one pack segment with a
+dependent representation, `(...?)` in impl lookup's type structure ranked by
+the overlap rule, `let` bindings and element-wise initialization; D-VA2-10
+variadic impl selection, terminating by subterm requirements; D-VA2-11
+statement expansions of `if`; D-VA2-12 the prelude's tuple impls; D-VA2-13
+and D-VA2-14 the TODO texts, templates unchanged and C++ calls on elements
+of packs of different types a land-time TODO; D-VA2-15 to D-VA2-19 goldens,
+programs, records, merge position and commits, with C0's and C0b's fix of
+nested aggregate constants.
+
+Options considered (plan §7.2): a second checking path (A-1); hand-written
+impls to a larger fixed arity (A-2); a pack-to-tuple shim (A-3); two packs
+now (A-4); a specific per element (A-5); constant packs everywhere (A-6);
+`return self;` as the tuple `Copy.Op` (A-7); `...and` for equality (A-8);
+the rev 1 type-structure hole (A-9); a pack index per arity binding (A-10).
+
+V-3 check: every mechanism is the design's (docs/design/variadics.md and
+docs/design/generics/details.md at upstream's 33863ed07, neither changed since
+57ba07a97), the fork's SemIR is internal representation, and no design page
+is edited; rev 1's
+type-structure hole was a second spelling of the design's type-structure
+rule, realigned before implementation. V-3a register entries, each with its
+work item: `...expand`'s typechecking is the design's TODO (W-217); tuple
+comparisons convert neither operand (W-334); a pack's bare name has no
+meaning yet (W-230); the fixed-arity `let` reading of :219-221 (W-214); a
+segment's rank against a `?` (W-338); comparisons of orderings that are not
+total (W-339).
+
+Records: W-225 discharged; W-212, W-213, W-214, W-218, W-219 and W-222 narrowed;
+W-215, W-220, W-221, W-223, W-224, W-226, W-229, W-230 and W-013 noted; W-330 to
+W-339 filed, W-335 as discharged by C0 and C0b. Both rows stay PARTIAL with
+narrower open text, expected, not of record, on the container run of 2026-10-27
+on bdd7b2424, whose toolchain is the carbonbuild toolchain of the fix 1ad7c9b5e,
+`conformance.sh` into a private directory with scoreboard generated
+2026-10-27T13:14:18Z and log
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/records/logs/conf_pre.log.
+
+Held state (2026-10-27, the discharge commit D, records only): the plan's rev 1
+(51c6cfb10), rev 2 (78524522b), rev 3 (8d377a06d) and rev 4 (7188540ca, signed
+off for implementation), its stop-and-amend and fold revisions rev 5 to rev 14
+(ef58cf5dd, 4d5388af2, e0038734f, 4299f9765, 956b73ffc, 529729be1, ea420acd6,
+f336c5105, 76071383a and c6e523472) and rev 15 (bdd7b2424, the implementation
+reviews' records commit); the commits C0 d92a9c709, C0b 64e9736c0 and its fill
+F0 8a7395cf1, C1 0aa8dd347 and F1 1a7c360e0, C2 3af0471b6 and F2 1afda55f0, C3
+3a39d69db and F3 4a627cd6c, C4 b40003716 and F4 1a9a0a11b, C5 4b7ca618e, which
+needs no fill, the fix 1ad7c9b5e and its fill 5bc6e5070, R 42a1ec16f, and D,
+which carries this entry. Expected, not of record (R9), on bdd7b2424, whose
+toolchain is the fix's: file_test 1977 passed, 0 failed, and 147 PASS / 0 FAIL /
+21 SKIP over 168 programs, 49/56 bullets PASS, where PR 59 has 1960 goldens and
+137 / 0 / 21 over 158. The id re-scan before D (plan §8.10, after a fetch, over
+90 refs and 20 worktrees) found none of W-330 to W-339 filed elsewhere, the
+highest filed ids being W-341 to W-344 on trunk and W-340 on DR-1b's branch, so
+no id is re-allocated and none of the ten is unused. PR 51 to PR 65 are held and
+none is on trunk (GitHub Actions is disabled, R28), so the land-time items M,
+S-CT, F-M, L-F and L (plan §3 item 15) are owed, and L brings this paragraph up
+to date on the merge of trunk. The plan's Sign-off has the focused re-review of
+the fix commits before R and D; this workflow wrote R and D first, so that
+re-review reads the fix, its fill and these records together (the plan's "Landed
+notes (VA-2, 2026-10-27)").
+
+Focused re-review of the fold, round 1 (2026-10-27, records only): two fresh
+reviews of f8d84ba75, both APPROVE-WITH-FIXES. Review 1 found one MAJOR,
+RR1-1-M1 (a pack of facets does not convert to a narrower facet type, so
+forwarding a tuple of one pack segment and the prelude's variadic impls reject
+IN forms whose fixed-arity twins run on PR 59 and trunk; C1's and C4's paths,
+not the fold's), and one MINOR, RR1-1-m1 (a diagnosed binding type in a `let`
+pack pattern still adds the deduced-arity TODO), both needing a toolchain change
+and a golden split. Review 2 found four MINORs, records only, folded by the
+records commit "VA-2 records: re-review round 1 recorded": the m62 mirror re-run
+with the fix (1985 of 1985, and PASS 152, SKIP 21 of 173) and the fix's files
+listed against each held head; a records-only commit after D is not a fix
+commit; this round recorded, with no mall re-run owed before the PR opens; and a
+negative index into a tuple of one pack segment reporting the TODO. Both reviews
+measured the gate at 1977 passed and 0 failed, conformance at PASS 147, 0
+failures, SKIP 21 of 168, and MV-15 to MV-18 killed. Round 1 is not dry, so
+round 2 is owed, its fixer taking the fix budget's last commit with its fill, or
+RR1-1-M1's stop-and-amend; nothing is shrunk, no id is filed, and W-225 stays
+DISCHARGED until round 2's fold (the plan's "Focused re-review of the fold,
+VA-2, round 1 (2026-10-27)").
+
+Focused re-review of the fold, round 2 (2026-10-27): the fold of round 1's two
+code findings by fix 3 ee6144ad9, "VA-2 fix 3: packs of facets converted to a
+narrower facet type", the fix budget's last commit, with its fill 903a0c321 and
+the records commit "VA-2 re-review fix: round 2 folded into the records".
+RR1-1-M1 is fixed at the root: a compile-time pack of types or facets that
+deduction converts to a pack of a narrower facet type is a `PackFacetValue`, a
+symbolic constant whose value in a specific is the pack of its elements each
+converted and whose pack type is its source's, so a tuple of one pack segment
+or a pack expansion forwarded to a callee of a narrower facet type, the
+prelude's variadic impls and a user's run as their fixed-arity twins do
+(D-VA2-5). RR1-1-m1: a `let` pack expansion pattern whose binding's type was
+diagnosed reports that diagnostic alone (D-VA2-4). Four splits in three goldens
+and three output lines of tuple_impl_generic.carbon (0, 1 and 5; the file
+changes by 22 insertions and 1 deletion) pin them; no TODO is added, the
+slice does not narrow, W-225 stays DISCHARGED and no id is filed (the W-345 of
+round 1's alternative is not taken). Expected, not of record: file_test 1977
+passed, 0 failed, and 147 PASS / 0 FAIL / 21 SKIP over 168 in three runs; the
+new mutants MV-19 to MV-23 killed; the mirrors m64, m60, m57, m62 and mdr green
+with it. The fix budget is used up, so a later code finding takes the plan's
+shrink line; round 2's two reviews read the fold next (the plan's "Focused
+re-review of the fold, VA-2, round 2 (2026-10-27)").
+
+Focused re-review of the fold, round 2, the reviews (2026-10-27, records only):
+two fresh reviews of 53460373d. Review 1, REJECT, found one BLOCKER, RR2-1-B1 (a
+pack expansion pattern in a file-scope `let`, such as `let (... unused each y:
+i32) = ();`, aborts the compiler: C2's `let` path admits it, and VA-1's
+interface check then reads an empty declaration-name stack, where PR 59 reports
+VA-1's TODO and trunk and the nightly reject it at parse), and three MINORs:
+RR2-1-m1 (importing a `PackFacetValue`, reached by a two-library probe, is
+pinned by no golden), RR2-1-m2 (a compile-time pack expanded as call arguments
+gets a wrong diagnostic with no location, where §4 requires a TODO; C1's and
+C2's) and RR2-1-m3 (records only). Review 2, APPROVE-WITH-FIXES, found five
+MINORs, records only, folded with RR2-1-m3 by the records commit "VA-2 records:
+re-review round 2 recorded": §5's tuple_impl_generic row and the three output
+lines that fix 3 adds to it; the rows' and the ledger's evidence predating fix
+3's program text, which L re-quotes from the merge commit; fix 3's twelve code
+comments, which name review ids, recorded in §2.0; the three paths of fix 3 that
+no golden pins; and clang-tidy's excluded check named. Both reviews measured the
+gate at 1977 passed and 0 failed and conformance at PASS 147, 0 failures, SKIP
+21 of 168. Round 2 is not dry, so round 3 is owed: with the fix budget used up,
+its fixer takes RR2-1-B1, RR2-1-m1 and RR2-1-m2 by the plan's shrink line in
+order or by D-VA2-19's break condition, a plan amendment that the reviews see
+first; nothing is shrunk, no id is filed, and the ledger and the gap rows do not
+change (the plan's "Focused re-review of the fold, VA-2, round 2 (2026-10-27)").
+
+Focused re-review of the fold, round 3 (2026-10-27, records only): with the
+fix budget used up, round 3's fixer takes D-VA2-19's break condition, since no
+shrink of the plan's §3 answers RR2-1-B1, RR2-1-m1 and RR2-1-m2 without
+breaking the plan's §0.2 measured rows: shrink 1 does not reach C2's `let`
+hunk; shrink 2, which includes it, would revert C3, C4 and C2's tuple-value
+and `let` hunks, taking back C3's Min, fix 3's forms through the prelude and
+C4's d01 to d03, which abort on PR 59, trunk and the nightly; and no shrink
+reaches C1's call-argument branch or fix 3's import path. The PR stops, and
+plan rev 16 budgets a fourth fix commit, fix 4, for exactly those three
+findings (the plan's §2.11), which the reviews of rev 16 read before it is
+committed: VA-1's interface check skipped for a `let`, so a file-scope `let`
+pack pattern reports the deduced-arity TODO, or its binding type's diagnostic
+alone, where the head aborts; `G(... each T)` in a call's argument list the
+`semantics TODO: pack expansion of a compile-time pack in a call's argument
+list`, W-345 reserved after a re-scan; and a two-library split importing a
+`PackFacetValue`. Measured on a scratch tree relinked over the head's objects,
+not of record: file_test 1977 passed, 0 failed after its fill, at its fixpoint
+in one pass; 147 PASS / 0 FAIL / 21 SKIP over 168 in three runs; MV-24 to
+MV-26 killed; of 145 probe lines, 22 change, each a targeted form. In round 3
+the head's toolchain, goldens and programs do not change, no id is filed, and
+the ledger and the gap rows do not change (the plan's "Focused re-review of
+the fold, VA-2, round 3 (2026-10-27)").
+
+Focused re-review of the fold, round 3, the reviews (2026-10-27, records only):
+two fresh reviews of dd61722d9 (plan rev 16), each REJECT for the head, whose
+toolchain is still fix 3's fill, and each finding the plan's §2.11 block sound,
+so rev 16's break condition is not met and no shrink is taken. Review 1 found
+two BLOCKERs: RR3-1-B1 (19 more file-scope `let` pack pattern shapes abort the
+compiler, `auto`, `private`, `export`, `ref`, `var` and a `let` after a choice
+or an interface among them, where PR 59 reports VA-1's TODO) and RR3-1-B2 (C1's
+collapse of `G(... each T)` passes a compile-time pack as one argument: a callee
+that deduces its pack runs with a pack of one element and no diagnostic,
+printing 1 where its fixed-arity twin prints 3, and a template-dependent callee
+aborts, where PR 59 refuses both); and one records-only MINOR, RR3-1-m1 (the
+design's Apply also needs W-345, and the rejected alternative's outcomes are
+W-345's break-condition data). Review 2 found RR3r2-B1, the same miscompile for
+a deduced callee, and three records-only MINORs: the plan's §3 item 12 and its
+D-VA2-19 index row still stating a budget of three; the Sign-off table listing
+round 2's code findings as open to round 3's fixer; and M-29's re-scan cite and
+an import_ref.cpp range. Fix 4's block answers the three BLOCKERs, so round 3 is
+not dry and round 4 is owed: its fixer commits fix 4 and its fill by the plan's
+hand-off note 8 unchanged, and fix 4's records commit files W-345 with the
+re-grade and adds the landed notes' bisection clause as the plan's §2.11 now
+words it. The four records-only MINORs and the BLOCKERs' records parts are
+folded by the records commit "VA-2 records: re-review round 3 recorded". Both
+reviews measured the head's gate at 1977 passed and 0 failed and conformance at
+PASS 147, 0 failures, SKIP 21 of 168, and fix 4's relinked block the same after
+its fill; nothing is committed to the toolchain, goldens or programs, no id is
+filed (W-345 stays reserved), and the ledger and the gap rows do not change (the
+plan's "Focused re-review of the fold, VA-2, round 3 (2026-10-27)").
+
+Focused re-review of the fold, round 4 (2026-10-27): round 3's three BLOCKERs,
+RR3-1-B1, RR3-1-B2 and RR3r2-B1, folded by fix 4 2f5865be3, "VA-2 fix 4:
+file-scope `let` pack patterns, compile-time packs as call arguments", the
+fourth fix commit that the plan's rev 16 budgets by D-VA2-19's break condition,
+with its fill 1517517eb and the records commit "VA-2 re-review fix: round 4
+folded into the records"; the two are the plan's §2.11 block and its measured
+fill byte for byte. VA-1's interface check is skipped for a `let`, so a pack
+expansion pattern in a file-scope `let` reports what the same `let` in a
+function reports, where the previous head aborted in 26 shapes and two more of
+review 2's; and a compile-time pack expanded as a call's arguments, `G(... each
+T)`, reports `semantics TODO: pack expansion of a compile-time pack in a call's
+argument list` at its `...`, where the previous head passed the pack as one
+argument, so that a callee that deduces an unconstrained type or pack of types
+ran with the wrong arity and no diagnostic for a variadic parameter and aborted
+for one that is not, one whose deduced type or pack an interface constrains
+reported a deduction error at the call, a template-dependent callee aborted, and
+any other callee reported a conversion with no location or, beside another
+expansion for the same pack, VA-1's merged-arguments TODO.
+W-345 is filed for that TODO after a re-scan, its notes recording the re-grade
+and the rejected alternative's outcomes, and W-214's notes gain the file-scope
+`let`; round 2's RR2-1-B1, RR2-1-m1 and RR2-1-m2 are folded with them. Expected,
+not of record: file_test 1977 passed, 0 failed, and 147 PASS / 0 FAIL / 21 SKIP
+over 168 in three runs; MV-24 to MV-26 killed on the branch. The fix budget of
+four is used up and nothing is shrunk; the gap rows do not change, and round 4's
+two reviews read the three commits next (the plan's "Focused re-review of the
+fold, VA-2, round 4 (2026-10-27)").
+
+Focused re-review of the fold, round 4, the reviews (2026-10-27, records only):
+two fresh reviews of 37991ee80, each APPROVE-WITH-FIXES, each judging the round
+dry: fix 4 2f5865be3 and its fill 1517517eb are the plan's §2.11 block and its
+measured fill byte for byte, and no finding is MAJOR or BLOCKER or needs a
+toolchain, prelude, golden or program change of this branch. Review 1 found
+three records-only MINORs: a pack expansion pattern in a choice alternative's
+parameter list, `choice C { A(... each x: i32) }`, passes VA-1's check and
+aborts in lowering, identically on PR 59, so the plan's hand-off note 9 routes
+its fix to PR 59 and fork/ORCHESTRATION.md requests an id; the plan's M-29
+counted one object for fix 4's build, which compiled two; and the landed notes'
+clause gave every callee that deduces its pack a silent wrong arity, where one
+whose deduced pack an interface constrains reported a deduction error at the
+call. Review 2 found three: W-345 missing from the Generics row's "Not yet" list
+and from W-213's and W-226's notes; the object count again; and the clause
+missing VA-1's merged-arguments TODO beside another expansion for the same pack.
+All six are folded by the records commit "VA-2 records: re-review round 4
+recorded", none rejected: the round 4 paragraph above and the landed notes below
+state the previous head's behavior as reproduced on a relink of fix 4's parent,
+where `G[U: type](u: U)` aborts given a pack of types too; the Generics row's
+"Not yet" list names W-345; and W-213's and W-226's notes name it. Both reviews
+measured the gate at 1977 passed and 0 failed and conformance at PASS 147, 0
+failures, SKIP 21 of 168; nothing is committed to the toolchain, goldens or
+programs, and no id is filed. Round 4 is dry, and the PR opens held with base
+claude/carbon-fork-0-1-va (the plan's "Focused re-review of the fold, VA-2,
+round 4 (2026-10-27)").
+
+Landed notes (commits of the branch that a later commit completes or fixes,
+kept because history is not rewritten; for bisection): rev 7 moved two hunks
+that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a
+pack in an impl's implicit parameter list (`each-name binding in an impl's
+implicit parameter list`), and C2 removes the refusal; the lowering of packs
+of aggregates, rev 11's C3b, is in C3 since rev 12; C0's message says the
+next commit fills its golden, which is the fill after C0b; C1 and C2 abort
+on a constant pack of aggregates until C3 (the plan's e12, which prints 14 on
+PR 59, and e14); and C1 to C5 abort on a destroyed tuple of one pack segment
+and on a pack of symbolic facets, and miscompile an integer index into a
+tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9); and C1
+to the round 1 records commit bdf941edc reject a compile-time pack of facets
+converted to a pack of a narrower facet type, and report a second TODO after
+a `let` binding's diagnosed type, until fix 3 ee6144ad9 (the plan's §2.10);
+and C2 3af0471b6 to abeccdbc5, fix 4's parent, abort on a pack expansion pattern
+in a file-scope `let`, and C1 0aa8dd347 to abeccdbc5 pass a compile-time pack
+expanded as call arguments as one argument: a callee that deduces an
+unconstrained type or pack of types for a variadic parameter gets the wrong
+arity with no diagnostic, and for a parameter that is not variadic aborts in
+lowering; one whose deduced type or pack is constrained by an interface gets a
+deduction error at the call; a template-dependent callee aborts in check; and
+any other callee gets a conversion error with no location or, beside another
+expansion for the same pack, VA-1's merged-arguments TODO, until fix 4 2f5865be3
+(the plan's §2.11).
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

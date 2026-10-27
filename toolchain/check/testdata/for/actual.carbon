@@ -160,7 +160,7 @@ fn Read(generic y: Core.IntLiteral) {
 // CHECK:STDOUT:   %OrderedWith.assoc_type.e6d: type = assoc_entity_type @OrderedWith, @OrderedWith(%Int.67af24.1) [symbolic]
 // CHECK:STDOUT:   %assoc0.ebc: %OrderedWith.assoc_type.e6d = assoc_entity element0, imports.%Core.import_ref.e7a [symbolic]
 // CHECK:STDOUT:   %require_complete.4c8: <witness> = require_complete_type %OrderedWith.type.6f8 [symbolic]
-// CHECK:STDOUT:   %assoc0.13c: %OrderedWith.assoc_type.1d2 = assoc_entity element0, imports.%Core.import_ref.447 [symbolic]
+// CHECK:STDOUT:   %assoc0.13c: %OrderedWith.assoc_type.1d2 = assoc_entity element0, imports.%Core.import_ref.447cae.1 [symbolic]
 // CHECK:STDOUT:   %M: Core.IntLiteral = symbolic_binding M, 1 [symbolic]
 // CHECK:STDOUT:   %Int.as.OrderedWith.impl.Less.type.89b: type = fn_type @Int.as.OrderedWith.impl.Less.1, @Int.as.OrderedWith.impl.ab3(%N.fe9, %M) [symbolic]
 // CHECK:STDOUT:   %Int.as.OrderedWith.impl.Less.050: %Int.as.OrderedWith.impl.Less.type.89b = struct_value () [symbolic]
@@ -260,14 +260,14 @@ fn Read(generic y: Core.IntLiteral) {
 // CHECK:STDOUT:   %CursorType: %Destroy.type = assoc_const_decl @CursorType [concrete] {}
 // CHECK:STDOUT:   %Core.import_ref.ebd: %facet_type.f48 = import_ref Core//prelude/iterate, loc{{\d+_\d+}}, loaded [concrete = %ElementType]
 // CHECK:STDOUT:   %ElementType: %facet_type.f48 = assoc_const_decl @ElementType [concrete] {}
-// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
-// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.cd63: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd63), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT:   %Core.Optional: %Optional.type = import_ref Core//prelude/types/optional, Optional, loaded [concrete = constants.%Optional.generic]
 // CHECK:STDOUT:   %Core.Copy.e5d: type = import_ref Core//prelude/copy, Copy, loaded [concrete = constants.%Copy.type]
 // CHECK:STDOUT:   %Core.OrderedWith: %OrderedWith.type.ad8 = import_ref Core//prelude/operators/comparison, OrderedWith, loaded [concrete = constants.%OrderedWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.ef7: @OrderedWith.WithSelf.%OrderedWith.assoc_type (%OrderedWith.assoc_type.1d2) = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [symbolic = @OrderedWith.WithSelf.%assoc0 (constants.%assoc0.13c)]
 // CHECK:STDOUT:   %Core.import_ref.e7a: @OrderedWith.WithSelf.%OrderedWith.WithSelf.Less.type (%OrderedWith.WithSelf.Less.type.b87) = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [symbolic = @OrderedWith.WithSelf.%OrderedWith.WithSelf.Less (constants.%OrderedWith.WithSelf.Less.9e1)]
-// CHECK:STDOUT:   %Core.import_ref.447 = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.447cae.1 = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.c1c8: @Int.as.OrderedWith.impl.ab3.%Int.as.OrderedWith.impl.Less.type (%Int.as.OrderedWith.impl.Less.type.89b) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.OrderedWith.impl.ab3.%Int.as.OrderedWith.impl.Less (constants.%Int.as.OrderedWith.impl.Less.050)]
 // CHECK:STDOUT:   %Core.import_ref.30c = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.664 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded

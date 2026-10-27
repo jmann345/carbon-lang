@@ -113,6 +113,24 @@ auto HandleParseNode(Context& context, Parse::ParenPatternId node_id) -> bool {
   context.param_and_arg_refs_stack().PopAndDiscard();
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::TuplePatternStart>();
+  // Fork (VA-2, D-VA2-9): "if the nearest enclosing delimiters around a `...`
+  // are parentheses, they will be interpreted as forming a tuple rather than
+  // as grouping" (docs/design/variadics.md, "Pack expansions"), so
+  // `(... each x: each T)` is a tuple pattern of one element.
+  if (context.insts().Is<SemIR::PackExpansionPattern>(pattern_id)) {
+    auto scrutinee_type_id = SemIR::ExtractScrutineeType(
+        context.sem_ir(), context.insts().Get(pattern_id).type_id());
+    pattern_id = AddInst(
+        context,
+        SemIR::LocIdAndInst::RuntimeVerified(
+            context.sem_ir(), SemIR::LocId(pattern_id),
+            SemIR::TuplePattern{
+                .type_id = GetPatternType(
+                    context,
+                    GetTupleType(context, {context.types().GetTypeInstId(
+                                              scrutinee_type_id)})),
+                .elements_id = context.inst_blocks().Add({pattern_id})}));
+  }
   context.node_stack().Push(node_id, pattern_id);
   // Start a new pending `ExprRegion`, to maintain the invariant that one is
   // pending at the end of handling for a pattern.

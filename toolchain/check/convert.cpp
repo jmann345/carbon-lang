@@ -521,11 +521,12 @@ static auto ConvertPackLiteralToPack(Context& context,
       context.sem_ir().GetZExtIntValue(pack_type.arity_id) == elements.size(),
       "Pack literal of {0} elements converted to {1}", elements.size(),
       target.type_id);
-  auto element_type_id =
-      context.types().GetTypeIdForTypeInstId(pack_type.element_type_inst_id);
   llvm::SmallVector<SemIR::InstId> value_ids;
   value_ids.reserve(elements.size());
-  for (auto element_id : elements) {
+  for (auto [index, element_id] : llvm::enumerate(elements)) {
+    // Fork (VA-2): the `index`th element of a pack of different types has the
+    // `index`th type of its pack of types.
+    auto element_type_id = GetPackElementTypeId(context, pack_type, index);
     auto converted_id = Convert(context, SemIR::LocId(element_id), element_id,
                                 {.kind = ConversionTarget::Value,
                                  .type_id = element_type_id,
@@ -547,11 +548,17 @@ static auto ConvertPackLiteralToPack(Context& context,
 // expansion whose body converts the source's element at the pack index; like
 // the argument's own expansion, it runs once per element. This only converts
 // the type, and produces a value.
-static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
+static auto ConvertPackToPack(Context& context, SemIR::LocId loc_id,
+                              SemIR::PackType src_type,
                               SemIR::PackType target_type,
                               SemIR::InstId value_id, ConversionTarget target)
     -> SemIR::InstId {
   SemIR::LocId value_loc_id(value_id);
+  // Fork (VA-2, RR1-1-M1): a compile-time pack that deduction converts is a
+  // constant with no location of its own; its conversion is the call's.
+  if (!context.insts().GetCanonicalLocId(value_id).has_value()) {
+    value_loc_id = loc_id;
+  }
 
   // Deduction made the target's arity the source's.
   CARBON_CHECK(context.constant_values().Get(src_type.arity_id) ==
@@ -566,16 +573,19 @@ static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
       context, value_loc_id,
       {.type_id =
            GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
-  auto element_id = AddInst<SemIR::PackElement>(
-      context, value_loc_id,
-      {.type_id = context.types().GetTypeIdForTypeInstId(
-           src_type.element_type_inst_id),
-       .pack_id = value_id,
-       .index_id = index_id});
+  // Fork (VA-2): the element types of a pack of different types depend on
+  // the pack index.
+  auto src_element_type_id =
+      GetPackElementType(context, value_loc_id, src_type);
+  auto target_element_type_id =
+      GetPackElementType(context, value_loc_id, target_type);
+  auto element_id = AddInst<SemIR::PackElement>(context, value_loc_id,
+                                                {.type_id = src_element_type_id,
+                                                 .pack_id = value_id,
+                                                 .index_id = index_id});
   auto result_id = Convert(context, value_loc_id, element_id,
                            {.kind = ConversionTarget::Value,
-                            .type_id = context.types().GetTypeIdForTypeInstId(
-                                target_type.element_type_inst_id),
+                            .type_id = target_element_type_id,
                             .diagnose = target.diagnose});
   CARBON_CHECK(context.inst_block_stack().is_current_block_reachable() &&
                    context.inst_block_stack().PeekOrAdd() == body_block_id,
@@ -594,6 +604,19 @@ static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
                    "pack element conversion that needs a cleanup");
     }
     return SemIR::ErrorInst::InstId;
+  }
+  // Fork (VA-2, RR1-1-M1): a compile-time pack of types or facets, such as
+  // the pack `T` of `[... each T: I & J]` that deduction converts to the type
+  // of a callee's or an impl's `[... each U: I]`, converts as a facet does to
+  // a facet type, to a compile-time pack: the pack of facets whose element is
+  // the element conversion checked above, which is a constant.
+  if (context.constant_values().Get(value_id).is_constant() &&
+      context.constant_values().Get(result_id).is_constant() &&
+      context.types().Is<SemIR::FacetType>(src_element_type_id) &&
+      context.types().Is<SemIR::FacetType>(target_element_type_id)) {
+    return AddInst<SemIR::PackFacetValue>(
+        context, value_loc_id,
+        {.type_id = target.type_id, .pack_id = value_id});
   }
   return AddInst<SemIR::PackExpansionExpr>(context, value_loc_id,
                                            {.type_id = target.type_id,
@@ -618,6 +641,85 @@ static auto ConvertFunctionToCppPointer(
        .function_id = src_type.function_id});
 }
 
+// Fork (VA-2, D-VA2-9): initializes a tuple of one pack segment of type
+// `dest_pack` from `value_id`, a tuple of one segment of type `src_pack`, or
+// the literal of one pack whose elements `literal` holds: "`...` in a tuple
+// literal behaves like a series of comma-separated tuple elements"
+// (docs/design/variadics.md, "Pack expansion expressions and statements"), so
+// each element of the destination is initialized from the source's element at
+// the pack index, once per element, by the element type's own initialization.
+static auto InitializeTupleSegment(Context& context, SemIR::PackType src_pack,
+                                   SemIR::PackType dest_pack,
+                                   SemIR::InstId value_id,
+                                   const LiteralElements& literal,
+                                   ConversionTarget target) -> SemIR::InstId {
+  SemIR::LocId value_loc_id(value_id);
+  CARBON_CHECK(target.storage_id.has_value(),
+               "Tuple with a pack segment initialized without storage");
+
+  // The pack of the source's elements: the literal's one element, or else the
+  // tuple itself, whose element at the pack index is the same.
+  auto src_id = value_id;
+  if (literal.has_value()) {
+    src_id = context.inst_blocks().Get(literal.elems_id).front();
+    if (literal.specific_id.has_value()) {
+      src_id = AddSpecificInst(context, src_id, literal.specific_id);
+    }
+  }
+
+  auto cleanup_depth = context.scope_stack().cleanup_scope_depth();
+  context.inst_block_stack().Push();
+  auto body_block_id = context.inst_block_stack().PeekOrAdd();
+  auto index_id = AddInst<SemIR::PackIndex>(
+      context, value_loc_id,
+      {.type_id =
+           GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
+  auto src_elem_id = AddInst<SemIR::PackElement>(
+      context, value_loc_id,
+      {.type_id = GetPackElementType(context, value_loc_id, src_pack),
+       .pack_id = src_id,
+       .index_id = index_id});
+  auto dest_elem_type_id = GetPackElementType(context, value_loc_id, dest_pack);
+  PendingBlock elem_storage_block(&context);
+  auto dest_elem_id = elem_storage_block.AddInst<SemIR::PackElement>(
+      value_loc_id, {.type_id = dest_elem_type_id,
+                     .pack_id = target.storage_id,
+                     .index_id = index_id});
+  auto init_id = Convert(context, value_loc_id, src_elem_id,
+                         {.kind = ConversionTarget::InPlaceInitializing,
+                          .type_id = dest_elem_type_id,
+                          .storage_id = dest_elem_id,
+                          .storage_access_block = &elem_storage_block,
+                          .diagnose = target.diagnose});
+  elem_storage_block.InsertHere();
+  // Fork (VA-1, D-VA-6): the body runs as one straight-line block per element,
+  // with no temporary to destroy.
+  bool is_straight_line =
+      context.inst_block_stack().is_current_block_reachable() &&
+      context.inst_block_stack().PeekOrAdd() == body_block_id;
+  bool needs_cleanup =
+      context.scope_stack().cleanup_scope_depth() != cleanup_depth;
+  context.inst_block_stack().Pop();
+  if (init_id == SemIR::ErrorInst::InstId) {
+    return SemIR::ErrorInst::InstId;
+  }
+  if (!is_straight_line || needs_cleanup) {
+    if (target.diagnose) {
+      context.TODO(value_loc_id, is_straight_line
+                                     ? "pack element conversion that needs a "
+                                       "cleanup"
+                                     : "control flow in a pack expansion");
+    }
+    return SemIR::ErrorInst::InstId;
+  }
+
+  target.storage_access_block->InsertHere();
+  return AddInst<SemIR::PackSegmentInit>(context, value_loc_id,
+                                         {.type_id = target.type_id,
+                                          .body_block_id = body_block_id,
+                                          .dest_id = target.storage_id});
+}
+
 // Performs a conversion from a tuple to a tuple type. This function only
 // converts the type, and does not perform a final conversion to the requested
 // expression category.
@@ -638,6 +740,56 @@ static auto ConvertTupleToTuple(Context& context, SemIR::TupleType src_type,
       GetAggregateLiteralElements<SemIR::TupleLiteral>(context, value_id);
   if (!literal.has_value()) {
     value_id = MaterializeIfInitializer(context, value_id);
+  }
+
+  // Fork (VA-2, D-VA2-9): a tuple of one pack segment converts to a tuple of
+  // the same one segment, whose elements are as many as the segment's arity:
+  // it is initialized by one pack segment initialization, and its value is
+  // converted element by element below, its one element being the pack.
+  // Matching a segment with other elements or with another arity, "merging"
+  // segments (docs/design/variadics.md, "Typechecking pattern matches"), is
+  // not implemented.
+  auto is_segment = [&](SemIR::InstId elem_type_id) {
+    return sem_ir.insts().Is<SemIR::PackType>(elem_type_id);
+  };
+  if (llvm::any_of(src_elem_types, is_segment) ||
+      llvm::any_of(dest_elem_types, is_segment)) {
+    if (src_elem_types.size() != 1 || dest_elem_types.size() != 1 ||
+        !is_segment(src_elem_types.front()) ||
+        !is_segment(dest_elem_types.front()) ||
+        context.constant_values().Get(
+            sem_ir.insts()
+                .GetAs<SemIR::PackType>(src_elem_types.front())
+                .arity_id) !=
+            context.constant_values().Get(
+                sem_ir.insts()
+                    .GetAs<SemIR::PackType>(dest_elem_types.front())
+                    .arity_id)) {
+      if (target.diagnose) {
+        context.TODO(value_loc_id,
+                     "tuple pack segment matched with other segments");
+      }
+      return SemIR::ErrorInst::InstId;
+    }
+    if (target.is_initializer()) {
+      return InitializeTupleSegment(
+          context,
+          sem_ir.insts().GetAs<SemIR::PackType>(src_elem_types.front()),
+          sem_ir.insts().GetAs<SemIR::PackType>(dest_elem_types.front()),
+          value_id, literal, target);
+    }
+    // A tuple that is not a literal has no element to convert: its one
+    // element is not its first element, and its value is the specific's.
+    if (!literal.has_value()) {
+      if (src_type.type_elements_id == dest_type.type_elements_id) {
+        return value_id;
+      }
+      if (target.diagnose) {
+        context.TODO(value_loc_id,
+                     "tuple pack segment matched with other segments");
+      }
+      return SemIR::ErrorInst::InstId;
+    }
   }
 
   // Check that the tuples are the same size.
@@ -718,6 +870,14 @@ static auto ConvertTupleToType(Context& context, SemIR::LocId loc_id,
               value_const_id)) {
     for (auto tuple_inst_id :
          context.inst_blocks().Get(tuple_value->elements_id)) {
+      // Fork (VA-2): a segment that is a compile-time pack of types or
+      // facets, `... each T`, is the type segment `...⟬each T⟭`.
+      if (auto pack_type = context.types().TryGetAs<SemIR::PackType>(
+              context.insts().Get(tuple_inst_id).type_id())) {
+        type_inst_ids.push_back(context.types().GetTypeInstId(
+            GetPackType(context, tuple_inst_id, pack_type->arity_id)));
+        continue;
+      }
       // TODO: This call recurses back into conversion. Switch to an
       // iterative approach.
       type_inst_ids.push_back(
@@ -1891,10 +2051,34 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       return ConvertPackLiteralToPack(context, *literal, *target_pack_type,
                                       value_id, target);
     }
+    // Fork (VA-2): a pack value of known arity, such as a compile-time pack of
+    // types deduced for `T` in `[... each T: I]`, converts element by
+    // element, so that a pack of constants converts to a pack of constants.
+    if (auto pack_value = value.TryAs<SemIR::PackValue>();
+        pack_value && sem_ir.GetZExtIntValue(target_pack_type->arity_id)) {
+      auto elements = sem_ir.inst_blocks().Get(pack_value->elements_id);
+      llvm::SmallVector<SemIR::InstId> converted_ids;
+      converted_ids.reserve(elements.size());
+      for (auto [index, element_id] : llvm::enumerate(elements)) {
+        auto converted_id = Convert(
+            context, loc_id, element_id,
+            {.kind = ConversionTarget::Value,
+             .type_id = GetPackElementTypeId(context, *target_pack_type, index),
+             .diagnose = target.diagnose});
+        if (converted_id == SemIR::ErrorInst::InstId) {
+          return SemIR::ErrorInst::InstId;
+        }
+        converted_ids.push_back(converted_id);
+      }
+      return AddInst<SemIR::PackValue>(
+          context, loc_id,
+          {.type_id = target.type_id,
+           .elements_id = context.inst_blocks().Add(converted_ids)});
+    }
     if (auto src_pack_type =
             sem_ir.types().TryGetAs<SemIR::PackType>(value_type_id)) {
-      return ConvertPackToPack(context, *src_pack_type, *target_pack_type,
-                               value_id, target);
+      return ConvertPackToPack(context, loc_id, *src_pack_type,
+                               *target_pack_type, value_id, target);
     }
   }
 
@@ -2469,6 +2653,10 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
                  .storage_id = target.storage_id,
                  .in_place = SemIR::BoolValue::From(
                      target.kind == ConversionTarget::InPlaceInitializing)})});
+    // Fork (VA-2, D-VA2-14): the action was refused.
+    if (action_id == SemIR::ErrorInst::InstId) {
+      return action_id;
+    }
 
     // Extract the first result: this is the instruction that performs the
     // initialization and produces the result.

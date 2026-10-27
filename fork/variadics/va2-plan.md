@@ -6,7 +6,28 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 12, 2026-10-27 -- the fold of the focused re-review of rev 11
+**Status:** rev 13, 2026-10-27 -- the implementation's fifth stop-and-amend,
+at stage 6 (C5, §3 item 11), which the "Stop-and-amend record (rev 13,
+2026-10-27)" before the Sign-off section records. The stopped run wrote
+Appendix A's 13 files verbatim and reproduced every prediction of C5: the ten
+programs' outputs, the three oracles, conformance 147 / 0 / 21 of 168 with
+bullets 49 / 0 / 7 of 56, the self-test's 168 programs and 56 bullets, the
+README's ten rows and the gate's 1975 passed. But prek's clang-format hook
+rewrapped §A.1's oracle, whose fifth line was 84 columns: rev 1's was 79, and
+rev 2's `*_diff` rename (B-m3) lengthened it by five without a rewrap, while no
+revision ran clang-format on Appendix A's C++ fences, which M-10 compiled and
+ran only. So Appendix A's "verbatim" and the prek fixpoint of §3 and §8.6
+could not both hold. Since rev 13 §A.1's fence is clang-format's output, the
+word `Carbon` moved from its fifth line to its sixth, a change to a comment
+that the stopped run's post-prek oracle holds byte for byte; all three
+oracles, like the 24 already in the tree, are clang-format clean; and on the
+C4 install the saved C5 state passes prek unchanged in one pass, its oracle
+compiles and prints the same lines, and conformance, the self-test and the
+gate are as predicted (M-26). No code, golden, count or D-VA2 decision changes,
+no commit is reset, C5 never having been committed, and stage 6 re-runs from
+the rev 13 commit with the record's instructions (amended 2026-10-27,
+implementation: stop-and-amend: the §A.1 oracle's comment wrap). Rev 12
+(f336c5105, 2026-10-27) is the fold of the focused re-review of rev 11
 (ea420acd6, on F2 1afda55f0), whose verdict was APPROVE-WITH-AMENDMENTS on one
 MAJOR and six MINORs, recorded in the rev 12 part of the "Stop-and-amend record
 (rev 11, 2026-10-27)". Rev 11 left C3 to be committed alone, with C3b after it,
@@ -328,7 +349,21 @@ under /dev/shm/va2-impl/builds, one at a time (all deleted when rev 12 was
 committed), beside the re-review's directory `amendrr11` beside `$Z`, and the
 scratch directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend12`
-(`$Y` below) (amended 2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m4).
+(`$Y` below) (amended 2026-10-27, review fold: RR11-M1 / RR11-m1 / RR11-m4). The
+measurements of rev 13 were taken by the plan amender of the implementation's
+fifth stop-and-amend with the implementer's install
+/home/user/carbon-build/carbon-va2, whose `carbon version` prints
+`0.0.0-0.dev+b40003716`, C4's toolchain state, which the fill F4 (1a9a0a11b)
+does not change; with the stopped run's saved C5 applied to the worktree for
+prek, R31, the self-test, conformance and the gate, and removed again with
+explicit paths; with LLVM 21.1.8's clang-format and clang++ and the toolchain's
+clang++, whose binaries were built under /dev/shm/va2-amend/orc and deleted
+after use; beside the implementer's stage 6 directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/stage6`
+(`$E`), and the scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend13`
+(`$T` below) (amended 2026-10-27, implementation: stop-and-amend: the §A.1
+oracle's comment wrap).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -859,7 +894,11 @@ given C4's three impl declarations with bodies the prototype can check
 
 M-10. The three C++ oracles (§A.1, §A.7, §A.8), compiled with LLVM 21.1.8's
 `clang++ -std=c++17 -Wall -Wextra -Werror -stdlib=libc++` and run
-(`$Q/oracles`), print exactly the hand-derived lines of §5.
+(`$Q/oracles`), print exactly the hand-derived lines of §5. They were compiled
+and run, never formatted; since rev 13 each is clang-format 21.1.8 clean with
+the repository's .clang-format, §A.1's after clang-format's wrap of its
+comment (M-26) (amended 2026-10-27, implementation: stop-and-amend: the §A.1
+oracle's comment wrap).
 
 M-11. The nine rev 1 programs parse on PR 59's install; the four stdlib
 programs, which use no pack syntax, check there with errors only at their
@@ -2082,6 +2121,62 @@ the F1 mirror `probes_c1_summary.txt`):
 -   Upstream: `git fetch upstream trunk` and `git ls-remote upstream
     refs/heads/trunk` give 4c5734a8c, rev 11's tip.
 
+M-26. The §A.1 oracle's comment wrap (amended 2026-10-27, implementation:
+stop-and-amend: the §A.1 oracle's comment wrap). With `$T/bin/extract.py`
+(the stopped run's `$E/bin/extract.py`), LLVM 21.1.8's
+/home/user/llvm/bin/clang-format and the repository's .clang-format
+(`BasedOnStyle: Google`, so a column limit of 80, byte-identical to upstream's
+at 4c5734a8c, whose .pre-commit-config.yaml runs `clang-format -i` from the
+package clang-format 21.1.8 on every C++ file, :128-134 there and on this
+branch):
+
+-   The difference. Rev 12's §A.1 to §A.10 give the 13 files of `$E/src` byte
+    for byte (`$T/logs/extract12.txt`). `clang-format --dry-run --Werror`
+    exits 1 on §A.1's oracle, at 5:78, 5:85 and 6:1, and 0 on §A.7's and
+    §A.8's (`$T/logs/cf12_*.log`); of the 13 files only that fifth line is
+    longer than 80 columns, at 84. The 24 oracles already in
+    fork/conformance/programs are clang-format clean
+    (`$T/logs/existing_oracles_cf.txt`).
+-   Root cause. Rev 1's line, `// Differential C++17 equivalent of
+    variadics_hetero_digits.carbon: each Carbon`, was 79 columns (`git show
+    51c6cfb10:fork/variadics/va2-plan.md`); rev 2 renamed the pair to
+    `*_diff` (B-m3), which lengthened the line by five without a rewrap, where
+    §A.8's sentence was rewrapped. M-10 compiled and ran the oracles, no
+    revision formatted them, and prek on the plan does not format a fence. A
+    plan text that was never formatted: not a header a relink missed, a golden
+    the manifest missed, a defect of a measured diff or a misread rule.
+-   The fix. clang-format's output,
+    `$T/cf/variadics_hetero_digits_diff.diff.cpp` (66 lines, md5
+    2c58c3bce1bf0385a745d04414ab2f9e), moves `Carbon` from the fifth line to
+    the start of the sixth and changes nothing else. It is byte-identical to
+    the post-prek oracle of `$E/c5_uncommitted_source_state_post_prek.patch`,
+    whose other 12 program files are rev 12's fences byte for byte, and it is
+    §A.1's fence since rev 13. The toolchain's clang++ (clang 24.0.0git) and
+    LLVM 21.1.8's, with `-std=c++17 -Wall -Wextra -Werror -stdlib=libc++`,
+    compile it with no output, and three runs print 6, 742074, 3, 422, 0, 0,
+    40293 and 5 (`$T/logs/oracle_rev13.txt`).
+-   The saved state on the worktree.
+    `$E/c5_uncommitted_source_state_post_prek.patch` (14 files, 857
+    insertions, the paths of `$T/files.txt`) applies to F4 1a9a0a11b. prek
+    with a private cache and §8.6's SKIP list passes, 15 hooks passed and 17
+    skipped, and changes nothing in one pass (`$T/logs/prek_c5_1.log`,
+    `$T/pre_prek.md5`, `$T/post_prek1.md5`). R31 on fork/conformance/README.md
+    gives headings {1: 1, 2: 4, 3: 3}, bullets 22, numbered 6, rows 160, lines
+    415 and blocks 5 at F4, and rows 170 and lines 425 with the patch, the rest
+    the same, before and after prek. `runner.py --self-test` prints
+    "self-test: 168 programs parsed, 56 bullets in table, OK". Conformance on
+    the C4 install prints "PASS 147, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+    OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 168)", bullets 49 PASS, 0
+    FAIL, 7 SKIP and 0 NOT-WRITTEN of 56, the ten programs PASS
+    (`$T/logs/conf.log`, `ten_status.txt`), and the gate prints "1975 passed,
+    0 failed" with no crash (`$T/logs/gate.txt`). On a private index, F4 with
+    the patch has the `fork/conformance` tree
+    84418c0de08eb81bd94195159d36b54afdc4e838 and F4's `toolchain` and `core`
+    trees. The worktree was restored with explicit paths.
+-   Upstream: `git fetch upstream trunk` and `git ls-remote upstream
+    refs/heads/trunk` give 4c5734a8c, rev 12's tip
+    (`$T/logs/upstream_tip.txt`).
+
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
 VA-1's §1.4 built one path for a pack of one element type `«E; N»`
@@ -2398,6 +2493,11 @@ since rev 2 added `variadics_strcat`, amended 2026-10-22, review fold: B-M3).
     and a break condition that reads backwards; two of §2.5's decisions had no
     break condition; and PR 59's abort on defect A was handed to no one. All
     are measured and corrected by rev 12 (M-25).
+-   F-16 (amended 2026-10-27, implementation: stop-and-amend: the §A.1
+    oracle's comment wrap). Rev 2's rename of §A.1's pair left the oracle's
+    fifth line at 84 columns, and no revision formatted Appendix A's C++
+    fences, so Appendix A's "verbatim" and the prek fixpoint of §3 and §8.6
+    contradicted each other at C5. Measured and corrected by rev 13 (M-26).
 
 ## §1 Design
 
@@ -5091,7 +5191,11 @@ The commits, in order:
     (R-5).
 11. **C5, programs** (Appendix A): the ten programs and three `.diff.cpp`
     files, and fork/conformance/README.md's table regenerated by
-    `runner.py --update-readme-table`. Expected: §8.4's totals.
+    `runner.py --update-readme-table`. Expected: §8.4's totals. Since rev 13
+    the 13 files are Appendix A's fences as rev 13 states them, §A.1's oracle
+    with clang-format's wrap, and prek on C5's 14 files passes and changes
+    nothing in one pass (M-26) (amended 2026-10-27, implementation:
+    stop-and-amend: the §A.1 oracle's comment wrap).
 12. **Implementation reviews** (two, R29(c)), then at most three fix commits
     by a separate fixer, each with its own fill, each named "VA-2 fix <n>:
     <subject>", or a shrink above.
@@ -5984,6 +6088,18 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     pack-free analog has on trunk too, such as the lowering of a comparison on
     `Core.IntLiteral` (q01 to q04 and p06_destroy, M-25), is upstream's class,
     recorded, not a stop (amended 2026-10-27, review fold: RR11-m3).
+-   **R-18. A text this plan gives verbatim is changed by a prek hook** (added
+    by rev 13) (amended 2026-10-27, implementation: stop-and-amend: the §A.1
+    oracle's comment wrap). §A.1's oracle reached C5 with a comment line of 84
+    columns, which prek's clang-format hook rewraps, so Appendix A's text and
+    the prek fixpoint contradicted each other (M-26). Since rev 13 every C++
+    fence of Appendix A is clang-format 21.1.8 clean, measured, and C5's 14
+    files pass prek unchanged in one pass. Detected by prek before every
+    commit (§8.6) and by `clang-format --dry-run --Werror` on any C++ fence a
+    revision adds or edits; falsified by a hook that changes a text of
+    Appendix A, or of §A.12 once its fields are filled and wrapped by hand,
+    which is a stop and a plan revision that states the hook's output as the
+    text.
 
 ### §7.2 Rejected alternatives
 
@@ -6158,6 +6274,18 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     free and measured (M-25). Falsified as a rejection if an implementation
     review requires §2.8's fix as a commit of its own, which then comes after
     the reviews by revert commits, never by a rewrite.
+-   **A-18. §A.1's oracle committed as rev 12 wrote it, or prek's output
+    committed without a revision** (rejected; added by rev 13) (amended
+    2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment
+    wrap). The first commits a file that the repository's clang-format hook
+    rewrites, against the prek fixpoint of §3 and §8.6 and R18, or needs a
+    `// clang-format off` region, which none of the 24 oracles in the tree
+    has; the second commits a file that differs from Appendix A, which §8
+    makes a stop. Rejected for a revision that takes clang-format's output,
+    a change to a comment that compiles and prints as before (M-26).
+    Falsified as a rejection by an oracle whose clang-format output differs
+    from its fence beyond comments, which a revision then compiles, runs and
+    measures against conformance again before C5 commits it.
 
 ## §8 Verification and discharge
 
@@ -6378,6 +6506,17 @@ written from private indexes; and `git merge-tree` of every held head, trunk and
 upstream's tip with 525e95792 (`$Y/logs/mt_held_c3r12.txt`). The worktrees, the
 mirrors and the relinked binaries were removed when rev 12 was committed.
 
+Rev 13's are the plan amender's of the implementation's fifth stop-and-amend
+(amended 2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment
+wrap), with `$T` the directory the header names and every rev 13 number in
+`$T` (M-26): Appendix A's fences extracted by `$T/bin/extract.py`;
+clang-format 21.1.8 over the three oracles and the 24 in the tree; the
+rewrapped oracle compiled with the toolchain's clang++ and LLVM 21.1.8's and
+run under /dev/shm/va2-amend/orc; with the stopped run's saved C5 on the
+worktree, prek, R31, the self-test, conformance on the C4 install and the
+gate; the `fork/conformance` tree from a private index; and upstream's tip.
+The worktree was restored with explicit paths and the binaries removed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -6473,7 +6612,10 @@ C3 too, on the stopped run's install, and C3b on its relink: 137 / 0 / 21 over
 158 and bullets 49 / 0 / 7 of 56 (M-24) (amended 2026-10-27, implementation:
 stop-and-amend: C3's p06 line and packs of aggregates); and C3 with §2.8's
 hunks, as rev 12 states it, on its relink (M-25) (amended 2026-10-27, review
-fold: RR11-M1).
+fold: RR11-M1). C5 as rev 13 states it, on the C4 install: the totals, the
+bullets and the ten PASS above, measured with the oracle that prek leaves
+(M-26) (amended 2026-10-27, implementation: stop-and-amend: the §A.1 oracle's
+comment wrap).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -6530,7 +6672,13 @@ changed since b0822a744 (M-24) (amended 2026-10-27, implementation:
 stop-and-amend: C3's p06 line and packs of aggregates). Since rev 12 those are
 C3's files: C3's passes are the stopped run's over its 8 .cpp files (`$W/tidy`)
 and rev 11's over these two (`$Z/tidy`), which stand while C3's code is
-`$Y/c3_rev12.patch`'s (amended 2026-10-27, review fold: RR11-M1).
+`$Y/c3_rev12.patch`'s (amended 2026-10-27, review fold: RR11-M1). Since rev 13
+prek on C5's 14 files passes and changes nothing in one pass, every C++ fence of
+Appendix A being clang-format clean (M-26). A hook that changes a text this plan
+gives verbatim is a difference, as at rev 12's stop (R-18); §A.12's texts are
+verbatim but for their `<...>` fields, and the stage that fills a field wraps by
+hand (R31) each markdown line that the field lengthens before prek (amended
+2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment wrap).
 
 ### §8.7 Composition mirrors (implementer, before the implementation reviews)
 
@@ -8036,7 +8184,146 @@ reset or rewritten, C3 never having been committed; and no W id is minted:
 defect A is VA-1's lowering of W-013's packs, handed to the orchestrator for
 PR 59 by hand-off note 7, and defect B C1's of W-212's, fixed in C3.
 
+## Stop-and-amend record (rev 13, 2026-10-27)
+
+Stage 6 of the implementation (C5, §3 item 11) stopped before committing C5 on
+2026-10-27 and returned the difference below; the plan amender reproduced it,
+found its root cause and wrote this revision (amended 2026-10-27,
+implementation: stop-and-amend: the §A.1 oracle's comment wrap). The stage's
+state at the stop: the branch holds the plan's revisions to rev 12 and C0, C0b,
+F0, C1, F1, C2, F2, C3, F3, C4 and F4, all on origin (head 1a9a0a11b, F4; the
+command `git branch -r --contains 1a9a0a11b` prints
+`origin/claude/carbon-fork-0-1-va2`); nothing of stage 6 was committed or
+pushed; the worktree is clean; the stopped run's C5 after prek is saved as
+`$E/c5_uncommitted_source_state_post_prek.patch` (14 files, 857 insertions on
+1a9a0a11b); and the install /home/user/carbon-build/carbon-va2 prints
+`0.0.0-0.dev+b40003716`, C4's toolchain state, which C5 does not change.
+
+The difference, as the implementer recorded it (`$E/stage.log`,
+`$E/prek_oracle_reflow.diff`, `$E/logs/prek_1.log` and `prek_2.log`): the file
+fork/conformance/programs/generics/variadics_hetero_digits_diff.diff.cpp,
+written verbatim from §A.1's cpp fence, was predicted to pass prek unchanged
+(§3, §8.6), and prek's clang-format hook rewrapped its lines 5 and 6. The fifth,
+`// Differential C++17 equivalent of variadics_hetero_digits_diff.carbon: each
+Carbon`, is 84 columns, and the hook moved its last word to the start of the
+sixth, `// function over a pack of different types is a function template over
+a`. The file keeps its 66 lines, prek's second pass changed nothing, and no
+other file changed. Every other prediction held: the ten programs' outputs of
+§5 and Appendix A, three runs each; the three oracles with the toolchain's
+clang++ and LLVM 21.1.8's; conformance 147 / 0 / 21 of 168 with bullets 49 / 0
+/ 7 / 0 of 56; the self-test's 168 programs and 56 bullets; the README's ten
+rows; and the gate, 1975 passed and 0 failed.
+
+Root cause (M-26). A plan text that no revision formatted. Rev 1's line was 79
+columns; rev 2's rename of the pair to `*_diff` (B-m3) added five characters
+without a rewrap, M-10 compiled and ran the oracles but never formatted them,
+and prek on the plan does not format a fence. So Appendix A's "verbatim" and
+the prek fixpoint of §3 and §8.6 could not both hold at C5. It is not a header
+a relink missed, a golden the manifest missed, a defect of a measured diff, a
+wrong prediction of a count or output, or a misread rule: the repository's
+.clang-format and its clang-format hook are upstream's at 4c5734a8c.
+
+The amendment:
+
+-   §A.1's cpp fence takes clang-format's output: `Carbon` moves from the fifth
+    line to the start of the sixth, and nothing else changes. The file is
+    byte-identical to the stopped run's post-prek oracle (md5
+    2c58c3bce1bf0385a745d04414ab2f9e), compiles with both compilers and
+    prints the same eight lines; the other 12 files and the README stand
+    as the stopped run wrote them (M-26).
+-   Marked: the header, M-10, M-26 (new), F-16 (new), §3 item 11, §7.1's R-18
+    (new), §7.2's A-18 (new), §8.0, §8.4, §8.6, Appendix A's lead, §A.1, this
+    record and the Sign-off.
+-   No D-VA2 decision changes, D-VA2-16 included: the programs, their pairs and
+    their outputs are rev 12's. No code, golden, count or prediction of §4, §5,
+    §6 or §8.3 changes, no W id is minted, §A.12's records are unchanged, and no
+    commit is reset or rewritten: C5 was never committed.
+
+R32: upstream's tip is 4c5734a8c (`git fetch upstream trunk` and `git
+ls-remote upstream refs/heads/trunk`, 2026-10-27), rev 12's. The amendment adds
+no mechanism, spelling or diagnostic: it rewraps a comment in a fork program,
+and the rule it follows is upstream's own, the .clang-format of 4c5734a8c
+(`BasedOnStyle: Google`, byte-identical on this branch) applied by its
+.pre-commit-config.yaml (:128-134, `clang-format -i` from the package
+clang-format 21.1.8 on every C++ file). No design page is read differently.
+
+Instructions to the implementer, for stage 6 re-run after the focused re-review
+of this amendment:
+
+1.  Start at the rev 13 commit, on F4 (1a9a0a11b). Nothing of stage 6 is in the
+    history, so nothing is reset: `git -C /home/user/carbon-va2 branch -r
+    --contains 1a9a0a11b` prints `origin/claude/carbon-fork-0-1-va2`, `git -C
+    /home/user/carbon-va2 log origin/claude/carbon-fork-0-1-va2..HEAD
+    --oneline` prints only the plan commits since F4 (rev 13's, and rev 14's
+    if the re-review's fold adds one), and `git -C /home/user/carbon-va2 status
+    --short` is empty. The install needs no build: its `carbon version` prints
+    `0.0.0-0.dev+b40003716`. Read upstream's tip (`git -C /home/user/carbon-va2
+    fetch upstream trunk` and `git -C /home/user/carbon-va2 ls-remote upstream
+    refs/heads/trunk`) and record it in the stage's log: rev 13 reads
+    4c5734a8c; a later tip is listed with the files it changes since
+    4c5734a8c, and it is a difference if it changes .clang-format,
+    .pre-commit-config.yaml or a design page of the header's list.
+2.  Write the 13 files from rev 13's Appendix A, as stage 6 did: `python3 -I
+    $T/bin/extract.py /home/user/carbon-va2/fork/variadics/va2-plan.md <a
+    private directory>`, which lists the 13 files and skips §A.5's and §A.10's
+    `diff` fences, then each file to fork/conformance/programs/<its path>. Each
+    is byte-identical to its file in
+    `$E/c5_uncommitted_source_state_post_prek.patch`: the §A.1 oracle's md5 is
+    2c58c3bce1bf0385a745d04414ab2f9e, and the other 12 are `$E/src`'s.
+    `/home/user/llvm/bin/clang-format --dry-run --Werror` exits 0 on the three
+    `.diff.cpp` files. A mismatch is a difference.
+3.  `python3 fork/conformance/runner.py --update-readme-table` prints "updated
+    program table in README.md (168 programs)" and adds the ten rows of
+    `$E/readme.diff` and nothing else. R31 on fork/conformance/README.md:
+    headings {1: 1, 2: 4, 3: 3}, bullets 22, numbered 6, rows 160, lines 415
+    and blocks 5 before, and rows 170 and lines 425 after, the rest the same.
+    `python3 fork/conformance/runner.py --self-test` prints "self-test: 168
+    programs parsed, 56 bullets in table, OK".
+4.  prek with a private `XDG_CACHE_HOME` and §8.6's SKIP list on the 14 paths
+    of `$T/files.txt`: every hook passes or is skipped, and the first pass
+    changes nothing, so it is the fixpoint; R31's README counts after it are
+    item 3's. Then `git -C /home/user/carbon-va2 apply -R --check
+    $E/c5_uncommitted_source_state_post_prek.patch` exits 0 and `git -C
+    /home/user/carbon-va2 status --short` lists those 14 paths and no other.
+5.  `conformance.sh` with a private cache into a private directory: PASS 147,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH
+    0, SKIP 21 (of 168), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56,
+    and the ten programs PASS; each of the ten binaries, run three times,
+    prints §5's lines with rc 0 and empty stderr, and the three oracles,
+    compiled with the toolchain's clang++ and with LLVM 21.1.8's (whose libc++
+    needs `-Wl,-rpath,/home/user/llvm/lib/x86_64-unknown-linux-gnu`), print
+    the Carbon programs' stdout (§8.4).
+6.  `gate.sh`: "1975 passed, 0 failed", with no crash.
+7.  Commit C5 with the 14 explicit paths, §3's title "VA-2 C5: conformance
+    programs for packs of different types and tuple impls" and its message as
+    §3 states it, §3's author and committer, and the two session trailers
+    after a blank line. `git -C /home/user/carbon-va2 rev-parse
+    HEAD:fork/conformance` prints 84418c0de08eb81bd94195159d36b54afdc4e838,
+    and `HEAD:toolchain` and `HEAD:core` print F4's,
+    92063f4ca11894c58fa1537b29b381aeeb5ca916 and
+    9e828aeb5fcb90579b14198038ce7dcaedca68ea. C5 has no fill commit.
+8.  `git push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan
+    commits since F4 and C5.
+9.  Then §3 items 12 to 14 and §8.5 to §8.10 as the plan states them, which
+    rev 13 does not change.
+
+Predictions, EXPECTED, not of record: the 13 files and the README of items 2
+and 3; prek's fixpoint at its first pass; the self-test's 168 and 56;
+conformance 147 / 0 / 21 over 168 with bullets 49 / 0 / 7 / 0 of 56 and §5's
+and Appendix A's outputs; the three oracles' lines; the gate's 1975 passed and
+0 failed; and the trees of item 7. A difference from these is a stop, as §8
+says.
+
 ## Sign-off
+
+Rev 13 (2026-10-27) amends rev 12 for the implementation's stop-and-amend at
+stage 6, which the "Stop-and-amend record (rev 13, 2026-10-27)" above states
+(amended 2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment
+wrap): rev 4's sign-off, as amended by rev 5 to rev 12, stands for every part
+the amendment does not touch, and the focused re-review of the amendment,
+which the orchestrator runs next, decides the rest; its row joins the table
+below when it reports, and the table's RR11 row names rev 12's commit,
+f336c5105, where rev 12 wrote "this revision".
 
 Rev 12 (2026-10-27) folds the focused re-review of rev 11 (RR11,
 APPROVE-WITH-AMENDMENTS: one MAJOR and six MINORs, all folded, none rejected),
@@ -8124,7 +8411,7 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (4d5388af2): all folded, none rejected |
 | Focused re-review of the amendment (RR7) | rev 7 (e0038734f) | APPROVE-WITH-AMENDMENTS | 0 | 4 | 1 | 5 | rev 8 (4299f9765): all folded, none rejected |
 | Focused re-review of the amendment (RR9) | rev 9 (956b73ffc) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 10 (529729be1): all folded, none rejected |
-| Focused re-review of the amendment (RR11) | rev 11 (ea420acd6) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 6 | 7 | rev 12 (this revision): all folded, none rejected |
+| Focused re-review of the amendment (RR11) | rev 11 (ea420acd6) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 6 | 7 | rev 12 (f336c5105): all folded, none rejected |
 | Total | | | 6 | 19 | 29 | 54 | 54 folded, 0 rejected (53 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
@@ -8151,7 +8438,11 @@ fixer parsed those four on PR 59's install and checked the three stdlib ones
 there (M-11); §A.1 to §A.3 and §A.10 run on the rev 2 prototype with the
 derived outputs, and the rest cannot run before C2 to C4 (amended 2026-10-22,
 review fold: A-m-1 / A-m-2 / B-M1 / B-M3 / B-m3). EXPECT lines are derived from
-the program text and the design (R16(d)), never from a run.
+the program text and the design (R16(d)), never from a run. Every `.diff.cpp`
+fence is clang-format 21.1.8 clean with the repository's .clang-format, so
+prek's hook leaves it as written; §A.1's was not until rev 13, whose fence
+takes clang-format's wrap of its fifth and sixth lines (M-26) (amended
+2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment wrap).
 
 ### §A.1 `generics/variadics_hetero_digits_diff.carbon`
 
@@ -8165,6 +8456,9 @@ of -7, 300 and 40000 is 40293; `Sum(5 as i32)` is 5. Stdout: 6, 742074, 3, 422,
 exactly these lines, and the rev 2 prototype's Carbon side prints them too
 (`$F/r3/probes_rank.txt`). Cat has StrCat's shape over names the fork has;
 StrCat's own text is §A.10's program (amended 2026-10-22, review fold: B-M3).
+Since rev 13 the oracle's header comment wraps `Carbon` onto its sixth line,
+as clang-format does at 80 columns, and its code is unchanged (M-26) (amended
+2026-10-27, implementation: stop-and-amend: the §A.1 oracle's comment wrap).
 
 <!-- google-doc-style-ignore -->
 
@@ -8258,8 +8552,8 @@ fn Run() -> i32 {
 // Exceptions. See /LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Differential C++17 equivalent of variadics_hetero_digits_diff.carbon: each Carbon
-// function over a pack of different types is a function template over a
+// Differential C++17 equivalent of variadics_hetero_digits_diff.carbon: each
+// Carbon function over a pack of different types is a function template over a
 // parameter pack, each statement expansion `... body;` is a comma fold
 // `((body), ...)`, whose operands are evaluated left to right, and each
 // interface implementation is a member function of the struct.

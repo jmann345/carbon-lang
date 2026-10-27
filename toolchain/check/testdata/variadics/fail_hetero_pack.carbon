@@ -132,3 +132,8 @@ fn F[... each T: Code](t: (... each T)) {
   // CHECK:STDERR:
   let (... unused each y: Missing(each T)) = t;
 }
+
+// --- fail_let_file_scope_binding_type_error.carbon
+library "[[@TEST_NAME]]";
+
+let (... unused each y: Missing) = ();

@@ -97,6 +97,31 @@ fn Call() {
   ForwardPack(2 as i32, false);
 }
 
+// --- import_forward_wider_facet_lib.carbon
+library "[[@TEST_NAME]]";
+
+fn G[... each U: Core.Copy](u: (... each U)) -> (... each U) { return u; }
+
+fn F[... each T: Core.Copy & Core.Destroy](t: (... each T)) -> (... each T) {
+  return G(t);
+}
+
+// --- import_forward_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+import library "import_forward_wider_facet_lib";
+
+//@dump-sem-ir-begin
+fn Concrete() -> (i32, bool) {
+  return F((1 as i32, true));
+}
+
+fn Generic[... each T: Core.Copy & Core.Destroy & Core.Eq](t: (... each T))
+    -> (... each T) {
+  return F(t);
+}
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- copy.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

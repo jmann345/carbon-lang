@@ -97,6 +97,15 @@ fn F[... each T: Core.ImplicitAs(i64)](... each x: each T) {
   H(... each x);
 }
 
+// --- fail_todo_type_pack_call_args.carbon
+library "[[@TEST_NAME]]";
+
+fn G(... each t: type);
+
+fn F[... each T: type](... unused each x: each T) {
+  G(... each T);
+}
+
 // --- fail_todo_expansion_without_each_name.carbon
 library "[[@TEST_NAME]]";
 

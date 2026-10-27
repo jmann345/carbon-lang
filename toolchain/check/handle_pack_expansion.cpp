@@ -86,9 +86,11 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
       }
       // Fork (VA-1, D-VA-5): an interface's function is matched by the
       // functions of its impls, and the thunk that adapts one to the other
-      // does not clone a pack expansion pattern yet.
-      if (context.name_scopes().InstIs<SemIR::InterfaceWithSelfDecl>(
-              context.decl_name_stack().PeekParentScopeId())) {
+      // does not clone a pack expansion pattern yet. Fork (VA-2, D-VA2-9): a
+      // `let` is no function's parameter list, and a `let` at file scope has
+      // no declaration name on the stack.
+      if (!in_let && context.name_scopes().InstIs<SemIR::InterfaceWithSelfDecl>(
+                         context.decl_name_stack().PeekParentScopeId())) {
         return context.TODO(node_id,
                             "pack expansion pattern in an interface function");
       }
@@ -336,6 +338,14 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
     if (pack_const_id.is_constant() &&
         context.types().Is<SemIR::PackType>(
             context.insts().Get(element->pack_id).type_id())) {
+      // Fork (VA-2, D-VA2-13): in a call's argument list the segment would be
+      // one argument, and the call would convert the whole pack to the
+      // parameter's element type.
+      if (!in_tuple_literal) {
+        return context.TODO(stack.back().start_node_id,
+                            "pack expansion of a compile-time pack in a "
+                            "call's argument list");
+      }
       auto scope = stack.pop_back_val();
       if (!FinishPackExpansionBody(context, node_id, scope)) {
         return false;

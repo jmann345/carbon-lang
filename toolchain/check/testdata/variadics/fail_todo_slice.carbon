@@ -21,6 +21,11 @@ fn F() {
   let (... each x: i64) = ();
 }
 
+// --- fail_todo_let_file_scope.carbon
+library "[[@TEST_NAME]]";
+
+let (... each x: i64) = ();
+
 // --- fail_todo_statement_kind.carbon
 library "[[@TEST_NAME]]";
 

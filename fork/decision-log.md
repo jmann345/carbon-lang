@@ -3728,6 +3728,27 @@ RR1-1-M1's stop-and-amend; nothing is shrunk, no id is filed, and W-225 stays
 DISCHARGED until round 2's fold (the plan's "Focused re-review of the fold,
 VA-2, round 1 (2026-10-27)").
 
+Focused re-review of the fold, round 2 (2026-10-27): the fold of round 1's two
+code findings by fix 3 ee6144ad9, "VA-2 fix 3: packs of facets converted to a
+narrower facet type", the fix budget's last commit, with its fill 903a0c321 and
+the records commit "VA-2 re-review fix: round 2 folded into the records".
+RR1-1-M1 is fixed at the root: a compile-time pack of types or facets that
+deduction converts to a pack of a narrower facet type is a `PackFacetValue`, a
+symbolic constant whose value in a specific is the pack of its elements each
+converted and whose pack type is its source's, so a tuple of one pack segment
+or a pack expansion forwarded to a callee of a narrower facet type, the
+prelude's variadic impls and a user's run as their fixed-arity twins do
+(D-VA2-5). RR1-1-m1: a `let` pack expansion pattern whose binding's type was
+diagnosed reports that diagnostic alone (D-VA2-4). Four splits in three goldens
+and three lines of tuple_impl_generic.carbon pin them; no TODO is added, the
+slice does not narrow, W-225 stays DISCHARGED and no id is filed (the W-345 of
+round 1's alternative is not taken). Expected, not of record: file_test 1977
+passed, 0 failed, and 147 PASS / 0 FAIL / 21 SKIP over 168 in three runs; the
+new mutants MV-19 to MV-23 killed; the mirrors m64, m60, m57, m62 and mdr green
+with it. The fix budget is used up, so a later code finding takes the plan's
+shrink line; round 2's two reviews read the fold next (the plan's "Focused
+re-review of the fold, VA-2, round 2 (2026-10-27)").
+
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks
 that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a
@@ -3738,7 +3759,10 @@ next commit fills its golden, which is the fill after C0b; C1 and C2 abort
 on a constant pack of aggregates until C3 (the plan's e12, which prints 14 on
 PR 59, and e14); and C1 to C5 abort on a destroyed tuple of one pack segment
 and on a pack of symbolic facets, and miscompile an integer index into a
-tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9).
+tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9); and C1
+to the round 1 records commit bdf941edc reject a compile-time pack of facets
+converted to a pack of a narrower facet type, and report a second TODO after
+a `let` binding's diagnosed type, until fix 3 ee6144ad9 (the plan's §2.10).
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

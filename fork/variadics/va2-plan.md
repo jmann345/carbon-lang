@@ -50,6 +50,24 @@ folded by the round's records commit, which is not a fix commit (D-VA2-19).
 The record is "Focused re-review of the fold, VA-2, round 1 (2026-10-27)"
 before the Sign-off section.
 
+Round 2's fold (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1)
+takes both findings at the root in the fix budget's last commit, ee6144ad9
+"VA-2 fix 3: packs of facets converted to a narrower facet type", with its fill
+903a0c321 (§2.10, M-28). A compile-time pack of types or facets that deduction
+converts to a pack of a narrower facet type is a `PackFacetValue`, a symbolic
+constant whose value in a specific is the pack of its elements each converted,
+whose element at the pack index is the source's element so converted, and which
+a pack type replaces by its source, so the forms RR1-1-M1 names run as their
+fixed-arity twins do; and a `let` pack expansion pattern whose binding's type
+was diagnosed has the error type with no second diagnostic. No TODO is added,
+the slice does not narrow, and W-225 stays DISCHARGED. The gate is 1977 passed
+and 0 failed, conformance 147 / 0 / 21 of 168 in three runs,
+tuple_impl_generic.carbon gains three lines, the new mutants MV-19 to MV-23 and
+MV-18 again are killed, and the mirrors of the held heads that change a file
+the fix touches are green with it. The fix budget is used up, three commits of
+three, and no shrink line is taken. The record is "Focused re-review of the
+fold, VA-2, round 2 (2026-10-27)" before the Sign-off section.
+
 Rev 14 (c6e523472, 2026-10-27) was the fold of the focused re-review of rev 13
 (76071383a, on F4 1a9a0a11b), whose verdict was APPROVE-WITH-AMENDMENTS on
 three MINORs, recorded in the rev 14 part of the "Stop-and-amend
@@ -2405,6 +2423,103 @@ directory,
     since 57ba07a97 (docs/design/variadics.md's last change is a045da8e6,
     generics/details.md's db87a84b6, both its ancestors).
 
+M-28. Round 2 of the focused re-review: the fold of RR1-1-M1 and RR1-1-m1
+(amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1). With `$F2` the
+fixer's directory,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-rr/fix-r2`,
+each probe ran on the head's install, PR 59's (0.0.0-0.dev+88b1b5bd2), trunk's
+(0.0.0-0.dev+0bdce60a5) and the nightly 2026.10.12's (`$F2/logs`, `$F2/probes`):
+
+-   The reproduction (`base_matrix.txt`, on bdf941edc's install, which prints
+    0.0.0-0.dev+bdd7b2424). h06 (`G[... each U: Core.Copy]` called with `t:
+    (... each T)`, `each T: Core.Copy & Core.Destroy`) reports "compile-time
+    value requires runtime conversion, constructing value of type `«Core.Copy;
+    <pack arity>»`" at 3:77, and h07, the pack expansion form, at 3:80; h01 and
+    h10 report `Core.EqWith((... each T))` missing at 2:73 and 2:90, h02
+    `Core.Copy` at 3:75, and h03 and h04 `Which` at 4:77 and 5:66; g01 and g08
+    to g12 report "cannot convert type `(... each T)` into type implementing"
+    their facet types at the call; d01 and d01b report "name `Missing` not
+    found" at 3:27 and then `semantics TODO: pack expansion pattern with
+    deduced arity outside a parameter list` at 3:8. The twins: h06's prints 1
+    on all four toolchains; h01's prints 1 on the head, where PR 59, trunk and
+    the nightly have no tuple `EqWith`; g01's prints 101 203 1 703 501 0 9 703
+    501 on the head, PR 59 and trunk. PR 59 refuses every pack form with VA-1's
+    TODO, trunk and the nightly at parse.
+-   The root causes. RR1-1-M1: deduction converts a deduced compile-time pack
+    to the binding's pack type, and `ConvertPackToPack` built only a run-time
+    `PackExpansionExpr`, never a constant, so deduce.cpp's requirement that the
+    conversion be a constant failed, with that diagnostic on a call and
+    silently in impl lookup. RR1-1-m1: the `NameBindingDecl` branch of
+    handle_binding_pattern.cpp reported its TODO for an erroneous binding type
+    too.
+-   The fix (§2.10), built incrementally with 0 warnings. Its code and its
+    split sources before the fill: 1974 passed and 3 failed, the three goldens
+    it adds splits to, with no crash (`gate_fix_alone.txt`); after the fill, at
+    its fixpoint after one pass: 1977 passed and 0 failed (`gate_fill.txt`).
+    Conformance with a private cache, three runs: PASS 147, COMPILE-FAIL 0,
+    LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of
+    168), bullets 49 PASS, 0 FAIL, 7 SKIP and 0 NOT-WRITTEN of 56
+    (`conf_final.log`, `conf_run2.log`, `conf_run3.log`); tuple_impl_generic
+    prints its fifteen lines; `runner.py --self-test` passes and
+    `--update-readme-table` changes nothing. clang-format 21.1.8 leaves the
+    seven C++ files unchanged; clang-tidy's `misc-no-recursion` pass and the
+    repository's checks line-filtered to the fix's lines, typed_insts.h's
+    included, exit 0 with no warning over the five .cpp files (`tidy`); prek
+    with §8.6's SKIP list on the fix's eleven paths and on the fill's three
+    changes no file by md5.
+-   The forms, after the fix (`final_head.txt`). h01, h03, h05 to h10, g01 and
+    g03 to g13 run, each printing its twin's lines (h01 1, h06 1, h07 1, h09 31,
+    h10 1, g01 101 203 1 703 501 0 9 703 501, g08 to g12 1); h02 and h04 compile
+    and run; g02 reports the missing `Core.Destroy` as its twin does. The new
+    probes: k01 (to a pack of types) prints 2, k02 (three conversions in a
+    chain) 1, as its twin, k03 (a pack expansion forwarded to `Core.Eq`) 3 0,
+    k05 (a generic caller's pack of symbolic facets) 1, k09 (`<`) 1, k13 (a copy
+    through `H[U: Core.Copy]`, then `.1`) 5, and k04 (the conversion in a
+    generic imported from another library, run on the head's install) 1; k05a
+    reports `Core.Destroy` missing for `(... each T)` as its twin does for `(T,
+    V)`; k11 and k12, a pack whose facet type does not imply the callee's,
+    report "cannot convert type `each T` that implements `Core.Copy` into type
+    implementing `Core.Eq`" at 2:48 and 2:51, at the call as the twin's at 2:47,
+    where rev 15 gave the diagnostic no line; d01, d01b, d01c (a `let` in a
+    function without a pack) and d01d (the pack used after it) report "name
+    `Missing` not found" alone. On PR 59, trunk and the nightly the new probes
+    fail as the old ones do (`base_matrix_k.txt`).
+-   The earlier probe sets on fix 3's install (`$F2/sets/*_fx3.txt` against the
+    fold's `$FX/sets/*_fx1.txt`, `$F2/logs/sets_cmp_fx3.txt`): every line as on
+    the fix's install but a03's indeterminate value and the line of a19's and
+    a20's CHECK in check/convert.cpp, :2497 for :2476, fix 3's hunks adding 21
+    lines above it; and the fold's probes, review 1's s02b to e03 with
+    `$FX/probes` (`$F2/logs/fprobes_fx3.txt`), print
+    `$FX/logs/fprobes_install.txt` line for line.
+-   Mutants (`mut`): MV-19 to MV-23 and MV-18 again, each applied to the fix's
+    tree, rebuilt, gated, run on the 19 programs, then reverted and rebuilt;
+    §8.5's rows give each kill. MV-21 survived the first fill, whose dump range
+    left out the callee `TakePack`, so the fix's `forward_wider_facet` dumps
+    it, and its symbolic specific then pins the element fold; the tree rebuilt
+    after them gates 1977 passed and 0 failed.
+-   The mirrors with fix 3, by §8.7's method: a detached worktree of each held
+    head merged with 903a0c321 by §6.2's rules, built in full under /dev/shm
+    with 0 warnings, gated, filled to its fixpoint, gated again, run through
+    conformance and round 2's probes, then deleted
+    (`$F2/mirrors/<name>/meas.txt`). m64 (PR 64 4a3220c11): convert.cpp and
+    eval.cpp conflicted and resolved by rules 1 and 2, 1988 passed and 6 failed
+    before its fill (TP-1's five and CT-1's symbolic_arg.carbon, renames, +16 /
+    -16), 1994 passed after it, PASS 166, SKIP 19 of 185. m60 (PR 60 40a76ab81):
+    only records conflicted, 1994 passed before and after its fill, PASS 149,
+    SKIP 20 of 169, bullets 50 / 0 / 6. m57 (PR 57 a080c7886):
+    question_optional.carbon and lower/for/bindings.carbon conflicted (rule 6),
+    1982 passed and 3 failed before its fill, 1985 after, PASS 158, SKIP 21
+    of 179. m62 (PR 62 0ef8a0334): 1983 passed and 2 failed before its fill
+    (SV-1's optional.carbon and variant.carbon, renames, +26 / -26), 1985 after,
+    PASS 152, SKIP 21 of 173. mdr (PR 65 fee0ef31c on PR 63): 1980 passed and 1
+    failed before its fill (DR-1b's write_through.carbon, a rename, +2 / -2),
+    1981 after, PASS 149, SKIP 21 of 170. Each run has 0 failures and no crash,
+    every program of both sides PASS, round 2's 43 single-file probes print the
+    head's lines, and each red set and fill is the fix's, so fix 3 changes no
+    mirror's composition.
+-   Upstream: `git ls-remote upstream refs/heads/trunk` gives 33863ed07 at
+    2026-10-27T15:42Z, rev 15's reading.
+
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
 VA-1's §1.4 built one path for a pack of one element type `«E; N»`
@@ -2790,7 +2905,10 @@ form outside it. Round 1 of the focused re-review of the fold found the first
 half met by RR1-1-M1, a pack of facets not converted to a narrower facet type,
 which rejects IN forms whose fixed-arity twins run; round 2's fold answers it,
 by the root fix or by a TODO that narrows the slice (amended 2026-10-27,
-re-review round 1: RR1-1-M1).
+re-review round 1: RR1-1-M1). Round 2's fold answers it by the root fix, so the
+slice is unchanged: a compile-time pack of facets converts to a pack of a
+narrower facet type element by element (D-VA2-5, §2.10, M-28) (amended
+2026-10-27, re-review round 2: RR1-1-M1).
 
 ### §1.2 The design's rules, VA-1's DR-1..DR-42 table extended
 
@@ -2941,12 +3059,16 @@ a TODO (M-19) (amended 2026-10-26, review fold: RR2-M1). An each-name binding
 whose type was diagnosed, such as `... each x: Optional(each T)` with `T` not
 `Core.OptionalStorage`, keeps the enclosing generic's arity and adds no second
 diagnostic; rev 14 also reported `more than one pack arity in a generic` there
-(§2.9, M-27) (amended 2026-10-27, implementation-review fold: RV1-m1). _Break
-condition:_ upstream allows several deduced arities per full pattern before
-W-222 lands,
-or reads `[... each T1, ... each T2]` otherwise, or a generic with two
-arities reaches a specific without the TODO, or a compile-time each-name
-outside a function's or an impl's implicit list checks without the TODO.
+(§2.9, M-27) (amended 2026-10-27, implementation-review fold: RV1-m1). A `let`
+pack expansion pattern whose binding's type was diagnosed, such as `let (...
+unused each y: Missing(each T)) = t;`, has the error type and adds no second
+diagnostic either; rev 15 also reported `pack expansion pattern with deduced
+arity outside a parameter list` there (§2.10, M-28) (amended 2026-10-27,
+re-review round 2: RR1-1-m1). _Break condition:_ upstream allows several
+deduced arities per full pattern before W-222 lands, or reads `[... each T1,
+... each T2]` otherwise, or a generic with two arities reaches a specific
+without the TODO, or a compile-time each-name outside a function's or an
+impl's implicit list checks without the TODO.
 
 ### §1.4 Deduction, checking and lowering of a pack of types (D-VA2-5..D-VA2-7)
 
@@ -2969,9 +3091,22 @@ deduction reported a misleading "cannot implicitly convert non-type value of
 type `«Core.ImplicitAs(i64); <pack arity>»` to `type`", and rev 2 reports
 `semantics TODO: forwarding a pack of different types to a pack of one type,
 or the reverse` (W-336; f06, f07, x08) (amended 2026-10-22, review fold:
-A-M-2). _Break condition:_ a call deduces a pack of types
+A-M-2). A compile-time pack deduced for a callee's or an impl's pack of a
+narrower facet type, `T` of `[... each T: Core.Eq & Core.Copy]` for `[... each
+U: Core.Copy]`, converts as a facet converts to a facet type ("Expansion
+convertibility", :835-837): `ConvertPackToPack` checks the element conversion
+at the pack index, with the existing diagnostics at the call, and, the pack and
+that conversion being constants, gives the symbolic `PackFacetValue` of the
+pack, whose value in a specific is the `PackValue` of its elements each
+converted, whose element at the pack index is the source's element converted,
+and which a pack type replaces by its source, so the callee's `(... each U)` is
+the caller's `(... each T)`; rev 15 built a run-time pack expansion there,
+which deduction rejected with "compile-time value requires runtime conversion"
+on a call and silently in impl lookup (§2.10, M-28) (amended 2026-10-27,
+re-review round 2: RR1-1-M1). _Break condition:_ a call deduces a pack of types
 in another order than the arguments', or accepts an argument whose type does
-not satisfy `I`.
+not satisfy `I`, or, since round 2, a pack converts to a facet type that one of
+its elements does not satisfy.
 
 **D-VA2-6 (definition checking).** "Within a given iteration, typechecking
 follows the usual rules of non-variadic typechecking, except that when we need
@@ -3672,7 +3807,10 @@ RR9-m3)), W-226 (Apply's `F: Call(... each T)` is its arbiter),
 W-230 (register entry (iii)), W-215 (an integer tuple index at or after a pack
 segment is its TODO, RV1-B3). W-225 discharged and W-212 narrowed (§1.9),
 W-212's `each x: auto` moving to W-333; rev 14 discharged W-212 too (amended
-2026-10-27, implementation-review fold: MAJOR-1 / RV1-B3).
+2026-10-27, implementation-review fold: MAJOR-1 / RV1-B3). Round 2 files no
+residue: its fix is at the root, so the id that round 1 named for a
+stop-and-amend, W-345 after a re-scan, is not taken, and no re-scan is owed
+(amended 2026-10-27, re-review round 2: RR1-1-M1).
 
 ### §1.12 The V-3a register (DR-0) and decision index
 
@@ -5294,6 +5432,58 @@ ten it adds to (§6.1); clang-tidy's three passes over its nine .cpp files,
 line-filtered to its lines, and clang-format 21.1.8 over its ten files are
 clean (M-27).
 
+### §2.10 Round 2's fix (built)
+
+The fix commit ee6144ad9, "VA-2 fix 3: packs of facets converted to a narrower
+facet type", on the round 1 records commit bdf941edc, changes seven non-test
+toolchain files (+240 / -18), adds the sources of four splits to three goldens,
+which its fill 903a0c321 fills (+980), and adds three lines to
+fork/conformance/programs/stdlib/tuple_impl_generic.carbon, which §A.9 states;
+the `toolchain` tree is 9a17d03c8 after the fix and d33d478d1 after the fill.
+As §2.9's, its code is in no block of this plan, the pushed commits being its
+record; its logs are `$F2` (M-28). File by file (amended 2026-10-27, re-review
+round 2: RR1-1-M1 / RR1-1-m1):
+
+-   sem_ir/inst_kind.def and typed_insts.h: the instruction `PackFacetValue`
+    (`pack_facet_value`), whose `type_id` is a pack type `«F; N»` whose element
+    `F` is a facet type and whose `pack_id` is a compile-time pack of types or
+    facets of arity `N`; symbolic only, evaluated with its instruction's
+    location, and not lowered, since every specific gives it a `PackValue`.
+    `PackType` becomes conditionally constant, so that its evaluation can
+    replace such an element.
+-   check/convert.cpp, `ConvertPackToPack`: once the element conversion at the
+    pack index is checked, a source that is a constant and an element
+    conversion that is a constant, both element types being facet types, give
+    the `PackFacetValue` of the source in place of the run-time
+    `PackExpansionExpr`; and a source with no location of its own, a constant
+    that deduction converts, takes the conversion's location, so its
+    diagnostics are at the call. Invariant: a run-time pack, such as a pack
+    expansion argument, converts as before.
+-   check/eval_inst.cpp: a `PackFacetValue` of a `PackFacetValue` is one of the
+    inner source, one of the target's own type is its source, and one of a
+    `PackValue` is the `PackValue` of the source's elements, each converted to
+    the facet type as `PerformBuiltinConversion` converts a type or a facet, to
+    its type for `type` and else to a `FacetValue` whose witnesses impl lookup
+    finds; a `PackType` whose element is a `PackFacetValue` is the pack type of
+    its source; and a `PackElement` of a `PackFacetValue` is the source's
+    element at that index so converted. Invariant: a converted pack's pack type
+    and its elements' types are its source's, so a callee's `(... each U)` and
+    the caller's `(... each T)` are one type.
+-   check/import_ref.cpp: the instruction is imported as the other pack
+    instructions are, for an imported generic's eval block.
+-   sem_ir/stringify.cpp: it prints as `⟬each T as F⟭`.
+-   check/handle_binding_pattern.cpp: in a `let`, an each-name binding whose
+    type is the error type keeps that type for its pattern and reports nothing
+    more; the TODO is for a binding type that is not an error.
+
+Its splits, whose sources §A.11 gives: check prelude_tuple_impls's
+`eq_wider_facet` and `forward_wider_facet`, on the production prelude, whose
+facet-type `&` the min prelude of check hetero_pack, where round 1 proposed the
+second, does not have (`type.and` is in the full prelude only); lower
+prelude_tuple_impls's `eq_wider_facet`; and check fail_hetero_pack's
+`fail_let_binding_type_error`. It changes no other golden (§6.1) and adds no
+golden file.
+
 ## §3 Commits (one PR, "VA-2: definition-checked variadics, slice 2", R29(b))
 
 **D-VA2-19.** A prerequisite commit C0, followed since rev 5 by its
@@ -5349,7 +5539,10 @@ three, unlike rev 15's bdd7b2424, the fold's own records revision; so after
 round 1 one fix commit is left, for round 2's fixer (amended 2026-10-27,
 re-review round 1: RR2r1-m2). _Break condition:_ a records commit that
 changes a count, an id or a status that a later code fix depends on counts as
-a fix commit.
+a fix commit. Round 2's fixer took the budget's last commit, ee6144ad9, with
+its fill 903a0c321 (§2.10), so the budget is used up: a later finding that
+needs a toolchain, prelude, golden or program change takes the shrink line
+below, in order (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
 B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
@@ -5591,7 +5784,12 @@ The commits, in order:
     of the focused re-review (2026-10-27) found RR1-1-M1 and RR1-1-m1, which
     need a toolchain change, so round 2's fixer makes the budget's last fix
     commit with its fill; round 1's records commit is not counted (D-VA2-19)
-    (amended 2026-10-27, re-review round 1: RR2r1-m2).
+    (amended 2026-10-27, re-review round 1: RR2r1-m2). Round 2's fixer made it:
+    ee6144ad9, "VA-2 fix 3: packs of facets converted to a narrower facet
+    type", the third fix commit after 1ad7c9b5e and bdd7b2424, and its fill
+    903a0c321, "VA-2 fix fill: autoupdate fix 3's splits on the container
+    arbiter"; no commit of the budget is left and no shrink is taken (amended
+    2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
 13. **R, the rows.** §A.12's text for "Generics: Definition-checked variadics"
     and "Stdlib: tuple/array library parts", quoting §8.4's container run,
     EXPECTED, not of record; both stay PARTIAL, so the header's counts do not
@@ -5986,6 +6184,7 @@ RR11-M1 / RR11-m4).
 | (same) | `fail_each_type_not_pack` | `error: `each T` does not name a pack [EachNameNotPack]` (VA-1's diagnostic, unchanged) |
 | (same) | `fail_two_explicit_packs` | `error: parameter list can contain at most one pack expansion pattern [MultiplePackExpansionPatterns]` with the `previous pack expansion pattern is here` note: the explicit list is a tuple pattern (:333-334) |
 | (same, fix) | `fail_binding_type_error`, `fail_binding_type_name_error` | `error: cannot convert type `each T` that implements `Code` into type implementing `Other` [ConversionFailureFacetToFacet]` with the `initializing generic parameter `T` declared here` note, and `error: name `Missing` not found [NameNotFound]`, each alone, where rev 14 also reported `more than one pack arity in a generic` (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-m1) |
+| (same, fix 3) | `fail_let_binding_type_error` | `error: name `Missing` not found [NameNotFound]` at `Missing(each T)` in the `let`, alone, where rev 15 also reported `semantics TODO: pack expansion pattern with deduced arity outside a parameter list` (measured, M-28; amended 2026-10-27, re-review round 2: RR1-1-m1) |
 | check/generic_pack.carbon (C1) | `declaration` | VA-1's `fail_todo_generic_pack` source, now without a diagnostic (M-6: "succeeded; if success is expected, remove the `fail_` prefix") |
 | (same) | `call` | `F(1 as i64, true, 2 as i32)` deduces `T` = `⟬%i64, bool, %i32⟭`; no diagnostic, `F` defined since rev 7, as `hetero_pack`'s `Count`; the file has no dump range, so its golden holds the sources and no SemIR, and `type_pack` shows the deduction (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources); so the file has no CHECK lines, C1's gate passes it before F1, and F1 leaves it as C1 writes it (M-22) (amended 2026-10-26, review fold: RR7-M1) |
 | check/fail_todo_va2.carbon (C1) | `fail_todo_two_implicit_packs` | `semantics TODO: `more than one pack expansion pattern in an implicit parameter list`` at the second `...`, and nothing for `U` |
@@ -6075,8 +6274,10 @@ RR11-M1 / RR11-m4).
 | (same) | `one_element` | `var v: ((i32, i32),) = ((1, 2),);` is initialized by an 8-byte memcpy of the inner tuple's constant `{ i32, i32 }` into `v.0`, and no global holds the outer by-copy value (C0b, measured; on C0 alone a CHECK failure in `StoreObject`, M-20's a01) (amended 2026-10-26, implementation: stop-and-amend: nested constant initialization) |
 | check/prelude_tuple_impls.carbon (C4) | `copy`, `eq`, `ordered` | on the production prelude, `Dup((1, 2, 3, 4))` deduces `T` = `(i32, i32, i32, i32)` whose `Copy` witness is the variadic impl's with `T` = `⟬i32, i32, i32, i32⟭`; `a == b` and `a < b` on `(i32, i64)` use the `EqWith` and `OrderedWith` impls (amended 2026-10-22, review fold: B-m4) |
 | (same, fix) | `generic_elements` | `Dup[T: Core.Copy]`'s `p.(Core.Copy.Op)()` on `(T, T)`, `Same[T: Core.Eq]`'s `a == b` on `(T, T)` and `Before[T: Core.Ordered, U: Core.Ordered]`'s `a < b` on `(T, U)` each find the variadic impl through a symbolic `lookup_impl_witness`, with the `require_specific_def` of `@tuple.type.as.Copy.impl`, `EqWith`'s and `OrderedWith`'s for the pack of facets `(%T, %T)` or `(%T, %U)`; no diagnostic, where rev 14 reported `Core.Copy` missing for `(T, T)` and `(T, U)`, which PR 59, trunk and the nightly copy by their fixed-arity impls (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B2) |
+| (same, fix 3) | `eq_wider_facet`, `forward_wider_facet` | `Same[... each T: Core.Eq & Core.Copy]`'s `a == b` finds the variadic `EqWith` impl with the impl's pack the `pack_facet_value` of `T`, to which `Call`'s specific for `(i32, bool)` gives a `pack_value`; `ForwardTuple`'s `TakeTuple(t)`, `TakeTypes(t)` and `TakeOne(t)` and `ForwardPack`'s `TakePack(... each x)` deduce the callees' packs, and `TakeOne`'s impl lookup the tuple `Copy` impl's, as `pack_facet_value`s of `T` of the types `«Core.Copy; N»` and, for `TakeTypes`, `«type; N»`, and `TakePack`'s symbolic specific gives its `each U` the `facet_value` of `each T` as `Core.Copy`; no diagnostic, where rev 15 reported "compile-time value requires runtime conversion" or a missing impl (measured, M-28; amended 2026-10-27, re-review round 2: RR1-1-M1) |
 | lower/prelude_tuple_impls.carbon (C4) | `copy_op`, `eq` | the 4-tuple's `Op` calls each element's `Copy` in order into the return slot; `==` on `(i32, i64)` compares the first elements and branches on the result before the second; measured (stage 5): `copy_op`'s `Op` copies elements 0 to 3 in order, each a GEP into `self`, a load of the `i32` and a store into `%return`, `i32`'s `Copy` being the builtin primitive copy, not a call, and `eq`'s `Equal` compares element 0 (`icmp eq i32`), branches to the next iteration and compares element 1 (amended 2026-10-27, implementation-review fold: MINOR-5) |
 | (same, fix) | `generic_elements`, `copy_class_element` | `Call`'s `Before(Dup(a.0), Dup(b.0)) and Before(a, b)` lowers `Dup`'s specific for `i32`, which calls the variadic `Copy` impl's `Op` for `⟬i32, i32⟭`, and `Before`'s specifics for `(i32, i32)` and `(i32, i64)`, each calling the variadic `OrderedWith` impl's `Less`; `copy_class_element`'s `Op` for `⟬C, i32⟭` calls `C`'s own `Copy.Op` for element 0, which calls `Sink`, and copies element 1 by a load and a store, the per-element call §4 predicted for `copy_op` (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B2 / MINOR-5) |
+| (same, fix 3) | `eq_wider_facet` | `Call`'s `Same(a, b)` lowers `Same`'s specific for `(i32, bool)`, which calls the variadic `EqWith` impl's `Equal` for `⟬i32, bool⟭`, comparing the `i32`s and then the `bool`s (measured, M-28; amended 2026-10-27, re-review round 2: RR1-1-M1) |
 | check/../interop/cpp/template/fail_todo_cpp_call_on_hetero_element.carbon (S-CT, land time, after M) | `fail_todo_value_arg`, `fail_todo_type_arg`, `fail_todo_facet_type_arg`, and since rev 10 `fail_todo_tuple_literal_arg` | the C1 TODO, `C++ or template-dependent action on an element of a pack of different types`, at `Cpp.Add(each x)`, `Cpp.SizeOfFn(each T)` with `each T: type` and the same with `each T: I` (M-18's ct1, ct5 and ct7 on the PR 64 mirror merged with rev 3; before M they are upstream's "call argument of type `each T` is not supported" and "no matching function"; amended 2026-10-26, review fold: RR1-B-M5); and C2's TODO, `C++ or template-dependent action on a tuple literal with a pack segment`, at `Cpp.Add((... each x))`, once, where rev 9's C2 aborted in check/cpp/type_mapping.cpp (measured on the PR 64 mirror with C2 rev 10 and its fill, all four splits at their fixpoint in one pass, `$X/sct/filled_p1.carbon`; before M it is upstream's "call argument of type `⟬each T⟭` is not supported", ctI's on C2, M-23) (amended 2026-10-27, review fold: RR9-m3) |
 
 Totals: 15 new files (10 check, 5 lower: C0's one, C1 to C3's twelve, C4's
@@ -6111,7 +6312,12 @@ tuple_segment, fail_todo_tuple_segment and prelude_tuple_impls; lower
 hetero_pack, expansion_if and prelude_tuple_impls), so 17 new files (11 check,
 6 lower), and its fill changes no other golden
 (M-27) (amended 2026-10-27, implementation-review fold: RV1-B1 / RV1-B2 /
-RV1-B3 / RV1-m1 / RV1-m2 / MINOR-5).
+RV1-B3 / RV1-m1 / RV1-m2 / MINOR-5). Round 2's fix adds four splits to three of
+the seventeen (check prelude_tuple_impls's `eq_wider_facet` and
+`forward_wider_facet`, lower prelude_tuple_impls's `eq_wider_facet` and check
+fail_hetero_pack's `fail_let_binding_type_error`) and no file, and its fill
+changes no other golden (M-28) (amended 2026-10-27, re-review round 2: RR1-1-M1
+/ RR1-1-m1).
 
 ## §5 Conformance delta (from PR 59's 137 PASS / 0 FAIL / 21 SKIP over 158, re-measured as M-5)
 
@@ -6201,6 +6407,10 @@ Existing goldens that change, by commit:
     splits to, and no other golden (M-27) (amended 2026-10-27,
     implementation-review fold: RV1-B1 / RV1-B2 / RV1-B3 / RV1-m1 / RV1-m2 /
     MINOR-5).
+-   Round 2's fix (§2.10) and its fill: the three goldens it adds splits to,
+    and no other golden; its instruction kind sits in VA-1's alphabetical block
+    of sem_ir/inst_kind.def after `PackExpansionStatement`, where dumps print
+    names (M-28) (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
 -   Nothing else. M-6: the prototype, which holds every shared-code change of
     C1 and C2's built half, failed only VA-1's five goldens, because a
     `TupleType` or `TupleValue` without a pack element evaluates exactly as
@@ -6263,8 +6473,17 @@ that a held head changes are convert.cpp (PR 57, PR 60, PR 62 and PR 65, which
 merge with it, and PR 61 and PR 64, which conflict with it as with C5, by
 rule 1), type.cpp (PR 60 and PR 62), and handle_binding_pattern.cpp, type.h
 and type_completion.cpp (PR 60) (amended 2026-10-27, re-review round 1:
-RR2r1-m1). Merge rules, applied
-by commit M and by every mirror (§8.7):
+RR2r1-m1). Round 2's fix adds no conflicted path for any held head or trunk
+either: 903a0c321, fix 3 with its fill, lists the same conflicted paths as
+bdf941edc against each of the fifteen held heads and origin/trunk; its
+convert.cpp hunks, in `ConvertPackToPack` and its one call, merge with PR 57's,
+PR 60's, PR 62's and PR 65's, and PR 61's and PR 64's still conflict only in
+`ConvertTupleToType` (rule 1); import_ref.cpp, stringify.cpp, typed_insts.h and
+inst_kind.def, which PR 60, PR 61 and PR 64 change, and
+handle_binding_pattern.cpp, which PR 60 changes, merge with its hunks; and no
+held head changes eval_inst.cpp (`$F2/logs/merge_tree_fix3.txt`, M-28) (amended
+2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1). Merge rules, applied by
+commit M and by every mirror (§8.7):
 
 1.  convert.cpp, `ConvertTupleToType` (PR 61, PR 64): keep both changes,
     PR 61's `SpliceInst` redirect first, then VA-2's pack segment, since a
@@ -7200,11 +7419,13 @@ copied one), run against the ten programs and VA-1's nine, then reverted and
 rebuilt; MV-7, MV-8, MV-10 and MV-11 change only the prelude and need only
 `install.sh`.
 Each must turn at least the listed programs red, and the result is recorded
-per program. Measured at stage 7 on C5 (MV-1 to MV-11) and by the fold on the
-fix's tree (MV-3, MV-4 and MV-12 to MV-18; M-27): every mutant is killed; the
-"Measured" sentence of each row names what kills it, and a program the
-prediction names that survives is struck there (amended 2026-10-27,
-implementation-review fold: RV1-m3 / MINOR-2).
+per program. Measured at stage 7 on C5 (MV-1 to MV-11), by the fold on the fix's
+tree (MV-3, MV-4 and MV-12 to MV-18; M-27), and by round 2's fixer on fix 3's
+tree (MV-18 again and MV-19 to MV-23; M-28) (amended 2026-10-27, re-review
+round 2: RR1-1-M1 / RR1-1-m1): every mutant is killed; the "Measured" sentence
+of each row names what kills it, and a program the prediction names that
+survives is struck there (amended 2026-10-27, implementation-review fold: RV1-m3
+/ MINOR-2).
 
 | Mutant | Decision | Change | Predicted to fail |
 | --- | --- | --- | --- |
@@ -7225,7 +7446,12 @@ implementation-review fold: RV1-m3 / MINOR-2).
 | MV-15 | D-VA2-8 | check/custom_witness.cpp: `CanDestroyType`'s `PackType` case removed (the fix's hunk reverted) | the check tuple_segment_destroy golden (file_test aborts at check/custom_witness.cpp:487, "Unexpected type for CanDestroyType: PackType"); measured by the fold, and the 19 programs all PASS (amended 2026-10-27, implementation-review fold: RV1-B1) |
 | MV-16 | D-VA2-3 | check/type.cpp: `GetPackElementTypeId` never gives a facet its `FacetAccessType` (`false &&` before its test) | the check hetero_pack golden (`generic_caller`: file_test aborts at SemIR's new CHECK, sem_ir/generic.cpp:183, on a `SymbolicBinding` element); measured by the fold, and the 19 programs all PASS (amended 2026-10-27, implementation-review fold: RV1-B2) |
 | MV-17 | D-VA2-8 | check/member_access.cpp: an index at or after a segment not refused (`false &&` before its test) | the check fail_todo_tuple_segment golden (1976 passed, 1 failed); measured by the fold, and the 19 programs all PASS (amended 2026-10-27, implementation-review fold: RV1-B3) |
-| MV-18 | D-VA2-4 | check/handle_binding_pattern.cpp: the second-arity TODO reported beside an erroneous binding type too (`if (!is_error)` becomes `if (true)`) | the check fail_hetero_pack golden (1976 passed, 1 failed); measured by the fold, and the 19 programs all PASS (amended 2026-10-27, implementation-review fold: RV1-m1) |
+| MV-18 | D-VA2-4 | check/handle_binding_pattern.cpp: the second-arity TODO reported beside an erroneous binding type too (`if (!is_error)` becomes `if (true)`) | the check fail_hetero_pack golden (1976 passed, 1 failed); measured by the fold, and the 19 programs all PASS (amended 2026-10-27, implementation-review fold: RV1-m1); measured again by round 2's fixer on fix 3's tree: 1976 passed and 1 failed, the same golden, the 19 programs all PASS (amended 2026-10-27, re-review round 2: RR1-1-m1) |
+| MV-19 | D-VA2-5 | check/convert.cpp: `ConvertPackToPack`'s `PackFacetValue` branch never taken (`false &&` before its test) | the check and lower prelude_tuple_impls goldens and tuple_impl_generic; measured by round 2's fixer: 1975 passed and 2 failed, those two goldens, and tuple_impl_generic COMPILE-FAIL, the other 18 programs PASS (amended 2026-10-27, re-review round 2: RR1-1-M1) |
+| MV-20 | D-VA2-5 | check/eval_inst.cpp: a `PackType` whose element is a `PackFacetValue` not replaced by its source (`true \|\|` before the element's test) | the same; measured: 1975 passed and 2 failed, the same two goldens, and tuple_impl_generic COMPILE-FAIL, the other 18 programs PASS (amended 2026-10-27, re-review round 2: RR1-1-M1) |
+| MV-21 | D-VA2-5 | check/eval_inst.cpp: a `PackElement` of a `PackFacetValue` not folded to the source's element converted (`false &&` before its test) | the check prelude_tuple_impls golden (`forward_wider_facet`, whose dump of `TakePack`'s symbolic specific shows the element); measured: 1976 passed and 1 failed, that golden, the 19 programs all PASS; it survived the first fill, 1977 passed, whose dump range left `TakePack` out, so the split dumps it (amended 2026-10-27, re-review round 2: RR1-1-M1) |
+| MV-22 | D-VA2-4 | check/handle_binding_pattern.cpp: the `let` branch's TODO reported beside an erroneous binding type too (`if (!is_error)` becomes `if (true)`) | the check fail_hetero_pack golden (`fail_let_binding_type_error`); measured: 1976 passed and 1 failed, the 19 programs all PASS (amended 2026-10-27, re-review round 2: RR1-1-m1) |
+| MV-23 | D-VA2-5 | check/eval_inst.cpp: a `PackFacetValue` of a `PackValue` given the source's elements unconverted | the check prelude_tuple_impls golden (the values a specific gives a `pack_facet_value`); measured: 1976 passed and 1 failed, the 19 programs all PASS, since an element of the source's facet type has the witnesses the narrower one needs (amended 2026-10-27, re-review round 2: RR1-1-M1) |
 
 ### §8.6 prek, clang-tidy and R31 (every agent, every commit)
 
@@ -7371,18 +7597,20 @@ Measured at stage 7 on C5 (4b7ca618e) and, for m64, m60, m57 and mdr, by the
 fold with the fix and its fill (the scratch commit 3258f7598, M-27) (amended
 2026-10-27, implementation-review fold: RV1-m5 / MAJOR-2 / MINOR-3), and, for
 m62, by round 1's review 2 with f8d84ba75 (the scratch commit 6f58f8960)
-(amended 2026-10-27, re-review round 1: RR2r1-m1):
+(amended 2026-10-27, re-review round 1: RR2r1-m1), and, for m64, m60, m57, m62
+and mdr, by round 2's fixer with fix 3 and its fill (903a0c321 merged, M-28)
+(amended 2026-10-27, re-review round 2: RR1-1-M1):
 
-| Mirror | Red before its fill, at C5 | Gate after its fill: C5, with the fix | Conformance: C5, with the fix |
+| Mirror | Red before its fill, at C5 | Gate after its fill: C5, with the fix, with fix 3 | Conformance: C5, with the fix, with fix 3 |
 | --- | --- | --- | --- |
-| m61 | TP-1's five full-prelude goldens that C4 renames | 1990, not re-run | PASS 157, SKIP 21 of 178, not re-run |
-| m60 | none | 1992, 1994 | PASS 149, SKIP 20 of 169, both |
-| m62 | SV-1's optional.carbon and variant.carbon (C4 renames) | 1983, 1985 (round 1; amended 2026-10-27, re-review round 1: RR2r1-m1) | PASS 152, SKIP 21 of 173, both |
-| m64 | TP-1's five and CT-1's symbolic_arg.carbon (C4 renames), and S-CT's new split | 1993, 1995 | PASS 166, SKIP 19 of 185, both |
-| m55 | ST-1's string/compare.carbon (a C4 rename) | 1983, not re-run | PASS 152, SKIP 20 of 172, not re-run |
-| m57 | question_optional.carbon and optional/compare.carbon (C4 renames) and lower/for/bindings.carbon (both sides' lowering); the first and the last conflicted (rule 6) | 1983, 1985 | PASS 158, SKIP 21 of 179, both |
-| mdr | DR-1b's slice/write_through.carbon (a C4 rename) | 1979, 1981 | PASS 149, SKIP 21 of 170, both |
-| mall | T*'s 17 held land-time refills, seven C4 renames, lower/for/bindings.carbon and S-CT's split; question_optional.carbon and lower/for/bindings.carbon conflicted (rule 6) | 2038 passed and 3 failed (held side), not re-run | PASS 222, SKIP 14 of 236, not re-run |
+| m61 | TP-1's five full-prelude goldens that C4 renames | 1990, not re-run, not re-run | PASS 157, SKIP 21 of 178, not re-run, not re-run |
+| m60 | none | 1992, 1994, 1994 | PASS 149, SKIP 20 of 169, all three |
+| m62 | SV-1's optional.carbon and variant.carbon (C4 renames) | 1983, 1985 (round 1; amended 2026-10-27, re-review round 1: RR2r1-m1), 1985 | PASS 152, SKIP 21 of 173, all three |
+| m64 | TP-1's five and CT-1's symbolic_arg.carbon (C4 renames), and S-CT's new split | 1993, 1995, 1994 (S-CT's split not applied) | PASS 166, SKIP 19 of 185, all three |
+| m55 | ST-1's string/compare.carbon (a C4 rename) | 1983, not re-run, not re-run | PASS 152, SKIP 20 of 172, not re-run, not re-run |
+| m57 | question_optional.carbon and optional/compare.carbon (C4 renames) and lower/for/bindings.carbon (both sides' lowering); the first and the last conflicted (rule 6) | 1983, 1985, 1985 | PASS 158, SKIP 21 of 179, all three |
+| mdr | DR-1b's slice/write_through.carbon (a C4 rename) | 1979, 1981, 1981 | PASS 149, SKIP 21 of 170, all three |
+| mall | T*'s 17 held land-time refills, seven C4 renames, lower/for/bindings.carbon and S-CT's split; question_optional.carbon and lower/for/bindings.carbon conflicted (rule 6) | 2038 passed and 3 failed (held side), not re-run, not re-run | PASS 222, SKIP 14 of 236, not re-run, not re-run |
 
 Every conformance run has 0 failures and both sides' programs PASS. So the red
 set before a mirror's fill is the held PR's own full-prelude goldens that C4's
@@ -7398,7 +7626,9 @@ change of a cascading diagnostic. On mdr rr2's tp3_template_index_hetero
 reports C1's TODO at 4:12 and then a second diagnostic, which the stage 7 log
 cut at 300 characters; its full stderr is M-27's. With the fix, each re-run
 mirror's probe sets print its stage 7 lines but the four lines M-27 names,
-which the fix changes on VA-2's install alone too.
+which the fix changes on VA-2's install alone too. With fix 3, each re-run
+mirror's red set and fill are the fix's, and round 2's probes print the head's
+lines on each (M-28).
 
 A mirror is evidence for the implementation review, not a commit; a failure
 in one is a finding against whichever side the review assigns it to.
@@ -7477,10 +7707,17 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     or trunk moves before M, M conflicts otherwise than §6.2 states, or a
     later fix commit touches a file that a held head changes, whose mirrors
     are then re-run by §8.7's method.
+    Round 2's fix 3 touches convert.cpp and files that PR 60, PR 61 and PR 64
+    change, so that clause is met, and m64, m60, m57, m62 and mdr are re-run
+    with it (§8.7, M-28); m61, m55 and the mall are not, for the reasons above:
+    PR 61's changes are in m64 again, PR 55's head changes none of the fix's
+    files, and the mall is §8.8's at land time (amended 2026-10-27, re-review
+    round 2: RR1-1-M1).
 -   The mutants of §8.5: they need C5's tree. Since stage 7 MV-1 to MV-11 are
     measured on C5, and since the fold MV-3, MV-4 and MV-12 to MV-18 on the
     fix's tree (§8.5, M-27) (amended 2026-10-27, implementation-review fold:
-    MINOR-2).
+    MINOR-2), and since round 2 MV-18 to MV-23 on fix 3's tree (M-28)
+    (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
 -   clang-tidy: the prototypes were built with `-Werror` (0 warnings, M-8 and
     rev 2's builds) but not run through clang-tidy, except, since rev 5,
     `misc-no-recursion` over the rev 4 prototype's 24 .cpp files with C0b and
@@ -7679,6 +7916,12 @@ W-344 (trunk), and no id is re-allocated (amended 2026-10-27, discharge).
     j_sym_CoreCopy, k01c, k01d, k01h, s08 and e03 print
     `$FX/logs/fprobes_install.txt`, any other line being a difference (amended
     2026-10-27, implementation-review fold: RV1-B1 / RV1-B2 / RV1-B3 / RV1-m1).
+    Since round 2, after fix 3's build and every later one, the sets print
+    `$F2/sets/*_fx3.txt`, the fold's lines but a03's value and a19's and a20's
+    CHECK at check/convert.cpp:2497; the fold's probes print
+    `$FX/logs/fprobes_install.txt`; and round 2's probes `$F2/probes` print
+    `$F2/logs/final_head.txt`, any other line being a difference (M-28)
+    (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4. A §4
     row that reads SemIR is reviewed against its split's dump, and a split with
     no dump range dumps no SemIR (R-15) (amended 2026-10-27, review fold:
@@ -9171,7 +9414,63 @@ records: re-review round 1 recorded" (this plan, the decision log and
 fork/ORCHESTRATION.md); no toolchain, prelude, golden or program file changes,
 and the PR body is refreshed in the scratchpad.
 
+## Focused re-review of the fold, VA-2, round 2 (2026-10-27)
+
+Round 2 of §3 item 12's focused re-review loop is the fold of round 1's
+findings that need a toolchain, golden or program change, RR1-1-M1 and
+RR1-1-m1, by the fix budget's last commit, ee6144ad9 "VA-2 fix 3: packs of
+facets converted to a narrower facet type", its fill 903a0c321 "VA-2 fix fill:
+autoupdate fix 3's splits on the container arbiter", and this records commit,
+"VA-2 re-review fix: round 2 folded into the records", on the round 1 records
+commit bdf941edc, whose install prints 0.0.0-0.dev+bdd7b2424, the fold's
+toolchain. Round 1's records-only findings were folded by round 1's records
+commit, and this round re-opens none of them. Upstream's tip is still 33863ed07
+(`git ls-remote upstream refs/heads/trunk` at 2026-10-27T15:42Z), origin/trunk
+is ad2e45a66, and the fifteen held heads are the landed notes' (`git fetch
+origin` at 2026-10-27T15:40:24Z). The fixer's directory is `$F2` (M-28); every
+figure is container-local, EXPECTED, not of record (R9). Each probe ran on four
+toolchains: the head's install; PR 59's, which prints 0.0.0-0.dev+88b1b5bd2;
+trunk's, which prints 0.0.0-0.dev+0bdce60a5; and the nightly of 2026.10.12
+(R30).
+
+The fold's judgment. Both findings are reproduced and fixed at the root, and
+the alternative round 1 offered for RR1-1-M1, a stop-and-amend TODO, is not
+taken: no TODO is added, the slice does not narrow, the id round 1 named for it
+(W-345 after a re-scan) is not taken, and W-225 stays DISCHARGED. The forms
+RR1-1-M1 names run as their fixed-arity twins do, RR1-1-m1's `let` reports its
+one diagnostic, no golden changes but the three the fix adds splits to,
+conformance holds at 147 / 0 / 21 of 168, MV-19 to MV-23 are killed and MV-18
+again, and the mirrors of every held head that changes a file the fix touches
+are green with it (M-28). The fix budget is used up, three commits of three
+(1ad7c9b5e, bdd7b2424 and ee6144ad9), and no shrink line is taken; a later
+finding that needs a toolchain, prelude, golden or program change takes §3's
+shrink line in order. _Break condition:_ a finding that no shrink can answer
+without breaking a measured row of §0.2 or §8.0 stops the PR, and the plan is
+amended. Round 2's two reviews read the three commits next and judge whether
+the round is dry; the ledger, the gap rows and §A.12's ledger and row texts do
+not change.
+
+| Finding | Review | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- | --- |
+| RR1-1-M1 a pack of facets does not convert to a narrower facet type, so forwarding and the prelude's variadic impls reject valid tuples of one pack segment | round 1, review 1 | MAJOR | yes (M-28, `$F2/logs/base_matrix.txt`): h06 reports "compile-time value requires runtime conversion, constructing value of type `«Core.Copy; <pack arity>»`" at 3:77 and h07 at 3:80, h01 and h10 `Core.EqWith((... each T))` missing, h02 `Core.Copy`, h03 and h04 `Which`, and g01 and g08 to g12 "cannot convert type `(... each T)` into type implementing" their facet types; h06's twin prints 1 on the head, PR 59, trunk and the nightly, h01's 1 on the head, g01's 101 203 1 703 501 0 9 703 501 on the head, PR 59 and trunk; the root cause, `ConvertPackToPack`'s only result a run-time `PackExpansionExpr`, which deduce.cpp requires to be a constant | Folded at the root by fix 3 ee6144ad9 and its fill 903a0c321, as the review proposed: a constant pack whose element conversion is a constant converts to the `PackFacetValue` of the pack, whose value in a specific is the pack of its elements converted, whose element at the pack index is the source's converted, and which a pack type replaces by its source; every RR1 probe and the twins now print alike; the splits `eq_wider_facet` (check and lower prelude_tuple_impls) and `forward_wider_facet` (check prelude_tuple_impls, not check hetero_pack, whose min prelude has no facet-type `&`; the callee `TakePack` dumped, so its symbolic specific pins the element fold) and tuple_impl_generic's three lines pin it, killing MV-19 to MV-21 and MV-23; a conversion of a deduced pack is diagnosed at the call, where rev 15 gave the diagnostic no line (k11, k12) | convert.cpp `ConvertPackToPack`, eval_inst.cpp, typed_insts.h, inst_kind.def, import_ref.cpp, stringify.cpp; D-VA2-1, D-VA2-5, §2.10, §4, §6, §8.5, §8.7, §A.9, §A.11, M-28 |
+| RR1-1-m1 a diagnosed binding type in a `let` pack pattern adds a second TODO | round 1, review 1 | MINOR | yes: d01 and d01b report "name `Missing` not found" at 3:27 and then `semantics TODO: pack expansion pattern with deduced arity outside a parameter list` at 3:8; the `NameBindingDecl` branch of handle_binding_pattern.cpp had no `!is_error` | Folded at the root by fix 3: the TODO is for a binding type that is not an error, and an erroneous `let` binding's pattern has the error type, the review's second alternative; its first, the enclosing arity, has no arity to take in a `let` of a function without a pack (d01c), where the parameter-list branch would add one; d01, d01b, d01c and d01d report the one diagnostic; the split `fail_let_binding_type_error` (check fail_hetero_pack) pins it, killing MV-22; D-VA2-4 states the `let` case | handle_binding_pattern.cpp; D-VA2-4, §2.10, §4, §8.5, M-28 |
+
+Also recorded by the round, outside the findings: round 1's MX-b survivor, the
+`PackValue` branch of `PerformBuiltinConversion`, is not reached by fix 3,
+which converts a symbolic pack, so it stays unpinned as round 1 recorded; the
+PR body (`pr_va2.md` in the scratchpad) is refreshed; and this record's commit
+changes the plan, the decision log and fork/ORCHESTRATION.md only.
+
 ## Sign-off
+
+Round 2 of the focused re-review of the fold (2026-10-27) is the fold of round
+1's two code findings, RR1-1-M1 and RR1-1-m1: fix 3 ee6144ad9, the fix budget's
+last commit, with its fill 903a0c321, fixes both at the root, and this round's
+records commit records them; none is rejected, and the "Focused re-review of
+the fold, VA-2, round 2 (2026-10-27)" above states them (amended 2026-10-27,
+re-review round 2: RR1-1-M1 / RR1-1-m1). Round 2's two reviews read the three
+commits next. Rev 4's sign-off, as amended by rev 5 to rev 15 and by both
+rounds' records, stands.
 
 Round 1 of the focused re-review of the fold (2026-10-27) read f8d84ba75, the
 fix, its fill, rev 15, R and D together, R and D having been written first as
@@ -9307,9 +9606,9 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review of the amendment (RR13) | rev 13 (76071383a) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 | 3 | rev 14 (c6e523472): all folded, none rejected |
 | Implementation review 1 (R29(c)) | C5 (4b7ca618e) | REJECT | 3 | 0 | 5 | 8 | the fix 1ad7c9b5e, its fill 5bc6e5070 and rev 15: all folded, none rejected |
 | Implementation review 2 (R29(c)) | C5 (4b7ca618e) | APPROVE-WITH-FIXES | 0 | 3 | 8 | 11 | the fix 1ad7c9b5e and rev 15: all folded, none rejected |
-| Focused re-review of the fold, round 1, review 1 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 1 | 1 | 2 | open: to round 2's fixer, a toolchain change; none rejected |
+| Focused re-review of the fold, round 1, review 1 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 1 | 1 | 2 | fix 3 ee6144ad9, its fill 903a0c321 and round 2's records commit: all folded, none rejected (amended 2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1) |
 | Focused re-review of the fold, round 1, review 2 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 0 | 4 | 4 | round 1's records commit: all folded, none rejected |
-| Total | | | 9 | 23 | 50 | 82 | 80 folded, 2 open, 0 rejected (80 distinct) |
+| Total | | | 9 | 23 | 50 | 82 | 82 folded, 0 open, 0 rejected (80 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, and
 implementation review 2's MINOR-1 restates review 1's RV1-m4, so the 82
@@ -9464,6 +9763,13 @@ writer's scratch directory,
     fill, or RR1-1-M1's stop-and-amend, and round 2's reviews read it; the PR
     opens held after the first dry round ("Focused re-review of the fold,
     VA-2, round 1 (2026-10-27)").
+    Round 2's fold (amended 2026-10-27, re-review round 2: RR1-1-M1 /
+    RR1-1-m1): fix 3 ee6144ad9 and its fill 903a0c321 take both code findings
+    at the root, in the budget's last fix commit, and the records commit "VA-2
+    re-review fix: round 2 folded into the records" records them; round 2's two
+    reviews read the three commits, and with the budget used up a later code
+    finding takes §3's shrink line ("Focused re-review of the fold, VA-2, round
+    2 (2026-10-27)").
 -   **Round 1's records** (R29: decided and recorded). The decision-log entry
     gains a dated paragraph for the round after its held-state paragraph,
     which §A.12's text does not have, as it does not have the held-state
@@ -9471,6 +9777,12 @@ writer's scratch directory,
     §A.12 do not change in round 1, W-225 staying DISCHARGED until round 2's
     fold decides RR1-1-M1. _Break condition:_ a review names §A.12's text as
     the entry's whole text, or round 2's fold narrows W-225.
+    Round 2's fold does not narrow W-225, which stays DISCHARGED, and files no
+    id, so the ledger, the gap rows and §A.12's ledger and row texts do not
+    change in round 2 either; the decision-log entry gains a round 2 paragraph
+    after round 1's, and its landed-notes paragraph, as §A.12's text and the PR
+    text, names fix 3 (amended 2026-10-27, re-review round 2: RR1-1-M1 /
+    RR1-1-m1).
 -   **Land-time items, in order after PR 65** (§3 item 15, D-VA2-18, §6.2, §8.8;
     fork/ORCHESTRATION.md Next actions item 6). (a) M, a merge commit (`git
     merge --no-ff`, never a rebase) of the trunk that holds PR 51 to PR 65,
@@ -10372,7 +10684,12 @@ rev 3's field-wise `NotEqual` (amended 2026-10-26, review fold: RR1-Nm-2): 11,
 12, 0, 11, 12, 13, 1, 21, 22, 1, 1, 10. On PR 59's install the program fails
 exactly at the five generic calls whose requirement is a tuple's (`cannot
 convert type ... into type implementing Core.Eq`, `Core.Ordered`, `Core.Copy`),
-and nowhere else (M-11).
+and nowhere else (M-11). Round 2's fold adds SameEach and CopyEach, whose packs
+of types require more than the impls do, and their lines 0, 1 and 5, derived
+from tuples.md's field-wise `==` and from Copies's copy; on PR 59's install the
+program now stops first at VA-1's `semantics TODO: pack expansion pattern
+outside an explicit parameter list` at 85:13, SameEach's pack, trunk and the
+nightly at parse (M-28) (amended 2026-10-27, re-review round 2: RR1-1-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -10396,6 +10713,9 @@ and nowhere else (M-11).
 //   1
 //   1
 //   10
+//   0
+//   1
+//   5
 //
 // The prelude's tuple impls are found through a generic function's
 // requirement, where the tuple is a specific's type argument. Counted's
@@ -10409,7 +10729,13 @@ and nowhere else (M-11).
 // three, printing 11, 12 and 13, and is true (1); Differ(a, b) prints 21
 // (the first elements are not not-equal) and 22, and is true (1). Less through
 // `Core.Ordered` is true for (1, 2) < (1, 3) (1), and Copies through
-// `Core.Copy` copies a 4-tuple whose last element is 10.
+// `Core.Copy` copies a 4-tuple whose last element is 10. SameEach's and
+// CopyEach's packs of types require more than the impls do, so impl lookup
+// converts each pack to the impl's narrower facet type element by element
+// (docs/design/variadics.md, "Expansion convertibility"): (1, true) == (1,
+// false) is false (0) and (1, true) == (1, true) is true (1), and CopyEach
+// passes its tuple to Copies, whose copy of (4, 5) has 5 as its second
+// element.
 
 import Core library "io";
 
@@ -10452,6 +10778,15 @@ fn Copies[T: Core.Copy](x: T) -> T {
   return x.(Core.Copy.Op)();
 }
 
+fn SameEach[... each T: Core.Eq & Core.Copy](x: (... each T), y: (... each T))
+    -> bool {
+  return x == y;
+}
+
+fn CopyEach[... each T: Core.Copy & Core.Eq](x: (... each T)) -> (... each T) {
+  return Copies(x);
+}
+
 fn Run() -> i32 {
   let c1: Counted = {.v = 1};
   let c2: Counted = {.v = 2};
@@ -10464,6 +10799,9 @@ fn Run() -> i32 {
   Show(Differ(a, b));
   Show(Less((1 as i32, 2 as i32), (1 as i32, 3 as i32)));
   Core.Print(Copies((7 as i32, 8 as i32, 9 as i32, 10 as i32)).3);
+  Show(SameEach((1 as i32, true), (1 as i32, false)));
+  Show(SameEach((1 as i32, true), (1 as i32, true)));
+  Core.Print(CopyEach((4 as i32, 5 as i32)).1);
   return 0;
 }
 ```
@@ -10948,6 +11286,26 @@ library "[[@TEST_NAME]]";
 interface Code {}
 
 fn F[... each T: Code](... unused each x: Missing(each T)) {}
+```
+
+<!-- google-doc-style-resume -->
+
+Round 2's fix 3 appends, after a blank line, the split
+`fail_let_binding_type_error`: a `let` pack expansion pattern whose binding's
+type is diagnosed reports that diagnostic and nothing more (amended 2026-10-27,
+re-review round 2: RR1-1-m1):
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// --- fail_let_binding_type_error.carbon
+library "[[@TEST_NAME]]";
+
+interface Code {}
+
+fn F[... each T: Code](t: (... each T)) {
+  let (... unused each y: Missing(each T)) = t;
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -12468,6 +12826,58 @@ fn Before[T: Core.Ordered, U: Core.Ordered](a: (T, U), b: (T, U)) -> bool {
 
 <!-- google-doc-style-resume -->
 
+Round 2's fix 3 appends, after a blank line, the splits `eq_wider_facet`, the
+tuple `EqWith` impl for a pack whose facet type is wider than the impl's, and
+`forward_wider_facet`, such a pack forwarded as a tuple, as a pack expansion
+and as one facet to callees of narrower facet types (amended 2026-10-27,
+re-review round 2: RR1-1-M1):
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// --- eq_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn Same[... each T: Core.Eq & Core.Copy](a: (... each T), b: (... each T))
+    -> bool {
+  return a == b;
+}
+//@dump-sem-ir-end
+
+fn Call(a: (i32, bool), b: (i32, bool)) -> bool {
+  return Same(a, b);
+}
+
+// --- forward_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+fn TakeTuple[... each U: Core.Copy](unused u: (... each U)) {}
+fn TakeTypes[... each U: type](unused u: (... each U)) {}
+fn TakeOne[U: Core.Copy](unused u: U) {}
+
+//@dump-sem-ir-begin
+fn TakePack[... each U: Core.Copy](... unused each u: each U) {}
+
+fn ForwardTuple[... each T: Core.Copy & Core.Destroy](t: (... each T)) {
+  TakeTuple(t);
+  TakeTypes(t);
+  TakeOne(t);
+}
+
+fn ForwardPack[... each T: Core.Copy & Core.Destroy](... each x: each T) {
+  TakePack(... each x);
+}
+//@dump-sem-ir-end
+
+fn Call() {
+  ForwardTuple((1 as i32, true));
+  ForwardPack(2 as i32, false);
+}
+```
+
+<!-- google-doc-style-resume -->
+
 toolchain/lower/testdata/variadics/prelude_tuple_impls.carbon (C4; amended
 2026-10-22, review fold: B-m4), on the production prelude:
 
@@ -12544,6 +12954,28 @@ class C {
 
 fn Call(t: (C, i32)) -> (C, i32) {
   return t.(Core.Copy.Op)();
+}
+```
+
+<!-- google-doc-style-resume -->
+
+Round 2's fix 3 appends, after a blank line, the split `eq_wider_facet`, that
+impl lowered for `(i32, bool)` (amended 2026-10-27, re-review round 2:
+RR1-1-M1):
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// --- eq_wider_facet.carbon
+library "[[@TEST_NAME]]";
+
+fn Same[... each T: Core.Eq & Core.Copy](a: (... each T), b: (... each T))
+    -> bool {
+  return a == b;
+}
+
+fn Call(a: (i32, bool), b: (i32, bool)) -> bool {
+  return Same(a, b);
 }
 ```
 
@@ -13187,12 +13619,16 @@ next commit fills its golden, which is the fill after C0b; C1 and C2 abort
 on a constant pack of aggregates until C3 (the plan's e12, which prints 14 on
 PR 59, and e14); and C1 to C5 abort on a destroyed tuple of one pack segment
 and on a pack of symbolic facets, and miscompile an integer index into a
-tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9).
+tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9); and C1
+to the round 1 records commit bdf941edc reject a compile-time pack of facets
+converted to a pack of a narrower facet type, and report a second TODO after
+a `let` binding's diagnosed type, until fix 3 ee6144ad9 (the plan's §2.10).
 ```
 
 The PR text (commit D's PR body) carries the paragraph "Landed notes" above
 verbatim, under its own heading (amended 2026-10-27, implementation-review
-fold: MAJOR-3).
+fold: MAJOR-3). Since round 2 its last clause names fix 3 too (amended
+2026-10-27, re-review round 2: RR1-1-M1 / RR1-1-m1).
 
 <!-- google-doc-style-resume -->
 

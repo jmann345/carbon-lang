@@ -3740,7 +3740,8 @@ or a pack expansion forwarded to a callee of a narrower facet type, the
 prelude's variadic impls and a user's run as their fixed-arity twins do
 (D-VA2-5). RR1-1-m1: a `let` pack expansion pattern whose binding's type was
 diagnosed reports that diagnostic alone (D-VA2-4). Four splits in three goldens
-and three lines of tuple_impl_generic.carbon pin them; no TODO is added, the
+and three output lines of tuple_impl_generic.carbon (0, 1 and 5; the file
+changes by 22 insertions and 1 deletion) pin them; no TODO is added, the
 slice does not narrow, W-225 stays DISCHARGED and no id is filed (the W-345 of
 round 1's alternative is not taken). Expected, not of record: file_test 1977
 passed, 0 failed, and 147 PASS / 0 FAIL / 21 SKIP over 168 in three runs; the
@@ -3748,6 +3749,29 @@ new mutants MV-19 to MV-23 killed; the mirrors m64, m60, m57, m62 and mdr green
 with it. The fix budget is used up, so a later code finding takes the plan's
 shrink line; round 2's two reviews read the fold next (the plan's "Focused
 re-review of the fold, VA-2, round 2 (2026-10-27)").
+
+Focused re-review of the fold, round 2, the reviews (2026-10-27, records only):
+two fresh reviews of 53460373d. Review 1, REJECT, found one BLOCKER, RR2-1-B1 (a
+pack expansion pattern in a file-scope `let`, such as `let (... unused each y:
+i32) = ();`, aborts the compiler: C2's `let` path admits it, and VA-1's
+interface check then reads an empty declaration-name stack, where PR 59 reports
+VA-1's TODO and trunk and the nightly reject it at parse), and three MINORs:
+RR2-1-m1 (importing a `PackFacetValue`, reached by a two-library probe, is
+pinned by no golden), RR2-1-m2 (a compile-time pack expanded as call arguments
+gets a wrong diagnostic with no location, where §4 requires a TODO; C1's and
+C2's) and RR2-1-m3 (records only). Review 2, APPROVE-WITH-FIXES, found five
+MINORs, records only, folded with RR2-1-m3 by the records commit "VA-2 records:
+re-review round 2 recorded": §5's tuple_impl_generic row and the three output
+lines that fix 3 adds to it; the rows' and the ledger's evidence predating fix
+3's program text, which L re-quotes from the merge commit; fix 3's twelve code
+comments, which name review ids, recorded in §2.0; the three paths of fix 3 that
+no golden pins; and clang-tidy's excluded check named. Both reviews measured the
+gate at 1977 passed and 0 failed and conformance at PASS 147, 0 failures, SKIP
+21 of 168. Round 2 is not dry, so round 3 is owed: with the fix budget used up,
+its fixer takes RR2-1-B1, RR2-1-m1 and RR2-1-m2 by the plan's shrink line in
+order or by D-VA2-19's break condition, a plan amendment that the reviews see
+first; nothing is shrunk, no id is filed, and the ledger and the gap rows do not
+change (the plan's "Focused re-review of the fold, VA-2, round 2 (2026-10-27)").
 
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks

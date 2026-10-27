@@ -3824,6 +3824,30 @@ its fill; nothing is committed to the toolchain, goldens or programs, no id is
 filed (W-345 stays reserved), and the ledger and the gap rows do not change (the
 plan's "Focused re-review of the fold, VA-2, round 3 (2026-10-27)").
 
+Focused re-review of the fold, round 4 (2026-10-27): round 3's three BLOCKERs,
+RR3-1-B1, RR3-1-B2 and RR3r2-B1, folded by fix 4 2f5865be3, "VA-2 fix 4:
+file-scope `let` pack patterns, compile-time packs as call arguments", the
+fourth fix commit that the plan's rev 16 budgets by D-VA2-19's break condition,
+with its fill 1517517eb and the records commit "VA-2 re-review fix: round 4
+folded into the records"; the two are the plan's §2.11 block and its measured
+fill byte for byte. VA-1's interface check is skipped for a `let`, so a pack
+expansion pattern in a file-scope `let` reports what the same `let` in a
+function reports, where the previous head aborted in 26 shapes and two more of
+review 2's; and a compile-time pack expanded as a call's arguments, `G(... each
+T)`, reports `semantics TODO: pack expansion of a compile-time pack in a call's
+argument list` at its `...`, where the previous head passed the pack as one
+argument, so that a callee that deduces its pack ran with the wrong arity and no
+diagnostic, a template-dependent callee and `G[U: type](u: U)` given a pack of
+facets aborted, and any other callee reported a conversion with no location.
+W-345 is filed for that TODO after a re-scan, its notes recording the re-grade
+and the rejected alternative's outcomes, and W-214's notes gain the file-scope
+`let`; round 2's RR2-1-B1, RR2-1-m1 and RR2-1-m2 are folded with them. Expected,
+not of record: file_test 1977 passed, 0 failed, and 147 PASS / 0 FAIL / 21 SKIP
+over 168 in three runs; MV-24 to MV-26 killed on the branch. The fix budget of
+four is used up and nothing is shrunk; the gap rows do not change, and round 4's
+two reviews read the three commits next (the plan's "Focused re-review of the
+fold, VA-2, round 4 (2026-10-27)").
+
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks
 that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a
@@ -3837,7 +3861,14 @@ and on a pack of symbolic facets, and miscompile an integer index into a
 tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9); and C1
 to the round 1 records commit bdf941edc reject a compile-time pack of facets
 converted to a pack of a narrower facet type, and report a second TODO after
-a `let` binding's diagnosed type, until fix 3 ee6144ad9 (the plan's §2.10).
+a `let` binding's diagnosed type, until fix 3 ee6144ad9 (the plan's §2.10);
+and C2 3af0471b6 to abeccdbc5, fix 4's parent, abort on a pack expansion
+pattern in a file-scope `let`, and C1 0aa8dd347 to abeccdbc5 pass a
+compile-time pack expanded as call arguments as one argument: a deduced
+callee gets the wrong arity with no diagnostic, and any other callee a
+conversion error with no location, except that a template-dependent callee
+aborts in check and `G[U: type](u: U)` given a pack of facets aborts in
+lowering, until fix 4 2f5865be3 (the plan's §2.11).
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

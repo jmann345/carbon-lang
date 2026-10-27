@@ -568,6 +568,14 @@ auto DominanceVerifier::VerifyAndRecordInst(InstId root_inst_id,
       push_pack_expansion_body(worklist, inst_id, expansion->body_block_id);
       continue;
     }
+    // Fork (VA-2): a `PackSegmentInit` initializes each element of its
+    // destination by evaluating its body in place, once per element.
+    if (auto init = inst.TryAs<PackSegmentInit>()) {
+      CARBON_RETURN_IF_ERROR(
+          VerifyOperand(inst_id, init->dest_id, block_index));
+      push_pack_expansion_body(worklist, inst_id, init->body_block_id);
+      continue;
+    }
 
     // A `SpliceInst` evaluates the instruction that its operand names.
     if (auto splice = inst.TryAs<SpliceInst>()) {

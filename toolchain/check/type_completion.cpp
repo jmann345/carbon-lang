@@ -662,6 +662,17 @@ auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
     return MakeEmptyTypeInfo();
   }
 
+  // Fork (VA-2, D-VA2-8): a tuple type with a pack segment, `(... each T)`,
+  // has as many elements as its segment's arity, which only a specific knows,
+  // so its value and initializing representations depend on the specific, as
+  // a symbolic binding's type does. (A segment of known arity and element
+  // types was already replaced by its elements, "Pack expansion splitting".)
+  if (llvm::any_of(elements, [&](SemIR::InstId element_id) {
+        return context_->insts().Is<SemIR::PackType>(element_id);
+      })) {
+    return MakeDependentTypeInfo(type_id);
+  }
+
   // Find the value representation for each element, and construct a tuple
   // of value representations.
   llvm::SmallVector<SemIR::InstId> value_rep_elements;

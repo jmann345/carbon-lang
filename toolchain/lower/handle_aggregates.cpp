@@ -119,6 +119,34 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::TupleValue inst) -> void {
+  // Fork (VA-2, D-VA2-9): the value of a tuple of one pack segment, such as
+  // `(... each x)`, is the pack's: both are the address of the elements' value
+  // representations. A 1-tuple holds its element's value representation by
+  // copy, which the pack holds at the same layout.
+  auto elements = context.sem_ir().inst_blocks().Get(inst.elements_id);
+  if (elements.size() == 1) {
+    auto element_type = context.GetTypeIdOfInst(elements.front());
+    if (element_type.file->types().Is<SemIR::PackType>(element_type.type_id)) {
+      auto value_repr = context.GetValueRepr(context.GetTypeIdOfInst(inst_id));
+      auto* pack = context.GetValue(elements.front());
+      switch (value_repr.repr.kind) {
+        case SemIR::ValueRepr::Pointer:
+          context.SetLocal(inst_id, pack);
+          return;
+        case SemIR::ValueRepr::Copy:
+          context.SetLocal(inst_id, context.LoadObject(value_repr.type(), pack,
+                                                       "tuple.value"));
+          return;
+        case SemIR::ValueRepr::None:
+          context.SetLocal(inst_id, llvm::PoisonValue::get(
+                                        context.GetType(value_repr.type())));
+          return;
+        default:
+          CARBON_FATAL("Unexpected value representation for tuple {0}",
+                       inst_id);
+      }
+    }
+  }
   context.SetLocal(inst_id,
                    EmitAggregateValueRepr(context, inst_id, inst.elements_id));
 }

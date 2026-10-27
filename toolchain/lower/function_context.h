@@ -131,6 +131,19 @@ class FunctionContext {
     return *pack_index_;
   }
 
+  // Fork (VA-2, D-VA2-9): the storage that the elements of the destination
+  // `dest_id` of a `PackSegmentInit` are initialized in while its body is
+  // lowered, when its tuple is initialized by copy and so has no storage of
+  // its own, or null.
+  auto pack_segment_storage(SemIR::InstId dest_id) const -> llvm::Value* {
+    return dest_id == pack_segment_dest_id_ ? pack_segment_storage_ : nullptr;
+  }
+  auto set_pack_segment_storage(SemIR::InstId dest_id, llvm::Value* storage)
+      -> void {
+    pack_segment_dest_id_ = dest_id;
+    pack_segment_storage_ = storage;
+  }
+
   // Returns a phi node corresponding to the block argument of the given basic
   // block.
   auto GetBlockArg(SemIR::InstBlockId block_id, TypeInFile type)
@@ -472,6 +485,10 @@ class FunctionContext {
   // current iteration.
   std::optional<uint64_t> pack_index_;
   llvm::SmallVector<SemIR::InstId> pack_iteration_locals_;
+
+  // See `pack_segment_storage`.
+  SemIR::InstId pack_segment_dest_id_ = SemIR::InstId::None;
+  llvm::Value* pack_segment_storage_ = nullptr;
 };
 
 namespace Internal {

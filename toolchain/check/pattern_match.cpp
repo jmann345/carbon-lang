@@ -1843,6 +1843,52 @@ auto MatchContext::DoPreWork(State state, SemIR::TuplePattern tuple_pattern,
     return;
   }
 
+  // Fork (VA-2, D-VA2-9): a `let`'s tuple pattern of one pack expansion
+  // pattern, `let (... each x: each T) = t;`, binds the pack to the elements
+  // of `t`, a tuple of the one segment `⟬each T⟭`: its scrutinee is the pack
+  // whose element at the pack index is `t`'s ("Tuple indexing",
+  // docs/design/variadics.md, "Reduction rules"), so no element is copied.
+  if (llvm::any_of(subpattern_ids, [&](SemIR::InstId subpattern_id) {
+        return context_.insts().Is<SemIR::PackExpansionPattern>(subpattern_id);
+      })) {
+    auto loc_id = SemIR::LocId(entry.pattern_id);
+    auto pack_type_id = GetScrutineeTypeInSpecific(
+        context_, subpattern_ids.front(), specific_id_stack_.back());
+    auto element_type_inst_ids =
+        context_.inst_blocks().Get(context_.types()
+                                       .GetAs<SemIR::TupleType>(tuple_type_id)
+                                       .type_elements_id);
+    if (subpattern_ids.size() != 1 || element_type_inst_ids.size() != 1 ||
+        context_.types().GetTypeIdForTypeInstId(
+            context_.types().GetAsTypeInstId(element_type_inst_ids.front())) !=
+            pack_type_id) {
+      context_.TODO(loc_id, "tuple pack segment matched with other segments");
+      return;
+    }
+    auto scrutinee_value_id =
+        ConvertToValueExpr(context_, converted_scrutinee_id);
+    context_.inst_block_stack().Push();
+    auto body_block_id = context_.inst_block_stack().PeekOrAdd();
+    auto index_id = AddInst<SemIR::PackIndex>(
+        context_, loc_id,
+        {.type_id =
+             GetSingletonType(context_, SemIR::IntLiteralType::TypeInstId)});
+    auto element_id = AddInst<SemIR::PackElement>(
+        context_, loc_id,
+        {.type_id = GetPackElementType(
+             context_, loc_id,
+             context_.types().GetAs<SemIR::PackType>(pack_type_id)),
+         .pack_id = scrutinee_value_id,
+         .index_id = index_id});
+    context_.inst_block_stack().Pop();
+    add_all_subscrutinees(
+        {AddInst<SemIR::PackExpansionExpr>(context_, loc_id,
+                                           {.type_id = pack_type_id,
+                                            .body_block_id = body_block_id,
+                                            .result_id = element_id})});
+    return;
+  }
+
   auto tuple_type = context_.types().GetAs<SemIR::TupleType>(tuple_type_id);
   auto element_type_inst_ids =
       context_.inst_blocks().Get(tuple_type.type_elements_id);

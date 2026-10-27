@@ -10,6 +10,7 @@
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
+#include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -67,10 +68,20 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
                                   Parse::NodeKind::ImplicitParamListStart) &&
                               context.full_pattern_stack().CurrentKind() ==
                                   FullPatternStack::Kind::ImplicitParamList;
-      if (!in_explicit_list && !in_implicit_list) {
+      // Fork (VA-2, D-VA2-9): and as the one element of the whole tuple
+      // pattern of a `let`, whose binding's type names a pack of an enclosing
+      // generic, so that the expansion has "fixed arity"
+      // (docs/design/variadics.md, "Typechecking patterns").
+      bool in_let =
+          context.node_stack().PeekIs(Parse::NodeKind::TuplePatternStart) &&
+          context.node_stack().PeekNextIs(Parse::NodeKind::LetIntroducer) &&
+          context.full_pattern_stack().CurrentKind() ==
+              FullPatternStack::Kind::NameBindingDecl &&
+          context.param_and_arg_refs_stack().PeekCurrentBlockContents().empty();
+      if (!in_explicit_list && !in_implicit_list && !in_let) {
         return context.TODO(node_id,
-                            "pack expansion pattern outside an explicit "
-                            "parameter list");
+                            "pack expansion pattern in a pattern other than a "
+                            "parameter list or let");
       }
       // Fork (VA-1, D-VA-5): an interface's function is matched by the
       // functions of its impls, and the thunk that adapts one to the other
@@ -226,9 +237,29 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStatementId node_id)
   if (!body_block_id->has_value()) {
     return true;
   }
+  // Fork (VA-2, D-VA2-4): the arity of an expansion over a pack of an
+  // enclosing generic, such as a variadic impl's pack in one of the impl's
+  // functions, is a binding of that generic. It is referred to by a
+  // `specific_constant` of the enclosing generic's self specific, as upstream
+  // refers to a name from an enclosing generic, so that each specific of this
+  // generic gives it a value.
+  auto arity_id = scope.arity_id;
+  if (auto const_id = context.constant_values().GetAttached(arity_id);
+      const_id.is_symbolic() && !context.generic_region_stack().Empty()) {
+    auto generic_id =
+        context.constant_values().GetSymbolicConstant(const_id).generic_id;
+    if (generic_id.has_value() &&
+        generic_id !=
+            context.generic_region_stack().PeekPendingGeneric().generic_id) {
+      arity_id =
+          WrapInstForSpecific(context, node_id, arity_id,
+                              context.generics().GetSelfSpecific(generic_id))
+              .inst_id;
+    }
+  }
   AddInst<SemIR::PackExpansionStatement>(
       context, node_id,
-      {.arity_id = scope.arity_id, .body_block_id = *body_block_id});
+      {.arity_id = arity_id, .body_block_id = *body_block_id});
   return true;
 }
 
@@ -239,6 +270,8 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
       .PopAndDiscardSoloNodeId<Parse::NodeKind::PackExpansionStart>();
   auto& stack = context.pack_expansion_stack();
   CARBON_CHECK(stack.back().kind == PackExpansionScope::Kind::Expr);
+  bool in_tuple_literal =
+      context.node_stack().PeekIs(Parse::NodeKind::TupleLiteralStart);
 
   // Fork (VA-2): `... each T` for a compile-time pack `T` is a segment whose
   // elements are `T`'s: its value is the pack `T` itself, as in the tuple
@@ -257,6 +290,38 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
           node_id, context.constant_values().GetInstId(pack_const_id));
       return true;
     }
+    // Fork (VA-2, D-VA2-9): so is `... each x` for a run-time pack `x` in a
+    // tuple literal, "a series of comma-separated tuple elements"
+    // (docs/design/variadics.md, "Pack expansion expressions and
+    // statements"): `(... each x)` is the tuple of one segment whose
+    // elements are `x`'s, and no element is copied to form it. The name
+    // reference is formed again outside the body, which is not evaluated.
+    auto pack_ref = context.insts().TryGetAs<SemIR::NameRef>(element->pack_id);
+    if (in_tuple_literal && pack_ref &&
+        context.types().Is<SemIR::PackType>(pack_ref->type_id)) {
+      auto scope = stack.pop_back_val();
+      auto body_block_id = FinishPackExpansionBody(context, node_id, scope);
+      if (!body_block_id) {
+        return false;
+      }
+      context.node_stack().Push(
+          node_id,
+          body_block_id->has_value()
+              ? AddInst(context, SemIR::LocId(element->pack_id), *pack_ref)
+              : SemIR::ErrorInst::InstId);
+      return true;
+    }
+  }
+
+  // Fork (VA-2, D-VA2-9): an initializing element of a tuple literal would
+  // initialize its element of the tuple in place, once per element, which is
+  // not implemented; converting it to a value first would copy each element
+  // twice.
+  if (in_tuple_literal && SemIR::IsInitializerCategory(SemIR::GetExprCategory(
+                              context.sem_ir(), result_id))) {
+    return context.TODO(stack.back().start_node_id,
+                        "pack expansion of initializing expressions in a "
+                        "tuple literal");
   }
 
   // Each iteration's element is a value: a pack holds its elements' values

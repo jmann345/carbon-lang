@@ -1307,6 +1307,12 @@ auto Formatter::FormatInstRhs(Inst inst) -> void {
       return;
     }
 
+    case CARBON_KIND(PackSegmentInit init): {
+      // The destination is part of the formatted form, `init T to dest`.
+      FormatTrailingBlock(init.body_block_id);
+      return;
+    }
+
     case CARBON_KIND(SpliceBlock splice): {
       FormatArgs(splice.result_id);
       FormatTrailingBlock(splice.block_id);

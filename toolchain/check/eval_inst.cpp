@@ -823,6 +823,67 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
   return ConstantEvalResult::NewSamePhase(inst);
 }
 
+// Fork (VA-2): a tuple type's pack segment of known arity is replaced by the
+// pack's element types: `(A, ... «B; 2», ... ⟬C, D⟭)` is `(A, B, B, C, D)`
+// (docs/design/variadics.md, "Reduction rules": "Pack expansion splitting",
+// "Singular expansion removal").
+auto EvalConstantInst(Context& context, SemIR::TupleType inst)
+    -> ConstantEvalResult {
+  auto elements = context.inst_blocks().Get(inst.type_elements_id);
+  bool has_known_segment = false;
+  for (auto element_id : elements) {
+    if (auto pack = context.insts().TryGetAs<SemIR::PackType>(element_id);
+        pack && context.sem_ir().GetZExtIntValue(pack->arity_id) &&
+        (!IsHeterogeneousPackType(context, *pack) ||
+         context.insts().Is<SemIR::PackValue>(pack->element_id))) {
+      has_known_segment = true;
+    }
+  }
+  if (!has_known_segment) {
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+  llvm::SmallVector<SemIR::InstId> flat_ids;
+  for (auto element_id : elements) {
+    auto pack = context.insts().TryGetAs<SemIR::PackType>(element_id);
+    auto arity =
+        pack ? context.sem_ir().GetZExtIntValue(pack->arity_id) : std::nullopt;
+    if (!arity || (IsHeterogeneousPackType(context, *pack) &&
+                   !context.insts().Is<SemIR::PackValue>(pack->element_id))) {
+      flat_ids.push_back(element_id);
+      continue;
+    }
+    for (auto index : llvm::seq(*arity)) {
+      flat_ids.push_back(context.types().GetTypeInstId(
+          SemIR::GetPackElementTypeId(context.sem_ir(), *pack, index)));
+    }
+  }
+  return ConstantEvalResult::Existing(
+      context.types().GetConstantId(GetTupleType(context, flat_ids)));
+}
+
+// Fork (VA-2): a tuple value's pack segment that is a known pack value is
+// replaced by the pack's elements, as its type's segment is.
+auto EvalConstantInst(Context& context, SemIR::TupleValue inst)
+    -> ConstantEvalResult {
+  auto elements = context.inst_blocks().Get(inst.elements_id);
+  if (!llvm::any_of(elements, [&](SemIR::InstId id) {
+        return context.insts().Is<SemIR::PackValue>(id);
+      })) {
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+  llvm::SmallVector<SemIR::InstId> flat_ids;
+  for (auto element_id : elements) {
+    if (auto pack = context.insts().TryGetAs<SemIR::PackValue>(element_id)) {
+      auto pack_elements = context.inst_blocks().Get(pack->elements_id);
+      flat_ids.append(pack_elements.begin(), pack_elements.end());
+    } else {
+      flat_ids.push_back(element_id);
+    }
+  }
+  inst.elements_id = context.inst_blocks().AddCanonical(flat_ids);
+  return ConstantEvalResult::NewSamePhase(inst);
+}
+
 // Fork (VA-2): an each-name of a compile-time pack, such as `each T` of
 // `[... each T: I]`, is the `$I`th element of the pack once the pack and the
 // pack index are known (docs/design/variadics.md, "Execution Semantics": "An

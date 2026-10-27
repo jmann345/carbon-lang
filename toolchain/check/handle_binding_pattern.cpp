@@ -391,16 +391,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
                             "each-name binding of a class, interface or "
                             "explicit compile-time parameter");
       }
-      // Fork (VA-2, D-VA2-19): impl lookup selects an impl by its self type's
-      // type structure, which does not yet record a pack segment as a run of
-      // the query's elements ("deleting deduced parameters and replacing type
-      // parameters by a `?`", docs/design/generics/details.md, "Type structure
-      // of an impl declaration"), so an impl's pack is not implemented yet.
-      if (introducer_kind == Lex::TokenKind::Impl) {
-        return context.TODO(name_node,
-                            "each-name binding in an impl's implicit "
-                            "parameter list");
-      }
     }
     if (pack_scope->each_binding_pattern_id.has_value()) {
       return context.TODO(name_node,
@@ -439,6 +429,14 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       return context.TODO(type_expr.node_id,
                           "pack expansion pattern whose binding type is "
                           "computed from an each-name");
+    } else if (context.full_pattern_stack().CurrentKind() ==
+               FullPatternStack::Kind::NameBindingDecl) {
+      // Fork (VA-2, D-VA2-9): a `let`'s pack expansion pattern has the fixed
+      // arity of the pack its binding's type names; a deduced arity, from
+      // the scrutinee, is not implemented ("Typechecking patterns").
+      return context.TODO(pack_scope->start_node_id,
+                          "pack expansion pattern with deduced arity outside "
+                          "a parameter list");
     } else {
       // Fork (VA-2, D-VA2-4): every pack of a generic, and of the generics
       // that enclose it, shares one deduced arity, so the pack index of a
@@ -745,6 +743,16 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
 
       auto binding_pattern_id = make_binding_pattern(
           GetLeafBindingPatternInstKind(node_kind, is_ref));
+      if (is_each) {
+        // Fork (VA-2, D-VA2-9): the pack of a `let`'s pack expansion
+        // pattern, whose each-names have its type's pack's arity.
+        pack_scope->each_binding_pattern_id = binding_pattern_id;
+        context.pack_binding_arities().Insert(context.bind_name_map()
+                                                  .Lookup(binding_pattern_id)
+                                                  .value()
+                                                  .bind_name_id,
+                                              pack_scope->arity_binding_id);
+      }
       if (node_kind == Parse::NodeKind::VarBindingPattern) {
         CARBON_CHECK(!is_generic);
 

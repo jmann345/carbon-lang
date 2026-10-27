@@ -496,6 +496,71 @@ auto DeductionContext::Deduce() -> bool {
         continue;
       }
 
+      // Fork (VA-2): a tuple type with one pack segment, such as the
+      // `(... each T)` of an impl, matches a tuple type whose elements before
+      // and after the segment match the elements around it, and whose
+      // remaining run of elements the segment matches as a pack literal of
+      // those types (docs/design/variadics.md, "Typechecking pattern
+      // matches").
+      case CARBON_KIND(SemIR::TupleType param_tuple): {
+        auto param_elements =
+            context().inst_blocks().Get(param_tuple.type_elements_id);
+        const auto* segment = llvm::find_if(param_elements, [&](auto id) {
+          return context().insts().Is<SemIR::PackType>(id);
+        });
+        auto arg_tuple = context().insts().TryGetAs<SemIR::TupleType>(arg_id);
+        if (!arg_tuple) {
+          break;
+        }
+        if (segment == param_elements.end()) {
+          // Deduce through the tuple's operands as before.
+          worklist_.AddInstArg(param_inst.arg0_and_kind(),
+                               context().insts().Get(arg_id).arg0(),
+                               want_value);
+          continue;
+        }
+        auto arg_elements =
+            context().inst_blocks().Get(arg_tuple->type_elements_id);
+        size_t num_before = segment - param_elements.begin();
+        size_t num_after = param_elements.end() - segment - 1;
+        if (llvm::any_of(arg_elements, [&](auto id) {
+              return context().insts().Is<SemIR::PackType>(id);
+            })) {
+          // A tuple type with a pack segment in the same position, such as the
+          // impl's own self type, matches segment by segment; merging a pack
+          // segment with other elements is not supported (DR-37, W-215).
+          if (arg_elements.size() != param_elements.size() ||
+              !context().insts().Is<SemIR::PackType>(
+                  arg_elements[num_before])) {
+            return false;
+          }
+          for (auto [param_element_id, arg_element_id] :
+               llvm::zip(param_elements, arg_elements)) {
+            Add(param_element_id, arg_element_id, want_value);
+          }
+          continue;
+        }
+        if (arg_elements.size() < num_before + num_after) {
+          return false;
+        }
+        for (auto [param_element_id, arg_element_id] :
+             llvm::zip(param_elements.take_front(num_before),
+                       arg_elements.take_front(num_before))) {
+          Add(param_element_id, arg_element_id, want_value);
+        }
+        for (auto [param_element_id, arg_element_id] :
+             llvm::zip(param_elements.take_back(num_after),
+                       arg_elements.take_back(num_after))) {
+          Add(param_element_id, arg_element_id, want_value);
+        }
+        auto run = arg_elements.drop_front(num_before).drop_back(num_after);
+        llvm::SmallVector<SemIR::InstId> run_ids(run.begin(), run.end());
+        Add(*segment,
+            context().types().GetTypeInstId(GetTupleType(context(), run_ids)),
+            want_value);
+        continue;
+      }
+
       case SemIR::StructValue::Kind:
         // TODO: Match field name order between param and arg.
         break;

@@ -173,3 +173,36 @@ fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
   // CHECK:STDERR:
   ... u.Get(each x);
 }
+
+// --- fail_todo_initializing_element.carbon
+library "[[@TEST_NAME]]";
+
+fn MakeTuple[... each T: Core.Copy](... each x: each T) -> (... each T) {
+  return (... each x.(Core.Copy.Op)());
+}
+
+// --- fail_todo_var_pattern.carbon
+library "[[@TEST_NAME]]";
+
+fn F[... each T: Core.Copy](t: (... each T)) {
+  var (... each x: each T) = t;
+}
+
+// --- fail_todo_enclosing_arity.carbon
+library "[[@TEST_NAME]]";
+
+interface Count {
+  fn N(self) -> i64;
+}
+
+impl forall [... each T: type] (... each T) as Count {
+  fn N(unused self) -> i64 { return 0; }
+  fn Extra(... unused each n: i64) -> i64 { return 0; }
+}
+
+// --- fail_todo_template_action_on_tuple_of_pack.carbon
+library "[[@TEST_NAME]]";
+
+fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
+  u.Get((... each x));
+}

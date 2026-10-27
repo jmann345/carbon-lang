@@ -1643,9 +1643,15 @@ struct OverloadSetValue {
 // Fork (VA-2): when `pack_id` is a compile-time pack, such as the pack `T` of
 // `[... each T: I]`, the element is a symbolic constant that depends on the
 // pack index, and is the `$I`th element of the pack once both are known.
+//
+// Fork (VA-2, D-VA2-9): `pack_id` may also be a tuple of one pack segment, a
+// value or a reference, whose element at the pack index this is
+// (docs/design/variadics.md, "Reduction rules": "Tuple indexing"), as a
+// `TupleAccess` is, so it has the tuple's category.
 struct PackElement {
   static constexpr auto Kind = InstKind::PackElement.Define<Parse::NodeId>(
       {.ir_name = "pack_element",
+       .expr_category = ComputedExprCategory::SameAsFirstOperand,
        .is_type = InstIsType::Maybe,
        .constant_kind = InstConstantKind::SymbolicOnly});
 
@@ -1737,6 +1743,23 @@ struct PackLiteral {
 
   TypeId type_id;
   InstBlockId elements_id;
+};
+
+// Fork (VA-2): initializes the elements of a tuple of one pack segment at
+// `dest_id` by running `body_block_id` once per element, whose instructions
+// initialize the element at the pack index (docs/design/variadics.md,
+// "Pack expansion expressions and statements": "`...` in a tuple literal
+// behaves like a series of comma-separated tuple elements").
+struct PackSegmentInit {
+  static constexpr auto Kind = InstKind::PackSegmentInit.Define<Parse::NodeId>(
+      {.ir_name = "pack_segment_init",
+       .expr_category = ExprCategory::ReprInitializing,
+       .constant_kind = InstConstantKind::Never});
+
+  // A `TupleType` whose only element is a `PackType`.
+  TypeId type_id;
+  AbsoluteInstBlockId body_block_id;
+  DestInstId dest_id;
 };
 
 // The type `«E; N»` of a pack expansion segment: `arity_id` repetitions of
@@ -2497,9 +2520,13 @@ struct TupleType {
   static constexpr auto Kind = InstKind::TupleType.Define<Parse::NoneNodeId>(
       {.ir_name = "tuple_type",
        .is_type = InstIsType::Always,
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
        .deduce_through = true});
 
+  // Fork (VA-2): an element may be a pack type, `...«E; N»` or `...⟬each T⟭`,
+  // a segment of the tuple whose elements are the pack's
+  // (docs/design/variadics.md, "Tuples, packs, segments, and shapes"); a
+  // segment of known arity is replaced by its elements when evaluated.
   TypeId type_id;
   InstBlockId type_elements_id;
 };
@@ -2508,9 +2535,11 @@ struct TupleType {
 struct TupleValue {
   static constexpr auto Kind = InstKind::TupleValue.Define<Parse::NodeId>(
       {.ir_name = "tuple_value",
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
        .deduce_through = true});
 
+  // Fork (VA-2): an element may be a pack value of a pack segment, whose
+  // elements are spliced in when the pack is known.
   TypeId type_id;
   InstBlockId elements_id;
 };

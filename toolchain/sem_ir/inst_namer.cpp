@@ -1465,6 +1465,11 @@ auto InstNamer::NamingContext::NameInst() -> void {
       PushBlockId(scope_id_, inst.body_block_id);
       return;
     }
+    case CARBON_KIND(PackSegmentInit inst): {
+      PushBlockId(scope_id_, inst.body_block_id);
+      AddInstName("");
+      return;
+    }
     case PackType::Kind: {
       AddInstName("pack_type");
       return;

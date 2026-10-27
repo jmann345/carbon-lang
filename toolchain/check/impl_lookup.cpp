@@ -650,6 +650,9 @@ struct CandidateImpl {
 
   // Used for sorting the candidates to find the most-specialized match.
   TypeStructure type_structure;
+  // Fork (VA-2, D-VA2-8): the impl's ranking against the query, which sorts
+  // the candidates (`TypeStructure::IsBetterRanking`).
+  llvm::SmallVector<int, 0> ranking;
   SemIR::InstId match_first_block;
   int match_first_position;
 };
@@ -734,9 +737,10 @@ static auto CollectCandidateImplsForQuery(
     // TODO: We can skip the comparison here if the `impl_interface_const_id` is
     // not symbolic, since when the interface and specific ids match, and they
     // aren't symbolic, the structure will be identical.
+    llvm::SmallVector<int, 0> ranking;
     if (!query_type_structure.CompareStructure(
             TypeStructure::CompareTest::IsEqualToOrMoreSpecificThan,
-            *type_structure)) {
+            *type_structure, &ranking)) {
       // If the query does not match this impl, but the impl is part of a final
       // `match_first` block, then we also check to see if the impl is _more
       // specific_ than the query. Meaning that the query, once specialized,
@@ -758,7 +762,7 @@ static auto CollectCandidateImplsForQuery(
     }
 
     candidates.impls.push_back({id, &impl, std::move(*type_structure),
-                                impl.match_first_id,
+                                std::move(ranking), impl.match_first_id,
                                 impl.match_first_position});
   }
 
@@ -790,7 +794,7 @@ static auto CollectCandidateImplsForQuery(
       return lhs.match_first_position < rhs.match_first_position;
     }
     // Otherwise, specificity wins.
-    return lhs.type_structure < rhs.type_structure;
+    return TypeStructure::IsBetterRanking(lhs.ranking, rhs.ranking);
   };
   // Stable sort is used so that impls that are seen first are preferred when
   // they have an equal priority ordering.

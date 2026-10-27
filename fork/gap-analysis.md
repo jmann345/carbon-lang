@@ -197,6 +197,14 @@ a045da8e6 cherry-picked. Next: W-212 (generic and heterogeneous packs), then
 W-213 and W-218 (tuples with pack segments, statement expansions of
 declarations), which the design's Zip needs.
 
+**Slice 2 (VA-2, fork/variadics/va2-plan.md):** packs of different types in
+implicit parameter lists, tuples with one pack segment, `let` pack bindings,
+statement expansions of `if`, and variadic impls, with which the prelude's
+tuple `Copy`, `EqWith` and `OrderedWith` are single variadic impls, as this
+section's arbiter asks. Next: W-330 (computed element types), W-222 (several
+packs) and W-217 (`...expand`), which the design's Zip, Apply and
+TupleConcat need (W-213).
+
 ### W7. Integrated templates completion + structural conformance [L]
 
 **Depends on:** Design authorship: error handling, unions, if-let/let-else,

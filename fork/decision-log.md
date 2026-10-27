@@ -3629,6 +3629,97 @@ The next advance's four added conflicts (plan M-16) resolve by taking the
 fork's side, which holds upstream's lines, except the golden of (v).
 Veto-able.
 
+### VA-2: definition-checked variadics, slice 2 (2026-10-27)
+
+Context: W-212, W-213 and W-225 (VA-1's residues; gap rows "Generics:
+Definition-checked variadics" and "Stdlib: tuple/array library parts", both
+PARTIAL); fork/variadics/va2-plan.md, rev 15 after two plan reviews and
+two focused re-reviews, five stop-and-amend revisions of the implementation,
+each with its focused re-review (rev 5, nested constant initialization; rev
+7, C1's split and golden sources; rev 9, the rank splits on the min prelude;
+rev 11, C3's p06 line and packs of aggregates; rev 13, the comment wrap of
+the plan's §A.1 oracle), and two implementation reviews of C5 and their fix,
+all folded; branch claude/carbon-fork-0-1-va2, one PR stacked on PR 59.
+Every decision auto-adopted under V-2 and V-3b, which R32 states (R29(a)),
+and open to veto.
+
+Decisions (plan §1, each with its break condition): D-VA2-1 the slice;
+D-VA2-2 a symbolic pack index and per-iteration values of a specific;
+D-VA2-3 one pack type whose element is a type or a pack of types; D-VA2-4
+`[... each T: I]` with one deduced arity per generic, a second a TODO;
+D-VA2-5 to D-VA2-7 deduction, definition checking against `each T`, and
+lowering per element; D-VA2-8 and D-VA2-9 tuples of one pack segment with a
+dependent representation, `(...?)` in impl lookup's type structure ranked by
+the overlap rule, `let` bindings and element-wise initialization; D-VA2-10
+variadic impl selection, terminating by subterm requirements; D-VA2-11
+statement expansions of `if`; D-VA2-12 the prelude's tuple impls; D-VA2-13
+and D-VA2-14 the TODO texts, templates unchanged and C++ calls on elements
+of packs of different types a land-time TODO; D-VA2-15 to D-VA2-19 goldens,
+programs, records, merge position and commits, with C0's and C0b's fix of
+nested aggregate constants.
+
+Options considered (plan §7.2): a second checking path (A-1); hand-written
+impls to a larger fixed arity (A-2); a pack-to-tuple shim (A-3); two packs
+now (A-4); a specific per element (A-5); constant packs everywhere (A-6);
+`return self;` as the tuple `Copy.Op` (A-7); `...and` for equality (A-8);
+the rev 1 type-structure hole (A-9); a pack index per arity binding (A-10).
+
+V-3 check: every mechanism is the design's (docs/design/variadics.md and
+docs/design/generics/details.md at upstream's 33863ed07, neither changed since
+57ba07a97), the fork's SemIR is internal representation, and no design page
+is edited; rev 1's
+type-structure hole was a second spelling of the design's type-structure
+rule, realigned before implementation. V-3a register entries, each with its
+work item: `...expand`'s typechecking is the design's TODO (W-217); tuple
+comparisons convert neither operand (W-334); a pack's bare name has no
+meaning yet (W-230); the fixed-arity `let` reading of :219-221 (W-214); a
+segment's rank against a `?` (W-338); comparisons of orderings that are not
+total (W-339).
+
+Records: W-225 discharged; W-212, W-213, W-214, W-218, W-219 and W-222 narrowed;
+W-215, W-220, W-221, W-223, W-224, W-226, W-229, W-230 and W-013 noted; W-330 to
+W-339 filed, W-335 as discharged by C0 and C0b. Both rows stay PARTIAL with
+narrower open text, expected, not of record, on the container run of 2026-10-27
+on bdd7b2424, whose toolchain is the carbonbuild toolchain of the fix 1ad7c9b5e,
+`conformance.sh` into a private directory with scoreboard generated
+2026-10-27T13:14:18Z and log
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/records/logs/conf_pre.log.
+
+Held state (2026-10-27, the discharge commit D, records only): the plan's rev 1
+(51c6cfb10), rev 2 (78524522b), rev 3 (8d377a06d) and rev 4 (7188540ca, signed
+off for implementation), its stop-and-amend and fold revisions rev 5 to rev 14
+(ef58cf5dd, 4d5388af2, e0038734f, 4299f9765, 956b73ffc, 529729be1, ea420acd6,
+f336c5105, 76071383a and c6e523472) and rev 15 (bdd7b2424, the implementation
+reviews' records commit); the commits C0 d92a9c709, C0b 64e9736c0 and its fill
+F0 8a7395cf1, C1 0aa8dd347 and F1 1a7c360e0, C2 3af0471b6 and F2 1afda55f0, C3
+3a39d69db and F3 4a627cd6c, C4 b40003716 and F4 1a9a0a11b, C5 4b7ca618e, which
+needs no fill, the fix 1ad7c9b5e and its fill 5bc6e5070, R 42a1ec16f, and D,
+which carries this entry. Expected, not of record (R9), on bdd7b2424, whose
+toolchain is the fix's: file_test 1977 passed, 0 failed, and 147 PASS / 0 FAIL /
+21 SKIP over 168 programs, 49/56 bullets PASS, where PR 59 has 1960 goldens and
+137 / 0 / 21 over 158. The id re-scan before D (plan §8.10, after a fetch, over
+90 refs and 20 worktrees) found none of W-330 to W-339 filed elsewhere, the
+highest filed ids being W-341 to W-344 on trunk and W-340 on DR-1b's branch, so
+no id is re-allocated and none of the ten is unused. PR 51 to PR 65 are held and
+none is on trunk (GitHub Actions is disabled, R28), so the land-time items M,
+S-CT, F-M, L-F and L (plan §3 item 15) are owed, and L brings this paragraph up
+to date on the merge of trunk. The plan's Sign-off has the focused re-review of
+the fix commits before R and D; this workflow wrote R and D first, so that
+re-review reads the fix, its fill and these records together (the plan's "Landed
+notes (VA-2, 2026-10-27)").
+
+Landed notes (commits of the branch that a later commit completes or fixes,
+kept because history is not rewritten; for bisection): rev 7 moved two hunks
+that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a
+pack in an impl's implicit parameter list (`each-name binding in an impl's
+implicit parameter list`), and C2 removes the refusal; the lowering of packs
+of aggregates, rev 11's C3b, is in C3 since rev 12; C0's message says the
+next commit fills its golden, which is the fill after C0b; C1 and C2 abort
+on a constant pack of aggregates until C3 (the plan's e12, which prints 14 on
+PR 59, and e14); and C1 to C5 abort on a destroyed tuple of one pack segment
+and on a pack of symbolic facets, and miscompile an integer index into a
+tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9).
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

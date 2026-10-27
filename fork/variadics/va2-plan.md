@@ -34,7 +34,11 @@ W-212 is narrowed, not discharged; §6.2 gains rule 6 for a conflicted golden;
 the landed notes have a text; and the measured churn, mutant outcomes and
 mirror red sets replace their predictions. No shrink line is taken, and the
 fix budget keeps one of its three commits (amended 2026-10-27,
-implementation-review fold: every finding).
+implementation-review fold: every finding). The records commits R (42a1ec16f)
+and D are written, and the "Landed notes (VA-2, 2026-10-27)" after the Sign-off
+section record what they wrote, the measurements and their heads, and every
+land-time item (amended 2026-10-27, discharge); the focused re-review of the fix
+commits reads them with the fix next.
 
 Rev 14 (c6e523472, 2026-10-27) was the fold of the focused re-review of rev 13
 (76071383a, on F4 1a9a0a11b), whose verdict was APPROVE-WITH-AMENDMENTS on
@@ -5556,7 +5560,10 @@ The commits, in order:
 13. **R, the rows.** §A.12's text for "Generics: Definition-checked variadics"
     and "Stdlib: tuple/array library parts", quoting §8.4's container run,
     EXPECTED, not of record; both stay PARTIAL, so the header's counts do not
-    move (§1.9).
+    move (§1.9). Done 2026-10-27 as 42a1ec16f, which quotes the run on
+    bdd7b2424, the head before it, whose toolchain is the fix's and whose totals
+    are C5's, since the fix changed the toolchain after C5 (amended 2026-10-27,
+    discharge).
 14. **D, discharge** (§A.12): the ledger (W-225 discharged, W-212 and W-213
     narrowed (amended 2026-10-27, implementation-review fold: MAJOR-1); W-214,
     W-218, W-219, W-222 narrowed; W-215 (amended 2026-10-27,
@@ -5568,7 +5575,9 @@ The commits, in order:
     OP-2's storage and the id requests for the a03, a19 and a20 class and for
     `String.Reserve` and `String.Append`; amended 2026-10-27,
     implementation-review fold: MAJOR-1 / MAJOR-2 / MINOR-8), the W6 sentence
-    of fork/gap-analysis.md, after §8.10's id re-scan.
+    of fork/gap-analysis.md, after §8.10's id re-scan. Done 2026-10-27 by D,
+    after §8.10's re-scan found no collision; the landed notes after the
+    Sign-off section record what it wrote (amended 2026-10-27, discharge).
 15. **Land time, when VA-2 is next** (D-VA2-18), messages below: M, the merge of
     trunk (a merge commit, `git merge --no-ff`, conflicts resolved by §6.2's
     rules); S-CT, the land-time test commit of D-VA2-14 (the split file
@@ -7504,6 +7513,11 @@ W-330 to W-399" (header); if another workstream has filed one of them, D
 re-allocates from the maximum plus one, skipping reserved blocks, and §A.12's
 ids are renumbered in D's commit, never in source.
 
+Run before D on 2026-10-27 (the "Landed notes (VA-2, 2026-10-27)"): after a
+fetch, over 90 refs and the `fork/` trees of 20 worktrees, no ledger files any
+of W-330..W-339, the highest filed ids are W-340 (DR-1b's branch) and W-341 to
+W-344 (trunk), and no id is re-allocated (amended 2026-10-27, discharge).
+
 ## Hand-off notes for the implementer
 
 1.  **Start from the prototype.** `git apply` of Appendix B (or of
@@ -9136,6 +9150,167 @@ RR5-m3)); rev 2's record
 counts two of reviews A's and B's 25 as folded in part, with evidence (B-m5 is
 one). The records of each fold are the "Review fold record" sections above and
 the stop-and-amend record.
+
+## Landed notes (VA-2, 2026-10-27)
+
+Written by the discharge commit D, "VA-2 discharge: W-225 discharged, W-212 and
+W-213 narrowed, W-330 to W-339 filed", after the row commit R (42a1ec16f, "VA-2
+R: gap rows for slice 2, expected, not of record"), both dated 2026-10-27, the
+UTC date of their commits, on this branch, stacked on PR 59 (b0822a744) with no
+merge of trunk. In the held state no PR of PR 51 to PR 65 is on trunk (ad2e45a66
+at R and D), so these notes record what R and D wrote, the ids, the measurements
+and their heads, what moved after the mirrors, and every land-time item in
+order; the land-time records commit L adds the merged tree's runs here.
+Everything measured is EXPECTED and not of record (R9). `$RD` is the records
+writer's scratch directory,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/records`
+(its `logs/`, `r31/`, `a12/` and `msg_*.txt`).
+
+-   **What R and D write** (§3 items 13 and 14, §A.12's texts with only the
+    `<...>` fields filled: `<date>` 2026-10-27, `<n>` 15, `<programs>` 168,
+    `<tip>` 33863ed07, `<fixes>` 1ad7c9b5e, 5bc6e5070 and bdd7b2424, `<R>`
+    42a1ec16f, the commits' short hashes, and `<run>` and `<counts>` the run
+    below). R: the two rows of fork/gap-analysis.md, each found by its bullet
+    text, which occurs once, at its line on this branch (59 and 80); both stay
+    PARTIAL and the header does not move. D: the ledger (W-212 narrowed and
+    W-225 discharged, each replaced by §A.12's entry; the fourteen sentences
+    appended to the notes of W-213, W-214, W-215, W-218, W-219, W-220, W-221,
+    W-222, W-223, W-224, W-226, W-229, W-230 and W-013; W-330 to W-339 appended
+    after W-230 in id order; the `source` sentence; 154 items, the last W-339);
+    the "Slice 2" paragraph of fork/gap-analysis.md §W6, after "Slice 1"; the
+    decision-log entry "VA-2: definition-checked variadics, slice 2
+    (2026-10-27)" directly after VA-1's entry, where §1.9 and §A.12 place it
+    (R29: the instruction that launched D said "appended at the end of the log",
+    and the plan's placement, review B's B-m3, is followed; _break condition:_ a
+    review of D names the log's end as the rule), with one dated held-state
+    paragraph before its landed notes, and its "Records:" paragraph rewrapped by
+    hand where `<run>` lengthened it, the words unchanged; in
+    fork/ORCHESTRATION.md, a dated paragraph after VA-1's (§A.12's text, then
+    the reviews, the commits, the verification, the ids and the merge order),
+    the Branches row in the held wording, the expected scoreboard after VA-1's,
+    Next actions item 6 (the land-time items) and items 7 to 12 (§A.12's six);
+    and in this plan, the status line, §3 items 13 and 14, §8.10 and these
+    notes.
+-   **The id re-scan before D** (§8.10's three commands after `git fetch origin`
+    in /home/user/carbon-lang at 2026-10-27T13:14:57Z; `$RD/logs/rescan.log`,
+    `rescan_files.txt`, `rescan_lines.txt` and `rescan_wt.txt`). Over 90 refs
+    (18 local and 70 origin `claude/carbon-fork-0-1-*` branches, trunk and
+    origin/trunk) and the `fork/` trees of 20 worktrees, the highest ids named
+    are W-343, W-344 and W-399, the last only as DR-1's range bound ("no id from
+    W-330 to W-399"). `W-3[3-9][0-9]` is named in 20 files across the refs (this
+    plan on this branch's two refs, DR-1's and DR-1b's records on their four,
+    and trunk's and the 7mwfb7 branch's ORCHESTRATION.md, decision-log.md and
+    ledger) and in ten worktree files. No ledger on any ref or worktree files
+    any of W-330..W-339: the only `"id": "W-33x"` lines are this plan's §A.12
+    texts, and every other file names the range only as VA-2's reservation or
+    inside DR-1's range bound. W-340 is filed on DR-1b's branch and W-341 to
+    W-344 on trunk (the weekly check of 2026-10-26). No id is re-allocated.
+-   **Ids.** Filed: W-330 to W-339, all ten of VA-2's reservation, W-335 as
+    DISCHARGED by C0 and C0b; none is unused, and none is ever reused. No F id
+    is minted (D-VA2-17). Without an id: the a03, a19 and a20 class and Core's
+    `String.Reserve` and `String.Append`, whose ids fork/ORCHESTRATION.md's Next
+    actions items 11 and 12 request, VA-2's reservation being used up.
+-   **Measured for R and D.** On bdd7b2424, the head before R, whose toolchain
+    is the fix 1ad7c9b5e's: an incremental build (the version stamp and the
+    busybox link only, 0 warnings; the install prints 0.0.0-0.dev+bdd7b2424;
+    `$RD/logs/build.log`); "file_test test mode on /home/user/carbon-va2: 1977
+    passed, 0 failed (exit 0, 23s)" (`$RD/logs/gate_pre.log`); and conformance
+    with a private `XDG_CACHE_HOME`, "PASS 147, COMPILE-FAIL 0, LINK-FAIL 0,
+    RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 168)", bullets
+    49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56, the variadics bullet holding
+    fifteen programs and the tuple/array bullet five, all PASS
+    (`$RD/logs/conf_pre.log`, `$RD/conf-pre/scoreboard.json`, generated
+    2026-10-27T13:14:18Z), the totals of C5's run at stage 6 and of the fix's
+    (M-27). R and D change records only; D's `json.load` of the ledger,
+    `runner.py --self-test` and prek runs are in its message.
+-   **Measurement heads.** The implementer's build
+    /home/user/carbon-build/carbon-va2, built in full at C1 0aa8dd347, C2
+    3af0471b6 and C3 3a39d69db (each after `ninja -t clean`) and incrementally
+    at C0b 64e9736c0, C4 b40003716 (its golden manifest), the fix 1ad7c9b5e and
+    bdd7b2424; gates on F0 8a7395cf1 (1961), F1 1a7c360e0 (1966), F2 1afda55f0
+    (1971), F3 4a627cd6c (1973), F4 1a9a0a11b and C5 4b7ca618e (1975), and the
+    fix's fill 5bc6e5070 and bdd7b2424 (1977), each passing every golden;
+    conformance 137 / 0 / 21 over 158 on C0b, C1, C2, C3 and C4, and 147 / 0 /
+    21 over 168 on C5, the fix and bdd7b2424; the probe sets after every build
+    (hand-off note 2); the mutants MV-1 to MV-11 on C5's tree and MV-3, MV-4 and
+    MV-12 to MV-18 on the fix's (§8.5); the mirrors of §8.7 at stage 7 from
+    4b7ca618e (m61 on PR 61 5661a35c8, m60 on PR 60 40a76ab81, m62 on PR 62
+    0ef8a0334, m64 on PR 64 4a3220c11, m55 on PR 55 21307851a, m57 on PR 57
+    a080c7886, which holds PR 56's 894139b34, mdr on DR-1b fee0ef31c, which sits
+    on PR 63's 89aabd125, and the mall on trunk ad2e45a66 with all fifteen held
+    heads, T* 814d788ef, then M 91722f55d, S-CT 3964e54c6 and the README table
+    c67a87753), and m64, m60, m57 and mdr again from the fix's scratch commit
+    3258f7598 (M-27).
+-   **What moved after the mirrors** (R29: decided and recorded). Nothing: at R
+    and D the fifteen held heads are the mirrors' (PR 51 f96fe8a7a, PR 52
+    ea573f672, PR 53 adaae4e35, PR 54 cb3ef2e74, PR 55 21307851a, PR 56
+    894139b34, PR 57 a080c7886, PR 58 fcee90d9b, PR 59 b0822a744, PR 60
+    40a76ab81, PR 61 5661a35c8, PR 62 0ef8a0334, PR 63 89aabd125, PR 64
+    4a3220c11, PR 65 fee0ef31c), origin/trunk is ad2e45a66, the mall's base, and
+    upstream's tip is 33863ed07 (fetch and ls-remote), rev 15's reading. _Break
+    condition:_ a held head or trunk that moves before M re-runs its mirror at
+    that head, and the land simulation is re-run by §8.8 at land time.
+-   **R32 at landing.** The design pages this slice spells
+    (docs/design/variadics.md, generics/details.md, tuples.md and
+    expressions/comparison_operators.md) and core/prelude/copy.carbon and
+    operators/comparison.carbon are unchanged from 57ba07a97 to upstream's
+    33863ed07 (`git log 57ba07a97..33863ed07` on them is empty), so the V-3
+    check of the header and of the decision-log entry stands at that tip; the
+    window's one prelude change, 05a7ecbd3's core/prelude/destroy.carbon
+    (`SubobjectDestroy` and `SelfDestruct` moved out of interface `Destroy`), is
+    §6.3's, p06's line being re-measured at the advance that takes it. At land
+    time the V-3 check is repeated against the then-tip by sha, quoting the
+    pages there (R32(a)), and L records it. _Break condition:_ that tip changes
+    a mechanism of §1.12's register entries or the prelude's tuple impls, which
+    their own break conditions then re-decide.
+-   **Next on the branch** (R29: decided and recorded). The Sign-off places the
+    focused re-review of the fix commits before R and D, and the workflow ran R
+    and D first. R and D change records only, so that re-review reads the fix
+    1ad7c9b5e, its fill 5bc6e5070, rev 15 and these records together, with the
+    gate, the mutants MV-15 to MV-18 and the fold's probes (hand-off note 2)
+    re-run; a finding that changes a count, an id or a status that R or D wrote
+    is folded by a new records commit after D, never by a rewrite, and the
+    budget's one fix commit is kept for a code finding. The PR opens held with
+    base claude/carbon-fork-0-1-va after the last round. Hand-off note 7's
+    decision, whether PR 59 takes the array-stride layout of defect A, is the
+    orchestrator's and is not recorded yet; until it is, VA-2 does not change PR
+    59's branch. _Break condition:_ the re-review finds a defect that one fix
+    commit cannot fold, which takes §3's shrink line.
+-   **Land-time items, in order after PR 65** (§3 item 15, D-VA2-18, §6.2, §8.8;
+    fork/ORCHESTRATION.md Next actions item 6). (a) M, a merge commit (`git
+    merge --no-ff`, never a rebase) of the trunk that holds PR 51 to PR 65,
+    merged in fork/ORCHESTRATION.md's order (PR 53, 51, 52, 60, 54, 55, 56, 57,
+    58, 59, 61, 62, 64, 63, 65), after `git merge-tree` dry runs against that
+    day's heads; its message is §3's, its fields filled; its conflicts resolve
+    by §6.2's rules as the land simulation measured them: convert.cpp by rule 1,
+    eval.cpp by rule 2, the records and the conformance README table by rule 3,
+    question_optional.carbon and lower/for/bindings.carbon by rule 6, rule 4 if
+    trunk holds upstream's 57bf903ef, and any other conflict a stop (rule 5).
+    (b) S-CT, the test-only commit of D-VA2-14: §A.11's split file
+    `fail_todo_cpp_call_on_hetero_element`, four splits, no code. (c) F-M, the
+    fill that M and S-CT need, autoupdate only, to its fixpoint; on the land
+    simulation VA-2 made nine goldens red, seven held PRs' full-prelude goldens
+    that C4's prelude renames, lower/for/bindings.carbon with both sides'
+    lowering and S-CT's split, and the other seventeen red there are the held
+    PRs' own land-time refills, which they make before VA-2 lands; after its
+    fill the simulation's gate was 2038 passed and 3 failed, the three the held
+    side's (Next actions items 6 and 10), and its conformance PASS 222, 0
+    failures and SKIP 14 of 236 programs. (d) L-F: fork/conformance/README.md's
+    table regenerated with runner.py's `--update-readme-table` on the merge
+    commit, and every program header that names a count re-derived; no EXPECT
+    line changes. (e) The second id re-scan (§8.10), immediately before L's
+    ledger edit; a collision re-allocates from the maximum plus one, skipping
+    every reserved block, and is recorded here. (f) L, the land-time records
+    commit: §8.1 to §8.4 re-run on the merge commit (§8.8), with the mutants and
+    `runner.py --self-test`, its totals quoted from its scoreboard (trunk's
+    floor plus §5's delta, never added by hand); the two rows replaced again on
+    the merged tree by their bullet text; the ledger's entries of W-212, W-213,
+    W-225 and W-330 to W-339 in id order and their evidence re-quoting that run;
+    the decision-log entry, after VA-1's, its held-state paragraph brought up to
+    date; fork/ORCHESTRATION.md's VA-2 row, paragraph and Next actions; the V-3
+    comparison of R32; and these notes. (g) When Actions returns, the hosted
+    autoupdate, gate and conformance runs on a tree with VA-2 in it are the
+    record, and the "not of record" phrases go in a records commit.
 
 ## Appendix A. Conformance programs, golden sources and records
 

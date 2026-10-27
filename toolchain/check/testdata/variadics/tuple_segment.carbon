@@ -1025,3 +1025,137 @@ fn First[... each T: type](t: (i64, ... each T)) -> i64 {
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: --- index_before_segment.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.dc0: type = pattern_type Core.IntLiteral [concrete]
+// CHECK:STDOUT:   %arity.patt: %pattern_type.dc0 = symbolic_binding_pattern <pack arity>, 0 [symbolic]
+// CHECK:STDOUT:   %arity: Core.IntLiteral = symbolic_binding <pack arity>, 0 [symbolic]
+// CHECK:STDOUT:   %pack_type.c29: type = pack_type type, %arity [symbolic]
+// CHECK:STDOUT:   %pattern_type.fc0: type = pattern_type %pack_type.c29 [symbolic]
+// CHECK:STDOUT:   %T.patt.f84: %pattern_type.fc0 = symbolic_binding_pattern T, 1 [symbolic]
+// CHECK:STDOUT:   %T.621: %pack_type.c29 = symbolic_binding T, 1 [symbolic]
+// CHECK:STDOUT:   %.99e: %pattern_type.fc0 = pack_expansion_pattern %T.patt.f84, %arity.patt [symbolic]
+// CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
+// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
+// CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
+// CHECK:STDOUT:   %.4ee: Core.IntLiteral = pack_index [symbolic]
+// CHECK:STDOUT:   %.425: type = pack_element %T.621, %.4ee [symbolic]
+// CHECK:STDOUT:   %tuple.type.6dc: type = tuple_type (type, %pack_type.c29) [symbolic]
+// CHECK:STDOUT:   %tuple.605: %tuple.type.6dc = tuple_value (%i64, %T.621) [symbolic]
+// CHECK:STDOUT:   %pack_type.8fb: type = pack_type %T.621, %arity [symbolic]
+// CHECK:STDOUT:   %tuple.type.ff9: type = tuple_type (%i64, %pack_type.8fb) [symbolic]
+// CHECK:STDOUT:   %pattern_type.6bb: type = pattern_type %tuple.type.ff9 [symbolic]
+// CHECK:STDOUT:   %t.param_patt: %pattern_type.6bb = value_param_pattern [symbolic]
+// CHECK:STDOUT:   %t.patt: %pattern_type.6bb = wrapper_binding_pattern t, %t.param_patt [symbolic]
+// CHECK:STDOUT:   %.bc0: Core.Form = init_form %i64 [concrete]
+// CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
+// CHECK:STDOUT:   %return.param_patt.cfc: %pattern_type.f57 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.178: %pattern_type.f57 = return_slot_pattern %return.param_patt.cfc, %i64 [concrete]
+// CHECK:STDOUT:   %First.type: type = fn_type @First [concrete]
+// CHECK:STDOUT:   %First: %First.type = struct_value () [concrete]
+// CHECK:STDOUT:   %require_complete.c6e: <witness> = require_complete_type %tuple.type.ff9 [symbolic]
+// CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Copy.impl_witness.8cc: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_64) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.494: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%int_64) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.d73: %Int.as.Copy.impl.Op.type.494 = struct_value () [concrete]
+// CHECK:STDOUT:   %Copy.facet: %Copy.type = facet_value %i64, (%Copy.impl_witness.8cc) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.5c1: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet) [concrete]
+// CHECK:STDOUT:   %.826: type = fn_type_with_self_type %Copy.WithSelf.Op.type.5c1, %Copy.facet [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.d73, @Int.as.Copy.impl.Op(%int_64) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/parts/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %First.decl: %First.type = fn_decl @First [concrete = constants.%First] {
+// CHECK:STDOUT:     %arity.patt.loc4_10.1: %pattern_type.dc0 = symbolic_binding_pattern <pack arity>, 0 [symbolic = %arity.patt.loc4_10.2 (constants.%arity.patt)]
+// CHECK:STDOUT:     %T.patt.loc4_20.1: @First.%pattern_type.loc4_20 (%pattern_type.fc0) = symbolic_binding_pattern T, 1 [symbolic = %T.patt.loc4_20.2 (constants.%T.patt.f84)]
+// CHECK:STDOUT:     %.loc4_10.1: @First.%pattern_type.loc4_20 (%pattern_type.fc0) = pack_expansion_pattern %T.patt.loc4_20.1, %arity.patt.loc4_10.1 [symbolic = %.loc4_10.2 (constants.%.99e)]
+// CHECK:STDOUT:     %t.param_patt.loc4_29.1: @First.%pattern_type.loc4_29 (%pattern_type.6bb) = value_param_pattern [symbolic = %t.param_patt.loc4_29.2 (constants.%t.param_patt)]
+// CHECK:STDOUT:     %t.patt.loc4_29.1: @First.%pattern_type.loc4_29 (%pattern_type.6bb) = wrapper_binding_pattern t, %t.param_patt.loc4_29.1 [symbolic = %t.patt.loc4_29.2 (constants.%t.patt)]
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.f57 = out_param_pattern [concrete = constants.%return.param_patt.cfc]
+// CHECK:STDOUT:     %return.patt: %pattern_type.f57 = return_slot_pattern %return.param_patt, %i64.loc4_53 [concrete = constants.%return.patt.178]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %i64.loc4_53: type = type_literal constants.%i64 [concrete = constants.%i64]
+// CHECK:STDOUT:     %.loc4_53: Core.Form = init_form %i64.loc4_53 [concrete = constants.%.bc0]
+// CHECK:STDOUT:     %arity.loc4_10.2: Core.IntLiteral = symbolic_binding <pack arity>, 0 [symbolic = %arity.loc4_10.1 (constants.%arity)]
+// CHECK:STDOUT:     %.loc4_22.1: type = splice_block %.loc4_22.2 [concrete = type] {
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.loc4_22.2: type = type_literal type [concrete = type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc4_20.2: @First.%pack_type.loc4_20 (%pack_type.c29) = symbolic_binding T, 1 [symbolic = %T.loc4_20.1 (constants.%T.621)]
+// CHECK:STDOUT:     %t.param: @First.%tuple.type.loc4_47.2 (%tuple.type.ff9) = value_param call_param0
+// CHECK:STDOUT:     %.loc4_47.1: type = splice_block %.loc4_47.3 [symbolic = %tuple.type.loc4_47.2 (constants.%tuple.type.ff9)] {
+// CHECK:STDOUT:       %i64.loc4_32: type = type_literal constants.%i64 [concrete = constants.%i64]
+// CHECK:STDOUT:       %.loc4_47.2: @First.%tuple.type.loc4_47.1 (%tuple.type.6dc) = tuple_literal (%i64.loc4_32, constants.%T.621) [symbolic = %tuple (constants.%tuple.605)]
+// CHECK:STDOUT:       %.loc4_47.3: type = converted %.loc4_47.2, constants.%tuple.type.ff9 [symbolic = %tuple.type.loc4_47.2 (constants.%tuple.type.ff9)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %t: @First.%tuple.type.loc4_47.2 (%tuple.type.ff9) = wrapper_binding t, %t.param
+// CHECK:STDOUT:     %return.param: ref %i64 = out_param call_param1
+// CHECK:STDOUT:     %return: ref %i64 = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic fn @First(%arity.loc4_10.2: Core.IntLiteral, %T.loc4_20.2: @First.%pack_type.loc4_20 (%pack_type.c29)) {
+// CHECK:STDOUT:   %arity.patt.loc4_10.2: %pattern_type.dc0 = symbolic_binding_pattern <pack arity>, 0 [symbolic = %arity.patt.loc4_10.2 (constants.%arity.patt)]
+// CHECK:STDOUT:   %arity.loc4_10.1: Core.IntLiteral = symbolic_binding <pack arity>, 0 [symbolic = %arity.loc4_10.1 (constants.%arity)]
+// CHECK:STDOUT:   %pack_type.loc4_20: type = pack_type type, %arity.loc4_10.1 [symbolic = %pack_type.loc4_20 (constants.%pack_type.c29)]
+// CHECK:STDOUT:   %pattern_type.loc4_20: type = pattern_type %pack_type.loc4_20 [symbolic = %pattern_type.loc4_20 (constants.%pattern_type.fc0)]
+// CHECK:STDOUT:   %T.patt.loc4_20.2: @First.%pattern_type.loc4_20 (%pattern_type.fc0) = symbolic_binding_pattern T, 1 [symbolic = %T.patt.loc4_20.2 (constants.%T.patt.f84)]
+// CHECK:STDOUT:   %T.loc4_20.1: @First.%pack_type.loc4_20 (%pack_type.c29) = symbolic_binding T, 1 [symbolic = %T.loc4_20.1 (constants.%T.621)]
+// CHECK:STDOUT:   %.loc4_10.2: @First.%pattern_type.loc4_20 (%pattern_type.fc0) = pack_expansion_pattern %T.patt.loc4_20.2, %arity.patt.loc4_10.2 [symbolic = %.loc4_10.2 (constants.%.99e)]
+// CHECK:STDOUT:   %.loc4_41.1: Core.IntLiteral = pack_index [symbolic = %.loc4_41.1 (constants.%.4ee)]
+// CHECK:STDOUT:   %.loc4_41.2: type = pack_element %T.loc4_20.1, %.loc4_41.1 [symbolic = %.loc4_41.2 (constants.%.425)]
+// CHECK:STDOUT:   %tuple.type.loc4_47.1: type = tuple_type (type, %pack_type.loc4_20) [symbolic = %tuple.type.loc4_47.1 (constants.%tuple.type.6dc)]
+// CHECK:STDOUT:   %tuple: @First.%tuple.type.loc4_47.1 (%tuple.type.6dc) = tuple_value (constants.%i64, %T.loc4_20.1) [symbolic = %tuple (constants.%tuple.605)]
+// CHECK:STDOUT:   %pack_type.loc4_47: type = pack_type %T.loc4_20.1, %arity.loc4_10.1 [symbolic = %pack_type.loc4_47 (constants.%pack_type.8fb)]
+// CHECK:STDOUT:   %tuple.type.loc4_47.2: type = tuple_type (constants.%i64, %pack_type.loc4_47) [symbolic = %tuple.type.loc4_47.2 (constants.%tuple.type.ff9)]
+// CHECK:STDOUT:   %pattern_type.loc4_29: type = pattern_type %tuple.type.loc4_47.2 [symbolic = %pattern_type.loc4_29 (constants.%pattern_type.6bb)]
+// CHECK:STDOUT:   %t.param_patt.loc4_29.2: @First.%pattern_type.loc4_29 (%pattern_type.6bb) = value_param_pattern [symbolic = %t.param_patt.loc4_29.2 (constants.%t.param_patt)]
+// CHECK:STDOUT:   %t.patt.loc4_29.2: @First.%pattern_type.loc4_29 (%pattern_type.6bb) = wrapper_binding_pattern t, %t.param_patt.loc4_29.2 [symbolic = %t.patt.loc4_29.2 (constants.%t.patt)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %tuple.type.loc4_47.2 [symbolic = %require_complete (constants.%require_complete.c6e)]
+// CHECK:STDOUT:
+// CHECK:STDOUT:   fn(%t.param: @First.%tuple.type.loc4_47.2 (%tuple.type.ff9)) -> out %return.param: %i64 {
+// CHECK:STDOUT:   !entry:
+// CHECK:STDOUT:     %t.ref: @First.%tuple.type.loc4_47.2 (%tuple.type.ff9) = name_ref t, %t
+// CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
+// CHECK:STDOUT:     %tuple.elem0: %i64 = tuple_access %t.ref, element0
+// CHECK:STDOUT:     %impl.elem0: %.826 = impl_witness_access constants.%Copy.impl_witness.8cc, element0 [concrete = constants.%Int.as.Copy.impl.Op.d73]
+// CHECK:STDOUT:     %bound_method.loc5_11.1: <bound method> = bound_method %tuple.elem0, %impl.elem0
+// CHECK:STDOUT:     %specific_fn: <specific function> = specific_function %impl.elem0, @Int.as.Copy.impl.Op(constants.%int_64) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:     %bound_method.loc5_11.2: <bound method> = bound_method %tuple.elem0, %specific_fn
+// CHECK:STDOUT:     %Int.as.Copy.impl.Op.call: init %i64 = call %bound_method.loc5_11.2(%tuple.elem0)
+// CHECK:STDOUT:     return %Int.as.Copy.impl.Op.call
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @First(constants.%arity, constants.%T.621) {
+// CHECK:STDOUT:   %arity.patt.loc4_10.2 => constants.%arity.patt
+// CHECK:STDOUT:   %arity.loc4_10.1 => constants.%arity
+// CHECK:STDOUT:   %pack_type.loc4_20 => constants.%pack_type.c29
+// CHECK:STDOUT:   %pattern_type.loc4_20 => constants.%pattern_type.fc0
+// CHECK:STDOUT:   %T.patt.loc4_20.2 => constants.%T.patt.f84
+// CHECK:STDOUT:   %T.loc4_20.1 => constants.%T.621
+// CHECK:STDOUT:   %.loc4_10.2 => constants.%.99e
+// CHECK:STDOUT:   %.loc4_41.1 => constants.%.4ee
+// CHECK:STDOUT:   %.loc4_41.2 => constants.%.425
+// CHECK:STDOUT:   %tuple.type.loc4_47.1 => constants.%tuple.type.6dc
+// CHECK:STDOUT:   %tuple => constants.%tuple.605
+// CHECK:STDOUT:   %pack_type.loc4_47 => constants.%pack_type.8fb
+// CHECK:STDOUT:   %tuple.type.loc4_47.2 => constants.%tuple.type.ff9
+// CHECK:STDOUT:   %pattern_type.loc4_29 => constants.%pattern_type.6bb
+// CHECK:STDOUT:   %t.param_patt.loc4_29.2 => constants.%t.param_patt
+// CHECK:STDOUT:   %t.patt.loc4_29.2 => constants.%t.patt
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

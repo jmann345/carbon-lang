@@ -546,3 +546,109 @@ fn Call() {
 // CHECK:STDOUT: !157 = !DILocation(line: 19, column: 1, scope: !147)
 // CHECK:STDOUT: !158 = !{!148}
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'and_condition.carbon'
+// CHECK:STDOUT: source_filename = "and_condition.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.041.loc16_8.5 = internal constant [2 x i64] [i64 1, i64 2]
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_CConsume.Main(i64)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i1 @_CSmall.Main(i64)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i1 @_COdd.Main(i64)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CCall.Main() #0 !dbg !163 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CEach.Main.91a8a89714fbc21c(ptr @.041.loc16_8.5), !dbg !165
+// CHECK:STDOUT:   ret void, !dbg !166
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CEach.Main.91a8a89714fbc21c(ptr %x) #0 !dbg !167 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc10_17.2.pack.elem = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 0, !dbg !171
+// CHECK:STDOUT:   %.loc10_17.2.pack.elem.load = load i64, ptr %.loc10_17.2.pack.elem, align 8, !dbg !171
+// CHECK:STDOUT:   %Small.call = call i1 @_CSmall.Main(i64 %.loc10_17.2.pack.elem.load), !dbg !172
+// CHECK:STDOUT:   br i1 %Small.call, label %and.rhs, label %and.result, !dbg !172
+// CHECK:STDOUT:
+// CHECK:STDOUT: and.rhs:                                          ; preds = %entry
+// CHECK:STDOUT:   %.loc10_33.2.pack.elem = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 0, !dbg !173
+// CHECK:STDOUT:   %.loc10_33.2.pack.elem.load = load i64, ptr %.loc10_33.2.pack.elem, align 8, !dbg !173
+// CHECK:STDOUT:   %Odd.call = call i1 @_COdd.Main(i64 %.loc10_33.2.pack.elem.load), !dbg !174
+// CHECK:STDOUT:   br label %and.result, !dbg !172
+// CHECK:STDOUT:
+// CHECK:STDOUT: and.result:                                       ; preds = %and.rhs, %entry
+// CHECK:STDOUT:   %0 = phi i1 [ false, %entry ], [ %Odd.call, %and.rhs ]
+// CHECK:STDOUT:   br i1 %0, label %if.then, label %if.else, !dbg !175
+// CHECK:STDOUT:
+// CHECK:STDOUT: if.then:                                          ; preds = %and.result
+// CHECK:STDOUT:   %.loc11_13.2.pack.elem = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 0, !dbg !176
+// CHECK:STDOUT:   %.loc11_13.2.pack.elem.load = load i64, ptr %.loc11_13.2.pack.elem, align 8, !dbg !176
+// CHECK:STDOUT:   call void @_CConsume.Main(i64 %.loc11_13.2.pack.elem.load), !dbg !177
+// CHECK:STDOUT:   br label %if.else, !dbg !178
+// CHECK:STDOUT:
+// CHECK:STDOUT: if.else:                                          ; preds = %if.then, %and.result
+// CHECK:STDOUT:   br label %pack.next, !dbg !170
+// CHECK:STDOUT:
+// CHECK:STDOUT: pack.next:                                        ; preds = %if.else
+// CHECK:STDOUT:   %.loc10_17.2.pack.elem2 = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 1, !dbg !171
+// CHECK:STDOUT:   %.loc10_17.2.pack.elem.load3 = load i64, ptr %.loc10_17.2.pack.elem2, align 8, !dbg !171
+// CHECK:STDOUT:   %Small.call4 = call i1 @_CSmall.Main(i64 %.loc10_17.2.pack.elem.load3), !dbg !172
+// CHECK:STDOUT:   br i1 %Small.call4, label %and.rhs5, label %and.result6, !dbg !172
+// CHECK:STDOUT:
+// CHECK:STDOUT: and.rhs5:                                         ; preds = %pack.next
+// CHECK:STDOUT:   %.loc10_33.2.pack.elem7 = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 1, !dbg !173
+// CHECK:STDOUT:   %.loc10_33.2.pack.elem.load8 = load i64, ptr %.loc10_33.2.pack.elem7, align 8, !dbg !173
+// CHECK:STDOUT:   %Odd.call9 = call i1 @_COdd.Main(i64 %.loc10_33.2.pack.elem.load8), !dbg !174
+// CHECK:STDOUT:   br label %and.result6, !dbg !172
+// CHECK:STDOUT:
+// CHECK:STDOUT: and.result6:                                      ; preds = %and.rhs5, %pack.next
+// CHECK:STDOUT:   %1 = phi i1 [ false, %pack.next ], [ %Odd.call9, %and.rhs5 ]
+// CHECK:STDOUT:   br i1 %1, label %if.then10, label %if.else11, !dbg !175
+// CHECK:STDOUT:
+// CHECK:STDOUT: if.then10:                                        ; preds = %and.result6
+// CHECK:STDOUT:   %.loc11_13.2.pack.elem12 = getelementptr inbounds [2 x i64], ptr %x, i32 0, i32 1, !dbg !176
+// CHECK:STDOUT:   %.loc11_13.2.pack.elem.load13 = load i64, ptr %.loc11_13.2.pack.elem12, align 8, !dbg !176
+// CHECK:STDOUT:   call void @_CConsume.Main(i64 %.loc11_13.2.pack.elem.load13), !dbg !177
+// CHECK:STDOUT:   br label %if.else11, !dbg !178
+// CHECK:STDOUT:
+// CHECK:STDOUT: if.else11:                                        ; preds = %if.then10, %and.result6
+// CHECK:STDOUT:   br label %pack.next1, !dbg !170
+// CHECK:STDOUT:
+// CHECK:STDOUT: pack.next1:                                       ; preds = %if.else11
+// CHECK:STDOUT:   ret void, !dbg !179
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!160}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !44 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !98 = !{null, !44}
+// CHECK:STDOUT: !99 = !DISubroutineType(types: !98)
+// CHECK:STDOUT: !100 = !{null}
+// CHECK:STDOUT: !101 = !DISubroutineType(types: !100)
+// CHECK:STDOUT: !159 = !DIFile(filename: "and_condition.carbon", directory: "")
+// CHECK:STDOUT: !160 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !159, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !163 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !159, line: 15, type: !101, spFlags: DISPFlagDefinition, unit: !160)
+// CHECK:STDOUT: !165 = !DILocation(line: 16, column: 3, scope: !163)
+// CHECK:STDOUT: !166 = !DILocation(line: 15, column: 1, scope: !163)
+// CHECK:STDOUT: !167 = distinct !DISubprogram(name: "Each", linkageName: "_CEach.Main.91a8a89714fbc21c", scope: null, file: !159, line: 9, type: !99, spFlags: DISPFlagDefinition, unit: !160, retainedNodes: !180)
+// CHECK:STDOUT: !168 = !DILocalVariable(arg: 1, scope: !167, type: !44)
+// CHECK:STDOUT: !170 = !DILocation(line: 10, column: 3, scope: !167)
+// CHECK:STDOUT: !171 = !DILocation(line: 10, column: 17, scope: !167)
+// CHECK:STDOUT: !172 = !DILocation(line: 10, column: 11, scope: !167)
+// CHECK:STDOUT: !173 = !DILocation(line: 10, column: 33, scope: !167)
+// CHECK:STDOUT: !174 = !DILocation(line: 10, column: 29, scope: !167)
+// CHECK:STDOUT: !175 = !DILocation(line: 10, column: 10, scope: !167)
+// CHECK:STDOUT: !176 = !DILocation(line: 11, column: 13, scope: !167)
+// CHECK:STDOUT: !177 = !DILocation(line: 11, column: 5, scope: !167)
+// CHECK:STDOUT: !178 = !DILocation(line: 10, column: 7, scope: !167)
+// CHECK:STDOUT: !179 = !DILocation(line: 9, column: 1, scope: !167)
+// CHECK:STDOUT: !180 = !{!168}
+// CHECK:STDOUT:

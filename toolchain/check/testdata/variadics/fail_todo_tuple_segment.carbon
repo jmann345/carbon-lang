@@ -45,6 +45,10 @@ fn F[... each T: Core.Copy](... each x: each T) {
 library "[[@TEST_NAME]]";
 
 fn F[... each T: Core.Copy](t: (... each T)) {
+  // CHECK:STDERR: fail_todo_index_segment.carbon:[[@LINE+4]]:23: error: semantics TODO: `tuple index at or after a pack segment` [SemanticsTodo]
+  // CHECK:STDERR:   let unused a: i64 = t.0;
+  // CHECK:STDERR:                       ^~~
+  // CHECK:STDERR:
   let unused a: i64 = t.0;
 }
 
@@ -52,7 +56,15 @@ fn F[... each T: Core.Copy](t: (... each T)) {
 library "[[@TEST_NAME]]";
 
 fn F[... each T: Core.Copy](t: (i64, ... each T)) {
+  // CHECK:STDERR: fail_todo_index_past_segment.carbon:[[@LINE+4]]:23: error: semantics TODO: `tuple index at or after a pack segment` [SemanticsTodo]
+  // CHECK:STDERR:   let unused a: i64 = t.1;
+  // CHECK:STDERR:                       ^~~
+  // CHECK:STDERR:
   let unused a: i64 = t.1;
+  // CHECK:STDERR: fail_todo_index_past_segment.carbon:[[@LINE+4]]:23: error: semantics TODO: `tuple index at or after a pack segment` [SemanticsTodo]
+  // CHECK:STDERR:   let unused b: i64 = t.7;
+  // CHECK:STDERR:                       ^~~
+  // CHECK:STDERR:
   let unused b: i64 = t.7;
 }
 
@@ -62,5 +74,9 @@ library "[[@TEST_NAME]]";
 fn G[... each T: Core.Copy](unused t: (... each T)) {}
 
 fn F[... each T: Core.Copy](t: (... each T)) {
+  // CHECK:STDERR: fail_todo_index_rewrap.carbon:[[@LINE+4]]:6: error: semantics TODO: `tuple index at or after a pack segment` [SemanticsTodo]
+  // CHECK:STDERR:   G((t.0,));
+  // CHECK:STDERR:      ^~~
+  // CHECK:STDERR:
   G((t.0,));
 }

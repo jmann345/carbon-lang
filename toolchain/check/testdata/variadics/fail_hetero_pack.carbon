@@ -100,6 +100,13 @@ interface Other {}
 
 class Box(unused T: Other) {}
 
+// CHECK:STDERR: fail_binding_type_error.carbon:[[@LINE+7]]:43: error: cannot convert type `each T` that implements `Code` into type implementing `Other` [ConversionFailureFacetToFacet]
+// CHECK:STDERR: fn F[... each T: Code](... unused each x: Box(each T)) {}
+// CHECK:STDERR:                                           ^~~~~~~~~~~
+// CHECK:STDERR: fail_binding_type_error.carbon:[[@LINE-5]]:18: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Box(unused T: Other) {}
+// CHECK:STDERR:                  ^~~~~~~~
+// CHECK:STDERR:
 fn F[... each T: Code](... unused each x: Box(each T)) {}
 
 // --- fail_binding_type_name_error.carbon
@@ -107,4 +114,8 @@ library "[[@TEST_NAME]]";
 
 interface Code {}
 
+// CHECK:STDERR: fail_binding_type_name_error.carbon:[[@LINE+4]]:43: error: name `Missing` not found [NameNotFound]
+// CHECK:STDERR: fn F[... each T: Code](... unused each x: Missing(each T)) {}
+// CHECK:STDERR:                                           ^~~~~~~
+// CHECK:STDERR:
 fn F[... each T: Code](... unused each x: Missing(each T)) {}

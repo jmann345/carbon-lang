@@ -715,3 +715,110 @@ fn Call(a: A, b: B) {
 // CHECK:STDOUT: !264 = !DILocation(line: 25, column: 39, scope: !259)
 // CHECK:STDOUT: !265 = !{!260}
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'generic_caller.carbon'
+// CHECK:STDOUT: source_filename = "generic_caller.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i64 @"_CGet.A.Main:Code.Main"(ptr %self) #0 !dbg !268 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i64 1, !dbg !273
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i64 @"_CGet.B.Main:Code.Main"(ptr %self) #0 !dbg !275 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i64 2, !dbg !280
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_CConsume.Main(i64)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CCall.Main(ptr %a, ptr %b) #0 !dbg !282 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CCaller.Main.bb61c1939a998b64(ptr %a, ptr %b), !dbg !289
+// CHECK:STDOUT:   ret void, !dbg !290
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CCaller.Main.bb61c1939a998b64(ptr %x, ptr %y) #0 !dbg !292 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc24_11.4.pack = alloca { ptr, ptr, ptr }, align 8, !dbg !297
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc24_11.4.pack), !dbg !297
+// CHECK:STDOUT:   %.loc24_11.4.pack.elem = getelementptr inbounds { ptr, ptr, ptr }, ptr %.loc24_11.4.pack, i32 0, i32 0, !dbg !297
+// CHECK:STDOUT:   store ptr %x, ptr %.loc24_11.4.pack.elem, align 8, !dbg !297
+// CHECK:STDOUT:   %.loc24_11.4.pack.elem1 = getelementptr inbounds { ptr, ptr, ptr }, ptr %.loc24_11.4.pack, i32 0, i32 1, !dbg !297
+// CHECK:STDOUT:   store ptr %y, ptr %.loc24_11.4.pack.elem1, align 8, !dbg !297
+// CHECK:STDOUT:   %.loc24_11.4.pack.elem2 = getelementptr inbounds { ptr, ptr, ptr }, ptr %.loc24_11.4.pack, i32 0, i32 2, !dbg !297
+// CHECK:STDOUT:   store ptr %x, ptr %.loc24_11.4.pack.elem2, align 8, !dbg !297
+// CHECK:STDOUT:   call void @_CForEach.Main.a68351f87c3c8f6d(ptr %.loc24_11.4.pack), !dbg !300
+// CHECK:STDOUT:   ret void, !dbg !301
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CForEach.Main.a68351f87c3c8f6d(ptr %x) #0 !dbg !303 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc20_15.5.pack.elem = getelementptr inbounds { ptr, ptr, ptr }, ptr %x, i32 0, i32 0, !dbg !307
+// CHECK:STDOUT:   %.loc20_15.5.pack.elem.load = load ptr, ptr %.loc20_15.5.pack.elem, align 8, !dbg !307
+// CHECK:STDOUT:   %Code.WithSelf.Get.call = call i64 @"_CGet.A.Main:Code.Main"(ptr %.loc20_15.5.pack.elem.load), !dbg !307
+// CHECK:STDOUT:   call void @_CConsume.Main(i64 %Code.WithSelf.Get.call), !dbg !308
+// CHECK:STDOUT:   %.loc20_15.5.pack.elem1 = getelementptr inbounds { ptr, ptr, ptr }, ptr %x, i32 0, i32 1, !dbg !307
+// CHECK:STDOUT:   %.loc20_15.5.pack.elem.load2 = load ptr, ptr %.loc20_15.5.pack.elem1, align 8, !dbg !307
+// CHECK:STDOUT:   %Code.WithSelf.Get.call3 = call i64 @"_CGet.B.Main:Code.Main"(ptr %.loc20_15.5.pack.elem.load2), !dbg !307
+// CHECK:STDOUT:   call void @_CConsume.Main(i64 %Code.WithSelf.Get.call3), !dbg !308
+// CHECK:STDOUT:   %.loc20_15.5.pack.elem4 = getelementptr inbounds { ptr, ptr, ptr }, ptr %x, i32 0, i32 2, !dbg !307
+// CHECK:STDOUT:   %.loc20_15.5.pack.elem.load5 = load ptr, ptr %.loc20_15.5.pack.elem4, align 8, !dbg !307
+// CHECK:STDOUT:   %Code.WithSelf.Get.call6 = call i64 @"_CGet.A.Main:Code.Main"(ptr %.loc20_15.5.pack.elem.load5), !dbg !307
+// CHECK:STDOUT:   call void @_CConsume.Main(i64 %Code.WithSelf.Get.call6), !dbg !308
+// CHECK:STDOUT:   ret void, !dbg !309
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!267}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !34 = !DIBasicType(name: "int", size: 64, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !35 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !36 = !{!34, !35}
+// CHECK:STDOUT: !37 = !DISubroutineType(types: !36)
+// CHECK:STDOUT: !40 = !{null, !35, !35}
+// CHECK:STDOUT: !41 = !DISubroutineType(types: !40)
+// CHECK:STDOUT: !65 = !{null, !35}
+// CHECK:STDOUT: !66 = !DISubroutineType(types: !65)
+// CHECK:STDOUT: !266 = !DIFile(filename: "generic_caller.carbon", directory: "")
+// CHECK:STDOUT: !267 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !266, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !268 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.A.Main:Code.Main", scope: null, file: !266, line: 9, type: !37, spFlags: DISPFlagDefinition, unit: !267, retainedNodes: !274)
+// CHECK:STDOUT: !269 = !DILocalVariable(arg: 1, scope: !268, type: !35)
+// CHECK:STDOUT: !273 = !DILocation(line: 9, column: 32, scope: !268)
+// CHECK:STDOUT: !274 = !{!269}
+// CHECK:STDOUT: !275 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.B.Main:Code.Main", scope: null, file: !266, line: 14, type: !37, spFlags: DISPFlagDefinition, unit: !267, retainedNodes: !281)
+// CHECK:STDOUT: !276 = !DILocalVariable(arg: 1, scope: !275, type: !35)
+// CHECK:STDOUT: !280 = !DILocation(line: 14, column: 32, scope: !275)
+// CHECK:STDOUT: !281 = !{!276}
+// CHECK:STDOUT: !282 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !266, line: 27, type: !41, spFlags: DISPFlagDefinition, unit: !267, retainedNodes: !291)
+// CHECK:STDOUT: !283 = !DILocalVariable(arg: 1, scope: !282, type: !35)
+// CHECK:STDOUT: !284 = !DILocalVariable(arg: 2, scope: !282, type: !35)
+// CHECK:STDOUT: !289 = !DILocation(line: 28, column: 3, scope: !282)
+// CHECK:STDOUT: !290 = !DILocation(line: 27, column: 1, scope: !282)
+// CHECK:STDOUT: !291 = !{!283, !284}
+// CHECK:STDOUT: !292 = distinct !DISubprogram(name: "Caller", linkageName: "_CCaller.Main.bb61c1939a998b64", scope: null, file: !266, line: 23, type: !41, spFlags: DISPFlagDefinition, unit: !267, retainedNodes: !302)
+// CHECK:STDOUT: !293 = !DILocalVariable(arg: 1, scope: !292, type: !35)
+// CHECK:STDOUT: !294 = !DILocalVariable(arg: 2, scope: !292, type: !35)
+// CHECK:STDOUT: !297 = !DILocation(line: 24, column: 11, scope: !292)
+// CHECK:STDOUT: !300 = !DILocation(line: 24, column: 3, scope: !292)
+// CHECK:STDOUT: !301 = !DILocation(line: 23, column: 1, scope: !292)
+// CHECK:STDOUT: !302 = !{!293, !294}
+// CHECK:STDOUT: !303 = distinct !DISubprogram(name: "ForEach", linkageName: "_CForEach.Main.a68351f87c3c8f6d", scope: null, file: !266, line: 19, type: !66, spFlags: DISPFlagDefinition, unit: !267, retainedNodes: !310)
+// CHECK:STDOUT: !304 = !DILocalVariable(arg: 1, scope: !303, type: !35)
+// CHECK:STDOUT: !307 = !DILocation(line: 20, column: 15, scope: !303)
+// CHECK:STDOUT: !308 = !DILocation(line: 20, column: 7, scope: !303)
+// CHECK:STDOUT: !309 = !DILocation(line: 19, column: 1, scope: !303)
+// CHECK:STDOUT: !310 = !{!304}
+// CHECK:STDOUT:

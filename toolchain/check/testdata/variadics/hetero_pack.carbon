@@ -1554,3 +1554,142 @@ fn Caller[T: Code, U: Code](x: T, y: U) {
 // CHECK:STDOUT:   %.loc11_46.8 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: --- generic_caller.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %Code.type: type = facet_type <@Code> [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %ForEach.type: type = fn_type @ForEach [concrete]
+// CHECK:STDOUT:   %ForEach: %ForEach.type = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.437: type = pattern_type %Code.type [concrete]
+// CHECK:STDOUT:   %T.patt.b7a: %pattern_type.437 = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   %T.72a: %Code.type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %U.patt: %pattern_type.437 = symbolic_binding_pattern U, 1 [symbolic]
+// CHECK:STDOUT:   %U: %Code.type = symbolic_binding U, 1 [symbolic]
+// CHECK:STDOUT:   %T.as_type: type = facet_access_type %T.72a [symbolic]
+// CHECK:STDOUT:   %pattern_type.9da: type = pattern_type %T.as_type [symbolic]
+// CHECK:STDOUT:   %x.param_patt.bc0: %pattern_type.9da = value_param_pattern [symbolic]
+// CHECK:STDOUT:   %x.patt.68a: %pattern_type.9da = wrapper_binding_pattern x, %x.param_patt.bc0 [symbolic]
+// CHECK:STDOUT:   %U.as_type: type = facet_access_type %U [symbolic]
+// CHECK:STDOUT:   %pattern_type.e6a: type = pattern_type %U.as_type [symbolic]
+// CHECK:STDOUT:   %y.param_patt: %pattern_type.e6a = value_param_pattern [symbolic]
+// CHECK:STDOUT:   %y.patt: %pattern_type.e6a = wrapper_binding_pattern y, %y.param_patt [symbolic]
+// CHECK:STDOUT:   %Caller.type: type = fn_type @Caller [concrete]
+// CHECK:STDOUT:   %Caller: %Caller.type = struct_value () [concrete]
+// CHECK:STDOUT:   %require_complete.116: <witness> = require_complete_type %T.as_type [symbolic]
+// CHECK:STDOUT:   %require_complete.1de: <witness> = require_complete_type %U.as_type [symbolic]
+// CHECK:STDOUT:   %tuple.type: type = tuple_type (%T.as_type, %U.as_type, %T.as_type) [symbolic]
+// CHECK:STDOUT:   %int_3: Core.IntLiteral = int_value 3 [concrete]
+// CHECK:STDOUT:   %pack_type.043: type = pack_type type, %int_3 [concrete]
+// CHECK:STDOUT:   %.d30: %pack_type.043 = pack_value (%T.as_type, %U.as_type, %T.as_type) [symbolic]
+// CHECK:STDOUT:   %pack_type.7e3: type = pack_type %Code.type, %int_3 [concrete]
+// CHECK:STDOUT:   %.bb0: %pack_type.7e3 = pack_value (%T.72a, %U, %T.72a) [symbolic]
+// CHECK:STDOUT:   %pack_type.fd1: type = pack_type %.bb0, %int_3 [symbolic]
+// CHECK:STDOUT:   %ForEach.specific_fn: <specific function> = specific_function %ForEach, @ForEach(%int_3, %.bb0) [symbolic]
+// CHECK:STDOUT:   %require_complete.dd9: <witness> = require_complete_type %pack_type.fd1 [symbolic]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %Caller.decl: %Caller.type = fn_decl @Caller [concrete = constants.%Caller] {
+// CHECK:STDOUT:     %T.patt.loc14_12.1: %pattern_type.437 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc14_12.2 (constants.%T.patt.b7a)]
+// CHECK:STDOUT:     %U.patt.loc14_21.1: %pattern_type.437 = symbolic_binding_pattern U, 1 [symbolic = %U.patt.loc14_21.2 (constants.%U.patt)]
+// CHECK:STDOUT:     %x.param_patt.loc14_30.1: @Caller.%pattern_type.loc14_30 (%pattern_type.9da) = value_param_pattern [symbolic = %x.param_patt.loc14_30.2 (constants.%x.param_patt.bc0)]
+// CHECK:STDOUT:     %x.patt.loc14_30.1: @Caller.%pattern_type.loc14_30 (%pattern_type.9da) = wrapper_binding_pattern x, %x.param_patt.loc14_30.1 [symbolic = %x.patt.loc14_30.2 (constants.%x.patt.68a)]
+// CHECK:STDOUT:     %y.param_patt.loc14_36.1: @Caller.%pattern_type.loc14_36 (%pattern_type.e6a) = value_param_pattern [symbolic = %y.param_patt.loc14_36.2 (constants.%y.param_patt)]
+// CHECK:STDOUT:     %y.patt.loc14_36.1: @Caller.%pattern_type.loc14_36 (%pattern_type.e6a) = wrapper_binding_pattern y, %y.param_patt.loc14_36.1 [symbolic = %y.patt.loc14_36.2 (constants.%y.patt)]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %.loc14_14: type = splice_block %Code.ref.loc14_14 [concrete = constants.%Code.type] {
+// CHECK:STDOUT:       %.Self.frozen.loc14_12: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %Code.ref.loc14_14: type = name_ref Code, file.%Code.decl [concrete = constants.%Code.type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc14_12.2: %Code.type = symbolic_binding T, 0 [symbolic = %T.loc14_12.1 (constants.%T.72a)]
+// CHECK:STDOUT:     %.loc14_23: type = splice_block %Code.ref.loc14_23 [concrete = constants.%Code.type] {
+// CHECK:STDOUT:       %.Self.frozen.loc14_21: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %Code.ref.loc14_23: type = name_ref Code, file.%Code.decl [concrete = constants.%Code.type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %U.loc14_21.2: %Code.type = symbolic_binding U, 1 [symbolic = %U.loc14_21.1 (constants.%U)]
+// CHECK:STDOUT:     %x.param: @Caller.%T.as_type.loc14_32.1 (%T.as_type) = value_param call_param0
+// CHECK:STDOUT:     %.loc14_32.1: type = splice_block %.loc14_32.2 [symbolic = %T.as_type.loc14_32.1 (constants.%T.as_type)] {
+// CHECK:STDOUT:       %T.ref: %Code.type = name_ref T, %T.loc14_12.2 [symbolic = %T.loc14_12.1 (constants.%T.72a)]
+// CHECK:STDOUT:       %T.as_type.loc14_32.2: type = facet_access_type %T.ref [symbolic = %T.as_type.loc14_32.1 (constants.%T.as_type)]
+// CHECK:STDOUT:       %.loc14_32.2: type = converted %T.ref, %T.as_type.loc14_32.2 [symbolic = %T.as_type.loc14_32.1 (constants.%T.as_type)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %x: @Caller.%T.as_type.loc14_32.1 (%T.as_type) = wrapper_binding x, %x.param
+// CHECK:STDOUT:     %y.param: @Caller.%U.as_type.loc14_38.1 (%U.as_type) = value_param call_param1
+// CHECK:STDOUT:     %.loc14_38.1: type = splice_block %.loc14_38.2 [symbolic = %U.as_type.loc14_38.1 (constants.%U.as_type)] {
+// CHECK:STDOUT:       %U.ref: %Code.type = name_ref U, %U.loc14_21.2 [symbolic = %U.loc14_21.1 (constants.%U)]
+// CHECK:STDOUT:       %U.as_type.loc14_38.2: type = facet_access_type %U.ref [symbolic = %U.as_type.loc14_38.1 (constants.%U.as_type)]
+// CHECK:STDOUT:       %.loc14_38.2: type = converted %U.ref, %U.as_type.loc14_38.2 [symbolic = %U.as_type.loc14_38.1 (constants.%U.as_type)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %y: @Caller.%U.as_type.loc14_38.1 (%U.as_type) = wrapper_binding y, %y.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic fn @Caller(%T.loc14_12.2: %Code.type, %U.loc14_21.2: %Code.type) {
+// CHECK:STDOUT:   %T.patt.loc14_12.2: %pattern_type.437 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc14_12.2 (constants.%T.patt.b7a)]
+// CHECK:STDOUT:   %T.loc14_12.1: %Code.type = symbolic_binding T, 0 [symbolic = %T.loc14_12.1 (constants.%T.72a)]
+// CHECK:STDOUT:   %U.patt.loc14_21.2: %pattern_type.437 = symbolic_binding_pattern U, 1 [symbolic = %U.patt.loc14_21.2 (constants.%U.patt)]
+// CHECK:STDOUT:   %U.loc14_21.1: %Code.type = symbolic_binding U, 1 [symbolic = %U.loc14_21.1 (constants.%U)]
+// CHECK:STDOUT:   %T.as_type.loc14_32.1: type = facet_access_type %T.loc14_12.1 [symbolic = %T.as_type.loc14_32.1 (constants.%T.as_type)]
+// CHECK:STDOUT:   %pattern_type.loc14_30: type = pattern_type %T.as_type.loc14_32.1 [symbolic = %pattern_type.loc14_30 (constants.%pattern_type.9da)]
+// CHECK:STDOUT:   %x.param_patt.loc14_30.2: @Caller.%pattern_type.loc14_30 (%pattern_type.9da) = value_param_pattern [symbolic = %x.param_patt.loc14_30.2 (constants.%x.param_patt.bc0)]
+// CHECK:STDOUT:   %x.patt.loc14_30.2: @Caller.%pattern_type.loc14_30 (%pattern_type.9da) = wrapper_binding_pattern x, %x.param_patt.loc14_30.2 [symbolic = %x.patt.loc14_30.2 (constants.%x.patt.68a)]
+// CHECK:STDOUT:   %U.as_type.loc14_38.1: type = facet_access_type %U.loc14_21.1 [symbolic = %U.as_type.loc14_38.1 (constants.%U.as_type)]
+// CHECK:STDOUT:   %pattern_type.loc14_36: type = pattern_type %U.as_type.loc14_38.1 [symbolic = %pattern_type.loc14_36 (constants.%pattern_type.e6a)]
+// CHECK:STDOUT:   %y.param_patt.loc14_36.2: @Caller.%pattern_type.loc14_36 (%pattern_type.e6a) = value_param_pattern [symbolic = %y.param_patt.loc14_36.2 (constants.%y.param_patt)]
+// CHECK:STDOUT:   %y.patt.loc14_36.2: @Caller.%pattern_type.loc14_36 (%pattern_type.e6a) = wrapper_binding_pattern y, %y.param_patt.loc14_36.2 [symbolic = %y.patt.loc14_36.2 (constants.%y.patt)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete.loc14_30: <witness> = require_complete_type %T.as_type.loc14_32.1 [symbolic = %require_complete.loc14_30 (constants.%require_complete.116)]
+// CHECK:STDOUT:   %require_complete.loc14_36: <witness> = require_complete_type %U.as_type.loc14_38.1 [symbolic = %require_complete.loc14_36 (constants.%require_complete.1de)]
+// CHECK:STDOUT:   %tuple.type: type = tuple_type (%T.as_type.loc14_32.1, %U.as_type.loc14_38.1, %T.as_type.loc14_32.1) [symbolic = %tuple.type (constants.%tuple.type)]
+// CHECK:STDOUT:   %.loc15_18.8: %pack_type.043 = pack_value (%T.as_type.loc14_32.1, %U.as_type.loc14_38.1, %T.as_type.loc14_32.1) [symbolic = %.loc15_18.8 (constants.%.d30)]
+// CHECK:STDOUT:   %.loc15_18.9: %pack_type.7e3 = pack_value (%T.loc14_12.1, %U.loc14_21.1, %T.loc14_12.1) [symbolic = %.loc15_18.9 (constants.%.bb0)]
+// CHECK:STDOUT:   %ForEach.specific_fn.loc15_3.2: <specific function> = specific_function constants.%ForEach, @ForEach(constants.%int_3, %.loc15_18.9) [symbolic = %ForEach.specific_fn.loc15_3.2 (constants.%ForEach.specific_fn)]
+// CHECK:STDOUT:   %pack_type: type = pack_type %.loc15_18.9, constants.%int_3 [symbolic = %pack_type (constants.%pack_type.fd1)]
+// CHECK:STDOUT:   %require_complete.loc15: <witness> = require_complete_type %pack_type [symbolic = %require_complete.loc15 (constants.%require_complete.dd9)]
+// CHECK:STDOUT:
+// CHECK:STDOUT:   fn(%x.param: @Caller.%T.as_type.loc14_32.1 (%T.as_type), %y.param: @Caller.%U.as_type.loc14_38.1 (%U.as_type)) {
+// CHECK:STDOUT:   !entry:
+// CHECK:STDOUT:     %ForEach.ref: %ForEach.type = name_ref ForEach, file.%ForEach.decl [concrete = constants.%ForEach]
+// CHECK:STDOUT:     %x.ref.loc15_11: @Caller.%T.as_type.loc14_32.1 (%T.as_type) = name_ref x, %x
+// CHECK:STDOUT:     %y.ref: @Caller.%U.as_type.loc14_38.1 (%U.as_type) = name_ref y, %y
+// CHECK:STDOUT:     %x.ref.loc15_17: @Caller.%T.as_type.loc14_32.1 (%T.as_type) = name_ref x, %x
+// CHECK:STDOUT:     %.loc15_11.1: @Caller.%tuple.type (%tuple.type) = pack_literal (%x.ref.loc15_11, %y.ref, %x.ref.loc15_17)
+// CHECK:STDOUT:     %int_3.loc15_18.1: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
+// CHECK:STDOUT:     %.loc15_18.1: %pack_type.043 = pack_value (constants.%T.as_type, constants.%U.as_type, constants.%T.as_type) [symbolic = %.loc15_18.8 (constants.%.d30)]
+// CHECK:STDOUT:     %int_3.loc15_18.2: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
+// CHECK:STDOUT:     %.loc15_18.2: %pack_type.043 = pack_value (constants.%T.as_type, constants.%U.as_type, constants.%T.as_type) [symbolic = %.loc15_18.8 (constants.%.d30)]
+// CHECK:STDOUT:     %.loc15_18.3: %Code.type = converted constants.%T.as_type, constants.%T.72a [symbolic = %T.loc14_12.1 (constants.%T.72a)]
+// CHECK:STDOUT:     %.loc15_18.4: %Code.type = converted constants.%U.as_type, constants.%U [symbolic = %U.loc14_21.1 (constants.%U)]
+// CHECK:STDOUT:     %.loc15_18.5: %Code.type = converted constants.%T.as_type, constants.%T.72a [symbolic = %T.loc14_12.1 (constants.%T.72a)]
+// CHECK:STDOUT:     %.loc15_18.6: %pack_type.7e3 = pack_value (%.loc15_18.3, %.loc15_18.4, %.loc15_18.5) [symbolic = %.loc15_18.9 (constants.%.bb0)]
+// CHECK:STDOUT:     %.loc15_18.7: %pack_type.7e3 = converted constants.%.d30, %.loc15_18.6 [symbolic = %.loc15_18.9 (constants.%.bb0)]
+// CHECK:STDOUT:     %ForEach.specific_fn.loc15_3.1: <specific function> = specific_function %ForEach.ref, @ForEach(constants.%int_3, constants.%.bb0) [symbolic = %ForEach.specific_fn.loc15_3.2 (constants.%ForEach.specific_fn)]
+// CHECK:STDOUT:     %.loc15_11.2: %pack_type.043 = pack_value (constants.%T.as_type, constants.%U.as_type, constants.%T.as_type) [symbolic = %.loc15_18.8 (constants.%.d30)]
+// CHECK:STDOUT:     %.loc15_11.3: %pack_type.043 = pack_value (constants.%T.as_type, constants.%U.as_type, constants.%T.as_type) [symbolic = %.loc15_18.8 (constants.%.d30)]
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:     %.loc15_11.4: @Caller.%pack_type (%pack_type.fd1) = pack_value (%x.ref.loc15_11, %y.ref, %x.ref.loc15_17)
+// CHECK:STDOUT:     %.loc15_11.5: @Caller.%pack_type (%pack_type.fd1) = converted %.loc15_11.1, %.loc15_11.4
+// CHECK:STDOUT:     %ForEach.call: init %empty_tuple.type = call %ForEach.specific_fn.loc15_3.1(%.loc15_11.5)
+// CHECK:STDOUT:     return
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @Caller(constants.%T.72a, constants.%U) {
+// CHECK:STDOUT:   %T.patt.loc14_12.2 => constants.%T.patt.b7a
+// CHECK:STDOUT:   %T.loc14_12.1 => constants.%T.72a
+// CHECK:STDOUT:   %U.patt.loc14_21.2 => constants.%U.patt
+// CHECK:STDOUT:   %U.loc14_21.1 => constants.%U
+// CHECK:STDOUT:   %T.as_type.loc14_32.1 => constants.%T.as_type
+// CHECK:STDOUT:   %pattern_type.loc14_30 => constants.%pattern_type.9da
+// CHECK:STDOUT:   %x.param_patt.loc14_30.2 => constants.%x.param_patt.bc0
+// CHECK:STDOUT:   %x.patt.loc14_30.2 => constants.%x.patt.68a
+// CHECK:STDOUT:   %U.as_type.loc14_38.1 => constants.%U.as_type
+// CHECK:STDOUT:   %pattern_type.loc14_36 => constants.%pattern_type.e6a
+// CHECK:STDOUT:   %y.param_patt.loc14_36.2 => constants.%y.param_patt
+// CHECK:STDOUT:   %y.patt.loc14_36.2 => constants.%y.patt
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

@@ -3708,6 +3708,26 @@ the fix commits before R and D; this workflow wrote R and D first, so that
 re-review reads the fix, its fill and these records together (the plan's "Landed
 notes (VA-2, 2026-10-27)").
 
+Focused re-review of the fold, round 1 (2026-10-27, records only): two fresh
+reviews of f8d84ba75, both APPROVE-WITH-FIXES. Review 1 found one MAJOR,
+RR1-1-M1 (a pack of facets does not convert to a narrower facet type, so
+forwarding a tuple of one pack segment and the prelude's variadic impls reject
+IN forms whose fixed-arity twins run on PR 59 and trunk; C1's and C4's paths,
+not the fold's), and one MINOR, RR1-1-m1 (a diagnosed binding type in a `let`
+pack pattern still adds the deduced-arity TODO), both needing a toolchain change
+and a golden split. Review 2 found four MINORs, records only, folded by the
+records commit "VA-2 records: re-review round 1 recorded": the m62 mirror re-run
+with the fix (1985 of 1985, and PASS 152, SKIP 21 of 173) and the fix's files
+listed against each held head; a records-only commit after D is not a fix
+commit; this round recorded, with no mall re-run owed before the PR opens; and a
+negative index into a tuple of one pack segment reporting the TODO. Both reviews
+measured the gate at 1977 passed and 0 failed, conformance at PASS 147, 0
+failures, SKIP 21 of 168, and MV-15 to MV-18 killed. Round 1 is not dry, so
+round 2 is owed, its fixer taking the fix budget's last commit with its fill, or
+RR1-1-M1's stop-and-amend; nothing is shrunk, no id is filed, and W-225 stays
+DISCHARGED until round 2's fold (the plan's "Focused re-review of the fold,
+VA-2, round 1 (2026-10-27)").
+
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks
 that rev 4 gave C2 into C1, whose gate aborted without them; C1 refuses a

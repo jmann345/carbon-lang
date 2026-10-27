@@ -38,7 +38,17 @@ implementation-review fold: every finding). The records commits R (42a1ec16f)
 and D are written, and the "Landed notes (VA-2, 2026-10-27)" after the Sign-off
 section record what they wrote, the measurements and their heads, and every
 land-time item (amended 2026-10-27, discharge); the focused re-review of the fix
-commits reads them with the fix next.
+commits reads them with the fix next. Round 1 of that re-review read f8d84ba75
+(amended 2026-10-27, re-review round 1): both reviews APPROVE-WITH-FIXES.
+Review 1's RR1-1-M1, MAJOR, finds that a pack of facets does not convert to a
+narrower facet type, so forwarding a tuple of one pack segment and the
+prelude's variadic impls reject IN forms whose fixed-arity twins run, and its
+RR1-1-m1, MINOR, a second TODO after a diagnosed `let` binding type; both
+need a toolchain change, so round 1 is not dry and round 2 is owed, its fixer
+taking the budget's last fix commit. Review 2's four records-only MINORs are
+folded by the round's records commit, which is not a fix commit (D-VA2-19).
+The record is "Focused re-review of the fold, VA-2, round 1 (2026-10-27)"
+before the Sign-off section.
 
 Rev 14 (c6e523472, 2026-10-27) was the fold of the focused re-review of rev 13
 (76071383a, on F4 1a9a0a11b), whose verdict was APPROVE-WITH-AMENDMENTS on
@@ -2364,7 +2374,13 @@ directory,
     and its fill, has the same conflicted paths as C5 against each of the
     fifteen held heads and origin/trunk, the fix's custom_witness.cpp merging
     with PR 57's and PR 60's and its member_access.cpp with PR 60's, PR 61's and
-    PR 64's. The mirrors with the fix, by §8.7's method (`$FX/mirrors/<name>`,
+    PR 64's. Of its other files, convert.cpp is also changed by PR 57, PR 60,
+    PR 62 and PR 65, merging with each, and by PR 61 and PR 64, conflicting
+    with them as C5 does (rule 1); type.cpp by PR 60 and PR 62;
+    handle_binding_pattern.cpp, type.h and type_completion.cpp by PR 60; and
+    deduce.cpp, eval_inst.cpp and sem_ir/generic.cpp by none (amended
+    2026-10-27, re-review round 1: RR2r1-m1). The mirrors with the fix, by
+    §8.7's method (`$FX/mirrors/<name>`,
     `$FX/mirrors/conf-<name>`): m64, the merge's conflicts as at stage 7, red
     before its fill on the same seven files (1988 passed, 7 failed), six renames
     and S-CT's split, 1995 passed after it, PASS 166, 0 failures, SKIP 19 of
@@ -2770,7 +2786,11 @@ binding the `semantics TODO: more than one pack arity in a generic` (D-VA2-4),
 and W-222's independent arities stay filed (amended 2026-10-22, review fold:
 A-B-1). _Break condition:_ a form inside this boundary is mis-checked or
 lowered with another iteration's type or callee, or an arbiter of §1.8 needs a
-form outside it.
+form outside it. Round 1 of the focused re-review of the fold found the first
+half met by RR1-1-M1, a pack of facets not converted to a narrower facet type,
+which rejects IN forms whose fixed-arity twins run; round 2's fold answers it,
+by the root fix or by a TODO that narrows the slice (amended 2026-10-27,
+re-review round 1: RR1-1-M1).
 
 ### §1.2 The design's rules, VA-1's DR-1..DR-42 table extended
 
@@ -5257,7 +5277,11 @@ RV1-B2 / RV1-B3 / RV1-m1 / MINOR-6):
     for an index at or after a tuple's first `PackType` element, before
     `ValidateTupleIndex`. Invariant: an index before the segment, the only
     one the design's "Tuple indexing" reduces without the segment's arity, is
-    unchanged.
+    unchanged. A negative index, such as `t.(-1)` on `(i64, ... each T)`,
+    reports the TODO too, since the index is read as unsigned, as upstream's
+    `ValidateTupleIndex` reads it, where a tuple without a segment reports it
+    past the end; the program is rejected either way (amended 2026-10-27,
+    re-review round 1: RR2r1-m4).
 -   check/handle_binding_pattern.cpp: an each-name binding whose type is the
     error type reuses an arity binding already on the compile-time binding
     stack instead of reporting `more than one pack arity in a generic`; with
@@ -5318,7 +5342,14 @@ its fill and one records commit of the three budgeted, and no shrink; C1 to
 C5, pushed before the reviews, abort on RV1-B1's and RV1-B2's forms and
 miscompile RV1-B3's until the fix, which history keeps and the landed notes,
 whose text §A.12 gives since rev 15, record (amended 2026-10-27,
-implementation-review fold: RV1-B1 / RV1-B2 / RV1-B3 / MAJOR-3).
+implementation-review fold: RV1-B1 / RV1-B2 / RV1-B3 / MAJOR-3). A records-only
+commit of the re-review loop after D, which changes no toolchain, prelude,
+golden or program file, is not a fix commit and does not count against the
+three, unlike rev 15's bdd7b2424, the fold's own records revision; so after
+round 1 one fix commit is left, for round 2's fixer (amended 2026-10-27,
+re-review round 1: RR2r1-m2). _Break condition:_ a records commit that
+changes a count, an id or a status that a later code fix depends on counts as
+a fix commit.
 
 **Fix commits and the shrink line** (amended 2026-10-22, review fold: A-B-2 /
 B-M6). The rev 4 prototype, which is C0, C1 and the built half of C2, is 31
@@ -5556,7 +5587,11 @@ The commits, in order:
     5bc6e5070 and the records commit of rev 15, named "VA-2 fix: <subject>"
     and "VA-2 fix fill: <subject>" as the held PRs' folds name theirs,
     messages below; one commit of the budget is left and no shrink is taken
-    (amended 2026-10-27, implementation-review fold: every finding).
+    (amended 2026-10-27, implementation-review fold: every finding). Round 1
+    of the focused re-review (2026-10-27) found RR1-1-M1 and RR1-1-m1, which
+    need a toolchain change, so round 2's fixer makes the budget's last fix
+    commit with its fill; round 1's records commit is not counted (D-VA2-19)
+    (amended 2026-10-27, re-review round 1: RR2r1-m2).
 13. **R, the rows.** §A.12's text for "Generics: Definition-checked variadics"
     and "Stdlib: tuple/array library parts", quoting §8.4's container run,
     EXPECTED, not of record; both stay PARTIAL, so the header's counts do not
@@ -5995,7 +6030,7 @@ RR11-M1 / RR11-m4).
 | check/fail_todo_tuple_segment.carbon (C2) | `fail_todo_two_segments` | `semantics TODO: `tuple with more than one pack segment`` |
 | (same) | `fail_todo_elements_beside_segment` | `semantics TODO: `tuple pack segment matched with other segments`` at the `return` |
 | (same) | `fail_todo_segment_to_elements` | the same TODO at the `let` |
-| (same, fix) | `fail_todo_index_segment`, `fail_todo_index_past_segment`, `fail_todo_index_rewrap` | `semantics TODO: `tuple index at or after a pack segment`` at `t.0` of `(... each T)`, at `t.1` and at `t.7` of `(i64, ... each T)`, and at the `t.0` of `G((t.0,))`, once each and nothing else; rev 14 typed each as the pack, `t.7` past the end, and `G((t.0,))` compiled and segfaulted (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B3) |
+| (same, fix) | `fail_todo_index_segment`, `fail_todo_index_past_segment`, `fail_todo_index_rewrap` | `semantics TODO: `tuple index at or after a pack segment`` at `t.0` of `(... each T)`, at `t.1` and at `t.7` of `(i64, ... each T)`, and at the `t.0` of `G((t.0,))`, once each and nothing else; rev 14 typed each as the pack, `t.7` past the end, and `G((t.0,))` compiled and segfaulted (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B3); a negative index, `t.(-1)` on `(i64, ... each T)`, reports the same TODO, the index read as unsigned as upstream reads it, and no split pins it (amended 2026-10-27, re-review round 1: RR2r1-m4) |
 | check/tuple_segment_destroy.carbon (fix; production prelude) | `var`, `let_from_call`, `discarded_result` | each `F`'s body destroys its `(... each T)` storage or temporary by `impl_witness_access` of a symbolic `lookup_impl_witness` of `(⟬%T⟭)` for `@Destroy` and its `SelfDestruct`, and `Call`'s specific for `(i32, bool)` by the tuple's custom witness; no diagnostic, where rev 14 aborted in `CanDestroyType` (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B1) |
 | (same) | `fail_missing_destroy` | `error: cannot access member of interface `Core.Destroy` in type `(... each T)` that does not implement that interface [MissingImplInMemberAccess]` at the `var` and at `G(t);`, as `(T, U)` with `T, U: Core.Copy` reports on PR 59 and trunk (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B1) |
 | lower/tuple_segment_destroy.carbon (fix; production prelude) | `var`, `let_from_call`, `discarded_result` | `F`'s specifics for `⟬C, i32, C⟭`, `⟬C, i32⟭` and `⟬i32, C⟭` destroy the `var`, the `let` temporary and the discarded result through the tuple's `SelfDestruct`, whose `SubobjectDestroy` destroys the elements in reverse order, `C`'s by its `Destroy` impl, which calls `Sink`, and `i32`'s trivially (measured, M-27; amended 2026-10-27, implementation-review fold: RV1-B1) |
@@ -6223,7 +6258,12 @@ lists the same conflicted paths as C5's 4b7ca618e, though PR 57 and PR 60
 change check/custom_witness.cpp and PR 60, PR 61 and PR 64 change
 check/member_access.cpp, which now merge with the fix's hunks
 (`$FX/logs/merge_tree_fix1.txt`, `merge_tree_paths_fix1.txt`, M-27) (amended
-2026-10-27, implementation-review fold: RV1-B1 / RV1-B3). Merge rules, applied
+2026-10-27, implementation-review fold: RV1-B1 / RV1-B3). The fix's other files
+that a held head changes are convert.cpp (PR 57, PR 60, PR 62 and PR 65, which
+merge with it, and PR 61 and PR 64, which conflict with it as with C5, by
+rule 1), type.cpp (PR 60 and PR 62), and handle_binding_pattern.cpp, type.h
+and type_completion.cpp (PR 60) (amended 2026-10-27, re-review round 1:
+RR2r1-m1). Merge rules, applied
 by commit M and by every mirror (§8.7):
 
 1.  convert.cpp, `ConvertTupleToType` (PR 61, PR 64): keep both changes,
@@ -7329,13 +7369,15 @@ every mirror also runs `$Y/probes` after its build, expecting the lines of
 
 Measured at stage 7 on C5 (4b7ca618e) and, for m64, m60, m57 and mdr, by the
 fold with the fix and its fill (the scratch commit 3258f7598, M-27) (amended
-2026-10-27, implementation-review fold: RV1-m5 / MAJOR-2 / MINOR-3):
+2026-10-27, implementation-review fold: RV1-m5 / MAJOR-2 / MINOR-3), and, for
+m62, by round 1's review 2 with f8d84ba75 (the scratch commit 6f58f8960)
+(amended 2026-10-27, re-review round 1: RR2r1-m1):
 
 | Mirror | Red before its fill, at C5 | Gate after its fill: C5, with the fix | Conformance: C5, with the fix |
 | --- | --- | --- | --- |
 | m61 | TP-1's five full-prelude goldens that C4 renames | 1990, not re-run | PASS 157, SKIP 21 of 178, not re-run |
 | m60 | none | 1992, 1994 | PASS 149, SKIP 20 of 169, both |
-| m62 | SV-1's optional.carbon and variant.carbon (C4 renames) | 1983, not re-run | PASS 152, SKIP 21 of 173, not re-run |
+| m62 | SV-1's optional.carbon and variant.carbon (C4 renames) | 1983, 1985 (round 1; amended 2026-10-27, re-review round 1: RR2r1-m1) | PASS 152, SKIP 21 of 173, both |
 | m64 | TP-1's five and CT-1's symbolic_arg.carbon (C4 renames), and S-CT's new split | 1993, 1995 | PASS 166, SKIP 19 of 185, both |
 | m55 | ST-1's string/compare.carbon (a C4 rename) | 1983, not re-run | PASS 152, SKIP 20 of 172, not re-run |
 | m57 | question_optional.carbon and optional/compare.carbon (C4 renames) and lower/for/bindings.carbon (both sides' lowering); the first and the last conflicted (rule 6) | 1983, 1985 | PASS 158, SKIP 21 of 179, both |
@@ -7417,13 +7459,24 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     prototype (amended 2026-10-22, review fold: A-M-2 / B-M4) and the rev 3
     prototype (amended 2026-10-26, review fold: RR1-B-M5). Since stage 7 all
     eight are measured on C5, and m64, m60, m57 and mdr again with the fix
-    (§8.7, M-27). m61, m62, m55 and the mall are not re-run with the fix: its
-    files add no conflicted path against any held head; PR 62's and PR 55's
-    heads change none of them; PR 61's changes, which merge with the fix's
-    member_access.cpp, are in m64, whose PR 64 is stacked on PR 61; and the
-    mall, fifteen merges and two full builds, is re-measured by §8.8 at land
-    time, the focused re-review of the fix deciding whether one is owed
-    before R (amended 2026-10-27, implementation-review fold: MINOR-3).
+    (§8.7, M-27) (amended 2026-10-27, implementation-review fold: MINOR-3),
+    and m62 with the fix by round 1's review 2 (amended 2026-10-27, re-review
+    round 1: RR2r1-m1). m61, m55 and the mall are not re-run with the fix: its
+    files add no conflicted path against any held head; PR 55's head changes
+    none of them; PR 62's changes convert.cpp and type.cpp, which merge with
+    the fix's hunks, so round 1 re-ran m62; PR 61's changes convert.cpp,
+    which conflicts as at C5 (rule 1), and member_access.cpp, which merges
+    with the fix's hunk, and are in m64, whose PR 64 is stacked on PR 61 (rev
+    15 wrote "PR 62's and PR 55's heads change none of them", false for PR
+    62; amended 2026-10-27, re-review round 1: RR2r1-m1); and the mall,
+    fifteen merges and two full builds, is re-measured by §8.8 at land time.
+    Round 1 decided that no mall re-run is owed before the PR opens, since
+    every held head that changes one of the fix's files, PR 57, PR 60, PR 62,
+    PR 64 with PR 61, and PR 65, has a green mirror with the fix (amended
+    2026-10-27, re-review round 1: RR2r1-m3). _Break condition:_ a held head
+    or trunk moves before M, M conflicts otherwise than §6.2 states, or a
+    later fix commit touches a file that a held head changes, whose mirrors
+    are then re-run by §8.7's method.
 -   The mutants of §8.5: they need C5's tree. Since stage 7 MV-1 to MV-11 are
     measured on C5, and since the fold MV-3, MV-4 and MV-12 to MV-18 on the
     fix's tree (§8.5, M-27) (amended 2026-10-27, implementation-review fold:
@@ -9009,7 +9062,129 @@ The fix changes ten toolchain files and the sources of ten goldens, and its
 fill fills them; it changes no program, no prelude file and no other golden.
 The records commit changes this plan only.
 
+## Focused re-review of the fold, VA-2, round 1 (2026-10-27)
+
+Round 1 of §3 item 12's focused re-review loop read the implementation-review
+fold and the records, 4b7ca618e..f8d84ba75 (the fix 1ad7c9b5e, its fill
+5bc6e5070, rev 15 bdd7b2424, R 42a1ec16f and D f8d84ba75; 25 files, with 4928
+insertions and 188 deletions), at the head f8d84ba75, whose `toolchain` tree
+is 4e0a154c5, the fill's, and whose install prints 0.0.0-0.dev+bdd7b2424.
+Upstream's tip is still 33863ed07 (both reviews re-fetched it, and this
+record's `git ls-remote upstream refs/heads/trunk` gives it at
+2026-10-27T14:36Z), origin/trunk is ad2e45a66, and the fifteen held heads are
+the landed notes' (this record's `git fetch origin` at 2026-10-27T14:35:55Z).
+Two fresh reviews, each in its own scratch (`scratchpad/va2-rr/rev1-r1` and
+`rev2-r1`), and this record's reproductions (`$RR`,
+`scratchpad/va2-rr/rec-r1`, its `probes/` and `logs/probes.txt`), all under
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b`;
+every figure is container-local, EXPECTED, not of record (R9). Each probe
+this record cites ran on four toolchains: the head's install; PR 59's, whose
+`carbon version` prints 0.0.0-0.dev+88b1b5bd2; trunk's, which prints the
+version 0.0.0-0.dev+0bdce60a5; and the nightly of 2026.10.12 (R30).
+
+-   **Review 1: APPROVE-WITH-FIXES, judged not dry.** One MAJOR, RR1-1-M1, and
+    one MINOR, RR1-1-m1; neither is records only, and neither was introduced
+    by the fold. Its runs, with a private `TEST_TMPDIR`, cache and output
+    directory: the gate, 1977 passed and 0 failed; conformance PASS 147, 0
+    failures, SKIP 21 of 168, bullets 49 / 0 / 7 / 0 of 56; a full autoupdate
+    on a `git archive` copy changing nothing; the fold's findings reproduced
+    and each root cause read in the code (for RV1-B1, s02c and f01 to f03, and
+    its b01 to b10 and e01, each printing its fixed-arity twin's lines on the
+    head, PR 59 and trunk, b07 also a C++ oracle's; s02b, s02d and s02h the
+    missing bound's error, as `(T, U)` reports on PR 59, trunk and the
+    nightly; for RV1-B2, j_generic_caller_a 313, j_sym_CoreCopy 1 1 1,
+    j_prelude_copy_exact 5 7, and its c01 to c11 and e04 running; for RV1-B3,
+    k01c, k01d, k01e, k01h and f05 the TODO, and f04, a02, a04, a05 and a07,
+    indexes before the segment, running; for RV1-m1, one diagnostic in each
+    `fail_binding_type_error` split); the LLVM IR of two specifics of one `F`
+    destroying their elements in reverse through `SubobjectDestroy`, the
+    caller's and the callee's layouts of a pack of different types agreeing;
+    VA-1's nine programs PASS and only VA-2's ten goldens changed by the fold;
+    MV-15 to MV-18 relinked and killed (MV-15 aborting in check
+    tuple_segment_destroy, MV-16 at sem_ir/generic.cpp:183, MV-17 and MV-18
+    each 1976 passed and 1 failed), with its own call-site reverts MX-a, MX-c,
+    MX-d and MX-e (the CHECK at generic.cpp:183) and MX-f (`uge` made `ugt`)
+    killed and MX-b, `PerformBuiltinConversion`'s `PackValue` site, surviving
+    at 1977 and 0 with no reachable shape found, so no finding; and m64
+    rebuilt, CT-1's 4a3220c11 merged with f8d84ba75 (scratch efe33eebf,
+    deleted): stage 7's conflicts, resolved by rules 1 to 3, 0 warnings, 1988
+    passed and 6 failed before its fill (TP-1's five and symbolic_arg.carbon,
+    renames, +16 / -16, the fixpoint in one pass), 1994 passed and 0 failed
+    after it (§8.7's 1995 holds S-CT's split, not applied), PASS 166, 0
+    failures, SKIP 19 of 185, bullets 49 / 0 / 7. Its i01 and b07-analog
+    lowering aborts are trunk's and the nightly's too, so not VA-2's.
+-   **Review 2: APPROVE-WITH-FIXES, judged dry.** No BLOCKER or MAJOR; four
+    MINORs, RR2r1-m1 to RR2r1-m4, all records only. Its runs: the whole diff
+    read; the gate, 1977 passed and 0 failed; a full autoupdate on a `git
+    archive` copy changing nothing; conformance PASS 147, 0 failures, SKIP 21
+    of 168, bullets 49 / 0 / 7 of 56; `runner.py --self-test` OK over 168
+    programs and 56 bullets, and `--update-readme-table` on a copy leaving the
+    README unchanged; the 17 new goldens byte for byte §A.11's, S-CT's block
+    being land-time; the three oracles built with clang++ 21.1.8 and the diff
+    programs PASS; MV-15 to MV-18 relinked and killed, as review 1 measured;
+    the fold's probes printing M-27's lines; the rows, the ledger (154 items,
+    the last W-339), the decision-log entry, ORCHESTRATION and every hash and
+    count of the PR body checked against §A.12 and the tree; `git merge-tree`
+    of f8d84ba75 against origin/trunk and PR 51 to PR 65 reproducing the PR
+    body's table; prek `--all-files` twice on a shared clone with no change,
+    clang-format 21.1.8 clean on the 48 C++ files, and clang-tidy over the
+    fix's nine .cpp files clean in both passes; and m62 rebuilt with the fix
+    (RR2r1-m1 below).
+
+The dry judgment. A round is dry when no finding is MAJOR or BLOCKER and none
+needs a toolchain, prelude, golden or program change. RR1-1-M1 is MAJOR, a
+valid program rejected (IN forms whose fixed-arity twins run on the head, PR
+59 and trunk), and needs a toolchain change, golden splits and a program line;
+RR1-1-m1 needs a toolchain change and a split. So round 1 is NOT DRY and
+round 2 is owed; review 2 judged dryness on its own findings only. Round 2's
+fixer takes both in the fix budget's last commit, with its own fill, since
+this round's records commit is not a fix commit (D-VA2-19, as RR2r1-m2 amends
+it). If RR1-1-M1's root fix does not fit that commit, the fixer takes the
+review's alternative by a stop-and-amend: `semantics TODO: converting a pack
+of facets to a pack of another facet type` at `ConvertPackToPack` for a
+constant source, filed as the next free id after an id re-scan widened to
+`W-3[3-9][0-9]` (W-345 unless the re-scan says otherwise) and recorded in
+§1.11 and the records appendix with a dated mark, and W-225's discharge text
+narrowed by a records commit. D-VA2-1's break condition is met (§1.1), and
+round 2's fold re-decides it. Nothing is shrunk, no id is filed and the ledger
+does not change in this record: W-225 stays DISCHARGED until round 2's fold.
+Every records-only finding is folded here, each reproduced against the tree
+first; none is rejected.
+
+| Finding | Review | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- | --- |
+| RR1-1-M1 a pack of facets does not convert to a narrower facet type, so forwarding and the prelude's variadic impls reject valid tuples of one pack segment | 1 | MAJOR | yes (`$RR/logs/probes.txt`): on the head, h06 (`G[... each U: Core.Copy]` called with `t: (... each T)`, `each T: Core.Copy & Core.Destroy`) reports "compile-time value requires runtime conversion, constructing value of type `«Core.Copy; <pack arity>»`" at 3:77, deduce.cpp:714's diagnostic, because the deduced binding's conversion is `ConvertPackToPack`'s (convert.cpp:551), a run-time `PackExpansionExpr` (:600); h01 (`t == t`, `each T: Core.Eq & Core.Copy`) reports "cannot access member of interface `Core.EqWith((... each T))` in type `(... each T)` that does not implement that interface" at 2:73, h02 (`t.(Core.Copy.Op)()`) the same for `Core.Copy` at 3:75, h03 (a user variadic impl) for `Which` at 4:77, and g01 and g08 (`H(t)` for `H[U: Core.Copy & Core.Destroy]` and `H[U: Core.Copy]`) "cannot convert type `(... each T)` into type implementing" the facet type at 13:63 and 3:63, while h08, the same facet type, prints 1; the twins: h06's prints 1 on the head, PR 59, trunk and the nightly, g01's prints 101 203 1 703 501 0 9 703 501 on the head, PR 59 and trunk (the nightly without its elements' `Destroy` lines), and h01's prints 1 on the head, PR 59, trunk and the nightly rejecting it for want of a tuple `EqWith`; PR 59, trunk and the nightly refuse each pack form with VA-1's TODO or at parse | To round 2's fixer (toolchain, golden and program files): the review's fix, a compile-time path in `ConvertPackToPack` for a constant pack of facets converted to a facet type, its per-iteration facet conversion made constant-evaluable in eval_inst.cpp and flattened per specific, so deduce.cpp:707 receives a constant, pinned by the splits `forward_wider_facet` (check hetero_pack) and `eq_wider_facet` (check prelude_tuple_impls and its lower twin) and a program line; or the stop-and-amend above. The cause is C1's and C4's paths, not the fold's, and the m64 mirror prints the same lines | convert.cpp:551-603, deduce.cpp:693-723 (round 2); D-VA2-1; W-225 |
+| RR1-1-m1 a diagnosed binding type in a `let` pack pattern still adds a second TODO | 1 | MINOR | yes: d01 (`let (... unused each y: Missing(each T)) = t;` in `F[... each T: Code](t: (... each T))`) and d01b (`Missing`) report "name `Missing` not found" at 3:27 and then `semantics TODO: pack expansion pattern with deduced arity outside a parameter list` at 3:8 on the head; handle_binding_pattern.cpp:432's `NameBindingDecl` branch has no `!is_error`, which the branch at :424 has; D-VA2-4's amended sentence (:2920-2924) says a diagnosed binding type adds no second diagnostic; PR 59 refuses `F` with VA-1's TODO at 2:6, trunk and the nightly at parse | To round 2's fixer (toolchain and golden files): `!is_error &&` at :432, the erroneous `let` binding taking the existing arity or keeping the error type with no TODO, and the split `fail_let_binding_type_error` in check fail_hetero_pack, filled by autoupdate; D-VA2-4's sentence stands as the rule | handle_binding_pattern.cpp:432-439 (round 2); D-VA2-4 |
+| RR2r1-m1 the reasons for not re-running m62 with the fix are false or incomplete | 2 | MINOR, records only | yes: `git diff --name-only` from each held head's merge base with the head, over the fix's ten files: PR 57 a080c7886 changes convert.cpp and custom_witness.cpp; PR 60 40a76ab81 convert.cpp, custom_witness.cpp, handle_binding_pattern.cpp, member_access.cpp, type.cpp, type.h and type_completion.cpp; PR 61 5661a35c8 and PR 64 4a3220c11 convert.cpp and member_access.cpp; PR 62 0ef8a0334 convert.cpp and type.cpp; PR 65 fee0ef31c convert.cpp; PR 51 to PR 56, PR 58, PR 63 and origin/trunk none; so §8.9's "PR 62's and PR 55's heads change none of them" is false for PR 62, and M-27 and §6.2 named custom_witness.cpp and member_access.cpp only. Review 2's m62 logs (`rev2-r1/m62`): PR 62 0ef8a0334 merged with f8d84ba75 (scratch 6f58f8960, deleted), the three records conflicted and convert.cpp and type.cpp auto-merged, 0 warnings, 1983 passed and 2 failed before its fill (SV-1's optional.carbon and variant.carbon, renames, +26 / -26, the fixpoint in one pass, no crash), 1985 passed and 0 failed after it, PASS 152, 0 failures, SKIP 21 of 173, bullets 49 / 0 / 7 | Folded: M-27, §6.2 and §8.9 list every held head that changes each of the fix's files; §8.7's m62 row and §8.9 record round 1's m62 measurement; the PR body's Mirrors and NOT run lines likewise | M-27; §6.2; §8.7; §8.9; PR body |
+| RR2r1-m2 the fix budget's accounting for records commits after D | 2 | MINOR, records only | yes: D-VA2-19 (:5316-5317) and §3 item 12 (:5555-5559) count rev 15's bdd7b2424 among the three, and the landed notes (:9270-9273) fold a records-only finding by a records commit after D while keeping "the budget's one fix commit" for a code finding, so no text says whether that records commit counts | Folded: D-VA2-19, item 12, the landed notes and the PR header state that a records-only commit after D, which changes no toolchain, prelude, golden or program file, is not a fix commit and does not count against the three, unlike bdd7b2424, the fold's own records revision; one fix commit is left, for round 2's fixer; _break condition:_ a records commit that changes a count, an id or a status that a later code fix depends on counts as a fix commit | D-VA2-19; §3 item 12; landed notes; PR body |
+| RR2r1-m3 this round is not recorded | 2 | MINOR, records only | yes: at f8d84ba75 the Sign-off (:9020-9022), the landed notes (:9266-9277), §8.9 (:7424-7426), fork/ORCHESTRATION.md's paragraph (:222-224) and Branches row (:568), the decision log's held-state paragraph (:3706-3709) and the PR body's header, Review record and NOT run name the re-review as next, and §8.9 leaves it the mall decision "before R", R being written | Folded by this record: this section, the Sign-off's rows and paragraph, the landed notes, §8.9's mall decision, ORCHESTRATION's row and paragraph, a round paragraph in the decision-log entry and the PR body; the mall decision: no mall re-run is owed before the PR opens, since every held head that changes one of the fix's files (PR 57, PR 60, PR 62, PR 64 with PR 61, and PR 65) has a green mirror with the fix, and §8.8 re-runs the land simulation at land time; _break condition:_ a held head or trunk moves, M conflicts otherwise than §6.2 states, or a later fix commit touches a file a held head changes, whose mirrors are then re-run by §8.7's method | Sign-off; landed notes; §8.9; ORCHESTRATION; decision log; PR body |
+| RR2r1-m4 a negative index into a tuple of one pack segment reports the TODO, unrecorded | 2 | MINOR, records only | yes: n2 (`t.(-1)` on `t: (i64, ... each T)`) reports `semantics TODO: tuple index at or after a pack segment` at 2:67 on the head, and n1 (`t.(-1)` on `(i64, i64)`) "tuple element index `-1` is past the end of type `(i64, i64)`" at 2:37 on the head, PR 59, trunk and the nightly; member_access.cpp:945 reads the index with `uge`, as `ValidateTupleIndex` (:491) does; the program is rejected either way | Folded: §2.9's member_access.cpp item and the §4 row of the `fail_todo_index_*` splits state it; the optional split is passed to round 2's fixer, not required | §2.9; §4 |
+
+Also recorded by the round, outside the findings: review 1's MX-b survivor
+has no reachable shape, so `PerformBuiltinConversion`'s `PackValue` call to
+`GetPackElementTypeId` is pinned by no golden, and round 2's fixer may add one
+if its fix reaches that site; review 1's i01 and b07-analog lowering aborts
+belong to trunk and the nightly; and the mirrors that round 2's fix needs are
+those of the held heads that change a file it touches (convert.cpp: PR 57, PR
+60, PR 61, PR 62, PR 64 and PR 65). This record's commit is "VA-2
+records: re-review round 1 recorded" (this plan, the decision log and
+fork/ORCHESTRATION.md); no toolchain, prelude, golden or program file changes,
+and the PR body is refreshed in the scratchpad.
+
 ## Sign-off
+
+Round 1 of the focused re-review of the fold (2026-10-27) read f8d84ba75, the
+fix, its fill, rev 15, R and D together, R and D having been written first as
+the landed notes record: review 1, APPROVE-WITH-FIXES, one MAJOR and one
+MINOR; review 2, APPROVE-WITH-FIXES, four MINORs, records only, all folded by
+the round's records commit, none rejected; the "Focused re-review of the
+fold, VA-2, round 1 (2026-10-27)" above states them (amended 2026-10-27,
+re-review round 1: the reviews). Review 1's two findings need a toolchain
+change, so round 1 is not dry and round 2 is owed: its fixer takes them in the
+budget's last fix commit with its fill, or takes RR1-1-M1's stop-and-amend,
+and round 2's two reviews read that fold. Rev 4's sign-off, as amended by rev
+5 to rev 15 and by this round's records, stands for every part that RR1-1-M1
+and RR1-1-m1 do not touch.
 
 Rev 15 (2026-10-27) folds the two implementation reviews of C5 (review 1,
 REJECT: three BLOCKERs and five MINORs; review 2, APPROVE-WITH-FIXES: three
@@ -9132,11 +9307,15 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review of the amendment (RR13) | rev 13 (76071383a) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 | 3 | rev 14 (c6e523472): all folded, none rejected |
 | Implementation review 1 (R29(c)) | C5 (4b7ca618e) | REJECT | 3 | 0 | 5 | 8 | the fix 1ad7c9b5e, its fill 5bc6e5070 and rev 15: all folded, none rejected |
 | Implementation review 2 (R29(c)) | C5 (4b7ca618e) | APPROVE-WITH-FIXES | 0 | 3 | 8 | 11 | the fix 1ad7c9b5e and rev 15: all folded, none rejected |
-| Total | | | 9 | 22 | 45 | 76 | 76 folded, 0 rejected (74 distinct) |
+| Focused re-review of the fold, round 1, review 1 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 1 | 1 | 2 | open: to round 2's fixer, a toolchain change; none rejected |
+| Focused re-review of the fold, round 1, review 2 | the fold, R and D (f8d84ba75) | APPROVE-WITH-FIXES | 0 | 0 | 4 | 4 | round 1's records commit: all folded, none rejected |
+| Total | | | 9 | 23 | 50 | 82 | 80 folded, 2 open, 0 rejected (80 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, and
-implementation review 2's MINOR-1 restates review 1's RV1-m4, so the 76
-findings as reported are 74 distinct ones (57 and 56 before rev 15 (amended
+implementation review 2's MINOR-1 restates review 1's RV1-m4, so the 82
+findings as reported are 80 distinct ones (76 and 74 before round 1 of the
+focused re-review of the fold (amended 2026-10-27, re-review round 1: the
+reviews), 57 and 56 before rev 15 (amended
 2026-10-27, implementation-review fold: every finding), 54 and 53 before rev
 14 (amended
 2026-10-27, review fold: RR13-m1 / RR13-m2 / RR13-m3), 47 and 46 before rev 12
@@ -9275,7 +9454,23 @@ writer's scratch directory,
     decision, whether PR 59 takes the array-stride layout of defect A, is the
     orchestrator's and is not recorded yet; until it is, VA-2 does not change PR
     59's branch. _Break condition:_ the re-review finds a defect that one fix
-    commit cannot fold, which takes §3's shrink line.
+    commit cannot fold, which takes §3's shrink line. Round 1 of the re-review
+    ran on 2026-10-27 (amended 2026-10-27, re-review round 1): it is not dry,
+    for review 1's RR1-1-M1 (MAJOR) and RR1-1-m1, which need a toolchain
+    change and golden splits; review 2's four records-only findings are folded
+    by the records commit "VA-2 records: re-review round 1 recorded", which is
+    not a fix commit, since a records-only commit after D never is one
+    (D-VA2-19); round 2's fixer takes the budget's last fix commit with its
+    fill, or RR1-1-M1's stop-and-amend, and round 2's reviews read it; the PR
+    opens held after the first dry round ("Focused re-review of the fold,
+    VA-2, round 1 (2026-10-27)").
+-   **Round 1's records** (R29: decided and recorded). The decision-log entry
+    gains a dated paragraph for the round after its held-state paragraph,
+    which §A.12's text does not have, as it does not have the held-state
+    paragraph either; L brings both up to date. The ledger, the gap rows and
+    §A.12 do not change in round 1, W-225 staying DISCHARGED until round 2's
+    fold decides RR1-1-M1. _Break condition:_ a review names §A.12's text as
+    the entry's whole text, or round 2's fold narrows W-225.
 -   **Land-time items, in order after PR 65** (§3 item 15, D-VA2-18, §6.2, §8.8;
     fork/ORCHESTRATION.md Next actions item 6). (a) M, a merge commit (`git
     merge --no-ff`, never a rebase) of the trunk that holds PR 51 to PR 65,

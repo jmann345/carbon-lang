@@ -219,11 +219,19 @@ and DR-1b (on PR 63) and the land simulation (trunk ad2e45a66 with all fifteen
 held PRs, then VA-2) on scratch mirrors, every program PASS on each
 (fork/variadics/va2-plan.md §8.7). The id re-scan before D (after a fetch; 90
 refs and 20 worktrees) found W-330..W-339 filed nowhere else, so all ten are
-filed as reserved and none is unused. The focused re-review of the fix commits
-reads the fix, its fill and these records next, and the PR opens held with base
-claude/carbon-fork-0-1-va after its last round. Merge order: PR 53, 51, 52, 60,
-54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, then VA-2 through its land-time
-items (Next actions item 6). None is merged.
+filed as reserved and none is unused. Round 1 of the focused re-review of the
+fix commits and these records (2026-10-27, on f8d84ba75; both reviews
+APPROVE-WITH-FIXES) is not dry: review 1's RR1-1-M1, MAJOR (a pack of facets
+does not convert to a narrower facet type, so forwarding a tuple of one pack
+segment and the prelude's variadic impls reject IN forms whose fixed-arity twins
+run), and its RR1-1-m1 need a toolchain change, and review 2's four records-only
+MINORs are folded by the records commit "VA-2 records: re-review round 1
+recorded", which is not a fix commit; round 2 is owed, its fixer taking the fix
+budget's last commit, and the PR opens held with base claude/carbon-fork-0-1-va
+after the first dry round (fork/variadics/va2-plan.md, "Focused re-review of the
+fold, VA-2, round 1 (2026-10-27)"). Merge order: PR 53, 51, 52, 60, 54, 55, 56,
+57, 58, 59, 61, 62, 64, 63, 65, then VA-2 through its land-time items (Next
+actions item 6). None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -565,7 +573,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PLANNING — OX-1 operator export to C++ (W-054, gap row 48), cut from f67ab650d; reserves W-202..W-211, F-017 if minted; merges after DD-1. |
 | `claude/carbon-fork-0-1-va` | PUSHED, PR TO OPEN AND HOLD — VA-1 definition-checked variadics slice 1, discharged on top of the trunk merge e25b27e34 (W-013 open; W-212..W-230 filed, W-231 unused; F-018 not minted; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58, OX-1 and VA-1 in the order their PRs open. |
-| `claude/carbon-fork-0-1-va2` | IMPLEMENTED AND HELD, no PR — VA-2 definition-checked variadics slice 2 at its discharge commit D (records only, over R 42a1ec16f and the fold's head bdd7b2424; toolchain 1ad7c9b5e), stacked on PR 59 (W-225 discharged, W-212 and W-213 narrowed; W-330..W-339 filed, W-335 discharged, none unused; no F id; expected gate 1977/1977 and 147/0/21 over 168, not of record; the gap rows "Generics: Definition-checked variadics" and "Stdlib: tuple/array library parts" PARTIAL); the focused re-review of the fix commits is next, then the PR opens held with base claude/carbon-fork-0-1-va; merges last after PR 65 through its land-time items M, S-CT, F-M, L-F and L (Next actions item 6). |
+| `claude/carbon-fork-0-1-va2` | IMPLEMENTED AND HELD, no PR; ROUND 2 OWED — VA-2 definition-checked variadics slice 2 at the records commit of re-review round 1, over its discharge commit D (records only, over R 42a1ec16f and the fold's head bdd7b2424; toolchain 1ad7c9b5e), stacked on PR 59 (W-225 discharged, W-212 and W-213 narrowed; W-330..W-339 filed, W-335 discharged, none unused; no F id; expected gate 1977/1977 and 147/0/21 over 168, not of record; the gap rows "Generics: Definition-checked variadics" and "Stdlib: tuple/array library parts" PARTIAL); re-review round 1 (2026-10-27, on f8d84ba75) is not dry: review 1's RR1-1-M1 (MAJOR, a pack of facets not converted to a narrower facet type) and RR1-1-m1 need a toolchain change, which round 2's fixer makes in the fix budget's last commit, and review 2's four records-only MINORs are folded; the PR opens held with base claude/carbon-fork-0-1-va after the first dry round; merges last after PR 65 through its land-time items M, S-CT, F-M, L-F and L (Next actions item 6). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |

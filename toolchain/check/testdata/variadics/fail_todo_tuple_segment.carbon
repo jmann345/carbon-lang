@@ -13,12 +13,20 @@
 // --- fail_todo_two_segments.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_two_segments.carbon:[[@LINE+4]]:27: error: semantics TODO: `tuple with more than one pack segment` [SemanticsTodo]
+// CHECK:STDERR: fn F[... each T: type](t: (... each T, ... each T));
+// CHECK:STDERR:                           ^~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn F[... each T: type](t: (... each T, ... each T));
 
 // --- fail_todo_elements_beside_segment.carbon
 library "[[@TEST_NAME]]";
 
 fn F[... each T: Core.Copy](... each x: each T) -> (i64, ... each T) {
+  // CHECK:STDERR: fail_todo_elements_beside_segment.carbon:[[@LINE+4]]:10: error: semantics TODO: `tuple pack segment matched with other segments` [SemanticsTodo]
+  // CHECK:STDERR:   return (0, ... each x);
+  // CHECK:STDERR:          ^~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return (0, ... each x);
 }
 
@@ -26,5 +34,9 @@ fn F[... each T: Core.Copy](... each x: each T) -> (i64, ... each T) {
 library "[[@TEST_NAME]]";
 
 fn F[... each T: Core.Copy](... each x: each T) {
+  // CHECK:STDERR: fail_todo_segment_to_elements.carbon:[[@LINE+4]]:30: error: semantics TODO: `tuple pack segment matched with other segments` [SemanticsTodo]
+  // CHECK:STDERR:   let unused t: (i64, i64) = (... each x);
+  // CHECK:STDERR:                              ^~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused t: (i64, i64) = (... each x);
 }

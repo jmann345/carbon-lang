@@ -178,6 +178,10 @@ fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
 library "[[@TEST_NAME]]";
 
 fn MakeTuple[... each T: Core.Copy](... each x: each T) -> (... each T) {
+  // CHECK:STDERR: fail_todo_initializing_element.carbon:[[@LINE+4]]:11: error: semantics TODO: `pack expansion of initializing expressions in a tuple literal` [SemanticsTodo]
+  // CHECK:STDERR:   return (... each x.(Core.Copy.Op)());
+  // CHECK:STDERR:           ^~~
+  // CHECK:STDERR:
   return (... each x.(Core.Copy.Op)());
 }
 
@@ -185,6 +189,10 @@ fn MakeTuple[... each T: Core.Copy](... each x: each T) -> (... each T) {
 library "[[@TEST_NAME]]";
 
 fn F[... each T: Core.Copy](t: (... each T)) {
+  // CHECK:STDERR: fail_todo_var_pattern.carbon:[[@LINE+4]]:8: error: semantics TODO: `pack expansion pattern in a pattern other than a parameter list or let` [SemanticsTodo]
+  // CHECK:STDERR:   var (... each x: each T) = t;
+  // CHECK:STDERR:        ^~~
+  // CHECK:STDERR:
   var (... each x: each T) = t;
 }
 
@@ -197,6 +205,10 @@ interface Count {
 
 impl forall [... each T: type] (... each T) as Count {
   fn N(unused self) -> i64 { return 0; }
+  // CHECK:STDERR: fail_todo_enclosing_arity.carbon:[[@LINE+4]]:28: error: semantics TODO: `more than one pack arity in a generic` [SemanticsTodo]
+  // CHECK:STDERR:   fn Extra(... unused each n: i64) -> i64 { return 0; }
+  // CHECK:STDERR:                            ^
+  // CHECK:STDERR:
   fn Extra(... unused each n: i64) -> i64 { return 0; }
 }
 
@@ -204,5 +216,9 @@ impl forall [... each T: type] (... each T) as Count {
 library "[[@TEST_NAME]]";
 
 fn F[template U: type, ... each T: type](u: U, ... each x: each T) {
+  // CHECK:STDERR: fail_todo_template_action_on_tuple_of_pack.carbon:[[@LINE+4]]:3: error: semantics TODO: `C++ or template-dependent action on a tuple literal with a pack segment` [SemanticsTodo]
+  // CHECK:STDERR:   u.Get((... each x));
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   u.Get((... each x));
 }

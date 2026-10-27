@@ -14,7 +14,7 @@
 library "[[@TEST_NAME]]";
 
 fn F() {
-  // CHECK:STDERR: fail_todo_tuple_pattern.carbon:[[@LINE+4]]:8: error: semantics TODO: `pack expansion pattern outside an explicit parameter list` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_tuple_pattern.carbon:[[@LINE+4]]:8: error: semantics TODO: `pack expansion pattern with deduced arity outside a parameter list` [SemanticsTodo]
   // CHECK:STDERR:   let (... each x: i64) = ();
   // CHECK:STDERR:        ^~~
   // CHECK:STDERR:
@@ -49,9 +49,9 @@ fn F(... each b: bool) {
 library "[[@TEST_NAME]]";
 
 fn F(... each n: i64) {
-  // CHECK:STDERR: fail_todo_tuple_literal.carbon:[[@LINE+4]]:31: error: semantics TODO: `pack expansion in a tuple literal outside a call's argument list` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_tuple_literal.carbon:[[@LINE+4]]:30: error: semantics TODO: `tuple pack segment matched with other segments` [SemanticsTodo]
   // CHECK:STDERR:   let unused t: (i64, i64) = (... each n);
-  // CHECK:STDERR:                               ^~~~~~~~~~
+  // CHECK:STDERR:                              ^~~~~~~~~~~~
   // CHECK:STDERR:
   let unused t: (i64, i64) = (... each n);
 }

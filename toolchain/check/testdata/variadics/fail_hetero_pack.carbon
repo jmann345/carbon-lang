@@ -136,4 +136,8 @@ fn F[... each T: Code](t: (... each T)) {
 // --- fail_let_file_scope_binding_type_error.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_let_file_scope_binding_type_error.carbon:[[@LINE+4]]:25: error: name `Missing` not found [NameNotFound]
+// CHECK:STDERR: let (... unused each y: Missing) = ();
+// CHECK:STDERR:                         ^~~~~~~
+// CHECK:STDERR:
 let (... unused each y: Missing) = ();

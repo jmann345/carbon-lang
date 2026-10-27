@@ -24,6 +24,10 @@ fn F() {
 // --- fail_todo_let_file_scope.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_let_file_scope.carbon:[[@LINE+4]]:6: error: semantics TODO: `pack expansion pattern with deduced arity outside a parameter list` [SemanticsTodo]
+// CHECK:STDERR: let (... each x: i64) = ();
+// CHECK:STDERR:      ^~~
+// CHECK:STDERR:
 let (... each x: i64) = ();
 
 // --- fail_todo_statement_kind.carbon

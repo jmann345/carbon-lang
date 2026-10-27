@@ -103,6 +103,10 @@ library "[[@TEST_NAME]]";
 fn G(... each t: type);
 
 fn F[... each T: type](... unused each x: each T) {
+  // CHECK:STDERR: fail_todo_type_pack_call_args.carbon:[[@LINE+4]]:5: error: semantics TODO: `pack expansion of a compile-time pack in a call's argument list` [SemanticsTodo]
+  // CHECK:STDERR:   G(... each T);
+  // CHECK:STDERR:     ^~~
+  // CHECK:STDERR:
   G(... each T);
 }
 

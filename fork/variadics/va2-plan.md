@@ -6,7 +6,27 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 8, 2026-10-26 -- the fold of the focused re-review of rev 7
+**Status:** rev 9, 2026-10-27 -- the implementation's third stop-and-amend, at
+stage 3 (C2 and F2), which the "Stop-and-amend record (rev 9, 2026-10-27)"
+before the Sign-off section records. The four `rank` splits of §A.11's
+impl.carbon summed with `+`, which checks through `Core.AddWith`, but the file
+includes min_prelude/primitives.carbon, which declares none, so each reported
+"name `Core.AddWith` implicitly referenced here, but not found" where §4
+predicts no diagnostic, and the gate after F2 was 1970 passed and 1 failed
+where §8.3 predicts 1971 passed. No revision had compiled the splits on their
+own prelude (M-15 ran x05 and x06 on the production one), and they had no
+dump range, so their golden would have pinned only that they check, and §8.5's
+MV-9 passes it. Since rev 9 each split sums with a local `Add` builtin, as the
+file's `requirement` and `body_expansion` splits do, and dumps `Call`'s body,
+which shows the impl each query selects: on the stopped run's install the
+fill reaches its fixpoint in one pass, the gate after F2 is 1971 passed, MV-9
+turns the golden red and conformance is unchanged (M-23). Two probe lines that
+rev 8 said C2 prints as rev 4 did, ctI and r19, take §2.4's tuple literal of
+one segment and print upstream's "call argument of type `⟬each T⟭` is not
+supported" and 3, which hand-off note 2 and R-14 now say. No code, no §2
+block and no D-VA2 decision changes, and no commit is reset (amended
+2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude).
+Rev 8 (4299f9765, 2026-10-26) is the fold of the focused re-review of rev 7
 (e0038734f, on F0 8a7395cf1), whose verdict was APPROVE-WITH-AMENDMENTS on four
 MAJORs and one MINOR, recorded in the rev 8 part of the "Stop-and-amend record
 (rev 7, 2026-10-26)". Rev 7's gate before C1's fill, 1956 passed and 10 failed,
@@ -175,7 +195,19 @@ golden sources). Rev 8's were taken by the plan amender of the re-review of rev
 under /dev/shm/va2-impl/amend8 (deleted when rev 8 was committed) and the
 scratch directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend8`
-(`$P` below) (amended 2026-10-26, review fold: RR7-M1 / RR7-M4).
+(`$P` below) (amended 2026-10-26, review fold: RR7-M1 / RR7-M4). Rev 9's were
+taken by the plan amender of the implementation's third stop-and-amend with the
+implementer's C2 install (/home/user/carbon-build/carbon-va2, built from F1
+1a7c360e0 with the uncommitted C2), whose file_test ran in the scratch tree
+/dev/shm/va2-amend/src (1a7c360e0's toolchain, common and testing directories
+with the saved C2 applied), and the MV-9 mutant relinked over that install's
+objects under /dev/shm/va2-amend/mv9 (all deleted when rev 9 was committed),
+beside the implementer's stage 3 directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/stage3`
+(`$U`), and the scratch directory
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/amend9`
+(`$V` below) (amended 2026-10-27, implementation: stop-and-amend: the rank
+splits on the min prelude).
 
 **Items.** W-212 (generic and heterogeneous packs) and W-225 (variadic impls)
 are discharged, and W-213 (tuples with pack segments) is narrowed, not
@@ -1427,6 +1459,117 @@ implementer's C1 objects into /dev/shm/va2-impl/amend8/c1r7 (`$P/bin/relink.sh`,
     generic.cpp); C1's `TryEvalPackIterationsForSpecific` call is inside
     generic.cpp's second conflict. §6.2's rule 4 and §6.3 resolve it.
 
+M-23. C2's `rank` splits on the min prelude (amended 2026-10-27,
+implementation: stop-and-amend: the rank splits on the min prelude). On the
+implementer's C2 install, built in full from the stopped run's saved state
+(`$U/c2_uncommitted_source_state.patch`: 27 files, 1437 insertions and 31
+deletions on F1 1a7c360e0; `carbon version` 0.0.0-0.dev+1a7c360e0.dirty), its
+file_test run in the scratch tree /dev/shm/va2-amend/src (`$V/bin/mgate.sh`,
+`$V/bin/mau.sh`):
+
+-   The difference, reproduced. §A.11's impl.carbon, extracted from rev 8, is
+    the saved state's byte for byte, and its fill reports "error: name
+    `Core.AddWith` implicitly referenced here, but not found
+    [CoreNameNotFound]" at the first `+` of each `rank` split's `Call`
+    (rank.carbon:20:10, rank_reversed.carbon:20:10,
+    rank_elements_after.carbon:16:10 and
+    rank_elements_after_reversed.carbon:16:10), with autoupdate's "if failure
+    is expected, add the `fail_` prefix" for each (`$V/logs/au_repro.log`);
+    with the implementer's fill of the other six files the gate is 1970 passed
+    and 1 failed, impl.carbon (`$V/logs/mgate_repro.txt`).
+-   Root cause. min_prelude/primitives.carbon (its bool, char, copy, float,
+    int, string and uint parts) declares no `AddWith`, and `+` on `i64` looks
+    up `Core.AddWith`. M-15 measured these splits' selections as x05 and x06
+    on the production prelude, and rev 2 wrote the splits for the min prelude
+    without compiling them there, the class of M-21's D2. A scan of the 87
+    Carbon splits of §A.11 whose file includes a min prelude other than
+    full.carbon finds an operator in these four only (`$V/bin/scan_ops.py`,
+    `$V/logs/scan_ops.txt`).
+-   A second defect in the same splits: they had no dump range, so their
+    golden holds no SemIR, and with the `+` replaced it pins only that they
+    check. The MV-9 mutant (§8.5), check/type_structure.cpp with its two
+    `4 * (lhs_cursor - lhs.begin()) + 2` keys made `4 * (lhs_cursor -
+    lhs.begin())`, relinked into /dev/shm/va2-amend/mv9
+    (`$V/logs/relink_mv9.log`), changes `rank`'s and `rank_reversed`'s
+    selections: in the per-query programs of `$U/rankvar` `(i64, bool)` then
+    calls the variadic impl's `N`, which returns 2, where the install calls
+    the `(T, U)` impl's, which returns 3 (`$V/mv9out`); yet it passes the
+    implementer's variant golden, which sums with `Add` and dumps nothing
+    (`$U/variant/impl_rank_add_p1.carbon`, `$V/logs/v1_gate_impl_mv9.log`).
+-   The fix, measured. Each split declares `fn Add(a: i64, b: i64) -> i64 =
+    "int.sadd";`, as the file's `requirement` and `body_expansion` splits do,
+    sums with nested `Add` calls and holds `Call`'s `return` between
+    `//@dump-sem-ir-begin` and `//@dump-sem-ir-end` (§A.11,
+    `$V/v2/impl_src.carbon`). C2 with it, `$V/c2_rev9.patch` (27 files, 1455
+    insertions and 31 deletions on 1a7c360e0; 21 non-test files, 802 and 31;
+    the paths of `$V/c2_rev9_files.txt`), is the scratch commit a5cebd9c0,
+    whose `toolchain` tree is 571123536d9a10222040f22c22c86eb16b510b90. Its
+    gate before the fill is 1964 passed and 7 failed, the seven of §3 item 5,
+    with no crash (`$V/logs/mgate_c2r9_pre.txt`); the fill of the seven files
+    reaches its fixpoint in one pass, the second changing nothing
+    (`$V/fill_rev9_p1`, `$V/fill_rev9_p2`, `$V/logs/au_c2r9_2.log`), six of
+    them byte-identical to the implementer's (`$U/fill_p1`) and impl.carbon
+    the implementer's variant fill but for the four splits' sources and dumps;
+    the gate after it is 1971 passed and 0 failed
+    (`$V/logs/mgate_c2r9_filled.txt`); and C2 with its fill is the scratch
+    commit 492272573, whose `toolchain` tree is
+    db8bb8e8c1076098322273af29e81e9c88659140 (the fill: 7 files, 3662
+    insertions and 3 deletions). The dumps show `x.(Count.N)()` calling
+    `@T.as.Count.impl.N(%i64)`, `p.(Count.N)()` the `(T, U)` impl's `N` with
+    `(%i64, bool)`, and `t.(Count.N)()` and `e.(Count.N)()` the variadic
+    impl's `N` with the arity 3 and the pack value `(%i64, bool, %i64)` and
+    with the arity 0 and the empty pack value, in both declaration orders; in
+    `rank_elements_after` and its reversal `a` and `c` call the `(... each T,
+    bool)` impl's `N` (arities 1 and 0) and `b` the `(... each T)` impl's
+    (arity 2). With MV-9 the golden fails, `p.(Count.N)()` then calling the
+    variadic impl's `N` with the arity 2 (`$V/logs/v2_gate_impl_mv9.log`).
+-   Conformance on the C2 install: PASS 137, COMPILE-FAIL 0, LINK-FAIL 0,
+    RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets
+    49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56 (`$V/logs/conf_c2.log`).
+    clang-format 21.1.8 `--dry-run --Werror` with the repository's
+    .clang-format exits 0 on C2's 20 .cpp and .h files
+    (`$V/logs/clang_format_c2.log`); the saved state carries clang-format's
+    re-wrap of one line of the built half's eval_inst.cpp, the return of
+    `EvalConstantInst` for a `TupleType`. The stopped run's prek and both
+    clang-tidy passes over C2's 17 .cpp files (`$U/tidy`) stand, since rev 9
+    changes no code.
+-   The probes, as the implementer ran them on that install (`$U/sets`,
+    `$U/probes_c2.txt`), which rev 9 does not change: M-20's 36 with d01 to
+    d04 print `$M/probes_wt2.txt` but for a03's indeterminate value and a19's
+    and a20's CHECK, at check/convert.cpp:2477 on C2; the sets print
+    `$M/sets/*_wt2.txt` line for line but two, each a form of §2.4, which wt2
+    did not have. ctI, `Cpp.Size((... each x))`, reports upstream's "call
+    argument of type `⟬each T⟭` is not supported" at `each x` (5:74), where
+    wt2 reported VA-1's `pack expansion in a tuple literal outside a call's
+    argument list`: the tuple literal of one segment now forms, and upstream
+    maps a tuple literal argument to C++ element by element
+    (check/cpp/type_mapping.cpp, `InventCompoundClangArg` :621, its tuple
+    case :643-657, and the diagnostic :594-598), the pack-typed element having
+    no C++ type. r19, `Pass(t).2` through `-> (... each T)`, runs and prints
+    3, where wt2 reported the prototype's placeholder `initializing a tuple
+    with a pack segment` (§1.7). Each is a precise diagnostic or the IN
+    behavior, and neither crashes.
+-   Upstream: `git fetch upstream trunk` and `git ls-remote upstream
+    refs/heads/trunk` give 5f1dd4941 ("Optimize the horizontal space skip fast
+    path for x86", 2026-10-26 22:46 UTC), three commits past rev 8's
+    57bf903ef. 05a7ecbd3 ("Move `SubobjectDestroy` and `SelfDestruct` out of
+    interface `Destroy`") changes core/prelude/destroy.carbon,
+    check/core_identifier.def, check/custom_witness.cpp and .h,
+    check/handle_interface.cpp, check/interface.cpp and .h,
+    check/operator.cpp, check/cpp/impl_lookup.cpp, check/cpp/operators.cpp,
+    sem_ir/core_interface_kind.def and 346 goldens, none in a variadics
+    directory; 7cc1d0898, the stage 3 run's tip, and 5f1dd4941 change
+    toolchain/lex/lex.cpp only. None of docs, proposals,
+    core/prelude/copy.carbon, core/prelude/operators/comparison.carbon and the
+    files rev 8's item 1 lists changes, and no file §2, M-20, §2.7 or A-11
+    cites. `git merge-tree --write-tree --name-only` gives 120 conflicted
+    paths, the same set, for b0822a744, ca939ee19, 90c34dbaa, ca23d0695, F1
+    1a7c360e0 and the scratch commits a5cebd9c0 and 492272573
+    (`$V/mt_*.txt`, `$V/mt_up_5f1d.txt`): rev 8's 106 and 14 more that
+    conflict at b0822a744 already, the fork's own lines against 05a7ecbd3's
+    (sem_ir/core_interface_kind.def and 13 goldens), so C2 and F2 add no
+    conflicted path.
+
 ### §0.3 Where a heterogeneous pack enters VA-1's path
 
 VA-1's §1.4 built one path for a pack of one element type `«E; N»`
@@ -1711,6 +1854,13 @@ since rev 2 added `variadics_strcat`, amended 2026-10-22, review fold: B-M3).
     aad2cd31e over the ten fill paths), and rev 7's C1 accepted a pack in an
     impl's implicit list that only C2 can select by. All three are measured and
     corrected by rev 8 (M-22).
+-   F-12 (amended 2026-10-27, implementation: stop-and-amend: the rank splits
+    on the min prelude). §4 predicted no diagnostic for impl.carbon's four
+    `rank` splits and §8.5 named them MV-9's evidence, but their sums used the
+    operator `+`, which their min prelude cannot check, and they dumped
+    nothing; and hand-off note 2 and R-14 said C2 prints rev 4's probe sets
+    again, which two forms of §2.4, ctI and r19, do not. All are measured and
+    corrected by rev 9 (M-23).
 
 ## §1 Design
 
@@ -2305,7 +2455,12 @@ variadic impl, review B's requested golden) and `fail_impl`'s
 (W-336), `fail_todo_expansion_without_each_name` (W-337) and
 `fail_todo_overload_hetero_member` (W-223, M-16); and lower `tuple_segment`'s
 `self_return` (M-13) (amended 2026-10-22, review fold: A-B-1 / A-B-2 / A-M-1
-/ B-B2). Refilled: VA-1's each_param.carbon, forward.carbon, import.carbon,
+/ B-B2). Those four `rank` splits summed with `+`, which min_prelude cannot
+check, and dumped nothing; since rev 9 they sum with a local `Add` builtin, as
+the file's `requirement` and `body_expansion` splits do, and dump `Call`'s
+body, which shows the impl each query selects (M-23) (amended 2026-10-27,
+implementation: stop-and-amend: the rank splits on the min prelude).
+Refilled: VA-1's each_param.carbon, forward.carbon, import.carbon,
 fail_todo_slice.carbon (the `fail_todo_generic_pack` split moved, relabeled
 TODOs) and the lower pack_expansion.carbon (M-6's three classes), and, by C4,
 M-9's predicted 44 goldens on the production prelude, a lower bound (M-9).
@@ -2993,6 +3148,26 @@ index c5d240ff8..549402d82 100644
 <!-- google-doc-style-resume -->
 
 ### §2.4 C2, tuple values with a pack segment and `let` (specified, not built)
+
+Since rev 9 these items are built: the stopped stage 3 run wrote them on C1
+with C2's built half, and its saved state with §A.11's rev 9 `rank` splits is
+`$V/c2_rev9.patch` (M-23). It follows the items below with the decisions the
+implementer recorded under R29 in its stage 3 report, each measured by C2's
+fill: a second segment's TODO is reported at the tuple literal, since a
+collapsed compile-time pack has no location of its own; item 2's collapse of
+`... each x` for a run-time pack applies only to an element of a tuple
+literal, so that VA-1's call arguments and their goldens are unchanged; a tuple
+initialized by copy or with nothing to initialize, which has no storage of its
+own, has its elements initialized by `PackSegmentInit` in a temporary
+(lower/function_context.h, `pack_segment_storage`); and
+check/handle_pattern_list.cpp, which the items do not name, makes a
+parenthesized pack expansion pattern a tuple pattern of one element, since the
+parser forms `(... each x: each T)` as a parenthesized pattern and the design
+says "if the nearest enclosing delimiters around a `...` are parentheses, they
+will be interpreted as forming a tuple rather than as grouping"
+(docs/design/variadics.md :137-139, "Pack expansions"). No decision of §1
+changes (amended 2026-10-27, implementation: stop-and-amend: the rank splits on
+the min prelude).
 
 1.  check/handle_tuple_literal.cpp: VA-1's TODO for a `PackExpansionExpr`
     element (`pack expansion in a tuple literal outside a call's argument
@@ -3904,8 +4079,17 @@ The commits, in order:
     `impl_body`, `impl_lib` and `impl_use` splits (amended 2026-10-26, review
     fold: RR1-NB-1)); `fail_todo_va2` gains its C2 splits; fail_todo_slice
     refilled (`fail_todo_tuple_pattern` and `fail_todo_tuple_literal`
-    relabeled). Expected gate: red on exactly 7 files.
-6.  **F2.** Autoupdate of those 7 files.
+    relabeled). Expected gate: red on exactly 7 files. Since rev 9 `impl`'s
+    four `rank` splits sum with a local `Add` builtin and dump `Call`'s body
+    (§A.11), and C2 is `$V/c2_rev9.patch`, the stopped run's saved state with
+    them (27 files; `toolchain` tree 571123536), whose gate is 1964 passed and
+    those 7 failed, with no crash (M-23) (amended 2026-10-27, implementation:
+    stop-and-amend: the rank splits on the min prelude).
+6.  **F2.** Autoupdate of those 7 files: one pass, the second changing
+    nothing, and the gate 1971 passed (measured, M-23: the fill is
+    `$V/fill_rev9_p2`, and C2 with it has the `toolchain` tree db8bb8e8c)
+    (amended 2026-10-27, implementation: stop-and-amend: the rank splits on
+    the min prelude).
 7.  **C3, statement expansions of `if`** (§2.5): the body region,
     `PackExpansionNext`, per-iteration blocks. New goldens: check
     `expansion_if`, lower `expansion_if`; `fail_todo_va2` gains
@@ -3983,7 +4167,10 @@ pack among its TODOs, and C2's says that an impl may declare it and cites
 D-VA2-4, M-17, M-21 and M-22, the decisions and measurements of its
 `specific_constant` sentence and of its split (amended 2026-10-26, review fold:
 RR7-M4 / RR7-m1); M's names §6.2's rule 4 in a `<...>` field for a trunk that
-holds upstream's 57bf903ef (amended 2026-10-26, review fold: RR7-M3)):
+holds upstream's 57bf903ef (amended 2026-10-26, review fold: RR7-M3); since
+rev 9 C2's also cites M-23, the measurement of its `rank` splits (amended
+2026-10-27, implementation: stop-and-amend: the rank splits on the min
+prelude)):
 
 <!-- google-doc-style-ignore -->
 
@@ -4069,7 +4256,7 @@ beside other elements and initializing expansion elements are semantics
 TODOs.
 
 fork/variadics/va2-plan.md §2.3, §2.4, D-VA2-4, D-VA2-8 to D-VA2-10,
-M-17, M-21, M-22.
+M-17, M-21, M-22, M-23.
 ```
 
 ```text
@@ -4202,7 +4389,12 @@ with §2.2's block fills to each of them as rev 7 states them, and rev 7 amends
 the four that the fill contradicted (M-21) (amended 2026-10-26, implementation:
 stop-and-amend: C1's split and golden sources). C1 rev 8, with its refusal of an
 impl's pack, fills to the same rows byte for byte, since no C1 split declares an
-impl with a pack (M-22) (amended 2026-10-26, review fold: RR7-M4).
+impl with a pack (M-22) (amended 2026-10-26, review fold: RR7-M4). Since rev 9
+the C2 rows are measured too: C2 with §A.11's rev 9 sources fills to each of
+them as rev 9 states them, and rev 9 amends the four `rank` rows, whose
+sources the fill rejected, and states the `return` row's block as filled
+(M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on
+the min prelude).
 
 | File (commit) | Split | Predicted key output |
 | --- | --- | --- |
@@ -4252,7 +4444,7 @@ impl with a pack (M-22) (amended 2026-10-26, review fold: RR7-M4).
 | (same) | `lib`, `use` | `use.carbon` lowers the imported `ForEach`'s `⟬A, B, A⟭` specific (A's `Get`, then B's, then A's) and the imported `Count`'s `⟬i64, bool, i32⟭` specific (`One`'s three specifics in order) from `lib.carbon`'s bodies, as `call` and `layout` do in one file (measured: the split compiled on rev 3 with `--optimize=none`, `$G/r/gw_rev3/lower_use_O0.out`; M-17's i2 and i5 print 16 and 3; amended 2026-10-26, review fold: RR1-NB-1); measured on C1 with §2.2's block, `Count`'s argument the address of an internal constant as in `layout` (M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | lower/pack_expansion.carbon (C1, refill) | `sum`, `generic_element`, `class_element`, `arg_order`, `forward_converted_field`, `lib`, `use` | M-6's classes: a `pack_value` of constants becomes a global constant (the `llvm.lifetime.start` declarations and per-call stores of constant packs disappear); every call and every iteration as before |
 | check/tuple_segment.carbon (C2) | `param` | `F`'s parameter of type `(⟬%T⟭)`, a `tuple_type` whose one element is a pack type; `F((1 as i64, true))` deduces `T` = `⟬%i64, bool⟭`, and the specific's parameter type is `(%i64, bool)`; no diagnostic, `F` defined, `{}`, since rev 7: declared only, both calls are `use of undefined generic function` (measured on C1 with C2's built half, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
-| (same) | `return` | `MakeTuple`'s `return (... each x)` is a `pack_segment_init` into the return slot whose block holds `pack_index`, two `pack_element`s and the element's `Copy` initialization; `Call` returns the specific's result of type `(%i64, bool)` with no conversion |
+| (same) | `return` | `MakeTuple`'s `return (... each x)` is a `pack_segment_init` into the return slot whose block holds the iteration's `pack_index`, `pack_element %x.ref` and the reference `pack_element %return.param` at it, and the element's `Copy.WithSelf.Op` call initializing the latter in place, with two more `pack_index` and `pack_element %T` pairs that compute the element's type (measured, M-23; rev 8 wrote "two `pack_element`s"); `Call` returns the specific's result of type `(%i64, bool)` with no conversion (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
 | (same) | `let` | `let (... each x: each T) = t;` binds a `pack_expansion_expr` of `pack_element %t, %pack_index`, no copy, no arity binding; the statement expansion calls `Get` |
 | (same) | `tuple_value` | `Take((... each x))` passes the pack value as a value of `(⟬%T⟭)`, deducing `U` = `%T`; `Take` defined since rev 7, as `param`'s `F` (M-21; on C1 with C2's built half, before §2.4 item 1, the call is VA-1's `pack expansion in a tuple literal outside a call's argument list`) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
 | (same) | `elements_around_segment` | `F((1 as i64, 2 as i32, false, true))` deduces `T` = `⟬%i32, bool⟭` (the run between `i64` and the last `bool`), and `F((1 as i64, true))` deduces `T` = `⟬⟭`; no diagnostic, `F` defined since rev 7, as `param`'s (measured on C1 with C2's built half, M-21) (amended 2026-10-26, implementation: stop-and-amend: C1's split and golden sources) |
@@ -4266,10 +4458,10 @@ impl with a pack (M-22) (amended 2026-10-26, review fold: RR7-M4).
 | (same) | `symbolic_query` | `t.(Count.N)()` on the symbolic `(⟬%T⟭)` in `H`'s body finds the variadic impl with `T` = `%T` (§0.2 p25) |
 | (same) | `self_query` | `self.(Count.N)()` inside the impl's own `Twice` finds the impl being defined, as for any impl; no crash (M-9's first crash was this path) |
 | (same) | `lib`, `use` | `use.carbon` imports the variadic impl and selects it for `(i64, bool, i64)`, its self type imported with its pack segment (R-7) |
-| (same) | `rank` | a blanket `impl forall [T: type] T as Count`, `impl forall [... each T: type] (... each T) as Count` and `impl forall [T: type, U: type] (T, U) as Count` in one library, no diagnostic; `N` on `i64` finds the blanket impl, on `(i64, bool)` the `(T, U)` impl, on `(i64, bool, i64)` and on `()` the variadic impl (M-15's x05: 1 3 2 2; amended 2026-10-22, review fold: A-M-1 / B-B2) |
-| (same) | `rank_reversed` | the same three impls declared in the opposite order, the same selections (x05b) |
-| (same) | `rank_elements_after` | `(... each T, bool)` and `(... each T)`: `(i64, bool)` and `(bool,)` find the first, `(bool, i64)` the second (x06: 1 2 1) |
-| (same) | `rank_elements_after_reversed` | the same two declared in the opposite order, the same selections (x06b) |
+| (same) | `rank` | a blanket `impl forall [T: type] T as Count`, `impl forall [... each T: type] (... each T) as Count` and `impl forall [T: type, U: type] (T, U) as Count` in one library, no diagnostic; `N` on `i64` finds the blanket impl, on `(i64, bool)` the `(T, U)` impl, on `(i64, bool, i64)` and on `()` the variadic impl (M-15's x05: 1 3 2 2; amended 2026-10-22, review fold: A-M-1 / B-B2); since rev 9 `Call` sums the four calls with nested calls of a local `Add` builtin and its `return` is dumped: `x.(Count.N)()` calls `@T.as.Count.impl.N(%i64)`, `p.(Count.N)()` the `(T, U)` impl's `N` with `(%i64, bool)`, and `t.(Count.N)()` and `e.(Count.N)()` the variadic impl's `N` with the arity 3 and the pack value `(%i64, bool, %i64)` and with the arity 0 and the empty pack value (measured, M-23; rev 8's sum with `+` reports "name `Core.AddWith` implicitly referenced here, but not found" on min_prelude) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
+| (same) | `rank_reversed` | the same three impls declared in the opposite order, the same selections (x05b), summed and dumped as `rank` since rev 9 (measured, M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
+| (same) | `rank_elements_after` | `(... each T, bool)` and `(... each T)`: `(i64, bool)` and `(bool,)` find the first, `(bool, i64)` the second (x06: 1 2 1); since rev 9 summed and dumped as `rank`: `a` and `c` call the `(... each T, bool)` impl's `N` with the arities 1 and 0, and `b` the `(... each T)` impl's with the arity 2 (measured, M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
+| (same) | `rank_elements_after_reversed` | the same two declared in the opposite order, the same selections (x06b), summed and dumped as `rank` since rev 9 (measured, M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
 | (same) | `body_expansion` | the `pack_expansion_statement` in `Get`'s body takes its arity from a `specific_constant` of the impl's `<pack arity>` binding with the impl's self specific, `@tuple.type.as.Sum.impl(%arity, %T)` (D-VA2-4; measured, `$G/r/gw_rev3/be.sem`; amended 2026-10-26, review fold: RR1-NB-1) |
 | check/fail_impl.carbon (C2) | `fail_missing_element_impl` | `error: cannot access member of interface `Code` in type `(i64, bool)` that does not implement that interface [MissingImplInMemberAccess]` |
 | (same) | `fail_not_a_tuple` | the same diagnostic for `Count` in type `i64`: `(...?)` matches only a tuple (amended 2026-10-22, review fold: A-M-1) |
@@ -4502,6 +4694,14 @@ second conflict. The advance resolves it by §6.2's rule 4, upstream's
 C1's fill, since `FinishRun` now repeats `CheckRequiredDefinitions` after
 `FinalizeCppAstFragment`, the path of `fail_todo_cpp_template_on_tuple_of_pack`
 (`$P/mt_up_57bf.txt`, M-22) (amended 2026-10-26, review fold: RR7-M3).
+Rev 9 at 5f1dd4941 measured 120 paths, the same set, for b0822a744, ca939ee19,
+90c34dbaa, ca23d0695, F1 1a7c360e0 and C2's and F2's scratch commits a5cebd9c0
+and 492272573: rev 8's 106 and 14 more that conflict at b0822a744 already, the
+fork's own lines against upstream's 05a7ecbd3, which moves `SubobjectDestroy`
+and `SelfDestruct` out of `Destroy` and refills 346 goldens, none of VA-2's;
+the advance refills any of C4's full-prelude goldens that 05a7ecbd3 also
+changes, by the rule below (`$V/mt_up_5f1d.txt`, M-23) (amended 2026-10-27,
+implementation: stop-and-amend: the rank splits on the min prelude).
 Two upstream commits change how rev 3's mechanisms sit at the advance, and
 the advance re-runs M-17's probes for both: e1c8c1f85 makes name lookup pair
 every name of an enclosing generic with that generic's self specific, so a
@@ -4681,10 +4881,25 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     re-runs after its build; falsified by a crash in a split commit's gate, by
     a probe on C1 that selects an impl or prints a value without a diagnostic
     where PR 59 reports one, or by a C2 probe that prints other than rev 4's on
-    C2's install. If a review requires the refusal to be pinned by a golden, C1
+    C2's install, ctI and r19 excepted: they take §2.4's tuple values, which
+    rev 4's prototype did not have, and on C2 print upstream's "call argument
+    of type `⟬each T⟭` is not supported" and 3 (M-23) (amended 2026-10-27,
+    implementation: stop-and-amend: the rank splits on the min prelude). If a
+    review requires the refusal to be pinned by a golden, C1
     adds a `fail_todo_va2` split for it and C2 deletes that split, by a plan
     revision; §7.2's A-13 rejects taking C2's type-structure hunks into C1
     instead, rev 7's break condition here.
+-   **R-15. A golden split that dumps nothing pins only that it checks**
+    (added by rev 9) (amended 2026-10-27, implementation: stop-and-amend: the
+    rank splits on the min prelude). Rev 2's `rank` splits were the evidence
+    of §4's selection rows and of §8.5's MV-9, but with no dump range their
+    golden holds no SemIR: once compiled it pins that the four calls check,
+    not which impl each selects, and MV-9 passes it (M-23). Since rev 9 the
+    splits dump `Call`'s body. Detected by §8.5's mutants, each run against
+    the golden §8.5 names for it; falsified by a golden that §4 or §8.5 names
+    as a selection's or a mutant's evidence and that passes with that mutant,
+    which is a stop at §8.5 and a plan revision that adds the dump range or
+    the split.
 
 ### §7.2 Rejected alternatives
 
@@ -4807,6 +5022,20 @@ D-VA2-12's break conditions); VA-2's goldens are refilled, never merged.
     Rejected: C1's refusal is 10 lines that C2 removes, changes no golden and
     no fill (M-22), and keeps §3's split by feature. Falsified as a rejection if
     a review requires C1 to accept a variadic impl.
+-   **A-14. The `rank` splits on the production prelude, or as `fail_` splits**
+    (rejected; added by rev 9) (amended 2026-10-27, implementation:
+    stop-and-amend: the rank splits on the min prelude). The splits could sum
+    with `+` on min_prelude/full.carbon, the production prelude M-15's x05 and
+    x06 ran on, or keep the error under a `fail_` prefix. Rejected: D-VA2-15
+    builds these goldens on min_prelude with local interfaces so that none
+    depends on the prelude C4 changes, and full.carbon is, by its own note,
+    "quite slow relative to a more minimal prelude", about a second where a
+    minimal one takes ten milliseconds; a `fail_` split would pin
+    `CoreNameNotFound`, not a selection, and leave §4's rows and MV-9 without
+    evidence. The local `Add` builtin is the file's own pattern (`requirement`,
+    `body_expansion`). Falsified as a rejection if a review requires the
+    selections pinned on the production prelude, which would then be a split of
+    C4's `prelude_tuple_impls`.
 
 ## §8 Verification and discharge
 
@@ -4957,6 +5186,22 @@ and upstream's tip, 57bf903ef, with `git merge-tree` against it
 (`mt_up_57bf.txt`). The worktree and the relinked binaries were removed when rev
 8 was committed.
 
+Rev 9's are the plan amender's of the implementation's third stop-and-amend
+(amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min
+prelude), with `$U` and `$V` the directories the header names and every rev 9
+number in `$V` (M-23): the implementer's stage 3 logs, fill, variants and saved
+state (`$U`); that state in the scratch tree /dev/shm/va2-amend/src, where the
+C2 install's file_test reproduced the difference and gave rev 9's gates and
+fills (`$V/bin/mgate.sh`, `$V/bin/mau.sh`); the MV-9 mutant relinked over the
+install's objects into /dev/shm/va2-amend/mv9 (`$V/bin/relink.sh`,
+`$V/logs/relink_mv9.log`), with the per-query programs (`$V/mv9out`) and both
+goldens; conformance on the C2 install (`$V/logs/conf_c2.log`); clang-format;
+the scan of §A.11 (`$V/bin/scan_ops.py`); C2's and F2's trees, written from a
+private index, and their scratch commits a5cebd9c0 and 492272573; and
+upstream's tip, 5f1dd4941, with `git merge-tree` against it (`$V/mt_*.txt`).
+The scratch tree and the relinked binaries were removed when rev 9 was
+committed.
+
 ### §8.1 Build (implementer)
 
 After C0, C1, C2 and C3: `$CB/build.sh /home/user/carbon-va2` then
@@ -5002,6 +5247,11 @@ of §3 item 3, generic_pack.carbon passing before its fill, with no crash, and
 wrote 1956 and 10, measured before §A.11's four definitions) (amended
 2026-10-26, review fold: RR7-M1); rev 6's split aborted it (M-21) (amended
 2026-10-26, implementation: stop-and-amend: C1's split and golden sources).
+C2 alone, with §A.11's rev 9 sources, is 1964 passed and 7 failed, the seven
+files of §3 item 5, with no crash, and 1971 passed after F2, both measured on
+the stopped run's install (M-23; with rev 8's `rank` sources the gate after F2
+is 1970 passed and 1 failed) (amended 2026-10-27, implementation:
+stop-and-amend: the rank splits on the min prelude).
 
 ### §8.4 Conformance (implementer)
 
@@ -5023,7 +5273,10 @@ precondition, and a d01 that does not is a stop at C4, not a failure at C5
 21 over 158 and bullets 49 / 0 / 7 of 56, measured (M-21), and the stage 2
 re-run repeats it (amended 2026-10-26, implementation: stop-and-amend: C1's
 split and golden sources); C1 rev 8 too, every program as on rev 7's C1 (M-22)
-(amended 2026-10-26, review fold: RR7-M4).
+(amended 2026-10-26, review fold: RR7-M4). C2 too, on the stopped run's
+install: 137 / 0 / 21 over 158 and bullets 49 / 0 / 7 of 56 (M-23) (amended
+2026-10-27, implementation: stop-and-amend: the rank splits on the min
+prelude).
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -5045,7 +5298,7 @@ per program.
 | MV-6 | D-VA2-11 | lower: `PackExpansionNext` of every iteration branches past the last iteration | variadics_min (`Min(4, 9, 2, 2, 7)` prints 4), tuple_eq_diff (`a == c` prints 1), tuple_ordered_diff |
 | MV-7 | D-VA2-12 | comparison.carbon: `Less`'s final `return false;` becomes `return true;` | tuple_ordered_diff (`a < c` prints 1), tuple_impl_generic is unaffected |
 | MV-8 | A-2 | copy.carbon: the variadic impl replaced by hand-written impls for arities 0 to 12 | tuple_copy_variadic (COMPILE-FAIL at the 13-tuple) |
-| MV-9 | D-VA2-8 | check/type_structure.cpp: a `?`'s ranking key `4p + 2` becomes `4p` (below a segment's) | the `impl` golden's `rank` splits (`(i64, bool)` finds the variadic impl), and no program: the prelude has no fixed-arity tuple impl beside the variadic ones (amended 2026-10-22, review fold: A-M-1 / B-B2) |
+| MV-9 | D-VA2-8 | check/type_structure.cpp: a `?`'s ranking key `4p + 2` becomes `4p` (below a segment's) | the `impl` golden's `rank` splits (`(i64, bool)` finds the variadic impl), and no program: the prelude has no fixed-arity tuple impl beside the variadic ones (amended 2026-10-22, review fold: A-M-1 / B-B2); measured on C2 since rev 9: impl.carbon fails, its `rank` and `rank_reversed` dumps then showing `p.(Count.N)()` calling the variadic impl's `N` with the arity 2, which needs the dump range rev 9 adds (without it the golden passes with MV-9, R-15) (M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank splits on the min prelude) |
 | MV-10 | D-VA2-12 | comparison.carbon: `Equal`'s `not (each a == each b)` becomes `each a != each b` (rev 1's body) | tuple_impl_generic (21 and 22 where 11 and 12), tuple_eq_diff (the Counted lines, DIFF-MISMATCH) (amended 2026-10-22, review fold: A-m-1 / B-M1) |
 | MV-11 | D-VA2-12 | comparison.carbon: `NotEqual` removed, so `!=` is `EqWith`'s default `not Equal` (rev 2's reading) | tuple_impl_generic (`Differ(a, b)` prints 11 and 12 where 21 and 22); tuple_eq_diff is unaffected, its elements' `!=` being `not ==` (amended 2026-10-26, review fold: RR1-Nm-2) |
 
@@ -5106,7 +5359,13 @@ fills, plus the set named below, and its programs are both sides' (amended
     the second re-review's probes as on rev 4 but ctH and ctJ, CT-1's (amended
     2026-10-26, review fold: RR2-M1 / RR2-m1). The implementer re-runs it with
     VA-2's head, expecting the same plus S-CT's split, filled (amended
-    2026-10-26, review fold: RR1-B-M5).
+    2026-10-26, review fold: RR1-B-M5), but for ctI, whose tuple literal of
+    one segment forms from C2 on (§2.4) and which on C2 alone reports
+    upstream's "call argument of type `⟬each T⟭` is not supported" (M-23): on
+    the mirror CT-1 may defer that call, whose operand does not depend on the
+    pack index, so its line there is a first measurement, recorded with its
+    text, and a crash or a CHECK failure is a stop (amended 2026-10-27,
+    implementation: stop-and-amend: the rank splits on the min prelude).
 -   m55, PR 55 (st, 21307851a): `Core.String`'s operations and impls beside
     the variadic tuple impls in the production prelude. Expected: ST-1's
     goldens and programs and VA-2's pass after the fill; the full-prelude
@@ -5144,6 +5403,10 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
 
 ### §8.9 Not run, and why
 
+-   Since rev 9, C2's part of the unbuilt half below, `PackSegmentInit` and
+    `let`, is built and filled on the stopped run's install (M-23) (amended
+    2026-10-27, implementation: stop-and-amend: the rank splits on the min
+    prelude).
 -   The unbuilt half of the slice: tuple values with a run-time pack segment
     (`PackSegmentInit`), `let` with a pack expansion pattern, statement
     expansions of `if` (`PackExpansionNext`, the per-iteration blocks), the
@@ -5205,7 +5468,11 @@ floor plus §5's delta, and commit L quotes that run, EXPECTED, not of record.
     (/dev/shm/va2-impl/amend8: wt, c1r7 and c1r8) were removed when rev 8 was
     committed; C1 rev 8 is reproducible from `$P/c1_rev8.patch` on 8a7395cf1
     and C1 with C2's built half from it and `$P/c2_rest_after_rev8.patch`
-    (amended 2026-10-26, review fold: RR7-M4).
+    (amended 2026-10-26, review fold: RR7-M4). Rev 9's (/dev/shm/va2-amend:
+    src, mv9src and mv9) were removed when rev 9 was committed; C2 is
+    reproducible from `$V/c2_rev9.patch` on 1a7c360e0 and the mutant from
+    `$V/mv9.diff` (amended 2026-10-27, implementation: stop-and-amend: the
+    rank splits on the min prelude).
 -   The real prelude bodies' lowering through an import: M-9's last bullet
     lowers proxy bodies that hold an expansion over the impl's pack, and
     M-17 lowers imported variadic impls whose bodies do, but C4's own bodies
@@ -5299,7 +5566,15 @@ ids are renumbered in D's commit, never in source.
     reports `each-name binding in an impl's implicit parameter list` and nothing
     else (pl0 and pl1 with the prelude proxy also the names the proxied file
     then fails to provide), and from C2 on each prints rev 4's again (M-22)
-    (amended 2026-10-26, review fold: RR7-M4).
+    (amended 2026-10-26, review fold: RR7-M4). Since rev 9, from C2 on, every
+    set prints rev 4's again but ctI and r19, which take §2.4's tuple literal
+    and return: ctI reports upstream's "call argument of type `⟬each T⟭` is
+    not supported" at 5:74 and r19 prints 3; on C2 the sets print
+    `$U/sets/rr2set_c2.txt`, `set_c2.txt` and `probesall_c2.txt`, and M-20's
+    with d01 to d04 `$U/probes_c2.txt`, line for line but for the paths, a03's
+    value and the line of a19's and a20's CHECK in convert.cpp (:2477 there)
+    (M-23) (amended 2026-10-27, implementation: stop-and-amend: the rank
+    splits on the min prelude).
 3.  **Fills are separate commits**, to their fixpoint, reviewed against §4.
 4.  **Watch-outs.** A variadic impl is a candidate for every tuple query
     (R-4), so a non-tuple argument must fail deduction, never walk a tuple's
@@ -5983,7 +6258,170 @@ condition; D-VA2-1 to D-VA2-18 hold as written, Appendix B and every count of
 §8.3 and §8.4 stand but C1's gate before its fill, now 1957 and 9, and no W id
 is minted (M-22 numbers a measurement).
 
+## Stop-and-amend record (rev 9, 2026-10-27)
+
+Stage 3 of the implementation (C2 and F2, §3 items 5 and 6) stopped before
+committing C2 on 2026-10-26 and returned the difference below; the plan amender
+reproduced it, found its root cause and wrote this revision (amended
+2026-10-27, implementation: stop-and-amend: the rank splits on the min
+prelude). The stage's state at the stop: the branch holds the plan's revisions
+and C0, C0b, F0, C1 and F1, all on origin (head 1a7c360e0, F1; the command
+`git branch -r --contains 1a7c360e0` prints
+`origin/claude/carbon-fork-0-1-va2`); nothing of stage 3 was committed or
+pushed; the worktree is clean; the stopped run's C2 is saved as
+`$U/c2_uncommitted_source_state.patch` (27 files, 1437 insertions and 31
+deletions on 1a7c360e0), with its fill in `$U/fill_p1`; and the install
+/home/user/carbon-build/carbon-va2 holds that uncommitted state, its `carbon
+version` printing 0.0.0-0.dev+1a7c360e0.dirty.
+
+The difference, as the implementer recorded it (`$U/stage.log`): impl.carbon's
+splits `rank`, `rank_reversed`, `rank_elements_after` and
+`rank_elements_after_reversed`, for which §4 predicts no diagnostic, each report
+"error: name `Core.AddWith` implicitly referenced here, but not found
+[CoreNameNotFound]" at `Call`'s first `+` (20:10, 20:10, 16:10 and 16:10);
+autoupdate asks for the `fail_` prefix four times (`$U/logs/au1.log`); and the
+gate after the fill is 1970 passed and 1 failed, impl.carbon
+(`$U/logs/gate2.txt`), where §3 item 6 and §8.3 predict 1971 passed. It also
+listed two probe lines that differ from `$M/sets/*_wt2.txt`, which hand-off
+note 2 said C2 prints again: ctI and r19.
+
+Root cause (M-23). The splits sum with `+`, which checks through
+`Core.AddWith`, and their file includes min_prelude/primitives.carbon, which
+declares no `AddWith`; rev 2 wrote them from M-15's x05 and x06, which ran on
+the production prelude, and no revision compiled them on their own prelude, the
+class of rev 7's D2. They also had no dump range, so their golden, once
+compiled, would pin only that they check: the MV-9 mutant, which §8.5 says
+these splits catch, changes their selections and passes that golden. ctI and
+r19 are not defects: they take §2.4's tuple literal of one segment and its
+`PackSegmentInit`, which wt2 (C1 with C2's built half) did not have, so rev 8's
+"from C2 on each prints rev 4's again" was a wrong prediction for those two;
+ctI's diagnostic is upstream's own for a tuple literal argument whose
+pack-typed element has no C++ type, and r19 runs as the design says. None is a
+header a relink missed (the implementer built in full), a golden the manifest
+missed (the red set is the seven predicted files) or a defect of the code (the
+gate, the fill and the probes are the predicted ones but for these lines, and
+no §2 block, Appendix B or code file of the saved state changes), and no
+upstream rule is misread (R32 below).
+
+The amendment:
+
+-   §A.11: each `rank` split declares `fn Add(a: i64, b: i64) -> i64 =
+    "int.sadd";`, sums with nested `Add` calls and dumps `Call`'s `return`, and
+    the lead says why. C2 with them is `$V/c2_rev9.patch`, measured: 1964
+    passed and 7 failed before the fill, the fill at its fixpoint in one pass,
+    1971 passed after it, MV-9 red on the golden, conformance 137 / 0 / 21 of
+    158 (M-23).
+-   §4: the four `rank` rows as the fill dumps them, and the `return` row's
+    block as filled; its totals are unchanged.
+-   §2.4: built since rev 9, with the implementer's R29 decisions recorded.
+-   §3 items 5 and 6, the note before the messages and C2's cite line, §8.0,
+    §8.3, §8.4, §8.5's MV-9 row, §8.7's m64, §8.9, R-14's falsifier, R-15 and
+    A-14 (new), F-12 (new), D-VA2-15's sentence, §6.3, hand-off note 2, the
+    header and the Sign-off, each marked.
+-   No decision changes: D-VA2-15 gains a sentence that applies its own rule,
+    goldens on min_prelude with local interfaces, to the four splits, and
+    D-VA2-1 to D-VA2-19 hold as written. No code, no §2 block and Appendix B
+    change; every count of §8.3 and §8.4 stands, C2's gate before its fill and
+    its conformance now measured; no commit is reset or rewritten; and no W id
+    is minted (M-23 numbers a measurement).
+
+R32: upstream's tip is 5f1dd4941 (`git fetch upstream trunk` and `git
+ls-remote upstream refs/heads/trunk`, 2026-10-27), three commits past rev 8's
+57bf903ef, the stage 3 run's 7cc1d0898 among them; it changes none of
+docs/design, proposals, core/prelude/copy.carbon,
+core/prelude/operators/comparison.carbon and the files rev 8's item 1 lists
+(M-23). The amendment adds no mechanism and no spelling: the `Add` builtin is
+the file's own (`requirement`, `body_expansion`), and the dump markers are
+file_test's. The design text §2.4 quotes for handle_pattern_list.cpp, "if the
+nearest enclosing delimiters around a `...` are parentheses, they will be
+interpreted as forming a tuple rather than as grouping", is
+docs/design/variadics.md :137-139 at 5f1dd4941, unchanged since 57ba07a97.
+
+Instructions to the implementer, for stage 3 re-run after the focused re-review
+of this amendment:
+
+1.  Start at the rev 9 commit, or the commit that folds its re-review, on F1
+    (1a7c360e0). Nothing of stage 3 is in the history, so nothing is reset:
+    `git -C /home/user/carbon-va2 branch -r --contains 1a7c360e0` prints
+    `origin/claude/carbon-fork-0-1-va2`, `git -C /home/user/carbon-va2 log
+    origin/claude/carbon-fork-0-1-va2..HEAD --oneline` prints only the plan
+    commits since F1, and `git -C /home/user/carbon-va2 status --short` is
+    empty. Read upstream's tip (`git -C /home/user/carbon-va2 fetch upstream
+    trunk` and `git -C /home/user/carbon-va2 ls-remote upstream
+    refs/heads/trunk`) and record it in the stage's log: rev 9 read 5f1dd4941;
+    a later tip is listed with the files it changes since 5f1dd4941, and it is
+    a difference if it changes a file rev 8's item 1 lists, a file of
+    `$V/c2_rev9_files.txt`, check/cpp/type_mapping.cpp or a design page of the
+    header's list.
+2.  Apply `$V/c2_rev9.patch` (`git -C /home/user/carbon-va2 apply --check`,
+    then `git apply`): 27 files, 1455 insertions and 31 deletions on
+    1a7c360e0, the paths of `$V/c2_rev9_files.txt`. It is the stopped run's
+    saved state with §A.11's rev 9 `rank` splits; check it first: it and
+    `$U/c2_uncommitted_source_state.patch` differ in impl.carbon alone, and
+    impl.carbon is §A.11's text, extracted; a mismatch is a difference.
+3.  `/home/user/llvm/bin/clang-format --dry-run --Werror` on C2's 20 .cpp and
+    .h files exits 0 (`$V/logs/clang_format_c2.log`), and prek with a private
+    `XDG_CACHE_HOME` and §8.6's SKIP list on the 27 files passes and changes
+    nothing, as on the stopped run (`$U/logs/prek_code_1.log`,
+    `prek_goldens_1.log`); the stopped run's clang-tidy, both §8.6 passes over
+    C2's 17 .cpp files (`$U/tidy`), stands, the code being byte-identical, and
+    is re-run if any code file differs from the saved state.
+4.  Commit C2 with the 27 explicit paths, §3's title "VA-2 C2: tuples with one
+    pack segment, `let` pack bindings, variadic impls" and its message as rev 9
+    amends it (its cite line ends "M-17, M-21, M-22, M-23."), §3's author and
+    committer, and the two session trailers after a blank line; `git -C
+    /home/user/carbon-va2 rev-parse HEAD:toolchain` prints
+    571123536d9a10222040f22c22c86eb16b510b90.
+5.  `build.sh` and `install.sh`: a full build (typed_insts.h and inst_kind.def
+    change) with 0 warnings, replacing the stopped run's install; `carbon
+    version` prints C2's short hash.
+6.  `gate.sh`: "1964 passed, 7 failed", with no crash, the seven of §3 item 5.
+7.  Probes: M-20's 36 and d01 to d04, the sets of hand-off note 2 and its C2
+    probes, as stage 3 ran them: `$U/probes_c2.txt` and `$U/sets/*_c2.txt` line
+    for line but for the paths, the toolchain line, a03's indeterminate value
+    and the line of a19's and a20's CHECK in convert.cpp (:2477 on the stopped
+    run); and the C2 probes of hand-off note 2 as the stopped run printed them
+    (i1 16 9; i3 and same3 46; f10 3 0; pl1 1 and pl0 5 with the proxy; p19
+    and p25 compile; p24 7 7 7; p24b 8; p26 5 1; r01 and r01b 2 1; r14 1 2; r17
+    links; x05 and x05b 1 3 2 2; x06 and x06b 1 2 1; x12 the same-type-structure
+    error).
+8.  F2: `autoupdate.sh /home/user/carbon-va2` on the seven files of
+    `$V/f2_files.txt`, then the same again, which changes nothing; each file is
+    byte-identical to `$V/fill_rev9_p2/<its path>` and is reviewed against §4's
+    C2 rows as rev 9 states them.
+9.  `gate.sh`: "1971 passed, 0 failed".
+10. `conformance.sh` with a private cache into a private directory: PASS 137,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
+    SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56.
+11. Commit F2, "Autoupdate testdata goldens on the container arbiter", with the
+    seven paths and the trailers (`git -C /home/user/carbon-va2 rev-parse
+    HEAD:toolchain` prints db8bb8e8c1076098322273af29e81e9c88659140), then `git
+    push -u origin claude/carbon-fork-0-1-va2`, which pushes the plan commits
+    since F1, C2 and F2.
+12. Stage 4 (C3) as §3 item 7 says, with hand-off note 2's probes after its
+    build; from C3 on the sets print `$U/sets/*_c2.txt` but for what C3 itself
+    changes, which the stage records as a difference unless §4 or hand-off
+    note 2 predicts it.
+
+Predictions, EXPECTED, not of record: the gate 1964 passed and 7 failed after
+C2 and 1971 passed after F2, then §8.3's 1973 and 1975; conformance 137/0/21
+over 158 after C2 and after C4 alone, and 147/0/21 over 168 after C5, bullets
+49/0/7 of 56; the fill of item 8, the probes of item 7, §4's rows as rev 9
+states them, MV-9 red on impl.carbon at §8.5, and §5's and Appendix A's outputs
+and C4's predicted churn as rev 4 states them. A difference from these is a
+stop, as §8 says; a03's indeterminate value and the convert.cpp line of a19's
+and a20's CHECK failure are not predictions.
+
 ## Sign-off
+
+Rev 9 (2026-10-27) amends rev 8 for the implementation's stop-and-amend at stage
+3, which the "Stop-and-amend record (rev 9, 2026-10-27)" above states (amended
+2026-10-27, implementation: stop-and-amend: the rank splits on the min
+prelude): rev 4's sign-off, as amended by rev 5 to rev 8, stands for every part
+the amendment does not touch, and the focused re-review of the amendment, which
+the orchestrator runs next, decides the rest; its row joins the table below
+when it reports, and the table's RR7 row names rev 8's commit, 4299f9765, where
+rev 8 wrote "this revision".
 
 Rev 8 (2026-10-26) folds the focused re-review of rev 7 (RR7,
 APPROVE-WITH-AMENDMENTS: four MAJORs and one MINOR, all folded, none rejected),
@@ -6028,7 +6466,7 @@ golden (§4, §8.2). Every review of this plan:
 | Focused re-review 1 (RR1) | rev 2 (78524522b) | REJECT | 1 | 1 | 3 | 5 | rev 3 (8d377a06d): all folded, none rejected |
 | Focused re-review 2 (RR2) | rev 3 (8d377a06d) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 4 (7188540ca): all folded, none rejected |
 | Focused re-review of the amendment (RR5) | rev 5 (ef58cf5dd) | APPROVE-WITH-AMENDMENTS | 0 | 1 | 3 | 4 | rev 6 (4d5388af2): all folded, none rejected |
-| Focused re-review of the amendment (RR7) | rev 7 (e0038734f) | APPROVE-WITH-AMENDMENTS | 0 | 4 | 1 | 5 | rev 8 (this revision): all folded, none rejected |
+| Focused re-review of the amendment (RR7) | rev 7 (e0038734f) | APPROVE-WITH-AMENDMENTS | 0 | 4 | 1 | 5 | rev 8 (4299f9765): all folded, none rejected |
 | Total | | | 6 | 17 | 20 | 43 | 43 folded, 0 rejected (42 distinct) |
 
 RR1's MAJOR is review B's B-M5, which rev 2 folded without resolving it, so the
@@ -7145,6 +7583,13 @@ of undefined generic function` (M-21). Since rev 7 each of those functions has
 the empty definition `{}`, its parameters `unused`, as VA-1's goldens give a
 callee, and every C1 split has been compiled and filled on C1 (M-21) (amended
 2026-10-26, implementation: stop-and-amend: C1's split and golden sources).
+Rev 2's four `rank` splits of `impl.carbon` (C2) summed with `+`, which checks
+through `Core.AddWith`, which min_prelude/primitives.carbon does not declare,
+and they dumped nothing. Since rev 9 each declares the `Add` builtin that the
+file's `requirement` and `body_expansion` splits declare, sums with nested
+`Add` calls and dumps `Call`'s `return`, and every C2 split has been compiled
+and filled on C2 (M-23) (amended 2026-10-27, implementation: stop-and-amend:
+the rank splits on the min prelude).
 
 toolchain/check/testdata/variadics/hetero_pack.carbon (C1):
 
@@ -7855,7 +8300,8 @@ fn F[... each T: Core.Copy](... each x: each T) {
 
 <!-- google-doc-style-resume -->
 
-toolchain/check/testdata/variadics/impl.carbon (C2):
+toolchain/check/testdata/variadics/impl.carbon (C2; amended 2026-10-27,
+implementation: stop-and-amend: the rank splits on the min prelude):
 
 <!-- google-doc-style-ignore -->
 
@@ -8019,6 +8465,8 @@ fn Call(t: (i64, bool, i64)) -> i64 {
 // --- rank.carbon
 library "[[@TEST_NAME]]";
 
+fn Add(a: i64, b: i64) -> i64 = "int.sadd";
+
 interface Count {
   fn N(self) -> i64;
 }
@@ -8036,12 +8484,17 @@ impl forall [T: type, U: type] (T, U) as Count {
 }
 
 fn Call(x: i64, p: (i64, bool), t: (i64, bool, i64), e: ()) -> i64 {
-  return x.(Count.N)() + p.(Count.N)() + t.(Count.N)() + e.(Count.N)();
+  //@dump-sem-ir-begin
+  return Add(Add(Add(x.(Count.N)(), p.(Count.N)()), t.(Count.N)()),
+             e.(Count.N)());
+  //@dump-sem-ir-end
 }
 
 // --- rank_reversed.carbon
 library "[[@TEST_NAME]]";
 
+fn Add(a: i64, b: i64) -> i64 = "int.sadd";
+
 interface Count {
   fn N(self) -> i64;
 }
@@ -8059,12 +8512,17 @@ impl forall [T: type] T as Count {
 }
 
 fn Call(x: i64, p: (i64, bool), t: (i64, bool, i64), e: ()) -> i64 {
-  return x.(Count.N)() + p.(Count.N)() + t.(Count.N)() + e.(Count.N)();
+  //@dump-sem-ir-begin
+  return Add(Add(Add(x.(Count.N)(), p.(Count.N)()), t.(Count.N)()),
+             e.(Count.N)());
+  //@dump-sem-ir-end
 }
 
 // --- rank_elements_after.carbon
 library "[[@TEST_NAME]]";
 
+fn Add(a: i64, b: i64) -> i64 = "int.sadd";
+
 interface Count {
   fn N(self) -> i64;
 }
@@ -8078,12 +8536,16 @@ impl forall [... each T: type] (... each T) as Count {
 }
 
 fn Call(a: (i64, bool), b: (bool, i64), c: (bool,)) -> i64 {
-  return a.(Count.N)() + b.(Count.N)() + c.(Count.N)();
+  //@dump-sem-ir-begin
+  return Add(Add(a.(Count.N)(), b.(Count.N)()), c.(Count.N)());
+  //@dump-sem-ir-end
 }
 
 // --- rank_elements_after_reversed.carbon
 library "[[@TEST_NAME]]";
 
+fn Add(a: i64, b: i64) -> i64 = "int.sadd";
+
 interface Count {
   fn N(self) -> i64;
 }
@@ -8097,7 +8559,9 @@ impl forall [... each T: type] (... each T, bool) as Count {
 }
 
 fn Call(a: (i64, bool), b: (bool, i64), c: (bool,)) -> i64 {
-  return a.(Count.N)() + b.(Count.N)() + c.(Count.N)();
+  //@dump-sem-ir-begin
+  return Add(Add(a.(Count.N)(), b.(Count.N)()), c.(Count.N)());
+  //@dump-sem-ir-end
 }
 
 // --- body_expansion.carbon

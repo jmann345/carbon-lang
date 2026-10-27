@@ -426,8 +426,8 @@ fn F() {
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = ref_binding_pattern x [concrete]
-// CHECK:STDOUT:   %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt [concrete]
+// CHECK:STDOUT:   %x.patt.aaf: %pattern_type.6b6 = ref_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt.aaf [concrete]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.type: type = cpp_overload_set_type @GetCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.value: %GetCallback.cpp_overload_set.type = cpp_overload_set_value @GetCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type45000000 [concrete]
@@ -567,7 +567,7 @@ fn F() {
 // CHECK:STDOUT:   %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %x: ref %i32 = wrapper_binding x, %x.var
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = ref_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = ref_binding_pattern x [concrete = constants.%x.patt.aaf]
 // CHECK:STDOUT:     %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt [concrete = constants.%x.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc7_41: init %empty_tuple.type = call constants.%Destroy.WithSelf.SelfDestruct.bound(constants.%.ed2)

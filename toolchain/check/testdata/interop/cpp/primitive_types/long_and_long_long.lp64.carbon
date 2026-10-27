@@ -1682,7 +1682,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Cpp.long_long: type = class_type @LongLong64 [concrete]
 // CHECK:STDOUT:   %pattern_type.d58: type = pattern_type %Cpp.long_long [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.ef6: %pattern_type.d58 = value_binding_pattern a [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.0ec: type = facet_type <@ImplicitAs, @ImplicitAs(%Cpp.long_long)> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.f95: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.6d4 [concrete]
@@ -1693,7 +1693,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert [concrete]
 // CHECK:STDOUT:   %int_1.b19: %Cpp.long_long = int_value 1 [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.d58 = value_binding_pattern b [concrete]
+// CHECK:STDOUT:   %b.patt.7c2: %pattern_type.d58 = value_binding_pattern b [concrete]
 // CHECK:STDOUT:   %EqWith.type.9fc: type = facet_type <@EqWith, @EqWith(%Cpp.long_long)> [concrete]
 // CHECK:STDOUT:   %EqWith.impl_witness.f8a: <witness> = impl_witness imports.%EqWith.impl_witness_table.0b8 [concrete]
 // CHECK:STDOUT:   %EqWith.facet.a82: %EqWith.type.9fc = facet_value %Cpp.long_long, (%EqWith.impl_witness.f8a) [concrete]
@@ -1757,7 +1757,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %Cpp.long_long = wrapper_binding a, %.loc8_26.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete = constants.%a.patt.ef6]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_1.loc9: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc9: %.cd7 = impl_witness_access constants.%ImplicitAs.impl_witness.f95, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert]
@@ -1771,7 +1771,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %b: %Cpp.long_long = wrapper_binding b, %.loc9_26.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %b.patt: %pattern_type.d58 = value_binding_pattern b [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.d58 = value_binding_pattern b [concrete = constants.%b.patt.7c2]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a.ref.loc10: %Cpp.long_long = name_ref a, %a
 // CHECK:STDOUT:   %b.ref.loc10: %Cpp.long_long = name_ref b, %b
@@ -1815,7 +1815,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %Cpp.long_long: type = class_type @LongLong64 [concrete]
 // CHECK:STDOUT:   %pattern_type.d58: type = pattern_type %Cpp.long_long [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.ef6: %pattern_type.d58 = value_binding_pattern a [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.0ec: type = facet_type <@ImplicitAs, @ImplicitAs(%Cpp.long_long)> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.f95: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.6d4 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.facet.82d: %ImplicitAs.type.0ec = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.f95) [concrete]
@@ -2006,7 +2006,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %Cpp.long_long = wrapper_binding a, %.loc9_26.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete = constants.%a.patt.ef6]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a.ref.loc10: %Cpp.long_long = name_ref a, %a
 // CHECK:STDOUT:   %b.ref.loc10: %i64 = name_ref b, %b
@@ -2272,7 +2272,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %Cpp.long_long: type = class_type @LongLong64 [concrete]
 // CHECK:STDOUT:   %pattern_type.d58: type = pattern_type %Cpp.long_long [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.ef6: %pattern_type.d58 = value_binding_pattern a [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.0ec: type = facet_type <@ImplicitAs, @ImplicitAs(%Cpp.long_long)> [concrete]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness.f95: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.6d4 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.facet.82d: %ImplicitAs.type.0ec = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.f95) [concrete]
@@ -2485,7 +2485,7 @@ fn CopyUnsignedLongLong() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %Cpp.long_long = wrapper_binding a, %.loc9_26.2
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.d58 = value_binding_pattern a [concrete = constants.%a.patt.ef6]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %b.ref.loc10: %i64 = name_ref b, %b
 // CHECK:STDOUT:   %a.ref.loc10: %Cpp.long_long = name_ref a, %a

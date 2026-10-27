@@ -361,7 +361,7 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %int_-1.4ef: %i32 = int_value -1 [concrete]
 // CHECK:STDOUT:   %Construct.type: type = fn_type @Construct [concrete]
 // CHECK:STDOUT:   %Construct: %Construct.type = struct_value () [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.e96 = value_binding_pattern b [concrete]
+// CHECK:STDOUT:   %b.patt.401: %pattern_type.e96 = value_binding_pattern b [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -374,9 +374,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %EqWith.impl_witness_table.166 = impl_witness_table (%Core.import_ref.b92, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -600,7 +600,7 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %b: %P.b38 = wrapper_binding b, %B.ref
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %b.patt: %pattern_type.e96 = value_binding_pattern b [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.e96 = value_binding_pattern b [concrete = constants.%b.patt.401]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Classify.ref: %Classify.type = name_ref Classify, file.%Classify.decl [concrete = constants.%Classify]
 // CHECK:STDOUT:   %b.ref: %P.b38 = name_ref b, %b
@@ -686,11 +686,11 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %P.b38: type = class_type @P, @P(%i32) [concrete]
 // CHECK:STDOUT:   %pattern_type.e96: type = pattern_type %P.b38 [concrete]
 // CHECK:STDOUT:   %a.param_patt: %pattern_type.e96 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.e96 = wrapper_binding_pattern a, %a.param_patt [concrete]
+// CHECK:STDOUT:   %a.patt.307: %pattern_type.e96 = wrapper_binding_pattern a, %a.param_patt [concrete]
 // CHECK:STDOUT:   %P.94c: type = class_type @P, @P(bool) [concrete]
 // CHECK:STDOUT:   %pattern_type.b3c: type = pattern_type %P.94c [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.b3c = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.b3c = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.0a0: %pattern_type.b3c = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
@@ -768,9 +768,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %EqWith.impl_witness_table.166 = impl_witness_table (%Core.import_ref.b92, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -785,9 +785,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %G.decl: %G.type = fn_decl @G [concrete = constants.%G] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.e96 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.e96 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.e96 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.307]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.b3c = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.b3c = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.b3c = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.0a0]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc13_32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -1229,9 +1229,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %EqWith.impl_witness_table.166 = impl_witness_table (%Core.import_ref.b92, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -1618,7 +1618,7 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %int_-1.4ef: %i32 = int_value -1 [concrete]
 // CHECK:STDOUT:   %Construct.type: type = fn_type @Construct [concrete]
 // CHECK:STDOUT:   %Construct: %Construct.type = struct_value () [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.e96 = value_binding_pattern a [concrete]
+// CHECK:STDOUT:   %a.patt.c8b: %pattern_type.e96 = value_binding_pattern a [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1632,9 +1632,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %EqWith.impl_witness_table.166 = impl_witness_table (%Core.import_ref.b92, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.abd9 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
+// CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd9, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -1782,7 +1782,7 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: %P.b38 = wrapper_binding a, %A.ref
 // CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %a.patt: %pattern_type.e96 = value_binding_pattern a [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.e96 = value_binding_pattern a [concrete = constants.%a.patt.c8b]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Classify.ref: %Classify.type = name_ref Classify, file.%Classify.decl [concrete = constants.%Classify]
 // CHECK:STDOUT:   %a.ref: %P.b38 = name_ref a, %a

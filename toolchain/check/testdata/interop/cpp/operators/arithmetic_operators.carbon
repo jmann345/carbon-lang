@@ -354,7 +354,7 @@ fn TestUnaryOperators(a: Cpp.Int16, b: Cpp.Int32) {
 // CHECK:STDOUT:   %y.param_patt.740: %pattern_type.753 = value_param_pattern [symbolic]
 // CHECK:STDOUT:   %y.patt.603: %pattern_type.753 = wrapper_binding_pattern y, %y.param_patt.740 [symbolic]
 // CHECK:STDOUT:   %require_complete.15e: <witness> = require_complete_type %AddWith.type.9da [symbolic]
-// CHECK:STDOUT:   %assoc1.57d: %AddWith.assoc_type.588 = assoc_entity element1, imports.%Core.import_ref.9768 [symbolic]
+// CHECK:STDOUT:   %assoc1.57d: %AddWith.assoc_type.588 = assoc_entity element1, imports.%Core.import_ref.976 [symbolic]
 // CHECK:STDOUT:   %AddWith.lookup_impl_witness.2b1: <witness> = lookup_impl_witness %T.ceb, @AddWith.1, @AddWith.1(%U.as_type.b61) [symbolic]
 // CHECK:STDOUT:   %AddWith.facet.fea: %AddWith.type.9da = facet_value %T.as_type.6fc, (%AddWith.lookup_impl_witness.2b1) [symbolic]
 // CHECK:STDOUT:   %AddWith.WithSelf.Op.type.977: type = fn_type @AddWith.WithSelf.Op, @AddWith.WithSelf(%U.as_type.b61, %AddWith.facet.fea) [symbolic]
@@ -1525,7 +1525,7 @@ fn TestUnaryOperators(a: Cpp.Int16, b: Cpp.Int32) {
 // CHECK:STDOUT:   %SubAssignWith.WithSelf.Op.type.a31: type = fn_type @SubAssignWith.WithSelf.Op, @SubAssignWith.WithSelf(%Int32, %SubAssignWith.facet.a7e) [concrete]
 // CHECK:STDOUT:   %.70d: type = fn_type_with_self_type %SubAssignWith.WithSelf.Op.type.a31, %SubAssignWith.facet.a7e [concrete]
 // CHECK:STDOUT:   %MulAssignWith.WithSelf.Op.type.606: type = fn_type @MulAssignWith.WithSelf.Op, @MulAssignWith.WithSelf(%Int32, %MulAssignWith.facet.b35) [concrete]
-// CHECK:STDOUT:   %.375: type = fn_type_with_self_type %MulAssignWith.WithSelf.Op.type.606, %MulAssignWith.facet.b35 [concrete]
+// CHECK:STDOUT:   %.3758: type = fn_type_with_self_type %MulAssignWith.WithSelf.Op.type.606, %MulAssignWith.facet.b35 [concrete]
 // CHECK:STDOUT:   %DivAssignWith.WithSelf.Op.type.d14: type = fn_type @DivAssignWith.WithSelf.Op, @DivAssignWith.WithSelf(%Int32, %DivAssignWith.facet.b1e) [concrete]
 // CHECK:STDOUT:   %.f69: type = fn_type_with_self_type %DivAssignWith.WithSelf.Op.type.d14, %DivAssignWith.facet.b1e [concrete]
 // CHECK:STDOUT:   %ModAssignWith.WithSelf.Op.type.690: type = fn_type @ModAssignWith.WithSelf.Op, @ModAssignWith.WithSelf(%Int32, %ModAssignWith.facet.342) [concrete]
@@ -1547,7 +1547,7 @@ fn TestUnaryOperators(a: Cpp.Int16, b: Cpp.Int32) {
 // CHECK:STDOUT:   %Core.import_ref.3cf: @AddWith.WithSelf.%AddWith.WithSelf.Op.type (%AddWith.WithSelf.Op.type.28e) = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [symbolic = @AddWith.WithSelf.%AddWith.WithSelf.Op (constants.%AddWith.WithSelf.Op.eab)]
 // CHECK:STDOUT:   %Core.import_ref.91f8: type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = %Result.9a4]
 // CHECK:STDOUT:   %Result.9a4: type = assoc_const_decl @Result.1 [concrete] {}
-// CHECK:STDOUT:   %Core.import_ref.9768 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Core.import_ref.976 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.0f3: @SubWith.WithSelf.%SubWith.assoc_type (%SubWith.assoc_type.b0b) = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [symbolic = @SubWith.WithSelf.%assoc1 (constants.%assoc1.178)]
 // CHECK:STDOUT:   %Core.import_ref.3a4: @SubWith.WithSelf.%SubWith.WithSelf.Op.type (%SubWith.WithSelf.Op.type.68d) = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [symbolic = @SubWith.WithSelf.%SubWith.WithSelf.Op (constants.%SubWith.WithSelf.Op.97a)]
 // CHECK:STDOUT:   %Core.import_ref.190e: type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = %Result.7bd]
@@ -4515,7 +4515,7 @@ fn TestUnaryOperators(a: Cpp.Int16, b: Cpp.Int32) {
 // CHECK:STDOUT:   %MulAssignWith.assoc_type => constants.%MulAssignWith.assoc_type.c04
 // CHECK:STDOUT:   %assoc0 => constants.%assoc0.2db
 // CHECK:STDOUT:   %MulAssignWith.WithSelf.Op.type => constants.%MulAssignWith.WithSelf.Op.type.606
-// CHECK:STDOUT:   %.loc239_5.2 => constants.%.375
+// CHECK:STDOUT:   %.loc239_5.2 => constants.%.3758
 // CHECK:STDOUT:   %MulAssignWith.lookup_impl_witness => constants.%custom_witness.ec9760.2
 // CHECK:STDOUT:   %impl.elem0.loc239_5.2 => constants.%Int64.Op.4dca31.4
 // CHECK:STDOUT:   %specific_impl_fn.loc239_5.2 => constants.%Int64.Op.4dca31.4

@@ -3836,9 +3836,12 @@ function reports, where the previous head aborted in 26 shapes and two more of
 review 2's; and a compile-time pack expanded as a call's arguments, `G(... each
 T)`, reports `semantics TODO: pack expansion of a compile-time pack in a call's
 argument list` at its `...`, where the previous head passed the pack as one
-argument, so that a callee that deduces its pack ran with the wrong arity and no
-diagnostic, a template-dependent callee and `G[U: type](u: U)` given a pack of
-facets aborted, and any other callee reported a conversion with no location.
+argument, so that a callee that deduces an unconstrained type or pack of types
+ran with the wrong arity and no diagnostic for a variadic parameter and aborted
+for one that is not, one whose deduced type or pack an interface constrains
+reported a deduction error at the call, a template-dependent callee aborted, and
+any other callee reported a conversion with no location or, beside another
+expansion for the same pack, VA-1's merged-arguments TODO.
 W-345 is filed for that TODO after a re-scan, its notes recording the re-grade
 and the rejected alternative's outcomes, and W-214's notes gain the file-scope
 `let`; round 2's RR2-1-B1, RR2-1-m1 and RR2-1-m2 are folded with them. Expected,
@@ -3847,6 +3850,32 @@ over 168 in three runs; MV-24 to MV-26 killed on the branch. The fix budget of
 four is used up and nothing is shrunk; the gap rows do not change, and round 4's
 two reviews read the three commits next (the plan's "Focused re-review of the
 fold, VA-2, round 4 (2026-10-27)").
+
+Focused re-review of the fold, round 4, the reviews (2026-10-27, records only):
+two fresh reviews of 37991ee80, each APPROVE-WITH-FIXES, each judging the round
+dry: fix 4 2f5865be3 and its fill 1517517eb are the plan's §2.11 block and its
+measured fill byte for byte, and no finding is MAJOR or BLOCKER or needs a
+toolchain, prelude, golden or program change of this branch. Review 1 found
+three records-only MINORs: a pack expansion pattern in a choice alternative's
+parameter list, `choice C { A(... each x: i32) }`, passes VA-1's check and
+aborts in lowering, identically on PR 59, so the plan's hand-off note 9 routes
+its fix to PR 59 and fork/ORCHESTRATION.md requests an id; the plan's M-29
+counted one object for fix 4's build, which compiled two; and the landed notes'
+clause gave every callee that deduces its pack a silent wrong arity, where one
+whose deduced pack an interface constrains reported a deduction error at the
+call. Review 2 found three: W-345 missing from the Generics row's "Not yet" list
+and from W-213's and W-226's notes; the object count again; and the clause
+missing VA-1's merged-arguments TODO beside another expansion for the same pack.
+All six are folded by the records commit "VA-2 records: re-review round 4
+recorded", none rejected: the round 4 paragraph above and the landed notes below
+state the previous head's behavior as reproduced on a relink of fix 4's parent,
+where `G[U: type](u: U)` aborts given a pack of types too; the Generics row's
+"Not yet" list names W-345; and W-213's and W-226's notes name it. Both reviews
+measured the gate at 1977 passed and 0 failed and conformance at PASS 147, 0
+failures, SKIP 21 of 168; nothing is committed to the toolchain, goldens or
+programs, and no id is filed. Round 4 is dry, and the PR opens held with base
+claude/carbon-fork-0-1-va (the plan's "Focused re-review of the fold, VA-2,
+round 4 (2026-10-27)").
 
 Landed notes (commits of the branch that a later commit completes or fixes,
 kept because history is not rewritten; for bisection): rev 7 moved two hunks
@@ -3862,13 +3891,16 @@ tuple of one pack segment, until the fix 1ad7c9b5e (the plan's §2.9); and C1
 to the round 1 records commit bdf941edc reject a compile-time pack of facets
 converted to a pack of a narrower facet type, and report a second TODO after
 a `let` binding's diagnosed type, until fix 3 ee6144ad9 (the plan's §2.10);
-and C2 3af0471b6 to abeccdbc5, fix 4's parent, abort on a pack expansion
-pattern in a file-scope `let`, and C1 0aa8dd347 to abeccdbc5 pass a
-compile-time pack expanded as call arguments as one argument: a deduced
-callee gets the wrong arity with no diagnostic, and any other callee a
-conversion error with no location, except that a template-dependent callee
-aborts in check and `G[U: type](u: U)` given a pack of facets aborts in
-lowering, until fix 4 2f5865be3 (the plan's §2.11).
+and C2 3af0471b6 to abeccdbc5, fix 4's parent, abort on a pack expansion pattern
+in a file-scope `let`, and C1 0aa8dd347 to abeccdbc5 pass a compile-time pack
+expanded as call arguments as one argument: a callee that deduces an
+unconstrained type or pack of types for a variadic parameter gets the wrong
+arity with no diagnostic, and for a parameter that is not variadic aborts in
+lowering; one whose deduced type or pack is constrained by an interface gets a
+deduction error at the call; a template-dependent callee aborts in check; and
+any other callee gets a conversion error with no location or, beside another
+expansion for the same pack, VA-1's merged-arguments TODO, until fix 4 2f5865be3
+(the plan's §2.11).
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

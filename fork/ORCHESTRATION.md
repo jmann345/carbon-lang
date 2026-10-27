@@ -280,9 +280,16 @@ after a re-scan); 1977/1977 and 147 / 0 / 21 over 168 in three runs, MV-24 to
 MV-26 killed on the branch, not of record; no finding is open, the fix budget of
 four is used up, and round 4's two reviews read the three commits next
 (fork/variadics/va2-plan.md, "Focused re-review of the fold, VA-2, round 4
-(2026-10-27)"). Merge order: PR 53, 51, 52, 60, 54, 55, 56, 57, 58, 59, 61, 62,
-64, 63, 65, then VA-2 through its land-time items (Next actions item 6). None is
-merged.
+(2026-10-27)"). Round 4's reviews (2026-10-27, on 37991ee80; APPROVE-WITH-FIXES
+twice; ROUND 4 DRY) find no BLOCKER or MAJOR and no finding that needs a change
+of VA-2's toolchain, prelude, goldens or programs: their six records-only MINORs
+are folded by the records commit "VA-2 records: re-review round 4 recorded", and
+review 1's RR4-1-m1, a pack expansion pattern in a choice alternative's
+parameter list that aborts in lowering on PR 59 as on VA-2, is PR 59's to fix
+(Next actions item 14; the plan's hand-off note 9); the PR opens held with base
+claude/carbon-fork-0-1-va (Next actions item 13). Merge order: PR 53, 51, 52,
+60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, then VA-2 through its land-time
+items (Next actions item 6). None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -624,7 +631,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PLANNING — OX-1 operator export to C++ (W-054, gap row 48), cut from f67ab650d; reserves W-202..W-211, F-017 if minted; merges after DD-1. |
 | `claude/carbon-fork-0-1-va` | PUSHED, PR TO OPEN AND HOLD — VA-1 definition-checked variadics slice 1, discharged on top of the trunk merge e25b27e34 (W-013 open; W-212..W-230 filed, W-231 unused; F-018 not minted; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58, OX-1 and VA-1 in the order their PRs open. |
-| `claude/carbon-fork-0-1-va2` | IMPLEMENTED AND HELD, no PR; ROUND 4 FIX UNDER REVIEW — VA-2 definition-checked variadics slice 2 at the records commit of re-review round 4, over fix 4 2f5865be3 (the fourth fix commit, by D-VA2-19's break condition) and its fill 1517517eb (toolchain 2f5865be3), the records commit of re-review round 3's reviews abeccdbc5, round 3's records commit dd61722d9 (plan rev 16, a stop-and-amend under D-VA2-19's break condition: fix 4's block specified and measured on a scratch tree, not committed), over the records commit of re-review round 2's reviews 45213d1c1, the round 2 fold's records commit 53460373d, fix 3 ee6144ad9 and its fill 903a0c321, on the round 1 records commit bdf941edc and the discharge D f8d84ba75, stacked on PR 59 (W-225 discharged, W-212 and W-213 narrowed; W-330..W-339 filed, W-335 discharged, none unused; no F id, and no id in round 2 or round 3, W-345 filed by round 4's records commit for fix 4's TODO; expected gate 1977/1977 and 147/0/21 over 168, not of record; the gap rows "Generics: Definition-checked variadics" and "Stdlib: tuple/array library parts" PARTIAL); re-review round 1 (2026-10-27, on f8d84ba75) was not dry, and round 2's fixer folded its RR1-1-M1 (MAJOR) and RR1-1-m1 at the root by fix 3; round 2's reviews (2026-10-27, on 53460373d; REJECT and APPROVE-WITH-FIXES) are not dry: review 1's RR2-1-B1 (BLOCKER, a pack expansion pattern in a file-scope `let` aborts the compiler, C2's, where PR 59 reports VA-1's TODO), RR2-1-m1 (an imported `PackFacetValue` pinned by no golden) and RR2-1-m2 (a compile-time pack expanded as call arguments diagnosed with no location) need a toolchain or golden change, which round 3 (2026-10-27) answers by D-VA2-19's break condition, no shrink answering them without breaking the plan's §0.2 measured rows: the PR stops, and plan rev 16 budgets a fourth fix commit, fix 4 (the plan's §2.11: `!in_let &&` before VA-1's interface check, a TODO for a compile-time pack in a call's argument list with W-345 reserved, and a two-library import split), measured on a scratch tree (1977/1977 after its fill, 147/0/21 over 168, MV-24 to MV-26 killed) and read by rev 16's reviews before it is committed (Next actions item 13); the six records-only MINORs are folded; round 3's reviews (2026-10-27, on dd61722d9; REJECT and REJECT) find the block sound, so the break condition is not met, and three BLOCKERs of the head that the block answers (RR3-1-B1, 19 more file-scope `let` shapes aborting; RR3-1-B2 and RR3r2-B1, `G(... each T)` running with the wrong arity and no diagnostic for a callee that deduces its pack and aborting for a template-dependent one), so round 4 is owed, its fixer committing fix 4 by the plan's hand-off note 8, and the four records-only MINORs are folded; round 4 (2026-10-27) committed fix 4 and its fill by hand-off note 8, the fill equal to the measured fill byte for byte (1977/1977 and 147/0/21 over 168 in three runs, MV-24 to MV-26 killed on the branch; every file-scope `let` pack pattern a diagnostic, every compile-time pack expanded as call arguments W-345's TODO), filed W-345 and folded every open finding, the fix budget of four used up; round 4's two reviews read it next (Next actions item 13); the PR opens held with base claude/carbon-fork-0-1-va after the first dry round; merges last after PR 65 through its land-time items M, S-CT, F-M, L-F and L (Next actions item 6). |
+| `claude/carbon-fork-0-1-va2` | IMPLEMENTED AND HELD, no PR; ROUND 4 DRY — VA-2 definition-checked variadics slice 2 at the records commit of re-review round 4's reviews, over round 4's records commit 37991ee80, fix 4 2f5865be3 (the fourth fix commit, by D-VA2-19's break condition) and its fill 1517517eb (toolchain 2f5865be3), the records commit of re-review round 3's reviews abeccdbc5, round 3's records commit dd61722d9 (plan rev 16, a stop-and-amend under D-VA2-19's break condition: fix 4's block specified and measured on a scratch tree, not committed), over the records commit of re-review round 2's reviews 45213d1c1, the round 2 fold's records commit 53460373d, fix 3 ee6144ad9 and its fill 903a0c321, on the round 1 records commit bdf941edc and the discharge D f8d84ba75, stacked on PR 59 (W-225 discharged, W-212 and W-213 narrowed; W-330..W-339 filed, W-335 discharged, none unused; no F id, and no id in round 2 or round 3, W-345 filed by round 4's records commit for fix 4's TODO; expected gate 1977/1977 and 147/0/21 over 168, not of record; the gap rows "Generics: Definition-checked variadics" and "Stdlib: tuple/array library parts" PARTIAL); re-review round 1 (2026-10-27, on f8d84ba75) was not dry, and round 2's fixer folded its RR1-1-M1 (MAJOR) and RR1-1-m1 at the root by fix 3; round 2's reviews (2026-10-27, on 53460373d; REJECT and APPROVE-WITH-FIXES) are not dry: review 1's RR2-1-B1 (BLOCKER, a pack expansion pattern in a file-scope `let` aborts the compiler, C2's, where PR 59 reports VA-1's TODO), RR2-1-m1 (an imported `PackFacetValue` pinned by no golden) and RR2-1-m2 (a compile-time pack expanded as call arguments diagnosed with no location) need a toolchain or golden change, which round 3 (2026-10-27) answers by D-VA2-19's break condition, no shrink answering them without breaking the plan's §0.2 measured rows: the PR stops, and plan rev 16 budgets a fourth fix commit, fix 4 (the plan's §2.11: `!in_let &&` before VA-1's interface check, a TODO for a compile-time pack in a call's argument list with W-345 reserved, and a two-library import split), measured on a scratch tree (1977/1977 after its fill, 147/0/21 over 168, MV-24 to MV-26 killed) and read by rev 16's reviews before it is committed (Next actions item 13); the six records-only MINORs are folded; round 3's reviews (2026-10-27, on dd61722d9; REJECT and REJECT) find the block sound, so the break condition is not met, and three BLOCKERs of the head that the block answers (RR3-1-B1, 19 more file-scope `let` shapes aborting; RR3-1-B2 and RR3r2-B1, `G(... each T)` running with the wrong arity and no diagnostic for a callee that deduces its pack and aborting for a template-dependent one), so round 4 is owed, its fixer committing fix 4 by the plan's hand-off note 8, and the four records-only MINORs are folded; round 4 (2026-10-27) committed fix 4 and its fill by hand-off note 8, the fill equal to the measured fill byte for byte (1977/1977 and 147/0/21 over 168 in three runs, MV-24 to MV-26 killed on the branch; every file-scope `let` pack pattern a diagnostic, every compile-time pack expanded as call arguments W-345's TODO), filed W-345 and folded every open finding, the fix budget of four used up; round 4's reviews (2026-10-27, on 37991ee80; APPROVE-WITH-FIXES and APPROVE-WITH-FIXES) are dry, their six records-only MINORs folded by the records commit "VA-2 records: re-review round 4 recorded" (the landed notes' clause made exact, W-345 named in the Generics row's "Not yet" list and in W-213's and W-226's notes, and an abort of PR 59's in a choice alternative's parameter list routed to PR 59, Next actions item 14); the PR opens held with base claude/carbon-fork-0-1-va (Next actions item 13); merges last after PR 65 through its land-time items M, S-CT, F-M, L-F and L (Next actions item 6). |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -838,15 +845,26 @@ merge commit.
 12. Core's `String.Reserve` and `String.Append`, which the design's StrCat over
     `String` needs with W-220 (VA-2's W-212, narrowed): request an id and an
     owner, the next Core.String workstream.
-13. VA-2 round 4's reviews (fork/variadics/va2-plan.md, "Focused re-review of
-    the fold, VA-2, round 4 (2026-10-27)"): fix 4 2f5865be3, its fill 1517517eb
-    and the records commit "VA-2 re-review fix: round 4 folded into the records"
-    are committed and pushed by the plan's hand-off note 8, the fill equal to
-    the measured fill byte for byte, and W-345 is filed; two fresh reviews read
-    them next, and the PR opens held after the first dry round. With the fix
-    budget of four used up, a later finding that needs a toolchain, prelude,
-    golden or program change takes the plan's shrink line in order or D-VA2-19's
-    break condition, by a plan revision reviewed before any commit.
+13. VA-2 round 4 is dry (fork/variadics/va2-plan.md, "Focused re-review of the
+    fold, VA-2, round 4 (2026-10-27)"): fix 4 2f5865be3, its fill 1517517eb and
+    the records commit "VA-2 re-review fix: round 4 folded into the records" are
+    committed by the plan's hand-off note 8, W-345 is filed, and round 4's two
+    reviews (APPROVE-WITH-FIXES twice, six records-only MINORs) are folded by
+    the records commit "VA-2 records: re-review round 4 recorded". Open the PR
+    held with base claude/carbon-fork-0-1-va from its text in the scratchpad
+    (`pr_va2.md`), verify it through the API and stamp trunk's VA-2 row. With
+    the fix budget of four used up, a later finding that needs a toolchain,
+    prelude, golden or program change takes the plan's shrink line in order or
+    D-VA2-19's break condition, by a plan revision reviewed before any commit.
+14. A pack expansion pattern in a choice alternative's parameter list (PR 59's;
+    VA-2's RR4-1-m1 and the plan's hand-off note 9): `choice C { A(... each x:
+    i32) }` passes VA-1's check and aborts in lowering at
+    lower/file_context.h:187 ("Lowering symbolic type"), on PR 59, on VA-2 and
+    on VA-2's land simulation alike; trunk and the nightly 2026.10.12 reject it
+    at parse. Request an id for it and route the fix to PR 59 under its own
+    review: in handle_pack_expansion.cpp's `Pattern` case, a list whose
+    declaration is a choice alternative refused with a TODO, pinned by a
+    `fail_todo_` split. VA-2 changes no file for it.
 
 ### Standing user directives
 

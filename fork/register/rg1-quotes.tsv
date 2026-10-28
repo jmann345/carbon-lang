@@ -1,0 +1,269 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# The upstream lines RG-1's register classification quotes
+# (fork/register/rg1-plan.md section 2 and D-RG-20), one per row:
+# path<TAB>line at upstream's tip<TAB>verbatim substring of that line.
+# Run from the repository root:
+#   fork/register/check_quotes.sh <repo> <tip-sha> fork/register/rg1-quotes.tsv
+docs/design/README.md	3858	For now, Carbon does not have language features dedicated to error handling
+docs/design/README.md	3860	represented using [choice types](#choice-types) like `Result` and `Optional`.
+docs/design/README.md	3164	choice Result(T: type, Error: type) {
+docs/design/README.md	3165	Success(value: T),
+docs/design/README.md	3166	Failure(error: Error)
+docs/design/README.md	2176	Success(value: i32),
+docs/design/README.md	2177	Failure(error: String),
+proposals/p000157-design-direction-for-sum-types.md	691	Success(T: value),
+proposals/p002875-functions-function-types-and-function-calls.md	481	using placeholder syntax:
+proposals/p002875-functions-function-types-and-function-calls.md	484	overloaded fn Abs[T:! Unsigned](x: T) -> T { return x; }
+proposals/p002875-functions-function-types-and-function-calls.md	475	our current intent is to use the
+docs/design/pattern_matching.md	696	We do not yet have an approved design for overloaded functions, but it
+docs/design/pattern_matching.md	697	is anticipated that declaration order will be used in that case too.
+docs/project/principles/static_open_extension.md	53	function overloading is limited in Carbon to only
+docs/project/principles/static_open_extension.md	54	signatures defined together in the same library.
+proposals/p000157-design-direction-for-sum-types.md	239	A typed `union` facility, such as the one described in proposal
+docs/design/interoperability/README.md	255	TODO: C++ view types such as `std::span` and other standard library types will
+docs/design/README.md	3708	like `std::span`, are intended to map similarly.
+docs/design/README.md	912	**TODO:** Slices
+docs/design/README.md	885	A heap-allocated dynamically sized array is written `buf(T)`, which is a
+docs/design/README.md	886	shorthand for the library type `Core.Buf(T)`.
+proposals/p004682-the-core-array-type-for-direct-storage-immutably-sized-buffers.md	326	is the closest fit with the current provisional syntax
+proposals/p004682-the-core-array-type-for-direct-storage-immutably-sized-buffers.md	322	`Box(T)` for a heap-allocated `T` value.
+docs/design/values.md	1128	raw pointer arithmetic is expected to be provided at some point, but through
+docs/design/values.md	1129	specialized constructs given the specialized nature of these operations.
+core/prelude/iterate.carbon	17	fn Next(self, ref cursor: CursorType) -> Optional(ElementType);
+docs/design/interoperability/philosophy_and_goals.md	405	Carbon may not provide seamless interoperability support for C++ exceptions.
+docs/design/interoperability/philosophy_and_goals.md	409	without suitable annotations or bridging, and that function exits with an
+core/prelude/default.carbon	17	interface UnformedInit {
+toolchain/sem_ir/function.h	547	TODO: Also include parameters to support overloaded functions. Then use
+docs/design/expressions/comparison_operators.md	316	operations should have no observable side-effects.
+docs/design/expressions/comparison_operators.md	434	should have no observable side-effects.
+proposals/p002188-pattern-matching-syntax-and-semantics.md	489	Note that a pattern of the form `Optional(T).None` is an expression pattern and
+proposals/p002188-pattern-matching-syntax-and-semantics.md	490	is compared using `==`.
+docs/design/pattern_matching.md	526	Note that a pattern of the form `Optional(T).None` is an expression pattern and
+docs/design/pattern_matching.md	527	is compared using `==`.
+core/prelude/types/optional.carbon	30	fn None() -> Self {
+core/prelude/types/optional.carbon	27	We don't have an approved design for an `Optional` type yet, but it's
+core/prelude/types/optional.carbon	28	The API here is a placeholder.
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	83	The address of a `ref` binding is `nocapture` and `noalias`.
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	663	Our plan is to prevent mutation of borrowed objects in Carbon's strict safe
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	831	For full safety, we need each bound parameter to be immutable for the duration
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	832	of the lifetime of the returned result.
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	834	We will reconsider this with the memory
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	1226	### Restore `addr`
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	1234	To allow the `self` parameter to use one of the pointer semantics we create
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	1235	as part of the upcoming memory safety design, that can't be achieved with
+proposals/p005914-updating-carbon-s-safety-strategy.md	184	pointers, and exclusive mutable pointers -- this is where the complexity
+proposals/p005914-updating-carbon-s-safety-strategy.md	205	To avoid undefined behavior, the optimization of
+proposals/p005914-updating-carbon-s-safety-strategy.md	206	safe code will not rely on properties that are not established locally.
+proposals/p005914-updating-carbon-s-safety-strategy.md	207	example, there won't be an assumption that a call to C++ code won't save a copy
+proposals/p005914-updating-carbon-s-safety-strategy.md	87	Requires initialization errors to not have undefined behavior, but
+proposals/p005914-updating-carbon-s-safety-strategy.md	88	allows, for example, zero-initialization rather than fail-stop behavior.
+docs/design/expressions/arithmetic.md	156	In a performance build, the optimizer can assume that such conditions don't
+docs/design/expressions/arithmetic.md	157	occur. As a consequence, if they do, the behavior of the program is not
+docs/design/safety/README.md	260	Carbon will provide a way to disable the default hardening in release builds,
+docs/design/safety/README.md	261	but not in a supported way. Its use is expected to be strictly for benchmarking
+docs/design/safety/README.md	219	The release build will include a baseline of hardening necessary to uphold the
+docs/design/README.md	2131	initialization for the [hardened build mode](#build-modes). For example, this
+docs/design/README.md	2132	causes integers to be set to `0` when in unformed state in this mode.
+docs/design/safety/README.md	118	must include the `unsafe` keyword as it is standing in place of more granular
+docs/design/safety/README.md	122	Define how to mark `import`s of permissive libraries in
+docs/design/safety/README.md	98	_Strict Carbon_ is the mode in which all unsafe code is marked with the `unsafe`
+docs/design/README.md	2146	when returning a value from a function or by using the _move operator_ `~x`.
+docs/design/README.md	2150	This is provisional. The move operator was discussed but not
+docs/design/functions.md	310	var thread: Thread = Thread.Make(fn [var handle] { handle.Process(); });
+docs/project/milestones.md	230	Build system integration for CMake, and documentation for integrating with
+proposals/p006333-cli-and-separate-compilation.md	419	system, such as CMake. Migration should be easier if users can retain their
+toolchain/driver/compile_subcommand.cpp	45	TODO: Produce an error in this case rather than skipping all files but the
+docs/design/README.md	622	This is provisional, no design for string types has been through the
+docs/design/README.md	627	`String` - a byte sequence treated as containing UTF-8 encoded text.
+proposals/p006177-c-interop-mapping-std-string-view-to-core-str.md	147	The choice of `Str` over `String` for the
+docs/design/expressions/arithmetic.md	186	Decide whether strings are built-in types, and whether they support
+docs/design/expressions/arithmetic.md	187	`+` for concatenation. See
+toolchain/check/custom_witness.cpp	466	TODO: Handle destruction of adapters generally by destroying the
+toolchain/check/custom_witness.cpp	467	adapted type.
+toolchain/lower/handle.cpp	77	context.SetLocal(inst_id, context.GetValue(inst.source_id));
+toolchain/check/convert.cpp	1564	auto value_rep =
+toolchain/check/convert.cpp	1567	SemIR::ValueRepr::ForType(context.sem_ir(), target.type_id);
+docs/design/pattern_matching.md	803	_case_ ::= `case` _pattern_ [`if` _expression_]? `=>` _block_
+toolchain/parse/handle_match.cpp	176	"expected `(` after `if`");
+proposals/p003938-exporting-imported-names.md	82	`alias` is not fully designed
+docs/design/variadics.md	47	which are marked with the `each` keyword at the
+docs/design/variadics.md	92	An _each-name_ consists of the keyword `each` followed by the name of a pack,
+toolchain/parse/node_kind.def	292	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
+toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
+docs/design/generics/details.md	1073	template parameters, use the `template` keyword before `constraint`.
+docs/design/generics/details.md	5494	the keyword introducer `interface`, `constraint`, or `template constraint`,
+toolchain/check/handle_named_constraint.cpp	45	Or maybe it should be a modifier, like `abstract class`?
+toolchain/check/handle_named_constraint.cpp	113	TODO: Support for `template constraint`.
+docs/design/generics/overview.md	376	_We have decided to support passing a symbolic constant to a template
+docs/design/generics/overview.md	379	but incorporating it into the design is future work._
+docs/design/generics/appendix-witness.md	151	Carbon's planned approach to support calling a templated function from a
+docs/design/generics/appendix-witness.md	154	relies on monomorphization.
+proposals/p002200-template-generics.md	205	Impl lookup is delayed until all templated types, interfaces, and parameters
+proposals/p002200-template-generics.md	200	Member lookup into a templated type looks in the actual type value provided
+toolchain/lower/handle.cpp	384	TODO: We don't yet have support for cross-file templates at all. Lowering
+toolchain/lower/handle.cpp	390	CARBON_FATAL("Cross-file template lowering not implemented yet");
+toolchain/sem_ir/typed_insts.h	1312	MetaInstId storage_access_block_id;
+toolchain/check/call.cpp	387	Wrap symbolic template args in a `TemplateInst` so that all symbolic
+toolchain/check/cpp/overload_resolution.cpp	156	static auto IsMoveEquivalentToCopy(clang::QualType type) {
+docs/design/expressions/indexing.md	105	impl as IndexWith(like i64) {
+docs/design/sum_types.md	113	let template Continuation: type;
+toolchain/lex/token_kind.def	208	CARBON_KEYWORD_TOKEN(Like,
+core/prelude/destroy.carbon	27	constraint Destroy {
+core/prelude/destroy.carbon	36	fn SelfDestruct[T: Destroy](ref t: T) {
+proposals/p000257-initialization-of-memory-and-variables.md	274	The intent is that most types have an unformed state
+docs/design/README.md	3705	map transparently between C++ and the Carbon equivalents
+docs/design/safety/README.md	80	We instead focus on the
+docs/design/safety/README.md	81	narrow and specific unsafe operations and constructs.
+proposals/p006333-cli-and-separate-compilation.md	99	`carbon compile`: Take a single input to build, and produce a single output
+docs/project/milestones.md	223	Make- and CMake-derived build systems.
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	1130	## Future work
+docs/design/README.md	3859	we would consider adding some in the future.
+docs/design/interoperability/README.md	256	have corresponding types in Carbon.
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	664	dialect.
+proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	660	Mutation of objects with a non-copy-value representation in an active value
+docs/design/safety/README.md	116	Define the exact syntax for package declaration and function
+docs/design/expressions/arithmetic.md	158	defined.
+toolchain/parse/handle_match.cpp	169	auto open_paren = context.ConsumeIf(Lex::TokenKind::OpenParen);
+core/prelude/destroy.carbon	28	extend require impls SubobjectDestroy & DestroyImpl;
+toolchain/sem_ir/core_interface_kind.def	22	CARBON_SEM_IR_CORE_INTERFACE_KIND(CppRangeForIterate)
+docs/design/README.md	2130	Types may define additional
+docs/project/milestones.md	231	Make or similar build systems.
+toolchain/driver/compile_subcommand.cpp	43	If we're lowering and have an output file name, we can only support a
+proposals/p006333-cli-and-separate-compilation.md	371	Similarly, `carbon_library` and `carbon_binary` are important to us for
+docs/design/variadics.md	493	Discuss typechecking `...expand`.
+docs/design/variadics.md	750	address `...expand`, `...and` and `...or`.
+docs/design/expressions/comparison_operators.md	504	Comparisons between tuples permit implicit conversions for either operand, but
+docs/design/expressions/comparison_operators.md	457	There is no expectation that an `Ordered` implementation be a total order
+docs/design/generics/details.md	4921	We pick the type structure with a non-`?` at the first difference as most
+docs/design/README.md	1078	associated constant, and so no phase keyword is allowed there.
+proposals/p002200-template-generics.md	208	type checking of any expression dependent
+proposals/p002200-template-generics.md	209	on a templated parameter may not be completed until its value is known.
+docs/design/variadics.md	221	so, it must be a deduced parameter of the enclosing pattern.
+proposals/p002240-variadics.md	555	### Omit each-names
+docs/design/expressions/comparison_operators.md	433	the members of an `OrderedWith` implementation
+docs/design/expressions/comparison_operators.md	315	Additionally, these
+proposals/p005914-updating-carbon-s-safety-strategy.md	182	We expect to have more distinguished types of pointers in Carbon to be
+toolchain/check/cpp/custom_type_mapping.cpp	93	static auto StdStringView(const clang::CXXRecordDecl* record_decl) -> bool {
+docs/design/README.md	3856	### Error handling
+docs/design/README.md	2167	### Choice types
+docs/design/README.md	2176	Success(value: i32),
+docs/design/README.md	2177	Failure(error: String),
+docs/design/README.md	3159	#### Generic choice types
+proposals/p000157-design-direction-for-sum-types.md	229	should be considered provisional
+core/prelude/destroy.carbon	14	TODO: rename to `Destroy` when `require impls` adds a witness table entry.
+core/prelude/destroy.carbon	23	impl forall [T: SubobjectDestroy] T as DestroyImpl {
+core/prelude/destroy.carbon	24	fn Op(ref self) = "no_op";
+core/prelude/destroy.carbon	37	t.(DestroyImpl.Op)();
+core/prelude/destroy.carbon	38	t.(SubobjectDestroy.Op)();
+toolchain/check/control_flow.cpp	158	BuildSelfDestructCall(context, destroy_id);
+toolchain/check/custom_witness.cpp	1054	case SemIR::CoreInterface::SubobjectDestroy:
+docs/design/README.md	873	`T` is written `array(T, N)`, which is a shorthand for the library type
+docs/design/README.md	874	`Core.Array(T, N)`. This type is defined in the prelude.
+core/prelude/types/array.carbon	13	class Array(T: type, N: IntLiteral) {
+core/prelude/types/array.carbon	14	adapt MakeArray(T, N);
+docs/design/README.md	3706	instance, C++'s `std::string_view` maps directly to Carbon's `Core.Str` (see
+docs/design/interoperability/README.md	260	C++'s `std::string_view` maps directly to Carbon's `str` (which is an alias for
+docs/design/interoperability/README.md	261	`Core.Str`) when importing C++ headers.
+toolchain/sem_ir/type_info.h	381	// `str` / `Core.String`.
+toolchain/sem_ir/type_info.h	382	// TODO: Rename `Core.String` to `Core.Str`.
+proposals/p006177-c-interop-mapping-std-string-view-to-core-str.md	147	The choice of `Str` over `String` for the
+proposals/p006177-c-interop-mapping-std-string-view-to-core-str.md	148	non-owning view type is intentional.
+proposals/p006333-cli-and-separate-compilation.md	193	This requires that `Core` files (not just the prelude) will have been compiled,
+proposals/p006333-cli-and-separate-compilation.md	195	will be provided through on-demand runtimes. It should be possible to opt out of
+proposals/p006333-cli-and-separate-compilation.md	198	should be on-by-default.
+docs/design/variadics.md	138	delimiters around a `...` are parentheses, they will be interpreted as forming a
+docs/design/variadics.md	139	tuple rather than as grouping.
+docs/design/interoperability/philosophy_and_goals.md	409	without suitable annotations or bridging, and that function exits with an
+docs/design/interoperability/philosophy_and_goals.md	410	exception, the program might terminate.
+docs/design/safety/README.md	242	Carbon will also have additional build modes to provide specific, narrow
+docs/design/safety/README.md	248	-   Release + specialized [hardening]: some users can afford significant
+docs/design/safety/README.md	250	several specialized build modes in this space.
+docs/design/README.md	381	-   In a _debug build_, the priority is diagnosing problems and fast build time.
+docs/design/README.md	382	-   In a _release build_, the priority is fastest execution time and lowest
+proposals/p005914-updating-carbon-s-safety-strategy.md	204	Lastly, Carbon's safety model will make fewer assumptions about what unsafe code
+proposals/p005914-updating-carbon-s-safety-strategy.md	205	is allowed to do than Rust. To avoid undefined behavior, the optimization of
+proposals/p005914-updating-carbon-s-safety-strategy.md	206	safe code will not rely on properties that are not established locally. For
+proposals/p005914-updating-carbon-s-safety-strategy.md	207	example, there won't be an assumption that a call to C++ code won't save a copy
+proposals/p005914-updating-carbon-s-safety-strategy.md	208	of pointers to passed-in objects. When there are restrictions on what unsafe
+proposals/p005914-updating-carbon-s-safety-strategy.md	209	code can do, we will endeavor to make violations into
+proposals/p005914-updating-carbon-s-safety-strategy.md	210	[erroneous behavior]
+docs/design/sum_types.md	94	layout will presumably involve untagged unions or some other low-level storage
+docs/design/expressions/indexing.md	113	And a type such as `std::span` could look like this:
+docs/design/expressions/indexing.md	116	class Span(T: type) {
+docs/design/expressions/indexing.md	117	impl as IndirectIndexWith(like i64) {
+docs/design/safety/README.md	122	> **Future work**: Define how to mark `import`s of permissive libraries in
+docs/design/safety/README.md	123	> various contexts, balancing ergonomic burden against the potential for
+docs/design/variadics.md	493	> **TODO:** Discuss typechecking `...expand`.
+docs/design/variadics.md	750	> **TODO:** address `...expand`, `...and` and `...or`.
+proposals/p002240-variadics.md	555	### Omit each-names
+proposals/p002240-variadics.md	557	Rather than having packs be distinguished by their names, we could instead
+docs/design/generics/details.md	4921	We pick the type structure with a non-`?` at the first difference as most
+docs/design/expressions/comparison_operators.md	457	There is no expectation that an `Ordered` implementation be a total order, a
+docs/design/expressions/comparison_operators.md	462	**TODO:** The standard library should provide a way to specify that an ordering
+docs/design/expressions/comparison_operators.md	504	Comparisons between tuples permit implicit conversions for either operand, but
+docs/design/README.md	1076	[Associated constants](#associated-constants) are always checked generic
+docs/design/README.md	1077	bindings. This is not a contextual default: no other phase is possible for an
+docs/design/generics/terminology.md	100	[Associated constants](#interface-parameters-and-associated-constants) are
+docs/design/generics/terminology.md	101	always checked generic bindings.
+docs/design/variadics.md	219	the named pack from the Nth scrutinee. The binding pattern's type expression may
+toolchain/sem_ir/typed_insts.h	2009	struct SpecificConstant {
+toolchain/sem_ir/typed_insts.h	2013	.expr_category = ComputedExprCategory::SameAsFirstOperand,
+toolchain/check/cpp/export.cpp	403	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
+toolchain/check/cpp/export.cpp	404	auto* record_decl = ExportClassToCppInDeclContext(
+toolchain/check/cpp/export.cpp	538	if (!decl_context) {
+toolchain/check/cpp/export.cpp	1903	"can't form a pointer to a template");
+toolchain/parse/node_kind.def	292	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
+toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
+toolchain/lower/testdata/var/destroy_control_flow.carbon	18	impl as Core.DestroyImpl {
+toolchain/lower/testdata/var/destroy_control_flow.carbon	187	define linkonce_odr void @_CSelfDestruct.Core.
+toolchain/lower/testdata/var/destroy_control_flow.carbon	188	_COp:thunk:DestroyImpl.
+docs/design/README.md	2175	choice IntResult {
+toolchain/sem_ir/expr_info.cpp	219	case ComputedExprCategory::SameAsFirstOperand: {
+toolchain/sem_ir/expr_info.cpp	220	inst_id = AsAnyInstId(untyped_inst.arg0_and_kind());
+docs/design/README.md	872	The type of a direct-storage immutably sized array holding `N` values of type
+core/prelude/types/array.carbon	10	private fn MakeArray(T: type, N: IntLiteral) -> type = "array.make_type";
+docs/design/README.md	1078	associated constant, and so no phase keyword is allowed there.
+docs/design/variadics.md	137	As a corollary, if the nearest enclosing
+docs/design/variadics.md	220	contain an each-name (such as `each ElementType` in the `Zip` example), but if
+docs/design/variadics.md	221	so, it must be a deduced parameter of the enclosing pattern.
+docs/design/variadics.md	982	[Omit each-names](/proposals/p002240-variadics.md#omit-each-names)
+docs/design/generics/details.md	4922	specific.
+docs/design/expressions/comparison_operators.md	458	weak order, or a partial order
+docs/design/expressions/comparison_operators.md	463	is a weak, partial, or total ordering, and a way to request such an ordering in
+docs/design/expressions/comparison_operators.md	505	not both.
+docs/design/interoperability/philosophy_and_goals.md	408	Furthermore, if Carbon code calls a C++ function
+docs/design/safety/README.md	249	run-time overhead in order to use additional hardening. Carbon will have
+toolchain/check/cpp/export.cpp	1902	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
+docs/design/README.md	377	## Build modes
+docs/design/README.md	379	The behavior of the Carbon compiler depends on the _build mode_:
+docs/design/README.md	383	memory usage.
+docs/design/README.md	385	> References: [Safety design](/docs/design/safety#build-modes)
+docs/design/README.md	476	In a development build, overflow will be caught immediately when it happens
+docs/design/README.md	478	In a performance build, the optimizer can assume that such conditions don't
+docs/design/README.md	481	In a hardened build, overflow does not result in undefined behavior.
+docs/design/expressions/arithmetic.md	154	In a development build, they will be caught immediately when they happen at
+docs/design/expressions/arithmetic.md	155	runtime.
+docs/design/expressions/arithmetic.md	159	In a hardened build, overflow and division by zero do not result in
+docs/design/expressions/arithmetic.md	160	undefined behavior. On overflow and division by zero, either the program
+docs/design/expressions/arithmetic.md	162	incorrect result, such as a two's complement result or zero.
+docs/design/expressions/arithmetic.md	164	no control flow or memory
+docs/design/expressions/arithmetic.md	165	access that depends on the value will be performed.
+docs/design/expressions/arithmetic.md	171	In a hardened build, should we prefer to trap on overflow, give a
+docs/design/expressions/arithmetic.md	172	two's complement result, or produce zero?
+docs/design/safety/README.md	207	## Build modes
+docs/design/safety/README.md	212	There are two primary build modes:
+docs/design/safety/README.md	214	**Release**: the primary build mode for programs in production, focuses on
+docs/design/safety/README.md	215	giving the best possible performance with a practical baseline of safety.
+docs/design/safety/README.md	216	**Debug**: the primary build mode during development, focuses on
+docs/design/safety/README.md	217	high-quality developer experience.
+docs/design/safety/README.md	222	bounds checking is enabled in the release build.
+docs/design/safety/README.md	231	The debug build will change the actual behavior of both safe and unsafe code
+docs/design/safety/README.md	233	[fail-stop] behavior and provide detailed diagnostics to enable better
+docs/design/safety/README.md	244	an extension of either the debug or
+docs/design/safety/README.md	245	release build for that specific purpose.
+docs/design/safety/README.md	251	space include [Control-Flow Integrity (CFI)][cfi] and hardware-accelerated
+docs/design/safety/README.md	252	address sanitizing ([HWASAN]).
+docs/design/safety/README.md	262	purposes.

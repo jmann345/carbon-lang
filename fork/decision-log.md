@@ -274,6 +274,198 @@ on trunk) gains a dated note naming D-DR-1 slice 3 and R32, and no new id.
 W-324..W-329 are reserved and unused. The trunk ledger holds W-001..W-125 and
 these four; the ids between live on the held PRs' branches.
 
+### RG-1: the V-3a register classified at f27a977d8 (2026-10-28)
+
+Placed here, in Decided directly after DR-0, because the log groups entries by
+workstream and RG-1 carries out V-3b's rule for DR-0's register: the register
+"is a work queue whose entries each carry a work item" (fork/rulebook.md R32
+(b)). DR-1's entry, held on PR 63, goes between DR-0's and this one when it
+lands. Line cites into this log are to the file at trunk 0b999d449, before this
+entry and its notes moved them. Records only: no toolchain, prelude, golden or
+program file changes with it.
+
+_The work and the rule._ W-342, W-343 and W-344 asked for every V-3a register
+entry to be classified against upstream's tip. Upstream trunk f27a977d8
+(2026-10-27, "Fix ASan CI failures due to `preserve_none`", upstream PR 8045;
+131 commits past the c1e83b0b7 cut, 14 past 21c825a3f) was read by sha and
+re-checked unchanged at e6fddcf97. fork/register/rg1-plan.md section 2 quotes
+upstream's text for each of the 155 entries in 26 blocks and V-3's design-fork
+group: on trunk DR-0's block, the eleven blocks that predate it and the
+design-fork entries F-006a, F-007 and F-009 that V-3 registered and UA-1's
+review names; on the held heads fourteen blocks, PR 51's UA-2 register re-read
+among them. The scripts committed with this entry re-read the 260 quoted lines
+of fork/register/rg1-quotes.tsv (fork/register/check_quotes.sh) and re-run the
+89 silence checks of fork/register/rg1-checks.tsv
+(fork/register/check_greps.sh), one for each NONE row whose upstream silence is
+shown by a grep, a log count or a directory listing at the tip. An entry is a
+DRIFT when upstream has designed its mechanism and the fork spells it otherwise
+(R32 (d)), ALIGNED when the fork's spelling or rule is upstream's, and NONE when
+upstream is silent. Upstream has designed a mechanism when text at the tip shows
+it with a spelling, is about it, and does not call the spelling placeholder or
+provisional (D-RG-2). Toolchain-internal surfaces are NONE, their merge rules
+their break conditions, unless that condition has already fired (D-RG-3); a
+partial implementation whose gap carries an item is ALIGNED (D-RG-4). The
+decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each with its break
+condition in the plan's section 1.
+
+_The count._ 19 DRIFT, 33 ALIGNED and 103 NONE; 10 entries, three DRIFTs among
+them, wait on an upstream decision or on an item blocked by one (the plan's
+section 7). Eight DRIFT entries were filed before RG-1 (W-109 twice, W-320 with
+W-324, W-321, W-322, W-326 twice, and SC-1's W-139); eleven are carried by items
+filed now: W-346, W-347 to W-351, W-352, W-353 and W-354 (three entries). Every
+NONE and ALIGNED entry outside VA-2's block carries W-355, the register's watch
+item, re-read at each weekly upstream check (D-RG-17); VA-2's six carry VA-2's
+own items, re-read weekly by ORCHESTRATION's Next actions items 8 and 9 or
+scheduled with W-222, so the register stays a work queue.
+
+_The two R29 decisions._ F-006a's `Ok`/`Err` is a DRIFT (D-RG-5). Upstream's
+README, in its "Error handling" section, names `Result` as Carbon's error
+representation ("At this point, errors are represented using `[choice
+types](#choice-types)` like `Result` and `Optional`.",
+docs/design/README.md:3856-3860), and the choice-types section it links spells a
+result choice's alternatives `Success(value: i32)` and `Failure(error: String)`
+(:2167-2177); the README's own `Result` under "Generic choice types"
+(:3159-3166) spells them `Success(value: T)` and `Failure(error: Error)`. No
+upstream text spells `Ok` or `Err` or marks `Success` and `Failure` as
+placeholder, and "illustrative" was V-3's override ground, which V-3b withdrew.
+W-346 renames the alternatives (the payload names and the order already match),
+owner EH-C, on trunk's base after the held PRs land and before UA-3. It reverses
+the user's sub-decision F-006a (2026-07-19, :716-718) under the owner directive
+of 2026-10-21, and the user may veto it. Break condition: upstream adds a
+prelude `Result` or an error-handling proposal with other alternatives (take
+them), or changes the README's examples to `Ok`/`Err` (withdraw W-346), or the
+user vetoes. F-009's `overload fn` is NONE (D-RG-6): upstream's only introducer
+is p002875's "using placeholder syntax" (:481) before `overloaded fn`
+(:484-485), and pattern_matching.md says "We do not yet have an approved design
+for overloaded functions" (:696); F-009's closed same-library sets and
+declaration-order first match are ALIGNED with static_open_extension.md:52-54
+and pattern_matching.md:696-697. Break condition: upstream accepts a proposal or
+lands a token or page that spells the introducer (then a rename is filed as a
+drift).
+
+_The drifts and their items._ Trunk: F-006a's `Ok`/`Err` (W-346, EH-C); SL-1's
+D-SL-16 yield and D-SL-19 keying, whose own break condition ("if upstream's
+destroy-op synthesis starts calling declared impls") 05a7ecbd3 meets: at the tip
+`fn SelfDestruct[T: Destroy](ref t: T)` calls `t.(DestroyImpl.Op)();`
+(core/prelude/destroy.carbon:36-38) for every cleanup
+(check/control_flow.cpp:158), so W-354, owner UA-3 with SL-1's records, drops
+both at the advance that brings 05a7ecbd3 (PR 51's UA-2 record of the trigger
+met for fields is the same drift); the rest are DR-1's (W-109, W-321 and W-322,
+resolved on PR 65, PR 63 and PR 62; D-SL-17's literal-subscript rule, W-326,
+blocked on upstream's `like`). The fork's declared-destructor spelling `impl as
+Destroy` is ALIGNED with destroy.carbon:14's "TODO: rename to `Destroy` when
+`require impls` adds a witness table entry." PR 53, SAFE-1's departures from
+accepted text: p005434:83's `noalias` on every `ref` binding narrowed by
+D-SAFE-8 (W-347), p005434:663's plan to prevent mutation of borrowed objects in
+Strict narrowed by D-SAFE-17 (W-348), p005434:831-832's "immutable" narrowed to
+"not invalidated" by D-SAFE-11(d) (W-349), arithmetic.md:156-158's
+performance-build row withdrawn by D-SAFE-15 (W-350), safety/README.md:260-262's
+benchmarking disable withdrawn by D-SAFE-14 (W-351), and README.md:2130-2132's
+"Types may define additional initialization for the hardened build mode" made by
+D-SAFE-13 I5 a zero-fill of every type (W-353). Upstream's pages name three
+builds in some places (development, performance and hardened: README.md:476-484,
+arithmetic.md:154-165) and two primary modes in others (README.md:377-383, the
+section README.md:2131 links, and safety/README.md:207-217); RG-1 reads the
+hardened build as the release build and the performance build as the release
+build with its default hardening disabled, the unsupported benchmarking build of
+safety/README.md:260-262 (D-RG-20, R29; break condition: upstream reconciles
+those pages), so the zeroing's place in the Release build is upstream's and only
+its mandate for every type is the drift, and W-350 restores the performance row
+as the benchmarking build's. The six are realigned by SAFE-1 by a new commit on
+PR 53's branch before it lands (R32 (e)), and PR 53 lands first. PR 60: D-SC-6's
+definition-time rejection of a checked-generic argument to a template parameter,
+where generics/overview.md:375-379 records "We have decided to support passing a
+symbolic constant to a template parameter" (leads issue 2153) and
+appendix-witness.md:151-154 that the approach "relies on monomorphization":
+W-139's break condition was already met when it was filed, upstream's text
+predating the cut; SC-1 realigns on PR 60 before it lands. PR 56: the
+comparisons run `T.Copy` and `T.Destroy`, against comparison_operators.md
+:315-316 and :433-434's "should have no observable side-effects" (W-352, owner
+OP-1, a code commit on PR 56 before it lands, comparing in place, a route a
+read-only probe showed checks without a `Copy` or a `SelfDestruct` call). Not
+drifts: the Permissive reading of p005914:204-210 (NONE: the passage, the
+nearest upstream text, limits what the safety model may assume so that no
+undefined behavior follows, no fork optimization relies on the diagnostic
+assumption, and upstream says nothing of diagnostic assumptions), the restored
+`addr self: Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter destruction
+(ALIGNED with upstream's TODO at check/custom_witness.cpp:466-467), the guard
+parentheses DD-1 documents (ALIGNED with upstream's own parser,
+parse/handle_match.cpp:169 and :176), `Core.Buf` (ALIGNED with
+README.md:885-886), VA-1's `each` keyword and `(... x)` tuple (ALIGNED with
+variadics.md:47-48, :92 and :137-139), `template constraint` (ALIGNED with
+generics/details.md:1072-1073 and :5494), TP-1's `array` arm (ALIGNED with
+README.md:872-874's `array(T, N)` shorthand for the prelude's `Core.Array`),
+CM-1's Core-object helper (ALIGNED with p006333:193-198, its gap W-003), EH-B's
+`noexcept` fence (ALIGNED with interoperability/philosophy_and_goals.md:408-410)
+and `Core.StringBuf` (NONE: README.md calls its string types "provisional",
+:622; the view keeps upstream's prelude spelling `Core.String` until
+sem_ir/type_info.h:382's "TODO: Rename `Core.String` to `Core.Str`." lands).
+
+_Per block_ (lines at trunk 0b999d449 or at the held head; D, A and N are the
+DRIFT, ALIGNED and NONE counts):
+
+| Block | Lines | D / A / N | Items |
+| --- | --- | --- | --- |
+| DR-0's register | :241-247 | 3 / 0 / 0 | W-322, W-109, W-321 (resolved on held PRs) |
+| F-006 (B1) | :757-765 | 0 / 0 / 3 | W-355 |
+| V-3's F-006a, F-007, F-009 | :31-41, :6652-6653 | 1 / 2 / 4 | W-346; W-355 |
+| SL-2 | :3686-3697 | 0 / 3 / 5 | W-120 (watch); W-355 |
+| OV-3 | :4025-4033 | 0 / 0 / 2 | W-355 |
+| SL-1 | :4421-4432 | 4 / 2 / 5 | W-354, W-326, W-109; W-110 (the `buf(T)` gap); W-355 |
+| OV-2 | :4718-4726 | 0 / 0 / 5 | W-355 |
+| OV-1 | :4971-4978 | 0 / 0 / 5 | W-355 |
+| UN-2 | :5179-5186 | 0 / 0 / 2 | W-355 |
+| UN-1 | :5476-5484 | 0 / 0 / 3 | W-355 |
+| EH-B (with UA-1's `noexcept` fence) | :5596-5617, :6606-6607 | 0 / 1 / 3 | W-355 |
+| EH-A | :5961-5971 | 0 / 2 / 2 | W-346 (the alternatives); W-355 |
+| UA-1's watch list | :6768-6782 | 0 / 0 / 7 | W-355 |
+| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 3 / 6 | W-347 to W-351, W-353; W-355 |
+| CM-1, PR 52 ea573f672 | :3119-3133 | 0 / 2 / 5 | W-003, W-132, W-129; W-355 |
+| EV-1, PR 54 cb3ef2e74 | :3538-3549 | 0 / 0 / 3 | W-355 |
+| ST-1, PR 55 21307851a | :3503-3516 | 0 / 0 / 6 | W-355 |
+| OP-1, PR 56 894139b34 (PR 57 :4460-4472) | :3529-3541 | 1 / 1 / 4 | W-352; W-320; W-355 |
+| OP-2, PR 57 a080c7886 | :3779-3792 | 0 / 2 / 5 | W-196, W-200 (gaps); W-355 |
+| DD-1, PR 58 fcee90d9b | :4114-4129 | 0 / 2 / 4 | the nine documented gaps' items; W-355 |
+| VA-1, PR 59 b0822a744 (and PR 66) | :3609-3630 | 0 / 3 / 5 | W-230 (watch); W-355 |
+| SC-1, PR 60 40a76ab81 | :4187-4202 | 1 / 2 / 3 | W-139; W-355 |
+| TP-1, PR 61 5661a35c8 (and PR 64) | :4185-4208 | 0 / 3 / 5 | W-258, W-268, W-260 to W-262, W-266, W-250; W-355 |
+| CT-1, PR 64 4a3220c11 | :8341-8342, plan §0.10 | 0 / 3 / 7 | W-355 |
+| UA-2's re-read, PR 51 f96fe8a7a | :6226-6232 | 1 / 0 / 0 | W-354 |
+| DR-0 extended, PR 63 and PR 65 | :247-254 | 2 / 0 / 0 | W-320 with W-324, W-326 |
+| VA-2, PR 66 43c8ab476 | :3672-3676 | 0 / 2 / 4 | W-217, W-334, W-230, W-214, W-338, W-339 |
+
+_Records corrected on the held branches._ Cites of a fork copy or a stale count:
+PR 53's "docs/design/README.md:2147" (its own copy; upstream's text is at
+:2130-2132) and "arithmetic.md:155-158" (upstream :156-158); PR 52's "thirteen
+`cmake` mentions are Bazel-internal" (measured on the fork's tree; upstream's
+thirteen files include docs/project/milestones.md, whose :230-231 names "Build
+system integration for CMake" as a 0.1 deliverable); PR 55's "README.md:629"
+(the fork's copy; upstream :627); PR 56's "p002188:488-489" and
+"pattern_matching.md:527-528" (upstream :489-490 and :526-527, the latter cite
+PR 56's own copy); PR 61's "lower/handle.cpp:524" (its own copy; upstream
+:384-390); PR 64's "the nine of plan §0.10" (ten: the tenth was added at the
+plan's rev 4); PR 60's template_constraints.md, which calls issue 2153
+"upstream's open question", gains a dated note. Each is a new commit on its
+branch (R32 (e)); PR 57 and PR 64 merge their base PR's commit. The blocks
+without a drift or a stale cite (PR 54's, PR 57's OP-2, PR 58's and PR 59's) and
+PR 51's, whose drift is trunk's code (D-RG-8), gain their notes with their PRs'
+land-time records, scheduled in ORCHESTRATION (D-RG-11).
+
+_Also filed._ W-355, the register watch item (D-RG-17), and W-356: the probe
+that tested OP-1's routes stops trunk's toolchain at
+check/pattern_match.cpp:2207's `CHECK` after "value expression passed to
+reference parameter", where the nightly 2026.10.12 diagnoses; owner UA-3, re-run
+at the advance (D-RG-18).
+
+_Ids._ The re-scan of rg1-plan.md section 4.5 (136 origin refs, 25 local
+branches, 21 worktrees, after a fetch) finds W-340 to W-345 in ledgers and
+W-346, W-398 and W-399 only as range bounds in two plans' text. RG-1 reserves
+W-346 to W-359, files W-346 to W-356, and leaves W-357 to W-359 unused.
+
+_Not run._ No build, fill, gate, conformance or dispatch (R28); Actions is
+disabled, so nothing is of record (R9). The probes of the plan's section 4.8
+ran the read-only installs with `--phase=check` only.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying
@@ -762,7 +954,14 @@ order `ControlFlow(C, B)` — continue-first, matching `Try`'s
 `(ContinueType, BreakType)` reading, a DELIBERATE divergence from Rust's
 break-first `ControlFlow<B, C>`; (iii) the member spellings
 `Try`/`Branch`/`FromBreak`/`Continue`/`Break` (with F-006a's `Ok`/`Err`
-already on the register). _Mechanism (plan §2.4 as revised):_ the desugar
+already on the register). _RG-1 (classified 2026-10-28, upstream f27a977d8,
+re-checked at e6fddcf97; the entry "RG-1: the V-3a register classified at
+f27a977d8 (2026-10-28)" has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv): (i) to (iii) NONE, W-355, upstream
+README.md:3858-3859 "Carbon does not have language features dedicated to error
+handling"; `ControlFlow` (checks T1.1 and T1.2) and `interface Try`, `FromBreak`
+or `FromContinue` (T1.3) are 0 in upstream's core, docs/design, proposals and
+toolchain; F-006a DRIFT, W-346._ _Mechanism (plan §2.4 as revised):_ the desugar
 (new toolchain/check/handle_question.cpp) emits only existing inst kinds —
 pre-flight (QuestionOutsideFunction; region-depth>1 →
 QuestionInPatternContext, digest item 3's diagnose-and-reject policy, by way of
@@ -3696,6 +3895,19 @@ witness follows it and W-120 closes; D-SL-21 applies upstream's own orphan
 rule and is a fork convention, not a divergence; if upstream's C++ `Copy`
 import declines deleted copy constructors, D-SL-24's sentence flips. Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ the
+`Span` mapping and the export arm (classified 2026-10-28, RG-1: ALIGNED, W-355;
+README.md:3707-3708 "Other view types, like `std::span`, are intended to map
+similarly"); the synthesized interface, the prelude sections, D-SL-8, D-SL-9 and
+D-SL-24 (classified 2026-10-28, RG-1: NONE, W-355; README.md:912 "**TODO:**
+Slices"; upstream has no `CppContiguousRange` (check T3.3: 0), no `Slice` in
+core, check or sem_ir (T3.4: 0), no `BuildCppContiguousRangeWitness` (T3.6: 0),
+and its own `BuildCopyWitness` (T3.8: 2 lines) is D-SL-24's merge point; W-120
+watches D-SL-9); D-SL-21 (classified 2026-10-28, RG-1: ALIGNED, W-355;
+upstream's own orphan rule).
+
 ### SL-2 round-1 note: the prelude interop impl was an orphan (2026-10-05)
 
 The first hosted autoupdate of SL-2 (run 37356848697, fill 0790c7428 on
@@ -4031,6 +4243,12 @@ member and drop the other), and `overload_index` on a generated thunk
 (upstream's `overloaded` placeholder, when it lands, will key its own
 thunks somehow; the fork's rule is "the thunk mangles as its member does").
 Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ both
+(classified 2026-10-28, RG-1: NONE, W-355; internal: `NamedDeclList` (check
+T4.1) and `overload_index` (T4.2) are 0 in upstream's toolchain).
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 
@@ -4431,6 +4649,29 @@ specified rewrite; if upstream's destroy-op synthesis starts calling
 declared impls, D-SL-16's yield and D-SL-19's keying are dropped in favor of
 it. Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ the
+four builtins (classified 2026-10-28, RG-1: NONE, W-355; values.md:1128-1129
+expects pointer arithmetic "through specialized constructs"; none of the four
+names upstream, check T5.1: 0); `Core.Slice` (classified 2026-10-28, RG-1: NONE,
+W-355; README.md:912 "**TODO:** Slices"; indexing.md:116's `class Span(T: type)`
+is an example of `IndirectIndexWith`); `Core.Buf` (classified 2026-10-28, RG-1:
+ALIGNED, W-355; README.md:885-886 "a shorthand for the library type
+`Core.Buf(T)`"; the shorthand is W-110); the `Iterate` impl (classified
+2026-10-28, RG-1: ALIGNED, W-355; iterate.carbon's interface; its cursor is
+W-321's); D-SL-15, D-SL-18 and D-SL-20 (classified 2026-10-28, RG-1: NONE,
+W-355; no `pointer.offset` (check T5.5), slice or buffer class (T5.8) or
+`heap.allocate` (T5.10) upstream, each 0); D-SL-16 and D-SL-19 (classified
+2026-10-28, RG-1: DRIFT, W-354: this block's own break condition is met, since
+upstream's `fn SelfDestruct[T: Destroy](ref t: T)` calls `t.(DestroyImpl.Op)();`
+(core/prelude/destroy.carbon:36-38) for every cleanup
+(check/control_flow.cpp:158); UA-3 drops the yield and the keying at the advance
+that brings 05a7ecbd3; the declared spelling `impl as Destroy` is ALIGNED with
+destroy.carbon:14's "TODO: rename to `Destroy` ..."); D-SL-17 (classified
+2026-10-28, RG-1: DRIFT, W-326, blocked on `like`); D-SL-3 (classified
+2026-10-28, RG-1: DRIFT, W-109, resolved on PR 65).
+
 ### OV-2: overload-set import, generic members, api/impl definitions (2026-10-05)
 
 Milestone bullet "Functions: function overloading (Carbon-native)" stays
@@ -4725,6 +4966,15 @@ OV-1's entries stand; OV-2 adds the two diagnostic kinds
 merge, keep whichever resolves `fn C.F` in an impl file and drop the other)
 and the `OverloadSetValue` arm of `AddImportRefOrMerge`. Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ the
+five (classified 2026-10-28, RG-1: NONE, W-355; internal surfaces with their
+merge rules: the two diagnostics (check T6.1), `MergeOverloadMemberRedecl` and
+`prev_decl_override` (T6.2), `bool diagnose` in check/deduce.h (T6.3),
+`GetApiClassDeclForQualifier` (T6.4) and `OverloadSetValue` (T6.5) are each 0 in
+upstream's toolchain).
+
 ### OV-1: `overload fn` closed sets, first-match resolution (2026-09-28)
 
 Milestone bullet "Functions: function overloading (Carbon-native)" flips
@@ -4977,6 +5227,19 @@ is a rename away. Fork-local surface added by implementation: the
 `overload_set_id` field of `Function::Print`. F-009's register entries
 (closed sets, first-match, the marker) stand. Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ the
+`overload` keyword (classified 2026-10-28, RG-1: NONE, W-355; p002875:481
+introduces `overloaded fn` "using placeholder syntax"; pattern_matching.md:696
+"We do not yet have an approved design for overloaded functions"; no `overload`
+in upstream's lex/token_kind.def, check T7.1); the marker, the inst kinds and
+store, the five diagnostics and the print field (classified 2026-10-28, RG-1:
+NONE, W-355; internal: `:overload` 0 in sem_ir/mangler.cpp (T7.2), the three
+`OverloadSet` names 0 (T7.3), the five diagnostics 0 (T7.4), `overload_set_id` 0
+in sem_ir/function.h (T7.5); upstream's only mention is sem_ir/function.h:547's
+TODO); F-009's entries are noted after UA-1's review.
+
 ### UN-2: union C++ interop (2026-09-28)
 
 Milestone bullet "Type system: Unions (un-discriminated) + C++ union
@@ -5184,6 +5447,13 @@ offset-zero layout arm are fork-local implementation surface with no
 upstream counterpart to contradict. The `union` keyword and the
 byte-reinterpretation reads remain F-007's register entries; UN-2 mints
 no new public name and no new diagnostic. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ both
+(classified 2026-10-28, RG-1: NONE, W-355; upstream exports no Carbon union:
+`TagTypeKind::Union` 0 in check/cpp/export.cpp (check T8.1), `is_union` 0 in
+check/cpp (T8.2)).
 
 ### Scoreboard totals corrected: EH-B was 138 programs, UN-1 139 (2026-09-28)
 
@@ -5483,6 +5753,14 @@ toolchain; no library change), the `is_union` raw-dump field, and the
 four diagnostic kinds. Upstream has no `union`; p000157 leaves typed
 union versus `Storage` open — no contradiction. Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ the
+three surfaces (classified 2026-10-28, RG-1: NONE, W-355; upstream does not
+recognize core/prelude/default.carbon:17's `interface UnformedInit` as a kind,
+and has no `is_union` (check T9.2: 0) and none of the four `Union...`
+diagnostics (T9.3: 0)); F-007's entries are noted after UA-1's review.
+
 ### EH-B: catching thunks, Cpp.Exception, Carbon::expected export (2026-09-27)
 
 Milestone bullet "Error handling: C++ exception interop (-fno-except config,
@@ -5615,6 +5893,18 @@ unaffected). (iii) The catching thunk's identifier
 `<callee>__carbon_catching_thunk` and asm label
 `<mangled>.carbon_thunk_catch.<modes>` are fork-local names beside B0's
 `__carbon_thunk`.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ (i),
+(ii) and (iii) (classified 2026-10-28, RG-1: NONE, W-355; upstream designs no
+exception mapping: `carbon/expected.h` and `primary_` 0 in upstream
+toolchain/install and core (check T10.1), `std::expected` 0 in docs/design and
+proposals (T10.2), `carbon_catching_thunk` 0 in toolchain (T10.3);
+interoperability/philosophy_and_goals.md:405-410 allows that "translating C++
+exceptions to or from Carbon errors might require annotations or bridge code");
+the `noexcept` fence UA-1's review counts (classified 2026-10-28, RG-1: ALIGNED,
+W-355; the same page's :408-410 "the program might terminate").
 
 _Review record and the blocker:_ one implementation review (R28),
 APPROVE-WITH-FIXES. BLOCKER: the catching thunk was imported through the public
@@ -5969,6 +6259,19 @@ widening of the fork-local SF-6 payload allowlist; upstream's choice design
 has no such allowlist, so admitting `()` moves toward upstream and cannot
 contradict it; the zero-size `((),)` region layout is fork-owned until
 upstream lands a choice layout of its own.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ (i)
+`Core.Result` as a choice (classified 2026-10-28, RG-1: ALIGNED, W-355;
+README.md:3859-3860 "errors are represented using `[choice
+types](#choice-types)` like `Result`"; its alternatives are W-346's), the
+library name (classified 2026-10-28, RG-1: NONE, W-355; `git grep -c -F
+prelude/types/result` over upstream core and toolchain is 0, check T11.2), the
+success-first order (classified 2026-10-28, RG-1: ALIGNED, W-355;
+README.md:3165-3166); (ii) the `()` payload (classified 2026-10-28, RG-1: NONE,
+W-355; upstream has no payload allowlist, `IsInSliceChoicePayloadType` 0, check
+T11.4).
 
 _Runner-exposed defect — a review MISS (R28(d)) and a lesson:_ plan §7
 R-12's falsifier fired exactly as written, on optional.carbon rather than
@@ -6653,6 +6956,26 @@ ported to `SpecificInterface` at the re-merge. The design-fork entries these
 blocks extend (F-006a `Ok`/`Err`, F-007's `union`, F-009's marked closed sets)
 stand with them. No entry is retired by this merge.
 
+_RG-1 on the design-fork entries (classified 2026-10-28, upstream f27a977d8,
+re-checked at e6fddcf97; the entry "RG-1: the V-3a register classified at
+f27a977d8 (2026-10-28)" has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ F-006a's `Ok`/`Err` (classified 2026-10-28,
+RG-1: DRIFT, W-346, reversing the user's F-006a under the 2026-10-21 directive,
+veto-able; README.md:3856-3860 names `Result` as the choice that represents
+errors and links the choice-types section, whose `IntResult` spells
+`Success(value: i32)` and `Failure(error: String)` (:2175-2177), as :3164-3166
+spells `Result`'s `Success(value: T)` and `Failure(error: Error)`); F-007's
+`union` keyword, class-shaped declaration and byte-reinterpretation reads
+(classified 2026-10-28, RG-1: NONE, W-355; p000157:239 proposes "A typed `union`
+facility", upstream's lexer has no `union` token (check T2.2: 0), its toolchain
+no union class (T2.3: 0), and its only untagged-union text is sum_types.md:94's
+"layout will presumably involve untagged unions or some other low-level storage"
+primitive (T2.4: 1)); F-009's closed sets and first match (classified
+2026-10-28, RG-1: ALIGNED, W-355; static_open_extension.md:52-54 and
+pattern_matching.md:696-697); F-009's marker `overload fn` (classified
+2026-10-28, RG-1: NONE, W-355; p002875:481 "using placeholder syntax",
+pattern_matching.md:696).
+
 RESIDUES FILED (D-UA-15; ids allocated after W-122, the round-3 item). W-123:
 a catching (`?`) thunk over a C++ function-pointer callee is a semantics TODO
 ("Unsupported: catching thunk for a C++ function pointer",
@@ -6780,6 +7103,21 @@ each marked "Fork (D-UA-n)" in code, each a V-3a convergence candidate when
 upstream lands its own (upstream's `TryMergeRedecl<Function>` growing a
 member-targeted entry point retires `MergeOverloadMemberRedecl`; upstream
 conditionalizing arm cleanups retires the W-122 guard). Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ the
+seven items (classified 2026-10-28, RG-1: NONE, W-355; fork code inside upstream
+functions with no upstream design): upstream's toolchain has no `is_union` in
+check/merge.cpp (check T12.1), no `TryMergeOverloadDecl` (T12.2), no `is_choice`
+in check/custom_witness.cpp (T12.3), no `return_type_id` in check/function.h
+(T12.4), no `BeginConditionalExprOperand` or `EndConditionalExprOperand` (T12.5)
+and no `function.generic_id.has_value()` in check/cpp/type_mapping.cpp (T12.6),
+each `git grep -c` 0 at the tip; and upstream still asserts
+`CARBON_CHECK(!src_clang_decl->isTemplateDecl(), "can't form a pointer to a
+template")` (check/cpp/export.cpp:1902-1903) where the fork's guard diagnoses
+(T12.7). 05a7ecbd3 rewrote check/custom_witness.cpp, the `is_choice` clauses'
+file, which is UA-3's merge rule, not a design.
 
 ### Weekly upstream check 2026-10-26 (R32 direction register): cut HOLDS at 117 commits; a dry-run merge conflicts in 97 files; one drift filed as W-341; GitHub Actions on the fork is still DISABLED (2026-10-26)
 

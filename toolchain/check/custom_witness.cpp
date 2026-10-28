@@ -226,6 +226,17 @@ static auto HasClassKeyedImpl(Context& context, SemIR::ClassType class_type,
                               SemIR::CoreInterface core_interface,
                               bool outside_core_only) -> bool;
 
+// Fork (OP-2, fork/optional2/plan.md D-OP2-3, fork design F-016): returns
+// whether destroying an adapter whose adapted type is `adapted_type_id` does
+// any work. An adapter declares no fields: its object is an object of the
+// adapted type (docs/design/classes.md, "Adapters"), so it is destroyed as that
+// type is, and trivially exactly when that type is.
+static auto AdapterHasDestroyWork(Context& context,
+                                  SemIR::TypeId adapted_type_id) -> bool {
+  return adapted_type_id != SemIR::ErrorInst::TypeId &&
+         !IsTriviallyDestructible(context, adapted_type_id);
+}
+
 // Returns true if `class_type` should impl `Destroy`. `query_is_symbolic` is
 // whether the QUERY constant is symbolic — the same
 // `query_self_const_id.is_symbolic()` fact `LookupDestroyWitness` branches on
@@ -318,6 +329,13 @@ static auto CanDestroyClass(Context& context, SemIR::LocId loc_id,
       query_specific_interface);
   if (has_witness == DestroyFormat::NoDestroy) {
     return DestroyFormat::NoDestroy;
+  }
+
+  // Fork (OP-2, D-OP2-3, F-016): an adapter is destroyed as its adapted type.
+  if (class_info.adapt_id.has_value()) {
+    return AdapterHasDestroyWork(context, object_repr_id)
+               ? DestroyFormat::NonTrivial
+               : DestroyFormat::Trivial;
   }
 
   if (class_info.GetStructTypeFields(context.sem_ir(), class_type.specific_id)
@@ -1024,6 +1042,20 @@ static auto MakeSubobjectDestroyOpBody(Context& context, SemIR::LocId loc_id,
           // the field walk below cannot name them; payload destructors do not
           // run — placeholder semantics preserved. TODO: choice-payload
           // destroy synthesis (D-UA-15 residue).
+          return;
+        }
+        // Fork (OP-2, D-OP2-3, F-016): an adapter is destroyed as its adapted
+        // type, by that type's `SelfDestruct` on `self` converted to it.
+        if (auto adapted_type_id = class_info.GetAdaptedType(
+                context.sem_ir(), class_type.specific_id);
+            adapted_type_id.has_value()) {
+          if (AdapterHasDestroyWork(context, adapted_type_id)) {
+            auto adapted_id = AddInst<SemIR::AsCompatible>(
+                context, loc_id,
+                {.type_id = adapted_type_id,
+                 .source_id = callee_self_param_id});
+            DiscardExpr(context, BuildSelfDestructCall(context, adapted_id));
+          }
           return;
         }
         auto access_context =

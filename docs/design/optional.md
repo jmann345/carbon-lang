@@ -8,8 +8,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 **Status:** Fork design (F-015, 2026-10-13): `Core.Optional` as implemented in
 the fork's prelude, core/prelude/types/optional.carbon; toolchain status: OP-1
-landed 2026-10-13. Upstream has no approved design for `Core.Optional` (proposal
-p006357, future work).
+landed 2026-10-13, and OP-2 landed 2026-10-14: an Optional destroys the value it
+holds, `Get()` fails-stop on an empty value, `Core.Optional(bool)` and nested
+pointer-niche Optionals read correctly, and only `Core.Optional(T*)` may be
+declared without an initializer. Upstream has no approved design for
+`Core.Optional` (proposal p006357, future work).
 
 <!-- toc -->
 
@@ -87,9 +90,9 @@ pointer, and generic code names `Core.Copy & Core.Destroy` for its `T` (W-176).
 | `fn None() -> Self` | the empty value |
 | `fn Some(value: T) -> Self` | a value holding a copy of `value` (one `Copy`) |
 | `fn HasValue(self) -> bool` | whether it holds a value |
-| `fn Get(self) -> T` | a copy of the held value; requires `HasValue()`, unchecked in 0.1 (W-173) |
+| `fn Get(self) -> T` | a copy of the held value; requires `HasValue()`, and fails-stop on an empty value |
 | `impl forall [T: OptionalStorage] Optional(T) as Copy` | copies the held value, if any |
-| `impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit` | an Optional may be declared without an initializer when `T` may (`T: UnformedInit`) |
+| `impl forall [T: type] Optional(T*) as UnformedInit` | a pointer-niche Optional may be declared without an initializer; any other may not (W-200) |
 | `ImplicitAs(Optional(T))` from `T`, from any `U: ImplicitAs(T)` and from `Optional(U)` | `Some` of the (converted) value; empty stays empty |
 | `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where .ContinueType = T and .BreakType = ()` | `o?` continues with the value or propagates absence as `()` (D9) |
 | `final impl forall [T: Destroy & OptionalStorage & Eq] Optional(T) as EqWith(Optional(T))` | `==` and `!=` ([Comparison](#comparison)) |
@@ -99,8 +102,8 @@ Not provided, on purpose or as a filed limit: `.Some` and `.None` patterns and
 `match` over an Optional (W-177); an explicit `as` between Optionals of
 different payloads (W-175); comparison with a bare `T` or with `Cpp.nullptr`
 (W-178); comparison of a pointer-niche Optional whose pointer type is not
-`Core.Eq`, which is every built-in pointer (W-174); a checked `Get()` (W-173);
-destruction of the held value (W-170).
+`Core.Eq`, which is every built-in pointer (W-174); declaring a non-pointer
+Optional without an initializer (W-200).
 
 ### The API
 
@@ -116,7 +119,7 @@ class Optional(T: OptionalStorage) {
   adapt T.Type;
 }
 
-impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit {}
+impl forall [T: type] Optional(T*) as UnformedInit {}
 
 impl forall [T: OptionalStorage] Optional(T) as Copy;
 
@@ -137,7 +140,7 @@ The storage, private to the prelude:
 
 ```carbon
 private interface OptionalStorage {
-  let Type: type;
+  let Type: Destroy;
   fn None() -> Type;
   fn Some(self) -> Type;
   fn Has(value: Type) -> bool;
@@ -152,6 +155,8 @@ private class DefaultOptionalStorage(T: Copy & Destroy) {
 
 impl forall [T: Copy & Destroy] T as OptionalStorage
     where .Type = DefaultOptionalStorage(T);
+
+impl forall [T: Copy & Destroy] DefaultOptionalStorage(T) as Destroy;
 
 final impl forall [T: type] T* as OptionalStorage
     where .Type = MaybeUnformed(T*);
@@ -282,24 +287,19 @@ fn Same[T: Core.Eq & Core.Copy & Core.Destroy](a: Core.Optional(T),
 }
 ```
 
-In 0.1 a checked generic can compare only `Core.Optional(T)` values that it
-receives: a local or temporary `Core.Optional(T)` in its body, such as
-`Core.Optional(T).Some(a) == b` or a `let` of that type, is rejected with
-"cannot access member of interface `Core.Destroy` in type
-`Core.Optional(T as Core.OptionalStorage)`", because `Core.Optional` declares
-no `Destroy` impl (W-170).
+A checked generic may also compare a `Core.Optional(T)` that it creates, such
+as `Core.Optional(T).Some(a) == b` or a `let` of that type: every storage type
+is `Core.Destroy`, so the generic can destroy the Optional it made.
 
 A pointer-niche `Core.Optional(T*)` compares exactly when `T*` is `Core.Eq`. The
 prelude gives the built-in pointer types no `==` (W-174), so
 `Core.Optional(i32*)` does not compare; a library that owns a class `C` may
 implement `C* as Core.EqWith(C*)`, and `Core.Optional(C*)` then compares.
-`Core.Optional(bool)` is `Core.Eq`, but in 0.1 comparing two of them, like
-reading or copying one, crashes the compiler (W-171). The same defect makes
-reading, copying and comparing a `Core.Optional(Core.Optional(U*))` return wrong
-values with no diagnostic (W-171). For a payload that exists only at compile
-time, such as `Core.IntLiteral`, comparing two `Core.Optional(T)` values passes
-check and then crashes the compiler in lowering, as a checked generic's `==` on
-`Core.IntLiteral` does without Optional (W-195).
+`Core.Optional(bool)` and `Core.Optional(Core.Optional(U*))` compare, and are
+read and copied, like any other payload. For a payload that exists only at
+compile time, such as `Core.IntLiteral`, comparing two `Core.Optional(T)` values
+passes check and then crashes the compiler in lowering, as a checked generic's
+`==` on `Core.IntLiteral` does without Optional (W-195).
 
 For example, with a library's own pointer equality, which compares the objects
 the pointers refer to, `Core.Optional(C*)` values compare through the null
@@ -357,39 +357,49 @@ form `Optional(T).None` is an expression pattern and is compared using `==`"
 
 An `Optional(T)` owns the value it holds: `Some(v)` stores a copy of `v`,
 copying an `Optional(T)` copies its value, and destroying a non-empty
-`Optional(T)` destroys its value. In 0.1 the last rule is not implemented: a
-held value is never destroyed (W-170), so a `T` whose `Destroy` frees or counts
-leaks one destruction per held value. The fix must keep `Core.Optional(T*)`
-trivially destructible, because a union may have a `Core.Optional(T*)` field.
+`Optional(T)` destroys its value, once. `Core.Optional(T*)` has nothing to
+destroy and is trivially destructible, so a union may have a
+`Core.Optional(T*)` field.
 
 The rule is C++'s for `std::optional` and Rust's for `Option`, and the
 destructors proposal's `Optional` sketch destroys its value exactly when it
 holds one ("`if (me.holds_value) value.Destroy();`", proposal p001154, a
-considered alternative). The 0.1 storage holds the value in a
-`MaybeUnformed(T)`, which runs no destructor, and no `Destroy` impl for
-`Core.Optional` exists. Declaring one is not enough: under
-[Destructors](classes.md#destructors), a class that defines a destructor with
-a non-empty body is not `TrivialDestructor`, so a declared `Destroy` on
-`Optional(T)` would make the pointer niche nontrivial and reject the
-`Core.Optional(T*)` union fields that
-[Unions](unions.md#trivially-destructible-and-trivially-copyable-types) admits.
-Proposal p001154's way out, a conditional `TrivialDestructor` impl for
-`Optional(U)`, was considered there and not adopted. The program
-fork/conformance/programs/stdlib/optional_destroys_value.carbon states the rule
-and is skipped until W-170 lands.
+considered alternative). The default storage holds the value in a
+`MaybeUnformed(T)`, which runs no destructor of its own, and declares the
+`Destroy` that destroys the value when it holds one. `Core.Optional(T)` adapts
+its storage, and an adapter is destroyed as its adapted type, and is trivially
+destructible exactly when that type is (fork design F-016,
+[Adapters](classes.md#adapters)), so destroying the Optional runs that
+`Destroy`. The pointer niche's storage, a `MaybeUnformed(T*)`, declares none,
+so `Core.Optional(T*)` stays trivially destructible and keeps the union fields
+that [Unions](unions.md#trivially-destructible-and-trivially-copyable-types)
+admits; a `Destroy` declared on `Optional(T)` itself would have reached the
+pointer niche too.
+
+Under [Destructors](classes.md#destructors), a class that defines a destructor
+with a non-empty body is not `TrivialDestructor`, so the default storage is
+not, and by F-016 neither is `Core.Optional(T)` for a non-pointer `T`, even
+when `T` is trivially destructible: a `Core.Optional(i32)` is not a union field
+type, and destroying one tests whether it holds a value and, when it does,
+calls the value's destroy, which for `i32` is an out-of-line call that does
+nothing (W-196). Proposal p001154's way to make it conditional, a
+`TrivialDestructor` impl for `Optional(U)` when `U` has one, was considered
+there and not adopted. Because the storage's destroy reads whether it holds a
+value, only `Core.Optional(T*)` may be declared without an initializer and left
+unformed, as `Core.Buf` may not be (W-200). The programs
+fork/conformance/programs/stdlib/optional_destroys_value.carbon,
+optional_destroy_diff.carbon, the second with a C++ `std::optional` oracle, and
+optional_cpp_class_destroy.carbon state the rule.
 
 Comparisons never move or destroy a held value. A comparison of two non-empty
 operands runs `T.Copy` and `T.Destroy` once per value, through `Get()`, and one
-with an empty operand runs neither ([Comparison](#comparison)). Until W-170
-lands, a comparison of two non-empty `Core.Optional(Core.Optional(T))` values
-also leaks one copy of each `T` that the inner values hold: each outer `Get()`
-copy is a `Core.Optional(T)`, and destroying it does not destroy its value.
+with an empty operand runs neither ([Comparison](#comparison)).
 
-`Get()` requires `HasValue()`. In 0.1 the requirement is not checked (W-173): on
-an empty value `Get()` returns the unformed storage, and for `Core.Optional(T*)`
-it returns a null pointer, whose dereference needs no `unsafe`. That contradicts
-the safety design's TY4 ("null is never a hole", F-013) until W-173 lands a
-checked `Get()` or TY4 is amended.
+`Get()` requires `HasValue()`. On an empty value it fails-stop: it writes
+`carbon: Core.Optional.Get on an empty value; terminating` to standard error and
+aborts, as a `Core.Slice` bounds violation does. So `Get()` never returns the
+unformed storage, and for `Core.Optional(T*)` never returns a null pointer,
+which is the safety design's TY4 ("null is never a hole", F-013).
 
 `Core.Optional(T)` is not `Core.Plain` for any `T` (F-013, D-SAFE-9): its value
 sub-object exists only when it holds one, so under Strict Carbon assigning an
@@ -397,7 +407,10 @@ sub-object exists only when it holds one, so under Strict Carbon assigning an
 
 Assignment `o = p;` does not destroy the old value of any class with a
 `Destroy`; that is not specific to `Core.Optional`, and is filed by the strings
-workstream (W-160: assignment does not destroy the overwritten value).
+workstream ("assignment does not destroy the overwritten value"). A class that
+declares its own `Destroy` does not yet destroy its fields after that `Destroy`
+runs, so an Optional field of such a class keeps its value (W-197); a class
+without one destroys its fields, an Optional field included.
 
 ## Propagation and iteration
 
@@ -410,7 +423,11 @@ that its `Try` impl breaks with, so it compiles only when `()` converts to `E`.
 For `E = ()`, absence propagates as `.Err(())`; for any other `E` it is a
 conversion error from `()` to `E`. The landed `Try` body
 dispatches through `HasValue()` and `Get()`, the same two-way split as the
-design's `match` sketch, because `Core.Optional` is not a choice.
+design's `match` sketch, because `Core.Optional` is not a choice. `?` builds a
+`Core.ControlFlow(T, ())`, which is a `choice`, and in 0.1 a `choice` payload
+must be a scalar or a pointer (SF-6), so `o?` on an Optional of a class or a
+tuple is rejected, as `?` on a `Core.Result` of one is: the Sum types bullet's
+W-010 residue.
 
 A `for` loop over a type that implements `Iterate` calls its `Next`, which
 returns `Optional(ElementType)`, and stops at the first empty value; the
@@ -458,8 +475,9 @@ exports as `T*`; the null niche makes the two the same bits. `Cpp.nullptr`
 converts to `Optional(T*).None()`. Comparing two C++ pointers in Carbon, and
 therefore two `Core.Optional(T*)` values for a built-in `T*`, needs W-174.
 
-An imported C++ class whose `operator==` makes it `Core.Eq` can be held, and
-`Some`, `HasValue()` and `Get()` work, but in 0.1 `==` on two
+An imported C++ class can be held, and `Some`, `HasValue()` and `Get()` work;
+destroying a non-empty Optional of one runs the class's C++ destructor on the
+held copy. If its `operator==` makes it `Core.Eq`, in 0.1 `==` on two
 `Core.Optional(T)` values for such a class `T` fails to check with "semantics
 TODO: `interop with non-identifier package name`" at the prelude's `Optional`
 class: the comparison would need the toolchain to name the `Core` package from
@@ -474,23 +492,11 @@ it is the open half of the fork's work on sum-type consumption with
 
 Each limit is a filed fork work item, with the condition under which it closes:
 
--   **W-170: an Optional never destroys the value it holds.** See
-    [Ownership and lifetime](#ownership-and-lifetime). Closes when a `Destroy`
-    for `Core.Optional` lands that keeps `Core.Optional(T*)` trivially
-    destructible, and optional_destroys_value.carbon passes.
--   **W-171: the default storage misreads a payload whose value representation
-    differs from that of its `MaybeUnformed` field.** For
-    `Core.Optional(bool)`, `Get()`, a copy and `==` crash the compiler; for
-    `Core.Optional(Core.Optional(U*))` they return wrong values with no
-    diagnostic. Closes when both lower correctly, and optional_bool.carbon and
-    optional_nested_pointer.carbon pass.
 -   **W-172: a float or character literal argument for a
     `T: Core.Copy & Core.Destroy` parameter aborts check.**
     `Core.Optional(f64).Some(2.5)` is an example; bind a typed value first
     (`let f: f64 = 2.5;`). Closes when the toolchain handles literal types
     there.
--   **W-173: `Get()` on an empty Optional is unchecked.** Closes when `Get()`
-    on an empty value is a fail-stop.
 -   **W-174: the built-in pointer types have no `==`.** So `Core.Optional(T*)`
     compares only when a library gives `T*` an equality. Closes when the
     prelude gives `T*` an `EqWith(T*)` impl, whose design must say whether it
@@ -513,6 +519,23 @@ Each limit is a filed fork work item, with the condition under which it closes:
 -   **W-179: a non-final impl that a `final` impl completely subsumes is
     diagnosed only where it is used.** Closes when its declaration is
     diagnosed, as proposal p5337 specifies.
+-   **W-196: `Core.Optional(T)` for a non-pointer `T` is not trivially
+    destructible.** See [Ownership and lifetime](#ownership-and-lifetime): a
+    `Core.Optional(i32)` is not a union field type, and destroying one tests
+    whether it holds a value and calls the value's out-of-line destroy, where
+    C++'s `std::optional<int>` is trivially destructible. Closes when a
+    conditional `TrivialDestructor` rule is designed and adopted.
+-   **W-199: a `const C` object never runs `C`'s declared `Destroy`.** So a
+    `Core.Optional(const C)` keeps its held value. Filed under classes. Closes
+    when a `const C` is destroyed as a `C` is.
+-   **W-200: only `Core.Optional(T*)` may be declared without an
+    initializer.** An unformed default storage would leave the flag that says
+    whether it holds a value uninitialized for its destroy to read. For the
+    same reason, a class with a non-pointer `Core.Optional` field, or an
+    adapter of one, must not implement `Core.UnformedInit`, as one with a
+    `Core.Buf` field must not: the toolchain accepts the impl, but its unformed
+    object's destroy reads that flag. Closes when a variable's destroy runs
+    only once it is formed, as for `Core.Buf` (W-115).
 -   **W-195: a checked generic's `==` on a compile-time-only type aborts
     lowering.** `Core.Optional(Core.IntLiteral)` values compare through the
     generic impl, which lowers `Core.IntLiteral`'s compile-time-only `==` as a
@@ -523,8 +546,11 @@ Each limit is a filed fork work item, with the condition under which it closes:
     to check.** See [C++ interoperability](#c-interoperability). Filed by the
     C++ export work. Closes when the toolchain can name the `Core` package
     from C++.
--   **Assignment does not destroy the overwritten value** (W-160, filed by the
-    strings workstream). Closes with assignment that destroys the old value.
+-   **Assignment does not destroy the overwritten value** (filed by the strings
+    workstream). Closes with assignment that destroys the old value.
+-   **A class that declares its own `Destroy` does not destroy its fields**
+    (W-197), so an Optional field of such a class keeps its value. Closes when
+    such a class's fields are destroyed after its `Destroy` runs.
 
 One divergence is disclosed rather than filed: in 0.1 a comparison of two
 non-empty values runs `T`'s `Copy` and `Destroy` once per value
@@ -550,9 +576,14 @@ non-empty values runs `T`'s `Copy` and `Destroy` once per value
 -   **Rebuilding `Optional` as a `choice` now.** The pointer ABI, the `Try`
     signature, the names the `for` desugaring calls and the C++ mapping's name
     all constrain it, and comparison does not need it (W-177).
--   **Destroying the held value with a declared `Destroy` now.** It makes every
-    Optional nontrivially destructible, the pointer niche included, so a
-    `Core.Optional(T*)` union field stops compiling (W-170).
+-   **A `Destroy` declared on `Optional(T)` itself.** It makes every Optional
+    nontrivially destructible, the pointer niche included, so a
+    `Core.Optional(T*)` union field stops compiling; the default storage's
+    `Destroy`, reached because an adapter is destroyed as its adapted type, does
+    not reach the niche.
+-   **Amending TY4 to name `Get()`'s precondition instead of checking it.**
+    That would describe a hole rather than close it; the check costs nothing in
+    a `for` loop, whose own `HasValue()` test makes it dead after optimization.
 -   **The dated note above the placeholder TODO as a multi-line comment.** Every
     debug-info and diagnostic line number below it moves, which moves goldens
     that never compare an Optional.
@@ -562,8 +593,8 @@ non-empty values runs `T`'s `Copy` and `Destroy` once per value
     same-type comparison defines `NotEqual` itself, and C++ uses the contained
     type's `!=`; for a `T` whose `!=` is not the negation of its `==`, the
     default would disagree with that rule.
--   **A checked `Get()` or a pointer `==` in this design's first step.** Each is
-    its own design (W-173, W-174), and neither is needed for comparison.
+-   **A pointer `==` in this design.** It is its own design (W-174), and is not
+    needed for comparison.
 
 ## References
 
@@ -590,4 +621,5 @@ non-empty values runs `T`'s `Copy` and `Destroy` once per value
     [p005337: Interface extension and `final impl` update](/proposals/p005337-interface-extension-and-final-impl-update.md)
 -   [Unions](unions.md#trivially-destructible-and-trivially-copyable-types)
 -   Fork: [fork/optional/plan.md](/fork/optional/plan.md) (decisions
-    D-OP-1..15), [fork/decision-log.md](/fork/decision-log.md) (F-015)
+    D-OP-1..15), [fork/optional2/plan.md](/fork/optional2/plan.md) (decisions
+    D-OP2-1..16), [fork/decision-log.md](/fork/decision-log.md) (F-015, F-016)

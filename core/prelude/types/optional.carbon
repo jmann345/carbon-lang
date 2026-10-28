@@ -12,10 +12,10 @@ import library "prelude/operators/bitwise";
 import library "prelude/try";
 import library "prelude/operators/comparison";
 import library "prelude/types/maybe_unformed";
-
+import library "prelude/types/string";
 // TODO: Decide how to expose this in the public API.
 private interface OptionalStorage {
-  let Type: type;
+  let Type: Destroy;
   fn None() -> Type;
   fn Some(self) -> Type;
   fn Has(value: Type) -> bool;
@@ -37,15 +37,15 @@ class Optional(T: OptionalStorage) {
   fn HasValue(self) -> bool {
     return T.Has(self as T.Type);
   }
-  fn Get(self) -> T {
-    return T.Get(self as T.Type);
-  }
+  fn Get(self) -> T;
+  // Defined at the end of this file, where an empty value fails-stop
+  // (fork, OP-2, W-173).
 
   // TODO: Use `private adapt` or `unsafe adapt` once available.
   adapt T.Type;
 }
 
-impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit {}
+// Only `Optional(T*)` is `UnformedInit`: see the end of this file (OP-2).
 
 impl forall [T: OptionalStorage] Optional(T) as Copy {
   fn Op(self) -> Self {
@@ -272,4 +272,36 @@ final impl forall [T: Destroy & OptionalStorage & Ordered]
     }
     return self.Get() >= other.Get();
   }
+}
+
+// Fork (OP-2, F-015, docs/design/optional.md): an Optional owns the value it
+// holds. The default storage destroys its value when it holds one, and the
+// `Optional` adapter is destroyed as its storage. The pointer niche's
+// `MaybeUnformed(T*)` declares no `Destroy`, so `Optional(T*)` stays trivially
+// destructible and a union may hold one. `OptionalStorage.Type` is `Destroy`
+// so that a checked generic can destroy an `Optional(T)` it creates.
+impl forall [T: Copy & Destroy] DefaultOptionalStorage(T) as Destroy {
+  fn Op(ref self) {
+    if (self.has_value) {
+      (self.value unsafe as T).(Destroy.SelfDestruct)();
+    }
+  }
+}
+
+// An unformed default storage would leave `has_value` uninitialized, and its
+// `Destroy` reads it, so only the pointer niche is `UnformedInit`: as for
+// `Buf` (buf.carbon), `var o: Optional(T);` is an error for a non-pointer `T`
+// (fork, OP-2).
+impl forall [T: type] Optional(T*) as UnformedInit {}
+
+private fn FailStop(message: str) = "fail_stop";
+
+// `Get()` requires `HasValue()`. On an empty value it fails-stop, as a
+// `Core.Slice` bounds violation does, so it never reads unformed storage and
+// never returns the null pointer of the niche (fork, OP-2, W-173).
+fn Optional(T: OptionalStorage).Get(self) -> T {
+  if (not self.HasValue()) {
+    FailStop("carbon: Core.Optional.Get on an empty value; terminating\n");
+  }
+  return T.Get(self as T.Type);
 }

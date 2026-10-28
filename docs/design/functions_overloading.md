@@ -363,7 +363,9 @@ gate and the gate's golden in the same commit:
     specific; interfaces and impls remain gates (ix) and (xiii));
 -   (iii) an explicit parameter after `self` that is not a single by-value
     binding (`ref` or `var` parameters, and destructuring tuple or struct
-    parameter patterns);
+    parameter patterns) (amended 2026-10-28, OV-4: a default value does not
+    change the parameter it wraps, so `y: i32 = 2` is a by-value binding and
+    is accepted; a defaulted `var` parameter or tuple pattern is still gated);
 -   (iv) `extern overload fn` — LIFTED at OV-2 (an `extern overload fn`
     must name an existing member of the imported set, and the per-member
     `extern` ownership rules then apply);
@@ -445,6 +447,12 @@ diagnostics of proposal #3763 (`RedeclParamDiffers`,
 [functions: redeclaration matching](functions.md#redeclaration-matching)),
 never a silently unreachable member. Member identity is parameter-type
 equality: the first type-equal member is the one being redeclared.
+_Fork amendment 2026-10-28, OV-4:_ a default value is part of a declaration's
+tokens, not of a parameter's type, so `overload fn F(x: i32, y: i32 = 2);`
+followed by `overload fn F(x: i32, y: i32);`, or
+`overload fn G(x: i32, y: i32 = 2);` followed by
+`overload fn G(x: i32, y: i32 = 3);`, redeclares the first member and is
+diagnosed `RedeclParamDiffers`, as two plain declarations are.
 
 ### Preserved diagnostics
 
@@ -542,9 +550,12 @@ literal→float, abstract-init and aggregate-literal element conversions".)
 1.  **Arity.** The number of arguments is within the candidate's accepted
     range; for method calls, the receiver binds to `self` and the
     parenthesized arguments are counted against the parameters after `self`.
-    (The range is a single number today; it is specified as a range so that
-    [variadic](variadics.md) members can join sets later without changing
-    this algorithm. In the toolchain: `GetExplicitArityRange`.)
+    (The range runs from the candidate's parameter count less its trailing
+    parameters with default values up to its parameter count, the range the
+    ordinary call checks; it is a range so that [variadic](variadics.md)
+    members can join sets later without changing this algorithm. In the
+    toolchain: `GetExplicitArityRange`. Rewritten 2026-10-28 by OV-4, W-341; the
+    2026-09-27 text read "The range is a single number today".)
 2.  **Deduction.** Values for the candidate's deduced and compile-time
     parameters are deduced from the argument types, per
     [generic call rules](functions.md#direct-calls). Deduction failure means
@@ -567,13 +578,47 @@ found. Argument expressions are evaluated once, before resolution, in the
 usual left-to-right order; the match test examines their types and
 compile-time values but does not re-evaluate them per candidate.
 
-**CLOSED (fork amendment 2026-09-27) by D-OV-4 step 2(b):** no
-Carbon-native default arguments in 0.1, so the arity step above stays exact
-and no interaction rule is needed. Carbon has no default-argument design;
+**CLOSED (fork amendment 2026-09-27; rewritten 2026-10-28 by OV-4, W-341) by
+D-OV-4 step 2(b) and OV-4's D-OV4-1:** Carbon parameters take positional default
+values, as upstream's design spells them and its toolchain implements them: a
+parameter written `p: i32 = 4` may be omitted at a call, and the call uses the
+default value for it. Proposal
+[p2200](/proposals/p002200-template-generics.md) declares
+`class C4 { fn M[me: Self](p: i32 = 4); }` and calls `C4.M` "using the default
+value of `4` for `p`", and the future-work sketch "Field defaults for struct
+types" under "Optional named parameters" in [classes](classes.md) declares
+`options: {.stable: bool = false, .descending: bool = false} = {}` and calls
+`SortIntVector(&v);`. Every parameter after a defaulted one must also have a
+default (upstream's toolchain at 0421bf3b4, check/function.cpp:676-679: "if a
+subpattern provides a default value, all subsequent patterns at that level of
+nesting must provide a default value as well"), a default must be a constant
+(check/handle_pattern_list.cpp:185: "default value is not a constant"), and a
+call supplies from the parameter count less the defaults up to the parameter
+count (check/call.cpp:46-52: "the number of arguments is within the range
+[callee_arity - arity_lower_bound_margin, callee_arity]"). Named optional
+parameters stay the open question that classes.md records; this page adds no
+spelling for them. A member with default values matches as the ordinary call of
+the same function would: the arity step accepts from the member's parameter
+count less its trailing defaulted parameters up to its parameter count, the
+match test converts only the arguments the call supplies, and the selected
+member's ordinary call supplies the omitted defaults. When defaults make two
+members accept one call, the first in declaration order is selected, as for any
+two members that accept it; using a default is not a worse match, so a member
+that an earlier member's defaults cover, such as
+`overload fn Pick(unused x: i32) -> i32` declared after
+`overload fn Pick(unused x: i32, unused y: i32 = 2) -> i32`, is never
+selected, as a member that an earlier member's conversions cover is not. Until
+the fork takes upstream's later
+commits, a generic member called with a defaulted argument omitted fails
+deduction as the ordinary call of a generic function does (upstream 503f09037,
+W-360), and an exported member's C++ declaration carries no default argument
+(upstream 9799a2326, W-361). (The superseded text of 2026-09-27 read: "no
+Carbon-native default arguments in 0.1, so the arity step above stays exact and
+no interaction rule is needed. Carbon has no default-argument design;
 overloading substitutes for the common cases, and default arguments on
 _imported_ C++ functions keep working (they participate in Clang-side
-resolution; see [Importing C++ overload sets](#importing-c-overload-sets)).
-Revisit as its own design fork if a need appears.
+resolution; see Importing C++ overload sets). Revisit as its own design fork if
+a need appears.")
 
 ### No ranking, no subsumption
 
@@ -1019,8 +1064,13 @@ carry the detail.
     [Exporting Carbon overload sets to C++](#exporting-carbon-overload-sets-to-c)):
     export the exportable subset; the per-member semantics TODO is the note.
     CLOSED by fork/overload/plan.md §1.C.1 (OV-3).
--   **F-009j — Default arguments**: none in 0.1; the arity step is exact.
-    CLOSED by D-OV-4 step 2(b).
+-   **F-009j — Default arguments**: members take upstream's positional default
+    values; the arity step accepts a range, the match test converts the
+    supplied arguments only, and first match decides between members that both
+    accept (see the CLOSED paragraph that ends
+    [The candidate match test](#the-candidate-match-test)). CLOSED by D-OV-4
+    step 2(b); rewritten 2026-10-28 by OV-4 (W-341), whose superseded 2026-09-27
+    text read "none in 0.1; the arity step is exact."
 -   **F-009k — Type-identical, token-different declarations** (see
     [New member versus redeclaration](#new-member-versus-redeclaration)):
     an invalid redeclaration of the type-identical member. CLOSED by D-OV-3.

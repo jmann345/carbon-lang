@@ -4221,8 +4221,10 @@ rule and re-measures W-253), (v) and (vi) (classified 2026-10-28, RG-1:
 ALIGNED with gaps, p002200:200-206; W-268, W-260 to W-262 and W-266); (i),
 (ii), (iv), (vii) and (viii) (classified 2026-10-28, RG-1: NONE, W-355;
 internal surfaces and fixes with their merge rules: none of (i)'s five names is
-in upstream's toolchain, and one upstream commit since the cut touches
-lower/handle.cpp and none deduce_class_args.carbon; W-258 and W-250).
+in upstream's toolchain, one upstream commit since the cut touches
+lower/handle.cpp, and seven touch check/call.cpp, whose `IsCallPerformable`
+holds (viii)'s exception (check H10.8 of fork/register/rg1-checks.tsv on
+claude/carbon-fork-0-1-rg1); W-258 and W-250).
 
 Veto digest: D-TP-3 (a copy of the storage chain, not upstream's shared block),
 D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a

@@ -6,15 +6,28 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 5, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 5 is the
+**Status:** rev 6, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION at rev 5,
+AMENDED BY A STOP-AND-AMEND. Rev 6 is the plan amender's revision of rev 5
+(4ca369e38) after the implementer stopped before committing commit 1: the
+superseded texts that Appendix A's blocks A.1.6 and A.5.10 quote had dropped
+the link markup of three links on the page lines they quote, so they were not
+byte-equal to the pages at 2407efa74. Rev 6 restores the three links in those
+two quotes, states in section 2.1 the byte-equality test every superseded text
+and anchor meets, adds that test to section 8 item 5, and corrects A.10.2's
+line count from 10 to 11 and the line ranges in A.1.6's and A.5.10's headings
+(section 8.12; amended 2026-10-28, implementation:
+stop-and-amend: link markup in two superseded quotes). No design statement,
+rule, example, diagnostic or count of section 8 item 1 changes. The
+implementation resumes from this revision's commit with section 3's commit 1,
+after the focused re-review of this amendment. Rev 5 was the
 fixer's fold of the focused re-review (round 3) of rev 4 (9d48a863e), whose
 verdict was APPROVE-WITH-AMENDMENTS: no BLOCKER (RR2-B1 resolved), one MAJOR,
 RR3-M1 (PR 65's `IndirectIndexWith.Ref`, a by-value producer of a `ref` into
 the block with no `bound`, would reopen `Peek8`'s shape once PR 65 lands), and
 two MINORs, RR3-m1 and RR3-m2; all three are folded and none is rejected
 (section 8.11), and the "Sign-off" section tables every review of this plan.
-The implementation starts from this revision's commit with section 3's
-commit 1. Rev 4, 2026-10-28, was the
+The implementation started from rev 5's commit with section 3's commit 1 and
+stopped before committing it (section 8.12). Rev 4, 2026-10-28, was the
 fixer's fold of the focused re-review (round 2) of rev 3 (603749ee1), whose
 verdict was REJECT on one BLOCKER, RR2-B1 (a trusted prelude writer,
 `Core.Buf(T).Set` with its by-value receiver, wrote a borrowed `Core.String`
@@ -40,8 +53,8 @@ V-3b, DR-0). Branch
 after PR 67), head 2407efa74; this plan is a new file beside fork/safe/plan.md,
 which receives a dated pointer paragraph in commit 2 (section 2.3). Upstream
 was read at its tip 0421bf3b4 (fetched 2026-10-28) and re-read for rev 3 at
-22f3cd353 and for rev 4 and rev 5 at 07718a832, where no quoted file has
-changed (section 0.1). Records and design
+22f3cd353 and for rev 4, rev 5 and rev 6 at 07718a832, where no quoted file
+has changed (section 0.1). Records and design
 text only: no toolchain, prelude, golden, program or conformance change; the
 two SKIP stubs stay as they are; nothing is built.
 
@@ -81,8 +94,10 @@ and section 2.6).
 -   Section 5, scoreboard.
 -   Section 6, churn and collisions.
 -   Section 7, risks and rejected alternatives.
--   Section 8, verification, the list of what was not run, and the plan
-    reviews' fold records (sections 8.8 to 8.11).
+-   Section 8, verification, the list of what was not run, the plan
+    reviews' fold records (sections 8.8 to 8.11) and the stop-and-amend
+    record (section 8.12; amended 2026-10-28, implementation: stop-and-amend:
+    link markup in two superseded quotes).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -1078,8 +1093,11 @@ replacement text serves both (Appendix B.1).
     or withdrawn rule is rewritten in place to state upstream's rule, and the
     rewrite carries the mark "(realigned <date>, SAFE-2: W-nnn; the superseded
     2026-10-12 text read: "...")" with the superseded sentences verbatim, the
-    OV-4 convention; a passage whose text stays true and only needs the rule's
-    consequence gains a dated sentence instead. A heading that states a
+    OV-4 convention, verbatim being section 2.1's byte-equality with the
+    page's source, link markup included (amended 2026-10-28, implementation:
+    stop-and-amend: link markup in two superseded quotes); a passage whose
+    text stays true and only needs the rule's consequence gains a dated
+    sentence instead. A heading that states a
     withdrawn rule is renamed, and the renamed section's first paragraph
     quotes the old heading; the markdown-toc hook regenerates each page's
     table of contents. `<date>` is the implementing commit's `date -u +%F`.
@@ -1686,6 +1704,20 @@ Where a block replaces a sentence inside a paragraph, it
 quotes the sentence to be replaced in full as its anchor and the rest of the
 paragraph is untouched.
 
+Every anchor and every superseded text a block quotes is byte-equal to its
+file's source at 2407efa74 once these, and nothing else, are set aside: a line
+break with the indentation after it; the `>` and the space after it that start a
+blockquote line; the `//` and the space after it that start the second line of a
+code comment the quote joins into one (A.2.12); and the " / " with which a block
+says it joins list items or separate pieces (A.2.8, A.3.4). Link markup, code
+spans, emphasis and punctuation belong to the text: a link is quoted as
+`[text](target)`, never as its text alone, because the quote is of the page's
+source, not of its rendered words. A ledger note's quote is of the item's JSON
+string value. The implementer tests every quote this way before each commit, a
+mismatch being a stop (section 8 item 5). (Added 2026-10-28, implementation:
+stop-and-amend: link markup in two superseded quotes: rev 5's A.1.6 and A.5.10
+quoted three links by their text alone, section 8.12.)
+
 ### §2.2 Commit 1: the pages (Appendix A)
 
 | Page (docs/design/) | Blocks | What changes |
@@ -2102,7 +2134,11 @@ For each of commits 1 and 2, and every fold commit:
     examples once), outcomes as section 0.7.
 5.  PR 67's quote and silence checks at a freshly fetched tip, from a detached
     worktree of PR 67's head under /dev/shm/safe2-implementer/rg1, removed
-    after; plus this plan's own quotes (section 0.1) re-read at that tip.
+    after; plus this plan's own quotes (section 0.1) re-read at that tip. And
+    before each commit, every anchor and superseded text of the Appendix A or
+    B blocks it applies is compared with its file at 2407efa74 under the test
+    of section 2.1, link markup included, and found once (amended 2026-10-28,
+    implementation: stop-and-amend: link markup in two superseded quotes).
 6.  `python3 -I fork/conformance/runner.py --self-test` clean (R7).
 7.  `git merge-tree --write-tree --name-only <head> <held head>` for trunk and
     every held head; the conflict set of each equals its row of section 0.8's
@@ -2387,6 +2423,102 @@ comparison and the copy of mutation_safety.md at 2407efa74 are in the scratch
 directory above; the detached worktree under /dev/shm/safe2-fixer3 was removed
 after the checks; nothing was built.
 
+### §8.12 Stop-and-amend record (rev 6, 2026-10-28)
+
+The implementer of section 3's commits 1 and 2 stopped before committing
+commit 1 on the stop condition "a superseded text the block quotes is not
+byte-equal to the page's text at 2407efa74". Nothing was committed or pushed,
+its worktree was left clean at 4ca369e38, and every other check of commit 1
+matched this plan: every anchor found once, the R31 deltas of section 8 item 1,
+prek's fixpoint with no word of a replacement text changed, rumdl@0.2.58, the
+heading sets, the links, the nightly outcomes of section 0.7, the merge-tree
+sets of section 0.8, the id re-scan (W-365 next free), PR 67's checks and the
+self-test.
+
+**The difference.** Two blocks quote a superseded text with the link markup of
+the page's source removed, three links in all:
+
+| block | line at 2407efa74 | the page's source | rev 5's quote |
+| --- | --- | --- | --- |
+| A.1.6 | safety/README.md:566 | `see [Spatial safety](spatial_safety.md).` | `see Spatial safety.` |
+| A.5.10 | safety/spatial_safety.md:553 | `The strategy's [build modes](README.md#build-modes) section` | `The strategy's build modes section` |
+| A.5.10 | safety/spatial_safety.md:557 | `in [fork/safe/plan.md](/fork/safe/plan.md)) for two reasons.` | `in fork/safe/plan.md) for two reasons.` |
+
+With the three links restored, both quotes are byte-equal to their pages once
+line breaks and blockquote markers are set aside.
+
+**Root cause.** A quote that was not byte-exact. The planner quoted the two
+passages' rendered words, the link text without its target, and the plan
+never said what "verbatim" (D-SAFE2-2) and "byte for byte" (hand-off note 3)
+set aside, so a quote of the rendered page and a quote of its source could not
+be told apart by their words. The sweeps that followed, B-M5's re-diff of each
+superseded passage (section 8.8), RR1-m2's sweep for dropped fold marks
+(section 8.9) and RR2's check of the A.9.1 and A.5.9 quotes (section 8.10),
+looked for missing sentences and marks, and none compared every quote with its
+source with link markup included. It is not a wrong anchor, a stale line, a
+count of section 8 item 1, a hook rewrite, an unlisted dependent line or a
+design statement: no rule changes, and no shrink line is drawn.
+
+**Measured facts** (the rev 6 amender, 2026-10-28, scratch directory
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2/amender6/):
+
+-   Upstream fetched at 07718a832, the tip rev 4 and rev 5 read. Over p005434,
+    p005914, p000257, docs/design/README.md, safety/README.md, arithmetic.md,
+    values.md, classes.md and slices.md, `git log c1e83b0b7..upstream/trunk`
+    lists only f21c62524 (classes.md), and safety/README.md:260-262,
+    p005434:83, :660-664 and :831-835, p000257:355-360, p005914:85-88 and
+    arithmetic.md:150-173 read as section 0.1 quotes them.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd under
+    /dev/shm/safe2-amender/rg1, removed after, at 07718a832: "checked 273
+    quotes, 0 failed", "checked 89 silence checks, 0 failed", the H1 subsets
+    of 97 and 120 quote rows with 0 failed, and the five H1 silence checks
+    (H1.1, H1.3, H1.4, H1.7, H1.15) with 0 failed. All 18 held heads and
+    trunk 1c83422a0 match `git ls-remote origin`.
+-   A checker written apart from the implementer's (bin/q6.py) took every
+    top-level quoted span of 25 characters or more in the fenced texts of
+    Appendices A and B, and in Appendices C and D against PR 67's files at
+    56e2e5bbd and trunk's fork/ORCHESTRATION.md at 1c83422a0, and compared it
+    with its file with only line breaks and blockquote markers set aside. The
+    only spans that match once link markup or a comment marker is removed and
+    not before are A.1.6's, A.5.10's and A.2.12's; every other span is on its
+    file byte for byte, is a quote of upstream found byte for byte at
+    07718a832, or is new text. B.4's eleven superseded quotes equal the JSON
+    string values of W-146 and W-148, and the 281 verbatim line fields of
+    sections 0.4 and 0.5 equal their page lines apart from leading
+    indentation.
+-   A.2.12's quote joins the two comment lines it replaces without the second
+    line's `//` and its space; a quote inside a comment of one line cannot
+    keep the break,
+    so section 2.1 now names that marker among the things set aside, and the
+    block is unchanged.
+-   The two amended texts, applied to the implementer's applied copies of
+    safety/README.md and spatial_safety.md in the worktree and run through
+    prek to a fixpoint (the first pass changed nothing; check-links and the
+    style hook passed), pass `uvx rumdl@0.2.58 check`, keep the R31 counts of
+    section 8 item 1 (safety/README.md bullets 70 and rows 47,
+    spatial_safety.md bullets 55 and rows 22, headings unchanged), make each
+    page one line longer than the implementer's copy (841 and 742 lines), and
+    quote their pages byte for byte under section 2.1's test; the two files
+    were restored from the index after.
+-   A.10.2's block is ten lines and its blank line an eleventh, as A.10.1's;
+    the implementer measured slices.md going from 462 to 484 lines.
+
+**The amended instructions.** A.1.6's fenced block quotes the superseded
+note's last sentence but one with the link `[Spatial safety](spatial_safety.md)`
+as :566 writes it, its last two lines becoming three, and its heading cites
+:561-567. A.5.10's first
+block quotes the superseded opening with `[build modes](README.md#build-modes)`
+and `[fork/safe/plan.md](/fork/safe/plan.md)`, and its heading cites the
+bullet as :552-567. A.10.2 adds 11 lines, not 10. Section 2.1 states the
+byte-equality test, D-SAFE2-2 and hand-off note 3 point at it, and section 8
+item 5 runs it before each commit, a mismatch being a stop. No other block,
+record, count, merge-tree set, nightly outcome or design statement changes;
+the three restored links point where links of the same pages already point at
+2407efa74. The implementer resumes the stage from rev 6's commit: it applies
+commit 1 from the rev 6 blocks, or applies the two amended texts to its saved
+copies of the pages, and re-runs every check of section 8 before committing,
+then commit 2.
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (added 2026-10-28,
@@ -2398,16 +2530,26 @@ review fold: RR3-M1, RR3-m1, RR3-m2):
 | B: records, consistency and R31 | rev 1, 475b7ecb0 | APPROVE-WITH-AMENDMENTS | 0 | 6 | 7 | 13 | none | rev 2, 46980f8bd, §8.8 |
 | RR1: the focused re-review, round 1 | rev 2, 46980f8bd | REJECT | 1 | 1 | 4 | 6 | none | rev 3, 603749ee1, §8.9 |
 | RR2: the focused re-review, round 2 | rev 3, 603749ee1 | REJECT | 1 | 0 | 3 | 4 | none | rev 4, 9d48a863e, §8.10 |
-| RR3: the focused re-review, round 3 | rev 4, 9d48a863e | APPROVE-WITH-AMENDMENTS | 0 | 1 | 2 | 3 | none | rev 5 (this revision), §8.11 |
+| RR3: the focused re-review, round 3 | rev 4, 9d48a863e | APPROVE-WITH-AMENDMENTS | 0 | 1 | 2 | 3 | none | rev 5, 4ca369e38, §8.11 |
 
 The five reviews raised 34 findings, 4 BLOCKERs, 10 MAJORs and 20 MINORs; all
 34 are folded and none is rejected. RR3, the last review, found no BLOCKER and
 its verdict is not REJECT, so rev 5 is SIGNED OFF FOR IMPLEMENTATION on
 2026-10-28. Its one MAJOR fold adds no rule: it applies the trusted-body rule
 of rev 4, which RR3 traced and accepted, to PR 65's `Ref`, in the words W-144
-already uses for `IndexWith.At`. The implementation starts from this
-revision's commit with section 3's commit 1; its two document reviews and the
-focused re-review of section 3 steps 3 to 5 follow.
+already uses for `IndexWith.At`. The implementation started from rev 5's
+commit with section 3's commit 1; its two document reviews and the focused
+re-review of section 3 steps 3 to 5 follow.
+
+Rev 6, 2026-10-28, is a stop-and-amend of rev 5, not a review fold (see
+section 8.12): it restores three links in two superseded quotes, corrects two
+line ranges and A.10.2's line count, and states the byte-equality test the
+quotes meet. It changes no rule, example, diagnostic, Appendix B to D text,
+count of section 8 item 1 or merge-tree set, so rev 5's sign-off stands for
+every text rev 6 leaves as it was; the focused re-review of the
+amendment comes next, and the implementation resumes from rev 6's commit
+with section 3's commit 1 once it finds no BLOCKER (amended 2026-10-28,
+implementation: stop-and-amend: link markup in two superseded quotes).
 
 ## Hand-off notes for the implementer
 
@@ -2420,7 +2562,9 @@ focused re-review of section 3 steps 3 to 5 follow.
     notes of Appendix B.4 append to each item's `notes` string, a space and the
     note text, keeping the file's two-space indentation; parse it after.
 3.  Keep the superseded texts byte for byte: they are quotes of PR 53's lines
-    at 2407efa74 and a reviewer diffs them.
+    at 2407efa74 and a reviewer diffs them. Byte for byte is section 2.1's
+    test: a quoted link keeps its `[text](target)` (amended 2026-10-28,
+    implementation: stop-and-amend: link markup in two superseded quotes).
 4.  R31 and the style hook (SAFE-1's hand-off note 4 applies unchanged):
     never let a `#NN`, a list marker, `+`, `-` or a digit and a period start a
     prose line; write "PR 53", "proposal 5434" or "p005434"; headings never end
@@ -2579,12 +2723,17 @@ W-348).
 
 <!-- google-doc-style-resume -->
 
-### §A.1.6 safety/README.md :560-566, Build modes, the blockquote replaced
+### §A.1.6 safety/README.md :561-567, Build modes, the blockquote replaced
 
 Replace the blockquote that begins "> **Withdrawn (fork amendment 2026-10-12,
 F-013 D-SAFE-14).**" and ends "> is kept as history." with the block, whose
 label is dated by SAFE-2's commit and names the 2026-10-12 note it replaces
-(amended 2026-10-28, review fold: B-M5; rev 1 dated the new note 2026-10-12):
+(amended 2026-10-28, review fold: B-M5; rev 1 dated the new note 2026-10-12).
+The quoted superseded note keeps the page's link to the spatial page, as
+:566 writes it, `[Spatial safety](spatial_safety.md)` (amended 2026-10-28,
+implementation: stop-and-amend: link markup in two superseded quotes; rev 5
+quoted the link by its text alone, "see Spatial safety", and its heading gave
+the blockquote's lines as :560-566, section 8.12):
 
 <!-- google-doc-style-ignore -->
 
@@ -2605,7 +2754,8 @@ label is dated by SAFE-2's commit and names the 2026-10-12 note it replaces
 > per-site `unsafe fn GetUnchecked` on `Core.Slice` and `Core.Buf` is the only
 > disable, which keeps the strategy's "manually disabled for
 > performance-critical use cases" (proposal p000196) at the site rather than
-> the build; see Spatial safety. The paragraph above is kept as history.")
+> the build; see [Spatial safety](spatial_safety.md). The paragraph above is
+> kept as history.")
 ```
 
 <!-- google-doc-style-resume -->
@@ -4956,12 +5106,18 @@ is" and "Break condition: none for the semantics;" without quoting them).
 
 <!-- google-doc-style-resume -->
 
-### §A.5.10 safety/spatial_safety.md :552-566 and :573-575, Alternatives, the build-flag bullet and the mode-gated sentence
+### §A.5.10 safety/spatial_safety.md :552-567 and :573-575, Alternatives, the build-flag bullet and the mode-gated sentence
 
 Replace the bullet from "**A build flag that disables the checks.**"
 through "which is also the program that would ship." with the first block. In
 the "Mode-gated checks" bullet replace "but not of a bounds violation." with the
-second block.
+second block. The first block's quote of the superseded bullet's opening keeps
+the page's two links as :553 and :557 write them,
+`[build modes](README.md#build-modes)` and
+`[fork/safe/plan.md](/fork/safe/plan.md)` (amended 2026-10-28,
+implementation: stop-and-amend: link markup in two superseded quotes; rev 5
+quoted both links by their text alone, and its heading ended the bullet at
+:566, section 8.12).
 
 <!-- google-doc-style-ignore -->
 
@@ -4984,14 +5140,15 @@ second block.
     per-site `unsafe fn GetUnchecked`, which keeps proposal p000196's disable
     "for performance-critical use cases" where the keyword is. (Realigned
     <date>, SAFE-2: W-351. The superseded 2026-10-12 bullet was headed "A
-    build flag that disables the checks." and began: "The strategy's build
-    modes section promised an unsupported way to disable the default
-    hardening in release builds for benchmarking, and attempt C carried it as
-    an `--unhardened` build flag beside its hardened runtime core. The
-    synthesis withdraws it (D-SAFE-14, review fold A-13(c) in
-    fork/safe/plan.md) for two reasons."; it ended: "and a benchmark that
-    wants the unchecked build measures the program with the accessor at its
-    hot sites, which is also the program that would ship.")
+    build flag that disables the checks." and began: "The strategy's
+    [build modes](README.md#build-modes) section promised an unsupported way
+    to disable the default hardening in release builds for benchmarking, and
+    attempt C carried it as an `--unhardened` build flag beside its hardened
+    runtime core. The synthesis withdraws it (D-SAFE-14, review fold A-13(c)
+    in [fork/safe/plan.md](/fork/safe/plan.md)) for two reasons."; it ended:
+    "and a benchmark that wants the unchecked build measures the program with
+    the accessor at its hot sites, which is also the program that would
+    ship.")
 ```
 
 ```markdown
@@ -5369,7 +5526,10 @@ and :256-259 ("so a callee can `Set` through it") describe the 0.1 prelude's
 by-value `Set`, which D-SAFE2-5 gives `ref self` under W-144. Insert after the
 bullet that ends "and its fields are trivially destroyed." (the last of the
 `Buf` bullets, :260-264) and before "## Iteration", a blank line and the block
-(10 lines added, no heading, list item or row). It goes after the list, not
+(11 lines added, the blank line and the block's 10, as A.10.1's 11, so
+slices.md goes from 462 lines to 484 with both blocks; no heading, list item
+or row; amended 2026-10-28, implementation: stop-and-amend: A.10.2's line
+count, which rev 5 gave as 10). It goes after the list, not
 into the `Set` bullet, because PR 65 rewrites that bullet's last two lines
 (section 0.8); the three-way merge-file with PR 51's, PR 65's and trunk's
 copies is clean.

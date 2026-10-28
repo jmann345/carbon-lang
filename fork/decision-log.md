@@ -4202,10 +4202,29 @@ follow upstream and refill default_init.carbon. (vi) D-TP-13's constraint lookup
 runs on instantiation only (TR-8 PARTIAL, W-260 to W-262, W-266); if upstream
 implements proposal 2200's name lookup, take upstream's. (vii) D-TP-14's
 `semantics TODO` at the `import` stands in front of upstream's own cross-file
-lowering TODO (lower/handle.cpp:524); when upstream imports actions and splices,
+lowering TODO (upstream lower/handle.cpp:384-390 at f27a977d8, this branch's
+:518-524, corrected 2026-10-28 by RG-1); when upstream imports actions and
+splices,
 remove TP-1's TODO with W-250. (viii) D-TP-11 forms a generic class type with
 template-dependent argument values eagerly; if upstream defers it, follow
 upstream and refill deduce_class_args.carbon. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H10 have the quotes):_ (iii) (classified
+2026-10-28, RG-1: ALIGNED at the tip, W-355: upstream README.md:872-874 writes
+the type `array(T, N)` as "a shorthand for the library type
+`Core.Array(T, N)`", whose prelude class adapts the builtin the arm handles,
+core/prelude/types/array.carbon:13-14; UA-3 absorbs 947c1eb52 under the merge
+rule and re-measures W-253), (v) and (vi) (classified 2026-10-28, RG-1:
+ALIGNED with gaps, p002200:200-206; W-268, W-260 to W-262 and W-266); (i),
+(ii), (iv), (vii) and (viii) (classified 2026-10-28, RG-1: NONE, W-355;
+internal surfaces and fixes with their merge rules: none of (i)'s five names is
+in upstream's toolchain, one upstream commit since the cut touches
+lower/handle.cpp, and seven touch check/call.cpp, whose `IsCallPerformable`
+holds (viii)'s exception (check H10.8 of fork/register/rg1-checks.tsv on
+claude/carbon-fork-0-1-rg1); W-258 and W-250).
 
 Veto digest: D-TP-3 (a copy of the storage chain, not upstream's shared block),
 D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a

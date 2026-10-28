@@ -6,20 +6,25 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 4, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 4 folds the
-two implementation reviews of D-RG-13 step 3, RV1 and RV2 of R1 and the seven
-staged commits (both APPROVE-WITH-FIXES: eight MINOR, none rejected; section
-"Implementation review fold record (2026-10-28)"); no verdict and no count of
-section 2 changes. Rev 3, 2026-10-28, folded the focused re-review RR1 of rev 2
-(APPROVE-WITH-AMENDMENTS: two MAJOR, five MINOR; section "Review fold record
-(rev 3, 2026-10-28)"), and section "Sign-off" tables every review of this plan
-and of its implementation. Rev 2, 2026-10-28, folded reviews A and B (section
-"Review fold record (rev 2, 2026-10-28)"); rev 1, 2026-10-27, was the planner's
-draft. Records only: no toolchain, prelude, golden, program or workflow file
-changes with this plan or with any commit it specifies RG-1 makes, beyond the
-register's two check scripts and their two tables, which R1 commits under
-fork/register/ (section 4.2); the code realignments it files are their owners'
-commits (D-RG-7). RG-1 is workstream W-342, W-343 and W-344 of
+**Status:** rev 5, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 5 folds
+round 2 of the two implementation reviews of D-RG-13 step 3, RV1r2 and RV2r2 of
+R1's line and the seven staged commits (both APPROVE-WITH-FIXES: one MAJOR and
+five MINOR, none rejected; section "Implementation review fold record (round 2,
+2026-10-28)"): H1.6, PR 53's prefix `unsafe` forms, becomes NONE, so the
+verdicts are 19 DRIFT, 32 ALIGNED and 104 NONE, and section 4.2's quote table
+holds 273 lines. Rev 4, 2026-10-28, folded round 1, RV1 and RV2 of R1 and the
+seven staged commits (both APPROVE-WITH-FIXES: eight MINOR, none rejected;
+section "Implementation review fold record (2026-10-28)"), with no verdict and
+no count of section 2 changed. Rev 3, 2026-10-28, folded the focused re-review
+RR1 of rev 2 (APPROVE-WITH-AMENDMENTS: two MAJOR, five MINOR; section "Review
+fold record (rev 3, 2026-10-28)"), and section "Sign-off" tables every review of
+this plan and of its implementation. Rev 2, 2026-10-28, folded reviews A and B
+(section "Review fold record (rev 2, 2026-10-28)"); rev 1, 2026-10-27, was the
+planner's draft. Records only: no toolchain, prelude, golden, program or
+workflow file changes with this plan or with any commit it specifies RG-1 makes,
+beyond the register's two check scripts and their two tables, which R1 commits
+under fork/register/ (section 4.2); the code realignments it files are their
+owners' commits (D-RG-7). RG-1 is workstream W-342, W-343 and W-344 of
 fork/inventory/work-items.json, scheduled by fork/ORCHESTRATION.md Next actions
 item 6, on branch claude/carbon-fork-0-1-rg1 cut from trunk 0b999d449.
 
@@ -27,7 +32,7 @@ item 6, on branch claude/carbon-fork-0-1-rg1 cut from trunk 0b999d449.
 classified against upstream's tip f27a977d8 by the rule of fork/rulebook.md R32,
 and re-checked unchanged at the moved tip e6fddcf97 (section 0.1): 155 entries
 in 26 blocks and V-3's design-fork entries (section 0.2). The verdicts are 19
-DRIFT, 33 ALIGNED and 103 NONE; every NONE carries a quote of the nearest
+DRIFT, 32 ALIGNED and 104 NONE; every NONE carries a quote of the nearest
 upstream passage or a scripted silence check (section 4.2, whose tables and
 scripts R1 commits under fork/register/), and every NONE and ALIGNED entry
 outside VA-2's block, whose six carry VA-2's own items, carries the standing
@@ -58,7 +63,8 @@ PR 57 and PR 64 also gain a merge commit of their base PR's new head, and RG-1's
 own PR is records only, held, base trunk, first in the land sequence. Every RG-1
 commit is staged unpushed, reviewed twice and fixed before any push (D-RG-13).
 (amended 2026-10-28, review fold: A-M1 to A-M5, A-m1, A-m3, A-m4, B-B1, B-M2 to
-B-M5, B-m5, RR1-N-1, RR1-N-2, RR1-m3, RR1-m4)
+B-M5, B-m5, RR1-N-1, RR1-N-2, RR1-m3, RR1-m4) (amended 2026-10-28,
+implementation review: R2-M1)
 
 ## Contents
 
@@ -73,6 +79,7 @@ B-M5, B-m5, RR1-N-1, RR1-N-2, RR1-m3, RR1-m4)
 -   Appendix A: records texts
 -   Hand-off notes for the implementer
 -   Implementation review fold record (2026-10-28)
+-   Implementation review fold record (round 2, 2026-10-28)
 -   Review fold record (rev 2, 2026-10-28)
 -   Review fold record (rev 3, 2026-10-28)
 -   Sign-off
@@ -379,17 +386,23 @@ overload-set introducer is p002875's "given the following, using placeholder
 syntax:" (:481) before `overloaded fn Abs[...]` (:484-485), and
 pattern_matching.md says "We do not yet have an approved design for overloaded
 functions" (:696); upstream's lexer has no `overload` or `overloaded` token
-(lex/token_kind.def; check T7.1) and its only toolchain mention is
-sem_ir/function.h:547's "TODO: Also include parameters to support overloaded
-functions." The semantics F-009 chose are ALIGNED: closed same-library sets
-with static_open_extension.md:52-54 ("function overloading is limited in Carbon
-to only signatures defined together in the same library") and
-declaration-order first match with pattern_matching.md:696-697 ("it is
-anticipated that declaration order will be used in that case too") and
-p002875:473-476. Break condition: upstream accepts an overloading proposal or
-lands a token or design page that spells the introducer; the fork then renames
-(a mechanical change of lex/token_kind.def:221, the parser and the docs), filed
-as a DRIFT at that weekly check.
+(lex/token_kind.def; check T7.1). Its nearest toolchain text for Carbon's own
+overloading (its C++ overload resolution aside) is sem_ir/function.h:547-548's
+TODO in the key of generated functions, "TODO: Also include parameters to
+support overloaded functions. Then use them in mangling.", and
+toolchain/docs/lower.md:140-142, which asks that a feature such as "overloaded
+function parameters" that would create a distinct entity "must be included in
+some way in the generated identifier"; neither spells an introducer, a marker or
+a representation (amended 2026-10-28, implementation review: RV1r2-m2). The
+semantics F-009 chose are ALIGNED: closed same-library sets with
+static_open_extension.md:52-54 ("function overloading is limited in Carbon to
+only signatures defined together in the same library") and declaration-order
+first match with pattern_matching.md:696-697 ("it is anticipated that
+declaration order will be used in that case too") and p002875:473-476. Break
+condition: upstream accepts an overloading proposal or lands a token or design
+page that spells the introducer; the fork then renames (a mechanical change of
+lex/token_kind.def:221, the parser and the docs), filed as a DRIFT at that
+weekly check.
 
 **D-RG-7: what RG-1 amends on a held branch, and what it only files.** RG-1's
 commit on a held branch is records and text only: the block's dated note,
@@ -723,7 +736,7 @@ cross-reference to T2.1.
 | T2.4 | F-007: reads as defined byte reinterpretation | silent at the tip, check T2.4: `git grep -c -i -E 'untagged union'` over docs/design, proposals = 1: no upstream page names union reads | NONE | an upstream union design that makes a read of an inactive field otherwise | W-355 |
 | T2.5 | F-009: closed, same-library overload sets | static_open_extension.md:52-54 "function overloading is limited in Carbon to only signatures defined together in the same library." | ALIGNED | upstream allows open or cross-library overloading | W-355 |
 | T2.6 | F-009: declaration-order first match | pattern_matching.md:696-697 "We do not yet have an approved design for overloaded functions, but it is anticipated that declaration order will be used in that case too."; p002875:475 "our current intent is to use the former approach" | ALIGNED | upstream designs best-match selection | W-355 |
-| T2.7 | F-009: the marker `overload fn` (lex/token_kind.def:221) | p002875:481 "using placeholder syntax:" before :484 `overloaded fn Abs[T:! Unsigned](x: T) -> T { return x; }`; pattern_matching.md:696; upstream function.h:547 "TODO: Also include parameters to support overloaded functions." | NONE (R29, D-RG-6) | D-RG-6's | W-355 |
+| T2.7 | F-009: the marker `overload fn` (lex/token_kind.def:221) | p002875:481 "using placeholder syntax:" before :484 `overloaded fn Abs[T:! Unsigned](x: T) -> T { return x; }`; pattern_matching.md:696; the nearest toolchain text (amended 2026-10-28, implementation review: RV1r2-m2): upstream sem_ir/function.h:547-548 "TODO: Also include parameters to support overloaded functions. Then use them in mangling.", in the key of generated functions, and toolchain/docs/lower.md:140-142 "Any feature of an entity (such as parent namespaces or overloaded function parameters) that would create a distinct entity must be included in some way in the generated identifier." | NONE (R29, D-RG-6) | D-RG-6's | W-355 |
 
 ### §2.T3 SL-2 (trunk :3686-3697)
 
@@ -778,7 +791,7 @@ The block's "OV-1's and OV-2's entries stand" is a cross-reference (T6, T7).
 | # | Entry | Upstream at f27a977d8 | Verdict | Break condition | Item, note |
 | --- | --- | --- | --- | --- | --- |
 | T7.1 | the `overload` keyword (lex/token_kind.def:221), F-009's marker | T2.7's quotes; check T7.1: `git grep -c -w 'overload'` over toolchain/lex/token_kind.def = 0 | NONE (R29, D-RG-6) | D-RG-6's | W-355 |
-| T7.2 | the `:overload<N>` mangling marker (sem_ir/mangler.cpp:217-230) | silent at the tip, check T7.2: `git grep -c -F ':overload'` over toolchain/sem_ir/mangler.cpp = 0: function.h:547's TODO | NONE | upstream mangles overloads | W-355 |
+| T7.2 | the `:overload<N>` mangling marker (sem_ir/mangler.cpp:217-230) | silent at the tip, check T7.2: `git grep -c -F ':overload'` over toolchain/sem_ir/mangler.cpp = 0; the nearest text, T2.7's (amended 2026-10-28, implementation review: RV1r2-m2): function.h:547-548's TODO, whose "Then use them in mangling." is about the keys of generated functions, and lower.md:140-142's rule that "overloaded function parameters" be "included in some way in the generated identifier", which the member's position in its set meets | NONE (D-RG-3: an internal marker under lower.md's rule) | upstream mangles overloads | W-355 |
 | T7.3 | the `OverloadSetType`/`OverloadSetValue` inst kinds and the `OverloadSetId` store (sem_ir/inst_kind.def:129-130, ids.h:299) | silent at the tip, check T7.3: `git grep -c -w -E 'OverloadSetType\|OverloadSetValue\|OverloadSetId'` over toolchain = 0 (internal) | NONE | upstream's own representation | W-355 |
 | T7.4 | the five diagnostic kinds `OverloadMarkerMismatch`, `OverloadMarkerPrevious`, `OverloadCandidateRejected`, `OverloadNoMatch`, `OverloadSetNotCallee` (diagnostics/kind.def:304-305, :315-317) | silent at the tip, check T7.4: `git grep -c -E 'Overload(Marker\|CandidateRejected\|NoMatch\|SetNotCallee)'` over toolchain = 0 | NONE | upstream's diagnostics | W-355 |
 | T7.5 | the `overload_set_id` field of `Function::Print` (sem_ir/function.h:191, :279-280) | silent at the tip, check T7.5: `git grep -c -w 'overload_set_id'` over toolchain/sem_ir/function.h = 0 | NONE | upstream's field | W-355 |
@@ -848,8 +861,9 @@ decisions at :3044-3600 of PR 53's log). PR 53 is documentation and records
 only, so every realignment is text; D-RG-7 assigns the six DRIFTs (the five
 departures and the zero-fill, H1.13) to SAFE-1 because each changes a decision
 that two to five of its pages state (amended 2026-10-28, review fold: RR1-m1),
-and gives the dependent lines. PR 53 lands first, so these six gate the land
-sequence (section 5; amended 2026-10-28, review fold: A-M5, B-M3). H1.11 and
+and gives the dependent lines. PR 53 lands first after RG-1's PR (amended
+2026-10-28, implementation review: R2-m1), so these six gate the land sequence
+(section 5; amended 2026-10-28, review fold: A-M5, B-M3). H1.11 and
 H1.13 read upstream's build modes by D-RG-20, which maps the development,
 performance and hardened builds of README.md and arithmetic.md onto the two
 primary modes of README.md:377-383 and safety/README.md:207-217 (amended
@@ -862,7 +876,7 @@ primary modes of README.md:377-383 and safety/README.md:207-217 (amended
 | H1.3 | `unsafe import` (D-SAFE-6) | safety/README.md:122 "**Future work**: Define how to mark `import`s of permissive libraries in" various contexts; check H1.3: `git grep -c -F 'unsafe import'` over docs/design, proposals = 0 | NONE | upstream defines the marker | W-355 |
 | H1.4 | `unsafe class` | silent at the tip, check H1.4: `git grep -c -F 'unsafe class'` over docs/design, proposals = 0: `git grep -c 'unsafe class'` over upstream docs/design and proposals is 0 | NONE | upstream designs unsafe types | W-355 |
 | H1.5 | `addr self: Self*` restored | p005434:1226 "### Restore `addr`" (under "## Future work", :1130): "To allow the `self` parameter to use one of the pointer semantics we create as part of the upcoming memory safety design, that can't be achieved with `ref`." (:1234-1236) | ALIGNED | upstream's memory-safety design restores `addr` otherwise, or not at all | W-355 |
-| H1.6 | the prefix `unsafe` forms (`unsafe F(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe s[i]`, `unsafe (...)`, `unsafe fn F(...) = "name"`) | safety/README.md:80-81 "We instead focus on the narrow and specific unsafe operations and constructs."; :98-99 "_Strict Carbon_ is the mode in which all unsafe code is marked with the `unsafe` keyword" | ALIGNED (the per-operation keyword; the forms' grammar is the fork's) | upstream designs another marking | W-355 |
+| H1.6 | the prefix `unsafe` forms (`unsafe F(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe s[i]`, `unsafe (...)`, `unsafe fn F(...) = "name"`) | the per-operation rule: safety/README.md:80-81 "We instead focus on the narrow and specific unsafe operations and constructs."; :98-99 "_Strict Carbon_ is the mode in which all unsafe code is marked with the `unsafe` keyword"; the only spelling of a marker on an operation other than `as`, a sketch under an open question (amended 2026-10-28, implementation review: R2-M1): values.md:573 "**Open question:** It may be necessary to provide some amount of escape hatch" for taking the address of values; :579-582 "If a further escape hatch is needed, this kind of fundamental weakening of the semantic model would be a good case for some syntactic marker like Rust's `unsafe`, although rather than a region, it would seem better to tie it directly to the operation in question. For example:" before :595 `s_value.unsafe RefMemberFunction();`, which PR 53's values.md:615-618 marks "Superseded" by the prefix form (and its safety/README.md:295-297 says the prefix "supersedes the member-position strawman"); upstream's parser takes `unsafe` only as the modifier of `as`: parse/typed_nodes.h:1304 "An `unsafe` modifier: `a unsafe <operator> b`.", whose node handle_expr.cpp:376-377 adds only when the next token is `as` (`if (context.PositionIs(Lex::TokenKind::Unsafe)) {`, `if (context.PositionIs(Lex::TokenKind::As, Lookahead::NextToken)) {`), diagnosing any other operator (:381), a form PR 53 keeps (its safety/README.md:294) | NONE (amended 2026-10-28, implementation review: R2-M1; rev 4 had ALIGNED): the per-operation keyword is upstream's rule, but the one upstream spelling of a marker on an operation other than `as` stands under :573's "Open question", which D-RG-2 (iii) does not count as designed, as T2.7's placeholder `overloaded fn` is not; the forms' grammar is fork-local | upstream resolves values.md:573's open question or widens its `unsafe` modifier beyond `as` (the forms are then re-read under D-RG-2 as a drift) | W-355 |
 | H1.7 | the library names `Core.Plain`, `Guarded`, `Box`, `Send`, `Sync`, `Freeze`, `Relocatable`, `Lifetime`, `DynCast`, `Move`, `Utf8`, `Atomic`, `Thread` | silent at the tip, check H1.7: `git grep -c -E 'Core\.(Plain\|Guarded\|Box\|Send\|Sync\|Freeze\|Relocatable\|Lifetime\|DynCast\|Move\|Utf8\|Atomic\|Thread)\b'` over docs/design, proposals, core = 1: no upstream type of these names (`git grep -w` over docs/design, core and the two safety proposals finds none, `Lifetime` and `Atomic` only in headings); `Box(T)` is p004682:322's placeholder ("`Box(T)` for a heap-allocated `T` value."); README.md:2150's move operator "is provisional"; functions.md:310's `Thread.Make` is a lambda example (D-RG-2 (ii)) | NONE | upstream names any of them (each renames) | W-355 |
 | H1.8 | p005434:83 narrowed: `noalias`/`captures(none)` only for exclusive-kind refs (D-SAFE-8, PR 53 :3098-3121; amended 2026-10-28, implementation review: RV1-m1) | p005434:83 "The address of a `ref` binding is `nocapture` and `noalias`." | **DRIFT** | an accepted upstream memory-safety proposal that narrows :83 | W-347, owner SAFE-1 |
 | H1.9 | p005434:663 narrowed: in Strict, `Plain`-field writes through other shared aliases during a non-`Plain` value binding stay erroneous and Debug-detected, not prevented (D-SAFE-17, PR 53 :3532-3568) | p005434:660-664 "Mutation of objects with a non-copy-value representation in an active value binding ("borrowed objects") is erroneous behavior." / "Our plan is to prevent mutation of borrowed objects in Carbon's strict safe dialect." | **DRIFT** | upstream relaxes :663 (its :665-669 conditions) | W-348, owner SAFE-1 |
@@ -937,7 +951,7 @@ fold: A-M2).
 | --- | --- | --- | --- | --- | --- |
 | H6.1 | lower/handle.cpp's value conversion in `AsCompatible` (D-OP2-1) | a fix to upstream code, which upstream still carries: upstream lower/handle.cpp:75-78 is `context.SetLocal(inst_id, context.GetValue(inst.source_id));` (:77) | NONE | upstream fixes it its own way (take upstream's if M-2's probes and W-171's arbiters pass) | W-355 |
 | H6.2 | check/convert.cpp's swapped `ForType` calls (D-OP2-2) | upstream convert.cpp:1561-1569 still forms `value_rep` from `value_type_id` (:1564-1565) and `unformed_value_rep` from `target.type_id` (:1566-1567) | NONE | as H6.1 | W-355 |
-| H6.3 | custom_witness.cpp's adapter arms, F-016 "an adapter is destroyed as its adapted type" (D-OP2-3) | upstream check/custom_witness.cpp:466-467 "TODO: Handle destruction of adapters generally by destroying the adapted type." (since 947c1eb52) | ALIGNED (the TODO's mechanism) | upstream implements the TODO (take upstream's arms) or an accepted adapter-destruction design | none; 05a7ecbd3 rewrote the file (UA-3's conflict) |
+| H6.3 | custom_witness.cpp's adapter arms, F-016 "an adapter is destroyed as its adapted type" (D-OP2-3) | upstream check/custom_witness.cpp:466-467 "TODO: Handle destruction of adapters generally by destroying the adapted type." (since 947c1eb52) | ALIGNED (the TODO's mechanism) | upstream implements the TODO (take upstream's arms) or an accepted adapter-destruction design | W-355; 05a7ecbd3 rewrote the file (UA-3's conflict) (amended 2026-10-28, implementation review: R2-m3) |
 | H6.4 | optional.carbon :15, :18, :40-42 and :48 replace upstream lines and :276-307 are fork-only | silent at the tip, check H6.4: 0 upstream commits since the cut touch core/prelude/types/optional.carbon (merge rule M-11) | NONE | an upstream edit above :275 | W-355 |
 | H6.5 | `Core.Optional(i32)` is not trivially destructible where `std::optional<int>` is (D-OP2-6) | silent at the tip, check H6.5: `git grep -c -i -E 'trivially destructible\|trivial destructor'` over core/prelude/types/optional.carbon = 0: no upstream text on Optional's triviality | NONE | an upstream Optional layout or triviality rule | W-196 |
 | H6.6 | only `Core.Optional(T*)` is `UnformedInit`, "short of p000257's direction" (D-OP2-15) | p000257:274 "The intent is that most types have an unformed state"; upstream core/prelude/default.carbon:17 `interface UnformedInit {` | ALIGNED with a gap (D-RG-4) | upstream's Optional gains an unformed state | W-200 |
@@ -1082,7 +1096,10 @@ plan, are new commits `RG-1 plan (rev N): <fold summary>` with the same path,
 fork/register/rg1-plan.md. Rev 4: `RG-1 plan (rev 4): implementation review
 round 1 folded`, made on the published rev 3 head 0cb93c3d9 and pushed, then
 merged into the unpushed line of R1 and its fix (section "Implementation review
-fold record (2026-10-28)").
+fold record (2026-10-28)"). Rev 5: `RG-1 plan (rev 5): implementation review
+round 2 folded`, made the same way on the published rev 4 head 8c8c6856f and
+merged into the line of R1 and its two fixes (section "Implementation review
+fold record (round 2, 2026-10-28)").
 
 **R1, the records.** Made after sign-off, committed in /home/user/carbon-rg1 and
 not pushed until step 6 of D-RG-13. Message:
@@ -1118,7 +1135,12 @@ and the drifts in Next actions. Records and the register's check scripts only.
 <!-- google-doc-style-resume -->
 
 `<tip>` is the nine-character sha R1's fetch gives (e6fddcf97 at rev 2); if it
-differs from e6fddcf97, both scripts of section 4.2 are re-run at it first.
+differs from e6fddcf97, both scripts of section 4.2 are re-run at it first. R1
+was committed as 675bef479 with this message and rev 3's counts; its round 2
+fix commit (`RG-1 records: implementation review round 2 folded`, 8f5805f71)
+re-grades H1.6 and its message gives the counts that supersede these: 19
+DRIFT, 32 ALIGNED and 104 NONE, and 273 quotes (amended 2026-10-28,
+implementation review: R2-M1).
 Paths: fork/decision-log.md (the entry of Appendix A.1 inserted after trunk
 0b999d449's :276, the blank line after DR-0's "_Ids._" paragraph, which ends at
 :275, and before "### B0 SF-1..5" at :277; the twelve notes of Appendix A.3,
@@ -1176,7 +1198,7 @@ commit. Staged in this order (D-RG-13 step 2), merged at step 5, pushed at step
 | 6 | claude/carbon-fork-0-1-op2 (PR 57) | a080c7886 | H57: merge of H56's final head, `OP-2: merge OP-1's RG-1 records commit (R32 (e))` | the merge's paths |
 | 7 | claude/carbon-fork-0-1-tp (PR 61) | 5661a35c8 | H61: `TP-1 records: the cross-file lowering TODO cited at upstream's line, (iii) re-read at the tip (RG-1; R32 (a), (e))` | fork/decision-log.md |
 | 8 | claude/carbon-fork-0-1-ct (PR 64) | 4a3220c11 | H64: `CT-1 records: the register block names ten entries, not nine (RG-1; R32 (e), R10)` | fork/decision-log.md |
-| 9 | claude/carbon-fork-0-1-ct (PR 64) | H64's final head | H64m: merge of H61's final head, `CT-1: merge TP-1's RG-1 records commit (R32 (e))` | the merge's paths |
+| 9 | claude/carbon-fork-0-1-ct (PR 64) | H64's final head | H64m: merge of H61's final head, `CT-1: merge TP-1's RG-1 records commits (R32 (e))` (amended 2026-10-28, implementation review: R2-m2) | the merge's paths |
 
 H64 is made on 4a3220c11 itself and H64m after it (rev 1 had them the other
 way), so that H64's line is the head's own :8342 and the merge comes last, after
@@ -1241,11 +1263,12 @@ each by path, the two scripts with mode 100755.
 
 R1 commits the two tables and the two scripts under fork/register/, so that a
 weekly check after this session runs them from the tree (amended 2026-10-28,
-review fold: RR1-N-2): fork/register/rg1-quotes.tsv holds the 260 quoted lines
+review fold: RR1-N-2): fork/register/rg1-quotes.tsv holds the 273 quoted lines
 of section 2 and D-RG-20 (path, line at the tip, verbatim substring: rev 1's
 140, rev 2's 90 and rev 3's 30 for D-RG-20; amended 2026-10-28, review fold:
-B-B1, B-m7, RR1-N-1), fork/register/rg1-checks.tsv holds the 89 silence checks
-section 2's rows name, and fork/register/check_quotes.sh and
+B-B1, B-m7, RR1-N-1; and rev 5's 13 for H1.6, T2.7 and T7.2, amended 2026-10-28,
+implementation review: R2-M1, RV1r2-m2), fork/register/rg1-checks.tsv holds the
+89 silence checks section 2's rows name, and fork/register/check_quotes.sh and
 fork/register/check_greps.sh are the checkers below. Each file opens with the
 project's license header as "#" comment lines, which check-copyright requires
 (section 4.1), and both scripts skip lines that start with "#". Their rev 3
@@ -1255,7 +1278,7 @@ sources, which R1 copies after `sha256sum -c` of these sums, are in
 <!-- google-doc-style-ignore -->
 
 ```text
-4843640bcb73af6369b81c304eebd675fc926ff54b5b58a55976aadb9ba52912  rg1-quotes.tsv
+3cfec533df38a229c462707ce8b67ad82546beae7ba77659e94a22ff76b0246e  rg1-quotes.tsv
 39db6dbe201ebb5df25c7ae59d1e6682090130a4e3344e2b9a8e418346368b08  rg1-checks.tsv
 a354640dddb0f61eaaa963627cbc21f0db7e56d5c0135697edcd481822c3d585  check_quotes.sh
 5ddbff38e3640ff7f29cb8a9bd4291d47eb1ad4129eab182110f064e3a23af0b  check_greps.sh
@@ -1268,8 +1291,15 @@ RV2-m3): row H10.8 counts upstream commits since the cut to
 toolchain/check/call.cpp (7 at f27a977d8 and at e6fddcf97), not to PR 61's own
 deduce_class_args.carbon, which upstream never had; rev 3's file had sum
 c285acdf4, and rev 4's is R1's fix commit's, copied with its SHA256SUMS to
-rg1/impl/fixer-r1/out/ in the same scratchpad as fixer1/out/ above. The other
-three sums are rev 3's, unchanged. If those directories are gone, R1 rebuilds
+rg1/impl/fixer-r1/out/ in the same scratchpad as fixer1/out/ above. The
+rg1-quotes.tsv sum is rev 5's (amended 2026-10-28, implementation review:
+R2-M1, RV1r2-m2): R1's round 2 fix commit appends, after a "#" comment, the
+nine lines H1.6 quotes (values.md:573, :579-582 and :595,
+parse/typed_nodes.h:1304 and parse/handle_expr.cpp:376-377) and the four that
+T2.7 and T7.2 add (toolchain/docs/lower.md:140-142 and sem_ir/function.h:548);
+rev 3's file had sum 4843640bc, and rev 5's is copied with its SHA256SUMS to
+rg1/impl/fixer-r2/out/ in the same scratchpad. The two script sums are rev 3's,
+unchanged. If those directories are gone, R1 rebuilds
 the two tables from section 2 (each quoted line and each check its rows name)
 and the two scripts from the text
 below, and the reviews of D-RG-13 step 3 compare them with section 2. The quote
@@ -1355,7 +1385,10 @@ fork/register/rg1-checks.tsv` (before R1, on the scratch copies). At rev 2 the
 rev 2 tables passed at f27a977d8 and at e6fddcf97 ("checked 230 quotes, 0
 failed"; "checked 89 silence checks, 0 failed"); at rev 3 the rev 3 files pass
 at both shas: "checked 260 quotes, 0 failed" and "checked 89 silence checks, 0
-failed". The implementer re-runs both before R1 and before R2; a FAIL means
+failed"; and at rev 5 the files of R1's round 2 fix pass at both shas:
+"checked 273 quotes, 0 failed" and "checked 89 silence checks, 0 failed"
+(amended 2026-10-28, implementation review: R2-M1, RV1r2-m2). The implementer
+re-runs both before R1 and before R2; a FAIL means
 upstream moved, and the entry is re-read at the new tip before any record is
 written (section 6, R-1). An L check counts upstream commits since the cut and
 so grows when upstream edits a merge-rule file; that FAIL is the merge rule's
@@ -1589,13 +1622,15 @@ until their owners' realignment commits are made on their branches and reviewed
 -   PR 53 waits for SAFE-1's re-derivation of W-347 to W-351 and W-353 (a plan
     amendment of fork/safe/plan.md, a new commit on PR 53's branch, two
     document reviews and a fixer; D-RG-7's table names the dependent lines).
-    Until then the land sequence is held at its first PR.
+    Until then the land sequence is held at PR 53, the second in the order
+    after RG-1's own PR (amended 2026-10-28, implementation review: R2-m1).
 -   PR 60 waits for SC-1's W-139 (code: a checked-symbolic self deferred to
     monomorphization, with its goldens, fills and the template_constraints.md
-    paragraph rewritten; D-RG-7). PR 60 is fourth in the order.
+    paragraph rewritten; D-RG-7). PR 60 is fifth in the order.
 -   PR 56 waits for OP-1's W-352 (code: the comparisons compare in place, with
     their goldens and fills, D-RG-10), merged into PR 57's branch. PR 56 is
-    seventh.
+    eighth (the ordinals count RG-1's PR; amended 2026-10-28, implementation
+    review: R2-m1).
 
 The sequence may run up to a waiting PR and stop there; it does not skip it,
 because each later PR's records and merge-trees assume the earlier ones. W-346
@@ -1765,7 +1800,7 @@ upstream's text for each of the 155 entries in 26 blocks and V-3's design-fork
 group: on trunk DR-0's block, the eleven blocks that predate it and the
 design-fork entries F-006a, F-007 and F-009 that V-3 registered and UA-1's
 review names; on the held heads fourteen blocks, PR 51's UA-2 register re-read
-among them. The scripts committed with this entry re-read the 260 quoted lines
+among them. The scripts committed with this entry re-read the 273 quoted lines
 of fork/register/rg1-quotes.tsv (fork/register/check_quotes.sh) and re-run the
 89 silence checks of fork/register/rg1-checks.tsv
 (fork/register/check_greps.sh): 88 for the NONE rows whose upstream silence is
@@ -1781,7 +1816,7 @@ merge rules their break conditions, unless that condition has already fired
 (D-RG-4). The decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each
 with its break condition in the plan's section 1.
 
-_The count._ 19 DRIFT, 33 ALIGNED and 103 NONE; 10 entries, three DRIFTs among
+_The count._ 19 DRIFT, 32 ALIGNED and 104 NONE; 10 entries, three DRIFTs among
 them, wait on an upstream decision or on an item blocked by one (the plan's
 section 7). Eight DRIFT entries were filed before RG-1 (W-109 twice, W-320 with
 W-324, W-321, W-322, W-326 twice, and SC-1's W-139); eleven are carried by items
@@ -1845,9 +1880,10 @@ safety/README.md:260-262 (D-RG-20, R29; break condition: upstream reconciles
 those pages), so the zeroing's place in the Release build is upstream's and only
 its mandate for every type is the drift, and W-350 restores the performance row
 as the benchmarking build's. The six are realigned by SAFE-1 by a new commit on
-PR 53's branch before it lands (R32 (e)), and PR 53 lands first. PR 60: D-SC-6's
-definition-time rejection of a checked-generic argument to a template parameter,
-where generics/overview.md:375-379 records "We have decided to support passing a
+PR 53's branch before it lands (R32 (e)), and PR 53 lands first after RG-1's PR
+(fork/register/rg1-plan.md section 5). PR 60: D-SC-6's definition-time rejection
+of a checked-generic argument to a template parameter, where
+generics/overview.md:375-379 records "We have decided to support passing a
 symbolic constant to a template parameter" (leads issue 2153) and
 appendix-witness.md:151-154 that the approach "relies on monomorphization":
 W-139's break condition was already met when it was filed, upstream's text
@@ -1859,10 +1895,15 @@ read-only probe showed checks without a `Copy` or a `SelfDestruct` call). Not
 drifts: the Permissive reading of p005914:204-210 (NONE: the passage, the
 nearest upstream text, limits what the safety model may assume so that no
 undefined behavior follows, no fork optimization relies on the diagnostic
-assumption, and upstream says nothing of diagnostic assumptions), the restored
-`addr self: Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter destruction
-(ALIGNED with upstream's TODO at check/custom_witness.cpp:466-467), the guard
-parentheses DD-1 documents (ALIGNED with upstream's own parser,
+assumption, and upstream says nothing of diagnostic assumptions), PR 53's prefix
+`unsafe` forms (NONE: safety/README.md:80-81 ties the keyword to each unsafe
+operation, but upstream's only marker on an operation other than `as` is
+values.md:595's `s_value.unsafe RefMemberFunction();`, a sketch under :573's
+"Open question" that PR 53 marks superseded, and upstream's parser takes
+`unsafe` only before `as`, parse/handle_expr.cpp:376-377, as PR 53 does), the
+restored `addr self: Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter
+destruction (ALIGNED with upstream's TODO at check/custom_witness.cpp:466-467),
+the guard parentheses DD-1 documents (ALIGNED with upstream's own parser,
 parse/handle_match.cpp:169 and :176), `Core.Buf` (ALIGNED with
 README.md:885-886), VA-1's `each` keyword and `(... x)` tuple (ALIGNED with
 variadics.md:47-48, :92 and :137-139), `template constraint` (ALIGNED with
@@ -1892,7 +1933,7 @@ DRIFT, ALIGNED and NONE counts):
 | EH-B (with UA-1's `noexcept` fence) | :5596-5617, :6606-6607 | 0 / 1 / 3 | W-355 |
 | EH-A | :5961-5971 | 0 / 2 / 2 | W-346 (the alternatives); W-355 |
 | UA-1's watch list | :6768-6782 | 0 / 0 / 7 | W-355 |
-| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 3 / 6 | W-347 to W-351, W-353; W-355 |
+| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 2 / 7 | W-347 to W-351, W-353; W-355 |
 | CM-1, PR 52 ea573f672 | :3119-3133 | 0 / 2 / 5 | W-003, W-132, W-129; W-355 |
 | EV-1, PR 54 cb3ef2e74 | :3538-3549 | 0 / 0 / 3 | W-355 |
 | ST-1, PR 55 21307851a | :3503-3516 | 0 / 0 / 6 | W-355 |
@@ -1949,20 +1990,34 @@ since R32 (b) reads "a work queue reviewed at each weekly check, each entry
 carrying its work item", and "_The work and the rule._" says that the 89 silence
 checks are 88 for NONE rows and T10.4 for the ALIGNED `noexcept` fence.
 
+Rev 5 amends the entry again, as R1's round 2 fix commit (8f5805f71) writes
+it (amended 2026-10-28, implementation review: R2-M1, R2-m1): the quote count
+is 273, the count is 19 DRIFT, 32 ALIGNED and 104 NONE, the per-block row of
+SAFE-1 reads 6 / 2 / 7, "Not drifts" names PR 53's prefix `unsafe` forms as
+NONE with values.md:573 and :595 and parse/handle_expr.cpp:376-377 (row H1.6),
+and PR 53 "lands first after RG-1's PR (fork/register/rg1-plan.md section 5)",
+which section 5's order gives.
+
 ### A.2 R2's paragraph (appended to the RG-1 entry, before its "_Ids._")
 
 <!-- google-doc-style-ignore -->
 
 ```text
-_Held commits (2026-10-27, R2)._ PR 53 <sha53> (H53), PR 52 <sha52> (H52), PR
-60 <sha60> (H60), PR 55 <sha55> (H55), PR 56 <sha56> (H56) with PR 57's merge
-<sha57> (H57), PR 61 <sha61> (H61), and PR 64's own <sha64> (H64) with its
-merge <sha64m> (H64m), after two implementation reviews and their fixes; each
-description is refreshed. W-344 is discharged; W-343 is narrowed to the
-land-time notes of PR 51, PR 54, PR 57 (OP-2), PR 58 and PR 59.
+_Held commits (2026-10-27, R2)._ PR 53 <sha53a> (H53) with its review fix
+<sha53>, PR 52 <sha52> (H52), PR 60 <sha60> (H60), PR 55 <sha55> (H55), PR 56
+<sha56> (H56) with PR 57's merge <sha57> (H57), PR 61 <sha61a> (H61) with its
+review fix <sha61>, and PR 64's own <sha64> (H64) with its merge <sha64m>
+(H64m), after two implementation reviews and their fixes; each description is
+refreshed. W-344 is discharged; W-343 is narrowed to the land-time notes of
+PR 51, PR 54, PR 57 (OP-2), PR 58 and PR 59.
 ```
 
 <!-- google-doc-style-resume -->
+
+`<sha53a>` and `<sha61a>` are H53's and H61's own commits and `<sha53>` and
+`<sha61>` the final heads of PR 53 and PR 61, their review fixes, wherever
+A.2, A.7, A.9, A.10 and A.11 name them (amended 2026-10-28, implementation
+review: R2-m2).
 
 ### A.3 The notes in trunk's blocks (R1)
 
@@ -2071,7 +2126,12 @@ T7.1); the marker, the inst kinds and store, the five diagnostics and the print
 field (classified 2026-10-27, RG-1: NONE, W-355; internal: `:overload` 0 in
 sem_ir/mangler.cpp (T7.2), the three `OverloadSet` names 0 (T7.3), the five
 diagnostics 0 (T7.4), `overload_set_id` 0 in sem_ir/function.h (T7.5);
-upstream's only mention is sem_ir/function.h:547's TODO); F-009's entries are
+upstream's nearest text is sem_ir/function.h:547-548's TODO in the key of
+generated functions, "TODO: Also include parameters to support overloaded
+functions. Then use them in mangling.", and toolchain/docs/lower.md:140-142,
+which asks that "overloaded function parameters" be "included in some way in the
+generated identifier", as the member's position in its set is; neither spells a
+marker or a representation, so these stay NONE, D-RG-3); F-009's entries are
 noted after UA-1's review.
 
 [T6, after :4726]
@@ -2141,7 +2201,9 @@ toolchain; F-006a DRIFT, W-346._
 <!-- google-doc-style-resume -->
 
 In each note "the entry "RG-1: ..."" is written out in full, as in T12's and
-T2's.
+T2's. T7's last clause names upstream's nearest text, function.h:547-548 and
+lower.md:140-142, where rev 4 said "only mention", as R1's round 2 fix commit
+writes it (amended 2026-10-28, implementation review: RV1r2-m2).
 
 ### A.4 The held blocks' amendments
 
@@ -2192,18 +2254,30 @@ the nearest passage, limits what the safety model may assume so that no
 undefined behavior follows, and its example is an optimization assumption; T8
 withholds `noalias`, so no optimization relies on the diagnostic assumption, and
 upstream says nothing of diagnostic assumptions) is not a drift. `unsafe
-permissive`, the prefix `unsafe` forms and the restored `addr self: Self*`
-(classified 2026-10-27, RG-1: ALIGNED, W-355; safety README.md:116-118 and
-:80-81, p005434:1226-1236) follow upstream; `exclusive`, `unsafe import`,
-`unsafe class`, the library names and the `import Cpp` asymmetry (classified
-2026-10-27, RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe
-import` and `unsafe class` are each 0 in upstream's docs/design and proposals,
-the library names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
+permissive` and the restored `addr self: Self*` (classified 2026-10-27, RG-1:
+ALIGNED, W-355; safety README.md:116-118, p005434:1226-1236) follow upstream.
+The prefix `unsafe` forms (classified 2026-10-27, RG-1: NONE, W-355) have no
+designed upstream spelling: safety README.md:80-81 ties the keyword to each
+unsafe operation, but upstream's only marker on an operation other than `as` is
+its values.md:595's `s_value.unsafe RefMemberFunction();`, a sketch under :573's
+"Open question" that this branch's values.md marks superseded, and upstream's
+parser takes `unsafe` only before `as` (parse/handle_expr.cpp:376-377), as this
+branch does; if upstream resolves that question or widens its modifier beyond
+`as`, the forms are re-read as a drift. `exclusive`, `unsafe import`, `unsafe
+class`, the library names and the `import Cpp` asymmetry (classified 2026-10-27,
+RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe import` and
+`unsafe class` are each 0 in upstream's docs/design and proposals, the library
+names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
 README.md:122-123 leaves import marking to future work). Since V-3b the
 re-basing clause above reads "re-based under R32".
 ```
 
 <!-- google-doc-style-resume -->
+
+The prefix forms' sentence is rev 5's (amended 2026-10-28, implementation
+review: R2-M1): H53 (cd3c5b2e1) placed them in the ALIGNED clause, and its
+review fix `SAFE-1 records: RG-1 review round 2 folded` (2407efa74), a new
+commit on top of it with refs/rg1-stage/53 moved to it, writes this text.
 
 **H52, PR 52 (claude/carbon-fork-0-1-cmake at ea573f672),
 fork/decision-log.md.**
@@ -2672,7 +2746,7 @@ commit writes them (amended 2026-10-28, implementation review: RV1-m1).
       "size": "S",
       "bullet": "none",
       "evidence": [
-        "fork/register/rg1-plan.md section 2: 130 NONE and ALIGNED entries in 22 blocks and V-3's design-fork group, each with its break condition (every block of section 2 with such an entry except VA-2's, C2, whose six carry VA-2's own items); fork/register/rg1-quotes.tsv (260 quoted lines) and fork/register/rg1-checks.tsv (89 silence checks) with fork/register/check_quotes.sh and fork/register/check_greps.sh (section 4.2)",
+        "fork/register/rg1-plan.md section 2: 130 NONE and ALIGNED entries in 22 blocks and V-3's design-fork group, each with its break condition (every block of section 2 with such an entry except VA-2's, C2, whose six carry VA-2's own items); fork/register/rg1-quotes.tsv (273 quoted lines) and fork/register/rg1-checks.tsv (89 silence checks) with fork/register/check_quotes.sh and fork/register/check_greps.sh (section 4.2)",
         "fork/rulebook.md R32 (b): \"the V-3a register is a work queue reviewed at each weekly check, each entry carrying its work item\"; the 2026-10-26 weekly check's finding that no pre-DR-0 entry carried one (W-342)"
       ],
       "blocked_by": [],
@@ -2714,7 +2788,7 @@ W-326's, D-SL-3 W-109's), each ALIGNED with its quote, and each NONE with the
 quote of the nearest upstream passage or a silence check of
 fork/register/rg1-checks.tsv, named in the note by row with its grep and result;
 fork/register/check_quotes.sh and fork/register/check_greps.sh passed at R1's
-tip ("checked 260 quotes, 0 failed";
+tip ("checked 273 quotes, 0 failed";
 "checked 89 silence checks, 0 failed"); every NONE and ALIGNED entry carries
 W-355; F-009's `overload fn` is NONE (D-RG-6). Original filing:
 
@@ -2732,7 +2806,13 @@ ORCHESTRATION, discharge this item with the last of them.
 W-352, owner OP-1, not blocked (RG-1's probe shows an in-place route), a code
 commit on PR 56 before it lands; OP-1 replaces DR-1 as the owner of the
 closure named above; the `None` entry stays W-320's; the cites' correction by
-a new commit on PR 56, merged into PR 57, follows, and R2 discharges this item.
+a new commit on PR 56, merged into PR 57, follows, and R2 discharges this item;
+its blocked_by W-320 is cleared, since the closure it gated is W-352's, not
+blocked (fork/register/rg1-plan.md D-RG-10), and the `None` entry rides W-320
+itself.
+
+[W-344 "blocked_by": replace]
+[]
 
 [top-level "source": append]
  Updated 2026-10-27 by the RG-1 records (the V-3a register classified at
@@ -2753,7 +2833,12 @@ fails at R1's tip, W-342 is narrowed, not discharged, until the plan is amended
 and the scripts pass (amended 2026-10-28, review fold: B-B1); its counts are rev
 3's (amended 2026-10-28, review fold: RR1-N-2). W-342's DISCHARGED prefix names
 where W-354 departs from W-342's own Work clause and why, as R1's fix commit
-writes it (amended 2026-10-28, implementation review: RV1-m4).
+writes it (amended 2026-10-28, implementation review: RV1-m4). W-342's quote
+count is rev 5's 273, and W-344's `blocked_by` is emptied with the clause that
+says why, as R1's round 2 fix commit writes them (amended 2026-10-28,
+implementation review: R2-M1, RV1r2-m1): the item's remaining work, H56's cites
+and R2's discharge, waits on nothing, and D-RG-10 gives `blocked_by` its
+meaning, a blocker of the closure, which is W-352's.
 
 ### A.7 The ledger's R2 edits
 
@@ -2762,9 +2847,10 @@ writes it (amended 2026-10-28, implementation review: RV1-m4).
 ```text
 [W-343 "notes": append]
  Narrowed again 2026-10-27 by RG-1's stamp (R2): the held records commits are
-made (PR 53 <sha53>, PR 52 <sha52>, PR 60 <sha60>, PR 55 <sha55>, PR 61
-<sha61>, PR 64 <sha64> and <sha64m>); the drifts are W-347 to W-351 and W-353
-(SAFE-1, before PR 53 lands) and W-139 (SC-1, before PR 60 lands). Open: the
+made (PR 53 <sha53a> with its review fix <sha53>, PR 52 <sha52>, PR 60
+<sha60>, PR 55 <sha55>, PR 61 <sha61a> with its review fix <sha61>, PR 64
+<sha64> and <sha64m>); the drifts are W-347 to W-351 and W-353 (SAFE-1,
+before PR 53 lands) and W-139 (SC-1, before PR 60 lands). Open: the
 land-time notes of PR 51, PR 54, PR 57 (OP-2), PR 58 and PR 59; the last of
 them discharges this item.
 
@@ -2776,11 +2862,16 @@ owner OP-1, a code commit on PR 56 before it lands. Original filing:
 
 <!-- google-doc-style-resume -->
 
+R2 leaves W-344's `blocked_by` empty, as R1's round 2 fix commit sets it
+(amended 2026-10-28, implementation review: RV1r2-m1), and names PR 53's and
+PR 61's review fixes beside H53 and H61 (amended 2026-10-28, implementation
+review: R2-m2).
+
 ### A.8 ORCHESTRATION at R1
 
 **The "Last updated:" line (:13).** "Last updated: 2026-10-27 (VA-2, ..."
 becomes "Last updated: 2026-10-27 (RG-1's records classify the V-3a register at
-upstream f27a977d8: 155 entries, 19 DRIFT, 33 ALIGNED, 103 NONE; W-346 to W-356
+upstream f27a977d8: 155 entries, 19 DRIFT, 32 ALIGNED, 104 NONE; W-346 to W-356
 filed; see the paragraph dated 2026-10-27 (RG-1) below; the earlier 2026-10-27
 text follows). 2026-10-27 (VA-2, ..." with the rest unchanged.
 
@@ -2806,7 +2897,7 @@ f27a977d8 (2026-10-27, upstream PR 8045; re-checked at <tip>), records first, on
 claude/carbon-fork-0-1-rg1 (decision-log entry "RG-1: the V-3a register
 classified at f27a977d8 (2026-10-27)"; fork/register/rg1-plan.md). Every entry
 of the 26 blocks and V-3's design-fork entries was read against the page at the
-tip: 155 entries, 19 DRIFT, 33 ALIGNED, 103 NONE, 10 waiting on upstream; every
+tip: 155 entries, 19 DRIFT, 32 ALIGNED, 104 NONE, 10 waiting on upstream; every
 NONE carries its quote or silence check, and every NONE and ALIGNED outside
 VA-2's six, which carry VA-2's items, the watch item W-355, whose weekly run
 uses fork/register/check_quotes.sh and check_greps.sh. F-006a's `Ok`/`Err` is a
@@ -2872,15 +2963,21 @@ the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5).", so
 that the Branches table agrees with the rg1 row and section 5. The dated
 paragraph's last sentence, section 5's merge order, and item 6's re-checks of
 H5.5 (W-324) and of T5.7 and C1.2 (W-326), section 7's residues, are rev 4's
-(amended 2026-10-28, implementation review: RV2-m1, RV2-m2).
+(amended 2026-10-28, implementation review: RV2-m1, RV2-m2). The two counts of
+the "Last updated:" line and the dated paragraph are rev 5's, 32 ALIGNED and
+104 NONE, as R1's round 2 fix commit writes them (amended 2026-10-28,
+implementation review: R2-M1).
 
 ### A.9 ORCHESTRATION at R2
 
 In the Branches rows of `claude/carbon-fork-0-1-safe`, `-cmake`, `-sc`, `-st`,
 `-op`, `-op2`, `-tp` and `-ct`, the head becomes the new one and the row gains
 "; amended 2026-10-27 by RG-1's records commit <sha> (R32 (e)), the description
-refreshed" (for op2: "by RG-1's merge <sha57> of PR 56's commit"; for ct: "by
-RG-1's count correction <sha64> and its merge <sha64m> of PR 61's commit"). The
+refreshed" (for safe and tp: "by RG-1's records commit <sha53a> and its review
+fix <sha53>" and "<sha61a> and its review fix <sha61>"; for op2: "by RG-1's
+merge <sha57> of PR 56's commit"; for ct: "by RG-1's count correction <sha64>
+and its merge <sha64m> of PR 61's commits"; amended 2026-10-28,
+implementation review: R2-m2). The
 rg1 row's last clause becomes "R1 and R2 made; to be held open as its PR, first
 in the land sequence." A sentence is appended to the RG-1 dated paragraph: "R2
 (date): the held commits are made after two implementation reviews and
@@ -2969,11 +3066,13 @@ entries, the tenth (`SpecificConstant`'s category) added at plan rev 4
 and carries RG-1's dated note (rg1-plan.md section 2.H11). No drift. Records
 only.
 
-H64m CT-1: merge TP-1's RG-1 records commit (R32 (e))
+H64m CT-1: merge TP-1's RG-1 records commits (R32 (e))
 
-Merges claude/carbon-fork-0-1-tp at <sha61> (RG-1's H61) into PR 64's branch,
-which is stacked on PR 61's, after PR 64's own count correction. The TP-1
-block's copy takes the corrected cite and the dated note. No toolchain change.
+Merges claude/carbon-fork-0-1-tp at <sha61>, RG-1's H61 <sha61a> and its
+review fix, into PR 64's branch, which is stacked on PR 61's, after PR 64's
+own count correction. The TP-1 block's copy takes the corrected cite, the
+dated note and the note's check of (viii) against toolchain/check/call.cpp. No
+toolchain change.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2990,7 +3089,8 @@ Appended to each PR's description under "RG-1 amendment (2026-10-27)":
 
 ```text
 PR 53: RG-1 classified this PR's V-3a register block against upstream f27a977d8
-(commit <sha53>, records only). Six departures from accepted text are drifts
+(commit <sha53a> and its review fix <sha53>, records only). Six departures
+from accepted text are drifts
 under R32 and V-3b, filed on RG-1's branch as W-347 (p005434:83's `noalias`),
 W-348 (p005434:663), W-349 (p005434:831-832), W-350 (arithmetic.md's
 performance-build row, read as the unsupported benchmarking build's), W-351
@@ -3002,8 +3102,12 @@ builds onto the safety README's Debug and Release until upstream reconciles its
 build-mode pages); SAFE-1 realigns them by a new commit on this branch, under
 its own plan amendment and document reviews, before this PR lands. The zero-fill
 cite now names upstream's README.md:2130-2132, and arithmetic.md's range is
-upstream's :156-158. The rest of the block is aligned with upstream or has no
-upstream counterpart, and carries the watch item W-355.
+upstream's :156-158. The prefix `unsafe` forms have no designed upstream
+counterpart: upstream's only marker on an operation other than `as` is
+values.md:595's member-position sketch under an open question, which this PR
+marks superseded, and the review fix records them so rather than as aligned.
+The rest of the block is aligned with upstream or has no upstream counterpart,
+and carries the watch item W-355.
 
 PR 52: RG-1 corrected the register block's CMake measurement against upstream
 f27a977d8 (commit <sha52>, records only): the block's "thirteen `cmake`
@@ -3037,11 +3141,14 @@ PR 57: PR 56's RG-1 records commit is merged (merge <sha57>); no OP-2 change.
 OP-1's W-352 commit on PR 56 will be merged the same way.
 
 PR 61: RG-1 corrected the register block's cite of the cross-file lowering TODO
-to upstream's lower/handle.cpp:384-390 at f27a977d8 (commit <sha61>, records
-only). No drift.
+to upstream's lower/handle.cpp:384-390 at f27a977d8 (commit <sha61a> and its
+review fix <sha61>, records only). The review fix re-points the silence check
+of (viii): it now counts upstream commits since the cut to
+toolchain/check/call.cpp, whose `IsCallPerformable` holds that exception,
+rather than to a test file this PR adds. No drift.
 
 PR 64: the register block's count is corrected to the ten entries of plan
-§0.10 (commit <sha64>, records only), and PR 61's RG-1 records commit is
+§0.10 (commit <sha64>, records only), and PR 61's RG-1 records commits are
 merged (merge <sha64m>). No drift.
 ```
 
@@ -3051,7 +3158,10 @@ The PR 53 and PR 52 paragraphs name the corrections H53 and H52 make, the
 arithmetic.md range and the CMake count, so that a description re-posted from
 them reports the whole amendment; pr_53_refresh.md and pr_52_refresh.md at
 D-RG-13 step 6 use this text, and no staged commit changes for it (amended
-2026-10-28, implementation review: RV2-m4).
+2026-10-28, implementation review: RV2-m4). The PR 53, PR 61 and PR 64
+paragraphs name both commits of each branch that carries a review fix, and what
+the fix changes, by the same rule (amended 2026-10-28, implementation review:
+R2-m2, R2-M1).
 
 ## Hand-off notes for the implementer
 
@@ -3154,6 +3264,65 @@ gives tp's baseline (0/1/2/0) and against R1's fix the same; the H57 probe
 are clean. Counts: unchanged, 155 entries, 19 DRIFT, 33 ALIGNED and 103 NONE,
 260 quotes, 89 silence checks (88 for NONE rows and T10.4), W-346 to W-356.
 
+## Implementation review fold record (round 2, 2026-10-28)
+
+Reviews: round 2 of D-RG-13 step 3's two implementation reviews, RV1r2 and
+RV2r2, of R1's line at 17877c5d8 (R1 675bef479, its fix 2bce73123 and the merge
+of rev 4) and of the seven stage refs (53 cd3c5b2e1, 52 e6bc32a6d, 60
+cc4daba00, 55 c3cdecc5d, 56 9f12209d8, 61 66aa13132 and 64 5f23d27c9); both
+APPROVE-WITH-FIXES, no BLOCKER, one MAJOR (R2-M1) and five MINOR, six findings,
+all records only. Both re-ran section 4's checks without a failure. The fixer of
+round 2, the last round D-RG-13 step 4 allows (scratch rg1/impl/fixer-r2/ in
+the session scratchpad of section 4.2's sources), reproduced every finding
+against upstream e6fddcf97, unchanged at the fetch of 2026-10-28 02:41 UTC,
+trunk 0b999d449 and the sixteen held heads, unchanged; all six are folded and
+none is rejected. Each fold is marked "(amended 2026-10-28, implementation
+review: <id>)" where it lands. The fixes are new commits, none pushed: R1's
+round 2 fix `RG-1 records: implementation review round 2 folded` (8f5805f71)
+on claude/carbon-fork-0-1-rg1, and H53's fix `SAFE-1 records: RG-1 review
+round 2 folded` (2407efa74) on top of H53, refs/rg1-stage/53 moved to it; no
+other staged commit changes.
+
+| Finding | Reproduced | Folded where |
+| --- | --- | --- |
+| RV1r2-m1 | work-items.json at 17877c5d8: W-344's `"blocked_by": ["W-320"]` beside R1's narrowing, "filed as W-352, owner OP-1, not blocked"; D-RG-10's break condition is what would give W-352 that blocker | A.6 (W-344's `blocked_by` emptied, the clause in its note) and the note after A.7; R1's round 2 fix (the ledger) |
+| RV1r2-m2 | at e6fddcf97 toolchain/docs/lower.md:140-142 asks that "overloaded function parameters" be "included in some way in the generated identifier", sem_ir/typed_insts.h:2026-2027 names "the overloaded calls design", and function.h:547's TODO goes on at :548, "Then use them in mangling.", in `GeneratedFunction::CanonicalKey`; the NONE verdicts hold (D-RG-3, D-RG-6) | D-RG-6, T2.7, T7.2, A.3's T7 note; rg1-quotes.tsv (lower.md:140-142, function.h:548); R1's round 2 fix (the note, the table) |
+| R2-M1 | upstream values.md:573 "**Open question:**", :579-582 and :595 `s_value.unsafe RefMemberFunction();`, unchanged since the cut; parse/handle_expr.cpp:376-389 adds the `UnsafeModifier` node only before `as` and diagnoses any other operator (parse/testdata/operators/modifier.carbon's `a unsafe or b`, `a unsafe * b`); PR 53's values.md:615-618 "Superseded" note and safety/README.md:294-297 at adaae4e35 | §2 H1.6 (NONE, D-RG-2 (iii)); the Status and summary; §3.1's note on R1's message; §4.2 (273 quotes, the new sum); A.1 (the count, the SAFE-1 row 6 / 2 / 7, "Not drifts", 273) and its note; A.4 H53 and its note; A.5's W-355; A.6's W-342; A.8; A.11's PR 53; R1's round 2 fix (the entry, the ledger, ORCHESTRATION, nine rows of rg1-quotes.tsv); H53's fix |
+| R2-m1 | the log at 17877c5d8 :376 "and PR 53 lands first" against section 5's "RG-1, PR 53, 51, ..."; in the same class, section 5's "held at its first PR", "PR 60 is fourth" and "PR 56 is seventh" counted from PR 53 (the fixer's, folded with it) | §2.H1's intro, §5, A.1 and its note; R1's round 2 fix (the entry) |
+| R2-m2 | refs/rg1-stage/61 is 66aa13132 over 40daf0a2a, and A.2, A.7, A.9, A.10 H64m and A.11 named one commit for PR 61; in the same class, PR 53 now carries H53 and its round 2 fix (the fixer's, folded with it) | A.2 and the sentence after it (`<sha53a>`, `<sha61a>`), A.7 and its note, A.9, A.10 H64m (its subject "commits", also in §3.2), A.11's PR 53, PR 61 and PR 64 and its note |
+| R2-m3 | §2.H6's H6.3 item cell "none; 05a7ecbd3 rewrote the file" against D-RG-17's W-355 and A.4's OP-2 land-time note "ALIGNED, W-355" | §2 H6.3 |
+
+Four R29 decisions. The quotes T2.7 and T7.2 gain are rows of rg1-quotes.tsv
+(lower.md:140-142 and function.h:548), although RV1r2-m2 asked for none so that
+the count of 260 stays exact: R2-M1's re-grade moves the count anyway, and
+section 2's rule is that section 4.2 re-reads every quoted line; break
+condition: a review that asks for those four rows out (the cells then cite the
+lines without quoting them). H1.6 quotes upstream's parser
+(parse/typed_nodes.h:1304, parse/handle_expr.cpp:376-377), which D-RG-3 does
+not count as direction, only as the watch for its break condition, a modifier
+widened beyond `as`; break condition: the row's own. R1's message (675bef479)
+keeps rev 3's counts, since D-RG-13 forbids an amend, and §3.1 says that the
+round 2 fix commit's message supersedes them; break condition: none, since
+history is not rewritten (R2's message gives the final counts). Rev 5 is
+committed on the published rev 4 head 8c8c6856f, pushed as a fast-forward and
+merged into the local line, as rev 4 was; break condition: rev 4's.
+
+Re-measured after the fixes (EXPECTED, not of record): both scripts from R1's
+round 2 fixed tree, "checked 273 quotes, 0 failed" and "checked 89 silence
+checks, 0 failed" at e6fddcf97 and at f27a977d8; the ledger loads, 144 items,
+with W-346 to W-356 once each, W-357 to W-359 absent and W-344's `blocked_by`
+empty; prek passes twice with no change on every changed file; the
+model-identifier check finds nothing outside the trailers. Section 4.7's
+merge-trees: R1's round 2 fix against trunk is clean, and against each of the
+sixteen held heads it gives R1's regions (the baseline plus sc's T4 region and
+dr's and dr-idx's A.1 and ledger-tail regions); H53's fix against trunk gives
+safe's baseline (1/1/2/0) and against R1's round 2 fix the same; the other six
+stage refs against R1's round 2 fix give the regions they gave against R1; the
+H57 probe (a080c7886 with stage 56) and the H64m probe (stage 64 with stage 61)
+are clean. Counts: 155 entries, 19 DRIFT, 32 ALIGNED and 104 NONE (SAFE-1 6 /
+2 / 7), 130 entries under W-355, 273 quotes, 89 silence checks (88 for NONE
+rows and T10.4), W-346 to W-356.
+
 ## Review fold record (rev 2, 2026-10-28)
 
 Reviews: A (APPROVE-WITH-AMENDMENTS, five MAJOR and five MINOR) and B (REJECT,
@@ -3233,8 +3402,10 @@ D-RG-19 become D-RG-1 to D-RG-20; the items W-346 to W-356 are unchanged.
 | A | rev 1 (8cfd46bc2) | APPROVE-WITH-AMENDMENTS | 0 | 5 | 5 | rev 2 (a2623241f) |
 | B | rev 1 (8cfd46bc2) | REJECT | 1 | 5 | 9 | rev 2 (a2623241f) |
 | RR1, the focused re-review | rev 2 (a2623241f) | APPROVE-WITH-AMENDMENTS | 0 | 2 | 5 | rev 3 (0cb93c3d9) |
-| RV1, implementation review 1 | R1 (675bef479) and the seven staged commits | APPROVE-WITH-FIXES | 0 | 0 | 4 | rev 4 (this revision), R1's fix 2bce73123 |
-| RV2, implementation review 2 | R1 (675bef479) and the seven staged commits | APPROVE-WITH-FIXES | 0 | 0 | 4 | rev 4 (this revision), R1's fix 2bce73123, H61's fix 66aa13132 |
+| RV1, implementation review 1 | R1 (675bef479) and the seven staged commits | APPROVE-WITH-FIXES | 0 | 0 | 4 | rev 4 (8c8c6856f), R1's fix 2bce73123 |
+| RV2, implementation review 2 | R1 (675bef479) and the seven staged commits | APPROVE-WITH-FIXES | 0 | 0 | 4 | rev 4 (8c8c6856f), R1's fix 2bce73123, H61's fix 66aa13132 |
+| RV1r2, implementation review 1, round 2 | R1's line (17877c5d8) and the seven stage refs | APPROVE-WITH-FIXES | 0 | 0 | 2 | rev 5 (this revision), R1's round 2 fix 8f5805f71 |
+| RV2r2, implementation review 2, round 2 | R1's line (17877c5d8) and the seven stage refs | APPROVE-WITH-FIXES | 0 | 1 | 3 | rev 5 (this revision), R1's round 2 fix 8f5805f71, H53's fix 2407efa74 |
 
 The three reviews raised 32 findings, 25 folded at rev 2 and 7 at rev 3, and
 none is rejected. RR1, the last review, found no BLOCKER, and its verdict is not
@@ -3243,4 +3414,8 @@ records commits follow D-RG-13, whose two implementation reviews and fixer
 rounds come before any push. The two implementation reviews raised eight MINOR
 findings, all folded by round 1 of the fixer and none rejected (section
 "Implementation review fold record (2026-10-28)"); rev 4 changes no verdict and
-no count, and stays signed off.
+no count, and stays signed off. Their round 2 raised one MAJOR and five MINOR,
+all folded by round 2 of the fixer, the last D-RG-13 step 4 allows, and none
+rejected (section "Implementation review fold record (round 2, 2026-10-28)");
+rev 5 re-grades H1.6 from ALIGNED to NONE under D-RG-2 (iii), a fold of an
+implementation review under D-RG-13 step 4, and stays signed off.

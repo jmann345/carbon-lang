@@ -363,10 +363,8 @@ static auto TryMergeIntoOverloadSet(
     auto member_function_id =
         context.insts().GetAs<SemIR::FunctionDecl>(member_decl_id).function_id;
     const auto& member_function = context.functions().Get(member_function_id);
-    if (!CheckRedeclParamsMatch(context, new_params,
-                                DeclParams(member_function),
-                                SemIR::SpecificId::None, /*diagnose=*/false,
-                                /*check_syntax=*/false)) {
+    if (!CheckOverloadMemberParamsMatch(context, new_params,
+                                        DeclParams(member_function))) {
       continue;
     }
     // This is a redeclaration of `member_function`. The ordinary path
@@ -858,19 +856,28 @@ static auto DiagnoseOverloadGates(
   // the resolution probe is a value conversion, so `ref` and `var` members
   // would be accepted by the probe and rejected by the commit. This also gates
   // destructuring tuple and struct parameter patterns, whose leaf is not a
-  // single `ValueParamPattern`. The patterns are this declaration's own: a
-  // redeclaration of an imported member merges into a `Function` whose
-  // pattern block holds import refs to the declaring file's patterns, which
-  // say nothing about the parameter kind here.
+  // single `ValueParamPattern`. A default value does not change the kind of
+  // the parameter it wraps: the probe converts only the arguments a call
+  // supplies, and the commit's pattern match fills an omitted one with its
+  // default. The patterns are this declaration's own: a redeclaration of an
+  // imported member merges into a `Function` whose pattern block holds import
+  // refs to the declaring file's patterns, which say nothing about the
+  // parameter kind here.
   for (auto param_pattern_id :
        context.inst_blocks().GetOrEmpty(function_info.param_patterns_id)) {
     if (param_pattern_id == function_info.self_param_id ||
         param_pattern_id == SemIR::ErrorInst::InstId) {
       continue;
     }
+    auto binding_pattern_id = param_pattern_id;
+    if (auto default_value =
+            context.insts().TryGetAs<SemIR::DefaultValuePattern>(
+                param_pattern_id)) {
+      binding_pattern_id = default_value->subpattern_id;
+    }
     bool is_value_param = false;
     if (auto binding = context.insts().TryGetAs<SemIR::WrapperBindingPattern>(
-            param_pattern_id)) {
+            binding_pattern_id)) {
       is_value_param =
           context.insts().Is<SemIR::ValueParamPattern>(binding->subpattern_id);
     }
@@ -948,6 +955,10 @@ static auto CheckDefaults(Context& context, SemIR::Function& function)
 
     // A count of the number of patterns on this level that have defaults.
     int32_t default_count = 0;
+
+    // Fork (OV-4, W-362): a count of the patterns at the end of this level
+    // that have defaults, after its last pattern without one.
+    int32_t trailing_default_count = 0;
   };
 
   llvm::SmallVector<PatternLevelState> level_state_stack;
@@ -1005,6 +1016,9 @@ static auto CheckDefaults(Context& context, SemIR::Function& function)
       }
       // Finished processing this subpattern, detect a missing default if
       // required.
+      state->trailing_default_count = state->current_pattern_has_default
+                                          ? state->trailing_default_count + 1
+                                          : 0;
       if (state->current_pattern_has_default &&
           !state->first_pattern_with_default.has_value()) {
         state->first_pattern_with_default = state->current_id;
@@ -1036,8 +1050,13 @@ static auto CheckDefaults(Context& context, SemIR::Function& function)
     }
 
     // Extract the count from the level we just completed, overwriting any
-    // nested level value extracted previously.
-    default_count = level_state_stack.back().default_count;
+    // nested level value extracted previously. Fork (OV-4, W-362): a level
+    // with a diagnosed missing default counts only its trailing defaults, so
+    // that a caller's arity check never admits a call that omits an argument
+    // for a parameter with no default value.
+    default_count = state->patterns_missing_defaults.empty()
+                        ? state->default_count
+                        : state->trailing_default_count;
     level_state_stack.pop_back();
   }
 

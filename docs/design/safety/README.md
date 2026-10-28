@@ -136,7 +136,19 @@ The prelude is the first client of this model. `Core.Slice`, `Core.Buf` and
 optional.carbon:186-203): their bodies are trusted, their signatures are what a
 Strict caller is checked against, and the audit of those signatures under the
 loan rules is the first residue item of the design (W-144; see
-[Temporal safety](temporal_safety.md)).
+[Temporal safety](temporal_safety.md)). A trusted body keeps the write rule of
+the mutation page's M3: it writes an object whose type holds a
+`Core.SharedImmutable` sub-object only through an exclusive path, an owner, a
+`ref` or an `exclusive T*`, or through a pointer into storage owned by an object
+it holds exclusively, every other path to that storage the type hands out being
+`bound` to that object; so `Core.Buf(T).Set`, which writes an element of the
+block, takes `ref self` under W-144, and the `Ref` method of the indexing
+interface `IndirectIndexWith`, once the prelude has it, which hands out a `ref`
+into the storage a `Core.Slice` views or a `Core.Buf` owns, takes `bound self`
+under W-144, at the interface and in both impls, so that a binding formed
+through `b[i]` keeps the loan on `b` that `Set`'s `ref self` conflicts with
+([Mutation safety](mutation_safety.md), Value bindings; added 2026-10-28,
+SAFE-2: W-348).
 
 The design uses six names for memory safety, five categories and one
 companion: [type safety], [initialization safety], [spatial safety],
@@ -152,6 +164,13 @@ across threads once the thread API's lifetime contract is fixed at stage 5
 the thread or joins inside the borrow (see
 [Mutation safety](mutation_safety.md); amended 2026-10-12, document-review
 fold: D-8).
+
+The guarantee is stated for the supported build modes, Release and Debug and
+their extensions. The unsupported benchmarking build of
+[Build modes](#build-modes) removes the run-time enforcement the guarantee
+relies on, the bounds check, the division guard, the overflow wrap and the
+hardening initialization of unformed storage, and nothing on the safety pages
+holds in it (realigned 2026-10-28, SAFE-2: W-350, W-351).
 
 ## Safety modes
 
@@ -279,6 +298,18 @@ setting emits; a Permissive file keeps them after the flip.
     shared path, whose obligation is that no live access path reaches the
     storage the operation invalidates (amended 2026-10-12, document-review
     fold: D-9).
+-   `let ref r: T = unsafe *p;`, `unsafe F(ref *p)`, `let v: T = unsafe *p;`,
+    `unsafe p->M(args)` and `unsafe F(p)` — a `ref` binding, a value binding
+    of a borrowed object, or a call whose `bound` pointer argument reaches an
+    open place, formed where the checker cannot see every other carrier
+    ([Temporal safety](temporal_safety.md), `ref` bindings, T2 and T5(d);
+    [Mutation safety](mutation_safety.md), M8). For a `ref` the obligation is
+    the one proposal p005434 gives unsafe code, to "adhere to just the
+    `noalias` restrictions": no other path accesses the referent, or writes it
+    for a `const` `ref`, while the binding lives; for a value binding, no path
+    mutates the borrowed object while the binding lives; for a `bound` pointer
+    argument, no path but the result writes the pointee while the result lives
+    (realigned 2026-10-28, SAFE-2: W-347, W-348, W-349).
 -   `unsafe fn F(...) = "name"` — a builtin binding declared outside the
     prelude, a declaration-level form like `unsafe import`: the declaration
     asserts the builtin's contract and every call of it is an `unsafe fn`
@@ -319,7 +350,11 @@ twin; the fail-stop rows are identical in every mode.
 | `StrictAddressOfUnformed` ([initialization safety](initialization_safety.md)) | error | none — I3's Permissive assumption (the callee forms it) | same as above on a later read |
 | `StrictMoveFromNonEntire` ([initialization safety](initialization_safety.md)) | error | error (a type rule, [values.md:117-118](/docs/design/values.md), not a safety relaxation) | — |
 | `StrictExclusiveBorrowConflict` ([temporal safety](temporal_safety.md)) | error | warning `PermissiveAliasedExclusive` | — |
-| `StrictSharedBorrowInvalidated` ([temporal safety](temporal_safety.md)) | error | warning `PermissiveAliasedExclusive` | `MutationDuringValueBinding` for the value-binding case (D-SAFE-17) |
+| `StrictSharedBorrowInvalidated` ([temporal safety](temporal_safety.md)) | error | warning `PermissiveAliasedExclusive` | ASan-class detection when the invalidation frees what a loan reads; the value-binding report is `StrictBorrowedObjectMutated`'s (realigned 2026-10-28, SAFE-2: W-348; this cell read "`MutationDuringValueBinding` for the value-binding case (D-SAFE-17)") |
+| `StrictRefFromShared` ([temporal safety](temporal_safety.md); realigned 2026-10-28, SAFE-2: W-347) | error | warning `PermissiveAliasedExclusive` | — |
+| `StrictBorrowFromShared` ([mutation safety](mutation_safety.md); realigned 2026-10-28, SAFE-2: W-348, W-349) | error | warning `PermissiveAliasedExclusive` | — |
+| `StrictBorrowedObjectMutated` ([mutation safety](mutation_safety.md); realigned 2026-10-28, SAFE-2: W-348, W-349) | error | warning `PermissiveAliasedExclusive` | `MutationDuringValueBinding` |
+| `StrictSharedImmutableWrite` ([mutation safety](mutation_safety.md); realigned 2026-10-28, SAFE-2: W-348) | error | warning `PermissiveAliasedExclusive` | `MutationDuringValueBinding` when a binding of the object is live |
 | `StrictBorrowOutlivesPlace`, `StrictBorrowOfTemporary`, `StrictDanglingReturn`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam` ([temporal safety](temporal_safety.md)) | error | warning `PermissiveDanglingLoan` | ASan-class detection |
 | `StrictCppCallUnannotated` ([temporal safety](temporal_safety.md)) | error | warning `PermissiveUnannotatedCppCall` — assumed fact | — |
 | `StrictInvalidatingThroughShared` ([mutation safety](mutation_safety.md)) | error | warning `PermissiveAliasedExclusive`; none for a C++ non-`const` method through `T*` — assumed fact | — |
@@ -379,8 +414,11 @@ worked examples, C++ interop consequence and staging rows:
     checked in Strict over unformed storage, zero-fill in Release, and moves
     that leave their source unformed.
 -   [Spatial safety](spatial_safety.md): every element access is bounds-checked
-    and fails-stop in every build mode, `unsafe fn GetUnchecked` is the only
-    opt-out, and views carry their length and a loan.
+    and fails-stop in every supported build mode, `unsafe fn GetUnchecked` is
+    the supported opt-out beside the unsupported benchmarking build, and views
+    carry their length and a loan (realigned 2026-10-28, SAFE-2: W-351; the
+    superseded 2026-10-12 text read "fails-stop in every build mode,
+    `unsafe fn GetUnchecked` is the only opt-out").
 -   [Temporal safety](temporal_safety.md): three pointer kinds, loans on
     places, `bound` on signatures, the Store rule, and the first enforceable
     subset that ships before loan sets.
@@ -401,6 +439,20 @@ used by every other page.
 | shared-mutable | `T*` | downgrade from `exclusive T*`; `&x` on a place already under shared access; C++ `T&` | shared | read; write `Plain` fields; `addr`/`const` methods; form further shared loans | `addr self: Self*` (restored) | `&Shared<T>` |
 | shared-const | `const T*` | conversion from either kind; C++ `const T&` | shared (const) | read; `const` methods | `ref self: const Self`, by-value `self` | `&SharedView<T>` (`&T` only under the D-SAFE-19 proviso) |
 | unverified (any kind) | the same spellings, loan set ⊥ | `unsafe as` from non-pointers, C++ results, union reads and `unsafe &u.f`, `unsafe class` fields | ⊥ | copy, compare, store, pass; `unsafe *p` to use | — | raw pointer |
+
+Every `ref` binding is exclusive access to its referent, or a frozen read of it
+when its type is `const`, whatever its source, and a value binding of a type
+whose value representation is not a copy binds a borrowed object, frozen for
+the binding's lifetime. Through `T*` or `const T*` such a binding is formed
+only on a closed place or, for a frozen one, a `Core.SharedImmutable` type, and
+is an `unsafe` operation otherwise, so the `const T*` row's receivers meet that
+rule when they are called through a shared pointer
+([Temporal safety](temporal_safety.md), T2); and the `T*` row's `Plain` writes
+exclude every assignment whose type holds a `Core.SharedImmutable` sub-object,
+a `Core.String`, a `Core.Slice(T)` for a `Core.Freeze` `T`, or a struct,
+tuple, array or class holding one, which only an exclusive path makes
+([Mutation safety](mutation_safety.md), M3; realigned 2026-10-28, SAFE-2: W-347,
+W-348).
 
 ### C++ call allowlist
 
@@ -558,13 +610,24 @@ Carbon will provide a way to disable the default hardening in release builds,
 but not in a supported way. Its use is expected to be strictly for benchmarking
 purposes.
 
-> **Withdrawn (fork amendment 2026-10-12, F-013 D-SAFE-14).** The fork provides
-> no build flag that disables the default hardening, for benchmarking or
-> otherwise. The per-site `unsafe fn GetUnchecked` on `Core.Slice` and
-> `Core.Buf` is the only disable, which keeps the strategy's "manually disabled
-> for performance-critical use cases" (proposal p000196) at the site rather
-> than the build; see [Spatial safety](spatial_safety.md). The paragraph above
-> is kept as history.
+> **Kept (fork note 2026-10-28, SAFE-2: W-351, replacing the withdrawal of
+> 2026-10-12, F-013 D-SAFE-14).** The fork provides the way the paragraph
+> above promises: the _benchmarking build_, the Release build with its default
+> hardening disabled,
+> that is with no bounds check, no division-by-zero guard, no overflow wrap,
+> which leaves the arithmetic design's performance-build row in force, and no
+> hardening initialization of unformed storage. It is not a supported build
+> mode: no guarantee of the safety pages holds in it, no program is shipped
+> from it, and its spelling is fixed with the build modes at stage 2 (residue
+> item W-146). The per-site `unsafe fn GetUnchecked` on `Core.Slice` and
+> `Core.Buf` is the supported opt-out ([Spatial safety](spatial_safety.md),
+> SP4). (The superseded 2026-10-12 note read: "The fork provides no build flag
+> that disables the default hardening, for benchmarking or otherwise. The
+> per-site `unsafe fn GetUnchecked` on `Core.Slice` and `Core.Buf` is the only
+> disable, which keeps the strategy's "manually disabled for
+> performance-critical use cases" (proposal p000196) at the site rather than
+> the build; see [Spatial safety](spatial_safety.md). The paragraph above is
+> kept as history.")
 
 ## Constraints
 
@@ -670,9 +733,9 @@ allowlist and the migration ladder; each category page carries its own rows.
 | --- | --- | --- |
 | 0 (this PR) | This page and the six category pages; no toolchain change | All of this page |
 | 1 | Lex and parse `exclusive`, `permissive` (contextual), `bound`, `addr`, the mode spellings, `unsafe fn`, `unsafe impl`, `unsafe class`, `unsafe import`, the `unsafe` prefix forms — recorded in SemIR, unenforced | The mode example; rungs 1 to 4 parse |
-| 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill | — |
+| 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill; the unsupported benchmarking build that disables them (realigned 2026-10-28, SAFE-2: W-350, W-351) | — |
 | 3 | Strict static checks without loan sets: unsafe-operation marking, definite formation, the C++-call rule with the allowlist, the first enforceable temporal subset, the warning twins; `--strict-checks=warn` default | The matrix's warning column; rung 1's warning, rung 3's error |
-| 4 | The loan checker: loans, `bound`, no-invalidation, `exclusive`; `error` default; `noalias` under T8 | The matrix's error column |
+| 4 | The loan checker: loans, `bound`, no-invalidation, `exclusive`; frozen loans, the closed-place rule, the `bound` pointer argument's pointee and `Core.SharedImmutable` (realigned 2026-10-28, SAFE-2: W-347, W-348, W-349); `error` default; `noalias` under T8 | The matrix's error column |
 | 5 | Facets, `Core.Thread`, `--strict-concurrency` | The `StrictNotSend`/`StrictNotSync` row |
 | 6 | `bound(a)` and `Core.Lifetime`, `Core.DynCast`, the Rust binding generator | — |
 

@@ -63,15 +63,19 @@ change the behavior of a read that is erroneous in both.
 This page was fixed by fork decision [F-013](/fork/decision-log.md),
 sub-decision D-SAFE-13, synthesized in [fork/safe/plan.md](/fork/safe/plan.md).
 No part of this page is implemented in the toolchain (fork workstream SAFE-1,
-stage 0); see [Implementation staging](#implementation-staging). The
-toolchain today desugars an uninitialized `var` onto `Core.DefaultOrUnformed`
-and has no diagnostic for a read of unformed storage; `Core.MaybeUnformed` and
-`Core.Optional` exist, while `Core.Move` and `Core.Relocatable`, named under
-I4, are D-SAFE-20 library residue and are not in the 0.1 prelude. File and line
-citations
-are against trunk 0bdce60a5 unless a citation says otherwise; the examples
-marked "today's syntax" were compiled on the 2026.10.12 nightly toolchain and
-their outcomes are stated with each example.
+stage 0); see [Implementation staging](#implementation-staging). The toolchain
+today desugars an uninitialized `var` onto `Core.DefaultOrUnformed` and has no
+diagnostic for a read of unformed storage; `Core.MaybeUnformed` and
+`Core.Optional` exist, while `Core.Move` and `Core.Relocatable`, named under I4,
+are D-SAFE-20 library residue and are not in the 0.1 prelude. File and line
+citations are against trunk 0bdce60a5 unless a citation says otherwise; the
+examples marked "today's syntax" were compiled on the 2026.10.12 nightly
+toolchain and their outcomes are stated with each example. Rule I5 and the
+D-SAFE-13 text that states it were realigned 2026-10-28 by fork workstream
+SAFE-2: the zero-fill they specify is proposal p000257's hardening
+initialization in the build the fork's Release build is, not a departure from it
+(W-353, closed as a classification corrected; fork/safe/safe2-plan.md); each
+realigned passage quotes the text it supersedes.
 
 ## Rules
 
@@ -214,25 +218,44 @@ facet also decides which types cross to Rust by value
 ### I5: Zero-fill in Release, poison in Debug
 
 In every safety mode, the Release build's `make_uninitialized` zero-fills the
-whole object, padding included, so that unformed storage holds zeros until it
-is assigned. This promotes the design overview's hardened-mode sentence —
-"this causes integers to be set to `0` when in unformed state in this mode"
+whole object, padding included, so that unformed storage holds zeros until it is
+assigned. This is proposal p000257's hardening initialization: "The entire
+storage, including any padding bytes, for all types will be at least be zeroed
+as part of hardening initialization." (p000257:356-358), and the fork's Release
+build is the build the design overview calls hardened (fork decision D-RG-20,
+fork/register/rg1-plan.md). A type may customize its hardening initialization to
+set parts or members of its unformed storage to values other than zero
+(p000257:358-360), which is the design overview's "Types may define additional
+initialization for the hardened build mode" (docs/design/README.md:2147-2149);
+the interface that spells the customization is upstream's to name
+(p000257:345-347 says only "by implementing interfaces"), and until it is named
+every type's unformed storage is zeros. Proposal p005914's memory-safe-language
+test requires initialization errors to have no undefined behavior and allows
+zero-initialization in place of fail-stop (p005914:87-88); the hardening
+initialization is how the Release build meets it. The unsupported benchmarking
+build of the [build modes](README.md#build-modes) section skips the hardening
+initialization, and there an unformed read "may lead to undefined behavior"
+(p000257:180); no guarantee of this page holds in it. (Realigned 2026-10-28,
+SAFE-2: W-353, closed as a classification corrected. The superseded 2026-10-12
+text read: "This promotes the design overview's hardened-mode sentence — "this
+causes integers to be set to `0` when in unformed state in this mode"
 (docs/design/README.md:2148-2149) — to the Release baseline, which proposal
-p005914 permits: its memory-safe-language test requires initialization errors
-to have no undefined behavior and allows zero-initialization in place of
-fail-stop (p005914:87-88). Proposal p000257 already asked that the entire
-storage, padding bytes included, be zeroed as hardening initialization
-(p000257:355-358); the departure is only that the fork's Release build is the
-hardened build for this purpose, recorded as a dated amendment at the
-overview's sentence.
+p005914 permits: its memory-safe-language test requires initialization errors to
+have no undefined behavior and allows zero-initialization in place of fail-stop
+(p005914:87-88). Proposal p000257 already asked that the entire storage, padding
+bytes included, be zeroed as hardening initialization (p000257:355-358); the
+departure is only that the fork's Release build is the hardened build for this
+purpose, recorded as a dated amendment at the overview's sentence.")
 
 The consequence for a read that I2 does not catch — a Permissive body, or
 storage reached through a pointer the callee was assumed to form — is that the
-read is _erroneous_ and yields a defined value: zeros for storage that was
-never assigned, the representation the last assignment or move left otherwise.
-Erroneous here has the meaning [values.md](/docs/design/values.md) gives it: a
-bug the implementation may detect and report, never unbounded undefined
-behavior.
+read is _erroneous_ and yields a defined value: the hardening initialization's
+value for storage that was never assigned (zeros, or the values a type's
+customization sets; realigned 2026-10-28, SAFE-2: W-353, where this clause read
+"zeros for storage that was never assigned"), the representation the last
+assignment or move left otherwise. Erroneous here has the meaning
+[values.md](/docs/design/values.md) gives it: a bug the implementation may
+detect and report, never unbounded undefined behavior.
 
 The Debug build poison-fills unformed storage instead and detects reads of it,
 the MemorySanitizer-class detection the [build modes](README.md#build-modes)
@@ -438,7 +461,7 @@ diagnosed or zero-filled by the 0.1 toolchain.
 | Stage | Contents | Owned here |
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page |
-| 2 | Runtime hardening regardless of mode | I5: Release `make_uninitialized` zero-fill of the whole object; Debug poison-fill and the read-of-unformed fail-stop |
+| 2 | Runtime hardening regardless of mode | I5: Release `make_uninitialized` zero-fill of the whole object, proposal p000257's hardening initialization, with the type customization once upstream names its interface; Debug poison-fill and the read-of-unformed fail-stop; the unsupported benchmarking build skips the zero-fill (realigned 2026-10-28, SAFE-2: W-351, W-353) |
 | 3 | Strict static checks without loan sets; `--strict-checks=warn` default | I2 definite formation over `UnformedInit` locals and `MaybeUnformed(T)`; I3's `StrictAddressOfUnformed`; I6's argument and return uses; the warning twin `MaybeUnformedRead` (residue item W-147) |
 | 4 | The loan checker | I4: `~x`, `Core.Move`, `Core.Relocatable`, `StrictMoveFromNonEntire`, and I2 over moved-from objects; the T4 self-loan rule for relocation |
 
@@ -458,16 +481,21 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     local, every `MaybeUnformed(T)` and every moved-from object; conditional
     initialization is rejected and `Optional(T)` is the escape. I3 `&x` of a
     possibly-unformed `x` is Strict-legal only for `MaybeUnformed(T)`, whose
-    projection is the existing `unsafe as`; Permissive assumes the callee
-    forms it. I4 `~x` leaves `x` unformed, the default move is bitwise
-    relocation plus the unformed mark, `Core.Move` customizes,
-    `Core.Relocatable` is structural, and only entire reference expressions
-    move. I5 Release zero-fills the whole object in every mode and Debug
-    poison-fills and detects. I6 no unformed members, arguments or returns.
-    Break condition: a benchmark in the fork showing more than 0.5 percent
-    from zero-fill alone — then zero-fill is scoped to escaped-unformed
-    objects only, which the same pass knows, and the rule text of I5 is
-    amended in a dated edit.
+    projection is the existing `unsafe as`; Permissive assumes the callee forms
+    it. I4 `~x` leaves `x` unformed, the default move is bitwise relocation plus
+    the unformed mark, `Core.Move` customizes, `Core.Relocatable` is structural,
+    and only entire reference expressions move. I5 Release zero-fills the whole
+    object in every mode, which is p000257:356-358's hardening initialization in
+    the build D-RG-20 reads as the hardened one, a type customizing it under
+    p000257:358-360, and Debug poison-fills and detects; the benchmarking build
+    skips it. I6 no unformed members, arguments or returns. Break condition: an
+    upstream amendment of p000257's hardening initialization, or a
+    reconciliation of the build-mode pages otherwise than D-RG-20 reads them; I5
+    then follows the upstream text in a dated edit (realigned 2026-10-28,
+    SAFE-2: W-353; the superseded 2026-10-12 break condition read: "a benchmark
+    in the fork showing more than 0.5 percent from zero-fill alone — then
+    zero-fill is scoped to escaped-unformed objects only, which the same pass
+    knows, and the rule text of I5 is amended in a dated edit").
 
 Two rules on this page rest on decisions other pages own. The `unsafe as`
 projection out of `MaybeUnformed(T)` is an `unsafe` operation under D-SAFE-5
@@ -478,10 +506,12 @@ the loan rule T4 under D-SAFE-10 ([temporal safety](temporal_safety.md)).
 
 The design was chosen by a panel of three attempts and two judges, recorded in
 [fork/safe/plan.md](/fork/safe/plan.md); the judges scored the attempts as
-wholes, and the [safety README](README.md#alternatives-considered) carries
-their verdicts. All three attempts kept proposal p000257's unformed state and
+wholes, and the [safety README](README.md#alternatives-considered) carries their
+verdicts. All three attempts kept proposal p000257's unformed state and
 zero-fill, so the alternatives specific to this page are two pieces the
-synthesis did not take, and one the design overview had.
+synthesis did not take, and one reading of the design overview's build modes
+(realigned 2026-10-28, SAFE-2: W-353; this sentence ended "and one the design
+overview had").
 
 -   **Attempt C's runtime-tracked address escape in Strict.** Attempt C,
     "Ratchet: hardened runtime core now, annotated borrows later", put its 0.1
@@ -508,14 +538,24 @@ synthesis did not take, and one the design overview had.
     marker. A second word for the same obligation would be a second thing an
     audit must search for, and on an `i32` local it would silence a check
     that `Core.Optional(i32)` answers without any assertion.
--   **Zero-fill in a hardened build only.** The design overview placed
-    zero-fill in a hardened build mode and the fork promotes it to the Release
-    baseline. Keeping it hardened-only was not taken because the
-    memory-safe-language test of proposal p005914 requires initialization
-    errors to have no undefined behavior in the default mode, and an
-    uninitialized read in Release is exactly such an error; the cost
+-   **Zero-fill in an extension of Release only.** Proposal p000257 places the
+    zeroing in the hardened build's hardening initialization, and the fork's
+    Release build is that build (D-RG-20), so one reading would have kept the
+    Release build without it and offered zero-fill as one of the specialized
+    Release extensions. That reading is not taken because it would move
+    upstream's hardening out of the build upstream names into a build it does
+    not, and because the memory-safe-language test of proposal p005914
+    requires initialization errors to have no undefined behavior in the
+    supported build modes; the benchmarking build, which skips it, is
+    unsupported. (Realigned 2026-10-28, SAFE-2: W-353. The superseded 2026-10-12
+    bullet was headed "Zero-fill in a hardened build only." and read: "The
+    design overview placed zero-fill in a hardened build mode and the fork
+    promotes it to the Release baseline. Keeping it hardened-only was not
+    taken because the memory-safe-language test of proposal p005914 requires
+    initialization errors to have no undefined behavior in the default mode,
+    and an uninitialized read in Release is exactly such an error; the cost
     question is the break condition of D-SAFE-13, not a reason to leave the
-    default mode unsafe.
+    default mode unsafe.")
 
 That decision is final; this page specifies the chosen design rather than
 relitigating it.
@@ -527,7 +567,7 @@ Claims about tools outside this repository appear only here, with a status
 
 | Fact | Used by | Status |
 | --- | --- | --- |
-| Clang's `-ftrivial-auto-var-init=zero` zero-fills automatic storage in C and C++, and deployments of it report a cost small enough that production builds enable it | The plausibility of I5's 0.5 percent break condition; no rule depends on the figure | UNVERIFIED: we expect the option to exist under that name and the reported cost to be below one percent on typical workloads; the fork's own benchmark is what the break condition reads |
+| Clang's `-ftrivial-auto-var-init=zero` zero-fills automatic storage in C and C++, and deployments of it report a cost small enough that production builds enable it | The expectation that p000257's hardening initialization is affordable in the Release build; no rule depends on the figure (realigned 2026-10-28, SAFE-2: W-353; the cell read "The plausibility of I5's 0.5 percent break condition") | UNVERIFIED: we expect the option to exist under that name and the reported cost to be below one percent on typical workloads; no break condition reads a fork benchmark since SAFE-2 |
 
 ## References
 

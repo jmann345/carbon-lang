@@ -69,6 +69,17 @@ Core.Print(s[1]);             // 30: no copy was made
 > `unsafe fn Make` under residue item W-144; 0.1 keeps the unchecked contract
 > above. See [Spatial safety](safety/spatial_safety.md), rule SP3.
 
+> **Amendment (2026-10-28, SAFE-2 — F-013 D-SAFE-11(d), W-349):** in Strict
+> Carbon the write `a[2] = 30` above is rejected while `s` lives. `FromArray`
+> takes `bound p`, so for the view's lifetime `a` is held by the view and no
+> path but the view writes it, proposal p005434's "each bound parameter to be
+> immutable for the duration of the lifetime of the returned result"
+> ([Temporal safety](safety/temporal_safety.md), T5(d)), and the owner's write
+> is `StrictBorrowedObjectMutated`. A Strict program writes `a` after the last
+> use of `s`, or through the view once slice elements are writable
+> ([0.1 limits](#01-limits)); Permissive warns `PermissiveAliasedExclusive`
+> and accepts the write, and 0.1 keeps the unchecked contract above.
+
 The element type is constrained to `Copy & Destroy`, the constraint `Iterate`
 and `Optional` already impose, so that an element can be read out of a view by
 value. `const T` satisfies it, so `Core.Slice(const i32)` — the mapping of
@@ -262,6 +273,17 @@ A `Core.Buf(T)` owns one `malloc` block of `Size()` elements:
     unformed `Buf` would free an uninitialized pointer at scope exit. `Slice`
     keeps `UnformedInit` because it has no user `Destroy` and its fields are
     trivially destroyed.
+
+> **Amendment (2026-10-28, SAFE-2 — F-013 D-SAFE-17, W-348):** in Strict Carbon
+> `Set` takes `ref self` once residue item W-144 lands, for every element
+> type, an exclusive receiver: an element of the block may be a borrowed
+> object, a `Core.String` bound by a live value binding among them, and the
+> prelude's trusted bodies write such an object only through an exclusive
+> path ([Mutation safety](safety/mutation_safety.md), M3 and Value bindings).
+> So `Set` is called through an owner, a `ref` or an `exclusive` pointer while
+> no view of the block, and no binding formed through one, is live, and a
+> callee given a `Buf` by value or through a shared pointer cannot `Set` it,
+> where 0.1 keeps the by-value receiver above.
 
 ## Iteration
 

@@ -39,6 +39,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [EX-TM-6: Named lifetimes](#ex-tm-6-named-lifetimes)
     -   [EX-TM-7 and EX-TM-7b: Temporaries](#ex-tm-7-and-ex-tm-7b-temporaries)
     -   [EX-TM-8: The review regression set](#ex-tm-8-the-review-regression-set)
+    -   [EX-TM-9: A `ref` binding through a shared pointer](#ex-tm-9-a-ref-binding-through-a-shared-pointer)
 -   [C++ interop consequence](#c-interop-consequence)
 -   [Implementation staging](#implementation-staging)
 -   [Decisions within this design](#decisions-within-this-design)
@@ -74,23 +75,30 @@ repeated below.
 This page was fixed by fork decision [F-013](/fork/decision-log.md),
 sub-decisions D-SAFE-7, D-SAFE-8, D-SAFE-10, D-SAFE-11 and D-SAFE-12, with the
 relocation rule of D-SAFE-13, synthesized in
-[fork/safe/plan.md](/fork/safe/plan.md). No part of this page is implemented
-in the toolchain (fork workstream SAFE-1, stage 0); see
+[fork/safe/plan.md](/fork/safe/plan.md). No part of this page is implemented in
+the toolchain (fork workstream SAFE-1, stage 0); see
 [Implementation staging](#implementation-staging). The toolchain today has no
 loan analysis and no borrow diagnostic, and the tokens `bound`, `addr` and
 `exclusive` do not exist: toolchain/lex/token_kind.def declares `unsafe` as a
 keyword and none of the three. `Core.Box`, `Core.Relocatable` and
 `Core.Lifetime`, named below, are D-SAFE-20 library residue and are not in the
-0.1 prelude. Every pointer in today's toolchain behaves as an
-unmarked Permissive pointer, and today's `ref` bindings are checked only by the
-rule of proposal p005434 that a `ref` binds a durable reference expression.
-File and line citations are against trunk 0bdce60a5 unless a citation says
-otherwise; the examples marked "today's syntax" were compiled on the 2026.10.12
-nightly toolchain and their outcomes are stated with each example.
+0.1 prelude. Every pointer in today's toolchain behaves as an unmarked
+Permissive pointer, and today's `ref` bindings are checked only by the rule of
+proposal p005434 that a `ref` binds a durable reference expression. File and
+line citations are against trunk 0bdce60a5 unless a citation says otherwise; the
+examples marked "today's syntax" were compiled on the 2026.10.12 nightly
+toolchain and their outcomes are stated with each example. The `ref` bindings
+section, T2, T4, T8, T5(a) and (d), and the examples they decide were realigned
+2026-10-28 by fork workstream SAFE-2 to proposal p005434's rules: every `ref`
+binding is `nocapture` and `noalias`, Strict prevents mutation of borrowed
+objects, and each `bound` argument is immutable for the duration of the returned
+result (W-347, W-348, W-349; fork/safe/safe2-plan.md); each realigned passage
+quotes the text it supersedes.
 
 ## Vocabulary
 
-The rules use seven words, fixed by D-SAFE-10.
+The rules use seven words, fixed by D-SAFE-10, and two more, _closed_ and
+_open_, added 2026-10-28 by SAFE-2 (W-347, W-348).
 
 -   A _place_ is the storage of a durable reference expression
     ([values: reference expressions](../values.md#reference-expressions)): a
@@ -99,8 +107,14 @@ The rules use seven words, fixed by D-SAFE-10.
     `x` and `*p`'s pointee, and `root(P)` names the outermost place that `P`
     lies within, which is the one whose lifetime bounds `P`'s.
 -   A _loan_ is a triple of a place, a _kind_ and an _origin_. The kind is
-    _exclusive_ or _shared_; the origin is the expression that formed the loan,
-    which the diagnostics name.
+    _exclusive_, _shared_ or _frozen_. A frozen loan is the loan of a borrowed
+    object or of a `const` `ref`, under which no path writes the place's
+    storage, or the loan a call's result holds on the pointee of a `bound` `T*`
+    or `const T*` argument, under which no path but the result and the carriers
+    copied from it writes the pointee, the result's own access being at the kind
+    T5(a) gives its parameter (T5(d); added 2026-10-28, SAFE-2: W-348, W-349);
+    the origin is the expression that formed the loan, which the diagnostics
+    name.
 -   A _loan set_ is what every pointer value, `ref` binding, value binding and
     value of a class type transitively containing a pointer carries. Loans are
     a property of values, not of types (p005434, "Part of the expression type
@@ -117,6 +131,23 @@ The rules use seven words, fixed by D-SAFE-10.
     `Core.Buf`'s elements are reached through its `ptr` field and a `Core.Box`'s
     pointee through its handle, so a view of either is a loan on the owner,
     and an invalidating operation on the owner kills it.
+-   A place is _closed_ in a function body when every carrier of a loan on it
+    is in the body's view: the body's own owners, local `var`s, `var`
+    parameters and temporaries, and their sub-objects, the referents of its
+    `ref` parameters and of `ref self`, the pointees of its `exclusive T*`
+    parameters, and every place reached through a carrier whose loan set holds
+    only closed places, such as `*p` for a local `let p: T* = &x;`. Every other
+    place is _open_: one reached through a `T*` or `const T*` parameter or
+    `addr self`, through a pointer loaded from memory or returned by a call
+    whose loan set is not closed, through a free loan, a global among them, or
+    through ⊥. An
+    exclusive or a frozen loan is formed on a closed place, where T4 sees every
+    carrier; on an open place it is an `unsafe` operation, except a frozen loan
+    on a `Core.SharedImmutable` type, whose shared-path writes the mutation
+    page's M3 rejects (M8). A carrier of a
+    closed place cannot escape it: the Store rule keeps a loan on a local out
+    of every destination it does not outlive, and T5(b) keeps a non-`bound`
+    parameter in (added 2026-10-28, SAFE-2: W-347, W-348).
 
 The kinds, the places and the loan sets together give one lattice, which the
 mutation page restates as exclusive-XOR-shared access per place. Carbon's
@@ -144,6 +175,19 @@ alias while a `const T*` to it is live.
 | shared-const | `const T*` | conversion from either kind; C++ `const T&` | shared (const) | read; `const` methods | `ref self: const Self`, by-value `self` | `&SharedView<T>` (`&T` only under the D-SAFE-19 proviso) |
 | unverified (any kind) | the same spellings, loan set ⊥ | `unsafe as` from non-pointers, C++ results, union reads and `unsafe &u.f`, `unsafe class` fields | ⊥ | copy, compare, store, pass; `unsafe *p` to use | — | raw pointer |
 
+Every `ref` binding is exclusive access to its referent, or a frozen read of it
+when its type is `const`, whatever its source, and a value binding of a type
+whose value representation is not a copy binds a borrowed object, frozen for
+the binding's lifetime. Through `T*` or `const T*` such a binding is formed
+only on a closed place or, for a frozen one, a `Core.SharedImmutable` type, and
+is an `unsafe` operation otherwise, so the `const T*` row's receivers meet that
+rule when they are called through a shared pointer (T2); and the `T*` row's
+`Plain` writes exclude every assignment whose type holds a
+`Core.SharedImmutable` sub-object, a `Core.String`, a `Core.Slice(T)` for a
+`Core.Freeze` `T`, or a struct, tuple, array or class holding one, which only
+an exclusive path makes (the mutation page's M3; realigned 2026-10-28, SAFE-2:
+W-347, W-348).
+
 `&x` on a place under exclusive access — an owner, a `ref` binding, or `*p` for
 `p: exclusive T*` — yields `exclusive T*`. The conversions between kinds form a
 lattice in which every arrow is a downgrade and nothing converts upward except
@@ -164,16 +208,17 @@ closed list of unsafe operations carries that upgrade as its own row (amended
 
 The receiver forms follow the kinds. `ref self: Self` is exclusive access, as
 proposal p005434 defines it. `addr self: Self*` is the shared-mutable receiver,
-restored for exactly the purpose p005434 reserves it under "Restore `addr`":
-"to allow the `self` parameter to use one of the pointer semantics we create as
-part of the upcoming memory safety design". Its declared type is the pointer
-type the body sees, `Self*`, rather than the historic `addr self: Self` that
-third_party/examples/re2/re2.carbon:769 still spells in a file no target
-builds, because the receiver is the address-taking form and the body uses it
-as a shared pointer. `ref self: const Self` and by-value `self` are const
-access. The method classification this gives — which methods may invalidate,
-which may only write `Plain` fields — is rule M4 of the
-[mutation safety](mutation_safety.md) page.
+restored for exactly the purpose p005434 reserves it under "Restore `addr`": "to
+allow the `self` parameter to use one of the pointer semantics we create as part
+of the upcoming memory safety design". Its declared type is the pointer type the
+body sees, `Self*`, rather than the historic `addr self: Self` that
+third_party/examples/re2/re2.carbon:769 still spells in a file no target builds,
+because the receiver is the address-taking form and the body uses it as a shared
+pointer. `ref self: const Self` and by-value `self` are const access, and a call
+of either binds `self` under the rules of [`ref` bindings](#ref-bindings) and T2
+(realigned 2026-10-28, SAFE-2: W-347, W-348). The method classification this
+gives — which methods may invalidate, which may only write `Plain` fields — is
+rule M4 of the [mutation safety](mutation_safety.md) page.
 
 `T*` is the shared kind rather than the exclusive one for two reasons that are
 facts about the repository. C++ `T&` is translated to `T*`
@@ -188,34 +233,79 @@ otherwise ([Alternatives considered](#alternatives-considered)).
 
 ## `ref` bindings
 
-A `ref` binding inherits the kind of its source (D-SAFE-8). A `ref` formed from
-a place is exclusive access, as p005434 states and this design keeps: "A `ref`
-binding may only bind to a durable reference expression or an expression that
-can be converted to one. The bound durable reference expression must outlive
-the `ref` binding." A `ref` formed from `*p` inherits `p`'s kind: exclusive
-from `exclusive T*`, shared-mutable from `T*`, under which the mutation page's
-M3 applies to every use of the binding, and const from `const T*`. So the
-proposal's `Valid1(bound p: i32*) -> ref i32 { return *p; }` and its
-`ValToRef(bound y: C) -> ref D { return *y.ptr; }` stay valid in both modes,
-the result being a shared-kind `ref`: a `ref` through which an invalidating
-operation is rejected but a `Plain` write is not.
+Every `ref` binding is exclusive access to its referent for its lifetime, as
+proposal p005434 states: "The address of a `ref` binding is `nocapture` and
+`noalias`" (p005434:83), where `noalias` "means like C `restrict`; you can't
+observe mutations through aliases; mutation through a restricted pointer is not
+observable through another pointer" (p005434:850-852). A `ref` of a `const`
+type is the read-only case: its loan is frozen, so no path writes the referent
+while it lives and other paths may read it; any other `ref` holds an exclusive
+loan, so no other path reads or writes the referent. A `ref` binding not
+marked `bound` does not escape, `captures(none)`, and one marked `bound`
+escapes only into the result, `captures(ret: address, provenance)`
+(p005434:846-848; T5(b)). The binding's source does not change this, and the
+proposal's rule that "A `ref` binding may only bind to a durable reference
+expression or an expression that can be converted to one. The bound durable
+reference expression must outlive the `ref` binding." is kept; the source
+decides only whether the checker can establish it. On a closed place
+([Vocabulary](#vocabulary)), an owner, the referent of a `ref`, the pointee of
+an `exclusive T*`, or `*p` for a local `p` whose loans are closed, the binding
+is a checked reborrow: forming it suspends every other carrier of the place
+(T2), and T4 rejects any use of them that the binding excludes. A `const` `ref`
+on an open place of a `Core.SharedImmutable` type is checked the same way. Any
+other `ref` on an open place, `*p` for a `T*` or `const T*` parameter, a
+pointer loaded from memory, a global, a free or ⊥ pointer, is an `unsafe`
+formation, spelled at the binding as T6 spells a binding through a ⊥ carrier
+(`let ref r: T = unsafe *p;`, or `unsafe F(ref *p)` for a `ref` argument),
+whose obligation is the one the proposal gives unsafe code, to "adhere to just
+the `noalias` restrictions" (p005434:861-862); unmarked, it is
+`StrictRefFromShared` in Strict and its twin `PermissiveAliasedExclusive` in
+Permissive. EX-TM-9 is the proposal's own example through a shared pointer.
 
-A `ref` or a call result whose loan set mixes kinds has the **weakest** kind:
-shared if any loan in the set is shared, const if any is const. The proposal's
+A `ref` _return_ is not a binding. The proposal's
+`Valid1(bound p: i32*) -> ref i32 { return *p; }` and
+`ValToRef(bound y: C) -> ref D { return *y.ptr; }` return a reference
+expression to an open place and stay valid in both modes; the call's result
+has the kind of its loans, shared here, and using it is using `*p` (the
+mutation page's M3 applies). A call of either is checked by T5(d): while the
+result lives, the `bound` argument is written by no path but the result, so a
+call through a shared pointer to an open place of a type that is not
+`Core.SharedImmutable`, `Valid1(p)` for a parameter `p: i32*`, is
+`StrictBorrowFromShared` (added 2026-10-28, SAFE-2: W-349). A result whose loan
+set mixes kinds has the
+**weakest** kind: shared if any loan in the set is shared. The proposal's
 `Conditional(b: bool, bound ref r: C, bound p: C*) -> ref C` carries the set
-`{(r, exclusive), (*p, shared)}` and so is a shared-kind `ref`, and T4 applies
-to every place in the set. The program `Pick`/`UsePick` of EX-TM-8 is this
-rule's example: a non-`Plain` assignment through such a `ref` is
-`StrictInvalidatingThroughShared` regardless of whether any other view is
-live.
+`{(r, exclusive), (*p, shared)}`, so its result is a shared-kind reference
+expression, and T4 applies to every place in the set. Binding such a result
+with `let ref` is a `ref` binding like any other: checked when every place in
+the set is closed, `unsafe` otherwise. The program `Pick`/`UsePick` of EX-TM-8
+is the closed case: `z` is an exclusive `ref` on both `x` and `y`, which
+conflicts with the live `q2` (`StrictExclusiveBorrowConflict`).
 
-> **Narrowing (fork amendment 2026-10-12, F-013 D-SAFE-8).** Proposal p005434
-> states (p005434:83) that "the address of a `ref` binding is `nocapture` and
-> `noalias`". This design emits `noalias` and `captures(none)` only for
-> exclusive-kind refs, and only under the conditions of T8 below; a shared-kind
-> `ref` carries neither attribute. The proposal's sentence is kept for the
-> exclusive kind and narrowed for the rest, because a shared-kind `ref` is, by
-> construction, one alias among many.
+> **Realigned (fork amendment 2026-10-28, SAFE-2: W-347, F-013 D-SAFE-8).** This
+> section states proposal p005434:83 for every `ref` binding. The superseded
+> 2026-10-12 section read, in the sentences that stated the narrowed rule: "A
+> `ref` binding inherits the kind of its source (D-SAFE-8). A `ref` formed from
+> a place is exclusive access, as p005434 states and this design keeps" / "A
+> `ref` formed from `*p` inherits `p`'s kind: exclusive from `exclusive T*`,
+> shared-mutable from `T*`, under which the mutation page's M3 applies to every
+> use of the binding, and const from `const T*`. So the proposal's
+> `Valid1(bound p: i32*) -> ref i32 { return *p; }` and its
+> `ValToRef(bound y: C) -> ref D { return *y.ptr; }` stay valid in both modes,
+> the result being a shared-kind `ref`: a `ref` through which an invalidating
+> operation is rejected but a `Plain` write is not." / "A `ref` or a call
+> result whose loan set mixes kinds has the **weakest** kind: shared if any
+> loan in the set is shared, const if any is const." / "and so is a
+> shared-kind `ref`" / "The program `Pick`/`UsePick` of EX-TM-8 is this rule's
+> example: a non-`Plain` assignment through such a `ref` is
+> `StrictInvalidatingThroughShared` regardless of whether any other view is
+> live." Its blockquote read: "**Narrowing (fork amendment 2026-10-12, F-013
+> D-SAFE-8).** Proposal p005434 states (p005434:83) that "the address of a
+> `ref` binding is `nocapture` and `noalias`". This design emits `noalias` and
+> `captures(none)` only for exclusive-kind refs, and only under the conditions
+> of T8 below; a shared-kind `ref` carries neither attribute. The proposal's
+> sentence is kept for the exclusive kind and narrowed for the rest, because a
+> shared-kind `ref` is, by construction, one alias among many."
 
 ## Rules T1 to T8 and the Store rule
 
@@ -244,17 +334,29 @@ A loan is formed by the operations below, with the kind each gives.
     loan is formed, so T4's exclusion of exclusive loans does not fire, which
     is how `UsePick` of EX-TM-8 takes `&y` twice while `q` is live (amended
     2026-10-12, document-review fold: D-14).
--   `let ref r = x;` forms an exclusive loan on `x`
-    ([`ref` bindings](#ref-bindings)).
--   A value binding of a non-`Plain` type, from `*p` or from an owner, forms a
-    shared loan on the bound object for the binding's lifetime (D-SAFE-17, rule
-    M8 of the mutation page); a value binding of a `Plain` type copies eagerly
-    and holds no loan; and a value binding of a non-`Plain` type from an
-    initializing expression — a materialized temporary, the third source
+-   `let ref r = x;` forms an exclusive loan on `x`, and a `ref` of a `const`
+    type a frozen one; a `ref` formed from `*p` or from a call's result forms
+    the same loan on every place in the source's loan set when each is closed,
+    suspending the source carrier as the reborrow clause below does, and is the
+    `unsafe` formation of [`ref` bindings](#ref-bindings) otherwise (realigned
+    2026-10-28, SAFE-2: W-347; this bullet read "`let ref r = x;` forms an
+    exclusive loan on `x`").
+-   A value binding of a type whose value representation is not a copy binds a
+    borrowed object and forms a frozen loan on it for the binding's lifetime, on
+    a closed place, or on an open place when the type is `Core.SharedImmutable`
+    (D-SAFE-17, rule M8 of the mutation page); a value binding of a
+    copy-represented type holds no loan, the value having been read; and a value
+    binding from an initializing expression — a materialized temporary, the
+    third source
     [values](../values.md#binding-patterns-and-local-variables-with-let-and-var)
-    names — takes ownership of the materialized storage, the `var` rule
-    applied to `let`, and holds no loan on it. The loans carried _by_ the
-    bound value are unaffected in every case.
+    names — takes ownership of the materialized storage, the `var` rule applied
+    to `let`, and holds no loan on it. The loans carried _by_ the bound value
+    are unaffected in every case (realigned 2026-10-28, SAFE-2: W-348; the
+    superseded 2026-10-12 text read: "A value binding of a non-`Plain` type,
+    from `*p` or from an owner, forms a shared loan on the bound object for the
+    binding's lifetime (D-SAFE-17, rule M8 of the mutation page); a value
+    binding of a `Plain` type copies eagerly and holds no loan; and a value
+    binding of a non-`Plain` type from an initializing expression").
 -   `p->f`, `(*p).f`, `case .Some(ref v)`, `Core.Slice.Subslice`,
     `Core.Slice.FromArray` and `Core.Buf.AsSlice` form _sub-loans_: loans on a
     place within the place of their operand, at the operand's kind. A loan
@@ -287,6 +389,11 @@ derived loan is dead the carrier may be used only at shared kind (reads,
 invalidating use of it is `StrictSharedBorrowInvalidated`. This is how the
 mutation page's EX-M-1 reads: `vec->Get(0)` while a derived view lives is a
 shared use, and `vec->Push(3)` is legal only once every derived view is dead.
+A frozen loan derived from an exclusive carrier, a by-value `bound self` of a
+borrowed type or a value binding of `*p`, suspends it further: until the frozen
+loan is dead the carrier may only be read, so EX-M-1's `a->Set(0, 5)` while
+`first` lives is `StrictBorrowedObjectMutated` (realigned 2026-10-28, SAFE-2:
+W-348, W-349).
 
 ### T3: Liveness
 
@@ -302,19 +409,33 @@ that is legal after it.
 
 ### T4: Conflicts
 
-A live exclusive loan excludes every other access to overlapping places,
-except through the suspended carrier at shared kind (the reborrow clause of
-T2): a second loan or a direct use while one is live is
-`StrictExclusiveBorrowConflict`. A live shared loan excludes exclusive loans
-and invalidating operations on overlapping places — destruction, `~`,
-assignment of a non-`Plain` value, a `ref self` call, formation of an exclusive
-loan, the mutation page's rule M3 — and an invalidating operation on a place
-`P` kills every interior loan on `P`: the operation is
-`StrictSharedBorrowInvalidated` while such a loan is live. For a carrier whose
-loan set mixes kinds, T4 is applied to every place in the set at the weakest
-kind ([`ref` bindings](#ref-bindings)). T4 and the mutation page's rule M2 are
-one rule seen from two sides: T4 is stated over loans and M2 over the access a
-place is under.
+A live exclusive loan excludes every other access to overlapping places, except
+through the suspended carrier at the kind the reborrow clause of T2 allows: a
+second loan or a direct use while one is live is
+`StrictExclusiveBorrowConflict`. A live shared loan excludes exclusive loans and
+invalidating operations on overlapping places — destruction, `~`, assignment of
+a non-`Plain` value, a `ref self` call, formation of an exclusive loan, the
+mutation page's rule M3 — and an invalidating operation on a place `P` kills
+every interior loan on `P`: the operation is `StrictSharedBorrowInvalidated`
+while such a loan is live. A live frozen loan excludes everything a shared loan
+excludes and every other write to the place's storage through any carrier: a
+`Plain` assignment, an `addr` method call, and passing a carrier of a shared or
+exclusive loan on an overlapping place, a non-`const` pointer or a value that
+carries one, to a call that could write through it; such a write is
+`StrictBorrowedObjectMutated`, and the invalidating ones stay
+`StrictSharedBorrowInvalidated`. The one carrier a frozen loan does not exclude
+is its holder when the holder may write: the result of a call that holds a
+`bound` pointer argument's pointee (T5(d)), with the carriers copied from it,
+writes the pointee as the result's own kind allows, and only it does. For a call
+result or reference expression whose loan set mixes kinds, T4 is applied to
+every place in the set at the weakest kind, frozen counting below shared
+([`ref` bindings](#ref-bindings)). T4 and the mutation page's rule M2 are one
+rule seen from two sides: T4 is stated over loans and M2 over the access a place
+is under (realigned 2026-10-28, SAFE-2: W-347, W-348, W-349; the superseded
+2026-10-12 text read "except through the suspended carrier at shared kind (the
+reborrow clause of T2)" and "For a carrier whose loan set mixes kinds, T4 is
+applied to every place in the set at the weakest kind
+([`ref` bindings](#ref-bindings)).", and named no frozen loan).
 
 ### T5: `bound`
 
@@ -370,17 +491,21 @@ callee saves no pointer, says nothing about what the result points at.
 A ⊥ pointer may be copied, compared, and passed to a non-`bound` parameter, and
 every copy of it is ⊥ (T2). Every use of its pointee is an `unsafe` operation
 whose obligation is that the storage outlives every use derived from it, and an
-unmarked one is `StrictUnverifiedDeref`. A dereference (`*p`, `p->m`) is
-spelled `unsafe *p` or `unsafe p->m`, the operation-tied spelling of
+unmarked one is `StrictUnverifiedDeref`. A dereference (`*p`, `p->m`) is spelled
+`unsafe *p` or `unsafe p->m`, the operation-tied spelling of
 [type safety](type_safety.md); a use that is not a dereference — passing the
 carrier to a `bound` parameter, binding a `ref` through it, forming a view from
 it, subscripting a ⊥ view — is spelled with the same prefix on the innermost
-call, binding or subscript that consumes the carrier, `unsafe Load(q)`,
-`let ref r = unsafe *q;`, `unsafe v[i]`, the form the strategy page lists under
+call, binding or subscript that consumes the carrier, `unsafe Load(q)`, `let ref
+r = unsafe *q;`, `unsafe v[i]`, the form the strategy page lists under
 [operation-tied `unsafe`](README.md#operation-tied-unsafe) (amended 2026-10-12,
-document-review fold: D-1). Each marker discharges exactly one obligation: in
-`Wild3` the `unsafe &u.p` discharges the address-of obligation of type safety
-and not the pass, which needs its own marker; written
+document-review fold: D-1). The same spelling marks a `ref` binding, or a value
+binding of a borrowed object, formed on an open place
+([`ref` bindings](#ref-bindings), T2): its obligation is the binding's,
+`noalias` for a `ref`, which for a ⊥ carrier includes this one, one marker for
+one binding (added 2026-10-28, SAFE-2: W-347, W-348). Each marker discharges
+exactly one obligation: in `Wild3` the `unsafe &u.p` discharges the address-of
+obligation of type safety and not the pass, which needs its own marker; written
 `unsafe Load(unsafe &u.p)` the call is accepted and its result is ⊥.
 
 **A ⊥ value does not leave a Strict function through its signature** (amended
@@ -424,22 +549,39 @@ T7 is D-SAFE-12, stated in [Temporaries](#temporaries).
 
 ### T8: Codegen honesty
 
-`noalias` and `captures(none)` are emitted for exclusive loans only where the
-checker established them: intra-function, and on `ref` and `exclusive T*`
-parameters of functions that are not exported to C++, not address-taken (no
-function value crosses to C++ or Permissive code), and whose every Carbon call
-site in the package is Strict-checked. That is a whole-package fact, and
-otherwise the attributes are never emitted, which is the policy p005434 states
-under "How addresses interact with `ref`": "these attributes won't be passed to
-LLVM unless their requirements can be established". The fork's own corpus has
-both excluded shapes: C++ calls `fn Bump(ref self, n: i32)` from `inline Cpp`
+`noalias` is emitted, with `captures(none)` for a `ref` not marked `bound` and
+`captures(ret: address, provenance)` for one marked `bound` (p005434:846-848),
+only where the checker established the requirement against every other
+access, Permissive and C++ ones included: intra-function, for a `ref` binding
+or an `exclusive T*` loan a Strict body forms on a place whose every carrier
+is the body's own, an owner of the body or a place reached only through
+carriers of such owners' loans; and, for a `ref` binding on the referent of a
+`ref` parameter or on the pointee of an `exclusive T*` parameter, and on those
+parameters themselves, only in functions that are not exported to C++, not
+address-taken (no function value crosses to C++ or Permissive code), and whose
+every Carbon call site in the package is Strict-checked. That is a
+whole-package fact, and otherwise the attributes are not emitted; nor are they
+ever emitted for a `ref` on an open place, the checked `const` `ref` on a
+`Core.SharedImmutable` type included, whose frozen loan Strict enforces but
+which a Permissive body or C++ may still write as erroneous behavior. That is
+the policy p005434 states under "How addresses interact with `ref`": "these
+attributes won't be passed to LLVM unless their requirements can be
+established". A `ref` binding formed with `unsafe`, and every `ref` in a
+Permissive body, keeps the language's `noalias` rule as the unsafe code's
+obligation, "Unsafe code will be required to adhere to just the `noalias`
+restrictions, but will not be checked" (p005434:861-863), and carries no
+attribute. The fork's own corpus has both excluded shapes: C++ calls
+`fn Bump(ref self, n: i32)` from `inline Cpp`
 (fork/conformance/programs/interop/cpp_export_method.carbon:31-33), and
 `std::thread` takes a Carbon function value
 (cpp_thread_carbon_fn_diff.carbon:38-45), and both are callers the
 whole-package fact must count. A Permissive or C++ caller that aliases such a
 parameter produces erroneous behavior, never undefined behavior, which is the
 strategy's rule that "the optimization of safe code will not rely on
-properties that are not established locally" (proposal p005914).
+properties that are not established locally" (proposal p005914; realigned
+2026-10-28, SAFE-2: W-347; the superseded 2026-10-12 text began "`noalias` and
+`captures(none)` are emitted for exclusive loans only where the checker
+established them:").
 
 ## The first enforceable subset
 
@@ -477,17 +619,24 @@ kept from proposal p005434 with its semantics now fixed.
 
 -   **(a) The result's loans.** The loan set of a call's result is the union of
     the loan sets of the arguments passed to `bound` parameters, `self`
-    included, with kind equal to the parameter's kind: `ref` and
-    `exclusive T*` parameters give exclusive, value, `T*` and `const`
-    parameters give shared, and a mixed set takes the weakest kind. A function
-    with no `bound` parameters returns a free value, subject to the Store rule;
-    this is never read as applying to a copy, a conversion or a `Copy.Op` of
-    an existing value (T2). A prelude function whose result can carry a loan
-    from a parameter — a view of `self`, a `T` payload returned from `self`, a
-    `T` argument stored into the result — without `bound` on that parameter is
-    a defect of the W-144 audit under the spatial page's rule SP3, not a loan
-    boundary. A ⊥ argument to a `bound` parameter makes the result ⊥, after
-    the `unsafe` that T6 demands for the pass.
+    included, with kind equal to the parameter's kind: a `ref` parameter gives
+    exclusive under a `ref` return and frozen under a `val` or by-value return,
+    an `exclusive T*` parameter gives exclusive, `T*` and `const T*` parameters
+    give shared, and a by-value parameter of a borrowed type, `self` included,
+    or a `const` `ref` gives frozen; a mixed set takes the weakest kind, frozen
+    counting below shared, so no write reaches a frozen argument through the
+    result (realigned 2026-10-28, SAFE-2: W-349; the superseded 2026-10-12
+    sentence read "with kind equal to the parameter's kind: `ref` and `exclusive
+    T*` parameters give exclusive, value, `T*` and `const` parameters give
+    shared, and a mixed set takes the weakest kind."). A function with no
+    `bound` parameters returns a free value, subject to the Store rule; this is
+    never read as applying to a copy, a conversion or a `Copy.Op` of an existing
+    value (T2). A prelude function whose result can carry a loan from a
+    parameter — a view of `self`, a `T` payload returned from `self`, a `T`
+    argument stored into the result — without `bound` on that parameter is a
+    defect of the W-144 audit under the spatial page's rule SP3, not a loan
+    boundary. A ⊥ argument to a `bound` parameter makes the result ⊥, after the
+    `unsafe` that T6 demands for the pass.
 -   **(b) Escape in the callee.** A non-`bound` pointer or `ref` parameter may
     not escape: not returned, not stored, not passed as a `bound` argument
     whose result escapes; the violation is `StrictEscapeOfUnboundParam`. A
@@ -496,14 +645,45 @@ kept from proposal p005434 with its semantics now fixed.
     `var` parameter is `StrictDanglingReturn`. The cases p005434 calls
     erroneous under "`bound` parameters" (`Invalid1` to `Invalid3`) become hard
     errors in Strict and warnings in Permissive.
--   **(d) The argument stays borrowed.** For the duration of a returned loan
-    the bound argument stays borrowed in the caller at the parameter's kind.
-    The proposal asks (p005434:831-832) for the bound parameter to be
-    "immutable for the duration of the lifetime of the returned result"; this
-    design narrows "immutable" to "not invalidated": a shared-kind bound
-    argument stays writable in its `Plain` fields through other aliases, the
-    same narrowing D-SAFE-17 applies to value bindings. This is a dated
-    narrowing, recorded here and in the F-013 entry.
+-   **(d) The argument stays immutable.** For the duration of a returned loan
+    each `bound` argument is immutable, as the proposal says full safety needs:
+    "For full safety, we need each bound parameter to be immutable for the
+    duration of the lifetime of the returned result" (p005434:831-832); no path
+    but the result writes it. A by-value `bound` argument of a borrowed type,
+    `bound self` included, and a `bound` `const` `ref` keep their frozen loan
+    for the result's lifetime, so no path writes their storage while the result
+    lives (`StrictBorrowedObjectMutated`, T4; the mutation page's EX-M-1). A
+    `bound ref` argument keeps its exclusive loan, which the result carries (`captures(ret:
+    address, provenance)`), so no path but the result reaches it, when the
+    result is a `ref` return, as the proposal's `ValidRef`, returning `self.m`
+    from `bound ref self`, needs (p005434:730-731); under a `val` or by-value
+    result, the proposal's `RefToVal` (p005434:825), it keeps a frozen loan, and
+    may be read but not written while the result lives. The pointee of a `bound`
+    pointer argument, `T*`, `const T*` or `exclusive T*`, the pointer itself
+    being a copy, is held by the result under a frozen loan, an exclusive one
+    for an `exclusive T*`: while the result lives no carrier but the result and
+    the carriers copied from it writes the pointee, and the result's own access
+    is at the kind (a) gives the parameter, so it writes the pointee only as
+    that kind allows, never through a `const T*`; an `exclusive T*`'s pointee is
+    reached by no other path at all. On a closed place T4 enforces this against
+    every carrier, so while a view `Core.Slice(T).FromArray(&a)` of a local
+    array lives, `a` is written only through the view ([slices](../slices.md),
+    the opening example). On an open place it needs the pointee's type to be
+    `Core.SharedImmutable`, whose shared-path writes the mutation page's M3
+    rejects; otherwise the call is `StrictBorrowFromShared`, or `unsafe` at the
+    call (`unsafe Valid1(p)`, the T6 spelling of a call that consumes a carrier
+    the checker cannot vouch for) with the obligation that no path but the
+    result writes the pointee while the result lives. The proposal's "We will
+    reconsider this with the memory safety design" (p005434:834-835) is answered
+    by keeping the sentence (realigned 2026-10-28, SAFE-2: W-349; the bullet was
+    "(d) The argument stays borrowed.", and its superseded 2026-10-12 text read:
+    "For the duration of a returned loan the bound argument stays borrowed in
+    the caller at the parameter's kind. The proposal asks (p005434:831-832) for
+    the bound parameter to be "immutable for the duration of the lifetime of the
+    returned result"; this design narrows "immutable" to "not invalidated": a
+    shared-kind bound argument stays writable in its `Plain` fields through
+    other aliases, the same narrowing D-SAFE-17 applies to value bindings. This
+    is a dated narrowing, recorded here and in the F-013 entry.").
 -   **(e) Interfaces.** An impl may drop but not add `bound` relative to its
     interface, as the proposal states. This is why the prelude's interface
     declarations `IndexWith.At` (core/prelude/operators/index.carbon:9) and
@@ -625,7 +805,8 @@ is shared with [type safety](type_safety.md), which owns its spelling.
 | --- | --- | --- | --- |
 | `StrictUnverifiedDeref` (shared with [type safety](type_safety.md)) | error | none — assumed fact | ASan-class detection ([Build modes](README.md#build-modes)) |
 | `StrictExclusiveBorrowConflict` | error | warning `PermissiveAliasedExclusive` | — |
-| `StrictSharedBorrowInvalidated` | error | warning `PermissiveAliasedExclusive` | `MutationDuringValueBinding` for the value-binding case (D-SAFE-17) |
+| `StrictSharedBorrowInvalidated` | error | warning `PermissiveAliasedExclusive` | ASan-class detection when the invalidation frees what a loan reads; the value-binding report is `StrictBorrowedObjectMutated`'s (realigned 2026-10-28, SAFE-2: W-348; this cell read "`MutationDuringValueBinding` for the value-binding case (D-SAFE-17)") |
+| `StrictRefFromShared` (realigned 2026-10-28, SAFE-2: W-347) | error | warning `PermissiveAliasedExclusive` | — |
 | `StrictBorrowOutlivesPlace`, `StrictBorrowOfTemporary`, `StrictDanglingReturn`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam` | error | warning `PermissiveDanglingLoan` | ASan-class detection |
 | `StrictCppCallUnannotated` | error | warning `PermissiveUnannotatedCppCall` — assumed fact | — |
 
@@ -637,6 +818,13 @@ The diagnostics and what each names:
 -   `StrictSharedBorrowInvalidated`: placed at the invalidating operation,
     naming the place and the live shared loan's origin (T4; the reborrow
     clause of T2).
+-   `StrictRefFromShared`: "`ref` binding `{0}` of `{1}` through a shared path;
+    use an `exclusive` pointer or `unsafe`", placed at the binding or at the
+    call that binds a `ref` parameter, with a note at the shared path's origin
+    ([`ref` bindings](#ref-bindings); added 2026-10-28, SAFE-2: W-347). Its
+    siblings `StrictBorrowFromShared`, which a `bound` pointer argument on an
+    open place also raises (T5(d)), `StrictBorrowedObjectMutated` and
+    `StrictSharedImmutableWrite` are the mutation page's (M3, M8).
 -   `StrictBorrowOutlivesPlace`: placed at the scope exit or the thread-crossing
     call, naming the `var` being destroyed and the carrier that still holds a
     loan on it (T3).
@@ -676,7 +864,9 @@ is used; `Core.Buf`, `Core.Slice` and `union` are the fork prelude's
 and the fork syntax's and are not in that toolchain, so the examples that use
 them cite the fork program or prelude line that proves the cell instead. The
 two regression sets, EX-TM-4 and EX-TM-8, are the standing counterexamples the
-design must reject and are kept verbatim from the plan. Tags of the form A-n,
+design must reject and are kept verbatim from the plan, but for `UsePick`'s
+comments in EX-TM-8, realigned 2026-10-28 by SAFE-2 (W-347) with the superseded
+comments kept in them. Tags of the form A-n,
 B-n and RR-n in example comments index the review-fold record of
 [fork/safe/plan.md](/fork/safe/plan.md).
 
@@ -690,11 +880,20 @@ fn Longest(bound a: const Core.String*, bound b: const Core.String*) -> const Co
 ```
 
 Rule T5(a). Outcome today: NEW-SYNTAX — toolchain/lex/token_kind.def has no
-`bound` token. Under the design the result's loan set is the union of `a`'s
-and `b`'s at shared kind, so in a caller both arguments stay borrowed, not
+`bound` token. Under the design the result's loan set is the union of `a`'s and
+`b`'s at shared kind, and by T5(d) the result holds both pointees, frozen
+because the parameters are `const T*`: in a caller, while the result is live,
+neither pointee may be written, destroyed or assigned through any path, and both
+may still be read; on a caller's local the check is T4's, and through a caller's
+own shared pointers the prelude's opt-in of `Core.String` to
+`Core.SharedImmutable` (W-144) lets the loan be formed. `a->Size()` binds `*a`,
+an open place, by value, which the same opt-in makes a checked frozen loan (the
+mutation page's M8; realigned 2026-10-28, SAFE-2: W-348, W-349; the superseded
+2026-10-12 sentence read "Under the design the result's loan set is the union of
+`a`'s and `b`'s at shared kind, so in a caller both arguments stay borrowed, not
 invalidated, while the result is live; neither may be destroyed or assigned a
-non-`Plain` value, and both may still be read. Lands at stage 1 (the token) and
-stage 4 (the loan).
+non-`Plain` value, and both may still be read."). Lands at stage 1 (the token)
+and stage 4 (the loan).
 
 ### EX-TM-2: A dangling return
 
@@ -721,27 +920,33 @@ fn Use() {
   Core.Print(p->Size() as i32);
   s = "def";                        // OK even while p is live: String is Plain (B2), assignment is non-invalidating
   var buf: Core.Buf(i32) = Core.Buf(i32).Make(4, 0);
+  buf.Set(1, 7);                    // OK: no loan on buf is live; Set takes ref self after W-144 (realigned 2026-10-28, SAFE-2: W-348; this call followed the next line and read "buf.Set(1, 7);                    // OK: Set is non-invalidating and i32 is Plain")
   let v: Core.Slice(i32) = buf.AsSlice();   // AsSlice is [bound self] after W-144: v holds an interior loan on buf
-  buf.Set(1, 7);                    // OK: Set is non-invalidating and i32 is Plain
+  // buf.Set(1, 7);                 // here: StrictSharedBorrowInvalidated — Set's ref self is an exclusive use of buf, and v's frozen loan on buf is live (T4)
   Core.Print(v[1]);                 // prints 7; last use of v: loan ends (NLL)
   buf = Core.Buf(i32).Make(1, 0);   // OK after v is dead; before it: StrictSharedBorrowInvalidated (the block v views is freed)
 }
 ```
 
-Rules T3 and T4 with the mutation page's M3. Outcome today: ACCEPTS-UNCHECKED
-— the `String` half (the first five statements, with `Core.Print` given the
-`as i32` the [slices](../slices.md) design uses for a `Size()` result) compiles
-on the nightly with exit status 0, and it is accepted in Strict too: the
-prelude's `String` is a non-owning `{Char*, i64}` with `impl as Copy` and no
-`Destroy` (core/prelude/types/string.carbon:16-28), so it is `Plain` and the
-assignment under the live `const String*` is non-invalidating. The `Buf` half
-is fork prelude code (`Make`, `Set`, `AsSlice` at
-core/prelude/types/buf.carbon:28-56) and is not compile-verified against the
-upstream nightly; the view `v` holds an interior loan on `buf` once `AsSlice`
-is `[bound self]` (W-144), `buf.Set(1, 7)` is permitted through it because
-`Set` is non-invalidating and `i32` is `Plain`, and the last use of `v` ends
-the loan, after which the assignment to `buf` — which frees the block `v`
-viewed — is legal. Moved one line earlier, that assignment is
+Rules T3 and T4 with the mutation page's M3. Outcome today: ACCEPTS-UNCHECKED —
+the `String` half (the first five statements, with `Core.Print` given the `as
+i32` the [slices](../slices.md) design uses for a `Size()` result) compiles on
+the nightly with exit status 0, and it is accepted in Strict too: the prelude's
+`String` is a non-owning `{Char*, i64}` with `impl as Copy` and no `Destroy`
+(core/prelude/types/string.carbon:16-28), so it is `Plain` and the assignment
+under the live `const String*` is non-invalidating. The `Buf` half is fork
+prelude code (`Make`, `Set`, `AsSlice` at core/prelude/types/buf.carbon:28-56)
+and is not compile-verified against the upstream nightly; the view `v` holds an
+interior loan on `buf` once `AsSlice` is `[bound self]` (W-144), `buf.Set(1, 7)`
+comes before `v` is formed, because `Set` takes `ref self` once W-144 lands, the
+exclusive receiver the mutation page's
+[Value bindings](mutation_safety.md#value-bindings) requires of a trusted writer
+of an element, so that under the live `v` the call is
+`StrictSharedBorrowInvalidated` (realigned 2026-10-28, SAFE-2: W-348; the
+superseded clause read "`buf.Set(1, 7)` is permitted through it because `Set` is
+non-invalidating and `i32` is `Plain`,"), and the last use of `v` ends the loan,
+after which the assignment to `buf` — which frees the block `v` viewed — is
+legal. Moved one line earlier, that assignment is
 `StrictSharedBorrowInvalidated`. The loan rule lands at stage 4.
 
 ### EX-TM-4: The regression set
@@ -897,21 +1102,21 @@ fn UsePick() {
   var x: Core.Buf(i32) = Core.Buf(i32).Make(1, 0);
   var y: Core.Buf(i32) = Core.Buf(i32).Make(1, 0);
   let q: Core.Buf(i32)* = &y;  let q2: Core.Buf(i32)* = &y;
-  let ref z: Core.Buf(i32) = Pick(false, x, q);          // z: shared-kind ref whose loan set covers x and y (A-5)
-  let v: Core.Slice(i32) = q2->AsSlice();                // interior loan on y
-  z = Core.Buf(i32).Make(5, 0);     // StrictInvalidatingThroughShared (RR-7): a non-Plain assignment through a shared-kind ref, rejected regardless of v; y's live view is the second reason
+  let ref z: Core.Buf(i32) = Pick(false, x, q);          // z: an exclusive ref on x and y, both closed places (realigned 2026-10-28, SAFE-2: W-347; was "z: shared-kind ref whose loan set covers x and y (A-5)")
+  let v: Core.Slice(i32) = q2->AsSlice();                // StrictExclusiveBorrowConflict: q2 reaches y while z's exclusive loan on y is live (was "interior loan on y")
+  z = Core.Buf(i32).Make(5, 0);     // through the exclusive ref, not itself rejected (was "StrictInvalidatingThroughShared (RR-7): a non-Plain assignment through a shared-kind ref, rejected regardless of v; y's live view is the second reason")
   Core.Print(v[0]);
 }
 ```
 
 Rules T6, T2, T5(a) and D-SAFE-8; the programs the plan's reviews added, kept
-verbatim, each of which must be rejected by stage 4 with the diagnostic named
-in its comment. Outcome today: NEW-SYNTAX for `Wild`, `Wild3`, `Pick` and
-`UsePick` (`unsafe u.p`, `unsafe &u.p` and `bound` do not parse; the `union`
-itself is fork syntax proven by
-fork/conformance/programs/types/union_basic.carbon, and the upstream nightly
-has no `union`); ACCEPTS-UNCHECKED for `Launder1` to `Launder5`, which are
-today's syntax over the fork prelude (`Subslice` at slice.carbon:46-52, the
+verbatim but for `UsePick`'s comments, realigned 2026-10-28 (SAFE-2: W-347),
+each of which must be rejected by stage 4 with the diagnostic named in its
+comment. Outcome today: NEW-SYNTAX for `Wild`, `Wild3`, `Pick` and `UsePick` (`unsafe
+u.p`, `unsafe &u.p` and `bound` do not parse; the `union` itself is fork syntax
+proven by fork/conformance/programs/types/union_basic.carbon, and the upstream
+nightly has no `union`); ACCEPTS-UNCHECKED for `Launder1` to `Launder5`, which
+are today's syntax over the fork prelude (`Subslice` at slice.carbon:46-52, the
 `Slice(const T)` conversion at :80-84, the container conversion at :100-106,
 `Optional.Some` and `Optional.Get` at optional.carbon:34-42, the identity
 conversion at as.carbon:37-39). What each shows:
@@ -923,9 +1128,12 @@ conversion at as.carbon:37-39). What each shows:
     narrowness principle names: the unsafe type conversion must not also allow
     the out-of-lifetime access, and here it does not, because the second
     obligation has its own marker.
--   **`Load`** (T5(a)). Correct Strict code, accepted: a read through a
-    verified `bound` pointer-to-pointer whose result carries `q`'s loans at
-    shared kind.
+-   **`Load`** (T5(a)). Correct Strict code, accepted: a read through a verified
+    `bound` pointer-to-pointer whose result carries `q`'s loans at shared kind.
+    By T5(d) the result also holds the caller's `*q`, the pointer `q` points to:
+    while the result lives no other path writes it, and in `Wild3` the argument
+    is ⊥, which needs the T6 `unsafe` before T5(d) applies (added 2026-10-28,
+    SAFE-2: W-349).
 -   **`Wild3`** (T6, modular). `unsafe &u.p` is ⊥ on formation, so passing it
     to `Load`'s `bound` parameter needs the T6 `unsafe` and the result of the
     call is ⊥ by T5(a); `Load` cannot see the union and does not need to. Had
@@ -944,12 +1152,48 @@ conversion at as.carbon:37-39). What each shows:
     type, so both are `bound` after W-144 — a receiver-only audit would have
     missed them — and the returns are `StrictDanglingReturn`. Rejected at
     stage 3 with W-144.
--   **`Pick`, `UsePick`** (D-SAFE-8). `Pick`'s result carries `{(r, exclusive),
-    (*p, shared)}` and is a shared-kind `ref`; the assignment of a new `Buf`
-    through `z` is `StrictInvalidatingThroughShared`, the mutation page's
-    diagnostic for a non-`Plain` assignment through shared-kind access,
-    regardless of the view `v`; the live view of `y` through `q2` is the
-    second reason. Rejected at stage 4.
+-   **`Pick`, `UsePick`** (D-SAFE-8). `Pick` returns a reference expression, not
+    a binding, and is accepted; its result carries `{(r, exclusive), (*p,
+    shared)}` and has the weakest kind, shared. In `UsePick` both places in that
+    set, `x` and `y`, are locals, so `let ref z` forms an exclusive loan on each
+    (T2) and suspends `q`, the carrier passed; `q2` is another carrier of `y`,
+    live on the next line, so `q2->AsSlice()` is
+    `StrictExclusiveBorrowConflict`. Rejected at stage 4 (realigned 2026-10-28,
+    SAFE-2: W-347; the superseded 2026-10-12 text read: "`Pick`'s result carries
+    `{(r, exclusive), (*p, shared)}` and is a shared-kind `ref`; the assignment
+    of a new `Buf` through `z` is `StrictInvalidatingThroughShared`, the
+    mutation page's diagnostic for a non-`Plain` assignment through shared-kind
+    access, regardless of the view `v`; the live view of `y` through `q2` is the
+    second reason.").
+
+### EX-TM-9: A `ref` binding through a shared pointer
+
+```carbon
+// EX-TM-9 (F: today's syntax, accepted today — p005434:152-162's F without its Assert line; F2, F3: NEW — added 2026-10-28, SAFE-2: W-347)
+fn F(ptr: i32*) {
+  let ref x: i32 = *ptr;          // Strict: StrictRefFromShared — *ptr is an open place; Permissive: PermissiveAliasedExclusive
+  x += 1;
+}
+fn F2(ptr: exclusive i32*) { let ref x: i32 = *ptr; x += 1; }   // accepted: a checked reborrow of the exclusive pointee
+fn F3(ptr: i32*) { let ref x: i32 = unsafe *ptr; x += 1; }      // accepted: the marker takes on the noalias obligation (p005434:861-862)
+```
+
+[`ref` bindings](#ref-bindings), the open place. `ptr` is a shared-pointer
+parameter, so `*ptr` is an open place: the caller may hold another `i32*` to
+the same object, and nothing in `F` can show that none is used while `x`
+lives, which is what `noalias` requires. Strict rejects `F` with
+`StrictRefFromShared`; Permissive warns and accepts it, so the proposal's
+example stays valid where unchecked code is allowed, as D-SAFE-8's break
+condition requires. `F2` takes the exclusive kind, under which `x` is a checked
+reborrow, and `F3` spells the obligation; the proposal's caller,
+`var y: i32 = 2; F(&y);`, is unchanged for all three, `&y` on the owner
+yielding `exclusive i32*`. Outcome: `F` ACCEPTS-UNCHECKED — the nightly
+compiles it with exit status 0, and with
+`fn Run() -> i32 { var y: i32 = 2; F(&y); Core.Print(y); return 0; }` the
+linked program prints `3`; the proposal's own line `Assert(&x == ptr);` is left
+out because the nightly has no pointer comparison ("cannot access member of
+interface `Core.EqWith(i32*)` in type `i32*` that does not implement that
+interface"). `F2` and `F3` are NEW-SYNTAX. Stage 4.
 
 The checklist rows this page owns, in the checklist's own vocabulary:
 
@@ -965,7 +1209,8 @@ The checklist rows this page owns, in the checklist's own vocabulary:
 | T7 temporaries, `bound` result | EX-TM-7b | ACCEPTS-UNCHECKED (fork prelude; `bound self` is W-144) | buf.carbon:54-56 | 4 (W-144) |
 | T6 union laundering | EX-TM-8 `Wild`/`Wild3` | NEW-SYNTAX (`unsafe u.p`, `unsafe &u.p`, `bound`; the union is fork syntax, types/union_basic.carbon; the nightly has no `union`) | unions.md [Reads](../unions.md#reads), [Aliasing](../unions.md#aliasing) | 1, 3 |
 | T2 copies preserve loans, W-144 signature audit | EX-TM-8 `Launder1` to `Launder5` | ACCEPTS-UNCHECKED (fork prelude) | slice.carbon:46-56, :74-77, :80-84, :100-106; as.carbon:37-39; optional.carbon:34-42, :69-78; buf.carbon:28, :45, :72-75; index.carbon:9; p005434 "`bound` parameters" | 3 with W-144 (`Launder1`, `Launder2`, `Launder4`, `Launder5`), 4 (`Launder3`) |
-| D-SAFE-8 mixed-kind result | EX-TM-8 `Pick`/`UsePick` | NEW-SYNTAX (`bound`) | p005434 `Conditional` | 1, 4 |
+| D-SAFE-8 mixed-kind result, a `ref` binding on closed places (realigned 2026-10-28, SAFE-2: W-347) | EX-TM-8 `Pick`/`UsePick` | NEW-SYNTAX (`bound`) | p005434 `Conditional` | 1, 4 |
+| D-SAFE-8 a `ref` through a shared pointer (added 2026-10-28, SAFE-2: W-347) | EX-TM-9 | ACCEPTS-UNCHECKED for `F` (nightly exit 0, prints 3); NEW-SYNTAX for `F2`, `F3` | p005434:152-162 | 1, 4 |
 
 ## C++ interop consequence
 
@@ -1064,7 +1309,7 @@ toolchain.
 | 0 (this PR) | This page; no toolchain change | All of this page |
 | 1 | Lex and parse `exclusive`, `bound`, `addr`, `unsafe class`; recorded in SemIR, unenforced | EX-TM-1, EX-TM-5 and EX-TM-8 parse (residue item W-145); `bound(a)` and EX-TM-6 are stage 6's |
 | 3 | Strict static checks without loan sets; `--strict-checks=warn` default | The P1/P2/P3 subset: `StrictDanglingReturn` for a P1 return (EX-TM-2), `StrictBorrowOutlivesPlace` for `Leak` and `Escape` once W-144 lands, `StrictUnverifiedDeref` for P3; `StrictCppCallUnannotated` with the allowlist and the annotation mapping; the warning twins `PermissiveDanglingLoan` and `PermissiveUnannotatedCppCall` (residue item W-147, gated on W-144) |
-| 4 | The loan checker | T1 to T8 and the Store rule over loan sets; `bound` per T5(a) to (e); `exclusive`; the reborrow and same-kind-copy clauses; `StrictExclusiveBorrowConflict`, `StrictSharedBorrowInvalidated`, `StrictBorrowOfTemporary`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam`; `noalias` and `captures(none)` under T8; `error` default (residue item W-148) |
+| 4 | The loan checker | T1 to T8 and the Store rule over loan sets; `bound` per T5(a) to (e), with T5(d)'s hold of a `bound` pointer argument's pointee; `exclusive`; the reborrow and same-kind-copy clauses; frozen loans and the closed-place rule; `StrictExclusiveBorrowConflict`, `StrictSharedBorrowInvalidated`, `StrictRefFromShared`, `StrictBorrowOfTemporary`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam`; `noalias` with `captures(none)` or `captures(ret: address, provenance)` under T8 where established (realigned 2026-10-28, SAFE-2: W-347, W-348, W-349); `error` default (residue item W-148) |
 | 5 | Facets, `Core.Thread`, `--strict-concurrency` | `StrictBorrowOutlivesPlace` at a thread-crossing call whose argument's loan set is not free, the thread-boundary lifetime rule of the mutation page (residue item W-149) |
 | 6 | `bound(a)` and `Core.Lifetime`, `Core.DynCast`, the Rust binding generator | T5(f): one name, one loan set; `bound(a)` fields replace the `unsafe class` interim for Strict classes with non-owning pointers (EX-TM-6; residue item W-150) |
 
@@ -1093,13 +1338,26 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     const. Break condition: a prelude or interop API that needs a fourth kind
     (exclusive-const) — added additively; the `exclusive` spelling is a
     mechanical rename.
--   **D-SAFE-8 — `ref` bindings inherit the kind of their source.** A `ref`
-    from a place is exclusive; a `ref` from `*p` has `p`'s kind; a mixed loan
-    set has the weakest kind and T4 applies to every place in it. `noalias`
-    and `captures(none)` are emitted only for exclusive-kind refs under T8,
-    which narrows p005434:83 in a dated amendment on this page. Break
-    condition: an accepted p005434 example that becomes invalid in Permissive
-    mode (none may; the checklist lists them as accepted).
+-   **D-SAFE-8 — Every `ref` binding is `nocapture` and `noalias`.** Proposal
+    p005434:83's rule holds for every `ref` binding, exclusive, or frozen for a
+    `const` type: a checked reborrow on a closed place, and on an open place an
+    `unsafe` formation (`StrictRefFromShared` unmarked), a `const` `ref` on a
+    `Core.SharedImmutable` type excepted; a `ref` return is not a binding, so
+    `Valid1`, `ValToRef` and `Conditional` stay valid, a mixed result set
+    taking the weakest kind; T8 emits `noalias` with `captures(none)` or
+    `captures(ret: address, provenance)` only where established against every
+    writer, on the body's own places and, under the whole-package condition,
+    on `ref` and `exclusive T*` parameters' places, never on an open place nor
+    for an `unsafe` one. Break condition: an accepted
+    p005434 example that becomes invalid in Permissive mode (none may; the
+    checklist lists them as accepted), or an accepted upstream memory-safety
+    proposal that narrows p005434:83 (realigned 2026-10-28, SAFE-2: W-347; the
+    heading read "`ref` bindings inherit the kind of their source." and the
+    superseded 2026-10-12 text: "A `ref` from a place is exclusive; a `ref`
+    from `*p` has `p`'s kind; a mixed loan set has the weakest kind and T4
+    applies to every place in it. `noalias` and `captures(none)` are emitted
+    only for exclusive-kind refs under T8, which narrows p005434:83 in a dated
+    amendment on this page.").
 -   **D-SAFE-10 — Loans T1 to T8 plus the Store rule.** As stated under
     [Rules T1 to T8 and the Store rule](#rules-t1-to-t8-and-the-store-rule),
     with the first enforceable subset P1/P2/P3 shipping at stage 3 only
@@ -1109,10 +1367,13 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
 -   **D-SAFE-11 — `bound` semantics fixed; named lifetimes pinned.** As stated
     under
     [`bound`, `bound(a)` and `unsafe class`](#bound-bounda-and-unsafe-class),
-    with the narrowing of p005434:831-832 from "immutable" to "not invalidated".
-    Break condition: upstream amends p005434's `bound` with different semantics
-    — a V-3 review; the fork keeps whichever is lower-divergence and records the
-    delta.
+    with p005434:831-832's "immutable for the duration of the lifetime of the
+    returned result" kept for each `bound` argument, a pointer argument's
+    pointee included (T5(d); realigned 2026-10-28, SAFE-2: W-349, where this
+    text read "with the narrowing of p005434:831-832 from "immutable" to "not
+    invalidated""). Break condition: upstream amends p005434's `bound` with
+    different semantics — a V-3 review; the fork keeps whichever is
+    lower-divergence and records the delta.
 -   **D-SAFE-12 — Temporaries: diagnose, do not extend.** A loan on a temporary
     lives until the end of the full-expression; a later use is
     `StrictBorrowOfTemporary`; `var` is the fix; the builder-chain idiom stays
@@ -1152,9 +1413,12 @@ their verdicts. The alternatives specific to this page:
     p005434:710-713/826 and makes `ref self` ... unreachable through a pointer
     in Strict; repairing that means adding the exclusive pointer kind, which
     turns B into A", and judge 1 asked for the same graft. D-SAFE-7 and
-    D-SAFE-8 are that repair: `exclusive T*` exists, and a `ref` through `*p`
+    D-SAFE-8 are that repair: `exclusive T*` exists, `ref self` is
+    reachable through it, and the proposal's `Valid1` and `ValToRef` stay valid
+    because they return reference expressions, not bindings (realigned
+    2026-10-28, SAFE-2: W-347; this text read "and a `ref` through `*p`
     inherits `p`'s kind so that the proposal's `Valid1` and `ValToRef` stay
-    valid.
+    valid").
 -   **Attempt C's `derived(...)` and `exclusive ref`.** Attempt C, "Ratchet:
     hardened runtime core now, annotated borrows later", annotated returns
     with `derived(...)` naming the parameters a result derives from, and

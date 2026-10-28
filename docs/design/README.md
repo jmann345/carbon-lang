@@ -2148,9 +2148,15 @@ for any type with a trivial destructor like `i32`. Types may define additional
 initialization for the [hardened build mode](#build-modes). For example, this
 causes integers to be set to `0` when in unformed state in this mode.
 
-> **Fork amendment (2026-10-12, F-013 D-SAFE-13 I5).** The fork promotes this
-> zeroing to the Release baseline for every type; there is no separate hardened
-> mode. See [Initialization safety](safety/initialization_safety.md), rule I5.
+> **Fork note (2026-10-28, SAFE-2: W-353, replacing the fork amendment of
+> 2026-10-12, F-013 D-SAFE-13 I5).** The fork's Release build is the hardened
+> build of this paragraph (fork decision D-RG-20), so its `make_uninitialized`
+> zeroes the whole object, padding included, for every type, which is the
+> hardening initialization of proposal p000257; a type's additional
+> initialization is the customization p000257 describes. See
+> [Initialization safety](safety/initialization_safety.md), rule I5. (The
+> superseded 2026-10-12 amendment read: "The fork promotes this zeroing to the
+> Release baseline for every type; there is no separate hardened mode.")
 
 Any operation on an unformed object _other_ than destruction or assignment from
 a fully formed value is an error, even if its in-memory representation is that

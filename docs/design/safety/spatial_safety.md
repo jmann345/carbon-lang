@@ -13,9 +13,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -   [Overview](#overview)
 -   [Rules](#rules)
     -   [SP1: No pointer arithmetic](#sp1-no-pointer-arithmetic)
-    -   [SP2: Every element access is bounds-checked and fails-stop in every build mode](#sp2-every-element-access-is-bounds-checked-and-fails-stop-in-every-build-mode)
+    -   [SP2: Every element access is bounds-checked and fails-stop in every supported build mode](#sp2-every-element-access-is-bounds-checked-and-fails-stop-in-every-supported-build-mode)
     -   [SP3: Views carry their length and a loan](#sp3-views-carry-their-length-and-a-loan)
-    -   [SP4: `unsafe fn GetUnchecked` is the only opt-out](#sp4-unsafe-fn-getunchecked-is-the-only-opt-out)
+    -   [SP4: `unsafe fn GetUnchecked` is the supported opt-out](#sp4-unsafe-fn-getunchecked-is-the-supported-opt-out)
     -   [SP5: Hardening extensions carry no Strict guarantee](#sp5-hardening-extensions-carry-no-strict-guarantee)
 -   [Arithmetic](#arithmetic)
 -   [Runtime behavior and messages](#runtime-behavior-and-messages)
@@ -38,14 +38,19 @@ enforcement, and this page states what that enforcement is. There is no pointer
 arithmetic, so the only way to reach an element of a contiguous region is
 through an indexable type, `array(T, N)`, `Core.Slice(T)` or `Core.Buf(T)`;
 every element access through those types is bounds-checked; a violation
-[fails-stop][fail-stop] in every build mode and in every
-[safety mode](README.md#safety-modes); the only way to read without the check
-is an `unsafe fn`, spelled `unsafe` at the call; and a view carries its length
+[fails-stop][fail-stop] in every supported build mode and in every
+[safety mode](README.md#safety-modes); the supported way to read without the
+check is an `unsafe fn`, spelled `unsafe` at the call, the unsupported
+benchmarking build of the [build modes](README.md#build-modes) section removing
+the check with the rest of the default hardening; and a view carries its length
 together with a loan on the storage it views, so that a bounds check is never
 performed against storage that no longer exists. Integer arithmetic belongs on
 this page too, because a wrongly computed index is the one path by which a
 checked access could reach the wrong element without the program noticing: the
-rule is that arithmetic never produces undefined behavior in Carbon code.
+rule is that arithmetic never produces undefined behavior in Carbon code in a
+supported build mode (realigned 2026-10-28, SAFE-2: W-350, W-351; this paragraph
+read "fails-stop in every build mode", "the only way to read without the check"
+and "never produces undefined behavior in Carbon code.").
 
 [spatial safety]: /docs/design/safety/terminology.md#spatial-safety
 [fail-stop]: /docs/design/safety/terminology.md#fail-stop
@@ -65,25 +70,30 @@ design is the library this page's rules are enforced by.
 This page was fixed by fork decision [F-013](/fork/decision-log.md),
 sub-decisions D-SAFE-14 and D-SAFE-15, synthesized in
 [fork/safe/plan.md](/fork/safe/plan.md). No part of this page beyond the live
-`Core.Slice`/`Core.Buf` check the slices design already specifies is
-implemented in the toolchain (fork workstream SAFE-1, stage 0); see
-[Implementation staging](#implementation-staging). What the toolchain does
-today is this. The bounds check on `Core.Slice(T)` and `Core.Buf(T)` is live
-and fails-stop unconditionally, the 0.1 toolchain having a single mode in which
-the release baseline's bounds checks cannot be turned off (fork decision
-D-SL-4, [Slices: bounds behavior](../slices.md#bounds-behavior)). An
-`array(T, N)` subscript with a constant index is rejected at compile time when
-it is out of range (`ArrayIndexOutOfBounds`, toolchain/check/eval.cpp:1080-1116)
-and an `array(T, N)` subscript with a run-time index is lowered with no check
-at all (toolchain/lower/handle.cpp:47-74, an `inbounds` GEP). No unchecked
-accessor exists on either view type: `UnsafeMake` and `Data()` form views, they
-do not read without a check. Integer division by zero is emitted unguarded
+`Core.Slice`/`Core.Buf` check the slices design already specifies is implemented
+in the toolchain (fork workstream SAFE-1, stage 0); see
+[Implementation staging](#implementation-staging). What the toolchain does today
+is this. The bounds check on `Core.Slice(T)` and `Core.Buf(T)` is live and
+fails-stop unconditionally, the 0.1 toolchain having a single mode in which the
+release baseline's bounds checks cannot be turned off (fork decision D-SL-4,
+[Slices: bounds behavior](../slices.md#bounds-behavior)). An `array(T, N)`
+subscript with a constant index is rejected at compile time when it is out of
+range (`ArrayIndexOutOfBounds`, toolchain/check/eval.cpp:1080-1116) and an
+`array(T, N)` subscript with a run-time index is lowered with no check at all
+(toolchain/lower/handle.cpp:47-74, an `inbounds` GEP). No unchecked accessor
+exists on either view type: `UnsafeMake` and `Data()` form views, they do not
+read without a check. Integer division by zero is emitted unguarded
 (toolchain/lower/handle_call.cpp:188-192). File and line citations are against
 trunk 0bdce60a5 unless a citation says otherwise; the examples marked "today's
 syntax" that use only the upstream prelude were compiled on the 2026.10.12
 nightly toolchain and their outcomes are stated with each example, and the
 examples that use the fork's `Core.Slice` cite the scoreboard program that
-proves their outcome.
+proves their outcome. SP2, SP4, the Arithmetic section, and the examples and
+decisions that state them were realigned 2026-10-28 by fork workstream SAFE-2 to
+the strategy's build modes: the arithmetic design's three rows are read through
+them, and the strategy's unsupported benchmarking build is kept rather than
+withdrawn (W-350, W-351; fork/safe/safe2-plan.md); each realigned passage quotes
+the text it supersedes.
 
 ## Rules
 
@@ -112,20 +122,23 @@ elements of a contiguous region are reached only through the indexable types
 of SP2, and spatial safety reduces to the bounds behavior of three types
 rather than to a property of every pointer.
 
-### SP2: Every element access is bounds-checked and fails-stop in every build mode
+### SP2: Every element access is bounds-checked and fails-stop in every supported build mode
 
-Every element access through `array(T, N)`, `Core.Slice(T)` and `Core.Buf(T)`
-is bounds-checked, and a violation fails-stop: one line on stderr naming the
+Every element access through `array(T, N)`, `Core.Slice(T)` and `Core.Buf(T)` is
+bounds-checked, and a violation fails-stop: one line on stderr naming the
 operation, then `abort()`
 ([Runtime behavior and messages](#runtime-behavior-and-messages)). The check is
 present in the Release build, the Debug build and every specialized build mode
 of the [build modes](README.md#build-modes) section, because the release
 baseline of hardening the strategy promises is exactly this check, and it is
 present in Strict and Permissive alike, because the safety modes govern where
-the `unsafe` keyword is written and this access has no keyword. The fork's
-decision D-SL-4, that the 0.1 toolchain's one mode fails-stop unconditionally,
-is retained as the Release baseline rather than being the Debug promise it was
-adopted from.
+the `unsafe` keyword is written and this access has no keyword. Those are the
+supported build modes; the unsupported benchmarking build the same section
+promises removes the check with the rest of the default hardening, and no rule
+of this page holds in it (realigned 2026-10-28, SAFE-2: W-351; the heading read
+"fails-stop in every build mode"). The fork's decision D-SL-4, that the 0.1
+toolchain's one mode fails-stop unconditionally, is retained as the Release
+baseline rather than being the Debug promise it was adopted from.
 
 The check has three shapes today and one gap:
 
@@ -203,23 +216,34 @@ churn is a named residue item, W-144, gated on stage 1, and no example on this
 page assumes it has landed: 0.1 keeps the unchecked contract the slices design
 states, and the [slices](../slices.md) page carries a dated amendment saying so.
 
-### SP4: `unsafe fn GetUnchecked` is the only opt-out
+### SP4: `unsafe fn GetUnchecked` is the supported opt-out
 
 Unchecked access is `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on
 `Core.Slice(T)` and `Core.Buf(T)`, declared `unsafe fn` from the start and
 spelled `unsafe s.GetUnchecked(i)` at every Strict call
-([type safety](type_safety.md), TY2). Its stated obligation is that
-`0 <= i < Size()`; nothing else about the call changes, and the `bound self`
-keeps the result's loan the same as `Get`'s. This is the "ways to write unsafe
-code that disables the run-time enforcement" the strategy's
-[build modes](README.md#build-modes) section promises, and it is the only such
-way: no build flag disables the checks. The strategy's sentence that Carbon
-"will provide a way to disable the default hardening in release builds, but not
-in a supported way" is withdrawn by the fork, dated, in a blockquote under
-that sentence; the per-site `unsafe fn GetUnchecked` keeps proposal p000196's
-"manually disabled for performance-critical use cases" at the site, where an
-audit finds it with the same search that finds every other `unsafe`, rather
-than at the build, where no search in the source finds it.
+([type safety](type_safety.md), TY2). Its stated obligation is that `0 <= i <
+Size()`; nothing else about the call changes, and the `bound self` keeps the
+result's loan the same as `Get`'s. This is the "ways to write unsafe code that
+disables the run-time enforcement" the strategy's
+[build modes](README.md#build-modes) section promises, and it is the only
+supported such way. The same section's other promise, that Carbon "will provide
+a way to disable the default hardening in release builds, but not in a supported
+way", "strictly for benchmarking purposes", is kept: the benchmarking build
+removes every check of this page, no program the design supports is built that
+way, and its spelling is fixed with the build modes at stage 2 (W-146). The
+per-site `unsafe fn GetUnchecked` keeps proposal p000196's "manually disabled
+for performance-critical use cases" at the site, where an audit finds it with
+the same search that finds every other `unsafe`; the benchmarking build is
+configured outside the source, which is why it is not a supported mode.
+(Realigned 2026-10-28, SAFE-2: W-351. The heading read "`unsafe fn GetUnchecked`
+is the only opt-out", and the superseded 2026-10-12 text read: "and it is the
+only such way: no build flag disables the checks. The strategy's sentence that
+Carbon "will provide a way to disable the default hardening in release builds,
+but not in a supported way" is withdrawn by the fork, dated, in a blockquote
+under that sentence; the per-site `unsafe fn GetUnchecked` keeps proposal
+p000196's "manually disabled for performance-critical use cases" at the site,
+where an audit finds it with the same search that finds every other `unsafe`,
+rather than at the build, where no search in the source finds it.")
 
 Permissive removes only the keyword: `s.GetUnchecked(i)` in a Permissive body
 is the same unchecked read with no marker (the `StrictUnsafeCallUnmarked` row
@@ -243,13 +267,16 @@ soundness model trusts rather than checks.
 
 ## Arithmetic
 
-Integer arithmetic is on this page because an index is an integer, and a
-wrongly computed index is the one path by which a bounds-checked access could
-reach the wrong element without the program noticing. The rule (D-SAFE-15,
-amending the build-mode behavior of
+Integer arithmetic is on this page because an index is an integer, and a wrongly
+computed index is the one path by which a bounds-checked access could reach the
+wrong element without the program noticing. The rule (D-SAFE-15, reading the
+build-mode rows of
 [Arithmetic: overflow and other error conditions](../expressions/arithmetic.md#overflow-and-other-error-conditions)
-and answering its open question) is that arithmetic in Carbon code never
-produces undefined behavior:
+through the strategy's build modes and answering its open question for Release)
+is that arithmetic in Carbon code never produces undefined behavior in a
+supported build mode (realigned 2026-10-28, SAFE-2: W-350; this sentence read
+"amending the build-mode behavior of" and ended "never produces undefined
+behavior"):
 
 -   **Release: signed overflow wraps.** The existing lowering, which emits
     `add`, `sub` and `mul` without the `nsw` flag
@@ -257,27 +284,46 @@ produces undefined behavior:
     is made normative: the result is the two's complement result. An overflowed
     index is then a logic bug, not a memory bug, because the access it feeds
     is still bounds-checked.
--   **Every mode: division and remainder by zero fail-stop.** Signed or
-    unsigned `/` and `%` by zero fails-stop with "carbon: division by zero;
-    terminating" before the division instruction. The guard is NEW, emitted
-    before the `CreateSDiv`/`CreateSRem` at handle_call.cpp:188-192 and their
-    unsigned twins at :210-214, and lands at stage 2 (W-146).
+-   **Every supported build mode: division and remainder by zero fail-stop.**
+    Signed or unsigned `/` and `%` by zero fails-stop with "carbon: division by
+    zero; terminating" before the division instruction. The guard is NEW,
+    emitted before the `CreateSDiv`/`CreateSRem` at handle_call.cpp:188-192 and
+    their unsigned twins at :210-214, and lands at stage 2 (W-146); the
+    benchmarking build omits it (realigned 2026-10-28, SAFE-2: W-350, where the
+    lead read "Every mode").
 -   **Debug: overflow fails-stop with a diagnostic.** The Debug build turns the
     wrap into a fail-stop at the operation, which is the development-build row
     of the arithmetic design's table made concrete.
 -   **Compile time: overflow is rejected**, as it is today.
 
-The arithmetic design's "performance build" row, under which the optimizer may
-assume overflow and division by zero do not occur so that "the behavior of the
-program is not defined", is withdrawn for Carbon code: proposal p005914 forbids
-undefined behavior in safe code, and with bounds checks in place the one
-consequence of overflow the row was guarding against, an out-of-range access,
-cannot occur. Its open question, whether a hardened build should trap, wrap or
-produce zero, is answered: wrap in Release, trap in Debug, never zero. The
-arithmetic page carries a dated blockquote with this decision. The break
-condition is a real-world benchmark of the class p005914 names where the loss
-of `nsw` exceeds 0.5 percent; that is an owner call on a performance-build
-opt-in, not a change to the rule.
+The arithmetic design's three rows are upstream's build modes as the fork reads
+them (fork decision D-RG-20, fork/register/rg1-plan.md): the development build
+is Debug, the hardened build is Release, and the "performance build" row, under
+which the optimizer may assume overflow and division by zero do not occur so
+that "the behavior of the program is not defined", is the unsupported
+benchmarking build of the strategy's [build modes](README.md#build-modes)
+section, the Release build with its default hardening disabled. That row stands.
+No guarantee of the safety pages holds in that build, and proposal p005914's
+prohibition of undefined behavior in safe code is met in every supported build
+mode, where bounds checks make an overflowed index a logic bug rather than a
+memory bug. The arithmetic design's open question, whether a hardened build
+should trap, wrap or produce zero, is answered for Release: wrap, never zero;
+Debug traps, the development row. The arithmetic page carries a dated blockquote
+with this reading. The break condition is upstream's: an answer to the open
+question other than wrap, a rewrite of the rows, or a reconciliation of the
+build-mode pages otherwise than D-RG-20 reads them, which the rule then follows
+in a dated edit. (Realigned 2026-10-28, SAFE-2: W-350. The superseded 2026-10-12
+text read: "The arithmetic design's "performance build" row, under which the
+optimizer may assume overflow and division by zero do not occur so that "the
+behavior of the program is not defined", is withdrawn for Carbon code: proposal
+p005914 forbids undefined behavior in safe code, and with bounds checks in place
+the one consequence of overflow the row was guarding against, an out-of-range
+access, cannot occur. Its open question, whether a hardened build should trap,
+wrap or produce zero, is answered: wrap in Release, trap in Debug, never zero.
+The arithmetic page carries a dated blockquote with this decision. The break
+condition is a real-world benchmark of the class p005914 names where the loss of
+`nsw` exceeds 0.5 percent; that is an owner call on a performance-build opt-in,
+not a change to the rule.")
 
 ## Runtime behavior and messages
 
@@ -354,7 +400,7 @@ fn Oob() -> i32 {
 fn ConstOob() -> i32 { var a: array(i32, 2) = (1, 2); return a[2]; }
 // EX-SP-4 (today's syntax; accepted today and lowered UNCHECKED — stage 2 closes it)
 fn RuntimeArr(i: i32) -> i32 { var a: array(i32, 2) = (1, 2); return a[i]; }
-// EX-SP-5 (NEW): the only opt-out
+// EX-SP-5 (NEW): the supported opt-out (realigned 2026-10-28, SAFE-2: W-351; was "the only opt-out")
 fn Hot(s: Core.Slice(i32), i: i64) -> i32 { return unsafe s.GetUnchecked(i); }
 // EX-SP-6 (today's syntax; today `x / y` with y == 0 is emitted unguarded — stage 2 makes it fail-stop)
 fn Div(x: i32, y: i32) -> i32 { return x / y; }
@@ -402,12 +448,18 @@ What each example shows:
     NEW-SYNTAX; no accessor exists in slice.carbon and no `unsafe fn` modifier
     exists in the toolchain. Stage 1 parses the call spelling and W-144 adds
     the accessor.
+    The unsupported benchmarking build removes the check from `s[i]` as well,
+    and a program built that way is outside every guarantee of this page;
+    `Hot` is the program that ships (added 2026-10-28, SAFE-2: W-351).
 -   **EX-SP-6 (D-SAFE-15, division by zero).** `Div(1, 0)` reaches an
     unguarded `sdiv` today (handle_call.cpp:188-192). Outcome:
-    ACCEPTS-UNCHECKED; the nightly exits 0 with no diagnostic. Stage 2 (W-146)
-    emits the guard, after which `Div(1, 0)` fails-stop with "carbon: division
-    by zero; terminating" in every mode, and a `Div` of the least `i32` by
-    −1, the overflowing division, wraps in Release and fails-stop in Debug.
+    ACCEPTS-UNCHECKED; the nightly exits 0 with no diagnostic.
+    Stage 2 (W-146) emits the guard, after which `Div(1, 0)` fails-stop with
+    "carbon: division by zero; terminating" in every supported build mode,
+    and a `Div` of the least `i32` by −1, the overflowing division, wraps in
+    Release and fails-stop in Debug; in the benchmarking build both are the
+    arithmetic design's performance row (realigned 2026-10-28, SAFE-2: W-350;
+    this sentence read "in every mode").
 
 The checklist rows this page owns, in the checklist's own vocabulary:
 
@@ -471,9 +523,10 @@ consequences:
     library modes a C++ toolchain offers are the C++ side's option, not a
     Strict guarantee (SP5). A pointer returned by such code into Carbon is
     unverified (T6), and its dereference is the type page's `unsafe *p`.
--   **Division.** A division inside a C++ function is C++ arithmetic and is
-    not guarded; a division in Carbon code is guarded at the Carbon operation
-    in every mode, so a migrated expression gains the guard the moment it is
+-   **Division.** A division inside a C++ function is C++ arithmetic and is not
+    guarded; a division in Carbon code is guarded at the Carbon operation in
+    every supported build mode (realigned 2026-10-28, SAFE-2: W-350; this read
+    "in every mode"), so a migrated expression gains the guard the moment it is
     rewritten in Carbon and not before.
 
 The migration ladder for a C++ API that takes pointers is the one on the
@@ -494,7 +547,7 @@ else on this page is. The rows this page owns:
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page; the dated amendments on the [slices](../slices.md) and [arithmetic](../expressions/arithmetic.md) pages |
 | 1 | Lex and parse `unsafe fn` and the `unsafe` prefix forms, recorded in SemIR, unenforced | EX-SP-5's call spelling parses; the prelude churn W-144 is gated here: `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and `Buf`, `bound p` on `FromArray`, `bound self` on every view producer and on `IndexWith.At` and `Copy.Op`, `UnsafeMake` renamed to `unsafe fn Make` |
-| 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill | `ArrayIndex` lowered as compare-and-`fail_stop` with "carbon: array index out of bounds; terminating", array subscripts through `IndexWith(i64)` (absorbing W-116); the division and remainder guard with "carbon: division by zero; terminating"; Debug overflow fail-stop; residue item W-146 |
+| 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill; the unsupported benchmarking build that disables them | `ArrayIndex` lowered as compare-and-`fail_stop` with "carbon: array index out of bounds; terminating", array subscripts through `IndexWith(i64)` (absorbing W-116); the division and remainder guard with "carbon: division by zero; terminating"; Debug overflow fail-stop; the benchmarking build's removal of the checks, the guard and the wrap; residue item W-146 (realigned 2026-10-28, SAFE-2: W-350, W-351) |
 | 3 | Strict static checks without loan sets; `--strict-checks=warn` default | `StrictBuiltinBindingUnmarked` for a builtin binding outside the prelude (SP1; residue item W-147); an unmarked `GetUnchecked` call is the type page's `StrictUnsafeCallUnmarked` |
 | 4 | The loan checker | SP3 enforced: the `bound` loans of the view producers and the ⊥ result of `unsafe fn Make`, under the temporal page's rules |
 
@@ -507,14 +560,14 @@ its break condition in [fork/decision-log.md](/fork/decision-log.md); the
 strategy page carries D-SAFE-1 to D-SAFE-6, D-SAFE-18 and D-SAFE-21, and the
 other category pages carry the rest.
 
--   **D-SAFE-14 — Spatial: fail-stop everywhere, `unsafe fn` is the opt-out,
-    views carry loans.** SP1 no arithmetic, `pointer.offset` bound by the
-    prelude and by an `unsafe fn` anywhere else.
+-   **D-SAFE-14 — Spatial: fail-stop in every supported build mode, `unsafe fn`
+    is the supported opt-out, views carry loans.** SP1 no arithmetic,
+    `pointer.offset` bound by the prelude and by an `unsafe fn` anywhere else.
     SP2 every element access through `array(T, N)`, `Core.Slice(T)` and
-    `Core.Buf(T)` is bounds-checked and a violation fails-stop in every build
-    mode, D-SL-4 retained as the Release baseline; the array gap, constant
-    indices rejected at compile time and run-time indices lowered unchecked,
-    is a stage-2 lowering residue in which `ArrayIndex` emits the
+    `Core.Buf(T)` is bounds-checked and a violation fails-stop in every
+    supported build mode, D-SL-4 retained as the Release baseline; the array
+    gap, constant indices rejected at compile time and run-time indices lowered
+    unchecked, is a stage-2 lowering residue in which `ArrayIndex` emits the
     compare-and-`fail_stop` sequence of `Slice.Get` and array subscripts go
     through `IndexWith(i64)`. SP3 views carry their length and a loan:
     `FromArray` takes `bound p`, every producer whose result views `self`'s
@@ -524,24 +577,48 @@ other category pages carry the rest.
     `Copy.Op` so that impls may keep it; `UnsafeMake` becomes `unsafe fn
     Make(p: T*, size: i64)` with its existing comment as the stated
     obligation; the prelude churn is the named residue item W-144, gated, and
-    never assumed in an example. SP4 unchecked access is `unsafe fn
-    GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and `Buf`; no build
-    flag disables checks, and the strategy's promise of an unsupported disable
-    for benchmarking is withdrawn by the fork, dated. SP5 hardening extensions
-    carry no Strict guarantee. The fail-stop message text stays fixed (W-113)
-    so that `fail_stop` needs no formatting runtime. Break condition: none for
-    the semantics; the unchecked accessor's name is the residue item's.
+    never assumed in an example. SP4 the supported unchecked access is
+    `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and
+    `Buf`; the strategy's promise of a way to disable the default hardening in
+    release builds, "not in a supported way" and "strictly for benchmarking
+    purposes", is kept as the benchmarking build, which removes the bounds
+    check, the division guard, the overflow wrap and the hardening
+    initialization and whose spelling is fixed with the build modes at stage 2
+    (W-146). SP5 hardening extensions carry no Strict guarantee. The fail-stop
+    message text stays fixed (W-113) so that `fail_stop` needs no formatting
+    runtime. Break condition: none for the semantics in the supported build
+    modes; the unchecked accessor's name is the residue item's; an upstream
+    withdrawal of the benchmarking promise removes the benchmarking build with
+    it. (Realigned 2026-10-28, SAFE-2: W-351. The superseded 2026-10-12 text was
+    headed "Spatial: fail-stop everywhere, `unsafe fn` is the opt-out, views
+    carry loans.", read "fails-stop in every build mode" in SP2, read in SP4
+    "SP4 unchecked access is `unsafe fn GetUnchecked[bound self: Self](i:
+    i64) -> T` on `Slice` and `Buf`; no build flag disables checks, and the
+    strategy's promise of an unsupported disable for benchmarking is
+    withdrawn by the fork, dated.", and ended "Break condition: none for the
+    semantics; the unchecked accessor's name is the residue item's.")
 -   **D-SAFE-15 — Arithmetic.** Release: signed overflow wraps, the existing
     lowering made normative, and signed or unsigned division or remainder by
     zero fails-stop, a NEW guard before the division instruction at stage 2.
     Debug: overflow fails-stop with a diagnostic. Compile-time overflow is
-    already rejected. The arithmetic design's "performance build ... not
-    defined" row is withdrawn for Carbon code, because proposal p005914
-    forbids undefined behavior in safe code and bounds checks make overflow a
-    logic bug rather than a memory bug; its open question is answered with
-    wrap, not zero. Break condition: a real-world benchmark of the class
-    p005914 names where the loss of `nsw` exceeds 0.5 percent, an owner call on
-    a performance-build opt-in.
+    already rejected. The arithmetic design's rows are read through the
+    strategy's build modes (D-RG-20): development is Debug, hardened is
+    Release, and the "performance build ... not defined" row stands for the
+    unsupported benchmarking build, outside every guarantee; proposal
+    p005914's prohibition of undefined behavior in safe code holds in every
+    supported build mode, where bounds checks make overflow a logic bug rather
+    than a memory bug; the open question is answered for Release with wrap,
+    not zero. Break condition: an upstream answer to the arithmetic design's
+    open question other than wrap, a rewrite of its rows, or a reconciliation
+    of the build-mode pages otherwise than D-RG-20 reads them; the rule then
+    follows the upstream text in a dated edit. (Realigned 2026-10-28, SAFE-2:
+    W-350. The superseded 2026-10-12 text read: "The arithmetic design's
+    "performance build ... not defined" row is withdrawn for Carbon code,
+    because proposal p005914 forbids undefined behavior in safe code and
+    bounds checks make overflow a logic bug rather than a memory bug; its open
+    question is answered with wrap, not zero. Break condition: a real-world
+    benchmark of the class p005914 names where the loss of `nsw` exceeds 0.5
+    percent, an owner call on a performance-build opt-in.")
 
 ## Alternatives considered
 
@@ -549,22 +626,33 @@ The design was chosen by a panel of three attempts and two judges, recorded in
 [fork/safe/plan.md](/fork/safe/plan.md); the strategy page states the
 synthesis. Four alternatives bear on this page:
 
--   **A build flag that disables the checks.** The strategy's
-    [build modes](README.md#build-modes) section promised an unsupported way to
-    disable the default hardening in release builds for benchmarking, and
+-   **A supported build flag that disables the checks.** Attempt C carried the
+    strategy's unsupported benchmarking disable as an `--unhardened` build flag
+    beside its hardened runtime core, and SAFE-1's synthesis withdrew the
+    disable altogether (D-SAFE-14, review fold A-13(c) in
+    [fork/safe/plan.md](/fork/safe/plan.md)). The fork keeps the strategy's
+    promise instead: the benchmarking build exists and is unsupported, as the
+    [build modes](README.md#build-modes) section says. What stays rejected is
+    making that build a supported mode, for the two reasons SAFE-1 gave
+    against the flag. A build-level disable moves the disable from the site to
+    the build configuration, so no search of the source finds where the check
+    was removed, which is the audit property the whole design rests on
+    ([Safe and unsafe code](README.md#safe-and-unsafe-code)); and it makes the
+    matrix's fail-stop row depend on how the program was built. Both
+    properties hold for every program the design supports, because the
+    benchmarking build is outside that set, and a program that ships uses the
+    per-site `unsafe fn GetUnchecked`, which keeps proposal p000196's disable
+    "for performance-critical use cases" where the keyword is. (Realigned
+    2026-10-28, SAFE-2: W-351. The superseded 2026-10-12 bullet was headed "A
+    build flag that disables the checks." and began: "The strategy's
+    [build modes](README.md#build-modes) section promised an unsupported way
+    to disable the default hardening in release builds for benchmarking, and
     attempt C carried it as an `--unhardened` build flag beside its hardened
-    runtime core. The synthesis withdraws it (D-SAFE-14, review fold A-13(c) in
-    [fork/safe/plan.md](/fork/safe/plan.md)) for two reasons. A flag moves the
-    disable from the site to the build configuration, so no search of the source
-    finds where the check was removed, which is the audit property the whole
-    design rests on ([Safe and unsafe code](README.md#safe-and-unsafe-code));
-    and a flag makes the matrix's fail-stop row depend on how the program was
-    built, so a Permissive program's one spatial guarantee would no longer be
-    identical in every mode. The per-site `unsafe fn GetUnchecked` keeps
-    proposal p000196's disable "for performance-critical use cases" where the
-    keyword is, and a benchmark that wants the unchecked build measures the
-    program with the accessor at its hot sites, which is also the program that
-    would ship.
+    runtime core. The synthesis withdraws it (D-SAFE-14, review fold A-13(c)
+    in [fork/safe/plan.md](/fork/safe/plan.md)) for two reasons."; it ended:
+    "and a benchmark that wants the unchecked build measures the program with
+    the accessor at its hot sites, which is also the program that would
+    ship.")
 -   **Mode-gated checks.** The slices design's 0.1 limits anticipated that the
     unchecked read would arrive with build modes, "the check becomes
     mode-gated", and the toolchain's one mode adopted the Debug build's promise
@@ -572,7 +660,10 @@ synthesis. Four alternatives bear on this page:
     check is the Release baseline the strategy already requires, Debug adds
     nothing to it, and the opt-out is an accessor, so the arrival of build
     modes at stage 2 changes the behavior of overflow and of unformed reads
-    but not of a bounds violation.
+    but not of a bounds violation in a supported build mode; the unsupported
+    benchmarking build removes the check with the rest of the default
+    hardening (realigned 2026-10-28, SAFE-2: W-351; this sentence ended "but not
+    of a bounds violation.").
 -   **Attempt C's ratchet.** Attempt C's thesis was a hardened runtime core
     first, fail-stop bounds, zero-fill and division-by-zero fail-stop as the
     0.1 deliverable, with annotated borrows later. Judge 1 found that C "is
@@ -608,7 +699,7 @@ motivates a check the strategy already requires.
 | Fact | Used by | Status |
 | --- | --- | --- |
 | LLVM's `sdiv`, `srem`, `udiv` and `urem` instructions have undefined behavior when the divisor is zero, so an unguarded Carbon division is undefined behavior at the LLVM level today | The motivation for the stage-2 division guard; the "emitted unguarded" wording in the [Overview](#overview) | UNVERIFIED: we expect this from the LLVM language reference; the writer has not checked the reference for this page, and the guard is required regardless |
-| The run-time cost of bounds checking in a hardened standard library is small enough that production deployments enable it by default, the figure the strategy's evidence link reports | The expectation in SP2 that the check is cheap; no rule depends on the figure | UNVERIFIED: we expect the figure to be below one percent on typical workloads, as the linked account reports; the fork's own measurement is what D-SAFE-15's 0.5 percent break condition reads |
+| The run-time cost of bounds checking in a hardened standard library is small enough that production deployments enable it by default, the figure the strategy's evidence link reports | The expectation in SP2 that the check is cheap; no rule depends on the figure | UNVERIFIED: we expect the figure to be below one percent on typical workloads, as the linked account reports; no break condition reads a fork measurement since SAFE-2 (realigned 2026-10-28, SAFE-2: W-350; this cell ended "the fork's own measurement is what D-SAFE-15's 0.5 percent break condition reads") |
 | Death by `SIGABRT` is reported by the conformance runner as exit status −6 | The EXPECT-EXIT of EX-SP-2 | VERIFIED: fork/conformance/runner.py returns the subprocess return code unmodified and Python reports death by signal N as −N; the program's own header states it and the scoreboard passes |
 
 ## References

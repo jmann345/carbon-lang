@@ -164,14 +164,25 @@ programming errors:
     overflow checks might be combined into one -- but no control flow or memory
     access that depends on the value will be performed.
 
-> **Amendment (2026-10-12, SAFE-1 — F-013 D-SAFE-15):** for Carbon code the
-> fork fixes the behavior by build mode. In the Release build, signed overflow
-> wraps to the two's complement result; in the Debug build, overflow fails-stop
-> with a diagnostic; signed or unsigned division or remainder by zero
-> fails-stop in both. The performance-build row above, under which the
-> behavior is not defined, is withdrawn for Carbon code. The second TODO below
-> is answered: wrap, not zero. See
-> [Spatial safety: Arithmetic](../safety/spatial_safety.md#arithmetic).
+> **Amendment (2026-10-12, SAFE-1 — F-013 D-SAFE-15; realigned 2026-10-28,
+> SAFE-2: W-350):** the fork reads the three rows above through the safety
+> strategy's build modes: the development build is Debug, the hardened build
+> is Release, and the performance build is the unsupported benchmarking build,
+> the Release build with its default hardening disabled. For Carbon code, in
+> the Release build signed overflow wraps to the two's complement result; in
+> the Debug build, overflow fails-stop with a diagnostic; signed or unsigned
+> division or remainder by zero fails-stop in both. The performance-build row
+> stands for the benchmarking build, where the behavior is not defined, and no
+> supported build mode has that behavior. The second TODO below is answered
+> for the hardened build: wrap, not zero. See
+> [Spatial safety: Arithmetic](../safety/spatial_safety.md#arithmetic). (The
+> superseded 2026-10-12 text read, in full: "for Carbon code the fork fixes
+> the behavior by build mode. In the Release build, signed overflow wraps to
+> the two's complement result; in the Debug build, overflow fails-stop with a
+> diagnostic; signed or unsigned division or remainder by zero fails-stop in
+> both. The performance-build row above, under which the behavior is not
+> defined, is withdrawn for Carbon code. The second TODO below is answered:
+> wrap, not zero.")
 
 **TODO:** Unify the description of these programming errors with those of
 bit-shift domain errors, document the behavior in a common place and link to it

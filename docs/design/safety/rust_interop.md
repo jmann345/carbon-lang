@@ -127,9 +127,15 @@ optimize on those promises. The asymmetry has three consequences:
     the design of that promise.
 -   **Even the const kind cannot be `&T` for an exported class.** Carbon
     writes `Plain` fields through `T*` aliases while a `const T*` to the same
-    object is live (EX-TM-3 on the temporal page, EX-M-1 on the mutation page),
-    and a value binding of a non-`Plain` type is a shared loan under which the
-    same writes are permitted (D-SAFE-17). A Rust `&IntVec` reachable from the
+    object is live
+    (EX-TM-3 on the temporal page), because a `const T*` is not a binding and
+    freezes nothing. A value binding of a borrowed object is the opposite
+    case: Carbon freezes it for the binding's lifetime, which is why the
+    [type table](#by-type) maps a by-value parameter of a borrowed `Freeze`
+    type to `&T` (realigned 2026-10-28, SAFE-2: W-348, W-349; this text read
+    "(EX-TM-3 on the temporal page, EX-M-1 on the mutation page), and a value
+    binding of a non-`Plain` type is a shared loan under which the same
+    writes are permitted (D-SAFE-17)."). A Rust `&IntVec` reachable from the
     same exported signature set as a `&Shared<IntVec>` would make
     `Shared::set` undefined behavior for the holder of the `&IntVec`. So
     `const T*` exports as `&SharedView<T>`, the read-only `Cell`-shaped view,
@@ -209,8 +215,9 @@ emit until the loan checker exists.
 | `T*` | `&Shared<T>` | Always; `Shared<T>` is the generated `UnsafeCell`-based wrapper of the next section, exposing exactly the non-invalidating surface | after stage 4 |
 | `const T*` | `&SharedView<T>` | By default: the read-only `Cell`-shaped view | after stage 4 |
 | `const T*` | `&T` | Only when `T: Core.Freeze` and no `T*` to the same object is reachable from Rust in the exported signature set; in practice never for an exported class | after stage 5 (`Freeze`) |
+| a by-value parameter of a borrowed type | `&T` | When `T: Core.Freeze`, and `&SharedView<T>` otherwise: the parameter binds a borrowed object, frozen for the call ([mutation safety](mutation_safety.md), M8), which is what Rust's `&T` promises; the `&T` is the Rust caller's, and `Freeze` excludes Rust-side interior mutability (added 2026-10-28, SAFE-2: W-348) | after stage 5 (`Freeze`) |
 | `Core.Slice(T)` | `&SharedSlice<T>` | Always; a `&[Cell<T>]`-shaped view formed through a two-word shim, never by layout | after stage 4 |
-| `Core.Slice(const T)` | `&[T]` | Only for a `Freeze` element type under the same proviso as `&T`: `Buf.Set` during a live view is the temporal page's EX-TM-3, so a slice of a class reachable through `&Shared` cannot be `&[T]` | after stage 5 (`Freeze`) |
+| `Core.Slice(const T)` | `&[T]` | Only for a `Freeze` element type under the same proviso as `&T`: an element is written through the `T*` that a view's `Data()` returns while another view of the same storage lives (realigned 2026-10-28, SAFE-2: W-348; this read "`Buf.Set` during a live view is the temporal page's EX-TM-3", and `Core.Buf(T).Set` now takes `ref self`, which rejects that call), so a slice of a class reachable through `&Shared` cannot be `&[T]` | after stage 5 (`Freeze`) |
 | `bound` parameter or result | one lifetime `'a`, written by the generator on every `bound` parameter and the result | The result's loan set is the union of the `bound` arguments' sets, one Rust lifetime shared by all of them (amended 2026-10-12, document-review fold: D-10) | after stage 4 |
 | `bound(a)` | named lifetimes | One name, one loan set (T5(f)) | after stage 6 |
 | a free loan set | `'static` | A loan set with no place in it: an owner's value, a literal, a global | after stage 4 |
@@ -306,6 +313,12 @@ Why this is safe Rust to use, in the terms of Rust's own rules:
     same object is reachable from Rust in the exported signature set, and
     `&SharedView<T>` otherwise; the generator checks the whole set, not one
     signature.
+    A by-value parameter's `&T` is not handed to Rust but taken from it, for
+    the call only: Rust holds a `&T` only to an object it owns or to one a
+    row above handed it under this proviso, the wrappers convert nothing to
+    `&T`, and the Carbon callee keeps the object frozen for the call, so no
+    `&Shared<T>` to the same object is used while that `&T` lives (added
+    2026-10-28, SAFE-2: W-348).
 
 `SharedSlice<T>` is the same construction over a view: a `&[Cell<T>]`-shaped
 slice whose elements are read and written by copy, formed by a two-word shim
@@ -316,10 +329,12 @@ conversion from a `&mut [T]` to a `&[Cell<T>]` (`Cell::from_mut` and
 `Cell::as_slice_of_cells`), which is the precedent for a slice whose elements
 are shared-mutable cells being safe Rust.
 
-Break condition (D-SAFE-19): a Rust soundness argument against the wrapper —
-an `UnsafeCell` reachable from a `Sync` type, say — makes `T*` fall back to a
-raw pointer on the Rust side, which is attempt A's durable gap, and this page
-would say so in a dated edit.
+Break condition (D-SAFE-19): a Rust soundness argument against the wrapper — an
+`UnsafeCell` reachable from a `Sync` type, say — makes `T*` fall back to a raw
+pointer on the Rust side, which is attempt A's durable gap, and this page would
+say so in a dated edit. A Rust soundness argument against `&T` for a frozen
+by-value parameter returns that row to `&SharedView<T>` (added 2026-10-28,
+SAFE-2: W-348).
 
 ## Exported-signature examples
 
@@ -333,7 +348,7 @@ checkable. Tags of the form A-n, B-n and RR-n in example comments index the
 review-fold record of [fork/safe/plan.md](/fork/safe/plan.md).
 
 ```carbon
-fn At[bound self: Self](i: i64) -> const i32*;      // → fn at<'a>(&'a SharedView<Self>, i: i64) -> &'a SharedView<i32>   (stage 4; never &'a i32 for an exported class — A-9)
+fn At[bound self: Self](i: i64) -> const i32*;      // → fn at<'a>(&'a Self, i: i64) -> &'a SharedView<i32>   (stage 5 with Freeze, else &'a SharedView<Self> at stage 4; never &'a i32 for an exported class; receiver realigned 2026-10-28, SAFE-2: W-348; the line read "→ fn at<'a>(&'a SharedView<Self>, i: i64) -> &'a SharedView<i32>   (stage 4; never &'a i32 for an exported class — A-9)")
 fn Bump(p: exclusive Counter*);                     // → fn bump(p: &mut Counter)                 (stage 4)
 fn Observe(p: Node*);                               // → fn observe(p: &Shared<Node>)             (stage 4; safe, Cell-shaped)
 fn Longest(bound a: const Core.String*, bound b: const Core.String*) -> const Core.String*;   // → fn longest<'a>(a: &'a SharedView<str>, b: &'a SharedView<str>) -> &'a SharedView<str> (stage 4: one lifetime shared by both bound parameters, D-10; &str needs Core.Utf8 and the Freeze proviso)
@@ -341,16 +356,35 @@ fn Longest(bound a: const Core.String*, bound b: const Core.String*) -> const Co
 
 What each line shows:
 
--   **`At`: a `bound` result over a const receiver.** The receiver is
-    `bound self: Self` on a `const` path, so the result's loan set is the
-    receiver's and the generated lifetime `'a` ties the result to the
-    receiver. The receiver exports as `&'a SharedView<Self>` and the result as
+-   **`At`: a `bound` result over a frozen receiver.** The receiver is
+    `bound self: Self`, a by-value receiver: for an exported class it binds a
+    borrowed object, frozen for the call and, through `bound`, for the life
+    of the result (the temporal page's T5(d)), so the result's loan set is
+    the receiver's and the generated lifetime `'a` ties the result to the
+    receiver. The receiver exports as `&'a Self` when `Self: Core.Freeze`,
+    the by-value row of the [type table](#by-type), and as
+    `&'a SharedView<Self>` otherwise. The result exports as
     `&'a SharedView<i32>`, not `&'a i32`: `i32` is `Freeze`, but the element
-    lives inside an exported class that is reachable as `&Shared<Self>` from
-    another signature, under which `set` on the element is permitted (EX-M-1
-    on the mutation page writes `a->Set(0, 5)` while `first: const i32*` is
-    live). A Rust `&'a i32` would promise immutability that Carbon does not
-    keep. Stage 4, because `bound` and the loan checker are stage 4.
+    is not the receiver's storage, a class like `IntVec` holding its elements
+    in a `Core.Buf` block, and a by-value method that writes an `i32` of that
+    block through the `T*` a view of it returns, which M3 permits for an
+    element type that holds no `Core.SharedImmutable` sub-object, is callable
+    on the frozen receiver from Carbon or from Rust through the same
+    `&'a Self` (the mutation page's
+    [Value bindings](mutation_safety.md#value-bindings)). A Rust `&'a i32`
+    would promise immutability that Carbon does not keep. Stage 4, because
+    `bound` and the loan checker are stage 4, and stage 5 for the `&'a Self`
+    receiver, because `Freeze` is. (Realigned 2026-10-28, SAFE-2: W-348, W-349.
+    The superseded 2026-10-12 bullet was headed "`At`: a `bound` result over
+    a const receiver." and read in part: "The receiver is `bound self: Self`
+    on a `const` path, so the result's loan set is the receiver's and the
+    generated lifetime `'a` ties the result to the receiver. The receiver
+    exports as `&'a SharedView<Self>` and the result as `&'a SharedView<i32>`,
+    not `&'a i32`: `i32` is `Freeze`, but the element lives inside an
+    exported class that is reachable as `&Shared<Self>` from another
+    signature, under which `set` on the element is permitted (EX-M-1 on the
+    mutation page writes `a->Set(0, 5)` while `first: const i32*` is
+    live).")
 -   **`Bump`: the exclusive kind is `&mut`.** `exclusive Counter*` is the one
     live access path to its referent, checked by T4 in a Strict body, so Rust's
     `&mut Counter` is the exact analogue and is safe to hand out. Stage 4; and
@@ -378,8 +412,10 @@ What each line shows:
 The four parts of D-SAFE-19, stated against [the bar](#the-bar).
 
 1.  **Safe Rust calling Strict Carbon.** Every Strict-checked Carbon function
-    over relocatable values, `exclusive T*`, `T*` as `&Shared<T>`, `const T*`
-    as `&SharedView<T>`, with `bound`-expressible lifetimes, `Core.Optional(T*)`
+    over relocatable values, `exclusive T*`, `T*` as `&Shared<T>`,
+    `const T*` as `&SharedView<T>`, a by-value parameter of a borrowed
+    `Freeze` type as `&T` (realigned 2026-10-28, SAFE-2: W-348), with
+    `bound`-expressible lifetimes, `Core.Optional(T*)`
     as `Option<&Shared<T>>`, `Core.Slice` as `&SharedSlice<T>`, `Core.Result`
     and `repr`-declared `choice` types exports as a safe Rust `fn`. A
     Permissive function always exports as a Rust `unsafe fn`, which is an
@@ -395,9 +431,14 @@ The four parts of D-SAFE-19, stated against [the bar](#the-bar).
     inside the call, so that import is `unsafe` with the obligation that the
     callback does not reach the object.
 3.  **The remaining gap**, as the strategy asks it be stated. `&T` and `&[T]`
-    are never produced for exported classes and slices; `&SharedView<T>` and
-    `&SharedSlice<T>` stand in for them, which is the D-SAFE-17 value-binding
-    case generalized to the boundary. Named lifetimes and outlives bounds wait
+    are never produced for exported classes and slices;
+    `&SharedView<T>` and `&SharedSlice<T>` stand in for them, because a
+    `const T*` freezes nothing in Carbon, M3 permitting `Plain` writes through
+    `T*` aliases while it lives; a by-value parameter of a borrowed `Freeze`
+    type, which Carbon freezes for the call, is the one place a Carbon
+    signature yields `&T` (realigned 2026-10-28, SAFE-2: W-348; this sentence
+    ended "which is the D-SAFE-17 value-binding case generalized to the
+    boundary."). Named lifetimes and outlives bounds wait
     on stage 6. `Send`/`Sync` export waits on stage 5. Interface-typed and
     inheritance-typed APIs are opaque in both directions. A `&T`-plus-callback
     import is `unsafe`. A Rust API with several lifetimes imports
@@ -556,7 +597,10 @@ carry the rest of D-SAFE-1 to D-SAFE-23.
     `&Shared<T>`, a generated `UnsafeCell`-based wrapper exposing exactly the
     non-invalidating surface, safe Rust because `Cell` semantics are what the
     no-invalidation rule is; `const T*` as `&SharedView<T>` by default and as
-    `&T` only under the `Freeze` and no-reachable-`T*` proviso; `Core.Slice(T)`
+    `&T` only under the `Freeze` and no-reachable-`T*` proviso;
+    a by-value parameter of a borrowed type, frozen for the call, as `&T`
+    when `T: Core.Freeze` and as `&SharedView<T>` otherwise (realigned
+    2026-10-28, SAFE-2: W-348); `Core.Slice(T)`
     as `&SharedSlice<T>`; `bound` as one elided lifetime and `bound(a)` as
     named lifetimes; `Core.Relocatable` values by value; `Core.Optional(T*)`
     as `Option<&Shared<T>>` by representation; `choice` as a `repr(C)`
@@ -566,7 +610,9 @@ carry the rest of D-SAFE-1 to D-SAFE-23.
     the facet holds. The verdict is the four parts of [Verdict](#verdict).
     Break condition: a Rust soundness argument against the `Shared<T>` wrapper
     — then `T*` falls back to a raw pointer on the Rust side, attempt A's
-    durable gap, and this page says so in a dated edit.
+    durable gap, and this page says so in a dated edit; a Rust soundness
+    argument against `&T` for a frozen by-value parameter returns that row to
+    `&SharedView<T>` (added 2026-10-28, SAFE-2: W-348).
 -   **D-SAFE-22 — External facts are quarantined.** Every claim about Rust on
     this page — the aliasing rules for `&T` and `&mut T`, `UnsafeCell` as the
     one opt-out, `Cell`'s discipline, the auto-trait rules for `Send` and
@@ -625,17 +671,28 @@ their verdicts. The alternatives specific to this page:
     rewritten to `&SharedView<T>` and `&SharedSlice<T>` by default with `&T`
     only under the `Freeze` and no-reachable-`T*` proviso, and the verdict's
     part (1) was narrowed with the difference moved to part (3).
+    (EX-M-1's write under the live `first` was realigned 2026-10-28 by SAFE-2,
+    W-349, and is rejected now; EX-TM-3 still shows the writes.)
 -   **A `"C-unwind"` transport.** Rejected: it would let a Rust panic unwind
     Carbon frames, which have no unwinder and whose fail-stop contract is that
     nothing unwinds, and it would require the C++ exceptions Carbon fences to
     be re-raised rather than terminated; the no-unwind rule the error-handling
     design already fixes for C++ is kept for Rust.
--   **Eager-copy value bindings, for a `&T` mapping.** D-SAFE-17's recorded
-    alternative, eager acquisition for every type, would make a value binding
-    carry no loan and would remove one of the two reasons `const T*` cannot be
-    `&T`; it was rejected on the mutation page as costly for large owning
-    types, and the other reason — `Plain`-field writes through `T*` aliases —
-    would remain, so the mapping would not change.
+-   **Eager-copy value bindings, for a `&T` mapping.** SAFE-1's recorded
+    alternative to D-SAFE-17, eager acquisition for every type, would make a
+    value binding carry no loan. It is not upstream's rule: proposal p005434
+    makes a value binding of a non-copy type a borrowed object that Strict
+    prevents from being mutated, which SAFE-2 adopted, and that frozen
+    binding is what gives a by-value parameter its `&T` row. The `const T*`
+    rows are unchanged by either choice, because `Plain`-field writes through
+    `T*` aliases during a live `const T*` remain (EX-TM-3). (Realigned
+    2026-10-28, SAFE-2: W-348. The superseded 2026-10-12 bullet read:
+    "D-SAFE-17's recorded alternative, eager acquisition for every type,
+    would make a value binding carry no loan and would remove one of the two
+    reasons `const T*` cannot be `&T`; it was rejected on the mutation page
+    as costly for large owning types, and the other reason — `Plain`-field
+    writes through `T*` aliases — would remain, so the mapping would not
+    change.")
 
 That decision is final; this page specifies the chosen analysis rather than
 relitigating it.

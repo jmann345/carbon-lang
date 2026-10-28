@@ -134,13 +134,19 @@ cannot be implicitly converted to durable reference expressions at all.
 > properties like uniqueness, and make sure their names are aligned with
 > memory-safety terminology.
 
-> **Answered (2026-10-12, SAFE-1 — F-013 D-SAFE-7, D-SAFE-8, D-SAFE-17):** a
-> durable entire reference expression is a _place_ in the safety design's
-> sense; a `ref` binding is exclusive access to its place, or has the kind of
-> the pointer it was formed through; a value binding is a shared read; and
-> `T*`, `exclusive T*` and `const T*` are the three pointer kinds. See
+> **Answered (2026-10-12, SAFE-1 — F-013 D-SAFE-7, D-SAFE-8, D-SAFE-17;
+> realigned 2026-10-28, SAFE-2: W-347, W-348):** a durable entire reference
+> expression is a _place_ in the safety design's sense; a `ref` binding is
+> exclusive access to its place, or a frozen read of it for a `const` type,
+> whatever it was formed through, as proposal p005434's `nocapture` and
+> `noalias` rule requires; a value binding of a type whose value
+> representation is a copy is a read, and a value binding of any other type
+> binds a borrowed object, frozen while the binding lives; and `T*`,
+> `exclusive T*` and `const T*` are the three pointer kinds. See
 > [Temporal safety](safety/temporal_safety.md) and
-> [Mutation safety](safety/mutation_safety.md).
+> [Mutation safety](safety/mutation_safety.md). (The superseded 2026-10-12
+> text read "a `ref` binding is exclusive access to its place, or has the kind
+> of the pointer it was formed through; a value binding is a shared read".)
 
 #### Value acquisition
 
@@ -482,13 +488,22 @@ expression an error.
 > or weaken it based on experience, especially with C++ interop and a more
 > complete memory safety story.
 
-> **Pinned (2026-10-12, SAFE-1 — F-013 D-SAFE-17):** a value binding of a
-> `Core.Plain` type acquires eagerly and is unaffected by later mutation (the
-> mutation safety page's EX-M-4a is accepted, and its `b` is 1); a value
-> binding of a non-`Plain` type is a shared loan under which invalidating
-> operations are rejected in Strict Carbon and `Plain`-field writes through
-> other aliases stay erroneous. See
+> **Pinned (2026-10-12, SAFE-1 — F-013 D-SAFE-17; realigned 2026-10-28, SAFE-2:
+> W-348):** the restriction above is kept as proposal p005434 states it for
+> borrowed objects. A value binding of a type whose value representation is a
+> copy reads the object when it is bound and is unaffected by later mutation
+> (the mutation safety page's EX-M-4a is accepted, and its `b` is 1). A value
+> binding of any other type binds a borrowed object, and Strict Carbon rejects
+> every mutation of it while the binding lives, invalidating or not;
+> Permissive Carbon warns, and the Debug build reports the erroneous behavior
+> this section describes as `MutationDuringValueBinding`. See
 > [Mutation safety: Value bindings](safety/mutation_safety.md#value-bindings).
+> (The superseded 2026-10-12 text read: "a value binding of a `Core.Plain` type
+> acquires eagerly and is unaffected by later mutation (the mutation safety
+> page's EX-M-4a is accepted, and its `b` is 1); a value binding of a
+> non-`Plain` type is a shared loan under which invalidating operations are
+> rejected in Strict Carbon and `Plain`-field writes through other aliases
+> stay erroneous.")
 
 Even with these restrictions, we expect to make values in Carbon useful in
 roughly the same places as `const &`s in C++, but with added efficiency in the

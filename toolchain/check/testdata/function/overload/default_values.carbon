@@ -426,10 +426,24 @@ library "[[@TEST_NAME]]";
 // member 1, and no member accepts `c.M()`.
 class C {
   var v: i32;
+  // CHECK:STDERR: fail_implicit_self_with_default.carbon:[[@LINE+4]]:17: error: `self` must be declared in the explicit parameter list [SelfInImplicitParamList]
+  // CHECK:STDERR:   overload fn M[self: Self](y: i32 = 2) -> i32 { return self.v + y; }
+  // CHECK:STDERR:                 ^~~~~~~~~~
+  // CHECK:STDERR:
   overload fn M[self: Self](y: i32 = 2) -> i32 { return self.v + y; }
   overload fn M(self, unused b: bool) -> i32 { return self.v; }
 }
 
+// CHECK:STDERR: fail_implicit_self_with_default.carbon:[[@LINE+10]]:30: error: no member of overload set `M` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Use(c: C) -> i32 { return c.M() + c.M(true); }
+// CHECK:STDERR:                              ^~~~~
+// CHECK:STDERR: fail_implicit_self_with_default.carbon:[[@LINE-7]]:3: note: candidate takes a different number of arguments [OverloadCandidateRejected]
+// CHECK:STDERR:   overload fn M[self: Self](y: i32 = 2) -> i32 { return self.v + y; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_implicit_self_with_default.carbon:[[@LINE-9]]:3: note: candidate takes a different number of arguments [OverloadCandidateRejected]
+// CHECK:STDERR:   overload fn M(self, unused b: bool) -> i32 { return self.v; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(c: C) -> i32 { return c.M() + c.M(true); }
 
 // --- import_lib.carbon
@@ -1592,6 +1606,46 @@ fn Use() -> i32 { return F(1) + F(1, 5); }
 // CHECK:STDOUT:   %.loc10_28.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_1.0c6]
 // CHECK:STDOUT:   %.loc10_28.2: %i32 = converted %int_1, %.loc10_28.1 [concrete = constants.%int_1.0c6]
 // CHECK:STDOUT:   %F.call: init %i32 = call %F.ref.loc10_29(%.loc10_28.2, @F.loc7.%.loc7_32.2)
+// CHECK:STDOUT:   return %F.call
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- fail_todo_generic_member_default.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
+// CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
+// CHECK:STDOUT:   %true: bool = bool_literal true [concrete]
+// CHECK:STDOUT:   %F.overload_set.type: type = overload_set_type @F.overload_set [concrete]
+// CHECK:STDOUT:   %F.overload_set.value: %F.overload_set.type = overload_set_value @F.overload_set [concrete]
+// CHECK:STDOUT:   %F.type.eb3ec9.2: type = fn_type @F.loc34 [concrete]
+// CHECK:STDOUT:   %F.7088cc.2: %F.type.eb3ec9.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %UseLater.type: type = fn_type @UseLater [concrete]
+// CHECK:STDOUT:   %UseLater: %UseLater.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %UseLater.decl: %UseLater.type = fn_decl @UseLater [concrete = constants.%UseLater] {
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
+// CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     %.loc37: Core.Form = init_form %i32 [concrete = constants.%.795f]
+// CHECK:STDOUT:     %return.param: ref %i32 = out_param call_param0
+// CHECK:STDOUT:     %return: ref %i32 = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @UseLater() -> out %return.param: %i32 {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %F.ref.loc37_31: %F.overload_set.type = name_ref F, file.%F.overload_set.value [concrete = constants.%F.overload_set.value]
+// CHECK:STDOUT:   %true: bool = bool_literal true [concrete = constants.%true]
+// CHECK:STDOUT:   %F.ref.loc37_37: %F.type.eb3ec9.2 = name_ref F, file.%F.decl.loc34 [concrete = constants.%F.7088cc.2]
+// CHECK:STDOUT:   %F.call: init %i32 = call %F.ref.loc37_37(%true)
 // CHECK:STDOUT:   return %F.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

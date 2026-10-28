@@ -161,6 +161,17 @@ static auto IsMoveEquivalentToCopy(clang::QualType type) {
   if (!record_decl) {
     return true;
   }
+  // An exported Carbon class is defined on demand by the external AST source,
+  // and an xvalue argument of its type completes nothing in overload
+  // resolution, so complete it before reading its special members.
+  if (!record_decl->hasDefinition() &&
+      record_decl->hasExternalLexicalStorage()) {
+    record_decl->getASTContext().getExternalSource()->CompleteType(record_decl);
+  }
+  // The argument is an xvalue of the class type, which a class without a
+  // definition cannot have.
+  CARBON_CHECK(record_decl->hasDefinition(),
+               "Incomplete class type of an xvalue argument");
 
   // - The move constructor is defaulted and deleted or non-existent, in
   //   which case overload resolution for a move will call the copy

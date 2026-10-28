@@ -365,13 +365,15 @@ static auto LookupMemberNameInScope(Context& context, SemIR::LocId loc_id,
       specific_value_id = wrapper->value_id;
     }
     if (specific_value_id.has_value()) {
+      auto use_id = GetOrAddInst<SemIR::SpecificConstant>(
+          context, loc_id,
+          {.type_id = type_id,
+           .inst_id = specific_value_id,
+           .specific_id = result.specific_id});
+      AddAliasUseCheckToCurrentGeneric(context, loc_id, specific_value_id,
+                                       use_id);
       result.scope_result = SemIR::ScopeLookupResult::MakeFound(
-          GetOrAddInst<SemIR::SpecificConstant>(
-              context, loc_id,
-              {.type_id = type_id,
-               .inst_id = specific_value_id,
-               .specific_id = result.specific_id}),
-          SemIR::AccessKind::Public);
+          use_id, SemIR::AccessKind::Public);
     }
   }
 

@@ -8242,3 +8242,134 @@ User approved adding `carbon-language/carbon-lang` to the session to
 download the nightly prebuilt toolchain tarball (Linux x86_64). This
 arbitrates _language behavior_ while our fork's tree equals upstream
 trunk; it cannot execute fork-local compiler changes — see OPEN F-005.
+
+### CT-1: C++ templates on symbolic Carbon type arguments (2026-10-21)
+
+Context: W-043 (gap row 56, "Generics: C++ interop — importing C++ templates,
+instantiating on Carbon types", PARTIAL, with its second program under row 42),
+fork/cpp-templates/plan.md, rev 4 (62530b76e, signed off; amended in place with
+dated marks by 79740957a, 98a82cc4f and the records commit of the focused
+re-review's round 1, no later revision and no stop-and-amend) after plan reviews
+A (REJECT, twelve findings) and B (APPROVE-WITH-AMENDMENTS, thirteen) of rev 1
+and the focused re-reviews RR1 of rev 2 (REJECT, four) and RR2 of rev 3
+(APPROVE-WITH-AMENDMENTS, one), thirty findings folded and none rejected,
+implemented and folded with two implementation reviews (review 1 REJECT, eight
+findings: one BLOCKER, three MAJOR, four MINOR; review 2 APPROVE-WITH-FIXES, six
+MINOR; all fourteen folded, none rejected) and one round of plan §3 item 9's
+focused re-review of the fold (round 1, recorded 2026-10-22: reviews 1 and 2
+both APPROVE-WITH-FIXES, five and seven MINOR findings, all records, folded and
+none rejected; the round is dry, so the loop ends). Every decision auto-adopted
+under V-2/V-3 (R29(a)) and open to veto.
+Options considered (plan §7.2): instantiating eagerly on every possible
+argument, treating C++ templates as Carbon templates only, requiring `template
+T` for all uses, diagnosing member access where a checked generic is defined, a
+new instruction kind, wrapping every value argument, substituting into every
+action operand, instantiating a variable template from the import, completing
+every exported class when mapped, keeping PR 51's constructor-initialized
+programs, a definition-time TODO for the OUT kinds, not deferring a lookup whose
+splice belongs to an enclosing generic, deferring on an argument's own
+dependence, keeping definition checks on a deferred call's result, deferring
+form-dependent arguments, `Sema::isCompleteType`, extending the lookup walk to
+runtime operands, attaching every discarded generic region, converting an
+alias's template-dependent value where it is written, detaching an alias's
+region for a call, destroying a deferred call's temporary in this slice,
+rejecting a discarded deferred call in a checked generic, narrowing the admitted
+alias uses instead of fixing a specific constant's category, following a
+specific constant's concrete value for its category, wrapping a class template's
+substituted C++ argument in `TemplateInst` instead of deferring at the call
+action, and stringifying a `TemplateInst` in this slice. Decisions: D-CT-1,
+upstream's deferred `CallAction` over `TemplateInst`, performed per specific, no
+new SemIR; D-CT-2 and D-CT-3, F-021 (below); D-CT-4, the template lane rides
+TP-1, TR-22 stays OUT for Carbon forms while its C++ forms run; D-CT-5, impl
+lookup on a C++ specialization is deferred, the walk following action operands
+and constant values (D-TP-12 amended, W-268 narrowed); D-CT-6, a C++ callee's
+action waits for concrete arguments; D-CT-7, constant action operands and
+another generic's operands are substituted; D-CT-8, a deferred `return` uses the
+return slot only in place; D-CT-9, variable template specializations are
+implicitly instantiated; D-CT-10, an exported class is completed before overload
+resolution reads it, and checked complete; D-CT-11, the admitted kinds and the
+OUT table; D-CT-12, goldens; D-CT-13, nine programs; D-CT-14, docs at land time
+with fixture X37, records and TP-1's dated lines; D-CT-15, stacked on PR 61,
+merged after PR 62, with S-VA after M; D-CT-16, F-021 minted; D-CT-17, an
+alias's dependent instructions belong to the enclosing generic (TP-1's W-273
+discharged), and its template-dependent value is checked to be a constant for
+each specific, with the concrete twin's diagnostic, instead of being converted
+where it is written, and a use of it through a specific takes the category of
+its value in that specific; D-CT-18, F-021 ships W-309's undestroyed temporary
+in the checked lane, pinned and stated.
+
+**F-021 (the checked-generic C++ rule).** In a checked generic, a C++ template's
+specialization of a symbolic argument, a call to a C++ function with an argument
+of a checked-symbolic type (or that is such a type), and every operation on
+their values, Carbon operations on a deferred call's result included, are
+checked for each specific when the generic is instantiated, and an error in one
+is reported where the specific is named; every other expression of the generic
+is checked where it is defined. A call whose arguments' C++ types are known (a
+symbolic value of a concrete type), a form-dependent argument and a pack
+expansion argument are not deferred. Upstream states the `TemplateInst` deferral
+of a C++ template name and delays impl lookup until template arguments are known
+(proposal 2200); it leaves a checked generic's use of a template to future work
+(p002200:1089-1096, leads issue 2153), so the rule is the fork's. Its costs: an
+error in a deferred expression, and in a Carbon operation on its result, is seen
+only when a caller instantiates the generic; and a C++ temporary that a deferred
+call returns is not destroyed when it is discarded, `let`-bound, read for a
+member or passed by value (W-309, as in a template; D-CT-18). Break condition:
+upstream lands a rule for a checked generic's C++ calls that differs, re-decided
+at that upstream merge; or W-309 is shown to do more than skip the destructor
+(D-CT-18's break condition).
+
+Consequences: rows 56 and 42 stay PARTIAL with corrected text; W-043
+discharged, W-268 narrowed, TP-1's W-273 discharged; W-300 to W-311 filed (CT-1
+reserved W-300..W-319; W-312 to W-319 unused); F-021 minted; the TP-1 records
+CT-1 edits are one dated line each on D-TP-12 and TR-22 in
+fork/templates/plan.md, and W-268, W-273 and one dated line in W-274's notes in
+the ledger.
+
+_Held state (2026-10-21)._ Landed on claude/carbon-fork-0-1-ct, stacked on PR 61
+(TP-1, head 5661a35c8) and held, in the commits of plan §3: the plan 7865787a7
+(rev 1), e2d525091 (rev 2), bd97af1cc (rev 3) and 62530b76e (rev 4); 3a4fa82d0
+(C1) and 378cffa2e (F1), d5d7c6580 (C2) and c7635b14a (F2), 65fc0d394 (P),
+79740957a (the held-state measurements), 224ee2f8f and 5c78c4086 (the first fix
+commit and its fill), ccd6a80a8 and ffde90904 (the second and its fill),
+98a82cc4f (the fold's records), 59f7b0258 (R), 118fc1bc8 (D, which wrote this
+entry) and the records commit of the focused re-review's round 1, which brings
+it up to date. The expected scoreboard, container-built and not of record
+(Actions disabled, R9, R28), on 98a82cc4f, whose toolchain is 224ee2f8f's:
+file_test 1959 of 1959 and conformance 147 / 0 / 20 over 167, 48 of 56 bullets,
+tree-relative to TP-1's 138 / 0 / 22 over 160 and to trunk's floor of record
+128 / 0 / 22 over 150 (TP-1's ten programs included); the absolute count is
+re-quoted from the merged trunk at landing. Filed: W-300 to W-311 (W-310 and
+W-311 by the implementation-review fold); W-312 to W-319 unused. The land-time
+items (plan §2.11, its landed notes) are M, S-VA, L-F, L and the land-time
+records commit, which reapplies W-043's discharge over DD-1's entry and finds
+rows 56 and 42 by their bullet text. R32 and V-3b, recorded on trunk at
+fd290b6e6 after this plan's sign-off, reach this branch at M: F-021's V-3
+comparison (plan §0.10, §1.17) is then repeated against upstream's tip by sha,
+quoting the design pages at that tip (R32 (a)); break condition: that tip
+records a rule for a checked generic's C++ calls, which is F-021's own break
+condition. Round 1 of the focused re-review (2026-10-22) read
+79740957a..118fc1bc8, the fold and the records: both reviews APPROVE-WITH-FIXES,
+no BLOCKER or MAJOR, twelve MINOR findings, all records only, folded by its
+records commit with no fix commit, so the round is dry and the PR opens held;
+the reviews re-ran the gate (1959 of 1959), conformance (147 / 0 / 20 over 167)
+and the mutants and probe matrices on the head, and measured PR 62's mirror at
+its moved head 0ef8a0334 (1967 of 1967, 152 / 0 / 20 over 172, PR 62's own W-322
+SKIP the one change), which was owed; no residue is filed and W-312 to W-319
+stay unused.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
+ten of plan §0.10 (the tenth, `SpecificConstant`'s category, added at plan rev
+4, RR2-M1; counted 2026-10-28 by RG-1), with their merge rules. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H11 have the quotes):_
+`NamesTemplateBinding`, the deferral of C++ calls on symbolic arguments (F-021)
+and the per-specific alias check (classified 2026-10-28, RG-1: ALIGNED, W-355;
+p002200:205-209, generics/overview.md:375-379 and appendix-witness.md:151-154);
+the other seven (classified 2026-10-28, RG-1: NONE, W-355; fixes to upstream
+code and golden edits with their merge rules: upstream's subst.cpp has no
+`MetaInstId` case, its check/cpp no `TSK_ImplicitInstantiation`, its toolchain
+no `DiscardGenericDeclIntoEnclosingGeneric`, and its `SpecificConstant` keeps
+`ComputedExprCategory::SameAsFirstOperand`, sem_ir/typed_insts.h:2013).

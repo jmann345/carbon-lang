@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Type system: C++ interop — importing C++ types / exporting Carbon types
-// SKIP: known-missing slice — instantiating an imported C++ template on a symbolic Carbon generic parameter fails to compile on nightly 2026.07.19 with: "error: semantics TODO: `unsupported type used as template argument`" (both uses of Cpp.Box(T) below; same TODO as check/testdata/interop/cpp/template/generic_call.carbon). Concrete Carbon class types as template args DO work — arbitrated by cpp_type_import_class_enum.carbon.
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   7
 //
-// Encodes the missing slice of this PARTIAL bullet precisely: the audit
-// evidence says "C++ templates cannot instantiate on Carbon class types",
-// but on this toolchain the concrete case (`var b: Cpp.Box(Pt);`) compiles,
-// links, and runs. What still fails is naming `Cpp.Box(T)` with `T` a
-// checked-generic parameter — instantiation is not deferred to
-// monomorphization (explicit TODO in check/testdata/interop/cpp/template/
-// generic_call.carbon). Un-SKIP this program when that lands; it should
-// then print 7 and exit 0.
+// An imported C++ class template instantiated on a symbolic Carbon generic
+// parameter and, at the specific, on an exported Carbon class: MakeBox's
+// Cpp.Box(T) becomes Box<Pt> for MakeBox(p), with Pt exported to C++ as the
+// argument (CT-1, fork/cpp-templates/plan.md). b.value.x reads back 7. Pt
+// implements Core.Copy because `b.value = x` copies a Pt value, which the same
+// body written with Cpp.Box(Pt) and no generic needs on every toolchain.
 
 import Core library "io";
 import Cpp inline '''
@@ -28,6 +25,9 @@ template <typename T> struct Box {
 
 class Pt {
   var x: i32;
+  impl as Core.Copy {
+    fn Op(self) -> Self { return {.x = self.x}; }
+  }
 }
 
 fn MakeBox[T: type](x: T) -> Cpp.Box(T) {

@@ -267,3 +267,18 @@ docs/design/safety/README.md	245	release build for that specific purpose.
 docs/design/safety/README.md	251	space include [Control-Flow Integrity (CFI)][cfi] and hardware-accelerated
 docs/design/safety/README.md	252	address sanitizing ([HWASAN]).
 docs/design/safety/README.md	262	purposes.
+# RG-1's implementation review, round 2 (2026-10-28): H1.6 (R2-M1), T2.7 and
+# T7.2 (RV1r2-m2).
+docs/design/values.md	573	**Open question:** It may be necessary to provide some amount of escape hatch
+docs/design/values.md	579	If a further escape hatch is needed, this kind of fundamental weakening of the
+docs/design/values.md	580	semantic model would be a good case for some syntactic marker like Rust's
+docs/design/values.md	581	`unsafe`, although rather than a region, it would seem better to tie it directly
+docs/design/values.md	582	to the operation in question. For example:
+docs/design/values.md	595	s_value.unsafe RefMemberFunction();
+toolchain/parse/typed_nodes.h	1304	An `unsafe` modifier: `a unsafe <operator> b`.
+toolchain/parse/handle_expr.cpp	376	if (context.PositionIs(Lex::TokenKind::Unsafe)) {
+toolchain/parse/handle_expr.cpp	377	if (context.PositionIs(Lex::TokenKind::As, Lookahead::NextToken)) {
+toolchain/docs/lower.md	140	Any feature of an entity (such
+toolchain/docs/lower.md	141	as parent namespaces or overloaded function parameters) that would create a
+toolchain/docs/lower.md	142	distinct entity must be included in some way in the generated identifier.
+toolchain/sem_ir/function.h	548	them in mangling.

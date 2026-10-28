@@ -11,7 +11,7 @@ branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
 Last updated: 2026-10-28 (RG-1's records classify the V-3a register at upstream
-f27a977d8: 155 entries, 19 DRIFT, 33 ALIGNED, 103 NONE; W-346 to W-356 filed;
+f27a977d8: 155 entries, 19 DRIFT, 32 ALIGNED, 104 NONE; W-346 to W-356 filed;
 see the paragraph dated 2026-10-28 (RG-1) below; the earlier 2026-10-27 text
 follows).
 2026-10-27 (VA-2, definition-checked variadics slice 2, is
@@ -604,7 +604,7 @@ f27a977d8 (2026-10-27, upstream PR 8045; re-checked at e6fddcf97), records
 first, on claude/carbon-fork-0-1-rg1 (decision-log entry "RG-1: the V-3a
 register classified at f27a977d8 (2026-10-28)"; fork/register/rg1-plan.md).
 Every entry of the 26 blocks and V-3's design-fork entries was read against the
-page at the tip: 155 entries, 19 DRIFT, 33 ALIGNED, 103 NONE, 10 waiting on
+page at the tip: 155 entries, 19 DRIFT, 32 ALIGNED, 104 NONE, 10 waiting on
 upstream; every NONE carries its quote or silence check, and every NONE and
 ALIGNED outside VA-2's six, which carry VA-2's items, the watch item W-355,
 whose weekly run uses fork/register/check_quotes.sh and check_greps.sh. F-006a's

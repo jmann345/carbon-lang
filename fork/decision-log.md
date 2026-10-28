@@ -293,7 +293,7 @@ upstream's text for each of the 155 entries in 26 blocks and V-3's design-fork
 group: on trunk DR-0's block, the eleven blocks that predate it and the
 design-fork entries F-006a, F-007 and F-009 that V-3 registered and UA-1's
 review names; on the held heads fourteen blocks, PR 51's UA-2 register re-read
-among them. The scripts committed with this entry re-read the 260 quoted lines
+among them. The scripts committed with this entry re-read the 273 quoted lines
 of fork/register/rg1-quotes.tsv (fork/register/check_quotes.sh) and re-run the
 89 silence checks of fork/register/rg1-checks.tsv
 (fork/register/check_greps.sh): 88 for the NONE rows whose upstream silence is
@@ -309,7 +309,7 @@ merge rules their break conditions, unless that condition has already fired
 (D-RG-4). The decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each
 with its break condition in the plan's section 1.
 
-_The count._ 19 DRIFT, 33 ALIGNED and 103 NONE; 10 entries, three DRIFTs among
+_The count._ 19 DRIFT, 32 ALIGNED and 104 NONE; 10 entries, three DRIFTs among
 them, wait on an upstream decision or on an item blocked by one (the plan's
 section 7). Eight DRIFT entries were filed before RG-1 (W-109 twice, W-320 with
 W-324, W-321, W-322, W-326 twice, and SC-1's W-139); eleven are carried by items
@@ -373,9 +373,10 @@ safety/README.md:260-262 (D-RG-20, R29; break condition: upstream reconciles
 those pages), so the zeroing's place in the Release build is upstream's and only
 its mandate for every type is the drift, and W-350 restores the performance row
 as the benchmarking build's. The six are realigned by SAFE-1 by a new commit on
-PR 53's branch before it lands (R32 (e)), and PR 53 lands first. PR 60: D-SC-6's
-definition-time rejection of a checked-generic argument to a template parameter,
-where generics/overview.md:375-379 records "We have decided to support passing a
+PR 53's branch before it lands (R32 (e)), and PR 53 lands first after RG-1's PR
+(fork/register/rg1-plan.md section 5). PR 60: D-SC-6's definition-time rejection
+of a checked-generic argument to a template parameter, where
+generics/overview.md:375-379 records "We have decided to support passing a
 symbolic constant to a template parameter" (leads issue 2153) and
 appendix-witness.md:151-154 that the approach "relies on monomorphization":
 W-139's break condition was already met when it was filed, upstream's text
@@ -387,10 +388,15 @@ read-only probe showed checks without a `Copy` or a `SelfDestruct` call). Not
 drifts: the Permissive reading of p005914:204-210 (NONE: the passage, the
 nearest upstream text, limits what the safety model may assume so that no
 undefined behavior follows, no fork optimization relies on the diagnostic
-assumption, and upstream says nothing of diagnostic assumptions), the restored
-`addr self: Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter destruction
-(ALIGNED with upstream's TODO at check/custom_witness.cpp:466-467), the guard
-parentheses DD-1 documents (ALIGNED with upstream's own parser,
+assumption, and upstream says nothing of diagnostic assumptions), PR 53's prefix
+`unsafe` forms (NONE: safety/README.md:80-81 ties the keyword to each unsafe
+operation, but upstream's only marker on an operation other than `as` is
+values.md:595's `s_value.unsafe RefMemberFunction();`, a sketch under :573's
+"Open question" that PR 53 marks superseded, and upstream's parser takes
+`unsafe` only before `as`, parse/handle_expr.cpp:376-377, as PR 53 does), the
+restored `addr self: Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter
+destruction (ALIGNED with upstream's TODO at check/custom_witness.cpp:466-467),
+the guard parentheses DD-1 documents (ALIGNED with upstream's own parser,
 parse/handle_match.cpp:169 and :176), `Core.Buf` (ALIGNED with
 README.md:885-886), VA-1's `each` keyword and `(... x)` tuple (ALIGNED with
 variadics.md:47-48, :92 and :137-139), `template constraint` (ALIGNED with
@@ -420,7 +426,7 @@ DRIFT, ALIGNED and NONE counts):
 | EH-B (with UA-1's `noexcept` fence) | :5596-5617, :6606-6607 | 0 / 1 / 3 | W-355 |
 | EH-A | :5961-5971 | 0 / 2 / 2 | W-346 (the alternatives); W-355 |
 | UA-1's watch list | :6768-6782 | 0 / 0 / 7 | W-355 |
-| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 3 / 6 | W-347 to W-351, W-353; W-355 |
+| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 2 / 7 | W-347 to W-351, W-353; W-355 |
 | CM-1, PR 52 ea573f672 | :3119-3133 | 0 / 2 / 5 | W-003, W-132, W-129; W-355 |
 | EV-1, PR 54 cb3ef2e74 | :3538-3549 | 0 / 0 / 3 | W-355 |
 | ST-1, PR 55 21307851a | :3503-3516 | 0 / 0 / 6 | W-355 |
@@ -5238,8 +5244,13 @@ in upstream's lex/token_kind.def, check T7.1); the marker, the inst kinds and
 store, the five diagnostics and the print field (classified 2026-10-28, RG-1:
 NONE, W-355; internal: `:overload` 0 in sem_ir/mangler.cpp (T7.2), the three
 `OverloadSet` names 0 (T7.3), the five diagnostics 0 (T7.4), `overload_set_id` 0
-in sem_ir/function.h (T7.5); upstream's only mention is sem_ir/function.h:547's
-TODO); F-009's entries are noted after UA-1's review.
+in sem_ir/function.h (T7.5); upstream's nearest text is
+sem_ir/function.h:547-548's TODO in the key of generated functions, "TODO: Also
+include parameters to support overloaded functions. Then use them in mangling.",
+and toolchain/docs/lower.md:140-142, which asks that "overloaded function
+parameters" be "included in some way in the generated identifier", as the
+member's position in its set is; neither spells a marker or a representation, so
+these stay NONE, D-RG-3); F-009's entries are noted after UA-1's review.
 
 ### UN-2: union C++ interop (2026-09-28)
 

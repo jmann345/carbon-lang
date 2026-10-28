@@ -10,7 +10,12 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-28 (RG-1, the V-3a register classified against upstream
+Last updated: 2026-10-28 (OV-4, `overload fn` members with upstream's default
+parameter values (W-341), is implemented, reviewed and held open as PR 68 on
+trunk's base, merging after PR 66 and before EH-C; eighteen PRs are held open,
+PR 51 to PR 68, none merged; see the paragraph dated 2026-10-28 (13:28 UTC)
+below; the earlier 2026-10-28 text follows).
+2026-10-28 (RG-1, the V-3a register classified against upstream
 f27a977d8, is implemented, reviewed and held open as PR 67 on trunk's base,
 first in the land sequence; eight held PRs are amended by new records commits
 and their descriptions refreshed; seventeen PRs are held open, PR 51 to PR 67,
@@ -640,6 +645,46 @@ section 5 gives it: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
 W-352. Next: OV-4 (W-341) on trunk's base per item 6 below, then EH-C (W-346)
 after the held PRs land, then UA-3.
 
+2026-10-28 (13:28 UTC): OV-4 is IMPLEMENTED, REVIEWED AND HELD OPEN as PR 68
+(claude/carbon-fork-0-1-ov4 at 097c76473, base trunk 66bd2ba90; twelve commits:
+plan rev 1 to rev 3, C1 751d077fd, F1 0f53d7e53, P dc1bb641b, the measurements
+record 16c58df0d, the fold's fix ef31d5820 with its fill 9ee5fcde3 and records
+1c2470b06, D dcbb449eb and the re-review's records 097c76473). An `overload fn`
+member with upstream's positional default values is called with a defaulted
+argument omitted (W-341, the R32 (d) drift of F-009j filed at the 2026-10-26
+weekly check): the arity step takes the plain call's range
+[n - default_value_arity, n], the probe converts the supplied arguments and the
+ordinary call fills the rest, gate (iii) looks through a default value, member
+identity ignores defaults (a default-only difference is `RedeclParamDiffers`),
+and a diagnosed non-trailing default counts only its trailing defaults, which
+also fixes the plain path's aborts at pattern_match.cpp:1275 and :1805; between
+two accepting members the first in declaration order wins (T2.6's ALIGNED first
+match). docs/design/functions_overloading.md is rewritten by dated amendments
+that keep the superseded text (F-009j ALIGNED), quoted at upstream 0421bf3b4.
+Reviews: two plan reviews and a focused plan re-review (15 and 4 findings,
+folded at rev 2 and rev 3), two implementation reviews (one MAJOR, RV1-M1, a
+CHECK abort for an implicit-list `self` with a default where trunk prints
+diagnostics, fixed at its root by the one counted fix commit ef31d5820 of a
+budget of three, plus nine MINORs) and a focused re-review of the fold and D,
+dry at round 1 with one records-only MINOR: 30 findings, every one folded,
+A-M1's proposed skip rejected on upstream evidence (SFINAE), no history
+rewritten. Measured container-local, EXPECTED, not of record: 1946 of 1946
+goldens (four new files, 26 splits), conformance 130/0/22 over 152 (two new
+programs, one with a C++ oracle), bullets 48/0/8/0; mutants M1 to M5, M5b, M6
+and M8 killed; mirrors m66, m64, m61, m60 and the mall rehearsal green, no
+refill of an OV-4 file. W-341 DISCHARGED; W-360 to W-363 filed for UA-3 (generic
+members with defaults until 503f09037, export of defaults, the CheckDefaults
+count's merge note, upstream's own abort for a defaulted method whose `self` is
+in the implicit list); W-364 unused. No held PR is amended; no build, merge or
+dispatch; Actions is still disabled. Eighteen PRs are held open (PR 51 to
+PR 68); none is merged. Merge order: PR 67 (RG-1), then PR 53, 51, 52, 60, 54,
+55, 56, 57, 58, 59, 61, 62, 64, 63, 65, 66, then PR 68 (OV-4) through its
+land-time commits M, F-M, L-R and L (fork/overload/ov4-plan.md section 3); the
+sequence waits at PR 53 for SAFE-1's realignment (W-347 to W-351 and W-353), at
+PR 60 for SC-1's W-139 and at PR 56 for OP-1's W-352. Next: EH-C (W-346) after
+the held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs
+W-355's scripts.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -989,6 +1034,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-dr-idx` | HELD OPEN as PR 65 — DR-1b element access through `IndirectIndexWith`, `Core.Slice` and `Core.Buf` writing through `Ref`, upstream 230227264 cherry-picked (R32; W-109 DISCHARGED) at fee0ef31c (toolchain 7a442f632; base claude/carbon-fork-0-1-dr, stacked on PR 63; expected 1946 of 1946 and 130/0/22 over 152); one stop-and-amend (plan rev 4), one implementation review folded at the root (fddfcf42a and its fill bcd9ba06f, the comment commits 8deb75262 and 7a442f632, and round 4's shrink-line split 0cd4e5d2e with W-340 filed), a focused re-review of four rounds (rounds 1 to 3 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR, RR3-1-M1; round 4 dry after the shrink line); merges after DR-1a through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-va2` | HELD OPEN as PR 66 (stacked on PR 59, base claude/carbon-fork-0-1-va) — VA-2 definition-checked variadics slice 2 at 43c8ab476 (2026-10-27; forty-two commits over PR 59's b0822a744: plan rev 1 to rev 16, C0, C0b, C1 to C5 with their fills, the fold's fix and fill, R, D, the re-review loop's four rounds with fix 3, fix 4 by D-VA2-19's break condition, their fills and records; 104 findings over twenty-one reviews, all folded, none rejected, round 4 dry; W-225 discharged, W-212 and W-213 narrowed, W-330..W-339 and W-345 filed; gap rows 53 and 74 stay PARTIAL; expected, not of record: 1977 of 1977 and 147/0/21 over 168); merges last after PR 65 through M, S-CT, F-M, L-F and L. |
 | `claude/carbon-fork-0-1-rg1` | HELD OPEN as PR 67 (base trunk 0b999d449) — RG-1 records, the V-3a register classified against upstream f27a977d8, at 56e2e5bbd (2026-10-28; twelve commits: plan rev 1 to rev 5, R1, the two review-fold fixes, the two merges of plan rev 4 and rev 5 into the records line, R2 and the fold of R2's review; records only; W-342 and W-344 discharged, W-343 narrowed to the five land-time notes; W-346 to W-356 filed; plan fork/register/rg1-plan.md with the register's check scripts and tables beside it, check_quotes.sh, check_greps.sh, rg1-quotes.tsv and rg1-checks.tsv, 273 quotes and 89 silence checks passing at e6fddcf97; the held records commits on PR 53, 52, 60, 55, 56 (merged into PR 57), 61 and 64 (with PR 61's merged) made after three implementation-review rounds and pushed, the descriptions refreshed); merges first in the land sequence, before PR 53. |
+| `claude/carbon-fork-0-1-ov4` | HELD OPEN as PR 68 (base trunk 66bd2ba90) — OV-4, `overload fn` members with default parameter values (W-341 DISCHARGED; W-360 to W-363 filed for UA-3; W-364 unused), at 097c76473 (2026-10-28; twelve commits: plan rev 1 to rev 3, C1 751d077fd, F1 0f53d7e53, P dc1bb641b, the measurements record 16c58df0d, the fold's fix ef31d5820 with its fill 9ee5fcde3 and records 1c2470b06, D dcbb449eb and the re-review's records 097c76473; plan fork/overload/ov4-plan.md rev 3, signed off at 89001cfcd, amended by the measurements, the fold and the re-review's records commits; one counted fix commit of three); gap row "Functions: function overloading (Carbon-native)" stays DONE; expected 1946 of 1946 and 130/0/22 over 152; merges after PR 66 and before EH-C, through M, F-M, L-R and L. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -1084,32 +1130,32 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI when GitHub Actions is enabled again.
 6.  **R32 work from the 2026-10-26 weekly check and RG-1 (2026-10-28)**: W-341
-    (OV-4: an `overload fn` member with Carbon default parameter values called
-    with a defaulted argument omitted; the arity step and the overload probe
-    follow `default_value_arity`, and F-009j is rewritten) after VA-2 lands and
-    before UA-3, on trunk's base. RG-1 (W-342 discharged; W-344 at its stamp;
-    W-343 by the last land-time note) classified the V-3a register at upstream
-    f27a977d8 and is held open as PR 67, first in the land sequence. Its drifts,
-    each before the PR that carries it lands: W-347 to W-351 and W-353 (SAFE-1:
-    a plan amendment of fork/safe/plan.md, a re-derivation commit on PR 53's
-    branch, two document reviews and a fixer, before PR 53 lands; the land
-    sequence waits at PR 53 until then), W-139 (SC-1: a fix commit on PR 60's
-    branch with its fills and the template_constraints.md paragraph, under its
-    own reviews, before PR 60 lands) and W-352 (OP-1: the in-place comparison
-    commit on PR 56's branch with its fills, merged into PR 57's, under its own
-    reviews, before PR 56 lands). After the held PRs land and before UA-3: W-346
-    (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's base, beside W-341).
-    In UA-3's gate, because they need the advance: W-354 (drop D-SL-16's yield
-    and D-SL-19's keying against 05a7ecbd3) and W-356 (re-run RG-1's crash
-    probe). Land-time notes, each by its PR's land-sequence records commit after
-    its register block (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54,
-    PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At each
-    weekly upstream check: W-355 (run fork/register/check_quotes.sh and
-    check_greps.sh over their tables at the tip, and re-read the break condition
-    of every NONE and ALIGNED entry outside VA-2's, which items 8 and 9
-    re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of T5.7 and
-    C1.2 (indexing.md:101-121 and a `like` in upstream's parse or check). UA-3
-    follows W-341 and W-346.
+    (OV-4) is implemented, reviewed and held open as PR 68 on
+    claude/carbon-fork-0-1-ov4, base trunk, merging after PR 66 and before EH-C
+    and UA-3 through M, F-M, L-R and L (fork/overload/ov4-plan.md section 3);
+    its residues W-360 to W-363 go to UA-3. RG-1 (W-342 discharged; W-344 at its
+    stamp; W-343 by the last land-time note) classified the V-3a register at
+    upstream f27a977d8 and is held open as PR 67, first in the land sequence.
+    Its drifts, each before the PR that carries it lands: W-347 to W-351 and
+    W-353 (SAFE-1: a plan amendment of fork/safe/plan.md, a re-derivation commit
+    on PR 53's branch, two document reviews and a fixer, before PR 53 lands; the
+    land sequence waits at PR 53 until then), W-139 (SC-1: a fix commit on
+    PR 60's branch with its fills and the template_constraints.md paragraph,
+    under its own reviews, before PR 60 lands) and W-352 (OP-1: the in-place
+    comparison commit on PR 56's branch with its fills, merged into PR 57's,
+    under its own reviews, before PR 56 lands). After the held PRs land and
+    before UA-3: W-346 (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's
+    base, beside W-341). In UA-3's gate, because they need the advance: W-354
+    (drop D-SL-16's yield and D-SL-19's keying against 05a7ecbd3) and W-356
+    (re-run RG-1's crash probe). Land-time notes, each by its PR's land-sequence
+    records commit after its register block (fork/register/rg1-plan.md Appendix
+    A.4): PR 51, PR 54, PR 57's OP-2 block, PR 58 and PR 59; the last discharges
+    W-343. At each weekly upstream check: W-355 (run
+    fork/register/check_quotes.sh and check_greps.sh over their tables at the
+    tip, and re-read the break condition of every NONE and ALIGNED entry outside
+    VA-2's, which items 8 and 9 re-read), with W-324's re-check of C1.1 and H5.5
+    and W-326's of T5.7 and C1.2 (indexing.md:101-121 and a `like` in upstream's
+    parse or check). UA-3 follows W-341 and W-346.
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

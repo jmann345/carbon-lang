@@ -3452,20 +3452,21 @@ origin. The placeholders of A.2, A.7, A.9, A.10 and A.11 name these commits:
 | PR 64 | claude/carbon-fork-0-1-ct | 4a3220c11 | H64 5f23d27c9; H64m 551a03328, the merge of 66aa13132 | 551a03328 | `<sha64>`, `<sha64m>` |
 
 Checks (EXPECTED, not of record, R9). Upstream's tip at every fetch of steps 1
-to 7 was e6fddcf97, the last at 2026-10-28 03:51 UTC, and both scripts from R1's
-tree read "checked 273 quotes, 0 failed" and "checked 89 silence checks, 0
-failed" at e6fddcf97 and at f27a977d8 before R2. Each held head equalled 3.2's
-"Head before" column at its push; the other eight held heads (PR 51, PR 54,
-PR 58, PR 59, PR 62, PR 63, PR 65 and PR 66) are unchanged, and trunk is
-0b999d449. Section 4.7 before the pushes: claude/carbon-fork-0-1-rg1 at
-c10295ea2 merges clean with trunk; each new held head gives its baseline against
-trunk and R1's regions against c10295ea2 (the baseline, and for sc the T4
-decision-log region); the H57 probe (a080c7886 with 9f12209d8) and the H64m
-probe (5f23d27c9 with 66aa13132) were clean. Before R2's push: R2 merges clean
-with trunk, and against each of the sixteen held heads at its new head it gives
-the regions R1's line gives, the baseline plus sc's T4 region and dr's and
-dr-idx's A.1 and ledger-tail regions. The ledger loads, 144 items, with W-346 to
-W-356 once each and W-357 to W-359 absent.
+to 7 was e6fddcf97, the last at 2026-10-28 03:51 UTC, and both scripts from the
+records line's tree (c10295ea2, R1's round 2 fixed tree) read "checked 273
+quotes, 0 failed" and "checked 89 silence checks, 0 failed" at e6fddcf97 and at
+f27a977d8 before R2. Each held head equalled 3.2's "Head before" column at its
+push; the other eight held heads (PR 51, PR 54, PR 58, PR 59, PR 62, PR 63,
+PR 65 and PR 66) are unchanged, and trunk is 0b999d449. Section 4.7 before the
+pushes: claude/carbon-fork-0-1-rg1 at c10295ea2 merges clean with trunk; each
+new held head gives its baseline against trunk and R1's regions against
+c10295ea2 (the baseline, and for sc the T4 decision-log region); the H57 probe
+(a080c7886 with 9f12209d8) and the H64m probe (5f23d27c9 with 66aa13132) were
+clean. Before R2's push: R2 merges clean with trunk, and against each of the
+sixteen held heads at its new head it gives the regions R1's line gives, the
+baseline plus sc's T4 region and dr's and dr-idx's A.1 and ledger-tail regions.
+The ledger loads, 144 items, with W-346 to W-356 once each and W-357 to W-359
+absent.
 
 The description refreshes of 3.3 and A.11 are pr_53_refresh.md,
 pr_52_refresh.md, pr_60_refresh.md, pr_55_refresh.md, pr_56_refresh.md,
@@ -3505,3 +3506,13 @@ disabled, so nothing is of record (R9). Next: the focused review of R2 (D-RG-13
 step 7); RG-1's PR then opens held, base trunk, first in the land sequence
 (section 5, hand-off note 10), and the three realignments it files (SAFE-1's on
 PR 53, SC-1's on PR 60 and OP-1's on PR 56) are their owners' commits.
+
+R2's review fold (2026-10-28). The focused review of R2 (D-RG-13 step 7)
+approved R2 with one MINOR finding, R2F-m1: the checks paragraph above credited
+the 273 quotes to "R1's tree", whose table at 675bef479 holds 260 rows, while
+the scripts ran from c10295ea2, whose table carries 8f5805f71's 273 rows (R10).
+The new records commit "RG-1 records: R2's review folded" names that tree and
+adds this paragraph; it changes this file only, and no held branch, stage ref,
+refresh file or PR description changes. The next step is the one the paragraph
+above names after the review: RG-1's PR opens held, base trunk, first in the
+land sequence.

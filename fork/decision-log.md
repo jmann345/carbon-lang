@@ -3927,15 +3927,52 @@ s[i]`, `unsafe (...)`, `unsafe fn F(...) = "name"`), and the library names
 upstream chooses otherwise; the dated narrowings and departures from accepted
 text — p005434:83 (`noalias`/`captures(none)` for exclusive-kind refs only,
 D-SAFE-8), p005434:663 (D-SAFE-17), p005434:831-832 ("immutable" narrowed to
-"not invalidated", D-SAFE-11(d)), arithmetic.md:155-158 (the performance-build
+"not invalidated", D-SAFE-11(d)), arithmetic.md:156-158 (the performance-build
 row withdrawn, D-SAFE-15), safety README.md:260-262 (the benchmarking disable
-withdrawn, D-SAFE-14), docs/design/README.md:2147 (zero-fill promoted to the
+withdrawn, D-SAFE-14), docs/design/README.md:2130-2132 (upstream's at f27a977d8;
+this branch's copy :2147-2149; zero-fill promoted to the
 Release baseline, D-SAFE-13), the Permissive reading of p005914:206-208
 (D-SAFE-18) and the `import Cpp` asymmetry (D-SAFE-6, A-13) — are each a
 one-paragraph amendment away from an upstream decision and are disclosed on
 the owning page. If upstream lands the dedicated memory-safety proposals
 p005914 defers to, every D-SAFE is re-based under V-3, the fork keeping
 whichever is lower-divergence and recording the delta. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H1 have the quotes):_ under V-3b each
+departure from accepted text is a drift with its work item, realigned by SAFE-1
+by a new commit on this branch before it lands (R32 (e)): p005434:83 (classified
+2026-10-28, RG-1: DRIFT, W-347), p005434:663 (classified 2026-10-28, RG-1:
+DRIFT, W-348), p005434:831-832 (classified 2026-10-28, RG-1: DRIFT, W-349),
+arithmetic.md:156-158 (classified 2026-10-28, RG-1: DRIFT, W-350; under D-RG-20
+the row of the unsupported benchmarking build), safety README.md:260-262
+(classified 2026-10-28, RG-1: DRIFT, W-351) and the zero-fill promotion
+(classified 2026-10-28, RG-1: DRIFT, W-353: upstream README.md:2130-2132 lets
+types define additional initialization for the hardened build mode, where
+D-SAFE-13 I5 zero-fills every type; RG-1 reads that mode as the release build,
+the one of upstream README.md:381-382's two builds the link can name and the one
+upstream safety README.md:212-219 gives a baseline of hardening (rg1-plan.md
+D-RG-20, R29, until upstream reconciles its build-mode pages), so the zeroing's
+place in Release is upstream's and its mandate for every type is the drift; its
+cite above corrected from this branch's copy). Each decision is named on two to
+five of this branch's pages (rg1-plan.md D-RG-7 lists the lines), so each
+realignment is a re-derivation, not a one-sentence edit. The Permissive reading
+of p005914:206-208 (classified 2026-10-28, RG-1: NONE, W-355: p005914:204-210,
+the nearest passage, limits what the safety model may assume so that no
+undefined behavior follows, and its example is an optimization assumption; T8
+withholds `noalias`, so no optimization relies on the diagnostic assumption, and
+upstream says nothing of diagnostic assumptions) is not a drift. `unsafe
+permissive`, the prefix `unsafe` forms and the restored `addr self: Self*`
+(classified 2026-10-28, RG-1: ALIGNED, W-355; safety README.md:116-118 and
+:80-81, p005434:1226-1236) follow upstream; `exclusive`, `unsafe import`,
+`unsafe class`, the library names and the `import Cpp` asymmetry (classified
+2026-10-28, RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe
+import` and `unsafe class` are each 0 in upstream's docs/design and proposals,
+the library names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
+README.md:122-123 leaves import marking to future work). Since V-3b the
+re-basing clause above reads "re-based under R32".
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

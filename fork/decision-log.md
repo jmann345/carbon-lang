@@ -3501,7 +3501,8 @@ Actions returns before the merge — then the hosted conformance run on the PR
 head is the record, and the "not of record" phrases go in a records commit.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
-fork-local name `Core.StringBuf` (README.md:629's owning `String`, p006177's
+fork-local name `Core.StringBuf` (upstream README.md:627's owning `String`,
+:629 in the fork's copy, corrected 2026-10-28 by RG-1; p006177's
 `Core.Str` view: on upstream's rename, `StringBuf` takes the owning type's
 name, D-ST-4's break condition); `+` on strings decides issue 457 for the fork
 (D-ST-7); string.carbon:12, :14 and :37 edit upstream lines and :26-31 insert
@@ -3514,6 +3515,28 @@ TODO, and its `fail_todo_rewrite_equal` split carries the prelude-located
 the fork-owned fork_all_operands_conversion.carbon pins that TODO instead
 (when upstream implements C++ operator lookup through operand conversions, it
 refills and is renamed or removed with upstream's split). Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H4 have the quotes):_ `Core.StringBuf`
+(classified 2026-10-28, RG-1: NONE, W-355; README.md:622 "This is provisional,
+no design for string types has been through the" proposal process, so the
+owning name is undecided). The view's name is decided upstream: README.md:3706
+and interoperability/README.md:260-261 map `std::string_view` to `Core.Str`,
+p006177:147-148 chose `Str` "for the non-owning view type", and
+sem_ir/type_info.h:382 carries "TODO: Rename `Core.String` to `Core.Str`.";
+upstream's prelude still spells it `Core.String`, so this branch keeping that
+class follows upstream's current spelling and D-ST-4's rejected early rename is
+not a divergence; when the TODO lands, the view becomes `Core.Str` at that
+advance and `StringBuf` takes README.md:627's owning name (D-ST-4's break
+condition). `+` on strings (classified 2026-10-28, RG-1: NONE, W-355;
+arithmetic.md:186-187 leaves issue 457 a TODO); the edited and inserted lines,
+the null check and the three goldens' merge rules (classified 2026-10-28, RG-1:
+NONE, W-355; no upstream commit since the cut touches
+core/prelude/types/string.carbon, four touch operators.carbon, and upstream's
+export.cpp:402-404 still has no null check where its other callers at :538,
+:914 and :2077 do).
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

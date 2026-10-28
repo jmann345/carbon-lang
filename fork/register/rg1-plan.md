@@ -83,6 +83,7 @@ implementation review: R2-M1)
 -   Review fold record (rev 2, 2026-10-28)
 -   Review fold record (rev 3, 2026-10-28)
 -   Sign-off
+-   Landed notes (RG-1, 2026-10-28)
 
 ## §0 Audit
 
@@ -3419,3 +3420,88 @@ all folded by round 2 of the fixer, the last D-RG-13 step 4 allows, and none
 rejected (section "Implementation review fold record (round 2, 2026-10-28)");
 rev 5 re-grades H1.6 from ALIGNED to NONE under D-RG-2 (iii), a fold of an
 implementation review under D-RG-13 step 4, and stays signed off.
+
+## Landed notes (RG-1, 2026-10-28)
+
+RG-1's records line on claude/carbon-fork-0-1-rg1, base trunk 0b999d449: R1
+675bef479, its review fixes 2bce73123 (round 1) and 8f5805f71 (round 2), and the
+merges 17877c5d8 and c10295ea2 of this plan's rev 4 (8c8c6856f) and rev 5
+(9315a3a30), pushed at D-RG-13 step 6 as the fast-forward 9315a3a30..c10295ea2;
+then R2, the commit that adds this section, with 3.1's message, A.2's paragraph
+in the RG-1 decision-log entry, A.7's ledger edits (W-344 discharged, W-343
+narrowed to the five land-time notes) and A.9's ORCHESTRATION edits.
+
+The seven held records commits (H53, H52, H60, H55, H56, H61 and H64) are new
+commits on their PRs' heads, each made in a detached scratch worktree under
+/dev/shm/rg1-impl/ and staged under `refs/rg1-stage/<pr>`, reviewed in two
+rounds (RV1 and RV2, then RV1r2 and RV2r2) and fixed by new commits; H57 and
+H64m followed at step 5, after section 4.7's probes. All were pushed at step 6
+in the merge order as fast-forwards of new commits only, each verified by a
+fetch; the eight stage refs were then deleted, and none remains locally or on
+origin. The placeholders of A.2, A.7, A.9, A.10 and A.11 name these commits:
+
+| PR | Branch | Head before | Commits | Head after | Placeholders |
+| --- | --- | --- | --- | --- | --- |
+| PR 53 | claude/carbon-fork-0-1-safe | adaae4e35 | H53 cd3c5b2e1; its round 2 fix 2407efa74 | 2407efa74 | `<sha53a>`, `<sha53>` |
+| PR 52 | claude/carbon-fork-0-1-cmake | ea573f672 | H52 e6bc32a6d | e6bc32a6d | `<sha52>` |
+| PR 60 | claude/carbon-fork-0-1-sc | 40a76ab81 | H60 cc4daba00 | cc4daba00 | `<sha60>` |
+| PR 55 | claude/carbon-fork-0-1-st | 21307851a | H55 c3cdecc5d | c3cdecc5d | `<sha55>` |
+| PR 56 | claude/carbon-fork-0-1-op | 894139b34 | H56 9f12209d8 | 9f12209d8 | `<sha56>` |
+| PR 57 | claude/carbon-fork-0-1-op2 | a080c7886 | H57 e23113ba2, the merge of 9f12209d8 | e23113ba2 | `<sha57>` |
+| PR 61 | claude/carbon-fork-0-1-tp | 5661a35c8 | H61 40daf0a2a; its round 1 fix 66aa13132 | 66aa13132 | `<sha61a>`, `<sha61>` |
+| PR 64 | claude/carbon-fork-0-1-ct | 4a3220c11 | H64 5f23d27c9; H64m 551a03328, the merge of 66aa13132 | 551a03328 | `<sha64>`, `<sha64m>` |
+
+Checks (EXPECTED, not of record, R9). Upstream's tip at every fetch of steps 1
+to 7 was e6fddcf97, the last at 2026-10-28 03:51 UTC, and both scripts from R1's
+tree read "checked 273 quotes, 0 failed" and "checked 89 silence checks, 0
+failed" at e6fddcf97 and at f27a977d8 before R2. Each held head equalled 3.2's
+"Head before" column at its push; the other eight held heads (PR 51, PR 54,
+PR 58, PR 59, PR 62, PR 63, PR 65 and PR 66) are unchanged, and trunk is
+0b999d449. Section 4.7 before the pushes: claude/carbon-fork-0-1-rg1 at
+c10295ea2 merges clean with trunk; each new held head gives its baseline against
+trunk and R1's regions against c10295ea2 (the baseline, and for sc the T4
+decision-log region); the H57 probe (a080c7886 with 9f12209d8) and the H64m
+probe (5f23d27c9 with 66aa13132) were clean. Before R2's push: R2 merges clean
+with trunk, and against each of the sixteen held heads at its new head it gives
+the regions R1's line gives, the baseline plus sc's T4 region and dr's and
+dr-idx's A.1 and ledger-tail regions. The ledger loads, 144 items, with W-346 to
+W-356 once each and W-357 to W-359 absent.
+
+The description refreshes of 3.3 and A.11 are pr_53_refresh.md,
+pr_52_refresh.md, pr_60_refresh.md, pr_55_refresh.md, pr_56_refresh.md,
+pr_57_refresh.md, pr_61_refresh.md and pr_64_refresh.md in 3.3's rg1/impl/
+directory of the session scratchpad, each headed "RG-1 amendment (2026-10-28)"
+with its PR's A.11 paragraph and the shas filled, for the orchestrator to append
+to each PR's current description; RG-1 edits no description itself. Deltas from
+this plan, honestly:
+
+-   **Dates.** This plan writes 2026-10-27; every RG-1 commit is dated
+    2026-10-28 UTC, so by section 3's rule every RG-1 date in the records, the
+    refresh files' heading (3.3's "RG-1 amendment (2026-10-27)") and R2's texts
+    of A.2, A.7 and A.9 read 2026-10-28.
+-   **Counts.** R1's message (675bef479) keeps rev 3's counts (33 ALIGNED, 103
+    NONE, 260 quotes), since no commit is amended; 8f5805f71's message gives the
+    final 19 DRIFT, 32 ALIGNED, 104 NONE and 273 quotes (3.1's note), and R2's
+    message gives no count.
+-   **Fixer rounds.** Both rounds D-RG-13 step 4 allows were used: round 1
+    changed R1 (2bce73123) and H61 (66aa13132), round 2 changed R1 (8f5805f71)
+    and H53 (2407efa74). Rev 4 and rev 5 of this plan were pushed on the
+    published plan head and merged into the unpushed line, so step 6's push of
+    claude/carbon-fork-0-1-rg1 was a fast-forward.
+-   **The tp row.** A.9 puts the new head in each Branches row's head position;
+    the tp row's named e408ad4d6, round 9's head, while its later clause records
+    round 11 dry at 5661a35c8. R2 writes 66aa13132 there and keeps the round 11
+    clause (R29; break condition: a review that asks for the old head in a
+    "first held at" clause, as the op rows carry it).
+-   **Hand-off note 8.** R2 fills the placeholders of the texts it writes (A.2,
+    A.7 and A.9); A.10's and A.11's were filled in the held commits' messages
+    and in the refresh files at steps 2, 5 and 6. The appendix keeps its
+    placeholders, and the table above maps each to its commit (R29; break
+    condition: a review that asks for the appendix filled in place). The
+    Contents list gains this section.
+
+Not run: no build, fill, gate, conformance or dispatch (R28); Actions is
+disabled, so nothing is of record (R9). Next: the focused review of R2 (D-RG-13
+step 7); RG-1's PR then opens held, base trunk, first in the land sequence
+(section 5, hand-off note 10), and the three realignments it files (SAFE-1's on
+PR 53, SC-1's on PR 60 and OP-1's on PR 56) are their owners' commits.

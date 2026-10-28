@@ -464,6 +464,14 @@ check/pattern_match.cpp:2207's `CHECK` after "value expression passed to
 reference parameter", where the nightly 2026.10.12 diagnoses; owner UA-3, re-run
 at the advance (D-RG-18).
 
+_Held commits (2026-10-28, R2)._ PR 53 cd3c5b2e1 (H53) with its review fix
+2407efa74, PR 52 e6bc32a6d (H52), PR 60 cc4daba00 (H60), PR 55 c3cdecc5d (H55),
+PR 56 9f12209d8 (H56) with PR 57's merge e23113ba2 (H57), PR 61 40daf0a2a (H61)
+with its review fix 66aa13132, and PR 64's own 5f23d27c9 (H64) with its merge
+551a03328 (H64m), after two implementation reviews and their fixes; each
+description is refreshed. W-344 is discharged; W-343 is narrowed to the
+land-time notes of PR 51, PR 54, PR 57 (OP-2), PR 58 and PR 59.
+
 _Ids._ The re-scan of rg1-plan.md section 4.5 (136 origin refs, 25 local
 branches, 21 worktrees, after a fetch) finds W-340 to W-345 in ledgers and
 W-346, W-398 and W-399 only as range bounds in two plans' text. RG-1 reserves

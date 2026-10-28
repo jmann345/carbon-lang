@@ -3118,8 +3118,12 @@ house hand-off (item 9).
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_
 upstream has no CMake integration (no CMakeLists.txt, no `*.cmake`, no
-cmake/ or examples/cmake/ directory, no build-systems guide; its thirteen
-`cmake` mentions are Bazel-internal), so the module and helper names
+cmake/ or examples/cmake/ directory, no build-systems guide; thirteen of its
+files mention CMake, nine of them build or toolchain files and four of them
+text, among them docs/project/milestones.md, whose :230-231 names "Build system
+integration for CMake" as a 0.1 deliverable this workstream delivers;
+corrected 2026-10-28, RG-1, against upstream f27a977d8), so the module and
+helper names
 (`CMAKE_Carbon_*`, `carbon_add_library`, `carbon_add_executable`,
 `carbon_add_core_library`, `Carbon::core_io`) are fork-local and rename if
 upstream ships its own; README.md's one-line pointer and the
@@ -3131,6 +3135,23 @@ deleted; if `carbon link` learns the Core objects (W-003) or shared libraries
 (W-132), D-CM-7's helper becomes a warning no-op and D-CM-5's failing rule
 becomes the C reference rule; if the driver writes a depfile (W-129), D-CM-9's
 NASM-style wiring replaces OBJECT_DEPENDS. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H2 have the quotes):_ the CMake support
+(classified 2026-10-28, RG-1: ALIGNED, W-355; docs/project/milestones.md:230-231
+and proposals/p006333:368-370); D-CM-7's helper and D-CM-5's rule (classified
+2026-10-28, RG-1: ALIGNED with gaps W-003 and W-132; p006333:193-198 makes
+`carbon link` include the Core objects by default with an opt-out for a build
+system that provides its own, which the helper does); the names, the touched
+upstream lines, the harness directive, D-CM-6 and D-CM-9 (classified
+2026-10-28, RG-1: NONE, W-355; upstream has no `CMAKE_Carbon` or
+`carbon_add_*` name and no `BUILD-SCRIPT` directive, each 0 in its whole tree,
+no upstream commit since the cut touches README.md or .gitignore, and its
+driver writes no depfile; compile_subcommand.cpp:43-46's single-input TODO and
+p006333:99-100's `carbon compile` are the driver's, which this branch does not
+change).
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

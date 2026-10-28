@@ -6,20 +6,34 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 6, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION at rev 5,
-AMENDED BY A STOP-AND-AMEND. Rev 6 is the plan amender's revision of rev 5
-(4ca369e38) after the implementer stopped before committing commit 1: the
-superseded texts that Appendix A's blocks A.1.6 and A.5.10 quote had dropped
-the link markup of three links on the page lines they quote, so they were not
-byte-equal to the pages at 2407efa74. Rev 6 restores the three links in those
-two quotes, states in section 2.1 the byte-equality test every superseded text
-and anchor meets, adds that test to section 8 item 5, and corrects A.10.2's
-line count from 10 to 11 and the line ranges in A.1.6's and A.5.10's headings
-(section 8.12; amended 2026-10-28, implementation:
-stop-and-amend: link markup in two superseded quotes). No design statement,
-rule, example, diagnostic or count of section 8 item 1 changes. The
-implementation resumes from this revision's commit with section 3's commit 1,
-after the focused re-review of this amendment. Rev 5 was the
+**Status:** rev 7, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION at rev 5,
+AMENDED BY A STOP-AND-AMEND (rev 6) AND BY THE FOLD OF ITS FOCUSED RE-REVIEW
+(rev 7). Rev 7 is the plan amender's fold of the focused re-review of rev 6
+(486d2bc74), whose verdict was APPROVE-WITH-AMENDMENTS with no BLOCKER, one
+MAJOR and one MINOR, both folded and none rejected (section 8.12; amended
+2026-10-28, stop-and-amend re-review: AM6-M1, AM6-m1). AM6-M1: section 2.1's
+test, as rev 6 worded it, failed five quotes that rev 6 kept, three code lines
+whose runs of spaces the quotes shorten (A.2.11 twice, A.2.13), A.3.13's
+anchor, which also ends in "..." for the rest of its code line, and A.8.1's
+locator, which quoted a link by its text alone. AM6-m1: section 8.12
+overstated what rev 6's checker set aside and scanned. Rev 7 adds the two
+code-line set-asides to section 2.1, scopes its test to anchors and
+superseded texts, writes a quote that carries link markup in this plan's own
+prose as a code span, quotes A.8.1's locator with its link, and records a
+sweep, in section 8.12, that applies exactly section 2.1's test to every
+quoted span of Appendices A to D, prose anchors included, with no mismatch
+left. No page or record text, rule, example, diagnostic, line count or count
+of section 8 item 1 changes, so the implementation resumes from this
+revision's commit with section 3's commit 1. Rev 6 was the plan amender's
+revision of rev 5 (4ca369e38) after the implementer stopped before committing
+commit 1: the superseded texts that Appendix A's blocks A.1.6 and A.5.10 quote
+had dropped the link markup of three links on the page lines they quote, so
+they were not byte-equal to the pages at 2407efa74. Rev 6 restored the three
+links in those two quotes, stated in section 2.1 the byte-equality test every
+superseded text and anchor meets, added that test to section 8 item 5, and
+corrected A.10.2's line count from 10 to 11 and the line ranges in A.1.6's and
+A.5.10's headings (section 8.12; amended 2026-10-28, implementation:
+stop-and-amend: link markup in two superseded quotes). Rev 5 was the
 fixer's fold of the focused re-review (round 3) of rev 4 (9d48a863e), whose
 verdict was APPROVE-WITH-AMENDMENTS: no BLOCKER (RR2-B1 resolved), one MAJOR,
 RR3-M1 (PR 65's `IndirectIndexWith.Ref`, a by-value producer of a `ref` into
@@ -96,8 +110,9 @@ and section 2.6).
 -   Section 7, risks and rejected alternatives.
 -   Section 8, verification, the list of what was not run, the plan
     reviews' fold records (sections 8.8 to 8.11) and the stop-and-amend
-    record (section 8.12; amended 2026-10-28, implementation: stop-and-amend:
-    link markup in two superseded quotes).
+    record with the fold of its focused re-review (section 8.12; amended
+    2026-10-28, implementation: stop-and-amend: link markup in two superseded
+    quotes; amended 2026-10-28, stop-and-amend re-review: AM6-m1).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -1708,15 +1723,30 @@ Every anchor and every superseded text a block quotes is byte-equal to its
 file's source at 2407efa74 once these, and nothing else, are set aside: a line
 break with the indentation after it; the `>` and the space after it that start a
 blockquote line; the `//` and the space after it that start the second line of a
-code comment the quote joins into one (A.2.12); and the " / " with which a block
-says it joins list items or separate pieces (A.2.8, A.3.4). Link markup, code
-spans, emphasis and punctuation belong to the text: a link is quoted as
-`[text](target)`, never as its text alone, because the quote is of the page's
-source, not of its rendered words. A ledger note's quote is of the item's JSON
-string value. The implementer tests every quote this way before each commit, a
-mismatch being a stop (section 8 item 5). (Added 2026-10-28, implementation:
-stop-and-amend: link markup in two superseded quotes: rev 5's A.1.6 and A.5.10
-quoted three links by their text alone, section 8.12.)
+code comment the quote joins into one (A.2.12); the " / " with which a block
+says it joins list items or separate pieces (A.2.8, A.3.4); a run of spaces in
+a code line, the line's indentation included, which a quote writes as one
+space or two (A.2.11's two anchors and its first block's quote, A.2.13's
+anchor, A.3.13's two anchors); and a closing "..." that stands for the rest of
+an anchor's code line (A.3.13). Link markup, code spans, emphasis and
+punctuation belong to the text: a link is quoted as `[text](target)`, never as
+its text alone, because the quote is of the page's source, not of its
+rendered words. A quote in this plan's own prose that carries link markup is
+written as a code span rather than between double quotes, the backticks being
+its delimiters, so that this plan holds no live link for the check-links hook
+to resolve against this file (A.1.6, A.5.10, A.8.1). A ledger note's quote is
+of the item's JSON string value. The test is of anchors and superseded texts,
+the texts the implementer finds on the page and replaces or keeps as quotes; a
+quote of another file inside a new text, as A.4.2's and B.5's quote of the
+design overview's sentence at docs/design/README.md:2147-2148, quotes the words
+a reader of that file sees, a link by its text, and is not an anchor. The
+implementer tests every quote this way before each commit, a mismatch being a
+stop (section 8 item 5). (Added 2026-10-28, implementation: stop-and-amend:
+link markup in two superseded quotes: rev 5's A.1.6 and A.5.10 quoted three
+links by their text alone, section 8.12. The two code-line set-asides, the
+code-span form and the test's scope amended 2026-10-28, stop-and-amend
+re-review: AM6-M1: rev 6 named none of them, so its test as worded failed five
+quotes it kept, section 8.12.)
 
 ### §2.2 Commit 1: the pages (Appendix A)
 
@@ -2138,7 +2168,12 @@ For each of commits 1 and 2, and every fold commit:
     before each commit, every anchor and superseded text of the Appendix A or
     B blocks it applies is compared with its file at 2407efa74 under the test
     of section 2.1, link markup included, and found once (amended 2026-10-28,
-    implementation: stop-and-amend: link markup in two superseded quotes).
+    implementation: stop-and-amend: link markup in two superseded quotes),
+    with section 2.1's set-asides and no other normalization, prose anchors
+    as well as fenced texts: a checker that collapses every whitespace run or
+    drops link markup does not run this test. Section 8.12 records the sweep
+    of rev 7, under which every such quote passes (amended 2026-10-28,
+    stop-and-amend re-review: AM6-M1).
 6.  `python3 -I fork/conformance/runner.py --self-test` clean (R7).
 7.  `git merge-tree --write-tree --name-only <head> <held head>` for trunk and
     every held head; the conflict set of each equals its row of section 0.8's
@@ -2423,7 +2458,7 @@ comparison and the copy of mutation_safety.md at 2407efa74 are in the scratch
 directory above; the detached worktree under /dev/shm/safe2-fixer3 was removed
 after the checks; nothing was built.
 
-### §8.12 Stop-and-amend record (rev 6, 2026-10-28)
+### §8.12 Stop-and-amend record (rev 6 and rev 7, 2026-10-28)
 
 The implementer of section 3's commits 1 and 2 stopped before committing
 commit 1 on the stop condition "a superseded text the block quotes is not
@@ -2477,15 +2512,26 @@ design statement: no rule changes, and no shrink line is drawn.
 -   A checker written apart from the implementer's (bin/q6.py) took every
     top-level quoted span of 25 characters or more in the fenced texts of
     Appendices A and B, and in Appendices C and D against PR 67's files at
-    56e2e5bbd and trunk's fork/ORCHESTRATION.md at 1c83422a0, and compared it
-    with its file with only line breaks and blockquote markers set aside. The
-    only spans that match once link markup or a comment marker is removed and
-    not before are A.1.6's, A.5.10's and A.2.12's; every other span is on its
-    file byte for byte, is a quote of upstream found byte for byte at
-    07718a832, or is new text. B.4's eleven superseded quotes equal the JSON
-    string values of W-146 and W-148, and the 281 verbatim line fields of
-    sections 0.4 and 0.5 equal their page lines apart from leading
-    indentation.
+    56e2e5bbd and trunk's fork/ORCHESTRATION.md at 1c83422a0. It read no
+    prose, so no prose anchor (q6.py:54-57). It compared each span with its
+    file after collapsing every whitespace run to one space and removing
+    every blockquote marker (q6.py:24, :31), and tested a span that failed
+    again with link markup and a leading `//` also removed (q6.py:26, :30),
+    the only form in which it compared a span with upstream's files
+    (q6.py:41, :84). The only spans
+    that matched in the second form and not the first were A.1.6's, A.5.10's
+    and A.2.12's. Because the first form collapses every whitespace run, a
+    span it matched is not thereby byte for byte: A.2.11's first block quotes
+    a run of 19 spaces as two and passed it; and the upstream quotes it found
+    were found in rendered words with whitespace collapsed, not byte for byte
+    (rewritten 2026-10-28, stop-and-amend re-review: AM6-m1, where rev 6 said
+    the spans were compared "with only line breaks and blockquote markers set
+    aside" and that every other span "is on its file byte for byte, is a
+    quote of upstream found byte for byte at 07718a832, or is new text"; the
+    sweep of rev 7 below measures section 2.1's test as worded). B.4's eleven
+    superseded quotes equal the JSON string values of W-146 and W-148, and
+    the 281 verbatim line fields of sections 0.4 and 0.5 equal their page
+    lines apart from leading indentation.
 -   A.2.12's quote joins the two comment lines it replaces without the second
     line's `//` and its space; a quote inside a comment of one line cannot
     keep the break,
@@ -2519,6 +2565,99 @@ commit 1 from the rev 6 blocks, or applies the two amended texts to its saved
 copies of the pages, and re-runs every check of section 8 before committing,
 then commit 2.
 
+**The focused re-review of rev 6 and its fold (rev 7, 2026-10-28).** The
+focused re-review of rev 6 (486d2bc74) re-fetched upstream at 07718a832, ran
+PR 67's checks, compared the amended texts with the pages and applied them to
+the implementer's copies in a detached worktree, where prek, rumdl@0.2.58,
+the R31 counts and the heading sets matched rev 6. Its verdict was
+APPROVE-WITH-AMENDMENTS, with no BLOCKER (amended 2026-10-28, stop-and-amend
+re-review: AM6-M1, AM6-m1):
+
+| finding | severity | what it found | disposition |
+| --- | --- | --- | --- |
+| AM6-M1 | MAJOR | section 2.1's test, as rev 6 worded it ("these, and nothing else"), fails five quotes that rev 6 keeps, so the resumed stage would stop again | folded: section 2.1, section 8 item 5, A.8.1's locator |
+| AM6-m1 | MINOR | the q6.py bullet above overstated what that checker set aside and what it scanned (R10) | folded: the bullet rewritten, and this record's sweep |
+
+The five quotes, each measured on its file at 2407efa74 by the rev 7 amender:
+
+| block | the quote | line at 2407efa74 | what the quote differs by |
+| --- | --- | --- | --- |
+| A.2.11, first block | the superseded `a->Set(0, 5);` line | safety/mutation_safety.md:547 | a run of 19 spaces quoted as two |
+| A.2.11, prose | the anchor that ends with the `vec->Push(3);` line | safety/mutation_safety.md:549 | a run of 19 spaces quoted as one |
+| A.2.13, prose | the anchor's `let b: Core.Buf(i32) = a;` line | safety/mutation_safety.md:642 | a run of 7 spaces quoted as one |
+| A.3.13, prose | the anchor that ends with the `z = Core.Buf(i32).Make(5, 0);` line | safety/temporal_safety.md:902 | a run of 5 spaces quoted as one, and the rest of the comment quoted as "..." |
+| A.8.1, prose | the locator of the replaced blockquote | README.md:2147-2148 | the link `[hardened build mode](#build-modes)` quoted by its text |
+
+**Root cause.** Rev 6 wrote section 2.1's test from the two quotes that had
+stopped the implementer and validated it with a checker laxer than the test:
+q6.py collapsed every whitespace run and read no prose, so the code-line
+quotes, whose runs of spaces this plan has shortened since rev 1, and the
+prose anchors were never measured against the test as worded, and its
+"nothing else" was not true of the plan it governed. The fold names that
+practice in section 2.1 (a run of spaces in a code line, and a closing "..."
+for the rest of an anchor's code line), quotes A.8.1's link, the one quote
+outside any set-aside, scopes the test to anchors and superseded texts, and
+measures the test as worded with a checker that implements it and nothing
+more, prose anchors included. No rule, example, diagnostic, page or record
+text, line range or count changes, and no shrink line is drawn.
+
+**Measured facts** (the rev 7 amender, 2026-10-28, scratch directory
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-impl/amend7/):
+
+-   Upstream fetched at 07718a832 again; over the nine files of rev 6's first
+    bullet `git log c1e83b0b7..upstream/trunk` lists only f21c62524
+    (classes.md). PR 67's checks, from a detached worktree of 56e2e5bbd under
+    /dev/shm/safe2-amend7/rg1, removed after: "checked 273 quotes, 0
+    failed", "checked 89 silence checks, 0 failed", and the five H1 silence
+    checks with 0 failed. All 18 held heads and trunk 1c83422a0 match
+    `git ls-remote origin`, PR 53's pushed head being 2407efa74.
+-   bin/sweep.py reads every double-quoted span of Appendices A to D, in prose
+    and fenced texts alike, and every code span of this plan's prose that
+    carries link markup, and compares it with the block's file: PR 53's files
+    at 2407efa74, and for Appendices C and D PR 67's files at 56e2e5bbd and
+    trunk's fork/ORCHESTRATION.md at 1c83422a0. It tests a span first with
+    only the line-break and blockquote set-asides, then with each other
+    set-aside of section 2.1 alone, then with link markup reduced to its text,
+    which section 2.1 does not set aside; a span that holds a nested quote is
+    tested whole. Its output is sweep-r6.txt for rev 6 and sweep-r7.txt for
+    rev 7.
+-   On rev 6 the anchors and superseded texts that fail the line-break and
+    blockquote set-asides are A.2.12's comment quote, which the comment
+    marker clears, and the five quotes of the table above, and no other.
+-   On rev 7 it reads 614 spans. 479 are equal to their files under the
+    line-break and blockquote set-asides alone. A.2.12's comment quote needs
+    the comment marker, A.2.11's two code-line quotes and A.2.13's anchor a
+    run of spaces, and A.3.13's anchor a run of spaces and its closing "...".
+    The four code-span quotes, A.1.6's, A.5.10's two and A.8.1's, are equal. So
+    every anchor and superseded text passes section 2.1's test as rev 7 words
+    it. Of the other 126 spans, none an anchor or a superseded text: 35 are
+    found only in upstream's files at 07718a832 (28 quotes of upstream's
+    words in new texts, and seven times the string literal "longer" of the
+    new examples' code, a word upstream's files also hold); one,
+    the design overview's sentence inside A.4.2's new text, only in rendered
+    words, as section 2.1 now says such a quote is written; 31 quote new texts
+    of this plan's fenced blocks; 52 are found nowhere and were read one by
+    one, each a new text given in prose (a renamed heading, a replacement
+    clause, a diagnostic's or the runtime's message, a commit message or a
+    check's output) or a quote of an earlier revision of this plan; five are
+    words found on another file, none an anchor; and two, A.1.6's "see
+    Spatial safety" and B.1.7's "Memory safety holds ...", quote what rev 5
+    and rev 1 wrote.
+
+**The amended instructions (rev 7).** No fenced text of Appendices A to D
+changes, nor any line range, count, merge-tree set or nightly outcome, and no
+anchor's words but A.8.1's locator. Section 2.1 sets aside, besides rev 6's
+four, a run of spaces in a code line and a closing "..." for the rest of an
+anchor's code line; it scopes its test to anchors and superseded texts; and
+A.8.1's locator quotes the sentence at :2147-2148 with its link, whose words
+are those of the sentence the implementer already found once. The
+implementer resumes the stage from rev 7's commit as rev 6's instructions
+above say, and runs section 8 item 5's test as section 2.1 now words it,
+prose anchors and fenced texts alike, with no whitespace collapsed beyond a
+code line's runs of spaces and no link markup dropped; bin/sweep.py in the
+rev 7 scratch directory is such a checker, and sweep-r7.txt is the expected
+result.
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (added 2026-10-28,
@@ -2531,9 +2670,11 @@ review fold: RR3-M1, RR3-m1, RR3-m2):
 | RR1: the focused re-review, round 1 | rev 2, 46980f8bd | REJECT | 1 | 1 | 4 | 6 | none | rev 3, 603749ee1, §8.9 |
 | RR2: the focused re-review, round 2 | rev 3, 603749ee1 | REJECT | 1 | 0 | 3 | 4 | none | rev 4, 9d48a863e, §8.10 |
 | RR3: the focused re-review, round 3 | rev 4, 9d48a863e | APPROVE-WITH-AMENDMENTS | 0 | 1 | 2 | 3 | none | rev 5, 4ca369e38, §8.11 |
+| AM6: the focused re-review of the stop-and-amend | rev 6, 486d2bc74 | APPROVE-WITH-AMENDMENTS | 0 | 1 | 1 | 2 | none | rev 7, §8.12 |
 
-The five reviews raised 34 findings, 4 BLOCKERs, 10 MAJORs and 20 MINORs; all
-34 are folded and none is rejected. RR3, the last review, found no BLOCKER and
+The five reviews before the implementation raised 34 findings, 4 BLOCKERs, 10
+MAJORs and 20 MINORs; all 34 are folded and none is rejected. RR3, the last of
+them, found no BLOCKER and
 its verdict is not REJECT, so rev 5 is SIGNED OFF FOR IMPLEMENTATION on
 2026-10-28. Its one MAJOR fold adds no rule: it applies the trusted-body rule
 of rev 4, which RR3 traced and accepted, to PR 65's `Ref`, in the words W-144
@@ -2551,6 +2692,16 @@ amendment comes next, and the implementation resumes from rev 6's commit
 with section 3's commit 1 once it finds no BLOCKER (amended 2026-10-28,
 implementation: stop-and-amend: link markup in two superseded quotes).
 
+Rev 7, 2026-10-28, folds that focused re-review, AM6 in the table, which
+found no BLOCKER: its MAJOR and its MINOR are folded and none is rejected, so
+the six reviews of this plan raised 36 findings, 4 BLOCKERs, 11 MAJORs and 21
+MINORs, all folded. The fold changes section 2.1's statement of the test, its
+measurement in section 8.12 and A.8.1's locator, and no rule, example,
+diagnostic, fenced text, line range, count of section 8 item 1 or merge-tree
+set, so rev 5's sign-off stands for every text rev 7 leaves as it was, and
+the implementation resumes from rev 7's commit with section 3's commit 1
+(amended 2026-10-28, stop-and-amend re-review: AM6-M1, AM6-m1).
+
 ## Hand-off notes for the implementer
 
 1.  Read section 1 first, then the Appendix A block for each page in order;
@@ -2564,7 +2715,11 @@ implementation: stop-and-amend: link markup in two superseded quotes).
 3.  Keep the superseded texts byte for byte: they are quotes of PR 53's lines
     at 2407efa74 and a reviewer diffs them. Byte for byte is section 2.1's
     test: a quoted link keeps its `[text](target)` (amended 2026-10-28,
-    implementation: stop-and-amend: link markup in two superseded quotes).
+    implementation: stop-and-amend: link markup in two superseded quotes),
+    and a run of spaces in a code line may be quoted as one space or two,
+    the only whitespace the test sets aside besides a line break and its
+    indentation (amended
+    2026-10-28, stop-and-amend re-review: AM6-M1).
 4.  R31 and the style hook (SAFE-1's hand-off note 4 applies unchanged):
     never let a `#NN`, a list marker, `+`, `-` or a digit and a period start a
     prose line; write "PR 53", "proposal 5434" or "p005434"; headings never end
@@ -5435,11 +5590,14 @@ D-SAFE-17):**" with:
 ### §A.8.1 README.md :2151-2153, Unformed state, the blockquote replaced
 
 Replace the blockquote that begins "> **Fork amendment (2026-10-12, F-013
-D-SAFE-13 I5).**" (the one under "Types may define additional initialization
-for the hardened build mode", not the move blockquote at :2175, which stays)
-with the block, whose label is dated by SAFE-2's commit and names the
-2026-10-12 amendment it replaces (amended 2026-10-28, review fold: B-M5; rev 1
-dated the new "Fork note" 2026-10-12):
+D-SAFE-13 I5).**" (the one under the sentence at :2147-2148 that begins "Types
+may define additional initialization for the" and ends
+`[hardened build mode](#build-modes).`, not the move blockquote at :2175,
+which stays) with the block, whose label is dated by SAFE-2's commit and names
+the 2026-10-12 amendment it replaces (amended 2026-10-28, review fold: B-M5;
+rev 1 dated the new "Fork note" 2026-10-12; the locator's link amended
+2026-10-28, stop-and-amend re-review: AM6-M1, where rev 6 quoted the sentence
+with the link's text alone, section 8.12):
 
 <!-- google-doc-style-ignore -->
 

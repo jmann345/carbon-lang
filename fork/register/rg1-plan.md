@@ -6,12 +6,16 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 2, 2026-10-28, reviews A and B folded (section "Review fold
-record (rev 2, 2026-10-28)" at the end); not signed off: the re-review decides.
-Rev 1, 2026-10-27, was the planner's draft. Records only: no toolchain, prelude,
-golden, program or workflow file changes with this plan or with any commit it
-specifies RG-1 makes; the code realignments it files are their owners' commits
-(D-RG-7). RG-1 is workstream W-342, W-343 and W-344 of
+**Status:** rev 3, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds the
+focused re-review RR1 of rev 2 (APPROVE-WITH-AMENDMENTS: two MAJOR, five MINOR;
+section "Review fold record (rev 3, 2026-10-28)"), and section "Sign-off" tables
+every review of this plan. Rev 2, 2026-10-28, folded reviews A and B (section
+"Review fold record (rev 2, 2026-10-28)"); rev 1, 2026-10-27, was the planner's
+draft. Records only: no toolchain, prelude, golden, program or workflow file
+changes with this plan or with any commit it specifies RG-1 makes, beyond the
+register's two check scripts and their two tables, which R1 commits under
+fork/register/ (section 4.2); the code realignments it files are their owners'
+commits (D-RG-7). RG-1 is workstream W-342, W-343 and W-344 of
 fork/inventory/work-items.json, scheduled by fork/ORCHESTRATION.md Next actions
 item 6, on branch claude/carbon-fork-0-1-rg1 cut from trunk 0b999d449.
 
@@ -19,33 +23,38 @@ item 6, on branch claude/carbon-fork-0-1-rg1 cut from trunk 0b999d449.
 classified against upstream's tip f27a977d8 by the rule of fork/rulebook.md R32,
 and re-checked unchanged at the moved tip e6fddcf97 (section 0.1): 155 entries
 in 26 blocks and V-3's design-fork entries (section 0.2). The verdicts are 19
-DRIFT, 34 ALIGNED and 102 NONE; every NONE carries a quote of the nearest
-upstream passage or a scripted silence check (section 4.2), and every NONE and
-ALIGNED entry carries the standing register watch item W-355 (D-RG-17). Ten
-entries, three of the DRIFTs among them, wait on an upstream decision or on an
-item blocked by one (section 7). Eight DRIFT entries were already carried by
-items filed before RG-1 (W-109 twice, W-320 with W-324, W-321, W-322, W-326
-twice, and SC-1's W-139, whose break condition was already met when it was
-filed: upstream's text predates the cut), and eleven are carried by items this
-plan files: W-346 (F-006a), W-347 to W-351 and W-353 (SAFE-1's six departures
-from accepted text), W-352 (OP-1's comparisons) and W-354 (D-SL-16's yield and
-D-SL-19's keying, three entries). W-355 is the register watch item and W-356 a
-fork crash RG-1's probe found. The two R29 decisions are: F-006a's `Ok`/`Err`
-is a DRIFT (upstream's error-handling statement names `Result` and links the
-choice-types section, whose result choice spells its alternatives `Success` and
-`Failure`; W-346, owner EH-C, on trunk after the held PRs land and before UA-3,
-reversing the user's F-006a under the 2026-10-21 directive, veto-able), and
-F-009's `overload fn` is NONE (upstream's only spelling is p002875's
-self-declared "placeholder syntax", and pattern_matching.md says there is no
-approved design). Three held PRs carry drifts and wait for their owners'
-realignment commits before they land (R32 (e)): PR 53 (SAFE-1, six), PR 56
-(OP-1, W-352) and PR 60 (SC-1, W-139). Seven held branches gain one RG-1
-records commit each (PR 53, PR 52, PR 60, PR 55, PR 56, PR 61 and PR 64), PR 57
-and PR 64 also gain a merge commit of their base PR's new head, and RG-1's own
-PR is records only, held, base trunk, first in the land sequence. Every RG-1
+DRIFT, 33 ALIGNED and 103 NONE; every NONE carries a quote of the nearest
+upstream passage or a scripted silence check (section 4.2, whose tables and
+scripts R1 commits under fork/register/), and every NONE and ALIGNED entry
+outside VA-2's block, whose six carry VA-2's own items, carries the standing
+register watch item W-355 (D-RG-17). Ten entries, three of the DRIFTs among
+them, wait on an upstream decision or on an item blocked by one (section 7).
+Eight DRIFT entries were already carried by items filed before RG-1 (W-109
+twice, W-320 with W-324, W-321, W-322, W-326 twice, and SC-1's W-139, whose
+break condition was already met when it was filed: upstream's text predates the
+cut), and eleven are carried by items this plan files: W-346 (F-006a), W-347 to
+W-351 and W-353 (SAFE-1's six departures from accepted text), W-352 (OP-1's
+comparisons) and W-354 (D-SL-16's yield and D-SL-19's keying, three entries).
+W-355 is the register watch item and W-356 a fork crash RG-1's probe found. The
+two R29 decisions are: F-006a's `Ok`/`Err` is a DRIFT (upstream's error-handling
+statement names `Result` and links the choice-types section, whose result choice
+spells its alternatives `Success` and `Failure`; W-346, owner EH-C, on trunk
+after the held PRs land and before UA-3, reversing the user's F-006a under the
+2026-10-21 directive, veto-able), and F-009's `overload fn` is NONE (upstream's
+only spelling is p002875's self-declared "placeholder syntax", and
+pattern_matching.md says there is no approved design). Upstream's build-mode
+pages name three builds in some places and two primary modes in others; D-RG-20
+(R29) reads the hardened build as the release build and the performance build as
+the unsupported benchmarking build, so SAFE-1's zero-fill drift is its mandate
+for every type (W-353), not its mode. Three held PRs carry drifts and wait for
+their owners' realignment commits before they land (R32 (e)): PR 53 (SAFE-1,
+six), PR 56 (OP-1, W-352) and PR 60 (SC-1, W-139). Seven held branches gain one
+RG-1 records commit each (PR 53, PR 52, PR 60, PR 55, PR 56, PR 61 and PR 64),
+PR 57 and PR 64 also gain a merge commit of their base PR's new head, and RG-1's
+own PR is records only, held, base trunk, first in the land sequence. Every RG-1
 commit is staged unpushed, reviewed twice and fixed before any push (D-RG-13).
 (amended 2026-10-28, review fold: A-M1 to A-M5, A-m1, A-m3, A-m4, B-B1, B-M2 to
-B-M5, B-m5)
+B-M5, B-m5, RR1-N-1, RR1-N-2, RR1-m3, RR1-m4)
 
 ## Contents
 
@@ -60,6 +69,8 @@ B-M5, B-m5)
 -   Appendix A: records texts
 -   Hand-off notes for the implementer
 -   Review fold record (rev 2, 2026-10-28)
+-   Review fold record (rev 3, 2026-10-28)
+-   Sign-off
 
 ## §0 Audit
 
@@ -80,11 +91,17 @@ committed 2026-10-27 22:16:05 UTC, "Add all stores in File to CollectMemUsage"
 clang-tidy issue with the `u` suffix" (upstream PR 8047). Together they touch
 only toolchain/base/mem_usage.h, toolchain/lex/lex.cpp and
 toolchain/sem_ir/file.cpp, none of them a file this plan quotes or checks.
-Section 4.2's two scripts pass at both shas: "checked 230 quotes, 0 failed" and
-"checked 89 silence checks, 0 failed". The classification stays named by
-f27a977d8; R1 re-runs both scripts at the tip it fetches and names that sha
-beside f27a977d8 in every record it writes (section 3.1), and a FAIL stops R1
-until the plan is amended (R-1).
+Section 4.2's two scripts passed on rev 2's tables at both shas: "checked 230
+quotes, 0 failed" and "checked 89 silence checks, 0 failed". The classification
+stays named by f27a977d8; R1 re-runs both scripts at the tip it fetches and
+names that sha beside f27a977d8 in every record it writes (section 3.1), and a
+FAIL stops R1 until the plan is amended (R-1).
+
+The re-check at rev 3 (amended 2026-10-28, review fold: RR1-N-1, RR1-N-2): the
+fetch at 2026-10-28 00:42 UTC still gives e6fddcf97, and the sixteen held heads
+and origin/trunk 0b999d449 are unchanged. The rev 3 tables of section 4.2, whose
+quote table gains 30 rows for D-RG-20's build-mode passages, pass at both shas:
+"checked 260 quotes, 0 failed" and "checked 89 silence checks, 0 failed".
 
 The fourteen commits from 21c825a3f to f27a977d8, by sha and subject (R32 (c),
 for the record of this plan; the next weekly check classifies them):
@@ -251,7 +268,7 @@ repeated before each records commit (section 4.5).
 
 Every decision is auto-adopted under R29(a), recorded in the RG-1 decision-log
 entry for after-the-fact veto, and carries its break condition. Ids D-RG-1 to
-D-RG-19 are minted in this plan only; RG-1 mints no F id.
+D-RG-20 are minted in this plan only; RG-1 mints no F id.
 
 **D-RG-1: the classification rule.** For each entry the plan states the fork
 mechanism and where it lives at the head read, upstream's text for that
@@ -378,13 +395,13 @@ amended 2026-10-28, review fold: A-M3). A realignment that is a mechanical text
 change with no consequence elsewhere is RG-1's; there is none this round. A
 realignment that changes a design decision or code is the filed item's, owned by
 the PR's workstream, made by a new commit on that PR's branch under its own
-review before the PR lands, and RG-1's commit records the item. SAFE-1's six
-are design changes, not restatements: each departure is named by its decision
-id on three to five of PR 53's pages and the rules there are derived from it,
-so restating upstream's sentence on one page would leave the others stating the
-narrowed rule (amended 2026-10-28, review fold: A-M5). The dependent lines at
-adaae4e35, by `git grep -n -E '<id>' origin/claude/carbon-fork-0-1-safe --
-docs`:
+review before the PR lands, and RG-1's commit records the item. SAFE-1's six are
+design changes, not restatements: each departure is named by its decision id on
+two to five of PR 53's pages (amended 2026-10-28, review fold: RR1-m1) and the
+rules there are derived from it, so restating upstream's sentence on one page
+would leave the others stating the narrowed rule (amended 2026-10-28, review
+fold: A-M5). The dependent lines at adaae4e35, by `git grep -n -E '<id>'
+origin/claude/carbon-fork-0-1-safe -- docs`:
 
 | Item | Decision | Dependent lines on PR 53 (adaae4e35) |
 | --- | --- | --- |
@@ -455,17 +472,20 @@ shows the in-place route cannot keep D-OP-4's frozen signatures or F-015's API
 (then W-352 gains `blocked_by: ["W-320"]` and PR 56 waits for W-320; it does not
 land with the drift).
 
-**D-RG-11: held blocks with no drift and no stale cite get no RG-1 commit now.**
-PR 51's (H12), PR 54's (H3), PR 57's OP-2 block (H6), PR 58's (H7) and PR 59's
-(H8, carried by PR 66) are classified in RG-1's entry, which names each by PR
-and line, and their dated notes (Appendix A.4, "Land-time notes") are added by
-the records commit of that PR's land sequence, scheduled in ORCHESTRATION's
-Next actions at R1 (A.8) so that no note is left unscheduled. W-343 is narrowed
-at R2 and discharged by the last of those land-time notes, PR 59's, which also
-discharges the land-time obligation for PR 66's copy (amended 2026-10-28, review
-fold: B-M2). Break condition: a land sequence without a records commit (the
-RG-1 entry then stands as the block's note and W-343 is discharged by the
-orchestrator's stamp naming it).
+**D-RG-11: held blocks that need no amendment get no RG-1 commit now.** PR 54's
+(H3), PR 57's OP-2 block (H6), PR 58's (H7) and PR 59's (H8, carried by PR 66)
+have no drift and no stale cite; PR 51's (H12) carries a drift, H12.1, but the
+yield it records is trunk's code, which W-354 removes at UA-3, so PR 51 is not
+amended for it (D-RG-8; amended 2026-10-28, review fold: RR1-m2). The five are
+classified in RG-1's entry, which names each by PR and line, and their dated
+notes (Appendix A.4, "Land-time notes") are added by the records commit of that
+PR's land sequence, scheduled in ORCHESTRATION's Next actions at R1 (A.8) so
+that no note is left unscheduled. W-343 is narrowed at R2 and discharged by the
+last of those land-time notes, PR 59's, which also discharges the land-time
+obligation for PR 66's copy (amended 2026-10-28, review fold: B-M2). Break
+condition: a land sequence without a records commit (the RG-1 entry then stands
+as the block's note and W-343 is discharged by the orchestrator's stamp naming
+it).
 
 **D-RG-12: how a block's prose is split into entries.** Each mechanism a block
 names is one entry: a list of names that rename together is one entry (SAFE-1's
@@ -546,16 +566,22 @@ or its `SelfDestruct` stops calling `DestroyImpl.Op` (then T5.6, T5.9 and H12.1
 return to NONE and W-354 is withdrawn).
 
 **D-RG-17: the register stays a work queue (R32 (b)).** (amended 2026-10-28,
-review fold: B-M2) Each entry carries a work item: a DRIFT its own (sections 2
-and 7), and every NONE and ALIGNED entry W-355, the standing register watch item
-filed by R1, owned by the weekly upstream check. At each weekly check W-355's
-owner re-runs section 4.2's two scripts at the new tip, re-reads every NONE and
-ALIGNED entry's break condition against the window's commits (R32 (c)), and
-files a fired one as its own DRIFT item scheduled before UA-3; the dated note in
-each block names W-355. A classified entry does not leave the register: it stays
-in the queue under W-355 until its break condition fires or its mechanism is
-removed. Break condition: an owner ruling that a classified NONE leaves the
-register (then W-355 narrows to the ALIGNED entries).
+review fold: B-M2, RR1-N-2, RR1-m4) Each entry carries a work item: a DRIFT its
+own (sections 2 and 7); every NONE and ALIGNED entry outside VA-2's block W-355,
+the standing register watch item filed by R1, owned by the weekly upstream check
+(130 entries in 22 blocks and V-3's design-fork group); and VA-2's six (C2)
+VA-2's own items, W-217, W-230 and W-214 re-read at each weekly check by
+ORCHESTRATION's Next actions item 9, W-338 and W-339 by item 8, and W-334
+scheduled with W-222, so RG-1 adds no note to C2's block. At each weekly check
+W-355's owner runs fork/register/check_quotes.sh over
+fork/register/rg1-quotes.tsv and fork/register/check_greps.sh over
+fork/register/rg1-checks.tsv at the new tip (the files R1 commits, section 4.2),
+re-reads every covered entry's break condition against the window's commits (R32
+(c)), and files a fired one as its own DRIFT item scheduled before UA-3; the
+dated note in each covered block names W-355. A classified entry does not leave
+the register: it stays in the queue under W-355 until its break condition fires
+or its mechanism is removed. Break condition: an owner ruling that a classified
+NONE leaves the register (then W-355 narrows to the ALIGNED entries).
 
 **D-RG-18: a defect found by RG-1's probe is filed, not fixed.** The section 4.8
 probe that tested D-OP-4's accessor route stopped trunk's install at the `CHECK`
@@ -586,6 +612,51 @@ becomes `Core.Str` at that advance and `StringBuf` takes the owning name
 README.md:627 gives, D-ST-4's break condition), or an accepted string design
 names the owning type.
 
+**D-RG-20 (R29): upstream's build modes are read as its two primary modes.**
+(amended 2026-10-28, review fold: RR1-N-1) Upstream names its build modes two
+ways, in text last touched no later than 7134e23f2, an ancestor of the cut.
+Three builds, "development", "performance" and "hardened": README.md:476-484 and
+arithmetic.md:154-165 give a row to each, arithmetic.md:171-172 asks "In a
+hardened build, should we prefer to trap on overflow, give a two's complement
+result, or produce zero?", and README.md:2130-2131 says "Types may define
+additional initialization for the `[hardened build mode](#build-modes)`". Two
+primary modes: the section that link names, README.md:377-383 ("The behavior of
+the Carbon compiler depends on the _build mode_:"), defines only "a _debug
+build_" (:381) and "a _release build_" (:382), and safety/README.md:207-217 says
+"There are two primary build modes:", **Release** (:214-215) and **Debug**
+(:216-217), with extensions, each "an extension of either the debug or release
+build for that specific purpose" (:244-245; "Release + specialized
+`[hardening]`", :248-252, whose named techniques are CFI and HWASAN), and a way
+"to disable the default hardening in release builds, but not in a supported
+way", "strictly for benchmarking purposes" (:260-262). No upstream text maps the
+three onto the two; RG-1 maps them so. The development build is the debug build:
+both catch the error when it happens (arithmetic.md:154-155 "they will be caught
+immediately when they happen at runtime"; safety/README.md:231-233's fail-stop).
+The hardened build is the release build: it is the one of :381-382's two builds
+that the hardened build mode link can name, and the release build "will include
+a baseline of hardening" (safety/README.md:219), whose "bounds checking is
+enabled in the release build" (:222) needs the hardened row's "no control flow
+or memory access that depends on the value will be performed" (arithmetic.md
+:164-165). The performance build, where "the behavior of the program is not
+defined", is the release build with its default hardening disabled, the
+unsupported benchmarking build of safety/README.md:260-262. SAFE-1 reads the
+hardened build so in D-SAFE-15, which answers arithmetic.md:171-173's question
+with the Release build's wrapping (PR 53 :3483-3493). Consequences: H1.13's
+placement of the zeroing in the Release build is upstream's hardened build, and
+its drift is only that the fork mandates the zeroing for every type where
+README.md:2130 says "Types may define" (W-353, narrowed); H1.11's withdrawn row
+is upstream's row for the unsupported benchmarking build, so W-350 restores it
+as that build's row beside W-351, D-SAFE-15's Release and Debug rules being the
+hardened and development rows. Rejected reading: the hardened build as an
+extension, "Release + specialized `[hardening]`" (safety/README.md:248-250),
+because README.md:2131's link names a section that defines no such mode and
+:250-252's techniques are CFI and HWASAN, not initialization. Break condition:
+upstream reconciles its build-mode pages, a change to a line quoted here, which
+the weekly run of check_quotes.sh reports (section 4.2): H1.11 and H1.13 are
+re-read, and if the reconciled text puts type-defined initialization or the
+hardened row in an extension of Release, W-353 widens to the zeroing's placement
+and W-350's target becomes the release build's row.
+
 ## §2 The classification tables
 
 Every row gives the entry's mechanism and where it lives at the head read,
@@ -597,15 +668,17 @@ the fork's at the head named for the block; upstream paths are prefixed
 
 A NONE row shows upstream's silence with a quote of the nearest passage, with a
 silence check, or with both (D-RG-1; amended 2026-10-28, review fold: B-B1). A
-check is named by its row and is a row of section 4.2's checks.tsv, re-run by
-check_greps.sh at the tip: "check X: `git grep -c <flags> '<pattern>'` over
-<paths> = N" sums the per-file counts at the tip; "N upstream commits since the
-cut touch <paths>" is `git log --oneline c1e83b0b7..<tip> -- <paths> | wc -l`,
-the state of a file a merge rule watches; "upstream's <dir>/ lists N entries" is
-`git ls-tree --name-only <tip> <dir>/ | wc -l`. In a table cell `\|` is the
-pattern's `|`. The item column names each DRIFT's own item; every NONE and
-ALIGNED entry also carries W-355, the register watch item (D-RG-17), shown
-alone where the entry has no other item.
+check is named by its row and is a row of fork/register/rg1-checks.tsv, which R1
+commits (section 4.2), re-run by fork/register/check_greps.sh at the tip: "check
+X: `git grep -c <flags> '<pattern>'` over <paths> = N" sums the per-file counts
+at the tip; "N upstream commits since the cut touch <paths>" is `git log
+--oneline c1e83b0b7..<tip> -- <paths> | wc -l`, the state of a file a merge rule
+watches; "upstream's <dir>/ lists N entries" is `git ls-tree --name-only <tip>
+<dir>/ | wc -l`. In a table cell `\|` is the pattern's `|`. The item column
+names each DRIFT's own item; every NONE and ALIGNED entry outside C2 also
+carries W-355, the register watch item (D-RG-17), shown alone where the entry
+has no other item, and C2's carry VA-2's own items (amended 2026-10-28, review
+fold: RR1-N-2, RR1-m4).
 
 ### §2.T0 DR-0's register (trunk :241-247; re-check :249-262)
 
@@ -769,9 +842,13 @@ Fork: PR 53's docs/design/safety/ pages and its F-013 entry (the D-SAFE
 decisions at :3044-3600 of PR 53's log). PR 53 is documentation and records
 only, so every realignment is text; D-RG-7 assigns the six DRIFTs (the five
 departures and the zero-fill, H1.13) to SAFE-1 because each changes a decision
-that three to five other pages state, and gives the dependent lines. PR 53
-lands first, so these six gate the land sequence (section 5; amended 2026-10-28,
-review fold: A-M5, B-M3).
+that two to five of its pages state (amended 2026-10-28, review fold: RR1-m1),
+and gives the dependent lines. PR 53 lands first, so these six gate the land
+sequence (section 5; amended 2026-10-28, review fold: A-M5, B-M3). H1.11 and
+H1.13 read upstream's build modes by D-RG-20, which maps the development,
+performance and hardened builds of README.md and arithmetic.md onto the two
+primary modes of README.md:377-383 and safety/README.md:207-217 (amended
+2026-10-28, review fold: RR1-N-1).
 
 | # | Entry | Upstream at f27a977d8 | Verdict | Break condition | Item, note |
 | --- | --- | --- | --- | --- | --- |
@@ -785,10 +862,10 @@ review fold: A-M5, B-M3).
 | H1.8 | p005434:83 narrowed: `noalias`/`captures(none)` only for exclusive-kind refs (D-SAFE-8, PR 53 :3098-3125) | p005434:83 "The address of a `ref` binding is `nocapture` and `noalias`." | **DRIFT** | an accepted upstream memory-safety proposal that narrows :83 | W-347, owner SAFE-1 |
 | H1.9 | p005434:663 narrowed: in Strict, `Plain`-field writes through other shared aliases during a non-`Plain` value binding stay erroneous and Debug-detected, not prevented (D-SAFE-17, PR 53 :3532-3568) | p005434:660-664 "Mutation of objects with a non-copy-value representation in an active value binding ("borrowed objects") is erroneous behavior." / "Our plan is to prevent mutation of borrowed objects in Carbon's strict safe dialect." | **DRIFT** | upstream relaxes :663 (its :665-669 conditions) | W-348, owner SAFE-1 |
 | H1.10 | p005434:831-832 narrowed: a bound argument stays "not invalidated", not "immutable", for a returned loan's duration (D-SAFE-11(d), PR 53 :3297-3330) | p005434:831-832 "For full safety, we need each bound parameter to be immutable for the duration of the lifetime of the returned result."; :834 "We will reconsider this with the memory safety design." | **DRIFT** | upstream's memory-safety design reconsiders it otherwise | W-349, owner SAFE-1 |
-| H1.11 | arithmetic.md's performance-build row withdrawn for Carbon code (D-SAFE-15, PR 53 :3483-3495; the block's ":155-158" is upstream's :156-158) | arithmetic.md:156-158 "In a performance build, the optimizer can assume that such conditions don't occur. As a consequence, if they do, the behavior of the program is not defined." | **DRIFT** | upstream withdraws or rewrites the row | W-350, owner SAFE-1 |
+| H1.11 | arithmetic.md's performance-build row withdrawn for Carbon code (D-SAFE-15, PR 53 :3483-3495; the block's ":155-158" is upstream's :156-158) | arithmetic.md:156-158 "In a performance build, the optimizer can assume that such conditions don't occur. As a consequence, if they do, the behavior of the program is not defined."; the build it names, against upstream's two primary modes (D-RG-20; amended 2026-10-28, review fold: RR1-N-1): README.md:377 "## Build modes", :379 "The behavior of the Carbon compiler depends on the _build mode_:", :381 "In a _debug build_, the priority is diagnosing problems and fast build time.", :382-383 "In a _release build_, the priority is fastest execution time and lowest memory usage."; safety/README.md:212 "There are two primary build modes:", :214-215 "**Release**: the primary build mode for programs in production, focuses on giving the best possible performance with a practical baseline of safety.", :216 "**Debug**: the primary build mode during development, focuses on"; :260-262 "Carbon will provide a way to disable the default hardening in release builds, but not in a supported way. Its use is expected to be strictly for benchmarking purposes." | **DRIFT** (amended 2026-10-28, review fold: RR1-N-1): under D-RG-20 the withdrawn row is upstream's row for the unsupported benchmarking build, and D-SAFE-15's Release and Debug rules are the hardened and development rows (arithmetic.md:154-155, :159-165) | upstream withdraws or rewrites the row, or reconciles its build-mode pages otherwise than D-RG-20 reads them | W-350, owner SAFE-1 |
 | H1.12 | safety/README.md:260-262's benchmarking disable withdrawn (D-SAFE-14, PR 53 :3427-3482) | safety/README.md:260-261 "Carbon will provide a way to disable the default hardening in release builds, but not in a supported way. Its use is expected to be strictly for benchmarking" purposes. | **DRIFT** | upstream withdraws the promise | W-351, owner SAFE-1 |
-| H1.13 | zero-fill promoted to the Release baseline for every type, "there is no separate hardened mode" (D-SAFE-13 I5; PR 53's README.md:2151-2153 amendment); the block cites "docs/design/README.md:2147", PR 53's own copy (its :2147-2149) | README.md:2130-2132 "Types may define additional initialization for the `[hardened build mode](#build-modes)`. For example, this causes integers to be set to `0` when in unformed state in this mode."; safety/README.md:242 "Carbon will also have additional build modes to provide specific, narrow" capabilities, :248-250 "Release + specialized [hardening]: some users can afford significant run-time overhead in order to use additional hardening. Carbon will have several specialized build modes in this space."; :219 "The release build will include a baseline of hardening necessary to uphold the" memory-safety model; p005914:87-88 "allows, for example, zero-initialization rather than fail-stop behavior." | **DRIFT** (amended 2026-10-28, review fold: B-M3): upstream makes the extra initialization type-defined ("Types may define") and places it in a hardened mode that extends Release; the fork makes it language-mandated for every type in the Release baseline and removes the separate mode, the build-mode remapping H1.11 is; SAFE-1's own block lists it among its "departures from accepted text" | an accepted upstream memory-safety design that puts unformed-state zeroing in the Release baseline for every type | W-353, owner SAFE-1; cite corrected by H53 |
-| H1.14 | the Permissive reading of p005914:206-208 (D-SAFE-18): Permissive assumes unannotated C++ pointer parameters do not escape, a diagnostic assumption only, while T8 withholds `noalias`/`captures(none)` at every such boundary | p005914:204-210 in full: "Lastly, Carbon's safety model will make fewer assumptions about what unsafe code is allowed to do than Rust. To avoid undefined behavior, the optimization of safe code will not rely on properties that are not established locally. For example, there won't be an assumption that a call to C++ code won't save a copy of pointers to passed-in objects. When there are restrictions on what unsafe code can do, we will endeavor to make violations into [erroneous behavior]" | ALIGNED, decided against the whole passage (amended 2026-10-28, review fold: B-M3): the passage limits what the safety model may assume about unsafe code so that no undefined behavior follows, and its example is an optimization assumption; the fork's Permissive assumption licenses no optimization (T8 withholds the attributes) and restricts nothing C++ may do, whose saving a copy stays defined, so it is a diagnostic heuristic outside the passage's rule; "departure" in SAFE-1's block is SAFE-1's disclosure, not upstream's text | an upstream memory-safety design that forbids diagnostics to assume a C++ callee does not save a copy, or that makes such a save erroneous behavior (:208-209's "endeavor") | W-355 |
+| H1.13 | zero-fill promoted to the Release baseline for every type, "there is no separate hardened mode" (D-SAFE-13 I5; PR 53's README.md:2151-2153 amendment); the block cites "docs/design/README.md:2147", PR 53's own copy (its :2147-2149) | README.md:2130-2132 "Types may define additional initialization for the `[hardened build mode](#build-modes)`. For example, this causes integers to be set to `0` when in unformed state in this mode."; the section the link names, README.md:377-383, defines only "In a _debug build_" (:381) and "In a _release build_" (:382); safety/README.md:212 "There are two primary build modes:" (**Release** :214, **Debug** :216), :219 "The release build will include a baseline of hardening necessary to uphold the" memory-safety model, :242 "Carbon will also have additional build modes to provide specific, narrow" capabilities, :244-245 "an extension of either the debug or release build for that specific purpose", :248-250 "Release + specialized [hardening]: some users can afford significant run-time overhead in order to use additional hardening. Carbon will have several specialized build modes in this space."; p005914:87-88 "allows, for example, zero-initialization rather than fail-stop behavior." (amended 2026-10-28, review fold: RR1-N-1) | **DRIFT** (amended 2026-10-28, review fold: B-M3, RR1-N-1): README.md:2130's "Types may define" makes the extra initialization type-defined, and the fork mandates the zeroing for every type. Its place is D-RG-20's: the hardened build mode is the release build, the one of :381-382's two builds the link can name, so zeroing in the Release build is upstream's mode and PR 53's "there is no separate hardened mode" restates safety/README.md:212's two primary modes; only the mandate is the drift. SAFE-1's own block lists the promotion among its "departures from accepted text" | an accepted upstream memory-safety design that makes unformed-state zeroing language-defined for every type, or upstream reconciles its build-mode pages otherwise than D-RG-20 reads them (if the hardened mode becomes an extension of Release, the placement joins W-353) | W-353, owner SAFE-1, narrowed to the mandate; cite corrected by H53 |
+| H1.14 | the Permissive reading of p005914:206-208 (D-SAFE-18): Permissive assumes unannotated C++ pointer parameters do not escape, a diagnostic assumption only, while T8 withholds `noalias`/`captures(none)` at every such boundary | the nearest passage, p005914:204-210 in full: "Lastly, Carbon's safety model will make fewer assumptions about what unsafe code is allowed to do than Rust. To avoid undefined behavior, the optimization of safe code will not rely on properties that are not established locally. For example, there won't be an assumption that a call to C++ code won't save a copy of pointers to passed-in objects. When there are restrictions on what unsafe code can do, we will endeavor to make violations into [erroneous behavior]" | NONE, the nearest passage quoted in full (amended 2026-10-28, review fold: B-M3, RR1-m3): the passage limits what the safety model may assume about unsafe code so that no undefined behavior follows, and its example is an optimization assumption; the fork's Permissive assumption licenses no optimization (T8 withholds the attributes) and restricts nothing C++ may do, whose saving a copy stays defined, so it is a diagnostic heuristic on which upstream is silent (D-RG-1); "departure" in SAFE-1's block is SAFE-1's disclosure, not upstream's text | an upstream memory-safety design that forbids diagnostics to assume a C++ callee does not save a copy, or that makes such a save erroneous behavior (:208-209's "endeavor") | W-355 |
 | H1.15 | the `import Cpp` asymmetry (D-SAFE-6, A-13): `import Cpp` needs no marker | safety/README.md:122-124's future work, as H1.3; check H1.15: `git grep -c -F 'unsafe import'` over docs/design, proposals = 0 | NONE | as H1.3 | W-355 |
 
 The block's re-basing clause ("If upstream lands the dedicated memory-safety
@@ -952,9 +1029,11 @@ carries their notes, the 2026-10-26 weekly's routing).
 
 ### §2.C2 VA-2's register entries (PR 66, 43c8ab476 :3672-3676; fork/variadics/va2-plan.md §1.12)
 
-Owned by VA-2; each carries its item and its weekly next action
-(ORCHESTRATION Next actions items 8 and 9). RG-1 records the verdict VA-2's
-§1.12 states and does not amend.
+Owned by VA-2; each carries its own item, not W-355: W-217, W-230 and W-214 are
+re-read at each weekly check by ORCHESTRATION's Next actions item 9, W-338 and
+W-339 by item 8, and W-334 is scheduled with W-222 (amended 2026-10-28, review
+fold: RR1-m4). RG-1 records the verdict VA-2's §1.12 states, does not amend the
+block and adds it no note.
 
 | # | Entry | Upstream at f27a977d8 | Verdict | Break condition | Item |
 | --- | --- | --- | --- | --- | --- |
@@ -991,9 +1070,11 @@ stage refs are deleted after the pushes.
 ### §3.1 On claude/carbon-fork-0-1-rg1 (base trunk 0b999d449)
 
 **P (the plan).** Rev 1: `RG-1 plan (rev 1): the V-3a register classified at
-upstream f27a977d8`. Rev 2 (this): `RG-1 plan (rev 2): reviews A and B folded,
-25 findings`. Later revisions are new commits `RG-1 plan (rev N): <fold
-summary>` with the same path, fork/register/rg1-plan.md.
+upstream f27a977d8`. Rev 2: `RG-1 plan (rev 2): reviews A and B folded, 25
+findings`. Rev 3 (this, signed off): `RG-1 plan (rev 3): focused re-review
+folded, sign-off`. Later revisions, if a review of the implementation amends the
+plan, are new commits `RG-1 plan (rev N): <fold summary>` with the same path,
+fork/register/rg1-plan.md.
 
 **R1, the records.** Made after sign-off, committed in /home/user/carbon-rg1 and
 not pushed until step 6 of D-RG-13. Message:
@@ -1005,21 +1086,25 @@ RG-1 records: the V-3a register classified at upstream f27a977d8; W-346 to W-356
 
 Every entry of the 26 V-3a register blocks and V-3's design-fork entries is
 classified against upstream f27a977d8 and re-checked at <tip>
-(fork/register/rg1-plan.md section 2): 155 entries, 19 DRIFT, 34 ALIGNED, 102
-NONE, 10 of them blocked; 230 quotes and 89 silence checks re-read at both shas.
-F-006a's Ok/Err is a drift against README.md:3856-3860 and the choice-types
-section it links (W-346, owner EH-C, reversing the user's F-006a under the
-2026-10-21 directive, veto-able); F-009's overload fn is not one (p002875:481
-calls its spelling placeholder syntax). SAFE-1's six departures from accepted
-text are W-347 to W-351 and W-353, OP-1's comparisons' side effects W-352 (a
-code commit on PR 56 before it lands), D-SL-16's yield and D-SL-19's keying
-W-354 (at UA-3, against 05a7ecbd3's SelfDestruct); SC-1's W-139 is a drift whose
-break condition was already met when it was filed. W-355 is the register's watch
-item for every NONE and ALIGNED entry; W-356 a crash RG-1's probe found. The
-decision-log entry is placed after DR-0; trunk's eleven blocks and V-3's group
-gain their dated notes; W-342 is discharged and W-343 and W-344 narrowed;
-ORCHESTRATION gains the rg1 row, a dated paragraph and the drifts in Next
-actions. Records only.
+(fork/register/rg1-plan.md section 2): 155 entries, 19 DRIFT, 33 ALIGNED, 103
+NONE, 10 of them blocked; 260 quotes and 89 silence checks re-read at both
+shas by fork/register/check_quotes.sh and check_greps.sh over
+fork/register/rg1-quotes.tsv and rg1-checks.tsv, committed here for the weekly
+check. F-006a's Ok/Err is a drift against README.md:3856-3860 and the
+choice-types section it links (W-346, owner EH-C, reversing the user's F-006a
+under the 2026-10-21 directive, veto-able); F-009's overload fn is not one
+(p002875:481 calls its spelling placeholder syntax). SAFE-1's six departures
+from accepted text are W-347 to W-351 and W-353 (the zero-fill's mandate for
+every type, upstream's hardened build read as the release build, D-RG-20),
+OP-1's comparisons' side effects W-352 (a code commit on PR 56 before it
+lands), D-SL-16's yield and D-SL-19's keying W-354 (at UA-3, against
+05a7ecbd3's SelfDestruct); SC-1's W-139 is a drift whose break condition was
+already met when it was filed. W-355 is the register's watch item for every
+NONE and ALIGNED entry outside VA-2's six, which carry VA-2's items; W-356 a
+crash RG-1's probe found. The decision-log entry is placed after DR-0; trunk's
+eleven blocks and V-3's group gain their dated notes; W-342 is discharged and
+W-343 and W-344 narrowed; ORCHESTRATION gains the rg1 row, a dated paragraph
+and the drifts in Next actions. Records and the register's check scripts only.
 ```
 
 <!-- google-doc-style-resume -->
@@ -1032,10 +1117,14 @@ Paths: fork/decision-log.md (the entry of Appendix A.1 inserted after trunk
 inserted bottom up), fork/inventory/work-items.json (A.5's eleven items appended
 after W-344 in id order, A.6's edits of W-342, W-343 and W-344, and A.6's
 sentence appended to the top-level `source`), fork/ORCHESTRATION.md (A.8)
-(amended 2026-10-28, review fold: B-m2). fork/gap-analysis.md is not changed: no
-row's status changes, and the one row text that names the drifting spelling,
-row 68's example `case .Ok(v: i32)` (fork/gap-analysis.md:68 at 0b999d449), is
-rewritten by W-346's realignment when it lands, not by RG-1.
+(amended 2026-10-28, review fold: B-m2), and the four files of section 4.2,
+fork/register/rg1-quotes.tsv, fork/register/rg1-checks.tsv,
+fork/register/check_quotes.sh and fork/register/check_greps.sh, the scripts with
+mode 100755, copied from the rev 3 sources section 4.2 names after
+`sha256sum -c` (amended 2026-10-28, review fold: RR1-N-2). fork/gap-analysis.md
+is not changed: no row's status changes, and the one row text that names the
+drifting spelling, row 68's example `case .Ok(v: i32)` (fork/gap-analysis.md:68
+at 0b999d449), is rewritten by W-346's realignment when it lands, not by RG-1.
 
 **R2, the stamp.** Made after the pushes of step 6. Message:
 
@@ -1083,13 +1172,16 @@ commit. Staged in this order (D-RG-13 step 2), merged at step 5, pushed at step
 
 H64 is made on 4a3220c11 itself and H64m after it (rev 1 had them the other
 way), so that H64's line is the head's own :8342 and the merge comes last, after
-the reviews (amended 2026-10-28, review fold: B-m2). PR 54, PR 58, PR 59, PR 62,
-PR 63, PR 65, PR 66 and PR 51 gain no RG-1 commit: their blocks have no drift
-and no stale cite, or none at all, and their notes are land-time notes
-(D-RG-11). The realignment commits are not RG-1's: SAFE-1's on PR 53, SC-1's on
-PR 60 and OP-1's on PR 56 (merged into PR 57) are their owners' new commits
-under their own reviews, made after RG-1's pushes and before each PR lands
-(section 5).
+the reviews (amended 2026-10-28, review fold: B-m2). Eight PRs gain no RG-1
+commit (amended 2026-10-28, review fold: RR1-m2): PR 54's, PR 58's and PR 59's
+blocks have no drift and no stale cite; PR 62 has no block; PR 63's and PR 65's
+(C1) and PR 66's (C2) are DR-1's and VA-2's, whose own items and records carry
+them; and PR 51's carries a drift, H12.1, whose mechanism is trunk's code, which
+W-354 removes at UA-3 (D-RG-8). The notes of PR 51, PR 54, PR 57's OP-2 block,
+PR 58 and PR 59 are land-time notes (D-RG-11). The realignment commits are not
+RG-1's: SAFE-1's on PR 53, SC-1's on PR 60 and OP-1's on PR 56 (merged into
+PR 57) are their owners' new commits under their own reviews, made after RG-1's
+pushes and before each PR lands (section 5).
 
 ### §3.3 The description refreshes
 
@@ -1130,25 +1222,61 @@ records state. The R31 diff check of the rulebook (`^\+\s*#{1,6}
 [0-9]|^\+#[0-9]`) is run on every diff. JSON: `python3 -I -c 'import json;
 json.load(open("fork/inventory/work-items.json"))'` before each commit that
 touches the ledger, and a check that every id from W-346 to W-356 occurs once.
-The held commits run prek in their scratch worktrees on their own paths.
+The held commits run prek in their scratch worktrees on their own paths. R1's
+four files under fork/register/ run through the same prek command; measured at
+rev 3 on their rev 3 sources in a scratch worktree, every hook passes and prek
+changes nothing, and check-copyright passes only with the "#" license header
+each file opens with (amended 2026-10-28, review fold: RR1-N-2). `git add` names
+each by path, the two scripts with mode 100755.
 
 ### §4.2 Every quote and every silence re-read at the tip
 
-Two tables in
-/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/rg1/fixer/
-(the implementer copies both into its own scratch): quotes_rev2.tsv, the 230
-quoted lines of section 2 (path, line, verbatim substring; rev 1's 140 and 90
-added at rev 2), and checks.tsv, the 89 silence checks section 2's rows name
-(amended 2026-10-28, review fold: B-B1, B-m7). The quote checker:
+R1 commits the two tables and the two scripts under fork/register/, so that a
+weekly check after this session runs them from the tree (amended 2026-10-28,
+review fold: RR1-N-2): fork/register/rg1-quotes.tsv holds the 260 quoted lines
+of section 2 and D-RG-20 (path, line at the tip, verbatim substring: rev 1's
+140, rev 2's 90 and rev 3's 30 for D-RG-20; amended 2026-10-28, review fold:
+B-B1, B-m7, RR1-N-1), fork/register/rg1-checks.tsv holds the 89 silence checks
+section 2's rows name, and fork/register/check_quotes.sh and
+fork/register/check_greps.sh are the checkers below. Each file opens with the
+project's license header as "#" comment lines, which check-copyright requires
+(section 4.1), and both scripts skip lines that start with "#". Their rev 3
+sources, which R1 copies after `sha256sum -c` of these sums, are in
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/rg1/fixer1/out/:
+
+<!-- google-doc-style-ignore -->
+
+```text
+4843640bcb73af6369b81c304eebd675fc926ff54b5b58a55976aadb9ba52912  rg1-quotes.tsv
+c285acdf451048395a6f96cc91cfdb2f46f5b54b2e03c993d12b25935571a117  rg1-checks.tsv
+a354640dddb0f61eaaa963627cbc21f0db7e56d5c0135697edcd481822c3d585  check_quotes.sh
+5ddbff38e3640ff7f29cb8a9bd4291d47eb1ad4129eab182110f064e3a23af0b  check_greps.sh
+```
+
+<!-- google-doc-style-resume -->
+
+If that directory is gone, R1 rebuilds the two tables from section 2 (each
+quoted line and each check its rows name) and the two scripts from the text
+below, and the reviews of D-RG-13 step 3 compare them with section 2. The quote
+checker, fork/register/check_quotes.sh:
 
 <!-- google-doc-style-ignore -->
 
 ```sh
 #!/bin/bash
-# check_quotes.sh <repo> <tip-sha> <quotes.tsv>: prints FAIL rows, exits 1 on any.
+#
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# check_quotes.sh <repo> <tip-sha> <quotes.tsv>: re-reads at <tip-sha> each
+# upstream line that RG-1's register classification quotes
+# (fork/register/rg1-plan.md section 4.2); prints a FAIL row for each quote no
+# longer on its line and exits 1 on any. A row is
+# path<TAB>line<TAB>verbatim substring; lines starting with "#" are comments.
 repo=$1; tip=$2; tsv=$3; n=0; bad=0
 while IFS=$'\t' read -r path line sub; do
-  [ -z "$path" ] && continue
+  case $path in '' | '#'*) continue ;; esac
   n=$((n+1))
   if ! git -C "$repo" show "$tip:$path" | sed -n "${line}p" | grep -qF -- "$sub"; then
     echo "FAIL $path:$line: $sub"; bad=$((bad+1))
@@ -1160,28 +1288,44 @@ echo "checked $n quotes, $bad failed"
 
 <!-- google-doc-style-resume -->
 
-The silence checker (bin/check_greps.sh in the same directory):
+The silence checker, fork/register/check_greps.sh:
 
 <!-- google-doc-style-ignore -->
 
 ```sh
 #!/bin/bash
-# check_greps.sh <repo> <tip-sha> <checks.tsv>: re-runs each silence check; prints FAIL rows, exits 1 on any.
-# Row: id<TAB>kind<TAB>flags<TAB>pattern<TAB>paths<TAB>expected.
+#
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# check_greps.sh <repo> <tip-sha> <checks.tsv> [<cut-sha>]: re-runs at
+# <tip-sha> each silence check of RG-1's register classification
+# (fork/register/rg1-plan.md section 4.2); prints a FAIL row for each count
+# that moved and exits 1 on any. <cut-sha> defaults to c1e83b0b7, the fork's
+# cut; after an advance, pass the advance's base. Lines starting with "#" are
+# comments. A row is id<TAB>kind<TAB>flags<TAB>pattern<TAB>paths<TAB>expected:
 #   G: sum of `git grep -c <flags> -e <pattern> <tip> -- <paths>`.
-#   L: `git log --oneline c1e83b0b7..<tip> -- <paths> | wc -l` (upstream commits since the cut).
-#   T: `git ls-tree --name-only <tip> <paths>/ | wc -l` (entries of an upstream directory).
-repo=$1; tip=$2; tsv=$3; n=0; bad=0
-# Empty flags or pattern are written "-" so that tab-separated read keeps every column.
+#   L: `git log --oneline <cut>..<tip> -- <paths> | wc -l` (upstream commits
+#      since the cut to a file a merge rule watches).
+#   T: `git ls-tree --name-only <tip> <paths>/ | wc -l` (entries of an
+#      upstream directory).
+# Empty flags or pattern are written "-" so that a tab-separated read keeps
+# every column.
+repo=$1; tip=$2; tsv=$3; cut=${4:-c1e83b0b7}; n=0; bad=0
 while IFS=$'\t' read -r id kind flags pat paths want; do
-  [ -z "$id" ] && continue
+  case $id in '' | '#'*) continue ;; esac
   n=$((n+1)); [ "$flags" = "-" ] && flags=""
   case $kind in
-    G) got=$(git -C "$repo" grep -c $flags -e "$pat" "$tip" -- $paths 2>/dev/null | awk -F: '{s+=$NF} END {print s+0}') ;;
-    L) got=$(git -C "$repo" log --oneline "c1e83b0b7..$tip" -- $paths | wc -l) ;;
+    G) got=$(git -C "$repo" grep -c $flags -e "$pat" "$tip" -- $paths 2>/dev/null |
+         awk -F: '{s+=$NF} END {print s+0}') ;;
+    L) got=$(git -C "$repo" log --oneline "$cut..$tip" -- $paths | wc -l) ;;
     T) got=$(git -C "$repo" ls-tree --name-only "$tip" "$paths/" | wc -l) ;;
+    *) got="unknown kind" ;;
   esac
-  if [ "$got" != "$want" ]; then echo "FAIL $id ($kind) got $got want $want: $pat $paths"; bad=$((bad+1)); fi
+  if [ "$got" != "$want" ]; then
+    echo "FAIL $id ($kind) got $got want $want: $pat $paths"; bad=$((bad+1))
+  fi
 done < "$tsv"
 echo "checked $n silence checks, $bad failed"
 [ "$bad" -eq 0 ]
@@ -1189,16 +1333,23 @@ echo "checked $n silence checks, $bad failed"
 
 <!-- google-doc-style-resume -->
 
-Run as `check_quotes.sh /home/user/carbon-lang <sha> quotes_rev2.tsv` and
-`check_greps.sh /home/user/carbon-lang <sha> checks.tsv`. At rev 2 both pass at
-f27a977d8 and at e6fddcf97: "checked 230 quotes, 0 failed" and "checked 89
-silence checks, 0 failed". The implementer re-runs both before R1 and before
-R2; a FAIL means upstream moved, and the entry is re-read at the new tip before
-any record is written (section 6, R-1). An L check counts commits since the cut
-and so grows when upstream edits a merge-rule file; that FAIL is the merge
-rule's own signal, re-read, and the expected count updated in the plan. Each
-trunk note of A.3 names the checks of its block's NONE rows by row, and W-355's
-owner runs both scripts at each weekly check (D-RG-17).
+Run from the repository root as `fork/register/check_quotes.sh
+/home/user/carbon-lang <sha> fork/register/rg1-quotes.tsv` and
+`fork/register/check_greps.sh /home/user/carbon-lang <sha>
+fork/register/rg1-checks.tsv` (before R1, on the scratch copies). At rev 2 the
+rev 2 tables passed at f27a977d8 and at e6fddcf97 ("checked 230 quotes, 0
+failed"; "checked 89 silence checks, 0 failed"); at rev 3 the rev 3 files pass
+at both shas: "checked 260 quotes, 0 failed" and "checked 89 silence checks, 0
+failed". The implementer re-runs both before R1 and before R2; a FAIL means
+upstream moved, and the entry is re-read at the new tip before any record is
+written (section 6, R-1). An L check counts upstream commits since the cut and
+so grows when upstream edits a merge-rule file; that FAIL is the merge rule's
+own signal, re-read, and the expected count is updated in rg1-checks.tsv by a
+records commit. After UA-3 moves the cut, W-355's owner passes the advance's
+base as check_greps.sh's fourth argument and updates the L rows with the
+advance's records. Each trunk note of A.3 names the checks of its block's NONE
+rows by row of fork/register/rg1-checks.tsv, and W-355's owner runs both scripts
+at each weekly check (D-RG-17).
 
 ### §4.3 Every cite into the log
 
@@ -1487,6 +1638,13 @@ Each risk is falsifiable by the check named.
     the stage ref is made before the worktree is removed (section 3), and a
     lost commit is re-made from Appendix A by a fresh read (amended 2026-10-28,
     review fold: B-M5).
+-   **R-10: D-RG-20 maps upstream's build modes wrongly.** Falsifier: an
+    upstream page or accepted proposal at the tip that names the hardened build
+    an extension of Release, or the performance build the release build; the
+    weekly quote check reports a change to any line D-RG-20 quotes. Response:
+    D-RG-20's break condition: W-353 widens to the zeroing's placement, W-350's
+    target moves, and SAFE-1's re-derivation follows the reconciled text
+    (amended 2026-10-28, review fold: RR1-N-1).
 -   **Rejected: reordering PR 53 later in the land sequence** so that SAFE-1's
     re-derivation does not hold the other PRs (amended 2026-10-28, review fold:
     A-M5). Cost: SC-1's W-144 collides with SAFE-1's W-144 and renumbers to
@@ -1503,15 +1661,28 @@ Each risk is falsifiable by the check named.
     own decision, page and break condition; one item would hide which ones are
     realigned.
 -   **Rejected: notes on every held block now.** Five more held commits and
-    description refreshes for blocks with no drift and no stale cite, against
-    R32 (e)'s purpose; D-RG-11 schedules their notes with their land-time
-    records instead.
+    description refreshes, for four blocks with no drift and no stale cite and
+    for PR 51's, whose drift is trunk's code (D-RG-8; amended 2026-10-28,
+    review fold: RR1-m2), against R32 (e)'s purpose; D-RG-11 schedules their
+    notes with their land-time records instead.
 -   **Rejected: one watch item per block instead of W-355.** One more id per
-    block (23 blocks and V-3's group) for the same weekly action; W-355's
+    block (22 blocks and V-3's group; amended 2026-10-28, review fold: RR1-m4)
+    for the same weekly action; W-355's
     evidence names the blocks it covers (A.5).
 -   **Rejected: placing the RG-1 entry beside the weekly checks.** The weekly
     entries are a dated series; RG-1 executes V-3b and DR-0's register, which
     sit at the top (D-RG-14).
+-   **Rejected: marking H1.13's mode placement "blocked on upstream's own
+    conflict"**, as C1.1 is. C1.1's conflict is two upstream texts about one
+    mechanism, `Match.Continuation`'s phase, which no reading of the fork's can
+    settle; the build-mode texts are two vocabularies for one set of modes,
+    which R29 lets RG-1 map with a break condition (D-RG-20), and a blocked
+    mark would leave W-353's realignment target unnamed while PR 53, first in
+    the land sequence, waits on it (amended 2026-10-28, review fold: RR1-N-1).
+-   **Rejected: the tables embedded in an appendix** instead of committed
+    files. The weekly owner runs the scripts on files, so an appendix copy
+    would be extracted again at every check, and the plan would carry 349
+    tab-separated rows (amended 2026-10-28, review fold: RR1-N-2).
 
 ## §7 Residues
 
@@ -1536,7 +1707,10 @@ A-M2, A-m3). H5.4 is no longer a residue: W-352 is realigned on PR 56 (D-RG-10).
 C2.2 is not a residue (it is scheduled with W-222). W-354 is not a residue
 either: it waits on no upstream decision, only on the advance that brings
 05a7ecbd3 (D-RG-16). No other entry waits: every other DRIFT is scheduled
-(section 5), and every NONE and ALIGNED carries its break condition and W-355.
+(section 5), H1.11's and H1.13's reading of upstream's build modes is D-RG-20's
+R29 decision, whose break condition the weekly quote check re-reads, and every
+NONE and ALIGNED carries its break condition and W-355, or, in VA-2's block,
+VA-2's own item (amended 2026-10-28, review fold: RR1-N-1, RR1-m4).
 
 ## Appendix A: records texts
 
@@ -1576,26 +1750,30 @@ upstream's text for each of the 155 entries in 26 blocks and V-3's design-fork
 group: on trunk DR-0's block, the eleven blocks that predate it and the
 design-fork entries F-006a, F-007 and F-009 that V-3 registered and UA-1's
 review names; on the held heads fourteen blocks, PR 51's UA-2 register re-read
-among them. Its section 4.2 re-reads the 230 quoted lines and re-runs 89
-silence checks, one for each NONE row whose upstream silence is shown by a
-grep, a log count or a directory listing at the tip. An entry is a DRIFT when
-upstream has designed its mechanism and the fork spells it otherwise (R32 (d)),
-ALIGNED when the fork's spelling or rule is upstream's, and NONE when upstream
-is silent. Upstream has designed a mechanism when text at the tip shows it with
-a spelling, is about it, and does not call the spelling placeholder or
+among them. The scripts committed with this entry re-read the 260 quoted lines
+of fork/register/rg1-quotes.tsv (fork/register/check_quotes.sh) and re-run the
+89 silence checks of fork/register/rg1-checks.tsv
+(fork/register/check_greps.sh), one for each NONE row whose upstream silence is
+shown by a grep, a log count or a directory listing at the tip. An entry is a
+DRIFT when upstream has designed its mechanism and the fork spells it otherwise
+(R32 (d)), ALIGNED when the fork's spelling or rule is upstream's, and NONE when
+upstream is silent. Upstream has designed a mechanism when text at the tip shows
+it with a spelling, is about it, and does not call the spelling placeholder or
 provisional (D-RG-2). Toolchain-internal surfaces are NONE, their merge rules
 their break conditions, unless that condition has already fired (D-RG-3); a
 partial implementation whose gap carries an item is ALIGNED (D-RG-4). The
-decisions D-RG-1 to D-RG-19 are auto-adopted under R29(a), each with its break
+decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each with its break
 condition in the plan's section 1.
 
-_The count._ 19 DRIFT, 34 ALIGNED and 102 NONE; 10 entries, three DRIFTs among
+_The count._ 19 DRIFT, 33 ALIGNED and 103 NONE; 10 entries, three DRIFTs among
 them, wait on an upstream decision or on an item blocked by one (the plan's
 section 7). Eight DRIFT entries were filed before RG-1 (W-109 twice, W-320 with
-W-324, W-321, W-322, W-326 twice, and SC-1's W-139); eleven are carried by
-items filed now: W-346, W-347 to W-351, W-352, W-353 and W-354 (three entries).
-Every NONE and ALIGNED entry carries W-355, the register's watch item, re-read
-at each weekly upstream check (D-RG-17), so the register stays a work queue.
+W-324, W-321, W-322, W-326 twice, and SC-1's W-139); eleven are carried by items
+filed now: W-346, W-347 to W-351, W-352, W-353 and W-354 (three entries). Every
+NONE and ALIGNED entry outside VA-2's block carries W-355, the register's watch
+item, re-read at each weekly upstream check (D-RG-17); VA-2's six carry VA-2's
+own items, re-read weekly by ORCHESTRATION's Next actions items 8 and 9 or
+scheduled with W-222, so the register stays a work queue.
 
 _The two R29 decisions._ F-006a's `Ok`/`Err` is a DRIFT (D-RG-5). Upstream's
 README, in its "Error handling" section, names `Result` as Carbon's error
@@ -1640,13 +1818,20 @@ Strict narrowed by D-SAFE-17 (W-348), p005434:831-832's "immutable" narrowed to
 "not invalidated" by D-SAFE-11(d) (W-349), arithmetic.md:156-158's
 performance-build row withdrawn by D-SAFE-15 (W-350), safety/README.md:260-262's
 benchmarking disable withdrawn by D-SAFE-14 (W-351), and README.md:2130-2132's
-type-defined initialization "for the hardened build mode" promoted by D-SAFE-13
-to the Release baseline for every type with no separate hardened mode, where
-safety/README.md:248-250 plans specialized hardened modes extending Release
-(W-353); each is realigned by SAFE-1 by a new commit on PR 53's branch before it
-lands (R32 (e)), and PR 53 lands first. PR 60: D-SC-6's definition-time
-rejection of a checked-generic argument to a template parameter, where
-generics/overview.md:375-379 records "We have decided to support passing a
+"Types may define additional initialization for the hardened build mode" made by
+D-SAFE-13 I5 a zero-fill of every type (W-353). Upstream's pages name three
+builds in some places (development, performance and hardened: README.md:476-484,
+arithmetic.md:154-165) and two primary modes in others (README.md:377-383, the
+section README.md:2131 links, and safety/README.md:207-217); RG-1 reads the
+hardened build as the release build and the performance build as the release
+build with its default hardening disabled, the unsupported benchmarking build of
+safety/README.md:260-262 (D-RG-20, R29; break condition: upstream reconciles
+those pages), so the zeroing's place in the Release build is upstream's and only
+its mandate for every type is the drift, and W-350 restores the performance row
+as the benchmarking build's. The six are realigned by SAFE-1 by a new commit on
+PR 53's branch before it lands (R32 (e)), and PR 53 lands first. PR 60: D-SC-6's
+definition-time rejection of a checked-generic argument to a template parameter,
+where generics/overview.md:375-379 records "We have decided to support passing a
 symbolic constant to a template parameter" (leads issue 2153) and
 appendix-witness.md:151-154 that the approach "relies on monomorphization":
 W-139's break condition was already met when it was filed, upstream's text
@@ -1655,22 +1840,23 @@ comparisons run `T.Copy` and `T.Destroy`, against comparison_operators.md
 :315-316 and :433-434's "should have no observable side-effects" (W-352, owner
 OP-1, a code commit on PR 56 before it lands, comparing in place, a route a
 read-only probe showed checks without a `Copy` or a `SelfDestruct` call). Not
-drifts: the Permissive reading of p005914:204-210 (ALIGNED: the passage limits
-what the safety model may assume so that no undefined behavior follows, and no
-fork optimization relies on the diagnostic assumption), the restored `addr self:
-Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter destruction (ALIGNED
-with upstream's TODO at check/custom_witness.cpp:466-467), the guard parentheses
-DD-1 documents (ALIGNED with upstream's own parser, parse/handle_match.cpp:169
-and :176), `Core.Buf` (ALIGNED with README.md:885-886), VA-1's `each` keyword
-and `(... x)` tuple (ALIGNED with variadics.md:47-48, :92 and :137-139),
-`template constraint` (ALIGNED with generics/details.md:1072-1073 and :5494),
-TP-1's `array` arm (ALIGNED with README.md:872-874's `array(T, N)` shorthand for
-the prelude's `Core.Array`), CM-1's Core-object helper (ALIGNED with
-p006333:193-198, its gap W-003), EH-B's `noexcept` fence (ALIGNED with
-interoperability/philosophy_and_goals.md:408-410) and `Core.StringBuf` (NONE:
-README.md calls its string types "provisional", :622; the view keeps upstream's
-prelude spelling `Core.String` until sem_ir/type_info.h:382's "TODO: Rename
-`Core.String` to `Core.Str`." lands).
+drifts: the Permissive reading of p005914:204-210 (NONE: the passage, the
+nearest upstream text, limits what the safety model may assume so that no
+undefined behavior follows, no fork optimization relies on the diagnostic
+assumption, and upstream says nothing of diagnostic assumptions), the restored
+`addr self: Self*` (ALIGNED with p005434:1226-1236), OP-2's adapter destruction
+(ALIGNED with upstream's TODO at check/custom_witness.cpp:466-467), the guard
+parentheses DD-1 documents (ALIGNED with upstream's own parser,
+parse/handle_match.cpp:169 and :176), `Core.Buf` (ALIGNED with
+README.md:885-886), VA-1's `each` keyword and `(... x)` tuple (ALIGNED with
+variadics.md:47-48, :92 and :137-139), `template constraint` (ALIGNED with
+generics/details.md:1072-1073 and :5494), TP-1's `array` arm (ALIGNED with
+README.md:872-874's `array(T, N)` shorthand for the prelude's `Core.Array`),
+CM-1's Core-object helper (ALIGNED with p006333:193-198, its gap W-003), EH-B's
+`noexcept` fence (ALIGNED with interoperability/philosophy_and_goals.md:408-410)
+and `Core.StringBuf` (NONE: README.md calls its string types "provisional",
+:622; the view keeps upstream's prelude spelling `Core.String` until
+sem_ir/type_info.h:382's "TODO: Rename `Core.String` to `Core.Str`." lands).
 
 _Per block_ (lines at trunk 0b999d449 or at the held head; D, A and N are the
 DRIFT, ALIGNED and NONE counts):
@@ -1690,7 +1876,7 @@ DRIFT, ALIGNED and NONE counts):
 | EH-B (with UA-1's `noexcept` fence) | :5596-5617, :6606-6607 | 0 / 1 / 3 | W-355 |
 | EH-A | :5961-5971 | 0 / 2 / 2 | W-346 (the alternatives); W-355 |
 | UA-1's watch list | :6768-6782 | 0 / 0 / 7 | W-355 |
-| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 4 / 5 | W-347 to W-351, W-353; W-355 |
+| SAFE-1, PR 53 adaae4e35 | :3920-3938 | 6 / 3 / 6 | W-347 to W-351, W-353; W-355 |
 | CM-1, PR 52 ea573f672 | :3119-3133 | 0 / 2 / 5 | W-003, W-132, W-129; W-355 |
 | EV-1, PR 54 cb3ef2e74 | :3538-3549 | 0 / 0 / 3 | W-355 |
 | ST-1, PR 55 21307851a | :3503-3516 | 0 / 0 / 6 | W-355 |
@@ -1707,20 +1893,20 @@ DRIFT, ALIGNED and NONE counts):
 
 _Records corrected on the held branches._ Cites of a fork copy or a stale count:
 PR 53's "docs/design/README.md:2147" (its own copy; upstream's text is at
-:2130-2132) and "arithmetic.md:155-158" (upstream :156-158); PR 52's
-"thirteen `cmake` mentions are Bazel-internal" (measured on the fork's tree;
-upstream's thirteen files include docs/project/milestones.md, whose :230-231
-names "Build system integration for CMake" as a 0.1 deliverable); PR 55's
-"README.md:629" (the fork's copy; upstream :627); PR 56's "p002188:488-489" and
+:2130-2132) and "arithmetic.md:155-158" (upstream :156-158); PR 52's "thirteen
+`cmake` mentions are Bazel-internal" (measured on the fork's tree; upstream's
+thirteen files include docs/project/milestones.md, whose :230-231 names "Build
+system integration for CMake" as a 0.1 deliverable); PR 55's "README.md:629"
+(the fork's copy; upstream :627); PR 56's "p002188:488-489" and
 "pattern_matching.md:527-528" (upstream :489-490 and :526-527, the latter cite
 PR 56's own copy); PR 61's "lower/handle.cpp:524" (its own copy; upstream
 :384-390); PR 64's "the nine of plan §0.10" (ten: the tenth was added at the
 plan's rev 4); PR 60's template_constraints.md, which calls issue 2153
 "upstream's open question", gains a dated note. Each is a new commit on its
 branch (R32 (e)); PR 57 and PR 64 merge their base PR's commit. The blocks
-without a drift or a stale cite (PR 51's, PR 54's, PR 57's OP-2, PR 58's, PR
-59's) gain their notes with their PRs' land-time records, scheduled in
-ORCHESTRATION (D-RG-11).
+without a drift or a stale cite (PR 54's, PR 57's OP-2, PR 58's and PR 59's) and
+PR 51's, whose drift is trunk's code (D-RG-8), gain their notes with their PRs'
+land-time records, scheduled in ORCHESTRATION (D-RG-11).
 
 _Also filed._ W-355, the register watch item (D-RG-17), and W-356: the probe
 that tested OP-1's routes stops trunk's toolchain at
@@ -1764,170 +1950,169 @@ order: T12 (:6782), T2 (:6654), T11 (:5971), T10 (:5617), T9 (:5484), T8
 (amended 2026-10-28, review fold: B-m2). The common lead is "_RG-1 (classified
 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry "RG-1: the V-3a
 register classified at f27a977d8 (2026-10-27)" has the quotes, and the checks
-named are rows of fork/register/rg1-plan.md section 4.2):_". Each note names the
-silence check of every NONE it records, by row, with the grep and its result,
-and W-355 for every NONE and ALIGNED (amended 2026-10-28, review fold: B-B1,
-B-M2).
+named are rows of fork/register/rg1-checks.tsv):_". Each note names the silence
+check of every NONE it records, by row, with the grep and its result, and W-355
+for every NONE and ALIGNED (amended 2026-10-28, review fold: B-B1, B-M2,
+RR1-N-2, RR1-m5).
 
 <!-- google-doc-style-ignore -->
 
 ```text
 [T12, a new paragraph after :6782]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-27)" has the
-quotes, and the checks named are rows of fork/register/rg1-plan.md
-section 4.2):_ the seven items (classified 2026-10-27, RG-1: NONE, W-355; fork code
-inside upstream functions with no upstream design): upstream's toolchain has no
-`is_union` in check/merge.cpp (check T12.1), no `TryMergeOverloadDecl` (T12.2),
-no `is_choice` in check/custom_witness.cpp (T12.3), no `return_type_id` in
-check/function.h (T12.4), no `BeginConditionalExprOperand` or
-`EndConditionalExprOperand` (T12.5) and no `function.generic_id.has_value()`
-in check/cpp/type_mapping.cpp (T12.6), each `git grep -c` 0 at the tip; and
-upstream still asserts `CARBON_CHECK(!src_clang_decl->isTemplateDecl(), "can't
-form a pointer to a template")` (check/cpp/export.cpp:1902-1903) where the
-fork's guard diagnoses (T12.7). 05a7ecbd3 rewrote check/custom_witness.cpp, the
-`is_choice` clauses' file, which is UA-3's merge rule, not a design.
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: the V-3a register classified at f27a977d8 (2026-10-27)" has the quotes,
+and the checks named are rows of fork/register/rg1-checks.tsv):_ the seven items
+(classified 2026-10-27, RG-1: NONE, W-355; fork code inside upstream functions
+with no upstream design): upstream's toolchain has no `is_union` in
+check/merge.cpp (check T12.1), no `TryMergeOverloadDecl` (T12.2), no `is_choice`
+in check/custom_witness.cpp (T12.3), no `return_type_id` in check/function.h
+(T12.4), no `BeginConditionalExprOperand` or `EndConditionalExprOperand` (T12.5)
+and no `function.generic_id.has_value()` in check/cpp/type_mapping.cpp (T12.6),
+each `git grep -c` 0 at the tip; and upstream still asserts
+`CARBON_CHECK(!src_clang_decl->isTemplateDecl(), "can't form a pointer to a
+template")` (check/cpp/export.cpp:1902-1903) where the fork's guard diagnoses
+(T12.7). 05a7ecbd3 rewrote check/custom_witness.cpp, the `is_choice` clauses'
+file, which is UA-3's merge rule, not a design.
 
 [T2, a new paragraph after UA-1's review, after :6654]
 _RG-1 on the design-fork entries (classified 2026-10-27, upstream f27a977d8,
 re-checked at <tip>; the entry "RG-1: the V-3a register classified at f27a977d8
 (2026-10-27)" has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ F-006a's `Ok`/`Err` (classified
-2026-10-27, RG-1: DRIFT, W-346, reversing the user's F-006a under the
-2026-10-21 directive, veto-able; README.md:3856-3860 names `Result` as the
-choice that represents errors and links the choice-types section, whose
-`IntResult` spells `Success(value: i32)` and `Failure(error: String)`
-(:2175-2177), as :3164-3166 spells `Result`'s `Success(value: T)` and
-`Failure(error: Error)`); F-007's `union` keyword, class-shaped declaration and
-byte-reinterpretation reads (classified 2026-10-27, RG-1: NONE, W-355;
-p000157:239 proposes "A typed `union` facility", upstream's lexer has no
-`union` token (check T2.2: 0), its toolchain no union class (T2.3: 0), and its
-only untagged-union text is sum_types.md:94's "layout will presumably involve
-untagged unions or some other low-level storage" primitive (T2.4: 1)); F-009's
-closed sets and first match (classified 2026-10-27, RG-1: ALIGNED, W-355;
-static_open_extension.md:52-54 and pattern_matching.md:696-697); F-009's marker
-`overload fn` (classified 2026-10-27, RG-1: NONE, W-355; p002875:481 "using
-placeholder syntax", pattern_matching.md:696).
+fork/register/rg1-checks.tsv):_ F-006a's `Ok`/`Err` (classified 2026-10-27,
+RG-1: DRIFT, W-346, reversing the user's F-006a under the 2026-10-21 directive,
+veto-able; README.md:3856-3860 names `Result` as the choice that represents
+errors and links the choice-types section, whose `IntResult` spells
+`Success(value: i32)` and `Failure(error: String)` (:2175-2177), as :3164-3166
+spells `Result`'s `Success(value: T)` and `Failure(error: Error)`); F-007's
+`union` keyword, class-shaped declaration and byte-reinterpretation reads
+(classified 2026-10-27, RG-1: NONE, W-355; p000157:239 proposes "A typed `union`
+facility", upstream's lexer has no `union` token (check T2.2: 0), its toolchain
+no union class (T2.3: 0), and its only untagged-union text is sum_types.md:94's
+"layout will presumably involve untagged unions or some other low-level storage"
+primitive (T2.4: 1)); F-009's closed sets and first match (classified
+2026-10-27, RG-1: ALIGNED, W-355; static_open_extension.md:52-54 and
+pattern_matching.md:696-697); F-009's marker `overload fn` (classified
+2026-10-27, RG-1: NONE, W-355; p002875:481 "using placeholder syntax",
+pattern_matching.md:696).
 
 [T11, after :5971]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ (i) `Core.Result` as a choice
-(classified 2026-10-27, RG-1: ALIGNED, W-355; README.md:3859-3860 "errors are
-represented using `[choice types](#choice-types)` like `Result`"; its
-alternatives are W-346's), the library name (classified 2026-10-27, RG-1: NONE,
-W-355; `git grep -c -F prelude/types/result` over upstream core and toolchain
-is 0, check T11.2), the success-first order (classified 2026-10-27, RG-1:
-ALIGNED, W-355; README.md:3165-3166); (ii) the `()` payload (classified
-2026-10-27, RG-1: NONE, W-355; upstream has no payload allowlist,
-`IsInSliceChoicePayloadType` 0, check T11.4).
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ (i) `Core.Result` as a choice (classified
+2026-10-27, RG-1: ALIGNED, W-355; README.md:3859-3860 "errors are represented
+using `[choice types](#choice-types)` like `Result`"; its alternatives are
+W-346's), the library name (classified 2026-10-27, RG-1: NONE, W-355; `git grep
+-c -F prelude/types/result` over upstream core and toolchain is 0, check T11.2),
+the success-first order (classified 2026-10-27, RG-1: ALIGNED, W-355;
+README.md:3165-3166); (ii) the `()` payload (classified 2026-10-27, RG-1: NONE,
+W-355; upstream has no payload allowlist, `IsInSliceChoicePayloadType` 0, check
+T11.4).
 
 [T10, after :5617]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ (i), (ii) and (iii) (classified
-2026-10-27, RG-1: NONE, W-355; upstream designs no exception mapping:
-`carbon/expected.h` and `primary_` 0 in upstream toolchain/install and core
-(check T10.1), `std::expected` 0 in docs/design and proposals (T10.2),
-`carbon_catching_thunk` 0 in toolchain (T10.3);
-interoperability/philosophy_and_goals.md:405-410 allows that "translating C++
-exceptions to or from Carbon errors might require annotations or bridge
-code"); the `noexcept` fence UA-1's review counts (classified 2026-10-27,
-RG-1: ALIGNED, W-355; the same page's :408-410 "the program might terminate").
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ (i), (ii) and (iii) (classified 2026-10-27,
+RG-1: NONE, W-355; upstream designs no exception mapping: `carbon/expected.h`
+and `primary_` 0 in upstream toolchain/install and core (check T10.1),
+`std::expected` 0 in docs/design and proposals (T10.2), `carbon_catching_thunk`
+0 in toolchain (T10.3); interoperability/philosophy_and_goals.md:405-410 allows
+that "translating C++ exceptions to or from Carbon errors might require
+annotations or bridge code"); the `noexcept` fence UA-1's review counts
+(classified 2026-10-27, RG-1: ALIGNED, W-355; the same page's :408-410 "the
+program might terminate").
 
 [T9, after :5484]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ the three surfaces (classified
-2026-10-27, RG-1: NONE, W-355; upstream does not recognize
-core/prelude/default.carbon:17's `interface UnformedInit` as a kind, and has no
-`is_union` (check T9.2: 0) and none of the four `Union...` diagnostics (T9.3:
-0)); F-007's entries are noted after UA-1's review.
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ the three surfaces (classified 2026-10-27, RG-1:
+NONE, W-355; upstream does not recognize core/prelude/default.carbon:17's
+`interface UnformedInit` as a kind, and has no `is_union` (check T9.2: 0) and
+none of the four `Union...` diagnostics (T9.3: 0)); F-007's entries are noted
+after UA-1's review.
 
 [T8, after :5186]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ both (classified 2026-10-27, RG-1:
-NONE, W-355; upstream exports no Carbon union: `TagTypeKind::Union` 0 in
-check/cpp/export.cpp (check T8.1), `is_union` 0 in check/cpp (T8.2)).
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ both (classified 2026-10-27, RG-1: NONE, W-355;
+upstream exports no Carbon union: `TagTypeKind::Union` 0 in check/cpp/export.cpp
+(check T8.1), `is_union` 0 in check/cpp (T8.2)).
 
 [T7, after :4978]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ the `overload` keyword (classified
-2026-10-27, RG-1: NONE, W-355; p002875:481 introduces `overloaded fn` "using
-placeholder syntax"; pattern_matching.md:696 "We do not yet have an approved
-design for overloaded functions"; no `overload` in upstream's
-lex/token_kind.def, check T7.1); the marker, the inst kinds and store, the five
-diagnostics and the print field (classified 2026-10-27, RG-1: NONE, W-355;
-internal: `:overload` 0 in sem_ir/mangler.cpp (T7.2), the three `OverloadSet`
-names 0 (T7.3), the five diagnostics 0 (T7.4), `overload_set_id` 0 in
-sem_ir/function.h (T7.5); upstream's only mention is sem_ir/function.h:547's
-TODO); F-009's entries are noted after UA-1's review.
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ the `overload` keyword (classified 2026-10-27,
+RG-1: NONE, W-355; p002875:481 introduces `overloaded fn` "using placeholder
+syntax"; pattern_matching.md:696 "We do not yet have an approved design for
+overloaded functions"; no `overload` in upstream's lex/token_kind.def, check
+T7.1); the marker, the inst kinds and store, the five diagnostics and the print
+field (classified 2026-10-27, RG-1: NONE, W-355; internal: `:overload` 0 in
+sem_ir/mangler.cpp (T7.2), the three `OverloadSet` names 0 (T7.3), the five
+diagnostics 0 (T7.4), `overload_set_id` 0 in sem_ir/function.h (T7.5);
+upstream's only mention is sem_ir/function.h:547's TODO); F-009's entries are
+noted after UA-1's review.
 
 [T6, after :4726]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ the five (classified 2026-10-27,
-RG-1: NONE, W-355; internal surfaces with their merge rules: the two
-diagnostics (check T6.1), `MergeOverloadMemberRedecl` and
-`prev_decl_override` (T6.2), `bool diagnose` in check/deduce.h (T6.3),
-`GetApiClassDeclForQualifier` (T6.4) and `OverloadSetValue` (T6.5) are each 0
-in upstream's toolchain).
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ the five (classified 2026-10-27, RG-1: NONE,
+W-355; internal surfaces with their merge rules: the two diagnostics (check
+T6.1), `MergeOverloadMemberRedecl` and `prev_decl_override` (T6.2), `bool
+diagnose` in check/deduce.h (T6.3), `GetApiClassDeclForQualifier` (T6.4) and
+`OverloadSetValue` (T6.5) are each 0 in upstream's toolchain).
 
 [T5, after :4432]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ the four builtins (classified
-2026-10-27, RG-1: NONE, W-355; values.md:1128-1129 expects pointer arithmetic
-"through specialized constructs"; none of the four names upstream, check T5.1:
-0); `Core.Slice` (classified 2026-10-27, RG-1: NONE, W-355; README.md:912
-"**TODO:** Slices"; indexing.md:116's `class Span(T: type)` is an example of
-`IndirectIndexWith`); `Core.Buf` (classified 2026-10-27, RG-1: ALIGNED, W-355;
-README.md:885-886 "a shorthand for the library type `Core.Buf(T)`"; the
-shorthand is W-110); the `Iterate` impl (classified 2026-10-27, RG-1: ALIGNED,
-W-355; iterate.carbon's interface; its cursor is W-321's); D-SL-15, D-SL-18 and
-D-SL-20 (classified 2026-10-27, RG-1: NONE, W-355; no `pointer.offset` (check
-T5.5), slice or buffer class (T5.8) or `heap.allocate` (T5.10) upstream, each
-0); D-SL-16 and D-SL-19 (classified 2026-10-27, RG-1: DRIFT, W-354: this
-block's own break condition is met, since upstream's
-`fn SelfDestruct[T: Destroy](ref t: T)` calls `t.(DestroyImpl.Op)();`
-(core/prelude/destroy.carbon:36-38) for every cleanup
-(check/control_flow.cpp:158); UA-3 drops the yield and the keying at the
-advance that brings 05a7ecbd3; the declared spelling `impl as Destroy` is
-ALIGNED with destroy.carbon:14's "TODO: rename to `Destroy` ..."); D-SL-17
-(classified 2026-10-27, RG-1: DRIFT, W-326, blocked on `like`); D-SL-3
-(classified 2026-10-27, RG-1: DRIFT, W-109, resolved on PR 65).
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ the four builtins (classified 2026-10-27, RG-1:
+NONE, W-355; values.md:1128-1129 expects pointer arithmetic "through specialized
+constructs"; none of the four names upstream, check T5.1: 0); `Core.Slice`
+(classified 2026-10-27, RG-1: NONE, W-355; README.md:912 "**TODO:** Slices";
+indexing.md:116's `class Span(T: type)` is an example of `IndirectIndexWith`);
+`Core.Buf` (classified 2026-10-27, RG-1: ALIGNED, W-355; README.md:885-886 "a
+shorthand for the library type `Core.Buf(T)`"; the shorthand is W-110); the
+`Iterate` impl (classified 2026-10-27, RG-1: ALIGNED, W-355; iterate.carbon's
+interface; its cursor is W-321's); D-SL-15, D-SL-18 and D-SL-20 (classified
+2026-10-27, RG-1: NONE, W-355; no `pointer.offset` (check T5.5), slice or buffer
+class (T5.8) or `heap.allocate` (T5.10) upstream, each 0); D-SL-16 and D-SL-19
+(classified 2026-10-27, RG-1: DRIFT, W-354: this block's own break condition is
+met, since upstream's `fn SelfDestruct[T: Destroy](ref t: T)` calls
+`t.(DestroyImpl.Op)();` (core/prelude/destroy.carbon:36-38) for every cleanup
+(check/control_flow.cpp:158); UA-3 drops the yield and the keying at the advance
+that brings 05a7ecbd3; the declared spelling `impl as Destroy` is ALIGNED with
+destroy.carbon:14's "TODO: rename to `Destroy` ..."); D-SL-17 (classified
+2026-10-27, RG-1: DRIFT, W-326, blocked on `like`); D-SL-3 (classified
+2026-10-27, RG-1: DRIFT, W-109, resolved on PR 65).
 
 [T4, after :4033]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ both (classified 2026-10-27, RG-1:
-NONE, W-355; internal: `NamedDeclList` (check T4.1) and `overload_index` (T4.2)
-are 0 in upstream's toolchain).
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ both (classified 2026-10-27, RG-1: NONE, W-355;
+internal: `NamedDeclList` (check T4.1) and `overload_index` (T4.2) are 0 in
+upstream's toolchain).
 
 [T3, after :3697]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes, and the checks named are rows of
-fork/register/rg1-plan.md section 4.2):_ the `Span` mapping and the export arm
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv):_ the `Span` mapping and the export arm
 (classified 2026-10-27, RG-1: ALIGNED, W-355; README.md:3707-3708 "Other view
 types, like `std::span`, are intended to map similarly"); the synthesized
 interface, the prelude sections, D-SL-8, D-SL-9 and D-SL-24 (classified
-2026-10-27, RG-1: NONE, W-355; README.md:912 "**TODO:** Slices"; upstream has
-no `CppContiguousRange` (check T3.3: 0), no `Slice` in core, check or sem_ir
-(T3.4: 0), no `BuildCppContiguousRangeWitness` (T3.6: 0), and its own
+2026-10-27, RG-1: NONE, W-355; README.md:912 "**TODO:** Slices"; upstream has no
+`CppContiguousRange` (check T3.3: 0), no `Slice` in core, check or sem_ir (T3.4:
+0), no `BuildCppContiguousRangeWitness` (T3.6: 0), and its own
 `BuildCopyWitness` (T3.8: 2 lines) is D-SL-24's merge point; W-120 watches
 D-SL-9); D-SL-21 (classified 2026-10-27, RG-1: ALIGNED, W-355; upstream's own
 orphan rule).
 
 [T1, inline at :765, after "(with F-006a's `Ok`/`Err`
 already on the register)." and before "_Mechanism (plan §2.4 as revised):_"]
-_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
-entry "RG-1: ..." has the quotes): (i) to (iii) NONE, W-355, upstream
-README.md:3858-3859 "Carbon does not have language features dedicated to
-error handling"; `ControlFlow` (checks T1.1 and T1.2) and `interface Try`,
-`FromBreak` or `FromContinue` (T1.3) are 0 in upstream's core, docs/design,
-proposals and toolchain; F-006a DRIFT, W-346._
+_RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the entry
+"RG-1: ..." has the quotes, and the checks named are rows of
+fork/register/rg1-checks.tsv): (i) to (iii) NONE, W-355, upstream
+README.md:3858-3859 "Carbon does not have language features dedicated to error
+handling"; `ControlFlow` (checks T1.1 and T1.2) and `interface Try`, `FromBreak`
+or `FromContinue` (T1.3) are 0 in upstream's core, docs/design, proposals and
+toolchain; F-006a DRIFT, W-346._
 ```
 
 <!-- google-doc-style-resume -->
@@ -1962,32 +2147,36 @@ _RG-1 (classified 2026-10-27, upstream f27a977d8, re-checked at <tip>; the
 decision-log entry "RG-1: the V-3a register classified at f27a977d8
 (2026-10-27)" on claude/carbon-fork-0-1-rg1, which lands first, and
 fork/register/rg1-plan.md section 2.H1 have the quotes):_ under V-3b each
-departure from accepted text is a drift with its work item, realigned by
-SAFE-1 by a new commit on this branch before it lands (R32 (e)): p005434:83
-(classified 2026-10-27, RG-1: DRIFT, W-347), p005434:663 (classified
-2026-10-27, RG-1: DRIFT, W-348), p005434:831-832 (classified 2026-10-27, RG-1:
-DRIFT, W-349), arithmetic.md:156-158 (classified 2026-10-27, RG-1: DRIFT,
-W-350), safety README.md:260-262 (classified 2026-10-27, RG-1: DRIFT, W-351)
-and the zero-fill promotion (classified 2026-10-27, RG-1: DRIFT, W-353:
-upstream README.md:2130-2132 lets types define additional initialization for
-the hardened build mode, which safety README.md:248-250 plans as specialized
-modes extending Release, where D-SAFE-13 I5 zero-fills every type in the
-Release baseline with no separate mode; its cite above corrected from this
-branch's copy). Each decision is named on three to five of this branch's pages
-(rg1-plan.md D-RG-7 lists the lines), so each realignment is a re-derivation,
-not a one-sentence edit. The Permissive reading of p005914:206-208 (classified
-2026-10-27, RG-1: ALIGNED, W-355: read against p005914:204-210 in full, the
-passage limits assumptions so that no undefined behavior follows and its
-example is an optimization assumption; T8 withholds `noalias`, so no
-optimization relies on the diagnostic assumption) is not a drift. `unsafe
+departure from accepted text is a drift with its work item, realigned by SAFE-1
+by a new commit on this branch before it lands (R32 (e)): p005434:83 (classified
+2026-10-27, RG-1: DRIFT, W-347), p005434:663 (classified 2026-10-27, RG-1:
+DRIFT, W-348), p005434:831-832 (classified 2026-10-27, RG-1: DRIFT, W-349),
+arithmetic.md:156-158 (classified 2026-10-27, RG-1: DRIFT, W-350; under D-RG-20
+the row of the unsupported benchmarking build), safety README.md:260-262
+(classified 2026-10-27, RG-1: DRIFT, W-351) and the zero-fill promotion
+(classified 2026-10-27, RG-1: DRIFT, W-353: upstream README.md:2130-2132 lets
+types define additional initialization for the hardened build mode, where
+D-SAFE-13 I5 zero-fills every type; RG-1 reads that mode as the release build,
+the one of upstream README.md:381-382's two builds the link can name and the one
+upstream safety README.md:212-219 gives a baseline of hardening (rg1-plan.md
+D-RG-20, R29, until upstream reconciles its build-mode pages), so the zeroing's
+place in Release is upstream's and its mandate for every type is the drift; its
+cite above corrected from this branch's copy). Each decision is named on two to
+five of this branch's pages (rg1-plan.md D-RG-7 lists the lines), so each
+realignment is a re-derivation, not a one-sentence edit. The Permissive reading
+of p005914:206-208 (classified 2026-10-27, RG-1: NONE, W-355: p005914:204-210,
+the nearest passage, limits what the safety model may assume so that no
+undefined behavior follows, and its example is an optimization assumption; T8
+withholds `noalias`, so no optimization relies on the diagnostic assumption, and
+upstream says nothing of diagnostic assumptions) is not a drift. `unsafe
 permissive`, the prefix `unsafe` forms and the restored `addr self: Self*`
 (classified 2026-10-27, RG-1: ALIGNED, W-355; safety README.md:116-118 and
 :80-81, p005434:1226-1236) follow upstream; `exclusive`, `unsafe import`,
 `unsafe class`, the library names and the `import Cpp` asymmetry (classified
 2026-10-27, RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe
 import` and `unsafe class` are each 0 in upstream's docs/design and proposals,
-the library names only p004682:316's `Core.Box(Array(T, N))` table cell;
-safety README.md:122-123 leaves import marking to future work). Since V-3b the
+the library names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
+README.md:122-123 leaves import marking to future work). Since V-3b the
 re-basing clause above reads "re-based under R32".
 ```
 
@@ -2374,10 +2563,11 @@ as JSON when wrapped in brackets (section 4.1).
       "evidence": [
         "upstream docs/design/expressions/arithmetic.md:156-158 at f27a977d8: \"In a performance build, the optimizer can assume that such conditions don't occur. As a consequence, if they do, the behavior of the program is not defined.\"",
         "PR 53 fork/decision-log.md D-SAFE-15 (:3483-3495) and the register block (:3930-3931, which cites :155-158); the 8 dependent lines naming D-SAFE-15 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
+        "upstream docs/design/README.md:377-383 (\"The behavior of the Carbon compiler depends on the _build mode_:\", with a _debug build_ and a _release build_ only), docs/design/safety/README.md:212 (\"There are two primary build modes:\") and :260-262 at f27a977d8; fork/register/rg1-plan.md D-RG-20, which reads the development, performance and hardened builds of README.md:476-484 and arithmetic.md:154-165 as the debug build, the unsupported benchmarking build and the release build",
         "fork/register/rg1-plan.md section 2.H1 (H1.11)"
       ],
       "blocked_by": [],
-      "notes": "Filed 2026-10-27 by RG-1 (upstream f27a977d8; W-343). Work: SAFE-1 restores the performance-build row (Release keeps its wrapping and division fail-stop, the row describing the non-default performance build that safety/README.md:260-262 promises; W-351), and amends arithmetic.md's dated note, the dependent lines and the F-013 entry, by a new commit on PR 53's branch before it lands (R32 (e)). Owner: SAFE-1. Break condition: upstream withdraws or rewrites the row."
+      "notes": "Filed 2026-10-27 by RG-1 (upstream f27a977d8; W-343; review fold RR1-N-1 of the RG-1 plan). Work, as RG-1's D-RG-20 (R29) reads upstream's build modes: SAFE-1 restores the performance-build row as the row of the unsupported benchmarking build, the release build with its default hardening disabled that safety/README.md:260-262 promises (W-351), while Release and Debug keep D-SAFE-15's wrapping and fail-stop, which are upstream's hardened and development rows (arithmetic.md:154-155, :159-165), and amends arithmetic.md's dated note, the dependent lines and the F-013 entry, by a new commit on PR 53's branch before it lands (R32 (e)). Owner: SAFE-1. Break condition: upstream withdraws or rewrites the row, or reconciles its build-mode pages otherwise than D-RG-20 reads them (the restored row then follows the reconciled text)."
     },
     {
       "id": "W-351",
@@ -2413,17 +2603,17 @@ as JSON when wrapped in brackets (section 4.1).
     {
       "id": "W-353",
       "kind": "design-needed",
-      "title": "SAFE-1 (R32 (d), (e); RG-1): D-SAFE-13 I5 promotes zero-fill to the Release baseline for every type with no separate hardened mode, where upstream lets types define additional initialization for the hardened build mode -- realign by a new commit on PR 53 before it lands",
+      "title": "SAFE-1 (R32 (d), (e); RG-1, D-RG-20): D-SAFE-13 I5 mandates zero-fill of unformed state for every type, where upstream lets types define additional initialization for the hardened build mode -- realign by a new commit on PR 53 before it lands",
       "subsystem": "docs/design/README.md (PR 53's amendment :2151-2153) + docs/design/safety (PR 53: initialization_safety.md, temporal_safety.md, rust_interop.md) + PR 53's F-013 entry",
       "size": "M",
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
-        "upstream docs/design/README.md:2130-2132 at f27a977d8: \"Types may define additional initialization for the [hardened build mode](#build-modes). For example, this causes integers to be set to `0` when in unformed state in this mode.\"; docs/design/safety/README.md:242 and :248-250 (\"Release + specialized [hardening]: ... Carbon will have several specialized build modes in this space.\"); :219 (the release baseline of hardening); proposals/p005914-updating-carbon-s-safety-strategy.md:87-88 (\"allows, for example, zero-initialization rather than fail-stop behavior.\")",
+        "upstream docs/design/README.md:2130-2132 at f27a977d8: \"Types may define additional initialization for the [hardened build mode](#build-modes). For example, this causes integers to be set to `0` when in unformed state in this mode.\"; docs/design/README.md:377-383 (the build-modes section that link names, with a _debug build_ and a _release build_ only); docs/design/safety/README.md:212 (\"There are two primary build modes:\"), :219 (the release baseline of hardening) and :242-252 (the extension modes, \"Release + specialized [hardening]\" among them); proposals/p005914-updating-carbon-s-safety-strategy.md:87-88 (\"allows, for example, zero-initialization rather than fail-stop behavior.\")",
         "PR 53 docs/design/README.md:2151-2153 (\"The fork promotes this zeroing to the Release baseline for every type; there is no separate hardened mode.\"), fork/decision-log.md D-SAFE-13 and the register block (:3932-3933, which cites the branch's own :2147); the 13 dependent lines naming D-SAFE-13 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
-        "fork/register/rg1-plan.md section 2.H1 (H1.13)"
+        "fork/register/rg1-plan.md D-RG-20 (the hardened build read as the release build) and section 2.H1 (H1.13)"
       ],
       "blocked_by": [],
-      "notes": "Filed 2026-10-27 by RG-1 (upstream f27a977d8; W-343; review fold B-M3 of the RG-1 plan). SAFE-1's own register block lists this promotion among its departures from accepted text. Work: SAFE-1 re-derives D-SAFE-13 I5 so that the extra initialization is type-defined and lives in a hardened mode extending Release, as README.md:2130-2132 and safety/README.md:248-250 state, keeping in the Release baseline only what the memory-safety model needs (safety/README.md:219) and stating how initialization errors avoid undefined behavior there (p005914:87-88), with the dependent lines and the F-013 entry, by a new commit on PR 53's branch before it lands (R32 (e)), with W-347's review. Owner: SAFE-1. Break condition: an accepted upstream memory-safety design that puts unformed-state zeroing in the Release baseline for every type (cite it and close this item)."
+      "notes": "Filed 2026-10-27 by RG-1 (upstream f27a977d8; W-343; review folds B-M3 and RR1-N-1 of the RG-1 plan). SAFE-1's own register block lists this promotion among its departures from accepted text. The zeroing's place is not the drift: RG-1's D-RG-20 (R29) reads README.md:2131's hardened build mode as the release build, the one of the two builds its link's section names (README.md:377-383) that safety/README.md:219-222 gives a baseline of hardening, so zeroing in the Release build is upstream's mode and PR 53's \"there is no separate hardened mode\" restates safety/README.md:212's two primary modes. Work: SAFE-1 re-derives D-SAFE-13 I5 so that the extra initialization is type-defined, as README.md:2130's \"Types may define\" states, in the release build, keeping as a language rule only what the memory-safety model needs (safety/README.md:219) and stating how initialization errors avoid undefined behavior for a type that defines none (p005914:87-88), with the dependent lines and the F-013 entry, by a new commit on PR 53's branch before it lands (R32 (e)), with W-347's review. Owner: SAFE-1. Break condition: an accepted upstream memory-safety design that makes unformed-state zeroing language-defined for every type (cite it and close this item), or upstream reconciles its build-mode pages otherwise than D-RG-20 reads them (if the hardened mode becomes an extension of Release, this item widens to the zeroing's placement)."
     },
     {
       "id": "W-354",
@@ -2445,15 +2635,15 @@ as JSON when wrapped in brackets (section 4.1).
       "id": "W-355",
       "kind": "infra",
       "title": "Weekly upstream check (R32 (b); RG-1, D-RG-17): the V-3a register's NONE and ALIGNED entries, each classified by RG-1 with its break condition -- re-run RG-1's quote and silence checks at each new tip and file a fired break condition as its own drift item",
-      "subsystem": "fork records (fork/decision-log.md register blocks; fork/register/rg1-plan.md section 4.2's checks)",
+      "subsystem": "fork records (fork/decision-log.md register blocks; fork/register/rg1-quotes.tsv, rg1-checks.tsv, check_quotes.sh and check_greps.sh)",
       "size": "S",
       "bullet": "none",
       "evidence": [
-        "fork/register/rg1-plan.md section 2: 136 NONE and ALIGNED entries in 23 blocks and V-3's design-fork group, each with its break condition; section 4.2's quotes_rev2.tsv (230 quotes) and checks.tsv (89 silence checks) with check_quotes.sh and check_greps.sh",
+        "fork/register/rg1-plan.md section 2: 130 NONE and ALIGNED entries in 22 blocks and V-3's design-fork group, each with its break condition (every block of section 2 with such an entry except VA-2's, C2, whose six carry VA-2's own items); fork/register/rg1-quotes.tsv (260 quoted lines) and fork/register/rg1-checks.tsv (89 silence checks) with fork/register/check_quotes.sh and fork/register/check_greps.sh (section 4.2)",
         "fork/rulebook.md R32 (b): \"the V-3a register is a work queue reviewed at each weekly check, each entry carrying its work item\"; the 2026-10-26 weekly check's finding that no pre-DR-0 entry carried one (W-342)"
       ],
       "blocked_by": [],
-      "notes": "Filed 2026-10-27 by RG-1 (review fold B-M2 of the RG-1 plan). A standing item: every NONE and ALIGNED register entry carries it (the blocks' RG-1 notes name it), so the register stays a work queue under R32 (b). Work, at each weekly upstream check: fetch the tip, run check_quotes.sh and check_greps.sh against it, re-read each NONE and ALIGNED entry's break condition against the window's design-page and prelude-signature commits (R32 (c)), and for each fired condition file a DRIFT item owned by the entry's workstream, scheduled before UA-3, with a dated note in the block. An L check's FAIL (an upstream commit to a merge-rule file) is the merge rule's signal and updates the expected count. Owner: the weekly upstream check. Break condition: an owner ruling that a classified NONE leaves the register (then this item narrows to the ALIGNED entries); it is discharged only if the register is retired."
+      "notes": "Filed 2026-10-27 by RG-1 (review folds B-M2, RR1-N-2 and RR1-m4 of the RG-1 plan). A standing item: every NONE and ALIGNED register entry outside VA-2's block carries it (the blocks' RG-1 notes name it), and VA-2's six carry VA-2's own items (W-217, W-230 and W-214 under ORCHESTRATION's Next actions item 9, W-338 and W-339 under item 8, W-334 with W-222), so the register stays a work queue under R32 (b). Work, at each weekly upstream check: fetch the tip, run fork/register/check_quotes.sh <repo> <tip> fork/register/rg1-quotes.tsv and fork/register/check_greps.sh <repo> <tip> fork/register/rg1-checks.tsv, re-read each covered entry's break condition against the window's design-page and prelude-signature commits (R32 (c)), and for each fired condition file a DRIFT item owned by the entry's workstream, scheduled before UA-3, with a dated note in the block. A FAIL on a quoted line that a DRIFT item or an R29 decision rests on (D-RG-5, D-RG-6, D-RG-19 or D-RG-20) is reported to that item's owner; an L check's FAIL (an upstream commit to a merge-rule file) is the merge rule's signal and updates the expected count by a records commit; after UA-3 moves the cut, check_greps.sh takes the advance's base as its fourth argument. Owner: the weekly upstream check. Break condition: an owner ruling that a classified NONE leaves the register (then this item narrows to the ALIGNED entries); it is discharged only if the register is retired."
     },
     {
       "id": "W-356",
@@ -2479,18 +2669,18 @@ as JSON when wrapped in brackets (section 4.1).
 
 ```text
 [W-342 "notes": prepend]
-DISCHARGED 2026-10-27 by RG-1's records (R1; fork/register/rg1-plan.md):
-every entry of trunk's eleven pre-DR-0 blocks and V-3's design-fork group is
-classified against upstream f27a977d8, re-checked at <tip>, in the
-decision-log entry "RG-1: the V-3a register classified at f27a977d8
-(2026-10-27)" and in each block's dated note: each DRIFT with its item
-(F-006a's `Ok`/`Err` filed as W-346; SL-1's D-SL-16 and D-SL-19 as W-354;
-D-SL-17 is W-326's, D-SL-3 W-109's), each ALIGNED with its quote, and each
-NONE with the quote of the nearest upstream passage or a silence check of
-rg1-plan.md section 4.2, named in the note by row with its grep and result;
-both of section 4.2's scripts passed at R1's tip ("checked 230 quotes, 0
-failed"; "checked 89 silence checks, 0 failed"); every NONE and ALIGNED
-entry carries W-355; F-009's `overload fn` is NONE (D-RG-6). Original filing:
+DISCHARGED 2026-10-27 by RG-1's records (R1; fork/register/rg1-plan.md): every
+entry of trunk's eleven pre-DR-0 blocks and V-3's design-fork group is
+classified against upstream f27a977d8, re-checked at <tip>, in the decision-log
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-27)" and in each
+block's dated note: each DRIFT with its item (F-006a's `Ok`/`Err` filed as
+W-346; SL-1's D-SL-16 and D-SL-19 as W-354; D-SL-17 is W-326's, D-SL-3 W-109's),
+each ALIGNED with its quote, and each NONE with the quote of the nearest
+upstream passage or a silence check of fork/register/rg1-checks.tsv, named in
+the note by row with its grep and result; fork/register/check_quotes.sh and
+fork/register/check_greps.sh passed at R1's tip ("checked 260 quotes, 0 failed";
+"checked 89 silence checks, 0 failed"); every NONE and ALIGNED entry carries
+W-355; F-009's `overload fn` is NONE (D-RG-6). Original filing:
 
 [W-343 "notes": append]
  Narrowed 2026-10-27 by RG-1's records (R1): the held blocks are classified in
@@ -2524,7 +2714,8 @@ discharged, W-343 and W-344 narrowed.
 The JSON strings hold these texts on one line each (no line breaks inside a
 string), with the leading space where shown. If either script of section 4.2
 fails at R1's tip, W-342 is narrowed, not discharged, until the plan is amended
-and the scripts pass (amended 2026-10-28, review fold: B-B1).
+and the scripts pass (amended 2026-10-28, review fold: B-B1); its counts are rev
+3's (amended 2026-10-28, review fold: RR1-N-2).
 
 ### A.7 The ledger's R2 edits
 
@@ -2551,7 +2742,7 @@ owner OP-1, a code commit on PR 56 before it lands. Original filing:
 
 **The "Last updated:" line (:13).** "Last updated: 2026-10-27 (VA-2, ..."
 becomes "Last updated: 2026-10-27 (RG-1's records classify the V-3a register at
-upstream f27a977d8: 155 entries, 19 DRIFT, 34 ALIGNED, 102 NONE; W-346 to W-356
+upstream f27a977d8: 155 entries, 19 DRIFT, 33 ALIGNED, 103 NONE; W-346 to W-356
 filed; see the paragraph dated 2026-10-27 (RG-1) below; the earlier 2026-10-27
 text follows). 2026-10-27 (VA-2, ..." with the rest unchanged.
 
@@ -2560,7 +2751,7 @@ text follows). 2026-10-27 (VA-2, ..." with the rest unchanged.
 <!-- google-doc-style-ignore -->
 
 ```text
-| `claude/carbon-fork-0-1-rg1` | RG-1 records, the V-3a register classified at upstream f27a977d8 (W-342 discharged; W-343 and W-344 narrowed, W-344 discharged at R2, W-343 by the last land-time note), base trunk 0b999d449: plan fork/register/rg1-plan.md; R1 files W-346 (EH-C), W-347 to W-351 and W-353 (SAFE-1, PR 53), W-352 (OP-1, PR 56), W-354 and W-356 (UA-3) and W-355 (the weekly check); the held records commits on PR 53, 52, 60, 55, 56 (merged into 57), 61 and 64 (with 61 merged) follow after two implementation reviews; to be held open as its PR after R2, first in the land sequence. |
+| `claude/carbon-fork-0-1-rg1` | RG-1 records, the V-3a register classified at upstream f27a977d8 (W-342 discharged; W-343 and W-344 narrowed, W-344 discharged at R2, W-343 by the last land-time note), base trunk 0b999d449: plan fork/register/rg1-plan.md, with the register's check scripts and tables beside it (check_quotes.sh, check_greps.sh, rg1-quotes.tsv, rg1-checks.tsv); R1 files W-346 (EH-C), W-347 to W-351 and W-353 (SAFE-1, PR 53), W-352 (OP-1, PR 56), W-354 and W-356 (UA-3) and W-355 (the weekly check); the held records commits on PR 53, 52, 60, 55, 56 (merged into 57), 61 and 64 (with 61 merged) follow after two implementation reviews; to be held open as its PR after R2, first in the land sequence. |
 ```
 
 <!-- google-doc-style-resume -->
@@ -2573,24 +2764,25 @@ per item 6 below, then UA-3." (:596):
 
 ```text
 Later on 2026-10-27 (RG-1): the V-3a register is classified at upstream
-f27a977d8 (2026-10-27, upstream PR 8045; re-checked at <tip>), records first,
-on claude/carbon-fork-0-1-rg1 (decision-log entry "RG-1: the V-3a register
+f27a977d8 (2026-10-27, upstream PR 8045; re-checked at <tip>), records first, on
+claude/carbon-fork-0-1-rg1 (decision-log entry "RG-1: the V-3a register
 classified at f27a977d8 (2026-10-27)"; fork/register/rg1-plan.md). Every entry
-of the 26 blocks and V-3's design-fork entries was read against the page at
-the tip: 155 entries, 19 DRIFT, 34 ALIGNED, 102 NONE, 10 waiting on upstream;
-every NONE carries its quote or silence check, and every NONE and ALIGNED the
-watch item W-355. F-006a's `Ok`/`Err` is a drift against README.md's
-`Success`/`Failure` (W-346, owner EH-C, after the held PRs land and before
-UA-3, reversing the user's F-006a under the 2026-10-21 directive, veto-able);
-F-009's `overload fn` is not (p002875 calls its spelling placeholder). Three
-held PRs carry drifts and wait for their owners' realignment commits before
-they land: PR 53 six (W-347 to W-351 and W-353, owner SAFE-1), PR 60 one
-(D-SC-6, W-139, whose break condition was already met when it was filed), and
-PR 56 one (the comparisons' side effects, W-352, owner OP-1, not blocked).
-D-SL-16's yield and D-SL-19's keying are W-354, dropped at UA-3 against
-05a7ecbd3's `SelfDestruct`; W-356 is a crash RG-1's probe found, UA-3's to
-triage. RG-1's held records commits follow on PR 53, PR 52, PR 60, PR 55, PR
-56 (merged into PR 57), PR 61 and PR 64 (with PR 61's merged), staged and
+of the 26 blocks and V-3's design-fork entries was read against the page at the
+tip: 155 entries, 19 DRIFT, 33 ALIGNED, 103 NONE, 10 waiting on upstream; every
+NONE carries its quote or silence check, and every NONE and ALIGNED outside
+VA-2's six, which carry VA-2's items, the watch item W-355, whose weekly run
+uses fork/register/check_quotes.sh and check_greps.sh. F-006a's `Ok`/`Err` is a
+drift against README.md's `Success`/`Failure` (W-346, owner EH-C, after the held
+PRs land and before UA-3, reversing the user's F-006a under the 2026-10-21
+directive, veto-able); F-009's `overload fn` is not (p002875 calls its spelling
+placeholder). Three held PRs carry drifts and wait for their owners' realignment
+commits before they land: PR 53 six (W-347 to W-351 and W-353, owner SAFE-1),
+PR 60 one (D-SC-6, W-139, whose break condition was already met when it was
+filed), and PR 56 one (the comparisons' side effects, W-352, owner OP-1, not
+blocked). D-SL-16's yield and D-SL-19's keying are W-354, dropped at UA-3
+against 05a7ecbd3's `SelfDestruct`; W-356 is a crash RG-1's probe found, UA-3's
+to triage. RG-1's held records commits follow on PR 53, PR 52, PR 60, PR 55,
+PR 56 (merged into PR 57), PR 61 and PR 64 (with PR 61's merged), staged and
 reviewed before any push, then the stamp R2. No build, merge or dispatch;
 Actions is still disabled. Sixteen PRs are held open; none is merged.
 ```
@@ -2598,7 +2790,7 @@ Actions is still disabled. Sixteen PRs are held open; none is merged.
 <!-- google-doc-style-resume -->
 
 **Next actions item 6** becomes (amended 2026-10-28, review fold: A-M5, B-M2,
-B-m6):
+B-m6, RR1-N-2, RR1-m4):
 
 <!-- google-doc-style-ignore -->
 
@@ -2624,9 +2816,11 @@ B-m6):
     probe). Land-time notes, each by its PR's land-sequence records commit
     after its register block (fork/register/rg1-plan.md Appendix A.4): PR 51,
     PR 54, PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At
-    each weekly upstream check: W-355 (re-run RG-1's two scripts at the tip
-    and re-read every NONE and ALIGNED entry's break condition), with W-324's
-    re-check of C1.1. UA-3 follows W-341 and W-346.
+    each weekly upstream check: W-355 (run fork/register/check_quotes.sh and
+    check_greps.sh over their tables at the tip, and re-read the break
+    condition of every NONE and ALIGNED entry outside VA-2's, which items 8
+    and 9 re-read), with W-324's re-check of C1.1. UA-3 follows W-341 and
+    W-346.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2654,11 +2848,13 @@ A new commit on PR 53's branch, never a rewrite (R32 (e)), from RG-1's
 classification at upstream f27a977d8 (fork/register/rg1-plan.md on
 claude/carbon-fork-0-1-rg1, section 2.H1): the register block's departures at
 p005434:83, :663 and :831-832, arithmetic.md:156-158, safety
-README.md:260-262 and the zero-fill promotion against README.md:2130-2132 are
-drifts under V-3b, filed on claude/carbon-fork-0-1-rg1 as W-347 to W-351 and
-W-353 and realigned by SAFE-1 by a new commit here before this PR lands; the
-zero-fill cite now names upstream's README.md:2130-2132 instead of this
-branch's copy, and arithmetic.md's range is upstream's :156-158. Records only.
+README.md:260-262 and the zero-fill mandated for every type against
+README.md:2130-2132's "Types may define" (the hardened build mode read as the
+release build, rg1-plan.md D-RG-20) are drifts under V-3b, filed on
+claude/carbon-fork-0-1-rg1 as W-347 to W-351 and W-353 and realigned by SAFE-1
+by a new commit here before this PR lands; the zero-fill cite now names
+upstream's README.md:2130-2132 instead of this branch's copy, and
+arithmetic.md's range is upstream's :156-158. Records only.
 
 H52  CM-1 records: the CMake measurement corrected against upstream's tip and milestone (RG-1; R32 (a), (e))
 
@@ -2740,17 +2936,20 @@ Appended to each PR's description under "RG-1 amendment (2026-10-27)":
 <!-- google-doc-style-ignore -->
 
 ```text
-PR 53: RG-1 classified this PR's V-3a register block against upstream
-f27a977d8 (commit <sha53>, records only). Six departures from accepted text
-are drifts under R32 and V-3b, filed on RG-1's branch as W-347 (p005434:83's
-`noalias`), W-348 (p005434:663), W-349 (p005434:831-832), W-350
-(arithmetic.md's performance-build row), W-351 (safety README's benchmarking
-disable) and W-353 (README.md:2130-2132's type-defined initialization for the
-hardened build mode, promoted here to the Release baseline for every type);
-SAFE-1 realigns them by a new commit on this branch, under its own plan
-amendment and document reviews, before this PR lands. The zero-fill cite now
-names upstream's README.md:2130-2132. The rest of the block is aligned with
-upstream or has no upstream counterpart, and carries the watch item W-355.
+PR 53: RG-1 classified this PR's V-3a register block against upstream f27a977d8
+(commit <sha53>, records only). Six departures from accepted text are drifts
+under R32 and V-3b, filed on RG-1's branch as W-347 (p005434:83's `noalias`),
+W-348 (p005434:663), W-349 (p005434:831-832), W-350 (arithmetic.md's
+performance-build row, read as the unsupported benchmarking build's), W-351
+(safety README's benchmarking disable) and W-353 (the zero-fill mandated here
+for every type, where README.md:2130-2132 lets types define additional
+initialization for the hardened build mode, which RG-1 reads as the release
+build: its D-RG-20 maps the README's development, performance and hardened
+builds onto the safety README's Debug and Release until upstream reconciles its
+build-mode pages); SAFE-1 realigns them by a new commit on this branch, under
+its own plan amendment and document reviews, before this PR lands. The zero-fill
+cite now names upstream's README.md:2130-2132. The rest of the block is aligned
+with upstream or has no upstream counterpart, and carries the watch item W-355.
 
 PR 52: RG-1 corrected the register block's CMake measurement against upstream
 f27a977d8 (commit <sha52>, records only): upstream has no CMake files, and its
@@ -2797,11 +2996,14 @@ merged (merge <sha64m>). No drift.
     test, and a reviewer's change of a verdict changes section 2, the counts
     (0.2, the summary, 3.1's R1 message, A.1, A.8) and the items together.
 2.  Re-run section 4's checks first, at the tip you fetch: the quotes and the
-    silence checks (4.2; copy quotes_rev2.tsv, checks.tsv and bin/ from
-    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/rg1/fixer/
-    into your own scratch), the block scan (4.4, blocks2.py) and the re-scan
-    (4.5). A moved upstream line, a failed silence check or a moved held head
-    stops the work until the plan is amended (section 6, R-1 and R-7).
+    silence checks (4.2: check the rev 3 sources in
+    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/rg1/fixer1/out/
+    with `sha256sum -c SHA256SUMS`, then run them; R1 commits them under
+    fork/register/), the block scan (4.4, blocks2.py in
+    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/rg1/fixer/bin/)
+    and the re-scan (4.5). A moved upstream line, a failed silence check or a
+    moved held head stops the work until the plan is amended (section 6, R-1 and
+    R-7).
 3.  Follow D-RG-13's seven steps: R1 and the seven held records commits are
     staged and not pushed until two implementation reviews and at most two
     fixer rounds (new commits only) are done; then H57 and H64m; then the
@@ -2812,7 +3014,8 @@ merged (merge <sha64m>). No drift.
     counts of 4.1 before each commit.
 5.  The ledger: append A.5's eleven items after W-344, keep two-space JSON
     indentation, fill `<tip>`, and apply A.6's string edits; `json.load` it
-    before the commit.
+    before the commit. Copy the four files of 4.2 to fork/register/, keep the
+    scripts executable, and stage all of R1's paths by name.
 6.  The held commits: one scratch worktree per branch under /dev/shm/rg1-impl/,
     detached at the head named in 3.2, a stage ref made before the worktree is
     deleted; check 4.7's merge-tree before each push; never touch the held
@@ -2873,3 +3076,44 @@ typed_insts.h:2009-2013 with expr_info.cpp:219-220; T12.7's row now shows that
 upstream still asserts where the fork's guard diagnoses. Counts: 153 entries,
 15/32/106 at rev 1 become 155, 19/34/102; items filed W-346 to W-352 become
 W-346 to W-356. Status: rev 2, not signed off; the re-review decides.
+
+## Review fold record (rev 3, 2026-10-28)
+
+Review: the focused re-review RR1 of rev 2 (a2623241f), APPROVE-WITH-AMENDMENTS,
+no BLOCKER, two MAJOR (N-1 and N-2) and five MINOR (m1 to m5), seven findings.
+RR1 re-ran rev 2's two scripts at e6fddcf97 (230 quotes and 89 silence checks,
+none failed), re-derived the counts (155 entries: 19 DRIFT, 34 ALIGNED, 102
+NONE) and found rev 2's folds of every BLOCKER and MAJOR of reviews A and B
+resolved. Every RR1 finding was reproduced in the fixer's scratch
+(/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/rg1/fixer1/)
+against upstream e6fddcf97, unchanged at the fetch of 2026-10-28 00:42 UTC, and
+the held heads, unchanged, and all seven are folded; none is rejected. Each fold
+is marked "(amended 2026-10-28, review fold: RR1-<id>)" where it lands.
+
+| Finding | Reproduced | Folded where |
+| --- | --- | --- |
+| RR1-N-1 | README.md:377-383 defines only the debug and release builds and safety/README.md:207-217 names two primary modes, while README.md:476-484, :2130-2132 and arithmetic.md:154-165 and :171-173 name development, performance and hardened builds; `git blame` puts all of them at 7134e23f2; rev 2's quote table held README.md:381-382 (rows 175-176), which section 2 never cited | D-RG-20 (new, R29); §2.H1's intro; H1.11 and H1.13 re-quoted; W-353 narrowed to the mandate; W-350's work restated as D-RG-20's consequence; R-10 and the rejected "blocked" alternative in §6; §7; A.1, A.4 H53, A.10 H53 and A.11 PR 53; the summary; 30 quote rows added |
+| RR1-N-2 | rev 2's R1 paths (§3.1) named only the decision log, the ledger and ORCHESTRATION, and §4.2's tables were scratch files; prek on the four files in a scratch worktree at a2623241f fails check-copyright until each opens with the "#" license header | §4.2 rewritten: R1 commits fork/register/rg1-quotes.tsv, rg1-checks.tsv, check_quotes.sh and check_greps.sh, checked against the sha256 sums of their rev 3 sources; the scripts skip "#" lines, and check_greps.sh takes the cut as an optional fourth argument; §4.1; §3.1's R1 message and paths; D-RG-17; §2's intro; W-355; A.1; A.3's lead and notes; A.6; A.8; the rejected appendix alternative in §6; hand-off notes 2 and 5 |
+| RR1-m1 | `git grep` at adaae4e35: D-SAFE-11 on mutation_safety.md and temporal_safety.md, D-SAFE-15 on arithmetic.md and spatial_safety.md | D-RG-7, §2.H1's intro and A.4 H53 say "two to five" |
+| RR1-m2 | H12.1 is a DRIFT (W-354), and PR 51 gets no commit because of D-RG-8 | D-RG-11; §3.2, which no longer says either that C1's and C2's heads have no drift; A.1; §6 |
+| RR1-m3 | H1.14's rationale names a heuristic outside the passage's rule, which D-RG-1 makes NONE | H1.14 re-graded NONE; 33 ALIGNED and 103 NONE in the summary, §3.1, A.1 (SAFE-1 6 / 3 / 6), A.4 H53 and A.8 |
+| RR1-m4 | rev 2's 136 counted C2's six, and C2's block gets no note naming W-355 | W-355 covers 130 entries in 22 blocks and V-3's group, and C2's six carry VA-2's items (Next actions items 8 and 9, W-334 with W-222): D-RG-17, §2's intro, §2.C2, §6, §7, A.1, A.5 W-355, A.8 |
+| RR1-m5 | rev 2's line 1779 is 83 columns | A.3's notes rewrapped at 80 with their new lead |
+
+Counts: 155 entries; rev 2's 19 DRIFT, 34 ALIGNED and 102 NONE become 19, 33
+and 103; 230 quotes become 260; the 89 silence checks are unchanged; D-RG-1 to
+D-RG-19 become D-RG-1 to D-RG-20; the items W-346 to W-356 are unchanged.
+
+## Sign-off
+
+| Review | Of | Verdict | BLOCKER | MAJOR | MINOR | Folded at |
+| --- | --- | --- | --- | --- | --- | --- |
+| A | rev 1 (8cfd46bc2) | APPROVE-WITH-AMENDMENTS | 0 | 5 | 5 | rev 2 (a2623241f) |
+| B | rev 1 (8cfd46bc2) | REJECT | 1 | 5 | 9 | rev 2 (a2623241f) |
+| RR1, the focused re-review | rev 2 (a2623241f) | APPROVE-WITH-AMENDMENTS | 0 | 2 | 5 | rev 3 (this revision) |
+
+The three reviews raised 32 findings, 25 folded at rev 2 and 7 at rev 3, and
+none is rejected. RR1, the last review, found no BLOCKER, and its verdict is not
+REJECT, so rev 3 is SIGNED OFF FOR IMPLEMENTATION on 2026-10-28. R1 and the held
+records commits follow D-RG-13, whose two implementation reviews and fixer
+rounds come before any push.

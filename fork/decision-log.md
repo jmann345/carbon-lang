@@ -8339,4 +8339,18 @@ SKIP the one change), which was owed; no residue is filed and W-312 to W-319
 stay unused.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
-nine of plan §0.10, with their merge rules. Veto-able.
+ten of plan §0.10 (the tenth, `SpecificConstant`'s category, added at plan rev
+4, RR2-M1; counted 2026-10-28 by RG-1), with their merge rules. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H11 have the quotes):_
+`NamesTemplateBinding`, the deferral of C++ calls on symbolic arguments (F-021)
+and the per-specific alias check (classified 2026-10-28, RG-1: ALIGNED, W-355;
+p002200:205-209, generics/overview.md:375-379 and appendix-witness.md:151-154);
+the other seven (classified 2026-10-28, RG-1: NONE, W-355; fixes to upstream
+code and golden edits with their merge rules: upstream's subst.cpp has no
+`MetaInstId` case, its check/cpp no `TSK_ImplicitInstantiation`, its toolchain
+no `DiscardGenericDeclIntoEnclosingGeneric`, and its `SpecificConstant` keeps
+`ComputedExprCategory::SameAsFirstOperand`, sem_ir/typed_insts.h:2013).

@@ -10,7 +10,13 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-27 (VA-2, definition-checked variadics slice 2, is
+Last updated: 2026-10-28 (RG-1, the V-3a register classified against upstream
+f27a977d8, is implemented, reviewed and held open as PR 67 on trunk's base,
+first in the land sequence; eight held PRs are amended by new records commits
+and their descriptions refreshed; seventeen PRs are held open, PR 51 to PR 67,
+none merged; see the paragraph dated 2026-10-28 below; the earlier 2026-10-27
+text follows).
+2026-10-27 (VA-2, definition-checked variadics slice 2, is
 implemented, reviewed and held open as PR 66, stacked on PR 59; sixteen PRs
 are held open, PR 51 to PR 66, none merged; see the paragraph dated 2026-10-27
 below; the earlier 2026-10-26 text follows).
@@ -595,6 +601,45 @@ PR 59's abort on a pack expansion pattern in a choice alternative's
 parameter list. Sixteen PRs are held open (PR 51 to PR 66); none is merged.
 Next: OV-4 (W-341) and RG-1 (W-342..W-344) per item 6 below, then UA-3.
 
+2026-10-28 (04:47 UTC): RG-1 is IMPLEMENTED, REVIEWED AND HELD OPEN as PR 67
+(claude/carbon-fork-0-1-rg1 at 56e2e5bbd, base trunk 0b999d449; twelve commits:
+plan rev 1 to rev 5, R1, the two review-fold fixes, the two merges of plan rev 4
+and rev 5 into the records line, R2 and the fold of R2's review). Records only,
+no toolchain, prelude or test file: the V-3a register's 155 entries in 26 blocks
+and V-3's design-fork entries were classified against upstream's tip f27a977d8
+(2026-10-27) and re-checked at e6fddcf97: 19 DRIFT, 32 ALIGNED, 104 NONE, 10
+waiting on upstream; every NONE carries its quote or silence check, and
+fork/register/check_quotes.sh and check_greps.sh re-run the 273 quotes and 89
+silence checks of rg1-quotes.tsv and rg1-checks.tsv at the tip, 0 failed.
+Reviews: two plan reviews and a focused plan re-review (25 and 7 findings,
+folded at rev 2 and rev 3), three implementation-review rounds of two reviewers
+each (round 1 eight MINORs, round 2 one MAJOR and five MINORs, round 3 dry at
+c10295ea2) and the focused review of R2 (one MINOR, folded by 56e2e5bbd): 47
+findings in all, every one folded by a new commit, none rejected, no history
+rewritten. Filed: W-346 (EH-C: `Core.Result`'s `Success`/`Failure` for F-006a's
+`Ok`/`Err`, after the held PRs land and before UA-3, reversing the user's
+2026-07-19 F-006a under the 2026-10-21 directive, veto-able), W-347 to W-351 and
+W-353 (SAFE-1's departures from accepted text, PR 53), W-352 (OP-1's comparison
+side effects, PR 56, not blocked), W-354 and W-356 (UA-3: D-SL-16's yield and
+D-SL-19's keying against 05a7ecbd3's `SelfDestruct`; a crash RG-1's probe found)
+and W-355 (the weekly watch); W-139's break condition was found already met when
+it was filed (SC-1, PR 60); F-009's `overload fn` is not a drift. W-342 and
+W-344 are discharged; W-343 is narrowed to the five land-time notes (PR 51, PR
+54, PR 57's OP-2 block, PR 58 and PR 59). Eight held PRs are amended by new
+records commits (R32 (e)), each made in a detached scratch worktree, reviewed
+before any push, pushed as a fast-forward after section 4.7's merge-trees, and
+its description refreshed: PR 53 cd3c5b2e1 and its review fix 2407efa74, PR 52
+e6bc32a6d, PR 60 cc4daba00 (with a dated note on template_constraints.md), PR 55
+c3cdecc5d, PR 56 9f12209d8, PR 57 e23113ba2 (merging PR 56's), PR 61 40daf0a2a
+and its review fix 66aa13132, PR 64 5f23d27c9 and 551a03328 (merging PR 61's).
+No build, merge or dispatch; Actions is still disabled. Seventeen PRs are held
+open (PR 51 to PR 67); none is merged. Merge order, as fork/register/rg1-plan.md
+section 5 gives it: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
+59, 61, 62, 64, 63, 65, 66; the sequence waits at PR 53 for SAFE-1's realignment
+(W-347 to W-351 and W-353), at PR 60 for SC-1's W-139 and at PR 56 for OP-1's
+W-352. Next: OV-4 (W-341) on trunk's base per item 6 below, then EH-C (W-346)
+after the held PRs land, then UA-3.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -927,22 +972,23 @@ code). Next check: Monday 14:00 UTC.
 | Branch | State |
 | --- | --- |
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
-| `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
-| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
+| `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at e6bc32a6d (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs; amended 2026-10-28 by RG-1's records commit e6bc32a6d (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
-| `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
-| `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 894139b34 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
-| `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at a080c7886 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
+| `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at c3cdecc5d (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1; amended 2026-10-28 by RG-1's records commit c3cdecc5d (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 9f12209d8 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55; amended 2026-10-28 by RG-1's records commit 9f12209d8 (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at e23113ba2 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1; amended 2026-10-28 by RG-1's merge e23113ba2 of PR 56's commit (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
-| `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at 40a76ab81 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54. |
-| `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at e408ad4d6 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit. |
+| `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at cc4daba00 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54; amended 2026-10-28 by RG-1's records commit cc4daba00 (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at 66aa13132 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit; amended 2026-10-28 by RG-1's records commit 40daf0a2a and its review fix 66aa13132 (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-sv` | HELD OPEN as PR 62 — SV-1 std::optional and std::variant interop mapping at 0ef8a0334 (toolchain 4a9c18b07; first held at 3a6531157, then amended 2026-10-21 by DR-1's W-322 commit, which retires the D-SV-7 Core.Optional view under R32 (d), and its focused review's four MINORs folded, the description and first comment refreshed; W-011 DISCHARGED; gap row 68 stays PARTIAL, W-177 not narrowed; F-020 minted; W-275..W-277, W-279..W-281, W-285 and W-286 filed, W-284 held for M-VA, W-282 conditional at land time, W-283 and W-287..W-294 unused, W-278 withdrawn; expected 133/0/22 over 155 with the view's program SKIPped; gate 1950 of 1950); plan rev 5 signed off after five reviews, two implementation reviews folded in two fix commits, focused re-review round 2 dry; merges last, after PR 61, through its land-time items M, M-VA, F-M, Doc-M and the records commit. |
-| `claude/carbon-fork-0-1-ct` | HELD OPEN as PR 64 — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific, at 4a3220c11 (toolchain 224ee2f8f; base claude/carbon-fork-0-1-tp, stacked on PR 61; W-043 DISCHARGED, TP-1's W-273 discharged and W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; gap rows 56 and 42 stay PARTIAL; expected 1959 of 1959 and 147/0/20 over 167); plan rev 4 signed off after four reviews, two implementation reviews folded in three fix commits, focused re-review round 1 dry; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit. |
+| `claude/carbon-fork-0-1-ct` | HELD OPEN as PR 64 — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific, at 551a03328 (toolchain 224ee2f8f; base claude/carbon-fork-0-1-tp, stacked on PR 61; W-043 DISCHARGED, TP-1's W-273 discharged and W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; gap rows 56 and 42 stay PARTIAL; expected 1959 of 1959 and 147/0/20 over 167); plan rev 4 signed off after four reviews, two implementation reviews folded in three fix commits, focused re-review round 1 dry; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit; amended 2026-10-28 by RG-1's count correction 5f23d27c9 and its merge 551a03328 of PR 61's commits (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-dr` | HELD OPEN as PR 63 — DR-1a Core.Iterate.Next takes a ref cursor (R32; W-321 discharged) at 18a7e8934 (toolchain d0cfe8082; base trunk; expected 1942 of 1942 and 128/0/22 over 150); DR-1's plan rev 3 signed off with slice 1 (W-320, Match for Core.Optional) stopped on upstream's own conflict and blocked on W-324; W-324..W-327 and W-329 filed, W-328 reserved; one implementation review (three records-only MINORs) folded; plan rev 4 (f551057ea) records DR-1b's stop-and-amend; DR-1b (IndirectIndexWith, W-109) is HELD OPEN as PR 65 on claude/carbon-fork-0-1-dr-idx, stacked on this branch; merges after CT-1 through M-a and L-a, then DR-1b through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-dr-idx` | HELD OPEN as PR 65 — DR-1b element access through `IndirectIndexWith`, `Core.Slice` and `Core.Buf` writing through `Ref`, upstream 230227264 cherry-picked (R32; W-109 DISCHARGED) at fee0ef31c (toolchain 7a442f632; base claude/carbon-fork-0-1-dr, stacked on PR 63; expected 1946 of 1946 and 130/0/22 over 152); one stop-and-amend (plan rev 4), one implementation review folded at the root (fddfcf42a and its fill bcd9ba06f, the comment commits 8deb75262 and 7a442f632, and round 4's shrink-line split 0cd4e5d2e with W-340 filed), a focused re-review of four rounds (rounds 1 to 3 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR, RR3-1-M1; round 4 dry after the shrink line); merges after DR-1a through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-va2` | HELD OPEN as PR 66 (stacked on PR 59, base claude/carbon-fork-0-1-va) — VA-2 definition-checked variadics slice 2 at 43c8ab476 (2026-10-27; forty-two commits over PR 59's b0822a744: plan rev 1 to rev 16, C0, C0b, C1 to C5 with their fills, the fold's fix and fill, R, D, the re-review loop's four rounds with fix 3, fix 4 by D-VA2-19's break condition, their fills and records; 104 findings over twenty-one reviews, all folded, none rejected, round 4 dry; W-225 discharged, W-212 and W-213 narrowed, W-330..W-339 and W-345 filed; gap rows 53 and 74 stay PARTIAL; expected, not of record: 1977 of 1977 and 147/0/21 over 168); merges last after PR 65 through M, S-CT, F-M, L-F and L. |
+| `claude/carbon-fork-0-1-rg1` | HELD OPEN as PR 67 (base trunk 0b999d449) — RG-1 records, the V-3a register classified against upstream f27a977d8, at 56e2e5bbd (2026-10-28; twelve commits: plan rev 1 to rev 5, R1, the two review-fold fixes, the two merges of plan rev 4 and rev 5 into the records line, R2 and the fold of R2's review; records only; W-342 and W-344 discharged, W-343 narrowed to the five land-time notes; W-346 to W-356 filed; plan fork/register/rg1-plan.md with the register's check scripts and tables beside it, check_quotes.sh, check_greps.sh, rg1-quotes.tsv and rg1-checks.tsv, 273 quotes and 89 silence checks passing at e6fddcf97; the held records commits on PR 53, 52, 60, 55, 56 (merged into PR 57), 61 and 64 (with PR 61's merged) made after three implementation-review rounds and pushed, the descriptions refreshed); merges first in the land sequence, before PR 53. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -1037,16 +1083,33 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     payload subpatterns (W-008).
 5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI when GitHub Actions is enabled again.
-6.  **R32 work from the 2026-10-26 weekly check**: W-341 (OV-4: an `overload fn`
-    member with Carbon default parameter values called with a defaulted argument
-    omitted; the arity step and the overload probe follow `default_value_arity`,
-    and F-009j is rewritten) after VA-2 lands and before UA-3, on trunk's base;
-    W-342, W-343 and W-344 (RG-1: the V-3a register entries that carry no work
-    item, trunk's pre-DR-0 blocks, the held-branch blocks with SAFE-1's
-    departures on PR 53 first, and OP-1's entries) records-first and runnable
-    now, each drift found filed as its own work item and a held PR carrying one
-    amended by a new commit on its branch before it lands (R32 (e)). UA-3
-    follows W-341.
+6.  **R32 work from the 2026-10-26 weekly check and RG-1 (2026-10-28)**: W-341
+    (OV-4: an `overload fn` member with Carbon default parameter values called
+    with a defaulted argument omitted; the arity step and the overload probe
+    follow `default_value_arity`, and F-009j is rewritten) after VA-2 lands and
+    before UA-3, on trunk's base. RG-1 (W-342 discharged; W-344 at its stamp;
+    W-343 by the last land-time note) classified the V-3a register at upstream
+    f27a977d8 and is held open as PR 67, first in the land sequence. Its drifts,
+    each before the PR that carries it lands: W-347 to W-351 and W-353 (SAFE-1:
+    a plan amendment of fork/safe/plan.md, a re-derivation commit on PR 53's
+    branch, two document reviews and a fixer, before PR 53 lands; the land
+    sequence waits at PR 53 until then), W-139 (SC-1: a fix commit on PR 60's
+    branch with its fills and the template_constraints.md paragraph, under its
+    own reviews, before PR 60 lands) and W-352 (OP-1: the in-place comparison
+    commit on PR 56's branch with its fills, merged into PR 57's, under its own
+    reviews, before PR 56 lands). After the held PRs land and before UA-3: W-346
+    (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's base, beside W-341).
+    In UA-3's gate, because they need the advance: W-354 (drop D-SL-16's yield
+    and D-SL-19's keying against 05a7ecbd3) and W-356 (re-run RG-1's crash
+    probe). Land-time notes, each by its PR's land-sequence records commit after
+    its register block (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54,
+    PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At each
+    weekly upstream check: W-355 (run fork/register/check_quotes.sh and
+    check_greps.sh over their tables at the tip, and re-read the break condition
+    of every NONE and ALIGNED entry outside VA-2's, which items 8 and 9
+    re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of T5.7 and
+    C1.2 (indexing.md:101-121 and a `like` in upstream's parse or check). UA-3
+    follows W-341 and W-346.
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

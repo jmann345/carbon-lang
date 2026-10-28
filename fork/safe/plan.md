@@ -452,9 +452,13 @@ sides); the break conditions are per decision.
     below shared, and T4 applies to every place in the set; binding such a
     result with `let ref` is a `ref` formation like any other. Program `Pick`
     in §4.1: in `UsePick` both places of the set, `x` and `y`, are locals, so
-    `let ref z = Pick(false, x, q)` forms an exclusive loan on each, and
-    `q2->AsSlice()`, another carrier of `y` used while `z` lives, is
-    `StrictExclusiveBorrowConflict`. T8 emits `noalias` with `captures(none)`
+    `let ref z = Pick(false, x, q)` would form an exclusive loan on each, and
+    `q2`, another carrier of `y` whose shared loan is live on the next line,
+    makes that formation `StrictSharedBorrowInvalidated` (T4; amended
+    2026-10-28, document-review fold: R1-m1; this read "forms an exclusive
+    loan on each, and `q2->AsSlice()`, another carrier of `y` used while `z`
+    lives, is `StrictExclusiveBorrowConflict`"). T8 emits `noalias` with
+    `captures(none)`
     or `captures(ret: address, provenance)` only where the requirement is
     established against every writer: intra-function, for a `ref` binding on
     a place whose every carrier is the body's own; on the referent of a `ref`
@@ -603,15 +607,20 @@ sides); the break conditions are per decision.
     is copied as a reborrow at shared kind, so T8 never sees two live exclusive
     carriers of one loan. **Reborrow** (amended 2026-10-12, review fold: A-4):
     forming a shared loan from an exclusive carrier — the `exclusive T*` → `T*`
-    downgrade, a `bound self` by value, an `addr self` call, `&*p` at shared
-    kind — _suspends_ the carrier's exclusivity; until every derived loan is
-    dead the carrier may be used only at shared kind (reads, `Plain` writes,
-    `addr` and `const` methods, further shared loans), and an invalidating use
-    of it is `StrictSharedBorrowInvalidated` — which is how EX-M-1 reads:
-    `vec->Get(0)` while `a` lives is a shared use, `vec->Push(3)` is legal only
-    once `a`, `b` and `first` are dead. A frozen derived loan, a by-value `bound
-    self` of a borrowed type or a value binding of `*p`, restricts the carrier
-    to reads until it is dead (added 2026-10-28, SAFE-2: W-349). T3 liveness:
+    downgrade, an `addr self` call, `&*p` at shared kind — _suspends_ the
+    carrier's exclusivity; until every derived loan is dead the carrier may be
+    used only at shared kind (reads, `Plain` writes, `addr` and `const`
+    methods, further shared loans), and an invalidating use of it is
+    `StrictSharedBorrowInvalidated` — which is how EX-M-1 reads: `vec->Get(0)`
+    while `a` lives is a use at shared kind, a `const` call whose by-value
+    `bound self` forms a frozen loan, `vec->Push(3)` is legal only once `a`,
+    `b` and `first` are dead. A frozen derived loan, a by-value `bound self` of
+    a borrowed type or a value binding of `*p`, restricts the carrier to reads
+    until it is dead (added 2026-10-28, SAFE-2: W-349); a by-value `bound
+    self` forms no shared loan (amended 2026-10-28, document-review fold:
+    R1-m2; this read "the `exclusive T*` → `T*` downgrade, a `bound self` by
+    value, an `addr self` call, `&*p` at shared kind" and "`vec->Get(0)` while
+    `a` lives is a shared use"). T3 liveness:
     from creation to last use of any carrier (NLL on SemIR's block graph); at
     scope exit the destroyed `var`'s loans must be dead
     (`StrictBorrowOutlivesPlace`). T4 conflicts: a live exclusive loan excludes
@@ -2270,7 +2279,7 @@ is a finding.
 | T7 temporaries, `bound` result | EX-TM-7b | ACCEPTS-UNCHECKED (fork prelude; `bound self` is W-144) | buf.carbon:54-56 | 4 (W-144) |
 | T6 union laundering (A-1, RR-1) | EX-TM-8 `Wild`/`Wild3` | NEW-SYNTAX (`unsafe u.p`, `unsafe &u.p`, `bound`; the union is fork syntax, types/union_basic.carbon; the nightly has no `union`) | unions.md:241, :369-380, :417-418 (a pointer into a union aliases every field: `unsafe &u.f` is ⊥ on formation) | 1, 3 |
 | T2 copies preserve loans, W-144 signature audit (A-2, RR-2) | EX-TM-8 `Launder1`/`Launder2`/`Launder3`/`Launder4`/`Launder5` | ACCEPTS-UNCHECKED (fork prelude) | slice.carbon:46-56, :74-77, :80-84, :100-106; as.carbon:38-40; optional.carbon:34-42, :69-78; buf.carbon:28, :45, :72-75; index.carbon:9; copy.carbon:10; p005434:782-784 | 3 with W-144 (`Launder1`, `Launder2`, `Launder4`, `Launder5`), 4 (`Launder3`) |
-| D-SAFE-8 mixed-kind result, a `ref` binding on closed places (realigned 2026-10-28, SAFE-2: W-347) | EX-TM-8 `Pick`/`UsePick` | NEW-SYNTAX (`bound`); `UsePick` is `StrictExclusiveBorrowConflict` | p005434:772-779 | 1, 4 |
+| D-SAFE-8 mixed-kind result, a `ref` binding on closed places (realigned 2026-10-28, SAFE-2: W-347) | EX-TM-8 `Pick`/`UsePick` | NEW-SYNTAX (`bound`); `UsePick` is `StrictSharedBorrowInvalidated` at `let ref z` (amended 2026-10-28, document-review fold: R1-m1, where this read `StrictExclusiveBorrowConflict`) | p005434:772-779 | 1, 4 |
 | D-SAFE-8 a `ref` through a shared pointer (added 2026-10-28, SAFE-2: W-347) | EX-TM-9 `F`, `F2`, `F3` | ACCEPTS-UNCHECKED for `F` (nightly 2026.10.12 exit 0, prints 3); NEW-SYNTAX for `F2`, `F3` | p005434:152-162 | 1, 4 |
 | M3/M4 `addr`, reborrow (A-4) | EX-M-1 | NEW-SYNTAX | call.cpp:528-540 (gate xii) | 1, 4 |
 | M6 `Guarded` | EX-M-2 | NEW-SYNTAX (library) | — | 4 (W-144) |

@@ -3153,9 +3153,13 @@ residue ids are the allocated ones, below):
     below shared, and T4 applies to every place in the set; binding such a
     result with `let ref` is a `ref` formation like any other. Program `Pick`
     in §4.1: in `UsePick` both places of the set, `x` and `y`, are locals, so
-    `let ref z = Pick(false, x, q)` forms an exclusive loan on each, and
-    `q2->AsSlice()`, another carrier of `y` used while `z` lives, is
-    `StrictExclusiveBorrowConflict`. T8 emits `noalias` with `captures(none)`
+    `let ref z = Pick(false, x, q)` would form an exclusive loan on each, and
+    `q2`, another carrier of `y` whose shared loan is live on the next line,
+    makes that formation `StrictSharedBorrowInvalidated` (T4; amended
+    2026-10-28, document-review fold: R1-m1; this read "forms an exclusive
+    loan on each, and `q2->AsSlice()`, another carrier of `y` used while `z`
+    lives, is `StrictExclusiveBorrowConflict`"). T8 emits `noalias` with
+    `captures(none)`
     or `captures(ret: address, provenance)` only where the requirement is
     established against every writer: intra-function, for a `ref` binding on
     a place whose every carrier is the body's own; on the referent of a `ref`
@@ -3304,15 +3308,20 @@ residue ids are the allocated ones, below):
     is copied as a reborrow at shared kind, so T8 never sees two live exclusive
     carriers of one loan. **Reborrow** (amended 2026-10-12, review fold: A-4):
     forming a shared loan from an exclusive carrier — the `exclusive T*` → `T*`
-    downgrade, a `bound self` by value, an `addr self` call, `&*p` at shared
-    kind — _suspends_ the carrier's exclusivity; until every derived loan is
-    dead the carrier may be used only at shared kind (reads, `Plain` writes,
-    `addr` and `const` methods, further shared loans), and an invalidating use
-    of it is `StrictSharedBorrowInvalidated` — which is how EX-M-1 reads:
-    `vec->Get(0)` while `a` lives is a shared use, `vec->Push(3)` is legal only
-    once `a`, `b` and `first` are dead. A frozen derived loan, a by-value `bound
-    self` of a borrowed type or a value binding of `*p`, restricts the carrier
-    to reads until it is dead (added 2026-10-28, SAFE-2: W-349). T3 liveness:
+    downgrade, an `addr self` call, `&*p` at shared kind — _suspends_ the
+    carrier's exclusivity; until every derived loan is dead the carrier may be
+    used only at shared kind (reads, `Plain` writes, `addr` and `const`
+    methods, further shared loans), and an invalidating use of it is
+    `StrictSharedBorrowInvalidated` — which is how EX-M-1 reads: `vec->Get(0)`
+    while `a` lives is a use at shared kind, a `const` call whose by-value
+    `bound self` forms a frozen loan, `vec->Push(3)` is legal only once `a`,
+    `b` and `first` are dead. A frozen derived loan, a by-value `bound self` of
+    a borrowed type or a value binding of `*p`, restricts the carrier to reads
+    until it is dead (added 2026-10-28, SAFE-2: W-349); a by-value `bound
+    self` forms no shared loan (amended 2026-10-28, document-review fold:
+    R1-m2; this read "the `exclusive T*` → `T*` downgrade, a `bound self` by
+    value, an `addr self` call, `&*p` at shared kind" and "`vec->Get(0)` while
+    `a` lives is a shared use"). T3 liveness:
     from creation to last use of any carrier (NLL on SemIR's block graph); at
     scope exit the destroyed `var`'s loans must be dead
     (`StrictBorrowOutlivesPlace`). T4 conflicts: a live exclusive loan excludes

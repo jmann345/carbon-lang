@@ -1412,39 +1412,42 @@ replacement text serves both (Appendix B.1).
     set `{(r, exclusive), (*p, shared)}` keeps the weakest kind, shared, for the
     result expression, and binding that result with `let ref` is a `ref`
     formation like any other: checked when every place in the set is closed
-    (`UsePick`, whose `z` now conflicts with the live `q2`:
-    `StrictExclusiveBorrowConflict`), `unsafe` otherwise. T8 emits `noalias` and
-    `captures(none)` or `captures(ret: address, provenance)` only where the
-    requirement is established against every writer, Permissive and C++ ones
-    included (amended 2026-10-28, review fold: A-M-1, A-B-1; rev 1 emitted for
-    every checked `ref` and made a Permissive caller's aliasing undefined
-    behavior): for a `ref` binding on a place whose every carrier is the body's
-    own, an owner of the body or a place reached only through carriers of such
-    owners' loans, intra-function; for one on the referent of a `ref` parameter
-    or the pointee of an `exclusive T*` parameter, and for those parameters
-    themselves, only under T8's whole-package condition (no export to C++, no
-    address taken, every Carbon call site in the package Strict-checked); and
-    never for a `ref` on an open place, the checked `const` `ref` on a
-    `Core.SharedImmutable` type included, whose frozen loan Strict enforces but
-    which a Permissive body or C++ may still write as erroneous behavior, nor
-    for an `unsafe`-formed one or one in a Permissive body, whose `noalias` is
-    the unsafe code's obligation and not "established" (p005434:866-868).
-    Permissive warns `PermissiveAliasedExclusive` and accepts, so D-SAFE-8's
-    break condition ("an accepted p005434 example that becomes invalid in
-    Permissive mode") stays unbroken. The options the brief names: the exclusive
-    formation is taken where the place is closed, the `unsafe` formation where
-    it is open, and "no `ref` from a shared pointer" is rejected (section 7).
-    **Cost of realignment:** p005434:152-162's `F(ptr: i32*)`, whose `let ref x:
-    i32 = *ptr;` binds through a shared parameter, is rejected in Strict
-    (EX-TM-9) and is accepted with an `exclusive i32*` parameter or the `unsafe`
-    marker; a `ref self: const Self` method called through a shared pointer to a
-    type that does not opt in needs `unsafe`; a `ref` binding or a `ref`
-    argument on a global, an open place, needs the `unsafe` formation (`unsafe
-    F(ref g)` for an argument), a `const` `ref` of a `Core.SharedImmutable` type
-    excepted (amended 2026-10-28, review fold: RR1-m4); and a `match` through a
-    shared pointer binds payloads by value, not by `ref` (EX-M-5, EX-M-6). Break
-    condition: W-347's own, an accepted upstream memory-safety proposal that
-    narrows p005434:83 (cite it and close the item); and D-SAFE-8's, kept.
+    (`UsePick`, whose `z` the live `q2`'s shared loan on `y` excludes:
+    `StrictSharedBorrowInvalidated` at the `let ref z`, T4; amended 2026-10-28,
+    document-review fold: R1-m1, where this read "whose `z` now conflicts with
+    the live `q2`: `StrictExclusiveBorrowConflict`"), `unsafe` otherwise. T8
+    emits `noalias` and `captures(none)` or `captures(ret: address, provenance)`
+    only where the requirement is established against every writer, Permissive
+    and C++ ones included (amended 2026-10-28, review fold: A-M-1, A-B-1; rev 1
+    emitted for every checked `ref` and made a Permissive caller's aliasing
+    undefined behavior): for a `ref` binding on a place whose every carrier is
+    the body's own, an owner of the body or a place reached only through
+    carriers of such owners' loans, intra-function; for one on the referent of a
+    `ref` parameter or the pointee of an `exclusive T*` parameter, and for those
+    parameters themselves, only under T8's whole-package condition (no export to
+    C++, no address taken, every Carbon call site in the package
+    Strict-checked); and never for a `ref` on an open place, the checked `const`
+    `ref` on a `Core.SharedImmutable` type included, whose frozen loan Strict
+    enforces but which a Permissive body or C++ may still write as erroneous
+    behavior, nor for an `unsafe`-formed one or one in a Permissive body, whose
+    `noalias` is the unsafe code's obligation and not "established"
+    (p005434:866-868). Permissive warns `PermissiveAliasedExclusive` and
+    accepts, so D-SAFE-8's break condition ("an accepted p005434 example that
+    becomes invalid in Permissive mode") stays unbroken. The options the brief
+    names: the exclusive formation is taken where the place is closed, the
+    `unsafe` formation where it is open, and "no `ref` from a shared pointer" is
+    rejected (section 7). **Cost of realignment:** p005434:152-162's `F(ptr:
+    i32*)`, whose `let ref x: i32 = *ptr;` binds through a shared parameter, is
+    rejected in Strict (EX-TM-9) and is accepted with an `exclusive i32*`
+    parameter or the `unsafe` marker; a `ref self: const Self` method called
+    through a shared pointer to a type that does not opt in needs `unsafe`; a
+    `ref` binding or a `ref` argument on a global, an open place, needs the
+    `unsafe` formation (`unsafe F(ref g)` for an argument), a `const` `ref` of a
+    `Core.SharedImmutable` type excepted (amended 2026-10-28, review fold:
+    RR1-m4); and a `match` through a shared pointer binds payloads by value, not
+    by `ref` (EX-M-5, EX-M-6). Break condition: W-347's own, an accepted
+    upstream memory-safety proposal that narrows p005434:83 (cite it and close
+    the item); and D-SAFE-8's, kept.
 -   **D-SAFE2-7 — The Debug value-binding shadow flag.** Kept, as the Debug
     detector of what p005434:670-672 says unchecked code can still do: a
     Permissive body, an `unsafe`-formed binding's aliases or C++ mutating a
@@ -1655,29 +1658,29 @@ replacement text serves both (Appendix B.1).
     realignment:** the audit property "no search of the source finds where
     the check was removed" holds for every program the design supports and
     not for a benchmarking build, which is configured outside the source.
--   **D-SAFE2-14 — The examples whose outcomes change** (section 4): EX-M-1
-    (the aliased `Set` under `first`), EX-M-5 and EX-M-6 (value payloads
-    through shared pointers), `UsePick` (`StrictExclusiveBorrowConflict` in
-    place of `StrictInvalidatingThroughShared`); added, EX-M-4c and EX-M-4d (the
-    closed and the open borrowed object, EX-M-4d with review A's `Peek2`, the
-    `Plain` whole-object write through a shared pointer that is now
-    `StrictSharedImmutableWrite`; amended 2026-10-28, review fold: A-B-1; and
-    with the focused re-review's `Peek4`, the same write of an enclosing
-    struct, amended 2026-10-28, review fold: RR1-B1; and with the round-2
-    re-review's `Peek8`, the fork-prelude `Core.Buf(str)` whose `Set` through
-    the shared `b` is now `StrictInvalidatingThroughShared`, amended
-    2026-10-28, review fold: RR2-B1) and EX-TM-9
-    (p005434:152-162's `F`); the slices design's opening example, whose
-    `a[2] = 30` under the live view `s` is now `StrictBorrowedObjectMutated`
-    (A.10.1; amended 2026-10-28, review fold: RR1-M1); and EX-TM-3's `Buf`
-    half, whose `buf.Set(1, 7)` under the live view `v` is now
-    `StrictSharedBorrowInvalidated` and moves before `v` (A.3.12a; amended
-    2026-10-28, review fold: RR2-B1).
-    Each changed program is rewritten in place with its superseded line kept
-    in a comment, and the regression sets' "kept verbatim" sentences gain the
-    dated exception. Break condition: a reviewer traces a page example to an
-    outcome other than section 4's; the example or the rule is fixed, never
-    the matrix alone.
+-   **D-SAFE2-14 — The examples whose outcomes change** (section 4): EX-M-1 (the
+    aliased `Set` under `first`), EX-M-5 and EX-M-6 (value payloads through
+    shared pointers), `UsePick` (`StrictSharedBorrowInvalidated` at the `let ref
+    z` in place of `StrictInvalidatingThroughShared` at `z = ...`; amended
+    2026-10-28, document-review fold: R1-m1, where this read "`StrictExclusiveBorrowConflict`
+    in place of"); added, EX-M-4c and EX-M-4d (the closed and the open borrowed
+    object, EX-M-4d with review A's `Peek2`, the `Plain` whole-object write
+    through a shared pointer that is now `StrictSharedImmutableWrite`; amended
+    2026-10-28, review fold: A-B-1; and with the focused re-review's `Peek4`,
+    the same write of an enclosing struct, amended 2026-10-28, review fold:
+    RR1-B1; and with the round-2 re-review's `Peek8`, the fork-prelude
+    `Core.Buf(str)` whose `Set` through the shared `b` is now
+    `StrictInvalidatingThroughShared`, amended 2026-10-28, review fold: RR2-B1)
+    and EX-TM-9 (p005434:152-162's `F`); the slices design's opening example,
+    whose `a[2] = 30` under the live view `s` is now
+    `StrictBorrowedObjectMutated` (A.10.1; amended 2026-10-28, review fold:
+    RR1-M1); and EX-TM-3's `Buf` half, whose `buf.Set(1, 7)` under the live view
+    `v` is now `StrictSharedBorrowInvalidated` and moves before `v` (A.3.12a;
+    amended 2026-10-28, review fold: RR2-B1). Each changed program is rewritten
+    in place with its superseded line kept in a comment, and the regression
+    sets' "kept verbatim" sentences gain the dated exception. Break condition: a
+    reviewer traces a page example to an outcome other than section 4's; the
+    example or the rule is fixed, never the matrix alone.
 -   **D-SAFE2-15 — Ids and residue.** No new work item and no F id (section
     §0.9): the implementation of every rule above falls inside SAFE-1's stage
     items, which gain dated notes (Appendix B.4): W-144 (the prelude's
@@ -1896,10 +1899,10 @@ under the realigned design and the stage that enforces it.
 | EX-M-4d `Peek`, `BufSize`, `Peek2`, `Peek4`, `Peek8` (new; `Peek2` amended 2026-10-28, review fold: A-B-1; `Peek4` amended 2026-10-28, review fold: RR1-B1; `Peek8` amended 2026-10-28, review fold: RR2-B1) | ACCEPTS-UNCHECKED (nightly exit 0: `Peek` prints 1, `Peek2(&x, &x)` prints 6, `Peek4(&y, &y)` prints 6; `BufSize` and `Peek8` are fork prelude, `Peek8`'s stand-in class printing 6, section 0.7) | `Peek`: `StrictBorrowFromShared` at `let v`; `BufSize`: accepted (`Core.Buf(i32)` is `Core.SharedImmutable`, `i32` being `Freeze`); `Peek2`: the binding of `*p` is accepted (`Core.String` opts in) and `*q = "longer"` is `StrictSharedImmutableWrite` (M3); `Peek4`: the binding of `p->s` is accepted and `*q = {.s = "longer", .n = 1}` is `StrictSharedImmutableWrite`, the `Plain` struct holding a `str` (M3); `Peek8`: the binding of the element is accepted (`str` opts in) and `b->Set(0, "longer")` is `StrictInvalidatingThroughShared`, `Set` taking `ref self` (M3(d)); stage 4 with W-144 | (not in the design; SAFE-1 accepted the writes of `Peek2`, `Peek4` and `Peek8`, M3(c) and the by-value `Set`) | W-348 |
 | EX-M-5 `Alt` | NEW-SYNTAX | the realigned program, a value payload, is accepted; the old `case .Some(ref s)` would be `StrictRefFromShared`; stage 4 plus the `Optional` redesign | accepted with a shared-kind `ref` payload | W-347 |
 | EX-M-6 `Alt2` | NEW-SYNTAX | `StrictInvalidatingThroughShared` at `*d = ...` with a copied payload `p: i32*` | the same diagnostic with `ref p` | W-347 (program only) |
-| EX-TM-1 `Longest` | NEW-SYNTAX | accepted: `a->Size()` binds `*a` frozen, `Core.String` being `Core.SharedImmutable`; in a caller both pointees are held by the result, frozen (the parameters are `const`), for its lifetime (T5(d)), a caller's write to either through any other path being `StrictBorrowedObjectMutated`; stage 4 with W-144 (amended 2026-10-28, review fold: A-B-2) | accepted; a caller's `Plain` write to an argument under a live result accepted | reason, and a caller's writes under a live result (W-349) |
+| EX-TM-1 `Longest` | NEW-SYNTAX | accepted: `a->Size()` binds `*a` frozen, `Core.String` being `Core.SharedImmutable`; in a caller both pointees are held by the result, frozen as the pointees of `bound` pointer arguments that are not `exclusive T*`, the `const` only keeping the result's own access to reads (amended 2026-10-28, document-review fold: R1-m2, where this read "frozen (the parameters are `const`)"), for its lifetime (T5(d)), a caller's write to either through any other path being `StrictBorrowedObjectMutated`; stage 4 with W-144 (amended 2026-10-28, review fold: A-B-2) | accepted; a caller's `Plain` write to an argument under a live result accepted | reason, and a caller's writes under a live result (W-349) |
 | EX-TM-3 `Use` | ACCEPTS-UNCHECKED (`String` half: nightly exit 0) | the `String` half unchanged: `p->Size()` binds on a closed place, and `s = "def"` writes through the owner, a closed place under no frozen loan, so M3's `Core.SharedImmutable` paragraph does not apply (amended 2026-10-28, review fold: A-B-1); the `Buf` half: `buf.Set(1, 7)` under the live view `v` is `StrictSharedBorrowInvalidated`, `Set` taking `ref self` (W-144) and `v` holding a frozen loan on `buf`, so the program calls it before `v` is formed and `v[1]` still prints 7; stage 4 with W-144 (amended 2026-10-28, review fold: RR2-B1; rev 3 read "unchanged") | accepted, `buf.Set(1, 7)` under the live `v` | W-348 (`Buf` half; amended 2026-10-28, review fold: RR2-B1) |
 | EX-TM-8 `Pick` | NEW-SYNTAX | accepted: returns a reference expression | accepted | none |
-| EX-TM-8 `UsePick` | NEW-SYNTAX | `StrictExclusiveBorrowConflict` at `q2->AsSlice()`: `z` is an exclusive `ref` on the closed `x` and `y`; stage 4 | `StrictInvalidatingThroughShared` at `z = ...` | W-347 |
+| EX-TM-8 `UsePick` | NEW-SYNTAX | `StrictSharedBorrowInvalidated` at `let ref z`: `z` would be an exclusive `ref` on the closed `x` and `y`, and `q2`'s shared loan on `y` is live (T4); stage 4 (amended 2026-10-28, document-review fold: R1-m1, where this read "`StrictExclusiveBorrowConflict` at `q2->AsSlice()`: `z` is an exclusive `ref` on the closed `x` and `y`") | `StrictInvalidatingThroughShared` at `z = ...` | W-347 |
 | EX-TM-8 `Launder1` to `Launder5`, `Wild`, `Wild3`, `Load` | as before | unchanged; re-traced (amended 2026-10-28, review fold: A-M-2, A-B-2): a `Core.Slice(i32)` receiver bound on a local (`Launder1`'s `s.Subslice`, `Launder3`'s `b.AsSlice`) is a frozen loan on a closed place; `Launder4`'s `o.Get()` binds a copy-represented `Core.Optional(i32*)`, an adapter of `MaybeUnformed(i32*)` (section 0.1), so it forms no loan on `o` and the loan on `x` its value carries is unchanged; `Load`'s result also holds the caller's `*q` (T5(d)), which in `Wild3` is ⊥ and needs the T6 `unsafe` first; no diagnostic changes | unchanged | none |
 | EX-TM-9 `F`, `F2`, `F3` (new) | `F`: ACCEPTS-UNCHECKED (nightly exit 0, prints 3); `F2`, `F3`: NEW-SYNTAX | `F`: `StrictRefFromShared`; `F2` (an `exclusive i32*`) and `F3` (`unsafe *ptr`) accepted; stage 4 | `F` accepted (a shared-kind `ref`) | W-347 |
 | p005434 `Valid1`, `ValToRef`, `Conditional` | NEW-SYNTAX (`bound`) | the definitions accepted in both modes: reference returns, not bindings; a call checks T5(d): on a local, the pointee is held by the result and the caller's other paths may not write it while the result lives; through a parameter `p: i32*` to an open place, `Valid1(p)` is `StrictBorrowFromShared` in Strict, `PermissiveAliasedExclusive` in Permissive (amended 2026-10-28, review fold: A-B-2) | accepted, definitions and calls | reason; calls through open places (W-349) |

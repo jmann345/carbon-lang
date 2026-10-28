@@ -353,7 +353,15 @@ the [definition](#definition); EX-M-5 and EX-M-6 are its two shapes (realigned
 exclusive path binds `ref` payloads as exclusive sub-loans on the scrutinee; a
 `match` through a shared path binds them as shared sub-loans. Under a shared
 sub-loan the alternative of the sum cannot change while the payload reference
-lives").
+lives, and this is a consequence of M3(c) rather than a separate rule: a
+payload `choice`, and `Core.Optional(T)` for every `T`, is non-`Plain`, so
+assigning a new alternative to the scrutinee through any shared alias is
+`StrictInvalidatingThroughShared`, and assigning it through the owner while the
+sub-loan is live is `StrictSharedBorrowInvalidated` (T4). The change of a sum
+type's alternative under a payload reference is the second mutation safety bug
+of the [definition](#definition); EX-M-5 and EX-M-6 are its two shapes."; the
+quote amended 2026-10-28, document-review fold: R2-m2, where it stopped at
+"while the payload reference lives").
 
 ### M6: `Core.Guarded(T)` for observer idioms
 
@@ -991,7 +999,10 @@ M3(c), and in the fork prelude's `Buf` it is concretely so: the old block is
 freed by `Destroy` (buf.carbon:58-60) while `b`'s deferred read could still
 reach it. Strict rejects it with `StrictSharedBorrowInvalidated`; Permissive
 warns `PermissiveAliasedExclusive`; Debug reports `MutationDuringValueBinding`
-at the write in a Permissive body. The fix is to end `b`'s use before the
+at the write in a Permissive body (realigned 2026-10-28, SAFE-2: W-348; the
+superseded 2026-10-12 sentence read "Debug reports the stale read if it
+happens."; the mark amended 2026-10-28, document-review fold: R2-m2). The fix
+is to end `b`'s use before the
 assignment or to copy eagerly with a `var`. Outcome: ACCEPTS-UNCHECKED (fork
 prelude, not compile-verified in this PR): the fork toolchain compiles it, the
 value binding being today's `i32`-independent rule with no loan behind it, and
@@ -1112,9 +1123,11 @@ Outcome: NEW-SYNTAX. `Core.Optional` is a class with an `adapt`
 (optional.carbon:30-46) and the prelude's own comment (:64-68) says it "is not a
 choice" and that the `match` form "applies once an approved `Optional` design
 makes it one", so the `case .Some(...)` pattern does not parse against the fork
-prelude; `ref` payload bindings exist today only for user `choice` types
-(toolchain/check/handle_binding_pattern.cpp:518-528). Stage 4 plus the
-choice-based `Optional` redesign the prelude comment names.
+prelude (realigned 2026-10-28, SAFE-2: W-347; this read "so `case .Some(ref s)`
+does not parse against the fork prelude"; the mark amended 2026-10-28,
+document-review fold: R2-m2); `ref` payload bindings exist today only for user
+`choice` types (toolchain/check/handle_binding_pattern.cpp:518-528). Stage 4
+plus the choice-based `Optional` redesign the prelude comment names.
 
 ### EX-M-6: The alternative cannot change through another alias
 

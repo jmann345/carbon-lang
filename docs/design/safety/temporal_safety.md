@@ -287,46 +287,61 @@ A `ref` _return_ is not a binding. The proposal's
 `Valid1(bound p: i32*) -> ref i32 { return *p; }` and
 `ValToRef(bound y: C) -> ref D { return *y.ptr; }` return a reference
 expression to an open place and stay valid in both modes; the call's result
-has the kind of its loans, shared here, and using it is using `*p` (the
-mutation page's M3 applies). A call of either is checked by T5(d): while the
+has the kind of its loans, shared for `Valid1`'s `T*` parameter and frozen for
+`ValToRef`'s by-value `y` of a borrowed type (T5(a)), a kind that keeps `y`'s
+own storage unwritten while the result lives, and the reference is to `*p` or
+`*y.ptr`, a place reached through a pointer and outside the argument's
+storage, whose uses the mutation page's M3 governs (amended 2026-10-28,
+document-review fold: R1-m2). A call of either is checked by T5(d): while the
 result lives, the `bound` argument is written by no path but the result, so a
 call through a shared pointer to an open place of a type that is not
 `Core.SharedImmutable`, `Valid1(p)` for a parameter `p: i32*`, is
 `StrictBorrowFromShared` (added 2026-10-28, SAFE-2: W-349). A result whose loan
 set mixes kinds has the
-**weakest** kind: shared if any loan in the set is shared. The proposal's
+**weakest** kind: frozen if any loan in the set is frozen, and otherwise shared
+if any is shared, frozen counting below shared (T5(a); amended 2026-10-28,
+document-review fold: R1-m2). The proposal's
 `Conditional(b: bool, bound ref r: C, bound p: C*) -> ref C` carries the set
 `{(r, exclusive), (*p, shared)}`, so its result is a shared-kind reference
 expression, and T4 applies to every place in the set. Binding such a result
 with `let ref` is a `ref` binding like any other: checked when every place in
 the set is closed, `unsafe` otherwise. The program `Pick`/`UsePick` of EX-TM-8
-is the closed case: `z` is an exclusive `ref` on both `x` and `y`, which
-conflicts with the live `q2` (`StrictExclusiveBorrowConflict`).
+is the closed case: `z` would be an exclusive `ref` on both `x` and `y`, and
+`q2`'s shared loan on `y`, live on the next line, excludes forming it, so the
+`let ref z` is `StrictSharedBorrowInvalidated` (T4; amended 2026-10-28,
+document-review fold: R1-m1, where this read "which conflicts with the live
+`q2` (`StrictExclusiveBorrowConflict`)").
 
 > **Realigned (fork amendment 2026-10-28, SAFE-2: W-347, F-013 D-SAFE-8).** This
 > section states proposal p005434:83 for every `ref` binding. The superseded
 > 2026-10-12 section read, in the sentences that stated the narrowed rule: "A
 > `ref` binding inherits the kind of its source (D-SAFE-8). A `ref` formed from
-> a place is exclusive access, as p005434 states and this design keeps" / "A
-> `ref` formed from `*p` inherits `p`'s kind: exclusive from `exclusive T*`,
-> shared-mutable from `T*`, under which the mutation page's M3 applies to every
-> use of the binding, and const from `const T*`. So the proposal's
-> `Valid1(bound p: i32*) -> ref i32 { return *p; }` and its
-> `ValToRef(bound y: C) -> ref D { return *y.ptr; }` stay valid in both modes,
-> the result being a shared-kind `ref`: a `ref` through which an invalidating
-> operation is rejected but a `Plain` write is not." / "A `ref` or a call
-> result whose loan set mixes kinds has the **weakest** kind: shared if any
-> loan in the set is shared, const if any is const." / "and so is a
-> shared-kind `ref`" / "The program `Pick`/`UsePick` of EX-TM-8 is this rule's
-> example: a non-`Plain` assignment through such a `ref` is
+> a place is exclusive access, as p005434 states and this design keeps: "A `ref`
+> binding may only bind to a durable reference expression or an expression that
+> can be converted to one. The bound durable reference expression must outlive
+> the `ref` binding."" / "A `ref` formed from `*p` inherits `p`'s kind:
+> exclusive from `exclusive T*`, shared-mutable from `T*`, under which the
+> mutation page's M3 applies to every use of the binding, and const from `const
+> T*`. So the proposal's `Valid1(bound p: i32*) -> ref i32 { return *p; }` and
+> its `ValToRef(bound y: C) -> ref D { return *y.ptr; }` stay valid in both
+> modes, the result being a shared-kind `ref`: a `ref` through which an
+> invalidating operation is rejected but a `Plain` write is not." / "A `ref` or
+> a call result whose loan set mixes kinds has the **weakest** kind: shared if
+> any loan in the set is shared, const if any is const." / "The proposal's
+> `Conditional(b: bool, bound ref r: C, bound p: C*) -> ref C` carries the set
+> `{(r, exclusive), (*p, shared)}` and so is a shared-kind `ref`, and T4 applies
+> to every place in the set." / "The program `Pick`/`UsePick` of EX-TM-8 is this
+> rule's example: a non-`Plain` assignment through such a `ref` is
 > `StrictInvalidatingThroughShared` regardless of whether any other view is
 > live." Its blockquote read: "**Narrowing (fork amendment 2026-10-12, F-013
-> D-SAFE-8).** Proposal p005434 states (p005434:83) that "the address of a
-> `ref` binding is `nocapture` and `noalias`". This design emits `noalias` and
+> D-SAFE-8).** Proposal p005434 states (p005434:83) that "the address of a `ref`
+> binding is `nocapture` and `noalias`". This design emits `noalias` and
 > `captures(none)` only for exclusive-kind refs, and only under the conditions
 > of T8 below; a shared-kind `ref` carries neither attribute. The proposal's
 > sentence is kept for the exclusive kind and narrowed for the rest, because a
-> shared-kind `ref` is, by construction, one alias among many."
+> shared-kind `ref` is, by construction, one alias among many." (The second and
+> sixth sentences quoted in full, amended 2026-10-28, document-review fold:
+> R2-m2.)
 
 ## Rules T1 to T8 and the Store rule
 
@@ -403,18 +418,24 @@ as a reborrow at shared kind. T8 therefore never sees two live exclusive
 carriers of one loan.
 
 **Reborrow.** Forming a shared loan from an exclusive carrier — the
-`exclusive T*` to `T*` downgrade, a `bound self` by value, an `addr self` call,
-`&*p` at shared kind — _suspends_ the carrier's exclusivity: until every
-derived loan is dead the carrier may be used only at shared kind (reads,
-`Plain` writes, `addr` and `const` methods, further shared loans), and an
-invalidating use of it is `StrictSharedBorrowInvalidated`. This is how the
-mutation page's EX-M-1 reads: `vec->Get(0)` while a derived view lives is a
-shared use, and `vec->Push(3)` is legal only once every derived view is dead.
-A frozen loan derived from an exclusive carrier, a by-value `bound self` of a
-borrowed type or a value binding of `*p`, suspends it further: until the frozen
-loan is dead the carrier may only be read, so EX-M-1's `a->Set(0, 5)` while
-`first` lives is `StrictBorrowedObjectMutated` (realigned 2026-10-28, SAFE-2:
-W-348, W-349).
+`exclusive T*` to `T*` downgrade, an `addr self` call, `&*p` at shared kind —
+_suspends_ the carrier's exclusivity: until every derived loan is dead the
+carrier may be used only at shared kind (reads, `Plain` writes, `addr` and
+`const` methods, further shared loans), and an invalidating use of it is
+`StrictSharedBorrowInvalidated`. This is how the mutation page's EX-M-1 reads:
+`vec->Get(0)` while a derived view lives is a use at shared kind, a `const`
+call whose by-value `bound self` forms the frozen loan the next sentence names,
+and `vec->Push(3)` is legal only once every derived view is dead. A frozen loan
+derived from an exclusive carrier, a by-value `bound self` of a borrowed type
+or a value binding of `*p`, suspends it further: until the frozen loan is dead
+the carrier may only be read, so EX-M-1's `a->Set(0, 5)` while `first` lives
+is `StrictBorrowedObjectMutated` (realigned 2026-10-28, SAFE-2: W-348, W-349).
+A by-value `bound self` forms no shared loan, T5(a) giving it frozen for a
+borrowed type and no loan on the object for a copy-represented one (amended
+2026-10-28, document-review fold: R1-m2; the superseded 2026-10-12 text read
+"the `exclusive T*` to `T*` downgrade, a `bound self` by value, an `addr self`
+call, `&*p` at shared kind" and "`vec->Get(0)` while a derived view lives is a
+shared use").
 
 ### T3: Liveness
 
@@ -912,8 +933,10 @@ fn Longest(bound a: const Core.String*, bound b: const Core.String*) -> const Co
 
 Rule T5(a). Outcome today: NEW-SYNTAX — toolchain/lex/token_kind.def has no
 `bound` token. Under the design the result's loan set is the union of `a`'s and
-`b`'s at shared kind, and by T5(d) the result holds both pointees, frozen
-because the parameters are `const T*`: in a caller, while the result is live,
+`b`'s at shared kind, and by T5(d) the result holds both pointees, frozen as
+the pointees of `bound` pointer arguments that are not `exclusive T*`, the
+`const` only keeping the result's own access to reads (amended 2026-10-28,
+document-review fold: R1-m2): in a caller, while the result is live,
 neither pointee may be written, destroyed or assigned through any path, and both
 may still be read; on a caller's local the check is T4's, and through a caller's
 own shared pointers the prelude's opt-in of `Core.String` to
@@ -1133,8 +1156,8 @@ fn UsePick() {
   var x: Core.Buf(i32) = Core.Buf(i32).Make(1, 0);
   var y: Core.Buf(i32) = Core.Buf(i32).Make(1, 0);
   let q: Core.Buf(i32)* = &y;  let q2: Core.Buf(i32)* = &y;
-  let ref z: Core.Buf(i32) = Pick(false, x, q);          // z: an exclusive ref on x and y, both closed places (realigned 2026-10-28, SAFE-2: W-347; was "z: shared-kind ref whose loan set covers x and y (A-5)")
-  let v: Core.Slice(i32) = q2->AsSlice();                // StrictExclusiveBorrowConflict: q2 reaches y while z's exclusive loan on y is live (was "interior loan on y")
+  let ref z: Core.Buf(i32) = Pick(false, x, q);          // StrictSharedBorrowInvalidated (T4): q2's shared loan on y, live below, excludes the exclusive loan z forms (amended 2026-10-28, document-review fold: R1-m1); z: an exclusive ref on x and y, both closed places (realigned 2026-10-28, SAFE-2: W-347; was "z: shared-kind ref whose loan set covers x and y (A-5)")
+  let v: Core.Slice(i32) = q2->AsSlice();                // the use that keeps q2's shared loan on y live when z is formed (amended 2026-10-28, document-review fold: R1-m1, where this read "StrictExclusiveBorrowConflict: q2 reaches y while z's exclusive loan on y is live"; was "interior loan on y")
   z = Core.Buf(i32).Make(5, 0);     // through the exclusive ref, not itself rejected (was "StrictInvalidatingThroughShared (RR-7): a non-Plain assignment through a shared-kind ref, rejected regardless of v; y's live view is the second reason")
   Core.Print(v[0]);
 }
@@ -1188,14 +1211,17 @@ conversion at as.carbon:37-39). What each shows:
     shared)}` and has the weakest kind, shared. In `UsePick` both places in that
     set, `x` and `y`, are locals, so `let ref z` forms an exclusive loan on each
     (T2) and suspends `q`, the carrier passed; `q2` is another carrier of `y`,
-    live on the next line, so `q2->AsSlice()` is
-    `StrictExclusiveBorrowConflict`. Rejected at stage 4 (realigned 2026-10-28,
-    SAFE-2: W-347; the superseded 2026-10-12 text read: "`Pick`'s result carries
-    `{(r, exclusive), (*p, shared)}` and is a shared-kind `ref`; the assignment
-    of a new `Buf` through `z` is `StrictInvalidatingThroughShared`, the
-    mutation page's diagnostic for a non-`Plain` assignment through shared-kind
-    access, regardless of the view `v`; the live view of `y` through `q2` is the
-    second reason.").
+    whose shared loan is live on the next line, so forming `z`'s exclusive loan
+    on `y` is `StrictSharedBorrowInvalidated`, T4's shared-loan clause, at the
+    `let ref z` (amended 2026-10-28, document-review fold: R1-m1; this read
+    "live on the next line, so `q2->AsSlice()` is
+    `StrictExclusiveBorrowConflict`"). Rejected at stage 4 (realigned
+    2026-10-28, SAFE-2: W-347; the superseded 2026-10-12 text read: "`Pick`'s
+    result carries `{(r, exclusive), (*p, shared)}` and is a shared-kind `ref`;
+    the assignment of a new `Buf` through `z` is
+    `StrictInvalidatingThroughShared`, the mutation page's diagnostic for a non-`Plain`
+    assignment through shared-kind access, regardless of the view `v`; the live
+    view of `y` through `q2` is the second reason.").
 
 ### EX-TM-9: A `ref` binding through a shared pointer
 

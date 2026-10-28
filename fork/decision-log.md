@@ -4201,6 +4201,27 @@ W-139/W-140 follow; if upstream's `CheckFunctionTypeMatches` gains a specific
 for the new side, the fork's `new_specific_id` parameter merges into it.
 Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H9 have the quotes):_ `template
+constraint` and its member requirements (classified 2026-10-28, RG-1: ALIGNED,
+W-355; generics/details.md:1072-1073 "use the `template` keyword before
+`constraint`" and :5494); the structural vector, the look-through and
+`new_specific_id` (classified 2026-10-28, RG-1: NONE, W-355; internal:
+upstream's sem_ir/named_constraint.h has no `is_template` and its check has no
+`new_specific_id`, each 0, and its `CalleeCppOverloadSet` arms have no
+look-through); D-SC-6 (classified 2026-10-28, RG-1: DRIFT, W-139): its break
+condition was already met when W-139 was filed, since
+generics/overview.md:375-379 records "We have decided to support passing a
+symbolic constant to a template parameter" (leads issue 2153) and
+appendix-witness.md:151-154 that the approach "relies on monomorphization",
+text that predates the cut; SC-1 realigns the definition-time rejection by a
+new commit on this branch before it lands (R32 (e)), with
+docs/design/generics/template_constraints.md's paragraph that calls issue 2153
+"upstream's open question", which now carries a dated note; W-140 follows
+W-139.
+
 FILL (appended 2026-10-13). The goldens were filled on the container-built
 toolchain (the carbonbuild fastbuild of this branch, Carbon's assertions on),
 not on hosted runners (Actions disabled; R28). Fill round 1: 1a7cce0b2 (fixes),

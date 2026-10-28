@@ -467,6 +467,14 @@ lookup through a checked binding will never find structural members, so nothing
 is lost in 0.1 by rejecting the combination outright, and permitting it later is
 purely additive.
 
+> **RG-1 note (2026-10-28).** Upstream records leads issue 2153 as decided, not
+> open: "We have decided to support passing a symbolic constant to a template
+> parameter" (upstream docs/design/generics/overview.md:375-379), an approach
+> that "relies on monomorphization" (appendix-witness.md:151-154). The
+> definition-time rejection described above is therefore a drift under the
+> fork's rulebook R32 (d), W-139, which SC-1 realigns on this branch before it
+> lands; this paragraph is rewritten with it.
+
 One further use of plain named constraints does not carry over cleanly: a type
 may [`impl` a plain named constraint](details.md#named-constraints), but an
 impl's members cannot satisfy a template constraint's member requirements, since

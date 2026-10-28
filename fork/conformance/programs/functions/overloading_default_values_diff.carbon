@@ -10,9 +10,11 @@
 // requires byte-identical exit code and stdout, so C++ is the oracle for the
 // values. The calls are the ones where Carbon's first match
 // (fork/overload/ov4-plan.md OV-4, D-OV-4) and C++'s best viable match select
-// the same function: the defaulted member is the only viable one for an
-// omitted argument, and `bool` arguments have an exact C++ match where Carbon
-// has no `bool` to `i32` conversion. A call two members accept is not here:
+// the same function: for an omitted argument the defaulted member is the only
+// one Carbon accepts, and C++ ranks it best by its exact match (`F(bool)` is
+// viable in C++ too, through the integral to boolean conversion, and ranks
+// lower); `bool` arguments have an exact C++ match where Carbon has no `bool`
+// to `i32` conversion. A call two members accept is not here:
 // C++ rejects it as ambiguous (overloading_default_values.carbon pins
 // Carbon's selection). The set is not exported, so rulebook R30 does not
 // apply.

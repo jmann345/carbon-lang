@@ -433,7 +433,15 @@ static auto GetExplicitArityRange(Context& context,
   size_t expected_args_size =
       param_patterns.size() - (self_id.has_value() ? 1 : 0);
   auto default_value_arity = static_cast<size_t>(function.default_value_arity);
-  CARBON_CHECK(default_value_arity <= expected_args_size);
+  if (default_value_arity > expected_args_size) {
+    // Only a bound receiver and a `self` declared in the implicit parameter
+    // list reach this: that `self` is diagnosed (`SelfInImplicitParamList`)
+    // and still found by `FindSelfPattern`, but it is not one of the explicit
+    // parameters the receiver is counted against. `ResolveCalleeInCall` would
+    // abort on this member for every argument count (W-363), so it accepts
+    // none.
+    return {1, 0};
+  }
   return {expected_args_size - default_value_arity, expected_args_size};
 }
 
@@ -569,13 +577,14 @@ static auto ProbeOverloadCandidateInScratchScope(
 }
 
 // Probes whether a call's arguments select `function` — deducing a generic
-// member's arguments and converting every argument to the corresponding
-// parameter — without diagnosing and without leaving any instruction, cleanup,
-// or generic-region state behind (D-OV-4 steps 2(d) and 2(e)). `arg_ids` is
-// `self` (if bound) followed by the explicit arguments, zipped against all of
-// the function's parameter patterns as `CallerPatternMatch` does. A bound
-// receiver is never converted here: its presence was checked by the caller,
-// and binding it is the commit's job.
+// member's arguments and converting every supplied argument to the
+// corresponding parameter — without diagnosing and without leaving any
+// instruction, cleanup, or generic-region state behind (D-OV-4 steps 2(d) and
+// 2(e)). `arg_ids` is `self` (if bound) followed by the explicit arguments,
+// zipped against the function's leading parameter patterns; the trailing
+// parameters the call omits have default values, which the commit's
+// `CallerPatternMatch` supplies. A bound receiver is never converted here: its
+// presence was checked by the caller, and binding it is the commit's job.
 static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
                                    const SemIR::Function& function,
                                    SemIR::SpecificId enclosing_specific_id,

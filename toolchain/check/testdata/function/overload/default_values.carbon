@@ -402,6 +402,36 @@ fn P[T: type](unused x: T, y: i32 = 2) -> i32 { return y; }
 // CHECK:STDERR:
 fn Use() -> i32 { return G(true, 5) + G(true) + P(true); }
 
+// Until then a later member that accepts the short call is selected with no
+// diagnostic: `F(true)` calls `F(b: bool)` today, and will call the generic
+// member once deduction appends its default. UA-3's refill of this split shows
+// that change, which the decision log records before the golden moves.
+overload fn F[T: type](unused x: T, y: i32 = 2) -> i32 { return y; }
+overload fn F(unused b: bool) -> i32 { return -1; }
+
+//@dump-sem-ir-begin
+fn UseLater() -> i32 { return F(true); }
+//@dump-sem-ir-end
+
+// --- fail_implicit_self_with_default.carbon
+
+library "[[@TEST_NAME]]";
+
+// A `self` declared in the implicit parameter list is diagnosed, and the error
+// recovery of `FindSelfPattern` still treats it as `self`, although it is not
+// one of the explicit parameters a bound receiver is counted against. With a
+// bound receiver, member 0's defaults then outnumber its explicit parameters
+// after the receiver, and its ordinary call would abort for every argument
+// count (W-363), so the set rejects it by its arity: `c.M(true)` selects
+// member 1, and no member accepts `c.M()`.
+class C {
+  var v: i32;
+  overload fn M[self: Self](y: i32 = 2) -> i32 { return self.v + y; }
+  overload fn M(self, unused b: bool) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return c.M() + c.M(true); }
+
 // --- import_lib.carbon
 
 library "[[@TEST_NAME]]";

@@ -1251,7 +1251,17 @@ replacement text serves both (Appendix B.1).
     `Core.Box(T)`, which the prelude does not yet have, opts in the same way
     when W-144 adds it. So a by-value call through a shared pointer to one of
     them stays accepted (EX-TM-1, EX-M-4d), and a type that opts in is written
-    through shared paths by no Strict code. The trusted bodies keep the
+    through shared paths by no Strict code. The live shared path excludes the
+    exclusive ones only through a loan the writer's checker sees, so a frozen
+    loan formed through the free result of a marked `unsafe fn` call, whose
+    carrier holds none, rests on that marker, whose obligation T6 extends:
+    while the binding lives no path other than the result and its copies
+    writes the storage it borrows (amended 2026-10-28, document-review fold:
+    R1-M2: `var x: str = "ab"; let v: Core.Slice(str) =
+    unsafe Core.Slice(str).Make(&x, 1); let s: str = *v.Data(); x = "longer";
+    return s.Size();` met `Make`'s stated obligation and read the owner's
+    write, a nightly stand-in of its shape printing 6, section 8.7). The
+    trusted bodies keep the
     language half too (amended 2026-10-28, review fold: RR2-B1): a trusted
     body, the prelude's under S0, follows M3's write rule, writing an object
     whose type holds a `Core.SharedImmutable` sub-object only through an
@@ -1382,12 +1392,25 @@ replacement text serves both (Appendix B.1).
     binding as T6 already spells a binding through a ⊥ carrier (`let ref r: T =
     unsafe *p;`, `unsafe F(ref *p)`), whose obligation is the one p005434 gives
     unsafe code, to "adhere to just the `noalias` restrictions" (:861-862);
-    unmarked it is `StrictRefFromShared`. The shared-kind `ref` is gone. A `ref`
-    _return_ is not a binding, so the proposal's `Valid1` (:717-720), `ValToRef`
-    (:826) and `Conditional` (:772-779) stay valid in both modes, each returning
-    a reference expression whose kind is that of its loans; `Conditional`'s
-    mixed set `{(r, exclusive), (*p, shared)}` keeps the weakest kind, shared,
-    for the result expression, and binding that result with `let ref` is a `ref`
+    unmarked it is `StrictRefFromShared`. The shared-kind `ref` is gone. The
+    `ref` operand of a built-in operator, the first operand of assignment, of
+    the compound assignments and of `++` and `--`, the operand of `&`, the
+    object of member access and the first operand of indexing (p005434:302-318;
+    docs/design/assignment.md:76-82, "a `(ref self: Self)` parameter" whatever
+    the operand's form), lives for the one operation, during which nothing else
+    is evaluated, so where the implementation is the language's own or a prelude
+    impl whose body is a builtin it is established on any place, open ones
+    included, and M3 alone decides what the operation may do through a shared
+    path; a user-written impl's `ref self` is a `ref` binding under this rule
+    and its call M3(d)'s (amended 2026-10-28, document-review fold: R1-M1:
+    without it upstream's operator rule made every `Plain` write through `T*`
+    that M3 permits, `q->n = 2` in EX-M-4d's `Peek` among them, a `ref` binding
+    on an open place and so `StrictRefFromShared`). A `ref` _return_ is not a
+    binding, so the proposal's `Valid1` (:717-720), `ValToRef` (:826) and
+    `Conditional` (:772-779) stay valid in both modes, each returning a
+    reference expression whose kind is that of its loans; `Conditional`'s mixed
+    set `{(r, exclusive), (*p, shared)}` keeps the weakest kind, shared, for the
+    result expression, and binding that result with `let ref` is a `ref`
     formation like any other: checked when every place in the set is closed
     (`UsePick`, whose `z` now conflicts with the live `q2`:
     `StrictExclusiveBorrowConflict`), `unsafe` otherwise. T8 emits `noalias` and

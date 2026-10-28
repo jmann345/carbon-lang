@@ -142,6 +142,15 @@ do to the pointee:
 | shared-mutable | `T*` | read; write `Plain` fields; call `addr` and `const` methods; form further shared loans | any invalidating operation (M3): `StrictInvalidatingThroughShared` |
 | shared-const | `const T*` | read; call `const` methods | write anything; the `const` is API subsetting ([`const`-qualified types](../values.md#const-qualified-types)), nothing more |
 
+Through `T*` and `const T*`, the rows' `const` method calls and reads meet M8
+when they bind a borrowed object, a by-value `self`, a `ref self: const Self`
+or a value binding of a type whose value representation is not a copy: on a
+closed place, or on an open one for a `Core.SharedImmutable` type, and with
+`unsafe` otherwise (`StrictBorrowFromShared`, or `StrictRefFromShared` for
+`ref self: const Self`; M4); and the `T*` row's `Plain` writes exclude every
+assignment whose type holds a `Core.SharedImmutable` sub-object, which only an
+exclusive path makes (M3) (amended 2026-10-28, document-review fold: R1-M3).
+
 `&x` on a place under exclusive access, an owner, a `ref` binding or `*p` for
 `p: exclusive T*`, yields `exclusive T*`; it converts implicitly to `T*`, a
 downgrade under which the loan becomes shared and the exclusive carrier is
@@ -207,14 +216,26 @@ conflict is a loan conflict). Everything else, reads, overwriting `Plain`
 fields, `addr` and `const` methods, is permitted through any number of aliases
 at once, but for the assignments of a type that holds a `Core.SharedImmutable`
 sub-object, which the next paragraph names (realigned 2026-10-28, SAFE-2: W-348;
-this sentence ended "is permitted through any number of aliases at once."). The
+this sentence ended "is permitted through any number of aliases at once."). A
+`const` method call through `T*` or `const T*`, and a read of the pointee into
+a value binding, meet M8 besides when they bind a borrowed object: a closed
+place, a `Core.SharedImmutable` type, or `unsafe` (amended 2026-10-28,
+document-review fold: R1-M3). The
 rule is the strategy's fourth mutation commitment made checkable: iterators hold
 `T*`, `Push` is `ref self`, and the C++ notion of "iterator invalidation" is
 captured by the methods that require exclusive access, which preclude any
 outstanding shared mutable pointers (proposal p005914). Which assignments are
 invalidating is decided by one facet, [`Core.Plain`](#coreplain), defined
 structurally below so that (c) says exactly what (a) and the sub-object clause
-require.
+require. An operator that passes its operand to a `ref` parameter, an
+assignment among them (the [assignment](../assignment.md#syntax) design's "a
+`(ref self: Self)` parameter"), is not a call in (d)'s sense when its
+implementation is built in, the language's own or a prelude impl whose body is
+a builtin: the temporal page's [`ref` bindings](temporal_safety.md#ref-bindings)
+establish its operand for the one operation, and (a) to (c) and the next
+paragraph decide what it may do through a shared path, while the call of a
+user-written impl's `ref self` is (d)'s (amended 2026-10-28, document-review
+fold: R1-M1).
 
 One more class of write needs exclusive access although it invalidates
 nothing: a write of storage that holds a `Core.SharedImmutable` object
@@ -283,7 +304,10 @@ is checked against that statement:
     2026-10-28, SAFE-2: W-348; this clause read "it may assign `Plain` fields
     (`i32`, the pointer kinds, `Core.Slice`, the prelude's non-owning
     `Core.String`),"), call `addr` and `const` methods
-    on `self` and read anything; it may not assign a `Core.Buf`, `Core.Box`,
+    on `self` and read anything, a `const` call or a read into a value binding
+    that binds a borrowed object meeting M8 as the next bullet says, `*self`
+    being an open place (amended 2026-10-28, document-review fold: R1-M3); it
+    may not assign a `Core.Buf`, `Core.Box`,
     `Core.Optional` or payload-`choice` field, call an exclusive method on
     `self`, move out of `self` or destroy it. A call of an `addr` method is
     not invalidating and is permitted through `T*`.
@@ -633,37 +657,39 @@ The memory-safety argument, and what the rule costs. A frozen loan on a closed
 place is sound because every carrier of the place is in the body's view and a
 carrier of a local cannot escape it (the Store rule and T5(b)); on an open place
 of a `Core.SharedImmutable` type, because M3 rejects every Strict assignment
-through a shared path that writes the object's storage, whether its type is
-the object's or holds it, every trusted body keeps the same rule, the live
-shared path excludes the exclusive ones (M2), and the opt-in's obligation
-covers what the checker cannot see. A write by
+through a shared path that writes the object's storage, whether its type is the
+object's or holds it, every trusted body keeps the same rule, the live shared
+path excludes the exclusive ones (M2), its carrier holding a loan the writer's
+checker sees or, when it is the free result of a marked `unsafe fn` call, the
+marker's obligation that no other path writes the storage while the binding
+lives (the temporal page's T6; amended 2026-10-28, document-review fold: R1-M2),
+and the opt-in's obligation covers what the checker cannot see. A write by
 unchecked code, a Permissive body, C++ or an alias an `unsafe` binding promised
-away, is the erroneous behavior proposal p005434 keeps for it
-(p005434:670-672), never undefined behavior, because the safe-code optimizer
-assumes nothing about it (the temporal page's T8 emits no `noalias` on an open
-place), and the Debug build detects it: Debug keeps, in shadow memory keyed by
-address and never in the object's layout, a count of live frozen loans for each
-byte of a borrowed object's storage, incremented when the binding is formed and
-decremented at its last use as the stage-4 checker computes it, and every store
-that writes a byte whose count is non-zero, of any type and by any path,
-through `T*`, through a `ref`, through the owner, to a global by name or in an
-`addr self` body, reports `MutationDuringValueBinding`. The rule rejects in
-Strict what the rule of 2026-10-12 accepted: a `Plain`-field write during a
-binding even where it frees nothing (EX-M-4c), the aliased write of EX-M-1
-while a `bound` result lives (the temporal page's T5(d)), a by-value call or a
-`let` of a type that does not opt in, through a shared pointer whose aliases the
-body cannot see (EX-M-4d's `Peek`), a `Plain` assignment through a shared
-pointer, or to a global, of a `Core.String`, a `Core.Slice(T)` for a
-`Core.Freeze` `T` or an array, tuple, struct or class that holds one (EX-M-4d's
-`Peek2` and `Peek4`), and a `Core.Buf(T).Set` call through a shared pointer, on
-a `Buf` bound by value, or while a view of the block lives (EX-M-4d's `Peek8`;
-the temporal page's EX-TM-3).
-That is the cost proposal p005434 anticipated when it said to
-"revisit the underlying idea of mutation being erroneous if enforcing it in
-the strict mode proves fundamentally untenable due to ergonomic costs"
-(p005434:667-669), and revisiting it is upstream's call. For Rust, a parameter
-bound this way is frozen for the call, which is what `&T` promises, and it
-exports as `&T` when its type is `Core.Freeze`
+away, is the erroneous behavior proposal p005434 keeps for it (p005434:670-672),
+never undefined behavior, because the safe-code optimizer assumes nothing about
+it (the temporal page's T8 emits no `noalias` on an open place), and the Debug
+build detects it: Debug keeps, in shadow memory keyed by address and never in
+the object's layout, a count of live frozen loans for each byte of a borrowed
+object's storage, incremented when the binding is formed and decremented at its
+last use as the stage-4 checker computes it, and every store that writes a byte
+whose count is non-zero, of any type and by any path, through `T*`, through a
+`ref`, through the owner, to a global by name or in an `addr self` body, reports
+`MutationDuringValueBinding`. The rule rejects in Strict what the rule of
+2026-10-12 accepted: a `Plain`-field write during a binding even where it frees
+nothing (EX-M-4c), the aliased write of EX-M-1 while a `bound` result lives (the
+temporal page's T5(d)), a by-value call or a `let` of a type that does not opt
+in, through a shared pointer whose aliases the body cannot see (EX-M-4d's
+`Peek`), a `Plain` assignment through a shared pointer, or to a global, of a
+`Core.String`, a `Core.Slice(T)` for a `Core.Freeze` `T` or an array, tuple,
+struct or class that holds one (EX-M-4d's `Peek2` and `Peek4`), and a
+`Core.Buf(T).Set` call through a shared pointer, on a `Buf` bound by value, or
+while a view of the block lives (EX-M-4d's `Peek8`; the temporal page's
+EX-TM-3). That is the cost proposal p005434 anticipated when it said to "revisit
+the underlying idea of mutation being erroneous if enforcing it in the strict
+mode proves fundamentally untenable due to ergonomic costs" (p005434:667-669),
+and revisiting it is upstream's call. For Rust, a parameter bound this way is
+frozen for the call, which is what `&T` promises, and it exports as `&T` when
+its type is `Core.Freeze`
 ([safe-Rust interop](rust_interop.md)).
 
 (Realigned 2026-10-28, SAFE-2: W-348, W-349. The superseded 2026-10-12 section
@@ -1238,7 +1264,13 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     loan. Invalidating operations require exclusive access, and so does every
     assignment whose type holds a `Core.SharedImmutable` sub-object (M3,
     D-SAFE-17; added 2026-10-28, SAFE-2: W-348); everything else is permitted
-    through any number of aliases. `Core.Plain` is structural:
+    through any number of aliases, a `const` call or a read into a value
+    binding of a borrowed object through `T*` or `const T*` meeting
+    D-SAFE-17's rule besides (amended 2026-10-28, document-review fold:
+    R1-M3). A built-in operator's `ref` operand, an assignment's among them,
+    is not an exclusive-receiver call: the operation is classified by what it
+    does (D-SAFE-8; amended 2026-10-28, document-review fold: R1-M1).
+    `Core.Plain` is structural:
     `Copy` with trivial destruction, every sub-object existing and formed at a
     fixed offset; `Optional(T)`, `MaybeUnformed(T)`, payload choices, `Buf`,
     `Box` and pointer-carrying unions are not `Plain`, the scalars, the three

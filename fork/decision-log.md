@@ -3128,8 +3128,21 @@ residue ids are the allocated ones, below):
     `unsafe` formation (`let ref r: T = unsafe *p;`, `unsafe F(ref *p)`)
     whose obligation is to "adhere to just the `noalias` restrictions"
     (p005434:861-862), and unmarked it is `StrictRefFromShared`, warned in
-    Permissive as `PermissiveAliasedExclusive`. A `ref` return is not a
-    binding, so p005434:717-720
+    Permissive as `PermissiveAliasedExclusive`. The `ref` operand of a
+    built-in operator — the first operand of assignment, of the compound
+    assignments and of `++` and `--`, the operand of `&`, the object of member
+    access and the first operand of indexing, which p005434:302-318 passes to
+    a `ref` parameter and assignment.md:76-82 to "a `(ref self: Self)`
+    parameter" whatever its form, a dereference of a pointer included — lives
+    for the one operation, during which nothing else is evaluated, so where
+    the implementation is the language's own or a prelude impl whose body is a
+    builtin (int.carbon:331's `"int.sadd_assign"`) it is established on any
+    place, open ones included, and D-SAFE-9's M3 alone decides what the
+    operation may do through a shared path; a user-written impl's `ref self`
+    is a `ref` binding under this rule and its call D-SAFE-9's (d) (amended
+    2026-10-28, document-review fold: R1-M1: without it every `Plain` write
+    through `T*` that M3 permits was `StrictRefFromShared`). A `ref` return is
+    not a binding, so p005434:717-720
     (`Valid1(bound p: i32*) -> ref i32 { return *p; }`) and :826
     (`ValToRef`) stay valid in both modes, each returning a reference
     expression whose kind is that of its loans, and a call of either holds
@@ -3197,7 +3210,13 @@ residue ids are the allocated ones, below):
     read's `unsafe` (realigned 2026-10-28, SAFE-2: W-348;
     fork/safe/safe2-plan.md D-SAFE2-5; this sentence read "Everything else
     (reads, overwriting `Plain` fields, `addr`/`const` methods) is permitted
-    through any number of aliases."). `Core.Plain` is a
+    through any number of aliases."). A `const` method call or a read into a
+    value binding of a borrowed object through `T*` or `const T*` meets
+    D-SAFE-17 besides: a closed place, a `Core.SharedImmutable` type, or
+    `unsafe` (amended 2026-10-28, document-review fold: R1-M3). A built-in
+    operator's `ref` operand, an assignment's among them, is not (d)'s call:
+    (a) to (c) classify the operation by what it does (D-SAFE-8; amended
+    2026-10-28, document-review fold: R1-M1). `Core.Plain` is a
     compiler-determined facet in the `Concrete`/`TrivialDestructor` pattern
     (classes.md:1941-1944; details.md:4254-4290), defined **structurally** to
     match the invalidation definition above (amended 2026-10-12, review fold:
@@ -3322,7 +3341,11 @@ residue ids are the allocated ones, below):
     has no `bound` parameter, because the marker takes on the callee's stated
     obligation, lifetime included where the doc comment states one, so `unsafe
     Slice(T).Make(p, n)` yields a free view and is the single audit line §1.4
-    names — amended 2026-10-12, document-review fold: D-1), anything read
+    names — amended 2026-10-12, document-review fold: D-1; the marker also
+    takes on that, while a value binding of a borrowed object or a `const`
+    `ref` formed through a free result lives, no path other than the result
+    and its copies writes the storage it borrows, which the checker cannot see
+    — amended 2026-10-28, document-review fold: R1-M2), anything read
     through an unverified pointer, **a value of pointer-carrying type read from
     a union field (`unsafe u.p`), and the pointer `unsafe &u.f` itself, ⊥ on
     formation for every field type** (amended 2026-10-12, review fold: A-1: the
@@ -3706,7 +3729,11 @@ residue ids are the allocated ones, below):
     obligation covers what the checker cannot see (every field private, no
     `addr` method writing `self`, no function writing the storage through a
     shared path or returning a non-`const` pointer or `ref` into it, no stored
-    self-pointer). It implies `Core.Freeze`; the prelude opts in for
+    self-pointer); a binding formed through the free result of a marked
+    `unsafe fn` call relies besides on that marker, whose obligation includes
+    that no other path writes the storage while the binding lives (D-SAFE-10's
+    T6; amended 2026-10-28, document-review fold: R1-M2). It implies
+    `Core.Freeze`; the prelude opts in for
     `Core.String` and, under `forall [T: Core.Freeze]`, for `Core.Slice(T)`,
     `Core.Buf(T)` and `Core.Optional(T)`, and for `Core.Box(T)` once W-144 adds
     it (W-144). A trusted body keeps the write rule of M3: it writes an object

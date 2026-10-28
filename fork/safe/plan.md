@@ -427,8 +427,21 @@ sides); the break conditions are per decision.
     `unsafe` formation (`let ref r: T = unsafe *p;`, `unsafe F(ref *p)`)
     whose obligation is to "adhere to just the `noalias` restrictions"
     (p005434:861-862), and unmarked it is `StrictRefFromShared`, warned in
-    Permissive as `PermissiveAliasedExclusive`. A `ref` return is not a
-    binding, so p005434:717-720
+    Permissive as `PermissiveAliasedExclusive`. The `ref` operand of a
+    built-in operator — the first operand of assignment, of the compound
+    assignments and of `++` and `--`, the operand of `&`, the object of member
+    access and the first operand of indexing, which p005434:302-318 passes to
+    a `ref` parameter and assignment.md:76-82 to "a `(ref self: Self)`
+    parameter" whatever its form, a dereference of a pointer included — lives
+    for the one operation, during which nothing else is evaluated, so where
+    the implementation is the language's own or a prelude impl whose body is a
+    builtin (int.carbon:331's `"int.sadd_assign"`) it is established on any
+    place, open ones included, and D-SAFE-9's M3 alone decides what the
+    operation may do through a shared path; a user-written impl's `ref self`
+    is a `ref` binding under this rule and its call D-SAFE-9's (d) (amended
+    2026-10-28, document-review fold: R1-M1: without it every `Plain` write
+    through `T*` that M3 permits was `StrictRefFromShared`). A `ref` return is
+    not a binding, so p005434:717-720
     (`Valid1(bound p: i32*) -> ref i32 { return *p; }`) and :826
     (`ValToRef`) stay valid in both modes, each returning a reference
     expression whose kind is that of its loans, and a call of either holds
@@ -496,7 +509,13 @@ sides); the break conditions are per decision.
     read's `unsafe` (realigned 2026-10-28, SAFE-2: W-348;
     fork/safe/safe2-plan.md D-SAFE2-5; this sentence read "Everything else
     (reads, overwriting `Plain` fields, `addr`/`const` methods) is permitted
-    through any number of aliases."). `Core.Plain` is a
+    through any number of aliases."). A `const` method call or a read into a
+    value binding of a borrowed object through `T*` or `const T*` meets
+    D-SAFE-17 besides: a closed place, a `Core.SharedImmutable` type, or
+    `unsafe` (amended 2026-10-28, document-review fold: R1-M3). A built-in
+    operator's `ref` operand, an assignment's among them, is not (d)'s call:
+    (a) to (c) classify the operation by what it does (D-SAFE-8; amended
+    2026-10-28, document-review fold: R1-M1). `Core.Plain` is a
     compiler-determined facet in the `Concrete`/`TrivialDestructor` pattern
     (classes.md:1941-1944; details.md:4254-4290), defined **structurally** to
     match the invalidation definition above (amended 2026-10-12, review fold:
@@ -621,7 +640,11 @@ sides); the break conditions are per decision.
     has no `bound` parameter, because the marker takes on the callee's stated
     obligation, lifetime included where the doc comment states one, so `unsafe
     Slice(T).Make(p, n)` yields a free view and is the single audit line §1.4
-    names — amended 2026-10-12, document-review fold: D-1), anything read
+    names — amended 2026-10-12, document-review fold: D-1; the marker also
+    takes on that, while a value binding of a borrowed object or a `const`
+    `ref` formed through a free result lives, no path other than the result
+    and its copies writes the storage it borrows, which the checker cannot see
+    — amended 2026-10-28, document-review fold: R1-M2), anything read
     through an unverified pointer, **a value of pointer-carrying type read from
     a union field (`unsafe u.p`), and the pointer `unsafe &u.f` itself, ⊥ on
     formation for every field type** (amended 2026-10-12, review fold: A-1: the
@@ -1005,7 +1028,11 @@ sides); the break conditions are per decision.
     obligation covers what the checker cannot see (every field private, no
     `addr` method writing `self`, no function writing the storage through a
     shared path or returning a non-`const` pointer or `ref` into it, no stored
-    self-pointer). It implies `Core.Freeze`; the prelude opts in for
+    self-pointer); a binding formed through the free result of a marked
+    `unsafe fn` call relies besides on that marker, whose obligation includes
+    that no other path writes the storage while the binding lives (D-SAFE-10's
+    T6; amended 2026-10-28, document-review fold: R1-M2). It implies
+    `Core.Freeze`; the prelude opts in for
     `Core.String` and, under `forall [T: Core.Freeze]`, for `Core.Slice(T)`,
     `Core.Buf(T)` and `Core.Optional(T)`, and for `Core.Box(T)` once W-144 adds
     it (W-144). A trusted body keeps the write rule of M3: it writes an object
@@ -1506,7 +1533,10 @@ formed only on a closed place or, for a frozen one, a `Core.SharedImmutable`
 type, and is an `unsafe` operation otherwise; and the `T*` row's `Plain` writes
 exclude every assignment whose type holds a `Core.SharedImmutable` sub-object,
 which only an exclusive path makes (§1.6's M3; realigned 2026-10-28, SAFE-2:
-W-347, W-348; the table's rows are unchanged).
+W-347, W-348; the table's rows are unchanged). A built-in operator's `ref`
+operand, an assignment's among them, lives for the one operation and is
+established on any place, M3 deciding what the operation may do (amended
+2026-10-28, document-review fold: R1-M1).
 
 Diagnostics: `StrictRefFromShared` ("`ref` binding `{0}` of `{1}` through a
 shared path; use an `exclusive` pointer or `unsafe`"; realigned 2026-10-28,
@@ -1533,37 +1563,42 @@ M1 the lattice restated from the pointer's side (D-SAFE-7); M2
 exclusive-XOR-shared per place (T4); M3 the no-invalidation rule and
 `Core.Plain` (D-SAFE-9), and exclusive access for every assignment whose type
 holds a `Core.SharedImmutable` sub-object, the type itself or an array, tuple,
-struct, class or adapter that holds it (realigned 2026-10-28, SAFE-2: W-348); M4
-method classification by receiver (`ref self` may invalidate; `addr self` body
-is checked under M3 — may assign `Plain` fields (`i32`, pointers; a field whose
-type holds a `Core.SharedImmutable` sub-object, a `Slice(T)` for a `Freeze` `T`,
-a `String` or an aggregate holding one, and `*self` when `Self` holds one, only
-through exclusive access, M3 — realigned 2026-10-28, SAFE-2: W-348, where this
-read "(`i32`, pointers, `Slice`, the prelude's non-owning `String`)"), call
-`addr`/`const` methods, read anything; may not assign a
-`Buf`/`Box`/`Optional`/payload-`choice` field, call exclusive methods, move or
-destroy — amended 2026-10-12, review fold: B2; `ref self: const Self`/`self` no
-mutation); interior mutability is a type's private Permissive business (`Core.Atomic(T)`
-over `Cpp.std.atomic(T)`, threading-atomics.md:201-204) and such a type is not
-`Freeze`; M5 `match` through an exclusive path binds payloads as exclusive
-sub-loans, through a shared path to an open place a `ref` payload is
-`StrictRefFromShared` unless marked `unsafe` and a value payload that borrows
-needs a `Core.SharedImmutable` type, and under every such sub-loan the
-alternative cannot change while it lives (realigned 2026-10-28, SAFE-2: W-347;
-this read "through a shared path as shared sub-loans whose alternative cannot
-change while they live") — a consequence of M3(c) now that sums are non-`Plain`
-(A-3; the rev-1 "M3c subsumes Ante's sum-type restriction" stands on that
-footing); M6 `Core.Guarded(T)` (D-SAFE-20) as the opt-in dynamic exclusivity
-cell for the observer / back-pointer idioms the rule rejects through `T*`; M7
-data races (D-SAFE-16); M8 value bindings, stated (D-SAFE-17): a value binding
-of a copy-represented type reads the object and holds no loan — mutation of the
-source afterwards is accepted; a value binding of any other type binds a
-borrowed object under a frozen loan for its NLL lifetime, under which every
-write to the object's storage is rejected in Strict (`StrictSharedBorrowInvalidated`
-if invalidating, `StrictBorrowedObjectMutated` otherwise), on an open place
-formed only for a `Core.SharedImmutable` type and `StrictBorrowFromShared`
-otherwise, and unchecked code's writes are erroneous and Debug-reported — and
-from a materialized temporary it owns the storage and holds no loan (realigned
+struct, class or adapter that holds it (realigned 2026-10-28, SAFE-2: W-348), a
+built-in operator's `ref` operand being classified by what the operation does
+rather than as an exclusive-receiver call (amended 2026-10-28, document-review
+fold: R1-M1); M4 method classification by receiver (`ref self` may invalidate;
+`addr self` body is checked under M3 — may assign `Plain` fields (`i32`,
+pointers; a field whose type holds a `Core.SharedImmutable` sub-object, a
+`Slice(T)` for a `Freeze` `T`, a `String` or an aggregate holding one, and
+`*self` when `Self` holds one, only through exclusive access, M3 — realigned
+2026-10-28, SAFE-2: W-348, where this read "(`i32`, pointers, `Slice`, the
+prelude's non-owning `String`)"), call `addr`/`const` methods, read anything (a
+`const` call or a read into a value binding of a borrowed object through
+`*self`, an open place, meeting M8 — amended 2026-10-28, document-review fold:
+R1-M3); may not assign a `Buf`/`Box`/`Optional`/payload-`choice` field, call
+exclusive methods, move or destroy — amended 2026-10-12, review fold: B2; `ref
+self: const Self`/`self` no mutation); interior mutability is a type's private
+Permissive business (`Core.Atomic(T)` over `Cpp.std.atomic(T)`,
+threading-atomics.md:201-204) and such a type is not `Freeze`; M5 `match`
+through an exclusive path binds payloads as exclusive sub-loans, through a
+shared path to an open place a `ref` payload is `StrictRefFromShared` unless
+marked `unsafe` and a value payload that borrows needs a `Core.SharedImmutable`
+type, and under every such sub-loan the alternative cannot change while it lives
+(realigned 2026-10-28, SAFE-2: W-347; this read "through a shared path as shared
+sub-loans whose alternative cannot change while they live") — a consequence of
+M3(c) now that sums are non-`Plain` (A-3; the rev-1 "M3c subsumes Ante's
+sum-type restriction" stands on that footing); M6 `Core.Guarded(T)` (D-SAFE-20)
+as the opt-in dynamic exclusivity cell for the observer / back-pointer idioms
+the rule rejects through `T*`; M7 data races (D-SAFE-16); M8 value bindings,
+stated (D-SAFE-17): a value binding of a copy-represented type reads the object
+and holds no loan — mutation of the source afterwards is accepted; a value
+binding of any other type binds a borrowed object under a frozen loan for its
+NLL lifetime, under which every write to the object's storage is rejected in
+Strict (`StrictSharedBorrowInvalidated` if invalidating,
+`StrictBorrowedObjectMutated` otherwise), on an open place formed only for a
+`Core.SharedImmutable` type and `StrictBorrowFromShared` otherwise, and
+unchecked code's writes are erroneous and Debug-reported — and from a
+materialized temporary it owns the storage and holds no loan (realigned
 2026-10-28, SAFE-2: W-348; the superseded text read, in full: "M8 value
 bindings, stated (D-SAFE-17, A-8/B3): a value binding of a `Plain` type copies
 eagerly and holds no loan — mutation of the source afterwards is accepted; a

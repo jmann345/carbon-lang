@@ -262,6 +262,27 @@ the `noalias` restrictions" (p005434:861-862); unmarked, it is
 `StrictRefFromShared` in Strict and its twin `PermissiveAliasedExclusive` in
 Permissive. EX-TM-9 is the proposal's own example through a shared pointer.
 
+The `ref` operand of a built-in operator is exclusive by construction.
+Proposal p005434 passes to a `ref` parameter the first operand of the
+assignment operators and of `++` and `--`, the operand of `&`, the object of
+member access and the first operand of indexing (p005434:302-318), and the
+[assignment](../assignment.md#syntax) design's first operand "is passed to a
+`(ref self: Self)` parameter" whatever its form, "A dereference of a pointer"
+and "Member access naming a field" among them (assignment.md:76-82). Where the
+operator's implementation is built in, the language's own or a prelude impl
+whose body is a builtin, such as `fn Op(ref self, other: Self) =
+"int.sadd_assign";` (core/prelude/types/int.carbon:331), that `ref` lives for
+the one operation and nothing else is evaluated while it does, so no other path
+observes the referent during it, on any place, open ones included: the checker
+establishes it with no marker, and the mutation page's M3 alone decides what
+the operation may do through a shared path. So `q->n = 2` for `q: T*` is a
+`Plain` write that M3 permits, and `*q = "longer"` for `q: str*` is
+`StrictSharedImmutableWrite`. The `ref self` of a user-written impl of an
+operator interface is a `ref` binding under this section's rule, and its call
+through a shared path is M3(d)'s exclusive-receiver call,
+`StrictInvalidatingThroughShared` (amended 2026-10-28, document-review fold:
+R1-M1).
+
 A `ref` _return_ is not a binding. The proposal's
 `Valid1(bound p: i32*) -> ref i32 { return *p; }` and
 `ValToRef(bound y: C) -> ref D { return *y.ptr; }` return a reference
@@ -486,7 +507,17 @@ that the elements outlive the view, so the view is free and no later `v[i]`
 through it needs a marker, which is what makes that call the single audit line
 of a migrated buffer API ([spatial safety](spatial_safety.md)). The result of
 an unannotated C++ call stays ⊥ because its marker's obligation, that the
-callee saves no pointer, says nothing about what the result points at.
+callee saves no pointer, says nothing about what the result points at. A free
+result hides from the checker which storage it reaches, so the marker also
+takes on what a frozen loan formed through it would otherwise need: while a
+value binding of a borrowed object, or a `const` `ref`, formed through the
+result or a copy of it lives, no path other than the result and its copies
+writes the storage that binding borrows. Without that obligation,
+`var x: str = "ab"; let v: Core.Slice(str) =
+unsafe Core.Slice(str).Make(&x, 1); let s: str = *v.Data(); x = "longer";
+return s.Size();` would meet `Make`'s stated obligation, the element outliving
+the view, and `s` would still read the owner's write, `x` carrying no frozen
+loan the checker could see (amended 2026-10-28, document-review fold: R1-M2).
 
 A ⊥ pointer may be copied, compared, and passed to a non-`bound` parameter, and
 every copy of it is ⊥ (T2). Every use of its pointee is an `unsafe` operation

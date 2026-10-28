@@ -196,7 +196,11 @@ and the loan is formed by the function that produced the view. Concretely, on
     `unsafe Core.Slice(T).Make(p, n)`, and because the marker takes on that
     obligation the result carries the loan set the signature gives — free,
     rule T6 of the temporal page — so no later access through the view needs
-    a marker (amended 2026-10-12, document-review fold: D-1).
+    a marker (amended 2026-10-12, document-review fold: D-1). The view being
+    free, the marker also takes on that no path other than the view and its
+    copies writes an element while a value binding formed through the view
+    lives, which the checker cannot see (T6; amended 2026-10-28,
+    document-review fold: R1-M2).
 
 The W-144 audit rule generalizes the list: the prelude churn reviews every
 prelude signature as if its body were Strict-checked, the body itself trusted
@@ -505,7 +509,9 @@ consequences:
     into something indexable is `unsafe Core.Slice(T).Make(p, n)`, and that
     line is the single audit line of a migrated buffer API: the obligation it
     takes on is that `p` names at least `n` valid elements that outlive the
-    view, the view is free under rule T6 of the temporal page because the
+    view, and that no other path writes an element while a value binding
+    formed through the view lives (amended 2026-10-28, document-review fold:
+    R1-M2), the view is free under rule T6 of the temporal page because the
     marker took on that lifetime, every access through the view is checked
     from then on, and the
     search for `unsafe` finds the one place where the length was asserted

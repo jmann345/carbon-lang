@@ -6,10 +6,14 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 3, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds the
-focused re-review RR1 of rev 2 (APPROVE-WITH-AMENDMENTS: two MAJOR, five MINOR;
-section "Review fold record (rev 3, 2026-10-28)"), and section "Sign-off" tables
-every review of this plan. Rev 2, 2026-10-28, folded reviews A and B (section
+**Status:** rev 4, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 4 folds the
+two implementation reviews of D-RG-13 step 3, RV1 and RV2 of R1 and the seven
+staged commits (both APPROVE-WITH-FIXES: eight MINOR, none rejected; section
+"Implementation review fold record (2026-10-28)"); no verdict and no count of
+section 2 changes. Rev 3, 2026-10-28, folded the focused re-review RR1 of rev 2
+(APPROVE-WITH-AMENDMENTS: two MAJOR, five MINOR; section "Review fold record
+(rev 3, 2026-10-28)"), and section "Sign-off" tables every review of this plan
+and of its implementation. Rev 2, 2026-10-28, folded reviews A and B (section
 "Review fold record (rev 2, 2026-10-28)"); rev 1, 2026-10-27, was the planner's
 draft. Records only: no toolchain, prelude, golden, program or workflow file
 changes with this plan or with any commit it specifies RG-1 makes, beyond the
@@ -68,6 +72,7 @@ B-M5, B-m5, RR1-N-1, RR1-N-2, RR1-m3, RR1-m4)
 -   §7 Residues
 -   Appendix A: records texts
 -   Hand-off notes for the implementer
+-   Implementation review fold record (2026-10-28)
 -   Review fold record (rev 2, 2026-10-28)
 -   Review fold record (rev 3, 2026-10-28)
 -   Sign-off
@@ -859,10 +864,10 @@ primary modes of README.md:377-383 and safety/README.md:207-217 (amended
 | H1.5 | `addr self: Self*` restored | p005434:1226 "### Restore `addr`" (under "## Future work", :1130): "To allow the `self` parameter to use one of the pointer semantics we create as part of the upcoming memory safety design, that can't be achieved with `ref`." (:1234-1236) | ALIGNED | upstream's memory-safety design restores `addr` otherwise, or not at all | W-355 |
 | H1.6 | the prefix `unsafe` forms (`unsafe F(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe s[i]`, `unsafe (...)`, `unsafe fn F(...) = "name"`) | safety/README.md:80-81 "We instead focus on the narrow and specific unsafe operations and constructs."; :98-99 "_Strict Carbon_ is the mode in which all unsafe code is marked with the `unsafe` keyword" | ALIGNED (the per-operation keyword; the forms' grammar is the fork's) | upstream designs another marking | W-355 |
 | H1.7 | the library names `Core.Plain`, `Guarded`, `Box`, `Send`, `Sync`, `Freeze`, `Relocatable`, `Lifetime`, `DynCast`, `Move`, `Utf8`, `Atomic`, `Thread` | silent at the tip, check H1.7: `git grep -c -E 'Core\.(Plain\|Guarded\|Box\|Send\|Sync\|Freeze\|Relocatable\|Lifetime\|DynCast\|Move\|Utf8\|Atomic\|Thread)\b'` over docs/design, proposals, core = 1: no upstream type of these names (`git grep -w` over docs/design, core and the two safety proposals finds none, `Lifetime` and `Atomic` only in headings); `Box(T)` is p004682:322's placeholder ("`Box(T)` for a heap-allocated `T` value."); README.md:2150's move operator "is provisional"; functions.md:310's `Thread.Make` is a lambda example (D-RG-2 (ii)) | NONE | upstream names any of them (each renames) | W-355 |
-| H1.8 | p005434:83 narrowed: `noalias`/`captures(none)` only for exclusive-kind refs (D-SAFE-8, PR 53 :3098-3125) | p005434:83 "The address of a `ref` binding is `nocapture` and `noalias`." | **DRIFT** | an accepted upstream memory-safety proposal that narrows :83 | W-347, owner SAFE-1 |
+| H1.8 | p005434:83 narrowed: `noalias`/`captures(none)` only for exclusive-kind refs (D-SAFE-8, PR 53 :3098-3121; amended 2026-10-28, implementation review: RV1-m1) | p005434:83 "The address of a `ref` binding is `nocapture` and `noalias`." | **DRIFT** | an accepted upstream memory-safety proposal that narrows :83 | W-347, owner SAFE-1 |
 | H1.9 | p005434:663 narrowed: in Strict, `Plain`-field writes through other shared aliases during a non-`Plain` value binding stay erroneous and Debug-detected, not prevented (D-SAFE-17, PR 53 :3532-3568) | p005434:660-664 "Mutation of objects with a non-copy-value representation in an active value binding ("borrowed objects") is erroneous behavior." / "Our plan is to prevent mutation of borrowed objects in Carbon's strict safe dialect." | **DRIFT** | upstream relaxes :663 (its :665-669 conditions) | W-348, owner SAFE-1 |
-| H1.10 | p005434:831-832 narrowed: a bound argument stays "not invalidated", not "immutable", for a returned loan's duration (D-SAFE-11(d), PR 53 :3297-3330) | p005434:831-832 "For full safety, we need each bound parameter to be immutable for the duration of the lifetime of the returned result."; :834 "We will reconsider this with the memory safety design." | **DRIFT** | upstream's memory-safety design reconsiders it otherwise | W-349, owner SAFE-1 |
-| H1.11 | arithmetic.md's performance-build row withdrawn for Carbon code (D-SAFE-15, PR 53 :3483-3495; the block's ":155-158" is upstream's :156-158) | arithmetic.md:156-158 "In a performance build, the optimizer can assume that such conditions don't occur. As a consequence, if they do, the behavior of the program is not defined."; the build it names, against upstream's two primary modes (D-RG-20; amended 2026-10-28, review fold: RR1-N-1): README.md:377 "## Build modes", :379 "The behavior of the Carbon compiler depends on the _build mode_:", :381 "In a _debug build_, the priority is diagnosing problems and fast build time.", :382-383 "In a _release build_, the priority is fastest execution time and lowest memory usage."; safety/README.md:212 "There are two primary build modes:", :214-215 "**Release**: the primary build mode for programs in production, focuses on giving the best possible performance with a practical baseline of safety.", :216 "**Debug**: the primary build mode during development, focuses on"; :260-262 "Carbon will provide a way to disable the default hardening in release builds, but not in a supported way. Its use is expected to be strictly for benchmarking purposes." | **DRIFT** (amended 2026-10-28, review fold: RR1-N-1): under D-RG-20 the withdrawn row is upstream's row for the unsupported benchmarking build, and D-SAFE-15's Release and Debug rules are the hardened and development rows (arithmetic.md:154-155, :159-165) | upstream withdraws or rewrites the row, or reconciles its build-mode pages otherwise than D-RG-20 reads them | W-350, owner SAFE-1 |
+| H1.10 | p005434:831-832 narrowed: a bound argument stays "not invalidated", not "immutable", for a returned loan's duration (D-SAFE-11(d), PR 53 :3315-3322, in D-SAFE-11 at :3297-3354; amended 2026-10-28, implementation review: RV1-m1) | p005434:831-832 "For full safety, we need each bound parameter to be immutable for the duration of the lifetime of the returned result."; :834 "We will reconsider this with the memory safety design." | **DRIFT** | upstream's memory-safety design reconsiders it otherwise | W-349, owner SAFE-1 |
+| H1.11 | arithmetic.md's performance-build row withdrawn for Carbon code (D-SAFE-15, PR 53 :3483-3493, amended 2026-10-28, implementation review: RV1-m1; the block's ":155-158" is upstream's :156-158) | arithmetic.md:156-158 "In a performance build, the optimizer can assume that such conditions don't occur. As a consequence, if they do, the behavior of the program is not defined."; the build it names, against upstream's two primary modes (D-RG-20; amended 2026-10-28, review fold: RR1-N-1): README.md:377 "## Build modes", :379 "The behavior of the Carbon compiler depends on the _build mode_:", :381 "In a _debug build_, the priority is diagnosing problems and fast build time.", :382-383 "In a _release build_, the priority is fastest execution time and lowest memory usage."; safety/README.md:212 "There are two primary build modes:", :214-215 "**Release**: the primary build mode for programs in production, focuses on giving the best possible performance with a practical baseline of safety.", :216 "**Debug**: the primary build mode during development, focuses on"; :260-262 "Carbon will provide a way to disable the default hardening in release builds, but not in a supported way. Its use is expected to be strictly for benchmarking purposes." | **DRIFT** (amended 2026-10-28, review fold: RR1-N-1): under D-RG-20 the withdrawn row is upstream's row for the unsupported benchmarking build, and D-SAFE-15's Release and Debug rules are the hardened and development rows (arithmetic.md:154-155, :159-165) | upstream withdraws or rewrites the row, or reconciles its build-mode pages otherwise than D-RG-20 reads them | W-350, owner SAFE-1 |
 | H1.12 | safety/README.md:260-262's benchmarking disable withdrawn (D-SAFE-14, PR 53 :3427-3482) | safety/README.md:260-261 "Carbon will provide a way to disable the default hardening in release builds, but not in a supported way. Its use is expected to be strictly for benchmarking" purposes. | **DRIFT** | upstream withdraws the promise | W-351, owner SAFE-1 |
 | H1.13 | zero-fill promoted to the Release baseline for every type, "there is no separate hardened mode" (D-SAFE-13 I5; PR 53's README.md:2151-2153 amendment); the block cites "docs/design/README.md:2147", PR 53's own copy (its :2147-2149) | README.md:2130-2132 "Types may define additional initialization for the `[hardened build mode](#build-modes)`. For example, this causes integers to be set to `0` when in unformed state in this mode."; the section the link names, README.md:377-383, defines only "In a _debug build_" (:381) and "In a _release build_" (:382); safety/README.md:212 "There are two primary build modes:" (**Release** :214, **Debug** :216), :219 "The release build will include a baseline of hardening necessary to uphold the" memory-safety model, :242 "Carbon will also have additional build modes to provide specific, narrow" capabilities, :244-245 "an extension of either the debug or release build for that specific purpose", :248-250 "Release + specialized [hardening]: some users can afford significant run-time overhead in order to use additional hardening. Carbon will have several specialized build modes in this space."; p005914:87-88 "allows, for example, zero-initialization rather than fail-stop behavior." (amended 2026-10-28, review fold: RR1-N-1) | **DRIFT** (amended 2026-10-28, review fold: B-M3, RR1-N-1): README.md:2130's "Types may define" makes the extra initialization type-defined, and the fork mandates the zeroing for every type. Its place is D-RG-20's: the hardened build mode is the release build, the one of :381-382's two builds the link can name, so zeroing in the Release build is upstream's mode and PR 53's "there is no separate hardened mode" restates safety/README.md:212's two primary modes; only the mandate is the drift. SAFE-1's own block lists the promotion among its "departures from accepted text" | an accepted upstream memory-safety design that makes unformed-state zeroing language-defined for every type, or upstream reconciles its build-mode pages otherwise than D-RG-20 reads them (if the hardened mode becomes an extension of Release, the placement joins W-353) | W-353, owner SAFE-1, narrowed to the mandate; cite corrected by H53 |
 | H1.14 | the Permissive reading of p005914:206-208 (D-SAFE-18): Permissive assumes unannotated C++ pointer parameters do not escape, a diagnostic assumption only, while T8 withholds `noalias`/`captures(none)` at every such boundary | the nearest passage, p005914:204-210 in full: "Lastly, Carbon's safety model will make fewer assumptions about what unsafe code is allowed to do than Rust. To avoid undefined behavior, the optimization of safe code will not rely on properties that are not established locally. For example, there won't be an assumption that a call to C++ code won't save a copy of pointers to passed-in objects. When there are restrictions on what unsafe code can do, we will endeavor to make violations into [erroneous behavior]" | NONE, the nearest passage quoted in full (amended 2026-10-28, review fold: B-M3, RR1-m3): the passage limits what the safety model may assume about unsafe code so that no undefined behavior follows, and its example is an optimization assumption; the fork's Permissive assumption licenses no optimization (T8 withholds the attributes) and restricts nothing C++ may do, whose saving a copy stays defined, so it is a diagnostic heuristic on which upstream is silent (D-RG-1); "departure" in SAFE-1's block is SAFE-1's disclosure, not upstream's text | an upstream memory-safety design that forbids diagnostics to assume a C++ callee does not save a copy, or that makes such a save erroneous behavior (:208-209's "endeavor") | W-355 |
@@ -984,7 +989,7 @@ fold: A-M2).
 | H10.5 | (v) D-TP-12 defers impl lookup only for queries that name a template binding | p002200:205 "Impl lookup is delayed until all templated types, interfaces, and parameters" are known | ALIGNED with a gap (D-RG-4) | upstream draws the line differently (follow, refill default_init.carbon) | W-268 |
 | H10.6 | (vi) D-TP-13's constraint lookup on instantiation only | p002200:200-202 "Member lookup into a templated type looks in the actual type value provided by the caller in addition to in any constraints on that type" | ALIGNED with gaps (D-RG-4) | upstream implements proposal 2200's name lookup (take it) | W-260, W-261, W-262, W-266 |
 | H10.7 | (vii) D-TP-14's `semantics TODO` at the `import` in front of upstream's cross-file lowering TODO, cited as "lower/handle.cpp:524", PR 61's own copy (its :518-524) | upstream toolchain/lower/handle.cpp:384-390 "TODO: We don't yet have support for cross-file templates at all." ... `CARBON_FATAL("Cross-file template lowering not implemented yet");` | NONE (cite corrected by PR 61's commit) | upstream imports actions and splices (remove the TODO with W-250) | W-250 |
-| H10.8 | (viii) D-TP-11 forms a generic class type with template-dependent arguments eagerly | silent at the tip, check H10.8: 0 upstream commits since the cut touch toolchain/check/testdata/generic/template/deduce_class_args.carbon (toolchain behavior) | NONE | upstream defers it (follow, refill deduce_class_args.carbon) | W-355 |
+| H10.8 | (viii) D-TP-11 forms a generic class type with template-dependent arguments eagerly | silent at the tip, check H10.8: 7 upstream commits since the cut touch toolchain/check/call.cpp, whose `IsCallPerformable` holds D-TP-11's type-forming exception on PR 61 (toolchain behavior; amended 2026-10-28, implementation review: RV2-m3, the check was over this branch's own deduce_class_args.carbon, absent upstream) | NONE | upstream defers it (follow, refill deduce_class_args.carbon) | W-355 |
 
 ### §2.H11 CT-1 (PR 64, 4a3220c11 :8341-8342 and plan §0.10 :935-1004)
 
@@ -1074,7 +1079,10 @@ upstream f27a977d8`. Rev 2: `RG-1 plan (rev 2): reviews A and B folded, 25
 findings`. Rev 3 (this, signed off): `RG-1 plan (rev 3): focused re-review
 folded, sign-off`. Later revisions, if a review of the implementation amends the
 plan, are new commits `RG-1 plan (rev N): <fold summary>` with the same path,
-fork/register/rg1-plan.md.
+fork/register/rg1-plan.md. Rev 4: `RG-1 plan (rev 4): implementation review
+round 1 folded`, made on the published rev 3 head 0cb93c3d9 and pushed, then
+merged into the unpushed line of R1 and its fix (section "Implementation review
+fold record (2026-10-28)").
 
 **R1, the records.** Made after sign-off, committed in /home/user/carbon-rg1 and
 not pushed until step 6 of D-RG-13. Message:
@@ -1248,15 +1256,22 @@ sources, which R1 copies after `sha256sum -c` of these sums, are in
 
 ```text
 4843640bcb73af6369b81c304eebd675fc926ff54b5b58a55976aadb9ba52912  rg1-quotes.tsv
-c285acdf451048395a6f96cc91cfdb2f46f5b54b2e03c993d12b25935571a117  rg1-checks.tsv
+39db6dbe201ebb5df25c7ae59d1e6682090130a4e3344e2b9a8e418346368b08  rg1-checks.tsv
 a354640dddb0f61eaaa963627cbc21f0db7e56d5c0135697edcd481822c3d585  check_quotes.sh
 5ddbff38e3640ff7f29cb8a9bd4291d47eb1ad4129eab182110f064e3a23af0b  check_greps.sh
 ```
 
 <!-- google-doc-style-resume -->
 
-If that directory is gone, R1 rebuilds the two tables from section 2 (each
-quoted line and each check its rows name) and the two scripts from the text
+The rg1-checks.tsv sum is rev 4's (amended 2026-10-28, implementation review:
+RV2-m3): row H10.8 counts upstream commits since the cut to
+toolchain/check/call.cpp (7 at f27a977d8 and at e6fddcf97), not to PR 61's own
+deduce_class_args.carbon, which upstream never had; rev 3's file had sum
+c285acdf4, and rev 4's is R1's fix commit's, copied with its SHA256SUMS to
+rg1/impl/fixer-r1/out/ in the same scratchpad as fixer1/out/ above. The other
+three sums are rev 3's, unchanged. If those directories are gone, R1 rebuilds
+the two tables from section 2 (each quoted line and each check its rows name)
+and the two scripts from the text
 below, and the reviews of D-RG-13 step 3 compare them with section 2. The quote
 checker, fork/register/check_quotes.sh:
 
@@ -1735,11 +1750,11 @@ followed by one blank line (amended 2026-10-28, review fold: B-m2):
 
 Placed here, in Decided directly after DR-0, because the log groups entries by
 workstream and RG-1 carries out V-3b's rule for DR-0's register: the register
-"is a work queue whose entries each carry a work item" (fork/rulebook.md R32
-(b)). DR-1's entry, held on PR 63, goes between DR-0's and this one when it
-lands. Line cites into this log are to the file at trunk 0b999d449, before this
-entry and its notes moved them. Records only: no toolchain, prelude, golden or
-program file changes with it.
+"is a work queue whose entries each carry a work item" (V-3b, :47-48 at trunk
+0b999d449, after fork/rulebook.md R32 (b)). DR-1's entry, held on PR 63, goes
+between DR-0's and this one when it lands. Line cites into this log are to the
+file at trunk 0b999d449, before this entry and its notes moved them. Records
+only: no toolchain, prelude, golden or program file changes with it.
 
 _The work and the rule._ W-342, W-343 and W-344 asked for every V-3a register
 entry to be classified against upstream's tip. Upstream trunk f27a977d8
@@ -1753,17 +1768,18 @@ review names; on the held heads fourteen blocks, PR 51's UA-2 register re-read
 among them. The scripts committed with this entry re-read the 260 quoted lines
 of fork/register/rg1-quotes.tsv (fork/register/check_quotes.sh) and re-run the
 89 silence checks of fork/register/rg1-checks.tsv
-(fork/register/check_greps.sh), one for each NONE row whose upstream silence is
-shown by a grep, a log count or a directory listing at the tip. An entry is a
-DRIFT when upstream has designed its mechanism and the fork spells it otherwise
-(R32 (d)), ALIGNED when the fork's spelling or rule is upstream's, and NONE when
-upstream is silent. Upstream has designed a mechanism when text at the tip shows
-it with a spelling, is about it, and does not call the spelling placeholder or
-provisional (D-RG-2). Toolchain-internal surfaces are NONE, their merge rules
-their break conditions, unless that condition has already fired (D-RG-3); a
-partial implementation whose gap carries an item is ALIGNED (D-RG-4). The
-decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each with its break
-condition in the plan's section 1.
+(fork/register/check_greps.sh): 88 for the NONE rows whose upstream silence is
+shown by a grep, a log count or a directory listing at the tip, and T10.4 for
+the ALIGNED `noexcept` fence, which upstream's toolchain has not built. An entry
+is a DRIFT when upstream has designed its mechanism and the fork spells it
+otherwise (R32 (d)), ALIGNED when the fork's spelling or rule is upstream's, and
+NONE when upstream is silent. Upstream has designed a mechanism when text at the
+tip shows it with a spelling, is about it, and does not call the spelling
+placeholder or provisional (D-RG-2). Toolchain-internal surfaces are NONE, their
+merge rules their break conditions, unless that condition has already fired
+(D-RG-3); a partial implementation whose gap carries an item is ALIGNED
+(D-RG-4). The decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each
+with its break condition in the plan's section 1.
 
 _The count._ 19 DRIFT, 33 ALIGNED and 103 NONE; 10 entries, three DRIFTs among
 them, wait on an upstream decision or on an item blocked by one (the plan's
@@ -1925,6 +1941,13 @@ ran the read-only installs with `--phase=check` only.
 ```
 
 <!-- google-doc-style-resume -->
+
+Rev 4 amends two passages of the entry, as R1's fix commit writes them
+(amended 2026-10-28, implementation review: RV1-m3, RV1-m2): the first
+paragraph attributes the quoted "work queue" words to V-3b at trunk :47-48,
+since R32 (b) reads "a work queue reviewed at each weekly check, each entry
+carrying its work item", and "_The work and the rule._" says that the 89 silence
+checks are 88 for NONE rows and T10.4 for the ALIGNED `noexcept` fence.
 
 ### A.2 R2's paragraph (appended to the RG-1 entry, before its "_Ids._")
 
@@ -2381,11 +2404,18 @@ rule and re-measures W-253), (v) and (vi) (classified 2026-10-27, RG-1:
 ALIGNED with gaps, p002200:200-206; W-268, W-260 to W-262 and W-266); (i),
 (ii), (iv), (vii) and (viii) (classified 2026-10-27, RG-1: NONE, W-355;
 internal surfaces and fixes with their merge rules: none of (i)'s five names is
-in upstream's toolchain, and one upstream commit since the cut touches
-lower/handle.cpp and none deduce_class_args.carbon; W-258 and W-250).
+in upstream's toolchain, one upstream commit since the cut touches
+lower/handle.cpp, and seven touch check/call.cpp, whose `IsCallPerformable`
+holds (viii)'s exception (check H10.8 of fork/register/rg1-checks.tsv on
+claude/carbon-fork-0-1-rg1); W-258 and W-250).
 ```
 
 <!-- google-doc-style-resume -->
+
+The note's last clause is as H61's fix commit writes it on top of H61 (amended
+2026-10-28, implementation review: RV2-m3); H61 itself wrote "and one upstream
+commit since the cut touches lower/handle.cpp and none
+deduce_class_args.carbon", a check that could not move.
 
 **H64 and H64m, PR 64 (claude/carbon-fork-0-1-ct at 4a3220c11).** H64 first, on
 4a3220c11 itself, fork/decision-log.md; then H64m, `git merge --no-ff <H61's
@@ -2487,7 +2517,10 @@ In these five "..." stands for the full lead of EV-1's, which is UA-2's.
 W-346 to W-351 as at rev 1 with their notes amended; W-352 rewritten; W-353 to
 W-356 new (amended 2026-10-28, review fold: A-M1, A-M2, A-m1, A-m3, B-M2, B-M3,
 B-m3, B-m4, B-m9). `<tip>` is filled as in section 3.1. The text below parses
-as JSON when wrapped in brackets (section 4.1).
+as JSON when wrapped in brackets (section 4.1). The PR 53 decision ranges in
+W-347's, W-349's and W-350's evidence end where each decision does, D-SAFE-8 at
+:3121, D-SAFE-15 at :3493 and D-SAFE-11's part (d) at :3315-3322, as R1's fix
+commit writes them (amended 2026-10-28, implementation review: RV1-m1).
 
 <!-- google-doc-style-ignore -->
 
@@ -2517,7 +2550,7 @@ as JSON when wrapped in brackets (section 4.1).
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
         "upstream proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md:83 at f27a977d8: \"The address of a `ref` binding is `nocapture` and `noalias`.\"",
-        "PR 53 (claude/carbon-fork-0-1-safe, adaae4e35) fork/decision-log.md D-SAFE-8 (:3098-3125) and the register block (:3928-3929); the 13 dependent lines naming D-SAFE-8 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
+        "PR 53 (claude/carbon-fork-0-1-safe, adaae4e35) fork/decision-log.md D-SAFE-8 (:3098-3121) and the register block (:3928-3929); the 13 dependent lines naming D-SAFE-8 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
         "fork/register/rg1-plan.md section 2.H1 (H1.8)"
       ],
       "blocked_by": [],
@@ -2547,7 +2580,7 @@ as JSON when wrapped in brackets (section 4.1).
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
         "upstream p005434:831-832 at f27a977d8: \"For full safety, we need each bound parameter to be immutable for the duration of the lifetime of the returned result.\"; :834 \"We will reconsider this with the memory safety design.\"",
-        "PR 53 fork/decision-log.md D-SAFE-11(d) (:3297-3330) and the register block (:3929-3930); the 7 dependent lines naming D-SAFE-11 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
+        "PR 53 fork/decision-log.md D-SAFE-11(d) (:3315-3322, in D-SAFE-11 at :3297-3354) and the register block (:3929-3930); the 7 dependent lines naming D-SAFE-11 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
         "fork/register/rg1-plan.md section 2.H1 (H1.10)"
       ],
       "blocked_by": [],
@@ -2562,7 +2595,7 @@ as JSON when wrapped in brackets (section 4.1).
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
         "upstream docs/design/expressions/arithmetic.md:156-158 at f27a977d8: \"In a performance build, the optimizer can assume that such conditions don't occur. As a consequence, if they do, the behavior of the program is not defined.\"",
-        "PR 53 fork/decision-log.md D-SAFE-15 (:3483-3495) and the register block (:3930-3931, which cites :155-158); the 8 dependent lines naming D-SAFE-15 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
+        "PR 53 fork/decision-log.md D-SAFE-15 (:3483-3493) and the register block (:3930-3931, which cites :155-158); the 8 dependent lines naming D-SAFE-15 on PR 53's docs (fork/register/rg1-plan.md D-RG-7's table)",
         "upstream docs/design/README.md:377-383 (\"The behavior of the Carbon compiler depends on the _build mode_:\", with a _debug build_ and a _release build_ only), docs/design/safety/README.md:212 (\"There are two primary build modes:\") and :260-262 at f27a977d8; fork/register/rg1-plan.md D-RG-20, which reads the development, performance and hardened builds of README.md:476-484 and arithmetic.md:154-165 as the debug build, the unsupported benchmarking build and the release build",
         "fork/register/rg1-plan.md section 2.H1 (H1.11)"
       ],
@@ -2674,11 +2707,14 @@ entry of trunk's eleven pre-DR-0 blocks and V-3's design-fork group is
 classified against upstream f27a977d8, re-checked at <tip>, in the decision-log
 entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-27)" and in each
 block's dated note: each DRIFT with its item (F-006a's `Ok`/`Err` filed as
-W-346; SL-1's D-SL-16 and D-SL-19 as W-354; D-SL-17 is W-326's, D-SL-3 W-109's),
-each ALIGNED with its quote, and each NONE with the quote of the nearest
-upstream passage or a silence check of fork/register/rg1-checks.tsv, named in
-the note by row with its grep and result; fork/register/check_quotes.sh and
-fork/register/check_greps.sh passed at R1's tip ("checked 260 quotes, 0 failed";
+W-346; SL-1's D-SL-16 and D-SL-19 as W-354, which is UA-3's with SL-1's records,
+in UA-3's gate rather than before UA-3 as this item's Work asks, since the cut's
+tree has no `DestroyImpl` (fork/register/rg1-plan.md D-RG-16); D-SL-17 is
+W-326's, D-SL-3 W-109's), each ALIGNED with its quote, and each NONE with the
+quote of the nearest upstream passage or a silence check of
+fork/register/rg1-checks.tsv, named in the note by row with its grep and result;
+fork/register/check_quotes.sh and fork/register/check_greps.sh passed at R1's
+tip ("checked 260 quotes, 0 failed";
 "checked 89 silence checks, 0 failed"); every NONE and ALIGNED entry carries
 W-355; F-009's `overload fn` is NONE (D-RG-6). Original filing:
 
@@ -2715,7 +2751,9 @@ The JSON strings hold these texts on one line each (no line breaks inside a
 string), with the leading space where shown. If either script of section 4.2
 fails at R1's tip, W-342 is narrowed, not discharged, until the plan is amended
 and the scripts pass (amended 2026-10-28, review fold: B-B1); its counts are rev
-3's (amended 2026-10-28, review fold: RR1-N-2).
+3's (amended 2026-10-28, review fold: RR1-N-2). W-342's DISCHARGED prefix names
+where W-354 departs from W-342's own Work clause and why, as R1's fix commit
+writes it (amended 2026-10-28, implementation review: RV1-m4).
 
 ### A.7 The ledger's R2 edits
 
@@ -2785,6 +2823,8 @@ to triage. RG-1's held records commits follow on PR 53, PR 52, PR 60, PR 55,
 PR 56 (merged into PR 57), PR 61 and PR 64 (with PR 61's merged), staged and
 reviewed before any push, then the stamp R2. No build, merge or dispatch;
 Actions is still disabled. Sixteen PRs are held open; none is merged.
+Merge order, as fork/register/rg1-plan.md section 5 gives it:
+RG-1, PR 53, 51, 52, 60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, 66.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2819,11 +2859,20 @@ B-m6, RR1-N-2, RR1-m4):
     each weekly upstream check: W-355 (run fork/register/check_quotes.sh and
     check_greps.sh over their tables at the tip, and re-read the break
     condition of every NONE and ALIGNED entry outside VA-2's, which items 8
-    and 9 re-read), with W-324's re-check of C1.1. UA-3 follows W-341 and
-    W-346.
+    and 9 re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of
+    T5.7 and C1.2 (indexing.md:101-121 and a `like` in upstream's parse or
+    check). UA-3 follows W-341 and W-346.
 ```
 
 <!-- google-doc-style-resume -->
+
+**The safe row** (`claude/carbon-fork-0-1-safe`, :931 at 0b999d449): its
+closing clause "merges first in the land sequence." becomes "merges first in
+the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5).", so
+that the Branches table agrees with the rg1 row and section 5. The dated
+paragraph's last sentence, section 5's merge order, and item 6's re-checks of
+H5.5 (W-324) and of T5.7 and C1.2 (W-326), section 7's residues, are rev 4's
+(amended 2026-10-28, implementation review: RV2-m1, RV2-m2).
 
 ### A.9 ORCHESTRATION at R2
 
@@ -2836,6 +2885,10 @@ rg1 row's last clause becomes "R1 and R2 made; to be held open as its PR, first
 in the land sequence." A sentence is appended to the RG-1 dated paragraph: "R2
 (date): the held commits are made after two implementation reviews and
 recorded; W-344 is discharged and W-343 waits on the five land-time notes."
+The safe row keeps the clause R1's fix commit wrote, "merges first in the land
+sequence after RG-1's PR (fork/register/rg1-plan.md section 5)", before the
+appended amendment, and R2's sentence follows the dated paragraph's merge order
+(amended 2026-10-28, implementation review: RV2-m1).
 
 ### A.10 The held commits' messages (bodies)
 
@@ -2948,14 +3001,18 @@ build: its D-RG-20 maps the README's development, performance and hardened
 builds onto the safety README's Debug and Release until upstream reconciles its
 build-mode pages); SAFE-1 realigns them by a new commit on this branch, under
 its own plan amendment and document reviews, before this PR lands. The zero-fill
-cite now names upstream's README.md:2130-2132. The rest of the block is aligned
-with upstream or has no upstream counterpart, and carries the watch item W-355.
+cite now names upstream's README.md:2130-2132, and arithmetic.md's range is
+upstream's :156-158. The rest of the block is aligned with upstream or has no
+upstream counterpart, and carries the watch item W-355.
 
 PR 52: RG-1 corrected the register block's CMake measurement against upstream
-f27a977d8 (commit <sha52>, records only): upstream has no CMake files, and its
-docs/project/milestones.md:230-231 names CMake integration as a 0.1
-deliverable, which this PR delivers; the Core-object helper follows
-p006333:193-198's opt-out, its gap W-003. No drift.
+f27a977d8 (commit <sha52>, records only): the block's "thirteen `cmake`
+mentions are Bazel-internal", a count taken on the fork's tree, becomes
+thirteen upstream files that mention CMake, nine of them build or toolchain
+files and four of them text, among them docs/project/milestones.md, whose
+:230-231 names CMake integration as a 0.1 deliverable, which this PR delivers;
+upstream still has no CMake integration of its own. The Core-object helper
+follows p006333:193-198's opt-out, its gap W-003. No drift.
 
 PR 60: RG-1 found D-SC-6 to be a drift under R32 (commit <sha60>, records and
 a dated page note only): upstream decided leads issue 2153
@@ -2989,6 +3046,12 @@ merged (merge <sha64m>). No drift.
 ```
 
 <!-- google-doc-style-resume -->
+
+The PR 53 and PR 52 paragraphs name the corrections H53 and H52 make, the
+arithmetic.md range and the CMake count, so that a description re-posted from
+them reports the whole amendment; pr_53_refresh.md and pr_52_refresh.md at
+D-RG-13 step 6 use this text, and no staged commit changes for it (amended
+2026-10-28, implementation review: RV2-m4).
 
 ## Hand-off notes for the implementer
 
@@ -3031,6 +3094,65 @@ merged (merge <sha64m>). No drift.
     position is first (section 5). The three realignments RG-1 files on held
     branches (SAFE-1's on PR 53, SC-1's on PR 60, OP-1's on PR 56) are their
     owners' work, scheduled by A.8's item 6, not RG-1's.
+
+## Implementation review fold record (2026-10-28)
+
+Reviews: RV1 and RV2, the two independent implementation reviews of D-RG-13
+step 3, of R1 (675bef479, unpushed) and the seven staged commits
+(refs/rg1-stage/53 cd3c5b2e1, 52 e6bc32a6d, 60 cc4daba00, 55 c3cdecc5d, 56
+9f12209d8, 61 40daf0a2a and 64 5f23d27c9); both APPROVE-WITH-FIXES, no BLOCKER
+and no MAJOR, four MINOR each, eight findings, all records only. Both re-ran
+section 4's checks without a failure: upstream still at e6fddcf97, 260 quotes
+and 89 silence checks passing at both shas, the block scan, the id re-scan, the
+model-identifier check, the `Ok`/`Err` count and the merge-trees as section 4
+expects. The fixer of round 1 (D-RG-13 step 4; scratch rg1/impl/fixer-r1/ in
+the session scratchpad of section 4.2's sources) reproduced every finding
+against upstream e6fddcf97, unchanged at the fetch of 2026-10-28 01:54 UTC,
+trunk 0b999d449 and the sixteen held heads, unchanged;
+all eight are folded and none is rejected. Each fold is marked "(amended
+2026-10-28, implementation review: <id>)" where it lands. The fixes are new
+commits, none pushed: R1's fix `RG-1 records: implementation review round 1
+folded` (2bce73123) on claude/carbon-fork-0-1-rg1, and H61's fix `TP-1 records:
+RG-1 review round 1 folded` (66aa13132) on top of H61, refs/rg1-stage/61 moved
+to it; no other staged commit changes.
+
+| Finding | Reproduced | Folded where |
+| --- | --- | --- |
+| RV1-m1 | PR 53 adaae4e35: D-SAFE-9 opens at :3122 and D-SAFE-16 at :3494, so D-SAFE-8 is :3098-3121 and D-SAFE-15 :3483-3493; in the same class, D-SAFE-11's part (d) is :3315-3322 of D-SAFE-11's :3297-3354, not :3297-3330 (the fixer's, folded with it) | §2 H1.8, H1.10 and H1.11; A.5's W-347, W-349 and W-350 evidence; R1's fix (the ledger) |
+| RV1-m2 | the 89 ids of rg1-checks.tsv against section 2's rows: 88 NONE rows and T10.4, an ALIGNED row | A.1's "_The work and the rule._"; R1's fix (the entry) |
+| RV1-m3 | fork/rulebook.md:397-398 at 0b999d449 reads "a work queue reviewed at each weekly check, each entry carrying its work item"; the quoted words are V-3b's, decision-log :47-48 | A.1's first paragraph; R1's fix (the entry) |
+| RV1-m4 | W-342's Work clause, "scheduled before UA-3", against W-354's owner UA-3 and D-RG-16's "in UA-3's gate rather than before UA-3" | A.6's W-342 prefix and its note; R1's fix (the ledger) |
+| RV2-m1 | ORCHESTRATION at 675bef479: the safe row's "merges first in the land sequence" beside the rg1 row's "first in the land sequence" | A.8 (the safe row and the dated paragraph's merge order), A.9; R1's fix (ORCHESTRATION) |
+| RV2-m2 | item 6 names only W-324's re-check of C1.1; W-326, on PR 63's and PR 65's ledgers, carries T5.7 and C1.2 with no weekly re-check | A.8's item 6; R1's fix (ORCHESTRATION) |
+| RV2-m3 | `git cat-file -e` fails for toolchain/check/testdata/generic/template/deduce_class_args.carbon at c1e83b0b7, f27a977d8 and e6fddcf97 (TP-1's 781908afb adds it); upstream's `IsCallPerformable` is unchanged since the cut, and 7 upstream commits touch toolchain/check/call.cpp at both shas; no other row of the table names a path absent at the tip | §2 H10.8; §4.2's rg1-checks.tsv sum; A.4 H61's note; R1's fix (the table) and H61's fix (the note) |
+| RV2-m4 | A.11's PR 53 paragraph leaves out arithmetic.md:156-158, and its PR 52 paragraph says "upstream has no CMake files" where H52 counts thirteen upstream files that mention CMake | A.11 |
+
+Two R29 decisions. H10.8's new check is a log count over
+toolchain/check/call.cpp, the file whose `IsCallPerformable` holds D-TP-11's
+exception, rather than RV2-m3's examples (toolchain/check/deduce.cpp, 2; the
+generic/template testdata directory, 7), because upstream's deferral rule for
+such a call lives there; break condition: upstream moves `IsCallPerformable`
+out of call.cpp (the row follows it). Plan revisions are pushed, as rev 1 to
+rev 3 were, while R1 and its fix stay unpushed until D-RG-13 step 6; so rev 4
+is committed on the published rev 3 head 0cb93c3d9 and pushed as a
+fast-forward, and the local line of R1 and its fix merges it (a merge commit
+that touches this file only, since neither R1 nor its fix touches it), so that
+step 6's push of claude/carbon-fork-0-1-rg1 stays a fast-forward; break
+condition: a review that asks for a linear branch (the merge stays and is
+recorded, since no history is rewritten).
+
+Re-measured after the fixes (EXPECTED, not of record): both scripts from R1's
+fixed tree, "checked 260 quotes, 0 failed" and "checked 89 silence checks, 0
+failed" at e6fddcf97 and at f27a977d8; the ledger loads, with W-346 to W-356
+once each and W-357 to W-359 absent; prek passes twice with no change on every
+changed file; the model-identifier check finds nothing outside the trailers.
+Section 4.7's merge-trees: R1's fix against trunk is clean, and against each of
+the sixteen held heads it gives R1's regions, the baseline plus sc's T4 region
+and dr's and dr-idx's A.1 and ledger-tail regions; H61's fix against trunk
+gives tp's baseline (0/1/2/0) and against R1's fix the same; the H57 probe
+(a080c7886 with stage 56) and the H64m probe (stage 64 with the moved stage 61)
+are clean. Counts: unchanged, 155 entries, 19 DRIFT, 33 ALIGNED and 103 NONE,
+260 quotes, 89 silence checks (88 for NONE rows and T10.4), W-346 to W-356.
 
 ## Review fold record (rev 2, 2026-10-28)
 
@@ -3110,10 +3232,15 @@ D-RG-19 become D-RG-1 to D-RG-20; the items W-346 to W-356 are unchanged.
 | --- | --- | --- | --- | --- | --- | --- |
 | A | rev 1 (8cfd46bc2) | APPROVE-WITH-AMENDMENTS | 0 | 5 | 5 | rev 2 (a2623241f) |
 | B | rev 1 (8cfd46bc2) | REJECT | 1 | 5 | 9 | rev 2 (a2623241f) |
-| RR1, the focused re-review | rev 2 (a2623241f) | APPROVE-WITH-AMENDMENTS | 0 | 2 | 5 | rev 3 (this revision) |
+| RR1, the focused re-review | rev 2 (a2623241f) | APPROVE-WITH-AMENDMENTS | 0 | 2 | 5 | rev 3 (0cb93c3d9) |
+| RV1, implementation review 1 | R1 (675bef479) and the seven staged commits | APPROVE-WITH-FIXES | 0 | 0 | 4 | rev 4 (this revision), R1's fix 2bce73123 |
+| RV2, implementation review 2 | R1 (675bef479) and the seven staged commits | APPROVE-WITH-FIXES | 0 | 0 | 4 | rev 4 (this revision), R1's fix 2bce73123, H61's fix 66aa13132 |
 
 The three reviews raised 32 findings, 25 folded at rev 2 and 7 at rev 3, and
 none is rejected. RR1, the last review, found no BLOCKER, and its verdict is not
 REJECT, so rev 3 is SIGNED OFF FOR IMPLEMENTATION on 2026-10-28. R1 and the held
 records commits follow D-RG-13, whose two implementation reviews and fixer
-rounds come before any push.
+rounds come before any push. The two implementation reviews raised eight MINOR
+findings, all folded by round 1 of the fixer and none rejected (section
+"Implementation review fold record (2026-10-28)"); rev 4 changes no verdict and
+no count, and stays signed off.

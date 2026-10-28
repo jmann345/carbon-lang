@@ -3536,9 +3536,30 @@ accepted upstream design lands); the comparisons run `T.Copy` and `T.Destroy`
 once per value when both operands hold one, against comparison_operators.md:316
 and :434's "should have no observable side-effects" (closed when W-177 or a
 by-reference accessor lands, D-OP-4); `None()` is a function where
-p002188:488-489 and pattern_matching.md:527-528 spell `Optional(T).None` as a
+p002188:489-490 and pattern_matching.md:526-527 (upstream's at f27a977d8,
+corrected 2026-10-28 by RG-1 from :488-489 and this branch's copy's :527-528)
+spell `Optional(T).None` as a
 value (W-177); and F-015 states that `Get()` on an empty `Optional(T*)`
 falsifies F-013's TY4 until W-173 lands. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at e6fddcf97; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" on claude/carbon-fork-0-1-rg1, which lands first, and
+fork/register/rg1-plan.md section 2.H5 have the quotes):_ the comparisons'
+`T.Copy` and `T.Destroy` (classified 2026-10-28, RG-1: DRIFT, W-352):
+comparison_operators.md:315-316 and :433-434 say these operations "should have
+no observable side-effects", so OP-1 realigns them by a new commit on this
+branch before it lands (R32 (e)), comparing the held payloads in place over
+value-bound storage with no `Copy` or `Destroy` per operand, a route RG-1's
+read-only probe showed checks on PR 57's install (rg1-plan.md section 4.8 and
+D-RG-10); OP-1 owns the closure, which W-344 had given to DR-1; `None()`
+(classified 2026-10-28, RG-1: ALIGNED with upstream's
+core/prelude/types/optional.carbon:30 `fn None() -> Self`, the pattern being
+W-320's); the replaced lines, `final` and F-015 itself (classified 2026-10-28,
+RG-1: NONE, W-355; optional.carbon:27-28 "The API here is a placeholder", no
+upstream commit since the cut touches optional.carbon, and it has no `EqWith`
+or `OrderedWith` impl); the TY4 statement (classified 2026-10-28, RG-1: NONE,
+W-355; between two fork designs, `TY4` 0 in upstream's docs and proposals).
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

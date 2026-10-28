@@ -6,10 +6,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # OV-4 plan: `overload fn` members with default parameter values (W-341)
 
-**Status:** rev 2, 2026-10-28, plan reviews A and B folded (fifteen findings:
-fourteen folded, one folded in part with its proposed fix rejected on upstream
-evidence; see "Review fold record (rev 2, 2026-10-28)" at the end of §8), not
-signed off: the re-review decides. Rev 1 was the planner's draft, fdaed06ae.
+**Status:** rev 3, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds
+the focused re-review RR1 of rev 2 (7fda41b11; APPROVE-WITH-AMENDMENTS: no
+BLOCKER, no MAJOR, four MINORs, all four folded, none rejected; see "Review
+fold record (rev 3, 2026-10-28)" at the end of §8), and the "Sign-off" section
+after §8 tables every review of this plan. Rev 2, 2026-10-28, folded plan
+reviews A and B (fifteen findings: fourteen folded, one folded in part with its
+proposed fix rejected on upstream evidence; see "Review fold record (rev 2,
+2026-10-28)"). Rev 1 was the planner's draft, fdaed06ae.
 Branch `claude/carbon-fork-0-1-ov4` in /home/user/carbon-ov4, cut from trunk
 66bd2ba90 (pushed, no commits of its own before this plan). One PR, base
 trunk, merging after PR 66 and before EH-C (fork ORCHESTRATION Next actions
@@ -43,7 +47,10 @@ failure is an error" makes a diagnosed member, never a skipped one (amended
 plus the four new files), 130/0/22 over 152 programs (trunk's 128/0/22 over
 150 plus the two new programs), mutants M1 to M5 and M5b each caught on the
 toolchain and M6 on the programs (§0.5, §8.5; amended 2026-10-28, review fold:
-A-m4).
+A-m4). Rev 3 changes no toolchain line: it adds one split and one call to
+Appendix A.1's golden source, filled and measured on the same prototype
+toolchain (1946 of 1946, 130/0/22 over 152; amended 2026-10-28, review fold:
+RR1-m1 / RR1-m2).
 
 ## Sections
 
@@ -58,7 +65,8 @@ A-m4).
 -   §5 Conformance delta.
 -   §6 Churn and collisions with the held PRs, region by region.
 -   §7 Risks and rejected alternatives.
--   §8 Verification, ending with the review fold record of rev 2.
+-   §8 Verification, ending with the review fold records of rev 2 and rev 3.
+-   Sign-off: every review of this plan, its verdict and its counts.
 -   Hand-off notes, then Appendices A to D (golden sources, programs, docs
     amendments and records texts, verbatim).
 
@@ -99,6 +107,21 @@ probes, logs and saved files are under
 to f07), `$X/n-<toolchain>.txt`, `$X/r2/proto-toolchain.diff`, `$X/r2/saved`,
 `$X/appx` and `$X/mt-regions2.txt`.
 
+The fixer's rev-3 measurements (amended 2026-10-28, review fold: RR1-m1 / RR1-m2
+/ RR1-m3 / RR1-m4) re-ran the check (`git diff --stat 0bdce60a5 66bd2ba90 --
+toolchain core` is empty) and rebuilt the rev-2 prototype, the scratch commit
+3ff06902f, in a detached worktree (`CB_BUILD_ROOT=/dev/shm/ov4-fixer1/builds`,
+9.8 minutes beside probe runs, `0.0.0-0.dev+3ff06902f`), with Appendix A's rev-3
+sources written in place of its goldens; rev 3 changes no toolchain line. The
+focused re-review's probes r01, r02, r02b and r04 and the fixer's r04s ran on
+trunk, PR 59, PR 66, PR 61, PR 64, the nightly and the prototype (§0.3), and
+mutant M5 was rebuilt on rev 3 (§0.5). Probes, logs and the rev-3 fill are under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/ov4/fixer1
+(`$F` below): `$F/probes`, `$F/n-<toolchain>.txt`, `$F/r3/saved` (the four
+filled goldens, each path's `/` written `_`), `$F/r3/golden-rev3.diff` (the
+check golden against 3ff06902f's) and `$F/reg` (the register rows and both
+scripts' runs).
+
 ### §0.2 Upstream at the tip, and every commit since the cut (R32 (a), (c))
 
 `git -C /home/user/carbon-lang fetch -q upstream trunk` left upstream/trunk at
@@ -109,7 +132,10 @@ re-fetch (2026-10-28 06:58 UTC) leaves it at **0421bf3b4** (2026-10-28 05:36
 UTC, "Optimize token kinds and whitespace flags", upstream PR 8044), one commit
 later, which changes only toolchain/lex and toolchain/base/value_store.h; every
 quote below reads identically at both shas, and the fifteen register quotes of
-Appendix D.6 pass at both (amended 2026-10-28, review fold: A-m1 / B-m5).
+rev 2's Appendix D.6 pass at both (amended 2026-10-28, review fold: A-m1 /
+B-m5). The rev-3 fixer's re-fetches (2026-10-28, before 08:05 UTC and again
+at 08:31 UTC) leave the tip at 0421bf3b4, and the sixteen quotes of rev 3's
+Appendix D.6 pass at both shas (amended 2026-10-28, review fold: RR1-m3).
 
 _The design text_ (amended 2026-10-28, review fold: A-m1 / B-M1; rev 1 said
 that no design page or accepted proposal describes parameter default values,
@@ -189,6 +215,12 @@ reads toolchain text that names a mechanism)._
 -   toolchain/sem_ir/entity_with_params_base.h:136-139: "A count of the
     top-level explicit parameters that have default values provided. This is
     useful for quickly bounds-checking caller argument arity."
+-   toolchain/check/function.cpp:29-46, `FindSelfPattern`, through
+    sem_ir/pattern.cpp:51-55 `IsSelfPattern` and its `GetUnwrapped` (:15-38),
+    which looks through `var` patterns, `SpecificConstant` and loaded import
+    refs and not through a `DefaultValuePattern`: a parameter named `self`
+    that has a default is not the function's `self`, and the function is not
+    a method (D-OV4-8; amended 2026-10-28, review fold: RR1-m1).
 -   Goldens: function/call/default_values.carbon (its
     `fail_caller_too_few_arguments` split: "0 arguments passed to function
     expecting 2 arguments"), function/declaration, function/definition and
@@ -322,6 +354,33 @@ so the measured behavior is the designed one (D-OV4-11). And the rev-1 count of
 trunk's plain path accepts (a10): rev 2 counts the level's trailing defaults
 (D-OV4-5).
 
+Rows the focused re-review and the rev-3 fixer added (amended 2026-10-28,
+review fold: RR1-m1 / RR1-m2; probes `$F/probes/r0*.carbon`: r01, r02, r02b
+and r04 the re-review's, r04s the fixer's; "proto" is rev 2's toolchain, which
+rev 3 does not change; PR 61 and PR 64 print trunk's lines exactly, PR 59 and
+PR 66 too but for r04's line number):
+
+| probe | trunk = PR 59 = PR 66 = PR 61 = PR 64 | proto | nightly |
+| --- | --- | --- | --- |
+| r01 plain `class C { fn M(self: i32 = 1) -> i32 }`, `C.M()`, `c.M()` | prints 1, 1 | same | same |
+| r02 the set `M(self: i32 = 1)` and `M(unused b: bool)` in `C`: `C.M()`, `C.M(4)`, `c.M()`, `C.M(true)` | TODO(iii) at `self: i32 = 1`; NoMatch at `C.M()` and `c.M()`, arity notes | prints 1, 4, 1, -1 | n/a |
+| r02b `M(self, y: i32 = 1)` then `M(self: i32 = 1)`, `c.M()` | TODO(iii) twice, gate (x)'s "`overload fn` members that disagree on `self`", NoMatch | gate (x)'s TODO only | n/a |
+| r04 plain `fn P(x: i32 = 1, (a: i32, b: i32), z: i32 = 3)`, `P(5, (1, 2))`, `P((1, 2))` | the missing-default error; at `P((1, 2))` "cannot implicitly convert expression of type `(Core.IntLiteral, Core.IntLiteral)` to `i32`", then a CRASH, `CHECK failure at toolchain/check/pattern_match.cpp:1805`, the `std::holds_alternative<CalleeState*>(state)` check of the tuple pattern's `DoPreWork` (PR 59 and PR 66 at :1807) | the missing-default error, then "1 argument passed to function expecting 3 arguments" at `P((1, 2))` | CRASH at pattern_match.cpp:750, the same check (p21's at :489) |
+| r04s that declaration as a set member beside `P(unused b: bool)`, `P((1, 2))` | the missing-default error, TODO(iii) at `x: i32 = 1`, NoMatch | the missing-default error, TODO(iii) at the tuple pattern, NoMatch with an arity note (member 0) and a conversion note (member 1) | n/a |
+
+Two readings (amended 2026-10-28, review fold: RR1-m1 / RR1-m2). A `self`
+that has a default is not a receiver, on trunk and upstream alike (§0.2,
+`FindSelfPattern`): its plain call binds no receiver and fills `self` (r01),
+and the set, reading the same `self_param_id`, treats the member as one
+without `self` and prints the plain path's lines (r02), so D-OV4-8 needs no
+rule for it. And the count's admitting a call that leaves a parameter without
+a default unmatched has a second crash site: when that parameter is a tuple
+pattern, the caller's pre-work stops at the tuple pattern's check
+(pattern_match.cpp:1805) instead of the parameter pattern's (:1275). The
+trailing count closes both: the plain call gets `CallArgCountMismatch` (r04)
+and the set the arity note (r04s, behind gate (iii)'s TODO at the tuple
+pattern, as p12b is).
+
 ### §0.4 Where a defaulted member enters each step of resolution
 
 The path is OV-1's `PerformCallToOverloadSet` (trunk call.cpp:601-712), its
@@ -329,8 +388,19 @@ steps as D-OV-4 numbers them (fork/overload/plan.md:348-520):
 
 1.  Erroneous arguments and gate (xi) (:605-626): unchanged; the arguments are
     the call's, and an omitted argument is no argument.
-2.  (a) Receiver alignment (:646-652): unchanged; `self` never has a default
-    in any probe (p13e shows `self` in the implicit list is refused first).
+2.  (a) Receiver alignment (:646-652): unchanged. A `self` with a default is
+    not a receiver (amended 2026-10-28, review fold: RR1-m1; rev 2 said
+    "`self` never has a default in any probe"): `FindSelfPattern`
+    (function.cpp:27-44) finds `self` through `IsSelfPattern`
+    (sem_ir/pattern.cpp:51-55), whose `GetUnwrapped` (:15-38) does not look
+    through a `DefaultValuePattern`, so `fn M(self: i32 = 1)` declares no
+    `self_param_id` and is not a method, upstream's toolchain alike (§0.2).
+    Its plain call `c.M()` binds no receiver and fills `self` with the default
+    (r01). The set reads the same `self_param_id`, so such a member is a
+    member without `self` for gate (x) and for this step, and the set prints
+    the plain path's lines (r02); beside a member with `self` it is gate (x)'s
+    TODO (r02b). A defaulted `self: Self` fails earlier, at the default's
+    conversion to the incomplete class (a07, a07b).
 3.  (b) Arity (:654-660): `GetExplicitArityRange` (:420-432) returns `{n, n}`
     with `n` = parameter patterns less one when the call binds a receiver; its
     comment (:420-423) says "Carbon has no default arguments, so the range is
@@ -385,7 +455,12 @@ Outside the call path:
     `default_value_arity` admits a call that omits a parameter with no
     default, and
     `CallerPatternMatch` then reaches pattern_match.cpp:1275's
-    `CARBON_CHECK(scrutinee_id.has_value())` (p21, plain, trunk and nightly).
+    `CARBON_CHECK(scrutinee_id.has_value())` in the parameter pattern's
+    `DoPreWork` (p21, plain, trunk and nightly), or, when the parameter left
+    with no argument is a tuple pattern, :1805's `CARBON_CHECK(
+    std::holds_alternative<CalleeState*>(state) || ...)` in the tuple
+    pattern's `DoPreWork` (:1772-1805; r04, plain: trunk, PR 59 and PR 66 at
+    :1807, the nightly at :750; amended 2026-10-28, review fold: RR1-m2).
     Upstream's tip has the same `CheckDefaults` (only its diagnostic rendering
     differs) and the same `ResolveCalleeInCall`; the crash at the tip is
     inferred, not measured (no tip build).
@@ -469,6 +544,21 @@ with `git apply` and its deduce.cpp hunk applied by hand around the fork's
 generic member in a set) prints 5, 2; p20 prints 9, 2. With no OV-4 code for
 generic members, the set takes upstream's deduction once it arrives, which is
 UA-3's (reverted; not part of any commit).
+
+Rev 3's measurement (amended 2026-10-28, review fold: RR1-m1 / RR1-m2): the
+rev-2 prototype rebuilt from 3ff06902f, its four goldens written from Appendix
+A's rev-3 sources without CHECK lines and filled by autoupdate (`!!!!`,
+`.!..`, `....`, R26, as on rev 2). The A.2 to A.4 fills are byte-identical to
+3ff06902f's, and the check file's differs only in the new split and in
+`fail_default_not_trailing` (`$F/r3/golden-rev3.diff`). The gate passes 1946
+of 1946 (25 s); conformance PASS 130, SKIP 22, nothing else, of 152, bullets
+48 PASS, 0 FAIL, 8 SKIP, 0 NOT-WRITTEN of 56 (67.4 s), as on rev 2. M5 rebuilt
+on rev 3: the gate aborts on the check golden at pattern_match.cpp:1275
+(`fail_default_not_trailing`'s `F(5)` is its first call), p21 aborts there,
+and r04, whose `P` is the split's `R`, aborts at :1805, so the split pins the
+second site once the first is fixed apart from it. The tree was restored,
+rebuilt and re-gated (1946 of 1946), and the five r probes print §0.3's lines
+again.
 
 ### §0.6 Collisions with the held PRs (numstat, then `git merge-tree`)
 
@@ -592,11 +682,22 @@ and classified first match NONE where T2.6 has it ALIGNED):
 -   The tie-break between two members that both accept a call stays T2.6's
     ALIGNED first match, unchanged: D-OV4-6 applies T2.6, it adds no entry.
 
-Both rows go to PR 67's fork/register/rg1-checks.tsv and rg1-quotes.tsv after
-a `#` comment line naming fork/overload/ov4-plan.md, as RG-1's own later rows
-are introduced (rg1-quotes.tsv:270-271), and are measured with PR 67's
-check_greps.sh and check_quotes.sh at both tips: "checked 2 silence checks, 0
-failed" and "checked 15 quotes, 0 failed" (`$X/reg`). Rev 1's three checks
+Commit L-R writes both rows into fork/register/rg1-plan.md's §2.T2 table,
+directly after T2.7's, with the texts of Appendix D.6, so that the register's
+table holds them where W-355's owner re-reads every entry's break condition
+(D-RG-17). It appends their checks and quotes to PR 67's
+fork/register/rg1-checks.tsv and rg1-quotes.tsv after a `#` comment line
+naming fork/overload/ov4-plan.md and the two rows, as RG-1's own later rows
+are introduced (rg1-quotes.tsv:270-271). Each TSV row then names a section 2
+entry, as the TSVs' header says ("the row names a section 2 entry"), and
+section 2 stays the source the two tables are rebuilt from (rg1-plan.md §4.2)
+(amended 2026-10-28, review fold: RR1-m4; rev 2 named the rows, but no commit
+wrote them). Measured with PR 67's check_greps.sh and check_quotes.sh at both
+tips: "checked 2 silence checks, 0 failed" and "checked 16 quotes, 0 failed"
+(`$F/reg`; rev 2's fifteen and function.cpp:677, the trailing-default rule
+that C.1 quotes; amended 2026-10-28, review fold: RR1-m3); a dry run of the
+two rows' insertion into PR 67's rg1-plan.md at 56e2e5bbd changes its R31
+counts by two table rows and nothing else. Rev 1's three checks
 become these two: its OV4.3 (`default_value_arity`) is T2.8's; its OV4.1
 (lines naming both overloading and a default value, 0) is subsumed by T2.9's,
 which any such line also moves; its OV4.2 (`default (value|argument)` in
@@ -653,6 +754,16 @@ worktrees aside, finds only this branch's fork/overload/ov4-plan.md.
     in the introduction (A-m4: M1 to M5 and M6); "OV-4, D-OV4-8" in two golden
     headers (A-m4, B-m4: export is D-OV4-10); and §0.6's "67 RG-1 ... none"
     (B-M3: its records collide in five regions).
+-   Rev 2's own false or incomplete statements, corrected in rev 3 (amended
+    2026-10-28, review fold: RR1): "`self` never has a default in any probe"
+    (§0.4) and "`self` included only when it carries a default, which no
+    probe could declare (p13e)" (D-OV4-8, D.2; RR1-m1: `fn M(self: i32 = 1)`
+    compiles, and is not a method); W-362's one crash site (RR1-m2: a tuple
+    pattern left without an argument stops at pattern_match.cpp:1805); C.1's
+    cite of call.cpp for the trailing and constant rules (RR1-m3:
+    function.cpp:676-679 and handle_pattern_list.cpp:185 state them); and
+    "rows T2.8 and T2.9 of RG-1's §2.T2 table" with no commit writing them
+    (RR1-m4: L-R now does).
 
 ## §1 Design
 
@@ -746,15 +857,20 @@ defaults.** `CheckDefaults` diagnoses "this pattern is missing a required
 default value." and still returns the level's count, so the plain call of `fn
 F(x: i32 = 1, y: i32)` with one argument passes the arity check and aborts at
 pattern_match.cpp:1275 (p21: trunk, the nightly; upstream's tip has the same
-function and call path, inferred). Once D-OV4-3 admits such a member, a set
-reaches the same abort (mutant M5). The root is the count: a level with a
-diagnosed missing default counts only the defaulted patterns after its last
-pattern without one, the only parameters a positional call can omit, so the
-arity check admits exactly the calls whose omitted arguments all have defaults.
+function and call path, inferred), and the call `R((1, 2))` of
+`fn R(x: i32 = 1, (a: i32, b: i32), z: i32 = 3)`, whose omitted parameter is a
+tuple pattern, aborts at the tuple pattern's CHECK, pattern_match.cpp:1805
+(r04: trunk; the nightly at :750; amended 2026-10-28, review fold: RR1-m2).
+Once D-OV4-3 admits such a member, a set reaches the same aborts (mutant M5).
+The root of both is the count: a level with a diagnosed missing default counts
+only the defaulted patterns after its last pattern without one, the only
+parameters a positional call can omit, so the arity check admits exactly the
+calls whose omitted arguments all have defaults.
 Every call that compiled on trunk still compiles (`P(5, 6)` for `P(x: i32 = 1,
-y: i32, z: i32 = 3)`, a10), and every call that crashed gets
-`CallArgCountMismatch` (plain) or the arity note (set) (amended 2026-10-28,
-review fold: A-m3; rev 1 counted 0, which also rejected `P(5, 6)`, mutant M5b).
+y: i32, z: i32 = 3)`, a10), and every call that crashed, at either site, gets
+`CallArgCountMismatch` (plain: p21, r04) or the arity note (set) (amended
+2026-10-28, review fold: A-m3 / RR1-m2; rev 1 counted 0, which also rejected
+`P(5, 6)`, mutant M5b).
 The edit to upstream's `CheckDefaults` carries a `Fork (OV-4, W-362)` marker at
 its new field and at its changed return, for UA-3's merge into function.cpp
 after 1b0a5709e (amended 2026-10-28, review fold: B-m5). It is the plain path's
@@ -797,12 +913,27 @@ lands without 503f09037's deduce.cpp hunk, or PR 66's deduction changes the
 result for a defaulted generic member; W-360 then re-plans.
 
 **D-OV4-8 — methods and receivers.** No step adds a receiver rule:
-`default_value_arity` counts explicit parameters, `self` included only when it
-carries a default, which no probe could declare (p13e). The range for `c.M()`
-is `[1 - 1, 1]` explicit arguments, and for `C.M(c)` it is `[2 - 1, 2]` with the
-receiver probed against `self` as D-OV-4 step 2(e) does; both fill `n` at the
-commit (p08: 102, 105, 102, 107, the plain method's output). _Break condition:_
-upstream lets `self` take a default, and the receiver's alignment is re-read.
+`default_value_arity` counts the explicit parameters with defaults after
+`self`. The range for `c.M()` is `[1 - 1, 1]` explicit arguments, and for
+`C.M(c)` it is `[2 - 1, 2]` with the receiver probed against `self` as D-OV-4
+step 2(e) does; both fill `n` at the commit (p08: 102, 105, 102, 107, the plain
+method's output). A parameter named `self` that carries a default is not a
+`self` parameter upstream: `FindSelfPattern` (upstream function.cpp:29-46 at
+0421bf3b4) does not look through the `DefaultValuePattern`, so the function is
+not a method, its plain call `c.M()` binds no receiver and `self` takes its
+default (r01: 1, 1 on trunk and the nightly). The set reads the same
+`self_param_id`, so it treats such a member as a member without `self`, exactly
+as the plain call does: gate (x) groups it with selfless members, and `C.M()`,
+`C.M(4)`, `c.M()` and `C.M(true)` print 1, 4, 1, -1 against
+`M(self: i32 = 1)` then `M(b: bool)` (r02); beside a member with `self` it is
+gate (x)'s "members that disagree on `self`" TODO (r02b). The split
+`defaulted_self_is_not_a_receiver` pins the plain and the set calls (amended
+2026-10-28, review fold: RR1-m1; rev 2 said "`self` included only when it
+carries a default, which no probe could declare (p13e)", which is false: p13e's
+`self` is refused for its list, not for its default). _Break condition:_
+upstream's `FindSelfPattern` comes to look through a default, so that a
+defaulted `self` is a receiver or an error; the receiver's alignment and the
+split are then re-read.
 
 **D-OV4-9 — import.** An imported member carries `default_value_arity`
 (import_ref.cpp:2806) and its `DefaultValuePattern` as a deduplicated constant
@@ -878,9 +1009,11 @@ is reason 1 (p15). _Break condition:_ a review shows the note misleads for a
 real call (for example a call within the range rejected for arity), which
 would be a defect in D-OV4-1, not in the text.
 
-**D-OV4-14 — goldens and programs.** Golden sources: one check file with 17
+**D-OV4-14 — goldens and programs.** Golden sources: one check file with 18
 splits (Appendix A.1, rev 2 adding `fail_template_default_specific` and
-respelling `fail_redecl_default_differs` and `fail_default_not_trailing`), the
+respelling `fail_redecl_default_differs` and `fail_default_not_trailing`, rev 3
+adding `defaulted_self_is_not_a_receiver` and `fail_default_not_trailing`'s
+`R`; amended 2026-10-28, review fold: RR1-m1 / RR1-m2), the
 export check file with 3 splits (A.2), a lower file with 3 splits (A.3, rev 2
 adding `template_dependent_default`) and the export lower twin (A.4); CHECK
 lines by autoupdate only (R16) (amended 2026-10-28, review fold: A-M1, A-m3,
@@ -918,9 +1051,14 @@ evidence refreshed; ORCHESTRATION's header, a dated paragraph, a Branches row
 and its Next actions item 6. The register entries in RG-1's vocabulary (§0.8):
 T2.8, F-009j, **ALIGNED**; T2.9, the plain-call rule, **NONE**, watched by
 W-355; the tie-break stays T2.6's ALIGNED first match (amended 2026-10-28,
-review fold: A-m2 / B-m1). Their two silence checks and fifteen quote rows
-(Appendix D.6) are added to PR 67's fork/register/rg1-checks.tsv and
-rg1-quotes.tsv only at land time, after PR 67 lands (commit L-R). Named
+review fold: A-m2 / B-m1). Their two table rows, two silence checks and sixteen
+quote rows (Appendix D.6) are added to PR 67's fork/register/rg1-plan.md
+(§2.T2's table, after T2.7's row), rg1-checks.tsv and rg1-quotes.tsv only at
+land time, after PR 67 lands (commit L-R), so that each TSV row names a
+section 2 entry, as the TSVs' header says, and W-355's owner re-reads the two
+break conditions where every other entry's is (amended 2026-10-28, review
+fold: RR1-m4 / RR1-m3; rev 2 named the table rows but no commit wrote them, and
+had fifteen quotes, without function.cpp:677's trailing-default rule). Named
 optional parameters stay where upstream leaves them, an open question in
 classes.md, with no fork spelling. _Break condition:_ RG-1's vocabulary or
 table formats change before land time; L-R then follows the landed format.
@@ -963,12 +1101,13 @@ commits.
     under R30 (c) before the goldens. Break condition: D-OV4-10's.
 -   **W-362** (toolchain-defect, filed already resolved on the fork): the plain
     call of a function with a diagnosed non-trailing default aborted at
-    pattern_match.cpp:1275; fixed by D-OV4-5 in handle_function.cpp's
-    `CheckDefaults` (the trailing count; amended 2026-10-28, review fold:
-    A-m3), which upstream moved to function.cpp (1b0a5709e). UA-3
-    carries the fix into function.cpp, or drops it if upstream fixed the crash
-    another way, and reports the crash upstream if the tip still has it. Break
-    condition: D-OV4-5's.
+    pattern_match.cpp:1275, or at :1805 when the omitted parameter is a tuple
+    pattern (amended 2026-10-28, review fold: RR1-m2); fixed by D-OV4-5 in
+    handle_function.cpp's `CheckDefaults` (the trailing count; amended
+    2026-10-28, review fold: A-m3), which upstream moved to function.cpp
+    (1b0a5709e). UA-3 carries the fix into function.cpp, or drops it if
+    upstream fixed the crash another way, and reports both crash sites
+    upstream if the tip still has them. Break condition: D-OV4-5's.
 -   W-363 and W-364: reserved, unused unless a review files a residue.
 
 ## §2 Spec, file by file
@@ -1323,21 +1462,24 @@ C1 adds the four files of Appendix A with no CHECK lines (each starts from its
 writing passes and a third that changes nothing, R26, measured on rev 1 and rev
 2), and nothing else: no existing golden moves (measured, 1942 of 1942 pass on
 the prototype before the four files are added). File names and splits
-(amended 2026-10-28, review fold: A-M1 / A-m3 / B-m5):
+(amended 2026-10-28, review fold: A-M1 / A-m3 / B-m5 / RR1-m1 / RR1-m2):
 
 -   toolchain/check/testdata/function/overload/default_values.carbon:
     `omitted_and_supplied`, `all_defaulted`, `first_member_needs_default`,
-    `exact_member_first`, `method_default`, `generic_class_member_default`,
-    `template_dependent_default`, `redecl_same_default`,
+    `exact_member_first`, `method_default`, `defaulted_self_is_not_a_receiver`
+    (rev 3: the plain and the set call of a defaulted `self`, D-OV4-8),
+    `generic_class_member_default`, `template_dependent_default`,
+    `redecl_same_default`,
     `fail_redecl_default_differs` (rev 2: the design page's two pairs in its
     own spelling, R27, and the forward-declared `H`),
     `fail_too_few`, `fail_supplied_argument_rejected`,
     `fail_default_not_trailing` (rev 2: `Q(5, 6)` accepted and `Q(5)`
-    rejected beside rev 1's `F(5)` and `P(5)`), `fail_todo_non_value_default`,
+    rejected beside rev 1's `F(5)` and `P(5)`; rev 3: `R((1, 2))` rejected,
+    its unmatched parameter a tuple pattern), `fail_todo_non_value_default`,
     `fail_template_default_specific` (rev 2: a template class's member whose
     default fails in `Box(bool)`, and the reversed order that never
     substitutes it), `fail_todo_generic_member_default`, `import_lib` and
-    `import_use` (seventeen splits).
+    `import_use` (eighteen splits).
 -   The export check file
     (toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon):
     `supplied`, `divergence_omitted`, `fail_cpp_omitted`.
@@ -1395,7 +1537,8 @@ ORCHESTRATION move into D, after the reviews, so no record claims the
 discharge before the ledger does (amended 2026-10-28, review fold: B-M5 /
 B-m4).
 
-1.  **Plan**: fork/overload/ov4-plan.md, rev 1 (fdaed06ae) and this rev 2.
+1.  **Plan**: fork/overload/ov4-plan.md, rev 1 (fdaed06ae), rev 2 (7fda41b11)
+    and this rev 3, the signed-off one (amended 2026-10-28, review fold: RR1).
     Later plan revisions are commits on the same file, each a fold record.
 2.  **C1, the toolchain change with its golden sources**: §2.1 to §2.3 and
     Appendix A's four files without CHECK lines, after re-fetching upstream
@@ -1469,14 +1612,18 @@ review fold: B-M3; rev 1 gave no messages or texts):
     it. Message: "OV-4 land (F-M): refill OV-4's goldens on the merged branch
     (autoupdate)", its body naming each refilled file. If autoupdate changes
     nothing, there is no F-M commit, and L says so.
-3.  **L-R**: the register rows of Appendix D.6 appended to PR 67's
+3.  **L-R**: the register entries of Appendix D.6: its two table rows
+    inserted into fork/register/rg1-plan.md's §2.T2 table directly after
+    T2.7's row, and its checks and quotes appended to PR 67's
     fork/register/rg1-checks.tsv and rg1-quotes.tsv, after re-fetching
     upstream and checking them with PR 67's check_greps.sh and
     check_quotes.sh at that tip (each count and quote re-read; a moved count
-    is a weekly-check finding, not an edit). Message: "OV-4 land (L-R):
-    register rows T2.8 and T2.9 in fork/register/rg1-checks.tsv and
-    rg1-quotes.tsv", its body: "Checked at upstream <tip>: <n> silence
-    checks and <m> quotes, 0 failed (fork/overload/ov4-plan.md Appendix D.6)."
+    is a weekly-check finding, not an edit), with prek and rg1-plan.md's R31
+    counts before and after (two table rows more, nothing else; amended
+    2026-10-28, review fold: RR1-m4). Message: "OV-4 land (L-R): register rows
+    T2.8 and T2.9 in fork/register/rg1-plan.md, rg1-checks.tsv and
+    rg1-quotes.tsv", its body: "Checked at upstream <tip>: <n> silence checks
+    and <m> quotes, 0 failed (fork/overload/ov4-plan.md Appendix D.6)."
 4.  **L**: §8.1 to §8.4 re-run on the branch's head after M, F-M and L-R, the
     gate and conformance figures quoted into the ledger, the decision log and
     ORCHESTRATION by the texts of Appendix D.7, EXPECTED, not of record, as
@@ -1506,31 +1653,35 @@ refills.
 ## §4 Testdata matrix (R16: autoupdate fills; the fill must reproduce these lines)
 
 Each row's prediction is hand-traced from §1 before the build; the measured
-column is rev 2's fill (`$X/r2/saved/<path>`, line numbers in the filled file;
+column is rev 3's fill (`$F/r3/saved/<path>`, line numbers in the filled file;
 amended 2026-10-28, review fold: A-M1 / A-m3 / B-m5, the rows marked "rev 2"
-new or changed, every line number re-read because the new split moves the
-dumps). Every row matched; nothing was predicted differently and corrected.
+new or changed, and RR1-m1 / RR1-m2, the rows marked "rev 3" new or changed,
+every line number of the check file re-read because the new split and `R`
+move its diagnostics and dumps; the other three files' fills are rev 2's,
+byte for byte). Every row matched; nothing was predicted differently and
+corrected.
 
 _toolchain/check/testdata/function/overload/default_values.carbon:_
 
 | split | predicted | measured |
 | --- | --- | --- |
-| omitted_and_supplied | member 0 takes `Scale(1)` with the default `10` filled from the declaration's converted default; `Scale(2, 3)` both supplied; no diagnostic | :569 `call %Scale.ref.loc10_33(%.loc10_32.2, @Scale.loc5.%.loc5_41.2)`, :588 `(%.loc10_43.2, %.loc10_46.2)`; the declaration's `default_value_pattern %factor.patt, %int_10.6bf` at :416 |
-| all_defaulted | `Count()` fills both, `Count(5)` fills `b`, `Count(5, 6)` none, `Count(true)` member 1 | :676 both `@Count.loc4.%...` values, :687 one, :715 none, :728 `call %Count.ref.loc11_71(%true)` |
-| first_member_needs_default | `Pick(5)` member 0 with the default; `Pick(5, 6)` member 0 | :821 `(%.loc11_31.2, @Pick.loc7.%.loc7_49.2)`, :840 two supplied |
-| exact_member_first | `Pick(5)` member 0 with one argument; `Pick(5, 6)` member 1 | :935 one argument, :954 two |
-| method_default | `c.Plus()` and `Counter.Plus(c)` fill `n`; `c.Plus(5)` and `Counter.Plus(c, 7)` supply it; receivers as D-OV-4 binds them | :1051 and :1079 with `@Counter.Plus.loc9.%.loc9_35.2`, :1065 and :1101 supplied |
-| generic_class_member_default | `Box(bool).Get()` fills `y` in the specific; `Get(9)` supplies | :1192 `call %Box.Get.specific_fn.loc13_40(@Box.Get.loc8.%.loc8_28.2)`, :1209 |
-| template_dependent_default | both specifics check; no diagnostic (the per-specific selection is pinned by the lower split of the same name) | :1300 and :1305, no STDERR |
-| redecl_same_default | one member; `F(1)` fills from the definition's default | :1380 `(%.loc10_28.2, @F.loc7.%.loc7_32.2)` |
-| fail_redecl_default_differs (rev 2) | three `RedeclParamDiffers` with `RedeclParamPrevious`, at parameter 2 of the second `F`, `G` and `H`, the `F` and `G` pairs spelled as C.5 spells them | :151/:154, :161/:164, :171/:174 |
-| fail_too_few | `OverloadNoMatch`, two arity notes | :189, :192, :195 |
-| fail_supplied_argument_rejected | `OverloadNoMatch`; member 0 conversion note, member 1 arity note | :210, :213, :216 |
-| fail_default_not_trailing (rev 2) | three `RequiredPatternDefaultValueMissing` (`F`, `P`, `Q`) with their first-default notes; `F(5)` `OverloadNoMatch` with an arity note (member 0) and a conversion note (member 1); `P(5)` "1 argument passed to function expecting 2 arguments"; `Q(5, 6)` accepted; `Q(5)` "1 argument passed to function expecting 3 arguments"; no crash | :231/:234, :241/:244, :250/:253, :259/:262/:265, :269/:272, :276/:279; nothing at `Q(5, 6)`'s column 40 |
-| fail_todo_non_value_default | two gate (iii) TODOs, at `var y: i32 = 2` and at the defaulted tuple pattern | :292, :297 |
-| fail_template_default_specific (rev 2) | one "unable to monomorphize specific `Get(bool)`" at `Box(bool).Get()`, with the notes "cannot implicitly convert expression of type `Core.IntLiteral` to `bool`" and the missing `ImplicitAs` impl at the default; nothing for `Box(i32).Get()`, `Box2(bool).Get()` or `Box2(i32).Get(5)` | :326, :329, :332 (no other STDERR) |
-| fail_todo_generic_member_default | `G(true, 5)` selects; `G(true)` `OverloadNoMatch` with the deduction note; `P(true)` `DeductionIncomplete` with `DeductionGenericHere` | :352/:355, :359/:362 |
-| import_lib, import_use | `F(1)` fills the imported default as the constant `2`; `F(1, 5)` supplies | :1467 `(%.loc9_28.2, constants.%int_2)`, :1486 |
+| omitted_and_supplied | member 0 takes `Scale(1)` with the default `10` filled from the declaration's converted default; `Scale(2, 3)` both supplied; no diagnostic | :606 `call %Scale.ref.loc10_33(%.loc10_32.2, @Scale.loc5.%.loc5_41.2)`, :625 `(%.loc10_43.2, %.loc10_46.2)`; the declaration's `default_value_pattern %factor.patt, %int_10.6bf` at :453 |
+| all_defaulted | `Count()` fills both, `Count(5)` fills `b`, `Count(5, 6)` none, `Count(true)` member 1 | :713 both `@Count.loc4.%...` values, :724 one, :752 none, :765 `call %Count.ref.loc11_71(%true)` |
+| first_member_needs_default | `Pick(5)` member 0 with the default; `Pick(5, 6)` member 0 | :858 `(%.loc11_31.2, @Pick.loc7.%.loc7_49.2)`, :877 two supplied |
+| exact_member_first | `Pick(5)` member 0 with one argument; `Pick(5, 6)` member 1 | :972 one argument, :991 two |
+| method_default | `c.Plus()` and `Counter.Plus(c)` fill `n`; `c.Plus(5)` and `Counter.Plus(c, 7)` supply it; receivers as D-OV-4 binds them | :1088 and :1116 with `@Counter.Plus.loc9.%.loc9_35.2`, :1102 and :1138 supplied |
+| defaulted_self_is_not_a_receiver (rev 3) | `c.P()` binds no receiver and passes `P`'s default for `self`; `C.M()` and `c.M()` select member 0 with its default and no receiver; `C.M(4)` member 0 with `4`; `C.M(true)` member 1; no diagnostic | :1233 `call %P.ref(@C.P.%.loc9_20.2)`; :1237 `call %M.ref.loc16_22(@C.M.loc10.%.loc10_29.2)` and :1271 `call %M.ref.loc16_39(@C.M.loc10.%.loc10_29.2)`; :1258 `(%.loc16_30.2)`; :1284 `@C.%C.M.decl.loc11` and :1285 `(%true)`; no STDERR |
+| generic_class_member_default | `Box(bool).Get()` fills `y` in the specific; `Get(9)` supplies | :1376 `call %Box.Get.specific_fn.loc13_40(@Box.Get.loc8.%.loc8_28.2)`, :1393 |
+| template_dependent_default | both specifics check; no diagnostic (the per-specific selection is pinned by the lower split of the same name) | :1484 and :1489, no STDERR |
+| redecl_same_default | one member; `F(1)` fills from the definition's default | :1564 `(%.loc10_28.2, @F.loc7.%.loc7_32.2)` |
+| fail_redecl_default_differs (rev 2) | three `RedeclParamDiffers` with `RedeclParamPrevious`, at parameter 2 of the second `F`, `G` and `H`, the `F` and `G` pairs spelled as C.5 spells them | :171/:174, :181/:184, :191/:194 |
+| fail_too_few | `OverloadNoMatch`, two arity notes | :209, :212, :215 |
+| fail_supplied_argument_rejected | `OverloadNoMatch`; member 0 conversion note, member 1 arity note | :230, :233, :236 |
+| fail_default_not_trailing (rev 2, rev 3) | four `RequiredPatternDefaultValueMissing` (`F`, `P`, `Q`, `R`) with their first-default notes; `F(5)` `OverloadNoMatch` with an arity note (member 0) and a conversion note (member 1); `P(5)` "1 argument passed to function expecting 2 arguments"; `Q(5, 6)` accepted; `Q(5)` and `R((1, 2))` "1 argument passed to function expecting 3 arguments"; no crash | :252/:255, :262/:265, :271/:274, :280/:283, :289/:292/:295, :299/:302, :306/:309, :313/:316 (`R((1, 2))` at column 57); nothing at `Q(5, 6)`'s column 40 |
+| fail_todo_non_value_default | two gate (iii) TODOs, at `var y: i32 = 2` and at the defaulted tuple pattern | :329, :334 |
+| fail_template_default_specific (rev 2) | one "unable to monomorphize specific `Get(bool)`" at `Box(bool).Get()`, with the notes "cannot implicitly convert expression of type `Core.IntLiteral` to `bool`" and the missing `ImplicitAs` impl at the default; nothing for `Box(i32).Get()`, `Box2(bool).Get()` or `Box2(i32).Get(5)` | :363, :366, :369 (no other STDERR) |
+| fail_todo_generic_member_default | `G(true, 5)` selects; `G(true)` `OverloadNoMatch` with the deduction note; `P(true)` `DeductionIncomplete` with `DeductionGenericHere` | :389/:392, :396/:399 |
+| import_lib, import_use | `F(1)` fills the imported default as the constant `2`; `F(1, 5)` supplies | :1651 `(%.loc9_28.2, constants.%int_2)`, :1670 |
 
 _toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon:_
 `supplied` and `divergence_omitted` check with no diagnostic, Carbon's `F(1)`
@@ -1575,7 +1726,8 @@ re-renders `fail_default_not_trailing`'s two `RequiredPatternDefaultValue*`
 messages without their trailing period, and W-360 and W-361 move their splits;
 both are UA-3's refills. Rev 2 adds no existing-golden churn: its new split
 and lower split are inside OV-4's own files (amended 2026-10-28, review fold:
-A-M1 / B-m5).
+A-M1 / B-m5); nor does rev 3, whose split and call are in the same check file
+(amended 2026-10-28, review fold: RR1-m1 / RR1-m2).
 
 ### §6.2 Collisions with the held PRs and the merge rules
 
@@ -1617,8 +1769,10 @@ PR 67 (PR 67's first):
     makes one, keep both; OV-4's entry stays directly above OV-3's heading, its
     weekly note directly after the paragraph that ends "or removes positional
     defaults.", and each gap-row edit at its anchor of D.4.
-7.  The register TSVs: OV-4's branch does not touch them before L-R, which
-    appends its rows after M, so they cannot conflict at M.
+7.  The register's table and TSVs (fork/register/rg1-plan.md §2.T2,
+    rg1-checks.tsv and rg1-quotes.tsv): OV-4's branch does not touch them
+    before L-R, which adds its rows after M, so they cannot conflict at M
+    (amended 2026-10-28, review fold: RR1-m4).
 8.  EH-C (W-346): whichever of OV-4 and EH-C lands second applies rules 1 to
     6 to the other's records in the same way (D-OV4-16).
 
@@ -1755,6 +1909,12 @@ mirrors m66, m64 and m61 on rev 2. Every build, mirror and the prototype's
 worktree under /dev/shm/ov4-fixer were deleted after this plan's commit; the
 prototype's files are kept at `$X/r2/saved` and `$X/r2/proto-toolchain.diff`,
 and its trees as the scratch commits 3ff06902f (code) and 59b65eb9c (records).
+The rev-3 fixer's (amended 2026-10-28, review fold: RR1): the rev-2 prototype
+rebuilt with rev 3's Appendix A sources, its fill, gate and conformance,
+mutant M5, the five r probes on six toolchains and the prototype, and the
+register rows at both tips (§0.1, §0.3, §0.5, §0.8); the build and the
+worktree under /dev/shm/ov4-fixer1 were deleted before this plan's commit, no
+install is kept, and the rev-3 fill is kept at `$F/r3/saved`.
 
 ### §8.1 Build (implementer)
 
@@ -1775,9 +1935,9 @@ incremental rebuild of one changed file about 10 seconds; no warning under
 ### §8.2 Autoupdate to its fixpoint
 
 `$CB/autoupdate.sh /home/user/carbon-ov4 <the four files>` until a pass prints
-four dots (measured: the third pass, after two writing passes, R26), then `git
-diff --stat` shows only the four files. A pass that changes another file is a
-finding.
+four dots (measured on rev 2 and rev 3: the third pass, after two writing
+passes, R26), then `git diff --stat` shows only the four files. A pass that
+changes another file is a finding.
 
 ### §8.3 Gate
 
@@ -1899,6 +2059,13 @@ EXPECTED, not of record.
     since rev 1 is the default count, which no program exercises.
 -   macOS, Windows, ASan and opt builds: the container builds Linux fastbuild
     only.
+-   For rev 3 (amended 2026-10-28, review fold: RR1): the 62 probes of
+    `$X/probe_list.txt`, the mutants but M5, clang-format, clang-tidy and the
+    mirrors m66, m64 and m61, because rev 3 changes no toolchain line and the
+    rebuilt prototype is rev 2's toolchain. The five r probes print on PR 59,
+    PR 66, PR 61 and PR 64 alone what trunk prints (PR 59's and PR 66's r04
+    abort at :1807, their line for :1805), and the implementer's mall and F-M
+    run the new split on the merged branches.
 
 ### §8.10 Id re-scan (before commit D)
 
@@ -1946,18 +2113,69 @@ check leaves the diagnostic in place (R17). No finding needed W-363 or W-364.
 Disk: the fixer's prototype build and the m66, m64 and m61 mirrors were built
 under /dev/shm/ov4-fixer and deleted with their worktrees; no install is kept.
 
+### §8.12 Review fold record (rev 3, 2026-10-28)
+
+The focused re-review RR1 of rev 2 (7fda41b11), APPROVE-WITH-AMENDMENTS: no
+BLOCKER, no MAJOR, four MINORs. It re-checked the base (`git diff --stat
+0bdce60a5 66bd2ba90 -- toolchain core` is empty) and the tip (0421bf3b4),
+rebuilt the rev-2 prototype 3ff06902f under /dev/shm/ov4-rr1 and measured it:
+the gate passes 1946 of 1946; §2's diff blocks are byte-identical to the
+prototype's diff; A.1 and B.1 are the prototype's files and B.1 prints its
+EXPECT lines; the fifteen D.6 quotes pass at 0421bf3b4 and the two counts are
+3 and 40; W-360 to W-364 are free on every ref; and a merge-tree of the records
+twin 59b65eb9c against the seventeen heads adds conflicts only in ORCHESTRATION
+and the ledger, beside the code conflicts §0.6 names. It found every rev-2
+MAJOR resolved (A-M1's fix rejected on upstream evidence, measured: f01, f02,
+f04, f05, f06 and a09c as §0.3 says, p002200:214-217 and README.md:2828-2832 as
+quoted; B-M1 to B-M5), every MINOR fold in place (A-m3: a10 and f07 as trunk,
+p21 an arity error where trunk crashes) and no fold breaking another section.
+Every finding was reproduced in the fixer's scratch (`$F`) before it was
+folded; none is rejected, and none needs W-363 or W-364.
+
+| finding | severity | disposition | where |
+| --- | --- | --- | --- |
+| RR1-m1 D-OV4-8 says `self` takes no default, but a defaulted `self` is declarable | MINOR | folded: reproduced (r01 prints 1, 1 on trunk, the four held installs and the nightly; r02 prints 1, 4, 1, -1 on the prototype; r02b is gate (x)'s TODO); the reason restated from upstream's `FindSelfPattern`, which does not look through a default, so the function is not a method and the set treats the member as one without `self`, as the plain call does; the split `defaulted_self_is_not_a_receiver` added, filled and gated | §0.2, §0.3, §0.4 step 2, §0.10, D-OV4-8, D-OV4-14, §2.4, §4, A.1, D.1, D.2 |
+| RR1-m2 W-362 and its split miss the tuple-pattern crash site | MINOR | folded: reproduced (r04 aborts at pattern_match.cpp:1805 on trunk, PR 61 and PR 64, at :1807 on PR 59 and PR 66 and at :750 on the nightly; the prototype reports "1 argument passed to function expecting 3 arguments"; r04s is the set form behind gate (iii)); `R((1, 2))` added to `fail_default_not_trailing`; M5 rebuilt on rev 3 aborts r04 at :1805; both sites cited in D-OV4-5, W-362 and its upstream report | §0.3, §0.4, §0.5, §0.10, D-OV4-5, D-OV4-14, §1.1, §2.4, §4, A.1, D.1, D.2, D.5 |
+| RR1-m3 C.1 cites call.cpp's arity range for the trailing and constant rules | MINOR | folded: reproduced (call.cpp:46-52 at 0421bf3b4 speaks of the arity range only); C.1 cites function.cpp:676-679 for the trailing rule and handle_pattern_list.cpp:185 for the constant rule and keeps the call.cpp quote for the range; function.cpp:677 added to D.6's quotes (16 of 16 pass at both tips) and the trailing rule quoted in D.2's V-3 check | §0.2, §0.8, D-OV4-15, C.1, D.2, D.6 |
+| RR1-m4 rows T2.8 and T2.9 said to join rg1-plan.md's table, written by no commit | MINOR | folded by the review's first fix: L-R also inserts the two rows, verbatim in D.6, into fork/register/rg1-plan.md §2.T2 after T2.7's row, so each TSV row names a section 2 entry, as the TSVs' header says and rg1-plan.md §4.2's rebuild from section 2 assumes; the TSVs' comment lines name the rows; the other fix (the entries only in the decision log) would leave W-355's owner no section 2 entry to re-read | §0.8, D-OV4-15, §3 L-R, §6.2 rule 7, D.2, D.6, hand-off note 10 |
+
+Disk: the rev-3 prototype's build and worktree under /dev/shm/ov4-fixer1 were
+deleted before this plan's commit; no install is kept.
+
+## Sign-off
+
+Every review of this plan, with its verdict and its counts (amended
+2026-10-28, review fold: RR1):
+
+| review | read | verdict | BLOCKER | MAJOR | MINOR | folded | rejected | fold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A: root causes, soundness, upstream fidelity | rev 1, fdaed06ae | APPROVE-WITH-AMENDMENTS | 0 | 1 | 4 | 5 (A-M1 in part) | A-M1's proposed fix, on upstream evidence (§7.2) | rev 2, §8.11 |
+| B: records, process, R31 and R32 | rev 1, fdaed06ae | APPROVE-WITH-AMENDMENTS | 0 | 5 | 5 | 10 | none | rev 2, §8.11 |
+| RR1: the focused re-review | rev 2, 7fda41b11 | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 | 4 | none | rev 3, §8.12 |
+
+Rev 3 is SIGNED OFF FOR IMPLEMENTATION: the last review's verdict is
+APPROVE-WITH-AMENDMENTS, not REJECT; every finding of the three reviews is
+folded, A-M1 in part with its proposed fix rejected on the evidence of §7.2;
+and rev 3's one change outside the records texts, Appendix A.1's new split and
+`R`, was filled on the rev-2 toolchain, gated (1946 of 1946) and run through
+conformance (130/0/22 over 152), with no earlier outcome changed (§0.5). The
+implementation starts from this plan's commit with §3's C1.
+
 ## Hand-off notes for the implementer
 
 1.  Start from a clean worktree at this plan's commit: the planner and the
-    fixer restored or deleted every tree they prototyped in. `$X/r2/saved`
+    fixers restored or deleted every tree they prototyped in. `$X/r2/saved`
     holds rev 2's prototype files and `$X/r2/proto-toolchain.diff` its
     toolchain diff, identical to §2's blocks; the scratch commit 3ff06902f
-    holds the same tree (amended 2026-10-28, review fold: B-m5).
+    holds the same tree (amended 2026-10-28, review fold: B-m5). Rev 3
+    changes only Appendix A.1's source: its fill is in `$F/r3/saved` and its
+    difference from 3ff06902f's golden is `$F/r3/golden-rev3.diff` (amended
+    2026-10-28, review fold: RR1-m1 / RR1-m2).
 2.  C1's goldens go in without CHECK lines; never write a CHECK line by hand
     (R16). Appendix A's sources are complete; F1 is autoupdate's.
-3.  Write the probes of §0.3 into your own scratch (`$Q/probes` and
-    `$X/probes` are the planner's and the fixer's; read, do not write there)
-    and keep `$Q/bin/probe.sh`'s shape: compile each unit with
+3.  Write the probes of §0.3 into your own scratch (`$Q/probes`, `$X/probes`
+    and `$F/probes` are the planner's and the fixers'; read, do not write
+    there) and keep `$Q/bin/probe.sh`'s shape: compile each unit with
     `--output-last-input-only`, link, run.
 4.  B.1's EXPECT lines are derived in its header; re-derive them from §1 and
     the prelude before running anything (R16 (d)). B.2 has no EXPECT-STDOUT
@@ -1974,6 +2192,9 @@ under /dev/shm/ov4-fixer and deleted with their worktrees; no install is kept.
 8.  W-360 to W-362 are filed at D, not before; their `<sha>` fields are C1's.
 9.  Run mall before the implementation reviews (§8.7), and the R27 step of
     §8.6 before P (amended 2026-10-28, review fold: B-M3 / B-m5).
+10. At L-R, D.6's two table rows go into fork/register/rg1-plan.md §2.T2 as
+    well as its rows into the two TSVs; run prek and the R31 counts on
+    rg1-plan.md (amended 2026-10-28, review fold: RR1-m4).
 
 ## Appendix A. Golden sources (C1; CHECK lines by autoupdate only)
 
@@ -2081,6 +2302,26 @@ fn Use(c: Counter) -> i32 {
 }
 //@dump-sem-ir-end
 
+// --- defaulted_self_is_not_a_receiver.carbon
+
+library "[[@TEST_NAME]]";
+
+// A parameter named `self` that has a default value does not make a method:
+// the function has no `self` parameter, so `c.P()` binds no receiver and fills
+// `self` from its default. A set treats such a member as one without `self`,
+// exactly as the ordinary call does (D-OV4-8), beside the selfless `M(b)`.
+class C {
+  fn P(self: i32 = 1) -> i32 { return self; }
+  overload fn M(self: i32 = 1) -> i32 { return self; }
+  overload fn M(unused b: bool) -> i32 { return -1; }
+}
+
+//@dump-sem-ir-begin
+fn Use(c: C) -> i32 {
+  return c.P() + C.M() + C.M(4) + c.M() + C.M(true);
+}
+//@dump-sem-ir-end
+
 // --- generic_class_member_default.carbon
 
 library "[[@TEST_NAME]]";
@@ -2174,7 +2415,8 @@ library "[[@TEST_NAME]]";
 // the defaults after its last parameter that has none: a call that omits an
 // argument for a parameter with no default is an arity mismatch, for a set
 // member and for a plain function alike, and a call that omits only trailing
-// defaulted arguments is still accepted (`Q(5, 6)`).
+// defaulted arguments is still accepted (`Q(5, 6)`). The parameter without a
+// default may be a tuple pattern: `R((1, 2))` is a mismatch too.
 overload fn F(unused x: i32 = 1, unused y: i32) -> i32 { return 1; }
 overload fn F(unused b: bool) -> i32 { return 2; }
 
@@ -2182,7 +2424,9 @@ fn P(unused x: i32 = 1, unused y: i32) -> i32 { return 1; }
 
 fn Q(x: i32 = 1, y: i32, z: i32 = 3) -> i32 { return x + y + z; }
 
-fn Use() -> i32 { return F(5) + P(5) + Q(5, 6) + Q(5); }
+fn R(x: i32 = 1, (a: i32, b: i32), z: i32 = 3) -> i32 { return x + a + b + z; }
+
+fn Use() -> i32 { return F(5) + P(5) + Q(5, 6) + Q(5) + R((1, 2)); }
 
 // --- fail_todo_non_value_default.carbon
 
@@ -2665,7 +2909,9 @@ measured there (§0.6).
 
 The seven lines from "**CLOSED (fork amendment 2026-09-27) by D-OV-4 step
 2(b):** no" through "Revisit as its own design fork if a need appears." are
-replaced by (amended 2026-10-28, review fold: A-m1 / B-M1 / B-M4 / B-m5):
+replaced by (amended 2026-10-28, review fold: A-m1 / B-M1 / B-M4 / B-m5 /
+RR1-m3; rev 2 cited call.cpp's arity range for the trailing and constant
+rules):
 
 <!-- google-doc-style-ignore -->
 
@@ -2681,8 +2927,12 @@ value of `4` for `p`", and the future-work sketch "Field defaults for struct
 types" under "Optional named parameters" in [classes](classes.md) declares
 `options: {.stable: bool = false, .descending: bool = false} = {}` and calls
 `SortIntVector(&v);`. Every parameter after a defaulted one must also have a
-default, and a default must be a constant (upstream's toolchain at 0421bf3b4:
-check/call.cpp verifies "that the number of arguments is within the range
+default (upstream's toolchain at 0421bf3b4, check/function.cpp:676-679: "if a
+subpattern provides a default value, all subsequent patterns at that level of
+nesting must provide a default value as well"), a default must be a constant
+(check/handle_pattern_list.cpp:185: "default value is not a constant"), and a
+call supplies from the parameter count less the defaults up to the parameter
+count (check/call.cpp:46-52: "the number of arguments is within the range
 [callee_arity - arity_lower_bound_margin, callee_arity]"). Named optional
 parameters stay the open question that classes.md records; this page adds no
 spelling for them. A member with default values matches as the ordinary call of
@@ -2823,7 +3073,8 @@ are replaced, the four "Landed at" items are prepended to `evidence` (the filed
 items stay after them), and the discharge sentence is appended to `notes`
 (amended 2026-10-28, review fold: A-M1 / A-m3 / B-M4: the line ranges are rev
 2's, the default count is the trailing one, and the docs are "rewritten in
-place", which is what P does).
+place", which is what P does; RR1-m1 / RR1-m2: eighteen splits, and W-362's
+two crash sites).
 
 <!-- google-doc-style-ignore -->
 
@@ -2836,10 +3087,10 @@ place", which is what P does).
   "evidence_prepended": [
     "Landed at OV-4 (<C1>): toolchain/check/call.cpp:422-438 (`GetExplicitArityRange`: `[n - default_value_arity, n]`, `ResolveCalleeInCall`'s range and CHECK), :495-511 (`ProbeOverloadCandidateInScratchScope`: the supplied arguments against the leading parameter patterns, under `CARBON_CHECK(arg_ids.size() <= param_pattern_ids.size() && param_pattern_ids.size() - arg_ids.size() <= default_value_arity)`)",
     "Landed at OV-4 (<C1>): toolchain/check/handle_function.cpp:366-367 (member identity through `CheckOverloadMemberParamsMatch`), :859-880 (gate (iii) through a `DefaultValuePattern`), :958-961, :1019-1021 and :1053-1059 (`CheckDefaults`, marked `Fork (OV-4, W-362)`: a level with a diagnosed missing default counts only its trailing defaults); toolchain/check/merge.cpp:576-629 and :643-654, merge.h:121-135 (`GetOverloadMemberParamPatterns`, `CheckOverloadMemberParamsMatch`)",
-    "Landed at OV-4 (<F1>): toolchain/check/testdata/function/overload/default_values.carbon (17 splits), toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (3), toolchain/lower/testdata/function/overload/default_values.carbon (3), toolchain/lower/testdata/interop/cpp/function/export/overload_set_default.carbon (1)",
+    "Landed at OV-4 (<F1>): toolchain/check/testdata/function/overload/default_values.carbon (18 splits), toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (3), toolchain/lower/testdata/function/overload/default_values.carbon (3), toolchain/lower/testdata/interop/cpp/function/export/overload_set_default.carbon (1)",
     "Landed at OV-4 (<P>): fork/conformance/programs/functions/overloading_default_values.carbon and the DIFF-1 pair overloading_default_values_diff.carbon and .diff.cpp; docs/design/functions_overloading.md rewritten in place at the match test's CLOSED paragraph (:570-576 at 66bd2ba90), the F-009j item (:1022-1023) and the arity step's parenthesis (:543-545), each quoting its superseded 2026-09-27 text, and amended at 0.1 limits item (iii) and D-OV-3's paragraph; fork/overload/plan.md's dated notes at :380 and :2173; measured <gate> of <gate> goldens and <pass>/0/<skip> over <total> programs, container-local, EXPECTED, not of record"
   ],
-  "notes_appended": " Discharged <date> by OV-4 (fork/overload/ov4-plan.md; decision-log entry OV-4): the filed mechanism was necessary but not sufficient, because D-OV-6 gate (iii) refused every defaulted member at its declaration, member identity treated a default as a different parameter (a declaration differing only in a default became a second member of the same parameter types), and a diagnosed non-trailing default left the plain path's arity open (a CHECK at pattern_match.cpp:1275, on trunk and the nightly); OV-4 changed those three too, each at its root, with one resolution path and no new diagnostic. The filed notes' \"functions_overloading.md:570-576 and :1022-1023 are rewritten\" is done in place, each rewrite quoting the text it supersedes. Generic members with defaults wait for 503f09037 at UA-3 (W-360), exported members' C++ default arguments for 9799a2326, 8fdc8ebc3 and c7de72757 (W-361); the default count's fix moves into function.cpp at UA-3 (W-362)."
+  "notes_appended": " Discharged <date> by OV-4 (fork/overload/ov4-plan.md; decision-log entry OV-4): the filed mechanism was necessary but not sufficient, because D-OV-6 gate (iii) refused every defaulted member at its declaration, member identity treated a default as a different parameter (a declaration differing only in a default became a second member of the same parameter types), and a diagnosed non-trailing default left the plain path's arity open (the CHECKs at pattern_match.cpp:1275 and, when the unmatched parameter is a tuple pattern, :1805, on trunk and the nightly); OV-4 changed those three too, each at its root, with one resolution path and no new diagnostic. The filed notes' \"functions_overloading.md:570-576 and :1022-1023 are rewritten\" is done in place, each rewrite quoting the text it supersedes. Generic members with defaults wait for 503f09037 at UA-3 (W-360), exported members' C++ default arguments for 9799a2326, 8fdc8ebc3 and c7de72757 (W-361); the default count's fix moves into function.cpp at UA-3 (W-362)."
 }
 ```
 
@@ -2886,18 +3137,18 @@ PR 67's W-356 once it has landed, §6.2 rule 5):
     {
       "id": "W-362",
       "kind": "toolchain-defect",
-      "title": "OV-4 residue (fixed on the fork, owed upstream): a call that omits an argument of a function whose default is not trailing aborted at pattern_match.cpp:1275 (`CARBON_CHECK(scrutinee_id.has_value())`), because `CheckDefaults` diagnosed the missing default and still returned the level's count; OV-4's `CheckDefaults` counts only the trailing defaults of such a level, so a call that omits only trailing defaulted arguments still compiles",
+      "title": "OV-4 residue (fixed on the fork, owed upstream): a call that omits an argument of a function whose default is not trailing aborted at pattern_match.cpp:1275 (`CARBON_CHECK(scrutinee_id.has_value())`), or at :1805 (the tuple pattern's caller-side check) when the omitted parameter is a tuple pattern, because `CheckDefaults` diagnosed the missing default and still returned the level's count; OV-4's `CheckDefaults` counts only the trailing defaults of such a level, so a call that omits only trailing defaulted arguments still compiles",
       "subsystem": "toolchain/check (handle_function.cpp; upstream's function.cpp)",
       "size": "S",
       "bullet": "Functions: function overloading (Carbon-native)",
       "evidence": [
         "toolchain/check/handle_function.cpp:958-961, :1019-1021 and :1053-1059 (the fix, marked `Fork (OV-4, W-362)`, OV-4 <C1>)",
-        "toolchain/check/testdata/function/overload/default_values.carbon `fail_default_not_trailing` (the set member F, the plain functions P and Q; `Q(5, 6)` compiles, `Q(5)` is a count mismatch)",
+        "toolchain/check/testdata/function/overload/default_values.carbon `fail_default_not_trailing` (the set member F, the plain functions P, Q and R; `Q(5, 6)` compiles, `Q(5)` and `R((1, 2))` are count mismatches)",
         "upstream 0421bf3b4 toolchain/check/function.cpp:688 `CheckDefaults` (moved by 1b0a5709e, PR 7893; unchanged but for diagnostic rendering), call.cpp:46-84",
-        "fork/overload/ov4-plan.md D-OV4-5 and section 0.3 p21 and a10 (the crash on trunk and on the 2026.10.12 nightly)"
+        "fork/overload/ov4-plan.md D-OV4-5 and section 0.3 p21, r04 and a10 (the crashes on trunk, at :1275 and :1805, and on the 2026.10.12 nightly, at :489 and :750)"
       ],
       "blocked_by": [],
-      "notes": "Filed <date> by OV-4. Owner: UA-3, which carries the fix into function.cpp's `CheckDefaults` (1b0a5709e moved it), or drops it if upstream has fixed the crash another way, and reports the crash upstream if the tip still has it. Break condition: upstream fixes it; UA-3 then takes upstream's fix."
+      "notes": "Filed <date> by OV-4. Owner: UA-3, which carries the fix into function.cpp's `CheckDefaults` (1b0a5709e moved it), or drops it if upstream has fixed the crash another way, and reports both crash sites upstream if the tip still has them. Break condition: upstream fixes it; UA-3 then takes upstream's fix."
     }
 ]
 ```
@@ -2948,16 +3199,19 @@ selected (D-OV-4). Decisions, auto-adopted under R29 (a), veto-able:
     `RedeclParamDiffers`. Break: upstream lets redeclarations differ in
     defaults.
 -   **D-OV4-5:** a level with a diagnosed missing default counts only its
-    trailing defaults (the plain call aborted at pattern_match.cpp:1275;
-    W-362). Break: upstream fixes it otherwise.
+    trailing defaults (the plain call aborted at pattern_match.cpp:1275, or
+    at :1805 when the unmatched parameter is a tuple pattern; W-362). Break:
+    upstream fixes it otherwise.
 -   **D-OV4-6:** two members that accept one call, one through a default:
     first match, no ranking (pattern_matching.md:696-697). Break: an upstream
     overloading design with ranking.
 -   **D-OV4-7:** generic members with a defaulted argument omitted fail
     deduction as the plain call does, until 503f09037 at UA-3 (W-360). Break:
     UA-3 lands without it.
--   **D-OV4-8:** receivers need no new rule (`self` takes no default). Break:
-    upstream allows a defaulted `self`.
+-   **D-OV4-8:** receivers need no new rule: a `self` with a default is not a
+    receiver upstream (`FindSelfPattern` does not look through the default),
+    so the set treats that member as one without `self`, as the plain call
+    does. Break: upstream makes a defaulted `self` a receiver or an error.
 -   **D-OV4-9:** imported members carry `default_value_arity` and the pattern.
     Break: upstream stops importing them.
 -   **D-OV4-10:** exported members have no C++ default argument until
@@ -2988,7 +3242,9 @@ possible mechanism for implementing optional named parameters."), declares
 ("It also verifies that the number of arguments is within the range
 [callee_arity - arity_lower_bound_margin, callee_arity]. This allows arity
 matching when the callee has default arguments for some subpatterns.") and
-:241, function.cpp:676-688 (`CheckDefaults`, "TODO: per
+:241, function.cpp:676-688 (`CheckDefaults`: "if a subpattern provides a
+default value, all subsequent patterns at that level of nesting must provide a
+default value as well", and "TODO: per
 https://github.com/carbon-language/carbon-lang/issues/7529"),
 pattern_match.cpp:950 ("If there's no scrutinee supplied, supply the default
 value instead."), handle_pattern_list.cpp:185 ("default value is not a
@@ -3008,7 +3264,8 @@ d87891f3a, 9799a2326, 503f09037, 427c448dc, 8fdc8ebc3, c7de72757
 fill.
 
 _V-3a register lines (RG-1's vocabulary, D-RG-1 to D-RG-6; rows T2.8 and T2.9
-of fork/register/rg1-plan.md section 2.T2's table, added at land time)._ T2.8,
+of fork/register/rg1-plan.md section 2.T2's table, which the land-time commit
+L-R writes with their checks and quotes)._ T2.8,
 F-009j, Carbon default arguments in overload sets: **ALIGNED**, the fork's rule
 is the mechanism p002200:471-476 and classes.md:2198-2207 spell and upstream's
 toolchain implements; quotes in fork/register/rg1-quotes.tsv, check T2.8
@@ -3109,8 +3366,8 @@ probe converts the supplied arguments and the ordinary call fills the rest;
 gate (iii) looks through a default value, member identity ignores defaults (a
 default-only difference is `RedeclParamDiffers`), and a diagnosed non-trailing
 default counts only its trailing defaults, which also fixes the plain path's
-abort at pattern_match.cpp:1275. F-009j and the match test's CLOSED paragraph
-are rewritten to name upstream's mechanism (R32), quoted at 0421bf3b4.
+aborts at pattern_match.cpp:1275 and :1805. F-009j and the match test's CLOSED
+paragraph are rewritten to name upstream's mechanism (R32), quoted at 0421bf3b4.
 Measured container-local: <gate> of <gate> goldens, <pass>/0/<skip> over
 <total>. Residues for UA-3: W-360 (503f09037), W-361 (9799a2326, 8fdc8ebc3,
 c7de72757), W-362 (function.cpp). No held PR is amended. OV-4 merges after PR
@@ -3148,15 +3405,30 @@ the rest of the item unchanged and rewrapped by hand within the item:
 
 ### §D.6 The register rows (L-R, after PR 67 lands)
 
+Inserted into fork/register/rg1-plan.md's §2.T2 table, directly after T2.7's
+row, verbatim but for `<date>` (L-R's `date -u +%F`) and `<tip>` (the upstream
+sha L-R checks at); in a cell `\|` is the pattern's `|`, as that plan's §2 says
+(amended 2026-10-28, review fold: RR1-m4; rev 2 gave no table rows):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+| T2.8 | F-009j: upstream's positional default values on `overload fn` members (docs/design/functions_overloading.md's match-test CLOSED paragraph and F-009j item as OV-4 rewrote them; call.cpp `GetExplicitArityRange` and its probe; fork/overload/ov4-plan.md D-OV4-1 to D-OV4-5; added <date> by OV-4's L-R) | at 0421bf3b4, re-read at <tip>: p002200:471 `class C4 { fn M[me: Self](p: i32 = 4); }` and :474 "using the default value of `4` for `p` when"; classes.md:2186 "### Optional named parameters", :2188 "Structs are being considered as a possible mechanism for implementing optional", :2202 `.descending: bool = false} = {}) {` and :2207 `SortIntVector(&v);`; upstream check/call.cpp:49-50 "the range [callee_arity - arity_lower_bound_margin, callee_arity]. This allows arity matching when the callee has default arguments for some" and :241 `function.default_value_arity);`; function.cpp:677 "patterns, ensure that if a subpattern provides a default value, all" and :682 "TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this"; pattern_match.cpp:950 "If there's no scrutinee supplied, supply the default value instead."; handle_pattern_list.cpp:185 "default value is not a constant"; check T2.8: `git grep -c -w 'default_value_arity'` over toolchain/check = 3 | ALIGNED (fork/overload/ov4-plan.md §0.8) | upstream designs another optional-parameter mechanism or removes positional defaults (W-341's) | W-355; W-341 DISCHARGED at OV-4 |
+| T2.9 | F-009j: the plain-call rule for an `overload fn` member with default values: a member accepts a call at k explicit arguments exactly when its ordinary call does, its probe converts the k supplied arguments, and the selected member's ordinary call fills the rest; the tie-break between two members that both accept stays T2.6's (fork/overload/ov4-plan.md D-OV4-1, D-OV4-2 and D-OV4-11; added <date> by OV-4's L-R) | silent at 0421bf3b4, re-read at <tip>, check T2.9: `git grep -c -i -E 'overload(ed\|ing)? (fn\|function\|set)s?\|function overloading'` over docs/design, proposals = 40: no upstream text on default values with overloading; the nearest passage, T2.6's pattern_matching.md:696 "We do not yet have an approved design for overloaded functions, but it"; for a member whose template-dependent default fails in a specific, p002200:214 `-   Substitution failure is an error. In C++, [the SFINAE rule](#terminology)` and README.md:2828 "One difference from C++ templates, Carbon template instantiation is not" | NONE (fork/overload/ov4-plan.md §0.8) | an accepted upstream overloading design, or upstream text on default values with overloading | W-355 |
+```
+
+<!-- google-doc-style-resume -->
+
 Appended to fork/register/rg1-checks.tsv (id, kind, flags, pattern, paths,
-count at the tip), after a `#` comment line naming this plan (amended
-2026-10-28, review fold: A-m2 / B-m1; measured at e6fddcf97 and 0421bf3b4 with
-PR 67's check_greps.sh: "checked 2 silence checks, 0 failed"):
+count at the tip), after a `#` comment line naming this plan and the two rows
+(amended 2026-10-28, review fold: A-m2 / B-m1 / RR1-m4; measured at e6fddcf97
+and 0421bf3b4 with PR 67's check_greps.sh: "checked 2 silence checks, 0
+failed"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-# OV-4 (fork/overload/ov4-plan.md section 1, D-OV4-15; added at land time by commit L-R): T2.8 F-009j's default values, T2.9 the plain-call rule for a member with defaults.
+# OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): rows T2.8 (F-009j's default values) and T2.9 (the plain-call rule for a member with defaults) of fork/register/rg1-plan.md section 2.T2.
 T2.8	G	-w	default_value_arity	toolchain/check	3
 T2.9	G	-i -E	overload(ed|ing)? (fn|function|set)s?|function overloading	docs/design proposals	40
 ```
@@ -3165,17 +3437,19 @@ T2.9	G	-i -E	overload(ed|ing)? (fn|function|set)s?|function overloading	docs/des
 
 Appended to fork/register/rg1-quotes.tsv (path, line at the tip, verbatim
 substring), after the same kind of comment line (amended 2026-10-28, review
-fold: A-m1 / B-M1; measured at e6fddcf97 and 0421bf3b4 with PR 67's
-check_quotes.sh: "checked 15 quotes, 0 failed"):
+fold: A-m1 / B-M1 / RR1-m3 / RR1-m4: rev 3 adds function.cpp:677, the
+trailing-default rule C.1 quotes; measured at e6fddcf97 and 0421bf3b4 with
+PR 67's check_quotes.sh: "checked 16 quotes, 0 failed"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-# OV-4 (fork/overload/ov4-plan.md section 1, D-OV4-15; added at land time by commit L-R): T2.8 and T2.9.
+# OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): the quotes of rows T2.8 and T2.9 of fork/register/rg1-plan.md section 2.T2.
 toolchain/check/call.cpp	49	// the range [callee_arity - arity_lower_bound_margin, callee_arity]. This
 toolchain/check/call.cpp	50	// allows arity matching when the callee has default arguments for some
 toolchain/check/call.cpp	241	function.default_value_arity);
 toolchain/check/pattern_match.cpp	950	// If there's no scrutinee supplied, supply the default value instead.
+toolchain/check/function.cpp	677	// patterns, ensure that if a subpattern provides a default value, all
 toolchain/check/function.cpp	682	// TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this
 toolchain/check/handle_pattern_list.cpp	185	"default value is not a constant");
 proposals/p002200-template-generics.md	471	class C4 { fn M[me: Self](p: i32 = 4); }

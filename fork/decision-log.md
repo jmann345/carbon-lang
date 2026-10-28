@@ -3802,6 +3802,140 @@ the header at 28 / 22 / 5 / 1 until the run of record (R9); `_Nonnull` on
 (`std::span<std::unique_ptr<int>>` maps to a `Core.Slice` whose element
 copies fail at the use site) recorded in slices.md, W-056 and import.cpp.
 
+### OV-4: `overload fn` members with default parameter values (W-341) (2026-10-28)
+
+W-341 (filed at the weekly upstream check 2026-10-26) is DISCHARGED on
+claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev 3, signed off at
+89001cfcd and amended at 16c58df0d and 1c2470b06; commits 751d077fd,
+0f53d7e53, dc1bb641b, ef31d5820 (the one fix commit, filled at 9ee5fcde3) and
+this one): an `overload fn` member with upstream's positional default values
+is called with a defaulted argument omitted, as the ordinary call of the same
+function is. The gap row "Functions: function overloading (Carbon-native)"
+stays DONE with its evidence refreshed. Measured container-local, EXPECTED,
+not of record: 1946 of 1946 goldens, conformance 130/0/22 over 152,
+bullets 48 PASS, 0 FAIL, 8 SKIP, 0 NOT-WRITTEN of 56. The entry sits with
+OV-1 to OV-3, newest first, as the log groups a workstream's entries.
+
+_The rule._ A member with default values behaves, for the number of arguments
+it is called with, exactly as the ordinary call of the same function would;
+between two members that both accept a call, the first in declaration order is
+selected (D-OV-4). Decisions, auto-adopted under R29 (a), veto-able:
+
+-   **D-OV4-1:** the arity step accepts `[n - default_value_arity, n]`, keyed
+    on the call's receiver: `ResolveCalleeInCall`'s range; a member whose
+    defaults outnumber its explicit parameters after a bound receiver,
+    reachable only through a diagnosed implicit-list `self`, gets the empty
+    range where the ordinary call aborts (W-363). Break: upstream
+    changes that range (issue 7529's tuple defaults) or picks another
+    optional-parameter mechanism.
+-   **D-OV4-2:** the probe converts the supplied arguments against the
+    leading parameter patterns; the commit's `CallerPatternMatch` fills the
+    omitted defaults. A default is converted at the declaration, or, when its
+    type is template-dependent, in each specific of the declaration, which
+    resolution forms before the probe converts anything (D-OV4-11). Break: a
+    default that depends on the call.
+-   **D-OV4-3:** gate (iii) looks through a `DefaultValuePattern`; a defaulted
+    `var` or tuple parameter stays gated. Break: gate (iii) lifted (W-095).
+-   **D-OV4-4:** member identity (D-OV-3, F-009k) ignores default values; a
+    declaration differing from a member only in a default is
+    `RedeclParamDiffers`. Break: upstream lets redeclarations differ in
+    defaults.
+-   **D-OV4-5:** a level with a diagnosed missing default counts only its
+    trailing defaults (the plain call aborted at pattern_match.cpp:1275, or
+    at :1805 when the unmatched parameter is a tuple pattern; W-362). Break:
+    upstream fixes it otherwise.
+-   **D-OV4-6:** two members that accept one call, one through a default:
+    first match, no ranking (pattern_matching.md:696-697). Break: an upstream
+    overloading design with ranking.
+-   **D-OV4-7:** generic members with a defaulted argument omitted fail
+    deduction as the plain call does, until 503f09037 at UA-3 (W-360); until
+    then a later member that accepts the short call is selected, and UA-3's
+    refill moves that selection, which is recorded here before the golden
+    moves. Break: UA-3 lands without it.
+-   **D-OV4-8:** receivers need no new rule: a `self` with a default is not a
+    receiver upstream (`FindSelfPattern` does not look through the default),
+    so the set treats that member as one without `self`, as the plain call
+    does; a `self` declared in the implicit parameter list stays `self` for
+    error recovery, and such a member whose defaults outnumber its explicit
+    parameters after a bound receiver gets the empty range (D-OV4-1, W-363).
+    Break: upstream makes a defaulted `self` a receiver or an error, or
+    changes that recovery.
+-   **D-OV4-9:** imported members carry `default_value_arity` and the pattern.
+    Break: upstream stops importing them.
+-   **D-OV4-10:** exported members have no C++ default argument until
+    9799a2326 at UA-3; both sides pinned (R30; W-361). Break: the export path
+    changes.
+-   **D-OV4-11:** template-dependent calls resolve per specific under the
+    same rule; a member whose specific fails to substitute is an error, not a
+    skipped candidate (p002200:214-217, no SFINAE). Break: upstream adopts
+    SFINAE for overload sets.
+-   **D-OV4-12:** defaults are constants, by upstream's toolchain; nothing
+    added. Break: upstream allows an earlier parameter.
+-   **D-OV4-13:** no new diagnostic or text. Break: a misleading note in a
+    real call.
+-   **D-OV4-14 to D-OV4-17:** the goldens and programs, the docs and records,
+    the merge position after PR 66 (and before EH-C) with no held PR amended,
+    and the commit sequence (fork/overload/ov4-plan.md sections 1 and 3).
+
+_V-3 check at upstream's tip 0421bf3b4 (R32 (a); e6fddcf97 reads the same)._
+Upstream's accepted design spells positional default values in two places
+and implements them in its toolchain. Proposal p002200:471-476: "class C4 {
+fn M[me: Self](p: i32 = 4); }" and "Calls `F` with `T` equal to `C4`, which
+succeeds, using the default value of `4` for `p` when calling `C4.M`."
+classes.md:2193-2207, "Field defaults for struct types" under the open question
+"Optional named parameters" (:2186-2191: "Structs are being considered as a
+possible mechanism for implementing optional named parameters."), declares
+`options: {.stable: bool = false, .descending: bool = false} = {}` and calls
+`SortIntVector(&v);` with the argument omitted. The toolchain: call.cpp:46-52
+("It also verifies that the number of arguments is within the range
+[callee_arity - arity_lower_bound_margin, callee_arity]. This allows arity
+matching when the callee has default arguments for some subpatterns.") and
+:241, function.cpp:676-688 (`CheckDefaults`: "if a subpattern provides a
+default value, all subsequent patterns at that level of nesting must provide a
+default value as well", and "TODO: per
+https://github.com/carbon-language/carbon-lang/issues/7529"),
+pattern_match.cpp:950 ("If there's no scrutinee supplied, supply the default
+value instead."), handle_pattern_list.cpp:185 ("default value is not a
+constant"). `git grep -c -i -E 'default (value|argument)'` over functions.md
+and pattern_matching.md is 0. F-009j's "no Carbon-native default arguments
+in 0.1" denied that mechanism, the drift W-341 filed under R32 (d); its rewrite
+names it. Upstream has no overload sets (pattern_matching.md:696-697: "We do
+not yet have an approved design for overloaded functions, but it is
+anticipated that declaration order will be used in that case too."), and its
+template design rejects SFINAE (p002200:214-217: "Substitution failure is an
+error. In C++, the SFINAE rule will skip functions in overload resolution that
+fail to instantiate. Instead, Carbon template parameters use constraints to
+control when the function is available."; README.md:2828-2832). Upstream
+commits since the cut that touch default values: 1b0a5709e, 2c9739799,
+d87891f3a, 9799a2326, 503f09037, 427c448dc, 8fdc8ebc3, c7de72757
+(fork/overload/ov4-plan.md section 0.2); none changes the arity margin or the
+fill.
+
+_V-3a register lines (RG-1's vocabulary, D-RG-1 to D-RG-6; rows T2.8 and T2.9
+of fork/register/rg1-plan.md section 2.T2's table, which the land-time commit
+L-R writes with their checks and quotes)._ T2.8,
+F-009j, Carbon default arguments in overload sets: **ALIGNED**, the fork's rule
+is the mechanism p002200:471-476 and classes.md:2198-2207 spell and upstream's
+toolchain implements; quotes in fork/register/rg1-quotes.tsv, check T2.8
+(`default_value_arity` in toolchain/check, 3 at the tip) in rg1-checks.tsv;
+watched by W-355. T2.9, the plain-call rule for a member with defaults (a
+member accepts at k arguments exactly when its ordinary call does, and its
+probe converts the k supplied arguments): **NONE**, upstream has no overload
+sets and no text on defaults with overloading; check T2.9 (40 lines on
+overloaded functions, function overloading and overload sets in docs/design
+and proposals at the tip, which a new overloading proposal moves); watched by
+W-355. The tie-break between two members that accept one call stays T2.6's
+ALIGNED first match, unchanged. Break conditions: T2.8, upstream designs
+another optional-parameter mechanism or removes positional defaults (W-341's);
+T2.9, an accepted upstream overloading design, or upstream text on defaults
+with overloading.
+
+_Residues._ W-360 (generic members, 503f09037), W-361 (export, 9799a2326,
+8fdc8ebc3, c7de72757), W-362 (the default count, into function.cpp) and W-363
+(the ordinary call's abort for a defaulted method whose `self` is in the
+implicit parameter list, upstream's, reported at UA-3), all UA-3's; W-364
+unused. No held PR is amended (R32 (e)).
+
 ### OV-3: overload-set export, documented divergence (2026-10-05)
 
 Milestone bullet "Functions: function overloading (Carbon-native)" flips PARTIAL
@@ -6904,6 +7038,16 @@ R29(a) and veto-able; each item carries its break condition, W-341's being an
 upstream design that picks another optional-parameter mechanism
 (classes.md:2186-2205 lists struct field defaults, struct destructuring and a
 named-parameter syntax as candidates) or removes positional defaults.
+
+_Note 2026-10-28 (OV-4):_ W-341 is resolved by OV-4 and DISCHARGED (see the
+entry "OV-4: `overload fn` members with default parameter values (W-341)"):
+the arity step, the probe, gate (iii), member identity and the default count
+follow upstream's positional default values, and F-009j and the CLOSED
+paragraph of functions_overloading.md's match test are rewritten to name them,
+quoted at upstream 0421bf3b4 (proposal p002200:471-476, classes.md:2193-2216
+and the toolchain). Its break condition has not fired: classes.md:2186-2191
+still lists named optional parameters as an open question, and no upstream
+commit since the cut removes positional defaults.
 
 _Ids._ The re-scan (CT-1's fork/cpp-templates/plan.md §0.11 command widened to
 `W-3[2-9][0-9]`, after a fetch, over 70 origin refs, 21 local branches and 22

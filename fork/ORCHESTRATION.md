@@ -10,7 +10,12 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-28 (RG-1, the V-3a register classified against upstream
+Last updated: 2026-10-28 (OV-4, `overload fn` members with upstream's default
+parameter values (W-341), is implemented and reviewed on
+claude/carbon-fork-0-1-ov4 on trunk's base; it merges after PR 66 and before
+EH-C; see the paragraph dated 2026-10-28 below; the earlier 2026-10-28 text
+follows).
+2026-10-28 (RG-1, the V-3a register classified against upstream
 f27a977d8, is implemented, reviewed and held open as PR 67 on trunk's base,
 first in the land sequence; eight held PRs are amended by new records commits
 and their descriptions refreshed; seventeen PRs are held open, PR 51 to PR 67,
@@ -640,6 +645,26 @@ section 5 gives it: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
 W-352. Next: OV-4 (W-341) on trunk's base per item 6 below, then EH-C (W-346)
 after the held PRs land, then UA-3.
 
+2026-10-28 (12:11 UTC): OV-4 is IMPLEMENTED AND REVIEWED on
+claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev 3, signed off at
+89001cfcd and amended at 16c58df0d and 1c2470b06; commits 751d077fd,
+0f53d7e53, dc1bb641b, ef31d5820 (the one fix commit, filled at 9ee5fcde3) and
+this records commit; base trunk 66bd2ba90). An `overload fn` member with
+upstream's positional default values is called with a defaulted argument
+omitted: the arity step takes the plain call's range, the probe converts the
+supplied arguments and the ordinary call fills the rest; gate (iii) looks
+through a default value, member identity ignores defaults (a default-only
+difference is `RedeclParamDiffers`), and a diagnosed non-trailing default
+counts only its trailing defaults, which also fixes the plain path's aborts at
+pattern_match.cpp:1275 and :1805. F-009j and the match test's CLOSED paragraph
+are rewritten to name upstream's mechanism (R32), quoted at 0421bf3b4.
+Measured container-local: 1946 of 1946 goldens, 130/0/22 over 152.
+Residues for UA-3: W-360 (503f09037), W-361 (9799a2326, 8fdc8ebc3,
+c7de72757), W-362 (function.cpp), W-363 (upstream's abort for a defaulted
+method whose `self` is in the implicit parameter list). No held PR is
+amended. OV-4 merges after PR 66 and before EH-C (W-346) through M, F-M, L-R
+and L (the plan's section 3).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -989,6 +1014,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-dr-idx` | HELD OPEN as PR 65 — DR-1b element access through `IndirectIndexWith`, `Core.Slice` and `Core.Buf` writing through `Ref`, upstream 230227264 cherry-picked (R32; W-109 DISCHARGED) at fee0ef31c (toolchain 7a442f632; base claude/carbon-fork-0-1-dr, stacked on PR 63; expected 1946 of 1946 and 130/0/22 over 152); one stop-and-amend (plan rev 4), one implementation review folded at the root (fddfcf42a and its fill bcd9ba06f, the comment commits 8deb75262 and 7a442f632, and round 4's shrink-line split 0cd4e5d2e with W-340 filed), a focused re-review of four rounds (rounds 1 to 3 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR, RR3-1-M1; round 4 dry after the shrink line); merges after DR-1a through M-b, C-b and L-b. |
 | `claude/carbon-fork-0-1-va2` | HELD OPEN as PR 66 (stacked on PR 59, base claude/carbon-fork-0-1-va) — VA-2 definition-checked variadics slice 2 at 43c8ab476 (2026-10-27; forty-two commits over PR 59's b0822a744: plan rev 1 to rev 16, C0, C0b, C1 to C5 with their fills, the fold's fix and fill, R, D, the re-review loop's four rounds with fix 3, fix 4 by D-VA2-19's break condition, their fills and records; 104 findings over twenty-one reviews, all folded, none rejected, round 4 dry; W-225 discharged, W-212 and W-213 narrowed, W-330..W-339 and W-345 filed; gap rows 53 and 74 stay PARTIAL; expected, not of record: 1977 of 1977 and 147/0/21 over 168); merges last after PR 65 through M, S-CT, F-M, L-F and L. |
 | `claude/carbon-fork-0-1-rg1` | HELD OPEN as PR 67 (base trunk 0b999d449) — RG-1 records, the V-3a register classified against upstream f27a977d8, at 56e2e5bbd (2026-10-28; twelve commits: plan rev 1 to rev 5, R1, the two review-fold fixes, the two merges of plan rev 4 and rev 5 into the records line, R2 and the fold of R2's review; records only; W-342 and W-344 discharged, W-343 narrowed to the five land-time notes; W-346 to W-356 filed; plan fork/register/rg1-plan.md with the register's check scripts and tables beside it, check_quotes.sh, check_greps.sh, rg1-quotes.tsv and rg1-checks.tsv, 273 quotes and 89 silence checks passing at e6fddcf97; the held records commits on PR 53, 52, 60, 55, 56 (merged into PR 57), 61 and 64 (with PR 61's merged) made after three implementation-review rounds and pushed, the descriptions refreshed); merges first in the land sequence, before PR 53. |
+| `claude/carbon-fork-0-1-ov4` | IMPLEMENTED AND REVIEWED (base trunk 66bd2ba90) — OV-4, `overload fn` members with default parameter values (W-341 DISCHARGED; W-360 to W-363 filed for UA-3; W-364 unused), at its records commit D, over the fold's records commit 1c2470b06; gap row "Functions: function overloading (Carbon-native)" stays DONE; expected 1946 of 1946 and 130/0/22 over 152; merges after PR 66 and before EH-C, through M, F-M, L-R and L. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -1084,10 +1110,10 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI when GitHub Actions is enabled again.
 6.  **R32 work from the 2026-10-26 weekly check and RG-1 (2026-10-28)**: W-341
-    (OV-4: an `overload fn` member with Carbon default parameter values called
-    with a defaulted argument omitted; the arity step and the overload probe
-    follow `default_value_arity`, and F-009j is rewritten) after VA-2 lands and
-    before UA-3, on trunk's base. RG-1 (W-342 discharged; W-344 at its stamp;
+    (OV-4) is implemented and reviewed on claude/carbon-fork-0-1-ov4, merging
+    after PR 66 and before EH-C and UA-3 through M, F-M, L-R and L
+    (fork/overload/ov4-plan.md section 3); its residues W-360 to W-363 go to
+    UA-3. RG-1 (W-342 discharged; W-344 at its stamp;
     W-343 by the last land-time note) classified the V-3a register at upstream
     f27a977d8 and is held open as PR 67, first in the land sequence. Its drifts,
     each before the PR that carries it lands: W-347 to W-351 and W-353 (SAFE-1:

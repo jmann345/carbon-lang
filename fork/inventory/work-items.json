@@ -2299,12 +2299,17 @@
     },
     {
       "id": "W-341",
-      "kind": "missing-feature",
-      "title": "OV-4 (R32 (b), (d); weekly upstream check 2026-10-26): an `overload fn` member with Carbon default parameter values cannot be called with a defaulted argument omitted -- the overload set's arity step is exact (\"Carbon has no default arguments\") and its probe checks one argument per parameter pattern, while the plain call path honors upstream's `default_value_arity`; F-009j's \"no Carbon-native default arguments\" is a second spelling of a mechanism upstream implements",
-      "subsystem": "toolchain/check (call.cpp) + docs/design (functions_overloading.md)",
+      "kind": "implemented",
+      "title": "OV-4 (DISCHARGED at OV-4, 2026-10-28): an `overload fn` member with upstream's positional default values is called with a defaulted argument omitted -- the overload set's arity step accepts the plain call's range (`default_value_arity`), its probe converts the supplied arguments only and the ordinary call fills the rest, gate (iii) looks through a default value, member identity ignores defaults, and a diagnosed non-trailing default counts only its trailing defaults; F-009j and the match test's CLOSED paragraph rewritten in place to name upstream's mechanism (R32 (b), (d); weekly upstream check 2026-10-26)",
+      "subsystem": "toolchain/check (call.cpp, handle_function.cpp, merge.cpp, merge.h) + docs/design (functions_overloading.md) + tests",
       "size": "M",
       "bullet": "Functions: function overloading (Carbon-native)",
       "evidence": [
+        "Landed at OV-4 (751d077fd): toolchain/check/call.cpp:422-438 (`GetExplicitArityRange`: `[n - default_value_arity, n]`, `ResolveCalleeInCall`'s range and CHECK), :495-511 (`ProbeOverloadCandidateInScratchScope`: the supplied arguments against the leading parameter patterns, under `CARBON_CHECK(arg_ids.size() <= param_pattern_ids.size() && param_pattern_ids.size() - arg_ids.size() <= default_value_arity)`)",
+        "Landed at OV-4 (751d077fd): toolchain/check/handle_function.cpp:366-367 (member identity through `CheckOverloadMemberParamsMatch`), :859-880 (gate (iii) through a `DefaultValuePattern`), :958-961, :1019-1021 and :1053-1059 (`CheckDefaults`, marked `Fork (OV-4, W-362)`: a level with a diagnosed missing default counts only its trailing defaults); toolchain/check/merge.cpp:576-629 and :643-654, merge.h:121-135 (`GetOverloadMemberParamPatterns`, `CheckOverloadMemberParamsMatch`)",
+        "Landed at OV-4 (0f53d7e53): toolchain/check/testdata/function/overload/default_values.carbon (18 splits; 19 after the implementation-review fold's ef31d5820, refilled at 9ee5fcde3), toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (3), toolchain/lower/testdata/function/overload/default_values.carbon (3), toolchain/lower/testdata/interop/cpp/function/export/overload_set_default.carbon (1)",
+        "Landed at OV-4 (dc1bb641b): fork/conformance/programs/functions/overloading_default_values.carbon and the DIFF-1 pair overloading_default_values_diff.carbon and .diff.cpp; docs/design/functions_overloading.md rewritten in place at the match test's CLOSED paragraph (:570-576 at 66bd2ba90), the F-009j item (:1022-1023) and the arity step's parenthesis (:545-547), each quoting its superseded 2026-09-27 text, and amended at 0.1 limits item (iii) and D-OV-3's paragraph; fork/overload/plan.md's dated notes at :380 and :2173; measured 1946 of 1946 goldens and 130/0/22 over 152 programs, container-local, EXPECTED, not of record",
+        "Landed at OV-4 (ef31d5820, filled at 9ee5fcde3; the implementation-review fold): toolchain/check/call.cpp:436-444 (`GetExplicitArityRange`: the empty range for a member whose defaults outnumber its explicit parameters after a bound receiver, reachable only through a diagnosed implicit-list `self`, where the ordinary call aborts, W-363) and :579-587 (the probe's comment: the leading parameter patterns); toolchain/check/testdata/function/overload/default_values.carbon `fail_implicit_self_with_default` and `fail_todo_generic_member_default`'s second set; the header comment of fork/conformance/programs/functions/overloading_default_values_diff.carbon",
         "toolchain/check/call.cpp:420-432 (`GetExplicitArityRange`: an exact range; its comment at :420-423 says \"Carbon has no default arguments\" and claims to compute the count exactly as `ResolveCalleeInCall` does), :655-660 (the arity step: a member called with fewer arguments is rejected, then `OverloadNoMatch` with the note \"takes a different number of arguments\", :693-702), :498 (`ProbeOverloadCandidateInScratchScope`: `CARBON_CHECK(param_pattern_ids.size() == arg_ids.size())`, so widening the range alone would stop at that check), :310 (the plain call path passes `function.default_value_arity` to `ResolveCalleeInCall`)",
         "docs/design/functions_overloading.md:570-576 (\"CLOSED (fork amendment 2026-09-27) by D-OV-4 step 2(b): no Carbon-native default arguments in 0.1, so the arity step above stays exact ... Carbon has no default-argument design\") and :1022-1023 (F-009j)",
         "toolchain/check/testdata/function/overload/ (no split declares a member with a defaulted parameter)",
@@ -2314,7 +2319,7 @@
         "fork/decision-log.md 'Weekly upstream check 2026-10-26 (R32 direction register)'; fork/rulebook.md R32 (b), (d)"
       ],
       "blocked_by": [],
-      "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), its reader's claim as corrected by its verifier. Provenance: F-009j (D-OV-4 step 2(b), OV-1, 2026-09-28) was true of OV-1's tree and became false when UA-1 brought upstream's positional default values on 2026-10-05; neither UA-1's audit nor the 2026-10-12 and 2026-10-19 weeklies named it (the 2026-09-21 weekly named upstream PR 7737 on default values). 503f09037 and 9799a2326 only extend defaults to generic functions and to C++ export. The call is diagnosed, not miscompiled (read from the code; no build this week): the defect is that an overload set rejects a call the plain path accepts. Mechanism: the arity step accepts from n minus `default_value_arity` to n explicit arguments, and `ProbeOverloadCandidateInScratchScope` probes only the supplied arguments against their parameter patterns (the commit already runs the plain path, which fills the defaulted tail); the comment at :420-423 is rewritten; goldens pin a defaulted member called with the argument omitted and supplied, and a set in which a default makes two members accept one call (first match wins, D-OV-4); functions_overloading.md:570-576 and :1022-1023 are rewritten to name upstream's default values. Generic overload members with defaults take 503f09037's deduce support at UA-3, whose audit re-checks this item. No held PR carries the drift (no held branch adds a no-default-arguments statement; PR 59's call.cpp keeps the exact range at :574-587), so no held PR is amended under R32 (e); PR 59's W-215 already treats default values beside a pack as a Carbon feature. Owner: OV-4, the overload workstream's default-value slice, on trunk's base, after VA-2 lands and before UA-3 (ORCHESTRATION Next actions item 6). Break condition: upstream's design picks a different optional-parameter mechanism (classes.md:2186-2205's candidates) or removes positional defaults; the item then follows that mechanism."
+      "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), its reader's claim as corrected by its verifier. Provenance: F-009j (D-OV-4 step 2(b), OV-1, 2026-09-28) was true of OV-1's tree and became false when UA-1 brought upstream's positional default values on 2026-10-05; neither UA-1's audit nor the 2026-10-12 and 2026-10-19 weeklies named it (the 2026-09-21 weekly named upstream PR 7737 on default values). 503f09037 and 9799a2326 only extend defaults to generic functions and to C++ export. The call is diagnosed, not miscompiled (read from the code; no build this week): the defect is that an overload set rejects a call the plain path accepts. Mechanism: the arity step accepts from n minus `default_value_arity` to n explicit arguments, and `ProbeOverloadCandidateInScratchScope` probes only the supplied arguments against their parameter patterns (the commit already runs the plain path, which fills the defaulted tail); the comment at :420-423 is rewritten; goldens pin a defaulted member called with the argument omitted and supplied, and a set in which a default makes two members accept one call (first match wins, D-OV-4); functions_overloading.md:570-576 and :1022-1023 are rewritten to name upstream's default values. Generic overload members with defaults take 503f09037's deduce support at UA-3, whose audit re-checks this item. No held PR carries the drift (no held branch adds a no-default-arguments statement; PR 59's call.cpp keeps the exact range at :574-587), so no held PR is amended under R32 (e); PR 59's W-215 already treats default values beside a pack as a Carbon feature. Owner: OV-4, the overload workstream's default-value slice, on trunk's base, after VA-2 lands and before UA-3 (ORCHESTRATION Next actions item 6). Break condition: upstream's design picks a different optional-parameter mechanism (classes.md:2186-2205's candidates) or removes positional defaults; the item then follows that mechanism. Discharged 2026-10-28 by OV-4 (fork/overload/ov4-plan.md; decision-log entry OV-4): the filed mechanism was necessary but not sufficient, because D-OV-6 gate (iii) refused every defaulted member at its declaration, member identity treated a default as a different parameter (a declaration differing only in a default became a second member of the same parameter types), and a diagnosed non-trailing default left the plain path's arity open (the CHECKs at pattern_match.cpp:1275 and, when the unmatched parameter is a tuple pattern, :1805, on trunk and the nightly); OV-4 changed those three too, each at its root, with one resolution path and no new diagnostic. The filed notes' \"functions_overloading.md:570-576 and :1022-1023 are rewritten\" is done in place, each rewrite quoting the text it supersedes. Generic members with defaults wait for 503f09037 at UA-3 (W-360), exported members' C++ default arguments for 9799a2326, 8fdc8ebc3 and c7de72757 (W-361); the default count's fix moves into function.cpp at UA-3 (W-362). The implementation reviews found the set's copy of `ResolveCalleeInCall`'s arity CHECK reachable through a diagnosed implicit-list `self`; ef31d5820 gives such a member the empty range, and the ordinary call's abort there, upstream's, is W-363."
     },
     {
       "id": "W-342",
@@ -2366,6 +2371,68 @@
       ],
       "blocked_by": ["W-320"],
       "notes": "Filed 2026-10-26 at the weekly upstream check (upstream 21c825a3f), from its verifier's finding. The side-effects entry closes when W-177, now W-320, or a by-reference accessor lands (D-OP-4); W-320 is blocked on W-324, so the entry is re-checked with W-324 at each weekly check. Records: the cites are corrected to p002188:489-490 and upstream pattern_matching.md:526-527 by a new commit on PR 56's branch, merged into PR 57's, before PR 56 lands (R32 (e)). Owner: RG-1 for the records (ORCHESTRATION Next actions item 6); DR-1, W-320's owner, for the closure. Break condition: a by-reference accessor lands on `Core.Optional` (D-OP-4's route), or D-DR-1's break condition re-plans W-320."
+    },
+    {
+      "id": "W-360",
+      "kind": "missing-feature",
+      "title": "OV-4 residue: generic `overload fn` members with default values for non-generic parameters -- a call that omits a defaulted argument fails deduction on trunk (reason 2, 'candidate has generic parameters that could not be deduced'), exactly as the plain call of a generic function does ('cannot deduce value for generic parameter'), until upstream's 503f09037 appends the defaults in `DeduceGenericCallArguments`",
+      "subsystem": "toolchain/check (deduce.cpp, pattern.cpp) + tests",
+      "size": "S",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/deduce.cpp:72-78 (`AddAll`: a parameter list longer than its arguments is treated as non-deduced) and :631-634",
+        "toolchain/check/testdata/function/overload/default_values.carbon `fail_todo_generic_member_default` (its `TODO(UA-3, W-360)`; the set's member G and the plain function P; OV-4 751d077fd, filled at 0f53d7e53; the set F, whose later member `F(b: bool)` is selected today with no diagnostic, added by ef31d5820 and filled at 9ee5fcde3)",
+        "upstream 503f09037 (PR 8011): check/deduce.cpp:640-653 at 0421bf3b4 ('If we are short on arguments, check if we can append default values for deduction.'), check/pattern.cpp:363 `ExtractParameterDefault`; 427c448dc (PR 8027) its golden",
+        "fork/overload/ov4-plan.md D-OV4-7 and section 0.5 (503f09037's hunks applied to the prototype in a scratch build: the generic member in a set selects and prints, with no OV-4 code)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-28 by OV-4. Owner: UA-3, whose audit takes 503f09037 with the advance and refills `fail_todo_generic_member_default` (renamed without `fail_todo_` once it passes). That refill moves `F(true)` from `F(b: bool)` to the generic member, a selection change the decision log records before the golden moves. The fork's `diagnose` parameter of `DeduceGenericCallArguments` (OV-2) and PR 66's deduce.cpp changes are the merge's context. Break condition: UA-3 lands without 503f09037's deduce.cpp hunk, or PR 66's deduction changes the result for a defaulted generic member; the item then re-plans."
+    },
+    {
+      "id": "W-361",
+      "kind": "missing-feature",
+      "title": "OV-4 residue: default values of exported `overload fn` members reach C++ -- trunk predates 9799a2326, so each member's C++ declaration has no default argument and a C++ call that omits one is resolved among the other members (`Carbon::F(1)` selects `F(bool)` where Carbon's `F(1)` selects `F(i32, i32 = 2)`) or rejected",
+      "subsystem": "toolchain/check (cpp/export.cpp) + tests",
+      "size": "S",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (`divergence_omitted`, `fail_cpp_omitted`) and its lower twin (C++'s `CallOne` calls `_CF__carbon_thunk:overload1.Main`); OV-4 751d077fd, filled at 0f53d7e53",
+        "upstream 9799a2326 (PR 7988), 8fdc8ebc3 (PR 8025) and c7de72757 (PR 8019): check/cpp/export.cpp:964 `BuildDefaultValueExpr`, used at :1223 and :1422 at 0421bf3b4",
+        "fork/overload/ov4-plan.md D-OV4-10"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-28 by OV-4. Owner: UA-3. When the advance brings the three commits, each exported member's C++ declaration carries its defaults; the export split's C++ side then selects the defaulted member, and that change is recorded in the decision log before the golden moves (rulebook R30 (c)). Break condition: the per-member export path stops exporting a defaulted member, or UA-3's export of a member differs from a plain function's."
+    },
+    {
+      "id": "W-362",
+      "kind": "toolchain-defect",
+      "title": "OV-4 residue (fixed on the fork, owed upstream): a call that omits an argument of a function whose default is not trailing aborted at pattern_match.cpp:1275 (`CARBON_CHECK(scrutinee_id.has_value())`), or at :1805 (the tuple pattern's caller-side check) when the omitted parameter is a tuple pattern, because `CheckDefaults` diagnosed the missing default and still returned the level's count; OV-4's `CheckDefaults` counts only the trailing defaults of such a level, so a call that omits only trailing defaulted arguments still compiles",
+      "subsystem": "toolchain/check (handle_function.cpp; upstream's function.cpp)",
+      "size": "S",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/handle_function.cpp:958-961, :1019-1021 and :1053-1059 (the fix, marked `Fork (OV-4, W-362)`, OV-4 751d077fd)",
+        "toolchain/check/testdata/function/overload/default_values.carbon `fail_default_not_trailing` (the set member F, the plain functions P, Q and R; `Q(5, 6)` compiles, `Q(5)` and `R((1, 2))` are count mismatches)",
+        "upstream 0421bf3b4 toolchain/check/function.cpp:688 `CheckDefaults` (moved by 1b0a5709e, PR 7893; unchanged but for diagnostic rendering), call.cpp:46-84",
+        "fork/overload/ov4-plan.md D-OV4-5 and section 0.3 p21, r04 and a10 (the crashes on trunk, at :1275 and :1805, and on the 2026.10.12 nightly, at :489 and :750)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-28 by OV-4. Owner: UA-3, which carries the fix into function.cpp's `CheckDefaults` (1b0a5709e moved it), or drops it if upstream has fixed the crash another way, and reports both crash sites upstream if the tip still has them. Break condition: upstream fixes it; UA-3 then takes upstream's fix."
+    },
+    {
+      "id": "W-363",
+      "kind": "toolchain-defect",
+      "title": "OV-4 residue (owed upstream): the ordinary call of a method whose `self` is declared in the implicit parameter list (diagnosed `SelfInImplicitParamList`, and still `self` through `FindSelfPattern`'s error recovery) and whose explicit parameters all have default values aborts at `ResolveCalleeInCall`'s `CARBON_CHECK(static_cast<size_t>(arity_lower_bound_margin) <= expected_args_size)` when the call binds a receiver (`c.M()`, `c.M(5)`), because the receiver is counted against an explicit parameter it does not occupy; an `overload fn` set gives such a member the empty arity range instead (OV-4's implementation-review fold, RV1-M1)",
+      "subsystem": "toolchain/check (call.cpp, function.cpp)",
+      "size": "S",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/call.cpp:81-82 (`ResolveCalleeInCall`'s check, unchanged since the cut) and function.cpp:33-35 (`FindSelfPattern`: 'We also look in the implicit parameter list for error recovery'); upstream 0421bf3b4 call.cpp:73-74 and function.cpp:35-37 read the same",
+        "fork/overload/ov4-plan.md section 8.13 and section 0.4 step 3, probes q01b and q32p (plain calls): CHECK failure at call.cpp:82 on trunk, PR 59, PR 66, PR 61 and OV-4, at :83 on PR 64, and at :74 on the 2026.10.12 nightly",
+        "toolchain/check/call.cpp:436-444 at ef31d5820 (`GetExplicitArityRange`'s empty range for the set) and toolchain/check/testdata/function/overload/default_values.carbon `fail_implicit_self_with_default` (OV-4 ef31d5820, filled at 9ee5fcde3)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed 2026-10-28 by OV-4's implementation-review fold (RV1-M1). The plain call aborted before OV-4 too; OV-4's C1 copied the check into the set's arity step, where it aborted the whole call even when another member accepts it, and fix ef31d5820 replaced it with the empty range. Owner: UA-3, which reports the plain call's abort upstream if the tip still has it and takes upstream's fix. Break condition: upstream fixes it (its error recovery stops treating an implicit-list `self` as the receiver, or the arity check stops counting it); the set's empty range then follows the plain call's new behavior."
     }
   ]
 }

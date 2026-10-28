@@ -85,7 +85,7 @@ H9.4	G	-w	CalleeCppOverloadSet	toolchain/check	3
 H9.6	G	-w	new_specific_id	toolchain/check	0
 H10.1	G	-E	PointerDereferenceAction|AddrOfAction|TupleIndexAction|[^a-zA-Z]IndexAction|TemplateMemberLookupAmbiguous	toolchain	0
 H10.4	L	-	-	toolchain/lower/handle.cpp	1
-H10.8	L	-	-	toolchain/check/testdata/generic/template/deduce_class_args.carbon	0
+H10.8	L	-	-	toolchain/check/call.cpp	7
 H11.3	G	-F	MetaInstId	toolchain/check/subst.cpp	0
 H11.4	L	-	-	toolchain/check/action.cpp	2
 H11.5	G	-w	TSK_ImplicitInstantiation	toolchain/check/cpp	0

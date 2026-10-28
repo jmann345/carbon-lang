@@ -278,11 +278,11 @@ these four; the ids between live on the held PRs' branches.
 
 Placed here, in Decided directly after DR-0, because the log groups entries by
 workstream and RG-1 carries out V-3b's rule for DR-0's register: the register
-"is a work queue whose entries each carry a work item" (fork/rulebook.md R32
-(b)). DR-1's entry, held on PR 63, goes between DR-0's and this one when it
-lands. Line cites into this log are to the file at trunk 0b999d449, before this
-entry and its notes moved them. Records only: no toolchain, prelude, golden or
-program file changes with it.
+"is a work queue whose entries each carry a work item" (V-3b, :47-48 at trunk
+0b999d449, after fork/rulebook.md R32 (b)). DR-1's entry, held on PR 63, goes
+between DR-0's and this one when it lands. Line cites into this log are to the
+file at trunk 0b999d449, before this entry and its notes moved them. Records
+only: no toolchain, prelude, golden or program file changes with it.
 
 _The work and the rule._ W-342, W-343 and W-344 asked for every V-3a register
 entry to be classified against upstream's tip. Upstream trunk f27a977d8
@@ -296,17 +296,18 @@ review names; on the held heads fourteen blocks, PR 51's UA-2 register re-read
 among them. The scripts committed with this entry re-read the 260 quoted lines
 of fork/register/rg1-quotes.tsv (fork/register/check_quotes.sh) and re-run the
 89 silence checks of fork/register/rg1-checks.tsv
-(fork/register/check_greps.sh), one for each NONE row whose upstream silence is
-shown by a grep, a log count or a directory listing at the tip. An entry is a
-DRIFT when upstream has designed its mechanism and the fork spells it otherwise
-(R32 (d)), ALIGNED when the fork's spelling or rule is upstream's, and NONE when
-upstream is silent. Upstream has designed a mechanism when text at the tip shows
-it with a spelling, is about it, and does not call the spelling placeholder or
-provisional (D-RG-2). Toolchain-internal surfaces are NONE, their merge rules
-their break conditions, unless that condition has already fired (D-RG-3); a
-partial implementation whose gap carries an item is ALIGNED (D-RG-4). The
-decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each with its break
-condition in the plan's section 1.
+(fork/register/check_greps.sh): 88 for the NONE rows whose upstream silence is
+shown by a grep, a log count or a directory listing at the tip, and T10.4 for
+the ALIGNED `noexcept` fence, which upstream's toolchain has not built. An entry
+is a DRIFT when upstream has designed its mechanism and the fork spells it
+otherwise (R32 (d)), ALIGNED when the fork's spelling or rule is upstream's, and
+NONE when upstream is silent. Upstream has designed a mechanism when text at the
+tip shows it with a spelling, is about it, and does not call the spelling
+placeholder or provisional (D-RG-2). Toolchain-internal surfaces are NONE, their
+merge rules their break conditions, unless that condition has already fired
+(D-RG-3); a partial implementation whose gap carries an item is ALIGNED
+(D-RG-4). The decisions D-RG-1 to D-RG-20 are auto-adopted under R29(a), each
+with its break condition in the plan's section 1.
 
 _The count._ 19 DRIFT, 33 ALIGNED and 103 NONE; 10 entries, three DRIFTs among
 them, wait on an upstream decision or on an item blocked by one (the plan's

@@ -621,7 +621,8 @@ probe found, UA-3's to triage. RG-1's held records commits follow on PR 53, PR
 52, PR 60, PR 55, PR 56 (merged into PR 57), PR 61 and PR 64 (with PR 61's
 merged), staged and reviewed before any push, then the stamp R2. No build, merge
 or dispatch; Actions is still disabled. Sixteen PRs are held open; none is
-merged.
+merged. Merge order, as fork/register/rg1-plan.md section 5 gives it:
+RG-1, PR 53, 51, 52, 60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, 66.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -956,7 +957,7 @@ code). Next check: Monday 14:00 UTC.
 | --- | --- |
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
-| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5). |
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
 | `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 894139b34 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
@@ -1090,8 +1091,9 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     each weekly upstream check: W-355 (run fork/register/check_quotes.sh and
     check_greps.sh over their tables at the tip, and re-read the break
     condition of every NONE and ALIGNED entry outside VA-2's, which items 8
-    and 9 re-read), with W-324's re-check of C1.1. UA-3 follows W-341 and
-    W-346.
+    and 9 re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of
+    T5.7 and C1.2 (indexing.md:101-121 and a `like` in upstream's parse or
+    check). UA-3 follows W-341 and W-346.
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

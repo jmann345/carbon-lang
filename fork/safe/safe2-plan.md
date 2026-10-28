@@ -6,11 +6,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 2, 2026-10-28, not signed off: the focused re-review decides.
-Rev 1 (475b7ecb0) was the planner's draft; rev 2 folds the two plan reviews,
+**Status:** rev 3 -- NOT signed off: RR1-B1. Rev 3, 2026-10-28, is the
+fixer's fold of the focused re-review of rev 2 (46980f8bd), whose verdict was
+REJECT on one BLOCKER, RR1-B1 (review A's B-1 not resolved: a write to an
+enclosing `Plain` aggregate, a struct or class that holds a `str`, still
+mutated a borrowed `Core.SharedImmutable` object through `T*`), with one MAJOR
+and four MINORs; all six are folded and none is rejected (section 8.9), and
+since RR1-B1's fold changes a rule of the design, only the next focused
+re-review can sign rev 3 off. Rev 2 (46980f8bd) folded the two plan reviews,
 review A (REJECT, two BLOCKERs) and review B (APPROVE-WITH-AMENDMENTS), 21
 findings, every one accepted (section 8.8; review A's ids carry the prefix
-"A-", so A-B-1 is review A's B-1). Workstream SAFE-2 realigns the six
+"A-", so A-B-1 is review A's B-1); rev 1 (475b7ecb0) was the planner's draft.
+Workstream SAFE-2 realigns the six
 "departures from accepted text" of SAFE-1's design (fork decision F-013) to
 upstream's recorded direction, as rulebook R32 requires since the owner's
 directive of 2026-10-21 ("Direction drifts are not permitted"; decision-log
@@ -18,9 +25,10 @@ V-3b, DR-0). Branch
 `claude/carbon-fork-0-1-safe` (PR 53, held open, second in the land sequence
 after PR 67), head 2407efa74; this plan is a new file beside fork/safe/plan.md,
 which receives a dated pointer paragraph in commit 2 (section 2.3). Upstream
-was read at its tip 0421bf3b4 (fetched 2026-10-28). Records and design text
-only: no toolchain, prelude, golden, program or conformance change; the two
-SKIP stubs stay as they are; nothing is built.
+was read at its tip 0421bf3b4 (fetched 2026-10-28) and re-read for rev 3 at
+22f3cd353, where no quoted file has changed (section 0.1). Records and design
+text only: no toolchain, prelude, golden, program or conformance change; the
+two SKIP stubs stay as they are; nothing is built.
 
 **Items:** W-347 (D-SAFE-8 narrows p005434:83), W-348 (D-SAFE-17 narrows
 p005434:660-664), W-349 (D-SAFE-11(d) narrows p005434:831-832), W-350
@@ -59,7 +67,7 @@ and section 2.6).
 -   Section 6, churn and collisions.
 -   Section 7, risks and rejected alternatives.
 -   Section 8, verification, the list of what was not run, and the plan
-    reviews' fold record (section 8.8).
+    reviews' fold records (sections 8.8 and 8.9).
 -   Hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
     PR 53 and PR 67 texts; Appendix D, the ORCHESTRATION texts.
@@ -86,6 +94,14 @@ for each source this plan quotes:
 | docs/design/classes.md | f21c62524 "Interface as base class use case supported" (upstream PR 8002): two lines of "Use cases" (:124-125) replaced by two; no line count changes, and no line the safety pages cite (classes.md:1852-1870, :1920-1957, :1941-1944, :1968-1982) moves |
 | docs/design/slices.md | not an upstream file: slices.md is the fork's (SL-1); no upstream text to compare |
 | toolchain/check/type_completion.cpp (amended 2026-10-28, review fold: B-m7) | seven: fb7eff130 "Move IdentifiedFacetType to check" (upstream PR 8004), eb66bebc3 "New specifics formed during identify need to be marked `identified`" (PR 8003), 51e2c76a8 "Add a HasError helper to SpecificStore" (PR 7970), f0bae9637 "Verify non-extend require constraints are satisfied at `impl as` definition" (PR 7937), 24766e213 "Defer evaluation of witnesses substituted while identifying a facet type" (PR 7930), b1de0e037 "Give the facet type as a TypeId to IdentifyFacetType functions" (PR 7926) and 62f1cc6a3 "Rename `GenericClassType` to `ParameterizedClassType`" (PR 7953); `git diff c1e83b0b7 0421bf3b4` of the file changes no line of the value-representation code (`BuildStructOrTupleValueRepr` and the struct, tuple, array, class, `const` and `MaybeUnformed` cases), only the facet-type code around it, so the lines this plan cites are the tip's and their text is the cut's |
+
+Re-read for rev 3 on 2026-10-28: upstream/trunk = 22f3cd353 (2026-10-28
+16:23:27 UTC, upstream PR 8053), two commits past 0421bf3b4, 6d5142779
+(upstream PR 8051, check tests only) and 22f3cd353 (toolchain/parse/context.cpp
+and context.h only). `git diff --stat 0421bf3b4 22f3cd353 -- proposals
+docs/design toolchain/check/type_completion.cpp core/prelude` prints nothing,
+the commits since the cut on the files above are still the ones the table
+names, and PR 67's checks pass at 22f3cd353 (section 0.2).
 
 No quoted passage moved or changed. The passages, at 0421bf3b4, verbatim:
 
@@ -287,6 +303,12 @@ Run from a detached worktree of 56e2e5bbd at /dev/shm/safe2-planner/rg1
     and the two parser files; the five checks H1.1, H1.3, H1.4, H1.7 and
     H1.15): 90 of 90 and 5 of 5 pass.
 
+Re-run for rev 3 at 22f3cd353 from a detached worktree of 56e2e5bbd at
+/dev/shm/safe2-fixer1/rg1 (removed after): "checked 273 quotes, 0 failed" and
+"checked 89 silence checks, 0 failed"; over the rows with Appendix C.2's eleven
+appended, "checked 284 quotes, 0 failed" (at 0421bf3b4 too), and over the
+checks with H1.7 widened, "checked 89 silence checks, 0 failed".
+
 So the break conditions of H1.8 to H1.12 have not fired: no accepted upstream
 proposal narrows p005434:83 (H1.8); upstream has not relaxed p005434:663
 (H1.9) nor reconsidered :831-834 (H1.10); arithmetic.md:156-158 and the
@@ -442,7 +464,11 @@ verbatim, fenced as in section 0.4. A line of
 upstream text the fork does not amend (README.md:480, values.md:150 and the
 like) is "no change, upstream's text"; a line of the panel record or an
 attempt's history is "no change, history"; a table-of-contents entry whose
-heading Appendix A renames is regenerated by the prek toc hook.
+heading Appendix A renames is regenerated by the prek toc hook. Two lines that
+no word of the grep reaches state W-349's narrowed rule by example and are
+listed too, slices.md:53 and :61: under T5(d) the opening example's
+`a[2] = 30` while the view `s` lives is rejected in Strict (amended
+2026-10-28, review fold: RR1-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -633,6 +659,8 @@ safety/temporal_safety.md:1140 | no change, history: attempt A | exclusive point
 safety/temporal_safety.md:1144 | no change, history: attempt A | into an unverified `noalias` claim, and `const` acquiring "shared" reads
 safety/temporal_safety.md:1159 | no change, history: attempt C | hardened runtime core now, annotated borrows later", annotated returns
 safety/temporal_safety.md:1203 | no change: an external fact about LLVM's `noalias` | | LLVM's `noalias` parameter attribute means that memory accessed through pointers based on the argument is not also accessed, during the function, through pointers not based on it, for locations modified during the function, with undefined behavior otherwise; `captures(none)` means the pointer is not captured | T8's codegen rule and the reason the attributes are withheld at Permissive and C++ boundaries | VERIFIED against the LLVM Language Reference, "Parameter Attributes" ("memory locations accessed by way of pointer values based on the argument or return value are not also accessed, during the execution of the function, by way of pointer values not based on the argument or return value"; "If there are other accesses not based on the argument or return value, the behavior is undefined"; "`captures(none)`: Pointer not captured"), read 2026-10-12 |
+slices.md:53 | A.10.1 (amended 2026-10-28, review fold: RR1-M1) | every write to that storage is visible through every slice of it:
+slices.md:61 | A.10.1 (amended 2026-10-28, review fold: RR1-M1) | a[2] = 30;
 slices.md:84 | no change: the slices design's value binding of an array, consistent | conversion from an array _value_: a value binding of array type may be
 slices.md:258 | no change: a by-value parameter of a class does not copy, consistent with a borrowed object | by-value parameter does not copy it (value bindings of a non-`Copy` class
 values.md:140 | A.7.1 | > the pointer it was formed through; a value binding is a shared read; and
@@ -715,15 +743,15 @@ Each structure that states one of the six rules, traced:
 | --- | --- | --- |
 | T2, forming loans (temporal_safety.md:235-289) | D-SAFE-17's shared loan for a non-`Plain` value binding, the eager copy for `Plain`, `let ref` exclusive, the reborrow clause naming "a `bound self` by value" | yes (A.3.5): borrowed objects by value representation, the frozen loan, `ref` formation by closed and open place, frozen reborrows read-only |
 | T4, conflicts (:303-317) | shared loans exclude only invalidation; the weakest kind for a mixed set | yes (A.3.6): a frozen loan excludes every write, and passing a writable carrier of the place to a call, except through the result that holds a `bound` pointer argument's pointee (amended 2026-10-28, review fold: A-B-2) |
-| T5(a) and (d) (:477-488, :499-505) | the result's kind map (value parameters give shared); "immutable" narrowed to "not invalidated" | yes (A.3.9): value and `const` `ref` parameters give frozen, and a `ref` parameter under a `val` or by-value result; each `bound` argument immutable, a `bound` pointer argument's pointee written by no path but the result (amended 2026-10-28, review fold: A-B-2, A-m-1) |
+| T5(a) and (d) (:477-488, :499-505) | the result's kind map (value parameters give shared); "immutable" narrowed to "not invalidated" | yes (A.3.9): value and `const` `ref` parameters give frozen, and a `ref` parameter under a `val` or by-value result; each `bound` argument immutable, a `bound` pointer argument's pointee written by no path but the result (amended 2026-10-28, review fold: A-B-2, A-m-1), under a frozen loan the result holds, an exclusive one for an `exclusive T*`, the result's own access being at (a)'s kind (amended 2026-10-28, review fold: RR1-m1); so a view `FromArray(&a)` holds `a`, and slices.md's opening `a[2] = 30` under the live view is rejected (A.10.1; amended 2026-10-28, review fold: RR1-M1) |
 | T6's binding spelling (:370-379) | `let ref r = unsafe *q;` for a ⊥ carrier | sentence added (A.3.7): the same spelling marks a `ref` on an open place |
 | T8, codegen honesty (:425-442) | attributes for exclusive loans only | yes (A.3.8): for `ref` bindings on closed places, `captures(ret: ...)` for `bound`; on a `ref` parameter's referent or an `exclusive T*` parameter's pointee only under the whole-package condition; never on an open place or for an `unsafe`-formed one (amended 2026-10-28, review fold: A-M-1, A-B-1) |
 | T1, T3, T7, the Store rule, the P-subset | none of the six | no |
 | The kinds table (README.md:393-403, temporal_safety.md:138-146, plan §1.5) | the `const T*` row's receivers `ref self: const Self` and by-value `self` as callable through every kind (M4) | the table's cells stay; a dated paragraph after each copy (A.1.5, A.3.3, B.3.4) states the binding rule the receivers now meet |
 | The diagnostic matrix (README.md:309-326, plan §1.1) | `StrictSharedBorrowInvalidated` with Debug `MutationDuringValueBinding` | four rows added (A.1.3, B.3.2): `StrictRefFromShared`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated`, `StrictSharedImmutableWrite`; the existing row's Debug cell re-worded, the report being `StrictBorrowedObjectMutated`'s (amended 2026-10-28, review fold: A-B-1, B-m6) |
-| The Debug value-binding shadow flag (mutation_safety.md:437-444, :511-514) | the detector of the narrowed rule's erroneous writes | kept as the Debug detector of the mutations unchecked code can still make, counting whole-object `Plain` assignments through `T*` beside field writes (D-SAFE2-7; A.2.8, A.2.9; amended 2026-10-28, review fold: A-B-1) |
+| The Debug value-binding shadow flag (mutation_safety.md:437-444, :511-514) | the detector of the narrowed rule's erroneous writes | kept as the Debug detector of the mutations unchecked code can still make, counting whole-object `Plain` assignments through `T*` beside field writes (D-SAFE2-7; A.2.8, A.2.9; amended 2026-10-28, review fold: A-B-1) and testing the written byte range against a per-byte count, so that a write of an enclosing aggregate and a field at a nonzero offset are both seen (amended 2026-10-28, review fold: RR1-B1) |
 | D-SAFE-19's Rust rows (rust_interop.md:126-140, :336, :343-352, :380-401, :633-638) | value bindings as one reason `const T*` and a value parameter cannot be `&T` | yes (A.6): a value parameter of a borrowed `Freeze` type exports as `&T`; the `const T*` reason stays |
-| M1, M2, M3, M4, M5, M8 and Value bindings (mutation_safety.md) | `ref` kind inheritance, shared value-binding loans, const receivers through every kind, payload refs through shared paths, `Plain` assignments through `T*` to any type | yes (A.2.3 to A.2.8; M3's paragraph on `Core.SharedImmutable` writes, A.2.4a, amended 2026-10-28, review fold: A-B-1) |
+| M1, M2, M3, M4, M5, M8 and Value bindings (mutation_safety.md) | `ref` kind inheritance, shared value-binding loans, const receivers through every kind, payload refs through shared paths, `Plain` assignments through `T*` to any type | yes (A.2.3 to A.2.8; M3's paragraph on `Core.SharedImmutable` writes, A.2.4a, amended 2026-10-28, review fold: A-B-1, over every assignment whose type holds a `Core.SharedImmutable` sub-object, a closure like `Core.Plain`'s, amended 2026-10-28, review fold: RR1-B1) |
 | §4.1 worked examples | EX-M-1's `a->Set(0, 5)` under `first`; EX-M-4a/4b's reasons; EX-M-5/6's `ref` payloads through shared pointers; `Pick`/`UsePick`; `Valid1`, `ValToRef`, `Conditional`; the `Launder` programs; EX-I rows; SP4's `GetUnchecked` | outcomes in section 4: EX-M-1, EX-M-5, EX-M-6 and `UsePick` change; EX-M-4c, EX-M-4d and EX-TM-9 are added; the rest keep their outcomes with realigned reasons or none |
 | Diagnostic names | `StrictSharedBorrowInvalidated`, `StrictInvalidatingThroughShared`, `MutationDuringValueBinding` | none renamed; four added (D-SAFE2-8; the fourth, `StrictSharedImmutableWrite`, amended 2026-10-28, review fold: A-B-1); `MutationDuringValueBinding`'s message reworded to upstream's "borrowed object" |
 | SP2, SP4, the arithmetic rows, the build-modes blockquote | "every build mode", "the only opt-out", the withdrawn row and disable | yes (A.5, A.1.6, A.9) |
@@ -757,6 +785,8 @@ was given, linked with `carbon link --output=<f>.bin <f>.o` and run, as SAFE-1's
 | EX-M-4c `ValueBinding3` (added, A.2.14) with a `Run` | mutation | 0, run exit 0 | prints `1` |
 | EX-M-4d `Peek(&a, &a)` (added, A.2.14) with a `Run` | mutation | 0, run exit 0 | prints `1` |
 | EX-M-4d `Peek2(&x, &x)` for `x == "ab"` (added, A.2.14; review A's counterexample, amended 2026-10-28, review fold: A-B-1), `fn Peek2(p: const str*, q: str*) -> i64 { let s: str = *p; *q = "longer"; return s.Size(); }` with a `Run` printing `Peek2(&x, &x) as i32` | mutation | 0, run exit 0 | prints `6`: `s` reads `*p` through the pointer representation after the write through `q` (re-run by the fixer) |
+| EX-M-4d `Peek4(&y, &y)` for `y == {.s = "ab", .n = 0}` (added, A.2.14; the focused re-review's counterexample, amended 2026-10-28, review fold: RR1-B1), `fn Peek4(p: {.s: str, .n: i32}*, q: {.s: str, .n: i32}*) -> i64 { let s: str = p->s; *q = {.s = "longer", .n = 1}; return s.Size(); }` with a `Run` printing `Peek4(&y, &y) as i32` | mutation | 0, run exit 0 | prints `6`: the whole-struct assignment through `q` writes the `str` that `s` borrows (re-run by the rev 3 fixer) |
+| the re-review's class probe, not a page example: `class W { var s: str; }` with `fn Peek5(p: W*, q: W*) -> i64 { let s: str = p->s; *q = {.s = "longer"}; return s.Size(); }` and a `Run` printing `Peek5(&w, &w) as i32` for `w == {.s = "ab"}` (amended 2026-10-28, review fold: RR1-B1) | (the class shape of RR1-B1) | 0, run exit 0 | prints `6`, as `Peek4` does (re-run by the rev 3 fixer) |
 | a fixer's probe, not a page example: EX-M-4c with `{.n: i32, .m: i32}`, whose elements are all copy-represented (`ValueAndObjectAggregate`), with a `Run` | (section 0.1's second branch) | 0, run exit 0 | prints `1`, as EX-M-4c's `ValueAggregate` does: the printed value does not tell the two aggregate kinds apart, and no page text says it does (amended 2026-10-28, review fold: A-M-2) |
 | EX-TM-2 `Bad` | temporal | 0 | none |
 | EX-TM-3, the `String` half | temporal | 0 | none |
@@ -787,9 +817,14 @@ are touched by no other head; docs/design/README.md is touched by PR 55 (one
 hunk at :636), PR 56 and PR 57 (one hunk at :862) and PR 58 (hunks from :151 to
 :4098), and SAFE-2 edits only :2151-2154, inside PR 53's own amendment, more
 than 700 lines from the nearest other hunk (PR 58's at :2890); arithmetic.md is
-touched by PR 55 at :189-190 and SAFE-2 edits :167-175; slices.md (PR 51, PR 65)
-is not edited by SAFE-2 (section 0.4: its :65 is SP3's). fork/safe/plan.md and
-this file are PR 53's alone. The records files fork/decision-log.md,
+touched by PR 55 at :189-190 and SAFE-2 edits :167-175; slices.md is touched by
+PR 51 (one hunk at :386) and PR 65 (hunks from :114 to :437), and SAFE-2
+inserts A.10.1's note after :70, the end of PR 53's own SP3 amendment
+(trunk's :64, 50 lines before PR 65's nearest hunk); a three-way
+`git merge-file` of PR 53's slices.md with the note applied against each
+head's copy, on their merge bases, is clean (amended 2026-10-28, review fold:
+RR1-M1; rev 2 left slices.md unedited). fork/safe/plan.md and this file are
+PR 53's alone. The records files fork/decision-log.md,
 fork/inventory/work-items.json, fork/ORCHESTRATION.md and fork/gap-analysis.md
 are touched by every head.
 
@@ -986,14 +1021,31 @@ replacement text serves both (Appendix B.1).
     broke it: review A's `fn Peek2(p: const str*, q: str*) -> i64 { let s: str
     = *p; *q = "longer"; return s.Size(); }` prints 6 on the nightly for
     `Peek2(&x, &x)` with `x == "ab"`). The language half is a new paragraph of
-    rule M3: every write of a `Core.SharedImmutable` type's storage, a
-    whole-object assignment and a field assignment included and a `Plain` one
-    among them, needs exclusive access, so through `T*`, through `addr self`
-    or to an open place such as a global it is rejected,
+    rule M3, over a structural property beside `Core.Plain`'s: a type _holds a
+    `Core.SharedImmutable` sub-object_ when it is `Core.SharedImmutable`, or
+    is an array, tuple, struct or class with an element, a field or a base
+    that holds one, or an adapter of a type that holds one. Every assignment
+    whose assigned type holds one, a whole-object or a field assignment and a
+    `Plain` one among them, needs exclusive access, so through `T*`, through
+    `addr self` or to an open place such as a global it is rejected,
     `StrictSharedImmutableWrite` (or, for a non-`Plain` assignment, M3's own
-    `StrictInvalidatingThroughShared`), while the owner of a closed place under
-    no frozen loan writes it as before (the temporal page's EX-TM-3,
-    `s = "def"` under a live `const Core.String*`, stays accepted). The
+    `StrictInvalidatingThroughShared`), while an exclusive path, the owner of
+    a closed place, a `ref` or an `exclusive T*`, writes it as before when no
+    frozen loan on an overlapping place is live (the temporal page's EX-TM-3,
+    `s = "def"` under a live `const Core.String*`, stays accepted) (amended
+    2026-10-28, review fold: RR1-B1; rev 2 covered only an assignment of the
+    `Core.SharedImmutable` type itself, so the focused re-review's
+    `fn Peek4(p: {.s: str, .n: i32}*, q: {.s: str, .n: i32}*) -> i64 { let s:
+    str = p->s; *q = {.s = "longer", .n = 1}; return s.Size(); }`, whose
+    `Plain` struct is not `Core.SharedImmutable` but holds a `str`, still
+    wrote the borrowed `str` through `q` and prints 6 on the nightly for
+    `Peek4(&y, &y)`, as does the same write of a `class W { var s: str; }`).
+    A union is outside the closure: reading its field is `unsafe` in Strict
+    (unions.md, "Strict Carbon and future safety hooks"), so a binding of a
+    union's field is formed under that marker, whose obligation then includes
+    that no path writes the union while the binding lives (break condition of
+    that exclusion: the unions design makes a Strict field read safe; a union
+    with such a field then joins the closure by a dated edit). The
     author's half is what no check of the language sees: every field
     private, no `addr` method that writes `self`, no function that writes the
     type's storage through a shared path or returns a non-`const` pointer or
@@ -1023,12 +1075,15 @@ replacement text serves both (Appendix B.1).
     a by-value method of a class that does not opt in, called through a `T*` or
     `const T*` parameter, a global or a loaded pointer, needs `unsafe` or one of
     the fixes; a whole two-element struct read into a `let` through a
-    shared parameter is rejected (EX-M-4d); and a `Core.String` or
-    `Core.Slice(T)` is assigned through a `T*` only with `unsafe`, an
-    `exclusive T*` or a `ref` (EX-M-4d's `Peek2`), so a class's setter of such
-    a field takes `ref self` where `addr self` sufficed (M4), where SAFE-1
-    accepted all four. M3, M4 and D-SAFE-9 carry the language half as dated
-    edits (A.2.4a, A.2.5, A.2.19, B.1.2a, B.3.5).
+    shared parameter is rejected (EX-M-4d); a `Core.String` or
+    `Core.Slice(T)`, or a struct, tuple, array or class that holds one, is
+    assigned through a `T*` only with `unsafe`, an `exclusive T*` or a `ref`
+    (EX-M-4d's `Peek2` and `Peek4`; the aggregate amended 2026-10-28, review
+    fold: RR1-B1), so a class's setter of such a field takes `ref self` where
+    `addr self` sufficed (M4); and a global that holds one, an open place, is
+    assigned in Strict only with `unsafe` (amended 2026-10-28, review fold:
+    RR1-m4), where SAFE-1 accepted all five. M3, M4 and D-SAFE-9 carry the
+    language half as dated edits (A.2.4a, A.2.5, A.2.19, B.1.2a, B.3.5).
     This is the cost p005434:667-669 anticipates ("if enforcing it in the
     strict mode proves fundamentally untenable due to ergonomic costs"), and
     revisiting it is upstream's call. Break condition: upstream relaxes
@@ -1084,20 +1139,26 @@ replacement text serves both (Appendix B.1).
     i32 = *ptr;` binds through a shared parameter, is rejected in Strict
     (EX-TM-9) and is accepted with an `exclusive i32*` parameter or the `unsafe`
     marker; a `ref self: const Self` method called through a shared pointer to a
-    type that does not opt in needs `unsafe`; and a `match` through a shared
-    pointer binds payloads by value, not by `ref` (EX-M-5, EX-M-6). Break
+    type that does not opt in needs `unsafe`; a `ref` binding or a `ref`
+    argument on a global, an open place, needs the `unsafe` formation (`unsafe
+    F(ref g)` for an argument), a `const` `ref` of a `Core.SharedImmutable` type
+    excepted (amended 2026-10-28, review fold: RR1-m4); and a `match` through a
+    shared pointer binds payloads by value, not by `ref` (EX-M-5, EX-M-6). Break
     condition: W-347's own, an accepted upstream memory-safety proposal that
     narrows p005434:83 (cite it and close the item); and D-SAFE-8's, kept.
 -   **D-SAFE2-7 — The Debug value-binding shadow flag.** Kept, as the Debug
     detector of what p005434:670-672 says unchecked code can still do: a
     Permissive body, an `unsafe`-formed binding's aliases or C++ mutating a
-    borrowed object. Debug keeps, in shadow memory keyed by object address and
-    never in the object's layout, a per-object count of live frozen loans, and
-    a `Plain` assignment through `T*`, to a field or to the whole object, or an
-    `addr self` call, whose target's count is non-zero reports
-    `MutationDuringValueBinding` (the whole-object assignment amended
-    2026-10-28, review fold: A-B-1: review A's `Peek2` writes a whole `str`),
-    "carbon: mutation of
+    borrowed object. Debug keeps, in shadow memory keyed by address and never
+    in the object's layout, a count of live frozen loans for each byte of a
+    borrowed object's storage, and a `Plain` assignment through `T*`, to a
+    field or to a whole object, that writes a byte whose count is non-zero,
+    or an `addr self` call on an object one of whose bytes has a non-zero
+    count, reports `MutationDuringValueBinding` (the whole-object assignment
+    amended 2026-10-28, review fold: A-B-1: review A's `Peek2` writes a whole
+    `str`; the per-byte count amended 2026-10-28, review fold: RR1-B1: rev 2's
+    count per object address missed `Peek4`'s write of an enclosing struct
+    and any field at a nonzero offset), "carbon: mutation of
     a borrowed object; terminating", then `abort()`; Release does nothing, the
     write being erroneous and defined. It is never a Strict rule: a Strict body
     is statically rejected first. The name is kept; the message uses upstream's
@@ -1113,12 +1174,16 @@ replacement text serves both (Appendix B.1).
     names a value binding or a `bound` pointer argument, mutation page),
     `StrictBorrowedObjectMutated` ("write to `{0}` while it is borrowed by the
     value binding `{1}`", mutation page) and `StrictSharedImmutableWrite`
-    ("write to `{0}` of `Core.SharedImmutable` type `{1}` through a shared
-    path; use an `exclusive` pointer or `unsafe`", mutation page, M3), the
-    last two with the Debug column `MutationDuringValueBinding` (the fourth
-    and the generalized `{0}` amended 2026-10-28, review fold: A-B-1, A-B-2;
-    rev 1 had three, and `StrictBorrowFromShared` read "value binding of
-    `{0}` borrows"). None renamed;
+    ("write to `{0}` through a shared path overwrites `{1}` of
+    `Core.SharedImmutable` type `{2}`; use an `exclusive` pointer or
+    `unsafe`", where `{1}` is `{0}` itself or the sub-object of it that holds
+    the type, mutation page, M3), the last two with the Debug column
+    `MutationDuringValueBinding` (the fourth and the generalized `{0}` amended
+    2026-10-28, review fold: A-B-1, A-B-2; rev 1 had three, and
+    `StrictBorrowFromShared` read "value binding of `{0}` borrows"; the
+    sub-object `{1}` amended 2026-10-28, review fold: RR1-B1, where rev 2's
+    text read "write to `{0}` of `Core.SharedImmutable` type `{1}` through a
+    shared path"). None renamed;
     `StrictSharedBorrowInvalidated` and `StrictInvalidatingThroughShared` keep
     their meanings. Break condition: stage 4 finds two of them
     indistinguishable at their sites; they merge in a dated edit.
@@ -1154,15 +1219,26 @@ replacement text serves both (Appendix B.1).
     give shared, and a by-value parameter of a borrowed type or a `const` `ref`
     gives frozen; a mixed set takes the weakest kind, frozen counting below
     shared, so no write reaches a frozen argument through the result. The
-    pointer argument's pointee rule is T5(d)'s, applied with the shared kind
-    the map gives. **Cost of realignment:** EX-M-1's aliased `a->Set(0, 5)`
+    pointee of a `bound` `T*` or `const T*` argument carries a frozen loan
+    held by the result, and that of a `bound` `exclusive T*` argument an
+    exclusive loan the result holds; the result's own access to the pointee
+    is at the kind T5(a)'s map gives its parameter, so it may write `Plain`
+    storage through a `T*`, only reads through a `const T*` and has exclusive
+    access through an `exclusive T*` (amended 2026-10-28, review fold:
+    RR1-m1; rev 2 read "The pointer argument's pointee rule is T5(d)'s,
+    applied with the shared kind the map gives.", which named no loan for
+    the pointee). **Cost of realignment:** EX-M-1's aliased `a->Set(0, 5)`
     while `first` lives is rejected and moves after `first`'s last use; a
     caller's write to a local passed to `Longest`, `Load`, `Valid1` or
-    `Conditional` is rejected while the result lives; and a call of a function
-    with a `bound` pointer parameter through a `T*` or `const T*` that reaches
-    an open place of a type that does not opt in, `Valid1(p)` for a parameter
-    `p: i32*` among them, needs `unsafe` or an `exclusive` pointer, where
-    SAFE-1 accepted every one; `Core.String`'s opt-in keeps EX-TM-1's calls
+    `Conditional` is rejected while the result lives; while an array view
+    `Core.Slice(T).FromArray(&a)` lives, `a` is written only through the
+    view, so the slices design's opening `a[2] = 30` under the live view `s`
+    is rejected and moves after `s`'s last use (A.10.1; amended 2026-10-28,
+    review fold: RR1-M1); and a call of a function with a `bound` pointer
+    parameter through a `T*` or `const T*` that reaches an open place of a
+    type that does not opt in, `Valid1(p)` for a parameter `p: i32*` among
+    them, needs `unsafe` or an `exclusive` pointer, where SAFE-1 accepted
+    every one; `Core.String`'s opt-in keeps EX-TM-1's calls
     through shared pointers accepted. Break condition: W-349's own, upstream's
     memory-safety design reconsiders the rule (p005434:834) otherwise; or
     upstream reads "each bound parameter" of a pointer as the pointer value
@@ -1266,8 +1342,12 @@ replacement text serves both (Appendix B.1).
     place of `StrictInvalidatingThroughShared`); added, EX-M-4c and EX-M-4d (the
     closed and the open borrowed object, EX-M-4d with review A's `Peek2`, the
     `Plain` whole-object write through a shared pointer that is now
-    `StrictSharedImmutableWrite`; amended 2026-10-28, review fold: A-B-1) and
-    EX-TM-9 (p005434:152-162's `F`).
+    `StrictSharedImmutableWrite`; amended 2026-10-28, review fold: A-B-1; and
+    with the focused re-review's `Peek4`, the same write of an enclosing
+    struct, amended 2026-10-28, review fold: RR1-B1) and EX-TM-9
+    (p005434:152-162's `F`); and the slices design's opening example, whose
+    `a[2] = 30` under the live view `s` is now `StrictBorrowedObjectMutated`
+    (A.10.1; amended 2026-10-28, review fold: RR1-M1).
     Each changed program is rewritten in place with its superseded line kept
     in a comment, and the regression sets' "kept verbatim" sentences gain the
     dated exception. Break condition: a reviewer traces a page example to an
@@ -1279,8 +1359,10 @@ replacement text serves both (Appendix B.1).
     `Core.SharedImmutable` opt-ins, conditional on `Core.Freeze`, and `Box`'s
     when W-144 adds `Box`), W-146 (the benchmarking build, the
     hardening-initialization customization), W-148 (frozen loans, the closed
-    and open places, M3's `Core.SharedImmutable` write rule, the four
-    diagnostics, T5(d)'s pointee rule, the Debug flag's new scope, T8's
+    and open places, M3's `Core.SharedImmutable` write rule over every type
+    that holds such a sub-object, the four diagnostics, T5(d)'s pointee rule,
+    the Debug flag's new scope and per-byte test (amended 2026-10-28, review
+    fold: RR1-B1), T8's
     attributes where established) and W-150 (the `&T` row); W-146's and
     W-148's notes also quote and supersede their lines that state the
     narrowed rules (section 0.5). The one new library name,
@@ -1345,10 +1427,13 @@ paragraph is untouched.
 | values.md | A.7.1, A.7.2 | the "Answered" and "Pinned" notes |
 | README.md | A.8.1 | the unformed-state amendment |
 | expressions/arithmetic.md | A.9.1 | the amendment blockquote |
+| slices.md | A.10.1 | a dated note after SP3's amendment to the opening example: in Strict the write to the array goes through the view or after the view's last use (W-349; added 2026-10-28, review fold: RR1-M1) |
 
-Not edited, measured (section 0.4): slices.md (:65 is SP3's), type_safety.md,
-terminology.md, unions.md, docs/project/principles/safety_strategy.md, the two
-SKIP stubs.
+Not edited, measured (section 0.4): type_safety.md, terminology.md, unions.md
+(whose Strict read rule M3's new paragraph cites),
+docs/project/principles/safety_strategy.md, the two SKIP stubs; slices.md:65,
+SP3's line, stays as it is (rev 2 listed slices.md here; amended 2026-10-28,
+review fold: RR1-M1).
 
 ### §2.3 Commit 2: the records (Appendix B)
 
@@ -1375,10 +1460,11 @@ changed, and ending after a blank line with the session's two attribution
 trailers.
 
 1.  **SAFE-2 (1/2): the six realignments on the safety pages, values.md,
-    arithmetic.md and README.md (W-347 to W-351, W-353).** Appendix A, the nine
-    pages of section 2.2. The brief's title named slices.md too; section 0.4
-    measured slices.md:65 as SP3's line, which SAFE-2 does not change, so the
-    title names the pages the commit edits (R10).
+    slices.md, arithmetic.md and README.md (W-347 to W-351, W-353).** Appendix
+    A, the ten pages of section 2.2. slices.md is edited by A.10.1 only, not
+    at :65, SP3's line, which SAFE-2 does not change (amended 2026-10-28,
+    review fold: RR1-M1; rev 2 left slices.md out of the title and the nine
+    pages).
 2.  **SAFE-2 (2/2): records: the F-013 decisions realigned, SAFE-1's plan
     aligned, the register block and the landed notes.** Appendix B, with
     `<sha1>` filled in.
@@ -1449,7 +1535,7 @@ under the realigned design and the stage that enforces it.
 | EX-M-4a `ValueBinding` | ACCEPTS (nightly exit 0, prints 1) | ACCEPTS, `b` is 1: `i32` is copy-represented | ACCEPTS, by `Plain` | reason only (W-348) |
 | EX-M-4b `ValueBinding2` | ACCEPTS-UNCHECKED (fork prelude) | `StrictSharedBorrowInvalidated` at the assignment; stage 4 | the same | reason only |
 | EX-M-4c `ValueBinding3` (new) | ACCEPTS-UNCHECKED (nightly exit 0, prints 1) | `StrictBorrowedObjectMutated` at `a.n = 2`; stage 4 | (not in the design) | W-348 |
-| EX-M-4d `Peek`, `BufSize`, `Peek2` (new; `Peek2` amended 2026-10-28, review fold: A-B-1) | ACCEPTS-UNCHECKED (nightly exit 0: `Peek` prints 1, `Peek2(&x, &x)` prints 6; `BufSize` is fork prelude) | `Peek`: `StrictBorrowFromShared` at `let v`; `BufSize`: accepted (`Core.Buf(i32)` is `Core.SharedImmutable`, `i32` being `Freeze`); `Peek2`: the binding of `*p` is accepted (`Core.String` opts in) and `*q = "longer"` is `StrictSharedImmutableWrite` (M3); stage 4 with W-144 | (not in the design; SAFE-1 accepted `Peek2`'s write, M3(c)) | W-348 |
+| EX-M-4d `Peek`, `BufSize`, `Peek2`, `Peek4` (new; `Peek2` amended 2026-10-28, review fold: A-B-1; `Peek4` amended 2026-10-28, review fold: RR1-B1) | ACCEPTS-UNCHECKED (nightly exit 0: `Peek` prints 1, `Peek2(&x, &x)` prints 6, `Peek4(&y, &y)` prints 6; `BufSize` is fork prelude) | `Peek`: `StrictBorrowFromShared` at `let v`; `BufSize`: accepted (`Core.Buf(i32)` is `Core.SharedImmutable`, `i32` being `Freeze`); `Peek2`: the binding of `*p` is accepted (`Core.String` opts in) and `*q = "longer"` is `StrictSharedImmutableWrite` (M3); `Peek4`: the binding of `p->s` is accepted and `*q = {.s = "longer", .n = 1}` is `StrictSharedImmutableWrite`, the `Plain` struct holding a `str` (M3); stage 4 with W-144 | (not in the design; SAFE-1 accepted the writes of `Peek2` and `Peek4`, M3(c)) | W-348 |
 | EX-M-5 `Alt` | NEW-SYNTAX | the realigned program, a value payload, is accepted; the old `case .Some(ref s)` would be `StrictRefFromShared`; stage 4 plus the `Optional` redesign | accepted with a shared-kind `ref` payload | W-347 |
 | EX-M-6 `Alt2` | NEW-SYNTAX | `StrictInvalidatingThroughShared` at `*d = ...` with a copied payload `p: i32*` | the same diagnostic with `ref p` | W-347 (program only) |
 | EX-TM-1 `Longest` | NEW-SYNTAX | accepted: `a->Size()` binds `*a` frozen, `Core.String` being `Core.SharedImmutable`; in a caller both pointees are held by the result, frozen (the parameters are `const`), for its lifetime (T5(d)), a caller's write to either through any other path being `StrictBorrowedObjectMutated`; stage 4 with W-144 (amended 2026-10-28, review fold: A-B-2) | accepted; a caller's `Plain` write to an argument under a live result accepted | reason, and a caller's writes under a live result (W-349) |
@@ -1459,6 +1545,7 @@ under the realigned design and the stage that enforces it.
 | EX-TM-8 `Launder1` to `Launder5`, `Wild`, `Wild3`, `Load` | as before | unchanged; re-traced (amended 2026-10-28, review fold: A-M-2, A-B-2): a `Core.Slice(i32)` receiver bound on a local (`Launder1`'s `s.Subslice`, `Launder3`'s `b.AsSlice`) is a frozen loan on a closed place; `Launder4`'s `o.Get()` binds a copy-represented `Core.Optional(i32*)`, an adapter of `MaybeUnformed(i32*)` (section 0.1), so it forms no loan on `o` and the loan on `x` its value carries is unchanged; `Load`'s result also holds the caller's `*q` (T5(d)), which in `Wild3` is ⊥ and needs the T6 `unsafe` first; no diagnostic changes | unchanged | none |
 | EX-TM-9 `F`, `F2`, `F3` (new) | `F`: ACCEPTS-UNCHECKED (nightly exit 0, prints 3); `F2`, `F3`: NEW-SYNTAX | `F`: `StrictRefFromShared`; `F2` (an `exclusive i32*`) and `F3` (`unsafe *ptr`) accepted; stage 4 | `F` accepted (a shared-kind `ref`) | W-347 |
 | p005434 `Valid1`, `ValToRef`, `Conditional` | NEW-SYNTAX (`bound`) | the definitions accepted in both modes: reference returns, not bindings; a call checks T5(d): on a local, the pointee is held by the result and the caller's other paths may not write it while the result lives; through a parameter `p: i32*` to an open place, `Valid1(p)` is `StrictBorrowFromShared` in Strict, `PermissiveAliasedExclusive` in Permissive (amended 2026-10-28, review fold: A-B-2) | accepted, definitions and calls | reason; calls through open places (W-349) |
+| slices.md's opening example (`s` from `FromArray(&a).Subslice(1, 3)`, then `a[2] = 30`; added 2026-10-28, review fold: RR1-M1) | ACCEPTS-UNCHECKED (fork prelude; the page's comments give the run, `s[1]` reading 30) | `a[2] = 30` is `StrictBorrowedObjectMutated` while `s` lives: `FromArray`'s `bound p` holds `a`, a closed place, for the view's lifetime (T5(d)); the write moves after `s`'s last use, or goes through the view once slices are writable; Permissive warns `PermissiveAliasedExclusive`; stage 4 with W-144's `bound` | accepted, the write visible through `s` | W-349 |
 | EX-SP-5 `Hot` | NEW-SYNTAX | unchanged; the comment reads "the supported opt-out" | "the only opt-out" | W-351 (comment) |
 | EX-SP-6 `Div` | ACCEPTS-UNCHECKED (nightly exit 0) | stage 2 guard fails-stop in every supported build mode; the benchmarking build has no guard | "in every mode" | W-350 (prose) |
 | EX-I-1 to EX-I-5 | as before (EX-I-1, EX-I-2, EX-I-5 nightly exit 0) | unchanged; EX-I-1's Release read yields 0 by I5 | unchanged | none (W-353 closed) |
@@ -1481,9 +1568,11 @@ bindings section and two new examples), temporal_safety.md about 130 and 50
 (the `ref` section, T2, T4, T8, EX-TM-9), spatial_safety.md about 60 and 30,
 README.md (safety) about 40 and 10, initialization_safety.md about 40 and 20,
 rust_interop.md about 30 and 15, values.md, README.md and arithmetic.md about
-10 each; fork/decision-log.md about 120 and 60, fork/safe/plan.md about 80 and
-40, work-items.json four notes. Heading changes: six renamed, all H3 (spatial
-SP2 and SP4; mutation M5, EX-M-4a, EX-M-4b and EX-M-5), and three added
+10 each, slices.md 11 added and none removed (A.10.1; amended 2026-10-28,
+review fold: RR1-M1); fork/decision-log.md about 120 and 60,
+fork/safe/plan.md about 80 and 40, work-items.json four notes. Heading
+changes: six renamed, all H3 (spatial SP2 and SP4; mutation M5, EX-M-4a,
+EX-M-4b and EX-M-5), and three added
 (mutation EX-M-4c and EX-M-4d, temporal EX-TM-9, H3); the markdown-toc hook
 rewrites the three tables of contents (amended 2026-10-28, review fold: B-m5;
 rev 1 counted two renames).
@@ -1523,7 +1612,12 @@ Risks:
     write the rules still admit through a shared path: a whole-object or field
     assignment, an `addr` call, a non-`const` pointer formed to a sub-object
     (amended 2026-10-28, review fold: A-B-1; rev 1 checked prelude functions
-    only, and review A's `Peek2` was such a write until M3's new paragraph).
+    only, and review A's `Peek2` was such a write until M3's new paragraph),
+    or an assignment of an enclosing aggregate, a struct, tuple, array or
+    class that holds such a type, the shape of the focused re-review's
+    `Peek4` and of a class with a `str` field, which rev 2's paragraph still
+    admitted and M3's structural "holds a `Core.SharedImmutable` sub-object"
+    now rejects (amended 2026-10-28, review fold: RR1-B1).
     Then that opt-in is withdrawn (D-SAFE2-5's break condition) and its
     examples re-measured.
 -   **R-3 the storage reading of D-SAFE2-3.** Falsifier: an upstream text that
@@ -1631,22 +1725,25 @@ For each of commits 1 and 2, and every fold commit:
     67, rows 55, 962; temporal_safety.md H2 19 H3 17, bullets 110, rows 47,
     1243; initialization_safety.md H2 11 H3 11, bullets 36, rows 14, 555;
     spatial_safety.md H2 12 H3 5, bullets 55, rows 22, 651; rust_interop.md H2
-    16 H3 2, bullets 64, numbered 4, rows 51, 712; values.md H2 13 H3 16 H4 8,
-    bullets 132, rows 11, 1570; README.md H2 18 H3 63 H4 28 H5 5, bullets 341,
-    numbered 3, rows 7, 4022; arithmetic.md H2 7 H3 4 H4 2, bullets 51, 332;
-    fork/safe/plan.md H2 15 H3 28 H4 2, bullets 45, numbered 28, rows 172, 2573;
-    fork/decision-log.md H2 2 H3 45 H4 1 H5 6, bullets 54, rows 11. Expected
-    deltas, every one a number (amended 2026-10-28, review fold: B-m5; rev 1
-    said "plus the checklist rows added"): safety/README.md rows +4 (A.1.3),
-    bullets +1 (A.1.2); mutation_safety.md H3 +2 (A.2.14), rows +5 (A.2.9 +3,
-    A.2.17 +2), bullets +6 (A.2.8 +1, A.2.9 +3, and the toc hook's two entries
-    for the new H3s); temporal_safety.md H3 +1 (A.3.14), rows +2 (A.3.10 +1,
-    A.3.13 +1), bullets +3 (A.3.2 +1, A.3.10 +1, the toc entry for EX-TM-9);
-    rust_interop.md rows +1 (A.6.2); fork/safe/plan.md H2 +1 (B.3.8), rows +7
-    (B.3.2 +4, B.3.6 +3); initialization_safety.md, spatial_safety.md,
-    values.md, README.md, arithmetic.md and fork/decision-log.md 0 everywhere,
-    numbered items 0 everywhere. Any other change is a defect to repair by
-    rephrasing, recorded in the message.
+    16 H3 2, bullets 64, numbered 4, rows 51, 712; slices.md H1 1 H2 10 H3 4,
+    bullets 55, rows 6, 462 (added 2026-10-28, review fold: RR1-M1); values.md
+    H2 13 H3 16 H4 8, bullets 132, rows 11, 1570; README.md H2 18 H3 63 H4 28 H5
+    5, bullets 341, numbered 3, rows 7, 4022; arithmetic.md H2 7 H3 4 H4 2,
+    bullets 51, 332; fork/safe/plan.md H2 15 H3 28 H4 2, bullets 45, numbered
+    28, rows 172, 2573; fork/decision-log.md H2 2 H3 45 H4 1 H5 6, bullets 54,
+    rows 11. Expected deltas, every one a number (amended 2026-10-28, review
+    fold: B-m5; rev 1 said "plus the checklist rows added"): safety/README.md
+    rows plus 4 (A.1.3), bullets plus 1 (A.1.2); mutation_safety.md H3 plus 2
+    (A.2.14), rows plus 5 (A.2.9 plus 3, A.2.17 plus 2), bullets plus 6 (A.2.8
+    plus 1, A.2.9 plus 3, and the toc hook's two entries for the new H3s);
+    temporal_safety.md H3 plus 1 (A.3.14), rows plus 2 (A.3.10 plus 1, A.3.13
+    plus 1), bullets plus 3 (A.3.2 plus 1, A.3.10 plus 1, the toc entry for
+    EX-TM-9); rust_interop.md rows plus 1 (A.6.2); fork/safe/plan.md H2 plus 1
+    (B.3.8), rows plus 7 (B.3.2 plus 4, B.3.6 plus 3); initialization_safety.md,
+    spatial_safety.md, values.md, README.md, arithmetic.md, slices.md and
+    fork/decision-log.md 0 everywhere, numbered items 0 everywhere (the signs
+    spelled "plus" on 2026-10-28 so that no wrapped line starts with one). Any
+    other change is a defect to repair by rephrasing, recorded in the message.
 2.  `cd /home/user/carbon-safe && XDG_CACHE_HOME=<private dir under the
     scratchpad's safe2/implementer/>
     SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -1740,6 +1837,63 @@ Disk: the fixer's probes (`Peek2`, EX-M-4c's struct variants) were compiled
 with the 2026-10-12 nightly into the scratch directory above; nothing was
 built, and no worktree or install is kept.
 
+### §8.9 Review fold record (rev 3, 2026-10-28)
+
+The focused re-review (round 1) of rev 2 (46980f8bd) returned REJECT on one
+BLOCKER, RR1-B1, with one MAJOR, RR1-M1, and four MINORs, RR1-m1 to RR1-m4.
+Its trace of rev 2's 21 folds found A-B-1 not resolved (RR1-B1), A-B-2
+resolved in text but inheriting RR1-B1's hole on open places and introducing
+RR1-M1, A-M-1, A-M-2 and B-M1 to B-M6 resolved (B-M5 but for RR1-m2's slips),
+and the minors folded with the residues RR1-m1 to RR1-m4. It re-fetched
+upstream at 6d5142779 (upstream PR 8051, tests only; `git diff 0421bf3b4
+6d5142779` changes no quoted file), ran PR 67's checks there from a detached
+56e2e5bbd worktree (273 quotes and 89 silence checks pass, 284 quotes with
+Appendix C.2's eleven rows, 89 checks with H1.7 widened), matched all 18
+heads by `git ls-remote`, reproduced section 0.8's merge-tree table, found
+W-365 still the next free id, rumdl clean and the R31 counts as rev 2's fixer
+reported (H3 117, bullets 74, numbered 31, rows 115), and found the log's and
+fork/safe/plan.md's D-SAFE ranges byte-identical.
+
+Every finding was reproduced by the rev 3 fixer before it was folded, in
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2/fixer1/:
+`Peek4(&y, &y)` and the class variant `Peek5(&w, &w)` compiled, linked and run
+on the 2026.10.12 nightly print `6` and `6` (ex/peek4.carbon);
+mutation_safety.md:304-305 at 2407efa74 (the re-review cites :306) reads "The
+facet is closed under arrays, tuples, structs and classes whose every field is
+`Plain`", so the struct of `Peek4` is `Plain` and rev 2's M3 paragraph, keyed on
+the assigned type being `Core.SharedImmutable`, admitted its write;
+slices.md:52-63 at 2407efa74 present `a[2] = 30` under the live `s` as the
+design's behavior, and SP3 gives `FromArray` its `bound p`; PR 51's slices.md
+hunk is at :386 and PR 65's run from :114 to :437 (`git diff -U0 1c83422a0
+<head>`), and a three-way `git merge-file` of PR 53's slices.md with A.10.1's
+note against each head's copy is clean; rev 2's vocabulary (A.3.2) defined a
+frozen loan only for a borrowed object or a `const` `ref` and D-SAFE2-9 applied
+"the shared kind the map gives" to the pointee, while A.3.6 and A.3.12 relied on
+a frozen loan the result holds; A.9.1 and A.5.9 rewrote the sentences RR1-m2
+names without quoting them, and B.3.5's M8 clause kept "A-8/B3" and "RR-5"; the
+H1.13 row of PR 67's rg1-plan.md at 56e2e5bbd keeps the DRIFT break condition
+and no W-355, which D-RG-17 attaches to every ALIGNED entry outside VA-2's
+block; and D-SAFE2-5's and D-SAFE2-6's cost sentences named no global. Upstream
+was re-fetched for rev 3 at 22f3cd353, two commits past 0421bf3b4 and touching
+no quoted file, where PR 67's checks pass with and without the C.2 rows
+(sections 0.1 and 0.2). All six findings are accepted and none is rejected. No
+id was taken: W-365 stays the next free work item, and no F id. The marks read
+"(amended 2026-10-28, review fold: RR1-B1)" and the like; as in section 8.8, the
+page and records texts of Appendices A and B carry only their SAFE-2 marks.
+
+| finding | severity | disposition | where |
+| --- | --- | --- | --- |
+| RR1-B1 a write to an enclosing `Plain` aggregate still mutates a borrowed `Core.SharedImmutable` object through `T*` | BLOCKER | folded as the fix asks: a structural property beside `Core.Plain`'s, a type _holds a `Core.SharedImmutable` sub-object_ when it is one or is an array, tuple, struct or class with an element, field or base that holds one, or an adapter of one; M3's paragraph and M4's `addr self` clause cover every assignment whose type holds one, `*self` included, with `StrictSharedImmutableWrite`, whose text now names the sub-object written; the rule restated in the same words in D-SAFE2-5, A.1.5, A.2.4a, A.2.5, A.2.7a, A.2.8, A.2.19, A.3.3, B.1.2a, B.1.7, B.3.4, B.3.5 and B.4; the Debug flag counts per byte and tests the written range; `Peek4` added to EX-M-4d, section 0.7 (with the class probe), section 4, A.2.2, A.2.10, A.2.17 and B.3.6, and R-2 names the shape; decided under R29, a union stays outside the closure because a Strict read of its field already needs `unsafe`, whose obligation the binding takes on (break condition in D-SAFE2-5: the unions design makes the read safe); and A.2.4a's first block now points at "the next paragraph", which rev 2 called "the next paragraph but one" | §0.6, §0.7, D-SAFE2-5, D-SAFE2-7, D-SAFE2-8, D-SAFE2-14, D-SAFE2-15, §4, §7 R-2, A.1.5, A.2.2, A.2.4a, A.2.5, A.2.7a, A.2.8, A.2.9, A.2.10, A.2.14, A.2.17, A.2.19, A.3.3, B.1.2a, B.1.7, B.3.4, B.3.5, B.3.6, B.4 |
+| RR1-M1 the A-B-2 fold makes slices.md's opening example Strict-rejected, untraced | MAJOR | folded as the fix asks, the note placed after SP3's amendment (slices.md:70), which states the loan the note relies on, rather than between the example and that amendment: A.10.1 says that in Strict `a[2] = 30` under the live `s` is `StrictBorrowedObjectMutated`, that the write goes after `s`'s last use or through the view once slices are writable, and that Permissive warns; section 0.5 lists slices.md:53 and :61, section 4 has the row, D-SAFE2-9's cost and A.3.9 name the array view; slices.md joins section 2.2, commit 1's title, section 6, section 8 item 1 (baseline H1 1 H2 10 H3 4, bullets 55, rows 6, 462 lines; delta 0) and hand-off note 5; section 0.8 records the hunks and the clean merge-file | §0.5, §0.6, §0.8, D-SAFE2-9, D-SAFE2-14, §2.2, §3 step 1, §4, §6, §8 item 1, hand-off note 5, A.3.9, A.10.1 |
+| RR1-m1 T5(d)'s hold has no defined loan kind | MINOR | folded as the fix asks: the pointee of a `bound` `T*` or `const T*` argument carries a frozen loan the result holds, that of an `exclusive T*` an exclusive one, the result's own access at the kind T5(a)'s map gives its parameter; stated in the vocabulary, T5(d) and D-SAFE2-9, and in the log's D-SAFE-10 vocabulary and D-SAFE-11(d) | §0.6, D-SAFE2-9, A.3.2, A.3.9, B.1.2, B.1.3, B.4 |
+| RR1-m2 residual breaks of the superseded-text convention | MINOR | folded as the fix asks: A.9.1 quotes the whole superseded blockquote, A.5.9 SP4's whole sentence and the old break condition, and B.3.5's M8 clause drops "A-8/B3" and "RR-5" into its full quote; the same sweep of Appendices A and B found four more and folded them: A.2.12's EX-M-4a comment ("A-8, B3"), A.6.3's `At` line ("A-9"), B.1.2's second block ("RR-5") and B.1.5's break condition, rewritten without a quote | A.2.12, A.5.9, A.6.3, A.9.1, B.1.2, B.1.5, B.3.5 |
+| RR1-m3 the H1.13 re-classification leaves the DRIFT break condition and no W-355 | MINOR | folded as the fix asks: C.2 (iv) replaces the row's break-condition cell with a ninth block, the ALIGNED re-open condition of the seventh block and section 0.3 with the superseded DRIFT condition quoted, and appends W-355 to the Item cell | C.2 |
+| RR1-m4 the cost of open-place globals is not stated | MINOR | folded as the fix asks: D-SAFE2-6's cost names a `ref` binding or `ref` argument on a global, D-SAFE2-5's an assignment to a global that holds a `Core.String` or `Core.Slice`, the page's cost list in A.2.8 names the global too, and the vocabulary (A.3.2) and the `ref` bindings section (A.3.4) name a global as an open place | D-SAFE2-5, D-SAFE2-6, A.2.8, A.3.2, A.3.4 |
+
+Disk: the rev 3 fixer's probe and merge-file inputs are in the scratch
+directory above; the detached worktree under /dev/shm/safe2-fixer1 was removed
+after the checks; nothing was built.
+
 ## Hand-off notes for the implementer
 
 1.  Read section 1 first, then the Appendix A block for each page in order;
@@ -1757,8 +1911,9 @@ built, and no worktree or install is kept.
     prose line; write "PR 53", "proposal 5434" or "p005434"; headings never end
     in punctuation; code blocks inside pages are fenced as the pages already
     fence them.
-5.  Do not touch slices.md, type_safety.md, terminology.md, the stubs, the
-    toolchain, the prelude or any golden; do not edit PR 67's branch except by
+5.  Do not touch type_safety.md, terminology.md, the stubs, the toolchain,
+    the prelude or any golden, nor slices.md beyond A.10.1's note (amended
+    2026-10-28, review fold: RR1-M1); do not edit PR 67's branch except by
     step 6 of section 3; do not push before section 3 step 5 is dry; do not
     open or edit a PR.
 6.  Every count and cite in a commit message is measured on that commit's
@@ -1855,7 +2010,9 @@ their length and a loan." with:
 ### §A.1.5 safety/README.md :403, Pointer kinds at a glance, a paragraph inserted
 
 Insert after the table (its last row's first cell is "unverified (any kind)")
-and before "### C++ call allowlist":
+and before "### C++ call allowlist" (the last clause amended 2026-10-28,
+review fold: RR1-B1, to M3's structural rule; A.3.3's first block has the same
+words with the temporal page's own cites):
 
 <!-- google-doc-style-ignore -->
 
@@ -1868,10 +2025,10 @@ only on a closed place or, for a frozen one, a `Core.SharedImmutable` type, and
 is an `unsafe` operation otherwise, so the `const T*` row's receivers meet that
 rule when they are called through a shared pointer
 ([Temporal safety](temporal_safety.md), T2); and the `T*` row's `Plain` writes
-exclude the storage of a `Core.SharedImmutable` type, a `Core.String` or
-`Core.Slice` field among it, which only an exclusive path writes
-([Mutation safety](mutation_safety.md), M3; realigned <date>, SAFE-2: W-347,
-W-348).
+exclude every assignment whose type holds a `Core.SharedImmutable` sub-object,
+a `Core.String`, a `Core.Slice` or a struct, tuple, array or class holding one,
+which only an exclusive path makes ([Mutation safety](mutation_safety.md), M3;
+realigned <date>, SAFE-2: W-347, W-348).
 ```
 
 <!-- google-doc-style-resume -->
@@ -1968,9 +2125,9 @@ with the first block, and append the second block to the paragraph after
 
 ```markdown
 The examples on this page in today's syntax, EX-M-4a, EX-M-4c and the
-functions `Peek` and `Peek2` of EX-M-4d, were compiled and run on the
-2026.10.12 nightly toolchain and their outcomes are stated with them (EX-M-4c
-and EX-M-4d added <date>, SAFE-2: W-348).
+functions `Peek`, `Peek2` and `Peek4` of EX-M-4d, were compiled and run on
+the 2026.10.12 nightly toolchain and their outcomes are stated with them
+(EX-M-4c and EX-M-4d added <date>, SAFE-2: W-348).
 ```
 
 ```markdown
@@ -2044,33 +2201,49 @@ methods, is permitted through any number of aliases at once." with the first
 block, and insert the second block after the paragraph that ends "exactly what
 (a) and the sub-object clause require." and before "The escape is the uniform
 `unsafe` prefix" (added 2026-10-28, review fold: A-B-1: the language half of
-`Core.SharedImmutable`'s promise, without which review A's `Peek2` breaks it):
+`Core.SharedImmutable`'s promise, without which review A's `Peek2` breaks it;
+amended 2026-10-28, review fold: RR1-B1: the paragraph now covers every
+assignment whose type holds a `Core.SharedImmutable` sub-object, a closure
+like `Core.Plain`'s, so that the focused re-review's `Peek4` and its class
+variant are rejected, and the first block names "the next paragraph", which
+rev 2 called "the next paragraph but one"):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 Everything else, reads, overwriting `Plain` fields, `addr` and `const` methods,
-is permitted through any number of aliases at once, but for the writes of a
-`Core.SharedImmutable` type's storage that the next paragraph but one names
-(realigned <date>, SAFE-2: W-348; this sentence ended "is permitted through
-any number of aliases at once.").
+is permitted through any number of aliases at once, but for the assignments of
+a type that holds a `Core.SharedImmutable` sub-object, which the next paragraph
+names (realigned <date>, SAFE-2: W-348; this sentence ended "is permitted
+through any number of aliases at once.").
 ```
 
 ```markdown
 One more class of write needs exclusive access although it invalidates
-nothing: a write of a `Core.SharedImmutable` type's storage
-([Value bindings](#value-bindings)), a whole-object or a field assignment of
-such a type, a `Plain` one included. Through `T*`, through `addr self`, or to
+nothing: a write of storage that holds a `Core.SharedImmutable` object
+([Value bindings](#value-bindings)). A type _holds a `Core.SharedImmutable`
+sub-object_ when it is `Core.SharedImmutable`, or is an array, tuple, struct or
+class with an element, a field or a base that holds one, or an adapter of a
+type that holds one, a closure like `Core.Plain`'s below: `Core.String`,
+`Core.Slice(T)`, `{.s: str, .n: i32}` and a class with a `str` field all hold
+one. An assignment whose assigned type holds one, a whole-object or a field
+assignment and a `Plain` one included, through `T*`, through `addr self`, or to
 an open place such as a global
-([temporal safety: vocabulary](temporal_safety.md#vocabulary)), it is
+([temporal safety: vocabulary](temporal_safety.md#vocabulary)), is
 `StrictSharedImmutableWrite`, a non-`Plain` one staying
-`StrictInvalidatingThroughShared`; through the owner of a closed place it is
-permitted while no frozen loan on the place is live and is
-`StrictBorrowedObjectMutated` while one is. This is the language half of the
-facet's promise that no path but an exclusive one writes the type's storage,
-which a frozen loan on an open place relies on. `Core.String` and
-`Core.Slice(T)` are `Plain` and opt in, so `*q = "longer"` through a `str*` is
-rejected in Strict (EX-M-4d's `Peek2`), and `s = "def"` through the owner under
+`StrictInvalidatingThroughShared`; through an exclusive path, the owner of a
+closed place, a `ref` or an `exclusive T*`, it is permitted while no frozen
+loan on an overlapping place is live and is `StrictBorrowedObjectMutated`
+while one is. A union is outside the closure: reading its field is `unsafe` in
+Strict ([unions](../unions.md#strict-carbon-and-future-safety-hooks)), so a
+binding of a union's field is formed under that marker, whose obligation then
+includes that no path writes the union while the binding lives. This is the
+language half of the facet's promise that no path but an exclusive one writes
+the type's storage, which a frozen loan on an open place relies on, and an
+assignment of an enclosing object writes that storage too. `Core.String` and
+`Core.Slice(T)` are `Plain` and opt in, so `*q = "longer"` through a `str*` and
+`*q = {.s = "longer", .n = 1}` through a `{.s: str, .n: i32}*` are rejected in
+Strict (EX-M-4d's `Peek2` and `Peek4`), and `s = "def"` through the owner under
 a live `const Core.String*` stays accepted (the temporal page's EX-TM-3). The
 `unsafe` prefix on the write, `unsafe (*q = "longer")`, takes on the
 obligation that no binding of the object is live (added <date>, SAFE-2:
@@ -2085,19 +2258,21 @@ In the `addr self: Self*` bullet replace "it may assign `Plain` fields (`i32`,
 the pointer kinds, `Core.Slice`, the prelude's non-owning `Core.String`)," with
 the first block (amended 2026-10-28, review fold: A-B-1: M3's new paragraph
 makes a `Core.String` or `Core.Slice` field written only through exclusive
-access). Replace the bullet "`ref self: const Self` and by-value `self` are
-const access: the body mutates nothing in `self`, and a call is permitted
-through every kind." with the second block.
+access; amended 2026-10-28, review fold: RR1-B1: so is a field, or `*self`,
+whose type holds such a sub-object). Replace the bullet "`ref self: const
+Self` and by-value `self` are const access: the body mutates nothing in
+`self`, and a call is permitted through every kind." with the second block.
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-it may assign `Plain` fields (`i32`, the pointer kinds), but a field of a
-`Core.SharedImmutable` type, `Core.Slice` or the prelude's non-owning
-`Core.String` among them, only as M3 allows such a write, so a setter of a
-`Core.String` field takes `ref self` (realigned <date>, SAFE-2: W-348; this
-clause read "it may assign `Plain` fields (`i32`, the pointer kinds,
-`Core.Slice`, the prelude's non-owning `Core.String`),"),
+it may assign `Plain` fields (`i32`, the pointer kinds), but a field whose type
+holds a `Core.SharedImmutable` sub-object, a `Core.Slice`, the prelude's
+non-owning `Core.String` or a struct holding one, and `*self` when `Self`
+holds one, only as M3 allows such a write, so a setter of a `Core.String`
+field takes `ref self` (realigned <date>, SAFE-2: W-348; this clause read "it
+may assign `Plain` fields (`i32`, the pointer kinds, `Core.Slice`, the
+prelude's non-owning `Core.String`),"),
 ```
 
 ```markdown
@@ -2185,13 +2360,19 @@ is erroneous and Debug-reported as `MutationDuringValueBinding`.").
 
 Append to the paragraph that ends "and an owning string, once the prelude has
 one, will not be." (added 2026-10-28, review fold: A-B-1, so that the line
-stating `Plain` assignment as accepted does not hide M3's new paragraph):
+stating `Plain` assignment as accepted does not hide M3's new paragraph;
+amended 2026-10-28, review fold: RR1-B1, for the aggregates that hold a
+string):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 Through a `T*` the same assignment is `StrictSharedImmutableWrite` in Strict,
-`Core.String` being `Core.SharedImmutable` (M3; added <date>, SAFE-2: W-348).
+`Core.String` being `Core.SharedImmutable`, and so is a `Plain` assignment
+through a `T*` of an array, tuple, struct or class that holds a `Core.String`
+or a `Core.Slice(T)`, which holds a `Core.SharedImmutable` sub-object as M3
+defines it by the same closure as this facet's (M3; added <date>, SAFE-2:
+W-348).
 ```
 
 <!-- google-doc-style-resume -->
@@ -2279,11 +2460,14 @@ prevent mutation of borrowed objects in Carbon's strict safe dialect"
 
 **`Core.SharedImmutable`** is the facet that says no path but an exclusive one
 writes a type's storage. The promise has two halves. The language keeps the
-first: every write of the type's storage through a shared path, a whole-object
-assignment included and a `Plain` one among them, is rejected in Strict by M3
-(`StrictSharedImmutableWrite`). The author keeps the second, what no check of
-the language sees: every field is private, no `addr` method writes `self`, no
-function writes the type's storage through a shared path or returns a
+first: every assignment through a shared path whose assigned type holds a
+`Core.SharedImmutable` sub-object, the type itself or an array, tuple, struct
+or class that holds it, a `Plain` one included, is rejected in Strict by M3
+(`StrictSharedImmutableWrite`; EX-M-4d's `Peek2` and `Peek4`), and a union's
+field binds only under the `unsafe` its read needs. The author keeps the
+second, what no check of the language sees: every field is private, no `addr`
+method writes `self`, no function writes the type's storage through a shared
+path or returns a
 non-`const` pointer or `ref` into it, and no pointer into its own storage is
 stored in it. It is opt-in only, `unsafe impl T as Core.SharedImmutable {}`, the
 author's audited obligation in the pattern of `unsafe impl T as Core.Send {}`,
@@ -2300,25 +2484,28 @@ page's EX-TM-1). A struct or tuple type has public elements and never opts in.
 The memory-safety argument, and what the rule costs. A frozen loan on a closed
 place is sound because every carrier of the place is in the body's view and a
 carrier of a local cannot escape it (the Store rule and T5(b)); on an open place
-of a `Core.SharedImmutable` type, because M3 rejects every Strict write of the
-object through a shared path, the live shared path excludes the exclusive ones
+of a `Core.SharedImmutable` type, because M3 rejects every Strict assignment
+through a shared path that writes the object's storage, whether its type is
+the object's or holds it, the live shared path excludes the exclusive ones
 (M2), and the opt-in's obligation covers what the checker cannot see. A write by
 unchecked code, a Permissive body, C++ or an alias an `unsafe` binding promised
 away, is the erroneous behavior proposal p005434 keeps for it
 (p005434:670-672), never undefined behavior, because the safe-code optimizer
 assumes nothing about it (the temporal page's T8 emits no `noalias` on an open
 place), and the Debug build detects it: Debug keeps, in shadow memory keyed by
-object address and never in the object's layout, a per-object count of live
-frozen loans, incremented when the binding is formed and decremented at its
-last use as the stage-4 checker computes it, and a `Plain` assignment through
-`T*`, to a field or to the whole object, or an `addr self` call, whose target's
-count is non-zero reports `MutationDuringValueBinding`. The rule rejects in
+address and never in the object's layout, a count of live frozen loans for each
+byte of a borrowed object's storage, incremented when the binding is formed and
+decremented at its last use as the stage-4 checker computes it, and a `Plain`
+assignment through `T*`, to a field or to a whole object, that writes a byte
+whose count is non-zero, or an `addr self` call on an object one of whose bytes
+has a non-zero count, reports `MutationDuringValueBinding`. The rule rejects in
 Strict what the rule of 2026-10-12 accepted: a `Plain`-field write during a
 binding even where it frees nothing (EX-M-4c), the aliased write of EX-M-1
 while a `bound` result lives (the temporal page's T5(d)), a by-value call or a
 `let` of a type that does not opt in, through a shared pointer whose aliases the
-body cannot see (EX-M-4d's `Peek`), and a `Plain` assignment of a
-`Core.String` or `Core.Slice(T)` through a shared pointer (EX-M-4d's `Peek2`).
+body cannot see (EX-M-4d's `Peek`), and a `Plain` assignment through a shared
+pointer, or to a global, of a `Core.String`, a `Core.Slice(T)` or an array,
+tuple, struct or class that holds one (EX-M-4d's `Peek2` and `Peek4`).
 That is the cost proposal p005434 anticipated when it said to
 "revisit the underlying idea of mutation being erroneous if enforcing it in
 the strict mode proves fundamentally untenable due to ergonomic costs"
@@ -2386,7 +2573,13 @@ The section's list goes from three items to four (bullets plus one). The
 superseded text is quoted in full, its bullets joined by " / " so that no
 quoted line starts with a list marker (amended 2026-10-28, review fold: B-M5;
 rev 1 dropped the introduction, the first bullet's body, the Debug sentence and
-"What a stale read costs is correctness").
+"What a stale read costs is correctness"). The `Core.SharedImmutable`
+paragraph's language half, the memory-safety argument's M3 clause, the Debug
+count and the cost list state M3's structural rule, the per-byte test and
+`Peek4` (amended 2026-10-28, review fold: RR1-B1; rev 2 read "every write of
+the type's storage through a shared path, a whole-object assignment included",
+"M3 rejects every Strict write of the object through a shared path" and "a
+per-object count of live frozen loans", and named only `Peek2` in the cost).
 
 ### §A.2.9 safety/mutation_safety.md :474-514, Diagnostics
 
@@ -2402,7 +2595,10 @@ the fourth block's three items after the `StrictNotSend` item; in the
 Permissive file;" with the fifth block; and replace the
 `MutationDuringValueBinding` item with the sixth (amended 2026-10-28, review
 fold: A-B-1 for the third row and item, A-B-2 for `StrictBorrowFromShared`'s
-`bound` argument, B-m6 for the Debug clause, B-M5 for the W ids).
+`bound` argument, B-m6 for the Debug clause, B-M5 for the W ids; amended
+2026-10-28, review fold: RR1-B1, `StrictSharedImmutableWrite`'s text naming
+the sub-object written, where rev 2's read "write to `{0}` of
+`Core.SharedImmutable` type `{1}` through a shared path").
 
 <!-- google-doc-style-ignore -->
 
@@ -2443,10 +2639,11 @@ shared pointer raises it (M5; realigned <date>, SAFE-2: W-347).
     carrier of the object, with a note at the binding; for the frozen loan of
     a `const` `ref` or of a `bound` argument the text names that binding or
     that result (realigned <date>, SAFE-2: W-348, W-349).
--   `StrictSharedImmutableWrite`: "write to `{0}` of `Core.SharedImmutable`
-    type `{1}` through a shared path; use an `exclusive` pointer or `unsafe`",
-    at the write, with a note at the type's opt-in (M3; realigned <date>,
-    SAFE-2: W-348).
+-   `StrictSharedImmutableWrite`: "write to `{0}` through a shared path
+    overwrites `{1}` of `Core.SharedImmutable` type `{2}`; use an `exclusive`
+    pointer or `unsafe`", where `{1}` is `{0}` itself or the sub-object of it
+    that holds the type, at the write, with a note at the type's opt-in (M3;
+    realigned <date>, SAFE-2: W-348).
 ```
 
 ```markdown
@@ -2480,12 +2677,12 @@ nightly toolchain, `carbon compile --output-last-input-only`, the missing
 <!-- google-doc-style-ignore -->
 
 ```markdown
-EX-M-4a, EX-M-4c and the functions `Peek` and `Peek2` of EX-M-4d use only the
-upstream prelude and were compiled on the 2026.10.12 nightly toolchain with
-`carbon compile --output-last-input-only` and no `package` line, then linked
-and run (EX-M-4c and EX-M-4d added <date>, SAFE-2: W-348); EX-M-4b and EX-M-4d's
-`BufSize` use the fork prelude's `Core.Buf`, which that toolchain lacks; every
-other example is NEW syntax.
+EX-M-4a, EX-M-4c and the functions `Peek`, `Peek2` and `Peek4` of EX-M-4d use
+only the upstream prelude and were compiled on the 2026.10.12 nightly
+toolchain with `carbon compile --output-last-input-only` and no `package`
+line, then linked and run (EX-M-4c and EX-M-4d added <date>, SAFE-2: W-348);
+EX-M-4b and EX-M-4d's `BufSize` use the fork prelude's `Core.Buf`, which that
+toolchain lacks; every other example is NEW syntax.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2534,15 +2731,17 @@ Rename the heading "### EX-M-4a: A `Plain` value binding" to "### EX-M-4a: A
 value binding that copies". Replace the code block's first two comment lines,
 "// EX-M-4a (today's syntax; accepted today and in Strict — amended 2026-10-12,
 review fold: A-8, B3:" and "// i32 is Plain, the binding copies eagerly
-(D-SAFE-17), there is no loan to invalidate; b is 1)", with the first block.
-Replace "Rule M8, the `Plain` case. `i32` is `Plain`, so `b` acquires eagerly
-and holds no loan;" with the second block.
+(D-SAFE-17), there is no loan to invalidate; b is 1)", with the first block
+(amended 2026-10-28, review fold: RR1-m2: the 2026-10-12 mark "A-8, B3" moved
+into the quoted superseded comment, off the rewritten one). Replace "Rule M8,
+the `Plain` case. `i32` is `Plain`, so `b` acquires eagerly and holds no
+loan;" with the second block.
 
 <!-- google-doc-style-ignore -->
 
 ```carbon
-// EX-M-4a (today's syntax; accepted today and in Strict — amended 2026-10-12, review fold: A-8, B3;
-// realigned <date>, SAFE-2: W-348: i32's value representation is a copy, so the binding holds no loan; b is 1)
+// EX-M-4a (today's syntax; accepted today and in Strict — realigned <date>, SAFE-2: W-348: i32's value representation is a copy,
+// so the binding holds no loan; b is 1; this comment read "amended 2026-10-12, review fold: A-8, B3: i32 is Plain, the binding copies eagerly (D-SAFE-17), there is no loan to invalidate; b is 1")
 ```
 
 ```markdown
@@ -2592,7 +2791,8 @@ the anchor is unambiguous; only the comment and the `let` line change.)
 
 ### §A.2.14 safety/mutation_safety.md :660, EX-M-4c and EX-M-4d inserted
 
-Insert before "### EX-M-5: Payload references through a shared path":
+Insert before "### EX-M-5: Payload references through a shared path" (EX-M-4d's
+`Peek4` and its paragraph amended 2026-10-28, review fold: RR1-B1):
 
 <!-- google-doc-style-ignore -->
 
@@ -2630,7 +2830,7 @@ outcomes the erroneous behavior allows. The fix is a copy,
 ### EX-M-4d: A borrowed object through a shared pointer
 
 ```carbon
-// EX-M-4d (Peek, Peek2: today's syntax, accepted today; BufSize: fork prelude — added <date>, SAFE-2: W-348)
+// EX-M-4d (Peek, Peek2, Peek4: today's syntax, accepted today; BufSize: fork prelude — added <date>, SAFE-2: W-348)
 fn Peek(p: {.n: i32, .o: Core.Optional(i32)}*, q: {.n: i32, .o: Core.Optional(i32)}*) -> i32 {
   let v: {.n: i32, .o: Core.Optional(i32)} = *p;  // Strict: StrictBorrowFromShared — *p is an open place, and a struct is never Core.SharedImmutable
   q->n = 2;                                       // the write the rule exists for: q may be p
@@ -2640,6 +2840,11 @@ fn BufSize(p: Core.Buf(i32)*) -> i64 { return p->Size(); }   // accepted: Core.B
 fn Peek2(p: const str*, q: str*) -> i64 {
   let s: str = *p;                                // accepted: str, the prelude's Core.String, is Core.SharedImmutable, so s binds frozen on the open *p
   *q = "longer";                                  // Strict: StrictSharedImmutableWrite (M3) — q may be p
+  return s.Size();
+}
+fn Peek4(p: {.s: str, .n: i32}*, q: {.s: str, .n: i32}*) -> i64 {
+  let s: str = p->s;                              // accepted: s binds frozen on the open p->s, str being Core.SharedImmutable
+  *q = {.s = "longer", .n = 1};                   // Strict: StrictSharedImmutableWrite (M3) — the struct holds a str, and q may be p
   return s.Size();
 }
 ```
@@ -2655,12 +2860,17 @@ parameter, or `unsafe *p` with its obligation. In `BufSize`, the by-value
 other half of that promise: `str` opts in too, so `s` binds frozen on the open
 `*p`, and the write the opt-in would otherwise let through, a `Plain`
 assignment of the whole `str` through the shared `q`, is rejected by M3 with
-`StrictSharedImmutableWrite`. Outcome: `Peek` and `Peek2` ACCEPTS-UNCHECKED —
-the nightly compiles both with exit status 0; `Peek(&a, &a)` for `a.n == 1`
-prints `1`, and `Peek2(&x, &x)` for `x == "ab"` prints `6`, `s` reading the
-string `q` wrote, the erroneous behavior Strict now prevents; `BufSize` is
-fork prelude, not compile-verified in this PR. Stage 4, with W-144 for the
-opt-ins.
+`StrictSharedImmutableWrite`. `Peek4` is the same write one level up: the
+struct `{.s: str, .n: i32}` is `Plain` and is not `Core.SharedImmutable`, but
+it holds a `str`, so the whole-struct assignment through `q` writes the
+storage `s` borrows and M3 rejects it with `StrictSharedImmutableWrite`; a
+class with a `str` field is rejected the same way. Outcome: `Peek`, `Peek2`
+and `Peek4` ACCEPTS-UNCHECKED — the nightly compiles all three with exit
+status 0; `Peek(&a, &a)` for `a.n == 1` prints `1`, `Peek2(&x, &x)` for
+`x == "ab"` prints `6`, and `Peek4(&y, &y)` for `y == {.s = "ab", .n = 0}`
+prints `6`, `s` reading the string `q` wrote, the erroneous behavior Strict
+now prevents; `BufSize` is fork prelude, not compile-verified in this PR.
+Stage 4, with W-144 for the opt-ins.
 ````
 
 <!-- google-doc-style-resume -->
@@ -2759,11 +2969,14 @@ B-M5):
 | M8 value binding, copy representation (realigned <date>, SAFE-2: W-348) | EX-M-4a | ACCEPTS (today and in Strict; `b` is 1) | — |
 | M8 value binding, borrowed object (realigned <date>, SAFE-2: W-348) | EX-M-4b | ACCEPTS-UNCHECKED (fork prelude) | 4 |
 | M8 `Plain` write to a borrowed object (added <date>, SAFE-2: W-348) | EX-M-4c | ACCEPTS-UNCHECKED (nightly exit 0, prints 1) | 4 |
-| M8 borrowed object through a shared pointer, `Core.SharedImmutable` (added <date>, SAFE-2: W-348) | EX-M-4d | ACCEPTS-UNCHECKED for `Peek` and `Peek2` (nightly exit 0, print 1 and 6); `BufSize` fork prelude | 4 (W-144) |
+| M8 borrowed object through a shared pointer, `Core.SharedImmutable` (added <date>, SAFE-2: W-348) | EX-M-4d | ACCEPTS-UNCHECKED for `Peek`, `Peek2` and `Peek4` (nightly exit 0, print 1, 6 and 6); `BufSize` fork prelude | 4 (W-144) |
 | M5 payload bindings (realigned <date>, SAFE-2: W-347) | EX-M-5 | NEW-SYNTAX | 4 plus the `Optional` redesign |
 ```
 
 <!-- google-doc-style-resume -->
+
+The EX-M-4d row names `Peek4` (amended 2026-10-28, review fold: RR1-B1), as
+B.3.6's row does.
 
 ### §A.2.18 safety/mutation_safety.md :797, Implementation staging, row 4 replaced
 
@@ -2781,10 +2994,12 @@ Replace the D-SAFE-17 bullet (from "**D-SAFE-17 — Value bindings through
 shared pointers.**" through "alternative is adopted for every type.") with the
 first block. In the D-SAFE-9 bullet replace "Invalidating operations require
 exclusive access; everything else is permitted through any number of aliases."
-with "Invalidating operations require exclusive access, and so do the writes of
-a `Core.SharedImmutable` type's storage (M3, D-SAFE-17; added <date>, SAFE-2:
-W-348); everything else is permitted through any number of aliases." (amended
-2026-10-28, review fold: A-B-1). In the D-SAFE-20 bullet replace "and
+with "Invalidating operations require exclusive access, and so does every
+assignment whose type holds a `Core.SharedImmutable` sub-object (M3,
+D-SAFE-17; added <date>, SAFE-2: W-348); everything else is permitted through
+any number of aliases." (amended 2026-10-28, review fold: A-B-1; amended
+2026-10-28, review fold: RR1-B1, where rev 2 read "and so do the writes of a
+`Core.SharedImmutable` type's storage"). In the D-SAFE-20 bullet replace "and
 `Core.Box(T)` are this page's items;" with "`Core.Box(T)` and
 `Core.SharedImmutable` (opt-in only, implying `Core.Freeze`; added <date>,
 SAFE-2: W-348) are this page's items;". In the closing paragraph replace "the
@@ -2801,7 +3016,8 @@ with the second block.
     `StrictBorrowedObjectMutated` or, for an invalidating one,
     `StrictSharedBorrowInvalidated`; the loan is formed on a closed place, or
     on an open place for a `Core.SharedImmutable` type (an `unsafe impl` opt-in
-    whose shared-path writes M3 rejects, which the prelude takes for `String`
+    whose storage M3 lets no shared-path assignment write, of the type or of
+    one that holds it, which the prelude takes for `String`
     and, for a `Freeze` argument, `Slice`, `Buf` and `Optional`, and for `Box`
     when W-144 adds it), and the binding is `StrictBorrowFromShared`
     otherwise; a binding from a
@@ -2910,7 +3126,9 @@ Replace "The rules use seven words, fixed by D-SAFE-10." with the first block;
 replace the loan bullet (from "A _loan_ is a triple of a place," through
 "which the diagnostics name.") with the second block; insert the third block
 after the interior-loan bullet (which ends "and an invalidating operation on the
-owner kills it."). Bullets plus one.
+owner kills it."). Bullets plus one. (The frozen loan of a `bound` pointer
+argument's pointee in the second block amended 2026-10-28, review fold:
+RR1-m1, and the global in the third, review fold: RR1-m4.)
 
 <!-- google-doc-style-ignore -->
 
@@ -2921,10 +3139,14 @@ _open_, added <date> by SAFE-2 (W-347, W-348).
 
 ```markdown
 -   A _loan_ is a triple of a place, a _kind_ and an _origin_. The kind is
-    _exclusive_, _shared_ or _frozen_, the last the loan of a borrowed object
-    or of a `const` `ref`, under which no path writes the place's storage
-    (added <date>, SAFE-2: W-348); the origin is the expression that formed the
-    loan, which the diagnostics name.
+    _exclusive_, _shared_ or _frozen_. A frozen loan is the loan of a borrowed
+    object or of a `const` `ref`, under which no path writes the place's
+    storage, or the loan a call's result holds on the pointee of a `bound`
+    `T*` or `const T*` argument, under which no path but the result and the
+    carriers copied from it writes the pointee, the result's own access being
+    at the kind T5(a) gives its parameter (T5(d); added <date>, SAFE-2: W-348,
+    W-349); the origin is the expression that formed the loan, which the
+    diagnostics name.
 ```
 
 ```markdown
@@ -2936,7 +3158,8 @@ _open_, added <date> by SAFE-2 (W-347, W-348).
     only closed places, such as `*p` for a local `let p: T* = &x;`. Every other
     place is _open_: one reached through a `T*` or `const T*` parameter or
     `addr self`, through a pointer loaded from memory or returned by a call
-    whose loan set is not closed, through a free loan or through ⊥. An
+    whose loan set is not closed, through a free loan, a global among them, or
+    through ⊥. An
     exclusive or a frozen loan is formed on a closed place, where T4 sees every
     carrier; on an open place it is an `unsafe` operation, except a frozen loan
     on a `Core.SharedImmutable` type, whose shared-path writes the mutation
@@ -2953,7 +3176,9 @@ _open_, added <date> by SAFE-2 (W-347, W-348).
 Insert the first block after the kinds table (whose last row's first cell is
 "unverified (any kind)") and before "`&x` on a place under exclusive access —
 an owner, a `ref` binding, or `*p` for". Replace "`ref self: const Self` and
-by-value `self` are const access." with the second block.
+by-value `self` are const access." with the second block. The first block is
+A.1.5's words with this page's own cites, its last clause amended with A.1.5's
+(2026-10-28, review fold: RR1-B1).
 
 <!-- google-doc-style-ignore -->
 
@@ -2965,9 +3190,10 @@ the binding's lifetime. Through `T*` or `const T*` such a binding is formed
 only on a closed place or, for a frozen one, a `Core.SharedImmutable` type, and
 is an `unsafe` operation otherwise, so the `const T*` row's receivers meet that
 rule when they are called through a shared pointer (T2); and the `T*` row's
-`Plain` writes exclude the storage of a `Core.SharedImmutable` type, a
-`Core.String` or `Core.Slice` field among it, which only an exclusive path
-writes (the mutation page's M3; realigned <date>, SAFE-2: W-347, W-348).
+`Plain` writes exclude every assignment whose type holds a
+`Core.SharedImmutable` sub-object, a `Core.String`, a `Core.Slice` or a struct,
+tuple, array or class holding one, which only an exclusive path makes (the
+mutation page's M3; realigned <date>, SAFE-2: W-347, W-348).
 ```
 
 ```markdown
@@ -2983,7 +3209,8 @@ either binds `self` under the rules of [`ref` bindings](#ref-bindings) and T2
 Keep the heading "## `ref` bindings"; replace its two paragraphs and the
 "Narrowing" blockquote, from "A `ref` binding inherits the kind of its source
 (D-SAFE-8)." through "because a shared-kind `ref` is, by construction, one alias
-among many.", with:
+among many.", with the block (its "a global" amended 2026-10-28, review fold:
+RR1-m4):
 
 <!-- google-doc-style-ignore -->
 
@@ -3009,8 +3236,8 @@ is a checked reborrow: forming it suspends every other carrier of the place
 (T2), and T4 rejects any use of them that the binding excludes. A `const` `ref`
 on an open place of a `Core.SharedImmutable` type is checked the same way. Any
 other `ref` on an open place, `*p` for a `T*` or `const T*` parameter, a
-pointer loaded from memory, a free or ⊥ pointer, is an `unsafe` formation,
-spelled at the binding as T6 spells a binding through a ⊥ carrier
+pointer loaded from memory, a global, a free or ⊥ pointer, is an `unsafe`
+formation, spelled at the binding as T6 spells a binding through a ⊥ carrier
 (`let ref r: T = unsafe *p;`, or `unsafe F(ref *p)` for a `ref` argument),
 whose obligation is the one the proposal gives unsafe code, to "adhere to just
 the `noalias` restrictions" (p005434:861-862); unmarked, it is
@@ -3233,7 +3460,9 @@ Replace the (d) bullet, from "**(d) The argument stays borrowed.**"
 through "narrowing, recorded here and in the F-013 entry.", with the second
 (amended 2026-10-28, review fold: A-B-2: rev 1 left a `bound` pointer
 argument's pointee "not invalidated", W-349's narrowing in other words; A-m-1:
-rev 1 kept a `bound ref`'s exclusive loan under a `val` result).
+rev 1 kept a `bound ref`'s exclusive loan under a `val` result; amended
+2026-10-28, review fold: RR1-m1, the pointee's frozen loan and the result's
+own kind, and RR1-M1, the array view's cost).
 
 <!-- google-doc-style-ignore -->
 
@@ -3267,11 +3496,15 @@ takes the weakest kind.").
     `RefToVal` (p005434:825), it keeps a frozen loan, and may be read but not
     written while the result lives. The pointee of a `bound` pointer argument,
     `T*`, `const T*` or `exclusive T*`, the pointer itself being a copy, is
-    held by the result: while the result lives no carrier but the result and
-    the carriers copied from it writes the pointee, and the result writes it
-    only as its own kind allows, never through a `const T*`; an
-    `exclusive T*`'s pointee is reached by no other path at all. On a closed
-    place T4 enforces this against every carrier. On an open place it needs
+    held by the result under a frozen loan, an exclusive one for an
+    `exclusive T*`: while the result lives no carrier but the result and the
+    carriers copied from it writes the pointee, and the result's own access
+    is at the kind (a) gives the parameter, so it writes the pointee only as
+    that kind allows, never through a `const T*`; an `exclusive T*`'s pointee
+    is reached by no other path at all. On a closed place T4 enforces this
+    against every carrier, so while a view `Core.Slice(T).FromArray(&a)` of a
+    local array lives, `a` is written only through the view
+    ([slices](../slices.md), the opening example). On an open place it needs
     the pointee's type to be `Core.SharedImmutable`, whose shared-path writes
     the mutation page's M3 rejects; otherwise the call is
     `StrictBorrowFromShared`, or `unsafe` at the call (`unsafe Valid1(p)`, the
@@ -3933,7 +4166,10 @@ Replace the bullet from "**D-SAFE-14 — Spatial: fail-stop everywhere,"
 through "the unchecked accessor's name is the residue item's." with the first
 block, and the bullet from "**D-SAFE-15 — Arithmetic.**" through "an owner
 call on a performance-build opt-in." with the second block. The SP3 sentences
-of the first block are the page's own, unchanged.
+of the first block are the page's own, unchanged. The first block's quote
+holds SP4's whole superseded sentence and the superseded break condition
+(amended 2026-10-28, review fold: RR1-m2; rev 2 rewrote "SP4 unchecked access
+is" and "Break condition: none for the semantics;" without quoting them).
 
 <!-- google-doc-style-ignore -->
 
@@ -3969,9 +4205,12 @@ of the first block are the page's own, unchanged.
     withdrawal of the benchmarking promise removes the benchmarking build with
     it. (Realigned <date>, SAFE-2: W-351. The superseded 2026-10-12 text was
     headed "Spatial: fail-stop everywhere, `unsafe fn` is the opt-out, views
-    carry loans.", read "fails-stop in every build mode" in SP2, and read in
-    SP4 "no build flag disables checks, and the strategy's promise of an
-    unsupported disable for benchmarking is withdrawn by the fork, dated".)
+    carry loans.", read "fails-stop in every build mode" in SP2, read in SP4
+    "SP4 unchecked access is `unsafe fn GetUnchecked[bound self: Self](i:
+    i64) -> T` on `Slice` and `Buf`; no build flag disables checks, and the
+    strategy's promise of an unsupported disable for benchmarking is
+    withdrawn by the fork, dated.", and ended "Break condition: none for the
+    semantics; the unchecked accessor's name is the residue item's.")
 ```
 
 ```markdown
@@ -4113,12 +4352,14 @@ therefore emitted only when" stays true of the rows that hand Rust a `&T`.
 Replace the code line that begins "fn At[bound self: Self](i: i64) -> const
 i32*;" with the first block, and the bullet from "**`At`: a `bound` result
 over a const receiver.**" through "Stage 4, because `bound` and the loan checker
-are stage 4." with the second block.
+are stage 4." with the second block. (The first block's 2026-10-12 mark "A-9"
+moved into its quote of the superseded line, off the rewritten comment;
+amended 2026-10-28, review fold: RR1-m2.)
 
 <!-- google-doc-style-ignore -->
 
 ```carbon
-fn At[bound self: Self](i: i64) -> const i32*;      // → fn at<'a>(&'a Self, i: i64) -> &'a SharedView<i32>   (stage 5 with Freeze, else &'a SharedView<Self> at stage 4; never &'a i32 for an exported class — A-9; receiver realigned <date>, SAFE-2: W-348, was &'a SharedView<Self>)
+fn At[bound self: Self](i: i64) -> const i32*;      // → fn at<'a>(&'a Self, i: i64) -> &'a SharedView<i32>   (stage 5 with Freeze, else &'a SharedView<Self> at stage 4; never &'a i32 for an exported class; receiver realigned <date>, SAFE-2: W-348; the line read "→ fn at<'a>(&'a SharedView<Self>, i: i64) -> &'a SharedView<i32>   (stage 4; never &'a i32 for an exported class — A-9)")
 ```
 
 ```markdown
@@ -4324,7 +4565,10 @@ dated the new "Fork note" 2026-10-12):
 ### §A.9.1 expressions/arithmetic.md :167-174, the amendment blockquote replaced
 
 Replace the blockquote that begins "> **Amendment (2026-10-12, SAFE-1 — F-013
-D-SAFE-15):**" with:
+D-SAFE-15):**" with the block, which quotes the whole superseded blockquote
+(amended 2026-10-28, review fold: RR1-m2; rev 2 rewrote "for Carbon code the
+fork fixes the behavior by build mode." and "The second TODO below is
+answered: wrap, not zero." without quoting them):
 
 <!-- google-doc-style-ignore -->
 
@@ -4341,8 +4585,40 @@ D-SAFE-15):**" with:
 > supported build mode has that behavior. The second TODO below is answered
 > for the hardened build: wrap, not zero. See
 > [Spatial safety: Arithmetic](../safety/spatial_safety.md#arithmetic). (The
-> superseded 2026-10-12 text read: "The performance-build row above, under
-> which the behavior is not defined, is withdrawn for Carbon code.")
+> superseded 2026-10-12 text read, in full: "for Carbon code the fork fixes
+> the behavior by build mode. In the Release build, signed overflow wraps to
+> the two's complement result; in the Debug build, overflow fails-stop with a
+> diagnostic; signed or unsigned division or remainder by zero fails-stop in
+> both. The performance-build row above, under which the behavior is not
+> defined, is withdrawn for Carbon code. The second TODO below is answered:
+> wrap, not zero.")
+```
+
+<!-- google-doc-style-resume -->
+
+### §A.10.1 slices.md :70, the opening example, a note inserted
+
+Added 2026-10-28, review fold: RR1-M1: under T5(d) the write the opening
+example presents as the design's behavior, `a[2] = 30` while the view `s`
+lives, is rejected in Strict, and rev 2 left the page saying otherwise. Insert
+after the SP3 amendment that follows the opening example, whose last line ends
+with a link to the spatial page and "rule SP3.", and before "The element type
+is constrained to `Copy & Destroy`", a blank line and the block (11 lines
+added, no heading, list item or row):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+> **Amendment (<date>, SAFE-2 — F-013 D-SAFE-11(d), W-349):** in Strict
+> Carbon the write `a[2] = 30` above is rejected while `s` lives. `FromArray`
+> takes `bound p`, so for the view's lifetime `a` is held by the view and no
+> path but the view writes it, proposal p005434's "each bound parameter to be
+> immutable for the duration of the lifetime of the returned result"
+> ([Temporal safety](safety/temporal_safety.md), T5(d)), and the owner's write
+> is `StrictBorrowedObjectMutated`. A Strict program writes `a` after the last
+> use of `s`, or through the view once slice elements are writable
+> ([0.1 limits](#01-limits)); Permissive warns `PermissiveAliasedExclusive`
+> and accepts the write, and 0.1 keeps the unchecked contract above.
 ```
 
 <!-- google-doc-style-resume -->
@@ -4481,17 +4757,23 @@ and append ", frozen counting below shared" after "at the weakest kind
 words; rev 1 quoted an "and" before them that the log does not have, amended
 2026-10-28, review fold: B-m5). (iv) Replace
 "T8 codegen honesty: `noalias`/`captures(none)` are emitted for exclusive loans
-only where the checker established them —" with the fifth block.
+only where the checker established them —" with the fifth block. (The first
+block's frozen loan on a `bound` pointer argument's pointee amended
+2026-10-28, review fold: RR1-m1; the second block's 2026-10-12 mark "RR-5"
+moved into its quote, off the rewritten clause, review fold: RR1-m2.)
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 a _loan_ is (place, kind ∈ {exclusive, shared, frozen}, origin), a frozen
 loan, a borrowed object's or a `const` `ref`'s, excluding every write to its
-place; a place is _closed_ in a body when every carrier of a loan on it is in
-the body's view and _open_ otherwise (realigned <date>, SAFE-2: W-348;
-fork/safe/safe2-plan.md D-SAFE2-3, D-SAFE2-4; the kinds were "{exclusive,
-shared}");
+place, or the one a call's result holds on a `bound` `T*` or `const T*`
+argument's pointee, excluding every write but the result's and its copies',
+the result's own access being at the kind D-SAFE-11(a) gives the parameter
+(D-SAFE-11(d)); a place is _closed_ in a body when every carrier of a loan on
+it is in the body's view and _open_ otherwise (realigned <date>, SAFE-2:
+W-348, W-349; fork/safe/safe2-plan.md D-SAFE2-3, D-SAFE2-4, D-SAFE2-9; the
+kinds were "{exclusive, shared}");
 ```
 
 ```markdown
@@ -4500,10 +4782,10 @@ shared}");
 `StrictRefFromShared` (D-SAFE-8); a value binding of a borrowed object, whose
 type's value representation is not a copy, is a frozen loan, on an open place
 only for a `Core.SharedImmutable` type and `StrictBorrowFromShared` otherwise —
-from a materialized temporary it owns the storage instead, D-SAFE-17, RR-5 —
-and a value binding of a copy-represented type a read with no loan — D-SAFE-17,
-M8 (realigned <date>, SAFE-2: W-347, W-348; this text read "a value binding of
-a non-`Plain` type is a shared loan — from a materialized temporary it owns the
+from a materialized temporary it owns the storage instead, D-SAFE-17 — and a
+value binding of a copy-represented type a read with no loan — D-SAFE-17, M8
+(realigned <date>, SAFE-2: W-347, W-348; this text read "a value binding of a
+non-`Plain` type is a shared loan — from a materialized temporary it owns the
 storage instead, D-SAFE-17, RR-5 — of a `Plain` type an eager copy with no loan
 — D-SAFE-17, M8");
 ```
@@ -4538,22 +4820,25 @@ checker established them") —
 ### §B.1.2a D-SAFE-9 (log :3122-3170, plan :407-455), one sentence
 
 Added 2026-10-28, review fold: A-B-1 (M3's new paragraph is a dependent line
-of D-SAFE-9's "everything else is permitted"). Replace "Everything else (reads,
-overwriting `Plain` fields, `addr`/`const` methods) is permitted through any
-number of aliases." with:
+of D-SAFE-9's "everything else is permitted"; amended 2026-10-28, review fold:
+RR1-B1, to M3's structural rule over the types that hold such a sub-object).
+Replace "Everything else (reads, overwriting `Plain` fields, `addr`/`const`
+methods) is permitted through any number of aliases." with:
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 Everything else (reads, overwriting `Plain` fields, `addr`/`const` methods) is
-permitted through any number of aliases, but a write of a
-`Core.SharedImmutable` type's storage, a whole-object or field assignment of
-such a type and a `Plain` one included, needs exclusive access too:
-`StrictSharedImmutableWrite` through `T*`, `addr self` or an open place, so
-that D-SAFE-17's frozen loan on an open place of such a type is sound
-(realigned <date>, SAFE-2: W-348; fork/safe/safe2-plan.md D-SAFE2-5; this
-sentence read "Everything else (reads, overwriting `Plain` fields,
-`addr`/`const` methods) is permitted through any number of aliases.").
+permitted through any number of aliases, but an assignment whose type holds a
+`Core.SharedImmutable` sub-object (the type itself, or an array, tuple,
+struct, class or adapter that holds one, closed like `Core.Plain`), a
+whole-object or field assignment and a `Plain` one included, needs exclusive
+access too: `StrictSharedImmutableWrite` through `T*`, `addr self` or an open
+place, so that D-SAFE-17's frozen loan on an open place of such a type is
+sound, a union's field binding only under its read's `unsafe` (realigned
+<date>, SAFE-2: W-348; fork/safe/safe2-plan.md D-SAFE2-5; this sentence read
+"Everything else (reads, overwriting `Plain` fields, `addr`/`const` methods)
+is permitted through any number of aliases.").
 ```
 
 <!-- google-doc-style-resume -->
@@ -4564,7 +4849,9 @@ In (a) replace "with kind = the parameter's kind (`ref`/`exclusive T*` →
 exclusive, value/`T*`/`const` → shared), a mixed set taking the weakest kind
 (D-SAFE-8, A-5);" with the first block. Replace clause (d), from "(d) For the
 duration of a returned loan" through "review fold: A-13(b))." with the second
-block (amended 2026-10-28, review fold: A-B-2, A-m-1, B-M5).
+block (amended 2026-10-28, review fold: A-B-2, A-m-1, B-M5; the pointee's
+frozen loan and the result's own kind amended 2026-10-28, review fold:
+RR1-m1).
 
 <!-- google-doc-style-ignore -->
 
@@ -4586,9 +4873,11 @@ their frozen loan, so no path writes their storage while the result lives
 (`StrictBorrowedObjectMutated`); a `bound ref` argument keeps its exclusive
 loan, which the result carries, under a `ref` return, and a frozen loan under
 a `val` or by-value return (p005434:825's `RefToVal`); the pointee of a
-`bound` pointer argument is held by the result, written through no other
-carrier while the result lives, on a closed place by T4 and on an open place
-only for a `Core.SharedImmutable` type, else `StrictBorrowFromShared` or
+`bound` pointer argument is held by the result under a frozen loan (an
+exclusive one for an `exclusive T*`), written through no other carrier while
+the result lives and by the result only at the kind (a) gives the parameter,
+on a closed place by T4 and on an open place only for a `Core.SharedImmutable`
+type, else `StrictBorrowFromShared` or
 `unsafe` at the call (realigned <date>, SAFE-2: W-349; fork/safe/safe2-plan.md
 D-SAFE2-9; the superseded 2026-10-12 text read: "the bound argument stays
 borrowed in the caller at the parameter's kind: p005434:831-832 asks for the
@@ -4643,7 +4932,9 @@ violation fails-stop in every supported build mode"; replace SP4's sentence
 from "no build flag disables checks — README.md:260-262's promise" through "at
 the site rather than the build." with the first block; and replace "Break
 condition: none for the semantics; the unchecked-accessor name is the residue
-item's." with the second block.
+item's." with the second block, which quotes it (amended 2026-10-28, review
+fold: RR1-m2, the slip RR1-m2 found in A.5.9 repeated here: rev 2 marked the
+rewritten break condition "added" and did not quote it).
 
 <!-- google-doc-style-ignore -->
 
@@ -4669,8 +4960,9 @@ fn` is the opt-out" and SP2 "in every build mode").
 ```markdown
 Break condition: none for the semantics in the supported build modes; the
 unchecked-accessor name is the residue item's; an upstream withdrawal of the
-benchmarking promise removes the benchmarking build with it (added <date>,
-SAFE-2: W-351).
+benchmarking promise removes the benchmarking build with it (realigned
+<date>, SAFE-2: W-351; this sentence read "Break condition: none for the
+semantics; the unchecked-accessor name is the residue item's.").
 ```
 
 <!-- google-doc-style-resume -->
@@ -4722,7 +5014,11 @@ none of its 2026-10-12 marks (A-8, B3, B13(c), RR-5) on rewritten text
 dropped "Memory safety holds ..." and the alternative's "simplest" from the
 quote, left "A-8, B3" and "B13(c)" on rewritten sentences, kept "of a
 non-`Plain` type" in the temporary's sentence, listed the opt-ins
-unconditionally and cited values.md:461-462 for the storage reading).
+unconditionally and cited values.md:461-462 for the storage reading; amended
+2026-10-28, review fold: RR1-B1: M3's clause states the structural rule over
+the types that hold such a sub-object, and the Debug count is per byte, where
+rev 2 read "M3 rejects every Strict write of such a type's storage through a
+shared path" and "a per-object count of live frozen loans").
 
 <!-- google-doc-style-ignore -->
 
@@ -4753,9 +5049,11 @@ unconditionally and cited values.md:461-462 for the storage reading).
     closed place (D-SAFE-10), and on an open place only when the bound type
     is `Core.SharedImmutable`, an opt-in facet
     (`unsafe impl T as Core.SharedImmutable {}`) promising that no path but an
-    exclusive one writes the type's storage: M3 rejects every Strict write of
-    such a type's storage through a shared path, a whole-object `Plain`
-    assignment included (`StrictSharedImmutableWrite`), and the author's
+    exclusive one writes the type's storage: M3 rejects every Strict
+    assignment through a shared path whose type holds such a sub-object, the
+    type itself or an array, tuple, struct, class or adapter that holds it, a
+    whole-object `Plain` assignment included (`StrictSharedImmutableWrite`; a
+    union's field binds only under its read's `unsafe`), and the author's
     obligation covers what the checker cannot see (every field private, no
     `addr` method writing `self`, no function writing the storage through a
     shared path or returning a non-`const` pointer or `ref` into it, no stored
@@ -4775,14 +5073,16 @@ unconditionally and cited values.md:461-462 for the storage reading).
     promised away, C++ — stays erroneous (p005434:670-672), never undefined
     behavior (T8 emits no `noalias` on an open place), and is Debug-detected
     by a value-binding shadow flag: Debug keeps, in shadow memory keyed by
-    object address (never in the object's layout), a per-object count of live
-    frozen loans, incremented when the binding is formed and decremented at
-    its last use as stage 4 computes it; a `Plain` assignment through `T*`,
-    to a field or to the whole object, or an `addr self` call, whose target's
-    count is non-zero reports `MutationDuringValueBinding`, "carbon: mutation
-    of a borrowed object; terminating". A value binding initialized from an
-    initializing expression — a materialized temporary, values.md:186-192's third source,
-    neither `*p` nor an owner — takes ownership of the materialized storage,
+    address (never in the object's layout), a count of live frozen loans for
+    each byte of a borrowed object's storage, incremented when the binding is
+    formed and decremented at its last use as stage 4 computes it; a `Plain`
+    assignment through `T*`, to a field or to a whole object, that writes a
+    byte whose count is non-zero, or an `addr self` call on an object one of
+    whose bytes has a non-zero count, reports `MutationDuringValueBinding`,
+    "carbon: mutation of a borrowed object; terminating". A value binding
+    initialized from an initializing expression — a materialized temporary,
+    values.md:186-192's third source, neither `*p` nor an owner — takes
+    ownership of the materialized storage,
     values.md:192's `var` rule applied to `let`, and carries no loan on it,
     so `let o: Core.Optional(i32) = Core.Optional(i32).Some(1);` followed by
     `o.HasValue()` on the next line is accepted; the loans carried _by_ the
@@ -5069,8 +5369,11 @@ row stands for it (realigned <date>, SAFE-2: W-350, W-351).
 Replace "`ref` inheritance (D-SAFE-8)," with "`ref` bindings, every one
 `noalias` (D-SAFE-8; realigned <date>, SAFE-2: W-347, where this read "`ref`
 inheritance"),". Insert the first block after the kinds table (its last row's
-first cell is "unverified (any kind)"). Replace "Diagnostics:
-`StrictExclusiveBorrowConflict`" with the second block.
+first cell is "unverified (any kind)"; its last clause amended 2026-10-28,
+review fold: RR1-B1, to M3's structural rule, where rev 2 read "exclude the
+storage of a `Core.SharedImmutable` type, which only an exclusive path
+writes"). Replace "Diagnostics: `StrictExclusiveBorrowConflict`" with the
+second block.
 
 <!-- google-doc-style-ignore -->
 
@@ -5080,9 +5383,9 @@ for a `const` type, whatever its source; a value binding of a borrowed object
 holds a frozen loan, the third loan kind; through `T*` or `const T*` either is
 formed only on a closed place or, for a frozen one, a `Core.SharedImmutable`
 type, and is an `unsafe` operation otherwise; and the `T*` row's `Plain` writes
-exclude the storage of a `Core.SharedImmutable` type, which only an exclusive
-path writes (§1.6's M3; realigned <date>, SAFE-2: W-347, W-348; the table's
-rows are unchanged).
+exclude every assignment whose type holds a `Core.SharedImmutable` sub-object,
+which only an exclusive path makes (§1.6's M3; realigned <date>, SAFE-2:
+W-347, W-348; the table's rows are unchanged).
 ```
 
 ```markdown
@@ -5105,13 +5408,21 @@ SAFE-2: W-348), `StrictNotSend`, `StrictNotSync`, Debug report
 `MutationDuringValueBinding` ("carbon: mutation of a borrowed object;
 terminating").". In M4 replace "may assign `Plain` fields (`i32`, pointers,
 `Slice`, the prelude's non-owning `String`)," with "may assign `Plain` fields
-(`i32`, pointers; a `Slice` or `String` field, a `Core.SharedImmutable` type,
-only through exclusive access, M3 — realigned <date>, SAFE-2: W-348, where this
-read "(`i32`, pointers, `Slice`, the prelude's non-owning `String`)")," and in
-M3 replace "M3 the no-invalidation rule and `Core.Plain` (D-SAFE-9);" with "M3
-the no-invalidation rule and `Core.Plain` (D-SAFE-9), and exclusive access for
-every write of a `Core.SharedImmutable` type's storage (realigned <date>,
-SAFE-2: W-348);" (amended 2026-10-28, review fold: A-B-1).
+(`i32`, pointers; a field whose type holds a `Core.SharedImmutable`
+sub-object, a `Slice`, a `String` or an aggregate holding one, and `*self`
+when `Self` holds one, only through exclusive access, M3 — realigned <date>,
+SAFE-2: W-348, where this read "(`i32`, pointers, `Slice`, the prelude's
+non-owning `String`)")," and in M3 replace "M3 the no-invalidation rule and
+`Core.Plain` (D-SAFE-9);" with "M3 the no-invalidation rule and `Core.Plain`
+(D-SAFE-9), and exclusive access for every assignment whose type holds a
+`Core.SharedImmutable` sub-object, the type itself or an array, tuple,
+struct, class or adapter that holds it (realigned <date>, SAFE-2: W-348);"
+(amended 2026-10-28, review fold: A-B-1; the M4 and M3 texts amended
+2026-10-28, review fold: RR1-B1, to M3's structural rule, where rev 2's read
+"a `Slice` or `String` field, a `Core.SharedImmutable` type, only through
+exclusive access" and "every write of a `Core.SharedImmutable` type's
+storage"; and the second block's M8 clause carries no 2026-10-12 mark, the
+marks "A-8/B3" and "RR-5" standing only in its quote, review fold: RR1-m2).
 
 <!-- google-doc-style-ignore -->
 
@@ -5125,21 +5436,23 @@ while they live")
 ```
 
 ```markdown
-M8 value bindings, stated (D-SAFE-17, A-8/B3): a value binding of a
-copy-represented type reads the object and holds no loan — mutation of the
-source afterwards is accepted; a value binding of any other type binds a
-borrowed object under a frozen loan for its NLL lifetime, under which every
-write to the object's storage is rejected in Strict
-(`StrictSharedBorrowInvalidated` if invalidating, `StrictBorrowedObjectMutated`
-otherwise), on an open place formed only for a `Core.SharedImmutable` type and
-`StrictBorrowFromShared` otherwise, and unchecked code's writes are erroneous
-and Debug-reported — and from a materialized temporary it owns the storage and
-holds no loan (RR-5; realigned <date>, SAFE-2: W-348; the superseded text read
-"a value binding of a `Plain` type copies eagerly and holds no loan — mutation
-of the source afterwards is accepted; a value binding of a non-`Plain` type is
-a shared loan for its NLL lifetime, under which an invalidating operation on
-the bound object is `StrictSharedBorrowInvalidated` and a `Plain`-field write
-through another alias is erroneous, Debug-reported").
+M8 value bindings, stated (D-SAFE-17): a value binding of a copy-represented
+type reads the object and holds no loan — mutation of the source afterwards is
+accepted; a value binding of any other type binds a borrowed object under a
+frozen loan for its NLL lifetime, under which every write to the object's
+storage is rejected in Strict (`StrictSharedBorrowInvalidated` if
+invalidating, `StrictBorrowedObjectMutated` otherwise), on an open place formed
+only for a `Core.SharedImmutable` type and `StrictBorrowFromShared` otherwise,
+and unchecked code's writes are erroneous and Debug-reported — and from a
+materialized temporary it owns the storage and holds no loan (realigned
+<date>, SAFE-2: W-348; the superseded text read, in full: "M8 value bindings,
+stated (D-SAFE-17, A-8/B3): a value binding of a `Plain` type copies eagerly
+and holds no loan — mutation of the source afterwards is accepted; a value
+binding of a non-`Plain` type is a shared loan for its NLL lifetime, under
+which an invalidating operation on the bound object is
+`StrictSharedBorrowInvalidated` and a `Plain`-field write through another alias
+is erroneous, Debug-reported — and from a materialized temporary it owns the
+storage and holds no loan (RR-5).").
 ```
 
 <!-- google-doc-style-resume -->
@@ -5154,7 +5467,8 @@ second row; and replace the row whose first cell is "M5 payload refs" with the
 fourth block's row. The first cells are the page checklist's (A.2.17, A.3.13)
 word for word (amended 2026-10-28, review fold: B-m4; rev 1 kept the
 "non-`Plain`" and "M5 payload refs" rows and worded two first cells
-differently from the page).
+differently from the page). The EX-M-4d row names `Peek4` (amended
+2026-10-28, review fold: RR1-B1).
 
 <!-- google-doc-style-ignore -->
 
@@ -5170,7 +5484,7 @@ differently from the page).
 
 ```markdown
 | M8 `Plain` write to a borrowed object (added <date>, SAFE-2: W-348) | EX-M-4c | ACCEPTS-UNCHECKED (nightly 2026.10.12 exit 0, prints 1); Strict `StrictBorrowedObjectMutated` | p005434:663; type_completion.cpp:580-582 and :597-609 at 0421bf3b4 | 4 |
-| M8 borrowed object through a shared pointer, `Core.SharedImmutable` (added <date>, SAFE-2: W-348) | EX-M-4d `Peek`, `BufSize`, `Peek2` | ACCEPTS-UNCHECKED (`Peek` and `Peek2`: nightly 2026.10.12 exit 0, print 1 and 6; `BufSize`: fork prelude); Strict `StrictBorrowFromShared` for `Peek`, accepted for `BufSize`, `StrictSharedImmutableWrite` at `Peek2`'s write | p005434:663; `Core.SharedImmutable` (W-144); M3 | 4 with W-144 |
+| M8 borrowed object through a shared pointer, `Core.SharedImmutable` (added <date>, SAFE-2: W-348) | EX-M-4d `Peek`, `BufSize`, `Peek2`, `Peek4` | ACCEPTS-UNCHECKED (`Peek`, `Peek2` and `Peek4`: nightly 2026.10.12 exit 0, print 1, 6 and 6; `BufSize`: fork prelude); Strict `StrictBorrowFromShared` for `Peek`, accepted for `BufSize`, `StrictSharedImmutableWrite` at the writes of `Peek2` and `Peek4` | p005434:663; `Core.SharedImmutable` (W-144); M3 | 4 with W-144 |
 ```
 
 ```markdown
@@ -5243,14 +5557,16 @@ json.load(open("fork/inventory/work-items.json"))'`). The W-146 and W-148
 notes quote and supersede the lines of those items that state the narrowed
 rules, which section 0.5 lists; the items' titles and evidence are left as
 written, the notes saying how to read them (amended 2026-10-28, review fold:
-B-M6; also A-B-1, A-B-2, A-M-1, A-m-2 for the rules the notes name).
+B-M6; also A-B-1, A-B-2, A-M-1, A-m-2 for the rules the notes name; the W-148
+note's M3 clause, per-byte Debug count and pointee loan amended 2026-10-28,
+review fold: RR1-B1, RR1-m1).
 
 <!-- google-doc-style-ignore -->
 
 ```text
 W-144: SAFE-2 (<date>, <sha1>; fork/safe/safe2-plan.md D-SAFE2-5): the audit also adds `unsafe impl ... as Core.SharedImmutable {}` for `Core.String` and, under `forall [T: Core.Freeze]`, for `Core.Slice(T)`, `Core.Buf(T)` and `Core.Optional(T)`, and for `Core.Box(T)` when this item adds `Box`, each checked against the facet's obligation (every field private, no `addr` method writing `self`, no function writing the type's storage through a shared path or returning a non-`const` pointer or `ref` into it, no stored self-pointer), and `Core.SharedImmutable` joins the library surface.
 W-146: SAFE-2 (<date>, <sha1>; D-SAFE2-11 to D-SAFE2-13): stage 2 also spells the unsupported benchmarking build, the Release build without the bounds check, the division guard, the overflow wrap and the zero-fill (kept as safety README.md's build modes promise it, W-351); the zero-fill is p000257:356-358's hardening initialization, with a type's customization once upstream names its interface (W-353 closed, its classification corrected). Superseded by this note: the title's "`--build-mode=debug|release`" names the supported modes only, and the benchmarking build is a third, unsupported configuration (W-351); the evidence's "the dated blockquote at docs/design/README.md:2147 promoting zero-fill to the Release baseline" reads as the blockquote SAFE-2 replaced with a note that the zeroing is p000257's (W-353), and "the dated blockquote withdrawing the performance-build row, D-SAFE-15" as the blockquote SAFE-2 rewrote to keep the row for the benchmarking build (W-350); the notes' "D-SAFE-14 (fail-stop everywhere, no build flag disables the checks — the benchmarking disable of safety README.md:260-262 withdrawn, A-13(c); break condition: a measured corpus where the checks exceed the strategy's budget — then a per-site `unsafe fn` accessor, never a flag)" reads "fail-stop in every supported build mode, the benchmarking build kept" (W-351), and the fork-benchmark break conditions "a real-world benchmark where the loss of `nsw` exceeds 0.5 percent — an owner call" (D-SAFE-15) and "more than 0.5 percent from zero-fill alone — then scoped to escaped-unformed objects" (D-SAFE-13 I5) are replaced by upstream's, as the realigned decisions state them (W-350, W-353).
-W-148: SAFE-2 (<date>, <sha1>; D-SAFE2-3 to D-SAFE2-9): the checker also implements the frozen loan kind and the closed and open place rule; M3's exclusive access for every write of a `Core.SharedImmutable` type's storage; `StrictRefFromShared`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated` and `StrictSharedImmutableWrite`, each with the Permissive twin `PermissiveAliasedExclusive`; M8's loans keyed on the value representation rather than `Core.Plain`, the Debug shadow count counting live frozen loans and reporting a `Plain` assignment through `T*`, to a field or to the whole object, or an `addr self` call (`MutationDuringValueBinding`, "carbon: mutation of a borrowed object; terminating"); T5(a)'s frozen kind and T5(d)'s immutability of each `bound` argument, a `bound` pointer argument's pointee held by the result; T8's `noalias` with `captures(none)` or `captures(ret: address, provenance)` only where established against every writer (intra-function on the body's own places, on `ref` and `exclusive T*` parameters' places under the whole-package condition, never on an open place). Superseded by this note: the evidence's "proposals/p005434 (`bound`, `ref`, `val`; :83 and :831-832 narrowed by D-SAFE-8 and D-SAFE-11(d))" reads ":83 and :831-832 kept by D-SAFE-8 and D-SAFE-11(d) as realigned" (W-347, W-349); its row names "'M8 value binding, non-`Plain`' EX-M-4b", "'M5 payload refs' EX-M-5" and "'D-SAFE-8 mixed-kind result' `Pick`/`UsePick`" read as fork/safe/plan.md §4.1's renamed rows "M8 value binding, borrowed object", "M5 payload bindings" and "D-SAFE-8 mixed-kind result, a `ref` binding on closed places"; and the notes' "D-SAFE-17 (value bindings; break condition: a corpus where the Debug shadow count's cost is measurable — then opt-in)" reads as the realigned D-SAFE-17, whose break condition is upstream's relaxation of p005434:663 or a prelude opt-in shown false (W-348).
+W-148: SAFE-2 (<date>, <sha1>; D-SAFE2-3 to D-SAFE2-9): the checker also implements the frozen loan kind and the closed and open place rule; M3's exclusive access for every assignment whose type holds a `Core.SharedImmutable` sub-object (the type itself or an array, tuple, struct, class or adapter that holds it); `StrictRefFromShared`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated` and `StrictSharedImmutableWrite`, each with the Permissive twin `PermissiveAliasedExclusive`; M8's loans keyed on the value representation rather than `Core.Plain`, the Debug shadow count counting live frozen loans for each byte of a borrowed object's storage and reporting a `Plain` assignment through `T*`, to a field or to a whole object, that writes a counted byte, or an `addr self` call on an object with a counted byte (`MutationDuringValueBinding`, "carbon: mutation of a borrowed object; terminating"); T5(a)'s frozen kind and T5(d)'s immutability of each `bound` argument, a `bound` pointer argument's pointee held by the result under a frozen loan, an exclusive one for an `exclusive T*`, the result's own access at T5(a)'s kind; T8's `noalias` with `captures(none)` or `captures(ret: address, provenance)` only where established against every writer (intra-function on the body's own places, on `ref` and `exclusive T*` parameters' places under the whole-package condition, never on an open place). Superseded by this note: the evidence's "proposals/p005434 (`bound`, `ref`, `val`; :83 and :831-832 narrowed by D-SAFE-8 and D-SAFE-11(d))" reads ":83 and :831-832 kept by D-SAFE-8 and D-SAFE-11(d) as realigned" (W-347, W-349); its row names "'M8 value binding, non-`Plain`' EX-M-4b", "'M5 payload refs' EX-M-5" and "'D-SAFE-8 mixed-kind result' `Pick`/`UsePick`" read as fork/safe/plan.md §4.1's renamed rows "M8 value binding, borrowed object", "M5 payload bindings" and "D-SAFE-8 mixed-kind result, a `ref` binding on closed places"; and the notes' "D-SAFE-17 (value bindings; break condition: a corpus where the Debug shadow count's cost is measurable — then opt-in)" reads as the realigned D-SAFE-17, whose break condition is upstream's relaxation of p005434:663 or a prelude opt-in shown false (W-348).
 W-150: SAFE-2 (<date>, <sha1>; D-SAFE2-10): the generator maps a by-value parameter of a borrowed type to `&T` when `T: Core.Freeze`, else `&SharedView<T>`; `At`'s by-value receiver becomes `&'a Self` under `Freeze`, its element result staying `&'a SharedView<i32>`.
 ```
 
@@ -5366,9 +5682,14 @@ quotes, 0 failed").
 `\|Thread)\b'` in the Upstream cell's check with
 `\|Thread\|SharedImmutable)\b'`; in row H1.13, append the fourth block to the
 Upstream cell, replace the Verdict cell's leading "**DRIFT**" with the fifth
-block, and append "; closed <date> by SAFE-2, its classification corrected" to
-the Item cell; insert the sixth block as a paragraph after the H1 table and
-before "The block's re-basing clause"; append the seventh block to D-RG-20's
+block, replace the Break condition cell with the ninth block, and append
+"; closed <date> by SAFE-2, its classification corrected; W-355" to the Item
+cell (the break condition and W-355 amended 2026-10-28, review fold: RR1-m3:
+an ALIGNED entry carries the re-open condition the seventh block states, and
+D-RG-17 attaches W-355 to every ALIGNED entry outside VA-2's block, which
+W-355's 131-entry note counts); insert the sixth block as a paragraph after
+the H1 table and before "The block's re-basing clause"; append the seventh
+block to D-RG-20's
 paragraph after "and W-350's target becomes the release build's row."; and
 append the eighth block to the Status paragraph after "section 4.2's quote
 table holds 273 lines." and to section 4.2's paragraph after "and
@@ -5378,7 +5699,8 @@ fork/register/check_greps.sh are the checkers below."
 paragraph that begins "_The count._", after "so the register stays a work
 queue.".
 
-`<TAB>` in the second and third blocks is one tab character.
+`<TAB>` in the second and third blocks is one tab character. The ninth block
+follows the eighth.
 
 <!-- google-doc-style-ignore -->
 
@@ -5419,9 +5741,9 @@ toolchain/check/type_completion.cpp<TAB>806<TAB>// `MaybeUnformed(T)` has the sa
 ```
 
 ```markdown
-Amended <date> by SAFE-2 (PR 53 at <head>; fork/safe/safe2-plan.md section
-0.3): H1.13 is ALIGNED, so this block holds five DRIFTs, H1.8 to H1.12, and
-the register 18 DRIFT, 33 ALIGNED and 104 NONE; H1.7 names
+Amended <date> by SAFE-2 (PR 53 at <head>; fork/safe/safe2-plan.md,
+section 0.3): H1.13 is ALIGNED, so this block holds five DRIFTs, H1.8 to
+H1.12, and the register 18 DRIFT, 33 ALIGNED and 104 NONE; H1.7 names
 `Core.SharedImmutable`, the one library name SAFE-2 adds, and its check covers
 it. W-347 to W-351 are realigned on PR 53 and W-353 is closed.
 ```
@@ -5439,6 +5761,10 @@ by items RG-1 filed, W-353 being closed; the quote table holds 284 lines,
 eleven added for p000257:356-360 and upstream's
 toolchain/check/type_completion.cpp; the 89 silence checks stay 89, H1.7 widened
 to `Core.SharedImmutable`.
+```
+
+```markdown
+upstream supersedes p000257:356-358's zeroing of every type's storage (an accepted proposal later than p000257, or README.md:2130-2132 shown to supersede it), or reconciles its build-mode pages otherwise than D-RG-20 reads them, the hardened mode becoming an extension of Release; either re-opens H1.13 as a DRIFT (amended <date>, SAFE-2 on PR 53 at <head>; the superseded DRIFT condition read "an accepted upstream memory-safety design that makes unformed-state zeroing language-defined for every type, or upstream reconciles its build-mode pages otherwise than D-RG-20 reads them (if the hardened mode becomes an extension of Release, the placement joins W-353)")
 ```
 
 <!-- google-doc-style-resume -->

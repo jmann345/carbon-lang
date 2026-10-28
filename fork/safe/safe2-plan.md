@@ -6,14 +6,22 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 4 -- NOT signed off: RR2-B1. Rev 4, 2026-10-28, is the
+**Status:** rev 5, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION. Rev 5 is the
+fixer's fold of the focused re-review (round 3) of rev 4 (9d48a863e), whose
+verdict was APPROVE-WITH-AMENDMENTS: no BLOCKER (RR2-B1 resolved), one MAJOR,
+RR3-M1 (PR 65's `IndirectIndexWith.Ref`, a by-value producer of a `ref` into
+the block with no `bound`, would reopen `Peek8`'s shape once PR 65 lands), and
+two MINORs, RR3-m1 and RR3-m2; all three are folded and none is rejected
+(section 8.11), and the "Sign-off" section tables every review of this plan.
+The implementation starts from this revision's commit with section 3's
+commit 1. Rev 4, 2026-10-28, was the
 fixer's fold of the focused re-review (round 2) of rev 3 (603749ee1), whose
 verdict was REJECT on one BLOCKER, RR2-B1 (a trusted prelude writer,
 `Core.Buf(T).Set` with its by-value receiver, wrote a borrowed `Core.String`
-element in Strict), with three MINORs; all four are folded and none is
-rejected (section 8.10), and since RR2-B1's fold changes a rule of the design
+element in Strict), with three MINORs; all four were folded and none was
+rejected (section 8.10), and since RR2-B1's fold changed a rule of the design
 (a trusted body keeps M3's write rule, and `Core.Buf(T).Set` takes `ref self`),
-only the next focused re-review can sign rev 4 off. Rev 3, 2026-10-28, was the
+only the next focused re-review could sign rev 4 off. Rev 3, 2026-10-28, was the
 fixer's fold of the focused re-review of rev 2 (46980f8bd), whose verdict was
 REJECT on one BLOCKER, RR1-B1 (review A's B-1 not resolved: a write to an
 enclosing `Plain` aggregate, a struct or class that holds a `str`, still
@@ -32,8 +40,8 @@ V-3b, DR-0). Branch
 after PR 67), head 2407efa74; this plan is a new file beside fork/safe/plan.md,
 which receives a dated pointer paragraph in commit 2 (section 2.3). Upstream
 was read at its tip 0421bf3b4 (fetched 2026-10-28) and re-read for rev 3 at
-22f3cd353 and for rev 4 at 07718a832, where no quoted file has changed
-(section 0.1). Records and design
+22f3cd353 and for rev 4 and rev 5 at 07718a832, where no quoted file has
+changed (section 0.1). Records and design
 text only: no toolchain, prelude, golden, program or conformance change; the
 two SKIP stubs stay as they are; nothing is built.
 
@@ -74,8 +82,9 @@ and section 2.6).
 -   Section 6, churn and collisions.
 -   Section 7, risks and rejected alternatives.
 -   Section 8, verification, the list of what was not run, and the plan
-    reviews' fold records (sections 8.8 to 8.10).
--   Hand-off notes for the implementer.
+    reviews' fold records (sections 8.8 to 8.11).
+-   The sign-off, every review of this plan with its verdict and counts, then
+    the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
     PR 53 and PR 67 texts; Appendix D, the ORCHESTRATION texts.
 
@@ -119,6 +128,23 @@ nothing; `git log --oneline c1e83b0b7..07718a832` over p005434, p005914,
 p000257, docs/design/README.md, safety/README.md, arithmetic.md, values.md,
 classes.md and slices.md lists only f21c62524, the table's; and PR 67's checks
 pass at 07718a832 (section 0.2).
+
+Re-read for rev 5 on 2026-10-28 (added 2026-10-28, review fold: RR3-M1, the
+round-3 re-review's tip): `git fetch upstream trunk` gives 07718a832 again;
+`git log --oneline c1e83b0b7..07718a832` over the nine files above lists only
+f21c62524, and `git diff --stat 0421bf3b4 07718a832` over them prints nothing,
+so p005434:83, :660-664 and :831-834, README.md:2130-2132,
+safety/README.md:260-262, arithmetic.md:156-158 and values.md:456-462 read as
+below. Read for RR3-M1 at the same tip: upstream's prelude declares
+`interface IndirectIndexWith(SubscriptType: type)` with
+`fn Ref(self, subscript: SubscriptType) -> ref ElementType;`
+(core/prelude/operators/index.carbon:14-17, added by upstream PR 7974,
+6d80ceb58), with no `bound`, as no prelude declaration there has one yet; and
+p005434's use case for a `ref`-returning operator interface puts `bound` on
+the receiver at the interface and keeps it in the impl: `interface Deref`
+declares `fn Op[bound ref self: Self]() -> ref Result;` and its impl for `T*`
+defines `fn Op[bound self: Self]() -> ref T` (p005434:952-960), the shape
+W-144 gives `IndirectIndexWith.Ref` (D-SAFE2-5).
 
 No quoted passage moved or changed. The passages, at 0421bf3b4, verbatim:
 
@@ -334,6 +360,15 @@ docs/design/README.md, the files the H1 rows quote for the six items, "checked
 97 quotes, 0 failed"; with Appendix C.2's eleven rows, "checked 284 quotes, 0
 failed"; with H1.7 widened, "checked 89 silence checks, 0 failed".
 
+Re-run for rev 5 at 07718a832 from a detached worktree of 56e2e5bbd at
+/dev/shm/safe2-fixer3/rg1 (removed after; added 2026-10-28, review fold:
+RR3-M1): "checked 273 quotes, 0 failed" and "checked 89 silence checks, 0
+failed"; the same 97 rows, "checked 97 quotes, 0 failed"; the 120 rows on
+p005434, p005914, p000257, values.md and the three README and arithmetic
+files, "checked 120 quotes, 0 failed"; the five H1 checks, "checked 5 silence
+checks, 0 failed"; with Appendix C.2's eleven rows, "checked 284 quotes, 0
+failed"; with H1.7 widened, "checked 89 silence checks, 0 failed".
+
 So the break conditions of H1.8 to H1.12 have not fired: no accepted upstream
 proposal narrows p005434:83 (H1.8); upstream has not relaxed p005434:663
 (H1.9) nor reconsidered :831-834 (H1.10); arithmetic.md:156-158 and the
@@ -500,6 +535,14 @@ the write rule), temporal_safety.md:725 and :741 (EX-TM-3's `buf.Set(1, 7)`
 under the live view), rust_interop.md:213 (the `Core.Slice(const T)` row's
 "`Buf.Set` during a live view"), slices.md:162 and :243 (the receiver), with
 slices.md:258's disposition changed (amended 2026-10-28, review fold: RR2-B1).
+Six more state how EX-M-1's `IntVec` writes an element, which `Set`'s
+`ref self` changes for the body of `IntVec.Set`, and are listed too:
+mutation_safety.md:536 (the `addr self` declaration), :556-558 (the reason,
+which the round-3 re-review cites as :555-556) and :736 and :742 (the C++
+partition bullet, which it cites as :736-741) (amended 2026-10-28, review
+fold: RR3-m1). Two more name W-144's `bound self` producers and stay as they
+are, spatial_safety.md:174 (SP3) and temporal_safety.md:509 (T5(e))
+(amended 2026-10-28, review fold: RR3-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -573,6 +616,10 @@ safety/mutation_safety.md:469 | A.2.8 | exports as `&SharedView<T>`, not `&T`
 safety/mutation_safety.md:487 | no change: the invalidating case's Debug column, as safety/README.md:322 | `MutationDuringValueBinding` for the value-binding case, and
 safety/mutation_safety.md:511 | A.2.9 | -   `MutationDuringValueBinding`: the Debug report, one line in the fail-stop
 safety/mutation_safety.md:513 | A.2.9 | mutation of an object during a live value binding; terminating", then
+safety/mutation_safety.md:536 | no change: `IntVec.Set` keeps `addr self`, an `i32` element holding no `Core.SharedImmutable` sub-object; A.2.11 names its body's path (RR3-m1) | fn Set[addr self: Self*](i: i64, v: i32);        // non-invalidating: i32 is Plain
+safety/mutation_safety.md:556 | A.2.11 (amended 2026-10-28, review fold: RR3-m1): a sentence names `Set`'s body path, `Core.Buf(T).Set` taking `ref self` | lifetime of every element and so is invalidating (M3(a)); `Set` is `addr self`
+safety/mutation_safety.md:557 | A.2.11 (RR3-m1) | because writing an `i32` element is a `Plain` write (M3(c) does not fire) and
+safety/mutation_safety.md:558 | A.2.11 (RR3-m1) | its body is checked to do nothing else; `Get` is `bound self` so its result is
 safety/mutation_safety.md:615 | A.2.12 | ### EX-M-4a: A `Plain` value binding
 safety/mutation_safety.md:622 | no change: the comment "eager copy" is true of a copy-represented binding | let b: i32 = a;                 // eager copy
 safety/mutation_safety.md:628 | A.2.12 | Rule M8, the `Plain` case. `i32` is `Plain`, so `b` acquires eagerly and holds
@@ -583,6 +630,8 @@ safety/mutation_safety.md:655 | no change: a `var` copy is one of D-SAFE2-5's fi
 safety/mutation_safety.md:657 | no change: the toolchain outcome stands | the fork toolchain compiles it, the value binding being today's
 safety/mutation_safety.md:722 | A.2.17 | | M8 value binding, `Plain` | EX-M-4a | ACCEPTS (today and in Strict; `b` is 1) | — |
 safety/mutation_safety.md:723 | A.2.17 | | M8 value binding, non-`Plain` | EX-M-4b | ACCEPTS-UNCHECKED (fork prelude) | 4 |
+safety/mutation_safety.md:736 | A.2.17a (added 2026-10-28, review fold: RR3-m1): a sentence appended to the bullet, the element writes that take `ref self` | `addr self` methods, the element writes and other non-invalidating
+safety/mutation_safety.md:742 | A.2.17a (RR3-m1) | guarantees do not are the `addr self` ones. EX-M-1's `IntVec` is the
 safety/mutation_safety.md:763 | no change: the C++ boundary still withholds `noalias` (T8) | withholds `noalias` at every such boundary. A `_Nonnull` or
 safety/mutation_safety.md:774 | no change: the C++ boundary still withholds `noalias` (T8) | which no `noalias` is emitted.
 safety/mutation_safety.md:790 | no change: 0.1 claims nothing, still true | pointer is diagnosed, no facet exists, and no value binding holds a loan in
@@ -646,6 +695,7 @@ safety/spatial_safety.md:16 | regenerated by the toc hook (A.5.3 renames the hea
 safety/spatial_safety.md:18 | regenerated by the toc hook (A.5.4 renames the heading) | -   [SP4: `unsafe fn GetUnchecked` is the only opt-out](#sp4-unsafe-fn-getunchecked-is-the-only-opt-out)
 safety/spatial_safety.md:41 | A.5.1 | [fails-stop][fail-stop] in every build mode and in every
 safety/spatial_safety.md:115 | A.5.3 | ### SP2: Every element access is bounds-checked and fails-stop in every build mode
+safety/spatial_safety.md:174 | no change, decided under R29 (added 2026-10-28, review fold: RR3-M1): SP3's producer rule names the prelude's producers at 2407efa74; `IndirectIndexWith.Ref`'s `bound self` is stated where the trusted-body rule is (A.1.1, A.2.8, B.1.0, B.1.7) and in W-144's note (B.4); break condition: a reviewer reads SP3 as letting `Ref` drop `bound`, and SP3 gains a dated sentence | `Convert` (:100-106) and every other producer whose result views `self`'s
 safety/spatial_safety.md:206 | A.5.4 | ### SP4: `unsafe fn GetUnchecked` is the only opt-out
 safety/spatial_safety.md:270 | A.5.5 | The arithmetic design's "performance build" row, under which the optimizer may
 safety/spatial_safety.md:275 | A.5.5 | cannot occur. Its open question, whether a hardened build should trap, wrap or
@@ -679,6 +729,7 @@ safety/temporal_safety.md:427 | A.3.8 | `noalias` and `captures(none)` are emitt
 safety/temporal_safety.md:482 | A.3.9 | parameters give shared, and a mixed set takes the weakest kind. A function
 safety/temporal_safety.md:502 | A.3.9 | "immutable for the duration of the lifetime of the returned result"; this
 safety/temporal_safety.md:503 | A.3.9 | design narrows "immutable" to "not invalidated": a shared-kind bound
+safety/temporal_safety.md:509 | no change, decided under R29 (added 2026-10-28, review fold: RR3-M1): T5(e)'s list names the interfaces the prelude has at 2407efa74, and its rule is the reason `IndirectIndexWith.Ref` takes `bound self` at the interface (D-SAFE2-5, A.2.8, B.4); break condition as the SP3 row's | declarations `IndexWith.At` (core/prelude/operators/index.carbon:9) and
 safety/temporal_safety.md:517 | no change: T5(f), whose weakest kind counts frozen below shared by T4 (A.3.6) | weakest among them; a store from a place in set `a` into a place in set `a`
 safety/temporal_safety.md:725 | A.3.12a (added 2026-10-28, review fold: RR2-B1) |   buf.Set(1, 7);                    // OK: Set is non-invalidating and i32 is Plain
 safety/temporal_safety.md:741 | A.3.12a (added 2026-10-28, review fold: RR2-B1) | is `[bound self]` (W-144), `buf.Set(1, 7)` is permitted through it because
@@ -809,7 +860,7 @@ Each structure that states one of the six rules, traced:
 | The diagnostic matrix (README.md:309-326, plan §1.1) | `StrictSharedBorrowInvalidated` with Debug `MutationDuringValueBinding` | four rows added (A.1.3, B.3.2): `StrictRefFromShared`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated`, `StrictSharedImmutableWrite`; the existing row's Debug cell re-worded, the report being `StrictBorrowedObjectMutated`'s (amended 2026-10-28, review fold: A-B-1, B-m6) |
 | The Debug value-binding shadow flag (mutation_safety.md:437-444, :511-514) | the detector of the narrowed rule's erroneous writes | kept as the Debug detector of the mutations unchecked code can still make, counting whole-object `Plain` assignments through `T*` beside field writes (D-SAFE2-7; A.2.8, A.2.9; amended 2026-10-28, review fold: A-B-1) and testing the written byte range against a per-byte count, so that a write of an enclosing aggregate and a field at a nonzero offset are both seen (amended 2026-10-28, review fold: RR1-B1); every store that writes a counted byte is tested, of any type and by any path, `T*`, a `ref`, the owner, a global or an `addr self` body, so that a Permissive body's write to a global and a Strict body's write that a Permissive caller made aliasing are seen (amended 2026-10-28, review fold: RR2-m1) |
 | D-SAFE-19's Rust rows (rust_interop.md:126-140, :213, :336, :343-352, :380-401, :633-638) | value bindings as one reason `const T*` and a value parameter cannot be `&T`; `Buf.Set` under a live view as the reason a `Slice(const T)` is not `&[T]` | yes (A.6): a value parameter of a borrowed `Freeze` type exports as `&T`; the `const T*` reason stays; the `&[T]` row's reason becomes an element write through a view's `Data()` (A.6.3a, B.1.8; amended 2026-10-28, review fold: RR2-B1) |
-| The prelude's trusted bodies (safety/README.md:133-139; buf.carbon:48-53 at 2407efa74) and the slices design's `Buf` bullets (slices.md:243-259) | `Core.Buf(T).Set` by value, writing an element of the block through `self.ptr`; "a callee can `Set` through it" | yes (added 2026-10-28, review fold: RR2-B1): a trusted body keeps M3's write rule (A.1.1, A.2.8, B.1.0, B.1.7), `Set` takes `ref self` (W-144), EX-TM-3's `buf.Set(1, 7)` moves before the view (A.3.12a), and the slices design gains a dated amendment (A.10.2) |
+| The prelude's trusted bodies (safety/README.md:133-139; buf.carbon:48-53 at 2407efa74) and the slices design's `Buf` bullets (slices.md:243-259) | `Core.Buf(T).Set` by value, writing an element of the block through `self.ptr`; "a callee can `Set` through it" | yes (added 2026-10-28, review fold: RR2-B1): a trusted body keeps M3's write rule (A.1.1, A.2.8, B.1.0, B.1.7), `Set` takes `ref self` (W-144), EX-TM-3's `buf.Set(1, 7)` moves before the view (A.3.12a), and the slices design gains a dated amendment (A.10.2); PR 65's `IndirectIndexWith.Ref`, which hands out a `ref` into the block, takes `bound self` at the interface and in both impls (W-144; the same four texts, D-SAFE2-5 and B.4; amended 2026-10-28, review fold: RR3-M1) |
 | M1, M2, M3, M4, M5, M8 and Value bindings (mutation_safety.md) | `ref` kind inheritance, shared value-binding loans, const receivers through every kind, payload refs through shared paths, `Plain` assignments through `T*` to any type | yes (A.2.3 to A.2.8; M3's paragraph on `Core.SharedImmutable` writes, A.2.4a, amended 2026-10-28, review fold: A-B-1, over every assignment whose type holds a `Core.SharedImmutable` sub-object, a closure like `Core.Plain`'s, amended 2026-10-28, review fold: RR1-B1) |
 | §4.1 worked examples | EX-M-1's `a->Set(0, 5)` under `first`; EX-M-4a/4b's reasons; EX-M-5/6's `ref` payloads through shared pointers; `Pick`/`UsePick`; `Valid1`, `ValToRef`, `Conditional`; the `Launder` programs; EX-I rows; SP4's `GetUnchecked` | outcomes in section 4: EX-M-1, EX-M-5, EX-M-6, `UsePick` and EX-TM-3's `Buf` half change (EX-TM-3 amended 2026-10-28, review fold: RR2-B1); EX-M-4c, EX-M-4d and EX-TM-9 are added; the rest keep their outcomes with realigned reasons or none |
 | Diagnostic names | `StrictSharedBorrowInvalidated`, `StrictInvalidatingThroughShared`, `MutationDuringValueBinding` | none renamed; four added (D-SAFE2-8; the fourth, `StrictSharedImmutableWrite`, amended 2026-10-28, review fold: A-B-1); `MutationDuringValueBinding`'s message reworded to upstream's "borrowed object" |
@@ -850,6 +901,8 @@ was given, linked with `carbon link --output=<f>.bin <f>.o` and run, as SAFE-1's
 | a fixer's probe, not a page example: `var g: str = "ab"; fn Q() { g = "longer"; }` with `fn F() -> i64 { let s: str = g; Q(); return s.Size(); }` and a `Run` printing `F() as i32` (amended 2026-10-28, review fold: RR2-m1) | (a write to a global by name, the first shape of RR2-m1) | 0, run exit 0 | prints `6`: the store through the name `g` is the one rev 3's Debug flag did not test (ex/global.carbon) |
 | a fixer's probe, not a page example: `fn F(ref r: str, p: const str*) -> i64 { let s: str = *p; r = "longer"; return s.Size(); }` with a `Run` printing `F(ref x, &x) as i32` for `x == "ab"` (the nightly requires the argument's `ref` marker, "argument to `ref` parameter not marked with `ref`" without it; amended 2026-10-28, review fold: RR2-m1) | (the third shape of RR2-m1: a write through a `ref` that the caller made aliasing) | 0, run exit 0 | prints `6` (ex/refalias.carbon) |
 | a fixer's probe, not a page example: EX-M-4c with `{.n: i32, .m: i32}`, whose elements are all copy-represented (`ValueAndObjectAggregate`), with a `Run` | (section 0.1's second branch) | 0, run exit 0 | prints `1`, as EX-M-4c's `ValueAggregate` does: the printed value does not tell the two aggregate kinds apart, and no page text says it does (amended 2026-10-28, review fold: A-M-2) |
+| the round-3 re-review's shape, a fixer's stand-in, not a page example (`IndirectIndexWith` is PR 65's and not on the nightly): `class B { fn Ref(self) -> ref str { return *self.ptr; } fn Set(self, value: str) { *self.ptr = value; } var ptr: str*; }` with `fn Peek9() -> i64 { var e: str = "ab"; var b: B = {.ptr = &e}; let s: str = b.Ref(); b.Set("longer"); return s.Size(); }` and a `Run` printing `Peek9() as i32` (added 2026-10-28, review fold: RR3-M1) | (the shape of PR 65's by-value `Ref` with no `bound`) | 0, run exit 0 | prints `6`: `s` binds the element through the `ref` result and reads it after the by-value writer's store (the rev 5 fixer's ex/ref8.carbon) |
+| the same stand-in with `fn At(self) -> str { return *self.ptr; }` in place of `Ref` and `let s: str = b.At();`, the shape of the `IndexWith(i64)` impl `Core.Buf` has at 2407efa74 (buf.carbon:72-75) (added 2026-10-28, review fold: RR3-M1) | (the shape before PR 65) | 0, run exit 0 | prints `2`: the by-value result is a copy the binding owns, so the reopening is PR 65's `ref` result (ex/at8.carbon) |
 | EX-TM-2 `Bad` | temporal | 0 | none |
 | EX-TM-3, the `String` half | temporal | 0 | none |
 | EX-TM-7 `Temp` | temporal | 1 | "error: cannot bind durable reference to non-reference value of type `str`" |
@@ -899,6 +952,30 @@ in the rev 4 fixer's scratch, mf/). fork/safe/plan.md and this file are
 PR 53's alone. The records files fork/decision-log.md,
 fork/inventory/work-items.json, fork/ORCHESTRATION.md and fork/gap-analysis.md
 are touched by every head.
+
+PR 65's prelude collides with no file SAFE-2 edits, but it meets the design
+(added 2026-10-28, review fold: RR3-M1). At fee0ef31c it declares
+`interface IndirectIndexWith(SubscriptType: type)` with `fn Ref(self,
+subscript: SubscriptType) -> ref ElementType;` (index.carbon:14-17, :16 the
+method) and gives `Core.Slice(T)` and `Core.Buf(T)` by-value impls that return
+`*PointerOffset(self.Data(), subscript)` and
+`*PointerOffset(self.AsSlice().Data(), subscript)` (slice.carbon:74-82,
+buf.carbon:72-80), a `ref` into the storage the view or the block holds, with
+no `bound`. PR 65 lands after PR 53 (section 5 of RG-1's plan), and from then
+on, with that `Ref`, `var b: Core.Buf(str) = Core.Buf(str).Make(1, "ab"); let
+s: str = b[0]; b.Set(0, "longer"); return s.Size();` binds `s` frozen on an
+element reached through a free result, holding no loan on `b`, so the
+`ref self` `Set` is accepted and the trusted body writes the element `s`
+borrows: 6, `Peek8`'s shape again (section 0.7's `Peek9` stand-in prints 6,
+and its by-value `At` twin, the `IndexWith(i64)` shape `Core.Buf` has at
+2407efa74, prints 2). Under W-144 `Ref` takes `bound self` at the interface,
+as `IndexWith.At` does (temporal T5(e): an impl may not add `bound` beyond its
+interface), and in both impls, so a binding formed through `b[i]` keeps the
+loan on `b` that `Set`'s `ref self` conflicts with (D-SAFE2-5, A.1.1, A.2.8,
+B.1.0, B.1.7, B.4). DR-1, PR 65's workstream, carries the counterexample: the
+orchestrator's stamp names it among the next actions (Appendix D's fourth
+block), for a dated note on PR 65's records before PR 65 lands, and W-144's
+note on PR 53's ledger (B.4) carries it until then.
 
 `git merge-tree --write-tree --name-only 2407efa74 <head>` today, before
 SAFE-2: every one of the 18 merges reports conflicts in records files only
@@ -1049,8 +1126,14 @@ replacement text serves both (Appendix B.1).
     falsifier; amended 2026-10-28, review fold: A-m-4), and it is why a
     `Plain` write of a `Core.Buf` element through the `T*` that a view's
     `Data()` returns stays accepted while a value binding of the `Buf` lives,
-    for an element type that holds no `Core.SharedImmutable` sub-object (M3)
-    (amended 2026-10-28, review fold: RR2-B1; rev 3 read "it is why
+    for an element type that holds no `Core.SharedImmutable` sub-object (M3);
+    `Data()` points at the view's element 0, so element `i` is reached through
+    the one-element view `AsSlice().Subslice(i, i + 1)` (slice.carbon:35-37
+    and :46-52 at 2407efa74), and once PR 65 lands through
+    `IndirectIndexWith.Ref`, `b[i] = v` and `s[i] = v`, whose `bound self`
+    keeps the loan, D-SAFE2-5 (amended 2026-10-28, review fold: RR3-m1, where
+    rev 4 named `Data()` alone; amended 2026-10-28, review fold: RR2-B1; rev 3
+    read "it is why
     `Core.Buf`'s by-value `Set` stays callable on a borrowed `Buf`", and the
     reading did not make that call safe for a `Core.String` element:
     `Core.Buf(T).Set` now takes `ref self`, D-SAFE2-5). A `ref`
@@ -1058,7 +1141,7 @@ replacement text serves both (Appendix B.1).
     condition: upstream counts storage reached through an owning pointer as the
     object's storage, or keys borrowed objects on something other than the
     value representation; then the storage sentence, and the element writes
-    through `Data()` with it (W-144), follow the upstream text.
+    through `Data()` and `Ref` with it (W-144), follow the upstream text.
 -   **D-SAFE2-4 — Closed and open places.** A place is _closed_ in a function
     body when every carrier of a loan on it is in the body's view: the body's
     own owners (local `var`s, `var` parameters, temporaries) and their
@@ -1163,10 +1246,30 @@ replacement text serves both (Appendix B.1).
     no other function of string.carbon, slice.carbon, buf.carbon or
     optional.carbon stores through a pointer; PR 65's `IndirectIndexWith`
     impls (`fn Ref(self, subscript: i64) -> ref T` on `Slice` and `Buf` at
-    fee0ef31c) write nothing themselves, and a Strict `b[i] = v` through them
-    is M3's: accepted for an element type that holds none and
+    fee0ef31c, slice.carbon:76 and buf.carbon:74, under the interface's
+    `fn Ref(self, subscript: SubscriptType) -> ref ElementType;`,
+    index.carbon:16) write nothing themselves, and a Strict `b[i] = v` through
+    them is M3's: accepted for an element type that holds none and
     `StrictSharedImmutableWrite` otherwise, a reference returned through a
-    by-value receiver being no exclusive path.
+    by-value receiver being no exclusive path. They do hand out a path into
+    the storage, a `ref` into the block or the view's storage, which the rule
+    above requires `bound`: under W-144 `IndirectIndexWith.Ref` takes
+    `bound self` at the interface, as `IndexWith.At` does (temporal T5(e): an
+    impl may not add `bound` beyond its interface), and in the `Slice` and
+    `Buf` impls, upstream's own shape for a `ref`-returning operator
+    interface (p005434:952-960, `Deref.Op`'s `bound ref self` at the interface
+    and `bound self` in the impl for `T*`). A binding formed through `b[i]`
+    then keeps the loan on `b` that `Set`'s `ref self` conflicts with:
+    `var b: Core.Buf(str) = Core.Buf(str).Make(1, "ab"); let s: str = b[0];
+    b.Set(0, "longer"); return s.Size();` is `StrictSharedBorrowInvalidated`
+    at the `Set` (T4), where with PR 65's unbound `Ref` `s` binds frozen on an
+    element reached through a free result, with no loan on `b`, the `Set` is
+    accepted and the trusted body writes the element `s` borrows, returning 6,
+    `Peek8`'s shape again (the focused re-review's round 3; a nightly stand-in
+    prints 6, section 0.7). PR 65 lands after PR 53, so the obligation is
+    W-144's brief (B.4) and DR-1 carries the counterexample on PR 65's
+    records (section 0.8) (amended 2026-10-28, review fold: RR3-M1; rev 4
+    read only "write nothing themselves", auditing the write half of `Ref`).
     Any other binding of a borrowed object on an open place is
     `StrictBorrowFromShared`, with the fixes the pages name: an owner or an
     `exclusive T*`, `Core.Guarded(T)`, the type's `value_rep = const Self` when
@@ -1198,10 +1301,17 @@ replacement text serves both (Appendix B.1).
     `StrictSharedBorrowInvalidated` and moves before `v` is formed, a callee
     given a `Buf` by value or through a shared pointer cannot `Set` it
     (slices.md:243-246 and :256-259 gain a dated amendment, A.10.2), and a
-    `Plain` element is written while a view lives only through the `T*` that
-    `Data()` returns, for an element type that holds no
-    `Core.SharedImmutable` sub-object (amended 2026-10-28, review fold:
-    RR2-B1), where SAFE-1 accepted all six. M3, M4 and D-SAFE-9 carry the
+    `Plain` element is written while a view lives, or by such a callee, only
+    through the `T*` that a view's `Data()` returns, for an element type that
+    holds no `Core.SharedImmutable` sub-object (amended 2026-10-28, review
+    fold: RR2-B1): `Data()` points at the view's element 0, so element `i` is
+    written through `AsSlice().Subslice(i, i + 1).Data()` until PR 65's
+    `IndirectIndexWith.Ref` gives `b[i] = v` and `s[i] = v`, and the body of
+    EX-M-1's `IntVec.Set`, an `addr self` method over a private
+    `Core.Buf(i32)`, writes its element that way, `self->buf.Set(i, v)` being
+    `StrictInvalidatingThroughShared` (M3(d); A.2.11; amended 2026-10-28,
+    review fold: RR3-m1, where rev 4 named `Data()`'s `T*` as if it reached
+    every element), where SAFE-1 accepted all six. M3, M4 and D-SAFE-9 carry the
     language half as dated edits (A.2.4a, A.2.5, A.2.19, B.1.2a, B.3.5), and
     the soundness model and D-SAFE-2 the trusted bodies' rule (A.1.1, B.1.0).
     This is the cost p005434:667-669 anticipates ("if enforcing it in the
@@ -1210,9 +1320,12 @@ replacement text serves both (Appendix B.1).
     p005434:663 under its :665-669 conditions (W-348's own); or a reviewer
     shows a prelude function that writes storage holding a
     `Core.SharedImmutable` sub-object through a shared path, an element of a
-    block it owns included, which is answered by fixing that function in a
-    dated edit, its receiver made exclusive or its body changed (W-144), as
-    `Core.Buf(T).Set` was; or a language-level write the rules admit through
+    block it owns included, or that hands out a path into such storage that is
+    not `bound` to the object (amended 2026-10-28, review fold: RR3-M1: PR
+    65's `IndirectIndexWith.Ref`), which is answered by fixing that function in
+    a dated edit, its receiver made exclusive or `bound`, or its body changed
+    (W-144), as `Core.Buf(T).Set` and `Ref` were; or a language-level write the
+    rules admit through
     a shared path, answered by M3 (amended 2026-10-28, review fold: RR2-B1;
     rev 3 read "or a reviewer shows a prelude opt-in false (a prelude
     function, or a language-level write the rules admit, that writes its
@@ -1577,8 +1690,8 @@ paragraph is untouched.
 
 | Page (docs/design/) | Blocks | What changes |
 | --- | --- | --- |
-| safety/README.md | A.1.1 to A.1.7 | S0 stated for the supported build modes; the trusted bodies' write rule appended to the prelude paragraph (amended 2026-10-28, review fold: RR2-B1); the `unsafe` form for a binding on an open place; four matrix rows and the `StrictSharedBorrowInvalidated` row's Debug cell; the spatial bullet; the kinds table's dated paragraph; the benchmarking blockquote kept, not withdrawn; staging rows 2 and 4 |
-| safety/mutation_safety.md | A.2.0 to A.2.21, with A.2.4a and A.2.7a | the definition's exception; M1, M2, M3's `Core.SharedImmutable` paragraph, M4, M5, M8; the `Core.Plain` consequences; the Value bindings section with `Core.SharedImmutable`; diagnostics; EX-M-1, EX-M-4a, EX-M-4b, EX-M-5, EX-M-6 rewritten; EX-M-4c and EX-M-4d added, EX-M-4d with `Peek8` (amended 2026-10-28, review fold: RR2-B1); checklist, staging, decisions, alternatives, references |
+| safety/README.md | A.1.1 to A.1.7 | S0 stated for the supported build modes; the trusted bodies' write rule appended to the prelude paragraph (amended 2026-10-28, review fold: RR2-B1), with `IndirectIndexWith.Ref`'s `bound self` (amended 2026-10-28, review fold: RR3-M1); the `unsafe` form for a binding on an open place; four matrix rows and the `StrictSharedBorrowInvalidated` row's Debug cell; the spatial bullet; the kinds table's dated paragraph; the benchmarking blockquote kept, not withdrawn; staging rows 2 and 4 |
+| safety/mutation_safety.md | A.2.0 to A.2.21, with A.2.4a, A.2.7a and A.2.17a (A.2.17a added 2026-10-28, review fold: RR3-m1) | the definition's exception; M1, M2, M3's `Core.SharedImmutable` paragraph, M4, M5, M8; the `Core.Plain` consequences; the Value bindings section with `Core.SharedImmutable`; diagnostics; EX-M-1, EX-M-4a, EX-M-4b, EX-M-5, EX-M-6 rewritten; EX-M-4c and EX-M-4d added, EX-M-4d with `Peek8` (amended 2026-10-28, review fold: RR2-B1); checklist, staging, decisions, alternatives, references; the Value bindings section's trusted-body paragraph names `IndirectIndexWith.Ref`'s `bound self` (amended 2026-10-28, review fold: RR3-M1); EX-M-1's prose names `IntVec.Set`'s body path and the C++ partition bullet gains the element writes that take `ref self` (A.2.11, A.2.17a; amended 2026-10-28, review fold: RR3-m1) |
 | safety/temporal_safety.md | A.3.1 to A.3.17, with A.3.12a | status; vocabulary (frozen, closed, open); the kinds paragraph; `ref` bindings; T2, T4, T6's sentence, T8; T5(a) and (d); diagnostics and the `StrictSharedBorrowInvalidated` row's Debug cell; EX-TM-1's prose; EX-TM-3's `buf.Set(1, 7)` moved before the view and its reason (A.3.12a, amended 2026-10-28, review fold: RR2-B1); `Load` and `UsePick`; EX-TM-9 added; staging, decisions, alternatives |
 | safety/initialization_safety.md | A.4.1 to A.4.6 | status; I5's first paragraph and one clause of its second; staging row 2; D-SAFE-13's I5 sentence and break condition; the alternatives introduction and bullet; the external fact's row |
 | safety/spatial_safety.md | A.5.1 to A.5.11 | overview; status; SP2's heading and sentence; SP4's heading and body; arithmetic; EX-SP-5, EX-SP-6; the C++ division bullet; staging row 2; D-SAFE-14 and D-SAFE-15; two alternatives; one external fact |
@@ -1598,9 +1711,9 @@ review fold: RR1-M1).
 
 | File | Blocks | What changes |
 | --- | --- | --- |
-| fork/decision-log.md (the F-013 entry) | B.1.0 to B.1.10, B.2.1, B.2.2 | D-SAFE-2's S0 scope and break condition (B.1.0, amended 2026-10-28, review fold: B-M4) and its prelude clause's trusted-body rule (amended 2026-10-28, review fold: RR2-B1), D-SAFE-8, D-SAFE-10's T2, T4 and T8 sentences, D-SAFE-11(a) and (d), D-SAFE-13's I5 and break condition, D-SAFE-14's SP2, SP4 and break condition, D-SAFE-15, D-SAFE-17, D-SAFE-19's new mapping, verdict part (3) and `&[T]` proviso (the last amended 2026-10-28, review fold: RR2-B1), D-SAFE-20's surface, D-SAFE-21's stages 2 and 4; the register block's spellings and departures sentence; RG-1's paragraph gains a dated SAFE-2 sentence per item |
+| fork/decision-log.md (the F-013 entry) | B.1.0 to B.1.10, B.2.1, B.2.2 | D-SAFE-2's S0 scope and break condition (B.1.0, amended 2026-10-28, review fold: B-M4) and its prelude clause's trusted-body rule (amended 2026-10-28, review fold: RR2-B1; with `IndirectIndexWith.Ref`'s `bound self` in B.1.0 and B.1.7, amended 2026-10-28, review fold: RR3-M1), D-SAFE-8, D-SAFE-10's T2, T4 and T8 sentences, D-SAFE-11(a) and (d), D-SAFE-13's I5 and break condition, D-SAFE-14's SP2, SP4 and break condition, D-SAFE-15, D-SAFE-17, D-SAFE-19's new mapping, verdict part (3) and `&[T]` proviso (the last amended 2026-10-28, review fold: RR2-B1), D-SAFE-20's surface, D-SAFE-21's stages 2 and 4; the register block's spellings and departures sentence; RG-1's paragraph gains a dated SAFE-2 sentence per item |
 | fork/safe/plan.md | B.1 (the same texts in §0.3), B.3.1 to B.3.8 | the pointer paragraph after Status; §1.1's S0 sentence, matrix rows and `StrictSharedBorrowInvalidated` Debug cell (amended 2026-10-28, review fold: B-M4, B-m6); §1.4's and §1.3's sentences; §1.5's kinds paragraph and diagnostics; §1.6's M5 and M8 sentence; §4.1's rows; §4.3's adversary-1 sentence; the "Realigned notes (SAFE-2)" paragraph after the landed notes |
-| fork/inventory/work-items.json (PR 53's ledger) | B.4 | dated notes on W-144, W-146, W-148 and W-150, those on W-146 and W-148 quoting and superseding the lines section 0.5 lists (amended 2026-10-28, review fold: B-M6) |
+| fork/inventory/work-items.json (PR 53's ledger) | B.4 | dated notes on W-144, W-146, W-148 and W-150, those on W-146 and W-148 quoting and superseding the lines section 0.5 lists (amended 2026-10-28, review fold: B-M6), W-144's naming `IndirectIndexWith.Ref`'s `bound self` and the counterexample (amended 2026-10-28, review fold: RR3-M1) |
 
 Not edited on PR 53: fork/gap-analysis.md (row 89 states no narrowed rule),
 PR 53's own fork/ORCHESTRATION.md (trunk's is the live snapshot; the
@@ -1787,9 +1900,18 @@ Risks:
     included, the shape of the round-2 re-review's `Peek8`, whose element
     `Core.Buf(T).Set`'s by-value receiver wrote (amended 2026-10-28, review
     fold: RR2-B1; rev 3's falsifier named only a function writing its own
-    type's storage). A prelude function is answered by fixing it, its
-    receiver made exclusive or its body changed by a dated edit (W-144), as
-    `Set`'s was, and a language-level write by M3; an opt-in is withdrawn
+    type's storage); or any prelude function that hands out a path into such
+    storage without `bound` on the object it views, the shape of the round-3
+    re-review's counterexample: PR 65's by-value `IndirectIndexWith.Ref`
+    returns a `ref T` into the block from an unbound receiver, so in
+    `var b: Core.Buf(str) = Core.Buf(str).Make(1, "ab"); let s: str = b[0];
+    b.Set(0, "longer"); return s.Size();` the binding `s` holds no loan on `b`,
+    the `ref self` `Set` is accepted and 6 is returned (a nightly stand-in
+    prints 6, section 0.7; amended 2026-10-28, review fold: RR3-M1; rev 4's
+    falsifier named only the writers). A prelude function is answered by
+    fixing it, its receiver made exclusive or `bound` or its body changed by a
+    dated edit (W-144), as `Set`'s and `Ref`'s were, and a language-level
+    write by M3; an opt-in is withdrawn
     (D-SAFE2-5's break condition) and its examples re-measured only when its
     own type's author obligation is shown false and no fix of the function
     keeps it.
@@ -1887,13 +2009,25 @@ Rejected alternatives:
     that holds no such sub-object, M3's property being structural and its
     complement no facet, so the split needs a new compiler-determined facet,
     a library name the register would carry and R32 (d) would weigh, and two
-    setters for one operation; the exclusive receiver costs only the writes
-    made while a view of the block, or a binding formed through one, is live
-    (EX-TM-3's), and an `i32` element stays writable then through the `T*`
-    that `Data()` returns. Falsifier: a constraint for "holds no
+    setters for one operation. Weighed against the exclusive receiver's full
+    cost (amended 2026-10-28, review fold: RR3-m1; rev 4 counted "only the
+    writes made while a view of the block, or a binding formed through one, is
+    live", which D-SAFE2-5's own cost list contradicts): a `Set` call is
+    rejected without exclusive access to the `Buf`, under a live view of the
+    block or a binding formed through one (EX-TM-3's), through a shared
+    pointer, on a `Buf` bound by value, and in an `addr self` body such as
+    EX-M-1's `IntVec.Set`. For an element type that holds no such sub-object,
+    the only types the split would serve, every one of those writes keeps a
+    path that needs no exclusive access: the `T*` that a view's `Data()`
+    returns, element `i` through `AsSlice().Subslice(i, i + 1)`
+    (slice.carbon:35-37 and :46-52 at 2407efa74), and once PR 65 lands
+    `IndirectIndexWith.Ref` with its `bound self`, `b[i] = v` and `s[i] = v`;
+    so the cost is a longer spelling until PR 65, not a lost operation, and
+    the rejection stands. Falsifier: a constraint for "holds no
     `Core.SharedImmutable` sub-object" that upstream's generics or a reviewed
-    fork design provides; the by-value `Set` is then restored for such element
-    types by a dated edit.
+    fork design provides, or a Strict element write of such a type that
+    neither the `Data()` path nor `Ref` can express; the by-value `Set` is
+    then restored for such element types by a dated edit.
 -   **Withdrawing `Core.String`'s opt-in for `Set`'s write** (the reading of
     rev 3's D-SAFE2-5 break condition the re-review flagged; added 2026-10-28,
     review fold: RR2-B1). Rejected, as the `Core.String` and `Core.Slice`
@@ -1947,8 +2081,11 @@ For each of commits 1 and 2, and every fold commit:
     spelled "plus" on 2026-10-28 so that no wrapped line starts with one).
     A.1.1's appended sentence, A.3.12a's code and prose, A.6.3a's replaced row,
     A.10.2's blockquote and B.1.0's third block add no heading, item or row, so
-    the deltas above stand (amended 2026-10-28, review fold: RR2-B1). Any other
-    change is a defect to repair by rephrasing, recorded in the message.
+    the deltas above stand (amended 2026-10-28, review fold: RR2-B1), nor do the
+    sentences A.1.1, A.2.8, B.1.0 and B.1.7 gain for `IndirectIndexWith.Ref`,
+    A.2.11's sentence on `IntVec.Set`'s body and A.2.17a's sentence appended to
+    a bullet (amended 2026-10-28, review fold: RR3-M1, RR3-m1). Any other change
+    is a defect to repair by rephrasing, recorded in the message.
 2.  `cd /home/user/carbon-safe && XDG_CACHE_HOME=<private dir under the
     scratchpad's safe2/implementer/>
     SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2152,7 +2289,7 @@ only their SAFE-2 marks.
 
 | finding | severity | disposition | where |
 | --- | --- | --- | --- |
-| RR2-B1 `Core.Buf(T).Set`, a trusted by-value writer, mutates a borrowed `Core.String` element in Strict | BLOCKER | folded as the fix asks, the writer fixed and not the opt-in: a trusted body keeps M3's write rule, writing an object whose type holds a `Core.SharedImmutable` sub-object only through an exclusive path or through a pointer into storage owned by an object it holds exclusively, every other path the type hands out being `bound` to that object, stated in the same words in D-SAFE2-5, A.1.1 (the soundness model's prelude paragraph), A.2.4a, A.2.8, B.1.0 (D-SAFE-2's prelude clause, which R27 aligns with the page), B.1.7 and B.4's W-144 note; decided under R29, `Set` takes `ref self` for every `T` (W-144), the re-review's first option, its cost recorded (EX-TM-3's `buf.Set(1, 7)` under the live `v` is `StrictSharedBorrowInvalidated` and moves before `v`; a callee given a `Buf` by value or through a shared pointer cannot `Set` it; an `i32` element stays writable through the `T*` of `Data()`), and the second option, a by-value `Set` for element types that hold none beside an exclusive setter, rejected in section 7 because no constraint names such a type; EX-TM-3 rewritten (A.3.12a); slices.md given a dated amendment after the `Buf` bullets rather than in the `Set` bullet PR 65 rewrites (A.10.2); the reason of the Rust `Core.Slice(const T)` row and of D-SAFE-19's proviso re-worded (A.6.3a, B.1.8 (v)), with D-SAFE2-3's storage sentence and D-SAFE2-10's and A.6.3's `At` reasons; `Peek8` added to EX-M-4d, section 0.7 (the stand-in), section 4 and both checklists; R-2's falsifier and D-SAFE2-5's break condition widened to any prelude function that writes such storage through a shared path, elements included, answered by fixing the function; R-3 records that EX-TM-3's consequence is now the design's | Status, §0.1, §0.2, §0.5, §0.6, §0.7, §0.8, D-SAFE2-3, D-SAFE2-5, D-SAFE2-10, D-SAFE2-14, D-SAFE2-15, §2.2, §2.3, §3 step 1, §4, §6, §7, §8 item 1, hand-off note 5, A.1.1, A.2.4a, A.2.8, A.2.10, A.2.14, A.2.17, A.2.19, A.3.12a, A.6.3, A.6.3a, A.10.2, B.1.0, B.1.7, B.1.8, B.3.6, B.4 |
+| RR2-B1 `Core.Buf(T).Set`, a trusted by-value writer, mutates a borrowed `Core.String` element in Strict | BLOCKER | folded as the fix asks, the writer fixed and not the opt-in: a trusted body keeps M3's write rule, writing an object whose type holds a `Core.SharedImmutable` sub-object only through an exclusive path or through a pointer into storage owned by an object it holds exclusively, every other path the type hands out being `bound` to that object, stated in the same words in D-SAFE2-5, A.1.1 (the soundness model's prelude paragraph), A.2.4a, A.2.8, B.1.0 (D-SAFE-2's prelude clause, which R27 aligns with the page), B.1.7 and B.4's W-144 note; decided under R29, `Set` takes `ref self` for every `T` (W-144), the re-review's first option, its cost recorded (EX-TM-3's `buf.Set(1, 7)` under the live `v` is `StrictSharedBorrowInvalidated` and moves before `v`; a callee given a `Buf` by value or through a shared pointer cannot `Set` it; an `i32` element stays writable through the `T*` of `Data()`, element `i` through `AsSlice().Subslice(i, i + 1)` and, once PR 65 lands, through `IndirectIndexWith.Ref`, amended 2026-10-28, review fold: RR3-m1), and the second option, a by-value `Set` for element types that hold none beside an exclusive setter, rejected in section 7 because no constraint names such a type; EX-TM-3 rewritten (A.3.12a); slices.md given a dated amendment after the `Buf` bullets rather than in the `Set` bullet PR 65 rewrites (A.10.2); the reason of the Rust `Core.Slice(const T)` row and of D-SAFE-19's proviso re-worded (A.6.3a, B.1.8 (v)), with D-SAFE2-3's storage sentence and D-SAFE2-10's and A.6.3's `At` reasons; `Peek8` added to EX-M-4d, section 0.7 (the stand-in), section 4 and both checklists; R-2's falsifier and D-SAFE2-5's break condition widened to any prelude function that writes such storage through a shared path, elements included, answered by fixing the function; R-3 records that EX-TM-3's consequence is now the design's | Status, §0.1, §0.2, §0.5, §0.6, §0.7, §0.8, D-SAFE2-3, D-SAFE2-5, D-SAFE2-10, D-SAFE2-14, D-SAFE2-15, §2.2, §2.3, §3 step 1, §4, §6, §7, §8 item 1, hand-off note 5, A.1.1, A.2.4a, A.2.8, A.2.10, A.2.14, A.2.17, A.2.19, A.3.12a, A.6.3, A.6.3a, A.10.2, B.1.0, B.1.7, B.1.8, B.3.6, B.4 |
 | RR2-m1 the Debug flag fires only on writes through `T*`; A.2.9's "never a Strict body's write" is false | MINOR | folded as the fix asks: Debug tests every store that writes a byte whose frozen count is non-zero, of any type and by any path, `T*`, a `ref`, the owner, a global by name or an `addr self` body; A.2.9's item states the exception, a Strict body's write that a Permissive caller made aliasing, which that call's `PermissiveAliasedExclusive` flags; the global and `ref` shapes reproduced on the nightly (section 0.7) | §0.6, §0.7, D-SAFE2-7, D-SAFE2-15, A.2.8, A.2.9, B.1.7, B.4 |
 | RR2-m2 fork/safe/plan.md section 2 still states the six superseded rules without a mark | MINOR | folded as the fix asks: B.3.1's pointer paragraph makes §2, the 2026-10-12 deliverable spec, history, superseded by Appendix A where it states the six rules or the by-value `Set`, and names its lines at 2407efa74, the finding's six and the nine more a grep of §2 finds; section 0.5 lists them as "no change, history (B.3.1)"; B.3.1's list of realigned decisions also gains D-SAFE-2 and D-SAFE-9, which B.1.0 and B.1.2a edit | §0.5, B.3.1 |
 | RR2-m3 `Core.Slice(T)` stated to hold and opt in for every `T` | MINOR | folded as the fix asks: "`Core.Slice(T)` for a `Core.Freeze` `T`" in D-SAFE2-5's cost, A.1.5, both sentences of A.2.4a, A.2.5, A.2.7a, A.2.8's cost list and A.3.3, and "`Slice(T)` for a `Freeze` `T`" in B.3.5's M4 text; B.3.4's paragraph names neither type, so the finding's B.3.4 cite is folded in B.3.5, the §1.6 sentence that names `Slice` | D-SAFE2-5, A.1.5, A.2.4a, A.2.5, A.2.7a, A.2.8, A.3.3, B.3.5 |
@@ -2161,6 +2298,116 @@ Disk: the rev 4 fixer's probes (ex/), merge-file inputs (mf/), the copy of
 fork/safe/plan.md at 2407efa74 and the check subsets are in the scratch
 directory above; the detached worktree under /dev/shm/safe2-fixer2 was removed
 after the checks; nothing was built.
+
+The rev 4 fixer rewrote nine cells of six rows of sections 2.2 and 2.3 (the
+"What changes" cells of the safety/README.md, mutation_safety.md,
+temporal_safety.md, rust_interop.md and slices.md rows and of the
+fork/decision-log.md row, and the "Blocks" cells of the temporal_safety.md,
+rust_interop.md and slices.md rows; the round-3 re-review counts seven) by a
+python3 string replace rather than by Edit, a deviation from R25 and hand-off
+note 2 that the rev 4 record and commit message left out. The rewrite is the
+text rev 4 committed: prek's fourth pass left the file unchanged, the
+fixpoint, and 9d48a863e's file is byte-equal to that pass's input; rev 5's
+changes to those cells are made by Edit, and its commit message records this
+deviation (added 2026-10-28, review fold: RR3-m2).
+
+### §8.11 Review fold record (rev 5, 2026-10-28)
+
+The focused re-review (round 3) of rev 4 (9d48a863e) returned
+APPROVE-WITH-AMENDMENTS: no BLOCKER, one MAJOR, RR3-M1, and two MINORs, RR3-m1
+and RR3-m2. Its trace found RR2-B1 resolved (`Peek8`'s `b->Set` through the
+shared `b` is M3(d)'s `StrictInvalidatingThroughShared`, through an owner, a
+`ref` or an `exclusive` pointer T4's `StrictSharedBorrowInvalidated` while `s`
+holds the loan `AsSlice` and `Data` carry, and a store scan of core/prelude on
+all 19 heads finds only buf.carbon:39 and :52 and PR 55's `ref self`
+`AddAssign`), RR2-m1 to RR2-m3 resolved (B.3.1's 25 lines exist in
+fork/safe/plan.md section 2 at 2407efa74 and state what it says; no
+unqualified `Core.Slice(T)` is left), and B.1.0's anchor (log :2964, plan
+:249) matching. It fetched upstream at 07718a832, unchanged since rev 4's read
+(over the nine quoted files `git log c1e83b0b7..upstream/trunk` lists only
+f21c62524, and the seven quoted passages are unchanged), ran PR 67's checks
+from a detached 56e2e5bbd worktree (273 quotes and 89 silence checks, the 97
+H1-file rows, 284 quotes with C.2's eleven rows, 89 checks with H1.7 widened,
+all with 0 failed), matched all 18 held heads and trunk 1c83422a0 by
+`git ls-remote`, found W-360 to W-364, W-398 and W-399 taken over 165 refs and
+every worktree and W-365 only in this file, counted the headings
+`{1: 1, 2: 15, 3: 123}`, bullets 76, numbered 31, rows 137 with no unguarded
+block, found
+rumdl@0.2.58 clean (the unpinned 0.3.2's three MD013 lines being section 8
+item 3's), `runner.py --self-test` exiting 0, the three-way merge-file of
+slices.md with A.10.1 and A.10.2 clean against PR 51, PR 65 and trunk, and a
+nightly stand-in of `Peek8` printing 6.
+
+Every finding was reproduced by the rev 5 fixer before it was folded, in
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2/fixer3/.
+RR3-M1: PR 65's prelude at fee0ef31c reads as cited (index.carbon:16 `fn
+Ref(self, subscript: SubscriptType) -> ref ElementType;`, and by-value `Ref`
+impls at slice.carbon:74-82 and buf.carbon:72-80 returning a `ref` into the
+storage with no `bound`), as do T5(a) (an unbound result is free), T5(e) (an
+impl may not add `bound`) and SP3 (spatial_safety.md:170-177) at 2407efa74; the
+stand-in `Peek9`, a class with a by-value `Ref` returning `ref str` and a
+by-value writer, compiled, linked and run on the 2026.10.12 nightly prints 6,
+and its twin with a by-value `At` returning `str`, the `IndexWith(i64)` shape
+`Core.Buf` has at 2407efa74, prints 2 (ex/ref8.carbon, ex/at8.carbon), so the
+reopening comes with PR 65's `ref` result; upstream at 07718a832 declares the
+same unbound `Ref` (index.carbon:14-17), and p005434:952-960's `Deref` puts
+`bound` on the receiver of a `ref`-returning operator at the interface and in
+the impl. RR3-m1: slice.carbon:35-37 at 2407efa74 calls `Data()` "The raw
+pointer to element 0", mutation_safety.md:536 and :556-558 give `IntVec.Set`
+`addr self` over a private `Core.Buf(i32)`, :736 and :742 state the partition,
+and slices.md:245 reads "Writes to owned storage go through `Set`"; the
+finding's premise that at PR 53 every element `i > 0` is written only by `Set`
+was measured false, since the public `Subslice` (slice.carbon:46-52) returns a
+view whose `Data()` points at element `start`, and a store through the `Data()`
+of `b.AsSlice().Subslice(i, i + 1)` writes element `i` with no `Set`; the
+finding's defects stand: rev 4 named `Data()`'s `T*` as if it reached every
+element, A.2.11 named no body path for `IntVec.Set`, whose forward to
+`self->buf.Set` is M3(d)'s, and section 7 weighed the exclusive receiver against
+the writes under a live view only, which D-SAFE2-5's own cost list contradicts.
+RR3-m2: a cell-by-cell comparison of sections 2.2 and 2.3 between 603749ee1 and
+9d48a863e (cells.py) finds nine changed cells in six rows, where the re-review
+counts seven, and the rev 4 fixer's scratch shows 9d48a863e's file byte-equal to
+the input of prek's fourth, unchanged pass. Upstream was re-fetched for rev 5 at
+07718a832 and PR 67's checks re-run there (sections 0.1 and 0.2); all 18 heads
+and trunk 1c83422a0 match `git ls-remote`; the id re-scan finds W-365 the next
+free id, unused outside this file; and `runner.py --self-test` exits 0. All
+three findings are accepted and none is rejected. No id was taken: W-365 stays
+the next free work item, and no F id. The marks read "(amended 2026-10-28,
+review fold: RR3-M1)" and the like; as in sections 8.8 to 8.10, the page and
+records texts of Appendices A and B carry only their SAFE-2 marks.
+
+| finding | severity | disposition | where |
+| --- | --- | --- | --- |
+| RR3-M1 the trusted-body rule's `bound` condition is not applied to PR 65's `IndirectIndexWith.Ref`, which reopens `Peek8`'s shape after PR 65 lands | MAJOR | folded as the fix asks: under W-144 `Ref` takes `bound self` at the interface (T5(e), as `IndexWith.At` does; upstream's `Deref` shape, p005434:952-960) and in the `Slice` and `Buf` impls, so a binding formed through `b[i]` keeps the loan on `b` that `Set`'s `ref self` conflicts with; stated in D-SAFE2-5's PR 65 sentence and break condition, in A.2.8's trusted-body paragraph and, in the same words, in A.1.1, B.1.0 and B.1.7, which rev 4 aligned with it, and in B.4's W-144 note with the counterexample; R-2's falsifier and section 0.8's PR 65 paragraph carry the counterexample, DR-1 carrying it on PR 65's records (Appendix D's fourth block names it); section 0.7 gains the stand-in and its by-value twin; decided under R29, SP3's producer list and T5(e)'s interface list are left as they are (section 0.5, with the break condition) | Status, §0.1, §0.2, §0.5, §0.6, §0.7, §0.8, D-SAFE2-3, D-SAFE2-5, §2.2, §2.3, §7 R-2, §8 item 1, hand-off note 5, A.1.1, A.2.8, B.1.0, B.1.7, B.4, D |
+| RR3-m1 the cost record names `Data()`'s `T*` as the surviving element-write path; EX-M-1's `IntVec.Set` is not traced | MINOR | folded with the premise corrected (element `i` is reached through `AsSlice().Subslice(i, i + 1).Data()` at PR 53, not by `Set` alone): D-SAFE2-3, D-SAFE2-5's cost list, A.2.8's storage bullet, B.1.7 and section 8.10's RR2-B1 row name the one-element view and, once PR 65 lands, `IndirectIndexWith.Ref` (`b[i] = v`, `s[i] = v`); A.2.11 names `IntVec.Set`'s body path, `self->buf.Set(i, v)` being M3(d)'s; A.2.17a appends to the C++ partition bullet the element writes that take `ref self`; section 0.5 lists mutation_safety.md:536, :556-558, :736 and :742 (the re-review's :555-556 and :736-741); section 7's alternative is re-weighed against the full cost and still rejected, the cost being a longer spelling until PR 65, with its falsifier widened | §0.5, D-SAFE2-3, D-SAFE2-5, §2.2, §7, §8 item 1, §8.10, A.2.8, A.2.11, A.2.17a, B.1.7 |
+| RR3-m2 the R25 deviation is not recorded in the plan or the commit | MINOR | folded by the first option: section 8.10 gains a sentence recording the python3 replace, the nine cells of six rows it touched and prek's fixpoint after it; rev 5 edits every cell it changes by Edit, and its commit message records the deviation | §8.10 |
+
+Disk: the rev 5 fixer's probes (ex/), the C.2 and check subsets, the cell
+comparison and the copy of mutation_safety.md at 2407efa74 are in the scratch
+directory above; the detached worktree under /dev/shm/safe2-fixer3 was removed
+after the checks; nothing was built.
+
+## Sign-off
+
+Every review of this plan, with its verdict and its counts (added 2026-10-28,
+review fold: RR3-M1, RR3-m1, RR3-m2):
+
+| review | read | verdict | BLOCKER | MAJOR | MINOR | folded | rejected | fold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A: design fidelity and soundness | rev 1, 475b7ecb0 | REJECT | 2 | 2 | 4 | 8 | none | rev 2, 46980f8bd, §8.8 |
+| B: records, consistency and R31 | rev 1, 475b7ecb0 | APPROVE-WITH-AMENDMENTS | 0 | 6 | 7 | 13 | none | rev 2, 46980f8bd, §8.8 |
+| RR1: the focused re-review, round 1 | rev 2, 46980f8bd | REJECT | 1 | 1 | 4 | 6 | none | rev 3, 603749ee1, §8.9 |
+| RR2: the focused re-review, round 2 | rev 3, 603749ee1 | REJECT | 1 | 0 | 3 | 4 | none | rev 4, 9d48a863e, §8.10 |
+| RR3: the focused re-review, round 3 | rev 4, 9d48a863e | APPROVE-WITH-AMENDMENTS | 0 | 1 | 2 | 3 | none | rev 5 (this revision), §8.11 |
+
+The five reviews raised 34 findings, 4 BLOCKERs, 10 MAJORs and 20 MINORs; all
+34 are folded and none is rejected. RR3, the last review, found no BLOCKER and
+its verdict is not REJECT, so rev 5 is SIGNED OFF FOR IMPLEMENTATION on
+2026-10-28. Its one MAJOR fold adds no rule: it applies the trusted-body rule
+of rev 4, which RR3 traced and accepted, to PR 65's `Ref`, in the words W-144
+already uses for `IndexWith.At`. The implementation starts from this
+revision's commit with section 3's commit 1; its two document reviews and the
+focused re-review of section 3 steps 3 to 5 follow.
 
 ## Hand-off notes for the implementer
 
@@ -2183,7 +2430,9 @@ after the checks; nothing was built.
     the prelude or any golden, nor slices.md beyond A.10.1's note and A.10.2's
     amendment (amended 2026-10-28, review fold: RR1-M1, RR2-B1); the prelude
     change A.10.2 and D-SAFE2-5 describe, `Core.Buf(T).Set`'s `ref self`, is
-    W-144's, not this workstream's; do not edit PR 67's branch except by
+    W-144's, not this workstream's, as is `IndirectIndexWith.Ref`'s
+    `bound self` once PR 65 lands (amended 2026-10-28, review fold: RR3-M1);
+    do not edit PR 65's branch, nor PR 67's except by
     step 6 of section 3; do not push before section 3 step 5 is dry; do not
     open or edit a PR.
 6.  Every count and cite in a commit message is measured on that commit's
@@ -2201,7 +2450,9 @@ prelude is the first client of this model." and ends "(W-144; see" and a link
 to the temporal page), after a space; it is the trusted bodies' half of M3's
 write rule, the same words as D-SAFE2-5, A.2.8, B.1.0 and B.1.7 (added
 2026-10-28, review fold: RR2-B1: the re-review's `Peek8` had `Core.Buf(T).Set`,
-a trusted by-value writer, write a borrowed `Core.String` element). Insert the
+a trusted by-value writer, write a borrowed `Core.String` element; amended
+2026-10-28, review fold: RR3-M1: the `IndirectIndexWith.Ref` clause, where
+rev 4's block ended "takes `ref self` under W-144" before its link). Insert the
 second block after the paragraph that ends "amended 2026-10-12,
 document-review fold: D-8)." (its parenthesis begins "(see" and a link to the
 mutation page) and before "## Safety modes":
@@ -2215,8 +2466,13 @@ exclusive path, an owner, a `ref` or an `exclusive T*`, or through a pointer
 into storage owned by an object it holds exclusively, every other path to that
 storage the type hands out being `bound` to that object; so
 `Core.Buf(T).Set`, which writes an element of the block, takes `ref self`
-under W-144 ([Mutation safety](mutation_safety.md), Value bindings; added
-<date>, SAFE-2: W-348).
+under W-144, and the `Ref` method of the indexing interface
+`IndirectIndexWith`, once the prelude has it, which hands out a `ref` into
+the storage a `Core.Slice` views or a `Core.Buf` owns, takes `bound self`
+under W-144, at the interface and in both impls, so that a binding formed
+through `b[i]` keeps the loan on `b` that `Set`'s `ref self` conflicts with
+([Mutation safety](mutation_safety.md), Value bindings; added <date>, SAFE-2:
+W-348).
 ```
 
 ```markdown
@@ -2736,8 +2992,10 @@ prevent mutation of borrowed objects in Carbon's strict safe dialect"
     storage is the object and its sub-objects; storage reached through a
     pointer it holds, the elements of a `Core.Buf` among them, is another
     object's, which is why an `i32` element of a borrowed `Buf` may still be
-    written through the `T*` that a view's `Data()` returns; `Core.Buf(T).Set`
-    itself takes `ref self`, below.
+    written through the `T*` that a view's `Data()` returns, element `i`
+    through the one-element view `AsSlice().Subslice(i, i + 1)`, and through
+    `b[i] = v` once the indexing interface `IndirectIndexWith` lands;
+    `Core.Buf(T).Set` itself takes `ref self`, below.
 -   **The frozen loan needs a place the checker can see.** On a closed place
     ([temporal safety: vocabulary](temporal_safety.md#vocabulary)), an owner, a
     `ref`, the pointee of an `exclusive T*` or a place every carrier of whose
@@ -2792,7 +3050,16 @@ storage the type hands out being `bound` to that object; so `Core.Buf(T).Set`,
 which writes an element of the block, takes `ref self` under W-144, and
 EX-M-4d's `Peek8`, which binds an element frozen through a shared
 `Core.Buf(str)*` and then calls `Set`, is `StrictInvalidatingThroughShared` at
-the call.
+the call. The `Ref` method of the indexing interface `IndirectIndexWith`, once
+the prelude has it, hands out a `ref` into the storage a `Core.Slice` views or
+a `Core.Buf` owns, so it takes `bound self` under W-144, at the interface,
+since an impl may not add `bound` beyond it
+([temporal safety](temporal_safety.md), T5(e)), and in the `Core.Slice` and
+`Core.Buf` impls: a binding formed through `b[i]`, such as
+`let s: str = b[0];`, then keeps the loan on `b` that `Set`'s `ref self`
+conflicts with, and `b.Set(0, "longer")` while `s` lives is
+`StrictSharedBorrowInvalidated` (T4), where an unbound `Ref` would leave `s`
+frozen on an element reached through a free result and the call accepted.
 
 The memory-safety argument, and what the rule costs. A frozen loan on a closed
 place is sound because every carrier of the place is in the body's view and a
@@ -2907,7 +3174,12 @@ through `T*`, to a field or to a whole object, that writes a byte whose count
 is non-zero, or an `addr self` call on an object one of whose bytes has a
 non-zero count" (RR2-m1); and the cost list's `Core.Slice(T)` is conditioned
 on a `Core.Freeze` `T` (RR2-m3; all three amended 2026-10-28, review fold:
-RR2-B1, RR2-m1, RR2-m3).
+RR2-B1, RR2-m1, RR2-m3). The storage bullet's element paths after "`Data()`
+returns" and the trusted bodies' paragraph's last two sentences, from "The
+`Ref` method", are rev 5's: rev 4's bullet ended "the `T*` that a view's
+`Data()` returns; `Core.Buf(T).Set` itself takes `ref self`, below." and its
+paragraph "is `StrictInvalidatingThroughShared` at the call." (amended
+2026-10-28, review fold: RR3-m1, RR3-M1).
 
 ### §A.2.9 safety/mutation_safety.md :474-514, Diagnostics
 
@@ -3032,10 +3304,14 @@ EX-M-4b and EX-M-4d's `BufSize` and `Peek8` use the fork prelude's
 In the code block, replace the four lines from " let first: const i32* =
 vec->Get(0);" through " vec->Push(3); // fine: a, b, first
 are dead (NLL)" with the first block. In the prose, replace "`Get` is `bound
-self` so its result is a shared loan on `*vec`." with "`Get` is `bound self`
-so its result keeps `*vec` borrowed.", and replace the two sentences from
-"`first` is a shared loan too," through "`vec->Push(3)` is accepted." with the
-second block.
+self` so its result is a shared loan on `*vec`." with the third block, and
+replace the two sentences from "`first` is a shared loan too," through
+"`vec->Push(3)` is accepted." with the second block (amended 2026-10-28,
+review fold: RR3-m1: the third block adds the sentence that names `Set`'s
+body path, where rev 4 replaced the `Get` sentence with "`Get` is `bound
+self` so its result keeps `*vec` borrowed." alone; with `Core.Buf(T).Set`
+taking `ref self`, the page's "its body is checked to do nothing else" left
+the body's write unnamed).
 
 <!-- google-doc-style-ignore -->
 
@@ -3061,6 +3337,20 @@ superseded 2026-10-12 text read: "`first` is a shared loan too, and
 a mutation safety bug, because nothing was invalidated. After
 `Core.Print(*first)` no carrier of any shared loan is used again, so by
 non-lexical liveness the loans are dead and `vec->Push(3)` is accepted.").
+```
+
+```markdown
+`Get` is `bound self` so its result keeps `*vec` borrowed. `Set`'s body
+writes the element through the private `buf` with no exclusive access to it,
+which a `Plain` `i32` element, another object's storage, does not need
+([Value bindings](#value-bindings)): as
+`*self->buf.AsSlice().Subslice(i, i + 1).Data() = v;` until the indexing
+interface `IndirectIndexWith` lands, and as `self->buf[i] = v` after it, its
+`Ref` taking `bound self` under residue item W-144; `self->buf.Set(i, v)`
+would be `StrictInvalidatingThroughShared` (M3(d)), `Core.Buf(T).Set` taking
+`ref self` (realigned <date>, SAFE-2: W-349, W-348; the superseded 2026-10-12
+text read: "`Get` is `bound self` so its result is a shared loan on
+`*vec`.").
 ```
 
 <!-- google-doc-style-resume -->
@@ -3334,6 +3624,29 @@ B-M5):
 The EX-M-4d row names `Peek4` (amended 2026-10-28, review fold: RR1-B1) and
 `Peek8` among the fork-prelude functions (amended 2026-10-28, review fold:
 RR2-B1), as B.3.6's row does.
+
+### §A.2.17a safety/mutation_safety.md :734-747, C++ interop consequence, a sentence appended to the partition bullet
+
+Added 2026-10-28, review fold: RR3-m1: the bullet at :734-747 partitions a
+migrated class's methods into `addr self` ones, "the element writes and other
+non-invalidating mutations", and `ref self` ones, and M3's paragraph (A.2.4a)
+now gives an element write of a type that holds a `Core.SharedImmutable`
+sub-object exclusive access. Append the block to the bullet, after "can call
+exactly the methods that cannot invalidate its other pointers." and a space,
+keeping the bullet's four-space indentation (no heading, list item or row
+added):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+An element write takes `addr self` only when the element type holds no
+`Core.SharedImmutable` sub-object (M3): a setter of a `str` element, like a
+setter of a `str` field (M4), takes `ref self` although it invalidates
+nothing, as `Core.Buf(T).Set` does for every element type
+([Value bindings](#value-bindings); added <date>, SAFE-2: W-348).
+```
+
+<!-- google-doc-style-resume -->
 
 ### §A.2.18 safety/mutation_safety.md :797, Implementation staging, row 4 replaced
 
@@ -5099,7 +5412,8 @@ the second block. Insert the third block after "optional.carbon:186-203)."
 (the end of the prelude clause, log :2964) and before the second block, a
 space on each side: the trusted bodies' write rule in the words of A.1.1's
 first block, which R27 aligns with D-SAFE-2 (added 2026-10-28, review fold:
-RR2-B1).
+RR2-B1; its `IndirectIndexWith.Ref` clause amended 2026-10-28, review fold:
+RR3-M1, as A.1.1's is).
 
 <!-- google-doc-style-ignore -->
 
@@ -5127,7 +5441,12 @@ exclusive path, an owner, a `ref` or an `exclusive T*`, or through a pointer
 into storage owned by an object it holds exclusively, every other path to that
 storage the type hands out being `bound` to that object; so
 `Core.Buf(T).Set`, which writes an element of the block, takes `ref self`
-under W-144 (added <date>, SAFE-2: W-348; fork/safe/safe2-plan.md D-SAFE2-5).
+under W-144, and the `Ref` method of the indexing interface
+`IndirectIndexWith`, once the prelude has it, which hands out a `ref` into
+the storage a `Core.Slice` views or a `Core.Buf` owns, takes `bound self`
+under W-144, at the interface and in both impls, so that a binding formed
+through `b[i]` keeps the loan on `b` that `Set`'s `ref self` conflicts with
+(added <date>, SAFE-2: W-348; fork/safe/safe2-plan.md D-SAFE2-5).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5498,7 +5817,11 @@ shared path, which withdraws that opt-in in a dated edit."; amended
 2026-10-28, review fold: RR2-m1: the Debug flag tests every store, where rev 3
 read "a `Plain` assignment through `T*`, to a field or to a whole object, that
 writes a byte whose count is non-zero, or an `addr self` call on an object one
-of whose bytes has a non-zero count, reports").
+of whose bytes has a non-zero count, reports"; amended 2026-10-28, review
+fold: RR3-M1, RR3-m1: the trusted-body sentence gains the
+`IndirectIndexWith.Ref` clause, where rev 4 ended it "moves before its
+view).", and the storage sentence the element paths after "`Data()`
+returns", where rev 4 ended it there).
 
 <!-- google-doc-style-ignore -->
 
@@ -5547,8 +5870,13 @@ of whose bytes has a non-zero count, reports").
     path to that storage the type hands out being `bound` to that object; so
     `Core.Buf(T).Set`, which writes an element of the block, takes
     `ref self` under W-144 (EX-M-4d's `Peek8`; EX-TM-3's `buf.Set(1, 7)`
-    moves before its view). Any other binding of a borrowed object on an open place
-    is `StrictBorrowFromShared` (EX-M-4d), fixed by an owner or an
+    moves before its view), and the `Ref` method of the indexing interface
+    `IndirectIndexWith`, once the prelude has it, which hands out a `ref`
+    into the storage a `Core.Slice` views or a `Core.Buf` owns, takes
+    `bound self` under W-144, at the interface and in both impls, so that a
+    binding formed through `b[i]` keeps the loan on `b` that `Set`'s
+    `ref self` conflicts with. Any other binding of a borrowed object on an
+    open place is `StrictBorrowFromShared` (EX-M-4d), fixed by an owner or an
     `exclusive T*`, `Core.Guarded(T)`, `value_rep = const Self`, a `var`
     copy, or `unsafe` at the binding with the obligation that no path mutates
     the object while the binding lives. The object's storage is its own bytes
@@ -5556,7 +5884,9 @@ of whose bytes has a non-zero count, reports").
     object's (the reading of values.md:461-462's "the object or its storage"
     that fork/safe/safe2-plan.md D-SAFE2-3 makes and its risk R-3 records), so
     an `i32` element of a borrowed `Buf` may still be written through the
-    `T*` that a view's `Data()` returns. Mutation
+    `T*` that a view's `Data()` returns, element `i` through the one-element
+    view `AsSlice().Subslice(i, i + 1)`, and through `b[i] = v` once
+    `IndirectIndexWith` lands. Mutation
     by unchecked code — a Permissive body, the aliases an `unsafe` binding
     promised away, C++ — stays erroneous (p005434:670-672), never undefined
     behavior (T8 emits no `noalias` on an open place), and is Debug-detected
@@ -6083,12 +6413,14 @@ review fold: RR1-B1, RR1-m1; the W-144 note's trusted-body rule and `Set`'s
 receiver amended 2026-10-28, review fold: RR2-B1, and the W-148 note's Debug
 test over every store, review fold: RR2-m1, where rev 3 read "reporting a
 `Plain` assignment through `T*`, to a field or to a whole object, that writes
-a counted byte, or an `addr self` call on an object with a counted byte").
+a counted byte, or an `addr self` call on an object with a counted byte"; the
+W-144 note's last sentence, on `IndirectIndexWith.Ref`'s `bound self` and the
+counterexample, added 2026-10-28, review fold: RR3-M1).
 
 <!-- google-doc-style-ignore -->
 
 ```text
-W-144: SAFE-2 (<date>, <sha1>; fork/safe/safe2-plan.md D-SAFE2-5): the audit also adds `unsafe impl ... as Core.SharedImmutable {}` for `Core.String` and, under `forall [T: Core.Freeze]`, for `Core.Slice(T)`, `Core.Buf(T)` and `Core.Optional(T)`, and for `Core.Box(T)` when this item adds `Box`, each checked against the facet's obligation (every field private, no `addr` method writing `self`, no function writing the type's storage through a shared path or returning a non-`const` pointer or `ref` into it, no stored self-pointer), and `Core.SharedImmutable` joins the library surface. Every prelude body is also checked against M3's write rule as a trusted body keeps it: it writes an object whose type holds a `Core.SharedImmutable` sub-object only through an exclusive path, an owner, a `ref` or an `exclusive T*`, or through a pointer into storage owned by an object it holds exclusively, every other path to that storage the type hands out being `bound` to that object; so `Core.Buf(T).Set` changes from `fn Set(self, i: i64, value: T)` to `fn Set(ref self, i: i64, value: T)` for every `T` (buf.carbon:48-53 at 2407efa74; the cost: a `Set` under a live view of the block, through a shared pointer or on a `Buf` bound by value is rejected, EX-TM-3's call moving before its view and slices.md's amendment saying so), and a prelude function found writing such storage through a shared path, an element of a block it owns included, is fixed the same way, never answered by withdrawing an opt-in that its own type's obligation still keeps.
+W-144: SAFE-2 (<date>, <sha1>; fork/safe/safe2-plan.md D-SAFE2-5): the audit also adds `unsafe impl ... as Core.SharedImmutable {}` for `Core.String` and, under `forall [T: Core.Freeze]`, for `Core.Slice(T)`, `Core.Buf(T)` and `Core.Optional(T)`, and for `Core.Box(T)` when this item adds `Box`, each checked against the facet's obligation (every field private, no `addr` method writing `self`, no function writing the type's storage through a shared path or returning a non-`const` pointer or `ref` into it, no stored self-pointer), and `Core.SharedImmutable` joins the library surface. Every prelude body is also checked against M3's write rule as a trusted body keeps it: it writes an object whose type holds a `Core.SharedImmutable` sub-object only through an exclusive path, an owner, a `ref` or an `exclusive T*`, or through a pointer into storage owned by an object it holds exclusively, every other path to that storage the type hands out being `bound` to that object; so `Core.Buf(T).Set` changes from `fn Set(self, i: i64, value: T)` to `fn Set(ref self, i: i64, value: T)` for every `T` (buf.carbon:48-53 at 2407efa74; the cost: a `Set` under a live view of the block, through a shared pointer or on a `Buf` bound by value is rejected, EX-TM-3's call moving before its view and slices.md's amendment saying so), and a prelude function found writing such storage through a shared path, an element of a block it owns included, is fixed the same way, never answered by withdrawing an opt-in that its own type's obligation still keeps. The audit also covers every prelude function that hands out a path into such storage: `IndirectIndexWith.Ref`, which PR 65 adds as `fn Ref(self, subscript: SubscriptType) -> ref ElementType;` (index.carbon:16 at fee0ef31c) with by-value impls on `Slice` and `Buf` (slice.carbon:76, buf.carbon:74), takes `bound self` at the interface, as `IndexWith.At` does (an impl may not add `bound` beyond its interface, temporal T5(e); upstream's `Deref.Op` has the same shape, p005434:952-960), and in both impls, so that `let s: str = b[0];` keeps the loan on `b` that `Set`'s `ref self` conflicts with; with an unbound `Ref`, `var b: Core.Buf(str) = Core.Buf(str).Make(1, "ab"); let s: str = b[0]; b.Set(0, "longer"); return s.Size();` binds `s` on an element reached through a free result, the `Set` is accepted and 6 is returned (fork/safe/safe2-plan.md section 0.8; DR-1 carries it on PR 65).
 W-146: SAFE-2 (<date>, <sha1>; D-SAFE2-11 to D-SAFE2-13): stage 2 also spells the unsupported benchmarking build, the Release build without the bounds check, the division guard, the overflow wrap and the zero-fill (kept as safety README.md's build modes promise it, W-351); the zero-fill is p000257:356-358's hardening initialization, with a type's customization once upstream names its interface (W-353 closed, its classification corrected). Superseded by this note: the title's "`--build-mode=debug|release`" names the supported modes only, and the benchmarking build is a third, unsupported configuration (W-351); the evidence's "the dated blockquote at docs/design/README.md:2147 promoting zero-fill to the Release baseline" reads as the blockquote SAFE-2 replaced with a note that the zeroing is p000257's (W-353), and "the dated blockquote withdrawing the performance-build row, D-SAFE-15" as the blockquote SAFE-2 rewrote to keep the row for the benchmarking build (W-350); the notes' "D-SAFE-14 (fail-stop everywhere, no build flag disables the checks — the benchmarking disable of safety README.md:260-262 withdrawn, A-13(c); break condition: a measured corpus where the checks exceed the strategy's budget — then a per-site `unsafe fn` accessor, never a flag)" reads "fail-stop in every supported build mode, the benchmarking build kept" (W-351), and the fork-benchmark break conditions "a real-world benchmark where the loss of `nsw` exceeds 0.5 percent — an owner call" (D-SAFE-15) and "more than 0.5 percent from zero-fill alone — then scoped to escaped-unformed objects" (D-SAFE-13 I5) are replaced by upstream's, as the realigned decisions state them (W-350, W-353).
 W-148: SAFE-2 (<date>, <sha1>; D-SAFE2-3 to D-SAFE2-9): the checker also implements the frozen loan kind and the closed and open place rule; M3's exclusive access for every assignment whose type holds a `Core.SharedImmutable` sub-object (the type itself or an array, tuple, struct, class or adapter that holds it); `StrictRefFromShared`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated` and `StrictSharedImmutableWrite`, each with the Permissive twin `PermissiveAliasedExclusive`; M8's loans keyed on the value representation rather than `Core.Plain`, the Debug shadow count counting live frozen loans for each byte of a borrowed object's storage and reporting every store, of any type and by any path (`T*`, a `ref`, the owner, a global by name, an `addr self` body), that writes a counted byte (`MutationDuringValueBinding`, "carbon: mutation of a borrowed object; terminating"), a Strict body's store among them only when a Permissive caller made it aliasing; T5(a)'s frozen kind and T5(d)'s immutability of each `bound` argument, a `bound` pointer argument's pointee held by the result under a frozen loan, an exclusive one for an `exclusive T*`, the result's own access at T5(a)'s kind; T8's `noalias` with `captures(none)` or `captures(ret: address, provenance)` only where established against every writer (intra-function on the body's own places, on `ref` and `exclusive T*` parameters' places under the whole-package condition, never on an open place). Superseded by this note: the evidence's "proposals/p005434 (`bound`, `ref`, `val`; :83 and :831-832 narrowed by D-SAFE-8 and D-SAFE-11(d))" reads ":83 and :831-832 kept by D-SAFE-8 and D-SAFE-11(d) as realigned" (W-347, W-349); its row names "'M8 value binding, non-`Plain`' EX-M-4b", "'M5 payload refs' EX-M-5" and "'D-SAFE-8 mixed-kind result' `Pick`/`UsePick`" read as fork/safe/plan.md §4.1's renamed rows "M8 value binding, borrowed object", "M5 payload bindings" and "D-SAFE-8 mixed-kind result, a `ref` binding on closed places"; and the notes' "D-SAFE-17 (value bindings; break condition: a corpus where the Debug shadow count's cost is measurable — then opt-in)" reads as the realigned D-SAFE-17, whose break condition is upstream's relaxation of p005434:663, or a prelude function shown writing storage that holds a `Core.SharedImmutable` sub-object through a shared path, answered by fixing that function (W-348).
 W-150: SAFE-2 (<date>, <sha1>; D-SAFE2-10): the generator maps a by-value parameter of a borrowed type to `&T` when `T: Core.Freeze`, else `&SharedView<T>`; `At`'s by-value receiver becomes `&'a Self` under `Freeze`, its element result staying `&'a SharedView<i32>`.
@@ -6319,7 +6651,8 @@ commit after it), the texts below with every placeholder filled; `<tip>` is
 the upstream tip the implementer's section 8 item 5 read (amended 2026-10-28,
 review fold: B-M3; rev 1 gave only the safe row and a paragraph that named
 neither the remaining waits, the held count nor a Next line, and gave no
-header, no item 6 text, no PR 67 row and no land-time discharge):
+header, no item 6 text, no PR 67 row and no land-time discharge; the fourth
+block's DR-1 action amended 2026-10-28, review fold: RR3-M1):
 
 1.  The header: insert the first block as the new first entry, "Last updated:"
     moving to it, so that the current first entry, which begins "Last updated:
@@ -6384,9 +6717,12 @@ merged. Merge order: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
 59, 61, 62, 64, 63, 65, 66, then PR 68 (OV-4) through its land-time commits M,
 F-M, L-R and L (fork/overload/ov4-plan.md section 3); the sequence no longer
 waits at PR 53, and still waits at PR 60 for SC-1's W-139 and at PR 56 for
-OP-1's W-352. Next: SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56, then EH-C
-(W-346) after the held PRs land, then UA-3; the weekly upstream check of
-2026-11-02 runs W-355's scripts over 284 quotes and 89 silence checks.
+OP-1's W-352. Next: SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56; DR-1
+notes on PR 65's records, before PR 65 lands, that its `IndirectIndexWith.Ref`
+takes `bound self` under W-144, with the counterexample of
+fork/safe/safe2-plan.md section 0.8; then EH-C (W-346) after the held PRs
+land, then UA-3; the weekly upstream check of 2026-11-02 runs W-355's scripts
+over 284 quotes and 89 silence checks.
 ```
 
 ```markdown

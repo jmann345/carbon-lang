@@ -1962,6 +1962,29 @@ not vacuous about first match. Seven mutants in all, six of the toolchain and
 one of the programs (amended 2026-10-28, review fold: A-m4 / A-m3). The
 implementer restores the tree after each and checks `git diff` is C1's.
 
+Measured on the committed C1 (measured 2026-10-28, implementation). Each
+toolchain mutant was applied with `$X/mutants.py` to a detached worktree of
+dc1bb641b, relinked over the objects of the C1 build in
+/home/user/carbon-build/carbon-ov4 (CT-1's relink recipe,
+`0.0.0-0.dev+751d077fd`), run on the four goldens and on p02, p04, p13, p21,
+a10, a09c, f04 and r04, and reverted, the scratch tree clean after each; M6
+ran B.1's swapped copy through `runner.py --toolchain` on the C1 install, and
+`git -C /home/user/carbon-ov4 diff` stayed empty throughout. Every mutant is
+killed, and each toolchain mutant's probe lines equal the fixer's rev-2 run
+(`$X/out-mut-<n>.txt`) but for crash frames and r04, which rev 2 did not run.
+The logs are in `ov4-impl/measure` of the scratchpad directory that holds
+§0.1's `$Q` (`$I` below): `$I/logs/mut-<n>/` and `$I/logs/m6.log`.
+
+| mutant | the four goldens, measured on C1 | the probes whose lines change from C1's, measured | killed |
+| --- | --- | --- | --- |
+| M1 | file_test aborts (exit 134): "CHECK failure at toolchain/check/call.cpp:508: param_pattern_ids.size() == arg_ids.size()" | p02, p04 and a09c abort at call.cpp:508 | yes, as §0.5 |
+| M2 | all four FAILED | p02 NoMatch; p04 prints 2, 1; a09c compiles and prints 2, 2, 2 (`Get()` no longer reaches the member whose default fails in the specific, so its diagnostic goes) | yes, as §0.5; a09c, which §0.5's row does not name, changes too, as the fixer's log shows |
+| M3 | all four FAILED | p02 and p04 print TODO(iii); p13, a09c and f04 gain TODO(iii) before their own diagnostic | yes, as §0.5; p13, a09c and f04 change too, as the fixer's log shows |
+| M4 | the check default_values.carbon FAILED, the other three passed | p13 compiles and runs, `F(1, 2)` returning 1: its second member is never selected | yes, as §0.5 |
+| M5 | file_test aborts (exit 134) on the check golden: "CHECK failure at toolchain/check/pattern_match.cpp:1275: scrutinee_id.has_value()" | p21 aborts at pattern_match.cpp:1275 and r04 at :1805 | yes, as §0.5's rev-3 measurement |
+| M5b | the check default_values.carbon FAILED, the other three passed | a10 gains "2 arguments passed to function expecting 3 arguments"; r04 gains the same diagnostic at `P(5, (1, 2))` (3:30) | yes, as §0.5; r04, outside rev 2's probe set, is a second kill |
+| M6 | (B.1 only) | B.1 OUTPUT-MISMATCH, printing `30 12 2 1 1 1 101 105 101 200 12 72 -1`: lines 3 and 5 print 2 and 1 | yes, as predicted |
+
 ### §8.6 prek, clang-tidy, R27 and R31 (every commit)
 
 `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2034,6 +2057,78 @@ Still to run, by the implementer:
     region §6.2's rules cannot resolve, stops the implementation reviews until
     the plan says why.
 
+Measured by the implementer on the committed C1 (measured 2026-10-28,
+implementation), before the implementation reviews. After `git fetch origin`,
+`git ls-remote` gave every held head as the hand-off's list: PR 67 56e2e5bbd,
+PR 53 2407efa74, PR 51 f96fe8a7a, PR 52 e6bc32a6d, PR 60 cc4daba00, PR 54
+cb3ef2e74, PR 55 c3cdecc5d, PR 56 9f12209d8, PR 57 e23113ba2, PR 58
+fcee90d9b, PR 59 b0822a744, PR 61 66aa13132, PR 62 0ef8a0334, PR 64
+551a03328, PR 63 89aabd125, PR 65 fee0ef31c and PR 66 43c8ab476, with trunk
+at 66bd2ba90; OV-4's head was dc1bb641b (C1, F1 and P). Each mirror was a
+detached worktree under /dev/shm/ov4-impl/src with its build under
+/dev/shm/ov4-impl/builds, one at a time, both deleted after its record; the
+logs are under `$I/mirrors/<name>/` (`$I` as in §8.5). "Alone" is the held
+side's own toolchain on the mirror's program set: PR 60's install
+(`+866468cba`), PR 66's (`+1517517eb`), and for the mall the same tree
+without OV-4's merge (T* below).
+
+| mirror | conflicts | gate | conformance with OV-4 | the held side alone | probes (the 62 and the five r probes) |
+| --- | --- | --- | --- | --- | --- |
+| m60, PR 60 (cc4daba00) plus OV-4 | merge.cpp, `CheckRedeclExplicitParamsAfterSelfMatch`'s return: OV-4's `llvm::ArrayRef(...).drop_front()` operands with SC-1's argument list, and SC-1's two arguments added to `CheckOverloadMemberParamsMatch`'s two calls (§6.2); ORCHESTRATION and the ledger taken from PR 60; the README table unchanged by its regeneration | 323 steps, 0 warnings; 1963 passed, 0 failed, none refilled: SC-1's goldens and OV-4's four, `fail_redecl_default_differs` unchanged | PASS 132, SKIP 21 of 153; bullets 49, 0, 7, 0 | PASS 130, COMPILE-FAIL 2 (OV-4's two programs), SKIP 21 | all equal C1's |
+| m66, PR 66 (43c8ab476) plus OV-4, re-run | handle_function.cpp (VA-1's pack gate, then the look-through); ORCHESTRATION, the decision log and the ledger taken from PR 66 | 324 steps, 0 warnings; 1981 passed, 0 failed, none refilled | PASS 149, SKIP 21 of 170; bullets 49, 0, 7, 0 | PASS 147, COMPILE-FAIL 2, SKIP 21 | C1's but for a12, rev 2's m66 line (VA-1's TODO) |
+| mall, the land rehearsal (below) | handle_function.cpp and merge.cpp, by the m66 and m60 rules; no records conflict | 17 incremental steps, 0 warnings; before F-M 2021 passed, 26 failed (T*'s 26, none of OV-4's four); after F-M 2044 passed, 3 failed (T*'s three) | PASS 224, SKIP 14 of 238; bullets 51, 0, 5, 0 | T*: PASS 222, SKIP 14 of 236; bullets 51, 0, 5, 0 | C1's but for a12, as on m66 |
+
+The mall rebuilt the land sequence on trunk 66bd2ba90: each held head merged
+with `git merge --no-ff` in fork/ORCHESTRATION.md's order, PR 67 first, as a
+scratch commit on no branch, with the land-time hunks that VA-2's rehearsal
+applies at the same points (fork/variadics/va2-plan.md §8.7 `mall`): SV-1's
+M-VA after PR 62, CT-1's S-VA after PR 64 and VA-2's S-CT after PR 66; then
+the README table regenerated (236 programs, `runner.py --self-test` OK). That
+is 21 scratch commits ending d316f7903, T* below
+(`$I/mirrors/mall/chain.log`). A records conflict (the fork/ Markdown files
+and the ledger) took the accumulated trunk's side, as each PR's land rule
+takes its records; every other conflict took VA-2's recorded resolution (its
+scratch merges 86b5885e9 to 814d788ef and its round-4 merge of PR 66,
+3d99f544e), and only where the step's two inputs for the file equal that
+resolution's, which held for each: PR 64's two programs (CT-1's C-1 rule), PR
+63's handle_loop_statement.cpp, loops.md, error_handling.md and four goldens
+(DR-1's M-a), PR 65's handle_index.cpp and string_indexing.carbon (M-b with
+C-b), and PR 66's convert.cpp (rule 1), eval.cpp (rule 2) and two goldens
+(rule 6). The heads that moved since VA-2's stage-7 rehearsal moved by records
+commits only, and T* differs from round 4's 3d99f544e only in fork/ records,
+the register's files, docs/design/generics/template_constraints.md (PR 60's
+RG-1 records commit) and S-CT's split.
+
+T* alone: 326 steps, 0 warnings (514 s); 2017 passed and 26 failed, with no
+CHECK failure or stack dump: VA-2's stage-7 T*'s 17 held land-time refills,
+VA-2's seven C4 renames and lower/for/bindings.carbon (VA-2's round-4 mall's
+25, `va2-rr/rev1-r4/mirror/meas.txt`), and S-CT's new split
+fail_todo_cpp_call_on_hetero_element.carbon. Its fill, 26 files with 1333
+insertions and 1632 deletions, is at its fixpoint after one writing pass,
+and then 2040 passed and 3 failed, the held side's three:
+dependent_var_full_prelude.carbon and write_through.carbon, which CT-1's C-2
+and DR-1b's L-b rename at land time, and template_constraint.carbon's
+`self_facet_in_signature_required`, SC-1's split against OP-2's
+`DefaultOptionalStorage` (fork/variadics/va2-plan.md D-VA2-18).
+
+M merged dc1bb641b into T* by §6.2 (the scratch commit e4cfcf24b):
+handle_function.cpp by the PR 59 and PR 66 rule and merge.cpp by the PR 60
+rule, the README table regenerated (238 programs, self-test OK). OV-4's head
+holds no D yet, so no records region conflicted. `git merge-tree` of the
+records twin 59b65eb9c (§0.6) against T* conflicts in the ledger's tail only
+(T*'s W-346 to W-356 against W-360 to W-362), which rule 5 resolves (checked:
+the three items appended after W-356, the JSON one array); ORCHESTRATION, the
+decision log and the gap analysis merge cleanly there because the rehearsal
+kept the accumulated trunk's records at each step, so §0.6's per-head regions
+stand for the landed trunk. Before F-M the red set is T*'s 26 exactly and
+none of OV-4's four goldens; F-M refilled the 26 (1333 insertions and 1632
+deletions, a second pass changing nothing), each refill byte-identical to
+T*'s, so OV-4 adds no refill; after it 2044 passed and 3 failed, T*'s three.
+Conformance is T*'s plus OV-4's two programs, both PASS, with no other status
+changed. The prediction holds: the held sequence's own red set and refills
+(with PR 66 in the sequence, VA-2's round-4 mall's 25 and S-CT's split rather
+than VA-2's stage-7 T*'s 17) and none of OV-4's files red.
+
 ### §8.8 Re-verification on the merge commit (land time)
 
 After M: §8.1 to §8.5 on the merge commit; F-M commits the refills; the
@@ -2055,6 +2150,9 @@ EXPECTED, not of record.
     changes no unit-tested API.
 -   The m60 and mall mirrors: specified for the implementer, mall before the
     implementation reviews (§8.7); m66, m64 and m61 were measured on rev 2.
+    The implementer ran m60 and mall on the committed C1 before the
+    implementation reviews and re-ran m66 on it (§8.7; measured 2026-10-28,
+    implementation).
 -   M6 was not re-run on rev 2: B.1 is unchanged and the toolchain change
     since rev 1 is the default count, which no program exercises.
 -   macOS, Windows, ASan and opt builds: the container builds Linux fastbuild
@@ -2066,6 +2164,18 @@ EXPECTED, not of record.
     PR 66, PR 61 and PR 64 alone what trunk prints (PR 59's and PR 66's r04
     abort at :1807, their line for :1805), and the implementer's mall and F-M
     run the new split on the merged branches.
+-   On the committed C1 (measured 2026-10-28, implementation): m64 and m61
+    were not re-run, since C1's toolchain diff is byte-identical to rev 2's
+    prototype diff (§2), on which they were measured; m59 was not run, PR 66
+    containing PR 59 and the mall holding both. The mall simulated neither the
+    held PRs' records commits nor their other land-time items (DD-1's state
+    L, EV-1's state C, CT-1's C-2 rename and DR-1b's L-b rename, whose absence
+    leaves two of T*'s three red after F-M; the third is SC-1's split against
+    OP-2, which VA-2's D-VA2-18 routes to their owners), nor OV-4's D, L-R
+    and L; the records regions were measured only by the merge-tree of the
+    rev-2 records twin.
+    The probes were not run on T* alone, nor was A-M1's alternative (M7),
+    which is no mutant of this plan.
 
 ### §8.10 Id re-scan (before commit D)
 

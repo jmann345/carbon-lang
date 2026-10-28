@@ -617,8 +617,8 @@ Carbon-native default arguments in 0.1, so the arity step above stays exact and
 no interaction rule is needed. Carbon has no default-argument design;
 overloading substitutes for the common cases, and default arguments on
 _imported_ C++ functions keep working (they participate in Clang-side
-resolution; see Importing C++ overload sets). Revisit as its own design fork if
-a need appears.")
+resolution; see [Importing C++ overload sets](#importing-c-overload-sets)).
+Revisit as its own design fork if a need appears.")
 
 ### No ranking, no subsumption
 

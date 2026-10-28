@@ -13,7 +13,12 @@ fold record (rev 3, 2026-10-28)" at the end of §8), and the "Sign-off" section
 after §8 tables every review of this plan. Rev 2, 2026-10-28, folded plan
 reviews A and B (fifteen findings: fourteen folded, one folded in part with its
 proposed fix rejected on upstream evidence; see "Review fold record (rev 2,
-2026-10-28)"). Rev 1 was the planner's draft, fdaed06ae.
+2026-10-28)"). Rev 1 was the planner's draft, fdaed06ae. The implementation (C1,
+F1, P and the held-state measurements) passed two implementation reviews, both
+APPROVE-WITH-FIXES, with one MAJOR and nine MINORs between them; all ten are
+folded by one fix commit, its fill and one records commit, within the fix
+budget, and none is rejected (amended 2026-10-28, implementation-review fold:
+see "Implementation review fold record (2026-10-28)", §8.13).
 Branch `claude/carbon-fork-0-1-ov4` in /home/user/carbon-ov4, cut from trunk
 66bd2ba90 (pushed, no commits of its own before this plan). One PR, base
 trunk, merging after PR 66 and before EH-C (fork ORCHESTRATION Next actions
@@ -65,7 +70,9 @@ RR1-m1 / RR1-m2).
 -   §5 Conformance delta.
 -   §6 Churn and collisions with the held PRs, region by region.
 -   §7 Risks and rejected alternatives.
--   §8 Verification, ending with the review fold records of rev 2 and rev 3.
+-   §8 Verification, ending with the review fold records of rev 2 and rev 3 and
+    the implementation review fold record (amended 2026-10-28,
+    implementation-review fold).
 -   Sign-off: every review of this plan, its verdict and its counts.
 -   Hand-off notes, then Appendices A to D (golden sources, programs, docs
     amendments and records texts, verbatim).
@@ -406,7 +413,20 @@ steps as D-OV-4 numbers them (fork/overload/plan.md:348-520):
     comment (:420-423) says "Carbon has no default arguments, so the range is
     exact". The plain path checks `[n - default_value_arity, n]` at
     `ResolveCalleeInCall` (:73-82), with `default_value_arity` passed at :310.
-    This is the step W-341 names.
+    This is the step W-341 names. A `self` declared in the implicit parameter
+    list breaks the count (amended 2026-10-28, implementation-review fold:
+    RV1-M1): it is diagnosed `SelfInImplicitParamList` and still returned by
+    `FindSelfPattern` (function.cpp:33-35, upstream's error recovery), but it is
+    not one of the `n` explicit patterns, so a bound receiver subtracts one that
+    is not there. When all of such a member's explicit parameters have defaults,
+    `default_value_arity` exceeds `n`, and `ResolveCalleeInCall`'s
+    `CARBON_CHECK` (:81-82) aborts the plain call for every argument count
+    (probes q01b and q32p: trunk, PR 59, PR 66 and PR 61 at :82, PR 64 at :83,
+    the nightly at :74; W-363). C1's copy of that CHECK aborted the set at
+    call.cpp:436, because the set computes every member's range before it
+    selects one, even where another member accepts the call (q31) or where
+    trunk's set reported `OverloadNoMatch` (q32). Fix ef31d5820 gives such a
+    member the empty range (§2.1, D-OV4-1).
 4.  (d) Deduction (`ProbeOverloadCandidateInScratchScope`, :502-516): the
     probe passes the supplied explicit arguments to
     `DeduceGenericCallArguments`, as `ResolveCalleeInCall` does at :108-117.
@@ -522,11 +542,11 @@ rev 2's after the run):
 | mutant | edit | measured |
 | --- | --- | --- |
 | M1 (D-OV4-1 without D-OV4-2) | the range widened, the probe's `CARBON_CHECK(param_pattern_ids.size() == arg_ids.size())` restored without `take_front` | p02, p04 and a09c abort: "CHECK failure at toolchain/check/call.cpp:508: param_pattern_ids.size() == arg_ids.size()"; the gate aborts (exit 134) |
-| M2 (D-OV4-2 without D-OV4-1) | the probe's prefix kept, the range exact | all four goldens FAILED; p02 NoMatch; p04 prints 2, 1 (the exact member wins) |
-| M3 (D-OV4-3 reverted) | gate (iii) not looking through the default | all four goldens FAILED; p02 and p04 print TODO(iii) |
+| M2 (D-OV4-2 without D-OV4-1) | the probe's prefix kept, the range exact | all four goldens FAILED; p02 NoMatch; p04 prints 2, 1 (the exact member wins); measured on C1 too, where a09c also changes (amended 2026-10-28, implementation-review fold: RV1-m4; §8.5) |
+| M3 (D-OV4-3 reverted) | gate (iii) not looking through the default | all four goldens FAILED; p02 and p04 print TODO(iii); measured on C1 too, where p13, a09c and f04 also gain TODO(iii) (amended 2026-10-28, implementation-review fold: RV1-m4; §8.5) |
 | M4 (D-OV4-4 reverted) | identity through `CheckRedeclParamsMatch` again | the check golden default_values.carbon FAILED; p13 compiles, its second member of the same parameter types never selected |
 | M5 (D-OV4-5 reverted to upstream's count) | `CheckDefaults` returns the level's count | the gate aborts (exit 134) and p21 aborts: "CHECK failure at toolchain/check/pattern_match.cpp:1275: scrutinee_id.has_value()" |
-| M5b (D-OV4-5 as rev 1 had it) | a level with a diagnosed missing default counts 0 | the check golden FAILED (`fail_default_not_trailing`'s `Q(5, 6)` diagnosed); a10 gains "2 arguments passed to function expecting 3 arguments" |
+| M5b (D-OV4-5 as rev 1 had it) | a level with a diagnosed missing default counts 0 | the check golden FAILED (`fail_default_not_trailing`'s `Q(5, 6)` diagnosed); a10 gains "2 arguments passed to function expecting 3 arguments"; measured on C1 too, where r04 also gains it (amended 2026-10-28, implementation-review fold: RV1-m4; §8.5) |
 | M6 (the programs, §8.5) | `Pick`'s and `Order`'s members swapped in B.1 | measured by the planner on rev 1's prototype, B.1 unchanged since: OUTPUT-MISMATCH, lines 3 and 5 printing 2 and 1 |
 
 Review A's proposed probe check (A-M1's fix), measured as an alternative, not a
@@ -735,8 +755,10 @@ worktrees aside, finds only this branch's fork/overload/ov4-plan.md.
     at 21c825a3f; at e6fddcf97 the definition is at :964 and the uses at :1223
     and :1422 (c7de72757 moved it).
 -   fork/overload/plan.md:380 and :2173 and docs/design/functions_overloading.md
-    :540-545, :570-576 and :1022-1023 are the only sentences of the two files
-    that say or assume Carbon has no default arguments (`git grep -n -i -E 'no
+    :545-547, :570-576 and :1022-1023 (the first range amended 2026-10-28,
+    implementation-review fold: RV1-m3; rev 3 said :540-545) are the only
+    sentences of the two files that say or assume Carbon has no default
+    arguments (`git grep -n -i -E 'no
     default arg|has no default|no Carbon-native default|default-argument
     design'` over docs/ and fork/); the page's "0.1 limits" item (iii) and its
     "New member versus redeclaration" CLOSED paragraph need a sentence each,
@@ -780,7 +802,13 @@ default_value_arity, n]`, with `n` the member's parameter patterns less one when
 the call binds a receiver, exactly the range `ResolveCalleeInCall` checks for
 the plain call (call.cpp:73-82 with the margin passed at :310; upstream
 call.cpp:46-52 and :241 at e6fddcf97), and with that function's
-`CARBON_CHECK(default_value_arity <= n)`. The range stays keyed on the call's
+`CARBON_CHECK(default_value_arity <= n)` (amended 2026-10-28,
+implementation-review fold: RV1-M1: in place of that CHECK, a member whose
+`default_value_arity` exceeds `n` gets the empty range; only a bound receiver
+with a diagnosed implicit-list `self` reaches it (§0.4 step 3), the plain call
+of such a member aborts for every argument count (upstream's, W-363), and the
+set, which computes every member's range before it selects one, now rejects that
+member by reason 0 instead of aborting). The range stays keyed on the call's
 receiver (D-OV-4 step 2(b)): through `c.M()` the explicit arguments after
 `self` count, through `C.M(c)` the receiver is argument 0 (p08). The comment at
 call.cpp:420-423 is rewritten (§2.1). _Break condition:_ upstream changes how
@@ -906,7 +934,14 @@ no OV-4 change (§0.5). OV-4 does not cherry-pick it: its export.cpp half needs
 9799a2326, which trunk lacks, and its deduce.cpp half lands in the function
 PR 66 changes by +127 lines. The split `fail_todo_generic_member_default` pins
 both the plain and the set behavior with a `TODO(UA-3, W-360)` comment, and
-W-360 asks UA-3's audit to take 503f09037 and refill the split. A defaulted
+W-360 asks UA-3's audit to take 503f09037 and refill the split. Until then a
+later member that accepts the short call is selected with no diagnostic
+(amended 2026-10-28, implementation-review fold: RV1-m1): against
+`F[T: type](x: T, y: i32 = 2)` then `F(b: bool)`, `F(true)` selects
+`F(b: bool)` and prints -1 (probe q30), and once 503f09037 lands it selects
+the generic member and prints 2. The split dumps that call too, so UA-3's
+refill shows the changed selection, which W-360 records in the decision log
+before the golden moves. A defaulted
 member of a generic class whose own parameters are not generic is IN now (p09:
 the enclosing specific supplies the class's bindings). _Break condition:_ UA-3
 lands without 503f09037's deduce.cpp hunk, or PR 66's deduction changes the
@@ -930,10 +965,23 @@ gate (x)'s "members that disagree on `self`" TODO (r02b). The split
 `defaulted_self_is_not_a_receiver` pins the plain and the set calls (amended
 2026-10-28, review fold: RR1-m1; rev 2 said "`self` included only when it
 carries a default, which no probe could declare (p13e)", which is false: p13e's
-`self` is refused for its list, not for its default). _Break condition:_
-upstream's `FindSelfPattern` comes to look through a default, so that a
-defaulted `self` is a receiver or an error; the receiver's alignment and the
-split are then re-read.
+`self` is refused for its list, not for its default). A `self` declared in
+the implicit parameter list is the other `self` that `FindSelfPattern` returns
+(amended 2026-10-28, implementation-review fold: RV1-M1): it is diagnosed
+`SelfInImplicitParamList` and still treated as `self`, but it is not among the
+explicit parameters a bound receiver is counted against. For
+`M[self: Self](y: i32 = 2)` called with a bound receiver the defaults then
+outnumber the explicit parameters after the receiver, the plain call aborts at
+`ResolveCalleeInCall`'s CHECK for every argument count on trunk and the
+nightly (W-363), and the set gives the member the empty range (D-OV4-1):
+beside `M(self, b: bool)`, `c.M(true)` selects `M(self, b: bool)` and `c.M()`
+is `OverloadNoMatch` with two arity notes, pinned by the split
+`fail_implicit_self_with_default`; the plain call, which aborts, is in no
+golden. _Break condition:_ upstream's `FindSelfPattern` comes to look through
+a default, so that a defaulted `self` is a receiver or an error, or stops
+treating an implicit-list `self` as `self`, or `ResolveCalleeInCall` stops
+aborting on it (W-363); the receiver's alignment, the empty range and the
+splits are then re-read.
 
 **D-OV4-9 — import.** An imported member carries `default_value_arity`
 (import_ref.cpp:2806) and its `DefaultValuePattern` as a deduplicated constant
@@ -1013,7 +1061,10 @@ would be a defect in D-OV4-1, not in the text.
 splits (Appendix A.1, rev 2 adding `fail_template_default_specific` and
 respelling `fail_redecl_default_differs` and `fail_default_not_trailing`, rev 3
 adding `defaulted_self_is_not_a_receiver` and `fail_default_not_trailing`'s
-`R`; amended 2026-10-28, review fold: RR1-m1 / RR1-m2), the
+`R`; amended 2026-10-28, review fold: RR1-m1 / RR1-m2; nineteen splits after the
+implementation-review fold, amended 2026-10-28, implementation-review fold:
+RV1-M1 adds `fail_implicit_self_with_default` and RV1-m1 a second, dumped set in
+`fail_todo_generic_member_default`), the
 export check file with 3 splits (A.2), a lower file with 3 splits (A.3, rev 2
 adding `template_dependent_default`) and the export lower twin (A.4); CHECK
 lines by autoupdate only (R16) (amended 2026-10-28, review fold: A-M1, A-m3,
@@ -1033,17 +1084,21 @@ incomplete (amended 2026-10-28, review fold: B-M4; rev 1 inserted amendments
 beside the false sentences, which W-341's notes, "functions_overloading.md
 :570-576 and :1022-1023 are rewritten", do not allow): the match test's CLOSED
 paragraph (:570-576), the F-009j item (:1022-1023) and the arity step's
-parenthesis (:543-545) are rewritten, each with a dated parenthesis quoting the
-2026-09-27 text it supersedes, as the page's OPEN paragraphs became dated
-CLOSED ones in place (Appendix C.1 to C.3); the 0.1 limits item (iii) and the
-D-OV-3 CLOSED paragraph each gain one dated sentence, which supersedes nothing
-(C.4, C.5). C.1 names upstream's positional default values with the design
-text and the toolchain text of §0.2 quoted at 0421bf3b4 (amended 2026-10-28,
+parenthesis (:545-547; amended 2026-10-28, implementation-review fold: RV1-m3 /
+MINOR-1; rev 3 said :543-545) are rewritten, each with a dated parenthesis
+quoting the 2026-09-27 text it supersedes, as the page's OPEN paragraphs became
+dated CLOSED ones in place (Appendix C.1 to C.3); the 0.1 limits item (iii) and
+the D-OV-3 CLOSED paragraph each gain one dated sentence, which supersedes
+nothing (C.4, C.5). C.1 names upstream's positional default values with the
+design text and the toolchain text of §0.2 quoted at 0421bf3b4 (amended
+2026-10-28,
 review fold: A-m1 / B-M1). fork/overload/plan.md is history: :380 and :2173
 get dated notes, not rewrites (C.6). Records (Appendix D, all in commit D,
 after the reviews and their fixes; amended 2026-10-28, review fold: B-M5):
 W-341 DISCHARGED (kind `implemented`, title prefixed "OV-4 (DISCHARGED at
-OV-4, <date>)"); W-360, W-361 and W-362 filed; W-363 and W-364 unused; the
+OV-4, <date>)"); W-360, W-361 and W-362 filed, and W-363 with them
+(amended 2026-10-28, implementation-review fold: RV1-M1; rev 3 left W-363
+unused); W-364 unused; the
 decision-log entry "OV-4" with D-OV4-1 to D-OV4-17, the V-3 check by sha and
 the register lines, placed with OV-1 to OV-3 (B-m4); the weekly entry's W-341
 paragraph a dated "resolved by OV-4" note; the gap row stays DONE with its
@@ -1073,8 +1128,9 @@ either order is allowed, because the two share no toolchain, prelude, golden or
 program file (EH-C renames `Core.Result`'s alternatives in core/prelude and the
 goldens and programs that spell them; OV-4's goldens dump only their own
 ranges and spell no `Result`), and whichever lands second merges the other's
-records by §6.2's region rules, its ledger items in id order (W-360 to W-362
-after EH-C's own). No held PR carries the drift, so none is amended (R32 (e)):
+records by §6.2's region rules, its ledger items in id order (W-360 to W-363
+after EH-C's own; W-363 amended 2026-10-28, implementation-review fold: RV1-M1).
+No held PR carries the drift, so none is amended (R32 (e)):
 a `git grep` of the seventeen held heads for "no default arg", "has no default
 arg", "no Carbon-native default" and "default-argument design" finds only
 trunk's own three statements (functions_overloading.md, fork/overload/plan.md
@@ -1094,7 +1150,10 @@ commits.
     values for non-generic parameters; trunk's deduction ignores a short
     argument list, upstream's 503f09037 appends the defaults; owner UA-3, whose
     audit takes 503f09037 and refills `fail_todo_generic_member_default`
-    (renaming it to a passing split). Break condition: D-OV4-7's.
+    (renaming it to a passing split). That refill also moves the split's
+    `F(true)` from `F(b: bool)` to the generic member, a selection change the
+    decision log records before the golden moves (amended 2026-10-28,
+    implementation-review fold: RV1-m1). Break condition: D-OV4-7's.
 -   **W-361** (missing-feature): default values of exported `overload fn`
     members reach C++ with 9799a2326, 8fdc8ebc3 and c7de72757; owner UA-3; the
     export split's `divergence_omitted` and `fail_cpp_omitted` move, recorded
@@ -1108,7 +1167,20 @@ commits.
     (1b0a5709e). UA-3 carries the fix into function.cpp, or drops it if
     upstream fixed the crash another way, and reports both crash sites
     upstream if the tip still has them. Break condition: D-OV4-5's.
--   W-363 and W-364: reserved, unused unless a review files a residue.
+-   **W-363** (toolchain-defect, owed upstream; filed by the
+    implementation-review fold, amended 2026-10-28, implementation-review fold:
+    RV1-M1): the ordinary call of a method whose `self` is declared in the
+    implicit parameter list (diagnosed `SelfInImplicitParamList`, still `self`
+    through `FindSelfPattern`'s error recovery) and whose explicit parameters
+    all have defaults aborts at `ResolveCalleeInCall`'s check that
+    `arity_lower_bound_margin` is at most `expected_args_size` when the call
+    binds a receiver (call.cpp:81-82; q01b and q32p, on trunk before OV-4 as
+    after it, and on the nightly at :74). The set gives such a member the empty
+    range (fix ef31d5820). Owner UA-3, which reports it upstream if the tip
+    still aborts and takes upstream's fix. Break condition: upstream fixes it;
+    the set's empty range then follows the plain call's new behavior.
+-   W-364: reserved, unused (rev 3 reserved W-363 with it; amended 2026-10-28,
+    implementation-review fold: RV1-M1).
 
 ## §2 Spec, file by file
 
@@ -1129,10 +1201,13 @@ comment says so; the probe zips the supplied arguments with the leading
 parameter patterns, under the invariant the arity step guarantees (D-OV4-2).
 The `CARBON_CHECK(default_value_arity <= expected_args_size)` is
 `ResolveCalleeInCall`'s own (:81-82), so the set and the plain call abort on
-the same impossible input, never on different ones. `take_front` replaces the
-whole-list zip because `llvm::enumerate` over two ranges requires equal
-lengths. The commit path is untouched: the hunk's last line is the only change
-inside `ProbeOverloadCandidateInScratchScope` besides its comment.
+the same impossible input, never on different ones (amended 2026-10-28,
+implementation-review fold: RV1-M1: the input is possible, through a diagnosed
+implicit-list `self`, and the set reaches it for every member before it selects
+one; fix ef31d5820, below, replaces the CHECK by the empty range). `take_front`
+replaces the whole-list zip because `llvm::enumerate` over two ranges requires
+equal lengths. The commit path is untouched: the hunk's last line is the only
+change inside `ProbeOverloadCandidateInScratchScope` besides its comment.
 
 <!-- google-doc-style-ignore -->
 
@@ -1192,6 +1267,63 @@ index 8a7571fe8..7a2c4cce4 100644
 
    OverloadProbeResult result;
 
+```
+
+<!-- google-doc-style-resume -->
+
+Fix 1, ef31d5820 (amended 2026-10-28, implementation-review fold: RV1-M1 /
+RV1-m2): the CHECK above becomes the empty range for a member whose defaults
+outnumber its explicit parameters after a bound receiver, and
+`ProbeOverloadCandidate`'s comment says the arguments are zipped against the
+leading parameter patterns. Built and installed (`0.0.0-0.dev+ef31d5820`),
+clang-format 21.1.8 clean, both clang-tidy passes silent on call.cpp (§8.13).
+
+<!-- google-doc-style-ignore -->
+
+```diff
+diff --git a/toolchain/check/call.cpp b/toolchain/check/call.cpp
+index 7a2c4cce4..8f0e5a09c 100644
+--- a/toolchain/check/call.cpp
++++ b/toolchain/check/call.cpp
+@@ -433,7 +433,15 @@ static auto GetExplicitArityRange(Context& context,
+   size_t expected_args_size =
+       param_patterns.size() - (self_id.has_value() ? 1 : 0);
+   auto default_value_arity = static_cast<size_t>(function.default_value_arity);
+-  CARBON_CHECK(default_value_arity <= expected_args_size);
++  if (default_value_arity > expected_args_size) {
++    // Only a bound receiver and a `self` declared in the implicit parameter
++    // list reach this: that `self` is diagnosed (`SelfInImplicitParamList`)
++    // and still found by `FindSelfPattern`, but it is not one of the explicit
++    // parameters the receiver is counted against. `ResolveCalleeInCall` would
++    // abort on this member for every argument count (W-363), so it accepts
++    // none.
++    return {1, 0};
++  }
+   return {expected_args_size - default_value_arity, expected_args_size};
+ }
+
+@@ -569,13 +577,14 @@ static auto ProbeOverloadCandidateInScratchScope(
+ }
+
+ // Probes whether a call's arguments select `function` — deducing a generic
+-// member's arguments and converting every argument to the corresponding
+-// parameter — without diagnosing and without leaving any instruction, cleanup,
+-// or generic-region state behind (D-OV-4 steps 2(d) and 2(e)). `arg_ids` is
+-// `self` (if bound) followed by the explicit arguments, zipped against all of
+-// the function's parameter patterns as `CallerPatternMatch` does. A bound
+-// receiver is never converted here: its presence was checked by the caller,
+-// and binding it is the commit's job.
++// member's arguments and converting every supplied argument to the
++// corresponding parameter — without diagnosing and without leaving any
++// instruction, cleanup, or generic-region state behind (D-OV-4 steps 2(d) and
++// 2(e)). `arg_ids` is `self` (if bound) followed by the explicit arguments,
++// zipped against the function's leading parameter patterns; the trailing
++// parameters the call omits have default values, which the commit's
++// `CallerPatternMatch` supplies. A bound receiver is never converted here: its
++// presence was checked by the caller, and binding it is the commit's job.
+ static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
+                                    const SemIR::Function& function,
+                                    SemIR::SpecificId enclosing_specific_id,
 ```
 
 <!-- google-doc-style-resume -->
@@ -1479,7 +1611,11 @@ the prototype before the four files are added). File names and splits
     `fail_template_default_specific` (rev 2: a template class's member whose
     default fails in `Box(bool)`, and the reversed order that never
     substitutes it), `fail_todo_generic_member_default`, `import_lib` and
-    `import_use` (eighteen splits).
+    `import_use` (eighteen splits); after the implementation-review fold
+    (amended 2026-10-28, implementation-review fold: RV1-M1 / RV1-m1)
+    `fail_implicit_self_with_default` follows `fail_todo_generic_member_default`
+    (nineteen splits), and `fail_todo_generic_member_default` holds a second
+    set, dumped.
 -   The export check file
     (toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon):
     `supplied`, `divergence_omitted`, `fail_cpp_omitted`.
@@ -1518,7 +1654,8 @@ where the existing text stays true.
 ### §2.7 Records (D, L-R, L)
 
 Appendix D, verbatim but for their `<...>` fields: D.1 the ledger (W-341
-discharged, W-360 to W-362), D.2 the decision-log entry "OV-4", D.3 the weekly
+discharged, W-360 to W-363; W-363 amended 2026-10-28, implementation-review
+fold: RV1-M1), D.2 the decision-log entry "OV-4", D.3 the weekly
 entry's note, D.4 the gap row's evidence cell and D.5 ORCHESTRATION, all in
 commit D after the reviews and their fixes; D.6 the register rows (L-R, land
 time); D.7 the land-time texts of M and L (amended 2026-10-28, review fold:
@@ -1564,13 +1701,17 @@ B-m4).
     with the mall rehearsal of §8.7 measured before they start.
 6.  **Fix commits, at most three**, each with its own fill when it changes
     goldens (the fill is not counted). A records-only commit that changes no
-    toolchain, golden or program file is not a fix commit.
-7.  **D, the records**: the ledger (D.1: W-341 DISCHARGED, W-360 to W-362
-    filed), the decision-log entry OV-4 (D.2), the weekly entry's note (D.3),
+    toolchain, golden or program file is not a fix commit. The
+    implementation-review fold used one: ef31d5820, with its fill 9ee5fcde3 and
+    one records commit (amended 2026-10-28, implementation-review fold, §8.13).
+7.  **D, the records**: the ledger (D.1: W-341 DISCHARGED, W-360 to W-363
+    filed; W-363 amended 2026-10-28, implementation-review fold: RV1-M1),
+    the decision-log entry OV-4 (D.2), the weekly entry's note (D.3),
     the gap row's evidence (D.4) and ORCHESTRATION (D.5), every `<...>` field
     filled from the commits and runs it names, after the reviews and their
-    fixes. Message: "OV-4 records: W-341 DISCHARGED; W-360 to W-362 filed;
-    decision-log entry OV-4; gap row evidence and ORCHESTRATION".
+    fixes. Message: "OV-4 records: W-341 DISCHARGED; W-360 to W-363 filed;
+    decision-log entry OV-4; gap row evidence and ORCHESTRATION" (rev 3's read
+    "W-360 to W-362"; amended 2026-10-28, implementation-review fold: RV1-M1).
 8.  **The focused re-review** (amended 2026-10-28, review fold: B-m3): one
     fresh agent per round reviews the fix commits and D against the two
     implementation reviews' findings, this plan and the records' cites (every
@@ -1609,9 +1750,11 @@ review fold: B-M3; rev 1 gave no messages or texts):
 2.  **F-M**: the refills the merged branches cause in OV-4's four goldens, by
     autoupdate to its fixpoint, and nothing else; the m66, m64 and m61
     mirrors (§8.7, measured: none) and m60 and mall (to be measured) predict
-    it. Message: "OV-4 land (F-M): refill OV-4's goldens on the merged branch
-    (autoupdate)", its body naming each refilled file. If autoupdate changes
-    nothing, there is no F-M commit, and L says so.
+    it (amended 2026-10-28, implementation-review fold: RV1-m4: m60 and the mall
+    were measured on C1, and the mall again on the fold's head, none refilling
+    an OV-4 file, §8.7). Message: "OV-4 land (F-M): refill OV-4's goldens on the
+    merged branch (autoupdate)", its body naming each refilled file. If
+    autoupdate changes nothing, there is no F-M commit, and L says so.
 3.  **L-R**: the register entries of Appendix D.6: its two table rows
     inserted into fork/register/rg1-plan.md's §2.T2 table directly after
     T2.7's row, and its checks and quotes appended to PR 67's
@@ -1681,7 +1824,19 @@ _toolchain/check/testdata/function/overload/default_values.carbon:_
 | fail_todo_non_value_default | two gate (iii) TODOs, at `var y: i32 = 2` and at the defaulted tuple pattern | :329, :334 |
 | fail_template_default_specific (rev 2) | one "unable to monomorphize specific `Get(bool)`" at `Box(bool).Get()`, with the notes "cannot implicitly convert expression of type `Core.IntLiteral` to `bool`" and the missing `ImplicitAs` impl at the default; nothing for `Box(i32).Get()`, `Box2(bool).Get()` or `Box2(i32).Get(5)` | :363, :366, :369 (no other STDERR) |
 | fail_todo_generic_member_default | `G(true, 5)` selects; `G(true)` `OverloadNoMatch` with the deduction note; `P(true)` `DeductionIncomplete` with `DeductionGenericHere` | :389/:392, :396/:399 |
+| fail_todo_generic_member_default, its second set (fold, RV1-m1) | `F(true)` against `F[T: type](unused x: T, y: i32 = 2)` then `F(unused b: bool)`: member 0's deduction rejects the short call silently and member 1 is selected with no diagnostic; the dump names member 1's declaration, line 34 of the split | :1647 `name_ref F, file.%F.decl.loc34` and :1648 `call %F.ref.loc37_37(%true)`; no STDERR beyond :389 to :399 |
+| fail_implicit_self_with_default (fold, RV1-M1) | `SelfInImplicitParamList` at member 0's `self`; `c.M()` `OverloadNoMatch` with an arity note on each member; `c.M(true)` selects member 1 with no diagnostic; no crash | :429 (column 17), :437 (column 30), :440, :443; nothing for `c.M(true)` |
 | import_lib, import_use | `F(1)` fills the imported default as the constant `2`; `F(1, 5)` supplies | :1651 `(%.loc9_28.2, constants.%int_2)`, :1670 |
+
+Measured on the fold's fill 9ee5fcde3 (amended 2026-10-28, implementation-review
+fold: RV1-M1 / RV1-m1; the two rows marked "fold" are new, hand-traced before
+the build and matched by the fill, a single writing pass and a second that
+changed nothing): the STDERR lines of the other rows are unchanged (:171 to
+:399); the 30 source lines and 14 STDERR lines the fold adds at :404 to :447
+move every STDOUT line of the rows above by 44 (:453 is now :497, :606 :650,
+:1233 :1277, :1564 :1608), and the new STDOUT block of
+`fail_todo_generic_member_default` (:1612 to :1651) moves the import rows by 40
+more (:1651 is now :1735, :1670 :1754). The other three files are unchanged.
 
 _toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon:_
 `supplied` and `divergence_omitted` check with no diagnostic, Carbon's `F(1)`
@@ -1712,7 +1867,10 @@ member's thunk: the divergence R30 asks to assert.
 
 Delta: PASS +2, total +2, no status change for any existing program, no bullet
 change (the bullet was already PASS). Hand-derived EXPECTs (B.1) and the DIFF-1
-oracle (B.3) both match on the prototype.
+oracle (B.3) both match on the prototype. Re-measured after the
+implementation-review fold (amended 2026-10-28, implementation-review fold):
+PASS 130, SKIP 22, nothing else, of 152, bullets 48/0/8/0, every program's
+status equal to P's run; the fold changes only B.2's header comment.
 
 ## §6 Churn and collisions
 
@@ -1727,7 +1885,9 @@ messages without their trailing period, and W-360 and W-361 move their splits;
 both are UA-3's refills. Rev 2 adds no existing-golden churn: its new split
 and lower split are inside OV-4's own files (amended 2026-10-28, review fold:
 A-M1 / B-m5); nor does rev 3, whose split and call are in the same check file
-(amended 2026-10-28, review fold: RR1-m1 / RR1-m2).
+(amended 2026-10-28, review fold: RR1-m1 / RR1-m2), nor the
+implementation-review fold, whose split and set add 84 lines to that file
+(amended 2026-10-28, implementation-review fold: RV1-M1 / RV1-m1).
 
 ### §6.2 Collisions with the held PRs and the merge rules
 
@@ -1762,8 +1922,9 @@ PR 67 (PR 67's first):
     sentence, D.5's sentence is inserted at the item's start.
 5.  The ledger's tail: keep both sides' appended items, in id order (PR 67's
     W-346 to W-356, then any later landed ids below W-360, then OV-4's W-360
-    to W-362); the JSON stays one array, and prettier's format is re-checked
-    by prek.
+    to W-363, W-363 added by the implementation-review fold, amended 2026-10-28,
+    implementation-review fold); the JSON stays one array, and prettier's format
+    is re-checked by prek.
 6.  fork/decision-log.md, fork/gap-analysis.md, the overloading page and
     fork/overload/plan.md (no conflict measured): if a later landed commit
     makes one, keep both; OV-4's entry stays directly above OV-3's heading, its
@@ -1775,6 +1936,13 @@ PR 67 (PR 67's first):
     (amended 2026-10-28, review fold: RR1-m4).
 8.  EH-C (W-346): whichever of OV-4 and EH-C lands second applies rules 1 to
     6 to the other's records in the same way (D-OV4-16).
+
+After the implementation-review fold (amended 2026-10-28, implementation-review
+fold): `git merge-tree` of 9ee5fcde3 against the seventeen held heads, less each
+head's own conflicts with trunk, adds code conflicts only where §0.6 says
+(toolchain/check/merge.cpp with PR 60, toolchain/check/handle_function.cpp with
+PR 59 and PR 66); call.cpp, which the fold changes, merges cleanly with every
+head.
 
 ## §7 Risks and rejected alternatives (falsifiable)
 
@@ -1885,6 +2053,21 @@ PR 67 (PR 67's first):
     states a fact and its opposite in adjacent paragraphs misleads its reader;
     the rewrite quotes the superseded text, dated, so the history stays
     visible (amended 2026-10-28, review fold: B-M4).
+-   **Keeping `ResolveCalleeInCall`'s CHECK in the set's arity step** (C1's
+    D-OV4-1). Rejected (amended 2026-10-28, implementation-review fold:
+    RV1-M1): the set computes every member's range before it selects one, so a
+    member the call does not select aborted the whole call (q31, q32), where
+    trunk's set diagnosed the call or selected another member. Falsifier:
+    none; the empty range accepts what the member's ordinary call accepts
+    with a bound receiver, which is no argument count.
+-   **Fixing W-363 in upstream's plain path now** (counting the receiver only
+    when `self` is an explicit parameter, or dropping the implicit-list `self`
+    from `FindSelfPattern`). Rejected (amended 2026-10-28,
+    implementation-review fold: RV1-M1): the abort is upstream's error
+    recovery on a declaration already diagnosed, on trunk and the nightly
+    before OV-4, and either change alters upstream's recovery for every method,
+    not only in a set; W-363 carries it to UA-3's upstream report. Falsifier:
+    a call with no diagnosed error that reaches the abort.
 
 ## §8 Verification and discharge
 
@@ -1985,6 +2168,26 @@ The logs are in `ov4-impl/measure` of the scratchpad directory that holds
 | M5b | the check default_values.carbon FAILED, the other three passed | a10 gains "2 arguments passed to function expecting 3 arguments"; r04 gains the same diagnostic at `P(5, (1, 2))` (3:30) | yes, as §0.5; r04, outside rev 2's probe set, is a second kill |
 | M6 | (B.1 only) | B.1 OUTPUT-MISMATCH, printing `30 12 2 1 1 1 101 105 101 200 12 72 -1`: lines 3 and 5 print 2 and 1 | yes, as predicted |
 
+Re-run on the implementation-review fold's tree 9ee5fcde3 (amended 2026-10-28,
+implementation-review fold: RV1-M1 / RV1-m1), each toolchain mutant applied to a
+detached worktree under /dev/shm, relinked over the fix's build
+(`0.0.0-0.dev+ef31d5820`), run on the four goldens and on p02, p04, p13, p21,
+a10, a09c, f04 and r04 plus the review's q01, q30, q31 and q32, and reverted,
+the scratch tree clean after each. M8 is new: the fix reverted to C1's CHECK.
+Every mutant is killed; M6 is not re-run (B.1 is unchanged). The logs are in
+`ov4-impl/fixer` of the same scratchpad directory (`$J` below):
+`$J/logs/mut-<n>/` and `$J/logs/mutants-summary.txt`.
+
+| mutant | the four goldens, on the fold's tree | the probes whose lines change from the fold's install | killed |
+| --- | --- | --- | --- |
+| M1 | file_test aborts (exit 134): "CHECK failure at toolchain/check/call.cpp:516: param_pattern_ids.size() == arg_ids.size()" (C1's :508, moved by the fix's eight lines) | p02, p04, a09c and q30 abort at call.cpp:516 | yes |
+| M2 | all four FAILED | p02, p04 and a09c, as on C1 | yes |
+| M3 | all four FAILED | p02, p04, p13, a09c and f04, as on C1, and q01, q30, q31 and q32, which gain TODO(iii) | yes |
+| M4 | the check default_values.carbon FAILED, the other three passed | p13 | yes |
+| M5 | file_test aborts (exit 134) on the check golden at pattern_match.cpp:1275 | p21 aborts at :1275 and r04 at :1805 | yes |
+| M5b | the check default_values.carbon FAILED, the other three passed | a10 and r04 | yes |
+| M8 (the fix reverted) | file_test aborts (exit 134): "CHECK failure at toolchain/check/call.cpp:436: default_value_arity <= expected_args_size", checking `fail_implicit_self_with_default`'s `c.M()` | q01, q31 and q32 abort at call.cpp:436 | yes, by the new split |
+
 ### §8.6 prek, clang-tidy, R27 and R31 (every commit)
 
 `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2005,7 +2208,13 @@ i32, y: i32 = 2);' -e 'overload fn G(x: i32, y: i32 = 3);'` over
 toolchain/check/testdata/function/overload/default_values.carbon: four lines at
 C1, eight after F1, whose STDERR lines echo them; measured on rev 2), and C.1's
 two `Pick` spans are found in the same golden's `first_member_needs_default`
-split and in B.1.
+split and in B.1. The implementation-review fold (amended 2026-10-28,
+implementation-review fold): clang-format 21.1.8 clean on call.cpp; both
+clang-tidy passes print nothing on it (`$J/tidy/`); prek at its fixpoint on
+every path the fix, its fill and the records commit change, and the all-files
+prek run (`uvx prek run --all-files`) at its fixpoint before the push; the R31
+counts of ov4-plan.md and functions_overloading.md recorded before and after
+(§8.13).
 
 ### §8.7 Composition mirrors (before the implementation reviews)
 
@@ -2033,7 +2242,8 @@ default's behavior where trunk's plain path puts it (the A-M1 class, §0.3),
 and PR 66's deduction leaves D-OV4-7's OUT unchanged (p07, p20). PR 59 is PR
 66's base, so m66 covers it; m59 is run only if PR 66 is not landed with PR 59.
 
-Still to run, by the implementer:
+Still to run, by the implementer (amended 2026-10-28, implementation-review
+fold: RV1-m4: both run on C1, measured below):
 
 -   **m60, PR 60 plus OV-4:** the merge.cpp conflict and the two added
     arguments (§6.2); expected: SC-1's goldens and OV-4's four pass,
@@ -2048,7 +2258,11 @@ Still to run, by the implementer:
     head merged as M would merge it, with §6.2's region rules, then built,
     gated, filled (as F-M) and run through conformance. Predicted red set before
     F-M: exactly the held sequence's own, measured on the same tree without
-    OV-4's merge (VA-2's mall measured 17 held land-time refills and, after its
+    OV-4's merge (VA-2's mall measured 17 held land-time refills, a count that
+    left PR 66 out of the sequence: this mall measured 26, VA-2's round-4
+    mall's 25 and S-CT's split, under the same operative rule, and the stop
+    rule did not fire, amended 2026-10-28, implementation-review fold: MINOR-3 /
+    RV1-m4; and, after its
     F-M, three held-side failures, CT-1's and DR-1b's land-time renames and
     SC-1's `self_facet_in_signature_required`), and none of OV-4's four goldens
     or two programs (m66, m64 and m61 refill nothing, and m60's prediction is
@@ -2129,6 +2343,19 @@ changed. The prediction holds: the held sequence's own red set and refills
 (with PR 66 in the sequence, VA-2's round-4 mall's 25 and S-CT's split rather
 than VA-2's stage-7 T*'s 17) and none of OV-4's files red.
 
+Re-measured after the implementation-review fold (amended 2026-10-28,
+implementation-review fold: RV1-M1; call.cpp, which fix 1 changes, merges
+cleanly with every held head, so the mall alone is re-run): the scratch commit
+2ac280b05 merges 9ee5fcde3 into the mall's M e4cfcf24b with no conflict, built
+fresh under /dev/shm (326 steps, 0 warnings, `0.0.0-0.dev+2ac280b05`). Before
+F-M 2021 passed and 26 failed, T*'s 26 and none of OV-4's four; F-M refilled the
+26 (1333 insertions, 1632 deletions, a second pass changing nothing),
+byte-identical to the earlier F-M; after it 2044 passed and 3 failed, T*'s
+three. Conformance PASS 224, SKIP 14 of 238, bullets 51, 0, 5, 0, every status
+equal to the earlier mall's; the 62 probes and the five r probes print the
+earlier mall's lines, and q01, q30, q31 and q32 the fold install's. Logs:
+`$J/mall/` (`$J` as in §8.5).
+
 ### §8.8 Re-verification on the merge commit (land time)
 
 After M: §8.1 to §8.5 on the merge commit; F-M commits the refills; the
@@ -2176,6 +2403,15 @@ EXPECTED, not of record.
     rev-2 records twin.
     The probes were not run on T* alone, nor was A-M1's alternative (M7),
     which is no mutant of this plan.
+-   For the implementation-review fold (amended 2026-10-28,
+    implementation-review fold): m60, m64, m61 and m66 were not re-run, because
+    the fix changes call.cpp, which merges cleanly with every held head (`git
+    merge-tree` of 9ee5fcde3), leaves merge.cpp and handle_function.cpp as they
+    were, and the re-run mall holds all four heads; M6 was not re-run, B.1 being
+    unchanged and B.2's change a comment; W-363's plain-call abort was not built
+    at upstream's tip, where it is inferred from the unchanged
+    `ResolveCalleeInCall` (call.cpp:73-74 at 0421bf3b4) and `FindSelfPattern`
+    (function.cpp:35-37).
 
 ### §8.10 Id re-scan (before commit D)
 
@@ -2187,6 +2423,11 @@ also edits the `TODO(UA-3, W-360)` comment of
 `fail_todo_generic_member_default` in C1's golden source, by a fix commit with
 its fill (the comment is source text, so autoupdate keeps it), and the
 evidence lines of D.1 that cite it (amended 2026-10-28, review fold: B-m5).
+The fold's re-scan (amended 2026-10-28, implementation-review fold: RV1-M1):
+after a fetch, `\bW-36[0-4]\b` over the 164 refs and 22 worktrees finds only
+this branch, its remote and this worktree; the fold uses W-363 for RV1-M1's
+upstream residue, cited in fix ef31d5820's comment and split, and W-364 stays
+free.
 
 ### §8.11 Review fold record (rev 2, 2026-10-28)
 
@@ -2252,6 +2493,46 @@ folded; none is rejected, and none needs W-363 or W-364.
 Disk: the rev-3 prototype's build and worktree under /dev/shm/ov4-fixer1 were
 deleted before this plan's commit; no install is kept.
 
+### §8.13 Implementation review fold record (2026-10-28)
+
+Both implementation reviews of 89001cfcd..16c58df0d (C1 751d077fd, F1
+0f53d7e53, P dc1bb641b and the measurements 16c58df0d) returned
+APPROVE-WITH-FIXES: review 1 (root causes and probes) one MAJOR and four
+MINORs, review 2 (strictness and Goodhart) five MINORs, no BLOCKER. Every
+finding was reproduced before it was folded, on the C1 install
+(`0.0.0-0.dev+751d077fd`), trunk's, the nightly and the held installs it
+concerns (PR 59, PR 66, PR 61 and PR 64), or against the tree it cites; none
+is rejected. One fix commit is counted against §3's budget of three,
+ef31d5820 (toolchain/check/call.cpp, the check golden's source and B.2's
+header comment); its fill 9ee5fcde3 and this records commit are not counted.
+Upstream's tip is 0421bf3b4, re-fetched for the fold. Measured after the fold,
+container-local, EXPECTED, not of record: gate 1946 of 1946 at 9ee5fcde3;
+conformance PASS 130, SKIP 22, nothing else, of 152, bullets 48/0/8/0, every
+status equal to P's; `runner.py --self-test` "152 programs parsed, 56 bullets
+in table, OK"; the 62 probes and the five r probes print C1's lines; the
+mutants M1 to M5, M5b and M8 killed (§8.5); the mall re-run (§8.7). Ids: W-363
+is used for RV1-M1's upstream residue, W-364 stays unused. The held heads and
+trunk were unmoved by `git ls-remote` before the fold relied on them. The
+logs are under `$J` (§8.5): `logs/` (probes, gate, conformance, prek),
+`tidy/`, `mall/` and `src/` (the check golden's source before its fill).
+
+| finding | severity | disposition | where |
+| --- | --- | --- | --- |
+| RV1-M1 a new CHECK abort at call.cpp:436 for a member whose `self` is in the implicit list and that has a default | MAJOR | folded by fix ef31d5820, with its fill 9ee5fcde3: reproduced (q31 and q32 abort at call.cpp:436 on C1, where trunk, PR 59, PR 66, PR 61 and PR 64 print diagnostics; q01 aborts on trunk at the commit, :82, and on C1 at :436; the plain q01b and q32p abort on every toolchain, PR 64 at :83 and the nightly at :74); root cause: C1 copied `ResolveCalleeInCall`'s CHECK into the set's arity step, whose premise fails for an implicit-list `self`, and the set computes every member's range before it selects one; the CHECK became the empty range, which only a declaration already diagnosed `SelfInImplicitParamList` reaches, so no IN form is hidden; q01, q31 and q32 now give diagnostics, and the 62 probes, the five r probes and the review's other 45 probes are unchanged; the split `fail_implicit_self_with_default` pins `c.M()` and `c.M(true)`, and mutant M8, the fix reverted, aborts on it; W-363 filed for the plain call's abort, upstream's, at UA-3 | §0.4 step 3, D-OV4-1, D-OV4-8, D-OV4-14, §1.1, §2.1, §2.4, §4, §7.2, §8.5, §8.7, §8.10, A.1, D.1, D.2, D.4, D.5, D.7, hand-off note 8 |
+| RV1-m1 W-360's OUT form falls through silently to a later member, and no golden pins the selection that changes at UA-3 | MINOR | folded by ef31d5820 and 9ee5fcde3: reproduced (q30 prints -1, then 5, on C1; trunk and the held installs refuse it at gate (iii)); `fail_todo_generic_member_default` gains the set `F` and a dumped `UseLater`, whose dump names member 1 (`file.%F.decl.loc34`); D-OV4-7, W-360 (§1.1, D.1) and D.2 say that UA-3's refill moves the selection, which the decision log records before the golden moves | D-OV4-7, §1.1, §2.4, §4, A.1, D.1, D.2 |
+| RV1-m2 the probe's comment says the arguments are zipped against all parameter patterns | MINOR | folded by ef31d5820: confirmed (call.cpp:574-576 at C1); the comment now says the leading parameter patterns, the omitted trailing ones supplied by the commit's `CallerPatternMatch` | §2.1 |
+| RV1-m3 the arity parenthesis and D-OV-3 paragraph cites are off by one or two lines | MINOR | folded in this records commit: confirmed against 66bd2ba90's page (the parenthesis :545-547 inside item 1 at :542-547; the D-OV-3 paragraph :437-447); D-OV4-15, §0.10, the C.3 and C.5 headings and D.1 now cite :545-547 and :437-447 | §0.10, D-OV4-15, C.3, C.5, D.1 |
+| RV1-m4 predictions left unmarked after the measurement stage | MINOR | folded in this records commit: dated notes at §3's F-M item, §8.7's "Still to run" and its 17-refill prediction, and §0.5's M2, M3 and M5b rows, each pointing to the measured text | §0.5, §3, §8.7 |
+| MINOR-1 (review 2) D.1 would put a wrong docs cite into the ledger | MINOR | folded with RV1-m3, the same defect: D.1 cites :545-547 | D.1 |
+| MINOR-2 (review 2) hand-off note 8 says W-360 to W-362 carry C1's sha, which D.1 gives only W-362 | MINOR | folded in this records commit: D.1's W-360 and W-361 golden evidence names "OV-4 <C1>, filled at <F1>", and note 8 names each item's commits, W-363's included | D.1, hand-off note 8 |
+| MINOR-3 (review 2) a §8.7 count differed and was resolved by judgment | MINOR | folded in this records commit: confirmed (T*'s and the mall's red sets, 26 lines each, identical); the 17 prediction carries a dated amendment naming the measured 26 and its reason, VA-2's stage-7 T* having left PR 66 out; the plan's operative rule held, the stop rule did not fire, and the fold's mall re-run measured the same 26 | §8.7 |
+| MINOR-4 (review 2) B.2's header says the defaulted member is C++'s only viable one | MINOR | folded by ef31d5820, a comment-only program edit that moves no EXPECT (B.2 and its oracle still print the same seven lines, DIFF-1 PASS): confirmed by C++'s overload rules and the export golden's `divergence_omitted`, where C++'s `Carbon::F(1)` selects `F(bool)` through the integral to boolean conversion; the header now says the defaulted member is the only one Carbon accepts, and C++ ranks it best by its exact match | B.2 |
+| MINOR-5 (review 2) C.1's quote of the superseded text drops a link | MINOR | folded in this records commit: confirmed (66bd2ba90's page at :575 reads `see [Importing C++ overload sets](#importing-c-overload-sets)`); the page's quote and C.1 restore the link, so the quote is verbatim | docs/design/functions_overloading.md, C.1 |
+
+Disk: the mutant worktree and the mall's worktree and build, under
+/dev/shm/ov4-impl/fixer, were deleted before this commit; the install in
+/home/user/carbon-build/carbon-ov4 is the fix's (`0.0.0-0.dev+ef31d5820`).
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (amended
@@ -2262,6 +2543,8 @@ Every review of this plan, with its verdict and its counts (amended
 | A: root causes, soundness, upstream fidelity | rev 1, fdaed06ae | APPROVE-WITH-AMENDMENTS | 0 | 1 | 4 | 5 (A-M1 in part) | A-M1's proposed fix, on upstream evidence (§7.2) | rev 2, §8.11 |
 | B: records, process, R31 and R32 | rev 1, fdaed06ae | APPROVE-WITH-AMENDMENTS | 0 | 5 | 5 | 10 | none | rev 2, §8.11 |
 | RR1: the focused re-review | rev 2, 7fda41b11 | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 | 4 | none | rev 3, §8.12 |
+| Implementation review 1 (amended 2026-10-28, implementation-review fold) | C1 to 16c58df0d | APPROVE-WITH-FIXES | 0 | 1 | 4 | 5 | none | fix ef31d5820, fill 9ee5fcde3 and a records commit, §8.13 |
+| Implementation review 2 (amended 2026-10-28, implementation-review fold) | C1 to 16c58df0d | APPROVE-WITH-FIXES | 0 | 0 | 5 | 5 | none | the same, §8.13 |
 
 Rev 3 is SIGNED OFF FOR IMPLEMENTATION: the last review's verdict is
 APPROVE-WITH-AMENDMENTS, not REJECT; every finding of the three reviews is
@@ -2299,7 +2582,11 @@ implementation starts from this plan's commit with §3's C1.
 7.  There is no shrink line: a defect a review finds is fixed at its root in a
     fix commit, and one the fix budget cannot hold stops OV-4 at a plan
     revision, never at a guard (amended 2026-10-28, review fold: B-M2).
-8.  W-360 to W-362 are filed at D, not before; their `<sha>` fields are C1's.
+8.  W-360 to W-363 are filed at D, not before; W-360's and W-361's golden
+    evidence names C1 and F1, W-362's fix names C1, and W-363's names fix
+    ef31d5820 and its fill 9ee5fcde3 (amended 2026-10-28, implementation-review
+    fold: MINOR-2 / RV1-M1; rev 3 said "their `<sha>` fields are C1's", which
+    D.1 did not carry for W-360 and W-361).
 9.  Run mall before the implementation reviews (§8.7), and the R27 step of
     §8.6 before P (amended 2026-10-28, review fold: B-M3 / B-m5).
 10. At L-R, D.6's two table rows go into fork/register/rg1-plan.md §2.T2 as
@@ -2308,7 +2595,11 @@ implementation starts from this plan's commit with §3's C1.
 
 ## Appendix A. Golden sources (C1; CHECK lines by autoupdate only)
 
-Each file is written exactly as below; autoupdate adds the CHECK lines. Rev 2
+Each file is written exactly as below; autoupdate adds the CHECK lines. The
+implementation-review fold adds to A.1 the second set of
+`fail_todo_generic_member_default` and the split
+`fail_implicit_self_with_default`, both below (amended 2026-10-28,
+implementation-review fold: RV1-m1 / RV1-M1; fix ef31d5820). Rev 2
 changes A.1 (three splits), the headers of A.2 and A.4 (D-OV4-10) and A.3 (one
 split) (amended 2026-10-28, review fold: A-M1 / A-m3 / A-m4 / B-m4 / B-m5).
 
@@ -2588,6 +2879,36 @@ overload fn G[T: type](unused x: T, y: i32 = 2) -> i32 { return y; }
 fn P[T: type](unused x: T, y: i32 = 2) -> i32 { return y; }
 
 fn Use() -> i32 { return G(true, 5) + G(true) + P(true); }
+
+// Until then a later member that accepts the short call is selected with no
+// diagnostic: `F(true)` calls `F(b: bool)` today, and will call the generic
+// member once deduction appends its default. UA-3's refill of this split shows
+// that change, which the decision log records before the golden moves.
+overload fn F[T: type](unused x: T, y: i32 = 2) -> i32 { return y; }
+overload fn F(unused b: bool) -> i32 { return -1; }
+
+//@dump-sem-ir-begin
+fn UseLater() -> i32 { return F(true); }
+//@dump-sem-ir-end
+
+// --- fail_implicit_self_with_default.carbon
+
+library "[[@TEST_NAME]]";
+
+// A `self` declared in the implicit parameter list is diagnosed, and the error
+// recovery of `FindSelfPattern` still treats it as `self`, although it is not
+// one of the explicit parameters a bound receiver is counted against. With a
+// bound receiver, member 0's defaults then outnumber its explicit parameters
+// after the receiver, and its ordinary call would abort for every argument
+// count (W-363), so the set rejects it by its arity: `c.M(true)` selects
+// member 1, and no member accepts `c.M()`.
+class C {
+  var v: i32;
+  overload fn M[self: Self](y: i32 = 2) -> i32 { return self.v + y; }
+  overload fn M(self, unused b: bool) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return c.M() + c.M(true); }
 
 // --- import_lib.carbon
 
@@ -2898,6 +3219,13 @@ fn Run() -> i32 {
 
 ### §B.2 fork/conformance/programs/functions/overloading_default_values_diff.carbon
 
+Its header's fourth sentence is amended (amended 2026-10-28,
+implementation-review fold: MINOR-4; fix ef31d5820): rev 3's "the defaulted
+member is the only viable one for an omitted argument" was false on the C++
+side, where `F(bool)` is viable through the integral to boolean conversion and
+ranks below the exact match. No line of the program's code or its oracle
+changes.
+
 <!-- google-doc-style-ignore -->
 
 ```carbon
@@ -2913,9 +3241,11 @@ fn Run() -> i32 {
 // requires byte-identical exit code and stdout, so C++ is the oracle for the
 // values. The calls are the ones where Carbon's first match
 // (fork/overload/ov4-plan.md OV-4, D-OV-4) and C++'s best viable match select
-// the same function: the defaulted member is the only viable one for an
-// omitted argument, and `bool` arguments have an exact C++ match where Carbon
-// has no `bool` to `i32` conversion. A call two members accept is not here:
+// the same function: for an omitted argument the defaulted member is the only
+// one Carbon accepts, and C++ ranks it best by its exact match (`F(bool)` is
+// viable in C++ too, through the integral to boolean conversion, and ranks
+// lower); `bool` arguments have an exact C++ match where Carbon has no `bool`
+// to `i32` conversion. A call two members accept is not here:
 // C++ rejects it as ambiguous (overloading_default_values.carbon pins
 // Carbon's selection). The set is not exported, so rulebook R30 does not
 // apply.
@@ -3021,7 +3351,8 @@ The seven lines from "**CLOSED (fork amendment 2026-09-27) by D-OV-4 step
 2(b):** no" through "Revisit as its own design fork if a need appears." are
 replaced by (amended 2026-10-28, review fold: A-m1 / B-M1 / B-M4 / B-m5 /
 RR1-m3; rev 2 cited call.cpp's arity range for the trailing and constant
-rules):
+rules; the quote's link restored, so that the superseded text is verbatim,
+amended 2026-10-28, implementation-review fold: MINOR-5):
 
 <!-- google-doc-style-ignore -->
 
@@ -3065,8 +3396,8 @@ Carbon-native default arguments in 0.1, so the arity step above stays exact and
 no interaction rule is needed. Carbon has no default-argument design;
 overloading substitutes for the common cases, and default arguments on
 _imported_ C++ functions keep working (they participate in Clang-side
-resolution; see Importing C++ overload sets). Revisit as its own design fork if
-a need appears.")
+resolution; see [Importing C++ overload sets](#importing-c-overload-sets)).
+Revisit as its own design fork if a need appears.")
 ```
 
 <!-- google-doc-style-resume -->
@@ -3089,7 +3420,10 @@ The item's two lines are replaced by (amended 2026-10-28, review fold: B-M4):
 
 <!-- google-doc-style-resume -->
 
-### §C.3 the same page, the arity step's parenthesis (:543-545), replaced
+### §C.3 the same page, the arity step's parenthesis (:545-547), replaced
+
+(Amended 2026-10-28, implementation-review fold: RV1-m3 / MINOR-1; the
+heading said :543-545, which is not the parenthesis at 66bd2ba90.)
 
 The parenthesis from "(The range is a single number today;" through "In the
 toolchain: `GetExplicitArityRange`.)" inside item 1 is replaced by (amended
@@ -3123,7 +3457,10 @@ below, so the item's closing `;` moves after the parenthesis:
 
 <!-- google-doc-style-resume -->
 
-### §C.5 the same page, the D-OV-3 CLOSED paragraph that ends "the first type-equal member is the one being redeclared." (:438-448), a sentence after it
+### §C.5 the same page, the D-OV-3 CLOSED paragraph that ends "the first type-equal member is the one being redeclared." (:437-447), a sentence after it
+
+(Amended 2026-10-28, implementation-review fold: RV1-m3 / MINOR-1; the
+heading said :438-448.)
 
 Inserted on the line after the paragraph, as its last sentence; its code spans
 are the C1 golden's declarations verbatim (R27, §8.6; amended 2026-10-28,
@@ -3179,8 +3516,10 @@ seventeen heads (§0.6).
 ### §D.1 fork/inventory/work-items.json (D)
 
 W-341 changes in place: `kind` becomes `implemented`, `title` and `subsystem`
-are replaced, the four "Landed at" items are prepended to `evidence` (the filed
-items stay after them), and the discharge sentence is appended to `notes`
+are replaced, the five "Landed at" items are prepended to `evidence` (the filed
+items stay after them; the fifth, and the third's and fourth's corrected
+counts and cites, amended 2026-10-28, implementation-review fold: RV1-M1 /
+RV1-m3 / MINOR-1), and the discharge sentence is appended to `notes`
 (amended 2026-10-28, review fold: A-M1 / A-m3 / B-M4: the line ranges are rev
 2's, the default count is the trailing one, and the docs are "rewritten in
 place", which is what P does; RR1-m1 / RR1-m2: eighteen splits, and W-362's
@@ -3197,17 +3536,20 @@ two crash sites).
   "evidence_prepended": [
     "Landed at OV-4 (<C1>): toolchain/check/call.cpp:422-438 (`GetExplicitArityRange`: `[n - default_value_arity, n]`, `ResolveCalleeInCall`'s range and CHECK), :495-511 (`ProbeOverloadCandidateInScratchScope`: the supplied arguments against the leading parameter patterns, under `CARBON_CHECK(arg_ids.size() <= param_pattern_ids.size() && param_pattern_ids.size() - arg_ids.size() <= default_value_arity)`)",
     "Landed at OV-4 (<C1>): toolchain/check/handle_function.cpp:366-367 (member identity through `CheckOverloadMemberParamsMatch`), :859-880 (gate (iii) through a `DefaultValuePattern`), :958-961, :1019-1021 and :1053-1059 (`CheckDefaults`, marked `Fork (OV-4, W-362)`: a level with a diagnosed missing default counts only its trailing defaults); toolchain/check/merge.cpp:576-629 and :643-654, merge.h:121-135 (`GetOverloadMemberParamPatterns`, `CheckOverloadMemberParamsMatch`)",
-    "Landed at OV-4 (<F1>): toolchain/check/testdata/function/overload/default_values.carbon (18 splits), toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (3), toolchain/lower/testdata/function/overload/default_values.carbon (3), toolchain/lower/testdata/interop/cpp/function/export/overload_set_default.carbon (1)",
-    "Landed at OV-4 (<P>): fork/conformance/programs/functions/overloading_default_values.carbon and the DIFF-1 pair overloading_default_values_diff.carbon and .diff.cpp; docs/design/functions_overloading.md rewritten in place at the match test's CLOSED paragraph (:570-576 at 66bd2ba90), the F-009j item (:1022-1023) and the arity step's parenthesis (:543-545), each quoting its superseded 2026-09-27 text, and amended at 0.1 limits item (iii) and D-OV-3's paragraph; fork/overload/plan.md's dated notes at :380 and :2173; measured <gate> of <gate> goldens and <pass>/0/<skip> over <total> programs, container-local, EXPECTED, not of record"
+    "Landed at OV-4 (<F1>): toolchain/check/testdata/function/overload/default_values.carbon (18 splits; 19 after the implementation-review fold's ef31d5820, refilled at 9ee5fcde3), toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (3), toolchain/lower/testdata/function/overload/default_values.carbon (3), toolchain/lower/testdata/interop/cpp/function/export/overload_set_default.carbon (1)",
+    "Landed at OV-4 (<P>): fork/conformance/programs/functions/overloading_default_values.carbon and the DIFF-1 pair overloading_default_values_diff.carbon and .diff.cpp; docs/design/functions_overloading.md rewritten in place at the match test's CLOSED paragraph (:570-576 at 66bd2ba90), the F-009j item (:1022-1023) and the arity step's parenthesis (:545-547), each quoting its superseded 2026-09-27 text, and amended at 0.1 limits item (iii) and D-OV-3's paragraph; fork/overload/plan.md's dated notes at :380 and :2173; measured <gate> of <gate> goldens and <pass>/0/<skip> over <total> programs, container-local, EXPECTED, not of record",
+    "Landed at OV-4 (ef31d5820, filled at 9ee5fcde3; the implementation-review fold): toolchain/check/call.cpp:436-444 (`GetExplicitArityRange`: the empty range for a member whose defaults outnumber its explicit parameters after a bound receiver, reachable only through a diagnosed implicit-list `self`, where the ordinary call aborts, W-363) and :579-587 (the probe's comment: the leading parameter patterns); toolchain/check/testdata/function/overload/default_values.carbon `fail_implicit_self_with_default` and `fail_todo_generic_member_default`'s second set; the header comment of fork/conformance/programs/functions/overloading_default_values_diff.carbon"
   ],
-  "notes_appended": " Discharged <date> by OV-4 (fork/overload/ov4-plan.md; decision-log entry OV-4): the filed mechanism was necessary but not sufficient, because D-OV-6 gate (iii) refused every defaulted member at its declaration, member identity treated a default as a different parameter (a declaration differing only in a default became a second member of the same parameter types), and a diagnosed non-trailing default left the plain path's arity open (the CHECKs at pattern_match.cpp:1275 and, when the unmatched parameter is a tuple pattern, :1805, on trunk and the nightly); OV-4 changed those three too, each at its root, with one resolution path and no new diagnostic. The filed notes' \"functions_overloading.md:570-576 and :1022-1023 are rewritten\" is done in place, each rewrite quoting the text it supersedes. Generic members with defaults wait for 503f09037 at UA-3 (W-360), exported members' C++ default arguments for 9799a2326, 8fdc8ebc3 and c7de72757 (W-361); the default count's fix moves into function.cpp at UA-3 (W-362)."
+  "notes_appended": " Discharged <date> by OV-4 (fork/overload/ov4-plan.md; decision-log entry OV-4): the filed mechanism was necessary but not sufficient, because D-OV-6 gate (iii) refused every defaulted member at its declaration, member identity treated a default as a different parameter (a declaration differing only in a default became a second member of the same parameter types), and a diagnosed non-trailing default left the plain path's arity open (the CHECKs at pattern_match.cpp:1275 and, when the unmatched parameter is a tuple pattern, :1805, on trunk and the nightly); OV-4 changed those three too, each at its root, with one resolution path and no new diagnostic. The filed notes' \"functions_overloading.md:570-576 and :1022-1023 are rewritten\" is done in place, each rewrite quoting the text it supersedes. Generic members with defaults wait for 503f09037 at UA-3 (W-360), exported members' C++ default arguments for 9799a2326, 8fdc8ebc3 and c7de72757 (W-361); the default count's fix moves into function.cpp at UA-3 (W-362). The implementation reviews found the set's copy of `ResolveCalleeInCall`'s arity CHECK reachable through a diagnosed implicit-list `self`; ef31d5820 gives such a member the empty range, and the ordinary call's abort there, upstream's, is W-363."
 }
 ```
 
 <!-- google-doc-style-resume -->
 
 New items, appended in id order after the last item (W-344 on trunk; after
-PR 67's W-356 once it has landed, §6.2 rule 5):
+PR 67's W-356 once it has landed, §6.2 rule 5); W-363 is added by the
+implementation-review fold (amended 2026-10-28, implementation-review fold:
+RV1-M1):
 
 <!-- google-doc-style-ignore -->
 
@@ -3222,12 +3564,12 @@ PR 67's W-356 once it has landed, §6.2 rule 5):
       "bullet": "Functions: function overloading (Carbon-native)",
       "evidence": [
         "toolchain/check/deduce.cpp:72-78 (`AddAll`: a parameter list longer than its arguments is treated as non-deduced) and :631-634",
-        "toolchain/check/testdata/function/overload/default_values.carbon `fail_todo_generic_member_default` (its `TODO(UA-3, W-360)`; the set's member G and the plain function P)",
+        "toolchain/check/testdata/function/overload/default_values.carbon `fail_todo_generic_member_default` (its `TODO(UA-3, W-360)`; the set's member G and the plain function P; OV-4 <C1>, filled at <F1>; the set F, whose later member `F(b: bool)` is selected today with no diagnostic, added by ef31d5820 and filled at 9ee5fcde3)",
         "upstream 503f09037 (PR 8011): check/deduce.cpp:640-653 at 0421bf3b4 ('If we are short on arguments, check if we can append default values for deduction.'), check/pattern.cpp:363 `ExtractParameterDefault`; 427c448dc (PR 8027) its golden",
         "fork/overload/ov4-plan.md D-OV4-7 and section 0.5 (503f09037's hunks applied to the prototype in a scratch build: the generic member in a set selects and prints, with no OV-4 code)"
       ],
       "blocked_by": [],
-      "notes": "Filed <date> by OV-4. Owner: UA-3, whose audit takes 503f09037 with the advance and refills `fail_todo_generic_member_default` (renamed without `fail_todo_` once it passes). The fork's `diagnose` parameter of `DeduceGenericCallArguments` (OV-2) and PR 66's deduce.cpp changes are the merge's context. Break condition: UA-3 lands without 503f09037's deduce.cpp hunk, or PR 66's deduction changes the result for a defaulted generic member; the item then re-plans."
+      "notes": "Filed <date> by OV-4. Owner: UA-3, whose audit takes 503f09037 with the advance and refills `fail_todo_generic_member_default` (renamed without `fail_todo_` once it passes). That refill moves `F(true)` from `F(b: bool)` to the generic member, a selection change the decision log records before the golden moves. The fork's `diagnose` parameter of `DeduceGenericCallArguments` (OV-2) and PR 66's deduce.cpp changes are the merge's context. Break condition: UA-3 lands without 503f09037's deduce.cpp hunk, or PR 66's deduction changes the result for a defaulted generic member; the item then re-plans."
     },
     {
       "id": "W-361",
@@ -3237,7 +3579,7 @@ PR 67's W-356 once it has landed, §6.2 rule 5):
       "size": "S",
       "bullet": "Functions: function overloading (Carbon-native)",
       "evidence": [
-        "toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (`divergence_omitted`, `fail_cpp_omitted`) and its lower twin (C++'s `CallOne` calls `_CF__carbon_thunk:overload1.Main`)",
+        "toolchain/check/testdata/interop/cpp/function/export/overload_set_default.carbon (`divergence_omitted`, `fail_cpp_omitted`) and its lower twin (C++'s `CallOne` calls `_CF__carbon_thunk:overload1.Main`); OV-4 <C1>, filled at <F1>",
         "upstream 9799a2326 (PR 7988), 8fdc8ebc3 (PR 8025) and c7de72757 (PR 8019): check/cpp/export.cpp:964 `BuildDefaultValueExpr`, used at :1223 and :1422 at 0421bf3b4",
         "fork/overload/ov4-plan.md D-OV4-10"
       ],
@@ -3259,6 +3601,21 @@ PR 67's W-356 once it has landed, §6.2 rule 5):
       ],
       "blocked_by": [],
       "notes": "Filed <date> by OV-4. Owner: UA-3, which carries the fix into function.cpp's `CheckDefaults` (1b0a5709e moved it), or drops it if upstream has fixed the crash another way, and reports both crash sites upstream if the tip still has them. Break condition: upstream fixes it; UA-3 then takes upstream's fix."
+    },
+    {
+      "id": "W-363",
+      "kind": "toolchain-defect",
+      "title": "OV-4 residue (owed upstream): the ordinary call of a method whose `self` is declared in the implicit parameter list (diagnosed `SelfInImplicitParamList`, and still `self` through `FindSelfPattern`'s error recovery) and whose explicit parameters all have default values aborts at `ResolveCalleeInCall`'s `CARBON_CHECK(static_cast<size_t>(arity_lower_bound_margin) <= expected_args_size)` when the call binds a receiver (`c.M()`, `c.M(5)`), because the receiver is counted against an explicit parameter it does not occupy; an `overload fn` set gives such a member the empty arity range instead (OV-4's implementation-review fold, RV1-M1)",
+      "subsystem": "toolchain/check (call.cpp, function.cpp)",
+      "size": "S",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/call.cpp:81-82 (`ResolveCalleeInCall`'s check, unchanged since the cut) and function.cpp:33-35 (`FindSelfPattern`: 'We also look in the implicit parameter list for error recovery'); upstream 0421bf3b4 call.cpp:73-74 and function.cpp:35-37 read the same",
+        "fork/overload/ov4-plan.md section 8.13 and section 0.4 step 3, probes q01b and q32p (plain calls): CHECK failure at call.cpp:82 on trunk, PR 59, PR 66, PR 61 and OV-4, at :83 on PR 64, and at :74 on the 2026.10.12 nightly",
+        "toolchain/check/call.cpp:436-444 at ef31d5820 (`GetExplicitArityRange`'s empty range for the set) and toolchain/check/testdata/function/overload/default_values.carbon `fail_implicit_self_with_default` (OV-4 ef31d5820, filled at 9ee5fcde3)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed <date> by OV-4's implementation-review fold (RV1-M1). The plain call aborted before OV-4 too; OV-4's C1 copied the check into the set's arity step, where it aborted the whole call even when another member accepts it, and fix ef31d5820 replaced it with the empty range. Owner: UA-3, which reports the plain call's abort upstream if the tip still has it and takes upstream's fix. Break condition: upstream fixes it (its error recovery stops treating an implicit-list `self` as the receiver, or the arity check stops counting it); the set's empty range then follows the plain call's new behavior."
     }
 ]
 ```
@@ -3266,6 +3623,9 @@ PR 67's W-356 once it has landed, §6.2 rule 5):
 <!-- google-doc-style-resume -->
 
 ### §D.2 fork/decision-log.md, the entry OV-4 (D), placed directly above "### OV-3: overload-set export, documented divergence (2026-10-05)"
+
+(Amended 2026-10-28, implementation-review fold: RV1-M1 / RV1-m1;
+D-OV4-1, D-OV4-7, D-OV4-8 and the residues gain the fold's rules and W-363.)
 
 The log groups a workstream's entries newest first (OV-3 at :3805 above OV-2
 at :4434 and OV-1 at :4728), so OV-4's entry opens the group; DR-0 and RG-1 sit
@@ -3293,7 +3653,10 @@ between two members that both accept a call, the first in declaration order is
 selected (D-OV-4). Decisions, auto-adopted under R29 (a), veto-able:
 
 -   **D-OV4-1:** the arity step accepts `[n - default_value_arity, n]`, keyed
-    on the call's receiver: `ResolveCalleeInCall`'s range. Break: upstream
+    on the call's receiver: `ResolveCalleeInCall`'s range; a member whose
+    defaults outnumber its explicit parameters after a bound receiver,
+    reachable only through a diagnosed implicit-list `self`, gets the empty
+    range where the ordinary call aborts (W-363). Break: upstream
     changes that range (issue 7529's tuple defaults) or picks another
     optional-parameter mechanism.
 -   **D-OV4-2:** the probe converts the supplied arguments against the
@@ -3316,12 +3679,18 @@ selected (D-OV-4). Decisions, auto-adopted under R29 (a), veto-able:
     first match, no ranking (pattern_matching.md:696-697). Break: an upstream
     overloading design with ranking.
 -   **D-OV4-7:** generic members with a defaulted argument omitted fail
-    deduction as the plain call does, until 503f09037 at UA-3 (W-360). Break:
-    UA-3 lands without it.
+    deduction as the plain call does, until 503f09037 at UA-3 (W-360); until
+    then a later member that accepts the short call is selected, and UA-3's
+    refill moves that selection, which is recorded here before the golden
+    moves. Break: UA-3 lands without it.
 -   **D-OV4-8:** receivers need no new rule: a `self` with a default is not a
     receiver upstream (`FindSelfPattern` does not look through the default),
     so the set treats that member as one without `self`, as the plain call
-    does. Break: upstream makes a defaulted `self` a receiver or an error.
+    does; a `self` declared in the implicit parameter list stays `self` for
+    error recovery, and such a member whose defaults outnumber its explicit
+    parameters after a bound receiver gets the empty range (D-OV4-1, W-363).
+    Break: upstream makes a defaulted `self` a receiver or an error, or
+    changes that recovery.
 -   **D-OV4-9:** imported members carry `default_value_arity` and the pattern.
     Break: upstream stops importing them.
 -   **D-OV4-10:** exported members have no C++ default argument until
@@ -3393,8 +3762,10 @@ T2.9, an accepted upstream overloading design, or upstream text on defaults
 with overloading.
 
 _Residues._ W-360 (generic members, 503f09037), W-361 (export, 9799a2326,
-8fdc8ebc3, c7de72757) and W-362 (the default count, into function.cpp), all
-UA-3's; W-363 and W-364 unused. No held PR is amended (R32 (e)).
+8fdc8ebc3, c7de72757), W-362 (the default count, into function.cpp) and W-363
+(the ordinary call's abort for a defaulted method whose `self` is in the
+implicit parameter list, upstream's, reported at UA-3), all UA-3's; W-364
+unused. No held PR is amended (R32 (e)).
 ```
 
 <!-- google-doc-style-resume -->
@@ -3432,21 +3803,24 @@ commit D, so the row records the discharge only with the ledger (amended
 2.  After "the documented divergence asserted on both sides in one program
     (rulebook R30)" insert the second, which cites `<P>`, the commit that
     holds the programs (rev 1 cited `<F1>`).
-3.  Before " — ids provisional against the slices branch." insert the third.
+3.  Before " — ids provisional against the slices branch." insert the third
+    (its W-363 amended 2026-10-28, implementation-review fold: RV1-M1).
 
 <!-- google-doc-style-ignore -->
 
 ```text
  OV-4 landed (W-341 DISCHARGED <date>, fork/overload/ov4-plan.md): members take upstream's positional default values (an R32 realignment of F-009j) — a member accepts from its parameter count less its trailing defaulted parameters up to its parameter count, the probe converts the supplied arguments only and the ordinary call fills the rest, first match decides between members that both accept, a declaration that differs from a member only in a default is `RedeclParamDiffers`, and a diagnosed non-trailing default counts only its trailing defaults (check and lower goldens function/overload/default_values.carbon and interop/cpp/function/export/overload_set_default.carbon).
 ; at OV-4, functions/overloading_default_values (hand-derived EXPECT) and the DIFF-1 pair functions/overloading_default_values_diff, 9/9 container-measured on <P> (<pass>/0/<skip> over <total>, EXPECTED, not of record)
-; OV-4's W-360 (generic members with defaults, 503f09037), W-361 (defaults of exported members, 9799a2326) and W-362 (the default count, into function.cpp), all at UA-3
+; OV-4's W-360 (generic members with defaults, 503f09037), W-361 (defaults of exported members, 9799a2326), W-362 (the default count, into function.cpp) and W-363 (the ordinary call's abort for a defaulted method whose `self` is in the implicit parameter list, upstream's), all at UA-3
 ```
 
 <!-- google-doc-style-resume -->
 
 ### §D.5 fork/ORCHESTRATION.md (D)
 
-Header, prepended to "Last updated:" as each workstream does:
+Header, prepended to "Last updated:" as each workstream does (the dated
+paragraph, the Branches row and item 6 below name W-363 too,
+amended 2026-10-28, implementation-review fold: RV1-M1):
 
 <!-- google-doc-style-ignore -->
 
@@ -3480,7 +3854,8 @@ aborts at pattern_match.cpp:1275 and :1805. F-009j and the match test's CLOSED
 paragraph are rewritten to name upstream's mechanism (R32), quoted at 0421bf3b4.
 Measured container-local: <gate> of <gate> goldens, <pass>/0/<skip> over
 <total>. Residues for UA-3: W-360 (503f09037), W-361 (9799a2326, 8fdc8ebc3,
-c7de72757), W-362 (function.cpp). No held PR is amended. OV-4 merges after PR
+c7de72757), W-362 (function.cpp), W-363 (upstream's abort for a defaulted
+method whose `self` is in the implicit parameter list). No held PR is amended. OV-4 merges after PR
 66 and before EH-C (W-346) through M, F-M, L-R and L (the plan's section 3).
 ```
 
@@ -3491,7 +3866,7 @@ Branches row, after `claude/carbon-fork-0-1-rg1`'s:
 <!-- google-doc-style-ignore -->
 
 ```markdown
-| `claude/carbon-fork-0-1-ov4` | IMPLEMENTED AND REVIEWED (base trunk 66bd2ba90) — OV-4, `overload fn` members with default parameter values (W-341 DISCHARGED; W-360 to W-362 filed for UA-3; W-363 and W-364 unused), at <head>; gap row "Functions: function overloading (Carbon-native)" stays DONE; expected <gate> of <gate> and <pass>/0/<skip> over <total>; merges after PR 66 and before EH-C, through M, F-M, L-R and L. |
+| `claude/carbon-fork-0-1-ov4` | IMPLEMENTED AND REVIEWED (base trunk 66bd2ba90) — OV-4, `overload fn` members with default parameter values (W-341 DISCHARGED; W-360 to W-363 filed for UA-3; W-364 unused), at <head>; gap row "Functions: function overloading (Carbon-native)" stays DONE; expected <gate> of <gate> and <pass>/0/<skip> over <total>; merges after PR 66 and before EH-C, through M, F-M, L-R and L. |
 ```
 
 <!-- google-doc-style-resume -->
@@ -3507,8 +3882,8 @@ the rest of the item unchanged and rewrapped by hand within the item:
 6.  **R32 work from the 2026-10-26 weekly check and RG-1 (2026-10-28)**: W-341
     (OV-4) is implemented and reviewed on claude/carbon-fork-0-1-ov4, merging
     after PR 66 and before EH-C and UA-3 through M, F-M, L-R and L
-    (fork/overload/ov4-plan.md section 3); its residues W-360, W-361 and W-362
-    go to UA-3.
+    (fork/overload/ov4-plan.md section 3); its residues W-360 to W-363 go to
+    UA-3.
 ```
 
 <!-- google-doc-style-resume -->
@@ -3582,7 +3957,9 @@ weekly-check finding filed under W-355, never an edit of the expected count.
 ### §D.7 The land-time records (L)
 
 Written by L after M, F-M and L-R, on the merged branch (amended 2026-10-28,
-review fold: B-M3; rev 1 named them without texts). The ledger: appended to
+review fold: B-M3; rev 1 named them without texts; W-363 added to the texts
+below, amended 2026-10-28, implementation-review fold: RV1-M1). The ledger:
+appended to
 W-341's `notes`:
 
 <!-- google-doc-style-ignore -->
@@ -3632,7 +4009,7 @@ header> text follows).
 67 landed) and re-verified: M <M>, F-M <F-M or none>, L-R <L-R>, L (this
 commit); <gate> of <gate> goldens and <pass>/0/<skip> over <total>,
 container-local, EXPECTED, not of record. It merges after PR 66 and before EH-C
-(W-346); W-360, W-361 and W-362 go to UA-3.
+(W-346); W-360 to W-363 go to UA-3.
 ```
 
 <!-- google-doc-style-resume -->
@@ -3642,7 +4019,7 @@ container-local, EXPECTED, not of record. It merges after PR 66 and before EH-C
 ```markdown
 W-341 (OV-4) is merged with the landed trunk and re-verified on
 claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md section 3), merging
-before EH-C and UA-3; its residues W-360, W-361 and W-362 go to UA-3.
+before EH-C and UA-3; its residues W-360 to W-363 go to UA-3.
 ```
 
 <!-- google-doc-style-resume -->

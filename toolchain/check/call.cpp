@@ -419,8 +419,11 @@ struct OverloadProbeResult {
 
 // Returns the range of explicit argument counts a member accepts, keyed on
 // whether the call binds a receiver, exactly as `ResolveCalleeInCall` computes
-// the expected count. Carbon has no default arguments, so the range is exact;
-// it is a range so that variadic members (W-013) can widen it.
+// it for the ordinary call `PerformCallToFunction` makes: from the parameter
+// count less the member's trailing parameters with default values
+// (`default_value_arity`) up to the parameter count. A call that omits
+// defaulted arguments selects the member as it would call the same function
+// alone; the commit's pattern match supplies the omitted values.
 static auto GetExplicitArityRange(Context& context,
                                   const SemIR::Function& function,
                                   SemIR::InstId self_id)
@@ -429,7 +432,17 @@ static auto GetExplicitArityRange(Context& context,
       context.inst_blocks().GetOrEmpty(function.param_patterns_id);
   size_t expected_args_size =
       param_patterns.size() - (self_id.has_value() ? 1 : 0);
-  return {expected_args_size, expected_args_size};
+  auto default_value_arity = static_cast<size_t>(function.default_value_arity);
+  if (default_value_arity > expected_args_size) {
+    // Only a bound receiver and a `self` declared in the implicit parameter
+    // list reach this: that `self` is diagnosed (`SelfInImplicitParamList`)
+    // and still found by `FindSelfPattern`, but it is not one of the explicit
+    // parameters the receiver is counted against. `ResolveCalleeInCall` would
+    // abort on this member for every argument count (W-363), so it accepts
+    // none.
+    return {1, 0};
+  }
+  return {expected_args_size - default_value_arity, expected_args_size};
 }
 
 // Returns the leaf parameter pattern of a parameter pattern, looking through
@@ -487,15 +500,23 @@ static auto IntLiteralArgFitsParam(Context& context, SemIR::InstId arg_id,
 }
 
 // The body of `ProbeOverloadCandidate`, run inside its scratch scope: deduces
-// a generic member's arguments (D-OV-4 step 2(d)), then converts each explicit
+// a generic member's arguments (D-OV-4 step 2(d)), then converts each supplied
 // argument to its parameter type in the resulting specific (step 2(e)).
+// Parameters whose arguments the call omits have default values and are not
+// probed: the commit's `CallerPatternMatch` supplies their defaults.
 static auto ProbeOverloadCandidateInScratchScope(
     Context& context, SemIR::LocId loc_id, const SemIR::Function& function,
     SemIR::SpecificId enclosing_specific_id, SemIR::InstId self_id,
     llvm::ArrayRef<SemIR::InstId> arg_ids) -> OverloadProbeResult {
   auto param_pattern_ids =
       context.inst_blocks().GetOrEmpty(function.param_patterns_id);
-  CARBON_CHECK(param_pattern_ids.size() == arg_ids.size());
+  // The arity step admitted the call, so the arguments are a prefix of the
+  // parameters and every omitted parameter is one of the trailing
+  // `default_value_arity` parameters that have default values.
+  CARBON_CHECK(arg_ids.size() <= param_pattern_ids.size() &&
+               param_pattern_ids.size() - arg_ids.size() <=
+                   static_cast<size_t>(function.default_value_arity));
+  param_pattern_ids = param_pattern_ids.take_front(arg_ids.size());
 
   OverloadProbeResult result;
 
@@ -556,13 +577,14 @@ static auto ProbeOverloadCandidateInScratchScope(
 }
 
 // Probes whether a call's arguments select `function` — deducing a generic
-// member's arguments and converting every argument to the corresponding
-// parameter — without diagnosing and without leaving any instruction, cleanup,
-// or generic-region state behind (D-OV-4 steps 2(d) and 2(e)). `arg_ids` is
-// `self` (if bound) followed by the explicit arguments, zipped against all of
-// the function's parameter patterns as `CallerPatternMatch` does. A bound
-// receiver is never converted here: its presence was checked by the caller,
-// and binding it is the commit's job.
+// member's arguments and converting every supplied argument to the
+// corresponding parameter — without diagnosing and without leaving any
+// instruction, cleanup, or generic-region state behind (D-OV-4 steps 2(d) and
+// 2(e)). `arg_ids` is `self` (if bound) followed by the explicit arguments,
+// zipped against the function's leading parameter patterns; the trailing
+// parameters the call omits have default values, which the commit's
+// `CallerPatternMatch` supplies. A bound receiver is never converted here: its
+// presence was checked by the caller, and binding it is the commit's job.
 static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
                                    const SemIR::Function& function,
                                    SemIR::SpecificId enclosing_specific_id,

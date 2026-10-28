@@ -281,6 +281,8 @@ fails if this table is stale):
 | `error_handling/run_result_ok.carbon` | Error handling: dedicated control flow constructs | run |
 | `functions/forward_decl.carbon` | Functions: separate declaration and definition | run |
 | `functions/overloading_cross_library` | Functions: function overloading (Carbon-native) | multi-unit (3 units) |
+| `functions/overloading_default_values.carbon` | Functions: function overloading (Carbon-native) | run |
+| `functions/overloading_default_values_diff.carbon` | Functions: function overloading (Carbon-native) | differential |
 | `functions/overloading_generic.carbon` | Functions: function overloading (Carbon-native) | run |
 | `functions/overloading_generic_class.carbon` | Functions: function overloading (Carbon-native) | run |
 | `functions/overloading_methods.carbon` | Functions: function overloading (Carbon-native) | run |

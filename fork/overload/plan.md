@@ -379,7 +379,12 @@ second, export third", :253-255).
         naming W-013 variadics as the reason the check is a range (paper
         :403-406); Carbon has no default arguments, so the range is exact
         (stranded sub-fork F-009j's recommendation, :450-457, adopted; amended
-        2026-09-27, review fold: rev B B2). Mismatch → reason 0, next member.
+        2026-09-27, review fold: rev B B2).
+        [Note 2026-10-28, OV-4: superseded by W-341's discharge; upstream's
+        positional default values reached trunk with UA-1's merge 14801f14a
+        (2026-10-05), and the range is now the plain call's, from the
+        parameter count less `default_value_arity` (fork/overload/ov4-plan.md
+        D-OV4-1).] Mismatch → reason 0, next member.
         (c) Template-dependent arguments (amended 2026-09-27, review fold: rev B
         B4 [R29(a)]): if any argument's type constant has
         `constant_values().GetDependence(...) == ConstantDependence::Template`
@@ -2171,7 +2176,8 @@ each discharge.
     per-candidate notes with a five-way reason; g: hard error
     `OverloadSetNotCallee`; h: yes, whole-set and transitive through `export
     import`; i: export the exportable subset; j: no default arguments, arity
-    exact; k: invalid redeclaration of the type-identical member; l: no,
+    exact; [note 2026-10-28: superseded by OV-4, fork/overload/ov4-plan.md]
+    k: invalid redeclaration of the type-identical member; l: no,
     TODO-gated; m: moot (Decl group, exclusive with
     `virtual`/`abstract`/`impl`); the "Linkage and mangling" section rewritten
     to D-OV-5 with the §0.1 row 9 reason and the asm-label truth (§0.2 item 14);

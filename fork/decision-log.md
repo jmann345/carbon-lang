@@ -3964,13 +3964,20 @@ the nearest passage, limits what the safety model may assume so that no
 undefined behavior follows, and its example is an optimization assumption; T8
 withholds `noalias`, so no optimization relies on the diagnostic assumption, and
 upstream says nothing of diagnostic assumptions) is not a drift. `unsafe
-permissive`, the prefix `unsafe` forms and the restored `addr self: Self*`
-(classified 2026-10-28, RG-1: ALIGNED, W-355; safety README.md:116-118 and
-:80-81, p005434:1226-1236) follow upstream; `exclusive`, `unsafe import`,
-`unsafe class`, the library names and the `import Cpp` asymmetry (classified
-2026-10-28, RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe
-import` and `unsafe class` are each 0 in upstream's docs/design and proposals,
-the library names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
+permissive` and the restored `addr self: Self*` (classified 2026-10-28, RG-1:
+ALIGNED, W-355; safety README.md:116-118, p005434:1226-1236) follow upstream.
+The prefix `unsafe` forms (classified 2026-10-28, RG-1: NONE, W-355) have no
+designed upstream spelling: safety README.md:80-81 ties the keyword to each
+unsafe operation, but upstream's only marker on an operation other than `as` is
+its values.md:595's `s_value.unsafe RefMemberFunction();`, a sketch under :573's
+"Open question" that this branch's values.md marks superseded, and upstream's
+parser takes `unsafe` only before `as` (parse/handle_expr.cpp:376-377), as this
+branch does; if upstream resolves that question or widens its modifier beyond
+`as`, the forms are re-read as a drift. `exclusive`, `unsafe import`, `unsafe
+class`, the library names and the `import Cpp` asymmetry (classified 2026-10-28,
+RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe import` and
+`unsafe class` are each 0 in upstream's docs/design and proposals, the library
+names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
 README.md:122-123 leaves import marking to future work). Since V-3b the
 re-basing clause above reads "re-based under R32".
 

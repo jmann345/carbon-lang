@@ -19,6 +19,11 @@ APPROVE-WITH-FIXES, with one MAJOR and nine MINORs between them; all ten are
 folded by one fix commit, its fill and one records commit, within the fix
 budget, and none is rejected (amended 2026-10-28, implementation-review fold:
 see "Implementation review fold record (2026-10-28)", §8.13).
+The focused re-review of the fold, round 1 (16c58df0d..dcbb449eb), returned
+APPROVE-WITH-FIXES with no BLOCKER, no MAJOR and one records-only MINOR, so
+the round is dry; the MINOR is folded by the round's records commit, and the
+PR is opened held after it (amended 2026-10-28, re-review round 1: see
+"Focused re-review, round 1 (2026-10-28)", §8.14).
 Branch `claude/carbon-fork-0-1-ov4` in /home/user/carbon-ov4, cut from trunk
 66bd2ba90 (pushed, no commits of its own before this plan). One PR, base
 trunk, merging after PR 66 and before EH-C (fork ORCHESTRATION Next actions
@@ -70,9 +75,10 @@ RR1-m1 / RR1-m2).
 -   §5 Conformance delta.
 -   §6 Churn and collisions with the held PRs, region by region.
 -   §7 Risks and rejected alternatives.
--   §8 Verification, ending with the review fold records of rev 2 and rev 3 and
+-   §8 Verification, ending with the review fold records of rev 2 and rev 3,
     the implementation review fold record (amended 2026-10-28,
-    implementation-review fold).
+    implementation-review fold) and the record of the focused re-review's
+    round 1 (amended 2026-10-28, re-review round 1).
 -   Sign-off: every review of this plan, its verdict and its counts.
 -   Hand-off notes, then Appendices A to D (golden sources, programs, docs
     amendments and records texts, verbatim).
@@ -1720,7 +1726,10 @@ B-m4).
     toolchain, golden or program file; those MINORs are folded by one records
     commit without a further round. A round that is not dry gets a fixer and
     another round, at most three rounds; a fourth would be a plan revision.
-    The PR is opened held after a dry round.
+    The PR is opened held after a dry round. Round 1, of 16c58df0d..dcbb449eb,
+    is dry: one records-only MINOR, folded by the round's records commit, with
+    no fixer and no further round (amended 2026-10-28, re-review round 1:
+    §8.14).
 
 **No shrink line** (amended 2026-10-28, review fold: B-M2; rev 1's two steps,
 a semantics TODO for defaulted members of generic classes and the omission of
@@ -2533,6 +2542,131 @@ Disk: the mutant worktree and the mall's worktree and build, under
 /dev/shm/ov4-impl/fixer, were deleted before this commit; the install in
 /home/user/carbon-build/carbon-ov4 is the fix's (`0.0.0-0.dev+ef31d5820`).
 
+### §8.14 Focused re-review, round 1 (2026-10-28)
+
+Round 1 of §3 item 8's loop: one fresh agent reviewed 16c58df0d..dcbb449eb at
+dcbb449eb (the fix ef31d5820, its fill 9ee5fcde3, the fold's records commit
+1c2470b06 and D dcbb449eb) against the two implementation reviews' findings,
+this plan and the records' cites. It re-fetched upstream, still 0421bf3b4, and
+read there `ResolveCalleeInCall` (call.cpp, its comment from :46, the function
+from :59, its CHECK at :73-74), `FindSelfPattern` (function.cpp:29-46) and
+`CheckDefaults` (its comment at function.cpp:676-679, the function from :688),
+beside the branch's `GetExplicitArityRange` (call.cpp:420-446) and the set's
+loop. `git ls-remote` showed trunk at 66bd2ba90 and the seventeen held heads
+as §0.6's table names them, and this records commit read them again, unmoved.
+The review did not modify the worktree: its mutants were relinked over the
+fix's build and its mall was built under /dev/shm, both deleted after use. Its
+probes, oracle and logs are in `ov4-rr/r1/review` of the scratchpad directory
+that holds §0.1's `$Q` (`$K` below): `$K/logs/`, `$K/out/`, `$K/probes/`,
+`$K/probes2/`, `$K/oracle/` and `$K/tidy/`; this records commit's own runs are
+in `ov4-rr/rec1` beside it. Everything measured is container-local, EXPECTED,
+not of record (R9).
+
+**The review**, APPROVE-WITH-FIXES: no BLOCKER, no MAJOR and one MINOR,
+RR1-1-m1, records only, so the round is dry by its judgment. Its runs:
+
+-   The two implementation reviews' findings against the tree: every
+    disposition of §8.13 matches. RV1-M1: mutant M8, the fix reverted and
+    relinked, aborts at call.cpp:436 on `fail_implicit_self_with_default`'s
+    `c.M()` (31:30 in the abort's stack) and on q01, q31 and q32, which give
+    diagnostics with the fix; the plain twins q01b and q32p abort at call.cpp:82
+    on OV-4, trunk, PR 59, PR 61 and PR 66, at :83 on PR 64 and PR 60, and at
+    :74 on the nightly, as W-363 is filed. RV1-m1: q30 prints -1, then 5, and
+    the dump names member 1 (`file.%F.decl.loc34`). RV1-m2, RV1-m3 with
+    MINOR-1 (:545-547 and :437-447 at 66bd2ba90), RV1-m4 and MINOR-2 to
+    MINOR-5 are in the tree as recorded.
+-   R17: the fix is sound. `default_value_arity` is at most the number of
+    explicit parameters, and a `self` in the explicit list is never defaulted
+    (`IsSelfPattern` does not look through a `DefaultValuePattern`), so there
+    the arity is at most the expected count. It exceeds the expected count only
+    with a bound receiver and a `self` found in the implicit list, which
+    handle_binding_pattern.cpp always diagnoses `SelfInImplicitParamList` (its
+    `ImplicitParamList` case, :397-403 at the head), so no IN form reaches the
+    empty range `{1, 0}`.
+-   Probes: the review's neighbouring shapes, 48 files in `$K/probes/` and 15
+    in `$K/probes2/` (an implicit-list `self` with partial, all or no
+    defaults, bound and unbound, with 0 to 3 arguments, alone or beside
+    accepting and rejecting members; generic members and generic classes, a
+    tuple default, class member access, a specific, import, sets that differ
+    only in a trailing default, the note's wording, a default that does not
+    convert, a literal that does not fit, and `var` or tuple parameters beside
+    a default), run on OV-4, trunk, the nightly and the mall. OV-4 never
+    crashes; error-recovery shapes print what the plain twin prints wherever
+    the twin does not abort; IN forms equal a hand-written C++ oracle
+    (`$K/oracle/`) or a hand derivation, identical over 3 runs. The 62 probes
+    of `$X/probe_list.txt` and the five r probes print C1's lines
+    (`$K/logs/n62-diff.txt` is empty); review 1's 48 probes print C1's lines
+    but for q01, q31 and q32.
+-   Unchanged behaviour: OV-1's 14 goldens under function/overload/ and
+    function/call/default_values.carbon are unchanged and pass; on the mall,
+    fail_todo_gates.carbon (gate (xi), TP-1) and variadics/fail_todo_va2.carbon
+    and fail_todo_slice.carbon (VA-1, VA-2) pass unchanged.
+-   The fill: ef31d5820 adds no CHECK line and 9ee5fcde3 only CHECK lines, 84
+    lines between them in the check golden (30 and 54); autoupdate changes
+    nothing on the four goldens or on all 1946 (`$K/logs/au4.log`,
+    `$K/logs/auall.log`).
+-   Gate: `[  PASSED  ] 1946 tests.` Conformance: "PASS 130,
+    COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+    DIFF-MISMATCH 0, SKIP 22 (of 152)", bullets 48 PASS, 0 FAIL, 8 SKIP, 0
+    NOT-WRITTEN of 56, every status equal to P's; `runner.py --self-test`
+    "152 programs parsed, 56 bullets in table, OK"; B.1, B.2 and its C++
+    oracle identical over 3 runs.
+-   Mutants M1 to M5, M5b and M8, relinked over the fix's build: all killed,
+    as §8.5's re-run records them (M1 aborting at call.cpp:516, M5 at
+    pattern_match.cpp:1275 and M8 at call.cpp:436; M2 and M3 failing all four
+    goldens, M4 and M5b the check golden).
+-   The mirror: the fix touches only call.cpp, so the mirror run is the mall, a
+    fresh scratch merge c6602e295 of dcbb449eb into M's e4cfcf24b (the ledger
+    by §6.2 rule 5; its toolchain, core and conformance trees equal
+    2ac280b05's), built in 326 steps with 0 warnings
+    (`0.0.0-0.dev+c6602e295`). Before F-M 2021 passed and 26 failed, exactly
+    T*'s red set; F-M refilled the 26 files (+1333/-1632), byte-identical to
+    the fold's, at its fixpoint; after F-M 2044 passed and 3 failed, T*'s
+    held-side three. Conformance PASS 224, SKIP 14 of 238, bullets 51/0/5/0,
+    every status equal; the probes print C1's lines but for a12, as on m66.
+-   Records: §8.13, the fold's amendments and §4's line cites are exact. D.1
+    equals its appendix with the fields filled, and the ledger loads with
+    `json.load` with 137 unique ids; D.3, D.4 and D.5 match; D.2 matches but
+    for one character (RR1-1-m1). At the tip the T2.8 check counts 3 and the
+    T2.9 check 40, every quote re-read there. The id re-scan over 164 refs
+    and 22 worktrees finds W-360 to W-364 only on OV-4. `git merge-tree` adds
+    regions only in PR 67's ledger tail, PR 60's merge.cpp and, for PR 59 and
+    PR 66, handle_function.cpp, as the PR body's Conflicts table says.
+-   The PR body: the title is its first line and the body 29055 characters;
+    every hash, count and conflict checked is exact but one figure that no log
+    carries (RR1-1-m1); no model identifier, no PR number in hash form, and
+    the footer last.
+-   Lint: two `prek --all-files` passes on a copy changed nothing, R18's
+    clang-format 21.1.8 is clean, both clang-tidy passes print nothing, and
+    R31's counts change only as intended.
+
+**Dry judgment and the orchestrator's ruling.** The review has no BLOCKER and
+no MAJOR, and its one MINOR changes no toolchain, golden or program file. The
+orchestrator ruled round 1 DRY ("no BLOCKER, no MAJOR, every MINOR
+records-only"). By §3 item 8 the MINOR is folded by one records commit,
+"OV-4 records: focused re-review round 1 recorded" (2026-10-28, the UTC date
+of its commit), with no fixer and no further round; the fix budget stays at
+one of three (ef31d5820), no id is minted and W-364 stays unused, and the PR
+is opened held, base trunk, after it. The finding was reproduced against the
+tree before it was folded:
+
+<!-- google-doc-style-ignore -->
+
+| finding | severity | reproduced | disposition | where |
+| --- | --- | --- | --- | --- |
+| RR1-1-m1 the PR body cites a build time no log carries, and D.2's filled text changes one template character | MINOR | yes: (a) the PR body's "322 steps in 440 s": `ov4-impl/impl/logs/build-c1.log` ends "[322/322] LINK bin/make-installation-digest" with no warning and no time, and no log under `ov4-impl`, `$Q`, `$X` or `$F` records a time of 440 s; (b) a word diff of D.2's block against the entry (fork/decision-log.md from :3805) differs only in the filled fields and in the semicolon after `<n>`'s fill at :3808-3809, where D.2 read `rev <n>, commits <C1>,` and D.5 reads `rev <n>; commits <C1>,` | folded, records only: (a) the PR body says "322 steps with no warning", as the log shows; (b) D.2's template takes the semicolon by a dated amendment and the entry stays as D wrote it (the review's first remedy), so D's texts are verbatim but for their fields, as §2.7 says. _Break condition:_ a later round or the orchestrator requires rev 3's comma; the entry's :3809 then takes it and D.2's line returns to rev 3's text | PR body; D.2 |
+
+<!-- google-doc-style-resume -->
+
+Also changed by the round's records commit, outside the finding: the status
+line, the Sections list, §3 item 8, the Sign-off table's row for the round,
+the decision-log entry OV-4 (one dated paragraph), ORCHESTRATION's Branches
+row (its leading status phrase only) and its paragraph dated 2026-10-28
+(12:11 UTC) (one sentence), the dated notes in D.2 and D.5 that say so, and
+the PR body (the review record through this round, the commit table and
+heads, the counts). No toolchain, golden or program file changes, so the
+fold's gate and conformance figures stand.
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (amended
@@ -2545,6 +2679,7 @@ Every review of this plan, with its verdict and its counts (amended
 | RR1: the focused re-review | rev 2, 7fda41b11 | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 | 4 | none | rev 3, §8.12 |
 | Implementation review 1 (amended 2026-10-28, implementation-review fold) | C1 to 16c58df0d | APPROVE-WITH-FIXES | 0 | 1 | 4 | 5 | none | fix ef31d5820, fill 9ee5fcde3 and a records commit, §8.13 |
 | Implementation review 2 (amended 2026-10-28, implementation-review fold) | C1 to 16c58df0d | APPROVE-WITH-FIXES | 0 | 0 | 5 | 5 | none | the same, §8.13 |
+| Focused re-review of the fold, round 1 (amended 2026-10-28, re-review round 1) | 16c58df0d..dcbb449eb | APPROVE-WITH-FIXES (dry) | 0 | 0 | 1 | 1 | none | the round's records commit, §8.14 |
 
 Rev 3 is SIGNED OFF FOR IMPLEMENTATION: the last review's verdict is
 APPROVE-WITH-AMENDMENTS, not REJECT; every finding of the three reviews is
@@ -3627,6 +3762,16 @@ RV1-M1):
 (Amended 2026-10-28, implementation-review fold: RV1-M1 / RV1-m1;
 D-OV4-1, D-OV4-7, D-OV4-8 and the residues gain the fold's rules and W-363.)
 
+(Amended 2026-10-28, re-review round 1: RR1-1-m1; the first paragraph reads
+`rev <n>; commits <C1>,` where rev 3 read `rev <n>, commits <C1>,`. Commit D
+filled `<n>` with the revision, its sign-off and its amending commits and
+wrote the semicolon of D.5's dated paragraph, which keeps that clause apart
+from the commit list; the template now says so, and the entry (from
+fork/decision-log.md:3805, the semicolon at :3809) is this text with its
+fields filled. The round's records commit also gives the entry, after its
+residues, the dated paragraph "_Focused re-review, round 1 (2026-10-28)._",
+§8.14.)
+
 The log groups a workstream's entries newest first (OV-3 at :3805 above OV-2
 at :4434 and OV-1 at :4728), so OV-4's entry opens the group; DR-0 and RG-1 sit
 under V-1 to V-3 because they amend V-3 (amended 2026-10-28, review fold:
@@ -3638,7 +3783,7 @@ B-m4; rev 1 placed it after DR-0 and RG-1 with no reason).
 ### OV-4: `overload fn` members with default parameter values (W-341) (<date>)
 
 W-341 (filed at the weekly upstream check 2026-10-26) is DISCHARGED on
-claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev <n>, commits <C1>,
+claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev <n>; commits <C1>,
 <F1>, <P>, <fix commits> and this one): an `overload fn` member with upstream's
 positional default values is called with a defaulted argument omitted, as the
 ordinary call of the same function is. The gap row "Functions: function
@@ -3870,6 +4015,12 @@ Branches row, after `claude/carbon-fork-0-1-rg1`'s:
 ```
 
 <!-- google-doc-style-resume -->
+
+After a dry round of §3 item 8, that round's records commit changes the row's
+leading status phrase to "IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1 DRY
+(base trunk 66bd2ba90)" and gives the dated paragraph above one sentence
+naming the round, its verdict and D's sha, and nothing else in the file
+(amended 2026-10-28, re-review round 1: §8.14).
 
 Next actions item 6: its first sentence, from "**R32 work" through "on trunk's
 base." (trunk :1086-1090), is replaced by the text below, and the item's

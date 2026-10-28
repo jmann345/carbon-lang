@@ -3936,6 +3936,23 @@ _Residues._ W-360 (generic members, 503f09037), W-361 (export, 9799a2326,
 implicit parameter list, upstream's, reported at UA-3), all UA-3's; W-364
 unused. No held PR is amended (R32 (e)).
 
+_Focused re-review, round 1 (2026-10-28)._ One fresh review of the range
+16c58df0d..dcbb449eb (the fix ef31d5820, its fill 9ee5fcde3, the fold's
+records commit 1c2470b06 and D dcbb449eb) returned APPROVE-WITH-FIXES: no
+BLOCKER, no MAJOR and one MINOR, RR1-1-m1, records only. Re-measured
+container-local, EXPECTED, not of record: 1946 of 1946 goldens; conformance
+130/0/22 over 152, bullets 48/0/8/0, every status equal to P's; mutants M1 to
+M5, M5b and M8 killed; the 62 probes and the five r probes print C1's lines;
+the mall on a fresh scratch merge c6602e295, 2021 of 2047 before F-M (the held
+sequence's 26), F-M byte-identical, 2044 of 2047 after, 224/14 of 238. The
+orchestrator ruled the round DRY under the plan's section 3 item 8
+(fork/overload/ov4-plan.md): the MINOR, a PR-body build time no log carries
+and one template character D.2 did not have, is folded by the round's records
+commit, which gives Appendix D.2's template this entry's semicolon and changes
+no toolchain, golden or program file; there is no fixer and no further round,
+the fix budget stays at one of three, and the PR is opened held, base trunk,
+as the plan's section 8.14 records.
+
 ### OV-3: overload-set export, documented divergence (2026-10-05)
 
 Milestone bullet "Functions: function overloading (Carbon-native)" flips PARTIAL

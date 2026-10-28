@@ -8,7 +8,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 **Status:** rev 7, 2026-10-28 -- SIGNED OFF FOR IMPLEMENTATION at rev 5,
 AMENDED BY A STOP-AND-AMEND (rev 6) AND BY THE FOLD OF ITS FOCUSED RE-REVIEW
-(rev 7). Rev 7 is the plan amender's fold of the focused re-review of rev 6
+(rev 7); IMPLEMENTED by commits 48f2e66a0 and 954f1c542, whose two document
+reviews raised ten findings, all folded by fix commits 0f281d8bd and
+e1574b003 and the records commit of section 8.7, none rejected, the focused
+re-review of section 3 step 5 next (amended 2026-10-28, document-review fold:
+section 8.7). Rev 7 is the plan amender's fold of the focused re-review of rev 6
 (486d2bc74), whose verdict was APPROVE-WITH-AMENDMENTS with no BLOCKER, one
 MAJOR and one MINOR, both folded and none rejected (section 8.12; amended
 2026-10-28, stop-and-amend re-review: AM6-M1, AM6-m1). AM6-M1: section 2.1's
@@ -175,6 +179,25 @@ the receiver at the interface and keeps it in the impl: `interface Deref`
 declares `fn Op[bound ref self: Self]() -> ref Result;` and its impl for `T*`
 defines `fn Op[bound self: Self]() -> ref T` (p005434:952-960), the shape
 W-144 gives `IndirectIndexWith.Ref` (D-SAFE2-5).
+
+Re-read for the document-review fold on 2026-10-28 (added 2026-10-28,
+document-review fold: R1-m3, which found the last recorded re-read at
+07718a832 while the tip had moved): `git fetch upstream trunk` gives
+9192ee003 ("Make `TokenInfo` use a single 32-bit store for initialization.",
+upstream PR 8054); `git diff --stat 07718a832 9192ee003` over proposals,
+docs/design, toolchain/check/type_completion.cpp and core/prelude prints
+nothing; `git log --oneline c1e83b0b7..9192ee003` over the nine files above
+and docs/design/assignment.md and docs/design/expressions/indexing.md lists
+only f21c62524; the quotes below read as before. Read for R1-M1 at the same
+tip: docs/design/assignment.md:76-77, "the first operand must be modifiable
+because it is passed to a `(ref self: Self)` parameter", whose allowed forms
+include "A dereference of a pointer." (:80) and "Member access naming a
+field" (:82); :184, "The statement `x = y;` is rewritten to
+`x.(AssignWith(U).Op)(y);`."; and p005434:302-318, the operators that take a
+`ref` operand, `&`, the first operand of indexing and member access, and "The
+statement operators now use `ref` instead of pointers", the left-hand operand
+of the assignment operators and `++` and `--`. PR 67's checks pass at
+9192ee003 (section 0.2).
 
 No quoted passage moved or changed. The passages, at 0421bf3b4, verbatim:
 
@@ -398,6 +421,15 @@ p005434, p005914, p000257, values.md and the three README and arithmetic
 files, "checked 120 quotes, 0 failed"; the five H1 checks, "checked 5 silence
 checks, 0 failed"; with Appendix C.2's eleven rows, "checked 284 quotes, 0
 failed"; with H1.7 widened, "checked 89 silence checks, 0 failed".
+
+Re-run for the document-review fold at 9192ee003 from a detached worktree of
+56e2e5bbd at /dev/shm/safe2-fixer/rg1 (removed after; added 2026-10-28,
+document-review fold: R1-m3): "checked 273 quotes, 0 failed" and "checked 89
+silence checks, 0 failed"; the 97 and the 120 rows, "checked 97 quotes, 0
+failed" and "checked 120 quotes, 0 failed"; the five H1 checks, "checked 5
+silence checks, 0 failed"; and the nine upstream lines the fold quotes
+(docs/design/assignment.md:76, :77, :80, :82 and :184, p005434:83, :302, :314
+and :316), "checked 9 quotes, 0 failed".
 
 So the break conditions of H1.8 to H1.12 have not fired: no accepted upstream
 proposal narrows p005434:83 (H1.8); upstream has not relaxed p005434:663
@@ -873,6 +905,15 @@ W-144's D-SAFE-11 (a)/(e) and D-SAFE-14 SP3, W-147's D-SAFE-2 and D-SAFE-13
 I2/I3, and W-150's D-SAFE-11 (f) and D-SAFE-19 `const T*` rows state rules
 SAFE-2 keeps. fork/gap-analysis.md has no hit for the six ids or those words;
 its row 89 (:92) and the W3 narrative (:131-141) name the pages and items only.
+
+The grep above missed the lines that state W-348's consequence for a `const`
+method call or a read through a shared pointer, because they name neither the
+six ids nor a value binding (added 2026-10-28, document-review fold: R1-M3):
+mutation_safety.md:142-143 (the M1 table's `T*` and `const T*` rows),
+:206-210 (M3's "Everything else"), :285-286 (M4's `addr self` bullet) and
+:1239-1241 (the page's D-SAFE-9), the log's D-SAFE-9 with fork/safe/plan.md
+:488, and fork/safe/plan.md :1543 (section 1.6's M4), at 954f1c542. Fix commit
+0f281d8bd qualifies each with M8's rule (section 8.7).
 
 ### §0.6 The interlocks
 
@@ -1727,10 +1768,20 @@ implementer re-checks after prek (section 8). The placeholders (amended
 -   `<date>`: the UTC date, `date -u +%F`, of the commit that writes the text:
     commit 1's for Appendix A, commit 2's for Appendix B, the PR 67 note
     commit's for Appendix C.2, and the orchestrator's stamp's for Appendix C.1,
-    C.3 and D.
+    C.3 and D; and `<rdate>`, the realignment's date, commit 1's
+    `date -u +%F` (2026-10-28), which Appendix C and D use wherever they say
+    "realigned", "REALIGNED", "CLOSED" or "realignment of", `<date>` staying
+    the date of a "Last updated" line, a paragraph or the note commit (added
+    2026-10-28, document-review fold: R2-m4: the stamp can land on a later UTC
+    date than commit 1, and one placeholder dated the realignment differently
+    in trunk's ORCHESTRATION and PR 67's ledger than the pages' marks do).
 -   `<sha1>` and `<sha2>`: commit 1's and commit 2's short hashes, known only
     after they exist, so the texts that cite them (the register sentence, the
-    landed notes, Appendix C and D) are written in commit 2 or later.
+    landed notes, Appendix C and D) are written in commit 2 or later. Commit
+    2's own texts, B.2.2 and B.3.8, cannot hold its hash: commit 2 writes
+    "pending" in its place, and section 3 step 4's records commit fills
+    `<sha2>` there with `<verdict 1>`, `<verdict 2>` and `<fixes>` (amended
+    2026-10-28, document-review fold: R2-m1).
 -   `<head>`: PR 53's dry head, the head at which section 3 step 5's re-review
     is dry; the PR 67 notes (C.2), the PR texts (C.1, C.3) and Appendix D cite
     it rather than `<sha1>`.
@@ -1739,7 +1790,9 @@ implementer re-checks after prek (section 8). The placeholders (amended
     trunk's fork/ORCHESTRATION.md.
 -   `<verdict 1>`, `<verdict 2>`: the two document reviews' verdicts with their
     finding counts; `<fixes>`: the fold commits' short hashes; `<n>`: the
-    number of findings; all filled by section 3 step 4's records commit.
+    number of findings; all filled by section 3 step 4's records commit, with
+    `<sha2>` where commit 2 wrote "pending" (amended 2026-10-28,
+    document-review fold: R2-m1).
 
 Where a block replaces a sentence inside a paragraph, it
 quotes the sentence to be replaced in full as its anchor and the rest of the
@@ -1854,7 +1907,9 @@ trailers.
     the budget stops the workflow at a plan revision of this file. Every
     finding is dispositioned (ACCEPTED with where it landed, or REJECTED with
     the cite that refutes it, R17); the fold record goes into this plan as
-    section 8.7 by a records commit.
+    section 8.7 by a records commit, which also fills `<sha2>`, `<verdict 1>`,
+    `<verdict 2>` and `<fixes>` where commit 2 wrote "pending" (B.2.2, B.3.8;
+    amended 2026-10-28, document-review fold: R2-m1).
 5.  **The focused re-review of the fix commits**, one fresh agent per round,
     at most three rounds, until dry: dry is no BLOCKER and no MAJOR and every
     MINOR records-only, folded by one records commit. A round that is not dry
@@ -2173,7 +2228,9 @@ For each of commits 1 and 2, and every fold commit:
     sentences A.1.1, A.2.8, B.1.0 and B.1.7 gain for `IndirectIndexWith.Ref`,
     A.2.11's sentence on `IntVec.Set`'s body and A.2.17a's sentence appended to
     a bullet (amended 2026-10-28, review fold: RR3-M1, RR3-m1). Any other change
-    is a defect to repair by rephrasing, recorded in the message.
+    is a defect to repair by rephrasing, recorded in the message. The
+    document-review fold's commits 0f281d8bd and e1574b003 move none of these
+    counts (amended 2026-10-28, document-review fold; section 8.7).
 2.  `cd /home/user/carbon-safe && XDG_CACHE_HOME=<private dir under the
     scratchpad's safe2/implementer/>
     SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2227,7 +2284,86 @@ stands for the edits until step 7 measures them.
 
 ### §8.7 Document-review fold record
 
-Filled in by the fixer (section 3 step 4).
+Filled in by the fixer on 2026-10-28 (section 3 step 4). Both document reviews
+read 954f1c542. Review 1, design fidelity and soundness: APPROVE-WITH-FIXES,
+no BLOCKER, three MAJORs and three MINORs, one of them records-only. Review
+2, readability, consistency, records and R31: APPROVE-WITH-FIXES, no BLOCKER,
+no MAJOR, four MINORs, three of them records-only. All ten findings were
+reproduced against the files, the plan and upstream's tip, re-fetched as
+9192ee003 (section 0.1, where nothing the plan quotes has changed since
+07718a832, and section 0.2, where PR 67's checks pass). All ten are folded
+and none is rejected. The six page findings are folded by two fix commits,
+0f281d8bd (R1-M1, R1-M2, R1-M3) and e1574b003 (R1-m1, R1-m2, R2-m2). The four
+records-only findings are folded by this section's records commit. Each fold
+carries "(amended 2026-10-28, document-review fold: <id>)" on the page and in
+the log, fork/safe/plan.md section 0.3 and section 1, and this plan's section
+1 and section 4 where it reaches them (R27). A fold's quote of a superseded
+2026-10-12 sentence is byte-equal to 2407efa74 under section 2.1's test; its
+quote of SAFE-2's own superseded words, after "where this read" or "this
+read", is of the text at 954f1c542.
+
+| Finding | Severity | Reproduced | Disposition and where it landed |
+| --- | --- | --- | --- |
+| R1-M1, an operator's `ref` operand | MAJOR | docs/design/assignment.md:76-82 and p005434:302-318 at 9192ee003 pass the operand to a `ref` parameter; with every `ref` binding exclusive and an unmarked one on an open place `StrictRefFromShared` (temporal `ref` bindings at 954f1c542), EX-M-4d's `q->n = 2` was rejected; a nightly probe of `q->n = 2; q->n += 1;` through a struct pointer compiles and prints 3 | ACCEPTED, 0f281d8bd: a paragraph of the temporal `ref` bindings section (a built-in operator's `ref` operand lives for the one operation and is established on any place, M3 deciding the operation; a user-written impl's `ref self` stays a `ref` binding, its call M3(d)'s), M3, the page's D-SAFE-9, D-SAFE-8 and D-SAFE-9 in the log and fork/safe/plan.md section 0.3, that plan's sections 1.5 and 1.6, D-SAFE2-6, and W-148's notes |
+| R1-M2, a free result of a marked `unsafe fn` | MAJOR | the reviewer's program meets `Make`'s stated obligation and the owner's write sees no frozen loan on `x`, the view being free (T6); a nightly stand-in, a class whose by-value `Data` returns its stored `str*`, prints 6 | ACCEPTED, 0f281d8bd, the reviewer's first option: T6's marker also takes on that no path other than the result and its copies writes the storage a binding formed through it borrows; SP3's `Make` bullet, the spatial audit-line bullet, M8's soundness argument, D-SAFE-10's T6 and D-SAFE-17 in the log and section 0.3, D-SAFE2-5 and W-148's notes say so; type_safety.md, not edited (section 2.2), cites T6 for the rule rather than restating it (type_safety.md:145-147) |
+| R1-M3, `const` calls through shared pointers | MAJOR | mutation_safety.md:142-143, :206-210, :285-286 and :1239-1241, the log's D-SAFE-9 and fork/safe/plan.md :488 and :1543 at 954f1c542 permit `const` methods through `T*` and `const T*` unconditioned, where M4's third bullet and M8 make the binding of a borrowed object on an open place `StrictBorrowFromShared` | ACCEPTED, 0f281d8bd: a dated paragraph after the M1 table, a sentence of M3, M4's `addr self` bullet, the page's D-SAFE-9, D-SAFE-9 in the log and section 0.3, and section 1.6's M4; section 0.5 records the lines its grep missed |
+| R1-m1, `UsePick`'s diagnostic | MINOR | T4's shared-loan clause excludes forming `z`'s exclusive loan on `y` while `q2`'s shared loan is live, so the error is `StrictSharedBorrowInvalidated` at the `let ref z` | ACCEPTED, e1574b003: the temporal `ref` bindings sentence, EX-TM-8's two comments and its bullet, D-SAFE-8 in the log and section 0.3, fork/safe/plan.md section 4.1's row, D-SAFE2-6, D-SAFE2-14 and section 4's row |
+| R1-m2, the temporal page's kinds | MINOR | T5(a) gives frozen for `ValToRef`'s by-value `y`; the weakest-kind sentence named no frozen kind; the reborrow clause listed a by-value `bound self` as a shared formation; EX-TM-1 tied the frozen hold to `const` where T5(d) holds the pointee of every non-exclusive `bound` pointer argument frozen | ACCEPTED, e1574b003: the four temporal passages, the reborrow clause of D-SAFE-10 in the log and section 0.3, quoting its 2026-10-12 words, and section 4's EX-TM-1 row |
+| R1-m3, placeholders and the re-read tip | MINOR, records-only | the log's RG-1 paragraph and fork/safe/plan.md's realigned notes read "pending"; no re-read at 9192ee003 was recorded | ACCEPTED, this records commit: the placeholders filled with R2-m1; the re-read paragraphs of sections 0.1 and 0.2 |
+| R2-m1, `<sha2>` | MINOR, records-only | section 2.1 and section 3 step 4 named no step that fills `<sha2>` in commit 2's own texts | ACCEPTED, this records commit: dated marks in section 2.1, section 3 step 4, B.2.2 and B.3.8; 954f1c542 written in the log and in fork/safe/plan.md |
+| R2-m2, superseded sentences quoted in full | MINOR | the passages at 2407efa74 mutation_safety.md:654, :680-681 and :234-244 and temporal_safety.md:191-195 and :203-207 were cut or unquoted | ACCEPTED, e1574b003: each quoted in full, byte-equal to 2407efa74 under section 2.1's test (eleven quotes, eleven found once); Appendix A keeps commit 1's blocks, with the dated pointers decided below |
+| R2-m3, PR 67 acts stated as made | MINOR, records-only | at 56e2e5bbd, rg1-checks.tsv's H1.7 regex has no `SharedImmutable` and rg1-plan.md's H1.13 reads DRIFT, so the log's two sentences, and fork/safe/plan.md's "their notes there read", state section 3 step 6's acts as done | ACCEPTED, this records commit: the three sentences name SAFE-2's PR 67 note commit as the act; B.2.1, B.2.2 and B.3.8 carry the same words |
+| R2-m4, one `<date>` for two dates | MINOR, records-only | section 2.1 dated C.1, C.3 and D by the stamp and C.2 by the note commit, while their texts date the realignment | ACCEPTED, this records commit: `<rdate>`, commit 1's date, defined in section 2.1 and used in C.1, C.2's six notes and Item cell, and D's safe row and W-353 texts; `<date>` kept for "Last updated", the paragraph dates and the note commit |
+
+Decisions under R29, each with its break condition:
+
+-   The six page findings are held by two fix commits, and the third fix
+    commit of the budget is left for the focused re-review. Break condition:
+    a re-review finding that two commits' grouping hides, which is then split
+    by its own commit.
+-   Appendix A and Appendix B stay commit 1's and commit 2's texts, as their
+    headings say. The nine blocks a fold changed on its target, A.2.6, A.2.8,
+    A.3.4, A.3.12, A.3.13, B.1.1, B.1.2, B.1.7 and B.3.6, carry a dated
+    pointer to this section. The fold texts are the fix commits' diffs, and
+    this plan's sections 1 and 4 match them (R27). B.2.1, B.2.2 and B.3.8,
+    whose words this records commit changes, are amended in place. Break
+    condition: a re-reviewer needs the fold texts verbatim in this plan; they
+    are then copied from the fix commits into a dated subsection.
+-   R1-M1's "built in" means the language's own operation or a prelude impl
+    whose body is a builtin (core/prelude/types/int.carbon:331's
+    `"int.sadd_assign"`). Break condition: upstream specifies the borrow
+    semantics of an operator's operand otherwise; the rule then follows it.
+-   R1-M2 takes the reviewer's first option, the marker's obligation, so that
+    `unsafe Core.Slice(T).Make(p, n)` stays the single audit line and no
+    `v[i]` through the view needs a marker. Break condition: a counterexample
+    in which a binding formed through a free result is invalidated with the
+    extended obligation met; the second option, `unsafe` at such a binding,
+    then replaces it.
+-   No new item and no F id: W-148's notes gain the checker's share of R1-M1
+    and R1-M2, and the id re-scan is unchanged, with W-365 the next free id.
+
+Measured after each commit. R31 headings, bullets, numbered items and table
+rows are unchanged on every page and record that 0f281d8bd and e1574b003
+touch, so section 8 item 1's expected deltas stand. This records commit adds
+to this plan this section's twelve table rows and thirteen bullets, five
+decisions and eight checks, and changes no other count of this plan, the log,
+fork/safe/plan.md or the ledger. Other checks, with the logs under the
+scratchpad's safe2-impl/fixer/:
+
+-   prek to a fixpoint in two passes, the first a rumdl reflow only and the
+    word diff empty.
+-   rumdl@0.2.58: no issues. The heading sets are unchanged.
+-   Links over the ten pages: 1355, then 1358, then 1359, all resolving.
+-   The nightly outcomes of section 0.7: unchanged.
+-   runner.py --self-test: OK.
+-   The log's D-SAFE block is identical to fork/safe/plan.md section 0.3.
+-   The merge-tree sets against trunk and the 18 held heads: section 0.8's.
+-   PR 67's checks at 9192ee003: 273 of 273 quotes and 89 of 89 silence
+    checks; the H1 subsets 97, 120 and 5.
+
+Placeholders left for later steps: `<head>`, `<c2-sha>`, `<time>`, `<tip>`,
+`<rdate>` and `<date>` in Appendices C and D, which the later steps of section
+3 fill (steps 6 to 8); no text uses `<n>`.
 
 ### §8.8 Review fold record (rev 2, 2026-10-28)
 
@@ -3180,6 +3316,10 @@ prelude's non-owning `Core.String`),"),
 
 ### §A.2.6 safety/mutation_safety.md :232-244, M5, renamed and replaced
 
+(Amended 2026-10-28, document-review fold: R2-m2. The block below is commit
+1's text. Since e1574b003 the page's superseded quote runs to the end of the
+superseded paragraph, as section 8.7 records.)
+
 Rename the heading "### M5: Payload references through `match`" to
 "### M5: Payload bindings through `match`", and replace the paragraph from "A
 `match` through an exclusive path binds `ref` payloads" through "EX-M-5 and
@@ -3268,6 +3408,11 @@ facet's (M3; added <date>, SAFE-2: W-348).
 <!-- google-doc-style-resume -->
 
 ### §A.2.8 safety/mutation_safety.md :415-470, Value bindings, the section body replaced
+
+(Amended 2026-10-28, document-review fold: R1-M2. The blocks below are commit
+1's text. Since 0f281d8bd the page's soundness argument also names the
+marker's obligation for the free result of a marked `unsafe fn` call, as
+section 8.7 records.)
 
 Keep the heading "## Value bindings"; replace everything from "A value binding
 (`let x: T = e;`, a by-value parameter, a by-value `self`) is" through the
@@ -4216,6 +4361,13 @@ either binds `self` under the rules of [`ref` bindings](#ref-bindings) and T2
 
 ### §A.3.4 safety/temporal_safety.md :191-218, `ref` bindings, the section body replaced
 
+(Amended 2026-10-28, document-review fold: R1-M1, R1-m1, R1-m2, R2-m2. The
+block below is commit 1's text. Since 0f281d8bd and e1574b003 the page's
+section also holds the paragraph on a built-in operator's `ref` operand, the
+kinds of the `Valid1` and `ValToRef` results, the frozen kind in the
+weakest-kind rule, `UsePick`'s `StrictSharedBorrowInvalidated`, and its second
+and sixth superseded sentences quoted in full, as section 8.7 records.)
+
 Keep the heading "## `ref` bindings"; replace its two paragraphs and the
 "Narrowing" blockquote, from "A `ref` binding inherits the kind of its source
 (D-SAFE-8)." through "because a shared-kind `ref` is, by construction, one alias
@@ -4582,6 +4734,11 @@ comments kept in them.
 
 ### §A.3.12 safety/temporal_safety.md :693-697, EX-TM-1, the prose sentence replaced
 
+(Amended 2026-10-28, document-review fold: R1-m2. The block below is commit
+1's text. Since e1574b003 the page holds both pointees frozen as the pointees
+of `bound` pointer arguments, the `const` limiting the result's own access, as
+section 8.7 records.)
+
 Replace "Under the design the result's loan set is the union of `a`'s and `b`'s
 at shared kind, so in a caller both arguments stay borrowed, not invalidated,
 while the result is live; neither may be destroyed or assigned a non-`Plain`
@@ -4647,6 +4804,10 @@ is non-invalidating and `i32` is `Plain`,"),
 <!-- google-doc-style-resume -->
 
 ### §A.3.13 safety/temporal_safety.md :900-968, EX-TM-8's `UsePick`
+
+(Amended 2026-10-28, document-review fold: R1-m1. The blocks below are commit
+1's text. Since e1574b003 the page's `UsePick` comments and bullet give
+`StrictSharedBorrowInvalidated` at the `let ref z`, as section 8.7 records.)
 
 In the code block replace the three lines from " let ref z: Core.Buf(i32) =
 Pick(false, x, q);" through " z = Core.Buf(i32).Make(5, 0); //
@@ -5797,6 +5958,11 @@ through `b[i]` keeps the loan on `b` that `Set`'s `ref self` conflicts with
 
 ### §B.1.1 D-SAFE-8 (log :3098-3121, plan :383-406), the bullet replaced
 
+(Amended 2026-10-28, document-review fold: R1-M1, R1-m1. The block below is
+commit 2's text. Since 0f281d8bd and e1574b003 the log and fork/safe/plan.md
+section 0.3 also state the built-in operator's `ref` operand and give
+`UsePick`'s `StrictSharedBorrowInvalidated`, as section 8.7 records.)
+
 Replace the bullet from "**D-SAFE-8 — `ref` bindings inherit the kind of
 their source.**" through "(none may; §4.1 lists them as "ACCEPTS")." with the
 block, which quotes the whole superseded bullet and carries none of its
@@ -5875,6 +6041,12 @@ kept "A-5, RR-7" on the rewritten `Pick` sentence):
 <!-- google-doc-style-resume -->
 
 ### §B.1.2 D-SAFE-10 (log :3171-3296, plan :456-581), four sentences
+
+(Amended 2026-10-28, document-review fold: R1-M2, R1-m2. The blocks below are
+commit 2's text. Since 0f281d8bd and e1574b003 the log's and section 0.3's
+reborrow clause no longer lists a by-value `bound self` as a shared formation,
+and their T6 gives the marker of an `unsafe fn` call with a free result its
+obligation, as section 8.7 records.)
 
 Make four replacements in the D-SAFE-10 bullet. (i) Replace "a _loan_ is
 (place, kind ∈ {exclusive, shared}, origin);" with the first block. (ii)
@@ -6138,6 +6310,11 @@ opt-in." with:
 
 ### §B.1.7 D-SAFE-17 (log :3532-3568, plan :817-853), the bullet replaced
 
+(Amended 2026-10-28, document-review fold: R1-M2. The block below is commit
+2's text. Since 0f281d8bd the decision also names the marker's obligation for a
+binding formed through the free result of a marked `unsafe fn` call, as
+section 8.7 records.)
+
 Replace the bullet from "**D-SAFE-17 — Value bindings through shared
 pointers (MS-5, ratified" through "then the eager-copy alternative is
 adopted." with the block, which quotes the whole superseded bullet and carries
@@ -6399,6 +6576,10 @@ In the library names replace "`DynCast`/`Move`/`Utf8`/`Atomic`/`Thread` —"
 with "`DynCast`/`Move`/`Utf8`/`Atomic`/`Thread`/`SharedImmutable` (the last
 added <date>, SAFE-2: W-348; silent at the tip under RG-1's entry H1.7, whose
 check SAFE-2 widened to it) —" (amended 2026-10-28, review fold: B-M2, B-M5).
+Since the records commit of the document-review fold the log's parenthesis
+names SAFE-2's PR 67 note commit (section 3 step 6) as the act that widens
+H1.7's silence check, with its dated mark, the widening being that commit's
+and not yet on PR 67's head (amended 2026-10-28, document-review fold: R2-m3).
 Replace the parenthesized departures, from "p005434:83
 (`noalias`/`captures(none)` for exclusive-kind refs only," through "Release
 baseline, D-SAFE-13)," with the first block, and append the second block
@@ -6436,7 +6617,11 @@ upstream's rule; they stay listed, dated, as history.
 
 Insert after "its cite above corrected from this branch's copy)." and before
 "Each decision is named on two to five of this branch's pages" (amended
-2026-10-28, review fold: A-B-1, A-B-2, A-m-3, B-M1):
+2026-10-28, review fold: A-B-1, A-B-2, A-m-3, B-M1). Commit 2 writes "pending"
+for `<sha2>`, which section 3 step 4's records commit fills (amended
+2026-10-28, document-review fold: R2-m1), and the block's last clause reads
+as amended 2026-10-28, document-review fold: R2-m3, the re-classification
+being the PR 67 note commit's act, not yet on PR 67's head:
 
 <!-- google-doc-style-ignore -->
 
@@ -6459,8 +6644,11 @@ is accepted text, there at the cut and cited by I5 at the filing
 (initialization_safety.md:223-226, as p000257:355-358), that makes the
 zeroing language-defined for every type, and README.md:2130-2132's
 "additional initialization" is p000257:358-360's customization beyond it;
-RG-1's H1.13 row had not quoted it, and PR 67's register re-classifies H1.13
-ALIGNED; I5's text gained the customization and lost the word "promotes").
+RG-1's H1.13 row had not quoted it, and SAFE-2's PR 67 note commit
+(fork/safe/safe2-plan.md section 3 step 6) re-classifies H1.13 ALIGNED in PR
+67's register, amended 2026-10-28, document-review fold: R2-m3, where this
+read "and PR 67's register re-classifies H1.13 ALIGNED"; I5's text gained the
+customization and lost the word "promotes").
 ```
 
 <!-- google-doc-style-resume -->
@@ -6652,6 +6840,10 @@ storage and holds no loan (RR-5).").
 
 ### §B.3.6 fork/safe/plan.md §4.1 (:1900-1938), the checklist rows
 
+(Amended 2026-10-28, document-review fold: R1-m1. The block below is commit
+2's text. Since e1574b003 its D-SAFE-8 row gives `UsePick` as
+`StrictSharedBorrowInvalidated` at `let ref z`, as section 8.7 records.)
+
 Replace the row whose first cell is "D-SAFE-8 mixed-kind result (A-5)" with the
 first block's two rows; replace the row whose first cell is "M8 value binding,
 `Plain`" with the second block's first row and the row "M8 value binding,
@@ -6708,7 +6900,10 @@ Append at the end of the file, after the "## Landed notes (SAFE-1)" section.
 `<verdict 1>` and `<verdict 2>` are the two document reviews' verdicts and
 counts, `<fixes>` the fold commits' hashes, filled in by the records commit of
 section 3 step 4 (commit 2 writes the paragraph with "pending" in their
-place).
+place), and so is `<sha2>`, commit 2's own hash (amended 2026-10-28,
+document-review fold: R2-m1). The paragraph's last sentence reads as amended
+2026-10-28, document-review fold: R2-m3, the notes on PR 67 being the PR 67
+note commit's, not yet on PR 67's head.
 
 <!-- google-doc-style-ignore -->
 
@@ -6736,9 +6931,11 @@ rule is upstream's and only its disclosure changed. The examples whose outcomes
 changed are safe2-plan.md's section 4.
 The two document reviews returned <verdict 1> and <verdict 2>, folded by
 <fixes>; the fold record is safe2-plan.md's section 8.7. The six items are PR
-67's; their notes there read "REALIGNED" or "CLOSED" with this branch's dry
-head and are discharged by this branch's land-sequence records commit when it
-lands.
+67's; their notes there are to read "REALIGNED" or "CLOSED" with this branch's
+dry head once SAFE-2's PR 67 note commit lands (safe2-plan.md section 3 step
+6; amended 2026-10-28, document-review fold: R2-m3, where this read "their
+notes there read"), and they are discharged by this branch's land-sequence
+records commit when it lands.
 ```
 
 <!-- google-doc-style-resume -->
@@ -6825,13 +7022,15 @@ W-353: REALIGNED <date> by SAFE-2 on PR 53 at <head> (fork/safe/safe2-plan.md Ap
 ### §C.1 PR 53's description, a paragraph appended
 
 The orchestrator appends this paragraph to PR 53's description at section 3's
-step 8, with `<sha1>`, `<sha2>`, the dry head `<head>` and the stamp's `<date>`
-filled in, from the file that step names:
+step 8, with `<sha1>`, `<sha2>`, the dry head `<head>` and the realignment's
+`<rdate>` filled in, from the file that step names (amended 2026-10-28,
+document-review fold: R2-m4, where the paragraph's date was the stamp's
+`<date>`):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-**SAFE-2 (<date>): the six departures realigned (R32 (e)).** Commits <sha1>
+**SAFE-2 (<rdate>): the six departures realigned (R32 (e)).** Commits <sha1>
 (the pages) and <sha2> (the records), reviewed by two document reviews and
 re-reviewed until dry at <head>, realign SAFE-1's departures from accepted
 text under the owner's no-direction-drift directive: every `ref` binding is
@@ -6855,13 +7054,14 @@ golden or program change, the two SKIP stubs unchanged.
 ### §C.2 PR 67's records (section 3 step 6)
 
 The PR 67 note commit, in a detached worktree of PR 67's head, makes the five
-edits below, every `<date>` its own UTC date and every note citing PR 53's dry
-head `<head>` (amended 2026-10-28, review fold: B-M1, B-M2, B-m2, A-M-2,
+edits below, every `<date>` its own UTC date, every `<rdate>` commit 1's
+(amended 2026-10-28, document-review fold: R2-m4), and every note citing PR 53's
+dry head `<head>` (amended 2026-10-28, review fold: B-M1, B-M2, B-m2, A-M-2,
 A-m-3; rev 1 cited `<sha1>`, wrote W-353 "CLOSED by its break condition" at
 :355-358, added a check H1.7b with no register row, left H1.13 at DRIFT, and
-added no quote row). Its message is "RG-1 records: SAFE-2's realignment of
-W-347 to W-351 noted, W-353 closed and H1.13 re-classified ALIGNED, H1.7
-widened to Core.SharedImmutable, eleven quote rows added (PR 53 at <head>)".
+added no quote row). Its message is "RG-1 records: SAFE-2's realignment of W-347
+to W-351 noted, W-353 closed and H1.13 re-classified ALIGNED, H1.7 widened to
+Core.SharedImmutable, eleven quote rows added (PR 53 at <head>)".
 
 (i) fork/inventory/work-items.json: append each text of the first block to its
 item's `notes`, after a space.
@@ -6883,7 +7083,7 @@ quotes, 0 failed").
 `\|Thread\|SharedImmutable)\b'`; in row H1.13, append the fourth block to the
 Upstream cell, replace the Verdict cell's leading "**DRIFT**" with the fifth
 block, replace the Break condition cell with the ninth block, and append
-"; closed <date> by SAFE-2, its classification corrected; W-355" to the Item
+"; closed <rdate> by SAFE-2, its classification corrected; W-355" to the Item
 cell (the break condition and W-355 amended 2026-10-28, review fold: RR1-m3:
 an ALIGNED entry carries the re-open condition the seventh block states, and
 D-RG-17 attaches W-355 to every ALIGNED entry outside VA-2's block, which
@@ -6905,12 +7105,12 @@ follows the eighth.
 <!-- google-doc-style-ignore -->
 
 ```text
-W-347: REALIGNED <date> by SAFE-2 on PR 53 at <head> (fork/safe/safe2-plan.md D-SAFE2-6): every `ref` binding is `nocapture` and `noalias`, a checked reborrow on a closed place and an `unsafe` formation on an open one, T8 emitting the attributes only where established against every writer; discharged by PR 53's land-sequence records commit.
-W-348: REALIGNED <date> by SAFE-2 on PR 53 at <head> (D-SAFE2-3 to D-SAFE2-5, D-SAFE2-7): Strict prevents mutation of borrowed objects, keyed on the value representation, with the opt-in `Core.SharedImmutable` on shared paths, whose shared-path writes M3 rejects; discharged by PR 53's land-sequence records commit.
-W-349: REALIGNED <date> by SAFE-2 on PR 53 at <head> (D-SAFE2-9): each `bound` argument is immutable for the duration of the result, a pointer argument's pointee written by no path but the result; discharged by PR 53's land-sequence records commit.
-W-350: REALIGNED <date> by SAFE-2 on PR 53 at <head> (D-SAFE2-11): arithmetic.md's three rows are read through the build modes under D-RG-20, the performance-build row standing for the unsupported benchmarking build; discharged by PR 53's land-sequence records commit.
-W-351: REALIGNED <date> by SAFE-2 on PR 53 at <head> (D-SAFE2-13): the unsupported benchmarking build is kept as safety README.md:260-262 promises, `unsafe fn GetUnchecked` the supported opt-out; discharged by PR 53's land-sequence records commit.
-W-353: CLOSED <date>, its classification corrected (SAFE-2 on PR 53 at <head>; fork/safe/safe2-plan.md section 0.3): the zeroing of every type's storage is upstream's, p000257:356-358, "The entire storage, including any padding bytes, for all types will be at least be zeroed as part of hardening initialization", accepted text at the cut that I5 already cited when this item was filed (PR 53's initialization_safety.md:223-226 at 2407efa74, as p000257:355-358) and that H1.13's quote set left out; nothing upstream changed, H1.13 is re-classified ALIGNED, I5's text gained the customization of p000257:358-360 and lost its "departure", and rg1-quotes.tsv now quotes p000257:356, :357 and :359 for the weekly check. Discharged by PR 53's land-sequence records commit.
+W-347: REALIGNED <rdate> by SAFE-2 on PR 53 at <head> (fork/safe/safe2-plan.md D-SAFE2-6): every `ref` binding is `nocapture` and `noalias`, a checked reborrow on a closed place and an `unsafe` formation on an open one, T8 emitting the attributes only where established against every writer; discharged by PR 53's land-sequence records commit.
+W-348: REALIGNED <rdate> by SAFE-2 on PR 53 at <head> (D-SAFE2-3 to D-SAFE2-5, D-SAFE2-7): Strict prevents mutation of borrowed objects, keyed on the value representation, with the opt-in `Core.SharedImmutable` on shared paths, whose shared-path writes M3 rejects; discharged by PR 53's land-sequence records commit.
+W-349: REALIGNED <rdate> by SAFE-2 on PR 53 at <head> (D-SAFE2-9): each `bound` argument is immutable for the duration of the result, a pointer argument's pointee written by no path but the result; discharged by PR 53's land-sequence records commit.
+W-350: REALIGNED <rdate> by SAFE-2 on PR 53 at <head> (D-SAFE2-11): arithmetic.md's three rows are read through the build modes under D-RG-20, the performance-build row standing for the unsupported benchmarking build; discharged by PR 53's land-sequence records commit.
+W-351: REALIGNED <rdate> by SAFE-2 on PR 53 at <head> (D-SAFE2-13): the unsupported benchmarking build is kept as safety README.md:260-262 promises, `unsafe fn GetUnchecked` the supported opt-out; discharged by PR 53's land-sequence records commit.
+W-353: CLOSED <rdate>, its classification corrected (SAFE-2 on PR 53 at <head>; fork/safe/safe2-plan.md section 0.3): the zeroing of every type's storage is upstream's, p000257:356-358, "The entire storage, including any padding bytes, for all types will be at least be zeroed as part of hardening initialization", accepted text at the cut that I5 already cited when this item was filed (PR 53's initialization_safety.md:223-226 at 2407efa74, as p000257:355-358) and that H1.13's quote set left out; nothing upstream changed, H1.13 is re-classified ALIGNED, I5's text gained the customization of p000257:358-360 and lost its "departure", and rg1-quotes.tsv now quotes p000257:356, :357 and :359 for the weekly check. Discharged by PR 53's land-sequence records commit.
 W-355: SAFE-2 (<date>; PR 53 at <head>): the counts this item's evidence gives become 131 NONE and ALIGNED entries (H1.13 re-classified ALIGNED), fork/register/rg1-quotes.tsv's 284 quoted lines (eleven added: p000257:356, :357, :359 and eight lines of upstream's toolchain/check/type_completion.cpp that PR 53's value-representation rule rests on) and fork/register/rg1-checks.tsv's 89 silence checks, H1.7 widened to `Core.SharedImmutable`.
 ```
 
@@ -6990,13 +7190,15 @@ and the log entry. PR 67 still lands first.
 
 ## Appendix D. Trunk's fork/ORCHESTRATION.md (section 3 step 8)
 
-Six edits of trunk's fork/ORCHESTRATION.md (1c83422a0 or the records-only
-commit after it), the texts below with every placeholder filled; `<tip>` is
-the upstream tip the implementer's section 8 item 5 read (amended 2026-10-28,
-review fold: B-M3; rev 1 gave only the safe row and a paragraph that named
-neither the remaining waits, the held count nor a Next line, and gave no
-header, no item 6 text, no PR 67 row and no land-time discharge; the fourth
-block's DR-1 action amended 2026-10-28, review fold: RR3-M1):
+Six edits of trunk's fork/ORCHESTRATION.md (1c83422a0 or the records-only commit
+after it), the texts below with every placeholder filled, `<rdate>` being commit
+1's date where a text says "realigned" or "realignment of" and `<date>` the
+stamp's (amended 2026-10-28, document-review fold: R2-m4); `<tip>` is the
+upstream tip the implementer's section 8 item 5 read (amended 2026-10-28, review
+fold: B-M3; rev 1 gave only the safe row and a paragraph that named neither the
+remaining waits, the held count nor a Next line, and gave no header, no item 6
+text, no PR 67 row and no land-time discharge; the fourth block's DR-1 action
+amended 2026-10-28, review fold: RR3-M1):
 
 1.  The header: insert the first block as the new first entry, "Last updated:"
     moving to it, so that the current first entry, which begins "Last updated:
@@ -7032,7 +7234,7 @@ none merged; see the paragraph dated <date> (<time> UTC) below; the earlier
 ```
 
 ```markdown
-| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at <head>, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)); realigned <date> by SAFE-2 (fork/safe/safe2-plan.md; commits <sha1>, <sha2> and the fold commits <fixes>, re-reviewed until dry at <head>): W-347 to W-351 realigned and W-353 closed with its classification corrected, noted on PR 67's ledger by <c2-sha>, the descriptions of PR 53 and PR 67 refreshed. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at <head>, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)); realigned <rdate> by SAFE-2 (fork/safe/safe2-plan.md; commits <sha1>, <sha2> and the fold commits <fixes>, re-reviewed until dry at <head>): W-347 to W-351 realigned and W-353 closed with its classification corrected, noted on PR 67's ledger by <c2-sha>, the descriptions of PR 53 and PR 67 refreshed. |
 ```
 
 ```markdown
@@ -7070,16 +7272,16 @@ over 284 quotes and 89 silence checks.
 ```
 
 ```markdown
-W-353 (SAFE-1: realigned <date> by SAFE-2 on PR 53 at <head>,
+W-353 (SAFE-1: realigned <rdate> by SAFE-2 on PR 53 at <head>,
 fork/safe/safe2-plan.md, W-353 closed with its classification corrected; the
 land sequence no longer waits at PR 53; when PR 53 lands, its land-sequence
 records commit appends to W-347 to W-351 and W-353, in the ledger PR 67
 brought to trunk, the note "DISCHARGED <landing date> by PR 53's landing at
-<merge commit> (SAFE-2's realignment of <date>; fork/safe/safe2-plan.md)"),
+<merge commit> (SAFE-2's realignment of <rdate>; fork/safe/safe2-plan.md)"),
 ```
 
 ```text
-DISCHARGED <landing date> by PR 53's landing at <merge commit> (SAFE-2's realignment of <date>; fork/safe/safe2-plan.md).
+DISCHARGED <landing date> by PR 53's landing at <merge commit> (SAFE-2's realignment of <rdate>; fork/safe/safe2-plan.md).
 ```
 
 <!-- google-doc-style-resume -->

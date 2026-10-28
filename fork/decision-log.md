@@ -4210,7 +4210,10 @@ s[i]`, `unsafe (...)`, `unsafe fn F(...) = "name"`), and the library names
 `Core.Plain`/`Guarded`/`Box`/`Send`/`Sync`/`Freeze`/`Relocatable`/`Lifetime`/
 `DynCast`/`Move`/`Utf8`/`Atomic`/`Thread`/`SharedImmutable` (the last added
 2026-10-28, SAFE-2: W-348; silent at the tip under RG-1's entry H1.7, whose
-check SAFE-2 widened to it) — are each a mechanical rename if upstream chooses
+silence check SAFE-2's PR 67 note commit widens to it, fork/safe/safe2-plan.md
+section 3 step 6; amended 2026-10-28, document-review fold: R2-m3, where this
+read "whose check SAFE-2 widened to it") — are each a mechanical rename if
+upstream chooses
 otherwise; the dated narrowings and departures from accepted text — p005434:83
 (`noalias`/`captures(none)` for exclusive-kind refs only, D-SAFE-8; realigned
 2026-10-28 by SAFE-2 at 48f2e66a0: every `ref` binding), p005434:663 (D-SAFE-17;
@@ -4255,9 +4258,9 @@ upstream safety README.md:212-219 gives a baseline of hardening (rg1-plan.md
 D-RG-20, R29, until upstream reconciles its build-mode pages), so the zeroing's
 place in Release is upstream's and its mandate for every type is the drift; its
 cite above corrected from this branch's copy). SAFE-2 made those realignments on
-2026-10-28 (commits 48f2e66a0 and pending; fork/safe/safe2-plan.md): p005434:83
-(realigned 2026-10-28, SAFE-2: W-347, every `ref` binding `nocapture` and
-`noalias`, an `unsafe` formation where the checker cannot establish it),
+2026-10-28 (commits 48f2e66a0 and 954f1c542; fork/safe/safe2-plan.md):
+p005434:83 (realigned 2026-10-28, SAFE-2: W-347, every `ref` binding `nocapture`
+and `noalias`, an `unsafe` formation where the checker cannot establish it),
 p005434:663 (realigned 2026-10-28, SAFE-2: W-348, borrowed objects keyed on the
 value representation, frozen in Strict, `Core.SharedImmutable` the opt-in for
 open places, its shared-path writes rejected by M3), p005434:831-832 (realigned
@@ -4272,32 +4275,35 @@ zeroed as part of hardening initialization", is accepted text, there at the cut
 and cited by I5 at the filing (initialization_safety.md:223-226, as
 p000257:355-358), that makes the zeroing language-defined for every type, and
 README.md:2130-2132's "additional initialization" is p000257:358-360's
-customization beyond it; RG-1's H1.13 row had not quoted it, and PR 67's
-register re-classifies H1.13 ALIGNED; I5's text gained the customization and
-lost the word "promotes"). Each decision is named on two to five of this
-branch's pages (rg1-plan.md D-RG-7 lists the lines), so each realignment is a
-re-derivation, not a one-sentence edit. The Permissive reading of
-p005914:206-208 (classified 2026-10-28, RG-1: NONE, W-355: p005914:204-210, the
-nearest passage, limits what the safety model may assume so that no undefined
-behavior follows, and its example is an optimization assumption; T8 withholds
-`noalias`, so no optimization relies on the diagnostic assumption, and upstream
-says nothing of diagnostic assumptions) is not a drift. `unsafe permissive` and
-the restored `addr self: Self*` (classified 2026-10-28, RG-1: ALIGNED, W-355;
-safety README.md:116-118, p005434:1226-1236) follow upstream. The prefix
-`unsafe` forms (classified 2026-10-28, RG-1: NONE, W-355) have no designed
-upstream spelling: safety README.md:80-81 ties the keyword to each unsafe
-operation, but upstream's only marker on an operation other than `as` is its
-values.md:595's `s_value.unsafe RefMemberFunction();`, a sketch under :573's
-"Open question" that this branch's values.md marks superseded, and upstream's
-parser takes `unsafe` only before `as` (parse/handle_expr.cpp:376-377), as this
-branch does; if upstream resolves that question or widens its modifier beyond
-`as`, the forms are re-read as a drift. `exclusive`, `unsafe import`, `unsafe
-class`, the library names and the `import Cpp` asymmetry (classified 2026-10-28,
-RG-1: NONE, W-355; no upstream spelling: `exclusive T*`, `unsafe import` and
-`unsafe class` are each 0 in upstream's docs/design and proposals, the library
-names only p004682:316's `Core.Box(Array(T, N))` table cell; safety
-README.md:122-123 leaves import marking to future work). Since V-3b the
-re-basing clause above reads "re-based under R32".
+customization beyond it; RG-1's H1.13 row had not quoted it, and SAFE-2's PR 67
+note commit (fork/safe/safe2-plan.md section 3 step 6) re-classifies H1.13
+ALIGNED in PR 67's register, amended 2026-10-28, document-review fold: R2-m3,
+where this read "and PR 67's register re-classifies H1.13 ALIGNED"; I5's text
+gained the customization and lost the word "promotes"). Each decision is named
+on two to five of this branch's pages (rg1-plan.md D-RG-7 lists the lines), so
+each realignment is a re-derivation, not a one-sentence edit. The Permissive
+reading of p005914:206-208 (classified 2026-10-28, RG-1: NONE, W-355:
+p005914:204-210, the nearest passage, limits what the safety model may assume so
+that no undefined behavior follows, and its example is an optimization
+assumption; T8 withholds `noalias`, so no optimization relies on the diagnostic
+assumption, and upstream says nothing of diagnostic assumptions) is not a drift.
+`unsafe permissive` and the restored `addr self: Self*` (classified 2026-10-28,
+RG-1: ALIGNED, W-355; safety README.md:116-118, p005434:1226-1236) follow
+upstream. The prefix `unsafe` forms (classified 2026-10-28, RG-1: NONE, W-355)
+have no designed upstream spelling: safety README.md:80-81 ties the keyword to
+each unsafe operation, but upstream's only marker on an operation other than
+`as` is its values.md:595's `s_value.unsafe RefMemberFunction();`, a sketch
+under :573's "Open question" that this branch's values.md marks superseded, and
+upstream's parser takes `unsafe` only before `as`
+(parse/handle_expr.cpp:376-377), as this branch does; if upstream resolves that
+question or widens its modifier beyond `as`, the forms are re-read as a drift.
+`exclusive`, `unsafe import`, `unsafe class`, the library names and the `import
+Cpp` asymmetry (classified 2026-10-28, RG-1: NONE, W-355; no upstream spelling:
+`exclusive T*`, `unsafe import` and `unsafe class` are each 0 in upstream's
+docs/design and proposals, the library names only p004682:316's
+`Core.Box(Array(T, N))` table cell; safety README.md:122-123 leaves import
+marking to future work). Since V-3b the re-basing clause above reads "re-based
+under R32".
 
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 

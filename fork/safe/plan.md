@@ -2937,7 +2937,7 @@ grep result, the prek fixpoint, the R31 counts (decision log H3 44 → 45, dash
 
 SAFE-2 realigned the six departures RG-1 classified as drifts (W-347 to W-351
 and W-353; fork/register/rg1-plan.md on claude/carbon-fork-0-1-rg1) on this
-branch in commits 48f2e66a0 (the pages) and pending (these records), under
+branch in commits 48f2e66a0 (the pages) and 954f1c542 (these records), under
 fork/safe/safe2-plan.md. W-347: every `ref` binding is `nocapture` and
 `noalias`, a checked reborrow on a closed place and an `unsafe` formation on an
 open one (`StrictRefFromShared`). W-348: a value binding binds a borrowed object
@@ -2954,8 +2954,12 @@ classification corrected: p000257:356-358, accepted text RG-1's H1.13 row had
 not quoted, zeroes every type's storage as hardening initialization, so I5's
 rule is upstream's and only its disclosure changed. The examples whose outcomes
 changed are safe2-plan.md's section 4.
-The two document reviews returned pending and pending, folded by
-pending; the fold record is safe2-plan.md's section 8.7. The six items are PR
-67's; their notes there read "REALIGNED" or "CLOSED" with this branch's dry
-head and are discharged by this branch's land-sequence records commit when it
-lands.
+The two document reviews returned APPROVE-WITH-FIXES with three MAJORs and
+three MINORs (review 1) and APPROVE-WITH-FIXES with four MINORs (review 2),
+folded by 0f281d8bd and e1574b003 (the pages) and the records commit that
+writes this sentence; the fold record is safe2-plan.md's section 8.7. The six
+items are PR 67's; their notes there are to read "REALIGNED" or "CLOSED" with
+this branch's dry head once SAFE-2's PR 67 note commit lands (safe2-plan.md
+section 3 step 6; amended 2026-10-28, document-review fold: R2-m3, where this
+read "their notes there read"), and they are discharged by this branch's
+land-sequence records commit when it lands.

@@ -6,10 +6,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 13, 2026-10-29 -- NOT signed off: PRR2-M1 left at the second
+**Status:** rev 14, 2026-10-29 -- NOT signed off: PRR3-B1; no fifth fix commit;
+the ground-up re-derivation is planned as fork/safe/safe3-plan.md; the
+orchestrator's ruling on rev 13 recorded and the focused plan re-review of
+rev 13, round 3, folded, one BLOCKER and two MINORs, none rejected, SAFE-2
+stopping at rev 14 by that ruling's break condition with PR 53 at its pushed
+head 2407efa74 (amended 2026-10-29, plan re-review round 3: section 8.20, where
+this read "rev 13, 2026-10-29 -- NOT signed off: PRR2-M1 left at the second
 round; no fifth fix commit; the orchestrator rules; the focused plan re-review
 of rev 12, round 2, the ruling's last, folded, one MAJOR and four MINORs, none
-rejected, and the fifth fix commit's texts F1 to F27 dry-run again (amended
+rejected, and the fifth fix commit's texts F1 to F27 dry-run again"; amended
 2026-10-29, plan re-review round 2: section 8.20, where this read "rev 12,
 2026-10-29 -- NOT signed off pending plan re-review round 2 (PRR1-M1, PRR1-M2
 folded); the focused plan re-review of rev 11, round 1, folded, two MAJORs and
@@ -114,7 +120,21 @@ clause restrictive with the prelude's `Inc` and `Dec` excepted, carry every
 clause into F2 and state what follows round 2. PRR2-M1 is a MAJOR left at the
 second round, so SAFE-2 stops again for a ruling: no page changes, nothing is
 signed off and no fifth fix commit is made (added 2026-10-29, plan re-review
-round 2: section 8.20). Rev 7 is the
+round 2: section 8.20). Rev 14, 2026-10-29, records verbatim the orchestrator's
+ruling on rev 13, which authorized one further round, and folds the focused
+plan re-review of rev 13 (156412926), round 3, whose verdict was REJECT on one
+BLOCKER and two MINORs, one of them records-only, all three folded and none
+rejected: PRR3-B1 shows the governing test's sufficiency claim false for the
+toolchain's interim `=`, whose right operand reads the left operand through
+other paths after its in-place initialization has begun while no code written
+outside core/prelude runs; PRR3-m1 names where the binding begins for a prelude
+call whose argument is a user's call; PRR3-m2 records what the nightly's probes
+do not show. By the ruling's break condition SAFE-2 stops at rev 14: nothing is
+signed off, no fifth fix commit is made, F1 to F27 are applied by no commit,
+PR 53 keeps its pushed head 2407efa74, and the orchestrator plans the ground-up
+re-derivation of M3 and D-SAFE2-6 as a new plan file, fork/safe/safe3-plan.md,
+before any further commit on this branch (added 2026-10-29, plan re-review
+round 3: section 8.20). Rev 7 is the
 plan amender's fold
 of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
@@ -235,7 +255,9 @@ and section 2.6).
     F27 with the record of the focused plan re-review's round 1 (amended
     2026-10-29, plan re-review round 1: PRR1-M2, section 8.20) and of its
     round 2, the ruling's last (amended 2026-10-29, plan re-review round 2:
-    section 8.20).
+    section 8.20), and the orchestrator's ruling on rev 13 with the record of
+    round 3, which stops SAFE-2 at rev 14 (amended 2026-10-29, plan re-review
+    round 3: section 8.20).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -1636,7 +1658,13 @@ replacement text serves both (Appendix B.1).
     rev 11: RR3-M1, RA-M2, RB-m1: section 8.20 re-derives this test from the
     safety argument, its block F4 replacing the text above from "lives for the
     one operation" through this pointer; the pages and records state that text
-    until the fifth fix commit.) A `ref` _return_ is not a binding, so the
+    until the fifth fix commit.) (Amended 2026-10-29, plan re-review round 3:
+    PRR3-B1: no fifth fix commit is made and F4 is applied by no commit;
+    section 8.20's re-derived test is shown insufficient for the toolchain's
+    interim `=`, and the orchestrator plans the ground-up re-derivation of M3
+    and this decision as fork/safe/safe3-plan.md, until which the text above
+    stays what the pages and records state.) A `ref` _return_ is not a binding,
+    so the
     proposal's `Valid1` (:717-720), `ValToRef` (:826) and `Conditional`
     (:772-779) stay valid in both modes, each returning a reference expression
     whose kind is that of its loans; `Conditional`'s mixed set
@@ -2105,7 +2133,10 @@ trailers.
     the orchestrator's ruling of 2026-10-29 recorded in section 8.16) and a
     fifth by the ruling of section 8.19, made only after rev 11 or rev 12 is
     signed off (amended 2026-10-29, rev 10: the ruling on round 3,
-    section 8.19), records-only commits not counted; NO shrink line: a defect
+    section 8.19; amended 2026-10-29, plan re-review round 3: the ruling on
+    rev 13, section 8.20, moved it to rev 14's sign-off, which PRR3-B1
+    withholds, so it is not made), records-only commits not counted; NO shrink
+    line: a defect
     past the budget stops the workflow at a plan revision of this file. Every
     finding is
     dispositioned (ACCEPTED with where it landed, or REJECTED with the cite that
@@ -2130,7 +2161,15 @@ trailers.
     reviews, their fold in rev 11 under a focused plan re-review, and the fifth
     fix commit, which applies the signed-off fold texts of rev 11 or rev 12 and
     nothing else, with a records commit after it (amended 2026-10-29, rev 10:
-    the ruling on round 3, section 8.19).
+    the ruling on round 3, section 8.19). The fifth fix commit's authorization
+    rests on the rulings of sections 8.19 and 8.20: the ruling on rev 13,
+    recorded in section 8.20, authorized round 3 of the focused plan re-review
+    and the commit only on rev 14's sign-off, and round 3 found PRR3-B1, a
+    BLOCKER, so by that ruling's break condition no fifth fix commit is made,
+    the fix commits stay four, PR 53 keeps its pushed head 2407efa74, and the
+    orchestrator plans the ground-up re-derivation of M3 and D-SAFE2-6 as
+    fork/safe/safe3-plan.md before any further commit on this branch (amended
+    2026-10-29, plan re-review round 3: section 8.20).
 5.  **The focused re-review of the fix commits**, one fresh agent per round, at
     most three rounds, and round 4 by two fresh agents under the ruling of
     section 8.19, until dry: dry is no BLOCKER and no MAJOR and every MINOR
@@ -2152,7 +2191,14 @@ trailers.
     MINORs folded by one records commit; a BLOCKER, a MAJOR or a page-changing
     MINOR at round 4 stops SAFE-2 at a plan revision with no further fix commit
     (amended 2026-10-29, rev 10: the ruling on round 3, section 8.19, where this
-    read "one fresh agent per round, at most three rounds, until dry").
+    read "one fresh agent per round, at most three rounds, until dry"). Round 4
+    is not held: the ruling on rev 13 (section 8.20) has the fifth fix commit,
+    which round 4 would review, made only on rev 14's sign-off, and round 3's
+    PRR3-B1 withholds that sign-off, so steps 6 to 8 wait for the re-derivation
+    the orchestrator plans as fork/safe/safe3-plan.md; that ruling keeps the
+    break condition of round 4, a MAJOR at round 4 doing the same as
+    section 8.19 says (amended 2026-10-29, plan re-review round 3:
+    section 8.20).
 6.  **The PR 67 note commit** (D-SAFE2-16, Appendix C.2), in a detached scratch
     worktree of PR 67's head under /dev/shm/safe2-implementer/rg1 (removed
     after), with `<head>` filled in, reviewed by one fresh agent before any
@@ -4839,7 +4885,10 @@ revision's decision under R29:
     states them.
 
 **The budget**: five fix commits, the fifth by this ruling, made only after
-rev 11 or rev 12 is signed off without a BLOCKER or MAJOR. The first three
+rev 11 or rev 12 is signed off without a BLOCKER or MAJOR (amended 2026-10-29,
+plan re-review round 3: the ruling on rev 13, section 8.20, moved the fifth to
+rev 14's sign-off, which PRR3-B1 withholds, so the fix commits stay four). The
+first three
 are 0f281d8bd, e1574b003 and cbdc0552e, the fourth is 9d0b072cb by the ruling of
 section 8.16, and records-only commits and plan revisions are not counted; no
 shrink line is drawn, and VA-2's rev 16 precedent and the ruling of section 8.16
@@ -5018,7 +5067,10 @@ safety/README.md:531-533, the mutation page's overview at :127-128 and W-149's
 notes stating the guarantee whole). No
 reproduced finding shows a realigned rule unsound or not upstream's: p005434:83
 stands, and the fold states its consequence for the operators, so rev 11 is not
-blocked. Rev 11 changes no page, log, fork/safe/plan.md or ledger line; in this
+blocked (amended 2026-10-29, plan re-review round 3: PRR3-B1: the fold's
+statement of that consequence fails for the toolchain's interim `=`, and SAFE-2
+stops at rev 14, below; p005434:83 still stands). Rev 11 changes no page, log,
+fork/safe/plan.md or ledger line; in this
 plan it adds this section, marks the Status line and the Sign-off, gives
 D-SAFE2-6 a pointer here, marks the statements of sections 8.16, 8.18 and 8.19
 that the findings show false or superseded, and rewraps seven of its own lines
@@ -5059,8 +5111,20 @@ on an open one. A built-in operator's `ref` operand is exempt from both exactly
 when no code written outside core/prelude can run while that operand is bound:
 then nothing but the operation itself, whose prelude bodies are trusted under S0
 and W-144's audit, can reach the referent while the `ref` lives, and `noalias`
-holds by construction on any place. The operand is bound when the operation
-runs, once its operands are evaluated (the toolchain evaluates the left
+holds by construction on any place (amended 2026-10-29, plan re-review round 3:
+PRR3-B1: false for the toolchain's interim `=`, whose right operand's value
+acquisitions, copies and prelude calls read the left operand through paths not
+derived from its binding after the in-place initialization has begun while no
+code written outside core/prelude runs: `*q = {.a = p->b, .b = p->a}` with `p`
+aliasing `q` loads `b`, stores `a`, loads `a` and stores `b`, and prints 2 2
+(v09), and v10, v11, v14, v24 and v25 show the same on locals, on
+`Optional(i32)` fields copied by the prelude's `Copy.Op`, on arrays, for a bare
+reference element and for a prelude call, `Get`, after an element initialized
+in place; the claim holds for the call-based operators, whose operands are
+acquired before the call (a_p07, b_p1 to b_p3); F1 to F6 state it and are
+applied by no commit, and fork/safe/safe3-plan.md re-derives the test). The
+operand is bound when the operation runs, once its operands are evaluated (the
+toolchain evaluates the left
 operand's place, then the right operand, then the operation: a_p07, b_p1 to
 b_p3), so code in an operand runs before the binding, the toolchain's interim
 `=` excepted, below (added 2026-10-29, plan re-review round 2: PRR2-M1), and the
@@ -5091,7 +5155,18 @@ operand as its result location at its own position in a tuple or struct literal,
 an initializing expression producing "an initialized object at that location"
 (docs/design/values.md:604-607 at 9192ee003), and otherwise once the right
 operand's elements are evaluated, with the first conversion, copy or store into
-the left operand (b_p10, w1, w2, w4). So a call whose result type is
+the left operand (b_p10, w1, w2, w4) (amended 2026-10-29, plan re-review
+round 3: PRR3-m1: a call initialized in place receives its place in the left
+operand only once its arguments are evaluated, so a user's call among the
+arguments of a prelude call runs before the binding unless an element
+initialized in place comes before it:
+`*q = {.o = Core.Optional(i32).Some(F(p)), .n = 2}` and
+`*q = Core.Optional(i32).Some(F(p))` call `F` before `Some` receives `ptr %q.o`
+or `ptr %q`, `F` seeing nothing written (v04: 5 1 42 2; v05: 5 42), and after
+an element initialized in place `F` sees it written
+(v06: 1 0 42), user-written as F1 to F4 have it; by PRR3-B1 an element's value
+is acquired at its own position, which may come after that start, not with its
+evaluation as a place (v09)). So a call whose result type is
 copy-represented runs while the left operand is bound when it comes after an
 element initialized in place (z1: 42 0 7) and before the binding when it is the
 whole right operand or comes before every such element (q06a, z1b, w3) (added
@@ -5110,13 +5185,16 @@ binding-point decision below). Each case, decided by the evidence:
 | a literal operand | q04 and a_p03: `*q += 1` lowers to `add i32 %v, 1`, the literal converted by the prelude's builtin `IntLiteral as ImplicitAs(Int(To))` (int.carbon:31-33); q04b, the literal through a symbolic witness, crashes the nightly in lowering (not evidence) | built in |
 | `Inc` and `Dec` | q05: `Int`'s and `UInt`'s call the thunk with `i32 1`, whose `Convert` is the prelude's (int.carbon:61-67, uint.carbon:86-91); the three signed `CppCompat` integers' run in the prelude library (prints 6 6 6 1); q05b, q05c, a_p12: `CppCompat.ULong32`, `f64` and a user's adapter of `i32` have none; z3 and z3b, `++x` and `--x` on an `i32` through the symbolic witnesses of the row above: 6 and 4 (added 2026-10-29, plan re-review round 2: PRR2-m2) | built in |
 | the default compound assignment of assignment.md:302-316 | a_p04, b_p11: "cannot access member of interface `Core.AddAssignWith(C)`"; neither core/prelude nor the toolchain provides it; by its text it calls `AssignWith` and `OpWith` while `ref self` is bound | user-written wherever either impl is written outside core/prelude |
-| the interim `=` from a literal or a copy-represented value, no element initialized in place before a user's call (amended 2026-10-29, plan re-review round 2: PRR2-M1, which adds the condition) | q06f: `q->n = 2; q->n = v;` prints 3; b_p10: the struct literal's calls run before the stores (7 5); q06a: `*q = F(p)` for `i32` calls then stores, `F`'s write overwritten (5 7); q06e: a struct value copied field by field; w1 and w2 (added as the condition is): a literal and a `u32` that the prelude converts to `i64`, each before a user's call, are stored only after the call returns, which sees neither (5 1 7 each); w3 and z1b: the user's call before an element initialized in place sees nothing written (0 1 42 7; 0 42 7) | built in |
+| the interim `=` from a literal or a copy-represented value, no element initialized in place before a user's call (amended 2026-10-29, plan re-review round 2: PRR2-M1, which adds the condition) | q06f: `q->n = 2; q->n = v;` prints 3; b_p10: the struct literal's calls run before the stores (7 5); q06a: `*q = F(p)` for `i32` calls then stores, `F`'s write overwritten (5 7); q06e: a struct value copied field by field; w1 and w2 (added as the condition is): a literal and a `u32` that the prelude converts to `i64`, each before a user's call, are stored only after the call returns, which sees neither (5 1 7 each); w3 and z1b: the user's call before an element initialized in place sees nothing written (0 1 42 7; 0 42 7) | built in (amended 2026-10-29, plan re-review round 3: PRR3-B1: not established where an element reads the left operand through another path, which this row's evidence does not exercise; the row after the interim `=` rows) |
 | the interim `=` with an element initialized in place before a user's call (added 2026-10-29, plan re-review round 2: PRR2-M1) | z1, `*q = {.o = Core.Optional(i32).Some(42), .n = F(p)}` with `F` a user's function returning `i32` and `p` aliasing `q`: the IR calls `Some` with `ptr %q.o` as its return slot, then `F`, then stores `n`, so `F` sees the left operand written and its write through `p` survives (42 0 7) | user-written: M3(d)'s through a shared path, T4's on a closed place; the program evaluates the call first, `let n: i32 = F(p);` (z1b), built in |
 | the interim `=` with a user `ImplicitAs` per element | a_p10 (5 1 100 1) and b_p6 (5 70 70 80): convert, store, convert, the second conversion seeing the first store; q06c, the program's own `as` on each element: both conversions before any store (5 100 1 1) | user-written; converted first, built in |
 | the interim `=` from a user function returning in place | b_p8 (7 7), a_p11 (50 7), a_p08 (7 1), q06b (a struct type, 7 7): the left operand is the function's return slot; q06h, `c = Make(&c.a)` on a local, 7 7; q06g, the result bound first and then copied, 7 5 | user-written, T4's on a closed place; bound first, built in |
 | the interim `=` with a user `Copy` | a_p09 (1 2) and b_p5 (7 7): `Copy.Op` initializes the left operand; b_p9: a class with no `Copy` cannot be bound first, "cannot copy value of type `C`"; q06d: `~v` does not parse on the nightly; z2 (added 2026-10-29, plan re-review round 2: PRR2-m1), `*q = v` for a `{.k: i32, .o: Core.Optional(C)}` whose `C` has a user `Copy` writing through `&x.k`: `k` is stored, then the prelude's `Optional(C)` `Copy.Op` (core/prelude/types/optional.carbon:49-51 at 9192ee003) takes `ptr %q.o` as its return slot and copies the payload with `C`'s `Copy` (:137, :149), which sees `k` written (7, then 100); binding the value first does not help, `*q = v` copying again | user-written; the program writes through an exclusive path or under `unsafe` |
 | `AssignWith` in Core | a_p05: "member name `AssignWith` not found in `Core`" | every `=` today is the interim one |
-| the old value at the interim `=` | handle_operator.cpp:119-120 at 9192ee003, "TODO: Destroy the old value before reinitializing.": no destructor of the old value runs at the `=` today; b_p7 is no evidence, its `fn destroy(ref self: Self)` printing at neither the `=` nor the end of `Run`, and y1's `fn destroy[ref self: Self]()` is rejected, "`self` must be declared in the explicit parameter list" (amended 2026-10-29, plan re-review round 1: PRR1-m3, where this read "b_p7: no destructor runs (handle_operator.cpp:119's TODO)") | no change to the test until that TODO is done, decision 2's break condition (amended 2026-10-29, plan re-review round 1: PRR1-m3, where this read "no change to the test") |
+| the old value at the interim `=` | handle_operator.cpp:119-120 at 9192ee003, "TODO: Destroy the old value before reinitializing.": no destructor of the old value runs at the `=` today; b_p7 is no evidence, its `fn destroy(ref self: Self)` printing at neither the `=` nor the end of `Run`, and y1's `fn destroy[ref self: Self]()` is rejected, "`self` must be declared in the explicit parameter list" (amended 2026-10-29, plan re-review round 1: PRR1-m3, where this read "b_p7: no destructor runs (handle_operator.cpp:119's TODO)") | no change to the test until that TODO is done, decision 2's break condition (amended 2026-10-29, plan re-review round 1: PRR1-m3, where this read "no change to the test"; amended 2026-10-29, plan re-review round 3: PRR3-m2: v17, `impl D as Core.Destroy` with `x = {.n = 2}` and `x = Make(3)`, prints 10 20 30, its `Op` called nowhere in the IR, at neither the `=` nor the end of the scope, so it is no evidence of a user destructor either, beside b_p7 and y1) |
+| the interim `=` whose right operand reads the left operand, no code written outside core/prelude running (added 2026-10-29, plan re-review round 3: PRR3-B1) | v09, `*q = {.a = p->b, .b = p->a}` with `p` aliasing `q`: load `b`, store `a`, load `a`, store `b` (2 2); v10, `x = {.a = x.b, .b = x.a}` and `t = (t.1, t.0)` on locals (2 2 2 2); v11, v09 for `Optional(i32)` fields, the prelude's `Copy.Op` writing `ptr %q.a` from `ptr %p.b`, then `ptr %q.b` from `ptr %p.a` (2 2); v14, arrays, on a local and through aliasing pointers (2 2 2 2); v24, `x = {.a = x.b + 0, .b = x.a}`, the computed element read early and the bare one late (2 2), and the value bound first, `let v: {.a: i32, .b: i32} = {.a = y.b, .b = y.a}; y = v;` (2 1); v25, `*q = {.o = Core.Optional(i32).Some(42), .n = p->o.Get()}`: `Get` with `ptr %p.o` after `Some` with `ptr %q.o` (42 through the alias, 42 on a local, 5 with the call bound first); no Carbon function in their IR carries `noalias` | built in by the test as rev 13 states it, yet another path reads the referent while the `ref` lives: the test's sufficiency fails (PRR3-B1); open, the re-derivation fork/safe/safe3-plan.md's |
+| a prelude call whose argument is a user's call (added 2026-10-29, plan re-review round 3: PRR3-m1) | v04, `*q = {.o = Core.Optional(i32).Some(F(p)), .n = 2}`: `F`, then `Some` with `ptr %q.o`, then the store of `n` (5 1 42 2); v05, `*q = Core.Optional(i32).Some(F(p))`: `F`, then `Some` with `ptr %q` (5 42); v06, after an element initialized in place, `F` sees it written (1 0 42) | the user's call runs before the binding where no element initialized in place comes before it (v04, v05) and while bound after one (v06), user-written as the row of z1 has it |
+| the ruling's other interleavings with code written outside core/prelude (added 2026-10-29, plan re-review round 3) | v01 to v03, nested elements initialized in place before or after a user's call (1 0 7 2; 1 0 0 3 7; 0 0 7 1 3); v07 and v08, a user `Copy` or `ImplicitAs` at the first, middle and last position (1 2 3 and 0 2 3 5 each); v12 and v13, array literals; v15 and v16, a whole-operand user conversion (1 5 100; 5 5 6); v18, `var` initialization (0 42 7); v19 to v22, an adapter, a `const` operand, a generic `AddAssignWith(U)` and `CppCompat.Long32`; v23, an index path whose index is a user's call (1 2 50 0 7 2) | as the rows above classify them, by round 3 |
 
 The consequence for programs: an operand whose conversion is user-written is
 converted by the program before the operator, `*q += e as i32`, or the operator
@@ -5222,6 +5300,26 @@ the fork's and the tip's:
 | w2 (added as w1 is) | `*q = {.a = u, .n = F(p)}` for `i64` fields and `u: u32` | 5 1 7; `F` runs, then the prelude's `UInt as ImplicitAs` converts `u`, then both stores |
 | w3 (added as w1 is) | `*q = {.n = F(p), .o = Core.Optional(i32).Some(42)}`, `F` printing `p->o` and `p->n` and setting `n` to 100 | 0 1 42 7; `F` runs, then `Some` writes `ptr %q.o`, then `n` is stored |
 | w4 (added as w1 is) | `*q = e` for `q: i32*` and a user's `ImplicitAs(i32)` whose `Convert` prints `*self.p` and writes 100 through it | 1 5; `Convert` runs, then the one store |
+| v01, v02, v03 (added 2026-10-29, plan re-review round 3; the plan re-review's, re-run by rev 14) | nested elements initialized in place, a user's call after them (v01, v02) or before them (v03), `p` aliasing `q` | 1 0 7 2; 1 0 0 3 7; 0 0 7 1 3 |
+| v04, v05, v06 (added as v01 is; PRR3-m1) | a prelude call whose argument is a user's call: as the first element, as the whole right operand, and after an element initialized in place | 5 1 42 2; 5 42; 1 0 42 |
+| v07, first, middle and last (added as v01 is) | a user-typed field whose user `Copy` writes through an alias of the left operand's `a` | 1 2 3 each |
+| v08, first, middle and last (added as v01 is) | a user `ImplicitAs(i32)` whose `Convert` writes through an alias of the left operand | 0 2 3 5 each |
+| v09 (added as v01 is; PRR3-B1) | `*q = {.a = p->b, .b = p->a}`, `p` aliasing `q`, no code written outside core/prelude | 2 2; load `b`, store `a`, load `a`, store `b` |
+| v10 (added as v09 is) | `x = {.a = x.b, .b = x.a}` and `t = (t.1, t.0)` on locals | 2 2 2 2 |
+| v11 (added as v09 is) | v09 for `Core.Optional(i32)` fields | 2 2; the prelude's `Copy.Op` into `ptr %q.a` from `ptr %p.b`, then into `ptr %q.b` from `ptr %p.a` |
+| v12 (added as v01 is; PRR3-m2) | `*q = (1, F(p), 3)` into `array(i32, 3)` | 0 0 0 7 100: `F` runs before any store, as the texts say, but the IR stores only `F`'s result, the constant elements dropped, a lowering defect of the nightly: order-only evidence |
+| v13 (added as v01 is) | `*q = (Some(1), Some(F(p)))` into `array(Core.Optional(i32), 2)` | 1 0 7 |
+| v14 (added as v09 is) | `a = (a[1], a[0])` on a local array and through aliasing pointers | 2 2 2 2 |
+| v15, v16 (added as v01 is) | a whole-operand user conversion into a struct and into a class | 1 5 100; 5 5 6 |
+| v17 (added as v12 is) | `impl D as Core.Destroy` at `x = {.n = 2}` and `x = Make(3)` | 10 20 30: its `Op` runs at neither the `=` nor the end of the scope, so no evidence of a user destructor |
+| v18, v18b (added as v01 is) | z1's right operand initializing a `var`; the variable named in its own initializer | 0 42 7; compile error: "`y` used before initialization" |
+| v19, v20 (added as v01 is) | `*q += 1` on a user adapter of an integer and on a `const i32` | compile errors: no `Core.AddAssignWith(Core.IntLiteral)` in `MyInt` or `const i32`, and no `Core.Inc` in `const i32` |
+| v21 (added as v01 is) | a generic `T: Core.AddAssignWith(U)` with a user's `C` whose `Op` writes through an alias, and with `i32` | 3 100 8 |
+| v22 (added as v01 is) | `CppCompat.Long32` with a literal, `++` and a prelude integer | 10 |
+| v23, v23b (added as v12 is) | `(*q)[I(p)] = V(p)` on an array; `c[1 as i32] = 5` with a user `IndexWith` | 1 2 50 0 7 2: the index call, then the right operand, then the store; compile error: "expression is not assignable"; the nightly's prelude has neither `IndirectIndexWith` nor a slice type |
+| v24 (added as v09 is) | `x = {.a = x.b + 0, .b = x.a}`, then the value bound first, then `z = {.a = z.b, .b = z.a}` | 2 2; 2 1; 2 2 |
+| v25 (added as v09 is) | `*q = {.o = Core.Optional(i32).Some(42), .n = p->o.Get()}`, the same on a local, and with `Get` bound first | 42 42 5; `Get` with `ptr %p.o` after `Some` with `ptr %q.o` |
+| v26 (added as v12 is) | a user's choice value in a struct literal after a user's call | compile error: "cannot copy value of type `Ch`", so the case cannot be probed on the nightly |
 
 Decisions under R29, each with its break condition:
 
@@ -5341,7 +5439,13 @@ Decisions under R29, each with its break condition:
     returns before the one store, as in w4. Break condition: a reviewer
     requires the narrower binding; the
     trigger list then narrows, by a plan revision, to the conversions and
-    copies that run after the first write.
+    copies that run after the first write. (Amended 2026-10-29, plan re-review
+    round 3: PRR3-m1: a call initialized in place receives its result location
+    only once its arguments are evaluated, so a user's call among the arguments
+    of a prelude call falls before the start unless an element initialized in
+    place comes before it, v04 and v05 against v06; and by PRR3-B1 the start
+    does not bound what reads the left operand, an element's value being
+    acquired at its own position after it, v09.)
 -   (Added 2026-10-29, plan re-review round 2: PRR2-m3.) Every copy of the rule
     states its clauses in the same words, F2 taking F1's symbolic-witness
     clause, as PRR2-m2 amends it, its binding point and exemption and its list
@@ -5385,11 +5489,58 @@ Decisions under R29, each with its break condition:
     and authorizes no commit, and the fifth fix commit waits for that ruling.
     Break condition: the orchestrator's ruling; rev 13's texts are then
     applied, re-reviewed or re-planned as it says, recorded by a dated mark.
+    (Amended 2026-10-29, plan re-review round 3: the condition fired: the
+    ruling on rev 13, recorded at the end of this section, had rev 13
+    re-reviewed by a round 3, whose PRR3-B1 stops SAFE-2 at rev 14 with no
+    commit applying F1 to F27.)
 -   (Added 2026-10-29, plan re-review round 2.) The dry run keeps rev 12's
     script as bin/dryrun.rev12.py and adds the same-words checks to
     bin/dryrun.py, run on a fresh `git archive` of 3f8f4130d's docs/design and
     fork/ with this plan copied in, never the worktree of record. Break
     condition: a reviewer wants rev 12's script re-run unchanged; it is then
+    run beside the new one and both results recorded.
+-   (Added 2026-10-29, plan re-review round 3: PRR3-B1.) F1 to F27 stay as
+    rev 13 gives them, byte for byte, and are applied by no commit, over
+    amending F1 to F6 for PRR3-B1 at rev 14: the ruling's break condition gives
+    the ground-up re-derivation of M3 and D-SAFE2-6 to a new plan file,
+    fork/safe/safe3-plan.md, the review's fix names that file, and a patch of
+    F1 to F6 here would correct their justification without the re-derivation
+    the finding asks for, a wording patch R17 forbids; the statements of this
+    plan that PRR3-B1 shows false or superseded gain a dated mark pointing to
+    the round's record. Break condition: the orchestrator's safe3-plan.md takes
+    F1 to F27 as its base; they are then amended there, not here.
+-   (Added 2026-10-29, plan re-review round 3: PRR3-B1.) The BLOCKER is
+    accepted as the round graded it, over a MAJOR on the ground that no Carbon
+    function in the probes' IR carries `noalias`, so that no program has
+    undefined behavior today: the design states that p005434:83's `noalias`
+    holds by construction where the probes show another path reading the
+    referent while the `ref` lives, which is the soundness of the safety
+    argument and not one case of it, and the ruling's break condition is met at
+    either grade. Break condition: the orchestrator grades it otherwise; its
+    ruling then governs, recorded by a dated mark.
+-   (Added 2026-10-29, plan re-review round 3: PRR3-m1.) PRR3-m1's clause, that
+    a call initialized in place receives its place in the left operand only
+    once its arguments are evaluated, is stated in this section's record, the
+    test paragraph's binding sentence, the binding-point decision and the case
+    table, over amending F1 to F4 and F6, which no commit applies (the decision
+    above); the review's fix names rev 14's record as one of its two places.
+    Break condition: safe3-plan.md keeps an interim-`=` clause; it then takes
+    this one.
+-   (Added 2026-10-29, plan re-review round 3: PRR3-m2.) v12 counts as
+    order-only evidence, as the three lowering crashes count as none: `F` runs
+    before any store, as the texts say, and the dropped constant elements are a
+    lowering defect of the nightly, not the language's semantics; v17 sits
+    beside b_p7 and y1 as no evidence of a user destructor at the `=`, and
+    handle_operator.cpp:119-120's TODO stays decision 2's break condition.
+    Break condition: a later nightly stores the constant elements or runs
+    `Core.Destroy`'s `Op` at the `=`; the probe is then re-run and recorded by
+    a dated mark.
+-   (Added 2026-10-29, plan re-review round 3.) The dry run keeps rev 13's
+    script as bin/dryrun.rev13.py and adds to bin/dryrun.py a check that each
+    block F1 to F27 read from this plan is byte-equal to rev 13's
+    (156412926), run on a fresh `git archive` of 156412926's docs/design and
+    fork/ with this plan copied in, never the worktree of record. Break
+    condition: a reviewer wants rev 13's script re-run unchanged; it is then
     run beside the new one and both results recorded.
 
 **The fifth fix commit.** "SAFE-2 fix: the built-in test re-derived from the
@@ -5401,7 +5552,14 @@ authorized by the orchestrator's ruling of section 8.19 once rev 11 or rev 12 is
 signed off without a BLOCKER or MAJOR; neither was, plan re-review round 2
 having left PRR2-M1, so the commit waits for the orchestrator's ruling on
 rev 13, whose texts of F1 to F4 and F6 are not authorized until it rules (added
-2026-10-29, plan re-review round 2: PRR2-M1, PRR2-m4). The implementer edits
+2026-10-29, plan re-review round 2: PRR2-M1, PRR2-m4). The orchestrator's ruling
+on rev 13, recorded at the end of this section, authorized one further round and
+the commit only on rev 14's sign-off; round 3 found PRR3-B1, a BLOCKER, so by
+that ruling's break condition no fifth fix commit is made, the title above names
+no commit, and the texts below stay as rev 13 gave them, applied by no commit,
+the record of what rounds 1 to 3 reviewed, while fork/safe/safe3-plan.md
+re-derives M3 and D-SAFE2-6 (added 2026-10-29, plan re-review round 3:
+PRR3-B1). The implementer edits
 each markdown file
 by Edit or Write only, never by a script or a shell append (R25, hand-off
 note 2; added 2026-10-29, plan re-review round 1: PRR1-m5). Each anchor is
@@ -6716,6 +6874,83 @@ review fold: RB-M3).
     programs parsed, 56 bullets in table, OK". The model-name grep over the
     changed lines and the message: no hit outside the trailers and the scratch
     paths.
+-   Rev 14, 2026-10-29, in amend3/ beside rev11/ (added 2026-10-29, plan
+    re-review round 3): `git -C /home/user/carbon-lang fetch -q upstream trunk`
+    gives 9192ee003 again (2026-10-28 20:51:45 UTC), nothing newer;
+    `git log --oneline c1e83b0b7..9192ee003` lists db87a84b6 over
+    generics/details.md, f21c62524 over classes.md, 2c9739799 over
+    handle_operator.cpp, 947c1eb52 over type_info.cpp and six commits over
+    convert.cpp, and nothing over p005434, p005914, p000257,
+    docs/design/README.md, safety/README.md, expressions/arithmetic.md,
+    values.md, slices.md, assignment.md, optional.carbon, int.carbon,
+    uint.carbon or as.carbon. The three upstream lines rev 14 newly quotes
+    (amend3/rev14q.tsv: handle_operator.cpp:121 and convert.cpp:361 and :946)
+    are byte-equal at 9192ee003, and no line this section cites has moved.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-amend3/rg1, removed after, against /home/user/carbon-lang
+    at 9192ee003: "checked 273 quotes, 0 failed" and "checked 89 silence
+    checks, 0 failed"; the H1 subsets, 97 and 120 quotes and 5 checks, 0 failed;
+    rev 10's 12 rows, rev 11's 42, rev 12's 12, rev 13's 12, round 3's 12
+    (planrr3q.tsv) and rev 14's 3, 0 failed.
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the table
+    of section 0.8 names them, PR 53's pushed head 2407efa74 an ancestor of the
+    head. The id re-scan widened to `W-3[6-9][0-9]` over the 166 refs, 137
+    origin and 29 local, and the 22 worktrees: the ledgers end at W-363, W-365
+    is named only in this file, W-364 only as OV-4's reservation and W-398 and
+    W-399 only as range bounds, and W-357 to W-359 and W-364 stay untaken;
+    rev 14 files no residue and mints no F id.
+-   The probes: round 3's 32 sources, v01 to v26 with the variants of v07, v08,
+    v18 and v23, copied from planrr3/probe/ into amend3/probe/, and the 59 of
+    the fold, of rounds 1 and 2 and of rev 13 from planrr3/reprobe/ into
+    amend3/reprobe/, re-run with bin/run.sh's three commands: all 91 give their
+    recorded output, 88 byte for byte and the three that crash the nightly in
+    lowering (b_p6_assign_tuple, q04b, q06i) differing only in the stack trace's
+    addresses; the IR of v04 to v06, v09, v11, v14, v17 and v25 orders its
+    loads, stores, copies and calls as the round reports, and no Carbon function
+    in any probe's IR carries `noalias`, which appears only on the declaration
+    of `llvm.memcpy`.
+-   The dry run: bin/dryrun.py updated in rev11/bin/, rev 13's copy kept as
+    dryrun.rev13.py, to check each block F1 to F27 byte-equal to rev 13's
+    (156412926), run as
+    `python3 -I bin/dryrun.py amend3/wt 2026-10-30 <this plan>` on a fresh
+    `git archive` of 156412926's docs/design and fork/ with this plan copied in,
+    never the worktree of record: 217 checks, ALL OK, rev 13's 190 among them;
+    on rev 13's own plan the same script passes all 217. Line counts, r31.py's:
+    temporal_safety.md 1656 to 1767, mutation_safety.md 1533 to 1622,
+    safety/README.md 849 to 855, initialization_safety.md 595 and
+    spatial_safety.md 758 unchanged, the log 8317 to 8426,
+    fork/safe/plan.md 3051 to 3165, the ledger 2339 to 2353 with 132 to 133
+    items, W-365 last, and this plan 99 more, F4's, one fewer than rev 13's 100
+    because F4's rewrap now runs on through the dated mark rev 14 adds after
+    D-SAFE2-6's pointer; the log's D-SAFE-1 to D-SAFE-23 block, 1326 lines,
+    identical to fork/safe/plan.md section 0.3.
+-   R31 on the dry run's files: every markdown file keeps its heading counts per
+    level, bullets, numbered items, table rows and code blocks; the hazard
+    lines, by bin/hazards2.py, go from 2, 2, 1, 1, 3 and 16 on
+    temporal_safety.md, mutation_safety.md, initialization_safety.md,
+    spatial_safety.md, fork/safe/plan.md and the log to 0, 0, 0, 0, 0 and 15,
+    safety/README.md and the ledger having none, and none is new. prek, with a
+    private cache in amend3/, deleted after, on the nine files of the dry run's
+    tree, committed in the scratch with no ref (3dec22192) and checked out in a
+    scratch worktree, removed after: the first pass exits 0 with no change, this
+    plan's round 3 record written as rumdl's MD013 reflow leaves it, which an
+    earlier scratch commit (72658fcf4) showed by reflowing that one paragraph.
+    rumdl@0.2.58 on the eight markdown files: no issues. The merge-tree of that
+    tree against trunk and the 18 held heads: the sets of the table of
+    section 0.8, all under fork/, equal to 156412926's and to rev 13's dry run.
+-   R31 on this plan, the one file rev 14 changes, by r31.py: before,
+    {1: 1, 2: 16, 3: 134}, bullets 292, numbered 36, rows 330, 11389 lines
+    and 228 code blocks; after, {1: 1, 2: 16, 3: 134}, bullets 304, numbered 36,
+    rows 359, 11760 lines and 228 code blocks, every one guarded, the changes
+    being the case table's three rows, the probe table's twenty, the round
+    record's table of three findings with its two header lines, the Sign-off's
+    PRR3 row, five decisions and these seven bullets; no line starts with a
+    hazard before or after. prek with a private cache in amend3/, deleted after:
+    the first pass exits 0 with no change. rumdl@0.2.58: no issues. The runner's
+    self-test, `python3 -I fork/conformance/runner.py --self-test`:
+    "self-test: 150 programs parsed, 56 bullets in table, OK". The model-name
+    grep over the changed lines and the message: no hit outside the trailers and
+    the scratch paths.
 
 **Plan re-review, round 1 (2026-10-29).** One fresh agent read rev 11
 (22d57a397) as the ruling's step (2) asks, upstream re-fetched at 9192ee003 with
@@ -6785,11 +7020,127 @@ consequence paragraph and the fifth fix commit paragraph, adds a case row, nine
 probe rows, six decisions, seven Measured bullets and this record, and marks
 the Status line, the Sections list and the Sign-off. No reproduced finding
 shows a realigned rule unsound or not upstream's: the governing test stands,
-and the findings correct copies that did not yet state it. PRR2-M1 is a MAJOR
+and the findings correct copies that did not yet state it (amended 2026-10-29,
+plan re-review round 3: PRR3-B1: the governing test's sufficiency claim fails
+for the toolchain's interim `=`, below). PRR2-M1 is a MAJOR
 left at the ruling's second round, so by the ruling's step (2) SAFE-2 stops
 again for a ruling: rev 13 is NOT signed off, no fifth fix commit is made, and
 the orchestrator rules; no revision after rev 12 is signed off or applied
 without that ruling.
+
+**Ruling (orchestrator, R29, 2026-10-29) on rev 13.** The orchestrator's ruling
+on rev 13 and plan re-review round 2, recorded verbatim; it governs round 3
+below and rev 14 (added 2026-10-29, plan re-review round 3):
+
+<!-- google-doc-style-ignore -->
+
+> Ruling of the orchestrator under R29, 2026-10-29, on rev 13 (section 8.20's
+> plan re-review, round 2). Round 2 found PRR2-M1, a MAJOR: the fold texts
+> exempted a copy-represented call in the right operand of the interim `=` on
+> the ground that it returns before the left operand is written, which
+> values.md:604-607's in-place initialization refutes (probe z1
+> prints 42, 0, 7). Rev 13 folds it, the binding taken from the start of the
+> in-place initialization, and the four MINORs with it, and is not signed off:
+> the ruling of section 8.19 allowed two rounds and a MAJOR was left at the
+> second. The governing test, exempt exactly when no code written outside
+> core/prelude can run while the `ref` operand is bound, stood at both rounds;
+> what the rounds corrected is the case analysis of the toolchain's interim `=`.
+> One further round, round 3 of the focused plan re-review, is therefore
+> authorized: one fresh agent reviews rev 13 as rounds 1 and 2 reviewed rev 11
+> and rev 12, re-running every probe of the fold, of the two rounds and of
+> rev 13, and writing its own for every way the in-place initialization of the
+> interim `=`'s left operand can interleave with code written outside
+> core/prelude that the texts do not name (nested in-place elements, a
+> user-typed field's `Copy` or `ImplicitAs` at any position, an array literal, a
+> whole-operand conversion, destruction of the old value, `=` through a slice or
+> `IndirectIndexWith`, a prelude call whose argument is a user call) and for the
+> compound-assignment and `Inc` and `Dec` cases. Its findings are folded into
+> rev 14 by a second fresh agent, which records this ruling verbatim and signs
+> off rev 14 only if round 3 found no BLOCKER and no MAJOR. On that sign-off the
+> ruling of section 8.19 continues at its step (3): the fifth fix commit applies
+> the fold texts as rev 14 leaves them and nothing else, its records commit
+> follows, round 4 by two fresh agents judges the fold under the dry test, and
+> steps 6 to 8 follow a dry round 4. Break condition: a BLOCKER or MAJOR at
+> round 3 stops SAFE-2 at rev 14 with no fix commit, PR 53 keeps its pushed
+> head 2407efa74, and the orchestrator plans the ground-up re-derivation of M3
+> and D-SAFE2-6 as a new plan file, fork/safe/safe3-plan.md, before any further
+> commit on this branch; a MAJOR at round 4 does the same, as section 8.19 says.
+
+<!-- google-doc-style-resume -->
+
+**Plan re-review, round 3 (2026-10-29).** One fresh agent read rev 13
+(156412926) as the ruling on rev 13, above, asks, upstream re-fetched at
+9192ee003 with nothing newer and no cited line moved, its scratch
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rev10/planrr3/:
+PR 67's 273 quotes and 89 checks, the H1 subsets of 97, 120 and 5, rev 11's 42,
+rev 12's 12 and rev 13's 12 rows and 12 of its own, 0 failed; `git ls-remote`
+with trunk at 1c83422a0 and the 18 held heads as section 0.8 names them; rev
+13's dry run on a fresh `git archive` of 156412926, 190 checks, ALL OK, with the
+Measured list's line counts, hazard lines and same-words phrases, rumdl@0.2.58
+clean, prek on a scratch commit of the dry run's tree exiting 0 with no change
+on its first pass and the runner's self-test OK; the 59 probes of the fold, of
+rounds 1 and 2 and of rev 13 re-run with their recorded output, the three
+lowering crashes differing only in addresses; and 32 probe sources of its own,
+v01 to v26 with the variants of v07, v08, v18 and v23, for the interleavings the
+ruling lists and for the compound-assignment and `Inc` and `Dec` cases. Its
+verdict is REJECT on one BLOCKER and two MINORs, one of them records-only
+(PRR3-m2): 3 findings, 3 folded, none rejected. Every interleaving the ruling
+lists that runs code written outside core/prelude comes out as the texts
+classify it but the prelude call whose argument is a user's call, which the
+texts leave unnamed (PRR3-m1); the BLOCKER is not about such code: the
+toolchain's interim `=` reads its own right operand after its in-place
+initialization has begun, so another path observes the left operand while it is
+bound with no code written outside core/prelude running, and the governing test,
+correctly applied, exempts those programs while its own sufficiency claim fails
+for them. Rev 14's plan amender, a second fresh agent, reproduced each finding
+against the tree at 156412926, whose line numbers the table cites, upstream at
+9192ee003 and the nightly, re-running in amend3/ beside rev11/ the round's 32
+probes and the 59 before them, each with its recorded output (the three lowering
+crashes differing only in addresses).
+
+The BLOCKER, in the round's report as the orchestrator hands it on:
+
+<!-- google-doc-style-ignore -->
+
+> PRR3-B1 (BLOCKER): "The interim `=` reads its right operand after its in-place
+> initialization begins, so with no code written outside core/prelude another
+> path observes the bound left operand: the governing test's sufficiency fails"
+>
+> "The texts class every one as built in: no user code runs, and the elements
+> are literals, copy-represented values or prelude calls over prelude types. Yet
+> the right operand's own value acquisitions, copies and prelude calls read the
+> left operand through paths not derived from the binding after the binding
+> began, by the texts' own binding point."
+>
+> "So 'no user code runs, hence only the operation reaches the referent, hence
+> noalias holds' is false for the interim `=`. Trusted prelude code (Get) and
+> the toolchain's deferred loads are not confined to the binding. On closed
+> places (v10, v25's y) the exemption accepts these programs with no check."
+>
+> "This is not PRR2-M1's user-code case analysis: the governing test, correctly
+> applied, exempts these programs. It still holds for call-based operators,
+> whose operands are acquired before the call (a_p07, b_p1-3)."
+
+<!-- google-doc-style-resume -->
+
+| finding | severity | reproduced | disposition | where it lands |
+| --- | --- | --- | --- | --- |
+| PRR3-B1: the interim `=` reads its right operand after its in-place initialization begins, so with no code written outside core/prelude another path observes the bound left operand, and the governing test's sufficiency fails | BLOCKER | v09 (2 2: the IR loads `p->b`, stores `q->a`, loads `p->a`, stores `q->b`), v10 (2 2 2 2), v11 (2 2: the prelude's `Copy.Op` into `ptr %q.a` from `ptr %p.b`, then into `ptr %q.b` from `ptr %p.a`), v14 (2 2 2 2), v24 (2 2; 2 1; 2 2) and v25 (42 42 5: `Get` with `ptr %p.o` after `Some` with `ptr %q.o`), each the round's output; the test paragraph (:5056-5062), F1 (:5457-5459), F3 (:5753-5755), F4 (:5920-5922), the interim-`=` holding clause of F1 (:5545-5560), F2, F3, F4 and F6, F5 and the case row (:5113) class these programs built in; handle_operator.cpp:121 (`rhs_id = InitializeExisting(context, node_id, lhs_id, rhs_id);`), convert.cpp:361 and :946 (`ConvertAggregateElement`, each element converted into its target in turn), values.md:604-607 and p005434:83 at 9192ee003; no Carbon function in the probes' IR carries `noalias`, so no program has undefined behavior today, while the design claims p005434:83's `noalias` by construction | ACCEPTED as graded (decision): the governing test, correctly applied, exempts these programs and its sufficiency claim fails for them, a fault of the safety argument and not of its case analysis; by the ruling's break condition SAFE-2 stops at rev 14, no fifth fix commit is made, F1 to F27 stay as rev 13 gave them and are applied by no commit, and the re-derivation is fork/safe/safe3-plan.md's, keyed, by the review's fix, on nothing but the binding reaching the referent while it is bound, every part of the interim `=`'s right operand evaluated after its in-place initialization begins counting as running while bound, each element's value acquisition, copy and conversion and every call after an element initialized in place among them, with such an `=` a checked reborrow on a closed place and M3(d)'s through a shared path, the program evaluating the elements first, or the interim `=` modeled as element writes each checked under M3 | now: the marks on the Status line, the Sections list, section 3 steps 4 and 5, section 8.19's budget, D-SAFE2-6, this section's opening paragraph, the test paragraph, the case table, decision PRR2-m4's break condition, the fifth fix commit paragraph and round 2's record, a case row, the probe rows, two decisions and the Sign-off; the re-derivation: fork/safe/safe3-plan.md, the orchestrator's |
+| PRR3-m1: where the binding begins is unnamed for a prelude call whose argument is a user's call | MINOR | v04 (5 1 42 2: `F`, then `Some` with `ptr %q.o`, then the store of `n`), v05 (5 42: `F`, then `Some` with `ptr %q`) and v06 (1 0 42: `F`, after `Some` into the first field, sees it written), the round's output; the binding sentence and F1 (:5545-5557), with their copies in F2 to F4 and F6, say neither which reading of values.md:604-607 applies nor where such an argument's evaluation falls | ACCEPTED: an in-place call receives its place in the left operand only once its arguments are evaluated, so a user's call among a prelude call's arguments runs before the binding unless an element initialized in place comes before it, v04 and v05 built in, v06 user-written; stated in this section's record, the review's second place, not in F1 to F4 and F6, which no commit applies (decision) | now: the test paragraph's binding sentence, the binding-point decision, a case row and the probe rows; fork/safe/safe3-plan.md takes it with the re-derivation |
+| PRR3-m2: the nightly limits what round 3's probes show | MINOR, records-only | v12 (0 0 0 7 100: `F` before any store, the IR storing only `F`'s result), v17 (10 20 30: `impl D as Core.Destroy`'s `Op` called nowhere), v26 (compile error: "cannot copy value of type `Ch`"), v23 (1 2 50 0 7 2) and v23b (compile error: "expression is not assignable"); the nightly's prelude has neither `IndirectIndexWith` nor a slice type | ACCEPTED | now: the probe rows, v12 order-only evidence like the lowering crashes and v17 beside b_p7 and y1 in the old-value case row (decision) |
+
+Rev 14 changes no page, log, fork/safe/plan.md or ledger line and no fold text:
+F1 to F27 stay as rev 13 gave them, byte for byte, the record of what rounds 1
+to 3 reviewed. In this plan it records the ruling on rev 13 verbatim, quotes the
+BLOCKER, marks the statements PRR3-B1 shows false or superseded, states
+PRR3-m1's clause in this section's record, adds three case rows, the round's
+probe rows, five decisions, seven Measured bullets and this record, and marks
+the Status line, the Sections list, section 3 steps 4 and 5, section 8.19's
+budget, D-SAFE2-6 and the Sign-off. PRR3-B1 is a BLOCKER at round 3, the
+ruling's break condition: SAFE-2 stops at rev 14, nothing is signed off, no
+fifth fix commit is made, PR 53 keeps its pushed head 2407efa74, and the
+orchestrator plans the ground-up re-derivation of M3 and D-SAFE2-6 as a new
+plan file, fork/safe/safe3-plan.md, before any further commit on this branch.
 
 ## Sign-off
 
@@ -6808,6 +7159,7 @@ review fold: RR3-M1, RR3-m1, RR3-m2):
 | WT: the two whole-tree document reviews, A and B, of the ruling's step (1) (added 2026-10-29, rev 11) | the tree at rev 10, d86fce1b9 | APPROVE-WITH-FIXES, both | 0 | 5 | 7 | 12, RB-M3's rule by residue W-365 | RA-m1's slices.md half | rev 11, §8.20; pending the focused plan re-review |
 | PRR1: the focused plan re-review of rev 11, round 1 (added 2026-10-29, plan re-review round 1) | rev 11, 22d57a397 | APPROVE-WITH-AMENDMENTS | 0 | 2 | 5 | 7 | none | rev 12, §8.20; pending plan re-review round 2 |
 | PRR2: the focused plan re-review of rev 12, round 2, the ruling's last (added 2026-10-29, plan re-review round 2) | rev 12, 3f8f4130d | APPROVE-WITH-AMENDMENTS | 0 | 1 | 4 | 5 | none | rev 13, §8.20; PRR2-M1 left at the second round: NOT signed off, the orchestrator rules |
+| PRR3: the focused plan re-review of rev 13, round 3, by the ruling on rev 13 (added 2026-10-29, plan re-review round 3) | rev 13, 156412926 | REJECT | 1 | 0 | 2 | 3 | none | rev 14, §8.20; PRR3-B1: NOT signed off, no fifth fix commit, SAFE-2 stops at rev 14 and the orchestrator plans fork/safe/safe3-plan.md |
 
 The five reviews before the implementation raised 34 findings, 4 BLOCKERs, 10
 MAJORs and 20 MINORs; all 34 are folded and none is rejected. RR3, the last of
@@ -6948,6 +7300,25 @@ no revision after rev 12 is signed off or applied without the orchestrator's
 ruling, and PR 53 keeps its pushed head 2407efa74. Rev 13 changes no page,
 record outside this plan, ledger line, example, diagnostic or merge-tree set
 (added 2026-10-29, plan re-review round 2).
+
+Rev 14, 2026-10-29 -- NOT signed off: PRR3-B1; no fifth fix commit; the
+ground-up re-derivation is planned as fork/safe/safe3-plan.md. Rev 14 records
+verbatim the orchestrator's ruling on rev 13, which authorized round 3 of the
+focused plan re-review and the fifth fix commit only if that round found no
+BLOCKER and no MAJOR, and folds round 3, PRR3 in the table (section 8.20): one
+BLOCKER and two MINORs, one of them records-only, all three folded and none
+rejected. PRR3-B1 shows the governing test's sufficiency claim false for the
+toolchain's interim `=`, whose right operand reads the left operand through
+other paths after its in-place initialization has begun while no code written
+outside core/prelude runs, so the ruling's break condition is met: SAFE-2 stops
+at rev 14, rev 14 signs nothing off, no fifth fix commit is made and F1 to F27
+are applied by no commit, PR 53 keeps its pushed head 2407efa74, and the
+orchestrator plans the ground-up re-derivation of M3 and D-SAFE2-6 as a new plan
+file, fork/safe/safe3-plan.md, before any further commit on this branch; the
+fix commits stay four, and rev 5's sign-off stands for every text of commits 1
+and 2 that they leave as it was. Rev 14 changes no page, record outside this
+plan, ledger line, example, diagnostic, fold text or merge-tree set (added
+2026-10-29, plan re-review round 3).
 
 ## Hand-off notes for the implementer
 

@@ -36,66 +36,68 @@ clause stated as this design's classification beside
 docs/design/assignment.md:159's heading; section 8.16 records the stop and gives
 the texts of the one fold commit that answers both, for the orchestrator to rule
 on, and no page, record or ledger line changes (amended 2026-10-29, rev 8:
-section 8.16). Rev 7 is the plan amender's fold of the focused re-review of rev
-6 (486d2bc74), whose verdict was APPROVE-WITH-AMENDMENTS with no BLOCKER, one
-MAJOR and one MINOR, both folded and none rejected (section 8.12; amended
-2026-10-28, stop-and-amend re-review: AM6-M1, AM6-m1). AM6-M1: section 2.1's
-test, as rev 6 worded it, failed five quotes that rev 6 kept, three code lines
-whose runs of spaces the quotes shorten (A.2.11 twice, A.2.13), A.3.13's anchor,
-which also ends in "..." for the rest of its code line, and A.8.1's locator,
-which quoted a link by its text alone. AM6-m1: section 8.12 overstated what rev
-6's checker set aside and scanned. Rev 7 adds the two code-line set-asides to
-section 2.1, scopes its test to anchors and superseded texts, writes a quote
-that carries link markup in this plan's own prose as a code span, quotes A.8.1's
-locator with its link, and records a sweep, in section 8.12, that applies
-exactly section 2.1's test to every quoted span of Appendices A to D, prose
-anchors included, with no mismatch left. No page or record text, rule, example,
-diagnostic, line count or count of section 8 item 1 changes, so the
-implementation resumes from this revision's commit with section 3's commit 1.
-Rev 6 was the plan amender's revision of rev 5 (4ca369e38) after the implementer
-stopped before committing commit 1: the superseded texts that Appendix A's
-blocks A.1.6 and A.5.10 quote had dropped the link markup of three links on the
-page lines they quote, so they were not byte-equal to the pages at 2407efa74.
-Rev 6 restored the three links in those two quotes, stated in section 2.1 the
-byte-equality test every superseded text and anchor meets, added that test to
-section 8 item 5, and corrected A.10.2's line count from 10 to 11 and the line
-ranges in A.1.6's and A.5.10's headings (section 8.12; amended 2026-10-28,
-implementation: stop-and-amend: link markup in two superseded quotes). Rev 5 was
-the fixer's fold of the focused re-review (round 3) of rev 4 (9d48a863e), whose
-verdict was APPROVE-WITH-AMENDMENTS: no BLOCKER (RR2-B1 resolved), one MAJOR,
-RR3-M1 (PR 65's `IndirectIndexWith.Ref`, a by-value producer of a `ref` into the
-block with no `bound`, would reopen `Peek8`'s shape once PR 65 lands), and two
-MINORs, RR3-m1 and RR3-m2; all three are folded and none is rejected (section
-8.11), and the "Sign-off" section tables every review of this plan. The
-implementation started from rev 5's commit with section 3's commit 1 and stopped
-before committing it (section 8.12). Rev 4, 2026-10-28, was the fixer's fold of
-the focused re-review (round 2) of rev 3 (603749ee1), whose verdict was REJECT
-on one BLOCKER, RR2-B1 (a trusted prelude writer, `Core.Buf(T).Set` with its
-by-value receiver, wrote a borrowed `Core.String` element in Strict), with three
-MINORs; all four were folded and none was rejected (section 8.10), and since
-RR2-B1's fold changed a rule of the design (a trusted body keeps M3's write
-rule, and `Core.Buf(T).Set` takes `ref self`), only the next focused re-review
-could sign rev 4 off. Rev 3, 2026-10-28, was the fixer's fold of the focused
-re-review of rev 2 (46980f8bd), whose verdict was REJECT on one BLOCKER, RR1-B1
-(review A's B-1 not resolved: a write to an enclosing `Plain` aggregate, a
-struct or class that holds a `str`, still mutated a borrowed
-`Core.SharedImmutable` object through `T*`), with one MAJOR and four MINORs; all
-six were folded and none was rejected (section 8.9). Rev 2 (46980f8bd) folded
-the two plan reviews, review A (REJECT, two BLOCKERs) and review B
-(APPROVE-WITH-AMENDMENTS), 21 findings, every one accepted (section 8.8; review
-A's ids carry the prefix "A-", so A-B-1 is review A's B-1); rev 1 (475b7ecb0)
-was the planner's draft. Workstream SAFE-2 realigns the six "departures from
-accepted text" of SAFE-1's design (fork decision F-013) to upstream's recorded
-direction, as rulebook R32 requires since the owner's directive of 2026-10-21
-("Direction drifts are not permitted"; decision-log V-3b, DR-0). Branch
-`claude/carbon-fork-0-1-safe` (PR 53, held open, second in the land sequence
-after PR 67), head 2407efa74; this plan is a new file beside fork/safe/plan.md,
-which receives a dated pointer paragraph in commit 2 (section 2.3). Upstream was
-read at its tip 0421bf3b4 (fetched 2026-10-28) and re-read for rev 3 at
-22f3cd353 and for rev 4, rev 5 and rev 6 at 07718a832, where no quoted file has
-changed (section 0.1). Records and design text only: no toolchain, prelude,
-golden, program or conformance change; the two SKIP stubs stay as they are;
-nothing is built.
+section 8.16). Rev 8 is 1f9d0a16f, and section 8.17 records round 3's fold, in
+which the budget is exceeded and the orchestrator rules (amended 2026-10-29,
+re-review round 3 fold: section 8.17). Rev 7 is the plan amender's fold of the
+focused re-review of rev 6 (486d2bc74), whose verdict was
+APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
+and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
+AM6-M1, AM6-m1). AM6-M1: section 2.1's test, as rev 6 worded it, failed five
+quotes that rev 6 kept, three code lines whose runs of spaces the quotes shorten
+(A.2.11 twice, A.2.13), A.3.13's anchor, which also ends in "..." for the rest
+of its code line, and A.8.1's locator, which quoted a link by its text alone.
+AM6-m1: section 8.12 overstated what rev 6's checker set aside and scanned. Rev
+7 adds the two code-line set-asides to section 2.1, scopes its test to anchors
+and superseded texts, writes a quote that carries link markup in this plan's own
+prose as a code span, quotes A.8.1's locator with its link, and records a sweep,
+in section 8.12, that applies exactly section 2.1's test to every quoted span of
+Appendices A to D, prose anchors included, with no mismatch left. No page or
+record text, rule, example, diagnostic, line count or count of section 8 item 1
+changes, so the implementation resumes from this revision's commit with section
+3's commit 1. Rev 6 was the plan amender's revision of rev 5 (4ca369e38) after
+the implementer stopped before committing commit 1: the superseded texts that
+Appendix A's blocks A.1.6 and A.5.10 quote had dropped the link markup of three
+links on the page lines they quote, so they were not byte-equal to the pages at
+2407efa74. Rev 6 restored the three links in those two quotes, stated in section
+2.1 the byte-equality test every superseded text and anchor meets, added that
+test to section 8 item 5, and corrected A.10.2's line count from 10 to 11 and
+the line ranges in A.1.6's and A.5.10's headings (section 8.12; amended
+2026-10-28, implementation: stop-and-amend: link markup in two superseded
+quotes). Rev 5 was the fixer's fold of the focused re-review (round 3) of rev 4
+(9d48a863e), whose verdict was APPROVE-WITH-AMENDMENTS: no BLOCKER (RR2-B1
+resolved), one MAJOR, RR3-M1 (PR 65's `IndirectIndexWith.Ref`, a by-value
+producer of a `ref` into the block with no `bound`, would reopen `Peek8`'s shape
+once PR 65 lands), and two MINORs, RR3-m1 and RR3-m2; all three are folded and
+none is rejected (section 8.11), and the "Sign-off" section tables every review
+of this plan. The implementation started from rev 5's commit with section 3's
+commit 1 and stopped before committing it (section 8.12). Rev 4, 2026-10-28, was
+the fixer's fold of the focused re-review (round 2) of rev 3 (603749ee1), whose
+verdict was REJECT on one BLOCKER, RR2-B1 (a trusted prelude writer,
+`Core.Buf(T).Set` with its by-value receiver, wrote a borrowed `Core.String`
+element in Strict), with three MINORs; all four were folded and none was
+rejected (section 8.10), and since RR2-B1's fold changed a rule of the design (a
+trusted body keeps M3's write rule, and `Core.Buf(T).Set` takes `ref self`),
+only the next focused re-review could sign rev 4 off. Rev 3, 2026-10-28, was the
+fixer's fold of the focused re-review of rev 2 (46980f8bd), whose verdict was
+REJECT on one BLOCKER, RR1-B1 (review A's B-1 not resolved: a write to an
+enclosing `Plain` aggregate, a struct or class that holds a `str`, still mutated
+a borrowed `Core.SharedImmutable` object through `T*`), with one MAJOR and four
+MINORs; all six were folded and none was rejected (section 8.9). Rev 2
+(46980f8bd) folded the two plan reviews, review A (REJECT, two BLOCKERs) and
+review B (APPROVE-WITH-AMENDMENTS), 21 findings, every one accepted (section
+8.8; review A's ids carry the prefix "A-", so A-B-1 is review A's B-1); rev 1
+(475b7ecb0) was the planner's draft. Workstream SAFE-2 realigns the six
+"departures from accepted text" of SAFE-1's design (fork decision F-013) to
+upstream's recorded direction, as rulebook R32 requires since the owner's
+directive of 2026-10-21 ("Direction drifts are not permitted"; decision-log
+V-3b, DR-0). Branch `claude/carbon-fork-0-1-safe` (PR 53, held open, second in
+the land sequence after PR 67), head 2407efa74; this plan is a new file beside
+fork/safe/plan.md, which receives a dated pointer paragraph in commit 2 (section
+2.3). Upstream was read at its tip 0421bf3b4 (fetched 2026-10-28) and re-read
+for rev 3 at 22f3cd353 and for rev 4, rev 5 and rev 6 at 07718a832, where no
+quoted file has changed (section 0.1). Records and design text only: no
+toolchain, prelude, golden, program or conformance change; the two SKIP stubs
+stay as they are; nothing is built.
 
 **Items:** W-347 (D-SAFE-8 narrows p005434:83), W-348 (D-SAFE-17 narrows
 p005434:660-664), W-349 (D-SAFE-11(d) narrows p005434:831-832), W-350
@@ -143,7 +145,8 @@ and section 2.6).
     re-review round 1), the fold of its findings (section 8.14) and the
     re-review's round 2 (section 8.15; amended 2026-10-29, re-review round 2),
     and the stop-and-amend record of rev 8 (section 8.16; amended 2026-10-29,
-    rev 8).
+    rev 8) with the fold record of round 3 (section 8.17; amended 2026-10-29,
+    re-review round 3 fold).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -3312,7 +3315,7 @@ dispositioned:
 
 | finding | severity | reproduced | disposition | where |
 | --- | --- | --- | --- | --- |
-| RR2-M1, RR1-m1's built-in test leaves the prelude's `CppCompat` integer operators neither built in nor user-written | MAJOR | the test (temporal_safety.md:282-299, mutation_safety.md:238-252, the log :3144-3156, fork/safe/plan.md :443-455, D-SAFE2-6 :1475-1490) counts as built in the semantics docs/design/assignment.md:146-157 gives the built-in types (:148, "Integers and floating-point types, `bool`, and pointer types support simple"), with the prelude's impls of those, an aggregate's assignment with no user-written `AssignWith` impl, and the language's own `&`, member access and array indexing; core/prelude/types/cpp/int.carbon at 9192ee003, equal to the fork's, declares its six `CppCompat` integers as classes that adapt an integer (:16-37, `class CppCompat.Long32 {` and `adapt i32;` at :16-17), none a built-in type of :148, and gives them in core/prelude `fn Op(ref self, other: Self) = "int.sadd_assign";` (:1011) and the `Dec` and `Inc` bodies `self -= (1 as CppCompat.Long32);` and `self += (1 as CppCompat.Long32);` (:1179, :1185), impls that are thus neither the prelude's impls of a built-in type nor user-written under temporal_safety.md:301-305's rule; so `p->n += 1` and `++p->n` through `T*` for a C++ `long` field are unclassified, and read as user-written they are M3(d)'s `StrictInvalidatingThroughShared`, rejecting a `Plain` write M3 permits, R1-M1's class; section 8.14's third decision (:3109-3116) names these impls without classifying them | to round 3's fixer, not touched here: the review's remedy, built in by provenance, the language's own operators and every core/prelude impl of an operator interface whatever its body, user-written an impl outside core/prelude, in the same words with a dated mark in the temporal `ref` bindings section, M3, D-SAFE-8 and D-SAFE-9 on the page, in the log and fork/safe/plan.md section 0.3, that plan's section 1.6, D-SAFE2-6 and W-148's notes; a page change past the budget, under section 3 step 4's last clause | section 8.14's third decision, a dated mark |
+| RR2-M1, RR1-m1's built-in test leaves the prelude's `CppCompat` integer operators neither built in nor user-written | MAJOR | the test (temporal_safety.md:282-299, mutation_safety.md:238-252, the log :3144-3156, fork/safe/plan.md :443-455, D-SAFE2-6 :1475-1490) counts as built in the semantics docs/design/assignment.md:146-157 gives the built-in types (:148, "Integers and floating-point types, `bool`, and pointer types support simple"), with the prelude's impls of those, an aggregate's assignment with no user-written `AssignWith` impl, and the language's own `&`, member access and array indexing; core/prelude/types/cpp/int.carbon at 9192ee003, equal to the fork's, declares its six `CppCompat` integers as classes that adapt an integer (:16-38, amended 2026-10-29, re-review round 3 fold, where this read ":16-37"; `class CppCompat.Long32 {` and `adapt i32;` at :16-17), none a built-in type of :148, and gives them in core/prelude `fn Op(ref self, other: Self) = "int.sadd_assign";` (:1011) and the `Dec` and `Inc` bodies `self -= (1 as CppCompat.Long32);` and `self += (1 as CppCompat.Long32);` (:1179, :1185), impls that are thus neither the prelude's impls of a built-in type nor user-written under temporal_safety.md:301-305's rule; so `p->n += 1` and `++p->n` through `T*` for a C++ `long` field are unclassified, and read as user-written they are M3(d)'s `StrictInvalidatingThroughShared`, rejecting a `Plain` write M3 permits, R1-M1's class; section 8.14's third decision (:3109-3116) names these impls without classifying them | to round 3's fixer, not touched here: the review's remedy, built in by provenance, the language's own operators and every core/prelude impl of an operator interface whatever its body, user-written an impl outside core/prelude, in the same words with a dated mark in the temporal `ref` bindings section, M3, D-SAFE-8 and D-SAFE-9 on the page, in the log and fork/safe/plan.md section 0.3, that plan's section 1.6, D-SAFE2-6 and W-148's notes; a page change past the budget, under section 3 step 4's last clause | section 8.14's third decision, a dated mark |
 | RR2-m1, the aggregate clause credits assignment.md:159-161 with more than it says | MINOR, not records-only | upstream's docs/design/assignment.md:159 at 9192ee003 is the heading "Tuples, structs, choice types, and data classes" and :161 reads "_TODO_: Describe the rules for assignment in these cases."; docs/design/classes.md:130-131 there, "Data classes are types that consist of data fields that are publicly accessible and directly read and manipulated by client code", and no array is named; temporal_safety.md:290-293 reads "the assignment of a tuple, struct, array, choice type or class with no user-written `AssignWith` impl, whose rules assignment.md:159-161 leaves a TODO", and mutation_safety.md:243-244, the log :3151-3152, fork/safe/plan.md :450-451, D-SAFE2-6 :1482-1484 and W-148's notes carry the same clause; the widening to arrays and to classes with private fields, `Core.String` among them (core/prelude/types/string.carbon:16-26, `private var ptr: Char*;` and `private var size: i64;`), is section 8.14's third decision, not upstream's text (R32 (a), R10) | to round 3's fixer, not touched here: upstream's heading quoted, and the widening stated as this design's classification with its reason, `Core.String`, in every copy, with a dated mark | section 8.14's third decision, the same dated mark |
 | RR2-m2, records number this review round 3, and B.3.8 is left stale | MINOR, records-only | the Status line (:21-23) reads "round 3 reviews it next" and section 8.14's last paragraph (:3195-3196) "round 3, a fresh agent, reviews cbdc0552e and this records commit", while section 3 step 5 has "one fresh agent per round" and section 8.13 hands round 1's findings to "round 2's fixer", whose fold this review reads; section 8.14's first sentence (:3058) has round 2 go back to section 3 step 4, where by step 5 round 1, not dry, does; fork/safe/plan.md's realigned notes (:3001-3004) gained, by b30c77990, "The focused re-review's round 1 found four page defects in that fold, folded by cbdc0552e", while B.3.8 (:7274-7316), which section 8.7's decision amends in place, did not, and section 8.14's pointer list of fifteen blocks does not name it | folded by this records commit: dated marks in the Status line and in section 8.14's first and last paragraphs name this review round 2; B.3.8's block gains the sentence in the file's words and its lead paragraph a dated mark; section 8.14's pointer decision a dated mark that B.3.8 is amended in place; the Sections list names sections 8.14 and 8.15 | Status; Sections; section 8.14; B.3.8 |
 
@@ -3792,6 +3795,82 @@ SAFE-2 focused re-review, round 3 (<date>; RR2-M1, RR2-m1): superseding the prev
     hit outside the trailers and the scratch path. The merge-tree of the new
     tree against trunk and the 18 held heads: the sets of section 0.8's
     table, unchanged.
+
+No page, example, log, fork/safe/plan.md or ledger line changes, so the
+nightly compiles of section 0.7 are not re-run and the ledger's `json.load` is
+not owed; nothing is pushed (section 3 step 7 waits for a dry round).
+
+### §8.17 Focused re-review fold record, round 3 (2026-10-29)
+
+Round 2 of section 3 step 5's loop, not dry, went back to section 3 step 4, as
+the orchestrator's ruling recorded in section 8.15 has it: one fresh fixer, the
+fixer of round 3, took round 2's two findings that are serious or change a page,
+RR2-M1 and RR2-m1, reproduced each against the tree at 4e40e74d8, this plan and
+upstream's tip, re-fetched as 9192ee003, and dispositioned it. Both are ACCEPTED
+and none is rejected, and neither is folded on a page: the budget of three fix
+commits is spent (0f281d8bd, e1574b003 and cbdc0552e), and step 4 has no shrink
+line. The fixer made the plan revision that step 4's last clause names,
+1f9d0a16f, "SAFE-2 plan (rev 8): focused re-review fold: the built-in test names
+types and misattributes its aggregate clause, re-planned at its root", whose
+section 8.16, the stop-and-amend record, re-plans both findings at their root
+and gives the texts of the one fold commit that answers them; this records
+commit, "SAFE-2 records: focused re-review round 3 fold", which is not counted,
+records the round. The budget is exceeded, and the orchestrator rules on the
+fold commit; round 3, the loop's last, reviews 1f9d0a16f and this commit. Round
+2's one records-only MINOR, RR2-m2, was folded by round 2's records commit
+4e40e74d8; rev 8 touches two of the places its marks are in, the Status line and
+section 8.14's third decision, and both of RR2-m2's marks stand there as
+written. The scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rr/r3/fixer/.
+Everything measured is container-local, EXPECTED, not of record (R9).
+
+| finding | severity | reproduced at 4e40e74d8 and 9192ee003 | disposition | where |
+| --- | --- | --- | --- | --- |
+| RR2-M1, RR1-m1's built-in test leaves the prelude's `CppCompat` integer operators neither built in nor user-written | MAJOR | reproduced as section 8.16's table states it: docs/design/assignment.md:148's built-in types are "Integers and floating-point types, `bool`, and pointer types"; `class CppCompat.Long32 {` and `adapt i32;` (core/prelude/types/cpp/int.carbon:16-17), one of six such classes (:16-38), and its `"int.sadd_assign"` (:1011) and `self += (1 as CppCompat.Long32);` (:1185) are core/prelude impls of a class, so neither clause of temporal_safety.md:282-305 classes them; upstream's toolchain/check/cpp/import.cpp:1235-1260 maps C++'s `long` and `long long` to them | ACCEPTED, not folded: past the budget; re-planned by rev 8 at its root, built in by where an implementation is written (section 8.16, blocks E1 to E6), for one fold commit on the orchestrator's ruling | 1f9d0a16f: section 8.16; dated marks in the Status line, the Sections list, D-SAFE2-6 (a pointer), section 3 steps 4 and 5, section 8.7's R1-M1 decision, section 8.14's third decision and the Sign-off |
+| RR2-m1, the aggregate clause credits assignment.md:159-161 with more than it says | MINOR, not records-only | reproduced as section 8.16's table states it: assignment.md:159 is "## Tuples, structs, choice types, and data classes" and :161 "_TODO_: Describe the rules for assignment in these cases."; classes.md:130's data classes have publicly accessible fields; the six copies credit :159-161 with "a tuple, struct, array, choice type or class" | ACCEPTED, not folded: a page change past the budget; re-planned by rev 8: upstream's heading quoted, the reach to arrays and to classes that are not data classes stated as this design's classification with its reason, `Core.String` (string.carbon:16-26), in every copy | 1f9d0a16f: section 8.16, blocks E1 to E4 and E6; the same marks |
+
+Decisions under R29, each with its break condition:
+
+-   Two commits, the plan revision and then this records commit, rather than
+    one: rev 8 holds the re-plan and its stop-and-amend record, and this
+    section names rev 8's hash, which rev 8 cannot hold. Break condition: the
+    orchestrator wants the round in one commit; the next records commit then
+    says so by a dated mark.
+-   Section 8.15's RR2-M1 row gives the `CppCompat` classes as ":16-37",
+    where they span :16-38, the sixth class's closing brace being :38; the
+    row gains a dated mark. Break condition: none; a cite is exact or marked
+    (R10).
+-   No residue is filed: the fold is planned, not dropped, and W-365, the next
+    free id, stays free. Break condition: section 8.16's third decision, the
+    ruling keeps the fold out of SAFE-2.
+-   `<fixes>` (section 8.13's placeholder row) stays 0f281d8bd, e1574b003 and
+    cbdc0552e, since this round makes no fix commit. Break condition: section
+    8.14's last decision, a later fix commit, which then joins the list.
+
+**Measured** by this records commit, 2026-10-29, logs in the scratch's logs/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003,
+    as for rev 8; `git log 9192ee003..upstream/trunk` lists nothing.
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as section
+    0.8's table names them, PR 53's pushed head still 2407efa74.
+-   R31 on this plan, the one file this commit changes: before, headings
+    {1: 1, 2: 16, 3: 130}, bullets 168, numbered 31, rows 217, 8287 lines;
+    after, headings {1: 1, 2: 16, 3: 131}, bullets 177, numbered 31, rows
+    221, 8366 lines, the same after the edit and after each prek pass; the
+    changes are this section's heading, its nine bullets and its four table
+    rows, with no unguarded block.
+-   prek to a fixpoint with a private cache, deleted after: its first pass
+    reflowed, under rumdl's MD013, the Status paragraph, which this commit's
+    mark lengthens, and this section's first paragraph, which holds a scratch
+    path longer than a line, the word diff empty, and its second pass exits
+    0 with no change; rumdl@0.2.58: no issues; the heading sets differ by
+    this section's heading alone, and the manufactured-heading grep is empty.
+-   `runner.py --self-test`: "150 programs parsed, 56 bullets in table, OK".
+    The model-name grep over this plan's changed lines and the message: no
+    hit outside the trailers and the scratch path. The merge-tree of the new
+    tree against trunk and the 18 held heads: the sets of section 0.8's
+    table, unchanged. The id re-scan of section 8.16 stands: no ledger
+    changed since.
 
 No page, example, log, fork/safe/plan.md or ledger line changes, so the
 nightly compiles of section 0.7 are not re-run and the ledger's `json.load` is

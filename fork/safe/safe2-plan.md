@@ -6,13 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 8, 2026-10-29 -- SIGNED OFF FOR IMPLEMENTATION at rev 5, AMENDED
-BY A STOP-AND-AMEND (rev 6) AND BY THE FOLD OF ITS FOCUSED RE-REVIEW (rev 7),
-STOPPED AT THE FIX BUDGET AND RE-PLANNED, NOT SIGNED OFF (rev 8; amended
-2026-10-29, rev 8: section 8.16, where this read "rev 7, 2026-10-28" and "(rev
-7); IMPLEMENTED"); IMPLEMENTED by commits 48f2e66a0 and 954f1c542, whose two
-document reviews raised ten findings, all folded by fix commits 0f281d8bd and
-e1574b003 and the records commit of section 8.7, none rejected (amended
+**Status:** rev 9, 2026-10-29 -- the fourth fix commit authorized for RR2-M1 and
+RR2-m1; round 3 reviews it (amended 2026-10-29, rev 9: section 8.16's ruling,
+where this read "rev 8, 2026-10-29"); SIGNED OFF FOR IMPLEMENTATION at rev 5,
+AMENDED BY A STOP-AND-AMEND (rev 6) AND BY THE FOLD OF ITS FOCUSED RE-REVIEW
+(rev 7), STOPPED AT THE FIX BUDGET AND RE-PLANNED, NOT SIGNED OFF (rev 8;
+amended 2026-10-29, rev 8: section 8.16, where this read "rev 7, 2026-10-28" and
+"(rev 7); IMPLEMENTED"); IMPLEMENTED by commits 48f2e66a0 and 954f1c542, whose
+two document reviews raised ten findings, all folded by fix commits 0f281d8bd
+and e1574b003 and the records commit of section 8.7, none rejected (amended
 2026-10-28, document-review fold: section 8.7); the focused re-review of section
 3 step 5, round 1, returned REJECT on one BLOCKER, two MAJORs and two MINORs, so
 it is not dry: its one records-only MINOR, RR1-m2, is folded by the round's
@@ -38,7 +40,14 @@ the texts of the one fold commit that answers both, for the orchestrator to rule
 on, and no page, record or ledger line changes (amended 2026-10-29, rev 8:
 section 8.16). Rev 8 is 1f9d0a16f, and section 8.17 records round 3's fold, in
 which the budget is exceeded and the orchestrator rules (amended 2026-10-29,
-re-review round 3 fold: section 8.17). Rev 7 is the plan amender's fold of the
+re-review round 3 fold: section 8.17). Rev 9, 2026-10-29, folds the focused
+re-review of rev 8 and its records commit ac57e2ea7, whose verdict was
+APPROVE-WITH-AMENDMENTS with no BLOCKER, three MAJORs and three MINORs, all six
+folded and none rejected, into section 8.16's texts E1 to E6 and its records,
+and records the orchestrator's ruling under R29: one fourth fix commit, for
+RR2-M1 and RR2-m1 only, applies E1 to E6 as rev 9 leaves them, and round 3 of
+section 3 step 5, the loop's last, reviews it and its records commit (amended
+2026-10-29, rev 9: section 8.16). Rev 7 is the plan amender's fold of the
 focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
 and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
@@ -146,7 +155,9 @@ and section 2.6).
     re-review's round 2 (section 8.15; amended 2026-10-29, re-review round 2),
     and the stop-and-amend record of rev 8 (section 8.16; amended 2026-10-29,
     rev 8) with the fold record of round 3 (section 8.17; amended 2026-10-29,
-    re-review round 3 fold).
+    re-review round 3 fold), and in section 8.16 the fold of the focused
+    re-review of rev 8 and the orchestrator's ruling (amended 2026-10-29,
+    rev 9).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -1970,30 +1981,40 @@ trailers.
     §1 sentences match the pages (R27), the heading-set and count diffs are
     the deliberate ones only, every link resolves, and Appendix C's and D's
     texts match the commits.
-4.  **The fixer**, one fresh agent: reproduces every finding against the
-    files, then folds it by NEW commits, each fold marked "(amended <date>,
-    document-review fold: <id>)" on the page and, where the same finding
-    reaches a §0.3, §1 or log sentence, there too; a budget of three fix
-    commits, records-only commits not counted; NO shrink line: a defect past
-    the budget stops the workflow at a plan revision of this file. Every
-    finding is dispositioned (ACCEPTED with where it landed, or REJECTED with
-    the cite that refutes it, R17); the fold record goes into this plan as
-    section 8.7 by a records commit, which also fills `<sha2>`, `<verdict 1>`,
-    `<verdict 2>` and `<fixes>` where commit 2 wrote "pending" (B.2.2, B.3.8;
-    amended 2026-10-28, document-review fold: R2-m1). The budget is spent by
-    0f281d8bd, e1574b003 and cbdc0552e, and round 2's RR2-M1 and RR2-m1 change
-    pages, so the workflow stopped here at rev 8: section 8.16 re-plans both at
-    their root and gives the texts of one fold commit, which is made only on an
-    orchestrator's ruling that allows that one commit past the budget, no
-    shrink line being drawn (amended 2026-10-29, rev 8: section 8.16).
+4.  **The fixer**, one fresh agent: reproduces every finding against the files,
+    then folds it by NEW commits, each fold marked "(amended <date>,
+    document-review fold: <id>)" on the page and, where the same finding reaches
+    a §0.3, §1 or log sentence, there too; a budget of three fix commits
+    (amended 2026-10-29, rev 9: three; a fourth, for RR2-M1 and RR2-m1 only, by
+    the orchestrator's ruling of 2026-10-29 recorded in section 8.16),
+    records-only commits not counted; NO shrink line: a defect past the budget
+    stops the workflow at a plan revision of this file. Every finding is
+    dispositioned (ACCEPTED with where it landed, or REJECTED with the cite that
+    refutes it, R17); the fold record goes into this plan as section 8.7 by a
+    records commit, which also fills `<sha2>`, `<verdict 1>`, `<verdict 2>` and
+    `<fixes>` where commit 2 wrote "pending" (B.2.2, B.3.8; amended 2026-10-28,
+    document-review fold: R2-m1). The budget is spent by 0f281d8bd, e1574b003
+    and cbdc0552e, and round 2's RR2-M1 and RR2-m1 change pages, so the workflow
+    stopped here at rev 8: section 8.16 re-plans both at their root and gives
+    the texts of one fold commit, which is made only on an orchestrator's ruling
+    that allows that one commit past the budget, no shrink line being drawn
+    (amended 2026-10-29, rev 8: section 8.16). The ruling of 2026-10-29,
+    recorded at the end of section 8.16, allows it as the fourth fix commit, for
+    RR2-M1 and RR2-m1 only, applying E1 to E6 as rev 9 leaves them and nothing
+    else (amended 2026-10-29, rev 9: the ruling).
 5.  **The focused re-review of the fix commits**, one fresh agent per round,
     at most three rounds, until dry: dry is no BLOCKER and no MAJOR and every
     MINOR records-only, folded by one records commit. A round that is not dry
-    goes back to step 4 within its budget. Round 3, the loop's last, reviews
-    rev 8 and its records commit; the fold commit of section 8.16, if the
-    ruling allows it, is reviewed under this step's dry test by the fresh
-    agent the ruling names, before steps 6 to 8 (amended 2026-10-29, rev 8:
-    section 8.16).
+    goes back to step 4 within its budget. The focused re-review of rev 8,
+    one fresh agent, reviewed rev 8 and its records commit, and its findings
+    are folded into rev 9; round 3, the loop's last, reviews the fourth fix
+    commit, the fold commit of section 8.16 that the ruling of 2026-10-29
+    allows, and the records commit after it, under this step's dry test,
+    before steps 6 to 8 (amended 2026-10-29, rev 8: section 8.16; amended
+    2026-10-29, stop-and-amend re-review: RR8-m2, where this read "Round 3,
+    the loop's last, reviews rev 8 and its records commit; the fold commit of
+    section 8.16, if the ruling allows it, is reviewed under this step's dry
+    test by the fresh agent the ruling names").
 6.  **The PR 67 note commit** (D-SAFE2-16, Appendix C.2), in a detached scratch
     worktree of PR 67's head under /dev/shm/safe2-implementer/rg1 (removed
     after), with `<head>` filled in, reviewed by one fresh agent before any
@@ -3438,60 +3459,115 @@ Everything measured is container-local, EXPECTED, not of record (R9).
 | RR2-m1, the aggregate clause credits assignment.md:159-161 with more than it says | MINOR, not records-only | upstream's docs/design/assignment.md:159 at 9192ee003 is "## Tuples, structs, choice types, and data classes" and :161 "_TODO_: Describe the rules for assignment in these cases."; docs/design/classes.md:130 there begins "Data classes are types that consist of data fields that are publicly accessible"; no array is named; temporal_safety.md:290-293, mutation_safety.md:243-244, the log :3150-3152, fork/safe/plan.md :449-451, D-SAFE2-6 (this plan :1490-1492 at 4e40e74d8) and W-148's notes credit :159-161 with "a tuple, struct, array, choice type or class" | the clause states this design's widening, to arrays and to classes that are not data classes, `Core.String` among them (core/prelude/types/string.carbon:16-26), as upstream's text (R32 (a)) |
 
 **The re-planned test: built in by where it is written.** An operator's
-implementation is built in when it is the language's own, `=` on a type with no
-`AssignWith` impl, `&`, member access naming a field or indexing of an array,
-or an impl of an operator interface written in core/prelude, whatever its body
-and whichever type it is for; it is user-written when it is written outside
-core/prelude. The ground of the exception, that the operand's `ref` lives for
+implementation is built in when it is the language's own, `&`, member access
+naming a field, indexing of an array or the toolchain's interim `=` on a type
+with no `AssignWith` impl, or an impl of an operator interface written in
+core/prelude whose body, while its `ref` operand is bound, calls no impl written
+outside core/prelude, whichever type it is for; any other is user-written, an
+impl written outside core/prelude among them, and so is the default compound
+assignment of docs/design/assignment.md:302-316, `*self = *self $ other;`,
+wherever the `AssignWith` or `OpWith` impl it calls is written outside
+core/prelude, as for a user's class (amended 2026-10-29, stop-and-amend
+re-review: RR8-M1, RR8-M2, where this read "the language's own, `=` on a type
+with no `AssignWith` impl, `&`, member access naming a field or indexing of an
+array, or an impl of an operator interface written in core/prelude, whatever its
+body and whichever type it is for; it is user-written when it is written outside
+core/prelude"). The ground of the exception, that the operand's `ref` lives for
 the one operation with nothing user-written evaluated while it does, holds of
-every such prelude impl that takes a `ref` operand, at 9192ee003 and in the
-fork alike. There are 64, all for `Int`, `UInt`, `Float` or a `CppCompat`
-integer (`ref self` in core/prelude/types/int.carbon 12 times, uint.carbon 12,
-float.carbon 4 and cpp/int.carbon 36). Of these, 54 have a builtin body, and
-the other ten, the `Inc` and `Dec` of `Int` and `UInt` (int.carbon:384-399,
-uint.carbon:446-461) and of the three signed `CppCompat` integers
-(cpp/int.carbon:1177-1215), are a `self += ...;` or `self -= ...;` of a
-prelude conversion of `1`. The `ref self` impls of `Destroy`
+every such prelude impl that takes a `ref` operand, at 9192ee003 and in the fork
+alike. There are 64, all for `Int`, `UInt`, `Float` or a `CppCompat` integer (`ref
+self` in core/prelude/types/int.carbon 12 times, uint.carbon 12, float.carbon 4
+and cpp/int.carbon 36). Of these, 54 have a builtin body, and the other ten, the
+`Inc` and `Dec` of `Int` and `UInt` (int.carbon:384-399, uint.carbon:446-461)
+and of the three signed `CppCompat` integers (cpp/int.carbon:1177-1215), are a
+`self += ...;` or `self -= ...;` of a prelude conversion of `1`. Fifty of the
+54, the compound assignments of `Int`, `UInt` and the `CppCompat` integers
+(int.carbon:329-377, uint.carbon:391-440, cpp/int.carbon:1009-1169), are generic
+over a `U: ImplicitAs(...)` that a user's type may fill, but that `ImplicitAs`
+runs when the caller converts the right operand to `other: Self`
+(toolchain/check/convert.cpp:2727-2747 at 9192ee003, `ConvertCallArgs`), before
+the call binds `ref self`, so they stay built in; core/prelude holds no impl of
+assignment.md:302-316's default, at 9192ee003 or in the fork (amended
+2026-10-29, stop-and-amend re-review: RR8-M1). The `ref self` impls of `Destroy`
 (core/prelude/destroy.carbon, types/buf.carbon:58-59) are no operator
 interface's, and the test leaves them as they are. The prelude's bodies are
 trusted (S0, safety/README.md:117-139), so the claim is the prelude's to keep,
-under W-144's audit. The aggregate clause becomes the language's own `=` on a
-type with no `AssignWith` impl: assignment.md:148 names the scalars and
-pointers, and :159's heading the tuples, structs, choice types and data
-classes, whose rules :161 leaves a TODO; counting an array and a class that is
-not a data class too is this design's classification, said so in every copy,
-because such an assignment runs no user-written code, and `Core.String`, whose
-fields are private (string.carbon:23 and :25, `private var ptr: Char*;` and
-`private var size: i64;`) and which no prelude impl gives `AssignWith`, would
-otherwise be neither built in nor user-written, RR2-M1's gap for another
-prelude type. No classification other than the `CppCompat` impls' moves: what
-cbdc0552e's test made built in stays built in, since core/prelude has no
-`AssignWith` impl and no other impl of an operator interface that takes a
-`ref` operand, and `*q = "longer"` for `q: str*` stays
-`StrictSharedImmutableWrite` under M3's `Core.SharedImmutable` rule, which the
-test does not decide.
+under W-144's audit. The aggregate clause becomes the toolchain's interim `=` on
+a type with no `AssignWith` impl (toolchain/check/handle_operator.cpp:99-123,
+"TODO: Switch to using assignment interface for most assignment"), which
+initializes the left operand from the right and calls no `AssignWith`, where the
+assignment design has "The statement `x = y;` is rewritten to
+`x.(AssignWith(U).Op)(y);`" (assignment.md:184) and "The type is still required
+to implement `AssignWith` for the assignment to be valid" (:105-106), under
+which an assignment is classified by where its `AssignWith` impl is written:
+assignment.md:148 names the scalars and pointers, and :159's heading the tuples,
+structs, choice types and data classes, whose rules :161 leaves a TODO; counting
+an array and a class that is not a data class too is this design's
+classification of the interim path, said so in every copy, because it calls no
+user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it runs to
+convert the right operand or initialize the left from it (convert.cpp:1867-1880
+and :2162-2165 at 9192ee003, the copy from a value) is checked under M3 on every
+path it takes, a non-`Plain` type's assignment is M3(c)'s, and `Core.String`,
+whose fields are private (string.carbon:23 and :25, `private var ptr: Char*;`
+and `private var size: i64;`) and which no prelude impl gives `AssignWith`,
+would otherwise be neither built in nor user-written, RR2-M1's gap for another
+prelude type (amended 2026-10-29, stop-and-amend re-review: RR8-M2, where this
+read "The aggregate clause becomes the language's own `=` on a type with no
+`AssignWith` impl" and "because such an assignment runs no user-written code").
+No classification other than the `CppCompat` impls' moves: what cbdc0552e's test
+made built in stays built in, since core/prelude has no `AssignWith` impl and no
+other impl of an operator interface that takes a `ref` operand, and `*q =
+"longer"` for `q: str*` stays `StrictSharedImmutableWrite` under M3's
+`Core.SharedImmutable` rule, which the test does not decide. That holds in PR
+53's tree; across the land sequence PR 55's two `Core.StringBuf` impls are built
+in and M3(c)'s through a shared path, M3 counting every assignment operator,
+compound assignment included, and `++` and `--` as an assignment to the first
+operand (the last decision below; amended 2026-10-29, stop-and-amend re-review:
+RR8-M3).
 
 Decisions under R29, each with its break condition:
 
 -   Built in by where it is written, the review's remedy, over adding the
     `CppCompat` integers to the list of types, a wording patch that leaves the
     next prelude type out (R17), and over reading their impls as user-written,
-    which rejects a `Plain` write M3 permits, R1-M1's class. Break condition:
-    a core/prelude impl of an operator interface whose body, while its `ref`
-    operand is bound, evaluates a user-written impl, a blanket impl over a
-    type parameter that a user's type fills, say; that impl then counts as
-    user-written for this test by a dated mark.
+    which rejects a `Plain` write M3 permits, R1-M1's class; the body clause,
+    while the `ref` operand is bound, calls no impl written outside
+    core/prelude, keeps the ground true of a prelude impl that would call a
+    user's code. Break condition: a core/prelude impl of an operator
+    interface whose body, while its `ref` operand is bound, calls a member of
+    an interface of a type parameter, assignment.md:302-316's default among
+    them once core/prelude holds it; the rule already counts it user-written
+    wherever that member's impl is written outside core/prelude, and this
+    section records it and its outcomes by a dated mark. A type parameter
+    that only the conversion of the right operand to `Self` uses, the `U` of
+    the 50 generic compound assignments, is no such case, that conversion
+    running before the `ref` is bound (amended 2026-10-29, stop-and-amend
+    re-review: RR8-M1, where this read "Break condition: a core/prelude impl
+    of an operator interface whose body, while its `ref` operand is bound,
+    evaluates a user-written impl, a blanket impl over a type parameter that
+    a user's type fills, say; that impl then counts as user-written for this
+    test by a dated mark.").
 -   The aggregate clause keeps its reach, arrays and classes that are not data
     classes included, and says it is this design's, over narrowing it to
     upstream's heading, which would leave `Core.String`'s `=` unclassified.
     Break condition: section 8.14's, upstream answers assignment.md:161's TODO
     or routes `=` through `AssignWith` for a type the clause calls the
-    language's own; the clause then follows upstream by a dated mark.
+    language's own; the clause then follows upstream by a dated mark. Its
+    second half is met in upstream's text, assignment.md:184 and :105-106,
+    and pending only in the toolchain (handle_operator.cpp:99-100's TODO), so
+    the clause is stated as the classification of the toolchain's interim
+    `=`; once the toolchain routes `=` through `AssignWith`, the
+    classification follows where that impl is written, by the test's first
+    clause, and the interim clause is withdrawn by a dated mark (amended
+    2026-10-29, stop-and-amend re-review: RR8-M2).
 -   The fold is one commit, past the budget, made only on the orchestrator's
     ruling; this revision neither makes it nor files a residue for it. Break
     condition: the ruling keeps the fold out of SAFE-2; this section then
     gains a dated mark naming the ruling, and W-365, the next free id, is
-    filed for the fold by a records commit.
+    filed for the fold by a records commit. The ruling of 2026-10-29, at the
+    end of this section, authorizes the fold as the fourth fix commit, for
+    RR2-M1 and RR2-m1 only, so the break condition is not met, no residue is
+    filed and W-365 stays free (amended 2026-10-29, rev 9: the ruling).
 -   D-SAFE2-6 and every other copy keep their text until the fold commit,
     D-SAFE2-6 carrying a dated pointer here, so that this plan's section 1 and
     the pages state the same test at every commit (R27). Break condition: a
@@ -3507,51 +3583,114 @@ Decisions under R29, each with its break condition:
     section 0.3, and section 1.6, take E3 or E5. Break condition: a reviewer
     reads one of the four as stating the type-based test; it then takes E5's
     clause.
+-   M3 counts every assignment operator, compound assignment included, and
+    `++` and `--` as an assignment to the first operand, in (c) and in its
+    `Core.SharedImmutable` rule, over reading (c)'s "assignment to `P`" as
+    `=` alone, which would leave a built-in operator of a non-`Plain` type
+    exempt from (c), (d) and (e) at once. PR 55 (c3cdecc5d, landing after PR
+    53) gives `Core.StringBuf` `impl as AddAssignWith(str)`, whose
+    `fn Op(ref self, other: str)` frees the old block
+    (core/prelude/types/string.carbon:160-167, `HeapFree(self.ptr);` at
+    :163), and `impl StringBuf as AddAssignWith(StringBuf)`, whose body is
+    `self += other.AsStr();` (:177-179). Both call only core/prelude impls
+    while `ref self` is bound, so both are built in, and `StringBuf`, which
+    has `impl as Destroy` (:154-156), is not `Core.Plain`, so `*q += s` for
+    `q: Core.StringBuf*` is M3(c)'s `StrictInvalidatingThroughShared`, and
+    through an exclusive path it is permitted as M3's invalidating
+    operations are. No other held head adds to core/prelude an impl of an
+    operator interface that takes a `ref` operand (`git grep` of `ref self`
+    over the 18 heads; PR 57's `Destroy` of `DefaultOptionalStorage(T)` is
+    no operator interface's). Break condition: PR 55 lands with either impl
+    changed, or a later commit gives a non-`Plain` prelude type another
+    built-in operator with a `ref` operand; its outcome is then traced here
+    by a dated mark before that commit lands (added 2026-10-29,
+    stop-and-amend re-review: RR8-M3).
 
 **The fold commit.** "SAFE-2 fix: the built-in test by where an implementation
 is written and the aggregate clause as this design's classification (RR2-M1,
-RR2-m1)", with `<date>` its UTC date, applies E1 to E6 below and changes
-nothing else. Each anchor is quoted as section 2.1's test reads it, line breaks
-and indentation aside. Expected: no heading, bullet, numbered item or table row
-moves on any file it touches, so section 8 item 1's deltas stand; it touches
-the files cbdc0552e touched but type_safety.md and safety/README.md, so the
-merge-tree sets of section 0.8 stand; no example changes, and the nightly
-outcomes of section 0.7 are re-run as section 8 item 4 asks; the log's
-D-SAFE block stays identical to fork/safe/plan.md section 0.3. The records
-commit after it writes its hash into `<fixes>` (section 8.13's placeholder
-row), fork/safe/plan.md's realigned notes and B.3.8 by dated marks, and
-records the review of it that the ruling names.
+RR2-m1)", with `<date>` its UTC date, applies E1 to E6 below and changes nothing
+else. Each anchor is quoted as section 2.1's test reads it, line breaks and
+indentation aside. Each block names the passage it applies in, and each anchor
+is found once there: E4's anchors also occur in this section's own text of E4,
+so E4 applies within D-SAFE2-6's bullet of section 1, and E5 quotes each anchor
+with the words around it that make it unique in its file (amended 2026-10-29,
+stop-and-amend re-review: RR8-m1). After placing a block, the implementer
+rewraps by hand, to 80 columns, only the lines from the one where the block
+starts to the end of its paragraph, each code span kept on one line and no line
+started by `+`, by `*` or `-` other than a list marker, by `#` and a digit or by
+a digit and a period, so that rumdl's MD013 reflow leaves the paragraph's
+earlier lines as they are; D-SAFE2-6's paragraph, which holds a line of 94
+columns that cannot be broken, is refilled whole by rumdl, with no such line
+start (added 2026-10-29, rev 9: left to rumdl, as rev 8's dry run left it, the
+whole-paragraph reflow of rev 9's blocks starts a line with `*p;` in D-SAFE-8 of
+the log and of fork/safe/plan.md section 0.3 and with `+= AsInt(1);` on the
+temporal page). Expected: no heading, bullet, numbered item or table row moves
+on any file it touches, so section 8 item 1's deltas stand; it touches the files
+cbdc0552e touched but type_safety.md and safety/README.md, so the merge-tree
+sets of section 0.8 stand; no example changes, and the nightly outcomes of
+section 0.7 are re-run as section 8 item 4 asks; the log's D-SAFE block stays
+identical to fork/safe/plan.md section 0.3. The records commit after it writes
+its hash into `<fixes>` (section 8.13's placeholder row), fork/safe/plan.md's
+realigned notes and B.3.8 by dated marks, records the fold commit as the fourth
+fix commit, authorized by the orchestrator's ruling of 2026-10-29 at the end of
+this section, and records that round 3 of section 3 step 5, the loop's last,
+reviews it and the records commit (amended 2026-10-29, rev 9: the ruling, where
+this read "and records the review of it that the ruling names").
 
 E1, docs/design/safety/temporal_safety.md, `ref` bindings: replace from "An
 implementation is built in when it gives a built-in type the semantics the"
 through the end of the RR1-m1 mark that follows it, "and the mutation page's
-M3 alone decides")", with:
+M3 alone decides")", with the block below (amended 2026-10-29, stop-and-amend
+re-review: RR8-M1, RR8-M2, RR8-M3; rev 8's text of the block is
+1f9d0a16f's):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 An implementation is built in by where it is written, not by the type it
-serves: it is built in when it is the language's own, `=` on a type with no
-`AssignWith` impl, `&`, member access naming a field or indexing of an array,
-or an impl of an operator interface written in core/prelude, whatever its body
-and whichever type it is for, and it is user-written when it is written outside
-core/prelude. Each such prelude impl that takes a `ref` operand has a builtin
-body or one that calls only the prelude's own impls, so nothing user-written is
-evaluated while its `ref` lives: the impls "provided for built-in types as
-necessary to give the semantics described above" (assignment.md:168-170), the
-builtin `"int.sadd_assign"` (core/prelude/types/int.carbon:331) and `Inc`'s
+serves: it is built in when it is the language's own, `&`, member access
+naming a field, indexing of an array or the toolchain's interim `=` that this
+paragraph classifies below, or an impl of an operator interface written in
+core/prelude whose body, while its `ref` operand is bound, calls no impl
+written outside core/prelude, whichever type it is for; any other is
+user-written, an impl written outside core/prelude among them. Each such
+prelude impl that takes a `ref` operand has a builtin body or one that calls
+only the prelude's own impls, so nothing user-written is evaluated while its
+`ref` lives: the impls "provided for built-in types as necessary to give the
+semantics described above" (assignment.md:168-170), the builtin
+`"int.sadd_assign"` (core/prelude/types/int.carbon:331) and `Inc`'s
 `self += AsInt(1);` (int.carbon:395-399, uint.carbon:457-461) among them, as
 much as the same impls of the `CppCompat` integers, classes that adapt an
 integer (core/prelude/types/cpp/int.carbon:16-38), `"int.sadd_assign"` again
-(:1011) and `Inc`'s `self += (1 as CppCompat.Long32);` (:1183-1187). The
-[assignment](../assignment.md#built-in-types) design gives
-`=` to "Integers and floating-point types, `bool`, and pointer types"
-(assignment.md:148), and its next section, "Tuples, structs, choice types, and
-data classes" (assignment.md:159), leaves its rules a TODO (:161); counting as
-the language's own the assignment of every other type with no `AssignWith`
-impl, an array or a class that is not a data class among them, is this
-design's classification, not that section's text: such an assignment runs no
-user-written code, and `Core.String`, a class whose fields are private
+(:1011) and `Inc`'s `self += (1 as CppCompat.Long32);` (:1183-1187). A user's
+type may fill the `U` of their compound assignments, `U: ImplicitAs(Int(N))`
+(int.carbon:329-331), but its `ImplicitAs` runs when the caller converts the
+right operand to `other: Self`, before the call binds `ref self`, so those
+impls stay built in. The default compound assignment that the assignment
+design provides, `*self = *self $ other;` (assignment.md:302-316), calls the
+`AssignWith` and `OpWith` impls of the type it serves while `ref self` is
+bound, so it is user-written wherever one of those is written outside
+core/prelude, as for a user's class. The mutation page's M3 counts every
+assignment operator, compound assignment included, and `++` and `--` as an
+assignment to the first operand, so a built-in operator on a type that is not
+`Core.Plain` is M3(c)'s through a shared path. The
+[assignment](../assignment.md#built-in-types) design gives `=` to "Integers
+and floating-point types, `bool`, and pointer types" (assignment.md:148) and
+routes every `=` through `AssignWith`: "The statement `x = y;` is rewritten to
+`x.(AssignWith(U).Op)(y);`" (assignment.md:184), and "The type is still
+required to implement `AssignWith` for the assignment to be valid"
+(assignment.md:105-106), so there an assignment is classified by where its
+`AssignWith` impl is written. The toolchain's interim `=`
+(toolchain/check/handle_operator.cpp:99-123, "TODO: Switch to using assignment
+interface for most assignment") calls no `AssignWith`; counting it as the
+language's own on every type with no `AssignWith` impl, an array or a class
+that is not a data class among them besides the "Tuples, structs, choice
+types, and data classes" whose rules assignment.md:159-161 leaves a TODO, is
+this design's classification, not the assignment design's text: it calls no
+user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it runs to
+convert the right operand or initialize the left from it is checked under M3
+on every path it takes, a type that is not `Core.Plain` is M3(c)'s, and
+`Core.String`, a class whose fields are private
 (core/prelude/types/string.carbon:16-26) and which has no `AssignWith` impl,
 would otherwise be neither built in nor user-written (amended 2026-10-29,
 re-review round 2: RR1-m1, where this read "Where the operator's implementation
@@ -3583,23 +3722,35 @@ whatever their body, an assignment of a tuple, struct, array, choice type or
 class with no user-written `AssignWith` impl, `&`, member access naming a field
 or indexing of an array:" with the first block, and from "while the call of a
 user-written impl's `ref self` is (d)'s" through the end of the RR1-m1 mark that
-follows it, "and (a) to (c)")", with the second:
+follows it, "and (a) to (c)")", with the second (both blocks amended
+2026-10-29, stop-and-amend re-review: RR8-M1, RR8-M2, RR8-M3; rev 8's text of
+them is 1f9d0a16f's):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-the language's own, `=` on a type with no `AssignWith` impl, `&`, member
-access naming a field or indexing of an array, or an impl of an operator
-interface written in core/prelude whatever its body and whichever type it is
-for, the `CppCompat` integers' as much as `Int`'s, the assignment of an array
-or of a class that is not a data class counting as the language's own by this
-design's classification and not by the assignment design's "Tuples, structs,
-choice types, and data classes" (assignment.md:159):
+the language's own, `&`, member access naming a field, indexing of an array or
+the toolchain's interim `=` on a type with no `AssignWith` impl, or an impl of
+an operator interface written in core/prelude whose body, while its `ref`
+operand is bound, calls no impl written outside core/prelude, whichever type
+it is for, the `CppCompat` integers' as much as `Int`'s, a user's type that
+fills their `U` being converted to `Self` before the `ref` is bound; the
+interim `=` (toolchain/check/handle_operator.cpp:99-123), where the assignment
+design rewrites `x = y;` to `x.(AssignWith(U).Op)(y);` (assignment.md:184),
+counts as the language's own on an array or a class that is not a data class
+by this design's classification and not by the assignment design's "Tuples,
+structs, choice types, and data classes" (assignment.md:159), and any
+user-written `Copy` or `ImplicitAs` it runs is checked under this rule on every
+path it takes; and this rule counts every assignment operator, compound
+assignment included, and `++` and `--` as an assignment to the first operand,
+in (c) and in the next paragraph:
 ```
 
 ```markdown
 while the call of a user-written impl's `ref self`, an impl written outside
-core/prelude, is (d)'s (amended 2026-10-28, document-review fold: R1-M1;
+core/prelude or a prelude impl that calls one while its `ref` operand is bound,
+assignment.md:302-316's default `*self = *self $ other;` for a user's class
+among them, is (d)'s (amended 2026-10-28, document-review fold: R1-M1;
 amended 2026-10-29, re-review round 2: RR1-m1, where this read "the language's
 own or a prelude impl whose body is a builtin: the temporal page's
 [`ref` bindings](temporal_safety.md#ref-bindings) establish its operand for the
@@ -3616,30 +3767,47 @@ call of a user-written impl's `ref self` is (d)'s")
 E3, fork/decision-log.md D-SAFE-8 and fork/safe/plan.md section 0.3's, the
 same words in both: replace from "Built in is the semantics
 assignment.md:146-157" through the end of the RR1-m1 mark that follows it, "and
-D-SAFE-9's M3 alone decides")", with:
+D-SAFE-9's M3 alone decides")", with the block below (amended 2026-10-29,
+stop-and-amend re-review: RR8-M1, RR8-M2, RR8-M3; rev 8's text of the block is
+1f9d0a16f's):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
     Built in is decided by where an implementation is written, not by the
-    type it serves: the language's own, `=` on a type with no `AssignWith`
-    impl, `&`, member access naming a field and indexing of an array, and
-    every impl of an operator interface written in core/prelude whatever its
-    body and whichever type it is for, each of those that takes a `ref`
+    type it serves: the language's own `&`, member access naming a field and
+    indexing of an array, the toolchain's interim `=` below, and every impl
+    of an operator interface written in core/prelude whose body, while its
+    `ref` operand is bound, calls no impl written outside core/prelude,
+    whichever type it is for, each of the prelude's that takes a `ref`
     operand having a builtin body or one that calls only the prelude's own
     impls (the impls :168-170 says are "provided for built-in types as
     necessary to give the semantics described above", int.carbon:331's
     `"int.sadd_assign"` and :395-399's `Inc` as much as cpp/int.carbon:1011's
     `"int.sadd_assign"` and :1183-1187's `Inc` for the `CppCompat` integers,
-    classes that adapt an integer, :16-38); an impl written outside
-    core/prelude is user-written. assignment.md:148 gives `=` to "Integers
-    and floating-point types, `bool`, and pointer types" and :159-161 leaves
-    "Tuples, structs, choice types, and data classes" a TODO; counting as the
-    language's own the assignment of an array or of a class that is not a
-    data class is this design's classification, not that section's text: it
-    runs no user-written code, and `Core.String`, whose fields are private
-    (string.carbon:16-26) and which has no `AssignWith` impl, would otherwise
-    be neither built in nor user-written (amended 2026-10-29, re-review
+    classes that adapt an integer, :16-38), and a user's type that fills
+    their `U` (int.carbon:329-331, `U: ImplicitAs(Int(N))`) being converted
+    to `other: Self` before `ref self` is bound; any other impl is
+    user-written, assignment.md:302-316's default `*self = *self $ other;`
+    among them wherever the `AssignWith` or `OpWith` impl it calls is written
+    outside core/prelude. D-SAFE-9's M3 counts every assignment operator,
+    compound assignment included, and `++` and `--` as an assignment to the
+    first operand. assignment.md:184 has "The statement `x = y;` is
+    rewritten to `x.(AssignWith(U).Op)(y);`" and :105-106 "The type is still
+    required to implement `AssignWith` for the assignment to be valid", so
+    there an assignment is classified by where its `AssignWith` impl is
+    written; the toolchain's interim `=`
+    (toolchain/check/handle_operator.cpp:99-123) calls none, and counting it
+    as the language's own on every type with no `AssignWith` impl, an array
+    or a class that is not a data class among them besides :159's "Tuples,
+    structs, choice types, and data classes", whose rules :161 leaves a TODO,
+    is this design's classification, not that text: it calls no
+    user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it
+    runs is checked under D-SAFE-9's M3 on every path it takes, a
+    non-`Plain` type's assignment is D-SAFE-9's (c), and `Core.String`,
+    whose fields are private (string.carbon:16-26) and which has no
+    `AssignWith` impl, would otherwise be neither built in nor user-written
+    (amended 2026-10-29, re-review
     round 2: RR1-m1, where this read "where the implementation is the
     language's own or a prelude impl whose body is a builtin (int.carbon:331's
     `"int.sadd_assign"`) it is established on any place, open ones included,
@@ -3659,33 +3827,55 @@ D-SAFE-9's M3 alone decides")", with:
 
 <!-- google-doc-style-resume -->
 
-E4, this plan's D-SAFE2-6: replace from "Built in is the semantics
-docs/design/assignment.md:146-157" through "while `p->n += 1` was built in)."
-and the rev 8 pointer after it with:
+E4, this plan's D-SAFE2-6, applied within D-SAFE2-6's bullet of section 1, where
+each anchor below is found once (amended 2026-10-29, stop-and-amend re-review:
+RR8-m1: outside that bullet the start anchor occurs in this paragraph and in the
+block's "where this read" quote, and the end anchors in this paragraph and, the
+pointer's, in rev 8's Measured list below): replace from "Built in is the
+semantics docs/design/assignment.md:146-157" through "while `p->n += 1` was
+built in)." and the rev 8 pointer after it, which begins "(Re-planned
+2026-10-29, rev 8: RR2-M1, RR2-m1:" and ends "until the fold commit that section
+plans.)", with the block below (amended 2026-10-29, stop-and-amend re-review:
+RR8-M1, RR8-M2, RR8-M3; rev 8's text of the block is 1f9d0a16f's):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
     Built in is decided by where an implementation is written, not by the
-    type it serves: the language's own, `=` on a type with no `AssignWith`
-    impl, `&`, member access naming a field and indexing of an array, and
-    every impl of an operator interface written in core/prelude whatever its
-    body and whichever type it is for, each of those that takes a `ref`
+    type it serves: the language's own `&`, member access naming a field and
+    indexing of an array, the toolchain's interim `=` below, and every impl
+    of an operator interface written in core/prelude whose body, while its
+    `ref` operand is bound, calls no impl written outside core/prelude,
+    whichever type it is for, each of the prelude's that takes a `ref`
     operand having a builtin body or one that calls only the prelude's own
     impls (the impls docs/design/assignment.md:168-170 says are "provided for
     built-in types as necessary to give the semantics described above",
     core/prelude/types/int.carbon:331's `"int.sadd_assign"` and :395-399's
     `Inc` as much as core/prelude/types/cpp/int.carbon:1011's
     `"int.sadd_assign"` and :1183-1187's `Inc` for the `CppCompat` integers,
-    classes that adapt an integer, :16-38); an impl written outside
-    core/prelude is user-written. docs/design/assignment.md:148 gives `=` to
-    "Integers and floating-point types, `bool`, and pointer types" and
-    :159-161 leaves "Tuples, structs, choice types, and data classes" a TODO;
-    counting as the language's own the assignment of an array or of a class
-    that is not a data class is this design's classification, not that
-    section's text: it runs no user-written code, and `Core.String`, whose
-    fields are private (core/prelude/types/string.carbon:16-26) and which has
-    no `AssignWith` impl, would otherwise be neither built in nor
+    classes that adapt an integer, :16-38), and a user's type that fills
+    their `U` (core/prelude/types/int.carbon:329-331,
+    `U: ImplicitAs(Int(N))`) being converted to `other: Self` before
+    `ref self` is bound; any other impl is user-written,
+    docs/design/assignment.md:302-316's default `*self = *self $ other;`
+    among them wherever the `AssignWith` or `OpWith` impl it calls is written
+    outside core/prelude. M3 counts every assignment operator, compound
+    assignment included, and `++` and `--` as an assignment to the first
+    operand. docs/design/assignment.md:184 has "The statement `x = y;` is
+    rewritten to `x.(AssignWith(U).Op)(y);`" and :105-106 "The type is still
+    required to implement `AssignWith` for the assignment to be valid", so
+    there an assignment is classified by where its `AssignWith` impl is
+    written; the toolchain's interim `=`
+    (toolchain/check/handle_operator.cpp:99-123) calls none, and counting it
+    as the language's own on every type with no `AssignWith` impl, an array
+    or a class that is not a data class among them besides :159's "Tuples,
+    structs, choice types, and data classes", whose rules :161 leaves a TODO,
+    is this design's classification, not that text: it calls no
+    user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it
+    runs is checked under M3 on every path it takes, a non-`Plain` type's
+    assignment is M3(c)'s, and `Core.String`, whose fields are private
+    (core/prelude/types/string.carbon:16-26) and which has no `AssignWith`
+    impl, would otherwise be neither built in nor
     user-written (amended 2026-10-29, re-review round 2: RR1-m1, where this
     read "where the implementation is the language's own or a prelude impl
     whose body is a builtin it is established on any place, open ones
@@ -3710,29 +3900,42 @@ and the rev 8 pointer after it with:
 
 <!-- google-doc-style-resume -->
 
-E5, the decision copies the review lists: right after "a built-in operator's
-`ref` operand", capitalized or not, insert the clause below, before the comma
-that follows it in the temporal page's D-SAFE-8 bullet (:1442 at 4e40e74d8),
-the mutation page's D-SAFE-9 bullet (:1319-1320), the log's D-SAFE-9 (:3240)
-and fork/safe/plan.md section 0.3's (:539), and with a comma after it in
-fork/safe/plan.md section 1.6 (:1611), where "being classified" follows:
+E5, the decision copies the review lists, each anchor quoted with the words
+around it that make it unique in its file (amended 2026-10-29, stop-and-amend
+re-review: RR8-m1, where this read "right after "a built-in operator's `ref`
+operand", capitalized or not", a phrase found twice on each safety page and
+three times in fork/safe/plan.md): insert the clause below right after "operand"
+and before the comma that follows it in "`Core.SharedImmutable` type excepted; a
+built-in operator's `ref` operand, an assignment's among them, lives for the one
+operation" (the temporal page's D-SAFE-8 bullet, :1442-1443 at 4e40e74d8) and in
+"A built-in operator's `ref` operand, an assignment's among them, is neither",
+found once in each of the mutation page's D-SAFE-9 bullet (:1319-1320), the
+log's D-SAFE-9 (:3240-3241) and fork/safe/plan.md section 0.3's (:539-540), and,
+with a comma after it, in "a built-in operator's `ref` operand being classified"
+(fork/safe/plan.md section 1.6, :1610-1611; the clause amended 2026-10-29,
+stop-and-amend re-review: RR8-m1, RR8-M1, RR8-M3, where it read "built in
+meaning the language's own or one written in core/prelude"):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-, built in meaning the language's own or one written in core/prelude (added
-<date>, re-review round 3: RR2-M1)
+, built in meaning that its implementation is the language's own or an impl
+of an operator interface written in core/prelude that calls no impl written
+outside core/prelude while its `ref` operand is bound, M3 counting every
+assignment operator, compound assignment included, and `++` and `--` as an
+assignment to that operand (added <date>, re-review round 3: RR2-M1)
 ```
 
 <!-- google-doc-style-resume -->
 
 E6, fork/inventory/work-items.json, W-148: append to its `notes` string, after
-a space:
+a space (the text amended 2026-10-29, stop-and-amend re-review: RR8-M1,
+RR8-M2, RR8-M3; rev 8's text is 1f9d0a16f's):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-SAFE-2 focused re-review, round 3 (<date>; RR2-M1, RR2-m1): superseding the previous note's list of the built-in operators, an operator's implementation is built in by where it is written, the language's own (`=` on a type with no `AssignWith` impl, `&`, member access naming a field, indexing of an array) or an impl of an operator interface written in core/prelude whatever its body and whichever type it is for, the `CppCompat` integers' as much as `Int`'s, and user-written when written outside core/prelude; counting the assignment of an array or of a class that is not a data class as the language's own is this design's classification beside docs/design/assignment.md:159's "Tuples, structs, choice types, and data classes", not that section's text.
+SAFE-2 focused re-review, round 3 (<date>; RR2-M1, RR2-m1): superseding the previous note's list of the built-in operators, an operator's implementation is built in by where it is written, the language's own (`&`, member access naming a field, indexing of an array, and the toolchain's interim `=` on a type with no `AssignWith` impl) or an impl of an operator interface written in core/prelude whose body, while its `ref` operand is bound, calls no impl written outside core/prelude, whichever type it is for, the `CppCompat` integers' as much as `Int`'s, a user's type that fills the `U` of their compound assignments being converted before the `ref` is bound; any other impl is user-written, docs/design/assignment.md:302-316's default `*self = *self $ other;` wherever the `AssignWith` or `OpWith` impl it calls is written outside core/prelude. M3 counts every assignment operator, compound assignment included, and `++` and `--` as an assignment to the first operand. The interim `=` (toolchain/check/handle_operator.cpp:99-123) calls no `AssignWith`, where docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`; counting it as the language's own on an array or a class that is not a data class is this design's classification beside docs/design/assignment.md:159's "Tuples, structs, choice types, and data classes", not that section's text, and any user-written `Copy` or `ImplicitAs` it runs is checked under M3.
 ```
 
 <!-- google-doc-style-resume -->
@@ -3764,7 +3967,14 @@ SAFE-2 focused re-review, round 3 (<date>; RR2-M1, RR2-m1): superseding the prev
 -   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as section
     0.8's table names them, PR 53's pushed head still 2407efa74.
 -   A dry run of the fold (bin/dryrun.py) applied E1 to E6 to scratch copies
-    of the six files at 4e40e74d8: each anchor is found once, each round 3
+    of the six files at 4e40e74d8: each anchor is found once where the
+    script sought it (amended 2026-10-29, stop-and-amend re-review: RR8-m1,
+    where this read "each anchor is found once": the script sought E4's end
+    in the rev 8 pointer, "until the fold commit that section plans.)", and
+    E5's anchors with the words before them, while in the whole file E4's
+    start anchor occurs three times in this plan and its first end anchor
+    twice, and E5's phrase twice on each safety page and three times in
+    fork/safe/plan.md), each round 3
     quote equals the text it replaces once whitespace is set aside, each
     RR1-m1 mark is kept, the ledger parses with `json.load`, and the log's
     D-SAFE-1 to D-SAFE-23 block, 1203 lines, is identical to fork/safe/plan.md
@@ -3800,6 +4010,140 @@ No page, example, log, fork/safe/plan.md or ledger line changes, so the
 nightly compiles of section 0.7 are not re-run and the ledger's `json.load` is
 not owed; nothing is pushed (section 3 step 7 waits for a dry round).
 
+**The focused re-review of rev 8** (added 2026-10-29, rev 9). One fresh agent
+read rev 8 (1f9d0a16f) and its records commit ac57e2ea7 against the tree, this
+plan and upstream's tip, re-fetched as 9192ee003, and returned
+APPROVE-WITH-AMENDMENTS with no BLOCKER, three MAJORs and three MINORs, two of
+them records-only; it found the re-plan's core rule, built in by where an
+implementation is written, true to assignment.md:169-170 and the ruling's
+premises true. Rev 9, the plan amender's revision, reproduced each finding
+against the tree at ac57e2ea7 and upstream at 9192ee003; all six are ACCEPTED
+and none is rejected. RR8-M1, RR8-M2, RR8-M3 and RR8-m1 are folded into the test
+paragraph, the decisions, the fold-commit paragraph and blocks E1 to E6 above,
+which the fourth fix commit applies as they now stand; RR8-m2 and RR8-m3 are
+folded into section 3 step 5, section 8.17 and the Sign-off. The scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rev8/amend/.
+Everything measured is container-local, EXPECTED, not of record (R9).
+
+| finding | severity | reproduced at ac57e2ea7 and 9192ee003 | disposition | where |
+| --- | --- | --- | --- | --- |
+| RR8-M1, "whatever its body" counts as built in the default compound assignment upstream's text specifies, and decision 1's example describes the 50 generic builtin impls | MAJOR | docs/design/assignment.md:302-316: "Carbon provides a default `$=` implementation" by `impl forall [U: type, T: OpWith(U) where .Self impls AssignWith(.Self.Result)]`, whose body is `*self = *self $ other;` (:314); written in core/prelude, rev 8's test counts it built in, so `q->c += d` through `T*` for a user's class would pass the user's `AssignWith` an unmarked `ref` on an open place, where `q->c = q->c + d`, a call of that `AssignWith` (assignment.md:184), is M3(d)'s; core/prelude holds no such impl at the tip or in the fork (`AssignWith` there names only the interfaces and the `Int`, `UInt`, `Float` and `CppCompat` impls); 50 of the 54 builtin impls are generic over a `U: ImplicitAs(...)` (int.carbon:329-377, uint.carbon:391-440, cpp/int.carbon:1009-1169), which decision 1's example, "a blanket impl over a type parameter that a user's type fills", describes | ACCEPTED: the prelude clause reads "whose body, while its `ref` operand is bound, calls no impl written outside core/prelude"; the default counts as user-written wherever an impl it calls is; the conversion to `U`'s `Self` runs before `ref self` is bound (convert.cpp:2727-2747 at 9192ee003); decision 1's break condition reworded | the test paragraph, decision 1, E1 to E6 |
+| RR8-M2, the aggregate clause's ground, "runs no user-written code", is false, and its premise is the toolchain's interim path | MAJOR | handle_operator.cpp:121 calls `InitializeExisting`, which from a value calls `PerformCopy` through `Copy` (convert.cpp:2162-2165 and :1867-1880 at 9192ee003), user-written for a user's class, and converts the right operand through `ImplicitAs`; handle_operator.cpp:99 is "TODO: Switch to using assignment interface for most assignment" and :119 plans to destroy the old value; assignment.md:105-106 and :184 route `=` through `AssignWith` | ACCEPTED: the clause is the toolchain's interim `=`, with :184 and :105-106 quoted and handle_operator.cpp:99-123 cited, grounded as calling no user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it runs being checked under M3 and a non-`Plain` type's assignment being M3(c)'s; decision 2's break condition recorded as met in upstream's text and pending in the toolchain | the test paragraph, decision 2, E1 to E4, E6 |
+| RR8-M3, "whichever type it is for" makes PR 55's `Core.StringBuf` `+=` built in, and only an unstated reading of M3(c) rejects it through `T*` | MAJOR | at c3cdecc5d, core/prelude/types/string.carbon:160-167 (`HeapFree(self.ptr);` at :163) and :177-179 give `Core.StringBuf`, which has `impl as Destroy` (:154-156), two `AddAssignWith` impls that call only core/prelude impls; mutation_safety.md:208-209's (c) reads "assignment to `P`" | ACCEPTED: M3 counts every assignment operator, compound assignment included, and `++` and `--` as an assignment to the first operand, in (c) and in its `Core.SharedImmutable` rule; PR 55's two impls are traced, `*q += s` through `Core.StringBuf*` being M3(c)'s `StrictInvalidatingThroughShared`, with a break condition; no other held head adds such an impl | the test paragraph, the last decision, E1 to E6 |
+| RR8-m1, E4's and E5's anchors are not unique, and E5's clause defines built in by the operator | MINOR | at ac57e2ea7, E4's start anchor at this plan's lines 1493, 3662 and 3695 and its end anchor at 1508 and 3663; E5's phrase, capitalized or not, at temporal_safety.md:189 and :1442, mutation_safety.md:174 and :1319 and fork/safe/plan.md:539, :1580 and :1610; E5's clause read "the language's own or one written in core/prelude" | ACCEPTED: E4 applies within D-SAFE2-6's bullet; E5 quotes each anchor with the words around it, each found once; rev 8's measured claim is corrected; E5's clause names the implementation in the rule's words | the fold-commit paragraph, E4's and E5's paragraphs, rev 8's Measured list |
+| RR8-m2, the records name this review round 3 | MINOR, records-only | section 3 step 5 (:1992-1996 at ac57e2ea7), section 8.17 (:3819) and the Sign-off (:3932-3933) | ACCEPTED: dated marks name it the focused re-review of rev 8, and round 3 the review of the fourth fix commit and its records commit | §3 step 5, §8.17, Sign-off |
+| RR8-m3, the R25 deviation is not recorded | MINOR, records-only | the round 3 fixer's hand-off discloses an in-place Python replace of three cites; sections 8.16 and 8.17 and the messages of 1f9d0a16f and ac57e2ea7 do not record it | ACCEPTED: section 8.17 records the three cites, the tool and the checks, as section 8.10 recorded rev 4's | §8.17 |
+
+**Measured** by rev 9, 2026-10-29, logs in its scratch's logs/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003
+    (2026-10-28 20:51:45 UTC) again, and `git log 9192ee003..upstream/trunk`
+    lists nothing. `git log --oneline c1e83b0b7..upstream/trunk` lists nothing
+    over p005434, p005914, p000257, docs/design/README.md,
+    docs/design/safety/README.md, expressions/arithmetic.md, values.md,
+    slices.md, assignment.md and core/prelude/types/int.carbon, uint.carbon,
+    float.carbon, cpp/int.carbon and string.carbon and
+    operators/arithmetic.carbon and bitwise.carbon; over classes.md only
+    f21c62524, whose quoted lines read as quoted; over
+    toolchain/check/handle_operator.cpp only 2c9739799, a diagnostics change,
+    its :99-123 being as quoted and equal to the fork's at HEAD and at
+    0bdce60a5, the pages' citation base; and over convert.cpp and
+    pattern_match.cpp, which only this section cites, at 9192ee003, the
+    commits 7beb29f8b, 2c9739799, 230227264, 059ee7b9e, 4a8993af2, 947c1eb52
+    and bf5d2a2ac. No quoted line moved.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-amend/rg1, removed after, against /home/user/carbon-lang at
+    9192ee003: "checked 273 quotes, 0 failed" and "checked 89 silence checks, 0
+    failed"; the H1 subsets of rounds 1 and 2, "checked 97 quotes, 0 failed",
+    "checked 120 quotes, 0 failed" and "checked 5 silence checks, 0 failed"
+    (H1.1, H1.3, H1.4, H1.7, H1.15); round 2's thirteen lines and rev 8's
+    twenty, "checked 13 quotes, 0 failed" and "checked 20 quotes, 0 failed"; and
+    the 26 upstream lines rev 9 adds (docs/design/assignment.md:105, :106, :184,
+    :302, :303, :310 and :314, toolchain/check/handle_operator.cpp:99, :119,
+    :121 and :123, convert.cpp:1867, :1872, :1879, :2162, :2165, :2727 and
+    :2744, core/prelude/types/int.carbon:329, :331 and :375, uint.carbon:391 and
+    :437, cpp/int.carbon:1009, :1166 and :1168), "checked 26 quotes, 0 failed".
+    PR 55's lines read at c3cdecc5d as quoted.
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the table
+    of section 0.8 names them, PR 53's pushed head still 2407efa74. `git grep`
+    of `ref self` over core/ at the 18 heads finds a new impl of an operator
+    interface only in PR 55 (string.carbon:161 and :178); PR 57's
+    optional.carbon:284 is a `Destroy` impl's.
+-   A dry run of the fold (bin/dryrun9.py) applied rev 9's E1 to E6 to scratch
+    copies of the six files at ac57e2ea7, whose pages, log, fork/safe/plan.md
+    and ledger equal 4e40e74d8's, each block rewrapped as the fold-commit
+    paragraph says: each anchor is found once in the passage its block names,
+    each round 3 quote equals the text it replaces once whitespace is set aside,
+    each RR1-m1 mark is kept, the ledger parses with `json.load`, and the log's
+    D-SAFE-1 to D-SAFE-23 block, 1217 lines as rev 8's bin/dsafe.py counts it,
+    is identical to section 0.3 of fork/safe/plan.md (26 checks, "ALL OK").
+    rumdl@0.2.58 finds no MD013 issue on the pages, the log and
+    fork/safe/plan.md and refills only D-SAFE2-6's paragraph of this plan; no
+    line starts with `+`, with `*` or `-` other than a list marker, with `#` and
+    a digit or with a digit and a period that did not before; and the R31 counts
+    of temporal_safety.md, mutation_safety.md, the log and fork/safe/plan.md
+    equal ac57e2ea7's but for their lines (1607 to 1656, 1511 to 1533, 8284 to
+    8317, 3010 to 3047).
+-   The id re-scan widened to W-3[6-9][0-9] over the 165 origin refs and
+    local branches and the 23 worktrees, this amender's /dev/shm one among
+    them: the ledgers end at W-363, and this worktree's text names W-360,
+    W-363 to W-365, W-398 and W-399, W-365 only in this file; no id is taken,
+    no residue is filed and no F id is minted.
+-   R31 on this plan, the one file rev 9 changes: before, headings {1: 1, 2:
+    16, 3: 131}, bullets 177, numbered 31, rows 221, 8366 lines; after,
+    headings {1: 1, 2: 16, 3: 131}, bullets 186, numbered 31, rows 230,
+    8744 lines, the same after the edit and after each prek pass; the
+    changes are this section's nine bullets, a decision and eight Measured
+    items, its table's eight lines, six rows with the header and the rule,
+    and the Sign-off's one row, with no heading, numbered item or unguarded
+    block.
+-   prek to a fixpoint with a private cache, deleted after: its first pass
+    reflowed, under rumdl's MD013, the paragraphs rev 9 lengthens, the Status
+    paragraph among them, and the ruling's blockquote, the word diff empty
+    but for the blockquote's markers, and its second pass exits 0 with no
+    change; rumdl@0.2.58: no issues; the heading sets are unchanged, and the
+    manufactured-heading grep is empty.
+-   `runner.py --self-test`: "self-test: 150 programs parsed, 56 bullets in
+    table, OK". The model-name grep over this plan's changed lines and the
+    message: no hit outside the trailers and the scratch path. The merge-tree
+    of the new tree against trunk and the 18 held heads: the sets of the
+    table of section 0.8, unchanged.
+
+No page, example, log, fork/safe/plan.md or ledger line changes at this
+commit, so the nightly compiles of section 0.7 are not re-run and the ledger's
+`json.load` is owed only by the dry run, which passes; nothing is pushed.
+
+**Ruling (orchestrator, R29, 2026-10-29).** The orchestrator's ruling on this
+section, recorded verbatim; the focused re-review of rev 8 found no BLOCKER
+against the re-plan, so it takes effect with rev 9 (added 2026-10-29, rev 9):
+
+<!-- google-doc-style-ignore -->
+
+> Ruling of the orchestrator under R29, 2026-10-29, on rev 8's stop-and-amend
+> record (section 8.16): the budget of three fix commits (section 3 step 4) is
+> spent by 0f281d8bd, e1574b003 and cbdc0552e, and round 2's RR2-M1 (MAJOR) and
+> RR2-m1 (MINOR, a page change) stand accepted and re-planned at their root in
+> rev 8, the built-in test decided by where an implementation is written and the
+> aggregate clause stated as this design's classification. The defect is a
+> definitional gap in a test the fold itself introduced at RR1-m1, not a
+> narrowing of any realigned rule, and the fold commit's texts E1 to E6 are
+> given verbatim and dry-run. Following VA-2's precedent
+> (fork/variadics/va2-plan.md at rev 16, where D-VA2-19's break condition was
+> recorded as met and a fourth fix commit budgeted for named findings only), one
+> fourth fix commit is authorized for RR2-M1 and RR2-m1 only, applying E1 to E6
+> as rev 9 leaves them and nothing else, with the title section 8.16 gives,
+> after the focused re-review of rev 8 is folded into rev 9; the records commit
+> after it records the fourth commit as authorized by this ruling. Round 3 of
+> the focused re-review, the loop's last (section 3 step 5), then reviews the
+> fourth fix commit and its records. Break condition: a BLOCKER against rev 8's
+> re-plan in the focused re-review of rev 8, or any further finding in round 3
+> that needs a page change, stops SAFE-2 at a plan revision again with no
+> further fix commit; the orchestrator then re-plans the workstream's review
+> process, two fresh document reviews of the whole tree before any further
+> commit, and records that in this plan.
+
+<!-- google-doc-style-resume -->
+
 ### §8.17 Focused re-review fold record, round 3 (2026-10-29)
 
 Round 2 of section 3 step 5's loop, not dry, went back to section 3 step 4, as
@@ -3816,7 +4160,10 @@ section 8.16, the stop-and-amend record, re-plans both findings at their root
 and gives the texts of the one fold commit that answers them; this records
 commit, "SAFE-2 records: focused re-review round 3 fold", which is not counted,
 records the round. The budget is exceeded, and the orchestrator rules on the
-fold commit; round 3, the loop's last, reviews 1f9d0a16f and this commit. Round
+fold commit; the focused re-review of rev 8 reviews 1f9d0a16f and this commit,
+and round 3, the loop's last, reviews the fourth fix commit and the records
+commit after it (amended 2026-10-29, stop-and-amend re-review: RR8-m2, where
+this read "round 3, the loop's last, reviews 1f9d0a16f and this commit"). Round
 2's one records-only MINOR, RR2-m2, was folded by round 2's records commit
 4e40e74d8; rev 8 touches two of the places its marks are in, the Status line and
 section 8.14's third decision, and both of RR2-m2's marks stand there as
@@ -3876,6 +4223,17 @@ No page, example, log, fork/safe/plan.md or ledger line changes, so the
 nightly compiles of section 0.7 are not re-run and the ledger's `json.load` is
 not owed; nothing is pushed (section 3 step 7 waits for a dry round).
 
+The round 3 fixer corrected three line-range cites of section 8.16 in rev 8,
+`(:20-37)` to `(:20-38)`, `cpp/int.carbon:16-37)` to `cpp/int.carbon:16-38)` and
+`classes that adapt an integer, :16-37)` to `classes that adapt an integer,
+:16-38)`, by an in-place python3 string replace over that section's text rather
+than by Edit, a deviation from R25 and hand-off note 2 that the fixer's hand-off
+disclosed and that section 8.16, this section and the messages of 1f9d0a16f and
+ac57e2ea7 left out. It was a replacement, not an append; the word diff and prek
+were checked after it, prek reaching the fixpoint that section 8.16's Measured
+list records. Rev 9 edits every text it changes by Edit (added 2026-10-29,
+stop-and-amend re-review: RR8-m3; section 8.10's precedent for rev 4).
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (added 2026-10-28,
@@ -3889,6 +4247,7 @@ review fold: RR3-M1, RR3-m1, RR3-m2):
 | RR2: the focused re-review, round 2 | rev 3, 603749ee1 | REJECT | 1 | 0 | 3 | 4 | none | rev 4, 9d48a863e, §8.10 |
 | RR3: the focused re-review, round 3 | rev 4, 9d48a863e | APPROVE-WITH-AMENDMENTS | 0 | 1 | 2 | 3 | none | rev 5, 4ca369e38, §8.11 |
 | AM6: the focused re-review of the stop-and-amend | rev 6, 486d2bc74 | APPROVE-WITH-AMENDMENTS | 0 | 1 | 1 | 2 | none | rev 7, §8.12 |
+| RR8: the focused re-review of rev 8 (added 2026-10-29, rev 9) | rev 8, 1f9d0a16f, and ac57e2ea7 | APPROVE-WITH-AMENDMENTS | 0 | 3 | 3 | 6 | none | rev 9, §8.16 |
 
 The five reviews before the implementation raised 34 findings, 4 BLOCKERs, 10
 MAJORs and 20 MINORs; all 34 are folded and none is rejected. RR3, the last of
@@ -3929,9 +4288,28 @@ re-plans the test at its root and gives the fold commit's texts. It changes no
 page, record, ledger line, example, diagnostic, count of section 8 item 1 or
 merge-tree set, so rev 5's sign-off stands for every text rev 8 leaves as it
 was; its re-planned texts are not signed off: the orchestrator rules on the one
-fold commit past the budget, and fresh agents review rev 8 (round 3 of section
-3 step 5) and that commit before section 3's steps 6 to 8 (amended 2026-10-29,
-rev 8: RR2-M1, RR2-m1).
+fold commit past the budget, and fresh agents review rev 8 (the focused
+re-review of rev 8) and that commit (round 3 of section 3 step 5) before section
+3's steps 6 to 8 (amended 2026-10-29, rev 8: RR2-M1, RR2-m1; amended
+2026-10-29, stop-and-amend re-review: RR8-m2, where this read "fresh agents
+review rev 8 (round 3 of section 3 step 5) and that commit").
+
+Rev 9, 2026-10-29, folds the focused re-review of rev 8, RR8 in the table,
+which read rev 8 (1f9d0a16f) and its records commit (ac57e2ea7) and found no
+BLOCKER against the re-plan: its verdict is APPROVE-WITH-AMENDMENTS on three
+MAJORs and three MINORs, two of them records-only, all six folded and none
+rejected (section 8.16), so the seven reviews of this plan raised 42 findings,
+4 BLOCKERs, 14 MAJORs and 24 MINORs, all folded. Its three MAJORs and RR8-m1
+change the texts E1 to E6 of the fold commit and section 8.16's records, and
+no page, record, ledger line, example, diagnostic, count of section 8 item 1 or
+merge-tree set at this commit, so rev 5's sign-off stands for every text rev 9
+leaves as it was. With no BLOCKER found, the orchestrator's ruling of
+2026-10-29 (section 8.16) takes effect: the fourth fix commit, for RR2-M1 and
+RR2-m1 only, applies E1 to E6 as rev 9 leaves them, and round 3 of section 3
+step 5, the loop's last, reviews it and its records commit under the step's dry
+test before section 3's steps 6 to 8; a finding of round 3 that needs a page
+change stops SAFE-2 at a plan revision again with no further fix commit, the
+ruling's break condition (added 2026-10-29, rev 9).
 
 ## Hand-off notes for the implementer
 

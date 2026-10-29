@@ -1501,27 +1501,59 @@ replacement text serves both (Appendix B.1).
     2026-10-28, document-review fold: R1-M1: without it upstream's operator rule
     made every `Plain` write through `T*` that M3 permits, `q->n = 2` in
     EX-M-4d's `Peek` among them, a `ref` binding on an open place and so
-    `StrictRefFromShared`). Built in is the semantics
-    docs/design/assignment.md:146-157 gives the built-in types, `=` on integers,
-    floating-point types, `bool` and pointers, compound assignment on integers
-    and floating-point types, and `++` and `--` on integers, the prelude's impls
-    of them counting as built in whatever their body (the impls :168-170 says
-    are "provided for built-in types as necessary to give the semantics
-    described above"; core/prelude/types/int.carbon:395-399's `Inc` as much as
-    :331's `"int.sadd_assign"`); the assignment of a tuple, struct, array,
-    choice type or class with no user-written `AssignWith` impl
-    (assignment.md:159-161, a TODO upstream); and the language's own `&`, member
-    access naming a field and indexing of an array (amended 2026-10-29,
+    `StrictRefFromShared`). Built in is decided by where an implementation is
+    written, not by the type it serves: the language's own `&`, member access
+    naming a field and indexing of an array, the toolchain's interim `=` below,
+    and every impl of an operator interface written in core/prelude whose body,
+    while its `ref` operand is bound, calls no impl written outside
+    core/prelude, whichever type it is for, each of the prelude's that takes a
+    `ref` operand having a builtin body or one that calls only the prelude's own
+    impls (the impls docs/design/assignment.md:168-170 says are "provided for
+    built-in types as necessary to give the semantics described above",
+    core/prelude/types/int.carbon:331's `"int.sadd_assign"` and :395-399's `Inc`
+    as much as core/prelude/types/cpp/int.carbon:1011's `"int.sadd_assign"` and
+    :1183-1187's `Inc` for the `CppCompat` integers, classes that adapt an
+    integer, :16-38), and a user's type that fills their `U`
+    (core/prelude/types/int.carbon:329-331, `U: ImplicitAs(Int(N))`) being
+    converted to `other: Self` before `ref self` is bound; any other impl is
+    user-written, docs/design/assignment.md:302-316's default `*self = *self $
+    other;` among them wherever the `AssignWith` or `OpWith` impl it calls is
+    written outside core/prelude. M3 counts every assignment operator, compound
+    assignment included, and `++` and `--` as an assignment to the first
+    operand. docs/design/assignment.md:184 has "The statement `x = y;` is
+    rewritten to `x.(AssignWith(U).Op)(y);`" and :105-106 "The type is still
+    required to implement `AssignWith` for the assignment to be valid", so there
+    an assignment is classified by where its `AssignWith` impl is written; the
+    toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) calls
+    none, and counting it as the language's own on every type with no
+    `AssignWith` impl, an array or a class that is not a data class among them
+    besides :159's "Tuples, structs, choice types, and data classes", whose
+    rules :161 leaves a TODO, is this design's classification, not that text: it
+    calls no user-written `AssignWith`, any user-written `Copy` or `ImplicitAs`
+    it runs is checked under M3 on every path it takes, a non-`Plain` type's
+    assignment is M3(c)'s, and `Core.String`, whose fields are private
+    (core/prelude/types/string.carbon:16-26) and which has no `AssignWith` impl,
+    would otherwise be neither built in nor user-written (amended 2026-10-29,
     re-review round 2: RR1-m1, where this read "where the implementation is the
     language's own or a prelude impl whose body is a builtin it is established
     on any place, open ones included, and M3 alone decides": `++p->n` through
     `T*` was neither built in nor user-written, `Inc`'s body `self += AsInt(1);`
-    being no builtin, while `p->n += 1` was built in). (Re-planned 2026-10-29,
-    rev 8: RR2-M1, RR2-m1: section 8.16 restates this test by where an
-    implementation is written and quotes assignment.md:159's heading, its block
-    E4 replacing the sentence above; the pages and records state the sentence
-    above until the fold commit that section plans.) A `ref` _return_ is not a
-    binding, so the proposal's `Valid1` (:717-720), `ValToRef` (:826) and
+    being no builtin, while `p->n += 1` was built in; amended 2026-10-29,
+    re-review round 3: RR2-M1, RR2-m1, where this read "Built in is the
+    semantics docs/design/assignment.md:146-157 gives the built-in types, `=` on
+    integers, floating-point types, `bool` and pointers, compound assignment on
+    integers and floating-point types, and `++` and `--` on integers, the
+    prelude's impls of them counting as built in whatever their body (the impls
+    :168-170 says are "provided for built-in types as necessary to give the
+    semantics described above"; core/prelude/types/int.carbon:395-399's `Inc` as
+    much as :331's `"int.sadd_assign"`); the assignment of a tuple, struct,
+    array, choice type or class with no user-written `AssignWith` impl
+    (assignment.md:159-161, a TODO upstream); and the language's own `&`, member
+    access naming a field and indexing of an array": `q->m += 1` and `++q->m`
+    for a field `m` of a `CppCompat` integer type, C++'s `long` among them, were
+    neither built in nor user-written, and the aggregate clause credited
+    assignment.md:159-161 with arrays and every class). A `ref` _return_ is not
+    a binding, so the proposal's `Valid1` (:717-720), `ValToRef` (:826) and
     `Conditional` (:772-779) stay valid in both modes, each returning a
     reference expression whose kind is that of its loans; `Conditional`'s mixed
     set `{(r, exclusive), (*p, shared)}` keeps the weakest kind, shared, for the

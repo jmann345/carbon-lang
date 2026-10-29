@@ -279,30 +279,75 @@ it with no marker, the `ref` forms no loan of its own, neither the mutation
 page's M3(d) exclusive-receiver call nor its M3(e) exclusive loan, the loans of
 the operation's result, `&x`'s and a member access's sub-loan, being T2's, and
 M3 alone decides what the operation may do through a shared path. An
-implementation is built in when it gives a built-in type the semantics the
+implementation is built in by where it is written, not by the type it serves: it
+is built in when it is the language's own, `&`, member access naming a field,
+indexing of an array or the toolchain's interim `=` that this paragraph
+classifies below, or an impl of an operator interface written in core/prelude
+whose body, while its `ref` operand is bound, calls no impl written outside
+core/prelude, whichever type it is for; any other is user-written, an impl
+written outside core/prelude among them. Each such prelude impl that takes a
+`ref` operand has a builtin body or one that calls only the prelude's own impls,
+so nothing user-written is evaluated while its `ref` lives: the impls "provided
+for built-in types as necessary to give the semantics described above"
+(assignment.md:168-170), the builtin `"int.sadd_assign"`
+(core/prelude/types/int.carbon:331) and `Inc`'s `self += AsInt(1);`
+(int.carbon:395-399, uint.carbon:457-461) among them, as much as the same impls
+of the `CppCompat` integers, classes that adapt an integer
+(core/prelude/types/cpp/int.carbon:16-38), `"int.sadd_assign"` again (:1011) and
+`Inc`'s `self += (1 as CppCompat.Long32);` (:1183-1187). A user's type may fill
+the `U` of their compound assignments, `U: ImplicitAs(Int(N))`
+(int.carbon:329-331), but its `ImplicitAs` runs when the caller converts the
+right operand to `other: Self`, before the call binds `ref self`, so those impls
+stay built in. The default compound assignment that the assignment design
+provides, `*self = *self $ other;` (assignment.md:302-316), calls the
+`AssignWith` and `OpWith` impls of the type it serves while `ref self` is bound,
+so it is user-written wherever one of those is written outside core/prelude, as
+for a user's class. The mutation page's M3 counts every assignment operator,
+compound assignment included, and `++` and `--` as an assignment to the first
+operand, so a built-in operator on a type that is not `Core.Plain` is M3(c)'s
+through a shared path. The [assignment](../assignment.md#built-in-types) design
+gives `=` to "Integers and floating-point types, `bool`, and pointer types"
+(assignment.md:148) and routes every `=` through `AssignWith`: "The statement
+`x = y;` is rewritten to `x.(AssignWith(U).Op)(y);`" (assignment.md:184), and
+"The type is still required to implement `AssignWith` for the assignment to be
+valid" (assignment.md:105-106), so there an assignment is classified by where
+its `AssignWith` impl is written. The toolchain's interim `=`
+(toolchain/check/handle_operator.cpp:99-123, "TODO: Switch to using assignment
+interface for most assignment") calls no `AssignWith`; counting it as the
+language's own on every type with no `AssignWith` impl, an array or a class that
+is not a data class among them besides the "Tuples, structs, choice types, and
+data classes" whose rules assignment.md:159-161 leaves a TODO, is this design's
+classification, not the assignment design's text: it calls no user-written
+`AssignWith`, any user-written `Copy` or `ImplicitAs` it runs to convert the
+right operand or initialize the left from it is checked under M3 on every path
+it takes, a type that is not `Core.Plain` is M3(c)'s, and `Core.String`, a class
+whose fields are private (core/prelude/types/string.carbon:16-26) and which has
+no `AssignWith` impl, would otherwise be neither built in nor user-written
+(amended 2026-10-29, re-review round 2: RR1-m1, where this read "Where the
+operator's implementation is built in, the language's own or a prelude impl
+whose body is a builtin, such as
+`fn Op(ref self, other: Self) = "int.sadd_assign";`
+(core/prelude/types/int.carbon:331), that `ref` lives for the one operation" and
+"the checker establishes it with no marker, and the mutation page's M3 alone
+decides"; amended 2026-10-29, re-review round 3: RR2-M1, RR2-m1, where this read
+"An implementation is built in when it gives a built-in type the semantics the
 [assignment](../assignment.md#built-in-types) design states, `=` on integers,
 floating-point types, `bool` and pointers, compound assignment on integers and
-floating-point types, and `++` and `--` on integers (assignment.md:146-157),
-the prelude's impls of those, "provided for built-in types as necessary to give
-the semantics described above" (assignment.md:168-170), counting as built in
+floating-point types, and `++` and `--` on integers (assignment.md:146-157), the
+prelude's impls of those, "provided for built-in types as necessary to give the
+semantics described above" (assignment.md:168-170), counting as built in
 whatever their body, `Inc`'s `self += AsInt(1);`
 (core/prelude/types/int.carbon:395-399, uint.carbon:457-461) as much as
-`fn Op(ref self, other: Self) = "int.sadd_assign";` (int.carbon:331); when it
-is the assignment of a tuple, struct, array, choice type or class with no
-user-written `AssignWith` impl, whose rules assignment.md:159-161 leaves a
-TODO; and when it is the language's own `&`, member access naming a field or
-indexing of an array (amended 2026-10-29, re-review round 2: RR1-m1, where
-this read "Where the operator's implementation is built in, the language's own
-or a prelude impl whose body is a builtin, such as `fn Op(ref self, other:
-Self) = "int.sadd_assign";` (core/prelude/types/int.carbon:331), that `ref`
-lives for the one operation" and "the checker establishes it with no marker,
-and the mutation page's M3 alone decides"). So `q->n = 2` for `q: T*` is a
-`Plain` write that M3 permits, and `*q = "longer"` for `q: str*` is
-`StrictSharedImmutableWrite`. The `ref self` of a user-written impl of an
-operator interface is a `ref` binding under this section's rule, and its call
-through a shared path is M3(d)'s exclusive-receiver call,
-`StrictInvalidatingThroughShared` (amended 2026-10-28, document-review fold:
-R1-M1).
+`fn Op(ref self, other: Self) = "int.sadd_assign";` (int.carbon:331); when it is
+the assignment of a tuple, struct, array, choice type or class with no
+user-written `AssignWith` impl, whose rules assignment.md:159-161 leaves a TODO;
+and when it is the language's own `&`, member access naming a field or indexing
+of an array"). So `q->n = 2` for `q: T*` is a `Plain` write that M3 permits, and
+`*q = "longer"` for `q: str*` is `StrictSharedImmutableWrite`. The `ref self` of
+a user-written impl of an operator interface is a `ref` binding under this
+section's rule, and its call through a shared path is M3(d)'s exclusive-receiver
+call, `StrictInvalidatingThroughShared` (amended 2026-10-28, document-review
+fold: R1-M1).
 
 A `ref` _return_ is not a binding. The proposal's
 `Valid1(bound p: i32*) -> ref i32 { return *p; }` and
@@ -1440,24 +1485,28 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     `const` type: a checked reborrow on a closed place, and on an open place an
     `unsafe` formation (`StrictRefFromShared` unmarked), a `const` `ref` on a
     `Core.SharedImmutable` type excepted; a built-in operator's `ref` operand,
-    an assignment's among them, lives for the one operation and is established
-    on any place, M3 deciding what the operation may do (amended 2026-10-29,
-    re-review round 2: RR1-M1); a `ref` return is not a binding, so
-    `Valid1`, `ValToRef` and `Conditional` stay valid, a mixed result set
-    taking the weakest kind; T8 emits `noalias` with `captures(none)` or
+    built in meaning that its implementation is the language's own or an impl of
+    an operator interface written in core/prelude that calls no impl written
+    outside core/prelude while its `ref` operand is bound, M3 counting every
+    assignment operator, compound assignment included, and `++` and `--` as an
+    assignment to that operand (added 2026-10-29, re-review round 3: RR2-M1), an
+    assignment's among them, lives for the one operation and is established on
+    any place, M3 deciding what the operation may do (amended 2026-10-29,
+    re-review round 2: RR1-M1); a `ref` return is not a binding, so `Valid1`,
+    `ValToRef` and `Conditional` stay valid, a mixed result set taking the
+    weakest kind; T8 emits `noalias` with `captures(none)` or
     `captures(ret: address, provenance)` only where established against every
-    writer, on the body's own places and, under the whole-package condition,
-    on `ref` and `exclusive T*` parameters' places, never on an open place nor
-    for an `unsafe` one. Break condition: an accepted
-    p005434 example that becomes invalid in Permissive mode (none may; the
-    checklist lists them as accepted), or an accepted upstream memory-safety
-    proposal that narrows p005434:83 (realigned 2026-10-28, SAFE-2: W-347; the
-    heading read "`ref` bindings inherit the kind of their source." and the
-    superseded 2026-10-12 text: "A `ref` from a place is exclusive; a `ref`
-    from `*p` has `p`'s kind; a mixed loan set has the weakest kind and T4
-    applies to every place in it. `noalias` and `captures(none)` are emitted
-    only for exclusive-kind refs under T8, which narrows p005434:83 in a dated
-    amendment on this page.").
+    writer, on the body's own places and, under the whole-package condition, on
+    `ref` and `exclusive T*` parameters' places, never on an open place nor for
+    an `unsafe` one. Break condition: an accepted p005434 example that becomes
+    invalid in Permissive mode (none may; the checklist lists them as accepted),
+    or an accepted upstream memory-safety proposal that narrows p005434:83
+    (realigned 2026-10-28, SAFE-2: W-347; the heading read "`ref` bindings
+    inherit the kind of their source." and the superseded 2026-10-12 text: "A
+    `ref` from a place is exclusive; a `ref` from `*p` has `p`'s kind; a mixed
+    loan set has the weakest kind and T4 applies to every place in it. `noalias`
+    and `captures(none)` are emitted only for exclusive-kind refs under T8,
+    which narrows p005434:83 in a dated amendment on this page.").
 -   **D-SAFE-10 — Loans T1 to T8 plus the Store rule.** As stated under
     [Rules T1 to T8 and the Store rule](#rules-t1-to-t8-and-the-store-rule),
     with the first enforceable subset P1/P2/P3 shipping at stage 3 only

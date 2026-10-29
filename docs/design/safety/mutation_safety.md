@@ -238,19 +238,37 @@ require. An operator that passes its operand to a `ref` parameter, an
 assignment among them (the [assignment](../assignment.md#syntax) design's "a
 `(ref self: Self)` parameter"), is not a call in (d)'s sense when its
 implementation is built in, as the temporal page's
-[`ref` bindings](temporal_safety.md#ref-bindings) define it, the semantics the
-assignment design gives a built-in type with the prelude's impls of them
-whatever their body, an assignment of a tuple, struct, array, choice type or
-class with no user-written `AssignWith` impl, `&`, member access naming a field
-or indexing of an array: that section establishes its operand for the one
-operation, the operand's `ref` forms no loan of its own, neither (d)'s call nor
-(e)'s exclusive loan, and (a) to (c) and the next paragraph decide what it may
-do through a shared path, while the call of a user-written impl's `ref self` is
-(d)'s (amended 2026-10-28, document-review fold: R1-M1; amended 2026-10-29,
-re-review round 2: RR1-m1, where this read "the language's own or a prelude
-impl whose body is a builtin: the temporal page's
-[`ref` bindings](temporal_safety.md#ref-bindings) establish its operand for the
-one operation, and (a) to (c)").
+[`ref` bindings](temporal_safety.md#ref-bindings) define it, the language's own,
+`&`, member access naming a field, indexing of an array or the toolchain's
+interim `=` on a type with no `AssignWith` impl, or an impl of an operator
+interface written in core/prelude whose body, while its `ref` operand is bound,
+calls no impl written outside core/prelude, whichever type it is for, the
+`CppCompat` integers' as much as `Int`'s, a user's type that fills their `U`
+being converted to `Self` before the `ref` is bound; the interim `=`
+(toolchain/check/handle_operator.cpp:99-123), where the assignment design
+rewrites `x = y;` to `x.(AssignWith(U).Op)(y);` (assignment.md:184), counts as
+the language's own on an array or a class that is not a data class by this
+design's classification and not by the assignment design's "Tuples, structs,
+choice types, and data classes" (assignment.md:159), and any user-written `Copy`
+or `ImplicitAs` it runs is checked under this rule on every path it takes; and
+this rule counts every assignment operator, compound assignment included, and
+`++` and `--` as an assignment to the first operand, in (c) and in the next
+paragraph: that section establishes its operand for the one operation, the
+operand's `ref` forms no loan of its own, neither (d)'s call nor (e)'s exclusive
+loan, and (a) to (c) and the next paragraph decide what it may do through a
+shared path, while the call of a user-written impl's `ref self`, an impl written
+outside core/prelude or a prelude impl that calls one while its `ref` operand is
+bound, assignment.md:302-316's default `*self = *self $ other;` for a user's
+class among them, is (d)'s (amended 2026-10-28, document-review fold: R1-M1;
+amended 2026-10-29, re-review round 2: RR1-m1, where this read "the language's
+own or a prelude impl whose body is a builtin: the temporal page's [`ref`
+bindings](temporal_safety.md#ref-bindings) establish its operand for the one
+operation, and (a) to (c)"; amended 2026-10-29, re-review round 3: RR2-M1,
+RR2-m1, where this read "the semantics the assignment design gives a built-in
+type with the prelude's impls of them whatever their body, an assignment of a
+tuple, struct, array, choice type or class with no user-written `AssignWith`
+impl, `&`, member access naming a field or indexing of an array" and "while the
+call of a user-written impl's `ref self` is (d)'s").
 
 One more class of write needs exclusive access although it invalidates
 nothing: a write of storage that holds a `Core.SharedImmutable` object
@@ -1317,19 +1335,23 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     fold: R1-M3; amended 2026-10-29, re-review round 2: RR1-M2, where this read
     "a `const` call or a read into a value binding of a borrowed object
     through `T*` or `const T*` meeting D-SAFE-17's rule besides"). A built-in
-    operator's `ref` operand, an assignment's among them, is neither an
+    operator's `ref` operand, built in meaning that its implementation is the
+    language's own or an impl of an operator interface written in core/prelude
+    that calls no impl written outside core/prelude while its `ref` operand is
+    bound, M3 counting every assignment operator, compound assignment included,
+    and `++` and `--` as an assignment to that operand (added 2026-10-29,
+    re-review round 3: RR2-M1), an assignment's among them, is neither an
     exclusive-receiver call nor an exclusive loan: the operation is classified
     by what it does (D-SAFE-8; amended 2026-10-28, document-review fold: R1-M1;
     amended 2026-10-29, re-review round 2: RR1-m1, where this read "is not an
-    exclusive-receiver call").
-    `Core.Plain` is structural:
-    `Copy` with trivial destruction, every sub-object existing and formed at a
-    fixed offset; `Optional(T)`, `MaybeUnformed(T)`, payload choices, `Buf`,
-    `Box` and pointer-carrying unions are not `Plain`, the scalars, the three
-    pointer kinds, `Slice` and `String` are. Break condition: a migration
-    corpus in which more than 30 percent of C++ non-`const` methods end up
-    exclusive — then a finer rule (assignment through `T*` when no sub-loan
-    into the old value can exist, needing per-field loan tracking) or an
+    exclusive-receiver call"). `Core.Plain` is structural: `Copy` with trivial
+    destruction, every sub-object existing and formed at a fixed offset;
+    `Optional(T)`, `MaybeUnformed(T)`, payload choices, `Buf`, `Box` and
+    pointer-carrying unions are not `Plain`, the scalars, the three pointer
+    kinds, `Slice` and `String` are. Break condition: a migration corpus in
+    which more than 30 percent of C++ non-`const` methods end up exclusive —
+    then a finer rule (assignment through `T*` when no sub-loan into the old
+    value can exist, needing per-field loan tracking) or an
     `unsafe impl T as Core.Plain` opt-in.
 -   **D-SAFE-16 — Data races: inferred facets, staged, all races prevented
     among Carbon threads.** `Send`, `Sync` and `Freeze` are structural facets

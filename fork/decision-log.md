@@ -3141,63 +3141,92 @@ residue ids are the allocated ones, below):
     shared path; a user-written impl's `ref self` is a `ref` binding under
     this rule and its call D-SAFE-9's (d) (amended 2026-10-28, document-review
     fold: R1-M1: without it every `Plain` write through `T*` that M3 permits
-    was `StrictRefFromShared`). Built in is the semantics assignment.md:146-157
-    gives the built-in types, `=` on integers, floating-point types, `bool`
-    and pointers, compound assignment on integers and floating-point types,
-    and `++` and `--` on integers, the prelude's impls of them counting as
-    built in whatever their body (the impls :168-170 says are "provided for
-    built-in types as necessary to give the semantics described above";
+    was `StrictRefFromShared`). Built in is decided by where an implementation
+    is written, not by the type it serves: the language's own `&`, member access
+    naming a field and indexing of an array, the toolchain's interim `=` below,
+    and every impl of an operator interface written in core/prelude whose body,
+    while its `ref` operand is bound, calls no impl written outside
+    core/prelude, whichever type it is for, each of the prelude's that takes a
+    `ref` operand having a builtin body or one that calls only the prelude's own
+    impls (the impls :168-170 says are "provided for built-in types as necessary
+    to give the semantics described above", int.carbon:331's `"int.sadd_assign"`
+    and :395-399's `Inc` as much as cpp/int.carbon:1011's `"int.sadd_assign"`
+    and :1183-1187's `Inc` for the `CppCompat` integers, classes that adapt an
+    integer, :16-38), and a user's type that fills their `U`
+    (int.carbon:329-331, `U: ImplicitAs(Int(N))`) being converted to
+    `other: Self` before `ref self` is bound; any other impl is user-written,
+    assignment.md:302-316's default `*self = *self $ other;` among them wherever
+    the `AssignWith` or `OpWith` impl it calls is written outside core/prelude.
+    D-SAFE-9's M3 counts every assignment operator, compound assignment
+    included, and `++` and `--` as an assignment to the first operand.
+    assignment.md:184 has "The statement `x = y;` is rewritten to
+    `x.(AssignWith(U).Op)(y);`" and :105-106 "The type is still required to
+    implement `AssignWith` for the assignment to be valid", so there an
+    assignment is classified by where its `AssignWith` impl is written; the
+    toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) calls
+    none, and counting it as the language's own on every type with no
+    `AssignWith` impl, an array or a class that is not a data class among them
+    besides :159's "Tuples, structs, choice types, and data classes", whose
+    rules :161 leaves a TODO, is this design's classification, not that text: it
+    calls no user-written `AssignWith`, any user-written `Copy` or `ImplicitAs`
+    it runs is checked under D-SAFE-9's M3 on every path it takes, a non-`Plain`
+    type's assignment is D-SAFE-9's (c), and `Core.String`, whose fields are
+    private (string.carbon:16-26) and which has no `AssignWith` impl, would
+    otherwise be neither built in nor user-written (amended 2026-10-29,
+    re-review round 2: RR1-m1, where this read "where the implementation is the
+    language's own or a prelude impl whose body is a builtin (int.carbon:331's
+    `"int.sadd_assign"`) it is established on any place, open ones included, and
+    D-SAFE-9's M3 alone decides"; amended 2026-10-29, re-review round 3: RR2-M1,
+    RR2-m1, where this read "Built in is the semantics assignment.md:146-157
+    gives the built-in types, `=` on integers, floating-point types, `bool` and
+    pointers, compound assignment on integers and floating-point types, and `++`
+    and `--` on integers, the prelude's impls of them counting as built in
+    whatever their body (the impls :168-170 says are "provided for built-in
+    types as necessary to give the semantics described above";
     int.carbon:395-399's `Inc` as much as :331's `"int.sadd_assign"`); the
     assignment of a tuple, struct, array, choice type or class with no
-    user-written `AssignWith` impl (assignment.md:159-161, a TODO upstream);
-    and the language's own `&`, member access naming a field and indexing of
-    an array (amended 2026-10-29, re-review round 2: RR1-m1, where this read
-    "where the implementation is the language's own or a prelude impl whose
-    body is a builtin (int.carbon:331's `"int.sadd_assign"`) it is
-    established on any place, open ones included, and D-SAFE-9's M3 alone
-    decides"). A `ref` return is
-    not a binding, so p005434:717-720
-    (`Valid1(bound p: i32*) -> ref i32 { return *p; }`) and :826
-    (`ValToRef`) stay valid in both modes, each returning a reference
-    expression whose kind is that of its loans, and a call of either holds
-    its `bound` argument's pointee for the result's lifetime (D-SAFE-11(d));
-    a result whose loan set mixes kinds — p005434:772-779's
-    `Conditional(b, bound ref r: C, bound p: C*) -> ref C` carries `{(r,
-    exclusive), (*p, shared)}` — has the **weakest** kind, frozen counting
+    user-written `AssignWith` impl (assignment.md:159-161, a TODO upstream); and
+    the language's own `&`, member access naming a field and indexing of an
+    array"). A `ref` return is not a binding, so p005434:717-720
+    (`Valid1(bound p: i32*) -> ref i32 { return *p; }`) and :826 (`ValToRef`)
+    stay valid in both modes, each returning a reference expression whose kind
+    is that of its loans, and a call of either holds its `bound` argument's
+    pointee for the result's lifetime (D-SAFE-11(d)); a result whose loan set
+    mixes kinds — p005434:772-779's
+    `Conditional(b, bound ref r: C, bound p: C*) -> ref C` carries
+    `{(r, exclusive), (*p, shared)}` — has the **weakest** kind, frozen counting
     below shared, and T4 applies to every place in the set; binding such a
-    result with `let ref` is a `ref` formation like any other. Program `Pick`
-    in §4.1: in `UsePick` both places of the set, `x` and `y`, are locals, so
+    result with `let ref` is a `ref` formation like any other. Program `Pick` in
+    §4.1: in `UsePick` both places of the set, `x` and `y`, are locals, so
     `let ref z = Pick(false, x, q)` would form an exclusive loan on each, and
     `q2`, another carrier of `y` whose shared loan is live on the next line,
     makes that formation `StrictSharedBorrowInvalidated` (T4; amended
-    2026-10-28, document-review fold: R1-m1; this read "forms an exclusive
-    loan on each, and `q2->AsSlice()`, another carrier of `y` used while `z`
-    lives, is `StrictExclusiveBorrowConflict`"). T8 emits `noalias` with
-    `captures(none)`
-    or `captures(ret: address, provenance)` only where the requirement is
-    established against every writer: intra-function, for a `ref` binding on
-    a place whose every carrier is the body's own; on the referent of a `ref`
-    parameter or the pointee of an `exclusive T*` parameter, and on those
-    parameters, only under D-SAFE-10's whole-package condition; never on an
-    open place, the checked `const` `ref` on a `Core.SharedImmutable` type
+    2026-10-28, document-review fold: R1-m1; this read "forms an exclusive loan
+    on each, and `q2->AsSlice()`, another carrier of `y` used while `z` lives,
+    is `StrictExclusiveBorrowConflict`"). T8 emits `noalias` with
+    `captures(none)` or `captures(ret: address, provenance)` only where the
+    requirement is established against every writer: intra-function, for a `ref`
+    binding on a place whose every carrier is the body's own; on the referent of
+    a `ref` parameter or the pointee of an `exclusive T*` parameter, and on
+    those parameters, only under D-SAFE-10's whole-package condition; never on
+    an open place, the checked `const` `ref` on a `Core.SharedImmutable` type
     included, nor for an `unsafe`-formed one or one in a Permissive body
-    (p005434:866-868). Break condition: an accepted p005434 example that
-    becomes invalid in Permissive mode (none may; §4.1 lists them as
-    "ACCEPTS"), or an accepted upstream memory-safety proposal that narrows
-    p005434:83 (W-347's own).
-    (Realigned 2026-10-28, SAFE-2: W-347; fork/safe/safe2-plan.md D-SAFE2-6. The
-    superseded 2026-10-12 bullet read, in full: "**D-SAFE-8 — `ref` bindings
-    inherit the kind of their source.** A `ref` formed from a place is exclusive
-    access (p005434:83, :173-180 kept); a `ref` formed from `*p` inherits `p`'s
-    kind: exclusive from `exclusive T*`, shared-mutable from `T*` (M3 applies to
-    uses of it), const from `const T*`. So p005434:717-720 (`Valid1(bound p:
-    i32*) -> ref i32 { return *p; }`; re-pinned, B10) and :826 (`ValToRef`) stay
-    valid in both modes (judge 2 fatal B), the result being a shared-kind `ref`.
-    A `ref` or result whose loan set mixes kinds — p005434:772-779's
-    `Conditional(b, bound ref r: C, bound p: C*) -> ref C` carries `{(r,
-    exclusive), (*p, shared)}` — has the **weakest** kind (shared if any loan is
-    shared, const if any is const), and T4 applies to every place in the set:
-    program `Pick` in §4.1 (a shared-kind `ref` to `y` obtained from
+    (p005434:866-868). Break condition: an accepted p005434 example that becomes
+    invalid in Permissive mode (none may; §4.1 lists them as "ACCEPTS"), or an
+    accepted upstream memory-safety proposal that narrows p005434:83 (W-347's
+    own). (Realigned 2026-10-28, SAFE-2: W-347; fork/safe/safe2-plan.md
+    D-SAFE2-6. The superseded 2026-10-12 bullet read, in full: "**D-SAFE-8 —
+    `ref` bindings inherit the kind of their source.** A `ref` formed from a
+    place is exclusive access (p005434:83, :173-180 kept); a `ref` formed from
+    `*p` inherits `p`'s kind: exclusive from `exclusive T*`, shared-mutable from
+    `T*` (M3 applies to uses of it), const from `const T*`. So p005434:717-720
+    (`Valid1(bound p: i32*) -> ref i32 { return *p; }`; re-pinned, B10) and :826
+    (`ValToRef`) stay valid in both modes (judge 2 fatal B), the result being a
+    shared-kind `ref`. A `ref` or result whose loan set mixes kinds —
+    p005434:772-779's `Conditional(b, bound ref r: C, bound p: C*) -> ref C`
+    carries `{(r, exclusive), (*p, shared)}` — has the **weakest** kind (shared
+    if any loan is shared, const if any is const), and T4 applies to every place
+    in the set: program `Pick` in §4.1 (a shared-kind `ref` to `y` obtained from
     `Pick(false, x, q)` cannot be assigned a new `Buf` while `q2->AsSlice()`
     views `y`) is `StrictInvalidatingThroughShared` — a non-`Plain` assignment
     through shared-kind access, rejected even with no live view, the view `v`
@@ -3237,49 +3266,53 @@ residue ids are the allocated ones, below):
     round 2: RR1-M2, where this read "A `const` method call or a read into a
     value binding of a borrowed object through `T*` or `const T*` meets
     D-SAFE-17 besides: a closed place, a `Core.SharedImmutable` type, or
-    `unsafe`"). A built-in operator's `ref` operand, an assignment's among
+    `unsafe`"). A built-in operator's `ref` operand, built in meaning that its
+    implementation is the language's own or an impl of an operator interface
+    written in core/prelude that calls no impl written outside core/prelude
+    while its `ref` operand is bound, M3 counting every assignment operator,
+    compound assignment included, and `++` and `--` as an assignment to that
+    operand (added 2026-10-29, re-review round 3: RR2-M1), an assignment's among
     them, is neither (d)'s call nor (e)'s exclusive loan: (a) to (c) classify
-    the operation by what it does (D-SAFE-8; amended 2026-10-28,
-    document-review fold: R1-M1; amended 2026-10-29, re-review round 2:
-    RR1-m1, where this read "is not (d)'s call"). `Core.Plain` is a
-    compiler-determined facet in the `Concrete`/`TrivialDestructor` pattern
-    (classes.md:1941-1944; details.md:4254-4290), defined **structurally** to
-    match the invalidation definition above (amended 2026-10-12, review fold:
-    A-3, B2, B12): a type is `Plain` when (i) it is `Copy` with trivial
-    destruction — no user destructor in either spelling, classes.md
-    :1852-1870's `fn destroy(self)` / `fn destroy(ref self)` or the prelude's
+    the operation by what it does (D-SAFE-8; amended 2026-10-28, document-review
+    fold: R1-M1; amended 2026-10-29, re-review round 2: RR1-m1, where this read
+    "is not (d)'s call"). `Core.Plain` is a compiler-determined facet in the
+    `Concrete`/`TrivialDestructor` pattern (classes.md:1941-1944;
+    details.md:4254-4290), defined **structurally** to match the invalidation
+    definition above (amended 2026-10-12, review fold: A-3, B2, B12): a type is
+    `Plain` when (i) it is `Copy` with trivial destruction — no user destructor
+    in either spelling, classes.md :1852-1870's `fn destroy(self)` /
+    `fn destroy(ref self)` or the prelude's
     `impl as Destroy { fn Op(ref self) }` form (buf.carbon:58-60, D-SL-16; the
     mutation page discloses in one dated sentence that the fork's prelude uses
     the interface form classes.md does not name) — and (ii) every sub-object
-    exists **and is formed** at a fixed offset regardless of the value
-    (amended 2026-10-12, re-review fold: RR-6: `DefaultOptionalStorage(T)`
-    is {`MaybeUnformed(T)`, `bool`}, optional.carbon:140-143, and the
-    pointer storage is the one-word `MaybeUnformed(T*)`, :188-189 — every
-    sub-object has a fixed offset and what varies is formedness, so the
-    exclusions below follow from (ii) only with that word), closed under
-    arrays/tuples/structs/classes of `Plain` fields. Membership table (§2.7):
-    integers, floats, `bool`, `char`, all three pointer kinds, `Slice(T)` and
-    the prelude's `String` (= `str`: a non-owning `{Char*, i64}` with `impl as
-    Copy`, no `Destroy`, `impl String as UnformedInit`, string.carbon:16-28 —
-    B2) **are** `Plain`; `Buf`, `Box`, payload `choice`s, `Core.Optional(T)`
-    for every `T` (a class over `MaybeUnformed`/null-niche storage whose
-    payload sub-object exists only for `Some`, optional.carbon:13-60,
-    :186-203), `MaybeUnformed(T)` and unions with a pointer-carrying field
-    (unions.md:241) are **not** — so `*d = Optional(i32*).None()` through a
-    shared `Optional(i32*)*` is `StrictInvalidatingThroughShared`, and M5's
-    "alternative cannot change while a payload reference lives" is a
-    consequence of (c) rather than a contradiction of it (program `Alt2` in
-    §4.1). The rev-1 representational wording ("`Copy` with trivial
-    destruction, no `choice` payload", which admitted `Optional(T*)` and
-    listed `String` as non-`Plain`) is withdrawn. Attempt B's definition
-    replaces attempt A's `SharedAssignable` (judge 2's graft). This is
-    p005914:198-202 made checkable: iterators hold `T*`, `Push` is `ref self`
-    and so "precludes any outstanding shared mutable pointers". Break
-    condition (R-1): a migration corpus in which more than 30 percent of C++
-    non-`const` methods end up exclusive (the `Optional(T*)` exclusion makes
+    exists **and is formed** at a fixed offset regardless of the value (amended
+    2026-10-12, re-review fold: RR-6: `DefaultOptionalStorage(T)` is
+    {`MaybeUnformed(T)`, `bool`}, optional.carbon:140-143, and the pointer
+    storage is the one-word `MaybeUnformed(T*)`, :188-189 — every sub-object has
+    a fixed offset and what varies is formedness, so the exclusions below follow
+    from (ii) only with that word), closed under arrays/tuples/structs/classes
+    of `Plain` fields. Membership table (§2.7): integers, floats, `bool`,
+    `char`, all three pointer kinds, `Slice(T)` and the prelude's `String` (=
+    `str`: a non-owning `{Char*, i64}` with `impl as Copy`, no `Destroy`,
+    `impl String as UnformedInit`, string.carbon:16-28 — B2) **are** `Plain`;
+    `Buf`, `Box`, payload `choice`s, `Core.Optional(T)` for every `T` (a class
+    over `MaybeUnformed`/null-niche storage whose payload sub-object exists only
+    for `Some`, optional.carbon:13-60, :186-203), `MaybeUnformed(T)` and unions
+    with a pointer-carrying field (unions.md:241) are **not** — so
+    `*d = Optional(i32*).None()` through a shared `Optional(i32*)*` is
+    `StrictInvalidatingThroughShared`, and M5's "alternative cannot change while
+    a payload reference lives" is a consequence of (c) rather than a
+    contradiction of it (program `Alt2` in §4.1). The rev-1 representational
+    wording ("`Copy` with trivial destruction, no `choice` payload", which
+    admitted `Optional(T*)` and listed `String` as non-`Plain`) is withdrawn.
+    Attempt B's definition replaces attempt A's `SharedAssignable` (judge 2's
+    graft). This is p005914:198-202 made checkable: iterators hold `T*`, `Push`
+    is `ref self` and so "precludes any outstanding shared mutable pointers".
+    Break condition (R-1): a migration corpus in which more than 30 percent of
+    C++ non-`const` methods end up exclusive (the `Optional(T*)` exclusion makes
     linked-structure heads exclusive-only through pointers — counted in that
-    corpus) — then a finer rule (assignment through `T*` when no sub-loan
-    into the old value can exist, needing per-field loan tracking) or an
+    corpus) — then a finer rule (assignment through `T*` when no sub-loan into
+    the old value can exist, needing per-field loan tracking) or an
     `unsafe impl T as Core.Plain` opt-in.
 -   **D-SAFE-10 — Loans (T1-T8) plus the Store rule.** Vocabulary: a _place_ is
     a durable reference expression's storage (values.md:306-315); a _loan_ is

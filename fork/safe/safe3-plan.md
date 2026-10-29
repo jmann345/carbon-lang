@@ -6,12 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-3 plan: the built-in operator exemption re-derived from the safety argument
 
-**Status:** rev 5 -- NOT signed off pending re-review round 4: RR3-M1.
-Rev 5, 2026-10-29, is the fixer's fold of the focused re-review, round 3, of
-rev 4 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR3-M1, and two MINORs, RR3-m1 and
-RR3-m2; all three accepted, RR3-M1 folded at its root, T3's liveness, and RR3-m1
-with the free loan set cited at the temporal page's vocabulary, the rev 5 fold
-record after rev 4's); sign-off needs a round with no BLOCKER and no MAJOR.
+**Status:** rev 6 -- NOT signed off pending re-review round 5: RR4-M1.
+Rev 6, 2026-10-29, is the fixer's fold of the focused re-review, round 4, of
+rev 5 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR4-M1, accepted and folded at its
+root, the closed-place premise of a `returned var`, whose storage a global's
+dynamic initializer makes the global, the rev 6 fold record after rev 5's);
+sign-off needs a round with no BLOCKER and no MAJOR. Rev 5, 2026-10-29, the
+fixer's fold of the focused re-review, round 3, of rev 4
+(APPROVE-WITH-AMENDMENTS: one MAJOR, RR3-M1, and two MINORs, RR3-m1 and RR3-m2,
+all three accepted), is commit f29ece09a.
 Rev 4, 2026-10-29, the fixer's fold of the focused re-review, round 2, of rev 3
 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR2-M1, and three MINORs, RR2-m1 to
 RR2-m3, all four accepted), is commit f6cf71da9. Rev 3,
@@ -40,7 +43,8 @@ head reported, amended 2026-10-29, review fold: RR1-m2; still at 782a5b740 when
 rev 4 was written, rev 3's commit 29a28cdbe not yet mirrored, section 3 step 3,
 amended 2026-10-29, review fold: RR2-M1; at f6cf71da9, rev 4's commit, when
 rev 5 was written, a moved head reported, amended 2026-10-29, review fold:
-RR3-M1). This plan is a new file
+RR3-M1; still at f6cf71da9 when rev 6 was written, rev 5's commit f29ece09a not
+yet mirrored, amended 2026-10-29, review fold: RR4-M1). This plan is a new file
 beside fork/safe/safe2-plan.md, which this planner does not edit; its dated
 pointer marks come with the fold commit (section 2). Upstream was read at its
 tip 9192ee003, fetched 2026-10-29 (section 0.1). Records and design text only:
@@ -68,14 +72,17 @@ threads once W-365's stage 5 contract holds (section 1.3's last row; amended
 model for every probe of section 0.3."). A path to the referent is every path
 the program can take, a value passed to a call from which a carrier of the
 referent can be loaded among them, which T3 counts as a use of that carrier
-(A.32; added 2026-10-29, review fold: RR3-M1).
+(A.32; added 2026-10-29, review fold: RR3-M1), and the name of a global whose
+dynamic initializer fills a `returned var`, which the closed places of A.33
+make the initializer's to check (added 2026-10-29, review fold: RR4-M1).
 
 ## Sections
 
 -   Section 0, audit: section 0.0 the root cause; upstream at the tip; the
     toolchain and the prelude; the probes, 91 re-run, 23 new, rev 2's 11, the
     re-review's 4 of rev 3, the second re-review's 6 and the fixer's 1 of
-    rev 4 and the third re-review's 4 of rev 5, with the IR order of each;
+    rev 4, the third re-review's 4 of rev 5 and the fourth re-review's 5 and
+    the fixer's 2 of rev 6, with the IR order of each;
     PR 67's checks; every sentence on the pages and in the records that states
     the exemption; the interlocks; the collisions; the id re-scan; SAFE-2's
     findings that the tree does not yet carry.
@@ -86,7 +93,7 @@ referent can be loaded among them, which T3 counts as a use of that carrier
 -   Section 3, commits and reviews; section 4, the worked-example matrix;
     section 5, scoreboard; section 6, churn and collisions; section 7, risks
     and rejected alternatives; section 8, verification and the not-run list.
--   The review fold records of rev 2 to rev 5, the hand-off notes, then
+-   The review fold records of rev 2 to rev 6, the hand-off notes, then
     Appendix A (pages), Appendix B (records), Appendix C (the PR texts and
     PR 67's note commit) and Appendix D (trunk's fork/ORCHESTRATION.md).
 
@@ -137,10 +144,11 @@ while it stands the Strict checker checks it by what it does: a left operand
 whose type is not copy-represented at every depth, which the interim `=`
 initializes in place in whole or in part, has its whole right operand evaluated
 while it is bound. Under that model the noalias claim is true for every one of
-the 140 probes of section 0.3, each of one thread (section 1.3; rev 2 counted
+the 147 probes of section 0.3, each of one thread (section 1.3; rev 2 counted
 125, amended 2026-10-29, review fold: RR1-M1; rev 3 129, amended 2026-10-29,
 review fold: RR2-M1, RR2-m2, RR2-m3; rev 4 136, amended 2026-10-29, review
-fold: RR3-M1). Today's lowering emits no `noalias`
+fold: RR3-M1; rev 5 140, amended 2026-10-29, review fold: RR4-M1). Today's
+lowering emits no `noalias`
 on any Carbon function (no probe's IR carries it), so no program has undefined
 behavior today; the model's claim must still be true under the model, and now
 is.
@@ -274,15 +282,49 @@ bullet's lead and its sentence that give a copy-represented type's binding no
 borrowed object left standing as A.24 qualified them (RR3-m2), now re-keyed by
 A.30 and A.31 (added 2026-10-29, review fold: RR3-M1, RR3-m1, RR3-m2).
 
+Rev 5 stated the closed-place argument over every path to the place and to a
+carrier, a closed place being reached "only through its owner, a carrier or such
+a value, every carrier of a loan on it being in the body's view", and the fourth
+re-review showed its premise false for a `returned var` (RR4-M1): the temporal
+page counts a `returned var` closed as a local `var`
+(temporal_safety.md:134-143), while its storage is the place its caller's call
+initializes, "can be `&y`" for `y = F();` (assignment.md:111-113), and under a
+global's dynamic initializer that place is the global. For `var g: S = F(1);`,
+the nightly's `__global_init` calls `F(@g, 1)`, so `F`'s `returned var r` is
+`g`, and in `r = {.u = MakeU(k), .w = MakeW()}` the argument-free `MakeW` reads
+`g.u` by name after `MakeU`'s result is initialized into `r.u`
+(p01: 11 12 11 12, the right operand formed first 11 12 1 2); (a), (b) and (i)
+to (iii) all held, `r` closed, no carrier formed and no argument passed, so the
+`=` was exempt while another path on the same thread reads its referent,
+D-SAFE3-3's break condition met again, and a `ref` taken on such a
+`returned var` is the same case (p02: `Mod(ref r)`, 21 22 21 22), while a `var`
+parameter filled from a global is a copy (p03: 31 32 1 2). The root is the
+premise, not a clause: the body's view holds every carrier, but a `returned var`
+is storage its caller provides, and the caller's name for it, a global's, is
+reached by every function. So the closed places now say why a `returned var` is
+closed, every storage its caller's call initializes being closed or bound while
+the call runs, a local `var`, a `var` parameter or a temporary being
+initialized, the caller's own `returned var` or the left operand of an in-place
+`=`, whose interim rule counts the call as evaluated while that operand is
+bound, and name the one storage that is open, a global under its dynamic
+initializer, whose initializer this design, upstream having no global variables
+(docs/design/README.md:1236-1237), accepts for a type that is not
+copy-represented at every depth only under the interim rule's conditions for an
+in-place `=` on an open place, the global its left operand, and otherwise makes
+an `unsafe` formation, `StrictRefFromShared` unmarked, as a `ref` on a global
+already is (A.33 on the temporal page, B.32 in D-SAFE-10, A.1's and B.1's
+pointer, B.12, W-366's evidence; added 2026-10-29, review fold: RR4-M1).
+
 ### §0.1 Upstream at the tip
 
 `git -C /home/user/carbon-lang fetch -q upstream trunk` on 2026-10-29 at 08:54
 UTC gives upstream/trunk = **9192ee003** (2026-10-28 20:51:45 UTC, "Make
 `TokenInfo` use a single 32-bit store for initialization.", upstream PR 8054),
 the tip SAFE-2's rev 11 to rev 14 read; nothing newer, again when the rev 4
-fixer re-fetched it at 13:38 UTC and when the rev 5 fixer re-fetched it at
-14:29 UTC, the commits since the cut on the cited files those the table names;
-the cut c1e83b0b7 is its ancestor.
+fixer re-fetched it at 13:38 UTC, when the rev 5 fixer re-fetched it at 14:29
+UTC and when the rev 6 fixer re-fetched it at 15:30 UTC, the commits since the
+cut on the cited files those the table names; the cut c1e83b0b7 is its
+ancestor.
 `git log --oneline c1e83b0b7..9192ee003 -- <file>` for every file this plan
 quotes:
 
@@ -302,13 +344,15 @@ quotes:
 | core/prelude int, uint, float, cpp/int, operators/arithmetic, bitwise, as, string | none |
 | core/prelude/operators/index.carbon | 6d80ceb58 "Add the `IndirectIndexWith` interface to the prelude" (upstream PR 7974) |
 
-The quotes, at 9192ee003; every one is also a row of section 0.4's 116-row
+The quotes, at 9192ee003; every one is also a row of section 0.4's 123-row
 check, which passes at the tip (33 of them fail at the cut, the moved lines
 named above; rev 1's 67 rows, the fixer's 33, the 10 toolchain lines of
-section 0.2 that rev 3 adds and the 6 that rev 4 adds, amended 2026-10-29,
-review fold: A-RA3-M1, A-RA3-m3, B-m1; amended 2026-10-29, review fold: RR1-m1,
-where this read "100-row" and "19 of them"; amended 2026-10-29, review fold:
-RR2-m2, where this read "110-row" and "29 of them"):
+section 0.2 that rev 3 adds, the 6 that rev 4 adds and the 7 of README.md and
+assignment.md that rev 6 adds, amended 2026-10-29, review fold: A-RA3-M1,
+A-RA3-m3, B-m1; amended 2026-10-29, review fold: RR1-m1, where this read
+"100-row" and "19 of them"; amended 2026-10-29, review fold: RR2-m2, where this
+read "110-row" and "29 of them"; amended 2026-10-29, review fold: RR4-M1, where
+this read "116-row"):
 
 -   p005434:83 "The address of a `ref` binding is `nocapture` and
     `noalias`."; :302-316, the operators that take a `ref` operand: "the
@@ -350,7 +394,10 @@ RR2-m2, where this read "110-row" and "29 of them"):
     :163-164 "See leads issue" / "[#686: Operation order in struct/class
     assignment/initialization]"; :116-120 the unformed `var y: C;` / `y = F();`,
     whose `returned var` "can be `&y`" (:113; added 2026-10-29, review fold:
-    A-RA3-M1); :168-170 "Implementations of these interfaces are provided for
+    A-RA3-M1), and :111-112 `returned var c: C = {...};` / "`&c` here is `&x`
+    for the first call to `F()`." for `var x: C = F();`, a `returned var` being
+    the storage its caller's call initializes (added 2026-10-29, review fold:
+    RR4-M1); :168-170 "Implementations of these interfaces are provided for
     built-in types as necessary to give the semantics described above.";
     :176-177 `interface AssignWith(U: type) {` / `fn Op(ref self, other: U);`;
     :184 "The statement `x = y;` is rewritten to `x.(AssignWith(U).Op)(y);`.";
@@ -380,6 +427,14 @@ RR2-m2, where this read "110-row" and "29 of them"):
 -   classes.md: no line this plan cites; the pages' cites (:1852-1870,
     :1920-1957, :1941-1944, :1968-1982) do not move (f21c62524 replaces two
     lines at :124-125).
+-   docs/design/README.md:1236-1237, "Global constants and variables":
+    "However, there are currently no global variables."; :1239-1240 "**Note**:
+    The semantics of global constant declarations and absence of global variable
+    declarations is currently provisional." (the fork's README.md has them at
+    :1253-1257, the text the same). So a global's dynamic initializer, which the
+    toolchain lowers as a call whose return storage is the global (p01), has no
+    upstream rule, and A.33's is this design's (added 2026-10-29, review fold:
+    RR4-M1).
 -   docs/design/pattern_matching.md:834-948, "Evaluation order", for
     `var cd: (C, D) = (MakeA(), MakeB());` (:855), the first, third and fourth
     of its six steps: "Call `MakeA`." (:860), "Call `A.(Core.Copy).Op` to copy
@@ -590,9 +645,22 @@ its INDEX.tsv listing them) make 140; the rev 5 fixer re-ran them from copies in
 fixer3/probe/rr3/ by fixer3/bin/run.sh, every output identical to the one the
 re-review recorded, and printed each one's IR order by bin/irorder.py, the only
 `noalias` in their IR being m01's declaration of `llvm.memcpy` (added
-2026-10-29, review fold: RR3-M1). The new probes, with the IR order of the
-function that does the operation (`p` aliasing `q` where the program passes one
-place twice):
+2026-10-29, review fold: RR3-M1). The fourth re-review's five (p01 to p05, in
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/rr4/probe/,
+its INDEX.tsv listing them beside its re-runs of m02 and m04) make 145; the rev
+6 fixer re-ran them from copies in fixer4/probe/rr4/ by fixer4/bin/run.sh, every
+output identical to the one the re-review recorded, and printed each one's IR
+order by bin/irorder.py, the only `noalias` in their IR being p01's to p03's
+declarations of `llvm.memcpy`; and, for D-SAFE3-12's count, it lowered the
+fork's three globals' initializers (fixer4/probe/glob/: `__global_init` calls
+`Core.Optional(CharOrEOF).None()` with `@unread_char` as its return storage, and
+the prelude's `DefaultOrUnformed` with `@total` and `@gm`, which calls the C++
+default constructor's thunk); and its own two, g01 and g02 in fixer4/probe/new/,
+make 147, each a compile error that shows the premise of A.33's list, a local
+`var`'s initializer naming no part of it and a global's initializer taking no
+address of the global (added 2026-10-29, review fold: RR4-M1). The new probes,
+with the IR order of the function that does the operation (`p` aliasing `q`
+where the program passes one place twice):
 
 | probe | shape | IR order | output |
 | --- | --- | --- | --- |
@@ -642,6 +710,13 @@ place twice):
 | m02 (rev 5) | `x = {.u = MakeU(&p), .w = MakeW(&p)}` with `p = &x`, `x: {.u: {.a: i32, .b: i32}, .w: {.a: i32, .b: i32}}`, `MakeU` returning `(*pp)->w` and `MakeW` `(*pp)->u`; the remedy, the right operand formed into `v` first | `call MakeU(x.u, p)`, `call MakeW(x.w, p)`, each result initialized in place in its element of `x`; the remedy calls into `v` and copies `v` into `x` | 3 4 3 4 (remedy 3 4 1 2) |
 | m03 (rev 5) | by-value parameters two levels deep, one level and copy-represented at every depth, the callee writing the source through a pointer argument before it reads the parameter | the nightly copies each argument into a temporary at the call | 1 3 6 (order-only) |
 | m04 (rev 5) | m02's shape with `p` passed as `ref p`, and by value (the control) | `call MakeUr(x.u, p)`, `call MakeWr(x.w, p)`; `call MakeUv(x.u, x)`, `call MakeWv(x.w, x)` | 3 4 3 4; 7 8 7 8 |
+| p01 (rev 6) | `var g: S = F(1);` for `S = {.u: {.a: i32, .b: i32}, .w: {.a: i32, .b: i32}}`, `F`'s `returned var r` assigned `{.u = MakeU(k), .w = MakeW()}`, the argument-free `MakeW` reading `g.u` by name; the remedy `G`, its right operand formed into `v` first | `__global_init`: `call F(@g, 1)`; in `F`: `call MakeU(return.u)`, `call MakeW(return.w)`, `MakeW` loading `@g`; `G` calls into `v`, then copies `v` into `return` | 11 12 11 12 (remedy 11 12 1 2) |
+| p02 (rev 6) | p01 through a `ref`: `Init`'s `returned var r` is `g`, `Mod(ref r)` runs the in-place `=` on its `ref` parameter `x`, `MakeW` reading `g` by name | `call Mod(return)`; in `Mod`: `call MakeU(x.u)`, `call MakeW(x.w)` | 21 22 21 22 |
+| p03 (rev 6) | the control: `Take(g)` passes a global to a `var` parameter, whose in-place `=` runs `MakeW` reading `g` | the `var` parameter is the caller's copy of `g`; `call MakeU(s.u)`, `call MakeW(s.w)` | 31 32 1 2, `g.u.a` 1 |
+| p04 (rev 6) | `x = y` for `{.c: C, .d: C}`, `C` a class with a user `Copy` that loads `**self.q`, `y`'s elements holding `&p` for `p = &x.c.n` | `call Copy.Op(x.c, y.c)`, `call Copy.Op(x.d, y.d)`, the second loading `x.c.n` through `p` | 51 512 (formed first 51 52) |
+| p05 (rev 6) | p04 with `y`'s elements holding `p` itself, `C` loading `*self.q` | the same two in-place `Copy.Op` calls | 51 512 (formed first 51 52) |
+| g01 (rev 6, the fixer's) | `var x: {.a: i32, .b: i32} = F(&x);` in a function | none: a compile error | "`x` used before initialization" |
+| g02 (rev 6, the fixer's) | `var g: {.a: i32, .b: i32} = F(&g);` at file scope | none: a compile error | "cannot take the address of non-reference expression" |
 
 Facts the probes give, each with the probes that show it: the call-based
 operators evaluate the left operand's place, then the right operand, then the
@@ -682,10 +757,20 @@ copy-represented the nightly copies the element into a temporary when it forms
 `other` (f01: 2 1), a read values.md:456-463 allows to be immediate or deferred,
 so the design keeps D-SAFE2-3's one-element clause and treats that element as a
 borrowed object, reading the clause at every depth (n09; A.24, B.27; added
-2026-10-29, review fold: RR2-m1). No Carbon function in any probe's IR carries
-`noalias`, k01's and the second and third re-reviews' included (amended
-2026-10-29, review fold: RR2-m2; amended 2026-10-29, review fold: RR3-M1, where
-this read "k01's and the second re-review's included").
+2026-10-29, review fold: RR2-m1); a `returned var` is the storage its caller's
+call initializes, under a global's dynamic initializer the global itself
+(p01: `__global_init` calls `F(@g, 1)`; p02 through `Mod(ref r)`), whose name
+any function reads while the `returned var` is written in place, while a `var`
+parameter filled from a global is the caller's copy (p03), and an in-place
+`=` whose member assignment runs a user's `Copy` runs it once per element
+into the left operand, the second copy reading the element the first wrote
+(p04, p05: 51 512 where the right operand formed first gives 51 52; added
+2026-10-29, review fold: RR4-M1). No Carbon function in any probe's IR carries
+`noalias`, k01's and the second, third and fourth re-reviews' included
+(amended 2026-10-29, review fold: RR2-m2; amended 2026-10-29, review fold:
+RR3-M1, where this read "k01's and the second re-review's included"; amended
+2026-10-29, review fold: RR4-M1, where this read "the second and third
+re-reviews' included").
 The nightly's evidence limits: the three lowering crashes, s14b and ra02 are no
 evidence; v12 and s12 to s12c are order-only, the nightly storing reordered
 struct-literal fields with runtime values by position, not by name (s12c: 1 2
@@ -762,6 +847,16 @@ after, against /home/user/carbon-lang at 9192ee003:
     rev 5 quoting no new upstream line; every one 0 failed, and 33 of the 116
     failing at the cut c1e83b0b7 (fixer3/logs/pr67-checks.txt; added
     2026-10-29, review fold: RR3-M1).
+-   Re-run by the rev 6 fixer on 2026-10-29 from a detached worktree of
+    56e2e5bbd at /dev/shm/safe2-fixer4/rg1, removed after, at 9192ee003
+    (fetched again at 15:30 UTC, nothing newer): 273 and 89; the H1 subsets
+    97, 120 and 5; 284 and 89; rev 6's 7 upstream lines
+    (fixer4/logs/safe3-rev6-quotes.tsv: docs/design/README.md:1236-1237 and
+    :1239-1240, assignment.md:111-113) and the 123 of all five revisions
+    (fixer4/logs/safe3-quotes-all6.tsv); every one 0 failed; at the cut
+    c1e83b0b7 all 7 of rev 6's pass, neither file having moved, and 33 of the
+    123 fail (fixer4/logs/pr67-checks.txt; added 2026-10-29, review fold:
+    RR4-M1).
 
 So no break condition of H1.8 to H1.12 has fired, H1.13's correction stands,
 and every Appendix C.2 anchor of PR 67's files is found once at 56e2e5bbd
@@ -860,8 +955,8 @@ each new one once (section 8 item 4).
 | T2 (forming loans), T5, T6, T7, the Store rule | no: a user-written operator's `ref self` is a T2 formation as SAFE-2 has it; the interim rule uses T4 as it stands (amended 2026-10-29, review fold: RR3-M1, where this row named T3 too) |
 | T3 (liveness) | one sentence (A.32 on the temporal page, B.31 in D-SAFE-10's restatement in the log and fork/safe/plan.md): a use of a value from which a carrier can be loaded, a pointer to a place that holds the carrier, a `ref` of such a place or a value that carries a loan on one, transitively, is a use of the carrier, without which T4 sees no use of `p`'s loan in m02's `MakeW(&p)` and no exclusive or frozen loan, a `ref` binding's included, excludes a callee's read through a carrier it loads; the mutation page's summary of T3 (:189-191, "the last use of any carrier") is true as stated, T3 defining a use, and stays (added 2026-10-29, review fold: RR3-M1) |
 | T4 (conflicts) | no change of text: the interim `=`'s right operand's read or use of the left operand's place through its owner or a carrier of it is a conflict with the operand's checked reborrow, `StrictExclusiveBorrowConflict` for a read through the owner (n03) and `StrictSharedBorrowInvalidated` for a loan the use forms, as T4 already reports them (amended 2026-10-29, review fold: RR1-M1, where this read "the interim `=`'s right operand's use of a carrier of the left operand's place", which left the owner's read it names out); an array element at an index the checker cannot prove distinct from the left operand's overlaps it in the interim rule and in T4's check of the reborrow that replaces the exemption, A.1's fourth paragraph saying so for that check only (n05; added 2026-10-29, review fold: RR2-m3); a call in the right operand that receives a value from which a carrier of the left operand's place can be loaded uses that carrier's loan by T3's sentence (A.32), a conflict with the checked reborrow, `StrictExclusiveBorrowConflict` (m02, m04; added 2026-10-29, review fold: RR3-M1) |
-| T8 (codegen honesty) | no: T8 emits `noalias` only where established against every writer, never on an open place; under the interim rule, its conditions stated over every path and T3 counting a use through a value from which a carrier can be loaded, every accepted in-place `=` meets it (amended 2026-10-29, review fold: RR3-M1: rev 4's conditions accepted m02's `=`, which another path observes while it is bound, so "every accepted in-place `=` meets it" was false of rev 4) |
-| the loan kinds, closed and open places | no; the rule is stated in their terms |
+| T8 (codegen honesty) | no: T8 emits `noalias` only where established against every writer, never on an open place; under the interim rule, its conditions stated over every path, T3 counting a use through a value from which a carrier can be loaded, and a `returned var` closed only because the storage its caller's call initializes is, a global's dynamic initializer checked by the same conditions as an in-place `=` on an open place (A.33), every accepted in-place `=` meets it (amended 2026-10-29, review fold: RR3-M1: rev 4's conditions accepted m02's `=`, which another path observes while it is bound, so "every accepted in-place `=` meets it" was false of rev 4; amended 2026-10-29, review fold: RR4-M1: rev 5 counted p01's `returned var` closed while its storage was a global that `MakeW` reads by name, and p02's `ref` on it the same, so the claim was false of rev 5, where this read "and T3 counting a use through a value from which a carrier can be loaded, every accepted") |
+| the loan kinds, closed and open places | the loan kinds no; the closed places one sentence (A.33 on the temporal page, B.32 in D-SAFE-10's restatement in the log and fork/safe/plan.md): a `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs, a local `var`, a `var` parameter or a temporary being initialized, the caller's own `returned var` or the left operand of an in-place `=`, and a global under its dynamic initializer, the one such storage that is open, has its initializer checked by the interim rule's conditions as an in-place `=` on an open place and is otherwise an `unsafe` formation, `StrictRefFromShared` unmarked, this design's rule, upstream having no global variables (docs/design/README.md:1236-1237); the open places' list, which names a global already, stays (amended 2026-10-29, review fold: RR4-M1, where this row read "no; the rule is stated in their terms") |
 | D-SAFE2-3 to D-SAFE2-5, the value-representation keying of borrowed objects | the keying stays; its one-element clause is read at every depth: the re-derivation relies on it, a right operand that is not copy-represented at every depth holding a borrowed object whose frozen loan T4 and M3 check, and the interim rule keys the in-place case on the same representation read at every depth, which D-SAFE2-3's one-element clause states one level deep (mutation_safety.md:620-622; type_info.cpp:82-89, convert.cpp:283-297), so A.24 and B.27 state it at every depth and A.25 to A.31, B.28 to B.30 the lines that give a copy-represented type no loan (section 0.5's second table; n09; A.30 and A.31, the Value bindings bullet's lead and sentence, added 2026-10-29, review fold: RR3-m2), and a type whose value representation is not known when a generic's body is checked is not copy-represented (A.24; n06, k01) (amended 2026-10-29, review fold: A-RA3-B1, where this read "a pointer-represented right operand is a borrowed object" and "keys the in-place case on the same representation (type_info.cpp:82-89)"; amended 2026-10-29, review fold: RR2-m1, RR2-m2, where this read "no change; the re-derivation relies on it: a right operand that is not copy-represented, or a one-element aggregate whose element is not, holds a borrowed object" and "as D-SAFE2-3's one-element clause reads it") |
 | M7 and D-SAFE-16, the thread-boundary lifetime rule | no change of text; the noalias claim across Carbon-spawned threads rests on it, and W-365's three shapes, Race2's `Plain` write by the spawning thread to a place a scoped thread reads through a `const T*` argument, a global two threads write, and a write through a free pointer to allocator-owned storage whose copy `Core.Thread.Spawn`, which accepts a free loan set (mutation_safety.md:570-572), hands to a detached thread that reads it, are that claim's open gap, closed by W-365's stage 5 contract, a frozen hold for scoped threads and a rule for free storage (A.1's second paragraph, D-SAFE3-3, B.1, B.12, W-365's notes; added 2026-10-29, review fold: RR2-M1; amended 2026-10-29, review fold: RR3-m1, where this read "W-365's two shapes, Race2's `Plain` write by the spawning thread to a place a scoped thread reads through a `const T*` argument and a global two threads write"; the free loan set is the temporal page's vocabulary's, temporal_safety.md:126-129) |
 | `Core.SharedImmutable` and M3's structural write rule | no: M3 still decides what an exempt operation may write through a shared path (`Peek2`, `Peek4` unchanged) |
@@ -871,7 +966,7 @@ each new one once (section 8 item 4).
 | the Debug value-binding flag (D-SAFE2-7) | no |
 | the C++ boundary | no: a C++ function is never core/prelude code, so an operator that calls one is user-written, as before |
 | the Rust mapping (D-SAFE-19) | no |
-| the diagnostic names | none added or renamed: the rule uses `StrictInvalidatingThroughShared`, `StrictSharedBorrowInvalidated`, `StrictExclusiveBorrowConflict`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated`, `StrictSharedImmutableWrite` and `StrictRefFromShared`; `StrictInvalidatingThroughShared`'s message gains a third form, for a `ref` operand that is not exempt, naming what reaches the referent (A.23, B.22; added 2026-10-29, review fold: A-RA3-M2) |
+| the diagnostic names | none added or renamed: the rule uses `StrictInvalidatingThroughShared`, `StrictSharedBorrowInvalidated`, `StrictExclusiveBorrowConflict`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated`, `StrictSharedImmutableWrite` and `StrictRefFromShared`; `StrictInvalidatingThroughShared`'s message gains a third form, for a `ref` operand that is not exempt, naming what reaches the referent (A.23, B.22; added 2026-10-29, review fold: A-RA3-M2); a global's initializer that the interim rule's conditions do not accept is `StrictRefFromShared` unmarked, as a `ref` on a global already is, its message's "`ref` binding `{0}` of `{1}` through a shared path" naming the callee's `returned var` and the global (A.33; added 2026-10-29, review fold: RR4-M1) |
 | safe2-plan.md section 4's matrix | every page row keeps its outcome; new rows for the probe shapes (section 4) |
 
 ### §0.7 Collisions with trunk and the held heads
@@ -892,7 +987,9 @@ and the mirror still at 782a5b740, rev 3's 29a28cdbe not yet mirrored (added
 2026-10-29, review fold: RR2-M1); re-checked by the rev 5 fixer on
 2026-10-29, the 18 heads and trunk unchanged and the mirror moved to
 f6cf71da9, rev 4's commit (a moved head, reported; added 2026-10-29, review
-fold: RR3-M1).
+fold: RR3-M1); re-checked by the rev 6 fixer on 2026-10-29, the 18 heads and
+trunk unchanged and the mirror still at f6cf71da9, rev 5's f29ece09a not yet
+mirrored (added 2026-10-29, review fold: RR4-M1).
 Trunk is **abdc798c6**, a descendant
 of 1c83422a0 by one records-only commit ("ORCHESTRATION: SAFE-2 stopped at its
 plan rev 14 on PRR3-B1; SAFE-3 planned to re-derive the built-in operator
@@ -933,7 +1030,11 @@ heads, all 19, are again exactly 0f22798fb's (fixer2/logs/mergetree.txt; added
 fixer3/bin/dryrun.py at /dev/shm/safe3-fixer3/wt, scratch commit f3963cacd (on
 no branch; removed after): its conflict sets against trunk abdc798c6 and the 18
 heads, all 19, are again exactly 0f22798fb's (fixer3/logs/mergetree.txt; added
-2026-10-29, review fold: RR3-M1).
+2026-10-29, review fold: RR3-M1). For rev 6 the fixer did the same with
+fixer4/bin/dryrun.py at /dev/shm/safe3-fixer4/wt, scratch commit 18910f6fe (on
+no branch; removed after): its conflict sets against trunk abdc798c6 and the 18
+heads, all 19, are again exactly 0f22798fb's (fixer4/logs/mergetree.txt; added
+2026-10-29, review fold: RR4-M1).
 
 ### §0.8 The id re-scan
 
@@ -960,6 +1061,12 @@ the rev 5 fixer on 2026-10-29 over the 167 refs and every worktree: the same
 ids, W-360 to W-366, W-398 and W-399, W-366 only in this plan on the branch and
 the mirror, no ledger past W-363; rev 5 mints no id, W-365 widened rather than
 a residue filed for free storage (added 2026-10-29, review fold: RR3-m1).
+Repeated by the rev 6 fixer on 2026-10-29 over the 167 refs and every
+worktree: the same ids, W-360 to W-366, W-398 and W-399, W-366 only in this
+plan on the branch and the mirror, no ledger past W-363; rev 6 mints no id,
+RR4-M1 being folded at the closed-place premise rather than filed as the
+residue the re-review offered as its alternative, which would have been W-367
+(added 2026-10-29, review fold: RR4-M1).
 
 ### §0.9 SAFE-2's findings that the tree does not carry
 
@@ -1083,7 +1190,18 @@ carrier of the left operand's place and, on an open place, runs no code written
 outside core/prelude"; amended 2026-10-29, review fold: RR1-M1, where this read
 "uses no carrier of the left operand's place or of a place that overlaps it",
 which exempted `x = {.a = x.b, .b = x.a}`, a read through the owner,
-section 0.0).
+section 0.0). A `returned var` is closed because every storage its caller's call
+initializes is closed or bound while the call runs, but for a global under its
+dynamic initializer, the one such storage that is open, so this design, upstream
+having no global variables, accepts the initializer of a global whose type is
+not copy-represented at every depth only under the interim rule's conditions for
+an in-place `=` on an open place, the global its left operand and the
+initializer its right operand, whatever the rewrite's status, and makes it
+otherwise an `unsafe` formation (`var g: T = unsafe F(1);`),
+`StrictRefFromShared` unmarked (A.33, B.32; added 2026-10-29, review fold:
+RR4-M1: rev 5 counted a `returned var` closed whatever storage it named, so
+p01's `r = {.u = MakeU(k), .w = MakeW()}` was exempt while `MakeW` reads by
+name the global that `r` is, section 0.0).
 
 ### §1.2 Decisions
 
@@ -1092,11 +1210,12 @@ Each under R29, with its break condition.
 -   **D-SAFE3-1 — The baseline.** Upstream at 9192ee003 (section 0.1): no
     quoted passage changed since SAFE-2 read it, the one moved file
     (details.md, by one line) cited at the tip's numbers, PR 67's 273 quotes
-    and 89 checks passing, and this plan's 116 quote rows passing (rev 1's 67,
-    rev 2's 33, rev 3's 10 and rev 4's 6; amended 2026-10-29, review fold:
-    A-RA3-M1, A-RA3-m3; amended 2026-10-29, review fold: RR1-m1, where this
-    read "100"; amended 2026-10-29, review fold: RR2-m2, where this read
-    "110").
+    and 89 checks passing, and this plan's 123 quote rows passing (rev 1's 67,
+    rev 2's 33, rev 3's 10, rev 4's 6 and rev 6's 7; amended 2026-10-29,
+    review fold: A-RA3-M1, A-RA3-m3; amended 2026-10-29, review fold: RR1-m1,
+    where this read "100"; amended 2026-10-29, review fold: RR2-m2, where this
+    read "110"; amended 2026-10-29, review fold: RR4-M1, where this read
+    "116").
     Break
     condition: the implementer's re-fetch finds a newer tip under which a line
     this plan quotes fails; the block that rests on it stops and this plan is
@@ -1194,8 +1313,14 @@ Each under R29, with its break condition.
     "gives globals a rule", and named no free pointer). Within one thread a path
     is every path the program can take, a value passed to a call from which a
     carrier of the referent can be loaded among them, which T3 counts as a use
-    of that carrier (A.32; added 2026-10-29, review fold: RR3-M1). Anything else
-    is
+    of that carrier (A.32; added 2026-10-29, review fold: RR3-M1), and the
+    name of a global, which reaches a `returned var` that the global's dynamic
+    initializer fills: (a) and (b), like (i) to (iii), rest on the closed
+    places, in which a `returned var` is closed because every storage its
+    caller's call initializes is closed or bound while the call runs but a
+    global's, so the global's initializer is checked by the interim rule's
+    conditions as an in-place `=` on an open place (A.33, D-SAFE3-5; added
+    2026-10-29, review fold: RR4-M1). Anything else is
     user-written: a `ref` binding under the general rule, a checked reborrow on
     a closed place (T4) and M3(d)'s `StrictInvalidatingThroughShared` through a
     shared path. Labelled this design's: upstream says the `ref` is `noalias`
@@ -1206,7 +1331,15 @@ Each under R29, with its break condition.
     conditions are narrowed until none exists, never a clause added about who
     wrote the code; m02 met it at rev 4, and the interim rule's (ii) and T3's
     notion of a use were completed (D-SAFE3-5, A.32; added 2026-10-29, review
-    fold: RR3-M1). A path from another Carbon-spawned thread is a data race and
+    fold: RR3-M1); p01 met it at rev 5, `var g: S = F(1);` with `F`'s
+    `returned var r` being `g` and its exempt
+    `r = {.u = MakeU(k), .w = MakeW()}` running `MakeW`, which reads `g` by
+    name (11 12 11 12), and p02 the same through `Mod(ref r)`, and the closed
+    places' premise was
+    completed, a `returned var` closed only because the storage its caller's
+    call initializes is and a global's initializer checked as an in-place `=`
+    on an open place (A.33, B.32; added 2026-10-29, review fold: RR4-M1). A
+    path from another Carbon-spawned thread is a data race and
     M7's: W-365 owns the three shapes known, Race2, a global and a free pointer
     a detached thread receives, a fourth is added to W-365 by a dated note, and
     the thread-boundary lifetime rule, not (a) and (b), is narrowed for it
@@ -1317,7 +1450,33 @@ Each under R29, with its break condition.
     its owner or a carrier, every carrier of a loan on it being in the body's
     view by the definition of a closed place (temporal_safety.md:134-143)",
     which a callee loading the carrier `p` through `&p` refutes, m02: 3 4 3 4,
-    the right operand formed first 3 4 1 2). A type is
+    the right operand formed first 3 4 1 2). A closed place that is a
+    `returned var` is reached by no other name, because the storage it names
+    is the place its caller's call initializes, "can be `&y`" for `y = F();`
+    (assignment.md:111-113), and every such storage is closed or bound while
+    the call runs: a local `var`, a `var` parameter or a temporary being
+    initialized, which nothing else names yet, the caller's own `returned var`,
+    closed in turn, or the left operand of an in-place `=`, whose interim rule
+    counts the call as evaluated while that operand is bound; the one such
+    storage that is open is a global under its dynamic initializer, which every
+    function reaches by name, so the initializer of a global whose type is not
+    copy-represented at every depth is checked by these conditions as an
+    in-place `=` on an open place, the global its left operand and the
+    initializer its right operand, whatever the rewrite's status, the
+    initialization being in place by design (pattern_matching.md:858-867), and
+    is otherwise an `unsafe` formation (`var g: T = unsafe F(1);`),
+    `StrictRefFromShared` unmarked, as a `ref` on a global is (A.33 on the
+    temporal page, B.32 in D-SAFE-10; labelled this design's, upstream having
+    no global variables, docs/design/README.md:1236-1237). With it every path
+    to a `returned var`'s storage passes through the caller's checked
+    initialization, and a `ref` taken on a `returned var`, p02's `Mod(ref r)`,
+    is a checked reborrow of storage no other name reaches (added 2026-10-29,
+    review fold: RR4-M1: rev 5's argument took a `returned var` for a closed
+    local whatever its caller, so p01's `r = {.u = MakeU(k), .w = MakeW()}`,
+    `r` being the global `g` under `var g: S = F(1);`, kept the exemption while
+    `MakeW` reads `g` by name, 11 12 11 12, the right operand formed first
+    11 12 1 2; the fork's programs and examples declare three globals, the cost
+    measured in D-SAFE3-12). A type is
     copy-represented at every depth when it is copy-represented and, if its
     representation is a one-element tuple or struct's (the type, or an adapter,
     `const` or `MaybeUnformed` of one), its element is copy-represented at
@@ -1400,14 +1559,23 @@ Each under R29, with its break condition.
     review fold: A-RA3-B1, A-RA3-M1, where this read "the toolchain routes `=`
     through `AssignWith` (W-366's discharge)" and "or
     type_completion.cpp:576-577's TODO makes a small aggregate copy-represented,
-    moving it to the by-copy case").
+    moving it to the by-copy case"). The check of a global's initializer stays
+    when the interim rule is withdrawn, initialization being in place by
+    design; break condition: upstream states global variables and their
+    initialization, whose absence docs/design/README.md:1239-1240 calls
+    provisional, or the toolchain forms a global's initializer in a temporary
+    before it initializes the global; the check follows by a dated mark (added
+    2026-10-29, review fold: RR4-M1).
 -   **D-SAFE3-6 — Everything else stays.** T1 to T8 but for T3's one sentence
     that a use of a value from which a carrier can be loaded is a use of the
     carrier (A.32 and B.31, the root of RR3-M1: without it T4 sees no conflict
     when a call loads a carrier through such a value, for the reborrow that
     replaces the exemption and for every exclusive or frozen loan; added
     2026-10-29, review fold: RR3-M1), the Store rule, the loan
-    kinds, closed and open places, D-SAFE2-3 to D-SAFE2-5 (D-SAFE2-3's
+    kinds, closed and open places but for the closed places' sentence on a
+    `returned var` and a global's initializer (A.33 and B.32, the root of
+    RR4-M1: without it a `returned var` was closed whatever storage it named;
+    added 2026-10-29, review fold: RR4-M1), D-SAFE2-3 to D-SAFE2-5 (D-SAFE2-3's
     one-element clause read at every depth, D-SAFE3-5; amended 2026-10-29,
     review fold: RR2-m1), M7 and D-SAFE-16, on which the claim across threads
     rests (W-365; added 2026-10-29, review fold: RR2-M1),
@@ -1422,7 +1590,10 @@ Each under R29, with its break condition.
     on `i32` or the interim `=`, so the message texts gain a third form, for a
     `ref` operand that is not exempt, naming what reaches the referent (A.23 on
     the mutation page, B.22 in fork/safe/plan.md section 1.6; added 2026-10-29,
-    review fold: A-RA3-M2). Break condition: stage 4 (W-148) finds the reused
+    review fold: A-RA3-M2), and a global's initializer that the interim rule's
+    conditions do not accept is `StrictRefFromShared`, as a `ref` on a global
+    is (added 2026-10-29, review fold: RR4-M1). Break condition: stage 4
+    (W-148) finds the reused
     diagnostics misleading at the interim `=`; a name is added by a dated edit;
     or a page example or fork program is found that T3's sentence newly
     rejects, none of section 4's rows and no statement D-SAFE3-12 counts being
@@ -1555,9 +1726,32 @@ Each under R29, with its break condition.
     neither (ii)'s clause nor T3's sentence newly rejects any of them; and no
     page example passes to a call a pointer to a place that holds a carrier but
     the temporal page's `Wild3`, whose `Load(unsafe &u.p)` is rejected already
-    (added 2026-10-29, review fold: RR3-M1). Break condition: a later count
-    shows the cost larger than the pages state; the count is added by a dated
-    edit, the rule unchanged.
+    (added 2026-10-29, review fold: RR3-M1). Newly rejected by the closed
+    places' check of a global's initializer (A.33), each with its remedy: the
+    initializer of a global whose type is not copy-represented at every depth
+    that runs code written outside core/prelude, p01's `var g: S = F(1);`, the
+    program initializing the global from literals and prelude calls over them
+    and assigning it in a function from a value formed first,
+    `var v: S = F(1); g = v;` for a `Plain` `S`, or marking the initializer
+    `unsafe`. Measured for rev 6 (fixer4/bin/global_scan.py,
+    fixer4/logs/global-fork.txt and global-wide.txt): the fork's conformance
+    programs, the pages' `carbon` blocks and examples/ declare three globals;
+    examples/advent2024/io_utils.carbon:68's `unread_char`, initialized by the
+    prelude's `Core.Optional(CharOrEOF).None()`, runs only core/prelude code
+    and keeps its initializer, and the interop programs'
+    `var total: Cpp.std.atomic(i64);`
+    (cpp_atomic_global_counter_diff.carbon:12) and `var gm: Cpp.std.mutex;`
+    (cpp_thread_mutex_raii.carbon:44), each default-constructed in place by
+    C++ code through the prelude's `DefaultOrUnformed` (section 0.3), are newly
+    rejected read as Strict files, a Permissive file or an `unsafe` initializer
+    written out being their remedy; of the 748 file-scope `var`s in toolchain
+    testdata and core/ (none in core/), 111 of a type other than an integer,
+    floating-point, `bool`, `char` or pointer type have an initializer that
+    calls a function other than `Core`'s, an upper bound on those newly
+    rejected read as Strict files, the testdata being goldens of today's
+    mode-free toolchain (added 2026-10-29, review fold: RR4-M1). Break
+    condition: a later count shows the cost larger than the pages state; the
+    count is added by a dated edit, the rule unchanged.
 
 ### §1.3 The noalias claim, probe by probe
 
@@ -1602,9 +1796,13 @@ where this ended "in every accepted program:"):
 | m02, m04 (rev 5) | `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x`, and with `ref p`: the right operand reads no open place and uses no carrier of `x` itself, but passes to a call a value from which one, `p`, can be loaded, so (ii) fails as rev 5 states it, and T3's sentence (A.32) counts each call as a use of `p`'s loan, live while the checked reborrow is: T4, `StrictExclusiveBorrowConflict` (rev 4's (ii) exempted it, the model's closed-place argument counting carriers but not the paths to them; RR3-M1); the control that passes `p` by value fails (ii) as it stood | rejected; the remedy, the right operand formed first, prints 3 4 1 2 |
 | m01 (rev 5) | the same shapes for `{.a: i32, .b: i32}` with calls that return `i32`, a struct holding `&q` passed by value, and the left operand `s.v` with its carrier in the sibling field `s.p`: each passes to a call a value from which a carrier of the left operand's place can be loaded, so (ii) fails and T4 rejects as for m02 | rejected; the nightly runs the calls before the stores (2 1, 4 3, 6 5), the stricter criterion's cost |
 | m03 (rev 5) | `F(x, &x)` with `F`'s by-value `v` of `W2`: `v` binds `x.s.t` as a borrowed object (A.24, A.31), so passing `&x`, a writable carrier, to the call while `v`'s frozen loan lives is `StrictBorrowedObjectMutated` (T4), and the same for `G(y, &y)` one level deep; `H(z, &z)` for `{.s: {.n: i32}}`, copy-represented at every depth, binds no borrowed object and is accepted | rejected but `H`; the nightly copies each argument at the call (1 3 6), order-only |
+| p01 (rev 6) | `var g: S = F(1);`: `F`'s `returned var r` is `g`'s storage (`__global_init` calls `F(@g, 1)`), and `r = {.u = MakeU(k), .w = MakeW()}` runs `MakeW`, which reads `g.u` by name; rev 5 counted `r` closed, so (i) to (iii) held and the `=` was exempt while another path reads its referent (RR4-M1). Under rev 6 `g` is the one open storage a `returned var` can name (A.33): its initializer runs `F`, code written outside core/prelude, while `g` is bound, so it is `StrictRefFromShared` unless `unsafe`, and inside `F`, checked as before, `r` names storage no other name reaches | rejected at the global's initializer; with it rejected, no accepted program reaches `r` but through `r` (11 12 11 12 in place; the remedy formed first, itself a global's initializer and rejected too, 11 12 1 2) |
+| p02 (rev 6) | `var g: S = Init(1);` with `Init` passing `ref r` to `Mod`, whose in-place `=` on its `ref` parameter runs `MakeW`, which reads `g` by name: the same root, the `ref` a checked reborrow of a `returned var` that names `g`; rejected at the global's initializer as p01 | rejected; 21 22 21 22 |
+| p03 (rev 6) | the control: `Take(g)` copies the global into the `var` parameter's own storage, which nothing else names, so `s = {.u = MakeU(k), .w = MakeW()}` on the closed `s` is exempt and `MakeW`'s read of `g` reads another place | accepted; nothing but the operation reaches `s` (31 32 1 2, `g` unchanged) |
+| p04, p05 (rev 6) | `x = y` for `{.c: C, .d: C}`, `C` with a user `Copy` that loads `**self.q` (p04, `y` holding `&p`) or `*self.q` (p05, `y` holding `p`) for `p = &x.c.n`: the user's `Copy` makes the member assignment user-written (D-SAFE3-4, as z2's), so the `=` is a checked reborrow of `x`, and `y` is a value from which a carrier of `x.c.n` can be loaded (p04) or a carrier (p05), whose use by the in-place copies T3 counts (A.32): T4, `StrictExclusiveBorrowConflict`; (ii) fails too | rejected; the in-place copies print 51 512, the right operand formed first 51 52 |
 | n08 (rev 4) | an adapter of an adapter of `{.c: C}` has `{.c: C}`'s representation, which is not copy-represented at every depth (RR1-m1's definition by representation), so `*q = *p` is n02's case | rejected |
 | n09 (rev 4) | `W2` is not copy-represented at every depth, so `let v: W2 = x` binds `x.s.t` as a borrowed object (A.24, B.27; RR2-m1) and `x.s.t.a = 5` is `StrictBorrowedObjectMutated`; `AssignFrom(ref *q, *p)` with `p == q` is D-SAFE3-3 (b)'s `StrictBorrowFromShared` | rejected; the nightly reads `x.s.t` early (1; 2 1), order-only |
-| v17, v18, v18b, v26, b_p7, y1, b_p9, q06d, b_p6_assign_tuple, q06i, q04b, s12 to s12c, s14b, ra02, n06b | no evidence, no assignment, or a compile error | (section 0.3) |
+| v17, v18, v18b, v26, b_p7, y1, b_p9, q06d, b_p6_assign_tuple, q06i, q04b, s12 to s12c, s14b, ra02, n06b, g01, g02 (g01 and g02 added 2026-10-29, review fold: RR4-M1) | no evidence, no assignment, or a compile error | (section 0.3); g01 and g02 show that a local `var` and a global are named by no other path while their initializer runs but through code that runs, which A.33's check covers |
 | W-365's Race2, a global two threads write (rev 4) and a free pointer a detached thread receives (rev 5; no probe: NEW syntax, the nightly having no `Core.Thread`) | `x = 1` is exempt by (a) and (b), an `i32` assigned a literal, while a scoped thread reads `x` through a `const i32*` argument, and `*p = 1` through a free `p` is exempt while the detached thread `Core.Thread.Spawn` started with `p`'s `const i32*` copy reads it, paths from another thread that (a) and (b) do not see: M7's, whose rule as stated accepts them (RR2-M1; the free pointer added 2026-10-29, review fold: RR3-m1) | not established across threads until W-365's stage 5 contract holds, under whose frozen hold `x = 1` is `StrictBorrowedObjectMutated` (T4) and which gives free storage, globals and allocator-owned storage, a rule (D-SAFE3-3; amended 2026-10-29, review fold: RR3-m1, where this read "gives globals a rule") |
 
 ## §2 Spec
@@ -1679,13 +1877,13 @@ and checks that each anchor is found once.
 
 | file | blocks | what changes |
 | --- | --- | --- |
-| docs/design/safety/temporal_safety.md | A.0 (one place), A.1 to A.6, A.25, A.26, A.32 | the `ref` bindings section's second paragraph replaced by four (the rule, the exemption, the user-written operators, the interim `=`); the superseded paragraph quoted whole in a blockquote at the section's end; the kinds paragraph's sentence; the D-SAFE-8 decision's clause and sentence; two rewraps (RB-m3); T2's value-binding bullet and the reborrow paragraph's by-value `bound self` keyed at every depth (A.25, A.26, added 2026-10-29, review fold: RR2-m1); T3's sentence on a use through a value from which a carrier can be loaded (A.32, added 2026-10-29, review fold: RR3-M1) |
+| docs/design/safety/temporal_safety.md | A.0 (one place), A.1 to A.6, A.25, A.26, A.32, A.33 | the `ref` bindings section's second paragraph replaced by four (the rule, the exemption, the user-written operators, the interim `=`); the superseded paragraph quoted whole in a blockquote at the section's end; the kinds paragraph's sentence; the D-SAFE-8 decision's clause and sentence; two rewraps (RB-m3); T2's value-binding bullet and the reborrow paragraph's by-value `bound self` keyed at every depth (A.25, A.26, added 2026-10-29, review fold: RR2-m1); T3's sentence on a use through a value from which a carrier can be loaded (A.32, added 2026-10-29, review fold: RR3-M1); the closed places' sentence on a `returned var` and a global's initializer (A.33, added 2026-10-29, review fold: RR4-M1) |
 | docs/design/safety/mutation_safety.md | A.0 (one place), A.7 to A.18, A.23, A.24, A.27, A.28, A.30, A.31 | M3's built-in clause replaced, quoted whole in a blockquote at M3's end; M1's sentence; the D-SAFE-9 decision's clause; RB-M3's pointer in the overview, M7, Data races and the facets and the D-SAFE-16 bullet, free storage named (amended 2026-10-29, review fold: RR3-m1); RA-m1's sentence on `IndirectIndexWith.Ref`; RA-m2's bullet; two rewraps; `StrictInvalidatingThroughShared`'s third message form (A.23, added 2026-10-29, review fold: A-RA3-M2); the Value bindings one-element clause, M8's first sentence and the D-SAFE-17 decision keyed at every depth (A.24, A.27, A.28, added 2026-10-29, review fold: RR2-m1, RR2-m2), and the Value bindings bullet's lead and sentence (A.30, A.31, added 2026-10-29, review fold: RR3-m2) |
 | docs/design/values.md | A.29 | SAFE-2's pinned note keyed at every depth (added 2026-10-29, review fold: RR2-m1) |
 | docs/design/safety/README.md | A.19, A.20 | the kinds paragraph's sentence; RB-M3's pointer in the data-race paragraph |
 | docs/design/safety/initialization_safety.md, spatial_safety.md | A.21, A.22 | one rewrap each (RB-m3) |
-| fork/decision-log.md | B.1, A.0, B.2, B.3, B.4, B.5, B.24, B.25, B.27, B.28, B.31 | D-SAFE-8's operator clause (B.1), D-SAFE-9's clause, D-SAFE-16's pointer, D-SAFE-17's RA-m2 clause, a rewrap, a SAFE-3 sentence in RG-1's paragraph of the F-013 entry; the F-013 entry's two pointers to SAFE-2's PR 67 note commit re-pointed (B.24, B.25, added 2026-10-29, review fold: B-m3); D-SAFE-17's one-element clause and D-SAFE-10's T2 clause keyed at every depth (B.27, B.28, added 2026-10-29, review fold: RR2-m1); D-SAFE-10's T3 clause (B.31, added 2026-10-29, review fold: RR3-M1) |
-| fork/safe/plan.md | B.1, A.0 (two places), B.2, B.3, B.6 to B.11, B.22, B.23, B.27 to B.31 | section 0.3's D-SAFE block as the log's, D-SAFE-10's T3 clause among it (B.31, added 2026-10-29, review fold: RR3-M1); section 1.5's sentence and section 1.6's clause; the pointer paragraph after the realigned one; the "Realigned notes (SAFE-2)" section's SAFE-3 paragraph; three rewraps; section 1.6's message instance (B.22, A-RA3-M2) and the realigned notes' pointer to SAFE-2's note commit (B.23, B-m3; both added 2026-10-29, review fold); D-SAFE-17's and D-SAFE-10's clauses as the log's, section 1.6's M8 sentence and the realigned notes' W-348 summary keyed at every depth (B.27 to B.30, added 2026-10-29, review fold: RR2-m1) |
+| fork/decision-log.md | B.1, A.0, B.2, B.3, B.4, B.5, B.24, B.25, B.27, B.28, B.31, B.32 | D-SAFE-8's operator clause (B.1), D-SAFE-9's clause, D-SAFE-16's pointer, D-SAFE-17's RA-m2 clause, a rewrap, a SAFE-3 sentence in RG-1's paragraph of the F-013 entry; the F-013 entry's two pointers to SAFE-2's PR 67 note commit re-pointed (B.24, B.25, added 2026-10-29, review fold: B-m3); D-SAFE-17's one-element clause and D-SAFE-10's T2 clause keyed at every depth (B.27, B.28, added 2026-10-29, review fold: RR2-m1); D-SAFE-10's T3 clause (B.31, added 2026-10-29, review fold: RR3-M1); D-SAFE-10's closed places, a `returned var` and a global's initializer (B.32, added 2026-10-29, review fold: RR4-M1) |
+| fork/safe/plan.md | B.1, A.0 (two places), B.2, B.3, B.6 to B.11, B.22, B.23, B.27 to B.32 | section 0.3's D-SAFE block as the log's, D-SAFE-10's T3 clause and closed places among it (B.31, added 2026-10-29, review fold: RR3-M1; B.32, added 2026-10-29, review fold: RR4-M1); section 1.5's sentence and section 1.6's clause; the pointer paragraph after the realigned one; the "Realigned notes (SAFE-2)" section's SAFE-3 paragraph; three rewraps; section 1.6's message instance (B.22, A-RA3-M2) and the realigned notes' pointer to SAFE-2's note commit (B.23, B-m3; both added 2026-10-29, review fold); D-SAFE-17's and D-SAFE-10's clauses as the log's, section 1.6's M8 sentence and the realigned notes' W-348 summary keyed at every depth (B.27 to B.30, added 2026-10-29, review fold: RR2-m1) |
 | fork/inventory/work-items.json (PR 53's ledger) | B.12 to B.14 | a note on W-148 and on W-149; W-365 and W-366 filed after W-150, W-365 over free storage (amended 2026-10-29, review fold: RR3-m1) |
 | fork/safe/safe2-plan.md | B.15 to B.21, B.26 | dated pointer marks: a Status paragraph, D-SAFE2-6, section 3 step 5, section 8.20 before F1, the Sign-off, Appendix C and Appendix D; PRR3-m1's break condition closed (B.26, added 2026-10-29, review fold: B-m6) |
 
@@ -1700,12 +1898,13 @@ no heading, bullet, numbered item or table row to any file (section 8 item 1).
 ### §2.3 Commit 2, the records
 
 "SAFE-3 (2/2): records" edits this plan alone: the Status paragraph's first
-sentence, the one that begins "**Status:** rev" (at rev 5 it reads "**Status:**
-rev 5 -- NOT signed off pending re-review round 4: RR3-M1.", and the
+sentence, the one that begins "**Status:** rev" (at rev 6 it reads "**Status:**
+rev 6 -- NOT signed off pending re-review round 5: RR4-M1.", and the
 signed-off revision the implementer works from replaces it; amended
 2026-10-29, review fold: RR1-M1, where this quoted rev 2's; amended 2026-10-29,
 review fold: RR2-M1, where this quoted rev 3's; amended 2026-10-29, review
-fold: RR3-M1, where this quoted rev 4's), becomes the
+fold: RR3-M1, where this quoted rev 4's; amended 2026-10-29, review fold:
+RR4-M1, where this quoted rev 5's), becomes the
 implementation's state, dated; and a new section 8.1, "Implementation record",
 with commit 1's hash, every measurement of section 8 as run on commit 1's tree
 (prek passes, the R31 counts before and after per file, rumdl, the dry-run's
@@ -1734,8 +1933,8 @@ paths only (R20); each message recording the prek fixpoint, the R31 counts
 before and after, rumdl, the dry run and the nightly compiles, and ending after
 a blank line with the session's two attribution trailers.
 
-1.  **Dry run.** The implementer copies this plan's scripts, the rev 5 fixer's
-    fixer3/bin/dryrun.py, checktree.py, pw.py and wrap.py (section 8 item 4;
+1.  **Dry run.** The implementer copies this plan's scripts, the rev 6 fixer's
+    fixer4/bin/dryrun.py, checktree.py, pw.py and wrap.py (section 8 item 4;
     amended 2026-10-29, review fold: RR1-M1, where this named the rev 2 fixer's
     bin/, whose checktree.py checks rev 2's interim-rule sentence; amended
     2026-10-29, review fold: RR2-M1, where this named the rev 3 fixer's
@@ -1744,7 +1943,9 @@ a blank line with the session's two attribution trailers.
     or the keying at every depth; amended 2026-10-29, review fold: RR3-M1,
     where this named the rev 4 fixer's fixer2/bin/, which neither applies A.30
     to A.32 and B.31 nor checks rev 5's sentence, gloss, T3 sentence and free
-    storage), to its own
+    storage; amended 2026-10-29, review fold: RR4-M1, where this named the
+    rev 5 fixer's fixer3/bin/, which neither applies A.33 and B.32 nor checks
+    the closed `returned var` and a global's initializer), to its own
     scratch, runs dryrun.py on a fresh `git archive` of the branch head over
     docs/design and fork/, reading the texts from this plan, with the
     placeholders filled at their real widths, and gets "ALL OK" before it edits
@@ -1775,8 +1976,8 @@ a blank line with the session's two attribution trailers.
     W-365, W-366 and the six items on PR 67's ledger, this plan and
     safe2-plan.md's marks. Reviewer A, fidelity to upstream's text and to the
     toolchain's behavior: every quote re-read at a freshly fetched tip by sha,
-    PR 67's checks and this plan's 116 rows re-run (100 before rev 3, 110
-    before rev 4), every claim about evaluation
+    PR 67's checks and this plan's 123 rows re-run (100 before rev 3, 110
+    before rev 4, 116 before rev 6), every claim about evaluation
     order, thunks, conversions, in-place initialization or value representation
     checked by a nightly probe (R30) or by upstream's checker source at the tip.
     Reviewer B, soundness of the safety argument and consistency of every copy:
@@ -1874,7 +2075,10 @@ RR2-M1, RR2-m1, RR2-m2, RR2-m3), and again under rev 5's conditions over every
 path and T3's sentence, no example passing to a call a value from which a
 carrier can be loaded but the temporal page's `Wild3`, rejected already, and
 none handing a free pointer to a detached thread (added 2026-10-29, review
-fold: RR3-M1, RR3-m1); none changes:
+fold: RR3-M1, RR3-m1), and again under rev 6's closed places, no example
+declaring a global variable, the temporal page's `GetGlobalHolder()` returning
+a pointer to one whose initializer no example shows (added 2026-10-29, review
+fold: RR4-M1); none changes:
 
 | example | operators re-traced | SAFE-3 |
 | --- | --- | --- |
@@ -1914,6 +2118,8 @@ describes, takes A.23's third message form, and each such row says so (amended
 | W-365's Race2, `x = 1` while a scoped thread reads `x` through a `const i32*` (rev 4) | accepted | accepted: within one thread the exemption's claim holds, across threads it waits for W-365, under whose frozen hold `x = 1` is `StrictBorrowedObjectMutated` | the same | none (NEW syntax) |
 | a call loading the left operand's carrier through `&p` or `ref p` while the in-place `=` writes, `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x` (rev 5) | accepted, prints 3 4 3 4 | `StrictExclusiveBorrowConflict` (T4, (ii) failing on the value passed and T3's sentence counting the call as a use of `p`'s loan; rev 4 exempted it, amended 2026-10-29, review fold: RR3-M1); remedy `var v: T = {...}; x = v;` prints 3 4 1 2 | accepted, 3 4 1 2 | m02, m04, m01 |
 | a write through a free pointer that `Core.Thread.Spawn` hands a detached thread, `*p = 1` (rev 5) | accepted | accepted: within one thread the claim holds, across threads it waits for W-365's rule for free storage | the same | none (NEW syntax; added 2026-10-29, review fold: RR3-m1) |
+| a global initialized by a call whose `returned var` is the global's storage, `var g: S = F(1);` with `F`'s `r = {.u = MakeU(k), .w = MakeW()}` and `MakeW` reading `g` by name, or `F` passing `ref r` to a function whose `=` does (rev 6) | accepted, prints 11 12 11 12 (21 22 21 22 through the `ref`) | `StrictRefFromShared` at the global's initializer, which runs code written outside core/prelude while the open `g` is bound (A.33, B.32, this design's rule, upstream having no global variables; rev 5 accepted it, amended 2026-10-29, review fold: RR4-M1); remedy: initialize `g` from literals and prelude calls and assign it in a function from a value formed first, `var v: S = F(1); g = v;`, or mark the initializer `unsafe` | the same (initialization stays in place) | p01, p02, p03 (the `var` parameter's copy, accepted) |
+| `x = y` for `{.c: C, .d: C}`, `C` with a user `Copy` that loads through `y`'s `&p` or `p` for `p = &x.c.n` (rev 6) | accepted, prints 51 512 | `StrictExclusiveBorrowConflict` (T4: the user's `Copy` makes the member assignment user-written, D-SAFE3-4, and T3 counts the copies' use of `y`, A.32; (ii) fails too); remedy: a right operand that holds no carrier of the left operand's place, or the assignment marked `unsafe` | the same | p04, p05 |
 
 ## §5 Scoreboard
 
@@ -1926,16 +2132,19 @@ commit's tree. Gap row 89 and the bullet are unchanged.
 
 ## §6 Churn and collisions
 
-Measured on the rev 5 fixer's scratch commit f3963cacd against 0f22798fb (`git
+Measured on the rev 6 fixer's scratch commit 18910f6fe against 0f22798fb (`git
 diff --numstat`, added and removed, the placeholders filled at their widths):
-temporal_safety.md 345 and 133, mutation_safety.md 331 and 190,
+temporal_safety.md 389 and 150, mutation_safety.md 331 and 190,
 safety/README.md 25 and 13, initialization_safety.md 2 and 2, spatial_safety.md
-2 and 2, values.md 12 and 9, fork/decision-log.md 406 and 272, fork/safe/plan.md
-461 and 291, fork/inventory/work-items.json 30 and 2, fork/safe/safe2-plan.md 72
-and 35, the log's and fork/safe/plan.md's growth being mostly B.27's, B.28's
-and B.31's rewraps of the D-SAFE-17 and D-SAFE-10 paragraphs (amended
-2026-10-29, review fold: RR3-M1, RR3-m1, RR3-m2, where rev 4's were
-cb5ea2d5f's, temporal_safety.md 321 and 124, mutation_safety.md 307 and 180,
+2 and 2, values.md 12 and 9, fork/decision-log.md 429 and 282, fork/safe/plan.md
+484 and 301, fork/inventory/work-items.json 30 and 2, fork/safe/safe2-plan.md 72
+and 35, the log's and fork/safe/plan.md's growth being mostly B.27's, B.28's,
+B.31's and B.32's rewraps of the D-SAFE-17 and D-SAFE-10 paragraphs (amended
+2026-10-29, review fold: RR4-M1, where rev 5's were f3963cacd's,
+temporal_safety.md 345 and 133, the log 406 and 272 and fork/safe/plan.md 461
+and 291; amended 2026-10-29, review fold: RR3-M1, RR3-m1, RR3-m2, where rev
+4's were cb5ea2d5f's, temporal_safety.md 321 and 124, mutation_safety.md 307 and
+180,
 safety/README.md 24 and 13, the log 387 and 264 and fork/safe/plan.md 442 and
 283; amended 2026-10-29, review
 fold: B-M1, B-m2, where rev 1's figures were 34c19b364's with the placeholders
@@ -1969,7 +2178,12 @@ Risks:
     shapes, Race2 and a global"). Hit at rev 4 by m02, a call that loads the
     left operand's carrier through `&p`, and answered at the model's root, T3's
     notion of a use, with (ii) over every path (D-SAFE3-5, A.32; added
-    2026-10-29, review fold: RR3-M1).
+    2026-10-29, review fold: RR3-M1). Hit at rev 5 by p01 and p02, a
+    `returned var` whose storage a global's dynamic initializer makes the
+    global, read by name while its in-place `=` or a `ref` on it is bound, and
+    answered at the closed places' premise, a global's initializer checked as
+    an in-place `=` on an open place (D-SAFE3-5, A.33, B.32; added 2026-10-29,
+    review fold: RR4-M1).
 -   **R-2 the interim `=` changes under the rule.** Falsifier: an upstream or
     fork commit that routes `=` through `AssignWith`, runs the old value's
     destructor at the `=` (handle_operator.cpp:119-120), initializes a
@@ -2057,20 +2271,22 @@ For commit 1, each fix commit and each records commit:
     (added 2026-10-29, review fold: RR2-m1). Expected after commit 1, measured
     on the dry run with every placeholder filled at its real width
     (`2026-10-30`, nine-character shas): every heading, bullet, numbered and row
-    count unchanged, the lines 861, 1674, 1868, 595, 758, 3221, 8451, 11797 and
-    1588 (amended 2026-10-29, review fold: RR3-M1, RR3-m1, RR3-m2, where rev 4's
-    were 860, 1660, 1853, 3210 and 8440 for safety/README.md,
-    mutation_safety.md, temporal_safety.md, fork/safe/plan.md and the log;
-    amended 2026-10-29, review fold: B-M1, where these were rev 1's 859, 1630,
-    1803, 595, 758, 3160, 8400 and 11796, measured with the six-character
-    `<date>`; amended 2026-10-29, review fold: RR1-M1, RR1-m1, where rev 2's
-    were 1826, 3185 and 8419 for temporal_safety.md, fork/safe/plan.md and the
-    log; amended 2026-10-29, review fold: RR2-M1, RR2-m1, RR2-m2, RR2-m3, where
-    rev 3's were 1646, 1830, 3189 and 8423 for mutation_safety.md,
-    temporal_safety.md, fork/safe/plan.md and the log, with no values.md). Any
-    other change is a defect of this plan: the implementer stops at a plan
-    revision, never rephrasing reviewed text (amended 2026-10-29, review fold:
-    B-M1, where this read "a defect to repair by rephrasing").
+    count unchanged, the lines 861, 1674, 1895, 595, 758, 3234, 8464, 11797 and
+    1588 (amended 2026-10-29, review fold: RR4-M1, where rev 5's were 1868, 3221
+    and 8451 for temporal_safety.md, fork/safe/plan.md and the log; amended
+    2026-10-29, review fold: RR3-M1, RR3-m1, RR3-m2, where rev 4's were 860,
+    1660, 1853, 3210 and 8440 for safety/README.md, mutation_safety.md,
+    temporal_safety.md, fork/safe/plan.md and the log; amended 2026-10-29,
+    review fold: B-M1, where these were rev 1's 859, 1630, 1803, 595, 758, 3160,
+    8400 and 11796, measured with the six-character `<date>`; amended
+    2026-10-29, review fold: RR1-M1, RR1-m1, where rev 2's were 1826, 3185 and
+    8419 for temporal_safety.md, fork/safe/plan.md and the log; amended
+    2026-10-29, review fold: RR2-M1, RR2-m1, RR2-m2, RR2-m3, where rev 3's were
+    1646, 1830, 3189 and 8423 for mutation_safety.md, temporal_safety.md,
+    fork/safe/plan.md and the log, with no values.md). Any other change is a
+    defect of this plan: the implementer stops at a plan revision, never
+    rephrasing reviewed text (amended 2026-10-29, review fold: B-M1, where this
+    read "a defect to repair by rephrasing").
 2.  `cd /home/user/carbon-safe && XDG_CACHE_HOME=<a private dir under the
     scratchpad's safe3/implementer/>
     SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2083,8 +2299,8 @@ For commit 1, each fix commit and each records commit:
 3.  `uvx rumdl@0.2.58 check <touched>` exits 0 (measured on the filled dry
     tree: "Success: No issues found in 9 files", values.md the ninth; amended
     2026-10-29, review fold: RR2-m1, where this read "8 files").
-4.  The dry run and the tree checker: the rev 5 fixer's
-    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/fixer3/bin/dryrun.py
+4.  The dry run and the tree checker: the rev 6 fixer's
+    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/fixer4/bin/dryrun.py
     `<tree> fork/safe/safe3-plan.md --fill --baseline <tree0>` on a fresh copy
     of the head's docs/design and fork/ (an archive, or a detached scratch
     worktree where prek must run), never the worktree of record, `<tree0>` being
@@ -2155,6 +2371,17 @@ For commit 1, each fix commit and each records commit:
     checks, filled (fixer3/logs/dryrun-fill-1.txt), and "ALL OK", 427, unfilled;
     checktree.py alone on the filled tree "ALL OK", 330 checks; on 0f22798fb
     itself it fails 84 (added 2026-10-29, review fold: RR3-M1, RR3-m1, RR3-m2).
+    The rev 6 fixer's fixer4/bin/dryrun.py also applies A.33 and B.32, and its
+    checktree.py checks the closed places' one open storage, a global's
+    initializer under the interim rule's conditions and its `unsafe` formation
+    once each on the temporal page, in the log and in fork/safe/plan.md and in
+    W-148's note, A.1's and B.1's pointer to a global's initializer once each on
+    the temporal page, in the log and in fork/safe/plan.md, and W-366's evidence
+    naming p01 to p03 and its notes a global's dynamic initializer. Its run:
+    "ALL OK", 458 steps and checks, filled (fixer4/logs/dryrun-fill-1.txt), and
+    "ALL OK", 448, unfilled; checktree.py alone on the filled tree "ALL OK", 347
+    checks; on 0f22798fb itself it fails 96 (added 2026-10-29, review fold:
+    RR4-M1).
 5.  The nightly compiles: the 14 example sources of safe2-plan.md section 0.7
     re-compiled (measured: the outcomes recorded there, EX-M-4a, EX-M-4c and
     EX-M-4d printing 1, p005434:152-162's `F` rejected and its variant printing
@@ -2163,12 +2390,14 @@ For commit 1, each fix commit and each records commit:
 6.  PR 67's quote and silence checks at a freshly fetched tip from a detached
     worktree of 56e2e5bbd under /dev/shm/safe3-implementer/rg1, removed after
     (273 and 89; the H1 subsets 97, 120 and 5; 284 and 89 with Appendix C.2's
-    rows and H1.7), and this plan's 116 rows, the rev 4 fixer's
-    fixer2/logs/safe3-quotes-all4.tsv (rev 1's 67, rev 2's 33, rev 3's 10 and
-    rev 4's 6; amended 2026-10-29, review fold: RR1-m1, where this read "100
-    rows, the fixer's logs/safe3-quotes-all.tsv"; amended 2026-10-29, review
-    fold: RR2-m2, where this read "110 rows, the rev 3 fixer's
-    fixer1/logs/safe3-quotes-all3.tsv").
+    rows and H1.7), and this plan's 123 rows, the rev 6 fixer's
+    fixer4/logs/safe3-quotes-all6.tsv (rev 1's 67, rev 2's 33, rev 3's 10,
+    rev 4's 6 and rev 6's 7; amended 2026-10-29, review fold: RR1-m1, where
+    this read "100 rows, the fixer's logs/safe3-quotes-all.tsv"; amended
+    2026-10-29, review fold: RR2-m2, where this read "110 rows, the rev 3
+    fixer's fixer1/logs/safe3-quotes-all3.tsv"; amended 2026-10-29, review
+    fold: RR4-M1, where this read "116 rows, the rev 4 fixer's
+    fixer2/logs/safe3-quotes-all4.tsv").
 7.  `python3 -I fork/conformance/runner.py --self-test` clean (R7).
 8.  `git merge-tree --write-tree --name-only <head> <held head>` for trunk and
     every held head, each set equal to section 0.7's.
@@ -2180,8 +2409,10 @@ For commit 1, each fix commit and each records commit:
     json.load(open('fork/inventory/work-items.json'))"` after commit 1 and in
     the PR 67 note commit's worktree.
 12. The D-SAFE block of fork/decision-log.md identical to fork/safe/plan.md
-    section 0.3 (1217 lines at 0f22798fb, 1337 after commit 1, measured on the
-    filled dry tree; rev 4's 1326 was before B.1 grew to 149 lines and B.31
+    section 0.3 (1217 lines at 0f22798fb, 1350 after commit 1, measured on the
+    filled dry tree; rev 5's 1337 was before B.1 grew to 152 lines and B.32
+    rewrapped D-SAFE-10 again, amended 2026-10-29, review fold: RR4-M1;
+    rev 4's 1326 was before B.1 grew to 149 lines and B.31
     rewrapped D-SAFE-10 again, amended 2026-10-29, review fold: RR3-M1,
     RR3-m1; rev 1's 1292 was before B.1 grew to 130 lines, and rev 2's
     1305 before it grew to 134, amended 2026-10-29, review fold: RR1-M1,
@@ -2209,7 +2440,9 @@ probe of W-365's Race2, which section 1.3's last row and D-SAFE3-3 trace by hand
 (added 2026-10-29, review fold: RR2-M1, RR2-m2), nor of its free pointer that
 a detached thread receives (added 2026-10-29, review fold: RR3-m1); m03's
 by-value copy at the call is order-only (added 2026-10-29, review fold:
-RR3-m2).
+RR3-m2). The fork's two C++ globals and examples/advent2024/io_utils.carbon's
+were lowered to IR, not run, their initializers' calls the evidence
+(fixer4/probe/glob/; added 2026-10-29, review fold: RR4-M1).
 
 ## Review fold record (rev 2, 2026-10-29)
 
@@ -2469,6 +2702,74 @@ clean. Not run: no build, no Strict checker (W-148), no probe of
 `Core.Thread`, so none of Race2 or the free pointer's shape; m03 is
 order-only. Every edit of this file is by Edit.
 
+## Review fold record (rev 6, 2026-10-29)
+
+The fixer of re-review round 4 folded the focused re-review, round 4, of rev 5
+(f29ece09a): APPROVE-WITH-AMENDMENTS, no BLOCKER, one MAJOR (RR4-M1). The
+re-review found RR3-M1 resolved (m02 and m04 re-run, 3 4 3 4 and 7 8 7 8; the
+canonical sentence word for word at its six copies; sections 1.3, 4, 0.6 and
+D-SAFE3-6 agreeing with it), RR3-m1 resolved (W-365's title, notes and
+candidate rule over free storage, the three shapes counted at every copy) and
+RR3-m2 resolved (A.30's lead and A.31's sentence in the filled dry tree). Its
+baseline: the dry run "ALL OK", 437 filled and 427 unfilled; PR 67's checks
+from a detached worktree of 56e2e5bbd at /dev/shm/safe2-rr4/rg1, removed after,
+against tip 9192ee003, nothing newer: 273 and 89, the H1 subsets 97, 120 and 5,
+284 and 89 and this plan's 116, every one 0 failed, 33 of the 116 failing at
+the cut; `git ls-remote` for PR 53 2407efa74, PR 67 56e2e5bbd, trunk abdc798c6
+and the mirror f6cf71da9, the other 16 heads not checked; r31.py on this plan
+H1 1, H2 19, H3 83, 60 bullets, 34 numbered items, 248 rows, 4575 lines and no
+unguarded line; `uvx rumdl@0.2.58 check` clean; `--self-test` 150 programs, OK;
+its five probes, p01 to p05, in rr4/probe/, of which p04 and p05 raise no
+finding and are added as evidence rows. The finding was reproduced before it
+was folded and is not rejected. Marks in this file read "(amended 2026-10-29,
+review fold: RR4-M1)"; the page and records texts of Appendix A and B carry
+SAFE-3's own marks only. RR4-M1 showed the model unsound within one thread at
+the closed-place premise: a `returned var` was closed as a local `var` while its
+storage is the place its caller's call initializes, a global under its dynamic
+initializer among them, which every function reaches by name, so p01's in-place
+`=` on the `returned var` was exempt and p02's `ref` on it a checked reborrow
+while `MakeW` reads the global. It is folded at that premise, the closed places
+saying why a `returned var` is closed and checking a global's initializer, the
+one open storage, as an in-place `=` on an open place (A.33, B.32, section
+0.0), not as a clause about who wrote the code; the re-review's alternative, a
+residue at the next free id with the claims narrowed, is not taken, since the
+rule closes the hole, and no id is minted. The round left a MAJOR, so rev 6 is
+not signed off and re-review round 5 decides; sign-off needs a round with no
+BLOCKER and no MAJOR.
+
+| finding | reproduced by | disposition and where it lands |
+| --- | --- | --- |
+| RR4-M1 MAJOR | p01 to p05 re-run in fixer4/probe/rr4/ by fixer4/bin/run.sh (11 12 11 12, the remedy 11 12 1 2; 21 22 21 22; 31 32 1 2 and `g.u.a` 1; 51 512 and 51 512), each output the re-review's; p01's IR `__global_init` calling `F(@g, 1)` and `F` calling `MakeU(return.u)` and `MakeW(return.w)`, `MakeW` loading `@g`; temporal_safety.md:134-143 read at 0f22798fb; docs/design/README.md:1236-1240 and assignment.md:111-113 read at 9192ee003, no commit since the cut; the fork's three globals lowered (fixer4/probe/glob/); the fixer's g01 and g02, a local's and a global's initializer naming the place it initializes, compile errors | ACCEPTED at the root: the closed places' sentence (A.33 on the temporal page, B.32 in D-SAFE-10 in the log and fork/safe/plan.md) says a `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs, and names the one such storage that is open, a global under its dynamic initializer, whose initializer this design, upstream having no global variables, accepts for a type not copy-represented at every depth only under the interim rule's conditions for an in-place `=` on an open place and makes otherwise an `unsafe` formation, `StrictRefFromShared` unmarked, whatever the rewrite's status; A.1's and B.1's pointer to it after the relation to the rule above; W-148's note (B.12); W-366's evidence and notes (B.14); section 0.0's rev 5 paragraph, 0.1 (the README.md and assignment.md quotes, 7 quote rows, 123 in all), 0.3 (p01 to p05, g01 and g02, 147 probes), 0.4, 0.6 (the T8, closed-places and diagnostic rows), 0.7, 0.8, 1.1, D-SAFE3-1, D-SAFE3-3 (its break condition met at rev 5), D-SAFE3-5 (the closed-place argument and a break condition for the global's check), D-SAFE3-6, D-SAFE3-12 (the cost: two C++ globals of the fork's interop programs, an upper bound of 111 in toolchain testdata), 1.3, 2.2, 3, 4, 6, 7 (R-1) and 8; fixer4/bin/dryrun.py applies A.33 and B.32 and checktree.py checks each new phrase at its copies; the dry run re-run |
+
+Measured for rev 6 on 2026-10-29: upstream re-fetched at 15:30 UTC, tip
+9192ee003, nothing newer, docs/design/README.md and assignment.md unchanged
+since the cut; the 18 held heads and trunk abdc798c6 as section 0.7 states
+them, the mirror at f6cf71da9; PR 67's checks from a detached worktree of
+56e2e5bbd at /dev/shm/safe2-fixer4/rg1, removed after: 273 and 89, the H1
+subsets 97, 120 and 5, 284 and 89, rev 6's 7 rows and the 123, every one 0
+failed, all 7 passing at the cut and 33 of the 123 failing there; the fourth
+re-review's five probes re-run and the fixer's g01 and g02 added, 147 in all,
+the fork's three globals lowered; the dry run "ALL OK" filled (458
+steps and checks) and unfilled (448), checktree.py "ALL OK" alone (347 checks)
+and failing 96 on 0f22798fb; on scratch commit 18910f6fe prek's three passes
+changing nothing, `uvx rumdl@0.2.58 check` "No issues found in 9 files",
+r31.py's counts unchanged on the nine pages and records files with the lines
+861, 1674, 1895, 595, 758, 3234, 8464, 11797 and 1588, no new heading line, the
+D-SAFE blocks identical at 1350 lines, `json.load` 134 items, W-365 and W-366
+last, and the merge-trees against trunk and the 18 heads equal to 0f22798fb's;
+`--self-test` "150 programs parsed, 56 bullets in table, OK"; the id re-scan
+unchanged, no id minted; the model-name grep clean. This plan: r31.py before
+the fold H1 1, H2 19, H3 83, 60 bullets, 34 numbered items, 248 rows, 4575
+lines, and after it H1 1, H2 20 (this record), H3 85 (A.33 and B.32), 62
+bullets (one each in sections 0.1 and 0.4), 34 numbered items, 264 rows (seven
+in section 0.3, four in section 1.3, two in section 4 and the three lines of
+this record's table), 4959 lines and no unguarded line; prek's first pass, its
+rumdl, rewrapped two paragraph ends after long lines (section 0.3's opening
+and section 8 item 1), the counts unchanged, and the next two passes changed
+nothing; `uvx rumdl@0.2.58 check` clean. Not run: no build, no Strict checker
+(W-148), no probe of `Core.Thread`; the fork's globals lowered, not run. Every
+edit of this file is by Edit but prek's own rewrap.
+
 ## Hand-off notes for the implementer
 
 1.  Read section 1 first, then the blocks of Appendix A and B in order; re-open
@@ -2482,7 +2783,9 @@ order-only. Every edit of this file is by Edit.
     2026-10-29, review fold: RR2-m1); A.30 and A.31 go in after A.24 in the
     same bullet, A.32 in T3's paragraph, and B.31 after B.28 in the same
     paragraph, as fixer3/bin/dryrun.py orders them (added 2026-10-29, review
-    fold: RR3-M1, RR3-m2).
+    fold: RR3-M1, RR3-m2); A.33 goes in the Vocabulary bullet after A.32, and
+    B.32 after B.31 in the same D-SAFE-10 paragraph, as fixer4/bin/dryrun.py
+    orders them (added 2026-10-29, review fold: RR4-M1).
 2.  Markdown edits by Edit or Write only, never a shell append or a script
     (R25); the JSON by Edit, parsed after.
 3.  Keep every superseded text byte for byte under section 2.1's test; the
@@ -2571,7 +2874,11 @@ loan on it (T3), and prelude calls", and T4's rejection of m02's shape named;
 the second paragraph's paths from another thread through free storage, where
 it read "or through a global", with the free pointer a detached thread
 receives, where it named two threads' writes of one global alone, and W-365's
-rule for free storage, where it read "gives globals a rule"):
+rule for free storage, where it read "gives globals a rule"; amended 2026-10-29,
+review fold: RR4-M1: the fourth paragraph's sentence that a global's dynamic
+initializer is checked by these conditions as an in-place `=` on an open place,
+after the relation to the rule above, where "with nothing newly rejected." was
+followed by "So `q->n = 2`"):
 
 <!-- google-doc-style-ignore -->
 
@@ -2747,12 +3054,15 @@ A left operand whose type is copy-represented at every depth, such as `i32`,
 `{.n: i32}` or `Core.Optional(i32*)`, is stored once from a complete value, and
 the rule above decides alone. The interim rule only adds conditions, so every
 program it accepts the rule above accepts, and the toolchain's adoption of the
-rewrite withdraws it by a dated mark with nothing newly rejected. So `q->n = 2`,
-`p->n += 1` and `++p->n` for `q: T*` and a field `n: i32` are `Plain` writes
-that M3 permits, and `*q = "longer"` for `q: str*` is
-`StrictSharedImmutableWrite` (re-derived <date>, SAFE-3: D-SAFE3-1 to
-D-SAFE3-5; until then this paragraph read as the one quoted in full at the end
-of this section).
+rewrite withdraws it by a dated mark with nothing newly rejected. A global's
+dynamic initializer initializes the global in place whatever the rewrite's
+status and is checked by these conditions as an in-place `=` on an open place,
+as the [vocabulary](#vocabulary) says, a `returned var` it fills naming the
+global's storage. So `q->n = 2`, `p->n += 1` and `++p->n` for `q: T*` and a
+field `n: i32` are `Plain` writes that M3 permits, and `*q = "longer"` for
+`q: str*` is `StrictSharedImmutableWrite` (re-derived <date>, SAFE-3:
+D-SAFE3-1 to D-SAFE3-5; until then this paragraph read as the one quoted in full
+at the end of this section).
 ```
 
 <!-- google-doc-style-resume -->
@@ -3482,6 +3792,49 @@ load the carrier: passing `&p` to a call, after `p = &x`, uses the loan on `x`
 
 <!-- google-doc-style-resume -->
 
+### A.33 temporal_safety.md, the closed places, a global's initializer
+
+Insert after "whose loan set is not closed, through a free loan, a global among
+them, or through ⊥." (:142-143, in the Vocabulary bullet that defines closed
+and open places), found once: the bullet counts a `returned var` closed as a
+local `var`, while its storage is the place its caller's call initializes,
+which under a global's dynamic initializer is the global, so that p01's
+`r = {.u = MakeU(k), .w = MakeW()}` in `F`, for `var g: S = F(1);`, passed
+the interim rule while `MakeW` reads `g` by name, and p02's `Mod(ref r)` bound
+a `ref` to the same storage (added 2026-10-29, review fold: RR4-M1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+A `returned var` is closed because the storage it names, which its caller's
+call initializes (the assignment design's `returned var` "can be `&y`" for
+`y = F();`, assignment.md:111-113), is closed or bound while the call runs: a
+local `var`, a `var` parameter or a temporary being initialized, or a part of
+one, which nothing else names yet; the caller's own `returned var`, closed in
+turn; or the left operand of an in-place `=`, whose interim rule
+([`ref` bindings](#ref-bindings)) counts the call as evaluated while that
+operand is bound. A global under its dynamic initializer is the one such
+storage that is open, every function reaching it by name, so this design,
+upstream having no global variables
+([global variables](../README.md#global-constants-and-variables): "there are
+currently no global variables", docs/design/README.md:1236-1237 at 9192ee003),
+accepts the initializer of a global whose type is not copy-represented at every
+depth only under the interim rule's conditions for an in-place `=` on an open
+place, the global its left operand and the initializer its right operand,
+initialization being in place whatever the rewrite's status; otherwise the
+initializer's binding of the global's storage, its callee's `returned var` and
+every `ref` taken on one, is a `ref` on an open place, an `unsafe` formation
+(`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked. So
+`var g: S = F(1);` is rejected where `F`'s `r = {.u = MakeU(k), .w = MakeW()}`
+on its `returned var r` runs `MakeW`, which reads `g` by name after `MakeU`'s
+result is initialized into `r.u` (11 12 11 12 on the 2026.10.12 nightly
+toolchain, the right operand formed first 11 12 1 2), while `Take(g)` copies
+the global into a `var` parameter's own storage first (added <date>, SAFE-3:
+D-SAFE3-1 to D-SAFE3-5).
+```
+
+<!-- google-doc-style-resume -->
+
 ## Appendix B. Records texts, verbatim (commit 1)
 
 Line numbers are 0f22798fb's. A block that names both fork/decision-log.md and
@@ -3494,7 +3847,7 @@ Lines. In fork/decision-log.md (:3131-3190) and in fork/safe/plan.md (:430-489),
 replace the 60 lines from the line that begins "Permissive as
 `PermissiveAliasedExclusive`. The `ref` operand of a" to the line that ends "A
 `ref` return is not a binding, so p005434:717-720", each found once in each
-file, with the 149 lines below, the same in both files. The superseded text is
+file, with the 152 lines below, the same in both files. The superseded text is
 quoted whole after "which SAFE-2's fix commits 0f281d8bd, cbdc0552e and
 9d0b072cb wrote, read:" (D-SAFE3-7). Amended 2026-10-29, review fold: A-RA3-B1,
 A-RA3-M1, A-RA3-m3, B-M1, B-M3, B-m1: the first 67 lines, up to "(re-derived
@@ -3522,7 +3875,11 @@ sentence with the clause on a value passed to a call from which a carrier can
 be loaded, where it went from "(T1, T3)" to ", and, on an open place", T4's
 rejection of m02's shape beside the swap's, and the paths from another thread
 through free storage, the three shapes of W-365, where they read "or a global"
-and "the two shapes of W-365"; rev 4 replaced the 60 lines with 143:
+and "the two shapes of W-365"; rev 4 replaced the 60 lines with 143. Amended
+2026-10-29, review fold: RR4-M1: those lines, 89 now, carry after "adopting the
+rewrite withdraws it" the sentence that a global's dynamic initializer is
+checked by these conditions as an in-place `=` on an open place, as D-SAFE-10's
+closed places say (B.32); rev 5 replaced the 60 lines with 149:
 
 <!-- google-doc-style-ignore -->
 
@@ -3612,7 +3969,10 @@ and "the two shapes of W-365"; rev 4 replaced the 60 lines with 143:
     (`let v: T = ...; *q = v;`). A left operand whose type is copy-represented
     at every depth is stored once from a complete value. The interim rule only
     adds conditions, so every program it accepts the rule above accepts, and
-    adopting the rewrite withdraws it (re-derived <date>,
+    adopting the rewrite withdraws it; a global's dynamic initializer
+    initializes the global in place whatever the rewrite's status and is checked
+    by these conditions as an in-place `=` on an open place, as D-SAFE-10's
+    closed places say (re-derived <date>,
     SAFE-3: D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md; the superseded
     text, from "The `ref` operand of a built-in operator — the first operand"
     through "naming a field and indexing of an array")", which SAFE-2's fix
@@ -3892,12 +4252,14 @@ on a value passed to a call from which a carrier can be loaded, where it went
 from "(T1, T3)" to ", and, on an open place", the call's use of a carrier it
 loads named beside the right operand's read, and the paths from another thread
 through free storage, the three shapes of W-365, where it read "or a global"
-and "the two shapes of W-365"):
+and "the two shapes of W-365"; amended 2026-10-29, review fold: RR4-M1: the
+closed `returned var` and a global's dynamic initializer, after the relation to
+the rule above, where the note ended there):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth, and a type whose value representation is not known when a generic's body is checked, a type parameter among them, is not copy-represented, though `Core.Int(N)` for a symbolic `N` is; anything else is a `ref` binding under the general rule. The two conditions see the operation's own thread: another Carbon-spawned thread reaches the referent only through a loan that crosses into it or through free storage, a global or allocator-owned storage that a free pointer reaches, D-SAFE-16's thread-boundary lifetime rule (W-149), which as stated still accepts the three shapes of W-365, so p005434:83's `noalias` holds by construction within one thread, and across Carbon-spawned threads once residue item W-365's stage 5 contract holds. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the whole right operand counts as evaluated while the left operand is bound, and the `=` keeps the exemption only when its right operand reads no open place and passes no carrier of one to a call, reads or uses no part of the left operand's place, or of a place that overlaps it, through its owner or a carrier of it (T1, T3), passes to no call a value from which a carrier of an open place, of the left operand's place or of one that overlaps it can be loaded, a pointer to a place that holds one, a `ref` of such a place or a value that carries a loan on such a place, transitively (T3), and, on an open place, runs no code written outside core/prelude (an array element at an index the checker cannot prove distinct from the left operand's overlaps it, here and in T4's check of the reborrow); otherwise it is a checked reborrow on a closed place (`StrictExclusiveBorrowConflict` for the right operand's read and for a call's use of a carrier it loads through a value it receives, which T3 counts as a use of that carrier, `StrictSharedBorrowInvalidated` for a carrier it passes) and M3(d) through a shared path, whose `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts). The interim rule only adds conditions, so every program it accepts the rule above accepts.
+SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth, and a type whose value representation is not known when a generic's body is checked, a type parameter among them, is not copy-represented, though `Core.Int(N)` for a symbolic `N` is; anything else is a `ref` binding under the general rule. The two conditions see the operation's own thread: another Carbon-spawned thread reaches the referent only through a loan that crosses into it or through free storage, a global or allocator-owned storage that a free pointer reaches, D-SAFE-16's thread-boundary lifetime rule (W-149), which as stated still accepts the three shapes of W-365, so p005434:83's `noalias` holds by construction within one thread, and across Carbon-spawned threads once residue item W-365's stage 5 contract holds. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the whole right operand counts as evaluated while the left operand is bound, and the `=` keeps the exemption only when its right operand reads no open place and passes no carrier of one to a call, reads or uses no part of the left operand's place, or of a place that overlaps it, through its owner or a carrier of it (T1, T3), passes to no call a value from which a carrier of an open place, of the left operand's place or of one that overlaps it can be loaded, a pointer to a place that holds one, a `ref` of such a place or a value that carries a loan on such a place, transitively (T3), and, on an open place, runs no code written outside core/prelude (an array element at an index the checker cannot prove distinct from the left operand's overlaps it, here and in T4's check of the reborrow); otherwise it is a checked reborrow on a closed place (`StrictExclusiveBorrowConflict` for the right operand's read and for a call's use of a carrier it loads through a value it receives, which T3 counts as a use of that carrier, `StrictSharedBorrowInvalidated` for a carrier it passes) and M3(d) through a shared path, whose `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts). The interim rule only adds conditions, so every program it accepts the rule above accepts. A `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs, but for a global under its dynamic initializer, the one such storage that is open (D-SAFE-10's closed places): the checker accepts the initializer of a global whose type is not copy-represented at every depth only under the interim rule's conditions for an in-place `=` on an open place, the global its left operand and the initializer its right operand, whatever the rewrite's status, and reports it otherwise as an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked.
 ```
 
 <!-- google-doc-style-resume -->
@@ -3941,7 +4303,11 @@ thread reaches by name with no loan, get a rule", the free pointer's shape
 added after the global's, and the candidate rule and the noalias consequence
 over free storage, where they read "globals need a rule of their own" and
 "which this item's rule for globals decides"; W-366's evidence amended
-2026-10-29, review fold: RR3-M1: the third re-review's m02 and m04 added):
+2026-10-29, review fold: RR3-M1: the third re-review's m02 and m04 added;
+W-366's evidence and notes amended 2026-10-29, review fold: RR4-M1: the fourth
+re-review's p01 to p03 added before s10 and s11, and a global's dynamic
+initializer named after direct initialization as staying under the interim
+rule's conditions whatever the item's status):
 
 <!-- google-doc-style-ignore -->
 
@@ -3969,10 +4335,10 @@ over free storage, where they read "globals need a rule of their own" and
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
         "toolchain/check/handle_operator.cpp:99-123 at upstream 9192ee003 and the fork (\"TODO: Switch to using assignment interface for most assignment\"; `rhs_id = InitializeExisting(context, node_id, lhs_id, rhs_id);`, :121), toolchain/sem_ir/type_info.cpp:82-89 (a copy representation initializes by copy, a pointer or custom one in place) and toolchain/check/convert.cpp:283-297 and :400-405 at 9192ee003 (each element of a by-copy aggregate gets an initializing target inside the destination, so an element that is not copy-represented is initialized in place inside a copy-represented one-element tuple or struct; :1467-1518 converts an adapter of a tuple or struct part by part, so the same holds inside such an adapter)",
-        "fork/safe/safe3-plan.md section 0.3 (v09, v10, v11, v14, v24, v25, s03, s04, s05, s15 and review A's ra01, ra04 and ra05, the last three copy-represented one-element aggregates of a pointer-represented element, and the re-review's n03, a `var` parameter, a `returned var` and a class local read through their owner, print the in-place order's result on the 2026.10.12 nightly, and so does the second re-review's n05, an array element at a run-time index assigned from an element of the same array (2 2 when the indices are equal); the second re-review's n06, a generic body whose left operand's type is a type parameter, has the specific's user `Copy` initialize the left operand in place with `self` its own return slot (3 3 and 2 2), the generic's SemIR initializing it in place (the fixer's k01); the re-review's n02, an adapter of `{.c: C}`, has `C`'s `Copy` initialize its part of the left operand in place (its SemIR); the third re-review's m02 and m04, calls that receive `&p` or `ref p` for the left operand's only carrier `p` and load it, read an element an earlier call's result was initialized into (3 4 3 4, the right operand formed first 3 4 1 2); s10 and s11, the right operand formed first and the rewrite emulated, print 2 1)"
+        "fork/safe/safe3-plan.md section 0.3 (v09, v10, v11, v14, v24, v25, s03, s04, s05, s15 and review A's ra01, ra04 and ra05, the last three copy-represented one-element aggregates of a pointer-represented element, and the re-review's n03, a `var` parameter, a `returned var` and a class local read through their owner, print the in-place order's result on the 2026.10.12 nightly, and so does the second re-review's n05, an array element at a run-time index assigned from an element of the same array (2 2 when the indices are equal); the second re-review's n06, a generic body whose left operand's type is a type parameter, has the specific's user `Copy` initialize the left operand in place with `self` its own return slot (3 3 and 2 2), the generic's SemIR initializing it in place (the fixer's k01); the re-review's n02, an adapter of `{.c: C}`, has `C`'s `Copy` initialize its part of the left operand in place (its SemIR); the third re-review's m02 and m04, calls that receive `&p` or `ref p` for the left operand's only carrier `p` and load it, read an element an earlier call's result was initialized into (3 4 3 4, the right operand formed first 3 4 1 2); the fourth re-review's p01 and p02, a `returned var` whose storage is a global under the global's dynamic initializer (the nightly's `__global_init` passes the global as the call's return storage), have its in-place `=`, on the `returned var` itself or on a `ref` parameter bound to it, run a call that reads the global by name after an earlier element is initialized (11 12 11 12 and 21 22 21 22), which D-SAFE-10's closed places now check at the global's initializer whatever this item's status, while a `var` parameter filled from a global is a copy (p03: 31 32 1 2); s10 and s11, the right operand formed first and the rewrite emulated, print 2 1)"
       ],
       "blocked_by": [],
-      "notes": "Filed by SAFE-3's fold commit (<date>; fork/safe/safe3-plan.md D-SAFE3-5). No Carbon function's lowering carries `noalias` today, so the deviation gives a defined result different from the designed one, not undefined behavior. For the integers, floating-point types, `bool` and pointers the in-place `=` is a deviation from the assignment design by upstream's own TODO (handle_operator.cpp:99-100, \"Some cases may need to be handled directly.\"); for tuples, structs, choice types and data classes upstream has not decided the order (assignment.md:159-164, leads issue 686), and its designed initialization is itself depth-first and in place (pattern_matching.md:858-867; p005545:118-122), so treating the in-place order as a difference from the design is this design's reading of :184, pending that issue. Break condition and discharge: the toolchain routes `=` through `AssignWith` for every type, by an upstream advance (upstream's own TODO, handle_operator.cpp:99-100) or a fork change under R32; the interim rule of D-SAFE-8 is then withdrawn by a dated mark, the interim rule only adding conditions, so that every program it accepts the designed rule accepts and none is newly rejected, and this item is discharged. Partial: the toolchain routes only some types through `AssignWith`, the scalars of assignment.md:148-151 first; the interim rule then stays, by a dated mark naming them, for every type still initialized by `InitializeExisting`. Direct initialization: the toolchain or upstream gives an unformed left operand assignment.md:102-106's direct initialization (`y = F();`, :116-120); that is initialization in place and stays under the interim rule whatever the rewrite's status. Further TODOs re-open the interim rule's keying by a dated mark if done first: handle_operator.cpp:119-120's \"Destroy the old value before reinitializing\", which would run the old value's destructor, user-written for a user's class, at the `=`; type_info.cpp:83-84's \"Use in-place initialization for types that have non-trivial destructive move\"; and type_completion.cpp:576-577's \"Consider doing the same whenever `elementwise_rep` is sufficiently small\", which would give a tuple or struct of more than one element a copy representation that the keying would count as stored once, a probe deciding first. The 2026.10.12 nightly's evidence for the copy-represented one-element case is order-only: after the in-place `=` of such a type it stores `poison` of the whole object over the left operand (ra01, ra03 to ra06), a wrong-code defect of the nightly not filed here (fork/safe/safe3-plan.md section 0.3)."
+      "notes": "Filed by SAFE-3's fold commit (<date>; fork/safe/safe3-plan.md D-SAFE3-5). No Carbon function's lowering carries `noalias` today, so the deviation gives a defined result different from the designed one, not undefined behavior. For the integers, floating-point types, `bool` and pointers the in-place `=` is a deviation from the assignment design by upstream's own TODO (handle_operator.cpp:99-100, \"Some cases may need to be handled directly.\"); for tuples, structs, choice types and data classes upstream has not decided the order (assignment.md:159-164, leads issue 686), and its designed initialization is itself depth-first and in place (pattern_matching.md:858-867; p005545:118-122), so treating the in-place order as a difference from the design is this design's reading of :184, pending that issue. Break condition and discharge: the toolchain routes `=` through `AssignWith` for every type, by an upstream advance (upstream's own TODO, handle_operator.cpp:99-100) or a fork change under R32; the interim rule of D-SAFE-8 is then withdrawn by a dated mark, the interim rule only adding conditions, so that every program it accepts the designed rule accepts and none is newly rejected, and this item is discharged. Partial: the toolchain routes only some types through `AssignWith`, the scalars of assignment.md:148-151 first; the interim rule then stays, by a dated mark naming them, for every type still initialized by `InitializeExisting`. Direct initialization: the toolchain or upstream gives an unformed left operand assignment.md:102-106's direct initialization (`y = F();`, :116-120); that is initialization in place and stays under the interim rule whatever the rewrite's status. So does a global's dynamic initializer, which D-SAFE-10's closed places check by the interim rule's conditions as an in-place `=` on an open place (fork/safe/safe3-plan.md D-SAFE3-5). Further TODOs re-open the interim rule's keying by a dated mark if done first: handle_operator.cpp:119-120's \"Destroy the old value before reinitializing\", which would run the old value's destructor, user-written for a user's class, at the `=`; type_info.cpp:83-84's \"Use in-place initialization for types that have non-trivial destructive move\"; and type_completion.cpp:576-577's \"Consider doing the same whenever `elementwise_rep` is sufficiently small\", which would give a tuple or struct of more than one element a copy representation that the keying would count as stored once, a probe deciding first. The 2026.10.12 nightly's evidence for the copy-represented one-element case is order-only: after the in-place `=` of such a type it stores `poison` of the whole object over the left operand (ra01, ra03 to ra06), a wrong-code defect of the nightly not filed here (fork/safe/safe3-plan.md section 0.3)."
     }
 ```
 
@@ -4246,6 +4612,24 @@ sentence of A.32 (added 2026-10-29, review fold: RR3-M1):
 T3 liveness: from creation to last use of any carrier (NLL on SemIR's block graph);
 
 T3 liveness: from creation to last use of any carrier (NLL on SemIR's block graph), a use of a value from which a carrier can be loaded, a pointer to a place that holds it, a `ref` of such a place or a value that carries a loan on one, transitively, being a use of the carrier (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5);
+```
+
+<!-- google-doc-style-resume -->
+
+### B.32 D-SAFE-10's closed places, the log and fork/safe/plan.md section 0.3
+
+Words, in fork/decision-log.md (:3324-3325) and in fork/safe/plan.md
+(:623-624), in the same paragraph of D-SAFE-10, applied after B.31, the same
+words in both so that the D-SAFE blocks stay identical: A.33's closed
+`returned var` and a global's initializer (added 2026-10-29, review fold:
+RR4-M1):
+
+<!-- google-doc-style-ignore -->
+
+```text
+a place is _closed_ in a body when every carrier of a loan on it is in the body's view and _open_ otherwise
+
+a place is _closed_ in a body when every carrier of a loan on it is in the body's view and _open_ otherwise, a `returned var` closed because every storage its caller's call initializes is closed or bound while the call runs but for a global under its dynamic initializer, the one such storage that is open, so that this design, upstream having no global variables (docs/design/README.md:1236-1237 at 9192ee003), accepts the initializer of a global whose type is not copy-represented at every depth only under the interim rule's conditions for an in-place `=` on an open place, the global its left operand and the initializer its right operand (D-SAFE-8), and otherwise makes it an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5)
 ```
 
 <!-- google-doc-style-resume -->

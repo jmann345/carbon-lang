@@ -19,8 +19,15 @@ RR1-m1 go to round 2's fixer, which has the last fix commit of the budget
 (amended 2026-10-28, re-review round 1: section 8.13, where this read "the
 focused re-review of section 3 step 5 next"). Round 2's fixer accepted all
 four and folded them by fix commit cbdc0552e, the third and last of the
-budget, recorded in section 8.14; round 3 reviews it next (amended
-2026-10-29, re-review round 2: section 8.14). Rev 7 is the plan amender's
+budget, recorded in section 8.14; round 2 reviews it next (amended
+2026-10-29, re-review round 2: section 8.14; amended 2026-10-29, re-review
+round 2: RR2-m2, where this read "round 3 reviews it next"). The focused
+re-review's round 2 returned APPROVE-WITH-FIXES on one MAJOR and two MINORs,
+one of them records-only, so it is not dry: its records-only MINOR, RR2-m2,
+is folded by the round's records commit, and RR2-M1 and RR2-m1, which change
+pages, go to round 3's fixer, for which the budget of section 3 step 4 has no
+fix commit left (amended 2026-10-29, re-review round 2: section 8.15). Rev 7
+is the plan amender's
 fold of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
 and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
@@ -128,7 +135,8 @@ and section 2.6).
     quotes; amended 2026-10-28, stop-and-amend re-review: AM6-m1), and the
     implementation's records: the document-review fold record (section 8.7)
     and the focused re-review's round 1 (section 8.13; amended 2026-10-28,
-    re-review round 1).
+    re-review round 1), the fold of its findings (section 8.14) and the
+    re-review's round 2 (section 8.15; amended 2026-10-29, re-review round 2).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -3055,26 +3063,29 @@ is not owed; nothing is pushed (section 3 step 7 waits for a dry round).
 
 ### §8.14 Focused re-review fold record, round 2 (2026-10-29)
 
-Round 2 of section 3 step 5's loop goes back to section 3 step 4, as the ruling
-recorded in section 8.13 has it: one fresh fixer took round 1's four findings
-that are serious or change a page, RR1-B1, RR1-M1, RR1-M2 and RR1-m1, reproduced
-each against the tree at 6ebe4d650, this plan and upstream's tip, re-fetched as
-9192ee003 (2026-10-28 20:51:45 UTC, upstream PR 8054, the tip of section 8.13),
-and dispositioned it. All four are ACCEPTED and none is rejected. They are
-folded by one fix commit, cbdc0552e, "SAFE-2 fix: the free-result and
-`unsafe`-binding obligations keyed to the frozen loan, the operator exception
-and the `ref self: const Self` qualifier on every dependent line, and the
-built-in test (RR1-B1, RR1-M1, RR1-M2, RR1-m1)", the third and last commit of
-section 3 step 4's budget (0f281d8bd and e1574b003 are the other two), and
-recorded by this records commit, "SAFE-2 records: focused re-review round 2
-fold", which is not counted. No defect needed a commit past the budget, and no
-finding was answered by softening a realignment, so no plan revision is made.
-Each fold carries "(amended 2026-10-29, re-review round 2: <id>)", the UTC date
-of the fix commit, on the page and in the same words in the log's F-013 entry,
-fork/safe/plan.md section 0.3 and section 1, this plan's section 1 and W-148's
-notes (R27); each superseded clause is quoted after "where this read", every
-quote found in its file at 6ebe4d650 (29 of 29), and type_safety.md's superseded
-sentence, SAFE-1's 2026-10-12 text, in full. The scratch is
+Round 1 of section 3 step 5's loop goes back to section 3 step 4, as the ruling
+recorded in section 8.13 has it, and round 2 is the review of this fold (amended
+2026-10-29, re-review round 2: RR2-m2, where this read "Round 2 of section 3
+step 5's loop goes back to section 3 step 4"): one fresh fixer, the fixer of
+round 2, took round 1's four findings that are serious or change a page, RR1-B1,
+RR1-M1, RR1-M2 and RR1-m1, reproduced each against the tree at 6ebe4d650, this
+plan and upstream's tip, re-fetched as 9192ee003 (2026-10-28 20:51:45 UTC,
+upstream PR 8054, the tip of section 8.13), and dispositioned it. All four are
+ACCEPTED and none is rejected. They are folded by one fix commit, cbdc0552e,
+"SAFE-2 fix: the free-result and `unsafe`-binding obligations keyed to the
+frozen loan, the operator exception and the `ref self: const Self` qualifier on
+every dependent line, and the built-in test (RR1-B1, RR1-M1, RR1-M2, RR1-m1)",
+the third and last commit of section 3 step 4's budget (0f281d8bd and e1574b003
+are the other two), and recorded by this records commit, "SAFE-2 records:
+focused re-review round 2 fold", which is not counted. No defect needed a commit
+past the budget, and no finding was answered by softening a realignment, so no
+plan revision is made. Each fold carries "(amended 2026-10-29, re-review round
+2: <id>)", the UTC date of the fix commit, on the page and in the same words in
+the log's F-013 entry, fork/safe/plan.md section 0.3 and section 1, this plan's
+section 1 and W-148's notes (R27); each superseded clause is quoted after "where
+this read", every quote found in its file at 6ebe4d650 (29 of 29), and
+type_safety.md's superseded sentence, SAFE-1's 2026-10-12 text, in full. The
+scratch is
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rr/r2/fixer/.
 Everything measured is container-local, EXPECTED, not of record (R9).
 
@@ -3114,7 +3125,13 @@ Decisions under R29, each with its break condition:
     core/prelude is for `Int`, `UInt`, `Float` or a `CppCompat` integer.
     Break condition: upstream answers assignment.md:159-161's TODO, or
     routes `=` through `AssignWith` for a type this test calls built in; the
-    test then follows upstream by a dated mark.
+    test then follows upstream by a dated mark. (Amended 2026-10-29,
+    re-review round 2: RR2-M1, RR2-m1: the test leaves the prelude's
+    `CppCompat` integer impls neither built in nor user-written, and its
+    aggregate clause credits assignment.md:159-161, whose heading reads
+    "Tuples, structs, choice types, and data classes", with arrays and with
+    every class that has no user-written `AssignWith` impl; round 3's fixer
+    restates both; section 8.15.)
 -   type_safety.md is edited although section 2.2 and hand-off note 5 left it
     alone, because its sentence calling the doc comment the whole contract
     is a dependent line of RR1-B1 (R17); both carry a dated mark. Break
@@ -3127,7 +3144,11 @@ Decisions under R29, each with its break condition:
     mark to this list rather than marking fifteen blocks, and the spatial
     lines, T6's free-result paragraph, M3's two fold sentences and
     type_safety.md are no block's text. Break condition: section 8.7's, a
-    re-reviewer needs the fold texts verbatim in this plan.
+    re-reviewer needs the fold texts verbatim in this plan. (Amended
+    2026-10-29, re-review round 2: RR2-m2: B.3.8, whose target this records
+    commit, b30c77990, changed by the realigned notes' cbdc0552e sentence, is
+    amended in place by the records commit of section 8.15, as section 8.7
+    decided for it, and is on no pointer list.)
 -   `<fixes>` is now 0f281d8bd, e1574b003 and cbdc0552e (section 8.13's
     placeholder row, a dated mark), and fork/safe/plan.md's realigned notes,
     the one record that names the fold commits, gain cbdc0552e by a dated
@@ -3192,8 +3213,175 @@ Decisions under R29, each with its break condition:
     section's heading, its eighteen bullets and its six table rows;
     fork/safe/plan.md's counts are unchanged.
 
-Nothing is pushed: section 3 step 7 waits for a dry round, and round 3, a
-fresh agent, reviews cbdc0552e and this records commit.
+Nothing is pushed: section 3 step 7 waits for a dry round, and round 2, a
+fresh agent, reviews cbdc0552e and this records commit (amended 2026-10-29,
+re-review round 2: RR2-m2, where this read "round 3, a fresh agent, reviews";
+section 8.15 records that review).
+
+### §8.15 Focused re-review, round 2 (2026-10-29)
+
+Round 2 of section 3 step 5's loop: one fresh agent reviewed the commits after
+the head 106fc1877 up to b30c77990, at b30c77990: round 1's records commit
+6ebe4d650 with section 8.13, round 2's fix commit cbdc0552e, the third and last
+of section 3 step 4's budget (0f281d8bd and e1574b003 are the other two), and
+its records commit b30c77990 with section 8.14, against round 1's findings, this
+plan and upstream's tip. Its ids, RR2-M1, RR2-m1 and RR2-m2, are this round's:
+section 8.10 records the plan's own round 2 under the same prefix, with an
+RR2-m1 and an RR2-m2 of its own, and the marks tell them apart, "re-review round
+2" with an RR2 id here, "review fold" there, and "re-review round 2" with an RR1
+id for round 2's fixer. The review's scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rr/r2/review/,
+and this records commit's runs are in rec2/ beside r2/. Everything measured is
+container-local, EXPECTED, not of record (R9).
+
+**The review**, APPROVE-WITH-FIXES, with no BLOCKER, one MAJOR and two MINORs,
+one of them records-only. Its runs, as it reports them:
+
+-   Upstream re-fetched: still 9192ee003; since the cut c1e83b0b7 only
+    f21c62524 touches classes.md among the files the plan quotes, and the
+    fork's docs/design/assignment.md and core/prelude/types/int.carbon,
+    uint.carbon and cpp/int.carbon equal upstream's there.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-review/rg1, removed after: 273 quotes and 89 silence
+    checks with 0 failed, the H1 subsets of 97 and 120 quote rows and the
+    five H1 checks with 0 failed, and the earlier fold's nine quotes with 0
+    failed.
+-   Trunk 1c83422a0 and all 18 held heads match `git ls-remote`; the
+    merge-tree sets equal those of section 0.8, and no held head touches
+    docs/design/safety.
+-   The nightly compiles reproduce section 0.7: m4a prints 1, m4c 1, Peek 1,
+    Peek2 6, Peek4 6 and tm9 3, and tm7 and sp3 exit 1.
+-   R31: the counts equal the recorded ones at cbdc0552e and at b30c77990.
+    Run twice on a detached copy, prek exits 0 with no change; rumdl@0.2.58
+    is clean; only the headings of sections 8.13 and 8.14 are new.
+-   The log's D-SAFE block is identical to fork/safe/plan.md section 0.3;
+    the ledger parses with `json.load`, and `runner.py --self-test` passes.
+-   The budget is used, three of three; author, committer and trailers are
+    right, 2407efa74 is an ancestor, no model identifier appears, and the
+    ledgers end at W-363. Every quote of round 2 that it checked is found
+    at 6ebe4d650.
+-   Of section 8.14's dispositions the tree bears out RR1-B1, RR1-M1 and
+    RR1-M2, with section 8.13's RR1-m2, and the loan-keyed obligation
+    handles the `Alias` program; RR1-m1 is not closed at its root, the
+    prelude's `CppCompat` integer impls falling outside the new test
+    (RR2-M1).
+
+**Dry judgment and the orchestrator's ruling.** By section 3 step 5 a round is
+dry when it has no BLOCKER and no MAJOR and every MINOR is records-only. This
+round has a MAJOR, RR2-M1, and RR2-m1 changes the temporal and mutation pages,
+so it is not dry, as the review judges it. The orchestrator ruled it
+"NOT DRY: 1 serious or 2 page-changing findings go to round 3's fixer". The
+round goes back to section 3 step 4, whose budget of three fix commits is spent
+(0f281d8bd, e1574b003 and cbdc0552e): step 4 has no shrink line, and "a defect
+past the budget stops the workflow at a plan revision of this file", the
+review's own reading of RR2-M1's fix ("a plan revision under section 3
+step 4"). Round 3's fixer takes RR2-M1 and RR2-m1 under that clause, as the
+decisions below record; round 3, the loop's last, then reviews what it
+commits, and section 3's steps 6 to 8 wait for a dry round. This round's one
+records-only MINOR, RR2-m2, is folded now by this records commit, "SAFE-2
+records: focused re-review round 2 recorded" (2026-10-29, the UTC date of its
+commit). Each finding was reproduced against the tree at b30c77990, whose line
+numbers the table cites, and against upstream at 9192ee003, before it was
+dispositioned:
+
+| finding | severity | reproduced | disposition | where |
+| --- | --- | --- | --- | --- |
+| RR2-M1, RR1-m1's built-in test leaves the prelude's `CppCompat` integer operators neither built in nor user-written | MAJOR | the test (temporal_safety.md:282-299, mutation_safety.md:238-252, the log :3144-3156, fork/safe/plan.md :443-455, D-SAFE2-6 :1475-1490) counts as built in the semantics docs/design/assignment.md:146-157 gives the built-in types (:148, "Integers and floating-point types, `bool`, and pointer types support simple"), with the prelude's impls of those, an aggregate's assignment with no user-written `AssignWith` impl, and the language's own `&`, member access and array indexing; core/prelude/types/cpp/int.carbon at 9192ee003, equal to the fork's, declares its six `CppCompat` integers as classes that adapt an integer (:16-37, `class CppCompat.Long32 {` and `adapt i32;` at :16-17), none a built-in type of :148, and gives them in core/prelude `fn Op(ref self, other: Self) = "int.sadd_assign";` (:1011) and the `Dec` and `Inc` bodies `self -= (1 as CppCompat.Long32);` and `self += (1 as CppCompat.Long32);` (:1179, :1185), impls that are thus neither the prelude's impls of a built-in type nor user-written under temporal_safety.md:301-305's rule; so `p->n += 1` and `++p->n` through `T*` for a C++ `long` field are unclassified, and read as user-written they are M3(d)'s `StrictInvalidatingThroughShared`, rejecting a `Plain` write M3 permits, R1-M1's class; section 8.14's third decision (:3109-3116) names these impls without classifying them | to round 3's fixer, not touched here: the review's remedy, built in by provenance, the language's own operators and every core/prelude impl of an operator interface whatever its body, user-written an impl outside core/prelude, in the same words with a dated mark in the temporal `ref` bindings section, M3, D-SAFE-8 and D-SAFE-9 on the page, in the log and fork/safe/plan.md section 0.3, that plan's section 1.6, D-SAFE2-6 and W-148's notes; a page change past the budget, under section 3 step 4's last clause | section 8.14's third decision, a dated mark |
+| RR2-m1, the aggregate clause credits assignment.md:159-161 with more than it says | MINOR, not records-only | upstream's docs/design/assignment.md:159 at 9192ee003 is the heading "Tuples, structs, choice types, and data classes" and :161 reads "_TODO_: Describe the rules for assignment in these cases."; docs/design/classes.md:130-131 there, "Data classes are types that consist of data fields that are publicly accessible and directly read and manipulated by client code", and no array is named; temporal_safety.md:290-293 reads "the assignment of a tuple, struct, array, choice type or class with no user-written `AssignWith` impl, whose rules assignment.md:159-161 leaves a TODO", and mutation_safety.md:243-244, the log :3151-3152, fork/safe/plan.md :450-451, D-SAFE2-6 :1482-1484 and W-148's notes carry the same clause; the widening to arrays and to classes with private fields, `Core.String` among them (core/prelude/types/string.carbon:16-26, `private var ptr: Char*;` and `private var size: i64;`), is section 8.14's third decision, not upstream's text (R32 (a), R10) | to round 3's fixer, not touched here: upstream's heading quoted, and the widening stated as this design's classification with its reason, `Core.String`, in every copy, with a dated mark | section 8.14's third decision, the same dated mark |
+| RR2-m2, records number this review round 3, and B.3.8 is left stale | MINOR, records-only | the Status line (:21-23) reads "round 3 reviews it next" and section 8.14's last paragraph (:3195-3196) "round 3, a fresh agent, reviews cbdc0552e and this records commit", while section 3 step 5 has "one fresh agent per round" and section 8.13 hands round 1's findings to "round 2's fixer", whose fold this review reads; section 8.14's first sentence (:3058) has round 2 go back to section 3 step 4, where by step 5 round 1, not dry, does; fork/safe/plan.md's realigned notes (:3001-3004) gained, by b30c77990, "The focused re-review's round 1 found four page defects in that fold, folded by cbdc0552e", while B.3.8 (:7274-7316), which section 8.7's decision amends in place, did not, and section 8.14's pointer list of fifteen blocks does not name it | folded by this records commit: dated marks in the Status line and in section 8.14's first and last paragraphs name this review round 2; B.3.8's block gains the sentence in the file's words and its lead paragraph a dated mark; section 8.14's pointer decision a dated mark that B.3.8 is amended in place; the Sections list names sections 8.14 and 8.15 | Status; Sections; section 8.14; B.3.8 |
+
+Decisions under R29, each with its break condition:
+
+-   This round's ids keep the review's spelling though section 8.10 uses
+    RR2-m1 and RR2-m2 for the plan's own round 2: every mark of this round
+    reads "re-review round 2" with an RR2 id, every mark of section 8.10
+    reads "review fold". Break condition: a reviewer takes one round's
+    finding for the other's; this round's ids then gain a prefix by a dated
+    mark.
+-   Round 3's fixer finds the budget spent. This records commit neither
+    revises the plan nor widens the budget, and it does not choose for that
+    fixer: it records the orchestrator's ruling and section 3 step 4's last
+    clause side by side, the review reading RR2-M1's fold as a plan revision
+    under that clause. Break condition: the orchestrator's next
+    ruling names another path; this section then gains a dated mark naming
+    it.
+-   The round of a fold is the round whose review reads it, as section 8.13's
+    "round 2's fixer" has it, so section 8.14's heading and the fixer's
+    marks, "re-review round 2" with an RR1 id, stay as they are; RR2-m2's
+    marks correct the two places that gave this review a later number and,
+    beyond the review's list (R17), section 8.14's first sentence, which had
+    round 2 go back to section 3 step 4. Break condition: a reviewer reads a
+    fold's mark as a round of its own; the marks then name the review's round
+    by a dated mark.
+-   B.3.8 is amended in place rather than added to section 8.14's pointer
+    list: section 8.7's decision names it among the blocks amended in place,
+    and the pointer list is for blocks whose targets a fix commit changed,
+    where B.3.8's was changed by the records commit b30c77990. Break
+    condition: a reviewer needs B.3.8 kept as commit 2's text; the sentence
+    then moves to a dated pointer to this section.
+-   fork/safe/plan.md's realigned notes, the log and W-148's notes are not
+    changed: they state the folds made, and this round's two page findings
+    are not folded yet; round 3's fixer amends every copy with its fold, in
+    the same words (R27). Break condition: a reviewer finds a record stating
+    RR1-m1's test as closed at its root; that line then gains a dated mark
+    pointing here.
+
+**Measured** by this records commit, 2026-10-29, in rec2/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003
+    again (2026-10-28 20:51:45 UTC, upstream PR 8054), the review's tip;
+    `git log 9192ee003..upstream/trunk` lists nothing, and `git log
+    c1e83b0b7..9192ee003` over section 0.1's nine files,
+    docs/design/assignment.md, docs/design/expressions/indexing.md and
+    core/prelude/types/int.carbon, uint.carbon, cpp/int.carbon and
+    string.carbon lists only f21c62524 (classes.md); the fork's
+    assignment.md and those four prelude files equal upstream's there.
+    Section 0.1's quotes read at the tip as before, among them p005434:83,
+    :660-669 and :831-835, p005914:85-88, p000257:355-358,
+    docs/design/README.md:2130-2132, docs/design/safety/README.md:260-262
+    and docs/design/expressions/arithmetic.md:171-173.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-rec2/rg1, removed after, against /home/user/carbon-lang
+    at 9192ee003: "checked 273 quotes, 0 failed" and "checked 89 silence
+    checks, 0 failed"; the H1 subsets, byte-equal to the review's,
+    "checked 97 quotes, 0 failed", "checked 120 quotes, 0 failed" and
+    "checked 5 silence checks, 0 failed"; the document-review fold's nine
+    quotes and the sixteen of round 2's fixer, "checked 9 quotes, 0 failed"
+    and "checked 16 quotes, 0 failed"; and the thirteen upstream lines this
+    round cites (docs/design/assignment.md:148, :159 and :161,
+    docs/design/classes.md:128 and :130, core/prelude/types/cpp/int.carbon:16,
+    :17, :37, :1011, :1179 and :1185, string.carbon:23 and :25), "checked 13
+    quotes, 0 failed".
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the
+    table of section 0.8 names them, PR 53's pushed head still 2407efa74.
+-   The id re-scan widened to W-3[6-9][0-9] over the 165 origin refs and
+    local branches and the 22 worktrees: the ledgers end at W-363, the text
+    names W-360 to W-365, W-398 and W-399 as before, and W-365 only in this
+    file; no id is taken, no residue is filed and no F id is minted.
+-   B.3.8's block, with its placeholders filled as fork/safe/plan.md fills
+    them, equals that file's realigned notes, line breaks aside.
+-   R31 on this plan, the one file this commit changes: before, headings
+    {1: 1, 2: 16, 3: 128}, bullets 133, numbered 31, rows 208, 7665 lines;
+    after, headings {1: 1, 2: 16, 3: 129}, bullets 155, numbered 31, and
+    rows 213, the same after the edit and after each prek pass, in 7860
+    lines; the changes are this section's heading, its 22 bullets and its
+    five table rows, with no unguarded block.
+-   prek to a fixpoint with a private cache, deleted after: its first pass
+    reflowed, under rumdl's MD013, section 8.14's first paragraph, which a
+    mark of this commit lengthens, and this section's first paragraph, each
+    holding a scratch path longer than a line, the word diff empty; the
+    later passes exit 0 with no change. rumdl@0.2.58: no issues; the heading
+    sets differ by this section's heading alone, and the
+    manufactured-heading grep is empty.
+-   `runner.py --self-test`: "150 programs parsed, 56 bullets in table, OK".
+    The model-name grep over this plan's changed lines and the message: no
+    hit outside the trailers.
+-   The merge-tree of the new head against trunk and the 18 held heads: the
+    sets of section 0.8's table, unchanged.
+
+No page, example, log, fork/safe/plan.md or ledger line changes, so the
+nightly compiles of section 0.7 are not re-run and the ledger's `json.load` is
+not owed; nothing is pushed (section 3 step 7 waits for a dry round).
 
 ## Sign-off
 
@@ -7280,7 +7468,11 @@ section 3 step 4 (commit 2 writes the paragraph with "pending" in their
 place), and so is `<sha2>`, commit 2's own hash (amended 2026-10-28,
 document-review fold: R2-m1). The paragraph's last sentence reads as amended
 2026-10-28, document-review fold: R2-m3, the notes on PR 67 being the PR 67
-note commit's, not yet on PR 67's head.
+note commit's, not yet on PR 67's head. The sentence after the fold record's,
+on the focused re-review's round 1 and cbdc0552e, is the one the records
+commit b30c77990 added to the file, in the file's words (amended 2026-10-29,
+re-review round 2: RR2-m2; section 8.7 amends this block in place, and
+b30c77990 had left it without the sentence).
 
 <!-- google-doc-style-ignore -->
 
@@ -7307,7 +7499,10 @@ not quoted, zeroes every type's storage as hardening initialization, so I5's
 rule is upstream's and only its disclosure changed. The examples whose outcomes
 changed are safe2-plan.md's section 4.
 The two document reviews returned <verdict 1> and <verdict 2>, folded by
-<fixes>; the fold record is safe2-plan.md's section 8.7. The six items are PR
+<fixes>; the fold record is safe2-plan.md's section 8.7. The
+focused re-review's round 1 found four page defects in that fold, folded by
+cbdc0552e (the pages; amended 2026-10-29, re-review round 2: safe2-plan.md
+section 8.14). The six items are PR
 67's; their notes there are to read "REALIGNED" or "CLOSED" with this branch's
 dry head once SAFE-2's PR 67 note commit lands (safe2-plan.md section 3 step
 6; amended 2026-10-28, document-review fold: R2-m3, where this read "their

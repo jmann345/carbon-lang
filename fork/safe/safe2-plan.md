@@ -47,8 +47,10 @@ folded and none rejected, into section 8.16's texts E1 to E6 and its records,
 and records the orchestrator's ruling under R29: one fourth fix commit, for
 RR2-M1 and RR2-m1 only, applies E1 to E6 as rev 9 leaves them, and round 3 of
 section 3 step 5, the loop's last, reviews it and its records commit (amended
-2026-10-29, rev 9: section 8.16). Rev 7 is the plan amender's fold of the
-focused re-review of rev 6 (486d2bc74), whose verdict was
+2026-10-29, rev 9: section 8.16). The fourth fix commit is 9d0b072cb, made on
+2026-10-29 by that ruling, and round 3 reviews it and its records commit next
+(amended 2026-10-29, fourth fix commit: section 8.17). Rev 7 is the plan
+amender's fold of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
 and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
 AM6-M1, AM6-m1). AM6-M1: section 2.1's test, as rev 6 worded it, failed five
@@ -2033,7 +2035,10 @@ trailers.
     (amended 2026-10-29, rev 8: section 8.16). The ruling of 2026-10-29,
     recorded at the end of section 8.16, allows it as the fourth fix commit, for
     RR2-M1 and RR2-m1 only, applying E1 to E6 as rev 9 leaves them and nothing
-    else (amended 2026-10-29, rev 9: the ruling).
+    else (amended 2026-10-29, rev 9: the ruling). The fix commits are four,
+    the fourth by the ruling: 9d0b072cb, made on 2026-10-29, applies E1 to E6
+    and nothing else, and round 3 of step 5 reviews it and its records commit
+    (amended 2026-10-29, fourth fix commit: section 8.17).
 5.  **The focused re-review of the fix commits**, one fresh agent per round,
     at most three rounds, until dry: dry is no BLOCKER and no MAJOR and every
     MINOR records-only, folded by one records commit. A round that is not dry
@@ -3057,7 +3062,7 @@ section 8.7's records commit:
 | --- | --- | --- | --- |
 | `<sha1>` | C.1; D's second and fourth blocks | the files of section 3 step 8 | 48f2e66a0 |
 | `<sha2>` | C.1; D's second and fourth blocks | the files of section 3 step 8 | 954f1c542 |
-| `<fixes>` | D's second and fourth blocks | the files of section 3 step 8 | 0f281d8bd, e1574b003 and cbdc0552e (amended 2026-10-29, re-review round 2: section 8.14, where this read "0f281d8bd and e1574b003, with round 2's fix commit when it is made (decided below)") |
+| `<fixes>` | D's second and fourth blocks | the files of section 3 step 8 | 0f281d8bd, e1574b003, cbdc0552e and 9d0b072cb, the fourth by the orchestrator's ruling of 2026-10-29 (amended 2026-10-29, fourth fix commit: section 8.17, where this read "0f281d8bd, e1574b003 and cbdc0552e"; amended 2026-10-29, re-review round 2: section 8.14, where this read "0f281d8bd and e1574b003, with round 2's fix commit when it is made (decided below)") |
 | `<verdict 1>` | D's fourth block | the files of section 3 step 8 | "APPROVE-WITH-FIXES with three MAJORs and three MINORs", the words of fork/safe/plan.md's realigned notes |
 | `<verdict 2>` | D's fourth block | the files of section 3 step 8 | "APPROVE-WITH-FIXES with four MINORs", the same notes' words |
 | `<head>` | C.1; C.2's message and blocks; C.3; D's first, second, fourth and fifth blocks | section 3 step 6 for C.2, step 7's push, step 8 for C.1, C.3 and D | not known: the head at which step 5 is dry, and round 1 is not |
@@ -3236,7 +3241,10 @@ Decisions under R29, each with its break condition:
     the one record that names the fold commits, gain cbdc0552e by a dated
     mark; section 8.13's decision named the log's RG-1 paragraph too, which
     names commits 1 and 2 only and is left as it is. Break condition: a
-    later fix commit; it then joins the list the same way.
+    later fix commit; it then joins the list the same way. (Met by
+    9d0b072cb, the fourth fix commit, which joins the list in section 8.13's
+    row and in the realigned notes and B.3.8 by dated marks; amended
+    2026-10-29, fourth fix commit: section 8.17.)
 
 **Measured** after cbdc0552e, 2026-10-29, logs in the scratch's logs/:
 
@@ -4223,8 +4231,10 @@ Decisions under R29, each with its break condition:
     free id, stays free. Break condition: section 8.16's third decision, the
     ruling keeps the fold out of SAFE-2.
 -   `<fixes>` (section 8.13's placeholder row) stays 0f281d8bd, e1574b003 and
-    cbdc0552e, since this round makes no fix commit. Break condition: section
-    8.14's last decision, a later fix commit, which then joins the list.
+    cbdc0552e, since this round makes no fix commit. Break condition:
+    section 8.14's last decision, a later fix commit, which then joins the
+    list. (Met by 9d0b072cb, the fourth fix commit, recorded at the end of
+    this section; amended 2026-10-29, fourth fix commit: section 8.17.)
 
 **Measured** by this records commit, 2026-10-29, logs in the scratch's logs/:
 
@@ -4265,6 +4275,98 @@ ac57e2ea7 left out. It was a replacement, not an append; the word diff and prek
 were checked after it, prek reaching the fixpoint that section 8.16's Measured
 list records. Rev 9 edits every text it changes by Edit (added 2026-10-29,
 stop-and-amend re-review: RR8-m3; section 8.10's precedent for rev 4).
+
+**The fourth fix commit** (added 2026-10-29, fourth fix commit). Under the
+orchestrator's ruling of 2026-10-29 at the end of section 8.16, one fresh
+implementer made the fourth fix commit, 9d0b072cb, "SAFE-2 fix: the built-in
+test by where an implementation is written and the aggregate clause as this
+design's classification (RR2-M1, RR2-m1)", on 2026-10-29 over rev 9
+(38bc461b5). It applies section 8.16's blocks E1 to E6 as rev 9 leaves them,
+with `<date>` set to 2026-10-29, and nothing else: E1 on
+docs/design/safety/temporal_safety.md, E2 on mutation_safety.md, E3 on
+fork/decision-log.md and section 0.3 of fork/safe/plan.md, E4 on this plan's
+D-SAFE2-6, E5 at its five places and E6 on W-148's notes in
+fork/inventory/work-items.json, each by Edit (R25) and each block rewrapped
+by hand as section 8.16's fold-commit paragraph says. It is the fourth fix
+commit of section 3 step 4, past the budget of three only by the ruling and
+for RR2-M1 and RR2-m1 only. This records commit, "SAFE-2 records: the fourth
+fix commit recorded", is not counted; it writes 9d0b072cb into `<fixes>`
+(the placeholder row of section 8.13), the realigned notes of
+fork/safe/plan.md and B.3.8 by dated marks. Round 3 of section 3 step 5, the
+loop's last, reviews 9d0b072cb and this records commit under the step's dry
+test before steps 6 to 8. The ruling's break condition stands: a finding of
+round 3 that needs a page change stops SAFE-2 at a plan revision with no
+further fix commit, and the orchestrator then re-plans the review process,
+two fresh document reviews of the whole tree before any further commit,
+recorded in this plan. The scratch is safe2-rev8/fix4/ under the session's
+scratchpad, beside the amender's safe2-rev8/amend/. Everything measured is
+container-local, EXPECTED, not of record (R9).
+
+**Measured** for 9d0b072cb, 2026-10-29, logs in the scratch's logs/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003
+    again, and `git log 9192ee003..upstream/trunk` lists nothing; since
+    c1e83b0b7, over p005434, p005914, p000257, docs/design/README.md,
+    safety/README.md, expressions/arithmetic.md, values.md, classes.md,
+    slices.md, assignment.md, the cited core/prelude files and
+    toolchain/check/handle_operator.cpp, the log lists only f21c62524
+    (classes.md) and 2c9739799 (handle_operator.cpp, whose :99-123 equal the
+    fork's), and the fork's assignment.md, int.carbon, uint.carbon,
+    cpp/int.carbon and string.carbon equal upstream's there.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-implementer/rg1, removed after, against
+    /home/user/carbon-lang at 9192ee003: "checked 273 quotes, 0 failed" and
+    "checked 89 silence checks, 0 failed"; the H1 subsets, "checked 97
+    quotes, 0 failed", "checked 120 quotes, 0 failed" and "checked 5 silence
+    checks, 0 failed"; round 2's, rev 8's and rev 9's lines, "checked 13
+    quotes, 0 failed", "checked 20 quotes, 0 failed" and "checked 26 quotes,
+    0 failed".
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the
+    table of section 0.8 names them, PR 53's pushed head still 2407efa74.
+-   bin/dryrun9.py on scratch copies at 38bc461b5: 26 OK lines and "ALL
+    OK"; the committed files equal its output with `<date>` set to
+    2026-10-29, and the amender's amend/dry/ copies modulo line breaks and
+    that date; each block lands once in the passage it names.
+-   R31: the headings, bullets, numbered items and table rows of the five
+    markdown files are unchanged, so the deltas of section 8 item 1 stand;
+    lines temporal_safety.md 1607 to 1656, mutation_safety.md 1511 to 1533,
+    the log 8284 to 8317, fork/safe/plan.md 3010 to 3047 and this plan 8744
+    to 8776; the lines that start with `+`, with `#` and a digit, with a
+    digit and a period or with a `*` or `-` that is no list marker are the
+    same on each file before and after.
+-   prek to a fixpoint with a private cache, deleted after: its first pass
+    refilled D-SAFE2-6's paragraph, which holds a 94-column line, under
+    rumdl's MD013, the words equal, and its second pass exits 0 with no
+    change; rumdl@0.2.58: no issues in the five files; the fenced blocks and
+    the heading sets are unchanged, the manufactured-heading grep is empty
+    and the link check passes.
+-   `json.load` on the ledger passes, and the log's D-SAFE-1 to D-SAFE-23
+    block, 1217 lines as rev 8's bin/dsafe.py counts it, is identical to
+    section 0.3 of fork/safe/plan.md.
+-   The nightly compiles of section 0.7 on the pages as committed, no
+    example having changed: EX-M-4a, EX-M-4c and `Peek` print 1, `Peek2`
+    and `Peek4` print 6 and EX-TM-9 prints 3, each run with exit 0; EX-I-1,
+    EX-I-2, EX-I-5, EX-TM-2, EX-TM-3, EX-SP-4 and EX-SP-6 compile with exit
+    status 0; EX-TM-7 and EX-SP-3 exit 1 with the table's diagnostics.
+-   `runner.py --self-test`: "self-test: 150 programs parsed, 56 bullets in
+    table, OK". The merge-tree of 9d0b072cb's tree against trunk and the 18
+    held heads gives the sets of the table of section 0.8. The model-name
+    grep over the added lines and the message: no hit outside the trailers.
+-   The id re-scan widened to W-3[6-9][0-9] over the 165 origin refs and
+    local branches and the 23 worktrees, this implementer's /dev/shm one
+    among them: the ledgers end at W-363 and W-365 is named only in this
+    file; no id is taken, no residue is filed and no F id is minted.
+-   This records commit changes this plan and the realigned notes of
+    fork/safe/plan.md only. R31 on this plan: before, headings
+    {1: 1, 2: 16, 3: 131}, bullets 186, numbered 31, rows 230, 8776 lines;
+    after, the same headings, bullets 197, numbered 31, rows 230, 8892
+    lines, the same after the edit and after each prek pass, the new
+    bullets being this list's; on fork/safe/plan.md every count stands and
+    the lines go from 3047 to 3051. prek reaches its fixpoint with no change
+    on its first pass, rumdl@0.2.58 finds no issue in the two files, the
+    heading sets are unchanged, the manufactured-heading grep is empty, and
+    the model-name grep over the added lines and the message finds nothing
+    outside the trailers.
 
 ## Sign-off
 
@@ -4342,6 +4444,13 @@ step 5, the loop's last, reviews it and its records commit under the step's dry
 test before section 3's steps 6 to 8; a finding of round 3 that needs a page
 change stops SAFE-2 at a plan revision again with no further fix commit, the
 ruling's break condition (added 2026-10-29, rev 9).
+
+The fourth fix commit, 9d0b072cb, made on 2026-10-29 under the ruling,
+applies E1 to E6 as rev 9 leaves them and nothing else (section 8.17), so
+rev 5's sign-off stands for every text it leaves as it was; round 3 of
+section 3 step 5, the loop's last, reviews it and its records commit under
+the step's dry test before section 3's steps 6 to 8, the ruling's break
+condition standing (added 2026-10-29, fourth fix commit: section 8.17).
 
 ## Hand-off notes for the implementer
 
@@ -8388,7 +8497,10 @@ note commit's, not yet on PR 67's head. The sentence after the fold record's,
 on the focused re-review's round 1 and cbdc0552e, is the one the records
 commit b30c77990 added to the file, in the file's words (amended 2026-10-29,
 re-review round 2: RR2-m2; section 8.7 amends this block in place, and
-b30c77990 had left it without the sentence).
+b30c77990 had left it without the sentence). The sentence after that one, on
+the focused re-review's round 2 and 9d0b072cb, is the one the records commit
+of the fourth fix commit added to the file, in the file's words (amended
+2026-10-29, fourth fix commit: section 8.17).
 
 <!-- google-doc-style-ignore -->
 
@@ -8418,7 +8530,11 @@ The two document reviews returned <verdict 1> and <verdict 2>, folded by
 <fixes>; the fold record is safe2-plan.md's section 8.7. The
 focused re-review's round 1 found four page defects in that fold, folded by
 cbdc0552e (the pages; amended 2026-10-29, re-review round 2: safe2-plan.md
-section 8.14). The six items are PR
+section 8.14). The focused re-review's round 2 found the built-in test
+incomplete and its aggregate clause credited to upstream's text, folded past
+the budget of three by 9d0b072cb, the fourth fix commit, which the
+orchestrator's ruling of 2026-10-29 authorized (the pages; amended 2026-10-29,
+fourth fix commit: safe2-plan.md sections 8.16 and 8.17). The six items are PR
 67's; their notes there are to read "REALIGNED" or "CLOSED" with this branch's
 dry head once SAFE-2's PR 67 note commit lands (safe2-plan.md section 3 step
 6; amended 2026-10-28, document-review fold: R2-m3, where this read "their

@@ -3038,7 +3038,11 @@ folded by 0f281d8bd and e1574b003 (the pages) and the records commit that
 writes this sentence; the fold record is safe2-plan.md's section 8.7. The
 focused re-review's round 1 found four page defects in that fold, folded by
 cbdc0552e (the pages; amended 2026-10-29, re-review round 2: safe2-plan.md
-section 8.14). The six
+section 8.14). The focused re-review's round 2 found the built-in test
+incomplete and its aggregate clause credited to upstream's text, folded past
+the budget of three by 9d0b072cb, the fourth fix commit, which the
+orchestrator's ruling of 2026-10-29 authorized (the pages; amended 2026-10-29,
+fourth fix commit: safe2-plan.md sections 8.16 and 8.17). The six
 items are PR 67's; their notes there are to read "REALIGNED" or "CLOSED" with
 this branch's dry head once SAFE-2's PR 67 note commit lands (safe2-plan.md
 section 3 step 6; amended 2026-10-28, document-review fold: R2-m3, where this

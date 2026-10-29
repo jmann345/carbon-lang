@@ -6,10 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 10, 2026-10-29 -- round 3 not dry (RR3-M1, RR3-m1); the review
-process re-planned by the ruling of section 8.19: two whole-tree document
-reviews, rev 11, a focused plan re-review, one fold commit, a two-reviewer
-round 4 (amended 2026-10-29, rev 10: the ruling on round 3, section 8.19, where
+**Status:** rev 11, 2026-10-29 -- the whole-tree reviews folded (review A: two
+MAJORs and four MINORs, two of them records-only; review B: three MAJORs and
+three MINORs), with round 3's RR3-M1 and RR3-m1; the fifth fix commit's texts F1
+to F24 dry-run; NOT signed off until the focused plan re-review (amended
+2026-10-29, rev 11: section 8.20, where this read "rev 10, 2026-10-29 -- round 3
+not dry (RR3-M1, RR3-m1); the review process re-planned by the ruling of
+section 8.19: two whole-tree document reviews, rev 11, a focused plan re-review,
+one fold commit, a two-reviewer round 4"; amended 2026-10-29, rev 10: the ruling
+on round 3, section 8.19, where
 this read "rev 9, 2026-10-29 -- the fourth fix commit authorized for RR2-M1 and
 RR2-m1; round 3 reviews it"; amended 2026-10-29, rev 9: section 8.16's ruling,
 where this read "rev 8, 2026-10-29"); SIGNED OFF FOR IMPLEMENTATION at rev 5,
@@ -33,10 +38,10 @@ next"). The focused re-review's round 2 returned APPROVE-WITH-FIXES on one MAJOR
 and two MINORs, one of them records-only, so it is not dry: its records-only
 MINOR, RR2-m2, is folded by the round's records commit, and RR2-M1 and RR2-m1,
 which change pages, go to round 3's fixer, for which the budget of section 3
-step 4 has no fix commit left (amended 2026-10-29, re-review round 2: section
-8.15). Rev 8, 2026-10-29, is the stop-and-amend of section 3 step 4's last
-clause: round 3's fixer reproduced and accepted RR2-M1 and RR2-m1, found the
-budget spent, and re-planned the built-in test at its root, by where an
+step 4 has no fix commit left (amended 2026-10-29, re-review round 2:
+section 8.15). Rev 8, 2026-10-29, is the stop-and-amend of section 3 step 4's
+last clause: round 3's fixer reproduced and accepted RR2-M1 and RR2-m1, found
+the budget spent, and re-planned the built-in test at its root, by where an
 implementation is written rather than by the type it serves, with the aggregate
 clause stated as this design's classification beside
 docs/design/assignment.md:159's heading; section 8.16 records the stop and gives
@@ -66,7 +71,17 @@ it re-plans, two whole-tree document reviews, their fold in rev 11 under a
 focused plan re-review of at most two rounds, one fold commit, the fifth fix
 commit, and a round 4 by two fresh agents; RR3-M1 and RR3-m1 go with the
 reviews' findings to rev 11's fold agent, and no page changes
-(amended 2026-10-29, rev 10: the ruling on round 3, section 8.19). Rev 7 is the
+(amended 2026-10-29, rev 10: the ruling on round 3, section 8.19). Rev 11,
+2026-10-29, is that fold: the two whole-tree reviews, both APPROVE-WITH-FIXES on
+rev 10's head d86fce1b9, raised five MAJORs and seven MINORs, which with RR3-M1
+and RR3-m1 are ten findings; every one is ACCEPTED but the slices.md half of
+RA-m1, RB-M3's rule goes to residue W-365 with a pointer on every copy, and the
+built-in test is re-derived from the safety argument, an operator's `ref`
+operand being exempt exactly when no code written outside core/prelude can run
+while it is bound, the thunk of generics/details.md:5759-5779 and its
+conversions and the interim `=`'s in-place initialization included; section 8.20
+gives the fifth fix commit's texts F1 to F24, dry-run, and no page changes
+at this revision (added 2026-10-29, rev 11: section 8.20). Rev 7 is the
 plan amender's fold
 of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
@@ -87,10 +102,10 @@ changes, so the implementation resumes from this revision's commit with section
 the implementer stopped before committing commit 1: the superseded texts that
 Appendix A's blocks A.1.6 and A.5.10 quote had dropped the link markup of three
 links on the page lines they quote, so they were not byte-equal to the pages at
-2407efa74. Rev 6 restored the three links in those two quotes, stated in section
-2.1 the byte-equality test every superseded text and anchor meets, added that
-test to section 8 item 5, and corrected A.10.2's line count from 10 to 11 and
-the line ranges in A.1.6's and A.5.10's headings (section 8.12; amended
+2407efa74. Rev 6 restored the three links in those two quotes, stated in
+section 2.1 the byte-equality test every superseded text and anchor meets, added
+that test to section 8 item 5, and corrected A.10.2's line count from 10 to 11
+and the line ranges in A.1.6's and A.5.10's headings (section 8.12; amended
 2026-10-28, implementation: stop-and-amend: link markup in two superseded
 quotes). Rev 5 was the fixer's fold of the focused re-review (round 3) of rev 4
 (9d48a863e), whose verdict was APPROVE-WITH-AMENDMENTS: no BLOCKER (RR2-B1
@@ -113,18 +128,18 @@ enclosing `Plain` aggregate, a struct or class that holds a `str`, still mutated
 a borrowed `Core.SharedImmutable` object through `T*`), with one MAJOR and four
 MINORs; all six were folded and none was rejected (section 8.9). Rev 2
 (46980f8bd) folded the two plan reviews, review A (REJECT, two BLOCKERs) and
-review B (APPROVE-WITH-AMENDMENTS), 21 findings, every one accepted (section
-8.8; review A's ids carry the prefix "A-", so A-B-1 is review A's B-1); rev 1
-(475b7ecb0) was the planner's draft. Workstream SAFE-2 realigns the six
+review B (APPROVE-WITH-AMENDMENTS), 21 findings, every one accepted
+(section 8.8; review A's ids carry the prefix "A-", so A-B-1 is review A's B-1);
+rev 1 (475b7ecb0) was the planner's draft. Workstream SAFE-2 realigns the six
 "departures from accepted text" of SAFE-1's design (fork decision F-013) to
 upstream's recorded direction, as rulebook R32 requires since the owner's
 directive of 2026-10-21 ("Direction drifts are not permitted"; decision-log
 V-3b, DR-0). Branch `claude/carbon-fork-0-1-safe` (PR 53, held open, second in
 the land sequence after PR 67), head 2407efa74; this plan is a new file beside
-fork/safe/plan.md, which receives a dated pointer paragraph in commit 2 (section
-2.3). Upstream was read at its tip 0421bf3b4 (fetched 2026-10-28) and re-read
-for rev 3 at 22f3cd353 and for rev 4, rev 5 and rev 6 at 07718a832, where no
-quoted file has changed (section 0.1). Records and design text only: no
+fork/safe/plan.md, which receives a dated pointer paragraph in commit 2
+(section 2.3). Upstream was read at its tip 0421bf3b4 (fetched 2026-10-28) and
+re-read for rev 3 at 22f3cd353 and for rev 4, rev 5 and rev 6 at 07718a832,
+where no quoted file has changed (section 0.1). Records and design text only: no
 toolchain, prelude, golden, program or conformance change; the two SKIP stubs
 stay as they are; nothing is built.
 
@@ -181,7 +196,9 @@ and section 2.6).
     2026-10-29, re-review round 3), and the stop-and-amend record of rev 10,
     with the orchestrator's ruling on round 3 and the review process it re-plans
     (section 8.19; amended 2026-10-29, rev 10: the ruling on round 3,
-    section 8.19).
+    section 8.19), and the stop-and-amend record of rev 11, the fold of the
+    two whole-tree reviews with the built-in test re-derived and the fifth fix
+    commit's texts F1 to F24 (section 8.20; amended 2026-10-29, rev 11).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -1390,8 +1407,8 @@ replacement text serves both (Appendix B.1).
     storage and Strict code, and `Set`'s by-value receiver
     (buf.carbon:48-53 at 2407efa74: `*PointerOffset(self.ptr, i) = value`)
     wrote an element through a shared path: the focused re-review's
-    `fn Peek8(b: Core.Buf(str)*) -> i64 { let s: str =
-    *b->AsSlice().Data(); b->Set(0, "longer"); return s.Size(); }` binds `s`
+    `fn Peek8(b: Core.Buf(str)*) -> i64 { let s: str = *b->AsSlice().Data();
+    b->Set(0, "longer"); return s.Size(); }` binds `s`
     frozen on the open element and then has the trusted body write it, and a
     stand-in class of the same shape prints 6 on the nightly (section 0.7).
     Decided under R29: `Set` takes `ref self` for every element type, the
@@ -1502,60 +1519,62 @@ replacement text serves both (Appendix B.1).
     its referent for its lifetime: no other path reads or writes it, or, for a
     `ref` of a `const` type, writes it (the read-only case of p005434:850-852's
     `restrict`, a frozen loan); a `ref` binding not marked `bound` does not
-    escape (`captures(none)`), one marked `bound` escapes only into the result (`captures(ret:
-    address, provenance)`, p005434:846-848). The source decides only whether the
-    checker can establish this. On a closed place it is a checked reborrow that
-    suspends every other carrier of the place (T2, T4); a `const` `ref` on an
-    open place of a `Core.SharedImmutable` type is checked the same way; any
-    other `ref` on an open place is an `unsafe` formation, spelled at the
-    binding as T6 already spells a binding through a ⊥ carrier (`let ref r: T =
-    unsafe *p;`, `unsafe F(ref *p)`), whose obligation is the one p005434 gives
-    unsafe code, to "adhere to just the `noalias` restrictions" (:861-862);
-    unmarked it is `StrictRefFromShared`. The shared-kind `ref` is gone. The
-    `ref` operand of a built-in operator, the first operand of assignment, of
-    the compound assignments and of `++` and `--`, the operand of `&`, the
-    object of member access and the first operand of indexing (p005434:302-318;
-    docs/design/assignment.md:76-82, "a `(ref self: Self)` parameter" whatever
-    the operand's form), lives for the one operation, during which nothing else
-    is evaluated, so where the implementation is built in it is established on
-    any place, open ones included, forms no loan of its own, neither M3(d)'s
-    exclusive-receiver call nor M3(e)'s exclusive loan, and M3 alone decides
-    what the operation may do through a shared path; a user-written impl's `ref
-    self` is a `ref` binding under this rule and its call M3(d)'s (amended
-    2026-10-28, document-review fold: R1-M1: without it upstream's operator rule
-    made every `Plain` write through `T*` that M3 permits, `q->n = 2` in
-    EX-M-4d's `Peek` among them, a `ref` binding on an open place and so
-    `StrictRefFromShared`). Built in is decided by where an implementation is
-    written, not by the type it serves: the language's own `&`, member access
-    naming a field and indexing of an array, the toolchain's interim `=` below,
-    and every impl of an operator interface written in core/prelude whose body,
-    while its `ref` operand is bound, calls no impl written outside
-    core/prelude, whichever type it is for, each of the prelude's that takes a
-    `ref` operand having a builtin body or one that calls only the prelude's own
-    impls (the impls docs/design/assignment.md:168-170 says are "provided for
-    built-in types as necessary to give the semantics described above",
+    escape (`captures(none)`), one marked `bound` escapes only into the result
+    (`captures(ret: address, provenance)`, p005434:846-848). The source decides
+    only whether the checker can establish this. On a closed place it is a
+    checked reborrow that suspends every other carrier of the place (T2, T4); a
+    `const` `ref` on an open place of a `Core.SharedImmutable` type is checked
+    the same way; any other `ref` on an open place is an `unsafe` formation,
+    spelled at the binding as T6 already spells a binding through a ⊥ carrier
+    (`let ref r: T = unsafe *p;`, `unsafe F(ref *p)`), whose obligation is the
+    one p005434 gives unsafe code, to "adhere to just the `noalias`
+    restrictions" (:861-862); unmarked it is `StrictRefFromShared`. The
+    shared-kind `ref` is gone. The `ref` operand of a built-in operator, the
+    first operand of assignment, of the compound assignments and of `++` and
+    `--`, the operand of `&`, the object of member access and the first operand
+    of indexing (p005434:302-318; docs/design/assignment.md:76-82, "a
+    `(ref self: Self)` parameter" whatever the operand's form), lives for the
+    one operation, during which nothing else is evaluated, so where the
+    implementation is built in it is established on any place, open ones
+    included, forms no loan of its own, neither M3(d)'s exclusive-receiver call
+    nor M3(e)'s exclusive loan, and M3 alone decides what the operation may do
+    through a shared path; a user-written impl's `ref self` is a `ref` binding
+    under this rule and its call M3(d)'s (amended 2026-10-28, document-review
+    fold: R1-M1: without it upstream's operator rule made every `Plain` write
+    through `T*` that M3 permits, `q->n = 2` in EX-M-4d's `Peek` among them, a
+    `ref` binding on an open place and so `StrictRefFromShared`). Built in is
+    decided by where an implementation is written, not by the type it serves:
+    the language's own `&`, member access naming a field and indexing of an
+    array, the toolchain's interim `=` below, and every impl of an operator
+    interface written in core/prelude whose body, while its `ref` operand is
+    bound, calls no impl written outside core/prelude, whichever type it is for,
+    each of the prelude's that takes a `ref` operand having a builtin body or
+    one that calls only the prelude's own impls (the impls
+    docs/design/assignment.md:168-170 says are "provided for built-in types as
+    necessary to give the semantics described above",
     core/prelude/types/int.carbon:331's `"int.sadd_assign"` and :395-399's `Inc`
     as much as core/prelude/types/cpp/int.carbon:1011's `"int.sadd_assign"` and
     :1183-1187's `Inc` for the `CppCompat` integers, classes that adapt an
     integer, :16-38), and a user's type that fills their `U`
     (core/prelude/types/int.carbon:329-331, `U: ImplicitAs(Int(N))`) being
     converted to `other: Self` before `ref self` is bound; any other impl is
-    user-written, docs/design/assignment.md:302-316's default `*self = *self $
-    other;` among them wherever the `AssignWith` or `OpWith` impl it calls is
-    written outside core/prelude. M3 counts every assignment operator, compound
-    assignment included, and `++` and `--` as an assignment to the first
-    operand. docs/design/assignment.md:184 has "The statement `x = y;` is
-    rewritten to `x.(AssignWith(U).Op)(y);`" and :105-106 "The type is still
-    required to implement `AssignWith` for the assignment to be valid", so there
-    an assignment is classified by where its `AssignWith` impl is written; the
-    toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) calls
-    none, and counting it as the language's own on every type with no
-    `AssignWith` impl, an array or a class that is not a data class among them
-    besides :159's "Tuples, structs, choice types, and data classes", whose
-    rules :161 leaves a TODO, is this design's classification, not that text: it
-    calls no user-written `AssignWith`, any user-written `Copy` or `ImplicitAs`
-    it runs is checked under M3 on every path it takes, a non-`Plain` type's
-    assignment is M3(c)'s, and `Core.String`, whose fields are private
+    user-written, docs/design/assignment.md:302-316's default
+    `*self = *self $ other;` among them wherever the `AssignWith` or `OpWith`
+    impl it calls is written outside core/prelude. M3 counts every assignment
+    operator, compound assignment included, and `++` and `--` as an assignment
+    to the first operand. docs/design/assignment.md:184 has "The statement
+    `x = y;` is rewritten to `x.(AssignWith(U).Op)(y);`" and :105-106 "The type
+    is still required to implement `AssignWith` for the assignment to be valid",
+    so there an assignment is classified by where its `AssignWith` impl is
+    written; the toolchain's interim `=`
+    (toolchain/check/handle_operator.cpp:99-123) calls none, and counting it as
+    the language's own on every type with no `AssignWith` impl, an array or a
+    class that is not a data class among them besides :159's "Tuples, structs,
+    choice types, and data classes", whose rules :161 leaves a TODO, is this
+    design's classification, not that text: it calls no user-written
+    `AssignWith`, any user-written `Copy` or `ImplicitAs` it runs is checked
+    under M3 on every path it takes, a non-`Plain` type's assignment is M3(c)'s,
+    and `Core.String`, whose fields are private
     (core/prelude/types/string.carbon:16-26) and which has no `AssignWith` impl,
     would otherwise be neither built in nor user-written (amended 2026-10-29,
     re-review round 2: RR1-m1, where this read "where the implementation is the
@@ -1576,11 +1595,15 @@ replacement text serves both (Appendix B.1).
     access naming a field and indexing of an array": `q->m += 1` and `++q->m`
     for a field `m` of a `CppCompat` integer type, C++'s `long` among them, were
     neither built in nor user-written, and the aggregate clause credited
-    assignment.md:159-161 with arrays and every class). A `ref` _return_ is not
-    a binding, so the proposal's `Valid1` (:717-720), `ValToRef` (:826) and
-    `Conditional` (:772-779) stay valid in both modes, each returning a
-    reference expression whose kind is that of its loans; `Conditional`'s mixed
-    set `{(r, exclusive), (*p, shared)}` keeps the weakest kind, shared, for the
+    assignment.md:159-161 with arrays and every class). (Re-derived 2026-10-29,
+    rev 11: RR3-M1, RA-M2, RB-m1: section 8.20 re-derives this test from the
+    safety argument, its block F4 replacing the text above from "lives for the
+    one operation" through this pointer; the pages and records state that text
+    until the fifth fix commit.) A `ref` _return_ is not a binding, so the
+    proposal's `Valid1` (:717-720), `ValToRef` (:826) and `Conditional`
+    (:772-779) stay valid in both modes, each returning a reference expression
+    whose kind is that of its loans; `Conditional`'s mixed set
+    `{(r, exclusive), (*p, shared)}` keeps the weakest kind, shared, for the
     result expression, and binding that result with `let ref` is a `ref`
     formation like any other: checked when every place in the set is closed
     (`UsePick`, whose `z` the live `q2`'s shared loan on `y` excludes:
@@ -1607,18 +1630,18 @@ replacement text serves both (Appendix B.1).
     becomes invalid in Permissive mode") stays unbroken. The options the brief
     names: the exclusive formation is taken where the place is closed, the
     `unsafe` formation where it is open, and "no `ref` from a shared pointer" is
-    rejected (section 7). **Cost of realignment:** p005434:152-162's `F(ptr:
-    i32*)`, whose `let ref x: i32 = *ptr;` binds through a shared parameter, is
-    rejected in Strict (EX-TM-9) and is accepted with an `exclusive i32*`
-    parameter or the `unsafe` marker; a `ref self: const Self` method called
-    through a shared pointer to a type that does not opt in needs `unsafe`; a
-    `ref` binding or a `ref` argument on a global, an open place, needs the
-    `unsafe` formation (`unsafe F(ref g)` for an argument), a `const` `ref` of a
-    `Core.SharedImmutable` type excepted (amended 2026-10-28, review fold:
-    RR1-m4); and a `match` through a shared pointer binds payloads by value, not
-    by `ref` (EX-M-5, EX-M-6). Break condition: W-347's own, an accepted
-    upstream memory-safety proposal that narrows p005434:83 (cite it and close
-    the item); and D-SAFE-8's, kept.
+    rejected (section 7). **Cost of realignment:** p005434:152-162's
+    `F(ptr: i32*)`, whose `let ref x: i32 = *ptr;` binds through a shared
+    parameter, is rejected in Strict (EX-TM-9) and is accepted with an
+    `exclusive i32*` parameter or the `unsafe` marker; a `ref self: const Self`
+    method called through a shared pointer to a type that does not opt in needs
+    `unsafe`; a `ref` binding or a `ref` argument on a global, an open place,
+    needs the `unsafe` formation (`unsafe F(ref g)` for an argument), a `const`
+    `ref` of a `Core.SharedImmutable` type excepted (amended 2026-10-28, review
+    fold: RR1-m4); and a `match` through a shared pointer binds payloads by
+    value, not by `ref` (EX-M-5, EX-M-6). Break condition: W-347's own, an
+    accepted upstream memory-safety proposal that narrows p005434:83 (cite it
+    and close the item); and D-SAFE-8's, kept.
 -   **D-SAFE2-7 — The Debug value-binding shadow flag.** Kept, as the Debug
     detector of what p005434:670-672 says unchecked code can still do: a
     Permissive body, an `unsafe`-formed binding's aliases or C++ mutating a
@@ -3556,55 +3579,57 @@ body and whichever type it is for; it is user-written when it is written outside
 core/prelude"). The ground of the exception, that the operand's `ref` lives for
 the one operation with nothing user-written evaluated while it does, holds of
 every such prelude impl that takes a `ref` operand, at 9192ee003 and in the fork
-alike. There are 64, all for `Int`, `UInt`, `Float` or a `CppCompat` integer (`ref
-self` in core/prelude/types/int.carbon 12 times, uint.carbon 12, float.carbon 4
-and cpp/int.carbon 36). Of these, 54 have a builtin body, and the other ten, the
-`Inc` and `Dec` of `Int` and `UInt` (int.carbon:384-399, uint.carbon:446-461)
-and of the three signed `CppCompat` integers (cpp/int.carbon:1177-1215), are a
-`self += ...;` or `self -= ...;` of a prelude conversion of `1`. Fifty of the
-54, the compound assignments of `Int`, `UInt` and the `CppCompat` integers
-(int.carbon:329-377, uint.carbon:391-440, cpp/int.carbon:1009-1169), are generic
-over a `U: ImplicitAs(...)` that a user's type may fill, but that `ImplicitAs`
-runs when the caller converts the right operand to `other: Self`
-(toolchain/check/convert.cpp:2727-2747 at 9192ee003, `ConvertCallArgs`), before
-the call binds `ref self`, so they stay built in; core/prelude holds no impl of
-assignment.md:302-316's default, at 9192ee003 or in the fork (amended
-2026-10-29, stop-and-amend re-review: RR8-M1). The `ref self` impls of `Destroy`
-(core/prelude/destroy.carbon, types/buf.carbon:58-59) are no operator
-interface's, and the test leaves them as they are. The prelude's bodies are
-trusted (S0, safety/README.md:117-139), so the claim is the prelude's to keep,
-under W-144's audit. The aggregate clause becomes the toolchain's interim `=` on
-a type with no `AssignWith` impl (toolchain/check/handle_operator.cpp:99-123,
-"TODO: Switch to using assignment interface for most assignment"), which
-initializes the left operand from the right and calls no `AssignWith`, where the
-assignment design has "The statement `x = y;` is rewritten to
-`x.(AssignWith(U).Op)(y);`" (assignment.md:184) and "The type is still required
-to implement `AssignWith` for the assignment to be valid" (:105-106), under
-which an assignment is classified by where its `AssignWith` impl is written:
-assignment.md:148 names the scalars and pointers, and :159's heading the tuples,
-structs, choice types and data classes, whose rules :161 leaves a TODO; counting
-an array and a class that is not a data class too is this design's
-classification of the interim path, said so in every copy, because it calls no
-user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it runs to
-convert the right operand or initialize the left from it (convert.cpp:1867-1880
-and :2162-2165 at 9192ee003, the copy from a value) is checked under M3 on every
-path it takes, a non-`Plain` type's assignment is M3(c)'s, and `Core.String`,
-whose fields are private (string.carbon:23 and :25, `private var ptr: Char*;`
-and `private var size: i64;`) and which no prelude impl gives `AssignWith`,
-would otherwise be neither built in nor user-written, RR2-M1's gap for another
-prelude type (amended 2026-10-29, stop-and-amend re-review: RR8-M2, where this
-read "The aggregate clause becomes the language's own `=` on a type with no
-`AssignWith` impl" and "because such an assignment runs no user-written code").
-No classification other than the `CppCompat` impls' moves: what cbdc0552e's test
-made built in stays built in, since core/prelude has no `AssignWith` impl and no
-other impl of an operator interface that takes a `ref` operand, and `*q =
-"longer"` for `q: str*` stays `StrictSharedImmutableWrite` under M3's
-`Core.SharedImmutable` rule, which the test does not decide. That holds in PR
-53's tree; across the land sequence PR 55's two `Core.StringBuf` impls are built
-in and M3(c)'s through a shared path, M3 counting every assignment operator,
-compound assignment included, and `++` and `--` as an assignment to the first
-operand (the last decision below; amended 2026-10-29, stop-and-amend re-review:
-RR8-M3).
+alike. There are 64, all for `Int`, `UInt`, `Float` or a `CppCompat` integer
+(`ref self` in core/prelude/types/int.carbon 12 times, uint.carbon 12,
+float.carbon 4 and cpp/int.carbon 36). Of these, 54 have a builtin body, and the
+other ten, the `Inc` and `Dec` of `Int` and `UInt` (int.carbon:384-399,
+uint.carbon:446-461) and of the three signed `CppCompat` integers
+(cpp/int.carbon:1177-1215), are a `self += ...;` or `self -= ...;` of a prelude
+conversion of `1`. Fifty of the 54, the compound assignments of `Int`, `UInt`
+and the `CppCompat` integers (int.carbon:329-377, uint.carbon:391-440,
+cpp/int.carbon:1009-1169), are generic over a `U: ImplicitAs(...)` that a user's
+type may fill, but that `ImplicitAs` runs when the caller converts the right
+operand to `other: Self` (toolchain/check/convert.cpp:2727-2747 at 9192ee003,
+`ConvertCallArgs`), before the call binds `ref self`, so they stay built in;
+core/prelude holds no impl of assignment.md:302-316's default, at 9192ee003 or
+in the fork (amended 2026-10-29, stop-and-amend re-review: RR8-M1;
+amended 2026-10-29, rev 11: RR3-M1: false, the impls' thunk converting the right
+operand while `ref self` is bound, docs/design/generics/details.md:5769-5779,
+section 8.20). The `ref self` impls of `Destroy` (core/prelude/destroy.carbon,
+types/buf.carbon:58-59) are no operator interface's, and the test leaves them as
+they are. The prelude's bodies are trusted (S0, safety/README.md:117-139), so
+the claim is the prelude's to keep, under W-144's audit. The aggregate clause
+becomes the toolchain's interim `=` on a type with no `AssignWith` impl
+(toolchain/check/handle_operator.cpp:99-123, "TODO: Switch to using assignment
+interface for most assignment"), which initializes the left operand from the
+right and calls no `AssignWith`, where the assignment design has "The statement
+`x = y;` is rewritten to `x.(AssignWith(U).Op)(y);`" (assignment.md:184) and
+"The type is still required to implement `AssignWith` for the assignment to be
+valid" (:105-106), under which an assignment is classified by where its
+`AssignWith` impl is written: assignment.md:148 names the scalars and pointers,
+and :159's heading the tuples, structs, choice types and data classes, whose
+rules :161 leaves a TODO; counting an array and a class that is not a data class
+too is this design's classification of the interim path, said so in every copy,
+because it calls no user-written `AssignWith`, any user-written `Copy` or
+`ImplicitAs` it runs to convert the right operand or initialize the left from it
+(convert.cpp:1867-1880 and :2162-2165 at 9192ee003, the copy from a value) is
+checked under M3 on every path it takes, a non-`Plain` type's assignment is
+M3(c)'s, and `Core.String`, whose fields are private (string.carbon:23 and :25,
+`private var ptr: Char*;` and `private var size: i64;`) and which no prelude
+impl gives `AssignWith`, would otherwise be neither built in nor user-written,
+RR2-M1's gap for another prelude type (amended 2026-10-29, stop-and-amend
+re-review: RR8-M2, where this read "The aggregate clause becomes the language's
+own `=` on a type with no `AssignWith` impl" and "because such an assignment
+runs no user-written code"). No classification other than the `CppCompat` impls'
+moves: what cbdc0552e's test made built in stays built in, since core/prelude
+has no `AssignWith` impl and no other impl of an operator interface that takes a
+`ref` operand, and `*q = "longer"` for `q: str*` stays
+`StrictSharedImmutableWrite` under M3's `Core.SharedImmutable` rule, which the
+test does not decide. That holds in PR 53's tree; across the land sequence
+PR 55's two `Core.StringBuf` impls are built in and M3(c)'s through a shared
+path, M3 counting every assignment operator, compound assignment included, and
+`++` and `--` as an assignment to the first operand (the last decision below;
+amended 2026-10-29, stop-and-amend re-review: RR8-M3).
 
 Decisions under R29, each with its break condition:
 
@@ -3627,7 +3652,10 @@ Decisions under R29, each with its break condition:
     of an operator interface whose body, while its `ref` operand is bound,
     evaluates a user-written impl, a blanket impl over a type parameter that
     a user's type fills, say; that impl then counts as user-written for this
-    test by a dated mark.").
+    test by a dated mark."; amended 2026-10-29, rev 11: RR3-M1: the
+    conversion of the right operand to `Self` runs in the impls' thunk while
+    the `ref` is bound, so the break condition is met for a `U` filled by a
+    user's type, and section 8.20 re-derives the test).
 -   The aggregate clause keeps its reach, arrays and classes that are not data
     classes included, and says it is this design's, over narrowing it to
     upstream's heading, which would leave `Core.String`'s `=` unclassified.
@@ -3716,7 +3744,12 @@ realigned notes and B.3.8 by dated marks, records the fold commit as the fourth
 fix commit, authorized by the orchestrator's ruling of 2026-10-29 at the end of
 this section, and records that round 3 of section 3 step 5, the loop's last,
 reviews it and the records commit (amended 2026-10-29, rev 9: the ruling, where
-this read "and records the review of it that the ruling names").
+this read "and records the review of it that the ruling names"). The fourth
+fix commit applied E1 to E6 as they stand below, and they stay its record;
+section 8.20's F1 to F6 supersede their statements that a user's `ImplicitAs`
+runs before `ref self` is bound (RR3-M1), that uint.carbon's `Inc` is
+`self += AsInt(1);` (E1; RR3-m1) and that the interim `=` runs no user-written
+code while its left operand is bound, RA-M2 (added 2026-10-29, rev 11).
 
 E1, docs/design/safety/temporal_safety.md, `ref` bindings: replace from "An
 implementation is built in when it gives a built-in type the semantics the"
@@ -4045,8 +4078,8 @@ SAFE-2 focused re-review, round 3 (<date>; RR2-M1, RR2-m1): superseding the prev
     int.carbon:331, :395 and :398, uint.carbon:460, string.carbon:23 and :25,
     toolchain/check/cpp/import.cpp:1235, :1240 and :1253), "checked 20
     quotes, 0 failed".
--   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as section
-    0.8's table names them, PR 53's pushed head still 2407efa74.
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as
+    section 0.8's table names them, PR 53's pushed head still 2407efa74.
 -   A dry run of the fold (bin/dryrun.py) applied E1 to E6 to scratch copies
     of the six files at 4e40e74d8: each anchor is found once where the
     script sought it (amended 2026-10-29, stop-and-amend re-review: RR8-m1,
@@ -4108,7 +4141,7 @@ Everything measured is container-local, EXPECTED, not of record (R9).
 
 | finding | severity | reproduced at ac57e2ea7 and 9192ee003 | disposition | where |
 | --- | --- | --- | --- | --- |
-| RR8-M1, "whatever its body" counts as built in the default compound assignment upstream's text specifies, and decision 1's example describes the 50 generic builtin impls | MAJOR | docs/design/assignment.md:302-316: "Carbon provides a default `$=` implementation" by `impl forall [U: type, T: OpWith(U) where .Self impls AssignWith(.Self.Result)]`, whose body is `*self = *self $ other;` (:314); written in core/prelude, rev 8's test counts it built in, so `q->c += d` through `T*` for a user's class would pass the user's `AssignWith` an unmarked `ref` on an open place, where `q->c = q->c + d`, a call of that `AssignWith` (assignment.md:184), is M3(d)'s; core/prelude holds no such impl at the tip or in the fork (`AssignWith` there names only the interfaces and the `Int`, `UInt`, `Float` and `CppCompat` impls); 50 of the 54 builtin impls are generic over a `U: ImplicitAs(...)` (int.carbon:329-377, uint.carbon:391-440, cpp/int.carbon:1009-1169), which decision 1's example, "a blanket impl over a type parameter that a user's type fills", describes | ACCEPTED: the prelude clause reads "whose body, while its `ref` operand is bound, calls no impl written outside core/prelude"; the default counts as user-written wherever an impl it calls is; the conversion to `U`'s `Self` runs before `ref self` is bound (convert.cpp:2727-2747 at 9192ee003); decision 1's break condition reworded | the test paragraph, decision 1, E1 to E6 |
+| RR8-M1, "whatever its body" counts as built in the default compound assignment upstream's text specifies, and decision 1's example describes the 50 generic builtin impls | MAJOR | docs/design/assignment.md:302-316: "Carbon provides a default `$=` implementation" by `impl forall [U: type, T: OpWith(U) where .Self impls AssignWith(.Self.Result)]`, whose body is `*self = *self $ other;` (:314); written in core/prelude, rev 8's test counts it built in, so `q->c += d` through `T*` for a user's class would pass the user's `AssignWith` an unmarked `ref` on an open place, where `q->c = q->c + d`, a call of that `AssignWith` (assignment.md:184), is M3(d)'s; core/prelude holds no such impl at the tip or in the fork (`AssignWith` there names only the interfaces and the `Int`, `UInt`, `Float` and `CppCompat` impls); 50 of the 54 builtin impls are generic over a `U: ImplicitAs(...)` (int.carbon:329-377, uint.carbon:391-440, cpp/int.carbon:1009-1169), which decision 1's example, "a blanket impl over a type parameter that a user's type fills", describes | ACCEPTED: the prelude clause reads "whose body, while its `ref` operand is bound, calls no impl written outside core/prelude"; the default counts as user-written wherever an impl it calls is; the conversion to `U`'s `Self` runs before `ref self` is bound (convert.cpp:2727-2747 at 9192ee003); decision 1's break condition reworded (amended 2026-10-29, rev 11: RR3-M1: the conversion runs in the impls' thunk while `ref self` is bound, docs/design/generics/details.md:5769-5779, so this disposition's ground is false; section 8.20) | the test paragraph, decision 1, E1 to E6 |
 | RR8-M2, the aggregate clause's ground, "runs no user-written code", is false, and its premise is the toolchain's interim path | MAJOR | handle_operator.cpp:121 calls `InitializeExisting`, which from a value calls `PerformCopy` through `Copy` (convert.cpp:2162-2165 and :1867-1880 at 9192ee003), user-written for a user's class, and converts the right operand through `ImplicitAs`; handle_operator.cpp:99 is "TODO: Switch to using assignment interface for most assignment" and :119 plans to destroy the old value; assignment.md:105-106 and :184 route `=` through `AssignWith` | ACCEPTED: the clause is the toolchain's interim `=`, with :184 and :105-106 quoted and handle_operator.cpp:99-123 cited, grounded as calling no user-written `AssignWith`, any user-written `Copy` or `ImplicitAs` it runs being checked under M3 and a non-`Plain` type's assignment being M3(c)'s; decision 2's break condition recorded as met in upstream's text and pending in the toolchain | the test paragraph, decision 2, E1 to E4, E6 |
 | RR8-M3, "whichever type it is for" makes PR 55's `Core.StringBuf` `+=` built in, and only an unstated reading of M3(c) rejects it through `T*` | MAJOR | at c3cdecc5d, core/prelude/types/string.carbon:160-167 (`HeapFree(self.ptr);` at :163) and :177-179 give `Core.StringBuf`, which has `impl as Destroy` (:154-156), two `AddAssignWith` impls that call only core/prelude impls; mutation_safety.md:208-209's (c) reads "assignment to `P`" | ACCEPTED: M3 counts every assignment operator, compound assignment included, and `++` and `--` as an assignment to the first operand, in (c) and in its `Core.SharedImmutable` rule; PR 55's two impls are traced, `*q += s` through `Core.StringBuf*` being M3(c)'s `StrictInvalidatingThroughShared`, with a break condition; no other held head adds such an impl | the test paragraph, the last decision, E1 to E6 |
 | RR8-m1, E4's and E5's anchors are not unique, and E5's clause defines built in by the operator | MINOR | at ac57e2ea7, E4's start anchor at this plan's lines 1493, 3662 and 3695 and its end anchor at 1508 and 3663; E5's phrase, capitalized or not, at temporal_safety.md:189 and :1442, mutation_safety.md:174 and :1319 and fork/safe/plan.md:539, :1580 and :1610; E5's clause read "the language's own or one written in core/prelude" | ACCEPTED: E4 applies within D-SAFE2-6's bullet; E5 quotes each anchor with the words around it, each found once; rev 8's measured claim is corrected; E5's clause names the implementation in the rule's words | the fold-commit paragraph, E4's and E5's paragraphs, rev 8's Measured list |
@@ -4281,8 +4314,8 @@ Decisions under R29, each with its break condition:
 
 -   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003,
     as for rev 8; `git log 9192ee003..upstream/trunk` lists nothing.
--   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as section
-    0.8's table names them, PR 53's pushed head still 2407efa74.
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as
+    section 0.8's table names them, PR 53's pushed head still 2407efa74.
 -   R31 on this plan, the one file this commit changes: before, headings
     {1: 1, 2: 16, 3: 130}, bullets 168, numbered 31, rows 217, 8287 lines;
     after, headings {1: 1, 2: 16, 3: 131}, bullets 177, numbered 31, rows
@@ -4480,7 +4513,7 @@ it was dispositioned:
 
 | finding | severity | reproduced | disposition | where |
 | --- | --- | --- | --- | --- |
-| RR3-M1, the 50 generic compound assignments' `U` is converted inside a thunk while `ref self` is bound, not before | MAJOR | the pages state the conversion before the binding: temporal_safety.md:297-301, "its `ImplicitAs` runs when the caller converts the right operand to `other: Self`, before the call binds `ref self`, so those impls stay built in", and mutation_safety.md:246-247, "a user's type that fills their `U` being converted to `Self` before the `ref` is bound", as do D-SAFE-8 in the log (:3155-3157) and in fork/safe/plan.md section 0.3 (:454-456), D-SAFE2-6 (:1518-1520), section 8.16's test paragraph (:3526-3530) and RR8-M1's row (:4070), and W-148's notes (fork/inventory/work-items.json:2303); the interface declares `fn Op(ref self, other: Other);` (core/prelude/operators/arithmetic.carbon:31) and the impl `fn Op(ref self, other: Self) = "int.sadd_assign";` (core/prelude/types/int.carbon:331), so their parameter types differ, and by upstream's docs/design/generics/details.md at 9192ee003, where an impl's function is used directly only when "Each parameter in the `impl` function has the same type as the parameter in" the interface (:5761), "Otherwise, a synthetic function called a _thunk_ is generated:" (:5769), declared by substituting the impl's `Self` into the interface's declaration (:5771-5773), so its `other` has type `U`, and "Implicit conversions are performed as necessary to initialize the parameters" "of the function in the `impl` from the parameters of the thunk" (:5777-5778); upstream's toolchain/check/impl.cpp:83 builds it (`BuildThunk`), and the golden toolchain/lower/testdata/operators/increment.carbon:52-54 at the tip, the fork's :53-55, has the thunk's `%1 = call i32 @"_CConvert.` before its `%2 = load i32, ptr %self, align 4`; the caller's `ConvertCallArgs` (toolchain/check/convert.cpp:2727-2747), which RR8-M1's disposition cites, converts the arguments to that thunk's parameters, `other: U`, so a user's `ImplicitAs` runs inside the thunk while its `ref self` is bound, and a `Convert` that writes the referent through another path runs during the `ref`'s life, against p005434:83, "The address of a `ref` binding is `nocapture` and `noalias`.", as the review's nightly probe shows by printing 101; this records commit compiles nothing | to round 4's fixer, not touched here: a page change, so the ruling's break condition stops SAFE-2 at a plan revision with no further fix commit; the review's remedy, the impl classed by the function the operator calls, built in only when the thunk's conversion calls no impl written outside core/prelude (`U` is `Self`, an integer type or a literal) and otherwise user-written, M3(d)'s through a shared path, the program converting first (`*q += e as i32`), in the same words in all eight places, with RR8-M1 re-dispositioned in section 8.16 citing details.md:5769-5779 and the golden, at that plan revision | none |
+| RR3-M1, the 50 generic compound assignments' `U` is converted inside a thunk while `ref self` is bound, not before | MAJOR | the pages state the conversion before the binding: temporal_safety.md:297-301, "its `ImplicitAs` runs when the caller converts the right operand to `other: Self`, before the call binds `ref self`, so those impls stay built in", and mutation_safety.md:246-247, "a user's type that fills their `U` being converted to `Self` before the `ref` is bound", as do D-SAFE-8 in the log (:3155-3157) and in fork/safe/plan.md section 0.3 (:454-456), D-SAFE2-6 (:1518-1520), section 8.16's test paragraph (:3526-3530) and RR8-M1's row (:4070), and W-148's notes (fork/inventory/work-items.json:2303); the interface declares `fn Op(ref self, other: Other);` (core/prelude/operators/arithmetic.carbon:31) and the impl `fn Op(ref self, other: Self) = "int.sadd_assign";` (core/prelude/types/int.carbon:331), so their parameter types differ, and by upstream's docs/design/generics/details.md at 9192ee003, where an impl's function is used directly only when "Each parameter in the `impl` function has the same type as the parameter in" the interface (:5761), "Otherwise, a synthetic function called a _thunk_ is generated:" (:5769), declared by substituting the impl's `Self` into the interface's declaration (:5771-5773), so its `other` has type `U`, and "Implicit conversions are performed as necessary to initialize the parameters" "of the function in the `impl` from the parameters of the thunk" (:5777-5778); upstream's toolchain/check/impl.cpp:83 builds it (`BuildThunk`), and the golden toolchain/lower/testdata/operators/increment.carbon:52-54 at the tip, the fork's :53-55, has the thunk's `%1 = call i32 @"_CConvert.` before its `%2 = load i32, ptr %self, align 4`; the caller's `ConvertCallArgs` (toolchain/check/convert.cpp:2727-2747), which RR8-M1's disposition cites, converts the arguments to that thunk's parameters, `other: U`, so a user's `ImplicitAs` runs inside the thunk while its `ref self` is bound, and a `Convert` that writes the referent through another path runs during the `ref`'s life, against p005434:83, "The address of a `ref` binding is `nocapture` and `noalias`.", as the review's nightly probe shows by printing 101; this records commit compiles nothing (amended 2026-10-29, rev 11: RA-m3: the probe's `Bump` is a direct call, whose thunk the checker inlines (toolchain/check/call.cpp:311-331 at 9192ee003), so its 101 shows the order of the writes, not the thunk; section 8.20's a_p06, a_p13 and q03 show the thunk calling the user's `Convert` before it loads `%self`) | to round 4's fixer, not touched here: a page change, so the ruling's break condition stops SAFE-2 at a plan revision with no further fix commit; the review's remedy, the impl classed by the function the operator calls, built in only when the thunk's conversion calls no impl written outside core/prelude (`U` is `Self`, an integer type or a literal) and otherwise user-written, M3(d)'s through a shared path, the program converting first (`*q += e as i32`), in the same words in all eight places, with RR8-M1 re-dispositioned in section 8.16 citing details.md:5769-5779 and the golden, at that plan revision | none |
 | RR3-m1, `Inc`'s `self += AsInt(1);` attributed to uint.carbon too | MINOR, not records-only | temporal_safety.md:293-294 reads "`Inc`'s `self += AsInt(1);` (int.carbon:395-399, uint.carbon:457-461)", where core/prelude/types/int.carbon:398 is `self += AsInt(1);` and uint.carbon:460 is `self += AsUInt(1);`, after `fn AsUInt(n: IntLiteral) -> UInt(N) = "int.convert_checked";` (:459), both files equal to upstream's at 9192ee003 (R10); E1's text in section 8.16 (:3702) carries the same words; the log, fork/safe/plan.md, D-SAFE2-6 and W-148's notes do not quote the two bodies, and temporal_safety.md:339-340 and this plan's :3749 are superseded texts inside marks, quoted as they read | to round 4's fixer, not touched here: a page change; `self += AsInt(1);` (int.carbon:395-399) and `self += AsUInt(1);` (uint.carbon:457-461) on the page and in E1, at the plan revision of the ruling's break condition | none |
 | RR3-m2, pre-existing continuation lines start with `+` | MINOR, records-only | D-SAFE-5's paragraph, in the log (:3041) and in fork/safe/plan.md section 0.3 (:340), has a continuation line that starts with `+= b)`, the code span `unsafe (a += b)` broken over two lines; it is SAFE-1's text at PR 53's pushed head 2407efa74 (its :3020 and :305), which SAFE-2 does not change, and R31 forbids a `+` at a prose line's start; no page and no line of this plan starts with `+` | folded by this records commit: the four lines from "spelled with" to "operator" rewrapped in both copies identically, with the same words and the same line count, so that `unsafe (a += b)` starts a line whole; no mark, since no statement, cite or count changes (the decisions below); the D-SAFE-1 to D-SAFE-23 block stays identical in the two files | the log :3039-3042; fork/safe/plan.md :338-341 |
 
@@ -4523,7 +4556,9 @@ Decisions under R29, each with its break condition:
     revision corrects with the page (R27). Break condition: a reviewer
     finds a record outside E1 and the superseded texts that quotes
     `self += AsInt(1);` for uint.carbon; that line then gains a dated mark
-    pointing here.
+    pointing here. Rev 11 keeps E1 as the fourth fix commit's record, with a
+    dated mark on its paragraph, and its F1 corrects the page (amended
+    2026-10-29, rev 11: section 8.20).
 -   No residue is filed and no id is taken: RR3-M1 and RR3-m1 wait for the
     plan revision, not dropped, and W-365, the next free id, stays free.
     Break condition: the orchestrator's re-plan keeps a fold out of SAFE-2;
@@ -4848,7 +4883,9 @@ Decisions under R29, each with its break condition:
 -   No residue is filed and no id is taken: every finding stays in SAFE-2 under
     the ruling, and W-365, the next free id, stays free. Break condition:
     rev 11's fold keeps a finding out of SAFE-2; a residue then takes the next
-    free id after a re-scan.
+    free id after a re-scan. The break condition is met for RB-M3's rule:
+    rev 11's re-scan finds W-365 free, and the fifth fix commit files it by
+    section 8.20's F11 (amended 2026-10-29, rev 11).
 
 **Measured** by this revision, 2026-10-29, in rev10/:
 
@@ -4917,6 +4954,1171 @@ No page, example, log, fork/safe/plan.md or ledger line changes at this
 revision, so the nightly compiles of section 0.7 are not re-run and PR 53's
 ledger's `json.load` is not owed; nothing is pushed.
 
+### §8.20 Stop-and-amend record (rev 11, 2026-10-29)
+
+Rev 11 is the fold of the ruling's step (2) (section 8.19). The rev 11 fold
+agent, one fresh agent, reproduced every finding of the two whole-tree document
+reviews of the ruling's step (1), review A (fidelity to upstream's text and to
+the toolchain's behavior) and review B (soundness of the safety argument and
+consistency of every copy of every rule), both APPROVE-WITH-FIXES on the tree at
+rev 10's head d86fce1b9, against that tree, upstream's tip, re-fetched
+as 9192ee003, and the nightly; re-derived the built-in test of D-SAFE2-6 and
+M3(d) at its root from the safety argument; and gives below the texts F1 to F24
+of the fifth fix commit, dry-run on scratch copies. Review A raised two MAJORs
+and four MINORs, two of them records-only, and review B three MAJORs and three
+MINORs, none records-only; with round 3's RR3-M1 and RR3-m1 these are fourteen
+ids and ten findings, three of them raised twice or three times: RR3-M1, RA-M1
+and RB-M1 (the thunk), RA-M2 and RB-M2 (the interim `=`), and RR3-m1 and RB-m2
+(uint's `Inc`). Every finding is ACCEPTED but for the slices.md half of RA-m1,
+REJECTED with its cite; RB-M3's rule goes to a residue, W-365, which the fifth
+fix commit files with a pointer on every copy of the rule it qualifies. No
+reproduced finding shows a realigned rule unsound or not upstream's: p005434:83
+stands, and the fold states its consequence for the operators, so rev 11 is not
+blocked. Rev 11 changes no page, log, fork/safe/plan.md or ledger line; in this
+plan it adds this section, marks the Status line and the Sign-off, gives
+D-SAFE2-6 a pointer here, marks the statements of sections 8.16, 8.18 and 8.19
+that the findings show false or superseded, and rewraps seven of its own lines
+(RB-m3) and, whole, the D-SAFE2-6 bullet and section 8.16's test paragraph,
+which its marks lengthened, to 80 columns with the same words, so that rumdl's
+MD013 reflow leaves them.
+
+The scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rev10/rev11/,
+its probes in probe/ (each `<name>.carbon` with its `.cmd`, `.out` and, for a
+program that compiles, `.O0.ll`), its scripts in bin/ and its logs in logs/.
+Everything measured is container-local, EXPECTED, not of record (R9).
+
+**Dispositions.** Each finding was reproduced against the tree at d86fce1b9,
+whose line numbers the table cites, against upstream at 9192ee003 and, where the
+toolchain can show it, on the nightly (R30), every probe the reviews name re-run
+from their sources under the prefixes `a_` (review A) and `b_` (review B),
+round 3's as `r3_thunk`:
+
+| finding | severity | reproduced | disposition | where it lands |
+| --- | --- | --- | --- | --- |
+| RR3-M1, RA-M1, RB-M1: the generic compound assignments convert a user's `U` inside a thunk while `ref self` is bound | MAJOR | the interface declares `fn Op(ref self, other: Other);` (core/prelude/operators/arithmetic.carbon:31) and the impl `fn Op(ref self, other: Self)` (int.carbon:331), so by docs/design/generics/details.md:5769-5779 at 9192ee003 a thunk is generated whose body performs the conversion; a_p06 (a generic `G` over `U: Core.ImplicitAs(i32)`) prints 5 and 101, its IR calling `_COp:thunk:AddAssignWith(ptr %self, ptr %other)`, which calls Evil's `Convert` before `load i32, ptr %self`; a_p13 (`CppCompat.Long32`) and q03 (`u32`) the same; at a direct call the checker inlines the thunk (toolchain/check/call.cpp:311-331), so a_p01, b_p0 and r3_thunk call `Convert` in the caller before the inlined load | ACCEPTED: the test re-derived below, the thunk and its conversions running while the operand is bound; with a user-written `ImplicitAs` the operator is user-written, M3(d) through a shared path, and the program converts first; a literal, a prelude integer and `Inc` and `Dec` stay built in | F1 to F6; now: the marks on section 8.16's test paragraph, decision 1, fold-commit paragraph and RR8-M1's row, and D-SAFE2-6's pointer |
+| RR3-m1, RB-m2: uint's `Inc` misquoted | MINOR, not records-only | core/prelude/types/uint.carbon:460 is `self += AsUInt(1);` in the fork, the nightly and at 9192ee003; temporal_safety.md:293-294 attributes `self += AsInt(1);` to it | ACCEPTED | F1; now: the mark on E1's paragraph in section 8.16 |
+| RA-M2, RB-M2: the interim `=` initializes its left operand in place, running user code while it is bound | MAJOR | handle_operator.cpp:121 at 9192ee003 is `rhs_id = InitializeExisting(context, node_id, lhs_id, rhs_id);`; b_p8, a_p11 and q06b pass the left operand as a user function's return slot (`call void @_CMake.Main(ptr %q, ptr %p)`) and print 7 7, 50 7 and 7 7; a_p09 and b_p5 run a user `Copy.Op` into it; a_p10 and b_p6 run a user `ImplicitAs` per element between the stores, the second seeing the first; a_p05: Core has no `AssignWith`, so every `=` today is the interim one | ACCEPTED: the interim `=` is built in only when no function written outside core/prelude runs in its in-place initialization; otherwise user-written, M3(d) through a shared path and T4's on a closed place, the program converting or binding first; "nothing else is evaluated" dropped | F1 to F6 |
+| RB-M3: a `const T*` handed to a scoped thread races with the owner's `Plain` write | MAJOR | by the pages' own rules (NEW syntax, no `Core.Thread` on the nightly): `const i32*` is `Send` because `i32` is `Sync` (mutation_safety.md:555), a scope keeps its loans live until the join at the kind they were formed with (:576-578), and T4 lets the owner write a `Plain` place under a live shared loan, so `x = 1` races the reading thread; rev 11 also finds that a global, reached by name with no loan, crosses into any thread, so the thread-boundary rule alone cannot give M7's guarantee | ACCEPTED as a defect of D-SAFE-16, SAFE-1's text at 2407efa74 and none of the six departures; its rule, with globals, is the stage 5 contract's, so it goes to residue W-365, and every copy of the rule gains a pointer that states the gap | F7 to F11; now: the mark on section 8.19's residue decision |
+| RA-m1: upstream's prelude has `IndirectIndexWith` | MINOR | core/prelude/operators/index.carbon:14-17 at 9192ee003 declares `fn Ref(self, subscript: SubscriptType) -> ref ElementType;` with no `bound` (6d80ceb58, 2026-10-16); the pages plan `bound self` at the interface without saying that this changes upstream's signature; slices.md:389-396 is 119b35439's text (2026-10-05), true of this tree, whose index.carbon has only `IndexWith` (:7-10), and PR 65 (fee0ef31c) replaces it | ACCEPTED for the pages: the signature quoted where W-144's change is argued; REJECTED for slices.md:390: it states this tree's toolchain truly, it is no SAFE-2 text (hand-off note 5), and PR 65 rewrites it, so an edit here would only collide with PR 65 | F12 |
+| RA-m2: the `bool` exclusion is `MaybeUnformed`'s alone | MINOR | toolchain/check/type_completion.cpp at 9192ee003, unchanged since 0421bf3b4: an adapter (:762-770) and `const T` (:783-789) take the wrapped type's representation, and only `MaybeUnformed` excludes `bool` and a copy that is not the object representation (:815-819); mutation_safety.md:608-610 and D-SAFE-17 (log :3772-3775, fork/safe/plan.md :1071-1074) apply "other than `bool`" to all three; section 0.1 (:425-427) has it right | ACCEPTED | F13, F14 |
+| RA-m3: round 3's printed 101 does not show the thunk | MINOR, records-only | a_p01's IR calls `Convert` in `Bump` before the inlined load and add, and a_p02 (`*q += e as i32`) also prints 101 | ACCEPTED: the evidence is a_p06, a_p13, q03 and call.cpp:311-331; the ruling stays verbatim | now: the mark on section 8.18's RR3-M1 row; this section |
+| RA-m4: probe facts for the case table | MINOR, records-only | a_p03, a_p04, a_p07 and a_p12 reproduce as reported | ACCEPTED | this section's case table |
+| RB-m1: the pages do not say when the operand is bound | MINOR | b_p1, b_p2, b_p3 and a_p07 print the left operand's place, then the right operand's write through another path, then the operation's result | ACCEPTED: bound when the operation runs, once its operands are evaluated, the left operand's place held by its carriers' loans | F1, F3, F4, F6 |
+| RB-m3: lines that start with an R31 hazard | MINOR | bin/hazards.py over the touched files: mutation_safety.md:97 and :896 and temporal_safety.md:85 (48f2e66a0), temporal_safety.md:998, initialization_safety.md:322, spatial_safety.md:685 and fork/safe/plan.md :2274, :2575 and :2794 (SAFE-1's), and this plan's :37, :91, :117, :125, :1394, :4049 and :4285; sections 8.17 to 8.19 recorded none | ACCEPTED and widened to the class (R17): every such line of SAFE-1's and SAFE-2's text on the files the fold touches; values.md:1393 (upstream's, 7134e23f2) and the log's other workstreams' lines (section 8.18's decision) left; the widened scan adds the log's :2902, in F-013's entry (SAFE-1's), whose "2026.10.12" starts a line with a digit run and a period | F15 to F24; this plan's seven lines now |
+
+**The built-in test, re-derived from the safety argument.** A `ref` binding is
+exclusive access to its referent for its lifetime, "The address of a `ref`
+binding is `nocapture` and `noalias`" (p005434:83), and section 1 meets that
+obligation by a checked reborrow on a closed place and by an `unsafe` formation
+on an open one. A built-in operator's `ref` operand is exempt from both exactly
+when no code written outside core/prelude can run while that operand is bound:
+then nothing but the operation itself, whose prelude bodies are trusted under S0
+and W-144's audit, can reach the referent while the `ref` lives, and `noalias`
+holds by construction on any place. The operand is bound when the operation
+runs, once its operands are evaluated (the toolchain evaluates the left
+operand's place, then the right operand, then the operation: a_p07, b_p1 to
+b_p3), so code in an operand runs before the binding, and the left operand's
+place is held across it by the loans of the carriers it is reached through (T2,
+T3). What runs while it is bound is the impl's body; the thunk of
+docs/design/generics/details.md:5759-5779, which the design generates whenever
+the impl's parameter types differ from the interface's and whose body performs
+the "Implicit conversions ... as necessary to initialize the parameters of the
+function in the `impl` from the parameters of the thunk" (:5777-5778); and every
+conversion that thunk performs on the other operands. A conversion the caller
+performs before the call, to the interface's parameter types or by the program's
+own `as`, does not run while it is bound. The test follows the design's thunk,
+not the toolchain's inlining of it at a direct call (call.cpp:311-331), which
+moves the conversion's code but not its place in the semantics. For the
+toolchain's interim `=`, which calls no `AssignWith` and initializes its left
+operand in place (handle_operator.cpp:121, `InitializeExisting`), what runs
+while the left operand is bound is everything that initialization runs: the
+`ImplicitAs` that converts the right operand or each element of a tuple or
+struct literal in turn, the `Copy` that copies a value (convert.cpp:1867-1880
+and :2162-2165 at 9192ee003), and the body of a call whose result type is not
+copy-represented, which receives the left operand as its return slot
+(sem_ir/type_info.cpp:82-89 at 9192ee003: a copy representation initializes by
+copy, a pointer or custom one in place). Each case, decided by the evidence:
+
+| case | evidence | outcome |
+| --- | --- | --- |
+| a direct call, the impl's parameter types equal to the interface's (no thunk) | `Float(N) as AddAssignWith(Self)` and its three siblings (core/prelude/types/float.carbon:204-222); q01: `*q += y` lowers to the builtin `fadd` at the call site; q02: a user's `ImplicitAs(f64)` on the right is rejected, "cannot access member of interface `Core.AddAssignWith(Evil)` in type `f64`", so only the program's own `e as f64`, before the call, converts it | built in |
+| a thunk with a user-written `ImplicitAs` | a_p06, a_p13, q03 (through a symbolic witness): the thunk calls the user's `Convert` before it loads `%self`, and the probes print 101; a_p01, b_p0, r3_thunk (a direct call, the thunk inlined): 101 | user-written; through a shared path M3(d)'s `StrictInvalidatingThroughShared` |
+| the program converts first | a_p02, `*q += e as i32`: `Convert` runs by `As` in the caller, and the thunk's conversion is `i32` to `i32`, the prelude's | built in; the 101 is ordinary sequencing |
+| a literal operand | q04 and a_p03: `*q += 1` lowers to `add i32 %v, 1`, the literal converted by the prelude's builtin `IntLiteral as ImplicitAs(Int(To))` (int.carbon:31-33); q04b, the literal through a symbolic witness, crashes the nightly in lowering (not evidence) | built in |
+| `Inc` and `Dec` | q05: `Int`'s and `UInt`'s call the thunk with `i32 1`, whose `Convert` is the prelude's (int.carbon:61-67, uint.carbon:86-91); the three signed `CppCompat` integers' run in the prelude library (prints 6 6 6 1); q05b, q05c, a_p12: `CppCompat.ULong32`, `f64` and a user's adapter of `i32` have none | built in |
+| the default compound assignment of assignment.md:302-316 | a_p04, b_p11: "cannot access member of interface `Core.AddAssignWith(C)`"; neither core/prelude nor the toolchain provides it; by its text it calls `AssignWith` and `OpWith` while `ref self` is bound | user-written wherever either impl is written outside core/prelude |
+| the interim `=` from a literal or a copy-represented value | q06f: `q->n = 2; q->n = v;` prints 3; b_p10: the struct literal's calls run before the stores (7 5); q06a: `*q = F(p)` for `i32` calls then stores, `F`'s write overwritten (5 7); q06e: a struct value copied field by field | built in |
+| the interim `=` with a user `ImplicitAs` per element | a_p10 (5 1 100 1) and b_p6 (5 70 70 80): convert, store, convert, the second conversion seeing the first store; q06c, the program's own `as` on each element: both conversions before any store (5 100 1 1) | user-written; converted first, built in |
+| the interim `=` from a user function returning in place | b_p8 (7 7), a_p11 (50 7), a_p08 (7 1), q06b (a struct type, 7 7): the left operand is the function's return slot; q06h, `c = Make(&c.a)` on a local, 7 7; q06g, the result bound first and then copied, 7 5 | user-written, T4's on a closed place; bound first, built in |
+| the interim `=` with a user `Copy` | a_p09 (1 2) and b_p5 (7 7): `Copy.Op` initializes the left operand; b_p9: a class with no `Copy` cannot be bound first, "cannot copy value of type `C`"; q06d: `~v` does not parse on the nightly | user-written; the program writes through an exclusive path or under `unsafe` |
+| `AssignWith` in Core | a_p05: "member name `AssignWith` not found in `Core`" | every `=` today is the interim one |
+| the old value at the interim `=` | b_p7: no destructor runs (handle_operator.cpp:119's TODO) | no change to the test |
+
+The consequence for programs: an operand whose conversion is user-written is
+converted by the program before the operator, `*q += e as i32`, or the operator
+is M3(d)'s through a shared path, `StrictInvalidatingThroughShared`, and on a
+closed place a checked reborrow that T4 checks against the operands' carriers;
+an interim `=` whose initialization runs user code is the same, and the program
+binds the value first where the type's copy is the prelude's (q06g), converts
+each element first (q06c), or writes through an exclusive path. Every row of
+section 4 and every page example keeps its outcome: each operator use in them,
+`q->n = 2` (EX-M-4d's `Peek`), `*q = "longer"` and
+`*q = {.s = "longer", .n = 1}` (`Peek2`, `Peek4`), `a = 2`, `a.n = 2`,
+`s = "def"`, the prelude calls `Core.Buf(i32).Make(2, 0)` and
+`Core.Optional(i32*).None()` on the right of `=`, `*p += 1`, `x += 1`, `++i`,
+`total += s[i]` and slices.md's `a[2] = 30`, has a literal, a copy-represented
+value, `&`, a prelude call or a prelude integer on the right, all built in (q04,
+q05, q06f), so D-SAFE2-14's list stands. The programs whose classification
+changes are the probes': `*q += e` for a user's `e` through `q: i32*` (a_p01,
+a_p06, a_p13, q03), `*q = Make(p)` (b_p8, a_p11, q06b), `*q = r` with a user
+`Copy` (a_p09, b_p5) and `*q = e` or `*q = {.x = e, .y = e}` with a user
+`ImplicitAs` (b_p4, a_p10, b_p6), now M3(d)'s, and `c = Make(&c.a)` (q06h), now
+T4's; `p->n += 1`, `++p->n` and `q->n = 2` stay built in.
+
+**Probes**, compiled with the nightly
+/home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12/bin/carbon by
+bin/run.sh (`carbon compile --output-last-input-only`, `carbon link`, the run,
+and `--phase=lower --dump-llvm-ir --optimize=none` for the IR), the nightly's
+prelude files int.carbon, uint.carbon, float.carbon and cpp/int.carbon equal to
+the fork's and the tip's:
+
+| probe | claim tested | output |
+| --- | --- | --- |
+| r3_thunk, b_p0, a_p01 | round 3's probe, a direct call | 101; the inlined thunk calls `Convert` before the load |
+| a_p02 | the program converts first | 101; `Convert` by `As` in the caller |
+| a_p03, b_p12 | a literal, `++` and `--` through a shared pointer | 7 4; 6 |
+| a_p04, b_p11 | a default compound assignment | compile error: no `AddAssignWith(C)` |
+| a_p05 | `AssignWith` in Core | compile error: not found |
+| a_p06 | a generic thunk with a user `ImplicitAs(i32)` | 5 101; the thunk calls `Convert` before `load i32, ptr %self` |
+| a_p07 | operand order | 1 2 101 3 4 201 5 7 |
+| a_p08, a_p11, b_p8, q06b | a user function returning in place | 7 1; 50 7; 7 7; 7 7 |
+| a_p09, b_p5 | a user `Copy` into the left operand | 1 2; 7 7 |
+| a_p10, b_p6 | a user `ImplicitAs` per element | 5 1 100 1; 5 70 70 80 |
+| a_p12 | a user adapter of `i32` and `++` | compile error: no `Inc` |
+| a_p13 | a `CppCompat.Long32` thunk with a user `ImplicitAs` | 101 |
+| b_p1, b_p2, b_p3 | the right operand writes the left place first | 1 2 101 each |
+| b_p4 | a user `ImplicitAs(C)` into the left operand | 7 7 |
+| b_p6_assign_tuple, q06i | tuple and nested-class initializers | the nightly crashes in lowering, "Global variable initializer type does not match global variable type!" (not evidence) |
+| b_p7 | the old value's destructor | 10 20 2, none runs |
+| b_p9 | binding a class with no `Copy` first | compile error: "cannot copy value of type `C`" |
+| b_p10 | a struct literal of calls | 7 5 |
+| q01 | a `Float` direct call | 1; the call site's IR is `fadd` |
+| q02 | a user `ImplicitAs(f64)` on the right | compile error: no `AddAssignWith(Evil)` on `f64` |
+| q03 | a `UInt` thunk with a user `ImplicitAs(u32)` | 5 101 |
+| q04, q04b | a literal directly and through a symbolic witness | 6; q04b crashes the nightly in lowering (not evidence) |
+| q05, q05b, q05c | `Inc` and `Dec` of `Int`, `UInt` and the three signed `CppCompat` integers; `CppCompat.ULong32` and `f64` | 6 6 6 1; compile errors: no `Inc` |
+| q06a | `*q = F(p)` for an `i32` result | 5 7 |
+| q06c | each element converted first | 5 100 1 1 |
+| q06d | `*q = ~v` | compile error: `~v` does not parse |
+| q06e | a struct value of `i32` fields | 7 8; field-by-field load and store |
+| q06f | `q->n = 2` and `q->n = v` through a shared pointer | 3 |
+| q06g | the result bound first, then copied | 7 5 |
+| q06h | `c = Make(&c.a)` on a local | 7 7 |
+
+Decisions under R29, each with its break condition:
+
+-   The test follows the design's thunk
+    (docs/design/generics/details.md:5759-5779), not the toolchain's inlining of
+    it at a direct call (call.cpp:311-331), so `*q += e` with a user's `e` is
+    user-written whether or not the call is direct, over classifying by the
+    toolchain's call form, which would make the same program safe or not by an
+    optimization. Break condition: upstream's design text places the conversion
+    of a direct call before the binding; the test then follows it by a dated
+    mark.
+-   The interim `=` is classified by what its in-place initialization runs, the
+    initializing representation (type_info.cpp:82-89) deciding whether a call's
+    body is part of it, over classifying every interim `=` from a call as
+    user-written, which would reject `*q = F(p)` for an `i32` although `F`
+    returns before the left operand is written (q06a). Break condition:
+    section 8.16's decision 2's, the toolchain routing `=` through `AssignWith`,
+    which withdraws the interim clause, or a change of the initializing
+    representation of a type the pages name; the clause then follows by a dated
+    mark.
+-   RB-M3's rule goes to residue W-365, filed by F11 in the fifth fix commit
+    with the pointers F7 to F10, over writing review B's frozen hold into the
+    pages: rev 11's reproduction found the guarantee open through globals too,
+    which no sentence of this fold can close, and the guarantee is already
+    stated as waiting for the stage 5 contract (W-149), which the pointer
+    completes. Break condition: the focused plan re-review requires the rule in
+    SAFE-2; rev 12 then writes review B's frozen hold into F7 to F10 and the
+    data-race section, globals staying W-365's.
+-   W-365 is filed by the fifth fix commit (F11), not by its records commit, so
+    that no commit's tree names an unfiled id, over a records commit after a
+    page that already names it; the id re-scan widened to `W-3[6-9][0-9]` is
+    this revision's and the implementer repeats it. Break condition: the re-scan
+    finds W-365 taken; the next free id then replaces it in F7 to F11 by a plan
+    revision before the commit.
+-   RA-m1 is folded where W-144's change of the interface is argued, the
+    mutation page's Value bindings (F12); the copies that state the same rule,
+    safety/README.md's S0 sentence and D-SAFE-2 and D-SAFE-17 in the log and
+    fork/safe/plan.md, say "once the prelude has it", true of this tree, and
+    stay. Break condition: a reviewer requires the upstream quote at every copy;
+    each then takes F12's sentence.
+-   RB-m3 is widened from the lines the review lists to every hazardous line of
+    SAFE-1's and SAFE-2's text on the files the fold touches, rewrapped with the
+    same words and no mark, as section 8.18 rewrapped D-SAFE-5's copies, the
+    smallest change that clears each (bin/rewraps.py). Break condition: a
+    reviewer wants the rewraps marked; each then gains the same dated mark.
+-   The four sentences that only use the term (safety/README.md, the temporal
+    kinds paragraph, M1 and fork/safe/plan.md section 1.5) stay, as
+    section 8.16's decision 5 has it: "lives for the one operation and is
+    established on any place" is true of every implementation the re-derived
+    test calls built in. Break condition: section 8.16's.
+-   The records this fold supersedes keep their text with a dated mark pointing
+    here, E1 to E6 at their fold-commit paragraph, section 8.16's test
+    paragraph, decision 1 and RR8-M1's row, and section 8.18's RR3-M1 row;
+    Appendix A and B are commit 1's and commit 2's verbatim texts and are not
+    marked, as no earlier fold marked them; D-SAFE2-6 takes a pointer that F4
+    replaces. Break condition: a reviewer reads an unmarked record as live; it
+    then gains the mark.
+-   No example changes, so the nightly compiles of section 0.7 are not re-run by
+    rev 11; the fifth fix commit re-runs them as section 8 item 4 asks. Break
+    condition: a block changes an example; the compiles are then re-run before
+    rev 11 is signed off.
+
+**The fifth fix commit.** "SAFE-2 fix: the built-in test re-derived from the
+safety argument, a thunk's conversions running while the `ref` operand is bound
+(RR3-M1, RR3-m1, RA-M2, RB-M3, RA-m1, RA-m2, RB-m1, RB-m3)", with `<date>` its
+UTC date, applies F1 to F24 below and changes nothing else, authorized by the
+orchestrator's ruling of section 8.19 once rev 11 or rev 12 is signed off
+without a BLOCKER or MAJOR. Each anchor is quoted as section 2.1's test reads
+it, line breaks and indentation aside, and is found once in the passage its
+block names. A replacement block replaces the text from its start anchor through
+its end anchor, both included; an insertion block goes after its anchor with one
+space; a rewrap block replaces the listed lines with its own, the words
+unchanged. After placing a replacement or insertion block, the implementer
+rewraps by hand, to 80 columns, only the lines from the one where the block
+starts to the end of its paragraph, each code span kept on one line where it
+fits and no line started by `+`, by `*` or `-` other than a list marker, by `#`
+and a digit or by a digit and a period (section 8.16's rule). The JSON blocks go
+in as JSON: F6 appended to W-148's `notes` string after one space, F11 inserted
+as an item after W-150's. Expected: no heading, bullet, numbered item or table
+row moves on any markdown file, the line deltas being the Measured list's; the
+log's D-SAFE block stays identical to fork/safe/plan.md section 0.3; the ledger
+parses with `json.load`; the merge-tree sets of section 0.8 stand. The records
+commit after it, "SAFE-2 records: the fifth fix commit recorded", writes the
+fifth commit's hash into `<fixes>` (section 8.13's placeholder row),
+fork/safe/plan.md's realigned notes and B.3.8 by dated marks, adds section 8.21,
+which records the commit as the fifth fix commit, authorized by the ruling of
+section 8.19, with its measurements and the section 0.7 compiles, marks the
+Status line and the Sign-off, and records that round 4 of section 3 step 5, by
+two fresh agents, reviews the range from rev 10's head.
+
+F1, docs/design/safety/temporal_safety.md, `ref` bindings, the paragraph that
+begins "The `ref` operand of a built-in operator is exclusive by construction":
+replace from "Where the operator's implementation is built in, that `ref` lives"
+through the end of the RR2-M1 mark that follows, "or indexing of an array")";
+the RR1-m1 and RR2-M1 marks are carried in the block word for word (RR3-M1,
+RR3-m1, RA-M2, RB-m1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+Where the operator's implementation is built in, that `ref` lives for the one
+operation and is bound when the operation runs, once its operands are evaluated:
+code in another operand, a user-written call among them, runs before the
+binding, and the left operand's place is held across that evaluation by the
+loans of the carriers it is reached through (T2, T3). No code written outside
+core/prelude runs while it is bound, so no other path observes the referent
+during it, on any place, open ones included: the checker establishes it with no
+marker, the `ref` forms no loan of its own, neither the mutation page's M3(d)
+exclusive-receiver call nor its M3(e) exclusive loan, the loans of the
+operation's result, `&x`'s and a member access's sub-loan, being T2's, and M3
+alone decides what the operation may do through a shared path. An implementation
+is built in by what runs while its `ref` operand is bound, not by the type it
+serves: it is built in exactly when no code written outside core/prelude can run
+then. What runs then is the impl's body, the thunk that the generics design
+generates for an impl whose parameter types differ from the interface's,
+"Otherwise, a synthetic function called a _thunk_ is generated:"
+(docs/design/generics/details.md:5759-5779 at 9192ee003), whose body performs
+the "Implicit conversions ... as necessary to initialize the parameters of the
+function in the `impl` from the parameters of the thunk" (:5777-5778), and every
+conversion that thunk performs on the other operands; a conversion the caller
+performs before the call, to the interface's parameter types, runs before the
+binding. So an implementation is built in when it is the language's own, `&`,
+member access naming a field or indexing of an array, or the toolchain's interim
+`=` when no function written outside core/prelude initializes its left operand,
+as this paragraph classifies below, or an impl of an operator interface written
+in core/prelude whose body and thunk run no code written outside core/prelude
+while its `ref` operand is bound, whichever type it is for; any other is
+user-written, an impl written outside core/prelude among them. Each prelude impl
+that takes a `ref` operand has a builtin body or one that calls only the
+prelude's own impls: the impls "provided for built-in types as necessary to give
+the semantics described above" (assignment.md:168-170), the builtin
+`"int.sadd_assign"` (core/prelude/types/int.carbon:331), `Inc`'s
+`self += AsInt(1);` (int.carbon:395-399) and `self += AsUInt(1);`
+(uint.carbon:457-461) among them, as much as the same impls of the `CppCompat`
+integers, classes that adapt an integer
+(core/prelude/types/cpp/int.carbon:16-38), `"int.sadd_assign"` again (:1011) and
+`Inc`'s `self += (1 as CppCompat.Long32);` (:1183-1187). The compound
+assignments of `Int`, `UInt` and the `CppCompat` integers are generic over the
+right operand's type, `U: ImplicitAs(Int(N))` (int.carbon:329-331), and their
+`fn Op(ref self, other: Self)` differs from the interface's
+`fn Op(ref self, other: Other);` (core/prelude/operators/arithmetic.carbon:31),
+so the operator calls a thunk that converts the right operand from `U` to `Self`
+while `ref self` is bound; the toolchain calls that thunk through a symbolic
+witness and inlines it at a direct call, "If we're about to form a direct call
+to a thunk, inline it." (toolchain/check/call.cpp:311-331 at 9192ee003), which
+leaves the conversion the thunk's. Such an operator is built in when that
+conversion runs only core/prelude code, for a literal, which the prelude's
+`IntLiteral as ImplicitAs(Int(To))` converts (int.carbon:31-33), for another
+prelude integer and for the operand of `Inc` and `Dec`, and it is user-written
+when the conversion calls an `ImplicitAs` written outside core/prelude: through
+a shared path the operator is then M3(d)'s, `StrictInvalidatingThroughShared`,
+and the program converts first, `*q += e as i32`, a conversion performed before
+the call. `Float`'s compound assignments are for `Self` alone
+(core/prelude/types/float.carbon:204-222), direct calls with no thunk. The
+default compound assignment that the assignment design provides,
+`*self = *self $ other;` (assignment.md:302-316), calls the `AssignWith` and
+`OpWith` impls of the type it serves while `ref self` is bound, so it is
+user-written wherever one of those is written outside core/prelude, as for a
+user's class. The mutation page's M3 counts every assignment operator, compound
+assignment included, and `++` and `--` as an assignment to the first operand, so
+a built-in operator on a type that is not `Core.Plain` is M3(c)'s through a
+shared path. The [assignment](../assignment.md#built-in-types) design gives `=`
+to "Integers and floating-point types, `bool`, and pointer types"
+(assignment.md:148) and routes every `=` through `AssignWith`: "The statement
+`x = y;` is rewritten to `x.(AssignWith(U).Op)(y);`" (assignment.md:184), and
+"The type is still required to implement `AssignWith` for the assignment to be
+valid" (assignment.md:105-106), so there an assignment is classified by where
+its `AssignWith` impl is written. The toolchain's interim `=`
+(toolchain/check/handle_operator.cpp:99-123, "TODO: Switch to using assignment
+interface for most assignment") calls no `AssignWith` and initializes its left
+operand in place from the right,
+`rhs_id = InitializeExisting(context, node_id, lhs_id, rhs_id);` (:121): it
+converts the right operand, or each element of a tuple or struct literal in
+turn, through `ImplicitAs`, copies a value through `Copy`
+(toolchain/check/convert.cpp:1867-1880 and :2162-2165 at 9192ee003), and passes
+the left operand as the return slot of a call whose result type is not
+copy-represented (toolchain/sem_ir/type_info.cpp:82-89 at 9192ee003), so every
+function that initialization runs runs while the left operand is bound. Counting
+the interim `=` as the language's own on every type with no `AssignWith` impl,
+an array or a class that is not a data class among them besides the "Tuples,
+structs, choice types, and data classes" whose rules assignment.md:159-161
+leaves a TODO, is this design's classification, not the assignment design's
+text, and it holds when no function written outside core/prelude runs in that
+initialization, as for a literal, a prelude conversion, a value whose copy is
+the prelude's or a call of a prelude function over prelude types: then nothing
+user-written runs while the left operand is bound, a type that is not
+`Core.Plain` is M3(c)'s, and `Core.String`, a class whose fields are private
+(core/prelude/types/string.carbon:16-26) and which has no `AssignWith` impl,
+would otherwise be neither built in nor user-written. An interim `=` whose
+initialization runs a function written outside core/prelude, a user's
+`ImplicitAs` or `Copy` or a user's function whose result initializes the left
+operand in place, is user-written, its left operand bound under this section's
+rule from the start of that initialization: through a shared path it is M3(d)'s,
+`StrictInvalidatingThroughShared`, and on a closed place it is a checked
+reborrow, so T4 rejects `c = Make(&c.a)`, whose argument carries another loan on
+`c`; the program converts or binds the value first where the type's copy is the
+prelude's, `*q = {.x = e as i32, .y = e as i32}` or
+`let v: {.a: i32, .b: i32} = F(p); *q = v;`, or writes through an exclusive
+path, while a call whose result type is copy-represented, `*q = F(p)` for an
+`i32` result, returns its value before the left operand is written, and that `=`
+stays built in (amended 2026-10-29, re-review round 2: RR1-m1, where this read
+"Where the operator's implementation is built in, the language's own or a
+prelude impl whose body is a builtin, such as
+`fn Op(ref self, other: Self) = "int.sadd_assign";`
+(core/prelude/types/int.carbon:331), that `ref` lives for the one operation" and
+"the checker establishes it with no marker, and the mutation page's M3 alone
+decides"; amended 2026-10-29, re-review round 3: RR2-M1, RR2-m1, where this read
+"An implementation is built in when it gives a built-in type the semantics the
+[assignment](../assignment.md#built-in-types) design states, `=` on integers,
+floating-point types, `bool` and pointers, compound assignment on integers and
+floating-point types, and `++` and `--` on integers (assignment.md:146-157), the
+prelude's impls of those, "provided for built-in types as necessary to give the
+semantics described above" (assignment.md:168-170), counting as built in
+whatever their body, `Inc`'s `self += AsInt(1);`
+(core/prelude/types/int.carbon:395-399, uint.carbon:457-461) as much as
+`fn Op(ref self, other: Self) = "int.sadd_assign";` (int.carbon:331); when it is
+the assignment of a tuple, struct, array, choice type or class with no
+user-written `AssignWith` impl, whose rules assignment.md:159-161 leaves a TODO;
+and when it is the language's own `&`, member access naming a field or indexing
+of an array"; amended <date>, re-review round 3 fold: RR3-M1, RR3-m1, RA-M2,
+RB-m1, where this read "Where the operator's implementation is built in, that
+`ref` lives for the one operation and nothing else is evaluated while it does,
+so no other path observes the referent during it, on any place, open ones
+included", "An implementation is built in by where it is written, not by the
+type it serves: it is built in when it is the language's own, `&`, member access
+naming a field, indexing of an array or the toolchain's interim `=` that this
+paragraph classifies below, or an impl of an operator interface written in
+core/prelude whose body, while its `ref` operand is bound, calls no impl written
+outside core/prelude, whichever type it is for", "Each such prelude impl that
+takes a `ref` operand has a builtin body or one that calls only the prelude's
+own impls, so nothing user-written is evaluated while its `ref` lives", "`Inc`'s
+`self += AsInt(1);` (int.carbon:395-399, uint.carbon:457-461)", "A user's type
+may fill the `U` of their compound assignments, `U: ImplicitAs(Int(N))`
+(int.carbon:329-331), but its `ImplicitAs` runs when the caller converts the
+right operand to `other: Self`, before the call binds `ref self`, so those impls
+stay built in." and "calls no `AssignWith`; counting it as the language's own on
+every type with no `AssignWith` impl, an array or a class that is not a data
+class among them besides the "Tuples, structs, choice types, and data classes"
+whose rules assignment.md:159-161 leaves a TODO, is this design's
+classification, not the assignment design's text: it calls no user-written
+`AssignWith`, any user-written `Copy` or `ImplicitAs` it runs to convert the
+right operand or initialize the left from it is checked under M3 on every path
+it takes")
+```
+
+<!-- google-doc-style-resume -->
+
+F2, docs/design/safety/mutation_safety.md, M3, the paragraph that begins "An
+operation on a place `P` is _invalidating_" and its sentence "An operator that
+passes its operand to a `ref` parameter": replace from "define it, the
+language's own, `&`, member access naming a field" through "impl's `ref self` is
+(d)'s")", the R1-M1, RR1-m1 and RR2-M1 marks carried word for word (RR3-M1,
+RA-M2):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+define it: no code written outside core/prelude can run while its `ref` operand
+is bound, where what runs then is the impl's body, the thunk
+docs/design/generics/details.md:5759-5779 (at 9192ee003) generates for an impl
+whose parameter types differ from the interface's and every conversion that
+thunk performs on the other operands, and a conversion the caller performs
+before the call runs before the binding. So the language's own `&`, member
+access naming a field and indexing of an array, the toolchain's interim `=` on a
+type with no `AssignWith` impl when no function written outside core/prelude
+runs in its in-place initialization of the left operand, and an impl of an
+operator interface written in core/prelude whose body and thunk run no code
+written outside core/prelude while its `ref` operand is bound, whichever type it
+is for, the `CppCompat` integers' as much as `Int`'s, are built in; a compound
+assignment of `Int`, `UInt` or a `CppCompat` integer whose thunk converts a
+user's type that fills its `U` through an `ImplicitAs` written outside
+core/prelude is not, and the program converts first, `*q += e as i32`; the
+interim `=` (toolchain/check/handle_operator.cpp:99-123), where the assignment
+design rewrites `x = y;` to `x.(AssignWith(U).Op)(y);` (assignment.md:184),
+counts as the language's own on an array or a class that is not a data class by
+this design's classification and not by the assignment design's "Tuples,
+structs, choice types, and data classes" (assignment.md:159), and it initializes
+its left operand in place (`InitializeExisting`, :121), so one whose
+initialization runs a user-written `ImplicitAs`, `Copy` or function is
+user-written; and this rule counts every assignment operator, compound
+assignment included, and `++` and `--` as an assignment to the first operand, in
+(c) and in the next paragraph: that section establishes its operand for the one
+operation, the operand's `ref` forms no loan of its own, neither (d)'s call nor
+(e)'s exclusive loan, and (a) to (c) and the next paragraph decide what it may
+do through a shared path, while the call of a user-written impl's `ref self`, an
+impl written outside core/prelude or one under which code written outside
+core/prelude runs while its `ref` operand is bound, assignment.md:302-316's
+default `*self = *self $ other;` for a user's class, a compound assignment whose
+thunk runs a user's `ImplicitAs` and a user-written interim `=` among them, is
+(d)'s, `StrictInvalidatingThroughShared` through a shared path
+(amended 2026-10-28, document-review fold: R1-M1; amended 2026-10-29, re-review
+round 2: RR1-m1, where this read "the language's own or a prelude impl whose
+body is a builtin: the temporal page's [`ref`
+bindings](temporal_safety.md#ref-bindings) establish its operand for the one
+operation, and (a) to (c)"; amended 2026-10-29, re-review round 3: RR2-M1,
+RR2-m1, where this read "the semantics the assignment design gives a built-in
+type with the prelude's impls of them whatever their body, an assignment of a
+tuple, struct, array, choice type or class with no user-written `AssignWith`
+impl, `&`, member access naming a field or indexing of an array" and "while the
+call of a user-written impl's `ref self` is (d)'s"; amended <date>, re-review
+round 3 fold: RR3-M1, RA-M2, where this read "the language's own, `&`, member
+access naming a field, indexing of an array or the toolchain's interim `=` on a
+type with no `AssignWith` impl, or an impl of an operator interface written in
+core/prelude whose body, while its `ref` operand is bound, calls no impl written
+outside core/prelude, whichever type it is for, the `CppCompat` integers' as
+much as `Int`'s, a user's type that fills their `U` being converted to `Self`
+before the `ref` is bound", "and any user-written `Copy` or `ImplicitAs` it runs
+is checked under this rule on every path it takes" and "an impl written outside
+core/prelude or a prelude impl that calls one while its `ref` operand is bound,
+assignment.md:302-316's default `*self = *self $ other;` for a user's class
+among them, is (d)'s")
+```
+
+<!-- google-doc-style-resume -->
+
+F3, fork/decision-log.md D-SAFE-8 and fork/safe/plan.md section 0.3's, the same
+words in both, within the bullet that begins "**D-SAFE-8 —": replace from "lives
+for the one operation, during which nothing else is evaluated" through "naming a
+field and indexing of an array")", the R1-M1, RR1-m1 and RR2-M1 marks carried
+word for word (RR3-M1, RA-M2, RB-m1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    lives for the one operation and is bound when the operation runs, once its
+    operands are evaluated, code in another operand, a user-written call among
+    them, running before the binding and the left operand's place being held
+    across that evaluation by the loans of the carriers it is reached through
+    (T2, T3); where the implementation is built in, no code written outside
+    core/prelude runs while it is bound, so it is established on any place, open
+    ones included, forms no loan of its own, neither D-SAFE-9's (d) nor its (e),
+    and D-SAFE-9's M3 alone decides what the operation may do through a shared
+    path; a user-written impl's `ref self` is a `ref` binding under this rule
+    and its call D-SAFE-9's (d) (amended 2026-10-28, document-review fold:
+    R1-M1: without it every `Plain` write through `T*` that M3 permits was
+    `StrictRefFromShared`). Built in is decided by what runs while the `ref`
+    operand is bound, not by the type the implementation serves: an
+    implementation is built in exactly when no code written outside core/prelude
+    can run then, and what runs then is the impl's body, the thunk
+    generics/details.md:5759-5779 (at 9192ee003) generates for an impl whose
+    parameter types differ from the interface's, whose body performs the
+    "Implicit conversions ... as necessary to initialize the parameters of the
+    function in the `impl` from the parameters of the thunk" (:5777-5778), and
+    every conversion that thunk performs on the other operands, a conversion the
+    caller performs before the call, to the interface's parameter types, running
+    before the binding. So built in are the language's own `&`, member access
+    naming a field and indexing of an array, the toolchain's interim `=` when no
+    function written outside core/prelude initializes its left operand, below,
+    and every impl of an operator interface written in core/prelude whose body
+    and thunk run no code written outside core/prelude while its `ref` operand
+    is bound, whichever type it is for, each of the prelude's that takes a `ref`
+    operand having a builtin body or one that calls only the prelude's own impls
+    (the impls :168-170 says are "provided for built-in types as necessary to
+    give the semantics described above", int.carbon:331's `"int.sadd_assign"`
+    and :395-399's `Inc` as much as cpp/int.carbon:1011's `"int.sadd_assign"`
+    and :1183-1187's `Inc` for the `CppCompat` integers, classes that adapt an
+    integer, :16-38); any other implementation is user-written,
+    assignment.md:302-316's default `*self = *self $ other;` among them wherever
+    the `AssignWith` or `OpWith` impl it calls is written outside core/prelude.
+    The compound assignments of `Int`, `UInt` and the `CppCompat` integers are
+    generic over `U: ImplicitAs(Int(N))` (int.carbon:329-331) and their
+    `fn Op(ref self, other: Self)` differs from the interface's
+    `fn Op(ref self, other: Other);` (operators/arithmetic.carbon:31), so their
+    thunk converts the right operand from `U` while `ref self` is bound, the
+    toolchain inlining it at a direct call (toolchain/check/call.cpp:311-331
+    at 9192ee003) without moving the conversion out of the thunk: such an
+    operator is built in when that conversion runs only core/prelude code, for a
+    literal (int.carbon:31-33), another prelude integer or the operand of `Inc`
+    and `Dec`, and user-written when it calls an `ImplicitAs` written outside
+    core/prelude, D-SAFE-9's (d) through a shared path
+    (`StrictInvalidatingThroughShared`), the program converting first
+    (`*q += e as i32`); `Float`'s are for `Self` alone (float.carbon:204-222)
+    and call no thunk. D-SAFE-9's M3 counts every assignment operator, compound
+    assignment included, and `++` and `--` as an assignment to the first
+    operand. assignment.md:184 has "The statement `x = y;` is rewritten to
+    `x.(AssignWith(U).Op)(y);`" and :105-106 "The type is still required to
+    implement `AssignWith` for the assignment to be valid", so there an
+    assignment is classified by where its `AssignWith` impl is written; the
+    toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) calls
+    none and initializes its left operand in place (`InitializeExisting`, :121),
+    converting the right operand, or each element of a tuple or struct literal
+    in turn, through `ImplicitAs`, copying a value through `Copy`
+    (convert.cpp:1867-1880 and :2162-2165 at 9192ee003) and passing the left
+    operand as the return slot of a call whose result type is not
+    copy-represented (sem_ir/type_info.cpp:82-89 at 9192ee003), so every
+    function that initialization runs runs while the left operand is bound.
+    Counting the interim `=` as the language's own on every type with no
+    `AssignWith` impl, an array or a class that is not a data class among them
+    besides :159's "Tuples, structs, choice types, and data classes", whose
+    rules :161 leaves a TODO, is this design's classification, not that text,
+    and it holds when no function written outside core/prelude runs in that
+    initialization (a literal, a prelude conversion, a value whose copy is the
+    prelude's, a call of a prelude function over prelude types): then nothing
+    user-written runs while the left operand is bound, a non-`Plain` type's
+    assignment is D-SAFE-9's (c), and `Core.String`, whose fields are private
+    (string.carbon:16-26) and which has no `AssignWith` impl, would otherwise be
+    neither built in nor user-written. An interim `=` whose initialization runs
+    a function written outside core/prelude (a user's `ImplicitAs` or `Copy`, or
+    a user's function whose result initializes the left operand in place) is
+    user-written, its left operand bound under this rule from the start of that
+    initialization: D-SAFE-9's (d) through a shared path, a checked reborrow on
+    a closed place, so T4 rejects `c = Make(&c.a)`; the program converts or
+    binds the value first where the type's copy is the prelude's
+    (`*q = {.x = e as i32, .y = e as i32}`;
+    `let v: {.a: i32, .b: i32} = F(p); *q = v;`) or writes through an exclusive
+    path, while a call whose result type is copy-represented (`*q = F(p)` for an
+    `i32` result) returns before the left operand is written
+    (amended 2026-10-29, re-review round 2: RR1-m1, where this read "where the
+    implementation is the language's own or a prelude impl whose body is a
+    builtin (int.carbon:331's `"int.sadd_assign"`) it is established on any
+    place, open ones included, and D-SAFE-9's M3 alone decides";
+    amended 2026-10-29, re-review round 3: RR2-M1, RR2-m1, where this read
+    "Built in is the semantics assignment.md:146-157 gives the built-in types,
+    `=` on integers, floating-point types, `bool` and pointers, compound
+    assignment on integers and floating-point types, and `++` and `--` on
+    integers, the prelude's impls of them counting as built in whatever their
+    body (the impls :168-170 says are "provided for built-in types as necessary
+    to give the semantics described above"; int.carbon:395-399's `Inc` as much
+    as :331's `"int.sadd_assign"`); the assignment of a tuple, struct, array,
+    choice type or class with no user-written `AssignWith` impl
+    (assignment.md:159-161, a TODO upstream); and the language's own `&`, member
+    access naming a field and indexing of an array"; amended <date>, re-review
+    round 3 fold: RR3-M1, RA-M2, RB-m1, where this read "lives for the one
+    operation, during which nothing else is evaluated, so where the
+    implementation is built in it is established on any place, open ones
+    included", "Built in is decided by where an implementation is written, not
+    by the type it serves: the language's own `&`, member access naming a field
+    and indexing of an array, the toolchain's interim `=` below, and every impl
+    of an operator interface written in core/prelude whose body, while its `ref`
+    operand is bound, calls no impl written outside core/prelude, whichever type
+    it is for", "and a user's type that fills their `U` (int.carbon:329-331,
+    `U: ImplicitAs(Int(N))`) being converted to `other: Self` before `ref self`
+    is bound" and "calls none, and counting it as the language's own on every
+    type with no `AssignWith` impl, an array or a class that is not a data class
+    among them besides :159's "Tuples, structs, choice types, and data classes",
+    whose rules :161 leaves a TODO, is this design's classification, not that
+    text: it calls no user-written `AssignWith`, any user-written `Copy` or
+    `ImplicitAs` it runs is checked under D-SAFE-9's M3 on every path it takes")
+```
+
+<!-- google-doc-style-resume -->
+
+F4, this plan's D-SAFE2-6, within its bullet: replace from "lives for the one
+operation, during which nothing else is evaluated" through rev 11's pointer,
+which ends "until the fifth fix commit.)", the R1-M1, RR1-m1 and RR2-M1 marks
+carried word for word (RR3-M1, RA-M2, RB-m1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    lives for the one operation and is bound when the operation runs, once its
+    operands are evaluated, code in another operand, a user-written call among
+    them, running before the binding and the left operand's place being held
+    across that evaluation by the loans of the carriers it is reached through
+    (T2, T3); where the implementation is built in, no code written outside
+    core/prelude runs while it is bound, so it is established on any place, open
+    ones included, forms no loan of its own, neither M3(d)'s exclusive-receiver
+    call nor M3(e)'s exclusive loan, and M3 alone decides what the operation may
+    do through a shared path; a user-written impl's `ref self` is a `ref`
+    binding under this rule and its call M3(d)'s (amended 2026-10-28,
+    document-review fold: R1-M1: without it upstream's operator rule made every
+    `Plain` write through `T*` that M3 permits, `q->n = 2` in EX-M-4d's `Peek`
+    among them, a `ref` binding on an open place and so `StrictRefFromShared`).
+    Built in is decided by what runs while the `ref` operand is bound, not by
+    the type the implementation serves: an implementation is built in exactly
+    when no code written outside core/prelude can run then, and what runs then
+    is the impl's body, the thunk docs/design/generics/details.md:5759-5779
+    (at 9192ee003) generates for an impl whose parameter types differ from the
+    interface's, whose body performs the "Implicit conversions ... as necessary
+    to initialize the parameters of the function in the `impl` from the
+    parameters of the thunk" (:5777-5778), and every conversion that thunk
+    performs on the other operands, a conversion the caller performs before the
+    call, to the interface's parameter types, running before the binding. So
+    built in are the language's own `&`, member access naming a field and
+    indexing of an array, the toolchain's interim `=` when no function written
+    outside core/prelude initializes its left operand, below, and every impl of
+    an operator interface written in core/prelude whose body and thunk run no
+    code written outside core/prelude while its `ref` operand is bound,
+    whichever type it is for, each of the prelude's that takes a `ref` operand
+    having a builtin body or one that calls only the prelude's own impls (the
+    impls docs/design/assignment.md:168-170 says are "provided for built-in
+    types as necessary to give the semantics described above",
+    core/prelude/types/int.carbon:331's `"int.sadd_assign"` and :395-399's `Inc`
+    as much as core/prelude/types/cpp/int.carbon:1011's `"int.sadd_assign"` and
+    :1183-1187's `Inc` for the `CppCompat` integers, classes that adapt an
+    integer, :16-38); any other implementation is user-written,
+    docs/design/assignment.md:302-316's default `*self = *self $ other;` among
+    them wherever the `AssignWith` or `OpWith` impl it calls is written outside
+    core/prelude. The compound assignments of `Int`, `UInt` and the `CppCompat`
+    integers are generic over `U: ImplicitAs(Int(N))`
+    (core/prelude/types/int.carbon:329-331) and their
+    `fn Op(ref self, other: Self)` differs from the interface's
+    `fn Op(ref self, other: Other);`
+    (core/prelude/operators/arithmetic.carbon:31), so their thunk converts the
+    right operand from `U` while `ref self` is bound, the toolchain inlining it
+    at a direct call (toolchain/check/call.cpp:311-331 at 9192ee003) without
+    moving the conversion out of the thunk: such an operator is built in when
+    that conversion runs only core/prelude code, for a literal
+    (core/prelude/types/int.carbon:31-33), another prelude integer or the
+    operand of `Inc` and `Dec`, and user-written when it calls an `ImplicitAs`
+    written outside core/prelude, M3(d) through a shared path
+    (`StrictInvalidatingThroughShared`), the program converting first
+    (`*q += e as i32`); `Float`'s are for `Self` alone
+    (core/prelude/types/float.carbon:204-222) and call no thunk. M3 counts every
+    assignment operator, compound assignment included, and `++` and `--` as an
+    assignment to the first operand. docs/design/assignment.md:184 has "The
+    statement `x = y;` is rewritten to `x.(AssignWith(U).Op)(y);`" and :105-106
+    "The type is still required to implement `AssignWith` for the assignment to
+    be valid", so there an assignment is classified by where its `AssignWith`
+    impl is written; the toolchain's interim `=`
+    (toolchain/check/handle_operator.cpp:99-123) calls none and initializes its
+    left operand in place (`InitializeExisting`, :121), converting the right
+    operand, or each element of a tuple or struct literal in turn, through
+    `ImplicitAs`, copying a value through `Copy`
+    (toolchain/check/convert.cpp:1867-1880 and :2162-2165 at 9192ee003) and
+    passing the left operand as the return slot of a call whose result type is
+    not copy-represented (toolchain/sem_ir/type_info.cpp:82-89 at 9192ee003), so
+    every function that initialization runs runs while the left operand is
+    bound. Counting the interim `=` as the language's own on every type with no
+    `AssignWith` impl, an array or a class that is not a data class among them
+    besides :159's "Tuples, structs, choice types, and data classes", whose
+    rules :161 leaves a TODO, is this design's classification, not that text,
+    and it holds when no function written outside core/prelude runs in that
+    initialization (a literal, a prelude conversion, a value whose copy is the
+    prelude's, a call of a prelude function over prelude types): then nothing
+    user-written runs while the left operand is bound, a non-`Plain` type's
+    assignment is M3(c)'s, and `Core.String`, whose fields are private
+    (core/prelude/types/string.carbon:16-26) and which has no `AssignWith` impl,
+    would otherwise be neither built in nor user-written. An interim `=` whose
+    initialization runs a function written outside core/prelude (a user's
+    `ImplicitAs` or `Copy`, or a user's function whose result initializes the
+    left operand in place) is user-written, its left operand bound under this
+    rule from the start of that initialization: M3(d) through a shared path, a
+    checked reborrow on a closed place, so T4 rejects `c = Make(&c.a)`; the
+    program converts or binds the value first where the type's copy is the
+    prelude's (`*q = {.x = e as i32, .y = e as i32}`;
+    `let v: {.a: i32, .b: i32} = F(p); *q = v;`) or writes through an exclusive
+    path, while a call whose result type is copy-represented (`*q = F(p)` for an
+    `i32` result) returns before the left operand is written
+    (amended 2026-10-29, re-review round 2: RR1-m1, where this read "where the
+    implementation is the language's own or a prelude impl whose body is a
+    builtin it is established on any place, open ones included, and M3 alone
+    decides": `++p->n` through `T*` was neither built in nor user-written,
+    `Inc`'s body `self += AsInt(1);` being no builtin, while `p->n += 1` was
+    built in; amended 2026-10-29, re-review round 3: RR2-M1, RR2-m1, where this
+    read "Built in is the semantics docs/design/assignment.md:146-157 gives the
+    built-in types, `=` on integers, floating-point types, `bool` and pointers,
+    compound assignment on integers and floating-point types, and `++` and `--`
+    on integers, the prelude's impls of them counting as built in whatever their
+    body (the impls :168-170 says are "provided for built-in types as necessary
+    to give the semantics described above";
+    core/prelude/types/int.carbon:395-399's `Inc` as much as :331's
+    `"int.sadd_assign"`); the assignment of a tuple, struct, array, choice type
+    or class with no user-written `AssignWith` impl (assignment.md:159-161, a
+    TODO upstream); and the language's own `&`, member access naming a field and
+    indexing of an array": `q->m += 1` and `++q->m` for a field `m` of a
+    `CppCompat` integer type, C++'s `long` among them, were neither built in nor
+    user-written, and the aggregate clause credited assignment.md:159-161 with
+    arrays and every class; amended <date>, re-review round 3 fold: RR3-M1,
+    RA-M2, RB-m1, where this read "lives for the one operation, during which
+    nothing else is evaluated, so where the implementation is built in it is
+    established on any place, open ones included", "Built in is decided by where
+    an implementation is written, not by the type it serves: the language's own
+    `&`, member access naming a field and indexing of an array, the toolchain's
+    interim `=` below, and every impl of an operator interface written in
+    core/prelude whose body, while its `ref` operand is bound, calls no impl
+    written outside core/prelude, whichever type it is for", "and a user's type
+    that fills their `U` (core/prelude/types/int.carbon:329-331,
+    `U: ImplicitAs(Int(N))`) being converted to `other: Self` before `ref self`
+    is bound" and "calls none, and counting it as the language's own on every
+    type with no `AssignWith` impl, an array or a class that is not a data class
+    among them besides :159's "Tuples, structs, choice types, and data classes",
+    whose rules :161 leaves a TODO, is this design's classification, not that
+    text: it calls no user-written `AssignWith`, any user-written `Copy` or
+    `ImplicitAs` it runs is checked under M3 on every path it takes": `*q += e`
+    for a user's `e` was built in although its thunk runs the user's
+    `ImplicitAs` while `ref self` is bound, and a user's function, `Copy` or
+    `ImplicitAs` that initializes the interim `=`'s left operand in place ran
+    while that operand was bound).
+```
+
+<!-- google-doc-style-resume -->
+
+F5, the clause that section 8.16's E5 inserted, in five places: the temporal
+page's D-SAFE-8 bullet after "type excepted; a built-in operator's `ref`
+operand, built in meaning ", the mutation page's D-SAFE-9 bullet, the log's
+D-SAFE-9 and fork/safe/plan.md section 0.3's after "A built-in operator's `ref`
+operand, built in meaning ", and fork/safe/plan.md section 1.6 after "SAFE-2:
+W-348), a built-in operator's `ref` operand, built in meaning ": replace "that
+its implementation is the language's own or an impl of an operator interface
+written in core/prelude that calls no impl written outside core/prelude while
+its `ref` operand is bound, M3 counting every assignment operator, compound
+assignment included, and `++` and `--` as an assignment to that operand
+(added 2026-10-29, re-review round 3: RR2-M1)" with (RR3-M1, RA-M2):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+that no code written outside core/prelude can run while its `ref` operand is
+bound, the impl's body, the thunk docs/design/generics/details.md:5759-5779
+(at 9192ee003) generates for it, that thunk's conversions of the other operands
+and the toolchain's interim `=`'s in-place initialization of its left operand
+included, M3 counting every assignment operator, compound assignment included,
+and `++` and `--` as an assignment to that operand (added 2026-10-29, re-review
+round 3: RR2-M1; amended <date>, re-review round 3 fold: RR3-M1, RA-M2, where
+this read "that its implementation is the language's own or an impl of an
+operator interface written in core/prelude that calls no impl written outside
+core/prelude while its `ref` operand is bound")
+```
+
+<!-- google-doc-style-resume -->
+
+F6, fork/inventory/work-items.json, W-148: append to its `notes` string, after
+one space (RR3-M1, RA-M2, RB-m1):
+
+<!-- google-doc-style-ignore -->
+
+```text
+SAFE-2 whole-tree reviews, rev 11 fold (<date>; RR3-M1, RA-M2, RB-m1; fork/safe/safe2-plan.md section 8.20): superseding the previous note's test, an operator's `ref` operand is exempt from the `ref` rule's obligations exactly when no code written outside core/prelude can run while it is bound. It is bound when the operation runs, once its operands are evaluated; what runs then is the impl's body, the thunk docs/design/generics/details.md:5759-5779 (at 9192ee003) generates for an impl whose parameter types differ from the interface's, and every conversion that thunk performs on the other operands, while a conversion the caller performs before the call does not. The compound assignments of `Int`, `UInt` and the `CppCompat` integers convert their right operand from `U` inside such a thunk (core/prelude/types/int.carbon:329-331, core/prelude/operators/arithmetic.carbon:31), so with an `ImplicitAs` written outside core/prelude they are user-written, M3(d) through a shared path, and the program converts first (`*q += e as i32`); a literal, a prelude integer and `Inc` and `Dec` stay built in. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes its left operand in place (`InitializeExisting`, :121), so it is built in only when no function written outside core/prelude runs in that initialization; a user's `ImplicitAs`, `Copy` or in-place call makes it user-written, M3(d) through a shared path, while a call whose result type is copy-represented returns before the left operand is written.
+```
+
+<!-- google-doc-style-resume -->
+
+F7, docs/design/safety/mutation_safety.md, M7: insert after "or joins inside the
+borrow, the _thread-boundary lifetime rule_." (RB-M3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+As stated, that rule holds a loan that crosses into a scoped thread at the kind
+it was formed with, so the spawning thread may still make a `Plain` write to a
+place a `const T*` argument lets the scoped thread read, and a global, which
+every thread reaches by name with no loan, is outside it: the stage 5 contract
+this guarantee waits for gives a scoped API a frozen hold on every place its
+arguments' loans reach until the join, an exclusive one through an
+`exclusive T*`, and gives globals a rule, residue item W-365 (added <date>,
+re-review round 3 fold: RB-M3).
+```
+
+<!-- google-doc-style-resume -->
+
+F8, docs/design/safety/mutation_safety.md, Data races and the facets: insert
+after "and never into a detached one (EX-M-3)." (RB-M3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+As stated, that rule holds a loan that crosses into a scoped thread at the kind
+it was formed with, so the spawning thread may still make a `Plain` write to a
+place a `const T*` argument lets the scoped thread read, and a global, which
+every thread reaches by name with no loan, is outside it: the stage 5 contract
+this guarantee waits for gives a scoped API a frozen hold on every place its
+arguments' loans reach until the join, an exclusive one through an
+`exclusive T*`, and gives globals a rule, residue item W-365 (added <date>,
+re-review round 3 fold: RB-M3).
+```
+
+<!-- google-doc-style-resume -->
+
+F9, docs/design/safety/mutation_safety.md, the D-SAFE-16 bullet of Decisions:
+insert after "with the thread-boundary lifetime rule (a free loan set or a
+scoped join)." (RB-M3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    As stated, that rule holds a loan that crosses into a scoped thread at the
+    kind it was formed with, so the spawning thread may still make a `Plain`
+    write to a place a `const T*` argument lets the scoped thread read, and a
+    global, which every thread reaches by name with no loan, is outside it: the
+    stage 5 contract this guarantee waits for gives a scoped API a frozen hold
+    on every place its arguments' loans reach until the join, an exclusive one
+    through an `exclusive T*`, and gives globals a rule, residue item W-365
+    (added <date>, re-review round 3 fold: RB-M3).
+```
+
+<!-- google-doc-style-resume -->
+
+F10, fork/decision-log.md D-SAFE-16 and fork/safe/plan.md section 0.3's, the
+same words in both: insert after "a local `x` is rejected (program `Race` in
+§4.1)." (RB-M3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    As stated, that rule holds a loan that crosses into a scoped thread at the
+    kind it was formed with, so the spawning thread may still make a `Plain`
+    write to a place a `const T*` argument lets the scoped thread read, and a
+    global, which every thread reaches by name with no loan, is outside it: the
+    stage 5 contract this guarantee waits for gives a scoped API a frozen hold
+    on every place its arguments' loans reach until the join, an exclusive one
+    through an `exclusive T*`, and gives globals a rule, residue item W-365
+    (added <date>, re-review round 3 fold: RB-M3).
+```
+
+<!-- google-doc-style-resume -->
+
+F11, fork/inventory/work-items.json, the item after W-150: insert as the last
+item of `items`, after W-150's object and a comma, in the file's own layout,
+with `<date>` the commit's (RB-M3):
+
+<!-- google-doc-style-ignore -->
+
+```json
+    {
+      "id": "W-365",
+      "kind": "missing-feature",
+      "title": "SAFE-2 residue: the thread-boundary lifetime rule's loan kinds and globals across threads (D-SAFE-16) — a scoped thread-crossing API holds every place its arguments' loans reach under a frozen loan until the join (an exclusive one through `exclusive T*`), and globals, which every thread reaches by name with no loan, get a rule, so that \"no data races between Carbon-spawned threads\" follows",
+      "subsystem": "docs/design/safety (mutation_safety.md M7 and 'Data races and the facets', D-SAFE-16); toolchain/check (stage 5 thread-crossing calls)",
+      "size": "M",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/mutation_safety.md 'M7: Data races' and 'Data races and the facets' (the thread-boundary lifetime rule; the `const T*` row of the facet table; RB-M3's pointer)",
+        "fork/safe/safe2-plan.md section 8.20 (the whole-tree review B's RB-M3, reproduced by rev 11)"
+      ],
+      "blocked_by": ["W-148"],
+      "notes": "Filed by SAFE-2's fifth fix commit (<date>; fork/safe/safe2-plan.md section 8.20, RB-M3). As stated, the thread-boundary lifetime rule holds a loan that crosses into a scoped thread at the kind it was formed with: `fn Race2() { var x: i32 = 0; Core.Thread.Scope(fn (ref s: Core.Thread.Scope) { s.Spawn(fn (var q: const i32*) { Core.Print(*q); }, &x); x = 1; }); }` is accepted, `const i32*` being `Send` because `i32` is `Sync`, the scope keeping the shared loan on `x` live and the owner's `Plain` write under a live shared loan being allowed (T4), so the write races the reading thread; and a global, which every thread reaches by name with no loan, lets two Carbon-spawned threads write one `Plain` object with no pointer crossing at all. Review B's candidate rule: a thread-crossing API holds every place its arguments' loans reach under a frozen loan until the join, an exclusive one through `exclusive T*`, so that any other path's write, the spawning thread's included, is `StrictBorrowedObjectMutated`; globals need a rule of their own, which the stage 5 design (W-149) decides with this one. NEW syntax: the nightly has no `Core.Thread`, so no probe exists."
+    }
+```
+
+<!-- google-doc-style-resume -->
+
+F12, docs/design/safety/mutation_safety.md, Value bindings, the paragraph on
+`Core.Buf(T).Set`: insert after "where an unbound `Ref` would leave `s` frozen
+on an element reached through a free result and the call accepted." (RA-m1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+Upstream's prelude declares the interface with
+`fn Ref(self, subscript: SubscriptType) -> ref ElementType;` and no `bound`
+(core/prelude/operators/index.carbon:14-17 at 9192ee003, added by
+upstream's 6d80ceb58 after the fork's cut, so that this tree's prelude has it
+once PR 65 lands), so W-144's `bound self` at the interface changes upstream's
+signature, in upstream's own shape for a `ref`-returning operator interface,
+`Deref`'s `fn Op[bound ref self: Self]() -> ref Result;` (p005434:952-960; added
+<date>, re-review round 3 fold: RA-m1).
+```
+
+<!-- google-doc-style-resume -->
+
+F13, docs/design/safety/mutation_safety.md, Value bindings, the bullet "A
+copy-represented type holds no loan": replace "an adapter, `const T` and
+`MaybeUnformed(T)` of a copy-represented `T` other than `bool` take the
+representation of the type they wrap (:762-770, :783-789, :803-826)" with
+(RA-m2):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    an adapter and `const T` take the representation of the type they wrap
+    (:762-770, :783-789), and `MaybeUnformed(T)` is copy-represented exactly
+    when `T` is, with a copy that is its object representation, and is not
+    `bool` (:803-826; amended <date>, re-review round 3 fold: RA-m2, where this
+    read "an adapter, `const T` and `MaybeUnformed(T)` of a copy-represented `T`
+    other than `bool` take the representation of the type they wrap")
+```
+
+<!-- google-doc-style-resume -->
+
+F14, D-SAFE-17 in fork/decision-log.md and fork/safe/plan.md section 0.3, the
+same words in both: replace "and an adapter, `const T` or `MaybeUnformed(T)` of
+a copy-represented `T` other than `bool`
+(toolchain/check/type_completion.cpp:572-578, :697-751, :762-770, :783-789 and
+:803-826 at 0421bf3b4)" with (RA-m2):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    an adapter or `const T` of a copy-represented `T`, and `MaybeUnformed(T)` of
+    a copy-represented `T` whose copy is its object representation and that is
+    not `bool` (toolchain/check/type_completion.cpp:572-578, :697-751, :762-770,
+    :783-789 and :803-826 at 0421bf3b4; amended <date>, re-review round 3 fold:
+    RA-m2, where this read "and an adapter, `const T` or `MaybeUnformed(T)` of a
+    copy-represented `T` other than `bool`")
+```
+
+<!-- google-doc-style-resume -->
+
+F15, docs/design/safety/mutation_safety.md, lines 96 to 100 at d86fce1b9:
+replace the 5 lines from "functions `Peek`, `Peek2` and `Peek4` of EX-M-4d, were
+compiled and run on the" through "M5 and M8, and the sections they cite, were
+realigned 2026-10-28 by fork" with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+functions `Peek`, `Peek2` and `Peek4` of EX-M-4d, were compiled and run on
+the 2026.10.12 nightly toolchain and their outcomes are stated with them
+(EX-M-4c and EX-M-4d added 2026-10-28, SAFE-2: W-348). File and line citations
+are against trunk 0bdce60a5 unless a citation says otherwise. Rules M1, M2, M3,
+M4, M5 and M8, and the sections they cite, were realigned 2026-10-28 by fork
+```
+
+<!-- google-doc-style-resume -->
+
+F16, docs/design/safety/mutation_safety.md, lines 895 to 901 at d86fce1b9:
+replace the 7 lines from "on the 2026.10.12 nightly toolchain with
+`carbon compile" through "record of [fork/safe/plan.md](/fork/safe/plan.md)."
+with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+on the 2026.10.12 nightly toolchain with `carbon
+compile --output-last-input-only` and no `package` line, then linked and run
+(EX-M-4c and EX-M-4d added 2026-10-28, SAFE-2: W-348); EX-M-4b and EX-M-4d's
+`BufSize` and `Peek8` use the fork prelude's `Core.Buf`, which that toolchain
+lacks; every other example is NEW syntax. Prelude names are `Core.`-qualified
+throughout. Tags of the form A-n, B-n and RR-n in example comments index the
+review-fold record of [fork/safe/plan.md](/fork/safe/plan.md).
+```
+
+<!-- google-doc-style-resume -->
+
+F17, docs/design/safety/temporal_safety.md, lines 84 to 85 at d86fce1b9: replace
+the 2 lines from "`Core.Lifetime`, named below, are D-SAFE-20 library residue
+and are not in the" through "0.1 prelude. Every pointer in today's toolchain
+behaves as an unmarked" with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+`Core.Lifetime`, named below, are D-SAFE-20 library residue and are not in
+the 0.1 prelude. Every pointer in today's toolchain behaves as an unmarked
+```
+
+<!-- google-doc-style-resume -->
+
+F18, docs/design/safety/temporal_safety.md, lines 997 to 998 at d86fce1b9:
+replace the 2 lines from "the stage that will). The examples marked "today's
+syntax" were compiled on the" through "2026.10.12 nightly toolchain with
+`carbon compile --output-last-input-only`," with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+the stage that will). The examples marked "today's syntax" were compiled on
+the 2026.10.12 nightly toolchain with `carbon compile --output-last-input-only`,
+```
+
+<!-- google-doc-style-resume -->
+
+F19, docs/design/safety/initialization_safety.md, lines 321 to 322 at d86fce1b9:
+replace the 2 lines from "the stage that will). The examples marked "today's
+syntax" were compiled on the" through "2026.10.12 nightly toolchain with
+`carbon compile --output-last-input-only`" with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+the stage that will). The examples marked "today's syntax" were compiled on
+the 2026.10.12 nightly toolchain with `carbon compile --output-last-input-only`
+```
+
+<!-- google-doc-style-resume -->
+
+F20, docs/design/safety/spatial_safety.md, lines 684 to 685 at d86fce1b9:
+replace the 2 lines from "first, fail-stop bounds, zero-fill and
+division-by-zero fail-stop as the" through "0.1 deliverable, with annotated
+borrows later. Judge 1 found that C "is" with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    first, fail-stop bounds, zero-fill and division-by-zero fail-stop as the 0.1
+    deliverable, with annotated borrows later. Judge 1 found that C "is
+```
+
+<!-- google-doc-style-resume -->
+
+F21, fork/safe/plan.md, lines 2273 to 2276 at d86fce1b9: replace the 4 lines
+from "2); a[2];` as the compile-time spatial rejection, and `// let r: i32 =
+unsafe" through "The guard body (:29-34) is unchanged." with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+2); a[2];` as the compile-time spatial rejection, and `// let r: i32 =
+unsafe *q;` as the temporal audit point — still comments, still not
+compile-verified (R6 cannot apply to syntax no toolchain parses; disclosed in
+the comment). The guard body (:29-34) is unchanged.
+```
+
+<!-- google-doc-style-resume -->
+
+F22, fork/safe/plan.md, lines 2574 to 2575 at d86fce1b9: replace the 2 lines
+from "`grep -cE '^\s*[0-9]+\. '`), and save the set of heading lines
+(`grep" through "-n '^#' <f> > before`). (b) Run
+`SKIP=fix-cc-deps,check-build-graph," with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+    `grep -cE '^\s*[0-9]+\. '`), and save the set of heading lines (`grep -n
+    '^#' <f> > before`). (b) Run `SKIP=fix-cc-deps,check-build-graph,
+```
+
+<!-- google-doc-style-resume -->
+
+F23, fork/safe/plan.md, lines 2793 to 2795 at d86fce1b9: replace the 3 lines
+from "posture with `--default-safety-mode`; `unsafe import`; the S1a/S1b
+executable" through "stage-1 soundness claim (counterexamples `Leak`, the
+scope-escaping" with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+posture with `--default-safety-mode`; `unsafe import`; the S1a/S1b
+executable 0.1-optional slice; `unsafe class` interim; the per-row Stage column.
+Fatal: C's stage-1 soundness claim (counterexamples `Leak`, the scope-escaping
+```
+
+<!-- google-doc-style-resume -->
+
+F24, fork/decision-log.md, lines 2901 to 2902 at d86fce1b9: replace the 2 lines
+from "(ACCEPTS / REJECTS / ACCEPTS-UNCHECKED / NEW-SYNTAX, each with the
+nightly" through "2026.10.12 outcome or the scoreboard program that proves the
+cell)." with (RB-m3):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+(ACCEPTS / REJECTS / ACCEPTS-UNCHECKED / NEW-SYNTAX, each with the
+nightly 2026.10.12 outcome or the scoreboard program that proves the cell).
+```
+
+<!-- google-doc-style-resume -->
+
+**Measured** by rev 11, 2026-10-29, in rev11/:
+
+-   `git -C /home/user/carbon-safe fetch -q upstream trunk` gives 9192ee003
+    again (2026-10-28 20:51:45 UTC), and nothing newer.
+    `git log --oneline c1e83b0b7..9192ee003` lists nothing over p005434,
+    p005914, p000257, docs/design/README.md, safety/README.md,
+    expressions/arithmetic.md, values.md, slices.md, assignment.md,
+    core/prelude/types/int.carbon, uint.carbon, float.carbon, cpp/int.carbon and
+    core/prelude/operators/arithmetic.carbon; f21c62524 over classes.md,
+    db87a84b6 over generics/details.md, 6d80ceb58 over
+    core/prelude/operators/index.carbon, 2c9739799 over
+    toolchain/check/handle_operator.cpp and 947c1eb52 over
+    toolchain/sem_ir/type_info.cpp; seven commits over toolchain/check/call.cpp,
+    six over convert.cpp, ten over impl.cpp, seven over type_completion.cpp and
+    four over toolchain/lower/testdata/operators/increment.carbon. The 42
+    upstream lines this section quotes (rev11q.tsv) are byte-equal at 9192ee003,
+    and no quote of the ruling or of the reviews this section relies on has
+    moved.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-rev11/rg1, removed after, against /home/user/carbon-lang
+    at 9192ee003: 273 quotes checked, 0 failed, and 89 silence checks, 0 failed;
+    the H1 subsets, 97 quotes and 120 quotes, 0 failed, and 5 silence checks, 0
+    failed; rev 10's twelve lines of the ruling, 0 failed; and rev 11's 42, 0
+    failed.
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the table
+    of section 0.8 names them, PR 53's pushed head still 2407efa74, an ancestor
+    of the head.
+-   The id re-scan widened to `W-3[6-9][0-9]` over the 166 refs, 137 origin
+    and 29 local, and the 22 worktrees: the ledgers end at W-363; W-365 is named
+    only in this file, so it is free; W-357 to W-359 and W-364 stay untaken; no
+    residue is filed by rev 11 and no F id is minted.
+-   The dry run, `python3 -I bin/dryrun.py wt 2026-10-30 work/plan-with-820.md`,
+    on a detached worktree of d86fce1b9 in rev11/wt holding this plan, never the
+    worktree of record: blocks F1 to F24 read from this section, 107 checks, ALL
+    OK; each anchor found once in the passage its block names, each superseded
+    quote byte-equal to the text it replaces under section 2.1's test and
+    carried in its mark, the earlier marks carried word for word, the rewraps'
+    words unchanged, the ledger parsing with `json.load`, W-365 its last item
+    after W-150 and W-148's notes appended after one space, and the log's
+    D-SAFE-1 to D-SAFE-23 block identical to fork/safe/plan.md section 0.3. Line
+    deltas, by `wc -l`: temporal_safety.md 1655 to 1733, mutation_safety.md 1532
+    to 1593, initialization_safety.md 594 and spatial_safety.md 757 unchanged,
+    the log 8316 to 8392, fork/safe/plan.md 3050 to 3131, the ledger 2338
+    to 2352 with 132 to 133 items, and this plan 63 more, F4's.
+-   R31 on the dry run's files: every markdown file keeps its heading counts per
+    level, bullets, numbered items and table rows; the lines that start with a
+    hazard, by bin/hazards2.py, which closes a fence only at a run of its own
+    length or longer, so that a fence of three backticks inside one of four
+    stays code, go from 2 to 0 on temporal_safety.md and on
+    mutation_safety.md, 1 to 0 on initialization_safety.md and on
+    spatial_safety.md, 3 to 0 on fork/safe/plan.md and 16 to 15 on the log,
+    whose other fifteen are other workstreams' records; no line starts with a
+    hazard that did not before. prek to a fixpoint on the eight files with a
+    private cache in rev11/, deleted after: the first pass exits 0 with no
+    change. rumdl@0.2.58 on the seven markdown files: no issues. The merge-tree
+    of the dry run's tree, committed in the scratch, against trunk and the 18
+    held heads: the sets of the table of section 0.8, all under fork/, equal to
+    d86fce1b9's and to rev 10's.
+-   R31 on this plan, the one file rev 11 changes: before,
+    {1: 1, 2: 16, 3: 133}, bullets 251, numbered 36, rows 235, 9465 lines;
+    after, {1: 1, 2: 16, 3: 134}, bullets 268, numbered 36, rows 294, 10681
+    lines, the changes being this section's heading, its 17 bullets, its three
+    tables' 58 rows and the Sign-off's WT row; its seven hazard lines,
+    d86fce1b9's :37, :91, :117, :125, :1394, :4049 and :4285, are gone and none
+    is new. Once rev 11's marks were in them, rumdl's MD013 flagged the
+    D-SAFE2-6 bullet and section 8.16's test paragraph, each holding a line
+    over 80 columns from before, and its reflow started a line with `*ptr;`, so
+    the two are rewrapped whole by bin/rewrap_para.py, the words unchanged and
+    no line over 80 columns; then prek, with the private cache, exits 0 with no
+    change, and rumdl@0.2.58 has no issues.
+-   `python3 -I fork/conformance/runner.py --self-test`: "self-test: 150
+    programs parsed, 56 bullets in table, OK". The model-name grep over the
+    changed lines, the dry run's and the message: no hit outside the trailers,
+    the scratch paths and the branch names.
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (added 2026-10-28,
@@ -4931,6 +6133,7 @@ review fold: RR3-M1, RR3-m1, RR3-m2):
 | RR3: the focused re-review, round 3 | rev 4, 9d48a863e | APPROVE-WITH-AMENDMENTS | 0 | 1 | 2 | 3 | none | rev 5, 4ca369e38, §8.11 |
 | AM6: the focused re-review of the stop-and-amend | rev 6, 486d2bc74 | APPROVE-WITH-AMENDMENTS | 0 | 1 | 1 | 2 | none | rev 7, §8.12 |
 | RR8: the focused re-review of rev 8 (added 2026-10-29, rev 9) | rev 8, 1f9d0a16f, and ac57e2ea7 | APPROVE-WITH-AMENDMENTS | 0 | 3 | 3 | 6 | none | rev 9, §8.16 |
+| WT: the two whole-tree document reviews, A and B, of the ruling's step (1) (added 2026-10-29, rev 11) | the tree at rev 10, d86fce1b9 | APPROVE-WITH-FIXES, both | 0 | 5 | 7 | 12, RB-M3's rule by residue W-365 | RA-m1's slices.md half | rev 11, §8.20; pending the focused plan re-review |
 
 The five reviews before the implementation raised 34 findings, 4 BLOCKERs, 10
 MAJORs and 20 MINORs; all 34 are folded and none is rejected. RR3, the last of
@@ -5025,6 +6228,19 @@ fifth fix commit applies only once the focused plan re-review signs off rev 11
 or rev 12 without a BLOCKER or MAJOR; round 4, by two fresh agents, then reviews
 that commit before section 3's steps 6 to 8 (amended 2026-10-29, rev 10: the
 ruling on round 3, section 8.19).
+
+Rev 11, 2026-10-29, folds the two whole-tree document reviews of the ruling's
+step (1), WT in the table, and round 3's RR3-M1 and RR3-m1 (section 8.20): ten
+findings, every one ACCEPTED but the slices.md half of RA-m1, RB-M3's rule going
+to residue W-365, which the fifth fix commit files; the built-in test is
+re-derived from the safety argument and the fifth fix commit's texts F1 to F24
+are dry-run. It changes no page, record outside this plan, ledger line, example,
+diagnostic or merge-tree set. It is NOT signed off: the focused plan re-review
+of the ruling's step (2), one fresh agent, reads it next, a second agent folds
+its amendments into rev 12, at most two such rounds, and the fifth fix commit
+applies F1 to F24 only once rev 11 or rev 12 is signed off without a BLOCKER or
+MAJOR; a REJECT, or a MAJOR left at the second round, stops SAFE-2 again for a
+ruling (added 2026-10-29, rev 11).
 
 ## Hand-off notes for the implementer
 

@@ -134,10 +134,22 @@ its body; `unsafe permissive fn` is the body-mode marker, a Permissive body that
 is safe to call and never colors its callers. The two compose as `unsafe fn` on
 the declaration plus `unsafe permissive` on the definition. An `unsafe fn`
 states its obligation in its doc comment, and that sentence is the contract a
-caller discharges by writing `unsafe`: for `Core.Slice(T).Make` it is the
-sentence core/prelude/types/slice.carbon:29-30 already carries for
+caller discharges by writing `unsafe`, with, when the call's result is free,
+the obligation rule T6 of the [temporal safety](temporal_safety.md) page adds
+for the frozen loans formed through that result: for `Core.Slice(T).Make` it is
+the sentence core/prelude/types/slice.carbon:29-30 already carries for
 `UnsafeMake`, "the caller guarantees that `p` names at least `size` valid
-elements that outlive the view". The result of a marked `unsafe fn` call
+elements that outlive the view", and, the view being free, that while a frozen
+loan formed through the view, or through a carrier derived from it, is live,
+whatever carries the loan, a value binding of a borrowed object, a `const`
+`ref` or the result of a call that keeps it, no path other than the view and
+its copies writes the storage that loan covers (amended 2026-10-29, re-review
+round 2: RR1-B1, where this read "An `unsafe fn` states its obligation in its
+doc comment, and that sentence is the contract a caller discharges by writing
+`unsafe`: for `Core.Slice(T).Make` it is the sentence
+core/prelude/types/slice.carbon:29-30 already carries for `UnsafeMake`, "the
+caller guarantees that `p` names at least `size` valid elements that outlive
+the view"."). The result of a marked `unsafe fn` call
 carries the loan set its signature gives, free when it has no `bound`
 parameter, because the marker takes on the callee's stated obligation,
 lifetime included; and a ⊥ value may not leave a Strict function through its

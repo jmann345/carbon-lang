@@ -197,10 +197,15 @@ and the loan is formed by the function that produced the view. Concretely, on
     obligation the result carries the loan set the signature gives — free,
     rule T6 of the temporal page — so no later access through the view needs
     a marker (amended 2026-10-12, document-review fold: D-1). The view being
-    free, the marker also takes on that no path other than the view and its
-    copies writes an element while a value binding formed through the view
-    lives, which the checker cannot see (T6; amended 2026-10-28,
-    document-review fold: R1-M2).
+    free, the marker also takes on that, while a frozen loan formed through
+    the view, or through a carrier derived from it, is live, whatever carries
+    the loan, a value binding of a borrowed object, a `const` `ref` or the
+    result of a call that keeps it, no path other than the view and its copies
+    writes the storage that loan covers, which the checker cannot see (T6;
+    amended 2026-10-28, document-review fold: R1-M2; amended 2026-10-29,
+    re-review round 2: RR1-B1, where this read "no path other than the view
+    and its copies writes an element while a value binding formed through the
+    view lives").
 
 The W-144 audit rule generalizes the list: the prelude churn reviews every
 prelude signature as if its body were Strict-checked, the body itself trusted
@@ -509,9 +514,14 @@ consequences:
     into something indexable is `unsafe Core.Slice(T).Make(p, n)`, and that
     line is the single audit line of a migrated buffer API: the obligation it
     takes on is that `p` names at least `n` valid elements that outlive the
-    view, and that no other path writes an element while a value binding
-    formed through the view lives (amended 2026-10-28, document-review fold:
-    R1-M2), the view is free under rule T6 of the temporal page because the
+    view, and that, while a frozen loan formed through the view, or through a
+    carrier derived from it, is live, whatever carries the loan, a value
+    binding of a borrowed object, a `const` `ref` or the result of a call that
+    keeps it, no path other than the view and its copies writes the storage
+    that loan covers (amended 2026-10-28, document-review fold: R1-M2; amended
+    2026-10-29, re-review round 2: RR1-B1, where this read "that no other path
+    writes an element while a value binding formed through the view lives"),
+    the view is free under rule T6 of the temporal page because the
     marker took on that lifetime, every access through the view is checked
     from then on, and the
     search for `unsafe` finds the one place where the length was asserted

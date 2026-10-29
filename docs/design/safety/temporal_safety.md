@@ -186,7 +186,10 @@ rule when they are called through a shared pointer (T2); and the `T*` row's
 `Core.SharedImmutable` sub-object, a `Core.String`, a `Core.Slice(T)` for a
 `Core.Freeze` `T`, or a struct, tuple, array or class holding one, which only
 an exclusive path makes (the mutation page's M3; realigned 2026-10-28, SAFE-2:
-W-347, W-348).
+W-347, W-348). A built-in operator's `ref` operand, an assignment's among them,
+lives for the one operation and is established on any place, M3 deciding what
+the operation may do ([`ref` bindings](#ref-bindings); amended 2026-10-29,
+re-review round 2: RR1-M1).
 
 `&x` on a place under exclusive access — an owner, a `ref` binding, or `*p` for
 `p: exclusive T*` — yields `exclusive T*`. The conversions between kinds form a
@@ -269,13 +272,31 @@ member access and the first operand of indexing (p005434:302-318), and the
 [assignment](../assignment.md#syntax) design's first operand "is passed to a
 `(ref self: Self)` parameter" whatever its form, "A dereference of a pointer"
 and "Member access naming a field" among them (assignment.md:76-82). Where the
-operator's implementation is built in, the language's own or a prelude impl
-whose body is a builtin, such as `fn Op(ref self, other: Self) =
-"int.sadd_assign";` (core/prelude/types/int.carbon:331), that `ref` lives for
-the one operation and nothing else is evaluated while it does, so no other path
-observes the referent during it, on any place, open ones included: the checker
-establishes it with no marker, and the mutation page's M3 alone decides what
-the operation may do through a shared path. So `q->n = 2` for `q: T*` is a
+operator's implementation is built in, that `ref` lives for the one operation
+and nothing else is evaluated while it does, so no other path observes the
+referent during it, on any place, open ones included: the checker establishes
+it with no marker, the `ref` forms no loan of its own, neither the mutation
+page's M3(d) exclusive-receiver call nor its M3(e) exclusive loan, the loans of
+the operation's result, `&x`'s and a member access's sub-loan, being T2's, and
+M3 alone decides what the operation may do through a shared path. An
+implementation is built in when it gives a built-in type the semantics the
+[assignment](../assignment.md#built-in-types) design states, `=` on integers,
+floating-point types, `bool` and pointers, compound assignment on integers and
+floating-point types, and `++` and `--` on integers (assignment.md:146-157),
+the prelude's impls of those, "provided for built-in types as necessary to give
+the semantics described above" (assignment.md:168-170), counting as built in
+whatever their body, `Inc`'s `self += AsInt(1);`
+(core/prelude/types/int.carbon:395-399, uint.carbon:457-461) as much as
+`fn Op(ref self, other: Self) = "int.sadd_assign";` (int.carbon:331); when it
+is the assignment of a tuple, struct, array, choice type or class with no
+user-written `AssignWith` impl, whose rules assignment.md:159-161 leaves a
+TODO; and when it is the language's own `&`, member access naming a field or
+indexing of an array (amended 2026-10-29, re-review round 2: RR1-m1, where
+this read "Where the operator's implementation is built in, the language's own
+or a prelude impl whose body is a builtin, such as `fn Op(ref self, other:
+Self) = "int.sadd_assign";` (core/prelude/types/int.carbon:331), that `ref`
+lives for the one operation" and "the checker establishes it with no marker,
+and the mutation page's M3 alone decides"). So `q->n = 2` for `q: T*` is a
 `Plain` write that M3 permits, and `*q = "longer"` for `q: str*` is
 `StrictSharedImmutableWrite`. The `ref self` of a user-written impl of an
 operator interface is a `ref` binding under this section's rule, and its call
@@ -531,14 +552,33 @@ an unannotated C++ call stays ⊥ because its marker's obligation, that the
 callee saves no pointer, says nothing about what the result points at. A free
 result hides from the checker which storage it reaches, so the marker also
 takes on what a frozen loan formed through it would otherwise need: while a
-value binding of a borrowed object, or a `const` `ref`, formed through the
-result or a copy of it lives, no path other than the result and its copies
-writes the storage that binding borrows. Without that obligation,
+frozen loan formed through the result, or through a carrier derived from it,
+is live (T3), whatever carries the loan, a value binding of a borrowed object,
+a `const` `ref` or the result of a call that keeps it (T5(d)), no path other
+than the result and its copies writes the storage that loan covers (amended
+2026-10-29, re-review round 2: RR1-B1, where this read "while a value binding
+of a borrowed object, or a `const` `ref`, formed through the result or a copy
+of it lives, no path other than the result and its copies writes the storage
+that binding borrows"). Without that obligation,
 `var x: str = "ab"; let v: Core.Slice(str) =
 unsafe Core.Slice(str).Make(&x, 1); let s: str = *v.Data(); x = "longer";
 return s.Size();` would meet `Make`'s stated obligation, the element outliving
 the view, and `s` would still read the owner's write, `x` carrying no frozen
 loan the checker could see (amended 2026-10-28, document-review fold: R1-M2).
+The obligation lasts as long as the loan, not the binding that formed it. For
+`unsafe fn Alias(p: Core.Buf(i32)*) -> Core.Buf(i32)*`, whose doc comment says
+that the result points at `*p`, which outlives it, the body
+`var b: Core.Buf(i32) = Core.Buf(i32).Make(1, 7);
+let r: Core.Buf(i32)* = unsafe Alias(&b);
+let s: Core.Slice(i32) = r->AsSlice(); b = Core.Buf(i32).Make(1, 0);
+return s[0];` binds `*r`, an open place of a `Core.SharedImmutable` type,
+frozen for `AsSlice`'s by-value `bound self`, and `s` keeps that loan once the
+binding is dead (T5(d)); the owner's assignment sees no loan on `b` and frees
+the block `s` views, which breaks the obligation the marker on `Alias` took on
+for as long as `s` lives, so the read of freed memory is a bug of that
+`unsafe` line, as the [unsafe-code contract](#the-unsafe-code-contract) has
+it, and not of the code the checker accepted (amended 2026-10-29, re-review
+round 2: RR1-B1).
 
 A ⊥ pointer may be copied, compared, and passed to a non-`bound` parameter, and
 every copy of it is ⊥ (T2). Every use of its pointee is an `unsafe` operation
@@ -1399,7 +1439,10 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     p005434:83's rule holds for every `ref` binding, exclusive, or frozen for a
     `const` type: a checked reborrow on a closed place, and on an open place an
     `unsafe` formation (`StrictRefFromShared` unmarked), a `const` `ref` on a
-    `Core.SharedImmutable` type excepted; a `ref` return is not a binding, so
+    `Core.SharedImmutable` type excepted; a built-in operator's `ref` operand,
+    an assignment's among them, lives for the one operation and is established
+    on any place, M3 deciding what the operation may do (amended 2026-10-29,
+    re-review round 2: RR1-M1); a `ref` return is not a binding, so
     `Valid1`, `ValToRef` and `Conditional` stay valid, a mixed result set
     taking the weakest kind; T8 emits `noalias` with `captures(none)` or
     `captures(ret: address, provenance)` only where established against every

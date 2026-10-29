@@ -1305,12 +1305,23 @@ replacement text serves both (Appendix B.1).
     exclusive ones only through a loan the writer's checker sees, so a frozen
     loan formed through the free result of a marked `unsafe fn` call, whose
     carrier holds none, rests on that marker, whose obligation T6 extends:
-    while the binding lives no path other than the result and its copies
-    writes the storage it borrows (amended 2026-10-28, document-review fold:
+    while a frozen loan formed through the result, or through a carrier
+    derived from it, is live, whatever carries the loan, a value binding of a
+    borrowed object, a `const` `ref` or the result of a call that keeps it, no
+    path other than the result and its copies writes the storage that loan
+    covers (amended 2026-10-28, document-review fold:
     R1-M2: `var x: str = "ab"; let v: Core.Slice(str) =
     unsafe Core.Slice(str).Make(&x, 1); let s: str = *v.Data(); x = "longer";
     return s.Size();` met `Make`'s stated obligation and read the owner's
-    write, a nightly stand-in of its shape printing 6, section 8.7). The
+    write, a nightly stand-in of its shape printing 6, section 8.7; amended
+    2026-10-29, re-review round 2: RR1-B1, where this read "while the binding
+    lives no path other than the result and its copies writes the storage it
+    borrows": with `unsafe fn Alias(p: Core.Buf(i32)*) -> Core.Buf(i32)*`,
+    `let r: Core.Buf(i32)* = unsafe Alias(&b); let s: Core.Slice(i32) =
+    r->AsSlice();` keeps `AsSlice`'s frozen loan on `*r` in `s` after the
+    `bound self` binding is dead (T5(d)), so `b = Core.Buf(i32).Make(1, 0);`
+    freed the block `s[0]` then read with the binding-keyed obligation met,
+    section 8.14). The
     trusted bodies keep the
     language half too (amended 2026-10-28, review fold: RR2-B1): a trusted
     body, the prelude's under S0, follows M3's write rule, writing an object
@@ -1369,8 +1380,10 @@ replacement text serves both (Appendix B.1).
     it is small and copyable, a `var` copy of a struct or tuple
     (`var v: T = *p;`, whose `Plain` elements are read and whose class
     elements bind under this same rule), or `unsafe` at the binding, whose
-    obligation is that no
-    path mutates the object while the binding lives. A value binding from a
+    obligation is that no path mutates the object while the binding's loan
+    is live, a `bound self`'s as long as the call's result that keeps it
+    (T5(d); amended 2026-10-29, re-review round 2: RR1-B1, where this read
+    "while the binding lives"). A value binding from a
     materialized temporary owns the storage and holds no loan, as before. The
     mechanism is the loan rule widened, with the eager copy left to the type by
     upstream's `value_rep`; the eager copy for every type stays rejected
@@ -1448,14 +1461,30 @@ replacement text serves both (Appendix B.1).
     object of member access and the first operand of indexing (p005434:302-318;
     docs/design/assignment.md:76-82, "a `(ref self: Self)` parameter" whatever
     the operand's form), lives for the one operation, during which nothing else
-    is evaluated, so where the implementation is the language's own or a prelude
-    impl whose body is a builtin it is established on any place, open ones
-    included, and M3 alone decides what the operation may do through a shared
-    path; a user-written impl's `ref self` is a `ref` binding under this rule
-    and its call M3(d)'s (amended 2026-10-28, document-review fold: R1-M1:
-    without it upstream's operator rule made every `Plain` write through `T*`
-    that M3 permits, `q->n = 2` in EX-M-4d's `Peek` among them, a `ref` binding
-    on an open place and so `StrictRefFromShared`). A `ref` _return_ is not a
+    is evaluated, so where the implementation is built in it is established on
+    any place, open ones included, forms no loan of its own, neither M3(d)'s
+    exclusive-receiver call nor M3(e)'s exclusive loan, and M3 alone decides
+    what the operation may do through a shared path; a user-written impl's `ref
+    self` is a `ref` binding under this rule and its call M3(d)'s (amended
+    2026-10-28, document-review fold: R1-M1: without it upstream's operator rule
+    made every `Plain` write through `T*` that M3 permits, `q->n = 2` in
+    EX-M-4d's `Peek` among them, a `ref` binding on an open place and so
+    `StrictRefFromShared`). Built in is the semantics
+    docs/design/assignment.md:146-157 gives the built-in types, `=` on integers,
+    floating-point types, `bool` and pointers, compound assignment on integers
+    and floating-point types, and `++` and `--` on integers, the prelude's impls
+    of them counting as built in whatever their body (the impls :168-170 says
+    are "provided for built-in types as necessary to give the semantics
+    described above"; core/prelude/types/int.carbon:395-399's `Inc` as much as
+    :331's `"int.sadd_assign"`); the assignment of a tuple, struct, array,
+    choice type or class with no user-written `AssignWith` impl
+    (assignment.md:159-161, a TODO upstream); and the language's own `&`, member
+    access naming a field and indexing of an array (amended 2026-10-29,
+    re-review round 2: RR1-m1, where this read "where the implementation is the
+    language's own or a prelude impl whose body is a builtin it is established
+    on any place, open ones included, and M3 alone decides": `++p->n` through
+    `T*` was neither built in nor user-written, `Inc`'s body `self += AsInt(1);`
+    being no builtin, while `p->n += 1` was built in). A `ref` _return_ is not a
     binding, so the proposal's `Valid1` (:717-720), `ValToRef` (:826) and
     `Conditional` (:772-779) stay valid in both modes, each returning a
     reference expression whose kind is that of its loans; `Conditional`'s mixed
@@ -1856,7 +1885,10 @@ quotes it kept, section 8.12.)
 | expressions/arithmetic.md | A.9.1 | the amendment blockquote |
 | slices.md | A.10.1, A.10.2 | a dated note after SP3's amendment to the opening example: in Strict the write to the array goes through the view or after the view's last use (W-349; added 2026-10-28, review fold: RR1-M1); a dated amendment after the `Buf` bullets: in Strict `Set` takes `ref self` (W-348; added 2026-10-28, review fold: RR2-B1) |
 
-Not edited, measured (section 0.4): type_safety.md, terminology.md, unions.md
+Not edited, measured (section 0.4): type_safety.md, but for its `unsafe fn`
+contract sentence (:135-140), which the focused re-review's round 2 fix commit
+widens by T6's obligation for a free result (amended 2026-10-29, re-review
+round 2: RR1-B1; section 8.14), terminology.md, unions.md
 (whose Strict read rule M3's new paragraph cites),
 docs/project/principles/safety_strategy.md, the two SKIP stubs; slices.md:65,
 SP3's line, stays as it is (rev 2 listed slices.md here; amended 2026-10-28,
@@ -3070,7 +3102,9 @@ the implementation resumes from rev 7's commit with section 3's commit 1
     prose line; write "PR 53", "proposal 5434" or "p005434"; headings never end
     in punctuation; code blocks inside pages are fenced as the pages already
     fence them.
-5.  Do not touch type_safety.md, terminology.md, the stubs, the toolchain,
+5.  Do not touch type_safety.md (but for the round 2 fix commit's sentence at
+    :135-140; amended 2026-10-29, re-review round 2: RR1-B1), terminology.md,
+    the stubs, the toolchain,
     the prelude or any golden, nor slices.md beyond A.10.1's note and A.10.2's
     amendment (amended 2026-10-28, review fold: RR1-M1, RR2-B1); the prelude
     change A.10.2 and D-SAFE2-5 describe, `Core.Buf(T).Set`'s `ref self`, is

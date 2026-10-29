@@ -171,7 +171,9 @@ exists (realigned 2026-10-28, SAFE-2: W-347; the superseded 2026-10-12 text
 read: "A `ref` binding inherits the kind of its source (D-SAFE-8): a `ref`
 formed from a place is exclusive access, a `ref` formed from `*p` has `p`'s
 kind, and so the rules of this page apply to a shared-kind `ref` exactly as to a
-`T*`.").
+`T*`."). A built-in operator's `ref` operand, an assignment's among them, lives
+for the one operation and is established on any place, M3 deciding what the
+operation may do (amended 2026-10-29, re-review round 2: RR1-M1).
 
 ### M2: Exclusive-XOR-shared per place
 
@@ -217,10 +219,15 @@ fields, `addr` and `const` methods, is permitted through any number of aliases
 at once, but for the assignments of a type that holds a `Core.SharedImmutable`
 sub-object, which the next paragraph names (realigned 2026-10-28, SAFE-2: W-348;
 this sentence ended "is permitted through any number of aliases at once."). A
-`const` method call through `T*` or `const T*`, and a read of the pointee into
-a value binding, meet M8 besides when they bind a borrowed object: a closed
-place, a `Core.SharedImmutable` type, or `unsafe` (amended 2026-10-28,
-document-review fold: R1-M3). The
+`const` method call through `T*` or `const T*` whose `self` binds a borrowed
+object or is a `ref self: const Self`, and a read of the pointee into a value
+binding of a borrowed object, need besides a closed place, a
+`Core.SharedImmutable` type, or `unsafe`, M8 governing the borrowed object and
+the temporal page's [`ref` bindings](temporal_safety.md#ref-bindings) the
+`const` `ref` (amended 2026-10-28, document-review fold: R1-M3; amended
+2026-10-29, re-review round 2: RR1-M2, where this read "and a read of the
+pointee into a value binding, meet M8 besides when they bind a borrowed
+object: a closed place, a `Core.SharedImmutable` type, or `unsafe`"). The
 rule is the strategy's fourth mutation commitment made checkable: iterators hold
 `T*`, `Push` is `ref self`, and the C++ notion of "iterator invalidation" is
 captured by the methods that require exclusive access, which preclude any
@@ -230,12 +237,20 @@ structurally below so that (c) says exactly what (a) and the sub-object clause
 require. An operator that passes its operand to a `ref` parameter, an
 assignment among them (the [assignment](../assignment.md#syntax) design's "a
 `(ref self: Self)` parameter"), is not a call in (d)'s sense when its
-implementation is built in, the language's own or a prelude impl whose body is
-a builtin: the temporal page's [`ref` bindings](temporal_safety.md#ref-bindings)
-establish its operand for the one operation, and (a) to (c) and the next
-paragraph decide what it may do through a shared path, while the call of a
-user-written impl's `ref self` is (d)'s (amended 2026-10-28, document-review
-fold: R1-M1).
+implementation is built in, as the temporal page's
+[`ref` bindings](temporal_safety.md#ref-bindings) define it, the semantics the
+assignment design gives a built-in type with the prelude's impls of them
+whatever their body, an assignment of a tuple, struct, array, choice type or
+class with no user-written `AssignWith` impl, `&`, member access naming a field
+or indexing of an array: that section establishes its operand for the one
+operation, the operand's `ref` forms no loan of its own, neither (d)'s call nor
+(e)'s exclusive loan, and (a) to (c) and the next paragraph decide what it may
+do through a shared path, while the call of a user-written impl's `ref self` is
+(d)'s (amended 2026-10-28, document-review fold: R1-M1; amended 2026-10-29,
+re-review round 2: RR1-m1, where this read "the language's own or a prelude
+impl whose body is a builtin: the temporal page's
+[`ref` bindings](temporal_safety.md#ref-bindings) establish its operand for the
+one operation, and (a) to (c)").
 
 One more class of write needs exclusive access although it invalidates
 nothing: a write of storage that holds a `Core.SharedImmutable` object
@@ -256,7 +271,10 @@ loan on an overlapping place is live and is `StrictBorrowedObjectMutated`
 while one is. A union is outside the closure: reading its field is `unsafe` in
 Strict ([unions](../unions.md#strict-carbon-and-future-safety-hooks)), so a
 binding of a union's field is formed under that marker, whose obligation then
-includes that no path writes the union while the binding lives. This is the
+includes that no path writes the union while the binding's loan is live, a
+`bound` parameter's as long as the call's result that keeps it (the temporal
+page's T5(d); amended 2026-10-29, re-review round 2: RR1-B1, where this read
+"while the binding lives"). This is the
 language half of the facet's promise that no path but an exclusive one writes
 the type's storage, which a frozen loan on an open place relies on, and an
 assignment of an enclosing object writes that storage too. `Core.String`, and
@@ -304,9 +322,13 @@ is checked against that statement:
     2026-10-28, SAFE-2: W-348; this clause read "it may assign `Plain` fields
     (`i32`, the pointer kinds, `Core.Slice`, the prelude's non-owning
     `Core.String`),"), call `addr` and `const` methods
-    on `self` and read anything, a `const` call or a read into a value binding
-    that binds a borrowed object meeting M8 as the next bullet says, `*self`
-    being an open place (amended 2026-10-28, document-review fold: R1-M3); it
+    on `self` and read anything, a `const` call whose `self` binds a borrowed
+    object or is a `ref self: const Self`, or a read into a value binding of a
+    borrowed object, meeting M8 or the temporal page's `ref` bindings as the
+    next bullet says, `*self` being an open place (amended 2026-10-28,
+    document-review fold: R1-M3; amended 2026-10-29, re-review round 2:
+    RR1-M2, where this read "a `const` call or a read into a value binding
+    that binds a borrowed object meeting M8 as the next bullet says"); it
     may not assign a `Core.Buf`, `Core.Box`,
     `Core.Optional` or payload-`choice` field, call an exclusive method on
     `self`, move out of `self` or destroy it. A call of an `addr` method is
@@ -606,7 +628,10 @@ prevent mutation of borrowed objects in Carbon's strict safe dialect"
     `Core.SharedImmutable`, below; any other such binding is
     `StrictBorrowFromShared` (EX-M-4d), and its spellings
     `let v: T = unsafe *p;` and `unsafe p->M()` take on the obligation that no
-    path mutates the object while the binding lives. The other fixes are an
+    path mutates the object while the binding's loan is live, which for a
+    `bound self` lasts as long as the call's result that keeps it (the temporal
+    page's T5(d); amended 2026-10-29, re-review round 2: RR1-B1, where this
+    read "while the binding lives"). The other fixes are an
     owner or an `exclusive T*`, `Core.Guarded(T)`, the type's own
     `value_rep = const Self` when it is small and copyable, and a `var` copy of
     a struct or tuple, `var v: T = *p;`, whose `Plain` elements are read and
@@ -668,10 +693,17 @@ of a `Core.SharedImmutable` type, because M3 rejects every Strict assignment
 through a shared path that writes the object's storage, whether its type is the
 object's or holds it, every trusted body keeps the same rule, the live shared
 path excludes the exclusive ones (M2), its carrier holding a loan the writer's
-checker sees or, when it is the free result of a marked `unsafe fn` call, the
-marker's obligation that no other path writes the storage while the binding
-lives (the temporal page's T6; amended 2026-10-28, document-review fold: R1-M2),
-and the opt-in's obligation covers what the checker cannot see. A write by
+checker sees or, when it is the free result of a marked `unsafe fn` call or a
+carrier derived from it, the marker's obligation that, while a frozen loan
+formed through the result, or through a carrier derived from it, is live,
+whatever carries the loan, a value binding of a borrowed object, a `const`
+`ref` or the result of a call that keeps it, no path other than the result and
+its copies writes the storage that loan covers (the temporal page's T6;
+amended 2026-10-28, document-review fold: R1-M2; amended 2026-10-29, re-review
+round 2: RR1-B1, where this read "when it is the free result of a marked
+`unsafe fn` call, the marker's obligation that no other path writes the
+storage while the binding lives"), and the opt-in's obligation covers what the
+checker cannot see. A write by
 unchecked code, a Permissive body, C++ or an alias an `unsafe` binding promised
 away, is the erroneous behavior proposal p005434 keeps for it (p005434:670-672),
 never undefined behavior, because the safe-code optimizer assumes nothing about
@@ -1277,12 +1309,19 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     loan. Invalidating operations require exclusive access, and so does every
     assignment whose type holds a `Core.SharedImmutable` sub-object (M3,
     D-SAFE-17; added 2026-10-28, SAFE-2: W-348); everything else is permitted
-    through any number of aliases, a `const` call or a read into a value
-    binding of a borrowed object through `T*` or `const T*` meeting
-    D-SAFE-17's rule besides (amended 2026-10-28, document-review fold:
-    R1-M3). A built-in operator's `ref` operand, an assignment's among them,
-    is not an exclusive-receiver call: the operation is classified by what it
-    does (D-SAFE-8; amended 2026-10-28, document-review fold: R1-M1).
+    through any number of aliases, a `const` call whose `self` binds a
+    borrowed object or is a `ref self: const Self`, and a read into a value
+    binding of a borrowed object, through `T*` or `const T*` needing besides a
+    closed place, a `Core.SharedImmutable` type, or `unsafe`, under D-SAFE-17
+    and, for the `const` `ref`, D-SAFE-8 (amended 2026-10-28, document-review
+    fold: R1-M3; amended 2026-10-29, re-review round 2: RR1-M2, where this read
+    "a `const` call or a read into a value binding of a borrowed object
+    through `T*` or `const T*` meeting D-SAFE-17's rule besides"). A built-in
+    operator's `ref` operand, an assignment's among them, is neither an
+    exclusive-receiver call nor an exclusive loan: the operation is classified
+    by what it does (D-SAFE-8; amended 2026-10-28, document-review fold: R1-M1;
+    amended 2026-10-29, re-review round 2: RR1-m1, where this read "is not an
+    exclusive-receiver call").
     `Core.Plain` is structural:
     `Copy` with trivial destruction, every sub-object existing and formed at a
     fixed offset; `Optional(T)`, `MaybeUnformed(T)`, payload choices, `Buf`,

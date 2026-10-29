@@ -434,13 +434,27 @@ sides); the break conditions are per decision.
     a `ref` parameter and assignment.md:76-82 to "a `(ref self: Self)`
     parameter" whatever its form, a dereference of a pointer included — lives
     for the one operation, during which nothing else is evaluated, so where
-    the implementation is the language's own or a prelude impl whose body is a
-    builtin (int.carbon:331's `"int.sadd_assign"`) it is established on any
-    place, open ones included, and D-SAFE-9's M3 alone decides what the
-    operation may do through a shared path; a user-written impl's `ref self`
-    is a `ref` binding under this rule and its call D-SAFE-9's (d) (amended
-    2026-10-28, document-review fold: R1-M1: without it every `Plain` write
-    through `T*` that M3 permits was `StrictRefFromShared`). A `ref` return is
+    the implementation is built in it is established on any place, open ones
+    included, forms no loan of its own, neither D-SAFE-9's (d) nor its (e),
+    and D-SAFE-9's M3 alone decides what the operation may do through a
+    shared path; a user-written impl's `ref self` is a `ref` binding under
+    this rule and its call D-SAFE-9's (d) (amended 2026-10-28, document-review
+    fold: R1-M1: without it every `Plain` write through `T*` that M3 permits
+    was `StrictRefFromShared`). Built in is the semantics assignment.md:146-157
+    gives the built-in types, `=` on integers, floating-point types, `bool`
+    and pointers, compound assignment on integers and floating-point types,
+    and `++` and `--` on integers, the prelude's impls of them counting as
+    built in whatever their body (the impls :168-170 says are "provided for
+    built-in types as necessary to give the semantics described above";
+    int.carbon:395-399's `Inc` as much as :331's `"int.sadd_assign"`); the
+    assignment of a tuple, struct, array, choice type or class with no
+    user-written `AssignWith` impl (assignment.md:159-161, a TODO upstream);
+    and the language's own `&`, member access naming a field and indexing of
+    an array (amended 2026-10-29, re-review round 2: RR1-m1, where this read
+    "where the implementation is the language's own or a prelude impl whose
+    body is a builtin (int.carbon:331's `"int.sadd_assign"`) it is
+    established on any place, open ones included, and D-SAFE-9's M3 alone
+    decides"). A `ref` return is
     not a binding, so p005434:717-720
     (`Valid1(bound p: i32*) -> ref i32 { return *p; }`) and :826
     (`ValToRef`) stay valid in both modes, each returning a reference
@@ -513,13 +527,20 @@ sides); the break conditions are per decision.
     read's `unsafe` (realigned 2026-10-28, SAFE-2: W-348;
     fork/safe/safe2-plan.md D-SAFE2-5; this sentence read "Everything else
     (reads, overwriting `Plain` fields, `addr`/`const` methods) is permitted
-    through any number of aliases."). A `const` method call or a read into a
+    through any number of aliases."). A `const` method call through `T*` or
+    `const T*` whose `self` binds a borrowed object or is a `ref self: const
+    Self`, and a read into a value binding of a borrowed object through
+    either, need besides a closed place, a `Core.SharedImmutable` type, or
+    `unsafe`, under D-SAFE-17 and, for the `const` `ref`, D-SAFE-8 (amended
+    2026-10-28, document-review fold: R1-M3; amended 2026-10-29, re-review
+    round 2: RR1-M2, where this read "A `const` method call or a read into a
     value binding of a borrowed object through `T*` or `const T*` meets
     D-SAFE-17 besides: a closed place, a `Core.SharedImmutable` type, or
-    `unsafe` (amended 2026-10-28, document-review fold: R1-M3). A built-in
-    operator's `ref` operand, an assignment's among them, is not (d)'s call:
-    (a) to (c) classify the operation by what it does (D-SAFE-8; amended
-    2026-10-28, document-review fold: R1-M1). `Core.Plain` is a
+    `unsafe`"). A built-in operator's `ref` operand, an assignment's among
+    them, is neither (d)'s call nor (e)'s exclusive loan: (a) to (c) classify
+    the operation by what it does (D-SAFE-8; amended 2026-10-28,
+    document-review fold: R1-M1; amended 2026-10-29, re-review round 2:
+    RR1-m1, where this read "is not (d)'s call"). `Core.Plain` is a
     compiler-determined facet in the `Concrete`/`TrivialDestructor` pattern
     (classes.md:1941-1944; details.md:4254-4290), defined **structurally** to
     match the invalidation definition above (amended 2026-10-12, review fold:
@@ -650,10 +671,16 @@ sides); the break conditions are per decision.
     obligation, lifetime included where the doc comment states one, so `unsafe
     Slice(T).Make(p, n)` yields a free view and is the single audit line §1.4
     names — amended 2026-10-12, document-review fold: D-1; the marker also
-    takes on that, while a value binding of a borrowed object or a `const`
-    `ref` formed through a free result lives, no path other than the result
-    and its copies writes the storage it borrows, which the checker cannot see
-    — amended 2026-10-28, document-review fold: R1-M2), anything read
+    takes on that, while a frozen loan formed through a free result, or
+    through a carrier derived from it, is live, whatever carries the loan, a
+    value binding of a borrowed object, a `const` `ref` or the result of a
+    call that keeps it (11(d)), no path other than the result and its copies
+    writes the storage that loan covers, which the checker cannot see —
+    amended 2026-10-28, document-review fold: R1-M2; amended 2026-10-29,
+    re-review round 2: RR1-B1, where this read "while a value binding of a
+    borrowed object or a `const` `ref` formed through a free result lives, no
+    path other than the result and its copies writes the storage it
+    borrows"), anything read
     through an unverified pointer, **a value of pointer-carrying type read from
     a union field (`unsafe u.p`), and the pointer `unsafe &u.f` itself, ⊥ on
     formation for every field type** (amended 2026-10-12, review fold: A-1: the
@@ -1038,9 +1065,14 @@ sides); the break conditions are per decision.
     `addr` method writing `self`, no function writing the storage through a
     shared path or returning a non-`const` pointer or `ref` into it, no stored
     self-pointer); a binding formed through the free result of a marked
-    `unsafe fn` call relies besides on that marker, whose obligation includes
-    that no other path writes the storage while the binding lives (D-SAFE-10's
-    T6; amended 2026-10-28, document-review fold: R1-M2). It implies
+    `unsafe fn` call, or through a carrier derived from it, relies besides on
+    that marker, whose obligation includes that no path other than the result
+    and its copies writes the storage while a frozen loan formed through them
+    is live, whatever carries the loan, the binding or the result of a call
+    that keeps it (D-SAFE-10's T6; amended 2026-10-28, document-review fold:
+    R1-M2; amended 2026-10-29, re-review round 2: RR1-B1, where this read
+    "that no other path writes the storage while the binding lives"). It
+    implies
     `Core.Freeze`; the prelude opts in for
     `Core.String` and, under `forall [T: Core.Freeze]`, for `Core.Slice(T)`,
     `Core.Buf(T)` and `Core.Optional(T)`, and for `Core.Box(T)` once W-144 adds
@@ -1059,7 +1091,10 @@ sides); the break conditions are per decision.
     binding of a borrowed object on an open place is `StrictBorrowFromShared`
     (EX-M-4d), fixed by an owner or an `exclusive T*`, `Core.Guarded(T)`,
     `value_rep = const Self`, a `var` copy, or `unsafe` at the binding with the
-    obligation that no path mutates the object while the binding lives. The
+    obligation that no path mutates the object while the binding's loan is
+    live, a `bound self`'s as long as the call's result that keeps it
+    (D-SAFE-11(d); amended 2026-10-29, re-review round 2: RR1-B1, where this
+    read "while the binding lives"). The
     object's storage is its own bytes and sub-objects; storage reached through a
     pointer it holds is another object's (the reading of values.md:461-462's
     "the object or its storage" that fork/safe/safe2-plan.md D-SAFE2-3 makes and
@@ -1574,17 +1609,23 @@ exclusive-XOR-shared per place (T4); M3 the no-invalidation rule and
 holds a `Core.SharedImmutable` sub-object, the type itself or an array, tuple,
 struct, class or adapter that holds it (realigned 2026-10-28, SAFE-2: W-348), a
 built-in operator's `ref` operand being classified by what the operation does
-rather than as an exclusive-receiver call (amended 2026-10-28, document-review
-fold: R1-M1); M4 method classification by receiver (`ref self` may invalidate;
+rather than as an exclusive-receiver call or an exclusive loan (amended
+2026-10-28, document-review fold: R1-M1; amended 2026-10-29, re-review round
+2: RR1-m1, where this read "rather than as an exclusive-receiver call"); M4
+method classification by receiver (`ref self` may invalidate;
 `addr self` body is checked under M3 — may assign `Plain` fields (`i32`,
 pointers; a field whose type holds a `Core.SharedImmutable` sub-object, a
 `Slice(T)` for a `Freeze` `T`, a `String` or an aggregate holding one, and
 `*self` when `Self` holds one, only through exclusive access, M3 — realigned
 2026-10-28, SAFE-2: W-348, where this read "(`i32`, pointers, `Slice`, the
 prelude's non-owning `String`)"), call `addr`/`const` methods, read anything (a
-`const` call or a read into a value binding of a borrowed object through
-`*self`, an open place, meeting M8 — amended 2026-10-28, document-review fold:
-R1-M3); may not assign a `Buf`/`Box`/`Optional`/payload-`choice` field, call
+`const` call whose `self` binds a borrowed object or is a `ref self: const
+Self`, or a read into a value binding of a borrowed object, through `*self`, an
+open place, meeting M8 or §1.5's `ref` rule — amended 2026-10-28,
+document-review fold: R1-M3; amended 2026-10-29, re-review round 2: RR1-M2,
+where this read "a `const` call or a read into a value binding of a borrowed
+object through `*self`, an open place, meeting M8"); may not assign a
+`Buf`/`Box`/`Optional`/payload-`choice` field, call
 exclusive methods, move or destroy — amended 2026-10-12, review fold: B2; `ref
 self: const Self`/`self` no mutation); interior mutability is a type's private
 Permissive business (`Core.Atomic(T)` over `Cpp.std.atomic(T)`,

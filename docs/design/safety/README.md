@@ -306,10 +306,15 @@ setting emits; a Permissive file keeps them after the flip.
     [Mutation safety](mutation_safety.md), M8). For a `ref` the obligation is
     the one proposal p005434 gives unsafe code, to "adhere to just the
     `noalias` restrictions": no other path accesses the referent, or writes it
-    for a `const` `ref`, while the binding lives; for a value binding, no path
-    mutates the borrowed object while the binding lives; for a `bound` pointer
-    argument, no path but the result writes the pointee while the result lives
-    (realigned 2026-10-28, SAFE-2: W-347, W-348, W-349).
+    for a `const` `ref`, while the binding's loan is live; for a value binding,
+    no path mutates the borrowed object while the binding's loan is live; for a
+    `bound` pointer argument, no path but the result writes the pointee while
+    the result lives; and the loan of a binding that is a `bound` parameter
+    stays live as long as the call's result that keeps it
+    ([Temporal safety](temporal_safety.md), T3 and T5(d)) (realigned
+    2026-10-28, SAFE-2: W-347, W-348, W-349; amended 2026-10-29, re-review
+    round 2: RR1-B1, where this read "while the binding lives" for a `ref` and
+    for a value binding).
 -   `unsafe fn F(...) = "name"` — a builtin binding declared outside the
     prelude, a declaration-level form like `unsafe import`: the declaration
     asserts the builtin's contract and every call of it is an `unsafe fn`
@@ -452,7 +457,10 @@ exclude every assignment whose type holds a `Core.SharedImmutable` sub-object,
 a `Core.String`, a `Core.Slice(T)` for a `Core.Freeze` `T`, or a struct,
 tuple, array or class holding one, which only an exclusive path makes
 ([Mutation safety](mutation_safety.md), M3; realigned 2026-10-28, SAFE-2: W-347,
-W-348).
+W-348). A built-in operator's `ref` operand, an assignment's among them, lives
+for the one operation and is established on any place, M3 deciding what the
+operation may do ([Temporal safety](temporal_safety.md), `ref` bindings;
+amended 2026-10-29, re-review round 2: RR1-M1).
 
 ### C++ call allowlist
 

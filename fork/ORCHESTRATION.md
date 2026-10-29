@@ -10,7 +10,17 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-28 (OV-4, `overload fn` members with upstream's default
+Last updated: 2026-10-29 (SAFE-2, the R32 realignment of SAFE-1's six departures
+on PR 53's branch, is STOPPED at its plan rev 14 by the orchestrator's rulings:
+its commits and four fix commits stand unpushed with the plan, and round 3 of
+the plan re-review found the built-in operator exemption's justification false
+under the toolchain's in-place assignment (PRR3-B1); SAFE-3, a new plan that
+re-derives M3(d) and D-SAFE2-6 from the safety argument, is being planned on the
+same branch; PR 53 keeps its pushed head 2407efa74 and the land sequence still
+waits at PR 53; eighteen PRs are held open, PR 51 to PR 68, none merged; see the
+paragraph dated 2026-10-29 (08:49 UTC) below; the earlier 2026-10-28 text
+follows).
+2026-10-28 (OV-4, `overload fn` members with upstream's default
 parameter values (W-341), is implemented, reviewed and held open as PR 68 on
 trunk's base, merging after PR 66 and before EH-C; eighteen PRs are held open,
 PR 51 to PR 68, none merged; see the paragraph dated 2026-10-28 (13:28 UTC)
@@ -685,6 +695,45 @@ PR 60 for SC-1's W-139 and at PR 56 for OP-1's W-352. Next: EH-C (W-346) after
 the held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs
 W-355's scripts.
 
+2026-10-29 (08:49 UTC): SAFE-2 is STOPPED at its plan rev 14 on PR 53's branch
+(claude/carbon-fork-0-1-safe; the pushed head stays 2407efa74), under
+fork/safe/safe2-plan.md and three orchestrator rulings under R29 (its sections
+8.16, 8.19 and 8.20). The branch holds, unpushed, the plan's fourteen revisions,
+commit 1 48f2e66a0 (the six realignments on ten pages, W-347 to W-351 and
+W-353), commit 2 954f1c542 (the records), four counted fix commits (0f281d8bd,
+e1574b003, cbdc0552e and 9d0b072cb, the fourth by the ruling of section 8.16)
+and their records commits: twenty-seven commits at 0f22798fb, mirrored against
+loss at claude/carbon-fork-0-1-safe-wip, which is not a PR, is never a base, and
+is deleted when PR 53's head is pushed. What stopped it: the design exempts a
+built-in operator's `ref` operand from the `ref` rule because 'nothing else is
+evaluated' during the operation; nightly probes refuted that justification four
+times, the last (PRR3-B1, round 3 of the plan re-review) with no user code at
+all: the toolchain's interim `=` initializes an aggregate in place and reads its
+right operand through an alias after the binding begins
+(`*q = {.a = p->b, .b = p->a}` with `p` aliasing `q` prints 2 2), so the
+exemption's noalias claim (p005434:83) is false under the design's own model,
+while upstream's designed assignment, `x.(AssignWith(U).Op)(y)`
+(assignment.md:184), forms the value first and has no such interleaving. Two
+whole-tree document reviews, a re-derived rule (rev 11 to rev 13) and three plan
+re-review rounds with 91 probes are recorded in the plan's sections 8.13 to
+8.20; the accepted findings they left unapplied (among them W-365, the data-race
+residue for a `const T*` passed into a scoped thread) wait for SAFE-3's fold.
+SAFE-3 (fork/safe/safe3-plan.md, being planned on the same branch) re-derives
+M3(d) and D-SAFE2-6 from the safety argument and upstream's text, weighing by
+probe a value-representation keying, an element-wise model of the interim `=`,
+and upstream's AssignWith rule with the interim `=` recorded as a toolchain
+deviation, then completes the realignment: its fold commit, two whole-tree
+reviews, a fixer with a budget of two and no shrink line, a two-reviewer
+re-review until dry, the PR 67 note commit, the push of PR 53's head and the
+refreshes. No build, merge or dispatch; Actions is still disabled. Eighteen PRs
+are held open (PR 51 to PR 68); none is merged. Merge order unchanged: PR 67
+(RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, 66,
+then PR 68 (OV-4); the sequence waits at PR 53 for SAFE-3, at PR 60 for SC-1's
+W-139 and at PR 56 for OP-1's W-352. Next: SAFE-3's plan and implementation;
+then SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56; EH-C (W-346) after the
+held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs W-355's
+scripts from PR 67's branch at its head.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -1018,7 +1067,7 @@ code). Next check: Monday 14:00 UTC.
 | --- | --- |
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at e6bc32a6d (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs; amended 2026-10-28 by RG-1's records commit e6bc32a6d (R32 (e)), the description refreshed. |
-| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md at rev 14 0f22798fb, unpushed with its commits 48f2e66a0 and 954f1c542 and four fix commits, the twenty-seven commits mirrored at claude/carbon-fork-0-1-safe-wip, not a PR) STOPPED 2026-10-29 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1, the built-in operator exemption's justification being false under the toolchain's in-place `=`; SAFE-3 (fork/safe/safe3-plan.md, being planned) re-derives M3(d) and D-SAFE2-6 and completes the realignment; the pushed head is unchanged. |
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at c3cdecc5d (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1; amended 2026-10-28 by RG-1's records commit c3cdecc5d (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 9f12209d8 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55; amended 2026-10-28 by RG-1's records commit 9f12209d8 (R32 (e)), the description refreshed. |
@@ -1137,25 +1186,27 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     stamp; W-343 by the last land-time note) classified the V-3a register at
     upstream f27a977d8 and is held open as PR 67, first in the land sequence.
     Its drifts, each before the PR that carries it lands: W-347 to W-351 and
-    W-353 (SAFE-1: a plan amendment of fork/safe/plan.md, a re-derivation commit
-    on PR 53's branch, two document reviews and a fixer, before PR 53 lands; the
-    land sequence waits at PR 53 until then), W-139 (SC-1: a fix commit on
-    PR 60's branch with its fills and the template_constraints.md paragraph,
-    under its own reviews, before PR 60 lands) and W-352 (OP-1: the in-place
-    comparison commit on PR 56's branch with its fills, merged into PR 57's,
-    under its own reviews, before PR 56 lands). After the held PRs land and
-    before UA-3: W-346 (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's
-    base, beside W-341). In UA-3's gate, because they need the advance: W-354
-    (drop D-SL-16's yield and D-SL-19's keying against 05a7ecbd3) and W-356
-    (re-run RG-1's crash probe). Land-time notes, each by its PR's land-sequence
-    records commit after its register block (fork/register/rg1-plan.md Appendix
-    A.4): PR 51, PR 54, PR 57's OP-2 block, PR 58 and PR 59; the last discharges
-    W-343. At each weekly upstream check: W-355 (run
-    fork/register/check_quotes.sh and check_greps.sh over their tables at the
-    tip, and re-read the break condition of every NONE and ALIGNED entry outside
-    VA-2's, which items 8 and 9 re-read), with W-324's re-check of C1.1 and H5.5
-    and W-326's of T5.7 and C1.2 (indexing.md:101-121 and a `like` in upstream's
-    parse or check). UA-3 follows W-341 and W-346.
+    W-353 (SAFE-1: SAFE-2's realignment, fork/safe/safe2-plan.md, stopped at rev
+    14 on 2026-10-29 by the orchestrator's rulings, PRR3-B1; SAFE-3,
+    fork/safe/safe3-plan.md, re-derives the built-in operator exemption and
+    completes it before PR 53 lands; the land sequence waits at PR 53 until
+    then), W-139 (SC-1: a fix commit on PR 60's branch with its fills and the
+    template_constraints.md paragraph, under its own reviews, before PR 60
+    lands) and W-352 (OP-1: the in-place comparison commit on PR 56's branch
+    with its fills, merged into PR 57's, under its own reviews, before PR 56
+    lands). After the held PRs land and before UA-3: W-346 (EH-C:
+    `Core.Result`'s `Success`/`Failure`, on trunk's base, beside W-341). In
+    UA-3's gate, because they need the advance: W-354 (drop D-SL-16's yield and
+    D-SL-19's keying against 05a7ecbd3) and W-356 (re-run RG-1's crash probe).
+    Land-time notes, each by its PR's land-sequence records commit after its
+    register block (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54,
+    PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At each
+    weekly upstream check: W-355 (run fork/register/check_quotes.sh and
+    check_greps.sh over their tables at the tip, and re-read the break condition
+    of every NONE and ALIGNED entry outside VA-2's, which items 8 and 9
+    re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of T5.7 and
+    C1.2 (indexing.md:101-121 and a `like` in upstream's parse or check). UA-3
+    follows W-341 and W-346.
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

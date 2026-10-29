@@ -6,8 +6,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-2 plan: the R32 realignment of SAFE-1's six departures (W-347 to W-351, W-353)
 
-**Status:** rev 9, 2026-10-29 -- the fourth fix commit authorized for RR2-M1 and
-RR2-m1; round 3 reviews it (amended 2026-10-29, rev 9: section 8.16's ruling,
+**Status:** rev 10, 2026-10-29 -- round 3 not dry (RR3-M1, RR3-m1); the review
+process re-planned by the ruling of section 8.19: two whole-tree document
+reviews, rev 11, a focused plan re-review, one fold commit, a two-reviewer
+round 4 (amended 2026-10-29, rev 10: the ruling on round 3, section 8.19, where
+this read "rev 9, 2026-10-29 -- the fourth fix commit authorized for RR2-M1 and
+RR2-m1; round 3 reviews it"; amended 2026-10-29, rev 9: section 8.16's ruling,
 where this read "rev 8, 2026-10-29"); SIGNED OFF FOR IMPLEMENTATION at rev 5,
 AMENDED BY A STOP-AND-AMEND (rev 6) AND BY THE FOLD OF ITS FOCUSED RE-REVIEW
 (rev 7), STOPPED AT THE FIX BUDGET AND RE-PLANNED, NOT SIGNED OFF (rev 8;
@@ -56,7 +60,14 @@ RR3-m2, is folded by the round's records commit, and RR3-M1 and RR3-m1, which
 change pages, go to round 4's fixer at a plan revision, since they meet the
 break condition of the orchestrator's ruling, which stops SAFE-2 there with no
 further fix commit while the orchestrator re-plans the review process (amended
-2026-10-29, re-review round 3: section 8.18). Rev 7 is the plan amender's fold
+2026-10-29, re-review round 3: section 8.18). Rev 10, 2026-10-29, is that plan
+revision: it records the orchestrator's ruling on round 3 and the review process
+it re-plans, two whole-tree document reviews, their fold in rev 11 under a
+focused plan re-review of at most two rounds, one fold commit, the fifth fix
+commit, and a round 4 by two fresh agents; RR3-M1 and RR3-m1 go with the
+reviews' findings to rev 11's fold agent, and no page changes
+(amended 2026-10-29, rev 10: the ruling on round 3, section 8.19). Rev 7 is the
+plan amender's fold
 of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
 and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
@@ -167,7 +178,10 @@ and section 2.6).
     re-review round 3 fold), and in section 8.16 the fold of the focused
     re-review of rev 8 and the orchestrator's ruling (amended 2026-10-29,
     rev 9), and the focused re-review's round 3 (section 8.18; amended
-    2026-10-29, re-review round 3).
+    2026-10-29, re-review round 3), and the stop-and-amend record of rev 10,
+    with the orchestrator's ruling on round 3 and the review process it re-plans
+    (section 8.19; amended 2026-10-29, rev 10: the ruling on round 3,
+    section 8.19).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -2028,9 +2042,12 @@ trailers.
     document-review fold: <id>)" on the page and, where the same finding reaches
     a §0.3, §1 or log sentence, there too; a budget of three fix commits
     (amended 2026-10-29, rev 9: three; a fourth, for RR2-M1 and RR2-m1 only, by
-    the orchestrator's ruling of 2026-10-29 recorded in section 8.16),
-    records-only commits not counted; NO shrink line: a defect past the budget
-    stops the workflow at a plan revision of this file. Every finding is
+    the orchestrator's ruling of 2026-10-29 recorded in section 8.16) and a
+    fifth by the ruling of section 8.19, made only after rev 11 or rev 12 is
+    signed off (amended 2026-10-29, rev 10: the ruling on round 3,
+    section 8.19), records-only commits not counted; NO shrink line: a defect
+    past the budget stops the workflow at a plan revision of this file. Every
+    finding is
     dispositioned (ACCEPTED with where it landed, or REJECTED with the cite that
     refutes it, R17); the fold record goes into this plan as section 8.7 by a
     records commit, which also fills `<sha2>`, `<verdict 1>`, `<verdict 2>` and
@@ -2046,11 +2063,19 @@ trailers.
     else (amended 2026-10-29, rev 9: the ruling). The fix commits are four,
     the fourth by the ruling: 9d0b072cb, made on 2026-10-29, applies E1 to E6
     and nothing else, and round 3 of step 5 reviews it and its records commit
-    (amended 2026-10-29, fourth fix commit: section 8.17).
-5.  **The focused re-review of the fix commits**, one fresh agent per round,
-    at most three rounds, until dry: dry is no BLOCKER and no MAJOR and every
-    MINOR records-only, folded by one records commit. A round that is not dry
-    goes back to step 4 within its budget. The focused re-review of rev 8,
+    (amended 2026-10-29, fourth fix commit: section 8.17). Round 3 found RR3-M1
+    and RR3-m1, which change pages, so SAFE-2 stopped at rev 10 under that
+    ruling's break condition, and the ruling of 2026-10-29 on round 3, recorded
+    in section 8.19, re-plans the review process: two whole-tree document
+    reviews, their fold in rev 11 under a focused plan re-review, and the fifth
+    fix commit, which applies the signed-off fold texts of rev 11 or rev 12 and
+    nothing else, with a records commit after it (amended 2026-10-29, rev 10:
+    the ruling on round 3, section 8.19).
+5.  **The focused re-review of the fix commits**, one fresh agent per round, at
+    most three rounds, and round 4 by two fresh agents under the ruling of
+    section 8.19, until dry: dry is no BLOCKER and no MAJOR and every MINOR
+    records-only, folded by one records commit. A round that is not dry goes
+    back to step 4 within its budget. The focused re-review of rev 8,
     one fresh agent, reviewed rev 8 and its records commit, and its findings
     are folded into rev 9; round 3, the loop's last, reviews the fourth fix
     commit, the fold commit of section 8.16 that the ruling of 2026-10-29
@@ -2059,7 +2084,15 @@ trailers.
     2026-10-29, stop-and-amend re-review: RR8-m2, where this read "Round 3,
     the loop's last, reviews rev 8 and its records commit; the fold commit of
     section 8.16, if the ruling allows it, is reviewed under this step's dry
-    test by the fresh agent the ruling names").
+    test by the fresh agent the ruling names"). Round 3 was not dry
+    (section 8.18), and the loop continues as section 8.19 re-plans it: round 4,
+    by two fresh agents, reviews the fifth fix commit and its records under this
+    step's dry test, each over the range from rev 10's head and over the whole
+    tree's consistency, round 4 being dry when both are, with its records-only
+    MINORs folded by one records commit; a BLOCKER, a MAJOR or a page-changing
+    MINOR at round 4 stops SAFE-2 at a plan revision with no further fix commit
+    (amended 2026-10-29, rev 10: the ruling on round 3, section 8.19, where this
+    read "one fresh agent per round, at most three rounds, until dry").
 6.  **The PR 67 note commit** (D-SAFE2-16, Appendix C.2), in a detached scratch
     worktree of PR 67's head under /dev/shm/safe2-implementer/rg1 (removed
     after), with `<head>` filled in, reviewed by one fresh agent before any
@@ -4469,7 +4502,10 @@ Decisions under R29, each with its break condition:
     re-plan of the review process, and this commit revises no plan text,
     makes no page change and files no residue. Break condition: the
     orchestrator's re-plan names another path; this section then gains a
-    dated mark naming it.
+    dated mark naming it. The re-plan names it: the two whole-tree document
+    reviews read the tree first, rev 11's fold agent takes RR3-M1 and RR3-m1
+    with their findings, and round 4 is the focused re-review of the fifth fix
+    commit (amended 2026-10-29, rev 10: the ruling on round 3, section 8.19).
 -   RR3-m2's rewrap carries no dated mark on the two copies: no statement,
     cite or count changes, the words, the line counts and the D-SAFE
     block's identity standing, so every cite into the log and
@@ -4571,6 +4607,316 @@ are not re-run and the ledger's `json.load` is not owed; nothing is pushed:
 section 3 step 7 waits for a dry round, and the ruling's break condition stops
 SAFE-2 before it.
 
+### §8.19 Stop-and-amend record (rev 10, 2026-10-29)
+
+Round 3 of section 3 step 5, the loop's last, read rev 9, the fourth fix
+commit 9d0b072cb and its records commit 8a8274030, and section 8.18, which the
+records commit 78a50b076 adds, records its verdict: APPROVE-WITH-FIXES on one
+MAJOR and two MINORs, not dry. RR3-M1, the MAJOR, and RR3-m1, a MINOR that is
+not records-only, change pages: RR3-M1 shows false the sentence rev 9 gave the
+built-in test for RR8-M1, that a user's `ImplicitAs` runs before the call binds
+`ref self`, in the eight places section 8.18's table cites, and RR3-m1 corrects
+temporal_safety.md's attribution of `self += AsInt(1);` to uint.carbon; RR3-m2,
+the one records-only MINOR, is folded by 78a50b076. A finding of round 3 that
+needs a page change is the break condition of the orchestrator's ruling at the
+end of section 8.16, so the condition is met: no fix commit is made under that
+ruling, the fix commits stay the four it counts (0f281d8bd, e1574b003, cbdc0552e
+and 9d0b072cb), and SAFE-2 stops at this plan revision. Rev 10 is that revision.
+It records the orchestrator's ruling on round 3 verbatim and the review process
+the ruling re-plans, and it changes no page, example, record, ledger line, line
+of the log or of fork/safe/plan.md, text of Appendix A to D or text E1 to E6 of
+section 8.16; RR3-M1 and RR3-m1 stand as section 8.18 reproduced them, and their
+folds are rev 11's.
+
+The scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rev10/rev10/,
+and everything measured is container-local, EXPECTED, not of record (R9).
+
+**Ruling (orchestrator, R29, 2026-10-29).** The orchestrator's ruling on round 3
+of the focused re-review (section 8.18), recorded verbatim; it governs every
+stage of the process below (added 2026-10-29, rev 10):
+
+<!-- google-doc-style-ignore -->
+
+> Ruling of the orchestrator under R29, 2026-10-29, on round 3 of the focused
+> re-review (section 8.18). Round 3 found RR3-M1, a MAJOR that changes pages:
+> the sentence rev 9 added for RR8-M1, that a user's `ImplicitAs` runs when the
+> caller converts the right operand to `other: Self` before the call binds
+> `ref self`, so the 50 generic compound assignments of the prelude integers
+> stay built in, is false. Upstream's docs/design/generics/details.md:5759-5779
+> at 9192ee003 generates a thunk when the impl's parameter types differ from the
+> interface's, and the thunk's body performs the conversion;
+> toolchain/check/impl.cpp:83 builds it, the golden
+> toolchain/lower/testdata/operators/increment.carbon:52-54 calls `Convert`
+> before it loads `%self`, and the round's nightly probe (a user's `Convert`
+> that writes `*self.p = 100` under `*q += e` with `q` and `p` aliasing)
+> compiles and prints 101: user-written code ran while the `ref` was bound and
+> wrote its referent through another path. The break condition of the ruling
+> recorded in section 8.16 is met. SAFE-2 stops at this plan revision; no fix
+> commit is made under that ruling, and the workstream's review process is
+> re-planned as follows, recorded by rev 10, which changes no page. (1) Two
+> fresh document reviews of the WHOLE tree at rev 10's head, not of a diff
+> range, one reading for fidelity to upstream's text and to the toolchain's
+> behaviour and one for the soundness of the safety argument and the consistency
+> of every copy of every rule: every docs/design page commit 1 touched and every
+> safety page they restate, fork/safe/plan.md sections 0.3 and 1, the log's
+> F-013 entry and its D-SAFE block, the six items and W-144 to W-150 in the
+> ledger, section 4's matrix and the records; every claim about evaluation
+> order, thunks, conversions, value representations or what is built in is
+> checked by a nightly probe or by upstream's checker source and goldens at the
+> tip, by sha, and every finding is reproduced and graded BLOCKER, MAJOR or
+> MINOR with a cite and a fix. (2) The fold is plan rev 11: every finding of
+> both reviews reproduced and dispositioned (R17); the built-in test of
+> D-SAFE2-6 and M3(d) re-derived at its root from the safety argument, an
+> operator's `ref` operand being exempt from section 1's `ref` obligations
+> exactly when no code written outside core/prelude can run while that operand
+> is bound, where the impl's body, any thunk details.md:5759-5779 generates for
+> it, and any conversion that thunk performs on the other operands all run while
+> bound and a conversion the caller performs before the call does not; each case
+> decided by a probe where the toolchain can show it (a direct call, a thunk
+> with a user-written `ImplicitAs`, a literal operand, `Inc` and `Dec`, the
+> default compound assignment of assignment.md:302-316, the toolchain's interim
+> `=` on an aggregate) and the consequence for programs stated, an operand whose
+> conversion is user-written being converted by the program before the operator
+> or the write being M3(d)'s through a shared path; fold texts for every place
+> that states the rule (the eight places RR3-M1 cites, RR3-m1's line and every
+> other page-changing finding), each with its anchor and its superseded quote,
+> dry-run on scratch copies as section 8.16's were; then a focused plan
+> re-review of rev 11 by one fresh agent, its amendments folded into rev 12 by a
+> second, at most two such rounds; a REJECT, or a MAJOR left at the second
+> round, stops SAFE-2 again for a ruling. (3) One fold commit, the fifth fix
+> commit, is authorized by this ruling once rev 11 or rev 12 is signed off
+> without a BLOCKER or MAJOR: it applies the signed-off fold texts and nothing
+> else, with the title the plan gives, and a records commit follows it. (4) A
+> focused re-review of that commit, round 4 of section 3 step 5, by TWO fresh
+> agents, each over the range from rev 10's head and over the whole tree's
+> consistency under the step's dry test; dry is both dry, the records-only
+> MINORs folded by one records commit; a BLOCKER, a MAJOR or a page-changing
+> MINOR at round 4 stops SAFE-2 at a plan revision with no further fix commit,
+> PR 53 keeps its pushed head 2407efa74, and the orchestrator rules on a new
+> plan that re-derives M3 and D-SAFE2-6 from the ground up. (5) Steps 6 to 8 of
+> section 3 follow a dry round 4. The fix commits of this PR are then five, the
+> fifth by this ruling; VA-2's rev 16 precedent and the ruling of section 8.16
+> apply.
+
+<!-- google-doc-style-resume -->
+
+**The re-planned process**, the ruling's steps (1) to (5) with their roles;
+where the ruling names no break condition for a role, the one given here is this
+revision's decision under R29:
+
+1.  **Two whole-tree document reviews** (the ruling's (1)): reviewer A, for
+    fidelity to upstream's text and to the toolchain's behavior, and reviewer B,
+    for the soundness of the safety argument and the consistency of every copy
+    of every rule, two fresh agents, in parallel and read-only, each over the
+    whole tree at rev 10's head, not a diff range, by the file list below. Every
+    claim about evaluation order, thunks, conversions, value representations or
+    what is built in is checked by a nightly probe (R30) or by upstream's
+    checker source and goldens at the tip, by sha, and every finding is
+    reproduced and graded BLOCKER, MAJOR or MINOR with a cite (R8) and a fix.
+    Break condition: none stops SAFE-2 here; every finding of both reviews,
+    whatever its grade, goes to step 2's fold.
+2.  **The fold, plan rev 11, and its focused plan re-review** (the ruling's
+    (2)): the rev 11 fold agent, one fresh agent, reproduces and dispositions
+    every finding of both reviews (R17), RR3-M1 and RR3-m1 with them; re-derives
+    the built-in test of D-SAFE2-6 and M3(d) at its root from the safety
+    argument, an operator's `ref` operand being exempt from section 1's `ref`
+    obligations exactly when no code written outside core/prelude can run while
+    that operand is bound, where the impl's body, any thunk
+    docs/design/generics/details.md:5759-5779 generates for it and any
+    conversion that thunk performs on the other operands all run while it is
+    bound, and a conversion the caller performs before the call does not;
+    decides each case by a nightly probe where the toolchain can show it (a
+    direct call, a thunk with a user-written `ImplicitAs`, a literal operand,
+    `Inc` and `Dec`, the default compound assignment of
+    docs/design/assignment.md:302-316, the toolchain's interim `=` on an
+    aggregate) and states the consequence for programs, an operand whose
+    conversion is user-written being converted by the program before the
+    operator, or the write being M3(d)'s through a shared path; and gives the
+    fold texts for every place that states the rule, the eight places RR3-M1
+    cites, RR3-m1's line and every other page-changing finding, each with its
+    anchor and its superseded quote, dry-run on scratch copies as section 8.16's
+    were. Rev 11 changes no page. The focused plan re-reviewer, one fresh agent,
+    then reads rev 11, and its amender, a second, folds the amendments into
+    rev 12; at most two such rounds, and rev 11 or rev 12 is signed off only
+    after a round with no BLOCKER and no MAJOR. Break condition: a REJECT, or a
+    MAJOR left at the second round, stops SAFE-2 again for a ruling.
+3.  **The fifth fix commit** (the ruling's (3)): its implementer, one fresh
+    agent, makes one fold commit, authorized by the ruling once rev 11 or rev 12
+    is signed off without a BLOCKER or MAJOR, that applies the signed-off fold
+    texts and nothing else, with the title the plan gives, and the records
+    commit after it, which records the commit as authorized by the ruling. Break
+    condition: a fold text that does not apply to the tree as signed off stops
+    the implementer before it commits, at a plan revision of this file for a
+    ruling, section 8.12's precedent.
+4.  **Round 4 of section 3 step 5** (the ruling's (4)): two fresh agents, each
+    over the range from rev 10's head, rev 11 and its amendments, the fifth fix
+    commit and its records commit, and over the whole tree's consistency, under
+    the step's dry test; round 4 is dry when both are dry, and its records
+    writer, one fresh agent, records the round and folds the records-only MINORs
+    of both by one records commit. Break condition: a BLOCKER, a MAJOR or a
+    page-changing MINOR at round 4 stops SAFE-2 at a plan revision with no
+    further fix commit, PR 53 keeps its pushed head 2407efa74, and the
+    orchestrator rules on a new plan that re-derives M3 and D-SAFE2-6 from the
+    ground up.
+5.  **Section 3's steps 6 to 8** (the ruling's (5)) follow a dry round 4: the
+    PR 67 note commit, the push of PR 53's branch as a fast-forward
+    of 2407efa74, and the orchestrator's refresh of PR 53's and PR 67's
+    descriptions and its stamp of trunk's fork/ORCHESTRATION.md, each as
+    section 3 gives it. Break condition: those of steps 6 to 8 as section 3
+    states them.
+
+**The budget**: five fix commits, the fifth by this ruling, made only after
+rev 11 or rev 12 is signed off without a BLOCKER or MAJOR. The first three
+are 0f281d8bd, e1574b003 and cbdc0552e, the fourth is 9d0b072cb by the ruling of
+section 8.16, and records-only commits and plan revisions are not counted; no
+shrink line is drawn, and VA-2's rev 16 precedent and the ruling of section 8.16
+apply.
+
+**The whole-tree file list** that both reviews read, at rev 10's head unless a
+line names another tree; its line ranges are rev 10's head's, equal
+to 78a50b076's in every file but this plan:
+
+-   docs/design/safety/README.md (commit 1; section 2.2's first page)
+-   docs/design/safety/mutation_safety.md (commit 1)
+-   docs/design/safety/temporal_safety.md (commit 1)
+-   docs/design/safety/initialization_safety.md (commit 1)
+-   docs/design/safety/spatial_safety.md (commit 1)
+-   docs/design/safety/rust_interop.md (commit 1)
+-   docs/design/values.md (commit 1)
+-   docs/design/README.md (commit 1)
+-   docs/design/expressions/arithmetic.md (commit 1)
+-   docs/design/slices.md (commit 1; section 2.2's tenth page)
+-   docs/design/safety/type_safety.md (under docs/design/safety/; its :135-140
+    sentence widened by cbdc0552e)
+-   docs/design/safety/terminology.md (under docs/design/safety/; not edited by
+    SAFE-2)
+-   docs/design/assignment.md, upstream's governing text, read at upstream's tip
+    by sha (`git -C /home/user/carbon-lang show <tip>:docs/design/assignment.md`
+    after `git fetch -q upstream trunk`; 9192ee003 at rev 10), not edited
+-   docs/design/generics/details.md, upstream's governing text, read at
+    upstream's tip by sha as assignment.md is, not edited; the fork's copy is
+    the cut's, its thunk text one line lower than the tip's (section 8.18)
+-   fork/safe/plan.md: section 0.3 (:219-1451, its D-SAFE-1 to D-SAFE-23 block
+    :235-1451) and section 1 (:1468-1777)
+-   fork/decision-log.md: the F-013 entry, "SAFE-1 / F-013" (:2863-4374), and
+    its D-SAFE block (:2936-4152), identical to fork/safe/plan.md :235-1451
+-   fork/inventory/work-items.json, PR 53's ledger: W-144 to W-150 (:2224-2336)
+-   fork/inventory/work-items.json on `claude/carbon-fork-0-1-rg1` at 56e2e5bbd,
+    PR 67's ledger, read by `git show 56e2e5bbd:fork/inventory/work-items.json`:
+    the six items, W-347 to W-351 (:2386-2461) and W-353 (:2478-2492)
+-   fork/safe/safe2-plan.md, this plan: section 1, section 4 and sections 8.7
+    to 8.19
+
+The evidence a finding rests on is read beside the list: upstream's direction
+sources of section 0.1 and upstream's checker source and goldens at the tip, by
+sha, toolchain/check/impl.cpp, convert.cpp and
+toolchain/lower/testdata/operators/increment.carbon among them; the prelude
+files the built-in test counts, core/prelude/types/int.carbon, uint.carbon,
+float.carbon and cpp/int.carbon and core/prelude/operators/; and probes compiled
+with the nightly,
+/home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12/bin/carbon
+(R30), round 3's probe among them,
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rr/r3/review/probe/thunk.carbon.
+
+Decisions under R29, each with its break condition:
+
+-   Rev 10 changes none of the texts RR3-M1 and RR3-m1 show false, E1 to E6 in
+    section 8.16 and their copies on the pages and in the records among them: E1
+    to E6 are the record of what the fourth fix commit applied, and the pages
+    and records are what the two whole-tree reviews read; rev 11's fold texts
+    supersede each, with its quote. Break condition: a reviewer reads E1 to E6
+    as live texts; section 8.16 then gains a dated mark pointing here.
+-   The roles and break conditions the ruling leaves unnamed, the split of the
+    reviews into A and B, the fifth fix commit's stop before it commits and
+    round 4's records writer, are this revision's, each read from the ruling's
+    own step and from section 3's and section 8.12's precedents. Break
+    condition: the orchestrator names other roles; this section then gains a
+    dated mark naming them.
+-   Section 8.18's decision that hands RR3-M1 and RR3-m1 to round 4's fixer
+    meets its own break condition, the re-plan naming another path, and gains
+    the dated mark it asks for: the two findings go to rev 11's fold agent with
+    the two reviews' findings, and round 4 reviews the fifth fix commit. Break
+    condition: none further; the mark names the path.
+-   The landed and verbatim texts that count the fix commits,
+    fork/safe/plan.md's "Realigned notes (SAFE-2)" and its text in Appendix
+    B.3.8, which name the fourth, and Appendix C's `<fixes>`, stay as they read:
+    they are true at this head, and the records commit after the fifth fix
+    commit adds the fifth's sentence to both, as 8a8274030 added the fourth's.
+    Break condition: a reviewer finds a line that counts the fix commits as four
+    after the fifth lands; that line then gains a dated mark pointing here.
+-   No residue is filed and no id is taken: every finding stays in SAFE-2 under
+    the ruling, and W-365, the next free id, stays free. Break condition:
+    rev 11's fold keeps a finding out of SAFE-2; a residue then takes the next
+    free id after a re-scan.
+
+**Measured** by this revision, 2026-10-29, in rev10/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003
+    again (2026-10-28 20:51:45 UTC, upstream PR 8054), and
+    `git log 9192ee003..upstream/trunk` lists nothing.
+    `git log --oneline c1e83b0b7..upstream/trunk` lists nothing over p005434,
+    p005914, p000257, docs/design/README.md, safety/README.md,
+    expressions/arithmetic.md, values.md, slices.md, assignment.md,
+    core/prelude/types/int.carbon, uint.carbon and
+    core/prelude/operators/arithmetic.carbon; f21c62524 over classes.md and
+    db87a84b6 over generics/details.md, as section 8.18 has them; ten commits
+    over toolchain/check/impl.cpp, six over toolchain/check/convert.cpp and four
+    over toolchain/lower/testdata/operators/increment.carbon. No quote of the
+    ruling has moved.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-rev10/rg1, removed after, against /home/user/carbon-lang
+    at 9192ee003: "checked 273 quotes, 0 failed" and "checked 89 silence
+    checks, 0 failed"; the H1 subsets, byte-equal to the earlier rounds',
+    "checked 97 quotes, 0 failed", "checked 120 quotes, 0 failed" and "checked 5
+    silence checks, 0 failed"; and the twelve upstream lines the ruling cites
+    (docs/design/generics/details.md:5759, :5769, :5774, :5777 and :5779,
+    toolchain/check/impl.cpp:83,
+    toolchain/lower/testdata/operators/increment.carbon:52, :53 and :54, and
+    docs/design/assignment.md:302, :312 and :314), "checked 12 quotes, 0
+    failed".
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the table
+    of section 0.8 names them, PR 53's pushed head still 2407efa74, an ancestor
+    of the head.
+-   The id re-scan widened to W-3[6-9][0-9] over the 166 origin refs and local
+    branches, 137 and 29, and the 22 worktrees: the ledgers end at W-363, the
+    text names W-360 to W-365, W-398 and W-399 as before, W-365 only in this
+    file; no id is taken, no residue is filed and no F id is minted.
+-   The file list's ranges at 78a50b076: the log's D-SAFE-1 to D-SAFE-23 block,
+    :2936-4152, is identical to fork/safe/plan.md :235-1451, 1217 lines; the
+    F-013 entry ends at :4374 before the SL-2 heading; section 0.3 of
+    fork/safe/plan.md ends at :1451 and its section 1 at :1777; W-144's object
+    opens at :2224 and W-150's closes at :2336; on PR 67's ledger W-347's object
+    opens at :2386, W-351's closes at :2461, and W-353's spans :2478-2492,
+    PR 67's ledger parsing with `json.load`.
+-   R31 on this plan, the one file rev 10 changes: before, headings
+    {1: 1, 2: 16, 3: 132}, bullets 219, numbered 31, rows 235, 9105 lines;
+    after, headings {1: 1, 2: 16, 3: 133}, bullets 251, numbered 36,
+    rows 235, 9466 lines, the counts the same after each prek pass; the changes
+    are this section's heading, its five numbered items and its 32 bullets,
+    nineteen in the file list, five decisions and eight Measured items, with no
+    table row, no other heading and no unguarded block. The log,
+    fork/safe/plan.md and the ledger are unchanged.
+-   prek to a fixpoint with a private cache in rev10/, deleted after: its first
+    pass reflowed, under rumdl's MD013, the first five lines of this section's
+    first paragraph, which then held the scratch path, the word diff empty; the
+    path was then moved to a paragraph of its own and the five lines rewrapped
+    by hand so that none starts with a digit, and the later passes exit 0 with
+    no change. rumdl@0.2.58: no issues; the heading sets differ by this
+    section's heading alone, the manufactured-heading grep is empty, and no line
+    starts with `+`, `#` and a digit, a digit and a period, or a `*` or `-` that
+    is no list marker, that did not before.
+-   `runner.py --self-test`: "self-test: 150 programs parsed, 56 bullets in
+    table, OK". The model-name grep over the changed lines and the message: no
+    hit outside the trailers, the scratch paths and the branch name
+    `claude/carbon-fork-0-1-rg1`. The merge-tree of the new tree against trunk
+    and the 18 held heads: the sets of the table of section 0.8, equal
+    to 78a50b076's.
+
+No page, example, log, fork/safe/plan.md or ledger line changes at this
+revision, so the nightly compiles of section 0.7 are not re-run and PR 53's
+ledger's `json.load` is not owed; nothing is pushed.
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (added 2026-10-28,
@@ -4664,6 +5010,21 @@ text that revision leaves as it was, and the orchestrator re-plans the review
 process, two fresh document reviews of the whole tree before any further
 commit, before section 3's steps 6 to 8 (added 2026-10-29, re-review round 3:
 section 8.18).
+
+Rev 10, 2026-10-29, is a stop-and-amend at the break condition of the ruling
+recorded in section 8.16, not a review fold (section 8.19): round 3 of section 3
+step 5 found RR3-M1 and RR3-m1, which change pages, so no fix commit is made
+under that ruling. Rev 10 records the orchestrator's ruling on round 3 verbatim
+and the review process it re-plans, and changes no page, record, ledger line,
+example, diagnostic, Appendix A to D text, count of section 8 item 1 or
+merge-tree set. It is NOT signed off and signs nothing off: the pages and
+records stay as the fourth fix commit and its records commit leave them, with
+RR3-M1 and RR3-m1 open against them, and the fold texts that answer those two
+and the findings of the two whole-tree document reviews are rev 11's, which the
+fifth fix commit applies only once the focused plan re-review signs off rev 11
+or rev 12 without a BLOCKER or MAJOR; round 4, by two fresh agents, then reviews
+that commit before section 3's steps 6 to 8 (amended 2026-10-29, rev 10: the
+ruling on round 3, section 8.19).
 
 ## Hand-off notes for the implementer
 

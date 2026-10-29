@@ -3036,10 +3036,10 @@ residue ids are the allocated ones, below):
     programs/interop/cpp_operator_import_assignment.carbon:33 — a site that
     does not compile today, the program being SKIP until the assignment-operator
     import lands; re-pinned 2026-10-12, document-review fold: MINOR-1) is
-    spelled with
-    the parenthesized form, `unsafe (c = 42)`, `unsafe (a + b)`, `unsafe (a
-    += b)`, the parse note being that `unsafe (` begins a prefix expression
-    whose operand is the parenthesized expression's outermost operator
+    spelled with the parenthesized form, `unsafe (c = 42)`, `unsafe (a + b)`,
+    `unsafe (a += b)`, the parse note being that `unsafe (` begins a prefix
+    expression whose operand is the parenthesized expression's outermost
+    operator
     application (amended 2026-10-12, review fold: A-16, A-12). Three further
     forms (amended 2026-10-12, document-review fold: D-1, D-9, MAJOR-1): the
     same prefix on a call, method or subscript that does not resolve to an

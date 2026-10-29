@@ -49,8 +49,15 @@ RR2-M1 and RR2-m1 only, applies E1 to E6 as rev 9 leaves them, and round 3 of
 section 3 step 5, the loop's last, reviews it and its records commit (amended
 2026-10-29, rev 9: section 8.16). The fourth fix commit is 9d0b072cb, made on
 2026-10-29 by that ruling, and round 3 reviews it and its records commit next
-(amended 2026-10-29, fourth fix commit: section 8.17). Rev 7 is the plan
-amender's fold of the focused re-review of rev 6 (486d2bc74), whose verdict was
+(amended 2026-10-29, fourth fix commit: section 8.17). Round 3 of section 3
+step 5, the loop's last, returned APPROVE-WITH-FIXES on one MAJOR and two
+MINORs, one of them records-only, so it is not dry: its records-only MINOR,
+RR3-m2, is folded by the round's records commit, and RR3-M1 and RR3-m1, which
+change pages, go to round 4's fixer at a plan revision, since they meet the
+break condition of the orchestrator's ruling, which stops SAFE-2 there with no
+further fix commit while the orchestrator re-plans the review process (amended
+2026-10-29, re-review round 3: section 8.18). Rev 7 is the plan amender's fold
+of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
 and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
 AM6-M1, AM6-m1). AM6-M1: section 2.1's test, as rev 6 worded it, failed five
@@ -159,7 +166,8 @@ and section 2.6).
     rev 8) with the fold record of round 3 (section 8.17; amended 2026-10-29,
     re-review round 3 fold), and in section 8.16 the fold of the focused
     re-review of rev 8 and the orchestrator's ruling (amended 2026-10-29,
-    rev 9).
+    rev 9), and the focused re-review's round 3 (section 8.18; amended
+    2026-10-29, re-review round 3).
 -   The sign-off, every review of this plan with its verdict and counts, then
     the hand-off notes for the implementer.
 -   Appendix A, page replacements; Appendix B, records texts; Appendix C, the
@@ -4368,6 +4376,201 @@ container-local, EXPECTED, not of record (R9).
     the model-name grep over the added lines and the message finds nothing
     outside the trailers.
 
+### §8.18 Focused re-review, round 3 (2026-10-29)
+
+Round 3 of section 3 step 5's loop, its last: one fresh agent reviewed the
+commits after the records commit ac57e2ea7 up to 8a8274030, at 8a8274030: rev 9
+(38bc461b5), which folds the focused re-review of rev 8 and records the
+orchestrator's ruling of 2026-10-29 (section 8.16), the fourth fix commit
+9d0b072cb, which that ruling allows for RR2-M1 and RR2-m1 only, and its records
+commit 8a8274030 (section 8.17), against the ruling, this plan and upstream's
+tip. Its ids, RR3-M1, RR3-m1 and RR3-m2, are this round's: section 8.11 records
+the plan's own round 3 under the same three ids, and the marks tell them apart,
+"re-review round 3" naming this section or an RR3 id here, "review fold" there,
+and "re-review round 3" with an RR2 id for the fourth fix commit's fold. The
+review's scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rr/r3/review/,
+and this records commit's runs are in rec3/ beside r3/. Everything measured is
+container-local, EXPECTED, not of record (R9).
+
+**The review**, APPROVE-WITH-FIXES, with no BLOCKER, one MAJOR and two MINORs,
+one of them records-only. Its runs, as it reports them:
+
+-   Upstream re-fetched: still 9192ee003, nothing new; since the cut
+    c1e83b0b7 the direction files change only in f21c62524 (classes.md) and
+    2c9739799 (toolchain/check/handle_operator.cpp, whose :99-123 equal the
+    fork's).
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-review/rg1, removed after: 273 quotes and 89 silence
+    checks with 0 failed, the H1 subsets of 97 and 120 quote rows and the
+    five H1 checks with 0 failed, and the 29 upstream lines this round cites
+    with 0 failed.
+-   The fourth fix commit applies E1 to E6 as rev 9 leaves them and nothing
+    else: each block found once, E5 at its five places, each round 3 quote
+    equal to ac57e2ea7's text once whitespace is set aside, the RR1-m1 marks
+    kept and W-148's note appended.
+-   The log's D-SAFE-1 to D-SAFE-23 block is identical to fork/safe/plan.md
+    section 0.3, in 1217 lines; the R31 counts equal every recorded value,
+    the headings are unchanged, and no hazardous line start is new.
+-   Run twice on a detached copy, prek exits 0 with no change; rumdl@0.2.58
+    is clean; the ledger parses with `json.load`; `runner.py --self-test`
+    passes; the nightly compiles reproduce section 0.7.
+-   `git ls-remote origin`: trunk and all 18 held heads as stated, 2407efa74
+    an ancestor; the merge-tree sets equal those of section 0.8.
+-   Four fix commits, by the ruling; author, committer and trailers are
+    right, no model identifier appears, and the ledgers end at W-363.
+-   A nightly probe of RR3-M1, r3/review/probe/thunk.carbon: a class `Evil`
+    whose `ImplicitAs(i32)` impl's `Convert` writes `*self.p = 100`, passed
+    as `e` to `fn Bump(q: i32*, e: Evil)`, whose body is `*q += e;`, with `q`
+    and `e.p` both `&x` for `var x: i32 = 5`, compiles and prints 101.
+
+**Dry judgment and the orchestrator's ruling.** By section 3 step 5 a round is
+dry when it has no BLOCKER and no MAJOR and every MINOR is records-only. This
+round has a MAJOR, RR3-M1, and RR3-m1 changes the temporal page, so it is not
+dry, as the review judges it. The orchestrator ruled it "NOT DRY: 1 serious
+or 2 page-changing findings go to round 4's fixer". Both are findings of round 3
+that need a page change, so the break condition of the orchestrator's ruling
+of 2026-10-29, at the end of section 8.16, is met: "any further finding in
+round 3 that needs a page change, stops SAFE-2 at a plan revision again with no
+further fix commit; the orchestrator then re-plans the workstream's review
+process, two fresh document reviews of the whole tree before any further
+commit, and records that in this plan." The loop ends at this round, its last,
+with no further fix commit: the fix commits stay the four the ruling counts
+(0f281d8bd, e1574b003, cbdc0552e and 9d0b072cb), and section 3's steps 6 to 8
+wait. RR3-M1 and RR3-m1 go to round 4's fixer as the orchestrator rules, at
+that plan revision and not by a fix commit, as the decisions below record. This
+round's one records-only MINOR, RR3-m2, is folded now by this records commit,
+"SAFE-2 records: focused re-review round 3 recorded" (2026-10-29, the UTC date
+of its commit). Each finding was reproduced against the tree at 8a8274030,
+whose line numbers the table cites, and against upstream at 9192ee003, before
+it was dispositioned:
+
+| finding | severity | reproduced | disposition | where |
+| --- | --- | --- | --- | --- |
+| RR3-M1, the 50 generic compound assignments' `U` is converted inside a thunk while `ref self` is bound, not before | MAJOR | the pages state the conversion before the binding: temporal_safety.md:297-301, "its `ImplicitAs` runs when the caller converts the right operand to `other: Self`, before the call binds `ref self`, so those impls stay built in", and mutation_safety.md:246-247, "a user's type that fills their `U` being converted to `Self` before the `ref` is bound", as do D-SAFE-8 in the log (:3155-3157) and in fork/safe/plan.md section 0.3 (:454-456), D-SAFE2-6 (:1518-1520), section 8.16's test paragraph (:3526-3530) and RR8-M1's row (:4070), and W-148's notes (fork/inventory/work-items.json:2303); the interface declares `fn Op(ref self, other: Other);` (core/prelude/operators/arithmetic.carbon:31) and the impl `fn Op(ref self, other: Self) = "int.sadd_assign";` (core/prelude/types/int.carbon:331), so their parameter types differ, and by upstream's docs/design/generics/details.md at 9192ee003, where an impl's function is used directly only when "Each parameter in the `impl` function has the same type as the parameter in" the interface (:5761), "Otherwise, a synthetic function called a _thunk_ is generated:" (:5769), declared by substituting the impl's `Self` into the interface's declaration (:5771-5773), so its `other` has type `U`, and "Implicit conversions are performed as necessary to initialize the parameters" "of the function in the `impl` from the parameters of the thunk" (:5777-5778); upstream's toolchain/check/impl.cpp:83 builds it (`BuildThunk`), and the golden toolchain/lower/testdata/operators/increment.carbon:52-54 at the tip, the fork's :53-55, has the thunk's `%1 = call i32 @"_CConvert.` before its `%2 = load i32, ptr %self, align 4`; the caller's `ConvertCallArgs` (toolchain/check/convert.cpp:2727-2747), which RR8-M1's disposition cites, converts the arguments to that thunk's parameters, `other: U`, so a user's `ImplicitAs` runs inside the thunk while its `ref self` is bound, and a `Convert` that writes the referent through another path runs during the `ref`'s life, against p005434:83, "The address of a `ref` binding is `nocapture` and `noalias`.", as the review's nightly probe shows by printing 101; this records commit compiles nothing | to round 4's fixer, not touched here: a page change, so the ruling's break condition stops SAFE-2 at a plan revision with no further fix commit; the review's remedy, the impl classed by the function the operator calls, built in only when the thunk's conversion calls no impl written outside core/prelude (`U` is `Self`, an integer type or a literal) and otherwise user-written, M3(d)'s through a shared path, the program converting first (`*q += e as i32`), in the same words in all eight places, with RR8-M1 re-dispositioned in section 8.16 citing details.md:5769-5779 and the golden, at that plan revision | none |
+| RR3-m1, `Inc`'s `self += AsInt(1);` attributed to uint.carbon too | MINOR, not records-only | temporal_safety.md:293-294 reads "`Inc`'s `self += AsInt(1);` (int.carbon:395-399, uint.carbon:457-461)", where core/prelude/types/int.carbon:398 is `self += AsInt(1);` and uint.carbon:460 is `self += AsUInt(1);`, after `fn AsUInt(n: IntLiteral) -> UInt(N) = "int.convert_checked";` (:459), both files equal to upstream's at 9192ee003 (R10); E1's text in section 8.16 (:3702) carries the same words; the log, fork/safe/plan.md, D-SAFE2-6 and W-148's notes do not quote the two bodies, and temporal_safety.md:339-340 and this plan's :3749 are superseded texts inside marks, quoted as they read | to round 4's fixer, not touched here: a page change; `self += AsInt(1);` (int.carbon:395-399) and `self += AsUInt(1);` (uint.carbon:457-461) on the page and in E1, at the plan revision of the ruling's break condition | none |
+| RR3-m2, pre-existing continuation lines start with `+` | MINOR, records-only | D-SAFE-5's paragraph, in the log (:3041) and in fork/safe/plan.md section 0.3 (:340), has a continuation line that starts with `+= b)`, the code span `unsafe (a += b)` broken over two lines; it is SAFE-1's text at PR 53's pushed head 2407efa74 (its :3020 and :305), which SAFE-2 does not change, and R31 forbids a `+` at a prose line's start; no page and no line of this plan starts with `+` | folded by this records commit: the four lines from "spelled with" to "operator" rewrapped in both copies identically, with the same words and the same line count, so that `unsafe (a += b)` starts a line whole; no mark, since no statement, cite or count changes (the decisions below); the D-SAFE-1 to D-SAFE-23 block stays identical in the two files | the log :3039-3042; fork/safe/plan.md :338-341 |
+
+Decisions under R29, each with its break condition:
+
+-   This round's ids keep the review's spelling though section 8.11 uses
+    RR3-M1, RR3-m1 and RR3-m2 for the plan's own round 3: every mark of
+    this round reads "re-review round 3" and names this section or an RR3
+    id, every mark of section 8.11 reads "review fold", and the fourth fix
+    commit's marks read "re-review round 3" with an RR2 id. Break
+    condition: a reviewer takes one round's finding for the other's; this
+    round's ids then gain a prefix by a dated mark.
+-   The orchestrator's dry ruling hands RR3-M1 and RR3-m1 to round 4's
+    fixer, and its ruling of 2026-10-29 stops SAFE-2 at a plan revision
+    with no further fix commit once a finding of round 3 needs a page
+    change. This records commit records the two side by side and chooses
+    for neither: the table marks both findings "to round 4's fixer", the
+    agent that takes them at that plan revision under the orchestrator's
+    re-plan of the review process, and this commit revises no plan text,
+    makes no page change and files no residue. Break condition: the
+    orchestrator's re-plan names another path; this section then gains a
+    dated mark naming it.
+-   RR3-m2's rewrap carries no dated mark on the two copies: no statement,
+    cite or count changes, the words, the line counts and the D-SAFE
+    block's identity standing, so every cite into the log and
+    fork/safe/plan.md stays exact (R10). Break condition: a reviewer wants
+    the rewrap marked; both copies then gain the same dated mark.
+-   The fold covers D-SAFE-5's two copies only: the log's other lines that
+    start with `+`, :1941, :1942 and :5216 (2407efa74's :1941, :1942 and
+    :4824), are other workstreams' records, outside F-013's entries and
+    untouched by SAFE-1 and SAFE-2. Break condition: a reviewer grades
+    them; the records commit of the workstream that owns each then rewraps
+    it.
+-   RR3-m1's records copies wait with its page: the log, fork/safe/plan.md
+    and W-148's notes cite `Inc` without quoting its two bodies, and E1 in
+    section 8.16 is the text the fourth fix commit applied, which the plan
+    revision corrects with the page (R27). Break condition: a reviewer
+    finds a record outside E1 and the superseded texts that quotes
+    `self += AsInt(1);` for uint.carbon; that line then gains a dated mark
+    pointing here.
+-   No residue is filed and no id is taken: RR3-M1 and RR3-m1 wait for the
+    plan revision, not dropped, and W-365, the next free id, stays free.
+    Break condition: the orchestrator's re-plan keeps a fold out of SAFE-2;
+    a residue then takes the next free id after a re-scan.
+
+**Measured** by this records commit, 2026-10-29, in rec3/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003
+    again (2026-10-28 20:51:45 UTC, upstream PR 8054), the review's tip, and
+    `git log 9192ee003..upstream/trunk` lists nothing. `git log --oneline
+    c1e83b0b7..upstream/trunk` lists nothing over p005434, p005914,
+    p000257, docs/design/README.md, safety/README.md,
+    expressions/arithmetic.md, values.md, assignment.md,
+    core/prelude/types/int.carbon, uint.carbon and cpp/int.carbon and
+    core/prelude/operators/arithmetic.carbon, the four prelude files equal
+    to the fork's; f21c62524 over classes.md and 2c9739799 over
+    toolchain/check/handle_operator.cpp, as before; db87a84b6, upstream's
+    PR 7987, over docs/design/generics/details.md, a change at its
+    :3340-3348 that moves the thunk text up one line, the fork's :5770 being
+    the tip's :5769; ten commits over toolchain/check/impl.cpp, its
+    `BuildThunk` call at :83 as quoted; and four over
+    toolchain/lower/testdata/operators/increment.carbon, whose thunk lines,
+    :52-54 at the tip, are :53-55 in the fork, the `Convert` call before the
+    load of `%self` in both. Section 0.1's quotes read at the tip as before.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-rec3/rg1, removed after, against /home/user/carbon-lang
+    at 9192ee003: "checked 273 quotes, 0 failed" and "checked 89 silence
+    checks, 0 failed"; the H1 subsets, byte-equal to the earlier rounds',
+    "checked 97 quotes, 0 failed", "checked 120 quotes, 0 failed" and
+    "checked 5 silence checks, 0 failed"; the review's 29 lines, "checked 29
+    quotes, 0 failed"; and the eighteen upstream lines this section cites
+    (docs/design/generics/details.md:5761, :5769, :5774, :5777 and :5778,
+    toolchain/check/impl.cpp:83 and convert.cpp:2727,
+    toolchain/lower/testdata/operators/increment.carbon:52, :53 and :54,
+    core/prelude/operators/arithmetic.carbon:30 and :31,
+    core/prelude/types/int.carbon:329, :331 and :398, uint.carbon:459 and
+    :460, and p005434:83), "checked 18 quotes, 0 failed", once a first run
+    had failed the row that gave convert.cpp's line as :2726 (R10).
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the
+    table of section 0.8 names them, PR 53's pushed head still 2407efa74,
+    an ancestor of the head.
+-   The id re-scan widened to W-3[6-9][0-9] over the 166 origin refs and
+    local branches, 137 and 29, and the 22 worktrees: the ledgers end at
+    W-363, the text names W-360 to W-365, W-398 and W-399 as before, and
+    W-365 only in this file; no id is taken, no residue is filed and no F
+    id is minted.
+-   RR3-m2's fold: the words of the log and of fork/safe/plan.md equal
+    8a8274030's, their lines stay 8317 and 3051, no line of either starts
+    with `+= b)` any more, and the log's D-SAFE-1 to D-SAFE-23 block, 1217
+    lines as rev 8's bin/dsafe.py counts it, is identical to section 0.3 of
+    fork/safe/plan.md, the log's :2936-4152 to that file's :235-1451.
+-   R31: on the log, headings {1: 1, 2: 2, 3: 45, 4: 1, 5: 6}, bullets 54,
+    rows 11, 8317 lines, and on fork/safe/plan.md headings {1: 1, 2: 16, 3:
+    28, 4: 2}, bullets 45, numbered 28, rows 179, 3051 lines, before the
+    edit, after it and after each prek pass, its ten code blocks outside the
+    ignore markers SAFE-1's and unchanged; on this plan, before, headings
+    {1: 1, 2: 16, 3: 131}, bullets 197, numbered 31, rows 230, 8892 lines;
+    after, headings {1: 1, 2: 16, 3: 132}, bullets 219, numbered 31, rows
+    235, the same after each edit and each prek pass, in 9105 lines; the
+    changes are this section's heading, its 22 bullets and its five table
+    rows, with no unguarded block.
+-   prek to a fixpoint with a private cache, deleted after: its passes
+    reflowed, under rumdl's MD013, the Status lines that this commit's
+    sentence lengthens past a line, which were then rewrapped by hand so
+    that none starts with a digit, and this section's first paragraph,
+    which holds a scratch path longer than a line, the word diff empty each
+    time; its last pass exits 0 with no change, and the log and
+    fork/safe/plan.md are unchanged by every pass. rumdl@0.2.58: no issues
+    in the three files; the heading sets differ by this section's heading
+    alone, the manufactured-heading grep is empty, and no line of the three
+    files starts with `+`, `#` and a digit, a digit and a period, or a `*`
+    or `-` that is no list marker, that did not before.
+-   `runner.py --self-test`: "self-test: 150 programs parsed, 56 bullets in
+    table, OK". The model-name grep over the changed lines and the message:
+    no hit outside the trailers and the scratch path. The merge-tree of the
+    new tree against trunk and the 18 held heads: the sets of the table of
+    section 0.8, unchanged.
+
+No page, example or ledger line changes, so the nightly compiles of section 0.7
+are not re-run and the ledger's `json.load` is not owed; nothing is pushed:
+section 3 step 7 waits for a dry round, and the ruling's break condition stops
+SAFE-2 before it.
+
 ## Sign-off
 
 Every review of this plan, with its verdict and its counts (added 2026-10-28,
@@ -4451,6 +4654,16 @@ rev 5's sign-off stands for every text it leaves as it was; round 3 of
 section 3 step 5, the loop's last, reviews it and its records commit under
 the step's dry test before section 3's steps 6 to 8, the ruling's break
 condition standing (added 2026-10-29, fourth fix commit: section 8.17).
+
+Round 3 of section 3 step 5, the loop's last, read rev 9, the fourth fix
+commit and its records commit (section 8.18) and found RR3-M1, a MAJOR, and
+RR3-m1, a MINOR, both changing pages, with RR3-m2, a records-only MINOR that
+its records commit folds. The ruling's break condition is met: SAFE-2 stops at
+a plan revision with no further fix commit, rev 5's sign-off standing for every
+text that revision leaves as it was, and the orchestrator re-plans the review
+process, two fresh document reviews of the whole tree before any further
+commit, before section 3's steps 6 to 8 (added 2026-10-29, re-review round 3:
+section 8.18).
 
 ## Hand-off notes for the implementer
 

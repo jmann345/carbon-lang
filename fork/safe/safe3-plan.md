@@ -6,30 +6,34 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-3 plan: the built-in operator exemption re-derived from the safety argument
 
-**Status:** rev 2, 2026-10-29 -- the fixer's fold of the two plan reviews
-(review A: REJECT, one BLOCKER, two MAJORs, six MINORs; review B:
-APPROVE-WITH-AMENDMENTS, four MAJORs, six MINORs; all 18 accepted, the review
-fold record before the hand-off notes), NOT signed off: the re-review decides.
-Rev 1, the planner's draft of 2026-10-29, is commit f97cdf414. Workstream SAFE-3
-re-derives from the ground up M3(d) and
+**Status:** rev 3 -- NOT signed off pending re-review round 2: RR1-M1.
+Rev 3, 2026-10-29, is the fixer's fold of the focused re-review, round 1, of
+rev 2 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR1-M1, and three MINORs, RR1-m1 to
+RR1-m3; all four accepted, the rev 3 fold record after rev 2's); sign-off needs
+a round with no BLOCKER and no MAJOR. Rev 2, 2026-10-29, the fixer's fold of the
+two plan reviews (review A: REJECT, one BLOCKER, two MAJORs, six MINORs; review
+B: APPROVE-WITH-AMENDMENTS, four MAJORs, six MINORs; all 18 accepted), is
+commit 782a5b740; rev 1, the planner's draft of 2026-10-29, is commit f97cdf414.
+Workstream SAFE-3 re-derives from the ground up M3(d) and
 fork/safe/safe2-plan.md's D-SAFE2-6, the exemption of a built-in operator's
 `ref` operand from the `ref` rule of the safe-Carbon design, and completes
 SAFE-2's realignment of W-347 to W-351 and W-353 on PR 53's branch, under the
 orchestrator's rulings of 2026-10-29 recorded in sections 8.16, 8.19 and 8.20 of
 safe2-plan.md. Branch `claude/carbon-fork-0-1-safe` (PR 53, held open, second in
 the land sequence after PR 67), pushed head 2407efa74, local head 0f22798fb with
-SAFE-2's 27 unpushed commits (plan rev 1 to rev 14, commits 48f2e66a0 and
-954f1c542, the four counted fix commits 0f281d8bd, e1574b003, cbdc0552e and
-9d0b072cb and their records commits), mirrored against loss at
+SAFE-2's 27 unpushed commits (plan rev 1 to rev 14, commits 48f2e66a0
+and 954f1c542, the four counted fix commits 0f281d8bd, e1574b003, cbdc0552e
+and 9d0b072cb and their records commits), mirrored against loss at
 `claude/carbon-fork-0-1-safe-wip`, which is not a PR, never a base, and is
-deleted when PR 53's head is pushed (at f97cdf414 on 2026-10-29, the plan's rev
-1 commit, by `git ls-remote origin`; amended 2026-10-29, review fold: A-RA3-m4,
-B-M4). This plan is a new file beside
-fork/safe/safe2-plan.md, which this planner does not edit; its dated pointer
-marks come with the fold commit (section 2). Upstream was read at its tip
-9192ee003, fetched 2026-10-29 (section 0.1). Records and design text only: no
-toolchain, prelude, golden, program or conformance change, no build of any kind,
-the nightly compiling examples and probes only (R30).
+deleted when PR 53's head is pushed (at f97cdf414 on 2026-10-29, the plan's
+rev 1 commit, by `git ls-remote origin`; amended 2026-10-29, review fold:
+A-RA3-m4, B-M4; at 782a5b740, rev 2's commit, when rev 3 was written, a moved
+head reported, amended 2026-10-29, review fold: RR1-m2). This plan is a new file
+beside fork/safe/safe2-plan.md, which this planner does not edit; its dated
+pointer marks come with the fold commit (section 2). Upstream was read at its
+tip 9192ee003, fetched 2026-10-29 (section 0.1). Records and design text only:
+no toolchain, prelude, golden, program or conformance change, no build of any
+kind, the nightly compiling examples and probes only (R30).
 
 **Items:** W-347 to W-351 and W-353 (PR 67's ledger,
 fork/inventory/work-items.json on `claude/carbon-fork-0-1-rg1` at 56e2e5bbd),
@@ -51,10 +55,11 @@ every probe of section 0.3.
 ## Sections
 
 -   Section 0, audit: section 0.0 the root cause; upstream at the tip; the
-    toolchain and the prelude; the probes, 91 re-run, 23 new and rev 2's 11,
-    with the IR order of each; PR 67's checks; every sentence on the pages and
-    in the records that states the exemption; the interlocks; the collisions;
-    the id re-scan; SAFE-2's findings that the tree does not yet carry.
+    toolchain and the prelude; the probes, 91 re-run, 23 new, rev 2's 11 and
+    the re-review's 4 of rev 3, with the IR order of each; PR 67's checks;
+    every sentence on the pages and in the records that states the exemption;
+    the interlocks; the collisions; the id re-scan; SAFE-2's findings that the
+    tree does not yet carry.
 -   Section 1, design: the three models weighed, decisions D-SAFE3-1 to
     D-SAFE3-12, and the noalias claim decided probe by probe.
 -   Section 2, spec: the conventions and the index of every text change; the
@@ -62,9 +67,9 @@ every probe of section 0.3.
 -   Section 3, commits and reviews; section 4, the worked-example matrix;
     section 5, scoreboard; section 6, churn and collisions; section 7, risks
     and rejected alternatives; section 8, verification and the not-run list.
--   The review fold record of rev 2, the hand-off notes, then Appendix A
-    (pages), Appendix B (records), Appendix C (the PR texts and PR 67's note
-    commit) and Appendix D (trunk's fork/ORCHESTRATION.md).
+-   The review fold records of rev 2 and rev 3, the hand-off notes, then
+    Appendix A (pages), Appendix B (records), Appendix C (the PR texts and
+    PR 67's note commit) and Appendix D (trunk's fork/ORCHESTRATION.md).
 
 ## §0 Audit
 
@@ -113,7 +118,8 @@ while it stands the Strict checker checks it by what it does: a left operand
 whose type is not copy-represented at every depth, which the interim `=`
 initializes in place in whole or in part, has its whole right operand evaluated
 while it is bound. Under that model the noalias claim is true for every one of
-the 125 probes of section 0.3 (section 1.3). Today's lowering emits no `noalias`
+the 129 probes of section 0.3 (section 1.3; rev 2 counted 125, amended
+2026-10-29, review fold: RR1-M1). Today's lowering emits no `noalias`
 on any Carbon function (no probe's IR carries it), so no program has undefined
 behavior today; the model's claim must still be true under the model, and now
 is.
@@ -133,9 +139,40 @@ the interim `=` initializes in place, which D-SAFE2-3's own one-element clause
 already states for borrowed objects ("When the copy is a one-element aggregate,
 its element's own representation decides", mutation_safety.md:620-622), so a
 type is stored once from a complete value only when it is copy-represented at
-every depth, itself and, for a one-element tuple or struct, its element in turn
-(f02: one store of `{ { i32 } }`), and every other type is under the interim
-rule (amended 2026-10-29, review fold: A-RA3-B1).
+every depth, itself and, where its representation is a one-element tuple or
+struct's, its element in turn (f02: one store of `{ { i32 } }`), and every
+other type is under the interim rule (amended 2026-10-29, review fold:
+A-RA3-B1; amended 2026-10-29, review fold: RR1-m1, where this read "for a
+one-element tuple or struct, its element in turn").
+
+Rev 2 stated the interim rule's second condition over the carriers of the left
+operand's place, "uses no carrier of the left operand's place or of a place that
+overlaps it", and T3 defines a carrier as "a pointer value, `ref` binding, value
+binding or loan-carrying class value that holds the loan"
+(temporal_safety.md:508-510), so an owner, a local `var`, a `var` parameter or a
+`returned var` (T1, temporal_safety.md:420-421), is none:
+`x = {.a = x.b, .b = x.a}` passed all three conditions, the `=` was exempt and
+formed no loan of its own, and T4, which the same paragraph said rejects it, had
+nothing to check, so PRR3-B1's local shape was accepted while a `var` parameter,
+a `returned var` of a class and a class local each print the in-place
+order's 2 2, 4 4 and 6 6 (n03; the re-review's RR1-M1). The model was the one
+section 1.1 states, nothing but the operand reaching the referent while it is
+bound, and the condition named only part of the paths it rules out, T3's word
+standing in for every path to the place: the root cause is the same as RA3-B1's,
+a narrower term in place of the property. The second condition is therefore
+stated over every path the place kinds name, the owner and every carrier, "reads
+or uses no part of the left operand's place, or of a place that overlaps it,
+through its owner or a carrier of it (T1, T3)", and the gloss of what qualifies
+keeps only "the body's closed places that do not overlap the left operand's
+place". The re-review also found the keying's recursion stated only through a
+one-element tuple or struct, while an adapter of one is converted part by part
+into the storage too (toolchain/check/convert.cpp:1467-1518 at 9192ee003; n02's
+SemIR initializes `C`'s `Copy` result into `(q as {.c: C}).c` from
+`(p as {.c: C}).c`), so "copy-represented at every depth" is now defined by
+representation, the type, or an adapter, `const` or `MaybeUnformed` of one
+(D-SAFE3-5; RR1-m1). Where this plan says a one-element tuple, struct or
+aggregate in the keying, it means a type whose representation is one's, such an
+adapter included (added 2026-10-29, review fold: RR1-M1, RR1-m1).
 
 ### §0.1 Upstream at the tip
 
@@ -162,10 +199,12 @@ this plan quotes:
 | core/prelude int, uint, float, cpp/int, operators/arithmetic, bitwise, as, string | none |
 | core/prelude/operators/index.carbon | 6d80ceb58 "Add the `IndirectIndexWith` interface to the prelude" (upstream PR 7974) |
 
-The quotes, at 9192ee003; every one is also a row of section 0.4's 100-row
-check, which passes at the tip (19 of them fail at the cut, the moved lines
-named above; rev 1's 67 rows and the fixer's 33, amended 2026-10-29, review
-fold: A-RA3-M1, A-RA3-m3, B-m1):
+The quotes, at 9192ee003; every one is also a row of section 0.4's 110-row
+check, which passes at the tip (29 of them fail at the cut, the moved lines
+named above; rev 1's 67 rows, the fixer's 33 and the 10 toolchain lines of
+section 0.2 that rev 3 adds, amended 2026-10-29, review fold: A-RA3-M1,
+A-RA3-m3, B-m1; amended 2026-10-29, review fold: RR1-m1, where this read
+"100-row" and "19 of them"):
 
 -   p005434:83 "The address of a `ref` binding is `nocapture` and
     `noalias`."; :302-316, the operators that take a `ref` operand: "the
@@ -321,11 +360,37 @@ the same at all three (amended 2026-10-29, review fold: B-m1, where this read
     copy-represented one-element tuple or struct whose element is not
     copy-represented has that element initialized in place inside the
     destination (ra01, ra04, ra05), so only a type that is copy-represented at
-    every depth, itself and, for a one-element tuple or struct, its element in
-    turn, is stored once from a complete value (s01, s13's struct, s16, f02)
-    (amended 2026-10-29, review fold: A-RA3-B1, where this read "a
-    copy-represented type is initialized by a copy of a complete value, every
-    other type in place").
+    every depth, itself and, where its representation is a one-element tuple
+    or struct's, its element in turn, is stored once from a complete value
+    (s01, s13's struct, s16, f02) (amended 2026-10-29, review fold: A-RA3-B1,
+    where this read "a copy-represented type is initialized by a copy of a
+    complete value, every other type in place"; amended 2026-10-29, review
+    fold: RR1-m1, where this read "for a one-element tuple or struct").
+-   toolchain/check/type_completion.cpp:762-770, :786-788 and :806-826, a
+    representation that wraps another: ":762 // The object and value
+    representation of an adapter are the object and value / :763 //
+    representation of its adapted type.", ":786 // The object and value
+    representation of `const T` are the same as those of / :787 // `T`." and
+    ":806 // `MaybeUnformed(T)` has the same value representation as `T` if
+    that value / :807 // representation preserves all the bytes of the value,
+    including any padding / :808 // bits. Otherwise we need to use a different
+    representation."; and toolchain/check/convert.cpp:1467-1518, the adapter
+    case of `PerformBuiltinConversion`: ":1467 // If a class adapts a tuple or
+    struct, we convert each of its parts when / :1468 // there's no other
+    conversion going on (the source and target types are the / :1469 //
+    same).", converting the value and the initializing target to the adapted
+    type and its parts into the target's parts. So an adapter of a one-element
+    tuple or struct whose element is not copy-represented is copy-represented
+    and initialized in part in place, as the struct is (n02's SemIR for
+    `*q = *p` with `class A { adapt {.c: C}; }`: `C`'s `Copy` called with
+    `init %C to` the left operand's `(q as {.c: C}).c` and `self` from
+    `(p as {.c: C}).c`), and "copy-represented at every depth" reads the
+    representation through an adapter, `const` and `MaybeUnformed` (D-SAFE3-5).
+    At the cut these lines are type_completion.cpp:767, :791 and :811 and
+    convert.cpp:1461, in the fork at 0f22798fb :768, :792, :812 and :1597,
+    type_completion.cpp's text the same and convert.cpp's comment and
+    conversion the same, its "in copy of" diagnostic rendered otherwise before
+    2c9739799 (added 2026-10-29, review fold: RR1-m1).
 -   toolchain/check/type_completion.cpp:564-583: a struct or tuple of one
     element has a copy value representation of a one-element aggregate of its
     element's representation (:572-578, ":576 // TODO: Consider doing the same
@@ -382,9 +447,15 @@ one, the four aborts being the three crashes and s14b. Review A's seven probes
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/reviewA/probe/,
 re-run identical in fixer/probe/ra/) and the fixer's four (f01 to f04, in
 fixer/probe/new/) make 125; fixer/probe/INDEX.tsv lists the eleven (added
-2026-10-29, review fold: A-RA3-B1, A-RA3-m6). The new probes, with the IR order
-of the function that does the operation (`p` aliasing `q` where the program
-passes one place twice):
+2026-10-29, review fold: A-RA3-B1, A-RA3-m6). The focused re-review's four (n01
+to n04, in
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/rr1/probe/,
+its INDEX.tsv listing them) make 129; the rev 3 fixer re-ran them from copies in
+fixer1/probe/rr1/ by fixer1/bin/run.sh, n02 and n03 printing what the re-review
+recorded and n01 and n04 the same but for the uninitialized values the nightly's
+`poison` store leaves, and dumped n02's SemIR (added 2026-10-29, review fold:
+RR1-M1, RR1-m1). The new probes, with the IR order of the function that does the
+operation (`p` aliasing `q` where the program passes one place twice):
 
 | probe | shape | IR order | output |
 | --- | --- | --- | --- |
@@ -419,6 +490,10 @@ passes one place twice):
 | f02 | copy-represented at every depth: `{.s: {.n: i32}}` from `p->s.n + 1` and from `Bump(p)`; `{.o: Core.Optional(i32*)}` | one `store { { i32 } }` after the load or the call; load, the prelude's copy, one store | 2 13 7 |
 | f03 | class `{.data: i32, .next: i32*}`: `c = {.data = 42, .next = &c.data}`; the remedy `e.data = 43; e.next = &e.data;` | the pointer stored, nothing read through it during the `=` | 44 45 |
 | f04 | ra01's remedies on the nightly: `let v: W = {...}; y = v;` on a local; each element read into a local `i32` and assigned on its own | the first followed by `store poison` over `y`; the second two loads, then two stores | 2 2; 2 1 |
+| n01 (rev 3) | `class A { adapt W; }`: `*q = {.s = {.a = (*p as W).s.b, .b = (*p as W).s.a}} as A` | both loads of `p` into a temporary, the temporary copied into `q`, then `store poison` over `*q` (the `as` forms the value first) | order-only (an undefined value, 3) |
+| n02 (rev 3) | `class A { adapt {.c: C}; }`, `C` a two-field class with a user `Copy`: `*q = *p` | the nightly crashes in lowering; the SemIR calls `C`'s `Copy` with `init %C to` `(q as {.c: C}).c` and `self` from `(p as {.c: C}).c` | crash; the SemIR is the evidence |
+| n03 (rev 3) | reads through the owner, no carrier: a `var` parameter `x = {.a = x.b, .b = x.a}`, a `returned var` of a class `r = {.a = r.b, .b = r.a}`, a class local `d = {.a = d.b, .b = d.a}` | load `x.1`, store `x.0`, load `x.0`, store `x.1`; the same for `return` and for `d` | 2 2; 4 4; 6 6 |
+| n04 (rev 3) | `let v: W = y; y = {.s = {.a = v.s.b, .b = v.s.a}}`; the same with `v` bound from `*p` and the left operand `*q` | `v`'s elements copied into a temporary at the `let`, then the stores, then `store poison` | order-only |
 
 Facts the probes give, each with the probes that show it: the call-based
 operators evaluate the left operand's place, then the right operand, then the
@@ -428,9 +503,13 @@ left operand that is copy-represented at every depth once from a complete value
 (s01, s13's struct, s16, q06a, q06f, w4, f02); it initializes any other type in
 place, a copy-represented one-element aggregate whose element is not
 copy-represented included (ra01, ra04, ra05; rev 1 said "a copy-represented
-left operand", amended 2026-10-29, review fold: A-RA3-B1), one element at a
+left operand", amended 2026-10-29, review fold: A-RA3-B1) and so is an adapter
+of one (n02's SemIR; added 2026-10-29, review fold: RR1-m1), one element at a
 time, an element that is a reference expression read at its own position and
-a computed one earlier (v09 to v11, v14, v24, s03 to s05, s15), passing the left
+a computed one earlier (v09 to v11, v14, v24, s03 to s05, s15), whether the
+right operand reaches the left operand through a pointer or through its owner,
+a `var` parameter, a `returned var` or a local, with no carrier at all (n03:
+2 2, 4 4, 6 6; added 2026-10-29, review fold: RR1-M1), passing the left
 operand or an element as the return slot of a call or a `Copy` or `ImplicitAs`
 (b_p8, a_p11, q06b, z1, z2, x2, s06, s07, s08, s14), a call initialized in
 place receiving its place only once its arguments are evaluated (v04 to v06,
@@ -451,10 +530,12 @@ placed by name, s12b), a wrong-code defect of the nightly that this plan does
 not file (section 8's not-run list); and after the in-place `=` of a
 copy-represented one-element aggregate whose element is not copy-represented the
 nightly stores `poison` of the whole object over the left operand (ra01, ra03 to
-ra06, f04), a second wrong-code defect, so those outputs are order-only too, the
-IR order being the evidence, and ra06's and f04's 2 2 for the formed-first
-remedy is the defect's, not the remedy's (added 2026-10-29, review fold:
-A-RA3-B1); v17, b_p7 and y1 show no destructor at the `=`.
+ra06, f04, and the re-review's n01 and n04), a second wrong-code defect, so
+those outputs are order-only too, the IR order being the evidence, and ra06's
+and f04's 2 2 for the formed-first remedy is the defect's, not the remedy's
+(added 2026-10-29, review fold: A-RA3-B1; n01 and n04 added 2026-10-29, review
+fold: RR1-m1), and n02's lowering crashes, its SemIR being the evidence; v17,
+b_p7 and y1 show no destructor at the `=`.
 
 ### §0.4 PR 67's quote and silence checks
 
@@ -488,6 +569,15 @@ after, against /home/user/carbon-lang at 9192ee003:
     safe2-rev10/amend3/ 97, 120 and 5; 284 (the planner's logs/q284.tsv) and
     89 (logs/c89.tsv); the 67, 33 and 100 above; every one 0 failed (added
     2026-10-29, review fold: A-RA3-M1, A-RA3-m3, B-m1).
+-   Re-run by the rev 3 fixer on 2026-10-29 from a detached worktree of
+    56e2e5bbd at /dev/shm/safe2-fixer1/rg1, removed after, at 9192ee003
+    (fetched again, nothing newer): 273 and 89; the H1 subsets 97, 120 and 5;
+    284 and 89; rev 3's 10 toolchain lines of section 0.2
+    (fixer1/logs/safe3-rev3-quotes.tsv: type_completion.cpp:762-763, :786-787
+    and :806-808, convert.cpp:1467-1469) and the 110 of all three revisions
+    (fixer1/logs/safe3-quotes-all3.tsv); every one 0 failed; at the cut
+    c1e83b0b7 all 10 of rev 3's fail, the lines moved, and 29 of the 110
+    (added 2026-10-29, review fold: RR1-m1).
 
 So no break condition of H1.8 to H1.12 has fired, H1.13's correction stands,
 and every Appendix C.2 anchor of PR 67's files is found once at 56e2e5bbd
@@ -546,7 +636,7 @@ counts; amended 2026-10-29, review fold: B-M2).
 | structure | changes under SAFE-3 |
 | --- | --- |
 | T2 (forming loans), T3, T5, T6, T7, the Store rule | no: a user-written operator's `ref self` is a T2 formation as SAFE-2 has it; the interim rule uses T4 as it stands |
-| T4 (conflicts) | no change of text: the interim `=`'s right operand's use of a carrier of the left operand's place is a conflict with the operand's checked reborrow, `StrictExclusiveBorrowConflict` for a read through the owner and `StrictSharedBorrowInvalidated` for a loan the use forms, as T4 already reports them |
+| T4 (conflicts) | no change of text: the interim `=`'s right operand's read or use of the left operand's place through its owner or a carrier of it is a conflict with the operand's checked reborrow, `StrictExclusiveBorrowConflict` for a read through the owner (n03) and `StrictSharedBorrowInvalidated` for a loan the use forms, as T4 already reports them (amended 2026-10-29, review fold: RR1-M1, where this read "the interim `=`'s right operand's use of a carrier of the left operand's place", which left the owner's read it names out) |
 | T8 (codegen honesty) | no: T8 emits `noalias` only where established against every writer, never on an open place; under the interim rule every accepted in-place `=` meets it |
 | the loan kinds, closed and open places | no; the rule is stated in their terms |
 | D-SAFE2-3 to D-SAFE2-5, the value-representation keying of borrowed objects | no change; the re-derivation relies on it: a right operand that is not copy-represented, or a one-element aggregate whose element is not, holds a borrowed object whose frozen loan T4 and M3 check, and the interim rule keys the in-place case on the same representation read at every depth, as D-SAFE2-3's one-element clause reads it (mutation_safety.md:620-622; type_info.cpp:82-89, convert.cpp:283-297; amended 2026-10-29, review fold: A-RA3-B1, where this read "a pointer-represented right operand is a borrowed object" and "keys the in-place case on the same representation (type_info.cpp:82-89)") |
@@ -570,7 +660,10 @@ PR 67 56e2e5bbd, PR 68 097c76473, and `claude/carbon-fork-0-1-safe-wip`
 0f22798fb, all as the brief states; re-checked by the fixer on 2026-10-29, the
 18 heads and trunk unchanged and the mirror moved to f97cdf414, this plan's rev
 1 commit, which the orchestrator mirrored (a moved head, reported; amended
-2026-10-29, review fold: A-RA3-m4, B-M4). Trunk is **abdc798c6**, a descendant
+2026-10-29, review fold: A-RA3-m4, B-M4); re-checked by the rev 3 fixer on
+2026-10-29, the 18 heads and trunk unchanged and the mirror moved to 782a5b740,
+rev 2's commit (a moved head, reported; added 2026-10-29, review fold: RR1-m2).
+Trunk is **abdc798c6**, a descendant
 of 1c83422a0 by one records-only commit ("ORCHESTRATION: SAFE-2 stopped at its
 plan rev 14 on PRR3-B1; SAFE-3 planned to re-derive the built-in operator
 exemption", fork/ORCHESTRATION.md only), whose text Appendix D's anchors are
@@ -597,7 +690,11 @@ placeholders filled at their real widths, to a detached scratch worktree of
 0f22798fb at /dev/shm/safe3-fixer/wt and made scratch commit 3cff85911 there
 (on no branch; removed after): its conflict sets against trunk abdc798c6 and
 the 18 heads are again exactly 0f22798fb's, PR 53's own head none (amended
-2026-10-29, review fold: B-m2).
+2026-10-29, review fold: B-m2). For rev 3 the fixer did the same with
+fixer1/bin/dryrun.py at /dev/shm/safe3-fixer1/wt, scratch commit f5487ba94 (on
+no branch; removed after): its conflict sets against trunk abdc798c6 and the
+18 heads, all 19, are exactly 0f22798fb's, PR 53's own head 2407efa74 none
+(added 2026-10-29, review fold: RR1-M1).
 
 ### §0.8 The id re-scan
 
@@ -613,7 +710,10 @@ next free id, **W-366**, is the watch item of the interim `=` (D-SAFE3-9). No F
 id is minted; F-013 is amended by dated marks. Repeated by the fixer on
 2026-10-29 over the same 167 refs and every worktree: the same ids, W-366 now
 appearing only in this plan (fork/safe/safe3-plan.md at f97cdf414 on the branch
-and the mirror), no ledger past W-363; rev 2 mints no id.
+and the mirror), no ledger past W-363; rev 2 mints no id. Repeated by the rev 3
+fixer on 2026-10-29 over the 167 refs and every worktree: the same, W-366 only
+in this plan on the branch and the mirror; rev 3 mints no id (added
+2026-10-29, review fold: RR1-M1).
 
 ### §0.9 SAFE-2's findings that the tree does not carry
 
@@ -709,16 +809,19 @@ or in part, a left operand whose type is not copy-represented at every depth, so
 while that stands, for a left operand whose type is not copy-represented at
 every depth, the whole right operand counts as evaluated while the left operand
 is bound, and the `=` keeps the exemption only when its right operand reads no
-open place and passes no carrier of one to a call, uses no carrier of the left
-operand's place or of a place that overlaps it, and, on an open place, runs no
-code written outside core/prelude (amended 2026-10-29, review fold: A-RA3-B1,
-A-RA3-m3, B-M3, where this read "exactly when nothing but the operand can reach
-its referent while it is bound", "every other operand is a copy or a borrowed
-object under its frozen loan" and "Today's toolchain initializes a left operand
-that is not copy-represented in place, so while that deviation stands such an
-`=` keeps the exemption only when its right operand reads no open place, uses no
-carrier of the left operand's place and, on an open place, runs no code written
-outside core/prelude").
+open place and passes no carrier of one to a call, reads or uses no part of the
+left operand's place, or of a place that overlaps it, through its owner or a
+carrier of it (T1, T3), and, on an open place, runs no code written outside
+core/prelude (amended 2026-10-29, review fold: A-RA3-B1, A-RA3-m3, B-M3, where
+this read "exactly when nothing but the operand can reach its referent while it
+is bound", "every other operand is a copy or a borrowed object under its frozen
+loan" and "Today's toolchain initializes a left operand that is not
+copy-represented in place, so while that deviation stands such an `=` keeps the
+exemption only when its right operand reads no open place, uses no carrier of
+the left operand's place and, on an open place, runs no code written outside
+core/prelude"; amended 2026-10-29, review fold: RR1-M1, where this read "uses no
+carrier of the left operand's place or of a place that overlaps it", which
+exempted `x = {.a = x.b, .b = x.a}`, a read through the owner, section 0.0).
 
 ### §1.2 Decisions
 
@@ -727,8 +830,10 @@ Each under R29, with its break condition.
 -   **D-SAFE3-1 — The baseline.** Upstream at 9192ee003 (section 0.1): no
     quoted passage changed since SAFE-2 read it, the one moved file
     (details.md, by one line) cited at the tip's numbers, PR 67's 273 quotes
-    and 89 checks passing, and this plan's 100 quote rows passing (rev 1's 67
-    and rev 2's 33; amended 2026-10-29, review fold: A-RA3-M1, A-RA3-m3). Break
+    and 89 checks passing, and this plan's 110 quote rows passing (rev 1's 67,
+    rev 2's 33 and rev 3's 10; amended 2026-10-29, review fold: A-RA3-M1,
+    A-RA3-m3; amended 2026-10-29, review fold: RR1-m1, where this read "100").
+    Break
     condition: the implementer's re-fetch finds a newer tip under which a line
     this plan quotes fails; the block that rests on it stops and this plan is
     revised for it before its text is committed.
@@ -862,19 +967,38 @@ Each under R29, with its break condition.
     D-SAFE3-3: for a left operand whose type is not copy-represented at every
     depth, the whole right operand counts as evaluated while the left operand is
     bound, and the `=` keeps the exemption only when its right operand reads no
-    open place and passes no carrier of one to a call, uses no carrier of the
-    left operand's place or of a place that overlaps it, and, on an open place,
-    runs no code written outside core/prelude; these are conditions (i), (ii)
-    and (iii), and the sentence is the one every copy of the rule carries
-    (section 8 item 4 checks it; amended 2026-10-29, review fold: A-RA3-B1,
-    B-M3, where this read "for a left operand whose type is not
-    copy-represented"). A type is copy-represented at every depth when it is
-    copy-represented and, if it is a one-element tuple or struct, its element is
-    copy-represented at every depth: `i32`, `{.n: i32}`, `{.s: {.n: i32}}`,
-    `Core.Optional(i32*)` and `{.o: Core.Optional(i32*)}` are (f02), `{.s: {.a:
-    i32, .b: i32}}` and `((i32, i32),)` are not (ra01, ra04). Otherwise it is a
+    open place and passes no carrier of one to a call, reads or uses no part of
+    the left operand's place, or of a place that overlaps it, through its owner
+    or a carrier of it (T1, T3), and, on an open place, runs no code written
+    outside core/prelude; these are conditions (i), (ii) and (iii), and the
+    sentence is the one every copy of the rule carries (section 8 item 4 checks
+    it; amended 2026-10-29, review fold: A-RA3-B1, B-M3, where this read "for a
+    left operand whose type is not copy-represented"; amended 2026-10-29,
+    review fold: RR1-M1, where (ii) read "uses no carrier of the left operand's
+    place or of a place that overlaps it", T3's carriers leaving the owner out,
+    section 0.0). Condition (ii) covers every path to the place that the place
+    kinds name, the owner and every carrier, and with (i) and (iii) every path
+    by which the right operand can reach the referent: an open place only
+    through an open read or a carrier passed to a call, or through code written
+    outside core/prelude, and a closed place only through its owner or a
+    carrier, every carrier of a loan on it being in the body's view by the
+    definition of a closed place (temporal_safety.md:134-143). A type is
+    copy-represented at every depth when it is copy-represented and, if its
+    representation is a one-element tuple or struct's (the type, or an adapter,
+    `const` or `MaybeUnformed` of one), its element is copy-represented at
+    every depth (type_completion.cpp:572-578, :762-770, :786-788 and
+    :806-826, convert.cpp:283-297 and :1467-1518 at 9192ee003): `i32`,
+    `{.n: i32}`, `{.s: {.n: i32}}`, `Core.Optional(i32*)` and
+    `{.o: Core.Optional(i32*)}` are (f02), `{.s: {.a: i32, .b: i32}}`,
+    `((i32, i32),)` and a class that adapts `{.s: {.a: i32, .b: i32}}` or
+    `{.c: C}` are not (ra01, ra04, n01, n02) (amended 2026-10-29, review fold:
+    RR1-m1, where this read "if it is a one-element tuple or struct, its
+    element is copy-represented at every depth" and "`{.s: {.a: i32, .b: i32}}`
+    and `((i32, i32),)` are not (ra01, ra04)"). Otherwise it is a
     `ref` binding under the general rule, a checked reborrow on a closed place
-    (T4: `x = {.a = x.b, .b = x.a}` and `y = {.s = {.a = y.s.b, .b = y.s.a}}`,
+    (T4: `x = {.a = x.b, .b = x.a}`, the right operand reading the left
+    operand's place through its owner, as n03's `var` parameter, `returned var`
+    and class local do, and `y = {.s = {.a = y.s.b, .b = y.s.a}}`,
     `StrictExclusiveBorrowConflict`; `c = Make(&c.a)` and `c = {.data = 42,
     .next = &c.data}`, `StrictSharedBorrowInvalidated`) and M3(d)'s through a
     shared path (`*q = {.a = p->b, .b = p->a}` and ra01's `*q = {.s = {.a =
@@ -1037,17 +1161,20 @@ program:
 | a_p07, b_p1 to b_p3 | as their operators classify | the right operand's side effects end before the call |
 | q06a, q06f, w4 (`i32`), s01, s16, s13's struct, f02 | copy-represented at every depth, by copy (rev 1: "copy-represented"; amended 2026-10-29, review fold: A-RA3-B1) | one store of a complete value; w4's user `ImplicitAs` makes it user-written by D-SAFE3-4 |
 | v09, v11, v14, s03 to s05, s15, ra01, ra04, ra05 (through aliasing `T*`) | M3(d), `StrictInvalidatingThroughShared` (v09, v11 and ra05 also M3(c)) | rejected: the right operand reads an open place; ra01, ra04 and ra05 are copy-represented one-element aggregates whose element is not, under the interim rule since rev 2 (added 2026-10-29, review fold: A-RA3-B1) |
-| v10, v24, s17, ra01's and ra04's locals | T4, `StrictExclusiveBorrowConflict` | rejected: the right operand uses the left operand's place |
+| v10, v24, s17, ra01's and ra04's locals, n03 (a `var` parameter, a `returned var` and a class local) | condition (ii) fails, the right operand reading the left operand's place through its owner, so the `=` is a checked reborrow and T4 reports `StrictExclusiveBorrowConflict` (rev 2's (ii), over carriers only, exempted these; amended 2026-10-29, review fold: RR1-M1) | rejected: the right operand reads the left operand's place through its owner while the reborrow is live |
 | ra03 | M3(d) through `T*`: user code (`Peek`) in the right operand of an in-place `=` | rejected |
 | ra06, f04's first (the formed-first remedy for ra01's shape) | the interim rule accepts (the right operand reads only the body's value `v`); M3 decides | nothing in the right operand reaches the left operand's place; the nightly's `poison` store makes the output order-only (section 0.3) |
-| ra07 | `v` is a value binding of `x`, a borrowed object under a frozen loan, so the `=` is `StrictSharedBorrowInvalidated` (T4) before the interim rule applies; the gloss excludes it ("values that carry no loan on the left operand's place") | rejected |
+| ra07, n04's local (rev 3) | `v` is a value binding of `x` (of `y.s` for n04's `W`), a borrowed object under a frozen loan, so the `=` is `StrictSharedBorrowInvalidated` (T4) before the interim rule applies; condition (ii) fails too, `v` being a carrier (T3), and the gloss excludes it ("values that carry no loan on it"; rev 2's gloss read "values that carry no loan on the left operand's place", amended 2026-10-29, review fold: RR1-M1) | rejected |
+| n04's alias (rev 3) | `let v: W = *p` binds a borrowed object, `W`'s element, on an open place: `StrictBorrowFromShared` (D-SAFE2-3's one-element clause) | rejected at the `let` |
+| n01 (rev 3) | `class A { adapt W; }` is not copy-represented at every depth (D-SAFE3-5, RR1-m1), so the interim rule applies, and the right operand reads `*p`, an open place: M3(d), `StrictInvalidatingThroughShared` | rejected; the nightly forms the value first through `as` and stores `poison` after (order-only) |
+| n02 (rev 3) | `class A { adapt {.c: C}; }` is not copy-represented at every depth, and `*q = *p` initializes `C`'s part in place by a user `Copy`: D-SAFE3-3 (b), `StrictBorrowFromShared`, and the interim rule's (i) and (iii) | rejected |
 | f01 | designed, `W`'s `other` holding its element as a borrowed object: `StrictBorrowFromShared` through `T*` | the nightly copies the element first, which the design does not rely on |
 | f03 | the interim rule (ii) rejects `c = {.data = 42, .next = &c.data}`, T4 `StrictSharedBorrowInvalidated`; the field-by-field remedy is accepted | nothing reads through the carrier during the `=`, a cost of the stricter criterion |
 | v25 | M3 (`Core.Optional(i32)` holds a `Core.SharedImmutable` sub-object) and the interim rule | rejected |
 | b_p8, a_p08, a_p11, q06b, z1, w1 to w3, v01 to v08, v12, v13, v15, v16, s06's `Bump`, s07, s08 | M3(d) through `T*`; on a closed place a checked reborrow | rejected through a shared path: user code or an open read in the right operand |
 | q06h | T4, `StrictSharedBorrowInvalidated` | rejected: `&c.a` is a carrier of the place |
 | a_p09, b_p5, z2 | user-written (a user `Copy` runs while bound) | rejected through a shared path |
-| q06c, z1b, w3's remedy, q06g, q06e, s09's `var` copies, s10, v24's bound-first | the interim rule accepts when the right operand reads only literals, the body's closed places and values that carry no loan on the left operand's place (T3), and prelude calls over them; M3 then decides (amended 2026-10-29, review fold: A-RA3-m1, where this read "the body's own values and literals") | nothing in the right operand can reach the left operand's place |
+| q06c, z1b, w3's remedy, q06g, q06e, s09's `var` copies, s10, v24's bound-first | the interim rule accepts when the right operand reads only literals, the body's closed places that do not overlap the left operand's place, values that carry no loan on it (T3), and prelude calls over them; M3 then decides (amended 2026-10-29, review fold: A-RA3-m1, where this read "the body's own values and literals"; amended 2026-10-29, review fold: RR1-M1, where this read "the body's closed places and values that carry no loan on the left operand's place") | nothing in the right operand can reach the left operand's place |
 | s11, s20 (the rewrite emulated) | designed, for these aggregates this design's reading of assignment.md:184 pending leads issue 686 (amended 2026-10-29, review fold: A-RA3-M1): s11 accepted; s20's `other` is a value binding of the referent | s20 rejected by D-SAFE3-3 (b): `StrictBorrowFromShared` or `StrictBorrowedObjectMutated` |
 | s06's `Whole`, s14 | M3, `StrictSharedImmutableWrite` (and M3(c) for `Optional`) | rejected |
 | s18 | the interim rule accepts (literals, a prelude call over them); M3(c) rejects the non-`Plain` class through `T*` | as M3 decides |
@@ -1091,8 +1218,14 @@ is written:
     says "realigned", "REALIGNED", "CLOSED", "re-derived" or "realignment of".
 -   `<s1>` and `<s2>`: commit 1's and commit 2's short hashes, written only in
     Appendix C and D and in section 8's records, never in the commit they name.
--   `<head>`: PR 53's dry head, the head at which section 3 step 6's re-review
-    is dry; `<c2-sha>`: the PR 67 note commit's short hash; `<fixes>`: the fix
+-   `<head>`: PR 53's dry head, the branch head after the records commit that
+    folds the dry round of section 3 step 6, the head step 8 pushes and step
+    9 (b) checks the mirror against, the round having reviewed the commit
+    before that records commit, which a stamp that names it names by its own
+    sha (amended 2026-10-29, review fold: RR1-m2, where this read "the head at
+    which section 3 step 6's re-review is dry", which left the dry round's
+    records commit out of step 8's push and failed step 9 (b));
+    `<c2-sha>`: the PR 67 note commit's short hash; `<fixes>`: the fix
     commits' short hashes, "none" if there are none; `<verdict A>` and `<verdict
     B>`: the two document reviews' verdicts with their counts; `<tip>`: the
     upstream tip of the implementer's section 8 item 6; `<time>`: the UTC time,
@@ -1138,9 +1271,10 @@ no heading, bullet, numbered item or table row to any file (section 8 item 1).
 ### §2.3 Commit 2, the records
 
 "SAFE-3 (2/2): records" edits this plan alone: the Status paragraph's first
-sentence, the one that begins "**Status:** rev" (at rev 2 it reads "**Status:**
-rev 2, 2026-10-29 -- the fixer's fold of the two plan reviews", and the
-signed-off revision the implementer works from replaces it), becomes the
+sentence, the one that begins "**Status:** rev" (at rev 3 it reads "**Status:**
+rev 3 -- NOT signed off pending re-review round 2: RR1-M1.", and the
+signed-off revision the implementer works from replaces it; amended
+2026-10-29, review fold: RR1-M1, where this quoted rev 2's), becomes the
 implementation's state, dated; and a new section 8.1, "Implementation record",
 with commit 1's hash, every measurement of section 8 as run on commit 1's tree
 (prek passes, the R31 counts before and after per file, rumdl, the dry-run's
@@ -1169,9 +1303,11 @@ paths only (R20); each message recording the prek fixpoint, the R31 counts
 before and after, rumdl, the dry run and the nightly compiles, and ending after
 a blank line with the session's two attribution trailers.
 
-1.  **Dry run.** The implementer copies this plan's scripts, the fixer's
-    bin/dryrun.py, bin/checktree.py and bin/wrap.py (section 8 item 4), to its
-    own scratch, runs dryrun.py on a fresh `git archive` of the branch head over
+1.  **Dry run.** The implementer copies this plan's scripts, the rev 3 fixer's
+    fixer1/bin/dryrun.py, checktree.py, pw.py and wrap.py (section 8 item 4;
+    amended 2026-10-29, review fold: RR1-M1, where this named the rev 2 fixer's
+    bin/, whose checktree.py checks rev 2's interim-rule sentence), to its own
+    scratch, runs dryrun.py on a fresh `git archive` of the branch head over
     docs/design and fork/, reading the texts from this plan, with the
     placeholders filled at their real widths, and gets "ALL OK" before it edits
     the worktree; a FAIL stops it at a plan revision for a ruling, never a
@@ -1182,13 +1318,17 @@ a blank line with the session's two attribution trailers.
     B, the files of section 2.2, edited by Edit or Write only (R25), the JSON by
     Edit; then prek to a fixpoint and the checks of section 8, checktree.py on
     the committed tree among them.
-3.  **SAFE-3 (2/2): records.** Section 2.3. After each SAFE-3 commit on the
-    branch, from commit 1 through the last records commit of step 6, the
-    orchestrator advances the mirror over it, `git push origin
-    <sha>:claude/carbon-fork-0-1-safe-wip` as a fast-forward (the mirror stood
-    at f97cdf414, this plan's rev 1, on 2026-10-29), and confirms it with `git
+3.  **SAFE-3 (2/2): records.** Section 2.3. After each commit on the branch
+    from this plan's rev 1 on, every plan revision included, through the last
+    records commit of step 6, the orchestrator advances the mirror over it,
+    `git push origin <sha>:claude/carbon-fork-0-1-safe-wip` as a fast-forward
+    (the mirror stood at f97cdf414, this plan's rev 1, on 2026-10-29, and at
+    782a5b740, rev 2, when rev 3 was written), and confirms it with `git
     ls-remote origin claude/carbon-fork-0-1-safe-wip`, so that no unpushed
-    commit is outside R29's safeguard (added 2026-10-29, review fold: B-M4).
+    commit is outside R29's safeguard (added 2026-10-29, review fold: B-M4;
+    amended 2026-10-29, review fold: RR1-m2, where this read "After each SAFE-3
+    commit on the branch, from commit 1", which left the plan's revisions
+    outside the mirror).
 4.  **Two whole-tree document reviews**, fresh agents, in parallel, read-only,
     over the whole tree at commit 2's head, not a diff range: every page commit
     1 and SAFE-2's commits touched and every safety page they restate,
@@ -1196,7 +1336,8 @@ a blank line with the session's two attribution trailers.
     W-365, W-366 and the six items on PR 67's ledger, this plan and
     safe2-plan.md's marks. Reviewer A, fidelity to upstream's text and to the
     toolchain's behavior: every quote re-read at a freshly fetched tip by sha,
-    PR 67's checks and this plan's 100 rows re-run, every claim about evaluation
+    PR 67's checks and this plan's 110 rows re-run (100 before rev 3), every
+    claim about evaluation
     order, thunks, conversions, in-place initialization or value representation
     checked by a nightly probe (R30) or by upstream's checker source at the tip.
     Reviewer B, soundness of the safety argument and consistency of every copy:
@@ -1296,25 +1437,28 @@ changes:
 | initialization, spatial and slices examples | `x = 1`, `x = Core.Optional(i32).Some(1)`, `s = Core.Buf(i32).Make(2, 0)`, `total += s[i]`, `++i`, `a[2] = 30`, `total += x` | unchanged |
 | `Core.Guarded`, EX-M-3, the union examples | `self->busy = true`, `*q = 1`, `u.n = 0x1234` | unchanged |
 
-New rows, the probe shapes:
+New rows, the probe shapes; a `StrictInvalidatingThroughShared` that rejects a
+`Plain` type's operation, which neither of the message's first two forms
+describes, takes A.23's third message form, and each such row says so (amended
+2026-10-29, review fold: RR1-m3):
 
 | program | HEAD | SAFE-3 (deviation standing) | designed | decided by |
 | --- | --- | --- | --- | --- |
-| swap on a local, `x = {.a = x.b, .b = x.a}` | accepted, prints 2 2 | `StrictExclusiveBorrowConflict` (T4); remedy `let v: T = {...}; x = v;` prints 2 1 | accepted, 2 1 | v10, v24, s17, s10 |
-| swap through aliasing `T*` to a `Plain` struct, `*q = {.a = p->b, .b = p->a}` | accepted, 2 2 | `StrictInvalidatingThroughShared` (M3(d)) | accepted, 2 1 | s03, s04, s05, s11 |
+| swap on a local, `x = {.a = x.b, .b = x.a}`; the same through the owner of a `var` parameter, a `returned var` of a class and a class local (rev 3) | accepted, prints 2 2 (n03: 2 2, 4 4, 6 6) | `StrictExclusiveBorrowConflict` (T4, the interim rule's (ii) failing on the read through the owner; rev 2's (ii) exempted it, amended 2026-10-29, review fold: RR1-M1); remedy `let v: T = {...}; x = v;` prints 2 1 | accepted, 2 1 | v10, v24, s17, s10, n03 |
+| swap through aliasing `T*` to a `Plain` struct, `*q = {.a = p->b, .b = p->a}` | accepted, 2 2 | `StrictInvalidatingThroughShared` (M3(d)), A.23's third message form | accepted, 2 1 | s03, s04, s05, s11 |
 | the same for v09's class `C`, which is not `Plain` | `StrictInvalidatingThroughShared` (M3(c)) | the same | the same | v09 |
-| `*q = *p` through shared pointers to a pointer-represented type, or to a one-element aggregate of one (rev 2) | accepted (a `Plain` struct) | `StrictBorrowFromShared` | the same | s03, s20, f01 |
+| `*q = *p` through shared pointers to a pointer-represented type, or to a one-element aggregate of one (rev 2), or to an adapter of either (rev 3) | accepted (a `Plain` struct) | `StrictBorrowFromShared` | the same | s03, s20, f01, n02 |
 | `x = x` for such a type | accepted | `StrictBorrowedObjectMutated` | the same | s20 |
-| swap inside a copy-represented one-element aggregate through aliasing `W*`, `*q = {.s = {.a = p->s.b, .b = p->s.a}}`, `W = {.s: {.a: i32, .b: i32}}`; the same for `((i32, i32),)` and `{.c: C}` (added 2026-10-29, review fold: A-RA3-B1) | accepted, 2 2 | `StrictInvalidatingThroughShared` (M3(d)); `{.c: C}` also M3(c); remedy: each element read into a local and assigned on its own (f04: 2 1) | accepted, 2 1 | ra01, ra04, ra05, f04 |
+| swap inside a copy-represented one-element aggregate through aliasing `W*`, `*q = {.s = {.a = p->s.b, .b = p->s.a}}`, `W = {.s: {.a: i32, .b: i32}}`; the same for `((i32, i32),)` and `{.c: C}` (added 2026-10-29, review fold: A-RA3-B1) | accepted, 2 2 | `StrictInvalidatingThroughShared` (M3(d)), A.23's third message form for `W` and `((i32, i32),)`; `{.c: C}` also M3(c); the same for a class that adapts `W` (n01, rev 3); remedy: each element read into a local and assigned on its own (f04: 2 1) | accepted, 2 1 | ra01, ra04, ra05, f04, n01 |
 | the same on a local, `y = {.s = {.a = y.s.b, .b = y.s.a}}` | accepted, 4 4 | `StrictExclusiveBorrowConflict` (T4) | accepted | ra01, ra04 |
 | self-referential class assignment, `c = {.data = 42, .next = &c}` (added 2026-10-29, review fold: A-RA3-m6) | accepted | `StrictSharedBorrowInvalidated` (T4, the carrier `&c`); remedy `c.data = 42; c.next = &c;` | accepted | f03 |
-| in-place call, `*q = {.a = 1, .n = F(p)}` | accepted | `StrictInvalidatingThroughShared`; remedy: call first | accepted | w1, w2, w3, z1b |
+| in-place call, `*q = {.a = 1, .n = F(p)}` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form for a `Plain` struct; remedy: call first | accepted | w1, w2, w3, z1b |
 | `c = Make(&c.a)` on a local | accepted | `StrictSharedBorrowInvalidated` | accepted | q06h |
-| thunk conversion, `*q += e` with a user's `ImplicitAs(i32)` | accepted | `StrictInvalidatingThroughShared`; remedy `*q += e as i32` | the same | r3_thunk, a_p06, a_p13, q03, x1 |
-| `*q = e` into an `i32` with a user's `ImplicitAs` | accepted | `StrictInvalidatingThroughShared` (D-SAFE3-4) | the same | w4 |
+| thunk conversion, `*q += e` with a user's `ImplicitAs(i32)` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form naming the user's `Convert`; remedy `*q += e as i32` | the same | r3_thunk, a_p06, a_p13, q03, x1 |
+| `*q = e` into an `i32` with a user's `ImplicitAs` | accepted | `StrictInvalidatingThroughShared` (D-SAFE3-4), A.23's third message form | the same | w4 |
 | user `Copy` payload, `*q = v` holding `Optional(C)` | `StrictInvalidatingThroughShared` (M3(c), `Optional` is not `Plain`) | the same, and user-written | the same | z2 |
 | user `Copy` of a class into `*q` | as M3(c) | user-written, `StrictInvalidatingThroughShared` | the same | a_p09, b_p5, s07 |
-| `*q = {.x = e as i32, .y = e as i32}` with a user's `Convert` | accepted | `StrictInvalidatingThroughShared`; remedy: convert before the statement | accepted | q06c |
+| `*q = {.x = e as i32, .y = e as i32}` with a user's `Convert` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form; remedy: convert before the statement | accepted | q06c |
 | `q->n = 2`, `p->n += 1`, `++p->n` through `T*` | accepted | accepted | accepted | q06f, a_p03, b_p12, s19 |
 
 ## §5 Scoreboard
@@ -1328,15 +1472,17 @@ commit's tree. Gap row 89 and the bullet are unchanged.
 
 ## §6 Churn and collisions
 
-Measured on the fixer's scratch commit 3cff85911 against 0f22798fb (`git diff
---numstat`, added and removed, the placeholders filled at their widths):
-temporal_safety.md 277 and 107, mutation_safety.md 263 and 150,
+Measured on the rev 3 fixer's scratch commit f5487ba94 against 0f22798fb (`git
+diff --numstat`, added and removed, the placeholders filled at their widths):
+temporal_safety.md 281 and 107, mutation_safety.md 263 and 150,
 safety/README.md 24 and 13, initialization_safety.md 2 and 2, spatial_safety.md
-2 and 2, fork/decision-log.md 291 and 189, fork/safe/plan.md 334 and 200,
+2 and 2, fork/decision-log.md 295 and 189, fork/safe/plan.md 338 and 200,
 fork/inventory/work-items.json 30 and 2, fork/safe/safe2-plan.md 72 and 35
 (amended 2026-10-29, review fold: B-M1, B-m2, where rev 1's figures were
 34c19b364's with the placeholders unfilled, its wraps differing from the
-filled ones). No
+filled ones; amended 2026-10-29, review fold: RR1-M1, RR1-m1, where rev 2's
+were 3cff85911's, temporal_safety.md 277, the log 291 and fork/safe/plan.md 334
+added). No
 heading is added or renamed on any of those files, so no table of contents
 moves. Collisions (section 0.7): none on a page; the records keep the merge
 rules already recorded for PR 53 (the F-013 entry and its register block are
@@ -1440,9 +1586,11 @@ For commit 1, each fix commit and each records commit:
     359, 11760. Expected after commit 1, measured on the dry run with every
     placeholder filled at its real width (`2026-10-30`, nine-character shas):
     every heading, bullet, numbered and row count unchanged, the lines 860,
-    1646, 1826, 595, 758, 3185, 8419 and 11797 (amended 2026-10-29, review fold:
+    1646, 1830, 595, 758, 3189, 8423 and 11797 (amended 2026-10-29, review fold:
     B-M1, where these were rev 1's 859, 1630, 1803, 595, 758, 3160, 8400 and
-    11796, measured with the six-character `<date>`). Any other change is a
+    11796, measured with the six-character `<date>`; amended 2026-10-29, review
+    fold: RR1-M1, RR1-m1, where rev 2's were 1826, 3185 and 8419 for
+    temporal_safety.md, fork/safe/plan.md and the log). Any other change is a
     defect of this plan: the implementer stops at a plan revision, never
     rephrasing reviewed text (amended 2026-10-29, review fold: B-M1, where this
     read "a defect to repair by rephrasing").
@@ -1457,8 +1605,8 @@ For commit 1, each fix commit and each records commit:
     three passes").
 3.  `uvx rumdl@0.2.58 check <touched>` exits 0 (measured on the filled dry
     tree: "Success: No issues found in 8 files").
-4.  The dry run and the tree checker: the fixer's
-    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/fixer/bin/dryrun.py
+4.  The dry run and the tree checker: the rev 3 fixer's
+    /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/fixer1/bin/dryrun.py
     `<tree> fork/safe/safe3-plan.md --fill --baseline <tree0>` on a fresh copy
     of the head's docs/design and fork/ (an archive, or a detached scratch
     worktree where prek must run), never the worktree of record, `<tree0>` being
@@ -1472,21 +1620,32 @@ For commit 1, each fix commit and each records commit:
     the D-SAFE block of the log identical to fork/safe/plan.md section 0.3, the
     clause of A.0 at its five places, the short form at its four, the
     interim-rule sentence at its four page and records copies and in W-148's
-    note, the relation "The interim rule only adds conditions, so every program
-    it accepts the rule above accepts" at its three, none of the three false
-    statements of review B's M3, A.23's and B.22's message forms, the superseded
-    phrases ("nothing else is evaluated", "lives for the one operation",
-    "SAFE-2's PR 67 note commit", "exactly when nothing but the operand") each
-    inside a quoted superseded text, `json.load` of the ledger with W-365 and
-    W-366 last and W-366's notes stating the relation, and no placeholder of the
-    fold left. bin/checktree.py `<tree> --baseline <tree0>` runs alone on any
-    later commit's tree (each fix and records commit). The fixer's run on rev 2:
-    "ALL OK", 184 steps and checks, filled, and "ALL OK" unfilled; prek and
-    rumdl as items 2 and 3; checktree.py on 0f22798fb itself fails 31 checks, as
-    it must (amended 2026-10-29, review fold: B-M1, B-M2, B-M3, where this named
-    the planner's bin/dryrun.py, whose quoted-phrase and hazard-cleared checks
-    only printed counts, whose own r31() and hard-coded anchors went untested,
-    and which could not run on a later commit's tree).
+    note, the gloss of what qualifies on the temporal page, the definition of
+    "copy-represented at every depth" on the temporal page, in the log, in
+    fork/safe/plan.md and in W-148's note, none of rev 2's six superseded
+    wordings of condition (ii), the gloss and the definition on any of the five
+    pages and records files or in W-148's note (added 2026-10-29, review fold:
+    RR1-M1, RR1-m1), the relation "The interim rule only adds conditions, so
+    every program it accepts the rule above accepts" at its three, none of the
+    three false statements of review B's M3, A.23's and B.22's message forms,
+    the superseded phrases ("nothing else is evaluated", "lives for the one
+    operation", "SAFE-2's PR 67 note commit", "exactly when nothing but the
+    operand") each inside a quoted superseded text, `json.load` of the ledger
+    with W-365 and W-366 last and W-366's notes stating the relation, and no
+    placeholder of the fold left. bin/checktree.py `<tree> --baseline <tree0>`
+    runs alone on any later commit's tree (each fix and records commit). The
+    fixer's run on rev 2: "ALL OK", 184 steps and checks, filled, and "ALL OK"
+    unfilled; prek and rumdl as items 2 and 3; checktree.py on 0f22798fb itself
+    fails 31 checks, as it must (amended 2026-10-29, review fold: B-M1, B-M2,
+    B-M3, where this named the planner's bin/dryrun.py, whose quoted-phrase and
+    hazard-cleared checks only printed counts, whose own r31() and hard-coded
+    anchors went untested, and which could not run on a later commit's tree).
+    The rev 3 fixer's run, with fixer1/bin/checktree.py checking rev 3's
+    sentence, gloss and definition: "ALL OK", 225 steps and checks, filled
+    (fixer1/logs/dryrun-fill-1.txt), and "ALL OK", 216, unfilled; checktree.py
+    alone on the filled tree "ALL OK", 136 checks; on 0f22798fb itself it fails
+    36 checks, the five new ones among them (added 2026-10-29, review fold:
+    RR1-M1, RR1-m1).
 5.  The nightly compiles: the 14 example sources of safe2-plan.md section 0.7
     re-compiled (measured: the outcomes recorded there, EX-M-4a, EX-M-4c and
     EX-M-4d printing 1, p005434:152-162's `F` rejected and its variant printing
@@ -1495,8 +1654,10 @@ For commit 1, each fix commit and each records commit:
 6.  PR 67's quote and silence checks at a freshly fetched tip from a detached
     worktree of 56e2e5bbd under /dev/shm/safe3-implementer/rg1, removed after
     (273 and 89; the H1 subsets 97, 120 and 5; 284 and 89 with Appendix C.2's
-    rows and H1.7), and this plan's 100 rows, the fixer's
-    logs/safe3-quotes-all.tsv (rev 1's 67 and rev 2's 33).
+    rows and H1.7), and this plan's 110 rows, the rev 3 fixer's
+    fixer1/logs/safe3-quotes-all3.tsv (rev 1's 67, rev 2's 33 and rev 3's 10;
+    amended 2026-10-29, review fold: RR1-m1, where this read "100 rows, the
+    fixer's logs/safe3-quotes-all.tsv").
 7.  `python3 -I fork/conformance/runner.py --self-test` clean (R7).
 8.  `git merge-tree --write-tree --name-only <head> <held head>` for trunk and
     every held head, each set equal to section 0.7's.
@@ -1508,8 +1669,10 @@ For commit 1, each fix commit and each records commit:
     json.load(open('fork/inventory/work-items.json'))"` after commit 1 and in
     the PR 67 note commit's worktree.
 12. The D-SAFE block of fork/decision-log.md identical to fork/safe/plan.md
-    section 0.3 (1217 lines at 0f22798fb, 1305 after commit 1, measured on the
-    filled dry tree; rev 1's 1292 was before B.1 grew to 130 lines).
+    section 0.3 (1217 lines at 0f22798fb, 1309 after commit 1, measured on the
+    filled dry tree; rev 1's 1292 was before B.1 grew to 130 lines, and rev 2's
+    1305 before it grew to 134, amended 2026-10-29, review fold: RR1-M1,
+    RR1-m1).
 
 Not run, and why: no build of any kind, and no upstream toolchain test (no
 toolchain, prelude or golden changes; nothing may be built); no conformance run
@@ -1518,13 +1681,15 @@ probe of a Strict diagnostic, the checker being stage 4 (W-148) and the NEW
 syntax parsing nowhere, so every Strict outcome in sections 1.3 and 4 is traced
 by hand from the rules; no probe of `Core.Thread` (W-365's shape), which the
 nightly lacks; no probe of `IndirectIndexWith` or slices, which the nightly's
-prelude lacks; the nightly's three lowering crashes, s14b, ra02, its
-struct-literal field-order defect (s12c) and its `poison` store after the
-in-place `=` of a copy-represented one-element aggregate (ra01, ra03 to ra06,
-f04), which this plan reports as no evidence or as order-only evidence and
-does not file, leaving the decision to the orchestrator (amended 2026-10-29,
-review fold: A-RA3-B1, A-RA3-m6, where this list also named "no measurement of
-the cost count of risk R-5", which the fixer measured, D-SAFE3-12).
+prelude lacks; the nightly's three lowering crashes, s14b, ra02, n02's
+lowering crash, its struct-literal field-order defect (s12c) and its `poison`
+store after the in-place `=` of a copy-represented one-element aggregate or an
+adapter of one (ra01, ra03 to ra06, f04, n01, n04), which this plan reports as
+no evidence or as order-only evidence and does not file, leaving the decision
+to the orchestrator (amended 2026-10-29, review fold: A-RA3-B1, A-RA3-m6, where
+this list also named "no measurement of the cost count of risk R-5", which the
+fixer measured, D-SAFE3-12; amended 2026-10-29, review fold: RR1-m1, n01, n02
+and n04 added).
 
 ## Review fold record (rev 2, 2026-10-29)
 
@@ -1583,6 +1748,65 @@ replaced "instance" with "example" after "for" at the plan's line 561, the
 phrase spelled apart here because the style hook rewrites it (the planner's
 hand-off). The commit is not amended; commit 2's section 8.1 records the same
 correction (section 2.3).
+
+## Review fold record (rev 3, 2026-10-29)
+
+The fixer of re-review round 1 folded the focused re-review, round 1, of rev 2
+(782a5b740): APPROVE-WITH-AMENDMENTS, no new BLOCKER, one MAJOR (RR1-M1) and
+three MINORs (RR1-m1 to RR1-m3). Of the earlier findings the re-review found
+RA3-B1, RA3-M1, RA3-M2, review B's M1 to M4, RA3-m2 to RA3-m6 and review B's m1
+to m6 resolved, and RA3-m1 not resolved, subsumed by RR1-M1, whose gloss now
+resolves it. Its baseline: upstream tip 9192ee003, nothing newer, the rev 2
+quotes matching at the tip; PR 67's checks from a detached worktree of 56e2e5bbd
+at /dev/shm/safe2-rr1/rg1, 273, 89, the H1 subsets 97, 120 and 5, then 284
+and 89, and this plan's 100 and 33, every one 0 failed; the 18 held heads and
+trunk abdc798c6 as stated and the mirror at f97cdf414; rev 2's dryrun.py
+`--fill` on a fresh archive of 0f22798fb "ALL OK", 184 checks, and checktree.py
+failing 31 on the baseline; rumdl 0.2.58 clean; the R31 counts and the line
+counts as section 8 item 1 then stated; `json.load` and `--self-test` OK; W-366
+only in this plan over 167 refs. Its four probes, n01 to n04, are section 0.3's
+last rows. Every finding was reproduced at its cite before it was folded; none
+is rejected. Marks in this file read "(amended 2026-10-29, review fold:
+RR1-<n>)"; the page and records texts of Appendix A and B carry SAFE-3's own
+marks only. RR1-M1 showed the model unsound as written, the interim rule
+exempting PRR3-B1's local shape, and it is folded as the model's own condition
+stated over every path to the place, the owner and every carrier (section 0.0,
+D-SAFE3-5's completeness sentence), not as a clause added beside it. The round
+left a MAJOR, so rev 3 is not signed off and re-review round 2 decides; sign-off
+needs a round with no BLOCKER and no MAJOR.
+
+| finding | reproduced by | disposition and where it lands |
+| --- | --- | --- |
+| RR1-M1 MAJOR | n03 re-run in fixer1/probe/rr1/ (2 2, 4 4, 6 6; IR: load `x.1`, store `x.0`, load `x.0`, store `x.1`, and the same for the `returned var` and the class local); T3 at temporal_safety.md:508-510 and T1 at :420-421, read at 0f22798fb; the interim-rule sentence and the gloss at every copy | ACCEPTED: condition (ii) reads "reads or uses no part of the left operand's place, or of a place that overlaps it, through its owner or a carrier of it (T1, T3)" in section 1.1, D-SAFE3-5, A.1, A.7, B.1 and B.12, and fixer1/bin/checktree.py checks that sentence; the gloss reads "the body's closed places that do not overlap the left operand's place, values that carry no loan on it (T3)" in A.1 and section 1.3; D-SAFE3-5 states why (i) to (iii) cover every path; sections 0.0, 0.3 (n03), 0.6's T4 row, 1.3's rows, 4's local row and W-366's evidence (B.14) name the owner's read; the dry run re-run |
+| RR1-m1 MINOR | n01 and n02 re-run, n02's SemIR dumped (`C`'s `Copy` called with `init %C to` the left operand's `(q as {.c: C}).c` and `self` from `(p as {.c: C}).c`); type_completion.cpp:762-770, :786-788 and :806-826 and convert.cpp:1467-1518 read at 9192ee003, at the cut and at 0f22798fb | ACCEPTED: "copy-represented at every depth" defined by representation, "copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth", in D-SAFE3-5, A.1's first paragraph (its borrowed-object sentence, the fourth paragraph referring to it), B.1 and B.12, which checktree.py checks at four copies; convert.cpp:1467-1518 named in A.1, B.1, B.12 and W-366; sections 0.0, 0.2, 0.3 (n01, n02 and n04), 1.3 and 4; ten quote rows added, 110 in all |
+| RR1-m2 MINOR | `git ls-remote origin`: the mirror at f97cdf414 at the review and at 782a5b740 when rev 3 was written; steps 3, 6, 8 and 9 (b) read | ACCEPTED: section 2.1 defines `<head>` as the head after the dry round's records commit; step 3 mirrors every commit from rev 1 on, the plan's revisions included; C.1 and Appendix D's first two blocks say "until dry, PR 53 then at `<head>`"; the Status and section 0.7 record the mirror's move |
+| RR1-m3 MINOR | section 4's `Plain` rows against A.23 | ACCEPTED: section 4's introduction and its swap, one-element, in-place call, thunk, `*q = e` and `q06c` rows name A.23's third message form; records only |
+
+Measured for rev 3 on 2026-10-29: upstream re-fetched, tip 9192ee003, nothing
+newer; the 18 held heads and trunk abdc798c6 as section 0.7 states them, the
+mirror at 782a5b740; PR 67's checks from a detached worktree of 56e2e5bbd at
+/dev/shm/safe2-fixer1/rg1, removed after: 273 and 89, the H1 subsets 97, 120 and
+5, 284 and 89, rev 3's 10 rows and the 110, every one 0 failed, the 10 failing
+at the cut where their lines sit elsewhere; the re-review's four probes re-run,
+129 in all; the dry run "ALL OK" filled (225 steps and checks) and unfilled
+(216), checktree.py "ALL OK" alone (136 checks) and failing 36 on 0f22798fb;
+on scratch commit f5487ba94 prek's three passes changing nothing, rumdl clean,
+r31.py's counts unchanged on the eight pages and records files with the lines
+860, 1646, 1830, 595, 758, 3189, 8423 and 11797, the D-SAFE blocks identical at
+1309 lines, `json.load` 134 items, W-365 and W-366 last, and the merge-trees
+against trunk and the 18 heads equal to 0f22798fb's; `--self-test` "150
+programs parsed, 56 bullets in table, OK"; the id re-scan unchanged, no id
+minted. This plan: r31.py before the fold H1 1, H2 16, H3 69, 55 bullets, 34
+numbered items, 181 rows, 3293 lines, and after it H2 17 (this record), 57
+bullets (one each in sections 0.2 and 0.4), 194 rows (four in section 0.3,
+three in section 1.3 and the six lines of this record's table), the other
+counts unchanged and no unguarded line; prek's first pass, its rumdl,
+rewrapped two paragraph ends (section 0.3's opening and section 8 item 4) after
+a long path line, the counts unchanged, and the next two passes changed
+nothing; `uvx rumdl@0.2.58 check` clean, the unpinned 0.3.2 reporting only the
+two long command lines of section 8 items 1 and 2 that rev 2 had too. Not run:
+no build, no Strict checker (W-148), no probe of `Core.Thread`; n02's lowering
+crashes on the nightly, its SemIR the evidence.
 
 ## Hand-off notes for the implementer
 
@@ -1650,7 +1874,18 @@ object, the stricter criterion, the keying on types copy-represented at every
 depth with convert.cpp:283-297, the interim rule in the one sentence every copy
 carries, the gloss narrowed to values that carry no loan on the left operand's
 place, the relation to the rule above stated as D-SAFE3-5 states it, and the
-lines wrapped at the filled width of `<date>`):
+lines wrapped at the filled width of `<date>`; amended 2026-10-29, review fold:
+RR1-M1, RR1-m1: the interim rule's second condition over the owner and every
+carrier, where it read "uses no carrier of the left operand's place or of a
+place that overlaps it", the gloss's closed places limited to those that do not
+overlap the left operand's place, where it read "the body's closed places and
+values that carry no loan on the left operand's place (T3)", "copy-represented
+at every depth" defined in the first paragraph by representation, where that
+paragraph read "a type that is not copy-represented binds one, and so does a
+one-element tuple or struct whose element is not" and the fourth "one that is
+not copy-represented or a one-element tuple or struct whose element is not
+copy-represented at every depth", and the adapter case of convert.cpp:1467-1518
+named):
 
 <!-- google-doc-style-ignore -->
 
@@ -1682,16 +1917,19 @@ section 0.3), the left operand's place held across that evaluation by the loans
 of the carriers it is reached through (T2, T3), and the call receives the right
 operand complete, a copy that holds no borrowed object or a value binding of a
 borrowed object, which holds a frozen loan for the call (the mutation page's
-[Value bindings](mutation_safety.md#value-bindings)): a type that is not
-copy-represented binds one, and so does a one-element tuple or struct whose
-element is not. What runs while the `ref` is bound is the impl's body, the thunk
-that the generics design generates for an impl whose parameter types differ from
-the interface's, "Otherwise, a synthetic function called a _thunk_ is
-generated:" (docs/design/generics/details.md:5769 at 9192ee003), whose body
-performs the "Implicit conversions ... as necessary to initialize the parameters
-of the function in the `impl` from the parameters of the thunk" (:5777-5778),
-and that thunk's conversions; the language's own `&`, member access naming a
-field and indexing of an array form a reference expression and run nothing.
+[Value bindings](mutation_safety.md#value-bindings)): it binds one unless its
+type is copy-represented at every depth, a type being so when it is
+copy-represented and, if its representation is a one-element tuple or struct's
+(the type, or an adapter, `const` or `MaybeUnformed` of one), its element is
+copy-represented at every depth. What runs while the `ref` is bound is the
+impl's body, the thunk that the generics design generates for an impl whose
+parameter types differ from the interface's, "Otherwise, a synthetic function
+called a _thunk_ is generated:" (docs/design/generics/details.md:5769
+at 9192ee003), whose body performs the "Implicit conversions ... as necessary to
+initialize the parameters of the function in the `impl` from the parameters of
+the thunk" (:5777-5778), and that thunk's conversions; the language's own `&`,
+member access naming a field and indexing of an array form a reference
+expression and run nothing.
 
 Such an operand is exempt from the marker this section otherwise requires on an
 open place when the checker establishes that no path but the operand can reach
@@ -1760,32 +1998,33 @@ for a copy-represented type and in place for any other
 (toolchain/sem_ir/type_info.cpp:82-89), a tuple or struct right operand
 converted into the left operand one element at a time, each element into its own
 part of the left operand even when the whole is copy-represented
-(toolchain/check/convert.cpp:283-297 at 9192ee003), each element's value
-acquired at its own position, as [values](../values.md) allows
-(values.md:456-460 and :604-607). So for a type that is not copy-represented at
-every depth, one that is not copy-represented or a one-element tuple or struct
-whose element is not copy-represented at every depth, the right operand reads
-the left operand's place after its initialization has begun, and a user's
-`Copy`, `ImplicitAs` or call initialized in place runs while the left operand is
-written: `*q = {.a = p->b, .b = p->a}` with `p` aliasing `q` prints 2 2 on
-the 2026.10.12 nightly toolchain, and so does
-`*q = {.s = {.a = p->s.b, .b = p->s.a}}` for `{.s: {.a: i32, .b: i32}}`, where
-the right operand formed first prints 2 1 (fork/safe/safe3-plan.md section 0.3).
-For the integers, floating-point types, `bool` and pointers that is a deviation
-from the assignment design by its own TODO; for an aggregate, whose order that
-design leaves open, it differs from this design's reading of the rewrite. No
-Carbon function's lowering carries `noalias` today, so the difference gives a
-different defined result, not undefined behavior. While it stands, Strict checks
-the interim `=` by what it does as well as by the rule above: for a left operand
-whose type is not copy-represented at every depth, the whole right operand
-counts as evaluated while the left operand is bound, and the `=` keeps the
-exemption only when its right operand reads no open place and passes no carrier
-of one to a call, uses no carrier of the left operand's place or of a place that
-overlaps it, and, on an open place, runs no code written outside core/prelude;
-literals, the body's closed places and values that carry no loan on the left
-operand's place (T3), and prelude calls over them qualify. Otherwise the `=` is
-a `ref` binding under this section's rule: on a closed place a checked reborrow,
-so T4 rejects `x = {.a = x.b, .b = x.a}` (`StrictExclusiveBorrowConflict`) and
+(toolchain/check/convert.cpp:283-297 at 9192ee003), and an adapter of a tuple or
+struct the same way, part by part (:1467-1518), each element's value acquired at
+its own position, as [values](../values.md) allows (values.md:456-460 and
+:604-607). So for a type that is not copy-represented at every depth, as the
+first paragraph defines it, the right operand reads the left operand's place
+after its initialization has begun, and a user's `Copy`, `ImplicitAs` or call
+initialized in place runs while the left operand is written:
+`*q = {.a = p->b, .b = p->a}` with `p` aliasing `q` prints 2 2 on the 2026.10.12
+nightly toolchain, and so does `*q = {.s = {.a = p->s.b, .b = p->s.a}}` for
+`{.s: {.a: i32, .b: i32}}`, where the right operand formed first prints 2 1
+(fork/safe/safe3-plan.md section 0.3). For the integers, floating-point types,
+`bool` and pointers that is a deviation from the assignment design by its own
+TODO; for an aggregate, whose order that design leaves open, it differs from
+this design's reading of the rewrite. No Carbon function's lowering carries
+`noalias` today, so the difference gives a different defined result, not
+undefined behavior. While it stands, Strict checks the interim `=` by what it
+does as well as by the rule above: for a left operand whose type is not
+copy-represented at every depth, the whole right operand counts as evaluated
+while the left operand is bound, and the `=` keeps the exemption only when its
+right operand reads no open place and passes no carrier of one to a call, reads
+or uses no part of the left operand's place, or of a place that overlaps it,
+through its owner or a carrier of it (T1, T3), and, on an open place, runs no
+code written outside core/prelude; literals, the body's closed places that do
+not overlap the left operand's place, values that carry no loan on it (T3), and
+prelude calls over them qualify. Otherwise the `=` is a `ref` binding under this
+section's rule: on a closed place a checked reborrow, so T4 rejects
+`x = {.a = x.b, .b = x.a}` (`StrictExclusiveBorrowConflict`) and
 `c = Make(&c.a)` (`StrictSharedBorrowInvalidated`), and through a shared path
 M3(d)'s, so `*q = {.a = p->b, .b = p->a}` is `StrictInvalidatingThroughShared`;
 the program forms the right operand first,
@@ -1981,7 +2220,10 @@ carrier of one to a call", "or of a place that overlaps it" and "the whole right
 operand counts as evaluated while bound"; the stricter criterion, a copy that
 holds no borrowed object, the keying at every depth and issue 686 named; the
 lines wrapped at the filled width of `<date>`, so that no reflow starts a line
-with `*self $ other;`):
+with `*self $ other;`; amended 2026-10-29, review fold: RR1-M1: A.1's sentence
+with its second condition over the owner and every carrier, where it read
+"uses no carrier of the left operand's place or of a place that overlaps
+it"):
 
 <!-- google-doc-style-ignore -->
 
@@ -2023,14 +2265,14 @@ while it stands it is checked by the temporal page's interim rule: for a left
 operand whose type is not copy-represented at every depth, the whole right
 operand counts as evaluated while the left operand is bound, and the `=` keeps
 the exemption only when its right operand reads no open place and passes no
-carrier of one to a call, uses no carrier of the left operand's place or of a
-place that overlaps it, and, on an open place, runs no code written outside
-core/prelude; otherwise the `=` is (d)'s through a shared path, as
-`*q = {.a = p->b, .b = p->a}` is. This rule counts every assignment operator,
-compound assignment included, and `++` and `--` as an assignment to the first
-operand, in (c) and in the next paragraph (re-derived <date>, SAFE-3:
-D-SAFE3-1 to D-SAFE3-5; until then this text read as quoted in full at the end
-of this section).
+carrier of one to a call, reads or uses no part of the left operand's place, or
+of a place that overlaps it, through its owner or a carrier of it (T1, T3), and,
+on an open place, runs no code written outside core/prelude; otherwise the `=`
+is (d)'s through a shared path, as `*q = {.a = p->b, .b = p->a}` is. This rule
+counts every assignment operator, compound assignment included, and `++` and
+`--` as an assignment to the first operand, in (c) and in the next paragraph
+(re-derived <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5; until then this text
+read as quoted in full at the end of this section).
 ```
 
 <!-- google-doc-style-resume -->
@@ -2367,7 +2609,7 @@ Lines. In fork/decision-log.md (:3131-3190) and in fork/safe/plan.md (:430-489),
 replace the 60 lines from the line that begins "Permissive as
 `PermissiveAliasedExclusive`. The `ref` operand of a" to the line that ends "A
 `ref` return is not a binding, so p005434:717-720", each found once in each
-file, with the 130 lines below, the same in both files. The superseded text is
+file, with the 134 lines below, the same in both files. The superseded text is
 quoted whole after "which SAFE-2's fix commits 0f281d8bd, cbdc0552e and
 9d0b072cb wrote, read:" (D-SAFE3-7). Amended 2026-10-29, review fold: A-RA3-B1,
 A-RA3-M1, A-RA3-m3, B-M1, B-M3, B-m1: the first 67 lines, up to "(re-derived
@@ -2377,7 +2619,14 @@ in A.1's sentence and its relation to the rule above as D-SAFE3-5 states it,
 where rev 1's 56 said "a copy when its type is copy-represented", "exactly
 when", "for such a type the whole right operand counts as evaluated while bound"
 and "The interim rule rejects only what the rule above accepts"; the quoted
-superseded text after them is rev 1's, unchanged:
+superseded text after them is rev 1's, unchanged. Amended 2026-10-29, review
+fold: RR1-M1, RR1-m1: those lines, 71 now, carry A.1's sentence with its second
+condition over the owner and every carrier, where it read "uses no carrier of
+the left operand's place or of a place that overlaps it", the definition of
+"copy-represented at every depth" by representation, where they read "which a
+type that is not copy-represented holds and so does a one-element aggregate
+whose element is not", and convert.cpp:1467-1518's adapter case; rev 2 replaced
+the 60 lines with 130:
 
 <!-- google-doc-style-ignore -->
 
@@ -2394,12 +2643,14 @@ superseded text after them is rev 1's, unchanged:
     and `++` and `--` is likewise a call of its interface's `Op`, so the
     operands are evaluated first and the call receives the right operand
     complete, a copy that holds no borrowed object or a borrowed object's value
-    binding under D-SAFE-17's frozen loan, which a type that is not
-    copy-represented holds and so does a one-element aggregate whose element is
-    not. It is established on any place, open ones included, forms no loan of
-    its own, neither D-SAFE-9's (d) nor its (e), and D-SAFE-9's M3 alone decides
-    what the operation may do through a shared path, when the checker
-    establishes, by two conditions stricter than that property
+    binding under D-SAFE-17's frozen loan, the latter unless its type is
+    copy-represented at every depth, a type being so when it is copy-represented
+    and, if its representation is a one-element tuple or struct's (the type, or
+    an adapter, `const` or `MaybeUnformed` of one), its element is
+    copy-represented at every depth. It is established on any place, open ones
+    included, forms no loan of its own, neither D-SAFE-9's (d) nor its (e), and
+    D-SAFE-9's M3 alone decides what the operation may do through a shared path,
+    when the checker establishes, by two conditions stricter than that property
     (p005434:859-864), that nothing but the operand can reach its referent while
     it is bound: everything that runs then, the impl's body, the thunk
     docs/design/generics/details.md:5769-5779 at 9192ee003 generates for an impl
@@ -2431,24 +2682,26 @@ superseded text after them is rev 1's, unchanged:
     (`InitializeExisting`, :121), in place for a type that is not
     copy-represented (toolchain/sem_ir/type_info.cpp:82-89) and element by
     element, each element into its own part of the left operand even when the
-    whole is copy-represented (toolchain/check/convert.cpp:283-297;
-    values.md:604-607), so its right operand reads the left operand after the
-    initialization has begun (`*q = {.a = p->b, .b = p->a}` with `p == q`
-    gives 2 2 where the right operand formed first gives 2 1), a different
-    defined result while no `noalias` is emitted. While that stands, for a left
-    operand whose type is not copy-represented at every depth, the whole right
-    operand counts as evaluated while the left operand is bound, and the `=`
-    keeps the exemption only when its right operand reads no open place and
-    passes no carrier of one to a call, uses no carrier of the left operand's
-    place or of a place that overlaps it, and, on an open place, runs no code
-    written outside core/prelude; otherwise it is a checked reborrow on a closed
-    place (T4: `x = {.a = x.b, .b = x.a}` is `StrictExclusiveBorrowConflict`,
-    `c = Make(&c.a)` `StrictSharedBorrowInvalidated`) and D-SAFE-9's (d) through
-    a shared path, the program forming the right operand first
-    (`let v: T = ...; *q = v;`). A left operand whose type is copy-represented
-    at every depth is stored once from a complete value. The interim rule only
-    adds conditions, so every program it accepts the rule above accepts, and
-    adopting the rewrite withdraws it (re-derived <date>,
+    whole is copy-represented, an adapter of a tuple or struct the same way
+    (toolchain/check/convert.cpp:283-297 and :1467-1518; values.md:604-607), so
+    its right operand reads the left operand after the initialization has begun
+    (`*q = {.a = p->b, .b = p->a}` with `p == q` gives 2 2 where the right
+    operand formed first gives 2 1), a different defined result while no
+    `noalias` is emitted. While that stands, for a left operand whose type is
+    not copy-represented at every depth, the whole right operand counts as
+    evaluated while the left operand is bound, and the `=` keeps the exemption
+    only when its right operand reads no open place and passes no carrier of one
+    to a call, reads or uses no part of the left operand's place, or of a place
+    that overlaps it, through its owner or a carrier of it (T1, T3), and, on an
+    open place, runs no code written outside core/prelude; otherwise it is a
+    checked reborrow on a closed place (T4: `x = {.a = x.b, .b = x.a}` is
+    `StrictExclusiveBorrowConflict`, `c = Make(&c.a)`
+    `StrictSharedBorrowInvalidated`) and D-SAFE-9's (d) through a shared path,
+    the program forming the right operand first (`let v: T = ...; *q = v;`). A
+    left operand whose type is copy-represented at every depth is stored once
+    from a complete value. The interim rule only adds conditions, so every
+    program it accepts the rule above accepts, and adopting the rewrite
+    withdraws it (re-derived <date>,
     SAFE-3: D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md; the superseded
     text, from "The `ref` operand of a built-in operator — the first operand"
     through "naming a field and indexing of an array")", which SAFE-2's fix
@@ -2708,12 +2961,18 @@ only when its right operand reads no open place and passes no carrier of one to
 a call, uses no carrier of the left operand's place or an overlapping one, and
 on an open place runs no code written outside core/prelude"; "an impl written
 outside core/prelude", where this said "a library outside core/prelude";
-details.md at 9192ee003; the keying at every depth and the third message form):
+details.md at 9192ee003; the keying at every depth and the third message form;
+amended 2026-10-29, review fold: RR1-M1, RR1-m1: A.1's sentence with its second
+condition over the owner and every carrier, where it read "uses no carrier of
+the left operand's place or of a place that overlaps it", the definition of
+"copy-represented at every depth" by representation, where it read "a
+one-element aggregate whose element is not copy-represented holding one", and
+convert.cpp:1467-1518's adapter case):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, a one-element aggregate whose element is not copy-represented holding one; anything else is a `ref` binding under the general rule. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the whole right operand counts as evaluated while the left operand is bound, and the `=` keeps the exemption only when its right operand reads no open place and passes no carrier of one to a call, uses no carrier of the left operand's place or of a place that overlaps it, and, on an open place, runs no code written outside core/prelude; otherwise it is a checked reborrow on a closed place (`StrictExclusiveBorrowConflict` for the right operand's read, `StrictSharedBorrowInvalidated` for a carrier it passes) and M3(d) through a shared path, whose `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts). The interim rule only adds conditions, so every program it accepts the rule above accepts.
+SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth; anything else is a `ref` binding under the general rule. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the whole right operand counts as evaluated while the left operand is bound, and the `=` keeps the exemption only when its right operand reads no open place and passes no carrier of one to a call, reads or uses no part of the left operand's place, or of a place that overlaps it, through its owner or a carrier of it (T1, T3), and, on an open place, runs no code written outside core/prelude; otherwise it is a checked reborrow on a closed place (`StrictExclusiveBorrowConflict` for the right operand's read, `StrictSharedBorrowInvalidated` for a carrier it passes) and M3(d) through a shared path, whose `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts). The interim rule only adds conditions, so every program it accepts the rule above accepts.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2742,7 +3001,9 @@ issue 686, add the partial-adoption and direct-initialization break conditions
 and the nightly's `poison` store, and say "the interim rule only adding
 conditions, so that every program it accepts the designed rule accepts", where
 they said "every program it rejects being accepted under the designed rule",
-which section 4's `*q = *p` row contradicts):
+which section 4's `*q = *p` row contradicts; W-366's evidence amended
+2026-10-29, review fold: RR1-M1, RR1-m1: convert.cpp:1467-1518's adapter case
+and the re-review's n02 and n03 added):
 
 <!-- google-doc-style-ignore -->
 
@@ -2769,8 +3030,8 @@ which section 4's `*q = *p` row contradicts):
       "size": "M",
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
-        "toolchain/check/handle_operator.cpp:99-123 at upstream 9192ee003 and the fork (\"TODO: Switch to using assignment interface for most assignment\"; `rhs_id = InitializeExisting(context, node_id, lhs_id, rhs_id);`, :121), toolchain/sem_ir/type_info.cpp:82-89 (a copy representation initializes by copy, a pointer or custom one in place) and toolchain/check/convert.cpp:283-297 and :400-405 at 9192ee003 (each element of a by-copy aggregate gets an initializing target inside the destination, so an element that is not copy-represented is initialized in place inside a copy-represented one-element tuple or struct)",
-        "fork/safe/safe3-plan.md section 0.3 (v09, v10, v11, v14, v24, v25, s03, s04, s05, s15 and review A's ra01, ra04 and ra05, the last three copy-represented one-element aggregates of a pointer-represented element, print the in-place order's result on the 2026.10.12 nightly; s10 and s11, the right operand formed first and the rewrite emulated, print 2 1)"
+        "toolchain/check/handle_operator.cpp:99-123 at upstream 9192ee003 and the fork (\"TODO: Switch to using assignment interface for most assignment\"; `rhs_id = InitializeExisting(context, node_id, lhs_id, rhs_id);`, :121), toolchain/sem_ir/type_info.cpp:82-89 (a copy representation initializes by copy, a pointer or custom one in place) and toolchain/check/convert.cpp:283-297 and :400-405 at 9192ee003 (each element of a by-copy aggregate gets an initializing target inside the destination, so an element that is not copy-represented is initialized in place inside a copy-represented one-element tuple or struct; :1467-1518 converts an adapter of a tuple or struct part by part, so the same holds inside such an adapter)",
+        "fork/safe/safe3-plan.md section 0.3 (v09, v10, v11, v14, v24, v25, s03, s04, s05, s15 and review A's ra01, ra04 and ra05, the last three copy-represented one-element aggregates of a pointer-represented element, and the re-review's n03, a `var` parameter, a `returned var` and a class local read through their owner, print the in-place order's result on the 2026.10.12 nightly; the re-review's n02, an adapter of `{.c: C}`, has `C`'s `Copy` initialize its part of the left operand in place (its SemIR); s10 and s11, the right operand formed first and the rewrite emulated, print 2 1)"
       ],
       "blocked_by": [],
       "notes": "Filed by SAFE-3's fold commit (<date>; fork/safe/safe3-plan.md D-SAFE3-5). No Carbon function's lowering carries `noalias` today, so the deviation gives a defined result different from the designed one, not undefined behavior. For the integers, floating-point types, `bool` and pointers the in-place `=` is a deviation from the assignment design by upstream's own TODO (handle_operator.cpp:99-100, \"Some cases may need to be handled directly.\"); for tuples, structs, choice types and data classes upstream has not decided the order (assignment.md:159-164, leads issue 686), and its designed initialization is itself depth-first and in place (pattern_matching.md:858-867; p005545:118-122), so treating the in-place order as a difference from the design is this design's reading of :184, pending that issue. Break condition and discharge: the toolchain routes `=` through `AssignWith` for every type, by an upstream advance (upstream's own TODO, handle_operator.cpp:99-100) or a fork change under R32; the interim rule of D-SAFE-8 is then withdrawn by a dated mark, the interim rule only adding conditions, so that every program it accepts the designed rule accepts and none is newly rejected, and this item is discharged. Partial: the toolchain routes only some types through `AssignWith`, the scalars of assignment.md:148-151 first; the interim rule then stays, by a dated mark naming them, for every type still initialized by `InitializeExisting`. Direct initialization: the toolchain or upstream gives an unformed left operand assignment.md:102-106's direct initialization (`y = F();`, :116-120); that is initialization in place and stays under the interim rule whatever the rewrite's status. Further TODOs re-open the interim rule's keying by a dated mark if done first: handle_operator.cpp:119-120's \"Destroy the old value before reinitializing\", which would run the old value's destructor, user-written for a user's class, at the `=`; type_info.cpp:83-84's \"Use in-place initialization for types that have non-trivial destructive move\"; and type_completion.cpp:576-577's \"Consider doing the same whenever `elementwise_rep` is sufficiently small\", which would give a tuple or struct of more than one element a copy representation that the keying would count as stored once, a probe deciding first. The 2026.10.12 nightly's evidence for the copy-represented one-element case is order-only: after the in-place `=` of such a type it stores `poison` of the whole object over the left operand (ra01, ra03 to ra06), a wrong-code defect of the nightly not filed here (fork/safe/safe3-plan.md section 0.3)."
@@ -2986,7 +3247,9 @@ description at section 3 step 9, from the file that step names (amended
 2026-10-29, review fold: A-RA3-M1, A-RA3-m3: "states it (for an aggregate this
 design's reading, leads issue 686 being open)", "when the checker establishes
 that" and "differs from", where this read "designs it", "exactly when" and
-"deviates from"):
+"deviates from"; amended 2026-10-29, review fold: RR1-m2: "re-reviewed until
+dry, PR 53 then at `<head>`", where this read "re-reviewed until dry at
+`<head>`", `<head>` now being the head after the dry round's records commit):
 
 <!-- google-doc-style-ignore -->
 
@@ -3010,18 +3273,19 @@ accepted text RG-1's H1.13 row had not quoted. SAFE-2 stopped at its plan rev 14
 when a nightly probe showed its exemption of a built-in operator's `ref` operand
 unsound under the toolchain's in-place `=`. SAFE-3's commits <s1> (the
 fold) and <s2> (its records) and the fix commits <fixes>, reviewed by two
-whole-tree document reviews and re-reviewed until dry at <head>, re-derive
-that exemption from the safety argument: the operand is bound for the operator's
-call, as assignment.md:184's rewrite of `x = y;` to `x.(AssignWith(U).Op)(y);`
-states it (for an aggregate this design's reading, leads issue 686 being open),
-and is exempt when the checker establishes that nothing but the operand can
-reach its referent while it is bound, the toolchain's in-place `=` being checked
-by an interim rule while it differs from that rewrite (W-366). SAFE-3 also files
-W-365, the data-race gap SAFE-2's review found in D-SAFE-16, and folds SAFE-2's
-other accepted findings. The plans are fork/safe/safe2-plan.md and
-fork/safe/safe3-plan.md, and the examples whose outcomes changed are in each
-plan's section 4. Still documentation and records only: no toolchain, prelude,
-golden or program change, the two SKIP stubs unchanged.
+whole-tree document reviews and re-reviewed until dry, PR 53 then at <head>,
+re-derive that exemption from the safety argument: the operand is bound for the
+operator's call, as assignment.md:184's rewrite of `x = y;` to
+`x.(AssignWith(U).Op)(y);` states it (for an aggregate this design's reading,
+leads issue 686 being open), and is exempt when the checker establishes that
+nothing but the operand can reach its referent while it is bound, the
+toolchain's in-place `=` being checked by an interim rule while it differs from
+that rewrite (W-366). SAFE-3 also files W-365, the data-race gap SAFE-2's review
+found in D-SAFE-16, and folds SAFE-2's other accepted findings. The plans are
+fork/safe/safe2-plan.md and fork/safe/safe3-plan.md, and the examples whose
+outcomes changed are in each plan's section 4. Still documentation and records
+only: no toolchain, prelude, golden or program change, the two SKIP stubs
+unchanged.
 ```
 
 <!-- google-doc-style-resume -->
@@ -3036,11 +3300,11 @@ silence checks, H1.7 widened to `Core.SharedImmutable`, H1.13 ALIGNED, the
 register 18 DRIFT, 33 ALIGNED and 104 NONE. Each anchor below was found once at
 56e2e5bbd by the planner. Its message is "RG-1 records: SAFE-2's and SAFE-3's
 realignment of W-347 to W-351 noted, W-353 closed and H1.13 re-classified
-ALIGNED, H1.7 widened to Core.SharedImmutable, eleven quote rows added (PR 53 at
-<head>)". The W-347 note says "is exempt when the checker establishes that" and
-"differs from", where rev 1 said "exactly when" and "deviates from" (amended
-2026-10-29, review fold: A-RA3-M1, A-RA3-m3); the commit's checks are section 3
-step 7's.
+ALIGNED, H1.7 widened to Core.SharedImmutable, eleven quote rows added
+(PR 53 at <head>)". The W-347 note says "is exempt when the checker
+establishes that" and "differs from", where rev 1 said "exactly when" and
+"deviates from" (amended 2026-10-29, review fold: A-RA3-M1, A-RA3-m3); the
+commit's checks are section 3 step 7's.
 
 (i) fork/inventory/work-items.json: append each text of the first block to its
 item's `notes`, after a space, its quotes escaped.
@@ -3176,10 +3440,13 @@ order). The paragraphs of the first and fourth blocks hold `<fixes>`,
 here, so the implementer rewraps each filled paragraph to 80 columns in
 orchestration_stamp.md and runs `uvx rumdl@0.2.58 check` on it (amended
 2026-10-29, review fold: B-M1, B-M4, B-m4: the second block keeps "the
-description refreshed" and "by the orchestrator's rulings (its sections 8.16,
-8.19 and 8.20)" from trunk's row at abdc798c6:1070, where rev 1 dropped them;
-the fourth says "was deleted before this stamp", where it said "is deleted with
-this stamp"; the W-347 sentence is A.1's).
+description refreshed" and "by the orchestrator's rulings (its
+sections 8.16, 8.19 and 8.20)" from trunk's row at abdc798c6:1070, where rev 1
+dropped them; the fourth says "was deleted before this stamp", where it said
+"is deleted with this stamp"; the W-347 sentence is A.1's; amended 2026-10-29,
+review fold: RR1-m2: the first and second blocks say "until dry, PR 53 then
+at `<head>`", where they said "until dry at `<head>`", `<head>` being the
+head after the dry round's records commit, section 2.1).
 
 1.  The header: insert the first block as the new first entry, "Last updated:"
     moving to it, so that the current first entry, which begins "Last updated:
@@ -3215,18 +3482,18 @@ this stamp"; the W-347 sentence is A.1's).
 
 ```markdown
 Last updated: <date> (SAFE-2 and SAFE-3, the R32 realignment of SAFE-1's six
-departures from accepted text, are made on PR 53 and reviewed until dry at
-<head>: SAFE-2 stopped at its plan rev 14 on PRR3-B1, SAFE-3 re-derived the
-built-in operator exemption from the safety argument and completed the
-realignment, W-347 to W-351 realigned and W-353 closed with its classification
-corrected; the mirror claude/carbon-fork-0-1-safe-wip is deleted; the land
-sequence no longer waits at PR 53; eighteen PRs are held open, PR 51 to PR 68,
-none merged; see the paragraph dated <date> (<time> UTC) below; the earlier
-2026-10-29 text follows).
+departures from accepted text, are made on PR 53 and reviewed until dry, PR 53
+then at <head>: SAFE-2 stopped at its plan rev 14 on PRR3-B1, SAFE-3
+re-derived the built-in operator exemption from the safety argument and
+completed the realignment, W-347 to W-351 realigned and W-353 closed with its
+classification corrected; the mirror claude/carbon-fork-0-1-safe-wip is deleted;
+the land sequence no longer waits at PR 53; eighteen PRs are held open, PR 51 to
+PR 68, none merged; see the paragraph dated <date> (<time> UTC) below; the
+earlier 2026-10-29 text follows).
 ```
 
 ```markdown
-| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at <head>, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150, W-365, W-366); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md; commits 48f2e66a0 and 954f1c542 and the fix commits 0f281d8bd, e1574b003, cbdc0552e and 9d0b072cb) STOPPED 2026-10-29 at its plan rev 14 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1; realigned <rdate> by SAFE-3 (fork/safe/safe3-plan.md; commits <s1>, <s2> and the fix commits <fixes>, re-reviewed until dry at <head>): the built-in operator exemption re-derived, W-347 to W-351 realigned and W-353 closed with its classification corrected, W-365 and W-366 filed, noted on PR 67's ledger by <c2-sha>, the descriptions of PR 53 and PR 67 refreshed; the mirror claude/carbon-fork-0-1-safe-wip, created 2026-10-29 for the unpushed commits, deleted once <head> was pushed. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at <head>, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150, W-365, W-366); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md; commits 48f2e66a0 and 954f1c542 and the fix commits 0f281d8bd, e1574b003, cbdc0552e and 9d0b072cb) STOPPED 2026-10-29 at its plan rev 14 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1; realigned <rdate> by SAFE-3 (fork/safe/safe3-plan.md; commits <s1>, <s2> and the fix commits <fixes>, re-reviewed until dry, PR 53 then at <head>): the built-in operator exemption re-derived, W-347 to W-351 realigned and W-353 closed with its classification corrected, W-365 and W-366 filed, noted on PR 67's ledger by <c2-sha>, the descriptions of PR 53 and PR 67 refreshed; the mirror claude/carbon-fork-0-1-safe-wip, created 2026-10-29 for the unpushed commits, deleted once <head> was pushed. |
 ```
 
 ```markdown

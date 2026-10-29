@@ -17,7 +17,10 @@ MAJORs and two MINORs, so it is not dry: its one records-only MINOR, RR1-m2,
 is folded by the round's records commit, and RR1-B1, RR1-M1, RR1-M2 and
 RR1-m1 go to round 2's fixer, which has the last fix commit of the budget
 (amended 2026-10-28, re-review round 1: section 8.13, where this read "the
-focused re-review of section 3 step 5 next"). Rev 7 is the plan amender's
+focused re-review of section 3 step 5 next"). Round 2's fixer accepted all
+four and folded them by fix commit cbdc0552e, the third and last of the
+budget, recorded in section 8.14; round 3 reviews it next (amended
+2026-10-29, re-review round 2: section 8.14). Rev 7 is the plan amender's
 fold of the focused re-review of rev 6 (486d2bc74), whose verdict was
 APPROVE-WITH-AMENDMENTS with no BLOCKER, one MAJOR and one MINOR, both folded
 and none rejected (section 8.12; amended 2026-10-28, stop-and-amend re-review:
@@ -2276,7 +2279,9 @@ For each of commits 1 and 2, and every fold commit:
     a bullet (amended 2026-10-28, review fold: RR3-M1, RR3-m1). Any other change
     is a defect to repair by rephrasing, recorded in the message. The
     document-review fold's commits 0f281d8bd and e1574b003 move none of these
-    counts (amended 2026-10-28, document-review fold; section 8.7).
+    counts (amended 2026-10-28, document-review fold; section 8.7), nor does the
+    focused re-review's round 2 fix commit cbdc0552e (amended 2026-10-29,
+    re-review round 2; section 8.14).
 2.  `cd /home/user/carbon-safe && XDG_CACHE_HOME=<private dir under the
     scratchpad's safe2/implementer/>
     SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -2374,14 +2379,23 @@ Decisions under R29, each with its break condition:
     this plan's sections 1 and 4 match them (R27). B.2.1, B.2.2 and B.3.8,
     whose words this records commit changes, are amended in place. Break
     condition: a re-reviewer needs the fold texts verbatim in this plan; they
-    are then copied from the fix commits into a dated subsection.
+    are then copied from the fix commits into a dated subsection. (Amended
+    2026-10-29, re-review round 2: the pointer covers too the fifteen blocks
+    whose targets the round 2 fix commit cbdc0552e changes, listed by the
+    decisions of section 8.14.)
 -   R1-M1's "built in" means the language's own operation or a prelude impl
     whose body is a builtin (core/prelude/types/int.carbon:331's
     `"int.sadd_assign"`). Break condition: upstream specifies the borrow
     semantics of an operator's operand otherwise; the rule then follows it.
     (Amended 2026-10-28, re-review round 1: RR1-m1: the test leaves out the
     prelude's integer `Inc` and `Dec` impls, whose bodies are not builtins,
-    and round 2's fixer restates it; section 8.13.)
+    and round 2's fixer restates it; section 8.13.) (Amended 2026-10-29,
+    re-review round 2: RR1-m1: restated by cbdc0552e as the semantics
+    docs/design/assignment.md:146-157 gives the built-in types, the
+    prelude's impls of them whatever their body, an aggregate's assignment
+    with no user-written `AssignWith` impl, and the language's own `&`,
+    member access and array indexing, the operand forming no loan of its
+    own; section 8.14, whose decision carries the break condition.)
 -   R1-M2 takes the reviewer's first option, the marker's obligation, so that
     `unsafe Core.Slice(T).Make(p, n)` stays the single audit line and no
     `v[i]` through the view needs a marker. Break condition: a counterexample
@@ -2390,7 +2404,11 @@ Decisions under R29, each with its break condition:
     then replaces it. (Amended 2026-10-28, re-review round 1: RR1-B1: the
     break condition fired, the obligation lasting while the binding lives and
     not while the frozen loan formed through the result does, and round 2's
-    fixer re-runs this decision; section 8.13.)
+    fixer re-runs this decision; section 8.13.) (Amended 2026-10-29,
+    re-review round 2: RR1-B1: re-run by cbdc0552e, the obligation kept and
+    keyed to the frozen loan formed through the result or a carrier derived
+    from it for as long as that loan is live; section 8.14, whose decision
+    carries the break condition.)
 -   No new item and no F id: W-148's notes gain the checker's share of R1-M1
     and R1-M2, and the id re-scan is unchanged, with W-365 the next free id.
 
@@ -2952,7 +2970,7 @@ section 8.7's records commit:
 | --- | --- | --- | --- |
 | `<sha1>` | C.1; D's second and fourth blocks | the files of section 3 step 8 | 48f2e66a0 |
 | `<sha2>` | C.1; D's second and fourth blocks | the files of section 3 step 8 | 954f1c542 |
-| `<fixes>` | D's second and fourth blocks | the files of section 3 step 8 | 0f281d8bd and e1574b003, with round 2's fix commit when it is made (decided below) |
+| `<fixes>` | D's second and fourth blocks | the files of section 3 step 8 | 0f281d8bd, e1574b003 and cbdc0552e (amended 2026-10-29, re-review round 2: section 8.14, where this read "0f281d8bd and e1574b003, with round 2's fix commit when it is made (decided below)") |
 | `<verdict 1>` | D's fourth block | the files of section 3 step 8 | "APPROVE-WITH-FIXES with three MAJORs and three MINORs", the words of fork/safe/plan.md's realigned notes |
 | `<verdict 2>` | D's fourth block | the files of section 3 step 8 | "APPROVE-WITH-FIXES with four MINORs", the same notes' words |
 | `<head>` | C.1; C.2's message and blocks; C.3; D's first, second, fourth and fifth blocks | section 3 step 6 for C.2, step 7's push, step 8 for C.1, C.3 and D | not known: the head at which step 5 is dry, and round 1 is not |
@@ -3034,6 +3052,148 @@ Decisions under R29, each with its break condition:
 No page, example, log, fork/safe/plan.md or ledger line changes, so the
 nightly compiles of section 0.7 are not re-run and the ledger's `json.load`
 is not owed; nothing is pushed (section 3 step 7 waits for a dry round).
+
+### §8.14 Focused re-review fold record, round 2 (2026-10-29)
+
+Round 2 of section 3 step 5's loop goes back to section 3 step 4, as the ruling
+recorded in section 8.13 has it: one fresh fixer took round 1's four findings
+that are serious or change a page, RR1-B1, RR1-M1, RR1-M2 and RR1-m1, reproduced
+each against the tree at 6ebe4d650, this plan and upstream's tip, re-fetched as
+9192ee003 (2026-10-28 20:51:45 UTC, upstream PR 8054, the tip of section 8.13),
+and dispositioned it. All four are ACCEPTED and none is rejected. They are
+folded by one fix commit, cbdc0552e, "SAFE-2 fix: the free-result and
+`unsafe`-binding obligations keyed to the frozen loan, the operator exception
+and the `ref self: const Self` qualifier on every dependent line, and the
+built-in test (RR1-B1, RR1-M1, RR1-M2, RR1-m1)", the third and last commit of
+section 3 step 4's budget (0f281d8bd and e1574b003 are the other two), and
+recorded by this records commit, "SAFE-2 records: focused re-review round 2
+fold", which is not counted. No defect needed a commit past the budget, and no
+finding was answered by softening a realignment, so no plan revision is made.
+Each fold carries "(amended 2026-10-29, re-review round 2: <id>)", the UTC date
+of the fix commit, on the page and in the same words in the log's F-013 entry,
+fork/safe/plan.md section 0.3 and section 1, this plan's section 1 and W-148's
+notes (R27); each superseded clause is quoted after "where this read", every
+quote found in its file at 6ebe4d650 (29 of 29), and type_safety.md's superseded
+sentence, SAFE-1's 2026-10-12 text, in full. The scratch is
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe2-rr/r2/fixer/.
+Everything measured is container-local, EXPECTED, not of record (R9).
+
+| finding | severity | reproduced at 6ebe4d650 | disposition | where it landed |
+| --- | --- | --- | --- | --- |
+| RR1-B1, the free-result obligation lasts while the binding lives, not while its frozen loan does | BLOCKER | temporal_safety.md:532-536 keyed T6's obligation to "while a value binding of a borrowed object, or a `const` `ref`, formed through the result or a copy of it lives", spatial_safety.md:199-203 and :512-514, M8 (mutation_safety.md:671-673), D-SAFE-10's T6 and D-SAFE-17 (log :3354-3357 and :3741-3744, fork/safe/plan.md :653-656 and :1040-1043), D-SAFE2-5 (:1305-1309) and W-148 to the binding; T5(d) (temporal_safety.md:704-707) keeps a by-value `bound self`'s frozen loan for the result's lifetime, and the fork prelude's `AsSlice(self)` (buf.carbon:54) takes `bound self` under W-144 (spatial_safety.md:184-191), so in the review's `Alias` program `s` holds the loan on `*r`, an open place of the `Core.SharedImmutable` type `Core.Buf(i32)`, after the binding is dead, the owner's `b = Core.Buf(i32).Make(1, 0);` sees no loan on `b` and frees the block, and `s[0]` reads freed memory with `Alias`'s doc comment and the binding-keyed obligation both met; type_safety.md:135-140 called the doc comment's sentence the contract; the same root keys the `unsafe` binding's own obligation to "while the binding lives" (README.md:309-310, mutation_safety.md:259 and :608-609, log :3762-3763, fork/safe/plan.md :1061-1062, D-SAFE2-5 :1371-1373), shorter than a `bound self`'s loan | ACCEPTED: the obligation keyed to the frozen loan, as decided below: while a frozen loan formed through the result, or through a carrier derived from it, is live (T3), whatever carries the loan, a value binding of a borrowed object, a `const` `ref` or the result of a call that keeps it (T5(d)), no path other than the result and its copies writes the storage that loan covers; the `unsafe` binding's obligation lasts while the binding's loan is live, a `bound self`'s as long as the call's result that keeps it | cbdc0552e: T6 with the `Alias` program, both spatial bullets, M8's soundness argument and its open-place bullet, M3's union sentence, type_safety.md:135-140 (rewritten, the 2026-10-12 sentence quoted in full), README's operation-tied bullet, D-SAFE-10's T6 and D-SAFE-17 in the log and section 0.3, D-SAFE2-5 twice, W-148's notes; section 2.2 and hand-off note 5 gain a dated mark for type_safety.md |
+| RR1-M1, the operator exception missing from dependent lines | MAJOR | fork/safe/plan.md:1545-1548 (section 1.5) carries "A built-in operator's `ref` operand, an assignment's among them, lives for the one operation and is established on any place, M3 deciding what the operation may do"; safety/README.md:443-455, the paragraph section 1.5 drafts, temporal_safety.md:178-189 and the temporal D-SAFE-8 bullet (:1398-1412), and mutation_safety.md:164-172 (M1's `ref` sentence), each "every `ref` binding ... an `unsafe` formation on an open place", do not, so read with docs/design/assignment.md:76-82 at 9192ee003 they made `q->n = 2` `StrictRefFromShared` | ACCEPTED: section 1.5's sentence, word for word, in the four passages | cbdc0552e: safety/README.md's kinds paragraph, the temporal kinds paragraph and D-SAFE-8 bullet, mutation M1 (the fourth beyond the review's three, R17) |
+| RR1-M2, the qualifier misses `ref self: const Self` calls | MAJOR | mutation_safety.md:219-223 (M3), :307-309 (M4's `addr self` bullet) and :1280-1283 (the page's D-SAFE-9), the log's D-SAFE-9 (:3217-3220), fork/safe/plan.md :516-519 and :1585-1587 subject a `const` call to M8 "when they bind a borrowed object", which a `ref self: const Self` receiver, a frozen `ref` (p005434:660-661 at 9192ee003), is not; the temporal `ref` bindings (:250-262) and M4's third bullet make that call through a shared pointer to an open place `StrictRefFromShared` | ACCEPTED: a `const` call whose `self` binds a borrowed object or is a `ref self: const Self`, and a read into a value binding of a borrowed object, need besides a closed place, a `Core.SharedImmutable` type, or `unsafe`, under M8 (D-SAFE-17) and, for the `const` `ref`, the `ref` bindings (D-SAFE-8) | cbdc0552e: M3, M4's `addr self` bullet, the page's D-SAFE-9, D-SAFE-9 in the log and section 0.3, fork/safe/plan.md section 1.6's M4; the M1 table's paragraph (:145-152) already named the receiver |
+| RR1-m1, the built-in test leaves out the integer `++` and `--` | MINOR, page change | the test "the language's own or a prelude impl whose body is a builtin" (temporal_safety.md:271-277, mutation_safety.md:232-234, log :3138-3139, fork/safe/plan.md :437-438, D-SAFE2-6 :1451-1452) excludes `Inc` and `Dec`, whose bodies `self += AsInt(1);` and `self -= AsInt(1);` (core/prelude/types/int.carbon:384-399, uint.carbon:446-461, equal to upstream's at 9192ee003, under :382's TODO) are no builtin, so `++p->n` through `T*` was neither built in nor user-written while `p->n += 1` was built in; docs/design/assignment.md:156-157 reads "For integer types, `++n;` and `--n;` behave the same as `n += 1;` and `n -= 1;` respectively."; and no line said that the operand's `ref` forms no loan of its own, M3(e) included | ACCEPTED: built in is the semantics assignment.md:146-157 gives the built-in types, the prelude's impls of them, which :168-170 says are "provided for built-in types as necessary to give the semantics described above", counting whatever their body; the assignment of a tuple, struct, array, choice type or class with no user-written `AssignWith` impl (:159-161, a TODO upstream); and the language's own `&`, member access naming a field and indexing of an array; the operand's `ref` forms no loan of its own, neither M3(d)'s call nor M3(e)'s exclusive loan | cbdc0552e: the temporal `ref` bindings section, M3, the page's D-SAFE-9, D-SAFE-8 and D-SAFE-9 in the log and section 0.3, section 1.6's M3, D-SAFE2-6, W-148's notes; section 8.7's R1-M1 decision carries a dated mark |
+
+Decisions under R29, each with its break condition:
+
+-   Section 8.7's R1-M2 decision is re-run, its break condition having fired
+    (section 8.13), and keeps the obligation, keyed now to the frozen loan
+    and not to the binding, over the second option, `unsafe` at each frozen
+    formation through a free result: the counterexample broke the
+    obligation's duration, not its kind, and the second option would put a
+    marker on every value binding of a `Core.SharedImmutable` element read
+    through a `Make` view, undoing the single audit line that T6, SP3 and
+    the spatial audit-line bullet state. Break condition: a counterexample
+    in which a frozen loan formed through a free result is invalidated with
+    the loan-keyed obligation met; `unsafe` at each such formation then
+    replaces it.
+-   The `unsafe` binding's own obligation is re-keyed in the same commit,
+    beyond the review's list, because it has RR1-B1's root: an
+    `unsafe p->M()` whose `bound self` binds a borrowed object on an open
+    place keeps its frozen loan in the result (T5(d)), longer than the
+    binding (R17). Break condition: T5(d) stops keeping a by-value `bound`
+    argument's frozen loan in the result; the obligations then return to the
+    binding's lifetime by a dated mark.
+-   RR1-m1's test follows the review's remedy and spells the aggregate case
+    as a type with no user-written `AssignWith` impl, so that the assignment
+    of `Core.String`, a class whose fields are private
+    (core/prelude/types/string.carbon:16-26) and which the prelude gives no
+    `AssignWith` impl, stays built in and `*q = "longer"` through a `str*`
+    stays `StrictSharedImmutableWrite`; every `ref self` operator impl in
+    core/prelude is for `Int`, `UInt`, `Float` or a `CppCompat` integer.
+    Break condition: upstream answers assignment.md:159-161's TODO, or
+    routes `=` through `AssignWith` for a type this test calls built in; the
+    test then follows upstream by a dated mark.
+-   type_safety.md is edited although section 2.2 and hand-off note 5 left it
+    alone, because its sentence calling the doc comment the whole contract
+    is a dependent line of RR1-B1 (R17); both carry a dated mark. Break
+    condition: a held PR's change to type_safety.md:131-146 collides with
+    it; none does at cbdc0552e (section 0.8's merge-tree sets unchanged).
+-   Appendix A and B keep commits 1 and 2's texts, as section 8.7 decided.
+    The blocks whose targets cbdc0552e changes are A.1.2, A.1.5, A.2.3,
+    A.2.4a, A.2.5, A.2.8, A.2.19, A.3.3, A.3.4, A.3.16, B.1.1, B.1.2, B.1.2a,
+    B.1.7 and B.3.5; section 8.7's pointer decision is extended by a dated
+    mark to this list rather than marking fifteen blocks, and the spatial
+    lines, T6's free-result paragraph, M3's two fold sentences and
+    type_safety.md are no block's text. Break condition: section 8.7's, a
+    re-reviewer needs the fold texts verbatim in this plan.
+-   `<fixes>` is now 0f281d8bd, e1574b003 and cbdc0552e (section 8.13's
+    placeholder row, a dated mark), and fork/safe/plan.md's realigned notes,
+    the one record that names the fold commits, gain cbdc0552e by a dated
+    mark; section 8.13's decision named the log's RG-1 paragraph too, which
+    names commits 1 and 2 only and is left as it is. Break condition: a
+    later fix commit; it then joins the list the same way.
+
+**Measured** after cbdc0552e, 2026-10-29, logs in the scratch's logs/:
+
+-   `git -C /home/user/carbon-lang fetch -q upstream trunk` gives 9192ee003;
+    `git log 9192ee003..upstream/trunk` over proposals, docs/design,
+    toolchain/check/type_completion.cpp and core/prelude lists nothing, and
+    `git log c1e83b0b7..9192ee003` over section 0.1's nine files,
+    docs/design/assignment.md, docs/design/expressions/indexing.md,
+    core/prelude/types/int.carbon and uint.carbon lists only f21c62524
+    (classes.md); the fork's assignment.md, int.carbon and uint.carbon equal
+    upstream's there.
+-   PR 67's checks, from a detached worktree of 56e2e5bbd at
+    /dev/shm/safe2-r2fixer/rg1, removed after, against
+    /home/user/carbon-lang at 9192ee003: "checked 273 quotes, 0 failed",
+    "checked 89 silence checks, 0 failed", the 97 and the 120 H1 quote rows
+    "checked 97 quotes, 0 failed" and "checked 120 quotes, 0 failed", the
+    five H1 checks "checked 5 silence checks, 0 failed", the earlier fold's
+    nine quotes "checked 9 quotes, 0 failed", and the sixteen upstream lines
+    this round cites (docs/design/assignment.md:146, :148, :153, :156, :159,
+    :161, :169 and :170, core/prelude/types/int.carbon:331, :382, :395 and
+    :398, uint.carbon:457 and :460, p005434:660 and :831) "checked 16
+    quotes, 0 failed".
+-   `git ls-remote origin`: trunk 1c83422a0 and the 18 held heads as the
+    table of section 0.8 names them, PR 53's pushed head still 2407efa74.
+-   R31 at cbdc0552e: every heading, bullet, numbered and row count of the
+    eight markdown files it changes equals the count at 6ebe4d650, after the
+    edit and after each prek pass, so section 8 item 1's expected deltas
+    stand; lines temporal 1564 to 1607, mutation 1472 to 1511, spatial 748
+    to 758, safety/README.md 841 to 849, type_safety.md 539 to 551, the log
+    8249 to 8284, fork/safe/plan.md 2966 to 3007, this plan 7471 to 7505.
+-   prek with a private cache, deleted after: pass 1 reflowed one paragraph
+    of this plan (rumdl MD013), the words equal; pass 2 exits 0 with no
+    change. rumdl@0.2.58: no issues in 8 files. The heading sets are
+    unchanged and the manufactured-heading grep is empty.
+-   Links: 1359 to 1366 over the ten pages and 82 to 83 on type_safety.md,
+    the unresolved set unchanged and the checker's own (italic-heading
+    anchors of terminology.md and the README's parenthesized URLs); the prek
+    link hook passes.
+-   The nightly outcomes of section 0.7: m4a 1, m4c 1, Peek 1, Peek2 6,
+    Peek4 6, tm9 3; i1, i2, i5, tm2, tm3, sp4 and sp6 compile 0; tm7 and
+    sp3 exit 1 with the table's diagnostics.
+-   `runner.py --self-test`: "150 programs parsed, 56 bullets in table, OK";
+    the ledger parses with `json.load`; the log's D-SAFE-1 to D-SAFE-23
+    block, 1184 lines, is identical to fork/safe/plan.md section 0.3.
+-   The merge-tree of cbdc0552e against trunk and the 18 held heads: the
+    sets of section 0.8, the same as 6ebe4d650's.
+-   The id re-scan widened to W-3[6-9][0-9] over the 165 origin refs and
+    local branches and the 22 worktrees: the ledgers end at W-363, the text
+    names W-360 to W-365, W-398 and W-399 as before; no id is taken, no
+    residue is filed and no F id is minted.
+-   The model-name grep over the changed lines and the message: no hit
+    outside the trailers.
+-   R31 of this records commit, on this plan: before, headings {1: 1, 2: 16,
+    3: 127}, bullets 115, numbered 31, rows 202; after, headings {1: 1, 2:
+    16, 3: 128}, bullets 133, numbered 31, rows 208, the changes this
+    section's heading, its eighteen bullets and its six table rows;
+    fork/safe/plan.md's counts are unchanged.
+
+Nothing is pushed: section 3 step 7 waits for a dry round, and round 3, a
+fresh agent, reviews cbdc0552e and this records commit.
 
 ## Sign-off
 

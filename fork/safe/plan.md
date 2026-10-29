@@ -2998,7 +2998,10 @@ changed are safe2-plan.md's section 4.
 The two document reviews returned APPROVE-WITH-FIXES with three MAJORs and
 three MINORs (review 1) and APPROVE-WITH-FIXES with four MINORs (review 2),
 folded by 0f281d8bd and e1574b003 (the pages) and the records commit that
-writes this sentence; the fold record is safe2-plan.md's section 8.7. The six
+writes this sentence; the fold record is safe2-plan.md's section 8.7. The
+focused re-review's round 1 found four page defects in that fold, folded by
+cbdc0552e (the pages; amended 2026-10-29, re-review round 2: safe2-plan.md
+section 8.14). The six
 items are PR 67's; their notes there are to read "REALIGNED" or "CLOSED" with
 this branch's dry head once SAFE-2's PR 67 note commit lands (safe2-plan.md
 section 3 step 6; amended 2026-10-28, document-review fold: R2-m3, where this

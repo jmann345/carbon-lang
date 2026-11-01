@@ -10,7 +10,15 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-29 (SAFE-2, the R32 realignment of SAFE-1's six departures
+Last updated: 2026-11-01 (the owner directed merging,
+"Go ahead and merge changes that are correct"; the hold-open practice since
+2026-10-08 was the orchestrator's application of R21 and R28 (c) after Actions
+was disabled, not an owner directive, and the mis-attribution is withdrawn; R33
+and decision-log entry LD-0 record it; LAND-1 merges the held PRs into trunk in
+the recorded order with container verification, PR 67 first and PR 53 after
+SAFE-3 completes; see the paragraph dated 2026-11-01 (17:42 UTC) below; the
+earlier 2026-10-29 text follows).
+2026-10-29 (SAFE-2, the R32 realignment of SAFE-1's six departures
 on PR 53's branch, is STOPPED at its plan rev 14 by the orchestrator's rulings:
 its commits and four fix commits stand unpushed with the plan, and round 3 of
 the plan re-review found the built-in operator exemption's justification false
@@ -734,6 +742,23 @@ then SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56; EH-C (W-346) after the
 held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs W-355's
 scripts from PR 67's branch at its head.
 
+2026-11-01 (17:42 UTC): THE OWNER DIRECTED MERGING. The owner corrected the
+orchestrator's report of this day, which had said the PRs were held open at the
+owner's direction ("This is a hallucination - I never gave that directive"), and
+directed: "Go ahead and merge changes that are correct." The hold-open practice
+since 2026-10-08 was the orchestrator's application of R21 and R28 (c) after
+GitHub Actions was disabled on the fork, never an owner directive; the
+mis-attribution is withdrawn, and the directive is recorded as R33
+(fork/rulebook.md) and decision-log entry LD-0. What follows is LAND-1: the held
+PRs are merged into trunk in the recorded land order, each by a merge commit
+when it is correct, with the merged trunk built and verified in the container by
+the carbonbuild arbiter (the toolchain, the file_test gate, the conformance
+scoreboard, prek) and the PR's land-time records steps done; PR 67 (RG-1) first;
+PR 53 after SAFE-3 completes; PR 60 after SC-1's W-139 and PR 56 after OP-1's
+W-352. The plan is fork/land/land1-plan.md, reviewed before the first merge. At
+this stamp eighteen PRs are still held open and none is merged. No workflow is
+dispatched and the owner's machine is never used (R28).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -1142,6 +1167,12 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     arbiter (R28).
 
 ### Next actions (dependency order)
+
+LAND-1 comes first (R33, 2026-11-01): fork/land/land1-plan.md lands the held PRs
+into trunk in the recorded order, each merged by the orchestrator when it is
+correct and verified in the container, PR 67 first, PR 53 after SAFE-3
+completes, PR 60 after W-139 and PR 56 after W-352; the items below stand as the
+work still owed on the branches and after the landing.
 
 1.  **DR-1 (fork/direction/plan.md, rev 4, signed off)**: DR-1a, the `ref`
     cursor (W-321), is held open as PR 63 and DR-1b, `IndirectIndexWith` (W-109,

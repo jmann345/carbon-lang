@@ -274,6 +274,38 @@ on trunk) gains a dated note naming D-DR-1 slice 3 and R32, and no new id.
 W-324..W-329 are reserved and unused. The trunk ledger holds W-001..W-125 and
 these four; the ids between live on the held PRs' branches.
 
+### LD-0: the owner's merge directive; the hold-open practice corrected (2026-11-01)
+
+Placed here beside DR-0 because it records an owner directive that amends the
+rulebook (R33), and the log groups entries by workstream, not by date. Records
+only: no toolchain, prelude, golden or program file changes with it.
+
+_The directive._ The owner, 2026-11-01, verbatim:
+"Go ahead and merge changes that are correct." It came with a correction. The
+orchestrator's report of that day had said that the owner directed the PRs to be
+held open for the owner to merge; the owner replied that this was a
+hallucination and that no such directive was given. The record agrees with the
+owner: the hold-open practice began on 2026-10-08, when GitHub Actions was
+disabled on the fork and R21's merge gate could no longer run, as the
+orchestrator's application of R21 and R28 (c),
+"trunk receives only verified merges"; no owner message directed it. The
+mis-attribution is withdrawn here.
+
+_The decision._ R33 (fork/rulebook.md): the orchestrator merges a held PR into
+trunk when it is correct, by a merge commit in the recorded land order, with the
+merged trunk verified in the container by the carbonbuild arbiter (the toolchain
+built, the file_test gate passing over every golden, the conformance runner's
+scoreboard not regressing against the PR's expected scoreboard, prek clean) and
+the PR's land-time records steps done; a PR with an owed fix or an unfinished
+realignment is not merged until it is correct; R28 stands. The land sequence is
+LAND-1 (fork/land/land1-plan.md, planned next): PR 67 first, then the held PRs
+in the recorded order, PR 53 after SAFE-3 completes, PR 60 after SC-1's W-139
+and PR 56 after OP-1's W-352.
+
+_Break condition._ GitHub Actions returning on the fork: R21's hosted gate is
+re-run on everything landed under R33, and a failure there is a defect filed
+against the landed PR and fixed on trunk by a new commit.
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

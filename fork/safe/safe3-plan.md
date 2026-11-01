@@ -6,8 +6,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-3 plan: the built-in operator exemption re-derived from the safety argument
 
-**Status:** rev 11 -- NOT signed off: RT1-B1, RT1-M1, RT1-M2; SAFE-3's
-planning STOPPED under the re-think ruling's break condition. Rev 11,
+**Status:** rev 12 -- NOT signed off: RT2-B1, RT1-B1; SAFE-3's planning STOPPED
+under the re-think ruling's break condition, RT1-M1 and RT1-M2 recorded and
+open. Rev 12, 2026-11-01, is the fixer's record of re-think re-review round 2 of
+rev 11 (REJECT: one BLOCKER, RT2-B1, RT1-B1 still holding at rev 11 and wider
+than the re-ruling its review proposed, C++ code that receives a pointer to a
+Carbon class's C++ base calling a virtual function whose Carbon override
+receives the complete object and writes a field outside the base while a `ref`
+on that field is bound, a place the closure of D-SAFE3-13 does not name, so that
+T8 keeps `noalias` on the `ref` (y06: 9 9); two MINORs, RT2-m1, the stop path's
+trunk record, and RT2-m2, copies that rev 11's marks missed and two stale cells,
+both records only). RT2-B1 meets the same stop condition and is recorded,
+reproduced and not folded, and RT2-m1 and RT2-m2 are folded as records: the stop
+stands, and the orchestrator records it on trunk by Appendix D's stop path, the
+mirror fast-forwarded first, W-365 and W-366 reserved and unfiled and PR 53 held
+under R33 (c), and turns to the next workstream (the rev 12 fold record;
+amended 2026-11-01, re-think round 2: RT2-B1, RT2-m1, where this sentence read
+"rev 11 -- NOT signed off: RT1-B1, RT1-M1, RT1-M2; SAFE-3's planning STOPPED
+under the re-think ruling's break condition."). Rev 11 (commit 9ef7ac142),
 2026-11-01, is the fixer's record of re-think re-review round 1 of rev 10
 (REJECT: one BLOCKER, RT1-B1, C++ code reaching from a received element
 pointer a sibling element or the enclosing object, a Carbon place the closure
@@ -110,15 +126,20 @@ at 547fb6220, rev 9's commit, when rev 10 was written on 2026-11-01, a moved
 head reported, PR 53's head still 2407efa74, amended 2026-11-01, re-think:
 RT-1; still at 547fb6220 when rev 11 was written, rev 10's commit db91f602a
 not yet mirrored, PR 53's head still 2407efa74, amended 2026-11-01, re-think
-round 1: RT1-m2). This plan is a new file beside fork/safe/safe2-plan.md, which
-this planner does not edit; its dated pointer marks come with the fold commit
-(section 2). Upstream was read at its tip 9192ee003, fetched 2026-10-29,
-re-read at its tip 68569d234 on 2026-11-01 for rev 10 and re-fetched for
-rev 11 on 2026-11-01 at 19:27 UTC, its tip still 68569d234 (section 0.1;
-amended 2026-11-01, re-think round 1: RT1-m2, where this named 9192ee003
-alone). Records and design text only: no toolchain, prelude, golden,
-program or conformance change, no build of any kind, the nightly compiling
-examples and probes only (R30).
+round 1: RT1-m2; still at 547fb6220 when rev 12 was written, rev 10's db91f602a
+and rev 11's 9ef7ac142 not yet mirrored, the orchestrator fast-forwarding it to
+the records head before the stop's trunk stamp (Appendix D's stop path), PR 53's
+head still 2407efa74, amended 2026-11-01, re-think round 2: RT2-m1). This plan
+is a new file beside fork/safe/safe2-plan.md, which this planner does not edit;
+its dated pointer marks come with the fold commit (section 2). Upstream was read
+at its tip 9192ee003, fetched 2026-10-29, re-read at its tip 68569d234
+on 2026-11-01 for rev 10 and re-fetched for rev 11 on 2026-11-01 at 19:27 UTC
+and for rev 12 at 19:55 UTC, its tip still 68569d234 (section 0.1;
+amended 2026-11-01, re-think round 1: RT1-m2, where this named 9192ee003 alone;
+amended 2026-11-01, re-think round 2: RT2-m2, the rev 12 re-fetch added).
+Records and design text only: no toolchain, prelude, golden, program or
+conformance change, no build of any kind, the nightly compiling examples and
+probes only (R30).
 
 **Items:** W-347 to W-351 and W-353 (PR 67's ledger,
 fork/inventory/work-items.json on `claude/carbon-fork-0-1-rg1` at 56e2e5bbd),
@@ -126,8 +147,11 @@ realigned by SAFE-2's commits 1 and 2 and its four fix commits, whose W-347
 clause for the built-in operators SAFE-3 re-derives; residue W-365 (planned by
 SAFE-2 for RB-M3 and not yet filed) and the new watch item W-366 (the
 toolchain's interim `=`), both filed by SAFE-3's fold commit on PR 53's ledger
-(section 0.8); W-144 to W-150, SAFE-1's stage items, of which W-148 and W-149
-gain dated notes.
+(section 0.8; amended 2026-11-01, re-think round 2: RT2-m1: the plan having
+stopped, that commit does not come, so both stay reserved for SAFE-3 and
+unfiled, their texts in B.14, until a re-ruling resumes the plan, and the stop's
+trunk stamp names them reserved, Appendix D's stop path); W-144 to W-150,
+SAFE-1's stage items, of which W-148 and W-149 gain dated notes.
 
 **The rule applied** (R32, R17): the design states upstream's rule, a
 classification beyond upstream's text is labelled this design's, and no
@@ -177,13 +201,16 @@ of 2026-10-29 for RR3-M1, RR4-M1, RR5-M1, RU2-1, RU1-1 and RU1-2).
 -   Section 3, commits and reviews; section 4, the worked-example matrix;
     section 5, scoreboard; section 6, churn and collisions; section 7, risks
     and rejected alternatives; section 8, verification and the not-run list.
--   The review fold records of rev 2 to rev 11, rev 10's opening with the
-    orchestrator's ruling of 2026-11-01 quoted whole and rev 11's recording
-    the stop on RT1-B1 with the re-think re-review's 5 probes re-run (amended
-    2026-11-01, re-think round 1: RT1-B1, where this read "rev 2 to rev 10"),
-    the hand-off notes, then
+-   The review fold records of rev 2 to rev 12, rev 10's opening with the
+    orchestrator's ruling of 2026-11-01 quoted whole, rev 11's recording the
+    stop on RT1-B1 with the re-think re-review's 5 probes re-run and rev 12's
+    recording RT2-B1 with the second re-think re-review's 6 probes re-run
+    (amended 2026-11-01, re-think round 1: RT1-B1, where this read "rev 2 to
+    rev 10"; amended 2026-11-01, re-think round 2: RT2-B1, RT2-m1, where this
+    read "rev 2 to rev 11" and named no stop path), the hand-off notes, then
     Appendix A (pages), Appendix B (records), Appendix C (the PR texts and
-    PR 67's note commit) and Appendix D (trunk's fork/ORCHESTRATION.md).
+    PR 67's note commit) and Appendix D (trunk's fork/ORCHESTRATION.md, its stop
+    path's texts among them).
 
 ## §0 Audit
 
@@ -492,8 +519,13 @@ behavior; and the closed places name the storage a C++ caller supplies to a
 function exported to C++ as bound by that caller, whose own lowering marks it
 `noalias` (c06's declaration of `Carbon::Pair::Make`), as the left operand of a
 Permissive caller's in-place `=` is bound by that caller, the one open storage
-staying a global variable (D-SAFE3-13, A.33 to A.40, B.32 to B.35, B.12; added
-2026-10-29, ruling round 1: RU1-1). The same round found the carriers short of
+staying a global variable (D-SAFE3-13, A.33 to A.40, B.32 to B.35, B.12;
+added 2026-10-29, ruling round 1: RU1-1; recorded 2026-11-01, re-think round 1:
+RT1-M1, not folded, the plan having stopped: Clang declares w05's exported
+`F(ref x)` with no `noalias`, and storage a C++ caller supplies keeps the Carbon
+callee's `noalias` once forwarded to a function that is not exported, w04
+printing 9 9 and w05 9, this mark added 2026-11-01, re-think round 2: RT2-m2).
+The same round found the carriers short of
 a function value (RR6-m1): upstream's captures "behave as they would in regular
 bindings" (p003848:463-464), so a function value is a carrier of the loans its
 captures hold and a call of it a use of each, which T3's sentence, the loan-set
@@ -1084,7 +1116,7 @@ one place twice):
 | f02 | copy-represented at every depth: `{.s: {.n: i32}}` from `p->s.n + 1` and from `Bump(p)`; `{.o: Core.Optional(i32*)}` | one `store { { i32 } }` after the load or the call; load, the prelude's copy, one store | 2 13 7 |
 | f03 | class `{.data: i32, .next: i32*}`: `c = {.data = 42, .next = &c.data}`; the remedy `e.data = 43; e.next = &e.data;` | the pointer stored, nothing read through it during the `=` | 44 45 |
 | f04 | ra01's remedies on the nightly: `let v: W = {...}; y = v;` on a local; each element read into a local `i32` and assigned on its own | the first followed by `store poison` over `y`; the second two loads, then two stores | 2 2; 2 1 |
-| n01 (rev 3) | `class A { adapt W; }`: `*q = {.s = {.a = (*p as W).s.b, .b = (*p as W).s.a}} as A` | both loads of `p` into a temporary, the temporary copied into `q`, then `store poison` over `*q` (the `as` forms the value first) | order-only (an undefined value, 3) |
+| n01 (rev 3) | `class A { adapt W; }`: `*q = {.s = {.a = (*p as W).s.b, .b = (*p as W).s.a}} as A` | both loads of `p` into a temporary, the temporary copied into `q`, then `store poison` over `*q` (the `as` forms the value first) | order-only (two undefined values; amended 2026-11-01, re-think round 2: RT2-m2, where this read "an undefined value, 3", the second value following the same `store poison` and printing 3, 1, 2 and 2 in four runs) |
 | n02 (rev 3) | `class A { adapt {.c: C}; }`, `C` a two-field class with a user `Copy`: `*q = *p` | the nightly crashes in lowering; the SemIR calls `C`'s `Copy` with `init %C to` `(q as {.c: C}).c` and `self` from `(p as {.c: C}).c` | crash; the SemIR is the evidence |
 | n03 (rev 3) | reads through the owner, no carrier: a `var` parameter `x = {.a = x.b, .b = x.a}`, a `returned var` of a class `r = {.a = r.b, .b = r.a}`, a class local `d = {.a = d.b, .b = d.a}` | load `x.1`, store `x.0`, load `x.0`, store `x.1`; the same for `return` and for `d` | 2 2; 4 4; 6 6 |
 | n04 (rev 3) | `let v: W = y; y = {.s = {.a = v.s.b, .b = v.s.a}}`; the same with `v` bound from `*p` and the left operand `*q` | `v`'s elements copied into a temporary at the `let`, then the stores, then `store poison` | order-only |
@@ -1490,7 +1522,7 @@ each new one once (section 8 item 4).
 | T3 (liveness) | one sentence (A.32 on the temporal page, B.31 in D-SAFE-10's restatement in the log and fork/safe/plan.md): a use of a value from which a carrier can be loaded, a pointer to a place that holds the carrier, a `ref` of such a place or a value that carries a loan on one, transitively, is a use of the carrier, without which T4 sees no use of `p`'s loan in m02's `MakeW(&p)` and no exclusive or frozen loan, a `ref` binding's included, excludes a callee's read through a carrier it loads; the mutation page's summary of T3 (:189-191, "the last use of any carrier") is true as stated, T3 defining a use, and stays (added 2026-10-29, review fold: RR3-M1); the same block names a function value a carrier of every loan its captures hold and a call of it a use of each, and the loan-set bullet gives a function value its captures' loan sets (A.32, A.41, B.31; p003848:463-464; added 2026-10-29, ruling round 1: RU1-2) |
 | T4 (conflicts) | no change of text: when the interim rule removes the exemption the `=` is a checked reborrow of the left operand for the whole evaluation, and T4 reports the right operand's read or use of the left operand's place through its owner or a carrier of it, `StrictExclusiveBorrowConflict` for a read through the owner (n03) or a call's use of a carrier it loads through a value it receives (A.32; m02, m04) and `StrictSharedBorrowInvalidated` for a loan the use forms, an array element at an index the checker cannot prove distinct from the left operand's overlapping it (n05) (amended 2026-11-01, re-think: RT-1, where this row stated T4's conflicts beside condition (ii) as rev 9 (547fb6220) did, with its marks of 2026-10-29 for RR1-M1, RR2-m3 and RR3-M1) |
 | T8 (codegen honesty) | one sentence (A.37 on the temporal page, B.35 in D-SAFE-10's restatement in the log and fork/safe/plan.md): T8 withholds `noalias` and `captures(none)` on every place C++ code receives, by the closure of D-SAFE3-13, for the marked and the trusted routes alike, on `ref` and `exclusive T*` parameters and loans, a `ref` binding or an `exclusive T*` loan formed on such a place or on a place that overlaps one, and a `ref` or `exclusive T*` parameter one of whose call sites binds one among them, the obligation not being a fact the checker establishes (p005914:205-208), without which T8's whole-package fact marked c05's, e09's and t01's `Mod` while C++ code kept a pointer to the place, the program undefined, not erroneous; otherwise no change: T8 emits `noalias` only where established against every writer, never on an open place, and every exempt in-place `=` meets it by construction, nothing but prelude code over values formed before the binding running while its left operand is bound (D-SAFE3-5) (added 2026-10-29, ruling round 1: RU1-1; amended 2026-11-01, re-think: RT-1, RR8-M1, RR8-m1, where this row named the routes as rev 9 (547fb6220) did, from "no attribute for a `ref` on a place whose address C++ code received" to "neither obligation being a fact the checker establishes", and rested the claim for the interim `=` on "its conditions stated over every path" and a `returned var` closed by the list of storages its caller's call initializes, with its marks of 2026-10-29 for RU1-1, RU2-1, RR3-M1, RR4-M1 and RR5-M1) |
-| the loan kinds, closed and open places | the loan kinds no; the closed places two sentences (A.33 and A.44 on the temporal page, B.32 in D-SAFE-10's restatement in the log and fork/safe/plan.md, A.45 on the mutation page): statement (2) of D-SAFE3-5, a fresh local's own initialization exempt, a `returned var` checked as an in-place `=` is on a closed place, its caller's destination bound for the call by the caller, the storage a C++ caller supplies among them under C++'s own `noalias` (c06), a global variable's dynamic initializer, `DefaultOrUnformed` for one declared without an initializer, on an open place, otherwise an `unsafe` formation, `StrictRefFromShared` unmarked, and a global constant's temporary closed (values.md:102, :164-166), this design's rule, upstream allowing global constants and having no global variables (docs/design/README.md:1235-1240); and a carrier of a closed place escapes into C++ code, which T5(b) does not bind, that code receiving the places it carries loans on (A.44, A.45); the open places' list stays (added 2026-10-29, review fold: RR4-M1, RR5-M1, RR5-m1, ruling round 1: RU1-1; amended 2026-11-01, re-think: RT-1, RR8-M1, where this row listed the storages a `returned var` can name as rev 9 (547fb6220) did, from "a `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs" to "so the one open storage stays a global variable", with its marks of 2026-10-29) |
+| the loan kinds, closed and open places | the loan kinds no; the closed places two sentences (A.33 and A.44 on the temporal page, B.32 in D-SAFE-10's restatement in the log and fork/safe/plan.md, A.45 on the mutation page): statement (2) of D-SAFE3-5, a fresh local's own initialization exempt, a `returned var` checked as an in-place `=` is on a closed place, its caller's destination bound for the call by the caller, the storage a C++ caller supplies among them under C++'s own `noalias` (c06), a global variable's dynamic initializer, `DefaultOrUnformed` for one declared without an initializer, on an open place, otherwise an `unsafe` formation, `StrictRefFromShared` unmarked, and a global constant's temporary closed (values.md:102, :164-166), this design's rule, upstream allowing global constants and having no global variables (docs/design/README.md:1235-1240); and a carrier of a closed place escapes into C++ code, which T5(b) does not bind, that code receiving the places it carries loans on (A.44, A.45); the open places' list stays (added 2026-10-29, review fold: RR4-M1, RR5-M1, RR5-m1, ruling round 1: RU1-1; amended 2026-11-01, re-think: RT-1, RR8-M1, where this row listed the storages a `returned var` can name as rev 9 (547fb6220) did, from "a `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs" to "so the one open storage stays a global variable", with its marks of 2026-10-29; recorded 2026-11-01, re-think round 1: RT1-M1, not folded, the plan having stopped: the storage a C++ caller supplies keeps the Carbon callee's `noalias` once forwarded to a function that is not exported (w04: 9 9), and Clang declares an exported function's `ref` parameter with no `noalias` (w05: 9), which a re-ruling decides, this mark added 2026-11-01, re-think round 2: RT2-m2) |
 | D-SAFE2-3 to D-SAFE2-5, the value-representation keying of borrowed objects | the keying stays; its one-element clause is read at every depth: the re-derivation relies on it, a right operand that is not copy-represented at every depth holding a borrowed object whose frozen loan T4 and M3 check, and the interim rule keys the in-place case on the same representation read at every depth, which D-SAFE2-3's one-element clause states one level deep (mutation_safety.md:620-622; type_info.cpp:82-89, convert.cpp:283-297), so A.24 and B.27 state it at every depth and A.25 to A.31, B.28 to B.30 the lines that give a copy-represented type no loan (section 0.5's second table; n09; A.30 and A.31, the Value bindings bullet's lead and sentence, added 2026-10-29, review fold: RR3-m2), and a type whose value representation is not known when a generic's body is checked is not copy-represented (A.24; n06, k01) (amended 2026-10-29, review fold: A-RA3-B1, where this read "a pointer-represented right operand is a borrowed object" and "keys the in-place case on the same representation (type_info.cpp:82-89)"; amended 2026-10-29, review fold: RR2-m1, RR2-m2, where this read "no change; the re-derivation relies on it: a right operand that is not copy-represented, or a one-element aggregate whose element is not, holds a borrowed object" and "as D-SAFE2-3's one-element clause reads it") |
 | M7 and D-SAFE-16, the thread-boundary lifetime rule | no change of text; the noalias claim across Carbon-spawned threads rests on it, and W-365's three shapes, Race2's `Plain` write by the spawning thread to a place a scoped thread reads through a `const T*` argument, a global two threads write, and a write through a free pointer to allocator-owned storage whose copy `Core.Thread.Spawn`, which accepts a free loan set (mutation_safety.md:570-572), hands to a detached thread that reads it, are that claim's open gap, closed by W-365's stage 5 contract, a frozen hold for scoped threads and a rule for free storage (A.1's second paragraph, D-SAFE3-3, B.1, B.12, W-365's notes; added 2026-10-29, review fold: RR2-M1; amended 2026-10-29, review fold: RR3-m1, where this read "W-365's two shapes, Race2's `Plain` write by the spawning thread to a place a scoped thread reads through a `const T*` argument and a global two threads write"; the free loan set is the temporal page's vocabulary's, temporal_safety.md:126-129) |
 | `Core.SharedImmutable` and M3's structural write rule | no: M3 still decides what an exempt operation may write through a shared path (`Peek2`, `Peek4` unchanged) |
@@ -1650,8 +1682,19 @@ the rev 9 fixer on 2026-10-29 over the 167 refs and every worktree
 and W-399, and W-367 only in this plan on the branch, no ledger past W-363;
 rev 9 mints no id, RR7-M1 being decided at the C++ boundary's premise with no
 work deferred, every route's obligation stated and its cost measured
-(D-SAFE3-12, D-SAFE3-13), so W-367 stays free (added 2026-10-29, ruling round
-2: RU2-1).
+(D-SAFE3-12, D-SAFE3-13), so W-367 stays free (added 2026-10-29, ruling round 2:
+RU2-1). Revs 10 and 11 record their re-scans in their fold records. Repeated by
+the rev 12 fixer on 2026-11-01 over the 168 refs (138 origin tracking refs
+and 30 local branches) and the 22 worktrees: W-360 to W-371 and W-397 to W-399,
+no ledger past W-363; W-367 to W-370 are LAND-1's (fork/land/land1-plan.md's
+D-LAND-13, on the local branch `land-prep`, a8fa4d68b when scanned, and in the
+worktree /home/user/carbon-weekly), which takes W-367, the id rev 9's sentence
+above keeps free, names W-371 as the id SAFE-3 would take next and W-397 only as
+the bound of a range it finds empty; rev 12 mints no id, and with the plan
+stopped W-365 and W-366 are not filed: both stay reserved for SAFE-3, their
+texts in B.14, until a re-ruling resumes the plan, and no other workstream takes
+them, as LAND-1's plan already counts them SAFE-3's (Appendix D's stop path;
+added 2026-11-01, re-think round 2: RT2-m1).
 
 ### §0.9 SAFE-2's findings that the tree does not carry
 
@@ -1967,7 +2010,10 @@ Each under R29, with its break condition.
     counted pointer-carrying and the storage a C++ caller supplies named bound
     by that caller, the path then being the unsafe code's breach of a marker's
     or of C++'s own obligation, which T8 makes erroneous behavior (D-SAFE3-13,
-    A.33 to A.37, B.32, B.33, B.35; added 2026-10-29, ruling round 1: RU1-1),
+    A.33 to A.37, B.32, B.33, B.35; added 2026-10-29, ruling round 1: RU1-1;
+    that storage's `noalias` refuted for a `ref` parameter and once forwarded,
+    RT1-M1, recorded 2026-11-01, re-think round 1, not folded, this mark
+    added 2026-11-01, re-think round 2: RT2-m2),
     and its RR6-m1 named a function value's captures among the carriers (A.32,
     B.31; added 2026-10-29, ruling round 1: RU1-2); ruling round 2's e01 met
     it at rev 8, `Mod(ref x)` while the copy constructor that a shape-1
@@ -2777,7 +2823,13 @@ Each under R29, with its break condition.
     (w01: 9 9 2; w02: 9 9; w03: 9 9), and by RT1-M2, a union read that cuts
     the carrier relation where no ⊥ destination covers it (traced by hand),
     and the plan stopped there for the orchestrator, nothing folded against
-    this decision; recorded 2026-11-01, re-think round 1: RT1-B1, RT1-M2); a
+    this decision; recorded 2026-11-01, re-think round 1: RT1-B1, RT1-M2; and
+    met again at rev 12 by RT2-B1, C++ code that receives a pointer to a Carbon
+    class's C++ base calling a virtual function whose Carbon override receives
+    the complete object and writes a field outside the base, a place the closure
+    does not name and the re-ruling RT1-B1's review proposed does not reach,
+    while T8 keeps `noalias` on a `ref` to it (y06: 9 9), the stop standing and
+    nothing folded, recorded 2026-11-01, re-think round 2: RT2-B1); a
     corpus program or page
     example whose result turns on a trusted route's breach, or a later count
     that makes the trusted routes' cost or the open-for-life alternative's
@@ -2956,8 +3008,12 @@ is written:
     `date -u +%H:%M`, of the orchestrator's stamp; `<held>`: the PRs held open
     and those merged when the orchestrator stamps, read then from
     `git ls-remote origin` and trunk's log, R33 (trunk bb9fbba9c, LAND-1's
-    LD-0) making merges the orchestrator's (added 2026-11-01, re-think
-    round 1: RT1-m1).
+    LD-0) making merges the orchestrator's (added 2026-11-01, re-think round 1:
+    RT1-m1); `<records head>`: on the stop path (Appendix D), the head of
+    `claude/carbon-fork-0-1-safe` that holds this plan's last revision, 39
+    commits over 2407efa74 at rev 12, to which the orchestrator fast-forwards
+    the mirror before the stamp, checking it by `git ls-remote origin`
+    (added 2026-11-01, re-think round 2: RT2-m1).
 
 Every fenced text that a block gives already wrapped, the Lines texts of A.1,
 A.2, A.7, A.8 and B.1 among them, is wrapped with each placeholder counted at
@@ -3008,11 +3064,15 @@ item 1), A.34, A.38 and B.34 replacing words within one table row or code line.
 ### §2.3 Commit 2, the records
 
 "SAFE-3 (2/2): records" edits this plan alone: the Status paragraph's first
-sentence, the one that begins "**Status:** rev" (at rev 10 it reads "**Status:**
-rev 10, 2026-11-01 -- the re-think ruling carried out; NOT signed off pending
-re-think re-review round 1.", and the signed-off revision the implementer works
-from replaces it; amended 2026-11-01, re-think: RT-1, where this quoted rev
-9's; amended 2026-10-29, ruling round 2: RU2-1, where this quoted rev 8's;
+sentence, the one that begins "**Status:** rev" (at rev 12 it reads "**Status:**
+rev 12 -- NOT signed off: RT2-B1, RT1-B1; SAFE-3's planning STOPPED under the
+re-think ruling's break condition, RT1-M1 and RT1-M2 recorded and open.", and
+the signed-off revision the implementer works from replaces it;
+amended 2026-11-01, re-think round 2: RT2-m2, where this quoted rev 10's,
+"**Status:** rev 10, 2026-11-01 -- the re-think ruling carried out; NOT signed
+off pending re-think re-review round 1.", which rev 11 left as it was;
+amended 2026-11-01, re-think: RT-1, where this quoted rev 9's;
+amended 2026-10-29, ruling round 2: RU2-1, where this quoted rev 8's;
 amended 2026-10-29, review fold: RR1-M1, where this quoted rev 2's;
 amended 2026-10-29, review fold: RR2-M1, where this quoted rev 3's;
 amended 2026-10-29, review fold: RR3-M1, where this quoted rev 4's;
@@ -4936,6 +4996,197 @@ text above for the orchestrator, should it re-rule.
 | RT1-m1 MINOR | trunk bb9fbba9c's R33 (fork/rulebook.md:409-430) and LD-0; Appendix D's first and fourth blocks and section 3 steps 7 to 10 at rev 10 | ACCEPTED, folded as records: `<held>` defined in section 2.1 and filled at the stamp from `git ls-remote origin` and trunk's log, citing R33, in Appendix D's first and fourth blocks; section 3 step 7, step 9, C.3's lead and Appendix D's lead: if PR 67 has merged, the note commit is a records commit on trunk and C.3 is dropped |
 | RT1-m2 MINOR | D-SAFE3-1 at rev 10 against section 8 item 6's 141 rows (67, 33, 10, 6, 7, 5, 8 and 5) and safe3-quotes-all9.tsv's 141 lines; the Status's upstream sentence | ACCEPTED, folded as records: D-SAFE3-1 states 141 rows with rev 7 to rev 9's additions and the re-reads at 68569d234; the Status names the re-reads and the mirror's state at rev 11 |
 
+## Review fold record (rev 12, 2026-11-01)
+
+Re-think re-review round 2 of rev 11 (9ef7ac142), which the orchestrator ran on
+the stopped plan, as the orchestrator handed it to the fixer, its verdict
+REJECT:
+
+<!-- google-doc-style-ignore -->
+
+```text
+verdict: REJECT
+
+summary: I reviewed rev 11 (9ef7ac142). The verdict is REJECT. Rev 11 was right to stop SAFE-3's planning under the re-think ruling's break condition, and the stop should stand: RT1-B1 is still open, and a new probe shows it is wider than the re-ruling RT1-B1 proposed.
+
+Upstream: re-fetched at 19:41 UTC. The tip is still 68569d234, so `git log 68569d234..upstream/trunk` is empty and no quote has moved since rev 10.
+
+PR 67's checks, run from a detached worktree of 56e2e5bbd under /dev/shm/safe2-rethink-rr2/rg1 (removed afterwards):
+- Pass: the H1 sets 97, 120 and 5, rev 9's 5 H1-cited rows, and the plan's 141 rows (33 of the 141 fail at the cut, as before).
+- Fail: PR 67's own 273 and 89 fail 8 and 2, all outside the H1 rows, as the plan records.
+
+Branch state (`git ls-remote`): the 18 held heads are as recorded, trunk is bb9fbba9c, and the mirror is at 547fb6220.
+
+Earlier probes: 204 sources re-run (the 196 in the earlier re-run list plus the 8 in rethink-fixer1's probe directory). 202 are identical. n01 and n04 differ only in poison values. w01 to w05 reproduce (9 9 2; 9 9; 9 9; 9 9; 9), w07 prints 5 5 6, and x01 is rejected because the nightly has no `union`.
+
+New probes, y01 to y06, under scratchpad/safe3/rethink-rr2/probe/ (INDEX.tsv):
+- **Statement (1) held.** y01 and y02 print 3 4 1 2: the nightly copies by-value struct arguments at the call, and the design rejects both calls (T4 for y01, M8's `StrictBorrowFromShared` for y02). y03 prints 7 3 4 8: the formed cases run only loads, stores and the prelude's `Some`. y04 prints 2 1 2 1: `x = Make(x)` is rejected by T4 and the fresh-local form is exempt. y05 prints 9: `Cpp.g` is an open place, so `ref Cpp.g` is `StrictRefFromShared`.
+- **Statement (3) fails.** y06 (9 9) is a new instance of the RT1-B1 family; see RT2-B1.
+
+Checks:
+- Dry run on fresh archives of 0f22798fb: ALL OK, 703 checks filled and 692 unfilled.
+- r31: H1 1, H2 25, H3 102, 77 bullets, 34 numbered items, 368 rows, 7813 lines, no unguarded line.
+- rumdl@0.2.58: clean.
+
+Records: the ruling recorded at rev 10 is unchanged, RT1-m1 and RT1-m2 are folded correctly, and the worktree is clean. The scratch is at /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/rethink-rr2/. I edited no repository file.
+
+RT2-B1 (BLOCKER): RT1-B1 still holds at rev 11, and it is wider than its proposed re-ruling: C++ calls back into Carbon through a received base sub-object
+citation: safe3-plan.md D-SAFE3-13 (:2641-2790: the closure, and the break condition at :2765-2781), A.36, A.37; p005434:83 and :866-868 ('won't be passed to LLVM unless their requirements can be established'), p005914:206-208 at 68569d234; probes w01 to w03 re-run (9 9 2; 9 9; 9 9) and y06 (9 9)
+detail: The probe y06 sets this up:
+- `class D { extend base: Cpp.Base; var n: i32; override fn Virt(ref self: Self) { self.n = 9; } }`
+- The call is `Mod(ref d.n, &d.base)`.
+- Mod does `e = 5; unsafe Cpp.CallVirt(p); return e;`.
+
+The C++ code keeps no pointer, so it meets A.36's obligation. It calls `b->Virt()`, which dispatches to the Carbon override with `self` set to the whole `D`, and the override writes `d.n` while Mod's `e` is bound to it. The IR is store 5 to %e, call @_Z8CallVirtP4Base, load %e, and the program prints 9 9.
+
+The pointer's loan lies on `d.base` alone, and (r3) keeps `d.n` apart from it. So T4 accepts the program and T8 keeps `noalias` on `e`. This meets D-SAFE3-13's own stop condition, as w01 to w03 do.
+
+RT1-B1's proposed re-ruling does not cover this case. It hands C++ the outermost array, or, for a first member, the enclosing standard-layout C++ object. `D` is not standard-layout, and the route is a virtual call back into Carbon code that receives the complete object.
+fix: The stop stands under the ruling's break condition; nothing is to be folded. If the orchestrator re-rules, the rule should be stated as follows:
+- An address handed to C++ hands C++ the complete object that contains the place: the outermost array, the enclosing object, or the derived object of a base sub-object.
+- A dispatch from C++ into Carbon (a virtual override or an exported function) receives its `self` and its parameters as storage a C++ caller supplies (RT1-M1).
+- T8 withholds its attributes on every place within that object.
+
+Add y06 next to w01 to w05 in sections 0.3, 1.3 and 4, and count the corpus calls that pass `&a[i]`, a member's address or a base's address to C++.
+
+RT2-m1 (MINOR): The stop path's trunk record lacks the facts it needs: the mirror, unfiled ids, and LAND-1's wait at PR 53
+citation: Status (:24-28) and the rev 11 record ('unpushed and mirrored', 'carried by W-148 and W-366'); Items (:125-130); `git ls-remote origin`: claude/carbon-fork-0-1-safe-wip at 547fb6220; trunk bb9fbba9c: fork/inventory/work-items.json ends at W-344; 2407efa74 holds W-148 and W-149 only; ORCHESTRATION.md:13-20 and :745-760 ('PR 53 after SAFE-3 completes'); rulebook.md R33 (c)
+detail: Three gaps:
+- **Mirror:** the mirror lacks db91f602a and 9ef7ac142, so 'mirrored' would be false when stamped.
+- **Ids:** W-366, named as carrying the open question, is filed in no ledger. W-365, the residue of SAFE-2's accepted RB-M3, is also left unfiled. Both exist only in B.14, and the fold commit that would file them never comes, yet the Items paragraph still says both are 'filed by SAFE-3's fold commit'.
+- **LAND-1:** under R33 (c), PR 53 is not merged while its realignment is unfinished, and trunk's LAND-1 text waits on 'SAFE-3 completes'. No trunk text is given for the stop path; Appendix D covers only the success path.
+fix: Add a dated stop-path paragraph that says:
+- the mirror is fast-forwarded to the records head before the stamp;
+- W-365 and W-366 stay reserved and unfiled, with their texts in B.14 (or the stamp files them);
+- PR 53's land condition under R33 (c) is that it is held until a re-ruling;
+- the trunk text for this stop.
+
+RT2-m2 (MINOR): Copies that rev 11's recorded marks miss, and two stale cells (R27, R10)
+citation: D-SAFE3-13 (:2703-2709) holds the only RT1-M1 mark; section 0.0 (:491-493) and B.12 (:6951 'its own lowering marking it `noalias`', which reaches work-items.json on the filled dry-run tree) are unmarked; section 2.3 (:3011-3013) quotes rev 10's Status; section 0.3 n01 row (:1087) reads '(an undefined value, 3)'
+detail: The refuted general sentence about a C++ caller's storage still stands unmarked outside D-SAFE3-13. Section 2.3 still quotes rev 10's Status sentence as the current one. n01's second value follows a `store poison`; the re-run printed 2.
+fix: Add the '(recorded 2026-11-01, re-think round 1: RT1-M1)' mark at section 0.0 and B.12, or list those copies in the rev 11 record. Quote rev 11's Status sentence in section 2.3. Change n01's cell to read 'two undefined values'.
+```
+
+<!-- google-doc-style-resume -->
+
+The rev 12 fixer of 2026-11-01 reproduced every finding on rev 11 before
+deciding, its probes under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/rethink-fixer2/probe/
+(INDEX.tsv), each with its source, command, IR and output: y01 to y06 copied
+from the re-review's rethink-rr2/probe/ and re-run by run.sh with the nightly,
+each printing what the re-review recorded (y01 and y02: 3 4 1 2; y03: 7 3 4 8;
+y04: 2 1 2 1; y05: 9; y06: 9 9), y06's `Mod` lowering to `store i32 5, ptr %e`,
+a call of `@_Z8CallVirtP4Base` and `load i32, ptr %e`; w01 to w05 and w07 re-run
+as rev 11 records them (w01: 9 9 2; w02 to w04: 9 9; w05: 9; w07: 5 5 6) and x01
+still rejected at `union U {`; and n01 re-run, printing an undefined value and
+then the value 2, both of its loads following the poison store over `%q` that
+ends `Swap`, as the re-review found. The lines RT2-B1 cites read at upstream's
+tip, 68569d234, as the plan quotes them, p005434:83 "The address of a `ref`
+binding is `nocapture` and `noalias`.", p005434:866-868 "these attributes won't
+be passed to LLVM unless their requirements can be established" and
+p005914:206-208 "there won't be an assumption that a call to C++ code won't save
+a copy of pointers to passed-in objects", no upstream commit since the cut
+c1e83b0b7 touching either proposal.
+
+RT2-B1 is a BLOCKER, and it meets the stop condition D-SAFE3-13 states for
+statement (3), "a probe in which C++ code reaches a Carbon place that the
+closure does not name", as RT1-B1 did: in y06, C++ code that receives `&d.base`
+and keeps no pointer, so breaking no obligation A.36 states, calls `b->Virt()`,
+whose Carbon override receives the complete `D` as `self` and writes `d.n` while
+`Mod`'s `e` is bound to it, the pointer's loan lying on `d.base` alone and (r3)
+keeping `d.n` apart from it, so that T4 accepts the program and T8 keeps
+`noalias` on `e`. The ruling's break condition is met again and the stop
+recorded at rev 11 stands; nothing is folded against the ruling's statements.
+The re-review's proposed rule, an address handed to C++ code handing it the
+complete object that contains the place (the outermost array, the enclosing
+object or the derived object of a base sub-object), a dispatch from C++ code
+into Carbon receiving its `self` and its parameters as storage a C++ caller
+supplies (RT1-M1's), T8 withholding on every place within that object, y06
+beside w01 to w05 in sections 0.3, 1.3 and 4 and the corpus count of the calls
+that pass `&a[i]`, a member's or a base's address to C++, re-rules statement
+(3), which only the orchestrator can do, and stands in its text above. Taken
+together, the two rounds' BLOCKERs show the reach of C++ code from an address it
+receives bounded by C++'s object model and by the Carbon code it can call back,
+not by the Carbon places that loans name, the premise on which statement (3)
+closes; that observation is recorded for the orchestrator, not folded. RT2-B1 is
+recorded at the Status, at D-SAFE3-13's break condition, in the sections list
+and here.
+
+RT2-m1 and RT2-m2 change records only and state no rule, so both are folded.
+RT2-m1 is folded as Appendix D's stop path, `<records head>` in section 2.1, and
+marks at the Items paragraph, section 0.8 and the Status. Its one decision, made
+under R29: W-365 and W-366 stay reserved for SAFE-3 and unfiled, their texts
+B.14's, rather than filed by the stamp, because trunk's ledger ends at W-344
+while the ids filed after it are on the held PRs' ledgers, and LAND-1's plan
+already counts both SAFE-3's; break condition: a re-ruling that resumes the plan
+files both by SAFE-3's fold commit as B.14 gives them, and a ruling that ends
+SAFE-3 files both, as B.14 gives them, by a records commit on PR 53's branch
+before PR 53 lands. RT2-m2 is folded as RT1-M1's recorded mark at every copy of
+the refuted sentence on a C++ caller's storage outside D-SAFE3-13 (section 0.0,
+section 0.6's closed-places row, D-SAFE3-3's history, and the leads of A.33,
+B.12 and B.32, whose fenced texts are unchanged, the plan having stopped),
+section 2.3 quoting rev 12's Status sentence and n01's cell reading two
+undefined values. Marks in this file read "(amended 2026-11-01, re-think
+round 2: RT2-n)", or "(recorded 2026-11-01, re-think round 2: RT2-B1)" where the
+finding is recorded and not folded, and RT1-M1's copies "recorded 2026-11-01,
+re-think round 1: RT1-M1, not folded, ... this mark added 2026-11-01, re-think
+round 2: RT2-m2".
+
+Measured for rev 12 on 2026-11-01: upstream re-fetched at 19:55 UTC, its tip
+still 68569d234, `git log 68569d234..upstream/trunk` empty, so no quoted line
+moved since rev 10 (section 0.1); `git ls-remote origin` gives the 18 held heads
+as section 0.7 states them, PR 53 at 2407efa74, trunk at bb9fbba9c and the
+mirror at 547fb6220, rev 9's commit, rev 10's db91f602a and rev 11's 9ef7ac142
+not mirrored; trunk bb9fbba9c read for the stop path: fork/ORCHESTRATION.md:13,
+:745, :1095 and :1221-1224, fork/rulebook.md's R33 (c), and
+fork/inventory/work-items.json ending at W-344, PR 53's 2407efa74 ledger ending
+at W-150; PR 67's checks by rethink-fixer2/bin/pr67checks.sh from a detached
+worktree of 56e2e5bbd at /dev/shm/safe2-rethink-fixer2/rg1, removed after: the
+H1 subsets 97, 120 and 5, rev 9's 5 H1-cited rows and the plan's 141 every one 0
+failed at 68569d234, 33 of the 141 failing at the cut as before, and PR 67's
+own 273 and 89 and SAFE-2's 284 and 89 failing 8 and 2, all outside the H1 rows
+(section 0.4); the dry run by rethink-fixer2/bin/dryrun.py and checktree.py,
+rev 11's with its Status check moved to rev 12 and twelve checks of this plan's
+own records added (rev 11's commit and the mirror at rev 12 in the Status;
+D-SAFE3-13 recording RT2-B1 with y06; this record's three rows, RT2-B1 a STOP,
+and its quote of the re-review; RT1-M1's marks at section 0.0, the 0.6 row,
+D-SAFE3-3, A.33, B.12 and B.32; section 2.3 quoting the current Status sentence;
+n01's cell; the stop path's texts; its four anchors at bb9fbba9c;
+`<records head>` in section 2.1; W-365 and W-366 reserved in the Items paragraph
+and section 0.8; the sections list), on fresh archives of 0f22798fb "ALL OK"
+filled (715 steps and checks) and unfilled (704), checktree.py "ALL OK"
+alone on the filled tree (552 checks) and failing 160 on 0f22798fb, as at
+rev 11, Appendices A and B being unchanged; the id re-scan of section 0.8, W-363
+the highest filed, no id minted; the merge-trees of a scratch commit of this
+file over 0f22798fb, on no branch, against trunk bb9fbba9c and the 18 held heads
+naming the same files as 0f22798fb's, this file being on no other head;
+`--self-test` "150 programs parsed, 56 bullets in table, OK"; the model-name
+grep clean, its hits the branch names
+and scratch paths only. This plan: r31.py before the fold H1 1, H2 25,
+H3 102, 77 bullets, 34 numbered items, 368 rows, 7813 lines and no unguarded
+line, and after it H1 1, H2 26 (this record), H3 102, 77 bullets, 38 numbered
+items (the stop path's four), 373 rows (the five lines of this record's
+table), 8169 lines and no unguarded line; prek's passes, to a fixpoint with a
+private cache deleted after, and `uvx rumdl@0.2.58 check` recorded in the commit
+message. Not run: no build, no Strict checker (W-148); no count of the corpus
+calls that pass `&a[i]`, a member's or a base's address to C++, which only a
+re-ruling needs; no
+probe of a C++ caller passing a by-value Carbon struct (w06), as at rev 11.
+
+The round leaves a BLOCKER, so rev 12 is not signed off and SAFE-3's planning
+stays stopped under the ruling's break condition: section 3's implementation
+does not begin, no further round follows, and the orchestrator records the stop
+on trunk by Appendix D's stop path, the mirror fast-forwarded first, and turns
+to the next workstream. The re-review's proposals for RT2-B1, with rev 11's for
+RT1-B1, RT1-M1 and RT1-M2, stand in the two records' texts for the orchestrator,
+should it re-rule.
+
+| finding | reproduced by | disposition and where it lands |
+| --- | --- | --- |
+| RT2-B1 BLOCKER | y06 re-run (9 9), its `Mod` lowering to store `%e`, call `@_Z8CallVirtP4Base`, load `%e`; w01 to w03 re-run (9 9 2; 9 9; 9 9); D-SAFE3-13's break condition | STOP: recorded and not folded, meeting D-SAFE3-13's own stop condition and the ruling's break condition again; recorded at the Status, D-SAFE3-13's break condition, the sections list and this record; the re-review's proposed re-ruling (the complete object handed, a dispatch into Carbon receiving storage a C++ caller supplies, T8 withholding within it, y06 into sections 0.3, 1.3 and 4, the corpus count) left to the orchestrator |
+| RT2-m1 MINOR | `git ls-remote origin` (the mirror at 547fb6220); trunk bb9fbba9c's ledger ending at W-344, its fork/ORCHESTRATION.md:13, :745, :1095 and :1221-1224 and R33 (c); the Items paragraph at rev 11 | ACCEPTED, folded as records: Appendix D's stop path (the mirror fast-forwarded to `<records head>` before the stamp, W-365 and W-366 reserved and unfiled with their break condition, PR 53 held under R33 (c) until a re-ruling, four trunk texts), `<records head>` in section 2.1, and marks at the Items paragraph, section 0.8 and the Status |
+| RT2-m2 MINOR | a grep of rev 11 for the refuted sentence's copies (section 0.0, section 0.6's closed-places row, D-SAFE3-3, the leads of A.33, B.12 and B.32); section 2.3 at rev 11; n01 re-run (an undefined value, 2) | ACCEPTED, folded as records: RT1-M1's recorded mark at section 0.0, the 0.6 row, D-SAFE3-3's history and the leads of A.33, B.12 and B.32, the fenced texts unchanged; section 2.3 quotes rev 12's Status sentence; n01's cell reads two undefined values |
+
 ## Hand-off notes for the implementer
 
 1.  Read section 1 first, then the blocks of Appendix A and B in order; re-open
@@ -6053,7 +6304,12 @@ variable "the one such storage that is open", accepted "only under the interim
 rule's conditions for an in-place `=` on an open place, the global its left
 operand and the initializer its right operand", its binding "of the global's
 storage, its callee's `returned var` and every `ref` taken on one", a `ref` on
-an open place):
+an open place; recorded 2026-11-01, re-think round 1: RT1-M1, not folded, the
+plan having stopped: the storage the block names bound by a C++ caller, under
+its own `noalias` on the return slot (c06), keeps the Carbon callee's `noalias`
+once forwarded to a function that is not exported, w04's `returned var` passed
+to `Mod(ref r)` and written by C++ code printing 9 9, which a re-ruling decides;
+this mark added 2026-11-01, re-think round 2: RT2-m2):
 
 <!-- google-doc-style-ignore -->
 
@@ -6943,7 +7199,13 @@ initialization of a C++ class type that runs a constructor that is not trivial
 on its destination and its source" and "and T8 emits no attribute for a `ref` on
 a place C++ code received by any route, or on a place that overlaps one, nor for
 a `ref` parameter one of whose call sites binds such a place (D-SAFE3-13)", with
-A.43's ⊥ destination added):
+A.43's ⊥ destination added; recorded 2026-11-01, re-think round 1: RT1-M1, not
+folded, the plan having stopped: the block's "storage a C++ caller supplies to a
+function exported to C++ is bound by that caller, its own lowering marking it
+`noalias`" fails for a `ref` parameter, which Clang declares with no `noalias`
+(w05: 9), and for that storage once forwarded to a function that is not exported
+(w04: 9 9; w05), the re-review's fix narrowing it to the return slot, which a
+re-ruling decides; this mark added 2026-11-01, re-think round 2: RT2-m2):
 
 <!-- google-doc-style-ignore -->
 
@@ -7335,7 +7597,12 @@ global variable under its dynamic initializer, the one such storage that is
 open, so that this design" "accepts the initializer of a global variable whose
 type is not copy-represented at every depth only under the interim rule's
 conditions for an in-place `=` on an open place, the global its left operand
-and the initializer its right operand (D-SAFE-8)"):
+and the initializer its right operand (D-SAFE-8)"; recorded 2026-11-01, re-think
+round 1: RT1-M1, not folded, the plan having stopped: the storage a C++ caller
+supplies, bound by that caller under its own `noalias` on the return slot (c06),
+keeps the Carbon callee's `noalias` once forwarded to a function that is not
+exported (w04: 9 9), which a re-ruling decides; this mark added 2026-11-01,
+re-think round 2: RT2-m2):
 
 <!-- google-doc-style-ignore -->
 
@@ -7807,6 +8074,95 @@ fork/safe/safe2-plan.md, fork/safe/safe3-plan.md)"),
 
 ```text
 DISCHARGED <landing date> by PR 53's landing at <merge commit> (SAFE-2's and SAFE-3's realignment of <rdate>; fork/safe/safe2-plan.md, fork/safe/safe3-plan.md).
+```
+
+<!-- google-doc-style-resume -->
+
+The stop path (added 2026-11-01, re-think round 2: RT2-m1). While SAFE-3's
+planning stands stopped under the re-think ruling's break condition, as it has
+since rev 11, section 3's steps and the six edits above are not made, and the
+orchestrator records the stop on trunk by the four edits below of trunk's
+fork/ORCHESTRATION.md at bb9fbba9c (or the commit after it, its anchors found
+again), the texts below with every placeholder filled, `<records head>` as
+section 2.1 defines it, `<date>` and `<time>` the stamp's and `<held>` read
+then under R33, each filled paragraph rewrapped to 80 columns and checked by
+`uvx rumdl@0.2.58 check`. Before the stamp the orchestrator fast-forwards the
+mirror `claude/carbon-fork-0-1-safe-wip` from 547fb6220 to `<records head>` and
+checks it by `git ls-remote origin`, so that "mirrored" is true when it is
+stamped. W-365 and W-366 stay reserved for SAFE-3 and unfiled, their texts
+B.14's: SAFE-3's fold commit files them if a re-ruling resumes the plan and a
+round signs it off, and a ruling that ends SAFE-3 instead files them, as B.14
+gives them, by a records commit on PR 53's branch before PR 53 lands; the stamp
+does not file them, trunk's ledger ending at W-344 while the ids filed after it,
+W-345 to W-356 and W-360 to W-363, are on the held PRs' ledgers. Under R33 (c) a
+PR with an unfinished realignment is not merged, so PR 53 stays held
+at 2407efa74 until a re-ruling, the land sequence waiting at PR 53 after PR 67.
+
+1.  The header: insert the first block below as the new first entry, "Last
+    updated:" moving to it, so that the current first entry, which at bb9fbba9c
+    begins "Last updated: 2026-11-01 (the owner directed merging," (:13), begins
+    "2026-11-01 (the owner directed merging," as the earlier entries do.
+
+2.  The branch row whose first cell is `claude/carbon-fork-0-1-safe`
+    (bb9fbba9c:1095): replace "SAFE-3 (fork/safe/safe3-plan.md, being planned)
+    re-derives M3(d) and D-SAFE2-6 and completes the realignment;" with the
+    second block, within the row, with no rewrap.
+
+3.  A dated paragraph: insert the third block after the latest dated paragraph,
+    at bb9fbba9c the one that begins "2026-11-01 (17:42 UTC): THE OWNER DIRECTED
+    MERGING." (:745), in the form that paragraph uses.
+
+4.  Next actions item 6 (bb9fbba9c:1221-1224): replace "SAFE-3,
+    fork/safe/safe3-plan.md, re-derives the built-in operator exemption and
+    completes it before PR 53 lands; the land sequence waits at PR 53 until
+    then)," with the fourth block, and rewrap the item.
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+Last updated: <date> (SAFE-3, the re-derivation of the built-in operator
+exemption on PR 53's branch, is STOPPED at its plan rev 12 under the break
+condition of the orchestrator's re-think ruling of 2026-11-01, on RT1-B1 and
+RT2-B1; PR 53 is held at 2407efa74 and not merged under R33 (c) until a
+re-ruling; SAFE-2's and SAFE-3's commits stand unpushed at <records head>,
+mirrored at claude/carbon-fork-0-1-safe-wip; W-365 and W-366 are reserved and
+unfiled; <held>; see the paragraph dated <date> (<time> UTC) below; the
+earlier 2026-11-01 text follows).
+```
+
+```markdown
+SAFE-3 (fork/safe/safe3-plan.md at rev 12 <records head>, unpushed, its twelve plan commits mirrored with SAFE-2's at claude/carbon-fork-0-1-safe-wip) STOPPED <date> under the break condition of the orchestrator's re-think ruling of 2026-11-01 on RT1-B1 and RT2-B1, C++ code reaching from an address it receives a Carbon place that the closure of D-SAFE3-13 does not name; W-365 and W-366 reserved and unfiled, their texts in the plan's B.14; PR 53 not merged under R33 (c) until a re-ruling;
+```
+
+```markdown
+<date> (<time> UTC): SAFE-3 is STOPPED. fork/safe/safe3-plan.md, the
+ground-up re-derivation of M3(d) and D-SAFE2-6 on PR 53's branch, stopped at its
+rev 12 under the break condition of the orchestrator's re-think ruling
+of 2026-11-01: re-think re-review round 1 found RT1-B1, C++ code reaching from a
+received element pointer a sibling element or the enclosing object (probes w01
+to w03), and round 2 found it wider, RT2-B1, C++ code calling, through a
+received pointer to a Carbon class's C++ base, a Carbon override that receives
+the complete object (probe y06), each a Carbon place that the closure of
+D-SAFE3-13 does not name while T8 keeps `noalias` on a `ref` to it; RT1-M1 and
+RT1-M2 are recorded with them, and the re-reviews' proposed re-rulings stand in
+the plan's rev 11 and rev 12 fold records. PR 53 is held at 2407efa74 and, its
+realignment unfinished, is not merged under R33 (c) until a re-ruling; SAFE-2's
+twenty-seven commits and SAFE-3's twelve plan commits stand unpushed on
+claude/carbon-fork-0-1-safe at <records head>, mirrored at
+claude/carbon-fork-0-1-safe-wip, which is not a PR and never a base. The open
+design question, a `ref` binding's `noalias` against the reach of C++ code from
+an address it receives, is carried by W-148 on PR 53's ledger and by W-366,
+which with W-365 is reserved for SAFE-3 and unfiled, their texts in the plan's
+B.14, so that no other workstream takes either id. SAFE-3 made no build, merge
+or dispatch; merges are the orchestrator's under R33: <held>. The land sequence
+waits at PR 53 after PR 67.
+```
+
+```markdown
+SAFE-3, fork/safe/safe3-plan.md, stopped at its rev 12 on <date> under the
+re-think ruling's break condition (RT1-B1, RT2-B1), the open question carried by
+W-148 and by W-366, reserved with W-365 and unfiled; PR 53 is held and not
+merged under R33 (c) until a re-ruling, and the land sequence waits at PR 53),
 ```
 
 <!-- google-doc-style-resume -->

@@ -6,9 +6,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-3 plan: the built-in operator exemption re-derived from the safety argument
 
-**Status:** rev 9 -- NOT signed off pending ruling round 3: RR7-M1. Rev 9,
-2026-10-29, is the fixer's fold of ruling round 2, the second of the up to three
-further rounds the orchestrator's ruling of 2026-10-29 authorizes, of rev 8
+**Status:** rev 10, 2026-11-01 -- the re-think ruling carried out; NOT signed
+off pending re-think re-review round 1. Rev 10, 2026-11-01, is the fixer's
+re-derivation under the orchestrator's ruling of 2026-11-01 (R29, quoted whole
+at the head of the rev 10 fold record), which found the break condition of the
+ruling recorded at rev 8 met by ruling round 3's findings on rev 9 (one
+MAJOR, RR8-M1, C++ code reaching a Carbon place
+through a loan carried by a value it received, and one MINOR, RR8-m1, T8's
+withholding on `exclusive T*` parameters and loans, both accepted, the eighth
+MAJOR in eight rounds) and re-thought the closed-place premise in three
+statements, carried out here: the interim `=` keeps the exemption only when its
+right operand is formed before the binding (D-SAFE3-5, statement (1)), a fresh
+local's initialization is exempt, a `returned var` and a global variable's
+initializer checked as an `=` is and a global constant's temporary closed
+(statement (2)), and the C++ boundary is stated once, by closure under T3's
+carrier relation (D-SAFE3-13, statement (3)), the route lists deleted from every
+copy and every probe re-run and re-traced; one fresh focused re-review follows,
+folded into rev 11, and a second into rev 12 if it leaves a MAJOR; sign-off
+needs a round with no BLOCKER and no MAJOR. Rev 9, 2026-10-29, the fixer's fold
+of ruling round 2, the second of the up to three further rounds the
+orchestrator's ruling of 2026-10-29 authorizes, of rev 8
 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR7-M1, and one MINOR, RR7-m1, both
 accepted as RU2-1 and RU2-2, RR7-M1 decided at the C++ boundary's premise, C++
 code that receives the address of a Carbon place by any route may keep it, so
@@ -16,15 +33,15 @@ that every route carries one obligation, a route the allowlist does not name
 being pointer-carrying, a by-value parameter's copy constructor among them, a
 route it names staying unmarked with its trust for diagnostics only, and T8
 emitting no attribute for a place C++ code received by any route, D-SAFE3-13,
-the rev 9 fold record after rev 8's); sign-off needs a round with no BLOCKER and
-no MAJOR. Rev 8, 2026-10-29, the fixer's fold of ruling round 1, the first of
-those rounds (the ruling quoted in full at the head of the rev 8 fold record),
-of rev 7 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR6-M1, and one MINOR, RR6-m1,
-both accepted as RU1-1 and RU1-2, RR6-M1 decided at the C++ boundary's premise,
-a C++ function that constructs an object in Carbon storage receiving that
-storage as `this`, which makes such a call pointer-carrying, and the closed
-places naming the storage a C++ caller supplies), is commit 3b44e3e68. Rev 7,
-2026-10-29, the fixer's fold of the focused re-review, round 5, of rev 6
+the rev 9 fold record after rev 8's), is commit 547fb6220. Rev 8, 2026-10-29,
+the fixer's fold of ruling round 1, the first of those rounds (the ruling quoted
+in full at the head of the rev 8 fold record), of rev 7
+(APPROVE-WITH-AMENDMENTS: one MAJOR, RR6-M1, and one MINOR, RR6-m1, both
+accepted as RU1-1 and RU1-2, RR6-M1 decided at the C++ boundary's premise, a C++
+function that constructs an object in Carbon storage receiving that storage as
+`this`, which makes such a call pointer-carrying, and the closed places naming
+the storage a C++ caller supplies), is commit 3b44e3e68. Rev 7, 2026-10-29, the
+fixer's fold of the focused re-review, round 5, of rev 6
 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR5-M1, and one MINOR, RR5-m1, both
 accepted, RR5-M1 decided at the closed-place premise, a global constant's
 initializer filling a temporary that the constant reaches only once the
@@ -32,14 +49,14 @@ initializer completes and the one open storage being a global variable), is
 commit d286686c4. Rev 6, 2026-10-29, the fixer's fold of the focused re-review,
 round 4, of rev 5 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR4-M1, accepted and
 folded at its root, the closed-place premise of a `returned var`, whose storage
-a global's dynamic initializer makes the global), is commit c6853b97a. Rev 5,
-2026-10-29, the fixer's fold of the focused re-review, round 3, of rev 4
+a global's dynamic initializer makes the global), is commit c6853b97a. Rev
+5, 2026-10-29, the fixer's fold of the focused re-review, round 3, of rev 4
 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR3-M1, and two MINORs, RR3-m1 and RR3-m2,
 all three accepted), is commit f29ece09a. Rev 4, 2026-10-29, the fixer's fold of
 the focused re-review, round 2, of rev 3 (APPROVE-WITH-AMENDMENTS: one MAJOR,
 RR2-M1, and three MINORs, RR2-m1 to RR2-m3, all four accepted), is commit
-f6cf71da9. Rev 3, 2026-10-29, the fixer's fold of the focused re-review, round
-1, of rev 2 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR1-M1, and three MINORs,
+f6cf71da9. Rev 3, 2026-10-29, the fixer's fold of the focused re-review,
+round 1, of rev 2 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR1-M1, and three MINORs,
 RR1-m1 to RR1-m3, all four accepted), is commit 29a28cdbe. Rev 2, 2026-10-29,
 the fixer's fold of the two plan reviews (review A: REJECT, one BLOCKER, two
 MAJORs, six MINORs; review B: APPROVE-WITH-AMENDMENTS, four MAJORs, six MINORs;
@@ -51,29 +68,32 @@ SAFE-2's realignment of W-347 to W-351 and W-353 on PR 53's branch, under the
 orchestrator's rulings of 2026-10-29 recorded in sections 8.16, 8.19 and 8.20 of
 safe2-plan.md. Branch `claude/carbon-fork-0-1-safe` (PR 53, held open, second in
 the land sequence after PR 67), pushed head 2407efa74, local head 0f22798fb with
-SAFE-2's 27 unpushed commits (plan rev 1 to rev 14, commits 48f2e66a0 and
-954f1c542, the four counted fix commits 0f281d8bd, e1574b003, cbdc0552e and
-9d0b072cb and their records commits), mirrored against loss at
+SAFE-2's 27 unpushed commits (plan rev 1 to rev 14, commits 48f2e66a0
+and 954f1c542, the four counted fix commits 0f281d8bd, e1574b003, cbdc0552e
+and 9d0b072cb and their records commits), mirrored against loss at
 `claude/carbon-fork-0-1-safe-wip`, which is not a PR, never a base, and is
-deleted when PR 53's head is pushed (at f97cdf414 on 2026-10-29, the plan's rev
-1 commit, by `git ls-remote origin`; amended 2026-10-29, review fold: A-RA3-m4,
-B-M4; at 782a5b740, rev 2's commit, when rev 3 was written, a moved head
-reported, amended 2026-10-29, review fold: RR1-m2; still at 782a5b740 when rev 4
-was written, rev 3's commit 29a28cdbe not yet mirrored, section 3 step 3,
-amended 2026-10-29, review fold: RR2-M1; at f6cf71da9, rev 4's commit, when rev
-5 was written, a moved head reported, amended 2026-10-29, review fold: RR3-M1;
-still at f6cf71da9 when rev 6 was written, rev 5's commit f29ece09a not yet
-mirrored, amended 2026-10-29, review fold: RR4-M1; at f29ece09a, rev 5's commit,
-when rev 7 was written, a moved head reported, rev 6's commit c6853b97a not yet
-mirrored, amended 2026-10-29, review fold: RR5-M1; at d286686c4, rev 7's commit,
-when rev 8 was written, a moved head reported, amended 2026-10-29, ruling round
-1: RU1-1; still at d286686c4 when rev 9 was written, rev 8's commit 3b44e3e68
-not yet mirrored, amended 2026-10-29, ruling round 2: RU2-1). This plan is a new
-file beside fork/safe/safe2-plan.md, which this planner does not edit; its dated
-pointer marks come with the fold commit (section 2). Upstream was read at its
-tip 9192ee003, fetched 2026-10-29 (section 0.1). Records and design text only:
-no toolchain, prelude, golden, program or conformance change, no build of any
-kind, the nightly compiling examples and probes only (R30).
+deleted when PR 53's head is pushed (at f97cdf414 on 2026-10-29, the plan's
+rev 1 commit, by `git ls-remote origin`; amended 2026-10-29, review fold:
+A-RA3-m4, B-M4; at 782a5b740, rev 2's commit, when rev 3 was written, a moved
+head reported, amended 2026-10-29, review fold: RR1-m2; still at 782a5b740 when
+rev 4 was written, rev 3's commit 29a28cdbe not yet mirrored, section 3 step 3,
+amended 2026-10-29, review fold: RR2-M1; at f6cf71da9, rev 4's commit, when
+rev 5 was written, a moved head reported, amended 2026-10-29, review fold:
+RR3-M1; still at f6cf71da9 when rev 6 was written, rev 5's commit f29ece09a not
+yet mirrored, amended 2026-10-29, review fold: RR4-M1; at f29ece09a, rev 5's
+commit, when rev 7 was written, a moved head reported, rev 6's commit c6853b97a
+not yet mirrored, amended 2026-10-29, review fold: RR5-M1; at d286686c4, rev 7's
+commit, when rev 8 was written, a moved head reported, amended 2026-10-29,
+ruling round 1: RU1-1; still at d286686c4 when rev 9 was written, rev 8's
+commit 3b44e3e68 not yet mirrored, amended 2026-10-29, ruling round 2: RU2-1;
+at 547fb6220, rev 9's commit, when rev 10 was written on 2026-11-01, a moved
+head reported, PR 53's head still 2407efa74, amended 2026-11-01, re-think:
+RT-1). This plan is a new file beside fork/safe/safe2-plan.md, which this
+planner does not edit; its dated pointer marks come with the fold commit
+(section 2). Upstream was read at its tip 9192ee003, fetched 2026-10-29
+(section 0.1). Records and design text only: no toolchain, prelude, golden,
+program or conformance change, no build of any kind, the nightly compiling
+examples and probes only (R30).
 
 **Items:** W-347 to W-351 and W-353 (PR 67's ledger,
 fork/inventory/work-items.json on `claude/carbon-fork-0-1-rg1` at 56e2e5bbd),
@@ -94,23 +114,22 @@ every probe of section 0.3, each of one thread, and across Carbon-spawned
 threads once W-365's stage 5 contract holds (section 1.3's last row; amended
 2026-10-29, review fold: RR2-M1, where this read "true under the design's own
 model for every probe of section 0.3."). A path to the referent is every path
-the program can take, a value passed to a call from which a carrier of the
-referent can be loaded among them, which T3 counts as a use of that carrier
-(A.32; added 2026-10-29, review fold: RR3-M1), and the name of a global
-variable whose dynamic initializer fills a `returned var`, which the closed
-places of A.33 make the initializer's to check (added 2026-10-29, review fold:
-RR4-M1), a global constant's name reaching its initializer's temporary only
-once the initializer completes (amended 2026-10-29, review fold: RR5-M1, where
-this read "the name of a global whose"), a pointer that C++ code keeps to a
-Carbon place whose address it received by any route, which makes the route
-pointer-carrying unless the allowlist or a synthesized witness trusts it and
-either way withholds T8's attributes on the place (A.36, A.37, A.42,
-D-SAFE3-13; amended 2026-10-29, ruling round 2: RU2-1, where this read "a
-pointer that C++ keeps to storage a C++ function constructed an object in, its
-return slot or a constructor's `this`, which makes such a call
-pointer-carrying (A.36, D-SAFE3-13)"), and a call of a function value, which
-uses the loans its captures hold (A.32; added 2026-10-29, ruling round 1:
-RU1-1, RU1-2).
+the program can take, which the design does not enumerate but closes: an exempt
+in-place `=` runs nothing but prelude code over values formed before the binding
+while its left operand is bound (D-SAFE3-5, statement (1)); a fresh local's
+initialization is exempt, nothing naming its storage until it completes, a
+`returned var` and a global variable's dynamic initializer are checked as an `=`
+is and a global constant's temporary is closed (statement (2), A.33); every
+other `=` is a checked reborrow, T3 counting as a use of a carrier a call of a
+function value whose captures hold it and a value passed to a call from which it
+can be loaded (A.32); and C++ code receives every place on which a loan lies
+that a value or place it receives carries, transitively, under the obligation of
+unsafe code, T8 withholding its attributes on each (D-SAFE3-13, statement (3);
+A.36, A.37, A.42, A.43) (amended 2026-11-01, re-think: RT-1, RR8-M1, where this
+enumerated the paths as rev 9 (547fb6220) did, from "A path to the referent is
+every path the program can take, a value passed to a call" to "and a call of a
+function value, which uses the loans its captures hold", with its marks
+of 2026-10-29 for RR3-M1, RR4-M1, RR5-M1, RU2-1, RU1-1 and RU1-2).
 
 ## Sections
 
@@ -119,8 +138,10 @@ RU1-1, RU1-2).
     re-review's 4 of rev 3, the second re-review's 6 and the fixer's 1 of
     rev 4, the third re-review's 4 of rev 5, the fourth re-review's 5 and
     the fixer's 2 of rev 6, the fifth re-review's 7 and the fixer's 1 of
-    rev 7, ruling round 1's 10 and the fixer's 6 of rev 8 and ruling round
-    2's 9 and the fixer's 4 of rev 9, with the IR order of each;
+    rev 7, ruling round 1's 10 and the fixer's 6 of rev 8, ruling round
+    2's 9 and the fixer's 4 of rev 9 and ruling round 3's 3 and the
+    2026-10-29 fixer's 6 of rev 10, all 193 re-run by rev 10, with the IR
+    order of each;
     PR 67's checks; every sentence on the pages and in the records that states
     the exemption; the interlocks; the collisions; the id re-scan; SAFE-2's
     findings that the tree does not yet carry.
@@ -131,7 +152,8 @@ RU1-1, RU1-2).
 -   Section 3, commits and reviews; section 4, the worked-example matrix;
     section 5, scoreboard; section 6, churn and collisions; section 7, risks
     and rejected alternatives; section 8, verification and the not-run list.
--   The review fold records of rev 2 to rev 9, the hand-off notes, then
+-   The review fold records of rev 2 to rev 10, rev 10's opening with the
+    orchestrator's ruling of 2026-11-01 quoted whole, the hand-off notes, then
     Appendix A (pages), Appendix B (records), Appendix C (the PR texts and
     PR 67's note commit) and Appendix D (trunk's fork/ORCHESTRATION.md).
 
@@ -510,6 +532,39 @@ toolchain's overload set does not hold (e08: "no matching function for call to
 syntax), as `unsafe (y = t)` marks an assignment (A.36; added 2026-10-29, ruling
 round 2: RU2-1, RU2-2).
 
+Rev 9 named the routes by which C++ code receives a Carbon place one by one, and
+ruling round 3 found a route the list did not name: a by-value argument whose
+loan set holds a loan on a Carbon place, a trivially copyable `H` whose pointer
+field holds `&x`, crosses as shape 1, and the C++ code keeps the pointer its
+copy carries, so `x` is closed when `Mod(ref x)` binds it while the C++ code
+writes it (ruling-rr3's t01: 1 0 9 9), the same against the interim `=` (t02:
+0 7 0 1), and through a marked call whose received place holds a carrier and
+through `this` of a class whose field holds one (t03: 9 9) (RR8-M1); T8's
+withholding named `exclusive T*` parameters in the records and not on the page
+(RR8-m1). The rev 10 fixer that died found the relation the fix needs cut,
+besides, by T6's ⊥ read of a C++ type's pointer field: `h.p = &x;` then
+`h.p.Get()` launders the loan into ⊥, which a marked C++ call keeps (k04: 9) and
+a Strict callee writes while `Mod2(ref x, q)` binds `x`, with no C++ code run
+(k05: 9 9). With RR8-M1 it was the eighth MAJOR in eight rounds, each a route by
+which code outside the body's view reaches a place the closed-place premise
+called closed, and the orchestrator's ruling of 2026-11-01 (the rev 10 fold
+record, quoted whole) found the break condition of the ruling of rev 8 met and
+re-thought the premise: the interim rule no longer enumerates routes but states
+a positive form, an `=` on a left operand that is not copy-represented at every
+depth keeping the exemption only when its right operand is formed before the
+binding, so that nothing but prelude code over formed values runs while the left
+operand is bound and no route outside the body's view can be taken then
+(statement (1)); a fresh local's initialization is exempt, a `returned var` and
+a global variable's initializer checked as an `=` is, a global constant's
+temporary closed (statement (2)); and the C++ boundary is stated once, by
+closure under T3's carrier relation, with the obligation and T8's withholding
+over every place the closure names (statement (3)), the ⊥ destination of A.43
+keeping the relation unbroken. Rev 10 carries the three statements out
+(D-SAFE3-5, D-SAFE3-13), deletes the route lists from every copy, re-traces
+every probe and row (section 1.3, section 4, the rev 10 fold record) and
+measures the cost on the corpus (D-SAFE3-12: no site newly rejected)
+(added 2026-11-01, re-think: RT-1, RR8-M1, RR8-m1).
+
 ### §0.1 Upstream at the tip
 
 `git -C /home/user/carbon-lang fetch -q upstream trunk` on 2026-10-29 at 08:54
@@ -522,7 +577,16 @@ re-fetched it at 16:27 UTC, when the rev 8 fixer re-fetched it at 18:20 UTC
 and when the rev 9 fixer re-fetched it at 19:01 UTC (amended 2026-10-29, ruling
 round 2: RU2-1, where this read "and when the rev 8 fixer"),
 the commits since the cut on the cited files those the table names; the cut
-c1e83b0b7 is its ancestor.
+c1e83b0b7 is its ancestor. The rev 10 fixer re-fetched it on 2026-11-01 at
+17:45 UTC: upstream/trunk is **68569d234**, twelve commits past 9192ee003, of
+which only 4abb6100e ("Define exported C++ thunks in the LLVM function Clang
+uses for them", upstream PR 8060) touches a file this plan names,
+toolchain/lower/file_context.h and file_context.cpp, which the plan cites at the
+fork's 0f22798fb for W-069 and not at upstream's tip, and
+toolchain/check/cpp/export.cpp, which it does not cite;
+`git log c1e83b0b7..68569d234` names no other commit on the files of this
+section's table, the quoted proposals and pages unchanged, the plan's 141 quote
+rows passing at 68569d234 (section 0.4; added 2026-11-01, re-think: RT-1).
 `git log --oneline c1e83b0b7..9192ee003 -- <file>` for every file this plan
 quotes:
 
@@ -941,9 +1005,23 @@ address of Carbon storage, ruling-fixer2/bin/ir_routes.py over a fresh lowering
 of the 60 (ruling-fixer2/scan/ir/, the same 39 lowering and 21 failing as rev
 8's): the return slot, `this`, a constructor's source and any other pointer or
 reference argument, from user code or a prelude witness, the other 21 read by
-hand (added 2026-10-29, ruling round 2: RU2-1, RU2-2). The new probes, with the
-IR order of the function that does the operation (`p` aliasing `q` where the
-program passes one place twice):
+hand (added 2026-10-29, ruling round 2: RU2-1, RU2-2). Ruling round 3's three
+(t01 to t03, in
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/ruling-rr3/probe/,
+its INDEX.tsv listing them) and the six that the rev 10 fixer of 2026-10-29, who
+died on the account's usage limit before committing, wrote (k01 to k06, in
+ruling-fixer3/probe/new/, its INDEX.tsv listing them) make 193; the rev 10 fixer
+of 2026-11-01 copied all of them, the 184 before and these nine, into
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/rethink/rerun/
+(196 sources, rethink/rerun/LIST.tsv naming each with its original output) and
+re-ran them by rethink/bin/rerun_all.sh: 194 outputs identical to the recorded
+ones and n01 and n04 differing only in the `poison` values above, no Carbon
+function in any probe's IR carrying `noalias` (the 14 definitions that do are
+the C++ functions Clang lowers, their `sret` slots); the re-run is the evidence
+the re-trace of section 1.3 and section 4 under the ruling's statements rests on
+(added 2026-11-01, re-think: RT-1, RR8-M1). The new probes, with the IR order of
+the function that does the operation (`p` aliasing `q` where the program passes
+one place twice):
 
 | probe | shape | IR order | output |
 | --- | --- | --- | --- |
@@ -1036,6 +1114,15 @@ program passes one place twice):
 | j02 (rev 9, the fixer's) | `var w: Cpp.W = v;` through `W(const V&)`, which keeps its source, then `Mod(ref v)` | `_ZN1WC1ERK1V.carbon_thunk._(ptr %v.var, ptr %w.var)`: `v` the source, `w` the destination | 3 9 |
 | j03 (rev 9, the fixer's) | e09 with a free `begin(const R&)` found by argument-dependent lookup | `_CBegin:thunk:CppRangeForIterate` calls `_ZN3geo5beginERKNS_1RE.carbon_thunk._(ptr %self, ...)` | 10 9 |
 | j04 (rev 9, the fixer's) | `Cpp.Take(Cpp.MakeW(1, 2))` and `Cpp.Take(x)` for a `W` whose user-provided copy constructor counts its runs | the result is materialized into a temporary through its return slot and copied from it; `x` is the source of the second copy | 3 1 7 2 |
+| t01 (rev 10) | `h.p = &x;` for a trivially copyable `Cpp.H`, then the shape-1 `Cpp.Take(h)`, which keeps `h.p`, and `Mod(ref x)` calling the shape-1 `Cpp.Poke()` that writes `x` through it | `@_Z4Take1H.carbon_thunk._(ptr %h.var)`, the copy carrying `&x`; in `Mod`: store, `call Poke`, load | 1 0 9 9 |
+| t02 (rev 10) | t01's route against the interim `=`: `s = {.a = MakeA(7), .k = Cpp.ReadSaved()}` on the closed `s` after `Cpp.Take(h)` kept `&s.a.x`; the right operand formed first for `t` | `ReadSaved` loads through the kept pointer after `s.a`'s in-place initialization | 0 7 0 1 |
+| t03 (rev 10) | a marked `Cpp.TakePP(&p)` with `p` holding `&x`, which keeps `*pp`, and `h.Keep()` for a C++ class whose field holds `&y`, which keeps `this->p`; `Mod(ref x)` and `Mod(ref y)` calling `Cpp.Poke()` | the thunks receive `&p` and `&h`; the kept pointers are `x`'s and `y`'s | 9 9 |
+| k01 (rev 10, the 2026-10-29 fixer's) | t01 two levels deep: `Take2(h2)` by value with `h2.h = &h` and `h.p = &x` | the copy of `h2` carries `&h`, whose place holds `&x` | 0 9 9 |
+| k02 (rev 10, the 2026-10-29 fixer's) | a Carbon class with a pointer field passed by value to a C++ function that keeps it, `v.p = &x` | the thunk passes the copy, its field `&x` | 0 9 9 |
+| k03 (rev 10, the 2026-10-29 fixer's) | a `for` over a C++ range whose `data` field holds `&a[0]`, `begin()` keeping `data`, then `Mod(ref a[0])` | the synthesized witness calls `begin()` with the range as `this` | 10 9 |
+| k04 (rev 10, the 2026-10-29 fixer's) | `h.p = &x;` for a C++ type, `q = h.p.Get()` read as ⊥ (T6), a marked `Cpp.TakeP(q)` keeping it, then `Mod(ref x)` | the loan on `x` laundered into ⊥ before C++ code receives it | 9 |
+| k05 (rev 10, the 2026-10-29 fixer's) | k04's `q` with no C++ code run: `Mod2(ref x, q)` writes `s = 5` then `*q = 9` | in `Mod2`: store through `s`, store through `q`, the same address | 9 9 |
+| k06 (rev 10, the 2026-10-29 fixer's) | control: `h.p = &g` for a global and a string literal's `string_view`, free loans, passed by value; `Mod(ref x)` unaffected | the copies carry free loans only | 4 5 9 |
 
 Facts the probes give, each with the probes that show it: the call-based
 operators evaluate the left operand's place, then the right operand, then the
@@ -1157,7 +1244,12 @@ the nightly; and c02 is negative, its small class coming back in registers
 `Core.Slice`, shape 2 waits for stage 5's `Freeze`, and shape 3's members are
 the standard library's, so e09, e10, j01 and j03 stand for every trusted route,
 and e03, e05, e06 and e07 are controls or no evidence, e06's and e07's shapes
-rejected by (ii) or T5's `bound` (added 2026-10-29, ruling round 2: RU2-1).
+rejected by T4's check of the reborrow that replaces the exemption or by T5's
+`bound` (added 2026-10-29, ruling round 2: RU2-1; amended 2026-11-01,
+re-think: RT-1, where this read "rejected by (ii) or T5's `bound`"); t01 to t03
+and k01 to k05 stand for every place a loan carried into C++ code lies on, k03
+through a trusted witness, and k06 is the control, its loans free (added
+2026-11-01, re-think: RR8-M1).
 
 ### §0.4 PR 67's quote and silence checks
 
@@ -1257,6 +1349,20 @@ after, against /home/user/carbon-lang at 9192ee003:
     c1e83b0b7 all 5 of rev 9's pass, neither file having moved, and 33 of the
     141 fail (ruling-fixer2/logs/pr67-checks.txt; added 2026-10-29, ruling
     round 2: RU2-1).
+-   Re-run by the rev 10 fixer on 2026-11-01 from a detached worktree of
+    56e2e5bbd at /dev/shm/safe2-rethink/rg1, removed after, at upstream's new
+    tip 68569d234 (fetched at 17:45 UTC) by rethink/bin/pr67checks.sh: the H1
+    subsets 97, 120 and 5, rev 9's 5 rows and this plan's 141 every one 0
+    failed, all 5 passing at the cut and 33 of the 141 failing there, as
+    before; PR 67's own 273 quotes fail 8 and its 89 checks 2 at the new tip,
+    and SAFE-2's copies of them, 284 and 89, the same 8 and 2, every one
+    outside the H1 rows, moved lines that upstream's commits since
+    9192ee003 shifted (toolchain/parse/handle_match.cpp:169 and :176,
+    node_kind.def:292, handle_expr.cpp:376-377 and
+    check/cpp/export.cpp:1902-1903, and the silence checks T10.4 and H4.5, which
+    find 2 and 5 lines where they want 0 and 4), reported to the orchestrator
+    for RG-1's register and not taken here (rethink/logs/pr67-checks.txt;
+    added 2026-11-01, re-think: RT-1).
 
 So no break condition of H1.8 to H1.12 has fired, H1.13's correction stands,
 and every Appendix C.2 anchor of PR 67's files is found once at 56e2e5bbd
@@ -1352,11 +1458,11 @@ each new one once (section 8 item 4).
 
 | structure | changes under SAFE-3 |
 | --- | --- |
-| T2 (forming loans), T5, T6, T7, the Store rule | no: a user-written operator's `ref self` is a T2 formation as SAFE-2 has it; the interim rule uses T4 as it stands (amended 2026-10-29, review fold: RR3-M1, where this row named T3 too) |
+| T2 (forming loans), T5, T6, T7, the Store rule | T2 and T5 to T7 no: a user-written operator's `ref self` is a T2 formation as SAFE-2 has it; the interim rule uses T4 as it stands (amended 2026-10-29, review fold: RR3-M1, where this row named T3 too); the Store rule one sentence (A.43 on the temporal page, B.37 in D-SAFE-10's T6 clause in the log and fork/safe/plan.md): a pointer-typed field of an imported C++ type, which T6 reads as ⊥, and a field of such a type that holds one are ⊥ destinations, so that no Strict store turns a tracked loan into ⊥ with no marker and cuts the closure of D-SAFE3-13 (k04, k05; added 2026-11-01, re-think: RR8-M1, where this row began "no: a user-written operator's") |
 | T3 (liveness) | one sentence (A.32 on the temporal page, B.31 in D-SAFE-10's restatement in the log and fork/safe/plan.md): a use of a value from which a carrier can be loaded, a pointer to a place that holds the carrier, a `ref` of such a place or a value that carries a loan on one, transitively, is a use of the carrier, without which T4 sees no use of `p`'s loan in m02's `MakeW(&p)` and no exclusive or frozen loan, a `ref` binding's included, excludes a callee's read through a carrier it loads; the mutation page's summary of T3 (:189-191, "the last use of any carrier") is true as stated, T3 defining a use, and stays (added 2026-10-29, review fold: RR3-M1); the same block names a function value a carrier of every loan its captures hold and a call of it a use of each, and the loan-set bullet gives a function value its captures' loan sets (A.32, A.41, B.31; p003848:463-464; added 2026-10-29, ruling round 1: RU1-2) |
-| T4 (conflicts) | no change of text: the interim `=`'s right operand's read or use of the left operand's place through its owner or a carrier of it is a conflict with the operand's checked reborrow, `StrictExclusiveBorrowConflict` for a read through the owner (n03) and `StrictSharedBorrowInvalidated` for a loan the use forms, as T4 already reports them (amended 2026-10-29, review fold: RR1-M1, where this read "the interim `=`'s right operand's use of a carrier of the left operand's place", which left the owner's read it names out); an array element at an index the checker cannot prove distinct from the left operand's overlaps it in the interim rule and in T4's check of the reborrow that replaces the exemption, A.1's fourth paragraph saying so for that check only (n05; added 2026-10-29, review fold: RR2-m3); a call in the right operand that receives a value from which a carrier of the left operand's place can be loaded uses that carrier's loan by T3's sentence (A.32), a conflict with the checked reborrow, `StrictExclusiveBorrowConflict` (m02, m04; added 2026-10-29, review fold: RR3-M1) |
-| T8 (codegen honesty) | one sentence (A.37 on the temporal page, B.35 in D-SAFE-10's restatement in the log and fork/safe/plan.md): no attribute for a `ref` on a place whose address C++ code received, under a marker or by a route the allowlist or a synthesized witness trusts, as a pointer, reference or view argument, `this`, the storage it constructs in or the source of a copy, move or conversion, or on a place that overlaps one, nor for a `ref` parameter one of whose call sites binds one, neither obligation being a fact the checker establishes (p005914:205-208), without which T8's whole-package fact marked c05's `Mod` while a marked `MakeW` that broke its obligation made the program undefined, not erroneous (added 2026-10-29, ruling round 1: RU1-1), and marked e09's `Mod` while the `begin()` the trusted witness called kept `this` (amended 2026-10-29, ruling round 2: RU2-1, where this read "no attribute for a `ref` on storage whose address a C++ function received under a marker, as a pointer argument, `this` or the storage it constructs its result in, nor for a `ref` parameter a call site binds to such storage, the marker's obligation not being"); otherwise no change: T8 emits `noalias` only where established against every writer, never on an open place; under the interim rule, its conditions stated over every path, T3 counting a use through a value from which a carrier can be loaded, and a `returned var` closed only because the storage its caller's call initializes is, a global constant's temporary among it and a global variable's dynamic initializer checked by the same conditions as an in-place `=` on an open place (A.33), every accepted in-place `=` meets it (amended 2026-10-29, review fold: RR3-M1: rev 4's conditions accepted m02's `=`, which another path observes while it is bound, so "every accepted in-place `=` meets it" was false of rev 4; amended 2026-10-29, review fold: RR4-M1: rev 5 counted p01's `returned var` closed while its storage was a global that `MakeW` reads by name, and p02's `ref` on it the same, so the claim was false of rev 5, where this read "and T3 counting a use through a value from which a carrier can be loaded, every accepted"; amended 2026-10-29, review fold: RR5-M1, where this read "a global's dynamic initializer checked", rr5's q01 leaving a global constant's temporary undecided) |
-| the loan kinds, closed and open places | the loan kinds no; the closed places one sentence (A.33 on the temporal page, B.32 in D-SAFE-10's restatement in the log and fork/safe/plan.md): a `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs, a local `var`, a `var` parameter or a temporary being initialized, a global constant's among them, the constant acquiring its value only once the initializer completes (values.md:102, :164-166), the caller's own `returned var` or the left operand of an in-place `=`, and a global variable under its dynamic initializer, the one such storage that is open, has its initializer, `DefaultOrUnformed` for one declared without an initializer, checked by the interim rule's conditions as an in-place `=` on an open place and is otherwise an `unsafe` formation, `StrictRefFromShared` unmarked, this design's rule, upstream allowing global constants and having no global variables (docs/design/README.md:1235-1240); the open places' list, which names a global already, stays (amended 2026-10-29, review fold: RR4-M1, where this row read "no; the rule is stated in their terms"; amended 2026-10-29, review fold: RR5-M1, RR5-m1, where this read "a temporary being initialized, the caller's", "and a global under its dynamic initializer", "has its initializer checked" and "upstream having no global variables (docs/design/README.md:1236-1237)"); and the storage a C++ caller supplies to a function exported to C++ is among the bound storages, the C++ side binding it for the call, its own lowering marking it `noalias` (c06), a C++ caller that reaches it otherwise breaking the obligation of unsafe code, so the one open storage stays a global variable (A.33, B.32; added 2026-10-29, ruling round 1: RU1-1) |
+| T4 (conflicts) | no change of text: when the interim rule removes the exemption the `=` is a checked reborrow of the left operand for the whole evaluation, and T4 reports the right operand's read or use of the left operand's place through its owner or a carrier of it, `StrictExclusiveBorrowConflict` for a read through the owner (n03) or a call's use of a carrier it loads through a value it receives (A.32; m02, m04) and `StrictSharedBorrowInvalidated` for a loan the use forms, an array element at an index the checker cannot prove distinct from the left operand's overlapping it (n05) (amended 2026-11-01, re-think: RT-1, where this row stated T4's conflicts beside condition (ii) as rev 9 (547fb6220) did, with its marks of 2026-10-29 for RR1-M1, RR2-m3 and RR3-M1) |
+| T8 (codegen honesty) | one sentence (A.37 on the temporal page, B.35 in D-SAFE-10's restatement in the log and fork/safe/plan.md): T8 withholds `noalias` and `captures(none)` on every place C++ code receives, by the closure of D-SAFE3-13, for the marked and the trusted routes alike, on `ref` and `exclusive T*` parameters and loans, a `ref` binding or an `exclusive T*` loan formed on such a place or on a place that overlaps one, and a `ref` or `exclusive T*` parameter one of whose call sites binds one among them, the obligation not being a fact the checker establishes (p005914:205-208), without which T8's whole-package fact marked c05's, e09's and t01's `Mod` while C++ code kept a pointer to the place, the program undefined, not erroneous; otherwise no change: T8 emits `noalias` only where established against every writer, never on an open place, and every exempt in-place `=` meets it by construction, nothing but prelude code over values formed before the binding running while its left operand is bound (D-SAFE3-5) (added 2026-10-29, ruling round 1: RU1-1; amended 2026-11-01, re-think: RT-1, RR8-M1, RR8-m1, where this row named the routes as rev 9 (547fb6220) did, from "no attribute for a `ref` on a place whose address C++ code received" to "neither obligation being a fact the checker establishes", and rested the claim for the interim `=` on "its conditions stated over every path" and a `returned var` closed by the list of storages its caller's call initializes, with its marks of 2026-10-29 for RU1-1, RU2-1, RR3-M1, RR4-M1 and RR5-M1) |
+| the loan kinds, closed and open places | the loan kinds no; the closed places two sentences (A.33 and A.44 on the temporal page, B.32 in D-SAFE-10's restatement in the log and fork/safe/plan.md, A.45 on the mutation page): statement (2) of D-SAFE3-5, a fresh local's own initialization exempt, a `returned var` checked as an in-place `=` is on a closed place, its caller's destination bound for the call by the caller, the storage a C++ caller supplies among them under C++'s own `noalias` (c06), a global variable's dynamic initializer, `DefaultOrUnformed` for one declared without an initializer, on an open place, otherwise an `unsafe` formation, `StrictRefFromShared` unmarked, and a global constant's temporary closed (values.md:102, :164-166), this design's rule, upstream allowing global constants and having no global variables (docs/design/README.md:1235-1240); and a carrier of a closed place escapes into C++ code, which T5(b) does not bind, that code receiving the places it carries loans on (A.44, A.45); the open places' list stays (added 2026-10-29, review fold: RR4-M1, RR5-M1, RR5-m1, ruling round 1: RU1-1; amended 2026-11-01, re-think: RT-1, RR8-M1, where this row listed the storages a `returned var` can name as rev 9 (547fb6220) did, from "a `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs" to "so the one open storage stays a global variable", with its marks of 2026-10-29) |
 | D-SAFE2-3 to D-SAFE2-5, the value-representation keying of borrowed objects | the keying stays; its one-element clause is read at every depth: the re-derivation relies on it, a right operand that is not copy-represented at every depth holding a borrowed object whose frozen loan T4 and M3 check, and the interim rule keys the in-place case on the same representation read at every depth, which D-SAFE2-3's one-element clause states one level deep (mutation_safety.md:620-622; type_info.cpp:82-89, convert.cpp:283-297), so A.24 and B.27 state it at every depth and A.25 to A.31, B.28 to B.30 the lines that give a copy-represented type no loan (section 0.5's second table; n09; A.30 and A.31, the Value bindings bullet's lead and sentence, added 2026-10-29, review fold: RR3-m2), and a type whose value representation is not known when a generic's body is checked is not copy-represented (A.24; n06, k01) (amended 2026-10-29, review fold: A-RA3-B1, where this read "a pointer-represented right operand is a borrowed object" and "keys the in-place case on the same representation (type_info.cpp:82-89)"; amended 2026-10-29, review fold: RR2-m1, RR2-m2, where this read "no change; the re-derivation relies on it: a right operand that is not copy-represented, or a one-element aggregate whose element is not, holds a borrowed object" and "as D-SAFE2-3's one-element clause reads it") |
 | M7 and D-SAFE-16, the thread-boundary lifetime rule | no change of text; the noalias claim across Carbon-spawned threads rests on it, and W-365's three shapes, Race2's `Plain` write by the spawning thread to a place a scoped thread reads through a `const T*` argument, a global two threads write, and a write through a free pointer to allocator-owned storage whose copy `Core.Thread.Spawn`, which accepts a free loan set (mutation_safety.md:570-572), hands to a detached thread that reads it, are that claim's open gap, closed by W-365's stage 5 contract, a frozen hold for scoped threads and a rule for free storage (A.1's second paragraph, D-SAFE3-3, B.1, B.12, W-365's notes; added 2026-10-29, review fold: RR2-M1; amended 2026-10-29, review fold: RR3-m1, where this read "W-365's two shapes, Race2's `Plain` write by the spawning thread to a place a scoped thread reads through a `const T*` argument and a global two threads write"; the free loan set is the temporal page's vocabulary's, temporal_safety.md:126-129) |
 | `Core.SharedImmutable` and M3's structural write rule | no: M3 still decides what an exempt operation may write through a shared path (`Peek2`, `Peek4` unchanged) |
@@ -1364,7 +1470,7 @@ each new one once (section 8 item 4).
 | the `bound` rule (T5(d), W-349) | no |
 | Permissive | no: each new Strict rejection has the twin warning `PermissiveAliasedExclusive` |
 | the Debug value-binding flag (D-SAFE2-7) | no |
-| the C++ boundary | one change, the root of RR6-M1 and RR7-M1: C++ code that receives the address of a Carbon place may keep it, whatever the route (p005914:205-208), so every route carries one obligation, that the C++ code keeps no pointer to the place it received once it returns but within that place or in the call's result, and none to the source of a copy, move or conversion; the C++ call rule counts as pointer-carrying, as it counts a constructor named in the call, a by-value return of a class type that the C++ ABI returns in memory, a by-value parameter whose initialization from its argument runs a copy, move or converting constructor that is not trivial, and a copy, move, conversion or default initialization that runs a constructor that is not trivial on its destination and its source through the prelude's synthesized witness, `StrictCppCallUnannotated` unmarked, the allowlist's first shape narrowed to the calls that hand C++ no Carbon place; shapes 2 to 4 and the synthesized range witnesses stay unmarked, their obligation C++'s own, trusted for diagnostics only (A.34 to A.40, A.42, B.33, B.34, B.36; D-SAFE3-13); a C++ function is never core/prelude code, so an operator that calls one is user-written, as before (amended 2026-10-29, ruling round 1: RU1-1, where this row read "no: a C++ function is never core/prelude code, so an operator that calls one is user-written, as before"; amended 2026-10-29, ruling round 2: RU2-1, where this row began "one change, the root of RR6-M1: a C++ function that constructs an object in Carbon storage receives that storage as `this` and may keep it (p005914:205-208), so the C++ call rule counts as pointer-carrying a by-value return of a class type that the C++ ABI returns in memory and a copy, move or default initialization that runs a constructor that is not trivial on its destination", and named the first shape "narrowed to the calls that hand C++ no Carbon storage (A.34 to A.36, A.38 to A.40, B.33, B.34") |
+| the C++ boundary | one change, stated once by closure under T3's carrier relation, the root of RR6-M1, RR7-M1 and RR8-M1 (D-SAFE3-13): C++ code that receives the address of a Carbon place may keep it (p005914:205-208), and C++ code receives every place on which a loan lies that is carried, transitively, by a value or place it receives, a class value's loan set included; a call that hands C++ code a Carbon place is pointer-carrying, `StrictCppCallUnannotated` unmarked; the allowlist's first shape keeps only by-value arguments whose loan set is empty or free; shapes 2 to 4 and the synthesized range witnesses stay unmarked, their obligation C++'s own, trusted for diagnostics only; the obligation and T8's withholding are stated over every such place (A.34 to A.40, A.42 to A.45, B.33, B.34, B.36, B.37); a C++ function is never core/prelude code, so an operator that calls one is user-written, as before (amended 2026-10-29, ruling round 1: RU1-1, where this row read "no: a C++ function is never core/prelude code, so an operator that calls one is user-written, as before"; amended 2026-11-01, re-think: RR8-M1, where this row enumerated the routes as rev 9 (547fb6220) did, from "whatever the route (p005914:205-208), so every route carries one obligation" to "trusted for diagnostics only (A.34 to A.40, A.42, B.33, B.34, B.36; D-SAFE3-13)", with its mark of 2026-10-29 for RU2-1) |
 | the Rust mapping (D-SAFE-19) | no |
 | the diagnostic names | none added or renamed: the rule uses `StrictInvalidatingThroughShared`, `StrictSharedBorrowInvalidated`, `StrictExclusiveBorrowConflict`, `StrictBorrowFromShared`, `StrictBorrowedObjectMutated`, `StrictSharedImmutableWrite` and `StrictRefFromShared`; `StrictInvalidatingThroughShared`'s message gains a third form, for a `ref` operand that is not exempt, naming what reaches the referent (A.23, B.22; added 2026-10-29, review fold: A-RA3-M2); a global variable's initializer that the interim rule's conditions do not accept, `DefaultOrUnformed` for one declared without an initializer among them, is `StrictRefFromShared` unmarked, as a `ref` on a global already is, its message's "`ref` binding `{0}` of `{1}` through a shared path" naming the callee's `returned var` and the global (A.33; added 2026-10-29, review fold: RR4-M1; amended 2026-10-29, review fold: RR5-M1, RR5-m1, where this read "a global's initializer that"); a C++ call or initialization that hands C++ code the address of a Carbon place by a route the allowlist does not name is `StrictCppCallUnannotated`, the C++ call rule's existing name (A.36; added 2026-10-29, ruling round 1: RU1-1; amended 2026-10-29, ruling round 2: RU2-1, where this read "a C++ call that hands C++ Carbon storage to construct in is") |
 | safe2-plan.md section 4's matrix | every page row keeps its outcome; new rows for the probe shapes (section 4) |
@@ -1398,7 +1504,16 @@ d286686c4, rev 7's commit (a moved head, reported; added 2026-10-29, ruling
 round 1: RU1-1); re-checked by the rev 9 fixer on 2026-10-29
 (ruling-fixer2/logs/lsremote.txt), the 18 heads and trunk unchanged and the
 mirror still at d286686c4, rev 8's 3b44e3e68 not yet mirrored (added
-2026-10-29, ruling round 2: RU2-1).
+2026-10-29, ruling round 2: RU2-1); re-checked by the rev 10 fixer on 2026-11-01
+(rethink/logs/lsremote.txt), the 18 heads unchanged, the mirror moved to
+547fb6220, rev 9's commit, and trunk moved by one commit to bb9fbba9c
+("Records: R33, the owner's merge directive of 2026-11-01, and the hold-open
+mis-attribution withdrawn (LD-0)", fork/ORCHESTRATION.md, fork/decision-log.md
+and fork/rulebook.md), the merge-tree of the fold's scratch commit ff49922de
+against it naming the same three files as 0f22798fb's, and Appendix D's first
+anchor moved, trunk's header entry now beginning "Last updated: 2026-11-01 (the
+owner directed merging,", its other anchors found once; moved heads, reported,
+the stamp finding its anchors again (added 2026-11-01, re-think: RT-1).
 Trunk is **abdc798c6**, a descendant
 of 1c83422a0 by one records-only commit ("ORCHESTRATION: SAFE-2 stopped at its
 plan rev 14 on PRR3-B1; SAFE-3 planned to re-derive the built-in operator
@@ -1609,74 +1724,52 @@ waits for W-365's stage 5 contract (added 2026-10-29, review fold: RR2-M1;
 amended 2026-10-29, review fold: RR3-m1, where this read "or through a
 global"). Today's toolchain initializes in place, in whole or in part, a left
 operand whose type is not copy-represented at every depth, so while that
-stands, for a left operand whose type is not copy-represented at every depth,
-the whole right operand counts as evaluated while the left operand is bound,
-and the `=` keeps the exemption only when its right operand reads no open place
-and passes no carrier of one to a call, reads or uses no part of the left
-operand's place, or of a place that overlaps it, through its owner or a carrier
-of it (T1, T3), passes to no call a value from which a carrier of an open
-place, of the left operand's place or of one that overlaps it can be loaded, a
-pointer to a place that holds one, a `ref` of such a place or a value that
-carries a loan on such a place, transitively (T3), and, on an open place, runs
-no code written outside core/prelude (amended 2026-10-29, review fold: RR3-M1,
-where this read "through its owner or a carrier of it (T1, T3), and, on an open
-place", which exempted `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x`,
-whose call loads the carrier `p` through `&p`, section 0.0; amended 2026-10-29,
-review fold: A-RA3-B1,
-A-RA3-m3, B-M3, where this read "exactly when nothing but the operand can reach
-its referent while it is bound", "every other operand is a copy or a borrowed
-object under its frozen loan" and "Today's toolchain initializes a left operand
-that is not copy-represented in place, so while that deviation stands such an
-`=` keeps the exemption only when its right operand reads no open place, uses no
-carrier of the left operand's place and, on an open place, runs no code written
-outside core/prelude"; amended 2026-10-29, review fold: RR1-M1, where this read
-"uses no carrier of the left operand's place or of a place that overlaps it",
-which exempted `x = {.a = x.b, .b = x.a}`, a read through the owner,
-section 0.0). A `returned var` is closed because every storage its caller's call
-initializes is closed or bound while the call runs, a global constant's
-temporary among them, the constant acquiring its value only once the
-initializer completes, but for a global variable under its dynamic initializer,
-the one such storage that is open, so this design, upstream allowing global
-constants and having no global variables, accepts the initializer of a global
-variable whose type is not copy-represented at every depth, `DefaultOrUnformed`
-for one declared without an initializer, only under the interim rule's
-conditions for an in-place `=` on an open place, the global its left operand
-and the initializer its right operand, whatever the rewrite's status, and makes
-it otherwise an `unsafe` formation (`var g: T = unsafe F(1);`),
-`StrictRefFromShared` unmarked (A.33, B.32; added 2026-10-29, review fold:
-RR4-M1: rev 5 counted a `returned var` closed whatever storage it named, so
-p01's `r = {.u = MakeU(k), .w = MakeW()}` was exempt while `MakeW` reads by
-name the global that `r` is, section 0.0; amended 2026-10-29, review fold:
-RR5-M1, RR5-m1, where this read "but for a global under its dynamic
-initializer", "upstream having no global variables" and "the initializer of a
-global whose type", leaving rr5's q01, `let g: S = F(1);`, undecided). Storage
-a C++ caller supplies to a function exported to C++ is bound by that caller,
-whose own lowering marks it `noalias`; C++ code that receives the address of a
-Carbon place may keep it, whatever the route, so every route carries one
-obligation, that the C++ code keeps no pointer to the place it received once it
-returns but within that place or in the call's result, and none to the source
-of a copy, move or conversion; a route the allowlist does not name is
-pointer-carrying, `StrictCppCallUnannotated` unless marked `unsafe`, a by-value
-return of a class type that the C++ ABI returns in memory, a by-value parameter
-whose initialization from its argument runs a copy, move or converting
-constructor that is not trivial and a constructor that is not trivial run by
-the prelude's synthesized witness among them, the obligation the unsafe code's;
-shapes 2 to 4 and the synthesized range witnesses stay unmarked, the
-obligation C++'s own, trusted for diagnostics only; and T8 emits no attribute
-for a `ref` on a place C++ code received by any route (D-SAFE3-13; added
-2026-10-29, ruling round 1: RU1-1: rev 7 counted a local that a C++ call
-initialized closed, so c05's `Mod(ref x)` was a checked reborrow while C++
-wrote `x` through the `this` it kept, and c06's C++ caller read a
-`returned var` that the list did not name; amended 2026-10-29, ruling round 2:
-RU2-1, where this read "a C++ function that constructs an object in Carbon
-storage, a by-value return of a class type that the C++ ABI returns in memory
-or a constructor that is not trivial run by the prelude's synthesized witness,
-receives that storage as `this` and may keep it, so its call is
-pointer-carrying, `StrictCppCallUnannotated` unless marked `unsafe`, the
-marker's obligation that the constructor keeps no pointer to the storage; and
-T8 emits no attribute for a `ref` on storage a C++ function received under a
-marker", which left e01's copy constructor and e09's `begin()` holding a Carbon
-place's address unmarked and the place's `ref` bindings their attributes).
+stands, by the orchestrator's ruling of 2026-11-01 (the rev 10 fold record),
+three statements replace the route lists that eight rounds accreted. First,
+for a left operand whose type is not copy-represented at every depth, the `=`
+keeps the exemption only when its right operand is formed before the binding,
+that is, when the right operand is a formed value (the name of a local `var` or
+`let` or of a parameter, a literal, or an aggregate literal whose elements are
+such names or literals), or a call of a prelude initializer whose arguments are
+such and whose body runs no code written outside core/prelude, and when the
+right operand reads no place through a pointer, a `ref` or any other carrier
+and carries no loan on the left operand's place or on a place that overlaps it;
+every other right operand, a user call anywhere in it, a prelude call with any
+other argument, a read through a carrier, or a `Copy` or `ImplicitAs` written
+outside core/prelude that the initialization would run, removes the exemption,
+and the `=` is then a checked reborrow of the left operand for the whole
+evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s
+write through a shared path on an open place
+(`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy being
+to form the value in a fresh local first and assign the local. Second, a fresh
+local's own initialization is exempt, nothing naming its storage until it
+completes, but a `returned var` names its caller's destination and a global
+variable's dynamic initializer initializes an open place, so both are checked
+as an in-place `=` is, and a global constant's temporary is closed, the
+constant acquiring its value only once the initializer completes, upstream
+allowing global constants and having no global variables (A.33, B.32). Third,
+C++ code that receives the address of a Carbon place may keep it, and C++ code
+receives every place on which a loan lies that is carried, transitively, by a
+value or place it receives, a class value's loan set included; the
+allowlist's first shape keeps only by-value arguments whose loan set is empty
+or free; the obligation of unsafe code, that the C++ code keeps no pointer to
+the place it received once it returns but within that place or in the call's
+result, and none to the source of a copy, move or conversion, is stated over
+every such place; and T8 withholds `noalias` and `captures(none)` on every such
+place for the marked and the trusted routes alike, on `ref` and `exclusive T*`
+parameters and loans, a Strict store of a loan that is not free into a
+pointer-typed field of an imported C++ type, which T6 reads as ⊥, being
+`StrictStoreOutlivesSource` so that no read cuts the relation (D-SAFE3-13).
+In an exempt `=` nothing runs while the left operand is bound but prelude code
+over values formed before the binding, so no route outside the body's view
+reaches the referent then (re-thought 2026-11-01, re-think: RT-1, RR8-M1,
+RR8-m1, where this paragraph stated, from "for a left operand whose type is not
+copy-represented at every depth, the whole right operand counts" to "the place's
+`ref` bindings their attributes).", conditions (i) to (iii) in the sentence the
+rev 10 fold record quotes whole, the storages a `returned var` can name and the
+routes by which C++ code receives a Carbon place, with their marks of
+2026-10-29 for A-RA3-B1, A-RA3-m3, B-M3, RR1-M1, RR3-M1, RR4-M1, RR5-M1,
+RR5-m1, RU1-1 and RU2-1).
 
 ### §1.2 Decisions
 
@@ -1788,21 +1881,29 @@ Each under R29, with its break condition.
     "gives globals a rule", and named no free pointer). Within one thread a path
     is every path the program can take, a value passed to a call from which a
     carrier of the referent can be loaded among them, which T3 counts as a use
-    of that carrier (A.32; added 2026-10-29, review fold: RR3-M1), and the
-    name of a global variable, which reaches a `returned var` that the
-    variable's dynamic initializer fills: (a) and (b), like (i) to (iii), rest
-    on the closed places, in which a `returned var` is closed because every
-    storage its caller's call initializes is closed or bound while the call
-    runs but a global variable's, so its initializer is checked by the interim
-    rule's conditions as an in-place `=` on an open place (A.33, D-SAFE3-5;
-    added 2026-10-29, review fold: RR4-M1), a global constant's name reaching
-    its initializer's temporary only once the initializer completes (amended
-    2026-10-29, review fold: RR5-M1, where this read "the name of a global,
-    which", "the global's dynamic initializer fills" and "but a global's, so
-    the global's initializer"). Anything else is
-    user-written: a `ref` binding under the general rule, a checked reborrow on
-    a closed place (T4) and M3(d)'s `StrictInvalidatingThroughShared` through a
-    shared path. Labelled this design's: upstream says the `ref` is `noalias`
+    of that carrier (A.32; added 2026-10-29, review fold: RR3-M1). While the
+    operand is bound nothing runs but core/prelude code, its other operands
+    formed before the binding, so no code outside the body's view runs then to
+    take another path, and the interim `=` keeps that property by the positive
+    form of D-SAFE3-5's statement (1); the `ref` bindings that replace the
+    exemption rest on the closed places as every `ref` binding does, a
+    `returned var` checked on a closed place and a global variable's dynamic
+    initializer on an open one by statement (2), and a place C++ code receives
+    carrying the obligation of D-SAFE3-13 (re-thought 2026-11-01, re-think:
+    RT-1, where this read "and the name of a global variable, which reaches a
+    `returned var` that the variable's dynamic initializer fills: (a) and (b),
+    like (i) to (iii), rest on the closed places, in which a `returned var` is
+    closed because every storage its caller's call initializes is closed or
+    bound while the call runs but a global variable's, so its initializer is
+    checked by the interim rule's conditions as an in-place `=` on an open
+    place (A.33, D-SAFE3-5; added 2026-10-29, review fold: RR4-M1), a global
+    constant's name reaching its initializer's temporary only once the
+    initializer completes (amended 2026-10-29, review fold: RR5-M1, where this
+    read "the name of a global, which", "the global's dynamic initializer
+    fills" and "but a global's, so the global's initializer")"). Anything else
+    is user-written: a `ref` binding under the general rule, a checked reborrow
+    on a closed place (T4) and M3(d)'s `StrictInvalidatingThroughShared` through
+    a shared path. Labelled this design's: upstream says the `ref` is `noalias`
     and leaves its checking to "the memory safety design" (p005434:834-835,
     :859-864, :866-868). Break condition:
     a Strict-accepted program in which a path on the operation's own thread,
@@ -1844,7 +1945,14 @@ Each under R29, with its break condition.
     emitting no attribute for a place C++ code received by any route, so that
     such a path is C++ code's breach of the obligation unsafe code has, which
     T8 makes erroneous behavior (D-SAFE3-13, A.34, A.36, A.37, A.42, B.12,
-    B.33, B.35, B.36; added 2026-10-29, ruling round 2: RU2-1). A
+    B.33, B.35, B.36; added 2026-10-29, ruling round 2: RU2-1); ruling round
+    3's t01 to t03 met it at rev 9, a place C++ code reached through a loan
+    carried by a value or place it received, and the orchestrator's ruling of
+    2026-11-01 found its break condition met by the eighth such MAJOR, so the
+    interim `=` is stated in a positive form, which no route outside the
+    body's view can reach, and the C++ boundary once, by closure under T3's
+    carrier relation, the condition no longer narrowed route by route
+    (D-SAFE3-5, D-SAFE3-13; added 2026-11-01, re-think: RT-1, RR8-M1). A
     path from another Carbon-spawned thread is a data race and
     M7's: W-365 owns the three shapes known, Race2, a global and a free pointer
     a detached thread receives, a fourth is added to W-365 by a dated note, and
@@ -1911,110 +2019,119 @@ Each under R29, with its break condition.
     is recorded as watch item W-366; it is not this design's semantics, and with
     no `noalias` emitted its results are defined, not undefined behavior. While
     it stands, Strict checks the interim `=` by what it does as well as by
-    D-SAFE3-3: for a left operand whose type is not copy-represented at every
-    depth, the whole right operand counts as evaluated while the left operand is
-    bound, and the `=` keeps the exemption only when its right operand reads no
-    open place and passes no carrier of one to a call, reads or uses no part of
-    the left operand's place, or of a place that overlaps it, through its owner
-    or a carrier of it (T1, T3), passes to no call a value from which a carrier
-    of an open place, of the left operand's place or of one that overlaps it
-    can be loaded, a pointer to a place that holds one, a `ref` of such a place
-    or a value that carries a loan on such a place, transitively (T3), and, on
-    an open place, runs no code written outside core/prelude; these are
-    conditions (i), (ii) and (iii), the clause on a value from which a carrier
-    can be loaded completing (i) for an open place and (ii) for the left
-    operand's, and the sentence is the one every copy of the rule carries
-    (section 8 item 4 checks it; amended 2026-10-29, review fold: A-RA3-B1,
-    B-M3, where this read "for a left operand whose type is not
-    copy-represented"; amended 2026-10-29, review fold: RR1-M1, where (ii) read
-    "uses no carrier of the left operand's place or of a place that overlaps
-    it", T3's carriers leaving the owner out, section 0.0; amended 2026-10-29,
-    review fold: RR3-M1, where the sentence went from "(T1, T3)" to ", and, on
-    an open place", naming no value from which a carrier can be loaded, so
-    that m02's `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x` was exempt,
-    section 0.0). A place overlaps the left operand's place when either lies
-    within the other, and an array element at an index the checker cannot
-    prove distinct from the left operand's overlaps it, for (ii) and for T4's
-    check of the reborrow that replaces the exemption when (ii) fails (n05:
-    `a[i] = {.a = a[j].b, .b = a[j].a}` prints 2 2 when `i == j` at run time,
-    load `a.1`, store `a.0`, load `a.0`, store `a.1`, and 4 3 when `i != j`;
-    added 2026-10-29, review fold: RR2-m3). Condition (ii) covers every path to
-    the place that the place kinds name, the owner and every carrier, and every
-    path to a carrier, a value passed to a call from which one can be loaded,
-    and with (i) and (iii) every path by which the right operand can reach the
-    referent: an open place only through an open read, a carrier passed to a
-    call or a value passed to a call from which a carrier can be loaded, or
-    through code written outside core/prelude, and a closed place only through
-    its owner, a carrier or such a value, every carrier of a loan on it being in
-    the body's view by the definition of a closed place
-    (temporal_safety.md:134-143) and every path to one passing through the
-    right operand's own loads or its calls' arguments (amended 2026-10-29,
-    review fold: RR3-M1, where this read "the owner and every carrier, and with
-    (i) and (iii) every path by which the right operand can reach the referent:
-    an open place only through an open read or a carrier passed to a call, or
-    through code written outside core/prelude, and a closed place only through
-    its owner or a carrier, every carrier of a loan on it being in the body's
-    view by the definition of a closed place (temporal_safety.md:134-143)",
-    which a callee loading the carrier `p` through `&p` refutes, m02: 3 4 3 4,
-    the right operand formed first 3 4 1 2). A closed place that is a
-    `returned var` is reached by no other name, because the storage it names
-    is the place its caller's call initializes, "can be `&y`" for `y = F();`
-    (assignment.md:111-113), and every such storage is closed or bound while
-    the call runs: a local `var`, a `var` parameter or a temporary being
-    initialized, which nothing else names yet, a global constant's temporary
-    among them, the constant acquiring its value only once the initializer
-    completes, upstream's materialize and acquire for a value binding of an
+    D-SAFE3-3, in the positive form of the orchestrator's ruling of 2026-11-01
+    (the rev 10 fold record), whose statements (1) and (2) this decision
+    states: for a left operand whose type is not copy-represented at every
+    depth, the `=` keeps the exemption only when its right operand is formed
+    before the binding, that is, when the right operand is a formed value (the
+    name of a local `var` or `let` or of a parameter, a literal, or an
+    aggregate literal whose elements are such names or literals), or a call of
+    a prelude initializer whose arguments are such and whose body runs no code
+    written outside core/prelude, and when the right operand reads no place
+    through a pointer, a `ref` or any other carrier and carries no loan on the
+    left operand's place or on a place that overlaps it; every other right
+    operand, a user call anywhere in it, a prelude call with any other
+    argument, a read through a carrier, or a `Copy` or `ImplicitAs` written
+    outside core/prelude that the initialization would run, removes the
+    exemption, and the `=` is then a checked reborrow of the left operand for
+    the whole evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`)
+    and M3(d)'s write through a shared path on an open place
+    (`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy
+    being to form the value in a fresh local first and assign the local; the
+    sentence is the one every copy of the rule carries (section 8 item 4 checks
+    it). A fresh local's own initialization is exempt, nothing naming its
+    storage until it completes, but a `returned var` names its caller's
+    destination and a global variable's dynamic initializer initializes an open
+    place, so both are checked as an in-place `=` is, and a global constant's
+    temporary is closed, the constant acquiring its value only once the
+    initializer completes: the `returned var` on a closed place, its caller's
+    destination being bound for the call by the caller, a Carbon caller's own
+    initialization or `=`, which these rules check, or a C++ caller of a
+    function exported to C++, under C++'s own `noalias` on its return slot
+    (c06's `@_ZN6Carbon4Pair4MakeEi`), so that a C++ caller that reaches it
+    otherwise while the call runs breaks the obligation unsafe code has
+    (p005434:861-862), erroneous behavior on the Carbon side, T8 emitting no
+    attribute for a function exported to C++, and p02's `Mod(ref r)` a checked
+    reborrow of storage no other name reaches; the global on an open place, its
+    initializer, the prelude's `DefaultOrUnformed` for one declared without an
+    initializer (fixer4's glob probe), keeping the exemption only when it is
+    formed and otherwise an `unsafe` formation (`var g: T = unsafe F(1);`),
+    `StrictRefFromShared` unmarked, as a `ref` on a global is, a Permissive file
+    or an `unsafe` initializer written out the remedy for one declared without
+    an initializer, whatever the rewrite's status, the initialization being in
+    place by design (pattern_matching.md:858-867); and the constant's temporary
+    by upstream's materialize and acquire for a value binding of an
     initializing expression (values.md:102, :164-166), which this design reads,
     global constants' semantics being provisional
     (docs/design/README.md:1239-1240), as no use of the constant reaching the
-    temporary before then, the nightly's
-    SemIR binding `g` to a value acquired element by element after the call
-    (rr5's q01b) though its lowering serves no use of a runtime global constant
-    (rr5's q01, the fixer's h01), and the fork's lowering storing the formed
-    value into a zero-initialized backing global after the initializer
-    (W-069; toolchain/lower/function_context.cpp:155-160, file_context.h:76-85,
-    read, not run), what a use before then yields being the order of global
-    initialization and not this claim's (added 2026-10-29, review fold: RR5-M1,
-    rr5's q01, `let g: S = F(1);`, having shown the list undecided for a global
-    constant), the caller's own `returned var`,
-    closed in turn, the left operand of an in-place `=`, whose interim rule
-    counts the call as evaluated while that operand is bound, or storage that a
-    C++ caller supplies to a function exported to C++, which the C++ side binds
-    for the call, Clang's lowering marking it `noalias` (c06's
-    `@_ZN6Carbon4Pair4MakeEi`), so that a C++ caller that reaches it otherwise
-    while the call runs breaks the obligation unsafe code has
-    (p005434:861-862), as a Permissive caller's in-place `=` binds its left
-    operand, erroneous behavior on the Carbon side, T8 emitting no attribute
-    for a function exported to C++ (added 2026-10-29, ruling round 1: RU1-1,
-    where this read "closed in turn, or the left operand of an in-place `=`",
-    c06 having shown a C++ caller the list did not name); the one such
-    storage that is open is a global variable under its dynamic initializer,
-    which every function reaches by name, so the initializer of a global
-    variable whose type is not copy-represented at every depth, the prelude's
-    `DefaultOrUnformed` for one declared without an initializer (fixer4's
-    glob probe; added 2026-10-29, review fold: RR5-m1), is checked by these
-    conditions as an in-place `=` on an open place, the global its left operand
-    and the initializer its right operand, whatever the rewrite's status, the
-    initialization being in place by design (pattern_matching.md:858-867), and
-    is otherwise an `unsafe` formation (`var g: T = unsafe F(1);`),
-    `StrictRefFromShared` unmarked, as a `ref` on a global is, a Permissive file
-    or an `unsafe` initializer written out the remedy for one declared without
-    an initializer (A.33 on the temporal page, B.32 in D-SAFE-10; labelled this
-    design's, upstream allowing global constants and having no global
-    variables, docs/design/README.md:1235-1237; amended 2026-10-29, review
-    fold: RR5-M1, RR5-m1, where this read "a global under its dynamic
-    initializer", "the initializer of a global whose type" and "upstream having
-    no global variables, docs/design/README.md:1236-1237"). With it every path
-    to a `returned var`'s storage passes through the caller's checked
-    initialization, and a `ref` taken on a `returned var`, p02's `Mod(ref r)`,
-    is a checked reborrow of storage no other name reaches (added 2026-10-29,
-    review fold: RR4-M1: rev 5's argument took a `returned var` for a closed
-    local whatever its caller, so p01's `r = {.u = MakeU(k), .w = MakeW()}`,
-    `r` being the global `g` under `var g: S = F(1);`, kept the exemption while
-    `MakeW` reads `g` by name, 11 12 11 12, the right operand formed first
-    11 12 1 2; the fork's programs and examples declare three global
-    variables, the cost measured in D-SAFE3-12; amended 2026-10-29, review
-    fold: RR5-M1, where this read "declare three globals"). A type is
+    temporary before then, the nightly's SemIR binding `g` to a value acquired
+    element by element after the call (rr5's q01b) though its lowering serves
+    no use of a runtime global constant (rr5's q01, the fixer's h01), and the
+    fork's lowering storing the formed value into a zero-initialized backing
+    global after the initializer (W-069;
+    toolchain/lower/function_context.cpp:155-160, file_context.h:76-85, read,
+    not run), what a use before then yields being the order of global
+    initialization and not this claim's (A.33 on the temporal page, B.32 in
+    D-SAFE-10; labelled this design's, upstream allowing global constants and
+    having no global variables, docs/design/README.md:1235-1237). In an exempt
+    `=` nothing runs while the left operand is bound but prelude code over
+    values formed before the binding, so no code but the operation, a user's,
+    C++ code's or another initializer's, runs then to reach the referent by any
+    route, and the right operand's own reads name no place through a carrier and
+    no place on which a loan it carries lies; the one remaining path, the right
+    operand naming the left operand's own place, `x = x`, is D-SAFE3-3 (b)'s
+    (`StrictBorrowedObjectMutated`). So the exemption rests on no enumeration
+    of the routes by which code outside the body's view reaches a closed place,
+    the premise eight rounds narrowed case by case (the owner, a thread, a
+    carrier a user call loads, a global variable's initializer, a global
+    constant's, a C++ return slot, C++ routes and loans carried into C++), and
+    every other `=` is a `ref` binding under the general rule, sound as every
+    checked reborrow and every M3(d) write is, on the closed-place premise as
+    statement (2) and D-SAFE3-13 complete it. Four readings, each this
+    design's: (r1) the list is one level, as the ruling states it, an aggregate
+    literal's elements being names or literals, so z1b's
+    `*q = {.o = Core.Optional(i32).Some(42), .n = n}` removes the exemption,
+    its remedy `let o: Core.Optional(i32) = Core.Optional(i32).Some(42);`
+    then `*q = {.o = o, .n = n};`; (r2) a prelude initializer is a function or
+    an operator's impl written in core/prelude and reached through no symbolic
+    witness that an impl written outside core/prelude can fill (D-SAFE3-4's
+    test), `n + 1` on prelude integers among them, and it reads through a
+    carrier argument only where its body dereferences it, the prelude's bodies
+    read as D-SAFE3-4 reads them, so `Core.Optional(i32*).Some(p)` copies `p`;
+    (r3) overlap and a carried loan are decided on the places the checker
+    names: a place overlaps the left operand's place when either lies within
+    the other, an array element at an index the checker cannot prove distinct
+    from the left operand's overlaps it (n05: `a[i] = {.a = a[j].b, .b =
+    a[j].a}` prints 2 2 when `i == j` at run time, load `a.1`, store `a.0`, load
+    `a.0`, store `a.1`, and 4 3 when `i != j`), a value binding of a borrowed
+    object carries its frozen loan (ra07, n04), a by-value parameter's
+    borrowed object lies in its caller's place, which the caller's frozen loan
+    keeps apart from every place the callee writes (m03), so the parameter's
+    name qualifies, a `ref` parameter's name reads through a `ref` and does
+    not, and a pointer that the right operand stores and does not read
+    through, whose loan the checker cannot place within the left operand's
+    place, is not counted as overlapping it, no read observing it; (r4)
+    `x = x`, whose right operand names the left operand's own place, is a
+    formed value that D-SAFE3-3 (b) rejects, the interim rule only adding
+    conditions. Break condition of (r1): the cost count shows a corpus or page
+    site rejected only because a prelude call over formed values sits inside
+    an aggregate literal, or a reviewer shows the list closed under nesting
+    sound by the same argument; the list is then closed under nesting by a
+    dated mark. Break condition of (r2) to (r4): a Strict-accepted program in
+    which an exempt `=`'s right operand observes the left operand's place
+    while it is bound; the reading is narrowed by a dated mark (re-thought
+    2026-11-01, re-think: RT-1: the interim rule stated in the ruling's
+    positive form, statement (1), and a fresh local's initialization by
+    statement (2), where rev 9 (547fb6220) stated conditions (i) to (iii) in
+    the sentence the rev 10 fold record quotes whole, the clauses that
+    completed them (A-RA3-B1, B-M3, RR1-M1, RR3-M1, RR2-m3's overlap of array
+    elements, kept as (r3)), the argument that (ii) with (i) and (iii) covers
+    every path by which the right operand can reach the referent (RR3-M1), and
+    the list of the storages a `returned var` can name, a global constant's
+    temporary, a C++ caller's storage and the one open storage, a global
+    variable (RR4-M1, RR5-M1, RR5-m1, RU1-1), which statement (2) replaces; m02,
+    p01, p02, q01, c01, c06, e10, j01 and t02 stay its evidence, section 1.3
+    re-traced). A type is
     copy-represented at every depth when it is copy-represented and, if its
     representation is a one-element tuple or struct's (the type, or an adapter,
     `const` or `MaybeUnformed` of one), its element is copy-represented at
@@ -2051,8 +2168,11 @@ Each under R29, with its break condition.
     fold: RR3-m2; n09: `let v: W2 = x; x.s.t.a = 5;` for
     `W2 = {.s: {.t: {.a: i32, .b: i32}}}` is `StrictBorrowedObjectMutated`, the
     nightly reading `x.s.t` early, which values.md:456-463 permits and does not
-    require; added 2026-10-29, review fold: RR2-m1). Otherwise it is a
-    `ref` binding under the general rule, a checked reborrow on a closed place
+    require; added 2026-10-29, review fold: RR2-m1). When the interim rule
+    removes the exemption, the `=` is a `ref` binding under the general rule, a
+    checked reborrow on a closed place (amended 2026-11-01, re-think: RT-1,
+    where this read "Otherwise it is a `ref` binding under the general rule, a
+    checked reborrow on a closed place")
     (T4: `x = {.a = x.b, .b = x.a}`, the right operand reading the left
     operand's place through its owner, as n03's `var` parameter, `returned var`
     and class local do, `y = {.s = {.a = y.s.b, .b = y.s.a}}`, and
@@ -2123,27 +2243,38 @@ Each under R29, with its break condition.
     carrier (A.32 and B.31, the root of RR3-M1: without it T4 sees no conflict
     when a call loads a carrier through such a value, for the reborrow that
     replaces the exemption and for every exclusive or frozen loan; added
-    2026-10-29, review fold: RR3-M1), the Store rule, the loan
-    kinds, closed and open places but for the closed places' sentence on a
-    `returned var` and a global's initializer (A.33 and B.32, the root of
-    RR4-M1: without it a `returned var` was closed whatever storage it named;
-    added 2026-10-29, review fold: RR4-M1), the initializer a global
-    variable's, a global constant's temporary closed (the root of RR5-M1;
-    added 2026-10-29, review fold: RR5-M1), the storage a C++ caller supplies
-    named bound by that caller (A.33, B.32), T8 but for its sentence on a
-    place C++ code received by any route (A.37, B.35), and the C++ boundary
-    but for the C++ call rule over every route by which C++ code receives a
-    Carbon place, the allowlist's first shape narrowed to match and its
-    trusted routes stated for diagnostics only (A.34 to A.36, A.38 to A.40,
-    A.42, B.33, B.34, B.36; the root of RR6-M1 and RR7-M1, D-SAFE3-13; added
-    2026-10-29, ruling round 1: RU1-1; amended 2026-10-29, ruling round 2:
-    RU2-1, where this read "T8 but for its sentence on storage a C++ function
-    received under a marker (A.37, B.35), and the C++ boundary but for the C++
-    call rule over storage a C++ function constructs in and the allowlist's
-    first shape narrowed to match"), D-SAFE2-3 to D-SAFE2-5 (D-SAFE2-3's
-    one-element clause read at every depth, D-SAFE3-5; amended 2026-10-29,
-    review fold: RR2-m1), M7 and D-SAFE-16, on which the claim across threads
-    rests (W-365; added 2026-10-29, review fold: RR2-M1),
+    2026-10-29, review fold: RR3-M1), the Store rule but for its sentence
+    making a pointer-typed field of an imported C++ type a ⊥ destination
+    (A.43, B.37, the root of the cut the rev 10 fixer's k04 and k05 show:
+    without it a Strict store turns a tracked loan into ⊥ with no marker;
+    added 2026-11-01, re-think: RR8-M1), the loan kinds, closed and open places
+    but for the closed places' sentence, statement (2) of D-SAFE3-5, on a
+    `returned var` checked on a closed place, a global variable's initializer
+    on an open one and a global constant's temporary closed, the storage a C++
+    caller supplies bound by that caller (A.33 and B.32, the roots of RR4-M1,
+    RR5-M1 and RR6-M1; added 2026-10-29, review fold: RR4-M1, RR5-M1, ruling
+    round 1: RU1-1; amended 2026-11-01, re-think: RT-1, where A.33 and B.32
+    listed every storage a `returned var` can name), and the sentence that a
+    carrier of a closed place cannot escape it, which C++ code escapes (A.44,
+    A.45; added 2026-11-01, re-think: RR8-M1), T8 but for its sentence
+    withholding `noalias` and `captures(none)` on every place C++ code
+    receives (A.37, B.35), and the C++ boundary but for the C++ call rule
+    stated once by closure under T3's carrier relation, the allowlist's first
+    shape keeping only by-value arguments whose loan set is empty or free and
+    its trusted routes stated for diagnostics only (A.34 to A.36, A.38 to A.40,
+    A.42, B.33, B.34, B.36; the root of RR6-M1, RR7-M1 and RR8-M1, D-SAFE3-13;
+    added 2026-10-29, ruling round 1: RU1-1; amended 2026-11-01, re-think:
+    RR8-M1, RR8-m1, where this read "T8 but for its sentence on a place C++
+    code received by any route (A.37, B.35), and the C++ boundary but for the
+    C++ call rule over every route by which C++ code receives a Carbon place,
+    the allowlist's first shape narrowed to match"; amended 2026-10-29, ruling
+    round 2: RU2-1, where this read "T8 but for its sentence on storage a C++
+    function received under a marker (A.37, B.35), and the C++ boundary but
+    for the C++ call rule over storage a C++ function constructs in and the
+    allowlist's first shape narrowed to match"), D-SAFE2-3 to D-SAFE2-5
+    (D-SAFE2-3's one-element clause read at every depth, D-SAFE3-5;
+    amended 2026-10-29, review fold: RR2-m1), M7 and D-SAFE-16, on which the
+    claim across threads rests (W-365; added 2026-10-29, review fold: RR2-M1),
     `Core.SharedImmutable` and M3's structural rule, M3(c), the `bound` rule,
     Permissive's twin warnings, the Debug flag, the Rust
     mapping and the diagnostic names (section 0.6; amended 2026-10-29, ruling
@@ -2211,7 +2342,12 @@ Each under R29, with its break condition.
     records-only; a page-changing finding past the budget or the rounds stops at
     a plan revision for the orchestrator's ruling, and a finding that would
     soften a re-derived rule is never folded as such. Break condition: the
-    orchestrator's ruling.
+    orchestrator's ruling. By the ruling of 2026-11-01 (statement (5)), rev 10
+    is followed by one fresh focused re-review, folded into rev 11, and, if it
+    leaves a MAJOR, a second into rev 12; sign-off needs a round with no
+    BLOCKER and no MAJOR, and a BLOCKER, or a MAJOR left after the second
+    round, stops SAFE-3's planning, the orchestrator recording the state on
+    trunk (added 2026-11-01, re-think: RT-1).
 -   **D-SAFE3-12 — The cost, accepted.** Unchanged and permitted: `q->n = 2`,
     `p->n += 1` and `++p->n` through a plain `T*` (copy-represented, by copy,
     prelude only), `*q = F(p)` for an `i32` result, `*q = {.a = 1, .b = 2}` for
@@ -2284,7 +2420,11 @@ Each under R29, with its break condition.
     no nested one-element aggregate type appears and every adapter adapts a
     scalar; and the generic bodies' assignments are on `Core.Int(N)`, which
     keeps its exemption, or, in examples/advent2024/sort.carbon's `Swap`,
-    between two `ref` parameters, which (ii) lets through, so none is newly
+    between two `ref` parameters, which (ii) lets through (re-traced
+    2026-11-01, RT-1: under statement (1) `from = to` reads through the `ref`
+    parameter `to` and is not formed, so it is a checked reborrow of `from`,
+    which T4 accepts, no call site binding the two to overlapping places), so
+    none is newly
     rejected (added 2026-10-29, review fold: RR2-m1, RR2-m2, RR2-m3). Measured
     again for rev 5 over the same two sets (fixer3/bin/carrier_scan.py,
     r5count.py's statement matcher, fixer3/logs/carrier-fork.txt and
@@ -2404,67 +2544,148 @@ Each under R29, with its break condition.
     cpp_thread_carbon_fn_diff.carbon:50 and :51's joins and
     cpp_atomic_carbon_class_diff.carbon:45's `a.load()` after `a.store`, and
     every second `for` over one C++ range; and T8's withholding rejects
-    nothing (added 2026-10-29, ruling round 2: RU2-1). Break
+    nothing (added 2026-10-29, ruling round 2: RU2-1). Newly rejected by the
+    ruling's statement (1), each with its remedy, the right operand formed in a
+    fresh local first: an in-place `=` through a shared path whose right
+    operand is not formed, an aggregate literal holding a prelude call among
+    them, `*q = {.o = Core.Optional(i32).Some(42), .n = n}` (z1b, which rev 9
+    accepted, `let o: Core.Optional(i32) = Core.Optional(i32).Some(42);` its
+    remedy); on a closed place the `=` whose right operand is not formed is a
+    checked reborrow, which T4 rejects only where a carrier of the left
+    operand's place is used during it, as the rows above already count. Measured
+    for rev 10 by rethink/bin/inplace_scan.py, which compiles every unit of a
+    fresh archive of 0f22798fb with the nightly (the fork's conformance programs
+    alone with their COMPILE-ARGS, every examples/advent2024 file after its
+    libraries, every other example alone; the nightly gives SemIR for 182 of
+    the 208 units, 63 of them with errors it checks past, and none for 22 SKIP
+    stubs, 2 timeouts and 2 others) and reads from its SemIR every `=`
+    the toolchain initializes in place (an `assign` whose right side is an
+    initializer with a destination), with rethink/bin/text_scan.py over the 89
+    files that do not compile cleanly and rethink/bin/page_scan.py over the
+    `carbon` blocks of docs/design/ (rethink/logs/inplace-scan.txt,
+    rethink/scan/out/): of the 17 in-place `=` statements, 11 have a formed
+    right operand, `day5_common.carbon:20`'s `returned var` default-initialized
+    by the prelude and io_utils.carbon:74's global `unread_char` assigned the
+    prelude's `None()` among them, and keep the exemption, and the 6 that do
+    not, day14_part2.carbon:60's `r[i] = Robot.Read()`, day6_common.carbon:57
+    and :58's `copy.loc = self.loc` and `copy.dir = self.dir`, :72's
+    `self.dir = (-d.1, d.0)`, examples/interop/cpp/socket.carbon:52's
+    `address.sin6_port = Cpp.htons_wrap(port)` and sort.carbon:9's
+    `from = to`, are each on a closed place and a checked reborrow that T4
+    accepts but :72, where `d` is `let d: (i32, i32) = self.dir;`, a borrowed
+    object whose frozen loan the write breaks, `StrictBorrowedObjectMutated`
+    under D-SAFE2-3 in every revision since SAFE-2 and missed by every count
+    before this one (its remedy `var d: (i32, i32) = self.dir;`, upstream's own
+    comment there asking whether the direct form should work); the 63 in-place
+    `var` initializations of locals are statement (2)'s, exempt, the three
+    global variables' initializers counted for rev 6 above; of the 32
+    assignments in the files that do not compile and the 64 on the pages, none
+    is newly rejected, details.md:2277's `(*dest)[i] = p.Get(i)`, goals.md:662
+    and :663's `chunks = ...` and values.md:1275's `**dest = *arg` being
+    rejected under rev 9 as under rev 10. The statement's cost on the corpus is
+    therefore nil, and the closure of statement (3) and A.43's ⊥ destination
+    reject nothing in it either: rethink/bin/lower_corpus.sh and ir_byval.py
+    over a fresh lowering of the 60 programs that import `Cpp` (39 lowering, 21
+    failing, as rev 9's; rethink/scan/ir_byval_all.tsv, identical to
+    the 2026-10-29 fixer's) find 163 calls from a Carbon function to a C++
+    function, of which 26 in 11 programs pass a by-value class argument, 7 a
+    `std::string_view` bound to a string literal (a free loan set), 9 the C++
+    operators' `Acc` and `Meters` of `int` fields (empty) and 10 the iterators
+    and sentinels the trusted range witnesses compare, inside the trusted route,
+    and of the 21 read by hand 4 pass one, the Carbon `Val`, `Wide` and `Vec2`,
+    which hold no pointer, and union_cpp_import.carbon:84's `Pair`, a C++ union
+    with an `int*` member into which the program stored only an `int`
+    (ruling-fixer3/scan/byval.tsv); and no Strict store in the corpus puts a
+    loan into a C++ type's pointer field, a search for `.f = &` in the
+    programs that import `Cpp` finding none and the stores into C++ objects'
+    fields storing integers and Carbon values that hold no pointer
+    (ruling-fixer3/scan/cpp-field-stores.tsv) (added 2026-11-01, re-think:
+    RT-1, RR8-M1). Break
     condition: a later count shows the cost larger than the pages state; the
     count is added by a dated edit, the rule unchanged.
--   **D-SAFE3-13 — The C++ boundary: every route to a Carbon place.** C++ code
-    that receives the address of a Carbon place may keep it, which C++ permits
-    and which the strategy does not assume against (p005914:205-208), whatever
-    the route: a pointer, reference or view argument; `this` of a method or a
-    constructor; the storage a constructor initializes, a by-value return of a
-    class type that the C++ ABI returns in memory being constructed in the
-    storage the call initializes (c01, c03, c05, d02, d03, d05) and a copy,
-    move, conversion or default initialization that runs a constructor that is
-    not trivial through the prelude's synthesized witness constructing in its
-    destination, an in-place `=`'s copy into its left operand among them (d04);
-    the source such a constructor copies, moves or converts from, a by-value
-    parameter's argument among them, which the thunk's copy hands the
-    constructor as its `const T&` (d01, e01, e02, j02, j04); and the place a
-    shape of the allowlist or a synthesized witness hands it, shape 2's
-    reference, shape 3's `this`, shape 4's view and the `this` or `const T&`
-    with which the range witnesses call the user's `begin()`, `end()`, `data()`
-    and `size()` (e09, e10, j01, j03). Decided: every route carries one
-    obligation, that the C++ code keeps no pointer to the place it received once
-    it returns but within that place or in the call's result, and none to the
-    source of a copy, move or conversion, a property no annotation the importer
-    maps states. A route the allowlist does not name is pointer-carrying,
-    `StrictCppCallUnannotated` unmarked, as a constructor named in the call
-    already is, so that the marker puts the obligation, rung 3's, on the unsafe
-    code that writes it: `unsafe Cpp.MakeW(1, 2)`, `unsafe Cpp.Take(x)`,
-    `unsafe (y = t)` or, for an initialization, the marked copy
-    `var y: Cpp.W = unsafe t;` (NEW syntax; `Cpp.W.W(t)` does not name the copy
-    constructor, which the toolchain's overload set does not hold, e08). A route
-    that shapes 2 to 4 of the allowlist or D-SAFE-18's synthesized range
-    witnesses name stays unmarked, its obligation the C++ code's own as unsafe
-    code, the obligation unsafe code has to adhere to the `noalias` restrictions
-    (p005434:861-862), trusted for diagnostics only, as D-SAFE-18 trusts
-    Permissive's non-escape (A.42, B.36). The allowlist's first shape keeps the
-    calls that hand C++ no Carbon place, by-value parameters whose
-    initialization runs no constructor that is not trivial, copied by the thunk
-    (e03), and results that come back in registers, copied out of C++'s own
-    storage (c03 at 16 bytes, c02), its reason narrowed to them (A.34, A.36,
-    B.33). Neither obligation is a fact the checker establishes, so T8 emits no
-    attribute for a `ref` on a place C++ code received by any route, or on a
-    place that overlaps one, nor for a `ref` parameter one of whose call sites
-    binds one, and a C++ function that breaks the obligation, c05's `MakeW`
-    keeping `this` for `PokeLast`, e01's copy constructor keeping its source for
-    `PokeSrc` or e09's `begin()` keeping `this` for `PokeSaved`, is the bug of
-    the unsafe code the temporal page's unsafe-code contract names ("a pointer
-    saved by an unannotated C++ callee and used later"), erroneous behavior and
-    never undefined behavior on the Carbon side, the strategy's rule for what
-    unsafe code may do ("we will endeavor to make violations into erroneous
-    behavior", p005914:208-210) (A.37, B.35). The storage a C++ caller supplies
-    to a function exported to C++ is bound by that caller for the call, Clang's
-    lowering marking it `noalias` (c06), so a C++ caller that reaches it
-    otherwise breaks the obligation unsafe code has, as a Permissive caller's
-    in-place `=` binds its left operand, and T8 already emits no attribute for
-    such a function (A.33, B.32). With these, in every Strict-accepted program
-    C++ code holds the address of a Carbon place only by a route that a marker
-    or the allowlist names, under that route's obligation, and T8 claims no
-    attribute for the place, so the noalias claim is the checker's for every
-    place no C++ code received and the obligation of unsafe code, C++'s
-    included, for the others; the model is unchanged, its closed places' premise
-    completed for every route of the C++ boundary. Labelled this design's
+-   **D-SAFE3-13 — The C++ boundary, by closure under T3's carrier
+    relation.** C++ code that receives the address of a Carbon place may keep
+    it, which C++ permits and which the strategy does not assume against
+    (p005914:205-208). By the orchestrator's ruling of 2026-11-01, statement
+    (3), as RR8-M1's fix gives it, the boundary is stated once: C++ code
+    receives every Carbon value a call passes it and every Carbon place whose
+    address the call hands it, as a parameter or as `this`, the storage a
+    constructor initializes and the source a constructor copies, moves or
+    converts from among them, and C++ code receives every place on which a loan
+    lies that is carried, transitively, by a value or place it receives, a
+    class value's loan set included (temporal_safety.md:118-119). A call that
+    hands C++ code a Carbon place is pointer-carrying whatever its declared
+    parameters, `StrictCppCallUnannotated` unmarked, so that the marker puts
+    the obligation, rung 3's, on the unsafe code that writes it:
+    `unsafe Cpp.MakeW(1, 2)`, `unsafe Cpp.Take(x)`, `unsafe Cpp.TakeCV(v)` for
+    a `v` of a Carbon class that holds `&x` (k02; a C++ type's field holding
+    `&x`, t01's `h`, is A.43's rejected store), `unsafe (y = t)` or, for an
+    initialization, the
+    marked copy `var y: Cpp.W = unsafe t;` (NEW syntax; `Cpp.W.W(t)` does not
+    name the copy constructor, which the toolchain's overload set does not
+    hold, e08). The allowlist's first shape keeps only by-value arguments whose
+    loan set is empty or free, copied by the thunk with no constructor that is
+    not trivial (e03, k06), and results that come back in registers, copied
+    out of C++'s own storage (c03 at 16 bytes, c02) (A.34, B.33); shapes 2 to 4
+    and D-SAFE-18's synthesized range witnesses stay unmarked, their
+    obligation the C++ code's own as unsafe code, trusted for diagnostics only,
+    as D-SAFE-18 trusts Permissive's non-escape (A.42, B.36). The obligation of
+    unsafe code is stated over every place C++ code receives, that the C++ code
+    keeps no pointer to the place it received once it returns but within that
+    place or in the call's result, and none to the source of a copy, move or
+    conversion, the unsafe code's under a marker and C++'s own on a trusted
+    route, the obligation unsafe code has to adhere to the `noalias`
+    restrictions (p005434:861-862), a property no annotation the importer maps
+    states. The checker establishes it for no such place, so T8 withholds
+    `noalias` and `captures(none)` on every such place for the marked and the
+    trusted routes alike, on `ref` and `exclusive T*` parameters and loans, on
+    a place that overlaps one and on a `ref` or `exclusive T*` parameter one of
+    whose call sites binds one (A.37, B.35; RR8-m1), and a C++ function that
+    breaks the obligation, c05's `MakeW` keeping `this` for `PokeLast`, e01's
+    copy constructor keeping its source for `PokeSrc`, e09's `begin()` keeping
+    `this` for `PokeSaved` or k02's `TakeCV` keeping the pointer its by-value
+    argument carried for `Poke`, is the bug of the unsafe code the temporal
+    page's unsafe-code contract names ("a pointer saved by an unannotated C++
+    callee and used later"), erroneous behavior and never undefined behavior on
+    the Carbon side, the strategy's rule for what unsafe code may do ("we will
+    endeavor to make violations into erroneous behavior", p005914:208-210).
+    The closure needs the carrier relation unbroken where a Strict store puts a
+    loan: T6 reads a pointer-typed field of an imported C++ type as ⊥, so the
+    Store rule counts such a field, and a field of such a type that holds one,
+    a ⊥ destination, as T5(g) counts an `unsafe class`'s pointer fields, and a
+    store of a loan that is not free into one, `h.p = &x;` or an
+    initialization that puts one there, is `StrictStoreOutlivesSource` (A.43,
+    B.37), which rejects t01's, t02's, k01's and k03's stores and t03's
+    `h.p = &y;` before their C++ calls, since a later read of `h.p` would
+    give any call, C++ code's or a Strict callee's, a pointer to `x` that T4
+    and the closure do not see (the rev 10 fixer's k04: 9; k05, with no C++
+    code run, 9 9); and a carrier of a closed place escapes into C++ code,
+    which T5(b) does not bind, so the temporal page's vocabulary and the
+    mutation page's memory-safety argument say so (A.44, A.45). The storage a
+    C++ caller supplies to a function exported to C++ is bound by that caller
+    for the call, Clang's lowering marking it `noalias` (c06), as statement (2)
+    of D-SAFE3-5 says, and T8 already emits no attribute for such a function
+    (A.33, B.32). With these, in every Strict-accepted program C++ code holds
+    the address of a Carbon place only under a marked or a trusted route's
+    obligation, and T8 claims no attribute for the place, so the noalias claim
+    is the checker's for every place no C++ code receives and the obligation of
+    unsafe code, C++'s included, for the others. Measured (the rethink scan,
+    D-SAFE3-12): no corpus call of shape 1 passes a by-value argument whose
+    loan set is neither empty nor free and no Strict store puts a loan that is
+    not free into a C++ object's pointer field, so the closure and the ⊥
+    destination newly reject nothing in the corpus, and T8's withholding
+    rejects nothing (re-thought 2026-11-01, re-think: RR8-M1, RR8-m1: the
+    boundary stated by closure under T3's carrier relation, where the title
+    read "The C++ boundary: every route to a Carbon place." and the decision
+    enumerated the routes as rev 9 (547fb6220) stated them, from "whatever the
+    route: a pointer, reference or view argument;" to "completed for every route
+    of the C++ boundary.", which named no place on which a loan carried by a
+    received value or place lies (ruling-rr3's t01 to t03, the rev 10 fixer's
+    k01 to k03) and no ⊥ destination (k04, k05), and its T8 sentence read
+    "T8 emits no attribute for a `ref` on a place C++ code received by any
+    route, or on a place that overlaps one, nor for a `ref` parameter one of
+    whose call sites binds one", naming no `exclusive T*` parameter or loan).
+    Labelled this design's
     reading of the strategy's rule for C++ and for unsafe code (p005914:205-210)
     and of the allowlist, a trusted assumption of D-SAFE-18 narrowed by a dated
     edit, its trust for diagnostics only. Rejected: counting storage that a
@@ -2502,8 +2723,13 @@ Each under R29, with its break condition.
     on every class type by a dated mark, its cost the 26 of D-SAFE3-12; an
     importer annotation that maps "keeps no pointer to `this`" lets such a call
     drop the marker, as `_Nonnull` and the noescape attribute do for parameters;
-    a probe in which C++ code receives the address of a Carbon place by a route
-    this decision does not name narrows it again; a corpus program or page
+    a probe in which C++ code reaches a Carbon place that the closure does not
+    name, or in which a read cuts the carrier relation that the ⊥ destination
+    does not cover, stops the plan for the orchestrator, the closure being the
+    ruling's statement and no route to be added to it (amended 2026-11-01,
+    re-think: RR8-M1, where this read "a probe in which C++ code receives the
+    address of a Carbon place by a route this decision does not name narrows it
+    again"); a corpus program or page
     example whose result turns on a trusted route's breach, or a later count
     that makes the trusted routes' cost or the open-for-life alternative's
     differ from D-SAFE3-12's, reopens the choice between them by a dated mark;
@@ -2551,7 +2777,18 @@ For each probe, the outcome under D-SAFE3-3 to D-SAFE3-5 and why nothing but
 the operation reaches the referent while the `ref` lives in every accepted
 program; every probe is of one thread, and the last row is the case across
 threads, which no probe can show (amended 2026-10-29, review fold: RR2-M1,
-where this ended "in every accepted program:"):
+where this ended "in every accepted program:"). Rev 10 re-traced every row under
+the ruling's three statements (D-SAFE3-5 statements (1) and (2), D-SAFE3-13
+statement (3)) from the probes re-run in rethink/rerun/: a row that rested on
+conditions (i) to (iii) now rests on whether the right operand is formed before
+the binding, an exempt `=` running nothing but prelude code over formed values
+while its left operand is bound, and every other one being a checked reborrow
+on a closed place and M3(d)'s write on an open one; the rows whose outcome
+changes are q06c, z1b, s18 (its diagnostic), ruling-rr3's t01, t02 and t03's
+`h` and the rev 10 fixer's k01 to k05, and those whose route changes, the
+outcome the same, are p03, rr5's q01, c01, e10, j01 and t03's `p`, each saying
+so and the rev 10 fold record listing them
+with the probe that decides each (added 2026-11-01, re-think: RT-1, RR8-M1):
 
 | probes | outcome | why `noalias` holds |
 | --- | --- | --- |
@@ -2564,48 +2801,53 @@ where this ended "in every accepted program:"):
 | a_p07, b_p1 to b_p3 | as their operators classify | the right operand's side effects end before the call |
 | q06a, q06f, w4 (`i32`), s01, s16, s13's struct, f02 | copy-represented at every depth, by copy (rev 1: "copy-represented"; amended 2026-10-29, review fold: A-RA3-B1) | one store of a complete value; w4's user `ImplicitAs` makes it user-written by D-SAFE3-4 |
 | v09, v11, v14, s03 to s05, s15, ra01, ra04, ra05 (through aliasing `T*`) | M3(d), `StrictInvalidatingThroughShared` (v09, v11 and ra05 also M3(c)) | rejected: the right operand reads an open place; ra01, ra04 and ra05 are copy-represented one-element aggregates whose element is not, under the interim rule since rev 2 (added 2026-10-29, review fold: A-RA3-B1) |
-| v10, v24, s17, ra01's and ra04's locals, n03 (a `var` parameter, a `returned var` and a class local) | condition (ii) fails, the right operand reading the left operand's place through its owner, so the `=` is a checked reborrow and T4 reports `StrictExclusiveBorrowConflict` (rev 2's (ii), over carriers only, exempted these; amended 2026-10-29, review fold: RR1-M1) | rejected: the right operand reads the left operand's place through its owner while the reborrow is live |
+| v10, v24, s17, ra01's and ra04's locals, n03 (a `var` parameter, a `returned var` and a class local) | the right operand reads the left operand's place through its owner, a member access and not a formed value, so the `=` is a checked reborrow and T4 reports `StrictExclusiveBorrowConflict` (rev 2's (ii), over carriers only, exempted these; amended 2026-10-29, review fold: RR1-M1; re-traced 2026-11-01, RT-1, where this began "condition (ii) fails") | rejected: the right operand reads the left operand's place through its owner while the reborrow is live |
 | ra03 | M3(d) through `T*`: user code (`Peek`) in the right operand of an in-place `=` | rejected |
-| ra06, f04's first (the formed-first remedy for ra01's shape) | the interim rule accepts (the right operand reads only the body's value `v`); M3 decides | nothing in the right operand reaches the left operand's place; the nightly's `poison` store makes the output order-only (section 0.3) |
-| ra07, n04's local (rev 3) | `v` is a value binding of `x` (of `y.s` for n04's `W`), a borrowed object under a frozen loan, so the `=` is `StrictSharedBorrowInvalidated` (T4) before the interim rule applies; condition (ii) fails too, `v` being a carrier (T3), and the gloss excludes it ("values that carry no loan on it"; rev 2's gloss read "values that carry no loan on the left operand's place", amended 2026-10-29, review fold: RR1-M1) | rejected |
+| ra06, f04's first (the formed-first remedy for ra01's shape) | the right operand `v` is the name of a local, a formed value carrying no loan on the left operand's place, so the exemption holds; M3 decides (re-traced 2026-11-01, RT-1, where this read "the interim rule accepts (the right operand reads only the body's value `v`)") | nothing in the right operand reaches the left operand's place; the nightly's `poison` store makes the output order-only (section 0.3) |
+| ra07, n04's local (rev 3) | `v` is a value binding of `x` (of `y.s` for n04's `W`), a borrowed object under a frozen loan, so the `=` is `StrictSharedBorrowInvalidated` (T4) before the interim rule applies; `v` is a name that carries a loan on the left operand's place, so it is not formed before the binding either (re-traced 2026-11-01, RT-1, where this read "condition (ii) fails too, `v` being a carrier (T3), and the gloss excludes it ("values that carry no loan on it"; rev 2's gloss read "values that carry no loan on the left operand's place", amended 2026-10-29, review fold: RR1-M1)") | rejected |
 | n04's alias (rev 3) | `let v: W = *p` binds a borrowed object, `W`'s element, on an open place: `StrictBorrowFromShared` (D-SAFE2-3's one-element clause) | rejected at the `let` |
 | n01 (rev 3) | `class A { adapt W; }` is not copy-represented at every depth (D-SAFE3-5, RR1-m1), so the interim rule applies, and the right operand reads `*p`, an open place: M3(d), `StrictInvalidatingThroughShared` | rejected; the nightly forms the value first through `as` and stores `poison` after (order-only) |
-| n02 (rev 3) | `class A { adapt {.c: C}; }` is not copy-represented at every depth, and `*q = *p` initializes `C`'s part in place by a user `Copy`: D-SAFE3-3 (b), `StrictBorrowFromShared`, and the interim rule's (i) and (iii) | rejected |
+| n02 (rev 3) | `class A { adapt {.c: C}; }` is not copy-represented at every depth, and `*q = *p` initializes `C`'s part in place by a user `Copy`: D-SAFE3-3 (b), `StrictBorrowFromShared`, and the interim rule, `*p` a read through a carrier and the `Copy` written outside core/prelude (re-traced 2026-11-01, RT-1, where this read "and the interim rule's (i) and (iii)") | rejected |
 | f01 | designed, `W`'s `other` holding its element as a borrowed object: `StrictBorrowFromShared` through `T*` | the nightly copies the element first, which the design does not rely on |
-| f03 | the interim rule (ii) rejects `c = {.data = 42, .next = &c.data}`, T4 `StrictSharedBorrowInvalidated`; the field-by-field remedy is accepted | nothing reads through the carrier during the `=`, a cost of the stricter criterion |
+| f03 | `c = {.data = 42, .next = &c.data}`'s `&c.data` is not a name or a literal and carries a loan on `c`, so the `=` is a checked reborrow, T4 `StrictSharedBorrowInvalidated`; forming the value in a local first does not help, the local carrying the same loan, and the field-by-field remedy is accepted (re-traced 2026-11-01, RT-1, where this began "the interim rule (ii) rejects") | nothing reads through the carrier during the `=`, a cost of the stricter criterion |
 | v25 | M3 (`Core.Optional(i32)` holds a `Core.SharedImmutable` sub-object) and the interim rule | rejected |
 | b_p8, a_p08, a_p11, q06b, z1, w1 to w3, v01 to v08, v12, v13, v15, v16, s06's `Bump`, s07, s08 | M3(d) through `T*`; on a closed place a checked reborrow | rejected through a shared path: user code or an open read in the right operand |
 | q06h | T4, `StrictSharedBorrowInvalidated` | rejected: `&c.a` is a carrier of the place |
 | a_p09, b_p5, z2 | user-written (a user `Copy` runs while bound) | rejected through a shared path |
-| q06c, z1b, w3's remedy, q06g, q06e, s09's `var` copies, s10, v24's bound-first | the interim rule accepts when the right operand reads only literals, the body's closed places that do not overlap the left operand's place, values that carry no loan on it (T3) and from which no carrier of it can be loaded, and prelude calls over them; M3 then decides (amended 2026-10-29, review fold: A-RA3-m1, where this read "the body's own values and literals"; amended 2026-10-29, review fold: RR1-M1, where this read "the body's closed places and values that carry no loan on the left operand's place"; amended 2026-10-29, review fold: RR3-M1, where this read "values that carry no loan on it (T3), and prelude calls", which let `&p` for `p = &x` qualify, m02) | nothing in the right operand can reach the left operand's place |
+| q06g, q06e, s09's `var` copies, s10, v24's bound-first; q06c, z1b, w3's remedy | q06g's, q06e's, s09's, s10's and v24's right operands are names of locals or parameters, formed values carrying no loan on the left operand's place, so the exemption holds and M3 decides; q06c's `{.x = e as i32, .y = e as i32}` runs the user's `Convert` of `Evil`, and z1b's `{.o = Core.Optional(i32).Some(42), .n = n}`, which is w3's remedy, holds a prelude call inside an aggregate literal, a prelude call with an argument the list does not admit by (r1), so neither is formed and each `=` through `C*` is M3(d)'s, `StrictInvalidatingThroughShared` (re-traced 2026-11-01, RT-1, where the row's first cell began with q06c, z1b and w3's remedy and this cell read "the interim rule accepts when the right operand reads only literals, the body's closed places that do not overlap the left operand's place, values that carry no loan on it (T3) and from which no carrier of it can be loaded, and prelude calls over them; M3 then decides", with its marks of 2026-10-29 for A-RA3-m1, RR1-M1 and RR3-M1) | q06g to v24 accepted as M3 decides, nothing in the right operand reaching the left operand's place; q06c and z1b rejected, newly for z1b, whose remedy forms the value first, `let o: Core.Optional(i32) = Core.Optional(i32).Some(42);` then `*q = {.o = o, .n = n};`, and q06c's, whose rev 9 outcome its own `Convert` already contradicted (5 100 1 1), converting first |
 | s11, s20 (the rewrite emulated) | designed, for these aggregates this design's reading of assignment.md:184 pending leads issue 686 (amended 2026-10-29, review fold: A-RA3-M1): s11 accepted; s20's `other` is a value binding of the referent | s20 rejected by D-SAFE3-3 (b): `StrictBorrowFromShared` or `StrictBorrowedObjectMutated` |
 | s06's `Whole`, s14 | M3, `StrictSharedImmutableWrite` (and M3(c) for `Optional`) | rejected |
-| s18 | the interim rule accepts (literals, a prelude call over them); M3(c) rejects the non-`Plain` class through `T*` | as M3 decides |
+| s18 | `*q = {.a = 1, .o = Core.Optional(i32).Some(42)}` holds a prelude call inside an aggregate literal, not formed by (r1), so the `=` through `T*` is M3(d)'s, `StrictInvalidatingThroughShared`, and M3(c) rejects the non-`Plain` class through `T*` too (re-traced 2026-11-01, RT-1, where this read "the interim rule accepts (literals, a prelude call over them)") | rejected as before, with M3(d)'s diagnostic beside M3(c)'s |
 | v23 | built in: the index and the right operand evaluated before the store | the element is copy-represented, one store |
-| n05 (rev 4) | `a[i] = {.a = a[j].b, .b = a[j].a}` on a local array: `a[j]` overlaps `a[i]` unless the checker proves `i != j` (D-SAFE3-5, RR2-m3), so (ii) fails and T4 reports `StrictExclusiveBorrowConflict` on the checked reborrow; with indices proven distinct the `=` is exempt | rejected unless the indices are proven distinct, the case in which no other path reaches `a[i]` |
-| n06, k01 (rev 4) | a type parameter's value representation is dependent, so it is not copy-represented (D-SAFE3-5, RR2-m2): `x = x` fails (ii) and D-SAFE3-3 (b), `StrictExclusiveBorrowConflict` and `StrictBorrowedObjectMutated`; `*q = *p` is user-written by D-SAFE3-4 (the `Copy` reached through a symbolic witness) and D-SAFE3-3 (b)'s `StrictBorrowFromShared`; k01's `p = -p` on `Core.Int(N)`, copy-represented, is exempt | rejected, the specific `C`'s `Copy` running with `self` its own return slot (3 3; 2 2); k01's integer store is one store of the call's value |
-| n07 (rev 4) | `*pp` and `h.p` are pointer values that hold the loan on `x` and `y`, carriers (T3), so (ii) fails: T4, `StrictExclusiveBorrowConflict`; the right operand loads them itself, where m02's calls do (rev 5) | rejected |
-| m02, m04 (rev 5) | `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x`, and with `ref p`: the right operand reads no open place and uses no carrier of `x` itself, but passes to a call a value from which one, `p`, can be loaded, so (ii) fails as rev 5 states it, and T3's sentence (A.32) counts each call as a use of `p`'s loan, live while the checked reborrow is: T4, `StrictExclusiveBorrowConflict` (rev 4's (ii) exempted it, the model's closed-place argument counting carriers but not the paths to them; RR3-M1); the control that passes `p` by value fails (ii) as it stood | rejected; the remedy, the right operand formed first, prints 3 4 1 2 |
-| m01 (rev 5) | the same shapes for `{.a: i32, .b: i32}` with calls that return `i32`, a struct holding `&q` passed by value, and the left operand `s.v` with its carrier in the sibling field `s.p`: each passes to a call a value from which a carrier of the left operand's place can be loaded, so (ii) fails and T4 rejects as for m02 | rejected; the nightly runs the calls before the stores (2 1, 4 3, 6 5), the stricter criterion's cost |
+| n05 (rev 4) | `a[i] = {.a = a[j].b, .b = a[j].a}` on a local array: `a[j]` overlaps `a[i]` unless the checker proves `i != j` (D-SAFE3-5, RR2-m3); the right operand is not formed, `a[j].b` being an index and a member access, so the `=` is a checked reborrow and T4 reports `StrictExclusiveBorrowConflict` on it unless the indices are proven distinct, when T4 sees no conflict (re-traced 2026-11-01, RT-1, where this read "so (ii) fails and T4 reports `StrictExclusiveBorrowConflict` on the checked reborrow; with indices proven distinct the `=` is exempt") | rejected unless the indices are proven distinct, the case in which no other path reaches `a[i]` |
+| n06, k01 (rev 4) | a type parameter's value representation is dependent, so it is not copy-represented (D-SAFE3-5, RR2-m2): `x = x`, a formed value naming the left operand's own place, is D-SAFE3-3 (b)'s, `StrictBorrowedObjectMutated` (re-traced 2026-11-01, RT-1, (r4), where this read "`x = x` fails (ii) and D-SAFE3-3 (b), `StrictExclusiveBorrowConflict` and `StrictBorrowedObjectMutated`"); `*q = *p` is user-written by D-SAFE3-4 (the `Copy` reached through a symbolic witness) and D-SAFE3-3 (b)'s `StrictBorrowFromShared`; k01's `p = -p` on `Core.Int(N)`, copy-represented, is exempt | rejected, the specific `C`'s `Copy` running with `self` its own return slot (3 3; 2 2); k01's integer store is one store of the call's value |
+| n07 (rev 4) | `*pp` and `h.p` are pointer values that hold the loan on `x` and `y`, carriers (T3), and the right operand reads through them, so it is not formed: a checked reborrow, T4, `StrictExclusiveBorrowConflict`; the right operand loads them itself, where m02's calls do (rev 5) (re-traced 2026-11-01, RT-1, where this read "carriers (T3), so (ii) fails: T4") | rejected |
+| m02, m04 (rev 5) | `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x`, and with `ref p`: the right operand's calls are user calls, so it is not formed and the `=` is a checked reborrow, and T3's sentence (A.32) counts each call as a use of `p`'s loan, live while the reborrow is: T4, `StrictExclusiveBorrowConflict` (rev 4's (ii) exempted it, the model's closed-place argument counting carriers but not the paths to them; RR3-M1); the control that passes `p` by value is a user call too (re-traced 2026-11-01, RT-1, where this read "the right operand reads no open place and uses no carrier of `x` itself, but passes to a call a value from which one, `p`, can be loaded, so (ii) fails as rev 5 states it," and ended "fails (ii) as it stood") | rejected; the remedy, the right operand formed first, prints 3 4 1 2 |
+| m01 (rev 5) | the same shapes for `{.a: i32, .b: i32}` with calls that return `i32`, a struct holding `&q` passed by value, and the left operand `s.v` with its carrier in the sibling field `s.p`: each passes to a call a value from which a carrier of the left operand's place can be loaded, a user call, so the `=` is a checked reborrow and T4 rejects as for m02 (re-traced 2026-11-01, RT-1, where this read "so (ii) fails and T4 rejects as for m02") | rejected; the nightly runs the calls before the stores (2 1, 4 3, 6 5), the stricter criterion's cost |
 | m03 (rev 5) | `F(x, &x)` with `F`'s by-value `v` of `W2`: `v` binds `x.s.t` as a borrowed object (A.24, A.31), so passing `&x`, a writable carrier, to the call while `v`'s frozen loan lives is `StrictBorrowedObjectMutated` (T4), and the same for `G(y, &y)` one level deep; `H(z, &z)` for `{.s: {.n: i32}}`, copy-represented at every depth, binds no borrowed object and is accepted | rejected but `H`; the nightly copies each argument at the call (1 3 6), order-only |
 | p01 (rev 6) | `var g: S = F(1);`: `F`'s `returned var r` is `g`'s storage (`__global_init` calls `F(@g, 1)`), and `r = {.u = MakeU(k), .w = MakeW()}` runs `MakeW`, which reads `g.u` by name; rev 5 counted `r` closed, so (i) to (iii) held and the `=` was exempt while another path reads its referent (RR4-M1). Under rev 6 `g` is the one open storage a `returned var` can name (A.33): its initializer runs `F`, code written outside core/prelude, while `g` is bound, so it is `StrictRefFromShared` unless `unsafe`, and inside `F`, checked as before, `r` names storage no other name reaches | rejected at the global's initializer; with it rejected, no accepted program reaches `r` but through `r` (11 12 11 12 in place; the remedy formed first, itself a global's initializer and rejected too, 11 12 1 2) |
 | p02 (rev 6) | `var g: S = Init(1);` with `Init` passing `ref r` to `Mod`, whose in-place `=` on its `ref` parameter runs `MakeW`, which reads `g` by name: the same root, the `ref` a checked reborrow of a `returned var` that names `g`; rejected at the global's initializer as p01 | rejected; 21 22 21 22 |
-| p03 (rev 6) | the control: `Take(g)` copies the global into the `var` parameter's own storage, which nothing else names, so `s = {.u = MakeU(k), .w = MakeW()}` on the closed `s` is exempt and `MakeW`'s read of `g` reads another place | accepted; nothing but the operation reaches `s` (31 32 1 2, `g` unchanged) |
-| p04, p05 (rev 6) | `x = y` for `{.c: C, .d: C}`, `C` with a user `Copy` that loads `**self.q` (p04, `y` holding `&p`) or `*self.q` (p05, `y` holding `p`) for `p = &x.c.n`: the user's `Copy` makes the member assignment user-written (D-SAFE3-4, as z2's), so the `=` is a checked reborrow of `x`, and `y` is a value from which a carrier of `x.c.n` can be loaded (p04) or a carrier (p05), whose use by the in-place copies T3 counts (A.32): T4, `StrictExclusiveBorrowConflict`; (ii) fails too | rejected; the in-place copies print 51 512, the right operand formed first 51 52 |
-| rr5's q01, q01b, h01 (rev 7) | `let g: S = F(1);`, `F`'s in-place `=` on its `returned var r` running `MakeW`, which reads `g` by name: `r` is a temporary of `__global_init` (q01b), which the constant reaches only once `F` returns, a value binding acquiring its value after its initializer (values.md:102, :164-166; q01b's SemIR), so `r` is closed, (i) to (iii) hold and the `=` is exempt, and `MakeW`'s use of `g` reaches no part of `r`, the fork's lowering serving it from the zero-initialized backing global that the formed value is stored into after `F` returns (W-069, read, not run; RR5-M1) | accepted; the nightly lowers no use of a runtime global constant (q01, h01: a CHECK failure), so the outcome is the fork's lowering's |
-| rr5's q03, q04 (rev 7) | a global variable initialized in place by a struct literal of user calls, `MakeW` reading `g.u` after `MakeU`'s result is in `g.u` (q03), and `g = F(1);` in a function, `F`'s `returned var` being `g` (q04): the first is A.33's initializer of a global variable, the second an in-place `=` on the open `g` whose right operand runs code written outside core/prelude, (iii) failing, so the `=`'s `ref` on the global is `StrictRefFromShared` | rejected (61 62 61 62; 71 72 71 72) |
+| p03 (rev 6) | the control: `Take(g)` copies the global into the `var` parameter's own storage, which nothing else names, so `s = {.u = MakeU(k), .w = MakeW()}` on the closed `s`, whose right operand runs user calls and is not formed, is a checked reborrow that T4 accepts, `MakeW`'s read of `g` reading another place (re-traced 2026-11-01, RT-1, where this read "on the closed `s` is exempt and"; the route changed, the outcome not) | accepted; nothing but the operation reaches `s` (31 32 1 2, `g` unchanged) |
+| p04, p05 (rev 6) | `x = y` for `{.c: C, .d: C}`, `C` with a user `Copy` that loads `**self.q` (p04, `y` holding `&p`) or `*self.q` (p05, `y` holding `p`) for `p = &x.c.n`: the user's `Copy` makes the member assignment user-written (D-SAFE3-4, as z2's), so the `=` is a checked reborrow of `x`, and `y` is a value from which a carrier of `x.c.n` can be loaded (p04) or a carrier (p05), whose use by the in-place copies T3 counts (A.32): T4, `StrictExclusiveBorrowConflict`; the user's `Copy` makes the right operand not formed too (re-traced 2026-11-01, RT-1, where this ended "(ii) fails too") | rejected; the in-place copies print 51 512, the right operand formed first 51 52 |
+| rr5's q01, q01b, h01 (rev 7) | `let g: S = F(1);`, `F`'s in-place `=` on its `returned var r` running `MakeW`, which reads `g` by name: `r` is a temporary of `__global_init` (q01b), which the constant reaches only once `F` returns, a value binding acquiring its value after its initializer (values.md:102, :164-166; q01b's SemIR), so `r` is closed, and the `=`, whose right operand runs user calls and is not formed, is a checked reborrow that T4 accepts, `MakeW`'s use of `g` reaching no part of `r` (re-traced 2026-11-01, RT-1, where this read "(i) to (iii) hold and the `=` is exempt, and `MakeW`'s use of `g` reaches no part of `r`"; the route changed, the outcome not), the fork's lowering serving it from the zero-initialized backing global that the formed value is stored into after `F` returns (W-069, read, not run; RR5-M1) | accepted; the nightly lowers no use of a runtime global constant (q01, h01: a CHECK failure), so the outcome is the fork's lowering's |
+| rr5's q03, q04 (rev 7) | a global variable initialized in place by a struct literal of user calls, `MakeW` reading `g.u` after `MakeU`'s result is in `g.u` (q03), and `g = F(1);` in a function, `F`'s `returned var` being `g` (q04): the first is A.33's initializer of a global variable, the second an in-place `=` on the open `g` whose right operand runs code written outside core/prelude and is not formed, so the `=`'s `ref` on the global is `StrictRefFromShared`, an `unsafe` formation unmarked (re-traced 2026-11-01, RT-1, where this read "core/prelude, (iii) failing, so") | rejected (61 62 61 62; 71 72 71 72) |
 | rr5's q06 (rev 7) | the control: `{.n: i32}` is copy-represented at every depth, so `F`'s `returned var r` is its own local and `g` is stored once from `F`'s value; `Mod(ref r)` and `MakeN`'s read of `g` reach different places | accepted (91, `g` read as 0 during its initializer) |
 | rr5's q02, q05 (rev 7) | no evidence: q02 shows no user `Destroy` at the interim `=`, as v17, b_p7 and y1; q05 crashes the nightly's lowering | (section 0.3) |
-| c01, c03 (rev 8) | `var x: Cpp.W = Cpp.MakeW(1, 2); x = Cpp.Swapped();`: rev 7 counted both calls shape 1 and `x` closed, so the in-place `=` was exempt while `Swapped` read `x` through the `this` that `MakeW`'s constructor kept (RR6-M1); under D-SAFE3-13 each call returns a class type in memory and is pointer-carrying, `StrictCppCallUnannotated` unmarked, and marked it carries the obligation that `MakeW` keeps no pointer to `x`, which it breaks | rejected unmarked; marked, the read is the unsafe code's breach, C++'s own `noalias` on `Swapped`'s slot included (2 2; the right operand formed first 2 1; c03 the same for a trivially copyable 32-byte struct) |
+| c01, c03 (rev 8) | `var x: Cpp.W = Cpp.MakeW(1, 2); x = Cpp.Swapped();`: rev 7 counted both calls shape 1 and `x` closed, so the in-place `=` was exempt while `Swapped` read `x` through the `this` that `MakeW`'s constructor kept (RR6-M1); under D-SAFE3-13 each call returns a class type in memory and is pointer-carrying, `StrictCppCallUnannotated` unmarked, and marked it carries the obligation that `MakeW` keeps no pointer to `x`, which it breaks; the `=`, whose right operand is a C++ call and not formed, is a checked reborrow under statement (1) (re-traced 2026-11-01, RT-1; the route changed, the outcome not) | rejected unmarked; marked, the read is the unsafe code's breach, C++'s own `noalias` on `Swapped`'s slot included (2 2; the right operand formed first 2 1; c03 the same for a trivially copyable 32-byte struct) |
 | c05, d02, d03, d04 (rev 8) | `Mod(ref x)` for c01's `x` (c05), a `let` of such a result (d02), a field such a call initializes (d03) and a copy through a user-provided copy constructor (d04), a shape-1 `Cpp.PokeLast()` writing the storage through the kept `this` while the binding lives: rev 7 accepted each, a checked reborrow or a frozen loan on a closed place (RR6-M1); under D-SAFE3-13 the call or the copy that handed C++ the storage is `StrictCppCallUnannotated` unmarked, and with the marker T8 emits no attribute for `Mod`'s `ref` (A.37), the write being the unsafe code's breach | rejected unmarked; marked, erroneous behavior, never undefined behavior (9 in each) |
 | c06 (rev 8) | a C++ caller passes storage it points at as the return slot of the exported `Carbon::Pair::Make`, whose in-place `=` on its `returned var` calls back into C++, which reads `r.u.a` through its pointer: the storage is bound by the C++ caller, Clang marking the slot `noalias` in its declaration, so the read is the C++ caller's breach (A.33, B.32), and T8 emits no attribute for an exported function | the Carbon side accepted, no other Carbon path reaching `r`; the C++ caller's read erroneous behavior on the Carbon side (11) |
 | d01, d05, c02 (rev 8) | the controls: a by-value parameter's callee receives the thunk's copy (d01: `x` unchanged), whose user-provided copy constructor receives `x` as its source, so that under D-SAFE3-13 as rev 9 states it the call is `StrictCppCallUnannotated` unmarked, its marker's obligation that the constructor keeps no pointer to `x`, which d01's keeps (amended 2026-10-29, ruling round 2: RU2-1, where this read "a by-value parameter crosses as the thunk's copy (d01: `x` unchanged)" and the outcome "d01 and c02 accepted, nothing of Carbon's handed to C++"); `Cpp.MakeVector()` is constructed in `v`'s storage (d05, cpp_span_view.carbon:64's shape, newly `StrictCppCallUnannotated`), and a small class returned to a C++ caller comes back in registers (c02) | d01 rejected unmarked and accepted marked, the obligation kept (2 1 2); c02 accepted, nothing of Carbon's handed to C++; d05 rejected unmarked (3) |
 | e01, e02, j02, j04 (rev 9) | a by-value parameter whose initialization from its argument runs a copy or converting constructor that is not trivial (e01, e02, j04) and an initialization through a converting constructor (j02), each constructor receiving the Carbon argument's storage as its source and e01's, e02's and j02's keeping it, then `Mod(ref x)` calling a shape-1 C++ function that writes `x` through the kept pointer: rev 8 counted each call shape 1 and the initialization nothing of C++'s (RR7-M1); under D-SAFE3-13 each is `StrictCppCallUnannotated` unmarked, and marked, T8 gives `Mod`'s `ref` no attribute (A.37), the write being the unsafe code's breach | rejected unmarked; marked, erroneous behavior, never undefined behavior (9 in each; j04 3 1 7 2, the copy counted) |
 | e09, j03 (rev 9) | `for (i: i32 in r)` through the prelude's synthesized range witness, which calls the user's `begin()` with `r` as `this` (e09) or as a `const R&` (j03), the `begin()` keeping it, then `Mod(ref r)` calling a shape-1 `Cpp.PokeSaved()`: a route the allowlist trusts, unmarked, so the obligation that `begin()` keeps no pointer to `r` but in its result is the C++ code's own, which it breaks, and T8 gives `Mod`'s `ref` no attribute (A.37, A.42) | accepted, the `for` and `Mod` unmarked; the write the C++ code's breach, erroneous behavior, never undefined behavior (10 9) |
-| e10, j01 (rev 9) | e09's kept `this` against the interim `=`: `s = {.r = Cpp.R.Make(7), .k = Cpp.ReadSaved()}` after `for (i: i32 in s.r)` in the body that iterated (e10) or in `Assign(ref s)` (j01): (i) to (iii) hold on the closed `s`, so the `=` is exempt while `ReadSaved` reads `s.r` after its in-place initialization, PRR3-B1's shape through a C++ path (RR7-M1); under D-SAFE3-13 that read breaks the obligation of the `begin()` the trusted witness called, T8 giving no `ref` on `s` an attribute, and the interim rule's (iii) is not extended to `s`, which would reject e10 and still accept j01 (D-SAFE3-13's rejected alternatives) | accepted; the read the C++ code's breach, erroneous behavior, never undefined behavior (7; the right operand formed first 1) |
-| e03, e05 to e08 (rev 9) | e03: a trivially copyable 32-byte argument copied by `llvm.memcpy`, shape 1; e05: no destructor at the interim `=`, as v17, b_p7, y1 and rr5's q02; e06: `x = F(x)` with `F`'s `returned var` being `x`'s storage and its by-value parameter reading into `x`; e07: an in-place `=` through a `-> ref` return, `Pick(ref x) = {.u = x.w, .w = x.u}`; both rejected by (ii) or T5's `bound`, as the re-review traced; e08: `Cpp.W.W(t)` names no copy constructor (RR7-m1) | e03 accepted (3 0); e05 no evidence (0 5); e06 and e07 rejected (3 4 3 4; 3 3); e08 no program |
+| e10, j01 (rev 9) | e09's kept `this` against the interim `=`: `s = {.r = Cpp.R.Make(7), .k = Cpp.ReadSaved()}` after `for (i: i32 in s.r)` in the body that iterated (e10) or in `Assign(ref s)` (j01): rev 9's (i) to (iii) held on the closed `s`, so the `=` was exempt while `ReadSaved` reads `s.r` after its in-place initialization, PRR3-B1's shape through a C++ path (RR7-M1); under statement (1) the right operand's C++ calls make it not formed, so the `=` is a checked reborrow, which T4 accepts, no Carbon carrier of `s` being used, and under D-SAFE3-13 the read breaks the obligation of the `begin()` the trusted witness called, T8 withholding `noalias` and `captures(none)` on `s` by the closure, so e10 and j01 come out alike wherever the `=` is written (re-traced 2026-11-01, RT-1, RR8-M1, where this read "(i) to (iii) hold on the closed `s`, so the `=` is exempt" and ended "and the interim rule's (iii) is not extended to `s`, which would reject e10 and still accept j01 (D-SAFE3-13's rejected alternatives)"; the route changed, the outcome not) | accepted; the read the C++ code's breach, erroneous behavior, never undefined behavior (7; the right operand formed first 1) |
+| e03, e05 to e08 (rev 9) | e03: a trivially copyable 32-byte argument copied by `llvm.memcpy`, shape 1; e05: no destructor at the interim `=`, as v17, b_p7, y1 and rr5's q02; e06: `x = F(x)` with `F`'s `returned var` being `x`'s storage and its by-value parameter reading into `x`; e07: an in-place `=` through a `-> ref` return, `Pick(ref x) = {.u = x.w, .w = x.u}`; both rejected by T4's check of the checked reborrow that replaces the exemption, their right operands not formed, or by T5's `bound`, as the re-review traced (re-traced 2026-11-01, RT-1, where this read "both rejected by (ii) or T5's `bound`"); e08: `Cpp.W.W(t)` names no copy constructor (RR7-m1) | e03 accepted (3 0); e05 no evidence (0 5); e06 and e07 rejected (3 4 3 4; 3 3); e08 no program |
+| ruling-rr3's t01 and t02, the rev 10 fixer's k01 (rev 10) | `Cpp.Take(h)` by value with `h.p = &x;` for a trivially copyable `Cpp.H` (t01), the same two levels deep, `h2.h = &h;` (k01), and t01's route against the interim `=`, `Take(h)` keeping `&s.a.x` before `s = {.a = MakeA(7), .k = Cpp.ReadSaved()}` (t02): rev 9's list counted each call shape 1, a trivially copyable argument copied by no constructor, so it accepted each unmarked, T8 marked `Mod`'s `ref` while C++ code kept `&x`, and t02's `=` was exempt on the closed `s` while `ReadSaved` read `s.a.x` (RR8-M1); under rev 10 each store into the C++ type's pointer field is A.43's, a ⊥ destination that accepts only free loans, `StrictStoreOutlivesSource`, before the call; t02's right operand, a C++ call, is not formed, so its `=` would be a checked reborrow (re-traced 2026-11-01, RT-1, RR8-M1) | rejected at the store (rev 9 accepted them: 1 0 9 9; 0 7 0 1; 0 9 9) |
+| the rev 10 fixer's k02 (rev 10) | t01's route with a Carbon class, `var v: CV = {.p = &x};` passed by value to `Cpp.TakeCV(v)`, which keeps `v.p`: `v`'s loan set holds the loan on `x` (temporal_safety.md:118-119), so under statement (3) the argument's loan set is neither empty nor free and the call is pointer-carrying, `StrictCppCallUnannotated` unmarked; marked, the obligation covers `x`, which the closure under T3's carrier relation reaches, and T8 withholds `noalias` and `captures(none)` on it (re-traced 2026-11-01, RT-1, RR8-M1) | rejected unmarked (rev 9 accepted it); marked, erroneous behavior, never undefined behavior (0 9 9) |
+| ruling-rr3's t03, the rev 10 fixer's k03 (rev 10) | a marked `Cpp.TakePP(&p)` with `p` holding `&x`, which keeps `*pp`, and `h.Keep()` for a C++ class whose field holds `&y`, which keeps `this->p` (t03), and a `for` over a C++ range whose `data` field holds `&a[0]`, the trusted witness's `begin()` keeping `data` (k03): rev 9 withheld T8's attributes on the place whose address C++ code received, `p`, `h` and the range, and not on `x`, `y` and `a[0]`, reached through a loan that place holds, so `Mod`'s `ref` was marked while C++ code kept a pointer to its referent (RR8-M1); under statement (3) the closure reaches `x` through `p`'s loan and T8 withholds the attributes on it, the route changed and the outcome not, while `h.p = &y;` and `r.data = &a[0];` store into a C++ type's pointer field, A.43's `StrictStoreOutlivesSource` (re-traced 2026-11-01, RT-1, RR8-M1) | t03's `p` accepted marked, the write the C++ code's breach, erroneous behavior, never undefined behavior (9); t03's `h` and k03 rejected at the store (rev 9 accepted them: 9; 10 9) |
+| the rev 10 fixer's k04 and k05 (rev 10) | `h.p = &x;` for a C++ type, `q = h.p.Get()` read as ⊥ (T6), then a marked `Cpp.TakeP(q)` keeping it before `Mod(ref x)` (k04) or, with no C++ code run, `Mod2(ref x, q)` writing `s = 5` then `*q = 9` (k05): the Store rule accepted the loan on `x` into a field T6 reads as ⊥, so the closure of statement (3) could not name `x` and T8 marked `Mod`'s and `Mod2`'s `ref`; under A.43 and B.37 such a field is a ⊥ destination, which accepts only free loans, so the store is `StrictStoreOutlivesSource` (re-traced 2026-11-01, RT-1, RR8-M1) | rejected at `h.p = &x;` (rev 9 accepted them: 9; 9 9); written `unsafe`, the store's obligation the program's |
+| the rev 10 fixer's k06 (rev 10) | the control: `h.p = &g` for a global and a string literal's `string_view`, free loans, passed by value: shape 1, the closure reaching no Carbon place a loan in the body lies on | accepted unmarked, `Mod(ref x)` keeping its attributes (4 5 9) |
 | c04, l01, l02 (rev 8) | `let (u, w) = x;` binds the elements of `x` by value, borrowed objects of a type not copy-represented at every depth, so `x = (w, u)` is `StrictBorrowedObjectMutated` (T4) before the interim rule applies; a local named in its own initializer is a compile error | c04 rejected (the nightly copies at the `let`, 3 4 1 2, order-only); l01 and l02 no program, A.33's "which nothing else names yet" for a local |
-| l03, l04 (rev 8) | a function value's captures (RR6-m1): l04's `fn [&k]` is a semantics TODO and l03's capture-less lambda naming an enclosing local, which upstream forbids, crashes the nightly's lowering; under A.32 and A.41 a function value is a carrier of every loan its captures hold, a call of it a use of each, so an in-place `=` whose right operand calls one that captured a carrier of the left operand's place fails (ii) as m02's does | no runnable shape on the nightly; traced by hand from p003848:463-464 |
+| l03, l04 (rev 8) | a function value's captures (RR6-m1): l04's `fn [&k]` is a semantics TODO and l03's capture-less lambda naming an enclosing local, which upstream forbids, crashes the nightly's lowering; under A.32 and A.41 a function value is a carrier of every loan its captures hold, a call of it a use of each, so an in-place `=` whose right operand calls one, a user call that is not formed, is a checked reborrow, and T4 sees the use of a captured carrier of the left operand's place as m02's (re-traced 2026-11-01, RT-1, where this read "calls one that captured a carrier of the left operand's place fails (ii) as m02's does") | no runnable shape on the nightly; traced by hand from p003848:463-464 |
 | n08 (rev 4) | an adapter of an adapter of `{.c: C}` has `{.c: C}`'s representation, which is not copy-represented at every depth (RR1-m1's definition by representation), so `*q = *p` is n02's case | rejected |
 | n09 (rev 4) | `W2` is not copy-represented at every depth, so `let v: W2 = x` binds `x.s.t` as a borrowed object (A.24, B.27; RR2-m1) and `x.s.t.a = 5` is `StrictBorrowedObjectMutated`; `AssignFrom(ref *q, *p)` with `p == q` is D-SAFE3-3 (b)'s `StrictBorrowFromShared` | rejected; the nightly reads `x.s.t` early (1; 2 1), order-only |
 | v17, v18, v18b, v26, b_p7, y1, b_p9, q06d, b_p6_assign_tuple, q06i, q04b, s12 to s12c, s14b, ra02, n06b, g01, g02 (g01 and g02 added 2026-10-29, review fold: RR4-M1) | no evidence, no assignment, or a compile error | (section 0.3); g01 and g02 show that a local `var` and a global are named by no other path while their initializer runs but through code that runs, which A.33's check covers |
@@ -2686,15 +2928,15 @@ and checks that each anchor is found once.
 
 | file | blocks | what changes |
 | --- | --- | --- |
-| docs/design/safety/temporal_safety.md | A.0 (one place), A.1 to A.6, A.25, A.26, A.32, A.33, A.36 to A.39, A.41 (A.36 to A.39 and A.41 added 2026-10-29, ruling round 1: RU1-1, RU1-2: the C++ call rule over storage a C++ function constructs in, T8's withholding under a marker, `Launder2`'s marked call, the ladder's measured cost and a function value's captures in the loan-set bullet; A.32's function value and A.33's C++ caller amended the same day; A.36 and A.37 amended 2026-10-29, ruling round 2: RU2-1, RU2-2: the C++ call rule over every route to a Carbon place, the copy's source and the trusted routes among them, the marked copy `var y: Cpp.W = unsafe t;`, and T8's withholding on a place C++ code received by any route) | the `ref` bindings section's second paragraph replaced by four (the rule, the exemption, the user-written operators, the interim `=`); the superseded paragraph quoted whole in a blockquote at the section's end; the kinds paragraph's sentence; the D-SAFE-8 decision's clause and sentence; two rewraps (RB-m3); T2's value-binding bullet and the reborrow paragraph's by-value `bound self` keyed at every depth (A.25, A.26, added 2026-10-29, review fold: RR2-m1); T3's sentence on a use through a value from which a carrier can be loaded (A.32, added 2026-10-29, review fold: RR3-M1); the closed places' sentence on a `returned var` and a global's initializer (A.33, added 2026-10-29, review fold: RR4-M1), a global constant's temporary closed, the initializer a global variable's and `DefaultOrUnformed` that of one declared without an initializer (A.33 and A.1's pointer, amended 2026-10-29, review fold: RR5-M1, RR5-m1) |
-| docs/design/safety/mutation_safety.md | A.0 (one place), A.7 to A.18, A.23, A.24, A.27, A.28, A.30, A.31 | M3's built-in clause replaced, quoted whole in a blockquote at M3's end; M1's sentence; the D-SAFE-9 decision's clause; RB-M3's pointer in the overview, M7, Data races and the facets and the D-SAFE-16 bullet, free storage named (amended 2026-10-29, review fold: RR3-m1); RA-m1's sentence on `IndirectIndexWith.Ref`; RA-m2's bullet; two rewraps; `StrictInvalidatingThroughShared`'s third message form (A.23, added 2026-10-29, review fold: A-RA3-M2); the Value bindings one-element clause, M8's first sentence and the D-SAFE-17 decision keyed at every depth (A.24, A.27, A.28, added 2026-10-29, review fold: RR2-m1, RR2-m2), and the Value bindings bullet's lead and sentence (A.30, A.31, added 2026-10-29, review fold: RR3-m2) |
+| docs/design/safety/temporal_safety.md | A.0 (one place), A.1 to A.6, A.25, A.26, A.32, A.33, A.36 to A.39, A.41, A.43, A.44 (A.43 and A.44 added and A.1, A.33, A.36 and A.37 amended 2026-11-01, re-think: RT-1, RR8-M1, RR8-m1: the interim `=` in the positive form of statement (1), the closed places' exceptions as statement (2) gives them, the C++ call rule by closure under T3's carrier relation, T8's withholding on `exclusive T*` parameters and loans, a C++ type's pointer field a ⊥ destination and a carrier that reaches C++ code; A.36 to A.39 and A.41 added 2026-10-29, ruling round 1: RU1-1, RU1-2: the C++ call rule over storage a C++ function constructs in, T8's withholding under a marker, `Launder2`'s marked call, the ladder's measured cost and a function value's captures in the loan-set bullet; A.32's function value and A.33's C++ caller amended the same day; A.36 and A.37 amended 2026-10-29, ruling round 2: RU2-1, RU2-2: the C++ call rule over every route to a Carbon place, the copy's source and the trusted routes among them, the marked copy `var y: Cpp.W = unsafe t;`, and T8's withholding on a place C++ code received by any route) | the `ref` bindings section's second paragraph replaced by four (the rule, the exemption, the user-written operators, the interim `=`); the superseded paragraph quoted whole in a blockquote at the section's end; the kinds paragraph's sentence; the D-SAFE-8 decision's clause and sentence; two rewraps (RB-m3); T2's value-binding bullet and the reborrow paragraph's by-value `bound self` keyed at every depth (A.25, A.26, added 2026-10-29, review fold: RR2-m1); T3's sentence on a use through a value from which a carrier can be loaded (A.32, added 2026-10-29, review fold: RR3-M1); the closed places' sentence on a `returned var` and a global's initializer (A.33, added 2026-10-29, review fold: RR4-M1), a global constant's temporary closed, the initializer a global variable's and `DefaultOrUnformed` that of one declared without an initializer (A.33 and A.1's pointer, amended 2026-10-29, review fold: RR5-M1, RR5-m1) |
+| docs/design/safety/mutation_safety.md | A.0 (one place), A.7 to A.18, A.23, A.24, A.27, A.28, A.30, A.31, A.45 (A.45 added and A.7 amended 2026-11-01, re-think: RT-1, RR8-M1: M3's clause for the interim `=` in the positive form, and the memory-safety argument's carrier that reaches C++ code) | M3's built-in clause replaced, quoted whole in a blockquote at M3's end; M1's sentence; the D-SAFE-9 decision's clause; RB-M3's pointer in the overview, M7, Data races and the facets and the D-SAFE-16 bullet, free storage named (amended 2026-10-29, review fold: RR3-m1); RA-m1's sentence on `IndirectIndexWith.Ref`; RA-m2's bullet; two rewraps; `StrictInvalidatingThroughShared`'s third message form (A.23, added 2026-10-29, review fold: A-RA3-M2); the Value bindings one-element clause, M8's first sentence and the D-SAFE-17 decision keyed at every depth (A.24, A.27, A.28, added 2026-10-29, review fold: RR2-m1, RR2-m2), and the Value bindings bullet's lead and sentence (A.30, A.31, added 2026-10-29, review fold: RR3-m2) |
 | docs/design/values.md | A.29 | SAFE-2's pinned note keyed at every depth (added 2026-10-29, review fold: RR2-m1) |
-| docs/design/safety/README.md | A.19, A.20, A.34, A.35, A.42 | the kinds paragraph's sentence; RB-M3's pointer in the data-race paragraph; the allowlist's first shape narrowed within its table row and its measured cost, two sites of fourteen (A.34, A.35, added 2026-10-29, ruling round 1: RU1-1; A.34 amended 2026-10-29, ruling round 2: RU2-1, a by-value parameter's copy constructor named beside the return in memory); the allowlist's trusted routes, shapes 2 to 4 and the synthesized range witnesses, stated for diagnostics only with T8's withholding (A.42, added 2026-10-29, ruling round 2: RU2-1) |
+| docs/design/safety/README.md | A.19, A.20, A.34, A.35, A.42 (A.34 and A.42 amended 2026-11-01, re-think: RR8-M1, RR8-m1: shape 1 kept for by-value arguments whose loan set is empty or free, and the trusted routes' withholding by the closure) | the kinds paragraph's sentence; RB-M3's pointer in the data-race paragraph; the allowlist's first shape narrowed within its table row and its measured cost, two sites of fourteen (A.34, A.35, added 2026-10-29, ruling round 1: RU1-1; A.34 amended 2026-10-29, ruling round 2: RU2-1, a by-value parameter's copy constructor named beside the return in memory); the allowlist's trusted routes, shapes 2 to 4 and the synthesized range witnesses, stated for diagnostics only with T8's withholding (A.42, added 2026-10-29, ruling round 2: RU2-1) |
 | docs/design/safety/type_safety.md (added 2026-10-29, ruling round 1: RU1-1) | A.40 | the imported operators' bullet's measured site, one of two of fourteen |
 | docs/design/safety/initialization_safety.md, spatial_safety.md | A.21, A.22 | one rewrap each (RB-m3) |
-| fork/decision-log.md | B.1, A.0, B.2, B.3, B.4, B.5, B.24, B.25, B.27, B.28, B.31, B.32, B.33, B.35, B.36 (B.33 and B.35 added 2026-10-29, ruling round 1: RU1-1: D-SAFE-18's first shape narrowed and D-SAFE-10's T8 clause over storage a C++ function received under a marker; B.31's function value and B.32's C++ caller amended the same day; B.36 added and B.33 and B.35 amended 2026-10-29, ruling round 2: RU2-1: D-SAFE-18's trusted routes for diagnostics only, its first shape without a by-value parameter's copy constructor, and the T8 clause over a place C++ code received by any route) | D-SAFE-8's operator clause (B.1), D-SAFE-9's clause, D-SAFE-16's pointer, D-SAFE-17's RA-m2 clause, a rewrap, a SAFE-3 sentence in RG-1's paragraph of the F-013 entry; the F-013 entry's two pointers to SAFE-2's PR 67 note commit re-pointed (B.24, B.25, added 2026-10-29, review fold: B-m3); D-SAFE-17's one-element clause and D-SAFE-10's T2 clause keyed at every depth (B.27, B.28, added 2026-10-29, review fold: RR2-m1); D-SAFE-10's T3 clause (B.31, added 2026-10-29, review fold: RR3-M1); D-SAFE-10's closed places, a `returned var` and a global's initializer (B.32, added 2026-10-29, review fold: RR4-M1), a global constant's temporary closed and a global variable's initializer, `DefaultOrUnformed` for one declared without an initializer (B.32 and B.1's pointer, amended 2026-10-29, review fold: RR5-M1, RR5-m1) |
-| fork/safe/plan.md | B.1, A.0 (two places), B.2, B.3, B.6 to B.11, B.22, B.23, B.27 to B.36 (B.33 to B.35 added 2026-10-29, ruling round 1: RU1-1: D-SAFE-18's and D-SAFE-10's clauses as the log's, and section 4.1's interop row re-measured within the row; B.36 added 2026-10-29, ruling round 2: RU2-1, as the log's) | section 0.3's D-SAFE block as the log's, D-SAFE-10's T3 clause and closed places among it (B.31, added 2026-10-29, review fold: RR3-M1; B.32, added 2026-10-29, review fold: RR4-M1); section 1.5's sentence and section 1.6's clause; the pointer paragraph after the realigned one; the "Realigned notes (SAFE-2)" section's SAFE-3 paragraph; three rewraps; section 1.6's message instance (B.22, A-RA3-M2) and the realigned notes' pointer to SAFE-2's note commit (B.23, B-m3; both added 2026-10-29, review fold); D-SAFE-17's and D-SAFE-10's clauses as the log's, section 1.6's M8 sentence and the realigned notes' W-348 summary keyed at every depth (B.27 to B.30, added 2026-10-29, review fold: RR2-m1) |
-| fork/inventory/work-items.json (PR 53's ledger) | B.12 to B.14 | a note on W-148 and on W-149; W-365 and W-366 filed after W-150, W-365 over free storage (amended 2026-10-29, review fold: RR3-m1); W-148's note over storage a C++ function constructs in, T8 under a marker, a C++ caller's storage and a function value's captures (amended 2026-10-29, ruling round 1: RU1-1, RU1-2), its C++ clause over every route to a Carbon place (amended 2026-10-29, ruling round 2: RU2-1) |
+| fork/decision-log.md | B.1, A.0, B.2, B.3, B.4, B.5, B.24, B.25, B.27, B.28, B.31, B.32, B.33, B.35, B.36, B.37 (B.37 added and B.1, B.32, B.33, B.35 and B.36 amended 2026-11-01, re-think: RT-1, RR8-M1, RR8-m1: D-SAFE-8's clause in the positive form, the closed places' exceptions, D-SAFE-18's first shape and trusted routes and D-SAFE-10's T8 clause by the closure, and D-SAFE-10's T6 clause with the ⊥ destination; B.33 and B.35 added 2026-10-29, ruling round 1: RU1-1: D-SAFE-18's first shape narrowed and D-SAFE-10's T8 clause over storage a C++ function received under a marker; B.31's function value and B.32's C++ caller amended the same day; B.36 added and B.33 and B.35 amended 2026-10-29, ruling round 2: RU2-1: D-SAFE-18's trusted routes for diagnostics only, its first shape without a by-value parameter's copy constructor, and the T8 clause over a place C++ code received by any route) | D-SAFE-8's operator clause (B.1), D-SAFE-9's clause, D-SAFE-16's pointer, D-SAFE-17's RA-m2 clause, a rewrap, a SAFE-3 sentence in RG-1's paragraph of the F-013 entry; the F-013 entry's two pointers to SAFE-2's PR 67 note commit re-pointed (B.24, B.25, added 2026-10-29, review fold: B-m3); D-SAFE-17's one-element clause and D-SAFE-10's T2 clause keyed at every depth (B.27, B.28, added 2026-10-29, review fold: RR2-m1); D-SAFE-10's T3 clause (B.31, added 2026-10-29, review fold: RR3-M1); D-SAFE-10's closed places, a `returned var` and a global's initializer (B.32, added 2026-10-29, review fold: RR4-M1), a global constant's temporary closed and a global variable's initializer, `DefaultOrUnformed` for one declared without an initializer (B.32 and B.1's pointer, amended 2026-10-29, review fold: RR5-M1, RR5-m1) |
+| fork/safe/plan.md | B.1, A.0 (two places), B.2, B.3, B.6 to B.11, B.22, B.23, B.27 to B.37 (B.37 added 2026-11-01, re-think: RR8-M1, as the log's, where this read "B.27 to B.36"; B.33 to B.35 added 2026-10-29, ruling round 1: RU1-1: D-SAFE-18's and D-SAFE-10's clauses as the log's, and section 4.1's interop row re-measured within the row; B.36 added 2026-10-29, ruling round 2: RU2-1, as the log's) | section 0.3's D-SAFE block as the log's, D-SAFE-10's T3 clause and closed places among it (B.31, added 2026-10-29, review fold: RR3-M1; B.32, added 2026-10-29, review fold: RR4-M1); section 1.5's sentence and section 1.6's clause; the pointer paragraph after the realigned one; the "Realigned notes (SAFE-2)" section's SAFE-3 paragraph; three rewraps; section 1.6's message instance (B.22, A-RA3-M2) and the realigned notes' pointer to SAFE-2's note commit (B.23, B-m3; both added 2026-10-29, review fold); D-SAFE-17's and D-SAFE-10's clauses as the log's, section 1.6's M8 sentence and the realigned notes' W-348 summary keyed at every depth (B.27 to B.30, added 2026-10-29, review fold: RR2-m1) |
+| fork/inventory/work-items.json (PR 53's ledger) | B.12 to B.14 | a note on W-148 and on W-149; W-365 and W-366 filed after W-150, W-365 over free storage (amended 2026-10-29, review fold: RR3-m1); W-148's note over storage a C++ function constructs in, T8 under a marker, a C++ caller's storage and a function value's captures (amended 2026-10-29, ruling round 1: RU1-1, RU1-2), its C++ clause over every route to a Carbon place (amended 2026-10-29, ruling round 2: RU2-1), and W-148's and W-366's notes restated by the ruling's three statements, the route lists deleted (B.12, B.14, amended 2026-11-01, re-think: RT-1, RR8-M1) |
 | fork/safe/safe2-plan.md | B.15 to B.21, B.26 | dated pointer marks: a Status paragraph, D-SAFE2-6, section 3 step 5, section 8.20 before F1, the Sign-off, Appendix C and Appendix D; PRR3-m1's break condition closed (B.26, added 2026-10-29, review fold: B-m6) |
 
 Not edited: values.md but for A.29's words in SAFE-2's pinned note (amended
@@ -2713,21 +2955,22 @@ item 1), A.34, A.38 and B.34 replacing words within one table row or code line.
 ### §2.3 Commit 2, the records
 
 "SAFE-3 (2/2): records" edits this plan alone: the Status paragraph's first
-sentence, the one that begins "**Status:** rev" (at rev 9 it reads "**Status:**
-rev 9 -- NOT signed off pending ruling round 3: RR7-M1.", and the
-signed-off revision the implementer works from replaces it; amended
-2026-10-29, ruling round 2: RU2-1, where this quoted rev 8's; amended
-2026-10-29, review fold: RR1-M1, where this quoted rev 2's; amended 2026-10-29,
-review fold: RR2-M1, where this quoted rev 3's; amended 2026-10-29, review
-fold: RR3-M1, where this quoted rev 4's; amended 2026-10-29, review fold:
-RR4-M1, where this quoted rev 5's; amended 2026-10-29, review fold: RR5-M1,
-where this quoted rev 6's; amended 2026-10-29, ruling round 1: RU1-1, where
-this quoted rev 7's), becomes the
-implementation's state, dated; and a new section 8.1, "Implementation record",
-with commit 1's hash, every measurement of section 8 as run on commit 1's tree
-(prek passes, the R31 counts before and after per file, rumdl, the dry-run's
-checks, the nightly compiles of section 8 item 5, PR 67's checks at the tip,
-`--self-test`, the merge-trees, the id re-scan, the model-name grep,
+sentence, the one that begins "**Status:** rev" (at rev 10 it reads "**Status:**
+rev 10, 2026-11-01 -- the re-think ruling carried out; NOT signed off pending
+re-think re-review round 1.", and the signed-off revision the implementer works
+from replaces it; amended 2026-11-01, re-think: RT-1, where this quoted rev
+9's; amended 2026-10-29, ruling round 2: RU2-1, where this quoted rev 8's;
+amended 2026-10-29, review fold: RR1-M1, where this quoted rev 2's;
+amended 2026-10-29, review fold: RR2-M1, where this quoted rev 3's;
+amended 2026-10-29, review fold: RR3-M1, where this quoted rev 4's;
+amended 2026-10-29, review fold: RR4-M1, where this quoted rev 5's;
+amended 2026-10-29, review fold: RR5-M1, where this quoted rev 6's;
+amended 2026-10-29, ruling round 1: RU1-1, where this quoted rev 7's), becomes
+the implementation's state, dated; and a new section 8.1, "Implementation
+record", with commit 1's hash, every measurement of section 8 as run on
+commit 1's tree (prek passes, the R31 counts before and after per file, rumdl,
+the dry-run's checks, the nightly compiles of section 8 item 5, PR 67's checks
+at the tip, `--self-test`, the merge-trees, the id re-scan, the model-name grep,
 `json.load`, the D-SAFE block identity) and the not-run list, and a correction
 of the plan's rev 1 commit message: f97cdf414's message says prek's first pass
 "rewrote one Latin abbreviation", where that pass replaced "instance" with
@@ -2914,7 +3157,14 @@ temporal page's `Launder2` the one example whose C++ call hands C++ its
 caller's storage, its `Cpp.MakeVector()` marked by A.38 with its
 `StrictDanglingReturn` unchanged, the README's `Cpp.Normalize(v, &len)` ladder
 returning no class, and no example calling a function value with captures
-(added 2026-10-29, ruling round 1: RU1-1, RU1-2); no outcome changes:
+(added 2026-10-29, ruling round 1: RU1-1, RU1-2), and again under rev 10's
+three statements, every example's right operand on a left operand that is not
+copy-represented at every depth being a literal, an aggregate literal of
+literals or a prelude call over literals, formed before the binding, no example
+passing C++ code a by-value argument whose loan set is neither empty nor free
+or storing a loan that is not free into a C++ type's pointer field, and
+`Launder2`'s marked call the one the closure covers (added 2026-11-01,
+re-think: RT-1, RR8-M1); no outcome changes:
 
 | example | operators re-traced | SAFE-3 |
 | --- | --- | --- |
@@ -2933,7 +3183,7 @@ describes, takes A.23's third message form, and each such row says so (amended
 
 | program | HEAD | SAFE-3 (deviation standing) | designed | decided by |
 | --- | --- | --- | --- | --- |
-| swap on a local, `x = {.a = x.b, .b = x.a}`; the same through the owner of a `var` parameter, a `returned var` of a class and a class local (rev 3) | accepted, prints 2 2 (n03: 2 2, 4 4, 6 6) | `StrictExclusiveBorrowConflict` (T4, the interim rule's (ii) failing on the read through the owner; rev 2's (ii) exempted it, amended 2026-10-29, review fold: RR1-M1); remedy `let v: T = {...}; x = v;` prints 2 1 | accepted, 2 1 | v10, v24, s17, s10, n03 |
+| swap on a local, `x = {.a = x.b, .b = x.a}`; the same through the owner of a `var` parameter, a `returned var` of a class and a class local (rev 3) | accepted, prints 2 2 (n03: 2 2, 4 4, 6 6) | `StrictExclusiveBorrowConflict` (T4, the right operand reading the left operand's place through its owner, not formed, so the `=` a checked reborrow; rev 2's (ii) exempted it, amended 2026-10-29, review fold: RR1-M1; re-traced 2026-11-01, RT-1, where this read "the interim rule's (ii) failing on the read through the owner"); remedy `let v: T = {...}; x = v;` prints 2 1 | accepted, 2 1 | v10, v24, s17, s10, n03 |
 | swap through aliasing `T*` to a `Plain` struct, `*q = {.a = p->b, .b = p->a}` | accepted, 2 2 | `StrictInvalidatingThroughShared` (M3(d)), A.23's third message form | accepted, 2 1 | s03, s04, s05, s11 |
 | the same for v09's class `C`, which is not `Plain` | `StrictInvalidatingThroughShared` (M3(c)) | the same | the same | v09 |
 | `*q = *p` through shared pointers to a pointer-represented type, or to a one-element aggregate of one (rev 2), or to an adapter of either (rev 3) | accepted (a `Plain` struct) | `StrictBorrowFromShared` | the same | s03, s20, f01, n02 |
@@ -2941,7 +3191,7 @@ describes, takes A.23's third message form, and each such row says so (amended
 | swap inside a copy-represented one-element aggregate through aliasing `W*`, `*q = {.s = {.a = p->s.b, .b = p->s.a}}`, `W = {.s: {.a: i32, .b: i32}}`; the same for `((i32, i32),)` and `{.c: C}` (added 2026-10-29, review fold: A-RA3-B1) | accepted, 2 2 | `StrictInvalidatingThroughShared` (M3(d)), A.23's third message form for `W` and `((i32, i32),)`; `{.c: C}` also M3(c); the same for a class that adapts `W` (n01, rev 3); remedy: each element read into a local and assigned on its own (f04: 2 1) | accepted, 2 1 | ra01, ra04, ra05, f04, n01 |
 | the same on a local, `y = {.s = {.a = y.s.b, .b = y.s.a}}` | accepted, 4 4 | `StrictExclusiveBorrowConflict` (T4) | accepted | ra01, ra04 |
 | self-referential class assignment, `c = {.data = 42, .next = &c}` (added 2026-10-29, review fold: A-RA3-m6) | accepted | `StrictSharedBorrowInvalidated` (T4, the carrier `&c`); remedy `c.data = 42; c.next = &c;` | accepted | f03 |
-| in-place call, `*q = {.a = 1, .n = F(p)}` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form for a `Plain` struct; remedy: call first | accepted | w1, w2, w3, z1b |
+| in-place call, `*q = {.a = 1, .n = F(p)}` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form for a `Plain` struct; remedy: the value formed in a local first, `let v: T = {.a = 1, .n = F(p)}; *q = v;`, the call first into a field of an aggregate literal, `{.o = Core.Optional(i32).Some(42), .n = n}`, being rejected too, a prelude call not being an element statement (1) admits (re-traced 2026-11-01, RT-1, where the remedy read "call first", which z1b, rev 9's accepted remedy, now refutes) | accepted | w1, w2, w3, z1b |
 | `c = Make(&c.a)` on a local | accepted | `StrictSharedBorrowInvalidated` | accepted | q06h |
 | thunk conversion, `*q += e` with a user's `ImplicitAs(i32)` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form naming the user's `Convert`; remedy `*q += e as i32` | the same | r3_thunk, a_p06, a_p13, q03, x1 |
 | `*q = e` into an `i32` with a user's `ImplicitAs` | accepted | `StrictInvalidatingThroughShared` (D-SAFE3-4), A.23's third message form | the same | w4 |
@@ -2950,24 +3200,26 @@ describes, takes A.23's third message form, and each such row says so (amended
 | `*q = {.x = e as i32, .y = e as i32}` with a user's `Convert` | accepted | `StrictInvalidatingThroughShared`, A.23's third message form; remedy: convert before the statement | accepted | q06c |
 | `q->n = 2`, `p->n += 1`, `++p->n` through `T*` | accepted | accepted | accepted | q06f, a_p03, b_p12, s19 |
 | an array element from an element of the same array, `a[i] = {.a = a[j].b, .b = a[j].a}` on a local (rev 4) | accepted, 2 2 when `i == j` | `StrictExclusiveBorrowConflict` (T4) unless the checker proves `i != j`; remedy `let v: T = {...}; a[i] = v;` | accepted | n05 |
-| in a generic body over `T: Core.Copy`, `x = x` and `*q = *p` (rev 4) | accepted (n06: 3 3; 2 2) | `x = x`: `StrictExclusiveBorrowConflict` and `StrictBorrowedObjectMutated`; `*q = *p`: `StrictInvalidatingThroughShared` (a `Copy` reached through a symbolic witness) and `StrictBorrowFromShared`; `p = -p` on `Core.Int(N)` accepted | the same | n06, k01 |
+| in a generic body over `T: Core.Copy`, `x = x` and `*q = *p` (rev 4) | accepted (n06: 3 3; 2 2) | `x = x`: `StrictBorrowedObjectMutated` (D-SAFE3-3 (b), `x` a formed value naming the left operand's own place, (r4); re-traced 2026-11-01, RT-1, where this read "`StrictExclusiveBorrowConflict` and `StrictBorrowedObjectMutated`"); `*q = *p`: `StrictInvalidatingThroughShared` (a `Copy` reached through a symbolic witness) and `StrictBorrowFromShared`; `p = -p` on `Core.Int(N)` accepted | the same | n06, k01 |
 | a write of the source while a value binding two levels deep lives, `let v: W2 = x; x.s.t.a = 5;` (rev 4) | accepted, prints 1 | `StrictBorrowedObjectMutated` (A.24, B.27); remedy `var v: W2 = x;` | the same | n09 |
 | W-365's Race2, `x = 1` while a scoped thread reads `x` through a `const i32*` (rev 4) | accepted | accepted: within one thread the exemption's claim holds, across threads it waits for W-365, under whose frozen hold `x = 1` is `StrictBorrowedObjectMutated` | the same | none (NEW syntax) |
-| a call loading the left operand's carrier through `&p` or `ref p` while the in-place `=` writes, `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x` (rev 5) | accepted, prints 3 4 3 4 | `StrictExclusiveBorrowConflict` (T4, (ii) failing on the value passed and T3's sentence counting the call as a use of `p`'s loan; rev 4 exempted it, amended 2026-10-29, review fold: RR3-M1); remedy `var v: T = {...}; x = v;` prints 3 4 1 2 | accepted, 3 4 1 2 | m02, m04, m01 |
+| a call loading the left operand's carrier through `&p` or `ref p` while the in-place `=` writes, `x = {.u = MakeU(&p), .w = MakeW(&p)}` for `p = &x` (rev 5) | accepted, prints 3 4 3 4 | `StrictExclusiveBorrowConflict` (T4, the right operand's user calls not formed, so the `=` a checked reborrow, and T3's sentence counting each call as a use of `p`'s loan (re-traced 2026-11-01, RT-1, where this read "(ii) failing on the value passed and T3's sentence counting the call"); rev 4 exempted it, amended 2026-10-29, review fold: RR3-M1); remedy `var v: T = {...}; x = v;` prints 3 4 1 2 | accepted, 3 4 1 2 | m02, m04, m01 |
 | a write through a free pointer that `Core.Thread.Spawn` hands a detached thread, `*p = 1` (rev 5) | accepted | accepted: within one thread the claim holds, across threads it waits for W-365's rule for free storage | the same | none (NEW syntax; added 2026-10-29, review fold: RR3-m1) |
 | a global initialized by a call whose `returned var` is the global's storage, `var g: S = F(1);` with `F`'s `r = {.u = MakeU(k), .w = MakeW()}` and `MakeW` reading `g` by name, or `F` passing `ref r` to a function whose `=` does (rev 6) | accepted, prints 11 12 11 12 (21 22 21 22 through the `ref`) | `StrictRefFromShared` at the global's initializer, which runs code written outside core/prelude while the open `g` is bound (A.33, B.32, this design's rule, upstream having no global variables; rev 5 accepted it, amended 2026-10-29, review fold: RR4-M1); remedy: initialize `g` from literals and prelude calls and assign it in a function from a value formed first, `var v: S = F(1); g = v;`, or mark the initializer `unsafe` | the same (initialization stays in place) | p01, p02, p03 (the `var` parameter's copy, accepted) |
-| `x = y` for `{.c: C, .d: C}`, `C` with a user `Copy` that loads through `y`'s `&p` or `p` for `p = &x.c.n` (rev 6) | accepted, prints 51 512 | `StrictExclusiveBorrowConflict` (T4: the user's `Copy` makes the member assignment user-written, D-SAFE3-4, and T3 counts the copies' use of `y`, A.32; (ii) fails too); remedy: a right operand that holds no carrier of the left operand's place, or the assignment marked `unsafe` | the same | p04, p05 |
+| `x = y` for `{.c: C, .d: C}`, `C` with a user `Copy` that loads through `y`'s `&p` or `p` for `p = &x.c.n` (rev 6) | accepted, prints 51 512 | `StrictExclusiveBorrowConflict` (T4: the user's `Copy` makes the member assignment user-written, D-SAFE3-4, and T3 counts the copies' use of `y`, A.32; the right operand not formed either, re-traced 2026-11-01, RT-1, where this read "(ii) fails too"); remedy: a right operand that holds no carrier of the left operand's place, or the assignment marked `unsafe` | the same | p04, p05 |
 | a global constant initialized by a call whose `returned var` a function reads through the constant's name, `let g: S = F(1);` with `F`'s `r = {.u = MakeU(k), .w = MakeW()}` and `MakeW` reading `g` (rev 7) | accepted (the nightly's lowering stops at the use of `g`) | accepted: `r` is a temporary that the constant reaches only once `F` returns (A.33); what `MakeW` reads is the backing global before it is stored, the order of global initialization | the same | rr5's q01, q01b; h01 |
 | a global variable initialized in place by a struct literal of user calls, `var g: S = {.u = MakeU(1), .w = MakeW()};` (rev 7) | accepted, prints 61 62 61 62 | `StrictRefFromShared` at the global's initializer (A.33); remedy as for `var g: S = F(1);` | the same (initialization stays in place) | rr5's q03 |
-| `g = F(1);` in a function for that global, `F`'s `returned var` being `g` (rev 7) | accepted, prints 71 72 71 72 | `StrictRefFromShared` (the interim rule's (iii) on the open `g`, A.1); remedy `var v: S = F(1); g = v;` | accepted | rr5's q04 |
+| `g = F(1);` in a function for that global, `F`'s `returned var` being `g` (rev 7) | accepted, prints 71 72 71 72 | `StrictRefFromShared` (the right operand a user call, not formed, so the `=` on the open `g` is M3(d)'s `unsafe` formation, A.1; re-traced 2026-11-01, RT-1, where this read "the interim rule's (iii) on the open `g`"); remedy `var v: S = F(1); g = v;` | accepted | rr5's q04 |
 | a global variable declared without an initializer whose default initialization runs C++ code, `var gm: Cpp.std.mutex;` (rev 7) | accepted | `StrictRefFromShared` read as a Strict file, `DefaultOrUnformed` being its initializer (A.33); remedy: a Permissive file or an `unsafe` initializer written out | the same | fixer4/probe/glob/ |
 | a local a C++ call initializes through its return slot, `var x: Cpp.W = Cpp.MakeW(1, 2);`, `W`'s constructor keeping `this`, then `x = Cpp.Swapped();` or `Mod(ref x)` with a shape-1 C++ call that writes through the kept pointer (rev 8) | accepted, prints 2 2 (9 through the `ref`) | `StrictCppCallUnannotated` at `Cpp.MakeW(1, 2)` (A.36, D-SAFE3-13; rev 7 counted it shape 1, amended 2026-10-29, ruling round 1: RU1-1); marked `unsafe`, the kept pointer the unsafe code's breach, T8 marking no `ref` on `x` (A.37) | the same | c01, c03, c05, d05 |
 | the same storage as a `let`, a field or the destination of a user-provided C++ copy constructor, `let v: Cpp.W = Cpp.MakeW(1, 2);`, `{.w = Cpp.MakeW(1, 2), .n = 3}`, `var y: Cpp.W = t;` (rev 8) | accepted, 9 | `StrictCppCallUnannotated` at the call or the copy; remedy `unsafe` on the call, or the marked copy `var y: Cpp.W = unsafe t;` (NEW syntax; amended 2026-10-29, ruling round 2: RU2-2, where this read "or the constructor written out under it", e08 showing `Cpp.W.W(t)` names no copy constructor) | the same | d02, d03, d04, e08 |
 | a by-value parameter whose initialization runs no constructor that is not trivial, and a class result returned in registers (rev 8) | accepted | accepted: shape 1, nothing of Carbon's handed to C++ (amended 2026-10-29, ruling round 2: RU2-1, where the first cell read "a by-value parameter of a class type", which d01's copy constructor refutes) | the same | e03, c02, c03 at 16 bytes |
 | a by-value parameter whose initialization from its argument runs a copy, move or converting constructor that is not trivial, `Cpp.Take(x)`, or an initialization through a converting constructor, `var w: Cpp.W = v;`, the constructor keeping its source, then `Mod(ref x)` with a shape-1 C++ call that writes through the kept pointer (rev 9) | accepted, prints 9 | `StrictCppCallUnannotated` at the call or the initialization (A.36, D-SAFE3-13; rev 8 counted it shape 1); marked `unsafe Cpp.Take(x)` or `var w: Cpp.W = unsafe v;`, the kept pointer the unsafe code's breach, T8 marking no `ref` on `x` (A.37) | the same | e01, e02, j02, j04, d01 |
-| a `for` over a C++ range whose `begin()` keeps the place, then `Mod(ref r)` with a shape-1 C++ call that writes through it, or an in-place `=` on the place whose right operand reads through it, `s = {.r = Cpp.R.Make(7), .k = Cpp.ReadSaved()}`, in the same body or in a function that receives the place by `ref` (rev 9) | accepted, prints 9 (7 after the in-place `=`) | accepted: the synthesized witness a route the allowlist trusts, its obligation the C++ code's own, for diagnostics only; T8 marks no `ref` on the place (A.37, A.42), so the kept pointer's use is erroneous behavior, never undefined behavior (D-SAFE3-13); remedy for a deterministic result: a `begin()` that keeps no pointer to the range, or the right operand formed first, `var v: S = {...}; s = v;` (1) | the same, the rewrite forming the right operand first (1) | e09, e10, j01, j03 |
+| a `for` over a C++ range whose `begin()` keeps the place, then `Mod(ref r)` with a shape-1 C++ call that writes through it, or an in-place `=` on the place whose right operand reads through it, `s = {.r = Cpp.R.Make(7), .k = Cpp.ReadSaved()}`, in the same body or in a function that receives the place by `ref` (rev 9) | accepted, prints 9 (7 after the in-place `=`) | accepted: the synthesized witness a route the allowlist trusts, its obligation the C++ code's own, for diagnostics only; T8 marks no `ref` on the place (A.37, A.42), so the kept pointer's use is erroneous behavior, never undefined behavior (D-SAFE3-13); the in-place `=`, its right operand a C++ call and not formed, a checked reborrow that T4 accepts (re-traced 2026-11-01, RT-1, where it was exempt by rev 9's (i) to (iii)); remedy for a deterministic result: a `begin()` that keeps no pointer to the range, or the right operand formed first, `var v: S = {...}; s = v;` (1) | the same, the rewrite forming the right operand first (1) | e09, e10, j01, j03 |
 | a C++ caller that reads, through its own pointer, the storage it supplies as an exported Carbon function's return slot while the function's in-place `=` writes it (rev 8) | accepted, 11 | the Carbon function accepted; the C++ caller's read its breach of the storage it binds, Clang's `noalias` on the slot, erroneous behavior on the Carbon side (A.33, B.32) | the same | c06 |
-| an in-place `=` whose right operand calls a function value that captured a carrier of the left operand's place (rev 8; NEW syntax on the nightly) | not compiled (a semantics TODO) | `StrictExclusiveBorrowConflict` (T4, the call a use of the capture's loan by A.32's sentence, (ii) failing) | the same | l03, l04 (no runnable shape) |
+| a by-value argument whose loan set holds a loan on a Carbon place, `Cpp.TakeCV(v)` for a Carbon class `v` whose pointer field holds `&x`, the C++ code keeping it, then `Mod(ref x)` with a shape-1 C++ call that writes `x` through it (rev 10) | accepted, prints 9 | `StrictCppCallUnannotated` at the call (statement (3), A.34, A.36; rev 9 counted it shape 1); marked `unsafe Cpp.TakeCV(v)`, the kept pointer the unsafe code's breach, T8 withholding `noalias` and `captures(none)` on `x`, which the closure reaches (A.37), erroneous behavior, never undefined behavior | the same | the rev 10 fixer's k02, k06 (the control, free loans only: accepted) |
+| a store of a loan on a local into a C++ type's pointer field, `h.p = &x;` for `struct H { int* p; }`, then `Cpp.Take(h)` by value or a read `h.p.Get()` handed to C++ code or to a Strict callee that writes `x` while `Mod2(ref x, q)` binds it (rev 10) | accepted, prints 9 (9 9 with no C++ code run) | `StrictStoreOutlivesSource` at the store (A.43, B.37: the field a ⊥ destination, which accepts only free loans; rev 9 accepted it and T6's ⊥ read cut the carrier relation); remedy: a Carbon class for the holder, whose loan set the checker tracks, or the store marked `unsafe` | the same | ruling-rr3's t01, t02, t03's `h`; the rev 10 fixer's k01, k03, k04, k05 |
+| an in-place `=` whose right operand calls a function value that captured a carrier of the left operand's place (rev 8; NEW syntax on the nightly) | not compiled (a semantics TODO) | `StrictExclusiveBorrowConflict` (T4, the call a use of the capture's loan by A.32's sentence, a user call not formed; re-traced 2026-11-01, RT-1, where this read "(ii) failing") | the same | l03, l04 (no runnable shape) |
 
 ## §5 Scoreboard
 
@@ -3055,7 +3307,17 @@ Risks:
     every route, one obligation over all of them, a route the allowlist does
     not name pointer-carrying and a route it names trusted for diagnostics
     only, T8 withholding on every place C++ code received (D-SAFE3-13; added
-    2026-10-29, ruling round 2: RU2-1).
+    2026-10-29, ruling round 2: RU2-1). Hit at rev 9 by ruling round 3's t01
+    to t03, a place C++ code reached through a loan carried by a value or
+    place it received, the eighth such MAJOR in eight rounds, and answered by
+    the orchestrator's ruling of 2026-11-01, which re-thought the premise
+    rather than narrowing it again: the interim `=` in a positive form, which
+    no route outside the body's view can reach while the left operand is
+    bound, and the C++ boundary stated once, by closure under T3's carrier
+    relation, kept unbroken by A.43's ⊥ destination (D-SAFE3-5, D-SAFE3-13;
+    added 2026-11-01, re-think: RT-1, RR8-M1); a hit after rev 10 is answered
+    by the ruling's break condition, a BLOCKER or a MAJOR left after the second
+    re-think round stopping SAFE-3's planning, never by a further route.
 -   **R-2 the interim `=` changes under the rule.** Falsifier: an upstream or
     fork commit that routes `=` through `AssignWith`, runs the old value's
     destructor at the `=` (handle_operator.cpp:119-120), initializes a
@@ -3157,7 +3419,38 @@ Rejected alternatives:
     at four sites and every second `for` over one C++ range (D-SAFE3-12).
     Falsifier: a corpus program or page example whose result turns on a
     trusted route's breach, which would make the open-for-life reading's cost
-    worth paying (added 2026-10-29, ruling round 2: RU2-1).
+    worth paying (added 2026-10-29, ruling round 2: RU2-1). Moot since rev 10,
+    statement (1) leaving the interim rule no (iii): e10's and j01's `=`, its
+    right operand a C++ call and not formed, is a checked reborrow wherever it
+    is written, and T8 withholds on the place by the closure (added 2026-11-01,
+    re-think: RT-1).
+-   **The interim rule's conditions enumerated route by route** (rev 2 to
+    rev 9's (i) to (iii) and D-SAFE3-13's route list). Rejected by the
+    orchestrator's ruling of 2026-11-01: eight rounds found eight routes by
+    which code outside the body's view reached a place the closed-place
+    premise called closed, the owner, a thread, a carrier a user call loads, a
+    global variable's initializer, a global constant's, a C++ return slot, C++
+    routes and loans carried into C++ (the rev 10 fold record). Falsifier: none
+    by a probe; the ruling's break condition governs.
+-   **Nested formed values** (reading (r1) of statement (1) the other way, an
+    aggregate literal whose elements may be prelude initializer calls over
+    formed values, z1b's `{.o = Core.Optional(i32).Some(42), .n = n}`).
+    Rejected (D-SAFE3-5): the ruling's list is one level, names and literals
+    as the elements, and the remedy, the element formed in a local first, is
+    one line. Falsifier: a corpus or page site that the one-level list
+    rejects and a nested list would accept, none in rev 10's scan (D-SAFE3-12),
+    which reopens the reading by a dated mark.
+-   **T6's ⊥ read left as it is, the closure alone** (no A.43). Rejected
+    (D-SAFE3-13): a Strict store of `&x` into a C++ type's pointer field
+    followed by a read of the field launders the loan into ⊥, which a marked
+    C++ call keeps and a Strict callee writes through while a `ref` on `x` is
+    bound (k04: 9; k05: 9 9), a cut no closure under T3's carrier relation can
+    see. Also rejected: reading such a field as the loans the Carbon side
+    stored into it, which a C++ function that wrote the field would falsify,
+    the reason T6 reads it as ⊥. Falsifier: a corpus Strict program that
+    stores a loan that is not free into a C++ type's pointer field, none in
+    rev 10's scan, whose count would be added by a dated mark (added
+    2026-11-01, re-think: RT-1, RR8-M1).
 
 ## §8 Verification
 
@@ -3178,23 +3471,25 @@ For commit 1, each fix commit and each records commit:
     H1 1 H2 11 H3 4, 52, 0, 33, 551 (added 2026-10-29, ruling round 1: RU1-1).
     Expected after commit 1, measured on the dry run with every placeholder
     filled at its real width (`2026-10-30`, nine-character shas): every heading,
-    bullet, numbered and row count unchanged, the lines 873, 1674, 1980, 595,
-    758, 3264, 8494, 11797, 1588 and 553 (amended 2026-10-29, ruling round 2:
-    RU2-1, RU2-2, where rev 8's were 864, 1957, 3254 and 8484 for
-    safety/README.md, temporal_safety.md, fork/safe/plan.md and the log; amended
-    2026-10-29, ruling round 1: RU1-1, RU1-2, where rev 7's were 861, 1909, 3241
-    and 8471 for safety/README.md, temporal_safety.md, fork/safe/plan.md and the
-    log, with no type_safety.md; amended 2026-10-29, review fold: RR5-M1,
-    RR5-m1, where rev 6's were 1895, 3234 and 8464 for temporal_safety.md,
-    fork/safe/plan.md and the log; amended 2026-10-29, review fold: RR4-M1,
-    where rev 5's were 1868, 3221 and 8451 for temporal_safety.md,
-    fork/safe/plan.md and the log; amended 2026-10-29, review fold: RR3-M1,
-    RR3-m1, RR3-m2, where rev 4's were 860, 1660, 1853, 3210 and 8440 for
+    bullet, numbered and row count unchanged, the lines 876, 1682, 1994, 595,
+    758, 3279, 8509, 11797, 1588 and 553 (amended 2026-11-01, re-think: RT-1,
+    RR8-M1, RR8-m1, where rev 9's were 873, 1674, 1980, 3264 and 8494 for
     safety/README.md, mutation_safety.md, temporal_safety.md, fork/safe/plan.md
-    and the log; amended 2026-10-29, review fold: B-M1, where these were rev 1's
-    859, 1630, 1803, 595, 758, 3160, 8400 and 11796, measured with the
-    six-character `<date>`; amended 2026-10-29, review fold: RR1-M1, RR1-m1,
-    where rev 2's were 1826, 3185 and 8419 for temporal_safety.md,
+    and the log; amended 2026-10-29, ruling round 2: RU2-1, RU2-2, where rev 8's
+    were 864, 1957, 3254 and 8484 for safety/README.md, temporal_safety.md,
+    fork/safe/plan.md and the log; amended 2026-10-29, ruling round 1: RU1-1,
+    RU1-2, where rev 7's were 861, 1909, 3241 and 8471 for safety/README.md,
+    temporal_safety.md, fork/safe/plan.md and the log, with no type_safety.md;
+    amended 2026-10-29, review fold: RR5-M1, RR5-m1, where rev 6's were 1895,
+    3234 and 8464 for temporal_safety.md, fork/safe/plan.md and the log; amended
+    2026-10-29, review fold: RR4-M1, where rev 5's were 1868, 3221 and 8451 for
+    temporal_safety.md, fork/safe/plan.md and the log; amended 2026-10-29,
+    review fold: RR3-M1, RR3-m1, RR3-m2, where rev 4's were 860, 1660, 1853,
+    3210 and 8440 for safety/README.md, mutation_safety.md, temporal_safety.md,
+    fork/safe/plan.md and the log; amended 2026-10-29, review fold: B-M1, where
+    these were rev 1's 859, 1630, 1803, 595, 758, 3160, 8400 and 11796, measured
+    with the six-character `<date>`; amended 2026-10-29, review fold: RR1-M1,
+    RR1-m1, where rev 2's were 1826, 3185 and 8419 for temporal_safety.md,
     fork/safe/plan.md and the log; amended 2026-10-29, review fold: RR2-M1,
     RR2-m1, RR2-m2, RR2-m3, where rev 3's were 1646, 1830, 3189 and 8423 for
     mutation_safety.md, temporal_safety.md, fork/safe/plan.md and the log, with
@@ -3342,7 +3637,28 @@ For commit 1, each fix commit and each records commit:
     steps and checks, filled (ruling-fixer2/logs/dry-fill-2.txt), and "ALL OK",
     575, unfilled; checktree.py alone on the filled tree "ALL OK", 450 checks;
     on 0f22798fb itself it fails 141 (added 2026-10-29, ruling round 2: RU2-1,
-    RU2-2).
+    RU2-2). The rev 10 fixer's rethink/bin/dryrun.py, a copy of the rev 9 script
+    with the 2026-10-29 fixer's additions, also applies A.43 in the Store rule's
+    paragraph, A.44 after A.33 in the Vocabulary bullet, A.45 on the mutation
+    page and B.37 after B.36 in each record, and its rethink/bin/checktree.py
+    checks the ruling's statements at every copy: statement (1)'s sentence, the
+    checked reborrow otherwise and the remedy on the temporal and mutation
+    pages, in the log, in fork/safe/plan.md and in W-148's note (W-366's
+    carrying the remedy); statement (2)'s fresh local, a global variable's
+    initializer formed before the binding and a global constant's temporary
+    closed on the temporal page, in both records and in W-148's note; statement
+    (3)'s closure under T3's carrier relation, shape 1 over by-value arguments
+    whose loan set is empty or free, the trusted routes closed and T8's
+    withholding on `ref` and `exclusive T*` parameters and loans on
+    safety/README.md, the temporal page, in D-SAFE-18 and D-SAFE-10 in both
+    records and in W-148's note; A.43 to A.45 and B.37; the marked Carbon-class
+    example; and none of rev 9's fourteen superseded wordings, the interim-rule
+    sentence, its gloss, the route lists and the one open storage among them, on
+    the five files or in W-148's note. Its run on fresh archives of 0f22798fb:
+    "ALL OK", 695 steps and checks, filled (rethink/logs/dry-fill-1.txt), and
+    "ALL OK", 684, unfilled (rethink/logs/dry-unf-1.txt); checktree.py alone on
+    the filled tree "ALL OK", 552 checks; on 0f22798fb itself it fails 160
+    (added 2026-11-01, re-think: RT-1, RR8-M1, RR8-m1).
 5.  The nightly compiles: the 14 example sources of safe2-plan.md section 0.7
     re-compiled (measured: the outcomes recorded there, EX-M-4a, EX-M-4c and
     EX-M-4d printing 1, p005434:152-162's `F` rejected and its variant printing
@@ -3365,7 +3681,9 @@ For commit 1, each fix commit and each records commit:
     2026-10-29, review fold: RR2-m2, where this read "110 rows, the rev 3
     fixer's fixer1/logs/safe3-quotes-all3.tsv"; amended 2026-10-29, review
     fold: RR4-M1, where this read "116 rows, the rev 4 fixer's
-    fixer2/logs/safe3-quotes-all4.tsv").
+    fixer2/logs/safe3-quotes-all4.tsv"); rev 10 adds no quote row, the
+    ruling's statements quoting no upstream line the 141 do not already hold
+    (added 2026-11-01, re-think: RT-1).
 7.  `python3 -I fork/conformance/runner.py --self-test` clean (R7).
 8.  `git merge-tree --write-tree --name-only <head> <held head>` for trunk and
     every held head, each set equal to section 0.7's.
@@ -3377,10 +3695,12 @@ For commit 1, each fix commit and each records commit:
     json.load(open('fork/inventory/work-items.json'))"` after commit 1 and in
     the PR 67 note commit's worktree.
 12. The D-SAFE block of fork/decision-log.md identical to fork/safe/plan.md
-    section 0.3 (1217 lines at 0f22798fb, 1380 after commit 1, measured on the
-    filled dry tree; rev 8's 1370 was before B.36 stated D-SAFE-18's trusted
-    routes and B.33 and B.35 grew, amended 2026-10-29, ruling round 2: RU2-1;
-    rev 7's 1357 was before B.33 narrowed D-SAFE-18's first
+    section 0.3 (1217 lines at 0f22798fb, 1395 after commit 1, measured on the
+    filled dry tree; rev 9's 1380 was before B.1, B.32, B.33, B.35 and B.36
+    were restated by the ruling's statements and B.37 added, amended
+    2026-11-01, re-think: RT-1; rev 8's 1370 was before B.36 stated D-SAFE-18's
+    trusted routes and B.33 and B.35 grew, amended 2026-10-29, ruling round 2:
+    RU2-1; rev 7's 1357 was before B.33 narrowed D-SAFE-18's first
     shape, B.35 extended D-SAFE-10's T8 clause and B.31 and B.32 grew, amended
     2026-10-29, ruling round 1: RU1-1, RU1-2; rev 6's 1350 was before B.32
     named a global constant's temporary and `DefaultOrUnformed` and rewrapped
@@ -3436,7 +3756,16 @@ other 21 (ruling-fixer2/scan/routes-by-hand.tsv); shape 4 and the
 a pointer it receives, so the trusted routes are probed through the range
 witness alone (e09, e10, j01, j03); and the cost of the trusted routes made
 pointer-carrying is counted against review A's fourteen sites as its table
-lists them, not re-derived (added 2026-10-29, ruling round 2: RU2-1).
+lists them, not re-derived (added 2026-10-29, ruling round 2: RU2-1). The
+cost of the ruling's statement (1) is measured on the SemIR of the 182 units
+the nightly checks and by text for the 89 files it does not check cleanly and
+for the pages, the right operand's class read by a pattern (formed, a call, a
+read through a carrier, other) and each site that is not formed read by hand;
+no Strict checker classifies them (W-148); statement (3)'s by-value arguments
+are classified from the IR of the 39 corpus programs the nightly lowers and by
+hand for the other 21, as rev 9's routes were; and no probe runs a ⊥ read of a
+C++ type's pointer field into a Strict callee but k05's, which the nightly
+runs with no checker (added 2026-11-01, re-think: RT-1, RR8-M1).
 
 ## Review fold record (rev 2, 2026-10-29)
 
@@ -4154,6 +4483,251 @@ no Strict checker (W-148), no probe of `Core.Slice`, `Freeze` or a standard
 library member that keeps a pointer; 21 corpus programs read by hand for their
 routes. Every edit of this file is by Edit but prek's own rewrap.
 
+## Review fold record (rev 10, 2026-11-01)
+
+Ruling (orchestrator, R29, 2026-11-01) on the closed-place premise, which this
+record carries out and which the rev 10 fixer records here verbatim, its text
+checked by script equal, line breaks set aside, to the ruling the orchestrator
+handed the fixer:
+
+<!-- google-doc-style-ignore -->
+
+> Ruling of the orchestrator under R29, 2026-11-01, on the SAFE-3 plan at rev 9
+> (547fb6220), after the third ruling-authorized round. Round 3 found RR8-M1, a
+> MAJOR: C++ code reaches a Carbon place through a loan carried by a value it
+> received, so a place the design counts as closed is written while a `ref` on
+> it is bound, and T8 neither withholds its attributes nor states the
+> obligation; with RR8-m1 it is the eighth MAJOR in eight rounds, each a route
+> by which code outside the body's view reaches a place the closed-place premise
+> called closed: the owner, a thread, a carrier a user call loads, a global
+> variable's initializer, a global constant's, a C++ return slot, C++ routes,
+> and now loans carried into C++. The break condition of the ruling recorded at
+> rev 8 is met, and the closed-place premise is re-thought as follows. (1) The
+> interim rule for the toolchain's in-place `=` (D-SAFE3-5) stops enumerating
+> the routes by which the right operand might reach the left operand and states
+> a positive form instead: while W-366 stands, an `=` whose left operand's type
+> is not copy-represented at every depth keeps the exemption of D-SAFE3-3 only
+> when its right operand is formed before the binding, that is, when the right
+> operand is a formed value (the name of a local `var` or `let` or of a
+> parameter, a literal, or an aggregate literal whose elements are such names or
+> literals), or a call of a prelude initializer whose arguments are such and
+> whose body runs no code written outside core/prelude, and when the right
+> operand reads no place through a pointer, a `ref` or any other carrier and
+> carries no loan on the left operand's place or on a place that overlaps it;
+> every other right operand, a user call anywhere in it, a prelude call with any
+> other argument, a read through a carrier, or a `Copy` or `ImplicitAs` written
+> outside core/prelude that the initialization would run, removes the exemption,
+> and the `=` is then a checked reborrow of the left operand for the whole
+> evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s
+> write through a shared path on an open place
+> (`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy
+> being to form the value in a fresh local first and assign the local. (2) A
+> fresh local's own initialization is exempt, nothing naming its storage until
+> it completes, with the exceptions already decided: a `returned var` names its
+> caller's destination and a global variable's dynamic initializer initializes
+> an open place, so both are checked as (1) checks an `=`, and a global
+> constant's temporary is closed by upstream's materialize-and-acquire reading.
+> (3) The C++ boundary (D-SAFE3-13) is stated once, by closure under T3's
+> carrier relation, as RR8-M1's fix gives it: C++ code receives every place on
+> which a loan lies that is carried, transitively, by a value or place it
+> receives, a class value's loan set included (temporal_safety.md:118-119);
+> allowlist shape 1 keeps only by-value arguments whose loan set is empty or
+> free; the obligation of unsafe code is stated over every such place; T8
+> withholds `noalias` and `captures(none)` on every such place for the marked
+> and the trusted routes alike, on `ref` and `exclusive T*` parameters and loans
+> (RR8-m1); the cost is measured on the corpus. (4) These three statements
+> replace the accreted route lists of D-SAFE3-5 and D-SAFE3-13 and their copies
+> on the pages, in fork/safe/plan.md, in the log and in the ledger notes; the
+> rounds' findings and probes stay as the evidence in sections 0.3, 1.3 and 4
+> and in the fold records, re-traced under the new statements, and the rows
+> whose outcome changes are listed with the probe that decides each. (5) Rev 10
+> records this ruling verbatim and makes the re-derivation, with the dry run and
+> the probes re-run; one fresh focused re-review follows, folded into rev 11,
+> and if it leaves a MAJOR a second round follows into rev 12; sign-off needs a
+> round with no BLOCKER and no MAJOR, and only then does section 3's
+> implementation begin. Break condition: a BLOCKER, or a MAJOR left after the
+> second round, stops SAFE-3's planning; the orchestrator then records the state
+> on trunk (PR 53 held at 2407efa74 with SAFE-2's and SAFE-3's work unpushed and
+> mirrored, the open design question carried by W-148 and W-366), and turns to
+> the next workstream.
+
+<!-- google-doc-style-resume -->
+
+Ruling round 3's findings on rev 9 (547fb6220), as the orchestrator handed them
+to the fixer:
+
+<!-- google-doc-style-ignore -->
+
+```text
+RR8-M1 (MAJOR): A Carbon place whose address C++ code gets through a loan carried by what it received is neither trusted correctly nor withheld by T8
+fix: close the route set under T3's carrier relation: C++ receives every place on which a loan carried by a value or place it receives lies, transitively (class values' loan sets included); shape 1 keeps only by-value arguments whose loan set is empty or free; the obligation over every such place; T8 withholds on those places for marked and trusted routes; correct A.34, A.36, A.37, A.42, D-SAFE3-13, B.12, B.33, B.35, B.36 and the rows in 0.6, 1.3 and 4; add t01 to t03 to 0.3 (probes under scratchpad/safe3/ruling-rr3/probe/)
+
+RR8-m1 (MINOR): T8's withholding names `exclusive T*` parameters in the records but not on the page (R27)
+fix: word A.37 like B.35; name the `exclusive T*` loan formed on such a place in both; checktree.py checks the phrase at the page, the log and fork/safe/plan.md
+```
+
+<!-- google-doc-style-resume -->
+
+The rev 10 fixer of 2026-11-01 carried the ruling out on rev 9 (547fb6220),
+after the rev 10 fixer of 2026-10-29 had died on the account's usage limit with
+its edits uncommitted (saved at
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/dead-fixer-rev10/,
+not applied; its six probes, k01 to k06, and its scans of the corpus are re-run
+and used here). The ruling was judged sound before it was carried out (R29), so
+nothing stopped: in an exempt `=` nothing runs while the left operand is bound
+but prelude code over values formed before the binding, so no code outside the
+body's view can take any route to the referent then, and the one path left, the
+right operand naming the left operand's own place, `x = x`, is D-SAFE3-3 (b)'s;
+every other `=` is a checked reborrow on a closed place or M3(d)'s write on an
+open one, sound as every such binding is on the closed-place premise as
+statement (2) and statement (3) complete it. Carrying statement (3) out found
+one gap the ruling's text does not name: T6 reads a pointer-typed field of an
+imported C++ type as ⊥, while the Store rule accepted a loan that is not free
+into such a field, so `h.p = &x;` then a read of `h.p` laundered the loan out of
+the relation the closure follows (the 2026-10-29 fixer's k04: 9; k05, with no
+C++ code run, 9 9). It is closed as part of statement (3), not as a route added
+to it, by counting such a field a ⊥ destination, as T5(g) counts an `unsafe
+class`'s pointer fields (A.43, B.37), which rejects t01's, t02's, k01's and
+k03's stores and t03's `h.p = &y;` before their calls, rejects nothing in the
+corpus, and is recorded here for the re-review to judge; a gap the closure could
+not close so would have stopped the plan (D-SAFE3-13's break condition). Four
+readings of statement (1) are decided under R29 in D-SAFE3-5, each with its
+break condition: (r1) the list is one level (z1b newly rejected), (r2) a prelude
+initializer is D-SAFE3-4's prelude code and reads through a carrier argument
+only where its body dereferences it, (r3) overlap and a carried loan are decided
+on the places the checker names, a by-value parameter's name qualifying and a
+`ref` parameter's not, and (r4) `x = x` is formed and D-SAFE3-3 (b)'s. Marks in
+this file read "(amended 2026-11-01, re-think: RT-1)", RT-1 being the ruling
+carried out, or name RR8-M1 and RR8-m1; the page and records texts of Appendix A
+and B carry SAFE-3's own marks only. The route lists are deleted from every
+copy, D-SAFE3-5, D-SAFE3-13, A.1, A.7, A.33, A.34, A.36, A.37, A.42, B.1, B.12,
+B.14, B.32, B.33, B.35, B.36, the rule applied, sections 0.0, 0.3, 0.4, 0.6,
+1.1, 1.2, 1.3, 2, 4, 7 and 8, each rewritten passage keeping what it replaced in
+a dated mark (D-SAFE3-7). Rev 9 stated the interim rule's conditions in this
+sentence, at its four copies and in W-148's note, which statement (1) replaces
+whole:
+
+"for a left operand whose type is not copy-represented at every depth, the whole
+right operand counts as evaluated while the left operand is bound, and the `=`
+keeps the exemption only when its right operand reads no open place and passes
+no carrier of one to a call, reads or uses no part of the left operand's place,
+or of a place that overlaps it, through its owner or a carrier of it (T1, T3),
+passes to no call a value from which a carrier of an open place, of the left
+operand's place or of one that overlaps it can be loaded, a pointer to a place
+that holds one, a `ref` of such a place or a value that carries a loan on such a
+place, transitively (T3), and, on an open place, runs no code written outside
+core/prelude".
+
+Each clause the ruling supersedes, and its disposition: conditions (i) to (iii)
+and their sentence (rev 2 to rev 9; A-RA3-B1, B-M3, RR1-M1, RR3-M1, RU2-1),
+replaced by statement (1)'s positive form, a user call, a C++ call, a read
+through a carrier or a prelude call over anything else removing the exemption
+and the `=` then a checked reborrow or M3(d)'s write, its remedy the value
+formed in a fresh local first; the gloss of what qualifies (RR1-M1) and the
+argument that (ii) with (i) and (iii) covers every path (RR3-M1), replaced by
+statement (1)'s list and its one-paragraph argument; T3's sentence on a use
+through a value from which a carrier can be loaded and on a function value's
+captures (A.32, A.41, B.31; RR3-M1, RU1-2), kept, T4 using it on the checked
+reborrow; the overlap of array elements (RR2-m3), kept as reading (r3); the
+keying at every depth (A-RA3-B1, RR1-m1, RR2-m2), kept as statement (1)'s scope;
+the list of the storages a `returned var` can name and the one open storage, a
+global variable (RR4-M1, RR5-M1, RR5-m1, RU1-1), replaced by statement (2), a
+`returned var` and a global variable's initializer checked as an `=` is, the C++
+caller's storage kept as A.33's storage bound by its caller, a global constant's
+temporary kept closed; D-SAFE3-13's route list (RU1-1, RU2-1), replaced by
+statement (3)'s closure, its one obligation and the trusted routes for
+diagnostics only kept and T8's withholding widened to every place the closure
+names and to `exclusive T*` parameters and loans (RR8-m1); shape 1's "by-value
+parameter whose initialization runs no constructor that is not trivial" (RU2-1),
+replaced by by-value arguments whose loan set is empty or free, copied by the
+thunk with no such constructor; the rejected alternative of (iii) on a trusted
+route's place (RU2-1), moot, kept as RR7-M1's record; and A.36's `Cpp.Take(h)`
+example, t01's, replaced by k02's `Cpp.TakeCV(v)` for a Carbon class, A.43
+rejecting t01's store.
+
+Rows whose outcome changes, each with the probe that decides it (section 1.3,
+section 4): q06c rejected, its user `Convert` not formed (rev 9 listed it
+accepted though its output, 5 100 1 1, showed the `Convert` run); z1b newly
+rejected by (r1), a prelude call inside an aggregate literal, its remedy the
+element formed first; s18 rejected as before, with M3(d)'s diagnostic beside
+M3(c)'s; ruling-rr3's t01 (1 0 9 9), t02 (0 7 0 1) and the `h` of t03 and
+the 2026-10-29 fixer's k01 (0 9 9) and k03 (10 9) rejected at the store into a
+C++ type's pointer field (A.43), rev 9 accepting them unmarked; k02 (0 9 9)
+rejected unmarked at the C++ call by the closure, a Carbon class's by-value
+argument carrying the loan on `x`; k04 (9) and k05 (9 9) rejected at
+`h.p = &x;`; k06 (4 5 9) the control, accepted. Rows whose route changes, the
+outcome the same: p03, rr5's q01, c01, e10 and j01, whose `=` is a checked
+reborrow where rev 9 exempted it, and the `p` of t03, accepted marked with T8
+withholding on `x` by the closure. Every other row keeps its outcome, its cell
+re-traced and marked where it named (i) to (iii). Corrected beside them:
+examples/advent2024/day6_common.carbon:72's `self.dir = (-d.1, d.0);` after
+`let d: (i32, i32) = self.dir;` is `StrictBorrowedObjectMutated` under D-SAFE2-3
+in every revision, which no earlier count found (D-SAFE3-12).
+
+Measured for rev 10 on 2026-11-01: upstream re-fetched at 17:45 UTC,
+tip 68569d234, twelve commits past 9192ee003, of which 4abb6100e touches a file
+this plan names and moves no quoted line (section 0.1); the 18 held heads as
+section 0.7 states them, PR 53 at 2407efa74, the mirror at 547fb6220, rev 9's
+commit, and trunk moved by one records commit to bb9fbba9c, LAND-1's, the
+merge-tree against it naming the same three files as 0f22798fb's and Appendix
+D's first anchor moved, reported (section 0.7); PR 67's checks from a detached
+worktree of 56e2e5bbd at /dev/shm/safe2-rethink/rg1, removed after: the H1
+subsets 97, 120 and 5, rev 9's 5 rows and the 141 every one 0 failed, 33 of
+the 141 failing at the cut as before, and PR 67's own 273 and 89 and
+SAFE-2's 284 and 89 failing 8 and 2 at the new tip, all outside the H1 rows,
+lines upstream's commits moved, reported for RG-1 and not taken here
+(section 0.4); the 193 probes, 196 sources, re-run in rethink/rerun/ by
+rethink/bin/rerun_all.sh, 194 identical and n01 and n04 differing only in
+`poison` values, no Carbon function in their IR carrying `noalias`; the cost of
+statement (1) by rethink/bin/inplace_scan.py, text_scan.py and page_scan.py on a
+fresh archive of 0f22798fb: of 17 in-place `=` statements 11 formed and 6 not,
+each of the 6 on a closed place and a checked reborrow T4 accepts but
+day6_common.carbon:72, rejected in every revision, 63 in-place `var`
+initializations exempt, and no site of the 32 in the files the nightly does not
+check cleanly or of the 64 on the pages newly rejected, so the statement's cost
+is nil; the cost of statement (3) by rethink/bin/lower_corpus.sh and ir_byval.py
+over a fresh lowering of the 60 programs that import `Cpp`, the same 39
+lowering: 26 of 163 C++ calls pass a by-value class argument, each with an empty
+or free loan set or inside the trusted range witness, none newly rejected, and
+no Strict store into a C++ type's pointer field in the corpus (D-SAFE3-12); the
+dry run by rethink/bin/dryrun.py and checktree.py on fresh archives of 0f22798fb
+"ALL OK" filled (695 steps and checks) and unfilled (684), checktree.py "ALL OK"
+alone (552 checks) and failing 160 on 0f22798fb; on scratch commit ff49922de of
+a detached worktree at /dev/shm/safe3-rethink/wt, removed with its cache after,
+prek's three passes changing nothing, `uvx rumdl@0.2.58 check` "No issues found
+in 10 files", r31.py's counts unchanged on the ten pages and records files with
+the lines 876, 595, 1682, 758, 1994, 1588, 8509, 3279, 11797 and 553, no new
+heading line, the D-SAFE blocks identical at 1395 lines, `json.load` 134 items,
+W-365 and W-366 last, and the merge-trees against trunk and the 18 heads equal
+to 0f22798fb's; `--self-test` "150 programs parsed, 56 bullets in table, OK";
+the id re-scan over the 174 refs and every worktree, W-363 the highest filed, no
+id minted; the model-name grep clean, its hits the branch names, scratch paths
+and the committer's name only. This plan: r31.py before the fold H1 1, H2 23,
+H3 98, 73 bullets, 34 numbered items, 340 rows, 6775 lines and no unguarded
+line, and after it H1 1, H2 24 (this record), H3 102 (A.43 to A.45 and B.37), 77
+bullets (one in section 0.4 and three in section 7), 34 numbered items, 361 rows
+(nine in section 0.3, five in section 1.3, two in section 4 and the five lines
+of this record's table), 7588 lines and no unguarded line; prek's passes
+recorded in the commit message. Not run: no build, no Strict checker (W-148), so
+every Strict outcome is traced by hand and statement (1)'s classes are read by
+pattern and by hand; no probe of `Core.Slice`, `Freeze` or `Core.Thread`; 21
+corpus programs read by hand for their by-value arguments. Every edit of this
+file is a replacement checked to match once or a reflow of the lines one
+lengthened, prek's own rewrap aside.
+
+The round's MAJOR stood when the ruling was made, so rev 10 is not signed off:
+one fresh focused re-review of rev 10 follows, folded into rev 11, and a second
+into rev 12 if it leaves a MAJOR; sign-off needs a round with no BLOCKER and no
+MAJOR, and only then does section 3's implementation begin. The ruling's break
+condition stands: a BLOCKER, or a MAJOR left after the second round, stops
+SAFE-3's planning.
+
+| finding | reproduced by | disposition and where it lands |
+| --- | --- | --- |
+| RT-1, the orchestrator's ruling of 2026-11-01 (R29) | the ruling quoted above, checked by script equal to the text the orchestrator handed the fixer; every probe re-run (rethink/rerun/, 196 sources, 194 identical, n01 and n04 `poison` only); the cost of each statement measured on the corpus (rethink/bin/inplace_scan.py, text_scan.py, page_scan.py, lower_corpus.sh, ir_byval.py) | CARRIED OUT: statement (1) in D-SAFE3-5 with readings (r1) to (r4), A.1, A.7, B.1 and B.12; statement (2) in D-SAFE3-5, A.33, B.32, A.1 and B.1; statement (3) in D-SAFE3-13, A.34, A.36, A.37, A.42, B.33, B.35, B.36 and B.12, completed by A.43 to A.45 and B.37; the route lists deleted from every copy with dated marks; the Status, the rule applied, sections 0.0, 0.1, 0.3, 0.4, 0.6, 1.1, 1.2 (D-SAFE3-3, D-SAFE3-5, D-SAFE3-12, D-SAFE3-13), 1.3, 2.2, 2.3, 4, 7 (R-1, one alternative moot, three new), 8, the hand-off notes and this record; rethink/bin/dryrun.py and checktree.py check the statements at every copy |
+| RR8-M1 MAJOR | ruling-rr3's t01 to t03 re-run (1 0 9 9; 0 7 0 1; 9 9), `@_Z4Take1H.carbon_thunk._(ptr %h.var)` passing the copy that carries `&x`; the 2026-10-29 fixer's k01 to k06 re-run (0 9 9; 0 9 9; 10 9; 9; 9 9; 4 5 9); the temporal page's loan-set bullet (:118-119), Store rule and T6 read at 0f22798fb | ACCEPTED, by the ruling's statement (3) as its fix gives it: C++ code receives every place on which a loan lies that is carried, transitively, by a value or place it receives (A.36, B.33), shape 1 keeps only by-value arguments whose loan set is empty or free (A.34, A.36, B.33), the obligation stated over every such place (A.36, A.42, B.36), T8 withholding on every such place for the marked and the trusted routes (A.37, A.42, B.35), A.43 and B.37 keeping the relation unbroken at a C++ type's pointer field and A.44 and A.45 stating the escape into C++ code; D-SAFE3-13, B.12, sections 0.3 (t01 to t03, k01 to k06), 0.6, 1.3 and 4 |
+| RR8-m1 MINOR | A.37 at rev 9 against B.35 and B.12 | ACCEPTED: A.37 worded as B.35, both naming the `exclusive T*` parameter and the `exclusive T*` loan formed on such a place, and checktree.py checking the phrase on the page, in the log and in fork/safe/plan.md |
+
 ## Hand-off notes for the implementer
 
 1.  Read section 1 first, then the blocks of Appendix A and B in order; re-open
@@ -4176,7 +4750,11 @@ routes. Every edit of this file is by Edit but prek's own rewrap.
     RU1-1, RU1-2); A.42 goes in after A.35's words in the same README
     paragraph, and B.36 after B.33 in the same D-SAFE-18 paragraph, as
     ruling-fixer2/bin/dryrun.py orders them (added 2026-10-29, ruling round 2:
-    RU2-1).
+    RU2-1); A.43 goes in the Store rule's paragraph after A.42, A.44 in the
+    Vocabulary bullet after A.33, A.45 in the mutation page's memory-safety
+    paragraph, and B.37 after B.35 and B.36, in D-SAFE-10's T6 clause in each
+    record, as
+    rethink/bin/dryrun.py orders them (added 2026-11-01, re-think: RR8-M1).
 2.  Markdown edits by Edit or Write only, never a shell append or a script
     (R25); the JSON by Edit, parsed after.
 3.  Keep every superseded text byte for byte under section 2.1's test; the
@@ -4273,7 +4851,21 @@ after the relation to the rule above, where "with nothing newly rejected." was
 followed by "So `q->n = 2`"; amended 2026-10-29, review fold: RR5-M1: that
 sentence's subject a global variable's dynamic initializer, where it read "A
 global's dynamic initializer", a global constant's initializer filling a
-temporary that A.33 counts closed):
+temporary that A.33 counts closed; amended 2026-11-01, re-think: RT-1: the
+fourth paragraph's interim rule in the ruling's positive form, statement (1),
+the sentence every copy carries, where it stated conditions (i) to (iii) in the
+sentence the rev 10 fold record quotes whole and its gloss read "literals, the
+body's closed places that do not overlap the left operand's place, values that
+carry no loan on it (T3) and from which no carrier of it can be loaded, and
+prelude calls over them qualify.", with the reason no other code reaches the
+place, `x = x` named, the overlap's sentence kept with a borrowed object's
+frozen loan and a by-value parameter's name, the examples of T4 and M3(d) kept,
+and statement (2) on a fresh local, a `returned var`, a global variable and a
+global constant, where it read "A global variable's dynamic initializer
+initializes the global in place whatever the rewrite's status and is checked by
+these conditions as an in-place `=` on an open place, as the vocabulary
+says, a `returned var` it fills naming the global's storage.", its link markup
+set aside):
 
 <!-- google-doc-style-ignore -->
 
@@ -4420,44 +5012,52 @@ this design's reading of the rewrite. No Carbon function's lowering carries
 `noalias` today, so the difference gives a different defined result, not
 undefined behavior. While it stands, Strict checks the interim `=` by what it
 does as well as by the rule above: for a left operand whose type is not
-copy-represented at every depth, the whole right operand counts as evaluated
-while the left operand is bound, and the `=` keeps the exemption only when its
-right operand reads no open place and passes no carrier of one to a call, reads
-or uses no part of the left operand's place, or of a place that overlaps it,
-through its owner or a carrier of it (T1, T3), passes to no call a value from
-which a carrier of an open place, of the left operand's place or of one that
-overlaps it can be loaded, a pointer to a place that holds one, a `ref` of such
-a place or a value that carries a loan on such a place, transitively (T3), and,
-on an open place, runs no code written outside core/prelude; literals, the
-body's closed places that do not overlap the left operand's place, values that
-carry no loan on it (T3) and from which no carrier of it can be loaded, and
-prelude calls over them qualify. A place overlaps the left operand's place when
-either lies within the other, and an array element at an index the checker
-cannot prove distinct from the left operand's overlaps it, in this rule and in
-T4's check of the reborrow below, since `a[i] = {.a = a[j].b, .b = a[j].a}`
-prints 2 2 on that nightly when `i == j`. Otherwise the `=` is a `ref` binding
-under this section's rule: on a closed place a checked reborrow, so T4 rejects
-`x = {.a = x.b, .b = x.a}` and, for `p = &x`,
-`x = {.u = MakeU(&p), .w = MakeW(&p)}`, whose calls use the loan `p` holds
-(T3), each `StrictExclusiveBorrowConflict` (the second prints 3 4 3 4 on that
-nightly, where the right operand formed first prints 3 4 1 2), and
-`c = Make(&c.a)` (`StrictSharedBorrowInvalidated`), and through a shared path
-M3(d)'s, so `*q = {.a = p->b, .b = p->a}` is `StrictInvalidatingThroughShared`;
-the program forms the right operand first,
+copy-represented at every depth, as the first paragraph defines it, the `=`
+keeps the exemption only when its right operand is formed before the binding,
+that is, when the right operand is a formed value (the name of a local `var` or
+`let` or of a parameter, a literal, or an aggregate literal whose elements are
+such names or literals), or a call of a prelude initializer whose arguments are
+such and whose body runs no code written outside core/prelude, and when the
+right operand reads no place through a pointer, a `ref` or any other carrier and
+carries no loan on the left operand's place or on a place that overlaps it;
+every other right operand, a user call anywhere in it, a prelude call with any
+other argument, a read through a carrier, or a `Copy` or `ImplicitAs` written
+outside core/prelude that the initialization would run, removes the exemption,
+and the `=` is then a checked reborrow of the left operand for the whole
+evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s
+write through a shared path on an open place (`StrictInvalidatingThroughShared`,
+or an `unsafe` formation), the remedy being to form the value in a fresh local
+first and assign the local. Nothing then runs while the left operand is bound
+but prelude code over values formed before the binding, so no other code reaches
+its place, and `x = x`, whose right operand names that place itself, the rule
+above rejects. A place overlaps the left operand's place when either lies within
+the other, and an array element at an index the checker cannot prove distinct
+from the left operand's overlaps it, in this rule and in T4's check of the
+reborrow, since `a[i] = {.a = a[j].b, .b = a[j].a}` prints 2 2 on that nightly
+when `i == j`; a value binding of a borrowed object carries its frozen loan, and
+a by-value parameter's name qualifies, its borrowed object lying in its caller's
+place under the caller's frozen loan. So T4 rejects `x = {.a = x.b, .b = x.a}`
+and, for `p = &x`, `x = {.u = MakeU(&p), .w = MakeW(&p)}`, whose calls use the
+loan `p` holds (T3), each `StrictExclusiveBorrowConflict` (the second
+prints 3 4 3 4 on that nightly, where the right operand formed first
+prints 3 4 1 2), and `c = Make(&c.a)` (`StrictSharedBorrowInvalidated`), and
+`*q = {.a = p->b, .b = p->a}` is `StrictInvalidatingThroughShared`; the program
+forms the right operand first,
 `let v: {.a: i32, .b: i32} = {.a = p->b, .b = p->a}; *q = v;`, which prints 2 1.
-A left operand whose type is copy-represented at every depth, such as `i32`,
-`{.n: i32}` or `Core.Optional(i32*)`, is stored once from a complete value, and
-the rule above decides alone. The interim rule only adds conditions, so every
-program it accepts the rule above accepts, and the toolchain's adoption of the
-rewrite withdraws it by a dated mark with nothing newly rejected. A global
-variable's dynamic initializer initializes the global in place whatever the
-rewrite's status and is checked by these conditions as an in-place `=` on an
-open place, as the [vocabulary](#vocabulary) says, a `returned var` it fills
-naming the global's storage. So `q->n = 2`, `p->n += 1` and `++p->n` for `q: T*`
-and a field `n: i32` are `Plain` writes that M3 permits, and `*q = "longer"` for
-`q: str*` is `StrictSharedImmutableWrite` (re-derived <date>, SAFE-3:
-D-SAFE3-1 to D-SAFE3-5; until then this paragraph read as the one quoted in full
-at the end of this section).
+A fresh local's own initialization is exempt, nothing naming its storage until
+it completes, but a `returned var` names its caller's destination and a global
+variable's dynamic initializer initializes an open place, so both are checked as
+an in-place `=` is, and a global constant's temporary is closed, as the
+[vocabulary](#vocabulary) says. A left operand whose type is copy-represented at
+every depth, such as `i32`, `{.n: i32}` or `Core.Optional(i32*)`, is stored once
+from a complete value, and the rule above decides alone. The interim rule only
+adds conditions, so every program it accepts the rule above accepts, and the
+toolchain's adoption of the rewrite withdraws it by a dated mark with nothing
+newly rejected. So `q->n = 2`, `p->n += 1` and `++p->n` for `q: T*` and a field
+`n: i32` are `Plain` writes that M3 permits, and `*q = "longer"` for `q: str*`
+is `StrictSharedImmutableWrite` (re-derived <date>, SAFE-3: D-SAFE3-1 to
+D-SAFE3-5; until then this paragraph read as the one quoted in full at the end
+of this section).
 ```
 
 <!-- google-doc-style-resume -->
@@ -4644,7 +5244,11 @@ with its second condition over the owner and every carrier, where it read
 "uses no carrier of the left operand's place or of a place that overlaps
 it"; amended 2026-10-29, review fold: RR3-M1: A.1's sentence with the clause
 on a value passed to a call from which a carrier can be loaded, where it went
-from "(T1, T3)" to ", and, on an open place"):
+from "(T1, T3)" to ", and, on an open place"; amended 2026-11-01, re-think:
+RT-1: A.1's sentence in the ruling's positive form, statement (1), where it
+stated conditions (i) to (iii) as the rev 10 fold record quotes them and went
+on "; otherwise the `=` is (d)'s through a shared path, as
+`*q = {.a = p->b, .b = p->a}` is."):
 
 <!-- google-doc-style-ignore -->
 
@@ -4683,21 +5287,26 @@ not a data class among them, by this design's classification beside the
 assignment design's "Tuples, structs, choice types, and data classes"
 (assignment.md:159), whose order that design leaves to leads issue 686, and
 while it stands it is checked by the temporal page's interim rule: for a left
-operand whose type is not copy-represented at every depth, the whole right
-operand counts as evaluated while the left operand is bound, and the `=` keeps
-the exemption only when its right operand reads no open place and passes no
-carrier of one to a call, reads or uses no part of the left operand's place, or
-of a place that overlaps it, through its owner or a carrier of it (T1, T3),
-passes to no call a value from which a carrier of an open place, of the left
-operand's place or of one that overlaps it can be loaded, a pointer to a place
-that holds one, a `ref` of such a place or a value that carries a loan on such
-a place, transitively (T3), and, on an open place, runs no code written outside
-core/prelude; otherwise the `=` is (d)'s through a shared path, as
-`*q = {.a = p->b, .b = p->a}` is. This rule
-counts every assignment operator, compound assignment included, and `++` and
-`--` as an assignment to the first operand, in (c) and in the next paragraph
-(re-derived <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5; until then this text
-read as quoted in full at the end of this section).
+operand whose type is not copy-represented at every depth, the `=` keeps the
+exemption only when its right operand is formed before the binding, that is,
+when the right operand is a formed value (the name of a local `var` or `let` or
+of a parameter, a literal, or an aggregate literal whose elements are such names
+or literals), or a call of a prelude initializer whose arguments are such and
+whose body runs no code written outside core/prelude, and when the right operand
+reads no place through a pointer, a `ref` or any other carrier and carries no
+loan on the left operand's place or on a place that overlaps it; every other
+right operand, a user call anywhere in it, a prelude call with any other
+argument, a read through a carrier, or a `Copy` or `ImplicitAs` written outside
+core/prelude that the initialization would run, removes the exemption, and the
+`=` is then a checked reborrow of the left operand for the whole evaluation on a
+closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s write through a
+shared path on an open place (`StrictInvalidatingThroughShared`, or an `unsafe`
+formation), the remedy being to form the value in a fresh local first and assign
+the local, so `*q = {.a = p->b, .b = p->a}` is (d)'s. This rule counts every
+assignment operator, compound assignment included, and `++` and `--` as an
+assignment to the first operand, in (c) and in the next paragraph (re-derived
+<date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5; until then this text read as quoted
+in full at the end of this section).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5220,58 +5829,70 @@ named among the bound storages, its caller's obligation under C++'s own
 `noalias` on the return slot, after "while that operand is bound", where the
 sentence ended "while that operand is bound. A global variable", ruling-rr1's
 c06 having shown a C++ caller reading the storage through its own pointer while
-the exported function's in-place `=` writes it):
+the exported function's in-place `=` writes it; amended 2026-11-01, re-think:
+RT-1: the closed places by statement (2) of D-SAFE3-5, a fresh local exempt, a
+`returned var` checked on a closed place, its caller's destination bound by
+the caller, a global variable's initializer on an open place, a global
+constant's temporary closed, where the block began "A `returned var` is closed
+because the storage it names, which its caller's call initializes" and listed
+the storages it can name, "a local `var`, a `var` parameter or a temporary
+being initialized, or a part of one, which nothing else names yet, a global
+constant's temporary among them", "the caller's own `returned var`, closed in
+turn; or the left operand of an in-place `=`, whose interim rule (`ref`
+bindings) counts the call as evaluated while that operand is bound; or storage
+that a C++ caller supplies" (its link markup set aside), and called a global
+variable "the one such storage that is open", accepted "only under the interim
+rule's conditions for an in-place `=` on an open place, the global its left
+operand and the initializer its right operand", its binding "of the global's
+storage, its callee's `returned var` and every `ref` taken on one", a `ref` on
+an open place):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-A `returned var` is closed because the storage it names, which its caller's call
-initializes (the assignment design's `returned var` "can be `&y`" for
-`y = F();`, assignment.md:111-113), is closed or bound while the call runs: a
-local `var`, a `var` parameter or a temporary being initialized, or a part of
-one, which nothing else names yet, a global constant's temporary among them, the
-constant acquiring its value only once the initializer completes (values.md:102
-and :164-166 at 9192ee003: a value binding materializes an initializing
-expression and can "acquire the result as a value afterward"), so that no use of
-the constant reaches the temporary while the call runs; the caller's own
-`returned var`, closed in turn; or the left operand of an in-place `=`, whose
-interim rule ([`ref` bindings](#ref-bindings)) counts the call as evaluated
-while that operand is bound; or storage that a C++ caller supplies to a
-function exported to C++, which the C++ side binds for the call, its own
-lowering marking that storage `noalias` (the 2026.10.12 nightly toolchain's
-Clang declares the exported function's return slot so), so that a C++ caller
-that reaches the storage otherwise while the call runs, as through a pointer it
-saved and reads from a function the call reaches, breaks the obligation unsafe
-code has to adhere to the `noalias` restrictions (p005434:861-862), erroneous
-behavior and never undefined behavior on the Carbon side, which emits no
-attribute for a function exported to C++ (T8). A global variable under its
-dynamic initializer is
-the one such storage that is open, every function reaching it by name, so this
-design, upstream allowing global constants and having no global variables, the
-semantics of both provisional
-([global constants](../README.md#global-constants-and-variables): "Constant
-`let` declarations may occur at a global scope" and "there are currently no
-global variables", docs/design/README.md:1235-1240 at 9192ee003), accepts the
-initializer of a global variable whose type is not copy-represented at every
-depth only under the interim rule's conditions for an in-place `=` on an open
-place, the global its left operand and the initializer its right operand,
-initialization being in place whatever the rewrite's status, a global variable
-declared without an initializer having for its initializer the prelude's
-`DefaultOrUnformed`, which initializes it in place; otherwise the initializer's
-binding of the global's storage, its callee's `returned var` and every `ref`
-taken on one, is a `ref` on an open place, an `unsafe` formation
+A fresh local's own initialization is exempt, nothing naming its storage until
+it completes, but a `returned var` names its caller's destination and a global
+variable's dynamic initializer initializes an open place, so both are checked as
+an in-place `=` is, and a global constant's temporary is closed
+([`ref` bindings](#ref-bindings), the interim `=`). A `returned var` is checked
+on a closed place: the storage it names, which its caller's call initializes
+(the assignment design's `returned var` "can be `&y`" for `y = F();`,
+assignment.md:111-113), is bound for the call by its caller, a Carbon caller's
+own initialization or `=`, which these rules check, or, for storage that a C++
+caller supplies to a function exported to C++, which the C++ side binds for the
+call, that caller, its own lowering marking that storage `noalias`
+(the 2026.10.12 nightly toolchain's Clang declares the exported function's
+return slot so), so that a C++ caller that reaches the storage otherwise while
+the call runs, as through a pointer it saved and reads from a function the call
+reaches, breaks the obligation unsafe code has to adhere to the `noalias`
+restrictions (p005434:861-862), erroneous behavior and never undefined behavior
+on the Carbon side, which emits no attribute for a function exported to C++
+(T8). A global variable's dynamic initializer is checked on an open place, every
+function reaching the global by name, this design's reading, upstream allowing
+global constants and having no global variables, the semantics of both
+provisional ([global constants](../README.md#global-constants-and-variables):
+"Constant `let` declarations may occur at a global scope" and "there are
+currently no global variables", docs/design/README.md:1235-1240 at 9192ee003):
+the initializer, a global variable declared without an initializer having for
+its initializer the prelude's `DefaultOrUnformed`, which initializes it in
+place, keeps the exemption only when it is formed before the binding, whatever
+the rewrite's status, and is otherwise an `unsafe` formation
 (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked, and for one
 declared without an initializer whose default initialization runs code written
 outside core/prelude, such as `var gm: Cpp.std.mutex;`, whose C++ default
 constructor runs, a Permissive file or an `unsafe` initializer written out is
-the remedy. So `var g: S = F(1);` is rejected, as every such initializer that
-runs code written outside core/prelude is, and here `F`'s
-`r = {.u = MakeU(k), .w = MakeW()}` on its `returned var r` runs `MakeW`, which
-reads `g` by name after `MakeU`'s result is initialized into `r.u` (11 12 11 12
-on the 2026.10.12 nightly toolchain, the right operand formed first 11 12 1 2),
-while `Take(g)` copies the global into a `var` parameter's own storage first,
-and for `let g: S = F(1);` `F` fills a temporary that `MakeW`'s use of `g` does
-not reach (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5).
+the remedy. A global constant's temporary is closed, the constant acquiring its
+value only once the initializer completes (values.md:102 and :164-166
+at 9192ee003: a value binding materializes an initializing expression and can
+"acquire the result as a value afterward"), so that no use of the constant
+reaches the temporary while the call runs. So `var g: S = F(1);` is rejected, as
+every such initializer that runs code written outside core/prelude is, and here
+`F`'s `r = {.u = MakeU(k), .w = MakeW()}` on its `returned var r` runs `MakeW`,
+which reads `g` by name after `MakeU`'s result is initialized into `r.u`
+(11 12 11 12 on the 2026.10.12 nightly toolchain, the right operand formed
+first 11 12 1 2), while `Take(g)` copies the global into a `var` parameter's own
+storage first, and for `let g: S = F(1);` `F` fills a temporary that `MakeW`'s
+use of `g` does not reach (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5281,26 +5902,38 @@ not reach (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5).
 Words in one table row, the second cell of shape 1's row, the one whose first
 cell names "By-value parameters and by-value returns" (:481), found once,
 replaced within the row with no rewrap: the cell gave every by-value return its
-reason, while a class
-result that the C++ ABI returns in memory is constructed by the callee in its
-caller's storage, which it sees as `this` (ruling-rr1's c01, c03, c05; the
-fixer's d02, d03, d05; added 2026-10-29, ruling round 1: RU1-1), and every
-by-value parameter its reason, while one whose initialization from its argument
-runs a copy, move or converting constructor that is not trivial hands that
-constructor the argument's storage as its source (ruling-rr2's e01 and e02, the
-fixer's j04; amended 2026-10-29, ruling round 2: RU2-1, where the new cell read
-"a by-value parameter crosses as the thunk's copy and a result that comes back
-in registers is copied out of C++'s own storage. A by-value return of a class
-type that the C++ ABI returns in memory is not this shape, its callee
-constructing the result in the storage the call initializes, which it sees as
-`this` and may keep, so the call is pointer-carrying"):
+reason, while a class result that the C++ ABI returns in memory is constructed
+by the callee in its caller's storage, which it sees as `this` (ruling-rr1's
+c01, c03, c05; the fixer's d02, d03, d05; added 2026-10-29, ruling round 1:
+RU1-1), and every by-value parameter its reason, while one whose initialization
+from its argument runs a copy, move or converting constructor that is not
+trivial hands that constructor the argument's storage as its source
+(ruling-rr2's e01 and e02, the fixer's j04; amended 2026-10-29, ruling round 2:
+RU2-1, where the new cell read "a by-value parameter crosses as the thunk's copy
+and a result that comes back in registers is copied out of C++'s own storage. A
+by-value return of a class type that the C++ ABI returns in memory is not this
+shape, its callee constructing the result in the storage the call initializes,
+which it sees as `this` and may keep, so the call is pointer-carrying"), and
+every by-value argument its reason, while one whose loan set is neither empty
+nor free hands C++ code the places its loans lie on (ruling-rr3's t01 and t02,
+the rev 10 fixer's k01 and k02; amended 2026-11-01, re-think: RR8-M1, where the
+new cell read "a by-value parameter whose initialization runs no constructor
+that is not trivial is copied by the thunk, and a result that comes back in
+registers is copied out of C++'s own storage. Two kinds of call with by-value
+parameters and returns are not this shape, each handing C++ the address of a
+Carbon place that it may keep, and are pointer-carrying (Temporal safety): a
+by-value return of a class type that the C++ ABI returns in memory, whose callee
+constructs the result in the storage the call initializes, which it sees as
+`this`, and a by-value parameter whose initialization from its argument runs a
+copy, move or converting constructor that is not trivial, which receives the
+argument's storage as its source", its link markup set aside):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 | No pointer, reference, view or `this` crosses the call, so nothing can be saved or aliased by the callee |
 
-| No pointer, reference, view or `this` crosses the call, so nothing can be saved or aliased by the callee: a by-value parameter whose initialization runs no constructor that is not trivial is copied by the thunk, and a result that comes back in registers is copied out of C++'s own storage. Two kinds of call with by-value parameters and returns are not this shape, each handing C++ the address of a Carbon place that it may keep, and are pointer-carrying ([Temporal safety](temporal_safety.md)): a by-value return of a class type that the C++ ABI returns in memory, whose callee constructs the result in the storage the call initializes, which it sees as `this`, and a by-value parameter whose initialization from its argument runs a copy, move or converting constructor that is not trivial, which receives the argument's storage as its source (amended <date>, SAFE-3: D-SAFE3-13; this cell read "No pointer, reference, view or `this` crosses the call, so nothing can be saved or aliased by the callee") |
+| No pointer, reference, view or `this` crosses the call, so nothing can be saved or aliased by the callee: the shape keeps only by-value arguments whose loan set is empty or free, copied by the thunk with no constructor that is not trivial, and results that come back in registers, copied out of C++'s own storage. Any other call hands C++ code a Carbon place that it may keep and is pointer-carrying ([Temporal safety](temporal_safety.md)): C++ code receives every place on which a loan lies that is carried, transitively, by a value or place it receives, a class value's loan set included, and every place whose address the call hands it, the storage of a class result that the C++ ABI returns in memory and the source of a constructor that is not trivial among them (amended <date>, SAFE-3: D-SAFE3-13; this cell read "No pointer, reference, view or `this` crosses the call, so nothing can be saved or aliased by the callee") |
 ```
 
 <!-- google-doc-style-resume -->
@@ -5346,54 +5979,66 @@ storage once it returns" and ended "A by-value parameter crosses as the thunk's
 copy, and a class result that the ABI returns in registers is constructed in
 C++'s own storage and copied out, so neither hands C++ the address of a Carbon
 place and both stay shape 1", which ruling-rr2's e01, e02, e09 and e10 and the
-fixer's j01 to j04 refute):
+fixer's j01 to j04 refute; amended 2026-11-01, re-think: RR8-M1: the rule
+stated once, by closure under T3's carrier relation, the places C++ code
+receives being every value and place a call hands it and every place on which a
+loan carried by one lies, transitively, a class value's loan set included,
+where the block enumerated the routes from "whatever the route: a pointer,
+reference or view argument;" to "and the place a shape of the allowlist or the
+prelude's synthesized witness hands it.", named "a constructor named in the
+call; a by-value return of a class type that the C++ ABI returns in memory",
+"a by-value parameter whose initialization from its argument runs a copy, move
+or converting constructor that is not trivial" and "a copy, move, conversion or
+default initialization of a C++ class type whose constructor for it is not
+trivial" as the pointer-carrying calls, kept shape 1 for "A by-value parameter
+whose initialization runs no constructor that is not trivial", which
+ruling-rr3's t01 and t02 and the rev 10 fixer's k01 and k02 refute, a by-value
+argument holding `&x`, and read "Every route carries one obligation" and "The
+checker establishes neither, so T8 emits no attribute for a `ref` on such a
+place"):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 C++ code that receives the address of a Carbon place may keep it, which C++
-permits and the strategy does not assume against ("there won't be an
-assumption that a call to C++ code won't save a copy of pointers to passed-in
-objects", proposal p005914), whatever the route: a pointer, reference or view
-argument; `this` of a method or a constructor; the storage a constructor
-initializes; the source a constructor copies, moves or converts from; and the
-place a shape of the allowlist or the prelude's synthesized witness hands it.
-So a call is pointer-carrying whatever its declared parameters when it runs a
-C++ constructor in or from Carbon storage: a constructor named in the call; a
-by-value return of a class type that the C++ ABI returns in memory, the callee
-constructing its result in the storage the call initializes, its return slot,
-so that `var x: Cpp.W = Cpp.MakeW(1, 2);` hands C++ the address of `x` and a
-later call can reach `x` through a pointer the constructor kept, while a `ref`
-on `x` is bound or while `x = Cpp.Swapped();` initializes it in place (9 after
-`s.a = 5`, and 2 2 where the right operand formed first gives 2 1, on the
-2026.10.12 nightly toolchain); a by-value parameter whose initialization from
-its argument runs a copy, move or converting constructor that is not trivial,
-which receives the argument's storage as its source, so that `Cpp.Take(x)`
-hands the copy constructor the address of `x` (9 after
-`s.a = 5`); and a copy, move, conversion or default initialization of a C++
-class type whose constructor for it is not trivial, which the prelude's
-synthesized witness runs on the destination and the source, an in-place `=`'s
-copy into its left operand and `var w: Cpp.W = v;` through a converting
-constructor among them. Each is `StrictCppCallUnannotated` unmarked, spelled
-`unsafe Cpp.MakeW(1, 2)`, `unsafe Cpp.Take(x)`, `unsafe (y = t)` or, for an
-initialization, `var y: Cpp.W = unsafe t;` (NEW syntax). A by-value parameter
-whose initialization runs no constructor that is not trivial is copied by the
-thunk, and a class result that the ABI returns in registers is constructed in
-C++'s own storage and copied out, so neither hands C++ the address of a Carbon
-place and both stay shape 1. Shapes 2 to 4 of the allowlist and the prelude's
-synthesized range witnesses, which call the user's `begin()`, `end()`,
-`data()` and `size()` with the place as `this` or as a `const T&`, do hand C++
-code the address of a Carbon place and stay unmarked, their trust for
-diagnostics only, as Permissive's is. Every route carries one obligation, that
-the C++ code keeps no pointer to the place it received once it returns but
-within that place or in the call's result, and none to the source of a copy,
-move or conversion: the unsafe code's under a marker, and otherwise C++'s own,
-the obligation unsafe code has to adhere to the `noalias` restrictions
-(p005434:861-862). The checker establishes neither, so T8 emits no attribute
-for a `ref` on such a place, and a `begin()` that keeps `this` for a later call
-that writes the place while `Mod(ref r)` is bound produces erroneous behavior,
-never undefined behavior (9 after `s.data[0] = 5`) (added <date>, SAFE-3:
-D-SAFE3-13).
+permits and the strategy does not assume against ("there won't be an assumption
+that a call to C++ code won't save a copy of pointers to passed-in objects",
+proposal p005914). C++ code receives every Carbon value a call passes it and
+every Carbon place whose address the call hands it, as a parameter or as `this`,
+the storage a constructor initializes and the source a constructor copies, moves
+or converts from among them, and, closing that set under T3's carrier relation,
+C++ code receives every place on which a loan lies that is carried,
+transitively, by a value or place it receives, a class value's loan set included
+(the [vocabulary](#vocabulary)'s loan sets). A call that hands C++ code a Carbon
+place is pointer-carrying whatever its declared parameters:
+`var x: Cpp.W = Cpp.MakeW(1, 2);` hands C++ the address of `x` as its return
+slot when the C++ ABI returns `W` in memory, and a later call can reach `x`
+through a pointer the constructor kept, while a `ref` on `x` is bound or while
+`x = Cpp.Swapped();` initializes it in place (9 after `s.a = 5`, and 2 2 where
+the right operand formed first gives 2 1, on the 2026.10.12 nightly toolchain);
+`Cpp.Take(x)` hands a copy constructor that is not trivial the address of `x` as
+its source (9 after `s.a = 5`); and `Cpp.TakeCV(v)`, for a `v` of a Carbon class
+whose pointer field holds `&x`, hands C++ code `x` through the loan its copy
+carries (9 after `s = 5`). Each is `StrictCppCallUnannotated` unmarked, spelled
+`unsafe Cpp.MakeW(1, 2)`, `unsafe Cpp.Take(x)`, `unsafe Cpp.TakeCV(v)`,
+`unsafe (y = t)` or, for an initialization, `var y: Cpp.W = unsafe t;` (NEW
+syntax). The allowlist's first shape keeps only by-value arguments whose loan
+set is empty or free, copied by the thunk with no constructor that is not
+trivial, and results that come back in registers, copied out of C++'s own
+storage. Shapes 2 to 4 of the allowlist and the prelude's synthesized range
+witnesses, which call the user's `begin()`, `end()`, `data()` and `size()` with
+the place as `this` or as a `const T&`, do hand C++ code Carbon places and stay
+unmarked, their trust for diagnostics only, as Permissive's is. Every place C++
+code receives carries one obligation, that the C++ code keeps no pointer to the
+place it received once it returns but within that place or in the call's result,
+and none to the source of a copy, move or conversion: the unsafe code's under a
+marker, and otherwise C++'s own, the obligation unsafe code has to adhere to the
+`noalias` restrictions (p005434:861-862). The checker establishes it for no such
+place, so T8 withholds `noalias` and `captures(none)` on every such place for
+the marked and the trusted routes alike, on `ref` and `exclusive T*` parameters
+and loans, and a `begin()` that keeps `this` for a later call that writes the
+place while `Mod(ref r)` is bound produces erroneous behavior, never undefined
+behavior (9 after `s.data[0] = 5`) (added <date>, SAFE-3: D-SAFE3-13).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5413,20 +6058,30 @@ storage whose address a C++ function received under a marker, as a pointer
 argument, as `this` or as the storage it constructs its result in, nor for a
 `ref` parameter one of whose call sites binds such storage: the marker's
 obligation, that the C++ function keeps no pointer to the storage, is the
-unsafe code's and not a fact"):
+unsafe code's and not a fact"), or a place on which a loan lies that a value or
+place C++ code received carries (ruling-rr3's t01 to t03, the rev 10 fixer's
+k01 to k03), worded as B.35 is and naming the `exclusive T*` parameter and the
+`exclusive T*` loan formed on such a place in both (amended 2026-11-01,
+re-think: RR8-M1, RR8-m1, where the block read "Nor are the attributes emitted
+for a `ref` on a place whose address C++ code received, under a marker or by a
+route the allowlist or a synthesized witness trusts, as a pointer, reference or
+view argument, as `this`, as the storage it constructs in or as the source of a
+copy, move or conversion, or on a place that overlaps such a place, nor for a
+`ref` parameter one of whose call sites binds one:"):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-Nor are the attributes emitted for a `ref` on a place whose address C++ code
-received, under a marker or by a route the allowlist or a synthesized witness
-trusts, as a pointer, reference or view argument, as `this`, as the storage it
-constructs in or as the source of a copy, move or conversion, or on a place
-that overlaps such a place, nor for a `ref` parameter one of whose call sites
-binds one: the obligation that the C++ code keeps no pointer to the place, the
-unsafe code's under a marker and C++'s own otherwise, is not a fact the checker
-establishes, so a C++ function that breaks it produces erroneous behavior,
-never undefined behavior (added <date>, SAFE-3: D-SAFE3-13).
+Nor are the attributes emitted on a place C++ code receives, the C++ call rule
+closing the places it receives under T3's carrier relation: T8 withholds
+`noalias` and `captures(none)` on every such place for the marked and the
+trusted routes alike, on `ref` and `exclusive T*` parameters and loans, a `ref`
+binding or an `exclusive T*` loan formed on such a place or on a place that
+overlaps one, and a `ref` or `exclusive T*` parameter one of whose call sites
+binds one among them: the obligation that the C++ code keeps no pointer to the
+place, the unsafe code's under a marker and C++'s own otherwise, is not a fact
+the checker establishes, so a C++ function that breaks it produces erroneous
+behavior, never undefined behavior (added <date>, SAFE-3: D-SAFE3-13).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5510,22 +6165,96 @@ without saying that they hand C++ code the address of a Carbon place or that
 the trust is for diagnostics only, while a `begin()` the witness calls keeps
 `this` and a later call writes the place through it while a `ref` on it is
 bound (ruling-rr2's e09 and e10, the fixer's j01 and j03; added 2026-10-29,
-ruling round 2: RU2-1):
+ruling round 2: RU2-1), and with them the places a loan carried by what they
+hand lies on, which the rev 10 fixer's k03 shows a `begin()` keeping through a
+range's pointer field (amended 2026-11-01, re-think: RR8-M1, where the block
+read "Shapes 2 to 4 and those witnesses hand C++ code the address of a Carbon
+place," and "T8 emits no aliasing attribute for a `ref` on such a place"):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-Shapes 2 to 4 and those witnesses hand C++ code the address of a Carbon place,
-shape 2's reference, shape 3's `this`, shape 4's view and the witnesses' `this`
-or `const T&` for the user's `begin()`, `end()`, `data()` and `size()`, and
-that the C++ code keeps no pointer to the place it received once it returns but
-within that place or in the call's result is trusted for diagnostics only, as
-Permissive's non-escape is: T8 emits no aliasing attribute for a `ref` on such
-a place, so a
+Shapes 2 to 4 and those witnesses hand C++ code Carbon places, shape 2's
+reference, shape 3's `this`, shape 4's view and the witnesses' `this` or
+`const T&` for the user's `begin()`, `end()`, `data()` and `size()`, and with
+them every place on which a loan lies that is carried, transitively, by a value
+or place they hand it, and that the C++ code keeps no pointer to the place it
+received once it returns but within that place or in the call's result is
+trusted for diagnostics only, as Permissive's non-escape is: T8 withholds
+`noalias` and `captures(none)` on every such place for the marked and the
+trusted routes alike, on `ref` and `exclusive T*` parameters and loans, so a
 `begin()` that keeps `this` for a later call that writes the place while a
 Carbon `ref` on it is bound produces erroneous behavior, never undefined
 behavior ([Temporal safety](temporal_safety.md), T8) (added <date>, SAFE-3:
 D-SAFE3-13).
+```
+
+<!-- google-doc-style-resume -->
+
+### A.43 temporal_safety.md, the Store rule, a C++ pointer field a ⊥ destination
+
+Insert after "A free or ⊥ destination accepts only free loans." (:558-559, in
+the paragraph of the Store rule), found once: T6 reads a pointer-typed field of
+an imported C++ type as ⊥ (:571-574), while the Store rule accepted a loan that
+is not free into such a field of a local, so a Strict program turned a tracked
+loan into ⊥ with no marker, `h.p = &x;` then a read of `h.p`, and handed it to
+a marked C++ call, whose received places the closure of A.36 then could not
+name (the rev 10 fixer's k04: 9), or to a Strict callee that writes `x` through
+it while `Mod2(ref x, q)` binds `x`, with no C++ code run (k05: 9 9); T5(g)
+already makes an `unsafe class`'s pointer fields, which T6 reads as ⊥ too, a ⊥
+destination (added 2026-11-01, re-think: RR8-M1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+A pointer-typed field of an imported C++ type, which T6 reads as ⊥, and a field
+of such a type that holds one are ⊥ destinations, as a pointer field of an
+`unsafe class` is (T5(g)): a Strict store of a loan that is not free into one,
+`h.p = &x;` or an initialization that puts one there, is
+`StrictStoreOutlivesSource`, since a later read of `h.p` would
+give any call a pointer to `x` that T4 and the C++ call rule's closure under
+T3's carrier relation do not see, and a Strict callee could write `x` through it
+while a `ref` on `x` is bound (9 9 on the 2026.10.12 nightly toolchain, with no
+C++ code run) (added <date>, SAFE-3: D-SAFE3-13).
+```
+
+<!-- google-doc-style-resume -->
+
+### A.44 temporal_safety.md, the closed places, a carrier that reaches C++ code
+
+Insert after "keeps a non-`bound` parameter in (added 2026-10-28, SAFE-2:
+W-347, W-348)." (:147-150, the last sentence of the Vocabulary bullet that
+defines closed and open places, applied after A.33 in the same bullet), found
+once: the bullet's premise that "A carrier of a closed place cannot escape it"
+rests on the Store rule and T5(b), and C++ code is bound by neither, so a
+carrier passed to C++ code by value or reached through a place C++ code
+received escapes into it (ruling-rr3's t01 and t03, the rev 10 fixer's k01 and
+k02; added 2026-11-01, re-think: RR8-M1):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+C++ code is bound by neither: a carrier that reaches it hands it every place on
+which a loan the carrier holds lies, transitively, under the obligation of the
+C++ call rule, and T8 gives such a place no attribute (added <date>, SAFE-3:
+D-SAFE3-13).
+```
+
+<!-- google-doc-style-resume -->
+
+### A.45 mutation_safety.md, the memory-safety argument, a carrier that reaches C++ code
+
+Words, at :707-709, in the paragraph "The memory-safety argument, and what the
+rule costs.", found once: the paragraph rests a frozen loan on a closed place
+on "a carrier of a local cannot escape it (the Store rule and T5(b))", which
+C++ code escapes as A.44 says (added 2026-11-01, re-think: RR8-M1):
+
+<!-- google-doc-style-ignore -->
+
+```text
+a carrier of a local cannot escape it (the Store rule and T5(b));
+
+a carrier of a local cannot escape it (the Store rule and T5(b)) but into C++ code, which receives every place on which a loan the carrier holds lies under the obligation of the temporal page's C++ call rule, T8 giving such a place no attribute (amended <date>, SAFE-3: D-SAFE3-13, where this read "a carrier of a local cannot escape it (the Store rule and T5(b));");
 ```
 
 <!-- google-doc-style-resume -->
@@ -5577,7 +6306,15 @@ checked by these conditions as an in-place `=` on an open place, as D-SAFE-10's
 closed places say (B.32); rev 5 replaced the 60 lines with 149. Amended
 2026-10-29, review fold: RR5-M1: that sentence's subject is a global variable's
 dynamic initializer, where it read "a global's dynamic initializer", in the
-same 89 lines; rev 6 replaced the 60 lines with 152:
+same 89 lines; rev 6 replaced the 60 lines with 152. Amended 2026-11-01,
+re-think: RT-1: the interim rule in the ruling's positive form, statement (1),
+where it stated conditions (i) to (iii) as the rev 10 fold record quotes them
+and went on "; otherwise it is a checked reborrow on a closed place (T4:" with
+the examples kept, and the sentence on a global variable's dynamic initializer
+by statement (2), where it read "; a global variable's dynamic initializer
+initializes the global in place whatever the rewrite's status and is checked by
+these conditions as an in-place `=` on an open place"; rev 10 replaces the 60
+lines with 160:
 
 <!-- google-doc-style-ignore -->
 
@@ -5648,39 +6385,47 @@ same 89 lines; rev 6 replaced the 60 lines with 152:
     (`*q = {.a = p->b, .b = p->a}` with `p == q` gives 2 2 where the right
     operand formed first gives 2 1), a different defined result while no
     `noalias` is emitted. While that stands, for a left operand whose type is
-    not copy-represented at every depth, the whole right operand counts as
-    evaluated while the left operand is bound, and the `=` keeps the exemption
-    only when its right operand reads no open place and passes no carrier of one
-    to a call, reads or uses no part of the left operand's place, or of a place
-    that overlaps it, through its owner or a carrier of it (T1, T3), passes to
-    no call a value from which a carrier of an open place, of the left operand's
-    place or of one that overlaps it can be loaded, a pointer to a place that
-    holds one, a `ref` of such a place or a value that carries a loan on such a
-    place, transitively (T3), and, on an open place, runs no code written
-    outside core/prelude (an array element at an index the checker cannot prove
-    distinct from the left operand's overlaps it, here and in T4); otherwise it
-    is a checked reborrow on a closed place (T4: `x = {.a = x.b, .b = x.a}` and,
-    for `p = &x`, `x = {.u = MakeU(&p), .w = MakeW(&p)}`, whose calls use the
-    loan `p` holds, are `StrictExclusiveBorrowConflict`, `c = Make(&c.a)`
-    `StrictSharedBorrowInvalidated`) and D-SAFE-9's (d) through
-    a shared path, the program forming the right operand first
-    (`let v: T = ...; *q = v;`). A left operand whose type is copy-represented
-    at every depth is stored once from a complete value. The interim rule only
-    adds conditions, so every program it accepts the rule above accepts, and
-    adopting the rewrite withdraws it; a global variable's dynamic initializer
-    initializes the global in place whatever the rewrite's status and is checked
-    by these conditions as an in-place `=` on an open place, as D-SAFE-10's
-    closed places say (re-derived <date>,
-    SAFE-3: D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md; the superseded
-    text, from "The `ref` operand of a built-in operator — the first operand"
-    through "naming a field and indexing of an array")", which SAFE-2's fix
-    commits 0f281d8bd, cbdc0552e and 9d0b072cb wrote, read: "The `ref` operand
-    of a built-in operator — the first operand of assignment, of the compound
-    assignments and of `++` and `--`, the operand of `&`, the object of member
-    access and the first operand of indexing, which p005434:302-318 passes to a
-    `ref` parameter and assignment.md:76-82 to "a `(ref self: Self)` parameter"
-    whatever its form, a dereference of a pointer included — lives for the one
-    operation, during which nothing else is evaluated, so where the
+    not copy-represented at every depth, the `=` keeps the exemption only when
+    its right operand is formed before the binding, that is, when the right
+    operand is a formed value (the name of a local `var` or `let` or of a
+    parameter, a literal, or an aggregate literal whose elements are such names
+    or literals), or a call of a prelude initializer whose arguments are such
+    and whose body runs no code written outside core/prelude, and when the right
+    operand reads no place through a pointer, a `ref` or any other carrier and
+    carries no loan on the left operand's place or on a place that overlaps it;
+    every other right operand, a user call anywhere in it, a prelude call with
+    any other argument, a read through a carrier, or a `Copy` or `ImplicitAs`
+    written outside core/prelude that the initialization would run, removes the
+    exemption, and the `=` is then a checked reborrow of the left operand for
+    the whole evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`)
+    and M3(d)'s write through a shared path on an open place
+    (`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy
+    being to form the value in a fresh local first and assign the local (an
+    array element at an index the checker cannot prove distinct from the left
+    operand's overlaps it, here and in T4, and a value binding of a borrowed
+    object carries its frozen loan; T4: `x = {.a = x.b, .b = x.a}` and, for
+    `p = &x`, `x = {.u = MakeU(&p), .w = MakeW(&p)}`, whose calls use the loan
+    `p` holds, are `StrictExclusiveBorrowConflict`, `c = Make(&c.a)`
+    `StrictSharedBorrowInvalidated`, and D-SAFE-9's (d) through a shared path,
+    the program forming the right operand first, `let v: T = ...; *q = v;`). A
+    left operand whose type is copy-represented at every depth is stored once
+    from a complete value. The interim rule only adds conditions, so every
+    program it accepts the rule above accepts, and adopting the rewrite
+    withdraws it. A fresh local's own initialization is exempt, nothing naming
+    its storage until it completes, but a `returned var` names its caller's
+    destination and a global variable's dynamic initializer initializes an open
+    place, so both are checked as an in-place `=` is, and a global constant's
+    temporary is closed, as D-SAFE-10's closed places say (re-derived
+    <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md; the
+    superseded text, from "The `ref` operand of a built-in operator — the first
+    operand" through "naming a field and indexing of an array")", which SAFE-2's
+    fix commits 0f281d8bd, cbdc0552e and 9d0b072cb wrote, read: "The `ref`
+    operand of a built-in operator — the first operand of assignment, of the
+    compound assignments and of `++` and `--`, the operand of `&`, the object of
+    member access and the first operand of indexing, which p005434:302-318
+    passes to a `ref` parameter and assignment.md:76-82 to "a `(ref self: Self)`
+    parameter" whatever its form, a dereference of a pointer included — lives
+    for the one operation, during which nothing else is evaluated, so where the
     implementation is built in it is established on any place, open ones
     included, forms no loan of its own, neither D-SAFE-9's (d) nor its (e), and
     D-SAFE-9's M3 alone decides what the operation may do through a shared path;
@@ -5971,12 +6716,31 @@ initialization of a C++ class type that runs a constructor that is not trivial
 on its destination, the marker's obligation being that the constructor keeps
 no pointer to the storage once it returns, and T8 emits no attribute for a
 `ref` on storage a C++ function received under a marker nor for a `ref`
-parameter a call site binds to such storage"):
+parameter a call site binds to such storage"; amended 2026-11-01, re-think:
+RT-1, RR8-M1, RR8-m1: A.1's sentence in the ruling's positive form, where it
+stated conditions (i) to (iii) as the rev 10 fold record quotes them and went on
+"; otherwise it is a checked reborrow on a closed place
+(`StrictExclusiveBorrowConflict` for the right operand's read"; statement (2),
+where the sentence began "A `returned var` is closed because every storage its
+caller's call initializes is closed or bound while the call runs" and said "the
+one such storage that is open" and "accepts the initializer of a global variable
+whose type is not copy-represented at every depth only under the interim rule's
+conditions for an in-place `=` on an open place"; and statement (3), where the
+C++ clause read "whatever the route, so the checker reports
+`StrictCppCallUnannotated` for an unmarked by-value return of a class type that
+the C++ ABI returns in memory, for an unmarked by-value parameter whose
+initialization from its argument runs a copy, move or converting constructor
+that is not trivial and for an unmarked copy, move, conversion or default
+initialization of a C++ class type that runs a constructor that is not trivial
+on its destination and its source" and "and T8 emits no attribute for a `ref` on
+a place C++ code received by any route, or on a place that overlaps one, nor for
+a `ref` parameter one of whose call sites binds such a place (D-SAFE3-13)", with
+A.43's ⊥ destination added):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth, and a type whose value representation is not known when a generic's body is checked, a type parameter among them, is not copy-represented, though `Core.Int(N)` for a symbolic `N` is; anything else is a `ref` binding under the general rule. The two conditions see the operation's own thread: another Carbon-spawned thread reaches the referent only through a loan that crosses into it or through free storage, a global or allocator-owned storage that a free pointer reaches, D-SAFE-16's thread-boundary lifetime rule (W-149), which as stated still accepts the three shapes of W-365, so p005434:83's `noalias` holds by construction within one thread, and across Carbon-spawned threads once residue item W-365's stage 5 contract holds. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the whole right operand counts as evaluated while the left operand is bound, and the `=` keeps the exemption only when its right operand reads no open place and passes no carrier of one to a call, reads or uses no part of the left operand's place, or of a place that overlaps it, through its owner or a carrier of it (T1, T3), passes to no call a value from which a carrier of an open place, of the left operand's place or of one that overlaps it can be loaded, a pointer to a place that holds one, a `ref` of such a place or a value that carries a loan on such a place, transitively (T3), and, on an open place, runs no code written outside core/prelude (an array element at an index the checker cannot prove distinct from the left operand's overlaps it, here and in T4's check of the reborrow); otherwise it is a checked reborrow on a closed place (`StrictExclusiveBorrowConflict` for the right operand's read and for a call's use of a carrier it loads through a value it receives, which T3 counts as a use of that carrier, `StrictSharedBorrowInvalidated` for a carrier it passes) and M3(d) through a shared path, whose `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts). The interim rule only adds conditions, so every program it accepts the rule above accepts. A `returned var` is closed because every storage its caller's call initializes is closed or bound while the call runs, a global constant's temporary among them, the constant acquiring its value only once the initializer completes, but for a global variable under its dynamic initializer, the one such storage that is open (D-SAFE-10's closed places): the checker accepts the initializer of a global variable whose type is not copy-represented at every depth only under the interim rule's conditions for an in-place `=` on an open place, the global its left operand and the initializer its right operand, whatever the rewrite's status, a global variable declared without an initializer having for its initializer the prelude's `DefaultOrUnformed`, which initializes it in place, and reports it otherwise as an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked. C++ code that receives the address of a Carbon place may keep it, whatever the route, so the checker reports `StrictCppCallUnannotated` for an unmarked by-value return of a class type that the C++ ABI returns in memory, for an unmarked by-value parameter whose initialization from its argument runs a copy, move or converting constructor that is not trivial and for an unmarked copy, move, conversion or default initialization of a C++ class type that runs a constructor that is not trivial on its destination and its source, the marker's obligation being that the C++ code keeps no pointer to the place it received once it returns but within that place or in the call's result, and none to the source of a copy, move or conversion; the allowlist's shapes 2 to 4 and the prelude's synthesized range witnesses stay unmarked, their trust for diagnostics only; and T8 emits no attribute for a `ref` on a place C++ code received by any route, or on a place that overlaps one, nor for a `ref` parameter one of whose call sites binds such a place (D-SAFE3-13); storage a C++ caller supplies to a function exported to C++ is bound by that caller, its own lowering marking it `noalias`; and a function value is a carrier of every loan its captures hold, a use of it, a call among them, a use of each.
+SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth, and a type whose value representation is not known when a generic's body is checked, a type parameter among them, is not copy-represented, though `Core.Int(N)` for a symbolic `N` is; anything else is a `ref` binding under the general rule. The two conditions see the operation's own thread: another Carbon-spawned thread reaches the referent only through a loan that crosses into it or through free storage, a global or allocator-owned storage that a free pointer reaches, D-SAFE-16's thread-boundary lifetime rule (W-149), which as stated still accepts the three shapes of W-365, so p005434:83's `noalias` holds by construction within one thread, and across Carbon-spawned threads once residue item W-365's stage 5 contract holds. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the `=` keeps the exemption only when its right operand is formed before the binding, that is, when the right operand is a formed value (the name of a local `var` or `let` or of a parameter, a literal, or an aggregate literal whose elements are such names or literals), or a call of a prelude initializer whose arguments are such and whose body runs no code written outside core/prelude, and when the right operand reads no place through a pointer, a `ref` or any other carrier and carries no loan on the left operand's place or on a place that overlaps it; every other right operand, a user call anywhere in it, a prelude call with any other argument, a read through a carrier, or a `Copy` or `ImplicitAs` written outside core/prelude that the initialization would run, removes the exemption, and the `=` is then a checked reborrow of the left operand for the whole evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s write through a shared path on an open place (`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy being to form the value in a fresh local first and assign the local (an array element at an index the checker cannot prove distinct from the left operand's overlaps it, here and in T4's check of the reborrow, and a value binding of a borrowed object carries its frozen loan; the checked reborrow reports `StrictExclusiveBorrowConflict` for the right operand's read and for a call's use of a carrier it loads through a value it receives, which T3 counts as a use of that carrier, and `StrictSharedBorrowInvalidated` for a carrier it passes, and `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts)). The interim rule only adds conditions, so every program it accepts the rule above accepts. A fresh local's own initialization is exempt, nothing naming its storage until it completes, but a `returned var` names its caller's destination and a global variable's dynamic initializer initializes an open place, so both are checked as an in-place `=` is, and a global constant's temporary is closed: a `returned var` on a closed place, its destination bound for the call by its caller, and a global variable's initializer on an open place, which keeps the exemption only when it is formed before the binding, whatever the rewrite's status, a global variable declared without an initializer having for its initializer the prelude's `DefaultOrUnformed`, which initializes it in place, and which the checker otherwise reports as an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked (D-SAFE-10's closed places). C++ code that receives the address of a Carbon place may keep it, and C++ code receives every place on which a loan lies that is carried, transitively, by a value or place it receives, a class value's loan set included (D-SAFE3-13), so the checker reports `StrictCppCallUnannotated` for an unmarked call that hands C++ code a Carbon place, the allowlist's first shape keeps only by-value arguments whose loan set is empty or free, the marker's obligation being that the C++ code keeps no pointer to the place it received once it returns but within that place or in the call's result, and none to the source of a copy, move or conversion; the allowlist's shapes 2 to 4 and the prelude's synthesized range witnesses stay unmarked, their trust for diagnostics only; T8 withholds `noalias` and `captures(none)` on every such place for the marked and the trusted routes alike, on `ref` and `exclusive T*` parameters and loans, a `ref` binding or an `exclusive T*` loan formed on such a place or on a place that overlaps one, and a `ref` or `exclusive T*` parameter one of whose call sites binds one among them; a Strict store of a loan that is not free into a pointer-typed field of an imported C++ type, which T6 reads as ⊥, is `StrictStoreOutlivesSource`; storage a C++ caller supplies to a function exported to C++ is bound by that caller, its own lowering marking it `noalias`; and a function value is a carrier of every loan its captures hold, a use of it, a call among them, a use of each.
 ```
 
 <!-- google-doc-style-resume -->
@@ -6059,7 +6823,7 @@ where it read "So does a global's dynamic initializer"):
         "fork/safe/safe3-plan.md section 0.3 (v09, v10, v11, v14, v24, v25, s03, s04, s05, s15 and review A's ra01, ra04 and ra05, the last three copy-represented one-element aggregates of a pointer-represented element, and the re-review's n03, a `var` parameter, a `returned var` and a class local read through their owner, print the in-place order's result on the 2026.10.12 nightly, and so does the second re-review's n05, an array element at a run-time index assigned from an element of the same array (2 2 when the indices are equal); the second re-review's n06, a generic body whose left operand's type is a type parameter, has the specific's user `Copy` initialize the left operand in place with `self` its own return slot (3 3 and 2 2), the generic's SemIR initializing it in place (the fixer's k01); the re-review's n02, an adapter of `{.c: C}`, has `C`'s `Copy` initialize its part of the left operand in place (its SemIR); the third re-review's m02 and m04, calls that receive `&p` or `ref p` for the left operand's only carrier `p` and load it, read an element an earlier call's result was initialized into (3 4 3 4, the right operand formed first 3 4 1 2); the fourth re-review's p01 and p02, a `returned var` whose storage is a global under the global's dynamic initializer (the nightly's `__global_init` passes the global as the call's return storage), have its in-place `=`, on the `returned var` itself or on a `ref` parameter bound to it, run a call that reads the global by name after an earlier element is initialized (11 12 11 12 and 21 22 21 22), which D-SAFE-10's closed places now check at the global's initializer whatever this item's status, while a `var` parameter filled from a global is a copy (p03: 31 32 1 2); the fifth re-review's q03 and q04, a global variable initialized in place by a struct literal of user calls and by `g = F(1)` in a function, `F`'s `returned var` being the global, the same (61 62 61 62 and 71 72 71 72); s10 and s11, the right operand formed first and the rewrite emulated, print 2 1)"
       ],
       "blocked_by": [],
-      "notes": "Filed by SAFE-3's fold commit (<date>; fork/safe/safe3-plan.md D-SAFE3-5). No Carbon function's lowering carries `noalias` today, so the deviation gives a defined result different from the designed one, not undefined behavior. For the integers, floating-point types, `bool` and pointers the in-place `=` is a deviation from the assignment design by upstream's own TODO (handle_operator.cpp:99-100, \"Some cases may need to be handled directly.\"); for tuples, structs, choice types and data classes upstream has not decided the order (assignment.md:159-164, leads issue 686), and its designed initialization is itself depth-first and in place (pattern_matching.md:858-867; p005545:118-122), so treating the in-place order as a difference from the design is this design's reading of :184, pending that issue. Break condition and discharge: the toolchain routes `=` through `AssignWith` for every type, by an upstream advance (upstream's own TODO, handle_operator.cpp:99-100) or a fork change under R32; the interim rule of D-SAFE-8 is then withdrawn by a dated mark, the interim rule only adding conditions, so that every program it accepts the designed rule accepts and none is newly rejected, and this item is discharged. Partial: the toolchain routes only some types through `AssignWith`, the scalars of assignment.md:148-151 first; the interim rule then stays, by a dated mark naming them, for every type still initialized by `InitializeExisting`. Direct initialization: the toolchain or upstream gives an unformed left operand assignment.md:102-106's direct initialization (`y = F();`, :116-120); that is initialization in place and stays under the interim rule whatever the rewrite's status. So does a global variable's dynamic initializer, which D-SAFE-10's closed places check by the interim rule's conditions as an in-place `=` on an open place, a global constant's initializer filling a temporary that they count closed (fork/safe/safe3-plan.md D-SAFE3-5). Further TODOs re-open the interim rule's keying by a dated mark if done first: handle_operator.cpp:119-120's \"Destroy the old value before reinitializing\", which would run the old value's destructor, user-written for a user's class, at the `=`; type_info.cpp:83-84's \"Use in-place initialization for types that have non-trivial destructive move\"; and type_completion.cpp:576-577's \"Consider doing the same whenever `elementwise_rep` is sufficiently small\", which would give a tuple or struct of more than one element a copy representation that the keying would count as stored once, a probe deciding first. The 2026.10.12 nightly's evidence for the copy-represented one-element case is order-only: after the in-place `=` of such a type it stores `poison` of the whole object over the left operand (ra01, ra03 to ra06), a wrong-code defect of the nightly not filed here (fork/safe/safe3-plan.md section 0.3)."
+      "notes": "Filed by SAFE-3's fold commit (<date>; fork/safe/safe3-plan.md D-SAFE3-5). No Carbon function's lowering carries `noalias` today, so the deviation gives a defined result different from the designed one, not undefined behavior. For the integers, floating-point types, `bool` and pointers the in-place `=` is a deviation from the assignment design by upstream's own TODO (handle_operator.cpp:99-100, \"Some cases may need to be handled directly.\"); for tuples, structs, choice types and data classes upstream has not decided the order (assignment.md:159-164, leads issue 686), and its designed initialization is itself depth-first and in place (pattern_matching.md:858-867; p005545:118-122), so treating the in-place order as a difference from the design is this design's reading of :184, pending that issue. Break condition and discharge: the toolchain routes `=` through `AssignWith` for every type, by an upstream advance (upstream's own TODO, handle_operator.cpp:99-100) or a fork change under R32; the interim rule of D-SAFE-8 is then withdrawn by a dated mark, the interim rule only adding conditions, so that every program it accepts the designed rule accepts and none is newly rejected, and this item is discharged. Partial: the toolchain routes only some types through `AssignWith`, the scalars of assignment.md:148-151 first; the interim rule then stays, by a dated mark naming them, for every type still initialized by `InitializeExisting`. Direct initialization: the toolchain or upstream gives an unformed left operand assignment.md:102-106's direct initialization (`y = F();`, :116-120); that is initialization in place and stays under the interim rule whatever the rewrite's status. So does a global variable's dynamic initializer, which D-SAFE-10's closed places check as an in-place `=` is, on an open place, keeping the exemption only when it is formed before the binding, and so does a `returned var`, which names its caller's destination and is checked on a closed place, a global constant's initializer filling a temporary that they count closed (fork/safe/safe3-plan.md D-SAFE3-5). The interim rule is stated in a positive form (the orchestrator's ruling of 2026-11-01, fork/safe/safe3-plan.md D-SAFE3-5): an in-place `=` keeps the exemption only when its right operand is formed before the binding, and is otherwise a checked reborrow on a closed place and M3(d)'s write through a shared path on an open place, the remedy being to form the value in a fresh local first and assign the local. Further TODOs re-open the interim rule's keying by a dated mark if done first: handle_operator.cpp:119-120's \"Destroy the old value before reinitializing\", which would run the old value's destructor, user-written for a user's class, at the `=`; type_info.cpp:83-84's \"Use in-place initialization for types that have non-trivial destructive move\"; and type_completion.cpp:576-577's \"Consider doing the same whenever `elementwise_rep` is sufficiently small\", which would give a tuple or struct of more than one element a copy representation that the keying would count as stored once, a probe deciding first. The 2026.10.12 nightly's evidence for the copy-represented one-element case is order-only: after the in-place `=` of such a type it stores `poison` of the whole object over the left operand (ra01, ra03 to ra06), a wrong-code defect of the nightly not filed here (fork/safe/safe3-plan.md section 0.3)."
     }
 ```
 
@@ -6354,14 +7118,23 @@ having no global variables (docs/design/README.md:1236-1237 at 9192ee003)",
 "accepts the initializer of a global whose type" and "`StrictRefFromShared`
 unmarked (added"; amended 2026-10-29, ruling round 1: RU1-1: the storage a
 C++ caller supplies to a function exported to C++ named among the bound
-storages, as A.33, where the words went from "at 9192ee003)," to "but for"):
+storages, as A.33, where the words went from "at 9192ee003)," to "but for";
+amended 2026-11-01, re-think: RT-1: statement (2) of D-SAFE3-5, as A.33, where
+the new words went on after "_open_ otherwise" with ", a `returned var` closed
+because every storage its caller's call initializes is closed or bound while
+the call runs, a global constant's temporary among them," and ", but for a
+global variable under its dynamic initializer, the one such storage that is
+open, so that this design" "accepts the initializer of a global variable whose
+type is not copy-represented at every depth only under the interim rule's
+conditions for an in-place `=` on an open place, the global its left operand
+and the initializer its right operand (D-SAFE-8)"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 a place is _closed_ in a body when every carrier of a loan on it is in the body's view and _open_ otherwise
 
-a place is _closed_ in a body when every carrier of a loan on it is in the body's view and _open_ otherwise, a `returned var` closed because every storage its caller's call initializes is closed or bound while the call runs, a global constant's temporary among them, the constant acquiring its value only once the initializer completes (docs/design/values.md:102 and :164-166 at 9192ee003), and storage that a C++ caller supplies to a function exported to C++, which the C++ side binds for the call, its own lowering marking that storage `noalias`, a C++ caller that reaches it otherwise while the call runs breaking the obligation unsafe code has to adhere to the `noalias` restrictions (D-SAFE-8), but for a global variable under its dynamic initializer, the one such storage that is open, so that this design, upstream allowing global constants and having no global variables (docs/design/README.md:1235-1240 at 9192ee003), accepts the initializer of a global variable whose type is not copy-represented at every depth only under the interim rule's conditions for an in-place `=` on an open place, the global its left operand and the initializer its right operand (D-SAFE-8), a global variable declared without an initializer having for its initializer the prelude's `DefaultOrUnformed`, which initializes it in place, and otherwise makes it an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked, a Permissive file or an `unsafe` initializer written out the remedy for one declared without an initializer (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5)
+a place is _closed_ in a body when every carrier of a loan on it is in the body's view and _open_ otherwise; a fresh local's own initialization is exempt, nothing naming its storage until it completes, but a `returned var` names its caller's destination and a global variable's dynamic initializer initializes an open place, so both are checked as an in-place `=` is, and a global constant's temporary is closed: a `returned var` on a closed place, its destination bound for the call by its caller, a Carbon caller's own initialization or `=` or, for storage that a C++ caller supplies to a function exported to C++, which the C++ side binds for the call, that caller, its own lowering marking that storage `noalias`, a C++ caller that reaches it otherwise while the call runs breaking the obligation unsafe code has to adhere to the `noalias` restrictions (D-SAFE-8); a global variable's initializer on an open place, so that this design, upstream allowing global constants and having no global variables (docs/design/README.md:1235-1240 at 9192ee003), lets it keep the exemption only when it is formed before the binding (D-SAFE-8), a global variable declared without an initializer having for its initializer the prelude's `DefaultOrUnformed`, which initializes it in place, and otherwise makes it an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked, a Permissive file or an `unsafe` initializer written out the remedy for one declared without an initializer; and the constant acquiring its value only once the initializer completes (docs/design/values.md:102 and :164-166 at 9192ee003) (added <date>, SAFE-3: D-SAFE3-1 to D-SAFE3-5)
 ```
 
 <!-- google-doc-style-resume -->
@@ -6377,14 +7150,24 @@ runs a copy, move or converting constructor that is not trivial named beside
 the return in memory, and the copy's source beside its destination, where the
 new words read "and sees it as `this`, which is pointer-carrying as a
 constructor call is, as is a copy, move or default initialization of a C++
-class type that runs a constructor that is not trivial on its destination"):
+class type that runs a constructor that is not trivial on its destination";
+amended 2026-11-01, re-think: RR8-M1: the shape keeping only by-value arguments
+whose loan set is empty or free, by the closure of A.34 and A.36, where the new
+words went on after "by-value returns" with ", but for a by-value return of a
+class type that the C++ ABI returns in memory, whose callee constructs its
+result in the storage the call initializes and sees it as `this`, and a
+by-value parameter whose initialization from its argument runs a copy, move or
+converting constructor that is not trivial, which receives the argument's
+storage as its source, each pointer-carrying as a constructor call is, as is a
+copy, move, conversion or default initialization of a C++ class type that runs
+a constructor that is not trivial on its destination and its source"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 by-value parameters and by-value returns; (2)
 
-by-value parameters and by-value returns, but for a by-value return of a class type that the C++ ABI returns in memory, whose callee constructs its result in the storage the call initializes and sees it as `this`, and a by-value parameter whose initialization from its argument runs a copy, move or converting constructor that is not trivial, which receives the argument's storage as its source, each pointer-carrying as a constructor call is, as is a copy, move, conversion or default initialization of a C++ class type that runs a constructor that is not trivial on its destination and its source (amended <date>, SAFE-3: D-SAFE3-13); (2)
+by-value parameters and by-value returns, the shape keeping only by-value arguments whose loan set is empty or free and results that come back in registers, since C++ code receives every place on which a loan lies that is carried, transitively, by a value or place it receives, a class value's loan set included, and every place whose address a call hands it, the storage of a class result that the C++ ABI returns in memory and the source of a constructor that is not trivial among them, so that any other such call is pointer-carrying as a constructor call is (amended <date>, SAFE-3: D-SAFE3-13); (2)
 ```
 
 <!-- google-doc-style-resume -->
@@ -6419,14 +7202,22 @@ RU1-1), and for a place C++ code received by any route, as A.37 (amended
 storage whose address a C++ function received under a marker, as a pointer
 argument, as `this` or as the storage it constructs its result in, nor on a
 `ref` or `exclusive T*` parameter one of whose call sites binds such storage,
-the marker's obligation not being"):
+the marker's obligation not being"), and over every place C++ code receives by
+the closure, worded as A.37 is, the `exclusive T*` loan formed on such a place
+named in both (amended 2026-11-01, re-think: RR8-M1, RR8-m1, where the new
+words read "nor for a `ref` on a place whose address C++ code received, under a
+marker or by a route the allowlist or a synthesized witness trusts, as a
+pointer, reference or view argument, as `this`, as the storage it constructs in
+or as the source of a copy, move or conversion, or on a place that overlaps
+such a place, nor on a `ref` or `exclusive T*` parameter one of whose call
+sites binds one,"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 checker established them") — intra-function,
 
-checker established them"), nor for a `ref` on a place whose address C++ code received, under a marker or by a route the allowlist or a synthesized witness trusts, as a pointer, reference or view argument, as `this`, as the storage it constructs in or as the source of a copy, move or conversion, or on a place that overlaps such a place, nor on a `ref` or `exclusive T*` parameter one of whose call sites binds one, the obligation that the C++ code keeps no pointer to the place not being a fact the checker establishes (added <date>, SAFE-3: D-SAFE3-13) — intra-function,
+checker established them"), nor on a place C++ code receives, the C++ call rule closing the places it receives under T3's carrier relation: T8 withholds `noalias` and `captures(none)` on every such place for the marked and the trusted routes alike, on `ref` and `exclusive T*` parameters and loans, a `ref` binding or an `exclusive T*` loan formed on such a place or on a place that overlaps one, and a `ref` or `exclusive T*` parameter one of whose call sites binds one among them, the obligation that the C++ code keeps no pointer to the place not being a fact the checker establishes (added <date>, SAFE-3: D-SAFE3-13) — intra-function,
 ```
 
 <!-- google-doc-style-resume -->
@@ -6440,12 +7231,34 @@ cpp_span_view.carbon:62-69 shape, SL-2).", found once in each, the same words
 in both so that the D-SAFE blocks stay identical: A.42's statement that shapes
 (2) to (4) and the synthesized witnesses hand C++ code the address of a Carbon
 place under a trust for diagnostics only (ruling-rr2's e09 and e10; added
-2026-10-29, ruling round 2: RU2-1):
+2026-10-29, ruling round 2: RU2-1), and with them the places a loan carried by
+what they hand lies on, as A.42 (amended 2026-11-01, re-think: RR8-M1, where
+the text read "hand C++ code the address of a Carbon place," and "T8 emitting
+no attribute for a `ref` on such a place"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-Shapes (2) to (4) and the synthesized witnesses above hand C++ code the address of a Carbon place, and that the C++ code keeps no pointer to the place it received once it returns but within that place or in the call's result is trusted for diagnostics only, as Permissive's non-escape below is, T8 emitting no attribute for a `ref` on such a place (added <date>, SAFE-3: D-SAFE3-13).
+Shapes (2) to (4) and the synthesized witnesses above hand C++ code Carbon places, and with them every place on which a loan lies that is carried, transitively, by a value or place they hand it, and that the C++ code keeps no pointer to the place it received once it returns but within that place or in the call's result is trusted for diagnostics only, as Permissive's non-escape below is, T8 withholding `noalias` and `captures(none)` on every such place (added <date>, SAFE-3: D-SAFE3-13).
+```
+
+<!-- google-doc-style-resume -->
+
+### B.37 D-SAFE-10's T6 clause, the log and fork/safe/plan.md section 0.3
+
+Words, in fork/decision-log.md (:3400-3402) and in fork/safe/plan.md
+(:699-701), in D-SAFE-10's T6 clause, applied after B.35, the same words in
+both so that the D-SAFE blocks stay identical: A.43's ⊥ destination, T6 reading
+a pointer-typed field of an imported C++ type as ⊥ while the Store rule
+accepted a loan that is not free into it (the rev 10 fixer's k04 and k05; added
+2026-11-01, re-think: RR8-M1):
+
+<!-- google-doc-style-ignore -->
+
+```text
+every pointer-typed field read from an imported C++ type — amended 2026-10-12, document-review fold: D-7;
+
+every pointer-typed field read from an imported C++ type — amended 2026-10-12, document-review fold: D-7; such a field, and a field of such a type that holds one, is a ⊥ destination, as a pointer field of an `unsafe class` is, into which the Store rule accepts only free loans, so that no read cuts the C++ call rule's closure under T3's carrier relation — added <date>, SAFE-3: D-SAFE3-13;
 ```
 
 <!-- google-doc-style-resume -->

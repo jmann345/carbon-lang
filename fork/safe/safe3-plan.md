@@ -6,8 +6,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-3 plan: the built-in operator exemption re-derived from the safety argument
 
-**Status:** rev 10, 2026-11-01 -- the re-think ruling carried out; NOT signed
-off pending re-think re-review round 1. Rev 10, 2026-11-01, is the fixer's
+**Status:** rev 11 -- NOT signed off: RT1-B1, RT1-M1, RT1-M2; SAFE-3's
+planning STOPPED under the re-think ruling's break condition. Rev 11,
+2026-11-01, is the fixer's record of re-think re-review round 1 of rev 10
+(REJECT: one BLOCKER, RT1-B1, C++ code reaching from a received element
+pointer a sibling element or the enclosing object, a Carbon place the closure
+of D-SAFE3-13 does not name, so that T8 keeps `noalias` on a `ref` to it
+(w01, w02, w03); two MAJORs, RT1-M1, storage a C++ caller supplies to an
+exported function keeping `noalias` once forwarded to a function that is not
+exported (w04, w05), and RT1-M2, a Carbon union field laundering a loan that is
+not free past A.43's ⊥ destinations (traced by hand, the nightly having no
+`union`); two MINORs, RT1-m1 and RT1-m2, records only). RT1-B1 meets the stop
+condition D-SAFE3-13 states, "a probe in which C++ code reaches a Carbon place
+that the closure does not name", and the ruling's break condition, a BLOCKER,
+and RT1-M2 meets the condition's second half, a read that cuts the carrier
+relation where the ⊥ destination does not cover it, so the three are recorded,
+reproduced and not folded, no text being folded against the ruling's
+statements, and RT1-m1 and RT1-m2 are folded as records; the orchestrator
+records the state on trunk (PR 53 held at 2407efa74 with SAFE-2's and SAFE-3's
+work unpushed and mirrored, the open design question carried by W-148 and
+W-366) and turns to the next workstream, and section 3's implementation does
+not begin (the rev 11 fold record). Rev 10, 2026-11-01, is the fixer's
 re-derivation under the orchestrator's ruling of 2026-11-01 (R29, quoted whole
 at the head of the rev 10 fold record), which found the break condition of the
 ruling recorded at rev 8 met by ruling round 3's findings on rev 9 (one
@@ -23,7 +42,8 @@ initializer checked as an `=` is and a global constant's temporary closed
 carrier relation (D-SAFE3-13, statement (3)), the route lists deleted from every
 copy and every probe re-run and re-traced; one fresh focused re-review follows,
 folded into rev 11, and a second into rev 12 if it leaves a MAJOR; sign-off
-needs a round with no BLOCKER and no MAJOR. Rev 9, 2026-10-29, the fixer's fold
+needs a round with no BLOCKER and no MAJOR; rev 10 is commit db91f602a. Rev 9,
+2026-10-29, the fixer's fold
 of ruling round 2, the second of the up to three further rounds the
 orchestrator's ruling of 2026-10-29 authorizes, of rev 8
 (APPROVE-WITH-AMENDMENTS: one MAJOR, RR7-M1, and one MINOR, RR7-m1, both
@@ -88,10 +108,15 @@ ruling round 1: RU1-1; still at d286686c4 when rev 9 was written, rev 8's
 commit 3b44e3e68 not yet mirrored, amended 2026-10-29, ruling round 2: RU2-1;
 at 547fb6220, rev 9's commit, when rev 10 was written on 2026-11-01, a moved
 head reported, PR 53's head still 2407efa74, amended 2026-11-01, re-think:
-RT-1). This plan is a new file beside fork/safe/safe2-plan.md, which this
-planner does not edit; its dated pointer marks come with the fold commit
-(section 2). Upstream was read at its tip 9192ee003, fetched 2026-10-29
-(section 0.1). Records and design text only: no toolchain, prelude, golden,
+RT-1; still at 547fb6220 when rev 11 was written, rev 10's commit db91f602a
+not yet mirrored, PR 53's head still 2407efa74, amended 2026-11-01, re-think
+round 1: RT1-m2). This plan is a new file beside fork/safe/safe2-plan.md, which
+this planner does not edit; its dated pointer marks come with the fold commit
+(section 2). Upstream was read at its tip 9192ee003, fetched 2026-10-29,
+re-read at its tip 68569d234 on 2026-11-01 for rev 10 and re-fetched for
+rev 11 on 2026-11-01 at 19:27 UTC, its tip still 68569d234 (section 0.1;
+amended 2026-11-01, re-think round 1: RT1-m2, where this named 9192ee003
+alone). Records and design text only: no toolchain, prelude, golden,
 program or conformance change, no build of any kind, the nightly compiling
 examples and probes only (R30).
 
@@ -152,8 +177,11 @@ of 2026-10-29 for RR3-M1, RR4-M1, RR5-M1, RU2-1, RU1-1 and RU1-2).
 -   Section 3, commits and reviews; section 4, the worked-example matrix;
     section 5, scoreboard; section 6, churn and collisions; section 7, risks
     and rejected alternatives; section 8, verification and the not-run list.
--   The review fold records of rev 2 to rev 10, rev 10's opening with the
-    orchestrator's ruling of 2026-11-01 quoted whole, the hand-off notes, then
+-   The review fold records of rev 2 to rev 11, rev 10's opening with the
+    orchestrator's ruling of 2026-11-01 quoted whole and rev 11's recording
+    the stop on RT1-B1 with the re-think re-review's 5 probes re-run (amended
+    2026-11-01, re-think round 1: RT1-B1, where this read "rev 2 to rev 10"),
+    the hand-off notes, then
     Appendix A (pages), Appendix B (records), Appendix C (the PR texts and
     PR 67's note commit) and Appendix D (trunk's fork/ORCHESTRATION.md).
 
@@ -1778,12 +1806,19 @@ Each under R29, with its break condition.
 -   **D-SAFE3-1 — The baseline.** Upstream at 9192ee003 (section 0.1): no
     quoted passage changed since SAFE-2 read it, the one moved file
     (details.md, by one line) cited at the tip's numbers, PR 67's 273 quotes
-    and 89 checks passing, and this plan's 123 quote rows passing (rev 1's 67,
-    rev 2's 33, rev 3's 10, rev 4's 6 and rev 6's 7; amended 2026-10-29,
+    and 89 checks passing, and this plan's 141 quote rows passing (rev 1's 67,
+    rev 2's 33, rev 3's 10, rev 4's 6, rev 6's 7, rev 7's 5, rev 8's 8 and
+    rev 9's 5; amended 2026-10-29,
     review fold: A-RA3-M1, A-RA3-m3; amended 2026-10-29, review fold: RR1-m1,
     where this read "100"; amended 2026-10-29, review fold: RR2-m2, where this
     read "110"; amended 2026-10-29, review fold: RR4-M1, where this read
-    "116").
+    "116"; amended 2026-11-01, re-think round 1: RT1-m2, where this read "123"
+    and named rev 6's rows last). Re-read at upstream's tip 68569d234 on
+    2026-11-01 for rev 10 and again for rev 11, the tip unmoved: no quoted
+    passage changed, the 141 rows, the H1 subsets 97, 120 and 5 and rev 9's 5
+    H1-cited rows passing, and PR 67's own 273 and 89 failing 8 and 2 outside
+    the H1 rows, lines upstream's commits moved, reported for RG-1
+    (section 0.4; added 2026-11-01, re-think round 1: RT1-m2).
     Break
     condition: the implementer's re-fetch finds a newer tip under which a line
     this plan quotes fails; the block that rests on it stops and this plan is
@@ -2665,8 +2700,15 @@ Each under R29, with its break condition.
     C++ caller supplies to a function exported to C++ is bound by that caller
     for the call, Clang's lowering marking it `noalias` (c06), as statement (2)
     of D-SAFE3-5 says, and T8 already emits no attribute for such a function
-    (A.33, B.32). With these, in every Strict-accepted program C++ code holds
-    the address of a Carbon place only under a marked or a trusted route's
+    (A.33, B.32) (recorded 2026-11-01, re-think round 1: RT1-M1, not folded,
+    the plan having stopped: Clang declares w05's exported `F(ref x)` as
+    `_ZN6CarbonL1FERi(ptr noundef nonnull align 4 dereferenceable(4))`, with
+    no `noalias`, and storage a C++ caller supplies keeps its `noalias` once
+    forwarded to a function that is not exported, w04's `returned var` and
+    w05's `ref` parameter written by C++ code while the callee's `ref` is
+    bound, printing 9 9 and 9). With these, in every Strict-accepted program
+    C++ code holds the address of a Carbon place only under a marked or a
+    trusted route's
     obligation, and T8 claims no attribute for the place, so the noalias claim
     is the checker's for every place no C++ code receives and the obligation of
     unsafe code, C++'s included, for the others. Measured (the rethink scan,
@@ -2729,7 +2771,14 @@ Each under R29, with its break condition.
     ruling's statement and no route to be added to it (amended 2026-11-01,
     re-think: RR8-M1, where this read "a probe in which C++ code receives the
     address of a Carbon place by a route this decision does not name narrows it
-    again"); a corpus program or page
+    again"; this condition was met at rev 11 by RT1-B1, C++ code reaching from
+    a received element pointer a sibling element or the enclosing object, a
+    place the closure does not name, while T8 keeps `noalias` on a `ref` to it
+    (w01: 9 9 2; w02: 9 9; w03: 9 9), and by RT1-M2, a union read that cuts
+    the carrier relation where no ⊥ destination covers it (traced by hand),
+    and the plan stopped there for the orchestrator, nothing folded against
+    this decision; recorded 2026-11-01, re-think round 1: RT1-B1, RT1-M2); a
+    corpus program or page
     example whose result turns on a trusted route's breach, or a later count
     that makes the trusted routes' cost or the open-for-life alternative's
     differ from D-SAFE3-12's, reopens the choice between them by a dated mark;
@@ -2904,7 +2953,11 @@ is written:
     commits' short hashes, "none" if there are none; `<verdict A>` and `<verdict
     B>`: the two document reviews' verdicts with their counts; `<tip>`: the
     upstream tip of the implementer's section 8 item 6; `<time>`: the UTC time,
-    `date -u +%H:%M`, of the orchestrator's stamp.
+    `date -u +%H:%M`, of the orchestrator's stamp; `<held>`: the PRs held open
+    and those merged when the orchestrator stamps, read then from
+    `git ls-remote origin` and trunk's log, R33 (trunk bb9fbba9c, LAND-1's
+    LD-0) making merges the orchestrator's (added 2026-11-01, re-think
+    round 1: RT1-m1).
 
 Every fenced text that a block gives already wrapped, the Lines texts of A.1,
 A.2, A.7, A.8 and B.1 among them, is wrapped with each placeholder counted at
@@ -3090,7 +3143,13 @@ a blank line with the session's two attribution trailers.
     fresh agent per round, at most three rounds, until dry, a finding open after
     round 3 stopping at a plan revision; not pushed by the implementer (amended
     2026-10-29, review fold: B-m5, where this read "reviewed by one fresh agent
-    until dry").
+    until dry"). If PR 67 has merged into trunk when this step runs, R33
+    (trunk bb9fbba9c, LAND-1's LD-0) having made merges the orchestrator's, the
+    note commit is made instead in a detached scratch worktree of trunk's head
+    and lands on trunk as a records commit, its checks the same; steps 8 to 10
+    then read trunk where they name `claude/carbon-fork-0-1-rg1` and
+    `<c2-sha>`'s fast-forward of 56e2e5bbd, and step 9 (a) drops C.3, PR 67
+    being closed (added 2026-11-01, re-think round 1: RT1-m1).
 8.  **The pushes**, by the orchestrator once steps 6 and 7 are dry: `<head>` as
     a fast-forward of 2407efa74, `git push origin
     <head>:claude/carbon-fork-0-1-safe`, then the note commit as a fast-forward
@@ -3113,7 +3172,13 @@ a blank line with the session's two attribution trailers.
     files the implementer writes with every placeholder filled:
     /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/impl/pr_53_refresh.md,
     .../safe3/impl/pr_67_refresh.md and .../safe3/impl/orchestration_stamp.md;
-    no PR is merged, no workflow dispatched.
+    no PR is merged by this step, no workflow dispatched. The orchestrator fills
+    `<held>` in Appendix D's first and fourth blocks at the stamp from `git
+    ls-remote origin` and trunk's log, citing R33, so that the stamp states the
+    PRs held and merged as they then are (amended 2026-11-01, re-think round 1:
+    RT1-m1, where this read "no PR is merged, no workflow dispatched." and the
+    blocks stated "eighteen PRs are held open", which LAND-1 can make false
+    before the stamp).
 10. **The check after the stamp**: `git ls-remote origin` lists no
     `claude/carbon-fork-0-1-safe-wip`, PR 53's and PR 67's branches still hold
     `<head>` and `<c2-sha>`, and trunk's fork/ORCHESTRATION.md at the stamp
@@ -4727,6 +4792,149 @@ SAFE-3's planning.
 | RT-1, the orchestrator's ruling of 2026-11-01 (R29) | the ruling quoted above, checked by script equal to the text the orchestrator handed the fixer; every probe re-run (rethink/rerun/, 196 sources, 194 identical, n01 and n04 `poison` only); the cost of each statement measured on the corpus (rethink/bin/inplace_scan.py, text_scan.py, page_scan.py, lower_corpus.sh, ir_byval.py) | CARRIED OUT: statement (1) in D-SAFE3-5 with readings (r1) to (r4), A.1, A.7, B.1 and B.12; statement (2) in D-SAFE3-5, A.33, B.32, A.1 and B.1; statement (3) in D-SAFE3-13, A.34, A.36, A.37, A.42, B.33, B.35, B.36 and B.12, completed by A.43 to A.45 and B.37; the route lists deleted from every copy with dated marks; the Status, the rule applied, sections 0.0, 0.1, 0.3, 0.4, 0.6, 1.1, 1.2 (D-SAFE3-3, D-SAFE3-5, D-SAFE3-12, D-SAFE3-13), 1.3, 2.2, 2.3, 4, 7 (R-1, one alternative moot, three new), 8, the hand-off notes and this record; rethink/bin/dryrun.py and checktree.py check the statements at every copy |
 | RR8-M1 MAJOR | ruling-rr3's t01 to t03 re-run (1 0 9 9; 0 7 0 1; 9 9), `@_Z4Take1H.carbon_thunk._(ptr %h.var)` passing the copy that carries `&x`; the 2026-10-29 fixer's k01 to k06 re-run (0 9 9; 0 9 9; 10 9; 9; 9 9; 4 5 9); the temporal page's loan-set bullet (:118-119), Store rule and T6 read at 0f22798fb | ACCEPTED, by the ruling's statement (3) as its fix gives it: C++ code receives every place on which a loan lies that is carried, transitively, by a value or place it receives (A.36, B.33), shape 1 keeps only by-value arguments whose loan set is empty or free (A.34, A.36, B.33), the obligation stated over every such place (A.36, A.42, B.36), T8 withholding on every such place for the marked and the trusted routes (A.37, A.42, B.35), A.43 and B.37 keeping the relation unbroken at a C++ type's pointer field and A.44 and A.45 stating the escape into C++ code; D-SAFE3-13, B.12, sections 0.3 (t01 to t03, k01 to k06), 0.6, 1.3 and 4 |
 | RR8-m1 MINOR | A.37 at rev 9 against B.35 and B.12 | ACCEPTED: A.37 worded as B.35, both naming the `exclusive T*` parameter and the `exclusive T*` loan formed on such a place, and checktree.py checking the phrase on the page, in the log and in fork/safe/plan.md |
+
+## Review fold record (rev 11, 2026-11-01)
+
+Re-think re-review round 1 of rev 10 (db91f602a), the one fresh focused
+re-review the orchestrator's ruling of 2026-11-01 orders, as the orchestrator
+handed it to the fixer, its verdict REJECT:
+
+<!-- google-doc-style-ignore -->
+
+```text
+summary: Rev 10 (db91f602a) re-reviewed. Upstream was re-fetched at 68569d234 and no cited upstream file has changed since 9192ee003. The only change is file_context.h, which the plan cites at the fork's tree, not upstream's. All 196 earlier probe sources re-ran under rethink-rr1/rerun/: 194 identical, and n01 and n04 differ only in poison values. Every changed row (t01-t03, k01-k06, q06c, z1b, s18, p03, c01, e10, j01) matches its section 0.3 cell; a scripted comparison of 80 cells found no other mismatch. The dry run on fresh 0f22798fb archives gives ALL OK, 695 filled and 684 unfilled. The key phrases appear at every copy and no deleted route clause is left. The 23 D-SAFE blocks match between the log and plan.md. rumdl@0.2.58 is clean. r31 gives H2 24, H3 102, no unguarded line. The ruling is recorded verbatim (58 lines, equal to the task's text). PR 67's checks at 68569d234: H1 97/120/5 and the plan's 141 rows all pass; PR 67's own 273/89 and SAFE-2's 284/89 copies fail 8/2 outside the H1 rows, as the plan reports. Statement (1) held against my attacks: w07 shows the formed cases run only loads, stores and the prelude's Some, and w08 shows the nightly rejects a local that names itself. Statement (3) fails, with one BLOCKER, under D-SAFE3-13's own stop condition. New probes: scratchpad/safe3/rethink-rr1/probe/ (INDEX.tsv).
+
+RT1-B1 (BLOCKER): C++ reaches a sibling element (or enclosing object) from a received element pointer; the closure does not name it and T8 emits noalias
+citation: safe3-plan.md D-SAFE3-13 (:2606-2660, break condition 'a probe in which C++ code reaches a Carbon place that the closure does not name ... stops the plan'), A.36, A.37; spatial_safety.md:511-534 ('A Carbon array(T, N) passed to C++ as a pointer decays on the C++ side, under C++'s rules', raw pointer-plus-length); p005434:866-868 and p005914:206-207 at 68569d234; probes w01 (9 9 2), w02 (9 9), w03 (9 9)
+detail: Probe w02: Mod(ref a[1], &a[0]), and inside Mod, `unsafe Cpp.Fill(p, 2)`, the spatial page's sanctioned raw pointer-plus-length call (or a noescape-annotated trusted route). C++ writes a[1] during the call and keeps nothing, so it breaks no stated obligation (A.36 obliges it only to keep no pointer). The closure names a[0] and the places that overlap it, not a[1], and (r3) proves constant indices distinct. So T4 accepts and T8 keeps noalias on e. The IR is store e, call Fill, load e. w01 shows the same with p[-1], and w03 through a standard-layout first member. Statement (3) closes over the Carbon places named by loans, but C++'s reach from an address is the whole array or object. This defeats the statement and meets D-SAFE3-13's own stop condition. It also drifts from p005434:868 ('won't be passed to LLVM unless their requirements can be established').
+fix: Under the ruling's break condition, SAFE-3's planning stops. If the orchestrator re-rules: a pointer, reference or `this` handed to C++ hands the outermost array containing the place, and for a first member the enclosing standard-layout C++ object. T8 withholds on every place within it, and the obligation is stated over it. Count the corpus calls that pass &a[i] or &s.first to C++, and add w01-w03 to sections 0.3, 1.3 and 4.
+
+RT1-M1 (MAJOR): Storage a C++ caller supplies to an exported function keeps noalias once forwarded to a function that is not exported
+citation: D-SAFE3-13 (:2663-2667); B.12 (:6743 'storage a C++ caller supplies ... its own lowering marking it noalias'); A.33 (:5862-5870); temporal_safety.md:697 (T8) and its 'A Permissive or C++ caller that aliases such a parameter produces erroneous behavior, never undefined behavior'; D-SAFE3-5 (r3)/m03; probes w05 (9), w04 (9 9)
+detail: Probe w05: C++ keeps &s and calls the exported F(ref x). F forwards to G(ref y), which is not exported and has one Strict call site. G's shape-1 Cpp.Poke() writes s; the IR is store y, call Poke, load y. Clang declares _ZN6CarbonL1FERi(ptr noundef nonnull align 4 dereferenceable(4)) with no noalias, so B.12's claim is false for a ref parameter. T8 keeps noalias on G, so the C++ caller's alias is undefined behavior on the Carbon side, not the erroneous behavior T8 and D-SAFE3-13 promise. w04 is the same with Make's returned var passed as Mod(ref r). (r3) qualifies a by-value parameter's name only by its Carbon caller's frozen loan (m03), which a C++ caller does not give. That case was not runnable: no Carbon struct maps to C++ (w06).
+fix: Count the places a C++ caller supplies to an exported function (its return slot, the referents of its ref, exclusive T* and pointer parameters, a by-value parameter's borrowed object) among the places C++ code holds. Close them under the carrier relation and through forwarding: T8 withholds on every ref or exclusive T* parameter one of whose call sites binds one. Narrow 'its own lowering marking it noalias' to the return slot in B.1, B.12 and D-SAFE3-13. (r3) qualifies a by-value parameter only in a function no C++ caller reaches. Add w04 and w05 to the plan.
+
+RT1-M2 (MAJOR): A Carbon union field launders a loan that is not free; A.43's ⊥ destinations miss it
+citation: A.43 (:6194-6221); D-SAFE3-13 break condition ('a read cuts the carrier relation that the ⊥ destination does not cover'); temporal_safety.md:576 (a union read is ⊥, 'the punning obligation only'), :628 (a ⊥ pointer may be passed to a non-bound parameter), :1197 EX-TM-8 'var u: U = {.p = &x}; // Store rule ... accepted'
+detail: Traced by hand: the nightly has no union. `var u: U = {.p = &x}; let q: i32* = unsafe u.p; Mod2(ref x, q);`, with Mod2 doing `s = 5; *q = 9;`, is k05's shape through a union. The marker discharges punning only, passing q is unmarked, T4 sees no loan on x, and T8 keeps noalias on s. The same holds for `unsafe Cpp.W(q)` inside a ref-bound callee, where the closure names nothing. This meets the plan's own stop wording.
+fix: Make a union's pointer-carrying fields ⊥ destinations, as A.43 and T5(g) do, or require `unsafe` to pass a ⊥ pointer to any parameter. Word it in A.43 and B.37, check it at every copy, and count the cost (union_basic.carbon, EX-TM-8).
+
+RT1-m1 (MINOR): Section 3 steps 7-10 and Appendix D predate R33 (trunk bb9fbba9c, LD-0)
+citation: Appendix D blocks 1 and 4 ('eighteen PRs are held open ... none merged', 'No build, merge or dispatch'); section 3 steps 7-8 (:3080-3099, the note pushed as a fast-forward of 56e2e5bbd); section 0.7 reports only the moved anchor
+detail: LAND-1 lands PR 67 first. Once PR 67 has merged, step 8's push no longer reaches trunk, and the stamped sentences would be false.
+fix: Add a dated mark: the stamp fills in the set of held and merged PRs from ls-remote and trunk's log at stamp time and cites R33. If PR 67 has merged, the note lands on trunk as a records commit and C.3 is dropped.
+
+RT1-m2 (MINOR): Stale baseline counts (R10)
+citation: D-SAFE3-1 (:1781 'this plan's 123 quote rows'); Status (:85 'read at its tip 9192ee003')
+detail: Sections 0.1 and 0.4 measure 141 rows at 68569d234. D-SAFE3-1 was last amended at rev 6.
+fix: Change D-SAFE3-1 to 141 rows with the rev 7-9 additions, and name the 68569d234 re-read in the Status.
+```
+
+<!-- google-doc-style-resume -->
+
+The rev 11 fixer of 2026-11-01 reproduced every finding on rev 10 before
+deciding, its probes under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3/rethink-fixer1/probe/
+(INDEX.tsv), each with its source, command, IR and output: w01 to w05 copied
+from the re-review's rethink-rr1/probe/ and re-run by run.sh with the nightly,
+each printing what the re-review recorded (w01 9 9 2, w02 9 9, w03 9 9, w04 9 9,
+w05 9), w02's `Mod` lowering to `store i32 5, ptr %e`, a call of `@_Z4FillPii`
+and `load i32, ptr %e`, w05's `G` to `store i32 5, ptr %y`, a call of
+`@_Z4Pokev` and `load i32, ptr %y`, and Clang declaring w05's exported `F` as
+`_ZN6CarbonL1FERi(ptr noundef nonnull align 4 dereferenceable(4) %0)`, no Carbon
+function in the five carrying `noalias` today; RT1-M2's union by x01, which the
+nightly rejects at `union U {` ("unrecognized declaration introducer"), so its
+trace is by hand, at temporal_safety.md:576-578, :628-629 and :1195-1199 at
+0f22798fb, as the re-review gives it; and the re-review's statement (1) attacks
+w07 (5 5 6) and w08 (the nightly rejecting `x` used before its initialization)
+re-run, both as recorded. RT1-B1 is a BLOCKER, and it is the stop condition
+D-SAFE3-13 states for statement (3), "a probe in which C++ code reaches a Carbon
+place that the closure does not name, or in which a read cuts the carrier
+relation that the ⊥ destination does not cover, stops the plan for the
+orchestrator, the closure being the ruling's statement and no route to be added
+to it": spatial_safety.md:530-534 at 0f22798fb says a Carbon array passed to C++
+as a pointer "decays on the C++ side, under C++'s rules" and makes a raw
+pointer-plus-length call the sanctioned migration shape, so C++ code that
+receives `&a[0]` reaches `a[1]` without keeping any pointer, which A.36's
+obligation does not forbid and the closure, built over the places loans name,
+does not name. The ruling's break condition is met with it: "a BLOCKER, or a
+MAJOR left after the second round, stops SAFE-3's planning; the orchestrator
+then records the state on trunk (PR 53 held at 2407efa74 with SAFE-2's and
+SAFE-3's work unpushed and mirrored, the open design question carried by W-148
+and W-366), and turns to the next workstream." So SAFE-3's planning STOPS here.
+Nothing is folded against the ruling's statements: RT1-B1's fix is a re-ruling
+of statement (3), the reach of an address handed to C++ code widened to the
+outermost array or enclosing object, which only the orchestrator can make;
+RT1-M2 meets the second half of the same stop condition, a union read cutting
+the carrier relation where A.43's ⊥ destinations do not reach, and its fix
+completes statement (3) again in A.43 and B.37; and RT1-M1's fix closes
+statement (3) through forwarding and narrows the sentence on a C++ caller's
+storage in D-SAFE3-13, B.1 and B.12, both a route added to the closure, which
+D-SAFE3-13's break condition says is not to be added. The three are recorded, at
+the Status, at D-SAFE3-13's break condition and its sentence on a C++ caller's
+storage, and here, with their probes, for the orchestrator, and no page or
+records text of Appendix A or B changes, so the dry run's texts are rev 10's.
+RT1-m1 and RT1-m2 change records only and state no rule, so both are folded.
+Marks in this file read "(amended 2026-11-01, re-think round 1: RT1-n)", or
+"(recorded 2026-11-01, re-think round 1: RT1-n)" where a finding is recorded and
+not folded.
+
+Measured for rev 11 on 2026-11-01: upstream re-fetched at 19:27 UTC, its tip
+still 68569d234, `git log 68569d234..upstream/trunk` empty, so no quoted line
+moved since rev 10 (section 0.1); `git ls-remote origin` gives the 18 held heads
+as section 0.7 states them, PR 53 at 2407efa74, trunk at bb9fbba9c and the
+mirror at 547fb6220, rev 9's commit, rev 10's db91f602a not yet mirrored; R33
+read at trunk bb9fbba9c, fork/rulebook.md:409-430; PR 67's checks by
+rethink-fixer1/bin/pr67checks.sh from a detached worktree of 56e2e5bbd at
+/dev/shm/safe2-rethink-fixer1/rg1, removed after: the H1 subsets 97, 120 and
+5, rev 9's 5 H1-cited rows and the plan's 141 every one 0 failed at 68569d234,
+33 of the 141 failing at the cut as before, and PR 67's own 273 and 89 and
+SAFE-2's 284 and 89 failing 8 and 2, all outside the H1 rows, as rev 10
+reports (section 0.4); the dry run by rethink-fixer1/bin/dryrun.py and
+checktree.py, rev 10's with eight checks of this plan's own records added
+(the Status naming rev 11, its blockers and the stop; D-SAFE3-1's 141 rows
+equal to the sum of its parts and to safe3-quotes-all9.tsv's 141 lines; the
+68569d234 re-read named; no held-PR count left in Appendix D's blocks and
+`<held>` in its first and fourth; `<held>` defined in section 2.1 under R33;
+section 3 step 7's R33 alternative; D-SAFE3-13 recording RT1-B1, RT1-M1 and
+RT1-M2; this record's five rows, RT1-B1 a STOP), on fresh archives of
+0f22798fb "ALL OK" filled (703 steps and checks) and unfilled (692),
+checktree.py "ALL OK" alone on the filled tree (552 checks) and failing 160
+on 0f22798fb, as at rev 10, Appendices A and B being unchanged; the id
+re-scan widened to `W-3[6-9][0-9]` over the 168 refs (138 origin tracking
+refs and 30 local branches), the 73 distinct heads `git ls-remote origin`
+lists and the 22 worktrees, W-363 the highest filed, no id minted; the
+merge-trees of a scratch commit of this file over 0f22798fb, on no branch,
+against trunk bb9fbba9c and the 18 held heads naming the same files as
+0f22798fb's, this file being on no other head; `--self-test` "150 programs
+parsed, 56 bullets in table, OK"; the model-name grep clean, its hits the
+branch names and scratch paths only. This plan: r31.py before the fold H1 1,
+H2 24, H3 102, 77 bullets, 34 numbered items, 361 rows, 7588 lines and no
+unguarded line, and after it H1 1, H2 25 (this record), H3 102, 77 bullets,
+34 numbered items, 368 rows (the seven lines of this record's table),
+7813 lines and no unguarded line; prek's passes, to a fixpoint with a
+private cache deleted after, and `uvx rumdl@0.2.58 check` recorded in the
+commit message. Not run: no build, no Strict checker (W-148), so RT1-M2 is
+traced by hand, the nightly having no `union`; no probe of a C++ caller
+passing a by-value Carbon struct (w06, which no Carbon struct mapping to C++
+allows), as the re-review found; no count of the corpus calls that pass
+`&a[i]` or a first member's address to C++, which only a re-ruling needs.
+
+The round leaves a BLOCKER, so rev 11 is not signed off and SAFE-3's planning
+stops under the ruling's break condition: section 3's implementation does not
+begin, no rev 12 round follows, and the orchestrator records the state on trunk,
+PR 53 held at 2407efa74 with SAFE-2's and SAFE-3's work unpushed and mirrored,
+the open design question carried by W-148 and W-366, and turns to the next
+workstream. The re-review's proposals for RT1-B1, RT1-M1 and RT1-M2 stand in its
+text above for the orchestrator, should it re-rule.
+
+| finding | reproduced by | disposition and where it lands |
+| --- | --- | --- |
+| RT1-B1 BLOCKER | w01 to w03 re-run (9 9 2; 9 9; 9 9), w02's `Mod` lowering to store `%e`, call `@_Z4FillPii`, load `%e`; spatial_safety.md:511-534 at 0f22798fb; D-SAFE3-13's break condition | STOP: recorded and not folded, meeting D-SAFE3-13's own stop condition and the ruling's break condition; recorded at the Status, D-SAFE3-13's break condition, the sections list and this record; the re-review's proposed re-ruling (the outermost array or enclosing standard-layout C++ object handed, T8 withholding within it, the corpus count, w01 to w03 into sections 0.3, 1.3 and 4) left to the orchestrator |
+| RT1-M1 MAJOR | w04 (9 9) and w05 (9) re-run, w05's `G` lowering to store `%y`, call `@_Z4Pokev`, load `%y`, and Clang's declaration of the exported `F` with no `noalias` | RECORDED, not folded: its fix closes statement (3) through forwarding and narrows the sentence on a C++ caller's storage (D-SAFE3-13, B.1, B.12), a route added to the ruling's closure, which the stop forbids; recorded at D-SAFE3-13's sentence on that storage and in this record, for the orchestrator |
+| RT1-M2 MAJOR | traced by hand at temporal_safety.md:576-578, :628-629 and :1195-1199 at 0f22798fb; x01, the nightly rejecting `union U {` | RECORDED, not folded: it meets the second half of D-SAFE3-13's stop condition, a read cutting the carrier relation where the ⊥ destination does not cover it, and its fix completes statement (3) again in A.43 and B.37, which the stop forbids; recorded at D-SAFE3-13's break condition and in this record |
+| RT1-m1 MINOR | trunk bb9fbba9c's R33 (fork/rulebook.md:409-430) and LD-0; Appendix D's first and fourth blocks and section 3 steps 7 to 10 at rev 10 | ACCEPTED, folded as records: `<held>` defined in section 2.1 and filled at the stamp from `git ls-remote origin` and trunk's log, citing R33, in Appendix D's first and fourth blocks; section 3 step 7, step 9, C.3's lead and Appendix D's lead: if PR 67 has merged, the note commit is a records commit on trunk and C.3 is dropped |
+| RT1-m2 MINOR | D-SAFE3-1 at rev 10 against section 8 item 6's 141 rows (67, 33, 10, 6, 7, 5, 8 and 5) and safe3-quotes-all9.tsv's 141 lines; the Status's upstream sentence | ACCEPTED, folded as records: D-SAFE3-1 states 141 rows with rev 7 to rev 9's additions and the re-reads at 68569d234; the Status names the re-reads and the mirror's state at rev 11 |
 
 ## Hand-off notes for the implementer
 
@@ -7437,7 +7645,10 @@ upstream supersedes p000257:356-358's zeroing of every type's storage (an accept
 ### C.3 PR 67's description, a paragraph appended
 
 The orchestrator appends this paragraph to PR 67's current description at
-section 3 step 9, from the file that step names:
+section 3 step 9, from the file that step names, unless PR 67 has merged by
+then, in which case this text is dropped and the note commit is a records
+commit on trunk (section 3 step 7; added 2026-11-01, re-think round 1:
+RT1-m1, R33):
 
 <!-- google-doc-style-ignore -->
 
@@ -7464,8 +7675,8 @@ the history as it happened: SAFE-2 stopped at its plan rev 14, SAFE-3 completed
 the realignment, and the mirror branch was created to keep the unpushed commits
 and deleted once PR 53's head was pushed, before this stamp (section 3 step 9's
 order). The paragraphs of the first and fourth blocks hold `<fixes>`,
-`<verdict A>`, `<verdict B>` and `<time>`, whose filled widths are not known
-here, so the implementer rewraps each filled paragraph to 80 columns in
+`<verdict A>`, `<verdict B>`, `<time>` and `<held>`, whose filled widths are not
+known here, so the implementer rewraps each filled paragraph to 80 columns in
 orchestration_stamp.md and runs `uvx rumdl@0.2.58 check` on it (amended
 2026-10-29, review fold: B-M1, B-M4, B-m4: the second block keeps "the
 description refreshed" and "by the orchestrator's rulings (its
@@ -7475,6 +7686,21 @@ dropped them; the fourth says "was deleted before this stamp", where it said
 review fold: RR1-m2: the first and second blocks say "until dry, PR 53 then
 at `<head>`", where they said "until dry at `<head>`", `<head>` being the
 head after the dry round's records commit, section 2.1).
+
+The stamp states the PRs held and merged as they are when it is made: trunk
+moved on 2026-11-01 to bb9fbba9c, LAND-1's LD-0, whose R33 makes merging the
+orchestrator's call on verified correctness, so the orchestrator fills `<held>`
+from `git ls-remote origin` and trunk's log at stamp time and cites R33, and
+the anchors of the six edits are found again on trunk as it then is
+(section 0.7). If PR 67 has merged before section 3 step 7, the note commit
+lands on trunk as a records commit (section 3 step 7), C.3 is dropped, the
+second block's "the descriptions of PR 53 and PR 67 refreshed" reads "PR 53's
+description refreshed", and the third edit names that records commit where it
+names `<c2-sha>` on PR 67's branch (added 2026-11-01, re-think round 1:
+RT1-m1, where the first block read "eighteen PRs are held open, PR 51 to PR
+68, none merged" and the fourth "No build, merge or dispatch; Actions is still
+disabled. Eighteen PRs are held open (PR 51 to PR 68); none is merged.", both
+written before R33).
 
 1.  The header: insert the first block as the new first entry, "Last updated:"
     moving to it, so that the current first entry, which begins "Last updated:
@@ -7515,9 +7741,8 @@ then at <head>: SAFE-2 stopped at its plan rev 14 on PRR3-B1, SAFE-3
 re-derived the built-in operator exemption from the safety argument and
 completed the realignment, W-347 to W-351 realigned and W-353 closed with its
 classification corrected; the mirror claude/carbon-fork-0-1-safe-wip is deleted;
-the land sequence no longer waits at PR 53; eighteen PRs are held open, PR 51 to
-PR 68, none merged; see the paragraph dated <date> (<time> UTC) below; the
-earlier 2026-10-29 text follows).
+the land sequence no longer waits at PR 53; <held>; see the paragraph dated
+<date> (<time> UTC) below; the earlier 2026-10-29 text follows).
 ```
 
 ```markdown
@@ -7556,18 +7781,18 @@ D-SAFE-16. Reviews: two whole-tree document reviews (<verdict A>, <verdict B>),
 the fixer and a focused re-review by two reviewers per round until dry. PR 53's
 head was pushed as a fast-forward of 2407efa74, and the mirror
 claude/carbon-fork-0-1-safe-wip, which held the unpushed commits from 2026-10-29
-and was never a PR or a base, was deleted before this stamp. No build, merge or
-dispatch; Actions is still disabled. Eighteen PRs are held open (PR 51 to PR
-68); none is merged. Merge order: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55,
-56, 57, 58, 59, 61, 62, 64, 63, 65, 66, then PR 68 (OV-4) through its land-time
-commits M, F-M, L-R and L (fork/overload/ov4-plan.md section 3); the sequence no
-longer waits at PR 53, and still waits at PR 60 for SC-1's W-139 and at PR 56
-for OP-1's W-352. Next: SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56; DR-1
-notes on PR 65's records, before PR 65 lands, that its `IndirectIndexWith.Ref`
-takes `bound self` under W-144, with the counterexample of
-fork/safe/safe2-plan.md section 0.8; then EH-C (W-346) after the held PRs land,
-then UA-3; the weekly upstream check of 2026-11-02 runs W-355's scripts over 284
-quotes and 89 silence checks.
+and was never a PR or a base, was deleted before this stamp. SAFE-3 made no
+build, merge or dispatch; Actions is still disabled, and merges are the
+orchestrator's under R33: <held>. Merge order: PR 67 (RG-1), then PR 53, 51, 52,
+60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, 66, then PR 68 (OV-4) through
+its land-time commits M, F-M, L-R and L (fork/overload/ov4-plan.md section 3);
+the sequence no longer waits at PR 53, and still waits at PR 60 for SC-1's W-139
+and at PR 56 for OP-1's W-352. Next: SC-1's W-139 on PR 60 and OP-1's W-352 on
+PR 56; DR-1 notes on PR 65's records, before PR 65 lands, that its
+`IndirectIndexWith.Ref` takes `bound self` under W-144, with the counterexample
+of fork/safe/safe2-plan.md section 0.8; then EH-C (W-346) after the held PRs
+land, then UA-3; the weekly upstream check of 2026-11-02 runs W-355's scripts
+over 284 quotes and 89 silence checks.
 ```
 
 ```markdown

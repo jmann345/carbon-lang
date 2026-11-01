@@ -6,10 +6,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # LAND-1 plan: landing the held PRs into trunk under R33
 
-**Status:** rev 2, 2026-11-01 -- reviews A and B of rev 1 folded (25 findings,
-none rejected; see the review fold record at the end), not signed off: the
-re-review decides. Rev 1 was the planner's draft of 2026-11-01. Records only:
-this plan changes no toolchain, prelude, golden, program or workflow file. It
+**Status:** rev 3 -- NOT signed off: RR1-1 (BLOCKER) and RR1-2 (MAJOR), the
+focused re-review's N1 and N2, folded here with its four MINORs, RR1-3 to
+RR1-6 (see the focused re-review fold record at the end); the next re-review
+decides. Rev 2 (2026-11-01) folded reviews A and B of rev 1, 25 findings, none
+rejected (the review fold record); rev 1 was the planner's draft of the same
+day. Records only: this plan changes no toolchain, prelude, golden, program or
+workflow file. It
 carries out fork/rulebook.md R33 and decision-log entry LD-0 (the owner,
 2026-11-01: "Go ahead and merge changes that are correct"), scheduled by
 fork/ORCHESTRATION.md's Next actions lead (trunk bb9fbba9c :1171-1175) and its
@@ -56,6 +59,7 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Appendix B: the ORCHESTRATION stamps
 -   Appendix C: each landing's fields, targets and own texts
 -   Review fold record (rev 2, 2026-11-01)
+-   Focused re-review fold record (rev 3, 2026-11-01)
 
 Conventions. `trunk` is origin/trunk bb9fbba9c unless a section says otherwise.
 A file:line cite names the sha it was read at. `$P` is the planner's scratch
@@ -63,6 +67,8 @@ directory
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/planner,
 `$F` the rev-2 fixer's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer,
+`$F1` the rev-3 fixer's
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer1,
 `$CB` the arbiter's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/carbonbuild,
 and `$X` the expected trees, `$F/expected` (rev 1's `$P/expected` is superseded
@@ -77,14 +83,17 @@ survives into a commit (amended 2026-11-01, review fold: B-M5 / B-m6).
 | `<prev>` | the date in the current ORCHESTRATION header's first clause | that clause, read before the records edit |
 | `<trunk before>` | origin/trunk before the landing | `git rev-parse --short=9 origin/trunk` at step 1 |
 | `<head>` | the PR's pushed head | `git ls-remote origin` at step 1 (section 0.1's value) |
+| `<base>` | the PR's base branch, which is `trunk` at every landing (PR 64 and PR 65 after their retargets) | `pull_request_read`'s `base` at step 1 (added 2026-11-01, review fold: RR1-6) |
 | `<merge sha>` | the landing's merge commit | `git rev-parse --short=9 HEAD` after step 5 |
 | `<land-time shas>` | the commits after the merge, oldest first, comma-separated, or `none` | `git log --reverse --format=%h <merge sha>..HEAD` before the records commit |
 | `<conflicts>` | each conflicted file as `<path> (<regions>, <rule>)`, in `git diff --name-only --diff-filter=U` order, a file or region not in `$X` marked `not in the dry run` | step 3 |
 | `<refilled>` | each refilled golden as `<path> (<PRs whose changes combine>)` | step 7 |
-| `<g>` | the gate's passing count, which is its total | `gate.log`'s `[ PASSED ] <g> tests` |
+| `<g0>`, `<gn>` | the merge's gate at step 4, before any refill: tests passed and tests run | step 4's `gate.log`: `[  PASSED  ] <g0> tests` and `[==========] <gn> tests from 1 test suite ran` (added 2026-11-01, review fold: RR1-6) |
+| `<g>` | the landing's final gate (after step 7's refill, or step 4's when nothing is refilled): tests passed, which equals tests run | that gate's `gate.log`, `[  PASSED  ] <g> tests` |
 | `<p>`, `<f>`, `<s>`, `<n>` | conformance PASS, FAIL (the five failure kinds summed), SKIP and programs | the landing's `scoreboard.json` `totals` |
 | `<b>` | bullets PASS of 56 | the landing's `scoreboard.json` `bullets` |
 | `<tally>` | the gap tally as DONE/PARTIAL/MISSING/DESIGN-ONLY | `python3 -I $F/bin/gaptally.py fork/gap-analysis.md` after the records edits |
+| `<t1>`, `<t2>`, `<t3>`, `<t4>` | `<tally>`'s four numbers, DONE, PARTIAL, MISSING and DESIGN-ONLY | as `<tally>` (added 2026-11-01, review fold: RR1-5) |
 | `<tip>` | upstream trunk's head | `git fetch upstream` then `git ls-remote upstream refs/heads/trunk`, 9 characters, at the check |
 | `<q>`, `<qf>`, `<c>`, `<cf>` | quotes checked and failed, silence checks checked and failed | check_quotes.sh and check_greps.sh output at `<tip>` (D-LAND-19) |
 | `<landed>`, `<held>` | PRs landed and held after this landing | the stage number (section 3) and 18 minus it |
@@ -325,8 +334,9 @@ the compositions of D-LAND-5 and the two land-time commits named above, and no
 other land-time commit: not the records commits (rows, paragraphs, headers,
 ledger notes, decision-log sentences, Landed paragraphs), not TP-1's F6 and L,
 EV-1's state C, CT-1's L-F and L, DR-1's L-a, C-b and L-b, OV-4's L-R, nor
-Appendix B.1's stamp. A later merge can conflict with those: two are predicted
-from the heads (PR 65's merge against PR 63's Landed paragraph in
+Appendix B.1's stamp (TP-1's L and CT-1's L are applied apart, below; amended
+2026-11-01, review fold: RR1-2). A later merge can conflict with those: two are
+predicted from the heads (PR 65's merge against PR 63's Landed paragraph in
 fork/direction/plan.md and its decision-log sentence in DR-1's entry, PL-1 and
 DL-4), and a refill or a records text may meet a later PR's edit (PR 63's
 range_for against F6's refill; PR 64's W-043 against PR 58's records note). So
@@ -334,6 +344,27 @@ the conflict sets above are those of this sequence, not of the landings
 themselves: D-LAND-6 step 2a re-runs the remaining merges over the pushed trunk
 before each landing, and step 3 compares the landing's conflict set and regions
 with `$X` and records every difference.
+
+The two L commits over the state-L split (added 2026-11-01, review fold: RR1-2).
+PR 58's state-L commit 94dba6b21 removes "held PR 51" from the lines that TP-1's
+and CT-1's L texts quote, so neither applies as written: `git apply --check` of
+TP-1's templates.md diff, extracted from 66aa13132 fork/templates/plan.md
+Appendix C by `$F1/bin/extract_l61.py`, fails on the PR 61 scratch merge
+d03be4456 ("patch failed: docs/design/templates.md:361", hunk 9), and `patch`
+takes that hunk only with fuzz 1; CT-1's C.1 anchor "(fork work item W-043, and
+W-127 on held PR 51)." occurs nowhere on the PR 64 scratch merge e21480b05
+(`$F1/n2_apply_check.txt`). With section 2.7's and Appendix C.8's state-L
+context for hunk 9 and comments for X20 and X23, and Appendix C.10's anchor,
+both apply in scratch commits outside the chain (never pushed): TP-1's L on
+d03be4456 is 9e0ccecdb, where DD-1's checker reports "19 program blocks, 70
+fixtures, 2 W2 hits (1 allowlisted, 1 qualified); 0 errors"; on e21480b05,
+TP-1's L (f0d62063d) then CT-1's L by `$F1/bin/apply_l64.py` (6f6e2f388) give
+71 fixtures and 0 errors (`$F1/n2_l61_checker.txt`, `n2_l64_checker.txt` and
+`n2_shas.txt`). No later merge of the run touches a file
+either L edits (`git diff --stat d03be4456 5cf7406f1` over
+docs/design/templates.md, docs/design/interoperability/ and fork/designdocs/ is
+empty), so the chain's later commits are unchanged by them. The `--toolchain`
+mode is the landing's (section 6).
 
 Records interactions the dry run found that no plan names (each is a records
 correction in the named landing's records commit, not a merge rule): at PR 58,
@@ -389,23 +420,47 @@ eval.cpp, impl_lookup.cpp, member_access.cpp, expr_info.cpp and typed_insts.h
 (61, 64, stacked); core/prelude/iterate.carbon (63, 65, stacked). Only the
 first two combine two unstacked PRs' goldens, at PR 63 and PR 65, and their
 refills are DR-1's L-a and L-b. The plans predict these further refills at the
-landings where they apply: TP-1's F6 (PR 51's `fail_todo_unformed_dependent_var`
-split renamed `unformed_dependent_var` and refilled, and TP-1's seven refills
-recomputed on the merged tree), SV-1's F-M (its own goldens; the PR 57 part
-waits), CT-1's L-F (C.11's split waits with S-VA; the PR 51 split's rename is
-TP-1's, so CT-1 takes section 1.16's fallback), DR-1's L-a (check and lower
+landings where they apply: TP-1's F6 (TP-1's seven refills recomputed on the
+merged tree, and PR 51's split `fail_todo_unformed_dependent_var` refilled
+under its own name, CHECK lines only: the split's shape still fails on TP-1's
+toolchain, so F6 does not rename it), SV-1's F-M (its own goldens; the PR 57
+part waits), CT-1's L-F (C-2's rename of that split to `unformed_dependent_var`
+and its refill, the shape compiling on CT-1's toolchain; C.11's split waits
+with S-VA), DR-1's L-a (check and lower
 generic/template/for_range and interop/cpp/range_for; the m57 three wait), L-b
 (check generic/template/index, slice/write_through's renamed split,
 string_indexing 2/2) and OV-4's F-M (predicted none). Prelude changes (PR 55,
 62, 63, 65) can move full-prelude dumps; the gate finds any such golden and
 D-LAND-8 refills it.
 
+F6 and C-2, measured (added 2026-11-01, review fold: RR1-1). CT-1 found that
+TP-1's predicted rename fails: 551a03328 fork/cpp-templates/plan.md C-2
+(:864-878, "So TP-1's F6 rename would leave a split without the `fail_`
+prefix that still reports an error ... the rename and refill move to CT-1's
+land-time fill") and hand-off note H-1 (:4297-4305). Reproduced by this
+revision on the split's shape, `fn F[T: type](unused x: T) { var unused v:
+Cpp.S(T); }` with PR 51's header (`$F1/n1probe`): the TP-1 install
+/home/user/carbon-build/carbon-tp (version eafca5cb9, whose toolchain/ and
+core/ differ from 66aa13132 only in two testdata files) reports "cannot convert
+type `S(<cannot stringify inst59000038: {kind: TemplateInst, ...}>)` into type
+implementing `Core.DefaultOrUnformed`", exit 1; the CT-1 install (224ee2f8f,
+the same relation to 551a03328) compiles it, exit 0; trunk's (0bdce60a5)
+reports the `<splice of ...>` form PR 51's CHECK lines hold. file_test reports a
+split without the `fail_` prefix that fails as a problem autoupdate cannot fix
+(testing/file_test/file_test_base.cpp:131-160, `GetFailPrefixProblems`), so a
+rename at PR 61 would stop stage 7. F6 therefore keeps the name, and PR 64's
+L-F renames the split; CT-1's section 1.16 fallback, which assumed PR 61 landed
+the rename, does not apply.
+
 The gap tally of each scratch commit's rows (`$F/bin/gaptally.py`, rev 2) is
 30/21/4/1 at trunk, PR 67 and PR 51; 32/20/3/1 at PR 52; 33/19/3/1 at PR 54;
 34/18/3/1 at PR 55; 35/17/3/1 from PR 58 to PR 63; and 36/16/3/1 at PR 65 and
 PR 68, where DR-1b's row 79 is DONE. The header the merges keep says 32/20/3/1
-from PR 52 on, so the records commits of PR 54, 55, 58 and 65 rewrite it with
-the measured `<tally>` (amended 2026-11-01, review fold: A-B1). Six rows move
+from PR 52 on, with CM-1's "130 PASS / 0 FAIL / 20 SKIP over 150 programs, 49/56
+bullets PASS, stated as expected, not of record (Actions disabled)", so every
+landing's records commit rewrites the header's first sentence by Appendix A.8
+with the measured `<tally>` and the landing's container-measured scoreboard
+(amended 2026-11-01, review fold: A-B1 / RR1-5). Six rows move
 to DONE: rows 84 and 87 at PR 52 ("Project: toolchain drop-in usage as Clang
 C++ toolchain with common Make/CMake build systems" and "Project: CMake
 build-system integration plus Make documentation"), row 90 at PR 54 ("Project:
@@ -669,7 +724,9 @@ amended 2026-11-01, review fold: A-M2 / A-M4 / A-m3 / B-B1 / B-M4 / B-m2):
 
 1.  `git fetch origin`; confirm `git ls-remote origin` shows H for PR N's
     branch (a moved head stops the landing) and trunk where the last push
-    left it.
+    left it; `pull_request_read` for PR N gives `<base>`, which must be
+    `trunk` (another base stops the landing; added 2026-11-01, review fold:
+    RR1-6).
 2.  `git checkout trunk && git pull --ff-only`; then, in a scratch worktree
     under /dev/shm, `git merge-tree --write-tree --name-only` of H and of each
     later ready head onto the pushed trunk, recorded with the differences
@@ -749,25 +806,31 @@ before PR 67 and the difference is the first finding.
 files the gate names, to its fixpoint, in a commit of its own whose message
 names each file and which PRs' changes combined in it; a refill that changes a
 line other than a CHECK line, or a golden no merged PR or plan explains, stops
-the landing. A rename a plan specifies before a refill (TP-1's F6, DR-1's
-L-b) is its own commit before the autoupdate. _Break condition:_ none.
+the landing. A rename a plan specifies before a refill (CT-1's C-2 at PR 64's
+L-F, DR-1's L-b) is its own commit before the autoupdate; TP-1's F6 renames
+nothing (section 0.7; amended 2026-11-01, review fold: RR1-1). _Break
+condition:_ none.
 
 **D-LAND-9, the records texts** ("Land PR N: records", committed at step 12)
 write Appendix A.3's row, A.4's dated paragraph and header, A.5's Landed
 paragraph in the PR's plan, A.6's decision-log sentence, Appendix C's texts for
 the landing (the plan's own land-time records texts, the OR-5 carries, the
 GA-1c and GA-2 texts, the ledger notes and the Next actions marks), each at
-the target Appendix C names, and the gap header from `<tally>` when GA-2 kept
-trunk's. No free text is written: a text this plan does not give is a stop
-(D-LAND-10). (Amended 2026-11-01, review fold: B-M5 / A-B1.) _Break
+the target Appendix C names, the gap header's first sentence by A.8 at every
+landing, ORCHESTRATION's Scoreboard paragraph by A.9, and A.10's mark on each
+landed gap row that A.10 lists. No free text is written: a text this plan
+does not give is a stop (D-LAND-10). (Amended 2026-11-01, review fold: B-M5 /
+A-B1 / RR1-5.) _Break
 condition:_ a plan's land-time text that contradicts the merged trunk; the
 records texts state the measured fact and cite the plan's line (R17), never
 the stale text.
 
 **D-LAND-10, the review and stop-and-amend.** Fresh agents review each landing
 before phase 1: one for every landing, and two for PR 61 (TP-1's section 3
-item 9, the merged head's implementation reviews A and B, one of which also
-reviews L as its document review, item 11). The review covers the merge
+item 9, the merged head's implementation reviews A and B, both of which also
+review L as its document review, item 11, because TP-1's section 2.9 says "L
+is reviewed by a document review (two reviewers, R29(c))"; amended
+2026-11-01, review fold: RR1-3). The review covers the merge
 commit's diff against both parents (which is only the conflict resolution
 against the PR's side), the code, page and refill commits, the logs, the
 conformance comparison and `records.patch`, against this plan and the PR's
@@ -936,8 +999,10 @@ Head f96fe8a7a (the container fill), base trunk. Conflicts: gap-analysis
 ledger (LG-1, 14 decisions). Steps: merge; D-LAND-19's checks; records with
 RG-1's UA-2 land-time note after its register block (Appendix C.3; amended
 2026-11-01, review fold: B-M2 / B-M5). Expected: 1945 of 1945 (its own gate);
-131/0/19 over 150. Gap-row check: no row named. Deferred: none (TP-1's rename
-of its split is PR 61's F6). Its committed scoreboard.json is D-LAND-17's.
+131/0/19 over 150. Gap-row check: no row named. Deferred: none (its split
+`fail_todo_unformed_dependent_var` is refilled under its name by PR 61's F6
+and renamed by PR 64's L-F, C-2; amended 2026-11-01, review fold: RR1-1). Its
+committed scoreboard.json is D-LAND-17's.
 
 ### §2.3 PR 52, CM-1
 
@@ -1033,23 +1098,33 @@ ORCHESTRATION (OR-3, OR-4, OR-5), README-1 (192 programs), gap-analysis
 (GA-1c on row 54), ledger (LG-1, W-014 both edited). Steps, mapping section 3
 items 7 to 13 (amended 2026-11-01, review fold: B-M6): item 7, M, is the merge
 ("M resolves conflicts only", fork/templates/plan.md:5192-5205); item 8's S
-moves to G-60, and F6 is the refill: PR 51's `fail_todo_unformed_dependent_var`
-split renamed `unformed_dependent_var` (a rename commit before the
-autoupdate, the only non-CHECK edit, as F6 specifies), then every golden the
-gate names, with TP-1's seven refills recomputed; item 9's implementation
-reviews A and B on the merged head are D-LAND-10's two reviewers; item 10's
-fix commits, if a review finds a defect in the PR, go to PR 61's branch
-(D-LAND-10); item 11: the id re-scan of the front matter, then L "Land PR 61:
-TP-1 integration with PR 58" with Appendix C's texts (:16086 on) over PR 58's
-pages, both checker modes on L and on any fold commit, and L's document review
-by reviewer B with its fold commit if it finds anything; item 12, R: row 54
+moves to G-60, and F6 is the refill of every golden the gate names, with
+TP-1's seven refills recomputed and PR 51's split refilled under its name
+`fail_todo_unformed_dependent_var`, CHECK lines only: F6 drops TP-1's rename
+of that split (:5212-5214 and Appendix A's F6 line, :15210-15212), because the
+split's shape still fails on TP-1's toolchain and file_test rejects a failing
+split without the `fail_` prefix (section 0.7; CT-1's C-2 and H-1), and PR
+64's L-F renames it (section 2.9; amended 2026-11-01, review fold: RR1-1);
+item 9's implementation reviews A and B on the merged head are D-LAND-10's
+two reviewers; item 10's fix commits, if a review finds a defect in the PR, go
+to PR 61's branch (D-LAND-10); item 11: the id re-scan of the front matter,
+then L "Land PR 61: TP-1 integration with PR 58" with Appendix C's texts
+(:16086 on) as Appendix C.8 adapts them to PR 58's state-L text (hunk 9's
+context line and the comments of X20 and X23 without "held PR 51"; amended
+2026-11-01, review fold: RR1-2), both checker modes on L and on any fold
+commit, and L's document review by both reviewers, A and B, with a fold
+commit if either finds anything (TP-1's section 2.9, "two reviewers, R29(c)";
+amended 2026-11-01, review fold: RR1-3); item 12, R: row 54
 recomposed by section 2.8's rule over the merged row, which is not PR 58's
 text verbatim (it carries the UA-2 sentence GA-1b appended), so R keeps it and
 appends TP-1's sentence, re-citing every file:line to the landing's tree; item
 13, D: Appendix E's land-time texts (:17744 on: W-014's notes, the discharges
-of W-127, W-183, W-192 and W-193, the held-state sentences replaced by the
-merged tree's values), the landed notes with both id re-scans' outcomes (the
-one before L and one before the records commit). Expected: 1968 of 1968;
+of W-127, W-183, W-192 and W-193, W-127's as Appendix C.8 gives it, the
+held-state sentences replaced by the merged tree's values), the landed notes
+with both id re-scans' outcomes (the one before L and one before the records
+commit), and C.8's F6 sentence at the end of A.5 and A.6 (amended 2026-11-01,
+review fold: RR1-1). Expected: 1968 of 1968, the split passing as a `fail_`
+split;
 177/0/15 over 192. Gap-row check: row 54 named (R writes it). Deferred to
 G-60: S (member_access.cpp, :5206-5212); to G-59: the VA-1 compositions F6
 measured as none.
@@ -1086,16 +1161,24 @@ programs), PROG-1 on the two programs (PR 51's header with C.6's paragraph
 appended, `<YYYY-MM-DD>` the landing date, and CT-1's body, `var b:
 Cpp.Box(T);`), decision-log (DL-1), gap-analysis (GA-1c on rows 42 and 56),
 ledger (LG-7: W-043 "taken from DD-1's side whole", CT-1's discharge reapplied
-by the records commit, fork/cpp-templates/plan.md:2730-2737). Steps: merge;
-S-VA moves to G-59; L-F refills (C-2's fallback: the rename is PR 61's); L
-"Land PR 64: CT-1 interoperability page and fixture X37 over PR 58" (C.1,
-X37 with its `SAMPLES` entry after X09's and X09's limit comment, checked with
-`--toolchain`); records: rows 56 and 42 by C.4, found by bullet text, with the
-interop golden counts measured on the landing's tree, C.2's discharge over
-DD-1's W-043 (including the PR 58 note of section 2.6), W-127's sentence
-(C.10), the id re-scan. Expected: 1978 of 1978; 189/0/15 over 204. Gap-row
-check: rows 42 and 56 named (C.4 replaces them). Deferred to G-59: S-VA and
-C.11's split.
+by the records commit, fork/cpp-templates/plan.md:2730-2737). Steps: merge; S-VA
+moves to G-59; L-F, by C-2's own rule (fork/cpp-templates/plan.md:864-878 and
+section 2.11 item 3; not section 1.16's fallback, since PR 61's F6 keeps the
+name): first a rename commit, "Land PR 64: PR 51's split renamed for CT-1's L-F
+(C-2)", whose only edits are this plan's Appendix C.10 texts for
+toolchain/check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon
+(the split line, as TP-1's Appendix A F6 line gives it, and a dated header
+note); then the refill of every golden the gate names, that split among them,
+which CT-1's toolchain compiles (section 0.7; amended 2026-11-01, review fold:
+RR1-1); L "Land PR 64: CT-1 interoperability page and fixture X37 over PR 58"
+(C.1, with this plan's Appendix C.10 anchor; X37 with its `SAMPLES` entry after
+X09's and X09's limit comment, checked with `--toolchain`; the dry run's checker
+result is section 0.5's; amended 2026-11-01, review fold: RR1-2); records: rows
+56 and 42 by C.4, found by bullet text, with the interop golden counts measured
+on the landing's tree, C.2's discharge over DD-1's W-043 (including the PR 58
+note of section 2.6), W-127's sentence (C.10), the id re-scan. Expected: 1978 of
+1978; 189/0/15 over 204. Gap-row check: rows 42 and 56 named (C.4 replaces
+them). Deferred to G-59: S-VA and C.11's split.
 
 ### §2.10 PR 63, DR-1a
 
@@ -1248,7 +1331,8 @@ delta is its recorded expected PASS over its own base (section 0.1).
 
 Bullets: 48 PASS at the baseline; never below the previous landing's count;
 the bullets of rows that move to DONE (section 0.7) PASS at that landing. A
-renamed split (F6, L-b) keeps the gate count; a land-time commit that adds or
+renamed split (C-2 at PR 64's L-F, L-b; amended 2026-11-01, review fold:
+RR1-1) keeps the gate count; a land-time commit that adds or
 removes a golden names it, and the count moves by exactly that. The arbiter's
 values are recorded beside these; a difference D-LAND-18 does not explain
 stops the landing.
@@ -1312,7 +1396,14 @@ commit from PR 54 on; the gap-row check on rev 1's and rev 2's merges; the gap
 tallies; the follow-on merge-trees onto 5cf7406f1; the id re-scan for W-367 to
 W-370; the safe3 log of the register checks at 68569d234; the DR-1 probe
 sources and runner; the decision-log and plan-file anchors of Appendix C on the
-dry run's tree. Not run by the planner or the fixer, by rule: any build, gate,
+dry run's tree. Rev 3's fixer, measured (2026-11-01, review fold: RR1-1 to
+RR1-6): `git ls-remote` of all eighteen heads (unchanged); the split shape of
+section 0.7 compiled with the existing installs of TP-1, CT-1 and trunk (no
+build); TP-1's L extracted and applied with `git apply`, as written and with
+C.8's state-L context, on d03be4456, and CT-1's L with Appendix C.10's anchor on
+e21480b05, with DD-1's checker (section 0.5); the B.1 anchors and the A.10
+rows on bb9fbba9c and the scratch commits; the SV-1 id-list lines of C.9.
+Not run by the planner or the fixers, by rule: any build, gate,
 autoupdate or conformance run; the checkers' `--toolchain` mode; the merged
 trees' compilation (the TC-1 and TC-2 files are mechanical references, built
 first by stage 10 and stage 11); the register checks at a tip. Not run by
@@ -1328,7 +1419,8 @@ hosted gate, which R33 (b) owes when Actions returns.
     lines until the refill, and the dry run's PR 62 row-68 count is the
     placeholder `<p>/<f>/<s> over <n>`.
 2.  Run `$F/bin/gaptally.py fork/gap-analysis.md` in each records commit and
-    write the header from it; run `$F/bin/rowcheck.py` as step 9 says.
+    write the header's first sentence from it by Appendix A.8; run
+    `$F/bin/rowcheck.py` as step 9 says.
 3.  The google-doc-style hook rewrites some words inside code spans; check
     every records text after prek and restore code by hand (SAFE-1's hand-off
     note 4).
@@ -1344,6 +1436,14 @@ hosted gate, which R33 (b) owes when Actions returns.
     named in every records commit message (section 0.9).
 7.  The state-L texts of section 2.6 are the ones the dry run applied
     (`$F/bin/stateL58.py`); the literals.md note's date is the landing date.
+8.  At PR 61, PR 51's split keeps `fail_todo_unformed_dependent_var` and F6
+    refills its CHECK lines only; at PR 64, L-F renames it by Appendix C.10
+    before the autoupdate. If PR 61's gate reports that split as succeeded ("if
+    success is expected, remove the `fail_` prefix"), or PR 64's as failed, the
+    toolchain is not the one section 0.7 measured: the landing stops
+    (D-LAND-10). The L texts are `$F1/bin/extract_l61.py`'s output with
+    `--state-l` and `$F1/bin/apply_l64.py` with Appendix C.10's anchor, as
+    section 0.5 applied them (added 2026-11-01, review fold: RR1-1 / RR1-2).
 
 ## Appendix A: the per-landing record templates
 
@@ -1364,13 +1464,20 @@ into trunk <trunk before> under R33, as fork/land/land1-plan.md section
 
 Conflicts and rules: <conflicts>.
 
-Container-measured on the merge's tree (R33 (b)): build ok; gate <g>
-of <g>; conformance <p>/<f>/<s> over <n>, bullets <b> of 56. prek clean
-on the resolved files (SKIP=fix-cc-deps,check-build-graph,
-check-bazel-mod-deps,forbid-llvm-googletest).
+Container-measured on the merge's tree (R33 (b)): build ok; gate <g0>
+of <gn> before any refill (each golden that fails is refilled by this
+landing's refill commit, fork/land/land1-plan.md Appendix A.2, which
+states the gate after it); conformance <p>/<f>/<s> over <n>, bullets <b>
+of 56. prek clean on the resolved files (SKIP=fix-cc-deps,
+check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest).
 
 <trailers>
 ```
+
+The merge's `<g0>` and `<gn>` are step 4's; `<g0>` equals `<gn>` when
+nothing fails, and then no refill commit follows. The conformance values of
+A.1 are the merge's too; A.3 to A.7 carry the landing's final ones (amended
+2026-11-01, review fold: RR1-6).
 
 ### A.2 The refill commit's message
 
@@ -1449,6 +1556,59 @@ Record: fork/ORCHESTRATION.md's paragraph dated <date> (<hh:mm> UTC).
 
 It is prepended to the PR's description, which is otherwise unchanged.
 
+### A.8 The gap header's first sentence
+
+Added 2026-11-01 (review fold: RR1-5). At every landing, in
+fork/gap-analysis.md's "Scoreboard" section, the text from the paragraph's
+start through its first "fork/inventory/work-items.json ledger;" is replaced
+by this (the rest of the paragraph, from "the original 2026-07-19 audit read",
+stays):
+
+```text
+**<t1> DONE / <t2> PARTIAL / <t3> MISSING / <t4> DESIGN-ONLY** across 56
+milestone bullets (reconciled <date> at PR <N>'s landing, LAND-1, against
+that landing's container-measured conformance scoreboard, R33 (b) — <p>
+PASS / <f> FAIL / <s> SKIP over <n> programs, <b>/56 bullets PASS — and the
+fork/inventory/work-items.json ledger;
+```
+
+### A.9 ORCHESTRATION's Scoreboard paragraph
+
+Added 2026-11-01 (review fold: RR1-5). At every landing, directly under
+fork/ORCHESTRATION.md's heading "Scoreboard (source of truth: run the suite,
+don't trust this line)", this paragraph is put before the hosted record, in
+place of the previous landing's paragraph of this form:
+
+```text
+Container-measured at PR <N>'s landing (<date>, LAND-1, R33 (b)): <p> PASS
+/ <s> SKIP / <f> FAIL programs (<n> total); **<b>/56 bullets green**; gate
+<g> of <g>. R21's hosted run is owed when Actions returns; the paragraph
+below is the last hosted record.
+```
+
+### A.10 The mark on a landed gap row's labels
+
+Added 2026-11-01 (review fold: RR1-5). Each gap row below carries a "not of
+record" label (in any case, "EXPECTED, not of record" among them) that its
+PR wrote while it was held, measured on the dry run's scratch commits; the
+landing's records commit appends this before the row's closing `|`:
+
+```text
+ (Landed <date> as PR <N>, LAND-1: each "not of record" label above is superseded by this landing's container-measured scoreboard, R33 (b), <p>/<f>/<s> over <n> with <b>/56 bullets.)
+```
+
+The rows, by landing: PR 52, rows 84 ("Project: toolchain drop-in usage as
+Clang C++ toolchain with common Make/CMake build systems") and 87 ("Project:
+CMake build-system integration plus Make documentation"); PR 54, row 90
+("Project: basic evaluator documentation (getting started to FAQs)"); PR 55,
+row 77 ("Stdlib: String and string-literal types"); PR 58, row 70 ("C++
+interop: threading, atomics, memory model, synchronization", two labels);
+PR 65, rows 79 ("Stdlib: Slices") and 82 ("Stdlib C++ interop: transparent
+non-owning contiguous container mapping (incl. owning->view)"); PR 68, row
+60 ("Functions: function overloading (Carbon-native)"). No other landing
+brings such a label; trunk's rows carry none. Each row is found by its bullet
+text. The gap-row check of D-LAND-6 step 9 runs after the mark.
+
 <!-- google-doc-style-resume -->
 
 ## Appendix B: the ORCHESTRATION stamps
@@ -1470,8 +1630,31 @@ PR 67, 51, 52, 54, 55, 58, 61, 62, 64, 63, 65 and 68. Six wait, each for
 its follow-on (Next actions items 14 to 17): PR 53 (SAFE-3), PR 60 (W-139
 and item 10), PR 56 and PR 57 (W-352 and item 10), and PR 59 with PR 66
 (item 13's fix, W-367, and note 7's ruling, D-LAND-2). W-367 to W-370 are
-reserved to LAND-1. Eighteen PRs are held open; none is merged yet.
+reserved to LAND-1. Eighteen PRs are held open; none is merged yet. The
+Branches rows' merge positions are superseded by this order: each landing
+rewrites its PR's row, and each waiting PR's row carries a dated mark.
 ```
+
+In each waiting PR's Branches row, directly after the merge-position clause
+quoted first, the mark that follows it (added 2026-11-01, review fold:
+RR1-5):
+
+```text
+claude/carbon-fork-0-1-safe, after "merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5)":
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for SAFE-3 and lands by Next actions item 14)
+claude/carbon-fork-0-1-sc, after "merges after PR 52, before PR 54":
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 15 once W-139's fix and item 10 are done)
+claude/carbon-fork-0-1-op, after "merges after PR 55":
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 once W-352's commit and item 10 are done)
+claude/carbon-fork-0-1-op2, after "merges after PR 56, before DD-1":
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 after PR 56)
+claude/carbon-fork-0-1-va, after "merges after PR 58":
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 once item 13's fix and note 7's ruling are on its branch)
+claude/carbon-fork-0-1-va2, after "merges last after PR 65 through M, S-CT, F-M, L-F and L":
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 after PR 59)
+```
+
+Each quoted clause occurs once in its row at bb9fbba9c (measured).
 
 The header clause, put before the current "Last updated: " line as A.4 says:
 
@@ -1610,9 +1793,9 @@ empty):
 | 54 | ev | 2.4 | EV-1 | EV-1, evaluator documentation | the evaluator guides and transcribed programs, in state C with PR 52; gap row 90 DONE; W-062 discharged, W-152, W-153 and W-155 filed | none | PR 55 (ST-1) |
 | 55 | st | 2.5 | ST-1 | ST-1, str comparison, Core.StringBuf and concatenation | F-014: str comparison, Core.StringBuf and concatenation; gap row 77 DONE; W-057 discharged, W-160 to W-167 filed | to Next actions item 14: W-144's additions, the seven SAFE-1 reconciliation edits and the cross-branch re-cites | PR 58 (DD-1) |
 | 58 | dd | 2.6 | DD-1 | DD-1, design docs without placeholders | design docs without placeholders, with state L for PR 51, PR 54 and PR 55; gap row 70 DONE, row 91 PARTIAL until state L for PR 53, PR 56 and SC-1; W-065 discharged | to items 14, 15 and 16: state L for PR 53, SC-1 and PR 56 | PR 61 (TP-1) |
-| 61 | tp | 2.7 | TP-1 | TP-1, integrated templates | integrated templates with F6 and L over PR 51 and PR 58; W-127, W-183, W-192 and W-193 discharged; gap row 54 PARTIAL | to item 15: S; to item 17: the VA-1 compositions | PR 62 (SV-1) |
-| 62 | sv | 2.8 | SV-1 | SV-1, std::optional and std::variant interop mapping | F-020: std::optional and std::variant interop mapping; W-011 DISCHARGED; gap row 68 PARTIAL | to item 17: M-VA and W-284; to item 16: Doc-M, C.5, C.8, the W-177 header cite and F-M's PR 57 part | PR 64 (CT-1), after the orchestrator retargets it to trunk |
-| 64 | ct | 2.9 | CT-1 | CT-1, C++ templates on symbolic Carbon type arguments | F-021: C++ templates on symbolic Carbon type arguments, instantiated per specific; W-043 DISCHARGED; gap rows 56 and 42 PARTIAL | to item 17: S-VA and C.11's split | PR 63 (DR-1a) |
+| 61 | tp | 2.7 | TP-1 | TP-1, integrated templates | integrated templates with F6's refills (PR 51's split refilled under its fail_todo_ name, which PR 64's L-F renames) and L over PR 58; W-127 for the template shape, W-183, W-192 and W-193 discharged; gap row 54 PARTIAL | to item 15: S; to item 17: the VA-1 compositions | PR 62 (SV-1) |
+| 62 | sv | 2.8 | SV-1 | SV-1, std::optional and std::variant interop mapping | F-020: std::optional and std::variant interop mapping; W-011 DISCHARGED; W-284 held until M-VA lands (item 17); gap row 68 PARTIAL | to item 17: M-VA and W-284; to item 16: Doc-M, C.5, C.8, the W-177 header cite and F-M's PR 57 part | PR 64 (CT-1), after the orchestrator retargets it to trunk |
+| 64 | ct | 2.9 | CT-1 | CT-1, C++ templates on symbolic Carbon type arguments | F-021: C++ templates on symbolic Carbon type arguments, instantiated per specific; PR 51's split renamed unformed_dependent_var by L-F (C-2); W-043 DISCHARGED; gap rows 56 and 42 PARTIAL | to item 17: S-VA and C.11's split | PR 63 (DR-1a) |
 | 63 | dr | 2.10 | DR-1a | DR-1a, Core.Iterate.Next takes a ref cursor | R32: Core.Iterate.Next takes a ref cursor; W-321 discharged | to item 16: loops.md's M-a rule and the m57 refills | PR 65 (DR-1b), after the orchestrator retargets it to trunk |
 | 65 | dr-idx | 2.11 | DR-1b | DR-1b, subscripting prefers IndirectIndexWith | R32: subscripting prefers IndirectIndexWith and Core.Slice and Core.Buf write through Ref, with C-b over TP-1; W-109 and W-340 discharged; gap row 79 DONE | none | PR 68 (OV-4) |
 | 68 | ov4 | 2.12 | OV-4 | OV-4, `overload fn` members with default parameter values | W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3 | to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order | Appendix B.2's stamp, then the follow-ons |
@@ -1796,13 +1979,72 @@ Veto-able." OR-5: DD-1's note, verbatim after item 3's text:
 
 ### C.8 PR 61's own texts
 
-TP-1's: L's texts are 66aa13132 fork/templates/plan.md Appendix C (:16086 on);
+TP-1's: L's texts are 66aa13132 fork/templates/plan.md Appendix C (:16086 on),
+adapted to PR 58's state-L commit (section 2.6), which removed "held PR 51"
+from three lines they quote (amended 2026-11-01, review fold: RR1-2). The
+templates.md diff's hunk 9 (:16234-16245) is this, its first context line
+being state L's:
+
+```diff
+@@ -361,6 +423,11 @@
+     compiles (fork work item W-127). A method of a class with a
+     template parameter is rejected the same way, as the fork note in
+     [Types with template parameters](#types-with-template-parameters) shows.
++    (Resolved by TP-1, <date>: `F(5 as i32)` returns 5 for the function
++    whose body is `var y: T; y = x; return y;`; for a tuple argument, the
++    instantiation reports that `(i32, i32)` does not implement
++    `Core.DefaultOrUnformed`, as `var y: (i32, i32);` does without a template
++    parameter.)
+ -   `partial T*` for a template parameter `T` is rejected with
+     `` `partial` applied to final type `T` ``, as for a checked parameter,
+     although whether the template argument is final is known only on
+```
+
+In fork/designdocs/samples/X20_template_uninit_var.carbon (:16670-16671),
+the comment's last two lines are:
+
+```carbon
+// `T` into type implementing `Core.DefaultOrUnformed` `` (fork work item
+// W-127).
+```
+
+In X23_template_class_uninit_var.carbon (:16753-16754), the comment's last two
+lines become one:
+
+```carbon
+// is defined (fork work item W-127). X20 pins the same form in a function.
+```
+
+TP-1's run date 2026-10-20, in sixteen added lines of the diff and in no
+context line, is L's `<date>`, as TP-1's Appendix C says ("L uses its own
+date"). These texts apply with `git apply` on the PR 61 tree, and DD-1's
+checker reports 0 errors on them (section 0.5).
+
 R's row is section 2.8's rule applied to the merged row; D's land-time texts
 are Appendix E's (:17744 on), with `YYYY-MM-DD` the landing date and the
 `<merged ...>` values the landing's measurements, the id re-scans' outcomes
-quoted from their output. OR-5: the branch's "TP-1 at land time" item is
-discharged by the landing (the message lists S as item 15's and the VA-1
-compositions as item 17's).
+quoted from their output, but for W-127's notes paragraph (:17839-17845),
+which is TP-1's without its last clause, "PR 51's split lost its `fail_todo_`
+prefix in F6", since F6 keeps that name; it names the template shape only, as
+CT-1's H-1 asks (amended 2026-11-01, review fold: RR1-1):
+
+```text
+DISCHARGED by TP-1: impl lookup for a query that names a template binding selects no impl in the definition and keeps the deferred witness (impl_lookup.cpp `QueryNamesTemplateBinding`), so `var y: T;` resolves `DefaultOrUnformed` on instantiation (X20 and X23 run; default_init.carbon); checked generics keep their lookup (facet/period_self.carbon and interop/cpp/template/generic_call.carbon unchanged).
+```
+
+The checked-generic shape, PR 51's split, is CT-1's C.10 sentence at PR 64.
+TP-1's decision-log entry (66aa13132 fork/decision-log.md:4147-4149) and its
+plan (:5212-5214) state F6's rename as planned; PR 61's A.5 Landed paragraph
+and A.6 sentence each end with this sentence, which records what the landing
+did instead:
+
+```text
+F6 kept PR 51's split's name, fail_todo_unformed_dependent_var, because its shape still fails on TP-1's toolchain (fork/cpp-templates/plan.md C-2 and H-1); PR 64's L-F renames it.
+```
+
+OR-5: the branch's "TP-1 at land time" item is discharged by the landing (the
+message lists S as item 15's, the VA-1 compositions as item 17's and the
+rename of PR 51's split as PR 64's L-F).
 
 ### C.9 PR 62's own texts
 
@@ -1827,12 +2069,52 @@ merged trunk and open, `YYYY-MM-DD` the landing date and W-252's alternative
 the measured one. In Next actions item 4, "landed as SV-1, held open as PR
 62" becomes "landed as SV-1, merged to trunk <date> as PR 62 (LAND-1)".
 
+OR-5 (added 2026-11-01, review fold: RR1-4): the branch's item 5, "SV-1 at
+land time" (0ef8a0334 fork/ORCHESTRATION.md, Next actions item 5), which OR-4
+drops ($F/expected/pr62, ORCHESTRATION region 4), is discharged by the
+landing; the message lists M-VA and W-284 as item 17's and Doc-M, C.5, C.8
+and F-M's PR 57 part as item 16's. Its other steps map to section 2.8: M is
+the merge; F-M's own goldens, the second id re-scan and section 8 item 11 are
+steps of the landing; the absolute count re-quoted into row 68, W-011's note
+and the decision-log entry, x19 for W-282, the notes on W-252 and W-263, the
+re-cited evidence and C.7's fallback are the records commit's texts above.
+Its step "the id lists of the decision-log entry and this row completed"
+maps so: the entry's id list (0ef8a0334 fork/decision-log.md:7002-7005)
+keeps "W-284 held until M-VA lands", which stays true because M-VA is item
+17's, and "W-282 unused (X-1 fixed by TP-1 at eafca5cb9)" while x19 holds;
+if x19 files W-282 (section 2.8), that clause becomes "W-282 filed
+(<date>, LAND-1: x19 fails on the merged trunk)"; the row is A.3's, whose
+summary (C.1) names W-284's state, and A.3's row replaces the branch's
+"W-284 held until M-VA lands; W-282 unused" whole.
+
 ### C.10 PR 64's own texts
 
 CT-1's: C.1 (L), C.2 (W-043's discharge over DD-1's entry, including C.7's
 LAND-1 note), C.4 (rows 42 and 56, with the interop golden counts measured on
 the landing's tree in place of 164 and 56), C.6 (the two programs, in the
-merge), C.10 (W-127), with `<YYYY-MM-DD>` the landing date. OR-5: the
+merge), C.10 (W-127), with `<YYYY-MM-DD>` the landing date. C.1's replaced
+sentence runs from "One limit in 0.1:" to its state-L end, "(fork work item
+W-043, and W-127).", which PR 58's state-L commit made of the "(fork work
+item W-043, and W-127 on held PR 51)." that C.1 quotes (amended 2026-11-01,
+review fold: RR1-2).
+
+L-F's rename commit (section 2.9; added 2026-11-01, review fold: RR1-1), in
+toolchain/check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon:
+the line `// --- fail_todo_unformed_dependent_var.carbon` becomes
+`// --- unformed_dependent_var.carbon` (TP-1's Appendix A F6 line,
+:15210-15212), and after the header comment's last line, `// condition.`,
+come these lines, so that the header's "The failing split is `fail_todo_`"
+and the split's "Predicted:" comment read as history:
+
+```carbon
+//
+// At PR 64's landing (<date>, LAND-1), CT-1's land-time fill renamed the
+// split `unformed_dependent_var`: its shape compiles since CT-1
+// (fork/cpp-templates/plan.md C-2), so the failure described above and the
+// split's prediction are historical.
+```
+
+OR-5: the
 branch's "TP-1 at land time" and "CT-1 at land time" items are discharged by
 PR 61's and this landing (the message lists S-VA as item 17's).
 
@@ -1962,3 +2244,26 @@ Checks of this revision: prek to a fixpoint with the SKIP set of hand-off
 note 6, `uvx rumdl check`, R31's counts before and after each prek run, a scan
 for lines that start with `#` and a digit, `+`, or digits and `.` or `)` outside
 the lists, and the model-identifier grep, all recorded in the commit message.
+
+## Focused re-review fold record (rev 3, 2026-11-01)
+
+The focused re-review of rev 2 (adaf45757) returned REJECT with six findings:
+1 BLOCKER, 1 MAJOR, 4 MINOR. It confirmed rev 2's 25 folds against the
+scratch commits (rowcheck 0 missing at f2110e0fd and d3eb55f7a; DD-1's
+checker 1 error at a33d05cae and 0 at 94dba6b21 and 5cf7406f1; the decision
+log ordered DR-0, DR-1, RG-1, LD-0; the eighteen heads unchanged; W-367 to
+W-370 filed nowhere). RR1-n is its finding Nn. All six are folded; none is
+rejected. Each was reproduced first in `$F1` (a scratch worktree under
+/dev/shm/land1-fixer1, removed after the commit).
+
+| Id | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR1-1 | BLOCKER | Folded. Reproduced: the split's shape fails on the TP-1 install (eafca5cb9) with "cannot convert type `S(<...TemplateInst...>)` into type implementing `Core.DefaultOrUnformed`" and compiles on the CT-1 install (224ee2f8f); file_test_base.cpp:131-160 reports a failing split without `fail_` as a problem autoupdate cannot fix. F6 keeps the name and refills CHECK lines only; C.8 gives W-127's discharge without the F6 clause and a sentence for A.5 and A.6; PR 64's L-F renames the split by C.10's texts under C-2's own rule, not section 1.16's fallback; hand-off note 8 stops a landing whose gate disagrees | 0.7, D-LAND-8, 2.2, 2.7, 2.9, 4, hand-off note 8, C.1, C.8, C.10 |
+| RR1-2 | MAJOR | Folded. Reproduced: TP-1's diff fails `git apply --check` on d03be4456 at templates.md:361 and `patch` takes hunk 9 with fuzz 1; CT-1's anchor occurs nowhere on e21480b05. C.8 gives hunk 9 with state L's context and X20's and X23's comments without "held PR 51"; C.10 gives the anchor "(fork work item W-043, and W-127)."; both L texts applied in scratch (9e0ccecdb; f0d62063d and 6f6e2f388), DD-1's checker 70 and 71 fixtures, 0 errors | 0.5, 2.7, 2.9, hand-off note 8, C.8, C.10 |
+| RR1-3 | MINOR | Folded: both PR 61 reviewers review L as its document review, by TP-1's section 2.9 ("two reviewers, R29(c)") | D-LAND-10, 2.7 |
+| RR1-4 | MINOR | Folded: C.9 gains OR-5 for PR 62's item 5, discharged, with M-VA and W-284 to item 17 and Doc-M, C.5, C.8 and F-M's PR 57 part to item 16, and the id-list step mapped to the decision-log entry's clauses (fork/decision-log.md:7002-7005) and A.3's row | C.1, C.9 |
+| RR1-5 | MINOR | Folded: B.1 marks the six waiting PRs' rows after their merge-position clauses (each anchor unique at bb9fbba9c) and says the ready rows are rewritten at landing; A.8 gives the gap header's first sentence with the container-measured scoreboard at every landing; A.9 gives ORCHESTRATION's Scoreboard paragraph; A.10 marks the "not of record" labels of the eight landed rows that carry one | 0.7, D-LAND-9, hand-off note 2, A.8 to A.10, B.1 |
+| RR1-6 | MINOR | Folded: A.1 reports the merge's gate as `<g0>` of `<gn>` before any refill and cites A.2; `<base>` is defined and read at step 1 | conventions, D-LAND-6 step 1, A.1 |
+
+Checks of this revision: as rev 2's, with the R31 counts of every edit and
+prek run, recorded in the commit message.

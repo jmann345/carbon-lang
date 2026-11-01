@@ -6,13 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # LAND-1 plan: landing the held PRs into trunk under R33
 
-**Status:** rev 3 -- NOT signed off: RR1-1 (BLOCKER) and RR1-2 (MAJOR), the
-focused re-review's N1 and N2, folded here with its four MINORs, RR1-3 to
-RR1-6 (see the focused re-review fold record at the end); the next re-review
-decides. Rev 2 (2026-11-01) folded reviews A and B of rev 1, 25 findings, none
-rejected (the review fold record); rev 1 was the planner's draft of the same
-day. Records only: this plan changes no toolchain, prelude, golden, program or
-workflow file. It
+**Status:** rev 4 -- NOT signed off pending re-review round 3: RR2-1. The
+focused re-review's round 2 of rev 3 (a8fa4d68b) resolved N1 to N6 and found
+one MAJOR, RR2-1, and three MINORs, RR2-2 to RR2-4, all folded here (see the
+round-2 fold record at the end); sign-off needs a round with no BLOCKER and
+no MAJOR. Rev 3 (2026-11-01) folded the focused re-review's round 1, RR1-1
+(BLOCKER), RR1-2 (MAJOR) and RR1-3 to RR1-6. Rev 2 (2026-11-01) folded
+reviews A and B of rev 1, 25 findings, none rejected (the review fold
+record); rev 1 was the planner's draft of the same day. Records only: this
+plan changes no toolchain, prelude, golden, program or workflow file. It
 carries out fork/rulebook.md R33 and decision-log entry LD-0 (the owner,
 2026-11-01: "Go ahead and merge changes that are correct"), scheduled by
 fork/ORCHESTRATION.md's Next actions lead (trunk bb9fbba9c :1171-1175) and its
@@ -48,7 +50,7 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Section 0: audit (the held state, owed items, conflicts, the dry run,
     goldens, scoreboards, the arbiter, ids, stacked PRs, disk, the register
     checks at upstream's tip)
--   Section 1: decisions D-LAND-1 to D-LAND-19
+-   Section 1: decisions D-LAND-1 to D-LAND-20
 -   Section 2: spec, one subsection per landing in land order
 -   Section 3: the process, the actors and the follow-ons
 -   Section 4: the scoreboard progression and its stop values
@@ -60,6 +62,7 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Appendix C: each landing's fields, targets and own texts
 -   Review fold record (rev 2, 2026-11-01)
 -   Focused re-review fold record (rev 3, 2026-11-01)
+-   Focused re-review fold record, round 2 (rev 4, 2026-11-01)
 
 Conventions. `trunk` is origin/trunk bb9fbba9c unless a section says otherwise.
 A file:line cite names the sha it was read at. `$P` is the planner's scratch
@@ -69,7 +72,9 @@ directory
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer,
 `$F1` the rev-3 fixer's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer1,
-`$CB` the arbiter's
+`$F2` the rev-4 fixer's
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer2
+(added 2026-11-01, review fold: RR2-1), `$CB` the arbiter's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/carbonbuild,
 and `$X` the expected trees, `$F/expected` (rev 1's `$P/expected` is superseded
 from PR 58 on, section 0.5; amended 2026-11-01, review fold: A-B1 / A-M4). The
@@ -96,6 +101,10 @@ survives into a commit (amended 2026-11-01, review fold: B-M5 / B-m6).
 | `<t1>`, `<t2>`, `<t3>`, `<t4>` | `<tally>`'s four numbers, DONE, PARTIAL, MISSING and DESIGN-ONLY | as `<tally>` (added 2026-11-01, review fold: RR1-5) |
 | `<tip>` | upstream trunk's head | `git fetch upstream` then `git ls-remote upstream refs/heads/trunk`, 9 characters, at the check |
 | `<q>`, `<qf>`, `<c>`, `<cf>` | quotes checked and failed, silence checks checked and failed | check_quotes.sh and check_greps.sh output at `<tip>` (D-LAND-19) |
+| `<mut>` | the mutants D-LAND-20 re-runs, each as `<id> (<what turned red, or "survives" for a recorded survivor>)`, comma-separated, or `none` | D-LAND-20's runs at the landing (added 2026-11-01, review fold: RR2-1) |
+| `<dd>`, `<ddt>` | DD-1's checker's summary at L, without and with `--toolchain` | the last line that `python3 -I fork/designdocs/check_samples.py` prints, and the same with `--toolchain /home/user/carbon-build/carbon-trunk/install/bin/carbon` (added 2026-11-01, review fold: RR2-1) |
+| `<r31>` | R31's counts of docs/design/interoperability/README.md before L, after L and after prek | `r31.py` at each point, written `<before> / <after> / <after prek>`, each as `r31.py` prints its headings, bullets, numbered and rows fields (added 2026-11-01, review fold: RR2-1) |
+| `<v3>`, `<v3n>` | the places at `<tip>` of F-021's four upstream quotes, and the count of upstream commits since c1e83b0b7 to their files | section 2.9's `git grep -n -F` of each quote at `<tip>`, as `<path>:<line>`, comma-separated, and its `git log --oneline` line count (added 2026-11-01, review fold: RR2-1) |
 | `<landed>`, `<held>` | PRs landed and held after this landing | the stage number (section 3) and 18 minus it |
 | `<merged_at>`, `<api sha>` | GitHub's `merged_at` and `merge_commit_sha` for the PR | `pull_request_read` after phase 1 (D-LAND-11) |
 | `<r>` | this plan's revision at sign-off | its Status line |
@@ -214,14 +223,21 @@ fork/evaluator/plan.md section 3 item 6 (:1830-1842) and states T and C
 (:3103-3110); DD-1 fcee90d9b fork/designdocs/plan.md §2.13 and §2.14
 (:4180-4276), §8.5's integration-commit texts (:5665-5678, :5783-5810) and its
 merge position (:6658); TP-1 66aa13132 fork/templates/plan.md §1.12
-(:2924-2957), §3 items 7 to 13 (:5192-5316) and Appendix E's land-time texts
-(:17744 on); SV-1 0ef8a0334 fork/sumtype-interop/plan.md §1.15 (:2392-2399), §3
-item 8 (:4606-4830), Appendix C.6 and C.7 (:9351-9420) and the landed notes'
-Next actions text (:9566-9576); CT-1 551a03328 fork/cpp-templates/plan.md §2.11
-items 1 to 5 (:2725-2760) with Appendix C.1 to C.11; DR-1 89aabd125 and
-fee0ef31c fork/direction/plan.md §1.16 (:1547-1620), §2.2 (:2190-2245) and §8
-item 9 (:2755-2775); OV-4 097c76473 fork/overload/ov4-plan.md §3's land-time
-commits (:1749-1803), §6.2 (:1901) and Appendix D.6 and D.7 (:4042, :4108).
+(:2924-2957), §3 items 7 to 13 (:5192-5316), Appendix E's land-time texts
+(:17744 on) and its landed notes' land-time items (a) to (h) (:7919-7936,
+item (c) judging M, S and F6 "with §8's build, autoupdate, gate, conformance
+and mutants"; amended 2026-11-01, review fold: RR2-1); SV-1 0ef8a0334
+fork/sumtype-interop/plan.md §1.15 (:2392-2399), §3 item 8 (:4606-4830),
+Appendix C.6 and C.7 (:9351-9420) and the landed notes' Next actions text
+(:9566-9576); CT-1 551a03328 fork/cpp-templates/plan.md §2.11 items 1 to 5
+(:2725-2760) with Appendix C.1 to C.11, its landed notes' "R32 at landing"
+(:4793-4799) and land-time items (a) to (g) (:4809-4868), and its branch's
+Next actions item 6, "CT-1 at land time" (551a03328
+fork/ORCHESTRATION.md:1220-1267; added 2026-11-01, review fold: RR2-1); DR-1
+89aabd125 and fee0ef31c fork/direction/plan.md §1.16 (:1547-1620), §2.2
+(:2190-2245) and §8 item 9 (:2755-2775); OV-4 097c76473
+fork/overload/ov4-plan.md §3's land-time commits (:1749-1803), §6.2 (:1901)
+and Appendix D.6 and D.7 (:4042, :4108).
 
 ### §0.4 Conflicts against trunk
 
@@ -644,12 +660,14 @@ ready PR's land-time step whose object is a gated PR's code, page, golden,
 ledger item or decision is not made at the ready PR's landing; it becomes a
 land-time step of the gated PR's follow-on, with the same text, named in that
 follow-on's Next actions item by Appendix B.1 (section 3). The moved steps:
-TP-1's S (over SC-1) to G-60 and its VA-1 compositions (F6's, measured none)
-to G-59; OV-4's SC-1 arguments in M to G-60 and its VA-1 gate order to G-59;
-SV-1's M-VA and W-284 (with its `blocked_by` W-219) to G-59, and its Doc-M
-(optional.md and the F-015 paragraph), C.5's W-177 note and evidence, C.8's
+TP-1's S (over SC-1) with its mutant M18 to G-60 and its VA-1 compositions
+(F6's, measured none) to G-59; OV-4's SC-1 arguments in M to G-60 and its
+VA-1 gate order to G-59; SV-1's M-VA and W-284 (with its `blocked_by` W-219)
+to G-59, and its Doc-M (optional.md and the F-015 paragraph), C.5's W-177
+note and evidence, C.8's
 F-015 references, the W-177 cite in match_core_optional_diff.carbon's header
-and F-M's PR 57 part to G-56/57; CT-1's S-VA with C.11's split to G-59; DR-1's
+and F-M's PR 57 part to G-56/57; CT-1's S-VA with C.11's split and its mutant
+M18 to G-59 (the two M18s added 2026-11-01, review fold: RR2-1); DR-1's
 loops.md rule in M-a to G-56 and L-a's m57 refills to G-57; DD-1's state-L
 texts for PR 53, PR 56 and SC-1 to their follow-ons; ST-1's SAFE-1
 reconciliation edits to G-53; RG-1's land-time notes for PR 57 and PR 59 to
@@ -743,16 +761,27 @@ amended 2026-11-01, review fold: A-M2 / A-M4 / A-m3 / B-B1 / B-M4 / B-m2):
     /home/user/carbon-trunk`; `$CB/gate.sh /home/user/carbon-trunk`;
     `XDG_CACHE_HOME=/home/user/carbon-build/carbon-trunk/cache
     $CB/conformance.sh /home/user/carbon-trunk <out>` with `<out>` under
-    `scratchpad/land1/impl/pr<N>/`, outside the repository.
+    `scratchpad/land1/impl/pr<N>/`, outside the repository. This gate may
+    report, besides "Autoupdate would make changes", a `fail_`-prefix
+    problem (testing/file_test/file_test_base.cpp:131-160) only for a split
+    that section 2 names as renamed by a land-time commit of this landing,
+    which is expected at PR 64 and PR 65 (sections 2.9 and 2.11); it is
+    counted in A.1's `<g0>` and `<gn>`, and step 6's rename commit resolves
+    it. Any other failure of this gate that autoupdate cannot fix stops the
+    landing (added 2026-11-01, review fold: RR2-4).
 5.  Commit the merge with Appendix A.1's message, the results of step 4 in it.
 6.  The plan's land-time code, page and program commits, if section 2 lists
     any, each brought to a prek fixpoint before its commit, then built, gated
     and committed with section 2's message.
-7.  Refill: if the gate reports "Autoupdate would make changes", run
+7.  Refill: if the gate after step 6's commits (step 4's when section 2 lists
+    none) reports "Autoupdate would make changes", run
     `$CB/autoupdate.sh /home/user/carbon-trunk <files>` on exactly those
     files, gate again (every golden passes) and commit Appendix A.2's refill
-    commit (D-LAND-8). A gate failure of any other kind stops the landing.
-    Then prek on every other file the landing changed
+    commit (D-LAND-8). A failure of any other kind in the gate after step 6's
+    commits, a `fail_`-prefix problem among them, stops the landing (amended
+    2026-11-01, review fold: RR2-4). At PR 61 and PR 64, D-LAND-20's mutants
+    run after this step (added 2026-11-01, review fold: RR2-1). Then prek on
+    every other file the landing changed
     (`git diff --name-only <trunk before>..HEAD`): a change there is a defect
     of the PR's head, which stops the landing (D-LAND-10).
 8.  Conformance on the landing's final code tree (again if steps 6 or 7
@@ -963,7 +992,8 @@ is explained by a named commit or it stops the landing.
 
 **D-LAND-19, the register checks at the tip** (added 2026-11-01, review fold:
 B-M2). Where a landing's text names an upstream tip (the RG-1 notes of PR 51,
-PR 54 and PR 58, PR 67's W-355 note, OV-4's L-R), `<tip>` is upstream trunk's
+PR 54 and PR 58, PR 67's W-355 note, PR 64's R32 comparison of F-021, OV-4's
+L-R; PR 64's added 2026-11-01, review fold: RR2-1), `<tip>` is upstream trunk's
 head on the landing day, fetched at the check, never a tip chosen because the
 checks pass at it. Both scripts run over the whole tables there:
 `fork/register/check_quotes.sh /home/user/carbon-lang <tip>
@@ -972,6 +1002,53 @@ fork/register/rg1-quotes.tsv` and `fork/register/check_greps.sh
 quoted in the records commit's message and each FAIL row appended by id to
 W-355's notes (Appendix C.2's text); a note whose own entries fail says so in
 its lead (Appendix C.3). _Break condition:_ none.
+
+**D-LAND-20, the mutants at PR 61 and PR 64** (added 2026-11-01, review fold:
+RR2-1). TP-1's landed notes item (c) judges M, S and F6 "with §8's build,
+autoupdate, gate, conformance and mutants" (66aa13132
+fork/templates/plan.md:7927-7928), and CT-1's item (c) ends L-F with "then the
+gate, conformance and the mutants on the merged build" (551a03328
+fork/cpp-templates/plan.md:4842). Both plans re-run a recorded mutant when a
+change touches the file it edits, and only then: TP-1's round 3, "The other
+mutants of earlier rounds mutate files round 3 does not change and are not
+re-run" (fork/templates/plan.md:6389-6390), and its round 8, "none re-run by the
+fixer, as no toolchain file changes" (:7121); CT-1's implementation-review fold
+re-ran "M1, M2, M6, M7, M15 and M22, the mutants of the functions the fix
+touches" (fork/cpp-templates/plan.md:3871-3872). The landing applies that rule
+to its merged build and adds the killers: after step 7 (at PR 64 after L-F's
+comment commit, section 2.9), the implementer re-runs each mutant the PR's plan
+names whose edited file is in
+`git diff --name-only <head> HEAD -- toolchain core ':!*/testdata/*'`, or one
+of whose named killers this landing's refill commit changes or a rename commit
+renames. Each is the edit its plan's last
+record of it ran (CT-1's `.diff` files in scratchpad/ct1-impl/fixer/mut/ for M1,
+M1c, M2, M6, M7, M15, M22 to M26, M75 and M75r, and in
+scratchpad/ct1-impl/stage4/mut/ for the others; TP-1's round scripts under
+scratchpad/tp1-rr/ and scratchpad/tp1-x1/, which its plan's round records name),
+applied to the merged source, its translation units recompiled over
+/home/user/carbon-build/carbon-trunk's objects and relinked into /dev/shm
+(deleted after), and run over the whole gate and the programs as the PR's plan
+ran it; each must reproduce its record: killed by its named killer, or, for a
+mutant its plan records as surviving or reaching nothing (CT-1's M12, M1, M75
+and M75r), the same again. Measured on the dry run
+(`$F2/rr2-1_mutant_filesets.txt`): at PR 61 the file rule names none, because
+TP-1's 32 non-testdata files and the merge's non-testdata changes from
+66aa13132, core/prelude/types/string.carbon and toolchain/check/cpp/export.cpp
+(PR 55's), are disjoint, and F6 and L change no source; at PR 64 it names the
+six CT-1 mutants that edit convert.cpp, which PR 62 changes: M6, M7, M23, M24,
+M75 and M75r, each of whose edits applies to e21480b05's convert.cpp
+(`patch --dry-run`, `$F2/rr2-1_mutant_apply.txt`). No named killer of either
+plan is in the merge's testdata diff from its head (at PR 64 that diff holds
+the goldens of PR 51, PR 55 and PR 62 only); the killer rule's refill and
+rename part is
+measured at step 7. TP-1's M18 reverts S and CT-1's M18 S-VA, so each moves with
+its step (D-LAND-4). Every other named mutant is not re-run and keeps its record
+on the PR's head: section 6 lists them, and the PR's A.5 Landed paragraph says
+so by C.8's and C.10's mutant sentences. _Break condition:_ a re-run mutant that
+does not reproduce its record, or an edit that does not apply to the merged
+source; the landing stops (D-LAND-10) and the PR's workstream rules by its own
+break condition (CT-1's, "a mutant that turns nothing red other than M12, M1
+(subsumed, with M1c killed) and M75", fork/cpp-templates/plan.md:3906-3911).
 
 ## §2 Spec, per landing
 
@@ -1105,7 +1182,11 @@ of that split (:5212-5214 and Appendix A's F6 line, :15210-15212), because the
 split's shape still fails on TP-1's toolchain and file_test rejects a failing
 split without the `fail_` prefix (section 0.7; CT-1's C-2 and H-1), and PR
 64's L-F renames it (section 2.9; amended 2026-11-01, review fold: RR1-1);
-item 9's implementation reviews A and B on the merged head are D-LAND-10's
+M and F6 are judged with D-LAND-20's mutants (the landed notes' item (c),
+66aa13132 fork/templates/plan.md:7927-7928: the file rule names none at this
+landing, the killer rule is measured at step 7, and M18 moves to G-60 with
+S; added 2026-11-01, review fold: RR2-1); item 9's implementation reviews A
+and B on the merged head are D-LAND-10's
 two reviewers; item 10's fix commits, if a review finds a defect in the PR, go
 to PR 61's branch (D-LAND-10); item 11: the id re-scan of the front matter,
 then L "Land PR 61: TP-1 integration with PR 58" with Appendix C's texts
@@ -1119,11 +1200,13 @@ recomposed by section 2.8's rule over the merged row, which is not PR 58's
 text verbatim (it carries the UA-2 sentence GA-1b appended), so R keeps it and
 appends TP-1's sentence, re-citing every file:line to the landing's tree; item
 13, D: Appendix E's land-time texts (:17744 on: W-014's notes, the discharges
-of W-127, W-183, W-192 and W-193, W-127's as Appendix C.8 gives it, the
-held-state sentences replaced by the merged tree's values), the landed notes
-with both id re-scans' outcomes (the one before L and one before the records
-commit), and C.8's F6 sentence at the end of A.5 and A.6 (amended 2026-11-01,
-review fold: RR1-1). Expected: 1968 of 1968, the split passing as a `fail_`
+of W-127, W-183, W-192 and W-193, W-127's as Appendix C.8 gives it with C.8's
+sentence on PR 51's split appended to W-127's notes, the held-state
+sentences replaced by the merged tree's values), the landed notes with both
+id re-scans' outcomes (the one before L and one before the records commit),
+C.8's F6 sentence at the end of A.5 and A.6, and C.8's mutant sentence at
+the end of A.5 (amended 2026-11-01, review fold: RR1-1 / RR2-1 / RR2-3).
+Expected: 1968 of 1968, the split passing as a `fail_`
 split;
 177/0/15 over 192. Gap-row check: row 54 named (R writes it). Deferred to
 G-60: S (member_access.cpp, :5206-5212); to G-59: the VA-1 compositions F6
@@ -1161,24 +1244,78 @@ programs), PROG-1 on the two programs (PR 51's header with C.6's paragraph
 appended, `<YYYY-MM-DD>` the landing date, and CT-1's body, `var b:
 Cpp.Box(T);`), decision-log (DL-1), gap-analysis (GA-1c on rows 42 and 56),
 ledger (LG-7: W-043 "taken from DD-1's side whole", CT-1's discharge reapplied
-by the records commit, fork/cpp-templates/plan.md:2730-2737). Steps: merge; S-VA
-moves to G-59; L-F, by C-2's own rule (fork/cpp-templates/plan.md:864-878 and
-section 2.11 item 3; not section 1.16's fallback, since PR 61's F6 keeps the
-name): first a rename commit, "Land PR 64: PR 51's split renamed for CT-1's L-F
-(C-2)", whose only edits are this plan's Appendix C.10 texts for
+by the records commit, fork/cpp-templates/plan.md:2730-2737). Steps, mapping
+CT-1's landed notes' items (a) to (g) and its branch's item 6 (section 0.3;
+amended 2026-11-01, review fold: RR2-1): merge (item (a), M); step 4's gate
+reports PR 51's split `fail_todo_unformed_dependent_var` as succeeded ("if
+success is expected, remove the `fail_` prefix"), as expected, because CT-1's
+toolchain compiles its shape: it is counted in A.1's `<g0>` and `<gn>` and the
+rename commit resolves it (added 2026-11-01, review fold: RR2-4); S-VA (item
+(b)) moves to G-59 with its mutant M18; L-F (item (c)), by C-2's own rule
+(fork/cpp-templates/plan.md:864-878 and section 2.11 item 3; not section 1.16's
+fallback, since PR 61's F6 keeps the name): first a rename commit,
+"Land PR 64: PR 51's split renamed for CT-1's L-F (C-2)", whose only edits are
+this plan's Appendix C.10 texts for
 toolchain/check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon
 (the split line, as TP-1's Appendix A F6 line gives it, and a dated header
-note); then the refill of every golden the gate names, that split among them,
-which CT-1's toolchain compiles (section 0.7; amended 2026-11-01, review fold:
-RR1-1); L "Land PR 64: CT-1 interoperability page and fixture X37 over PR 58"
-(C.1, with this plan's Appendix C.10 anchor; X37 with its `SAMPLES` entry after
-X09's and X09's limit comment, checked with `--toolchain`; the dry run's checker
-result is section 0.5's; amended 2026-11-01, review fold: RR1-2); records: rows
-56 and 42 by C.4, found by bullet text, with the interop golden counts measured
-on the landing's tree, C.2's discharge over DD-1's W-043 (including the PR 58
-note of section 2.6), W-127's sentence (C.10), the id re-scan. Expected: 1978 of
-1978; 189/0/15 over 204. Gap-row check: rows 42 and 56 named (C.4 replaces
-them). Deferred to G-59: S-VA and C.11's split.
+note); then the refill of every golden the gate names, that split among
+them, which CT-1's toolchain compiles (section 0.7; amended 2026-11-01, review
+fold: RR1-1); then, in CT-1's order, a comment commit, "Land PR 64: A.2's
+nested_alias_through_specific comment names the constants (CT-1 L-F)", whose
+only edit is Appendix C.10's two comment lines for lines 260 and 261 of
+toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon (RR1r2-m7
+of CT-1's focused re-review), the same line count, checked as an autoupdate
+no-op: after `$CB/autoupdate.sh /home/user/carbon-trunk` on that file, `git
+status --porcelain` prints nothing for it (added 2026-11-01, review fold:
+RR2-1); then the gate, conformance and D-LAND-20's mutants on the merged
+build (M6, M7, M23, M24, M75 and M75r by the file rule; added 2026-11-01,
+review fold: RR2-1); L (item (d)) "Land PR 64: CT-1 interoperability page and
+fixture X37 over PR 58" (C.1, with this plan's Appendix C.10 anchor; X37 with
+its `SAMPLES` entry after X09's and X09's limit comment, checked with and
+without `--toolchain`; the dry run's checker result is section 0.5's; amended
+2026-11-01, review fold: RR1-2), with R27's spelling diff (each of the page's
+`var b: Cpp.Box(T);` and `Cpp.Twice(x)` found by `grep -F` in X37, and the
+first in both programs, as CT-1's C.1 names its spellings) and R31's counts of
+docs/design/interoperability/README.md before L, after it and after prek, both
+in C.10's message for L (added 2026-11-01, review fold: RR2-1); the second id
+re-scan (item (e)) immediately before the records commit's ledger edit;
+records (items (f) and (g)): rows 56 and 42 by C.4, found by bullet text, with
+the interop golden counts measured on the landing's tree, C.2's discharge over
+DD-1's W-043 (including the PR 58 note of section 2.6), W-127's sentence
+(C.10), R32's comparison below, the decision-log entry's held-state paragraph
+brought up to date by C.10's sentence (item (g), C.7's fallback: the merged
+log holds one CT-1 entry, measured at e21480b05, so only the held-state
+paragraph is brought up to date), and C.10's sentences at the end of A.5 (the
+checker runs, the mutants and R32's result; added 2026-11-01, review fold:
+RR2-1).
+
+R32's V-3 comparison of F-021 (the landed notes' "R32 at landing",
+551a03328 fork/cpp-templates/plan.md:4793-4799; added 2026-11-01, review fold:
+RR2-1), at D-LAND-19's `<tip>`: `git grep -n -F` finds each of F-021's four
+upstream quotes there, "relies on monomorphization" in
+docs/design/generics/appendix-witness.md (leads issue 2153, CT-1's
+:149-155), "We have decided to support passing a symbolic constant to a
+template" in docs/design/generics/overview.md (CT-1's :375-379), "More direct
+interoperation is being considered" in
+proposals/p002200-template-generics.md (CT-1's p002200:1089-1096) and
+"arguments are treated as templates." in toolchain/check/call.cpp (the
+`TemplateInst` comment, CT-1's call.cpp:749-750); and `git log --oneline
+c1e83b0b7..<tip> -- toolchain/check/call.cpp toolchain/check/cpp/call.cpp
+docs/design/generics/ proposals/p002200-template-generics.md` is read for a
+commit that lands a rule for a checked generic's C++ calls that differs from
+F-021, F-021's break condition (fork/cpp-templates/plan.md:1913-1916). A
+quote not found, or such a commit, stops the landing (D-LAND-10), and F-021
+is re-decided by CT-1's break condition; otherwise C.10's R32 sentence
+records `<v3>` and `<v3n>`. Measured
+at 68569d234 (`$F2/rr2-1_r32_68569d234.txt`): appendix-witness.md:154,
+overview.md:376, p002200-template-generics.md:1095 and call.cpp:388, and eight
+commits, none such: seven are in CT-1's section 0.10 table (:916) and the
+eighth, db87a84b6, is "Improve tests and clarify design for observe
+equivalence chains".
+
+Expected: 1978 of 1978; 189/0/15 over 204. Gap-row check: rows 42 and 56 named
+(C.4 replaces them). Deferred to G-59: S-VA with its mutant M18 and C.11's
+split.
 
 ### §2.10 PR 63, DR-1a
 
@@ -1215,7 +1352,13 @@ replaced by trunk's clause verbatim, "a `Buf` held in a field of an owner that
 declares its own `impl as Destroy`, or in a choice payload, is not freed (W-108
 narrowed at UA-2, 2026-10-06: ... W-125 for payloads)" (the full clause is
 `$F/expected/pr65/row79_clause.txt`); its status is DONE, so the tally is
-36/16/3/1 from here on. Steps: merge (M-b); C-b, "Land PR 65: DR-1b
+36/16/3/1 from here on. Steps: merge (M-b); step 4's gate reports
+slice/write_through.carbon's split `fail_todo_template_index_with_only` as
+succeeded ("if success is expected, remove the `fail_` prefix"), as expected:
+DR-1 measured it before and after C-b, "1962 passed and 1 failed, L-b's
+rename 1/1" (fee0ef31c fork/direction/plan.md:2756-2758); it is counted in
+A.1's `<g0>` and `<gn>`, and L-b's rename commit resolves it (added
+2026-11-01, review fold: RR2-4); C-b, "Land PR 65: DR-1b
 composition with TP-1: a template-dependent index chooses its interface per
 specific", the block of fork/direction/plan.md:2204-2225 at the head of
 `PerformIndex`'s default arm, removing the arm's later
@@ -1267,7 +1410,7 @@ stage 0 the orchestrator pushes the signed-off plan with Appendix B.1's stamp
 
 | Step | Actor |
 | --- | --- |
-| D-LAND-6 steps 1 to 9, the land-time commits, prek, R31, the checks | the implementer |
+| D-LAND-6 steps 1 to 9, the land-time commits, prek, R31, the checks, D-LAND-20's mutants and section 2.9's R32 comparison | the implementer |
 | D-LAND-10's review, one fresh agent per landing, two at PR 61 | the reviewers |
 | a fix of the landing's own commits | a fixer, a new commit, reviewed again |
 | a fix of a PR's code or texts | the PR's workstream, on its branch (D-LAND-10) |
@@ -1286,7 +1429,8 @@ D-LAND-12's gate holds; Appendix B.1's items 14 to 17 name their steps:
     edits, DD-1's state L for PR 53, RG-1's H53 notes already on the head,
     SAFE-3's notes on trunk's ledger.
 -   G-60 (PR 60): merge of trunk into PR 60's branch resolving convert.cpp,
-    member_access.cpp, merge.cpp and templates.md, with TP-1's S, OV-4's two
+    member_access.cpp, merge.cpp and templates.md, with TP-1's S and its
+    mutant M18 (amended 2026-11-01, review fold: RR2-1), OV-4's two
     arguments, DD-1's state L for SC-1, item 10's decided commit, fills, gate,
     its review; then the trunk landing.
 -   G-56/57 (PR 56, then PR 57 retargeted to trunk): W-352; loops.md by M-a's
@@ -1296,8 +1440,9 @@ D-LAND-12's gate holds; Appendix B.1's items 14 to 17 name their steps:
 -   G-59/66 (PR 59, then PR 66 retargeted to trunk), owned by VA-1's
     workstream: W-367's fix and note 7's ruling on PR 59, W-367 (and W-368 if
     the ruling makes a fix) filed in PR 59's branch's ledger;
-    handle_function.cpp by OV-4's rule; SV-1's M-VA and W-284; CT-1's S-VA and
-    C.11's split; RG-1's VA-1 note and W-343's discharge if it is the last;
+    handle_function.cpp by OV-4's rule; SV-1's M-VA and W-284; CT-1's S-VA
+    with its mutant M18 and C.11's split (amended 2026-11-01, review fold:
+    RR2-1); RG-1's VA-1 note and W-343's discharge if it is the last;
     then VA-2's own M, S-CT, F-M, L-F and L (va2-plan.md section 3 item 15)
     over convert.cpp, eval.cpp and handle_function.cpp.
 
@@ -1403,13 +1548,29 @@ build); TP-1's L extracted and applied with `git apply`, as written and with
 C.8's state-L context, on d03be4456, and CT-1's L with Appendix C.10's anchor on
 e21480b05, with DD-1's checker (section 0.5); the B.1 anchors and the A.10
 rows on bb9fbba9c and the scratch commits; the SV-1 id-list lines of C.9.
-Not run by the planner or the fixers, by rule: any build, gate,
-autoupdate or conformance run; the checkers' `--toolchain` mode; the merged
-trees' compilation (the TC-1 and TC-2 files are mechanical references, built
-first by stage 10 and stage 11); the register checks at a tip. Not run by
-LAND-1 at all: clang-tidy, the Bazel-only tests, the BUILD-dependency hooks
-prek skips, LLVM with assertions, macOS, Windows and other platforms, and R21's
-hosted gate, which R33 (b) owes when Actions returns.
+Rev 4's fixer, measured (2026-11-01, review fold: RR2-1 to RR2-4):
+`git ls-remote` of all eighteen heads (unchanged); D-LAND-20's file sets, the
+merges' non-testdata diffs from 66aa13132 and 551a03328 against TP-1's and
+CT-1's own files, and the six convert.cpp mutants' edits by
+`patch --dry-run` on 551a03328's and e21480b05's convert.cpp (all apply); the
+comment of template_symbolic_arg.carbon:260-261 on 551a03328 and e21480b05;
+the CT-1 decision-log entry and its held-state paragraph's last sentence on
+e21480b05 (one entry, the anchor once); F-021's four quotes and the
+`git log` at upstream 68569d234; fork/cpp-templates/plan.md absent at
+bb9fbba9c and d03be4456; trunk's Scoreboard paragraph and scoreboard.json;
+file_test_base.cpp:131-160 and DR-1's gate line. Not run by the planner or
+the fixers, by rule: any build, gate, autoupdate, mutant or conformance run;
+the checkers' `--toolchain` mode; the merged trees' compilation (the TC-1 and
+TC-2 files are mechanical references, built first by stage 10 and stage 11);
+the register checks at a tip. Not run by LAND-1, by D-LAND-20 (added
+2026-11-01, review fold: RR2-1): every mutant TP-1's and CT-1's plans name
+other than the ones D-LAND-20's rules select at PR 61 and PR 64 (predicted:
+none of TP-1's, and CT-1's M6, M7, M23, M24, M75 and M75r), each keeping its
+record on 66aa13132 or 551a03328 as the PR's A.5 paragraph says; and both
+M18s until G-60 and G-59. Not run by LAND-1 at all: clang-tidy, the
+Bazel-only tests, the BUILD-dependency hooks prek skips, LLVM with
+assertions, macOS, Windows and other platforms, and R21's hosted gate, which
+R33 (b) owes when Actions returns.
 
 ## Hand-off notes
 
@@ -1438,11 +1599,18 @@ hosted gate, which R33 (b) owes when Actions returns.
     (`$F/bin/stateL58.py`); the literals.md note's date is the landing date.
 8.  At PR 61, PR 51's split keeps `fail_todo_unformed_dependent_var` and F6
     refills its CHECK lines only; at PR 64, L-F renames it by Appendix C.10
-    before the autoupdate. If PR 61's gate reports that split as succeeded ("if
-    success is expected, remove the `fail_` prefix"), or PR 64's as failed, the
-    toolchain is not the one section 0.7 measured: the landing stops
-    (D-LAND-10). The L texts are `$F1/bin/extract_l61.py`'s output with
-    `--state-l` and `$F1/bin/apply_l64.py` with Appendix C.10's anchor, as
+    before the autoupdate. At PR 64 step 4's gate, on the merge, reports that
+    split as succeeded ("if success is expected, remove the `fail_` prefix"),
+    and at PR 65 it reports slice/write_through.carbon's
+    `fail_todo_template_index_with_only` the same way: both are expected,
+    counted in
+    A.1's `<g0>` and `<gn>`, and resolved by the rename commit (L-F's, L-b's)
+    before the refill (sections 2.9 and 2.11; added 2026-11-01, review fold:
+    RR2-4). If PR 61's gate reports that split as succeeded, or PR 64's gate
+    after the rename commit reports it failed, the toolchain is not the one
+    section 0.7 measured: the landing stops (D-LAND-10). The L texts are
+    `$F1/bin/extract_l61.py`'s output with `--state-l` and
+    `$F1/bin/apply_l64.py` with Appendix C.10's anchor, as
     section 0.5 applied them (added 2026-11-01, review fold: RR1-1 / RR1-2).
 
 ## Appendix A: the per-landing record templates
@@ -1465,10 +1633,11 @@ into trunk <trunk before> under R33, as fork/land/land1-plan.md section
 Conflicts and rules: <conflicts>.
 
 Container-measured on the merge's tree (R33 (b)): build ok; gate <g0>
-of <gn> before any refill (each golden that fails is refilled by this
-landing's refill commit, fork/land/land1-plan.md Appendix A.2, which
-states the gate after it); conformance <p>/<f>/<s> over <n>, bullets <b>
-of 56. prek clean on the resolved files (SKIP=fix-cc-deps,
+of <gn> before any refill (each golden that fails is renamed by a
+land-time commit that section <spec> names or refilled by this landing's
+refill commit, fork/land/land1-plan.md Appendix A.2, which states the
+gate after it); conformance <p>/<f>/<s> over <n>, bullets <b> of 56.
+prek clean on the resolved files (SKIP=fix-cc-deps,
 check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest).
 
 <trailers>
@@ -1477,7 +1646,9 @@ check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest).
 The merge's `<g0>` and `<gn>` are step 4's; `<g0>` equals `<gn>` when
 nothing fails, and then no refill commit follows. The conformance values of
 A.1 are the merge's too; A.3 to A.7 carry the landing's final ones (amended
-2026-11-01, review fold: RR1-6).
+2026-11-01, review fold: RR1-6). At PR 64 and PR 65 the split that the
+landing's section (2.9 or 2.11) renames is among the failures `<g0>` leaves
+out (amended 2026-11-01, review fold: RR2-4).
 
 ### A.2 The refill commit's message
 
@@ -1583,8 +1754,15 @@ place of the previous landing's paragraph of this form:
 Container-measured at PR <N>'s landing (<date>, LAND-1, R33 (b)): <p> PASS
 / <s> SKIP / <f> FAIL programs (<n> total); **<b>/56 bullets green**; gate
 <g> of <g>. R21's hosted run is owed when Actions returns; the paragraph
-below is the last hosted record.
+below is the hosted history; the last hosted scoreboard is
+fork/conformance/out/scoreboard.json's (D-LAND-17).
 ```
+
+The last sentence is amended 2026-11-01 (review fold: RR2-2): the paragraph
+below it states 126/23/0 over 149 at PR 48's head (bb9fbba9c
+fork/ORCHESTRATION.md:1123-1124), while the last hosted scoreboard is the
+committed scoreboard.json's, 128/0/22 over 150 (2026-10-06) on trunk and,
+from PR 51 on, run 37413300832's 131/0/19 over 150 (section 0.8).
 
 ### A.10 The mark on a landed gap row's labels
 
@@ -1729,7 +1907,7 @@ Four items appended after item 13:
     under SC-1's reviews and item 10 is decided, a merge of trunk into PR
     60's branch (never a rebase) resolving convert.cpp, member_access.cpp,
     merge.cpp and templates.md, with TP-1's S (fork/templates/plan.md
-    section 3 item 8), OV-4's two SC-1 arguments in
+    section 3 item 8) and its mutant M18, OV-4's two SC-1 arguments in
     CheckOverloadMemberParamsMatch (fork/overload/ov4-plan.md section 3,
     M's message), DD-1's state L for SC-1 (template_constraints.md),
     item 10's decided commit, fills, gate and review; then the trunk
@@ -1749,12 +1927,16 @@ Four items appended after item 13:
     (W-368 if it makes a fix) are on PR 59's branch under VA-1's review
     and item 2's preconditions hold. Steps: handle_function.cpp by OV-4's
     rule (VA-1's pack gate before OV-4's default look-through); SV-1's
-    M-VA and W-284 with its blocked_by W-219; CT-1's S-VA and C.11's split;
-    TP-1's VA-1 compositions (measured none); RG-1's VA-1 note and W-343's
-    discharge if it is the last; then VA-2's own M, S-CT, F-M, L-F and L
+    M-VA and W-284 with its blocked_by W-219; CT-1's S-VA with its mutant
+    M18 and C.11's split; TP-1's VA-1 compositions (measured none);
+    RG-1's VA-1 note and W-343's discharge if it is the last; then VA-2's
+    own M, S-CT, F-M, L-F and L
     (fork/variadics/va2-plan.md section 3 item 15) over convert.cpp,
     eval.cpp and handle_function.cpp.
 ```
+
+Items 15 and 17 name TP-1's and CT-1's mutant M18 with the step it reverts
+(amended 2026-11-01, review fold: RR2-1; D-LAND-4 and D-LAND-20).
 
 ### B.2 After the twelfth landing
 
@@ -1783,7 +1965,8 @@ Added 2026-11-01 (review fold: B-M5 / B-M1 / B-M6 / B-M7 / A-M1 / A-M2 / A-m4
 ### C.1 The fields and the targets
 
 The fields of Appendix A, by landing (`<moved>` is "none" where the column is
-empty):
+empty; PR 61's and PR 64's Moved cells name M18, amended 2026-11-01, review
+fold: RR2-1):
 
 | PR | Suffix | Spec | Workstream | Title | Summary | Moved | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1793,9 +1976,9 @@ empty):
 | 54 | ev | 2.4 | EV-1 | EV-1, evaluator documentation | the evaluator guides and transcribed programs, in state C with PR 52; gap row 90 DONE; W-062 discharged, W-152, W-153 and W-155 filed | none | PR 55 (ST-1) |
 | 55 | st | 2.5 | ST-1 | ST-1, str comparison, Core.StringBuf and concatenation | F-014: str comparison, Core.StringBuf and concatenation; gap row 77 DONE; W-057 discharged, W-160 to W-167 filed | to Next actions item 14: W-144's additions, the seven SAFE-1 reconciliation edits and the cross-branch re-cites | PR 58 (DD-1) |
 | 58 | dd | 2.6 | DD-1 | DD-1, design docs without placeholders | design docs without placeholders, with state L for PR 51, PR 54 and PR 55; gap row 70 DONE, row 91 PARTIAL until state L for PR 53, PR 56 and SC-1; W-065 discharged | to items 14, 15 and 16: state L for PR 53, SC-1 and PR 56 | PR 61 (TP-1) |
-| 61 | tp | 2.7 | TP-1 | TP-1, integrated templates | integrated templates with F6's refills (PR 51's split refilled under its fail_todo_ name, which PR 64's L-F renames) and L over PR 58; W-127 for the template shape, W-183, W-192 and W-193 discharged; gap row 54 PARTIAL | to item 15: S; to item 17: the VA-1 compositions | PR 62 (SV-1) |
+| 61 | tp | 2.7 | TP-1 | TP-1, integrated templates | integrated templates with F6's refills (PR 51's split refilled under its fail_todo_ name, which PR 64's L-F renames) and L over PR 58; W-127 for the template shape, W-183, W-192 and W-193 discharged; gap row 54 PARTIAL | to item 15: S and its mutant M18; to item 17: the VA-1 compositions | PR 62 (SV-1) |
 | 62 | sv | 2.8 | SV-1 | SV-1, std::optional and std::variant interop mapping | F-020: std::optional and std::variant interop mapping; W-011 DISCHARGED; W-284 held until M-VA lands (item 17); gap row 68 PARTIAL | to item 17: M-VA and W-284; to item 16: Doc-M, C.5, C.8, the W-177 header cite and F-M's PR 57 part | PR 64 (CT-1), after the orchestrator retargets it to trunk |
-| 64 | ct | 2.9 | CT-1 | CT-1, C++ templates on symbolic Carbon type arguments | F-021: C++ templates on symbolic Carbon type arguments, instantiated per specific; PR 51's split renamed unformed_dependent_var by L-F (C-2); W-043 DISCHARGED; gap rows 56 and 42 PARTIAL | to item 17: S-VA and C.11's split | PR 63 (DR-1a) |
+| 64 | ct | 2.9 | CT-1 | CT-1, C++ templates on symbolic Carbon type arguments | F-021: C++ templates on symbolic Carbon type arguments, instantiated per specific; PR 51's split renamed unformed_dependent_var by L-F (C-2); W-043 DISCHARGED; gap rows 56 and 42 PARTIAL | to item 17: S-VA with its mutant M18, and C.11's split | PR 63 (DR-1a) |
 | 63 | dr | 2.10 | DR-1a | DR-1a, Core.Iterate.Next takes a ref cursor | R32: Core.Iterate.Next takes a ref cursor; W-321 discharged | to item 16: loops.md's M-a rule and the m57 refills | PR 65 (DR-1b), after the orchestrator retargets it to trunk |
 | 65 | dr-idx | 2.11 | DR-1b | DR-1b, subscripting prefers IndirectIndexWith | R32: subscripting prefers IndirectIndexWith and Core.Slice and Core.Buf write through Ref, with C-b over TP-1; W-109 and W-340 discharged; gap row 79 DONE | none | PR 68 (OV-4) |
 | 68 | ov4 | 2.12 | OV-4 | OV-4, `overload fn` members with default parameter values | W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3 | to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order | Appendix B.2's stamp, then the follow-ons |
@@ -2033,13 +2216,34 @@ DISCHARGED by TP-1: impl lookup for a query that names a template binding select
 ```
 
 The checked-generic shape, PR 51's split, is CT-1's C.10 sentence at PR 64.
-TP-1's decision-log entry (66aa13132 fork/decision-log.md:4147-4149) and its
-plan (:5212-5214) state F6's rename as planned; PR 61's A.5 Landed paragraph
-and A.6 sentence each end with this sentence, which records what the landing
-did instead:
+Until then W-127 reads DISCHARGED while PR 51's split, whose header names
+W-127 as its open limit (f96fe8a7a dependent_var_full_prelude.carbon, "W-127
+carries the limit and its removal condition"), still fails, so this is
+appended to W-127's `notes` after the paragraph above (added 2026-11-01,
+review fold: RR2-3):
 
 ```text
-F6 kept PR 51's split's name, fail_todo_unformed_dependent_var, because its shape still fails on TP-1's toolchain (fork/cpp-templates/plan.md C-2 and H-1); PR 64's L-F renames it.
+ LAND-1 (<date>): PR 51's split, the checked-generic shape, stays fail_todo_unformed_dependent_var until CT-1's L-F (PR 64).
+```
+
+TP-1's decision-log entry (66aa13132 fork/decision-log.md:4147-4149) and its
+plan (:5212-5214) state F6's rename as planned, and its Appendix C quotes
+the "held PR 51" lines that PR 58's state-L commit changed; PR 61's A.5
+Landed paragraph and A.6 sentence each end with this text, which records
+what the landing did instead (the cite and the second sentence amended
+2026-11-01, review fold: RR2-3: fork/cpp-templates/plan.md reaches trunk
+only at PR 64, and R27 asks that L's departure from TP-1's text be
+recorded):
+
+```text
+F6 kept PR 51's split's name, fail_todo_unformed_dependent_var, because its shape still fails on TP-1's toolchain (551a03328 fork/cpp-templates/plan.md (held PR 64) C-2 and H-1); PR 64's L-F renames it. L's templates.md hunk 9 context line and the X20 and X23 comments follow PR 58's state-L text, which removed "held PR 51" from the lines TP-1's Appendix C quotes (fork/land/land1-plan.md Appendix C.8).
+```
+
+PR 61's A.5 Landed paragraph then ends with this sentence (D-LAND-20; added
+2026-11-01, review fold: RR2-1):
+
+```text
+Mutants (the landed notes' item (c); fork/land/land1-plan.md D-LAND-20): re-run <mut>; every other mutant of section 8 item 5 edits a file this landing does not change and keeps its record on 66aa13132; M18 reverts S and waits with it for Next actions item 15.
 ```
 
 OR-5: the branch's "TP-1 at land time" item is discharged by the landing (the
@@ -2114,9 +2318,79 @@ and the split's "Predicted:" comment read as history:
 // split's prediction are historical.
 ```
 
-OR-5: the
-branch's "TP-1 at land time" and "CT-1 at land time" items are discharged by
-PR 61's and this landing (the message lists S-VA as item 17's).
+L-F's comment commit, after the refill (section 2.9; added 2026-11-01, review
+fold: RR2-1; CT-1's landed notes' item (c), 551a03328
+fork/cpp-templates/plan.md:4834-4841), in
+lines 260 and 261 of
+toolchain/lower/testdata/interop/cpp/template_symbolic_arg.carbon:
+
+```carbon
+// lowered as the outer specific's constant: the load of `Traits<long>::size`
+// and of `Traits<short>::size`.
+```
+
+become, the same line count:
+
+```carbon
+// lowered as the outer specific's constant: the constants 8 and 2 of
+// `Traits<long>::size` and `Traits<short>::size`.
+```
+
+L's message (section 2.9; added 2026-11-01, review fold: RR2-1; the landed
+notes' item (d)):
+
+```text
+Land PR 64: CT-1 interoperability page and fixture X37 over PR 58
+
+CT-1's land-time L (fork/cpp-templates/plan.md Appendix C.1 and its
+landed notes' item (d), with the anchor fork/land/land1-plan.md Appendix
+C.10 adapts to PR 58's state-L text): the sentence of
+docs/design/interoperability/README.md's "Using C++ templates" from "One
+limit in 0.1:" replaced by C.1's paragraph dated <date>; fixture
+X37_cpp_template_symbolic_uninit.carbon with its SAMPLES entry after
+X09's; X09's comment updated.
+
+check_samples.py: <dd>; with --toolchain: <ddt>. R27: the page's
+`var b: Cpp.Box(T);` and `Cpp.Twice(x)` occur verbatim in X37, and the
+first in interop/cpp_template_symbolic_arg.carbon and
+cpp_template_on_carbon_generic.carbon. R31 (README.md, headings,
+bullets, numbered, rows): <r31>. prek clean (SKIP=fix-cc-deps,
+check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest).
+
+<trailers>
+```
+
+PR 64's A.5 Landed paragraph ends with these sentences (added 2026-11-01,
+review fold: RR2-1; the landed notes' items (c) and (f) and its "R32 at
+landing"):
+
+```text
+L-F reworded A.2's nested_alias_through_specific comment to name the constants 8 and 2 (item (c)), an autoupdate no-op; L's check_samples.py reported "<dd>" and, with --toolchain, "<ddt>" (item (f)). Mutants (item (c); fork/land/land1-plan.md D-LAND-20): re-run <mut>; every other mutant of section 8 item 5 edits a file this landing does not change and keeps its record on 551a03328; M18 waits with S-VA for Next actions item 17. R32 (the "R32 at landing" note above): F-021's V-3 comparison was repeated at upstream <tip>, where its four quotes are at <v3>, and none of the <v3n> upstream commits since c1e83b0b7 to their files lands a rule for a checked generic's C++ calls that differs from F-021, so F-021 stands.
+```
+
+In CT-1's decision-log entry, after the held-state paragraph's last words, "no
+residue is filed and W-312 to W-319 stay unused." (once in the entry at
+e21480b05), C.7's fallback (the landed notes' item (g)) appends (added
+2026-11-01, review fold: RR2-1):
+
+```text
+ Brought up to date <date> (LAND-1, fork/land/land1-plan.md section 2.9): merged into trunk as PR 64 by <merge sha> after PR 61 (TP-1) and PR 62, with land-time commits <land-time shas> (L-F and L); container-measured (R33 (b)) on the merged trunk, the absolute count re-quoted from its scoreboard: gate <g> of <g>, conformance <p>/<f>/<s> over <n>, <b>/56 bullets; F-021's V-3 comparison repeated at upstream <tip> (fork/cpp-templates/plan.md, its Landed notes); S-VA and its mutant M18 wait for Next actions item 17.
+```
+
+OR-5 (amended 2026-11-01, review fold: RR2-1): the branch's "TP-1 at land
+time" item is discharged by PR 61's landing (C.8), and its "CT-1 at land
+time" item, item 6 (551a03328 fork/ORCHESTRATION.md:1220-1267), by this
+landing, each of its steps mapped by section 2.9: M is the merge, with LG-7,
+PROG-1 and README-1 for its rules and OR-2 with A.3's row for "trunk's stale
+CT-1 Branches row dropped"; S-VA and M18 are item 17's (the message says so);
+L-F is the rename commit, the refill, the comment commit with its autoupdate
+no-op, and the gate, conformance and D-LAND-20's mutants; L is the L commit
+with both checker modes, R27's spelling diff and R31's counts in its message;
+the second id re-scan precedes the records commit; the records commit's
+steps are C.4's rows, C.2's discharge, W-127's sentence, R32's comparison,
+the held-state sentence above and the checker runs in A.5's sentences; and
+its last step, the hosted runs when Actions returns, is R33 (b)'s owed hosted
+gate, A.3's last clause.
 
 ### C.11 PR 63's own texts
 
@@ -2267,3 +2541,29 @@ rejected. Each was reproduced first in `$F1` (a scratch worktree under
 
 Checks of this revision: as rev 2's, with the R31 counts of every edit and
 prek run, recorded in the commit message.
+
+## Focused re-review fold record, round 2 (rev 4, 2026-11-01)
+
+The focused re-review's round 2 of rev 3 (a8fa4d68b) returned
+APPROVE-WITH-AMENDMENTS. It found N1 to N6 resolved: the split's shape fails
+on the TP-1 install (eafca5cb9) and compiles on the CT-1 install
+(224ee2f8f); TP-1's L with C.8's state-L context and CT-1's L with C.10's
+anchor apply, DD-1's checker reporting 70 and 71 fixtures and 0 errors;
+D-LAND-10, section 2.7 and section 3 agree; C.9's OR-5 matches
+fork/decision-log.md:7002-7005; the six B.1 anchors occur once at bb9fbba9c;
+the gate.log formats match `<g0>` and `<gn>`; the eighteen heads are
+unchanged; R31's counts were 1/14/50 headings, 68 bullets, 20 numbered, 173
+rows and 47 blocks, 0 unguarded. It found 1 MAJOR and 3 MINOR, RR2-1 to
+RR2-4. All four are folded; none is rejected. Each was reproduced first in
+`$F2`; no scratch worktree was needed, because the dry run's scratch commits
+d03be4456 and e21480b05 were read with `git show` and `git diff`.
+
+| Id | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR2-1 | MAJOR | Folded. Reproduced: CT-1's landed notes' items (c) to (g) (551a03328 fork/cpp-templates/plan.md:4809-4868) and its branch's item 6 (fork/ORCHESTRATION.md:1220-1267) name A.2's comment reword, the gate, conformance and mutants on the merged build, R27 and R31 at L, R32's V-3 comparison and the held-state paragraph, which rev 3 did not map; TP-1's item (c) (66aa13132 fork/templates/plan.md:7927-7928) names mutants. D-LAND-20 re-runs, by both plans' own rule (TP-1's :6389-6390 and :7121, CT-1's :3871-3872), each named mutant whose edited file the landing changes or whose killer it refills or renames: measured, none of TP-1's at PR 61 (its 32 non-testdata files and the merge's two non-testdata changes are disjoint) and CT-1's M6, M7, M23, M24, M75 and M75r at PR 64 (PR 62's convert.cpp; each edit applies to e21480b05's file by `patch --dry-run`); the others keep their head records, listed in section 6 and in A.5's sentences. Section 2.9 maps items (a) to (g); C.10 gives the comment reword (after the refill, in CT-1's order), L's message with R27's spelling diff and R31's counts, A.5's sentences (the checker runs, the mutants, R32's result), the held-state sentence by C.7's fallback (one CT-1 entry at e21480b05) and OR-5 step by step; R32's procedure was measured at upstream 68569d234 (the four quotes at appendix-witness.md:154, overview.md:376, p002200-template-generics.md:1095 and call.cpp:388; eight commits, none a rule for a checked generic's C++ calls) | Status, contents, conventions, 0.3, D-LAND-4, D-LAND-6 step 7, D-LAND-19, D-LAND-20, 2.7, 2.9, 3, 6, B.1, C.1, C.8, C.10 |
+| RR2-2 | MINOR | Folded. Reproduced: bb9fbba9c fork/ORCHESTRATION.md:1123-1124 states 126/23/0 over 149 at PR 48's head, while trunk's scoreboard.json is 128/0/22 over 150 (generated 2026-10-06 02:26 UTC). A.9's last sentence is the review's text, with a dated note under it | A.9 |
+| RR2-3 | MINOR | Folded. Reproduced: fork/cpp-templates/plan.md is absent at bb9fbba9c and d03be4456, present at e21480b05; PR 51's split header (f96fe8a7a) says "W-127 carries the limit and its removal condition". C.8's F6 sentence cites 551a03328's file as held PR 64's and gains the sentence on L's state-L departures (R27), and W-127's notes gain the split's sentence | 2.7, C.8 |
+| RR2-4 | MINOR | Folded. Reproduced: file_test_base.cpp:131-160 reports a `fail_` split that succeeds as a problem autoupdate cannot fix; DR-1 measured "1962 passed and 1 failed, L-b's rename 1/1" (fee0ef31c fork/direction/plan.md:2756-2758). Step 4 expects that report for the split section 2 renames at PR 64 and at PR 65, counted in `<g0>` and `<gn>`; step 7's stop applies to the gate after step 6's commits; hand-off note 8, sections 2.9 and 2.11 and A.1 say so | D-LAND-6 steps 4 and 7, 2.9, 2.11, hand-off note 8, A.1 |
+
+Checks of this revision: as rev 3's, with R31's counts before the edits,
+after them and after each prek run, recorded in the commit message.

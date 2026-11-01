@@ -6,7 +6,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # LAND-1 plan: landing the held PRs into trunk under R33
 
-**Status:** rev 6 -- NOT signed off pending re-review round 4 (the ruling's).
+**Status:** rev 7 -- NOT signed off pending re-review round 5: RR4-1, RR4-2.
+Rev 7 (2026-11-01) folds round 4 of the focused re-review: round 4 of rev 6
+(7cc793057) found no BLOCKER, two MAJORs, RR4-1 and RR4-2, and five MINORs,
+RR4-3 to RR4-7, all folded here (see the round-4 fold record at the end):
+D-LAND-22 decides, under R29 and with the measurement, that the template
+assignment abort PR 61 and PR 64 reach is W-259's, a trunk defect, so both
+land, and PR 63's records commit writes the (i) stamp the weekly upstream
+check routed to DR-1; round 5 follows under the same sign-off rule.
 Rev 6 (2026-11-01) records the orchestrator's ruling under R29 after round 3
 verbatim (the section "Orchestrator's ruling (2026-11-01, after round 3)"),
 restates PR 53's gate by its item 2, and folds the completeness audit of its
@@ -40,7 +47,12 @@ this
 audit, PR 59 and its stacked PR 66, because trunk's Next actions item 13 owes
 PR 59 a crash fix (a pack in a choice alternative's parameter list aborts in
 lowering where trunk rejects it at parse) and VA-2's hand-off note 7 owes it a
-ruling on a second abort (D-LAND-2). A sequential dry run of the twelve merges
+ruling on a second abort (D-LAND-2). PR 61 and PR 64 make a template's
+assignment through a literal subscript abort in lowering where trunk rejects
+it, but trunk aborts the same way on the variable subscript, and the root is
+W-259, TP-1's filed residue in trunk's assignment check, which upstream's tip
+shares; so both land and W-259 records the abort (D-LAND-22; added
+2026-11-01, review fold: RR4-1). A sequential dry run of the twelve merges
 over trunk bb9fbba9c, re-run for rev 2 with the gap rule corrected so that a
 row both sides changed is composed and never dropped, resolves every conflict
 by a recorded rule (section 0.5). The non-records conflicts are three, each
@@ -62,7 +74,7 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Section 0: audit (the held state, owed items, conflicts, the dry run,
     goldens, scoreboards, the arbiter, ids, stacked PRs, disk, the register
     checks at upstream's tip)
--   Section 1: decisions D-LAND-1 to D-LAND-21
+-   Section 1: decisions D-LAND-1 to D-LAND-22
 -   Section 2: spec, one subsection per landing in land order
 -   Section 3: the process, the actors and the follow-ons
 -   Section 4: the scoreboard progression and its stop values
@@ -78,6 +90,7 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Focused re-review fold record, round 2 (rev 4, 2026-11-01)
 -   Focused re-review fold record, round 3 (rev 5, 2026-11-01)
 -   Review fold record (rev 6, 2026-11-01)
+-   Focused re-review fold record, round 4 (rev 7, 2026-11-01)
 
 Conventions. `trunk` is origin/trunk bb9fbba9c unless a section says otherwise.
 A file:line cite names the sha it was read at. `$P` is the planner's scratch
@@ -93,7 +106,15 @@ directory
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer3
 (added 2026-11-01, review fold: RR3-2), `$F4` the rev-6 fixer's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer4
-(added 2026-11-01, ruling fold: the ruling's item 2), `$CB` the arbiter's
+(added 2026-11-01, ruling fold: the ruling's item 2), `$F5` the rev-7 fixer's
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer4/rev7
+(added 2026-11-01, review fold: RR4-1), `$Y` and `$W` SV-1's rev-5 and rev-4
+fixers' scratch directories,
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-fixer5
+and
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/sv1-fixer4,
+as SV-1's plan names them (0ef8a0334 fork/sumtype-interop/plan.md:172-173 and
+:181-183; added 2026-11-01, review fold: RR4-5), `$CB` the arbiter's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/carbonbuild,
 and `$X` the expected trees, `$F/expected` (rev 1's `$P/expected` is superseded
 from PR 58 on, section 0.5; amended 2026-11-01, review fold: A-B1 / A-M4). The
@@ -667,7 +688,9 @@ old tip; D-LAND-19 replaces it.
 recorded order with the gated PRs skipped: PR 67, 51, 52, 54, 55, 58, 61, 62,
 64, 63, 65, 68. Each is correct by R33 (a): its reviews are dry (section 0.1),
 its land-time steps that apply to the trunk it lands on are made by the
-landing (section 2), and its merged trunk is verified before the push. The
+landing (section 2), and its merged trunk is verified before the push; the
+abort on a template's assignment that PR 61 and PR 64 reach is not theirs, by
+D-LAND-22 (added 2026-11-01, review fold: RR4-1). The
 recorded order is kept among them; no records-only PR is moved, because each
 plan's merge rules assume the earlier ones. RG-1's section 5 says the sequence
 "does not skip" a waiting PR "because each later PR's records and merge-trees
@@ -691,7 +714,12 @@ awaiting a ruling (section 0.2); the fork has treated such an abort as a defect
 fixed at the root before a PR is held (TP-1's X-1, row :1104). PR 66 contains
 PR 59's commits and carries both. The fix's owner is VA-1's workstream: a new
 commit on PR 59's branch under VA-1's review, with VA-2's hand-off notes 7 and
-9 as its spec (amended 2026-11-01, review fold: B-m8). _Break condition:_ the
+9 as its spec (amended 2026-11-01, review fold: B-m8). The class is an abort
+whose root lies in the PR's own scope, as X-1's lay in TP-1's D-TP-11 and
+TR-13 and item 13's lies in VA-1's packs; an abort whose root is a
+trunk defect that trunk reaches on the same operation and that a PR's plan
+filed as out of its scope before the PR was held is not the PR's (D-LAND-22;
+added 2026-11-01, review fold: RR4-1). _Break condition:_ the
 orchestrator rules, with the evidence on record, that item 13 is not a defect
 of PR 59 (for example, that upstream's own toolchain at its tip aborts the
 same way), and records why in ORCHESTRATION; PR 59 then lands as G-59/66
@@ -809,6 +837,15 @@ implementer by hand, the saved files in `$X` being the reference (amended
     DL-4: where a PR's head appends paragraphs to an entry whose end trunk has
     given a Landed sentence (A.6), the PR's paragraphs go first and the Landed
     sentences stay last, in landing order (predicted at PR 65 for DR-1's entry).
+    DL-5 (added 2026-11-01, review fold: RR4-2): at PR 65, DR-0's register
+    block, where PR 63's records commit appended the (i) sentence of
+    Appendix C.11 and DR-1b's side appends its "(ii) resolved" sentence at
+    the same point, after "(iii) resolved 2026-10-21 by DR-1a, d0cfe8082
+    and its fill c1cc72a09.", keeps both, (i) first, in Appendix C.12's
+    four lines, with trunk's re-check paragraph after it unchanged (measured
+    by merging a copy of f2110e0fd's log with the (i) sentence against
+    fee0ef31c's over 89aabd125's: one conflict, this region;
+    `$F5/rr4-2/`).
 -   PL-1: where a PR's plan file gains a section after the section to which
     trunk appended a Landed paragraph (A.5), trunk's paragraph stays at the end
     of its own section and the PR's section follows (predicted at PR 65 for
@@ -1274,8 +1311,9 @@ break condition (CT-1's, "a mutant that turns nothing red other than M12, M1
 (subsumed, with M1c killed) and M75", fork/cpp-templates/plan.md:3906-3911).
 
 **D-LAND-21, the land-time id re-scans** (added 2026-11-01, ruling fold:
-AUD-55-12 / AUD-61-T15 / AUD-61-T26 / AUD-63-15 / AUD-65-A10). Six plans
-prescribe an id re-scan at land time: ST-1's for W-160 to W-167 (c3cdecc5d
+AUD-55-12 / AUD-61-T15 / AUD-61-T26 / AUD-63-15 / AUD-65-A10). Five plans
+(six landings; amended 2026-11-01, review fold: RR4-6) prescribe an id
+re-scan at land time: ST-1's for W-160 to W-167 (c3cdecc5d
 fork/ORCHESTRATION.md:553-558, fork/string/plan.md:2305-2316), TP-1's three
 commands, before L and before the records commit's ledger edit (66aa13132
 fork/templates/plan.md:582-597), SV-1's section 8 item 7 (the landed notes'
@@ -1301,6 +1339,90 @@ branch (c3cdecc5d) and on the local st branch and origin/pr/55, both at
 21307851a, an ancestor of c3cdecc5d. _Break condition:_ a collision; the
 orchestrator rules the re-allocation and this plan is amended.
 
+**D-LAND-22, the template assignment abort at PR 61 and PR 64** (added
+2026-11-01, review fold: RR4-1). Decided here under R29 on the measurement,
+not left to the landing's review. The rev-7 fixer compiled four programs
+with the existing installs, no build (`$F5/probe/`; each install's tree
+differs from its PR's head in testdata only, by `git diff --stat` over
+toolchain/ and core/). Each declares the class `V` below; lit is this file,
+var has `fn G[template T: type](v: T, i: i64) { v[i] = 5; }` called as
+`G(v, 0)`, nt_lit has `v[0] = 5;` in `Run` and no `G`, and rd_lit has
+`fn G[template T: type](v: T) -> i32 { return v[1]; }` called inside
+`Core.Print(G(v))`.
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+import Core library "io";
+class V { var x: i32; }
+impl V as Core.IndexWith(i64) where .ElementType = i32 {
+  fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
+}
+fn G[template T: type](v: T) { v[0] = 5; }
+fn Run() -> i32 {
+  var v: V = {.x = 5};
+  G(v);
+  return 0;
+}
+```
+
+<!-- google-doc-style-resume -->
+
+On trunk's install (0bdce60a5, trunk's toolchain at bb9fbba9c) and on UA-2's,
+ST-1's, SV-1's, DR-1a's and OV-4's, lit is rejected (rc 1, "unable to
+monomorphize specific `G(V)`", `V` not implementing
+`Core.IndexWith(Core.IntLiteral)`), var stops at lower.cpp:48 (rc 134,
+"Store operand must be a pointer"), nt_lit is rejected ("expression is not
+assignable") and rd_lit is rejected as lit is. On TP-1's (eafca5cb9) and
+CT-1's (224ee2f8f), lit and var stop at lower.cpp:48, nt_lit is rejected
+the same way and rd_lit compiles. On DR-1b's own tree (7a442f632) lit, var
+and rd_lit are rejected at monomorphization (W-340). The 2026.10.12 nightly
+stops on var at lower.cpp:48. The root: outside a template, trunk's
+assignment check rejects a left operand that is not a durable reference;
+inside one, the operand's category is `Dependent`, which that check skips
+(toolchain/check/handle_operator.cpp:110-118 at bb9fbba9c and 66aa13132,
+"(lhs_cat != SemIR::ExprCategory::Dependent &&"), and nothing checks it when
+the template is instantiated, so a value reaches lowering as a store's
+address. That is W-259, filed by TP-1 as out of its scope before PR 61 was
+held: "an assignment whose left operand is template-dependent is not checked
+on instantiation for being an assignable reference" (66aa13132
+fork/templates/plan.md:1743-1745, TR-21, and :1504-1509; its ledger entry).
+Upstream's tip has the same check, the same quote at 68569d234
+toolchain/check/handle_operator.cpp:110-118, and its nightly stops on var as
+trunk does. Trunk's rejection of lit does not diagnose the assignment: it
+is trunk's rejection of every literal subscript of such a type in a
+template, the valid rd_lit included, which TP-1's change removes, as trunk
+already compiles `v[1]` outside a template. So the abort that PR 61 makes
+reachable from lit is W-259's, a trunk defect, and not a defect of PR 61's
+change (D-LAND-2's class, as amended): X-1's root lay in TP-1's own
+D-TP-11, whose class types formed in the definition reached an alternative
+pattern through a deferred member access (66aa13132
+fork/templates/plan.md:140-145, "TR-13 and D-TP-11 amended"), and item
+13's in VA-1's packs, while TP-1's hunks in handle_operator.cpp change only
+the `&` and prefix `*` handlers (:270 and :378 at bb9fbba9c) and leave the
+assignment's handler (:97) as trunk has it. PR 61 and PR 64 land; PR 61's
+records commit writes Appendix C.8's W-259 note, which records both forms
+and widens W-259's break condition to them; W-369 stays unused, because a
+second item for one root would duplicate W-259; the fix stays W-259's, in
+the order W-014's notes give TP-1's next slice ("then W-255 and W-264, and
+W-254 and W-259", 66aa13132 fork/inventory/work-items.json). The check at
+the landings: at
+PR 61, PR 64 and PR 65, D-LAND-10's reviewers compile the four programs on
+the landing's install. Expected at PR 61 and PR 64: lit and var stop at
+lower.cpp:48 with "Store operand must be a pointer", nt_lit gives
+"expression is not assignable" and rd_lit compiles. Predicted at PR 65 the
+same, since C-b makes `IndexWith` serve a template operand per specific
+(fee0ef31c fork/direction/plan.md:1602-1606) and leaves the assignment
+check alone; there, a form that is diagnosed instead is recorded on W-259 by
+Appendix C.12's sentence. Any other result, rd_lit or nt_lit failing
+otherwise or a stop anywhere but lower.cpp:48, stops the landing
+(D-LAND-10). _Break condition:_ a landing's review finds a program that
+`<trunk before>` compiles, or diagnoses for its own error, and the landing's
+install aborts on, with the root in the PR's own scope; or the orchestrator
+rules W-259's abort the PR's. Then PR 61 and PR 64 wait for a fix commit on
+TP-1's branch under TP-1's review, W-369 filed with it as D-LAND-13 files
+W-367, and stages 7 to 12 are re-planned.
+
 ## §2 Spec, per landing
 
 Each subsection gives the head, the base, the files, the conflicts and rules
@@ -1320,8 +1442,12 @@ sentences and on W-343, W-355's tip note and item 6's RG-1 clause (amended
 same mark on the six other lines that restate the superseded order, in
 rg1-plan.md (:865-867, :1630, :1632-1633, :1679-1680, :1730-1732) and in
 RG-1's decision-log entry (56e2e5bbd fork/decision-log.md:376-377), and a
-dated mark on section 6's rejection of reordering PR 53, whose break
-condition has fired and whose W-144 renumbering commit is moot, the
+dated mark on section 6's rejection of reordering PR 53, which D-LAND-1
+supersedes under R33 without that rejection's break condition being met
+("every other PR before PR 66 is otherwise ready to land", 56e2e5bbd
+fork/register/rg1-plan.md:1704-1707, while PR 56, PR 57, PR 59 and PR 60
+are not; amended 2026-11-01, review fold: RR4-3), and whose W-144
+renumbering commit is moot, the
 renumbering to W-151 being on PR 60's branch already (2f4ebbf6e; cc4daba00
 fork/structural/plan.md:3111-3112; amended 2026-11-01, ruling fold:
 AUD-67-P11 / AUD-67-P12); C.2's W-355 note limited to the landing, W-355's
@@ -1399,13 +1525,21 @@ records commit; W-131's, W-133's and W-002's state C notes; the conformance
 README table regenerated by `runner.py --update-readme-table`, the
 C++-library row going from SKIP to `external-build` (section 2.E.8,
 cb3ef2e74 fork/evaluator/plan.md:1610-1615), without which `--self-test`
-fails; and, by R-8 (:2041-2045), each runner.py line cite of EV-1's
-decision-log entry (runner.py:516-524, :546-551, :321 and :453-462 on
-61458bc92) re-pinned to the lines holding the same code in the runner after
-state C, by C.8's re-cite rule, a cite whose code is gone stopping the
-landing. Then EV-1's land sequence (cb3ef2e74 fork/ORCHESTRATION.md:109-116;
-added 2026-11-01, ruling fold: AUD-54-16 / AUD-54-17 / AUD-54-18), after
-step 8: `python3 -I fork/evaluator/check_faq.py --which fork --toolchain
+fails; and, by R-8 (:2041-2045, "every other runner.py line cited in the
+records re-pinned against the merged runner"), every runner.py line cite of
+the records re-pinned in that commit to the lines holding the same code in
+the runner after state C, by C.8's re-cite rule, a cite whose code is gone
+stopping the landing: EV-1's decision-log entry's (runner.py:516-524,
+:546-551, :321 and :453-462 on 61458bc92) and the ledger's, W-002's
+evidence (fork/conformance/runner.py:652, :597, :413 and :1665) and W-060's
+(:597), measured on 61458bc92 and unmoved by the dry run's merges through
+5cf7406f1, which lack state C and PR 58's join; no gap row cites a
+runner.py line (measured on 61458bc92 and 5cf7406f1). PR 58's join commit
+re-pins the same set against the runner it leaves (section 2.6; amended
+2026-11-01, review fold: RR4-4). Then EV-1's land sequence (cb3ef2e74
+fork/ORCHESTRATION.md:109-116; added 2026-11-01, ruling fold: AUD-54-16 /
+AUD-54-17 / AUD-54-18), after step 8:
+`python3 -I fork/evaluator/check_faq.py --which fork --toolchain
 /home/user/carbon-build/carbon-trunk/install/bin/carbon`, where any mismatch
 stops the landing (D-EV-21, :638-653); the same with `--which nightly` and
 the newest upstream nightly, fetched as docs/guides/getting_started.md's
@@ -1498,7 +1632,11 @@ runner.py --self-test (D-DD-6)", because EV-1's state C commit (PR 54) put
 D-DD-6's condition (:567-571): Appendix C.7's rule, `--self-test` printing
 its `OK` line after it, a toolchain dependency or a run past `--self-test`'s
 budget limiting the join to the diff, quote and W2 checks by D-DD-6's own
-break condition (added 2026-11-01, ruling fold: AUD-58-U1); then records
+break condition (added 2026-11-01, ruling fold: AUD-58-U1), the join
+commit re-pinning section 2.4's runner.py cites (EV-1's decision-log
+entry's, W-002's and W-060's) by C.8's re-cite rule against the runner it
+leaves, EV-1's R-8 applying to every runner.py change (added 2026-11-01,
+review fold: RR4-4); then records
 with DD-1's
 section 2.14 evidence amendments for W-014, W-127, W-155 and W-167, row 91's
 dated mark, RG-1's DD-1 note (rg1-plan.md:2562-2570), the header `<tally>`
@@ -1605,15 +1743,18 @@ it as C0 (measured by the rev-6 fixer: 44 such commits at 68569d234, not
 judged here; AUD-61-T29); and DR-1's round-1 note, "passed to PR 61's and
 CT-1's records" (fee0ef31c fork/direction/plan.md:4285-4296, :4528-4533) and
 in neither head's records, is carried at this landing and at PR 64's by
-C.8's and C.10's note sentence at the end of A.5, and checked: D-LAND-10's
-reviewers at PR 61 and PR 64 compile the note's literal form, a template
-`v[0] = 5` on a by-value type with only `IndexWith`, which CHECK-fails at
-lower.cpp:48 "on CT-1's install, where trunk diagnoses", with the landing's
-install and with `<trunk before>`'s; an abort where `<trunk before>`
-diagnoses stops the landing for the orchestrator's ruling, as D-LAND-2's
-class (R33 (c)); the variable forms, `x[i] = 5` on such a type and
-`s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T`,
-CHECK-fail on trunk too, and DR-1b fixes the second (AUD-61-T30).
+C.8's and C.10's note sentence at the end of A.5, and checked by
+D-LAND-22, which decides its outcome now (amended 2026-11-01, review fold:
+RR4-1): D-LAND-10's reviewers at PR 61 and PR 64 compile D-LAND-22's four
+programs on the landing's install, the note's literal form, a template
+`v[0] = 5` on a by-value type with only `IndexWith`, among them, and expect
+what D-LAND-22 measured on TP-1's and CT-1's installs (the literal and the
+variable template forms stop at lower.cpp:48, W-259's abort; the same
+assignment outside a template is rejected as not assignable; the
+template's literal read compiles), any other result stopping the landing;
+PR 61's records commit writes C.8's W-259 note; and `s[i] = 5` on a
+`Core.Slice(i32)` or `Core.Buf(i32)` as a template `T` CHECK-fails on
+trunk too, which DR-1b fixes (AUD-61-T30).
 
 ### §2.8 PR 62, SV-1
 
@@ -1647,9 +1788,14 @@ landing itself: step 2's merge-trees, the build of the merged trunk, the
 gate and conformance are the measurement the mirrors predicted. Their probe
 sets, `$Y`'s probes rx, rt, cr, cz and w (44 programs) and `$W`'s probes/tp
 (h1 to h3, t2 to t7, x20, q05), are run on the landing's install with
-SV-1's runner of the round that last ran them and compared with the outputs
-the plan records (the mirrors' table, :5368-5373), a different output
-stopping the landing; a
+SV-1's runner of the round that last ran them and compared with the
+outputs the plan names (amended 2026-11-01, review fold: RR4-5): for the
+44, "what they print on C3" (:5361-5364), whose record is the C3 run's log,
+scratchpad/sv1-impl/stage3/probes-c3-y.txt (44 lines, one per program, the
+six W-263 stops y11, z1, z5, z7, z8 and z9 among them); for probes/tp, the
+mirrors' table (:5367-5372), whose PR 61 row (:5372) gives h1, h2, h3, t2,
+t4, t5, t6, t7 and x20 W-279's TODO under "unable to monomorphize
+specific", q05 5 and t3 `3 4`; a different output stopping the landing; a
 set whose sources are gone from the scratchpad is named not run in the
 records commit's message with that reason (AUD-62-S04). x19 is the
 composition probe of SV-1's fixer,
@@ -1798,8 +1944,10 @@ conditions (551a03328 fork/cpp-templates/plan.md:765, :814-851,
 :4044-4082); to G-56/57: its PR 57 composition, the red set empty but
 TP-1's lower/template/for_range.carbon refill, and its break condition
 (:832-840; amended 2026-11-01, ruling fold: AUD-64-a5 / AUD-64-a6). DR-1's
-note passed to CT-1's records is carried and checked here as at PR 61
-(section 2.7; the audit's x1 note).
+note passed to CT-1's records is carried here as at PR 61 and checked by
+D-LAND-22, with the same expected results as at PR 61, which
+`<trunk before>` already holds (section 2.7; the audit's x1 note; amended
+2026-11-01, review fold: RR4-1).
 
 ### §2.10 PR 63, DR-1a
 
@@ -1825,11 +1973,18 @@ row-68 mark and item 1's mark (Appendix C.11), the id re-scan by D-LAND-21
 routed to DR-1 as a commit on its branch (bb9fbba9c
 fork/decision-log.md:6903-6912, fork/ORCHESTRATION.md:536-540), which no
 head carries and D-LAND-3 makes this records commit's: W-322's discharge
-note and the dated notes of W-324 and W-326, by Appendix C.11's texts; the
-"(i) sha stamp" on PR 63's copy of DR-0's register block is made by the
-merge, since that block is trunk's at :242-243 and trunk's dated paragraph
-after it (:249-253) already holds "(i) resolved on PR 62's branch by
-22fe50ff8 and its fill f4660e409" (AUD-63-20). DR-1's section 8 item 9
+note and the dated notes of W-324 and W-326, by Appendix C.11's texts; and
+the "(i) sha stamp" on PR 63's copy of DR-0's register block, the records
+fix trunk routed, "(i) resolved 2026-10-21 by W-322's 22fe50ff8 and its
+fill f4660e409 on PR 62" (bb9fbba9c fork/decision-log.md:6908-6909),
+written by Appendix C.11's text after the block's "(iii) resolved"
+sentence (AUD-63-20; amended 2026-11-01, review fold: RR4-2). The merge
+does not make it: the merged block is PR 63's copy, whose (i) still reads
+"(W-322, retired by DR-1 slice 1)" with no sha while (iii) carries its own
+(f2110e0fd fork/decision-log.md:242-255), and trunk's dated paragraph
+after it (bb9fbba9c :249-253) says only that the stamp is "routed to
+DR-1". At PR 65, DL-5 keeps that sentence beside DR-1b's "(ii) resolved"
+one. DR-1's section 8 item 9
 re-run before M-a "if it has moved from 118fc1bc8" (:5151-5153) is not
 owed: item 9's own rule re-runs a mirror only when a head has moved in
 toolchain/, core/ or fork/conformance/ (:2707-2709), and `git diff`
@@ -1853,11 +2008,14 @@ gap-analysis (GA-1b on row 79), ledger (LG-1, LG-6 on the source header), TC-2
 and the default arm's `return elem_id;`, by $P/bin/resolve65.py), GOLD-1
 (string_indexing.carbon, trunk's side), and, predicted from the heads, PL-1 on
 fork/direction/plan.md and DL-4 on DR-1's decision-log entry (section 0.5's
-limit). GA-1b (amended 2026-11-01, review fold: A-B1): row 79 ("Stdlib:
-Slices") is DR-1b's row with its clause "a `Buf` held in a field is not freed —
-aggregate destroy ops are still the member-destruction placeholder (W-108)"
-replaced by trunk's clause verbatim, "a `Buf` held in a field of an owner that
-declares its own `impl as Destroy`, or in a choice payload, is not freed (W-108
+limit), and DL-5 on DR-0's register block, where PR 63's records commit
+wrote the (i) sentence (measured on copies, `$F5/rr4-2/`; added
+2026-11-01, review fold: RR4-2). GA-1b (amended 2026-11-01, review fold:
+A-B1): row 79 ("Stdlib: Slices") is DR-1b's row with its clause "a `Buf`
+held in a field is not freed — aggregate destroy ops are still the
+member-destruction placeholder (W-108)" replaced by trunk's clause
+verbatim, "a `Buf` held in a field of an owner that declares its own
+`impl as Destroy`, or in a choice payload, is not freed (W-108
 narrowed at UA-2, 2026-10-06: ... W-125 for payloads)" (the full clause is
 `$F/expected/pr65/row79_clause.txt`); its status is DONE, so the tally is
 36/16/3/1 from here on. Steps: merge (M-b); step 4's gate reports
@@ -1914,6 +2072,28 @@ marks kept (C.12; AUD-65-B3); and the A.5 sentence of C.12 that records
 SAFE-2's DR-1 note, whose premise "PR 65 lands after PR 53" this order
 reverses, as item 14's (AUD-65-F2). C-b's message is DR-1's own, prefixed
 as every landing commit is (:5459-5461; the audit's A3 note).
+
+Round 4's additions (added 2026-11-01, review fold: RR4-7 / RR4-1).
+handle_index.cpp is the one C++ file a landing writes beyond either head's
+text, by TC-2's resolution and C-b (TC-1's result equals 89aabd125's
+file), and DR-1's section 8 item 6 runs
+clang-tidy on each changed translation unit (fee0ef31c
+fork/direction/plan.md:2683-2694) on DR-1b's own tree, while mct-b
+checked C-b with clang-format only ("C-b +19/-1, clang-format clean",
+:2733 and :2757; mct-b's rebuild at :5418-5422). So after C-b's build,
+`ninja -C /home/user/carbon-build/carbon-trunk -t compdb` writes the
+compile database to `<S>/land1/impl/pr65-tidy/compile_commands.json`
+(`<S>` the scratchpad, as above; measured: the build's ninja file gives 323
+entries, handle_index.cpp among them), and in /home/user/carbon-trunk
+`/home/user/llvm/bin/clang-tidy` runs with `-p <S>/land1/impl/pr65-tidy`
+and `--checks=-modernize-use-trailing-return-type` on
+toolchain/check/handle_index.cpp, as item 6 runs it (clang-tidy 21.1.8,
+the repository's .clang-tidy otherwise); DR-1 recorded rc 0 with no
+user warning on f774ee836 and 7a442f632, and any user warning stops the
+landing for a fix by PR 65's workstream (D-LAND-10), the result going into
+the records commit's message and C.12's A.5 sentence. D-LAND-22's four
+programs are compiled on the landing's install after the refill, with
+D-LAND-22's expected results or C.12's W-259 sentence.
 
 ### §2.12 PR 68, OV-4
 
@@ -2107,6 +2287,13 @@ the follow-ons'.
 -   Rejected: landing PR 59 now with its fix as a later trunk commit. R33 (c)
     gates the PR itself, and trunk would carry two aborts on VA-1's forms in
     the meantime.
+-   Rejected: holding PR 61 and PR 64 for a fix of the template assignment
+    abort (added 2026-11-01, review fold: RR4-1). The abort is W-259's, a
+    trunk defect that trunk reaches with a variable subscript and that TP-1
+    filed out of its scope before PR 61 was held (D-LAND-22); holding them
+    would also hold PR 63 and PR 65, whose merge rules assume CT-1, and
+    leave the root unfixed, since the fix is W-259's assignment action,
+    not a change to PR 61. D-LAND-22's break condition reopens it.
 -   Rejected: stopping at PR 53, as RG-1's section 5 recorded. Only PR 67
     would land; the dry run shows the twelve merge by recorded rules.
 -   Rejected: taking trunk's side for a gap row both sides changed (rev 1's
@@ -2169,7 +2356,20 @@ the refs that file W-160 to W-167; lower/handle.cpp's cross-file FATAL at
 4a3220c11 against 551a03328 over toolchain/, core/ and fork/conformance/
 (empty); the 44 upstream commits to TP-1's 32 files in
 c1e83b0b7..68569d234; the files OV-4's mutants edit against 5cf7406f1; and
-the W-322, W-324 and W-326 notes on 89aabd125 and fee0ef31c. Not run
+the W-322, W-324 and W-326 notes on 89aabd125 and fee0ef31c. Rev 7's
+fixer, measured (2026-11-01, review fold: RR4-1 to RR4-7): `git ls-remote`
+of trunk (bb9fbba9c), all eighteen heads and
+claude/carbon-fork-0-1-safe-wip (14c1ac8ac), unchanged; D-LAND-22's four
+programs compiled with the existing installs of trunk, UA-2, ST-1, SV-1,
+TP-1, CT-1, DR-1a, DR-1b and OV-4 and with the 2026.10.12 nightly (no
+build; `$F5/probe/`), each install's tree equal to its head's but for
+testdata; handle_operator.cpp's assignment check at
+bb9fbba9c, 66aa13132 and upstream 68569d234 and TP-1's two hunks there;
+W-259 on 66aa13132; the (i) stamp's region on f2110e0fd and its merge
+against fee0ef31c on copies (`$F5/rr4-2/`); the runner.py cites of the
+ledger and gap rows on 61458bc92 to 5cf7406f1; SV-1's C3 probe log and
+mirrors' table; `ninja -t compdb` over carbon-trunk's build file and
+clang-tidy 21.1.8's path. Not run
 by the planner or the fixers, by rule: any build, gate, autoupdate, mutant
 or conformance run; the checkers' `--toolchain` mode; the merged trees'
 compilation (the TC-1 and TC-2 files are mechanical references, built first
@@ -2183,10 +2383,13 @@ M18s until G-60 and G-59; DR-1's mutants of section 8 item 5 other than C-b's
 and OV-4's of section 8.5 other than the file rule's (predicted M1, M2 and
 M8), each keeping its record on fee0ef31c or 097c76473; SV-1's M19 and M21
 until G-59 (added 2026-11-01, ruling fold: AUD-65-A11 / AUD-68-17 /
-AUD-62-S06). Not run by LAND-1 at all: clang-tidy, the
-Bazel-only tests, the BUILD-dependency hooks prek skips, LLVM with
-assertions, macOS, Windows and other platforms, and R21's hosted gate, which
-R33 (b) owes when Actions returns.
+AUD-62-S06). Not run by LAND-1 at all: clang-tidy on any file but
+handle_index.cpp after C-b, the one C++ file a landing writes beyond either
+head's text, which section 2.11 runs it on (amended 2026-11-01, review
+fold: RR4-7), the Bazel-only
+tests, the BUILD-dependency hooks prek skips, LLVM with assertions, macOS,
+Windows and other platforms, and R21's hosted gate, which R33 (b) owes when
+Actions returns.
 
 ## Hand-off notes
 
@@ -2749,10 +2952,12 @@ fork/decision-log.md:376-377), each anchor once on 56e2e5bbd.
 
 After section 6's rejected alternative's last words, "with W-144's
 renumbering as its own records commit." (rg1-plan.md:1699-1707; added
-2026-11-01, ruling fold: AUD-67-P12):
+2026-11-01, ruling fold: AUD-67-P12; the text amended 2026-11-01, review
+fold: RR4-3, because the break condition is not met, PR 56, PR 57, PR 59
+and PR 60 not being ready):
 
 ```text
- (Break condition met <date>: LAND-1 lands the ready PRs before PR 53, fork/land/land1-plan.md D-LAND-1; the renumbering commit is moot, SC-1's W-144 having been renumbered W-151 on PR 60's branch by 2f4ebbf6e.)
+ (Superseded <date> by LAND-1's D-LAND-1 under R33, fork/land/land1-plan.md, which lands the ready PRs before PR 53 without this break condition being met; the renumbering commit is moot, SC-1's W-144 having been renumbered W-151 on PR 60's branch by 2f4ebbf6e.)
 ```
 
 Appended to W-343's `notes` (restated 2026-11-01, ruling fold: the ruling's
@@ -3038,7 +3243,10 @@ fork/designdocs/check_samples.py for EV-1's path and
 `designdocs-samples self-check` for its label, called right after it,
 only when `--self-test` has no filter (EV-1's section 2.E.4, cb3ef2e74
 fork/evaluator/plan.md:1580-1586); it runs DD-1's checker without
-`--toolchain`, so its toolchain-free checks join, as D-DD-6 says.
+`--toolchain`, so its toolchain-free checks join, as D-DD-6 says. The same
+commit re-pins section 2.4's runner.py cites, EV-1's decision-log entry's
+and the `evidence` of W-002 and W-060, by C.8's re-cite rule against the
+runner it leaves (added 2026-11-01, review fold: RR4-4).
 
 The records commit's further texts (added 2026-11-01, ruling fold:
 AUD-58-U4 / AUD-58-U6 / AUD-58-U7): in fork/inventory/work-items.json's
@@ -3186,7 +3394,15 @@ passed it to their records (fee0ef31c fork/direction/plan.md:4285-4296;
 added 2026-11-01, ruling fold: AUD-61-T30):
 
 ```text
-DR-1's note, passed to this plan's records (fork/direction/plan.md, DR-1b's re-review round 4): a template `v[0] = 5` on a by-value type with only `IndexWith` CHECK-fails at lower.cpp:48 on CT-1's install, where trunk diagnoses; with a variable subscript, `x[i] = 5` on such a type CHECK-fails there on trunk too, and `s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T` CHECK-fails on trunk and prints `5 5` once DR-1b lands. The landing's review ran the literal form on this landing's install and on the trunk before it (fork/land/land1-plan.md section 2.7).
+DR-1's note, passed to this plan's records (fork/direction/plan.md, DR-1b's re-review round 4): a template `v[0] = 5` on a by-value type with only `IndexWith` CHECK-fails at lower.cpp:48 on CT-1's install, where trunk diagnoses; with a variable subscript, `x[i] = 5` on such a type CHECK-fails there on trunk too, and `s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T` CHECK-fails on trunk and prints `5 5` once DR-1b lands. The landing's review compiled the literal and variable forms, the same assignment outside a template and a template's literal read on this landing's install, with the results fork/land/land1-plan.md D-LAND-22 gives: the abort is W-259's, an assignment whose template-dependent left operand is not checked on instantiation, which trunk reaches with the variable form; trunk rejected the literal form only because it rejected every literal subscript of such a type in a template, the read included.
+```
+
+The note's last sentence is amended 2026-11-01 (review fold: RR4-1).
+Appended to W-259's `notes` by PR 61's records commit (D-LAND-22;
+added 2026-11-01, review fold: RR4-1):
+
+```text
+ LAND-1 (<date>, PR 61's landing, fork/land/land1-plan.md D-LAND-22): a value left operand is not checked either and stops lowering: in `fn G[template T: type](v: T) { v[0] = 5; }`, and with `v[i] = 5` for `i: i64`, called with a class that implements only `Core.IndexWith(i64)`, the assignment is accepted and the compiler stops at lower.cpp:48 ("Store operand must be a pointer") on this landing's install; trunk before TP-1 stopped there on the variable subscript and rejected the literal one only because it rejected every literal subscript of such a type in a template, and outside a template both are rejected as not assignable. The check this item needs is handle_operator.cpp's, which skips a `Dependent` left operand here and at upstream 68569d234 alike. Break condition widened: both splits flip to `fail_`, and both forms above are diagnosed.
 ```
 
 OR-5: the branch's "TP-1 at land time" item is discharged by the landing (the
@@ -3379,6 +3595,18 @@ To W-324's and W-326's `notes`, each:
  Weekly upstream check 2026-10-26 (V-3a register re-check at upstream 21c825a3f): HOLDS, no break condition fired (fork/decision-log.md, "Weekly upstream check 2026-10-26 (R32 direction register)"; routed to DR-1, written <date> at PR 63's landing, LAND-1).
 ```
 
+The (i) sha stamp the same check routed to DR-1 (bb9fbba9c
+fork/decision-log.md:6908-6909; added 2026-11-01, review fold: RR4-2): in
+fork/decision-log.md's DR-0 register block, the line "fill c1cc72a09.",
+which ends the sentence "(iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and
+its fill c1cc72a09." (:254-255 on f2110e0fd, once in the file), becomes
+these two lines:
+
+```text
+fill c1cc72a09. (i) resolved 2026-10-21 by W-322's 22fe50ff8 and its fill
+f4660e409 on PR 62 (written <date> at PR 63's landing, LAND-1).
+```
+
 ### C.12 PR 65's own texts
 
 DR-1's: Appendix C.2's W-340 discharge note (fee0ef31c
@@ -3447,6 +3675,36 @@ comment saying that the choice is made per specific.
 ```
 
 The note's last clause is amended 2026-11-01 (review fold: RR3-1).
+
+DL-5's resolution at PR 65's merge (added 2026-11-01, review fold: RR4-2):
+the conflict's two sides, trunk's two lines of C.11 and DR-1b's "fill
+c1cc72a09. (ii) resolved 2026-10-22 by DR-1b, 3c54754bc and its fill" and
+"cf4904138, with 230227264's code by cdaa15710 and its fill 06b6479d0.",
+become these four lines, the date in them the one PR 63's records commit
+wrote, then trunk's blank line and re-check paragraph as trunk has them:
+
+```text
+fill c1cc72a09. (i) resolved 2026-10-21 by W-322's 22fe50ff8 and its fill
+f4660e409 on PR 62 (written <date> at PR 63's landing, LAND-1). (ii)
+resolved 2026-10-22 by DR-1b, 3c54754bc and its fill cf4904138, with 230227264's
+code by cdaa15710 and its fill 06b6479d0.
+```
+
+PR 65's A.5 Landed paragraph also ends with this sentence (section 2.11;
+added 2026-11-01, review fold: RR4-7 / RR4-1):
+
+```text
+clang-tidy 21.1.8, run after C-b on the merged toolchain/check/handle_index.cpp as fork/direction/plan.md section 8 item 6 runs it (--checks=-modernize-use-trailing-return-type over the build's compile database), returned rc 0 with no user warning; fork/land/land1-plan.md D-LAND-22's four programs gave the results it predicts on this landing's install, or the one W-259's notes record.
+```
+
+Only where one of D-LAND-22's two template forms is diagnosed on PR 65's
+install instead, this is appended to W-259's `notes`, with "the literal
+form is" replaced by "the variable form is" or "both forms are" as
+measured, and the diagnostic goes into the records commit's message:
+
+```text
+ LAND-1 (<date>, PR 65's landing, fork/land/land1-plan.md D-LAND-22): on this tree the literal form is diagnosed, not stopped.
+```
 
 In Next actions item 1, as C.11 left it, "is held open as PR
 65;" becomes "landed on trunk <date> as PR 65 (LAND-1);", and "Both DR-1 PRs
@@ -3725,7 +3983,7 @@ are untouched.
 | 67 | P14, P20, P21, P22, P26 | MOVED | As found; P26's gate restated | D-LAND-4, D-LAND-12, B.1 |
 | 67 | P32 to P38 | NOT-A-STEP | Accepted: a cite form that stays true, triggers unmet (W-346, UA-3), RG-1's own commits, done at R2 | none |
 | 67 | P11 | UNMAPPED | Folded: the same dated mark on the six lines that restate the superseded order, each anchor once on 56e2e5bbd | 2.1, C.2 |
-| 67 | P12 | UNMAPPED | Folded: a dated mark recording section 6's break condition met and its renumbering commit moot (2f4ebbf6e) | 2.1, C.2 |
+| 67 | P12 | UNMAPPED | Folded: a dated mark recording section 6's break condition met and its renumbering commit moot (2f4ebbf6e); the mark says "superseded" since 2026-11-01 (review fold: RR4-3), that condition not being met | 2.1, C.2 |
 | 67 | P25 | UNMAPPED | Folded: RG-1's date rule makes every "2026-10-27" of the notes read "2026-10-28", the lead naming trunk's heading | D-LAND-15, C.3, C.5, C.7, B.1 items 16 and 17 |
 | 67 | P28 | UNMAPPED | Folded: C.2's W-355 note keeps W-355's own L-check rule and says the landing edits no row or count | 2.1, C.2 |
 | 67 | P29 | UNMAPPED | Folded: G-53's PR 67 note commit spans the ledger, the two TSVs, rg1-plan.md and RG-1's entry, owned by the realignment | D-LAND-12, 3, B.1 item 14 |
@@ -3827,3 +4085,45 @@ Checks of this revision: prek to a fixpoint with the SKIP set of hand-off
 note 6, `uvx rumdl@0.2.58 check`, R31's counts before the edits, after
 them and after each prek run, the scan for forbidden line starts, and the
 model-identifier grep, recorded in the commit message.
+
+## Focused re-review fold record, round 4 (rev 7, 2026-11-01)
+
+The focused re-review's round 4 of rev 6 (7cc793057), the first under the
+orchestrator's ruling, returned APPROVE-WITH-AMENDMENTS. It found all
+eighteen heads, claude/carbon-fork-0-1-safe-wip (14c1ac8ac) and trunk
+(bb9fbba9c) matching `git ls-remote`; round 3's N-1 and N-2 resolved
+(C.12's six lines replace fee0ef31c write_through.carbon:121-126, 831
+lines kept; section 2.9's sixteen-file set holds generic.cpp and generic.h
+and its log covers 57bf903ef) and its N-3 to N-6 folded; the completeness
+audit's MAJORs resolved but AUD-63-20 (RR4-2); and its spot checks
+holding: C.2's eight anchors once each on 56e2e5bbd, ST-1's re-stamp texts
+once each on 8beb5d7d5, W-148's counts (2/1/6) and title on 2407efa74,
+DL-2 on all five heads, handle.cpp :513 becoming :524, OP-2's source
+string and README lines :657 and :981 on 94dba6b21, D-DD-6 supporting U1,
+the D-SAFE3-13, rev 11, rev 12 and Appendix D cites, the ruling recorded
+verbatim, and section 4's table agreeing with D-LAND-4 and B.1's items 14
+to 17. As the ruling's test it enumerated the land-time steps of PR 52, PR
+68 and DR-1's PR 63 and PR 65: CM-1's and OV-4's map fully (OV-4's M7 is
+not a plan mutant, 097c76473 fork/overload/ov4-plan.md:2413-2414), and
+DR-1 has one unmapped step, RR4-2. It found no BLOCKER, 2 MAJOR and 5
+MINOR, RR4-1 to RR4-7. All seven are folded; none is rejected. Each was
+reproduced first in `$F5` (the probes in `$F5/probe/`, the (i) stamp's
+merge in `$F5/rr4-2/`); no scratch worktree was needed, because the heads
+and the dry run's scratch commits were read with `git show` and
+`git diff`, the merge was made with `git merge-file` on copies, and the
+probes ran on the existing installs, no build.
+
+| Id | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR4-1 | MAJOR | Folded by a decision under R29, the review's option 2 with W-259 in place of W-369. Reproduced: the review's lit.carbon is rejected on trunk's install (0bdce60a5, rc 1, "unable to monomorphize specific `G(V)`") and stops at lower.cpp:48 on TP-1's and CT-1's (rc 134). Measured further: its variable form stops there on trunk, UA-2, ST-1, SV-1, DR-1a, OV-4, TP-1, CT-1 and the 2026.10.12 nightly; the same assignment outside a template is "expression is not assignable" on every fork install; a template's literal read is rejected on trunk and compiles on TP-1 and CT-1; handle_operator.cpp:110-118 skips a `Dependent` left operand at bb9fbba9c, 66aa13132 and upstream 68569d234, TP-1's two hunks there being the `&` and prefix `*` handlers; that unchecked path is W-259, TP-1's TR-21, out of its scope (66aa13132 fork/templates/plan.md:1743-1745). D-LAND-22 decides that the abort is W-259's, a trunk defect, not PR 61's; D-LAND-2 states its class (a root in the PR's own scope, as X-1's D-TP-11 and item 13's packs); C.8 gives W-259's note with its widened break condition; W-369 stays unused, a second item for one root duplicating W-259; sections 2.7, 2.9 and 2.11 check the measured results at PR 61, PR 64 and PR 65; option 1 is recorded rejected with its cost | Summary, D-LAND-1, D-LAND-2, D-LAND-22, 2.7, 2.9, 2.11, 5, C.8, C.12 |
+| RR4-2 | MAJOR | Folded. Reproduced: on f2110e0fd, DR-0's block (:242-255) gives (i) as "(W-322, retired by DR-1 slice 1)" with no sha while (iii) carries its own, and on 5cf7406f1 it carries (ii) and (iii) only; trunk routes "(i) resolved 2026-10-21 by W-322's 22fe50ff8 and its fill f4660e409 on PR 62" to DR-1 (bb9fbba9c fork/decision-log.md:6908-6909) and its weekly table calls it a records gap. C.11 gives the two lines PR 63's records commit writes for the line "fill c1cc72a09." (once on f2110e0fd); a merge of that copy against fee0ef31c's log over 89aabd125's gives one conflict, this region, which DL-5 resolves into C.12's four lines, equal to the dry run's block with the (i) sentence added; section 2.10's sentence is corrected | D-LAND-5, 2.10, 2.11, C.11, C.12 |
+| RR4-3 | MINOR | Folded. Reproduced: the condition at 56e2e5bbd rg1-plan.md:1704-1707, "every other PR before PR 66 is otherwise ready to land", is not met. C.2's mark reads "Superseded ... without this break condition being met"; section 2.1's sentence and the rev-6 fold record's P12 row are amended with dated marks | 2.1, C.2, rev-6 fold record |
+| RR4-4 | MINOR | Folded. Reproduced: on 61458bc92 the ledger's runner.py line cites are W-002's :652, :597, :413 and :1665 and W-060's :597 (the review's :1148 is W-060's line), the cited functions there and unmoved through 5cf7406f1, which lacks state C and the join; no gap row cites a runner.py line. The state C commit at PR 54 and the join commit at PR 58 re-pin them by C.8's rule | 2.4, 2.6, C.7 |
+| RR4-5 | MINOR | Folded. Reproduced: `$Y` and `$W` are SV-1's (0ef8a0334 fork/sumtype-interop/plan.md:172-173 and :181-183); the table is :5367-5372; the C3 run's log is scratchpad/sv1-impl/stage3/probes-c3-y.txt, 44 lines with the six W-263 stops. The conventions define both; section 2.8 names the log and the table's PR 61 row | conventions, 2.8 |
+| RR4-6 | MINOR | Folded: "Five plans (six landings)" | D-LAND-21 |
+| RR4-7 | MINOR | Folded by running it. Reproduced: DR-1's item 6 (fee0ef31c fork/direction/plan.md:2683-2694) ran clang-tidy on DR-1b's own handle_index.cpp, and mct-b checked C-b with clang-format only (:2733, :2757). Section 2.11 runs item 6's command after C-b's build over the compile database `ninja -t compdb` writes from carbon-trunk's build file (323 entries, handle_index.cpp among them), with /home/user/llvm/bin/clang-tidy 21.1.8; a user warning stops the landing; C.12's A.5 sentence records the result; section 6 names the exception | 2.11, 6, C.12 |
+
+Checks of this revision: as rev 6's, prek to a fixpoint with the SKIP set
+of hand-off note 6, `uvx rumdl@0.2.58 check`, R31's counts before the
+edits, after them and after each prek run, the scan for forbidden line
+starts, and the model-identifier grep, recorded in the commit message.

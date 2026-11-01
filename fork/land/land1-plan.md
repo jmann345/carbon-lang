@@ -6,8 +6,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # LAND-1 plan: landing the held PRs into trunk under R33
 
-**Status:** rev 5 -- NOT signed off pending re-review round 4: RR3-1, RR3-2.
-The focused re-review's round 3 of rev 4 (81699e9c4) resolved RR2-1 to RR2-4
+**Status:** rev 6 -- NOT signed off pending re-review round 4 (the ruling's).
+Rev 6 (2026-11-01) records the orchestrator's ruling under R29 after round 3
+verbatim (the section "Orchestrator's ruling (2026-11-01, after round 3)"),
+restates PR 53's gate by its item 2, and folds the completeness audit of its
+item 1: twelve agents, one per ready PR, tabled 381 land-time steps, 202
+MAPPED, 32 MOVED, 72 UNMAPPED and 75 NOT-A-STEP; every UNMAPPED step is
+folded with a text or a rule and a dated mark (the rev-6 fold record at the
+end); rounds 4 and 5 follow under the same sign-off rule. Rev 5
+(2026-11-01) folded round 3 of the focused re-review: round 3 of rev 4
+(81699e9c4) resolved RR2-1 to RR2-4
 and found two MAJORs, RR3-1 and RR3-2, and four MINORs, RR3-3 to RR3-6, all
 folded here (see the round-3 fold record at the end); sign-off needs a round
 with no BLOCKER and no MAJOR. Rev 4 (2026-11-01) folded the focused
@@ -26,7 +34,9 @@ paragraph dated 2026-11-01 (17:42 UTC) (:745-760).
 every pushed head equals the head the task names (section 0.1). Twelve are
 correct now and land in the recorded relative order: PR 67, 51, 52, 54, 55,
 58, 61, 62, 64, 63, 65 and 68 (D-LAND-1). Six wait behind named gates: PR 53
-(SAFE-3), PR 60 (W-139), PR 56 and PR 57 (W-352), and, a finding of this
+(its realignment, SAFE-3 stopped; amended 2026-11-01, ruling fold: the
+ruling's item 2), PR 60 (W-139), PR 56 and PR 57 (W-352), and, a finding of
+this
 audit, PR 59 and its stacked PR 66, because trunk's Next actions item 13 owes
 PR 59 a crash fix (a pack in a choice alternative's parameter list aborts in
 lowering where trunk rejects it at parse) and VA-2's hand-off note 7 owes it a
@@ -52,7 +62,7 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Section 0: audit (the held state, owed items, conflicts, the dry run,
     goldens, scoreboards, the arbiter, ids, stacked PRs, disk, the register
     checks at upstream's tip)
--   Section 1: decisions D-LAND-1 to D-LAND-20
+-   Section 1: decisions D-LAND-1 to D-LAND-21
 -   Section 2: spec, one subsection per landing in land order
 -   Section 3: the process, the actors and the follow-ons
 -   Section 4: the scoreboard progression and its stop values
@@ -62,10 +72,12 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Appendix A: the per-landing record templates
 -   Appendix B: the ORCHESTRATION stamps
 -   Appendix C: each landing's fields, targets and own texts
+-   Orchestrator's ruling (2026-11-01, after round 3)
 -   Review fold record (rev 2, 2026-11-01)
 -   Focused re-review fold record (rev 3, 2026-11-01)
 -   Focused re-review fold record, round 2 (rev 4, 2026-11-01)
 -   Focused re-review fold record, round 3 (rev 5, 2026-11-01)
+-   Review fold record (rev 6, 2026-11-01)
 
 Conventions. `trunk` is origin/trunk bb9fbba9c unless a section says otherwise.
 A file:line cite names the sha it was read at. `$P` is the planner's scratch
@@ -79,7 +91,9 @@ directory
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer2
 (added 2026-11-01, review fold: RR2-1), `$F3` the rev-5 fixer's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer3
-(added 2026-11-01, review fold: RR3-2), `$CB` the arbiter's
+(added 2026-11-01, review fold: RR3-2), `$F4` the rev-6 fixer's
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/land1/fixer4
+(added 2026-11-01, ruling fold: the ruling's item 2), `$CB` the arbiter's
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/carbonbuild,
 and `$X` the expected trees, `$F/expected` (rev 1's `$P/expected` is superseded
 from PR 58 on, section 0.5; amended 2026-11-01, review fold: A-B1 / A-M4). The
@@ -97,7 +111,8 @@ survives into a commit (amended 2026-11-01, review fold: B-M5 / B-m6).
 | `<merge sha>` | the landing's merge commit | `git rev-parse --short=9 HEAD` after step 5 |
 | `<land-time shas>` | the commits after the merge, oldest first, comma-separated, or `none` | `git log --reverse --format=%h <merge sha>..HEAD` before the records commit |
 | `<conflicts>` | each conflicted file as `<path> (<regions>, <rule>)`, in `git diff --name-only --diff-filter=U` order, a file or region not in `$X` marked `not in the dry run` | step 3 |
-| `<refilled>` | each refilled golden as `<path> (<PRs whose changes combine>)` | step 7 |
+| `<refilled>` | each refilled golden as `<path> (<PRs whose changes combine>; <added>/<removed>)`, the two numbers its `git diff --numstat` against the commit before the refill (the numstat added 2026-11-01, ruling fold: AUD-63-7) | step 7 |
+| `<rescan>` | each land-time id re-scan of D-LAND-21 as `<the ids> at <the point>: <the refs that file them>`, `;`-separated, or `none` where the PR's plan prescribes none | D-LAND-21's runs (added 2026-11-01, ruling fold: AUD-61-T15 / AUD-61-T26) |
 | `<g0>`, `<gn>` | the merge's gate at step 4, before any refill: tests passed and tests run | step 4's `gate.log`: `[  PASSED  ] <g0> tests` and `[==========] <gn> tests from 1 test suite ran` (added 2026-11-01, review fold: RR1-6) |
 | `<g>` | the landing's final gate (after step 7's refill, or step 4's when nothing is refilled): tests passed, which equals tests run | that gate's `gate.log`, `[  PASSED  ] <g> tests` |
 | `<p>`, `<f>`, `<s>`, `<n>` | conformance PASS, FAIL (the five failure kinds summed), SKIP and programs | the landing's `scoreboard.json` `totals` |
@@ -107,8 +122,8 @@ survives into a commit (amended 2026-11-01, review fold: B-M5 / B-m6).
 | `<tip>` | upstream trunk's head | `git fetch upstream` then `git ls-remote upstream refs/heads/trunk`, 9 characters, at the check |
 | `<q>`, `<qf>`, `<c>`, `<cf>` | quotes checked and failed, silence checks checked and failed | check_quotes.sh and check_greps.sh output at `<tip>` (D-LAND-19) |
 | `<mut>` | the mutants D-LAND-20 re-runs, each as `<id> (<what turned red, or "survives" for a recorded survivor>)`, with `; <probe set> not run: <reason>` inside the parentheses for each probe set of its record the landing does not run, comma-separated, or `none` | D-LAND-20's runs at the landing (added 2026-11-01, review fold: RR2-1; the probe sets added 2026-11-01, review fold: RR3-5) |
-| `<dd>`, `<ddt>` | DD-1's checker's summary at L, without and with `--toolchain` | the last line that `python3 -I fork/designdocs/check_samples.py` prints, and the same with `--toolchain /home/user/carbon-build/carbon-trunk/install/bin/carbon` (added 2026-11-01, review fold: RR2-1) |
-| `<r31>` | R31's counts of docs/design/interoperability/README.md before L, after L and after prek | `r31.py` at each point, written `<before> / <after> / <after prek>`, each as `r31.py` prints its headings, bullets, numbered and rows fields (added 2026-11-01, review fold: RR2-1) |
+| `<dd>`, `<ddt>`, `<ddn>` | DD-1's checker's summary at the commit that names them (L, or PR 58's state-L commit), without `--toolchain`, with the landing's and with the 2026.10.12 nightly's | the last line that `python3 -I fork/designdocs/check_samples.py` prints, the same with `--toolchain /home/user/carbon-build/carbon-trunk/install/bin/carbon`, and with `--toolchain /home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12/bin/carbon` (added 2026-11-01, review fold: RR2-1; `<ddn>` added 2026-11-01, ruling fold: AUD-58-U3) |
+| `<r31>` | R31's counts of the markdown files the commit that names it edits (docs/design/interoperability/README.md at PR 64's L; the nine files of PR 58's state-L commit, one after another) before the edit, after it and after prek | `r31.py` at each point, written `<before> / <after> / <after prek>`, each as `r31.py` prints its headings, bullets, numbered and rows fields (added 2026-11-01, review fold: RR2-1; the state-L commit added 2026-11-01, ruling fold: AUD-58-U2) |
 | `<v3>`, `<v3n>` | the places at `<tip>` of F-021's four upstream quotes and of E-ARG's `CppCallArgTypeNotSupported`, and the count of upstream commits since c1e83b0b7 that section 2.9's log reads (CT-1's section 0.10 set: its sixteen toolchain files and three testdata paths, toolchain/check/cpp/, docs/design/ and proposals/) | section 2.9's `git grep -n -F` of each quote and its `git grep -n CppCallArgTypeNotSupported` at `<tip>`, as `<path>:<line>`, comma-separated, and its `git log --oneline` line count (added 2026-11-01, review fold: RR2-1; the set and E-ARG amended 2026-11-01, review fold: RR3-2) |
 | `<landed>`, `<held>` | PRs landed and held after this landing | the stage number (section 3) and 18 minus it |
 | `<merged_at>`, `<api sha>` | GitHub's `merged_at` and `merge_commit_sha` for the PR | `pull_request_read` after phase 1 (D-LAND-11) |
@@ -186,10 +201,18 @@ states none. Section 4 turns each into the PASS delta the landing must show.
 
 ### §0.2 Owed items and the not-ready PRs
 
--   PR 53: SAFE-2 stopped at its plan rev 14 and SAFE-3 is being planned on the
-    branch (row :1095; the 2026-10-29 paragraph :706-743); the pushed head
-    2407efa74 carries SAFE-1's six filed drifts W-347 to W-351 and W-353, which
-    live in PR 67's ledger.
+-   PR 53: SAFE-2 stopped at its plan rev 14 (row :1095; the 2026-10-29
+    paragraph :706-743), and SAFE-3 stopped at its plan rev 12 (14c1ac8ac,
+    2026-11-01) under its re-think ruling's break condition, RT1-B1 and
+    RT2-B1: C++ code reaching, from an address it receives, a Carbon place
+    that the carrier closure of D-SAFE3-13 does not name (14c1ac8ac
+    fork/safe/safe3-plan.md:9-44); the pushed head stays 2407efa74, which
+    carries SAFE-1's six filed drifts W-347 to W-351 and W-353, living in PR
+    67's ledger; SAFE-2's and SAFE-3's commits are unpushed and mirrored at
+    claude/carbon-fork-0-1-safe-wip; W-365 and W-366 stay reserved and
+    unfiled; the orchestrator stamps the stop on trunk from safe3-plan.md
+    Appendix D's stop path after Appendix B.1's stamp (amended 2026-11-01,
+    ruling fold: the ruling's item 2).
 -   PR 60: W-139 is owed on its branch (Next actions item 6, :1224-1226).
 -   PR 56 and PR 57: W-352 is owed on PR 56's branch and merged into PR 57's
     (:1226-1228).
@@ -221,30 +244,46 @@ records commit. Section 2 maps every item of each list below to a step at the
 landing or to a named follow-on (amended 2026-11-01, review fold: B-M6), and
 D-LAND-3 turns the branch-side steps into trunk-side commits. The sources: RG-1
 56e2e5bbd fork/register/rg1-plan.md section 5 (:1607-1640) and Appendix A.4's
-land-time notes (:2526-2587); UA-2 none of its own (its fill is the head); CM-1
-none (e6bc32a6d fork/cmake/plan.md names no land-time step); EV-1 cb3ef2e74
-fork/evaluator/plan.md section 3 item 6 (:1830-1842) and states T and C
-(:296-311); ST-1 c3cdecc5d fork/string/plan.md landed notes' conditional items
-(:3103-3110); DD-1 fcee90d9b fork/designdocs/plan.md §2.13 and §2.14
-(:4180-4276), §8.5's integration-commit texts (:5665-5678, :5783-5810) and its
-merge position (:6658); TP-1 66aa13132 fork/templates/plan.md §1.12
+land-time notes (:2526-2587) with its date rule (:1076-1079, :3479-3482), the
+section 6 rejection's break condition (:1699-1707) and W-355's L-check rule
+(:1394-1397); UA-2 none of its own (its fill is the head); CM-1 e6bc32a6d
+fork/cmake/plan.md D-CM-14's Option B trigger (:432-438), D-CM-16's ids
+"verified at merge" (:453-454), section 5.1's delta rule (:908-912) and section
+5.4's revert (:966-973), where rev 5 said CM-1 names none (amended 2026-11-01,
+ruling fold: AUD-52-02); EV-1 cb3ef2e74 fork/evaluator/plan.md section 3 item 6
+(:1830-1842), states T and C (:296-311), section 2.F.2 and 2.F.3 (:1677-1686,
+:1744-1746), R-8 (:2034-2045) and its branch's land-sequence item
+(fork/ORCHESTRATION.md:103-116); ST-1 c3cdecc5d fork/string/plan.md landed
+notes' conditional items (:3103-3110) and its branch's Next actions item 5
+(fork/ORCHESTRATION.md:524-562); DD-1 fcee90d9b fork/designdocs/plan.md §2.13
+and §2.14 (:4180-4276), §8.5's integration-commit texts (:5665-5678, :5783-5810)
+and its merge position (:6658); TP-1 66aa13132 fork/templates/plan.md §1.12
 (:2924-2957), §3 items 7 to 13 (:5192-5316), Appendix E's land-time texts
 (:17744 on), its landed notes' Ledger re-cites (:7905-7914, "At land time the
-records commit re-cites them to the merged tree"; added 2026-11-01, review
-fold: RR3-4) and its landed notes' land-time items (a) to (h) (:7919-7936,
-item (c) judging M, S and F6 "with §8's build, autoupdate, gate, conformance
-and mutants"; amended 2026-11-01, review fold: RR2-1); SV-1 0ef8a0334
+records commit re-cites them to the merged tree"; added 2026-11-01, review fold:
+RR3-4) and its landed notes' land-time items (a) to (h) (:7919-7936, item (c)
+judging M, S and F6 "with §8's build, autoupdate, gate, conformance and
+mutants"; amended 2026-11-01, review fold: RR2-1); SV-1 0ef8a0334
 fork/sumtype-interop/plan.md §1.15 (:2392-2399), §3 item 8 (:4606-4830),
 Appendix C.6 and C.7 (:9351-9420) and the landed notes' Next actions text
 (:9566-9576); CT-1 551a03328 fork/cpp-templates/plan.md §2.11 items 1 to 5
 (:2725-2760) with Appendix C.1 to C.11, its landed notes' "R32 at landing"
-(:4793-4799) and land-time items (a) to (g) (:4809-4868), and its branch's
-Next actions item 6, "CT-1 at land time" (551a03328
-fork/ORCHESTRATION.md:1220-1267; added 2026-11-01, review fold: RR2-1); DR-1
-89aabd125 and fee0ef31c fork/direction/plan.md §1.16 (:1547-1620), §2.2
-(:2190-2245) and §8 item 9 (:2755-2775); OV-4 097c76473
-fork/overload/ov4-plan.md §3's land-time commits (:1749-1803), §6.2 (:1901)
-and Appendix D.6 and D.7 (:4042, :4108).
+(:4793-4799) and land-time items (a) to (g) (:4809-4868), and its branch's Next
+actions item 6, "CT-1 at land time" (551a03328 fork/ORCHESTRATION.md:1220-1267;
+added 2026-11-01, review fold: RR2-1); DR-1 89aabd125 and fee0ef31c
+fork/direction/plan.md §1.16 (:1547-1642), §2.2 (:2190-2245), §8 items 5, 9 and
+10 (:2623-2650, :2701-2774), Appendix C.2 and C.3 (:3428-3469, :3525-3532), its
+landed notes' "At land time" items (:5151-5175, :5449-5477) and section 0.8's
+rows for PR 56, PR 57, PR 59 and PR 60 (:708-712), where rev 5 cited :1547-1620
+and :2755-2775 (amended 2026-11-01, ruling fold: AUD-63-12 / AUD-63-13); OV-4
+097c76473 fork/overload/ov4-plan.md §3's land-time commits (:1749-1803), §6.2
+(:1901), R-5 (:1991-1996), §8.8 (:2368-2372) and Appendix D.6 and D.7 (:4042,
+:4108). TP-1's front matter's id re-scans (:582-597), its section 2.8 rule for R
+(:5000-5005) and D-TP-16 (:3474-3478) are sources too. Rev 6's completeness
+audit (the ruling's item 1) enumerated each ready PR's land-time steps from all
+of its records, the other held plans' steps prescribed at its landing included;
+the rev-6 fold record tables each step with its status and disposition (added
+2026-11-01, ruling fold: the ruling's item 1).
 
 ### §0.4 Conflicts against trunk
 
@@ -675,7 +714,7 @@ TP-1's S (over SC-1) with its mutant M18 to G-60 and its VA-1 compositions
 (F6's, measured none) to G-59; OV-4's SC-1 arguments in M to G-60 and its
 VA-1 gate order to G-59; SV-1's M-VA and W-284 (with its `blocked_by` W-219)
 to G-59, and its Doc-M (optional.md and the F-015 paragraph), C.5's W-177
-note and evidence, C.8's
+evidence, C.8's
 F-015 references, the W-177 cite in match_core_optional_diff.carbon's header
 and F-M's PR 57 part to G-56/57; CT-1's S-VA with C.11's split and its mutant
 M18 to G-59 (the two M18s added 2026-11-01, review fold: RR2-1); DR-1's
@@ -683,8 +722,40 @@ loops.md rule in M-a to G-56 and L-a's m57 refills to G-57; DD-1's state-L
 texts for PR 53, PR 56 and SC-1 to their follow-ons; ST-1's SAFE-1
 reconciliation edits to G-53; RG-1's land-time notes for PR 57 and PR 59 to
 G-57 and G-59, with W-343's discharge (D-LAND-15). (Amended 2026-11-01, review
-fold: B-M6.) _Break condition:_ a moved step whose absence makes a ready
-landing's gate fail (D-LAND-1's).
+fold: B-M6.) The completeness audit added these moved steps, each named in
+Appendix B.1's item 14 to 17 (added 2026-11-01, ruling fold: the AUD ids
+named): to G-53, ST-1's re-reads of the pages SAFE-1 moves (arithmetic.md's
+Strings section and values.md:168, c3cdecc5d fork/string/plan.md:2835-2838,
+with W-057's evidence re-cited; AUD-55-22), the W-148 id restored where PR
+55's landing wrote its title (AUD-55-11), and SAFE-2's DR-1 note on
+`IndirectIndexWith.Ref` under W-144 (14c1ac8ac
+fork/safe/safe2-plan.md:1174-1190), whose premise "PR 65 lands after PR 53"
+LAND-1's order reverses (AUD-65-F2); to G-60, TP-1's M rules for SC-1's
+hunks (66aa13132 fork/ORCHESTRATION.md:1091-1094, fork/templates/plan.md:1395
+and :5194-5195; AUD-61-T06), CT-1's composition
+with PR 60 and its break conditions (551a03328
+fork/cpp-templates/plan.md:814-851; AUD-64-a5) and DR-1's call.cpp and
+convert.cpp test of SC-1's added lines (fee0ef31c
+fork/direction/plan.md:712; AUD-65-A15); to G-56/57, OP-2's fold of W-197
+into W-126, due once PR 51 has landed (e23113ba2
+fork/optional2/plan.md:1374-1376, fork/ORCHESTRATION.md:725-730;
+AUD-51-E20), CT-1's composition with PR 57 (551a03328
+fork/cpp-templates/plan.md:832-840; AUD-64-a6), DR-1's error_handling.md
+rule, both sides' amendments in date order, and row 78's DR-0 sentence kept
+beside PR 57's DONE text (fee0ef31c fork/direction/plan.md:708-709,
+:1635-1639; AUD-63-11 / AUD-63-12), W-323's discharge note (:3441;
+AUD-63-21), SV-1's nested-pointer leg of cpp_sum_type_roundtrip_diff with
+its oracle and the conditional refill of fail_todo_core_optional.carbon
+(0ef8a0334 fork/sumtype-interop/plan.md:1948-1964; AUD-62-S09), and Doc-M's
+texts re-derived under SV-1's section 1.14 document review (:2350-2353;
+AUD-62-S12); to G-59/66, SV-1's mutants M19 and M21 with M-VA (the landed
+notes' item (b); AUD-62-S06), W-284's clauses in C.6 to C.9 and A.3's row
+(AUD-62-S23) and DR-1's call.cpp and convert.cpp test of VA-1's added lines
+(fee0ef31c fork/direction/plan.md:711; AUD-65-A15). C.5's W-177 note was
+withdrawn at W-322 (0ef8a0334 fork/sumtype-interop/plan.md:9250-9255), so
+only its evidence moves (amended 2026-11-01, ruling fold: AUD-62-S12).
+_Break condition:_ a moved step whose absence makes a ready landing's gate
+fail (D-LAND-1's).
 
 **D-LAND-5, the merge rules.** Measured on the dry run and applied by the
 implementer by hand, the saved files in `$X` being the reference (amended
@@ -694,6 +765,12 @@ implementer by hand, the saved files in `$X` being the reference (amended
     restamps the header.
 -   OR-2: Branches rows are merged row by row by their first cell; a row both
     sides changed takes trunk's; the records commit rewrites the landed row.
+    Where the merge keeps two rows with the PR's branch in the first cell,
+    trunk's stale row and the PR's own, without a conflict (measured: two tp
+    rows at d03be4456 fork/ORCHESTRATION.md:1733 and :1736, two ct rows at
+    e21480b05), A.3's row replaces both, as TP-1's item 7 and CT-1's item 6
+    drop trunk's stale row (66aa13132 fork/ORCHESTRATION.md:1101-1103,
+    551a03328 :1231-1233; amended 2026-11-01, ruling fold: AUD-61-T05).
 -   OR-3: dated paragraphs inserted on both sides are both kept, in date
     order, the PR's first on the same date (it predates trunk's stamp of it).
 -   OR-4: a region both sides edited takes trunk's side (the newer
@@ -705,7 +782,27 @@ implementer by hand, the saved files in `$X` being the reference (amended
     PR's own "at land time" item, whose steps the landing makes or D-LAND-4
     moves); section 2 and Appendix C list which, landing by landing.
 -   DL-1: decision-log entries inserted at one point are both kept, trunk's
-    first, in the log's workstream grouping. DL-3: the order at the DR-0 group
+    first, in the log's workstream grouping, except where DL-2 or DL-3
+    decides. DL-2 (added 2026-11-01, ruling fold: AUD-54-12 / AUD-55-02 /
+    AUD-61-T04): the landed region after the entry "Full autonomy and the
+    throughput protocol (2026-09-27)" is newest first, and PR 52's, PR 54's,
+    PR 55's, PR 58's and PR 61's heads each put their entry directly after
+    that entry; their plans place it there at land time, above every entry
+    landed before it (EV-1's section 2.F.3, cb3ef2e74
+    fork/evaluator/plan.md:1744-1746, "above CM-1's or SAFE-1's if either
+    has merged"; ST-1's item 5, c3cdecc5d fork/ORCHESTRATION.md:530-532;
+    DD-1's "first in the landed region", fcee90d9b
+    fork/designdocs/plan.md:340; TP-1's, 66aa13132
+    fork/templates/plan.md:18347-18349; CM-1's "above SL-2" holds there).
+    So at those five landings the PR's entry goes directly after that
+    entry, above trunk's: step 9 checks that its heading is the first
+    level-3 heading after that entry's. The dry run applied DL-1 there (CM-1 at
+    :3397, EV-1 at :3690 and ST-1 at :4378 of 8beb5d7d5, DD-1 at :5056 of
+    a33d05cae, after OX-1's), so `$X`'s decision-log files from PR 52 to
+    PR 58 differ from DL-2's in the entries' order only, and at PR 61 a
+    decision-log region the dry run did not have is predicted (TP-1's
+    entry and trunk's DD-1 entry at one point), which DL-2 decides; step 3
+    records both. DL-3: the order at the DR-0 group
     is DR-0, DR-1, RG-1, LD-0, as D-RG-14 implies (RG-1's after DR-0's and
     DR-1's; LD-0 the newest): at PR 67 RG-1's entry goes before LD-0, and at PR
     63 DR-1's goes directly after DR-0's, before RG-1's (`$F/bin/dlorder.py`).
@@ -732,7 +829,13 @@ implementer by hand, the saved files in `$X` being the reference (amended
     for them as section 2 says and the header from the measured `<tally>`.
 -   LG-1: ledger items merge by id; an item one side changed takes that side;
     a new item is inserted after the last item with a smaller number;
-    `json.load` must pass. LG-2 to LG-6: an item both sides changed keeps
+    `json.load` must pass. This id order is the place the plans' "after the
+    then-last ledger item" asks for (ST-1's item 5, c3cdecc5d
+    fork/ORCHESTRATION.md:535-536; TP-1's item 7, 66aa13132 :1095-1100):
+    the ledger is kept in id order, so a later block goes after the last
+    smaller id, not after W-356 (recorded 2026-11-01, ruling fold: the
+    audit's S55-07 and T03 notes). LG-2 to LG-6: an item both sides
+    changed keeps
     both edits: disjoint words merged, lines both appended kept trunk's then
     the PR's, list elements unioned, a PR insertion placed after trunk's edits
     at that point. LG-7: CT-1's W-043 rule (section 2.9) overrides LG-5.
@@ -788,7 +891,13 @@ still gated before it is made (added 2026-11-01, review fold: RR3-3):
 5.  Commit the merge with Appendix A.1's message, the results of step 4 in it.
 6.  The plan's land-time code, page and program commits, if section 2 lists
     any, each brought to a prek fixpoint before its commit, then built, gated
-    and committed with section 2's message.
+    and committed with section 2's message. For each markdown file such a
+    commit edits, R31's counts before the edit, after it and after prek
+    (`r31.py`) go in its message, unchanged but for the headings, list items
+    and rows the commit's own text adds or removes, as TP-1's section 8 item
+    6 (66aa13132 fork/templates/plan.md:6008-6017) and DD-1's state-L check
+    (fcee90d9b fork/designdocs/plan.md:5592-5599) ask (added 2026-11-01,
+    ruling fold: AUD-61-T18 / AUD-58-U2).
 7.  Refill: if the gate after step 6's commits (step 4's when section 2 lists
     none) reports "Autoupdate would make changes", run
     `$CB/autoupdate.sh /home/user/carbon-trunk <files>` on exactly those
@@ -817,7 +926,15 @@ still gated before it is made (added 2026-11-01, review fold: RR3-3):
     (`r31.py`); `json.load` of the ledger; `runner.py --self-test`; the
     model-identifier grep of `git diff <trunk before>`; the gap-row check
     `python3 -I $F/bin/rowcheck.py <trunk before> H WORKTREE <rows>` with the
-    rows section 2 names, which must report 0 missing; the edits saved as
+    rows section 2 names, which must report 0 missing; at PR 52, 54, 55, 58
+    and 61, DL-2's check of the entry's place; and the re-read of
+    fork/ORCHESTRATION.md's four regions, the header, the dated paragraphs,
+    the Branches table and the Next actions, against `<trunk before>`'s
+    (`git diff <trunk before> -- fork/ORCHESTRATION.md`): every row,
+    paragraph and item there before is there once, and each change is the
+    merge's or a text this plan gives, OV-4's R-5 check
+    (097c76473 fork/overload/ov4-plan.md:1991-1996) at every landing (added
+    2026-11-01, ruling fold: AUD-68-19); the edits saved as
     `records.patch` beside the logs. The edits hold `<merged_at>` and
     `<api sha>` unfilled.
 10. The review (D-LAND-10) of the commits of steps 5 to 7, the logs and
@@ -912,11 +1029,27 @@ relying on it.
 
 **D-LAND-12, the follow-ons.** Each gated PR lands by its own follow-on when its
 gate is met, by LAND-1's procedure, in this order of preference: G-53 (PR 53)
-when SAFE-3 has completed (its realignment commits and reviews dry, PR 53's head
-pushed) and the realignment notes SAFE-3 owes PR 67 are on trunk's ledger, since
-PR 67 has landed; G-60 (PR 60) when W-139's fix commit is on PR 60's branch
-under SC-1's reviews and item 10 is decided; G-56/57 (PR 56, then PR 57) when
-W-352's commit is on PR 56's branch, merged into PR 57's, under OP-1's reviews,
+when the realignment of PR 53's branch completed under the orchestrator's
+re-ruling of the C++ boundary question (fork/safe/safe3-plan.md D-SAFE3-13
+and its rev 11 and rev 12 fold records), its commits and reviews dry and PR
+53's head pushed, and the PR 67 note commit the realignment owes is on trunk
+as a records commit, since PR 67 has landed: SAFE-2's and SAFE-3's specified
+commit, not the ledger alone, but the six items' notes in the ledger,
+rg1-checks.tsv's widened H1.7, the eleven rows rg1-quotes.tsv gains,
+rg1-plan.md's H1.7 and H1.13 with the counts (284 quotes, 89 checks) and
+RG-1's decision-log entry (14c1ac8ac fork/safe/safe2-plan.md:1240-1270,
+fork/safe/safe3-plan.md D-SAFE3-10 :2406-2418 and section 3 step 7
+:3193-3213, whose own break condition, PR 67 landed first, puts it on
+trunk). SAFE-3 stopped at its plan rev 12 (14c1ac8ac, 2026-11-01) under its
+re-think ruling's break condition (RT1-B1 and RT2-B1: C++ code reaching,
+from an address it receives, a Carbon place that the carrier closure does
+not name); the orchestrator stamps that stop on trunk from safe3-plan.md
+Appendix D's stop path after Appendix B.1's stamp; PR 53's pushed head
+stays 2407efa74, and W-365 and W-366 stay reserved and unfiled (amended
+2026-11-01, ruling fold: the ruling's item 2 / AUD-67-P29); G-60 (PR 60)
+when W-139's fix commit is on PR 60's branch under SC-1's reviews and item
+10 is decided; G-56/57 (PR 56, then PR 57) when W-352's commit is on PR
+56's branch, merged into PR 57's, under OP-1's reviews,
 and item 10 is decided; G-59/66 (PR 59, then PR 66), owned by VA-1's workstream,
 when item 13's fix (W-367, filed on PR 59's branch) and note 7's ruling are on
 PR 59's branch under VA-1's review and VA-2's item 2 preconditions hold. A
@@ -937,7 +1070,10 @@ makes it a PR 59 fix, filed the same way (otherwise unused); W-369 and W-370
 for a residue a landing finds, filed in trunk's ledger by that landing's
 records commit (otherwise unused). Appendix B.1 records the reservation, so
 SAFE-3, whose plan text keeps W-367 free, takes W-371 onward (amended
-2026-11-01, review fold: B-m8). _Break condition:_ any of W-367 to W-370 filed
+2026-11-01, review fold: B-m8): W-371 stays the next id of PR 53's
+realignment, SAFE-3 having stopped with W-365 and W-366 reserved and
+unfiled; rev 6 mints nothing (amended 2026-11-01, ruling fold: the
+ruling's item 2). _Break condition:_ any of W-367 to W-370 filed
 elsewhere first; LAND-1 then takes the next free id after a re-scan.
 
 **D-LAND-14, DD-1's state L in part.** DD-1's section 2.13 applies "after
@@ -956,16 +1092,36 @@ entry, W-188's notes), PR 56 (the interop pointer to optional.md) and SC-1
 (template_constraints.md) are made by G-53, G-56 and G-60; until then their
 state-T texts, which name the held PRs, stay true, and row 91 stays PARTIAL.
 From PR 58's landing on, every landing runs both checker modes (D-LAND-6
-step 8). (Amended 2026-11-01, review fold: A-M2 / B-B1.) _Break condition:_ a
-state-L text that cannot be split by PR; it then waits whole for the last
-follow-on, and the checker's `ALLOWLIST` keeps its entry until then.
+step 8). (Amended 2026-11-01, review fold: A-M2 / B-B1.) DD-1's D-DD-9 break
+condition fires, since PR 58 lands before SC-1 and PR 53 (fcee90d9b
+fork/designdocs/plan.md:638-644): it would file W-187 "to apply the state-L
+texts and ledger amendments and flip row 91 when those PRs land". The
+follow-ons' Next actions items 14 to 16 carry those steps by name and row
+91's mark names them, so W-187 stays unused, and PR 58's A.5 and A.6 say so
+(Appendix C.7; added 2026-11-01, ruling fold: AUD-58-U4). _Break condition:_
+a state-L text that cannot be split by PR; it then waits whole for the last
+follow-on, and the checker's `ALLOWLIST` keeps its entry until then; or a
+follow-on abandoned, and the orchestrator's stamp then files W-187 with the
+texts that follow-on carried.
 
 **D-LAND-15, W-343.** RG-1 narrowed W-343 to five land-time notes, discharged
 by the last (rg1-plan.md:500-504). PR 51's, PR 54's and PR 58's are made now,
 each after the text anchor Appendix C names (amended 2026-11-01, review fold:
 B-M5); PR 57's and PR 59's by G-57 and G-59, and whichever lands last
-discharges W-343. _Break condition:_ a follow-on abandoned; the orchestrator's
-stamp then discharges W-343 by RG-1's own break condition (:504-506).
+discharges W-343. Each note is the text after its locator line (the
+bracketed "[UA-2, PR 51, after its :6232]" and the like are not written:
+UA-2's note is rg1-plan.md:2534-2542, EV-1's :2545-2550, OP-2's
+:2553-2560, DD-1's :2563-2570 and VA-1's :2573-2583), with "..." replaced
+by UA-2's lead as A.4 says (:2588), `<tip>` D-LAND-19's, and every
+"2026-10-27" read "2026-10-28", the entry's title included, by RG-1's own
+date rule (56e2e5bbd fork/register/rg1-plan.md:1076-1079 and its landed
+notes' Dates, :3479-3482), so the lead names the heading trunk holds after
+PR 67, "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)"
+(56e2e5bbd fork/decision-log.md:277), and every pushed H-note's
+"classified 2026-10-28" agrees (added 2026-11-01, ruling fold:
+AUD-67-P25 / AUD-51-E16 / AUD-58-U8). _Break condition:_ a follow-on
+abandoned; the orchestrator's stamp then discharges W-343 by RG-1's own
+break condition (:504-506).
 
 **D-LAND-16, the orchestrator's steps** (amended 2026-11-01, review fold: B-m4
 / B-m6). Before stage 0: sign-off of this plan by its reviews; then one push
@@ -1023,12 +1179,16 @@ checks pass at it. Both scripts run over the whole tables there:
 fork/register/rg1-quotes.tsv` and `fork/register/check_greps.sh
 /home/user/carbon-lang <tip> fork/register/rg1-checks.tsv`, their counts
 quoted in the records commit's message and each FAIL row appended by id to
-W-355's notes (Appendix C.2's text); a note whose own entries fail says so in
-its lead (Appendix C.3). _Break condition:_ none.
+W-355's notes (Appendix C.2's text, at every landing this decision names,
+with that landing's PR number); a note whose own entries fail says so in
+its lead (Appendix C.3), and so does a register row OV-4's L-R adds
+(Appendix C.13; amended 2026-11-01, ruling fold: AUD-68-15). _Break
+condition:_ none.
 
-**D-LAND-20, the mutants at PR 61 and PR 64** (added 2026-11-01, review fold:
-RR2-1). TP-1's landed notes item (c) judges M, S and F6 "with §8's build,
-autoupdate, gate, conformance and mutants" (66aa13132
+**D-LAND-20, the mutants at PR 61, PR 64, PR 65 and PR 68** (added
+2026-11-01, review fold: RR2-1; PR 65 and PR 68 added 2026-11-01, ruling
+fold: AUD-65-A11 / AUD-68-17). TP-1's landed notes item (c) judges M, S
+and F6 "with §8's build, autoupdate, gate, conformance and mutants" (66aa13132
 fork/templates/plan.md:7927-7928), and CT-1's item (c) ends L-F with "then the
 gate, conformance and the mutants on the merged build" (551a03328
 fork/cpp-templates/plan.md:4842). Both plans re-run a recorded mutant only
@@ -1085,11 +1245,61 @@ rename part is
 measured at step 7. TP-1's M18 reverts S and CT-1's M18 S-VA, so each moves with
 its step (D-LAND-4). Every other named mutant is not re-run and keeps its record
 on the PR's head: section 6 lists them, and the PR's A.5 Landed paragraph says
-so by C.8's and C.10's mutant sentences. _Break condition:_ a re-run mutant that
+so by C.8's and C.10's mutant sentences. Two more plans name land-time
+mutants (added 2026-11-01, ruling fold: AUD-65-A11 / AUD-68-17). At PR 65,
+DR-1's section 8 item 5 names "C-b at merge: the dependence check removed
+(generic/template/index's `index_class_with_index_with` fails as on the
+mirror before C-b)" (fee0ef31c fork/direction/plan.md:2648-2650): after
+section 2.11's refill, C-b's `if` statement with its body (from `if
+(OperandDependence(context, operand_type_id) ==` through its closing brace)
+is removed from the merged handle_index.cpp, the hoisted `index_type_id`
+declaration kept, the translation unit recompiled and relinked into
+/dev/shm as above, and the gate run: it must fail on that split of check
+generic/template/index and on nothing else. DR-1's other mutants of item 5
+edit files the file rule does not name at this landing or mutate the
+branch's state before C-b, and keep their records on fee0ef31c. At PR 68,
+OV-4's section 8.8 runs section 8.5 on the merge commit (097c76473
+fork/overload/ov4-plan.md:2368-2372): the file rule applies to the mutants
+of section 8.5's record (:2146-2199) by their driver,
+scratchpad/ov4-impl/fixer/mbin/mutants.py with run_mutant.sh, probe.sh and
+norm.sh, over the gate and the probes its record ran; measured on the dry
+run's 5cf7406f1, of the two files those mutants edit only
+toolchain/check/call.cpp differs from 097c76473, so M1, M2 and M8 are
+predicted, and M3, M4, M5 and M5b (handle_function.cpp) and M6 (B.1, a
+program) keep their records. C.12's and C.13's mutant sentences record both
+in A.5. _Break condition:_ a re-run mutant that
 does not reproduce its record, or an edit that does not apply to the merged
 source; the landing stops (D-LAND-10) and the PR's workstream rules by its own
 break condition (CT-1's, "a mutant that turns nothing red other than M12, M1
 (subsumed, with M1c killed) and M75", fork/cpp-templates/plan.md:3906-3911).
+
+**D-LAND-21, the land-time id re-scans** (added 2026-11-01, ruling fold:
+AUD-55-12 / AUD-61-T15 / AUD-61-T26 / AUD-63-15 / AUD-65-A10). Six plans
+prescribe an id re-scan at land time: ST-1's for W-160 to W-167 (c3cdecc5d
+fork/ORCHESTRATION.md:553-558, fork/string/plan.md:2305-2316), TP-1's three
+commands, before L and before the records commit's ledger edit (66aa13132
+fork/templates/plan.md:582-597), SV-1's section 8 item 7 (the landed notes'
+item (f)), CT-1's item (e), and DR-1's section 8 item 10 for `W-32[4-9]`
+at PR 63's and PR 65's records commits (fee0ef31c
+fork/direction/plan.md:2773-2774, :5171, :5472-5473). The implementer runs
+each with the plan's own command over every origin ref, local branch and
+worktree after `git fetch origin`, at the points the plan names. Expected:
+each of the PR's own ids is filed only on a ref on the PR's own line, one
+that contains the PR's head or that the head contains (either way by
+`git merge-base --is-ancestor`: its branch, a lagging local copy, a stacked
+child's branch, the landing's trunk), and named elsewhere only as plan
+text; read
+literally after step 5, TP-1's rule would re-allocate, because trunk then
+holds TP-1's ids, and this reading replaces it. Any other ref that files one
+of them as a ledger item is a collision: the landing stops (D-LAND-10),
+because the re-allocation those plans prescribe rewrites texts already
+published, which only a fix the orchestrator rules may do. Each run's
+outcome is `<rescan>`, quoted in the records commit's message and written
+by A.4, A.5 and A.6. Measured by the rev-6 fixer (2026-11-01, every
+origin ref and local branch): W-160 to W-167 are filed only on origin's st
+branch (c3cdecc5d) and on the local st branch and origin/pr/55, both at
+21307851a, an ancestor of c3cdecc5d. _Break condition:_ a collision; the
+orchestrator rules the re-allocation and this plan is amended.
 
 ## §2 Spec, per landing
 
@@ -1106,9 +1316,18 @@ Steps: merge; no land-time step of its own (RG-1's A.4 notes are the later
 PRs'); D-LAND-19's checks at the tip; records with Appendix C.2's texts: the
 dated marks on rg1-plan.md section 5's "held at PR 53" and "does not skip it"
 sentences and on W-343, W-355's tip note and item 6's RG-1 clause (amended
-2026-11-01, review fold: B-M7 / B-M2). Expected: 1942 of 1942; 128/0/22 over
-150; tally 30/21/4/1. Gap-row check: no row named. Next: PR 64's and PR 65's
-bases are unaffected.
+2026-11-01, review fold: B-M7 / B-M2), and, by the completeness audit, the
+same mark on the six other lines that restate the superseded order, in
+rg1-plan.md (:865-867, :1630, :1632-1633, :1679-1680, :1730-1732) and in
+RG-1's decision-log entry (56e2e5bbd fork/decision-log.md:376-377), and a
+dated mark on section 6's rejection of reordering PR 53, whose break
+condition has fired and whose W-144 renumbering commit is moot, the
+renumbering to W-151 being on PR 60's branch already (2f4ebbf6e; cc4daba00
+fork/structural/plan.md:3111-3112; amended 2026-11-01, ruling fold:
+AUD-67-P11 / AUD-67-P12); C.2's W-355 note limited to the landing, W-355's
+owner keeping the L-check rule (AUD-67-P28). Expected: 1942 of 1942;
+128/0/22 over 150; tally 30/21/4/1. Gap-row check: no row named. Next: PR
+64's and PR 65's bases are unaffected.
 
 ### §2.2 PR 51, UA-2
 
@@ -1116,8 +1335,13 @@ Head f96fe8a7a (the container fill), base trunk. Conflicts: gap-analysis
 (GA-1, the Slices row keeps trunk's DR-0 sentence and UA-2's W-108 narrowing),
 ledger (LG-1, 14 decisions). Steps: merge; D-LAND-19's checks; records with
 RG-1's UA-2 land-time note after its register block (Appendix C.3; amended
-2026-11-01, review fold: B-M2 / B-M5). Expected: 1945 of 1945 (its own gate);
-131/0/19 over 150. Gap-row check: no row named. Deferred: none (its split
+2026-11-01, review fold: B-M2 / B-M5), the note being rg1-plan.md:2534-2542
+with D-LAND-15's date rule (amended 2026-11-01, ruling fold: AUD-51-E16).
+Expected: 1945 of 1945 (its own gate);
+131/0/19 over 150. Gap-row check: no row named. OP-2's fold of W-197 into
+W-126, due once PR 51 has landed, is G-56/57's (item 16), because W-197 is
+on PR 57's ledger only (amended 2026-11-01, ruling fold: AUD-51-E20).
+Deferred: none of its own (its split
 `fail_todo_unformed_dependent_var` is refilled under its name by PR 61's F6
 and renamed by PR 64's L-F, C-2; amended 2026-11-01, review fold: RR1-1). Its
 committed scoreboard.json is D-LAND-17's.
@@ -1131,7 +1355,27 @@ BUILD-SCRIPT programs (examples/cmake/test.sh); records with OR-5's carry of
 the W-128 item (Appendix C.4; amended 2026-11-01, review fold: A-M1).
 Expected: 1945 of 1945 (trunk's 1942 and PR 51's three); 133/0/17 over 150;
 tally 32/20/3/1, rows 84 and 87 DONE with their bullets PASS. Gap-row check:
-no row named. Deferred: none.
+no row named. Deferred: none. CM-1's own land-time steps (amended
+2026-11-01, ruling fold: AUD-52-02 / AUD-52-03 / AUD-52-07 / AUD-52-08):
+its delta rule, "PASS +2, SKIP -2, total unchanged", bullets 48 to 49
+(e6bc32a6d fork/cmake/plan.md:908-912), is section 4's "PR's own delta"
+for this landing; its ids W-128 to W-133, filed on the assumption that PR
+51 takes W-126 and W-127 and "verified at merge" (D-CM-16, :453-454), are
+verified at step 9 by `json.load` with a count of duplicate ids, which must
+be 0, and W-126 to W-133 each once (measured on the dry run's 5b6cc69ed:
+152 items, no duplicate); D-CM-14's Option B trigger, "cmake: command not
+found" in the run's log (:432-438), and section 5.4's revert of rows 84
+and 87 to PARTIAL or MISSING if the first run shows anything but the two
+PASS lines (:966-973), are this landing's first run of record (R33 (b)):
+either outcome stops the landing (D-LAND-18), and the SKIP, the rows'
+revert and the decision-log record CM-1 prescribes are a fix commit on PR
+52's branch under CM-1's review (D-LAND-10), never a landing commit. The
+container has the tools the BUILD-SCRIPT channel needs (measured by the
+audit: /usr/bin/cmake 3.28.3, ninja and make; OV-4's mall mirror ran both
+BUILD-SCRIPT programs to PASS). The "not of record" labels PR 52 brings,
+in rows 84 and 87, in section W11's arbiter sentence and in W-060's and
+W-061's notes, take A.10's mark (amended 2026-11-01, ruling fold: the
+audit's P52-22 note).
 
 ### §2.4 PR 54, EV-1
 
@@ -1146,7 +1390,34 @@ runner.py's `--self-test` (section 2.E.4), the build_systems.md links and the
 W-131 and W-133 citations of D-EV-10, row 90, the header and section W11 in
 their state C texts (sections 2.F.1 and 5.3; the tally 33/19/3/1), W-131's and
 W-133's notes, its message recording section 8.2's state C verification line
-and the R31 counts re-run (amended 2026-11-01, review fold: A-m2 / B-M6); then
+and the R31 counts re-run (amended 2026-11-01, review fold: A-m2 / B-M6). The
+completeness audit's additions to that commit, each by Appendix C.5's texts
+(amended 2026-11-01, ruling fold: AUD-54-07 / AUD-54-08 / AUD-54-09 /
+AUD-54-10 / AUD-54-11): section W11's state C text with `<date>` in place
+of its "2026-10-DD", its "not of record" label taking A.10's mark in the
+records commit; W-131's, W-133's and W-002's state C notes; the conformance
+README table regenerated by `runner.py --update-readme-table`, the
+C++-library row going from SKIP to `external-build` (section 2.E.8,
+cb3ef2e74 fork/evaluator/plan.md:1610-1615), without which `--self-test`
+fails; and, by R-8 (:2041-2045), each runner.py line cite of EV-1's
+decision-log entry (runner.py:516-524, :546-551, :321 and :453-462 on
+61458bc92) re-pinned to the lines holding the same code in the runner after
+state C, by C.8's re-cite rule, a cite whose code is gone stopping the
+landing. Then EV-1's land sequence (cb3ef2e74 fork/ORCHESTRATION.md:109-116;
+added 2026-11-01, ruling fold: AUD-54-16 / AUD-54-17 / AUD-54-18), after
+step 8: `python3 -I fork/evaluator/check_faq.py --which fork --toolchain
+/home/user/carbon-build/carbon-trunk/install/bin/carbon`, where any mismatch
+stops the landing (D-EV-21, :638-653); the same with `--which nightly` and
+the newest upstream nightly, fetched as docs/guides/getting_started.md's
+download block fetches it into a directory under `scratchpad/land1/impl/`
+(the installed 2026.10.12 nightly when the fetch fails, named in the
+records commit's message as the reason); and the runner with that
+nightly's busybox and `--filter project/evaluator`, expected 9 PASS and 2
+COMPILE-FAIL (D-EV-2, :340-345). A nightly result other than EV-1's stops
+the landing, and the guides' label change D-EV-2 then prescribes is a fix
+on PR 54's branch under EV-1's review (D-LAND-10); the nightly and both
+results go in the records commit's message. EV-1's entry goes by DL-2,
+above CM-1's (section 2.F.3, :1744-1746; AUD-54-12). Then
 records with RG-1's EV-1 note and the W-152 carry (Appendix C.5). Expected:
 1945 of 1945; 143/0/16 over 159 after state C (static 142/0/17 at the merge).
 Gap-row check: no row named. Deferred: none.
@@ -1156,16 +1427,30 @@ Gap-row check: no row named. Deferred: none.
 Head c3cdecc5d, base trunk; one toolchain file and one prelude file.
 Conflicts: ORCHESTRATION (OR-1, OR-2, OR-4 twice, OR-5), decision-log (DL-1),
 gap-analysis (GA-1 twice, GA-2 on the header), ledger (LG-1). Steps: merge;
-build, gate (a prelude change); refill only what the gate names; records with
+build, gate (a prelude change); refill only what the gate names; then two
+land-time commits of ST-1's item 5 (c3cdecc5d fork/ORCHESTRATION.md:540-552;
+added 2026-11-01, ruling fold: AUD-55-09 / AUD-55-11), each by Appendix
+C.6's texts: "Land PR 55: ST-1's landing-date stamps re-stamped", since the
+merge date is not 2026-10-13, and "Land PR 55: W-148 cited by its title
+until PR 53 lands", since PR 53 has not merged; the id re-scan of W-160 to
+W-167 by D-LAND-21 before the records edit (AUD-55-12); records with
 the header `<tally>` (34/18/3/1 expected) and W-126 cited by id (PR 51 has
 landed, as ST-1's landed notes assumed, :3107-3109), and OR-5: item 5 (ST-1's
 merge steps) discharged by the landing, item 6 (the SAFE-1 reconciliation)
 carried as G-53's item by Appendix B.1, and the ST-1 dated paragraph's item
-numbers marked (Appendix C.6; amended 2026-11-01, review fold: A-M1).
-Expected: 1953 of 1953 (section 4); 148/0/15 over 163. Gap-row check: no row
-named. Deferred to G-53: W-144's additions, the seven SAFE-1 reconciliation
-edits and the cross-branch re-cites (:3103-3106, fork/string/plan.md
-section 2.6).
+numbers marked (Appendix C.6; amended 2026-11-01, review fold: A-M1), row
+77's floor of record re-read (ST-1's row text, fork/string/plan.md:2230-2232,
+"re-read at rebase": the committed scoreboard is PR 51's, D-LAND-17;
+AUD-55-05) and the entry placed by DL-2 (AUD-55-02). With those steps made,
+item 5 is discharged by the landing, as C.6 says (amended 2026-11-01,
+ruling fold: the audit's S55-19 note). Expected: 1953 of 1953 (section 4);
+148/0/15 over 163. Gap-row check: no row named. Deferred to G-53: W-144's
+additions, the seven SAFE-1 reconciliation edits and the cross-branch
+re-cites (:3103-3106, fork/string/plan.md section 2.6), and the re-reads of
+arithmetic.md's Strings section and values.md:168 with W-057's evidence
+cite, both moved by SAFE-1 (:2835-2838; on 2407efa74 merged onto 5cf7406f1
+the amendment moves from arithmetic.md:190 to :199), and the W-148 id
+restored (amended 2026-11-01, ruling fold: AUD-55-22 / AUD-55-11).
 
 ### §2.6 PR 58, DD-1
 
@@ -1200,11 +1485,40 @@ commit "Land PR 58: DD-1 state L for PR 51, PR 54 and PR 55" with the texts of
 Appendix C.7 (the held-PR citations, the literals.md note, the README sentence
 narrowed to PR 53's section, the `ALLOWLIST` entry for arithmetic.md's
 "Strings" removed, the EV-1 sentences), checked by both checker modes (0
-errors; the dry run's 94dba6b21 is the reference); then records with DD-1's
+errors; the dry run's 94dba6b21 is the reference), its message C.7's, with
+DD-1's state-L checks in it: the W2 output expected and actual, both checker
+modes, `--self-test`, the totals, DD-1's section 8.10 Not-run list verbatim
+and the nineteen programs on the nightly (fcee90d9b
+fork/designdocs/plan.md:5600-5607), and for its nine markdown files R31's
+counts, the heading sets compared before and after (`comm`) and the grep
+for a manufactured heading (:5592-5599; added 2026-11-01, ruling fold:
+AUD-58-U2 / AUD-58-U3); then the commit "Land PR 58: DD-1's checker joins
+runner.py --self-test (D-DD-6)", because EV-1's state C commit (PR 54) put
+`evaluator_samples_self_check()` in runner.py's `--self-test`, which is
+D-DD-6's condition (:567-571): Appendix C.7's rule, `--self-test` printing
+its `OK` line after it, a toolchain dependency or a run past `--self-test`'s
+budget limiting the join to the diff, quote and W2 checks by D-DD-6's own
+break condition (added 2026-11-01, ruling fold: AUD-58-U1); then records
+with DD-1's
 section 2.14 evidence amendments for W-014, W-127, W-155 and W-167, row 91's
 dated mark, RG-1's DD-1 note (rg1-plan.md:2562-2570), the header `<tally>`
 (35/17/3/1 expected), a dated note on W-043, and OR-5's carry of DD-1's
-correction note under item 3 (Appendix C.7). Expected: 1953 of 1953;
+correction note under item 3 (Appendix C.7), and by the completeness audit
+(added 2026-11-01, ruling fold: AUD-58-U4 / AUD-58-U5 / AUD-58-U6 /
+AUD-58-U7 / AUD-58-U8): the ledger source's "OP-2 reserves W-196..W-199"
+made W-196..W-201, OP-2's hand-off to this commit (e23113ba2
+fork/ORCHESTRATION.md:739-743); W-057's and W-161's evidence cites of
+docs/design/README.md and docs/design/interoperability/README.md re-cited
+by C.8's re-cite rule, since the merge moves ST-1's amendment lines
+(measured: :636 to :657 and :303 to :981 on 94dba6b21); A.5's and A.6's
+sentence on W-187 (D-LAND-14) and on F-016's re-read against trunk
+(fcee90d9b fork/designdocs/plan.md:6804-6812: F-016 is OP-2's, minted on
+held PR 57 as trunk's fork/ORCHESTRATION.md:163 says, and DD-1 mints no
+fork design id); RG-1's DD-1 note by D-LAND-15's rule. DD-1's step to amend
+or annotate trunk's "a fourth focused round" (:4369-4373) is already made:
+trunk's paragraph at bb9fbba9c fork/ORCHESTRATION.md:183-190 records that
+the fourth round was one of both document reviews, so the landing makes no
+edit for it. Expected: 1953 of 1953;
 167/0/15 over 182; row 70 DONE with its bullet PASS. Gap-row check: row 91
 named (DD-1's cell supersedes the UA-2 re-read). Deferred: state L for PR 53,
 PR 56 and SC-1 (D-LAND-14).
@@ -1256,8 +1570,50 @@ the end of A.5 (amended 2026-11-01, review fold: RR1-1 / RR2-1 / RR2-3).
 Expected: 1968 of 1968, the split passing as a `fail_`
 split;
 177/0/15 over 192. Gap-row check: row 54 named (R writes it). Deferred to
-G-60: S (member_access.cpp, :5206-5212); to G-59: the VA-1 compositions F6
-measured as none.
+G-60: S (member_access.cpp, :5206-5212) and M's rules for SC-1's hunks
+(66aa13132 fork/ORCHESTRATION.md:1091-1094; AUD-61-T06); to G-59: the VA-1
+compositions F6 measured as none.
+
+The completeness audit's additions to this landing (added 2026-11-01, ruling
+fold: the AUD ids named): the entry goes by DL-2, directly after "Full
+autonomy and the throughput protocol" (fork/templates/plan.md:18347-18349;
+AUD-61-T04); A.3's row replaces both tp rows by OR-2 (AUD-61-T05); the two
+id re-scans by D-LAND-21, their outcomes in `<rescan>` (AUD-61-T15); L's
+message carries R31's counts of docs/design/templates.md before L, after it
+and after prek by step 6 (AUD-61-T18); R appends, after the merged row's
+UA-2 clause, which cites lower/handle.cpp:513 for the cross-file
+`CARBON_FATAL` that TP-1's change moves to :524 (measured on a33d05cae and
+d03be4456), the marker section 2.8 prescribes for a later clause TP-1
+changes (:5000-5005), C.8's text, and R's commit message quotes the row it
+started from (:5002-5003; AUD-61-T20 / AUD-61-T21); Appendix E's
+ORCHESTRATION stamp (:18456-18468) is replaced by A.3's row and A.4's
+paragraph, whose `<rescan>` holds the re-scans' outcomes, because its
+"merged after PR 59" is false under D-LAND-1 and its other fields are A.4's
+(AUD-61-T25); the landed notes and the decision-log entry record the
+merged checker runs and both re-scans' outcomes by C.8's sentence for A.5
+and A.6 (AUD-61-T26); TP-1's item (h), the "not of record" phrases replaced
+once Actions returns (:7935-7936), is A.10's mark at this landing, R33 (b)
+making the container scoreboard R9's record now (AUD-61-T28); D-TP-16's
+break condition, an upstream template commit subsuming one of C1 to C5
+before TP-1's merge (:3474-3478), is checked at D-LAND-19's `<tip>`:
+`git log --oneline c1e83b0b7..<tip> --` over TP-1's 32 non-testdata files
+(`git diff --name-only bb9fbba9c...66aa13132 -- toolchain core
+':!*/testdata/*'`), each commit read and judged as section 2.9 judges, the
+verdicts saved as `tp1-d16.txt` beside the logs and reviewed by D-LAND-10,
+a subsuming commit stopping the landing for TP-1's next revision to take
+it as C0 (measured by the rev-6 fixer: 44 such commits at 68569d234, not
+judged here; AUD-61-T29); and DR-1's round-1 note, "passed to PR 61's and
+CT-1's records" (fee0ef31c fork/direction/plan.md:4285-4296, :4528-4533) and
+in neither head's records, is carried at this landing and at PR 64's by
+C.8's and C.10's note sentence at the end of A.5, and checked: D-LAND-10's
+reviewers at PR 61 and PR 64 compile the note's literal form, a template
+`v[0] = 5` on a by-value type with only `IndexWith`, which CHECK-fails at
+lower.cpp:48 "on CT-1's install, where trunk diagnoses", with the landing's
+install and with `<trunk before>`'s; an abort where `<trunk before>`
+diagnoses stops the landing for the orchestrator's ruling, as D-LAND-2's
+class (R33 (c)); the variable forms, `x[i] = 5` on such a type and
+`s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T`,
+CHECK-fail on trunk too, and DR-1b fixes the second (AUD-61-T30).
 
 ### §2.8 PR 62, SV-1
 
@@ -1282,6 +1638,38 @@ the header cite of match_core_optional_diff.carbon move to their follow-ons
 (D-LAND-4). Expected: 1976 of 1976; 182/0/15 over 197. Gap-row check: row 68
 named (C.7 drops the branch's PR 56 clause, "`Core.Optional` itself is not
 matchable (W-177, F-015)", because PR 56 is absent).
+
+The completeness audit's additions (added 2026-11-01, ruling fold: the AUD
+ids named). The section 8.6 mirrors that the landed notes' item (a) repeats
+at M against that day's heads (0ef8a0334
+fork/sumtype-interop/plan.md:4745-4746, :5325-5326) are replaced by the
+landing itself: step 2's merge-trees, the build of the merged trunk, the
+gate and conformance are the measurement the mirrors predicted. Their probe
+sets, `$Y`'s probes rx, rt, cr, cz and w (44 programs) and `$W`'s probes/tp
+(h1 to h3, t2 to t7, x20, q05), are run on the landing's install with
+SV-1's runner of the round that last ran them and compared with the outputs
+the plan records (the mirrors' table, :5368-5373), a different output
+stopping the landing; a
+set whose sources are gone from the scratchpad is named not run in the
+records commit's message with that reason (AUD-62-S04). x19 is the
+composition probe of SV-1's fixer,
+scratchpad/sv1-fixer/probes/x/x19_tp_choice_match.carbon (66aa13132
+fork/templates/plan.md:10207-10211), not section 0's x19 (0ef8a0334
+fork/sumtype-interop/plan.md:627): compiled and run on the landing's
+install it must compile and print 0, and only if it stops does W-282 get
+C.4's text (:4793-4797; AUD-62-S18). "Evidence re-cited to the merged tree"
+(the landed notes' item (g)) is C.8's re-cite rule over the evidence of
+W-011 and of SV-1's filed items on the merged ledger; measured by the
+audit, W-280's handle_binding_pattern.cpp:518-528 and W-286's
+impl_lookup.cpp:253-281 are in files no ready PR before PR 62 changes, so
+those keep their lines (AUD-62-S21). M-VA's mutants M19 and M21 and
+W-284's clauses go with M-VA to item 17, and the nested-pointer leg, the
+conditional refill of fail_todo_core_optional.carbon and Doc-M's
+re-derivation to item 16 (D-LAND-4; AUD-62-S06 / AUD-62-S23 / AUD-62-S09 /
+AUD-62-S12). The `bool` payload split, the `bool` program leg and the
+core_optional_view refill that the branch's item 5 still lists were
+withdrawn at W-322 (:1959-1964), and OR-5's message says so (the audit's
+S10 note).
 
 ### §2.9 PR 64, CT-1
 
@@ -1404,7 +1792,14 @@ generic's C++ calls.
 
 Expected: 1978 of 1978; 189/0/15 over 204. Gap-row check: rows 42 and 56 named
 (C.4 replaces them). Deferred to G-59: S-VA with its mutant M18 and C.11's
-split.
+split; to G-60: CT-1's PR 60 composition, re-measured at the follow-on's
+merge with t08, t09, t13 and t14 and tc5 and tc6, and its break
+conditions (551a03328 fork/cpp-templates/plan.md:765, :814-851,
+:4044-4082); to G-56/57: its PR 57 composition, the red set empty but
+TP-1's lower/template/for_range.carbon refill, and its break condition
+(:832-840; amended 2026-11-01, ruling fold: AUD-64-a5 / AUD-64-a6). DR-1's
+note passed to CT-1's records is carried and checked here as at PR 61
+(section 2.7; the audit's x1 note).
 
 ### §2.10 PR 63, DR-1a
 
@@ -1419,11 +1814,35 @@ DR-1a's side, TP-1's `RequireCompleteType` block and its
 sentence (section 2.8's) appended verbatim before the closing `|`. Steps:
 merge (M-a; loops.md's rule moves to G-56); L-a as the refill: check
 generic/template/for_range, lower template/for_range and interop/cpp/range_for,
-its count recorded at L-a (fork/direction/plan.md:1555-1582); records with the
-row-68 mark and item 1's mark (Appendix C.11). Expected: 1978 of 1978;
+its count recorded at L-a (fork/direction/plan.md:1555-1582), and, since
+DR-1's section 4 says "the fill must reproduce these lines" (:2438, :2449),
+A.2's `<refilled>` numstats must be 12/17 for check
+generic/template/for_range and 137/137 for lower template/for_range, a
+different numstat stopping the landing (D-LAND-8), and range_for's is
+recorded (amended 2026-11-01, ruling fold: AUD-63-7); records with the
+row-68 mark and item 1's mark (Appendix C.11), the id re-scan by D-LAND-21
+(AUD-63-15), and the notes trunk's weekly upstream check of 2026-10-26
+routed to DR-1 as a commit on its branch (bb9fbba9c
+fork/decision-log.md:6903-6912, fork/ORCHESTRATION.md:536-540), which no
+head carries and D-LAND-3 makes this records commit's: W-322's discharge
+note and the dated notes of W-324 and W-326, by Appendix C.11's texts; the
+"(i) sha stamp" on PR 63's copy of DR-0's register block is made by the
+merge, since that block is trunk's at :242-243 and trunk's dated paragraph
+after it (:249-253) already holds "(i) resolved on PR 62's branch by
+22fe50ff8 and its fill f4660e409" (AUD-63-20). DR-1's section 8 item 9
+re-run before M-a "if it has moved from 118fc1bc8" (:5151-5153) is not
+owed: item 9's own rule re-runs a mirror only when a head has moved in
+toolchain/, core/ or fork/conformance/ (:2707-2709), and `git diff`
+118fc1bc8 551a03328 and 4a3220c11 551a03328 over those three is empty
+(measured by the rev-6 fixer); the landing's step 4 gate and conformance on
+the merged trunk is the composition's measurement, recorded in A.5
+(AUD-63-13). Expected: 1978 of 1978;
 189/0/15 over 204. Gap-row check: no row named. Deferred to G-56: loops.md's
-rule; to G-57: the m57 refills (lower array/iterate, for/break_continue,
-for/for).
+rule, error_handling.md's date-order rule and W-323's discharge note; to
+G-57: the m57 refills (lower array/iterate, for/break_continue, for/for)
+and row 78's DR-0 sentence beside PR 57's DONE text (fee0ef31c
+fork/direction/plan.md:708-709, :1635-1639, :3441; amended 2026-11-01,
+ruling fold: AUD-63-11 / AUD-63-12 / AUD-63-21).
 
 ### §2.11 PR 65, DR-1b
 
@@ -1447,10 +1866,11 @@ succeeded ("if success is expected, remove the `fail_` prefix"), as expected:
 DR-1 measured it before and after C-b, "1962 passed and 1 failed, L-b's
 rename 1/1" (fee0ef31c fork/direction/plan.md:2756-2758); it is counted in
 A.1's `<g0>` and `<gn>`, and L-b's rename commit resolves it (added
-2026-11-01, review fold: RR2-4); C-b, "Land PR 65: DR-1b
-composition with TP-1: a template-dependent index chooses its interface per
-specific", the block of fork/direction/plan.md:2204-2225 at the head of
-`PerformIndex`'s default arm, removing the arm's later
+2026-11-01, review fold: RR2-4); C-b, "Land PR 65: DR-1b: index a
+template-dependent operand per specific (TP-1's IndexAction)", DR-1's own
+message (amended 2026-11-01, ruling fold: the audit's A3 note), the block
+of fork/direction/plan.md:2204-2225 at the head of `PerformIndex`'s default
+arm, removing the arm's later
 `auto index_type_id = context.insts().Get(index_inst_id).type_id();` (the
 hoist section 2.2 names; :271 on the dry run's tree; amended 2026-11-01,
 review fold: B-m7); the nine probes on the landing's install, by
@@ -1477,7 +1897,23 @@ landing (D-LAND-8); records discharging W-340
 with M-b's, C-b's and L-b's shas (C.2), row 79's W-340 sentence in the past
 tense (C.3), the DR-1 entry's dated note, the header `<tally>` and item 1's
 mark (Appendix C.12). Expected: 1982 of 1982; 191/0/15 over 206; row 79 DONE
-with its bullet PASS. Gap-row check: no row named. Deferred: none.
+with its bullet PASS. Gap-row check: no row named. Deferred: none of its own
+steps; DR-1's call.cpp and convert.cpp test of the gated PRs' added lines
+(fee0ef31c fork/direction/plan.md:711-712) to G-59 and G-60, and SAFE-2's
+DR-1 note to G-53 (D-LAND-4).
+
+The completeness audit's additions (added 2026-11-01, ruling fold: the AUD
+ids named): DR-1's composition re-run before M-b "if it has moved from
+4a3220c11" (:5449-5451) is not owed, by item 9's rule, as at PR 63 (section
+2.10; AUD-65-A1); the id re-scan by D-LAND-21 (:5472-5473; AUD-65-A10); C-b's
+mutant by D-LAND-20, after the refill (AUD-65-A11); the refill's numstat for
+check generic/template/index must be 16/41 (DR-1's section 4, :2450), as
+write_through.carbon's must be 0/7; C.2's discharge text with its three sha
+slots filled as C.12 says (AUD-65-B2) and C.3's past tense with row 79's
+marks kept (C.12; AUD-65-B3); and the A.5 sentence of C.12 that records
+SAFE-2's DR-1 note, whose premise "PR 65 lands after PR 53" this order
+reverses, as item 14's (AUD-65-F2). C-b's message is DR-1's own, prefixed
+as every landing commit is (:5459-5461; the audit's A3 note).
 
 ### §2.12 PR 68, OV-4
 
@@ -1497,7 +1933,16 @@ steps 4 to 8, and D.7's ledger, decision-log and ORCHESTRATION texts are
 replaced by Appendix C.13's. Expected: 1986 of 1986; 193/0/15 over 208.
 Gap-row check: no row named. Deferred to G-60: SC-1's two arguments in
 `CheckOverloadMemberParamsMatch`; to G-59: the pack gate order in
-handle_function.cpp.
+handle_function.cpp. The completeness audit's additions (added 2026-11-01,
+ruling fold: AUD-68-15 / AUD-68-17 / AUD-68-19): L-R's failing rows go to
+W-355 by C.2's note with this landing's number, and a failure among T2.8's
+or T2.9's own quotes or checks is said in that row's cell by C.13's clause
+(097c76473 fork/overload/ov4-plan.md:4104-4106; measured by the audit at
+68569d234: two of T2.8's quotes fail, pattern_match.cpp:950 and
+handle_pattern_list.cpp:185, so the clause is predicted); section 8.8's
+re-run of section 8.5 is D-LAND-20's PR 68 part, M1, M2 and M8 predicted;
+R-5's re-read of the four ORCHESTRATION regions is step 9's, at every
+landing.
 
 ## §3 The process
 
@@ -1524,24 +1969,50 @@ paragraph, header and Appendix C's marks and carries.
 The follow-ons, each its own workstream with its own reviews, entered when
 D-LAND-12's gate holds; Appendix B.1's items 14 to 17 name their steps:
 
--   G-53 (PR 53): records-only merge (section 0.6); land-time: ST-1's SAFE-1
-    edits, DD-1's state L for PR 53, RG-1's H53 notes already on the head,
-    SAFE-3's notes on trunk's ledger.
+-   G-53 (PR 53), entered once the realignment of PR 53's branch completed
+    under the orchestrator's re-ruling of the C++ boundary question
+    (fork/safe/safe3-plan.md D-SAFE3-13 and its rev 11 and rev 12 fold
+    records); SAFE-3 stopped at its plan rev 12 (14c1ac8ac, 2026-11-01)
+    under its re-think ruling's break condition (RT1-B1 and RT2-B1), the
+    orchestrator stamping the stop on trunk from safe3-plan.md Appendix D's
+    stop path after B.1's stamp, PR 53's pushed head staying 2407efa74 and
+    W-365 and W-366 reserved and unfiled (amended 2026-11-01, ruling fold:
+    the ruling's item 2): records-only merge (section 0.6); land-time: the
+    PR 67 note commit on trunk across the six items' notes, rg1-checks.tsv,
+    rg1-quotes.tsv, rg1-plan.md and RG-1's log entry (D-LAND-12;
+    AUD-67-P29), ST-1's SAFE-1 edits and its re-reads of the pages SAFE-1
+    moves, the W-148 id restored, SAFE-2's DR-1 note on
+    `IndirectIndexWith.Ref` (D-LAND-4), DD-1's state L for PR 53, RG-1's
+    H53 notes already on the head.
 -   G-60 (PR 60): merge of trunk into PR 60's branch resolving convert.cpp,
     member_access.cpp, merge.cpp and templates.md, with TP-1's S and its
-    mutant M18 (amended 2026-11-01, review fold: RR2-1), OV-4's two
-    arguments, DD-1's state L for SC-1, item 10's decided commit, fills, gate,
-    its review; then the trunk landing.
+    mutant M18 (amended 2026-11-01, review fold: RR2-1) and M's rules for
+    SC-1's hunks, OV-4's two arguments, DD-1's state L for SC-1, CT-1's PR
+    60 composition and DR-1's call.cpp and convert.cpp test (amended
+    2026-11-01, ruling fold: AUD-61-T06 / AUD-64-a5 / AUD-65-A15), item 10's
+    decided commit, fills, gate, its review; then the trunk landing.
 -   G-56/57 (PR 56, then PR 57 retargeted to trunk): W-352; loops.md by M-a's
-    rule and C.7; error_handling.md by DD-1's and OP-1's texts; DR-1a's m57
-    refills; SV-1's Doc-M, C.5, C.8, the W-177 header cite and F-M's PR 57
-    part; DD-1's state L for PR 56; RG-1's OP-2 note.
+    rule and C.7; error_handling.md with both sides' amendments in date
+    order, DR-1a's (on trunk from PR 63) and OP-1's, by DR-1's rule
+    (fee0ef31c fork/direction/plan.md:708), where rev 5 said "by DD-1's and
+    OP-1's texts", DD-1 leaving error_handling.md untouched (amended
+    2026-11-01, ruling fold: AUD-63-11 and the audit's N6 note); row 78's
+    DR-0 sentence beside PR 57's DONE text; W-323's discharge note; DR-1a's
+    m57 refills; CT-1's PR 57 composition; OP-2's W-197 fold into W-126;
+    SV-1's Doc-M re-derived under its section 1.14 review, C.5's W-177
+    evidence, C.8, the W-177 header cite, F-M's PR 57 part, the
+    nested-pointer leg and the conditional refill; DD-1's state L for PR
+    56; RG-1's OP-2 note (amended 2026-11-01, ruling fold: AUD-63-12 /
+    AUD-63-21 / AUD-64-a6 / AUD-51-E20 / AUD-62-S09 / AUD-62-S12).
 -   G-59/66 (PR 59, then PR 66 retargeted to trunk), owned by VA-1's
     workstream: W-367's fix and note 7's ruling on PR 59, W-367 (and W-368 if
     the ruling makes a fix) filed in PR 59's branch's ledger;
-    handle_function.cpp by OV-4's rule; SV-1's M-VA and W-284; CT-1's S-VA
+    handle_function.cpp by OV-4's rule; SV-1's M-VA with its mutants M19
+    and M21, and W-284 with its clauses; CT-1's S-VA
     with its mutant M18 and C.11's split (amended 2026-11-01, review fold:
-    RR2-1); RG-1's VA-1 note and W-343's discharge if it is the last;
+    RR2-1); DR-1's call.cpp and convert.cpp test (amended 2026-11-01, ruling
+    fold: AUD-62-S06 / AUD-62-S23 / AUD-65-A15); RG-1's VA-1 note and
+    W-343's discharge if it is the last;
     then VA-2's own M, S-CT, F-M, L-F and L (va2-plan.md section 3 item 15)
     over convert.cpp, eval.cpp and handle_function.cpp.
 
@@ -1562,7 +2033,7 @@ delta is its recorded expected PASS over its own base (section 0.1).
 | trunk (baseline) | 150 | 128 / 0 / 22 | -- | -- | 30/21/4/1 | 1942 |
 | PR 67 | 150 | 128 / 0 / 22 | 0 | 0 | 30/21/4/1 | 1942 |
 | PR 51 | 150 | 131 / 0 / 19 | 3 | 3 | 30/21/4/1 | 1945 |
-| PR 52 | 150 | 133 / 0 / 17 | 2 | none stated | 32/20/3/1 | 1945 |
+| PR 52 | 150 | 133 / 0 / 17 | 2 | 2 (PASS +2, SKIP -2, fork/cmake/plan.md:908-912; the cell amended 2026-11-01, ruling fold: AUD-52-02) | 32/20/3/1 | 1945 |
 | PR 54 | 159 | 143 / 0 / 16 | 10 | 9, plus state C's un-SKIP | 33/19/3/1 | 1945 |
 | PR 55 | 163 | 148 / 0 / 15 | 5 | 5 | 34/18/3/1 | 1953 |
 | PR 58 | 182 | 167 / 0 / 15 | 19 | 19 | 35/17/3/1 | 1953 |
@@ -1581,6 +2052,15 @@ removes a golden names it, and the count moves by exactly that. The arbiter's
 values are recorded beside these; a difference D-LAND-18 does not explain
 stops the landing.
 
+The completeness audit's folds change no value of this table (checked
+2026-11-01, ruling fold: the audit's count check): the land-time
+commits it adds at the ready landings are records, page, comment and
+`runner.py` edits (PR 54's README table and W-002, W-131 and W-133 notes,
+PR 55's re-stamp and W-148 commits, PR 58's `--self-test` join), none of
+which adds, removes or re-SKIPs a program or a golden; the program and
+golden steps it names (SV-1's nested-pointer leg, CT-1's compositions) are
+the follow-ons'.
+
 ## §5 Risks and rejected alternatives
 
 -   R-1, a composition hidden by the order. A ready PR may need a gated PR's
@@ -1593,8 +2073,16 @@ stops the landing.
 -   R-3, the follow-ons grow. Moving compositions to G-60 and G-59/66 makes
     them larger. Falsifier: section 0.6's conflict sets grow when measured
     again at each follow-on's start; the follow-on re-plans.
--   R-4, id collision with SAFE-3. Falsifier: W-367 to W-370 found filed by
+-   R-4, id collision with PR 53's realignment, SAFE-3 having stopped with
+    W-365 and W-366 reserved and unfiled (amended 2026-11-01, ruling fold:
+    the ruling's item 2). Falsifier: W-367 to W-370 found filed by
     another workstream at the stamp; D-LAND-13's break condition.
+-   R-7, a land-time step left unmapped (added 2026-11-01, ruling fold: the
+    ruling's item 1). A plan's land-time step that section 2 neither carries
+    nor names as moved is a step the landing silently drops. Falsifier:
+    rounds 4 and 5 of the focused re-review, and each landing's review
+    (D-LAND-10), which checks the PR's own records against section 2 and
+    the rev-6 fold record; a step found unmapped stops the landing.
 -   R-5, the scratch references go stale. A head that moves after this plan,
     or a land-time commit the dry run did not make, changes a later merge.
     Falsifier: step 1's head check and step 2's re-run of the remaining
@@ -1667,7 +2155,21 @@ applied to a copy (831 lines, seven lines changed;
 59 commits, each given a verdict, the four quotes and E-ARG
 (`$F3/rr3-2_r32_68569d234.txt`); TP-1's Ledger re-cites and its item (c)
 count (`$F3/rr3-4_tp1_recites.txt`); the mutant scratch directories of TP-1
-and CT-1's mutrun.sh with its probe lists (`$F3/rr3-5_mutants.txt`). Not run
+and CT-1's mutrun.sh with its probe lists (`$F3/rr3-5_mutants.txt`). Rev 6's
+fixer, measured (2026-11-01, ruling fold): `git ls-remote` of all eighteen
+heads and of claude/carbon-fork-0-1-safe-wip (14c1ac8ac), unchanged; every
+UNMAPPED step's cite opened on its head; the decision-log entries directly
+after "Full autonomy" on the heads of PR 52, 54, 55, 58 and 61 (DL-2); the
+`W-148` occurrences on 8beb5d7d5 (strings.md 2, row 77 1, the ledger 6) and
+W-148's title on 2407efa74; ST-1's eight 2026-10-13 stamps on 8beb5d7d5;
+the ST-1 amendment lines on 94dba6b21 (README.md:657, interoperability
+README:981) and on 2407efa74 merged onto 5cf7406f1 (arithmetic.md:199);
+the refs that file W-160 to W-167; lower/handle.cpp's cross-file FATAL at
+:513 on a33d05cae and :524 on d03be4456; `git diff` of CT-1's 118fc1bc8 and
+4a3220c11 against 551a03328 over toolchain/, core/ and fork/conformance/
+(empty); the 44 upstream commits to TP-1's 32 files in
+c1e83b0b7..68569d234; the files OV-4's mutants edit against 5cf7406f1; and
+the W-322, W-324 and W-326 notes on 89aabd125 and fee0ef31c. Not run
 by the planner or the fixers, by rule: any build, gate, autoupdate, mutant
 or conformance run; the checkers' `--toolchain` mode; the merged trees'
 compilation (the TC-1 and TC-2 files are mechanical references, built first
@@ -1677,7 +2179,11 @@ the register checks at a tip. Not run by LAND-1, by D-LAND-20 (added
 other than the ones D-LAND-20's rules select at PR 61 and PR 64 (predicted:
 none of TP-1's, and CT-1's M6, M7, M23, M24, M75 and M75r), each keeping its
 record on 66aa13132 or 551a03328 as the PR's A.5 paragraph says; and both
-M18s until G-60 and G-59. Not run by LAND-1 at all: clang-tidy, the
+M18s until G-60 and G-59; DR-1's mutants of section 8 item 5 other than C-b's
+and OV-4's of section 8.5 other than the file rule's (predicted M1, M2 and
+M8), each keeping its record on fee0ef31c or 097c76473; SV-1's M19 and M21
+until G-59 (added 2026-11-01, ruling fold: AUD-65-A11 / AUD-68-17 /
+AUD-62-S06). Not run by LAND-1 at all: clang-tidy, the
 Bazel-only tests, the BUILD-dependency hooks prek skips, LLVM with
 assertions, macOS, Windows and other platforms, and R21's hosted gate, which
 R33 (b) owes when Actions returns.
@@ -1786,8 +2292,12 @@ It replaces the PR's row in the Branches table.
 <merge sha> under R33 (fork/land/land1-plan.md section <spec>), GitHub
 merged_at <merged_at>; container-measured (R33 (b)): gate <g> of <g>,
 conformance <p>/<f>/<s> over <n>, <b>/56 bullets, gap tally <tally>;
-<landed> PRs landed, <held> held. Next: <next>.
+id re-scans: <rescan>; <landed> PRs landed, <held> held. Next: <next>.
 ```
+
+The "id re-scans" clause is added 2026-11-01 (ruling fold: AUD-61-T25 /
+AUD-61-T26), as are A.5's and A.6's; TP-1's Appendix E stamp is replaced by
+this paragraph and A.3's row.
 
 The paragraph goes directly before the paragraph that begins "Earlier
 (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED", after the last
@@ -1808,7 +2318,7 @@ earlier <prev> text follows).
 <merged_at>) under R33, fork/land/land1-plan.md section <spec>;
 land-time commits <land-time shas>; container-measured (R33 (b)): gate
 <g> of <g>, conformance <p> PASS, <f> FAIL, <s> SKIP over <n>, <b> of 56
-bullets; moved to follow-ons: <moved>.
+bullets; id re-scans: <rescan>; moved to follow-ons: <moved>.
 ```
 
 It goes at the target Appendix C.1's "Plan file and anchor" column names.
@@ -1818,8 +2328,8 @@ It goes at the target Appendix C.1's "Plan file and anchor" column names.
 ```text
 _Landed (<date>, LAND-1, R33):_ merged into trunk as PR <N> by
 <merge sha> (GitHub merged_at <merged_at>); container-measured (R33 (b)):
-gate <g> of <g>, conformance <p>/<f>/<s> over <n>; moved to follow-ons:
-<moved>.
+gate <g> of <g>, conformance <p>/<f>/<s> over <n>; id re-scans: <rescan>;
+moved to follow-ons: <moved>.
 ```
 
 It is the last paragraph of the entry Appendix C.1's "Decision-log entry"
@@ -1897,6 +2407,34 @@ non-owning contiguous container mapping (incl. owning->view)"); PR 68, row
 brings such a label; trunk's rows carry none. Each row is found by its bullet
 text. The gap-row check of D-LAND-6 step 9 runs after the mark.
 
+The same label outside the rows (added 2026-11-01, ruling fold: AUD-61-T28 /
+AUD-54-07 and the audit's P52-22 note): R33 (b) makes the container
+scoreboard R9's record at every landing, so a "not of record" label the
+landing brings into a ledger item's `notes` or a prose section of
+fork/gap-analysis.md, found by `git diff <trunk before> HEAD --
+fork/inventory/work-items.json fork/gap-analysis.md` and a search of the
+added text for "not of record" in any case, a label broken across two
+lines included, takes the mark too: appended to the item's `notes` with a
+leading space, or after the sentence that holds the label in the prose,
+in this form:
+
+```text
+ (LAND-1, <date>: the "not of record" label above is superseded by PR <N>'s landing's container-measured scoreboard, R33 (b), <p>/<f>/<s> over <n> with <b>/56 bullets.)
+```
+
+Measured on the dry run's scratch commits (the first commit whose ledger
+item's notes match `not\s+of\s+record`), these are: at PR 52 W-060's and
+W-061's notes and section W11's arbiter sentence "PASS locally on nightly
+2026.10.12, not of record until a hosted run"; at PR 54 W-062's notes and
+section W11's state C sentence, which the state C commit writes; at PR 55
+W-057's notes; at PR 58 W-020's and W-065's notes; at PR 61 W-014's notes;
+at PR 62 W-011's notes; at PR 65 W-109's notes; none at PR 67, 51, 64, 63
+and 68, and trunk's own W-321 label is not a landing's. The plans' own steps for
+these labels, ST-1's and TP-1's "once Actions returns ... a records
+commit" (c3cdecc5d fork/ORCHESTRATION.md:559-562; 66aa13132
+fork/templates/plan.md:7935-7936), are made by this mark; R21's hosted
+gate stays owed (A.3).
+
 <!-- google-doc-style-resume -->
 
 ## Appendix B: the ORCHESTRATION stamps
@@ -1915,7 +2453,8 @@ The dated paragraph, after the 2026-11-01 (17:42 UTC) paragraph:
 signed off and on trunk. Twelve PRs land in this order, each verified in
 the container, reviewed, and recorded only after GitHub shows it merged:
 PR 67, 51, 52, 54, 55, 58, 61, 62, 64, 63, 65 and 68. Six wait, each for
-its follow-on (Next actions items 14 to 17): PR 53 (SAFE-3), PR 60 (W-139
+its follow-on (Next actions items 14 to 17): PR 53 (its realignment, SAFE-3
+stopped), PR 60 (W-139
 and item 10), PR 56 and PR 57 (W-352 and item 10), and PR 59 with PR 66
 (item 13's fix, W-367, and note 7's ruling, D-LAND-2). W-367 to W-370 are
 reserved to LAND-1. Eighteen PRs are held open; none is merged yet. The
@@ -1929,7 +2468,7 @@ RR1-5):
 
 ```text
 claude/carbon-fork-0-1-safe, after "merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5)":
- (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for SAFE-3 and lands by Next actions item 14)
+ (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for its realignment, completed under the orchestrator's re-ruling of the C++ boundary question, SAFE-3 having stopped, and lands by Next actions item 14)
 claude/carbon-fork-0-1-sc, after "merges after PR 52, before PR 54":
  (superseded <date> by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 15 once W-139's fix and item 10 are done)
 claude/carbon-fork-0-1-op, after "merges after PR 55":
@@ -1959,8 +2498,11 @@ LAND-1 comes first (R33, 2026-11-01): fork/land/land1-plan.md (rev <r>,
 signed off <date>) lands twelve held PRs into trunk in the recorded
 order, each merged when it is correct and verified in the container: PR
 67, 51, 52, 54, 55, 58, 61, 62, 64, 63, 65 and 68. Six wait behind their
-gates, each landing by its follow-on (items 14 to 17): PR 53 after SAFE-3
-completes, PR 60 after W-139 and item 10, PR 56 and PR 57 after W-352
+gates, each landing by its follow-on (items 14 to 17): PR 53 after the
+realignment of its branch completed under the orchestrator's re-ruling of
+the C++ boundary question (fork/safe/safe3-plan.md D-SAFE3-13 and its rev
+11 and rev 12 fold records), PR 60 after W-139 and item 10, PR 56 and PR 57
+after W-352
 and item 10, and PR 59 and PR 66 after item 13's fix and note 7's ruling.
 The items below stand as the work still owed on the branches and after
 the landing.
@@ -2002,51 +2544,105 @@ Four items appended after item 13:
 
 ```text
 14. G-53, PR 53 (fork/land/land1-plan.md D-LAND-12): lands by LAND-1's
-    procedure once SAFE-3 has completed on PR 53's branch and SAFE-3's
-    realignment notes on PR 67's items are on trunk's ledger. Its
-    land-time steps: ST-1's SAFE-1 reconciliation (W-144's additions, the
-    seven edits and the cross-branch re-cites of fork/string/plan.md
+    procedure once the realignment of PR 53's branch completed under the
+    orchestrator's re-ruling of the C++ boundary question
+    (fork/safe/safe3-plan.md D-SAFE3-13 and its rev 11 and rev 12 fold
+    records), SAFE-3 having stopped at its plan rev 12 (14c1ac8ac) with PR
+    53's pushed head 2407efa74 and W-365 and W-366 reserved and unfiled,
+    and once the PR 67 note commit the realignment owes is on trunk as a
+    records commit, across the six items' notes, rg1-checks.tsv's H1.7,
+    rg1-quotes.tsv's eleven rows, rg1-plan.md's H1.7 and H1.13 with the
+    counts and RG-1's decision-log entry (fork/safe/safe2-plan.md, the
+    placement of the six items' notes; fork/safe/safe3-plan.md D-SAFE3-10).
+    Its land-time steps: ST-1's SAFE-1 reconciliation (W-144's additions,
+    the seven edits and the cross-branch re-cites of fork/string/plan.md
     section 2.6 and its landed notes' conditional items, on trunk from PR
-    55's landing); DD-1's state L for PR 53 (fork/designdocs/plan.md
+    55's landing), ST-1's re-reads of arithmetic.md's Strings section and
+    values.md:168 with W-057's evidence re-cited, and W-148's id put back
+    where PR 55's landing wrote its title; SAFE-2's DR-1 note that
+    `IndirectIndexWith.Ref`, on trunk from PR 65's landing, takes `bound
+    self` under W-144, with fork/safe/safe2-plan.md section 0.8's
+    counterexample; DD-1's state L for PR 53 (fork/designdocs/plan.md
     section 2.13: assignment.md, threads_and_atomics.md,
-    safety/mutation_safety.md, README.md's state-L sentence and its "held
-    PR" definition dropped once no page cites a held PR, the ALLOWLIST's
-    PR 53 entry removed, W-188's notes, row 91 DONE if section 5's
-    condition holds); RG-1's H53 notes, already on the head.
+    safety/mutation_safety.md, README.md's state-L sentence, as PR 58's
+    landing narrowed it to "One section stays TODO-only until held work
+    lands", and its "held PR" definition dropped once no page cites a held
+    PR, the ALLOWLIST's PR 53 entry removed, W-188's notes, row 91 DONE if
+    section 5's condition holds); RG-1's H53 notes, already on the head.
 15. G-60, PR 60 (D-LAND-12): once W-139's fix commit is on PR 60's branch
     under SC-1's reviews and item 10 is decided, a merge of trunk into PR
     60's branch (never a rebase) resolving convert.cpp, member_access.cpp,
     merge.cpp and templates.md, with TP-1's S (fork/templates/plan.md
-    section 3 item 8) and its mutant M18, OV-4's two SC-1 arguments in
+    section 3 item 8) and its mutant M18, TP-1's M rules for SC-1's hunks
+    (`PerformAction(ConvertAction)` and `(ConvertToCategoryAction)` keep
+    SC-1's check first and A2's `PendingBlock` after it, member_access.cpp's
+    includes put `pointer_dereference.h` beside `structural_conformance.h`,
+    fork/templates/plan.md section 3 item 7), OV-4's two SC-1 arguments in
     CheckOverloadMemberParamsMatch (fork/overload/ov4-plan.md section 3,
-    M's message), DD-1's state L for SC-1 (template_constraints.md),
-    item 10's decided commit, fills, gate and review; then the trunk
-    landing.
+    M's message), DD-1's state L for SC-1 (template_constraints.md, X12
+    deleted from the samples and the checker's table, templates.md with
+    SC-1's paragraph and then DD-1's section, fork/designdocs/plan.md
+    section 2.13), CT-1's PR 60 composition re-measured with t08, t09, t13,
+    t14, tc5 and tc6 under its break conditions
+    (fork/cpp-templates/plan.md section 0.9), DR-1's test that SC-1's added
+    call.cpp and convert.cpp lines create no `TemporaryStorage` return
+    argument, pass no `return_arg_id` and add no `ConvertCallArgs` call
+    (fork/direction/plan.md section 0.8), item 10's decided commit, fills,
+    gate and review; then the trunk landing.
 16. G-56/57, PR 56 then PR 57 retargeted to trunk (D-LAND-12): once
     W-352's commit is on PR 56's branch, merged into PR 57's, under OP-1's
     reviews, and item 10 is decided. Steps: loops.md by DR-1's M-a rule
-    (fork/direction/plan.md section 1.16) and C.7; error_handling.md by
-    DD-1's and OP-1's texts; DR-1a's m57 refills (lower array/iterate,
-    for/break_continue, for/for); SV-1's Doc-M (optional.md and the F-015
-    paragraph), C.5's W-177 note and evidence, C.8's F-015 references,
-    the W-177 cite in match_core_optional_diff.carbon's header and F-M's
-    PR 57 part (fork/sumtype-interop/plan.md section 3 item 8); DD-1's
-    state L for PR 56; RG-1's OP-2 note (W-343).
+    (fork/direction/plan.md section 1.16) and C.7; error_handling.md with
+    both sides' amendments in date order, DR-1a's and OP-1's, by DR-1's
+    rule (section 0.8); row 78's DR-0 sentence kept beside PR 57's DONE
+    text, as DR-1's C.3 rewrites it (section 1.16); W-323's discharge note,
+    DR-1's C.2 text with PR 56's commit 894139b34; DR-1a's m57 refills
+    (lower array/iterate, for/break_continue, for/for); CT-1's PR 57
+    composition, its red set empty but TP-1's for_range refill, under its
+    break condition (fork/cpp-templates/plan.md section 0.9); OP-2's fold
+    of W-197 into W-126, W-197's title gaining "(FOLDED into W-126)", W-126
+    gaining W-197's OP-2 note and the Optional row, row 43 and optional.md
+    naming W-126 again (fork/optional2/plan.md, its ORCHESTRATION item);
+    SV-1's Doc-M (optional.md and the F-015 paragraph), its texts
+    re-derived under SV-1's section 1.14 document review, since they
+    describe the view W-322 retired, C.5's W-177 evidence (its note
+    withdrawn), C.8's F-015 references, the W-177 cite in
+    match_core_optional_diff.carbon's header, F-M's PR 57 part, the
+    nested-pointer leg of cpp_sum_type_roundtrip_diff with its oracle
+    (expected `-10 -20 81 -1 -2 81`) and the refill of
+    fail_todo_core_optional.carbon only if PR 57's merge changes it
+    (fork/sumtype-interop/plan.md section 3 item 8 and section 1.7); DD-1's
+    state L for PR 56; RG-1's OP-2 note (W-343), by D-LAND-15's rule.
 17. G-59/66, PR 59 then PR 66 retargeted to trunk (D-LAND-12), owned by
     VA-1's workstream: once item 13's fix and W-367 and note 7's ruling
     (W-368 if it makes a fix) are on PR 59's branch under VA-1's review
     and item 2's preconditions hold. Steps: handle_function.cpp by OV-4's
     rule (VA-1's pack gate before OV-4's default look-through); SV-1's
-    M-VA and W-284 with its blocked_by W-219; CT-1's S-VA with its mutant
-    M18 and C.11's split; TP-1's VA-1 compositions (measured none);
-    RG-1's VA-1 note and W-343's discharge if it is the last; then VA-2's
+    M-VA with its mutants M19 and M21, and W-284 with its blocked_by W-219
+    and its clauses in row 68, the decision-log entry's D-SV-4 and id-list
+    clauses, W-011's notes and the SV-1 Branches row
+    (fork/sumtype-interop/plan.md Appendix C.6 to C.9); CT-1's S-VA with
+    its mutant M18 and C.11's split; TP-1's VA-1 compositions (measured
+    none); DR-1's test that VA-1's added call.cpp and convert.cpp lines
+    create no `TemporaryStorage` return argument, pass no `return_arg_id`
+    and add no `ConvertCallArgs` call (fork/direction/plan.md section 0.8);
+    RG-1's VA-1 note, by D-LAND-15's rule, and W-343's discharge if it is
+    the last; then VA-2's
     own M, S-CT, F-M, L-F and L
     (fork/variadics/va2-plan.md section 3 item 15) over convert.cpp,
     eval.cpp and handle_function.cpp.
 ```
 
 Items 15 and 17 name TP-1's and CT-1's mutant M18 with the step it reverts
-(amended 2026-11-01, review fold: RR2-1; D-LAND-4 and D-LAND-20).
+(amended 2026-11-01, review fold: RR2-1; D-LAND-4 and D-LAND-20). Item 14
+restates PR 53's gate by the ruling's item 2, and items 14 to 17 name the
+moved steps the completeness audit added to D-LAND-4; item 16 says
+error_handling.md's rule is DR-1's, where rev 5 credited DD-1, whose head
+leaves that page untouched (amended 2026-11-01, ruling fold: the ruling's
+item 2, AUD-55-11, AUD-55-22, AUD-65-F2, AUD-61-T06, AUD-64-a5, AUD-65-A15,
+AUD-51-E20, AUD-64-a6, AUD-63-11, AUD-63-12, AUD-63-21, AUD-62-S06,
+AUD-62-S09, AUD-62-S12, AUD-62-S23, and the audit's MV2, MV4, MV5 and N6
+notes).
 
 ### B.2 After the twelfth landing
 
@@ -2093,6 +2689,20 @@ fold: RR2-1):
 | 65 | dr-idx | 2.11 | DR-1b | DR-1b, subscripting prefers IndirectIndexWith | R32: subscripting prefers IndirectIndexWith and Core.Slice and Core.Buf write through Ref, with C-b over TP-1; W-109 and W-340 discharged; gap row 79 DONE | none | PR 68 (OV-4) |
 | 68 | ov4 | 2.12 | OV-4 | OV-4, `overload fn` members with default parameter values | W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3 | to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order | Appendix B.2's stamp, then the follow-ons |
 
+`<moved>` also names the steps the completeness audit moved, appended to the
+cell above with "; " (added 2026-11-01, ruling fold: the AUD ids of
+D-LAND-4): PR 51, "to item 16: OP-2's fold of W-197 into W-126"; PR 55,
+"to item 14: the re-reads of the pages SAFE-1 moves and W-148's id"; PR
+61, "to item 15: M's rules for SC-1's hunks"; PR 62, "to item 17: M-VA's
+mutants M19 and M21 and W-284's clauses; to item 16: the nested-pointer
+leg and Doc-M's re-derivation"; PR 64, "to items 15 and 16: its PR 60 and
+PR 57 compositions"; PR 63, "to item 16: error_handling.md's rule, row
+78's DR-0 sentence and W-323's note"; PR 65, "to items 15 and 17: DR-1's
+call.cpp and convert.cpp test; to item 14: SAFE-2's DR-1 note". PR 55's
+A.6 target is its heading as section 2.5's re-stamp commit leaves it,
+`### ST-1 / F-014: str comparison, Core.StringBuf, concatenation (<date>)`
+(amended 2026-11-01, ruling fold: AUD-55-09).
+
 The targets of A.5 and A.6 (each anchor checked unique on the dry run's tree):
 
 | PR | Plan file and anchor (A.5) | Decision-log entry (A.6) |
@@ -2119,21 +2729,44 @@ later PR's records and merge-trees assume the earlier ones.", each:
 
 ```text
  (Superseded <date> by LAND-1's D-LAND-1, fork/land/land1-plan.md: PR 53
-waits for SAFE-3 by its follow-on while the ready PRs land past it, the
-dry run of that plan's section 0.5 having measured that their records and
-merge-trees hold without the waiting PRs.)
+waits for its realignment, SAFE-3 having stopped, by its follow-on while
+the ready PRs land past it, the dry run of that plan's section 0.5 having
+measured that their records and merge-trees hold without the waiting
+PRs.)
 ```
 
-Appended to W-343's `notes`:
+The same mark, after each of the six other lines that restate the
+superseded order (added 2026-11-01, ruling fold: AUD-67-P11): in
+rg1-plan.md, after "so these six gate the land sequence (section 5; amended
+2026-10-28, review fold: A-M5, B-M3)." (:865-867), "PR 60
+is fifth in the order." (:1630), "PR 56 is eighth (the ordinals count RG-1's
+PR; amended 2026-10-28, implementation review: R2-m1)." (:1632-1633), "the
+land sequence stops at PR 56 (amended 2026-10-28, review fold: A-M2)."
+(:1679-1680) and "while PR 53, first in the land sequence, waits on it"
+(:1730-1732), and in RG-1's decision-log entry after "and PR 53 lands first
+after RG-1's PR (fork/register/rg1-plan.md section 5)." (56e2e5bbd
+fork/decision-log.md:376-377), each anchor once on 56e2e5bbd.
+
+After section 6's rejected alternative's last words, "with W-144's
+renumbering as its own records commit." (rg1-plan.md:1699-1707; added
+2026-11-01, ruling fold: AUD-67-P12):
 
 ```text
- LAND-1 (<date>, fork/land/land1-plan.md, R33): landings resume; PR 53 waits for SAFE-3 (Next actions item 14) while the ready PRs land; the land-time notes of PR 51, PR 54 and PR 58 are made by their landings and those of PR 57 and PR 59 by items 16 and 17, the last of them discharging this item (D-LAND-15).
+ (Break condition met <date>: LAND-1 lands the ready PRs before PR 53, fork/land/land1-plan.md D-LAND-1; the renumbering commit is moot, SC-1's W-144 having been renumbered W-151 on PR 60's branch by 2f4ebbf6e.)
 ```
 
-Appended to W-355's `notes` (D-LAND-19):
+Appended to W-343's `notes` (restated 2026-11-01, ruling fold: the ruling's
+item 2):
 
 ```text
- LAND-1 (<date>): at upstream <tip>, check_quotes.sh reports <q> quotes with <qf> failed and check_greps.sh <c> silence checks with <cf> failed over the tables as landed by PR 67 (at 68569d234, 2026-11-01: 273 with 8 failed and 89 with 2 failed); the failing rows, <the FAIL rows' ids as the scripts print them, or "none">, are this item's to re-read, never an edit of an expected count.
+ LAND-1 (<date>, fork/land/land1-plan.md, R33): landings resume; PR 53 waits for its realignment, SAFE-3 having stopped at its plan rev 12 (Next actions item 14), while the ready PRs land; the land-time notes of PR 51, PR 54 and PR 58 are made by their landings and those of PR 57 and PR 59 by items 16 and 17, the last of them discharging this item (D-LAND-15).
+```
+
+Appended to W-355's `notes` at each landing D-LAND-19 names, `<N>` that
+landing's PR (amended 2026-11-01, ruling fold: AUD-67-P28 / AUD-68-15):
+
+```text
+ LAND-1 (<date>, PR <N>'s landing): at upstream <tip>, check_quotes.sh reports <q> quotes with <qf> failed and check_greps.sh <c> silence checks with <cf> failed over the tables as that landing leaves them (at 68569d234, 2026-11-01, as PR 67 landed them: 273 with 8 failed and 89 with 2 failed); the failing rows, <the FAIL rows' ids as the scripts print them, or "none">, are this item's to re-read by its own rules, an L check's expected count included (fork/register/rg1-plan.md:1394-1397); the landing edits no row and no expected count.
 ```
 
 The last placeholder is the scripts' own output, listed as printed. In Next
@@ -2142,8 +2775,11 @@ actions item 6, "is held open as PR 67, first in the land sequence" becomes
 
 ### C.3 PR 51's own texts
 
-RG-1's note "[UA-2, PR 51, after its :6232]" of rg1-plan.md Appendix A.4
-(:2533-2542), verbatim with `<tip>` D-LAND-19's, inserted as a paragraph after
+RG-1's note "[UA-2, PR 51, after its :6232]" of rg1-plan.md Appendix A.4,
+its text :2534-2542 without the locator line :2533, verbatim with `<tip>`
+D-LAND-19's and every "2026-10-27" read "2026-10-28" by D-LAND-15's date
+rule (amended 2026-11-01, ruling fold: AUD-51-E16 / AUD-67-P25), inserted
+as a paragraph after
 the paragraph of UA-2's decision-log entry that ends "with block 9's SL-1
 trigger met for fields, as just recorded." If a FAIL row of D-LAND-19 is one of
 the note's own quotes or checks, "re-checked at <tip>" is followed by "(<the
@@ -2151,7 +2787,10 @@ FAIL rows' ids> fail there; W-355)". OR-5: no item.
 
 ### C.4 PR 52's own texts
 
-OR-5: appended as the last Next actions item (numbered next):
+The "not of record" labels of W-060's and W-061's notes and of section
+W11's arbiter sentence take A.10's mark (added 2026-11-01, ruling fold:
+the audit's P52-22 note). OR-5: appended as the last Next actions item
+(numbered next):
 
 ```text
 W-128: install the cmake/ language modules into the toolchain tree
@@ -2166,9 +2805,56 @@ stands.)
 
 ### C.5 PR 54's own texts
 
-RG-1's note "[EV-1, PR 54, after its :3549]" (rg1-plan.md:2544-2550, with the
-UA-2 lead in place of "...", as A.4 says), after the paragraph of EV-1's entry
-that ends "the pointers are re-placed in that merge. Veto-able." OR-5:
+RG-1's note "[EV-1, PR 54, after its :3549]" (rg1-plan.md:2545-2550, with the
+UA-2 lead in place of "...", as A.4 says, by D-LAND-15's rule; amended
+2026-11-01, ruling fold: AUD-67-P25), after the paragraph of EV-1's entry
+that ends "the pointers are re-placed in that merge. Veto-able."
+
+The state C commit's texts (added 2026-11-01, ruling fold: AUD-54-07 /
+AUD-54-08 / AUD-54-09). In section W11 of fork/gap-analysis.md as the merge
+leaves it (trunk's side, CM-1's text), the sentence from "Evaluator docs
+remain thin" through "is W-062 and stays open." becomes EV-1's state C
+sentence (cb3ef2e74 fork/evaluator/plan.md:1655-1661) with `<date>` for
+its "2026-10-DD":
+
+```text
+The evaluator guides LANDED with EV-1 (fork/evaluator/plan.md, <date>):
+docs/guides/getting_started.md, tutorial.md and evaluator_faq.md beside
+the build-systems guide; W-062 is discharged.
+```
+
+and "(W-062, open)." becomes EV-1's (:1661-1665), verbatim, its label
+taking A.10's mark in the records commit:
+
+```text
+(met at EV-1, W-062 discharged: docs/guides/tutorial.md, its samples
+transcribed into project/evaluator_tutorial_*, ten PASS locally, not of
+record until a hosted run; the fork's build-from-source block is quoted
+from the hosted job, not run).
+```
+
+Appended to W-131's `notes` (section 2.F.2, :1683-1685, from section 0.1
+row 11, :117):
+
+```text
+ EV-1 (state C, <date>, LAND-1): a C-ABI object with no standard library, compiled by g++ 13 or by the system clang++ 21.1.8, links under `carbon link` (fork/evaluator/plan.md section 0.1 row 11); a function using `std::string` compiled by either fails to link (`ld.lld: error: undefined symbol: std::__cxx11::basic_string<...>`), and compiled by `carbon clang` it links.
+```
+
+Appended to W-133's `notes` (:1685-1686):
+
+```text
+ EV-1 (state C, <date>, LAND-1): docs/guides/evaluator_faq.md's entry "The short output flag needs an equals sign" documents the workaround.
+```
+
+In W-002's `notes`, "the C++-library tutorial program waits for PR 52's
+BUILD-SCRIPT channel (SKIP in the meantime, D-EV-12)." becomes (section
+0.2 item 9's state C sentence, :1677-1679):
+
+```text
+answered for the C++-library tutorial program by the BUILD-SCRIPT channel (state C at PR 54's landing, <date>, LAND-1; D-EV-12).
+```
+
+OR-5:
 appended as the last Next actions item:
 
 ```text
@@ -2192,6 +2878,56 @@ for PR 53.)
 
 OR-5: the branch's item 5 is discharged by the landing (the message says so)
 and item 6 is item 14's text.
+
+The re-stamp commit (section 2.5; added 2026-11-01, ruling fold:
+AUD-55-09), by ST-1's item 5 (c3cdecc5d fork/ORCHESTRATION.md:540-547),
+each text found once on the merge (measured on 8beb5d7d5): in
+docs/design/strings.md's status line, "**Fork design (F-014, 2026-10-13):"
+becomes "**Fork design (F-014, <date>):" and "status: ST-1 landed
+2026-10-13.**" becomes "status: ST-1 landed <date>.**"; "> **Fork amendment
+(2026-10-13, F-014)" becomes "> **Fork amendment (<date>, F-014)" in
+docs/design/README.md, docs/design/expressions/arithmetic.md and
+docs/design/interoperability/README.md, once each; W-057's title "ST-1
+(LANDED 2026-10-13): W9c: string equality, concatenation, and owning
+variant" becomes "ST-1 (LANDED <date>): W9c: string equality,
+concatenation, and owning variant"; "W-057 DISCHARGED 2026-10-13" becomes
+"W-057 DISCHARGED <date>" in fork/gap-analysis.md, twice, in row 77 and in
+section W9; and the decision-log heading "### ST-1 / F-014: str comparison,
+Core.StringBuf, concatenation (2026-10-13)" becomes "### ST-1 / F-014: str
+comparison, Core.StringBuf, concatenation (<date>)". Other "2026-10-13"
+dates, the discharge's own records among them, are not landing stamps and
+stay.
+
+The W-148 commit (section 2.5; added 2026-11-01, ruling fold: AUD-55-11),
+by ST-1's item 5 (:548-552) and fork/string/plan.md:2301-2305: each
+`W-148` in docs/design/strings.md, row 77 of fork/gap-analysis.md and
+fork/inventory/work-items.json (measured on 8beb5d7d5: 2, 1 and 6, the
+ledger's in its `source` field, W-057's notes and W-166's notes) is
+replaced by W-148's title as 2407efa74's ledger gives it, in double
+quotes (escaped in the JSON), followed by " (on held PR 53's ledger)":
+
+```text
+"SAFE-1 residue: stage 4 loan checker — loans T1 to T8 over SemIR's block graph (NLL liveness), the Store rule, `bound` per T5 (a)-(e), `exclusive T*` and the reborrow/same-kind-copy clauses, the no-invalidation rule M3 with `Core.Plain` synthesis, `addr self` body checks, M5 payload sub-loans, M8 value-binding loans with the Debug shadow count (`MutationDuringValueBinding`), `Core.Guarded(T)`, `Core.Relocatable`/`Core.Move`/`~x`, `noalias`/`captures(none)` under T8, `--strict-checks=error` as the default"
+```
+
+ST-1's rule names those three files; ST-1's decision-log entry, a dated
+record that names the SAFE-1 branch, keeps the id. G-53 puts the id back
+where this commit wrote the title (item 14).
+
+In row 77, "floor of record 128/0/22 over 150, run 37402970811" becomes
+(ST-1's "re-read at rebase", fork/string/plan.md:2230-2232; added
+2026-11-01, ruling fold: AUD-55-05):
+
+```text
+floor of record 131/0/19 over 150, run 37413300832 (re-read <date> at PR 55's landing, LAND-1: the committed scoreboard.json, D-LAND-17)
+```
+
+PR 55's A.5 Landed paragraph ends with this sentence (added 2026-11-01,
+ruling fold: the audit's S55-01 note):
+
+```text
+The merge of trunk 9d3ca60a3 that this plan's landed notes and the decision-log entry record as refused at the discharge was made on the branch afterwards, by 21307851a, which the landed head c3cdecc5d contains.
+```
 
 ### C.7 PR 58's own texts
 
@@ -2258,9 +2994,66 @@ In row 91, after "the two W2 allowlist entries":
  (PR 55's section and its entry done at PR 58's landing, LAND-1, <date>; PR 53's remains, with PR 56's interop link and SC-1's template-constraints link, D-LAND-14)
 ```
 
-RG-1's note "[DD-1, PR 58, after its :4129]" (rg1-plan.md:2562-2570), after
-the paragraph of DD-1's entry that ends "DR4b-8), the page states both.
-Veto-able." OR-5: DD-1's note, verbatim after item 3's text:
+RG-1's note "[DD-1, PR 58, after its :4129]" (rg1-plan.md:2563-2570, with
+the UA-2 lead in place of "...", `<tip>` D-LAND-19's and the 2026-10-28
+dates, by D-LAND-15's rule; amended 2026-11-01, ruling fold: AUD-58-U8),
+after the paragraph of DD-1's entry that ends "DR4b-8), the page states
+both. Veto-able."
+
+The state-L commit's message (added 2026-11-01, ruling fold: AUD-58-U2 /
+AUD-58-U3):
+
+```text
+Land PR 58: DD-1 state L for PR 51, PR 54 and PR 55
+
+DD-1's state L in part (fork/designdocs/plan.md section 2.13, as
+fork/land/land1-plan.md D-LAND-14 and Appendix C.7 split it by PR): the
+held-PR citations of PR 51, PR 54 and PR 55, the EV-1 sentences, the
+literals.md note, the README disclosure narrowed to PR 53's section and
+the ALLOWLIST entry for arithmetic.md's "Strings" removed.
+
+W2 expected: 2 hits, 1 allowlisted and 1 qualified (the dry run's
+94dba6b21); check_samples.py: <dd>; with --toolchain: <ddt>; the
+nineteen programs on nightly 2026.10.12 (DD-1 section 8 item 1): <ddn>;
+runner.py --self-test: OK; conformance <p>/<f>/<s> over <n>. R31 of the
+nine markdown files (headings, bullets, numbered, rows): <r31>; heading
+sets before and after compared with comm, none added or lost; no
+manufactured heading. prek clean
+(SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest).
+Not run, DD-1's section 8.10 list:
+
+<trailers>
+```
+
+DD-1's section 8.10 Not-run list follows its line, verbatim as fcee90d9b
+fork/designdocs/plan.md section 8.10 gives it (DD-1's section 8 item 1,
+:5592-5607), before the trailers.
+
+The `--self-test` join (section 2.6; added 2026-11-01, ruling fold:
+AUD-58-U1), "Land PR 58: DD-1's checker joins runner.py --self-test
+(D-DD-6)": in fork/conformance/runner.py, beside the
+`evaluator_samples_self_check()` that EV-1's state C commit added, a
+function `designdocs_samples_self_check()` that is the same code with
+fork/designdocs/check_samples.py for EV-1's path and
+`designdocs-samples self-check` for its label, called right after it,
+only when `--self-test` has no filter (EV-1's section 2.E.4, cb3ef2e74
+fork/evaluator/plan.md:1580-1586); it runs DD-1's checker without
+`--toolchain`, so its toolchain-free checks join, as D-DD-6 says.
+
+The records commit's further texts (added 2026-11-01, ruling fold:
+AUD-58-U4 / AUD-58-U6 / AUD-58-U7): in fork/inventory/work-items.json's
+`source`, "W-192..W-194 spare; OP-2 reserves W-196..W-199);" becomes
+"W-192..W-194 spare; OP-2 reserves W-196..W-201);"; W-057's and W-161's
+evidence cites of docs/design/README.md and
+docs/design/interoperability/README.md are re-cited by C.8's re-cite rule
+(:636 to :657 and :303 to :981 on 94dba6b21); and PR 58's A.5 Landed
+paragraph and A.6 sentence each end with:
+
+```text
+D-DD-9's break condition fired, PR 58 landing before SC-1 and PR 53: W-187 stays unused, because the remaining state-L texts are land-time steps of Next actions items 14 to 16 (fork/land/land1-plan.md D-LAND-14) and row 91's mark names them. The sentences that F-016 "stays unallocated" were re-read against trunk: F-016 is OP-2's, minted on held PR 57 (fork/ORCHESTRATION.md), and DD-1 mints no fork design id (D-DD-3).
+```
+
+OR-5: DD-1's note, verbatim after item 3's text:
 
 ```text
     (Corrected 2026-10-14 at the DD-1 discharge: the gate dissolved under
@@ -2372,6 +3165,30 @@ PR 61's A.5 Landed paragraph then ends with this sentence (D-LAND-20; added
 Mutants (the landed notes' item (c); fork/land/land1-plan.md D-LAND-20): re-run <mut>; every other mutant of section 8 item 5 edits a file this landing does not change and keeps its record on 66aa13132; M18 reverts S and waits with it for Next actions item 15.
 ```
 
+R's marker (section 2.7; added 2026-11-01, ruling fold: AUD-61-T20), after
+the merged row's UA-2 clause "... (pattern_match.cpp:2174-2180; W-014), as
+UA-2 recorded." and before TP-1's sentence, the line number re-cited by
+this appendix's re-cite rule (:524 on d03be4456):
+
+```text
+ (TP-1, <date>: the cross-file template lowering `CARBON_FATAL` cited above as lower/handle.cpp:513 is lower/handle.cpp:524 on this tree.)
+```
+
+PR 61's A.5 Landed paragraph and A.6 sentence then end with this sentence
+(added 2026-11-01, ruling fold: AUD-61-T26):
+
+```text
+On the merged tree, L's check_samples.py reported "<dd>" and, with --toolchain, "<ddt>"; the id re-scans before L and before the records commit: <rescan>.
+```
+
+PR 61's and PR 64's A.5 Landed paragraphs end with DR-1's note, as DR-1
+passed it to their records (fee0ef31c fork/direction/plan.md:4285-4296;
+added 2026-11-01, ruling fold: AUD-61-T30):
+
+```text
+DR-1's note, passed to this plan's records (fork/direction/plan.md, DR-1b's re-review round 4): a template `v[0] = 5` on a by-value type with only `IndexWith` CHECK-fails at lower.cpp:48 on CT-1's install, where trunk diagnoses; with a variable subscript, `x[i] = 5` on such a type CHECK-fails there on trunk too, and `s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T` CHECK-fails on trunk and prints `5 5` once DR-1b lands. The landing's review ran the literal form on this landing's install and on the trunk before it (fork/land/land1-plan.md section 2.7).
+```
+
 OR-5: the branch's "TP-1 at land time" item is discharged by the landing (the
 message lists S as item 15's, the VA-1 compositions as item 17's and the
 rename of PR 51's split as PR 64's L-F).
@@ -2416,6 +3233,18 @@ if x19 files W-282 (section 2.8), that clause becomes "W-282 filed
 (<date>, LAND-1: x19 fails on the merged trunk)"; the row is A.3's, whose
 summary (C.1) names W-284's state, and A.3's row replaces the branch's
 "W-284 held until M-VA lands; W-282 unused" whole.
+
+Two departures from SV-1's words, recorded (R27; added 2026-11-01, ruling
+fold: the audit's S15 and S16 notes): SV-1's item (g) re-quotes the count
+"into" W-011's note and the entry's scoreboard sentence, and this appendix
+appends the landed count beside the held-tree one, which stays as SV-1's
+measurement on its own base, so no measured count is overwritten; and
+row 68's sentence ends with "container-measured at its landing" where C.7
+gave its held-state evidence label, because R33 (b) makes the landing's
+scoreboard R9's record. The records commit's message names each probe set
+of section 2.8 not run, each on a line that begins "Not run:" and gives
+the set's name and, in parentheses, its reason; none is expected
+(AUD-62-S04).
 
 ### C.10 PR 64's own texts
 
@@ -2494,6 +3323,9 @@ landing"; the R32 sentence's set amended 2026-11-01, review fold: RR3-2):
 L-F reworded A.2's nested_alias_through_specific comment to name the constants 8 and 2 (item (c)), an autoupdate no-op; L's check_samples.py reported "<dd>" and, with --toolchain, "<ddt>" (item (f)). Mutants (item (c); fork/land/land1-plan.md D-LAND-20): re-run <mut>; every other mutant of section 8 item 5 edits a file this landing does not change and keeps its record on 551a03328; M18 waits with S-VA for Next actions item 17. R32 (the "R32 at landing" note above): F-021's V-3 comparison (sections 0.10 and 1.17) was repeated at upstream <tip>, where its four quotes and E-ARG's CppCallArgTypeNotSupported are at <v3>, and none of the <v3n> upstream commits since c1e83b0b7 to CT-1's files as section 0.10 lists them, toolchain/check/cpp/, docs/design/ and proposals/, each judged as section 0.10 judges (fork/land/land1-plan.md section 2.9), lands a rule for a checked generic's C++ calls that differs from F-021, so F-021 stands.
 ```
 
+PR 64's A.5 Landed paragraph also ends with C.8's DR-1 note sentence
+(section 2.9; added 2026-11-01, ruling fold: AUD-61-T30).
+
 In CT-1's decision-log entry, after the held-state paragraph's last words, "no
 residue is filed and W-312 to W-319 stay unused." (once in the entry at
 e21480b05), C.7's fallback (the landed notes' item (g)) appends (added
@@ -2531,12 +3363,45 @@ In Next actions item 1, "is held open as PR 63 and DR-1b, `IndirectIndexWith`
 (LAND-1), and DR-1b, `IndirectIndexWith` (W-109, stacked on DR-1a), is held
 open as PR 65;".
 
+The notes routed to DR-1 by trunk's weekly upstream check of 2026-10-26
+(bb9fbba9c fork/decision-log.md:6903-6912), appended by this records
+commit, since D-LAND-3 bars the branch commit they were routed to (added
+2026-11-01, ruling fold: AUD-63-20). To W-322's `notes`, DR-1's C.2 text
+(fee0ef31c fork/direction/plan.md:3439-3440) with PR 62's commit:
+
+```text
+ DISCHARGED 2026-10-21 by PR 62's commit 22fe50ff8 (C.6), with its fill f4660e409 (routed to DR-1 by the weekly upstream check of 2026-10-26; written <date> at PR 63's landing, LAND-1).
+```
+
+To W-324's and W-326's `notes`, each:
+
+```text
+ Weekly upstream check 2026-10-26 (V-3a register re-check at upstream 21c825a3f): HOLDS, no break condition fired (fork/decision-log.md, "Weekly upstream check 2026-10-26 (R32 direction register)"; routed to DR-1, written <date> at PR 63's landing, LAND-1).
+```
+
 ### C.12 PR 65's own texts
 
 DR-1's: Appendix C.2's W-340 discharge note (fee0ef31c
 fork/direction/plan.md:3463-3469) with M-b's sha `<merge sha>` and C-b's and
 L-b's from `<land-time shas>`, and C.3's past tense for row 79's W-340
-sentence.
+sentence. Their exact form (added 2026-11-01, ruling fold: AUD-65-B2 /
+AUD-65-B3): in C.2's text, "M-b <sha>" takes `<merge sha>`, "C-b <sha>"
+the first sha of `<land-time shas>`, and in "L-b <sha>" the one slot takes
+the second and third shas of `<land-time shas>`, the rename commit's and
+the refill's, joined by " and "; in row 79, the sentence from "On
+DR-1b's own tree, before M-b and C-b," through "RR4-2-m1)." (measured on
+d3eb55f7a) becomes, its marks kept and one added:
+
+```text
+Before M-b and C-b, DR-1b's own tree rejected a subscript of template-dependent type on a type that implements only `IndexWith` (W-340, discharged at M-b with C-b; added 2026-10-22 by DR-1b's re-review round 4, reworded 2026-10-26 by the records of its reviews, RR4-2-m1; put in the past tense <date> at PR 65's landing, LAND-1).
+```
+
+PR 65's A.5 Landed paragraph ends with these sentences (added 2026-11-01,
+ruling fold: AUD-65-F2 / AUD-65-A11):
+
+```text
+SAFE-2's note for DR-1 (fork/safe/safe2-plan.md section 0.8, on PR 53's unpushed realignment), that `IndirectIndexWith.Ref` takes `bound self` under W-144, assumed that PR 65 lands after PR 53; PR 65 landed first, so the note and its counterexample are Next actions item 14's, for PR 53's landing. Mutants (section 8 item 5; fork/land/land1-plan.md D-LAND-20): C-b's dependence check removed, re-run: <mut>; every other mutant keeps its record on fee0ef31c.
+```
 
 L-b's rename commit (section 2.11; added 2026-11-01, review fold: RR3-1).
 DR-1's plan says the split's comment is reworded at L-b, "its comment says
@@ -2609,6 +3474,18 @@ are among them and listed by id.
 <trailers>
 ```
 
+In Appendix D.6's rows T2.8 and T2.9, a cell that reads "re-read at <tip>"
+is followed, when one of that row's own quotes or checks fails at `<tip>`,
+by " (<the FAIL rows' ids> fail there; W-355)", C.3's form, the ids as the
+scripts print them, and those rows go to W-355's notes by C.2's text with
+this landing's number (097c76473 fork/overload/ov4-plan.md:4104-4106;
+added 2026-11-01, ruling fold: AUD-68-15). PR 68's A.5 Landed paragraph
+ends with this sentence (added 2026-11-01, ruling fold: AUD-68-17):
+
+```text
+Mutants (section 8.8's re-run of section 8.5; fork/land/land1-plan.md D-LAND-20): re-run <mut>; every other mutant edits a file this landing does not change, or a program, and keeps its record on 097c76473.
+```
+
 Appended to W-341's `notes`, replacing D.7's ledger text:
 
 ```text
@@ -2621,7 +3498,9 @@ The decision-log paragraph, the last of OV-4's entry:
 _Landed (<date>, LAND-1, R33):_ merged into trunk as PR 68 by
 <merge sha> (GitHub merged_at <merged_at>), trunk before <trunk before>
 holding PR 67, 51, 52, 54, 55, 58, 61, 62, 64, 63 and 65, by
-fork/overload/ov4-plan.md section 6.2's rules; land-time commits
+fork/land/land1-plan.md D-LAND-5's rules (OR-1 to OR-4 and LG-1), the code
+rules of fork/overload/ov4-plan.md section 6.2 going to the follow-ons;
+land-time commits
 <land-time shas>, L-R checked at upstream <tip> (<c> silence checks with
 <cf> failed, <q> quotes with <qf> failed over the whole tables).
 Container-measured (R33 (b)): gate <g> of <g>, conformance <p>/<f>/<s>
@@ -2637,6 +3516,57 @@ W-341 (OV-4) landed on trunk <date> as PR 68 by merge <merge sha>
 (LAND-1); its residues W-360 to W-363 go to UA-3, after EH-C (W-346);
 SC-1's two arguments and VA-1's pack gate order go to items 15 and 17.
 ```
+
+<!-- google-doc-style-resume -->
+
+## Orchestrator's ruling (2026-11-01, after round 3)
+
+Recorded verbatim (added 2026-11-01, ruling fold: the ruling's item 2); rev
+6 carries it out (the Status line and the rev-6 fold record).
+
+<!-- google-doc-style-ignore -->
+
+> Ruling of the orchestrator under R29, 2026-11-01, on the LAND-1 plan at
+> rev 5 (01f17f2ad), after the third focused re-review round, the cap of
+> three. Round 1 found one BLOCKER and one MAJOR, round 2 one MAJOR and
+> round 3 two MAJORs and no BLOCKER, every finding from round 2 on being a
+> mapping omission: a land-time step that a ready PR's own records
+> prescribe (CT-1's landed notes items and its branch's Next actions item
+> 6, TP-1's mutants, DR-1's L-b comment reword, CT-1's R32 comparison set)
+> that section 2 did not carry or name as moved. The reviewers find these
+> one at a time; the plan needs them found whole before the landing,
+> because an unmapped step is a step the landing silently drops. So: (1)
+> before round 4, a completeness audit, one fresh agent per ready PR,
+> enumerates every land-time step the PR's own records prescribe (its
+> plan's land-time section and its 'Landed notes' or 'land-sequence
+> records commit' paragraphs with every lettered or numbered item, its
+> branch's fork/ORCHESTRATION.md Next actions item for itself and its
+> Branches row's land notes, its decision-log entry's land-time sentences,
+> RG-1's Appendix A.4 note for it, every 'at land time', 'when it lands',
+> 'before PR N lands' or 'the records commit' sentence in its plan, and
+> any other held PR's plan step prescribed at this PR's landing) and
+> checks each against section 2's subsection for the PR, D-LAND-4's moved
+> steps, D-LAND-20 and Appendix B.1's items 14 to 17, reporting each step
+> as MAPPED (where), MOVED (to which follow-on, where) or UNMAPPED, with the
+> cite; (2) the fixer folds every UNMAPPED step into rev 6 with a text or a
+> rule and a dated mark, records this ruling verbatim, and restates PR
+> 53's gate: SAFE-3 stopped at its plan rev 12 (14c1ac8ac, 2026-11-01)
+> under its re-think ruling's break condition (RT1-B1 and RT2-B1, C++ code
+> reaching from an address it receives a Carbon place that the carrier
+> closure does not name), so D-LAND-12's G-53, section 3's G-53 paragraph,
+> Appendix B.1's item 14 and every 'SAFE-3 completes' phrase read 'the
+> realignment of PR 53's branch completed under the orchestrator's
+> re-ruling of the C++ boundary question (fork/safe/safe3-plan.md
+> D-SAFE3-13 and its rev 11 and rev 12 fold records)', the stop itself
+> being stamped on trunk by the orchestrator from safe3-plan.md Appendix
+> D's stop path after B.1's stamp, PR 53's pushed head staying 2407efa74
+> and W-365 and W-366 staying reserved and unfiled; (3) rounds 4 and 5
+> follow, each a fresh focused re-review and a fixer, under the same
+> sign-off rule: a round with no BLOCKER and no MAJOR signs off, its fixer
+> setting the Status line and the Sign-off section. Break condition: a
+> BLOCKER, or a MAJOR left after round 5, stops LAND-1's planning; the
+> orchestrator then re-plans section 2's mapping as a separate audited
+> document before any landing.
 
 <!-- google-doc-style-resume -->
 
@@ -2763,3 +3693,137 @@ and the dry run's scratch commits were read with `git show`, `git diff` and
 
 Checks of this revision: as rev 4's, with R31's counts before the edits,
 after them and after each prek run, recorded in the commit message.
+
+## Review fold record (rev 6, 2026-11-01)
+
+The orchestrator's ruling under R29 after round 3 (recorded verbatim above)
+ordered a completeness audit before round 4. Twelve fresh agents, one per ready
+PR, enumerated 381 land-time steps from each PR's own records and the other held
+plans, against rev 5 (01f17f2ad): 202 MAPPED, 32 MOVED, 72 UNMAPPED and 75
+NOT-A-STEP. Every UNMAPPED step was reproduced first, its cite opened on the
+PR's head (section 6 lists what the rev-6 fixer measured), and folded with a
+text or a rule and a dated mark "(amended 2026-11-01, ruling fold: AUD-67-P11)"
+and the like: "AUD-", the PR number, a hyphen and the audit's step id, with a
+prefix of the id that repeats the PR number dropped (AUD-52-02 is P52-02). No
+UNMAPPED step is rejected; three are folded as "not owed" or "already made" with
+the evidence that shows it, each named in section 2 (AUD-58-U5, AUD-63-13,
+AUD-65-A1), and AUD-58-U1, which the audit measured as a no-op on the heads, is
+folded as a step, because EV-1's state C commit meets D-DD-6's condition.
+MAPPED, MOVED and NOT-A-STEP are as the audit found them, by id; the audit's
+notes on steps it did not count UNMAPPED are folded where they named a defect.
+The ruling's items: item 1, this audit; item 2, every UNMAPPED step folded, the
+ruling recorded, and PR 53's gate restated in D-LAND-12, section 3's G-53, B.1's
+dated paragraph, its safe-row mark, its Next actions lead and item 14, section
+0.2, the Summary, R-4, C.2's marks and W-343's note; item 3, rounds 4 and 5 (the
+Status line). D-LAND-13: W-371 onward stays PR 53's realignment's next id;
+nothing is minted, no F id is minted, and W-357 to W-359, W-364, W-365 and W-366
+are untouched.
+
+| PR | Audit ids | Status | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| 67 | P1 to P10, P13, P15 to P19, P23, P24, P27, P30, P31 | MAPPED | As found; P7's and P9's texts restated by the ruling's item 2 | C.2 |
+| 67 | P14, P20, P21, P22, P26 | MOVED | As found; P26's gate restated | D-LAND-4, D-LAND-12, B.1 |
+| 67 | P32 to P38 | NOT-A-STEP | Accepted: a cite form that stays true, triggers unmet (W-346, UA-3), RG-1's own commits, done at R2 | none |
+| 67 | P11 | UNMAPPED | Folded: the same dated mark on the six lines that restate the superseded order, each anchor once on 56e2e5bbd | 2.1, C.2 |
+| 67 | P12 | UNMAPPED | Folded: a dated mark recording section 6's break condition met and its renumbering commit moot (2f4ebbf6e) | 2.1, C.2 |
+| 67 | P25 | UNMAPPED | Folded: RG-1's date rule makes every "2026-10-27" of the notes read "2026-10-28", the lead naming trunk's heading | D-LAND-15, C.3, C.5, C.7, B.1 items 16 and 17 |
+| 67 | P28 | UNMAPPED | Folded: C.2's W-355 note keeps W-355's own L-check rule and says the landing edits no row or count | 2.1, C.2 |
+| 67 | P29 | UNMAPPED | Folded: G-53's PR 67 note commit spans the ledger, the two TSVs, rg1-plan.md and RG-1's entry, owned by the realignment | D-LAND-12, 3, B.1 item 14 |
+| 51 | E02, E09 to E15, E17, E18, E21 to E24 | MAPPED | As found | 2.2 |
+| 51 | E01, E03 to E08, E19, E25, E26 | NOT-A-STEP | Accepted: branch-side and done, conditional, or other PRs' steps; E07's stale Toolchains list is the orchestrator's | none |
+| 51 | E16 | UNMAPPED | Folded with P25: the note is :2534-2542, without its locator, with the date rule | 2.2, D-LAND-15, C.3 |
+| 51 | E20 | UNMAPPED | Moved: OP-2's W-197 fold into W-126 is G-56/57's, W-197 being on PR 57 only | 2.2, D-LAND-4, 3, B.1 item 16, C.1 |
+| 52 | P52-01, 05, 06, 09 to 17 | MAPPED | As found | 2.3 |
+| 52 | P52-04, 18 to 22 | NOT-A-STEP | Accepted; P52-22's "not of record" notes take A.10's widened mark | A.10, C.4 |
+| 52 | P52-02 | UNMAPPED | Folded: CM-1's delta rule is section 4's PR 52 cell; section 0.3 corrected | 0.3, 2.3, 4 |
+| 52 | P52-03 | UNMAPPED | Folded: step 9 counts duplicate ids, W-126 to W-133 once each (5b6cc69ed measured) | 2.3 |
+| 52 | P52-07, P52-08 | UNMAPPED | Folded: the Option B trigger and the rows' revert stop the landing, the fix CM-1's on its branch; host tools recorded | 2.3 |
+| 54 | EV54-01 to 06, 13 to 15, 19 to 28 | MAPPED | As found | 2.4 |
+| 54 | EV54-29 to 31 | NOT-A-STEP | Accepted; EV54-30 is PR 58's U1, folded there | 2.6 |
+| 54 | EV54-07 | UNMAPPED | Folded: section W11's state C text with `<date>`, its label taking A.10's widened mark | 2.4, C.5, A.10 |
+| 54 | EV54-08, EV54-09 | UNMAPPED | Folded: W-131's, W-133's and W-002's state C texts | 2.4, C.5 |
+| 54 | EV54-10 | UNMAPPED | Folded: the state C commit regenerates the README table | 2.4 |
+| 54 | EV54-11 | UNMAPPED | Folded: R-8's re-pin of the entry's runner.py cites by C.8's rule | 2.4 |
+| 54 | EV54-12 | UNMAPPED | Folded: DL-2, the landed region newest first | D-LAND-5, 2.4 |
+| 54 | EV54-16 to 18 | UNMAPPED | Folded: check_faq.py with both toolchains and the nightly runner pass, a difference stopping the landing | 2.4 |
+| 55 | S55-01, 03, 04, 06 to 08, 10, 13, 14, 19 to 21, 23 | MAPPED | As found; S55-01's "refused" merge recorded in A.5, S55-07's id order and S55-19's "discharged" made accurate | D-LAND-5 LG-1, 2.5, C.6 |
+| 55 | S55-15 to 18 | MOVED | As found | B.1 item 14 |
+| 55 | S55-24 to 32 | NOT-A-STEP | Accepted: other PRs' steps, done on the branch, or upstream merges | none |
+| 55 | S55-02 | UNMAPPED | Folded: DL-2 | D-LAND-5, 2.5 |
+| 55 | S55-05 | UNMAPPED | Folded: row 77's floor of record re-read to PR 51's run 37413300832 | 2.5, C.6 |
+| 55 | S55-09 | UNMAPPED | Folded: the re-stamp commit's eight texts; A.6's anchor follows | 2.5, C.1, C.6 |
+| 55 | S55-11 | UNMAPPED | Folded: the W-148 commit (the title, measured counts), G-53 restoring the id | 2.5, C.6, B.1 item 14 |
+| 55 | S55-12 | UNMAPPED | Folded: D-LAND-21 (measured: only refs on ST-1's own line) | D-LAND-21, 2.5 |
+| 55 | S55-22 | UNMAPPED | Moved: the re-reads SAFE-1's pages need (arithmetic.md :190 to :199 measured) | D-LAND-4, 2.5, B.1 item 14 |
+| 58 | M1 to M18 | MAPPED | As found; M3's placement is DL-2's | D-LAND-5 |
+| 58 | MV1 to MV6 | MOVED | As found; MV2's anchor, MV4's X12 deletion and MV5's templates.md rule now named | B.1 items 14 and 15 |
+| 58 | N1 to N6 | NOT-A-STEP | Accepted; N6's phantom error_handling.md credit corrected to DR-1's rule | 3, B.1 item 16 |
+| 58 | U1 | UNMAPPED | Folded: EV-1's state C commit meets D-DD-6's condition, so DD-1's checker joins `--self-test` | 2.6, C.7 |
+| 58 | U2, U3 | UNMAPPED | Folded: step 6's R31 rule and the state-L message with DD-1's checks; `<ddn>` and `<r31>` defined | D-LAND-6, 2.6, C.7, conventions |
+| 58 | U4 | UNMAPPED | Folded: D-DD-9 fired; W-187 stays unused, A.5 and A.6 say so | D-LAND-14, 2.6, C.7 |
+| 58 | U5 | UNMAPPED | Folded as already made: trunk's paragraph (bb9fbba9c :183-190) records it | 2.6 |
+| 58 | U6 | UNMAPPED | Folded: F-016's re-read sentence in A.5 and A.6 | 2.6, C.7 |
+| 58 | U7 | UNMAPPED | Folded: the ledger source's OP-2 range made W-196..W-201 | 2.6, C.7 |
+| 58 | U8 | UNMAPPED | Folded with P25: lead, `<tip>` and dates | D-LAND-15, C.7 |
+| 61 | T01 to T03, T09 to T14, T16, T17, T19, T22 to T24, T27, T31 | MAPPED | As found; T03's id order recorded | D-LAND-5 LG-1 |
+| 61 | T07, T08 | MOVED | As found | D-LAND-4 |
+| 61 | T32 to T34 | NOT-A-STEP | Accepted | none |
+| 61 | T04 | UNMAPPED | Folded: DL-2 with step 9's check | D-LAND-5, D-LAND-6, 2.7 |
+| 61 | T05 | UNMAPPED | Folded: OR-2 replaces both rows by A.3's | D-LAND-5, 2.7 |
+| 61 | T06 | UNMAPPED | Moved: M's rules for SC-1's hunks to G-60 | D-LAND-4, 2.7, 3, B.1 item 15 |
+| 61 | T15 | UNMAPPED | Folded: D-LAND-21's reading and its collision stop | D-LAND-21, 2.7 |
+| 61 | T18 | UNMAPPED | Folded: step 6's R31 rule | D-LAND-6, 2.7 |
+| 61 | T20, T21 | UNMAPPED | Folded: R's marker text (lower/handle.cpp :513 to :524 measured) and its message rule | 2.7, C.8 |
+| 61 | T25 | UNMAPPED | Folded: A.3 and A.4 replace Appendix E's stamp | 2.7, A.4 |
+| 61 | T26 | UNMAPPED | Folded: `<rescan>` in A.4 to A.6 and C.8's checker sentence | conventions, A.4 to A.6, C.8 |
+| 61 | T28 | UNMAPPED | Folded: A.10's mark widened to ledger notes and prose | A.10, 2.7 |
+| 61 | T29 | UNMAPPED | Folded: D-TP-16's upstream log at `<tip>` with verdicts (44 commits measured, not judged) | 2.7 |
+| 61 | T30 | UNMAPPED | Folded: DR-1's note in PR 61's and PR 64's A.5, and the review's literal-form check, an abort where trunk diagnoses stopping the landing | 2.7, 2.9, C.8, C.10 |
+| 62 | S01 to S03, S07, S13 to S17, S19, S20, S27 to S30 | MAPPED | As found; S15's and S16's departures recorded | C.9 |
+| 62 | S05, S08, S11, S22, S24 to S26 | MOVED | As found; S24 is C.5's evidence only | D-LAND-4 |
+| 62 | S10, S31 to S34 | NOT-A-STEP | Accepted; S10's withdrawal named in OR-5's message | 2.8 |
+| 62 | S04 | UNMAPPED | Folded: the landing replaces the mirrors; the probe sets run or named not run | 2.8, C.9 |
+| 62 | S06 | UNMAPPED | Moved: M19 and M21 with M-VA | D-LAND-4, 3, B.1 item 17, 6 |
+| 62 | S09 | UNMAPPED | Moved: the nested-pointer leg and the conditional refill | D-LAND-4, 3, B.1 item 16 |
+| 62 | S12 | UNMAPPED | Moved: Doc-M re-derived under SV-1's section 1.14 review; C.5's note withdrawn | D-LAND-4, B.1 item 16 |
+| 62 | S18 | UNMAPPED | Folded: x19's path and expected output | 2.8 |
+| 62 | S21 | UNMAPPED | Folded: C.8's re-cite rule, two cites measured unmoved | 2.8 |
+| 62 | S23 | UNMAPPED | Moved: W-284's clauses with M-VA | D-LAND-4, B.1 item 17 |
+| 64 | a1, a3, a4, a7 to a9, c2 to c5, d1, d2, e1, f1 to f6, g1, o1, o2 | MAPPED | As found | 2.9 |
+| 64 | b1, b2, c1 | MOVED | As found | D-LAND-4 |
+| 64 | a2, x1 to x6 | NOT-A-STEP | Accepted; x1 is folded with T30 | 2.9 |
+| 64 | a5, a6 | UNMAPPED | Moved: CT-1's PR 60 and PR 57 compositions | D-LAND-4, 2.9, 3, B.1 items 15 and 16 |
+| 63 | 1, 2, 4 to 6, 10, 14, 16 to 19, 22, 23 | MAPPED | As found | 2.10 |
+| 63 | 3, 8 | MOVED | As found | D-LAND-4 |
+| 63 | 9, 24 to 28 | NOT-A-STEP | Accepted | none |
+| 63 | 7 | UNMAPPED | Folded: numstats in `<refilled>`, 12/17 and 137/137 required | conventions, 2.10 |
+| 63 | 11, 12, 21 | UNMAPPED | Moved: error_handling.md's date-order rule, row 78's sentence, W-323's note | D-LAND-4, 2.10, 3, B.1 item 16 |
+| 63 | 13 | UNMAPPED | Folded as not owed: item 9's own rule, the diffs measured empty | 2.10 |
+| 63 | 15 | UNMAPPED | Folded: D-LAND-21 | D-LAND-21, 2.10 |
+| 63 | 20 | UNMAPPED | Folded: W-322's, W-324's and W-326's notes in the records commit; the (i) stamp made by the merge | 2.10, C.11 |
+| 65 | A2 to A9, A12 to A14, B1, B4, D1, D2, E1, G1 | MAPPED | As found; A3's message aligned to DR-1's | 2.11 |
+| 65 | B5, E2, F1, F3, X1 | NOT-A-STEP | Accepted | none |
+| 65 | A1 | UNMAPPED | Folded as not owed: item 9's rule, as at PR 63 | 2.11 |
+| 65 | A10 | UNMAPPED | Folded: D-LAND-21 | D-LAND-21, 2.11 |
+| 65 | A11 | UNMAPPED | Folded: C-b's mutant in D-LAND-20 | D-LAND-20, 2.11, C.12, 6 |
+| 65 | A15 | UNMAPPED | Moved: DR-1's call.cpp and convert.cpp test to G-59 and G-60 | D-LAND-4, 2.11, 3, B.1 items 15 and 17 |
+| 65 | B2, B3 | UNMAPPED | Folded: the sha slots and row 79's past tense with its marks | 2.11, C.12 |
+| 65 | F2 | UNMAPPED | Moved: SAFE-2's DR-1 note to G-53, recorded in PR 65's A.5 | D-LAND-4, 2.11, B.1 item 14, C.12 |
+| 68 | PR68-01, 02, 05, 06, 08 to 11, 13, 14, 16, 18, 20, 21, 23 to 26, 28 to 30 | MAPPED | As found; PR68-08's C.13 wording corrected | C.13 |
+| 68 | PR68-03, 04, 22 | MOVED | As found | D-LAND-4 |
+| 68 | PR68-07, 12, 27, 31 to 35 | NOT-A-STEP | Accepted | none |
+| 68 | PR68-15 | UNMAPPED | Folded: W-355's note per landing and the rows' own failure clause (two T2.8 quotes fail at 68569d234) | D-LAND-19, 2.12, C.2, C.13 |
+| 68 | PR68-17 | UNMAPPED | Folded: D-LAND-20's PR 68 part, M1, M2 and M8 predicted | D-LAND-20, 2.12, C.13, 6 |
+| 68 | PR68-19 | UNMAPPED | Folded: step 9's ORCHESTRATION re-read at every landing | D-LAND-6, 2.12 |
+
+Section 4's counts hold: the folded steps at the ready landings change no
+program, SKIP or golden (the note under section 4's table). Appendix C
+gives every text a newly mapped records step writes; where a step is a
+rule over measured values (C.8's re-cite rule, A.10's mark, D-LAND-21's
+`<rescan>`), its form is given and its values are measured at the
+landing. R-7 records the risk this audit closes.
+
+Checks of this revision: prek to a fixpoint with the SKIP set of hand-off
+note 6, `uvx rumdl@0.2.58 check`, R31's counts before the edits, after
+them and after each prek run, the scan for forbidden line starts, and the
+model-identifier grep, recorded in the commit message.

@@ -458,18 +458,22 @@ Using a template constraint on a checked-generic binding is an error in 0.1
 Passing a checked-generic argument to a template-constrained binding is
 supported, as upstream decided in [leads issue
 2153](https://github.com/carbon-language/carbon-lang/issues/2153): "We have
-decided to support passing a symbolic constant to a template parameter"
-([overview](overview.md)), and such a call "relies on monomorphization"
-([witness appendix](appendix-witness.md)). The call is an ordinary call in the
-checked generic: the template parameter's value is the checked-generic argument
-converted to the parameter's constraint, so the callee's declared return type,
-and any type that names the parameter, such as `Holder(U)`, is a checked-generic
-type there, and the rest of the checked generic is checked at its definition as
-for any call. Only the argument's structural requirements, which need a concrete
-type, are checked later, in each specific of the checked generic, where the
-argument is concrete, and the template's body is instantiated there for that
-type; an argument type that does not conform is diagnosed when that specific is
-formed, with the requirement it misses. This holds for a function's, a generic
+decided to support passing a symbolic constant to a template parameter, see
+leads issue #2153: Checked generics calling templates, but incorporating it into
+the design is future work" ([overview](overview.md)), and such a call "relies on
+monomorphization" ([witness appendix](appendix-witness.md)); upstream records
+incorporating it into the design as future work, so the mechanism below is the
+fork's (register H9.8). The call is an ordinary call in the checked generic: the
+template parameter's value is the checked-generic argument converted to the
+parameter's constraint, so the callee's declared return type, and any type that
+names the parameter, such as `Holder(U)`, is a checked-generic type there, and
+the rest of the checked generic is checked at its definition as for any call.
+Only the argument's structural requirements, which need a concrete type, are
+checked later, in each specific of the checked generic, where the argument is
+concrete, and the template's body is instantiated there for that type; an
+argument type that does not conform is diagnosed when that specific is formed,
+with the requirement it misses. The structural check in each specific is SC-1's;
+upstream's design is silent on it (H9.8). This holds for a function's, a generic
 class's and a generic interface's `template` parameter alike, and for a
 template's own call made while one of its specifics is formed. An overload set
 is resolved at the checked generic's definition by its first matching member,
@@ -496,14 +500,14 @@ is why a template constraint constrains only a `template` binding.
 > fork's rulebook R32 (d), W-139, which SC-1 realigns on this branch before it
 > lands; this paragraph is rewritten with it.
 
-> **SC-1 note (2026-11-02).** W-139 realigned: the definition-time rejection the
-> note above describes is replaced by the check in each specific that the
-> paragraph above it states. The call itself is upstream's ordinary call with a
-> symbolic argument; the structural check in each specific is the
-> monomorphization upstream decided, applied to the fork's structural
-> requirements, which upstream's toolchain does not have. The `require` of an
-> impl in a generic class keeps D-SC-6's rejection; leads issue 2153 does not
-> decide it (W-373).
+> **SC-1 note (2026-11-02).** W-139 realigned: the definition-time rejection of
+> a call's checked-symbolic argument that the RG-1 note describes is replaced by
+> the check in each specific that the paragraph above it states. The call itself
+> is upstream's ordinary call with a symbolic argument; the structural check in
+> each specific is the monomorphization upstream decided, applied to the fork's
+> structural requirements, which upstream's toolchain does not have. The
+> `require` of an impl in a generic class keeps D-SC-6's rejection; leads issue
+> 2153 does not decide it (W-373).
 
 One further use of plain named constraints does not carry over cleanly: a type
 may [`impl` a plain named constraint](details.md#named-constraints), but an

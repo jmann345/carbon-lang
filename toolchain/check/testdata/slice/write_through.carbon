@@ -115,15 +115,15 @@ final impl V as Core.IndexWith(i64) where .ElementType = i32 {
   fn At(self, i: i64) -> i32 { return self.x + (i as i32); }
 }
 
-// --- fail_todo_template_index_with_only.carbon
+// --- template_index_with_only.carbon
 library "[[@TEST_NAME]]";
 
-// The current behavior, pinned: for a template-dependent operand, the
-// non-diagnosing `IndirectIndexWith` attempt is deferred to monomorphization,
-// so the `IndexWith` fallback does not run, and the deferred lookup's failure
-// there is an error. `V` implements only `IndexWith(i64)`, so `G(V)` is
-// rejected. Choosing between the two interfaces per specific, when the
-// template is instantiated, makes this valid.
+// For a template-dependent operand, the choice between `IndirectIndexWith`
+// and `IndexWith` is made per specific, when the template is instantiated.
+// `V` implements only `IndexWith(i64)`, so `G(V)` uses `IndexWith` and is
+// valid (W-340, discharged). Before the choice was made per specific, the
+// deferred `IndirectIndexWith` lookup failed at monomorphization and
+// rejected `G(V)`.
 fn G[template T: type](x: T, i: i64) -> i32 {
   return x[i];
 }

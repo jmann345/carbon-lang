@@ -5517,7 +5517,7 @@ generic/template/index.carbon's split `index_class_with_index_with`, 1981 of
 operators/overloaded/string_indexing, index_with_prelude, fail_invalid_base and
 fail_non_tuple_access among its 363 failures, 1619 of 1982), its second, the
 `IndexWith` fallback removed, applied with TC-2's `loc_id` (the full gate aborts
-at lower/handle.cpp:406's CARBON_FATAL; alone, lower operators/string_indexing
+at lower/handle.cpp:407's CARBON_FATAL; alone, lower operators/string_indexing
 aborts there and check operators/overloaded/string_indexing and
 index_with_prelude fail; the record's one-file-at-a-time totals not run: the
 abort), its third, 230227264's call.cpp line reverted (230227264's CARBON_CHECK

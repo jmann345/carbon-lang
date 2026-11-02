@@ -5358,7 +5358,10 @@ landing's records commit (D-LAND-9 as amended by the first):
 > is the check's record, and a miss is STOPPED.
 >
 > (21) At PR 65's landing (stage 11), on review round 1's MINOR finding RV65-1,
-> D-LAND-20's exemption of DR-1's other mutants: (1) The measurement, before the
+> D-LAND-20's exemption of DR-1's other mutants: (<PRDIR> below is
+> <S>/land1/impl/pr65, the landing's scratch directory, `<S>` being the plan's
+> name for the scratchpad; defined 2026-11-02 by ruling (22)) (1) The
+> measurement, before the
 > edits, by D-LAND-20's method on the landing's merged source at 180cd473f (the
 > worktree's toolchain/ and core/ have no uncommitted change; confirm it first):
 > with the review's scripts copied from <PRDIR>/review1/mutants/
@@ -5392,7 +5395,9 @@ landing's records commit (D-LAND-9 as amended by the first):
 > passed of 1982 with check slice/write_through failing at its
 > `literal_subscript_literal_impl` split and nothing else. The review's values
 > were ctl 1982, m1 1619 passed and 363 failed, m2's abort at
-> lower/handle.cpp:406 (the CARBON_FATAL at :406-407), m3's at convert.cpp:3413,
+> lower/handle.cpp:406 (the CARBON_FATAL at :406-407) (read :407, the line the
+> abort reports, as DR-1's records read theirs; corrected 2026-11-02, ruling
+> (22)), m3's at convert.cpp:3413,
 > m4 1981 passed; a different value is reported in `difference` and is STOPPED.
 > (2) The edits, each verbatim, the slots <p1>, <f1>, <l2>, <l3> and <p4> filled
 > with item (1)'s values: (a) in fork/land/land1-plan.md D-LAND-20, the sentence
@@ -5465,7 +5470,32 @@ landing's records commit (D-LAND-9 as amended by the first):
 > lower/handle.cpp:<l2>; the third's at convert.cpp:<l3>; the fourth <p4>
 > of 1982.", its slots filled. Measured at the landing (ruling (21)):
 > control 1982 of 1982; the first 1619 of 1982 with 363 failures; the second's
-> abort at lower/handle.cpp:406; the third's at convert.cpp:3413; the
+> abort at lower/handle.cpp:407; the third's at convert.cpp:3413; the
 > fourth 1981 of 1982.
+>
+> (22) After PR 65's landing (stage 11), on the fold check's MINOR findings
+> FC65-1 and FC65-2 in ruling (21)'s text, recorded by 3a9be5d4e as written:
+> (1) FC65-1, one convention for an abort's line: the line the abort message
+> reports, which DR-1's records use (fee0ef31c fork/direction/plan.md:2646 and
+> :2647 cite :405 and :2838, the reported lines of the CARBON_FATAL spanning
+> :404-405 and the CARBON_CHECK spanning :2836-2838 at fee0ef31c). On trunk's
+> tree the CARBON_FATAL spans toolchain/lower/handle.cpp:406-407 and reports
+> :407 (logs/step7-mutants/m2-gate.log: "FATAL failure at
+> /home/user/carbon-trunk/toolchain/lower/handle.cpp:407"), and the CARBON_CHECK
+> spans toolchain/check/convert.cpp:3411-3413 and reports :3413, so <l3> = 3413
+> already follows the convention and <l2> becomes 407. Edits, verbatim: (a) in
+> fork/direction/plan.md, PR 65's A.5 Landed paragraph, "at
+> lower/handle.cpp:406's CARBON_FATAL" becomes "at lower/handle.cpp:407's
+> CARBON_FATAL"; (b) in fork/land/land1-plan.md paragraph (21), its last
+> sentence's "the second's abort at lower/handle.cpp:406;" becomes "the second's
+> abort at lower/handle.cpp:407;", and in its item (1) the words "m2's abort at
+> lower/handle.cpp:406 (the CARBON_FATAL at :406-407)" gain, directly after
+> them, " (read :407, the line the abort reports, as DR-1's records read theirs;
+> corrected 2026-11-02, ruling (22))". (2) FC65-2, the shorthand: in
+> fork/land/land1-plan.md paragraph (21), directly after its introduction's
+> words "D-LAND-20's exemption of DR-1's other mutants:" the words " (<PRDIR>
+> below is <S>/land1/impl/pr65, the landing's scratch directory, `<S>` being the
+> plan's name for the scratchpad; defined 2026-11-02 by ruling (22))" are
+> inserted.
 
 <!-- google-doc-style-resume -->

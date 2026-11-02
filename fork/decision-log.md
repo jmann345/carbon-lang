@@ -4736,6 +4736,46 @@ fold: RR4-1-B1 / RR5-1-M1 / RR6-1-M1 / RR6r2-M1 / RR7r2-M1 / RR8-1-M1), W-256
 (q07c's template crash traded for the miscompile the same code has without
 templates), and the held state (the four discharges wait for land time).
 
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 61 by 35fb2aca9
+(GitHub merged_at 2026-11-02T09:04:22Z); container-measured (R33 (b)): gate 1968
+of 1968, conformance 177/0/15 over 192; id re-scans: W-250 to W-274 and W-295 to
+W-298 at the re-scan before L: origin/claude/carbon-fork-0-1-tp (66aa13132),
+trunk (35fb2aca9) and origin/claude/carbon-fork-0-1-ct (551a03328), which
+contain 66aa13132, claude/carbon-fork-0-1-tp, origin/pr/61 and the
+/home/user/carbon-tp worktree (5661a35c8, an ancestor of 66aa13132), and
+claude/carbon-fork-0-1-ct, origin/pr/64 and the /home/user/carbon-ct worktree
+(4a3220c11, a stacked child's lagging copy, a descendant of 5661a35c8 and an
+ancestor of 551a03328); W-250 to W-274 and W-295 to W-298 at the re-scan before
+the records commit's ledger edit: the same refs, trunk at 3f229ecdf; W-299 and
+F-019 at both: none (F-019 named only as plan text); moved to follow-ons: to
+item 15: S and its mutant M18; to item 17: the VA-1 compositions; to item 15:
+M's rules for SC-1's hunks. F6 kept PR 51's split's name,
+fail_todo_unformed_dependent_var, because its shape still fails on TP-1's
+toolchain (551a03328 fork/cpp-templates/plan.md (held PR 64) C-2 and H-1); PR
+64's L-F renames it. L's templates.md hunk 9 context line and the X20 and X23
+comments follow PR 58's state-L text, which removed "held PR 51" from the lines
+TP-1's Appendix C quotes (fork/land/land1-plan.md Appendix C.8). On the merged
+tree, L's check_samples.py reported "check_samples: 19 program blocks, 70
+fixtures, 2 W2 hits (1 allowlisted, 1 qualified); 0 errors" and, with
+--toolchain, "check_samples: 19 program blocks, 70 fixtures (compiled), 2 W2
+hits (1 allowlisted, 1 qualified); 0 errors"; the id re-scans before L and
+before the records commit: W-250 to W-274 and W-295 to W-298 at the re-scan
+before L: origin/claude/carbon-fork-0-1-tp (66aa13132), trunk (35fb2aca9) and
+origin/claude/carbon-fork-0-1-ct (551a03328), which contain 66aa13132,
+claude/carbon-fork-0-1-tp, origin/pr/61 and the /home/user/carbon-tp worktree
+(5661a35c8, an ancestor of 66aa13132), and claude/carbon-fork-0-1-ct,
+origin/pr/64 and the /home/user/carbon-ct worktree (4a3220c11, a stacked child's
+lagging copy, a descendant of 5661a35c8 and an ancestor of 551a03328); W-250 to
+W-274 and W-295 to W-298 at the re-scan before the records commit's ledger edit:
+the same refs, trunk at 3f229ecdf; W-299 and F-019 at both: none (F-019 named
+only as plan text). L's document-review fold a11a5ea2f (review round 1's finding
+RB61-2; TP-1's section 2.9, which makes a fold of that review a fix commit of L;
+fork/land/land1-plan.md, Landing-time rulings, paragraph (12), item (4a)) adds
+to templates.md's W-259 bullet the sentence C.8's W-259 note states, which
+TP-1's Appendix C predates (D-LAND-22), so the landed page differs from Appendix
+C there as well as where the sentence on L above says; check_samples.py, with
+and without --toolchain, reported on it the two outputs quoted above.
+
 ### DD-1: design docs without placeholders (2026-10-14)
 
 Milestone goals "Language design components are documented, cohesive, and

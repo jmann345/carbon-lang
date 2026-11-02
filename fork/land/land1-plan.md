@@ -826,7 +826,13 @@ implementer by hand, the saved files in `$X` being the reference (amended
     drop trunk's stale row (66aa13132 fork/ORCHESTRATION.md:1101-1103,
     551a03328 :1231-1233; amended 2026-11-01, ruling fold: AUD-61-T05).
 -   OR-3: dated paragraphs inserted on both sides are both kept, in date
-    order, the PR's first on the same date (it predates trunk's stamp of it).
+    order, the PR's first on the same date (it predates trunk's stamp of it);
+    each side's inserted block of dated paragraphs is kept whole and placed by
+    its first paragraph's date, the PR's block first on the same date, as the
+    dry run's merges place them (amended 2026-11-02, PR 61's landing, review
+    round 1: RB61-3; ruling (12): PR 61's block, first dated 2026-10-14,
+    precedes trunk's paragraphs of 2026-10-15 to 2026-10-21, and PR 64's and
+    PR 65's blocks are placed the same way).
 -   OR-4: a region both sides edited takes trunk's side (the newer
     orchestrator text); the region report lists the PR side's words trunk
     lacks.
@@ -1372,9 +1378,14 @@ fork/direction/plan.md:2773-2774, :5171, :5472-5473). The implementer runs
 each with the plan's own command over every origin ref, local branch and
 worktree after `git fetch origin`, at the points the plan names. Expected:
 each of the PR's own ids is filed only on a ref on the PR's own line, one
-that contains the PR's head or that the head contains (either way by
-`git merge-base --is-ancestor`: its branch, a lagging local copy, a stacked
-child's branch, the landing's trunk), and named elsewhere only as plan
+that contains the PR's head or that the head contains, or that descends from
+a commit the head contains which already files those ids and is an ancestor
+of a ref that contains the head (each by `git merge-base --is-ancestor`: its
+branch, a lagging local copy, a stacked child's branch or that child's lagging
+copy, the landing's trunk; amended 2026-11-02, the implementer's stop at PR
+61's re-scan before L, where CT-1's lagging local copy 4a3220c11, a descendant
+of 5661a35c8 and an ancestor of 551a03328, filed TP-1's ids; the orchestrator's
+ruling under R29), and named elsewhere only as plan
 text; read
 literally after step 5, TP-1's rule would re-allocate, because trunk then
 holds TP-1's ids, and this reading replaces it. Any other ref that files one
@@ -1801,8 +1812,11 @@ paragraph, whose `<rescan>` holds the re-scans' outcomes, because its
 (AUD-61-T25); the landed notes and the decision-log entry record the
 merged checker runs and both re-scans' outcomes by C.8's sentence for A.5
 and A.6 (AUD-61-T26); TP-1's item (h), the "not of record" phrases replaced
-once Actions returns (:7935-7936), is A.10's mark at this landing, R33 (b)
-making the container scoreboard R9's record now (AUD-61-T28); D-TP-16's
+once Actions returns (:7935-7936), is A.10's mark at this landing, which
+section 2.7 item 13's D makes by replacing the notes, so that the search finds
+no label and no mark is written (amended 2026-11-02, review round 1: RV61A-2,
+RB61-1; ruling (12)), R33 (b) making the container scoreboard R9's record now
+(AUD-61-T28); D-TP-16's
 break condition, an upstream template commit subsuming one of C1 to C5
 before TP-1's merge (:3474-3478), is checked at D-LAND-19's `<tip>`:
 `git log --oneline c1e83b0b7..<tip> --` over TP-1's 32 non-testdata files
@@ -2685,9 +2699,14 @@ text. The gap-row check of D-LAND-6 step 9 runs after the mark.
 The same label outside the rows (added 2026-11-01, ruling fold: AUD-61-T28 /
 AUD-54-07 and the audit's P52-22 note): R33 (b) makes the container
 scoreboard R9's record at every landing, so a "not of record" label the
-landing brings into a ledger item's `notes` or a prose section of
-fork/gap-analysis.md, found by `git diff <trunk before> HEAD --
-fork/inventory/work-items.json fork/gap-analysis.md` and a search of the
+landing brings into a ledger item's `notes`, a prose section of
+fork/gap-analysis.md or fork/ORCHESTRATION.md's Scoreboard section
+(amended 2026-11-02, PR 61's landing, review round 1: RB61-1; ruling (12):
+TP-1's "Expected at TP-1, NOT of record" paragraph, which the merge places under
+the Scoreboard heading below A.9's paragraph, takes the mark after its first
+sentence), found by `git diff <trunk before> HEAD --
+fork/inventory/work-items.json fork/gap-analysis.md fork/ORCHESTRATION.md` and
+a search of the
 added text for "not of record" in any case, a label broken across two
 lines included, takes the mark too: appended to the item's `notes` with a
 leading space, or after the sentence that holds the label in the prose,
@@ -2703,7 +2722,13 @@ W-061's notes and section W11's arbiter sentence "PASS locally on
 nightly 2026.10.12, not of record until a hosted run"; at PR 54 W-062's
 notes and
 section W11's state C sentence, which the state C commit writes; at PR 55
-W-057's notes; at PR 58 W-020's and W-065's notes; at PR 61 W-014's notes;
+W-057's notes; at PR 58 W-020's and W-065's notes; at PR 61 W-014's notes,
+which take no mark (amended 2026-11-02, PR 61's landing, review round 1:
+RV61A-2, RB61-1; ruling (12)): section 2.7 item 13's D replaces them by
+Appendix E's land-time text before step 9's search, which then finds no label
+(`git diff d13f47ea7 -- fork/inventory/work-items.json fork/gap-analysis.md |
+grep '^+' | grep -ciE 'not\s+of\s+record'` gives 0 on the records tree), and
+TP-1's item (h) is made by that replacement;
 at PR 62 W-011's notes; at PR 65 W-109's notes; none at PR 67, 51, 64, 63
 and 68, and trunk's own W-321 label is not a landing's. The plans' own steps for
 these labels, ST-1's and TP-1's "once Actions returns ... a records
@@ -3485,7 +3510,21 @@ landing's tree after the refill (read by `git show` of HEAD and the cite's
 path); an item absent from the merged
 ledger or closed is left as it is. A cite whose code is not found on that
 tree stops the landing (D-LAND-9's break condition), and evidence in a file
-TP-1 does not change keeps its lines, as the landed notes say.
+TP-1 does not change keeps its lines, as the landed notes say. The rule extends
+(added 2026-11-02, review round 2: RV61A2-1; ruling (13)) to every other
+present-tense cite in W-014's `evidence` and in the merged row 54 that points
+into a file the landing changes outside testdata (`git diff --name-only
+d13f47ea7 HEAD -- toolchain core ':!*/testdata/*'`): W-014's evidence cite
+toolchain/lower/handle.cpp:513 is :524 on the landing's tree; the merged row's
+DD-1 cite toolchain/lower/handle.cpp:494-505, a row's text being kept verbatim,
+takes a marker in R's marker's form after DD-1's parenthetical, "(TP-1,
+2026-11-02: the same-file SpliceInst lowering cited above as
+toolchain/lower/handle.cpp:494-505 is toolchain/lower/handle.cpp:500-516 on this
+tree.)"; a dated measurement records the tree it names and stays as measured:
+W-014's evidence cites import_ref.cpp:5087 with the nightly's :4875,
+lower/aggregate.cpp:67, inst.h:249 and function_context.cpp:223 (DD-1's probes
+of 2026-10-13 and 2026-10-14) and the UA-2 entry of 2026-10-06 in W-014's
+`notes`, re-cited to upstream c1e83b0b7, with lower/handle.cpp:513.
 
 TP-1's decision-log entry (66aa13132 fork/decision-log.md:4147-4149) and its
 plan (:5212-5214) state F6's rename as planned, and its Appendix C quotes
@@ -3516,6 +3555,22 @@ this appendix's re-cite rule (:524 on d03be4456):
  (TP-1, <date>: the cross-file template lowering `CARBON_FATAL` cited above as lower/handle.cpp:513 is lower/handle.cpp:524 on this tree.)
 ```
 
+R's TP-1 sentence (section 2.8's full-row block, 66aa13132
+fork/templates/plan.md:4993) carries two clauses of the held-state sentence
+(66aa13132 fork/gap-analysis.md:54) that the full-row block never took
+(added 2026-11-02, PR 61's landing, review round 1: RV61A-1; ruling (12)): after
+"(proposal 2200; W-183, discharged)," the clause "a class template's literal
+whose field has a template-dependent array bound or a produced type such as
+`T.Item` converts on instantiation, taking the defaults of the fields it omits,"
+and, before "; status unchanged", the clause ", and a `match`, a pattern
+condition or `let` ... `else` on a template-dependent choice value (a generic
+choice applied to a template parameter, or a choice declared in a class
+template) or on `Core.Int(N)` for a template `N` is checked in the definition
+and runs (round 10 of the focused re-review of the fold; this clause and the
+class template literal's are the held-state sentence's, carried into the
+land-time sentence at LAND-1's landing, 2026-11-02, fork/land/land1-plan.md
+ruling (12))".
+
 PR 61's A.5 Landed paragraph and A.6 sentence then end with this sentence
 (added 2026-11-01, ruling fold: AUD-61-T26):
 
@@ -3529,6 +3584,15 @@ added 2026-11-01, ruling fold: AUD-61-T30):
 
 ```text
 DR-1's note, passed to this plan's records (fork/direction/plan.md, DR-1b's re-review round 4): a template `v[0] = 5` on a by-value type with only `IndexWith` CHECK-fails at lower.cpp:48 on CT-1's install, where trunk diagnoses; with a variable subscript, `x[i] = 5` on such a type CHECK-fails there on trunk too, and `s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T` CHECK-fails on trunk and prints `5 5` once DR-1b lands. The landing's review compiled the literal and variable forms, the same assignment outside a template and a template's literal read on this landing's install, with the results fork/land/land1-plan.md D-LAND-22 gives: the abort is W-259's, an assignment whose template-dependent left operand is not checked on instantiation, which trunk reaches with the variable form; trunk rejected the literal form only because it rejected every literal subscript of such a type in a template, the read included.
+```
+
+PR 61's A.5 Landed paragraph and A.6 sentence then end with this sentence (added
+2026-11-02, review round 2: RB61R2-1; ruling (13)), the landed notes' item (e)
+(66aa13132 fork/templates/plan.md:7919-7936) asking for the checker runs on L's
+fold commits too:
+
+```text
+L's document-review fold a11a5ea2f (review round 1's finding RB61-2; TP-1's section 2.9, which makes a fold of that review a fix commit of L; fork/land/land1-plan.md, Landing-time rulings, paragraph (12), item (4a)) adds to templates.md's W-259 bullet the sentence C.8's W-259 note states, which TP-1's Appendix C predates (D-LAND-22), so the landed page differs from Appendix C there as well as where the sentence on L above says; check_samples.py, with and without --toolchain, reported on it the two outputs quoted above.
 ```
 
 The note's last sentence is amended 2026-11-01 (review fold: RR4-1).
@@ -4711,5 +4775,247 @@ landing's records commit (D-LAND-9 as amended by the first):
 > pre-review ruling, is inserted between (8) and (10) by its ruling folder
 > after this implementer); these plan edits are made with the records edits at
 > step 9, fork/land/land1-plan.md among the records files.
+>
+> (11) At PR 61's landing (stage 7), on the implementer's stop at step 6, the id
+> re-scan before L: (1) in D-LAND-21, "one that contains the PR's head or that
+> the head contains (either way by `git merge-base --is-ancestor`: its branch, a
+> lagging local copy, a stacked child's branch, the landing's trunk)" becomes
+> "one that contains the PR's head or that the head contains, or that descends
+> from a commit the head contains which already files those ids and is an
+> ancestor of a ref that contains the head (each by
+> `git merge-base --is-ancestor`: its branch, a lagging local copy, a stacked
+> child's branch or that child's lagging copy, the landing's trunk;
+> amended 2026-11-02, the implementer's stop at PR 61's re-scan before L, where
+> CT-1's lagging local copy 4a3220c11, a descendant of 5661a35c8 and an ancestor
+> of 551a03328, filed TP-1's ids; the orchestrator's ruling under R29)"; (2) the
+> re-scan before L is re-run with the same commands under the widened test
+> (bin/tp1_rescan.sh, its collision test extended to the third case: a ref off
+> both directions is a stacked child's lagging copy when some commit the head
+> contains that files the ids is its ancestor and some ref that contains the
+> head is its descendant), logged as logs/step6-rescan-beforeL-ruled.log, and
+> must report the three places as a stacked child's lagging copy,
+> naming 5661a35c8 and 551a03328, with no collision; its `<rescan>` outcome
+> names them so; the second re-scan, before the records commit's ledger edit,
+> runs under the same test.
+>
+> (12) At PR 61's landing (stage 7), on review round 1's MINOR findings RV61A-1,
+> RV61A-2, RB61-1, RB61-2 and RB61-3: (1) RV61A-1. TP-1's §2.8 full-row block
+> (66aa13132 fork/templates/plan.md:4993) never took two clauses that its
+> held-state sentence gained later (66aa13132 fork/gap-analysis.md:54), so the
+> land-time row says less than TP-1 delivers; the row carries both clauses,
+> verbatim from the held-state sentence but for the closing parenthetical. (1a)
+> In the records edit of fork/gap-analysis.md (row 54, "Generics: Integrated
+> templates"), the TP-1 sentence's text "(proposal 2200; W-183, discharged), and
+> `var y: T;` resolves its default on instantiation (W-127, discharged); status
+> unchanged." becomes "(proposal 2200; W-183, discharged), a class template's
+> literal whose field has a template-dependent array bound or a produced type
+> such as `T.Item` converts on instantiation, taking the defaults of the fields
+> it omits, and `var y: T;` resolves its default on instantiation (W-127,
+> discharged), and a `match`, a pattern condition or `let` ... `else` on a
+> template-dependent choice value (a generic choice applied to a template
+> parameter, or a choice declared in a class template) or on `Core.Int(N)` for a
+> template `N` is checked in the definition and runs (round 10 of the focused
+> re-review of the fold; this clause and the class template literal's are the
+> held-state sentence's, carried into the land-time sentence at LAND-1's
+> landing, 2026-11-02, fork/land/land1-plan.md ruling (12)); status unchanged."
+> (1b) In fork/land/land1-plan.md, Appendix C.8, directly before the paragraph
+> that begins "PR 61's A.5 Landed paragraph and A.6 sentence then end with this
+> sentence", a new paragraph: "R's TP-1 sentence (section 2.8's full-row
+> block, 66aa13132 fork/templates/plan.md:4993) carries two clauses of the
+> held-state sentence (66aa13132 fork/gap-analysis.md:54) that the full-row
+> block never took (added 2026-11-02, PR 61's landing, review round 1: RV61A-1;
+> ruling (12)): after "(proposal 2200; W-183, discharged)," the clause "a class
+> template's literal whose field has a template-dependent array bound or a
+> produced type such as `T.Item` converts on instantiation, taking the defaults
+> of the fields it omits," and, before "; status unchanged", the clause ", and a
+> `match`, a pattern condition or `let` ... `else` on a template-dependent
+> choice value (a generic choice applied to a template parameter, or a choice
+> declared in a class template) or on `Core.Int(N)` for a template `N` is
+> checked in the definition and runs (round 10 of the focused re-review of the
+> fold; this clause and the class template literal's are the held-state
+> sentence's, carried into the land-time sentence at LAND-1's
+> landing, 2026-11-02, fork/land/land1-plan.md ruling (12))"." (1c) In
+> fork/templates/plan.md, §2.8, directly after the paragraph that ends "a
+> generic; and W-271 at the end of the residue.", a new paragraph: "At the
+> landing (amended 2026-11-02, LAND-1, PR 61's landing, review round 1:
+> RV61A-1), the full-row block's TP-1 sentence carries the two clauses the
+> held-state sentence gained after the block was written and the block never
+> took, a class template's literal whose field has a template-dependent array
+> bound or a produced type such as `T.Item` converting on instantiation, taking
+> the defaults of the fields it omits, and a `match`, a pattern condition or
+> `let` ... `else` on a template-dependent choice value or on `Core.Int(N)` for
+> a template `N` checked in the definition and running, verbatim from the
+> held-state sentence, by the orchestrator's ruling under R29
+> (fork/land/land1-plan.md, Landing-time rulings, paragraph (12))." (2) RV61A-2
+> and RB61-1's first part. A.10's operative rule is step 9's search of the added
+> text; its list of targets is a measurement on the dry run's merge, which did
+> not simulate D. At PR 61, section 2.7 item 13's D replaces W-014's notes by
+> Appendix E's land-time text before the search, which then finds no label, so
+> no mark is written, and TP-1's item (h) is made by that replacement. (2a) In
+> fork/land/land1-plan.md, A.10, "at PR 61 W-014's notes;" becomes "at PR 61
+> W-014's notes, which take no mark (amended 2026-11-02, PR 61's landing, review
+> round 1: RV61A-2, RB61-1; ruling (12)): section 2.7 item 13's D replaces them
+> by Appendix E's land-time text before step 9's search, which then finds no
+> label (`git diff d13f47ea7 -- fork/inventory/work-items.json
+> fork/gap-analysis.md | grep '^+' | grep -ciE 'not\s+of\s+record'` gives 0 on
+> the records tree), and TP-1's item (h) is made by that replacement;". (2b) In
+> fork/land/land1-plan.md, section 2.7, "is A.10's mark at this landing, R33 (b)
+> making the container scoreboard R9's record now (AUD-61-T28);" becomes "is
+> A.10's mark at this landing, which section 2.7 item 13's D makes by replacing
+> the notes, so that the search finds no label and no mark is written
+> (amended 2026-11-02, review round 1: RV61A-2, RB61-1; ruling (12)), R33 (b)
+> making the container scoreboard R9's record now (AUD-61-T28);". (2c) The
+> records commit's message states that A.10's PR 61 entry takes no mark, for
+> this reason, and quotes the zero-count command above with its output. (3)
+> RB61-1's second part. The merge brings TP-1's paragraph "Expected at TP-1, NOT
+> of record: 138 PASS / 22 SKIP / 0 FAIL over 160, 48/56 bullets ..." into
+> fork/ORCHESTRATION.md's Scoreboard section, under A.9's paragraph, and neither
+> A.9 nor A.10 covers it; it takes A.10's prose mark. (3a) In the records edit
+> of fork/ORCHESTRATION.md, directly after that paragraph's first sentence,
+> which ends "(the hosted conformance run 37402970811 on 606a99c5a).", the text
+> " (LAND-1, 2026-11-02: the "not of record" label above is superseded by
+> PR 61's landing's container-measured scoreboard, R33 (b), 177/0/15 over 192
+> with 49/56 bullets.)" is inserted, so that the paragraph continues "...
+> on 606a99c5a). (LAND-1, 2026-11-02: the "not of record" label above is
+> superseded by PR 61's landing's container-measured scoreboard, R33
+> (b), 177/0/15 over 192 with 49/56 bullets.) TP-1 is measured on trunk alone;
+> ...". (3b) In fork/land/land1-plan.md, A.10, "into a ledger item's `notes` or
+> a prose section of fork/gap-analysis.md, found by `git diff <trunk before>
+> HEAD -- fork/inventory/work-items.json fork/gap-analysis.md` and a search of
+> the added text" becomes "into a ledger item's `notes`, a prose section of
+> fork/gap-analysis.md or fork/ORCHESTRATION.md's Scoreboard section
+> (amended 2026-11-02, PR 61's landing, review round 1: RB61-1; ruling (12):
+> TP-1's "Expected at TP-1, NOT of record" paragraph, which the merge places
+> under the Scoreboard heading below A.9's paragraph, takes the mark after its
+> first sentence), found by `git diff <trunk before> HEAD --
+> fork/inventory/work-items.json fork/gap-analysis.md fork/ORCHESTRATION.md` and
+> a search of the added text". (4) RB61-2. L's text for templates.md's W-259
+> limit is TP-1's Appendix C verbatim, which predates D-LAND-22, so the page and
+> C.8's W-259 note disagree (R27); TP-1 §2.9 makes a fold of L's document review
+> a fix commit of L that re-runs the checker. (4a) A fold commit of L, made
+> before this ruling's records edits: in docs/design/templates.md, the W-259
+> bullet's text "is accepted (fork work item W-259; pinned as `todo_fail` by
+> `generic/template/operator.carbon`)." gains, after it, the sentence " A value
+> left operand is not checked either and stops lowering: in `fn G[template T:
+> type](v: T) { v[0] = 5; }`, and with `v[i] = 5` for `i: i64`, called with a
+> class that implements only `Core.IndexWith(i64)`, the assignment is accepted
+> and the compiler stops at lower.cpp:48 ("Store operand must be a pointer")
+> (LAND-1, 2026-11-02, measured on PR 61's landing's
+> install, 0.0.0-0.dev+3f229ecdf; fork/land/land1-plan.md D-LAND-22; W-259).";
+> the bullet is then prek'd (rumdl's reflow stands),
+> fork/designdocs/check_samples.py is run in both modes (0 errors each; any
+> error is STOPPED), r31.py counts templates.md's bullets before and after (31
+> and 31), and the commit, touching docs/design/templates.md only, is titled
+> "Land PR 61: templates.md states W-259's lowering stop, review fold", with the
+> landing's author, committer and trailers, its message naming TP-1 §2.9 ("a
+> fold of that review is a fix commit of L and re-runs the checker"), RB61-2,
+> both checker outputs, the R31 counts, prek's fixpoint, and that no code,
+> golden, program or prelude file changed, so the install 0.0.0-0.dev+3f229ecdf,
+> the gate and the conformance values stand and D-LAND-18 is unchanged. (4b) In
+> the records edits, each text reading "land-time commits 2288e99f6, 3f229ecdf"
+> (two: fork/ORCHESTRATION.md's A.3 row and fork/templates/plan.md's A.5
+> paragraph) becomes "land-time commits 2288e99f6, 3f229ecdf, <fold>"
+> with <fold> the fold commit's 9-character sha, the field being `git
+> log --reverse --format=%h 35fb2aca9..HEAD`; the sentences reading "trunk
+> at 3f229ecdf" stand, the re-scans having run on that tree. (4c) The fold
+> commit is reviewed again (D-LAND-10) by review round 2. (5) RB61-3. OR-3's
+> words and the dry run's placement disagree; the dry run's placement is the
+> rule. In fork/land/land1-plan.md, OR-3's "OR-3: dated paragraphs inserted on
+> both sides are both kept, in date order, the PR's first on the same date (it
+> predates trunk's stamp of it)." becomes "OR-3: dated paragraphs inserted on
+> both sides are both kept, in date order, the PR's first on the same date (it
+> predates trunk's stamp of it); each side's inserted block of dated paragraphs
+> is kept whole and placed by its first paragraph's date, the PR's block first
+> on the same date, as the dry run's merges place them (amended 2026-11-02,
+> PR 61's landing, review round 1: RB61-3; ruling (12): PR 61's block, first
+> dated 2026-10-14, precedes trunk's paragraphs of 2026-10-15 to 2026-10-21, and
+> PR 64's and PR 65's blocks are placed the same way)." No change to the tree's
+> fork/ORCHESTRATION.md for this item. Cite corrected on the ruling folder's
+> check (R10, 2026-11-02): the ruling's ":4995", taken from RV61A-1's citation,
+> is ":4993", the line of the full-row block's row, in items (1) and (1b) above
+> and in C.8's paragraph; the folder had applied items (1) to (6) and made the
+> fold commit a11a5ea2f before it stopped on the cite.
+>
+> (13) At PR 61's landing (stage 7), on review round 2's MINOR findings RB61R2-1
+> (review B), RV61A2-1 and RV61A2-2 (review A): (1) RB61R2-1. TP-1's records
+> list L's departures from its Appendix C (the F6 sentence of C.8) without the
+> fold commit a11a5ea2f's added W-259 sentence, and the landed notes' item (e)
+> (66aa13132 fork/templates/plan.md:7919-7936) asks for the checker runs on L's
+> fold commits too. (1a) PR 61's A.5 Landed paragraph (fork/templates/plan.md)
+> and A.6 sentence (fork/decision-log.md) each gain, as their last sentence,
+> this text, verbatim: "L's document-review fold a11a5ea2f (review round 1's
+> finding RB61-2; TP-1's section 2.9, which makes a fold of that review a fix
+> commit of L; fork/land/land1-plan.md, Landing-time rulings, paragraph (12),
+> item (4a)) adds to templates.md's W-259 bullet the sentence C.8's W-259 note
+> states, which TP-1's Appendix C predates (D-LAND-22), so the landed page
+> differs from Appendix C there as well as where the sentence on L above says;
+> check_samples.py, with and without --toolchain, reported on it the two outputs
+> quoted above." In fork/templates/plan.md it follows A.5's last sentence,
+> DR-1's note, which ends "trunk rejected the literal form only because it
+> rejected every literal subscript of such a type in a template, the read
+> included.", separated by one space; in fork/decision-log.md it follows A.6's
+> last sentence, which ends "W-299 and F-019 at both: none (F-019 named only as
+> plan text).", separated by one space. (1b) In fork/land/land1-plan.md,
+> Appendix C.8, directly after the fenced text block that follows the paragraph
+> beginning "PR 61's and PR 64's A.5 Landed paragraphs end with DR-1's note"
+> (the block ending "the read included."), a new paragraph and fenced text
+> block: the paragraph "PR 61's A.5 Landed paragraph and A.6 sentence then end
+> with this sentence (added 2026-11-02, review round 2: RB61R2-1; ruling (13)),
+> the landed notes' item (e) (66aa13132 fork/templates/plan.md:7919-7936) asking
+> for the checker runs on L's fold commits too:" and, in a ```text block, item
+> (1a)'s sentence verbatim. (2) RV61A2-1. C.8's re-cite list was measured on
+> TP-1's branch, so two present-tense cites into toolchain/lower/handle.cpp, a
+> file TP-1 changes, state the lines of the tree before the landing: the merged
+> row 54's DD-1 cite "toolchain/lower/handle.cpp:494-505 lowers SpliceInst
+> within a file", whose code (the SpliceInst handler from its head through its
+> same-file branch) is at :500-516 on the landing's tree, and W-014's `evidence`
+> cite "toolchain/lower/handle.cpp:513", whose `CARBON_FATAL` is at :524. (2a)
+> In the records edit of fork/inventory/work-items.json, W-014's `evidence`
+> entry "toolchain/lower/handle.cpp:513 (`CARBON_FATAL("Cross-file template
+> lowering not implemented yet")`, the one template fatal left after upstream
+> PR 7727; was :359-364 `Template lowering not implemented yet` at the cut)"
+> reads ":524" for ":513", its path and words kept (C.8's re-cite rule). (2b) In
+> the records edit of fork/gap-analysis.md, row 54, directly after DD-1's
+> parenthetical ending "which no longer occurs under toolchain/)." and before "
+> templates.md no longer self-describes as a placeholder", the marker "
+> (TP-1, 2026-11-02: the same-file SpliceInst lowering cited above as
+> toolchain/lower/handle.cpp:494-505 is toolchain/lower/handle.cpp:500-516 on
+> this tree.)" is inserted, in R's marker's form, a row's text being kept
+> verbatim. (2c) In fork/land/land1-plan.md, Appendix C.8, the re-cite
+> paragraph's last sentence "A cite whose code is not found on that tree stops
+> the landing (D-LAND-9's break condition), and evidence in a file TP-1 does not
+> change keeps its lines, as the landed notes say." gains, after it, this
+> sentence: "The rule extends (added 2026-11-02, review round 2: RV61A2-1;
+> ruling (13)) to every other present-tense cite in W-014's `evidence` and in
+> the merged row 54 that points into a file the landing changes outside testdata
+> (`git diff --name-only d13f47ea7 HEAD -- toolchain core ':!*/testdata/*'`):
+> W-014's evidence cite toolchain/lower/handle.cpp:513 is :524 on the landing's
+> tree; the merged row's DD-1 cite toolchain/lower/handle.cpp:494-505, a row's
+> text being kept verbatim, takes a marker in R's marker's form after DD-1's
+> parenthetical, "(TP-1, 2026-11-02: the same-file SpliceInst lowering cited
+> above as toolchain/lower/handle.cpp:494-505 is
+> toolchain/lower/handle.cpp:500-516 on this tree.)"; a dated measurement
+> records the tree it names and stays as measured: W-014's evidence cites
+> import_ref.cpp:5087 with the nightly's :4875, lower/aggregate.cpp:67,
+> inst.h:249 and function_context.cpp:223 (DD-1's probes of 2026-10-13
+> and 2026-10-14) and the UA-2 entry of 2026-10-06 in W-014's `notes`, re-cited
+> to upstream c1e83b0b7, with lower/handle.cpp:513." Row 54's other cites
+> (lower/handle.cpp:513 marked by R's marker, lower/handle.cpp:524,
+> pattern_match.cpp:2174-2180 in a file TP-1 does not change) and W-014's
+> evidence cites into files TP-1 does not change (return.cpp,
+> handle_binding_pattern.cpp, pattern_match.cpp, the testdata splits) are
+> unchanged. (3) RV61A2-2. L's commit message (2288e99f6) reports the checker's
+> install as 0.0.0-0.dev+35fb2aca9 while logs/step6-L-install.log prints "Carbon
+> Language toolchain version: 0.0.0-0.dev+35fb2aca9.dirty", the install built
+> while L's edits were uncommitted; L changes no toolchain file, so that build's
+> toolchain sources are 35fb2aca9's and the checker's two summary lines in the
+> records are exact. The message stands (a submitted commit's history is never
+> rewritten) and the records commit's message states, verbatim: "L's message
+> reports the checker's install as 0.0.0-0.dev+35fb2aca9;
+> logs/step6-L-install.log prints "Carbon Language toolchain
+> version: 0.0.0-0.dev+35fb2aca9.dirty", the install built while L's edits were
+> uncommitted; L changes no toolchain file, so that build's toolchain sources
+> are 35fb2aca9's (RV61A2-2; fork/land/land1-plan.md, Landing-time rulings,
+> paragraph (13))." No tree edit.
 
 <!-- google-doc-style-resume -->

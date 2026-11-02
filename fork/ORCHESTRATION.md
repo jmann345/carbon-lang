@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-02 (PR 58 landed by LAND-1; 6 PRs landed,
+Last updated: 2026-11-02 (PR 61 landed by LAND-1; 7 PRs landed,
+11 held; see the paragraph dated 2026-11-02 (07:15 UTC) below; the
+earlier 2026-11-02 text follows).
+2026-11-02 (PR 58 landed by LAND-1; 6 PRs landed,
 12 held; see the paragraph dated 2026-11-02 (05:54 UTC) below; the
 earlier 2026-11-02 text follows).
 2026-11-02 (PR 55 landed by LAND-1; 5 PRs landed,
@@ -1496,6 +1499,21 @@ merged_at 2026-11-02T06:23:27Z; container-measured (R33 (b)): gate 1953 of 1953,
 conformance 167/0/15 over 182, 49/56 bullets, gap tally 35/17/3/1;
 id re-scans: none; 6 PRs landed, 12 held. Next: PR 61 (TP-1).
 
+2026-11-02 (07:15 UTC): PR 61 (TP-1) LANDED on trunk by merge 35fb2aca9 under
+R33 (fork/land/land1-plan.md section 2.7), GitHub merged_at
+2026-11-02T09:04:22Z; container-measured (R33 (b)): gate 1968 of 1968,
+conformance 177/0/15 over 192, 49/56 bullets, gap tally 35/17/3/1; id re-scans:
+W-250 to W-274 and W-295 to W-298 at the re-scan before L:
+origin/claude/carbon-fork-0-1-tp (66aa13132), trunk (35fb2aca9) and
+origin/claude/carbon-fork-0-1-ct (551a03328), which contain 66aa13132,
+claude/carbon-fork-0-1-tp, origin/pr/61 and the /home/user/carbon-tp worktree
+(5661a35c8, an ancestor of 66aa13132), and claude/carbon-fork-0-1-ct,
+origin/pr/64 and the /home/user/carbon-ct worktree (4a3220c11, a stacked child's
+lagging copy, a descendant of 5661a35c8 and an ancestor of 551a03328); W-250 to
+W-274 and W-295 to W-298 at the re-scan before the records commit's ledger edit:
+the same refs, trunk at 3f229ecdf; W-299 and F-019 at both: none (F-019 named
+only as plan text); 7 PRs landed, 11 held. Next: PR 62 (SV-1).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -1836,10 +1854,9 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at e23113ba2 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 after PR 56); amended 2026-10-28 by RG-1's merge e23113ba2 of PR 56's commit (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 once item 13's fix and note 7's ruling are on its branch). |
-| `claude/carbon-fork-0-1-tp` | PR 61 HELD OPEN, ROUND 11 DRY -- TP-1 integrated templates, toolchain at eafca5cb9 (splits through b412e602b) after round 11 of the focused re-review of the fold, records through the records commit that records round 11's reviews; round 9 was dry and the PR opened as PR 61 and was held, and round 10 opened on an external finding (X-1, a BLOCKER: a `match` on a template-dependent choice stopped the compiler where trunk reports a TODO; fixed at the root, W-295 filed); its two reviews found eleven MINOR findings, none needing a toolchain change, every records-only part folded, W-296 and W-297 filed from W-295..W-299 (W-298 and W-299 then unused) and two test-only items owed to the next round's fixer, so round 10 is dry; round 11 folds those two items, the W-id deleted from a golden's header comment and a split that pins TR-13's departure for a class template's choice, in one golden and no toolchain file, and its two reviews found six MINOR findings, all records only and none needing a toolchain or golden change, every one folded and W-298 filed from W-295..W-299 (W-299 unused), so round 11 is dry and PR 61 stays held (W-014 OPEN; W-250..W-274 and W-295 to W-298 filed, W-272 discharged within TP-1; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1957/1957 and conformance 138/0/22 over 160 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | LANDED as PR 58 by merge 909c817d3 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T06:23:27Z, merge_commit_sha 909c817d3) — DD-1: design docs without placeholders, with state L for PR 51, PR 54 and PR 55; gap row 70 DONE, row 91 PARTIAL until state L for PR 53, PR 56 and SC-1; W-065 discharged; land-time commits ad7bb2e0c, 9ae576af5; container-measured (R33 (b)): gate 1953 of 1953, conformance 167/0/15 over 182, 49/56 bullets; moved to follow-ons: to items 14, 15 and 16: state L for PR 53, SC-1 and PR 56; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at cc4daba00 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 15 once W-139's fix and item 10 are done); amended 2026-10-28 by RG-1's records commit cc4daba00 (R32 (e)), the description refreshed. |
-| `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at 66aa13132 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit; amended 2026-10-28 by RG-1's records commit 40daf0a2a and its review fix 66aa13132 (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-tp` | LANDED as PR 61 by merge 35fb2aca9 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T09:04:22Z, merge_commit_sha 35fb2aca9) — TP-1: integrated templates with F6's refills (PR 51's split refilled under its fail_todo_ name, which PR 64's L-F renames) and L over PR 58; W-127 for the template shape, W-183, W-192 and W-193 discharged; gap row 54 PARTIAL; land-time commits 2288e99f6, 3f229ecdf, a11a5ea2f; container-measured (R33 (b)): gate 1968 of 1968, conformance 177/0/15 over 192, 49/56 bullets; moved to follow-ons: to item 15: S and its mutant M18; to item 17: the VA-1 compositions; to item 15: M's rules for SC-1's hunks; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-sv` | HELD OPEN as PR 62 — SV-1 std::optional and std::variant interop mapping at 0ef8a0334 (toolchain 4a9c18b07; first held at 3a6531157, then amended 2026-10-21 by DR-1's W-322 commit, which retires the D-SV-7 Core.Optional view under R32 (d), and its focused review's four MINORs folded, the description and first comment refreshed; W-011 DISCHARGED; gap row 68 stays PARTIAL, W-177 not narrowed; F-020 minted; W-275..W-277, W-279..W-281, W-285 and W-286 filed, W-284 held for M-VA, W-282 conditional at land time, W-283 and W-287..W-294 unused, W-278 withdrawn; expected 133/0/22 over 155 with the view's program SKIPped; gate 1950 of 1950); plan rev 5 signed off after five reviews, two implementation reviews folded in two fix commits, focused re-review round 2 dry; merges last, after PR 61, through its land-time items M, M-VA, F-M, Doc-M and the records commit. |
 | `claude/carbon-fork-0-1-ct` | HELD OPEN as PR 64 — CT-1 C++ templates on symbolic Carbon type arguments, instantiated per specific, at 551a03328 (toolchain 224ee2f8f; base claude/carbon-fork-0-1-tp, stacked on PR 61; W-043 DISCHARGED, TP-1's W-273 discharged and W-268 narrowed; W-300..W-311 filed, W-312..W-319 unused; F-021 minted; gap rows 56 and 42 stay PARTIAL; expected 1959 of 1959 and 147/0/20 over 167); plan rev 4 signed off after four reviews, two implementation reviews folded in three fix commits, focused re-review round 1 dry; merges after PR 62 through its land-time items M, S-VA, L-F, L and the land-time records commit; amended 2026-10-28 by RG-1's count correction 5f23d27c9 and its merge 551a03328 of PR 61's commits (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-dr` | HELD OPEN as PR 63 — DR-1a Core.Iterate.Next takes a ref cursor (R32; W-321 discharged) at 18a7e8934 (toolchain d0cfe8082; base trunk; expected 1942 of 1942 and 128/0/22 over 150); DR-1's plan rev 3 signed off with slice 1 (W-320, Match for Core.Optional) stopped on upstream's own conflict and blocked on W-324; W-324..W-327 and W-329 filed, W-328 reserved; one implementation review (three records-only MINORs) folded; plan rev 4 (f551057ea) records DR-1b's stop-and-amend; DR-1b (IndirectIndexWith, W-109) is HELD OPEN as PR 65 on claude/carbon-fork-0-1-dr-idx, stacked on this branch; merges after CT-1 through M-a and L-a, then DR-1b through M-b, C-b and L-b. |
@@ -1858,9 +1875,9 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 58's landing (2026-11-02, LAND-1, R33 (b)): 167 PASS
-/ 15 SKIP / 0 FAIL programs (182 total); **49/56 bullets green**; gate
-1953 of 1953. R21's hosted run is owed when Actions returns; the paragraph
+Container-measured at PR 61's landing (2026-11-02, LAND-1, R33 (b)): 177 PASS
+/ 15 SKIP / 0 FAIL programs (192 total); **49/56 bullets green**; gate
+1968 of 1968. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
 fork/conformance/out/scoreboard.json's (D-LAND-17).
 
@@ -1887,7 +1904,10 @@ before round 10, 137 over 159 (amended 2026-10-20, round 10: X-1); ten programs,
 the tenth from round 10, join the "Generics: Integrated templates" bullet,
 already PASS, and its gap row stays PARTIAL), from the floor of record 128
 PASS / 22 SKIP / 0 FAIL over 150, 48/56 (the hosted conformance run 37402970811
-on 606a99c5a). TP-1 is measured on trunk alone; its landing count is PR 59's
+on 606a99c5a). (LAND-1, 2026-11-02: the "not of record" label above is
+superseded by PR 61's landing's container-measured scoreboard, R33 (b), 177/0/15
+over 192 with 49/56 bullets.) TP-1 is measured on trunk alone; its landing count
+is PR 59's
 expected state with every earlier PR plus ten PASS (fork/templates/plan.md §5)
 (amended 2026-10-20, round 10: X-1).
 

@@ -5042,6 +5042,17 @@ a class template's literal whose array field has a template-dependent bound
 converted on instantiation; W-250's residue naming the entities that name such
 a generic; and W-271 at the end of the residue.
 
+At the landing (amended 2026-11-02, LAND-1, PR 61's landing, review round 1:
+RV61A-1), the full-row block's TP-1 sentence carries the two clauses the
+held-state sentence gained after the block was written and the block never took,
+a class template's literal whose field has a template-dependent array bound or a
+produced type such as `T.Item` converting on instantiation, taking the defaults
+of the fields it omits, and a `match`, a pattern condition or `let` ... `else`
+on a template-dependent choice value or on `Core.Int(N)` for a template `N`
+checked in the definition and running, verbatim from the held-state sentence, by
+the orchestrator's ruling under R29 (fork/land/land1-plan.md, Landing-time
+rulings, paragraph (12)).
+
 ### §2.9 Land-time integration with PR 58 (commit L)
 
 Rewritten 2026-10-14 (review fold: B-B1 / B-M2 / B-M3 / A-M2). After M, with PR
@@ -7970,6 +7981,64 @@ two id re-scans.
     round 11: RR10r2-m1 / RR10-1-m1). Round 11's two reviews found no BLOCKER or
     MAJOR finding and no further toolchain change owed, so the row reads "PR 61
     HELD OPEN, ROUND 11 DRY" (amended 2026-10-21, records: round 11).
+
+TP-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 61 by 35fb2aca9 (head
+66aa13132, trunk before d13f47ea7; GitHub merged_at 2026-11-02T09:04:22Z) under
+R33, fork/land/land1-plan.md section 2.7; land-time commits 2288e99f6,
+3f229ecdf, a11a5ea2f; container-measured (R33 (b)): gate 1968 of 1968,
+conformance 177 PASS, 0 FAIL, 15 SKIP over 192, 49 of 56 bullets; id re-scans:
+W-250 to W-274 and W-295 to W-298 at the re-scan before L:
+origin/claude/carbon-fork-0-1-tp (66aa13132), trunk (35fb2aca9) and
+origin/claude/carbon-fork-0-1-ct (551a03328), which contain 66aa13132,
+claude/carbon-fork-0-1-tp, origin/pr/61 and the /home/user/carbon-tp worktree
+(5661a35c8, an ancestor of 66aa13132), and claude/carbon-fork-0-1-ct,
+origin/pr/64 and the /home/user/carbon-ct worktree (4a3220c11, a stacked child's
+lagging copy, a descendant of 5661a35c8 and an ancestor of 551a03328); W-250 to
+W-274 and W-295 to W-298 at the re-scan before the records commit's ledger edit:
+the same refs, trunk at 3f229ecdf; W-299 and F-019 at both: none (F-019 named
+only as plan text); moved to follow-ons: to item 15: S and its mutant M18; to
+item 17: the VA-1 compositions; to item 15: M's rules for SC-1's hunks. F6 kept
+PR 51's split's name, fail_todo_unformed_dependent_var, because its shape still
+fails on TP-1's toolchain (551a03328 fork/cpp-templates/plan.md (held PR 64) C-2
+and H-1); PR 64's L-F renames it. L's templates.md hunk 9 context line and the
+X20 and X23 comments follow PR 58's state-L text, which removed "held PR 51"
+from the lines TP-1's Appendix C quotes (fork/land/land1-plan.md Appendix C.8).
+Mutants (the landed notes' item (c); fork/land/land1-plan.md D-LAND-20): re-run
+none; every other mutant of section 8 item 5 edits a file this landing does not
+change and keeps its record on 66aa13132; M18 reverts S and waits with it for
+Next actions item 15. On the merged tree, L's check_samples.py reported
+"check_samples: 19 program blocks, 70 fixtures, 2 W2 hits (1 allowlisted, 1
+qualified); 0 errors" and, with --toolchain, "check_samples: 19 program blocks,
+70 fixtures (compiled), 2 W2 hits (1 allowlisted, 1 qualified); 0 errors"; the
+id re-scans before L and before the records commit: W-250 to W-274 and W-295 to
+W-298 at the re-scan before L: origin/claude/carbon-fork-0-1-tp (66aa13132),
+trunk (35fb2aca9) and origin/claude/carbon-fork-0-1-ct (551a03328), which
+contain 66aa13132, claude/carbon-fork-0-1-tp, origin/pr/61 and the
+/home/user/carbon-tp worktree (5661a35c8, an ancestor of 66aa13132), and
+claude/carbon-fork-0-1-ct, origin/pr/64 and the /home/user/carbon-ct worktree
+(4a3220c11, a stacked child's lagging copy, a descendant of 5661a35c8 and an
+ancestor of 551a03328); W-250 to W-274 and W-295 to W-298 at the re-scan before
+the records commit's ledger edit: the same refs, trunk at 3f229ecdf; W-299 and
+F-019 at both: none (F-019 named only as plan text). DR-1's note, passed to this
+plan's records (fork/direction/plan.md, DR-1b's re-review round 4): a template
+`v[0] = 5` on a by-value type with only `IndexWith` CHECK-fails at lower.cpp:48
+on CT-1's install, where trunk diagnoses; with a variable subscript, `x[i] = 5`
+on such a type CHECK-fails there on trunk too, and `s[i] = 5` on a
+`Core.Slice(i32)` or `Core.Buf(i32)` as a template `T` CHECK-fails on trunk and
+prints `5 5` once DR-1b lands. The landing's review compiled the literal and
+variable forms, the same assignment outside a template and a template's literal
+read on this landing's install, with the results fork/land/land1-plan.md
+D-LAND-22 gives: the abort is W-259's, an assignment whose template-dependent
+left operand is not checked on instantiation, which trunk reaches with the
+variable form; trunk rejected the literal form only because it rejected every
+literal subscript of such a type in a template, the read included. L's
+document-review fold a11a5ea2f (review round 1's finding RB61-2; TP-1's
+section 2.9, which makes a fold of that review a fix commit of L;
+fork/land/land1-plan.md, Landing-time rulings, paragraph (12), item (4a)) adds
+to templates.md's W-259 bullet the sentence C.8's W-259 note states, which
+TP-1's Appendix C predates (D-LAND-22), so the landed page differs from Appendix
+C there as well as where the sentence on L above says; check_samples.py, with
+and without --toolchain, reported on it the two outputs quoted above.
 
 ## Focused re-review of the fold (2026-10-15)
 

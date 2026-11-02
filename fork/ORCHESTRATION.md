@@ -235,6 +235,66 @@ ids from W-170 and fork design id F-015 if minted. Merge order now: PR 53, PR
 51, PR 52, SC-1, PR 54 (EV-1, after its state C integration commit), PR 55
 (ST-1), then OP-1. None is merged.
 
+DD-1 discharge (2026-10-14, state T; pushed after the implementation-review fold
+and again after the second, the third and the fourth document-review rounds'
+verdicts): claude/carbon-fork-0-1-dd carries DD-1 (fork/designdocs/plan.md rev
+4, signed off at 97686069f: design docs without placeholders for W-065, gap row
+91, and the F-008 threads page for W-020's documentation half, gap row 70) in
+commits 3ff319642 (1/4: the language pages), a32421433 (2/4: the
+interoperability README and
+docs/design/interoperability/threads_and_atomics.md), 4287fe0c0 (3/4: the design
+README notes), 6f1ba74ba (the document-review fold: review 1 REJECT with one
+BLOCKER, review 2 APPROVE-WITH-AMENDMENTS; 27 of 28 findings folded, DR1-12
+deferred and folded at the discharge), 9f920d2b9 (the discharge, DD-1 (4/4)),
+36e27f233 (the implementation-review fold: APPROVE-WITH-AMENDMENTS, one MAJOR,
+seven MINOR, all folded), a75c20391 (the second document-review fold: the second
+round of both document reviews, review 1 REJECT with one BLOCKER, R2-1, the
+templates page's list of differences from proposal 2200, and review 2
+APPROVE-WITH-AMENDMENTS; all sixteen findings folded), e27b917c8 ("DD-1 records:
+second document-review round recorded; row 70 verdict"), 6d101f36c ("DD-1: third
+document-review fold": the third round of both document reviews, review 1 REJECT
+with two BLOCKERs on templates.md's comparisons with proposal 2200 and the
+toolchain, R3-1 and R3-2, and review 2 APPROVE-WITH-AMENDMENTS, neither with a
+finding on the threads page; all fourteen findings folded), 6b692aa14 ("DD-1
+records: third document-review round recorded", the third round's verdict),
+6433978b5 ("DD-1: fourth document-review fold": the fourth round of both
+document reviews, which trunk 44761146d's stamp calls "a fourth focused round":
+both reviews APPROVE-WITH-AMENDMENTS, neither with a finding on the threads
+page; all thirteen findings folded, no id filed) and "DD-1 records: fourth
+document-review round recorded" (the fourth round's verdict). Gap row 70 is DONE
+(expected, not of record) on the second document-review round, which leaves no
+in-scope finding on the threads page unresolved, and stays DONE on the third and
+the fourth, which have none (D-DD-13; the discharge had written it DONE before
+that round, and the implementation-review fold restored PARTIAL, F1); row 91
+stays PARTIAL pending state L (PR 53's README.md "Lifetime and move semantics"
+and PR 55's arithmetic.md "Strings") alone: the fourth round of both document
+reviews (owed under D-DD-11's break condition because document review 1 of the
+third round returned REJECT) is folded at 6433978b5 and its verdict recorded,
+and, since neither of its reviews returned REJECT, no further round is owed;
+header 31 / 20 / 4 / 1; EXPECTED scoreboard 147 PASS / 0 FAIL / 22 SKIP over
+169, 48/56, whose nineteen new PASS lines are documentation-sync programs under
+already-PASS feature bullets, NOT OF RECORD. W-065 and W-020 discharged;
+W-182..W-185, W-188, W-189 and W-191 filed, and W-192..W-194 at the third
+document-review fold. Id reservation: W-180..W-194 (W-180, W-181, W-186
+withdrawn; W-187 contingent; W-190 unused; no spare left), and W-240..W-244 for
+residues of the fourth document-review round (none taken by its fold); OP-1's
+residue is W-195. OP-2 (claude/carbon-fork-0-1-op2, PR 57) files W-196..W-201
+(W-196..W-199 reserved in its plan at 963adda99); OX-1 and VA-1 reserve
+W-202..W-211 and W-212..W-231 (trunk 44761146d), and SC-1 W-232..W-239. Merge
+position: last of the held PRs, after PR 56 (OP-1), with OX-1 and VA-1 after
+DD-1 (trunk 44761146d): PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, then
+DD-1, and, at the orchestrator's direction, also after OP-2 (PR 57, held open;
+trunk 44761146d), which stacks on PR 56; through its integration commit (state
+L: the merge of trunk after OP-1 (and OP-2) lands, the state-L texts, an empty
+W2 allowlist, the W-014, W-127, W-155 and W-167 amendments and W-188's F-013
+note, row 91 DONE when PR 53 and PR 55 are on trunk, and the re-measure on the
+merged toolchain). NEXT for DD-1: PR to open and HOLD. No further
+document-review round is owed: the fourth round of both document reviews, which
+D-DD-11's break condition owed, returned APPROVE-WITH-AMENDMENTS twice, its fold
+(6433978b5) folds all thirteen findings, none rejected, and the commit that
+records its verdict keeps row 70 DONE (D-DD-13). The PR stays open until its
+state L integration commit.
+
 On 2026-10-14: PR 56 (OP-1, claude/carbon-fork-0-1-op, head 379f20f67: the
 Core.Optional comparison impls and the fork design F-015, W-058 discharged,
 W-170 to W-179 and W-195 filed, expected 132/0/25 over 157; the Optional row
@@ -1302,7 +1362,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |
 | `claude/carbon-fork-0-1-match-{replatform,s2d,s2e}` and `claude/carbon-fork-0-1-upstream-2026{0728,0808}` | MERGED by way of PRs #7/#8/#9/#10 and #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
-| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs (the veto-digest gate dissolved under R29). The F-009 overloading page (functions_overloading.md + its cross-references) is PORTED by the OV-1/OV-3 slices — do not re-land it; the F-008/F-010/F-011 portions are ported by their own workstreams (F-011's if-let docs landed with W-012). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
+| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs (the veto-digest gate dissolved under R29). The F-009 overloading page (functions_overloading.md + its cross-references) is PORTED by the OV-1/OV-3 slices — do not re-land it; the F-008/F-010/F-011 portions are ported by their own workstreams (F-011's if-let docs landed with W-012). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). Amended 2026-10-14 at the DD-1 discharge: the F-008 portion (its threading.md draft) is superseded by docs/design/interoperability/threads_and_atomics.md (DD-1, D-DD-7) and must not be ported; F-010 remains on SC-1 (claude/carbon-fork-0-1-sc); F-011 has landed (W-012). |
 | `claude/carbon-fork-0-1-{7mwfb7,b0,7mwfb7-upstream-20260727}` and other `7mwfb7-*` | MERGED or superseded; do not stack new commits. |
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)

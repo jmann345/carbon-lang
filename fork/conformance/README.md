@@ -398,7 +398,26 @@ fails if this table is stale):
 | `interop/string_view_cpp_to_str.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
 | `interop/string_view_str_to_cpp.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
 | `project/cmake_build_integration.carbon` | Project: CMake build-system integration plus Make documentation | external-build |
+| `project/design_docs_aliases.carbon` | Code organization: Namespaces | run |
+| `project/design_docs_assignment.carbon` | Type system: User-defined types (classes) | run |
+| `project/design_docs_carbon_from_cpp.carbon` | Functions: C++ interop — exporting Carbon functions/methods to C++ | run |
+| `project/design_docs_compile_time.carbon` | Generics: generic functions and types | run |
+| `project/design_docs_cpp_constructors.carbon` | Functions: C++ interop — importing/calling C++ functions and methods | run |
+| `project/design_docs_cpp_enums.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_globals.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_inline.carbon` | Code organization: Importing | run |
+| `project/design_docs_cpp_integers.carbon` | Stdlib C++ interop: transparent fundamental-type mapping | run |
+| `project/design_docs_cpp_members.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_operators.carbon` | Type system: C++ interop — synthesizing Carbon overloads for imported C++ types | run |
+| `project/design_docs_cpp_pointers.carbon` | Stdlib: pointer types | run |
+| `project/design_docs_cpp_ranges.carbon` | Stdlib C++ interop: transparent iteration-abstraction mapping | run |
+| `project/design_docs_cpp_struct_literals.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_templates.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `project/design_docs_cpp_threads.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
+| `project/design_docs_match.carbon` | Control flow: matching — good switch equivalents | run |
 | `project/design_docs_placeholders.carbon` | Goal: design docs documented, cohesive, understandable without placeholders | SKIP |
+| `project/design_docs_statements.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
+| `project/design_docs_templates.carbon` | Generics: Integrated templates | run |
 | `project/dropin_clang_cpp_toolchain.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | run |
 | `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | external-build |
 | `project/evaluator_docs_getting_started.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |

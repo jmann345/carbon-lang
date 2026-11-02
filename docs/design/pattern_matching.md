@@ -34,6 +34,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Pattern match control flow](#pattern-match-control-flow)
         -   [Alternatives considered](#alternatives-considered-6)
         -   [Guards](#guards)
+        -   [`match` in the 0.1 toolchain](#match-in-the-01-toolchain)
     -   [Refutable pattern bindings](#refutable-pattern-bindings)
     -   [Pattern matching in local variables](#pattern-matching-in-local-variables)
 -   [Evaluation order](#evaluation-order)
@@ -715,10 +716,16 @@ We will diagnose the following situations:
 
 ### Pattern match control flow
 
-`match` is a skeletal design, added to support [the overview](README.md). Aside
-from [guards](#guards), it should not be treated as accepted by the core team;
-rather, it is a placeholder until we have more time to examine this detail.
-Please feel welcome to rewrite and update as appropriate.
+> **Fork status (2026-10-14).** Accepted proposal 5164 marks the `match`
+> statement design of this section, apart from [guards](#guards), as not yet
+> accepted; this note replaces the placeholder paragraph that proposal wrote.
+> Proposal 2188 accepts the pattern, exhaustiveness, and guard rules the
+> section relies on, and proposal 5164 their object semantics. The prose and
+> first example below are kept unchanged. The fork implements `match`, and
+> [`match` in the 0.1 toolchain](#match-in-the-01-toolchain) documents what
+> compiles today. The first example does not: the toolchain rejects it with
+> ``semantics TODO: `match on unsupported scrutinee type` ``, because a `match`
+> on a tuple holding `f32` values is not supported (and `Pi` is not declared).
 
 The most powerful form and easiest to explain form of pattern matching is a
 dedicated control flow construct that subsumes the `switch` of C and C++ into
@@ -819,6 +826,253 @@ match (x) {
 
 For consistency, this facility is also available for `default` clauses, so that
 `default` remains equivalent to `case _: auto`.
+
+#### `match` in the 0.1 toolchain
+
+The fork's toolchain implements the `match` statement. The upstream nightly does
+not (it reports ``semantics TODO: `HandleMatchIntroducer` `` for any `match`),
+so every example here needs the fork's toolchain. The implemented grammar is:
+
+-   `match` `(` _expression_ `)` `{` _arm_ ... `}`, with at least one arm;
+-   _arm_ ::= `case` _pattern_ [`if` `(` _expression_ `)`]? `=>` _block_
+-   _arm_ ::= `default` [`if` `(` _expression_ `)`]? `=>` _block_
+
+A guard's condition is parenthesized, as an `if` statement's is; the
+unparenthesized guard of [Guards](#guards) is rejected with
+``expected `(` after `if` ``. A `match` is a statement: proposal 2188 leaves
+`match` expressions to future work, and the toolchain does not parse them.
+
+The scrutinee may be of an integer type, `bool`, a choice type (including a
+specific of a generic choice and an imported choice such as
+`Core.Result(T, E)`), or a tuple or struct type whose elements are of those
+types (nested tuples and structs included). Patterns are constant integer and
+`bool` expressions; bindings `x: T`, `var x: T`, and, for a reference
+scrutinee, `ref x: T`; `_`; tuple patterns; struct patterns with designated
+fields (`.w = 0`, `.w = w: i32`) or shorthand fields (`w: i32`) and a trailing
+`_` that discards the rest; and alternative patterns `.Name` and `.Name(...)`,
+whose payload subpatterns are constants or bindings.
+
+Arms are tried in order: the first arm whose pattern matches and whose guard, if
+any, is true runs, with the pattern's bindings in scope in the guard and the
+block; `default` matches every value. The toolchain checks exhaustiveness and
+usefulness by the rules
+[specified above](#refutability-overlap-usefulness-and-exhaustiveness), with
+one difference listed under "Not in the 0.1 toolchain" below: a `match`
+without an unguarded `default` arm must cover every alternative of a choice,
+both `bool` values, or have an unguarded irrefutable arm; for integer, tuple,
+and struct scrutinees only an irrefutable arm counts, because the toolchain
+decides exhaustiveness at the scrutinee's root and does not combine tuple or
+struct patterns element by element, even where the rules above make a set of
+tuple or struct patterns over `bool` or choice values exhaustive. A guarded arm
+never counts toward coverage; an arm that can never match is an error.
+
+```carbon
+import Core library "io";
+
+choice Shape {
+  Circle(radius: i32),
+  Rect(width: i32, height: i32),
+  Empty
+}
+
+fn Area(s: Shape) -> i32 {
+  // The arms cover every alternative, so no `default` is needed.
+  match (s) {
+    case .Circle(r: i32) => { return 3 * r * r; }
+    case .Rect(w: i32, h: i32) => { return w * h; }
+    case .Empty => { return 0; }
+  }
+  // Still required in 0.1; see the note on exhaustive `match` below.
+  return -1;
+}
+
+fn Classify(n: i32) -> i32 {
+  // Constant cases, a guarded binding, and the `default` an `i32` needs.
+  match (n) {
+    case 0 => { return 0; }
+    case x: i32 if (x < 0) => { return -1; }
+    default => { return 1; }
+  }
+}
+
+fn Quadrant(p: (i32, i32)) -> i32 {
+  match (p) {
+    case (0, 0) => { return 0; }
+    case (x: i32, y: i32) if (x > 0 and y > 0) => { return 1; }
+    default => { return 2; }
+  }
+}
+
+fn Width(r: {.w: i32, .h: i32}) -> i32 {
+  // Struct patterns name fields; `_` discards the rest.
+  match (r) {
+    case {.w = 0, _} => { return -1; }
+    case {.w = w: i32, .h = h: i32} => { return w * 10 + h; }
+  }
+  return -2;
+}
+
+fn Run() -> i32 {
+  Core.Print(Area(Shape.Rect(3, 4)));
+  Core.Print(Area(Shape.Empty));
+  Core.Print(Classify(-5));
+  Core.Print(Quadrant((2, 3)));
+  Core.Print(Width({.w = 4, .h = 5}));
+  return 0;
+}
+```
+
+This prints `12`, `0`, `-1`, `1`, and `45`. Each of the following checks is an
+error. A `match` on a choice that leaves out an alternative and has no
+`default`:
+
+```carbon
+choice Signal { Stop, Go, Wait }
+
+fn F(s: Signal) -> i32 {
+  match (s) {
+    case .Stop => { return 0; }
+    case .Go => { return 1; }
+  }
+  return 2;
+}
+```
+
+The toolchain reports `` `match` on choice `Signal` has no `default` arm and
+does not cover alternative `.Wait` ``. A `match` on an integer type with no
+`default` and no irrefutable arm:
+
+```carbon
+fn F(n: i32) -> i32 {
+  match (n) {
+    case 0 => { return 0; }
+    case 1 => { return 1; }
+  }
+  return 2;
+}
+```
+
+The toolchain reports `` `match` on `i32` has no `default` arm and no `case`
+arm that matches every value ``. An arm that a prior arm makes unreachable:
+
+```carbon
+fn F(n: i32) -> i32 {
+  match (n) {
+    case x: i32 => { return x; }
+    case 0 => { return 0; }
+  }
+  return 1;
+}
+```
+
+The toolchain reports `` `case` pattern never matches; every value it can
+match is matched by a prior arm ``. A `default` arm after arms that match every
+value:
+
+```carbon
+fn F(b: bool) -> i32 {
+  match (b) {
+    case true => { return 1; }
+    case false => { return 0; }
+    default => { return 2; }
+  }
+  return 3;
+}
+```
+
+The toolchain reports `` `default` arm never matches; every value of the
+scrutinee is matched by prior arms ``. A guard without parentheses:
+
+```carbon
+fn F(x: (i32, i32)) -> i32 {
+  match (x) {
+    case (m: i32, n: i32) if m + n < 5 => { return m - n; }
+    default => { return 0; }
+  }
+}
+```
+
+The toolchain reports ``expected `(` after `if` ``.
+
+Not in the 0.1 toolchain, each a filed fork work item or a pinned
+`semantics TODO` in `toolchain/check/testdata/match/`:
+
+-   An exhaustive `match` without a `default` arm does not end control flow:
+    the code after it is treated as reachable, which is why `Area` above ends
+    with a `return`, and why `IsTrue` in
+    [Refutability, overlap, usefulness, and exhaustiveness](#refutability-overlap-usefulness-and-exhaustiveness)
+    is rejected (fork work item W-155, on held PR 54).
+-   A set of tuple or struct patterns never counts as exhaustive unless one
+    arm is irrefutable: the four arms `case (false, false)`,
+    `case (false, true)`, `case (true, false)` and `case (true, true)` on a
+    `(bool, bool)` scrutinee are rejected with
+    `` `match` on `(bool, bool)` has no `default` arm and no `case` arm that
+    matches every value ``, and so are the two arms `case (true, x: i32)` and
+    `case (false, y: i32)` on a `(bool, i32)` scrutinee and the two arms
+    `case {.a = true, _}` and `case {.a = false, _}` on a `{.a: bool, .b: i32}`
+    scrutinee, although each set covers every value by the rules above, which
+    treat constant tuples and structs as tuple and struct patterns and `bool`
+    like a choice type; a `default` or an irrefutable arm is needed (W-189;
+    pinned by `fail_bool_pair_enumeration.carbon` in
+    `toolchain/check/testdata/match/fail_int_nonexhaustive.carbon`).
+-   An alternative pattern inside a tuple pattern, a struct pattern field, or a
+    payload subpattern is read as an expression, so the usefulness example
+    above cannot be written yet (W-182).
+-   An alternative pattern written with its choice type's name, such as
+    `Opt.None` or `Opt.Some(n: i32)` for a choice `Opt`: the first reports
+    ``semantics TODO: `qualified alternative pattern in match case` `` (pinned
+    by `fail_todo_qualified_pattern.carbon` in
+    `toolchain/check/testdata/match/fail_choice_alternative_pattern.carbon`),
+    and the second is not parsed as a pattern and reports
+    ``name `n` not found``; the leading-dot forms `.None` and `.Some(n: i32)`
+    work.
+-   A scrutinee of any other type, including floating-point types, `str`,
+    classes, template-dependent types, and a tuple or struct with an element
+    of such a type, so the [Templates](#templates) rules do not apply yet;
+    expression patterns that are not constants, such as a variable; and
+    compile-time bindings in a `case`.
+-   A refutable pattern in a plain `var` declaration, such as `var 5 = n;`
+    above, stops the compiler instead of being diagnosed (W-080).
+
+Because an exhaustive `match` does not end control flow, `IsTrue` is rejected:
+
+```carbon
+fn IsTrue(b: bool) -> bool {
+  match (b) {
+    case false => { return false; }
+    case true => { return true; }
+  }
+}
+```
+
+The toolchain reports ``missing `return` at end of function with declared
+return type``. An alternative pattern nested in a tuple pattern is read as an
+expression:
+
+```carbon
+choice Flag { Off, On }
+
+fn Both(a: Flag, b: Flag) -> bool {
+  match ((a, b)) {
+    case (.On, .On) => { return true; }
+    default => { return false; }
+  }
+}
+```
+
+The toolchain reports ``name `.Self` not found``. A floating-point scrutinee
+is not supported:
+
+```carbon
+fn F(x: f64) -> i32 {
+  match (x) {
+    default => { return 0; }
+  }
+}
+```
+
+The toolchain reports
+``semantics TODO: `match on unsupported scrutinee type` ``.
 
 ### Refutable pattern bindings
 

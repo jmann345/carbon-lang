@@ -221,8 +221,15 @@ which this page adopts as governing, the by-value right operand of
 `AddAssignWith(StringBuf).Op` is a shared loan on `s` for the call (T2's
 value-binding clause, mutation-safety rule M8), and the `ref self` call
 invalidates `s`, so T4 rejects the pair as `StrictSharedBorrowInvalidated` once
-the loan checker (W-148) lands, as Rust rejects `s.push_str(&s)`. The explicit
-copy is the spelling that stays valid.
+the loan checker ("SAFE-1 residue: stage 4 loan checker — loans T1 to T8 over
+SemIR's block graph (NLL liveness), the Store rule, `bound` per T5 (a)-(e),
+`exclusive T*` and the reborrow/same-kind-copy clauses, the no-invalidation rule
+M3 with `Core.Plain` synthesis, `addr self` body checks, M5 payload sub-loans,
+M8 value-binding loans with the Debug shadow count
+(`MutationDuringValueBinding`), `Core.Guarded(T)`,
+`Core.Relocatable`/`Core.Move`/`~x`, `noalias`/`captures(none)` under T8,
+`--strict-checks=error` as the default" (on held PR 53's ledger)) lands, as Rust
+rejects `s.push_str(&s)`. The explicit copy is the spelling that stays valid.
 
 ## Ownership and lifetime
 
@@ -348,7 +355,15 @@ removed:
     local owner, a `str` field initialized from a temporary, a `+` result
     assigned to an existing `str` variable, and a view held across `+=` all
     compile and read freed memory. Removed when the loan checker of F-013
-    (W-148) lands and diagnoses them; until then, follow the rules of
+    ("SAFE-1 residue: stage 4 loan checker — loans T1 to T8 over SemIR's block
+    graph (NLL liveness), the Store rule, `bound` per T5 (a)-(e), `exclusive T*`
+    and the reborrow/same-kind-copy clauses, the no-invalidation rule M3 with
+    `Core.Plain` synthesis, `addr self` body checks, M5 payload sub-loans, M8
+    value-binding loans with the Debug shadow count
+    (`MutationDuringValueBinding`), `Core.Guarded(T)`,
+    `Core.Relocatable`/`Core.Move`/`~x`, `noalias`/`captures(none)` under T8,
+    `--strict-checks=error` as the default" (on held PR 53's ledger)) lands and
+    diagnoses them; until then, follow the rules of
     [Ownership and lifetime](#ownership-and-lifetime).
 -   **W-167: struct-literal construction of a class bypasses private-field
     access control.** [Classes](classes.md#access-control-for-construction)

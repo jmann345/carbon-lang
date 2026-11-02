@@ -5490,3 +5490,44 @@ commits, the ids and the land-time items.
     M-b, C-b and L-b, gap row 79's W-340 sentence is put in the past tense, and
     the decision log's DR-1 entry gains a dated note (added 2026-10-26,
     re-review round 4: the reviews: RR4-2-m1).
+
+DR-1b landed on trunk (LAND-1, 2026-11-02): merged as PR 65 by 2cabe2e39 (head
+fee0ef31c, trunk before 9863b1087; GitHub merged_at 2026-11-02T15:06:29Z) under
+R33, fork/land/land1-plan.md section 2.11; land-time commits 7984e4045,
+2aded769a, 180cd473f; container-measured (R33 (b)): gate 1982 of 1982,
+conformance 191 PASS, 0 FAIL, 15 SKIP over 206, 49 of 56 bullets; id re-scans:
+W-324 to W-327 and W-329 at DR-1's re-scan (its section 8 item 10) before the
+records commit's ledger edit: claude/carbon-fork-0-1-dr-idx,
+origin/claude/carbon-fork-0-1-dr-idx and the /home/user/carbon-dr-idx worktree
+(fee0ef31c, the head), claude/carbon-fork-0-1-dr,
+origin/claude/carbon-fork-0-1-dr, origin/pr/63 and the /home/user/carbon-dr
+worktree (89aabd125), which fee0ef31c contains, trunk and the
+/home/user/carbon-trunk worktree (180cd473f), which contain fee0ef31c, and
+origin/trunk, origin/claude/carbon-fork-0-1-7mwfb7, weekly-20261102 and the
+/home/user/carbon-weekly worktree (9863b1087), which descend from 89aabd125 and
+are ancestors of trunk 180cd473f; W-328 at it: none; moved to follow-ons: to
+items 15 and 17: DR-1's call.cpp and convert.cpp test; to item 14: SAFE-2's DR-1
+note. SAFE-2's note for DR-1 (fork/safe/safe2-plan.md section 0.8, on PR 53's
+unpushed realignment), that `IndirectIndexWith.Ref` takes `bound self` under
+W-144, assumed that PR 65 lands after PR 53; PR 65 landed first, so the note and
+its counterexample are Next actions item 14's, for PR 53's landing. Mutants
+(section 8 item 5; fork/land/land1-plan.md D-LAND-20): re-run C-b (check
+generic/template/index.carbon's split `index_class_with_index_with`, 1981 of
+1982), DR-1's first, `diagnose=true` on the `IndirectIndexWith` probe (check
+operators/overloaded/string_indexing, index_with_prelude, fail_invalid_base and
+fail_non_tuple_access among its 363 failures, 1619 of 1982), its second, the
+`IndexWith` fallback removed, applied with TC-2's `loc_id` (the full gate aborts
+at lower/handle.cpp:406's CARBON_FATAL; alone, lower operators/string_indexing
+aborts there and check operators/overloaded/string_indexing and
+index_with_prelude fail; the record's one-file-at-a-time totals not run: the
+abort), its third, 230227264's call.cpp line reverted (230227264's CARBON_CHECK
+at convert.cpp:3413 aborts on check and lower function/call/form.carbon and on
+check slice/write_through), and its fourth, the
+`IndirectIndexWith(Core.IntLiteral)` probe removed (check slice/write_through's
+`literal_subscript_literal_impl` split, 1981 of 1982); every other mutant keeps
+its record on fee0ef31c. clang-tidy 21.1.8, run after C-b on the merged
+toolchain/check/handle_index.cpp as fork/direction/plan.md section 8 item 6 runs
+it (--checks=-modernize-use-trailing-return-type over the build's compile
+database), returned rc 0 with no user warning; fork/land/land1-plan.md
+D-LAND-22's four programs gave the results it predicts on this landing's
+install, or the one W-259's notes record.

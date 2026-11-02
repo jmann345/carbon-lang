@@ -957,9 +957,14 @@ still gated before it is made (added 2026-11-01, review fold: RR3-3):
     problem (testing/file_test/file_test_base.cpp:131-160) only for a split
     that section 2 names as renamed by a land-time commit of this landing,
     which is expected at PR 64 and PR 65 (sections 2.9 and 2.11); it is
-    counted in A.1's `<g0>` and `<gn>`, and step 6's rename commit resolves
-    it. Any other failure of this gate that autoupdate cannot fix stops the
-    landing (added 2026-11-01, review fold: RR2-4).
+    counted in A.1's `<g0>` and `<gn>`, and step 6's rename commit resolves it.
+    At PR 65 it may also report check generic/template/index.carbon's split
+    `index_class_with_index_with` as failed with "unable to monomorphize
+    specific `Get(bool)`", the pre-C-b state section 2.11 names, counted the
+    same way and resolved by C-b, whose gate must not report it (added
+    2026-11-02, PR 65's landing, the implementer's stop at step 4: ruling (19)).
+    Any other failure of this gate that autoupdate cannot fix stops the landing
+    (added 2026-11-01, review fold: RR2-4).
 5.  Commit the merge with Appendix A.1's message, the results of step 4 in it.
 6.  The plan's land-time code, page and program commits, if section 2 lists
     any, each brought to a prek fixpoint before its commit, then built, gated
@@ -980,9 +985,13 @@ still gated before it is made (added 2026-11-01, review fold: RR3-3):
     after step 6's commits (amended 2026-11-01, review fold: RR2-4 / RR3-3). A
     gate before the last rename commit (step 4's, and at PR 65 C-b's) may
     report, besides "Autoupdate would make changes", only the `fail_`-prefix
-    problem step 4 allows for the split that rename commit renames; any other
-    failure there stops the landing. At PR 61 and PR 64, D-LAND-20's mutants
-    run after this step (added 2026-11-01, review fold: RR2-1). Then prek on
+    problem step 4 allows for the split that rename commit renames, and at PR 65
+    step 4's gate alone the pre-C-b failure of check
+    generic/template/index.carbon's split `index_class_with_index_with` that
+    section 2.11 names, which C-b's gate must not report (added 2026-11-02,
+    ruling (19)); any other failure there stops the landing. At PR 61 and PR 64,
+    D-LAND-20's mutants run after this step (added 2026-11-01, review fold:
+    RR2-1). Then prek on
     every other file the landing changed
     (`git diff --name-only <trunk before>..HEAD`): a change there is a defect
     of the PR's head, which stops the landing (D-LAND-10).
@@ -1350,9 +1359,31 @@ section 2.11's refill, C-b's `if` statement with its body (from `if
 is removed from the merged handle_index.cpp, the hoisted `index_type_id`
 declaration kept, the translation unit recompiled and relinked into
 /dev/shm as above, and the gate run: it must fail on that split of check
-generic/template/index and on nothing else. DR-1's other mutants of item 5
-edit files the file rule does not name at this landing or mutate the
-branch's state before C-b, and keep their records on fee0ef31c. At PR 68,
+generic/template/index and on nothing else. DR-1's other mutants of item 5, the
+first (`diagnose=true` on the `IndirectIndexWith` probe), the second (the
+`IndexWith` fallback removed) and the fourth (the
+`IndirectIndexWith(Core.IntLiteral)` probe removed) in
+toolchain/check/handle_index.cpp and the third (230227264's call.cpp line
+reverted) in toolchain/check/call.cpp, are named at this landing by the file
+rule (`git diff --name-only fee0ef31c HEAD -- toolchain core ':!*/testdata/*'`
+lists both files) and by the killer rule (the refill changes
+string_indexing.carbon and write_through.carbon), and the code they mutate is
+present after C-b; so each is re-run after section 2.11's refill as this
+decision's method says, its edit applied to the merged source (the second's
+`node_id` is TC-2's `loc_id` on the merged source, the rename the merge's
+resolution made, which is the edit applied there), the full gate run and, where
+DR-1's record ran a file alone, that file alone, and each must reproduce its
+record: the first fails check operators/overloaded/string_indexing,
+index_with_prelude, fail_invalid_base and fail_non_tuple_access among its
+failures; the second aborts the full gate at lower/handle.cpp's CARBON_FATAL
+and, alone, lower operators/string_indexing aborts there while check
+operators/overloaded/string_indexing and index_with_prelude fail; the third
+aborts at 230227264's CARBON_CHECK in convert.cpp on the two form.carbon goldens
+and on check slice/write_through; the fourth fails check slice/write_through at
+its `literal_subscript_literal_impl` split and nothing else (amended 2026-11-02,
+PR 65's landing, review round 1: RV65-1, ruling (21); the sentence this replaces
+said these mutants edit files the file rule does not name or mutate the state
+before C-b, which the review refuted on the tree). At PR 68,
 OV-4's section 8.8 runs section 8.5 on the merge commit (097c76473
 fork/overload/ov4-plan.md:2368-2372): the file rule applies to the mutants
 of section 8.5's record (:2146-2199) by their driver,
@@ -2120,8 +2151,19 @@ slice/write_through.carbon's split `fail_todo_template_index_with_only` as
 succeeded ("if success is expected, remove the `fail_` prefix"), as expected:
 DR-1 measured it before and after C-b, "1962 passed and 1 failed, L-b's
 rename 1/1" (fee0ef31c fork/direction/plan.md:2756-2758); it is counted in
-A.1's `<g0>` and `<gn>`, and L-b's rename commit resolves it (added
-2026-11-01, review fold: RR2-4); C-b, "Land PR 65: DR-1b: index a
+A.1's `<g0>` and `<gn>`, and L-b's rename commit resolves it (added 2026-11-01,
+review fold: RR2-4); step 4's gate also reports check
+generic/template/index.carbon's split `index_class_with_index_with` as failed,
+"unable to monomorphize specific `Get(bool)`" with the note "cannot access
+member of interface `Core.IndirectIndexWith(i32)` in type `Vec(bool)` that does
+not implement that interface", the pre-C-b state DR-1 measured on its mirror
+with its root cause and root fix (fee0ef31c fork/direction/plan.md:747-749) and
+D-LAND-20's C-b mutant expects (fee0ef31c fork/direction/plan.md:2648-2650):
+C-b's root fix resolves it, so C-b's gate must not report it, and it is counted
+in A.1's `<g0>` and `<gn>` and named in the message's parenthetical as resolved
+by C-b (measured at the landing: 1979 of 1982 with string_indexing's autoupdate
+problem and write_through's renamed split; added 2026-11-02, PR 65's landing,
+the implementer's stop at step 4: ruling (19)); C-b, "Land PR 65: DR-1b: index a
 template-dependent operand per specific (TP-1's IndexAction)", DR-1's own
 message (amended 2026-11-01, ruling fold: the audit's A3 note), the block
 of fork/direction/plan.md:2204-2225 at the head of `PerformIndex`'s default
@@ -2478,6 +2520,7 @@ other than the ones D-LAND-20's rules select at PR 61 and PR 64 (predicted:
 none of TP-1's, and CT-1's M6, M7, M23, M24, M75 and M75r), each keeping its
 record on 66aa13132 or 551a03328 as the PR's A.5 paragraph says; and both
 M18s until G-60 and G-59; DR-1's mutants of section 8 item 5 other than C-b's
+and the four the file rule names at PR 65 (ruling (21))
 and OV-4's of section 8.5 other than the file rule's (predicted M1, M2 and
 M8), each keeping its record on fee0ef31c or 097c76473; SV-1's M19 and M21
 until G-59 (added 2026-11-01, ruling fold: AUD-65-A11 / AUD-68-17 /
@@ -2565,7 +2608,10 @@ nothing fails, and then no refill commit follows. The conformance values of
 A.1 are the merge's too; A.3 to A.7 carry the landing's final ones (amended
 2026-11-01, review fold: RR1-6). At PR 64 and PR 65 the split that the
 landing's section (2.9 or 2.11) renames is among the failures `<g0>` leaves
-out (amended 2026-11-01, review fold: RR2-4).
+out (amended 2026-11-01, review fold: RR2-4). At PR 65 the pre-C-b failure of
+check generic/template/index.carbon's split `index_class_with_index_with` is
+among them too, and the message's parenthetical names it as resolved by C-b
+(added 2026-11-02, ruling (19)).
 
 ### A.2 The refill commit's message
 
@@ -3864,10 +3910,11 @@ Before M-b and C-b, DR-1b's own tree rejected a subscript of template-dependent 
 ```
 
 PR 65's A.5 Landed paragraph ends with these sentences (added 2026-11-01,
-ruling fold: AUD-65-F2 / AUD-65-A11):
+ruling fold: AUD-65-F2 / AUD-65-A11; the mutant sentence amended 2026-11-02,
+review round 1: RV65-1, ruling (21)):
 
 ```text
-SAFE-2's note for DR-1 (fork/safe/safe2-plan.md section 0.8, on PR 53's unpushed realignment), that `IndirectIndexWith.Ref` takes `bound self` under W-144, assumed that PR 65 lands after PR 53; PR 65 landed first, so the note and its counterexample are Next actions item 14's, for PR 53's landing. Mutants (section 8 item 5; fork/land/land1-plan.md D-LAND-20): C-b's dependence check removed, re-run: <mut>; every other mutant keeps its record on fee0ef31c.
+SAFE-2's note for DR-1 (fork/safe/safe2-plan.md section 0.8, on PR 53's unpushed realignment), that `IndirectIndexWith.Ref` takes `bound self` under W-144, assumed that PR 65 lands after PR 53; PR 65 landed first, so the note and its counterexample are Next actions item 14's, for PR 53's landing. Mutants (section 8 item 5; fork/land/land1-plan.md D-LAND-20): re-run <mut>; every other mutant keeps its record on fee0ef31c.
 ```
 
 L-b's rename commit (section 2.11; added 2026-11-01, review fold: RR3-1).
@@ -5223,5 +5270,202 @@ landing's records commit (D-LAND-9 as amended by the first):
 > written. The ruling's preamble cite "docs/design/templates.md:527-529" for
 > W-264's sentence, which no repository text carries, reads :525-529 on the
 > tree.
+>
+> (19) At PR 65's landing (stage 11), on the implementer's stop at step 4, the
+> pre-C-b failure of generic/template/index's split
+> `index_class_with_index_with`: (1) State check and step 4's reading. First
+> confirm the worktree is as the implementer left it: HEAD 9863b1087, MERGE_HEAD
+> fee0ef31c, `git diff --name-only --diff-filter=U` empty, `git status --short`
+> listing only the merge's staged files, prek clean; then re-run `$CB/gate.sh
+> /home/user/carbon-trunk` once on the unchanged tree and build (log
+> step4b-gate.log): it must report 1979 passed, 3 failed, with exactly the three
+> files above and their problems as the STOP log names them; any other result is
+> STOPPED. With that, step 4's gate at PR 65 is read as passing: its three
+> reported files are expected, and its values stand as measured (gate 1979
+> of 1982; conformance 191/0/15 over 206, PASS 191, COMPILE-FAIL 0, LINK-FAIL 0,
+> RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 15; bullets 49 of 56;
+> tally 36/16/3/1) with no other re-run. Step 5 commits the merge with A.1's
+> message, `<g0>` 1979 and `<gn>` 1982, and the message's parenthetical "(each
+> golden that fails is renamed by a land-time commit that section <spec> names
+> or refilled by this landing's refill commit, fork/land/land1-plan.md Appendix
+> A.2, which states the gate after it)" gains, before its closing parenthesis,
+> the words ", or, at this landing, check generic/template/index.carbon's split
+> `index_class_with_index_with`, whose pre-C-b failure C-b's root fix resolves
+> (section 2.11, ruling (19))". (2) Step 6 and after. C-b's gate (step 6, the
+> gate after C-b's commit and before L-b) must not report check
+> generic/template/index.carbon's split `index_class_with_index_with` as failed:
+> if it does, the landing is STOPPED (the ruling's break condition); it may
+> report, as step 7's rule allows for a gate before the last rename commit,
+> "Autoupdate would make changes" and write_through's `fail_`-prefix problem
+> until L-b. The refill, L-b, the fixture and probe steps, D-LAND-20's C-b
+> mutant after the refill (which must fail on that split, as the plan says; any
+> other result is STOPPED) and steps 7 to 9 follow section 2.11 and Appendix
+> C.12 as written. The records texts that carry step 4's values (A.1's message,
+> A.3's row, A.5's paragraph and its `<g0>`/`<gn>` sentence) state 1979 of 1982
+> with the three files named, each with its resolution (GOLD-1's refill, L-b's
+> rename, C-b's root fix). Read by ruling (20): A.1's message alone carries
+> them, and A.3's row and A.5's paragraph carry the landing's final gate as
+> their templates give. (3) Plan amendments, in fork/land/land1-plan.md, each
+> inserted verbatim: (a) in D-LAND-6 step 4, after "it is counted in A.1's
+> `<g0>` and `<gn>`, and step 6's rename commit resolves it." and before "Any
+> other failure of this gate that autoupdate cannot fix stops the landing", the
+> sentence "At PR 65 it may also report check generic/template/index.carbon's
+> split `index_class_with_index_with` as failed with "unable to monomorphize
+> specific `Get(bool)`", the pre-C-b state section 2.11 names, counted the same
+> way and resolved by C-b, whose gate must not report it (added 2026-11-02,
+> PR 65's landing, the implementer's stop at step 4: ruling (19))."; (b) in
+> step 7, after "only the `fail_`-prefix problem step 4 allows for the split
+> that rename commit renames" and before "; any other failure there stops the
+> landing", the words ", and at PR 65 step 4's gate alone the pre-C-b failure of
+> check generic/template/index.carbon's split `index_class_with_index_with` that
+> section 2.11 names, which C-b's gate must not report (added 2026-11-02, ruling
+> (19))"; (c) in section 2.11, after "(added 2026-11-01, review fold: RR2-4);"
+> and before "C-b, "Land PR 65: DR-1b: index a template-dependent operand per
+> specific (TP-1's IndexAction)"", the clause "step 4's gate also reports check
+> generic/template/index.carbon's split `index_class_with_index_with` as failed,
+> "unable to monomorphize specific `Get(bool)`" with the note "cannot access
+> member of interface `Core.IndirectIndexWith(i32)` in type `Vec(bool)` that
+> does not implement that interface", the pre-C-b state DR-1 measured on its
+> mirror with its root cause and root fix (fee0ef31c
+> fork/direction/plan.md:747-749) and D-LAND-20's C-b mutant expects (fee0ef31c
+> fork/direction/plan.md:2648-2650): C-b's root fix resolves it, so C-b's gate
+> must not report it, and it is counted in A.1's `<g0>` and `<gn>` and named in
+> the message's parenthetical as resolved by C-b (measured at the landing: 1979
+> of 1982 with string_indexing's autoupdate problem and write_through's renamed
+> split; added 2026-11-02, PR 65's landing, the implementer's stop at step 4:
+> ruling (19));"; (d) in Appendix A.1's note, after "(amended 2026-11-01, review
+> fold: RR2-4)." the sentence "At PR 65 the pre-C-b failure of check
+> generic/template/index.carbon's split `index_class_with_index_with` is among
+> them too, and the message's parenthetical names it as resolved by C-b
+> (added 2026-11-02, ruling (19))."
+>
+> (20) At PR 65's landing (stage 11), before its review, on the continuation
+> implementer's stop at step 9, the records texts that carry step 4's
+> values: (1) A.3's row and A.5's paragraph carry the landing's final
+> gate, 1982 of 1982, as their templates give; ruling (19) item (2)'s last
+> sentence is read as applying to A.1's message alone, whose parenthetical
+> names the three files and their resolutions (ruling (19) item (1)); the
+> records edits are right as written, and no records text other than
+> fork/land/land1-plan.md changes for this ruling. (2) The check, logged under
+> logs/step9-ruling20.log:
+> `git -C /home/user/carbon-trunk log -1 --format=%B 2cabe2e39` contains
+> "gate 1979 of 1982" and the words ", or, at this landing, check
+> generic/template/index.carbon's split `index_class_with_index_with`, whose
+> pre-C-b failure C-b's root fix resolves (section 2.11, ruling (19))"; in the
+> uncommitted records edits, A.3's row for PR 65 in fork/ORCHESTRATION.md's
+> Branches table and A.5's Landed paragraph in fork/direction/plan.md each
+> contain "gate 1982 of 1982" and neither contains "1979"; each grep's output
+> is the check's record, and a miss is STOPPED.
+>
+> (21) At PR 65's landing (stage 11), on review round 1's MINOR finding RV65-1,
+> D-LAND-20's exemption of DR-1's other mutants: (1) The measurement, before the
+> edits, by D-LAND-20's method on the landing's merged source at 180cd473f (the
+> worktree's toolchain/ and core/ have no uncommitted change; confirm it first):
+> with the review's scripts copied from <PRDIR>/review1/mutants/
+> to <PRDIR>/mutants/bin/ (read mk.py first and confirm that its m1, m2, m3 and
+> m4 edits are DR-1's four, section 8 item 5 of fee0ef31c
+> fork/direction/plan.md:2634-2663, and that m2 is the `IndexWith` fallback's
+> removal written with TC-2's `loc_id`; m2_verbatim is not run), each mutant's
+> source is made under /dev/shm/land1-mut65/<m>/src/, its translation unit
+> recompiled over /home/user/carbon-build/carbon-trunk's objects and file_test
+> relinked into /dev/shm/land1-mut65/<m>/ by relink.sh, and the full gate run by
+> mgate.sh, logs copied to <PRDIR>/logs/step7-mutants/<m>-gate.log;
+> /dev/shm/land1-mut65 is deleted after. The control relink (ctl, the unmutated
+> source) comes first and must give 1982 passed. Expected, each a STOPPED if not
+> met: the first (m1, `diagnose=true` on the `IndirectIndexWith` probe) fails
+> check operators/overloaded/string_indexing, index_with_prelude,
+> fail_invalid_base and fail_non_tuple_access among its failures, recording <p1>
+> passed of 1982 and <f1> failed; the second (m2, the `IndexWith` fallback
+> removed) aborts the full gate at lower/handle.cpp's CARBON_FATAL (its line on
+> the tree, <l2>), and then, file_test run on one file alone,
+> toolchain/lower/testdata/operators/string_indexing.carbon aborts there while
+> toolchain/check/testdata/operators/overloaded/string_indexing.carbon and
+> toolchain/check/testdata/operators/overloaded/index_with_prelude.carbon each
+> fail (DR-1's one-file-at-a-time totals over the whole gate are not
+> re-measured: the abort); the third (m3, 230227264's call.cpp line reverted)
+> aborts the full gate at 230227264's CARBON_CHECK in convert.cpp (its line on
+> the tree, <l3>), and, one file alone,
+> toolchain/check/testdata/function/call/form.carbon,
+> toolchain/lower/testdata/function/call/form.carbon and
+> toolchain/check/testdata/slice/write_through.carbon each abort there; the
+> fourth (m4, the `IndirectIndexWith(Core.IntLiteral)` probe removed) gives <p4>
+> passed of 1982 with check slice/write_through failing at its
+> `literal_subscript_literal_impl` split and nothing else. The review's values
+> were ctl 1982, m1 1619 passed and 363 failed, m2's abort at
+> lower/handle.cpp:406 (the CARBON_FATAL at :406-407), m3's at convert.cpp:3413,
+> m4 1981 passed; a different value is reported in `difference` and is STOPPED.
+> (2) The edits, each verbatim, the slots <p1>, <f1>, <l2>, <l3> and <p4> filled
+> with item (1)'s values: (a) in fork/land/land1-plan.md D-LAND-20, the sentence
+> "DR-1's other mutants of item 5 edit files the file rule does not name at this
+> landing or mutate the branch's state before C-b, and keep their records on
+> fee0ef31c." becomes "DR-1's other mutants of item 5, the first
+> (`diagnose=true` on the `IndirectIndexWith` probe), the second (the
+> `IndexWith` fallback removed) and the fourth (the
+> `IndirectIndexWith(Core.IntLiteral)` probe removed) in
+> toolchain/check/handle_index.cpp and the third (230227264's call.cpp line
+> reverted) in toolchain/check/call.cpp, are named at this landing by the file
+> rule (`git diff --name-only fee0ef31c HEAD -- toolchain core ':!*/testdata/*'`
+> lists both files) and by the killer rule (the refill changes
+> string_indexing.carbon and write_through.carbon), and the code they mutate is
+> present after C-b; so each is re-run after section 2.11's refill as this
+> decision's method says, its edit applied to the merged source (the second's
+> `node_id` is TC-2's `loc_id` on the merged source, the rename the merge's
+> resolution made, which is the edit applied there), the full gate run and,
+> where DR-1's record ran a file alone, that file alone, and each must reproduce
+> its record: the first fails check operators/overloaded/string_indexing,
+> index_with_prelude, fail_invalid_base and fail_non_tuple_access among its
+> failures; the second aborts the full gate at lower/handle.cpp's CARBON_FATAL
+> and, alone, lower operators/string_indexing aborts there while check
+> operators/overloaded/string_indexing and index_with_prelude fail; the third
+> aborts at 230227264's CARBON_CHECK in convert.cpp on the two form.carbon
+> goldens and on check slice/write_through; the fourth fails check
+> slice/write_through at its `literal_subscript_literal_impl` split and nothing
+> else (amended 2026-11-02, PR 65's landing, review round 1: RV65-1, ruling
+> (21); the sentence this replaces said these mutants edit files the file rule
+> does not name or mutate the state before C-b, which the review refuted on the
+> tree)."; (b) in section 6, "DR-1's mutants of section 8 item 5 other than
+> C-b's" becomes "DR-1's mutants of section 8 item 5 other than C-b's and the
+> four the file rule names at PR 65 (ruling (21))"; (c) in Appendix C.12, the
+> introduction "PR 65's A.5 Landed paragraph ends with these sentences
+> (added 2026-11-01, ruling fold: AUD-65-F2 / AUD-65-A11):" becomes "PR 65's A.5
+> Landed paragraph ends with these sentences (added 2026-11-01, ruling fold:
+> AUD-65-F2 / AUD-65-A11; the mutant sentence amended 2026-11-02, review
+> round 1: RV65-1, ruling (21)):" and, in its code block, "Mutants (section 8
+> item 5; fork/land/land1-plan.md D-LAND-20): C-b's dependence check removed,
+> re-run: <mut>; every other mutant keeps its record on fee0ef31c." becomes
+> "Mutants (section 8 item 5; fork/land/land1-plan.md D-LAND-20): re-run <mut>;
+> every other mutant keeps its record on fee0ef31c."; (d) in the uncommitted
+> records edits, PR 65's A.5 Landed paragraph in fork/direction/plan.md (the
+> paragraph beginning "DR-1b landed on trunk (LAND-1, 2026-11-02)"), the text
+> from "Mutants (section 8 item 5; fork/land/land1-plan.md D-LAND-20): C-b's
+> dependence check removed, re-run: C-b (check generic/template/index.carbon's
+> split `index_class_with_index_with`, 1981 of 1982); every other mutant keeps
+> its record on fee0ef31c." becomes "Mutants (section 8 item 5;
+> fork/land/land1-plan.md D-LAND-20): re-run C-b (check
+> generic/template/index.carbon's split `index_class_with_index_with`, 1981
+> of 1982), DR-1's first, `diagnose=true` on the `IndirectIndexWith` probe
+> (check operators/overloaded/string_indexing, index_with_prelude,
+> fail_invalid_base and fail_non_tuple_access among its <f1> failures, <p1>
+> of 1982), its second, the `IndexWith` fallback removed, applied with TC-2's
+> `loc_id` (the full gate aborts at lower/handle.cpp:<l2>'s CARBON_FATAL; alone,
+> lower operators/string_indexing aborts there and check
+> operators/overloaded/string_indexing and index_with_prelude fail; the record's
+> one-file-at-a-time totals not run: the abort), its third, 230227264's call.cpp
+> line reverted (230227264's CARBON_CHECK at convert.cpp:<l3> aborts on check
+> and lower function/call/form.carbon and on check slice/write_through), and its
+> fourth, the `IndirectIndexWith(Core.IntLiteral)` probe removed (check
+> slice/write_through's `literal_subscript_literal_impl` split, <p4> of 1982);
+> every other mutant keeps its record on fee0ef31c."; (e) in
+> fork/land/land1-plan.md's "## Landing-time rulings" blockquote, directly after
+> paragraph (20), a paragraph "(21)" holding items (1) and (2) verbatim,
+> introduced by "At PR 65's landing (stage 11), on review round 1's MINOR
+> finding RV65-1, D-LAND-20's exemption of DR-1's other mutants:", and ending
+> with the sentence "Measured at the landing (ruling (21)): control 1982
+> of 1982; the first <p1> of 1982 with <f1> failures; the second's abort at
+> lower/handle.cpp:<l2>; the third's at convert.cpp:<l3>; the fourth <p4>
+> of 1982.", its slots filled. Measured at the landing (ruling (21)):
+> control 1982 of 1982; the first 1619 of 1982 with 363 failures; the second's
+> abort at lower/handle.cpp:406; the third's at convert.cpp:3413; the
+> fourth 1981 of 1982.
 
 <!-- google-doc-style-resume -->

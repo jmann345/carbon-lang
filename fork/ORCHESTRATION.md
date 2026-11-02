@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-02 (PR 63 landed by LAND-1; 10 PRs landed,
+Last updated: 2026-11-02 (PR 65 landed by LAND-1; 11 PRs landed,
+7 held; see the paragraph dated 2026-11-02 (14:00 UTC) below; the
+earlier 2026-11-02 text follows).
+2026-11-02 (PR 63 landed by LAND-1; 10 PRs landed,
 8 held; see the paragraph dated 2026-11-02 (12:41 UTC) below; the
 earlier 2026-11-02 text follows).
 2026-11-02 (PR 64 landed by LAND-1; 9 PRs landed,
@@ -1721,6 +1724,22 @@ origin/claude/carbon-fork-0-1-dr-idx and the /home/user/carbon-dr-idx worktree
 which contain 89aabd125; W-328 at it: none; 10 PRs landed, 8 held. Next:
 PR 65 (DR-1b), after the orchestrator retargets it to trunk.
 
+2026-11-02 (14:00 UTC): PR 65 (DR-1b) LANDED on trunk by merge
+2cabe2e39 under R33 (fork/land/land1-plan.md section 2.11), GitHub
+merged_at 2026-11-02T15:06:29Z; container-measured (R33 (b)): gate 1982 of 1982,
+conformance 191/0/15 over 206, 49/56 bullets, gap tally 36/16/3/1;
+id re-scans: W-324 to W-327 and W-329 at DR-1's re-scan (its section 8
+item 10) before the records commit's ledger edit:
+claude/carbon-fork-0-1-dr-idx, origin/claude/carbon-fork-0-1-dr-idx and the
+/home/user/carbon-dr-idx worktree (fee0ef31c, the head),
+claude/carbon-fork-0-1-dr, origin/claude/carbon-fork-0-1-dr, origin/pr/63 and
+the /home/user/carbon-dr worktree (89aabd125), which fee0ef31c contains, trunk
+and the /home/user/carbon-trunk worktree (180cd473f), which contain fee0ef31c,
+and origin/trunk, origin/claude/carbon-fork-0-1-7mwfb7, weekly-20261102 and
+the /home/user/carbon-weekly worktree (9863b1087), which descend from
+89aabd125 and are ancestors of trunk 180cd473f; W-328 at it: none; 11 PRs
+landed, 7 held. Next: PR 68 (OV-4).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2067,7 +2086,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-sv` | LANDED as PR 62 by merge 4fd18b93f (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T10:03:37Z, merge_commit_sha 4fd18b93f) — SV-1: F-020: std::optional and std::variant interop mapping; W-011 DISCHARGED; W-284 held until M-VA lands (item 17); gap row 68 PARTIAL; land-time commits 855a90d3b; container-measured (R33 (b)): gate 1976 of 1976, conformance 182/0/15 over 197, 49/56 bullets; moved to follow-ons: to item 17: M-VA and W-284; to item 16: Doc-M, C.5, C.8, the W-177 header cite and F-M's PR 57 part; to item 17: M-VA's mutants M19 and M21 and W-284's clauses; to item 16: the nested-pointer leg and Doc-M's re-derivation; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ct` | LANDED as PR 64 by merge e68882519 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T12:05:55Z, merge_commit_sha e68882519) — CT-1: F-021: C++ templates on symbolic Carbon type arguments, instantiated per specific; PR 51's split renamed unformed_dependent_var by L-F (C-2); W-043 DISCHARGED; gap rows 56 and 42 PARTIAL; land-time commits d2cfbfe72, 4ce74a243, ef8456981, 940b67215; container-measured (R33 (b)): gate 1978 of 1978, conformance 189/0/15 over 204, 49/56 bullets; moved to follow-ons: to item 17: S-VA with its mutant M18, and C.11's split; to items 15 and 16: its PR 60 and PR 57 compositions; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-dr` | LANDED as PR 63 by merge 5316f9931 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T13:10:10Z, merge_commit_sha 5316f9931) — DR-1a: R32: Core.Iterate.Next takes a ref cursor; W-321 discharged; land-time commits 64b028643, aba67cdbd; container-measured (R33 (b)): gate 1978 of 1978, conformance 189/0/15 over 204, 49/56 bullets; moved to follow-ons: to item 16: loops.md's M-a rule and the m57 refills; to item 16: error_handling.md's rule, row 78's DR-0 sentence and W-323's note; R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-dr-idx` | HELD OPEN as PR 65 — DR-1b element access through `IndirectIndexWith`, `Core.Slice` and `Core.Buf` writing through `Ref`, upstream 230227264 cherry-picked (R32; W-109 DISCHARGED) at fee0ef31c (toolchain 7a442f632; base claude/carbon-fork-0-1-dr, stacked on PR 63; expected 1946 of 1946 and 130/0/22 over 152); one stop-and-amend (plan rev 4), one implementation review folded at the root (fddfcf42a and its fill bcd9ba06f, the comment commits 8deb75262 and 7a442f632, and round 4's shrink-line split 0cd4e5d2e with W-340 filed), a focused re-review of four rounds (rounds 1 to 3 APPROVE-WITH-FIXES with comment-only MINORs and, at round 3, one MAJOR, RR3-1-M1; round 4 dry after the shrink line); merges after DR-1a through M-b, C-b and L-b. |
+| `claude/carbon-fork-0-1-dr-idx` | LANDED as PR 65 by merge 2cabe2e39 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:06:29Z, merge_commit_sha 2cabe2e39) — DR-1b: R32: subscripting prefers IndirectIndexWith and Core.Slice and Core.Buf write through Ref, with C-b over TP-1; W-109 and W-340 discharged; gap row 79 DONE; land-time commits 7984e4045, 2aded769a, 180cd473f; container-measured (R33 (b)): gate 1982 of 1982, conformance 191/0/15 over 206, 49/56 bullets; moved to follow-ons: to items 15 and 17: DR-1's call.cpp and convert.cpp test; to item 14: SAFE-2's DR-1 note; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-va2` | HELD OPEN as PR 66 (stacked on PR 59, base claude/carbon-fork-0-1-va) — VA-2 definition-checked variadics slice 2 at 43c8ab476 (2026-10-27; forty-two commits over PR 59's b0822a744: plan rev 1 to rev 16, C0, C0b, C1 to C5 with their fills, the fold's fix and fill, R, D, the re-review loop's four rounds with fix 3, fix 4 by D-VA2-19's break condition, their fills and records; 104 findings over twenty-one reviews, all folded, none rejected, round 4 dry; W-225 discharged, W-212 and W-213 narrowed, W-330..W-339 and W-345 filed; gap rows 53 and 74 stay PARTIAL; expected, not of record: 1977 of 1977 and 147/0/21 over 168); merges last after PR 65 through M, S-CT, F-M, L-F and L (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 after PR 59). |
 | `claude/carbon-fork-0-1-rg1` | LANDED as PR 67 by merge 7f8c7e696 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T01:17:26Z, merge_commit_sha 7f8c7e696) — RG-1: records only: the V-3a register classified at upstream f27a977d8; W-342 and W-344 discharged, W-343 narrowed to the land-time notes, W-346 to W-356 filed; land-time commits none; container-measured (R33 (b)): gate 1942 of 1942, conformance 128/0/22 over 150, 48/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ov4` | HELD OPEN as PR 68 (base trunk 66bd2ba90) — OV-4, `overload fn` members with default parameter values (W-341 DISCHARGED; W-360 to W-363 filed for UA-3; W-364 unused), at 097c76473 (2026-10-28; twelve commits: plan rev 1 to rev 3, C1 751d077fd, F1 0f53d7e53, P dc1bb641b, the measurements record 16c58df0d, the fold's fix ef31d5820 with its fill 9ee5fcde3 and records 1c2470b06, D dcbb449eb and the re-review's records 097c76473; plan fork/overload/ov4-plan.md rev 3, signed off at 89001cfcd, amended by the measurements, the fold and the re-review's records commits; one counted fix commit of three); gap row "Functions: function overloading (Carbon-native)" stays DONE; expected 1946 of 1946 and 130/0/22 over 152; merges after PR 66 and before EH-C, through M, F-M, L-R and L. |
@@ -2082,9 +2101,9 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 63's landing (2026-11-02, LAND-1, R33 (b)): 189 PASS
-/ 15 SKIP / 0 FAIL programs (204 total); **49/56 bullets green**; gate
-1978 of 1978. R21's hosted run is owed when Actions returns; the paragraph
+Container-measured at PR 65's landing (2026-11-02, LAND-1, R33 (b)): 191 PASS
+/ 15 SKIP / 0 FAIL programs (206 total); **49/56 bullets green**; gate
+1982 of 1982. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
 fork/conformance/out/scoreboard.json's (D-LAND-17).
 
@@ -2183,13 +2202,13 @@ as the work still owed on the branches and after the landing.
 
 1.  **DR-1 (fork/direction/plan.md, rev 4, signed off)**: DR-1a, the `ref`
     cursor (W-321), landed on trunk 2026-11-02 as PR 63 (LAND-1), and DR-1b,
-    `IndirectIndexWith` (W-109, stacked on DR-1a), is held open as PR 65;
-    W-322's removal-only commit on PR 62's branch
-    (0ef8a0334, reviewed) and W-323's records commit on PR 56's branch
-    (894139b34), merged into PR 57's (a080c7886), are made, and the three
-    descriptions are re-posted; W-320 (`Core.Optional` matchable by `Match`)
-    stopped at the plan on upstream's own conflict, watched by W-324 at each
-    weekly upstream check. Both DR-1 PRs merge after CT-1 (PR 64).
+    `IndirectIndexWith` (W-109, stacked on DR-1a), landed on trunk 2026-11-02 as
+    PR 65 (LAND-1); W-322's removal-only commit on PR 62's branch (0ef8a0334,
+    reviewed) and W-323's records commit on PR 56's branch (894139b34), merged
+    into PR 57's (a080c7886), are made, and the three descriptions are
+    re-posted; W-320 (`Core.Optional` matchable by `Match`) stopped at the plan
+    on upstream's own conflict, watched by W-324 at each weekly upstream check.
+    Both DR-1 PRs landed after CT-1 (PR 64), LAND-1.
 2.  **VA-2 (definition-checked variadics slice 2)** is held open as PR 66
     (claude/carbon-fork-0-1-va2 at 43c8ab476, stacked on PR 59): generic and
     heterogeneous packs (W-212, narrowed), tuples with one pack segment (W-213,

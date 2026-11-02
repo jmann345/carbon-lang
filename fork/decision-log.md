@@ -725,6 +725,29 @@ worktree (fee0ef31c), and trunk and the /home/user/carbon-trunk worktree
 follow-ons: to item 16: loops.md's M-a rule and the m57 refills; to
 item 16: error_handling.md's rule, row 78's DR-0 sentence and W-323's note.
 
+_W-340 discharged (2026-11-02, LAND-1):_ M-b 2cabe2e39, then C-b and L-b
+(7984e4045, 2aded769a, 180cd473f) on trunk, by fork/direction/plan.md
+section 1.16: t10, t15, t16 and t18 print 7, 8, 9 and 6, n06, n15, n32 and
+n13 print 8, 5, 7 and `3 7`, and a4 prints 9 on the landing's toolchain;
+check slice/write_through.carbon's split is `template_index_with_only`, its
+comment saying that the choice is made per specific.
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 65 by
+2cabe2e39 (GitHub merged_at 2026-11-02T15:06:29Z); container-measured (R33 (b)):
+gate 1982 of 1982, conformance 191/0/15 over 206; id re-scans: W-324 to
+W-327 and W-329 at DR-1's re-scan (its section 8 item 10) before the
+records commit's ledger edit: claude/carbon-fork-0-1-dr-idx,
+origin/claude/carbon-fork-0-1-dr-idx and the /home/user/carbon-dr-idx
+worktree (fee0ef31c, the head), claude/carbon-fork-0-1-dr,
+origin/claude/carbon-fork-0-1-dr, origin/pr/63 and the /home/user/carbon-dr
+worktree (89aabd125), which fee0ef31c contains, trunk and the
+/home/user/carbon-trunk worktree (180cd473f), which contain fee0ef31c, and
+origin/trunk, origin/claude/carbon-fork-0-1-7mwfb7, weekly-20261102 and the
+/home/user/carbon-weekly worktree (9863b1087), which descend from 89aabd125
+and are ancestors of trunk 180cd473f; W-328 at it: none; moved to
+follow-ons: to items 15 and 17: DR-1's call.cpp and convert.cpp test; to
+item 14: SAFE-2's DR-1 note.
+
 ### RG-1: the V-3a register classified at f27a977d8 (2026-10-28)
 
 Placed here, in Decided directly after DR-0, because the log groups entries by

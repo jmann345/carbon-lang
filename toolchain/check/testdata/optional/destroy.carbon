@@ -57,6 +57,24 @@ fn HoldGeneric[T: Core.Copy & Core.Destroy](a: T) -> bool {
 }
 //@dump-sem-ir-end
 
+// --- incomplete_self_signature.carbon
+library "[[@TEST_NAME]]";
+
+// Item 10 (FO-1, D-FO1-1): a class with its own `Copy` and `Destroy` impls
+// names `Core.Optional(Self)` in a method's signature inside its definition.
+// Forming `Core.Optional(S)` looks up `DefaultOptionalStorage(S)`'s `Destroy`
+// while `S` is incomplete; the class's own `Destroy` impl answers that lookup
+// without completing `S`.
+class S {
+  impl as Core.Copy {
+    fn Op(unused self) -> Self { return {}; }
+  }
+  impl as Core.Destroy {
+    fn Op(unused ref self) {}
+  }
+  fn Next(self) -> Core.Optional(Self);
+}
+
 // --- union_pointer_field.carbon
 
 library "[[@TEST_NAME]]";

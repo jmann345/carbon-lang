@@ -372,6 +372,20 @@ static auto CanDestroyType(Context& context, SemIR::LocId loc_id,
     return DestroyFormat::NoDestroy;
   }
 
+  // Fork (OP-2, item 10): a class that declares its own `Destroy` impl is
+  // destroyed by that impl, never by the synthesized witness
+  // (`CanDestroyClass`, SL-1's R-12), so whether its type is complete does not
+  // decide the answer. It is not completed here: `OptionalStorage.Type` is
+  // `Destroy`, so forming `Core.Optional(C)` looks up
+  // `DefaultOptionalStorage(C)`'s `Destroy` where `C` may still be incomplete,
+  // as in a method of `C` returning `Core.Optional(Self)`.
+  if (auto class_type = inst.TryAs<SemIR::ClassType>();
+      class_type &&
+      HasClassKeyedImpl(context, *class_type, SemIR::CoreInterface::Destroy,
+                        /*outside_core_only=*/false)) {
+    return DestroyFormat::NoDestroy;
+  }
+
   // Incomplete types can not be destroyed.
   auto type_id = context.types().GetTypeIdForTypeInstId(inst_id);
   if (!TryToCompleteType(context, type_id, loc_id)) {

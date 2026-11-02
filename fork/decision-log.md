@@ -244,7 +244,15 @@ under V-3b each entry is a drift and carries its work item. (i) PR 62's D-SV-7
 read-only `Core.Slice`, registered at SL-1, against upstream's
 `IndirectIndexWith` and its `Ref` (6d80ceb58, 309d3d63c; W-109, DR-1 slice 3).
 (iii) The pointer cursor of `Core.Iterate.Next` at 11 sites against upstream's
-`ref cursor` (df3cf9294; W-321, DR-1 slice 2).
+`ref cursor` (df3cf9294; W-321, DR-1 slice 2). (iv) `Core.Optional` is not
+matchable because upstream's pages conflict on `Match.Continuation`
+(docs/design/sum_types.md:113 against README.md:1076-1078 and :3064-3067,
+generics/terminology.md:100-103 and the parser at ac31fd198); work items W-320
+(blocked) and W-324, owner DR-1, checked at each weekly upstream check (added
+2026-10-21, DR-1 plan). (v) D-SL-17's literal-subscript rule, a fork spelling
+of indexing.md's `like i64`; work item W-326, blocked on `like` (added
+2026-10-21, DR-1 plan). (iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its
+fill c1cc72a09.
 
 _V-3a register re-check, weekly upstream check 2026-10-26 (upstream 21c825a3f;
 the entry "Weekly upstream check 2026-10-26 (R32 direction register)" has the
@@ -273,6 +281,119 @@ records corrections owed on PR 56's branch; owner DR-1). W-109 (SL-1's residue,
 on trunk) gains a dated note naming D-DR-1 slice 3 and R32, and no new id.
 W-324..W-329 are reserved and unused. The trunk ledger holds W-001..W-125 and
 these four; the ids between live on the held PRs' branches.
+
+### DR-1: direction realignment: the ref cursor, IndirectIndexWith, D-SV-7 retired, Match stopped on upstream's conflict (2026-10-21)
+
+The workstream D-DR-1 scheduled (fork/direction/plan.md, rev 3, signed off
+2026-10-21). Upstream's direction was read at upstream/trunk bc45989b2, the tip
+at sign-off (rev 2 read ac31fd198). Decisions D-DR-5..D-DR-22, auto-adopted
+under R29(a), each with its break condition in the plan: two PRs, DR-1a (the
+`ref` cursor) on trunk's base and DR-1b (`IndirectIndexWith`) stacked on it
+(D-DR-5); the `ref` cursor as df3cf9294 (D-DR-6); `IndirectIndexWith` as
+6d80ceb58 and 309d3d63c with 230227264's code and upstream's tests,
+`Core.Slice` and `Core.Buf` writable through `Ref` (indexing.md's `std::span`
+category, D-SL-6's by-value writes), D-SL-3 retired by its own break condition,
+D-SL-17 filed as a drift (W-326) (D-DR-7); none of rev 1's language
+prerequisites for sum_types.md's `Match` (D-DR-8): a template associated
+constant contradicts docs/design/README.md:1076-1078 and :3064-3067,
+generics/terminology.md:100-103 and upstream's parser, and an impl member giving
+an associated constant its value is what accepted proposal p001013 removed, so
+D-DR-22's stop rule fired at the plan and W-320 waits on upstream's resolution
+(W-324); D-DR-9..D-DR-14 withdrawn with slice 1, their resumption bound by the
+plan's RC-1..RC-12, and the `Try` body kept on `HasValue()`/`Get()` (D-DR-13
+withdrawn: its sketch is the fork's own page); D-SV-7's view removed now by a
+removal-only commit on PR 62's branch, F-020's bridge kept (D-DR-15); no new
+diagnostic kind (D-DR-16); goldens, programs, docs and records
+(D-DR-17..D-DR-19); merge after CT-1 by merge commits with a composition commit
+that indexes a template-dependent operand per specific (D-DR-20); W-324..W-327
+and W-329 filed, W-328 reserved, no F-022 (D-DR-21).
+
+Amendments of DR-0, dated 2026-10-21: D-DR-1's slice 1 is stopped at DR-1's
+plan by D-DR-22, not re-spelled; its "`.Some(<pattern>)` and `.None` patterns"
+reads `.None()` for `Core.Optional` while the prelude's `None` is a function
+(docs/design/sum_types.md:214-222), and its "the `Try` body rewritten" is
+withdrawn (D-DR-13); its "on trunk's base" holds for both PRs. D-DR-2's
+retirement of the view no longer waits for W-320: R32 (e) removes it before PR
+62 lands (D-DR-15).
+
+V-3a register, at this entry's plan state: (ii) D-SL-3 is resolved by DR-1b,
+(iii) the pointer cursor by DR-1a and (i) D-SV-7 by W-322's commit on PR 62's
+branch, each sha recorded here at its discharge; (iv) added: `Core.Optional`
+not matchable because upstream's pages conflict on `Match.Continuation`, W-320
+(blocked) and W-324; (v) added: D-SL-17's literal-subscript rule, a fork
+spelling of `like i64`, W-326.
+
+_Ids._ The re-scan at this entry's records commit (2026-10-21, after a fetch;
+the command in CT-1's fork/cpp-templates/plan.md §0.11 widened to
+`W-3[2-9][0-9]`; 87 refs, 69 origin refs and 18 local heads, and 17 worktrees;
+the ref count corrected 2026-10-21 by the DR-1a records) found W-320..W-323
+(DR-0's) and no higher W-3xx id in any ledger. W-324..W-327 and W-329 are filed
+now; W-328 stays reserved and unused for W-320's resumption.
+
+Measured at planning (container-local, EXPECTED, not of record): slice 2 gate
+1942 of 1942 and conformance 128/0/22 over 150; slices 2 and 3 gate 1946 of
+1946 and conformance 130/0/22 over 152; composed on CT-1's head 1963 of 1963
+and 149/0/20 over 169; PR 62 with W-322's commit 1950 of 1950 and 133/0/22 over
+155; at discharge: each PR's own runs, recorded by its discharge commit.
+
+_DR-1a records (2026-10-21)._ The V-3a register's (iii), the pointer cursor,
+is resolved by DR-1a: d0cfe8082 ("DR-1a: `Core.Iterate.Next` takes `ref
+cursor`", upstream df3cf9294 re-expressed at the 11 sites and in the loop
+checker, loops.md's upstream subsections restored with the plan's C.9
+amendment) and its fill c1cc72a09 (the nine goldens of the plan's §0.6, their
+numstat line for line; autoupdate `!!!!!!.!!`, then a fixpoint). Measured on
+DR-1a's own build (container-local, EXPECTED, not of record): gate 1942 of
+1942; conformance 128/0/22 over 150, bullets 48/0/8 of 56, no status change
+against the scoreboard of record; the §0.6 probes as planned. The mutant of
+§8 item 5 (the loop checker passing `AddrOf` again) fails eight of the nine
+goldens, each one with a `for` (check for/actual.carbon has none: its lines
+move with `Next`'s signature), and every `for` over a range whose `Next` takes
+`ref` fails at the argument conversion. DR-1a alone merged onto CT-1's head
+118fc1bc8 as M-a resolves it (§8 item 9): before refill 1956 passed and 3
+failed, the three goldens L-a names; refilled to a fixpoint, their numstat
+against CT-1's head is 12/17, 137/137 and 17/103, the L-a row the plan
+measured with both PRs; then 1959 of 1959, and conformance 147/0/20 over 167
+with no status change against CT-1's own run; review A's tmpl_for prints 6.
+
+_DR-1a discharge (2026-10-21)._ DR-1a's implementation review (the plan's §3
+item 4, R29(c)) read 0ac137d9d against upstream/trunk 503f09037 and returned
+APPROVE-WITH-FIXES: no BLOCKER, no MAJOR and three MINOR findings, all
+records. Each was reproduced and folded, none rejected, by two of §3 item 9's
+three fix commits, and nothing is shrunk: 2481ed8f2 (DR1A-m1, loops.md is
+upstream's page with the `while let` amendment and C.9, df3cf9294's whole page
+edit; the §2.1 cites of DR1A-m3) and 851bd5d03 (DR1A-m2, W-321's landed-site
+evidence; the rest of DR1A-m3, the plan's §6 and §8 item 5 errata; the plan's
+"Implementation review fold record, DR-1a"). Neither changes a toolchain,
+golden or program file. Measured on the fold's tree, with the install at
+version 0.0.0-0.dev+d0cfe8082 (container-local, EXPECTED, not of record): gate
+1942 of 1942; conformance 128/0/22 over 150, bullets 48/0/8 of 56, no status
+change; `runner.py --self-test` OK over 150 programs. The id re-scan before this
+discharge (2026-10-21T23:22Z, after a fetch; 87 refs, 69 origin refs and 18
+local heads, and 17 worktrees; widened to `W-3[2-9][0-9]`) finds W-324..W-327
+and W-329 in this branch's ledger only, W-328 nowhere and no id above W-329;
+no id is filed. Held state: GitHub Actions is disabled (R28) and none of PR 51
+to PR 62 is on trunk (e0769c178), so DR-1a is held with no PR yet; it merges
+after CT-1 (whose head is 118fc1bc8 at this commit) through M-a, the merge of
+trunk that resolves handle_loop_statement.cpp and loops.md to DR-1a's side
+(the plan's §1.16), then L-a, the refill of check generic/template/for_range,
+lower template/for_range and check interop/cpp/range_for (12/17, 137/137 and
+17/103, measured) and PR 57's check/slice/basic (predicted; corrected 2026-10-22
+below, plan rev 4). DR-1b, stacked on this branch, is next.
+
+Correction (2026-10-22, plan rev 4 f551057ea and its Stop-and-amend record) of
+the DR-1a discharge note's land-time items: L-a refills check
+generic/template/for_range, lower template/for_range and check
+interop/cpp/range_for (12/17, 137/137 and 17/103) and lower array/iterate,
+for/break_continue and for/for (186/186, 183/183 and 185/185 against PR 57's
+text, after their CHECK-only conflict blocks take trunk's side at M-a); L-b
+refills check generic/template/index (16/41, after C-b) and PR 55's
+check/operators/overloaded/string_indexing (2/2); PR 57's check/slice/basic and
+PR 51's check and lower slice/buf_field goldens are not refilled. Carried on
+this branch on 2026-10-22 by the records of round 1 of DR-1b's focused
+re-review (the plan's RR4-m3), as DR-1b's records note on
+claude/carbon-fork-0-1-dr-idx first wrote it; range_for's 17/103 is against
+CT-1's text, and its L-a count is recorded at L-a against trunk's merged text
+(the plan's R-6 and RR4-m1).
 
 ### RG-1: the V-3a register classified at f27a977d8 (2026-10-28)
 

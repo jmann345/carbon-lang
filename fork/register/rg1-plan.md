@@ -864,7 +864,11 @@ departures and the zero-fill, H1.13) to SAFE-1 because each changes a decision
 that two to five of its pages state (amended 2026-10-28, review fold: RR1-m1),
 and gives the dependent lines. PR 53 lands first after RG-1's PR (amended
 2026-10-28, implementation review: R2-m1), so these six gate the land sequence
-(section 5; amended 2026-10-28, review fold: A-M5, B-M3). H1.11 and
+(section 5; amended 2026-10-28, review fold: A-M5, B-M3). (Superseded
+2026-11-02 by LAND-1's D-LAND-1, fork/land/land1-plan.md: PR 53 waits for its
+realignment, SAFE-3 having stopped, by its follow-on while the ready PRs land
+past it, the dry run of that plan's section 0.5 having measured that their
+records and merge-trees hold without the waiting PRs.) H1.11 and
 H1.13 read upstream's build modes by D-RG-20, which maps the development,
 performance and hardened builds of README.md and arithmetic.md onto the two
 primary modes of README.md:377-383 and safety/README.md:207-217 (amended
@@ -1625,16 +1629,33 @@ until their owners' realignment commits are made on their branches and reviewed
     document reviews and a fixer; D-RG-7's table names the dependent lines).
     Until then the land sequence is held at PR 53, the second in the order
     after RG-1's own PR (amended 2026-10-28, implementation review: R2-m1).
+    (Superseded 2026-11-02 by LAND-1's D-LAND-1, fork/land/land1-plan.md:
+    PR 53 waits for its realignment, SAFE-3 having stopped, by its follow-on
+    while the ready PRs land past it, the dry run of that plan's section 0.5
+    having measured that their records and merge-trees hold without the
+    waiting PRs.)
 -   PR 60 waits for SC-1's W-139 (code: a checked-symbolic self deferred to
     monomorphization, with its goldens, fills and the template_constraints.md
-    paragraph rewritten; D-RG-7). PR 60 is fifth in the order.
+    paragraph rewritten; D-RG-7). PR 60 is fifth in the order. (Superseded
+    2026-11-02 by LAND-1's D-LAND-1, fork/land/land1-plan.md: PR 53 waits for
+    its realignment, SAFE-3 having stopped, by its follow-on while the ready
+    PRs land past it, the dry run of that plan's section 0.5 having measured
+    that their records and merge-trees hold without the waiting PRs.)
 -   PR 56 waits for OP-1's W-352 (code: the comparisons compare in place, with
     their goldens and fills, D-RG-10), merged into PR 57's branch. PR 56 is
     eighth (the ordinals count RG-1's PR; amended 2026-10-28, implementation
-    review: R2-m1).
+    review: R2-m1). (Superseded 2026-11-02 by LAND-1's D-LAND-1,
+    fork/land/land1-plan.md: PR 53 waits for its realignment, SAFE-3 having
+    stopped, by its follow-on while the ready PRs land past it, the dry run of
+    that plan's section 0.5 having measured that their records and merge-trees
+    hold without the waiting PRs.)
 
 The sequence may run up to a waiting PR and stop there; it does not skip it,
-because each later PR's records and merge-trees assume the earlier ones. W-346
+because each later PR's records and merge-trees assume the earlier ones.
+(Superseded 2026-11-02 by LAND-1's D-LAND-1, fork/land/land1-plan.md: PR 53
+waits for its realignment, SAFE-3 having stopped, by its follow-on while the
+ready PRs land past it, the dry run of that plan's section 0.5 having measured
+that their records and merge-trees hold without the waiting PRs.) W-346
 lands on trunk after the held PRs (D-RG-8) and before UA-3, beside OV-4's
 W-341; W-354 and W-356 are UA-3's own (D-RG-16, D-RG-18).
 
@@ -1677,7 +1698,11 @@ Each risk is falsifiable by the check named.
     realignment cannot keep D-OP-4's signatures or the comparisons' results
     (its own review). Response: D-RG-10's break condition; PR 56 then waits for
     W-320 and the land sequence stops at PR 56 (amended 2026-10-28, review fold:
-    A-M2).
+    A-M2). (Superseded 2026-11-02 by LAND-1's D-LAND-1,
+    fork/land/land1-plan.md: PR 53 waits for its realignment, SAFE-3 having
+    stopped, by its follow-on while the ready PRs land past it, the dry run of
+    that plan's section 0.5 having measured that their records and merge-trees
+    hold without the waiting PRs.)
 -   **R-7: the held commits conflict.** Falsifier: 4.7's merge-trees. Response:
     stop, read both sides, record the resolution.
 -   **R-8: D-RG-8 leaves a held PR's text out of date.** Falsifier: PR 54 lands
@@ -1704,7 +1729,11 @@ Each risk is falsifiable by the check named.
     description, and every later PR's merge-tree baseline changes. Kept first;
     break condition: SAFE-1's re-derivation is not signed off when every other
     PR before PR 66 is otherwise ready to land, and then the reorder is decided
-    with W-144's renumbering as its own records commit.
+    with W-144's renumbering as its own records commit. (Superseded 2026-11-02
+    by LAND-1's D-LAND-1 under R33, fork/land/land1-plan.md, which lands the
+    ready PRs before PR 53 without this break condition being met; the
+    renumbering commit is moot, SC-1's W-144 having been renumbered W-151 on
+    PR 60's branch by 2f4ebbf6e.)
 -   **Rejected: landing PR 56 with W-352 recorded and blocked** (rev 1's
     D-RG-10). R32 (e) has no such exception, and the probe shows a route under
     OP-1's control (amended 2026-10-28, review fold: A-M2).
@@ -1729,7 +1758,12 @@ Each risk is falsifiable by the check named.
     settle; the build-mode texts are two vocabularies for one set of modes,
     which R29 lets RG-1 map with a break condition (D-RG-20), and a blocked
     mark would leave W-353's realignment target unnamed while PR 53, first in
-    the land sequence, waits on it (amended 2026-10-28, review fold: RR1-N-1).
+    the land sequence, waits on it (Superseded 2026-11-02 by LAND-1's
+    D-LAND-1, fork/land/land1-plan.md: PR 53 waits for its realignment, SAFE-3
+    having stopped, by its follow-on while the ready PRs land past it, the dry
+    run of that plan's section 0.5 having measured that their records and
+    merge-trees hold without the waiting PRs.) (amended 2026-10-28, review
+    fold: RR1-N-1).
 -   **Rejected: the tables embedded in an appendix** instead of committed
     files. The weekly owner runs the scripts on files, so an appendix copy
     would be extracted again at every check, and the plan would carry 349
@@ -3516,3 +3550,10 @@ adds this paragraph; it changes this file only, and no held branch, stage ref,
 refresh file or PR description changes. The next step is the one the paragraph
 above names after the review: RG-1's PR opens held, base trunk, first in the
 land sequence.
+
+RG-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 67 by
+7f8c7e696 (head 56e2e5bbd, trunk before ab44dce6a; GitHub merged_at
+2026-11-02T01:17:26Z) under R33, fork/land/land1-plan.md section 2.1;
+land-time commits none; container-measured (R33 (b)): gate
+1942 of 1942, conformance 128 PASS, 0 FAIL, 22 SKIP over 150, 48 of 56
+bullets; id re-scans: none; moved to follow-ons: none.

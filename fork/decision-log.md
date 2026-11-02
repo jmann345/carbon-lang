@@ -374,7 +374,11 @@ those pages), so the zeroing's place in the Release build is upstream's and only
 its mandate for every type is the drift, and W-350 restores the performance row
 as the benchmarking build's. The six are realigned by SAFE-1 by a new commit on
 PR 53's branch before it lands (R32 (e)), and PR 53 lands first after RG-1's PR
-(fork/register/rg1-plan.md section 5). PR 60: D-SC-6's definition-time rejection
+(fork/register/rg1-plan.md section 5). (Superseded 2026-11-02 by LAND-1's
+D-LAND-1, fork/land/land1-plan.md: PR 53 waits for its realignment, SAFE-3
+having stopped, by its follow-on while the ready PRs land past it, the dry run
+of that plan's section 0.5 having measured that their records and merge-trees
+hold without the waiting PRs.) PR 60: D-SC-6's definition-time rejection
 of a checked-generic argument to a template parameter, where
 generics/overview.md:375-379 records "We have decided to support passing a
 symbolic constant to a template parameter" (leads issue 2153) and
@@ -480,6 +484,11 @@ W-346 to W-359, files W-346 to W-356, and leaves W-357 to W-359 unused.
 _Not run._ No build, fill, gate, conformance or dispatch (R28); Actions is
 disabled, so nothing is of record (R9). The probes of the plan's section 4.8
 ran the read-only installs with `--phase=check` only.
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 67 by
+7f8c7e696 (GitHub merged_at 2026-11-02T01:17:26Z); container-measured (R33 (b)):
+gate 1942 of 1942, conformance 128/0/22 over 150; id re-scans: none;
+moved to follow-ons: none.
 
 ### LD-0: the owner's merge directive; the hold-open practice corrected (2026-11-01)
 

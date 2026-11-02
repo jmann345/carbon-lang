@@ -138,7 +138,7 @@ measurements (C.8), and DR-1's three `<sha>` slots to `<merge sha>` and
 
 | Placeholder | Value | Measured by |
 | --- | --- | --- |
-| `<date>`, `<hh:mm>` | the commit's UTC date and time | `date -u +%F` and `date -u +%H:%M` when the commit is made |
+| `<date>`, `<hh:mm>` | the commit's UTC date and time | `date -u +%F` and `date -u +%H:%M` when the commit is made (step 9's values, kept at step 12; amended 2026-11-02, RV67-2, the orchestrator's ruling under R29) |
 | `<prev>` | the date in the current ORCHESTRATION header's first clause | that clause, read before the records edit |
 | `<trunk before>` | origin/trunk before the landing | `git rev-parse --short=9 origin/trunk` at step 1 |
 | `<head>` | the PR's pushed head | `git ls-remote origin` at step 1 (section 0.1's value) |
@@ -1048,7 +1048,12 @@ does not give is a stop (D-LAND-10). (Amended 2026-11-01, review fold: B-M5 /
 A-B1 / RR1-5.) _Break
 condition:_ a plan's land-time text that contradicts the merged trunk; the
 records texts state the measured fact and cite the plan's line (R17), never
-the stale text.
+the stale text. A file:line cite inside a records text names the lines of the
+tree the records commit produces, so a cite that the landing's own records
+edit moves is written at its moved lines, and the orchestrator's landing-time
+rulings with their plan amendments go in the landing's records commit
+(amended 2026-11-02, fold check FC1-1 at PR 67, the orchestrator's ruling
+under R29).
 
 **D-LAND-10, the review and stop-and-amend.** Fresh agents review each landing
 before phase 1: one for every landing, and two for PR 61 (TP-1's section 3
@@ -2998,11 +3003,16 @@ Appended to W-355's `notes` at each landing D-LAND-19 names, `<N>` that
 landing's PR (amended 2026-11-01, ruling fold: AUD-67-P28 / AUD-68-15):
 
 ```text
- LAND-1 (<date>, PR <N>'s landing): at upstream <tip>, check_quotes.sh reports <q> quotes with <qf> failed and check_greps.sh <c> silence checks with <cf> failed over the tables as that landing leaves them (at 68569d234, 2026-11-01, as PR 67 landed them: 273 with 8 failed and 89 with 2 failed); the failing rows, <the FAIL rows' ids>, are this item's to re-read by its own rules, an L check's expected count included (fork/register/rg1-plan.md:1394-1397); the landing edits no row and no expected count.
+ LAND-1 (<date>, PR <N>'s landing): at upstream <tip>, check_quotes.sh reports <q> quotes with <qf> failed and check_greps.sh <c> silence checks with <cf> failed over the tables as that landing leaves them (at 68569d234, 2026-11-01, as PR 67 landed them: 273 with 8 failed and 89 with 2 failed); the failing rows, <the FAIL rows' ids>, are this item's to re-read by its own rules, an L check's expected count included (fork/register/rg1-plan.md:1398-1401); the landing edits no row and no expected count.
 ```
 
 The last placeholder is the scripts' own output, listed as printed, or
-`none` (the conventions table; amended 2026-11-02, sign-off check). In Next
+`none` (the conventions table; amended 2026-11-02, sign-off check). The cite
+names the L-check rule's lines in the tree the records commit produces:
+:1394-1397 at the merge, :1398-1401 once PR 67's records edit adds its four
+lines at :867, re-measured at each later landing that edits rg1-plan.md above
+the rule (amended 2026-11-02, fold check FC1-1 at PR 67, by D-LAND-9's break
+condition as the ruling states it). In Next
 actions item 6, "is held open as PR 67, first in the land sequence" becomes
 "landed on trunk <date> as PR 67 by merge <merge sha> (LAND-1)".
 
@@ -4241,3 +4251,54 @@ the audit's 72 UNMAPPED steps are graded by status, not severity. What
 follows sign-off is D-LAND-16's: the orchestrator pushes land-prep's
 commits and Appendix B.1's stamp, with `<r>` 8, to trunk and the mirror
 by fast-forward before stage 0.
+
+## Landing-time rulings
+
+Rulings of the orchestrator under R29 during the landing, each recorded by the
+landing's records commit (D-LAND-9 as amended by the first):
+
+<!-- google-doc-style-ignore -->
+
+> (1) FC1-1 / RV67-1: a file:line cite inside a records text names the lines of
+> the tree the records commit produces, so a cite that the landing's own records
+> edit moves is written at its moved lines; the implementer's W-355 note, citing
+> fork/register/rg1-plan.md:1398-1401 (the L-check rule after this landing's
+> four-line mark at :867), is the correct application, and the plan is amended
+> to say so by three exact edits of fork/land/land1-plan.md, made in the landing
+> worktree beside the records edits and committed by this landing's records
+> commit (D-LAND-9's list is extended by this ruling: the orchestrator's
+> landing-time rulings and their plan amendments go in the landing's records
+> commit): (a) D-LAND-9's break condition gains, after "never the stale text.",
+> the sentence: "A file:line cite inside a records text names the lines of the
+> tree the records commit produces, so a cite that the landing's own records
+> edit moves is written at its moved lines, and the orchestrator's landing-time
+> rulings with their plan amendments go in the landing's records commit (amended
+> 2026-11-02, fold check FC1-1 at PR 67, the orchestrator's ruling under R29).";
+> (b) in Appendix C.2's W-355 text block,
+> "(fork/register/rg1-plan.md:1394-1397)" becomes
+> "(fork/register/rg1-plan.md:1398-1401)", and the paragraph that follows the
+> block ("The last placeholder is the scripts' own output ...") gains, after its
+> first sentence, the sentence: "The cite names the L-check rule's lines in the
+> tree the records commit produces: :1394-1397 at the merge, :1398-1401 once
+> PR 67's records edit adds its four lines at :867, re-measured at each later
+> landing that edits rg1-plan.md above the rule (amended 2026-11-02, fold check
+> FC1-1 at PR 67, by D-LAND-9's break condition as the ruling states it).";
+> (c) a new section "## Landing-time rulings" after the Sign-off section, with
+> one paragraph per ruling: this ruling's items (1) to (3) verbatim under the
+> heading's lead sentence "Rulings of the orchestrator under R29 during the
+> landing, each recorded by the landing's records commit (D-LAND-9 as amended
+> by the first):".
+>
+> (2) RV67-2 / FC1-2's second half: the records' `<date>` and `<hh:mm>` are the
+> values measured when the records edits were written at step 9; step 12's
+> two-value check governs, so they are not re-measured at the commit, and the
+> records commit's message states "records written <date> <hh:mm> UTC,
+> committed <now> UTC"; the conventions table's row for `<date>`, `<hh:mm>`
+> gains, after its "Measured by" text, " (step 9's values, kept at step 12;
+> amended 2026-11-02, RV67-2, the orchestrator's ruling under R29)".
+>
+> (3) RV67-3 / FC1-2: Appendix A.4's "<landed> PRs landed" stands as the plan's
+> text at this landing ("1 PRs landed"); no amendment, the texts of later
+> landings reading 2 or more.
+
+<!-- google-doc-style-resume -->

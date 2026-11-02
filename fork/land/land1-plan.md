@@ -989,7 +989,14 @@ still gated before it is made (added 2026-11-01, review fold: RR3-3):
     (`r31.py`); `json.load` of the ledger; `runner.py --self-test`; the
     model-identifier grep of `git diff <trunk before>`; the gap-row check
     `python3 -I $F/bin/rowcheck.py <trunk before> H WORKTREE <rows>` with the
-    rows section 2 names, which must report 0 missing; at PR 52, 54, 55, 58
+    rows section 2 names, which must report 0 missing; the rows named being
+    also, by rowcheck.py's own rule (a row a plan rewrites, section 2), every
+    row that a land-time commit section 2 prescribes or a records text
+    Appendix C gives rewrites, each listed in the implementer's report with
+    the commit or text that rewrites it and verified by the review against
+    the plan's text, a missing segment of any other row stopping the landing
+    (amended 2026-11-02, the orchestrator's ruling under R29 at PR 55's stop,
+    the second of the class after PR 54's paragraph (5)); at PR 52, 54, 55, 58
     and 61, DL-2's check of the entry's place; and the re-read of
     fork/ORCHESTRATION.md's four regions, the header, the dated paragraphs,
     the Branches table and the Next actions, against `<trunk before>`'s
@@ -1619,17 +1626,25 @@ C.6's texts: "Land PR 55: ST-1's landing-date stamps re-stamped", since the
 merge date is not 2026-10-13, and "Land PR 55: W-148 cited by its title
 until PR 53 lands", since PR 53 has not merged; the id re-scan of W-160 to
 W-167 by D-LAND-21 before the records edit (AUD-55-12); records with
-the header `<tally>` (34/18/3/1 expected) and W-126 cited by id (PR 51 has
+the header `<tally>` (34/18/3/1 expected) and the header's landed list gaining
+ST-1's clause by C.6 (added 2026-11-02, RV55-1, the orchestrator's ruling under
+R29) and W-126 cited by id (PR 51 has
 landed, as ST-1's landed notes assumed, :3107-3109), and OR-5: item 5 (ST-1's
 merge steps) discharged by the landing, item 6 (the SAFE-1 reconciliation)
 carried as G-53's item by Appendix B.1, and the ST-1 dated paragraph's item
 numbers marked (Appendix C.6; amended 2026-11-01, review fold: A-M1), row
 77's floor of record re-read (ST-1's row text, fork/string/plan.md:2230-2232,
 "re-read at rebase": the committed scoreboard is PR 51's, D-LAND-17;
-AUD-55-05) and the entry placed by DL-2 (AUD-55-02). With those steps made,
+AUD-55-05) and item 5's re-read of row 77's and row 41's lines (C.6's three
+re-pins to the records tree's :79 and :43; added 2026-11-02, RV55-2, the
+orchestrator's ruling under R29) and the entry placed by DL-2 (AUD-55-02).
+With those steps made,
 item 5 is discharged by the landing, as C.6 says (amended 2026-11-01,
 ruling fold: the audit's S55-19 note). Expected: 1953 of 1953 (section 4);
-148/0/15 over 163. Gap-row check: no row named. Deferred to G-53: W-144's
+148/0/15 over 163. Gap-row check: row 77 named (C.6's re-stamp commit, its
+W-148 commit and its floor-of-record re-read rewrite words of the PR's row;
+amended 2026-11-02, the implementer's stop at step 9, the orchestrator's
+ruling under R29). Deferred to G-53: W-144's
 additions, the seven SAFE-1 reconciliation edits and the cross-branch
 re-cites (:3103-3106, fork/string/plan.md section 2.6), and the re-reads of
 arithmetic.md's Strings section and values.md:168 with W-057's evidence
@@ -3216,6 +3231,25 @@ ruling fold: the audit's S55-01 note):
 The merge of trunk 9d3ca60a3 that this plan's landed notes and the decision-log entry record as refused at the discharge was made on the branch afterwards, by 21307851a, which the landed head c3cdecc5d contains.
 ```
 
+Header clause (added 2026-11-02, RV55-1, the orchestrator's ruling under R29;
+GA-2's PR text for the header): in the gap header's paragraph, "and CMake
+build-system integration with Make documentation have since landed" becomes
+"and CMake build-system integration with Make documentation, and string
+comparison, the owning `Core.StringBuf` and concatenation have since landed",
+the PR's clause (c3cdecc5d fork/gap-analysis.md:31-32), written by the records
+commit; it moves every row down one line.
+
+Line re-pins (added 2026-11-02, RV55-2, the orchestrator's ruling under R29),
+by C.8's re-cite rule, row 77 at :79 and row 41 at :43 on the records tree: in
+the ST-1 decision-log entry, "fork/gap-analysis.md row 77, now line 81, reads"
+becomes "fork/gap-analysis.md row 77, now line 79 (line 81 on the branch;
+re-read 2026-11-02 at PR 55's landing, LAND-1), reads"; W-057's evidence
+"(line 81 on this branch after the header edit)" becomes "(line 81 on this
+branch after the header edit; line 79 on trunk, re-read 2026-11-02 at PR 55's
+landing, LAND-1)"; W-167's evidence "line 45 on this branch)" becomes "line 45
+on this branch, line 43 on trunk, re-read 2026-11-02 at PR 55's landing,
+LAND-1)".
+
 ### C.7 PR 58's own texts
 
 The state-L commit (D-LAND-14; `$F/bin/stateL58.py` applies exactly these):
@@ -4483,5 +4517,93 @@ landing's records commit (D-LAND-9 as amended by the first):
 > "fork/gap-analysis.md:262-283 (§W11 rewritten)" becomes
 > "fork/gap-analysis.md:262-290 (§W11 rewritten; re-pinned 2026-11-02 at PR 54's
 > landing, whose state C text and A.10 marks extended the section)"."
+>
+> (7) At PR 55's landing (stage 5), on the implementer's stop at step 9: (1)
+> Section 2.5's gap-row check names no row, yet three texts the plan itself
+> prescribes rewrite words of the PR's row 77 ("Stdlib: String and
+> string-literal types", fork/gap-analysis.md:78 at the stop, :79 after
+> ruling (8)'s header clause): C.6's re-stamp commit ("W-057
+> DISCHARGED 2026-10-13" to "W-057 DISCHARGED <date>"), C.6's W-148 commit (the
+> id replaced by W-148's title) and C.6's floor-of-record re-read in the records
+> edit ("floor of record 128/0/22 over 150, run 37402970811" to the 131/0/19
+> text); the dry run did not simulate the two land-time commits rev 6 added, so
+> the check reports the replaced words as missing (logs/step9-rowcheck.log: 3
+> missing, all of row 77; on the merge d7a3c13bb, 0 missing), the same class as
+> PR 54's stop, ruled there by paragraph (5); rowcheck.py's own rule ("Rows
+> named as ROW_KEY arguments (a plan rewrites them, section 2) are reported but
+> not failed") governs, and row 77 is named: (a) in section 2.5,
+> "148/0/15 over 163. Gap-row check: no row named." becomes
+> "148/0/15 over 163. Gap-row check: row 77 named (C.6's re-stamp commit, its
+> W-148 commit and its floor-of-record re-read rewrite words of the PR's row;
+> amended 2026-11-02, the implementer's stop at step 9, the orchestrator's
+> ruling under R29)."; (b) the check is re-run in the landing worktree as
+> `python3 -I $F/bin/rowcheck.py 732179150 c3cdecc5d WORKTREE "Stdlib: String
+> and string-literal types"`, logged as logs/step9-rowcheck-ruled.log, and must
+> print the row's three segments as "named in section 2" and `rowcheck: 0
+> missing` with exit 0; the records edits themselves stand as written (the
+> worktree's row 77 is the PR's row with C.6's three rewrites and A.10's mark,
+> verified by the orchestrator word for word). (2) The class is closed for the
+> later landings by a rule in D-LAND-6 step 9: after "with the rows section 2
+> names, which must report 0 missing;" the text "the rows named being also, by
+> rowcheck.py's own rule (a row a plan rewrites, section 2), every row that a
+> land-time commit section 2 prescribes or a records text Appendix C gives
+> rewrites, each listed in the implementer's report with the commit or text that
+> rewrites it and verified by the review against the plan's text, a missing
+> segment of any other row stopping the landing (amended 2026-11-02, the
+> orchestrator's ruling under R29 at PR 55's stop, the second of the class after
+> PR 54's paragraph (5));" is inserted.
+>
+> (8) At PR 55's landing (stage 5), on review round 1's RV55-1 and RV55-2: (1)
+> RV55-1: GA-2 kept trunk's header in the merge and says the records commit
+> writes the PR's header text as section 2 says, but section 2.5 names only the
+> tally, so the header's landed list lacks ST-1's clause although row 77 is
+> DONE; the PR's clause is written: in fork/gap-analysis.md's header paragraph,
+> "and CMake build-system integration with Make documentation have since landed"
+> becomes "and CMake build-system integration with Make documentation, and
+> string comparison, the owning `Core.StringBuf` and concatenation have since
+> landed" (the PR's words, c3cdecc5d fork/gap-analysis.md:31-32); in
+> section 2.5, "records with the header `<tally>` (34/18/3/1 expected)" becomes
+> "records with the header `<tally>` (34/18/3/1 expected) and the header's
+> landed list gaining ST-1's clause by C.6 (added 2026-11-02, RV55-1, the
+> orchestrator's ruling under R29)"; and Appendix C.6 gains, after its A.5
+> sentence block and before "### C.7 PR 58's own texts", the paragraph: "Header
+> clause (added 2026-11-02, RV55-1, the orchestrator's ruling under R29; GA-2's
+> PR text for the header): in the gap header's paragraph, "and CMake
+> build-system integration with Make documentation have since landed" becomes
+> "and CMake build-system integration with Make documentation, and string
+> comparison, the owning `Core.StringBuf` and concatenation have since landed",
+> the PR's clause (c3cdecc5d fork/gap-analysis.md:31-32), written by the records
+> commit; it moves every row down one line." (2) RV55-2: ST-1's item 5 asks that
+> row 77's and row 41's lines be re-read at the rebase (c3cdecc5d
+> fork/ORCHESTRATION.md:533-534); on the records tree row 77 is at
+> fork/gap-analysis.md:79 and row 41 at :43, so the three ST-1 records that cite
+> the branch's lines are re-pinned by C.8's re-cite rule: in
+> fork/decision-log.md's ST-1 entry, "fork/gap-analysis.md row 77, now line 81,
+> reads" becomes "fork/gap-analysis.md row 77, now line 79 (line 81 on the
+> branch; re-read 2026-11-02 at PR 55's landing, LAND-1), reads"; in
+> fork/inventory/work-items.json, W-057's evidence "(line 81 on this branch
+> after the header edit)" becomes "(line 81 on this branch after the header
+> edit; line 79 on trunk, re-read 2026-11-02 at PR 55's landing, LAND-1)" and
+> W-167's evidence "line 45 on this branch)" becomes "line 45 on this branch,
+> line 43 on trunk, re-read 2026-11-02 at PR 55's landing, LAND-1)", `json.load`
+> passing; fork/string/plan.md:3113's "so row 77 is line 81 and row 41 line 45
+> on this branch" stands as the landed notes' record of the branch; in
+> section 2.5, "D-LAND-17; AUD-55-05)" becomes "D-LAND-17; AUD-55-05) and
+> item 5's re-read of row 77's and row 41's lines (C.6's three re-pins to the
+> records tree's :79 and :43; added 2026-11-02, RV55-2, the orchestrator's
+> ruling under R29)"; in paragraph (7) of the section "## Landing-time rulings",
+> "fork/gap-analysis.md:78)" becomes "fork/gap-analysis.md:78 at the stop, :79
+> after ruling (8)'s header clause)"; and Appendix C.6 gains, directly after the
+> paragraph of item (1), the paragraph: "Line re-pins (added 2026-11-02, RV55-2,
+> the orchestrator's ruling under R29), by C.8's re-cite rule, row 77 at :79 and
+> row 41 at :43 on the records tree: in the ST-1 decision-log entry,
+> "fork/gap-analysis.md row 77, now line 81, reads" becomes
+> "fork/gap-analysis.md row 77, now line 79 (line 81 on the branch;
+> re-read 2026-11-02 at PR 55's landing, LAND-1), reads"; W-057's evidence
+> "(line 81 on this branch after the header edit)" becomes "(line 81 on this
+> branch after the header edit; line 79 on trunk, re-read 2026-11-02 at PR 55's
+> landing, LAND-1)"; W-167's evidence "line 45 on this branch)" becomes "line 45
+> on this branch, line 43 on trunk, re-read 2026-11-02 at PR 55's landing,
+> LAND-1)"."
 
 <!-- google-doc-style-resume -->

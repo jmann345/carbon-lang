@@ -3353,7 +3353,8 @@ exception interop), then unions W-009/W-015.
 
 Milestone bullet "String and related types used with string literals"
 (docs/project/milestones.md:202, under "Types with important language
-support", :201; fork/gap-analysis.md row 77, now line 81, reads "Stdlib: String
+support", :201; fork/gap-analysis.md row 77, now line 79 (line 81 on the branch;
+re-read 2026-11-02 at PR 55's landing, LAND-1), reads "Stdlib: String
 and string-literal types") flips PARTIAL → DONE with filed limits (D-ST-16, the
 row-82 precedent of DONE with filed W-119/W-120, distinguished from row 79's
 PARTIAL); the header moves 30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY →
@@ -4026,6 +4027,16 @@ NONE, W-355; no upstream commit since the cut touches
 core/prelude/types/string.carbon, four touch operators.carbon, and upstream's
 export.cpp:402-404 still has no null check where its other callers at :538,
 :914 and :2077 do).
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 55 by d7a3c13bb
+(GitHub merged_at 2026-11-02T05:14:12Z); container-measured (R33 (b)): gate 1953
+of 1953, conformance 148/0/15 over 163; id re-scans: W-160 to W-167 at step 9,
+before the records edit: origin/claude/carbon-fork-0-1-st (c3cdecc5d),
+claude/carbon-fork-0-1-st, origin/pr/55 and the /home/user/carbon-st worktree
+(21307851a, an ancestor of c3cdecc5d), and trunk (4520e8dec, which contains
+c3cdecc5d); moved to follow-ons: to Next actions item 14: W-144's additions, the
+seven SAFE-1 reconciliation edits and the cross-branch re-cites; to item 14: the
+re-reads of the pages SAFE-1 moves and W-148's id.
 
 ### EV-1: evaluator documentation: getting started, tutorial, FAQ, transcribed programs (2026-10-13)
 

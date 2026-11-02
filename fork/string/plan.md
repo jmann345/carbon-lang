@@ -3143,3 +3143,19 @@ are one finding seen twice):
 | ST1-IR2-6 | the trunk merge made commit 5's first step | Open: the merge was refused again; ORCHESTRATION Next actions 5 |
 | ST1-IR2-7 | the interoperability amendment's link | Closed |
 | ST1-IR2-8 | §8.3 reads the verdict from the exit status and the log | Open: the fixed gate.sh waits for the carbonbuild landing |
+
+ST-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 55 by
+d7a3c13bb (head c3cdecc5d, trunk before 732179150; GitHub merged_at
+2026-11-02T05:14:12Z) under R33, fork/land/land1-plan.md section 2.5;
+land-time commits 69a6f995b, 4520e8dec; container-measured (R33 (b)): gate
+1953 of 1953, conformance 148 PASS, 0 FAIL, 15 SKIP over 163, 49 of 56
+bullets; id re-scans: W-160 to W-167 at step 9, before the records edit:
+origin/claude/carbon-fork-0-1-st (c3cdecc5d), claude/carbon-fork-0-1-st,
+origin/pr/55 and the /home/user/carbon-st worktree (21307851a, an ancestor of
+c3cdecc5d), and trunk (4520e8dec, which contains c3cdecc5d); moved to
+follow-ons: to Next actions item 14: W-144's additions, the seven SAFE-1
+reconciliation edits and the cross-branch re-cites; to item 14: the re-reads of
+the pages SAFE-1 moves and W-148's id. The merge of trunk 9d3ca60a3 that this
+plan's landed notes and the decision-log entry record as refused at the
+discharge was made on the branch afterwards, by 21307851a, which the landed head
+c3cdecc5d contains.

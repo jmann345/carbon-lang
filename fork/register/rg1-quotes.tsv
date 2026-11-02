@@ -282,3 +282,20 @@ toolchain/docs/lower.md	140	Any feature of an entity (such
 toolchain/docs/lower.md	141	as parent namespaces or overloaded function parameters) that would create a
 toolchain/docs/lower.md	142	distinct entity must be included in some way in the generated identifier.
 toolchain/sem_ir/function.h	548	them in mangling.
+# OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): the quotes of rows T2.8 and T2.9 of fork/register/rg1-plan.md section 2.T2.
+toolchain/check/call.cpp	49	// the range [callee_arity - arity_lower_bound_margin, callee_arity]. This
+toolchain/check/call.cpp	50	// allows arity matching when the callee has default arguments for some
+toolchain/check/call.cpp	241	function.default_value_arity);
+toolchain/check/pattern_match.cpp	950	// If there's no scrutinee supplied, supply the default value instead.
+toolchain/check/function.cpp	677	// patterns, ensure that if a subpattern provides a default value, all
+toolchain/check/function.cpp	682	// TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this
+toolchain/check/handle_pattern_list.cpp	185	"default value is not a constant");
+proposals/p002200-template-generics.md	471	class C4 { fn M[me: Self](p: i32 = 4); }
+proposals/p002200-template-generics.md	474	// using the default value of `4` for `p` when
+proposals/p002200-template-generics.md	214	-   Substitution failure is an error. In C++, [the SFINAE rule](#terminology)
+docs/design/README.md	2828	One difference from C++ templates, Carbon template instantiation is not
+docs/design/classes.md	2186	### Optional named parameters
+docs/design/classes.md	2188	Structs are being considered as a possible mechanism for implementing optional
+docs/design/classes.md	2202	              .descending: bool = false} = {}) {
+docs/design/classes.md	2207	SortIntVector(&v);
+docs/design/pattern_matching.md	696	We do not yet have an approved design for overloaded functions, but it

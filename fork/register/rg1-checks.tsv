@@ -96,3 +96,6 @@ C2.1	G	-F	Discuss typechecking	docs/design/variadics.md	1
 C2.3	G	-i -F	omit each-names	docs/design/variadics.md	1
 C2.5	G	-F	segment	docs/design/generics/details.md	0
 C2.6	G	-i -E	total order|weak order|partial order	docs/design/expressions/comparison_operators.md	3
+# OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): rows T2.8 (F-009j's default values) and T2.9 (the plain-call rule for a member with defaults) of fork/register/rg1-plan.md section 2.T2.
+T2.8	G	-w	default_value_arity	toolchain/check	3
+T2.9	G	-i -E	overload(ed|ing)? (fn|function|set)s?|function overloading	docs/design proposals	40

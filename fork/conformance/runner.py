@@ -99,6 +99,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
 import contextlib
+import importlib.util
 import inspect
 import io
 import json
@@ -1701,6 +1702,25 @@ def build_script_self_check(programs, root=REPO_ROOT):
     return failures
 
 
+def evaluator_samples_self_check(root=REPO_ROOT):
+    """Runs EV-1's sample checker, fork/evaluator/check_samples.py, which
+    prints its own `check_samples:` line: every code block of the evaluator
+    guides must equal the program or fixture it is transcribed into
+    (fork/evaluator/plan.md section 2.E.4). Prints the self-check line and
+    returns True when the checker reports no error.
+    """
+    path = root / "fork" / "evaluator" / "check_samples.py"
+    spec = importlib.util.spec_from_file_location("check_samples", path)
+    if spec is None or spec.loader is None:
+        ok = False
+    else:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        ok = module.main() == 0
+    print(f"evaluator-samples self-check: {'OK' if ok else 'ERRORS'}")
+    return ok
+
+
 def self_test(programs_dir, filter_substr):
     """Validate all program headers + bullet names without a toolchain."""
     ok = True
@@ -1771,6 +1791,10 @@ def self_test(programs_dir, filter_substr):
     print(
         f"build-script self-check: {'OK' if not build_failures else 'ERRORS'}"
     )
+    # The evaluator guides' samples must equal their programs (EV-1); the
+    # checker reads whole pages, so a filtered run skips it.
+    if not filter_substr and not evaluator_samples_self_check():
+        ok = False
     if (
         not filter_substr
         and update_readme_table(programs, check_only=True) != 0

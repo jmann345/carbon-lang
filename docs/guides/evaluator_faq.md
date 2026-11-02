@@ -186,7 +186,10 @@ ld.lld: error: undefined symbol: _CPrintStr.Core
 program with `carbon build`, which links the rest of the Core library (see
 [One-step builds](getting_started.md#one-step-builds)), or print integers with
 `Core.Print` and text through C++, as the tutorial's
-[Hello, world](tutorial.md#hello-world) does.
+[Hello, world](tutorial.md#hello-world) does. A build system links the Core
+`io` objects explicitly, as
+[Core libraries](build_systems.md#core-libraries) in the build-systems guide
+shows.
 
 ### A C++ header is not found
 
@@ -220,7 +223,9 @@ carbon compile --output-last-input-only --output=main.o geometry.carbon main.car
 ```
 
 Or build every file in one step with `carbon build`. See
-[A multi-file package](tutorial.md#a-multi-file-package).
+[A multi-file package](tutorial.md#a-multi-file-package), and for CMake and
+Make, [A multi-file package](build_systems.md#a-multi-file-package) in the
+build-systems guide.
 
 ### The compiler only outputs one of several files
 
@@ -257,7 +262,10 @@ carbon link --output=main main.o strlib.o -- /usr/lib/x86_64-linux-gnu/libstdc++
 
 That holds only while no standard-library object crosses between the `g++`
 code and the rest of the program, because the two libraries' types are
-distinct.
+distinct. The build-systems guide's
+[Mixed Carbon and C++](build_systems.md#mixed-carbon-and-c) section compiles
+the C++ half with the toolchain's `clang++` for the same reason; linking
+objects built by a system `g++` is filed as W-131.
 
 ### A function ending in a match needs a return
 
@@ -334,7 +342,8 @@ error: option `-o` (short for `--output`) requires a value to be provided and no
 ```
 
 `carbon build -o forty_two forty_two.carbon` fails with this line; write
-`carbon build -o=forty_two forty_two.carbon` instead.
+`carbon build -o=forty_two forty_two.carbon` instead. The mismatch between
+the help text and this behavior is filed as W-133.
 
 ### How is the exit code set?
 

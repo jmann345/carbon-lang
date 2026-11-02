@@ -298,7 +298,7 @@ carbon build -o=forty_two forty_two.carbon
 It differs from the compile and link commands in three measured ways:
 
 -   The short output option takes an equals sign: `-o=forty_two` works, and
-    `-o forty_two` fails; see
+    `-o forty_two` fails (W-133); see
     [The short output flag needs an equals sign](evaluator_faq.md#the-short-output-flag-needs-an-equals-sign).
 -   Without an output option, the executable is named after the first input
     file, without its `.carbon` extension.
@@ -319,3 +319,5 @@ system runs, and names `carbon build` as the one-step alternative.
     `carbon help compile`, which describes the options of one subcommand.
 -   The [language design](/docs/design/README.md), which describes the whole
     language, much of which is not implemented yet.
+-   The [build-systems guide](build_systems.md), for building Carbon programs
+    with CMake and Make.

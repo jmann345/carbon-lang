@@ -15,20 +15,21 @@ with real test coverage), **PARTIAL** (works with material gaps),
 
 ## Scoreboard
 
-**32 DONE / 20 PARTIAL / 3 MISSING / 1 DESIGN-ONLY** across 56
-milestone bullets (reconciled 2026-11-02 at PR 52's landing, LAND-1, against
-that landing's container-measured conformance scoreboard, R33 (b) — 133
-PASS / 0 FAIL / 17 SKIP over 150 programs, 49/56 bullets PASS — and the
-fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
-24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
-W-012 landing later the same day). The front half of the compiler is done;
-match, choice payloads, `?` error handling, exception boundaries, threading
-interop, if-let / while-let / let-else, native unions, `overload fn` sets
-with import, api/impl definitions, generic members and C++ export, and
-`Core.Slice`/`Core.Buf` with the runtime bounds fail-stop, and the
-`std::span` <-> `Core.Slice` mapping with owning-container views, and CMake
-build-system integration with Make documentation have since landed, leaving
-variadics, Windows and the evaluator-documentation row as the open back half.
+**33 DONE / 19 PARTIAL / 3 MISSING / 1 DESIGN-ONLY** across 56 milestone bullets
+(row 90 PARTIAL → DONE 2026-10-13 on transcription plus document review, EV-1 /
+W-062; reconciled 2026-11-02 at PR 52's landing, LAND-1, against that landing's
+container-measured conformance scoreboard, R33 (b) — 133 PASS / 0 FAIL / 17 SKIP
+over 150 programs, 49/56 bullets PASS — and the fork/inventory/work-items.json
+ledger; the original 2026-07-19 audit read 24 / 18 / 13 / 1; the if-let /
+let-else row flipped MISSING → PARTIAL at the W-012 landing later the same day).
+The front half of the compiler is done; match, choice payloads, `?` error
+handling, exception boundaries, threading interop, if-let / while-let /
+let-else, native unions, `overload fn` sets with import, api/impl definitions,
+generic members and C++ export, and `Core.Slice`/`Core.Buf` with the runtime
+bounds fail-stop, and the `std::span` <-> `Core.Slice` mapping with
+owning-container views, and CMake build-system integration with Make
+documentation have since landed, leaving variadics and Windows as the open back
+half.
 
 ## Per-bullet status
 
@@ -88,7 +89,7 @@ variadics, Windows and the evaluator-documentation row as the open back half.
 | Project: CMake build-system integration plus Make documentation | DONE | CM-1 (2026-10-12, fork/cmake/plan.md): first-class CMake language support under cmake/ (CMakeDetermineCarbonCompiler, CMakeCarbonInformation, CMakeTestCarbonCompiler, CarbonTargets with carbon_add_library / carbon_add_executable for whole-package compilation and Carbon::core_io) and examples/cmake building hello, a two-file package and a mixed Carbon/C++ program under Unix Makefiles, Ninja and a plain Makefile, arbitrated by examples/cmake/test.sh through the runner's BUILD-SCRIPT channel (project/cmake_build_integration PASS locally on nightly 2026.10.12 — not of record: the hosted run R9 requires is pending with no dispatch date, Actions disabled); Make documentation in docs/guides/build_systems.md. 0.1 limits, each a filed item: no depfile (W-129), whole-package recompiles (W-130), `carbon link` adds no Core io objects (W-003), no shared libraries (W-132), modules not installed in the toolchain tree (W-128). (Landed 2026-11-02 as PR 52, LAND-1: each "not of record" label above is superseded by this landing's container-measured scoreboard, R33 (b), 133/0/17 over 150 with 49/56 bullets.) |
 | Project: detailed safety strategy | DONE | docs/design/safety/README.md rewritten by way of accepted p005914 (Strict/Permissive modes, per-category enforcement model, build modes, Rust-ecosystem reuse); residual future-work on soundness model/mode syntax and a stale conflicting principles doc. |
 | Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis) | MISSING | Temporal/mutation safety exists only as an explicitly 'directional... provisional' section of p005914; no dedicated design docs or follow-up proposals, no Rust-interop analysis, README 'Lifetime and move semantics' is a bare TODO. |
-| Project: basic evaluator documentation (getting started to FAQs) | DONE | EV-1 (2026-10-13, fork/evaluator/plan.md): docs/guides/getting_started.md (two toolchains: the upstream nightly, whose download block was run verbatim, and this fork built from source, a block quoted from the hosted conformance job and not run here; the stale fork prereleases named and warned against; a platform table whose rows each cite a measurement, upstream's CI configuration or this fork's CI record, with Linux x86-64 measured and macOS unverified for this fork's current trunk; the glibc development files that compiling C++ imports and linking need; the first program; the runtimes cache), docs/guides/tutorial.md (hello world, functions, classes, generics, choice and match and Core.Result with ? on the fork's toolchain, C++ interop in both directions, a multi-file package) and docs/guides/evaluator_faq.md (toolchain questions; every quoted toolchain diagnostic is re-run by fork/evaluator/check_faq.py except the download-failure and stale-prerelease loader lines, which were re-run by hand at commit 1; project questions stay in docs/project/faq.md). The ten tutorial programs are documentation-sync programs under a bullet that was already PASS (bullets unchanged), each a tutorial sample transcribed byte for byte and checked by fork/evaluator/check_samples.py: nine PASS locally on 0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, and the C++-library one SKIPs until PR 52's BUILD-SCRIPT channel is on trunk — not of record: the hosted run R9 requires is pending with no dispatch date, Actions disabled. Not falsified by any review here: the fork build-from-source block (no Bazel), platforms other than Linux x86-64, distributions other than Ubuntu 24.04, a system without libc6-dev. Residue, each a filed item: no current downloadable fork toolchain (W-152); the macOS failure of OV-3's export golden found while sourcing the platform table (W-153). |
+| Project: basic evaluator documentation (getting started to FAQs) | DONE | EV-1 (2026-10-13, fork/evaluator/plan.md): docs/guides/getting_started.md (two toolchains: the upstream nightly, whose download block was run verbatim, and this fork built from source, a block quoted from the hosted conformance job and not run here; the stale fork prereleases named and warned against; a platform table whose rows each cite a measurement, upstream's CI configuration or this fork's CI record, with Linux x86-64 measured and macOS unverified for this fork's current trunk; the glibc development files that compiling C++ imports and linking need; the first program; the runtimes cache), docs/guides/tutorial.md (hello world, functions, classes, generics, choice and match and Core.Result with ? on the fork's toolchain, C++ interop in both directions, a multi-file package) and docs/guides/evaluator_faq.md (toolchain questions; every quoted toolchain diagnostic is re-run by fork/evaluator/check_faq.py except the download-failure and stale-prerelease loader lines, which were re-run by hand at commit 1; project questions stay in docs/project/faq.md). The ten tutorial programs are documentation-sync programs under a bullet that was already PASS (bullets unchanged), each a tutorial sample transcribed byte for byte and checked by fork/evaluator/check_samples.py: all ten PASS locally on 0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, the C++-library one through fork/evaluator/cpp_library/build.sh under the BUILD-SCRIPT channel, and the sample check runs in runner.py --self-test — not of record: the hosted run R9 requires is pending with no dispatch date, Actions disabled. Not falsified by any review here: the fork build-from-source block (no Bazel), platforms other than Linux x86-64, distributions other than Ubuntu 24.04, a system without libc6-dev. Residue, each a filed item: no current downloadable fork toolchain (W-152); the macOS failure of OV-3's export golden found while sourcing the platform table (W-153). |
 | Goal: design docs documented, cohesive, understandable without placeholders | PARTIAL | Generics/variadics/pattern-matching/classes designs are mature, and the fork landed docs/design/error_handling.md (F-006) and docs/design/unions.md (F-007); but templates.md, metaprogramming.md, aliases.md and the `match` section of pattern_matching.md still self-describe as skeletal placeholders (re-read at UA-2, 2026-10-06, after upstream's docs PRs 7823/7839/7869/7875: templates.md:24, metaprogramming.md:20, aliases.md:21, pattern_matching.md:718), the interop README has 8 'TODO:' section headings (the overload-resolution one was filled at OV-3), and of the F-008..F-011 pages only overloading (docs/design/functions_overloading.md, OV-1) has landed — threads/atomics, structural conformance and if-let have not (W-065 open). |
 
 ## Workstreams to close the gap (dependency-ordered)
@@ -270,18 +271,22 @@ CMakeTestCarbonCompiler, CarbonTargets), the examples/cmake project (hello, a
 two-file package behind a static library, and a mixed Carbon/C++ program whose
 C++ half is compiled by the drop-in clang++) built under the Unix Makefiles and
 Ninja generators and by a plain Makefile, and docs/guides/build_systems.md with
-the explicit Make rules; `carbon config --json` was the groundwork. Evaluator
-docs remain thin (the glossary and the build-systems guide in docs/guides): the
-getting-started tutorial is W-062 and stays open.
+the explicit Make rules; `carbon config --json` was the groundwork. The
+evaluator guides LANDED with EV-1 (fork/evaluator/plan.md, 2026-11-02):
+docs/guides/getting_started.md, tutorial.md and evaluator_faq.md beside the
+build-systems guide; W-062 is discharged.
 
 **Arbiter:** For the build-system half, examples/cmake/test.sh driven by the
 conformance runner's BUILD-SCRIPT channel (project/cmake_build_integration and
 project/dropin_clang_make_cmake — PASS locally on nightly 2026.10.12, not of
-record until a hosted run). (LAND-1, 2026-11-02: the "not of record" label
-above is superseded by PR 52's landing's container-measured scoreboard,
-R33 (b), 133/0/17 over 150 with 49/56 bullets.) For the documentation half,
-a docs/guides getting-started tutorial an evaluator can follow from install
-to running a program with interop (W-062, open).
+record until a hosted run). (LAND-1, 2026-11-02: the "not of record" label above
+is superseded by PR 52's landing's container-measured scoreboard, R33 (b),
+133/0/17 over 150 with 49/56 bullets.) For the documentation half, a docs/guides
+getting-started tutorial an evaluator can follow from install to running a
+program with interop (met at EV-1, W-062 discharged: docs/guides/tutorial.md,
+its samples transcribed into project/evaluator_tutorial_*, ten PASS locally, not
+of record until a hosted run; the fork's build-from-source block is quoted from
+the hosted job, not run).
 
 ### W12. Unicode source support in the lexer [S]
 

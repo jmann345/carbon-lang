@@ -404,7 +404,7 @@ fails if this table is stale):
 | `project/evaluator_docs_getting_started.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
 | `project/evaluator_tutorial_choice_match.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
 | `project/evaluator_tutorial_classes.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
-| `project/evaluator_tutorial_cpp_library.carbon` | Project: basic evaluator documentation (getting started to FAQs) | SKIP |
+| `project/evaluator_tutorial_cpp_library.carbon` | Project: basic evaluator documentation (getting started to FAQs) | external-build |
 | `project/evaluator_tutorial_errors.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
 | `project/evaluator_tutorial_functions.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
 | `project/evaluator_tutorial_generics.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |

@@ -3649,8 +3649,8 @@ the decision's own, and the `§`, `R-` and row references are the plan's:
     25; the channel runs scripts from the repository root, and `build.sh`
     changes to its own directory because quoted headers resolve against the
     working directory, row 12). State T: this trunk's runner builds Carbon
-    units only (runner.py:516-524, :546-551, :321) and runs without a `cwd`
-    (:453-462), so the program SKIPs with §2.E.2's text, which names the
+    units only (runner.py:691-699, :721-726, :358) and runs without a `cwd`
+    (:564-575), so the program SKIPs with §2.E.2's text, which names the
     fixture script and the two-line un-SKIP. EV-1 merges only in state C
     (§1.F); W-154 is filed only if the land sequence must merge it in state
     T or PR 52 is abandoned, and it then carries the integration commit's

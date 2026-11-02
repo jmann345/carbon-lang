@@ -39,6 +39,11 @@
 // expectation); the container arbiter's autoupdate (2026-10-12) refilled the
 // split under the new name. W-127 carries the limit and its removal
 // condition.
+//
+// At PR 64's landing (2026-11-02, LAND-1), CT-1's land-time fill renamed the
+// split `unformed_dependent_var`: its shape compiles since CT-1
+// (fork/cpp-templates/plan.md C-2), so the failure described above and the
+// split's prediction are historical.
 
 // --- header.h
 
@@ -46,7 +51,7 @@ struct X {};
 
 template<typename T> struct S {};
 
-// --- fail_todo_unformed_dependent_var.carbon
+// --- unformed_dependent_var.carbon
 
 library "[[@TEST_NAME]]";
 

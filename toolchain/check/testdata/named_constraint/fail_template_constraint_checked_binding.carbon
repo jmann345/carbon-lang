@@ -111,6 +111,19 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_symbolic_arg_unsatisfied.carbon:[[@LINE+13]]:30: error: unable to monomorphize specific `Caller(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return Caller(d); }
+// CHECK:STDERR:                              ^~~~~~
+// CHECK:STDERR: fail_symbolic_arg_unsatisfied.carbon:[[@LINE-10]]:10: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   return CallGet(x);
+// CHECK:STDERR:          ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_unsatisfied.carbon:[[@LINE-13]]:10: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR:   return CallGet(x);
+// CHECK:STDERR:          ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_unsatisfied.carbon:[[@LINE-22]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return Caller(d); }
 
 // --- fail_symbolic_arg_mismatch.carbon
@@ -132,6 +145,19 @@ class E {
   fn Get(unused self) -> bool { return true; }
 }
 
+// CHECK:STDERR: fail_symbolic_arg_mismatch.carbon:[[@LINE+13]]:30: error: unable to monomorphize specific `Caller(E)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(e: E) -> i32 { return Caller(e); }
+// CHECK:STDERR:                              ^~~~~~
+// CHECK:STDERR: fail_symbolic_arg_mismatch.carbon:[[@LINE-11]]:10: note: cannot convert type `E` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   return CallGet(x);
+// CHECK:STDERR:          ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_mismatch.carbon:[[@LINE-9]]:3: note: member `Get` of type `E` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn Get(unused self) -> bool { return true; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_mismatch.carbon:[[@LINE-23]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(e: E) -> i32 { return Caller(e); }
 
 // --- fail_symbolic_arg_result_misused.carbon
@@ -147,6 +173,13 @@ template constraint HasGet {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Caller[U: type](x: U) -> i32 {
+  // CHECK:STDERR: fail_symbolic_arg_result_misused.carbon:[[@LINE+7]]:24: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   let unused b: bool = CallGet(x);
+  // CHECK:STDERR:                        ^~~~~~~~~~
+  // CHECK:STDERR: fail_symbolic_arg_result_misused.carbon:[[@LINE+4]]:24: note: type `i32` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   let unused b: bool = CallGet(x);
+  // CHECK:STDERR:                        ^~~~~~~~~~
+  // CHECK:STDERR:
   let unused b: bool = CallGet(x);
   return 0;
 }
@@ -163,6 +196,10 @@ template constraint HasGet {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Caller[U: type](x: U) -> i32 {
+  // CHECK:STDERR: fail_symbolic_arg_result_member.carbon:[[@LINE+4]]:10: error: member name `foo` not found in `i32` [MemberNameNotFoundInSpecificScope]
+  // CHECK:STDERR:   return CallGet(x).foo;
+  // CHECK:STDERR:          ^~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(x).foo;
 }
 
@@ -181,6 +218,19 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_concrete_arg_beside_symbolic.carbon:[[@LINE+13]]:43: error: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn H[U: type](d: D, u: U) -> i32 { return G(d, u); }
+// CHECK:STDERR:                                           ^~~~~~~
+// CHECK:STDERR: fail_concrete_arg_beside_symbolic.carbon:[[@LINE+10]]:43: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR: fn H[U: type](d: D, u: U) -> i32 { return G(d, u); }
+// CHECK:STDERR:                                           ^~~~~~~
+// CHECK:STDERR: fail_concrete_arg_beside_symbolic.carbon:[[@LINE-15]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_concrete_arg_beside_symbolic.carbon:[[@LINE-15]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn G[template T: HasGet, V: type](x: T, unused y: V) -> i32 { return x.Get(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn H[U: type](d: D, u: U) -> i32 { return G(d, u); }
 
 // --- fail_symbolic_conversion.carbon
@@ -193,6 +243,13 @@ template constraint HasGet {
 }
 
 fn Caller[U: type](unused x: U) {
+  // CHECK:STDERR: fail_symbolic_conversion.carbon:[[@LINE+7]]:26: error: cannot convert type `U` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   let unused T: HasGet = U;
+  // CHECK:STDERR:                          ^
+  // CHECK:STDERR: fail_symbolic_conversion.carbon:[[@LINE+4]]:26: note: template constraint `HasGet` can only be satisfied by a concrete type; `U` is a checked generic binding [StructuralRequirementNeedsConcreteType]
+  // CHECK:STDERR:   let unused T: HasGet = U;
+  // CHECK:STDERR:                          ^
+  // CHECK:STDERR:
   let unused T: HasGet = U;
 }
 
@@ -242,6 +299,19 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_symbolic_class_arg_unsatisfied.carbon:[[@LINE+13]]:30: error: unable to monomorphize specific `Make(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return Make(d); }
+// CHECK:STDERR:                              ^~~~
+// CHECK:STDERR: fail_symbolic_class_arg_unsatisfied.carbon:[[@LINE-11]]:10: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   var h: Holder(U) = {.n = 3};
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_symbolic_class_arg_unsatisfied.carbon:[[@LINE-14]]:10: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR:   var h: Holder(U) = {.n = 3};
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_symbolic_class_arg_unsatisfied.carbon:[[@LINE-25]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return Make(d); }
 
 // --- symbolic_interface_arg.carbon
@@ -296,6 +366,10 @@ impl i32 as J(C) {
 }
 
 fn Use[U: type](unused x: U) -> i32 {
+  // CHECK:STDERR: fail_symbolic_interface_arg_no_impl.carbon:[[@LINE+4]]:10: error: cannot convert type `i32` into type implementing `J(U as HasGet)` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return i32.(J(U).F)();
+  // CHECK:STDERR:          ^~~~~~~~~~~~
+  // CHECK:STDERR:
   return i32.(J(U).F)();
 }
 
@@ -310,6 +384,13 @@ template constraint HasGet {
 
 fn Id[template T: HasGet](x: T) -> T { return x; }
 
+// CHECK:STDERR: fail_symbolic_arg_return_type.carbon:[[@LINE+7]]:36: error: cannot implicitly convert expression of type `U` to `bool` [ConversionFailure]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> bool { return Id(x); }
+// CHECK:STDERR:                                    ^~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_return_type.carbon:[[@LINE+4]]:36: note: type `U` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> bool { return Id(x); }
+// CHECK:STDERR:                                    ^~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Caller[U: type](x: U) -> bool { return Id(x); }
 
 // --- fail_symbolic_arg_return_type_member.carbon
@@ -323,6 +404,14 @@ template constraint HasGet {
 
 fn Id[template T: HasGet](x: T) -> T { return x; }
 
+// CHECK:STDERR: fail_symbolic_arg_return_type_member.carbon:[[@LINE+8]]:42: error: type `U` does not support qualified expressions [QualifiedExprUnsupported]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return Id(x).Missing(); }
+// CHECK:STDERR:                                          ^~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_symbolic_arg_return_type_member.carbon:[[@LINE+4]]:42: error: cannot access member of interface `Core.Destroy` in type `U` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return Id(x).Missing(); }
+// CHECK:STDERR:                                          ^~~~~
+// CHECK:STDERR:
 fn Caller[U: type](x: U) -> i32 { return Id(x).Missing(); }
 
 // --- fail_symbolic_class_member_result.carbon
@@ -340,6 +429,13 @@ class Holder(template T: HasGet) {
 }
 
 fn Make[U: type](unused x: U) -> i32 {
+  // CHECK:STDERR: fail_symbolic_class_member_result.carbon:[[@LINE+7]]:24: error: cannot implicitly convert expression of type `U` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   let unused b: bool = Holder(U).Make();
+  // CHECK:STDERR:                        ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_symbolic_class_member_result.carbon:[[@LINE+4]]:24: note: type `U` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   let unused b: bool = Holder(U).Make();
+  // CHECK:STDERR:                        ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused b: bool = Holder(U).Make();
   return 0;
 }
@@ -502,6 +598,19 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_todo_symbolic_arg_overload_unsatisfied.carbon:[[@LINE+13]]:30: error: unable to monomorphize specific `Caller(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return Caller(d); }
+// CHECK:STDERR:                              ^~~~~~
+// CHECK:STDERR: fail_todo_symbolic_arg_overload_unsatisfied.carbon:[[@LINE-9]]:42: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return Pick(x); }
+// CHECK:STDERR:                                          ^~~~~~~
+// CHECK:STDERR: fail_todo_symbolic_arg_overload_unsatisfied.carbon:[[@LINE-12]]:42: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return Pick(x); }
+// CHECK:STDERR:                                          ^~~~~~~
+// CHECK:STDERR: fail_todo_symbolic_arg_overload_unsatisfied.carbon:[[@LINE-21]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return Caller(d); }
 
 // --- symbolic_arg_through_template.carbon
@@ -550,6 +659,22 @@ template constraint HasGet {
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 fn Twice[template T: type](x: T) -> i32 { return CallGet(x) * 2; }
+// CHECK:STDERR: fail_symbolic_arg_through_template_unsatisfied.carbon:[[@LINE+16]]:42: error: unable to monomorphize specific `Twice(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return Twice(x); }
+// CHECK:STDERR:                                          ^~~~~
+// CHECK:STDERR: fail_symbolic_arg_through_template_unsatisfied.carbon:[[@LINE-4]]:50: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Twice[template T: type](x: T) -> i32 { return CallGet(x) * 2; }
+// CHECK:STDERR:                                                  ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_through_template_unsatisfied.carbon:[[@LINE-7]]:50: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR: fn Twice[template T: type](x: T) -> i32 { return CallGet(x) * 2; }
+// CHECK:STDERR:                                                  ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_through_template_unsatisfied.carbon:[[@LINE-14]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_through_template_unsatisfied.carbon:[[@LINE-14]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Caller[U: type](x: U) -> i32 { return Twice(x); }
 
 class D {
@@ -633,6 +758,32 @@ impl W as I {
   fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
 }
 
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE+26]]:30: error: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return W.(I.F)(d); }
+// CHECK:STDERR:                              ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE+23]]:30: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return W.(I.F)(d); }
+// CHECK:STDERR:                              ^~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE-23]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE-12]]:3: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR:   fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE+13]]:30: error: unable to monomorphize specific `F(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return W.(I.F)(d); }
+// CHECK:STDERR:                              ^~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE-19]]:3: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE-22]]:3: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR:   fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_thunk_unsatisfied.carbon:[[@LINE-39]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return W.(I.F)(d); }
 
 // --- require_in_interface_symbolic.carbon

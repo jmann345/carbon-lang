@@ -120,6 +120,22 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_dependent_class_arg_unsatisfied.carbon:[[@LINE+16]]:30: error: unable to monomorphize specific `Wrap(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return Wrap(d); }
+// CHECK:STDERR:                              ^~~~
+// CHECK:STDERR: fail_dependent_class_arg_unsatisfied.carbon:[[@LINE-11]]:10: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   var h: Holder(T) = {.n = 5};
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_arg_unsatisfied.carbon:[[@LINE-14]]:10: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR:   var h: Holder(T) = {.n = 5};
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_arg_unsatisfied.carbon:[[@LINE-25]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_arg_unsatisfied.carbon:[[@LINE-25]]:14: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Holder(template T: HasGet) {
+// CHECK:STDERR:              ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return Wrap(d); }
 
 // --- fail_dependent_class_return_unsatisfied.carbon
@@ -141,6 +157,22 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_dependent_class_return_unsatisfied.carbon:[[@LINE+16]]:30: error: unable to monomorphize specific `Wrap(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return Wrap(d).n; }
+// CHECK:STDERR:                              ^~~~~~~
+// CHECK:STDERR: fail_dependent_class_return_unsatisfied.carbon:[[@LINE-9]]:43: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Wrap[template T: type](unused x: T) -> Holder(T) { return {.n = 5}; }
+// CHECK:STDERR:                                           ^~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_return_unsatisfied.carbon:[[@LINE-12]]:43: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR: fn Wrap[template T: type](unused x: T) -> Holder(T) { return {.n = 5}; }
+// CHECK:STDERR:                                           ^~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_return_unsatisfied.carbon:[[@LINE-22]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_return_unsatisfied.carbon:[[@LINE-22]]:14: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Holder(template T: HasGet) {
+// CHECK:STDERR:              ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return Wrap(d).n; }
 
 // --- fail_dependent_class_arg_checked_caller.carbon
@@ -161,6 +193,22 @@ fn Wrap[template T: type](unused x: T) -> i32 {
   return h.n;
 }
 
+// CHECK:STDERR: fail_dependent_class_arg_checked_caller.carbon:[[@LINE+16]]:42: error: unable to monomorphize specific `Wrap(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return Wrap(x); }
+// CHECK:STDERR:                                          ^~~~
+// CHECK:STDERR: fail_dependent_class_arg_checked_caller.carbon:[[@LINE-7]]:10: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   var h: Holder(T) = {.n = 5};
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_arg_checked_caller.carbon:[[@LINE-10]]:10: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR:   var h: Holder(T) = {.n = 5};
+// CHECK:STDERR:          ^~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_arg_checked_caller.carbon:[[@LINE-21]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_dependent_class_arg_checked_caller.carbon:[[@LINE-21]]:14: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Holder(template T: HasGet) {
+// CHECK:STDERR:              ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Caller[U: type](x: U) -> i32 { return Wrap(x); }
 
 class D {
@@ -187,6 +235,19 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_dependent_conversion_unsatisfied.carbon:[[@LINE+13]]:30: error: unable to monomorphize specific `F(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return F(d); }
+// CHECK:STDERR:                              ^
+// CHECK:STDERR: fail_dependent_conversion_unsatisfied.carbon:[[@LINE-11]]:26: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR:   let unused y: HasGet = T;
+// CHECK:STDERR:                          ^
+// CHECK:STDERR: fail_dependent_conversion_unsatisfied.carbon:[[@LINE-14]]:26: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR:   let unused y: HasGet = T;
+// CHECK:STDERR:                          ^
+// CHECK:STDERR: fail_dependent_conversion_unsatisfied.carbon:[[@LINE-21]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return F(d); }
 
 // --- fail_dependent_interface_arg_unsatisfied.carbon
@@ -213,4 +274,20 @@ class D {
   var v: i32;
 }
 
+// CHECK:STDERR: fail_dependent_interface_arg_unsatisfied.carbon:[[@LINE+16]]:30: error: unable to monomorphize specific `W(D)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn Use(d: D) -> i32 { return W(d); }
+// CHECK:STDERR:                              ^
+// CHECK:STDERR: fail_dependent_interface_arg_unsatisfied.carbon:[[@LINE-9]]:58: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn W[template T: type](unused x: T) -> i32 { return i32.(J(T).F)(); }
+// CHECK:STDERR:                                                          ^~~~
+// CHECK:STDERR: fail_dependent_interface_arg_unsatisfied.carbon:[[@LINE-12]]:58: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+// CHECK:STDERR: fn W[template T: type](unused x: T) -> i32 { return i32.(J(T).F)(); }
+// CHECK:STDERR:                                                          ^~~~
+// CHECK:STDERR: fail_dependent_interface_arg_unsatisfied.carbon:[[@LINE-26]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_dependent_interface_arg_unsatisfied.carbon:[[@LINE-26]]:13: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: interface J(template T: HasGet) {
+// CHECK:STDERR:             ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(d: D) -> i32 { return W(d); }

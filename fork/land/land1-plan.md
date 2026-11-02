@@ -401,7 +401,11 @@ it reports 0 errors, and so at every later scratch commit. EV-1's
 `fork/evaluator/check_samples.py` reports 0 errors from PR 54 on. Section 2's
 gap-row check (`$F/bin/rowcheck.py`, D-LAND-9) passes at every step with the
 rows section 2 names; on rev 1's merges it reports 8 missing segments at PR 65
-and 16 at PR 58 ($F/checkers.txt has the checker runs).
+and 16 at PR 58 ($F/checkers.txt has the checker runs). The dry run did not
+simulate PR 54's state C commit ($F/checkers.txt: 'state C not simulated'), so
+its check at PR 54 was the merge's, 0 missing with no row named; at the landing
+the state C rewrite of row 90 makes row 90 a named row (section 2.4 as
+amended 2026-11-02, the orchestrator's ruling under R29).
 
 Rev 1's run ($P/expected) is identical to rev 2's through PR 55. From PR 58 on
 it differs: rev 1's GA-2 took trunk's side for whole gap rows both sides
@@ -1547,7 +1551,15 @@ fork/evaluator/plan.md section 3 item 6 (:1830-1842): the C++-library
 program's two-line un-SKIP (section 2.E.2), `evaluator_samples_self_check()` in
 runner.py's `--self-test` (section 2.E.4), the build_systems.md links and the
 W-131 and W-133 citations of D-EV-10, row 90, the header and section W11 in
-their state C texts (sections 2.F.1 and 5.3; the tally 33/19/3/1), W-131's and
+their state C texts (sections 2.F.1 and 5.3; the tally 33/19/3/1; 2.F.1's
+clause on 'the expected scoreboard the parenthetical quotes' has no object on
+the merged trunk, whose header parenthetical is A.8's measured sentence from
+PR 52's landing, so it is not written and A.8's sentence from this landing's
+measurements governs, D-LAND-9's break condition; recorded 2026-11-02, the
+orchestrator's ruling under R29; the header clause's '2026-10-DD' takes the
+PR's own state T value 2026-10-13, cb3ef2e74 fork/gap-analysis.md:19, and
+A.8's sentence replaces the clause in the records commit, recorded 2026-11-02,
+R54-1, the orchestrator's ruling under R29), W-131's and
 W-133's notes, its message recording section 8.2's state C verification line
 and the R31 counts re-run (amended 2026-11-01, review fold: A-m2 / B-M6). The
 completeness audit's additions to that commit, each by Appendix C.5's texts
@@ -1577,9 +1589,12 @@ AUD-54-17 / AUD-54-18), after step 8:
 stops the landing (D-EV-21, :638-653); the same with `--which nightly` and
 the newest upstream nightly, fetched as docs/guides/getting_started.md's
 download block fetches it into a directory under `scratchpad/land1/impl/`
-(the installed 2026.10.12 nightly when the fetch fails, named in the
-records commit's message as the reason); and the runner with that
-nightly's busybox and `--filter project/evaluator`, expected 9 PASS and 2
+(the installed 2026.10.12 nightly when the fetch fails or the fetched
+nightly cannot be run under the session's permission policy, named in the
+records commit's message as the reason with the fetched nightly's version
+and sha256; amended 2026-11-02, the orchestrator's ruling under R29, on
+the 2026.11.01 nightly fetched and refused at this landing); and the runner with
+that nightly's busybox and `--filter project/evaluator`, expected 9 PASS and 2
 COMPILE-FAIL (D-EV-2, :340-345). A nightly result other than EV-1's stops
 the landing, and the guides' label change D-EV-2 then prescribes is a fix
 on PR 54's branch under EV-1's review (D-LAND-10); the nightly and both
@@ -1587,7 +1602,10 @@ results go in the records commit's message. EV-1's entry goes by DL-2,
 above CM-1's (section 2.F.3, :1744-1746; AUD-54-12). Then
 records with RG-1's EV-1 note and the W-152 carry (Appendix C.5). Expected:
 1945 of 1945; 143/0/16 over 159 after state C (static 142/0/17 at the merge).
-Gap-row check: no row named. Deferred: none.
+Gap-row check: row 90 named (the state C commit writes EV-1's
+section 5.3 state C text over the PR's row, which the merge took by GA-1;
+amended 2026-11-02, the implementer's stop at step 9, the orchestrator's
+ruling under R29). Deferred: none.
 
 ### §2.5 PR 55, ST-1
 
@@ -3102,6 +3120,27 @@ BUILD-SCRIPT channel (SKIP in the meantime, D-EV-12)." becomes
 answered for the C++-library tutorial program by the BUILD-SCRIPT channel (state C at PR 54's landing, <date>, LAND-1; D-EV-12).
 ```
 
+Re-pin note (added 2026-11-02, R54-2, the orchestrator's ruling under R29): in
+EV-1's decision-log entry, inside the parenthetical "(:564-575)" that the state
+C commit re-pinned, the records commit appends after the cite "; re-pinned at
+the landing, 2026-11-02, LAND-1: the merged runner's `run_cmd` is PR 52's,
+with `cwd` and `env` parameters that the compile, link and run calls
+at :700, :727 and :748 leave unset".
+
+Ledger re-cites (added 2026-11-02, R54-3, the orchestrator's ruling under
+R29), by C.8's re-cite rule, measured on the records tree: W-062's evidence
+"fork/gap-analysis.md:93 (row 90, DONE on transcription plus document review;
+the header's three added lines moved it from :90)" becomes
+"fork/gap-analysis.md:91 (row 90, DONE on transcription plus document review;
+the header's three added lines moved it from :90, and LAND-1's header rewrites
+to :91, re-pinned 2026-11-02 at PR 54's landing)", its
+"fork/gap-analysis.md:264-281 (the W11 paragraph and arbiter, with the EV-1
+notes)" becomes "fork/gap-analysis.md:266-290 (the W11 paragraph and arbiter,
+with the EV-1 notes; re-pinned 2026-11-02 at PR 54's landing)", and W-060's
+"fork/gap-analysis.md:262-283 (§W11 rewritten)" becomes
+"fork/gap-analysis.md:262-290 (§W11 rewritten; re-pinned 2026-11-02 at
+PR 54's landing, whose state C text and A.10 marks extended the section)".
+
 OR-5:
 appended as the last Next actions item:
 
@@ -4324,5 +4363,125 @@ landing's records commit (D-LAND-9 as amended by the first):
 > Contents list gains, after its last bullet "- Sign-off", the bullet
 > "- Landing-time rulings (the orchestrator's rulings under R29 during the
 > landing)".
+>
+> (5) At PR 54's landing (stage 4), on the implementer's stop at step 9 and two
+> notes of its report: (1) The gap-row check: section 2.4 prescribes the state C
+> commit's rewrite of row 90 (EV-1's section 5.3 state C text, over the PR's row
+> that the merge took by GA-1) but its check names no row, because the dry run
+> did not simulate the state C commit ($F/checkers.txt: "state C not
+> simulated"), so the check at the landing reports the PR's replaced words as
+> missing; rowcheck.py's own rule ("Rows named as ROW_KEY arguments (a plan
+> rewrites them, section 2) are reported but not failed") governs, and row 90 is
+> named: (a) in section 2.4, "(static 142/0/17 at the merge). Gap-row check: no
+> row named. Deferred: none." becomes "(static 142/0/17 at the merge). Gap-row
+> check: row 90 named (the state C commit writes EV-1's section 5.3 state C text
+> over the PR's row, which the merge took by GA-1; amended 2026-11-02, the
+> implementer's stop at step 9, the orchestrator's ruling under R29). Deferred:
+> none."; (b) in section 0.5, after "($F/checkers.txt has the checker runs).",
+> the sentence: "The dry run did not simulate PR 54's state C commit
+> ($F/checkers.txt: 'state C not simulated'), so its check at PR 54 was the
+> merge's, 0 missing with no row named; at the landing the state C rewrite of
+> row 90 makes row 90 a named row (section 2.4 as amended 2026-11-02, the
+> orchestrator's ruling under R29)."; (c) the check is re-run in the landing
+> worktree as `python3 -I $F/bin/rowcheck.py d1a6506b0 cb3ef2e74 WORKTREE
+> "Project: basic evaluator documentation (getting started to FAQs)"`, logged as
+> logs/step9-rowcheck-ruled.log, and must print the row as "named in section 2"
+> and `rowcheck: 0 missing` with exit 0; the records edits themselves stand as
+> written (the worktree's row 90 is section 5.3's state C text with the PR's own
+> date 2026-10-13 and A.10's mark, verified by the orchestrator word for word).
+> (2) The nightly: section 2.4's fallback reads "when the fetch fails"; at this
+> landing the 2026.11.01 nightly was fetched
+> (carbon_toolchain-0.0.0-0.nightly.2026.11.01.tar.gz,
+> sha256 7d0c2f8f04c59af4a7f9b57ede0dc4df199fa8e88deb76536d607dab8f410b9e,
+> logs/step8-nightly-fetch.log) and running it was refused by the session's
+> permission policy, so it was deleted unexecuted and the installed 2026.10.12
+> nightly ran (check_faq.py --which nightly: 17 reproducers run, 0 errors; the
+> runner with its busybox and --filter project/evaluator: 9 PASS, 2
+> COMPILE-FAIL, D-EV-2's expectation); a fetched nightly that cannot be run is,
+> for the fallback's purpose, a failed fetch: in section 2.4, "(the
+> installed 2026.10.12 nightly when the fetch fails, named in the records
+> commit's message as the reason)" becomes "(the installed 2026.10.12 nightly
+> when the fetch fails or the fetched nightly cannot be run under the session's
+> permission policy, named in the records commit's message as the reason with
+> the fetched nightly's version and sha256; amended 2026-11-02, the
+> orchestrator's ruling under R29, on the 2026.11.01 nightly fetched and refused
+> at this landing)", and this landing's records commit message names the fetched
+> nightly's version and sha256, the refusal, the fallback
+> nightly 0.0.0-0.nightly.2026.10.12+62f1cc6 and both results. (3) The header:
+> EV-1's section 2.F.1 state C clause "the expected scoreboard the parenthetical
+> quotes becomes the §5.1 state C figure" (cb3ef2e74
+> fork/evaluator/plan.md:1648-1652) has no object on the merged trunk, whose
+> header parenthetical at d1a6506b0 is Appendix A.8's measured sentence from
+> PR 52's landing, so the state C commit did not write it and the records commit
+> writes the header's first sentence from this landing's measurements by A.8,
+> D-LAND-9's break condition applied as the implementer applied it: in
+> section 2.4, "(sections 2.F.1 and 5.3; the tally 33/19/3/1)" becomes
+> "(sections 2.F.1 and 5.3; the tally 33/19/3/1; 2.F.1's clause on 'the expected
+> scoreboard the parenthetical quotes' has no object on the merged trunk, whose
+> header parenthetical is A.8's measured sentence from PR 52's landing, so it is
+> not written and A.8's sentence from this landing's measurements governs,
+> D-LAND-9's break condition; recorded 2026-11-02, the orchestrator's ruling
+> under R29)".
+>
+> (6) At PR 54's landing (stage 4), on review round 1's R54-1, R54-2 and R54-3:
+> (1) R54-1: the state C commit filled EV-1 section 2.F.1's header clause
+> "row 90 PARTIAL → DONE 2026-10-DD" with the PR's own state T value 2026-10-13
+> (cb3ef2e74 fork/gap-analysis.md:19), and Appendix A.8's sentence replaces the
+> clause in the records commit; the fill is confirmed and no tree changes: in
+> section 2.4, "measurements governs, D-LAND-9's break condition;
+> recorded 2026-11-02, the orchestrator's ruling under R29), W-131's and W-133's
+> notes" becomes "measurements governs, D-LAND-9's break condition;
+> recorded 2026-11-02, the orchestrator's ruling under R29; the header clause's
+> '2026-10-DD' takes the PR's own state T value 2026-10-13, cb3ef2e74
+> fork/gap-analysis.md:19, and A.8's sentence replaces the clause in the records
+> commit, recorded 2026-11-02, R54-1, the orchestrator's ruling under R29),
+> W-131's and W-133's notes". (2) R54-2: the state C commit re-pinned EV-1's
+> decision-log cite of `run_cmd` to the merged runner's :564-575, where
+> `run_cmd` is PR 52's, with `cwd` and `env` parameters
+> (fork/conformance/runner.py:564, :573-574) that the compile, link and run
+> calls at :700, :727 and :748 leave unset, so the entry's state T words stand
+> and the records edit states what the cited lines now hold: in
+> fork/decision-log.md's EV-1 entry, "runs without a `cwd` (:564-575), so the
+> program SKIPs" becomes "runs without a `cwd` (:564-575; re-pinned at the
+> landing, 2026-11-02, LAND-1: the merged runner's `run_cmd` is PR 52's, with
+> `cwd` and `env` parameters that the compile, link and run calls at :700, :727
+> and :748 leave unset), so the program SKIPs"; and Appendix C.5 gains, between
+> its W-002 block and its "OR-5:" paragraph, the paragraph: "Re-pin note
+> (added 2026-11-02, R54-2, the orchestrator's ruling under R29): in EV-1's
+> decision-log entry, inside the parenthetical "(:564-575)" that the state C
+> commit re-pinned, the records commit appends after the cite "; re-pinned at
+> the landing, 2026-11-02, LAND-1: the merged runner's `run_cmd` is PR 52's,
+> with `cwd` and `env` parameters that the compile, link and run calls
+> at :700, :727 and :748 leave unset"." (3) R54-3: W-062's two
+> fork/gap-analysis.md cites (the PR's evidence, merged by LG-1) and W-060's W11
+> cite name lines that this landing's header rewrite, state C text and A.10
+> marks moved, so by C.8's re-cite rule they are re-pinned to the records tree,
+> measured there: row 90 at :91, section W11 at :262-290, its paragraph
+> at :266-276 and its arbiter paragraph at :278-290: in
+> fork/inventory/work-items.json, W-062's evidence "fork/gap-analysis.md:93
+> (row 90, DONE on transcription plus document review; the header's three added
+> lines moved it from :90)" becomes "fork/gap-analysis.md:91 (row 90, DONE on
+> transcription plus document review; the header's three added lines moved it
+> from :90, and LAND-1's header rewrites to :91, re-pinned 2026-11-02 at PR 54's
+> landing)", its "fork/gap-analysis.md:264-281 (the W11 paragraph and arbiter,
+> with the EV-1 notes)" becomes "fork/gap-analysis.md:266-290 (the W11 paragraph
+> and arbiter, with the EV-1 notes; re-pinned 2026-11-02 at PR 54's landing)",
+> and W-060's "fork/gap-analysis.md:262-283 (§W11 rewritten)" becomes
+> "fork/gap-analysis.md:262-290 (§W11 rewritten; re-pinned 2026-11-02 at PR 54's
+> landing, whose state C text and A.10 marks extended the section)", `json.load`
+> passing; and Appendix C.5 gains, directly after the paragraph of item (2), the
+> paragraph: "Ledger re-cites (added 2026-11-02, R54-3, the orchestrator's
+> ruling under R29), by C.8's re-cite rule, measured on the records tree:
+> W-062's evidence "fork/gap-analysis.md:93 (row 90, DONE on transcription plus
+> document review; the header's three added lines moved it from :90)" becomes
+> "fork/gap-analysis.md:91 (row 90, DONE on transcription plus document review;
+> the header's three added lines moved it from :90, and LAND-1's header rewrites
+> to :91, re-pinned 2026-11-02 at PR 54's landing)", its
+> "fork/gap-analysis.md:264-281 (the W11 paragraph and arbiter, with the EV-1
+> notes)" becomes "fork/gap-analysis.md:266-290 (the W11 paragraph and arbiter,
+> with the EV-1 notes; re-pinned 2026-11-02 at PR 54's landing)", and W-060's
+> "fork/gap-analysis.md:262-283 (§W11 rewritten)" becomes
+> "fork/gap-analysis.md:262-290 (§W11 rewritten; re-pinned 2026-11-02 at PR 54's
+> landing, whose state C text and A.10 marks extended the section)"."
 
 <!-- google-doc-style-resume -->

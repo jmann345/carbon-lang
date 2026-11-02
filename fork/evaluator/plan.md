@@ -2544,3 +2544,10 @@ fork/ORCHESTRATION.md names W-155 and marks the branch pushed, its PR to be
 opened and HELD. The R31 counts of this fold are in the commit 4 message; in
 this file no heading or list count changes (the table rows above are not list
 items).
+
+EV-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 54 by
+969e4486c (head cb3ef2e74, trunk before d1a6506b0; GitHub merged_at
+2026-11-02T04:04:54Z) under R33, fork/land/land1-plan.md section 2.4;
+land-time commits d9e311250; container-measured (R33 (b)): gate
+1945 of 1945, conformance 143 PASS, 0 FAIL, 16 SKIP over 159, 49 of 56
+bullets; id re-scans: none; moved to follow-ons: none.

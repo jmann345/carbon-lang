@@ -3650,7 +3650,10 @@ the decision's own, and the `§`, `R-` and row references are the plan's:
     changes to its own directory because quoted headers resolve against the
     working directory, row 12). State T: this trunk's runner builds Carbon
     units only (runner.py:691-699, :721-726, :358) and runs without a `cwd`
-    (:564-575), so the program SKIPs with §2.E.2's text, which names the
+    (:564-575; re-pinned at the landing, 2026-11-02, LAND-1: the merged
+    runner's `run_cmd` is PR 52's, with `cwd` and `env` parameters that the
+    compile, link and run calls at :700, :727 and :748 leave unset), so the
+    program SKIPs with §2.E.2's text, which names the
     fixture script and the two-line un-SKIP. EV-1 merges only in state C
     (§1.F); W-154 is filed only if the land sequence must merge it in state
     T or PR 52 is abandoned, and it then carries the integration commit's
@@ -4036,6 +4039,20 @@ edited (D-EV-15). If upstream ships its own guides or a user-facing FAQ under
 docs/guides (D-EV-9's break condition), the fork's pages are renamed or merged
 into upstream's at that merge; if an upstream merge rewrites README "Getting
 started", the pointers are re-placed in that merge. Veto-able.
+
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at 68569d234; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" has the quotes):_ the guides, their content and the touched
+lines (classified 2026-10-28, RG-1: NONE, W-355; upstream's docs/guides lists
+two entries, README.md and glossary.md, none says tutorial, and no upstream
+commit since the cut touches README.md, docs/project/faq.md or
+docs/guides/README.md); the tutorial's `Ok`/`Err` are renamed by W-346 after
+the held PRs land.
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 54 by
+969e4486c (GitHub merged_at 2026-11-02T04:04:54Z); container-measured (R33 (b)):
+gate 1945 of 1945, conformance 143/0/16 over 159; id re-scans: none;
+moved to follow-ons: none.
 
 ### CM-1: CMake language modules, example project, Make documentation (2026-10-12)
 

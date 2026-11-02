@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-02 (PR 52 landed by LAND-1; 3 PRs landed,
+Last updated: 2026-11-02 (PR 54 landed by LAND-1; 4 PRs landed,
+14 held; see the paragraph dated 2026-11-02 (03:03 UTC) below; the
+earlier 2026-11-02 text follows).
+2026-11-02 (PR 52 landed by LAND-1; 3 PRs landed,
 15 held; see the paragraph dated 2026-11-02 (02:19 UTC) below; the
 earlier 2026-11-02 text follows).
 2026-11-02 (PR 51 landed by LAND-1; 2 PRs landed,
@@ -896,6 +899,12 @@ merged_at 2026-11-02T02:33:50Z; container-measured (R33 (b)): gate 1945 of 1945,
 conformance 133/0/17 over 150, 49/56 bullets, gap tally 32/20/3/1;
 id re-scans: none; 3 PRs landed, 15 held. Next: PR 54 (EV-1).
 
+2026-11-02 (03:03 UTC): PR 54 (EV-1) LANDED on trunk by merge
+969e4486c under R33 (fork/land/land1-plan.md section 2.4), GitHub
+merged_at 2026-11-02T04:04:54Z; container-measured (R33 (b)): gate 1945 of 1945,
+conformance 143/0/16 over 159, 49/56 bullets, gap tally 33/19/3/1;
+id re-scans: none; 4 PRs landed, 14 held. Next: PR 55 (ST-1).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -1230,7 +1239,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ua2` | LANDED as PR 51 by merge 985610146 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T02:06:13Z, merge_commit_sha 985610146) — UA-2: the reconciliation of the 2026-10 upstream advance, with the container fill f96fe8a7a (1945 of 1945) and hosted conformance 37413300832 (131/0/19 over 150); land-time commits none; container-measured (R33 (b)): gate 1945 of 1945, conformance 131/0/19 over 150, 48/56 bullets; moved to follow-ons: to item 16: OP-2's fold of W-197 into W-126; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-cmake` | LANDED as PR 52 by merge 12217e941 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T02:33:50Z, merge_commit_sha 12217e941) — CM-1: CMake language modules, examples/cmake and the Make documentation; gap rows 84 and 87 DONE; W-060 and W-061 discharged, W-128 to W-133 filed; land-time commits none; container-measured (R33 (b)): gate 1945 of 1945, conformance 133/0/17 over 150, 49/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5) (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for its realignment, completed under the orchestrator's re-ruling of the C++ boundary question, SAFE-3 having stopped, and lands by Next actions item 14); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md at rev 14 0f22798fb, unpushed with its commits 48f2e66a0 and 954f1c542 and four fix commits, the twenty-seven commits mirrored at claude/carbon-fork-0-1-safe-wip, not a PR) STOPPED 2026-10-29 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1, the built-in operator exemption's justification being false under the toolchain's in-place `=`; SAFE-3 (fork/safe/safe3-plan.md at rev 12 14c1ac8ac, unpushed, its twelve plan commits mirrored with SAFE-2's at claude/carbon-fork-0-1-safe-wip) STOPPED 2026-11-02 under the break condition of the orchestrator's re-think ruling of 2026-11-01 on RT1-B1 and RT2-B1, C++ code reaching from an address it receives a Carbon place that the closure of D-SAFE3-13 does not name; W-365 and W-366 reserved and unfiled, their texts in the plan's B.14; PR 53 not merged under R33 (c) until a re-ruling; the pushed head is unchanged. |
-| `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
+| `claude/carbon-fork-0-1-ev` | LANDED as PR 54 by merge 969e4486c (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T04:04:54Z, merge_commit_sha 969e4486c) — EV-1: the evaluator guides and transcribed programs, in state C with PR 52; gap row 90 DONE; W-062 discharged, W-152, W-153 and W-155 filed; land-time commits d9e311250; container-measured (R33 (b)): gate 1945 of 1945, conformance 143/0/16 over 159, 49/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at c3cdecc5d (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1; amended 2026-10-28 by RG-1's records commit c3cdecc5d (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 9f12209d8 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 once W-352's commit and item 10 are done); amended 2026-10-28 by RG-1's records commit 9f12209d8 (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at e23113ba2 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 after PR 56); amended 2026-10-28 by RG-1's merge e23113ba2 of PR 56's commit (R32 (e)), the description refreshed. |
@@ -1257,8 +1266,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 52's landing (2026-11-02, LAND-1, R33 (b)): 133 PASS
-/ 17 SKIP / 0 FAIL programs (150 total); **49/56 bullets green**; gate
+Container-measured at PR 54's landing (2026-11-02, LAND-1, R33 (b)): 143 PASS
+/ 16 SKIP / 0 FAIL programs (159 total); **49/56 bullets green**; gate
 1945 of 1945. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
 fork/conformance/out/scoreboard.json's (D-LAND-17).
@@ -1523,6 +1532,11 @@ as the work still owed on the branches and after the landing.
     drops its relative CMAKE_MODULE_PATH. (Carried 2026-11-02 from PR 52's
     branch by LAND-1; the container arbiter builds without Bazel, so the wait
     stands.)
+19. W-152 (EV-1 residue), after the owner's Actions decision: publish a
+    current fork toolchain artifact from a Bazel build of record and retire
+    or relabel the stale `fork-toolchain-*` prereleases;
+    docs/guides/getting_started.md then gains its download path (D-EV-5's
+    break condition). (Carried 2026-11-02 from PR 54's branch by LAND-1.)
 
 ### Standing user directives
 

@@ -66,10 +66,15 @@ class Buf(T: Copy & Destroy) {
 // No `UnformedInit`: `Destroy` runs unconditionally on `var` storage, so an
 // unformed `Buf` would free a garbage pointer (D-SL-6).
 
-// `i64` subscripts, as for `Slice` (an integer literal converts at the index
-// expression, check/handle_index.cpp); `final` for the same reason — `b[i]`
-// on a `Buf(T)` in a generic body has type `T`.
-final impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+// `IndirectIndexWith(i64)` with `i64` subscripts, as for `Slice` (DR-1
+// D-DR-7: `b[i] = v` writes the heap block, as `Set` does); `final` for the
+// same reason — `b[i]` on a `Buf(T)` in a generic body has type `T`.
+final impl forall [T: Copy & Destroy] Buf(T) as IndirectIndexWith(i64)
     where .ElementType = T {
-  fn At(self, subscript: i64) -> T { return self.Get(subscript); }
+  fn Ref(self, subscript: i64) -> ref T {
+    if (subscript < 0 or subscript >= self.Size()) {
+      FailStop("carbon: Core.Buf index out of bounds; terminating\n");
+    }
+    return *PointerOffset(self.AsSlice().Data(), subscript);
+  }
 }

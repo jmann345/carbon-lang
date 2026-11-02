@@ -18,12 +18,12 @@ class Counter {
   var n: i32;
   impl as Core.Iterate where .CursorType = (i32, i32) and .ElementType = i32 {
     fn NewCursor(self) -> (i32, i32) { return (0, self.n); }
-    fn Next(unused self, cursor: (i32, i32)*) -> Core.Optional(i32) {
-      if (cursor->0 >= cursor->1) {
+    fn Next(unused self, ref cursor: (i32, i32)) -> Core.Optional(i32) {
+      if (cursor.0 >= cursor.1) {
         return Core.Optional(i32).None();
       }
-      let v: i32 = cursor->0;
-      (*cursor).0 = v + 1;
+      let v: i32 = cursor.0;
+      cursor.0 = v + 1;
       return Core.Optional(i32).Some(v);
     }
   }

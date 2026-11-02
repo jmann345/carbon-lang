@@ -334,6 +334,31 @@ auto TryGetCanonicalFacet(Context& context, SemIR::InstId inst_id)
   return SemIR::InstId::None;
 }
 
+// Fork (SV-1, D-SV-8): whether `type_id` is the pointer-niche
+// `Core.Optional(T*)`, the type a nullable C++ `T*` imports as. It adapts
+// `MaybeUnformed(T*)`, whose `MaybeUnformed` type qualifier stops the
+// unqualify-then-adapt walk short of the pointer, so it is admitted by name,
+// with the walk that strips qualifiers and adapters together required to reach
+// a pointer; no other qualified adapter is admitted (`Cpp.nullptr_t` and
+// `Core.MaybeUnformed(T)` are not).
+static auto IsCoreOptionalOfPointer(Context& context, SemIR::TypeId type_id)
+    -> bool {
+  auto class_type = context.types().TryGetAs<SemIR::ClassType>(
+      context.types().GetUnqualifiedType(type_id));
+  if (!class_type || !class_type->specific_id.has_value()) {
+    return false;
+  }
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (class_info.is_choice ||
+      !context.name_scopes().IsCorePackage(class_info.parent_scope_id) ||
+      context.names().GetAsStringIfIdentifier(class_info.name_id) !=
+          "Optional") {
+    return false;
+  }
+  return context.types().Is<SemIR::PointerType>(
+      context.types().GetTransitiveUnqualifiedAdaptedType(type_id).first);
+}
+
 auto IsInSliceChoicePayloadType(Context& context, SemIR::TypeId type_id)
     -> bool {
   auto adapted_type_id = context.types().GetTransitiveAdaptedType(
@@ -351,7 +376,8 @@ auto IsInSliceChoicePayloadType(Context& context, SemIR::TypeId type_id)
     return context.inst_blocks().Get(tuple_type->type_elements_id).empty();
   }
   return inst.Is<SemIR::IntType>() || inst.Is<SemIR::FloatType>() ||
-         inst.Is<SemIR::BoolType>() || inst.Is<SemIR::PointerType>();
+         inst.Is<SemIR::BoolType>() || inst.Is<SemIR::PointerType>() ||
+         IsCoreOptionalOfPointer(context, type_id);
 }
 
 }  // namespace Carbon::Check

@@ -4266,6 +4266,22 @@ never a runtime value (D-SC-20 and D-SC-9 amended), a union drains its waiting
 `require`s (D-SC-8(iii) amended), the thunk test is deleted as unreachable, and
 the residue above is W-168. All of it is in the next entry.
 
+_W-139 (2026-11-02, FO-1):_ a checked generic may pass a checked-symbolic
+argument to a `template` binding with structural requirements (25a3c6947), as
+upstream decided leads issue 2153: the call is an ordinary call whose deduced
+value is the checked-symbolic converted argument, checked at the definition with
+the callee's declared return type, and only the argument's structural
+requirements are checked in each specific, where the template's body is
+instantiated, for functions', generic classes' and generic interfaces'
+parameters, also when a template's own call makes the deduction; an overload
+set's probe defers too, so first match agrees with a single function's call; a
+template-dependent self converted at a definition is checked in each specific
+(D-SC-19 as amended); D-SC-6 stays for a conversion of a checked-symbolic self
+outside a call, impl deduction and the generic class's `require` (W-373); the
+overload set's rejection where a concrete call would choose a later member is
+W-375, the cascade after a failed requirement in an impl's or a thunk callee's
+specific W-376, and the interface half of TP-1's eager `Holder(T)` W-374.
+
 ### SC-1 fill rounds (2026-10-13): four toolchain defects fixed on the container-built arbiter
 
 The SC-1 entry above committed every golden with `AUTOUPDATE` and no CHECK lines

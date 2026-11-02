@@ -159,17 +159,16 @@ Features that are provisional have been marked as such on a best-effort basis.
 > [Enums](#enums) and [Execution abstractions](#execution-abstractions)
 > sections, and the rules for
 > [assigning tuples, structs, and data classes](assignment.md#tuples-structs-choice-types-and-data-classes).
-> Two sections stay TODO-only until held work lands:
-> [Lifetime and move semantics](#lifetime-and-move-semantics) (held PR 53) and
-> the [Strings](expressions/arithmetic.md#strings) section of arithmetic
-> (held PR 55). The provisional notes that remain qualify the text beside
-> them. `fork/designdocs/check_samples.py` reports any placeholder
-> self-description, `TODO` heading, `TODO`-only section, or empty section that
-> returns. On the design pages, "the 0.1 toolchain" is this fork's toolchain, a
-> "fork decision F-nnn" is an entry of the
-> [fork's decision log](/fork/decision-log.md), a "fork work item W-nnn" is an
-> item of the [fork's work-item ledger](/fork/inventory/work-items.json), and a
-> "held PR" is a fork pull request that has not merged yet.
+> One section stays TODO-only until held work lands:
+> [Lifetime and move semantics](#lifetime-and-move-semantics) (held PR 53). The
+> provisional notes that remain qualify the text beside them.
+> `fork/designdocs/check_samples.py` reports any placeholder self-description,
+> `TODO` heading, `TODO`-only section, or empty section that returns. On the
+> design pages, "the 0.1 toolchain" is this fork's toolchain, a "fork decision
+> F-nnn" is an entry of the [fork's decision log](/fork/decision-log.md), a
+> "fork work item W-nnn" is an item of the
+> [fork's work-item ledger](/fork/inventory/work-items.json), and a "held PR" is
+> a fork pull request that has not merged yet.
 
 ### Tour of the basics
 

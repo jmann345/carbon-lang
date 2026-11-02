@@ -177,7 +177,7 @@ fn F(b: bool) -> i32 {
 This is rejected with
 ``missing `return` at end of function with declared return type``. In 0.1 the
 same rule also applies after a `match` that is exhaustive without a `default`
-arm (fork work item W-155, on held PR 54).
+arm (fork work item W-155).
 
 A block on its own is not accepted as a statement, although the grammar of
 proposal 162 includes it and the overview's second example uses it:

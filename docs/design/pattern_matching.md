@@ -1001,7 +1001,7 @@ Not in the 0.1 toolchain, each a filed fork work item or a pinned
     the code after it is treated as reachable, which is why `Area` above ends
     with a `return`, and why `IsTrue` in
     [Refutability, overlap, usefulness, and exhaustiveness](#refutability-overlap-usefulness-and-exhaustiveness)
-    is rejected (fork work item W-155, on held PR 54).
+    is rejected (fork work item W-155).
 -   A set of tuple or struct patterns never counts as exhaustive unless one
     arm is irrefutable: the four arms `case (false, false)`,
     `case (false, true)`, `case (true, false)` and `case (true, true)` on a

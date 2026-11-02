@@ -233,7 +233,7 @@ fn Reset(ref p: Point, q: Point) {
 The toolchain reports ``cannot copy value of type `Point` ``. It also accepts a
 struct literal for a class with `private` fields outside the class, which the
 [construction rule](classes.md#access-control-for-construction) forbids (fork
-work item W-167, on held PR 55).
+work item W-167).
 
 When the right-hand side reads the object being assigned, the result depends
 on how the statement is written. With `t` holding `(1, 2)`, `t = (t.1, t.0);`

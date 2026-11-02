@@ -95,7 +95,7 @@ instantiation.
 > method of `Stack` that declares `var y: T;` without an initializer is
 > rejected where the class is defined, with
 > ``cannot convert type `T` into type implementing `Core.DefaultOrUnformed` ``
-> (fork work item W-127, held PR 51). In a class `Holder(template T: type)`
+> (fork work item W-127). In a class `Holder(template T: type)`
 > whose method `First` returns `self.item[0]`, a call of `First` on a
 > `Holder(array(i32, 2))` is rejected with ``unable to monomorphize specific
 > `First(array(i32, 2))` `` and the note ``cannot access member of interface
@@ -358,7 +358,7 @@ Rejected where the function is defined, whatever the argument:
     is rejected where the function is defined with ``cannot convert type `T`
     into type implementing `Core.DefaultOrUnformed` ``, where proposal 2200
     delays impl lookup until the template argument is known; `var y: i32;`
-    compiles (fork work item W-127, held PR 51). A method of a class with a
+    compiles (fork work item W-127). A method of a class with a
     template parameter is rejected the same way, as the fork note in
     [Types with template parameters](#types-with-template-parameters) shows.
 -   `partial T*` for a template parameter `T` is rejected with

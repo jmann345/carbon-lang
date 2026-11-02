@@ -471,11 +471,16 @@ Output:
 
 What to notice: C++ names live under `Cpp`, and C++ `int` is Carbon `i32`. A
 constructor is called as `Cpp.Counter.Counter(...)`. A C++ class template is
-instantiated with a Carbon type argument, as in `Cpp.std.vector(i32)`.
-`import Cpp inline` compiles C++ source written in the Carbon file. Overload
-resolution for `std::abs` is C++'s own. The constructor call, C++ method calls
-and `import Cpp inline` are toolchain behavior whose design sections are still
-placeholders. Design:
+instantiated with a Carbon type argument, as in `Cpp.std.vector(i32)`. `import
+Cpp inline` compiles C++ source written in the Carbon file. Overload resolution
+for `std::abs` is C++'s own. The constructor call, C++ member access, and
+`import Cpp inline` are documented, with the 0.1 toolchain's behavior, in the
+interoperability design's
+[Constructors](/docs/design/interoperability/README.md#constructors),
+[Accessing C++ classes, structs, and members](/docs/design/interoperability/README.md#accessing-c-classes-structs-and-members),
+and
+[Importing C++ code (inline)](/docs/design/interoperability/README.md#importing-c-code-inline)
+sections. Design:
 [interoperability](/docs/design/interoperability/README.md).
 
 If it fails, see the FAQ:

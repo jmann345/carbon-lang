@@ -590,7 +590,6 @@ QUALIFIED = {
 # 2.12 item 5) and is empty at state L.
 ALLOWLIST = {
     ("README.md", "Lifetime and move semantics", "c"): "held PR 53 (SAFE-1)",
-    ("expressions/arithmetic.md", "Strings", "c"): "held PR 55 (ST-1)",
 }
 
 # The quote of the README disclosure's QUALIFIED entry, also used by the

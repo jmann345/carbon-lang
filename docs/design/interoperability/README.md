@@ -691,7 +691,7 @@ template argument: in a function `F[T: Core.Copy](x: T) -> T`, the body
 template is instantiated for each specific. One limit in 0.1: a `var` of such
 a specialization cannot be declared without an initializer, because
 `var b: Cpp.Box(T);` reports that the type does not implement
-`Core.DefaultOrUnformed` (fork work item W-043, and W-127 on held PR 51). C++20
+`Core.DefaultOrUnformed` (fork work item W-043, and W-127). C++20
 concepts can be used: a C++20 concept `IsLarge` applied to a C++ type is a
 compile-time `bool`, so `Cpp.IsLarge(Cpp.Small)` can be a generic argument
 (`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon

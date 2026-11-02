@@ -379,7 +379,7 @@ code it compiles.
 ### What is implemented, and what is only designed?
 
 Much of the [language design](/docs/design/README.md) is not implemented yet,
-and the design documents note their own placeholders. For this fork,
+and the design documents state their own status. For this fork,
 [fork/gap-analysis.md](/fork/gap-analysis.md) holds a table of the 0.1
 milestone's bullets with each one's status and evidence, and
 [fork/conformance/README.md](/fork/conformance/README.md) lists the conformance

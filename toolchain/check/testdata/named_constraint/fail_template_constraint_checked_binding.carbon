@@ -897,11 +897,11 @@ fn Bad[T: Wrap](unused x: T) {}
 // --- fail_extend_require_in_interface_symbolic.carbon
 library "[[@TEST_NAME]]";
 
-// The `extend` sibling of `fail_require_in_interface_symbolic`: `x.Get()` finds
-// the requirement through `I`'s `extend require` with `Self := T`, a checked
-// generic binding that cannot satisfy the constraint (D-SC-6), and a
-// requirement is never itself called (D-SC-4; fill round 2, review finding
-// MINOR-2).
+// The `extend` sibling of `require_in_interface_symbolic`, whose call now
+// checks per specific (W-139): `x.Get()` finds the requirement through `I`'s
+// `extend require` with `Self := T`, a checked generic binding that cannot
+// satisfy the constraint (D-SC-6), and a requirement is never itself called
+// (D-SC-4; fill round 2, review finding MINOR-2).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -918,3 +918,27 @@ interface I {
 // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn G[T: I](x: T) -> i32 { return x.Get(); }
+
+// --- fail_symbolic_arg_impl_deduction.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 defers only the structural requirements of the call's own `template`
+// binding: an impl that its conversion selects is still deduced with D-SC-6,
+// so `U` does not implement `I` through a blanket impl whose `template` binding
+// has a structural requirement, and the call is rejected at the definition, as
+// it is for a `template T: I` (FO-1 implementation review fold, R1-M1).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  fn F() -> i32;
+}
+
+impl forall [template V: HasGet] V as I {
+  fn F() -> i32 { return 4; }
+}
+
+fn CallF[template T: HasGet & I](unused x: T) -> i32 { return T.(I.F)(); }
+
+fn Caller[U: type](x: U) -> i32 { return CallF(x); }

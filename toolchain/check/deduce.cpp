@@ -769,9 +769,17 @@ auto DeduceImplArguments(Context& context, SemIR::LocId loc_id,
   // instructions to any enclosing generic, so we push a fresh generic region.
   context.inst_block_stack().Push();
   context.generic_region_stack().Push({.generic_id = SemIR::GenericId::None});
+  // Fork (SC-1, W-139): impl deduction keeps D-SC-6. It may run inside a
+  // call's conversion of a checked-symbolic argument whose structural
+  // requirements are deferred (`ConvertBindingArg`); that deferral is the
+  // call's own binding's, so it is lifted here, and a blanket impl's
+  // `template` binding still rejects a checked-symbolic self.
+  auto* outer_deferrals =
+      std::exchange(context.structural_check_deferrals(), nullptr);
 
   bool success = deduction.Deduce() && deduction.CheckDeductionIsComplete();
 
+  context.structural_check_deferrals() = outer_deferrals;
   context.generic_region_stack().Pop();
   context.inst_block_stack().PopAndDiscard();
 

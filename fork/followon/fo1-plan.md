@@ -6,11 +6,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # FO-1 plan: the follow-ons that gate the held PRs, then their landings
 
-**Status:** rev 4 -- NOT signed off: RR2-1, RR2-2 (the blockers of the focused
-re-review RR2 of rev 3, verdict REJECT, folded with its RR2-3 to RR2-6,
-2026-11-02; the re-review fold records at the end of the plan); the next
-re-review decides. Rev 3, 2026-11-02, folded RR1's N-1 to N-4 (blockers N-1 and
-N-2); rev 2, 2026-11-02, folded reviews A and B of rev 1. Records only: this
+**Status:** rev 5, 2026-11-02 -- SIGNED OFF FOR IMPLEMENTATION. Rev 5 folded the
+focused re-review RR3 of rev 4 (verdict APPROVE-WITH-AMENDMENTS, RR3-1 to RR3-4,
+no BLOCKER); rev 4, 2026-11-02, folded RR2's RR2-1 to RR2-6 (verdict REJECT,
+blockers RR2-1 and RR2-2); rev 3, 2026-11-02, folded RR1's N-1 to N-4 (blockers
+N-1 and N-2); rev 2, 2026-11-02, folded reviews A and B of rev 1 (the fold
+records and the sign-off table at the end of the plan). Records only: this
 plan changes no toolchain, prelude, golden, program or workflow file. It plans
 fork/ORCHESTRATION.md's Next actions items 10, 13, 15, 16 and 17 (trunk
 03b40f7c5 :2427-2476, :2482-2491 and the lead above item 1, :2273-2283) and the
@@ -27,8 +28,9 @@ against upstream's tip 68569d234 (fetched 2026-11-02 17:01 UTC, unchanged since
 14:01), re-read at be0f11be9 (fetched 20:50 UTC; its three new commits leave
 every direction source of section 0.6 unchanged and move call.cpp's
 `TemplateInst` from :394 to :392, and its next commit, d99b767dd, read at 21:24,
-touches none of them either; amended 2026-11-02, review fold: RR2-5). Four
-findings decide the plan.
+touches none of them either; amended 2026-11-02, review fold: RR2-5; d99b767dd
+is still the tip at 21:56 UTC, re-fetched by rev 5's fixer, amended 2026-11-02,
+review fold: RR3-1). Four findings decide the plan.
 
 Item 10 is OP-2's, not SC-1's. A class `S` with `fn Next(self) ->
 Core.Optional(Self);` in its own definition, with no template constraint at
@@ -75,16 +77,26 @@ argument prints 8 (m9; rev 3 aborted); a template-dependent argument to a
 generic class's structurally constrained parameter, also as a return type, and a
 conversion in a template body are rejected for a `D` without `Get` (m17c, m17f,
 e1; rev 3's land tree accepted them); and a failed check reports one error, the
-callee not being instantiated (p2) (D-FO1-2). The commit touches SC-1's files,
-eval_inst.cpp's `SpecificFunction` evaluation, action.cpp's delayed-action
-bracket, convert.cpp's facet conversion and, carrying upstream's own verifier
-fix e1c8c1f85, sem_ir/dominance.cpp; it applies at cc4daba00 and merges with
-trunk without a new conflict, so it goes on PR 60's branch before the land
-merge, in item 15's order. Rev 1's mechanism (CT-1's C++ call deferral widened
-to Carbon callees) and rev 2's (a template-dependent splice as the deduced
-value, a new type at every mention, which crashed the verifier on overload sets
-and let a return type naming `T` escape the definition's check) are withdrawn
-(section 7).
+callee not being instantiated (p2); an impl's thunk that passes its checked `U`
+to a `template` binding prints 9 (thunk1) (D-FO1-2). Three residues are filed
+beside the discharge (amended 2026-11-02, review fold: RR3-1 / RR3-2 / RR3-3):
+W-374, TP-1's eager `Holder(T)` (D-TP-11) leaves an interface-constrained
+template-dependent argument unchecked on trunk (m17n_d runs on trunk and on the
+land tree; the nightly rejects it), which convert.cpp's requirement, made for
+structural requirements only, does not cover; W-375, an overload set whose
+chosen member's requirements fail in a specific rejects that specific where a
+concrete call would choose a later member (q11d); and W-376, a failed
+requirement still reaches the specific of an impl or of a thunk's callee, so
+`W(D)` and `F(D)` are reported twice (m18i, thunk1d). The commit touches SC-1's
+files, eval_inst.cpp's `SpecificFunction` evaluation, action.cpp's
+delayed-action bracket, convert.cpp's facet conversion and, carrying upstream's
+own verifier fix e1c8c1f85, sem_ir/dominance.cpp; it applies at cc4daba00 and
+merges with trunk without a new conflict, so it goes on PR 60's branch before
+the land merge, in item 15's order. Rev 1's mechanism (CT-1's C++ call deferral
+widened to Carbon callees) and rev 2's (a template-dependent splice as the
+deduced value, a new type at every mention, which crashed the verifier on
+overload sets and let a return type naming `T` escape the definition's check)
+are withdrawn (section 7).
 
 W-352's in-place route keeps D-OP-4's signatures and F-015's API: two private
 interfaces over the storage type, a fallback for every storage and a more
@@ -111,7 +123,9 @@ files gated, and 196/0/14 over 210, 201/0/17 over 218, 208/0/14 over 222,
 218/0/13 over 231 and 228/0/13 over 241, with 50, 50, 50, 51 and 51 bullets
 (section 5); stage 13's row is measured on M60's tree with S, rev 4's B1 and its
 fills (196/0/14 over 210, 50 bullets, gate 2003 of 2003; amended 2026-11-02,
-review fold: RR1-1; re-measured, amended 2026-11-02, review fold: RR2-1).
+review fold: RR1-1; re-measured, amended 2026-11-02, review fold: RR2-1; the
+gate re-measured with rev 5's sources, 2003 of 2003, amended 2026-11-02, review
+fold: RR3-3).
 
 ## Contents
 
@@ -136,6 +150,8 @@ review fold: RR1-1; re-measured, amended 2026-11-02, review fold: RR2-1).
 -   Review fold record (rev 2)
 -   Re-review fold record (rev 3)
 -   Re-review fold record (rev 4)
+-   Re-review fold record (rev 5)
+-   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
 directory
@@ -180,7 +196,16 @@ and rev 3's B1 (27f921499, built to reproduce RR2), then rev 4's B1 over it with
 its sources and fills (scratch d9b22439b), then cc4daba00 with rev 4's B1 (PR
 60's own branch, scratch 2cea7599c), built with
 CB_BUILD_ROOT=/dev/shm/fo1-fixer2/builds and deleted with rev 4's commit (added
-2026-11-02, review fold: RR2-1 / RR2-2).
+2026-11-02, review fold: RR2-1 / RR2-2). `$Q3` is rev 5's fixer's scratch
+directory
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/fo1/fixer3,
+whose trees were one detached worktree /dev/shm/fo1-fixer3/wt: rev 4's land tree
+d9b22439b rebuilt (to reproduce RR3), then rev 5's sources over it (scratch
+22eb7200c), then 2cea7599c (c18c44c9d with B.1) with rev 5's sources and F-B1's
+fills (PR 60's own branch, scratch 7144f8b26), then 22eb7200c with one comment
+line reworded (scratch 36fe44963, the final land tree), built with
+CB_BUILD_ROOT=/dev/shm/fo1-fixer3/builds and deleted with rev 5's commit (added
+2026-11-02, review fold: RR3-3 / RR3-4).
 
 ## §0 Audit
 
@@ -432,6 +457,67 @@ holds for a concrete argument that does not satisfy the requirements (a silent
 check whose instructions are discarded), so the callee's definition is not
 required for it.
 
+**W-139 in rev 5** (added 2026-11-02, review fold: RR3-1 / RR3-2 / RR3-3). The
+focused re-review RR3's probes are in `$Q3/p` (copied from scratchpad/fo1/rr3/p,
+with m18i, m17n and q11b from `$Q2/p`) with the runner `$Q3/run.sh`. Rev 4's
+land tree was rebuilt (d9b22439b, its version 0.0.0-0.dev+d9b22439b) and
+reproduces every RR3 measurement (`$Q3/probes_land.txt`; the installs'
+answers in `$Q3/probes_installs.txt`). m17n_d is m17c with an interface
+`HasGet` (`class Holder(template T: HasGet)`, `var h: Holder(T)` in
+`Wrap[template T: type]`) called with a `D` that does not implement it; q11e is
+RR3's q11d (`Pick(c)` and `Pick(d)` printed) with `Caller(d)` printed too;
+thunk1 is `impl W as I` whose `F[template T: HasGet]` implements `I.F[U: type]`,
+called with a `C`, and thunk1d the same with a `D`; declact is a
+declaration-region `call_action` (`fn Wrap(template F: type, template T: F) ->
+Holder(T)`, called as `Wrap(type, U)`) that `MakeSpecific` resolves while
+`Caller[U: type]`'s definition is open, called with a `C`, and declactd with a
+`D`; tmplnest is a template calling a checked generic calling a template,
+and boxm a template method of `Box(U)`:
+
+| Probe | trunk | the nightly | PR 60's install (866468cba) | rev 4's land tree (d9b22439b) |
+| --- | --- | --- | --- | --- |
+| m17n_d | runs, rc 5 | ``unable to monomorphize specific `Wrap(D)` `` with ``cannot convert type `D` into type implementing `HasGet` `` and ``initializing generic parameter `T` declared here`` | the same as the nightly (the call is a `call_action` there) | runs, rc 5 (W-374) |
+| m17n (with a `C`) | prints 5 | prints 5 | prints 5 | prints 5 |
+| q11e | "unrecognized declaration introducer" (no `template constraint`) | the same | prints 3 7 7 (D-SC-6 in OV-4's probe, rev 3's rule) | ``unable to monomorphize specific `Caller(D)` `` with SC-1's notes at `Pick(x)`, while `Pick(d)` prints 7 (W-375) |
+| thunk1 | as q11e | as q11e | ``cannot convert type `U` into type implementing `HasGet` `` with `StructuralRequirementNeedsConcreteType` and ``while building thunk to match the signature of this function`` (D-SC-6) | prints 9 |
+| thunk1d | as q11e | as q11e | the same, then ``cannot convert type `D` ... `` at the call | ``cannot convert type `D` into type implementing `HasGet` `` at the call with SC-1's notes and `DeductionGenericHere`, then ``unable to monomorphize specific `F(D)` `` with SC-1's notes at `F` (W-376) |
+| m18i | as q11e | as q11e | D-SC-6 at the blanket impl's `J(V)`, then ``unable to monomorphize specific `W(D)` `` | ``unable to monomorphize specific `W(D)` `` at `J(T)`, then again at the blanket impl's `J(V)` (W-376) |
+| declact, declactd | as q11e | as q11e | D-SC-6 at `Wrap(type, U)` (declactd then also reports `Caller(D)`) | declact prints 6; declactd ``unable to monomorphize specific `Caller(D)` `` with SC-1's notes, one error |
+| tmplnest, tmplnestd, boxm | as q11e | as q11e | not run | prints 8 8; one error, `Twice(D)`; boxm prints 6 |
+
+The nominal analog of thunk1, thunk1n (an interface `HasGet` that `C`
+implements), is rejected at the thunk on trunk and the nightly (``cannot convert
+type `U` into type implementing `HasGet` ``): a checked `U: type` does not
+implement an interface, which is the check a template constraint defers. Every
+other RR3 probe gives RR3's answer on the rebuilt tree (outer1, tclassd,
+redecl_td, e1cd, gclassd and twoargd rejected with SC-1's notes; tclass,
+redecl_t, e1c, twoarg, mixedtv and impl_t run; poison1, poison2 and dsc6 keep
+D-SC-6; priv4 and priv5 judge private access at the definition; rev 4's m17c,
+m17f, m17d and m9td, re-measured by RR3 on its own rebuild, were not re-run by
+rev 5's fixer). twice_holder, two mentions of `Holder(T)`
+with a `D`, reports `Wrap(D)` once per mention, as the nightly reports its
+nominal analog twice_holdern; that is not a cascade. On PR 60's own branch with
+rev 4's B1 (scratch 7144f8b26, `$Q3/probes_pr60_rev5.txt`) thunk1 prints 9,
+thunk1d gives the land tree's two errors, q11e rejects `Caller(D)`, declact
+prints 6, declactd and tmplnestd report one error each, tmplnest prints 8 8 and
+boxm 6; m18i reports `W(D)` once, with ``initializing generic parameter `T`
+declared here`` (the branch replays `J(T)`'s `call_action`), and m17n_d is
+rejected as on PR 60's install, the branch having no D-TP-11.
+
+The roots. RR3-1: convert.cpp's requirement (D-FO1-2 (4)) is made only when the
+facet type has structural requirements, so an interface constraint of a
+template-dependent argument that TP-1's D-TP-11 converts at the definition is
+checked there symbolically and never again; that is TP-1's exception to
+upstream's `IsCallPerformable` (section 0.6), on trunk without PR 60, filed as
+W-374 rather than repaired by PR 60's commit (D-FO1-2 (4)). RR3-2: the overload
+set is resolved once at the definition (D-FO1-2's overload rule), so the
+specific has no second resolution; filed as W-375. RR3-3: the function callee's
+definition is not required after a failed requirement
+(`SpecificDefersStructuralChecks`), but an impl selected for the concrete
+argument and a thunk's callee are formed by other paths; filed as W-376, with
+the splits that pin the second error. The code of rev 4's B1 is unchanged in
+rev 5.
+
 **W-352.** The probe count.carbon (`$P/w352`) holds `Counted`, whose `Copy` and
 `Destroy` count into two variables, compares two non-empty Optionals and an
 empty one nine times (`==`, `!=`, `<`, `<=`, `>`, `>=`, empty `==`, empty `<`,
@@ -515,6 +601,9 @@ logs in `$P/<sim>/`):
 | `sim60` with S and rev 4's B1, the rev 4 fixer's land tree (scratch d9b22439b; added 2026-11-02, review fold: RR2-1 / RR2-2 / RR2-3 / RR2-6) | incremental from 27f921499, 110 steps, then structural_conformance.cpp | with Appendix A.2's rev 4 sources before the fills: 1999 passed, 4 failed of 2003, fail_template_constraint_checked_binding.carbon, template_constraint_dependent.carbon, lower/template/template_constraint.carbon and F-M60's fail_template_constraint_requirement_call.carbon; after autoupdate of those four (its second pass writes nothing): 2003 passed, 0 failed of 2003 | with B.1's program: 196 PASS, 0 FAIL, 14 SKIP of 210; 50 bullets | none; `$Q2/gate_land.txt`, `$Q2/conf_land.txt` |
 | M18 on that tree: rev 4's B1 with its fills and S's hunk reverted (added 2026-11-02, review fold: RR2-1) | incremental | 1993 passed, 10 failed of 2003, the same ten files as rev 3's M18 (`diff` empty) | 193 PASS, 3 COMPILE-FAIL, 14 SKIP of 210 (the same three programs) | M18 killed |
 | cc4daba00 with rev 4's B1, PR 60's own branch (scratch 2cea7599c; added 2026-11-02, review fold: RR2-1 / RR2-4) | incremental from the land tree's build, 276 steps | with Appendix A.2's rev 4 sources before F-B1: 1956 passed, 3 failed of 1959, exactly fail_template_constraint_checked_binding.carbon, template_constraint_dependent.carbon and lower/template/template_constraint.carbon; after F-B1's autoupdate (its second pass writes nothing): 1959 passed, 0 failed of 1959; the filled check golden is byte-identical to the land tree's; template_constraint_dependent.carbon differs from the land tree's only by the note ``initializing generic parameter `T` declared here`` in three splits (the branch replays `Holder(T)`'s `call_action`, the land tree performs the conversion's requirement), and the lower golden only in CHECK:STDOUT lines; F-M60 refills both | with B.1's program: 131 PASS, 0 FAIL, 21 SKIP of 152; 49 bullets; B.1's program passes | none; every probe of section 0.2 gives the land tree's answer (`$Q2/probes_pr60_b1.txt`) but for that note and pos1, which prints an uninitialized value, as its nominal analog pos1n does on PR 60's own install and on the nightly, while trunk prints 5 for pos1n and the land tree 5 for pos1: a lowering defect of the branch's base that trunk's code does not have, not B1's (B1 changes no lowering) |
+| `sim60` with S and rev 4's B1 rebuilt (d9b22439b), then rev 5's sources over it (scratch 22eb7200c; added 2026-11-02, review fold: RR3-3) | full, 324 steps, 8 min | with Appendix A.2's rev 5 sources before the fills: 2001 passed, 2 failed of 2003, fail_template_constraint_checked_binding.carbon and template_constraint_dependent.carbon; after autoupdate of the two (its second pass writes nothing): 2003 passed, 0 failed of 2003; the check golden equals rev 4's but for the renamed split's filename and the two thunk splits | 196 PASS, 0 FAIL, 14 SKIP of 210; 50 bullets | none; every RR3 probe reproduces (section 0.2, `$Q3/probes_land.txt`); `$Q3/gate_land.txt`, `$Q3/conf_land.txt` |
+| 2cea7599c (cc4daba00 with rev 4's B1 and B.1) with rev 5's sources, PR 60's own branch (scratch 7144f8b26; added 2026-11-02, review fold: RR3-3) | incremental from the land tree's build, 276 steps | before F-B1: 1956 passed, 3 failed of 1959, exactly fail_template_constraint_checked_binding.carbon, template_constraint_dependent.carbon and lower/template/template_constraint.carbon; after F-B1's autoupdate (its second pass writes nothing): 1959 passed, 0 failed of 1959; the filled check golden is byte-identical to the land tree's (thunk1d's two errors included); template_constraint_dependent.carbon differs from the land tree's by the note ``initializing generic parameter `T` declared here`` in four splits and by `fail_dependent_interface_arg_unsatisfied`'s second `W(D)` error, which only TP-1's eager `J(T)` produces (the branch replays `J(T)`'s `call_action`); F-M60 refills it | not run (no code or program changed since rev 4's 131/0/21 over 152) | none; thunk1 prints 9, q11e rejects `Caller(D)`, declact prints 6, declactd and tmplnestd report one error, tmplnest prints 8 8, boxm 6, m18i reports `W(D)` once, and m17n_d is rejected as on PR 60's install (no D-TP-11 on the branch) (`$Q3/probes_pr60_rev5.txt`) |
+| 22eb7200c with `fail_dependent_interface_arg_unsatisfied`'s TODO comment reworded for the branch's answer (scratch 36fe44963; added 2026-11-02, review fold: RR3-3) | incremental | 2003 passed, 0 failed of 2003 (`$Q3/gate_land_final.txt`), so the comment-only change leaves the land tree as measured | not re-run (a comment line) | none |
 | `sim59` | 324 steps, 6 m 37 s | 2004 passed, 0 failed of 2004 | 202 PASS, 0 FAIL, 14 SKIP of 216; 50 bullets | none |
 | `sim59` with W-367 and W-368 | incremental | 2004 passed, 0 failed of 2004 | not re-run | none |
 
@@ -528,7 +617,7 @@ that TP-1's later rounds made a refill.
 
 | File | Landed code there (PR) | Slice | Collision |
 | --- | --- | --- | --- |
-| toolchain/check/deduce.cpp, toolchain/check/structural_conformance.cpp and .h, toolchain/check/context.h, toolchain/check/action.cpp, toolchain/check/convert.cpp, toolchain/check/eval_inst.cpp, toolchain/sem_ir/dominance.cpp | none in deduce.cpp and structural_conformance.cpp (identical at cc4daba00 and on `sim60`); trunk's members in context.h (+20 lines, other regions); TP-1's and CT-1's action.cpp and convert.cpp regions (other regions: B1's action.cpp lines auto-merge, and its convert.cpp hunk in `PerformBuiltinConversion`'s facet conversion auto-merges outside the two convert.cpp regions of section 0.3); eval_inst.cpp and dominance.cpp identical at cc4daba00 and on trunk (`git diff --stat` empty) | B (W-139; rewritten 2026-11-02, review fold: A-B-1 / A-m-2 / B-B-1 / B-M-2; amended 2026-11-02, review fold: RR1-1 / RR1-4; amended 2026-11-02, review fold: RR2-2 / RR2-4) | none: rev 4's B1 applies at cc4daba00 (`git apply --cached --check` on a temporary index, `$Q2/w139/B1_rev4_land.patch`), and the merge of cc4daba00 plus rev 4's B1 (scratch 2b40c281a) with trunk (`git merge-tree --write-tree`) conflicts in the four files of section 0.3's PR 60 row only, convert.cpp's in its two regions only; with those resolved by section 0.3's rule its eight code files are byte-identical to rev 4's land tree's (`git hash-object`; rev 3's six files merged as scratch f3cd598e5); B1 uses upstream's `AddDependentActionInst`, `AddInstInNoBlock`, `TemplateInst` and `ConvertToValueAction`, all at cc4daba00, carries upstream's own dominance.cpp hunk of e1c8c1f85 (which UA-3 absorbs as identical), and uses no CT-1 code. DR-1's test on its added lines: no `TemporaryStorage`, no `return_arg_id`, no `ConvertCallArgs` (0 of each), and 0 in SC-1's and VA-1's own call.cpp and convert.cpp lines |
+| toolchain/check/deduce.cpp, toolchain/check/structural_conformance.cpp and .h, toolchain/check/context.h, toolchain/check/action.cpp, toolchain/check/convert.cpp, toolchain/check/eval_inst.cpp, toolchain/sem_ir/dominance.cpp | none in deduce.cpp and structural_conformance.cpp (identical at cc4daba00 and on `sim60`); trunk's members in context.h (+20 lines, other regions); TP-1's and CT-1's action.cpp and convert.cpp regions (other regions: B1's action.cpp lines auto-merge, and its convert.cpp hunk in `PerformBuiltinConversion`'s facet conversion auto-merges outside the two convert.cpp regions of section 0.3); eval_inst.cpp and dominance.cpp identical at cc4daba00 and on trunk (`git diff --stat` empty) | B (W-139; rewritten 2026-11-02, review fold: A-B-1 / A-m-2 / B-B-1 / B-M-2; amended 2026-11-02, review fold: RR1-1 / RR1-4; amended 2026-11-02, review fold: RR2-2 / RR2-4) | none: rev 4's B1 applies at cc4daba00 (`git apply --cached --check` on a temporary index, `$Q2/w139/B1_rev4_land.patch`), and the merge of scratch c18c44c9d (cc4daba00 plus rev 4's B1 and Appendix A.2's rev 4 sources, without fills; its diff is `$Q2/w139/B1_rev4_pr60.patch`) with trunk (`git merge-tree --write-tree`, re-run by rev 5's fixer) conflicts in the four files of section 0.3's PR 60 row only, convert.cpp's in its two regions only; with those resolved by section 0.3's rule its eight code files are byte-identical to rev 4's land tree's (equal blob ids for the seven auto-merged files, and convert.cpp equal once its two regions take the rule; rev 4 cited scratch 2b40c281a, a code-only commit made before `SpecificDefersStructuralChecks`'s silent check and discard lines, whose merge gives another structural_conformance.cpp, amended 2026-11-02, review fold: RR3-4; rev 3's six files merged as scratch f3cd598e5); B1 uses upstream's `AddDependentActionInst`, `AddInstInNoBlock`, `TemplateInst` and `ConvertToValueAction`, all at cc4daba00, carries upstream's own dominance.cpp hunk of e1c8c1f85 (which UA-3 absorbs as identical), and uses no CT-1 code. DR-1's test on its added lines: no `TemporaryStorage`, no `return_arg_id`, no `ConvertCallArgs` (0 of each), and 0 in SC-1's and VA-1's own call.cpp and convert.cpp lines |
 | toolchain/check/call.cpp | CT-1's `IsCheckedSymbolicCppArg` and `DeferCppCallOnSymbolicArgs` (PR 64); OV-4's resolution (PR 68); DR-1's return storage (PR 63, PR 65) | none since rev 2 | rev 1's B1 widened `DeferCppCallOnSymbolicArgs`; withdrawn (section 7) |
 | toolchain/check/convert.cpp | TP-1's A2 `PendingBlock`, `SpliceInst`, `AddConvertActionIfDependent` (PR 61); CT-1 (PR 64) | PR 60's merge; B (D-SC-19's requirement, amended 2026-11-02, review fold: RR2-2) | the merge's two regions (section 0.3); rev 4's B1 adds one hunk in `PerformBuiltinConversion`, a requirement for a template-dependent self only, which auto-merges (row above); W-139's checked-symbolic case does not touch convert.cpp (the planner's first prototype there, a `ConvertAction` splice in `PerformBuiltinConversion` for every checked-symbolic conversion to such a facet type, failed deduction with "inconsistent deductions for value of generic parameter `T`", `$P/w139/p1.txt`; rev 2's B1 converts once per binding and argument in a deduction and leaves other conversions to D-SC-6, section 7) |
 | toolchain/check/member_access.cpp | TP-1's C5 `LookupMemberInTemplateConstraint` (PR 61) | PR 60's merge | S (section 2.5) |
@@ -572,8 +661,9 @@ of them), and e1c8c1f85's dominance.cpp hunk is still at the tip; call.cpp
 changes by 12 insertions and 14 deletions above the C++ template name case,
 which moves the `TemplateInst` two lines up. Re-fetched at 21:24 UTC: d99b767dd
 ("Export fields of imported Carbon classes to C++ (#8021)", 20:37 UTC) changes
-seven files, none of these, and leaves the `TemplateInst` at :392. The quotes
-below are the same text at all three shas.
+seven files, none of these, and leaves the `TemplateInst` at :392. Re-fetched at
+21:56 UTC by rev 5's fixer: still d99b767dd (amended 2026-11-02, review fold:
+RR3-1). The quotes below are the same text at all three shas.
 
 Quoted at the tip (R32 (a)):
 
@@ -605,6 +695,15 @@ Quoted at the tip (R32 (a)):
     the callee's declared return type (n1 checks on trunk and the nightly, and
     n2 and n1m, its result misused, are diagnosed at the definition, section
     0.2) (amended 2026-11-02, review fold: A-B-2 / B-B-1).
+-   toolchain/check/call.cpp:449-464 at d99b767dd (added 2026-11-02, review
+    fold: RR3-1): `IsCallPerformable`, whose comment begins "Determines whether
+    a call can be performed immediately" and names such a call
+    "non-template-dependent", returns false when `OperandDependence` of the
+    callee or of any argument is `SemIR::ConstantDependence::Template`, with no
+    exception for a generic class, interface or named constraint. TP-1's D-TP-11
+    makes that exception (a type-forming call is performed when no argument's
+    type is template-dependent), so `Holder(T)` is formed at the definition on
+    trunk and deferred at the tip (m17n_d, section 0.2; W-374).
 -   docs/design/expressions/comparison_operators.md:315-316 ("Additionally,
     these operations should have no observable side-effects.", `EqWith`) and
     :433-434 ("the members of an `OrderedWith` implementation should have no
@@ -667,10 +766,12 @@ vocabulary, fork/register/rg1-plan.md):
     checked-symbolic argument, first match with the probe deferring as the
     diagnosing deduction does, is H9.9, ALIGNED (D-RG-6's first match with
     H9.8's deferral; rev 3's D-SC-6 in the probe was a DRIFT by D-RG-4, amended
-    2026-11-02, review fold: RR2-3) with T7.1's silence check (D-FO1-3,
-    D-FO1-13, Appendix D.6; amended 2026-11-02, review fold: A-B-2 / B-B-1 /
-    B-m-7; amended 2026-11-02, review fold: RR1-1 / RR1-2: rev 2 called H9.8
-    internal although its effect is the language's).
+    2026-11-02, review fold: RR2-3) with a gap, W-375, a specific rejected where
+    a concrete call would choose a later member (D-RG-4; amended 2026-11-02,
+    review fold: RR3-2), with T7.1's silence check (D-FO1-3, D-FO1-13, Appendix
+    D.6; amended 2026-11-02, review fold: A-B-2 / B-B-1 / B-m-7; amended
+    2026-11-02, review fold: RR1-1 / RR1-2: rev 2 called H9.8 internal although
+    its effect is the language's).
 -   H5.4 (rg1-plan.md:951), OP-1's comparisons' `T.Copy` and `T.Destroy` per
     value, DRIFT with W-352: becomes ALIGNED by Slice C, its break condition
     "upstream's Optional gains comparisons or a matchable form (W-320)".
@@ -691,13 +792,21 @@ value is the checked-symbolic converted argument, its per-specific check is the
 design's monomorphization for a surface upstream's toolchain lacks (structural
 requirements, H9.3), registered ALIGNED with its internal representation checked
 silent (H9.8), its overload rule is first match with the probe deferring (H9.9,
-ALIGNED; rev 3's D-SC-6 in the probe was the drift RR2-3 found, amended
-2026-11-02, review fold: RR2-3), and neither is a second spelling of upstream's
-C++ `TemplateInst` deferral, which rev 1 claimed it was (amended 2026-11-02,
-review fold: A-B-2 / B-B-1; amended 2026-11-02, review fold: RR1-2); the
-dominance verifier's hunk is upstream's own e1c8c1f85; Slice C's private
+ALIGNED with the gap W-375; rev 3's D-SC-6 in the probe was the drift RR2-3
+found, amended 2026-11-02, review fold: RR2-3), and neither is a second spelling
+of upstream's C++ `TemplateInst` deferral, which rev 1 claimed it was (amended
+2026-11-02, review fold: A-B-2 / B-B-1; amended 2026-11-02, review fold: RR1-2);
+the dominance verifier's hunk is upstream's own e1c8c1f85; Slice C's private
 interfaces are prelude-private machinery; and Slice D refuses, with a TODO in
-VA-1's check, a form upstream's parser refuses in every parameter list.
+VA-1's check, a form upstream's parser refuses in every parameter list. One
+entry outside this plan's does not hold at the tip (added 2026-11-02, review
+fold: RR3-1): TP-1's H10.8, "D-TP-11 forms a generic class type with
+template-dependent arguments eagerly", NONE as "silent at the tip", is not
+silent, since the tip's `IsCallPerformable` (quoted above) defers such a call;
+B1's convert.cpp hunk rests on that exception (H9.8's break condition). This
+plan does not re-classify TP-1's row; it passes it to the orchestrator in the
+sign-off stamp (Appendix F.1) and to the next weekly check under W-355, with
+W-374 as the item of its interface half.
 
 ### §0.7 The id re-scan
 
@@ -714,7 +823,12 @@ and W-368 (defect A) are filed by Slice D; W-369 and W-370 stay reserved to
 these landings' residues (D-FO1-12); W-373 is the next free id for anything else
 and is taken by D-FO1-3, reserved by the sign-off stamp (Appendix F.1) so that
 a weekly check cannot take it first (amended 2026-11-02, review fold: B-m-4);
-W-374 follows.
+W-374 follows. Re-scanned for rev 5 at 21:56 UTC (added 2026-11-02, review fold:
+RR3-1 / RR3-2 / RR3-3): over the same 171 refs and 23 worktrees, the only filed
+id from W-370 to W-389 is W-372, and W-374 to W-379 appear in no file under
+fork/ on any ref but this plan's branch (its texts "W-374 follows" and "W-374
+onward"); so W-374, W-375 and W-376 are taken by D-FO1-2's residues (D-FO1-12)
+and reserved with W-373 by the sign-off stamp, and W-377 follows.
 
 ### §0.8 Disk
 
@@ -792,8 +906,19 @@ the requirement there and aborted at generic_region_stack.h:98). Where the
 argument does not conform, that specific reports SC-1's diagnostic and notes
 (``unable to monomorphize specific `Caller(D)` ``), and the callee is not
 instantiated for that argument (part 2), so the specific reports SC-1's error
-only (p2, chaind, m5d; RR2-6: rev 3 then also reported the callee's body's first
-failure).
+only (p2, chaind,
+m5d; RR2-6: rev 3 then also reported the callee's body's first failure). Two
+specifics do not pass through that check and still report a cascade after SC-1's
+error: the specific of an impl selected for the concrete argument (m18i's
+blanket `impl forall [V: type] i32 as J(V)`, whose `J(V)` is reported for `D`
+after `J(T)` in `W(D)` where TP-1 forms `J(T)` at the definition, so on M60's
+tree and not on PR 60's own branch, which replays `J(T)` as a `call_action`) and
+the specific of a thunk's callee (thunk1d's `F(D)`, after the thunk's own
+deduction error, on both trees); both are filed as W-376 and pinned by
+`fail_dependent_interface_arg_unsatisfied` and
+`fail_symbolic_arg_impl_thunk_unsatisfied`, and the thunk's accepting form
+(thunk1, which prints 9) by `symbolic_arg_impl_thunk` (amended 2026-11-02,
+review fold: RR3-3).
 
 (2) The callee's definition (eval_inst.cpp,
 `EvalConstantInst(SpecificFunction)`, and structural_conformance.cpp's
@@ -833,7 +958,22 @@ specific, where the self is concrete and a failure is SC-1's diagnostic (m17c,
 m17f, m17d, m9td, e1 and e2 rejected; m17 and m9t print 5). It adds none in a
 delayed action or outside a generic region. A requirement in a symbolic specific
 (`Wrap(U)`, from a checked caller) is performed there as a delayed action and
-defers, as in part (1).
+defers, as in part (1). The requirement is made for structural requirements only
+(`FacetTypeHasStructuralRequirements`), and it exists because TP-1's D-TP-11
+forms `Holder(T)` at the definition, where upstream's `IsCallPerformable`
+(call.cpp:449-464 at d99b767dd, section 0.6) defers a call with any
+template-dependent argument. The interface half of that hole is TP-1's and is on
+trunk: with an interface `HasGet`, `class Holder(template T: HasGet)` and `var
+h: Holder(T)` in `Wrap[template T: type]`, `Wrap(d)` for a `D` that does not
+implement `HasGet` runs with rc 5 on trunk's install and on the land tree, where
+the nightly and PR 60's own install report ``unable to monomorphize specific
+`Wrap(D)` `` (m17n_d; D-TP-11's break condition, "a generic class whose
+parameter conversion depends on the argument's value", fires). It is filed as
+W-374 (Appendix D.3), not folded into B1: dropping the condition would make PR
+60's commit change TP-1's interface conversions and their goldens, outside
+SC-1's scope and B1's break condition, and TP-1's own repair is upstream's
+deferral, which would also make this hunk unnecessary (amended 2026-11-02,
+review fold: RR3-1).
 
 The overload rule (RR1-1; rewritten 2026-11-02, review fold: RR2-3). OV-4's
 probe (`ProbeOverloadCandidateInScratchScope`, the only non-diagnosing call
@@ -853,15 +993,19 @@ function with the same types, depending on which witness tables were available
 at the callsite", and rev 3's `Caller(c)` and `Pick(c)` chose different members
 for the same `C`. What remains different is a rejection, not a different result:
 an argument that fails the chosen member's requirements is diagnosed in that
-specific (`Caller(D)`, `fail_symbolic_arg_overload_unsatisfied`), where a
-concrete `Pick(d)` goes on to the second member; resolving the set again in each
-specific is D-OV-6 gate (xi)'s TODO and would leave the call without a type at
-the definition (rev 1's withdrawn mechanism). The rule is ALIGNED (H9.9: F-009's
-first match, ALIGNED by D-RG-6, with W-139's deferral, ALIGNED as H9.8);
-upstream has no overloaded functions ("We do not yet have an approved design for
-overloaded functions", pattern_matching.md:696). Impl deduction, a conversion of
-a checked-symbolic self outside a call (conv) and the `require` of an impl in a
-generic class keep D-SC-6's rejection (D-FO1-3).
+specific (`Caller(D)`, `fail_todo_symbolic_arg_overload_unsatisfied`; q11d),
+where a concrete `Pick(d)` goes on to the second member and prints 7, as issue
+2153's monomorphization would make `Caller(d)` do. Resolving the set again in
+each specific would leave the call without a type at the definition (rev 1's
+withdrawn mechanism), and D-OV-6 gate (xi)'s item W-101 covers
+template-dependent arguments, not checked-symbolic ones, so the gap is its own
+item, W-375 (amended 2026-11-02, review fold: RR3-2). The rule is ALIGNED with a
+gap (D-RG-4; H9.9: F-009's first match, ALIGNED by D-RG-6, with W-139's
+deferral, ALIGNED as H9.8, the gap W-375); upstream has no overloaded functions
+("We do not yet have an approved design for overloaded functions",
+pattern_matching.md:696). Impl deduction, a conversion of a checked-symbolic
+self outside a call (conv) and the `require` of an impl in a generic class keep
+D-SC-6's rejection (D-FO1-3).
 
 Order. B1 changes deduce.cpp, structural_conformance.cpp and .h, context.h,
 action.cpp, convert.cpp, eval_inst.cpp and dominance.cpp; trunk leaves
@@ -886,7 +1030,11 @@ another, or a template-dependent self whose structural requirements no specific
 checks, or a deduction that aborts while a specific is resolved; then the root
 is re-measured and B1 re-planned before its commit; or upstream's tip gives a
 Carbon callee's template parameter another mechanism, or approves overloaded
-functions (B1 then follows it).
+functions (B1 then follows it); or TP-1 follows upstream's deferral of every
+template-dependent call argument (H10.8, W-374), whereupon convert.cpp's hunk
+(part 4) is withdrawn, since the `call_action` replay then checks a
+template-dependent self again, as on PR 60's own branch (amended 2026-11-02,
+review fold: RR3-1).
 
 **D-FO1-3, W-139's shrink line: the generic class's `require`** (amended
 2026-11-02, review fold: A-B-3 / B-M-1 / B-m-4 / B-m-7). W-139's notes also name
@@ -1059,26 +1207,41 @@ reservations, are filed on PR 59's branch by D-R and reach trunk with PR 59;
 W-373 (D-FO1-3) is reserved on trunk by the sign-off stamp (Appendix F.1) and
 filed on PR 60's branch by B-R (amended 2026-11-02, review fold: B-m-4); W-369
 and W-370 stay reserved for a residue a FO-1 landing finds, filed in trunk's
-ledger by that landing's records commit, otherwise unused; anything else takes
-W-374 onward after a re-scan. _Break condition:_ any of these filed elsewhere
-first; then the next free id after a re-scan, recorded in the commit.
+ledger by that landing's records commit, otherwise unused; W-374 (TP-1's
+interface half, D-FO1-2 (4)), W-375 (the overload gap) and W-376 (the impl and
+thunk cascade) are reserved on trunk with W-373 by the sign-off stamp and filed
+on PR 60's branch, W-375 and W-376 by B-R and W-374 by B-R2, after M60 brings
+the TP-1 files its evidence cites (amended 2026-11-02, review fold: RR3-1 /
+RR3-2 / RR3-3); anything else takes W-377 onward after a re-scan. _Break
+condition:_ any of these filed elsewhere first; then the next free id after a
+re-scan, recorded in the commit; and if stage 13 stops before B-R2, W-374's text
+is filed on trunk by the orchestrator's next records commit, since its defect is
+on trunk.
 
 **D-FO1-13, the register entries** (amended 2026-11-02, review fold: A-B-2 /
 B-B-1 / B-m-7). FO-1's records commits write: W-139's discharge note, W-140's
-note and W-373's entry (B-R, on PR 60's branch before M60); H9.5's verdict
-ALIGNED with W-373 named (D-RG-4), the rows H9.7 (W-373, NONE, D-RG-1), H9.8
-(B1's per-specific check, ALIGNED by D-RG-1 with its internal representation's
-silence check, D-RG-3; amended 2026-11-02, review fold: RR1-2) and H9.9 (the
-overload rule for a checked-symbolic argument, ALIGNED: F-009's first match,
-ALIGNED by D-RG-6, with W-139's deferral; added 2026-11-02, review fold: RR1-1;
+note and the entries W-373, W-375 and W-376 (B-R, on PR 60's branch before M60),
+and W-374's entry (B-R2); H9.5's verdict ALIGNED with W-373 named (D-RG-4), the
+rows H9.7 (W-373, NONE, D-RG-1), H9.8 (B1's per-specific check, ALIGNED by
+D-RG-1 with its internal representation's silence check, D-RG-3; amended
+2026-11-02, review fold: RR1-2; its convert.cpp part stated as resting on TP-1's
+D-TP-11, with a break condition that withdraws it, amended 2026-11-02, review
+fold: RR3-1) and H9.9 (the overload rule for a checked-symbolic argument,
+ALIGNED with a gap: F-009's first match, ALIGNED by D-RG-6, with W-139's
+deferral, the gap W-375 by D-RG-4; added 2026-11-02, review fold: RR1-1;
 re-derived ALIGNED 2026-11-02, review fold: RR2-3: rev 3's NONE kept D-SC-6 in
-the probe, a DRIFT by D-RG-4), each with its silence check in rg1-checks.tsv
-(B-R2, after M60 brings the register files); H5.4's verdict ALIGNED with W-352's
-discharge note (C-R); and H8.9 for W-367's refusal with its check row (L59);
-each in RG-1's vocabulary with its break condition and W-355 as its item, and
-each re-checked by the weekly upstream check's quote and grep scripts (Appendix
-D.6). _Break condition:_ the weekly check classifies one of them otherwise; its
-records rule.
+the probe, a DRIFT by D-RG-4; the gap named, amended 2026-11-02, review fold:
+RR3-2), each with its silence check in rg1-checks.tsv (B-R2, after M60 brings
+the register files); TP-1's row H10.8 (NONE, "silent at the tip") is not this
+plan's to re-classify: its classification does not hold at d99b767dd, whose
+`IsCallPerformable` defers every template-dependent argument, and it is passed
+to the orchestrator by the sign-off stamp (Appendix F.1) and to the next weekly
+check under W-355, with W-374 as the gap's item (amended 2026-11-02, review
+fold: RR3-1); H5.4's verdict ALIGNED with W-352's discharge note (C-R); and H8.9
+for W-367's refusal with its check row (L59); each in RG-1's vocabulary with its
+break condition and W-355 as its item, and each re-checked by the weekly
+upstream check's quote and grep scripts (Appendix D.6). _Break condition:_ the
+weekly check classifies one of them otherwise; its records rule.
 
 **D-FO1-14, the conformance and gate expectations.** The landings' expected
 values are section 5's, computed from the simulations' measured counts plus
@@ -1160,19 +1323,20 @@ defect of OP-2's own scope, fixed before it lands; D-LAND-2's class).
 Rewritten 2026-11-02 (review fold: A-B-1 / A-B-2 / A-B-3 / A-m-1 / A-m-2 / B-B-1
 / B-M-1 / B-M-2 / B-m-6; rewritten again 2026-11-02, review fold: RR1-1 / RR1-2
 / RR1-3 / RR1-4; rewritten again 2026-11-02, review fold: RR2-1 / RR2-2 / RR2-3
-/ RR2-4 / RR2-6). Branch claude/carbon-fork-0-1-sc at cc4daba00 (PR 60), before
-the land merge M60 (D-FO1-2: B1 needs no trunk code). Commit B1, "SC-1 fix: a
-checked-symbolic argument for a template binding, and a template-dependent self,
-are checked per specific (W-139; leads issue 2153; D-SC-19)", changes
-toolchain/check/deduce.cpp, toolchain/check/structural_conformance.cpp and .h,
-toolchain/check/context.h, toolchain/check/action.cpp,
-toolchain/check/convert.cpp, toolchain/check/eval_inst.cpp and
-toolchain/sem_ir/dominance.cpp, the test sources of Appendix A.2 and the program
-of Appendix B.1. The code is this diff against cc4daba00
-(`$Q2/w139/B1_rev4_pr60.patch`, the diff of scratch c18c44c9d; clang-format
-leaves its eight files unchanged; measured on `sim60` with S and on PR 60's own
-branch, section 0.3; rev 3's diff, `$Q1/w139/B1_rev3.patch`, differed from the
-land tree's only by one `return` clang-format rewrapped):
+/ RR2-4 / RR2-6; amended 2026-11-02, review fold: RR3-2 / RR3-3 / RR3-4: the
+test sources and counts, the code unchanged). Branch claude/carbon-fork-0-1-sc
+at cc4daba00 (PR 60), before the land merge M60 (D-FO1-2: B1 needs no trunk
+code). Commit B1, "SC-1 fix: a checked-symbolic argument for a template binding,
+and a template-dependent self, are checked per specific (W-139; leads issue
+2153; D-SC-19)", changes toolchain/check/deduce.cpp,
+toolchain/check/structural_conformance.cpp and .h, toolchain/check/context.h,
+toolchain/check/action.cpp, toolchain/check/convert.cpp,
+toolchain/check/eval_inst.cpp and toolchain/sem_ir/dominance.cpp, the test
+sources of Appendix A.2 and the program of Appendix B.1. The code is this diff
+against cc4daba00 (`$Q2/w139/B1_rev4_pr60.patch`, the diff of scratch c18c44c9d;
+clang-format leaves its eight files unchanged; measured on `sim60` with S and on
+PR 60's own branch, section 0.3; rev 3's diff, `$Q1/w139/B1_rev3.patch`,
+differed from the land tree's only by one `return` clang-format rewrapped):
 
 <!-- google-doc-style-ignore -->
 
@@ -1634,59 +1798,81 @@ self is checked.
 Test sources (Appendix A.2): in
 check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon
 the file comment is rewritten; the split `fail_symbolic_arg` becomes
-`symbolic_arg`, instantiated as `Caller(C)` (B-m-6), followed by nineteen
-splits: rev 2's `fail_symbolic_arg_unsatisfied`, `fail_symbolic_arg_mismatch`,
-`fail_symbolic_arg_result_misused`, `fail_symbolic_arg_result_member`,
-`fail_concrete_arg_beside_symbolic`, `fail_symbolic_conversion`,
-`symbolic_class_arg`, `fail_symbolic_class_arg_unsatisfied` and
-`symbolic_interface_arg` (now with a blanket `impl forall [V: type] i32 as
-J(V)`), and rev 3's `fail_symbolic_interface_arg_no_impl` (rev 2's iface form,
-rejected at the definition as its nominal analog is),
-`fail_symbolic_arg_return_type` (t5), `fail_symbolic_arg_return_type_member`
-(t6), `fail_symbolic_class_member_result` (r6), `symbolic_class_param` (t3),
-`symbolic_class_param_redecl` (t2), `symbolic_class_impl` (t4),
-`symbolic_class_forwarded` (t7), `symbolic_arg_overload` (q14 with q11b's
-concrete call, now the first member for both), and rev 4's
-`symbolic_arg_overload_template_first` (q15, which rev 3 named
-`fail_symbolic_arg_overload_none`), `fail_symbolic_arg_overload_unsatisfied`
-(the first member chosen, `Caller(D)` rejected), `symbolic_arg_through_template`
-(m9p), `symbolic_arg_through_template_use` (m9),
+`symbolic_arg`, instantiated as `Caller(C)` (B-m-6), followed by twenty-six
+splits (rev 4's text said nineteen and listed twenty-four; amended 2026-11-02,
+review fold: RR3-4): rev 2's `fail_symbolic_arg_unsatisfied`,
+`fail_symbolic_arg_mismatch`, `fail_symbolic_arg_result_misused`,
+`fail_symbolic_arg_result_member`, `fail_concrete_arg_beside_symbolic`,
+`fail_symbolic_conversion`, `symbolic_class_arg`,
+`fail_symbolic_class_arg_unsatisfied` and `symbolic_interface_arg` (now with a
+blanket `impl forall [V: type] i32 as J(V)`), and rev 3's
+`fail_symbolic_interface_arg_no_impl` (rev 2's iface form, rejected at the
+definition as its nominal analog is), `fail_symbolic_arg_return_type` (t5),
+`fail_symbolic_arg_return_type_member` (t6), `fail_symbolic_class_member_result`
+(r6), `symbolic_class_param` (t3), `symbolic_class_param_redecl` (t2),
+`symbolic_class_impl` (t4), `symbolic_class_forwarded` (t7),
+`symbolic_arg_overload` (q14 with q11b's concrete call, now the first member for
+both), and rev 4's `symbolic_arg_overload_template_first` (q15, which rev 3
+named `fail_symbolic_arg_overload_none`),
+`fail_todo_symbolic_arg_overload_unsatisfied` (the first member chosen,
+`Caller(D)` rejected, W-375; rev 4 named it
+`fail_symbolic_arg_overload_unsatisfied`, renamed 2026-11-02, review fold:
+RR3-2), `symbolic_arg_through_template` (m9p),
+`symbolic_arg_through_template_use` (m9),
 `fail_symbolic_arg_through_template_unsatisfied` (m9d) and
 `symbolic_arg_return_type_used` (pos1; amended 2026-11-02, review fold: RR2-1 /
-RR2-3 / RR2-6); and `fail_require_in_interface_symbolic` becomes
-`require_in_interface_symbolic`, instantiated as `G(C)` with a `C` that
-implements `I`.
+RR2-3 / RR2-6), and rev 5's `symbolic_arg_impl_thunk` (thunk1) and
+`fail_symbolic_arg_impl_thunk_unsatisfied` (thunk1d, pinning W-376's second
+error; added 2026-11-02, review fold: RR3-3); and
+`fail_require_in_interface_symbolic` becomes `require_in_interface_symbolic`,
+instantiated as `G(C)` with a `C` that implements `I`.
 check/testdata/named_constraint/template_constraint_dependent.carbon's file
 comment is rewritten and it gains `dependent_class_arg` (m17 with `Wrap(c)`),
 `fail_dependent_class_arg_unsatisfied` (m17c),
 `fail_dependent_class_return_unsatisfied` (m17f),
-`fail_dependent_class_arg_checked_caller` (m17d) and
+`fail_dependent_class_arg_checked_caller` (m17d),
 `fail_dependent_conversion_unsatisfied` (e1; amended 2026-11-02, review fold:
-RR2-2); lower/testdata/template/template_constraint.carbon gains the split
+RR2-2) and `fail_dependent_interface_arg_unsatisfied` (m18i, pinning W-376's
+second error; added 2026-11-02, review fold: RR3-3);
+lower/testdata/template/template_constraint.carbon gains the split
 `checked_caller`. Commit F-B1, "SC-1 fix fill: autoupdate W-139's splits on the
 container arbiter", fills those three files.
 
-The CHECK-relevant lines, measured by autoupdate on the land tree (rev 4's:
-`$Q2/f1_after_au.carbon` and `$Q2/f2_after_au.carbon`; autoupdate's second pass
-writes nothing; amended 2026-11-02, review fold: RR2-1 / RR2-2 / RR2-3 / RR2-6):
-no diagnostic for the fifteen splits of the check file without the `fail_`
-prefix, nor for `dependent_class_arg`; for `fail_symbolic_arg_unsatisfied`, at
-`Caller(d)`, ``error: unable to monomorphize specific `Caller(D)`
-[ResolvingSpecificHere]`` with, at `CallGet(x)` in `Caller`, ``note: cannot
-convert type `D` into type implementing `HasGet`
-[ConversionFailureTypeToFacet]``, ``note: type `D` has no member named `Get`
-required by template constraint `HasGet` [StructuralMemberMissing]`` and ``note:
-requirement declared here [StructuralRequirementHere]``, and no second error
-(rev 3's `CallGet(D as HasGet)` instantiation error is gone, RR2-6); for
-`fail_symbolic_arg_mismatch` the same for `Caller(E)` with ``note: member `Get`
-of type `E` does not match the signature required by template constraint
-`HasGet` [StructuralMemberMismatch]``, one error; for
-`fail_symbolic_arg_overload_unsatisfied` the same four lines for `Caller(D)` at
-`Pick(x)`; for `fail_symbolic_arg_through_template_unsatisfied`, at `Twice(x)`
-in `Caller`, ``error: unable to monomorphize specific `Twice(D)`
-[ResolvingSpecificHere]`` with, at `CallGet(x)` in `Twice`, the three notes and
-``note: while deducing parameters of generic declared here
-[DeductionGenericHere]``; for `fail_dependent_class_arg_unsatisfied`,
+The CHECK-relevant lines, measured by autoupdate on the land tree (rev 5's:
+`$Q3/f1_after_au.carbon` and `$Q3/f2_after_au.carbon`, rev 4's lines unchanged
+but for the renamed split's filename; autoupdate's second pass writes nothing;
+amended 2026-11-02, review fold: RR2-1 / RR2-2 / RR2-3 / RR2-6; amended
+2026-11-02, review fold: RR3-3 / RR3-4): no diagnostic for the fourteen splits
+of the check file without the `fail_` prefix (rev 4's text said fifteen where
+its file had thirteen; rev 5 adds `symbolic_arg_impl_thunk`), nor for
+`dependent_class_arg`; for `fail_symbolic_arg_unsatisfied`, at `Caller(d)`,
+``error: unable to monomorphize specific `Caller(D)` [ResolvingSpecificHere]``
+with, at `CallGet(x)` in `Caller`, ``note: cannot convert type `D` into type
+implementing `HasGet` [ConversionFailureTypeToFacet]``, ``note: type `D` has no
+member named `Get` required by template constraint `HasGet`
+[StructuralMemberMissing]`` and ``note: requirement declared here
+[StructuralRequirementHere]``, and no second error (rev 3's `CallGet(D as
+HasGet)` instantiation error is gone, RR2-6); for `fail_symbolic_arg_mismatch`
+the same for `Caller(E)` with ``note: member `Get` of type `E` does not match
+the signature required by template constraint `HasGet`
+[StructuralMemberMismatch]``, one error; for
+`fail_todo_symbolic_arg_overload_unsatisfied` the same four lines for
+`Caller(D)` at `Pick(x)`; for `fail_symbolic_arg_impl_thunk_unsatisfied`, at the
+call `W.(I.F)(d)`, ``error: cannot convert type `D` into type implementing
+`HasGet` [ConversionFailureTypeToFacet]`` with the missing-member and
+requirement notes and ``note: while deducing parameters of generic declared here
+[DeductionGenericHere]`` at `F`, then ``error: unable to monomorphize specific
+`F(D)` [ResolvingSpecificHere]`` with the three notes at `F` (W-376); for
+`fail_dependent_interface_arg_unsatisfied`, ``error: unable to monomorphize
+specific `W(D)` [ResolvingSpecificHere]`` with the three notes at `J(T)`, then
+the same error with the three notes at the blanket impl's `J(V)` (W-376; on PR
+60's own branch the first error only, with ``note: initializing generic
+parameter `T` declared here``, so F-M60 refills it); for
+`fail_symbolic_arg_through_template_unsatisfied`, at `Twice(x)` in `Caller`,
+``error: unable to monomorphize specific `Twice(D)` [ResolvingSpecificHere]``
+with, at `CallGet(x)` in `Twice`, the three notes and ``note: while deducing
+parameters of generic declared here [DeductionGenericHere]``; for
+`fail_dependent_class_arg_unsatisfied`,
 `fail_dependent_class_return_unsatisfied` and
 `fail_dependent_class_arg_checked_caller`, ``error: unable to monomorphize
 specific `Wrap(D)` [ResolvingSpecificHere]`` with the three notes at
@@ -1719,10 +1905,13 @@ accepts this call [OverloadNoMatch]``) checks in rev 4, as
 and `CallGet` as `linkonce_odr` specifics for `C` and `C.Get`; no symbolic
 function is lowered. The gate after F-B1 on M60's tree: 2003 of 2003 with
 F-M60's fill of fail_template_constraint_requirement_call.carbon (measured;
-lower/template/template_constraint.carbon's fill is F-B1's and F-M60's at once
-there). On PR 60's own branch: section 0.3's row for cc4daba00 with rev 4's B1
-(RR1-4, RR2-4); a different set of changed goldens stops B1 (D-FO1-2's break
-condition).
+lower/template/template_constraint.carbon's and
+template_constraint_dependent.carbon's fills are F-B1's and F-M60's at once
+there; rev 4's text named the lower file only, amended 2026-11-02, review fold:
+RR3-4; re-measured with rev 5's sources, 2003 of 2003). On PR 60's own branch:
+section 0.3's rows for cc4daba00 with rev 4's B1 and with rev 5's sources
+(RR1-4, RR2-4, RR3-3); a different set of changed goldens stops B1 (D-FO1-2's
+break condition).
 
 The program generics/structural_conformance_checked_caller.carbon (Appendix B.1)
 is in B1: PASS on the land tree, conformance 196/0/14 over 210 with 50 bullets
@@ -1732,12 +1921,15 @@ paragraph and adds a dated note after RG-1's (Appendix C.1), and amends D-SC-6
 in fork/structural/plan.md (Appendix C.2). Commit B-R, the records on PR 60's
 branch (Appendix D.3): W-139's discharge note, W-140's note (its title example
 now checks; the residue is member lookup through the checked binding, A-m-1),
-W-373 filed, the clause of the gap row "Generics: Template-style structural
+W-373, W-375 and W-376 filed (W-375 and W-376 added 2026-11-02, review fold:
+RR3-2 / RR3-3), the clause of the gap row "Generics: Template-style structural
 conformance to nominal constraints" and SC-1's decision-log paragraph. Commit
 B-R2, the register rows (Appendix D.6: H9.5, H9.7, H9.8, H9.9 and their check
 rows; H9.9 added 2026-11-02, review fold: RR1-1, and re-derived ALIGNED, amended
-2026-11-02, review fold: RR2-3), waits for M60, which brings rg1-plan.md and
-rg1-checks.tsv to the branch (section 2.5).
+2026-11-02, review fold: RR2-3, its gap W-375 named, amended 2026-11-02, review
+fold: RR3-2) and W-374's entry (added 2026-11-02, review fold: RR3-1), waits for
+M60, which brings rg1-plan.md, rg1-checks.tsv and TP-1's files to the branch
+(section 2.5).
 
 ### §2.3 Slice C: W-352 on PR 56 (OP-1), merged into PR 57
 
@@ -2104,12 +2296,15 @@ of claude/carbon-fork-0-1-sc at cc4daba00 under /dev/shm, its build under
     use cases" paragraph, then DD-1's section "Templates in the 0.1 toolchain".
     B1's deduce.cpp, structural_conformance.cpp and .h, context.h, action.cpp,
     eval_inst.cpp and dominance.cpp auto-merge, and its convert.cpp hunk
-    auto-merges outside the two regions (measured: the merge of cc4daba00 plus
-    rev 4's B1 with trunk, scratch 2b40c281a, gives its eight code files
-    byte-identical to rev 4's land tree's once convert.cpp's two regions take
-    the rule above; rev 3's merge was scratch f3cd598e5, with six files; amended
-    2026-11-02, review fold: RR2-4). The records files by D-LAND-5's OR, DL, GA
-    and LG rules (trunk's blocks first, SC-1's appended),
+    auto-merges outside the two regions (measured: the merge of scratch
+    c18c44c9d, cc4daba00 plus rev 4's B1 and its sources, with trunk gives its
+    eight code files byte-identical to rev 4's land tree's once convert.cpp's
+    two regions take the rule above, with the same four conflicted files; rev 4
+    cited 2b40c281a, a code-only commit before the silent check's discard lines,
+    whose merge gives another structural_conformance.cpp, amended 2026-11-02,
+    review fold: RR3-4; rev 3's merge was scratch f3cd598e5, with six files;
+    amended 2026-11-02, review fold: RR2-4). The records files by D-LAND-5's OR,
+    DL, GA and LG rules (trunk's blocks first, SC-1's appended),
     fork/conformance/README.md's table regenerated by the runner's README
     option. The unmerged list is empty: `git diff --name-only --diff-filter=U`
     prints nothing. Then prek runs on the resolved files and `git add` names
@@ -2168,7 +2363,11 @@ of claude/carbon-fork-0-1-sc at cc4daba00 under /dev/shm, its build under
     named_constraint/template_constraint_dependent.carbon (measured: three
     splits lose the note ``initializing generic parameter `T` declared here``,
     which the branch's `call_action` replay gives and the land tree's conversion
-    requirement does not; amended 2026-11-02, review fold: RR2-2), and B1's
+    requirement does not; amended 2026-11-02, review fold: RR2-2; and
+    `fail_dependent_interface_arg_unsatisfied` loses the note and gains the
+    second ``unable to monomorphize specific `W(D)` `` error at the blanket
+    impl's `J(V)`, W-376's cascade, which its TODO comment names; amended
+    2026-11-02, review fold: RR3-3), and B1's
     check test file if its fill on the branch, made without TP-1's code, differs
     from the merged toolchain's output (measured byte-identical; any line other
     than a CHECK line stops, D-LAND-8). Gate after: 2003 of 2003 (measured on
@@ -2201,7 +2400,9 @@ of claude/carbon-fork-0-1-sc at cc4daba00 under /dev/shm, its build under
     H9.7, H9.8 and H9.9 texts and their rg1-checks.tsv rows (H9.9 reuses
     T7.1's), rg1-plan.md's check
     count, and step 7's measured values in SC-1's decision-log paragraph, now
-    that M60 brought the register files.
+    that M60 brought the register files; and W-374's entry (Appendix D.3) in
+    fork/inventory/work-items.json, its cites pinned on M60's tree (added
+    2026-11-02, review fold: RR3-1).
 10. The two implementation reviews of D-FO1-9 on M60..B-R2, which are also
     L60's document review; the fixer; and the push (a fast-forward).
 11. The trunk landing, D-LAND-6's twelve steps for PR 60 at its pushed head:
@@ -2427,11 +2628,11 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 13 | sc (60) | B1 | SC-1 fix: a checked-symbolic argument for a template binding, and a template-dependent self, are checked per specific (W-139; leads issue 2153; D-SC-19) | check/deduce.cpp; check/structural_conformance.cpp and .h; check/context.h; check/action.cpp; check/convert.cpp; check/eval_inst.cpp; sem_ir/dominance.cpp (amended 2026-11-02, review fold: RR1-1; amended 2026-11-02, review fold: RR2-1 / RR2-2); three test files; one program; README table | autoupdate would change the three test files (measured on PR 60's branch: exactly those three) |
 | 14 | sc (60) | F-B1 | SC-1 fix fill: autoupdate W-139's splits on the container arbiter | three test files | all pass (PR 60's branch) |
 | 15 | sc (60) | D-B | SC-1: template_constraints.md states upstream's decision on issue 2153 (W-139) | docs/design/generics/template_constraints.md; fork/structural/plan.md | unchanged |
-| 16 | sc (60) | B-R | SC-1: W-139 discharged, W-373 filed (D-FO1-2, D-FO1-3) | fork/inventory/work-items.json; fork/decision-log.md; fork/gap-analysis.md | unchanged |
+| 16 | sc (60) | B-R | SC-1: W-139 discharged, W-373, W-375 and W-376 filed (D-FO1-2, D-FO1-3; amended 2026-11-02, review fold: RR3-2 / RR3-3) | fork/inventory/work-items.json; fork/decision-log.md; fork/gap-analysis.md | unchanged |
 | 17 | sc (60) | M60 | SC-1: merge trunk at `<trunk>` (LAND-1 stage 13, D-LAND-12) | merge | M18's ten and fail_template_constraint_requirement_call.carbon |
 | 18 | sc (60) | S | TP-1 (7): over SC-1, a template constraint's requirement defers to the type in constraint lookup | check/member_access.cpp | F-M60's set |
 | 19 | sc (60) | F-M60 | SC-1: autoupdate the goldens the land merge changes (stage 13) | the files the gate names | 2003 of 2003 |
-| 20 | sc (60) | L60, B-R2 | SC-1: DD-1's state L (stage 13); SC-1: W-139's register rows (stage 13) | docs/design/templates.md; docs/design/interoperability/README.md; fork/designdocs/samples/ (X12); fork/designdocs/check_samples.py; fork/register/rg1-plan.md; fork/register/rg1-checks.tsv; fork/decision-log.md | unchanged; both checker modes 0 errors |
+| 20 | sc (60) | L60, B-R2 | SC-1: DD-1's state L (stage 13); SC-1: W-139's register rows (stage 13) | docs/design/templates.md; docs/design/interoperability/README.md; fork/designdocs/samples/ (X12); fork/designdocs/check_samples.py; fork/register/rg1-plan.md; fork/register/rg1-checks.tsv; fork/decision-log.md; fork/inventory/work-items.json (W-374; amended 2026-11-02, review fold: RR3-1) | unchanged; both checker modes 0 errors |
 | 21 | trunk | merge, records | Land PR 60: SC-1, template-style structural conformance (F-010); Land PR 60: records | LAND-1's Appendix A.1; A.3 to A.10 with Appendix E's fields | 2003 of 2003 |
 | 22 | op (56) | M56, F-M56, C-R, L56 | OP-1: merge trunk at `<trunk>` (LAND-1 stage 14, D-LAND-12); OP-1: autoupdate the goldens the land merge changes (stage 14); OP-1: W-352 discharged (D-FO1-4), its files docs/design/optional.md, fork/optional/plan.md, fork/decision-log.md, fork/inventory/work-items.json, fork/register/rg1-plan.md and fork/register/rg1-checks.tsv; OP-1: land-time texts (stage 14) | section 2.6 | 2006 of 2006 |
 | 23 | trunk | merge, records | Land PR 56: OP-1, Core.Optional comparison and the fork design F-015; Land PR 56: records | as row 21 | 2006 of 2006 |
@@ -2456,9 +2657,10 @@ written by hand, and each fill is autoupdate's, reviewed as a diff.
 | --- | --- | --- | --- | --- |
 | check/testdata/optional/destroy.carbon | A1 | split `incomplete_self_signature` (Appendix A.1), no CHECK line | F-A1: predicted none (no diagnostic, no dump range) | i10a checks with the fix, section 0.2 |
 | check/testdata/named_constraint/template_constraint.carbon (`self_facet_in_signature_required` and its `fail_todo_` twin) | none | none | none | fails at PR 57's landing without A1, passes with it (`sim57x60`) |
-| check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon | B1 | `fail_symbolic_arg` and `fail_require_in_interface_symbolic` renamed without `fail_` and instantiated, comments rewritten; nineteen splits added (Appendix A.2; amended 2026-11-02, review fold: A-B-1 / A-B-3 / B-m-6; amended 2026-11-02, review fold: RR1-1 / RR1-2 / RR1-3) | F-B1: the renamed splits lose their STDERR lines; the new ones gain section 2.2's | measured by autoupdate on the land tree and on PR 60's own branch, byte-identical, `$Q1/f1_after_au.carbon`, `$Q1/f1_pr60.carbon` |
+| check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon | B1 | `fail_symbolic_arg` and `fail_require_in_interface_symbolic` renamed without `fail_` and instantiated, comments rewritten; twenty-six splits added, the overload split named `fail_todo_` (Appendix A.2; amended 2026-11-02, review fold: A-B-1 / A-B-3 / B-m-6; amended 2026-11-02, review fold: RR1-1 / RR1-2 / RR1-3; amended 2026-11-02, review fold: RR3-2 / RR3-3 / RR3-4: rev 4's row said nineteen) | F-B1: the renamed splits lose their STDERR lines; the new ones gain section 2.2's | measured by autoupdate on the land tree and on PR 60's own branch, byte-identical, `$Q3/f1_after_au.carbon`, `$Q3/f1_pr60.carbon` |
+| check/testdata/named_constraint/template_constraint_dependent.carbon | B1 | file comment rewritten; six splits added (Appendix A.2: rev 4's five and rev 5's `fail_dependent_interface_arg_unsatisfied`; row added 2026-11-02, review fold: RR3-4) | F-B1 on PR 60's branch; F-M60 refills it on M60's tree: four splits lose the `call_action` replay's note and m18i's split gains its second error (section 2.5 step 6) | measured by autoupdate on the land tree and on PR 60's own branch, `$Q3/f2_after_au.carbon`, `$Q3/f2_pr60.carbon` |
 | lower/testdata/template/template_constraint.carbon | B1 | split `checked_caller` (Appendix A.2) | F-B1: its LLVM IR | measured: `Caller` and `CallGet` specifics for `C` |
-| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon; lower/testdata/template/template_constraint.carbon | M60 | none | F-M60: a note's location; IR names | `$P/sim60/gateS.log` |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon; lower/testdata/template/template_constraint.carbon; check/testdata/named_constraint/template_constraint_dependent.carbon | M60 | none | F-M60: a note's location; IR names; the note the branch's `call_action` replay adds (template_constraint_dependent.carbon added 2026-11-02, review fold: RR3-4) | `$P/sim60/gateS.log`; section 0.3's rows for PR 60's own branch |
 | check/testdata/optional/compare.carbon; check/testdata/optional/fail_compare.carbon; lower/testdata/optional/compare.carbon; lower/testdata/optional/destroy.carbon; lower/testdata/primitives/optional.carbon; lower/testdata/for/bindings.carbon; lower/testdata/interop/cpp/pointer.carbon | C1 | none | F-C1 (OP-1's files on PR 56) and F-C-M57 (the rest on PR 57); CHECK lines only | `$P/w352/gate_w352.log` |
 | check/testdata/variadics/fail_todo_slice.carbon | D1 | splits `fail_todo_choice_alternative`, `fail_todo_choice_second_alternative` and `fail_todo_choice_in_class` (Appendix A.3) | F-D1: section 2.4's four lines each | h01 with W-367; h08 and h10 by review A |
 | lower/testdata/variadics/pack_expansion.carbon | D2 | split `padded_element` (Appendix A.4) | F-D2: its LLVM IR | e13 prints 7 with W-368 |
@@ -2637,13 +2839,31 @@ x14, x13, t5s, t6s, r6, q4), as are impl lookups that name the deduced value
 (iface). Measured since rev 4: a template whose structurally constrained binding
 is deduced through another template's argument list (m9, m9d, m9p, m9c2), which
 RR2 constructed, and a failed deferred check reporting one error, the callee not
-being instantiated (p2, chaind, m5d). Not measured: a delayed action that
-deduces a structurally constrained binding while another generic's region is
-open (a declaration-region action of a specific that `MakeSpecific` resolves
-during a definition): no probe reached one; the delayed-action counter, not the
-region stack, decides, so such a requirement cannot land in the open generic;
-the reviews are asked to construct one. The remaining overload difference, a
-rejection where a concrete call would choose a later member, is D-FO1-2's.
+being instantiated (p2, chaind, m5d). Measured since rev 5 (RR3; amended
+2026-11-02, review fold: RR3-3 / RR3-4: rev 4 listed the first as not measured):
+a delayed action that deduces a structurally constrained binding while another
+generic's region is open, a declaration-region `call_action` that `MakeSpecific`
+resolves during `Caller`'s definition (declact prints 6, declactd reports
+`Caller(D)` once, so the requirement did not land in the open generic), a
+template calling a checked generic calling a template (tmplnest prints 8 8,
+tmplnestd one error), a template method of a generic class (boxm prints 6) and
+an impl's thunk (thunk1 prints 9). What remains is filed: the overload
+difference, a rejection where a concrete call would choose a later member, is
+W-375; the second error of an impl's or a thunk callee's specific after a failed
+requirement is W-376; and the interface half of TP-1's eager `Holder(T)` is
+W-374 (D-FO1-2).
+
+**Rejected: convert.cpp's requirement for every facet type** (added 2026-11-02,
+review fold: RR3-1). Dropping `FacetTypeHasStructuralRequirements` from the
+hunk's condition would also check, per specific, an interface constraint of a
+template-dependent argument that D-TP-11 converts at the definition (m17n_d).
+It would make PR 60's commit repair TP-1's exception to upstream's
+`IsCallPerformable` with fork code, change the SemIR of TP-1's interface
+conversions in trunk's goldens, outside B1's break condition and SC-1's review
+scope, and add a second fork mechanism where upstream's is the deferral, which
+TP-1's own item can take (W-374). _Falsifier:_ the orchestrator rules that W-374
+is PR 60's to carry, or TP-1's deferral is refused; then the condition is
+dropped, TP-1's goldens are refilled and measured, and B1 is re-reviewed.
 
 **Risk: A1 hides a missing `Destroy`.** A class with its own `Destroy` impl
 never used the synthesized witness (`CanDestroyClass` declines it after
@@ -2699,17 +2919,33 @@ Run for this plan (container-local, EXPECTED, not of record, R9):
 8.  Rev 4's fixer (added 2026-11-02, review fold: RR2-1 / RR2-2 / RR2-3 / RR2-4
     / RR2-5 / RR2-6): upstream re-fetched at 20:50 UTC, be0f11be9, and at 21:24
     UTC, d99b767dd, their diffs against 68569d234 read for the direction
-    sources; one build at a time under /dev/shm/fo1-fixer2/builds: 27f921499
-    (`sim60` with S and rev 3's B1, a full build; every RR2 finding reproduced,
+    sources; one build at a time under /dev/shm/fo1-fixer2/builds: 27f921499 (`sim60`
+    with S and rev 3's B1, a full build; every RR2 finding reproduced,
     `$Q2/probes_rev3.txt`), rev 4's B1 over it in two increments with the probes
     (`$Q2/probes_rev4.txt`, `probes_rev4b.txt`), Appendix A.2's rev 4 sources
     autoupdated to a fixpoint, the gate (1999 of 2003 before the fills, 2003 of
     2003 after), conformance (196/0/14 over 210) and M18 (1993 of 2003, 193/3/14
     over 210); then cc4daba00 with rev 4's B1 (PR 60's own branch, section 0.3's
     row); rev 4's B1 checked to apply at cc4daba00 and merged with trunk
-    (scratch 2b40c281a); PR 60's install, trunk's and the nightly on the RR2
-    probes and their nominal analogs; the builds were deleted with rev 4's
-    commit.
+    (scratch 2b40c281a, superseded by c18c44c9d's merge in rev 5, which matches
+    the land tree; amended 2026-11-02, review fold: RR3-4); PR 60's install,
+    trunk's and the nightly on the RR2 probes and their nominal analogs; the
+    builds were deleted with rev 4's commit.
+9.  Rev 5's fixer (added 2026-11-02, review fold: RR3-1 / RR3-2 / RR3-3 /
+    RR3-4): upstream re-fetched at 21:56 UTC, still d99b767dd; one build at a
+    time under /dev/shm/fo1-fixer3/builds: d9b22439b rebuilt (version
+    0.0.0-0.dev+d9b22439b; every RR3 finding reproduced, `$Q3/probes_land.txt`,
+    with the installs in `$Q3/probes_installs.txt`), rev 5's sources applied
+    over it, the gate (2001 of 2003 before the fills, the two named files, 2003
+    of 2003 after autoupdate, whose second pass writes nothing) and conformance
+    (196/0/14 over 210, 50 bullets; scratch 22eb7200c); then 2cea7599c (PR 60's
+    branch with rev 4's B1 and B.1) with rev 5's sources (1956 of 1959 before
+    F-B1, 1959 of 1959 after; scratch 7144f8b26) and the probes on it
+    (`$Q3/probes_pr60_rev5.txt`); then 22eb7200c with the reworded comment line
+    (scratch 36fe44963) rebuilt and gated (2003 of 2003); the merges of
+    c18c44c9d and 2b40c281a with trunk re-run (`git merge-tree`, the eight code
+    files compared by blob id); the id re-scan (section 0.7); the build was
+    deleted with rev 5's commit.
 
 The slices' and landings' implementers run, at each commit: the build, the
 gate, autoupdate to its fixpoint on exactly the files the gate names, the
@@ -2763,8 +2999,10 @@ Not run by this plan, and why:
 2.  The prototypes are in `$P` (`i10/F1.patch`, `sim60/S.patch`,
     `w352/w352_block.carbon` with `w352.py`, `w367/W367.patch`,
     `w368/W368.patch`) and `$Q2` (`w139/B1_rev4_pr60.patch`, rev 4's B1 against
-    cc4daba00, `w139/apply_a2_rev4.py`, and `a2/`, Appendix A.2's and B.1's
-    sources; amended 2026-11-02, review fold: RR2-1 / RR2-2); apply each with
+    cc4daba00, and `w139/apply_a2_rev4.py`; amended 2026-11-02, review fold:
+    RR2-1 / RR2-2) with `$Q3`'s `a2/`, Appendix A.2's and B.1's sources as rev
+    5 amends them, which `apply_a2_rev4.py` applies as it applied rev 4's
+    (amended 2026-11-02, review fold: RR3-3); apply each with
     `git apply` and re-read it against section 2, which governs where they
     differ. `$Q1/w139/B1_rev3.patch` is rev 3's superseded B1,
     `$Q/w139/B1v5_toolchain.patch` rev 2's withdrawn B1 and
@@ -2786,9 +3024,13 @@ Not run by this plan, and why:
     compare; a new conflict with a rule here is recorded as "not in the dry
     run".
 11. The orchestrator's stamps are Appendix F's, verbatim; F.1 precedes the
-    first slice commit (W-373's reservation), and each Next actions mark is
-    written by the stage F names (added 2026-11-02, review fold: B-M-2 /
-    B-m-4).
+    first slice commit (the reservation of W-373 to W-376), and each Next
+    actions mark is written by the stage F names (added 2026-11-02, review
+    fold: B-M-2 / B-m-4).
+12. W-375 and W-376 are filed by B-R and W-374 by B-R2 (D-FO1-12); TP-1's H10.8
+    is not edited by any FO-1 commit, its classification being passed to the
+    orchestrator and the weekly check by F.1 (added 2026-11-02, review fold:
+    RR3-1 / RR3-2 / RR3-3).
 
 ## Appendix A: golden sources
 
@@ -2831,21 +3073,26 @@ amended 2026-11-02, review fold: RR1-1 / RR1-2 / RR1-3: ten splits added,
 RR2-1 / RR2-2 / RR2-3 / RR2-6: the overload splits re-derived,
 `fail_symbolic_arg_overload_none` renamed
 `symbolic_arg_overload_template_first`, five check splits and five
-template_constraint_dependent.carbon splits added); the sources are `$Q2/a2/`,
-the ones measured on rev 4's land tree and on PR 60's own branch. In
+template_constraint_dependent.carbon splits added; amended 2026-11-02, review
+fold: RR3-2 / RR3-3: `fail_symbolic_arg_overload_unsatisfied` renamed
+`fail_todo_symbolic_arg_overload_unsatisfied` with a TODO naming W-375, two
+check splits and one template_constraint_dependent.carbon split added); the
+sources are `$Q3/a2/` (rev 4's `$Q2/a2/` with rev 5's changes, applied over a
+rev 4 tree by `$Q3/apply_rev5.py`), the ones measured on rev 5's land tree and
+on PR 60's own branch. In
 check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon:
 the file comment's "a checked-generic self never satisfies one (D-SC-6, the
 conservative answer to leads issue 2153)." becomes "a checked-generic argument
 that a call passes to a `template` binding is checked in each specific of its
 caller (W-139, as upstream decided leads issue 2153); elsewhere a
 checked-generic self never satisfies one (D-SC-6)."; the split
-`fail_symbolic_arg.carbon` is replaced by the twenty-five splits of the first
+`fail_symbolic_arg.carbon` is replaced by the twenty-seven splits of the first
 block below, in its place; and the split
 `fail_require_in_interface_symbolic.carbon` is replaced by the split of the
 second block, in its place. The other splits are unchanged. In
 check/testdata/named_constraint/template_constraint_dependent.carbon, the file
 comment (its lines after the `TIP` lines) becomes the comment of the third block
-below, and the five splits of the fourth block follow its last split.
+below, and the six splits of the fourth block follow its last split.
 
 <!-- google-doc-style-ignore -->
 
@@ -3262,12 +3509,13 @@ class C {
 
 fn Use(c: C) -> i32 { return Caller(c); }
 
-// --- fail_symbolic_arg_overload_unsatisfied.carbon
+// --- fail_todo_symbolic_arg_overload_unsatisfied.carbon
 library "[[@TEST_NAME]]";
 
 // W-139 with an `overload fn` set: `Caller` chose the first member at its
-// definition, so `Caller(D)` checks `HasGet` against `D`, which has no `Get`;
-// resolution does not go on to the second member, as `Pick(d)` would.
+// definition, so `Caller(D)` checks `HasGet` against `D`, which has no `Get`.
+// TODO: under issue 2153's monomorphization `Caller(D)` would go on to the
+// second member, as `Pick(d)` does, and return 7 (W-375).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -3359,6 +3607,60 @@ class C {
 }
 
 fn Use(c: C) -> i32 { return Caller(c).Get(); }
+
+// --- symbolic_arg_impl_thunk.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through an impl's thunk: `W`'s `F` has a `template` binding where
+// `I.F` has a checked `U`, so the thunk passes `U` to `F`'s `template T`, and
+// its structural requirement is checked in each specific of the thunk, here
+// for `C`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  fn F[U: type](x: U) -> i32;
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+class W {}
+
+impl W as I {
+  fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+}
+
+fn Use(c: C) -> i32 { return W.(I.F)(c); }
+
+// --- fail_symbolic_arg_impl_thunk_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through an impl's thunk: the thunk's specific for `D` checks `HasGet`
+// against `D`, which has no `Get`.
+// TODO: the specific of `F` for `D` is reported after it (W-376).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  fn F[U: type](x: U) -> i32;
+}
+
+class D {
+  var v: i32;
+}
+
+class W {}
+
+impl W as I {
+  fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+}
+
+fn Use(d: D) -> i32 { return W.(I.F)(d); }
 ```
 
 ```carbon
@@ -3519,6 +3821,32 @@ class D {
 }
 
 fn Use(d: D) -> i32 { return F(d); }
+
+// --- fail_dependent_interface_arg_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// D-SC-19 as amended for W-139: `J(T)` converts the template-dependent `T` to
+// `HasGet` in `W`'s definition, and `W(D)` performs that conversion again.
+// TODO: with TP-1's eager `J(T)`, the impl's `J(V)` is reported too (W-376).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface J(template T: HasGet) {
+  fn F() -> i32;
+}
+
+impl forall [V: type] i32 as J(V) {
+  fn F() -> i32 { return 5; }
+}
+
+fn W[template T: type](unused x: T) -> i32 { return i32.(J(T).F)(); }
+
+class D {
+  var v: i32;
+}
+
+fn Use(d: D) -> i32 { return W(d); }
 ```
 
 <!-- google-doc-style-resume -->
@@ -3972,7 +4300,8 @@ oracle), and its header gains no sentence. A mismatch stops stage 15
 
 Rewritten 2026-11-02 (review fold: A-B-2 / A-B-3 / B-B-1 / B-M-1; amended
 2026-11-02, review fold: RR1-1 / RR1-2 / RR1-3; amended 2026-11-02, review fold:
-RR2-2 / RR2-3). The paragraph that begins "Using a template constraint on a
+RR2-2 / RR2-3; amended 2026-11-02, review fold: RR3-2: the overload set's
+rejection stated). The paragraph that begins "Using a template constraint on a
 checked-generic binding is an error in 0.1" (:456-468 at cc4daba00) becomes:
 
 <!-- google-doc-style-ignore -->
@@ -4000,7 +4329,9 @@ template's own call made while one of its specifics is formed. An overload set
 is resolved at the checked generic's definition by its first matching member,
 and a member whose `template` parameter needs such a check accepts the
 checked-generic argument as a single function would; the check is then made in
-each specific. Likewise, when a template converts a type that depends on its own
+each specific, and a specific whose argument fails it is rejected, where a call
+with that concrete argument would go on to a later member (fork work item
+W-375). Likewise, when a template converts a type that depends on its own
 template parameters to a template constraint, as `Holder(T)` does for `class
 Holder(template T: HasGet)`, the structural requirements are checked in each
 specific of the template. Elsewhere a checked-generic self still never satisfies
@@ -4036,7 +4367,8 @@ After RG-1's note (2026-10-28), which stays, this note follows:
 Appended as the last paragraph of the D-SC-6 bullet (:388 at cc4daba00), at the
 bullet's indentation (rewritten 2026-11-02, review fold: A-B-2 / B-B-1; amended
 2026-11-02, review fold: RR1-1 / RR1-2; amended 2026-11-02, review fold: RR2-1 /
-RR2-2 / RR2-3; D-SC-19's sentence added):
+RR2-2 / RR2-3; D-SC-19's sentence added; amended 2026-11-02, review fold: RR3-1
+/ RR3-2: the residues named):
 
 <!-- google-doc-style-ignore -->
 
@@ -4057,7 +4389,10 @@ an impl's `require` in a generic class, W-373. D-SC-19 is amended with it: a
 conversion of a template-phase self at a definition, which TP-1 makes for a
 generic type such as `Holder(T)` and a template body makes outside a call, adds
 a requirement that each specific performs (convert.cpp,
-`PerformBuiltinConversion`; fork/followon/fo1-plan.md D-FO1-2 (4)).)
+`PerformBuiltinConversion`; fork/followon/fo1-plan.md D-FO1-2 (4)), for
+structural requirements only: the interface half of TP-1's eager `Holder(T)` is
+W-374. An overload set's specific whose argument fails the chosen member's
+requirements is rejected, W-375.)
 ```
 
 <!-- google-doc-style-resume -->
@@ -4246,27 +4581,28 @@ W-170's checked-generic destruction (measured).
 
 <!-- google-doc-style-resume -->
 
-### D.3 W-139, W-140 and W-373 (B-R)
+### D.3 W-139, W-140 and W-373 to W-376 (B-R, B-R2)
 
 Rewritten 2026-11-02 (review fold: A-B-2 / A-m-1 / B-B-1 / B-m-7; amended
 2026-11-02, review fold: RR1-1 / RR1-2 / RR1-3; amended 2026-11-02, review fold:
-RR2-1 / RR2-2 / RR2-3 / RR2-5 / RR2-6). W-139 in fork/inventory/work-items.json:
-`kind` becomes `implemented`; the title gains, after "SC-1 residue", "
-(DISCHARGED at SC-1's W-139 fix, <date>)"; `evidence` gains first "Landed at
-SC-1 (<sha-B1>): toolchain/check/deduce.cpp `ConvertBindingArg` (a call's
-checked-symbolic argument for a `template` binding with structural requirements
-is converted with them deferred, and that conversion is the deduced value; a
-diagnosing deduction outside a delayed action adds an eval-block
-`ConvertToValueAction` that checks them in each specific; OV-4's probe defers
-without it), action.cpp's delayed-action count and structural_conformance.cpp's
-deferral of a checked-symbolic self inside a delayed action (a template body's
-call is checked by each concrete specific), convert.cpp's requirement for a
-template-dependent self (D-SC-19 as amended), eval_inst.cpp and
-structural_conformance.cpp's `SpecificDefersStructuralChecks` (the template
-callee's definition waits for a concrete argument that satisfies the
-requirements), structural_conformance.cpp's D-SC-6 branch (the deferral counter)
-and upstream's dominance.cpp hunk of e1c8c1f85; the splits `symbolic_arg`,
-`fail_symbolic_arg_unsatisfied`, `fail_symbolic_arg_mismatch`,
+RR2-1 / RR2-2 / RR2-3 / RR2-5 / RR2-6; amended 2026-11-02, review fold: RR3-1 /
+RR3-2 / RR3-3: the split renamed and added, the residues W-374 to W-376). W-139
+in fork/inventory/work-items.json: `kind` becomes `implemented`; the title
+gains, after "SC-1 residue", " (DISCHARGED at SC-1's W-139 fix, <date>)";
+`evidence` gains first "Landed at SC-1 (<sha-B1>): toolchain/check/deduce.cpp
+`ConvertBindingArg` (a call's checked-symbolic argument for a `template` binding
+with structural requirements is converted with them deferred, and that
+conversion is the deduced value; a diagnosing deduction outside a delayed action
+adds an eval-block `ConvertToValueAction` that checks them in each specific;
+OV-4's probe defers without it), action.cpp's delayed-action count and
+structural_conformance.cpp's deferral of a checked-symbolic self inside a
+delayed action (a template body's call is checked by each concrete specific),
+convert.cpp's requirement for a template-dependent self (D-SC-19 as amended),
+eval_inst.cpp and structural_conformance.cpp's `SpecificDefersStructuralChecks`
+(the template callee's definition waits for a concrete argument that satisfies
+the requirements), structural_conformance.cpp's D-SC-6 branch (the deferral
+counter) and upstream's dominance.cpp hunk of e1c8c1f85; the splits
+`symbolic_arg`, `fail_symbolic_arg_unsatisfied`, `fail_symbolic_arg_mismatch`,
 `fail_symbolic_arg_result_misused`, `fail_symbolic_arg_result_member`,
 `fail_concrete_arg_beside_symbolic`, `fail_symbolic_conversion`,
 `symbolic_class_arg`, `fail_symbolic_class_arg_unsatisfied`,
@@ -4276,15 +4612,17 @@ and upstream's dominance.cpp hunk of e1c8c1f85; the splits `symbolic_arg`,
 `symbolic_class_param_redecl`, `symbolic_class_impl`,
 `symbolic_class_forwarded`, `symbolic_arg_overload`,
 `symbolic_arg_overload_template_first`,
-`fail_symbolic_arg_overload_unsatisfied`, `symbolic_arg_through_template`,
+`fail_todo_symbolic_arg_overload_unsatisfied`, `symbolic_arg_through_template`,
 `symbolic_arg_through_template_use`,
 `fail_symbolic_arg_through_template_unsatisfied`,
-`symbolic_arg_return_type_used` and `require_in_interface_symbolic`,
+`symbolic_arg_return_type_used`, `symbolic_arg_impl_thunk`,
+`fail_symbolic_arg_impl_thunk_unsatisfied` and `require_in_interface_symbolic`,
 template_constraint_dependent.carbon's `dependent_class_arg`,
 `fail_dependent_class_arg_unsatisfied`,
 `fail_dependent_class_return_unsatisfied`,
-`fail_dependent_class_arg_checked_caller` and
-`fail_dependent_conversion_unsatisfied`, and
+`fail_dependent_class_arg_checked_caller`,
+`fail_dependent_conversion_unsatisfied` and
+`fail_dependent_interface_arg_unsatisfied`, and
 lower/testdata/template/template_constraint.carbon's `checked_caller`
 (<sha-F-B1>)"; `notes` gains "Discharged <date> (FO-1, D-FO1-2): the call is
 upstream's ordinary call with a symbolic argument, whose deduced value is the
@@ -4292,13 +4630,17 @@ checked-symbolic converted argument (upstream's `TemplateInst` wrapping at
 check/call.cpp:384-393 at <tip>, be0f11be9 when the plan read it, :386-395 at
 68569d234, is a C++ template name's, not this path's); only SC-1's structural
 check is deferred to each specific, as the monomorphization issue 2153 decided,
-for functions', generic classes' and generic interfaces' `template` parameters;
-an `overload fn` set is resolved at the definition by first match, its probe
-deferring as the call to a single function does (register H9.9, ALIGNED); a
-template-dependent self converted at a definition is checked in each specific
-too (D-SC-19 as amended); docs rewritten (<sha-D-B>); the generic class's
-`require` path is W-373 (D-RG-4: the register entry H9.5 ALIGNED with W-373
-named).".
+for functions', generic classes' and generic interfaces' `template` parameters
+and through an impl's thunk; an `overload fn` set is resolved at the definition
+by first match, its probe deferring as the call to a single function does
+(register H9.9, ALIGNED with a gap: a specific whose argument fails the chosen
+member's requirements is rejected where a concrete call would choose a later
+member, W-375); a template-dependent self converted at a definition is checked
+in each specific too (D-SC-19 as amended), for structural requirements, while
+the interface half of TP-1's eager `Holder(T)` is W-374; the specifics of an
+impl and of a thunk's callee that still follow a failed requirement are W-376;
+docs rewritten (<sha-D-B>); the generic class's `require` path is W-373 (D-RG-4:
+the register entry H9.5 ALIGNED with W-373 named).".
 
 W-140 in fork/inventory/work-items.json: the title's example ("`interface I {
 require impls HasGet; } fn G[T: I](x: T) { CallGet(x); }` is rejected") is
@@ -4338,13 +4680,83 @@ W-373, appended after the last item:
 
 <!-- google-doc-style-resume -->
 
+W-375 and W-376, appended after W-373 by B-R (added 2026-11-02, review fold:
+RR3-2 / RR3-3):
+
+<!-- google-doc-style-ignore -->
+
+```json
+{
+  "id": "W-375",
+  "kind": "todo-stub",
+  "title": "SC-1 residue (W-139's overload rule; FO-1 D-FO1-2): an `overload fn` set called with a checked-symbolic argument is resolved once, at the checked generic's definition, by first match, so a specific whose concrete argument fails the chosen member's structural requirements is rejected (`Caller(D)`), where issue 2153's monomorphization, like the concrete call `Pick(d)`, would choose a later member",
+  "subsystem": "toolchain/check (call.cpp overload resolution, deduce.cpp)",
+  "size": "M",
+  "bullet": "Generics: Template-style structural conformance to nominal constraints",
+  "evidence": [
+    "toolchain/check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon `fail_todo_symbolic_arg_overload_unsatisfied` (`Caller(D)` rejected; `Pick(d)` prints 7)",
+    "toolchain/check/deduce.cpp `DeduceGenericCallArguments` and `ConvertBindingArg` (OV-4's probe defers the requirement, its commit adds it to the caller's eval block)",
+    "fork/followon/fo1-plan.md D-FO1-2 (the overload rule) and section 0.2 (q11d)"
+  ],
+  "blocked_by": [],
+  "notes": "Reserved by FO-1's sign-off stamp (fork/followon/fo1-plan.md Appendix F.1). Not W-101: D-OV-6 gate (xi)'s item covers template-dependent arguments, whose type is unknown at the definition; here the call has a type at the definition and only the structural check waits. Register: H9.9, ALIGNED with this gap (D-RG-4), watched by W-355. Removal: resolve the set again in each specific of the caller where the chosen member's deferred requirement fails, keeping the definition's type, then rename the split without `todo`. Break condition: upstream approves a design for overloaded functions (D-RG-6's break condition) or for overload resolution with symbolic arguments; the rule then follows it."
+}
+```
+
+```json
+{
+  "id": "W-376",
+  "kind": "todo-stub",
+  "title": "SC-1 residue (W-139; FO-1 D-FO1-2): after a deferred structural requirement fails in a specific, the specific of an impl selected for that concrete argument and the specific of a thunk's `template` callee are still formed, so the failure is reported a second time (`J(V)` of a blanket impl for `D` after `W(D)`; `F(D)` after the thunk's deduction error)",
+  "subsystem": "toolchain/check (structural_conformance.cpp `SpecificDefersStructuralChecks`, impl_lookup.cpp, thunk.cpp)",
+  "size": "S",
+  "bullet": "Generics: Template-style structural conformance to nominal constraints",
+  "evidence": [
+    "toolchain/check/testdata/named_constraint/template_constraint_dependent.carbon `fail_dependent_interface_arg_unsatisfied` (m18i: `W(D)` reported at `J(T)` and again at the blanket impl's `J(V)` where TP-1 forms `J(T)` at the definition, from M60 on; once on PR 60's branch before M60)",
+    "toolchain/check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon `fail_symbolic_arg_impl_thunk_unsatisfied` (thunk1d: the thunk's deduction error, then `F(D)`)",
+    "fork/followon/fo1-plan.md D-FO1-2 (1) and (2), section 0.2"
+  ],
+  "blocked_by": [],
+  "notes": "Reserved by FO-1's sign-off stamp (fork/followon/fo1-plan.md Appendix F.1). A cascade, not a wrong acceptance: the first error is SC-1's. `SpecificDefersStructuralChecks` keeps a function callee's definition from being required for such an argument (RR2-6: p2, chaind and m5d report one error); an impl's specific and a thunk's callee do not pass through it. Removal: stop those specifics at the failed requirement, as the function callee's is, and drop the splits' TODO comments by autoupdate. Break condition: a third entry point reports the cascade, or the removal changes a golden outside the two named files."
+}
+```
+
+<!-- google-doc-style-resume -->
+
+W-374, appended by B-R2 after M60, whose tree has TP-1's files (added
+2026-11-02, review fold: RR3-1):
+
+<!-- google-doc-style-ignore -->
+
+```json
+{
+  "id": "W-374",
+  "kind": "missing-feature",
+  "title": "TP-1 residue (D-TP-11; found by FO-1's W-139 review): a generic type formed at a template's definition with a template-dependent argument (`Holder(T)`, `class Holder(template T: HasGet)` with an interface `HasGet`) converts the argument to an interface constraint there, and no specific checks it again, so `Wrap(d)` for a `D` that does not implement `HasGet` is accepted and runs",
+  "subsystem": "toolchain/check (call.cpp `IsCallPerformable`, convert.cpp)",
+  "size": "M",
+  "bullet": "Generics: Integrated templates",
+  "evidence": [
+    "toolchain/check/call.cpp `IsCallPerformable` (D-TP-11's type-forming exception); upstream's toolchain/check/call.cpp:449-464 at d99b767dd defers a call with any template-dependent argument",
+    "fork/templates/plan.md D-TP-11 (its break condition: a generic class whose parameter conversion depends on the argument's value)",
+    "fork/followon/fo1-plan.md D-FO1-2 (4) and section 0.2 (m17n_d: rc 5 on trunk's install and on the land tree; the nightly and PR 60's install report `unable to monomorphize specific Wrap(D)`)"
+  ],
+  "blocked_by": [],
+  "notes": "Reserved by FO-1's sign-off stamp (fork/followon/fo1-plan.md Appendix F.1). The structural half is checked per specific by W-139's convert.cpp requirement (D-SC-19 as amended), which covers structural requirements only. Register: TP-1's H10.8 (NONE, 'silent at the tip') does not hold at d99b767dd and is passed to the orchestrator and the weekly check (W-355). Removal: TP-1 follows upstream's deferral of every template-dependent call argument, with deduce_class_args.carbon refilled; W-139's convert.cpp requirement is then withdrawn (H9.8's break condition). Break condition: upstream changes `IsCallPerformable`, or the removal changes a golden outside TP-1's and SC-1's template goldens."
+}
+```
+
+<!-- google-doc-style-resume -->
+
 The `evidence` cites are pinned by B-R at PR 60's branch, with line numbers, and
-re-pinned by B-R2 to M60's tree if the merge moves them. `<m18>` is section 2.5
+re-pinned by B-R2 to M60's tree if the merge moves them; W-374's are pinned by
+B-R2 on M60's tree. `<m18>` is section 2.5
 step 5's counts, written by B-R2 into this paragraph (B-R writes the paragraph
 without the clause from "Land merge", which B-R2 appends). The gap row
 "Generics: Template-style structural conformance to nominal constraints" gains,
 before its closing `|`, " W-139 discharged <date> (FO-1: checked generics call
-template-constrained functions per specific); W-373 filed." SC-1's decision-log
+template-constrained functions per specific); W-373, W-375 and W-376 filed."
+(amended 2026-11-02, review fold: RR3-2 / RR3-3). SC-1's decision-log
 entry `### SC-1: template structural conformance (F-010) (2026-10-12)` gains as
 its last paragraph:
 
@@ -4362,7 +4774,11 @@ template's own call makes the deduction; an overload set's probe defers too, so
 first match agrees with a single function's call; a template-dependent self
 converted at a definition is checked in each specific (D-SC-19 as amended);
 D-SC-6 stays for a conversion of a checked-symbolic self outside a call, impl
-deduction and the generic class's `require` (W-373). Land merge <sha-M60> with
+deduction and the generic class's `require` (W-373); the overload set's
+rejection where a concrete call would choose a later member is W-375, the
+cascade after a failed requirement in an impl's or a thunk callee's specific
+W-376, and the interface half of TP-1's eager `Holder(T)` W-374. Land merge
+<sha-M60> with
 TP-1's S re-derived (<sha-S>; M18 killed, <m18>); DR-1's call.cpp and
 convert.cpp test 0, 0 and 0; fork/followon/fo1-plan.md D-FO1-2, D-FO1-3.
 ```
@@ -4466,9 +4882,11 @@ sentences and the gate after F-D2.
 Rewritten 2026-11-02 (review fold: A-B-2 / B-B-1 / B-m-7; amended 2026-11-02,
 review fold: RR1-1 / RR1-2: H9.8 re-derived, H9.9 added; amended 2026-11-02,
 review fold: RR2-1 / RR2-2 / RR2-3: H9.8's mechanism widened, H9.9 re-derived
-ALIGNED). In fork/register/rg1-plan.md: H9.5's verdict cell becomes "ALIGNED
-(W-139 discharged <date>, FO-1, D-RG-4: a checked-symbolic argument for a
-`template` binding is passed as upstream's ordinary call, its deduced value the
+ALIGNED; amended 2026-11-02, review fold: RR3-1 / RR3-2: H9.8's dependence on
+D-TP-11 and its withdrawal stated, H9.9's gap named). In
+fork/register/rg1-plan.md: H9.5's verdict cell becomes "ALIGNED (W-139
+discharged <date>, FO-1, D-RG-4: a checked-symbolic argument for a `template`
+binding is passed as upstream's ordinary call, its deduced value the
 checked-symbolic converted argument and its structural check deferred to each
 specific; the gap, W-373, is H9.7)" and its item cell "W-139 (discharged); W-373
 (H9.7)" (B-R2); H5.4's verdict cell becomes "ALIGNED (W-352 discharged <date>,
@@ -4479,8 +4897,8 @@ added, H9.7, H9.8 and H9.9 after H9.6 (B-R2) and H8.9 after H8.8 (L59):
 
 ```markdown
 | H9.7 | an impl's `require` of a template constraint in a generic class is checked at the class end with a checked-symbolic self (D-SC-6, W-373) | silent at the tip, check H9.7: `git grep -c -F 'fail_todo_implicit_self_impls'` over toolchain/check/testdata/interface/require.carbon = 3: upstream's nominal analog, impl lookup for a required interface on a checked self, is a TODO there | NONE (D-RG-1; the gap D-RG-4 names beside H9.5) | upstream states how a checked-symbolic self satisfies a requirement that needs a concrete type, or its TODO lands (the count moves) | W-355; W-373 |
-| H9.8 | the per-specific structural check of a call's checked-symbolic argument for a `template` binding: deduce.cpp's `ConvertBindingArg` (the argument converted at the definition with its structural requirements deferred is the deduced value; an eval-block `ConvertToValueAction` on the argument in a `TemplateInst` checks them in each specific), eval_inst.cpp's deferral of the template callee's definition to a concrete argument that satisfies them (`SpecificDefersStructuralChecks`), the deferral counter and the delayed-action deferral in structural_conformance.cpp (action.cpp's count), and convert.cpp's requirement for a template-dependent self (W-139's fix, D-SC-19 as amended) | generics/appendix-witness.md:151-154 "Carbon's planned approach to support calling a templated function from a checked-generic function, decided in [issue #2153](https://github.com/carbon-language/carbon-lang/issues/2153), relies on monomorphization."; details.md:1075-1077 "a template constraint can depend on them."; the representation silent at the tip, check H9.8: `git grep -c -w 'ConvertBindingArg'` over toolchain/check = 0 | ALIGNED (D-RG-1: the rule, a template constraint's member requirements checked for a checked-generic argument when the checked generic is monomorphized, is the design's; the representation is internal, D-RG-3, with its silence check) | upstream designs how a checked generic's call to a template is checked (overview.md:378-379's "incorporating it into the design is future work"), or lands its own representation of structural requirements (H9.3); merge into it | W-355 |
-| H9.9 | an `overload fn` set called with a checked-symbolic argument is resolved at the definition by declaration-order first match, and OV-4's probe defers a member's structural check of that argument as the diagnosing deduction does, so the member the call to a single function would accept is chosen and checked in each specific (deduce.cpp's `DeduceGenericCallArguments` and `ConvertBindingArg`, W-139's fix) | pattern_matching.md:696-697 "We do not yet have an approved design for overloaded functions, but it is anticipated that declaration order will be used in that case too."; generics/appendix-witness.md:151-156 "Trying to rely on witness tables would result in different semantics for calling the same function with the same types, depending on which witness tables were available at the callsite."; check T7.1: `git grep -c -w 'overload'` over toolchain/lex/token_kind.def = 0 | ALIGNED (D-RG-6: F-009's first match is ALIGNED; the deferral is H9.8's; rev 3's D-SC-6 in the probe chose another member than a concrete call of the same type, a DRIFT by D-RG-4, and is withdrawn) | upstream approves a design for overloaded functions (D-RG-6's break condition), or for overload resolution with symbolic arguments | W-355 |
+| H9.8 | the per-specific structural check of a call's checked-symbolic argument for a `template` binding: deduce.cpp's `ConvertBindingArg` (the argument converted at the definition with its structural requirements deferred is the deduced value; an eval-block `ConvertToValueAction` on the argument in a `TemplateInst` checks them in each specific), eval_inst.cpp's deferral of the template callee's definition to a concrete argument that satisfies them (`SpecificDefersStructuralChecks`), the deferral counter and the delayed-action deferral in structural_conformance.cpp (action.cpp's count), and convert.cpp's requirement for a template-dependent self with structural requirements, which rests on TP-1's D-TP-11 forming `Holder(T)` at the definition (W-139's fix, D-SC-19 as amended; the interface half is W-374) | generics/appendix-witness.md:151-154 "Carbon's planned approach to support calling a templated function from a checked-generic function, decided in [issue #2153](https://github.com/carbon-language/carbon-lang/issues/2153), relies on monomorphization."; details.md:1075-1077 "a template constraint can depend on them."; the representation silent at the tip, check H9.8: `git grep -c -w 'ConvertBindingArg'` over toolchain/check = 0 | ALIGNED (D-RG-1: the rule, a template constraint's member requirements checked for a checked-generic argument when the checked generic is monomorphized, is the design's; the representation is internal, D-RG-3, with its silence check) | upstream designs how a checked generic's call to a template is checked (overview.md:378-379's "incorporating it into the design is future work"), or lands its own representation of structural requirements (H9.3); merge into it; or TP-1 follows upstream's deferral of every template-dependent call argument (`IsCallPerformable`, H10.8, W-374): withdraw the convert.cpp requirement | W-355 |
+| H9.9 | an `overload fn` set called with a checked-symbolic argument is resolved at the definition by declaration-order first match, and OV-4's probe defers a member's structural check of that argument as the diagnosing deduction does, so the member the call to a single function would accept is chosen and checked in each specific (deduce.cpp's `DeduceGenericCallArguments` and `ConvertBindingArg`, W-139's fix) | pattern_matching.md:696-697 "We do not yet have an approved design for overloaded functions, but it is anticipated that declaration order will be used in that case too."; generics/appendix-witness.md:151-156 "Trying to rely on witness tables would result in different semantics for calling the same function with the same types, depending on which witness tables were available at the callsite."; check T7.1: `git grep -c -w 'overload'` over toolchain/lex/token_kind.def = 0 | ALIGNED with a gap (D-RG-4; D-RG-6: F-009's first match is ALIGNED; the deferral is H9.8's; the gap, W-375: a specific whose concrete argument fails the chosen member's requirements is rejected where a concrete call would choose a later member; rev 3's D-SC-6 in the probe chose another member than a concrete call of the same type, a DRIFT by D-RG-4, and is withdrawn) | upstream approves a design for overloaded functions (D-RG-6's break condition), or for overload resolution with symbolic arguments | W-355; W-375 |
 | H8.9 | a pack expansion pattern in a choice alternative's parameter list is a semantics TODO (W-367) | silent at the tip, check H8.9: `git grep -c -i -E 'choice\|alternative'` over docs/design/variadics.md = 2 (the "Alternatives considered" heading and its contents link) | NONE | the design speaks to choice alternatives | W-355; W-367 |
 ```
 
@@ -4497,7 +4915,9 @@ H8.7's row, `H8.9`, `G`, `-i -E`, `choice|alternative`,
 tip and writes its "checked <n> silence checks, 0 failed" line in its message
 (91 rows on trunk 03b40f7c5, so 93 after B-R2 and 94 after L59); rg1-plan.md's
 dated counts are not edited (amended 2026-11-02, review fold: B-m-7: rev 1 gave
-H9.7 no check row).
+H9.7 no check row). B-R2 does not edit TP-1's row H10.8: its classification is
+the orchestrator's and the weekly check's (Appendix F.1, W-355; amended
+2026-11-02, review fold: RR3-1).
 
 ## Appendix E: the landings' fields (LAND-1 Appendix C rows)
 
@@ -4509,7 +4929,7 @@ where empty; titles are the PRs' GitHub titles shortened as LAND-1's C.1 does
 
 | PR | Suffix | Spec | Workstream | Title | Summary | Moved | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 60 | sc | FO-1 2.5 | SC-1 | SC-1, template-style structural conformance (F-010) | F-010: `template constraint` requirements satisfied by a type's own members, with W-139 realigned (a checked generic's checked-symbolic argument for a `template` binding is checked per specific) and TP-1's S; W-139 discharged, W-140 narrowed, W-373 filed | none | PR 56 (OP-1) |
+| 60 | sc | FO-1 2.5 | SC-1 | SC-1, template-style structural conformance (F-010) | F-010: `template constraint` requirements satisfied by a type's own members, with W-139 realigned (a checked generic's checked-symbolic argument for a `template` binding is checked per specific) and TP-1's S; W-139 discharged, W-140 narrowed, W-373 to W-376 filed (amended 2026-11-02, review fold: RR3-1 / RR3-2 / RR3-3) | none | PR 56 (OP-1) |
 | 56 | op | FO-1 2.6 | OP-1 | OP-1, Core.Optional comparison and the fork design F-015 | F-015: `Core.Optional` comparison, in place (W-352 discharged), with DD-1's state L for PR 56 | none | PR 57 (OP-2), after the orchestrator retargets it to trunk |
 | 57 | op2 | FO-1 2.7 | OP-2 | OP-2, Core.Optional owns its value, the MaybeUnformed unsafe-as fix, checked Get | F-016: ownership, adapter destruction, the MaybeUnformed fix and checked Get, with item 10 fixed; W-170, W-171, W-173 discharged; Optional row DONE | none | PR 59 (VA-1) |
 | 59 | va | FO-1 2.8 | VA-1 | VA-1, definition-checked variadics, slice 1 | W-013 slice 1 with W-367's TODO and W-368's layout, M-VA and S-VA; row 53 PARTIAL; W-343 discharged | none | PR 66 (VA-2), after the orchestrator retargets it to trunk |
@@ -4545,7 +4965,7 @@ Definition-checked variadics" DESIGN-ONLY to PARTIAL; PR 66 moves none.
 
 | Stage (PR) | `<tally>` | Landed, held | Gap rows taking A.10's row mark (by bullet text) | Ledger items taking the mark (appended to `notes`) | Prose labels taking the mark | Rows for step 9's `rowcheck.py` | `<rescan>` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 13 (60) | 36/17/2/1 | 13, 5 | "Generics: Template-style structural conformance to nominal constraints" | W-027 (its labels are in its title, `evidence` and `notes`, 36 of them; one mark) | none: PR 60's head adds no Scoreboard paragraph, and its header label (cc4daba00 fork/gap-analysis.md:18-25) is inside the sentence A.8 replaces | the same row (B-R's clause and the mark) | `W-373 at step 9, before the records edit: <the refs that file it>` (FO-1 prescribes it, D-FO1-12) |
+| 13 (60) | 36/17/2/1 | 13, 5 | "Generics: Template-style structural conformance to nominal constraints" | W-027 (its labels are in its title, `evidence` and `notes`, 36 of them; one mark) | none: PR 60's head adds no Scoreboard paragraph, and its header label (cc4daba00 fork/gap-analysis.md:18-25) is inside the sentence A.8 replaces | the same row (B-R's clause and the mark) | `W-373 to W-376 at step 9, before the records edit: <the refs that file them>` (FO-1 prescribes them, D-FO1-12; W-374 to W-376 added 2026-11-02, review fold: RR3-1 / RR3-2 / RR3-3) |
 | 14 (56) | 36/17/2/1 | 14, 4 | "Stdlib: Optional" | W-058 | the paragraph PR 56's head adds under the Scoreboard heading, "Expected at OP-1, NOT of record: 132 PASS / 25 SKIP / 0 FAIL ...", after its first sentence (rulings (12) and (16)); its Branches-row label goes with A.3's row | "Stdlib: Optional" (L56's row 78 text, E.3, and the mark) | `none` |
 | 15 (57) | 37/16/2/1 | 15, 3 | "Stdlib: Optional" | W-170, W-171, W-173 | "Expected at OP-2, NOT of record: 139 PASS / 22 SKIP / 0 FAIL ...", after its first sentence; the header label of e23113ba2 fork/gap-analysis.md:18-25 is inside A.8's sentence | "Stdlib: Optional" (L57's row 78 text, E.3, and the mark) and "Type system: User-defined types (classes)" (OP-2's fold names W-126 there again) | `none` |
 | 16 (59) | 37/17/2/0 | 16, 2 | "Generics: Definition-checked variadics" | none | "Expected at VA-1, NOT of record: 137 PASS / 21 SKIP / 0 FAIL ...", after its first sentence; the header label (b0822a744 fork/gap-analysis.md:18-23) is inside A.8's sentence | "Generics: Definition-checked variadics" and "Control flow: matching — sum-type consumption incl. std::variant/std::optional interop" (L59's W-284 clauses, SV-1's C.7) | `W-367 and W-368 at step 9, before the records edit: <the refs that file them>` |
@@ -4582,10 +5002,11 @@ DR-1 does not move the row's status (D-OP-13 as PR 57 amends it decides it).
 
 ## Appendix F: the orchestrator's stamps
 
-Added 2026-11-02 (review fold: B-M-2 / B-m-4). The orchestrator's texts
-(D-LAND-16), verbatim but for the placeholders. No amendment of D-LAND-12 or of
-item 15 is owed: B1 (rev 4's) is on PR 60's branch before the land merge, in
-item 15's order (D-FO1-2).
+Added 2026-11-02 (review fold: B-M-2 / B-m-4; F.1 amended 2026-11-02, review
+fold: RR3-1: W-374 to W-376 and H10.8). The orchestrator's texts (D-LAND-16),
+verbatim but for the placeholders. No amendment of D-LAND-12 or of item 15 is
+owed: B1 (rev 4's) is on PR 60's branch before the land merge, in item 15's
+order (D-FO1-2).
 
 ### F.1 At sign-off, before the first slice commit
 
@@ -4601,10 +5022,15 @@ commit is owed (D-FO1-1). Note 7 (VA-2's hand-off note 7, defect A) is ruled
 under D-LAND-2: PR 59's own abort, fixed on PR 59's branch with W-368 filed
 there (D-FO1-6); item 13's fix and W-367 go to the same branch (D-FO1-5).
 W-139 is realigned on PR 60's branch before its land merge (D-FO1-2) and
-W-352 on PR 56's, merged into PR 57's (D-FO1-4). W-373 is reserved to FO-1
-(D-FO1-3); W-369 and W-370 stay reserved to these landings' residues. The
-landings follow as stages 13 to 17 (PR 60, PR 56, PR 57, PR 59, PR 66) by
-LAND-1's procedure; PR 53 waits for item 14.
+W-352 on PR 56's, merged into PR 57's (D-FO1-4). W-373 to W-376 are reserved
+to FO-1 (D-FO1-3, D-FO1-12); W-369 and W-370 stay reserved to these landings'
+residues. The landings follow as stages 13 to 17 (PR 60, PR 56, PR 57, PR 59,
+PR 66) by LAND-1's procedure; PR 53 waits for item 14. For the orchestrator
+and the next weekly check (W-355): TP-1's register row H10.8 (NONE, "silent at
+the tip") does not hold at upstream's d99b767dd, whose `IsCallPerformable`
+(toolchain/check/call.cpp:449-464) defers every template-dependent call
+argument, where D-TP-11 forms `Holder(T)` at the definition; its interface
+half is W-374 (FO-1 D-FO1-2 (4)).
 ```
 
 <!-- google-doc-style-resume -->
@@ -4782,3 +5208,57 @@ structural_conformance.cpp) that no review has read; the next re-review decides.
 W-367, W-368, W-369 and W-370 are unchanged: no landing has run, so no landing
 used W-369 or W-370. Not re-measured by rev 4's fixer: Slices A, C and D
 (unchanged) and the stages 14 to 17 simulations (section 8).
+
+## Re-review fold record (rev 5, 2026-11-02)
+
+The focused re-review RR3 of rev 4 (4a574eaf3; verdict APPROVE-WITH-AMENDMENTS)
+rebuilt rev 4's land tree d9b22439b under /dev/shm/fo1-rr3 (its eight code
+files matching the plan's inlined diff and c18c44c9d), gated it (2003 of 2003),
+ran conformance (196/0/14 over 210, 50 bullets) and clang-format (clean),
+re-fetched upstream (d99b767dd, 21:32 UTC, `TemplateInst` at call.cpp:392) and
+probed it against trunk's install, the nightly and PR 60's install
+(scratchpad/fo1/rr3/p). It found RR2-1, RR2-2, RR2-3, RR2-5 and RR2-6 resolved
+and RR2-4 resolved in part, no BLOCKER, and raised one MAJOR and three MINORs,
+folded here as RR3-1 to RR3-4; every one was reproduced by rev 5's fixer on a
+rebuild of d9b22439b (`$Q3/probes_land.txt`, `$Q3/probes_installs.txt`) and none
+is rejected. B1's code is unchanged; rev 5 changes test sources, records texts
+and this plan. Measurements are the fixer's, container-local, EXPECTED, not of
+record (R9), with logs and probes in `$Q3`; the build under /dev/shm/fo1-fixer3
+is deleted with this commit.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR3-1: RR2-2's root also leaves an interface-constrained template-dependent class argument unchecked, and nothing records that half | MAJOR | yes: m17n_d runs with rc 5 on trunk's install (c6c9d5fe3) and on d9b22439b; the nightly and PR 60's install report ``unable to monomorphize specific `Wrap(D)` ``; upstream's `IsCallPerformable` (call.cpp:449-464 at d99b767dd) defers every template-dependent argument | folded by the residue route: the interface half is TP-1's D-TP-11 on trunk, filed as W-374 by B-R2 with m17n_d and D-TP-11's break condition; dropping the condition is recorded as rejected (it would repair TP-1 in PR 60's commit and change TP-1's goldens); D-FO1-2 (4) states the dependence on D-TP-11, D-FO1-2's and H9.8's break conditions withdraw the convert.cpp hunk if TP-1 follows upstream's deferral; H10.8's classification passed to the orchestrator (F.1) and the weekly check (W-355), not edited by FO-1 | Summary, D-FO1-2, D-FO1-12, D-FO1-13, sections 0.2, 0.6, 0.7, 2.5, 3, 7, C.2, D.3, D.6, F.1, hand-off note 12 |
+| RR3-2: the overload gap is ALIGNED with no work item, and W-139 is discharged "without residue" | MINOR | yes: q11d prints 3 7 for `Pick(c)` and `Pick(d)`; with `Caller(d)` printed (q11e) the land tree reports ``unable to monomorphize specific `Caller(D)` ``, PR 60's install prints 3 7 7 | folded: W-375 filed by B-R with q11d's split and a break condition; H9.9 "ALIGNED with a gap (D-RG-4)" naming W-375; the split renamed `fail_todo_symbolic_arg_overload_unsatisfied` with a TODO comment; D.3's notes, the decision-log paragraph, C.1 and C.2 each gain the sentence | D-FO1-2, D-FO1-12, D-FO1-13, sections 0.2, 0.6, 2.2, 3, 4, A.2, C.1, C.2, D.3, D.6 |
+| RR3-3: duplicate diagnostics after a failed deferred check; no positive split for the thunk form | MINOR | yes: m18i reports `W(D)` at `J(T)` and again at the blanket impl's `J(V)`; thunk1d reports the call's deduction error, then ``unable to monomorphize specific `F(D)` ``; thunk1 prints 9 on the land tree and is rejected by D-SC-6 on PR 60's install | folded by the residue route: W-376 filed by B-R with both programs as splits whose TODO comments name it (`fail_symbolic_arg_impl_thunk_unsatisfied`, `fail_dependent_interface_arg_unsatisfied`) and the positive split `symbolic_arg_impl_thunk`; filled on the land tree (2001 of 2003 before, the two named files; 2003 of 2003 after; conformance 196/0/14 over 210) and on PR 60's own branch (1956 of 1959 before F-B1, the three named files; 1959 of 1959 after; the check golden byte-identical to the land tree's; m18i's second error only where TP-1 forms `J(T)` at the definition, so its split's TODO says so and F-M60 refills it) | D-FO1-2, sections 0.2, 0.3, 2.2, 4, 7, 8, A.2, D.3 |
+| RR3-4: stale or incorrect texts after the rev 4 fold | MINOR | yes: 2b40c281a's merge with trunk gives a structural_conformance.cpp that differs from the land tree's (it predates the silent check's discard lines), c18c44c9d's matches with the same four conflicted files; section 2.2 said nineteen splits and listed twenty-four, and fifteen splits without `fail_` where the file had thirteen; section 4 and section 2.2's gate paragraph omitted template_constraint_dependent.carbon; declact measured the case section 7 listed as not measured | folded: c18c44c9d cited for the merge and byte-identity claims (2b40c281a named as superseded); the counts corrected and carried to rev 5's (twenty-six and fourteen); the template_constraint_dependent.carbon row and its F-M60 entries added; declact and declactd recorded in section 7 | sections 0.4, 2.2, 2.5, 4, 7, 8 |
+
+Rev 5's decision changes: D-FO1-2 (part 4's dependence on D-TP-11, the overload
+gap, the cascade and the break condition), D-FO1-12 (W-374 to W-376) and
+D-FO1-13 (H9.8's break condition, H9.9's gap, H10.8 passed on). W-367, W-368,
+W-369 and W-370 are unchanged: no landing has run, so no landing used W-369 or
+W-370. Not re-measured by rev 5's fixer: Slices A, C and D (unchanged), M18 on
+rev 5's tree (no code changed since rev 4's measurement) and the stages 14 to
+17 simulations (section 8).
+
+## Sign-off
+
+Signed off 2026-11-02 at rev 5: RR3's verdict is APPROVE-WITH-AMENDMENTS with no
+BLOCKER, and its four findings are folded above, none rejected. Every review
+of this plan:
+
+| Review | Of | Verdict | BLOCKER | MAJOR | MINOR | Folded in | Rejected |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Review A | rev 1 (67a97132a) | REJECT | 1 (A-B-1) | 2 (A-B-2, A-B-3) | 5 (A-m-1 to A-m-5) | rev 2 (912af8f8f) | 0 |
+| Review B | rev 1 (67a97132a) | REJECT | 1 (B-B-1) | 4 (B-M-1 to B-M-4) | 7 (B-m-1 to B-m-7) | rev 2 (912af8f8f) | 0 |
+| RR1 | rev 2 (912af8f8f) | REJECT | 2 (N-1, N-2) | 1 (N-3) | 1 (N-4) | rev 3 (dee3d0cc0) | 0 |
+| RR2 | rev 3 (dee3d0cc0) | REJECT | 2 (RR2-1, RR2-2) | 1 (RR2-3) | 3 (RR2-4 to RR2-6) | rev 4 (4a574eaf3) | 0 |
+| RR3 | rev 4 (4a574eaf3) | APPROVE-WITH-AMENDMENTS | 0 | 1 (RR3-1) | 3 (RR3-2 to RR3-4) | rev 5 (this commit) | 0 |
+
+Five reviews, 34 findings (6 BLOCKER, 9 MAJOR, 19 MINOR), all folded and none
+rejected; reviews A and B shared some findings (A-B-1 with B-B-1, A-B-3 with
+B-M-1, A-m-2 with B-M-2, A-m-3 with B-m-1), counted here once per review. The
+plan is ready for implementation in the order of section 3: the orchestrator's
+sign-off stamp (Appendix F.1, with `<rev>` = 5 and W-373 to W-376 reserved)
+precedes the first slice commit, and each slice and landing takes its own
+reviews (D-FO1-9).

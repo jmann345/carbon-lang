@@ -131,7 +131,7 @@ fn TestStringIndexing() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.55a: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_64) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.55a = struct_value () [concrete]
 // CHECK:STDOUT:   %ImplicitAs.facet: %ImplicitAs.type.221 = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.227) [concrete]
-// CHECK:STDOUT:   %IndexWith.impl_witness.567: <witness> = impl_witness imports.%IndexWith.impl_witness_table, @str.as.IndexWith.impl(%ImplicitAs.facet) [concrete]
+// CHECK:STDOUT:   %IndexWith.impl_witness.567: <witness> = impl_witness imports.%IndexWith.impl_witness_table.c31, @str.as.IndexWith.impl(%ImplicitAs.facet) [concrete]
 // CHECK:STDOUT:   %str.as.IndexWith.impl.At.type.e2e5ac.1: type = fn_type @str.as.IndexWith.impl.At.2, @str.as.IndexWith.impl(%ImplicitAs.facet) [concrete]
 // CHECK:STDOUT:   %str.as.IndexWith.impl.At.0889f8.1: %str.as.IndexWith.impl.At.type.e2e5ac.1 = struct_value () [concrete]
 // CHECK:STDOUT:   %str.as.IndexWith.impl.At.type.e2e5ac.2: type = fn_type @str.as.IndexWith.impl.At.1, @str.as.IndexWith.impl(%ImplicitAs.facet) [concrete]
@@ -163,7 +163,7 @@ fn TestStringIndexing() {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.c1f = import_ref Core//prelude/types/string, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.169: @str.as.IndexWith.impl.%str.as.IndexWith.impl.At.type.2 (%str.as.IndexWith.impl.At.type.62ebd3.1) = import_ref Core//prelude/types/string, loc{{\d+_\d+}}, loaded [symbolic = @str.as.IndexWith.impl.%str.as.IndexWith.impl.At.2 (constants.%str.as.IndexWith.impl.At.887ac3.1)]
-// CHECK:STDOUT:   %IndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.c1f, %Core.import_ref.169), @str.as.IndexWith.impl [concrete]
+// CHECK:STDOUT:   %IndexWith.impl_witness_table.c31 = impl_witness_table (%Core.import_ref.c1f, %Core.import_ref.169), @str.as.IndexWith.impl [concrete]
 // CHECK:STDOUT:   %Core.At.6f4: @str.as.IndexWith.impl.%str.as.IndexWith.impl.At.type.1 (%str.as.IndexWith.impl.At.type.62ebd3.2) = import_ref Core//prelude/types/string, At, loaded [symbolic = @str.as.IndexWith.impl.%str.as.IndexWith.impl.At.1 (constants.%str.as.IndexWith.impl.At.887ac3.2)]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]

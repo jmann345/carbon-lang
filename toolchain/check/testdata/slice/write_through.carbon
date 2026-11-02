@@ -137,13 +137,6 @@ impl V as Core.IndexWith(i64) where .ElementType = i32 {
 }
 
 fn F(v: V) -> i32 {
-  // CHECK:STDERR: fail_todo_template_index_with_only.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `G(V)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   return G(v, 2);
-  // CHECK:STDERR:          ^
-  // CHECK:STDERR: fail_todo_template_index_with_only.carbon:[[@LINE-15]]:10: note: cannot access member of interface `Core.IndirectIndexWith(i64)` in type `V` that does not implement that interface [MissingImplInMemberAccess]
-  // CHECK:STDERR:   return x[i];
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   return G(v, 2);
 }
 

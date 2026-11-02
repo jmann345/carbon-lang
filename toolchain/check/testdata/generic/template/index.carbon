@@ -827,14 +827,7 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
-// CHECK:STDOUT:   %SubscriptType: type = symbolic_binding SubscriptType, 0 [symbolic]
-// CHECK:STDOUT:   %IndexWith.type.cce: type = facet_type <@IndexWith, @IndexWith(%SubscriptType)> [symbolic]
-// CHECK:STDOUT:   %Self.6c2: %IndexWith.type.cce = symbolic_binding Self, 1 [symbolic]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.type.eec: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(%SubscriptType, %Self.6c2) [symbolic]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.b6a: %IndexWith.WithSelf.At.type.eec = struct_value () [symbolic]
 // CHECK:STDOUT:   %IndexWith.type.7ec: type = facet_type <@IndexWith, @IndexWith(%i32)> [concrete]
-// CHECK:STDOUT:   %IndexWith.assoc_type.e5c: type = assoc_entity_type @IndexWith, @IndexWith(%i32) [concrete]
-// CHECK:STDOUT:   %assoc1.1b9: %IndexWith.assoc_type.e5c = assoc_entity element1, imports.%Core.import_ref.54c [concrete]
 // CHECK:STDOUT:   %i.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
@@ -851,10 +844,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %Get.type: type = fn_type @Get [concrete]
 // CHECK:STDOUT:   %Get: %Get.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.debde9.2: <witness> = require_complete_type %Vec.2301bb.2 [template]
-// CHECK:STDOUT:   %.8cb: type = type_of_inst @Get.%.loc12_13.5 [template]
-// CHECK:STDOUT:   %.c23: %.8cb = splice_inst @Get.%.loc12_13.5 [template]
-// CHECK:STDOUT:   %.682: type = type_of_inst @Get.%.loc12_13.8 [template]
-// CHECK:STDOUT:   %.c2b: %.682 = splice_inst @Get.%.loc12_13.8 [template]
+// CHECK:STDOUT:   %.2dd: type = type_of_inst @Get.%.loc12_13.3 [template]
+// CHECK:STDOUT:   %.61f: %.2dd = splice_inst @Get.%.loc12_13.3 [template]
 // CHECK:STDOUT:   %.28a: %i32 = splice_inst @Get.%.loc12_14.2 [template]
 // CHECK:STDOUT:   %Vec.f02: type = class_type @Vec, @Vec(bool) [concrete]
 // CHECK:STDOUT:   %pattern_type.992: type = pattern_type %Vec.f02 [concrete]
@@ -866,28 +857,20 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %IndexWith.facet.ea2: %IndexWith.type.7ec = facet_value %Vec.f02, (%IndexWith.impl_witness.98a) [concrete]
 // CHECK:STDOUT:   %IndexWith.WithSelf.At.type.714: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(%i32, %IndexWith.facet.ea2) [concrete]
 // CHECK:STDOUT:   %.3df: type = fn_type_with_self_type %IndexWith.WithSelf.At.type.714, %IndexWith.facet.ea2 [concrete]
+// CHECK:STDOUT:   %Vec.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Vec.as.IndexWith.impl.At.2df, @Vec.as.IndexWith.impl.At(bool) [concrete]
 // CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %.65a: <bound method> = splice_block %bound_method.229 {
+// CHECK:STDOUT:     %.236: init %i32 = splice_block %Vec.as.IndexWith.impl.At.call {
 // CHECK:STDOUT:       %.0d0: %Vec.f02 = specific_inst @Get.%v.ref, @Get(bool)
 // CHECK:STDOUT:       %impl.elem1.d26: %.3df = impl_witness_access %IndexWith.impl_witness.98a, element1 [concrete = %Vec.as.IndexWith.impl.At.2df]
 // CHECK:STDOUT:       %bound_method.229: <bound method> = bound_method %.0d0, %impl.elem1.d26
-// CHECK:STDOUT:     }
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Vec.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Vec.as.IndexWith.impl.At.2df, @Vec.as.IndexWith.impl.At(bool) [concrete]
-// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %.fcd: init %i32 = splice_block %Vec.as.IndexWith.impl.At.call {
 // CHECK:STDOUT:       %specific_fn: <specific function> = specific_function %impl.elem1.d26, @Vec.as.IndexWith.impl.At(bool) [concrete = %Vec.as.IndexWith.impl.At.specific_fn]
 // CHECK:STDOUT:       %bound_method.68a: <bound method> = bound_method %.0d0, %specific_fn
 // CHECK:STDOUT:       %Vec.as.IndexWith.impl.At.call: init %i32 = call %bound_method.68a(%.0d0, @Get.%i.ref)
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %.0f5: init %i32 = splice_block %.fcd {}
+// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.78b: init %i32 = splice_block %.236 {}
 // CHECK:STDOUT:   }
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Core.import_ref.54c: @IndexWith.WithSelf.%IndexWith.WithSelf.At.type (%IndexWith.WithSelf.At.type.eec) = import_ref Core//prelude/operators/index, loc{{\d+_\d+}}, loaded [symbolic = @IndexWith.WithSelf.%IndexWith.WithSelf.At (constants.%IndexWith.WithSelf.At.b6a)]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -932,23 +915,18 @@ fn Use() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %Vec.loc11_34.1 [template = %require_complete (constants.%require_complete.debde9.2)]
-// CHECK:STDOUT:   %.loc12_13.5: <instruction> = compound_member_access_action %v.ref, constants.%assoc1.1b9 [template]
-// CHECK:STDOUT:   %.loc12_13.6: type = type_of_inst %.loc12_13.5 [template = %.loc12_13.6 (constants.%.8cb)]
-// CHECK:STDOUT:   %.loc12_13.7: @Get.%.loc12_13.6 (%.8cb) = splice_inst %.loc12_13.5 [template = %.loc12_13.7 (constants.%.c23)]
-// CHECK:STDOUT:   %.loc12_13.8: <instruction> = call_action (%.loc12_13.2, %i.ref), true [template]
-// CHECK:STDOUT:   %.loc12_13.9: type = type_of_inst %.loc12_13.8 [template = %.loc12_13.9 (constants.%.682)]
-// CHECK:STDOUT:   %.loc12_13.10: @Get.%.loc12_13.9 (%.682) = splice_inst %.loc12_13.8 [template = %.loc12_13.10 (constants.%.c2b)]
-// CHECK:STDOUT:   %.loc12_14.2: <instruction> = convert_action %.loc12_13.4, constants.%i32, element10 [template]
+// CHECK:STDOUT:   %.loc12_13.3: <instruction> = index_action %v.ref, %i.ref [template]
+// CHECK:STDOUT:   %.loc12_13.4: type = type_of_inst %.loc12_13.3 [template = %.loc12_13.4 (constants.%.2dd)]
+// CHECK:STDOUT:   %.loc12_13.5: @Get.%.loc12_13.4 (%.2dd) = splice_inst %.loc12_13.3 [template = %.loc12_13.5 (constants.%.61f)]
+// CHECK:STDOUT:   %.loc12_14.2: <instruction> = convert_action %.loc12_13.2, constants.%i32, element10 [template]
 // CHECK:STDOUT:   %.loc12_14.3: %i32 = splice_inst %.loc12_14.2 [template = %.loc12_14.3 (constants.%.28a)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%v.param: @Get.%Vec.loc11_34.1 (%Vec.2301bb.2), %i.param: %i32) -> out %return.param: %i32 {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %v.ref: @Get.%Vec.loc11_34.1 (%Vec.2301bb.2) = name_ref v, %v
 // CHECK:STDOUT:     %i.ref: %i32 = name_ref i, %i
-// CHECK:STDOUT:     %.loc12_13.1: type = type_of_inst %.loc12_13.5 [template = %.loc12_13.6 (constants.%.8cb)]
-// CHECK:STDOUT:     %.loc12_13.2: @Get.%.loc12_13.6 (%.8cb) = splice_inst %.loc12_13.5 [template = %.loc12_13.7 (constants.%.c23)]
-// CHECK:STDOUT:     %.loc12_13.3: type = type_of_inst %.loc12_13.8 [template = %.loc12_13.9 (constants.%.682)]
-// CHECK:STDOUT:     %.loc12_13.4: @Get.%.loc12_13.9 (%.682) = splice_inst %.loc12_13.8 [template = %.loc12_13.10 (constants.%.c2b)]
+// CHECK:STDOUT:     %.loc12_13.1: type = type_of_inst %.loc12_13.3 [template = %.loc12_13.4 (constants.%.2dd)]
+// CHECK:STDOUT:     %.loc12_13.2: @Get.%.loc12_13.4 (%.2dd) = splice_inst %.loc12_13.3 [template = %.loc12_13.5 (constants.%.61f)]
 // CHECK:STDOUT:     %.loc12_14.1: %i32 = splice_inst %.loc12_14.2 [template = %.loc12_14.3 (constants.%.28a)]
 // CHECK:STDOUT:     return %.loc12_14.1
 // CHECK:STDOUT:   }
@@ -973,13 +951,10 @@ fn Use() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.26b
-// CHECK:STDOUT:   %.loc12_13.5 => constants.%inst.splice_block.426619.1
-// CHECK:STDOUT:   %.loc12_13.6 => <bound method>
-// CHECK:STDOUT:   %.loc12_13.7 => <not constant>
-// CHECK:STDOUT:   %.loc12_13.8 => constants.%inst.splice_block.426619.2
-// CHECK:STDOUT:   %.loc12_13.9 => constants.%i32
-// CHECK:STDOUT:   %.loc12_13.10 => <not constant>
-// CHECK:STDOUT:   %.loc12_14.2 => constants.%inst.splice_block.426619.3
+// CHECK:STDOUT:   %.loc12_13.3 => constants.%inst.splice_block.426619.1
+// CHECK:STDOUT:   %.loc12_13.4 => constants.%i32
+// CHECK:STDOUT:   %.loc12_13.5 => <not constant>
+// CHECK:STDOUT:   %.loc12_14.2 => constants.%inst.splice_block.426619.2
 // CHECK:STDOUT:   %.loc12_14.3 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

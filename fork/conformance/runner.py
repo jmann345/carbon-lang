@@ -1721,6 +1721,27 @@ def evaluator_samples_self_check(root=REPO_ROOT):
     return ok
 
 
+def designdocs_samples_self_check(root=REPO_ROOT):
+    """Runs DD-1's sample checker, fork/designdocs/check_samples.py, without
+    `--toolchain`, which prints its own `check_samples:` line: every code
+    block of the design pages DD-1 wrote must equal the program or fixture it
+    is transcribed into, every quote must occur in its section, and
+    docs/design/ must pass the W2 placeholder rule (fork/designdocs/plan.md
+    D-DD-6). Prints the self-check line and returns True when the checker
+    reports no error.
+    """
+    path = root / "fork" / "designdocs" / "check_samples.py"
+    spec = importlib.util.spec_from_file_location("check_samples", path)
+    if spec is None or spec.loader is None:
+        ok = False
+    else:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        ok = module.main([]) == 0
+    print(f"designdocs-samples self-check: {'OK' if ok else 'ERRORS'}")
+    return ok
+
+
 def self_test(programs_dir, filter_substr):
     """Validate all program headers + bullet names without a toolchain."""
     ok = True
@@ -1794,6 +1815,11 @@ def self_test(programs_dir, filter_substr):
     # The evaluator guides' samples must equal their programs (EV-1); the
     # checker reads whole pages, so a filtered run skips it.
     if not filter_substr and not evaluator_samples_self_check():
+        ok = False
+    # The design pages' samples must equal their programs and fixtures
+    # (DD-1, D-DD-6); the checker reads whole pages, so a filtered run skips
+    # it.
+    if not filter_substr and not designdocs_samples_self_check():
         ok = False
     if (
         not filter_substr

@@ -1267,7 +1267,7 @@ def self_check() -> int:
     return wrong
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Checks the DD-1 design pages against their samples."
     )
@@ -1282,7 +1282,7 @@ def main() -> int:
         help="only run the built-in cases of the quote matcher, the W2 rule "
         "and the crash test",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if self_check():
         return 1
     if args.self_check:

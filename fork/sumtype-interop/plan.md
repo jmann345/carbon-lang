@@ -10119,6 +10119,21 @@ the records writer's scratch directory,
     texts' table and log list mended. **Round 2 is dry** (the [record of round
     2](#focused-re-review-of-the-fold-round-2-2026-10-21)).
 
+SV-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 62 by 4fd18b93f (head
+0ef8a0334, trunk before 9b82f1f99; GitHub merged_at 2026-11-02T10:03:37Z) under
+R33, fork/land/land1-plan.md section 2.8; land-time commits 855a90d3b;
+container-measured (R33 (b)): gate 1976 of 1976, conformance 182 PASS, 0 FAIL,
+15 SKIP over 197, 49 of 56 bullets; id re-scans: W-275 to W-277, W-279 to W-281,
+W-285 and W-286 at the second re-scan (SV-1's section 8 item 7) on the merged
+trunk before the records edits: origin/claude/carbon-fork-0-1-sv, origin/pr/62,
+claude/carbon-fork-0-1-sv and the /home/user/carbon-sv worktree (0ef8a0334, the
+head), and trunk and the /home/user/carbon-trunk worktree (855a90d3b), which
+contain 0ef8a0334; W-278, W-282 to W-284 and W-287 to W-294 at it: none; moved
+to follow-ons: to item 17: M-VA and W-284; to item 16: Doc-M, C.5, C.8, the
+W-177 header cite and F-M's PR 57 part; to item 17: M-VA's mutants M19 and M21
+and W-284's clauses; to item 16: the nested-pointer leg and Doc-M's
+re-derivation.
+
 ## Focused re-review of the fold, round 1 (2026-10-21)
 
 Two fresh reviews (R29(c)) of `git log 6efb8345b..21060cef4`, the seven commits

@@ -3595,7 +3595,9 @@ fold commits too:
 L's document-review fold a11a5ea2f (review round 1's finding RB61-2; TP-1's section 2.9, which makes a fold of that review a fix commit of L; fork/land/land1-plan.md, Landing-time rulings, paragraph (12), item (4a)) adds to templates.md's W-259 bullet the sentence C.8's W-259 note states, which TP-1's Appendix C predates (D-LAND-22), so the landed page differs from Appendix C there as well as where the sentence on L above says; check_samples.py, with and without --toolchain, reported on it the two outputs quoted above.
 ```
 
-The note's last sentence is amended 2026-11-01 (review fold: RR4-1).
+DR-1's note's last sentence is amended 2026-11-01 (review fold: RR4-1; the
+antecedent named 2026-11-02, the fold check of PR 61's review round 2:
+FC61-2-1, ruling (14)).
 Appended to W-259's `notes` by PR 61's records commit (D-LAND-22;
 added 2026-11-01, review fold: RR4-1):
 
@@ -5017,5 +5019,12 @@ landing's records commit (D-LAND-9 as amended by the first):
 > uncommitted; L changes no toolchain file, so that build's toolchain sources
 > are 35fb2aca9's (RV61A2-2; fork/land/land1-plan.md, Landing-time rulings,
 > paragraph (13))." No tree edit.
+>
+> (14) At PR 62's landing (stage 8), before its review, on the fold check of
+> PR 61's review round 2 (FC61-2-1): (1) In fork/land/land1-plan.md, Appendix
+> C.8, the sentence "The note's last sentence is amended 2026-11-01 (review
+> fold: RR4-1)." becomes "DR-1's note's last sentence is amended 2026-11-01
+> (review fold: RR4-1; the antecedent named 2026-11-02, the fold check of
+> PR 61's review round 2: FC61-2-1, ruling (14))."; no other word changes.
 
 <!-- google-doc-style-resume -->

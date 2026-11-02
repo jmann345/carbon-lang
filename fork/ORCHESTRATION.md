@@ -636,6 +636,33 @@ PR 59's abort on a pack expansion pattern in a choice alternative's
 parameter list. Sixteen PRs are held open (PR 51 to PR 66); none is merged.
 Next: OV-4 (W-341) and RG-1 (W-342..W-344) per item 6 below, then UA-3.
 
+Later on 2026-10-28 (RG-1): the V-3a register is classified at upstream
+f27a977d8 (2026-10-27, upstream PR 8045; re-checked at e6fddcf97), records
+first, on claude/carbon-fork-0-1-rg1 (decision-log entry "RG-1: the V-3a
+register classified at f27a977d8 (2026-10-28)"; fork/register/rg1-plan.md).
+Every entry of the 26 blocks and V-3's design-fork entries was read against the
+page at the tip: 155 entries, 19 DRIFT, 32 ALIGNED, 104 NONE, 10 waiting on
+upstream; every NONE carries its quote or silence check, and every NONE and
+ALIGNED outside VA-2's six, which carry VA-2's items, the watch item W-355,
+whose weekly run uses fork/register/check_quotes.sh and check_greps.sh. F-006a's
+`Ok`/`Err` is a drift against README.md's `Success`/`Failure` (W-346, owner
+EH-C, after the held PRs land and before UA-3, reversing the user's F-006a under
+the 2026-10-21 directive, veto-able); F-009's `overload fn` is not (p002875
+calls its spelling placeholder). Three held PRs carry drifts and wait for their
+owners' realignment commits before they land: PR 53 six (W-347 to W-351 and
+W-353, owner SAFE-1), PR 60 one (D-SC-6, W-139, whose break condition was
+already met when it was filed), and PR 56 one (the comparisons' side effects,
+W-352, owner OP-1, not blocked). D-SL-16's yield and D-SL-19's keying are W-354,
+dropped at UA-3 against 05a7ecbd3's `SelfDestruct`; W-356 is a crash RG-1's
+probe found, UA-3's to triage. RG-1's held records commits follow on PR 53, PR
+52, PR 60, PR 55, PR 56 (merged into PR 57), PR 61 and PR 64 (with PR 61's
+merged), staged and reviewed before any push, then the stamp R2. No build, merge
+or dispatch; Actions is still disabled. Sixteen PRs are held open; none is
+merged. Merge order, as fork/register/rg1-plan.md section 5 gives it:
+RG-1, PR 53, 51, 52, 60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, 66.
+R2 (2026-10-28): the held commits are made after two implementation reviews and
+recorded; W-344 is discharged and W-343 waits on the five land-time notes.
+
 2026-10-28 (04:47 UTC): RG-1 is IMPLEMENTED, REVIEWED AND HELD OPEN as PR 67
 (claude/carbon-fork-0-1-rg1 at 56e2e5bbd, base trunk 0b999d449; twelve commits:
 plan rev 1 to rev 5, R1, the two review-fold fixes, the two merges of plan rev 4

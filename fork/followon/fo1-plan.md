@@ -6,12 +6,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # FO-1 plan: the follow-ons that gate the held PRs, then their landings
 
-**Status:** rev 6, 2026-11-02 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
+**Status:** rev 7, 2026-11-02 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
 is a stop-and-amend of unit A (amended 2026-11-02, implementation:
 stop-and-amend, unit A: F-A1 is not made and A-R's records texts are
 re-given), recorded in "Stop-and-amend record (rev 6, 2026-11-02)" before
 the Sign-off; it changes no code block, golden source, program, prediction,
-decision's ruling or break condition. Rev 5 folded the
+decision's ruling or break condition. Rev 7 folds the focused re-review RR6 of
+rev 6 (verdict APPROVE-WITH-AMENDMENTS, RR6-1 to RR6-4, no BLOCKER, no MAJOR)
+into that record and changes no more than rev 6 did: D.1 cites the
+ORCHESTRATION item at its sha, unit A's pusher first confirms that trunk holds
+this plan at rev 7, a cite of this plan made before a branch's M merge names
+trunk's copy and is not a defect, and a fix commit after A-R is a stop
+(amended 2026-11-02, stop-and-amend re-review: RR6-1 to RR6-4). Rev 5 folded the
 focused re-review RR3 of rev 4 (verdict APPROVE-WITH-AMENDMENTS, RR3-1 to RR3-4,
 no BLOCKER); rev 4, 2026-11-02, folded RR2's RR2-1 to RR2-6 (verdict REJECT,
 blockers RR2-1 and RR2-2); rev 3, 2026-11-02, folded RR1's N-1 to N-4 (blockers
@@ -156,7 +162,7 @@ fold: RR3-3).
 -   Re-review fold record (rev 3)
 -   Re-review fold record (rev 4)
 -   Re-review fold record (rev 5)
--   Stop-and-amend record (rev 6)
+-   Stop-and-amend record (rev 6, extended at rev 7)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -1343,9 +1349,11 @@ with 48 of 56 bullets before and after A1, with no status or detail difference
 in any program; i10a returns 0 and i10b checks on A1's install. So F-A1 is not
 made: section 3's row 2 is conditional ("if autoupdate changes it") and its
 condition does not hold. A-R follows A1 directly with Appendix D.1's and D.2's
-texts as rev 6 gives them: D.1 names no fill commit, states the review rule
+texts as rev 7 gives them: D.1 names no fill commit, states the review rule
 rather than reviews that have not run when A-R is committed, and qualifies its
-cites of files that reach PR 57's tree only at M57 as trunk's.
+cites of files that reach PR 57's tree only at M57 as trunk's (this plan) or by
+the sha they were read at (fork/ORCHESTRATION.md at a88ccf167; amended
+2026-11-02, stop-and-amend re-review: RR6-3).
 
 ### §2.2 Slice B: W-139 on PR 60 (SC-1)
 
@@ -2646,7 +2654,7 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | --- | --- | --- | --- | --- | --- |
 | 1 | op2 (57) | A1 | OP-2 fix: a class with its own Destroy impl is not completed by the Destroy witness (item 10) | check/custom_witness.cpp; check/testdata/optional/destroy.carbon | autoupdate would change destroy.carbon only if the split prints (predicted not); every other golden passes; measured on PR 57's branch (47a3d9f4e): autoupdate writes nothing, 1950 of 1950, conformance 139/0/22 over 161 unchanged (amended 2026-11-02, implementation: stop-and-amend, unit A) |
 | 2 | op2 (57) | F-A1 | OP-2 fix fill: autoupdate item 10's split on the container arbiter | destroy.carbon, if autoupdate changes it: not made, autoupdate writes nothing (measured; amended 2026-11-02, implementation: stop-and-amend, unit A) | not made |
-| 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 6 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A) |
+| 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 7 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A; amended 2026-11-02, stop-and-amend re-review: RR6-3) |
 | 4 | op (56) | C1 | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon; two programs; fork/conformance/README.md | the W-352 goldens of OP-1 and SV-1 named in section 2.3 |
 | 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass |
 | 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls |
@@ -2989,6 +2997,21 @@ Run for this plan (container-local, EXPECTED, not of record, R9):
     ``unable to monomorphize specific `<none>` `` at 15:20); no remote branch
     contains 47a3d9f4e (`git branch -r --contains`); no build was made, and the
     worktree was removed after measuring.
+11. Rev 7's amender (added 2026-11-02, stop-and-amend re-review: RR6-1 to
+    RR6-4): the heads re-read at 23:38 UTC (op2 e23113ba2, sc cc4daba00, va
+    b0822a744, trunk and this branch a88ccf167; no remote branch contains
+    85125ceb4 or 47a3d9f4e); upstream re-fetched at 23:40 UTC, still
+    a7e2f3418; RR6-1 to RR6-4 reproduced from the trees (a88ccf167's D-FO1-1
+    and its fork/ORCHESTRATION.md:2393-2401, the three branches without this
+    plan, lane 1's c839ddec6); A-R simulated from rev 7's D.1 and D.2 in a
+    detached worktree /dev/shm/fo1/amend7/wt at 47a3d9f4e, each value as the
+    record's instruction 4 states: 16 and 6 insertions in the two files only,
+    R31's counts, 80 columns at most once filled (D.1's first line), prek's
+    fourteen hooks passing with nothing changed, `runner.py --self-test` OK
+    over 161 programs and 56 bullets, and the gate 1950 passed, 0 failed, run
+    with the lane build's file_test (read only, with its own TEST_TMPDIR,
+    version 0.0.0-0.dev+47a3d9f4e); the lane worktree stayed clean at
+    47a3d9f4e, no build was made, and the worktree was removed after measuring.
 
 The slices' and landings' implementers run, at each commit: the build, the
 gate, autoupdate to its fixpoint on exactly the files the gate names, the
@@ -3080,7 +3103,16 @@ Not run by this plan, and why:
     is not made (F-A1, section 2.1) is named by no placeholder of Appendix D,
     and a records text committed before its commits' reviews states the review
     rule, not the reviews' outcome (added 2026-11-02, implementation:
-    stop-and-amend, unit A).
+    stop-and-amend, unit A). A records text committed on a held branch before
+    that branch's M merge may cite fork/followon/fo1-plan.md unqualified, as
+    B-R's D.3 before M60 and D-R's D.5 before M59 do: the cite names trunk's
+    copy, which has held the decisions, sections and Appendix F.1 they cite
+    since a88ccf167 (rev 5; rev 6 and rev 7 leave them unchanged), and it
+    resolves on the branch's own tree at the M merge, so it is not a defect,
+    and B-R as lane 1 committed it (c839ddec6) and D-R stand. D.1 and D.2 say
+    "on trunk" outright, and unit A's pusher confirms that trunk holds the
+    revision they were written from (the Stop-and-amend record's instruction
+    5; added 2026-11-02, stop-and-amend re-review: RR6-1 / RR6-2).
 
 ## Appendix A: golden sources
 
@@ -4600,14 +4632,17 @@ A new section at the end of the file, after "Landed notes (OP-2, 2026-10-14)"
 (amended 2026-11-02, implementation: stop-and-amend, unit A: rev 5's text named
 a fill commit `<sha-F-A1>` that is not made, stated as done the two
 implementation reviews that follow A-R, and cited trunk's ORCHESTRATION item and
-this plan as if they were on PR 57's tree):
+this plan as if they were on PR 57's tree; amended 2026-11-02, stop-and-amend
+re-review: RR6-3: the item is cited at the sha it was read at, a88ccf167, whose
+fork/ORCHESTRATION.md:2393-2401 holds it, since Next actions items are the
+orchestrator's to renumber):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 ## Item 10 fold record (FO-1, <date>)
 
-Next actions item 10 of fork/ORCHESTRATION.md on trunk (an SC-1 split failing
+Next actions item 10 of fork/ORCHESTRATION.md at a88ccf167 (SC-1's split failing
 with ``unable to monomorphize specific `<none>` `` on the land tree) is OP-2's
 defect: a class with its own `Destroy` impl that names `Core.Optional(Self)`
 in a method's signature inside its definition was rejected on PR 57's
@@ -5378,7 +5413,46 @@ prints 0.0.0-0.dev+e23113ba2, where the held install, built at 9f9ccd768 with
 the same toolchain and core, prints +9f9ccd768 (section 0.1); A1's install
 prints +47a3d9f4e, and A-R's rebuild prints A-R's sha.
 
-Instructions to the implementer (unit A, resumed at A-R):
+Rev 7, the re-review RR6 folded (2026-11-02). The focused re-review RR6 of
+rev 6 (85125ceb4; verdict APPROVE-WITH-AMENDMENTS, no BLOCKER, no MAJOR) worked
+in its own detached worktree at 47a3d9f4e with a copy of the lane's file_test
+and its own TEST_TMPDIR. It reproduced the stop (autoupdate writes nothing to
+destroy.carbon, whose sha1 ca3dd574 is unchanged; the split fails on the held
+install +9f9ccd768 at 15:20 and checks on +47a3d9f4e and on trunk's
+c6c9d5fe3; i10a fails on +9f9ccd768 and checks on +47a3d9f4e), confirmed rev
+6's root cause and each of its measured claims, simulated A-R from rev 6's D.1
+and D.2 (instruction 4's values, the gate 1950 of 1950) and re-read upstream at
+a7e2f3418 (23:33 UTC). It found D-FO1-1's break condition not fired and no IN
+form hidden (R17), and raised four MINORs, folded here as RR6-1 to RR6-4. Rev
+7's amender reproduced each (scratchpad/fo1-impl/A/amend7 under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b:
+rr6-1.txt to rr6-4.txt, r32.txt), and none is rejected.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR6-1: A-R's "on trunk" cite of this plan resolves to rev 5 until rev 6 is pushed | MINOR | yes: at 23:38 UTC trunk and this branch are a88ccf167, `git merge-base --is-ancestor 85125ceb4 origin/trunk` returns 1, and a88ccf167's D-FO1-1 (:855) reads "and its fill F-A1" | folded: before pushing, unit A's pusher confirms that trunk holds 85125ceb4 and this plan at rev 7 or later, a stop otherwise; the orchestrator fast-forwards trunk and this branch to rev 7 before unit A's pusher runs, as it did each earlier revision | instruction 5; hand-off note 13 |
+| RR6-2: B-R's and D-R's texts cite this plan unqualified before their M merges | MINOR | yes: cc4daba00, b0822a744 and e23113ba2 hold no file under fork/followon/; lane 1's B-R c839ddec6 (not pushed; an ancestor of lane 1's worktree head 3736217e8 at 23:38 UTC) cites "fork/followon/fo1-plan.md D-FO1-3" and Appendix F.1; C-R's D.4 follows M56, so its cites resolve on PR 56's tree | folded: hand-off note 13 states that such a cite names trunk's copy, resolves at the branch's M merge and is not a defect; D.3 and D.5 are unchanged, so c839ddec6 and D-R stand | hand-off note 13 |
+| RR6-3: D.1's ORCHESTRATION cite names no sha | MINOR | yes: item 10 is fork/ORCHESTRATION.md:2393-2401 at a88ccf167, and e23113ba2's Next actions (:575) has seven items | folded: D.1 cites the item at a88ccf167, its first line rewrapped by hand within 80 columns ("an SC-1 split" becomes "SC-1's split"), so the text keeps its sixteen lines | section 2.1; section 3's row 3; D.1; instructions 3 and 4 |
+| RR6-4: instruction 5's stop list omits a code fix commit after the reviews | MINOR | yes: rev 6's instruction 5 names "the gate count, a fill commit"; D-FO1-10 allows two fix commits after Slice A's reviews; D.1 states "Fixed by `<sha-A1>`" | folded, wider than the finding's wording: every fix commit after A-R is a stop (D-LAND-9), since one that touches A1's files or any other toolchain, core or testdata file leaves D.1's "Fixed by" incomplete, and one that touches A-R's two files or changes a sha, count or commit that D.1 or D.2 states needs a text this plan does not give | instruction 5 |
+
+Rev 7's amendment. Each place carries a 2026-11-02 "stop-and-amend re-review"
+marker (amended, added or rewritten) with its findings, or sits under one: the
+status line and the contents; section 2.1's last sentence; section 3's row 3;
+section 8 (run item 11); hand-off note 13; Appendix D.1 (its preface, which
+marks its first line); this record's instructions 3 to 5; the Sign-off (RR6's
+row, and RR3's naming rev 5 by its sha, since "this commit" is now rev 7).
+Unchanged: every decision's ruling and break condition, every code block, golden
+source and program, section 5, Appendix D.2 to D.6, the commits and texts of
+units B, C and D, and instruction 4's predictions, re-measured on rev 7's texts
+(section 8 item 11). Not R32: rev 7 states no design; upstream's tip is still
+a7e2f3418 at 23:40 UTC, with core/prelude/types/optional.carbon:17
+`let Type: type;` and custom_witness.cpp and core unchanged since d99b767dd.
+Before unit A's pusher runs, the orchestrator fast-forwards trunk and
+claude/carbon-fork-0-1-fo1 to rev 7, as it did each earlier revision; that is
+not an Appendix F stamp, and no slice writes fork/ORCHESTRATION.md.
+
+Instructions to the implementer (unit A, resumed at A-R; instructions 3 to 5
+amended 2026-11-02, stop-and-amend re-review: RR6-1 / RR6-3 / RR6-4):
 
 1.  Reset nothing. A1 (47a3d9f4e) is correct and stays:
     `git -C /home/user/carbon-lang branch -r --contains 47a3d9f4e` lists
@@ -5389,19 +5463,20 @@ Instructions to the implementer (unit A, resumed at A-R):
 2.  F-A1 is not made, and its autoupdate is not re-run: section 2.1's measured
     run stands (implementer/au1.txt, amend6/au_repro.txt).
 3.  A-R, "OP-2: item 10 recorded (D-FO1-1)": write Appendix D.1's and D.2's
-    texts as rev 6 gives them, verbatim but for the placeholders `<date>` (the
+    texts as rev 7 gives them, verbatim but for the placeholders `<date>` (the
     UTC commit date, `date -u +%F`), `<sha-A1>` 47a3d9f4e
     (`git rev-parse --short=9 47a3d9f4e`) and `<g>` 1950; ar-draft.patch is not
     applied. D.1 is a new section at the end of fork/optional2/plan.md, after
     "Landed notes (OP-2, 2026-10-14)", with one blank line before its heading;
     D.2 is the last paragraph of the OP-2 / F-016 entry of fork/decision-log.md,
     before "### OP-1 / F-015", with a blank line on each side. Explicit paths
-    only; the body names D-FO1-1 and this plan's rev 6, the gate line, prek's
+    only; the body names D-FO1-1 and this plan's rev 7, the gate line, prek's
     result and R31's counts of both files before the edit, after it and after
     prek; the session's two trailers.
-4.  The predictions A-R reproduces: `git diff --stat 47a3d9f4e HEAD` names
-    fork/optional2/plan.md (16 insertions) and fork/decision-log.md (6
-    insertions) only; R31's counts of fork/optional2/plan.md go from headings
+4.  The predictions A-R reproduces, re-measured on rev 7's texts (section 8
+    item 11): `git diff --stat 47a3d9f4e HEAD` names fork/optional2/plan.md
+    (16 insertions) and fork/decision-log.md (6 insertions) only; R31's counts
+    of fork/optional2/plan.md go from headings
     {1: 1, 2: 15, 3: 21}, bullets 152, numbered 43, rows 145 to headings {1: 1,
     2: 16, 3: 21} with the rest unchanged, and fork/decision-log.md's stay
     headings {1: 1, 2: 2, 3: 46, 4: 1, 5: 6}, bullets 78, numbered 0, rows 11;
@@ -5413,9 +5488,19 @@ Instructions to the implementer (unit A, resumed at A-R):
     gate after it prints 1950 passed, 0 failed of 1950.
 5.  Then unit A continues as its brief orders: A1 and A-R take the two
     implementation reviews and the fixer (D-FO1-9, D-FO1-10), and the pusher
-    pushes. A fix commit that changes a value D.1 states (the gate count, a fill
-    commit) needs a records text this plan does not give, which is a stop
-    (D-LAND-9).
+    pushes. Every fix commit after A-R is a stop (D-LAND-9): one that touches
+    A1's files or any other toolchain, core or testdata file leaves D.1's
+    "Fixed by" incomplete, and one that touches A-R's two files, or changes any
+    sha, count or commit that D.1 or D.2 states, needs a records text this plan
+    does not give; the orchestrator then rules within D-FO1-10's budget
+    (rewritten 2026-11-02, stop-and-amend re-review: RR6-4). Before pushing,
+    the pusher confirms that trunk holds this plan at rev 7 or later, whose
+    D-FO1-1 and D.1 agree with A-R: after `git fetch -q origin trunk`,
+    `git merge-base --is-ancestor 85125ceb4 origin/trunk` succeeds, and the
+    status line of `git show origin/trunk:fork/followon/fo1-plan.md` names rev
+    7 or a later revision; otherwise it stops (D-FO1-11) and pushes nothing
+    until the orchestrator has fast-forwarded trunk (added 2026-11-02,
+    stop-and-amend re-review: RR6-1).
 
 Break condition of this amendment: autoupdate writes a CHECK line for the split
 on a later run, the gate after A-R is not 1950 of 1950, or A-R changes a file
@@ -5435,7 +5520,8 @@ of this plan:
 | Review B | rev 1 (67a97132a) | REJECT | 1 (B-B-1) | 4 (B-M-1 to B-M-4) | 7 (B-m-1 to B-m-7) | rev 2 (912af8f8f) | 0 |
 | RR1 | rev 2 (912af8f8f) | REJECT | 2 (N-1, N-2) | 1 (N-3) | 1 (N-4) | rev 3 (dee3d0cc0) | 0 |
 | RR2 | rev 3 (dee3d0cc0) | REJECT | 2 (RR2-1, RR2-2) | 1 (RR2-3) | 3 (RR2-4 to RR2-6) | rev 4 (4a574eaf3) | 0 |
-| RR3 | rev 4 (4a574eaf3) | APPROVE-WITH-AMENDMENTS | 0 | 1 (RR3-1) | 3 (RR3-2 to RR3-4) | rev 5 (this commit) | 0 |
+| RR3 | rev 4 (4a574eaf3) | APPROVE-WITH-AMENDMENTS | 0 | 1 (RR3-1) | 3 (RR3-2 to RR3-4) | rev 5 (5e3279a12) | 0 |
+| RR6 | rev 6 (85125ceb4) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 (RR6-1 to RR6-4) | rev 7 (this commit) | 0 |
 
 Five reviews, 34 findings (6 BLOCKER, 9 MAJOR, 19 MINOR), all folded and none
 rejected; reviews A and B shared some findings (A-B-1 with B-B-1, A-B-3 with
@@ -5450,3 +5536,10 @@ sign-off as it is: it re-gives unit A's records texts D.1 and D.2 and states
 that F-A1 is not made, as measured, and changes no decision's ruling, break
 condition, code block, golden source, program or prediction ("Stop-and-amend
 record (rev 6, 2026-11-02)").
+
+Rev 7 (amended 2026-11-02, stop-and-amend re-review: RR6-1 to RR6-4) adds RR6's
+row to the table above, a review of rev 6's stop-and-amend after the sign-off,
+and leaves the sign-off and its count of the five reviews before it as they
+are: with RR6, six reviews and 38 findings (6 BLOCKER, 9 MAJOR, 23 MINOR), all
+folded and none rejected. Rev 7 changes no decision's ruling, break condition,
+code block, golden source, program or prediction either.

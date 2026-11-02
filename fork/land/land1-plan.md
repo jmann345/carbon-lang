@@ -2079,7 +2079,16 @@ toolchain/, core/ or fork/conformance/ (:2707-2709), and `git diff`
 118fc1bc8 551a03328 and 4a3220c11 551a03328 over those three is empty
 (measured by the rev-6 fixer); the landing's step 4 gate and conformance on
 the merged trunk is the composition's measurement, recorded in A.5
-(AUD-63-13). Expected: 1978 of 1978;
+(AUD-63-13). A land-time fixture commit follows L-a (added 2026-11-02, PR 63's
+landing, the implementer's stop at step 8: ruling (17)):
+fork/designdocs/samples/X35_template_for_tuple_cursor.carbon, TP-1's fixture
+for templates.md's W-264 limit (2288e99f6), implements `Core.Iterate.Next` in
+the pointer form, which DR-1a's `ref cursor` signature
+(core/prelude/iterate.carbon:17) turns from the expected crash into a compile
+error; the commit "Land PR 63: fixture X35 takes DR-1a's ref cursor" rewrites
+its `Next` to the `ref` form, under which the compiler still stops at
+"Lowering function Sum(Counter)" as the fixture's EXPECT-CRASH says, and
+step 8's checker then reports 0 errors in both modes. Expected: 1978 of 1978;
 189/0/15 over 204. Gap-row check: no row named. Deferred to G-56: loops.md's
 rule, error_handling.md's date-order rule and W-323's discharge note; to
 G-57: the m57 refills (lower array/iterate, for/break_continue, for/for)
@@ -2732,7 +2741,12 @@ Appendix E's land-time text before step 9's search, which then finds no label
 (`git diff d13f47ea7 -- fork/inventory/work-items.json fork/gap-analysis.md |
 grep '^+' | grep -ciE 'not\s+of\s+record'` gives 0 on the records tree), and
 TP-1's item (h) is made by that replacement; at PR 62 W-011's notes; at PR 65
-W-109's notes; none at PR 67, 51, 63 and 68, and at PR 64 W-043's notes, where
+W-109's notes; none at PR 67, 51 and 68; at PR 63 W-321's notes, where PR 63's
+head brings a second label, "conformance 128/0/22 over 150 (container-local,
+EXPECTED, not of record)", beside trunk's own, found by step 9's search (the
+dry run's method missed it because W-321 already matched on trunk;
+amended 2026-11-02, PR 63's landing, the continuation implementer's report:
+ruling (18)); at PR 64 W-043's notes, where
 C.2's "Measured in the container (EXPECTED, not of record, R9)" sentence brings
 the label, found by step 9's search (amended 2026-11-02, PR 64's landing, the
 implementer's stop at step 9: ruling (15)), and CT-1's "Expected at CT-1, NOT of
@@ -5134,5 +5148,80 @@ landing's records commit (D-LAND-9 as amended by the first):
 > written. (2) The records commit's message names both A.10 marks of this
 > landing, W-043's notes (ruling (15)) and CT-1's Scoreboard paragraph (A.10's
 > prose rule as ruling (12) item (3b) widened it).
+>
+> (17) At PR 63's landing (stage 10), on the implementer's stop at step 8, the
+> checker's error on fixture X35: (1) A land-time fixture commit on top
+> of 64b028643, touching
+> fork/designdocs/samples/X35_template_for_tuple_cursor.carbon only, titled
+> "Land PR 63: fixture X35 takes DR-1a's ref cursor", with the landing's author,
+> committer and trailers: its lines 21 to 26, exactly
+>
+>     fn Next(unused self, cursor: (i32, i32)*) -> Core.Optional(i32) {
+>       if (cursor->0 >= cursor->1) {
+>         return Core.Optional(i32).None();
+>       }
+>       let v: i32 = cursor->0;
+>       (*cursor).0 = v + 1;
+>
+> become, exactly,
+>
+>     fn Next(unused self, ref cursor: (i32, i32)) -> Core.Optional(i32) {
+>       if (cursor.0 >= cursor.1) {
+>         return Core.Optional(i32).None();
+>       }
+>       let v: i32 = cursor.0;
+>       cursor.0 = v + 1;
+>
+> and no other line changes (the header comment, its EXPECT-CRASH and QUOTE
+> lines included). Before the commit, the compiler's run on the edited fixture
+> (the install of 64b028643, `carbon compile` as check_samples.py runs it) stops
+> with "Lowering function Sum(Counter)" in its output, rc 134; any other result
+> is STOPPED. The commit's message states: that DR-1a's `ref cursor` signature
+> of `Core.Iterate.Next` (core/prelude/iterate.carbon:17) made TP-1's
+> pointer-form fixture (2288e99f6, templates.md's W-264 limit) a compile error
+> where its EXPECT-CRASH expects a crash; the probe's result on the `ref` form
+> (rc 134, "Lowering function Sum(Counter)", function_context.cpp:264), so that
+> templates.md's W-264 sentence and W-264 stand; both check_samples.py outputs
+> on the commit (0 errors each); prek's fixpoint on the file; and that no code,
+> golden, program or prelude file changed, so the install 0.0.0-0.dev+64b028643,
+> the gate (1978 of 1978) and the conformance values (189/0/15 over 204, 49
+> of 56 bullets) stand and D-LAND-18 is unchanged. (2) Step 8 is then completed
+> on the tree with that commit: check_samples.py in both modes (0 errors each),
+> EV-1's checker, and the remaining step 8 checks; the land-time commits of
+> PR 63 are `git log --reverse --format=%h 5316f9931..HEAD`, the
+> refill 64b028643 and the fixture commit, and every records text that names the
+> land-time commits (`<land-time shas>`, A.3's row, A.4's paragraph, A.5's and
+> A.6's texts) names both. Step 9 follows section 2.10 and Appendix C.11 as
+> written. (3) In fork/land/land1-plan.md, section 2.10, directly before
+> "Expected: 1978 of 1978; 189/0/15 over 204. Gap-row check: no row named." (the
+> text following "(AUD-63-13)."), this sentence is inserted: "A land-time
+> fixture commit follows L-a (added 2026-11-02, PR 63's landing, the
+> implementer's stop at step 8: ruling (17)):
+> fork/designdocs/samples/X35_template_for_tuple_cursor.carbon, TP-1's fixture
+> for templates.md's W-264 limit (2288e99f6), implements `Core.Iterate.Next` in
+> the pointer form, which DR-1a's `ref cursor` signature
+> (core/prelude/iterate.carbon:17) turns from the expected crash into a compile
+> error; the commit "Land PR 63: fixture X35 takes DR-1a's ref cursor" rewrites
+> its `Next` to the `ref` form, under which the compiler still stops at
+> "Lowering function Sum(Counter)" as the fixture's EXPECT-CRASH says, and
+> step 8's checker then reports 0 errors in both modes."
+>
+> (18) At PR 63's landing (stage 10), before its review, on the continuation
+> implementer's report: (1) In fork/land/land1-plan.md, A.10 (the list itself,
+> not paragraph (15)'s quotation of it), the text "none at PR 67, 51, 63 and 68,
+> and at PR 64 W-043's notes, where" becomes "none at PR 67, 51 and 68; at
+> PR 63 W-321's notes, where PR 63's head brings a second label,
+> "conformance 128/0/22 over 150 (container-local, EXPECTED, not of record)",
+> beside trunk's own, found by step 9's search (the dry run's method missed it
+> because W-321 already matched on trunk; amended 2026-11-02, PR 63's landing,
+> the continuation implementer's report: ruling (18)); at PR 64 W-043's notes,
+> where"; no other word changes, and the mark on W-321's notes stands as
+> written. (2) Ruling (17) item (2)'s list of the records texts that name the
+> land-time commits is read as the texts whose templates carry
+> `<land-time shas>`, A.3's row and A.5's paragraph; A.4's paragraph and A.6's
+> text carry no such slot and name none, so the records edits are right as
+> written. The ruling's preamble cite "docs/design/templates.md:527-529" for
+> W-264's sentence, which no repository text carries, reads :525-529 on the
+> tree.
 
 <!-- google-doc-style-resume -->

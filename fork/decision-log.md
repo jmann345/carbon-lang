@@ -252,7 +252,8 @@ generics/terminology.md:100-103 and the parser at ac31fd198); work items W-320
 2026-10-21, DR-1 plan). (v) D-SL-17's literal-subscript rule, a fork spelling
 of indexing.md's `like i64`; work item W-326, blocked on `like` (added
 2026-10-21, DR-1 plan). (iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its
-fill c1cc72a09.
+fill c1cc72a09. (i) resolved 2026-10-21 by W-322's 22fe50ff8 and its fill
+f4660e409 on PR 62 (written 2026-11-02 at PR 63's landing, LAND-1).
 
 _V-3a register re-check, weekly upstream check 2026-10-26 (upstream 21c825a3f;
 the entry "Weekly upstream check 2026-10-26 (R32 direction register)" has the
@@ -394,6 +395,19 @@ re-review (the plan's RR4-m3), as DR-1b's records note on
 claude/carbon-fork-0-1-dr-idx first wrote it; range_for's 17/103 is against
 CT-1's text, and its L-a count is recorded at L-a against trunk's merged text
 (the plan's R-6 and RR4-m1).
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 63 by
+5316f9931 (GitHub merged_at 2026-11-02T13:10:10Z); container-measured (R33 (b)):
+gate 1978 of 1978, conformance 189/0/15 over 204; id re-scans: W-324 to
+W-327 and W-329 at DR-1's re-scan (its section 8 item 10) before the
+records commit's ledger edit: claude/carbon-fork-0-1-dr,
+origin/claude/carbon-fork-0-1-dr, origin/pr/63 and the /home/user/carbon-dr
+worktree (89aabd125, the head), and claude/carbon-fork-0-1-dr-idx,
+origin/claude/carbon-fork-0-1-dr-idx and the /home/user/carbon-dr-idx
+worktree (fee0ef31c), and trunk and the /home/user/carbon-trunk worktree
+(aba67cdbd), which contain 89aabd125; W-328 at it: none; moved to
+follow-ons: to item 16: loops.md's M-a rule and the m57 refills; to
+item 16: error_handling.md's rule, row 78's DR-0 sentence and W-323's note.
 
 ### RG-1: the V-3a register classified at f27a977d8 (2026-10-28)
 

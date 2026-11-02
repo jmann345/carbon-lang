@@ -5173,3 +5173,18 @@ measured is container-local, EXPECTED and not of record (R9). The scratch is
 -   **DR-1b.** Stacked on this branch (§3 items 5 to 8, B0 first on
     claude/carbon-fork-0-1-dr-idx); it merges after DR-1a through M-b, C-b
     and L-b.
+
+DR-1a landed on trunk (LAND-1, 2026-11-02): merged as PR 63 by 5316f9931 (head
+89aabd125, trunk before 62b1e6013; GitHub merged_at 2026-11-02T13:10:10Z) under
+R33, fork/land/land1-plan.md section 2.10; land-time commits 64b028643,
+aba67cdbd; container-measured (R33 (b)): gate 1978 of 1978, conformance 189
+PASS, 0 FAIL, 15 SKIP over 204, 49 of 56 bullets; id re-scans: W-324 to W-327
+and W-329 at DR-1's re-scan (its section 8 item 10) before the records commit's
+ledger edit: claude/carbon-fork-0-1-dr, origin/claude/carbon-fork-0-1-dr,
+origin/pr/63 and the /home/user/carbon-dr worktree (89aabd125, the head), and
+claude/carbon-fork-0-1-dr-idx, origin/claude/carbon-fork-0-1-dr-idx and the
+/home/user/carbon-dr-idx worktree (fee0ef31c), and trunk and the
+/home/user/carbon-trunk worktree (aba67cdbd), which contain 89aabd125; W-328 at
+it: none; moved to follow-ons: to item 16: loops.md's M-a rule and the m57
+refills; to item 16: error_handling.md's rule, row 78's DR-0 sentence and
+W-323's note.

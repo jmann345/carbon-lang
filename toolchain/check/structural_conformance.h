@@ -62,6 +62,15 @@ auto NoteStructuralConformanceFailure(Context& context, SemIR::LocId loc_id,
 auto FacetTypeHasStructuralRequirements(Context& context, SemIR::TypeId type_id)
     -> SemIR::NamedConstraintId;
 
+// Fork (SC-1, W-139): returns whether the specific `specific_id` gives a
+// `template` binding whose facet type has structural requirements an argument
+// that is checked-symbolic, or concrete and does not satisfy them. Such a
+// specific's definition is not instantiated: its caller's specific for each
+// concrete argument checks those requirements (deduce.cpp,
+// `ConvertBindingArg`) and requires the definition only where they hold.
+auto SpecificDefersStructuralChecks(Context& context,
+                                    SemIR::SpecificId specific_id) -> bool;
+
 // Returns the `template constraint` that declares the function `function_id`
 // as a structural requirement, or `None` if it is any other function.
 auto GetStructuralRequirementConstraint(Context& context,

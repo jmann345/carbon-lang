@@ -474,11 +474,14 @@ auto Internal::BeginPerformDelayedAction(Context& context) -> void {
   // this changes, we should push a region too.
   context.inst_block_stack().Push();
   context.pattern_block_stack().Push();
+  // Fork (SC-1, W-139): see `Context::delayed_action_depth`.
+  ++context.delayed_action_depth();
 }
 
 auto Internal::EndPerformDelayedAction(Context& context,
                                        SemIR::InstId result_id)
     -> SemIR::InstId {
+  --context.delayed_action_depth();
   // If the only created instruction is the result, then we can use it directly.
   auto contents = context.inst_block_stack().PeekCurrentBlockContents();
   auto pattern_contents =

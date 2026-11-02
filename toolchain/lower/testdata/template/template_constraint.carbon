@@ -393,6 +393,28 @@ fn Run() -> i32 {
   return P(c) * 2 + P(d) - 40;
 }
 
+// --- checked_caller.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Caller(C)` calls `CallGet(C)`; both are lowered per specific.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Caller[U: type](x: U) -> i32 { return CallGet(x); }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Run() -> i32 {
+  let c: C = {.v = 7};
+  return Caller(c);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

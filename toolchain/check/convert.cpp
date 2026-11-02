@@ -1973,6 +1973,28 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       if (lookup_result.has_error_value()) {
         return SemIR::ErrorInst::InstId;
       } else {
+        // Fork (SC-1, W-139; D-SC-19): the structural requirements of a
+        // template-dependent self were deferred, so the conversion is
+        // performed again, as an action, in each specific of the enclosing
+        // generic, where the self is concrete and a failure is diagnosed. A
+        // delayed action adds none: its specific's concrete counterparts
+        // perform it again (`Context::delayed_action_depth`).
+        if (target.diagnose &&
+            context.constant_values().GetDependence(
+                sem_ir.constant_values().Get(type_inst_id)) ==
+                SemIR::ConstantDependence::Template &&
+            context.delayed_action_depth() == 0 &&
+            !context.generic_region_stack().Empty() &&
+            FacetTypeHasStructuralRequirements(context, target.type_id)
+                .has_value()) {
+          AddDependentActionInst(
+              context, loc_id,
+              SemIR::ConvertToValueAction{
+                  .type_id = SemIR::InstType::TypeId,
+                  .inst_id = value_id,
+                  .target_type_inst_id =
+                      context.types().GetTypeInstId(target.type_id)});
+        }
         // Note that `FacetValue`'s type is the same `FacetType` that was used
         // to construct the set of witnesses, ie. the query to
         // `LookupImplWitness()`. This ensures that the witnesses are in the

@@ -12,8 +12,9 @@
 
 // A `template constraint` can only constrain a `template` binding (fork
 // decision F-010 / SC-1, fork/structural/plan.md D-SC-8(i)); a checked-generic
-// self never satisfies one (D-SC-6, the conservative answer to leads issue
-// 2153).
+// argument that a call passes to a `template` binding is checked in each
+// specific of its caller (W-139, as upstream decided leads issue 2153);
+// elsewhere a checked-generic self never satisfies one (D-SC-6).
 
 // --- fail_generic_binding.carbon
 library "[[@TEST_NAME]]";
@@ -69,9 +70,12 @@ fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 // CHECK:STDERR:
 fn Bad[T: HasGet & I](x: T) -> i32 { return CallGet(x); }
 
-// --- fail_symbolic_arg.carbon
+// --- symbolic_arg.carbon
 library "[[@TEST_NAME]]";
 
+// W-139 (leads issue 2153): a checked-generic argument passed to a `template`
+// binding constrained by a template constraint is checked in each specific of
+// `Caller`, here `Caller(C)`, so the definition checks.
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -79,25 +83,567 @@ template constraint HasGet {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Caller[U: type](x: U) -> i32 {
-  // CHECK:STDERR: fail_symbolic_arg.carbon:[[@LINE+10]]:10: error: cannot convert type `U` into type implementing `HasGet` [ConversionFailureTypeToFacet]
-  // CHECK:STDERR:   return CallGet(x);
-  // CHECK:STDERR:          ^~~~~~~~~~
-  // CHECK:STDERR: fail_symbolic_arg.carbon:[[@LINE+7]]:10: note: template constraint `HasGet` can only be satisfied by a concrete type; `U` is a checked generic binding [StructuralRequirementNeedsConcreteType]
-  // CHECK:STDERR:   return CallGet(x);
-  // CHECK:STDERR:          ^~~~~~~~~~
-  // CHECK:STDERR: fail_symbolic_arg.carbon:[[@LINE-9]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
-  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   return CallGet(x);
 }
 
-// --- fail_require_in_interface_symbolic.carbon
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return Caller(c); }
+
+// --- fail_symbolic_arg_unsatisfied.carbon
 library "[[@TEST_NAME]]";
 
-// Structural requirements are not forwarded through an interface's `require`
-// for a checked binding (D-SC-6, review fold B7; mirrors upstream's
-// interface/require.carbon `fail_todo_implicit_self_impls`).
+// W-139: the call is checked in `Caller(D)`, where `D` has no member `Get`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Caller[U: type](x: U) -> i32 {
+  return CallGet(x);
+}
+
+class D {
+  var v: i32;
+}
+
+fn Use(d: D) -> i32 { return Caller(d); }
+
+// --- fail_symbolic_arg_mismatch.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: the call is checked in `Caller(E)`, where `E.Get` returns `bool`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Caller[U: type](x: U) -> i32 {
+  return CallGet(x);
+}
+
+class E {
+  var v: i32;
+  fn Get(unused self) -> bool { return true; }
+}
+
+fn Use(e: E) -> i32 { return Caller(e); }
+
+// --- fail_symbolic_arg_result_misused.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: the call has `CallGet`'s declared return type, `i32`, in the checked
+// generic, so a misuse of the result is diagnosed at `Caller`'s definition,
+// as it is when the constraint is an interface.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Caller[U: type](x: U) -> i32 {
+  let unused b: bool = CallGet(x);
+  return 0;
+}
+
+// --- fail_symbolic_arg_result_member.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: a member access on the call's `i32` result is checked at `Caller`'s
+// definition.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Caller[U: type](x: U) -> i32 {
+  return CallGet(x).foo;
+}
+
+// --- fail_concrete_arg_beside_symbolic.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: only a checked-symbolic argument for the `template` binding is checked
+// per specific; the concrete `D` bound to `T` is checked at `H`'s definition.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn G[template T: HasGet, V: type](x: T, unused y: V) -> i32 { return x.Get(); }
+
+class D {
+  var v: i32;
+}
+
+fn H[U: type](d: D, u: U) -> i32 { return G(d, u); }
+
+// --- fail_symbolic_conversion.carbon
+library "[[@TEST_NAME]]";
+
+// D-SC-6 stays outside a call's template binding: a conversion of a
+// checked-symbolic type to a template constraint is rejected.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn Caller[U: type](unused x: U) {
+  let unused T: HasGet = U;
+}
+
+// --- symbolic_class_arg.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: a checked-generic argument for a generic class's `template` parameter
+// is checked in each specific of `Make`, here `Make(C)`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+}
+
+fn Make[U: type](unused x: U) -> i32 {
+  var h: Holder(U) = {.n = 3};
+  return h.n;
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return Make(c); }
+
+// --- fail_symbolic_class_arg_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Holder(U)` is checked in `Make(D)`, where `D` has no member `Get`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+}
+
+fn Make[U: type](unused x: U) -> i32 {
+  var h: Holder(U) = {.n = 3};
+  return h.n;
+}
+
+class D {
+  var v: i32;
+}
+
+fn Use(d: D) -> i32 { return Make(d); }
+
+// --- symbolic_interface_arg.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: a checked-generic argument for a generic interface's `template`
+// parameter, `J(U)`, is `U` converted to `HasGet` at `Use`'s definition, and
+// the blanket impl is found for it there; `J(C)` is checked in `Use(C)`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface J(template T: HasGet) {
+  fn F() -> i32;
+}
+
+impl forall [V: type] i32 as J(V) {
+  fn F() -> i32 { return 5; }
+}
+
+fn Use[U: type](unused x: U) -> i32 {
+  return i32.(J(U).F)();
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn UseC(c: C) -> i32 { return Use(c); }
+
+// --- fail_symbolic_interface_arg_no_impl.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `i32` implements `J(C)` only, so `J(U)` has no impl at `Use`'s
+// definition, as for an interface constraint.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface J(template T: HasGet) {
+  fn F() -> i32;
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+impl i32 as J(C) {
+  fn F() -> i32 { return 5; }
+}
+
+fn Use[U: type](unused x: U) -> i32 {
+  return i32.(J(U).F)();
+}
+
+// --- fail_symbolic_arg_return_type.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Id`'s declared return type `T` is `U` in `Caller`, so a misuse of
+// the result is diagnosed at `Caller`'s definition.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn Id[template T: HasGet](x: T) -> T { return x; }
+
+fn Caller[U: type](x: U) -> bool { return Id(x); }
+
+// --- fail_symbolic_arg_return_type_member.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: a member access on `Id(x)`, of type `U`, is checked at `Caller`'s
+// definition.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn Id[template T: HasGet](x: T) -> T { return x; }
+
+fn Caller[U: type](x: U) -> i32 { return Id(x).Missing(); }
+
+// --- fail_symbolic_class_member_result.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Holder(U).Make()` returns `U` in `Make`, so binding it to `bool` is
+// diagnosed at `Make`'s definition.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+  fn Make() -> T;
+}
+
+fn Make[U: type](unused x: U) -> i32 {
+  let unused b: bool = Holder(U).Make();
+  return 0;
+}
+
+// --- symbolic_class_param.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Holder(U)` is the same type at every mention, so `U` is deduced from
+// a `Holder(C)` argument.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+}
+
+fn Take[U: type](h: Holder(U)) -> i32 { return h.n; }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(h: Holder(C)) -> i32 { return Take(h); }
+
+// --- symbolic_class_param_redecl.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: a declaration and its definition name the same `Holder(U)`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+}
+
+fn Take[U: type](h: Holder(U)) -> i32;
+
+fn Take[U: type](h: Holder(U)) -> i32 { return h.n; }
+
+// --- symbolic_class_impl.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Holder(U)` in an impl's self type uses `U`, and the impl is found
+// for `Holder(C)`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+}
+
+interface Z {
+  fn F(self) -> i32;
+}
+
+impl forall [U: type] Holder(U) as Z {
+  fn F(self) -> i32 { return self.n; }
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(h: Holder(C)) -> i32 { return h.(Z.F)(); }
+
+// --- symbolic_class_forwarded.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Outer` passes its `Holder(U)` to `Inner`, which deduces its own `U`
+// from it at `Outer`'s definition.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Holder(template T: HasGet) {
+  var n: i32;
+}
+
+fn Inner[U: type](h: Holder(U)) -> i32 { return h.n; }
+
+fn Outer[U: type](unused x: U) -> i32 {
+  let h: Holder(U) = {.n = 6};
+  return Inner(h);
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return Outer(c); }
+
+// --- symbolic_arg_overload.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 with an `overload fn` set: the set is resolved at `Caller`'s
+// definition by declaration-order first match, and the first member accepts a
+// checked-symbolic `U` as the single function would, its structural
+// requirement waiting for `U` (OV-4's probe defers it too); so `Caller(C)`
+// calls the first member, as `Pick(c)` does.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+overload fn Pick[template T: HasGet](x: T) -> i32 { return x.Get(); }
+overload fn Pick[template T: type](unused x: T) -> i32 { return 7; }
+
+fn Caller[U: type](x: U) -> i32 { return Pick(x); }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return Caller(c) + Pick(c); }
+
+// --- symbolic_arg_overload_template_first.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 with an `overload fn` set: the template member accepts a
+// checked-symbolic `U` at `Caller`'s definition, before the `i32` member.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+overload fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+overload fn F(unused x: i32) -> i32 { return 2; }
+
+fn Caller[U: type](x: U) -> i32 { return F(x); }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return Caller(c); }
+
+// --- fail_todo_symbolic_arg_overload_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 with an `overload fn` set: `Caller` chose the first member at its
+// definition, so `Caller(D)` checks `HasGet` against `D`, which has no `Get`.
+// TODO: under issue 2153's monomorphization `Caller(D)` would go on to the
+// second member, as `Pick(d)` does, and return 7 (W-375).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+overload fn Pick[template T: HasGet](x: T) -> i32 { return x.Get(); }
+overload fn Pick[template T: type](unused x: T) -> i32 { return 7; }
+
+fn Caller[U: type](x: U) -> i32 { return Pick(x); }
+
+class D {
+  var v: i32;
+}
+
+fn Use(d: D) -> i32 { return Caller(d); }
+
+// --- symbolic_arg_through_template.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through a template: `Twice(U)`'s body passes `U` to `CallGet`, a
+// deduction performed while `Twice(U)` is resolved; the requirement waits for
+// the specific of `Twice` for each concrete argument, which performs that
+// deduction again.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+fn Twice[template T: type](x: T) -> i32 { return CallGet(x) * 2; }
+fn Caller[U: type](x: U) -> i32 { return Twice(x); }
+
+// --- symbolic_arg_through_template_use.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through a template, instantiated: `Caller(C)` resolves `Twice(C)`,
+// whose call `CallGet(C)` checks `HasGet` against `C`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+fn Twice[template T: type](x: T) -> i32 { return CallGet(x) * 2; }
+fn Caller[U: type](x: U) -> i32 { return Twice(x); }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+fn Use(c: C) -> i32 { return Caller(c); }
+
+// --- fail_symbolic_arg_through_template_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through a template: `Caller(D)` resolves `Twice(D)`, whose call
+// `CallGet(D)` finds no `Get` in `D`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+fn Twice[template T: type](x: T) -> i32 { return CallGet(x) * 2; }
+fn Caller[U: type](x: U) -> i32 { return Twice(x); }
+
+class D {
+  var v: i32;
+}
+
+fn Use(d: D) -> i32 { return Caller(d); }
+
+// --- symbolic_arg_return_type_used.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `Id(x)` has `Id`'s declared return type `T`, substituted with `U as
+// HasGet`, so the call has type `U` and `Caller` returns it as a `U`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn Id[template T: HasGet](x: T) -> T { return x; }
+
+fn Caller[U: type](x: U) -> U { return Id(x); }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+  impl as Core.Copy {
+    fn Op(self) -> Self { return {.v = self.v}; }
+  }
+}
+
+fn Use(c: C) -> i32 { return Caller(c).Get(); }
+
+// --- symbolic_arg_impl_thunk.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through an impl's thunk: `W`'s `F` has a `template` binding where
+// `I.F` has a checked `U`, so the thunk passes `U` to `F`'s `template T`, and
+// its structural requirement is checked in each specific of the thunk, here
+// for `C`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  fn F[U: type](x: U) -> i32;
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+}
+
+class W {}
+
+impl W as I {
+  fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+}
+
+fn Use(c: C) -> i32 { return W.(I.F)(c); }
+
+// --- fail_symbolic_arg_impl_thunk_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// W-139 through an impl's thunk: the thunk's specific for `D` checks `HasGet`
+// against `D`, which has no `Get`.
+// TODO: the specific of `F` for `D` is reported after it (W-376).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  fn F[U: type](x: U) -> i32;
+}
+
+class D {
+  var v: i32;
+}
+
+class W {}
+
+impl W as I {
+  fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
+}
+
+fn Use(d: D) -> i32 { return W.(I.F)(d); }
+
+// --- require_in_interface_symbolic.carbon
+library "[[@TEST_NAME]]";
+
+// W-139: `G`'s `T: I` is checked-symbolic, and the call that passes `x` to a
+// `template` binding is checked in each specific of `G`, here `G(C)`, so the
+// definition checks. A structural requirement is still not forwarded through
+// an interface's `require` to a member lookup in the checked binding itself,
+// `x.Get()` in `G` (W-140; mirrors upstream's interface/require.carbon
+// `fail_todo_implicit_self_impls`).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -109,18 +655,16 @@ interface I {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn G[T: I](x: T) -> i32 {
-  // CHECK:STDERR: fail_require_in_interface_symbolic.carbon:[[@LINE+10]]:10: error: cannot convert type `T` that implements `I` into type implementing `HasGet` [ConversionFailureFacetToFacet]
-  // CHECK:STDERR:   return CallGet(x);
-  // CHECK:STDERR:          ^~~~~~~~~~
-  // CHECK:STDERR: fail_require_in_interface_symbolic.carbon:[[@LINE+7]]:10: note: template constraint `HasGet` can only be satisfied by a concrete type; `T` is a checked generic binding [StructuralRequirementNeedsConcreteType]
-  // CHECK:STDERR:   return CallGet(x);
-  // CHECK:STDERR:          ^~~~~~~~~~
-  // CHECK:STDERR: fail_require_in_interface_symbolic.carbon:[[@LINE-9]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
-  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   return CallGet(x);
 }
+
+class C {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+  impl as I {}
+}
+
+fn Use(c: C) -> i32 { return G(c); }
 
 // --- fail_require_in_interface_blanket.carbon
 library "[[@TEST_NAME]]";

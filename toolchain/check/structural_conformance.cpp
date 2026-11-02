@@ -94,8 +94,10 @@ struct ComparisonSpecifics {
 
 }  // namespace
 
-// D-SC-19: a template-phase self reaches the check only through the `require`
-// entry point (`CheckRequireDeclsSatisfied`), where it is deferred.
+// D-SC-19: a template-phase self is deferred. At the `require` entry point
+// (`CheckRequireDeclsSatisfied`) it is checked at monomorphization; fork (SC-1,
+// W-139): a conversion of it to a facet type adds a requirement that each
+// specific performs (convert.cpp, `PerformBuiltinConversion`).
 static auto SelfIsTemplatePhase(Context& context, SemIR::ConstantId self)
     -> bool {
   return context.constant_values().GetDependence(self) ==
@@ -568,7 +570,20 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
     // D-SC-6: a checked-symbolic self never satisfies a structural
     // requirement. (A checked binding whose own facet type names a template
     // constraint has an error type, D-SC-8(i), so it is not such a self.)
+    // Fork (SC-1, W-139): except when a call passes it to a `template`
+    // binding, whose requirements are checked in each specific of the caller
+    // instead (deduce.cpp, `ConvertBindingArg`), and in a delayed action, whose
+    // checked-symbolic self is an argument of the specific being resolved and
+    // is checked when the specific for a concrete argument performs the action
+    // again (`Context::delayed_action_depth`).
     if (self.is_symbolic()) {
+      if (auto* deferrals = context.structural_check_deferrals()) {
+        ++*deferrals;
+        continue;
+      }
+      if (context.delayed_action_depth() > 0) {
+        continue;
+      }
       if (mode.explain) {
         CARBON_DIAGNOSTIC(StructuralRequirementNeedsConcreteType, Note,
                           "template constraint `{0}` can only be satisfied by "
@@ -664,6 +679,55 @@ auto NoteStructuralConformanceFailure(Context& context, SemIR::LocId loc_id,
   }
   CheckRequirements(context, loc_id, identified_id,
                     {.diagnose = false, .explain = &builder});
+}
+
+auto SpecificDefersStructuralChecks(Context& context,
+                                    SemIR::SpecificId specific_id) -> bool {
+  if (!specific_id.has_value()) {
+    return false;
+  }
+  const auto& specific = context.specifics().Get(specific_id);
+  auto binding_ids = context.inst_blocks().Get(
+      context.generics().Get(specific.generic_id).bindings_id);
+  auto arg_ids = context.inst_blocks().GetOrEmpty(specific.args_id);
+  for (auto [binding_id, arg_id] : llvm::zip(binding_ids, arg_ids)) {
+    auto binding = context.insts().TryGetAs<SemIR::SymbolicBinding>(binding_id);
+    if (!binding ||
+        !context.entity_names().Get(binding->entity_name_id).is_template ||
+        !FacetTypeHasStructuralRequirements(context, binding->type_id)
+             .has_value()) {
+      continue;
+    }
+    auto arg_const_id = context.constant_values().Get(arg_id);
+    if (arg_const_id.is_symbolic()) {
+      if (context.constant_values().GetDependence(arg_const_id) ==
+          SemIR::ConstantDependence::Checked) {
+        return true;
+      }
+      continue;
+    }
+    // A concrete argument that does not satisfy the requirements reaches a
+    // specific only through a deferred check, which the caller's specific has
+    // diagnosed; the callee is not instantiated for it, as it is not for an
+    // argument that fails a call's deduction. The check is silent, and the
+    // instructions its member lookups make are discarded.
+    context.inst_block_stack().Push();
+    auto identified_id = TryToIdentifyFacetType(
+        context, SemIR::LocId(arg_id),
+        GetCanonicalQuerySelfForLookupImplWitness(context, arg_const_id),
+        context.types().GetTypeInstId(context.insts().Get(arg_id).type_id()),
+        /*allow_partially_identified=*/false);
+    bool satisfied =
+        identified_id.has_value() &&
+        CheckStructuralRequirements(context, SemIR::LocId(arg_id),
+                                    identified_id, /*diagnose=*/false) ==
+            StructuralCheckResult::Satisfied;
+    context.inst_block_stack().PopAndDiscard();
+    if (!satisfied) {
+      return true;
+    }
+  }
+  return false;
 }
 
 auto FacetTypeHasStructuralRequirements(Context& context, SemIR::TypeId type_id)

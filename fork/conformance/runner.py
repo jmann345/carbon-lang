@@ -39,6 +39,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # simply passed sorted by filename with main.carbon last. Any unit's
 # compile failure is the ordinary COMPILE-FAIL status (no new fail class).
 #
+# External-build programs: a program with a `// BUILD-SCRIPT:` directive is
+# arbitrated by a build-system example instead of by the runner's own
+# compile/link/run. The directive names a repository-root-relative script
+# (plus optional whitespace-split arguments); the runner issues no compile,
+# link or run of its own and instead runs the script from the repository
+# root with CARBON_TOOLCHAIN=<toolchain directory>, CARBON=<the --toolchain
+# path> and CARBON_BUILD_DIR=<out>/build/<name> in the environment, under
+# the link timeout (the first `carbon link` builds the runtimes), then
+# applies EXPECT-EXIT to the script's exit code and EXPECT-STDOUT to its
+# stdout unchanged. Exit 2 is COMPILE-FAIL, exit 3 is LINK-FAIL, any other
+# unexpected exit (or a timeout) is RUN-FAIL, a stdout mismatch is
+# OUTPUT-MISMATCH — existing classes only. The program's body must be
+# byte-identical to a file the script builds (`--self-test`'s identity
+# rule), so the promoted program IS one of the example's own units:
+#
+#     cd <repository root>
+#     CARBON_TOOLCHAIN=<root> CARBON=<carbon> \
+#         CARBON_BUILD_DIR=<out>/build/<name> \
+#         <script> [args...]    # link timeout, capture exit code + stdout
+#
 # Differential Carbon-vs-C++ checking: a program `<name>.carbon` may have a
 # sibling `<name>.diff.cpp` — an equivalent plain C++17 program. When present,
 # after the Carbon binary runs (and passes its EXPECT-* checks, which stay
@@ -82,6 +102,7 @@ import contextlib
 import inspect
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -121,6 +142,9 @@ BULLET_SKIP = "SKIP"  # all of the bullet's programs are SKIPped
 BULLET_NOT_WRITTEN = "NOT-WRITTEN"
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+# The repository root (fork/conformance/ is two levels down): BUILD-SCRIPT
+# paths resolve against it and the scripts run from it.
+REPO_ROOT = SCRIPT_DIR.parent.parent
 DEFAULT_PROGRAMS_DIR = SCRIPT_DIR / "programs"
 GAP_ANALYSIS = SCRIPT_DIR.parent / "gap-analysis.md"
 
@@ -141,6 +165,7 @@ DIRECTIVE_PREFIXES = (
     "// EXPECT-EXIT:",
     "// EXPECT-STDOUT:",
     "// SKIP:",
+    "// BUILD-SCRIPT:",
 )
 
 
@@ -168,6 +193,11 @@ class Program:
         # toolchain's own clang++ and requires exit code and stdout to be
         # byte-identical to the Carbon program's.
         self.diff_cpp = None
+        # External-build arbitration (from `// BUILD-SCRIPT:`): the
+        # repository-root-relative script path followed by its arguments.
+        # When set, the runner runs the script instead of its own
+        # compile/link/run (see the header comment and README.md).
+        self.build_script = None
 
 
 def parse_directives(path, rel):
@@ -179,6 +209,7 @@ def parse_directives(path, rel):
       // EXPECT-EXIT: <int>                          (default 0)
       // EXPECT-STDOUT:                              (then `//   <line>` lines)
       // SKIP: <reason>
+      // BUILD-SCRIPT: <repository-root-relative script> [args...]
     """
     prog = Program(path, rel)
     lines = path.read_text(encoding="utf-8").splitlines()
@@ -232,6 +263,11 @@ def parse_directives(path, rel):
             prog.skip_reason = (
                 comment[len("// SKIP:") :].strip() or "(no reason)"
             )
+        elif comment.startswith("// BUILD-SCRIPT:"):
+            value = comment[len("// BUILD-SCRIPT:") :].strip()
+            if not value:
+                raise DirectiveError(f"{rel}: BUILD-SCRIPT needs a script path")
+            prog.build_script = value.split()
 
     if prog.expect_stdout is not None:
         prog.expect_stdout = "".join(ln + "\n" for ln in stdout_lines)
@@ -374,7 +410,44 @@ def discover_multi_unit_programs(programs_dir, filter_substr):
     return programs, errors, unit_files
 
 
-def discover_programs(programs_dir, filter_substr):
+def validate_build_script(prog, root):
+    """Guard rails for a program carrying `// BUILD-SCRIPT:`.
+
+    The directive replaces the runner's own compile/link/run, so it cannot
+    combine with anything that configures them: COMPILE-ARGS, a multi-unit
+    directory, or a differential `.diff.cpp` sibling. The script, resolved
+    against `root` (the repository root), must exist and be executable.
+    Raises DirectiveError.
+    """
+    if prog.compile_args:
+        raise DirectiveError(
+            f"{prog.rel}: BUILD-SCRIPT cannot combine with COMPILE-ARGS "
+            f"(the script owns the build)"
+        )
+    if len(prog.units) > 1:
+        raise DirectiveError(
+            f"{prog.rel}: BUILD-SCRIPT is for single-file programs only; "
+            f"a multi-unit directory program cannot carry it"
+        )
+    if prog.diff_cpp is not None:
+        raise DirectiveError(
+            f"{prog.rel}: BUILD-SCRIPT cannot combine with a differential "
+            f"{prog.diff_cpp.name} sibling"
+        )
+    script = root / prog.build_script[0]
+    if not script.is_file():
+        raise DirectiveError(
+            f"{prog.rel}: BUILD-SCRIPT names {prog.build_script[0]!r}, "
+            f"which does not exist under {root}"
+        )
+    if not os.access(script, os.X_OK):
+        raise DirectiveError(
+            f"{prog.rel}: BUILD-SCRIPT {prog.build_script[0]!r} is not "
+            f"executable"
+        )
+
+
+def discover_programs(programs_dir, filter_substr, root=REPO_ROOT):
     programs, errors, unit_files = discover_multi_unit_programs(
         programs_dir, filter_substr
     )
@@ -393,6 +466,20 @@ def discover_programs(programs_dir, filter_substr):
         if diff_cpp.is_file():
             prog.diff_cpp = diff_cpp
         programs.append(prog)
+    # External-build programs: the directive's guard rails (combination
+    # with COMPILE-ARGS / multi-unit / differential; script existence and
+    # executability) are discovery errors, so --self-test and every run see
+    # them before any toolchain is touched.
+    valid = []
+    for prog in programs:
+        if prog.build_script is not None:
+            try:
+                validate_build_script(prog, root)
+            except DirectiveError as e:
+                errors.append(str(e))
+                continue
+        valid.append(prog)
+    programs = valid
     # Deterministic order across both kinds: sort by path components of the
     # program's rel. For the pre-existing single-file corpus this
     # parts-based key matches the historical sorted-rglob (Path) order on
@@ -450,7 +537,30 @@ def find_clangxx(toolchain):
     return None
 
 
-def run_cmd(cmd, timeout):
+def toolchain_root(toolchain):
+    """The toolchain directory (the parent of bin/carbon) for a `carbon` path.
+
+    Probes the same two install-tree layouts as find_clangxx: the entry
+    point <root>/bin/carbon (two levels up) and its resolved target
+    <root>/lib/carbon/carbon-busybox (three levels up), accepting the
+    candidate that holds lib/carbon. When neither does — the stub-toolchain
+    fixtures of --self-test are a bare `carbon` in a directory — the
+    resolved binary's own directory is returned, so a real but mislaid
+    toolchain fails inside the build script as a named error (its exit 66,
+    RUN-FAIL) rather than here.
+    """
+    resolved = toolchain.resolve()
+    candidates = [
+        toolchain.parent.parent,
+        resolved.parent.parent.parent,
+    ]
+    for root in candidates:
+        if (root / "lib" / "carbon").is_dir():
+            return root
+    return resolved.parent
+
+
+def run_cmd(cmd, timeout, cwd=None, env=None):
     """Run a command; returns (returncode, stdout, stderr, timed_out)."""
     try:
         proc = subprocess.run(
@@ -459,6 +569,8 @@ def run_cmd(cmd, timeout):
             text=True,
             errors="replace",
             timeout=timeout,
+            cwd=cwd,
+            env=env,
         )
         return proc.returncode, proc.stdout, proc.stderr, False
     except subprocess.TimeoutExpired as e:
@@ -482,16 +594,78 @@ def write_log(log_dir, prog, sections):
     return log_path
 
 
-def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
+def run_build_script(prog, toolchain, out_dir, timeouts, repo_root):
+    """Arbitrate an external-build program through its BUILD-SCRIPT.
+
+    Runs `<repo_root>/<script> [args...]` from the repository root with
+    CARBON_TOOLCHAIN (the toolchain directory), CARBON (the toolchain path
+    the runner was given) and CARBON_BUILD_DIR (<out>/build/<name>) in the
+    environment, under the link timeout, then applies EXPECT-EXIT to the
+    script's exit code and EXPECT-STDOUT to its stdout. Status mapping uses
+    existing classes only: exit 2 -> COMPILE-FAIL, exit 3 -> LINK-FAIL,
+    any other exit that is not EXPECT-EXIT (or a timeout) -> RUN-FAIL,
+    stdout mismatch -> OUTPUT-MISMATCH. Returns (status, detail).
+    """
+    log_dir = out_dir / "logs"
+    build_dir = out_dir / "build" / prog.name
+    build_dir.mkdir(parents=True, exist_ok=True)
+    script_cmd = [repo_root / prog.build_script[0], *prog.build_script[1:]]
+    env = dict(os.environ)
+    env["CARBON_TOOLCHAIN"] = str(toolchain_root(toolchain))
+    env["CARBON"] = str(toolchain)
+    env["CARBON_BUILD_DIR"] = str(build_dir)
+    rc, out, err, timed_out = run_cmd(
+        script_cmd, timeouts["link"], cwd=repo_root, env=env
+    )
+    command = " ".join(str(c) for c in script_cmd)
+    if timed_out:
+        detail = (
+            f"build script did not finish within {timeouts['link']}s "
+            "(note: the first link builds runtimes on demand)"
+        )
+        status = RUN_FAIL
+    elif rc == 2:
+        detail = "build script exited with 2 (configure or compile failed)"
+        status = COMPILE_FAIL
+    elif rc == 3:
+        detail = "build script exited with 3 (link failed)"
+        status = LINK_FAIL
+    elif rc != prog.expect_exit:
+        detail = f"build script exited with {rc}, expected {prog.expect_exit}"
+        status = RUN_FAIL
+    elif prog.expect_stdout is not None and out != prog.expect_stdout:
+        detail = "build script stdout does not match EXPECT-STDOUT"
+        status = OUTPUT_MISMATCH
+    else:
+        return PASS, ""
+    sections = [("command", command), ("detail", detail)]
+    if status == OUTPUT_MISMATCH:
+        sections.append(("expected stdout", prog.expect_stdout))
+        sections.append(("actual stdout", out))
+    else:
+        sections.append(("stdout", out))
+    sections.append(("stderr", err))
+    write_log(log_dir, prog, sections)
+    return status, detail
+
+
+def execute_program(
+    prog, toolchain, clangxx, out_dir, timeouts, repo_root=REPO_ROOT
+):
     """Compile, link, and run one program. Returns (status, detail).
 
     If the program has a `<name>.diff.cpp` differential sibling, the C++
     file is additionally compiled with the toolchain's clang++ and run; its
     exit code and stdout must be byte-identical to the Carbon program's
     (on top of any EXPECT-* directives, which stay authoritative).
+
+    A program with a BUILD-SCRIPT directive is handed to its script instead
+    (run_build_script); nothing below applies to it.
     """
     if prog.skip_reason:
         return SKIP, prog.skip_reason
+    if prog.build_script is not None:
+        return run_build_script(prog, toolchain, out_dir, timeouts, repo_root)
 
     obj_dir = out_dir / "obj"
     bin_dir = out_dir / "bin"
@@ -766,6 +940,8 @@ def generate_program_table(programs):
             kind.append(f"multi-unit ({len(prog.units)} units)")
         if prog.diff_cpp is not None:
             kind.append("differential")
+        if prog.build_script is not None:
+            kind.append("external-build")
         lines.append(
             "| `%s` | %s | %s |"
             % (
@@ -1035,6 +1211,7 @@ def directive_sync_self_check():
             "// EXPECT-STDOUT:\n"
             "//   hi\n"
             "// SKIP: soon\n"
+            "// BUILD-SCRIPT: examples/x/test.sh --only y\n"
             "fn Run() {}\n",
             encoding="utf-8",
         )
@@ -1045,6 +1222,10 @@ def directive_sync_self_check():
         "// EXPECT-EXIT:": prog.expect_exit == 7,
         "// EXPECT-STDOUT:": prog.expect_stdout == "hi\n",
         "// SKIP:": prog.skip_reason == "soon",
+        # The combination guard (BUILD-SCRIPT with COMPILE-ARGS) lives in
+        # discovery, so this parse-only fixture may carry both.
+        "// BUILD-SCRIPT:": prog.build_script
+        == ["examples/x/test.sh", "--only", "y"],
     }
     check(
         set(effects) == set(DIRECTIVE_PREFIXES),
@@ -1144,6 +1325,14 @@ def execution_self_check():
       - middle-unit COMPILE-FAIL: the detail names the unit, the compile
         loop stops at it, and no link is attempted.
       - LINK-FAIL: all units compile, exactly one link attempt, no run.
+      - BUILD-SCRIPT PASS: the script (not the stub) runs from the given
+        repository root with CARBON_TOOLCHAIN = the stub's directory (the
+        toolchain_root fallback: the stub has no lib/carbon), CARBON = the
+        stub path and CARBON_BUILD_DIR = <out>/build/<name>; its stdout is
+        checked against EXPECT-STDOUT; `external_build` is true in the
+        scoreboard entry; no stub compile/link/run happens for it.
+      - BUILD-SCRIPT exit 2 -> COMPILE-FAIL; stdout `bye` against an
+        expected `hi` -> OUTPUT-MISMATCH.
 
     Returns (failures, skip_reason): skip_reason is non-None when the
     platform cannot exec the stub script (for example a noexec temp
@@ -1184,11 +1373,49 @@ def execution_self_check():
             "exec/midfail/main.carbon": header + "fn Run() {}\n",
             "exec/linkfail_prog/a_base.carbon": 'library "base";\n',
             "exec/linkfail_prog/main.carbon": header + "fn Run() {}\n",
+            # BUILD-SCRIPT programs: the scripts live under the temp root,
+            # which main() is told is the repository root.
+            "exec/build_pass.carbon": header
+            + "// BUILD-SCRIPT: scripts/pass.sh --only y\n"
+            + "// EXPECT-STDOUT:\n//   hi\nfn Run() {}\n",
+            "exec/build_fail2.carbon": header
+            + "// BUILD-SCRIPT: scripts/fail2.sh\nfn Run() {}\n",
+            "exec/build_bye.carbon": header
+            + "// BUILD-SCRIPT: scripts/bye.sh\n"
+            + "// EXPECT-STDOUT:\n//   hi\nfn Run() {}\n",
         }
         for relpath, text in files.items():
             path = progs_dir / relpath
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
+        env_record = root / "env.json"
+        scripts = {
+            # Records its arguments, working directory and the three
+            # environment variables, then prints `hi`.
+            "scripts/pass.sh": (
+                f"#!{sys.executable}\n"
+                "import json, os, sys\n"
+                f"with open({str(env_record)!r}, 'w', encoding='utf-8') as f:\n"
+                "    json.dump({'argv': sys.argv[1:], 'cwd': os.getcwd(),"
+                " 'env': {k: os.environ.get(k) for k in"
+                " ('CARBON_TOOLCHAIN', 'CARBON', 'CARBON_BUILD_DIR')}}, f)\n"
+                "sys.stdout.write('hi\\n')\n"
+            ),
+            "scripts/fail2.sh": (
+                f"#!{sys.executable}\n"
+                "import sys\n"
+                "sys.stderr.write('stub build script: compile failed\\n')\n"
+                "sys.exit(2)\n"
+            ),
+            "scripts/bye.sh": (
+                f"#!{sys.executable}\nimport sys\nsys.stdout.write('bye\\n')\n"
+            ),
+        }
+        for relpath, text in scripts.items():
+            path = root / relpath
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+            path.chmod(0o755)
 
         out_dir = root / "out"
         with contextlib.redirect_stdout(io.StringIO()):
@@ -1200,9 +1427,11 @@ def execution_self_check():
                     str(progs_dir),
                     "--out",
                     str(out_dir),
+                    "--repo-root",
+                    str(root),
                 ]
             )
-        check(rc == 1, f"main() exited {rc}, expected 1 (2 failing programs)")
+        check(rc == 1, f"main() exited {rc}, expected 1 (4 failing programs)")
 
         scoreboard_path = out_dir / "scoreboard.json"
         check(scoreboard_path.is_file(), "scoreboard.json not written")
@@ -1344,7 +1573,132 @@ def execution_self_check():
             f"exactly one binary run expected (the PASS program), "
             f"got {len(runs)}",
         )
+
+        # --- BUILD-SCRIPT PASS: the script ran, with the contract's
+        # environment, from the repository root; no stub involvement. ---
+        entry = entries.get("exec/build_pass.carbon", {})
+        check(
+            entry.get("status") == PASS,
+            f"exec/build_pass: {entry.get('status')} "
+            f"({entry.get('detail')}), expected PASS",
+        )
+        check(
+            entry.get("external_build") is True,
+            f"exec/build_pass scoreboard external_build = "
+            f"{entry.get('external_build')!r}, expected True",
+        )
+        check(env_record.is_file(), "build script pass.sh did not run")
+        if env_record.is_file():
+            record = json.loads(env_record.read_text(encoding="utf-8"))
+            check(
+                record.get("argv") == ["--only", "y"],
+                f"build script arguments wrong: {record.get('argv')}",
+            )
+            check(
+                Path(record.get("cwd", "")).resolve() == root.resolve(),
+                f"build script must run from the repository root: "
+                f"{record.get('cwd')}",
+            )
+            env = record.get("env", {})
+            check(
+                env.get("CARBON_TOOLCHAIN") == str(stub_dir),
+                f"CARBON_TOOLCHAIN = {env.get('CARBON_TOOLCHAIN')!r}, "
+                f"expected the stub's directory {str(stub_dir)!r}",
+            )
+            check(
+                env.get("CARBON") == str(stub.resolve()),
+                f"CARBON = {env.get('CARBON')!r}, expected the stub path",
+            )
+            check(
+                env.get("CARBON_BUILD_DIR")
+                == str(out_dir / "build" / "exec_build_pass"),
+                f"CARBON_BUILD_DIR = {env.get('CARBON_BUILD_DIR')!r}",
+            )
+        check(
+            not any("exec_build_pass" in out_name(r) for r in records),
+            "a BUILD-SCRIPT program must not reach the stub toolchain",
+        )
+
+        # --- BUILD-SCRIPT exit 2 -> COMPILE-FAIL. ---
+        entry = entries.get("exec/build_fail2.carbon", {})
+        check(
+            entry.get("status") == COMPILE_FAIL,
+            f"exec/build_fail2: {entry.get('status')}, expected COMPILE-FAIL",
+        )
+        check(
+            "exited with 2" in entry.get("detail", ""),
+            f"COMPILE-FAIL detail must name the exit code: "
+            f"{entry.get('detail')!r}",
+        )
+
+        # --- BUILD-SCRIPT wrong stdout -> OUTPUT-MISMATCH. ---
+        entry = entries.get("exec/build_bye.carbon", {})
+        check(
+            entry.get("status") == OUTPUT_MISMATCH,
+            f"exec/build_bye: {entry.get('status')}, expected OUTPUT-MISMATCH",
+        )
     return failures, None
+
+
+def leading_comment_block_end(text):
+    """Index of the first code line of a file: the first non-blank line
+    that does not start with `//` (parse_directives' notion of where the
+    leading comment block ends). Returns len(lines) for a file of comments.
+    """
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == "":
+            continue
+        if not stripped.startswith("//"):
+            return i
+    return len(lines)
+
+
+def program_body(path):
+    """A file's text after its leading comment block."""
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines(keepends=True)
+    return "".join(lines[leading_comment_block_end(text) :])
+
+
+def build_script_self_check(programs, root=REPO_ROOT):
+    """The identity rule for BUILD-SCRIPT programs.
+
+    A promoted program must BE a file its script builds: its body (the
+    text after the leading comment block, so the directive header does not
+    count) must be byte-identical to the body of exactly one `.carbon` file
+    under the script's directory tree, each file stripped of its own
+    leading comment block (the license header). Drift between the program
+    and the example fails here. Also re-checks that the script exists and
+    is executable. Returns a list of failure strings; empty means OK.
+    """
+    failures = []
+    for prog in programs:
+        if prog.build_script is None:
+            continue
+        script = root / prog.build_script[0]
+        if not script.is_file() or not os.access(script, os.X_OK):
+            failures.append(
+                f"build-script self-check: {prog.rel}: "
+                f"{prog.build_script[0]} is missing or not executable"
+            )
+            continue
+        body = program_body(prog.path)
+        matches = [
+            candidate.relative_to(root).as_posix()
+            for candidate in sorted(script.parent.rglob("*.carbon"))
+            if program_body(candidate) == body
+        ]
+        if len(matches) != 1:
+            failures.append(
+                f"build-script self-check: {prog.rel}: the program body "
+                f"must be byte-identical to exactly one .carbon file under "
+                f"{script.parent.relative_to(root).as_posix()}/ (after each "
+                f"file's leading comment block); found {len(matches)}: "
+                f"{matches}"
+            )
+    return failures
 
 
 def self_test(programs_dir, filter_substr):
@@ -1407,6 +1761,16 @@ def self_test(programs_dir, filter_substr):
                 f"{GAP_ANALYSIS.name} table:\n  {prog.bullet!r}",
                 file=sys.stderr,
             )
+    # BUILD-SCRIPT programs must be byte-identical to a file their script
+    # builds (the identity rule), so the promoted program proves the
+    # example and not a retyped copy.
+    build_failures = build_script_self_check(programs)
+    for failure in build_failures:
+        ok = False
+        print(failure, file=sys.stderr)
+    print(
+        f"build-script self-check: {'OK' if not build_failures else 'ERRORS'}"
+    )
     if (
         not filter_substr
         and update_readme_table(programs, check_only=True) != 0
@@ -1429,6 +1793,8 @@ def self_test(programs_dir, filter_substr):
                 )
             if prog.diff_cpp is not None:
                 marks.append("diff: C++")
+            if prog.build_script is not None:
+                marks.append("build: " + " ".join(prog.build_script))
             if prog.compile_args:
                 marks.append("args: " + " ".join(prog.compile_args))
             if len(prog.units) > 1:
@@ -1518,6 +1884,14 @@ def main(argv=None):
         help="programs directory (default: fork/conformance/programs)",
     )
     parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=REPO_ROOT,
+        help="repository root that BUILD-SCRIPT paths resolve against and "
+        "that the scripts run from (default: the checkout holding this "
+        "runner; --self-test points it at a fixture tree)",
+    )
+    parser.add_argument(
         "--update-readme-table",
         action="store_true",
         help="Regenerate the program table in README.md "
@@ -1578,7 +1952,9 @@ def main(argv=None):
         return 2
 
     bullets = load_gap_analysis_bullets(GAP_ANALYSIS)
-    programs, errors = discover_programs(args.programs, args.filter)
+    programs, errors = discover_programs(
+        args.programs, args.filter, root=args.repo_root
+    )
     if errors:
         for e in errors:
             print(f"directive error: {e}", file=sys.stderr)
@@ -1601,7 +1977,7 @@ def main(argv=None):
     started = time.time()
     for prog in programs:
         status, detail = execute_program(
-            prog, toolchain, clangxx, out_dir, timeouts
+            prog, toolchain, clangxx, out_dir, timeouts, args.repo_root
         )
         results[prog.rel] = (status, detail)
         line = f"[{status}] {prog.rel}"
@@ -1638,6 +2014,7 @@ def main(argv=None):
                 "status": results[prog.rel][0],
                 "detail": results[prog.rel][1],
                 "differential": prog.diff_cpp is not None,
+                "external_build": prog.build_script is not None,
                 # `units` appears for multi-unit programs only, so
                 # single-file entries stay byte-identical to before the
                 # multi-unit harness slice (W69h).

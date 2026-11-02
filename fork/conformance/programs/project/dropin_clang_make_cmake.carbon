@@ -3,19 +3,34 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems
+// BUILD-SCRIPT: examples/cmake/test.sh --only mixed
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   built by a drop-in Clang build-system example
-// SKIP: known-missing slice — Make/CMake integration of the drop-in Clang mode is unexercised and undocumented in-repo: the 0.1 arbiter (fork/gap-analysis.md, "Project/toolchain product features" section) requires a CI-tested example CMake project building a mixed Carbon/C++ program with the installed toolchain plus written Make-integration docs, and neither exists (no CMakeLists.txt or Makefile example anywhere; examples/bazel/ is the only downstream build-system example, and docs/ has no Make/CMake guide). This harness also cannot arbitrate it: runner.py only runs `carbon compile`/`carbon link` on single Main//default .carbon files and cannot drive an external build system. The underlying functionality does work when driven by hand against this exact install tree (nightly 2026.07.19): lib/carbon/llvm/bin/clang++ built and ran a std::cout C++ hello world both via `make` with CXX=<symlink> and via `cmake -DCMAKE_CXX_COMPILER=<symlink>` + `cmake --build` (configure detects "clang version 23.0.0git"), each printing the expected line with exit 0 — so the gap is in-repo integration, CI coverage, and documentation, not the drop-in toolchain itself. Un-SKIP (and move the arbitration to that example's CI) when the CMake example project and Make docs land.
+//   42
 //
-// Body below is the Carbon half such a mixed Carbon/C++ CMake/Make example
-// would build (the shape install_test.py's test_carbon_end_to_end compiles
-// and links against the installed tree); kept valid so the program can be
-// promoted when the integration slice lands.
+// Un-SKIPped by the CM-1 landing (fork/cmake/plan.md §3, commit 2 of 3) on
+// nightly 0.0.0-0.nightly.2026.10.12+62f1cc6: the arbiter is
+// examples/cmake/test.sh --only mixed, which builds the mixed Carbon/C++
+// program of examples/cmake three ways (CMake with the Unix Makefiles and
+// Ninja generators, the checked-in Makefile) with the C++ half compiled by
+// the toolchain's drop-in lib/carbon/llvm/bin/clang++ (CMAKE_CXX_COMPILER
+// under CMake, `CXX :=` under Make) and the whole program linked by
+// `carbon link`, then runs it from each build and requires the outputs to
+// agree. The marker line is printed by C++ (std::cout in mixed/twice.cpp);
+// 42 is Core.Print(Cpp.Twice(21)) from Carbon.
+//
+// Body replacement, disclosed (plan §0.2 item 6): the stub's body printed
+// the marker from Carbon through `import Cpp library "<iostream>"`; the
+// un-SKIPped body is examples/cmake/mixed/main.carbon verbatim after its
+// license header, so the program IS the file the script builds
+// (`--self-test`'s identity rule). The runner does NOT compile this file.
 
-import Cpp library "<iostream>";
+import Core library "io";
+import Cpp library "twice.h";
 
 fn Run() -> i32 {
-  Cpp.std.cout << "built by a drop-in Clang build-system example\n";
+  Cpp.PrintMarker();
+  Core.Print(Cpp.Twice(21));
   return 0;
 }

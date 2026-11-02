@@ -6883,6 +6883,16 @@ payloads) stays. §0.6's register row, closed: re-read at UA-2, the UA-1 listing
 below stands — nine blocks HOLD and OV-2's one entry MOVED (D-UA-6) — with
 block 9's SL-1 trigger met for fields, as just recorded.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at 68569d234; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" has the quotes):_ the SL-1 trigger statement above (classified
+2026-10-28, RG-1: DRIFT, W-354): at upstream's tip
+`fn SelfDestruct[T: Destroy](ref t: T)` calls `t.(DestroyImpl.Op)();`
+(core/prelude/destroy.carbon:36-38) for every cleanup, locals included
+(check/control_flow.cpp:158), so the trigger is met for locals too and W-354
+drops D-SL-16's yield and D-SL-19's keying at the advance that brings
+05a7ecbd3; this branch is not amended for it, since the yield is trunk's code.
+
 The two W-043 probes, root-caused before anything was decided. Both programs
 failed with the same two diagnostics: (1) at the uninitialized
 `var b: Cpp.Box(T);` — `ConversionFailureTypeToFacet` "cannot convert type
@@ -7052,6 +7062,11 @@ evidence. Verification at round 3, with no hosted run available: `json.load`,
 a fixpoint, R31 heading and list counts before and after (decision-log
 2/50/0/0, slices.md 10/4/0/0, gap-analysis.md 5/23/0/0 at H2/H3/H4/H5; list
 items 23 / 55 / 0 — unchanged). Veto-able.
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 51 by
+985610146 (GitHub merged_at 2026-11-02T02:06:13Z); container-measured (R33 (b)):
+gate 1945 of 1945, conformance 131/0/19 over 150; id re-scans: none;
+moved to follow-ons: to item 16: OP-2's fold of W-197 into W-126.
 
 ### Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)
 

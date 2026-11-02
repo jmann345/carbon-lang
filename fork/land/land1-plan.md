@@ -98,6 +98,8 @@ the code first, then the records commit once GitHub shows the PR merged
 -   Focused re-review fold record, round 4 (rev 7, 2026-11-01)
 -   Focused re-review fold record, round 5 (rev 8, 2026-11-02)
 -   Sign-off
+-   Landing-time rulings (the orchestrator's rulings under R29 during the
+    landing)
 
 Conventions. `trunk` is origin/trunk bb9fbba9c unless a section says otherwise.
 A file:line cite names the sha it was read at. `$P` is the planner's scratch
@@ -138,7 +140,8 @@ measurements (C.8), and DR-1's three `<sha>` slots to `<merge sha>` and
 
 | Placeholder | Value | Measured by |
 | --- | --- | --- |
-| `<date>`, `<hh:mm>` | the commit's UTC date and time | `date -u +%F` and `date -u +%H:%M` when the commit is made (step 9's values, kept at step 12; amended 2026-11-02, RV67-2, the orchestrator's ruling under R29) |
+| `<date>`, `<hh:mm>` | the UTC date and time the records edits were written at step 9, kept at step 12 | `date -u +%F` and `date -u +%H:%M` when the records edits are written at step 9 (reworded 2026-11-02, FC2-3, from the commit-time rule that RV67-2's ruling superseded; the records commit's message states 'records written <date> <hh:mm> UTC, committed <now> UTC') |
+| `<now>` | the records commit's UTC date and time, written in the records commit's message only, never in a records text | `date -u +%F` and `date -u +%H:%M` when the records commit is made (added 2026-11-02, FC2-1, the orchestrator's ruling under R29) |
 | `<prev>` | the date in the current ORCHESTRATION header's first clause | that clause, read before the records edit |
 | `<trunk before>` | origin/trunk before the landing | `git rev-parse --short=9 origin/trunk` at step 1 |
 | `<head>` | the PR's pushed head | `git ls-remote origin` at step 1 (section 0.1's value) |
@@ -1003,7 +1006,9 @@ still gated before it is made (added 2026-11-01, review fold: RR3-3):
 12. Phase 2: fill `<merged_at>` and `<api sha>`, check that `git diff` differs
     from `records.patch` in those two values only, prek again to a fixpoint,
     commit the records commit (section 2's message) and push trunk and the
-    mirror as in step 11.
+    mirror as in step 11. The records commit's message states 'records written
+    <date> <hh:mm> UTC, committed <now> UTC' (added 2026-11-02, RV67-2 and
+    FC2-3, the orchestrator's ruling under R29).
 
 Every commit: `--author='jmann345 <jerrymannstan@gmail.com>'`,
 `GIT_COMMITTER_NAME=Claude GIT_COMMITTER_EMAIL=noreply@anthropic.com`, a new
@@ -4300,5 +4305,24 @@ landing's records commit (D-LAND-9 as amended by the first):
 > (3) RV67-3 / FC1-2: Appendix A.4's "<landed> PRs landed" stands as the plan's
 > text at this landing ("1 PRs landed"); no amendment, the texts of later
 > landings reading 2 or more.
+>
+> (4) Before PR 51's landing (stage 2), on PR 67's fold check 2: (1) FC2-1 and
+> FC2-3: in the conventions table, the row whose first cell is `<date>`,
+> `<hh:mm>` is replaced whole by this row: "| `<date>`, `<hh:mm>` | the UTC date
+> and time the records edits were written at step 9, kept at step 12 |
+> `date -u +%F` and `date -u +%H:%M` when the records edits are written at
+> step 9 (reworded 2026-11-02, FC2-3, from the commit-time rule that RV67-2's
+> ruling superseded; the records commit's message states 'records written <date>
+> <hh:mm> UTC, committed <now> UTC') |", and directly after it this new row is
+> inserted: "| `<now>` | the records commit's UTC date and time, written in the
+> records commit's message only, never in a records text | `date -u +%F` and
+> `date -u +%H:%M` when the records commit is made (added 2026-11-02, FC2-1, the
+> orchestrator's ruling under R29) |"; and D-LAND-6's step 12 gains, after
+> "mirror as in step 11.", the sentence: "The records commit's message states
+> 'records written <date> <hh:mm> UTC, committed <now> UTC' (added 2026-11-02,
+> RV67-2 and FC2-3, the orchestrator's ruling under R29)." (2) FC2-2: the
+> Contents list gains, after its last bullet "- Sign-off", the bullet
+> "- Landing-time rulings (the orchestrator's rulings under R29 during the
+> landing)".
 
 <!-- google-doc-style-resume -->

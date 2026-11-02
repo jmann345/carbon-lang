@@ -257,8 +257,8 @@ class InnerTemplate(template T: type) {
 
 // An alias of another class's alias of a template-dependent C++ constant,
 // named through a concrete specific from a function that is not generic, is
-// lowered as the outer specific's constant: the load of `Traits<long>::size`
-// and of `Traits<short>::size`.
+// lowered as the outer specific's constant: the constants 8 and 2 of
+// `Traits<long>::size` and `Traits<short>::size`.
 class Outer(T: type) {
   alias Size = Inner(T).Size;
 }

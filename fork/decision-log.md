@@ -3791,6 +3791,12 @@ only `Core.Optional(T*)` is `UnformedInit`, short of p000257's direction (W-200,
 D-OP2-15); and the row is DONE on a container run, against SL-2's practice
 (D-OP2-16). Veto-able.
 
+_Item 10 (2026-11-02, FO-1):_ a class whose own `Destroy` impl answers the
+`Destroy` query is no longer completed by the custom witness, so a method of
+`C` returning `Core.Optional(Self)` checks (47a3d9f4e; fork/followon/fo1-plan.md
+on trunk, D-FO1-1); `let Type: Destroy` stays, since upstream's
+`let Type: type` removes W-170's checked-generic destruction (measured).
+
 ### OP-1 / F-015: Core.Optional comparison and design (2026-10-13)
 
 Milestone bullet "Optional" (docs/project/milestones.md:203, under "Types with

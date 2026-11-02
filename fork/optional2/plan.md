@@ -3825,3 +3825,19 @@ The implementation-review findings and their state after the discharge commit:
 | R2-m1: D-OP2-5's "SemIR-only" refills | MINOR | Closed: M-8, D-OP2-5, §4 and §6.1 restated (f859c7e73); the decision-log entry quotes the restated cost |
 | R2-m2: no "Fork (...)" markers | MINOR | Closed: markers on every OP-2 hunk (9f9ccd768) |
 | R2-m3: commit 4's forward-looking phrases | MINOR | Closed: the row says DISCHARGED with both decision-log titles, the header says the ledger was reconciled, §W9 checked, and the W-126 and W-160 rule ran (Ids above) |
+
+## Item 10 fold record (FO-1, 2026-11-02)
+
+Next actions item 10 of fork/ORCHESTRATION.md at a88ccf167 (SC-1's split failing
+with ``unable to monomorphize specific `<none>` `` on the land tree) is OP-2's
+defect: a class with its own `Destroy` impl that names `Core.Optional(Self)`
+in a method's signature inside its definition was rejected on PR 57's
+toolchain only. Root: `OptionalStorage`'s `let Type: Destroy;` makes forming
+`Core.Optional(C)` look up `DefaultOptionalStorage(C)`'s `Destroy`, and
+`CanDestroyType` completed the class before `CanDestroyClass` honored its own
+`Destroy` impl. Fixed by 47a3d9f4e (custom_witness.cpp declines such a class
+before completing it) with the split `incomplete_self_signature` in
+check/testdata/optional/destroy.carbon, for which autoupdate writes no CHECK
+line, so no fill commit is made; gate 1950 of 1950 on the branch. The fix and
+this record take OP-2's two implementation reviews before they are pushed
+(fork/followon/fo1-plan.md on trunk, D-FO1-1, D-FO1-9).

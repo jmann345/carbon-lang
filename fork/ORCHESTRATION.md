@@ -126,6 +126,32 @@ upstream's public read-only bazel cache (the tool-permission layer declined that
 setup when attempted) — until one of these, no code lands. Next cron Monday
 2026-10-19; the owner's machine is never used.
 
+ST-1 discharge (2026-10-13; pushed, PR to open and hold): ST-1
+(claude/carbon-fork-0-1-st, fork/string/plan.md rev 3, W-057, gap row 77,
+fork design F-014) is IMPLEMENTED AND DISCHARGED off trunk 80a11e7f0 —
+84ff63560 (core/prelude/types/string.carbon 32 → 275 lines: byte-wise `==`,
+`!=`, `<`, `<=`, `>` and `>=` on `str`, the owning `Core.StringBuf`, `+` and
+`+=`, `i64` `str` subscripts; the export.cpp null check; eight CHECK-free
+goldens), 16a87052f (the autoupdate fill: exactly the ten predicted goldens),
+d8d10bf70 (string_missing_ops SKIP → PASS, four new String programs,
+docs/design/strings.md, three dated amendments), 34e3af720 (both
+implementation reviews folded, 15 MINOR, none rejected) and the discharge
+commit (row 77 PARTIAL → DONE with filed limits, header 31 / 20 / 4 / 1,
+W-057 DISCHARGED, W-160..W-167 filed, the F-014 decision-log entry).
+Verification is container-built and NOT of record (Actions disabled): the
+carbonbuild toolchain of 84ff63560, file_test 1950/1950 (1942 + 8), the
+expected scoreboard 133 PASS / 0 FAIL / 21 SKIP over 154, 48/56 bullets
+(scoreboard generated 2026-10-13T19:47:00Z), the five String programs the only
+change from the floor of record 128 / 0 / 22 over 150, and the plan's
+allocation shim balanced (`bad=0`) on all six String programs. Not run: Bazel
+and its tests, clangd-tidy, any hosted run, an opt-mode toolchain, LLVM
+assertions, non-Linux. Merge position: LAST, after PR 53, PR 51, PR 52, SC-1
+and EV-1. Trunk 9d3ca60a3 (the id reservations and the EV-1 and ST-1 Branches
+rows) is NOT merged into the branch, because the session's permission policy
+refused that merge twice; merging it conflicts on the ST-1 Branches row only.
+The merge steps are Next actions item 5; the SAFE-1 reconciliation ST-1 owes
+at its rebase is item 6.
+
 Later on 2026-10-12 (after the weekly stamp above): three PRs are OPEN and HELD
 against trunk 0bdce60a5 — PR #51 (UA-2, claude/carbon-fork-0-1-ua2, head
 f96fe8a7a), PR #52 (CM-1, claude/carbon-fork-0-1-cmake, head ea573f672: the

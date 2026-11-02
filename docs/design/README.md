@@ -633,6 +633,12 @@ There are two string types:
 There is an [implicit conversion](expressions/implicit_conversions.md) from
 `String` to `StringView`.
 
+> **Fork amendment (2026-10-13, F-014).** In the fork the view is `str`, the
+> prelude class `Core.String` (the interop design's `Core.Str`), and the owning
+> type is `Core.StringBuf`; `==`, `!=`, `<`, `<=`, `>` and `>=` compare bytes,
+> `+` concatenates into a new `Core.StringBuf` and `+=` appends. See
+> [Strings](strings.md).
+
 > References:
 >
 > -   Question-for-leads issue

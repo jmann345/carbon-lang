@@ -251,7 +251,11 @@ generics/terminology.md:100-103 and the parser at ac31fd198); work items W-320
 (blocked) and W-324, owner DR-1, checked at each weekly upstream check (added
 2026-10-21, DR-1 plan). (v) D-SL-17's literal-subscript rule, a fork spelling
 of indexing.md's `like i64`; work item W-326, blocked on `like` (added
-2026-10-21, DR-1 plan). (iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its
+2026-10-21, DR-1 plan). (vi) The struct-pattern check layer: upstream's
+`SemIR::StructPattern` (c6b54b57e) beside the fork's W-077 layer; work item
+W-372, owner UA-3, realigned at UA-3 under the F-002 staging-merge rule (added
+2026-11-02, weekly upstream check).
+(iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its
 fill c1cc72a09. (i) resolved 2026-10-21 by W-322's 22fe50ff8 and its fill
 f4660e409 on PR 62 (written 2026-11-02 at PR 63's landing, LAND-1). (ii)
 resolved 2026-10-22 by DR-1b, 3c54754bc and its fill cf4904138, with 230227264's
@@ -271,6 +275,25 @@ loops.md unchanged since fb7eff130, W-321's break condition not fired. (iv) and
 unchanged since ac31fd198, and W-324's and W-326's break conditions did not
 fire. The register's other blocks were re-checked the same day and carry no work
 item; W-342 to W-344 are filed for them, and W-341 for this check's one drift.
+
+_V-3a register re-check, weekly upstream check 2026-11-02 (upstream 68569d234;
+the entry "Weekly upstream check 2026-11-02 (R32 direction register)" has the
+quotes):_ (i) resolved on trunk, PR 62 having landed 2026-11-02; sum_types.md
+and pattern_matching.md unchanged since fb7eff130, D-DR-2's break condition not
+fired. (ii) resolved on trunk, PR 65 having landed 2026-11-02; upstream's
+index.carbon, handle_index.cpp and indexing.md unchanged since bc45989b2, slice
+3's break condition not fired. (iii) resolved on trunk, PR 63 having landed
+2026-11-02; iterate.carbon, range.carbon and loops.md unchanged since fb7eff130,
+W-321's break condition not fired. (iv) HOLDS: of the files it cites only
+parse/handle_let.cpp changed (68569d234), its phase branch still refusing a
+template associated constant, so W-324's break condition did not fire. (v)
+HOLDS: `like` is still a keyword token only and the cited files are unchanged,
+so W-326's break condition did not fire. (vi) is added by this check: upstream
+c6b54b57e's struct-pattern check layer fired W-077's break condition, and W-372
+is filed, owner UA-3. W-355's scripts at the tip found ten quotes moved with
+their text unchanged and two counts changed without a fired break condition
+(T10.4, ALIGNED, at 2; H4.5's merge-rule signal at 5), all re-anchored by this
+check's records commit.
 
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened
@@ -11531,6 +11554,13 @@ upstream legalizing it flips one pin). Zero lower/ changes (struct_access
     Lesson worth a lint: `val` and 60 siblings are CARBON_KEYWORD_TOKENs
     (token_kind.def) — testdata field/binding names must avoid them.
 
+_Note 2026-11-02 (weekly upstream check):_ the break condition above fired:
+upstream c6b54b57e ("Add check support for struct patterns", PR 7876,
+2026-10-30) lands its own struct-pattern check layer for `let` and `var`, a
+second `SemIR::StructPattern` beside this one; W-372 is filed, owner UA-3, under
+the F-002 staging-merge rule (the entry "Weekly upstream check 2026-11-02 (R32
+direction register)"; DR-0's register entry (vi)).
+
 ### Runner access revoked: the sparing-verification protocol (2026-09-26)
 
 Owner directive, mid-W-077, verbatim in the parts that govern: "You no
@@ -12520,6 +12550,217 @@ each `git grep -c` 0 at the tip; and upstream still asserts
 template")` (check/cpp/export.cpp:1902-1903) where the fork's guard diagnoses
 (T12.7). 05a7ecbd3 rewrote check/custom_witness.cpp, the `is_choice` clauses'
 file, which is UA-3's merge rule, not a design.
+
+### Weekly upstream check 2026-11-02 (R32 direction register): cut HOLDS at 150 commits; a dry-run merge conflicts in 138 files; one drift filed as W-372; GitHub Actions on the fork is still DISABLED (2026-11-02)
+
+The second weekly check under R32, fired at 2026-11-02 14:01 UTC, placed
+directly before the 2026-10-26 entry because this log runs its weekly entries
+newest first. Two readers and two adversarial verifiers measured it, read-only,
+in the records worktree of branch weekly-20261102, then at trunk 9863b1087,
+after `git fetch upstream trunk` at 2026-11-02 14:05 UTC, with write-tree merges
+(`git merge-tree`) against trunk 9863b1087 and against each held or landing head
+(no worktree of a held branch was touched; no staging branch was created or
+pushed); the records were then written on that branch cut afresh from trunk
+7134405dc, after LAND-1 landed PR 65 and PR 68, and a second fetch at 16:14 UTC
+left the tip unchanged. Upstream trunk 68569d234 (2026-11-01, "Improve lexer and
+parser diagnostic locations", PR 7990) is 150 commits past the c1e83b0b7 cut, 33
+past last week's 21c825a3f, 19 past f27a977d8, the tip RG-1 classified the
+register at, and 0 past 68569d234, the tip LAND-1's notes on W-355 read. 1978
+upstream files are touched since the cut (1846 last week), 1053 files are
+modified by the fork since the cut (791), and 245 are in both sets (197); this
+week alone upstream touched 663 files (139), 123 of them fork-modified (39).
+
+The dry-run merge against trunk 9863b1087 conflicts in 138 files (tree
+ac97ec21e, all content conflicts), 46 sources (with the X-macro definitions, the
+two TextMate grammars and docs/design/control_flow/loops.md) and 92 goldens, up
+from 97 (31 and 66); against the 2026-10-26 list, re-derived with the same
+command at 21c825a3f and 563135b40, 41 files are new and none vanished. A
+stepwise merge-tree of each window commit against 9863b1087 attributes 20 of
+them to this week's upstream: check/check_unit.cpp and check/generic.cpp to
+57bf903ef; sem_ir/core_interface_kind.def and 13 goldens to 05a7ecbd3
+(check/testdata/interop/cpp/enum/anonymous, function/import/reference and
+primitive_types/arithmetic, check/testdata/var/destroy_control_flow, and
+lower/testdata/class/static and virtual, interop/cpp/class/import/constructor,
+conversion and virtual_base, interop/cpp/function/import/function_decl and
+import_inline, interop/cpp/template and var/param); sem_ir/file.cpp to
+e6fddcf97; parse/context.cpp to 22f3cd353; check/handle_pattern_list.cpp to
+c6b54b57e; and parse/handle_match.cpp to 68569d234 (c608c35e1 adds none). The
+other 21, eight sources and thirteen goldens, come from the ten landings then on
+trunk: docs/design/control_flow/loops.md and check/testdata/for/basic and
+pattern (PR 63); check/convert.cpp (PR 61, PR 62 and PR 64);
+check/handle_operator.cpp, pending_block.h, lower/aggregate.cpp and nine goldens
+(PR 61); check/impl_lookup.cpp and sem_ir/expr_info.cpp (PR 61 and PR 64);
+check/inst.cpp and check/testdata/interop/cpp/template/generic_call (PR 64); and
+check/testdata/operators/overloaded/string_indexing (PR 55). Against each held
+or landing head (read by `git ls-remote origin` at 14:16 UTC) every head gains
+the same 20 upstream files, and PR 60 also gains check/BUILD and PR 66
+check/handle_binding_pattern.cpp, both from c6b54b57e. Conflicting files per
+head, at 21c825a3f then at the tip: 97 then 117 for PR 53 (2407efa74) and PR 68
+(097c76473); 98 then 118 for PR 56 (9f12209d8); 100 then 120 for PR 57
+(e23113ba2); 104 then 124 for PR 59 (b0822a744); 106 then 127 for PR 60
+(cc4daba00); 107 then 127 for PR 65 (fee0ef31c); 113 then 134 for PR 66
+(43c8ab476). PR 65 and PR 68 have landed since; against trunk 7134405dc,
+measured for this commit with the same command, the tip conflicts in 144 files,
+46 sources and 98 goldens: PR 65's landing adds six goldens
+(check/testdata/function/call/form, index/fail_invalid_base,
+operators/overloaded/index and indirect_index_with, and
+lower/testdata/function/call/form and index/indirect_index_with) and PR 68's
+none.
+
+R32 (c), the window's commits: every one of the 33 was read; 21 touch
+docs/design, proposals, core/prelude or toolchain/check, lower, parse, lex or
+sem_ir; none touches docs/design or proposals, and one touches core/prelude:
+05a7ecbd3, the window's only prelude signature change, already W-354's (RG-1
+read it at f27a977d8). One is a new drift, one is a drift already filed that is
+also an advance, five are advances that UA-3 absorbs and fourteen are unrelated;
+with the twelve commits outside those paths, 26 are unrelated. Commits are
+listed by sha and subject only; fork touchpoints are trunk 9863b1087's, the same
+lines at 7134405dc, unless a PR is named, and upstream lines are 68569d234's.
+Where verifier 1 corrected reader 1's touchpoints, the correction is the record
+(the orchestrator's ruling under R29).
+
+| Commit | Subject | Fork touchpoint | Class |
+| --- | --- | --- | --- |
+| c6b54b57e | Add check support for struct patterns (PR 7876) | upstream implements the struct-pattern check layer for `let` and `var`: `SemIR::StructPattern` (sem_ir/typed_insts.h:2180-2193, inst_kind.def:163), parse/node_kind.def:223-224 (`StructPatternFieldLetBindingPattern`, `StructPatternFieldVarBindingPattern`), check/struct.cpp:35 (`StructNameDuplicate`) and diagnostics/kind.def:306 (`FieldWithStructPattern`), with TODOs for the `_` field (check/handle_pattern_list.cpp:171) and class fields (:156); the fork's W-077 layer is a second implementation of the same instruction: typed_insts.h:2224-2244 (`has_trailing_discard` at :2243), inst_kind.def:167, check/pattern_match.cpp:1980 (the `CARBON_FATAL` outside a match case) and :1983 (`DoMatchCaseStructPreWork`), the match-only gate check/handle_pattern_list.cpp:57-61 (its comment at :46-56, the TODO "struct pattern start" at :60) and diagnostics/kind.def:596-598; the fork-only golden check/testdata/let/fail_todo_struct_pattern.carbon (five pins of "struct pattern start", absent upstream) goes stale at the merge; both implement pattern_matching.md:413-467 (the `_` rule at :458-467); `git merge-file` (base the cut, ours trunk) raises typed_insts.h's conflicts from 1 to 3, pattern_match.cpp's from 1 to 2 and handle_pattern_list.cpp's from 0 to 4; six trunk conflict files (handle_pattern_list.cpp new; node_stack.h, pattern_match.cpp, diagnostics/kind.def, inst_kind.def and typed_insts.h), and PR 60's check/BUILD and PR 66's check/handle_binding_pattern.cpp | DRIFT, R32 (d): W-077's break condition fired; W-372 |
+| 05a7ecbd3 | Move `SubobjectDestroy` and `SelfDestruct` out of interface `Destroy` (PR 7942) | upstream core/prelude/destroy.carbon:14-15, :27-28 and :36-38; trunk core/prelude/types/buf.carbon:58 and types/string.carbon:154 (PR 55, landed) `impl as Destroy {`, check/custom_witness.cpp:234 (`CanDestroyClass`, D-SL-16's yield) and :554 (`HasUserDestroyImpl`, D-SL-19's keying); PR 57's e23113ba2 core/prelude/types/optional.carbon:283; 74 trunk conflict files, 14 of them new (core_interface_kind.def and 13 goldens); the string.carbon:154 site, now on trunk, joins W-354's and D-RG-16's evidence at UA-3 | DRIFT already filed (W-354); advance, prelude signature |
+| 57bf903ef | Keep resolving generics and templates until they're all resolved (PR 7957) | upstream check/check_unit.cpp:465 (`CheckRequiredDefinitions` returns `bool`), :640 (`max_resolution_check_cycles = 10`), :647 and :680 (`FinalizeCppAstFragment`, `DisconnectCppAst`); trunk check_unit.cpp:671-678 (one `CheckRequiredDefinitions()` pass at :673, then `FinishAst` at :678) and check/cpp/generate_ast.cpp:1112; no second spelling; its two new trunk conflicts are not PR 64's: generic.cpp's hunk is the `-> DefinitionResolution` signature beside upstream's TODO "Handle recursive resolution of the same generic definition." (c1e83b0b7's generic.cpp:747, :769 at the tip), which UA-1's merge 3d4c0e37a dropped and trunk lacks (:815-817), and check_unit.cpp's hunk is OV-2's API-file overload-definition check against upstream's resolution loop | advance, mechanism |
+| 54f37b35b | Fix Carbon methods always being exported as public to C++ (PR 8063) | upstream check/cpp/export.cpp:595 (`SetCppClassMemberAccess`) and :1416; trunk export.cpp:1158-1159 keeps `// TODO: Map Carbon access to C++ access.` and `clang::AS_public`; OV-3's overload thunks take the same mapping at UA-3; export.cpp merges clean; it moves T12.7's quotes (below) | advance, fix |
+| 4abb6100e | Define exported C++ thunks in the LLVM function Clang uses for them (PR 8060) | lower/file_context.cpp, a conflict among last week's 97 whose hunk is upstream's `.return_kind` against EH-A's `.entry_point_result_type_id` (not PR 61's code), and nine lower goldens; upstream export.cpp:1613 (`BuildCarbonToCarbonThunk`) now calls `.SetCppThunk(...)` (:1662), so after UA-3 every exported overload-member thunk, which trunk's `BuildCarbonToCarbonThunk` builds (export.cpp:1337, OV-3's `overload_index` at :1393-1394), the overload_set_default pair PR 68 landed included, goes through Clang's LLVM function and its three checks (parameter types equal Clang's, no `sret` type, no specific), which a clean textual merge does not show; it makes T10.4 count 2 (below) | advance, fix |
+| c7de72757 | Adds support for exporting default values for concrete parameters of generic functions. (PR 8019) | upstream export.cpp:964 (`BuildDefaultValueExpr`), :1223 and :1451; trunk exports no default; PR 68 (097c76473, landed by c62ae211e) changes check/call.cpp, handle_function.cpp, merge.cpp and merge.h and adds the check/ and lower/testdata/interop/cpp/function/export/overload_set_default.carbon pair, whose D-OV4-10 divergence split depends on this export path (both headers name 9799a2326 arriving with UA-3): UA-3 re-measures the pair once 9799a2326 and c7de72757 merge; export.cpp merges clean | advance, mechanism |
+| 56d9bbc40 | Support C++ friend declarations for Carbon generic classes (PR 8026) | check/cpp/import.cpp, an existing conflict (upstream's friend loop at :1018-1019), following 6f6a01f85; UN-2's union import takes the same path after the merge | advance, mechanism |
+
+Unrelated (26): 68569d234 (diagnostic locations and `r#` recovery in lex and
+parse; its only new trunk conflict is parse/handle_match.cpp; it moves W-355's
+quotes in handle_match.cpp and handle_expr.cpp and H4.5's count, below;
+parse/handle_let.cpp keeps `PhaseKeywordInAssociatedConstant`, so W-324 does not
+fire; at UA-3 the fork's own parse diagnostics take `PointAfterPreviousToken`,
+parse/context.h:689), c608c35e1 (terminal rendering; nine trunk-conflict
+goldens, none new, function/import/reference.carbon being 05a7ecbd3's),
+22f3cd353 (parser fast paths; the parse/context.cpp conflict), e6fddcf97
+(`CollectMemUsage`; the sem_ir/file.cpp conflict, whose resolution keeps both
+sides' lines, trunk already collecting `overload_sets_` at :218-219), 9192ee003,
+07718a832, 0421bf3b4, c008bec1a, 5f1dd4941, 7cc1d0898 and 8779d15e1 (lexer
+performance and lint, clean on trunk and every head), 6d5142779 and a45002667
+(tests), f27a977d8 (ASan CI; RG-1's tip), and the twelve outside those paths:
+611e6a210 and dd30c7655 (utils/vscode dependency bumps), c0eee3e0b, 5a614167c
+and 3ee012b86 (.github/workflows), ff0d3ff10, 39e69f0b4, 33863ed07 and 600fd55ba
+(toolchain/benchmarking), fda41783e (common/terminal and toolchain/diagnostics),
+and 4c5734a8c and e9d8d06f9 (toolchain/base). Since the cut (R32 (c)'s full
+window), nine upstream commits touch docs/design, proposals or core/prelude: the
+eight the 2026-10-26 entry names and this week's 05a7ecbd3.
+
+_W-355 at 68569d234._ Both scripts run from the worktree root as
+fork/register/rg1-plan.md section 4.2 says. Phase A ran them over trunk
+9863b1087's tables: "checked 273 quotes, 8 failed" and "checked 89 silence
+checks, 2 failed". PR 68's landing then appended OV-4's rows T2.8 and T2.9
+(c6c9d5fe3: 16 quotes and 2 checks), so over trunk 7134405dc's tables, before
+this commit's edits, they print "checked 289 quotes, 10 failed" and "checked 91
+silence checks, 2 failed": phase A's ten failing rows and two of OV-4's quotes,
+re-measured for this commit (`git grep -nF '<substring>' 68569d234 -- <path>`,
+at c6b54b57e^ and at c6b54b57e). Every failure traces to a window commit; rows
+are lines of fork/register/rg1-quotes.tsv and rg1-checks.tsv and of rg1-plan.md
+at trunk 7134405dc, before this commit's comment lines moved them.
+
+| Row | Section 2 row, block | Class | At 68569d234 | Decision |
+| --- | --- | --- | --- | --- |
+| rg1-quotes.tsv:90, parse/handle_match.cpp:176 | H7.4 (DD-1, PR 58; rg1-plan.md:974) | ALIGNED | MOVED to :180 by 68569d234 (four re-wrapped `Emit` calls above it; its own hunk only points the diagnostic at `OpeningBracketInsertionPoint()`), text unchanged | re-anchored in this commit; H7.4's break condition (an unparenthesized guard) not fired: `if (open_paren)` is still required |
+| rg1-quotes.tsv:129, parse/handle_match.cpp:169 | H7.4 | ALIGNED | MOVED to :173 by 68569d234 | re-anchored; not fired |
+| rg1-quotes.tsv:94, parse/node_kind.def:292 | H8.2 (VA-1, PR 59; rg1-plan.md:983) | NONE | MOVED to :294 by c6b54b57e (its two struct-pattern kinds at :223-224) | re-anchored; H8.2's break condition (upstream's own pack kinds) not fired, check H8.2 = 0 |
+| rg1-quotes.tsv:218, parse/node_kind.def:292 | H8.2 (the same quote, a second row) | NONE | MOVED to :294 by c6b54b57e | re-anchored; not fired |
+| rg1-quotes.tsv:217, check/cpp/export.cpp:1903 | T12.7 (UA-1's watch list; rg1-plan.md:858) | NONE | MOVED to :1951, to :1922 by 4abb6100e and on by 54f37b35b; e6fddcf97's :1885-1905 and the tip's :1933-1953 are byte-identical | re-anchored; T12.7's break condition (upstream's own guard) not fired: still `CARBON_CHECK`, check T12.7 = 1 |
+| rg1-quotes.tsv:239, check/cpp/export.cpp:1902 | T12.7 | NONE | MOVED to :1950 by 4abb6100e and 54f37b35b | re-anchored; not fired |
+| rg1-quotes.tsv:279, parse/handle_expr.cpp:376 | H1.6 (SAFE-1, PR 53; rg1-plan.md:886) | NONE | MOVED to :396 by 68569d234 (20 lines added above; the `unsafe` block untouched) | re-anchored; H1.6's break condition (values.md:573 resolved, or `unsafe` widened beyond `as`) not fired: `UnsafeModifier` is still added only before `as` |
+| rg1-quotes.tsv:280, parse/handle_expr.cpp:377 | H1.6 | NONE | MOVED to :397 by 68569d234 | re-anchored; not fired |
+| rg1-quotes.tsv:289, check/pattern_match.cpp:950 | T2.8 (F-009j, OV-4's row; rg1-plan.md:741) | ALIGNED | MOVED to :1054 by c6b54b57e, text unchanged (found at trunk 7134405dc, after phase A) | re-anchored; T2.8's break condition (another optional-parameter mechanism, or positional defaults removed) not fired, check T2.8 = 3 |
+| rg1-quotes.tsv:292, check/handle_pattern_list.cpp:185 | T2.8 | ALIGNED | MOVED to :281 by c6b54b57e | re-anchored; not fired |
+| rg1-checks.tsv:43, T10.4 | T10.4 (EH-B's `noexcept` fence; rg1-plan.md:834) | ALIGNED | count 0 to 2 by 4abb6100e: toolchain/lower/testdata/interop/cpp/function/export/macho_asm_label.carbon:266 and :275, Clang's terminate pad around the exported C++ destructor's invoke of the Carbon destroy thunk, the export direction; no toolchain source spells it | expected count 2, with a "#" comment line above the row; ALIGNED stands, upstream having built no fence (R29); break condition: a terminate pad on an import thunk or in a toolchain source |
+| rg1-checks.tsv:67, H4.5 | H4.5 (ST-1, PR 55; rg1-plan.md:936) | NONE | L count 4 to 5 by 68569d234, which refills only the diagnostic columns and order of operators.carbon's fail_prefix_calling_postfix and fail_todo_import_unsupported_unary_operators splits | expected count 5, ST-1's merge-rule signal: keep the fork's CHECK lines of fail_todo_import_plus_with_string_view_conversion and fail_todo_rewrite_equal, both untouched, then autoupdate (fork/decision-log.md:7195-7198 at 7134405dc), UA-3's to apply; break condition (an upstream refill of those splits) unchanged, not fired |
+
+After this commit's edits both scripts, run from the worktree root at 68569d234,
+print "checked 289 quotes, 0 failed" and "checked 91 silence checks, 0 failed";
+over phase A's tables the same eight quote edits and two counts give "checked
+273 quotes, 0 failed" and "checked 89 silence checks, 0 failed", the lines the
+ruling expected. The ruling's T10.4 comment named the golden
+toolchain/lower/testdata/interop/cpp/export/macho_asm_label.carbon; the file is
+toolchain/lower/testdata/interop/cpp/function/export/macho_asm_label.carbon
+(`git grep -nw __clang_call_terminate 68569d234 -- toolchain`), and the comment
+line names that path. No W-355 row's break condition fired, so the scripts file
+no DRIFT item; the window's drift, W-372, was found by R32 (c)'s read of
+c6b54b57e, which no register row covered.
+
+_V-3a register re-check at 68569d234 (R32 (b)), entry by entry._ Each cited page
+was re-read at the tip; "unchanged" means `git log <sha read>..68569d234` is
+empty for the entry's files. The quotes, with their lines at the tip, are in
+each row; DR-0's block lines are trunk 7134405dc's.
+
+| Entry | Recorded at | Upstream text at 68569d234 | Break condition | State |
+| --- | --- | --- | --- | --- |
+| (i) PR 62's D-SV-7 `Core.Optional(T)` view (W-322) | DR-0's block (:242-243, resolved at :255-256) | sum_types.md:108 (`interface Match {`) and :113 (`let template Continuation: type;`); sum_types.md and pattern_matching.md unchanged since fb7eff130 | D-DR-2's: not fired | RESOLVED on trunk (PR 62 landed 2026-11-02) |
+| (ii) D-SL-3's read-only `Core.Slice` (W-109) | DR-0's block (:243-245, resolved at :256-258) | core/prelude/operators/index.carbon:14 (`interface IndirectIndexWith`) and :16 (`fn Ref(self, subscript: SubscriptType) -> ref ElementType;`); index.carbon, check/handle_index.cpp and expressions/indexing.md unchanged since bc45989b2 | DR-1 slice 3's: not fired | RESOLVED on trunk (PR 65 landed 2026-11-02, after the readers measured 9863b1087) |
+| (iii) the pointer cursor of `Core.Iterate.Next` (W-321) | DR-0's block (:246-247, resolved at :254-255) | core/prelude/iterate.carbon:17 (`fn Next(self, ref cursor: CursorType) -> Optional(ElementType);`), range.carbon:20, control_flow/loops.md:118 (`case .Some(<pattern>)`); unchanged since fb7eff130 | W-321's (`Next` changes again): not fired | RESOLVED on trunk (PR 63 landed 2026-11-02) |
+| (iv) `Core.Optional` not matchable: upstream's pages conflict on `Match.Continuation` (W-320 blocked on W-324) | DR-0's block (:247-252) | sum_types.md:113 against README.md:1076-1078 and :3066-3067 and generics/terminology.md:100-106; of the cited files only parse/handle_let.cpp changed (68569d234: `r#` recovery for a non-phase word, and diagnostic locations), its phase branch still diagnosing `PhaseKeywordInAssociatedConstant` (:36-44); p001013:79-83, check/handle_loop_statement.cpp:237-238 (the `.Some(pattern_id)` TODO) and check/handle_match.cpp's 14 TODO handlers unchanged; no `Match` or `Continuation` in upstream core/ or toolchain/check | W-324's: not fired | HOLDS; W-320 stays blocked on W-324 |
+| (v) D-SL-17's literal-subscript rule, a fork spelling of indexing.md's `like i64` (W-326) | DR-0's block (:252-254) | expressions/indexing.md:105 (`impl as IndexWith(like i64) {`) and :117 (`impl as IndirectIndexWith(like i64) {`); lex/token_kind.def:208 (`CARBON_KEYWORD_TOKEN(Like, "like")`) with no `TokenKind::Like` in toolchain, and a whole-word `like` in 58 files and 111 lines of parse, check and core/prelude at both 21c825a3f and the tip, all prose; check/handle_index.cpp:88-97; no window commit to the cited files | W-326's (`like` lands): not fired | HOLDS; W-326 stays blocked on `like` |
+| (vi) the struct-pattern check layer (W-372) | DR-0's block, added by this commit | c6b54b57e's layer (the commit table above); pattern_matching.md:413-467 | W-077's ("upstream landing its own struct-pattern layer"): FIRED | DRIFT, filed now as W-372, owner UA-3, under the F-002 staging-merge rule |
+| The ten residues of fork/register/rg1-plan.md section 7: H5.5, C1.1, T5.7, C1.2, H8.3, C2.1, C2.3, C2.4, C2.5 and C2.6 | rg1-plan.md section 7 (:1774-1800) | H5.5 and C1.1 as (iv), with optional.carbon:30 (`fn None() -> Self {`); T5.7 and C1.2 as (v); H8.3 and C2.3 p002240:555 (`### Omit each-names`) and variadics.md:982 (checks H8.3 = 2, C2.3 = 1); C2.1 variadics.md:493 and :750 with check/handle_pack_expansion.cpp:12; C2.4 variadics.md:219-221 with :532-546; C2.5 generics/details.md:4906 (`#### Overlap rule`) and :4921; C2.6 comparison_operators.md:457-464 with comparison.carbon:25 and :55; no window commit to any | each entry's own: not fired | HOLD |
+| VA-2's six plan-state entries (W-217, W-334 with W-222, W-230, W-214, W-338, W-339) | PR 66's block (43c8ab476 :3672-3676), held | variadics.md:219-221, :493, :532-546, :750 and :982; comparison_operators.md:311-316, :457-464 and :504-505; generics/details.md:4906 and :4921; comparison.carbon:25 and :55; with check/type_structure.cpp, check/handle_pack_expansion.cpp and p002240 unchanged since 21c825a3f | each entry's next action: not fired | HOLD; the items live on PR 66's branch, so this entry records them and writes no ledger note |
+| Every other NONE and ALIGNED entry (W-355) | RG-1's blocks (rg1-plan.md section 2) | quotes: 255 of the 289 rows name files no window commit touches, 15 files only 05a7ecbd3 touches (destroy.carbon 8, custom_witness.cpp 3, destroy_control_flow.carbon 3, core_interface_kind.def 1), which RG-1 read after it, and 19 the nine other touched files (export.cpp 5, typed_insts.h 3, function.cpp 2, handle_expr.cpp 2, handle_match.cpp 2, node_kind.def 2, typed_nodes.h 1, pattern_match.cpp 1, handle_pattern_list.cpp 1); checks: 41 of the 91 name untouched paths and 50 touched ones; ten rows on touched paths re-read: H4.4 (`if (!decl_context)` = 3, at export.cpp:538, :914 and :2125; :402-404 still unchecked), T4.2 (`overload_index` = 0), T8.1 and T8.2 (union export and layout = 0), T7.3 (no overload-set instruction; c6b54b57e's `StructPattern` at inst_kind.def:163 is W-372's), H8.4 (no pack instruction), H10.1 (none of TP-1's five actions), H10.2 (typed_insts.h:1312 `MetaInstId storage_access_block_id;`), H11.9 (typed_insts.h:2009 and :2013, count 8) and T2.8 (OV-4's: `default_value_arity` = 3) | each entry's own: not fired | HOLD by the scripts' pass, the twelve rows of the table above re-anchored |
+
+The cut HOLDS, and UA-3 stays scheduled after the held PRs land, under the UA-1
+flow, with these starting-audit tasks named: 57bf903ef's resolution loop, with
+generic.cpp's lost TODO restored by taking upstream's hunk (a merge artifact,
+not a drift: the fork has no recursive-resolution handling of its own; break
+condition: upstream removes the TODO); 4abb6100e's `CppThunk` checks run over
+OV-3's export goldens and the overload_set_default pair PR 68 landed (not a
+drift; break condition: upstream reverts 4abb6100e); c7de72757's and 9799a2326's
+default-value exports, after which that pair is re-measured; and 05a7ecbd3's
+string.carbon:154 site added to W-354's and D-RG-16's evidence. One drift is
+verified: c6b54b57e lands upstream's struct-pattern check layer for `let` and
+`var`, so the fork's W-077 layer, a match-only `SemIR::StructPattern` with its
+own discard flag and diagnostics, is a second implementation of the same
+instruction. W-077's recorded break condition ("upstream landing its own
+struct-pattern layer — the F-002 staging-merge rule applies",
+fork/decision-log.md:11489-11491 at 7134405dc, and W-077's ledger note "Watch
+upstream: the layer is on their own path, so the F-002 staging-merge rule
+applies if they land it first.") has fired, so under R32 (d) and D-RG-3 it is a
+DRIFT, while the language surface both implement, pattern_matching.md:413-467,
+stays ALIGNED. It is filed as W-372, owner UA-3, in UA-3's gate: take upstream's
+`SemIR::StructPattern`, parse nodes, `let`/`var` lane and diagnostics, rebase
+the fork's `match` lane and `_` discard on them under the F-002 staging-merge
+rule, and retire the fork-only golden
+check/testdata/let/fail_todo_struct_pattern.carbon; W-079 then closes except for
+the `_` field, which waits on upstream's TODO. W-077 is trunk code (PR 39) and
+no held PR carries the drift (PR 60 and PR 66 each only gain a conflict file),
+so no held PR is amended (R32 (e)). DR-0's register gains entry (vi) for it,
+W-077's entry gains a dated note, W-077 and W-079 gain dated ledger notes, and
+ORCHESTRATION's Next actions item 6 schedules it with the audit tasks. W-355 is
+re-anchored by this commit, and W-324 and W-326 gain dated notes (HOLDS).
+Auto-adopted under R29 (a) and veto-able; W-372's break conditions: upstream
+reverts or renames the layer, or an owner ruling that the fork keeps its own
+layer.
+
+_Ids._ The re-scan for this commit, read-only and after `git fetch origin trunk`
+(`git grep -ohE 'W-3[5-9][0-9]'` over fork/ at 169 refs, 138 origin tracking
+refs and 31 local branches, the 74 remote heads equal to their tracking refs by
+`git ls-remote origin`, and `grep -r` over the fork/ directory of the 22
+worktrees), finds W-350 to W-356 and W-360 to W-363 in ledgers (W-363 the
+highest, on trunk since PR 68 landed and on PR 68's branch), W-357 to W-359
+(RG-1's) and W-364 (OV-4's) reserved unused, W-365 and W-366 reserved by SAFE-3,
+W-367 to W-370 by LAND-1 (D-LAND-13) and W-371 as the next id of PR 53's
+realignment, all as text only, and W-397 to W-399 only as range bounds; no W-372
+to W-396 appears anywhere, as reader 2's and verifier 2's scans found (verifier
+2's 23 worktrees included /dev/shm/land1-review65-1/wt, gone by this commit).
+W-372 is filed, appended after W-363. This entry and its notes move the lines
+after them, so the line cites into this log in this entry, in DR-0's dated
+paragraph and in W-372's ledger entry refer to the file at trunk 7134405dc.
+
+Not run: no build (no merge is due), no merge, no staging branch and no workflow
+dispatch (R28); the owner's machine was not used. GitHub Actions on the
+repository is still disabled: its newest workflow run is the 2026-10-08 08:19
+UTC Nightly Release (a read-only listing of the repository's runs, 1833 in all,
+re-read for this commit), so nothing is of record (R9). At trunk 7134405dc
+ORCHESTRATION's header records 12 PRs landed by LAND-1 (PR 67, 51, 52, 54, 55,
+58, 61, 62, 64, 63, 65 and 68) and 6 held (PR 53, PR 56, PR 57, PR 59, PR 60 and
+PR 66).
 
 ### Weekly upstream check 2026-10-26 (R32 direction register): cut HOLDS at 117 commits; a dry-run merge conflicts in 97 files; one drift filed as W-341; GitHub Actions on the fork is still DISABLED (2026-10-26)
 

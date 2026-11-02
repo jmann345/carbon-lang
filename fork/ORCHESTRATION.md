@@ -10,7 +10,14 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-02 (PR 68 landed by LAND-1; 12 PRs landed,
+Last updated: 2026-11-02 (weekly check fired under R32: the cut HOLDS at 150
+upstream commits with 138 conflicting files against trunk 9863b1087, 144 against
+7134405dc after PR 65's landing; one drift is filed as W-372, upstream
+c6b54b57e's struct-pattern check layer beside W-077's, owner UA-3; W-355's ten
+moved quotes and two counts are re-anchored; 12 PRs landed, 6 held; see the
+paragraph dated 2026-11-02 (14:01 UTC, weekly check fired) below; the earlier
+2026-11-02 text follows).
+2026-11-02 (PR 68 landed by LAND-1; 12 PRs landed,
 6 held; see the paragraph dated 2026-11-02 (15:36 UTC) below; the
 earlier 2026-11-02 text follows).
 2026-11-02 (PR 65 landed by LAND-1; 11 PRs landed,
@@ -1766,6 +1773,36 @@ the /home/user/carbon-weekly worktree (9863b1087), which descend from
 89aabd125 and are ancestors of trunk 180cd473f; W-328 at it: none; 11 PRs
 landed, 7 held. Next: PR 68 (OV-4).
 
+2026-11-02 (14:01 UTC, weekly check fired): the second weekly check under R32.
+Upstream trunk 68569d234 (2026-11-01) is 150 commits past the c1e83b0b7 cut (33
+since last week's 21c825a3f); a `git merge-tree` dry run against trunk 9863b1087
+conflicts in 138 files, 46 sources and grammars and 92 goldens (last week 97, 31
+and 66; 41 new, 20 from this week's upstream and 21 from the ten landings then
+on trunk, none gone), and against trunk 7134405dc, after PR 65's and PR 68's
+landings, in 144 (PR 65's six goldens); 1978 upstream files are touched since
+the cut, 1053 are fork-modified and 245 are in both (decision-log entry "Weekly
+upstream check 2026-11-02 (R32 direction register)"). The cut HOLDS and UA-3
+stays scheduled after the held PRs land. Of the window's 33 commits, 21 touch
+the design, prelude or toolchain paths: one new drift (c6b54b57e), one drift
+already filed that is also an advance (05a7ecbd3, W-354's, the window's only
+prelude signature change), five advances for UA-3's audit and fourteen
+unrelated; no design page or proposal changed. The drift: c6b54b57e lands
+upstream's struct-pattern check layer for `let` and `var`, so the fork's W-077
+layer is a second `SemIR::StructPattern`; W-077's break condition fired, and
+W-372 is filed, owner UA-3, under the F-002 staging-merge rule; no held PR
+carries it, so none is amended. W-355 at the tip: "checked 289 quotes, 10
+failed" and "checked 91 silence checks, 2 failed" over trunk 7134405dc's tables
+(273 with 8 and 89 with 2 over 9863b1087's), every failure a window commit's:
+ten quotes MOVED with their text unchanged and re-anchored, T10.4 expected 2
+(4abb6100e's export-direction terminate pad; ALIGNED stands) and H4.5 expected 5
+(68569d234, ST-1's merge-rule signal); after the records commit both scripts
+print 0 failed. The V-3a register: (i) to (iii) resolved on trunk; (iv) and (v)
+HOLD with W-324's and W-326's break conditions not fired; (vi) added for W-372;
+the ten section 7 residues, VA-2's six and every other NONE and ALIGNED entry
+HOLD. No build, no merge, no dispatch; Actions is still disabled (the newest run
+is of 2026-10-08), so nothing is of record. At trunk 7134405dc, which the
+records commit is cut from, 12 PRs are landed and 6 held.
+
 2026-11-02 (15:36 UTC): PR 68 (OV-4) LANDED on trunk by merge
 c62ae211e under R33 (fork/land/land1-plan.md section 2.12), GitHub
 merged_at 2026-11-02T15:53:02Z; container-measured (R33 (b)): gate 1986 of 1986,
@@ -2298,7 +2335,14 @@ as the work still owed on the branches and after the landing.
     (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's base, beside W-341).
     In UA-3's gate, because they need the advance: W-354 (drop D-SL-16's yield
     and D-SL-19's keying against 05a7ecbd3) and W-356 (re-run RG-1's crash
-    probe). Land-time notes, each by its PR's land-sequence records commit after
+    probe). W-372 (the struct-pattern check layer, filed 2026-11-02 by the
+    weekly upstream check) joins them, with the audit tasks that check names:
+    57bf903ef's resolution loop with generic.cpp's lost TODO restored,
+    4abb6100e's CppThunk checks over OV-3's export goldens and PR 68's
+    overload_set_default pair, c7de72757's and 9799a2326's default-value
+    exports, and 05a7ecbd3's string.carbon:154 site in W-354's and D-RG-16's
+    evidence.
+    Land-time notes, each by its PR's land-sequence records commit after
     its register block (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54,
     PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At each
     weekly upstream check: W-355 (run fork/register/check_quotes.sh and

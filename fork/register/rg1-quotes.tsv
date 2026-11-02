@@ -87,11 +87,12 @@ toolchain/lower/handle.cpp	77	context.SetLocal(inst_id, context.GetValue(inst.so
 toolchain/check/convert.cpp	1564	auto value_rep =
 toolchain/check/convert.cpp	1567	SemIR::ValueRepr::ForType(context.sem_ir(), target.type_id);
 docs/design/pattern_matching.md	803	_case_ ::= `case` _pattern_ [`if` _expression_]? `=>` _block_
-toolchain/parse/handle_match.cpp	176	"expected `(` after `if`");
+# Re-anchored 2026-11-02 (weekly upstream check) at upstream 68569d234: lines moved by 68569d234, c6b54b57e, 4abb6100e and 54f37b35b, text unchanged
+toolchain/parse/handle_match.cpp	180	"expected `(` after `if`");
 proposals/p003938-exporting-imported-names.md	82	`alias` is not fully designed
 docs/design/variadics.md	47	which are marked with the `each` keyword at the
 docs/design/variadics.md	92	An _each-name_ consists of the keyword `each` followed by the name of a pack,
-toolchain/parse/node_kind.def	292	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
+toolchain/parse/node_kind.def	294	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
 toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
 docs/design/generics/details.md	1073	template parameters, use the `template` keyword before `constraint`.
 docs/design/generics/details.md	5494	the keyword introducer `interface`, `constraint`, or `template constraint`,
@@ -126,7 +127,7 @@ proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	664	dialec
 proposals/p005434-ref-parameters-arguments-returns-and-val-returns.md	660	Mutation of objects with a non-copy-value representation in an active value
 docs/design/safety/README.md	116	Define the exact syntax for package declaration and function
 docs/design/expressions/arithmetic.md	158	defined.
-toolchain/parse/handle_match.cpp	169	auto open_paren = context.ConsumeIf(Lex::TokenKind::OpenParen);
+toolchain/parse/handle_match.cpp	173	auto open_paren = context.ConsumeIf(Lex::TokenKind::OpenParen);
 core/prelude/destroy.carbon	28	extend require impls SubobjectDestroy & DestroyImpl;
 toolchain/sem_ir/core_interface_kind.def	22	CARBON_SEM_IR_CORE_INTERFACE_KIND(CppRangeForIterate)
 docs/design/README.md	2130	Types may define additional
@@ -214,8 +215,8 @@ toolchain/sem_ir/typed_insts.h	2013	.expr_category = ComputedExprCategory::SameA
 toolchain/check/cpp/export.cpp	403	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
 toolchain/check/cpp/export.cpp	404	auto* record_decl = ExportClassToCppInDeclContext(
 toolchain/check/cpp/export.cpp	538	if (!decl_context) {
-toolchain/check/cpp/export.cpp	1903	"can't form a pointer to a template");
-toolchain/parse/node_kind.def	292	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
+toolchain/check/cpp/export.cpp	1951	"can't form a pointer to a template");
+toolchain/parse/node_kind.def	294	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
 toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
 toolchain/lower/testdata/var/destroy_control_flow.carbon	18	impl as Core.DestroyImpl {
 toolchain/lower/testdata/var/destroy_control_flow.carbon	187	define linkonce_odr void @_CSelfDestruct.Core.
@@ -236,7 +237,7 @@ docs/design/expressions/comparison_operators.md	463	is a weak, partial, or total
 docs/design/expressions/comparison_operators.md	505	not both.
 docs/design/interoperability/philosophy_and_goals.md	408	Furthermore, if Carbon code calls a C++ function
 docs/design/safety/README.md	249	run-time overhead in order to use additional hardening. Carbon will have
-toolchain/check/cpp/export.cpp	1902	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
+toolchain/check/cpp/export.cpp	1950	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
 docs/design/README.md	377	## Build modes
 docs/design/README.md	379	The behavior of the Carbon compiler depends on the _build mode_:
 docs/design/README.md	383	memory usage.
@@ -276,8 +277,8 @@ docs/design/values.md	581	`unsafe`, although rather than a region, it would seem
 docs/design/values.md	582	to the operation in question. For example:
 docs/design/values.md	595	s_value.unsafe RefMemberFunction();
 toolchain/parse/typed_nodes.h	1304	An `unsafe` modifier: `a unsafe <operator> b`.
-toolchain/parse/handle_expr.cpp	376	if (context.PositionIs(Lex::TokenKind::Unsafe)) {
-toolchain/parse/handle_expr.cpp	377	if (context.PositionIs(Lex::TokenKind::As, Lookahead::NextToken)) {
+toolchain/parse/handle_expr.cpp	396	if (context.PositionIs(Lex::TokenKind::Unsafe)) {
+toolchain/parse/handle_expr.cpp	397	if (context.PositionIs(Lex::TokenKind::As, Lookahead::NextToken)) {
 toolchain/docs/lower.md	140	Any feature of an entity (such
 toolchain/docs/lower.md	141	as parent namespaces or overloaded function parameters) that would create a
 toolchain/docs/lower.md	142	distinct entity must be included in some way in the generated identifier.
@@ -286,10 +287,10 @@ toolchain/sem_ir/function.h	548	them in mangling.
 toolchain/check/call.cpp	49	// the range [callee_arity - arity_lower_bound_margin, callee_arity]. This
 toolchain/check/call.cpp	50	// allows arity matching when the callee has default arguments for some
 toolchain/check/call.cpp	241	function.default_value_arity);
-toolchain/check/pattern_match.cpp	950	// If there's no scrutinee supplied, supply the default value instead.
+toolchain/check/pattern_match.cpp	1054	// If there's no scrutinee supplied, supply the default value instead.
 toolchain/check/function.cpp	677	// patterns, ensure that if a subpattern provides a default value, all
 toolchain/check/function.cpp	682	// TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this
-toolchain/check/handle_pattern_list.cpp	185	"default value is not a constant");
+toolchain/check/handle_pattern_list.cpp	281	"default value is not a constant");
 proposals/p002200-template-generics.md	471	class C4 { fn M[me: Self](p: i32 = 4); }
 proposals/p002200-template-generics.md	474	// using the default value of `4` for `p` when
 proposals/p002200-template-generics.md	214	-   Substitution failure is an error. In C++, [the SFINAE rule](#terminology)

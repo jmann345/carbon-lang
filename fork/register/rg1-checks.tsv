@@ -40,7 +40,8 @@ T9.3	G	-E	Union(FieldNotTriviallyCopyable|InitNotSingleField|InitUnknownField|Wi
 T10.1	G	-E	carbon/expected\.h|primary_	toolchain/install core	0
 T10.2	G	-i -E	std::expected|expected<	docs/design proposals	0
 T10.3	G	-E	carbon_catching_thunk|carbon_thunk_catch	toolchain	0
-T10.4	G	-w	__clang_call_terminate	toolchain	0
+# T10.4: 2 at 68569d234 are 4abb6100e's terminate pad in toolchain/lower/testdata/interop/cpp/function/export/macho_asm_label.carbon:266 and :275, Clang's codegen for an exported C++ destructor, not an import-direction fence; ALIGNED stands (weekly upstream check 2026-11-02, R29)
+T10.4	G	-w	__clang_call_terminate	toolchain	2
 T11.2	G	-F	prelude/types/result	core toolchain	0
 T11.4	G	-w	IsInSliceChoicePayloadType	toolchain	0
 T12.1	G	-w	is_union	toolchain/check/merge.cpp	0
@@ -64,7 +65,7 @@ H3.2	G	-i -w	tutorial	docs/guides	0
 H3.3	L	-	-	README.md docs/project/faq.md docs/guides/README.md	0
 H4.3	L	-	-	core/prelude/types/string.carbon	0
 H4.4	G	-F	if (!decl_context)	toolchain/check/cpp/export.cpp	3
-H4.5	L	-	-	toolchain/check/testdata/interop/cpp/operators/operators.carbon	4
+H4.5	L	-	-	toolchain/check/testdata/interop/cpp/operators/operators.carbon	5
 H4.6	G	-F	fork_all_operands_conversion	toolchain	0
 H5.1	L	-	-	core/prelude/types/optional.carbon	0
 H5.2	G	-E	EqWith|OrderedWith	core/prelude/types/optional.carbon	0

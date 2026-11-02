@@ -576,4 +576,10 @@ Forms of proposal 2200 that are not implemented yet:
     the template is instantiated: assigning to a field of a `const` object
     through a `ref` parameter of template type, or to a class's `let` member,
     is accepted (fork work item W-259; pinned as `todo_fail` by
-    `generic/template/operator.carbon`).
+    `generic/template/operator.carbon`). A value left operand is not checked
+    either and stops lowering: in `fn G[template T: type](v: T) { v[0] = 5; }`,
+    and with `v[i] = 5` for `i: i64`, called with a class that implements only
+    `Core.IndexWith(i64)`, the assignment is accepted and the compiler stops at
+    lower.cpp:48 ("Store operand must be a pointer") (LAND-1, 2026-11-02,
+    measured on PR 61's landing's install, 0.0.0-0.dev+3f229ecdf;
+    fork/land/land1-plan.md D-LAND-22; W-259).

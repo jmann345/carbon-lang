@@ -26,8 +26,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 ## Overview
 
-> **Fork design (F-014, 2026-10-13): the string types as implemented; toolchain
-> status: ST-1 landed 2026-10-13.** This page is a fork amendment
+> **Fork design (F-014, 2026-11-02): the string types as implemented; toolchain
+> status: ST-1 landed 2026-11-02.** This page is a fork amendment
 > (fork/string/plan.md, decisions D-ST-1..16, recorded in the fork decision log
 > under F-014 for after-the-fact veto). Upstream's
 > [String types](README.md#string-types) are provisional and no design for

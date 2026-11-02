@@ -1092,7 +1092,7 @@
     },
     {
       "id": "W-057",
-      "title": "ST-1 (LANDED 2026-10-13): W9c: string equality, concatenation, and owning variant",
+      "title": "ST-1 (LANDED 2026-11-02): W9c: string equality, concatenation, and owning variant",
       "kind": "implemented",
       "subsystem": "core/prelude",
       "size": "M",

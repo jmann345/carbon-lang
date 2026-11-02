@@ -3349,7 +3349,7 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
-### ST-1 / F-014: str comparison, Core.StringBuf, concatenation (2026-10-13)
+### ST-1 / F-014: str comparison, Core.StringBuf, concatenation (2026-11-02)
 
 Milestone bullet "String and related types used with string literals"
 (docs/project/milestones.md:202, under "Types with important language

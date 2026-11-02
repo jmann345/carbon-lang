@@ -4617,6 +4617,30 @@ constant-value alias, and, from the third and fourth document-review folds, the
 limits of W-014, W-127, W-192, W-193 and W-194; amended 2026-10-14,
 document-review fold 4: DR4b-8), the page states both. Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at 68569d234
+(toolchain/parse/handle_match.cpp:176, toolchain/parse/handle_match.cpp:169
+fail there; W-355); the decision-log entry "RG-1: the V-3a register
+classified at f27a977d8 (2026-10-28)" has the quotes):_ the guard
+parentheses (classified 2026-10-28, RG-1: ALIGNED, W-355, with upstream's
+parser, parse/handle_match.cpp:169 and :176, where pattern_matching.md:803
+omits them); the nine documented gaps (classified 2026-10-28, RG-1: ALIGNED
+with gaps, each item's); the convention, the new pages, the
+measured-behavior rule and the constant-value alias (classified 2026-10-28,
+RG-1: NONE, W-355; upstream's docs have no "Fork amendment" convention, its
+interoperability/ lists four entries, and p003938:82 says "`alias` is not
+fully designed").
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 58 by
+909c817d3 (GitHub merged_at 2026-11-02T06:23:27Z); container-measured (R33 (b)):
+gate 1953 of 1953, conformance 167/0/15 over 182; id re-scans: none;
+moved to follow-ons: to items 14, 15 and 16: state L for PR 53, SC-1 and
+PR 56. D-DD-9's break condition fired, PR 58 landing before SC-1 and PR 53:
+W-187 stays unused, because the remaining state-L texts are land-time steps
+of Next actions items 14 to 16 (fork/land/land1-plan.md D-LAND-14) and
+row 91's mark names them. The sentences that F-016 "stays unallocated" were
+re-read against trunk: F-016 is OP-2's, minted on held PR 57
+(fork/ORCHESTRATION.md), and DD-1 mints no fork design id (D-DD-3).
+
 ### ST-1 / F-014: str comparison, Core.StringBuf, concatenation (2026-11-02)
 
 Milestone bullet "String and related types used with string literals"
@@ -4970,8 +4994,9 @@ the `§`, `M-`, `R-` and row references are the plan's:
     with string literals exist as a view and an owning type with comparison,
     concatenation and conversion. The W9 Arbiter's String half, "an
     approved-design ... String with comparison/ownership story"
-    (gap-analysis.md:241-244), is met under R29(a): F-014 is a decided fork
-    design, recorded for after-the-fact veto as F-012 is for slices, whose
+    (gap-analysis.md:246-249, re-pinned 2026-11-02 at PR 58's landing,
+    LAND-1; :241-244 on ST-1's branch), is met under R29(a): F-014 is a decided
+    fork design, recorded for after-the-fact veto as F-012 is for slices, whose
     comparison and ownership story, limits included, is docs/design/strings.md.
     Row 79 stays PARTIAL because a design-specified operation OF ITS OWN TYPE is
     missing (write-through indexing, indexing.md's `IndirectIndexWith`, W-109);

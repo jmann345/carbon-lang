@@ -1069,7 +1069,12 @@ tree the records commit produces, so a cite that the landing's own records
 edit moves is written at its moved lines, and the orchestrator's landing-time
 rulings with their plan amendments go in the landing's records commit
 (amended 2026-11-02, fold check FC1-1 at PR 67, the orchestrator's ruling
-under R29).
+under R29). A fork/gap-analysis.md line cite in the ledger or the decision log
+names the tree of the date it carries (its entry's or its mark's), the rows
+being named by their bullet text (R7); a later landing that moves the lines
+does not re-pin it, and a landing re-pins only the cites its own texts write
+or its own section names, measured on its records tree (amended 2026-11-02,
+fold check FC55-1 at PR 55, the orchestrator's ruling under R29).
 
 **D-LAND-10, the review and stop-and-amend.** Fresh agents review each landing
 before phase 1: one for every landing, and two for PR 61 (TP-1's section 3
@@ -3355,8 +3360,14 @@ AUD-58-U1), "Land PR 58: DD-1's checker joins runner.py --self-test
 (D-DD-6)": in fork/conformance/runner.py, beside the
 `evaluator_samples_self_check()` that EV-1's state C commit added, a
 function `designdocs_samples_self_check()` that is the same code with
-fork/designdocs/check_samples.py for EV-1's path and
-`designdocs-samples self-check` for its label, called right after it,
+fork/designdocs/check_samples.py for EV-1's path,
+`designdocs-samples self-check` for its label and `module.main([])` for its
+call, DD-1's `main()` gaining in the same commit the `argv` parameter an
+in-process caller needs (`def main(argv: list[str] | None = None) -> int:`,
+`parser.parse_args(argv)`; standalone use unchanged), because written as the
+same code the hook exits 2 under `runner.py --self-test`, argparse reading the
+runner's `sys.argv` (amended 2026-11-02, the implementer's stop at step 6, the
+orchestrator's ruling under R29), called right after it,
 only when `--self-test` has no filter (EV-1's section 2.E.4, cb3ef2e74
 fork/evaluator/plan.md:1580-1586); it runs DD-1's checker without
 `--toolchain`, so its toolchain-free checks join, as D-DD-6 says. The same
@@ -3386,6 +3397,13 @@ OR-5: DD-1's note, verbatim after item 3's text:
     DD-1, so the stranded branch's F-008 draft is not ported; see its
     Branches row.)
 ```
+
+Re-pin (added 2026-11-02, FC55-2 at PR 55, the orchestrator's ruling under
+R29): in the ST-1 decision-log entry's D-ST-16 paragraph,
+"(gap-analysis.md:241-244)" becomes "(gap-analysis.md:246-249,
+re-pinned 2026-11-02 at PR 58's landing, LAND-1; :241-244 on ST-1's branch)",
+the lines of section W9's Arbiter paragraph measured on this landing's records
+tree.
 
 ### C.8 PR 61's own texts
 
@@ -4605,5 +4623,93 @@ landing's records commit (D-LAND-9 as amended by the first):
 > landing, LAND-1)"; W-167's evidence "line 45 on this branch)" becomes "line 45
 > on this branch, line 43 on trunk, re-read 2026-11-02 at PR 55's landing,
 > LAND-1)"."
+>
+> (9) Before PR 58's review (stage 6), on PR 55's fold check FC55-1 and FC55-2:
+> (1) FC55-1, the class closed: a fork/gap-analysis.md line cite in
+> fork/inventory/work-items.json or fork/decision-log.md names the tree of the
+> date it carries (its entry's date or its mark's), the rows being named by
+> their bullet text (R7); a later landing whose merge, land-time commits or
+> records edits move the lines does not re-pin it; a landing re-pins only the
+> cites its own texts write or that its own section names, measured on its
+> records tree; so PR 52's and PR 54's cites (W-060's :88 and :262-290, W-061's
+> :85, W-062's :91 and :266-290, CM-1's "now line 88" and "now line 85"), moved
+> one line by PR 55's header clause and four by its W9 hunk, stand with their
+> dates: in D-LAND-9 (its break condition's last sentence, not paragraph (1)'s
+> quotation of it), after "fold check FC1-1 at PR 67, the orchestrator's ruling
+> under R29)." the sentence: "A fork/gap-analysis.md line cite in the ledger or
+> the decision log names the tree of the date it carries (its entry's or its
+> mark's), the rows being named by their bullet text (R7); a later landing that
+> moves the lines does not re-pin it, and a landing re-pins only the cites its
+> own texts write or its own section names, measured on its records tree
+> (amended 2026-11-02, fold check FC55-1 at PR 55, the orchestrator's ruling
+> under R29)." (2) FC55-2: the ST-1 decision-log entry, re-stamped 2026-11-02 by
+> PR 55's landing, carries in its D-ST-16 paragraph the branch-era cite
+> "(gap-analysis.md:241-244)" for section W9's Arbiter paragraph, which PR 55's
+> landing did not re-pin because the plan gave no text; it is re-pinned here,
+> measured on PR 58's records tree after this landing's edits of
+> fork/gap-analysis.md (the folder measures section W9's Arbiter paragraph, from
+> its "**Arbiter:** A core/ test suite" line to its "round-tripping with C++."
+> line, with `grep -n`; expected :246-249, the lines on PR 55's records tree, if
+> this landing moves nothing above them; the measured values govern, are written
+> in the two texts below and in paragraph (9), and are reported): in
+> fork/decision-log.md's ST-1 entry, "(gap-analysis.md:241-244)" becomes
+> "(gap-analysis.md:246-249, re-pinned 2026-11-02 at PR 58's landing, LAND-1;
+> :241-244 on ST-1's branch)"; fork/string/plan.md:729's same cite stands as the
+> plan's record of the branch; and Appendix C.7 gains, before "### C.8 PR 61's
+> own texts", the paragraph: "Re-pin (added 2026-11-02, FC55-2 at PR 55, the
+> orchestrator's ruling under R29): in the ST-1 decision-log entry's D-ST-16
+> paragraph, "(gap-analysis.md:241-244)" becomes "(gap-analysis.md:246-249,
+> re-pinned 2026-11-02 at PR 58's landing, LAND-1; :241-244 on ST-1's branch)",
+> the lines of section W9's Arbiter paragraph measured on this landing's records
+> tree."
+>
+> (10) At PR 58's landing (stage 6), on the implementer's stop at step 6,
+> the --self-test join: (1) in fork/designdocs/check_samples.py, "def main() ->
+> int:" becomes "def main(argv: list[str] | None = None) -> int:" and "args =
+> parser.parse_args()" becomes "args = parser.parse_args(argv)" (standalone
+> use is unchanged: `argv=None` parses `sys.argv[1:]`; `--self-check` and
+> `--toolchain` unchanged; the `if __name__ == "__main__": sys.exit(main())`
+> lines unchanged); (2) in fork/conformance/runner.py,
+> `designdocs_samples_self_check()` is EV-1's hook with
+> fork/designdocs/check_samples.py for the path,
+> `designdocs-samples self-check` for the label, a docstring naming DD-1's
+> checker and fork/designdocs/plan.md D-DD-6, and `module.main([])` for the
+> call (the empty argv: the toolchain-free checks, as D-DD-6 says), placed
+> directly after `evaluator_samples_self_check()`, called right after it under
+> the same `not filter_substr` condition and failing `self_test` the same way,
+> with a comment of the same form as EV-1's; (3) the join commit's message
+> states the stop and the fix in these words: "Written as the same code as
+> EV-1's hook, the join exited 2: DD-1's main() parsed the runner's own
+> sys.argv ('unrecognized arguments: --self-test'). DD-1's main() gains the
+> argv parameter an in-process caller needs (def main(argv: list[str] | None =
+> None) -> int, parser.parse_args(argv); standalone use unchanged) and the
+> hook calls module.main([]) (the orchestrator's ruling under R29, 2026-11-02,
+> at the implementer's stop at step 6)", and records the measured
+> `--self-test` output after the join ("designdocs-samples self-check: OK"
+> right after "evaluator-samples self-check: OK", then "self-test: 182
+> programs parsed, 56 bullets in table, OK", exit 0, with the wall time), the
+> standalone checker's line (`python3 -I fork/designdocs/check_samples.py`,
+> "... 0 errors") and its `--self-check` and `--toolchain` runs with the
+> landing's install (both exit 0), and C.7's R-8 re-pins against the runner
+> the commit leaves, as C.7 says; (4) the plan: in Appendix C.7, "a function
+> `designdocs_samples_self_check()` that is the same code with
+> fork/designdocs/check_samples.py for EV-1's path and
+> `designdocs-samples self-check` for its label, called right after it,"
+> becomes "a function `designdocs_samples_self_check()` that is the same code
+> with fork/designdocs/check_samples.py for EV-1's path,
+> `designdocs-samples self-check` for its label and `module.main([])` for its
+> call, DD-1's `main()` gaining in the same commit the `argv` parameter an
+> in-process caller needs (`def main(argv: list[str] | None = None) -> int:`,
+> `parser.parse_args(argv)`; standalone use unchanged), because written as the
+> same code the hook exits 2 under `runner.py --self-test`, argparse reading
+> the runner's `sys.argv` (amended 2026-11-02, the implementer's stop at
+> step 6, the orchestrator's ruling under R29), called right after it,"; and the
+> section "## Landing-time rulings" gains, inside its blockquote after
+> paragraph (8), a paragraph "(10)" holding this ruling's items (1) to (4)
+> verbatim, introduced by "At PR 58's landing (stage 6), on the implementer's
+> stop at step 6, the --self-test join:" (paragraph (9), this stage's
+> pre-review ruling, is inserted between (8) and (10) by its ruling folder
+> after this implementer); these plan edits are made with the records edits at
+> step 9, fork/land/land1-plan.md among the records files.
 
 <!-- google-doc-style-resume -->

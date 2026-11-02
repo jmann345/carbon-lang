@@ -4867,6 +4867,62 @@ re-review's round 1 (2026-10-22) amends three of these items with dated marks
     held-state paragraph up to date. _Break condition:_ a review names a
     fallback clause of C.7 that this reading misses.
 
+CT-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 64 by e68882519 (head
+551a03328, trunk before 92120eff3; GitHub merged_at 2026-11-02T12:05:55Z) under
+R33, fork/land/land1-plan.md section 2.9; land-time commits d2cfbfe72,
+4ce74a243, ef8456981, 940b67215; container-measured (R33 (b)): gate 1978 of
+1978, conformance 189 PASS, 0 FAIL, 15 SKIP over 204, 49 of 56 bullets; id
+re-scans: W-300 to W-311 at the second re-scan (CT-1's item (e)) on the merged
+trunk before the records commit's ledger edit: origin/claude/carbon-fork-0-1-ct
+(551a03328, the head), and trunk and the /home/user/carbon-trunk worktree
+(940b67215), which contain 551a03328, and claude/carbon-fork-0-1-ct,
+origin/pr/64 and the /home/user/carbon-ct worktree (4a3220c11, an ancestor of
+551a03328); W-312 to W-319 at it: none; moved to follow-ons: to item 17: S-VA
+with its mutant M18, and C.11's split; to items 15 and 16: its PR 60 and PR 57
+compositions. L-F reworded A.2's nested_alias_through_specific comment to name
+the constants 8 and 2 (item (c)), an autoupdate no-op; L's check_samples.py
+reported "check_samples: 19 program blocks, 71 fixtures, 2 W2 hits (1
+allowlisted, 1 qualified); 0 errors" and, with --toolchain, "check_samples: 19
+program blocks, 71 fixtures (compiled), 2 W2 hits (1 allowlisted, 1 qualified);
+0 errors" (item (f)). Mutants (item (c); fork/land/land1-plan.md D-LAND-20):
+re-run M6 (A.2 stops: CHECK lower/handle_call.cpp:984 at
+narrow_return_template.carbon:7; cpp_template_symbolic_diff COMPILE-FAIL;
+c_twice_bool, c_twice_i8, c_returned_var_narrow and t_returned_var_narrow stop
+at that CHECK), M7 (A.2 stops: CHECK lower/handle_call.cpp:984 at
+narrow_return_template.carbon:7; cpp_template_symbolic_diff COMPILE-FAIL;
+c_twice_bool, c_twice_i8, c_returned_var_narrow and t_returned_var_narrow stop
+at that CHECK), M23 (A.2 stops: CHECK lower/file_context.h:187 at
+store_generic_call_result.carbon:25; as1, as3, as6, as8, as11, as12,
+c_assoc_type and c_assign_from_generic_call_box_field stop), M24 (A.1 stops:
+CHECK sem_ir/inst.h:249 at cpp_call_ref_argument; c_ref_param and rp2 stop), M75
+(survives), M75r (survives); every other mutant of section 8 item 5 edits a file
+this landing does not change and keeps its record on 551a03328; M18 waits with
+S-VA for Next actions item 17. R32 (the "R32 at landing" note above): F-021's
+V-3 comparison (sections 0.10 and 1.17) was repeated at upstream 68569d234,
+where its four quotes and E-ARG's CppCallArgTypeNotSupported are at
+docs/design/generics/appendix-witness.md:154,
+docs/design/generics/overview.md:376,
+proposals/p002200-template-generics.md:1095, toolchain/check/call.cpp:388,
+toolchain/check/cpp/type_mapping.cpp:461,
+toolchain/check/cpp/type_mapping.cpp:464, and none of the 59 upstream commits
+since c1e83b0b7 to CT-1's files as section 0.10 lists them,
+toolchain/check/cpp/, docs/design/ and proposals/, each judged as section 0.10
+judges (fork/land/land1-plan.md section 2.9), lands a rule for a checked
+generic's C++ calls that differs from F-021, so F-021 stands. DR-1's note,
+passed to this plan's records (fork/direction/plan.md, DR-1b's re-review round
+4): a template `v[0] = 5` on a by-value type with only `IndexWith` CHECK-fails
+at lower.cpp:48 on CT-1's install, where trunk diagnoses; with a variable
+subscript, `x[i] = 5` on such a type CHECK-fails there on trunk too, and
+`s[i] = 5` on a `Core.Slice(i32)` or `Core.Buf(i32)` as a template `T`
+CHECK-fails on trunk and prints `5 5` once DR-1b lands. The landing's review
+compiled the literal and variable forms, the same assignment outside a template
+and a template's literal read on this landing's install, with the results
+fork/land/land1-plan.md D-LAND-22 gives: the abort is W-259's, an assignment
+whose template-dependent left operand is not checked on instantiation, which
+trunk reaches with the variable form; trunk rejected the literal form only
+because it rejected every literal subscript of such a type in a template, the
+read included.
+
 ## Appendix A: golden sources
 
 Every new or changed golden source, without CHECK lines (R16(a)). A.1 and A.2

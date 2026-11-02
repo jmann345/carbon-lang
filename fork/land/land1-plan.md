@@ -135,8 +135,11 @@ survives into a commit (amended 2026-11-01, review fold: B-M5 / B-m6). A PR's
 own text that Appendix C cites by its plan's lines, rather than giving it, keeps
 that plan's slots, each set where Appendix C cites it: TP-1's `YYYY-MM-DD` and
 CT-1's `<YYYY-MM-DD>` to `<date>`, TP-1's `<merged ...>` values to the landing's
-measurements (C.8), and DR-1's three `<sha>` slots to `<merge sha>` and
-`<land-time shas>` (C.12; added 2026-11-02, sign-off check).
+measurements (C.8), CT-1's `<gate N of N>` and `<P / F / S over N>` to the
+landing's final gate and conformance in the slots' own forms (C.10; amended
+2026-11-02, PR 64's landing, the implementer's stop at step 9: ruling (15)), and
+DR-1's three `<sha>` slots to `<merge sha>` and `<land-time shas>` (C.12; added
+2026-11-02, sign-off check).
 
 | Placeholder | Value | Measured by |
 | --- | --- | --- |
@@ -2728,12 +2731,19 @@ RV61A-2, RB61-1; ruling (12)): section 2.7 item 13's D replaces them by
 Appendix E's land-time text before step 9's search, which then finds no label
 (`git diff d13f47ea7 -- fork/inventory/work-items.json fork/gap-analysis.md |
 grep '^+' | grep -ciE 'not\s+of\s+record'` gives 0 on the records tree), and
-TP-1's item (h) is made by that replacement;
-at PR 62 W-011's notes; at PR 65 W-109's notes; none at PR 67, 51, 64, 63
-and 68, and trunk's own W-321 label is not a landing's. The plans' own steps for
-these labels, ST-1's and TP-1's "once Actions returns ... a records
-commit" (c3cdecc5d fork/ORCHESTRATION.md:559-562; 66aa13132
-fork/templates/plan.md:7935-7936), are made by this mark; R21's hosted
+TP-1's item (h) is made by that replacement; at PR 62 W-011's notes; at PR 65
+W-109's notes; none at PR 67, 51, 63 and 68, and at PR 64 W-043's notes, where
+C.2's "Measured in the container (EXPECTED, not of record, R9)" sentence brings
+the label, found by step 9's search (amended 2026-11-02, PR 64's landing, the
+implementer's stop at step 9: ruling (15)), and CT-1's "Expected at CT-1, NOT of
+record" paragraph, which the merge places in fork/ORCHESTRATION.md's Scoreboard
+section and which takes the prose mark after its first sentence, the one ending
+"both rows PARTIAL." (A.10's prose rule as ruling (12) item (3b) widened it; the
+heads of PR 63, PR 65 and PR 68 bring no such label; amended 2026-11-02, PR 64's
+landing, review round 1: RV64-1, ruling (16)), and trunk's own W-321 label is
+not a landing's. The plans' own steps for these labels, ST-1's and TP-1's "once
+Actions returns ... a records commit" (c3cdecc5d fork/ORCHESTRATION.md:559-562;
+66aa13132 fork/templates/plan.md:7935-7936), are made by this mark; R21's hosted
 gate stays owed (A.3).
 
 <!-- google-doc-style-resume -->
@@ -3667,7 +3677,22 @@ the set's name and, in parentheses, its reason; none is expected
 CT-1's: C.1 (L), C.2 (W-043's discharge over DD-1's entry, including C.7's
 LAND-1 note), C.4 (rows 42 and 56, with the interop golden counts measured on
 the landing's tree in place of 164 and 56), C.6 (the two programs, in the
-merge), C.10 (W-127), with `<YYYY-MM-DD>` the landing date. C.1's replaced
+merge), C.10 (W-127), with `<YYYY-MM-DD>` the landing date. C.2's
+`<the original seven entries, kept, then DD-1's at land time>` stands for the
+merged tree's W-043 `evidence` entries, verbatim and in their order (seven on
+this tree: PR 51's six rewritten entries and DD-1's X09 entry, PR 51 having
+rewritten the original seven before PR 58 landed), C.2's six entries following
+them; its `<the original notes, kept, then DD-1's at land time>` stands for the
+merged tree's W-043 `notes` verbatim (DD-1's sentence and C.7's LAND-1 note
+included), whose final period is the template's, C.2's text following after
+one space from "DISCHARGED at CT-1"; the branch's held-state sentence ("Held
+state (2026-10-21): ...") is not carried, this records commit being the event
+it announces, and the branch's round sentence ("Focused re-review, round 1
+(2026-10-22): ...") is kept after C.2's text, as C.2's intro says; C.2's
+`<gate N of N>` and `<P / F / S over N>` are the landing's final gate and
+conformance in the slots' own forms, "1978 of 1978" and "189 / 0 / 15 over
+204" at this landing (added 2026-11-02, PR 64's landing, the implementer's
+stop at step 9: ruling (15)). C.1's replaced
 sentence runs from "One limit in 0.1:" to its state-L end, "(fork work item
 W-043, and W-127).", which PR 58's state-L commit made of the "(fork work
 item W-043, and W-127 on held PR 51)." that C.1 quotes (amended 2026-11-01,
@@ -5026,5 +5051,88 @@ landing's records commit (D-LAND-9 as amended by the first):
 > fold: RR4-1)." becomes "DR-1's note's last sentence is amended 2026-11-01
 > (review fold: RR4-1; the antecedent named 2026-11-02, the fold check of
 > PR 61's review round 2: FC61-2-1, ruling (14))."; no other word changes.
+>
+> (15) At PR 64's landing (stage 9), on the implementer's stop at step 9, C.2's
+> undefined slots and placeholders: (1) The slots. C.2's sentence "Measured in
+> the container (EXPECTED, not of record, R9): <gate N of N>, conformance
+> <P / F / S over N>." is written with the landing's final gate and conformance
+> in the slots' own forms, stage 9's step 8 values on the install of 940b67215:
+> "Measured in the container (EXPECTED, not of record, R9): 1978 of 1978,
+> conformance 189 / 0 / 15 over 204." In fork/land/land1-plan.md, the
+> conventions paragraph's "TP-1's `<merged ...>` values to the landing's
+> measurements (C.8), and DR-1's three `<sha>` slots" becomes "TP-1's
+> `<merged ...>` values to the landing's measurements (C.8), CT-1's
+> `<gate N of N>` and `<P / F / S over N>` to the landing's final gate and
+> conformance in the slots' own forms (C.10; amended 2026-11-02, PR 64's
+> landing, the implementer's stop at step 9: ruling (15)), and DR-1's three
+> `<sha>` slots". (2) The placeholders. C.2's
+> "<the original seven entries, kept, then DD-1's at land time>" stands for the
+> merged tree's W-043 `evidence` entries, verbatim and in their order (seven on
+> this tree: PR 51's six rewritten entries and DD-1's X09 entry), with C.2's six
+> entries following them; C.2's
+> "<the original notes, kept, then DD-1's at land time>" stands for the merged
+> tree's W-043 `notes` verbatim (DD-1's sentence and C.7's LAND-1 note
+> included), whose final period is the template's, so that C.2's text follows
+> after one space from "DISCHARGED at CT-1 (2026-11-02,
+> fork/cpp-templates/plan.md):"; C.2's title replaces the entry's title,
+> with 2026-11-02 for `<YYYY-MM-DD>`; the branch's held-state sentence of
+> W-043's notes ("Held state (2026-10-21): PR 51 to PR 62 are held, so this
+> branch's entry keeps the original seven evidence entries and notes, and the
+> land-time records commit reapplies this text over the entry that M takes whole
+> from DD-1 (PR 58), DD-1's evidence after the original seven and DD-1's notes
+> after the original notes (fork/cpp-templates/plan.md Appendix C.2, §2.11).")
+> is not carried, this records commit being the event it announces, and the
+> branch's round sentence ("Focused re-review, round 1 (2026-10-22): two reviews
+> of the fold and these records at 118fc1bc8 both returned APPROVE-WITH-FIXES
+> with no BLOCKER or MAJOR and twelve MINOR records findings, all folded and
+> none rejected, with no fix commit and no residue filed, so the round is dry
+> and the loop ends (fork/cpp-templates/plan.md, 'Focused re-review of the fold,
+> round 1 (2026-10-22)').") is kept after C.2's text, separated by one space, as
+> C.2's intro says (551a03328 fork/cpp-templates/plan.md:6771-6774). In
+> fork/land/land1-plan.md, Appendix C.10, directly after "C.10 (W-127), with
+> `<YYYY-MM-DD>` the landing date." this sentence is added: "C.2's
+> `<the original seven entries, kept, then DD-1's at land time>` stands for the
+> merged tree's W-043 `evidence` entries, verbatim and in their order (seven on
+> this tree: PR 51's six rewritten entries and DD-1's X09 entry, PR 51 having
+> rewritten the original seven before PR 58 landed), C.2's six entries following
+> them; its `<the original notes, kept, then DD-1's at land time>` stands for
+> the merged tree's W-043 `notes` verbatim (DD-1's sentence and C.7's LAND-1
+> note included), whose final period is the template's, C.2's text following
+> after one space from "DISCHARGED at CT-1"; the branch's held-state sentence
+> ("Held state (2026-10-21): ...") is not carried, this records commit being the
+> event it announces, and the branch's round sentence ("Focused re-review,
+> round 1 (2026-10-22): ...") is kept after C.2's text, as C.2's intro says;
+> C.2's `<gate N of N>` and `<P / F / S over N>` are the landing's final gate
+> and conformance in the slots' own forms, "1978 of 1978" and "189 / 0 / 15
+> over 204" at this landing (added 2026-11-02, PR 64's landing, the
+> implementer's stop at step 9: ruling (15))." (3) A.10. C.2's sentence brings
+> the label "EXPECTED, not of record" into W-043's `notes`, so step 9's search
+> finds it and the mark is written, appended to the notes with a leading space
+> in A.10's form: " (LAND-1, 2026-11-02: the "not of record" label above is
+> superseded by PR 64's landing's container-measured scoreboard, R33
+> (b), 189/0/15 over 204 with 49/56 bullets.)". In fork/land/land1-plan.md,
+> A.10, "none at PR 67, 51, 64, 63 and 68, and trunk's own W-321 label is not a
+> landing's." becomes "none at PR 67, 51, 63 and 68, and at PR 64 W-043's notes,
+> where C.2's "Measured in the container (EXPECTED, not of record, R9)" sentence
+> brings the label, found by step 9's search (amended 2026-11-02, PR 64's
+> landing, the implementer's stop at step 9: ruling (15)), and trunk's own W-321
+> label is not a landing's."
+>
+> (16) At PR 64's landing (stage 9), on review round 1's MINOR finding RV64-1:
+> (1) In fork/land/land1-plan.md, A.10 (the list itself, not paragraph (15)'s
+> quotation of it), the text "found by step 9's search (amended 2026-11-02,
+> PR 64's landing, the implementer's stop at step 9: ruling (15)), and trunk's
+> own W-321 label is not a landing's." becomes "found by step 9's search
+> (amended 2026-11-02, PR 64's landing, the implementer's stop at step 9:
+> ruling (15)), and CT-1's "Expected at CT-1, NOT of record" paragraph, which
+> the merge places in fork/ORCHESTRATION.md's Scoreboard section and which
+> takes the prose mark after its first sentence, the one ending "both rows
+> PARTIAL." (A.10's prose rule as ruling (12) item (3b) widened it; the heads
+> of PR 63, PR 65 and PR 68 bring no such label; amended 2026-11-02, PR 64's
+> landing, review round 1: RV64-1, ruling (16)), and trunk's own W-321 label
+> is not a landing's." No other file changes: the mark itself stands as
+> written. (2) The records commit's message names both A.10 marks of this
+> landing, W-043's notes (ruling (15)) and CT-1's Scoreboard paragraph (A.10's
+> prose rule as ruling (12) item (3b) widened it).
 
 <!-- google-doc-style-resume -->

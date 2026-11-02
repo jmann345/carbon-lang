@@ -12660,7 +12660,14 @@ the reviews re-ran the gate (1959 of 1959), conformance (147 / 0 / 20 over 167)
 and the mutants and probe matrices on the head, and measured PR 62's mirror at
 its moved head 0ef8a0334 (1967 of 1967, 152 / 0 / 20 over 172, PR 62's own W-322
 SKIP the one change), which was owed; no residue is filed and W-312 to W-319
-stay unused.
+stay unused. Brought up to date 2026-11-02 (LAND-1, fork/land/land1-plan.md
+section 2.9): merged into trunk as PR 64 by e68882519 after PR 61 (TP-1) and
+PR 62, with land-time commits d2cfbfe72, 4ce74a243, ef8456981, 940b67215 (L-F
+and L); container-measured (R33 (b)) on the merged trunk, the absolute count
+re-quoted from its scoreboard: gate 1978 of 1978, conformance 189/0/15 over
+204, 49/56 bullets; F-021's V-3 comparison repeated at upstream 68569d234
+(fork/cpp-templates/plan.md, its Landed notes); S-VA and its mutant M18 wait
+for Next actions item 17.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
 ten of plan §0.10 (the tenth, `SpecificConstant`'s category, added at plan rev
@@ -12678,3 +12685,14 @@ code and golden edits with their merge rules: upstream's subst.cpp has no
 `MetaInstId` case, its check/cpp no `TSK_ImplicitInstantiation`, its toolchain
 no `DiscardGenericDeclIntoEnclosingGeneric`, and its `SpecificConstant` keeps
 `ComputedExprCategory::SameAsFirstOperand`, sem_ir/typed_insts.h:2013).
+
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 64 by e68882519
+(GitHub merged_at 2026-11-02T12:05:55Z); container-measured (R33 (b)): gate 1978
+of 1978, conformance 189/0/15 over 204; id re-scans: W-300 to W-311 at the
+second re-scan (CT-1's item (e)) on the merged trunk before the records commit's
+ledger edit: origin/claude/carbon-fork-0-1-ct (551a03328, the head), and trunk
+and the /home/user/carbon-trunk worktree (940b67215), which contain 551a03328,
+and claude/carbon-fork-0-1-ct, origin/pr/64 and the /home/user/carbon-ct
+worktree (4a3220c11, an ancestor of 551a03328); W-312 to W-319 at it: none;
+moved to follow-ons: to item 17: S-VA with its mutant M18, and C.11's split; to
+items 15 and 16: its PR 60 and PR 57 compositions.

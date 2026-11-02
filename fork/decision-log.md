@@ -9107,6 +9107,18 @@ no toolchain, golden or program file; there is no fixer and no further round,
 the fix budget stays at one of three, and the PR is opened held, base trunk,
 as the plan's section 8.14 records.
 
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 68 by
+c62ae211e (GitHub merged_at 2026-11-02T15:53:02Z), trunk before 3a9be5d4e
+holding PR 67, 51, 52, 54, 55, 58, 61, 62, 64, 63 and 65, by
+fork/land/land1-plan.md D-LAND-5's rules (OR-1 to OR-4 and LG-1), the code
+rules of fork/overload/ov4-plan.md section 6.2 going to the follow-ons;
+land-time commits
+c6c9d5fe3, L-R checked at upstream 68569d234 (91 silence checks with
+2 failed, 289 quotes with 10 failed over the whole tables).
+Container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15
+over 208, 49/56 bullets; moved to follow-ons: SC-1's two arguments
+(item 15) and VA-1's pack gate order (item 17).
+
 ### OV-3: overload-set export, documented divergence (2026-10-05)
 
 Milestone bullet "Functions: function overloading (Carbon-native)" flips PARTIAL

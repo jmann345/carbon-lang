@@ -4174,3 +4174,23 @@ before EH-C and UA-3; its residues W-360 to W-363 go to UA-3.
 ```
 
 <!-- google-doc-style-resume -->
+
+## Landed notes (OV-4, LAND-1)
+
+OV-4 landed on trunk (LAND-1, 2026-11-02): merged as PR 68 by
+c62ae211e (head 097c76473, trunk before 3a9be5d4e; GitHub merged_at
+2026-11-02T15:53:02Z) under R33, fork/land/land1-plan.md section 2.12;
+land-time commits c6c9d5fe3; container-measured (R33 (b)): gate
+1986 of 1986, conformance 193 PASS, 0 FAIL, 15 SKIP over 208, 49 of 56
+bullets; id re-scans: none; moved to follow-ons: to item 15: SC-1's two
+arguments; to item 17: VA-1's pack gate order. Mutants (section 8.8's
+re-run of section 8.5; fork/land/land1-plan.md D-LAND-20): re-run M1
+(file_test aborts on the four goldens and on the whole gate at call.cpp:520's
+CHECK `param_pattern_ids.size() == arg_ids.size()`, the record's :516 moved
+four lines by the merged trunk's call.cpp; p02, p04, a09c and q30 abort
+there), M2 (the four goldens fail, the whole gate 1982 of 1986; p02, p04 and
+a09c change as recorded), M8 (file_test aborts on the four goldens and on the
+whole gate at call.cpp:440's CHECK `default_value_arity <= expected_args_size`,
+the record's :436; q01, q31 and q32 abort there); every other mutant edits a
+file this landing does not change, or a program, and keeps its record on
+097c76473.

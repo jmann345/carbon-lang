@@ -57,7 +57,7 @@ import Cpp library "header.h";
 // round-2 fill measured exactly this under the old split name; the CHECK
 // lines were cleared for the rename, see the header).
 fn F[T: type](unused x: T) {
-  // CHECK:STDERR: fail_todo_unformed_dependent_var.carbon:[[@LINE+4]]:3: error: cannot convert type `S(<cannot stringify inst69000038: {kind: TemplateInst, arg0: inst6900001C, type: type(TypeType)}>)` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR: fail_todo_unformed_dependent_var.carbon:[[@LINE+4]]:3: error: cannot convert type `S(<cannot stringify inst59000038: {kind: TemplateInst, arg0: inst5900001C, type: type(TypeType)}>)` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
   // CHECK:STDERR:   var unused v: Cpp.S(T);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:

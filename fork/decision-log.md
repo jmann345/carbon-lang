@@ -3642,6 +3642,11 @@ driver writes no depfile; compile_subcommand.cpp:43-46's single-input TODO and
 p006333:99-100's `carbon compile` are the driver's, which this branch does not
 change).
 
+_Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 52 by
+12217e941 (GitHub merged_at 2026-11-02T02:33:50Z); container-measured (R33 (b)):
+gate 1945 of 1945, conformance 133/0/17 over 150; id re-scans: none;
+moved to follow-ons: none.
+
 ### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
 
 **Context.** Workstream OX-1 planned W-054, "Export Carbon operator impls as

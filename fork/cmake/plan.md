@@ -1340,3 +1340,10 @@ nightly 2026.10.12 with CMake 3.28.3, GNU make 4.3 and ninja.
 
 Outstanding: the hosted conformance run R9 requires (no dispatch date,
 Actions disabled); W-128's install step.
+
+CM-1 landed on trunk (LAND-1, 2026-11-02): merged as PR 52 by
+12217e941 (head e6bc32a6d, trunk before 79a672cc4; GitHub merged_at
+2026-11-02T02:33:50Z) under R33, fork/land/land1-plan.md section 2.3;
+land-time commits none; container-measured (R33 (b)): gate
+1945 of 1945, conformance 133 PASS, 0 FAIL, 17 SKIP over 150, 49 of 56
+bullets; id re-scans: none; moved to follow-ons: none.

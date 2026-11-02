@@ -6,7 +6,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # FO-1 plan: the follow-ons that gate the held PRs, then their landings
 
-**Status:** rev 5, 2026-11-02 -- SIGNED OFF FOR IMPLEMENTATION. Rev 5 folded the
+**Status:** rev 6, 2026-11-02 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
+is a stop-and-amend of unit A (amended 2026-11-02, implementation:
+stop-and-amend, unit A: F-A1 is not made and A-R's records texts are
+re-given), recorded in "Stop-and-amend record (rev 6, 2026-11-02)" before
+the Sign-off; it changes no code block, golden source, program, prediction,
+decision's ruling or break condition. Rev 5 folded the
 focused re-review RR3 of rev 4 (verdict APPROVE-WITH-AMENDMENTS, RR3-1 to RR3-4,
 no BLOCKER); rev 4, 2026-11-02, folded RR2's RR2-1 to RR2-6 (verdict REJECT,
 blockers RR2-1 and RR2-2); rev 3, 2026-11-02, folded RR1's N-1 to N-4 (blockers
@@ -151,6 +156,7 @@ fold: RR3-3).
 -   Re-review fold record (rev 3)
 -   Re-review fold record (rev 4)
 -   Re-review fold record (rev 5)
+-   Stop-and-amend record (rev 6)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -606,6 +612,7 @@ logs in `$P/<sim>/`):
 | 22eb7200c with `fail_dependent_interface_arg_unsatisfied`'s TODO comment reworded for the branch's answer (scratch 36fe44963; added 2026-11-02, review fold: RR3-3) | incremental | 2003 passed, 0 failed of 2003 (`$Q3/gate_land_final.txt`), so the comment-only change leaves the land tree as measured | not re-run (a comment line) | none |
 | `sim59` | 324 steps, 6 m 37 s | 2004 passed, 0 failed of 2004 | 202 PASS, 0 FAIL, 14 SKIP of 216; 50 bullets | none |
 | `sim59` with W-367 and W-368 | incremental | 2004 passed, 0 failed of 2004 | not re-run | none |
+| e23113ba2 with A1, PR 57's own branch (47a3d9f4e, unit A's lane worktree; added 2026-11-02, implementation: stop-and-amend, unit A) | full, 322 steps, then a relink for the version stamp | 1950 passed, 0 failed of 1950 at e23113ba2, and with A1 before and after autoupdate of destroy.carbon, which writes nothing | 139 PASS, 0 FAIL, 22 SKIP of 161; 48 bullets, at e23113ba2 and with A1, no program's status or detail changed | none; F-A1 not made (section 2.1) |
 
 No CHECK failure or stack dump in any gate. TP-1's mutant M18 reverts S, so
 `sim60` without S is M18's run: it turns the eight template-constraint goldens
@@ -852,7 +859,10 @@ impl never depended on completeness (the custom witness declines it either
 way and impl lookup selects the declared impl), so the fix is to decline it
 before completing: commit A1 on PR 57's branch (section 2.1), with the split
 `incomplete_self_signature` in check/testdata/optional/destroy.carbon (OP-2's
-golden) and its fill F-A1. Not upstream's `let Type: type;` (it removes the
+golden) and its fill F-A1 only if autoupdate writes a line for the split
+(measured on PR 57's branch: it writes none, so F-A1 is not made; amended
+2026-11-02, implementation: stop-and-amend, unit A: rev 5 named F-A1 here
+unconditionally). Not upstream's `let Type: type;` (it removes the
 checked-generic destruction OP-2 is for, measured), and not SC-1's split
 reworded (it hides an IN form: a method returning `Core.Optional(Self)` is
 ordinary code). The fix is under OP-2's review rule (D-FO1-9) and lands with
@@ -1303,20 +1313,39 @@ to e23113ba2 (`git apply --check`; `$P/i10/F1.patch`):
 
 <!-- google-doc-style-resume -->
 
-`HasClassKeyedImpl` is declared above `CanDestroyType` (:225 at e23113ba2).
-The `partial` query keeps the synthesized witness: its instruction is a
+`HasClassKeyedImpl` is declared above `CanDestroyType` (:225 at e23113ba2). The
+`partial` query keeps the synthesized witness: its instruction is a
 `PartialType`, not a `ClassType`, so it is not declined here, as
 `CanDestroyClass`'s own shortcut excepts it. Commit F-A1, "OP-2 fix fill:
 autoupdate item 10's split on the container arbiter", runs autoupdate on
 check/testdata/optional/destroy.carbon; the predicted CHECK-relevant lines are
 none: the split checks with no diagnostic and has no dump range, so the fill
 adds nothing for it (if autoupdate adds a line, it is reviewed as a prediction
-miss before the commit). The gate after F-A1 on PR 57's branch: every golden
-passes; predicted unchanged elsewhere (measured on `sim57x60`: the fix changed
-no file but the one SC-1 split's). Records commit A-R on the same branch: the
-fold record in fork/optional2/plan.md (Appendix D.1) and the decision-log
-paragraph of Appendix D.2, item 10's evidence, no ledger id (item 10 is a
-defect of OP-2's own scope, fixed before it lands; D-LAND-2's class).
+miss before the commit). The gate after F-A1 on PR 57's branch (after A1, when
+no F-A1 is made; amended 2026-11-02, implementation: stop-and-amend, unit A):
+every golden passes; predicted unchanged elsewhere (measured on `sim57x60`: the
+fix changed no file but the one SC-1 split's). Records commit A-R on the same
+branch: the fold record in fork/optional2/plan.md (Appendix D.1) and the
+decision-log paragraph of Appendix D.2, item 10's evidence, no ledger id (item
+10 is a defect of OP-2's own scope, fixed before it lands; D-LAND-2's class).
+
+Measured on PR 57's own branch (amended 2026-11-02, implementation:
+stop-and-amend, unit A: the measurement and its consequence for F-A1 and A-R).
+Unit A's implementer, in a fresh worktree of the pushed head e23113ba2 (a full
+build, 322 steps), committed A1 as 47a3d9f4e, not pushed: the block above as
+clang-format 21.1.8 wraps it, token-identical, and Appendix A.1's split
+verbatim. On e23113ba2's toolchain the split fails with ``unable to monomorphize
+specific `<none>` `` at its :15:20; with A1 it checks. The gate is 1950 passed,
+0 failed of 1950 at e23113ba2, with A1 before autoupdate and after it;
+autoupdate on destroy.carbon writes nothing (its sha1 unchanged, a fixpoint on
+the first pass), as predicted. Conformance is 139 PASS, 0 FAIL, 22 SKIP of 161
+with 48 of 56 bullets before and after A1, with no status or detail difference
+in any program; i10a returns 0 and i10b checks on A1's install. So F-A1 is not
+made: section 3's row 2 is conditional ("if autoupdate changes it") and its
+condition does not hold. A-R follows A1 directly with Appendix D.1's and D.2's
+texts as rev 6 gives them: D.1 names no fill commit, states the review rule
+rather than reviews that have not run when A-R is committed, and qualifies its
+cites of files that reach PR 57's tree only at M57 as trunk's.
 
 ### §2.2 Slice B: W-139 on PR 60 (SC-1)
 
@@ -2119,11 +2148,12 @@ outside OP-1's, OP-2's, SV-1's and those three lower files stops C1 (D-FO1-4's
 break condition, which names the same set since rev 2).
 
 Then on PR 57's branch (claude/carbon-fork-0-1-op2): C-M57, "OP-2: merge OP-1's
-W-352 fix (R32 (e))", merges PR 56's head at F-C1 into PR 57's branch after A1,
-F-A1 and A-R; its conflicts are expected in fork/ records only (OP-2's own
-optional.carbon edits are after :275 and at :15, :18, :40-48, which C1 does not
-touch: measured, C1's block rewrite applies to e23113ba2's file as to
-9f12209d8's). F-C-M57 refills what PR 57's gate then names (predicted: OP-2's
+W-352 fix (R32 (e))", merges PR 56's head at F-C1 into PR 57's branch after A1
+and A-R (no F-A1 is made, section 2.1; amended 2026-11-02, implementation:
+stop-and-amend, unit A); its conflicts are expected in fork/ records only
+(OP-2's own optional.carbon edits are after :275 and at :15, :18, :40-48, which
+C1 does not touch: measured, C1's block rewrite applies to e23113ba2's file as
+to 9f12209d8's). F-C-M57 refills what PR 57's gate then names (predicted: OP-2's
 goldens that print optional.carbon lines and the comparison impls, among the
 seven of the land tree's W-352 set). Commit C-R, W-352's discharge note, H5.4's
 verdict, the decision-log paragraph and optional.md's amendment (Appendix C.3,
@@ -2461,8 +2491,9 @@ implementer, a fresh worktree of claude/carbon-fork-0-1-op at its pushed head.
 
 After stage 14's phase 2, the orchestrator retargets PR 57 from
 claude/carbon-fork-0-1-op to trunk (D-FO1-7) and the actor confirms the base
-with `pull_request_read`. PR 57's branch then holds A1, F-A1, A-R (section 2.1)
-and C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
+with `pull_request_read`. PR 57's branch then holds A1 and A-R (section 2.1; no
+F-A1 is made, amended 2026-11-02, implementation: stop-and-amend, unit A) and
+C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
 
 1.  Heads confirmed; base `trunk`.
 2.  **M57**, "OP-2: merge trunk at `<trunk>` (LAND-1 stage 15, D-LAND-12)":
@@ -2613,9 +2644,9 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 
 | # | Branch (PR) | Commit | Title | Files | Gate after (expected) |
 | --- | --- | --- | --- | --- | --- |
-| 1 | op2 (57) | A1 | OP-2 fix: a class with its own Destroy impl is not completed by the Destroy witness (item 10) | check/custom_witness.cpp; check/testdata/optional/destroy.carbon | autoupdate would change destroy.carbon only if the split prints (predicted not); every other golden passes |
-| 2 | op2 (57) | F-A1 | OP-2 fix fill: autoupdate item 10's split on the container arbiter | destroy.carbon, if autoupdate changes it | all pass |
-| 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged |
+| 1 | op2 (57) | A1 | OP-2 fix: a class with its own Destroy impl is not completed by the Destroy witness (item 10) | check/custom_witness.cpp; check/testdata/optional/destroy.carbon | autoupdate would change destroy.carbon only if the split prints (predicted not); every other golden passes; measured on PR 57's branch (47a3d9f4e): autoupdate writes nothing, 1950 of 1950, conformance 139/0/22 over 161 unchanged (amended 2026-11-02, implementation: stop-and-amend, unit A) |
+| 2 | op2 (57) | F-A1 | OP-2 fix fill: autoupdate item 10's split on the container arbiter | destroy.carbon, if autoupdate changes it: not made, autoupdate writes nothing (measured; amended 2026-11-02, implementation: stop-and-amend, unit A) | not made |
+| 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 6 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A) |
 | 4 | op (56) | C1 | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon; two programs; fork/conformance/README.md | the W-352 goldens of OP-1 and SV-1 named in section 2.3 |
 | 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass |
 | 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls |
@@ -2655,7 +2686,7 @@ written by hand, and each fill is autoupdate's, reviewed as a diff.
 
 | File | Commit | Change | Fill | Evidence |
 | --- | --- | --- | --- | --- |
-| check/testdata/optional/destroy.carbon | A1 | split `incomplete_self_signature` (Appendix A.1), no CHECK line | F-A1: predicted none (no diagnostic, no dump range) | i10a checks with the fix, section 0.2 |
+| check/testdata/optional/destroy.carbon | A1 | split `incomplete_self_signature` (Appendix A.1), no CHECK line | F-A1: predicted none (no diagnostic, no dump range); measured none on PR 57's branch, so F-A1 is not made (amended 2026-11-02, implementation: stop-and-amend, unit A) | i10a checks with the fix, section 0.2; autoupdate at 47a3d9f4e, section 2.1 |
 | check/testdata/named_constraint/template_constraint.carbon (`self_facet_in_signature_required` and its `fail_todo_` twin) | none | none | none | fails at PR 57's landing without A1, passes with it (`sim57x60`) |
 | check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon | B1 | `fail_symbolic_arg` and `fail_require_in_interface_symbolic` renamed without `fail_` and instantiated, comments rewritten; twenty-six splits added, the overload split named `fail_todo_` (Appendix A.2; amended 2026-11-02, review fold: A-B-1 / A-B-3 / B-m-6; amended 2026-11-02, review fold: RR1-1 / RR1-2 / RR1-3; amended 2026-11-02, review fold: RR3-2 / RR3-3 / RR3-4: rev 4's row said nineteen) | F-B1: the renamed splits lose their STDERR lines; the new ones gain section 2.2's | measured by autoupdate on the land tree and on PR 60's own branch, byte-identical, `$Q3/f1_after_au.carbon`, `$Q3/f1_pr60.carbon` |
 | check/testdata/named_constraint/template_constraint_dependent.carbon | B1 | file comment rewritten; six splits added (Appendix A.2: rev 4's five and rev 5's `fail_dependent_interface_arg_unsatisfied`; row added 2026-11-02, review fold: RR3-4) | F-B1 on PR 60's branch; F-M60 refills it on M60's tree: four splits lose the `call_action` replay's note and m18i's split gains its second error (section 2.5 step 6) | measured by autoupdate on the land tree and on PR 60's own branch, `$Q3/f2_after_au.carbon`, `$Q3/f2_pr60.carbon` |
@@ -2946,6 +2977,18 @@ Run for this plan (container-local, EXPECTED, not of record, R9):
     c18c44c9d and 2b40c281a with trunk re-run (`git merge-tree`, the eight code
     files compared by blob id); the id re-scan (section 0.7); the build was
     deleted with rev 5's commit.
+10. Rev 6's amender (added 2026-11-02, implementation: stop-and-amend, unit A):
+    the heads re-read (`git ls-remote`: op2 e23113ba2, trunk and this branch
+    a88ccf167); upstream re-fetched at 23:08 UTC, a7e2f3418, whose commits since
+    d99b767dd change .github and .pre-commit-config.yaml only; a detached
+    worktree /dev/shm/fo1/amend6/wt at 47a3d9f4e, on which the lane build's
+    file_test (read only, with its own TEST_TMPDIR) ran autoupdate on
+    destroy.carbon ("OK", its sha1 unchanged, nothing written) and test mode
+    (passed); the split, extracted, checked with A1's install
+    (0.0.0-0.dev+47a3d9f4e, rc 0) and with PR 57's held install (+9f9ccd768:
+    ``unable to monomorphize specific `<none>` `` at 15:20); no remote branch
+    contains 47a3d9f4e (`git branch -r --contains`); no build was made, and the
+    worktree was removed after measuring.
 
 The slices' and landings' implementers run, at each commit: the build, the
 gate, autoupdate to its fixpoint on exactly the files the gate names, the
@@ -2974,7 +3017,9 @@ Not run by this plan, and why:
     section 2.4; amended 2026-11-02, review fold: A-m-2; amended 2026-11-02,
     review fold: RR1-4); rev 4's B1 was built, filled and gated on PR 60's own
     branch by rev 4's fixer (section 0.3; amended 2026-11-02, review fold:
-    RR2-4).
+    RR2-4); A1 has since been built, autoupdated and gated on PR 57's own branch
+    by unit A's implementer (section 0.3's row, section 2.1; amended 2026-11-02,
+    implementation: stop-and-amend, unit A).
 5.  The register scripts (`check_quotes.sh`, `check_greps.sh`) and DD-1's and
     EV-1's checkers on the land trees: records-time checks, run by each
     landing.
@@ -3031,6 +3076,11 @@ Not run by this plan, and why:
     is not edited by any FO-1 commit, its classification being passed to the
     orchestrator and the weekly check by F.1 (added 2026-11-02, review fold:
     RR3-1 / RR3-2 / RR3-3).
+13. A records text names only commits that are made: a conditional commit that
+    is not made (F-A1, section 2.1) is named by no placeholder of Appendix D,
+    and a records text committed before its commits' reviews states the review
+    rule, not the reviews' outcome (added 2026-11-02, implementation:
+    stop-and-amend, unit A).
 
 ## Appendix A: golden sources
 
@@ -3064,6 +3114,10 @@ class S {
 ```
 
 <!-- google-doc-style-resume -->
+
+Autoupdate writes no CHECK line for this split: measured on PR 57's branch at
+47a3d9f4e, so F-A1 is not made (section 2.1; added 2026-11-02, implementation:
+stop-and-amend, unit A).
 
 ### A.2 W-139's splits (B1)
 
@@ -4542,24 +4596,30 @@ Placeholders as the conventions say; each text goes where its heading says.
 
 ### D.1 fork/optional2/plan.md: the item 10 fold record (A-R)
 
-A new section at the end of the file, after "Landed notes (OP-2, 2026-10-14)":
+A new section at the end of the file, after "Landed notes (OP-2, 2026-10-14)"
+(amended 2026-11-02, implementation: stop-and-amend, unit A: rev 5's text named
+a fill commit `<sha-F-A1>` that is not made, stated as done the two
+implementation reviews that follow A-R, and cited trunk's ORCHESTRATION item and
+this plan as if they were on PR 57's tree):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 ## Item 10 fold record (FO-1, <date>)
 
-ORCHESTRATION's Next actions item 10 (an SC-1 split failing with ``unable to
-monomorphize specific `<none>` `` on the land tree) is OP-2's defect: a class
-with its own `Destroy` impl that names `Core.Optional(Self)` in a method's
-signature inside its definition was rejected on PR 57's toolchain only. Root:
-`OptionalStorage`'s `let Type: Destroy;` makes forming `Core.Optional(C)` look
-up `DefaultOptionalStorage(C)`'s `Destroy`, and `CanDestroyType` completed the
-class before `CanDestroyClass` honored its own `Destroy` impl. Fixed by
-<sha-A1> (custom_witness.cpp declines such a class before completing it) with
-the split `incomplete_self_signature` in check/testdata/optional/destroy.carbon
-and its fill <sha-F-A1>; gate <g> of <g> on the branch; reviewed by two
-implementation reviews (fork/followon/fo1-plan.md D-FO1-1, D-FO1-9).
+Next actions item 10 of fork/ORCHESTRATION.md on trunk (an SC-1 split failing
+with ``unable to monomorphize specific `<none>` `` on the land tree) is OP-2's
+defect: a class with its own `Destroy` impl that names `Core.Optional(Self)`
+in a method's signature inside its definition was rejected on PR 57's
+toolchain only. Root: `OptionalStorage`'s `let Type: Destroy;` makes forming
+`Core.Optional(C)` look up `DefaultOptionalStorage(C)`'s `Destroy`, and
+`CanDestroyType` completed the class before `CanDestroyClass` honored its own
+`Destroy` impl. Fixed by <sha-A1> (custom_witness.cpp declines such a class
+before completing it) with the split `incomplete_self_signature` in
+check/testdata/optional/destroy.carbon, for which autoupdate writes no CHECK
+line, so no fill commit is made; gate <g> of <g> on the branch. The fix and
+this record take OP-2's two implementation reviews before they are pushed
+(fork/followon/fo1-plan.md on trunk, D-FO1-1, D-FO1-9).
 ```
 
 <!-- google-doc-style-resume -->
@@ -4567,16 +4627,18 @@ implementation reviews (fork/followon/fo1-plan.md D-FO1-1, D-FO1-9).
 ### D.2 fork/decision-log.md: OP-2's entry (A-R)
 
 The last paragraph of `### OP-2 / F-016: Core.Optional ownership, adapter
-destruction, the MaybeUnformed representation fix, checked Get (2026-10-14)`:
+destruction, the MaybeUnformed representation fix, checked Get (2026-10-14)`
+(amended 2026-11-02, implementation: stop-and-amend, unit A: the plan's cite
+names it as trunk's, since it reaches PR 57's tree only at M57):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
 _Item 10 (<date>, FO-1):_ a class whose own `Destroy` impl answers the
 `Destroy` query is no longer completed by the custom witness, so a method of
-`C` returning `Core.Optional(Self)` checks (<sha-A1>, fork/followon/fo1-plan.md
-D-FO1-1); `let Type: Destroy` stays, since upstream's `let Type: type` removes
-W-170's checked-generic destruction (measured).
+`C` returning `Core.Optional(Self)` checks (<sha-A1>; fork/followon/fo1-plan.md
+on trunk, D-FO1-1); `let Type: Destroy` stays, since upstream's
+`let Type: type` removes W-170's checked-generic destruction (measured).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5241,6 +5303,126 @@ W-370. Not re-measured by rev 5's fixer: Slices A, C and D (unchanged), M18 on
 rev 5's tree (no code changed since rev 4's measurement) and the stages 14 to
 17 simulations (section 8).
 
+## Stop-and-amend record (rev 6, 2026-11-02)
+
+The stop. Unit A's implementer (OP-2, PR 57, lane 2) confirmed the pushed head
+e23113ba2 with `git ls-remote`, built a fresh worktree of it
+(/dev/shm/fo1/lane2/wt-op2, CB_BUILD_ROOT=/dev/shm/fo1/lane2/builds, 322 steps)
+and committed A1 as 47a3d9f4e, "OP-2 fix: a class with its own Destroy impl is
+not completed by the Destroy witness (item 10)", not pushed. Every measurement
+was as predicted (section 2.1's measured paragraph, section 0.3's row): the gate
+1950 of 1950 before A1, after it and after autoupdate; autoupdate wrote nothing
+to destroy.carbon; conformance 139/0/22 over 161 with 48 of 56 bullets and no
+program changed; the split fails on e23113ba2's toolchain and checks with A1;
+i10a returns 0; prek's fourteen hooks passed twice on custom_witness.cpp; the
+clang-formatted block is token-identical to section 2.1's. It stopped before
+A-R: Appendix D.1's text read "and its fill <sha-F-A1>", F-A1 does not exist, so
+the placeholder has no value, and any other wording is a records text this plan
+did not give (D-LAND-9, hand-off note 6). It raised two related points for the
+ruling, not stops: D.1's "reviewed by two implementation reviews" would be
+committed by A-R before those reviews run, and D.1 and D.2 cite
+fork/followon/fo1-plan.md, which is not on PR 57's tree until M57. Its logs are
+scratchpad/fo1-impl/A/implementer under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b
+(stop_A-R.txt, au1.txt, gate0.txt to gate2.txt, conf-base, conf-a1pre, conf-a1,
+pin_before.log, ar-draft.patch).
+
+Reproduced by the amender (scratchpad/fo1-impl/A/amend6, section 8 item 10):
+autoupdate on destroy.carbon at 47a3d9f4e, run with the lane's own file_test in
+a separate detached worktree, writes nothing and the file passes; the split
+checks with A1's install and fails with ``unable to monomorphize specific
+`<none>` `` on PR 57's held install. Every figure is container-local, EXPECTED,
+not of record (R9).
+
+Root cause: a defect of this plan's records text, not of a prediction, the code
+or a golden. Section 2.1, section 3's row 2 ("destroy.carbon, if autoupdate
+changes it") and section 4 make F-A1 conditional and predict that it is not
+made: the split checks with no diagnostic and has no dump range, and
+destroy.carbon dumps only between `//@dump-sem-ir-begin` and
+`//@dump-sem-ir-end` (its concrete, pointer, generic and unformed_pointer splits
+bracket theirs), so autoupdate has nothing to write for it. D-FO1-1 ("its fill
+F-A1") and Appendix D.1 ("and its fill <sha-F-A1>") were written as if F-A1 were
+always made, and no review compared Appendix D's placeholders with section 3's
+conditional row. The same sentence of D.1 states as done the two implementation
+reviews that D-FO1-9 runs on A1 to A-R, after A-R is committed, so A-R cannot
+record their outcome; and D.1's "ORCHESTRATION's Next actions item 10" and D.1's
+and D.2's "fork/followon/fo1-plan.md" name text that is on trunk (a88ccf167:
+fork/ORCHESTRATION.md:2393-2401 and this plan) and reaches PR 57's tree only
+with trunk at M57 (stage 15): fork/ORCHESTRATION.md at e23113ba2 has no such
+item, and this plan is not there. Not a moved head (at 23:08 UTC op2 is
+e23113ba2, trunk and this branch a88ccf167) and not R32: upstream's tip
+a7e2f3418 (fetched 23:08 UTC) changes only .github and .pre-commit-config.yaml
+since d99b767dd, core/prelude/types/optional.carbon:17 still reads
+`let Type: type;` and custom_witness.cpp is unchanged, so section 0.6's quotes
+and D-FO1-1's comparison stand.
+
+The amendment. Each place carries "amended 2026-11-02, implementation:
+stop-and-amend, unit A": the status line and the contents; section 0.3 (a row
+for A1 on PR 57's own branch); D-FO1-1 (F-A1 only if autoupdate writes a line);
+section 2.1 (the gate sentence and a measured paragraph); section 2.3 (C-M57
+after A1 and A-R); section 2.7 (the branch holds A1 and A-R); section 3's rows 1
+to 3; section 4's destroy.carbon row; section 8 (run item 10, not-run item 4);
+hand-off note 13; Appendix A.1 (a note after the source); Appendix D.1 (the text
+re-given) and D.2 (the cite); the Sign-off. Unchanged: every decision's ruling
+and break condition (D-FO1-1's did not fire: A1's gate changed no golden but its
+split's file, and i10a passes; D-FO1-9 keeps A-R among the commits the two
+reviews read; D-FO1-10's Slice A budget, one code commit and its fill, is not
+exceeded by a fill that is not made), section 2.1's code block, Appendix A.1's
+source, section 5 (stage 15's row is the landing's, measured on `sim57x60` with
+A1; A1 leaves the branch's own 139/0/22 over 161 as it was) and every other
+unit's text.
+
+Not a difference, recorded for the brief: carbonbuild stamps
+`git rev-parse --short HEAD` (gen_ninja.py), so a fresh build of e23113ba2
+prints 0.0.0-0.dev+e23113ba2, where the held install, built at 9f9ccd768 with
+the same toolchain and core, prints +9f9ccd768 (section 0.1); A1's install
+prints +47a3d9f4e, and A-R's rebuild prints A-R's sha.
+
+Instructions to the implementer (unit A, resumed at A-R):
+
+1.  Reset nothing. A1 (47a3d9f4e) is correct and stays:
+    `git -C /home/user/carbon-lang branch -r --contains 47a3d9f4e` lists
+    nothing, so it is not pushed, and it is neither reset nor amended. First
+    confirm that `git ls-remote origin claude/carbon-fork-0-1-op2` prints
+    e23113ba2 and that the lane worktree /dev/shm/fo1/lane2/wt-op2 is clean at
+    47a3d9f4e; anything else is a stop (D-FO1-11).
+2.  F-A1 is not made, and its autoupdate is not re-run: section 2.1's measured
+    run stands (implementer/au1.txt, amend6/au_repro.txt).
+3.  A-R, "OP-2: item 10 recorded (D-FO1-1)": write Appendix D.1's and D.2's
+    texts as rev 6 gives them, verbatim but for the placeholders `<date>` (the
+    UTC commit date, `date -u +%F`), `<sha-A1>` 47a3d9f4e
+    (`git rev-parse --short=9 47a3d9f4e`) and `<g>` 1950; ar-draft.patch is not
+    applied. D.1 is a new section at the end of fork/optional2/plan.md, after
+    "Landed notes (OP-2, 2026-10-14)", with one blank line before its heading;
+    D.2 is the last paragraph of the OP-2 / F-016 entry of fork/decision-log.md,
+    before "### OP-1 / F-015", with a blank line on each side. Explicit paths
+    only; the body names D-FO1-1 and this plan's rev 6, the gate line, prek's
+    result and R31's counts of both files before the edit, after it and after
+    prek; the session's two trailers.
+4.  The predictions A-R reproduces: `git diff --stat 47a3d9f4e HEAD` names
+    fork/optional2/plan.md (16 insertions) and fork/decision-log.md (6
+    insertions) only; R31's counts of fork/optional2/plan.md go from headings
+    {1: 1, 2: 15, 3: 21}, bullets 152, numbered 43, rows 145 to headings {1: 1,
+    2: 16, 3: 21} with the rest unchanged, and fork/decision-log.md's stay
+    headings {1: 1, 2: 2, 3: 46, 4: 1, 5: 6}, bullets 78, numbered 0, rows 11;
+    prek reaches a fixpoint at those counts; no line of either text is longer
+    than 80 columns once filled; `runner.py --self-test` is OK over 161 programs
+    and 56 bullets; the ledger is not edited; the model-identifier grep is
+    clean. No toolchain, core, testdata or program file changes, so conformance
+    is not owed; the incremental rebuild only re-stamps the version, and the
+    gate after it prints 1950 passed, 0 failed of 1950.
+5.  Then unit A continues as its brief orders: A1 and A-R take the two
+    implementation reviews and the fixer (D-FO1-9, D-FO1-10), and the pusher
+    pushes. A fix commit that changes a value D.1 states (the gate count, a fill
+    commit) needs a records text this plan does not give, which is a stop
+    (D-LAND-9).
+
+Break condition of this amendment: autoupdate writes a CHECK line for the split
+on a later run, the gate after A-R is not 1950 of 1950, or A-R changes a file
+other than the two; the implementer then stops and the orchestrator rules (a
+written line is the prediction miss of section 2.1, and D.1 would again name a
+commit this plan does not give).
+
 ## Sign-off
 
 Signed off 2026-11-02 at rev 5: RR3's verdict is APPROVE-WITH-AMENDMENTS with no
@@ -5262,3 +5444,9 @@ plan is ready for implementation in the order of section 3: the orchestrator's
 sign-off stamp (Appendix F.1, with `<rev>` = 5 and W-373 to W-376 reserved)
 precedes the first slice commit, and each slice and landing takes its own
 reviews (D-FO1-9).
+
+Rev 6 (amended 2026-11-02, implementation: stop-and-amend, unit A) leaves this
+sign-off as it is: it re-gives unit A's records texts D.1 and D.2 and states
+that F-A1 is not made, as measured, and changes no decision's ruling, break
+condition, code block, golden source, program or prediction ("Stop-and-amend
+record (rev 6, 2026-11-02)").

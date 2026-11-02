@@ -11,9 +11,8 @@
 // Pins the page's sentence on a checked generic's type parameter as a C++
 // template argument: `F(7 as i32)` instantiates `Box<int>` and returns 7, and
 // `SizeOf` instantiates `Box<long>` and `Box<int>` for its two specifics,
-// whose `sizeof(T)` is 8 and 4 on 64-bit Linux. The form the page states as
-// the limit, `var b: Cpp.Box(T);` with no initializer, is the plan's probe
-// PR-T (section 4.3; fork work item W-043).
+// whose `sizeof(T)` is 8 and 4 on 64-bit Linux. The uninitialized form,
+// `var b: Cpp.Box(T);`, is fixture X37's (fork work item W-043).
 
 import Core library "io";
 

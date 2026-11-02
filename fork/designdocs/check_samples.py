@@ -537,6 +537,12 @@ SAMPLES = [
     ),
     (
         INTEROP,
+        "Using C++ templates",
+        QUOTE,
+        "X37_cpp_template_symbolic_uninit.carbon",
+    ),
+    (
+        INTEROP,
         "Using Carbon from C++",
         PROGRAM,
         "design_docs_carbon_from_cpp.carbon",

@@ -688,12 +688,23 @@ fn Run() -> i32 {
 This prints `7`, `5`, and `4`. A checked generic's type parameter can be a C++
 template argument: in a function `F[T: Core.Copy](x: T) -> T`, the body
 `let b: Cpp.Box(T) = Cpp.Box(T).Make(x); return b.Get();` compiles, and the
-template is instantiated for each specific. One limit in 0.1: a `var` of such
-a specialization cannot be declared without an initializer, because
-`var b: Cpp.Box(T);` reports that the type does not implement
-`Core.DefaultOrUnformed` (fork work item W-043, and W-127). C++20
-concepts can be used: a C++20 concept `IsLarge` applied to a C++ type is a
-compile-time `bool`, so `Cpp.IsLarge(Cpp.Small)` can be a generic argument
+template is instantiated for each specific. A `var` of such a specialization
+can be declared without an initializer, `var b: Cpp.Box(T);`, and a C++
+function template can be called with an argument of type `T`, as
+`Cpp.Twice(x)`. Each is checked when the generic is instantiated for a
+specific, as a template's body is, and so is an operation on what such a call
+returns; an error in one, such as a member that `Box<T>` does not have, is
+reported where the specific is named (updated 2026-11-02, fork work item
+W-043). This holds within one library: a generic whose body uses a C++
+template this way cannot yet be used from another library (W-250). A Carbon
+struct or tuple type cannot yet be a template argument (W-300), nor a Carbon
+generic class a template template argument (W-301), a member found only
+through `T`'s constraint, as `b.value.Get()` for `T: Show`, is not found on
+instantiation (W-305), and a C++ object that such a call returns is not
+destroyed when it is discarded, bound with `let`, read for a member or passed
+by value (W-309), though a `var` holding it is. C++20 concepts can be used: a
+C++20 concept `IsLarge` applied to a C++ type is a compile-time `bool`, so
+`Cpp.IsLarge(Cpp.Small)` can be a generic argument
 (`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon
 constraints are not exported as C++ concepts (W-029). Using Carbon generics
 from C++ is described in [Using Carbon from C++](#using-carbon-from-c).

@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // DESIGN-DOCS-SAMPLE: docs/design/templates.md, "Templates in the 0.1 toolchain", block
-// EXPECT-ERROR: unable to monomorphize specific `Report(Square as HasArea)`
+// EXPECT-STDOUT:
+//   25
+// QUOTE: This prints `25`: `s.Area()` finds `Area` in the constraint `HasArea`
+
+import Core library "io";
 
 interface HasArea {
   fn Area(self) -> i32;
@@ -20,6 +24,8 @@ fn Report[template T: HasArea](s: T) -> i32 {
   return s.Area();
 }
 
-fn Use(q: Square) -> i32 {
-  return Report(q);
+fn Run() -> i32 {
+  let q: Square = {.side = 5};
+  Core.Print(Report(q));
+  return 0;
 }

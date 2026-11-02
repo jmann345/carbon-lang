@@ -3,12 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // DESIGN-DOCS-SAMPLE: docs/design/templates.md, "Templates in the 0.1 toolchain", quote
-// EXPECT-ERROR: cannot convert type `T` into type implementing `Core.DefaultOrUnformed`
-// QUOTE: cannot convert type `T` into type implementing `Core.DefaultOrUnformed`
-// Pins the page's limit on a `var` of a template parameter's type without an
-// initializer: it is rejected where the function is defined (fork work item
-// W-127, held PR 51), where proposal 2200 delays impl lookup until the
-// template argument is known. `var y: i32;` in the same position compiles.
+// EXPECT-STDOUT:
+//   5
+// QUOTE: `F(5 as i32)` returns 5
+// Pins the resolution, by TP-1, of the page's limit on a `var` of a template
+// parameter's type without an initializer: impl lookup for `T` is delayed
+// until `F` is instantiated, as proposal 2200 specifies, and the program
+// prints 5. Before TP-1 the definition was rejected with ``cannot convert type
+// `T` into type implementing `Core.DefaultOrUnformed` `` (fork work item
+// W-127).
+
+import Core library "io";
 
 fn F[template T: type](x: T) -> T {
   var y: T;
@@ -16,6 +21,7 @@ fn F[template T: type](x: T) -> T {
   return y;
 }
 
-fn Use() -> i32 {
-  return F(5 as i32);
+fn Run() -> i32 {
+  Core.Print(F(5 as i32));
+  return 0;
 }

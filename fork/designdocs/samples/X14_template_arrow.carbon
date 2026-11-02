@@ -3,11 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // DESIGN-DOCS-SAMPLE: docs/design/templates.md, "Templates in the 0.1 toolchain", quote
-// EXPECT-ERROR: cannot apply `->` operator to non-pointer type `<dependent type>`
-// QUOTE: cannot apply `->` operator to non-pointer type `<dependent type>`
-// Pins the page's limit on `->` with a template-dependent operand: `x.p` has a
-// type known only at instantiation, and `x.p->n` is rejected where the
-// function is defined (fork work item W-014).
+// EXPECT-STDOUT:
+//   4
+// QUOTE: `Next(link)` returns 4
+// Pins the resolution, by TP-1, of the page's limit on `->` with a
+// template-dependent operand: `x.p->n` is checked when `Next(link)` is
+// instantiated, and the program prints `node.n`, 4. Before TP-1 the
+// definition was rejected with ``cannot apply `->` operator to non-pointer
+// type `<dependent type>` `` (fork work item W-014).
+
+import Core library "io";
 
 class Node {
   var n: i32;
@@ -21,8 +26,9 @@ fn Next[template T: type](x: T) -> i32 {
   return x.p->n;
 }
 
-fn Use() -> i32 {
+fn Run() -> i32 {
   var node: Node = {.n = 4};
   let link: Link = {.p = &node};
-  return Next(link);
+  Core.Print(Next(link));
+  return 0;
 }

@@ -320,6 +320,24 @@ SAMPLES = [
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
+        "X34_template_return_struct_of_tuple.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X35_template_for_tuple_cursor.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X36_template_type_member_constraint.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
         "X07_template_let_file_scope.carbon",
     ),
     (

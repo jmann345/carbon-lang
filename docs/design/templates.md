@@ -51,6 +51,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > predicates. Member requirements are implemented on the fork's held
 > template-constraint branch (SC-1), and `require` blocks and predicates are
 > fork work item W-028; none of them is in the toolchain this page describes.
+>
+> **Fork note (TP-1, 2026-11-02).** The integrated-templates work (TP-1)
+> resolved many of the limits listed in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain), and of the
+> fork notes in the sketch; each resolved limit and note keeps its text and is
+> marked resolved, with the date, and the limits measured after TP-1 are
+> listed with them.
 
 ## Overview
 
@@ -89,6 +96,10 @@ instantiation.
 > [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain) compiles and
 > runs; the next note and the limits listed there show uses of `T` in such a
 > class that are rejected or that stop the compiler.
+> (Amended by TP-1, 2026-11-02: the uses that the next note shows now compile
+> and run; an out-of-line definition of such a class's member whose signature
+> names a member of `T`, such as `T.U`, is still rejected even when it is
+> written exactly as the declaration, fork work item W-254.)
 
 > **Fork note (2026-10-14).** In the 0.1 toolchain, not every use of `T` in the
 > definition waits for instantiation, and not every use that waits succeeds. A
@@ -102,6 +113,12 @@ instantiation.
 > `Core.IndexWith(Core.IntLiteral)` in type `array(i32, 2)` that does not
 > implement that interface`` (W-192), although an `array(i32, 2)` member can be
 > indexed in a class without a template parameter.
+>
+> **Fork note (TP-1, 2026-11-02).** Both forms in the note above are resolved:
+> `Peek` on a `Stack(i32)` whose `top` is 6 returns 6, with impl lookup for
+> `T` delayed until the method is instantiated, and `First` on a
+> `Holder(array(i32, 2))` holding `(8, 9)` returns 8, indexing the array
+> member as an array.
 
 ### Functions with template parameters
 
@@ -148,6 +165,11 @@ declaration.
 > same declaration with a checked parameter, `[T: Core.Copy]`, deduces `T` as
 > `i32`; a parameter of type `Holder(T)*`, or `Vec(N)` for
 > `class Vec(template N: i32)`, behaves the same (fork work item W-193).
+>
+> **Fork note (TP-1, 2026-11-02).** The deduction is implemented:
+> `GetTemplate(h)` deduces `T` as `i32` from `Holder(T)`, as the checked
+> declaration does, and the `Holder(T)*` and `Vec(N)` forms deduce `T` and
+> `N` the same way.
 
 ### Overloading
 
@@ -193,6 +215,19 @@ an argument that would make them valid, stop the compiler, or are compiled
 wrongly; the limits below include the pointer operators `*`, `->`, and `&`,
 tuple element access, indexing an array, copying a struct, calls, `for` loops,
 and returning a tuple.
+
+> **Fork note (TP-1, 2026-11-02).** Since these limits were measured, the
+> toolchain also resolves for each instantiation the pointer operators `*`,
+> `->`, and `&`, tuple element access, indexing, struct copies, calls of a
+> value whose type is a template parameter, `for` loops over a
+> template-dependent range, returning a tuple, struct, or array built from a
+> template parameter, destructuring a template-dependent tuple, `var y: T;`,
+> member lookup into a constrained template parameter, and deduction through a
+> class's arguments. The limits below that it resolved are marked resolved;
+> the limits measured after TP-1 are added to the groups they belong to,
+> among them `for` loops whose cursor is a tuple or a class, and returning
+> some structs whose field is itself a struct or tuple, which still stop the
+> compiler or are compiled wrongly.
 
 ```carbon
 import Core library "io";
@@ -308,10 +343,28 @@ Name lookup differs from proposal 2200:
     without `extend` whose `F` differs, and `x.F()` in
     `fn G[template T: A](x: T)`, proposal 2200 rejects the call when `G` is
     instantiated, but the toolchain calls the type's member.
+    (Resolved by TP-1, 2026-11-02: when `G` is instantiated, the name is
+    looked up in the argument type and in the constraint, and a member that
+    only the constraint provides is found, as the example below shows; where
+    the two give the name different meanings, the call reports
+    ``unable to monomorphize specific `G(C as A)` `` with the note
+    ``member name `F` names different entities in type `C` and in its
+    constraint `A` ``.)
+-   Proposal 2200 also gives a member access the constraint's meaning where
+    the function is defined, when the constraint has the name: the toolchain
+    checks such an access only when the function is called, so
+    `let b: bool = x.F();` for an `F` of the constraint that returns `i32` is
+    accepted in a definition that is never called, and a name that two
+    interfaces of the constraint both declare is not reported as ambiguous
+    there (fork work items W-260 and W-261). `T.F()` for a type parameter calls
+    the constraint's `F` without comparing it with the type's own member of
+    that name (W-262).
 
 For example:
 
 ```carbon
+import Core library "io";
+
 interface HasArea {
   fn Area(self) -> i32;
 }
@@ -327,13 +380,18 @@ fn Report[template T: HasArea](s: T) -> i32 {
   return s.Area();
 }
 
-fn Use(q: Square) -> i32 {
-  return Report(q);
+fn Run() -> i32 {
+  let q: Square = {.side = 5};
+  Core.Print(Report(q));
+  return 0;
 }
 ```
 
-This reports ``unable to monomorphize specific `Report(Square as HasArea)` ``
-with the note ``member name `Area` not found in `Square` ``.
+This prints `25`: `s.Area()` finds `Area` in the constraint `HasArea`.
+(Amended by TP-1, 2026-11-02: before TP-1, the same declarations with
+`fn Use(q: Square) -> i32 { return Report(q); }` in place of `Run` reported
+``unable to monomorphize specific `Report(Square as HasArea)` `` with the note
+``member name `Area` not found in `Square` ``.)
 
 As the accepted design specifies, an interface constraint is satisfied only by
 types that implement the interface: for a class `Circle` with an `Area` method
@@ -354,6 +412,10 @@ Rejected where the function is defined, whatever the argument:
     expression`` (fork work item W-014; `generic/template/unimplemented.carbon`
     in the toolchain's check tests pins the dereference as `fail_todo`). Each
     compiles in a function without a template parameter.
+    (Resolved by TP-1, 2026-11-02: each is checked when the call is
+    instantiated: `Deref(&n)` returns 4 for `var n: i32 = 4`, `Next(link)`
+    returns 4 for a link to a node whose `n` is 4, `Read(ref c)` returns 4 for
+    a counter whose `n` is 4, and `Second(t)` on `(4, 5)` returns 5.)
 -   A `var` of a template parameter's type without an initializer, `var y: T;`,
     is rejected where the function is defined with ``cannot convert type `T`
     into type implementing `Core.DefaultOrUnformed` ``, where proposal 2200
@@ -361,6 +423,11 @@ Rejected where the function is defined, whatever the argument:
     compiles (fork work item W-127). A method of a class with a
     template parameter is rejected the same way, as the fork note in
     [Types with template parameters](#types-with-template-parameters) shows.
+    (Resolved by TP-1, 2026-11-02: `F(5 as i32)` returns 5 for the function
+    whose body is `var y: T; y = x; return y;`; for a tuple argument, the
+    instantiation reports that `(i32, i32)` does not implement
+    `Core.DefaultOrUnformed`, as `var y: (i32, i32);` does without a template
+    parameter.)
 -   `partial T*` for a template parameter `T` is rejected with
     `` `partial` applied to final type `T` ``, as for a checked parameter,
     although whether the template argument is final is known only on
@@ -381,6 +448,8 @@ code valid:
     ``unable to monomorphize specific `Apply(<type of Twice>)` `` with the note
     ``value of type `<type of Twice>` is not callable`` (W-014; pinned as
     `fail_todo` by `generic/template/call.carbon`).
+    (Resolved by TP-1, 2026-11-02: `Apply(Twice, 4)` calls `Twice` and
+    returns 8, because a function's type names the function, proposal 2875.)
 -   Copying a value whose type is a template argument of struct type, and
     indexing one of array type, fail when the call is instantiated: the
     toolchain resolves them through `Core.Copy` and `Core.IndexWith`, which
@@ -397,11 +466,20 @@ code valid:
     array member in a method of a class with a template parameter fails the
     same way, as the fork note in
     [Types with template parameters](#types-with-template-parameters) shows.
+    (Resolved by TP-1, 2026-11-02: the copy and the index are chosen when the
+    call is instantiated: `Id(s).y` returns 5 for `{.x = 4, .y = 5}`, and
+    `Second(a)` on `(1, 2, 3)` returns 2.)
 
 Stopping the compiler, or compiled wrongly:
 
 -   A template function defined in one library and called from another stops
     the compiler during checking, as it does in the upstream nightly (W-014).
+    (Changed by TP-1, 2026-11-02: the compiler no longer stops; the `import`
+    of the library reports ``semantics TODO: `using a generic from another
+    library whose definition is resolved for each instantiation, such as a
+    template` `` when the importing file uses such a function or class, fork
+    work item W-250, pinned by
+    `generic/template/fail_todo_import.carbon`.)
 -   A `for` loop whose range depends on a template parameter stops the
     compiler where the function is defined, whether or not the function is
     called: for example, `for (x: i32 in a)` for a parameter `a: T`, a range
@@ -410,6 +488,8 @@ Stopping the compiler, or compiled wrongly:
     a function without a template parameter, and a loop in a function with a
     template parameter whose range does not depend on the parameter, such as
     `Core.Range(3)`, runs (W-014). The upstream nightly stops the same way.
+    (Resolved by TP-1, 2026-11-02: each such definition compiles, and
+    `Sum(a)` on an `array(i32, 3)` holding `(1, 2, 3)` returns 6.)
 -   Returning a value of some types built from a template parameter stops
     the compiler when a call is instantiated:
     `fn Dup[template T: type](x: T) -> (T, T)` with the body `return (x, x);`,
@@ -419,12 +499,49 @@ Stopping the compiler, or compiled wrongly:
     form. In a class `H(template T: type)`, a method
     `fn Both(self) -> (T, T)` that returns `(self.a, self.a)` stops the
     compiler while it lowers a call of the method (W-014).
+    (Resolved by TP-1, 2026-11-02: `Dup(4 as i32)` returns `(4, 4)`,
+    `Mk(5 as i32)` returns `{.a = 5, .b = 5}`, `Two(4 as i32)` returns an
+    array holding 4 and 4, and `h.Both()` returns `(3, 3)` for `h.a` = 3.
+    The struct forms that the limits measured after TP-1 list below are not
+    resolved.)
 -   A tuple value whose type is a template argument is not compiled correctly:
     on an `(i32, i32)` argument, destructuring a parameter `p: T` with
     `let (a: i32, b: i32) = p;` stops the compiler while it lowers the
     instantiation, and `fn Id[template T: type](p: T) -> T { return p; }`
     returns values other than its argument's, which differ from run to run
-    (W-014).
+    (W-014). (Resolved by TP-1, 2026-11-02: `Sum(t)` on `(4, 5)` returns 9,
+    and `Id` returns its argument.)
+-   Measured after TP-1: returning `{.a = x}` from
+    `fn F[template T: type](x: T) -> {.a: (i32, i32)}` with the body
+    `return {.a = x};` stops the compiler when the call is instantiated, as
+    the same function without a template parameter does where it is defined
+    (fork work item W-256).
+-   Measured after TP-1: a struct whose field is a struct with a single tuple
+    field is compiled wrongly. `G(3 as i32)` for
+    `fn G[template T: type](x: T) -> {.a: {.b: (T, T)}, .c: T}` with the body
+    `return {.a = {.b = (x, x)}, .c = x};` returns values that differ from
+    run to run, and so does the same function with `i32` written for `T`
+    (fork work item W-256).
+-   Measured after TP-1: a `for` loop whose range depends on a template
+    parameter stops the compiler while it lowers a call of the function when
+    the range's cursor is initialized in place, as for a range whose cursor
+    is a tuple or a class; a range whose cursor is an integer, such as an
+    array or a `Core.Range`, runs (fork work item W-264).
+-   Measured after TP-1: a class value built in a template from a struct
+    literal that leaves a field to its default initializer, such as
+    `let c: C = {.a = Pair(x)};` where `Pair` is a template that returns
+    `(T, T)` and `C`'s field `b` has the default `5`, stops the compiler
+    during checking, and the same code
+    without a template parameter stops it while it lowers the function (fork
+    work items W-264 and W-265).
+-   Measured after TP-1: a constant nested tuple or struct, such as
+    `let t: ((i32, i32), i32) = ((1, 2), 3);`, stops the compiler while it
+    verifies the generated code, with or without a template parameter, and a
+    template that copies such a value reaches the same failure (fork work item
+    W-263).
+-   Measured after TP-1: a function with a form parameter, such as
+    `fn F(template Fm: Core.Form, unused x:? Fm)` or its `generic` form, stops
+    the compiler while it lowers a call (fork work item W-255).
 
 Forms of proposal 2200 that are not implemented yet:
 
@@ -453,4 +570,10 @@ Forms of proposal 2200 that are not implemented yet:
 -   A deduced template parameter is not computed from a class's arguments, as
     the fork note in
     [Functions with template parameters](#functions-with-template-parameters)
-    shows (W-193).
+    shows (W-193). (Resolved by TP-1, 2026-11-02, as the fork note there
+    says.)
+-   An assignment through a template-dependent operand is not checked when
+    the template is instantiated: assigning to a field of a `const` object
+    through a `ref` parameter of template type, or to a class's `let` member,
+    is accepted (fork work item W-259; pinned as `todo_fail` by
+    `generic/template/operator.carbon`).

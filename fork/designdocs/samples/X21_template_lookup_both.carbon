@@ -3,16 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // DESIGN-DOCS-SAMPLE: docs/design/templates.md, "Templates in the 0.1 toolchain", quote
-// EXPECT-STDOUT:
-//   21
-// QUOTE: proposal 2200 rejects the call when `G` is instantiated, but the toolchain calls the type's member
-// Pins the 0.1 toolchain's current result where a template parameter's type
-// and its constraint both provide `F` with different meanings: `x.(A.F)()`
-// calls the `impl`'s `F` (2) and `x.F()` calls the class's own `F` (1), so
-// the program prints 2 x 10 + 1. This restates the page's measured sentence,
-// not a design rule: proposal 2200's "Name lookup" section (p002200:476-503)
-// makes `x.F()` a monomorphization error here, so this fixture changes, with
-// the page, when fork work item W-183 is fixed.
+// EXPECT-ERROR: unable to monomorphize specific `G(C as A)`
+// QUOTE: member name `F` names different entities in type `C` and in its constraint `A`
+// Pins the resolution, by TP-1, of the page's limit on a name that a template
+// parameter's type and its constraint give different meanings: `x.F()` finds
+// the class's own `F` in `C` and the `impl`'s `F` in `A`, so `G(c)` is
+// rejected when `G` is instantiated, as proposal 2200's "Name lookup" section
+// (p002200:476-503) requires; the quote is the note under the error. Before
+// TP-1 the program printed 21, calling the type's member (fork work item
+// W-183). `x.(A.F)()` alone still calls the `impl`'s `F`.
 
 import Core library "io";
 

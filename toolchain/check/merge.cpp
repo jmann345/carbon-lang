@@ -573,6 +573,60 @@ static auto CheckRedeclParamSyntax(Context& context,
   return true;
 }
 
+// Returns the explicit parameter patterns of an `overload fn` member with each
+// top-level default value looked through: `overload fn` member identity is
+// parameter-type equality (D-OV-3), and a default value is not part of a
+// parameter's type. A declaration that differs from a member only in its
+// default values therefore redeclares that member, and the ordinary
+// redeclaration check diagnoses the difference.
+static auto GetOverloadMemberParamPatterns(Context& context,
+                                           SemIR::InstBlockId param_patterns_id)
+    -> llvm::SmallVector<SemIR::InstId> {
+  llvm::SmallVector<SemIR::InstId> pattern_ids;
+  for (auto pattern_id : context.inst_blocks().GetOrEmpty(param_patterns_id)) {
+    auto const_inst_id =
+        context.constant_values().GetConstantInstId(pattern_id);
+    if (auto default_value =
+            context.insts().TryGetAs<SemIR::DefaultValuePattern>(
+                const_inst_id.has_value() ? const_inst_id : pattern_id)) {
+      pattern_id = default_value->subpattern_id;
+    }
+    pattern_ids.push_back(pattern_id);
+  }
+  return pattern_ids;
+}
+
+auto CheckOverloadMemberParamsMatch(Context& context,
+                                    const DeclParams& new_entity,
+                                    const DeclParams& prev_entity) -> bool {
+  if (EntityHasParamError(context, new_entity) ||
+      EntityHasParamError(context, prev_entity)) {
+    return false;
+  }
+  if (!CheckRedeclParams(
+          context, new_entity.loc_id, new_entity.implicit_param_patterns_id,
+          prev_entity.loc_id, prev_entity.implicit_param_patterns_id,
+          /*is_implicit_param=*/true, SemIR::SpecificId::None,
+          /*diagnose=*/false, /*check_syntax=*/false)) {
+    return false;
+  }
+  if (new_entity.param_patterns_id.has_value() !=
+      prev_entity.param_patterns_id.has_value()) {
+    return false;
+  }
+  auto new_param_pattern_ids =
+      GetOverloadMemberParamPatterns(context, new_entity.param_patterns_id);
+  auto prev_param_pattern_ids =
+      GetOverloadMemberParamPatterns(context, prev_entity.param_patterns_id);
+  if (new_param_pattern_ids.size() != prev_param_pattern_ids.size()) {
+    return false;
+  }
+  return CheckRedeclParamLists(
+      context, new_param_pattern_ids, prev_param_pattern_ids,
+      /*is_implicit_param=*/false, SemIR::SpecificId::None,
+      /*diagnose=*/false, /*check_syntax=*/false);
+}
+
 auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
                                              const DeclParams& new_entity,
                                              const DeclParams& prev_entity)
@@ -586,18 +640,18 @@ auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
     return false;
   }
   auto new_param_pattern_ids =
-      context.inst_blocks().Get(new_entity.param_patterns_id);
+      GetOverloadMemberParamPatterns(context, new_entity.param_patterns_id);
   auto prev_param_pattern_ids =
-      context.inst_blocks().Get(prev_entity.param_patterns_id);
+      GetOverloadMemberParamPatterns(context, prev_entity.param_patterns_id);
   if (new_param_pattern_ids.empty() || prev_param_pattern_ids.empty() ||
       new_param_pattern_ids.size() != prev_param_pattern_ids.size()) {
     return false;
   }
-  return CheckRedeclParamLists(context, new_param_pattern_ids.drop_front(),
-                               prev_param_pattern_ids.drop_front(),
-                               /*is_implicit_param=*/false,
-                               SemIR::SpecificId::None,
-                               /*diagnose=*/false, /*check_syntax=*/false);
+  return CheckRedeclParamLists(
+      context, llvm::ArrayRef(new_param_pattern_ids).drop_front(),
+      llvm::ArrayRef(prev_param_pattern_ids).drop_front(),
+      /*is_implicit_param=*/false, SemIR::SpecificId::None,
+      /*diagnose=*/false, /*check_syntax=*/false);
 }
 
 auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,

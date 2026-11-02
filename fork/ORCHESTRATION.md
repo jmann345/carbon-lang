@@ -1436,6 +1436,29 @@ section 5 gives it: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
 W-352. Next: OV-4 (W-341) on trunk's base per item 6 below, then EH-C (W-346)
 after the held PRs land, then UA-3.
 
+2026-10-28 (12:11 UTC): OV-4 is IMPLEMENTED AND REVIEWED on
+claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev 3, signed off at
+89001cfcd and amended at 16c58df0d and 1c2470b06; commits 751d077fd,
+0f53d7e53, dc1bb641b, ef31d5820 (the one fix commit, filled at 9ee5fcde3) and
+this records commit; base trunk 66bd2ba90). An `overload fn` member with
+upstream's positional default values is called with a defaulted argument
+omitted: the arity step takes the plain call's range, the probe converts the
+supplied arguments and the ordinary call fills the rest; gate (iii) looks
+through a default value, member identity ignores defaults (a default-only
+difference is `RedeclParamDiffers`), and a diagnosed non-trailing default
+counts only its trailing defaults, which also fixes the plain path's aborts at
+pattern_match.cpp:1275 and :1805. F-009j and the match test's CLOSED paragraph
+are rewritten to name upstream's mechanism (R32), quoted at 0421bf3b4.
+Measured container-local: 1946 of 1946 goldens, 130/0/22 over 152.
+Residues for UA-3: W-360 (503f09037), W-361 (9799a2326, 8fdc8ebc3,
+c7de72757), W-362 (function.cpp), W-363 (upstream's abort for a defaulted
+method whose `self` is in the implicit parameter list). No held PR is
+amended. OV-4 merges after PR 66 and before EH-C (W-346) through M, F-M, L-R
+and L (the plan's section 3). The focused re-review's round 1, of
+16c58df0d..dcbb449eb (the fold and D), is DRY: APPROVE-WITH-FIXES with one
+records-only MINOR, folded by its records commit over D dcbb449eb, so the PR
+is opened held, base trunk (fork/overload/ov4-plan.md section 8.14).
+
 2026-10-28 (13:28 UTC): OV-4 is IMPLEMENTED, REVIEWED AND HELD OPEN as PR 68
 (claude/carbon-fork-0-1-ov4 at 097c76473, base trunk 66bd2ba90; twelve commits:
 plan rev 1 to rev 3, C1 751d077fd, F1 0f53d7e53, P dc1bb641b, the measurements

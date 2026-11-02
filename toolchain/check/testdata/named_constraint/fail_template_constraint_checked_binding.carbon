@@ -941,4 +941,11 @@ impl forall [template V: HasGet] V as I {
 
 fn CallF[template T: HasGet & I](unused x: T) -> i32 { return T.(I.F)(); }
 
+// CHECK:STDERR: fail_symbolic_arg_impl_deduction.carbon:[[@LINE+7]]:42: error: cannot convert type `U` into type implementing `I & HasGet` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Caller[U: type](x: U) -> i32 { return CallF(x); }
+// CHECK:STDERR:                                          ^~~~~~~~
+// CHECK:STDERR: fail_symbolic_arg_impl_deduction.carbon:[[@LINE-5]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallF[template T: HasGet & I](unused x: T) -> i32 { return T.(I.F)(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Caller[U: type](x: U) -> i32 { return CallF(x); }

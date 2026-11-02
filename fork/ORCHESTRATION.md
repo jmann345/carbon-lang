@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-02 (weekly check fired under R32: the cut HOLDS at 150
+Last updated: 2026-11-02 (LAND-1 stages 1 to 12 are done: 12 PRs landed, 6 held;
+see the paragraph dated 2026-11-02 (16:54 UTC) below; the earlier 2026-11-02
+text follows).
+2026-11-02 (weekly check fired under R32: the cut HOLDS at 150
 upstream commits with 138 conflicting files against trunk 9863b1087, 144 against
 7134405dc after PR 65's landing; one drift is filed as W-372, upstream
 c6b54b57e's struct-pattern check layer beside W-077's, owner UA-3; W-355's ten
@@ -1809,6 +1812,14 @@ merged_at 2026-11-02T15:53:02Z; container-measured (R33 (b)): gate 1986 of 1986,
 conformance 193/0/15 over 208, 49/56 bullets, gap tally 36/16/3/1;
 id re-scans: none; 12 PRs landed, 6 held. Next: Appendix B.2's stamp, then
 the follow-ons.
+
+2026-11-02 (16:54 UTC): LAND-1 stages 1 to 12 are done: 12 PRs landed, 6 held.
+Trunk fe0957d54 holds PR 67, 51, 52, 54, 55, 58, 61, 62, 64, 63, 65 and 68,
+verified in the container at each landing (final: gate 1986 of 1986, conformance
+193/0/15 over 208, 49/56 bullets; gap tally 36/16/3/1); R21's hosted gate is
+owed on all twelve when Actions returns (R33 (b)). Held: PR 53, PR 60, PR 56, PR
+57, PR 59 and PR 66, each landing by Next actions items 14 to 17 when its gate
+holds.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183

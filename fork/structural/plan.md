@@ -429,6 +429,28 @@ listing them verbatim at discharge (§8.5).
     templates", or lands the interface/require.carbon TODO — then the
     symbolic case becomes a deferred `LookupImplWitness`-style query instead
     of an error, and the interface-forwarding residue is picked up with it.
+
+    (Amended 2026-11-02, FO-1, W-139: a checked-symbolic argument that a call
+    passes to a `template` binding is no longer rejected at the caller's
+    definition. The call stays an ordinary call whose deduced value is the
+    argument converted with its structural requirements deferred; those
+    requirements are checked in each specific of the caller, where the argument
+    is concrete, and the template's definition is instantiated there
+    (deduce.cpp, `ConvertBindingArg`; eval_inst.cpp; fork/followon/fo1-plan.md
+    D-FO1-2), as upstream decided leads issue 2153. OV-4's overload probe defers
+    too, so an overload set's first match at the definition is the member a
+    single function's call would accept, and a deduction made while a specific
+    is resolved, which that specific's concrete counterparts make again, defers
+    with no requirement. The rejection stays for a conversion of a
+    checked-symbolic self outside a call, for impl deduction and for an impl's
+    `require` in a generic class, W-373. D-SC-19 is amended with it: a
+    conversion of a template-phase self at a definition, which TP-1 makes for a
+    generic type such as `Holder(T)` and a template body makes outside a call,
+    adds a requirement that each specific performs (convert.cpp,
+    `PerformBuiltinConversion`; fork/followon/fo1-plan.md D-FO1-2 (4)), for
+    structural requirements only: the interface half of TP-1's eager `Holder(T)`
+    is W-374. An overload set's specific whose argument fails the chosen
+    member's requirements is rejected, W-375.)
 -   **D-SC-7 — completeness and caching.** Completeness per D-SC-5(a). No
     satisfaction cache in SC-1: the check is linear in the constraint's
     requirement count and runs once per conversion site; the impl-lookup

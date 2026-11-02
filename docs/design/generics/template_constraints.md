@@ -454,18 +454,39 @@ fn Bad[T: Summable](s: Slice(T)) -> T;
 ```
 
 Using a template constraint on a checked-generic binding is an error in 0.1
-(landed: `TemplateConstraintOnNonTemplateBinding` at the binding, SC-1
-D-SC-8; a checked-generic argument passed to a template-constrained binding is
-likewise rejected at the checked function's definition with the note
-`StructuralRequirementNeedsConcreteType`, D-SC-6). This resolves upstream's
-open question
-([leads issue 2153](https://github.com/carbon-language/carbon-lang/issues/2153))
-conservatively, in the direction
-[#2200](/proposals/p002200-template-generics.md#template-constraints) already
-commits to: even if checked bindings later admit template constraints, member
-lookup through a checked binding will never find structural members, so nothing
-is lost in 0.1 by rejecting the combination outright, and permitting it later is
-purely additive.
+(landed: `TemplateConstraintOnNonTemplateBinding` at the binding, SC-1 D-SC-8).
+Passing a checked-generic argument to a template-constrained binding is
+supported, as upstream decided in [leads issue
+2153](https://github.com/carbon-language/carbon-lang/issues/2153): "We have
+decided to support passing a symbolic constant to a template parameter"
+([overview](overview.md)), and such a call "relies on monomorphization"
+([witness appendix](appendix-witness.md)). The call is an ordinary call in the
+checked generic: the template parameter's value is the checked-generic argument
+converted to the parameter's constraint, so the callee's declared return type,
+and any type that names the parameter, such as `Holder(U)`, is a checked-generic
+type there, and the rest of the checked generic is checked at its definition as
+for any call. Only the argument's structural requirements, which need a concrete
+type, are checked later, in each specific of the checked generic, where the
+argument is concrete, and the template's body is instantiated there for that
+type; an argument type that does not conform is diagnosed when that specific is
+formed, with the requirement it misses. This holds for a function's, a generic
+class's and a generic interface's `template` parameter alike, and for a
+template's own call made while one of its specifics is formed. An overload set
+is resolved at the checked generic's definition by its first matching member,
+and a member whose `template` parameter needs such a check accepts the
+checked-generic argument as a single function would; the check is then made in
+each specific, and a specific whose argument fails it is rejected, where a call
+with that concrete argument would go on to a later member (fork work item
+W-375). Likewise, when a template converts a type that depends on its own
+template parameters to a template constraint, as `Holder(T)` does for `class
+Holder(template T: HasGet)`, the structural requirements are checked in each
+specific of the template. Elsewhere a checked-generic self still never satisfies
+a structural requirement (`StructuralRequirementNeedsConcreteType`, D-SC-6): in
+a conversion outside a call, and in the `require` of an impl in a generic class
+(fork work item W-373), where no template parameter receives the symbolic type.
+Member lookup through a checked binding never finds structural members
+([#2200](/proposals/p002200-template-generics.md#template-constraints)), which
+is why a template constraint constrains only a `template` binding.
 
 > **RG-1 note (2026-10-28).** Upstream records leads issue 2153 as decided, not
 > open: "We have decided to support passing a symbolic constant to a template
@@ -474,6 +495,15 @@ purely additive.
 > definition-time rejection described above is therefore a drift under the
 > fork's rulebook R32 (d), W-139, which SC-1 realigns on this branch before it
 > lands; this paragraph is rewritten with it.
+
+> **SC-1 note (2026-11-02).** W-139 realigned: the definition-time rejection the
+> note above describes is replaced by the check in each specific that the
+> paragraph above it states. The call itself is upstream's ordinary call with a
+> symbolic argument; the structural check in each specific is the
+> monomorphization upstream decided, applied to the fork's structural
+> requirements, which upstream's toolchain does not have. The `require` of an
+> impl in a generic class keeps D-SC-6's rejection; leads issue 2153 does not
+> decide it (W-373).
 
 One further use of plain named constraints does not carry over cleanly: a type
 may [`impl` a plain named constraint](details.md#named-constraints), but an

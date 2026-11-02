@@ -2055,7 +2055,7 @@ struct SpecificConstant {
   // TODO: Can we make Parse::NodeId more specific?
   static constexpr auto Kind = InstKind::SpecificConstant.Define<Parse::NodeId>(
       {.ir_name = "specific_constant",
-       .expr_category = ComputedExprCategory::SameAsFirstOperand,
+       .expr_category = ComputedExprCategory::DependsOnOperands,
        .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
        .is_lowered = false});
 

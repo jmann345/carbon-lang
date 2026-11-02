@@ -1762,7 +1762,11 @@ the existing diagnostic or a new `semantics TODO` with a golden) and filed.
     value forms where the function is defined (x04, which trunk and the nightly
     reject with ``missing field `k` `` and whose twin with
     `fn Make(generic N: i32)` prints 9 on every toolchain). No residue is new
-    but W-274, the stop that trunk and the nightly share.
+    but W-274, the stop that trunk and the nightly share. Amended 2026-10-21 by
+    CT-1 (fork/cpp-templates/plan.md D-CT-4, D-CT-6, F-021): TR-22 stays OUT for
+    its Carbon forms; a template's C++ specialization or C++ call performed for
+    a checked generic's symbolic argument now runs in the specific that names a
+    concrete argument.
 
 ### §1.2 Crash and miscompile fixes (C1, C2)
 
@@ -2785,7 +2789,14 @@ x: i32) -> U { return x; }`) only checks that `return x;` is one deferred
 it ((amended 2026-10-14, implementation-review fold: IR1-m1 / IR2-MAJOR-1)).
 _Break condition:_ a golden of a checked generic changes, or a query that names
 no template binding is deferred (falsifiers: facet/period_self.carbon and
-interop/cpp/template/generic_call.carbon change, §7.1(2)).
+interop/cpp/template/generic_call.carbon change, §7.1(2)). Amended 2026-10-21 by
+CT-1 (fork/cpp-templates/plan.md D-CT-5): a checked generic's query that reaches
+a `TemplateInst`, or a template binding through an action's `MetaInstId`
+operands or a symbolic operand's constant value, or a call action of a C++
+template name or an imported C++ function (D-CT-5's call-action step;
+amended 2026-10-22, focused re-review round 1), is deferred too, so
+generic_call.carbon's `require_specific_def` moves to the specific;
+facet/period_self.carbon is unchanged.
 
 ### §1.8 Out-of-slice forms and their diagnostics
 

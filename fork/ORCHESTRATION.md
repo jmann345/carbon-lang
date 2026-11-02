@@ -1624,6 +1624,72 @@ the /home/user/carbon-sv worktree (0ef8a0334, the head), and trunk and the
 W-282 to W-284 and W-287 to W-294 at it: none; 8 PRs landed, 10 held. Next: PR
 64 (CT-1), after the orchestrator retargets it to trunk.
 
+Later on 2026-10-21 (22:09 UTC; the CT-1 discharge; pushed, no PR yet): CT-1
+(claude/carbon-fork-0-1-ct, fork/cpp-templates/plan.md rev 4, W-043, gap rows 56
+and 42) is IMPLEMENTED AND HELD, stacked on PR 61 (TP-1's head 5661a35c8), after
+two plan reviews (REJECT, twelve findings; APPROVE-WITH-AMENDMENTS, thirteen)
+and two focused re-reviews (REJECT, four; APPROVE-WITH-AMENDMENTS, one), thirty
+findings folded and none rejected (rev 4 62530b76e, signed off), and two
+implementation reviews (REJECT with one BLOCKER, three MAJOR and four MINOR
+findings; APPROVE-WITH-FIXES with six MINOR), all fourteen folded at their roots
+or in the records and none rejected -- C1 3a4fa82d0 (fifteen files: a C++
+specialization of a symbolic argument is formed and used for each specific) with
+its fill 378cffa2e, C2 d5d7c6580 (call.cpp: a C++ call with a checked generic's
+symbolic argument is deferred to each specific, F-021) with its fill c7635b14a,
+P 65fc0d394 (two programs un-SKIPped and seven added, one differential), the
+held-state measurements 79740957a, the fix commits 224ee2f8f and ccd6a80a8 with
+their fills 5c78c4086 and ffde90904 and the fold's records 98a82cc4f, R
+59f7b0258 (rows 56 and 42 PARTIAL) and the discharge. W-043 is DISCHARGED (the
+land-time records commit reapplies the text over DD-1's entry); TP-1's W-273 is
+discharged and its W-268 narrowed, and D-TP-12, TR-22 and W-274 gain one dated
+line each; W-300 to W-311 are filed and W-312 to W-319 stay unused (the id
+re-scan before D, after a fetch, over 69 origin refs, 18 local branches and 17
+worktrees: no ledger files any of W-300..W-319, trunk e0769c178 and DR-1's
+branch name the range only as CT-1's reservation, and F-021 is in no decision
+log, so no id is re-allocated); F-021 is minted (the decision-log entry "CT-1").
+Verification is container-built and NOT of record (Actions disabled): on
+98a82cc4f, whose toolchain is 224ee2f8f's, file_test 1959/1959 and the expected
+scoreboard 147 PASS / 0 FAIL / 20 SKIP over 167, 48/56 bullets; the mutants of
+the plan's §8 item 5 (every one turns something red but M10, not run, M12, kept,
+M1, subsumed since the fold with M1c killed, and TP-1's M75, defensive on CT-1);
+the PR 51, PR 57, PR 59, PR 60 and PR 62 compositions on scratch mirrors (§8
+item 9), with S-VA's land-time hunk measured early on PR 59's. Two held heads
+moved after those mirrors: PR 57's to a080c7886 (records and design pages only,
+so its code composition is unchanged) and PR 62's to 0ef8a0334 (DR-1's W-322,
+which changes eight toolchain and prelude files), so PR 62's mirror was owed
+again at its new head (the plan's §3 item 10 break condition; the focused
+re-review's round 1 measured it, below). R32 and V-3b, recorded on trunk after
+CT-1's sign-off, reach the branch at M, where F-021's V-3 comparison is repeated
+against upstream's tip. The focused re-review loop of the plan's §3 item 9 read
+the fix commits next (round 1, below). Merge order: PR 53, PR 51, PR 52, PR 60,
+PR 54, PR 55, PR 56, PR 57, PR 58 through its state L integration commit, PR 59,
+PR 61 through its land-time commits, PR 62 through its land-time items, then
+CT-1 through its land-time items (Next actions item 6). None is merged.
+
+Later on 2026-10-22 (00:00 UTC; CT-1's focused re-review, round 1; pushed, no PR
+yet): round 1 of the plan's §3 item 9 loop read the fold and the records,
+79740957a..118fc1bc8 (the fix commits 224ee2f8f and ccd6a80a8 with their fills,
+the fold's records 98a82cc4f, R 59f7b0258 and D 118fc1bc8), at 118fc1bc8, whose
+toolchain is 224ee2f8f's. Both reviews returned APPROVE-WITH-FIXES with no
+BLOCKER or MAJOR: five and seven MINOR findings, all records only, each
+reproduced against the tree and folded by the records commit "CT-1 records:
+re-review round 1 recorded", none rejected, with no fix commit (the plan's §3
+item 8 budget is spent; nothing is shrunk; no residue is filed, so W-312..W-319
+stay unused). The folds: the call-action clause in the dated line CT-1 adds to
+TP-1's D-TP-12 (a TP-1 record H-8 names); a template form with no C++,
+`IncG(ref v, x)`, that the fold's `ref`-tag step runs where TP-1, trunk and the
+nightly stop, recorded in D-CT-4; mutant M22's row; the call.cpp cite of W-043's
+notes; §1.12's count; A.2's comment wording, owed to L-F (no golden is edited on
+the branch); the round's record in the plan, the decision log, W-043's notes and
+this file; the PR texts with a Conflicts table. Measured by the reviews,
+container-built and NOT of record: on 118fc1bc8 file_test 1959/1959
+and 147 PASS / 0 FAIL / 20 SKIP over 167, 48/56 bullets, the mutants and the
+probe matrices as recorded; and PR 62's mirror at its moved head 0ef8a0334,
+which was owed: 1967/1967 and 152 / 0 / 20 over 172, PR 62's own W-322 SKIP the
+one change. The round is DRY, so the loop ends: CT-1 is IMPLEMENTED AND HELD,
+ROUND 1 DRY, and its PR opens held, stacked on PR 61, from the refreshed texts.
+The merge order does not change.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2020,6 +2086,16 @@ over 192 with 49/56 bullets.) TP-1 is measured on trunk alone; its landing count
 is PR 59's
 expected state with every earlier PR plus ten PASS (fork/templates/plan.md §5)
 (amended 2026-10-20, round 10: X-1).
+
+Expected at CT-1, NOT of record: 147 PASS / 20 SKIP / 0 FAIL over 167, 48/56
+bullets (a container run on the carbonbuild toolchain of 224ee2f8f at CT-1's
+head 98a82cc4f, scoreboard generated 2026-10-21T21:57:30Z, as at P 65fc0d394, at
+the implementation-review fold and, on 118fc1bc8, in both reviews of the focused
+re-review's round 1); TP-1's 160 programs plus CT-1's two
+un-SKIPped programs and seven new ones, under the bullets of gap rows 56 and 42,
+both PASS, both rows PARTIAL. CT-1 is measured on PR 61 alone; its landing count
+is PR 62's expected state with every earlier PR plus nine PASS, two SKIP fewer
+and seven programs more (fork/cpp-templates/plan.md §5).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 

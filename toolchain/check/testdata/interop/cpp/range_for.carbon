@@ -702,9 +702,9 @@ fn TestDriver(var no_begin_end: Cpp.NoBeginEnd,
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE+20]]:3: error: facet type `Core.CppRange where .(Core.CppRangeForIterate.Iterator).(Core.CppUnsafeDeref.Result) impls Core.Copy` can not be identified [ImplLookupInUnidentifiedFacetType]
   // CHECK:STDERR:   Test(begin_method_deleted);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:9: note: attempt to use a deleted function [CppInteropParseError]
+  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:25: note: attempt to use a deleted function [CppInteropParseError]
   // CHECK:STDERR:    63 |   alias ValueType = Self.(Iterator).(CppIterator.ValueType);
-  // CHECK:STDERR:       |         ^
+  // CHECK:STDERR:       |                         ^
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE-123]]:8: note: 'begin' has been explicitly marked deleted here [CppInteropParseNote]
   // CHECK:STDERR:    44 |   auto begin() = delete;
   // CHECK:STDERR:       |        ^
@@ -724,9 +724,9 @@ fn TestDriver(var no_begin_end: Cpp.NoBeginEnd,
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE+20]]:3: error: facet type `Core.CppRange where .(Core.CppRangeForIterate.Iterator).(Core.CppUnsafeDeref.Result) impls Core.Copy` can not be identified [ImplLookupInUnidentifiedFacetType]
   // CHECK:STDERR:   Test(end_method_deleted);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:9: note: attempt to use a deleted function [CppInteropParseError]
+  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:25: note: attempt to use a deleted function [CppInteropParseError]
   // CHECK:STDERR:    63 |   alias ValueType = Self.(Iterator).(CppIterator.ValueType);
-  // CHECK:STDERR:       |         ^
+  // CHECK:STDERR:       |                         ^
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE-139]]:8: note: 'end' has been explicitly marked deleted here [CppInteropParseNote]
   // CHECK:STDERR:    50 |   auto end() = delete;
   // CHECK:STDERR:       |        ^
@@ -746,9 +746,9 @@ fn TestDriver(var no_begin_end: Cpp.NoBeginEnd,
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE+20]]:3: error: facet type `Core.CppRange where .(Core.CppRangeForIterate.Iterator).(Core.CppUnsafeDeref.Result) impls Core.Copy` can not be identified [ImplLookupInUnidentifiedFacetType]
   // CHECK:STDERR:   Test(begin_function_deleted);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:9: note: call to deleted function 'begin' [CppInteropParseError]
+  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:25: note: call to deleted function 'begin' [CppInteropParseError]
   // CHECK:STDERR:    63 |   alias ValueType = Self.(Iterator).(CppIterator.ValueType);
-  // CHECK:STDERR:       |         ^~~~~~~~~
+  // CHECK:STDERR:       |                         ^
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE-157]]:15: note: candidate function has been explicitly deleted [CppInteropParseNote]
   // CHECK:STDERR:    54 |   friend auto begin(const BeginFunctionDeleted&) = delete;
   // CHECK:STDERR:       |               ^
@@ -768,9 +768,9 @@ fn TestDriver(var no_begin_end: Cpp.NoBeginEnd,
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE+20]]:3: error: facet type `Core.CppRange where .(Core.CppRangeForIterate.Iterator).(Core.CppUnsafeDeref.Result) impls Core.Copy` can not be identified [ImplLookupInUnidentifiedFacetType]
   // CHECK:STDERR:   Test(end_function_deleted);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:9: note: call to deleted function 'end' [CppInteropParseError]
+  // CHECK:STDERR: {{.*}}/prelude/iterate.carbon:63:25: note: call to deleted function 'end' [CppInteropParseError]
   // CHECK:STDERR:    63 |   alias ValueType = Self.(Iterator).(CppIterator.ValueType);
-  // CHECK:STDERR:       |         ^~~~~~~~~
+  // CHECK:STDERR:       |                         ^
   // CHECK:STDERR: fail_never_valid.carbon:[[@LINE-173]]:15: note: candidate function has been explicitly deleted [CppInteropParseNote]
   // CHECK:STDERR:    60 |   friend auto end(const EndFunctionDeleted&) = delete;
   // CHECK:STDERR:       |               ^

@@ -62,6 +62,11 @@
 // linked, and ran. What failed was naming `Cpp.Box(T)` with `T` a
 // checked-generic parameter — instantiation was not deferred to
 // monomorphization.
+//
+// CT-1 (2026-11-02, fork/cpp-templates/plan.md): the uninitialized
+// `var b: Cpp.Box(T);` compiles, so the box is declared without the
+// constructor initializer the round-2 edit added for W-127; `impl as
+// Core.Copy` stays, because `b.value = v` copies a Carbon class value.
 
 import Core library "io";
 import Cpp inline '''
@@ -74,14 +79,13 @@ template <typename T> struct Box {
 
 class Pt {
   var x: i32;
-
   impl as Core.Copy {
     fn Op(self) -> Self { return {.x = self.x}; }
   }
 }
 
 fn MakeBox[T: type](x: T) -> Cpp.Box(T) {
-  var b: Cpp.Box(T) = Cpp.Box(T).Box();
+  var b: Cpp.Box(T);
   b.value = x;
   return b;
 }

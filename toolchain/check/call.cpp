@@ -31,6 +31,7 @@
 #include "toolchain/diagnostics/format_providers.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/entity_with_params_base.h"
+#include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
@@ -896,10 +897,82 @@ static auto PerformCallHelper(Context& context, SemIR::LocId loc_id,
   }
 }
 
+// Returns whether a call argument has a symbolic type that is not
+// template-dependent, as a value `x: T` of a checked generic has, or is such a
+// type, as the `T` of `Cpp.Twice(T, x)` is. A value of a concrete type is not,
+// even when the value is symbolic, as `N` of `generic N: i32` is: its C++ type
+// is known where the generic is defined, and so is the call.
+static auto IsCheckedSymbolicCppArg(Context& context, SemIR::InstId arg_id)
+    -> bool {
+  auto type_id = context.insts().Get(arg_id).type_id();
+  if (OperandDependence(context, type_id) ==
+      SemIR::ConstantDependence::Checked) {
+    return true;
+  }
+  return context.types().Is<SemIR::FacetType>(type_id) &&
+         OperandDependence(context, arg_id) ==
+             SemIR::ConstantDependence::Checked;
+}
+
+// A call to an imported C++ function whose argument is a value of a symbolic
+// type that is not template-dependent, such as a checked generic's `x: T`, or
+// is such a type, as the `T` of `Cpp.Twice(T, x)`, cannot be resolved by Clang
+// until the type is known. As for a C++ template name applied to a symbolic
+// argument (`PerformCallToNonFunction`), the call is deferred as a `CallAction`
+// that each specific performs once its arguments' types are concrete
+// (`ActionIsPerformable`); a type argument is wrapped in a `TemplateInst`, as
+// there. Returns `None` if the call is not such a call.
+static auto DeferCppCallOnSymbolicArgs(Context& context, SemIR::LocId loc_id,
+                                       SemIR::InstId callee_id,
+                                       llvm::ArrayRef<SemIR::InstId> arg_ids,
+                                       bool is_desugared) -> SemIR::InstId {
+  if (llvm::none_of(arg_ids,
+                    [&](SemIR::InstId arg_id) {
+                      return IsCheckedSymbolicCppArg(context, arg_id);
+                    }) ||
+      !std::holds_alternative<SemIR::CalleeCppOverloadSet>(
+          GetCallee(context.sem_ir(), callee_id))) {
+    return SemIR::InstId::None;
+  }
+  // A form-dependent argument, such as a reference to `x:? Fm`, has no form
+  // that the call could take in a specific either, so the call is left to
+  // `PerformCallHelper`, which reports that where the call is written.
+  if (llvm::any_of(arg_ids, [&](SemIR::InstId arg_id) {
+        return SemIR::GetExprCategory(context.sem_ir(), arg_id) ==
+               SemIR::ExprCategory::Dependent;
+      })) {
+    return SemIR::InstId::None;
+  }
+  llvm::SmallVector<SemIR::InstId> inst_ids = {callee_id};
+  for (auto arg_id : arg_ids) {
+    auto arg = context.insts().Get(arg_id);
+    if (IsCheckedSymbolicCppArg(context, arg_id) &&
+        context.constant_values().Get(arg_id).is_symbolic() &&
+        context.types().Is<SemIR::FacetType>(arg.type_id())) {
+      inst_ids.push_back(AddInst(
+          context, SemIR::LocId(arg_id),
+          SemIR::TemplateInst{.type_id = arg.type_id(), .inst_id = arg_id}));
+    } else {
+      inst_ids.push_back(arg_id);
+    }
+  }
+  return AddDependentActionSplice(
+      context, loc_id,
+      SemIR::CallAction{.type_id = SemIR::InstType::TypeId,
+                        .inst_block_id = context.inst_blocks().Add(inst_ids),
+                        .is_desugared = SemIR::BoolValue::From(is_desugared)},
+      SemIR::TypeInstId::None);
+}
+
 auto PerformCall(Context& context, SemIR::LocId loc_id, SemIR::InstId callee_id,
                  llvm::ArrayRef<SemIR::InstId> arg_ids, bool is_desugared)
     -> SemIR::InstId {
   if (IsCallPerformable(context, callee_id, arg_ids)) {
+    if (auto deferred_id = DeferCppCallOnSymbolicArgs(
+            context, loc_id, callee_id, arg_ids, is_desugared);
+        deferred_id.has_value()) {
+      return deferred_id;
+    }
     return PerformCallHelper(context, loc_id, callee_id, arg_ids, is_desugared);
   }
 

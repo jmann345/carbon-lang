@@ -64,6 +64,11 @@
 // worked at the 2026-07-19 cut (cpp_template_builtins.carbon,
 // cpp_template_carbon_class.carbon); the symbolic case needed C++ template
 // instantiation deferred until monomorphization.
+//
+// CT-1 (2026-11-02, fork/cpp-templates/plan.md): the uninitialized
+// `var b: Cpp.Box(T);` compiles, so the box is declared without the
+// constructor initializer the round-2 edit added for W-127; `impl as
+// Core.Copy` stays, because `b.value = v` copies a Carbon class value.
 
 import Core library "io";
 import Cpp inline '''
@@ -74,14 +79,13 @@ template<typename T> struct Box {
 
 class Point {
   var x: i32;
-
   impl as Core.Copy {
     fn Op(self) -> Self { return {.x = self.x}; }
   }
 }
 
 fn Wrap[T: type](v: T) -> Cpp.Box(T) {
-  var b: Cpp.Box(T) = Cpp.Box(T).Box();
+  var b: Cpp.Box(T);
   b.value = v;
   return b;
 }

@@ -373,6 +373,487 @@ with 5 findings each). Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR
 56, PR 57, PR 58 through its state L integration commit, then PR 59. None is
 merged.
 
+Later on 2026-10-14 (the TP-1 discharge; pushed, PR to open and hold): TP-1
+(claude/carbon-fork-0-1-tp, fork/templates/plan.md rev 3, a W-014 slice with
+W-127, W-183, W-192 and W-193, gap row 54 "Generics: Integrated templates") is
+IMPLEMENTED AND HELD off trunk b2576f6c3, after two plan reviews (REJECT, 13 and
+14 findings) and a focused re-review (APPROVE-WITH-AMENDMENTS, six), all folded
+(rev 3 aaf43d5a4, signed off), and two implementation reviews (REJECT with seven
+findings, APPROVE-WITH-FIXES with thirteen, nineteen distinct), folded by three
+fix commits, none rejected and IR1-M3 narrowed and filed as W-266 -- C1
+675e0dd94 (template-dependent initializers keep their storage; lowering reads
+the specific), C2 637e3efaf (cross-library generics are a `semantics TODO` at
+the `import`; dependent operations print as expressions), C3 438b3c971 (four
+action kinds: dependent `*`, `->`, `&`, tuple element access and indexing, and
+calls of function-typed values, checked on instantiation), C4 781908afb
+(deduction through a class's arguments, deferred impl lookup), C5 df6487a05
+(constraint lookup on instantiation), each with its autoupdate fill, P 32c8ed777
+(eight programs, one with a C++ oracle), M 6efc3f257 (the merge of trunk
+8bfd78ae3, records only), 4e1f07a91 (the state-T measurements), the fold's
+7c7b1b170 (with a ninth program) and 12bd6d67a with their fills 17501c978 and
+f360b8735 and its records commit 824f29c4e, R 35e2240b5 (row 54 PARTIAL, one
+dated held-state sentence) and the discharge. W-014 stays OPEN with the slice in
+its notes; W-250 to W-266 are filed after W-125, and W-267 to W-269 stay unused
+(the id re-scan before D, over the 78 other fork and trunk refs: maximum W-249,
+nothing in W-250..W-269 or F-019 elsewhere, so no re-allocation); F-019 is not
+minted; the discharges of W-127 (PR 51's) and W-183, W-192 and W-193 (PR 58's)
+wait for the land-time records commit, because those items are not on trunk.
+Verification is container-built and NOT of record (Actions disabled): on the
+head 824f29c4e, whose toolchain is the carbonbuild toolchain of 12bd6d67a,
+file_test 1955/1955 and the expected scoreboard 137 PASS / 0 FAIL / 22 SKIP over
+159, 48/56 bullets (scoreboard generated 2026-10-15T00:56:22Z), the nine
+template programs the only change from the floor of record 128 / 0 / 22 over
+150; all 25 mutants killed. In the held state S, F6 and L are measured, not
+committed: composed over SC-1 1646988dc (with S) and VA-1 b0822a744, every
+composed golden passes (1972 of 1972, 1973 of 1973), and PR 58's checker reports
+0 errors with TP-1's toolchain on copies of fcee90d9b with Appendix C applied.
+Not run: Bazel and its tests, hosted CI with its clangd-tidy step, ASan, macOS
+and Windows, LLVM-side assertions, the owner's runner, and every land-time item
+(fork/templates/plan.md, "Landed notes (TP-1, 2026-10-14)"). Merge order: PR 53,
+PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, PR 57, PR 58 through its state L
+integration commit, PR 59, then TP-1 through its land-time commits M, S, F6 and
+L (Next actions item 5). None is merged.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 1, folded;
+pushed; RE-REVIEW ROUND 2 OWED): two reviews of the fold's
+commits 7c7b1b170..bf8e1b4cc returned REJECT (one BLOCKER, two MAJOR, five
+MINOR) and APPROVE-WITH-FIXES (two MAJOR, four MINOR), thirteen distinct
+findings, all folded and none rejected (fork/templates/plan.md, "Focused
+re-review of the fold (2026-10-15)", round 1): four toolchain fix commits with
+their fills -- 632f92117 (a runtime result of a deferred action used as a type
+is diagnosed at that operand in the specific, and a tuple type with a
+`T.Elem` element lowers) with d069d639d, d8f6ab60a (an imported class template
+whose field type or method declaration holds an action, and an imported
+interface or named constraint whose declaration holds one, report W-250's TODO
+instead of crashing) with 22b9074bd, 73b3124dd (dependent operations print with
+their precedence and interface members by name) with 831289fad, and ba64734e7
+(the diagnosed operand is an error in its specific, and a runtime `as` target
+is diagnosed) with 1f0bc7be0 -- the formatting commit 67a9dd91c, and a records
+commit. W-267 to W-270 are filed (an action's temporaries never destroyed,
+`var e: T.Elem;` rejected where it is defined, `return {} as T;` for a class
+without `Copy`, and an interface or named constraint whose later parameter's
+type depends on a template parameter crashing in its own library), each the
+same on trunk; TP-1 reserves W-250..W-274 and W-271 to W-274 stay unused; the
+id re-scan over the 79 other refs finds the ids only in trunk's own
+reservation sentence. Verification is container-built and NOT of record
+(Actions disabled): on 1f0bc7be0 file_test 1955/1955 and the expected
+scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard
+generated 2026-10-19T15:28:25Z by the container clock); thirty-three mutants
+re-run and killed, nine of them new; 213 probes swept on the fork, trunk and the
+nightly, the fork stopping on none that trunk and the nightly do not stop on
+the same way. `git merge-tree` of the head against trunk f3156a375 conflicts in
+this file only, and merges trunk's stale TP-1 Branches row beside this one,
+which the land-time merge drops (the PR body's "Conflicts"). Neither review
+judged the branch dry, both re-measured bf8e1b4cc (gate 1955/1955,
+conformance 137/0/22 over 159, 48/56 bullets, EXPECTED), and the fixer changed
+six toolchain source files and four goldens, so RE-REVIEW ROUND 2 OWED: two
+fresh reviews of 632f92117..c874c270f and the records commit that records
+round 1, then a fixer for what they find; the PR opens and is held after a round
+with no BLOCKER or MAJOR whose fixer changes no toolchain file. The merge order
+is unchanged.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 2, folded;
+pushed; RE-REVIEW ROUND 3 OWED): two fresh reviews of the round-1 fixer's
+commits 632f92117..c874c270f and the records commit 764e55445 returned
+APPROVE-WITH-FIXES (two MAJOR, one MINOR) and APPROVE-WITH-FIXES (one MAJOR,
+three MINOR, two of them records only), seven distinct findings, all folded and
+none rejected (fork/templates/plan.md, "Focused re-review of the fold
+(2026-10-15)", round 2): four toolchain fix commits with their fills --
+2165322c5 (every runtime operand that a specific needs constant is an error
+there, so `array(x.0, x.1)` no longer stops the compiler) with e6a663c22,
+123eb40ca (`->` prints as `p->n`) with 8af8ad78b, b678e2985 (a class
+template's literal whose array field has a template-dependent bound is
+converted on instantiation, as on trunk, and a deferred runtime literal with a
+template value element lowers) with 7ea3fed97, and 94227d82c (an imported
+entity whose data names one that cannot be imported reports W-250's TODO
+instead of crashing after it) with 4fcbf62ef -- 282930a73, which makes two of
+the new tests worklists for clang-tidy, f44280c1c with its fill 24bf5ea45,
+which removes an aggregate-level deferral that the round's own fix had made
+redundant, and a records commit. W-271 is filed (a generic class from another
+library that declares a nested class or interface stops the compiler where the
+class is used, with or without a template parameter, as on trunk and the
+nightly); TP-1 reserves W-250..W-274 and W-272 to W-274 stay unused.
+Verification is container-built and NOT of record (Actions disabled): on
+24bf5ea45 file_test 1955/1955 and the expected scoreboard 137 PASS / 0 FAIL /
+22 SKIP over 159, 48/56 bullets (scoreboard generated 2026-10-19T18:50:58Z by
+the container clock); every mutant killed but the two recorded survivors; 284
+probes swept on the fork, trunk and the nightly, the fork stopping on none
+that trunk compiles. `git merge-tree` of the head against trunk f3156a375 and
+each held PR gives the PR body's conflict table unchanged. Neither review
+judged the branch dry, both re-measured 764e55445 (gate 1955/1955, conformance
+137/0/22 over 159, 48/56 bullets, EXPECTED), and the fixer changed five
+toolchain source files, four goldens and one program, so RE-REVIEW ROUND 3
+OWED: two fresh reviews of the round-2 fixer's commits 2165322c5..bdc1f62d7 and
+the records commit after them that records round 2's reviews, then a fixer for
+what they find; the PR opens and is held after a round with no BLOCKER or MAJOR
+whose fixer changes no toolchain file. The merge order does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 3, folded;
+pushed; RE-REVIEW ROUND 4 OWED): two fresh reviews of the round-2 fixer's
+commits 2165322c5..bdc1f62d7 and the records commit aa57bfe1c returned
+APPROVE-WITH-FIXES (one MAJOR) and APPROVE-WITH-FIXES (the same MAJOR, two
+MINOR records only), three distinct findings, all folded and none rejected
+(fork/templates/plan.md, "Focused re-review of the fold (2026-10-15)", round
+3): 68102438e with its fill d0fbfd56b (W-250's import test follows each
+reference the import loads, so an imported entity that names a template
+through a callee, a specific's argument, a tuple or struct element or a field
+reports the TODO instead of stopping the compiler after it), d54c37f91 (the
+file records what each walk that reaches no action reached, so the wider walk
+does not slow the gate), ada45a7c6 with its fill e7dc20a43 (three more splits
+that pin what three of the round's mutants change), and the records commits
+9923c79fc and 3afd3ec92 and a records pass over the reviews' runs; no residue
+filed, W-272 to W-274 stay unused. Verification is container-built and NOT of
+record (Actions disabled): on e7dc20a43 with d54c37f91's toolchain file_test
+1955/1955 and the expected scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159,
+48/56 bullets (scoreboard generated 2026-10-19T20:56:03Z by the container
+clock); every mutant of the walk killed but the seven recorded
+survivors whose paths others cover; 110 cross-library probes swept on the
+fork, trunk and the nightly, the fork stopping on none that trunk compiles.
+`git merge-tree` of the head against trunk f3156a375 and each held PR gives
+the PR body's conflict table unchanged (context.h and import_ref.cpp merge
+cleanly). Neither review judged the branch dry, both re-measured aa57bfe1c
+(gate 1955/1955, conformance 137/0/22 over 159, 48/56 bullets, EXPECTED), and
+the fixer changed two toolchain source files and one golden, so RE-REVIEW
+ROUND 4 OWED: two fresh reviews of the round-3 fixer's commits
+68102438e..3afd3ec92 and the records commit after them that records round 3's
+reviews, then a fixer for what they find; the PR opens and is held after a
+round with no BLOCKER or MAJOR whose fixer changes no toolchain file. The
+merge order does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 4, folded;
+pushed; RE-REVIEW ROUND 5 OWED): two fresh reviews of the round-3 fixer's
+commits 68102438e..3afd3ec92 and the records commit f3f99c1c1 returned REJECT
+(one BLOCKER) and APPROVE-WITH-FIXES (one MAJOR, two MINOR records only), four
+distinct findings, all folded and none rejected (fork/templates/plan.md,
+"Focused re-review of the fold (2026-10-15)", round 4): c841ad9e7 with its fill
+043e67106 (a class template's literal whose field type is produced by a template
+action, such as `T.Item`, `T.Item*` or a class `C(M + 1)`, is converted on
+instantiation instead of stopping lowering), 0f2002243 with its fill e0facdb04
+(W-250's import test walks the `require` declarations of an interface or named
+constraint, so a parameter-dependent `require` that names a class template
+reports the TODO instead of stopping the compiler after it), 6aa403cd6 with its
+fill a1285a786 (a class value whose literal leaves a field to its default is
+converted on instantiation too), b0501358f with its fill 3d6685b8b (a split that
+pins the concrete `require` shape a mutant changes), and the records commits
+after them (9db2fbb12; 7beed27b7, which completes it after a container restart
+at 00:31 UTC on 2026-10-20 by the container clock, re-measuring 9db2fbb12 with
+the same results; and a records pass over the reviews' runs, which re-measures
+7beed27b7 with the same results and splits the PR description, moving its
+verification record to the PR's first comment); one residue filed, W-272 (such a
+literal that leaves a field to its default is rejected on instantiation, as on
+trunk and the nightly), and W-273 and W-274 stay unused. Verification is
+container-built and NOT of record (Actions disabled): on 3d6685b8b with
+6aa403cd6's toolchain file_test 1955/1955 and the expected scoreboard 137 PASS /
+0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard generated
+2026-10-19T23:30:16Z by the container clock); every round-4 mutant killed but
+the seven recorded survivors whose paths others cover or no measured shape
+reaches; the first review's 14 crash probes compile and run, and the ten
+`require` probes that stopped the compiler after the TODO report it with no
+crash, where trunk and the nightly stop all ten at the SpliceInst FATAL. `git
+merge-tree` of the head against trunk f3156a375 and each held PR gives the PR
+body's conflict table unchanged (round 4's convert.cpp and import_ref.cpp hunks
+merge cleanly). Neither review judged the branch dry, and the fixer changed two
+toolchain source files and three goldens, so RE-REVIEW ROUND 5 OWED: two fresh
+reviews of the round-4 fixers' commits c841ad9e7..7beed27b7 (the fix commits
+c841ad9e7..3d6685b8b and the records commits 9db2fbb12 and 7beed27b7) and the
+records commit after them that records round 4's reviews, then a fixer for what
+they find; the PR opens and is held after a round with no BLOCKER or MAJOR whose
+fixer changes no toolchain file. The merge order does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 5, folded;
+pushed; RE-REVIEW ROUND 6 OWED): two fresh reviews of the round-4 fixers'
+commits c841ad9e7..7beed27b7 and the records commit 7dd4e1e7c returned
+APPROVE-WITH-FIXES (one MAJOR, one MINOR records only) and APPROVE-WITH-FIXES
+(one MAJOR, two MINOR, one records only), four distinct findings, the MAJOR
+found by both, all folded and none rejected (fork/templates/plan.md, "Focused
+re-review of the fold (2026-10-15)", round 5): 0bd0756c8 with its fill
+2f2cc9bb4 (a class value whose literal leaves a field to its default is
+deferred only when its class's fields hold a part known only per instantiation,
+as an initializer is, so the constant literals that 6aa403cd6 turned into
+rejections on instantiation compile and run again, as at f3f99c1c1), aec81d0ee
+with its fill 82bb5a749 (the two splits that pin the remaining rejection are
+named `fail_todo_`), and the records commits after them (82ab5f78a, and a
+records pass over the reviews' runs, which re-measures 82ab5f78a with the same
+results); no residue filed, and W-273 and W-274 stay unused. Verification is
+container-built and NOT of record (Actions disabled): on 82bb5a749 with
+0bd0756c8's toolchain file_test 1955/1955 and the expected scoreboard 137 PASS /
+0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard generated
+2026-10-20T02:48:42Z by the container clock); every round-5 mutant killed but
+the four recorded survivors whose paths others cover or that no measured shape
+reaches (amended 2026-10-15, focused re-review of the fold: RR6r2-m1); the
+eleven class-value probes that the round-4 head rejected print their twins'
+values. `git merge-tree` of the head against trunk f3156a375 and each held PR
+gives the PR body's conflict table unchanged (round 5's convert.cpp hunk merges
+cleanly). Neither review judged the branch dry, and the fixer changed one
+toolchain source file and three goldens, so RE-REVIEW ROUND 6 OWED: two fresh
+reviews of the round-5 fixer's commits 0bd0756c8..82ab5f78a (the fix commits
+0bd0756c8..82bb5a749 and the records commit 82ab5f78a) and the records commit
+after them that records round 5's reviews, then a fixer for what they find; the
+PR opens and is held after a round with no BLOCKER or MAJOR whose fixer changes
+no toolchain file. The merge order does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 6, folded;
+pushed; RE-REVIEW ROUND 7 OWED): two fresh reviews of the round-5 fixer's
+commits 0bd0756c8..82ab5f78a and the records commit d50052bde returned
+APPROVE-WITH-FIXES (one MAJOR, two MINOR) and APPROVE-WITH-FIXES (one MAJOR,
+one MINOR records only), five distinct findings, all folded and none rejected
+(fork/templates/plan.md, "Focused re-review of the fold (2026-10-15)", round
+6): 4d015cf18 with its fill 464eca298 (a class literal that leaves to its
+default a field whose default initializer splices in a template action, such
+as `var k: i32 = N + 1;`, is converted on instantiation, where it stopped
+lowering, and is rejected there as trunk rejects it), 1d4e7419c with its fill
+873a6b70a (two lower splits that kill the round-4 mutants M70 and M72),
+080963a68 with its fill 8b94adb03 (a check split that kills M75 and pins
+W-273), 2dfd39e63 with its fill e193865fc (two check splits that pin a constant
+literal nested in a value converted on instantiation whole, a form of W-272's
+mechanism that predates the round), and the records commits after them
+(2cb6bfec0, and a records pass over the reviews' runs, which re-measures
+2cb6bfec0 with the same results); one residue filed, W-273, a class template
+whose field type names a class-scope alias of a `where` facet type, rejected
+where trunk and the nightly stop the compiler, and W-272 widened; W-274 stays
+unused. Verification is container-built and NOT of record (Actions disabled): on
+e193865fc with 4d015cf18's toolchain file_test 1955/1955 and the expected
+scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard
+generated 2026-10-20T04:39:57Z by the container clock); every round-6 mutant
+killed but M76, which only completes the walk; a sweep of 1281 earlier probes
+changes only the round's own shapes. `git merge-tree` of the head against trunk
+f3156a375 and each held PR gives the PR body's conflict table unchanged (round
+6's convert.cpp hunk merges cleanly). Neither review judged the branch dry, and
+the fixer changed one toolchain source file and three goldens, so RE-REVIEW
+ROUND 7 OWED: two fresh reviews of the round-6 fixer's commits
+4d015cf18..2cb6bfec0 (the fix commits 4d015cf18..e193865fc and the records
+commit 2cb6bfec0) and the records commit after them that records round 6's
+reviews, then a fixer for what they find; the PR opens and is held after a round
+with no BLOCKER or MAJOR whose fixer changes no toolchain file. The merge order
+does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 7, folded;
+pushed; RE-REVIEW ROUND 8 OWED): two fresh reviews of the round-6 fixer's
+commits 4d015cf18..2cb6bfec0 and the records commit aff28da43 returned
+APPROVE-WITH-FIXES (two MINOR, records only, judged dry) and APPROVE-WITH-FIXES
+(one MAJOR, one MINOR records only, not dry), four distinct findings, all folded
+and none rejected (fork/templates/plan.md, "Focused re-review of the fold
+(2026-10-15)", round 7): c4d609c8d with its fill a6c7910d6 (an action keeps a
+struct or tuple literal as its operand instead of the literal's constant value,
+so a constant literal deferred to instantiation takes the defaults of the
+class's concrete specific, nested literals included; `var k: T = 7;` in a class
+template, which round 6's deferral had turned from running into a rejection,
+runs again, and so does every form that W-272 recorded, whose six pins lose
+`fail_todo_`), b82630e75 with its fill d29e91e5c (a lower split that kills the
+round's surviving mutant M85), and the records commits after them (2b58312ea:
+W-270 widened to a class template whose later parameter's type is produced, the
+records' comparisons with trunk and the nightly corrected, three paragraphs
+rewrapped; and a records pass over the reviews' runs, which rewraps nine more
+paragraphs and re-measures 2b58312ea with the same results); no residue filed,
+W-272 discharged within TP-1, W-274 stays unused. Verification is
+container-built and NOT of record (Actions disabled): on d29e91e5c with
+c4d609c8d's toolchain file_test 1955/1955 and the expected scoreboard 137 PASS /
+0 FAIL / 22 SKIP over 159, 48/56 bullets (scoreboard generated
+2026-10-20T07:06:51Z by the container clock), every program equal to round 6's
+run; every round-7 mutant killed but M76, which only completes the walk; a sweep
+of 1445 earlier probes changes only the shapes that the fix makes compile or
+brings to their twins' behavior. `git merge-tree` of the head against trunk
+f3156a375 and each held PR gives the PR body's conflict table unchanged (round
+7's eval.cpp hunk and the two refilled eval goldens merge cleanly). Review 2 did
+not judge the branch dry, and the fixer changed two toolchain source files and
+six goldens, so RE-REVIEW ROUND 8 OWED: two fresh reviews of the round-7 fixer's
+commits c4d609c8d..2b58312ea (the fix commits c4d609c8d..d29e91e5c and the
+records commit 2b58312ea) and the records commit after them that records round
+7's reviews, then a fixer for what they find; the PR opens and is held after a
+round with no BLOCKER or MAJOR whose fixer changes no toolchain file. The merge
+order does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 8, folded;
+pushed; RE-REVIEW ROUND 9 OWED): two fresh reviews of the round-7 fixer's
+commits c4d609c8d..2b58312ea and the records commit 9bf11355d returned
+APPROVE-WITH-FIXES (one MAJOR, two MINOR records only, not dry) and
+APPROVE-WITH-FIXES (the same MAJOR, three MINOR, one of them records only, not
+dry), five distinct findings, all folded and none rejected
+(fork/templates/plan.md, "Focused re-review of the fold (2026-10-15)", round 8):
+1572d4d65 with 6e08becbc and their fill 6983fc5ca (a template action's
+conversion reads a class template's field default from the class specific's
+resolved definition, so a checked generic that calls such a template with a
+symbolic argument, which stopped the compiler since rounds 6 and 7 where trunk
+and the nightly reject it, is rejected on instantiation with a diagnostic;
+splits pin it, round 7's reach to checked generics whose types are `eval fn`
+results and to template-dependent call arguments, and a constant initializer
+that is not a literal, with an upstream TODO restored and narrowed), 813804758
+(the resolution for every default read; no golden change), and the records
+commits after them (3a4176711 and its correction 1a9fbb6de; and a records pass
+over the reviews' runs, which rewraps six paragraphs and re-measures 1a9fbb6de
+with the same results); one residue filed, W-274, a checked generic that calls
+such a template for a class whose object representation depends on a type
+parameter, which still stops the compiler as on trunk and the nightly, so
+W-250..W-274 are all filed. Verification is container-built and NOT of record
+(Actions disabled): on 813804758 with its own toolchain file_test 1955/1955 and
+the expected scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159, 48/56 bullets
+(scoreboard generated 2026-10-20T09:51:04Z by the container clock), every
+program equal to round 7's run, and again at 1a9fbb6de with the same results;
+every round-8 mutant killed; a sweep of 1902 earlier probes changes only the
+seven forms that stopped and are rejected now. `git merge-tree` of the head
+against trunk f3156a375 and each held PR gives the PR body's conflict table
+unchanged (round 8's convert.cpp hunks merge cleanly). Neither review judged the
+branch dry, and the fixer changed one toolchain source file and four goldens, so
+RE-REVIEW ROUND 9 OWED: two fresh reviews of the round-8 fixer's commits
+1572d4d65..1a9fbb6de (the fix commits 1572d4d65..813804758 and the records
+commits 3a4176711 and 1a9fbb6de) and the records commit after them that records
+round 8's reviews, then a fixer for what they find; the PR opens and is held
+after a round with no BLOCKER or MAJOR whose fixer changes no toolchain file.
+The merge order does not change.
+
+Later on 2026-10-15 (TP-1's focused re-review of the fold, round 9, folded;
+pushed; RE-REVIEW DRY AT ROUND 9, PR TO OPEN AND HOLD): two fresh reviews of the
+round-8 fixer's commits 1572d4d65..1a9fbb6de and the records commit c08623fc6
+returned APPROVE-WITH-FIXES (two MINOR, records only, dry) and
+APPROVE-WITH-FIXES (three MINOR, records only, dry), five distinct findings, all
+folded and none rejected (fork/templates/plan.md, "Focused re-review of the fold
+(2026-10-15)", round 9) in the records commit b31a62d62, which changes no
+toolchain, golden or program file: the plan's §1.1 gains TR-22 (a symbolic
+constant passed to a template parameter, OUT and unchanged from trunk), TR-4 and
+D-TP-24 say where a constant literal that leaves a default runs and that round
+8's three `fail_` splits pin trunk's limit for a symbolic argument, W-267 is
+widened to the actions of a checked generic whose types are `eval fn` results
+and W-274 to an object representation that depends on an array bound or a
+class-template field type, with a second shape in its notes, and W-256's and
+W-272's cites follow round 8's moved lines; no residue filed. Verification is
+container-built and NOT of record (Actions disabled): at c08623fc6, whose
+toolchain is 813804758's and which b31a62d62 leaves unchanged, file_test
+1955/1955 and the expected scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159,
+48/56 bullets (scoreboard generated 2026-10-20T11:53:27Z by the container
+clock), every program equal to round 8's run. `git merge-tree` of the round's
+head against trunk f3156a375 and each held PR gives the PR body's conflict table
+unchanged. A records pass over the reviews' runs, the records commit after
+b31a62d62, names b31a62d62 in the records, re-cites W-264's class value
+temporary to convert.cpp:1590, corrects D-TP-24's closing sentence, rewraps four
+paragraphs by hand, re-runs the id re-scan and `git merge-tree` with the same
+results and re-measures b31a62d62 with the same results (file_test 1955/1955;
+137/0/22 over 159, 48/56 bullets; NOT of record), with no toolchain, golden or
+program file changed. Both reviews judged the branch dry, and the fixer changed
+no toolchain file, so the re-review is complete: no round 10 is owed, and the
+TP-1 PR opens against trunk and is held open, as PR 51 to PR 60 are. The merge
+order does not change.
+
+Later on 2026-10-20 (TP-1's round 10, on an external finding, fixed; pushed;
+HELD OPEN AS PR 61, ROUND 10 FIX UNDER REVIEW): after round 9 was dry and the PR
+opened as PR 61 and was held, the fixer of SV-1's plan found X-1: a `match` with
+a `case .None` arm on a value of `Opt(T)`, a generic choice applied to the
+template parameter of `fn Conv[template T: type]`, stops the compiler at
+check/pattern_match.cpp:1409, where trunk 0bdce60a5 reports a `semantics TODO`
+at the scrutinee, an OUT form turned into a crash and so a BLOCKER. A separate
+fixer reproduced it on the installed toolchain, on trunk and on the nightly,
+swept the class with 117 probes (every refutable form over every
+template-dependent scrutinee kind, beside twins without a template or with a
+checked parameter) and fixed the root in eafca5cb9, with its fill 74e16c4de: an
+alternative pattern's name is resolved in the definition
+(`PerformAlternativeAccess`, refutable_binding.cpp), where a deferred member
+access left a splice whose type is not the scrutinee's; trunk stops the same way
+for a choice declared in a class template. The plan's TR-13 and D-TP-11 are
+amended (a refutable pattern on a template-dependent choice or `Core.Int(N)`
+value is IN, checked in the definition; a scrutinee whose type is not known in
+the definition stays OUT and W-252 is narrowed to it); the class is pinned by
+check generic/template/match_choice.carbon (23 splits), lower
+template/match_choice.carbon (4 splits) and a tenth program,
+templates_match_dependent_choice; W-295 is filed from W-295..W-299, which the
+orchestrator reserved to TP-1 for the round (a checked generic's `Core.Int(N)`
+compared with an integer literal stops the compiler while lowering, on trunk and
+the nightly too), and W-296 to W-299 stay unused. Verification is
+container-built and NOT of record (Actions disabled): at eafca5cb9 and
+74e16c4de, file_test 1957/1957 and the expected scoreboard 138 PASS / 0 FAIL /
+22 SKIP over 160, 48/56 bullets (scoreboard generated 2026-10-20T21:09:24Z by
+the container clock), the ten TP-1 programs the only movers; the mutants that
+revert either lane or both are killed. `git merge-tree` of the round's head
+against trunk 254b935b2 and each held PR gives the PR body's conflict table with
+trunk at 254b935b2, and no held PR touches handle_match.cpp or
+refutable_binding.{h,cpp}. The fixer changed toolchain files, so two fresh
+reviews (R29(c)) of eafca5cb9, 74e16c4de and the records commit after them are
+owed, then a fixer for what they find, and PR 61 stays held until a round with
+no BLOCKER or MAJOR finding whose fixer changes no toolchain file. The merge
+order does not change.
+
+Later on 2026-10-20 (TP-1's round 10 reviewed and recorded; pushed; PR 61 HELD
+OPEN, ROUND 10 DRY): two fresh reviews of eafca5cb9, 74e16c4de and 3d88e6a60
+returned APPROVE-WITH-FIXES (four MINOR, records only, dry) and
+APPROVE-WITH-FIXES (seven MINOR, six records only and one test only, not dry
+only for that one, a comment edit in a golden), eleven distinct findings, none
+BLOCKER or MAJOR and none needing a toolchain change (fork/templates/plan.md,
+"Focused re-review of the fold, round 10 (2026-10-20)"). The records commit
+after 3d88e6a60 folds every records-only part, none rejected: TR-13 records that
+an unknown alternative name is diagnosed in the definition even where nothing
+instantiates a class template, a departure from trunk that every instantiation
+would make anyway; the round's record gains the reviews' runs and three rows of
+probes; and two residues outside templates that trunk and the nightly share are
+filed from W-295..W-299: W-296, an `if` expression whose result is a class or
+choice value stops lowering, and W-297, a generic class's method defined out of
+line stops lowering at sem_ir/generic.cpp:84; W-298 and W-299 stay unused. Two
+test-only items are owed to the next round's fixer: a split for the unknown name
+in a class template that nothing instantiates, and deleting the W-id from the
+new check golden's header comment. Verification is container-built and NOT of
+record (Actions disabled): at 3d88e6a60, whose toolchain is eafca5cb9's, and on
+the records commit's tree, file_test 1957/1957 and the expected scoreboard 138
+PASS / 0 FAIL / 22 SKIP over 160, 48/56 bullets (scoreboard generated
+2026-10-20T23:03:11Z by the container clock), every program equal to the fixer's
+run. The id re-scan at 22:55 UTC (origin/trunk 254b935b2) finds no other ref
+naming W-296, W-297 or W-298, and `git merge-tree` of the records commit's tree
+against trunk and each held PR gives the PR body's conflict table unchanged. The
+round's toolchain change is reviewed and no further toolchain change is owed, so
+round 10 is dry and PR 61 stays held open, as PR 51 to PR 60 are. The merge
+order does not change.
+
+Later on 2026-10-20 (TP-1's round 11, round 10's two test-only items folded;
+pushed; PR 61 HELD OPEN, ROUND 11 FIX UNDER REVIEW): a separate fixer
+reproduced both items at 281292d8f and folded them in check
+generic/template/match_choice.carbon, with no toolchain source or program
+change (fork/templates/plan.md, "Focused re-review of the fold, round 11
+(2026-10-20)"). The fix commit 06f61260c deletes the W-id from the golden's
+header comment (RR10r2-m1), so no line that TP-1 adds to a toolchain source,
+golden or program names a W-id, and adds the split
+`fail_unknown_alternative_class_template` (RR10-1-m1's optional split): an
+unknown alternative name in a `match` arm, a pattern condition and a `let` ...
+`else` on the choice of a class template that nothing instantiates, diagnosed
+in the definition as the checked twin is, where trunk compiles the last two and
+stops at check/pattern_match.cpp:1409 on the first; its fill b412e602b writes
+the three hand-predicted errors, and round 10's three mutants each fail the
+split alone. No residue is filed, and W-298 and W-299 stay unused. Verification
+is container-built and NOT of record (Actions disabled): at b412e602b, on
+eafca5cb9's toolchain, file_test 1957/1957 and the expected scoreboard 138 PASS
+/ 0 FAIL / 22 SKIP over 160, 48/56 bullets (scoreboard generated
+2026-10-20T23:40:12Z by the container clock), every program equal to round 10's
+runs. The id re-scan at 23:47 UTC (origin/trunk 254b935b2) gives the outputs of
+the 22:55 UTC run, and `git merge-tree` of b412e602b against trunk and each
+held PR gives the PR body's conflict table unchanged. The round changes a
+golden, so two fresh reviews (R29(c)) of 06f61260c, b412e602b and the records
+commit after them are owed, then a fixer for what they find, and PR 61 stays
+held open, as PR 51 to PR 60 are. The merge order does not change.
+
+Later, on 2026-10-21 (TP-1's round 11 reviewed and recorded; pushed;
+PR 61 HELD OPEN, ROUND 11 DRY): two fresh reviews of 06f61260c, b412e602b
+and fe52530a4 returned APPROVE-WITH-FIXES (one MINOR, records only, dry)
+and APPROVE-WITH-FIXES (five MINOR, records only, dry), six distinct
+findings, none BLOCKER or MAJOR and none needing a toolchain or golden
+change (fork/templates/plan.md, "Focused re-review of the fold, round 11
+(2026-10-20)"). The records commit after fe52530a4 folds all six, none rejected:
+W-298 is filed from W-295..W-299, a choice alternative whose parameter type
+a template action forms (`T.Inner`, `array(i32, N)`) in a class template
+or a generic choice with a template parameter, which stops the compiler at
+sem_ir/generic.cpp:84 while the choice's definition is checked, on trunk too,
+where the checked twin compiles (TR-13 names the limit, and gap row 54's residue
+list gains it, the row PARTIAL); W-299 stays unused; and the records and PR
+texts name trunk 481f05612, which the orchestrator pushed at 00:05 UTC, with
+the round-11 records' wording, wraps and round labels corrected. Verification
+is container-built and NOT of record (Actions disabled): at fe52530a4, whose
+toolchain is eafca5cb9's, and on the records commit's tree, file_test 1957/1957
+and the expected scoreboard 138 PASS / 0 FAIL / 22 SKIP over 160, 48/56 bullets
+(scoreboard generated 2026-10-21T00:45:42Z by the container clock), every
+program equal to the fixer's run. The id re-scan at 00:42 UTC (origin/trunk
+481f05612) prints `W-297`, `W-298` and `W-299` from its first command, TP-1's
+own reservation as trunk records it, and finds no other workstream naming W-298
+or W-299; `git merge-tree` of fe52530a4 and of the records commit against trunk
+481f05612 and each held PR gives the PR body's conflict table with only trunk's
+head changed. The round's golden change is reviewed and no further toolchain
+change is owed, so round 11 is dry and PR 61 stays held open, as PR 51 to PR 60
+are; its description and first comment are re-posted from the branch's texts.
+The merge order does not change.
+
 Later on 2026-10-15 (01:30 UTC): PR 60 (SC-1, claude/carbon-fork-0-1-sc, head
 40a76ab81, 83 commits over trunk 8068151ed: template-style structural
 conformance (F-010), `template constraint` method and associated-function
@@ -1355,6 +1836,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at e23113ba2 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 after PR 56); amended 2026-10-28 by RG-1's merge e23113ba2 of PR 56's commit (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 once item 13's fix and note 7's ruling are on its branch). |
+| `claude/carbon-fork-0-1-tp` | PR 61 HELD OPEN, ROUND 11 DRY -- TP-1 integrated templates, toolchain at eafca5cb9 (splits through b412e602b) after round 11 of the focused re-review of the fold, records through the records commit that records round 11's reviews; round 9 was dry and the PR opened as PR 61 and was held, and round 10 opened on an external finding (X-1, a BLOCKER: a `match` on a template-dependent choice stopped the compiler where trunk reports a TODO; fixed at the root, W-295 filed); its two reviews found eleven MINOR findings, none needing a toolchain change, every records-only part folded, W-296 and W-297 filed from W-295..W-299 (W-298 and W-299 then unused) and two test-only items owed to the next round's fixer, so round 10 is dry; round 11 folds those two items, the W-id deleted from a golden's header comment and a split that pins TR-13's departure for a class template's choice, in one golden and no toolchain file, and its two reviews found six MINOR findings, all records only and none needing a toolchain or golden change, every one folded and W-298 filed from W-295..W-299 (W-299 unused), so round 11 is dry and PR 61 stays held (W-014 OPEN; W-250..W-274 and W-295 to W-298 filed, W-272 discharged within TP-1; F-019 not minted; W-127, W-183, W-192, W-193 discharged at land time; gate 1957/1957 and conformance 138/0/22 over 160 on the container toolchain, expected; row "Generics: Integrated templates" stays PARTIAL); lands after PR 59 by the land-time items in Next actions (item 5). |
 | `claude/carbon-fork-0-1-dd` | LANDED as PR 58 by merge 909c817d3 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T06:23:27Z, merge_commit_sha 909c817d3) — DD-1: design docs without placeholders, with state L for PR 51, PR 54 and PR 55; gap row 70 DONE, row 91 PARTIAL until state L for PR 53, PR 56 and SC-1; W-065 discharged; land-time commits ad7bb2e0c, 9ae576af5; container-measured (R33 (b)): gate 1953 of 1953, conformance 167/0/15 over 182, 49/56 bullets; moved to follow-ons: to items 14, 15 and 16: state L for PR 53, SC-1 and PR 56; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at cc4daba00 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 15 once W-139's fix and item 10 are done); amended 2026-10-28 by RG-1's records commit cc4daba00 (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-tp` | HELD OPEN as PR 61 — TP-1 integrated templates at 66aa13132 (toolchain 813804758; W-014 open with the slice recorded; W-250..W-274 filed, W-272 discharged within TP-1; expected 137/0/22 over 159; gap row 54 stays PARTIAL); nine focused re-review rounds after the implementation review, round 9 dry; round 10 opened after the PR on an external finding (X-1, a crash where trunk diagnoses, fixed at the root at eafca5cb9) and found only MINORs; round 11 (one golden, no toolchain file) DRY at 5661a35c8, six MINOR records-only findings folded; W-295..W-298 filed from the block W-295..W-299 reserved to TP-1 (W-299 unused); the description and first comment re-posted at 5661a35c8; expected 138/0/22 over 160; merges last, after PR 59, through its land-time commits M, S, F6, L and the records commit; amended 2026-10-28 by RG-1's records commit 40daf0a2a and its review fix 66aa13132 (R32 (e)), the description refreshed. |
@@ -1394,6 +1876,20 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 
 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3 → 128 SL-2. The scoreboard
 regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 `conformance`; R28).
+
+Expected at TP-1, NOT of record: 138 PASS / 22 SKIP / 0 FAIL over 160, 48/56
+bullets (a container run on the carbonbuild toolchain of eafca5cb9 at TP-1's
+head 74e16c4de, scoreboard generated 2026-10-20T21:09:24Z, and the same at
+b412e602b, generated 2026-10-20T23:40:12Z (amended 2026-10-20, round 11:
+RR10r2-m1 / RR10-1-m1), and on the records commit after fe52530a4, generated
+2026-10-21T00:45:42Z (amended 2026-10-21, records: round 11); at 824f29c4e,
+before round 10, 137 over 159 (amended 2026-10-20, round 10: X-1); ten programs,
+the tenth from round 10, join the "Generics: Integrated templates" bullet,
+already PASS, and its gap row stays PARTIAL), from the floor of record 128
+PASS / 22 SKIP / 0 FAIL over 150, 48/56 (the hosted conformance run 37402970811
+on 606a99c5a). TP-1 is measured on trunk alone; its landing count is PR 59's
+expected state with every earlier PR plus ten PASS (fork/templates/plan.md §5)
+(amended 2026-10-20, round 10: X-1).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 

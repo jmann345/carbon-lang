@@ -7,12 +7,12 @@
 #include <optional>
 
 #include "llvm/ADT/SmallVector.h"
+#include "toolchain/check/action.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/literal.h"
-#include "toolchain/check/member_access.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/check/type_completion.h"
@@ -288,6 +288,21 @@ auto ResolvePendingAlternative(Context& context, Parse::NodeId node_id,
   return result;
 }
 
+auto PerformAlternativeAccess(Context& context, Parse::NodeId node_id,
+                              SemIR::TypeId scrutinee_type_id,
+                              SemIR::NameId name_id) -> SemIR::InstId {
+  auto scrutinee_type_inst_id = context.types().GetTypeInstId(
+      context.types().GetUnqualifiedType(scrutinee_type_id));
+  // `PerformAction` rather than `PerformMemberAccess`, which would add a
+  // deferred action for a template-dependent base; for any other base the
+  // two are the same.
+  return PerformAction(
+      context, SemIR::LocId(node_id),
+      SemIR::AccessMemberAction{.type_id = SemIR::InstType::TypeId,
+                                .base_id = scrutinee_type_inst_id,
+                                .name_id = name_id});
+}
+
 // Resolves the case context's pending alternative (a root `.Name` checked
 // before its scrutinee) against the scrutinee's type, filling the context's
 // `alternative` on success. Returns false when resolution diagnosed an
@@ -318,10 +333,8 @@ static auto ResolveDeferredAlternative(Context& context,
     // An unknown alternative name: the standard member-access diagnostic,
     // emitted into the current block — no pattern region is open here, and
     // the result is unused.
-    auto scrutinee_type_inst_id = context.types().GetTypeInstId(
-        context.types().GetUnqualifiedType(scrutinee_type_id));
-    PerformMemberAccess(context, pending.node_id, scrutinee_type_inst_id,
-                        pending.name_id);
+    PerformAlternativeAccess(context, pending.node_id, scrutinee_type_id,
+                             pending.name_id);
     return false;
   }
   if (!resolved.alternative) {

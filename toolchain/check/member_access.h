@@ -49,7 +49,9 @@ auto GetAssociatedValue(Context& context, SemIR::LocId loc_id,
                         SemIR::SpecificInterface interface) -> SemIR::InstId;
 
 // Creates SemIR to perform a tuple index with base expression `tuple_inst_id`
-// and index expression `index_inst_id`. Returns the result of the access.
+// and index expression `index_inst_id`. A template-dependent operand of opaque
+// type is indexed when the template is instantiated. Returns the result of the
+// access.
 auto PerformTupleAccess(Context& context, SemIR::LocId loc_id,
                         SemIR::InstId tuple_inst_id,
                         SemIR::InstId index_inst_id) -> SemIR::InstId;

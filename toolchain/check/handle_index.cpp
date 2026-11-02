@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "toolchain/base/kind_switch.h"
+#include "toolchain/check/action.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/facet_type.h"
@@ -15,6 +16,7 @@
 #include "toolchain/check/literal.h"
 #include "toolchain/check/name_lookup.h"
 #include "toolchain/check/operator.h"
+#include "toolchain/check/pointer_dereference.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/diagnostic.h"
 #include "toolchain/sem_ir/expr_info.h"
@@ -34,7 +36,7 @@ auto HandleParseNode(Context& /*context*/, Parse::IndexExprStartId /*node_id*/)
 // `operand_type_id` for types that are not an array. This checks if
 // the base expression implements the `IndexWith` interface; if so, uses the
 // `At` associative method, otherwise prints a diagnostic.
-static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
+static auto PerformIndexWith(Context& context, SemIR::LocId loc_id,
                              SemIR::InstId operand_inst_id,
                              SemIR::InstId index_inst_id) -> SemIR::InstId {
   SemIR::InstId args[] = {context.types().GetTypeInstId(
@@ -42,7 +44,7 @@ static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
   Operator op{.interface_name = CoreIdentifier::IndexWith,
               .interface_args_ref = args,
               .op_name = CoreIdentifier::At};
-  return BuildBinaryOperator(context, node_id, op, operand_inst_id,
+  return BuildBinaryOperator(context, loc_id, op, operand_inst_id,
                              index_inst_id);
 }
 
@@ -154,12 +156,30 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   return i64_type_id;
 }
 
-auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
-  auto index_inst_id = context.node_stack().PopExpr();
-  auto operand_inst_id = context.node_stack().PopExpr();
+// Performs an index with base expression `operand_inst_id` and index
+// expression `index_inst_id`, `operand[index]`. A template-dependent operand of
+// opaque type is indexed when the template is instantiated.
+static auto PerformIndex(Context& context, SemIR::LocId loc_id,
+                         SemIR::InstId operand_inst_id,
+                         SemIR::InstId index_inst_id) -> SemIR::InstId {
   operand_inst_id = ConvertToValueOrRefExpr(context, operand_inst_id);
   auto operand_inst = context.insts().Get(operand_inst_id);
   auto operand_type_id = operand_inst.type_id();
+  // Proposal 2200: whether a template-dependent operand is an array, indexed
+  // by `ArrayIndex`, or a type that implements `IndexWith`, is known when the
+  // template is instantiated.
+  if (IsOpaqueTemplateDependentType(context, operand_type_id)) {
+    return AddDependentActionSplice<SemIR::IndexAction>(
+        context, loc_id,
+        {.type_id = SemIR::InstType::TypeId,
+         .operand_id = operand_inst_id,
+         .index_id = index_inst_id},
+        SemIR::TypeInstId::None);
+  }
+  // The types formed below are located at the index expression's parse node.
+  // On instantiation, `loc_id` is the `IndexAction`'s instruction, whose
+  // location is that node.
+  auto node_id = context.insts().GetCanonicalLocId(loc_id).node_id();
 
   CARBON_KIND_SWITCH(context.types().GetAsInst(operand_type_id)) {
     case CARBON_KIND(SemIR::ArrayType array_type): {
@@ -174,13 +194,13 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
         // If the operand is an array value, convert it to an ephemeral
         // reference to an array so we can perform a primitive indexing into it.
         operand_inst_id = AddInst<SemIR::ValueAsRef>(
-            context, node_id,
+            context, loc_id,
             {.type_id = operand_type_id, .value_id = operand_inst_id});
       }
       // Constant evaluation will perform a bounds check on this array indexing
       // if the index is constant.
       auto elem_id = AddInst<SemIR::ArrayIndex>(
-          context, node_id,
+          context, loc_id,
           {.type_id = context.types().GetTypeIdForTypeInstId(
                array_type.element_type_inst_id),
            .array_id = operand_inst_id,
@@ -192,8 +212,7 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
         // and `IndirectIndexWith`.
         elem_id = ConvertToValueExpr(context, elem_id);
       }
-      context.node_stack().Push(node_id, elem_id);
-      return true;
+      return elem_id;
     }
 
     default: {
@@ -212,12 +231,22 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
                                    index_inst_id, *target_type_id);
         }
       }
-      auto elem_id =
-          PerformIndexWith(context, node_id, operand_inst_id, index_inst_id);
-      context.node_stack().Push(node_id, elem_id);
-      return true;
+      return PerformIndexWith(context, loc_id, operand_inst_id, index_inst_id);
     }
   }
+}
+
+auto PerformAction(Context& context, SemIR::LocId loc_id,
+                   SemIR::IndexAction action) -> SemIR::InstId {
+  return PerformIndex(context, loc_id, action.operand_id, action.index_id);
+}
+
+auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
+  auto index_inst_id = context.node_stack().PopExpr();
+  auto operand_inst_id = context.node_stack().PopExpr();
+  context.node_stack().Push(
+      node_id, PerformIndex(context, node_id, operand_inst_id, index_inst_id));
+  return true;
 }
 
 }  // namespace Carbon::Check

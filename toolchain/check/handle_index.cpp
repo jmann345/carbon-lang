@@ -259,6 +259,25 @@ static auto PerformIndex(Context& context, SemIR::LocId loc_id,
     }
 
     default: {
+      // Fork (DR-1 D-DR-7, composed with TP-1): whether a template-dependent
+      // operand implements `IndirectIndexWith(I)`, and so which interface
+      // subscripting uses, is known only per specific. An impl lookup that
+      // depends on a template parameter is resolved at monomorphization, where
+      // a failed `IndirectIndexWith` probe is an error rather than a fallback,
+      // so such an index is performed when the template is instantiated, as an
+      // opaque operand's is.
+      auto index_type_id = context.insts().Get(index_inst_id).type_id();
+      if (OperandDependence(context, operand_type_id) ==
+              SemIR::ConstantDependence::Template ||
+          OperandDependence(context, index_type_id) ==
+              SemIR::ConstantDependence::Template) {
+        return AddDependentActionSplice<SemIR::IndexAction>(
+            context, loc_id,
+            {.type_id = SemIR::InstType::TypeId,
+             .operand_id = operand_inst_id,
+             .index_id = index_inst_id},
+            SemIR::TypeInstId::None);
+      }
       // The literal-subscript probe runs only where `PerformIndexOperator`
       // itself looks `Core.IndirectIndexWith` up, which its first attempt
       // does for every operand but an erroneous one: `BuildBinaryOperator`
@@ -268,7 +287,6 @@ static auto PerformIndex(Context& context, SemIR::LocId loc_id,
       // never does. The dispatch looks `Core.IndexWith` up only when that
       // attempt fails and no C++ `operator[]` is found; elsewhere the probe's
       // load of it is the rule's own (the rule's footprint comment).
-      auto index_type_id = context.insts().Get(index_inst_id).type_id();
       if (operand_inst_id != SemIR::ErrorInst::InstId &&
           context.types().Is<SemIR::IntLiteralType>(index_type_id)) {
         if (auto target_type_id = LiteralSubscriptTargetType(

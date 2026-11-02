@@ -1821,6 +1821,23 @@ owed on all twelve when Actions returns (R33 (b)). Held: PR 53, PR 60, PR 56, PR
 57, PR 59 and PR 66, each landing by Next actions items 14 to 17 when its gate
 holds.
 
+2026-11-02 (22:34 UTC): FO-1's plan (fork/followon/fo1-plan.md, rev 5) is signed
+off and on trunk. It plans Next actions items 10, 13 and 15 to 17. Item 10 is
+decided: OP-2's defect, fixed on PR 57's branch by A1, so no SC-1 commit is owed
+(D-FO1-1). Note 7 (VA-2's hand-off note 7, defect A) is ruled under D-LAND-2: PR
+59's own abort, fixed on PR 59's branch with W-368 filed there (D-FO1-6); item
+13's fix and W-367 go to the same branch (D-FO1-5). W-139 is realigned on PR
+60's branch before its land merge (D-FO1-2) and W-352 on PR 56's, merged into PR
+57's (D-FO1-4). W-373 to W-376 are reserved to FO-1 (D-FO1-3, D-FO1-12); W-369
+and W-370 stay reserved to these landings' residues. The landings follow as
+stages 13 to 17 (PR 60, PR 56, PR 57, PR 59, PR 66) by LAND-1's procedure; PR 53
+waits for item 14. For the orchestrator and the next weekly check (W-355):
+TP-1's register row H10.8 (NONE, "silent at the tip") does not hold at
+upstream's d99b767dd, whose `IsCallPerformable`
+(toolchain/check/call.cpp:449-464) defers every template-dependent call
+argument, where D-TP-11 forms `Holder(T)` at the definition; its interface half
+is W-374 (FO-1 D-FO1-2 (4)).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2380,7 +2397,8 @@ as the work still owed on the branches and after the landing.
     monomorphize specific <none>` at `fn Next(self) -> Core.Optional(Self);`,
     against OP-2's `DefaultOptionalStorage`; no plan names it. SC-1's and OP-2's
     owners decide which land-time fill or fix commit carries it, before either
-    lands.
+    lands. (Decided 2026-11-02 by FO-1, fork/followon/fo1-plan.md D-FO1-1:
+    OP-2's defect, fixed by A1 on PR 57's branch; no SC-1 commit is owed.)
 11. The a03, a19 and a20 class (upstream's defects; VA-2's M-20 and R-13): a
     `var` of a one-element tuple of a tuple of run-time values gives an
     indeterminate value (wrong code), and such a tuple initialized from a
@@ -2399,7 +2417,10 @@ as the work still owed on the branches and after the landing.
     and is filed in PR 59's branch's ledger with the fix, which goes to PR 59
     under VA-1's review (item 17): in handle_pack_expansion.cpp's `Pattern`
     case, a list whose declaration is a choice alternative refused with a TODO,
-    pinned by a `fail_todo_` split. VA-2 changes no file for it.
+    pinned by a `fail_todo_` split. VA-2 changes no file for it. (Planned
+    2026-11-02 by FO-1, fork/followon/fo1-plan.md D-FO1-5 and D-FO1-6: W-367's
+    TODO and, under note 7's ruling, W-368's layout fix, both on PR 59's
+    branch.)
 14. G-53, PR 53 (fork/land/land1-plan.md D-LAND-12): lands by LAND-1's procedure
     once the realignment of PR 53's branch completed under the orchestrator's
     re-ruling of the C++ boundary question (fork/safe/safe3-plan.md D-SAFE3-13

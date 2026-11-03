@@ -4363,7 +4363,7 @@
       "size": "S",
       "bullet": "Generics: Template-style structural conformance to nominal constraints",
       "evidence": [
-        "toolchain/check/testdata/named_constraint/template_constraint_dependent.carbon:253 `fail_dependent_interface_arg_unsatisfied` (m18i: `W(D)` reported at `J(T)` and again at the blanket impl's `J(V)` where TP-1 forms `J(T)` at the definition, from M60 on; once on PR 60's branch before M60)",
+        "toolchain/check/testdata/named_constraint/template_constraint_dependent.carbon:244 `fail_dependent_interface_arg_unsatisfied` (m18i: `W(D)` reported at `J(T)` and again at the blanket impl's `J(V)` where TP-1 forms `J(T)` at the definition, from M60 on; once on PR 60's branch before M60)",
         "toolchain/check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon:737 `fail_symbolic_arg_impl_thunk_unsatisfied` (thunk1d: the thunk's deduction error, then `F(D)`)",
         "fork/followon/fo1-plan.md D-FO1-2 (1) and (2), section 0.2"
       ],

@@ -208,10 +208,75 @@ final impl forall [T: type] T* as OptionalStorage
 // `Option`. Two empty values are equal; an empty and a non-empty value are
 // not; two non-empty values compare as their values do under `T`'s own
 // operator; and an empty value orders before every non-empty one. Each
-// function tests `HasValue()` before it calls `Get()`, so the storage of an
-// empty operand is never read. `Get()` returns a copy, destroyed by the end of
-// the call, so `Destroy` is in the bound (as in the `Try` impl above), and the
-// operands are left unchanged.
+// function tests `HasValue()` before it reads a value, so the storage of an
+// empty operand is never read.
+//
+// Fork (OP-1, W-352): the payloads are compared in place, with no `Copy` or
+// `Destroy` of `T` per operand, as comparison_operators.md asks of `EqWith`
+// and `OrderedWith` ("should have no observable side-effects"). Each storage
+// compares through these private interfaces: the default storage reads its
+// `MaybeUnformed(T)` field as a `T` value; any other storage, which in 0.1 is
+// only the pointer niche, compares the values `T.Get` returns, a primitive
+// copy of the pointer, when the program makes the pointer type comparable.
+private interface OptionalStorageEq(T: Destroy & OptionalStorage & Eq) {
+  fn PayloadEqual(a: Self, b: Self) -> bool;
+  fn PayloadNotEqual(a: Self, b: Self) -> bool;
+}
+
+impl forall [T: Destroy & OptionalStorage & Eq]
+    T.(OptionalStorage.Type) as OptionalStorageEq(T) {
+  fn PayloadEqual(a: Self, b: Self) -> bool { return T.Get(a) == T.Get(b); }
+  fn PayloadNotEqual(a: Self, b: Self) -> bool {
+    return T.Get(a) != T.Get(b);
+  }
+}
+
+impl forall [T: Copy & Destroy & Eq]
+    DefaultOptionalStorage(T) as OptionalStorageEq(T) {
+  fn PayloadEqual(a: Self, b: Self) -> bool {
+    return (a.value unsafe as T) == (b.value unsafe as T);
+  }
+  fn PayloadNotEqual(a: Self, b: Self) -> bool {
+    return (a.value unsafe as T) != (b.value unsafe as T);
+  }
+}
+
+private interface OptionalStorageOrdered(
+    T: Destroy & OptionalStorage & Ordered) {
+  fn PayloadLess(a: Self, b: Self) -> bool;
+  fn PayloadLessOrEquivalent(a: Self, b: Self) -> bool;
+  fn PayloadGreater(a: Self, b: Self) -> bool;
+  fn PayloadGreaterOrEquivalent(a: Self, b: Self) -> bool;
+}
+
+impl forall [T: Destroy & OptionalStorage & Ordered]
+    T.(OptionalStorage.Type) as OptionalStorageOrdered(T) {
+  fn PayloadLess(a: Self, b: Self) -> bool { return T.Get(a) < T.Get(b); }
+  fn PayloadLessOrEquivalent(a: Self, b: Self) -> bool {
+    return T.Get(a) <= T.Get(b);
+  }
+  fn PayloadGreater(a: Self, b: Self) -> bool { return T.Get(a) > T.Get(b); }
+  fn PayloadGreaterOrEquivalent(a: Self, b: Self) -> bool {
+    return T.Get(a) >= T.Get(b);
+  }
+}
+
+impl forall [T: Copy & Destroy & Ordered]
+    DefaultOptionalStorage(T) as OptionalStorageOrdered(T) {
+  fn PayloadLess(a: Self, b: Self) -> bool {
+    return (a.value unsafe as T) < (b.value unsafe as T);
+  }
+  fn PayloadLessOrEquivalent(a: Self, b: Self) -> bool {
+    return (a.value unsafe as T) <= (b.value unsafe as T);
+  }
+  fn PayloadGreater(a: Self, b: Self) -> bool {
+    return (a.value unsafe as T) > (b.value unsafe as T);
+  }
+  fn PayloadGreaterOrEquivalent(a: Self, b: Self) -> bool {
+    return (a.value unsafe as T) >= (b.value unsafe as T);
+  }
+}
+
 final impl forall [T: Destroy & OptionalStorage & Eq]
     Optional(T) as EqWith(Optional(T)) {
   fn Equal(self, other: Optional(T)) -> bool {
@@ -221,7 +286,8 @@ final impl forall [T: Destroy & OptionalStorage & Eq]
     if (not self.HasValue()) {
       return true;
     }
-    return self.Get() == other.Get();
+    return T.Type.(OptionalStorageEq(T).PayloadEqual)(self as T.Type,
+                                                      other as T.Type);
   }
   fn NotEqual(self, other: Optional(T)) -> bool {
     if (self.HasValue() != other.HasValue()) {
@@ -230,7 +296,8 @@ final impl forall [T: Destroy & OptionalStorage & Eq]
     if (not self.HasValue()) {
       return false;
     }
-    return self.Get() != other.Get();
+    return T.Type.(OptionalStorageEq(T).PayloadNotEqual)(self as T.Type,
+                                                         other as T.Type);
   }
 }
 
@@ -243,7 +310,8 @@ final impl forall [T: Destroy & OptionalStorage & Ordered]
     if (not self.HasValue()) {
       return true;
     }
-    return self.Get() < other.Get();
+    return T.Type.(OptionalStorageOrdered(T).PayloadLess)(self as T.Type,
+                                                          other as T.Type);
   }
   fn LessOrEquivalent(self, other: Optional(T)) -> bool {
     if (not self.HasValue()) {
@@ -252,7 +320,8 @@ final impl forall [T: Destroy & OptionalStorage & Ordered]
     if (not other.HasValue()) {
       return false;
     }
-    return self.Get() <= other.Get();
+    return T.Type.(OptionalStorageOrdered(T).PayloadLessOrEquivalent)(
+        self as T.Type, other as T.Type);
   }
   fn Greater(self, other: Optional(T)) -> bool {
     if (not self.HasValue()) {
@@ -261,7 +330,8 @@ final impl forall [T: Destroy & OptionalStorage & Ordered]
     if (not other.HasValue()) {
       return true;
     }
-    return self.Get() > other.Get();
+    return T.Type.(OptionalStorageOrdered(T).PayloadGreater)(self as T.Type,
+                                                             other as T.Type);
   }
   fn GreaterOrEquivalent(self, other: Optional(T)) -> bool {
     if (not other.HasValue()) {
@@ -270,7 +340,8 @@ final impl forall [T: Destroy & OptionalStorage & Ordered]
     if (not self.HasValue()) {
       return false;
     }
-    return self.Get() >= other.Get();
+    return T.Type.(OptionalStorageOrdered(T).PayloadGreaterOrEquivalent)(
+        self as T.Type, other as T.Type);
   }
 }
 

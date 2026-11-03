@@ -16,8 +16,8 @@
 //
 // Comparing `Core.Optional(T)` values never moves or destroys the values they
 // hold (fork design F-015, docs/design/optional.md): a comparison reads each
-// held value through `Get()`, which returns a copy, and each copy is destroyed
-// by the end of the comparison. `Tracked` counts its live copies through a
+// held value in place, with no copy (W-352), as comparison_operators.md asks
+// of `EqWith` and `OrderedWith`. `Tracked` counts its live copies through a
 // pointer: its `Copy` adds one and its `Destroy` removes one. Expected, from
 // F-015's rules: `Some` stores a copy of its argument, so two values are held
 // (2); `Some(1) == Some(2)` is 0 and `Some(1) < Some(2)` is 1; comparing an

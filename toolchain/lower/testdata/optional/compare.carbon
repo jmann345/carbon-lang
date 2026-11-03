@@ -11,8 +11,8 @@
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/lower/testdata/optional/compare.carbon
 
 // Fork (OP-1, fork/optional/plan.md §4): the comparison impls are generic, so
-// the `Optional(i32)` specific of each impl function is emitted here, with its
-// `HasValue()` tests before its `Get()` calls (D-OP-1, D-OP-2, D-OP-4).
+// the `Optional(i32)` specific of each impl function is emitted here; it tests
+// `HasValue()`, then compares in place (D-OP-1, D-OP-2, D-OP-4, W-352).
 
 fn IsEq(a: Core.Optional(i32), b: Core.Optional(i32)) -> bool { return a == b; }
 fn IsNe(a: Core.Optional(i32), b: Core.Optional(i32)) -> bool { return a != b; }
@@ -290,8 +290,45 @@ fn IsGe(a: Core.Optional(i32), b: Core.Optional(i32)) -> bool { return a >= b; }
 // CHECK:STDOUT:   ret i1 %1, !dbg !213
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i1 @"_CPayloadEqual.DefaultOptionalStorage.76dfce1d0720ccdf.Core:OptionalStorageEq.517dd5c25edce734.Core.50c5af1cbe028675"(ptr %a, ptr %b) #0 !dbg !215 {
+// CHECK:STDOUT:   %value = getelementptr inbounds nuw <{ i32, i1 }>, ptr %a, i32 0, i32 0, !dbg !222
+// CHECK:STDOUT:   %1 = load i32, ptr %value, align 4, !dbg !222
+// CHECK:STDOUT:   %value1 = getelementptr inbounds nuw <{ i32, i1 }>, ptr %b, i32 0, i32 0, !dbg !223
+// CHECK:STDOUT:   %2 = load i32, ptr %value1, align 4, !dbg !223
+// CHECK:STDOUT:   %3 = icmp eq i32 %1, %2, !dbg !224
+// CHECK:STDOUT:   ret i1 %3, !dbg !225
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i1 @"_CPayloadNotEqual.DefaultOptionalStorage.76dfce1d0720ccdf.Core:OptionalStorageEq.517dd5c25edce734.Core.50c5af1cbe028675"(ptr %a, ptr %b) #0 !dbg !227 {
+// CHECK:STDOUT:   %value = getelementptr inbounds nuw <{ i32, i1 }>, ptr %a, i32 0, i32 0, !dbg !234
+// CHECK:STDOUT:   %1 = load i32, ptr %value, align 4, !dbg !234
+// CHECK:STDOUT:   %value1 = getelementptr inbounds nuw <{ i32, i1 }>, ptr %b, i32 0, i32 0, !dbg !235
+// CHECK:STDOUT:   %2 = load i32, ptr %value1, align 4, !dbg !235
+// CHECK:STDOUT:   %3 = icmp ne i32 %1, %2, !dbg !236
+// CHECK:STDOUT:   ret i1 %3, !dbg !237
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i1 @"_CPayloadLess.DefaultOptionalStorage.76dfce1d0720ccdf.Core:OptionalStorageOrdered.e02cd5b2a71aebc6.Core.ff6a7eb445a8050b"(ptr %a, ptr %b) #0 !dbg !239 {
+// CHECK:STDOUT:   %value = getelementptr inbounds nuw <{ i32, i1 }>, ptr %a, i32 0, i32 0, !dbg !246
+// CHECK:STDOUT:   %1 = load i32, ptr %value, align 4, !dbg !246
+// CHECK:STDOUT:   %value1 = getelementptr inbounds nuw <{ i32, i1 }>, ptr %b, i32 0, i32 0, !dbg !247
+// CHECK:STDOUT:   %2 = load i32, ptr %value1, align 4, !dbg !247
+// CHECK:STDOUT:   %3 = icmp slt i32 %1, %2, !dbg !248
+// CHECK:STDOUT:   ret i1 %3, !dbg !249
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i1 @"_CPayloadLessOrEquivalent.DefaultOptionalStorage.76dfce1d0720ccdf.Core:OptionalStorageOrdered.e02cd5b2a71aebc6.Core.ff6a7eb445a8050b"(ptr %a, ptr %b) #0 !dbg !251 {
+// CHECK:STDOUT:   %value = getelementptr inbounds nuw <{ i32, i1 }>, ptr %a, i32 0, i32 0, !dbg !258
+// CHECK:STDOUT:   %1 = load i32, ptr %value, align 4, !dbg !258
+// CHECK:STDOUT:   %value1 = getelementptr inbounds nuw <{ i32, i1 }>, ptr %b, i32 0, i32 0, !dbg !259
+// CHECK:STDOUT:   %2 = load i32, ptr %value1, align 4, !dbg !259
+// CHECK:STDOUT:   %3 = icmp sle i32 %1, %2, !dbg !260
+// CHECK:STDOUT:   ret i1 %3, !dbg !261
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i32 @_CGet.Optional.Core.3530343734a6ea27(ptr %self) #0 !dbg !215 {

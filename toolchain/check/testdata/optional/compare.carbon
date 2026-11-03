@@ -105,12 +105,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %facet_type.f48: type = facet_type <@Destroy & @Copy> [concrete]
-// CHECK:STDOUT:   %T.283: %facet_type.f48 = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %DefaultOptionalStorage.d50: type = class_type @DefaultOptionalStorage, @DefaultOptionalStorage(%T.283) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Get.type.a12: type = fn_type @T.as_type.as.OptionalStorage.impl.Get, @T.as_type.as.OptionalStorage.impl(%T.283) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Get.d32: %T.as_type.as.OptionalStorage.impl.Get.type.a12 = struct_value () [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.type.e5a: type = fn_type @T.as_type.as.OptionalStorage.impl.Has, @T.as_type.as.OptionalStorage.impl(%T.283) [symbolic]
+// CHECK:STDOUT:   %facet_type.f48fc7.1: type = facet_type <@Destroy & @Copy> [concrete]
+// CHECK:STDOUT:   %T.2832be.1: %facet_type.f48fc7.1 = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %DefaultOptionalStorage.d50: type = class_type @DefaultOptionalStorage, @DefaultOptionalStorage(%T.2832be.1) [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.type.e5a: type = fn_type @T.as_type.as.OptionalStorage.impl.Has, @T.as_type.as.OptionalStorage.impl(%T.2832be.1) [symbolic]
 // CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.4ee: %T.as_type.as.OptionalStorage.impl.Has.type.e5a = struct_value () [symbolic]
 // CHECK:STDOUT:   %Destroy.lookup_impl_witness.7b3: <witness> = lookup_impl_witness %DefaultOptionalStorage.d50, @Destroy [symbolic]
 // CHECK:STDOUT:   %Destroy.facet.e78: %Destroy.type = facet_value %DefaultOptionalStorage.d50, (%Destroy.lookup_impl_witness.7b3) [symbolic]
@@ -124,18 +122,16 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbc: type = fn_type @Destroy.WithSelf.SelfDestruct.loc5 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3: %Destroy.WithSelf.SelfDestruct.type.fbc = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.f8f: <witness> = custom_witness (%Destroy.WithSelf.Op.403, %Destroy.WithSelf.SubobjectDestroy.d01, %Destroy.WithSelf.SelfDestruct.db3), @Destroy [concrete]
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
-// CHECK:STDOUT:   %facet_value.178: %facet_type.f48 = facet_value %i32, (%custom_witness.f8f, %Copy.impl_witness.b51) [concrete]
+// CHECK:STDOUT:   %facet_value.178: %facet_type.f48fc7.1 = facet_value %i32, (%custom_witness.f8f, %Copy.impl_witness.b51) [concrete]
 // CHECK:STDOUT:   %OptionalStorage.impl_witness.3c7: <witness> = impl_witness imports.%OptionalStorage.impl_witness_table.460, @T.as_type.as.OptionalStorage.impl(%facet_value.178) [concrete]
 // CHECK:STDOUT:   %OptionalStorage.facet.6c5: %OptionalStorage.type = facet_value %i32, (%OptionalStorage.impl_witness.3c7) [concrete]
 // CHECK:STDOUT:   %Optional.0ac: type = class_type @Optional, @Optional(%OptionalStorage.facet.6c5) [concrete]
 // CHECK:STDOUT:   %pattern_type.022: type = pattern_type %Optional.0ac [concrete]
-// CHECK:STDOUT:   %a.param_patt: %pattern_type.022 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete]
-// CHECK:STDOUT:   %b.param_patt: %pattern_type.022 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %a.param_patt.343: %pattern_type.022 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %a.patt.528: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt.343 [concrete]
+// CHECK:STDOUT:   %b.param_patt.79c: %pattern_type.022 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %b.patt.b6d: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt.79c [concrete]
 // CHECK:STDOUT:   %return.patt.c0c: %pattern_type.831 = return_slot_pattern %return.param_patt.5a1, bool [concrete]
 // CHECK:STDOUT:   %IsEq.type: type = fn_type @IsEq [concrete]
 // CHECK:STDOUT:   %IsEq: %IsEq.type = struct_value () [concrete]
@@ -285,10 +281,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %IsEq.decl: %IsEq.type = fn_decl @IsEq [concrete = constants.%IsEq] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt.343]
+// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.528]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt.79c]
+// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.b6d]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc5_58.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -318,10 +314,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:     %return: ref bool = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %IsNe.decl: %IsNe.type = fn_decl @IsNe [concrete = constants.%IsNe] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt.343]
+// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.528]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt.79c]
+// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.b6d]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc6_58.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -351,10 +347,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:     %return: ref bool = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %IsLt.decl: %IsLt.type = fn_decl @IsLt [concrete = constants.%IsLt] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt.343]
+// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.528]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt.79c]
+// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.b6d]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc7_58.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -384,10 +380,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:     %return: ref bool = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %IsLe.decl: %IsLe.type = fn_decl @IsLe [concrete = constants.%IsLe] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt.343]
+// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.528]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt.79c]
+// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.b6d]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc8_58.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -417,10 +413,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:     %return: ref bool = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %IsGt.decl: %IsGt.type = fn_decl @IsGt [concrete = constants.%IsGt] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt.343]
+// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.528]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt.79c]
+// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.b6d]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc9_58.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -450,10 +446,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:     %return: ref bool = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %IsGe.decl: %IsGe.type = fn_decl @IsGe [concrete = constants.%IsGe] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%a.param_patt.343]
+// CHECK:STDOUT:     %a.patt: %pattern_type.022 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.528]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.022 = value_param_pattern [concrete = constants.%b.param_patt.79c]
+// CHECK:STDOUT:     %b.patt: %pattern_type.022 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.b6d]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc10_58.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -658,8 +654,6 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %facet_type.a1aaf9.2: type = facet_type <@Copy & @Destroy> [concrete]
 // CHECK:STDOUT:   %T.dc4a5c.2: %facet_type.a1aaf9.2 = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %DefaultOptionalStorage.5e0: type = class_type @DefaultOptionalStorage, @DefaultOptionalStorage(%T.dc4a5c.2) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Get.type.7fb: type = fn_type @T.as_type.as.OptionalStorage.impl.Get, @T.as_type.as.OptionalStorage.impl(%T.dc4a5c.2) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Get.a96: %T.as_type.as.OptionalStorage.impl.Get.type.7fb = struct_value () [symbolic]
 // CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.type.62c: type = fn_type @T.as_type.as.OptionalStorage.impl.Has, @T.as_type.as.OptionalStorage.impl(%T.dc4a5c.2) [symbolic]
 // CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.7e4: %T.as_type.as.OptionalStorage.impl.Has.type.62c = struct_value () [symbolic]
 // CHECK:STDOUT:   %Destroy.lookup_impl_witness.597: <witness> = lookup_impl_witness %DefaultOptionalStorage.5e0, @Destroy [symbolic]
@@ -704,8 +698,6 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
 // CHECK:STDOUT:   %Copy.impl_witness.8cc: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_64) [concrete]
 // CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
 // CHECK:STDOUT:   %self.param_patt.108: %pattern_type.f57 = ref_param_pattern [concrete]
@@ -789,8 +781,8 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Core.import_ref.06a = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %EqWith.impl_witness_table.978 = impl_witness_table (%Core.import_ref.477, %Core.import_ref.06a), @Optional.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
-// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
-// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.bd66 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.bd66), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.074: @Int.as.EqWith.impl.e9c.%Int.as.EqWith.impl.Equal.type (%Int.as.EqWith.impl.Equal.type.9a2) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.EqWith.impl.e9c.%Int.as.EqWith.impl.Equal (constants.%Int.as.EqWith.impl.Equal.792)]
 // CHECK:STDOUT:   %Core.import_ref.449 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %EqWith.impl_witness_table.09e = impl_witness_table (%Core.import_ref.074, %Core.import_ref.449), @Int.as.EqWith.impl.e9c [concrete]
@@ -1060,12 +1052,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Optional.generic: %Optional.type = struct_value () [concrete]
 // CHECK:STDOUT:   %OptionalStorage.type: type = facet_type <@OptionalStorage> [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %facet_type.a1a: type = facet_type <@Copy & @Destroy> [concrete]
-// CHECK:STDOUT:   %T.dc4: %facet_type.a1a = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %DefaultOptionalStorage.5e0: type = class_type @DefaultOptionalStorage, @DefaultOptionalStorage(%T.dc4) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Get.type.7fb: type = fn_type @T.as_type.as.OptionalStorage.impl.Get, @T.as_type.as.OptionalStorage.impl(%T.dc4) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Get.a96: %T.as_type.as.OptionalStorage.impl.Get.type.7fb = struct_value () [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.type.62c: type = fn_type @T.as_type.as.OptionalStorage.impl.Has, @T.as_type.as.OptionalStorage.impl(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %facet_type.a1aaf9.1: type = facet_type <@Copy & @Destroy> [concrete]
+// CHECK:STDOUT:   %T.dc4a5c.1: %facet_type.a1aaf9.1 = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %DefaultOptionalStorage.5e0: type = class_type @DefaultOptionalStorage, @DefaultOptionalStorage(%T.dc4a5c.1) [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.type.62c: type = fn_type @T.as_type.as.OptionalStorage.impl.Has, @T.as_type.as.OptionalStorage.impl(%T.dc4a5c.1) [symbolic]
 // CHECK:STDOUT:   %T.as_type.as.OptionalStorage.impl.Has.7e4: %T.as_type.as.OptionalStorage.impl.Has.type.62c = struct_value () [symbolic]
 // CHECK:STDOUT:   %Destroy.lookup_impl_witness.597: <witness> = lookup_impl_witness %DefaultOptionalStorage.5e0, @Destroy [symbolic]
 // CHECK:STDOUT:   %Destroy.facet.0de: %Destroy.type = facet_value %DefaultOptionalStorage.5e0, (%Destroy.lookup_impl_witness.597) [symbolic]
@@ -1093,15 +1083,15 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.3: type = fn_type @Destroy.WithSelf.SelfDestruct.loc21_34.3 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.3: %Destroy.WithSelf.SelfDestruct.type.fbceb5.3 = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.f8f19d.3: <witness> = custom_witness (%Destroy.WithSelf.Op.403171.3, %Destroy.WithSelf.SubobjectDestroy.d01daf.3, %Destroy.WithSelf.SelfDestruct.db3fdb.3), @Destroy [concrete]
-// CHECK:STDOUT:   %facet_value.365: %facet_type.a1a = facet_value %Rank, (%Copy.impl_witness.d00, %custom_witness.f8f19d.3) [concrete]
+// CHECK:STDOUT:   %facet_value.365: %facet_type.a1aaf9.1 = facet_value %Rank, (%Copy.impl_witness.d00, %custom_witness.f8f19d.3) [concrete]
 // CHECK:STDOUT:   %OptionalStorage.impl_witness.809: <witness> = impl_witness imports.%OptionalStorage.impl_witness_table.0d6, @T.as_type.as.OptionalStorage.impl(%facet_value.365) [concrete]
 // CHECK:STDOUT:   %OptionalStorage.facet.c56: %OptionalStorage.type = facet_value %Rank, (%OptionalStorage.impl_witness.809) [concrete]
 // CHECK:STDOUT:   %Optional.fd5: type = class_type @Optional, @Optional(%OptionalStorage.facet.c56) [concrete]
 // CHECK:STDOUT:   %pattern_type.802: type = pattern_type %Optional.fd5 [concrete]
-// CHECK:STDOUT:   %a.param_patt: %pattern_type.802 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.802 = wrapper_binding_pattern a, %a.param_patt [concrete]
-// CHECK:STDOUT:   %b.param_patt: %pattern_type.802 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.802 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %a.param_patt.7d2: %pattern_type.802 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %a.patt.1fe: %pattern_type.802 = wrapper_binding_pattern a, %a.param_patt.7d2 [concrete]
+// CHECK:STDOUT:   %b.param_patt.c3b: %pattern_type.802 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %b.patt.8a6: %pattern_type.802 = wrapper_binding_pattern b, %b.param_patt.c3b [concrete]
 // CHECK:STDOUT:   %RankLess.type: type = fn_type @RankLess [concrete]
 // CHECK:STDOUT:   %RankLess: %RankLess.type = struct_value () [concrete]
 // CHECK:STDOUT:   %OrderedWith.type.02e: type = facet_type <@OrderedWith, @OrderedWith(%Optional.fd5)> [concrete]
@@ -1197,10 +1187,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %RankLess.decl: %RankLess.type = fn_decl @RankLess [concrete = constants.%RankLess] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.802 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.802 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.802 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.802 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.802 = value_param_pattern [concrete = constants.%a.param_patt.7d2]
+// CHECK:STDOUT:     %a.patt: %pattern_type.802 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.1fe]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.802 = value_param_pattern [concrete = constants.%b.param_patt.c3b]
+// CHECK:STDOUT:     %b.patt: %pattern_type.802 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.8a6]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc21_64.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -1338,10 +1328,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %OptionalStorage.facet.58b: %OptionalStorage.type = facet_value %ptr.6b6, (%OptionalStorage.impl_witness.2e9) [concrete]
 // CHECK:STDOUT:   %Optional.bce: type = class_type @Optional, @Optional(%OptionalStorage.facet.58b) [concrete]
 // CHECK:STDOUT:   %pattern_type.fe8: type = pattern_type %Optional.bce [concrete]
-// CHECK:STDOUT:   %a.param_patt: %pattern_type.fe8 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.fe8 = wrapper_binding_pattern a, %a.param_patt [concrete]
-// CHECK:STDOUT:   %b.param_patt: %pattern_type.fe8 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.fe8 = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %a.param_patt.aa6: %pattern_type.fe8 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %a.patt.7a2: %pattern_type.fe8 = wrapper_binding_pattern a, %a.param_patt.aa6 [concrete]
+// CHECK:STDOUT:   %b.param_patt.31d: %pattern_type.fe8 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %b.patt.bb2: %pattern_type.fe8 = wrapper_binding_pattern b, %b.param_patt.31d [concrete]
 // CHECK:STDOUT:   %SameC.type: type = fn_type @SameC [concrete]
 // CHECK:STDOUT:   %SameC: %SameC.type = struct_value () [concrete]
 // CHECK:STDOUT:   %EqWith.type.5ea: type = facet_type <@EqWith, @EqWith(%Optional.bce)> [concrete]
@@ -1356,7 +1346,7 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %EqWith.facet.310: %EqWith.type.5ea = facet_value %Optional.bce, (%EqWith.impl_witness.c89) [concrete]
 // CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.9de: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(%Optional.bce, %EqWith.facet.310) [concrete]
 // CHECK:STDOUT:   %.34d: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.9de, %EqWith.facet.310 [concrete]
-// CHECK:STDOUT:   %Optional.as.EqWith.impl.Equal.specific_fn: <specific function> = specific_function %Optional.as.EqWith.impl.Equal.e8b, @Optional.as.EqWith.impl.Equal(%facet_value) [concrete]
+// CHECK:STDOUT:   %Optional.as.EqWith.impl.Equal.specific_fn: <specific function> = specific_function %Optional.as.EqWith.impl.Equal.e8b, @Optional.as.EqWith.impl.Equal(%facet_value.af6) [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1386,10 +1376,10 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %SameC.decl: %SameC.type = fn_decl @SameC [concrete = constants.%SameC] {
-// CHECK:STDOUT:     %a.param_patt: %pattern_type.fe8 = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.fe8 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
-// CHECK:STDOUT:     %b.param_patt: %pattern_type.fe8 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.fe8 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.fe8 = value_param_pattern [concrete = constants.%a.param_patt.aa6]
+// CHECK:STDOUT:     %a.patt: %pattern_type.fe8 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.7a2]
+// CHECK:STDOUT:     %b.param_patt: %pattern_type.fe8 = value_param_pattern [concrete = constants.%b.param_patt.31d]
+// CHECK:STDOUT:     %b.patt: %pattern_type.fe8 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.bb2]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc16_57.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {

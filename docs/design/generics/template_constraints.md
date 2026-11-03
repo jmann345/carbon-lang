@@ -486,8 +486,11 @@ template parameters to a template constraint, as `Holder(T)` does for `class
 Holder(template T: HasGet)`, the structural requirements are checked in each
 specific of the template. Elsewhere a checked-generic self still never satisfies
 a structural requirement (`StructuralRequirementNeedsConcreteType`, D-SC-6): in
-a conversion outside a call, and in the `require` of an impl in a generic class
-(fork work item W-373), where no template parameter receives the symbolic type.
+a conversion outside a call, in the deduction of a blanket impl whose `template`
+binding has a structural requirement, also when a call's conversion selects it
+(so a `template T: HasGet & I` given `U: type` is rejected for `I`, as
+`template T: I` is), and in the `require` of an impl in a generic class (fork
+work item W-373), where no call's template parameter receives the symbolic type.
 Member lookup through a checked binding never finds structural members
 ([#2200](/proposals/p002200-template-generics.md#template-constraints)), which
 is why a template constraint constrains only a `template` binding.

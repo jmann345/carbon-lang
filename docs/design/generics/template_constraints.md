@@ -659,7 +659,7 @@ since a class is incomplete within its definition
 ([F-010h](#completeness-and-caching)), while the interfaces the same `require`
 names are checked at the impl, as for any nominal `require` (D-SC-8(iii),
 amended 2026-10-13). An impl inside a generic class has the checked-symbolic
-self `Box(T)` and is rejected at the class end (D-SC-6; W-139).
+self `Box(T)` and is rejected at the class end (D-SC-6; fork work item W-373).
 
 ### Definition-time checking
 

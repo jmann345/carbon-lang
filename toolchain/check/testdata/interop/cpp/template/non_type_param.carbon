@@ -176,6 +176,16 @@ template<typename ...T> struct X {
 ''';
 
 fn G() -> i32 {
+  // CHECK:STDERR: dependent_parameter_pack.carbon:[[@LINE+10]]:32: warning: instantiation of variable 'X<int, int>::n<1, 2>' required here, but no definition is available [CppInteropParseWarning]
+  // CHECK:STDERR:    21 |   return Cpp.X(i32, i32).n(1, 2);
+  // CHECK:STDERR:       |                                ^
+  // CHECK:STDERR: dependent_parameter_pack.carbon:[[@LINE-8]]:31: note: forward declaration of template entity is here [CppInteropParseNote]
+  // CHECK:STDERR:     6 |   template<T... N> static int n;
+  // CHECK:STDERR:       |                               ^
+  // CHECK:STDERR: dependent_parameter_pack.carbon:[[@LINE+4]]:32: note: add an explicit instantiation declaration to suppress this warning if 'X<int, int>::n<1, 2>' is explicitly instantiated in another translation unit [CppInteropParseNote]
+  // CHECK:STDERR:    21 |   return Cpp.X(i32, i32).n(1, 2);
+  // CHECK:STDERR:       |                                ^
+  // CHECK:STDERR:
   return Cpp.X(i32, i32).n(1, 2);
 }
 

@@ -113,8 +113,8 @@ fn Run() {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @_CMake.A.Main.a6a60dfee2d7d273(ptr sret({ {} }) %return, ptr %v) #0 !dbg !59 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.b3e.field = getelementptr inbounds nuw { {} }, ptr %return, i32 0, i32 0, !dbg !65
-// CHECK:STDOUT:   call void @"_COp.B.Main:Copy.Core"(ptr %.b3e.field, ptr %v), !dbg !64
+// CHECK:STDOUT:   %.22a.field = getelementptr inbounds nuw { {} }, ptr %return, i32 0, i32 0, !dbg !65
+// CHECK:STDOUT:   call void @"_COp.B.Main:Copy.Core"(ptr %.22a.field, ptr %v), !dbg !64
 // CHECK:STDOUT:   ret void, !dbg !66
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

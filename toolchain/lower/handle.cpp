@@ -84,9 +84,10 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   // struct, tuple and class inits. An all-constant `array_init` is itself a
   // constant, never reaches here, and is copied whole by its `Assign`.
   for (auto init_id : context.sem_ir().inst_blocks().Get(inst.inits_id)) {
-    if (context.sem_ir().constant_values().Get(init_id).is_constant()) {
-      auto dest_id =
-          SemIR::FindStorageArgForInitializer(context.sem_ir(), init_id);
+    if (context.IsConstant(init_id)) {
+      auto dest_id = SemIR::FindStorageArgForInitializer(
+          context.sem_ir(), init_id, /*allow_transitive=*/true,
+          context.specific_id());
       context.InitializeStorage(context.GetTypeIdOfInst(dest_id), dest_id,
                                 init_id);
     }
@@ -102,8 +103,9 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
                 SemIR::Assign inst) -> void {
-  if (SemIR::GetExprCategory(context.sem_ir(), inst.rhs_id) !=
-      SemIR::ExprCategory::InPlaceInitializing) {
+  if (SemIR::GetExprCategory(
+          context.sem_ir(), inst.rhs_id, &context.specific_sem_ir(),
+          context.specific_id()) != SemIR::ExprCategory::InPlaceInitializing) {
     context.InitializeStorage(context.GetTypeIdOfInst(inst.lhs_id), inst.lhs_id,
                               inst.rhs_id);
   }
@@ -488,7 +490,11 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::SpliceBlock inst) -> void {
   context.LowerBlockContents(inst.block_id);
-  context.SetLocal(inst_id, context.GetValue(inst.result_id));
+  // In a template's specific, the result can be an in-place initializer,
+  // which has no value; see the `SpecificInst` case above.
+  if (auto* value = context.GetValue(inst.result_id, /*require_value=*/false)) {
+    context.SetLocal(inst_id, value);
+  }
 }
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
@@ -502,7 +508,12 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
     // Easy case: same file. Just emit the spliced instruction.
     context.AddInstToCurrentFingerprint(inst_value.inst_id);
     context.LowerInst(inst_value.inst_id);
-    context.SetLocal(inst_id, context.GetValue(inst_value.inst_id));
+    // The spliced instruction can be an in-place initializer, which has no
+    // value; see the `SpecificInst` case above.
+    if (auto* value =
+            context.GetValue(inst_value.inst_id, /*require_value=*/false)) {
+      context.SetLocal(inst_id, value);
+    }
   } else {
     // TODO: We don't yet have support for cross-file templates at all. Lowering
     // the result here would mostly just require that we switch the `sem_ir` on

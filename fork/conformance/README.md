@@ -95,6 +95,7 @@ comment block:
 //   <literal line 1>
 //   <literal line 2>
 // SKIP: <reason>              (optional; marks a not-yet-runnable program)
+// BUILD-SCRIPT: <script> [args] (optional; an external build arbitrates instead)
 ```
 
 -   `CONFORMANCE-BULLET` is **required** and must match a first-column cell of
@@ -114,6 +115,10 @@ comment block:
 -   `SKIP` exists for programs written ahead of their feature
     (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
     writing programs against constructs that already work.
+-   `BUILD-SCRIPT` hands the program to an external build system's own script
+    instead of the runner's compile/link/run — see "External-build programs
+    (BUILD-SCRIPT)" below. The program's body must be byte-identical to a file
+    that script builds.
 
 ### Multi-unit (split-file) programs
 
@@ -174,6 +179,62 @@ The convention, enforced by discovery (and therefore by `--self-test`):
     additionally runs a fixture-based self-check of this discovery logic
     itself (`multi-unit discovery self-check`), so the machinery stays
     covered even while the tree has no multi-unit program.
+
+### External-build programs (BUILD-SCRIPT)
+
+A bullet about build-system integration cannot be arbitrated by compiling one
+`.carbon` file: the thing under test is CMake or Make driving the toolchain. A
+program carrying `// BUILD-SCRIPT: <script> [args...]` is arbitrated by that
+script instead (the two `project/` build-system programs name
+`examples/cmake/test.sh`). The script path is relative to the repository root
+and its arguments are whitespace-split, like `COMPILE-ARGS`.
+
+The contract, enforced by `execute_program`:
+
+-   The runner issues **no** compile, link or run of its own. It runs the
+    script from the repository root with three environment variables:
+    `CARBON_TOOLCHAIN` (the toolchain directory — the parent of `bin/carbon`,
+    derived from `--toolchain` by probing the same two install-tree layouts
+    `find_clangxx` probes, falling back to the binary's own directory when
+    neither holds `lib/carbon`), `CARBON` (the `--toolchain` path as given to
+    the runner, resolved) and `CARBON_BUILD_DIR` (`<out>/build/<name>`, a
+    private directory the script may fill). The script runs under the link
+    timeout, because its first `carbon link` builds the runtimes on demand.
+    The runner only creates `CARBON_BUILD_DIR`; it persists across runs
+    against the same `--out`, so the script owns the reuse rule: every build
+    it makes must come from the toolchain of this run, never from a cache left
+    by an earlier one (`examples/cmake/test.sh` configures its CMake variants
+    with `--fresh` and pins `CARBON=` for its Makefile variant).
+-   `EXPECT-EXIT` applies to the script's exit code and `EXPECT-STDOUT` to its
+    stdout, unchanged. The script must therefore print only what the programs
+    it builds print, with every configure and build message on stderr.
+-   **Status mapping uses existing classes only**: exit 2 is `COMPILE-FAIL`
+    (configure or compile failed), exit 3 is `LINK-FAIL`, any other exit that
+    is not `EXPECT-EXIT` — or a timeout — is `RUN-FAIL` (detail: "build script
+    exited with N"), and a stdout mismatch is `OUTPUT-MISMATCH`. The generated
+    table marks such a program `external-build`, the scoreboard entry carries
+    `"external_build": true`, and the log holds the script's command, stdout
+    and stderr.
+-   Guard rails (discovery errors, so `--self-test` catches them without a
+    toolchain): `BUILD-SCRIPT` cannot combine with `COMPILE-ARGS`, with a
+    multi-unit directory program, or with a `.diff.cpp` sibling; the script
+    must exist and be executable.
+-   **The identity rule** (`--self-test`'s `build-script self-check`): the
+    program's body — everything after its leading comment block, so the
+    directive header does not count — must be byte-identical to the body of
+    exactly one `.carbon` file under the script's directory tree, each file
+    stripped of its own leading comment block (the license header). The
+    promoted program IS a file the script builds; a retyped or drifted copy
+    fails the self-test. `--self-test` also runs three stub fixtures through
+    the execution path (a script printing `hi` with the three variables
+    asserted, a script exiting 2, a script printing `bye` against an expected
+    `hi`).
+
+Never a fake un-SKIP: when the hosted runner cannot run the script (for
+example a missing `cmake`), the program fails as `COMPILE-FAIL` with the
+script's message in the log, and the honest fallback is a `SKIP` naming the
+script, the toolchain version and the observed output — never a body that
+prints the expected lines through `carbon compile` alone.
 
 ### Differential Carbon-vs-C++ programs
 
@@ -243,9 +304,11 @@ fails if this table is stale):
 | `control_flow/choice_generic_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/choice_payload_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
+| `control_flow/cpp_sum_type_library` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | multi-unit (2 units), differential |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | run |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
 | `control_flow/match_bool.carbon` | Control flow: matching — good switch equivalents | run |
+| `control_flow/match_core_optional_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP, differential |
 | `control_flow/match_global_runtime_let.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
@@ -255,8 +318,10 @@ fails if this table is stale):
 | `control_flow/match_payload_literal.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_position.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_single_alternative.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
+| `control_flow/match_std_optional_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
+| `control_flow/match_std_variant_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/match_struct_destructure.carbon` | Control flow: matching — good switch equivalents | run |
-| `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP |
+| `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_switch.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_switch_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_tuple_case_diff.carbon` | Control flow: matching — good switch equivalents | differential |
@@ -281,6 +346,8 @@ fails if this table is stale):
 | `error_handling/run_result_ok.carbon` | Error handling: dedicated control flow constructs | run |
 | `functions/forward_decl.carbon` | Functions: separate declaration and definition | run |
 | `functions/overloading_cross_library` | Functions: function overloading (Carbon-native) | multi-unit (3 units) |
+| `functions/overloading_default_values.carbon` | Functions: function overloading (Carbon-native) | run |
+| `functions/overloading_default_values_diff.carbon` | Functions: function overloading (Carbon-native) | differential |
 | `functions/overloading_generic.carbon` | Functions: function overloading (Carbon-native) | run |
 | `functions/overloading_generic_class.carbon` | Functions: function overloading (Carbon-native) | run |
 | `functions/overloading_methods.carbon` | Functions: function overloading (Carbon-native) | run |
@@ -289,7 +356,17 @@ fails if this table is stale):
 | `generics/generic_class.carbon` | Generics: generic functions and types | run |
 | `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | run |
 | `generics/structural_conformance_checked_caller.carbon` | Generics: Template-style structural conformance to nominal constraints | run |
-| `generics/templates_dependent_member.carbon` | Generics: Integrated templates | SKIP |
+| `generics/templates_constant_elements.carbon` | Generics: Integrated templates | run |
+| `generics/templates_constraint_lookup.carbon` | Generics: Integrated templates | run |
+| `generics/templates_deduce_class_args.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_call.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_index.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_member.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_pointer.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_var.carbon` | Generics: Integrated templates | run |
+| `generics/templates_for_dependent_range.carbon` | Generics: Integrated templates | run |
+| `generics/templates_match_dependent_choice.carbon` | Generics: Integrated templates | run |
+| `generics/templates_return_aggregates_diff.carbon` | Generics: Integrated templates | differential |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
 | `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |
@@ -322,28 +399,65 @@ fails if this table is stale):
 | `interop/cpp_range_member_begin_end_iterate.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | run |
 | `interop/cpp_span_roundtrip_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
 | `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
+| `interop/cpp_span_write_through_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
 | `interop/cpp_structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | run |
+| `interop/cpp_sum_type_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
-| `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
-| `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | SKIP |
+| `interop/cpp_template_carbon_generic_spec.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_fn_symbolic.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_nested_symbolic.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `interop/cpp_template_spec_roundtrip.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `interop/cpp_template_symbolic_diff.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | differential |
+| `interop/cpp_template_two_specifics.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_condvar_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_mutex_raii.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
 | `interop/cpp_threading_atomics.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
 | `interop/cpp_type_export_carbon_class.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
 | `interop/cpp_type_import_class_enum.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `interop/cpp_var_template_runtime.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/inherit_carbon_extends_cpp.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | run |
 | `interop/inherit_cpp_extends_carbon.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | run |
 | `interop/inherit_multiple_bases.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | SKIP |
 | `interop/string_view_cpp_to_str.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
 | `interop/string_view_str_to_cpp.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
-| `project/cmake_build_integration.carbon` | Project: CMake build-system integration plus Make documentation | SKIP |
+| `project/cmake_build_integration.carbon` | Project: CMake build-system integration plus Make documentation | external-build |
+| `project/design_docs_aliases.carbon` | Code organization: Namespaces | run |
+| `project/design_docs_assignment.carbon` | Type system: User-defined types (classes) | run |
+| `project/design_docs_carbon_from_cpp.carbon` | Functions: C++ interop — exporting Carbon functions/methods to C++ | run |
+| `project/design_docs_compile_time.carbon` | Generics: generic functions and types | run |
+| `project/design_docs_cpp_constructors.carbon` | Functions: C++ interop — importing/calling C++ functions and methods | run |
+| `project/design_docs_cpp_enums.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_globals.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_inline.carbon` | Code organization: Importing | run |
+| `project/design_docs_cpp_integers.carbon` | Stdlib C++ interop: transparent fundamental-type mapping | run |
+| `project/design_docs_cpp_members.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_operators.carbon` | Type system: C++ interop — synthesizing Carbon overloads for imported C++ types | run |
+| `project/design_docs_cpp_pointers.carbon` | Stdlib: pointer types | run |
+| `project/design_docs_cpp_ranges.carbon` | Stdlib C++ interop: transparent iteration-abstraction mapping | run |
+| `project/design_docs_cpp_struct_literals.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `project/design_docs_cpp_templates.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
+| `project/design_docs_cpp_threads.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
+| `project/design_docs_match.carbon` | Control flow: matching — good switch equivalents | run |
 | `project/design_docs_placeholders.carbon` | Goal: design docs documented, cohesive, understandable without placeholders | SKIP |
+| `project/design_docs_statements.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
+| `project/design_docs_templates.carbon` | Generics: Integrated templates | run |
 | `project/dropin_clang_cpp_toolchain.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | run |
-| `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | SKIP |
+| `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | external-build |
 | `project/evaluator_docs_getting_started.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
-| `project/evaluator_docs_review.carbon` | Project: basic evaluator documentation (getting started to FAQs) | SKIP |
+| `project/evaluator_tutorial_choice_match.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_classes.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_cpp_library.carbon` | Project: basic evaluator documentation (getting started to FAQs) | external-build |
+| `project/evaluator_tutorial_errors.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_functions.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_generics.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_hello.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_interop_call_carbon.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_interop_use_cpp.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_package` | Project: basic evaluator documentation (getting started to FAQs) | multi-unit (3 units) |
 | `project/most_features_interop_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
 | `project/most_features_language_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
 | `project/most_features_missing_match.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
@@ -362,8 +476,13 @@ fails if this table is stale):
 | `stdlib/slices_basic.carbon` | Stdlib: Slices | run |
 | `stdlib/slices_bounds_fail_stop.carbon` | Stdlib: Slices | run |
 | `stdlib/slices_heap_buf.carbon` | Stdlib: Slices | run |
+| `stdlib/slices_write_through.carbon` | Stdlib: Slices | run |
 | `stdlib/string_basic.carbon` | Stdlib: String and string-literal types | run |
-| `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | SKIP |
+| `stdlib/string_buf_lifetime.carbon` | Stdlib: String and string-literal types | run |
+| `stdlib/string_concat_loop.carbon` | Stdlib: String and string-literal types | run |
+| `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | run |
+| `stdlib/string_ordering_diff.carbon` | Stdlib: String and string-literal types | differential |
+| `stdlib/string_subscripts.carbon` | Stdlib: String and string-literal types | run |
 | `stdlib/tuples_arrays_structs.carbon` | Stdlib: tuple/array library parts | run |
 | `types/choice_basic.carbon` | Type system: Sum types (discriminated unions) | run |
 | `types/choice_discriminant_diff.carbon` | Type system: Sum types (discriminated unions) | differential |

@@ -317,11 +317,20 @@ static auto BuildTemplateId(Context& context, SemIR::LocId loc_id,
     auto decl_result = context.clang_sema().CheckVarTemplateId(
         var_template_decl, /*TemplateLoc=*/clang::SourceLocation(), loc,
         arg_list, /*SetWrittenArgs=*/false);
-    return decl_result.isInvalid()
-               ? SemIR::ErrorInst::InstId
-               : ImportCppDecl(context, loc_id,
-                               SemIR::ClangDeclKey::ForNonFunctionDecl(
-                                   decl_result.get()));
+    if (decl_result.isInvalid()) {
+      return SemIR::ErrorInst::InstId;
+    }
+    // A specialization that nothing declared is implicitly instantiated, as
+    // Clang's own expression form of `CheckVarTemplateId` marks it before
+    // building a reference to it; otherwise the reference that the import
+    // makes never instantiates its definition.
+    auto* var_decl = cast<clang::VarDecl>(decl_result.get());
+    if (!var_decl->getTemplateSpecializationKind()) {
+      var_decl->setTemplateSpecializationKind(clang::TSK_ImplicitInstantiation,
+                                              loc);
+    }
+    return ImportCppDecl(context, loc_id,
+                         SemIR::ClangDeclKey::ForNonFunctionDecl(var_decl));
   }
 
   if (auto* concept_decl = dyn_cast<clang::ConceptDecl>(template_decl)) {

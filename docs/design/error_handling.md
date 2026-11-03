@@ -443,6 +443,17 @@ alternatives to match on (`core/prelude/types/optional.carbon`). Rebuilding
 design's B1 stage depends on; see
 [Implementation staging](#implementation-staging).
 
+> **Amendment (2026-10-21, DR-1; R32, DR-0).** "The `match` body above applies
+> verbatim once W-058 makes `Optional` a choice", and the paragraph above's
+> "Rebuilding `Core.Optional` as a choice type", no longer hold: W-058 kept
+> the class (F-015), and DR-0 rejected the `choice` conversion. The route is
+> `Core.Optional` implementing `Match` (W-320), under which the empty arm is
+> `case .None()`, because the prelude's `None` is a function
+> (docs/design/sum_types.md:214-222). W-320 waits on a conflict in upstream's
+> own pages over how `Match` declares `Continuation` (W-324); until then the
+> `Optional` impl's body keeps `HasValue()`/`Get()`, and this page, which has no
+> upstream copy, is the fork's.
+
 An implementation must uphold: `Branch` consumes `self` and returns exactly one
 alternative; `FromBreak` produces a value whose own `Branch` takes the failure
 path with an equal break value. The compiler does not verify these laws; they

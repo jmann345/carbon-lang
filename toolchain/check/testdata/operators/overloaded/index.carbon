@@ -24,6 +24,10 @@ library "[[@TEST_NAME]]";
 
 import Core library "core_wrong_index_with";
 
+// CHECK:STDERR: fail_wrong_index_with.carbon:[[@LINE+8]]:10: error: name `Core.IndirectIndexWith` implicitly referenced here, but not found [CoreNameNotFound]
+// CHECK:STDERR: fn F() { 0[1]; }
+// CHECK:STDERR:          ^~~~
+// CHECK:STDERR:
 // CHECK:STDERR: fail_wrong_index_with.carbon:[[@LINE+4]]:10: error: value of type `type` is not callable [CallToNonCallable]
 // CHECK:STDERR: fn F() { 0[1]; }
 // CHECK:STDERR:          ^~~~
@@ -34,6 +38,10 @@ fn F() { 0[1]; }
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_missing_index_with.carbon:[[@LINE+8]]:10: error: name `Core.IndirectIndexWith` implicitly referenced here, but not found [CoreNameNotFound]
+// CHECK:STDERR: fn F() { 0[1]; }
+// CHECK:STDERR:          ^~~~
+// CHECK:STDERR:
 // CHECK:STDERR: fail_missing_index_with.carbon:[[@LINE+4]]:10: error: name `Core.IndexWith` implicitly referenced here, but not found [CoreNameNotFound]
 // CHECK:STDERR: fn F() { 0[1]; }
 // CHECK:STDERR:          ^~~~
@@ -65,6 +73,10 @@ impl C as Core.IndexWith((), ()) {
 
 fn F() {
   let c: C = {};
+  // CHECK:STDERR: fail_wrong_arg_count.carbon:[[@LINE+11]]:3: error: name `Core.IndirectIndexWith` implicitly referenced here, but not found [CoreNameNotFound]
+  // CHECK:STDERR:   c[()];
+  // CHECK:STDERR:   ^~~~~
+  // CHECK:STDERR:
   // CHECK:STDERR: fail_wrong_arg_count.carbon:[[@LINE+7]]:3: error: 1 argument passed to generic interface expecting 2 arguments [CallArgCountMismatch]
   // CHECK:STDERR:   c[()];
   // CHECK:STDERR:   ^~~~~
@@ -138,6 +150,7 @@ fn F() {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core: <namespace> = namespace file.%Core.import, [concrete] {
 // CHECK:STDOUT:     .IndexWith = %Core.IndexWith
+// CHECK:STDOUT:     .IndirectIndexWith = <poisoned>
 // CHECK:STDOUT:     import Core//prelude
 // CHECK:STDOUT:     import Core//core_wrong_index_with
 // CHECK:STDOUT:     import Core//prelude/...
@@ -183,6 +196,7 @@ fn F() {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core: <namespace> = namespace file.%Core.import, [concrete] {
 // CHECK:STDOUT:     .IndexWith = <poisoned>
+// CHECK:STDOUT:     .IndirectIndexWith = <poisoned>
 // CHECK:STDOUT:     import Core//prelude
 // CHECK:STDOUT:     import Core//prelude/...
 // CHECK:STDOUT:   }
@@ -461,6 +475,7 @@ fn F() {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core: <namespace> = namespace file.%Core.import, [concrete] {
 // CHECK:STDOUT:     .IndexWith = %Core.IndexWith
+// CHECK:STDOUT:     .IndirectIndexWith = <poisoned>
 // CHECK:STDOUT:     .Destroy = %Core.Destroy
 // CHECK:STDOUT:     import Core//prelude
 // CHECK:STDOUT:     import Core//core_wrong_arg_count
@@ -635,7 +650,7 @@ fn F() {
 // CHECK:STDOUT:     %c.patt: %pattern_type.98b = value_binding_pattern c [concrete = constants.%c.patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %c.ref: %C = name_ref c, %c
-// CHECK:STDOUT:   %.loc23: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %.loc27: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call constants.%Destroy.WithSelf.SelfDestruct.bound(constants.%.115)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

@@ -110,7 +110,7 @@ impl Q as Core.EqWith(Q) {
 // CHECK:STDERR: fail_specialize.carbon:[[@LINE+7]]:1: error: `impl` will never be used [ImplFinalOverlapsNonFinal]
 // CHECK:STDERR: impl Core.Optional(Q) as Core.EqWith(Core.Optional(Q)) {
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:215:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:280:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
 // CHECK:STDERR: final impl forall [T: Destroy & OptionalStorage & Eq]
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:

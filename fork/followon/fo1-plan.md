@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # FO-1 plan: the follow-ons that gate the held PRs, then their landings
 
-**Status:** rev 8, 2026-11-03 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
+**Status:** rev 9, 2026-11-03 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
 is a stop-and-amend of unit A (amended 2026-11-02, implementation:
 stop-and-amend, unit A: F-A1 is not made and A-R's records texts are
 re-given), recorded in "Stop-and-amend record (rev 6, 2026-11-02)" before
@@ -23,7 +23,13 @@ unit D: F-D2's predicted IR is replaced by the measured fill, the metadata
 renumbering of the two splits after `padded_element` is named, and D-R's
 fork/variadics/plan.md text is given verbatim), recorded in "Stop-and-amend
 record (rev 8, 2026-11-03)" before the Sign-off; it changes no code block,
-golden source, program, decision's ruling or break condition. Rev 5 folded the
+golden source, program, decision's ruling or break condition. Rev 9 folds the
+focused re-review RR8 of rev 8 (verdict APPROVE-WITH-AMENDMENTS, RR8-1 to RR8-3,
+no BLOCKER, no MAJOR) into that record and changes no more than rev 8 did: the
+renumbering is stated node by node, F-D2's fill is governed by its sha1, B.3's
+header sentence stands, read as the pack's object layout, with no fix commit,
+and a rebuild after F-D2 or D-R prints that commit's own sha (amended
+2026-11-03, stop-and-amend re-review: RR8-1 to RR8-3). Rev 5 folded the
 focused re-review RR3 of rev 4 (verdict APPROVE-WITH-AMENDMENTS, RR3-1 to RR3-4,
 no BLOCKER); rev 4, 2026-11-02, folded RR2's RR2-1 to RR2-6 (verdict REJECT,
 blockers RR2-1 and RR2-2); rev 3, 2026-11-02, folded RR1's N-1 to N-4 (blockers
@@ -182,7 +188,7 @@ fold: RR3-3).
 -   Re-review fold record (rev 5)
 -   Stop-and-amend record (rev 6, extended at rev 7)
 -   Implementation review fold record (unit A)
--   Stop-and-amend record (rev 8, unit D)
+-   Stop-and-amend record (rev 8, unit D, extended at rev 9)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -2356,12 +2362,20 @@ stores their addresses in `%.loc16_21.9.pack = alloca [3 x ptr]` and passes
 that to `@_CSumA.Main.935b24abbbc86de3`, whose `each x.a` is a
 `getelementptr` into `[3 x ptr]`, a `load ptr` and a `getelementptr` into
 `<{ i32, i1 }>`. Second, in the following splits lib.carbon and use.carbon,
-the 98 CHECK:STDOUT lines (9 and 89) whose metadata numbers rise by 54, the
-count of nodes the new module numbers before them (`!283` to `!336`), so that
-lib.carbon's `!283 = !DIFile(...)` becomes `!337`; each line equals its old
-one once every `!N` is normalized. That renumbering depends only on the
-modules compiled beside the split, and this plan names it here: it is not a
-difference. The pack's object type, whose element D2 pads to the stride
+the 98 CHECK:STDOUT lines (9 and 89) in which every `!N` numbered 283 or more
+rises by 54, the count of nodes the new module numbers before them (`!283` to
+`!336`), so that lib.carbon's `!283 = !DIFile(...)` becomes `!337` (138
+references), while the seven references to the uniqued nodes `!34`, `!36`,
+`!38`, `!48` and `!50`, which lib.carbon and use.carbon define on unchanged
+lines, keep their numbers (the `type:` operands of the `DISubprogram` lines of
+`SelfDestruct`, `Call` and the two `Sum` specifics and of three
+`DILocalVariable` lines; amended 2026-11-03, stop-and-amend re-review:
+RR8-1); each line equals its old one once every `!N` is normalized. That
+renumbering depends only on the modules compiled beside the split, and this
+plan names it here: it is not a difference. The filled file's sha1 governs
+F-D2: a fill with that sha1 is the fill this paragraph describes, and a fill
+with another is a stop (added 2026-11-03, stop-and-amend re-review: RR8-1).
+The pack's object type, whose element D2 pads to the stride
 (`<{ <{ i32, i1 }>, [3 x i8] }>` by lower/type.cpp:595-607, 8 bytes), is
 built only by `FileContext::PrepareToLower`, which lowers every
 complete type (lower/file_context.cpp:76-80), and is checked there by
@@ -2791,7 +2805,7 @@ written by hand, and each fill is autoupdate's, reviewed as a diff.
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon; lower/testdata/template/template_constraint.carbon; check/testdata/named_constraint/template_constraint_dependent.carbon | M60 | none | F-M60: a note's location; IR names; the note the branch's `call_action` replay adds (template_constraint_dependent.carbon added 2026-11-02, review fold: RR3-4) | `$P/sim60/gateS.log`; section 0.3's rows for PR 60's own branch |
 | check/testdata/optional/compare.carbon; check/testdata/optional/fail_compare.carbon; lower/testdata/optional/compare.carbon; lower/testdata/optional/destroy.carbon; lower/testdata/primitives/optional.carbon; lower/testdata/for/bindings.carbon; lower/testdata/interop/cpp/pointer.carbon | C1 | none | F-C1 (OP-1's files on PR 56) and F-C-M57 (the rest on PR 57); CHECK lines only | `$P/w352/gate_w352.log` |
 | check/testdata/variadics/fail_todo_slice.carbon | D1 | splits `fail_todo_choice_alternative`, `fail_todo_choice_second_alternative` and `fail_todo_choice_in_class` (Appendix A.3) | F-D1: section 2.4's four lines each | h01 with W-367; h08 and h10 by review A |
-| lower/testdata/variadics/pack_expansion.carbon | D2 | split `padded_element` (Appendix A.4) | F-D2: its LLVM IR, which passes the pack as its value representation `[3 x ptr]` and prints no padded type, and 98 CHECK:STDOUT lines of the splits lib.carbon and use.carbon whose `!N` metadata numbers rise by 54, which are not a difference (section 2.4; amended 2026-11-03, implementation: stop-and-amend, unit D) | e13 prints 7 with W-368; PR 59's held file_test aborts on the filled golden at lower/type.cpp:936 and D2's passes it (Stop-and-amend record, rev 8) |
+| lower/testdata/variadics/pack_expansion.carbon | D2 | split `padded_element` (Appendix A.4) | F-D2: its LLVM IR, which passes the pack as its value representation `[3 x ptr]` and prints no padded type, and 98 CHECK:STDOUT lines of the splits lib.carbon and use.carbon in which every `!N` numbered 283 or more rises by 54 and the seven references to `!34`, `!36`, `!38`, `!48` and `!50` keep their numbers, which are not a difference; the filled file's sha1, af0b823f75e56c4a264823e1ec33b4888f4e8d69, governs (section 2.4; amended 2026-11-03, implementation: stop-and-amend, unit D; amended 2026-11-03, stop-and-amend re-review: RR8-1) | e13 prints 7 with W-368; PR 59's held file_test aborts on the filled golden at lower/type.cpp:936 and D2's passes it (Stop-and-amend record, rev 8) |
 | SV-1's choice/optional_pointer_payload.carbon, interop/cpp/stdlib/optional.carbon, variant.carbon | M56 or M57 | none | F-M56 or F-M57 | `$P/sim57x60/gate.log` |
 | lower/testdata/array/iterate.carbon, for/break_continue.carbon, for/for.carbon | M57 | conflicted, trunk's side (GOLD-1) | F-M57 (DR-1a's m57) | section 0.3 |
 | lower/testdata/template/for_range.carbon | M57 | none | F-M57 (CT-1's PR 57 composition) | `$P/sim57x60/gate.log` |
@@ -3119,6 +3133,23 @@ Run for this plan (container-local, EXPECTED, not of record, R9):
     simulated tree, 1960 passed, 0 failed, with the lane's file_test; the
     lane worktree stayed clean at a7f6f6395, no build was made, and the
     worktree was removed after measuring.
+13. Rev 9's amender (added 2026-11-03, stop-and-amend re-review: RR8-1 to
+    RR8-3): the heads re-read at 01:44 UTC (va b0822a744, va2 43c8ab476,
+    trunk and this branch 7e00cbff6), and at 01:51 UTC no remote branch
+    contains 389cf3af0, 249f23968 or a7f6f6395; the lane worktree clean at
+    a7f6f6395 and its install printing 0.0.0-0.dev+a7f6f6395; upstream
+    re-fetched at 01:46 UTC, still a7e2f3418; RR8-1 reproduced from the
+    implementer's filled golden (sha1 af0b823f75e56c4a264823e1ec33b4888f4e8d69,
+    as rev 8's amender's and RR8's) against a7f6f6395's with git's histogram
+    diff, every `!N` reference's shift counted, zero included: 98 pairs, none
+    differing once normalized, 138 references raised by 54 and 7 unchanged,
+    the smallest number that moves 283 and the largest that stays 50; RR8-2
+    by lowering B.3 with the lane install at `--optimize=none` (`[3 x ptr]`
+    11 times, an `alloca [3 x ptr]` for each of its two calls, no
+    `[3 x i8]`) and with PR 59's held install (aborted at
+    lower/type.cpp:936); RR8-3 from carbonbuild/gen_ninja.py:457-462 and the
+    brief's formula at 389cf3af0, 249f23968 and a7f6f6395; no worktree or
+    build was made.
 
 The slices' and landings' implementers run, at each commit: the build, the
 gate, autoupdate to its fixpoint on exactly the files the gate names, the
@@ -3223,6 +3254,17 @@ Not run by this plan, and why:
     "on trunk" outright, and unit A's pusher confirms that trunk holds the
     revision they were written from (the Stop-and-amend record's instruction
     5; added 2026-11-02, stop-and-amend re-review: RR6-1 / RR6-2).
+14. An install's version names the commit it was built at: carbonbuild stamps
+    `git rev-parse --short HEAD` (gen_ninja.py:457-462), with `.dirty` after
+    it for a tree with uncommitted changes. The brief's formula,
+    `git log -1 --format=%h -- toolchain ':!toolchain/*/testdata/*' core`,
+    names the toolchain state, the last commit that changed a toolchain or
+    core file outside testdata. The two agree at a code commit and differ
+    after a commit that changes only testdata or records, such as a fill or a
+    records commit, which is not a difference: each is checked against its
+    own expected value, and they are not compared (rev 6's "Not a
+    difference" paragraph for unit A; added 2026-11-03, stop-and-amend
+    re-review: RR8-3).
 
 ## Appendix A: golden sources
 
@@ -4142,9 +4184,11 @@ The split's source stands as D2 committed it (a7f6f6395). Its IR shows the
 pack's value representation, `[3 x ptr]`, and not the padded object type, which
 only `BuildType`'s layout check sees, so the split pins W-368 by that check:
 without D2 its lowering aborts at lower/type.cpp:936. Because it precedes
-lib.carbon, its module's 54 metadata nodes renumber those of lib.carbon and
-use.carbon, which F-D2 refills (section 2.4; added 2026-11-03, implementation:
-stop-and-amend, unit D).
+lib.carbon, its module's 54 metadata nodes, `!283` to `!336`, raise by 54 every
+`!N` of lib.carbon and use.carbon numbered 283 or more, which F-D2 refills,
+while the uniqued nodes `!34`, `!36`, `!38`, `!48` and `!50` keep their numbers
+(section 2.4; added 2026-11-03, implementation: stop-and-amend, unit D; amended
+2026-11-03, stop-and-amend re-review: RR8-1).
 
 ## Appendix B: conformance programs
 
@@ -4342,6 +4386,15 @@ fn Run() -> i32 {
 ```
 
 <!-- google-doc-style-resume -->
+
+The program stands as D2 committed it (a7f6f6395). Its header's sentence "each
+element is read at its array stride" is read as the pack's object layout, which
+D2 pads to the stride and `BuildType`'s layout check compares; with D2 the
+program's IR passes both packs as their value representation,
+`alloca [3 x ptr]`, and reads no element at the stride. The sentence stands
+with no fix commit, and its wording for the program's next touch is given by
+RR8-2's ruling in the Stop-and-amend record (rev 8, extended at rev 9; added
+2026-11-03, stop-and-amend re-review: RR8-2).
 
 ### B.4 stdlib/optional_compare_payload.carbon: the comment (C1)
 
@@ -5932,7 +5985,89 @@ sequence with the gate run on the tree being committed, and F-D2 and D-R follow
 it. _Break condition:_ a gate after a commit's rebuild that differs from the
 gate its message records; that is a stop.
 
-Instructions to the implementer (unit D, resumed at F-D2):
+Rev 9, the re-review RR8 folded (2026-11-03). The focused re-review RR8 of
+rev 8 (7e00cbff6; verdict APPROVE-WITH-AMENDMENTS, no BLOCKER, no MAJOR) worked
+in its own detached worktree of a7f6f6395 (/dev/shm/fo1/amendrr8, removed)
+with the lane's file_test, read only, and its own TEST_TMPDIR. It reproduced
+each new prediction of rev 8: F-D2's fill byte-identical to the implementer's
+(sha1 af0b823f75e56c4a264823e1ec33b4888f4e8d69), 307 and 102 lines (303 and 98
+with the histogram algorithm, 205 of them the split's module), CHECK:STDOUT
+lines only, the second pass writing nothing and no `[3 x i8]`; PR 59's held
+file_test aborting on the filled golden at lower/type.cpp:936 and the lane's
+passing it; the gate on the fill with D-R simulated from rev 8's D.5, 1960 of
+1960, and the self-test over 159 programs and 56 bullets; and D-R's numstat,
+R31 counts, line widths, prek and `json.load` (146 items) as instruction 4
+states them. It confirmed rev 8's root cause against the tree
+(`FileContext::PrepareToLower`, `BuildType`'s layout check, D-VA-3's value
+representation, and e09, e13 and B.3 lowered by D2's install with `[3 x ptr]`
+and no padded type), found no decision's ruling or break condition changed and
+no IN form hidden (R17), nothing pushed (no remote branch contains 389cf3af0,
+249f23968 or a7f6f6395, and va is b0822a744) and upstream's tip still
+a7e2f3418 (01:39 UTC), and raised three MINORs, folded here as RR8-1 to RR8-3.
+Rev 9's amender reproduced each (scratchpad/fo1-impl/D/amend9 under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b:
+norm_all.txt, rr8-2.txt, rr8-3.txt, r32.txt; section 8 item 13), and none is
+rejected.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR8-1: "each number raised by 54" is wrong for seven references, and the break condition would fire on a byte-identical fill | MINOR | yes: amend9/norm_all.txt pairs the 98 changed lines of the implementer's filled golden (sha1 af0b823f75e56c4a264823e1ec33b4888f4e8d69) with a7f6f6395's by git's histogram diff and counts every `!N` reference's shift, zero included: no pair differs once normalized; 138 references rise by 54, each to a node numbered 283 or more; 7 stay, `!36` and `!34` on `SelfDestruct`'s `DISubprogram` and `DILocalVariable` lines, `!38` on `Call`'s `DISubprogram`, and `!50` and `!48` on each `Sum` specific's two lines, uniqued nodes that lib.carbon and use.carbon define on unchanged lines; rev 8's amender's amend8/norm.py collected only the shifts that were not zero | folded both ways the finding offers: the renumbering is stated node by node, and the fill's sha1 governs F-D2, so the break condition names the bytes and drops "or by a number other than 54" | section 2.4; section 4's pack_expansion.carbon row; Appendix A.4's note; instruction 2; the break condition |
+| RR8-2: B.3's header contradicts rev 8's root cause, and rev 8 does not rule on it, so a review finding there would become a stop | MINOR | yes: amend9/rr8-2.txt: lowered by D2's install (+a7f6f6395) at `--optimize=none`, B.3 passes the packs of its constant call and its run-time call as `alloca [3 x ptr]` (its IR's lines 29 and 36), indexes them with 9 `getelementptr` into `[3 x ptr]`, and has no `[3 x i8]` and no `[3 x <{`; PR 59's held install (88b1b5bd2) aborts on it at lower/type.cpp:936 ("[3 x <{ i32, i1 }>] ... size 15, expected 24"); the header reads "each element is read at its array stride" (fork/conformance/programs/generics/variadics_padded_element.carbon:11-12 at a7f6f6395) | folded as the finding's option (a), with option (b)'s wording deferred: the sentence stands, read as the pack's object layout, with no fix commit (the ruling below); a review finding on it is folded by record and is not a stop | Appendix B.3 (a note after the program); instruction 5; the ruling below |
+| RR8-3: the rebuild after F-D2 stamps HEAD's sha, which disagrees with the brief's install-version formula | MINOR | yes: amend9/rr8-3.txt: carbonbuild/gen_ninja.py:457-462 stamps `git rev-parse --short HEAD`, with `.dirty` for a tree with changes; the brief's formula gives 389cf3af0 at 389cf3af0 and at 249f23968 (F-D1 changes fail_todo_slice.carbon only) and a7f6f6395 at a7f6f6395, so after F-D2 and D-R it gives a7f6f6395 where a rebuild prints each one's own sha; F-D1's body records its gate at D1's install, +389cf3af0 | folded the first way the finding offers, as the ruling below states it: the version and the formula are checked separately and not compared; stated in general in hand-off note 14, as rev 6's "Not a difference" paragraph stated it for unit A | instructions 2 and 4; the break condition; hand-off note 14 |
+
+Decided here (R29), for RR8-2: B.3's program stands as D2 committed it
+(a7f6f6395), with no fix commit. Its header's sentence "each element is read at
+its array stride" is read as the pack's object layout, which D2 builds with
+each element padded to its type's array stride, 8 bytes, so that the pack's
+LLVM type has the 24 bytes `BuildType`'s layout check expects (without D2, 15);
+it is not read as the program's IR, which passes each pack as its value
+representation, `[3 x ptr]`. The program's role (it aborts on PR 59's held
+install and prints 7 and 7 with D2) and its EXPECT lines do not depend on the
+sentence; R16 (b) does not apply, since nothing is weakened; and a fix commit
+would add a commit instruction 1 does not give, owe conformance again and
+re-open Appendix B.3 and D.5 for a comment, where unit A's R1-m1, an inexact
+code comment, was deferred by the orchestrator's ruling. A finding of unit D's
+reviews on that sentence is folded by record, citing this ruling, with no
+commit, and is not a stop. The wording for the program's next touch, under an
+orchestrator ruling within D-FO1-10's budget, with Appendix B.3 changing only
+with the program: "A pack of a struct whose layout has tail padding (W-368):
+the pack's object layout places each element at its array stride." _Break
+condition:_ the orchestrator rules that the header changes before PR 59 lands,
+or a review shows the sentence false of the object layout as well; that is
+then a commit on PR 59's branch with the text the ruling gives, before D-R if
+D-R is not yet committed and otherwise a stop under instruction 5.
+
+Decided here (R29), for RR8-3: for F-D2 and D-R, as for unit A's A-R, the
+install's version names the commit it was built at, which carbonbuild stamps
+(hand-off note 14), and the brief's formula names the toolchain state, which
+stays a7f6f6395, since F-D2 changes a golden and D-R records only; each is
+checked against its own value, and the two are not compared. The gate before
+each commit runs on the install of the commit before it (for F-D2, D2's
+install, as F-D1's ran on D1's; for D-R, F-D2's rebuilt install), and the gate
+after the commit's rebuild runs on the new one. _Break condition:_ the formula
+names a toolchain state other than a7f6f6395 after F-D2 or D-R, or an install's
+version names a commit other than the one it was built at; that is a stop.
+
+Rev 9's amendment. Each place carries a 2026-11-03 "stop-and-amend re-review"
+marker (amended, added or rewritten) with its findings: the status line and the
+contents; section 2.4 (the renumbering stated node by node, and the sha1 that
+governs); section 4's pack_expansion.carbon row; section 8 (run item 13);
+hand-off note 14; Appendix A.4's note; Appendix B.3 (a note after the program);
+this record's instructions 2 to 5 and its break condition; the Sign-off (RR8's
+row, and RR6's naming rev 7 by its sha). Unchanged: every decision's ruling and
+break condition, every code block, golden source and program (B.3's text
+included), section 3, section 5, Appendix D (D.5's texts as rev 8 gives them,
+so RR8's simulation of D-R and instruction 4's predicted values stand), the
+commits D1, F-D1 and D2, and the texts of units A, B and C. Not R32: rev 9
+states no design; upstream's tip is still a7e2f3418 at 01:46 UTC, whose
+lower/type.cpp pads an array's element with `BuildTailPaddedType` (:563, used
+by `BuildTypeForInst(ArrayType)` at :595-617) and lowers no `PackType`. Before
+unit D's pusher runs, the orchestrator fast-forwards trunk and
+claude/carbon-fork-0-1-fo1 to rev 9, as it did each earlier revision; that is
+not an Appendix F stamp, and no slice writes fork/ORCHESTRATION.md.
+
+Instructions to the implementer (unit D, resumed at F-D2; instructions 2 to 5
+amended 2026-11-03, stop-and-amend re-review: RR8-1 to RR8-3):
 
 1.  Reset nothing. D1 (389cf3af0), F-D1 (249f23968) and D2 (a7f6f6395) are
     correct and stay: `git -C /home/user/carbon-lang branch -r --contains` lists
@@ -5944,20 +6079,29 @@ Instructions to the implementer (unit D, resumed at F-D2):
 2.  F-D2, "VA-1 fix fill: autoupdate W-368's split on the container arbiter":
     run `$CB/autoupdate.sh` on
     toolchain/lower/testdata/variadics/pack_expansion.carbon with the lane's
-    CB_BUILD_ROOT and CB_JOBS=2, then again, then `$CB/gate.sh`, and commit that
-    file alone. Predictions, reproduced by rev 8's amender with the lane's
-    file_test: `git diff --numstat` 307 and 102; every changed line a
-    CHECK:STDOUT line; the second pass writes nothing; the file's sha1 is
-    af0b823f75e56c4a264823e1ec33b4888f4e8d69, byte-identical to
-    implementer/pe_filled.carbon; `[3 x i8]` appears nowhere in it; the 98
-    changed lines of lib.carbon and use.carbon each equal the old one with every
-    `!N` normalized, each number raised by 54; the gate 1960 passed, 0 failed
-    of 1960. The body names D-FO1-6 and this record (plan rev 8), the gate line
-    and prek's result as the brief orders it. Then rebuild and install (the
-    version names F-D2's sha) and gate again: 1960 of 1960. Conformance is not
-    owed (no program, prelude or toolchain file changes);
-    `runner.py --self-test` prints "self-test: 159 programs parsed, 56 bullets
-    in table, OK".
+    CB_BUILD_ROOT and CB_JOBS=2, then again, then `$CB/gate.sh`, all on D2's
+    install (version 0.0.0-0.dev+a7f6f6395), and commit that file alone.
+    Predictions, reproduced by rev 8's amender with the lane's file_test: the
+    file's sha1 is af0b823f75e56c4a264823e1ec33b4888f4e8d69, byte-identical to
+    implementer/pe_filled.carbon, and it governs: a fill with that sha1 is the
+    predicted fill, which the rest of this list describes (amended 2026-11-03,
+    stop-and-amend re-review: RR8-1); `git diff --numstat` 307 and 102; every
+    changed line a CHECK:STDOUT line; the second pass writes nothing;
+    `[3 x i8]` appears nowhere in it; the 98 changed lines of lib.carbon and
+    use.carbon each equal the old one once every `!N` is normalized, every
+    `!N` numbered 283 or more raised by 54 (138 references) and the seven
+    references to the uniqued nodes `!34`, `!36`, `!38`, `!48` and `!50`
+    unchanged (amended 2026-11-03, stop-and-amend re-review: RR8-1); the gate
+    1960 passed, 0 failed of 1960. The body names D-FO1-6 and this record
+    (plan rev 9), the gate line and prek's result as the brief orders it. Then
+    rebuild and install and gate again: 1960 of 1960. The rebuilt install
+    prints F-D2's own sha (`git rev-parse --short HEAD`), and the brief's
+    formula still names a7f6f6395, the toolchain state: each is checked
+    against its own value, and the two are not compared (RR8-3's ruling
+    above, hand-off note 14; amended 2026-11-03, stop-and-amend re-review:
+    RR8-3). Conformance is not owed (no program, prelude or toolchain file
+    changes); `runner.py --self-test` prints "self-test: 159 programs parsed,
+    56 bullets in table, OK".
 3.  D-R, "VA-1: W-367 and W-368 filed and fixed (D-FO1-5, D-FO1-6)": write
     Appendix D.5's three texts as rev 8 gives them, verbatim but for the
     placeholders `<date>` (the UTC commit date, `date -u +%F`),
@@ -5970,8 +6114,10 @@ Instructions to the implementer (unit D, resumed at F-D2):
     fold record ends fork/variadics/plan.md, after "Landed notes
     (VA-1, 2026-10-14)", with one blank line before its heading. Explicit paths
     only; the body names D-FO1-5, D-FO1-6, D-FO1-12 and this record (plan
-    rev 8), the gate line, prek's result, the ledger's `json.load` and R31's
-    counts of both markdown files before the edit, after it and after prek.
+    rev 9, whose D.5 is rev 8's), the gate line, prek's result, the ledger's
+    `json.load` and R31's counts of both markdown files before the edit, after
+    it and after prek (rev 9 named, amended 2026-11-03, stop-and-amend
+    re-review: RR8-1 to RR8-3).
 4.  The predictions D-R reproduces, simulated by rev 8's amender with a stand-in
     F-D2 sha (section 8 item 12): `git diff --numstat` names
     fork/decision-log.md (5 insertions), fork/inventory/work-items.json (28) and
@@ -5984,28 +6130,42 @@ Instructions to the implementer (unit D, resumed at F-D2):
     changes nothing, a fixpoint at the first pass; no added line is longer
     than 80 columns once filled; `json.load` succeeds with 146 items, the last
     two W-367 and W-368; `runner.py --self-test` is OK over 159 programs and 56
-    bullets; the gate after D-R's rebuild prints 1960 passed, 0 failed of 1960;
-    the model-identifier grep is clean. Conformance is not owed (records only).
+    bullets; the gate before D-R's commit, on F-D2's rebuilt install, and after
+    D-R's rebuild, whose install prints D-R's own sha while the brief's formula
+    still names a7f6f6395 (hand-off note 14), prints 1960 passed, 0 failed of
+    1960; the model-identifier grep is clean. Conformance is not owed (records
+    only; amended 2026-11-03, stop-and-amend re-review: RR8-3).
 5.  Then unit D continues as its brief orders: D1 to D-R take the two
     implementation reviews and the fixer (D-FO1-9, D-FO1-10), and the pusher
     pushes. Every fix commit after D-R is a stop (D-LAND-9): one that touches
     D1's or D2's files or any other toolchain, testdata or program file leaves
     D.5's evidence and gate incomplete, and one that changes any sha, count or
     commit that D.5's texts state needs a records text this plan does not give;
-    the orchestrator then rules within D-FO1-10's budget. Before pushing, the
-    pusher confirms that trunk holds this plan at rev 8 or later, whose D.5
-    gives the fold record D-R commits: after `git fetch -q origin trunk`, the
-    status line of `git show origin/trunk:fork/followon/fo1-plan.md` names rev 8
-    or a later revision; otherwise it stops (D-FO1-11) and pushes nothing until
-    the orchestrator has fast-forwarded trunk, as it did each earlier revision.
+    the orchestrator then rules within D-FO1-10's budget. A finding of the
+    reviews on B.3's header sentence is folded by record under RR8-2's ruling
+    above, with no commit, and is not a stop (added 2026-11-03,
+    stop-and-amend re-review: RR8-2). Before pushing, the pusher confirms that
+    trunk holds this plan at rev 9 or later, whose D.5 gives the fold record
+    D-R commits and whose RR8-2 ruling the reviews' fold cites: after
+    `git fetch -q origin trunk`, the status line of
+    `git show origin/trunk:fork/followon/fo1-plan.md` names rev 9 or a later
+    revision; otherwise it stops (D-FO1-11) and pushes nothing until the
+    orchestrator has fast-forwarded trunk, as it did each earlier revision
+    (amended 2026-11-03, stop-and-amend re-review: RR8-2).
 
-Break condition of this amendment: F-D2's fill differs from the predicted bytes,
-a line outside CHECK:STDOUT lines changes, a golden other than
-pack_expansion.carbon changes (D-FO1-6's break condition), one of the 98 lines
-differs once `!N` is normalized or by a number other than 54, the gate after
-F-D2 or D-R is not 1960 of 1960, or D-R changes a file other than its three or a
-count instruction 4 states; the implementer then stops and the orchestrator
-rules.
+Break condition of this amendment: F-D2's fill differs from the predicted bytes
+(sha1 af0b823f75e56c4a264823e1ec33b4888f4e8d69, which governs: a fill with
+those bytes meets instruction 2's other predictions, which describe it), a line
+outside CHECK:STDOUT lines changes, a golden other than pack_expansion.carbon
+changes (D-FO1-6's break condition), the gate after F-D2 or D-R is not 1960 of
+1960, the brief's formula names a toolchain state other than a7f6f6395 after
+F-D2 or D-R or an install's version names a commit other than the one it was
+built at, or D-R changes a file other than its three or a count instruction 4
+states; the implementer then stops and the orchestrator rules (rewritten
+2026-11-03, stop-and-amend re-review: RR8-1 / RR8-3: rev 8's clause "one of the
+98 lines differs once `!N` is normalized or by a number other than 54", which
+the predicted bytes already settle and which, read literally, fired on them,
+is dropped).
 
 ## Sign-off
 
@@ -6020,7 +6180,8 @@ of this plan:
 | RR1 | rev 2 (912af8f8f) | REJECT | 2 (N-1, N-2) | 1 (N-3) | 1 (N-4) | rev 3 (dee3d0cc0) | 0 |
 | RR2 | rev 3 (dee3d0cc0) | REJECT | 2 (RR2-1, RR2-2) | 1 (RR2-3) | 3 (RR2-4 to RR2-6) | rev 4 (4a574eaf3) | 0 |
 | RR3 | rev 4 (4a574eaf3) | APPROVE-WITH-AMENDMENTS | 0 | 1 (RR3-1) | 3 (RR3-2 to RR3-4) | rev 5 (5e3279a12) | 0 |
-| RR6 | rev 6 (85125ceb4) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 (RR6-1 to RR6-4) | rev 7 (this commit) | 0 |
+| RR6 | rev 6 (85125ceb4) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 (RR6-1 to RR6-4) | rev 7 (f609533dc) | 0 |
+| RR8 | rev 8 (7e00cbff6) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 (RR8-1 to RR8-3) | rev 9 (this commit) | 0 |
 
 Five reviews, 34 findings (6 BLOCKER, 9 MAJOR, 19 MINOR), all folded and none
 rejected; reviews A and B shared some findings (A-B-1 with B-B-1, A-B-3 with
@@ -6049,4 +6210,14 @@ names the metadata renumbering of lib.carbon and use.carbon in
 pack_expansion.carbon as not a difference, and gives D-R's fold record for
 fork/variadics/plan.md verbatim; it changes no decision's ruling, break
 condition, code block, golden source or program (the record "Stop-and-amend
-record (rev 8, 2026-11-03)"). No review of rev 8 is counted above.
+record (rev 8, 2026-11-03)").
+
+Rev 9 (amended 2026-11-03, stop-and-amend re-review: RR8-1 to RR8-3) adds
+RR8's row to the table above, a review of rev 8's stop-and-amend, and names
+RR6's fold by rev 7's sha, f609533dc, where "this commit" had stood since
+rev 8; it leaves the sign-off and its count of the five reviews before it as
+they are: with RR6 and RR8, seven reviews and 41 findings (6 BLOCKER, 9 MAJOR,
+26 MINOR), all folded and none rejected. Rev 9 changes no decision's ruling or
+break condition, code block, golden source, program or predicted value either;
+it rewords the break condition of the Stop-and-amend record's amendment
+(RR8-1, RR8-3).

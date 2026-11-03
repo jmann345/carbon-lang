@@ -81,6 +81,18 @@ adds the branch's measured values to sections 0.3, 3 and 8, and changes no
 code block, golden source, program, D.5 block, decision's ruling or break
 condition and no prediction for M59's tree or the landings.
 
+Unit C's implementation (2026-11-03): C1 (c655d55f3) and F-C1 (4509064fc) on PR
+56's branch took two implementation reviews and five focused re-reviews, the
+last APPROVE with no finding. The fold added one commit, fa54b8d97, the in-place
+program's generic leg and the lowered compare golden's header, Slice C's
+code-fix commit 1 of 2 (D-FO1-10); every later finding was folded by record. The
+section "Implementation review fold record (unit C, 2026-11-03)" before the
+Sign-off records the fifteen findings and the orchestrator's ruling with its six
+addenda, and amends section 2.3, D-FO1-4, sections 2.6, 2.7, 3 and 6, and
+Appendix B.2, C.3 and D.4 to the branch's measured values and the ruling's
+texts, each with its mark; it changes no decision's ruling or break condition,
+no code block of section 2.3 and no prediction of the landings' totals.
+
 **Summary.** Every number below is container-local, EXPECTED, not of record
 (R9), measured on detached worktrees under /dev/shm against trunk 03b40f7c5,
 whose toolchain is c6c9d5fe3's (the install 0.0.0-0.dev+c6c9d5fe3), and read
@@ -218,6 +230,7 @@ fold: RR3-3).
 -   Stop-and-amend record (rev 8, unit D, extended at rev 9)
 -   Implementation review fold record (unit B)
 -   Implementation review fold record (unit D)
+-   Implementation review fold record (unit C)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -1148,18 +1161,24 @@ returns and a more specialized impl for `DefaultOptionalStorage(T)` that
 compares `(a.value unsafe as T)` with `(b.value unsafe as T)`, as RG-1's probe
 did (rg1-plan.md section 4.8); the comparison impls' bodies call them. The impl
 headers, the six function signatures and F-015's API table rows
-(docs/design/optional.md:98-99) are unchanged; in a checked generic, the call
-dispatches through the symbolic witness and is specialized at monomorphization
-to the in-place impl (measured: gcount prints 0 copies and 0 destroys). Only the
-pointer niche reaches the fallback impl: a `Core.Optional(C*)` compares through
-it when the program makes `C*` comparable, as optional.md (:304-320 at
-9f12209d8) and OP-1's optional_nested_pointer.carbon do with `impl C* as
-Core.EqWith(C*)`, and its `Get` is a primitive copy of the pointer with no
-observable effect (measured by review A: optional_nested_pointer.carbon still
-prints `1 0 0 1 1`; amended 2026-11-02, review fold: A-m-3; rev 1 said `T*` was
-never `Eq` in 0.1). Two routes were measured and rejected: the bound `where
-.Type impls OptionalStorageEq`, which keeps concrete code in place but rejects
-OP-1's generic program (its four comparisons, "cannot access member of interface
+(docs/design/optional.md:95-96 at 9f12209d8, :98-99 at e23113ba2; amended
+2026-11-03, implementation review fold: R2-C-m5) are unchanged; in a checked
+generic, the call dispatches through the symbolic witness and is specialized at
+monomorphization to the in-place impl (measured: gcount prints 0 copies and 0
+destroys). The checked-generic in-place dispatch is pinned in the tree by the
+generic leg of stdlib/optional_compare_in_place.carbon (fa54b8d97, Appendix
+B.2): `GEq` to `GGe` over `Counted` print the copy and destroy deltas 0 0 on PR
+56's branch, where PR 56's held install (5d9edb3e0) prints 12 12 (amended
+2026-11-03, implementation review fold: R2-C-m6). Only the pointer niche reaches
+the fallback impl: a `Core.Optional(C*)` compares through it when the program
+makes `C*` comparable, as optional.md (:304-320 at 9f12209d8) and OP-1's
+optional_nested_pointer.carbon do with `impl C* as Core.EqWith(C*)`, and its
+`Get` is a primitive copy of the pointer with no observable effect (measured by
+review A: optional_nested_pointer.carbon still prints `1 0 0 1 1`; amended
+2026-11-02, review fold: A-m-3; rev 1 said `T*` was never `Eq` in 0.1). Two
+routes were measured and rejected: the bound `where .Type impls
+OptionalStorageEq`, which keeps concrete code in place but rejects OP-1's
+generic program (its four comparisons, "cannot access member of interface
 `Core.EqWith(...)`"), and a `template` impl, which hits W-250's TODO across the
 library boundary. One commit C1 on PR 56's branch with its fill F-C1, the
 program and the docs, then PR 56's branch merged into PR 57's (C-M57) with its
@@ -2123,7 +2142,8 @@ measured on PR 56's, PR 57's and `sim57x60`'s toolchains with `--custom-core`
 `Get()` ... `Get()` returns a copy, destroyed by the end of the call, so
 `Destroy` is in the bound") becomes the text of the first comment block below,
 whose first sentence keeps OP-1's semantics paragraph verbatim up to "never
-read.":
+read." but for "reads a value" where OP-1 said "calls `Get()`", the block
+governing (amended 2026-11-03, implementation review fold: R1-m4 / R2-C-m5):
 
 <!-- google-doc-style-ignore -->
 
@@ -2278,9 +2298,17 @@ included, but for the `OptionalStorageOrdered` interface's first line, which the
 measured file keeps on one 81-column line and the block wraps after its `(`, a
 whitespace-only change (prek's formatter does not touch `.carbon`, and `carbon
 format` is not run) (amended 2026-11-02, review fold: B-M-4: rev 1 left the
-`OrderedWith` impl in scratch). The `OrderedWith` impl keeps OP-1's tests and
-order. The `Destroy` in the impls' bounds stays: it is part of the frozen header
-(docs/design/optional.md:98-99), and the fallback impl's `T.Get` copies need it.
+`OrderedWith` impl in scratch) (measured 2026-11-03, implementation, unit C:
+that line is 82 columns; the block also prepends OP-1's semantics paragraph,
+eight comment lines, and rewrites the measured file's two pointer-niche comment
+lines, the fallback comparing "when the program makes the pointer type
+comparable" (review A's A-m-3); lines 206 to 346 of c655d55f3's optional.carbon
+equal the block byte for byte, and lines 1 to 205 are 9f12209d8's; amended
+2026-11-03, implementation review fold: R1-m4 / R2-C-m5). The `OrderedWith` impl
+keeps OP-1's tests and order. The `Destroy` in the impls' bounds stays: it is
+part of the frozen header (docs/design/optional.md:95-96 at 9f12209d8, :98-99 at
+e23113ba2; amended 2026-11-03, implementation review fold: R2-C-m5: rev 5 cited
+e23113ba2's numbering alone), and the fallback impl's `T.Get` copies need it.
 Commit F-C1, "OP-1 fix fill: autoupdate W-352's goldens on the container
 arbiter", fills what the gate names on PR 56's branch; predicted there:
 check/testdata/optional/compare.carbon (the SemIR of the comparison impls) and
@@ -2292,7 +2320,16 @@ IR names), plus any golden that prints a line of optional.carbon after :205;
 measured on the land tree: those and lower optional/destroy.carbon,
 for/bindings.carbon and interop/cpp/pointer.carbon, CHECK lines only. A golden
 outside OP-1's, OP-2's, SV-1's and those three lower files stops C1 (D-FO1-4's
-break condition, which names the same set since rev 2).
+break condition, which names the same set since rev 2). Measured on PR 56's
+branch (2026-11-03, implementation, unit C): C1's gate, 1942 passed, 3 failed of
+1945, names exactly OP-1's three files, check optional/compare.carbon, check
+optional/fail_compare.carbon and lower optional/compare.carbon, which F-C1
+(4509064fc) fills, CHECK lines only; lower/testdata/primitives/optional.carbon
+passes there and stays in F-C-M57's set on PR 57, where the land tree alone
+changes it, as do lower optional/destroy.carbon, for/bindings.carbon and
+interop/cpp/pointer.carbon. The measured set is a subset of D-FO1-4's, whose
+break condition did not fire, and F-C1 stands (amended 2026-11-03,
+implementation review fold: R1-m3 / R2-C-m5).
 
 Then on PR 57's branch (claude/carbon-fork-0-1-op2): C-M57, "OP-2: merge OP-1's
 W-352 fix (R32 (e))", merges PR 56's head at F-C1 into PR 57's branch after A1
@@ -2300,12 +2337,21 @@ and A-R (no F-A1 is made, section 2.1; amended 2026-11-02, implementation:
 stop-and-amend, unit A); its conflicts are expected in fork/ records only
 (OP-2's own optional.carbon edits are after :275 and at :15, :18, :40-48, which
 C1 does not touch: measured, C1's block rewrite applies to e23113ba2's file as
-to 9f12209d8's). F-C-M57 refills what PR 57's gate then names (predicted: OP-2's
-goldens that print optional.carbon lines and the comparison impls, among the
-seven of the land tree's W-352 set). Commit C-R, W-352's discharge note, H5.4's
-verdict, the decision-log paragraph and optional.md's amendment (Appendix C.3,
-D.4), is made on PR 56's branch after its land merge M56 (section 2.6), because
-W-352 and the register files exist only on trunk (RG-1's PR 67): `git show
+to 9f12209d8's) (measured 2026-11-03, implementation, unit C: PR 56's head after
+unit C is fa54b8d97, and `git merge-tree --write-tree 50840acf2 fa54b8d97`, as
+with 4509064fc, conflicts in check/testdata/optional/compare.carbon, five
+regions, and lower/testdata/optional/compare.carbon, seven regions, every
+conflicted line a CHECK line, which GOLD-1 takes and F-C-M57 refills;
+optional.carbon, the README table and optional_compare_payload.carbon merge
+cleanly, and no fork/ records file conflicts, unit C's commits changing none;
+the ruling's Addendum 1 says "all seven regions", the lower file's count;
+amended 2026-11-03, implementation review fold: R2-C-m5). F-C-M57 refills what
+PR 57's gate then names (predicted: OP-2's goldens that print optional.carbon
+lines and the comparison impls, among the seven of the land tree's W-352 set).
+Commit C-R, W-352's discharge note, H5.4's verdict, the decision-log paragraph
+and optional.md's amendment (Appendix C.3, D.4), is made on PR 56's branch after
+its land merge M56 (section 2.6), because W-352 and the register files exist
+only on trunk (RG-1's PR 67): `git show
 9f12209d8:fork/inventory/work-items.json` has no W-352. It reaches PR 57 with
 trunk at M57.
 
@@ -2675,7 +2721,21 @@ implementer, a fresh worktree of claude/carbon-fork-0-1-op at its pushed head.
     commit 894139b34; DD-1's state L for PR 56 (interoperability/README.md's
     pointer section, "`Core.Optional(T*)` in Carbon" gaining the link
     `([Optional](../optional.md), fork decision F-015)`, DD-1 section 2.13),
-    both checker modes 0 errors.
+    both checker modes 0 errors. L56 also edits fork/gap-analysis.md's "Stdlib:
+    Optional" row (:80 at fa54b8d97), the row whose DR-0 sentence it keeps
+    (Appendix E.3): the clause "since OP-1, `==` on `Core.Optional(bool)`
+    reaches the same crash, and `==` on `Core.Optional(Core.Optional(U*))` the
+    same wrong values, where each was a check error" becomes "since OP-1, `==`
+    on `Core.Optional(bool)` crashes the compiler too (until W-352 (c655d55f3)
+    at the verifier CHECK `Get()` reaches, toolchain/lower/lower.cpp:48; since
+    then at LLVM's `cast<IntegerType>` assertion while lowering `PayloadEqual`,
+    core/prelude/types/optional.carbon:236), and `==` on
+    `Core.Optional(Core.Optional(U*))` returns the same wrong values, where each
+    was a check error" (amended 2026-11-03, implementation review fold: RR2-C-m1
+    sweep / RR3-C-m1: the orchestrator's Addendum 5 (2), not a C-R edit, since
+    fork/gap-analysis.md is not among C-R's files; the copy's own abort,
+    handle_call.cpp:984, is optional_bool.carbon:6's, not this clause's; PR 57's
+    row :85, OP-2's DONE text, takes the row at M57 by D-LAND-5's GA rule).
 6.  Two implementation reviews (OP-1's rule, D-FO1-9) of C1 to L56 (C1 and
     F-C1 reviewed with C-M57 in view), which are also the document review of
     C-R's and L56's page edits; fixer; push.
@@ -2700,7 +2760,16 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     lines only, each taken from trunk's side by GOLD-1 and refilled in step 3;
     the records files by D-LAND-5. Measured: `sim60x57`'s toolchain, core and
     docs trees equal `sim57x60`'s, so the order of stages 13 to 15 changes no
-    code.
+    code. docs/design/optional.md, which C-R edits on trunk's side and OP-2 on
+    PR 57's, takes this region rule: Appendix C.3's texts, as amended, replace
+    the same passages in PR 57's copy at the bracketed anchors read at 50840acf2
+    (the Comparison paragraph :323-329 and the next sentence at :331, the
+    Overview sentence :62-64 with the words at :63-64, the Ownership paragraph
+    :394-396, the disclosed divergence :555-558 and the alternatives' bullet
+    :572-575), OP-2's own edits elsewhere in the file are kept, and the merged
+    page is re-read so that no sentence states the pre-W-352 comparison
+    behaviour (amended 2026-11-03, implementation review fold: R1-m1 / R2-C-m4 /
+    RR1-C-m1).
 3.  **F-M57**: autoupdate on what M57's gate names. Predicted (measured on
     `sim57x60` with S and A1, nine refills there): DR-1a's m57 three (lower
     array/iterate, for/break_continue, for/for;
@@ -2848,8 +2917,8 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 1 | op2 (57) | A1 | OP-2 fix: a class with its own Destroy impl is not completed by the Destroy witness (item 10) | check/custom_witness.cpp; check/testdata/optional/destroy.carbon | autoupdate would change destroy.carbon only if the split prints (predicted not); every other golden passes; measured on PR 57's branch (47a3d9f4e): autoupdate writes nothing, 1950 of 1950, conformance 139/0/22 over 161 unchanged (amended 2026-11-02, implementation: stop-and-amend, unit A) |
 | 2 | op2 (57) | F-A1 | OP-2 fix fill: autoupdate item 10's split on the container arbiter | destroy.carbon, if autoupdate changes it: not made, autoupdate writes nothing (measured; amended 2026-11-02, implementation: stop-and-amend, unit A) | not made |
 | 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 7 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A; amended 2026-11-02, stop-and-amend re-review: RR6-3) (measured 2026-11-03, implementation, unit A: A-R is 50840acf2, the gate after its rebuild 1950 of 1950) |
-| 4 | op (56) | C1 | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon; two programs; fork/conformance/README.md | the W-352 goldens of OP-1 and SV-1 named in section 2.3 |
-| 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass |
+| 4 | op (56) | C1 | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon; two programs; fork/conformance/README.md | the W-352 goldens of OP-1 and SV-1 named in section 2.3 (measured 2026-11-03, implementation, unit C: C1 is c655d55f3, its gate 1942 passed, 3 failed of 1945, exactly OP-1's check optional/compare.carbon, check optional/fail_compare.carbon and lower optional/compare.carbon; lower/testdata/primitives/optional.carbon stays in F-C-M57's set; conformance 133/0/25 over 158, 48 bullets; amended 2026-11-03, implementation review fold: R1-m3 / R2-C-m5) |
+| 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass (measured 2026-11-03, implementation, unit C: F-C1 is 4509064fc, 77/87, 1/1 and 248/249 CHECK lines in the three files, 1945 of 1945; the review fold's fa54b8d97 follows it, "Implementation review fold record (unit C, 2026-11-03)") |
 | 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls |
 | 7 | op2 (57) | F-C-M57 | OP-2: autoupdate the goldens OP-1's W-352 fix changes | the files the gate names | all pass |
 | 8 | va (59) | D1 | VA-1 fix: a pack expansion pattern in a choice alternative's parameter list is a TODO (W-367) | check/handle_pack_expansion.cpp; check/testdata/variadics/fail_todo_slice.carbon | autoupdate would change fail_todo_slice.carbon (measured 2026-11-03, implementation, unit D: D1 is 389cf3af0, its gate 1959 passed, 1 failed of 1960, fail_todo_slice.carbon only; conformance 137/0/21 over 158, 49 bullets, as at b0822a744) |
@@ -2936,7 +3005,7 @@ copies; Appendix B.4).
 | --- | --- | --- | --- |
 | A | custom_witness.cpp +14 in `CanDestroyType` | UA-3 (upstream's 05a7ecbd3 moves `SubobjectDestroy` and `SelfDestruct` out of `Destroy`, a prelude and custom-witness change UA-3 takes); SL-1's `CanDestroyClass` shortcut stays | UA-3 merges A1's hunk as fork code beside upstream's; A1's comment names item 10 so the merge keeps it |
 | B | rev 4's B1 against cc4daba00 (`git diff --numstat`): deduce.cpp +112/-8, structural_conformance.cpp +66/-2, structural_conformance.h +9, context.h +24, convert.cpp +22, action.cpp +3, eval_inst.cpp +6/-1, dominance.cpp +3/-3; clang-format changes none of them (rev 3's was deduce.cpp +108/-8, structural_conformance.cpp +34, structural_conformance.h +8, context.h +12, eval_inst.cpp +6/-1, dominance.cpp +3/-3, its inlined diff clang-formatted where the land tree's deduce.cpp was not, one `return` rewrapped); template_constraints.md one paragraph and one note (amended 2026-11-02, review fold: A-B-1 / B-B-1; amended 2026-11-02, review fold: RR2-4) (measured 2026-11-03, implementation, unit B: B1, 25a3c6947, has exactly these numstats; the review fold's 3736217e8 adds deduce.cpp +8 in `DeduceImplArguments`, so deduce.cpp is +120/-8 against cc4daba00 at 7d13e1626, and template_constraints.md's paragraph, note and :662 are as Appendix C.1 amends them) | UA-3's merge of upstream's deduce.cpp: 503f09037 ("Add support for default values for non-generic parameters of generic functions. (#8011)") rewrites `DeduceGenericCallArguments`'s argument list beside B1's one added line there, and 2c9739799 ("Render diagnostics through the terminal library (#7683)") touches the class's diagnostic helpers; neither touches the two conversions B1 routes (`git log c1e83b0b7..68569d234 -- toolchain/check/deduce.cpp`); W-372 none; CT-1's call.cpp untouched; UA-3's merge of upstream's action.cpp and convert.cpp, where B1's lines sit beside `BeginPerformDelayedAction` and in `PerformBuiltinConversion`'s facet conversion | UA-3 merges `ConvertBindingArg` and the deferral line as fork code beside upstream's changes; B1's comments name W-139 so the merge keeps them |
-| C | optional.carbon -40/+90 in OP-1's block after :205 | OP-2's lines (:15, :18, :40-48, after :275) on PR 57; DR-1's W-320 (stopped); RG-1's H6.4 grep check | C-M57 merges cleanly (measured apply); H6.4's check reads lines C does not change |
+| C | optional.carbon -40/+90 in OP-1's block after :205 (measured 2026-11-03, implementation, unit C: c655d55f3's numstat is 81/10, the file going from 275 to 346 lines, OP-1's comment and two impls at :206-275 becoming :206-346; amended 2026-11-03, implementation review fold: R1-m4 / R2-C-m5) | OP-2's lines (:15, :18, :40-48, after :275) on PR 57; DR-1's W-320 (stopped); RG-1's H6.4 grep check | C-M57 merges cleanly (measured apply); H6.4's check reads lines C does not change |
 | D | handle_pack_expansion.cpp +15 in the `Pattern` case; lower/type.cpp +19/-5 in `BuildTypeForInst(PackType)` (amended 2026-11-03, implementation review fold: R2-D-m1: rev 5 said +17; section 2.4's block, the planner's w368/W368.patch and a7f6f6395's numstat give 19/5) | VA-2's C1 (`Pattern` case rewritten) and D-VA2-7 (the same function) on PR 66 | section 2.9: W-367 auto-merges, lower/type.cpp takes VA-2's side |
 | landings | the records files | EH-C (W-346) and UA-3, which wait on trunk after the held PRs; SAFE-2/SAFE-3's PR 53 | no FO-1 commit touches PR 53's branch; EH-C and UA-3 merge trunk after stage 17 |
 
@@ -4429,7 +4498,14 @@ fn Run() -> i32 {
 ### B.2 stdlib/optional_compare_in_place.carbon (C1)
 
 The program, verbatim: the header below, then `$P/w352/count.carbon`'s text
-(amended 2026-11-02, review fold: B-M-4: rev 1 left the body in scratch):
+(amended 2026-11-02, review fold: B-M-4: rev 1 left the body in scratch).
+Re-given verbatim from fa54b8d97's tree (amended 2026-11-03, implementation
+review fold: R2-C-m6): C1 (c655d55f3) committed rev 5's text, 90 lines, and the
+review fold's fa54b8d97 appended the generic leg, 55 lines added and one
+changed, the header's last line "// the nine comparisons made, 0 and 0."
+extended in place; its EXPECT block gains eight lines, `0 1 1 1 0 0` and `0 0`,
+hand-derived as the header states, its body gains `GEq` to `GGe` and their calls
+after `Run`'s concrete leg, and the program is 144 lines:
 
 <!-- google-doc-style-ignore -->
 
@@ -4452,6 +4528,14 @@ The program, verbatim: the header below, then `$P/w352/count.carbon`'s text
 //   1
 //   0
 //   0
+//   0
+//   1
+//   1
+//   1
+//   0
+//   0
+//   0
+//   0
 //
 // Comparing `Core.Optional(T)` values compares the held values in place: no
 // `Copy` and no `Destroy` of `T` per operand (W-352), as
@@ -4462,7 +4546,13 @@ The program, verbatim: the header below, then `$P/w352/count.carbon`'s text
 // and `n` empty, `a == b` 0, `a != b` 1, `a < b` 1, `a <= b` 1, `a > b` 0,
 // `a >= b` 0, `n == a` 0 (empty and non-empty are not equal), `n < a` 1 (an
 // empty value orders first) and `a == a` 1; then the copies and destructions
-// the nine comparisons made, 0 and 0.
+// the nine comparisons made, 0 and 0. Then the six operators on `a` and `b`
+// through checked generics, `GEq` to `GGe`, whose comparison is the same
+// in-place one once each is specialized for `Counted` (W-352): 0, 1, 1, 1, 0
+// and 0 as above, then the copies and destructions those six made, again 0
+// and 0. Their bounds name `Core.Copy & Core.Destroy` because
+// `Core.Optional(T)` needs a storage impl for `T`, which only those provide
+// in user code (W-176).
 
 import Core library "io";
 
@@ -4501,6 +4591,36 @@ impl Counted as Core.OrderedWith(Counted) {
 
 fn B(b: bool) -> i32 { return if b then 1 else 0; }
 
+fn GEq[T: Core.Eq & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a == b;
+}
+
+fn GNe[T: Core.Eq & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a != b;
+}
+
+fn GLt[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a < b;
+}
+
+fn GLe[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a <= b;
+}
+
+fn GGt[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a > b;
+}
+
+fn GGe[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a >= b;
+}
+
 fn Run() -> i32 {
   var copies: i32 = 0;
   var destroys: i32 = 0;
@@ -4522,6 +4642,16 @@ fn Run() -> i32 {
   Core.Print(B(a == a));
   Core.Print(copies - c0);
   Core.Print(destroys - d0);
+  let c1: i32 = copies;
+  let d1: i32 = destroys;
+  Core.Print(B(GEq(a, b)));
+  Core.Print(B(GNe(a, b)));
+  Core.Print(B(GLt(a, b)));
+  Core.Print(B(GLe(a, b)));
+  Core.Print(B(GGt(a, b)));
+  Core.Print(B(GGe(a, b)));
+  Core.Print(copies - c1);
+  Core.Print(destroys - d1);
   return 0;
 }
 ```
@@ -4923,8 +5053,10 @@ requirements is rejected, W-375.)
 ### C.3 docs/design/optional.md (C-R)
 
 In "Comparison", the paragraph that begins "In 0.1 a comparison of two
-non-empty values reads each through `Get()`" (:322-328 at 9f12209d8) and the
-first sentence of the next become:
+non-empty values reads each through `Get()`" (:323-329 at 9f12209d8 and
+fa54b8d97, and in PR 57's copy at 50840acf2; amended 2026-11-03, implementation
+review fold: R2-C-m4: rev 5 said :322-328) and the first sentence of the next
+become:
 
 <!-- google-doc-style-ignore -->
 
@@ -4970,6 +5102,71 @@ impl forall [T: Copy & Destroy & Ordered]
 
 R31 for C-R's optional.md edit: headings unchanged, bullets unchanged; the
 code block count gains none (the sketch is an existing block).
+
+C-R's four further replacements in docs/design/optional.md (amended 2026-11-03,
+implementation review fold: R1-m1 / R2-C-m4 / RR1-C-m1; the texts are the
+orchestrator's ruling's, Addendum 1 (c) and Addendum 2 (1)). Each anchor is read
+at fa54b8d97, whose optional.md is 9f12209d8's, with PR 57's copy at 50840acf2
+in brackets for section 2.7 step 2's region rule; C-R applies them in the file's
+order, so a later anchor moves by the lines an earlier edit removes. In the
+Overview, the sentence at :59-61 [:62-64] drops the words "and the one
+divergence it discloses," and the comma before them (at :60-61 [:63-64]), so
+that its lines read:
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+comparison, and states the ownership rules. The [0.1 limits](#01-limits)
+section lists each filed limit of the 0.1 toolchain against it, with the
+condition under which each closes.
+```
+
+<!-- google-doc-style-resume -->
+
+In "Ownership", the paragraph at :381-386 [:394-396] that begins "Comparisons
+never move or destroy a held value." becomes the one paragraph below; the W-170
+sentence at :383-386, that a comparison of two non-empty
+`Core.Optional(Core.Optional(T))` values leaks one copy of each `T`, goes with
+it (PR 57's copy has no such sentence; gnest measures 0 copies and 0 destroys on
+the lane and 14 and 8 on PR 56's held install):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+Comparisons never move, copy or destroy a held value: two non-empty operands
+are compared in place, and an empty operand's storage is not read
+([Comparison](#comparison)).
+```
+
+<!-- google-doc-style-resume -->
+
+In "0.1 limits", the paragraph at :529-532 [:555-558] that begins "One
+divergence is disclosed rather than filed" is deleted with the blank line after
+it. In "Alternatives considered", the bullet at :546-549 [:572-575], "**A
+comparison member in `OptionalStorage`, or a builtin.** It avoids the copies of
+`Get()`, but needs pointer equality for the niche (W-174) and changes the
+private interface that every storage implements, for no 0.1 benefit.", becomes
+the bullet below, wrapped by hand from four lines to five (exact against the
+prelude at fa54b8d97: the fallback impls at
+core/prelude/types/optional.carbon:226-232 and :252-262 compare `T.Get(a)` with
+`T.Get(b)` at :228, :230, :254, :256, :258 and :260, and the default storage
+compares in place at :237 to :277):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+-   **A comparison member in `OptionalStorage`, or a builtin.** It changes the
+    private interface that every storage implements and needs pointer equality
+    for the niche (W-174); the in-place comparison (W-352) instead adds two
+    private interfaces over the storage type, whose fallback compares the values
+    `T.Get` returns.
+```
+
+<!-- google-doc-style-resume -->
+
+R31 for these four: headings and bullets unchanged, one paragraph fewer (the
+deletion); the Overview and Ownership texts replace paragraph lines, and the
+bullet keeps its marker on its first line only.
 
 ### C.4 SV-1's Doc-M, re-derived (L57)
 
@@ -5441,7 +5638,9 @@ _W-352 (<date>, FO-1):_ the comparisons compare the held values in place
 through two private interfaces over the storage type, with no `Copy` or
 `Destroy` per operand (<sha-C1>), as comparison_operators.md asks; D-OP-4's
 signatures and F-015's API rows are unchanged (fork/followon/fo1-plan.md
-D-FO1-4).
+D-FO1-4). OP-1's appended block in core/prelude/types/optional.carbon is
+:205-346 since c655d55f3 (the V-3a register entry's `:205-275` described it
+before W-352).
 ```
 
 <!-- google-doc-style-resume -->
@@ -5451,6 +5650,115 @@ fork/optional/plan.md gains at its end, after "Landed notes (OP-1,
 <sha-F-C1>; D-OP-4's 'Get() returns a copy, destroyed by the end of the call'
 holds for `Get()` and no longer for the comparisons (fork/followon/fo1-plan.md
 section 2.3)."
+
+The paragraph's last sentence, on OP-1's appended block, was added 2026-11-03
+(implementation review fold: RR1-C-m2; the orchestrator's Addendum 2 (2)(b)).
+
+C-R's further edits, in the same commit, with `<sha-C1>` c655d55f3 (amended
+2026-11-03, implementation review fold: R1-m2 / R2-C-m2 / R2-C-m3 / RR1-C-m2 /
+RR2-C-m1 / RR2-C-m1 sweep / RR3-C-m1; the texts are the orchestrator's ruling's,
+Addenda 1 to 6, as "Implementation review fold record (unit C, 2026-11-03)"
+records). Each anchor is read at fa54b8d97, with PR 57's at 50840acf2 in
+brackets, and each old text occurs once at each head. In
+fork/inventory/work-items.json, then `json.load`:
+
+-   W-179's `evidence` (:2378 [:2382]): "with the note at optional.carbon:215:1"
+    becomes "with the note at optional.carbon:280:1", the line F-C1's
+    fail_compare.carbon:113 prints, core/prelude/types/optional.carbon:280 being
+    `final impl forall [T: Destroy & OptionalStorage & Eq]` (R2-C-m3; Addendum 1
+    (c)).
+-   W-195's first `evidence` entry (:2391 [:2395]): the quoted frame and its
+    cite, "Lowering function Equal(Core.IntLiteral as Core.OptionalStorage &
+    Core.Destroy & Core.Eq)" (core/prelude/types/optional.carbon:217, the call
+    at :224), become "Lowering function PayloadEqual(Core.IntLiteral as
+    Core.Destroy & Core.Copy & Core.Eq)"
+    (core/prelude/types/optional.carbon:236, the call at :237) (the facet's
+    interfaces print in the order the compiled file first references them,
+    toolchain/sem_ir/declared_facet_type.cpp:191-192), the quotation marks
+    escaped as the file escapes them; the rest of the entry stands
+    (`--phase=check` exits 0, the compile aborts with exit 134), and no string a
+    compiler did not print is placed in quotation marks (R2-C-m3, RR3-C-m1;
+    Addendum 6 (a), which replaces Addendum 5 (3)'s form; the lane prints the
+    frame for review 1's lit.carbon at :236:3 and the call at :237:12).
+-   W-171's `notes` gains at its end the sentence: Since W-352's fix
+    (c655d55f3), `==` on `Core.Optional(bool)` aborts while lowering
+    `PayloadEqual` for `bool` (core/prelude/types/optional.carbon:236, call
+    :237) with LLVM's `cast<IntegerType>` assertion (lower/handle_call.cpp:122)
+    instead of the verifier CHECK at lower.cpp:48; `Get()` and the copy abort as
+    before. It has no facet spelling and no parenthetical (R1-m2, R2-C-m2,
+    RR3-C-m1; Addendum 6 (b), which replaces Addendum 1 (c)'s and Addendum 5
+    (3)'s forms). optional_bool.carbon's SKIP line is not edited on PR 56
+    (Addendum 1 (b)).
+-   W-170's `notes` (:2239 [:2241]): the clause "`o1 == o2` on two
+    `Core.Optional(Core.Optional(P))` values holding P1 and P2 prints `101 102
+    101 102 202 201 0`, four `P` copies and two destroys, leaking one `P` per
+    operand" becomes "`o1 == o2` on two `Core.Optional(Core.Optional(P))` values
+    holding P1 and P2 printed, before W-352, `101 102 101 102 202 201 0`, four
+    `P` copies and two destroys, leaking one `P` per operand; since OP-1's
+    in-place comparison (W-352, c655d55f3) it copies and destroys nothing (trace
+    `0`)" (RR1-C-m2; Addendum 2 (2)(a); the re-review's nesttrace prints the old
+    trace on PR 56's held install and `0` on the lane).
+-   W-177's `notes` (:2351 [:2355]): the sentence "It also closes the V-3a
+    divergence that comparisons copy the held values (D-OP-4), as a by-reference
+    accessor would." becomes "The V-3a divergence that comparisons copied the
+    held values (D-OP-4) closed with W-352 (c655d55f3), not with this item."
+    (RR2-C-m1; Addendum 3 (b)).
+
+In fork/decision-log.md, OP-1's V-3a register entry: its line :3531 [:4468],
+"line) and the appended block :205-275 is fork-only (on an upstream edit of",
+reads :205-346 for :205-275 (RR1-C-m2; Addendum 2 (2)(b)); its clause at
+:3535-3538 [:4472-4475], "the comparisons run `T.Copy` and `T.Destroy` once per
+value when both operands hold one, against comparison_operators.md:316 and
+:434's "should have no observable side-effects" (closed when W-177 or a
+by-reference accessor lands, D-OP-4)", becomes these five lines in place of
+those four (RR2-C-m1; Addendum 3 (a), wrapped as the round-3 fixer measured, 77,
+79, 76, 78 and 19 columns):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+accepted upstream design lands); the comparisons ran `T.Copy` and `T.Destroy`
+once per value when both operands held one, against comparison_operators.md:316
+and :434's "should have no observable side-effects", until W-352 (c655d55f3)
+compared the held values in place (closed, D-OP-4's break condition); `None()`
+is a function where
+```
+
+<!-- google-doc-style-resume -->
+
+and the RG-1 sub-paragraph after it, :3548-3555 [:4485-4492], whose clause at
+:3551-3555 [:4488-4492] begins "so OP-1 realigns them by a new commit on this
+branch before it lands (R32 (e))" and ends "OP-1 owns the closure, which W-344
+had given to DR-1;", takes the clause "so OP-1 realigned them by a new commit on
+this branch (R32 (e)): the comparisons ran them once per value until W-352
+(c655d55f3), and since then compare the held values in place with no `Copy` or
+`Destroy` per operand (ALIGNED, W-352 discharged; rg1-plan.md H5.4 as
+fork/followon/fo1-plan.md Appendix D.6 amends it), the route RG-1's read-only
+probe showed checks on PR 57's install (rg1-plan.md section 4.8 and D-RG-10);
+OP-1 owned the closure, which W-344 had given to DR-1;", its lines :3551-3555
+becoming these seven (RR2-C-m1 sweep, RR3-C-m1; Addendum 5 (1), which replaces
+Addendum 4's S1: it states no landing before it happens, and its D.6 is this
+plan's):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+no observable side-effects", so OP-1 realigned them by a new commit on this
+branch (R32 (e)): the comparisons ran them once per value until W-352
+(c655d55f3), and since then compare the held values in place with no `Copy` or
+`Destroy` per operand (ALIGNED, W-352 discharged; rg1-plan.md H5.4 as
+fork/followon/fo1-plan.md Appendix D.6 amends it), the route RG-1's read-only
+probe showed checks on PR 57's install (rg1-plan.md section 4.8 and D-RG-10);
+OP-1 owned the closure, which W-344 had given to DR-1; `None()`
+```
+
+<!-- google-doc-style-resume -->
+
+No line of the wrapped texts starts with a list marker, a digit or `+`; the V-3a
+lines are byte-identical on PR 57, so these edits merge at M57 with no region
+rule, and W-170's meets OP-2's DISCHARGED prefix on PR 57's W-170, which
+D-LAND-5's LG-2 to LG-6 word merge keeps beside it. Addendum 4's S2 is L56's
+(section 2.6 step 5).
 
 ### D.5 W-367 and W-368 (D-R)
 
@@ -7005,6 +7313,180 @@ Logs and probes: scratchpad/fo1-impl/D under
 /tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b, in
 implementer/ (r9_* and dr/ for F-D2 and D-R), rev1-r1/, rev2-r1/, fixer1/,
 rr1/ and recorder/ (this record's R31 counts and prek logs).
+
+## Implementation review fold record (unit C, 2026-11-03)
+
+Unit C (OP-1, PR 56, lane 2) on claude/carbon-fork-0-1-op. Base: 9f12209d8,
+the pushed head, which every role confirmed with `git ls-remote` before it
+worked and this record re-read at 03:52 UTC. Final head: fa54b8d97
+(fa54b8d97b75281662cfa8acc821c97d28f7b508), three commits above the base, none
+pushed when this record is committed (`git branch -r --contains` is empty for
+each); the pusher follows it and fast-forwards the branch from 9f12209d8 to
+fa54b8d97. The lane worktree is /dev/shm/fo1/lane2/wt-op, built with
+CB_BUILD_ROOT=/dev/shm/fo1/lane2/builds and CB_JOBS=2: a full build of
+9f12209d8, 322 steps, whose install printed 0.0.0-0.dev+9f12209d8 (the
+brief's formula names its toolchain state 5d9edb3e0, that of PR 56's held
+install, section 0.1), then C1's rebuild, whose install printed
+0.0.0-0.dev+c655d55f3, which F-C1 and fa54b8d97 (goldens, a program and a
+comment) left in place. The container restarted at 03:40 UTC; the
+orchestrator re-created the lane worktree at fa54b8d97 and is rebuilding it
+for the pusher; this record built nothing. C1 and F-C1 were committed while
+the plan's head was 5b79c7c92 (rev 7 with unit A's record), and fa54b8d97
+while it was 7e00cbff6 (rev 8). Upstream's tip was read at a7e2f3418 by the
+implementer and the round-1 reviews, and at b7919e8f5 by the re-reviews, the
+later fixers and this record (fetched 03:50 UTC): comparison_operators.md
+:316 and :434 still say "should have no observable side-effects", and
+upstream's core/prelude/types/optional.carbon has no `EqWith` or
+`OrderedWith` impl, so no R32 statement moves. Every figure below is
+container-local, EXPECTED, not of record (R9).
+
+| Section 3 row | Commit | Title | Files (insertions/deletions) | Measured after it |
+| --- | --- | --- | --- | --- |
+| 4 | C1, c655d55f3, 2026-11-03T01:13:39Z | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon (81/10); fork/conformance/README.md (1/0); fork/conformance/programs/stdlib/optional_compare_in_place.carbon (90/0); fork/conformance/programs/stdlib/optional_compare_payload.carbon (2/2) | gate "1942 passed, 3 failed (exit 1, 23s)" before C1's rebuild and "1942 passed, 3 failed (exit 1, 22s)" after it (install 0.0.0-0.dev+c655d55f3), each failure "Autoupdate would make changes": check optional/compare.carbon, check optional/fail_compare.carbon and lower optional/compare.carbon, no `fail_`-prefix problem, no crash; conformance PASS 133, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 25 (of 158), bullets 48 PASS, 0 FAIL, 8 SKIP, 0 NOT-WRITTEN of 56, against the baseline at 9f12209d8 (gate "1945 passed, 0 failed (exit 0, 23s)", PASS 132, SKIP 25 of 157, the same bullets), the new program's PASS the only change; "self-test: 158 programs parsed, 56 bullets in table, OK"; the planner's gcount.carbon prints 0 1 1 1 0 0 0 0 |
+| 5 | F-C1, 4509064fc, 2026-11-03T01:16:19Z | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | toolchain/check/testdata/optional/compare.carbon (77/87); toolchain/check/testdata/optional/fail_compare.carbon (1/1); toolchain/lower/testdata/optional/compare.carbon (248/249); CHECK lines only | gate "1945 passed, 0 failed (exit 0, 22s)"; autoupdate's second pass writes nothing; fail_compare.carbon's note moves from optional.carbon:215:1 to :280:1, the `final impl ... EqWith` line; conformance as C1's (PASS 133, SKIP 25 of 158, 48 bullets) |
+| fold | fa54b8d97, 2026-11-03T01:43:13Z | OP-1 fix: the in-place program's generic leg and the lowered compare golden's header (FO-1 review fold) | fork/conformance/programs/stdlib/optional_compare_in_place.carbon (55/1); toolchain/lower/testdata/optional/compare.carbon (2/2, its comment lines 13 to 15, 487 lines before and after) | gate "1945 passed, 0 failed (exit 0)"; autoupdate on the lower golden writes nothing (sha1 de5116bf6a8d1ccfbfaf475eb82cee02d0fe7c10 unchanged); conformance PASS 133, every failure class 0, SKIP 25 (of 158), bullets 48 PASS, 0 FAIL, 8 SKIP of 56; the program prints its nineteen EXPECT lines, and PR 56's held install prints 14 14 and 12 12 for its two legs' deltas |
+
+All three commits carry the author and committer of section 2's preamble,
+explicit paths and the session's two trailers; none is an amend, and the
+history from 9f12209d8 is linear. C1's prelude region, lines 206 to 346 of
+optional.carbon, equals section 2.3's block byte for byte and lines 1 to 205
+are 9f12209d8's; the program at C1 is Appendix B.2's as rev 5 gave it, B.4's
+two lines are as given, and the README table is
+`runner.py --update-readme-table`'s. fork/conformance/README.md went from
+headings {1: 1, 2: 4, 3: 3}, bullets 22, numbered 6 and rows 159 to rows 160,
+the other counts unchanged, after the edit and after prek. Prek passed on
+every commit's files and modified nothing (14, 11 and 12 hooks passed), a
+fixpoint at the first pass; the model-identifier grep of the diff finds
+nothing, and of the messages only the trailers. Reviews 1 and 2 and every
+re-review re-measured these values: each gate at 4509064fc and at fa54b8d97
+printed 1945 of 1945, and each conformance run 133/0/25 over 158 with 48 of 56
+bullets.
+
+The implementer recorded four deviations in C1's body, none judged a stop:
+lower/testdata/primitives/optional.carbon passes on PR 56's branch, where
+section 2.3 predicted it to change (R1-m3); the block says "reads a value"
+where section 2.3's prose says it keeps OP-1's paragraph verbatim (R1-m4); the
+prototype's unwrapped interface line is 82 columns, not 81; and section 6's
+churn is -40/+90 where C1's numstat is 81/10 (R1-m4). The ruling accepts F-C1
+under R29: the measured set is a subset of D-FO1-4's set, whose break
+condition did not fire.
+
+The orchestrator's ruling under R29 for this unit is C_fix.txt in
+scratchpad/fo1-impl/rulings under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b
+(copied as scratchpad/fo1-impl/C/ORCHESTRATOR_RULING_READ_ME.txt), the base
+ruling of 2026-11-03T01:50Z with Addendum 1 (02:05Z), Addendum 2 (02:33Z),
+Addendum 3 (02:51Z), Addendum 4 (03:00Z), Addendum 5 (03:08Z) and Addendum 6
+(03:21Z), the latest governing where they differ. The base ruling planned a
+records-only commit for R2-C-m1 and R2-C-m2 (the lower golden's header and
+optional_bool.carbon's SKIP clause) and a code-fix commit for R2-C-m6. The
+round-1 fixer did not find the ruling before it worked: it made one commit,
+fa54b8d97, folding R2-C-m1 and R2-C-m6, and then stopped for the records texts
+no plan gave. Addendum 1 accepted fa54b8d97 as the fold of both and as Slice
+C's code-fix commit 1 of 2, superseding the base ruling's three header lines
+and its two-commit instruction, since a commit on the lane is never
+rewritten; it withdrew the SKIP clause's edit on the fixer's evidence that
+PR 57's 503d25895 (an ancestor of 50840acf2) deletes that line, so the edit
+would add a conflict at C-M57 that no D-LAND-5 rule covers (D-FO1-11). This
+record re-measured it: a scratch commit over fa54b8d97 that edits only
+optional_bool.carbon:6 makes `git merge-tree --write-tree 50840acf2` conflict
+in that program, beside the two compare goldens. The SKIP line stays on PR 56,
+its `==` clause inexact there until PR 57's deletion (W-171 is OP-2's item).
+The resumed round-1 fixer verified fa54b8d97 and made no commit; Addenda 2 to
+6 folded every later finding by record, and the fixers of rounds 2 to 5 made
+no commit. The ruling's standing break condition, a fold that would change
+core/prelude/types/optional.carbon, a golden's CHECK line, a decision's ruling
+or a break condition of D-FO1-1 to D-FO1-10, did not fire.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| R1-m1 (review 1, round 1): optional.md's Ownership paragraph and 0.1-limits paragraph still state the comparison copies | MINOR, records only | yes: optional.md :381-386 and :529-532 at fa54b8d97, :394-396 and :555-558 at 50840acf2; gnest prints 0 copies and 0 destroys on the lane, 14 and 8 on the held install | folded by record with R2-C-m4 (Addendum 1 (c)): C.3 gains their replacement texts for C-R and section 2.7 step 2 the region rule | Appendix C.3, section 2.7 |
+| R1-m2 (review 1, round 1): `==` on `Core.Optional(bool)` still aborts, at a moved site | MINOR, records only | yes: the lane aborts at LLVM's `cast<IntegerType>` assertion while lowering `PayloadEqual` (optional.carbon:236:3, the call at :237:12), the held install at the verifier CHECK at lower.cpp:48 | folded by record with R2-C-m2: W-171's note gains Addendum 6 (b)'s sentence at C-R; the SKIP clause's edit withdrawn (above) | Appendix D.4 |
+| R1-m3 (review 1, round 1): section 2.3 predicted primitives/optional.carbon would change on PR 56 | MINOR, records only | yes: C1's gate names three files; the fourth fails only on the land tree | ruled by record (Addendum 1 (c)): PR 56's set is the three files, primitives/optional.carbon stays in F-C-M57's; F-C1 stands | section 2.3, section 3 row 4 |
+| R1-m4 (review 1, round 1): plan prose disagrees with the block and the numstat | MINOR, records only | yes: "reads a value", 82 columns, 81/10 | folded by record: measured marks | section 2.3, section 6 |
+| R2-C-m1 (review 2, round 1): the lowered compare golden's header names `Get()` calls the golden no longer has | MINOR | yes: 13 `_CGet` call lines at 9f12209d8, none at 4509064fc | fixed by fa54b8d97, "OP-1 fix: the in-place program's generic leg and the lowered compare golden's header (FO-1 review fold)", lines 13 to 15 (Addendum 1 (a)) | lower/testdata/optional/compare.carbon |
+| R2-C-m2 (review 2, round 1): the SKIP clause and W-171 quote the old crash | MINOR | yes, as R1-m2 | the SKIP edit withdrawn (Addendum 1 (b), the merge-tree evidence above); W-171 by record | Appendix D.4 |
+| R2-C-m3 (review 2, round 1): W-179 and W-195 cite prelude lines C1 moved | MINOR, records only | yes: fail_compare.carbon:113 prints :280:1; lit.carbon aborts in `PayloadEqual` at :236:3 | folded by record (Addendum 1 (c), with W-195's quote as Addendum 6 (a) corrects it) | Appendix D.4 |
+| R2-C-m4 (review 2, round 1): C.3's cite is off by one and three optional.md passages contradict C1 | MINOR, records only | yes: the Comparison paragraph is :323-329 | folded by record with R1-m1: the cite and three texts | Appendix C.3, section 2.7 |
+| R2-C-m5 (review 2, round 1): Slice C's plan text inexact, (a) to (e) | MINOR, records only | yes, each | folded by record: measured marks, the API rows' cite :95-96 at 9f12209d8, and the C-M57 conflict sentence | section 2.3, D-FO1-4, sections 3 and 6 |
+| R2-C-m6 (review 2, round 1): no test pins the checked-generic in-place path | MINOR | yes: only scratch gcount.carbon showed it | fixed by fa54b8d97 (the same commit), the generic leg `GEq` to `GGe`, deltas 0 0 on the lane and 12 12 on the held install | Appendix B.2, D-FO1-4 |
+| RR1-C-m1 (re-review 1, round 2): the "Alternatives considered" bullet still calls avoiding `Get()`'s copies of no 0.1 benefit | MINOR, records only | yes: optional.md :546-549 at fa54b8d97, :572-575 at 50840acf2 | folded by record (Addendum 2 (1)): C.3's fourth text | Appendix C.3, section 2.7 |
+| RR1-C-m2 (re-review 1, round 2): W-170's note and the V-3a register line describe the pre-W-352 comparison | MINOR, records only | yes: nesttrace prints `0` on the lane, the old trace on the held install; decision-log.md:3531 reads `:205-275` | folded by record (Addendum 2 (2)) | Appendix D.4 |
+| RR2-C-m1 (re-review 2, round 3): the V-3a comparison clause and W-177's note keep the divergence open | MINOR, records only | yes: decision-log.md :3535-3538, work-items.json:2351, byte-identical on PR 57 | folded by record (Addendum 3), and the sweep it ordered (Addendum 4 adopting S1 and S2, Addendum 5 correcting them) | Appendix D.4, section 2.6 |
+| RR3-C-m1 (re-review 3, round 4): S1 states an unmade landing and an unresolvable cite, S2 a verifier CHECK row 80 does not name and a file C-R does not own, and the facet spelling varies | MINOR, records only | yes: C-R is section 2.6 step 4, the landing step 7; the probes print both facet orders | folded by record (Addendum 5): S1 rewritten, S2 moved to L56 | Appendix D.4, section 2.6 |
+| RR3-C-m1, part (4) (re-review 4, round 5): Addendum 5 put W-195's quote in a form no compiler prints | MINOR, records only | yes: "PayloadEqual for" occurs in no compile log | folded by record (Addendum 6): W-195 keeps the measured frame with the parenthetical; W-171's sentence has no facet and no parenthetical | Appendix D.4 |
+
+Fifteen findings, all MINOR, all reproduced, none rejected: two fixed by
+fa54b8d97, one ruled by record with F-C1 standing, one partly withdrawn (the
+SKIP clause) and the rest folded by record. The workflow's reports prefix the
+ids by round (RR1-RR1-C-m1, RR4-RR3-RR3-C-m1 and so on); the table uses the
+reviewers' own. The rounds:
+
+| Round | Review (scratch directory) | Head | Verdict | Findings | Fixer |
+| --- | --- | --- | --- | --- | --- |
+| 1 | review 1 (rev1-r1) | 4509064fc | APPROVE-WITH-FIXES | R1-m1 to R1-m4 | the fixer (fixer/): fa54b8d97, then stopped for records texts; resumed (fixer-r1b/): verified, no commit |
+| 1 | review 2 (rev2-r1) | 4509064fc | APPROVE-WITH-FIXES | R2-C-m1 to R2-C-m6 | the same |
+| 2 | focused re-review 1 (rr1) | fa54b8d97 | APPROVE-WITH-FIXES | RR1-C-m1, RR1-C-m2 | fixer3/: by record, no commit (Addendum 2) |
+| 3 | focused re-review 2 (rr2) | fa54b8d97 | APPROVE-WITH-FIXES | RR2-C-m1 | fixer4/: by record and the sweep, no commit (Addenda 3 and 4) |
+| 4 | focused re-review 3 (rr3) | fa54b8d97 | APPROVE-WITH-FIXES | RR3-C-m1 | fixer5/: by record, no commit (Addendum 5) |
+| 5 | focused re-review 4 (rr4) | fa54b8d97 | APPROVE-WITH-FIXES | RR3-C-m1, part (4) only | fixer6/: by record, no commit (Addendum 6) |
+| 6 | focused re-review 5 (rr5) | fa54b8d97 | APPROVE | none; every earlier finding resolved, the unit dry | none |
+
+Fix budget (D-FO1-10, Slice C: one commit, its fill and the program; at most
+two fix commits; past them, W-352's break condition): C1 and F-C1, then one
+fix commit, fa54b8d97, so 1 of 2 used. D-FO1-10's break condition did not
+fire, nor did D-FO1-4's: C1's gate named three files inside its set, both
+round-1 reviews read details.md at a7e2f3418 (:4686-4760, the orphan rule, and
+:4906-4925, the overlap rule) and found the blanket impl over the storage type
+anchored in the same file by `OptionalStorageEq` and `OptionalStorageOrdered`
+and outranked by `DefaultOptionalStorage(T)`'s, and the signatures and F-015's
+API rows are unchanged.
+
+The sweep (Addendum 3), over both heads, found two stale passages beyond
+Addenda 1 to 3, S1 and S2, adopted by Addendum 4 and corrected by Addendum 5
+(Appendix D.4 and section 2.6 step 5). RECORDED, NOT EDITED (Addendum 4):
+the dated or decision texts the sweep excluded, true as history: the OP-1
+entry's opener "two divergences are disclosed" (decision-log.md:2892-2893
+[PR 57 :3829-3830]), D-OP-3's "`Destroy` because each `Get()` copy is
+destroyed" (:3006 [:3943]), the prototype note (:3239-3240), D-OP-4 itself
+(:3033-3050 [:3970-3987]), whose outcome D.4's W-352 paragraph and Addendum 3
+(a)'s "(closed, D-OP-4's break condition)" record, the reviews' A-2 line
+(:3341-3342 [:4278-4279]), W-058's discharge notes (work-items.json:1126 at
+both heads) and OP-2's own texts on PR 57 (W-171, the OP-2 entry, row 85);
+the texts measured still true: optional.md :296-299 and :481-485 (`==` on
+`Core.Optional(bool)` crashes the compiler; the nested-pointer comparison
+returns wrong values), W-049 and W-170's generic `==` rejection; and, outside
+the two trees, trunk's rg1-plan.md H5.4 row, whose subject cell states the
+drift the check was about and whose verdict cell alone D.6 changes. The
+fixers' O3, that C-R's W-170 edit meets OP-2's DISCHARGED prefix on PR 57's
+W-170 (work-items.json:2241 at 50840acf2), and the last re-review's note on
+W-171 are merged at M57 by D-LAND-5's LG-2 to LG-6 word merge, which keeps
+both edits; neither is a finding.
+
+The amendments of this record, each marked: a paragraph after the status
+line; the contents; section 2.3 (the block's first sentence, the block
+description, the API rows' cite, PR 56's golden set and the C-M57 conflict
+sentence); D-FO1-4 (the API rows' cite and the pinning sentence); section 2.6
+step 5 (S2); section 2.7 step 2 (the optional.md region rule); section 3's
+rows 4 and 5; section 6's row C; Appendix B.2 (the program re-given from
+fa54b8d97's tree); Appendix C.3 (the cite and four texts); and Appendix D.4
+(W-352's decision-log paragraph and C-R's further edits). Unchanged: every
+decision's ruling and break condition, section 2.3's code block, Appendix
+B.4, sections 4 and 5, every prediction for the landings' totals, and units
+A, B and D's texts. Not R32: this record states no new design; each changed
+docs text restates what C1's prelude does, against comparison_operators.md
+:316 and :434 at b7919e8f5.
+
+For the pusher, at 03:52 UTC: the remote op head is 9f12209d8 and op2's is
+50840acf2; no remote branch contains any of the three commits; origin/trunk
+and claude/carbon-fork-0-1-fo1 are a0f1fb99d. This record's commit is on
+claude/carbon-fork-0-1-fo1, is not pushed and changes neither check.
+
+Logs and probes: scratchpad/fo1-impl/C under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b, in
+implementer/, rev1-r1/, rev2-r1/, fixer/, fixer-r1b/, fixer3/ to fixer6/,
+rr1/ to rr5/ and recorder/ (this record's R31 counts, prek log and the
+merge-tree simulation).
 
 ## Sign-off
 

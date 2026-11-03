@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # FO-1 plan: the follow-ons that gate the held PRs, then their landings
 
-**Status:** rev 9, 2026-11-03 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
+**Status:** rev 11, 2026-11-03 -- SIGNED OFF FOR IMPLEMENTATION at rev 5. Rev 6
 is a stop-and-amend of unit A (amended 2026-11-02, implementation:
 stop-and-amend, unit A: F-A1 is not made and A-R's records texts are
 re-given), recorded in "Stop-and-amend record (rev 6, 2026-11-02)" before
@@ -29,7 +29,18 @@ no BLOCKER, no MAJOR) into that record and changes no more than rev 8 did: the
 renumbering is stated node by node, F-D2's fill is governed by its sha1, B.3's
 header sentence stands, read as the pack's object layout, with no fix commit,
 and a rebuild after F-D2 or D-R prints that commit's own sha (amended
-2026-11-03, stop-and-amend re-review: RR8-1 to RR8-3). Rev 5 folded the
+2026-11-03, stop-and-amend re-review: RR8-1 to RR8-3). Rev 10 is a
+stop-and-amend of unit CM (amended 2026-11-03, implementation: stop-and-amend,
+unit CM: the orchestrator's ruling under R29 names DR-1a's m57 three in
+D-FO1-4's set and in F-C-M57's), recorded in "Stop-and-amend record (rev 10,
+2026-11-03)" before the Sign-off; it changes no code block, golden source,
+program, records text, conformance row or decision's ruling. Rev 11 folds the
+focused re-review RR10 of rev 10 (verdict APPROVE-WITH-AMENDMENTS, RR10-1 to
+RR10-3, no BLOCKER, no MAJOR) into that record: it names the orchestrator's
+ruling as the authority, says why section 2.6 step 3 is unchanged, and returns
+section 2.7 step 2 to its rev 9 text, the sentence rev 10 added there becoming
+a note in the record (amended 2026-11-03, stop-and-amend re-review: RR10-1 to
+RR10-3). Rev 5 folded the
 focused re-review RR3 of rev 4 (verdict APPROVE-WITH-AMENDMENTS, RR3-1 to RR3-4,
 no BLOCKER); rev 4, 2026-11-02, folded RR2's RR2-1 to RR2-6 (verdict REJECT,
 blockers RR2-1 and RR2-2); rev 3, 2026-11-02, folded RR1's N-1 to N-4 (blockers
@@ -231,7 +242,7 @@ fold: RR3-3).
 -   Implementation review fold record (unit B)
 -   Implementation review fold record (unit D)
 -   Implementation review fold record (unit C)
--   Stop-and-amend record (rev 10, unit CM)
+-   Stop-and-amend record (rev 10, unit CM, extended at rev 11)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -1196,9 +1207,11 @@ files its own measurement named; OP-2's goldens in that set include lower
 array/iterate.carbon, for/break_continue.carbon and for/for.carbon, which the
 commit 189baa262 of OP-2 filled with OP-2's prelude lines after :275 and which
 change at C-M57 only in those lines' numbers, each by 71; amended 2026-11-03,
-implementation: stop-and-amend, unit CM: the land tree's measurement had
-masked them, as section 0.3 records); then W-352 gains `blocked_by` W-320 as
-its own break condition says, and PR 56 and PR 57 wait.
+implementation: stop-and-amend, unit CM: the orchestrator's ruling under R29
+of 2026-11-03T04:30Z; the land tree's measurement had masked them, as
+section 0.3 records; the ruling named, amended 2026-11-03, stop-and-amend
+re-review: RR10-1); then W-352 gains `blocked_by` W-320 as its own break
+condition says, and PR 56 and PR 57 wait.
 
 **D-FO1-5, W-367: the refusal at the root.** In handle_pack_expansion.cpp's
 `Pattern` case, a pack expansion pattern whose list is a choice alternative's
@@ -2783,11 +2796,6 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     the conflicts are PR 57's over `sim56` (section 0.3): lower/testdata
     array/iterate.carbon, for/break_continue.carbon and for/for.carbon, CHECK
     lines only, each taken from trunk's side by GOLD-1 and refilled in step 3;
-    F-C-M57 has refilled their optional.carbon line numbers on PR 57's side
-    first (section 2.3), so their region counts may differ from section 0.3's
-    three each, which is not a difference while every conflicted line in the
-    three files is a CHECK line, the same rule taking each region
-    (amended 2026-11-03, implementation: stop-and-amend, unit CM);
     the records files by D-LAND-5. Measured: `sim60x57`'s toolchain, core and
     docs trees equal `sim57x60`'s, so the order of stages 13 to 15 changes no
     code. docs/design/optional.md, which C-R edits on trunk's side and OP-2 on
@@ -7587,23 +7595,29 @@ cleanly and is unchanged), no upstream rule (the change is in goldens only;
 upstream's tip b7919e8f5 adds a GitHub Actions bump since a7e2f3418, nothing
 under core, docs/design or toolchain, so no R32 statement moves).
 
-The amendment. D-FO1-4's ruling and break condition are kept. Its set names
-OP-2's optional goldens, and these three are OP-2's goldens whose only
-optional.carbon content is OP-2's prelude lines, changed only in their line
-numbers by C1's insertion; rev 10 names them in that set, so the break
-condition does not fire on them, as rev 2 named the two lower files that print
-the prelude's IR names. This is a correction of the set's enumeration, not of
-the decision; a golden outside the ten (the seven and these three), or any
-other change in these three, still fires it. Amended: section 0.3 (the
-masked row and a new row for the branch's measurement), D-FO1-4 (the set),
-section 2.3 (F-C-M57's measured set), section 2.7 step 2 (M57's region rule
-for the three after F-C-M57), section 3 rows 6 and 7, section 4 (the W-352
-row and the three files' row), section 8 (item 14 and the not-run item 4),
+The amendment. Its authority is the orchestrator's ruling under R29 of
+2026-11-03T04:30Z (fo1-impl/CM/ORCHESTRATOR_RULING_READ_ME.txt under the
+scratchpad above), which decided the widening of D-FO1-4's set that this record
+writes; every rev 10 mark "(amended 2026-11-03, implementation: stop-and-amend,
+unit CM: ...)" carries that ruling as its authority, and D-FO1-4's mark names it
+(amended 2026-11-03, stop-and-amend re-review: RR10-1). D-FO1-4's ruling and
+break condition are kept. Its set names OP-2's optional goldens, and these three
+are OP-2's goldens whose only optional.carbon content is OP-2's prelude lines,
+changed only in their line numbers by C1's insertion; rev 10 names them in that
+set, so the break condition does not fire on them, as rev 2 named the two lower
+files that print the prelude's IR names. This is a correction of the set's
+enumeration, not of the decision; a golden outside the ten (the seven and these
+three), or any other change in these three, still fires it. Amended: section 0.3
+(the masked row and a new row for the branch's measurement), D-FO1-4 (the set),
+section 2.3 (F-C-M57's measured set), section 2.7 step 2 (M57's region rule for
+the three after F-C-M57; returned to its rev 9 text at rev 11, the rule now the
+note to M57's implementer below, RR10-3), section 3 rows 6 and 7, section 4 (the
+W-352 row and the three files' row), section 8 (item 14 and the not-run item 4),
 each with the mark "(amended 2026-11-03, implementation: stop-and-amend, unit
 CM: ...)"; and the sign-off table's RR8 row, whose "rev 9 (this commit)" names
-69b749783. No code block, golden source, program, records text, conformance
-row or other decision changes: section 5 has no row for the branch, and its
-stage-15 row stands.
+69b749783. No code block, golden source, program, records text, conformance row
+or other decision changes: section 5 has no row for the branch, and its stage-15
+row stands.
 
 Instructions to the implementer of unit CM:
 
@@ -7626,8 +7640,10 @@ Instructions to the implementer of unit CM:
     interop/cpp/pointer.carbon, optional/compare.carbon,
     optional/destroy.carbon and primitives/optional.carbon. Commit C-M57 with
     its title verbatim, "OP-2: merge OP-1's W-352 fix (R32 (e))", the body
-    naming D-FO1-4 and this record, then rebuild and install (the version
-    stamp; verify the install's hash against the brief's formula).
+    naming D-FO1-4 as the orchestrator's ruling under R29 of
+    2026-11-03T04:30Z widened its set and this record (plan rev 11; amended
+    2026-11-03, stop-and-amend re-review: RR10-1), then rebuild and install
+    (the version stamp; verify the install's hash against the brief's formula).
 3.  F-C-M57, "OP-2: autoupdate the goldens OP-1's W-352 fix changes": the gate
     again (the same nine), autoupdate on exactly those nine to its fixpoint,
     predicted `git diff --numstat` 20/20, 14/14, 14/14, 14/14, 14/14, 7/7,
@@ -7637,8 +7653,11 @@ Instructions to the implementer of unit CM:
     filled/; the second pass writes nothing; the gate 1950 of 1950;
     conformance 140/0/22 over 162 with 48 bullets; `--self-test` OK. Commit
     with its title verbatim and explicit paths, the body naming the nine files
-    and, for the three, DR-1a's m57 goldens refilled for OP-2's prelude lines
-    (D-LAND-8's PR naming), then rebuild for the version stamp and gate again.
+    and, for the three, DR-1a's m57 goldens refilled for OP-2's prelude lines,
+    the cause C1's 71 lines inserted after optional.carbon:205 (D-LAND-8's PR
+    naming), and naming the orchestrator's ruling under R29 and this record
+    (plan rev 11; amended 2026-11-03, stop-and-amend re-review: RR10-1), then
+    rebuild for the version stamp and gate again.
 4.  No new commit is added: the change is a fill of goldens, no code.
 
 Break condition of this amendment: C-M57's gate names a file other than the
@@ -7648,8 +7667,63 @@ raised by 71, or a filled file differs from amend10's filled/; then STOP for
 the orchestrator's ruling, which must decide whether D-FO1-4's break condition
 fires (W-352 gains `blocked_by` W-320 and PR 56 and PR 57 wait) or the set is
 widened by a ruling. A different region count at M57 in the three files is
-not a difference while every conflicted line is a CHECK line (section 2.7
-step 2).
+not a difference while every conflicted line is a CHECK line (the note to
+M57's implementer below; amended 2026-11-03, stop-and-amend re-review:
+RR10-3).
+
+Re-review fold (rev 11, 2026-11-03). The focused re-review RR10 of rev 10
+(0bf5adcc2) returned APPROVE-WITH-AMENDMENTS with no BLOCKER, no MAJOR and
+three MINORs, RR10-1 to RR10-3, all folded here and none rejected. It
+reproduced rev 10 end to end (scratchpad/fo1-impl/CM/amendrr10): the heads
+op2 50840acf2, op fa54b8d97 and fo1 0bf5adcc2; the merge's five and seven
+conflict regions, every conflicted line a CHECK line, the `--ours` resolution
+byte-identical to merge_state/*.resolved; the gate 1941 passed, 9 failed, the
+nine of instruction 2; the fill's numstat as instruction 3 predicts, its sha1
+743ce9c577eb81b1292057a771ae9a6cc4b0ca5c, each of the three DR-1a files' 42
+changed lines a `line: N` raised by 71; the gate after it 1950 of 1950;
+conformance 140 PASS, 0 FAIL, 22 SKIP of 162; `--self-test` 162 programs and
+56 bullets. The 48-bullet count was not re-derived by RR10; it is rev 10's
+amender's measurement (amend10/conf.log) and stands.
+
+RR10-1 (the record did not cite the orchestrator's ruling): folded by the
+sentence at the head of "The amendment." above, by D-FO1-4's mark, which now
+names the ruling, and by instructions 2 and 3, whose commit bodies name it.
+The substance is unchanged: the ruling widened D-FO1-4's set to these three
+and kept its break condition for any other golden and for any change in
+these three that is not a line-number change.
+
+RR10-2 (section 2.6 step 3 not amended, and not said why): section 2.6 step 3
+stays as rev 9 gives it, and the ruling's item (2) on F-M56 is met by this
+measurement rather than by an edit. Measured by rev 11's amender against trunk
+0bf5adcc2 (origin/trunk equals claude/carbon-fork-0-1-fo1 at 0bf5adcc2;
+amend11/optlines.txt, amend11/trunk_to_op_hunks.txt): trunk's lower
+array/iterate.carbon, for/break_continue.carbon and for/for.carbon print
+optional.carbon lines 31 to 170 only, and fa54b8d97's copies print the same
+set; trunk's optional.carbon has 204 lines and fa54b8d97's 346, and their diff
+is two line-count-neutral hunks (-10,7 +10,7 and -24,7 +24,7) and an append
+after :204. So M56 renumbers none of the three's optional.carbon lines, and
+its gate cannot name them for W-352's insertion; F-M56's prediction stands,
+and a file it names is still explained by OP-1's prelude or W-352's
+(D-LAND-8). RR10's reviewer wrote 169 as the last line; line 170 is
+`Get`'s body (`!DILocation(line: 170, ...)`, for/for.carbon :440-441 at
+0bf5adcc2), which changes nothing.
+
+RR10-3 (section 2.7 step 2 amended against the ruling's "UNCHANGED"): rev 11
+returns section 2.7 step 2 to its rev 9 text, byte for byte, and moves rev
+10's sentence here as a note to M57's implementer, changing no rule:
+
+Note to M57's implementer (section 2.7 step 2; moved here at rev 11,
+RR10-3): F-C-M57 has refilled the optional.carbon line numbers of lower
+array/iterate.carbon, for/break_continue.carbon and for/for.carbon on PR 57's
+side first (section 2.3), so their region counts at M57 may differ from
+section 0.3's three each. That is not a difference while every conflicted
+line in the three files is a CHECK line: GOLD-1 takes each region from
+trunk's side, as step 2 says, and F-M57 refills them in step 3.
+
+Instructions after rev 11: instructions 1 to 4 above stand as amended, and
+their measured predictions are rev 10's, which RR10 reproduced. No commit was
+made, so nothing is reset; the break condition of this amendment is
+unchanged but for the reference to the note above.
 
 ## Sign-off
 
@@ -7666,6 +7740,7 @@ of this plan:
 | RR3 | rev 4 (4a574eaf3) | APPROVE-WITH-AMENDMENTS | 0 | 1 (RR3-1) | 3 (RR3-2 to RR3-4) | rev 5 (5e3279a12) | 0 |
 | RR6 | rev 6 (85125ceb4) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 (RR6-1 to RR6-4) | rev 7 (f609533dc) | 0 |
 | RR8 | rev 8 (7e00cbff6) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 (RR8-1 to RR8-3) | rev 9 (69b749783) | 0 |
+| RR10 | rev 10 (0bf5adcc2) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 (RR10-1 to RR10-3) | rev 11 (this commit) | 0 |
 
 Five reviews, 34 findings (6 BLOCKER, 9 MAJOR, 19 MINOR), all folded and none
 rejected; reviews A and B shared some findings (A-B-1 with B-B-1, A-B-3 with
@@ -7712,4 +7787,16 @@ set and in D-FO1-4's set of OP-2's goldens, whose break condition is kept and
 does not fire on them, and records C-M57's and F-C-M57's measured predictions on
 PR 57's branch; it changes no decision's ruling, code block, golden source,
 program, records text or conformance row (the record "Stop-and-amend record
+(rev 10, 2026-11-03)").
+
+Rev 11 (amended 2026-11-03, stop-and-amend re-review: RR10-1 to RR10-3) adds
+RR10's row to the table above, a review of rev 10's stop-and-amend, and leaves
+the sign-off and its count of the five reviews before it as they are: with
+RR6, RR8 and RR10, eight reviews and 44 findings (6 BLOCKER, 9 MAJOR, 29
+MINOR), all folded and none rejected. Rev 11 names the orchestrator's ruling
+under R29 as the authority for rev 10's amendment, records why section 2.6
+step 3 is unchanged, and returns section 2.7 step 2 to its rev 9 text, its
+rev 10 sentence now a note in the record; it changes no decision's ruling or
+break condition, code block, golden source, program, records text,
+conformance row or predicted value (the record "Stop-and-amend record
 (rev 10, 2026-11-03)").

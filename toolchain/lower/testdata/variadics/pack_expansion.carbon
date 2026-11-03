@@ -114,6 +114,25 @@ fn Call(h: Holder, k: Holder) -> i64 {
   return SumHeld(h, k);
 }
 
+// --- padded_element.carbon
+library "[[@TEST_NAME]]";
+
+// W-368: a pack of an element whose LLVM type, a packed struct of 5 bytes, is
+// smaller than its array stride, 8 bytes, is laid out at the stride.
+fn Add(a: i32, b: i32) -> i32 = "int.sadd";
+
+fn Make(a: i32) -> {.a: i32, .b: bool} { return {.a = a, .b = true}; }
+
+fn SumA(... each x: {.a: i32, .b: bool}) -> i32 {
+  var total: i32 = 0;
+  ... total = Add(total, each x.a);
+  return total;
+}
+
+fn Call() -> i32 {
+  return SumA(Make(1), Make(2), Make(4));
+}
+
 // --- lib.carbon
 library "[[@TEST_NAME]]";
 

@@ -739,11 +739,25 @@ static auto BuildTypeForInst(FileContext& context, SemIR::PackType inst)
     -> LoweredTypes {
   auto arity = context.sem_ir().GetZExtIntValue(inst.arity_id);
   CARBON_CHECK(arity, "Lowering pack type of unknown arity");
-  return {llvm::ArrayType::get(
-              context.GetType(context.sem_ir().types().GetTypeIdForTypeInstId(
-                  inst.element_type_inst_id)),
-              *arity),
-          nullptr};
+  // Fork (VA-1, W-368): a pack is laid out as an array of its element type,
+  // each element at the array stride of that type, as `BuildTypeForInst` for
+  // an `ArrayType` lays out its elements and `ObjectLayout::ForArray` computes
+  // the pack's size (check/type_completion.cpp).
+  auto elem_type_id = context.sem_ir().types().GetTypeIdForTypeInstId(
+      inst.element_type_inst_id);
+  auto stride = context.sem_ir()
+                    .types()
+                    .GetCompleteTypeInfo(elem_type_id)
+                    .object_layout.ArrayStride();
+  auto* elem_type = context.GetType(elem_type_id);
+  auto elem_size = SemIR::ObjectSize::Bytes(
+      context.llvm_module().getDataLayout().getTypeAllocSize(elem_type));
+  if (elem_size != stride) {
+    CARBON_CHECK(elem_size < stride, "Pack element type too large");
+    elem_type =
+        BuildTailPaddedType(elem_type, stride.bytes() - elem_size.bytes());
+  }
+  return {llvm::ArrayType::get(elem_type, *arity), nullptr};
 }
 
 static auto BuildTypeForInst(FileContext& /*context*/,

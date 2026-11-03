@@ -299,6 +299,7 @@ fails if this table is stale):
 | `generics/variadics_forward.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_generic_element.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_no_copy.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_padded_element.carbon` | Generics: Definition-checked variadics | run |
 | `generics/variadics_sum_diff.carbon` | Generics: Definition-checked variadics | differential |
 | `interop/cpp_adl_swap_extension_point.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | SKIP |
 | `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |

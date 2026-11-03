@@ -4326,6 +4326,21 @@
       "notes": "Reserved by FO-1's sign-off stamp (fork/followon/fo1-plan.md Appendix F.1). Register: NONE (RG-1 vocabulary; D-RG-1, row H9.7 with its silence check), watched by W-355; it is the gap that D-RG-4 names beside H9.5's ALIGNED. Break condition: upstream states how a checked-symbolic self satisfies a requirement that needs a concrete type, or lands interface/require.carbon's `fail_todo_implicit_self_impls` (H9.7's check moves); D-RG-4's break condition then re-classifies H9.5 DRIFT and this item is re-titled and scheduled as the drift."
     },
     {
+      "id": "W-374",
+      "kind": "missing-feature",
+      "title": "TP-1 residue (D-TP-11; found by FO-1's W-139 review): a generic type formed at a template's definition with a template-dependent argument (`Holder(T)`, `class Holder(template T: HasGet)` with an interface `HasGet`) converts the argument to an interface constraint there, and no specific checks it again, so `Wrap(d)` for a `D` that does not implement `HasGet` is accepted and runs",
+      "subsystem": "toolchain/check (call.cpp `IsCallPerformable`, convert.cpp)",
+      "size": "M",
+      "bullet": "Generics: Integrated templates",
+      "evidence": [
+        "toolchain/check/call.cpp:855 `IsCallPerformable` (D-TP-11's type-forming exception); upstream's toolchain/check/call.cpp:449-464 at d99b767dd defers a call with any template-dependent argument",
+        "fork/templates/plan.md D-TP-11 (its break condition: a generic class whose parameter conversion depends on the argument's value)",
+        "fork/followon/fo1-plan.md D-FO1-2 (4) and section 0.2 (m17n_d: rc 5 on trunk's install and on the land tree; the nightly and PR 60's install report `unable to monomorphize specific Wrap(D)`)"
+      ],
+      "blocked_by": [],
+      "notes": "Reserved by FO-1's sign-off stamp (fork/followon/fo1-plan.md Appendix F.1). The structural half is checked per specific by W-139's convert.cpp requirement (D-SC-19 as amended), which covers structural requirements only. Register: TP-1's H10.8 (NONE, 'silent at the tip') does not hold at d99b767dd and is passed to the orchestrator and the weekly check (W-355). Removal: TP-1 follows upstream's deferral of every template-dependent call argument, with deduce_class_args.carbon refilled; W-139's convert.cpp requirement is then withdrawn (H9.8's break condition). Break condition: upstream changes `IsCallPerformable`, or the removal changes a golden outside TP-1's and SC-1's template goldens."
+    },
+    {
       "id": "W-375",
       "kind": "todo-stub",
       "title": "SC-1 residue (W-139's overload rule; FO-1 D-FO1-2): an `overload fn` set called with a checked-symbolic argument is resolved once, at the checked generic's definition, by first match, so a specific whose concrete argument fails the chosen member's structural requirements is rejected (`Caller(D)`), where issue 2153's monomorphization, like the concrete call `Pick(d)`, would choose a later member",

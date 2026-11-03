@@ -9914,7 +9914,10 @@ outside a call, impl deduction (3736217e8) and the generic class's `require`
 (W-373); the overload set's rejection where a concrete call would choose a
 later member is W-375, the cascade after a failed requirement in an impl's or
 a thunk callee's specific W-376, and the interface half of TP-1's
-eager `Holder(T)` W-374.
+eager `Holder(T)` W-374. Land merge cfe237c43 with
+TP-1's S re-derived (134e3caec; M18 killed, 1993 of 2003, 193/3/14 over 210);
+DR-1's call.cpp and convert.cpp test 0, 0 and 0; fork/followon/fo1-plan.md
+D-FO1-2, D-FO1-3.
 
 ### SC-1 fill rounds (2026-10-13): four toolchain defects fixed on the container-built arbiter
 

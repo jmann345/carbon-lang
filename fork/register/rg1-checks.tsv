@@ -84,6 +84,8 @@ H8.7	L	-	-	toolchain/check/handle_pack_expansion.cpp	1
 H9.3	G	-w	is_template	toolchain/sem_ir/named_constraint.h	0
 H9.4	G	-w	CalleeCppOverloadSet	toolchain/check	3
 H9.6	G	-w	new_specific_id	toolchain/check	0
+H9.7	G	-F	fail_todo_implicit_self_impls	toolchain/check/testdata/interface/require.carbon	3
+H9.8	G	-w	ConvertBindingArg	toolchain/check	0
 H10.1	G	-E	PointerDereferenceAction|AddrOfAction|TupleIndexAction|[^a-zA-Z]IndexAction|TemplateMemberLookupAmbiguous	toolchain	0
 H10.4	L	-	-	toolchain/lower/handle.cpp	1
 H10.8	L	-	-	toolchain/check/call.cpp	7

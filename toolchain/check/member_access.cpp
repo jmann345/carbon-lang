@@ -916,6 +916,14 @@ static auto LookupMemberInTemplateConstraint(Context& context,
   if (member_id == SemIR::ErrorInst::InstId) {
     return member_id;
   }
+  // Fork (TP-1 over SC-1): a member requirement of a `template constraint` is
+  // satisfied by the type's own member of that name (structural conformance),
+  // so it names the same entity as the lookup in the type, which decides.
+  if (GetStructuralRequirementOfType(context,
+                                     context.insts().Get(member_id).type_id())
+          .has_value()) {
+    return SemIR::InstId::None;
+  }
   return PerformInstanceBinding(context, loc_id, base_id, member_id);
 }
 

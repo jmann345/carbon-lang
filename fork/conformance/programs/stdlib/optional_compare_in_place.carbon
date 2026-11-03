@@ -16,6 +16,14 @@
 //   1
 //   0
 //   0
+//   0
+//   1
+//   1
+//   1
+//   0
+//   0
+//   0
+//   0
 //
 // Comparing `Core.Optional(T)` values compares the held values in place: no
 // `Copy` and no `Destroy` of `T` per operand (W-352), as
@@ -26,7 +34,13 @@
 // and `n` empty, `a == b` 0, `a != b` 1, `a < b` 1, `a <= b` 1, `a > b` 0,
 // `a >= b` 0, `n == a` 0 (empty and non-empty are not equal), `n < a` 1 (an
 // empty value orders first) and `a == a` 1; then the copies and destructions
-// the nine comparisons made, 0 and 0.
+// the nine comparisons made, 0 and 0. Then the six operators on `a` and `b`
+// through checked generics, `GEq` to `GGe`, whose comparison is the same
+// in-place one once each is specialized for `Counted` (W-352): 0, 1, 1, 1, 0
+// and 0 as above, then the copies and destructions those six made, again 0
+// and 0. Their bounds name `Core.Copy & Core.Destroy` because
+// `Core.Optional(T)` needs a storage impl for `T`, which only those provide
+// in user code (W-176).
 
 import Core library "io";
 
@@ -65,6 +79,36 @@ impl Counted as Core.OrderedWith(Counted) {
 
 fn B(b: bool) -> i32 { return if b then 1 else 0; }
 
+fn GEq[T: Core.Eq & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a == b;
+}
+
+fn GNe[T: Core.Eq & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a != b;
+}
+
+fn GLt[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a < b;
+}
+
+fn GLe[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a <= b;
+}
+
+fn GGt[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a > b;
+}
+
+fn GGe[T: Core.Ordered & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a >= b;
+}
+
 fn Run() -> i32 {
   var copies: i32 = 0;
   var destroys: i32 = 0;
@@ -86,5 +130,15 @@ fn Run() -> i32 {
   Core.Print(B(a == a));
   Core.Print(copies - c0);
   Core.Print(destroys - d0);
+  let c1: i32 = copies;
+  let d1: i32 = destroys;
+  Core.Print(B(GEq(a, b)));
+  Core.Print(B(GNe(a, b)));
+  Core.Print(B(GLt(a, b)));
+  Core.Print(B(GLe(a, b)));
+  Core.Print(B(GGt(a, b)));
+  Core.Print(B(GGe(a, b)));
+  Core.Print(copies - c1);
+  Core.Print(destroys - d1);
   return 0;
 }

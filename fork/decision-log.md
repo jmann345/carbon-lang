@@ -4277,10 +4277,11 @@ parameters, also when a template's own call makes the deduction; an overload
 set's probe defers too, so first match agrees with a single function's call; a
 template-dependent self converted at a definition is checked in each specific
 (D-SC-19 as amended); D-SC-6 stays for a conversion of a checked-symbolic self
-outside a call, impl deduction and the generic class's `require` (W-373); the
-overload set's rejection where a concrete call would choose a later member is
-W-375, the cascade after a failed requirement in an impl's or a thunk callee's
-specific W-376, and the interface half of TP-1's eager `Holder(T)` W-374.
+outside a call, impl deduction (3736217e8) and the generic class's `require`
+(W-373); the overload set's rejection where a concrete call would choose a
+later member is W-375, the cascade after a failed requirement in an impl's or
+a thunk callee's specific W-376, and the interface half of TP-1's
+eager `Holder(T)` W-374.
 
 ### SC-1 fill rounds (2026-10-13): four toolchain defects fixed on the container-built arbiter
 

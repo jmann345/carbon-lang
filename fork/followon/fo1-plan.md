@@ -32,6 +32,16 @@ D-LAND-12, D-LAND-20 and the landing-time rulings (1) to (22)) as stages 13
 to 17. PR 53 (SAFE-1) is out of scope: it waits for the orchestrator's re-ruling
 of the C++ boundary question (W-148, W-365, W-366), a separate workstream.
 
+Unit A's implementation (2026-11-03): A1 (47a3d9f4e) and A-R (50840acf2) on
+PR 57's branch took two implementation reviews and three focused re-reviews,
+the last APPROVE with no finding. Their six MINOR findings are folded by
+record, with no branch commit, in the section "Implementation review fold
+record (unit A, 2026-11-03)" before the Sign-off, which names the `Copy` and
+`Destroy` impls of the item-10 form in the Summary, D-FO1-1, D.1 and D.2,
+adds R1-m3's measurements to section 2.1 and A-R's sha to section 3's row 3,
+and changes no code block, golden source, program, prediction, decision's
+ruling or break condition.
+
 **Summary.** Every number below is container-local, EXPECTED, not of record
 (R9), measured on detached worktrees under /dev/shm against trunk 03b40f7c5,
 whose toolchain is c6c9d5fe3's (the install 0.0.0-0.dev+c6c9d5fe3), and read
@@ -43,9 +53,11 @@ touches none of them either; amended 2026-11-02, review fold: RR2-5; d99b767dd
 is still the tip at 21:56 UTC, re-fetched by rev 5's fixer, amended 2026-11-02,
 review fold: RR3-1). Four findings decide the plan.
 
-Item 10 is OP-2's, not SC-1's. A class `S` with `fn Next(self) ->
-Core.Optional(Self);` in its own definition, with no template constraint at
-all, is rejected with ``unable to monomorphize specific `<none>` `` on PR 57's
+Item 10 is OP-2's, not SC-1's. A class `S` with its own `Copy` and `Destroy`
+impls and `fn Next(self) -> Core.Optional(Self);` in its own definition, with
+no template constraint at all (the impls named, amended 2026-11-03,
+implementation review fold: RR1-A-m1 / RR2-A-m1), is rejected with
+``unable to monomorphize specific `<none>` `` on PR 57's
 install and on the land simulation, and checks on trunk's, PR 56's, PR 60's
 and the nightly's (section 0.2). The root: OP-2's `let Type: Destroy;` in the
 private `OptionalStorage` (upstream's tip has `let Type: type;`) makes forming
@@ -163,6 +175,7 @@ fold: RR3-3).
 -   Re-review fold record (rev 4)
 -   Re-review fold record (rev 5)
 -   Stop-and-amend record (rev 6, extended at rev 7)
+-   Implementation review fold record (unit A)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -852,9 +865,11 @@ this plan's commit; nothing was copied to /home/user.
 ## §1 Decisions
 
 **D-FO1-1, item 10's root and carrier.** The defect is OP-2's (PR 57), not
-SC-1's: SC-1's split only contains a class with a method returning
-`Core.Optional(Self)`, and the probe without any template constraint fails on
-PR 57's install alone (section 0.2). Root (R17): OP-2's `let Type: Destroy;`
+SC-1's: SC-1's split only contains a class with its own `Copy` and
+`Destroy` impls and a method returning `Core.Optional(Self)` (the impls
+named, amended 2026-11-03, implementation review fold: RR1-A-m1 /
+RR2-A-m1), and the probe without any template constraint fails on PR 57's
+install alone (section 0.2). Root (R17): OP-2's `let Type: Destroy;`
 makes the blanket `OptionalStorage` impl's specific for a class `C` look up
 `DefaultOptionalStorage(C)`'s `Destroy` when `Core.Optional(C)` is formed, and
 `CanDestroyType` completes a class before `CanDestroyClass` honors the class's
@@ -1354,6 +1369,38 @@ rather than reviews that have not run when A-R is committed, and qualifies its
 cites of files that reach PR 57's tree only at M57 as trunk's (this plan) or by
 the sha they were read at (fork/ORCHESTRATION.md at a88ccf167; amended
 2026-11-02, stop-and-amend re-review: RR6-3).
+
+Measured by unit A's reviews (amended 2026-11-03, implementation review fold:
+R1-m3). Beyond the split, A1 changes the branch's diagnostics for OUT forms that
+no golden pins, to trunk's and the nightly's, so the gate does not show it.
+Review 1's probes (scratchpad/fo1-impl/A/rev1-r1/p and results.txt; p06a to p06h
+and p08b re-run by the fixer, fixer/m3_runs.txt, and by the first re-review), on
+A1's install (+50840acf2, toolchain state 47a3d9f4e), PR 57's held install
+(+9f9ccd768), trunk's and the nightly: p06a, p06c, p06d, p06e and p06g (a
+variable, a defined function's parameter and a call naming `Core.Optional(S)`
+while `S`, with declared `Copy` and `Destroy` impls, is not yet defined; a field
+of type `Core.Optional(Self)` in `S`'s definition; and `S` never defined) first
+report ``unable to monomorphize specific `<none>` `` on the held install and,
+with A1, the incomplete-type diagnostics that trunk gives, identical to trunk's
+once paths are normalized and to the nightly's once core line numbers are too,
+with the same counts on all four toolchains (6, 4, 5, 4 and 10 errors); p03a (a
+`Destroy` impl declared in the class and defined after it) reports "impl
+declared but not defined", as trunk and the nightly do, where the held install
+reported the `<none>` error; p06h (a function in the class returning
+`Core.Optional(Self)`, declared with an unknown builtin name) reports only that
+name's error, as trunk and the nightly do, where the held install reported the
+`<none>` error twice before it; p06b, an IN form (a declaration naming
+`Core.Optional(S)` while `S` is incomplete), checks with A1, as on trunk and the
+nightly, where the held install rejected it; and p08b (`Core.Optional(W(Inc))`,
+where `W` has its own `Copy` and `Destroy` impls and `Inc` is never defined)
+reports 9 errors on all four toolchains, A1's first being ``member access into
+incomplete class `Core.Optional(W(Inc as Core.Copy) as Core.OptionalStorage)` ``
+with notes down to "`T` evaluates to incomplete type `Inc`", where the other
+three first report ``unable to monomorphize specific `W(Inc as Core.Copy)` ``
+(review 1 counted 8 on A1's install; the fixer's recount, which the first
+re-review confirmed, is the same 9 as on the others). None crashes. A `fail_`
+split pinning p06a's form is left to a later OP-2 commit ("Implementation review
+fold record (unit A, 2026-11-03)").
 
 ### §2.2 Slice B: W-139 on PR 60 (SC-1)
 
@@ -2654,7 +2701,7 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | --- | --- | --- | --- | --- | --- |
 | 1 | op2 (57) | A1 | OP-2 fix: a class with its own Destroy impl is not completed by the Destroy witness (item 10) | check/custom_witness.cpp; check/testdata/optional/destroy.carbon | autoupdate would change destroy.carbon only if the split prints (predicted not); every other golden passes; measured on PR 57's branch (47a3d9f4e): autoupdate writes nothing, 1950 of 1950, conformance 139/0/22 over 161 unchanged (amended 2026-11-02, implementation: stop-and-amend, unit A) |
 | 2 | op2 (57) | F-A1 | OP-2 fix fill: autoupdate item 10's split on the container arbiter | destroy.carbon, if autoupdate changes it: not made, autoupdate writes nothing (measured; amended 2026-11-02, implementation: stop-and-amend, unit A) | not made |
-| 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 7 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A; amended 2026-11-02, stop-and-amend re-review: RR6-3) |
+| 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 7 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A; amended 2026-11-02, stop-and-amend re-review: RR6-3) (measured 2026-11-03, implementation, unit A: A-R is 50840acf2, the gate after its rebuild 1950 of 1950) |
 | 4 | op (56) | C1 | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon; two programs; fork/conformance/README.md | the W-352 goldens of OP-1 and SV-1 named in section 2.3 |
 | 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass |
 | 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls |
@@ -4659,6 +4706,15 @@ this record take OP-2's two implementation reviews before they are pushed
 
 <!-- google-doc-style-resume -->
 
+A-R committed this text as 50840acf2, with `<date>` 2026-11-02, `<sha-A1>`
+set to 47a3d9f4e and `<g>` to 1950, and it stays as committed. Its "a class
+with its own `Destroy` impl ... was rejected on PR 57's toolchain only" holds
+for a class with its own `Copy` and `Destroy` impls, the form of the split and
+of section 2.1, since a class with its own `Destroy` impl and no `Copy` impl
+is rejected alike on every toolchain measured (amended 2026-11-03,
+implementation review fold: RR1-A-m1 / RR2-A-m1; the measurement is in
+"Implementation review fold record (unit A, 2026-11-03)").
+
 ### D.2 fork/decision-log.md: OP-2's entry (A-R)
 
 The last paragraph of `### OP-2 / F-016: Core.Optional ownership, adapter
@@ -4677,6 +4733,14 @@ on trunk, D-FO1-1); `let Type: Destroy` stays, since upstream's
 ```
 
 <!-- google-doc-style-resume -->
+
+A-R committed this text as 50840acf2, with `<date>` 2026-11-02 and
+`<sha-A1>` set to 47a3d9f4e, and it stays as committed. Its first clause holds
+as written; its consequence "so a method of `C` returning
+`Core.Optional(Self)` checks" holds for a class `C` with its own `Copy` and
+`Destroy` impls, the form of the split and of section 2.1 (amended 2026-11-03,
+implementation review fold: RR1-A-m1 / RR2-A-m1; the measurement is in
+"Implementation review fold record (unit A, 2026-11-03)").
 
 ### D.3 W-139, W-140 and W-373 to W-376 (B-R, B-R2)
 
@@ -5507,6 +5571,168 @@ on a later run, the gate after A-R is not 1950 of 1950, or A-R changes a file
 other than the two; the implementer then stops and the orchestrator rules (a
 written line is the prediction miss of section 2.1, and D.1 would again name a
 commit this plan does not give).
+
+## Implementation review fold record (unit A, 2026-11-03)
+
+Unit A (OP-2, PR 57, lane 2) on claude/carbon-fork-0-1-op2. Base: e23113ba2,
+the pushed head, which every role confirmed with `git ls-remote` before it
+worked and this record re-read at 00:46 UTC. Final head: 50840acf2
+(50840acf2341fd94665f00c295a5b11d1b2e8623), not pushed when this record is
+committed; the pusher follows it and fast-forwards the branch from e23113ba2
+to 50840acf2. The lane worktree is /dev/shm/fo1/lane2/wt-op2, built with
+CB_BUILD_ROOT=/dev/shm/fo1/lane2/builds and CB_JOBS=2 (a full build of
+e23113ba2, 322 steps, then incremental builds). A1 was committed under rev 5,
+before the stop of the Stop-and-amend record; A-R was committed under rev 7
+(f609533dc) and that record's instructions 1 to 4. Every figure below is
+container-local, EXPECTED, not of record (R9).
+
+| Section 3 row | Commit | Title | Files (insertions) | Measured after it |
+| --- | --- | --- | --- | --- |
+| 1 | A1, 47a3d9f4e, 2026-11-02T23:01:39Z | OP-2 fix: a class with its own Destroy impl is not completed by the Destroy witness (item 10) | toolchain/check/custom_witness.cpp (14); toolchain/check/testdata/optional/destroy.carbon (18) | gate "1950 passed, 0 failed (exit 0, 51s)" before autoupdate and "1950 passed, 0 failed (exit 0, 47s)" after it, which wrote nothing to destroy.carbon (implementer/au1.txt); conformance PASS 139, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 (of 161), bullets 48 PASS, 0 FAIL, 8 SKIP, 0 NOT-WRITTEN of 56, equal to the baseline at e23113ba2 (gate "1950 passed, 0 failed (exit 0, 40s)", the same totals), no program's status or detail changed |
+| 2 | F-A1 | OP-2 fix fill: autoupdate item 10's split on the container arbiter | not made: autoupdate wrote nothing (section 2.1; the Stop-and-amend record's instruction 2) | not made |
+| 3 | A-R, 50840acf2, 2026-11-02T23:51:40Z | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md (16); fork/decision-log.md (6) | gate "1950 passed, 0 failed (exit 0, 42s)" on A1's install with A-R's change in the tree, the line A-R's body records; after A-R's rebuild (2 steps; version 0.0.0-0.dev+50840acf2, toolchain state 47a3d9f4e) "1950 passed, 0 failed (exit 0, 25s)"; conformance not owed (records only), so A1's totals stand |
+
+Both commits carry the author and committer of section 2's preamble, explicit
+paths and the session's two trailers, and `git diff --numstat` from e23113ba2
+to 50840acf2 names the four files above only (54 insertions, no deletion).
+A-R's R31 counts, before its edit, after it and after prek:
+fork/optional2/plan.md went from headings {1: 1, 2: 15, 3: 21}, bullets 152,
+numbered 43, rows 145 to headings {1: 1, 2: 16, 3: 21} with the rest
+unchanged, the same after prek; fork/decision-log.md stayed at headings
+{1: 1, 2: 2, 3: 46, 4: 1, 5: 6}, bullets 78, numbered 0, rows 11. Prek passed
+fourteen hooks on A-R's two files and on A1's custom_witness.cpp, modifying
+nothing, a fixpoint at the first pass; `runner.py --self-test` printed
+"self-test: 161 programs parsed, 56 bullets in table, OK"; the ledger is not
+edited; the model-identifier grep of the diff is clean. These are the values
+that section 2.1, section 3's rows 1 to 3 and the Stop-and-amend record's
+instruction 4 predict, so no value is marked as a difference; section 3's
+row 3 gains A-R's sha and gate under a measured mark. The reviews, each with
+its own TEST_TMPDIR, and the fixers re-ran the gate on the lane install and
+got 1950 of 1950 every time (the last run by the third re-review); the
+second reviewer's full autoupdate (1950 tests, nothing written,
+destroy.carbon's sha1 ca3dd574 unchanged) and conformance, and fixer-r2's
+conformance, were equal to the totals above.
+
+The orchestrator's ruling under R29 for this unit is A_fix.txt in
+scratchpad/fo1-impl/rulings under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b,
+dated 2026-11-03T00:05Z, with addenda at 00:07Z, 00:22Z and 00:33Z: every
+finding of unit A's reviews is folded by record, with no commit on the branch
+after A-R and no amend, since a fix commit after A-R is a stop under the
+Stop-and-amend record's instruction 5; a finding that would need such a
+commit is a stop for the orchestrator's ruling, and none arose. Each round's
+fixer reproduced its findings, made no commit and returned no code change.
+The workflow's reports prefix the ids by reviewer (R1-R1-m1, R2-A-rev2-m1,
+RR1-RR1-A-m1, RR2-RR2-A-m1); the table uses the reviewers' own ids.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| R1-m1 (review 1, round 1): the split's comment credits `S`'s own `Destroy` impl with answering the `DefaultOptionalStorage(S)` lookup, which Core's `impl forall [T: Copy & Destroy] DefaultOptionalStorage(T) as Destroy` (core/prelude/types/optional.carbon:283 at 50840acf2) answers | MINOR | yes: the fixer's mutant M1 (`outside_core_only=true` in A1's check, relinked over the lane's objects) makes Appendix A.1's split fail again with ``unable to monomorphize specific `<none>` `` (at :14:20 of the fixer's extracted probe, the split's :15:20), as PR 57's held install does, where A1's install, trunk's and the nightly check it | folded by record, no commit (the ruling's first addendum): DEFERRED to PR 57's stage-15 branch work (section 2.7) or a later OP-2 cleanup, under OP-2's two reviews and D-FO1-10's budget, with the review's texts below; Appendix A.1 and section 2.1's block change only with the comment | this record |
+| R1-m2 (review 1, round 1): SL-1's R-12 scan in `CanDestroyClass` is unreachable after A1 and costs a second full impl scan | MINOR | yes: `CanDestroyClass`'s callers are custom_witness.cpp:423 (`ClassType`, reached only after A1's early return at :375-387) and :446 (`PartialType`, where `!is_partial` skips the scan); the fixer's mutant M2 (R-12's `return DestroyFormat::NoDestroy` at :283 made a `CARBON_FATAL`) passes the full gate, 1950 of 1950, and gives review 1's 38 probes the lane install's outcomes, never firing | folded by record, no commit (the ruling's first addendum): DEFERRED, with the review's text below; not a correctness defect | this record |
+| R1-m3 (review 1, round 1): A1 also changes the branch's OUT-form diagnostics, which no golden pins and no record states | MINOR, records only | yes, with one count corrected: p08b reports 9 errors on A1's install, as on the other three toolchains, not 8 | folded by record (the ruling's first addendum): the probes and their outcomes stated; the optional `fail_` split pinning p06a's form is a later OP-2 commit's | section 2.1 |
+| A-rev2-m1 (review 2, round 1): A1's commit body calls the block's first comment line 81 columns | MINOR, records only | yes: fo1-plan.md:1302 at f609533dc, the comment's second line, is 81 columns without the diff's `+`, and :1301, its first, is 74; the block applied to e23113ba2's file and run through clang-format 21.1.8 is byte-identical to 47a3d9f4e's custom_witness.cpp | folded by record, no amend and no commit (the ruling's item 1): the correction below | this record |
+| RR1-A-m1 (re-review 1, round 2): D.1 and D.2's consequence state the item-10 form without its `Copy` impl | MINOR, records only | yes: rr1's probe q01 (its own `Destroy` impl, no `Copy` impl) is rejected alike on the held install, A1's, trunk's and the nightly; fixer-r2's q02 (the same class complete, named outside it) likewise, and its q03 (`Copy` and `Destroy`) checks on all four | folded by record, no branch commit (the ruling's second addendum, its text superseded by the third's): the text below; the impls named in the Summary, D-FO1-1, D.1 and D.2 | Summary, D-FO1-1, D.1, D.2, this record |
+| RR2-A-m1 (re-review 2, round 3): the second addendum's text misquotes D.2 and quotes q01's `Self` diagnostic for q02 | MINOR, records only | yes: D.2 (fork/decision-log.md:3794-3798 at 50840acf2) lacks the phrase, and its first clause holds for a class with a `Destroy` impl and no `Copy` impl, since A1's early return tests `HasClassKeyedImpl(..., Destroy, ...)` alone; q02 reports `S` at 8:15 on all four toolchains | folded by record (the ruling's third addendum): the one text below, verbatim; D.2's first clause stays as written, and only its consequence takes the qualifier | D.2, this record |
+
+Six findings, all MINOR (four records only), all reproduced, all folded by
+record and none rejected; no BLOCKER and no MAJOR. The rounds:
+
+| Round | Review (scratch directory) | Head | Verdict | Findings | Fixer |
+| --- | --- | --- | --- | --- | --- |
+| 1 | review 1 (rev1-r1) | 50840acf2 | APPROVE-WITH-FIXES | R1-m1, R1-m2, R1-m3 | fixer: reproduced, folded by record, no commit |
+| 1 | review 2 (rev2-r1) | 50840acf2 | APPROVE | A-rev2-m1 | the same fixer |
+| 2 | re-review 1 (rr1) | 50840acf2 | APPROVE-WITH-FIXES | RR1-A-m1; round 1's four resolved | fixer-r2: reproduced, folded by record, no commit |
+| 3 | re-review 2 (rr2) | 50840acf2 | APPROVE-WITH-FIXES | RR2-A-m1; RR1-A-m1 resolved in substance | fixer-r3: reproduced, folded by record, no commit |
+| 4 | re-review 3 (rr3) | 50840acf2 | APPROVE | none; RR2-A-m1 resolved, the unit dry | none |
+
+Fix budget (D-FO1-10, Slice A: one code commit and its fill, at most two fix
+commits after the reviews): one code commit (A1), no fill (F-A1 not made) and
+no fix commit, 0 of 2 used. D-FO1-10's break condition did not fire, nor did
+D-FO1-1's (A1's gate changed no golden but its split's file, and i10a checks
+with A1) or the Stop-and-amend record's (autoupdate wrote no line, the gate
+after A-R is 1950 of 1950, and A-R changed its two files only).
+
+R1-m1, deferred, in the review's words: "At the next touch of these files,
+under an orchestrator ruling within D-FO1-10, reword the comment's last
+sentence to: "`DefaultOptionalStorage`'s own `Destroy` impl, declared in Core,
+answers that lookup without completing `DefaultOptionalStorage(S)`, whose
+`MaybeUnformed(S)` field needs `S` complete; `S`'s own `Destroy` impl is what
+makes `S` a `Destroy` type while it is incomplete." In the code comment, add
+"(including an impl declared in Core, such as `DefaultOptionalStorage(T)`'s)".
+Amend Appendix A.1 to match." When it is applied, the rewording takes the
+`Copy` and `Destroy` qualifier of RR1-A-m1 and RR2-A-m1 (the ruling's second
+and third addenda), with the words the orchestrator's ruling then gives;
+until the comment changes, Appendix A.1 and section 2.1's block stay as they
+are (the ruling's first addendum).
+
+R1-m2, deferred, in the review's words (the R-12 block is
+custom_witness.cpp:280-284 at 50840acf2): "Defer, and record it in the plan's
+fold record. In a later SL-1 or OP-2 cleanup, delete the R-12 block in
+CanDestroyClass (or reduce it to a CARBON_DCHECK) and move its comment to the
+early check in CanDestroyType."
+
+R1-m3: section 2.1's paragraph "Measured by unit A's reviews" states the
+probes and their outcomes. The first re-review adds that the fixer's
+position :14:20 for the split's error is in its extracted probe
+(fixer/p/a1_split.carbon, without the split's `library` line), and that in
+the split `incomplete_self_signature.carbon` the same error is at :15:20.
+
+A-rev2-m1's correction (implementation review fold: A-rev2-m1, recorded):
+A1's body says that the plan's block's "first comment line is 81 columns".
+The line of section 2.1's block that is 81 columns is the comment's second
+line (fo1-plan.md:1302 at f609533dc), "// destroyed by that impl, never by the
+synthesized witness (`CanDestroyClass`,"; the first comment line is 74
+columns; clang-format's rewrap of it and of the condition is token-identical
+to the plan's block, and A1's file is byte-identical to the block plus
+clang-format. The commit message stays as committed.
+
+RR1-A-m1 and RR2-A-m1, the one text (amended 2026-11-03, implementation
+review fold: RR1-A-m1 / RR2-A-m1): "D.1's 'a class with its own `Destroy`
+impl ... was rejected on PR 57's toolchain only' and D.2's consequence 'so a
+method of `C` returning `Core.Optional(Self)` checks' hold for a class with
+its own `Copy` and `Destroy` impls, the form of the split
+(check/testdata/optional/destroy.carbon:63 at 50840acf2) and of section 2.1.
+D.2's first clause holds as written. A class with its own `Destroy` impl and
+no `Copy` impl is rejected alike on PR 57's held install, A1's, trunk's and
+the nightly: inside its definition with 'cannot convert type `Self` into type
+implementing `Core.OptionalStorage`' (rr1 probe q01, 6:20), and, complete and
+named outside it, with 'cannot convert type `S` into type implementing
+`Core.OptionalStorage`' (fixer-r2 probe q02, 8:15). The reason is that
+`Core.Optional`'s default storage requires `T: Copy & Destroy`
+(core/prelude/types/optional.carbon:140 and :148 at 50840acf2; upstream
+a7e2f3418 :115 and :123)."
+
+Decided here (R29): Appendix D.1 and D.2 take the qualifier as a note after
+each block, not inside it, so that their blocks stay the texts A-R committed
+at 50840acf2 (hand-off note 6: verbatim but for the placeholders) and a later
+comparison of the branch with this plan finds them equal; the Summary and
+D-FO1-1 take it in their sentence. _Break condition:_ the orchestrator rules
+that a block itself changes; that is then a records commit on PR 57's branch
+with the text the ruling gives.
+
+The amendments of this record, each marked: a paragraph after the status
+line; the contents; the Summary's and D-FO1-1's statement of the item-10
+form; section 2.1 (R1-m3's paragraph); section 3's row 3 (a measured mark);
+and Appendix D.1 and D.2 (a note after each block). Unchanged: every
+decision's ruling and break condition, every code block, Appendix A.1's
+source, every golden, program and prediction, sections 4 and 5, Appendix D's
+blocks and units B, C and D's texts. Not R32: this record states no design;
+upstream's tip, fetched at 00:41 UTC, is still a7e2f3418, with
+core/prelude/types/optional.carbon:17 `let Type: type;` and :115 and :123 as
+the text above cites them.
+
+For the pusher (the Stop-and-amend record's instruction 5), at 00:46 UTC: the
+remote op2 head is e23113ba2; no remote branch contains A1 (47a3d9f4e) or A-R
+(50840acf2); origin/trunk and claude/carbon-fork-0-1-fo1 are f609533dc, so
+`git merge-base --is-ancestor 85125ceb4 origin/trunk` succeeds, and trunk's
+plan status line names rev 7. This record's commit is on
+claude/carbon-fork-0-1-fo1, is not pushed and changes neither check.
+
+Logs and probes: scratchpad/fo1-impl/A under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b,
+in implementer/ (with ar7/ for A-R), rev1-r1/, rev2-r1/, fixer/, rr1/,
+fixer-r2/, rr2/, fixer-r3/, rr3/ and recorder/ (this record's R31 counts and
+prek logs).
 
 ## Sign-off
 

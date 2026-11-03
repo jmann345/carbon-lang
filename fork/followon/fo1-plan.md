@@ -67,6 +67,20 @@ C.1 and D.3 to the branch's texts, each with its mark; it changes no
 decision's ruling or break condition and no prediction for M60's tree or the
 landings.
 
+Unit D's implementation (2026-11-03): D1 (389cf3af0), F-D1 (249f23968), D2
+(a7f6f6395), F-D2 (c7855285a) and D-R (8bc84a2bc) on PR 59's branch took two
+implementation reviews and one focused re-review, the last APPROVE with no
+finding. Their four MINOR findings, all records only, are folded by record,
+with no branch commit, in the section "Implementation review fold record
+(unit D, 2026-11-03)" before the Sign-off, which names W-377, a defect of
+trunk's tuple lowering that the orchestrator files, marks section 2.4 and
+Appendix D.5 where they read as if every pack of an element smaller than its
+stride now compiles, corrects section 6's lower/type.cpp churn, extends
+hand-off note 13 and L59's list (section 2.8 step 6) for W-367's two cites,
+adds the branch's measured values to sections 0.3, 3 and 8, and changes no
+code block, golden source, program, D.5 block, decision's ruling or break
+condition and no prediction for M59's tree or the landings.
+
 **Summary.** Every number below is container-local, EXPECTED, not of record
 (R9), measured on detached worktrees under /dev/shm against trunk 03b40f7c5,
 whose toolchain is c6c9d5fe3's (the install 0.0.0-0.dev+c6c9d5fe3), and read
@@ -203,6 +217,7 @@ fold: RR3-3).
 -   Implementation review fold record (unit A)
 -   Stop-and-amend record (rev 8, unit D, extended at rev 9)
 -   Implementation review fold record (unit B)
+-   Implementation review fold record (unit D)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -659,7 +674,7 @@ logs in `$P/<sim>/`):
 | `sim59` | 324 steps, 6 m 37 s | 2004 passed, 0 failed of 2004 | 202 PASS, 0 FAIL, 14 SKIP of 216; 50 bullets | none |
 | `sim59` with W-367 and W-368 | incremental | 2004 passed, 0 failed of 2004 | not re-run | none |
 | e23113ba2 with A1, PR 57's own branch (47a3d9f4e, unit A's lane worktree; added 2026-11-02, implementation: stop-and-amend, unit A) | full, 322 steps, then a relink for the version stamp | 1950 passed, 0 failed of 1950 at e23113ba2, and with A1 before and after autoupdate of destroy.carbon, which writes nothing | 139 PASS, 0 FAIL, 22 SKIP of 161; 48 bullets, at e23113ba2 and with A1, no program's status or detail changed | none; F-A1 not made (section 2.1) |
-| b0822a744 with D1, F-D1 and D2, PR 59's own branch (389cf3af0, 249f23968 and a7f6f6395, unit D's lane worktree; added 2026-11-03, implementation: stop-and-amend, unit D) | full, 324 steps, then incremental | 1960 passed, 0 failed of 1960 at b0822a744; with D1, before and after its commit, 1959 passed, 1 failed of 1960, fail_todo_slice.carbon only (autoupdate, no CHECK failure); after F-D1 1960 of 1960; with D2, before and after its commit, 1959 passed, 1 failed of 1960, pack_expansion.carbon only (autoupdate, no CHECK failure); with F-D2's fill, not committed, 1960 of 1960 | 137 PASS, 0 FAIL, 21 SKIP of 158, 49 bullets, at b0822a744 and with D1; 138 PASS, 0 FAIL, 21 SKIP of 159, 49 bullets, with D2, the new program's PASS the only change | none in the gate; F-D2's fill differs from rev 5's prediction in section 2.4 (its IR, and two following splits' metadata numbers), the stop of "Stop-and-amend record (rev 8, 2026-11-03)" |
+| b0822a744 with D1, F-D1 and D2, PR 59's own branch (389cf3af0, 249f23968 and a7f6f6395, unit D's lane worktree; added 2026-11-03, implementation: stop-and-amend, unit D) | full, 324 steps, then incremental | 1960 passed, 0 failed of 1960 at b0822a744; with D1, before and after its commit, 1959 passed, 1 failed of 1960, fail_todo_slice.carbon only (autoupdate, no CHECK failure); after F-D1 1960 of 1960; with D2, before and after its commit, 1959 passed, 1 failed of 1960, pack_expansion.carbon only (autoupdate, no CHECK failure); with F-D2's fill, not committed, 1960 of 1960; F-D2, committed as c7855285a, and D-R, as 8bc84a2bc, each 1960 passed, 0 failed of 1960 on the install before it with its change in the tree and again after its 2-step version-stamp rebuild (installs 0.0.0-0.dev+c7855285a and +8bc84a2bc, the brief's formula a7f6f6395 for both), and 1960 of 1960 in each run of the two reviews, the fixer and the re-review at 8bc84a2bc (measured 2026-11-03, implementation, unit D) | 137 PASS, 0 FAIL, 21 SKIP of 158, 49 bullets, at b0822a744 and with D1; 138 PASS, 0 FAIL, 21 SKIP of 159, 49 bullets, with D2, the new program's PASS the only change; the same at 8bc84a2bc in each of the review loop's four runs (measured 2026-11-03, implementation, unit D) | none in the gate; F-D2's fill differs from rev 5's prediction in section 2.4 (its IR, and two following splits' metadata numbers), the stop of "Stop-and-amend record (rev 8, 2026-11-03)"; a pack of one odd-width integer (`Core.Int(24)`, `Core.Int(520)`) aborts after D2 at its argument tuple's layout check, which trunk fails for a plain `(Core.Int(24),)` (probes c03, c04 and c06; measured 2026-11-03, implementation review fold: D-R1-m1: the pack's own layout; the argument tuple's check is trunk's, W-377) |
 | cc4daba00 with B1, F-B1, D-B and B-R, then the review fold's eight commits, PR 60's own branch (25a3c6947, c95e8fb5b, 2ee787f0d and c839ddec6, then 3736217e8 to 7d13e1626, unit B's lane worktree; added 2026-11-03, implementation review fold, unit B) | full, 323 steps, at cc4daba00 (install 0.0.0-0.dev+cc4daba00), then incremental: B1 110 steps, 3736217e8 4 steps, and a version-stamp rebuild of 2 steps after a commit that changes no toolchain file | 1959 passed, 0 failed of 1959 at cc4daba00; with B1, before and after its commit, 1956 passed, 3 failed of 1959, exactly fail_template_constraint_checked_binding.carbon, template_constraint_dependent.carbon and lower/template/template_constraint.carbon, each "Autoupdate would make changes", no `fail_`-prefix problem, no crash; after F-B1 1959 of 1959 (autoupdate's second pass writes nothing), the fills byte-identical to `$Q3`'s f1_pr60, f2_pr60 and f3_pr60; with 3736217e8 1958 passed, 1 failed of 1959, the check file only (its new pin split); after 4cdbc7ce4 1959 of 1959, and 1959 of 1959 at every later commit to 7d13e1626 | 130 PASS, 0 FAIL, 21 SKIP of 151, 49 bullets, at cc4daba00; 131 PASS, 0 FAIL, 21 SKIP of 152, 49 bullets, after F-B1, the new program's PASS the only change, and the same after 4cdbc7ce4, after 11411e343 and at 7d13e1626; B1's tree has F-B1's toolchain state (25a3c6947), program and README, so F-B1's measurement is B1's too (amended 2026-11-03, implementation review fold: B-R2r1-m3) | none in the gate; tclass aborts and pos1 prints an uninitialized value, as in the row of rev 4's B1 above, defects of the branch's base (R1-m4); leak1 printed 4 at c839ddec6 and is rejected at the definition from 3736217e8 on (R1-M1) |
 
 No CHECK failure or stack dump in any gate. TP-1's mutant M18 reverts S, so
@@ -2456,7 +2471,15 @@ VA-1's decision-log paragraph and fold record, each text verbatim in D.5 (the
 fold record's since rev 8, amended 2026-11-03, implementation: stop-and-amend,
 unit D); the NONE register entry waits for M59 (section 2.8). VA-2's hand-off
 notes 7 and 9 are discharged by D-R's texts (their break condition "PR 59
-landing on trunk before the fix" no longer reachable).
+landing on trunk before the fix" no longer reachable). F-D2 is c7855285a, its
+fill the governing bytes, and D-R is 8bc84a2bc, with D.5's texts; the gate
+before and after each one's rebuild is 1960 of 1960 (measured 2026-11-03,
+implementation, unit D). D2's layout, and so W-368's discharge, is the pack's
+own: a pack whose element is an odd-width integer, such as `Core.Int(24)` or
+`Core.Int(520)`, still aborts after D2, at the layout check of its argument
+tuple, the tuple a call gathers the pack's arguments in, which trunk fails for
+a plain `(Core.Int(24),)` (measured 2026-11-03, implementation review fold:
+D-R1-m1: the pack's own layout; the argument tuple's check is trunk's, W-377).
 
 ### §2.5 Landing G-60: PR 60 (stage 13)
 
@@ -2767,7 +2790,11 @@ stage 13 to 15 stop, stage 16 may run first by the orchestrator's ruling
     notes once PR 57's has landed, W-343's discharge (RG-1's text, :500-504);
     the NONE register entry for W-367's refusal (Appendix D.6), which D-R
     cannot write because RG-1's register files reach PR 59's branch only at
-    M59.
+    M59; and W-367's note, in which "VA-2's hand-off note 9" becomes
+    "fork/variadics/va2-plan.md's hand-off note 9 (on PR 66's branch until
+    stage 17)", so that trunk's W-367 names the file its cite resolves in
+    between stages 16 and 17, D.5's text on PR 59's branch standing as D-R
+    committed it (amended 2026-11-03, implementation review fold: R2-D-m2).
 7.  Two implementation reviews (VA-1's rule, D-FO1-9) of M59 to L59; fixer;
     push.
 8.  The trunk landing at the pushed head: expected 2029 of 2029, 218/0/13 over
@@ -2825,11 +2852,11 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass |
 | 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls |
 | 7 | op2 (57) | F-C-M57 | OP-2: autoupdate the goldens OP-1's W-352 fix changes | the files the gate names | all pass |
-| 8 | va (59) | D1 | VA-1 fix: a pack expansion pattern in a choice alternative's parameter list is a TODO (W-367) | check/handle_pack_expansion.cpp; check/testdata/variadics/fail_todo_slice.carbon | autoupdate would change fail_todo_slice.carbon |
-| 9 | va (59) | F-D1 | VA-1 fix fill: autoupdate W-367's split on the container arbiter | fail_todo_slice.carbon | all pass |
+| 8 | va (59) | D1 | VA-1 fix: a pack expansion pattern in a choice alternative's parameter list is a TODO (W-367) | check/handle_pack_expansion.cpp; check/testdata/variadics/fail_todo_slice.carbon | autoupdate would change fail_todo_slice.carbon (measured 2026-11-03, implementation, unit D: D1 is 389cf3af0, its gate 1959 passed, 1 failed of 1960, fail_todo_slice.carbon only; conformance 137/0/21 over 158, 49 bullets, as at b0822a744) |
+| 9 | va (59) | F-D1 | VA-1 fix fill: autoupdate W-367's split on the container arbiter | fail_todo_slice.carbon | all pass (measured 2026-11-03, implementation, unit D: F-D1 is 249f23968, 12 CHECK:STDERR lines, 1960 of 1960) |
 | 10 | va (59) | D2 | VA-1 fix: a pack is laid out at its element's array stride (W-368) | lower/type.cpp; lower/testdata/variadics/pack_expansion.carbon; one program; README table | autoupdate would change pack_expansion.carbon (measured 2026-11-03, implementation, unit D: D2 is a7f6f6395, its gate 1959 passed, 1 failed of 1960, pack_expansion.carbon only; conformance 138/0/21 over 159, 49 bullets) |
-| 11 | va (59) | F-D2 | VA-1 fix fill: autoupdate W-368's split on the container arbiter | pack_expansion.carbon (the split's IR, and the metadata numbers of lib.carbon and use.carbon, section 2.4; amended 2026-11-03, implementation: stop-and-amend, unit D) | all pass (measured with the fill before its commit: 1960 of 1960) |
-| 12 | va (59) | D-R | VA-1: W-367 and W-368 filed and fixed (D-FO1-5, D-FO1-6) | fork/inventory/work-items.json; fork/variadics/plan.md; fork/decision-log.md | unchanged, 1960 of 1960 (records only, with D.5's texts as rev 8 gives them; amended 2026-11-03, implementation: stop-and-amend, unit D) |
+| 11 | va (59) | F-D2 | VA-1 fix fill: autoupdate W-368's split on the container arbiter | pack_expansion.carbon (the split's IR, and the metadata numbers of lib.carbon and use.carbon, section 2.4; amended 2026-11-03, implementation: stop-and-amend, unit D) | all pass (measured with the fill before its commit: 1960 of 1960) (measured 2026-11-03, implementation, unit D: F-D2 is c7855285a, 307/102 CHECK:STDOUT lines with the governing sha1, 1960 of 1960 before and after its rebuild) |
+| 12 | va (59) | D-R | VA-1: W-367 and W-368 filed and fixed (D-FO1-5, D-FO1-6) | fork/inventory/work-items.json; fork/variadics/plan.md; fork/decision-log.md | unchanged, 1960 of 1960 (records only, with D.5's texts as rev 8 gives them; amended 2026-11-03, implementation: stop-and-amend, unit D) (measured 2026-11-03, implementation, unit D: D-R is 8bc84a2bc, 5, 28 and 18 lines added, 1960 of 1960 before and after its rebuild; the review fold made no commit, "Implementation review fold record (unit D, 2026-11-03)") |
 | 13 | sc (60) | B1 | SC-1 fix: a checked-symbolic argument for a template binding, and a template-dependent self, are checked per specific (W-139; leads issue 2153; D-SC-19) | check/deduce.cpp; check/structural_conformance.cpp and .h; check/context.h; check/action.cpp; check/convert.cpp; check/eval_inst.cpp; sem_ir/dominance.cpp (amended 2026-11-02, review fold: RR1-1; amended 2026-11-02, review fold: RR2-1 / RR2-2); three test files; one program; README table | autoupdate would change the three test files (measured on PR 60's branch: exactly those three) (measured 2026-11-03, implementation, unit B: B1 is 25a3c6947, its gate 1956 passed, 3 failed of 1959, the three files) |
 | 14 | sc (60) | F-B1 | SC-1 fix fill: autoupdate W-139's splits on the container arbiter | three test files | all pass (PR 60's branch) (measured 2026-11-03, implementation, unit B: F-B1 is c95e8fb5b, +151, +77 and +139 CHECK lines, 1959 of 1959, conformance 131/0/21 over 152 with 49 bullets) |
 | 15 | sc (60) | D-B | SC-1: template_constraints.md states upstream's decision on issue 2153 (W-139) | docs/design/generics/template_constraints.md; fork/structural/plan.md | unchanged (measured 2026-11-03, implementation, unit B: D-B is 2ee787f0d, 1959 of 1959) |
@@ -2910,7 +2937,7 @@ copies; Appendix B.4).
 | A | custom_witness.cpp +14 in `CanDestroyType` | UA-3 (upstream's 05a7ecbd3 moves `SubobjectDestroy` and `SelfDestruct` out of `Destroy`, a prelude and custom-witness change UA-3 takes); SL-1's `CanDestroyClass` shortcut stays | UA-3 merges A1's hunk as fork code beside upstream's; A1's comment names item 10 so the merge keeps it |
 | B | rev 4's B1 against cc4daba00 (`git diff --numstat`): deduce.cpp +112/-8, structural_conformance.cpp +66/-2, structural_conformance.h +9, context.h +24, convert.cpp +22, action.cpp +3, eval_inst.cpp +6/-1, dominance.cpp +3/-3; clang-format changes none of them (rev 3's was deduce.cpp +108/-8, structural_conformance.cpp +34, structural_conformance.h +8, context.h +12, eval_inst.cpp +6/-1, dominance.cpp +3/-3, its inlined diff clang-formatted where the land tree's deduce.cpp was not, one `return` rewrapped); template_constraints.md one paragraph and one note (amended 2026-11-02, review fold: A-B-1 / B-B-1; amended 2026-11-02, review fold: RR2-4) (measured 2026-11-03, implementation, unit B: B1, 25a3c6947, has exactly these numstats; the review fold's 3736217e8 adds deduce.cpp +8 in `DeduceImplArguments`, so deduce.cpp is +120/-8 against cc4daba00 at 7d13e1626, and template_constraints.md's paragraph, note and :662 are as Appendix C.1 amends them) | UA-3's merge of upstream's deduce.cpp: 503f09037 ("Add support for default values for non-generic parameters of generic functions. (#8011)") rewrites `DeduceGenericCallArguments`'s argument list beside B1's one added line there, and 2c9739799 ("Render diagnostics through the terminal library (#7683)") touches the class's diagnostic helpers; neither touches the two conversions B1 routes (`git log c1e83b0b7..68569d234 -- toolchain/check/deduce.cpp`); W-372 none; CT-1's call.cpp untouched; UA-3's merge of upstream's action.cpp and convert.cpp, where B1's lines sit beside `BeginPerformDelayedAction` and in `PerformBuiltinConversion`'s facet conversion | UA-3 merges `ConvertBindingArg` and the deferral line as fork code beside upstream's changes; B1's comments name W-139 so the merge keeps them |
 | C | optional.carbon -40/+90 in OP-1's block after :205 | OP-2's lines (:15, :18, :40-48, after :275) on PR 57; DR-1's W-320 (stopped); RG-1's H6.4 grep check | C-M57 merges cleanly (measured apply); H6.4's check reads lines C does not change |
-| D | handle_pack_expansion.cpp +15 in the `Pattern` case; lower/type.cpp +17 in `BuildTypeForInst(PackType)` | VA-2's C1 (`Pattern` case rewritten) and D-VA2-7 (the same function) on PR 66 | section 2.9: W-367 auto-merges, lower/type.cpp takes VA-2's side |
+| D | handle_pack_expansion.cpp +15 in the `Pattern` case; lower/type.cpp +19/-5 in `BuildTypeForInst(PackType)` (amended 2026-11-03, implementation review fold: R2-D-m1: rev 5 said +17; section 2.4's block, the planner's w368/W368.patch and a7f6f6395's numstat give 19/5) | VA-2's C1 (`Pattern` case rewritten) and D-VA2-7 (the same function) on PR 66 | section 2.9: W-367 auto-merges, lower/type.cpp takes VA-2's side |
 | landings | the records files | EH-C (W-346) and UA-3, which wait on trunk after the held PRs; SAFE-2/SAFE-3's PR 53 | no FO-1 commit touches PR 53's branch; EH-C and UA-3 merge trunk after stage 17 |
 
 No slice changes a file of PR 53, of fork/tools/, of .github/ or of the
@@ -3251,7 +3278,10 @@ Not run by this plan, and why:
     2026-11-03, implementation: stop-and-amend, unit D); B1 to B-R and the
     eight commits of unit B's review fold have since been built, filled and
     gated on PR 60's own branch by unit B's implementer and fixers
-    (section 0.3's row; measured 2026-11-03, implementation, unit B).
+    (section 0.3's row; measured 2026-11-03, implementation, unit B); F-D2
+    and D-R have since been committed on PR 59's own branch, each gated
+    before and after its rebuild, and D1 to D-R reviewed there
+    (section 0.3's row; measured 2026-11-03, implementation, unit D).
 5.  The register scripts (`check_quotes.sh`, `check_greps.sh`) and DD-1's and
     EV-1's checkers on the land trees: records-time checks, run by each
     landing.
@@ -3322,6 +3352,11 @@ Not run by this plan, and why:
     "on trunk" outright, and unit A's pusher confirms that trunk holds the
     revision they were written from (the Stop-and-amend record's instruction
     5; added 2026-11-02, stop-and-amend re-review: RR6-1 / RR6-2).
+    W-367's note cites W-355, which reaches PR 59's tree at M59 (trunk's
+    ledger), and VA-2's hand-off note 9, which reaches trunk at PR 66's
+    landing (stage 17): both cites resolve at those merges, as this note's
+    rule says of cites made before a branch's M merge (amended 2026-11-03,
+    implementation review fold: R2-D-m2).
 14. An install's version names the commit it was built at: carbonbuild stamps
     `git rev-parse --short HEAD` (gen_ninja.py:457-462), with `.dirty` after
     it for a tree with uncommitted changes. The brief's formula,
@@ -5459,6 +5494,12 @@ Appended to PR 59's branch's fork/inventory/work-items.json:
 
 <!-- google-doc-style-resume -->
 
+W-367's note stands on PR 59's branch as D-R committed it (8bc84a2bc): its
+cite of W-355 resolves at M59, and its cite of VA-2's hand-off note 9 at the
+landing of PR 66 (hand-off note 13), and L59 names the second cite's file,
+fork/variadics/va2-plan.md (section 2.8 step 6; amended 2026-11-03,
+implementation review fold: R2-D-m2).
+
 VA-1's decision-log entry `### VA-1: definition-checked variadics, slice 1
 (2026-10-14)` gains as its last paragraph:
 
@@ -5472,6 +5513,15 @@ aborts (fork/followon/fo1-plan.md D-FO1-5, D-FO1-6).
 ```
 
 <!-- google-doc-style-resume -->
+
+The paragraph's "so neither form aborts", like W-368's title above and the
+fold record below, states the pack's own layout (measured 2026-11-03,
+implementation review fold: D-R1-m1: the pack's own layout; the argument
+tuple's check is trunk's, W-377): a pack whose element is an odd-width
+integer still aborts after D2, at its argument tuple's layout check, which
+trunk fails for a plain tuple of such an integer, the defect the
+orchestrator files as W-377. The three texts stand on PR 59's branch as D-R
+committed them (8bc84a2bc), as the unit D record decides.
 
 The section below goes at the end of fork/variadics/plan.md, after "Landed
 notes (VA-1, 2026-10-14)", with one blank line before its heading
@@ -6743,6 +6793,218 @@ Logs and probes: scratchpad/fo1-impl/B under
 implementer/, rev1-r1/, rev2-r1/, fixer/, rr1/, fixer2/, rr2/, fixer3/, rr3/,
 fixer4/, rr4/, fixer5/, rr5/, fixer6/, rr6/ and recorder/ (this record's R31
 counts and prek logs).
+
+## Implementation review fold record (unit D, 2026-11-03)
+
+Unit D (VA-1, PR 59, lane 1) on claude/carbon-fork-0-1-va. Base: b0822a744,
+the pushed head, which every role confirmed with `git ls-remote` before it
+worked and this record re-read at 03:08 UTC. Final head: 8bc84a2bc
+(8bc84a2bcac332e07bddc9f3b0e2a88267c30324), five commits above the base, none
+pushed when this record is committed (`git branch -r --contains` is empty for
+each); the pusher follows it and fast-forwards the branch from b0822a744 to
+8bc84a2bc. The lane worktree is /dev/shm/fo1/lane1/wt-va, built with
+CB_BUILD_ROOT=/dev/shm/fo1/lane1/builds and CB_JOBS=2: a full build of
+b0822a744, 324 steps, whose install printed 0.0.0-0.dev+b0822a744 (the brief's
+formula names its toolchain state 0ee9f2d1b, whose toolchain and core are
+those of PR 59's held install +88b1b5bd2, section 0.1), then incremental
+builds: 4 steps for D1's and for D2's code before each commit, and a 2-step
+version-stamp rebuild after D1, D2, F-D2 and D-R. D1, F-D1 and D2 were
+committed under rev 5 as read at rev 7 (f609533dc), and F-D2 and D-R under
+rev 9 (69b749783) and the Stop-and-amend record's instructions 1 to 4; the
+reviews, the fixer and the re-review read rev 9, and the fold followed the
+orchestrator's ruling below. Upstream's tip was read at a7e2f3418 by the
+implementer (fetched 00:38 UTC) and at b7919e8f5 by the reviews, the fixer,
+the re-review and this record (fetched 03:04 UTC; its one commit after
+a7e2f3418 changes .github/workflows only). Every figure below is
+container-local, EXPECTED, not of record (R9).
+
+| Section 3 row | Commit | Title | Files (insertions/deletions) | Measured after it |
+| --- | --- | --- | --- | --- |
+| 8 | D1, 389cf3af0, 2026-11-03T00:54:18Z | VA-1 fix: a pack expansion pattern in a choice alternative's parameter list is a TODO (W-367) | toolchain/check/handle_pack_expansion.cpp (15/0); toolchain/check/testdata/variadics/fail_todo_slice.carbon (22/0) | gate "1959 passed, 1 failed (exit 1, 22s)" before the commit (install 0.0.0-0.dev+b0822a744.dirty) and after it (install 0.0.0-0.dev+389cf3af0): exactly fail_todo_slice.carbon, "Autoupdate would make changes", the three TODOs at 4:14, 5:17 and 6:16, no `fail_`-prefix problem, no crash; h01 reports the TODO at 1:14, rc 1; conformance PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56, equal to the baseline at b0822a744 (gate "1960 passed, 0 failed (exit 0, 22s)", the same totals), no program's status or detail changed; "self-test: 158 programs parsed, 56 bullets in table, OK" |
+| 9 | F-D1, 249f23968, 2026-11-03T00:55:48Z | VA-1 fix fill: autoupdate W-367's split on the container arbiter | fail_todo_slice.carbon (12/0), CHECK:STDERR lines only | gate "1960 passed, 0 failed (exit 0, 33s)" on D1's install with the fill; autoupdate's second pass writes nothing; the filled file byte-identical to rev 3's fixer's `$Q1/slice_pr59.carbon`; conformance D1's, not owed |
+| 10 | D2, a7f6f6395, 2026-11-03T00:59:06Z | VA-1 fix: a pack is laid out at its element's array stride (W-368) | toolchain/lower/type.cpp (19/5); toolchain/lower/testdata/variadics/pack_expansion.carbon (19/0); fork/conformance/programs/generics/variadics_padded_element.carbon (30/0); fork/conformance/README.md (1/0) | gate "1959 passed, 1 failed (exit 1, 42s)" before the commit (install 0.0.0-0.dev+249f23968.dirty) and after it (install 0.0.0-0.dev+a7f6f6395): exactly pack_expansion.carbon, "Autoupdate would make changes", no CHECK failure, so D-FO1-6's break condition does not fire; e09, e11 and e13 print 2, 7 and 7, and h01 still reports D1's TODO; conformance PASS 138, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 159), bullets 49 PASS, 0 FAIL, 7 SKIP, 0 NOT-WRITTEN of 56, the new program's PASS the only change and VA-1's nine generics/variadics_* programs unchanged; "self-test: 159 programs parsed, 56 bullets in table, OK" |
+| 11 | F-D2, c7855285a, 2026-11-03T01:56:15Z | VA-1 fix fill: autoupdate W-368's split on the container arbiter | pack_expansion.carbon (307/102; 303/98 with `--diff-algorithm=histogram`), CHECK:STDOUT lines only | the filled file's sha1 af0b823f75e56c4a264823e1ec33b4888f4e8d69, the governing bytes (the Stop-and-amend record's instruction 2), autoupdate's second pass writing nothing; the split's module 205 lines, the pack passed as `[3 x ptr]`, no `[3 x i8]`; 98 pairs in lib.carbon and use.carbon equal once `!N` is normalized, 138 references raised by 54 and 7 unchanged; gate "1960 passed, 0 failed (exit 0, 24s)" on D2's install with the fill, and after the 2-step rebuild (install 0.0.0-0.dev+c7855285a, the brief's formula a7f6f6395) "1960 passed, 0 failed (exit 0, 22s)"; self-test OK over 159 programs; conformance not owed |
+| 12 | D-R, 8bc84a2bc, 2026-11-03T01:58:44Z | VA-1: W-367 and W-368 filed and fixed (D-FO1-5, D-FO1-6) | fork/decision-log.md (5/0); fork/inventory/work-items.json (28/0); fork/variadics/plan.md (18/0) | gate "1960 passed, 0 failed (exit 0, 23s)" on F-D2's install with D-R's change in the tree, the gate D-R's body records, and after the 2-step rebuild (install 0.0.0-0.dev+8bc84a2bc, the brief's formula a7f6f6395) "1960 passed, 0 failed (exit 0, 22s)"; `json.load` 146 items, the last two W-367 and W-368; self-test OK; conformance not owed (records only) |
+
+All five commits carry the author and committer of section 2's preamble,
+explicit paths and the session's two trailers; none is an amend, and the
+history from b0822a744 is linear. `git diff --numstat` from b0822a744 to
+8bc84a2bc names the nine files above, with 476 insertions and 107 deletions
+(fail_todo_slice.carbon 34/0 over D1 and F-D1, pack_expansion.carbon 326/102
+over D2 and F-D2). D1's and D2's code are section 2.4's two diff blocks, which
+review 2 regenerated from the plan text and applied at b0822a744 byte-identical
+to the tree, and clang-format 21.1.8 changes neither file; the splits are
+Appendix A.3's and A.4's once their CHECK lines are stripped, and the program
+is B.3's, byte for byte, with the README table by
+`runner.py --update-readme-table`; D-R's texts are Appendix D.5's, verbatim
+but for the placeholders `<date>` 2026-11-03, `<sha-D1>` 389cf3af0,
+`<sha-F-D1>` 249f23968, `<sha-D2>` a7f6f6395, `<sha-F-D2>` c7855285a and
+`<g>` 1960, placed as the Stop-and-amend record's instruction 3 says, after
+D-FO1-12's re-scan found neither id filed on origin/trunk (69b749783), on
+PR 59's branch or on VA-2's. R31's counts, before each edit, after it and
+after prek, as each message states: fork/conformance/README.md (D2) went from
+headings {1: 1, 2: 4, 3: 3}, bullets 22, numbered 6, rows 160 and 415 lines
+to rows 161 and 416 lines; fork/variadics/plan.md (D-R) went from headings
+{1: 1, 2: 15, 3: 38}, bullets 68, numbered 86, rows 208 and 8193 lines to
+headings {1: 1, 2: 16, 3: 38} and 8211 lines; fork/decision-log.md (D-R) kept
+headings {1: 1, 2: 2, 3: 45, 4: 1, 5: 6}, bullets 23, numbered 0 and rows 32,
+its lines going from 7573 to 7578. Prek passed on every commit's files and
+modified nothing, a fixpoint at the first pass; the model-identifier grep of
+the diff finds nothing, and of the messages only the trailers. These are the
+values that section 2.4, section 3's rows 8 to 12, section 4 and the
+Stop-and-amend record's instructions 2 and 4 predict, so no value is marked
+as a difference; section 3's rows 8, 9, 11 and 12 gain the commits' shas
+under measured marks (row 10 has carried D2's since rev 8), and section 0.3's
+row and section 8's "not run" item 4 gain F-D2 and D-R. The implementer's one
+deviation, an over-long line in D-R's message, is R2-D-m3 below.
+
+The reviews measured, beside their findings: review 1 ran W-367's OUT forms
+(A.3's three splits, a choice in a function body and one nested in an
+interface, the pack in the first of two alternatives and after a fixed
+parameter, an element type that is itself a choice, a duplicate choice, an
+undefined element type and two packs) on the lane install, PR 59's held
+install, trunk's and the nightly, each OUT form reporting the TODO at the
+`...` column, rc 1, where the held install aborts in lowering, and the IN
+forms unchanged; and 22 W-368 programs against a C++ oracle (clang++ 21.1.8)
+at `--optimize` none, debug, speed and size, every lane output equal to the
+oracle. Review 2 gated each code commit's tree alone: 389cf3af0 and 249f23968
+on a mutant file_test (b0822a744's type.cpp relinked over the lane's objects),
+1959 passed, 1 failed, fail_todo_slice.carbon only, and 1960 of 1960;
+a7f6f6395 on the lane's, 1959 passed, 1 failed, pack_expansion.carbon only;
+its autoupdate of all 1960 files at 8bc84a2bc wrote nothing, and its mutant
+without D2 aborted on pack_expansion.carbon at lower/type.cpp:936 with the
+other 1959 passing. PR 59's held file_test fails the three W-367 splits
+("succeeded; remove the fail_ prefix") and aborts on the filled
+pack_expansion.carbon, so both pins hold. Every gate that the reviews, the
+fixer and the re-review ran at 8bc84a2bc printed 1960 of 1960, and every
+conformance run PASS 138, every failure class 0, SKIP 21 (of 159), 49 of 56
+bullets, variadics_padded_element and VA-1's nine programs passing;
+`runner.py --self-test` printed "self-test: 159 programs parsed, 56 bullets
+in table, OK" each time.
+
+The orchestrator's ruling under R29 for this unit is D_fix.txt in
+scratchpad/fo1-impl/rulings under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b
+(copied as scratchpad/fo1-impl/D/ORCHESTRATOR_RULING_READ_ME.txt), dated
+2026-11-03T02:41Z, with addendum 1 at 02:46Z: under the Stop-and-amend
+record's instruction 5 a fix commit after D-R is a stop, so every finding of
+unit D's reviews is folded by record, with no commit on the branch after D-R,
+no amend and no reset. Its standing break condition, a finding that would
+change a code block, a golden's CHECK line, a decision's ruling or a break
+condition, or that needs a commit after D-R, did not fire. The round's fixer
+reproduced each finding, made no commit and returned no code change. The
+workflow's reports prefix the ids by reviewer (R1-D-R1-m1, R2-R2-D-m1 to
+R2-R2-D-m3); the table uses the reviewers' own ids.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| D-R1-m1 (review 1, round 1): a pack of an odd-width integer still aborts after D2, at its argument tuple's layout check, which trunk shares | MINOR, records only | yes: the fixer re-ran review 1's probes c01 to c06 and B.3 on the four toolchains (the table below, scratchpad/fo1-impl/D/fixer1/w368_int_repro.txt), and the re-review again, its SemIR dump of c03 showing that the aborting tuple is the call's argument pack (`%.loc10_20.1: tuple_type (%i520) = pack_literal (%Mk.call)`) | folded by record, no commit (the ruling's item (1)): D2's pack layout is right, and W-368's discharge covers the pack's own layout, D.5's texts standing as D-R committed them; the abort is trunk's tuple lowering, which the orchestrator files as W-377 (below); the sentences of section 2.4 and D.5 that read as if every such pack now compiles are marked | section 0.3, section 2.4, Appendix D.5, this record |
+| R2-D-m1 (review 2, round 1): section 6's row D states lower/type.cpp +17, where section 2.4's block and the tree are +19/-5 | MINOR, records only | yes: `git show --numstat a7f6f6395` gives 19/5 for toolchain/lower/type.cpp, as section 2.4's block and the planner's w368/W368.patch do; handle_pack_expansion.cpp's +15 matches 389cf3af0 (15/0) | folded by record (addendum 1, item (1)): row D reads +19/-5; section 2.4 governs (hand-off note 2), so the tree is right | section 6 |
+| R2-D-m2 (review 2, round 1): W-367's note cites W-355 and VA-2's hand-off note 9, neither of which is on PR 59's tree | MINOR, records only | yes: W-355 is absent from the ledger at b0822a744 (144 items), at 8bc84a2bc (146) and at VA-2's 43c8ab476 (155), and filed on trunk (fork/inventory/work-items.json:3878 at 69b749783); fork/variadics/va2-plan.md exists only on 43c8ab476, where hand-off note 9 (:8794) is the choice-alternative note; hand-off note 13 covered only this plan's cites | folded by record (addendum 1, item (2)): hand-off note 13 extended with the ruling's sentence, and L59's list (section 2.8 step 6) qualifies the second cite; D.5's W-367 text stands on PR 59's branch as D-R committed it | hand-off note 13, section 2.8, Appendix D.5 |
+| R2-D-m3 (review 2, round 1): D-R's commit message has an 84-column line and list-marker line starts | MINOR, records only | yes: counting the title as line 1, line 8 of 8bc84a2bc's message is 84 columns (the implementer reported 85), and lines 12, 17 and 19 start with "- "; the fixer also found line 23 starting with "+18"; D1's 93-column title is section 3's, verbatim, and no line of D1's, F-D1's, D2's or F-D2's body is over 80 columns or starts with a marker | folded by record, no amend and no commit (addendum 1, item (3)): the note below; no repository file is affected | this record |
+
+Four findings, all MINOR and records only, all reproduced, all folded by
+record and none rejected; no BLOCKER and no MAJOR. The rounds:
+
+| Round | Review (scratch directory) | Head | Verdict | Findings | Fixer |
+| --- | --- | --- | --- | --- | --- |
+| 1 | review 1 (rev1-r1) | 8bc84a2bc | APPROVE | D-R1-m1 | fixer (fixer1): reproduced, folded by record, no commit |
+| 1 | review 2 (rev2-r1) | 8bc84a2bc | APPROVE-WITH-FIXES | R2-D-m1, R2-D-m2, R2-D-m3 | the same fixer |
+| 2 | focused re-review 1 (rr1) | 8bc84a2bc | APPROVE | none; round 1's four resolved by record, the unit dry | none |
+
+Fix budget (D-FO1-10, Slice D: two code commits, W-367's and W-368's, their
+fills, the program and the records; at most two fix commits each; no
+shrink): D1, F-D1, D2, F-D2 and D-R, and no fix commit, 0 of 2 used for each
+code commit. D-FO1-10's break condition did not fire, nor did D-FO1-5's (at
+b7919e8f5 docs/design/variadics.md is silent on choice alternatives and
+p002240's three "choice" hits are prose, and no VA-2 change is on PR 59's
+branch), D-FO1-6's (D2's gate and F-D2's fill named pack_expansion.carbon
+only), the Stop-and-amend record's (F-D2's fill has the governing sha1 and
+changes CHECK:STDOUT lines only, the gates after F-D2 and D-R are 1960 of
+1960, the formula names a7f6f6395 and each install's version its own commit,
+and D-R changed its three files with instruction 4's counts), RR8-3's
+ruling's or RR8-2's: both reviews read B.3's header sentence as true of the
+pack's object layout, which D2 pads to the 8-byte stride so that the layout
+check passes, and raised no finding on it.
+
+W-377, for D-R1-m1 (the ruling's item (1) (c)): the defect is filed on
+trunk's ledger by the orchestrator, not by this record nor by any FO-1 slice
+or landing, in a records commit of its own after the slices' records, titled
+"Ledger: W-377 filed, a tuple of an odd-width integer aborts at lowering's
+layout check (found by FO-1 unit D's review)", after a re-scan of every ref
+(D-FO1-12: anything else takes W-377 onward after a re-scan). At 03:04 UTC
+W-377 is filed in the ledger of none of the 171 refs of
+`git for-each-ref refs/remotes/origin refs/heads` and appears only in this
+plan. The probe evidence, review 1's probes (scratchpad/fo1-impl/D/rev1-r1,
+p/ and w368_int_probes.txt) as the fixer re-ran them:
+
+| Probe | Form | Lane (+8bc84a2bc) | PR 59's held install (+88b1b5bd2) | Trunk (c6c9d5fe3) | Nightly (2026.10.12) |
+| --- | --- | --- | --- | --- | --- |
+| c03 | `fn F(... each x: Core.Int(520))` called with one argument | aborts at lower/type.cpp:950 on the tuple `<{ i520 }>`, "unexpected size 68, expected 65" | aborts at :936 on the pack `[1 x i520]`, "unexpected size 68, expected 96" | rejects the pack at parse ("expected identifier or `Self` after `.`") | "expected pattern" |
+| c04 | the same with `Core.Int(24)` | aborts at :950 on the tuple `<{ i24 }>`, "unexpected size 4, expected 3" | the same at :936 | rejects the pack at parse | "expected pattern" |
+| c06 | `let t: (Core.Int(24),) = (Mk(5),);`, no pack | aborts at :950 on `<{ i24 }>`, "unexpected size 4, expected 3" | the same at :936 | the same at :922 | prints 5 |
+| c01 | a tuple of three `Core.Int(24)`, no pack | aborts at :950 on `<{ i24, i24, i24 }>`, "unexpected size 12, expected 11" | the same at :936 | the same at :922 | prints 100006 |
+| c05 | a `Core.Int(520)` value, no tuple | prints 5 | prints 5 | prints 5 | prints 5 |
+| B.3 | Appendix B.3's program | prints 7 7 | aborts at :936 on `[3 x <{ i32, i1 }>]`, "unexpected size 15, expected 24" | rejects the pack at parse | "expected pattern" |
+
+The check that aborts is `BuildType`'s layout check, a `CARBON_DCHECK` that
+the arbiter's builds keep (section 2.4), so the nightly, a release build,
+runs c06 and c01; upstream's tip b7919e8f5 has the same check
+(lower/type.cpp:886-890). c03 shows D2's part: the held install aborts on the
+pack, and the lane gets past it to the argument tuple. Passed to the
+orchestrator for W-377's scope, outside FO-1: c02,
+`var a: array(Core.Int(520), 3)`, aborts on all four toolchains at another
+check, "Field at non-byte offset" (lower/type.cpp:791 on the lane, :777 on
+the held install, :763 on trunk's and :731 on the nightly), which release
+builds keep too.
+
+R2-D-m3 (addendum 1, item (3)): D-R's commit message (8bc84a2bc), counting
+its title as line 1, has one line of 84 columns, line 8,
+"instructions 3 and 4). Appendix D.5's three texts, verbatim but for the
+placeholders", three list-marker line starts, lines 12, 17 and 19, each
+"- fork/...", and line 23 starts with "+18, no deletion."; the message is not
+amended (the no-amend rule), and no repository file is affected. Whoever
+reuses the body in PR 59's text rewraps it to 80 columns and writes the three
+items, and line 23's count, as prose.
+
+Decided here (R29): Appendix D.5 takes D-R1-m1's mark and R2-D-m2's pointer
+as notes after its blocks, not inside them, so that its blocks stay the texts
+D-R committed at 8bc84a2bc (hand-off note 6: verbatim but for the
+placeholders) and a later comparison of the branch with this plan finds them
+equal, as unit A's record decided for D.1 and D.2; section 2.4 takes the
+mark in its sentence. _Break condition:_ the orchestrator rules that a block
+itself changes; that is then a records commit on PR 59's branch with the text
+the ruling gives, a stop under the Stop-and-amend record's instruction 5
+until that ruling.
+
+The amendments of this record, each marked: a paragraph after the status
+line; the contents; section 0.3's row for PR 59's own branch (F-D2's and
+D-R's gates, the review loop's runs and D-R1-m1's probes); section 2.4
+(F-D2's and D-R's shas, and D-R1-m1's sentence); section 2.8 step 6
+(R2-D-m2's edit in L59's list); section 3's rows 8, 9, 11 and 12 (measured
+marks); section 6's Slice D row (R2-D-m1); section 8's "not run" item 4;
+hand-off note 13 (R2-D-m2); and Appendix D.5 (a note after the JSON blocks,
+R2-D-m2, and one after the decision-log block, D-R1-m1). Unchanged: every
+decision's ruling and break condition, section 2.4's two code blocks,
+Appendix A.3's and A.4's sources, B.3's program and its header sentence
+(RR8-2's ruling), D.5's blocks, sections 4 and 5, every prediction for M59's
+tree and the landings, and units A, B and C's texts. Not R32: this record
+states no design; upstream's tip, fetched at 03:04 UTC, is b7919e8f5, whose
+docs/design/variadics.md matches "choice" or "alternative" only in its
+"Alternatives considered" heading (:975) and contents link (:36), and whose
+lower/type.cpp pads an array's element with `BuildTailPaddedType` (:610) and
+lowers no `PackType`.
+
+For the pusher (the Stop-and-amend record's instruction 5), at 03:08 UTC: the
+remote va head is b0822a744; no remote branch contains any of the five
+commits; origin/trunk and claude/carbon-fork-0-1-fo1 are 790ea706e, whose
+plan status line names rev 9. This record's commit is on
+claude/carbon-fork-0-1-fo1, is not pushed and changes neither check.
+
+Logs and probes: scratchpad/fo1-impl/D under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b, in
+implementer/ (r9_* and dr/ for F-D2 and D-R), rev1-r1/, rev2-r1/, fixer1/,
+rr1/ and recorder/ (this record's R31 counts and prek logs).
 
 ## Sign-off
 

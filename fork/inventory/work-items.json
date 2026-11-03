@@ -2485,6 +2485,34 @@
       ],
       "blocked_by": [],
       "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). The design gives a pack's bare name no meaning yet; slice 1 does not decide one (D-VA-11). Follows VA-1 slice 1. Break condition: the design or upstream gives the bare name a meaning or makes it an error, and the TODO becomes that rule."
+    },
+    {
+      "id": "W-367",
+      "kind": "missing-feature",
+      "title": "VA-1 residue (FO-1 D-FO1-5; LAND-1 item 13): a pack expansion pattern in a choice alternative's parameter list (`choice C { A(... each x: i32) }`) is a semantics TODO; it aborted in lowering before the TODO",
+      "subsystem": "toolchain/check (handle_pack_expansion.cpp)",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "toolchain/check/handle_pack_expansion.cpp the `Pattern` case's choice-alternative TODO (389cf3af0)",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon `fail_todo_choice_alternative` (249f23968)"
+      ],
+      "blocked_by": [],
+      "notes": "Upstream is silent on a choice alternative's parameter list in docs/design/variadics.md and p002240, and its parser rejects `...` there (`ExpectedPattern`); register NONE, watched by W-355. Break condition: the design speaks to choice alternatives, or VA-2 reaches an alternative's parameters (VA-2's hand-off note 9)."
+    },
+    {
+      "id": "W-368",
+      "kind": "implemented",
+      "title": "VA-1 (DISCHARGED at VA-1's W-368 fix, 2026-11-03; LAND-1 note 7, defect A): a pack of an element whose LLVM type is smaller than its array stride aborted at lower/type.cpp's layout check; a pack is now laid out at its element's array stride",
+      "subsystem": "toolchain/lower (type.cpp)",
+      "size": "S",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "Landed at VA-1 (a7f6f6395): toolchain/lower/type.cpp `BuildTypeForInst(PackType)` (`BuildTailPaddedType` to the stride)",
+        "toolchain/lower/testdata/variadics/pack_expansion.carbon `padded_element` (c7855285a); fork/conformance/programs/generics/variadics_padded_element.carbon"
+      ],
+      "blocked_by": [],
+      "notes": "VA-2's D-VA2-7 layout for PR 59's one-type pack (fork/followon/fo1-plan.md D-FO1-6); PR 66's merge takes VA-2's side of the function."
     }
   ]
 }

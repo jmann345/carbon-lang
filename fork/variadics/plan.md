@@ -8190,3 +8190,21 @@ row.
     entry "fork/conformance/programs/generics/variadics_each.carbon (PASS,
     expected)" rather than the file without a line beside that entry, so the
     file is not listed twice.
+
+## FO-1 fold record (2026-11-03)
+
+W-367 and W-368 are fixed on this branch (fork/followon/fo1-plan.md D-FO1-5,
+D-FO1-6). A pack expansion pattern in a choice alternative's parameter list
+(`choice C { A(... each x: i32) }`), which aborted in lowering, is a semantics
+TODO in handle_pack_expansion.cpp's `Pattern` case (389cf3af0, W-367), pinned by
+the splits `fail_todo_choice_alternative`,
+`fail_todo_choice_second_alternative` and `fail_todo_choice_in_class` of
+check/testdata/variadics/fail_todo_slice.carbon (filled by 249f23968). A pack
+of an element whose LLVM type is smaller than its array stride
+(`{.a: i32, .b: bool}`, `Core.Optional(i32)`), which aborted at
+lower/type.cpp's layout check, is laid out at its element's array stride
+(a7f6f6395, W-368), pinned by the split `padded_element` of
+lower/testdata/variadics/pack_expansion.carbon (filled by c7855285a) and by
+fork/conformance/programs/generics/variadics_padded_element.carbon. The gate
+after F-D2 is 1960 of 1960. These commits and this record take VA-1's two
+implementation reviews before they are pushed (D-FO1-9).

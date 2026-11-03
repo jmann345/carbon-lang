@@ -3629,6 +3629,11 @@ The next advance's four added conflicts (plan M-16) resolve by taking the
 fork's side, which holds upstream's lines, except the golden of (v).
 Veto-able.
 
+_W-367 and W-368 (2026-11-03, FO-1):_ a pack expansion pattern in a choice
+alternative's parameter list is a semantics TODO (389cf3af0, W-367), and a pack
+is laid out at its element's array stride (a7f6f6395, W-368), so neither form
+aborts (fork/followon/fo1-plan.md D-FO1-5, D-FO1-6).
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

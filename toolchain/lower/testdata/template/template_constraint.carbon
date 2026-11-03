@@ -750,9 +750,9 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'requirement_through_template_instantiation.carbon'
 // CHECK:STDOUT: source_filename = "requirement_through_template_instantiation.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @tuple.6f2.tuple.6f2 = internal constant { {}, {} } zeroinitializer
+// CHECK:STDOUT: @tuple.6f2.4af = internal constant { {}, {} } zeroinitializer
 // CHECK:STDOUT: @tuple.7fd.loc31_38.5 = internal constant { {}, i32 } { {} zeroinitializer, i32 1 }
-// CHECK:STDOUT: @tuple.799.tuple.799 = internal constant { {}, {} } zeroinitializer
+// CHECK:STDOUT: @tuple.799.77e = internal constant { {}, {} } zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CN.C.Main() #0 !dbg !136 {
@@ -786,15 +786,15 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i32 @_CTuple.Main.9522ff908e97e267() #0 !dbg !157 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Take.call.3e46d0.2 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.6f2.tuple.6f2), !dbg !160
-// CHECK:STDOUT:   ret i32 %Take.call.3e46d0.2, !dbg !161
+// CHECK:STDOUT:   %Take.call.b3b = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.6f2.4af), !dbg !160
+// CHECK:STDOUT:   ret i32 %Take.call.b3b, !dbg !161
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i32 @_CStruct.Main.9522ff908e97e267() #0 !dbg !162 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Take.call.146 = call i32 @_CTake.Main.eab0bcee34c43f4b({ {} } zeroinitializer), !dbg !165
-// CHECK:STDOUT:   ret i32 %Take.call.146, !dbg !166
+// CHECK:STDOUT:   %Take.call.848 = call i32 @_CTake.Main.eab0bcee34c43f4b({ {} } zeroinitializer), !dbg !165
+// CHECK:STDOUT:   ret i32 %Take.call.848, !dbg !166
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -807,8 +807,8 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i32 @_CMethodTuple.Main.9522ff908e97e267() #0 !dbg !175 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Take.call.6c2 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.799.tuple.799), !dbg !178
-// CHECK:STDOUT:   ret i32 %Take.call.6c2, !dbg !179
+// CHECK:STDOUT:   %Take.call.674 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.799.77e), !dbg !178
+// CHECK:STDOUT:   ret i32 %Take.call.674, !dbg !179
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -820,8 +820,8 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr i32 @_CF.Box.Main.9522ff908e97e267() #0 !dbg !184 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Take.call.3e46d0.1 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.6f2.tuple.6f2), !dbg !187
-// CHECK:STDOUT:   ret i32 %Take.call.3e46d0.1, !dbg !188
+// CHECK:STDOUT:   %Take.call.a1c = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.6f2.4af), !dbg !187
+// CHECK:STDOUT:   ret i32 %Take.call.a1c, !dbg !188
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind

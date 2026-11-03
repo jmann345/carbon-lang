@@ -357,6 +357,7 @@ fails if this table is stale):
 | `stdlib/optional_bool.carbon` | Stdlib: Optional | SKIP |
 | `stdlib/optional_compare_diff.carbon` | Stdlib: Optional | differential |
 | `stdlib/optional_compare_generic.carbon` | Stdlib: Optional | run |
+| `stdlib/optional_compare_in_place.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_compare_payload.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_destroys_value.carbon` | Stdlib: Optional | SKIP |
 | `stdlib/optional_missing_ops.carbon` | Stdlib: Optional | run |

@@ -231,6 +231,7 @@ fold: RR3-3).
 -   Implementation review fold record (unit B)
 -   Implementation review fold record (unit D)
 -   Implementation review fold record (unit C)
+-   Stop-and-amend record (rev 10, unit CM)
 -   Sign-off
 
 Conventions. `trunk` is origin/trunk 03b40f7c5. `$P` is the planner's scratch
@@ -668,7 +669,7 @@ logs in `$P/<sim>/`):
 | `sim60` with S (TP-1's S re-derived, section 2.5) | incremental | 2001 passed, 2 failed of 2003 | 195 PASS, 0 FAIL, 14 SKIP of 209; 50 bullets | the two refills: a note gains its location (`fail_requirement_through_template_instantiation.carbon:24:49` and four more) and lower IR names change (`@tuple.6f2.4af`); CHECK lines only |
 | `sim57x60` with S | incremental | 2001 passed, 10 failed of 2011 | not run | item 10 (a defect, section 0.2) and nine refills: SV-1's choice/optional_pointer_payload, interop/cpp/stdlib/optional and variant; PR 60's two above; DR-1a's m57 three; TP-1's lower/template/for_range (CT-1's PR 57 composition, "its red set empty but TP-1's for_range refill") |
 | `sim57x60` with S and D-FO1-1 | incremental | 2002 passed, 9 failed of 2011 | 206 PASS, 0 FAIL, 14 SKIP of 220; 50 bullets | the nine refills only; no `fail_`-prefix problem |
-| `sim57x60` with S, D-FO1-1 and D-FO1-4's prelude | install only | 1995 passed, 16 failed of 2011 | not run | the nine and seven W-352 refills: check optional/compare.carbon (164 lines) and optional/fail_compare.carbon (one note's prelude line, optional.carbon:215 to :280), lower optional/compare.carbon, optional/destroy.carbon, primitives/optional.carbon, for/bindings.carbon and interop/cpp/pointer.carbon; CHECK lines only (`$P/w352/gate_w352.log`) |
+| `sim57x60` with S, D-FO1-1 and D-FO1-4's prelude | install only | 1995 passed, 16 failed of 2011 | not run | the nine and seven W-352 refills: check optional/compare.carbon (164 lines) and optional/fail_compare.carbon (one note's prelude line, optional.carbon:215 to :280), lower optional/compare.carbon, optional/destroy.carbon, primitives/optional.carbon, for/bindings.carbon and interop/cpp/pointer.carbon; CHECK lines only (`$P/w352/gate_w352.log`); the delta of sixteen over nine hides W-352's refill of DR-1a's m57 three (lower array/iterate.carbon, for/break_continue.carbon and for/for.carbon), red among the nine already, whose OP-2 prelude lines after :275 C1 also moves (amended 2026-11-03, implementation: stop-and-amend, unit CM: measured on PR 57's own branch, the row of 50840acf2 merged with fa54b8d97 below) |
 | `sim57x60` with S, D-FO1-1 and rev 1's W-139 (withdrawn, section 7) | incremental | 2001 passed, 10 failed of 2011 | not run | the nine refills and fail_template_constraint_checked_binding.carbon, whose splits `fail_symbolic_arg` and `fail_require_in_interface_symbolic` now succeed |
 | `sim60` with S and rev 2's B1, the fixer's land tree (bd47fd623; added 2026-11-02, review fold: A-B-1 / B-B-1) | incremental, 4 steps after the first (deduce.cpp, structural_conformance.cpp and context.h's dependents) | 2000 passed, 3 failed of 2003: fail_template_constraint_checked_binding.carbon (its splits `fail_symbolic_arg` and `fail_require_in_interface_symbolic` succeed, a `fail_`-prefix problem the renames resolve) and F-M60's two refills; nothing else | not run before the fills | B1 changes no other golden |
 | the same with Appendix A.2's sources, F-B1's and F-M60's autoupdate and B.1's program | autoupdate only | 2003 passed, 0 failed of 2003 (autoupdate's second pass writes nothing) | 196 PASS, 0 FAIL, 14 SKIP of 210; 50 bullets | none |
@@ -687,6 +688,7 @@ logs in `$P/<sim>/`):
 | `sim59` | 324 steps, 6 m 37 s | 2004 passed, 0 failed of 2004 | 202 PASS, 0 FAIL, 14 SKIP of 216; 50 bullets | none |
 | `sim59` with W-367 and W-368 | incremental | 2004 passed, 0 failed of 2004 | not re-run | none |
 | e23113ba2 with A1, PR 57's own branch (47a3d9f4e, unit A's lane worktree; added 2026-11-02, implementation: stop-and-amend, unit A) | full, 322 steps, then a relink for the version stamp | 1950 passed, 0 failed of 1950 at e23113ba2, and with A1 before and after autoupdate of destroy.carbon, which writes nothing | 139 PASS, 0 FAIL, 22 SKIP of 161; 48 bullets, at e23113ba2 and with A1, no program's status or detail changed | none; F-A1 not made (section 2.1) |
+| 50840acf2 merged with fa54b8d97, C-M57 on PR 57's own branch (the lane's file_test and carbon-busybox, read only, over a detached worktree; added 2026-11-03, implementation: stop-and-amend, unit CM) | none (no C++ change; install only) | the merge with the two compare goldens by GOLD-1, before F-C-M57: 1941 passed, 9 failed of 1950, exactly check optional/compare.carbon and lower array/iterate.carbon, for/bindings.carbon, for/break_continue.carbon, for/for.carbon, interop/cpp/pointer.carbon, optional/compare.carbon, optional/destroy.carbon and primitives/optional.carbon; after autoupdate of those nine (its second pass writes nothing, CHECK lines only): 1950 passed, 0 failed of 1950 | 140 PASS, 0 FAIL, 22 SKIP of 162; 48 bullets, the new program's PASS the only change from 50840acf2's 139/0/22 over 161 | none; the three DR-1a m57 files change only in the line numbers of `!DISubprogram` and `!DILocation` lines of optional.carbon, 42 of them, each by 71, C1's insertion before OP-2's lines after :275 (section 2.3's last paragraph) |
 | b0822a744 with D1, F-D1 and D2, PR 59's own branch (389cf3af0, 249f23968 and a7f6f6395, unit D's lane worktree; added 2026-11-03, implementation: stop-and-amend, unit D) | full, 324 steps, then incremental | 1960 passed, 0 failed of 1960 at b0822a744; with D1, before and after its commit, 1959 passed, 1 failed of 1960, fail_todo_slice.carbon only (autoupdate, no CHECK failure); after F-D1 1960 of 1960; with D2, before and after its commit, 1959 passed, 1 failed of 1960, pack_expansion.carbon only (autoupdate, no CHECK failure); with F-D2's fill, not committed, 1960 of 1960; F-D2, committed as c7855285a, and D-R, as 8bc84a2bc, each 1960 passed, 0 failed of 1960 on the install before it with its change in the tree and again after its 2-step version-stamp rebuild (installs 0.0.0-0.dev+c7855285a and +8bc84a2bc, the brief's formula a7f6f6395 for both), and 1960 of 1960 in each run of the two reviews, the fixer and the re-review at 8bc84a2bc (measured 2026-11-03, implementation, unit D) | 137 PASS, 0 FAIL, 21 SKIP of 158, 49 bullets, at b0822a744 and with D1; 138 PASS, 0 FAIL, 21 SKIP of 159, 49 bullets, with D2, the new program's PASS the only change; the same at 8bc84a2bc in each of the review loop's four runs (measured 2026-11-03, implementation, unit D) | none in the gate; F-D2's fill differs from rev 5's prediction in section 2.4 (its IR, and two following splits' metadata numbers), the stop of "Stop-and-amend record (rev 8, 2026-11-03)"; a pack of one odd-width integer (`Core.Int(24)`, `Core.Int(520)`) aborts after D2 at its argument tuple's layout check, which trunk fails for a plain `(Core.Int(24),)` (probes c03, c04 and c06; measured 2026-11-03, implementation review fold: D-R1-m1: the pack's own layout; the argument tuple's check is trunk's, W-377) |
 | cc4daba00 with B1, F-B1, D-B and B-R, then the review fold's eight commits, PR 60's own branch (25a3c6947, c95e8fb5b, 2ee787f0d and c839ddec6, then 3736217e8 to 7d13e1626, unit B's lane worktree; added 2026-11-03, implementation review fold, unit B) | full, 323 steps, at cc4daba00 (install 0.0.0-0.dev+cc4daba00), then incremental: B1 110 steps, 3736217e8 4 steps, and a version-stamp rebuild of 2 steps after a commit that changes no toolchain file | 1959 passed, 0 failed of 1959 at cc4daba00; with B1, before and after its commit, 1956 passed, 3 failed of 1959, exactly fail_template_constraint_checked_binding.carbon, template_constraint_dependent.carbon and lower/template/template_constraint.carbon, each "Autoupdate would make changes", no `fail_`-prefix problem, no crash; after F-B1 1959 of 1959 (autoupdate's second pass writes nothing), the fills byte-identical to `$Q3`'s f1_pr60, f2_pr60 and f3_pr60; with 3736217e8 1958 passed, 1 failed of 1959, the check file only (its new pin split); after 4cdbc7ce4 1959 of 1959, and 1959 of 1959 at every later commit to 7d13e1626 | 130 PASS, 0 FAIL, 21 SKIP of 151, 49 bullets, at cc4daba00; 131 PASS, 0 FAIL, 21 SKIP of 152, 49 bullets, after F-B1, the new program's PASS the only change, and the same after 4cdbc7ce4, after 11411e343 and at 7d13e1626; B1's tree has F-B1's toolchain state (25a3c6947), program and README, so F-B1's measurement is B1's too (amended 2026-11-03, implementation review fold: B-R2r1-m3) | none in the gate; tclass aborts and pos1 prints an uninitialized value, as in the row of rev 4's B1 above, defects of the branch's base (R1-m4); leak1 printed 4 at c839ddec6 and is rejected at the definition from 3736217e8 on (R1-M1) |
 
@@ -1190,8 +1192,13 @@ changes a golden outside the set section 2.3 and section 4 name (OP-1's, OP-2's
 and SV-1's optional goldens, and lower for/bindings.carbon and
 interop/cpp/pointer.carbon, which print the prelude's IR names; amended
 2026-11-02, review fold: A-m-3 / B-m-1: rev 1's condition left out the two lower
-files its own measurement named); then W-352 gains `blocked_by` W-320 as its own
-break condition says, and PR 56 and PR 57 wait.
+files its own measurement named; OP-2's goldens in that set include lower
+array/iterate.carbon, for/break_continue.carbon and for/for.carbon, which the
+commit 189baa262 of OP-2 filled with OP-2's prelude lines after :275 and which
+change at C-M57 only in those lines' numbers, each by 71; amended 2026-11-03,
+implementation: stop-and-amend, unit CM: the land tree's measurement had
+masked them, as section 0.3 records); then W-352 gains `blocked_by` W-320 as
+its own break condition says, and PR 56 and PR 57 wait.
 
 **D-FO1-5, W-367: the refusal at the root.** In handle_pack_expansion.cpp's
 `Pattern` case, a pack expansion pattern whose list is a choice alternative's
@@ -2347,7 +2354,25 @@ cleanly, and no fork/ records file conflicts, unit C's commits changing none;
 the ruling's Addendum 1 says "all seven regions", the lower file's count;
 amended 2026-11-03, implementation review fold: R2-C-m5). F-C-M57 refills what
 PR 57's gate then names (predicted: OP-2's goldens that print optional.carbon
-lines and the comparison impls, among the seven of the land tree's W-352 set).
+lines and the comparison impls, among the seven of the land tree's W-352 set)
+(amended 2026-11-03, implementation: stop-and-amend, unit CM: measured on PR
+57's own branch, C-M57's gate, with the merge in the tree before its commit,
+is 1941 passed, 9 failed of 1950: six of the seven, check
+optional/compare.carbon and lower optional/compare.carbon,
+optional/destroy.carbon, primitives/optional.carbon, for/bindings.carbon and
+interop/cpp/pointer.carbon, check optional/fail_compare.carbon passing as
+merged from F-C1; and DR-1a's m57 three, lower array/iterate.carbon,
+for/break_continue.carbon and for/for.carbon, which print OP-2's prelude
+functions after :275, `Get`'s out-of-line body at :303 to :306 and
+`DefaultOptionalStorage(T)`'s `Destroy` at :284 to :286, lines C1 moves by
+71; the land tree hid these three, which were red there for DR-1a's m57
+already. F-C-M57 fills the nine, CHECK lines only, with the numstat 20/20,
+14/14, 14/14, 14/14, 14/14, 7/7, 238/301, 21/21 and 21/21 in the order of the
+gate's list, the three DR-1a files' 42 changed lines each a line number raised
+by 71 and nothing else, autoupdate's second pass writing nothing, the gate
+after it 1950 of 1950 and conformance 140/0/22 over 162 with 48 bullets, the
+new program's PASS the only change; the "Stop-and-amend record (rev 10,
+2026-11-03)").
 Commit C-R, W-352's discharge note, H5.4's verdict, the decision-log paragraph
 and optional.md's amendment (Appendix C.3, D.4), is made on PR 56's branch after
 its land merge M56 (section 2.6), because W-352 and the register files exist
@@ -2758,6 +2783,11 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     the conflicts are PR 57's over `sim56` (section 0.3): lower/testdata
     array/iterate.carbon, for/break_continue.carbon and for/for.carbon, CHECK
     lines only, each taken from trunk's side by GOLD-1 and refilled in step 3;
+    F-C-M57 has refilled their optional.carbon line numbers on PR 57's side
+    first (section 2.3), so their region counts may differ from section 0.3's
+    three each, which is not a difference while every conflicted line in the
+    three files is a CHECK line, the same rule taking each region
+    (amended 2026-11-03, implementation: stop-and-amend, unit CM);
     the records files by D-LAND-5. Measured: `sim60x57`'s toolchain, core and
     docs trees equal `sim57x60`'s, so the order of stages 13 to 15 changes no
     code. docs/design/optional.md, which C-R edits on trunk's side and OP-2 on
@@ -2919,8 +2949,8 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 3 | op2 (57) | A-R | OP-2: item 10 recorded (D-FO1-1) | fork/optional2/plan.md; fork/decision-log.md | unchanged, 1950 of 1950 (records only, with D.1's and D.2's texts as rev 7 gives them; amended 2026-11-02, implementation: stop-and-amend, unit A; amended 2026-11-02, stop-and-amend re-review: RR6-3) (measured 2026-11-03, implementation, unit A: A-R is 50840acf2, the gate after its rebuild 1950 of 1950) |
 | 4 | op (56) | C1 | OP-1 fix: Core.Optional compares its payloads in place (W-352) | core/prelude/types/optional.carbon; two programs; fork/conformance/README.md | the W-352 goldens of OP-1 and SV-1 named in section 2.3 (measured 2026-11-03, implementation, unit C: C1 is c655d55f3, its gate 1942 passed, 3 failed of 1945, exactly OP-1's check optional/compare.carbon, check optional/fail_compare.carbon and lower optional/compare.carbon; lower/testdata/primitives/optional.carbon stays in F-C-M57's set; conformance 133/0/25 over 158, 48 bullets; amended 2026-11-03, implementation review fold: R1-m3 / R2-C-m5) |
 | 5 | op (56) | F-C1 | OP-1 fix fill: autoupdate W-352's goldens on the container arbiter | the files the gate names | all pass (measured 2026-11-03, implementation, unit C: F-C1 is 4509064fc, 77/87, 1/1 and 248/249 CHECK lines in the three files, 1945 of 1945; the review fold's fa54b8d97 follows it, "Implementation review fold record (unit C, 2026-11-03)") |
-| 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls |
-| 7 | op2 (57) | F-C-M57 | OP-2: autoupdate the goldens OP-1's W-352 fix changes | the files the gate names | all pass |
+| 6 | op2 (57) | C-M57 | OP-2: merge OP-1's W-352 fix (R32 (e)) | merge; records conflicts by D-LAND-5's rules | OP-2's goldens that print the comparison impls (amended 2026-11-03, implementation: stop-and-amend, unit CM: 1941 passed, 9 failed of 1950, the nine files of section 2.3's measured sentence, DR-1a's m57 three among them, measured with the merge in the tree before the commit) |
+| 7 | op2 (57) | F-C-M57 | OP-2: autoupdate the goldens OP-1's W-352 fix changes | the files the gate names (amended 2026-11-03, implementation: stop-and-amend, unit CM: the nine of row 6) | all pass (amended 2026-11-03, implementation: stop-and-amend, unit CM: 1950 of 1950, conformance 140/0/22 over 162, 48 bullets) |
 | 8 | va (59) | D1 | VA-1 fix: a pack expansion pattern in a choice alternative's parameter list is a TODO (W-367) | check/handle_pack_expansion.cpp; check/testdata/variadics/fail_todo_slice.carbon | autoupdate would change fail_todo_slice.carbon (measured 2026-11-03, implementation, unit D: D1 is 389cf3af0, its gate 1959 passed, 1 failed of 1960, fail_todo_slice.carbon only; conformance 137/0/21 over 158, 49 bullets, as at b0822a744) |
 | 9 | va (59) | F-D1 | VA-1 fix fill: autoupdate W-367's split on the container arbiter | fail_todo_slice.carbon | all pass (measured 2026-11-03, implementation, unit D: F-D1 is 249f23968, 12 CHECK:STDERR lines, 1960 of 1960) |
 | 10 | va (59) | D2 | VA-1 fix: a pack is laid out at its element's array stride (W-368) | lower/type.cpp; lower/testdata/variadics/pack_expansion.carbon; one program; README table | autoupdate would change pack_expansion.carbon (measured 2026-11-03, implementation, unit D: D2 is a7f6f6395, its gate 1959 passed, 1 failed of 1960, pack_expansion.carbon only; conformance 138/0/21 over 159, 49 bullets) |
@@ -2964,11 +2994,11 @@ written by hand, and each fill is autoupdate's, reviewed as a diff.
 | check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon (`fail_symbolic_arg_impl_deduction`, and the comment of `fail_extend_require_in_interface_symbolic`) | 3736217e8 (the review fold's fix commit) | the split appended after the file's last split, and the comment naming the renamed split `require_in_interface_symbolic` in the same five lines (Appendix A.2; row added 2026-11-03, implementation review fold: R1-M1 / R1-m2) | 4cdbc7ce4: +7/-0, ``cannot convert type `U` into type implementing `I & HasGet` [ConversionFailureTypeToFacet]`` at `CallF(x)` with the `DeductionGenericHere` note at `CallF`; autoupdate's second pass writes nothing | the gate with 3736217e8, 1958 passed, 1 failed of 1959, this file only; after the fill 1959 of 1959 |
 | check/testdata/named_constraint/template_constraint_require.carbon (`fail_todo_require_in_interface_in_generic_class_impl`'s comment) | 4fb4324b1 (the review fold, records-only) | two of the comment's seven lines (:527-533) changed in place, :529's cite to structural_conformance.cpp:579 and :531's to W-373 (Appendix A.2; row added 2026-11-03, implementation review fold: RR2-B-m1) | none: no CHECK line or `[[@LINE]]` offset moves, the file is 600 lines before and after, and autoupdate writes nothing | the gate 1959 of 1959 with no refill |
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon; lower/testdata/template/template_constraint.carbon; check/testdata/named_constraint/template_constraint_dependent.carbon | M60 | none | F-M60: a note's location; IR names; the note the branch's `call_action` replay adds (template_constraint_dependent.carbon added 2026-11-02, review fold: RR3-4) | `$P/sim60/gateS.log`; section 0.3's rows for PR 60's own branch |
-| check/testdata/optional/compare.carbon; check/testdata/optional/fail_compare.carbon; lower/testdata/optional/compare.carbon; lower/testdata/optional/destroy.carbon; lower/testdata/primitives/optional.carbon; lower/testdata/for/bindings.carbon; lower/testdata/interop/cpp/pointer.carbon | C1 | none | F-C1 (OP-1's files on PR 56) and F-C-M57 (the rest on PR 57); CHECK lines only | `$P/w352/gate_w352.log` |
+| check/testdata/optional/compare.carbon; check/testdata/optional/fail_compare.carbon; lower/testdata/optional/compare.carbon; lower/testdata/optional/destroy.carbon; lower/testdata/primitives/optional.carbon; lower/testdata/for/bindings.carbon; lower/testdata/interop/cpp/pointer.carbon | C1 | none | F-C1 (OP-1's files on PR 56) and F-C-M57 (the rest on PR 57); CHECK lines only | `$P/w352/gate_w352.log`; F-C-M57's set on PR 57's own branch is the next row's three and six of these, check optional/fail_compare.carbon passing as merged (amended 2026-11-03, implementation: stop-and-amend, unit CM) |
 | check/testdata/variadics/fail_todo_slice.carbon | D1 | splits `fail_todo_choice_alternative`, `fail_todo_choice_second_alternative` and `fail_todo_choice_in_class` (Appendix A.3) | F-D1: section 2.4's four lines each | h01 with W-367; h08 and h10 by review A |
 | lower/testdata/variadics/pack_expansion.carbon | D2 | split `padded_element` (Appendix A.4) | F-D2: its LLVM IR, which passes the pack as its value representation `[3 x ptr]` and prints no padded type, and 98 CHECK:STDOUT lines of the splits lib.carbon and use.carbon in which every `!N` numbered 283 or more rises by 54 and the seven references to `!34`, `!36`, `!38`, `!48` and `!50` keep their numbers, which are not a difference; the filled file's sha1, af0b823f75e56c4a264823e1ec33b4888f4e8d69, governs (section 2.4; amended 2026-11-03, implementation: stop-and-amend, unit D; amended 2026-11-03, stop-and-amend re-review: RR8-1) | e13 prints 7 with W-368; PR 59's held file_test aborts on the filled golden at lower/type.cpp:936 and D2's passes it (Stop-and-amend record, rev 8) |
 | SV-1's choice/optional_pointer_payload.carbon, interop/cpp/stdlib/optional.carbon, variant.carbon | M56 or M57 | none | F-M56 or F-M57 | `$P/sim57x60/gate.log` |
-| lower/testdata/array/iterate.carbon, for/break_continue.carbon, for/for.carbon | M57 | conflicted, trunk's side (GOLD-1) | F-M57 (DR-1a's m57) | section 0.3 |
+| lower/testdata/array/iterate.carbon, for/break_continue.carbon, for/for.carbon | C-M57; M57 | C-M57: none; M57: conflicted, trunk's side (GOLD-1) | F-C-M57: OP-2's prelude lines after :275, each line number raised by 71, 14/14 in each (amended 2026-11-03, implementation: stop-and-amend, unit CM); F-M57 (DR-1a's m57) | section 0.3, the row of 50840acf2 merged with fa54b8d97 |
 | lower/testdata/template/for_range.carbon | M57 | none | F-M57 (CT-1's PR 57 composition) | `$P/sim57x60/gate.log` |
 | SV-1's fail_todo_core_optional.carbon | M57 | none | only if M57's gate names it | SV-1 section 3 item 8 |
 | M-VA's and S-VA's splits; VA-2's S-CT file | M-VA, S-VA, S-CT | their plans' sources | F-M59, F-M | their plans |
@@ -3311,6 +3341,19 @@ Run for this plan (container-local, EXPECTED, not of record, R9):
     lower/type.cpp:936); RR8-3 from carbonbuild/gen_ninja.py:457-462 and the
     brief's formula at 389cf3af0, 249f23968 and a7f6f6395; no worktree or
     build was made.
+14. Rev 10's amender (added 2026-11-03, implementation: stop-and-amend, unit
+    CM): the heads re-read at 04:33 UTC (op fa54b8d97, op2 50840acf2, this
+    branch 20891c7f6), the lane worktree clean at 50840acf2; upstream fetched,
+    b7919e8f5; a detached worktree /dev/shm/fo1/amend10/wt-op2m at 50840acf2
+    with the lane build's carbon-busybox and file_test copied beside it (read
+    only, version 0.0.0-0.dev+50840acf2, no C++ change in the merge); `git
+    merge --no-ff --no-commit fa54b8d97`, the two compare goldens by GOLD-1
+    with `git merge-file --ours`, byte-identical to the implementer's
+    merge_state; `install.sh`, the gate (1941 passed, 9 failed of 1950, the
+    implementer's nine), autoupdate of the nine twice (the second pass writing
+    nothing), the gate (1950 of 1950), conformance (140/0/22 over 162, 48
+    bullets) and `runner.py --self-test`; the worktree and its build were
+    removed after measuring.
 
 The slices' and landings' implementers run, at each commit: the build, the
 gate, autoupdate to its fixpoint on exactly the files the gate names, the
@@ -3350,7 +3393,10 @@ Not run by this plan, and why:
     (section 0.3's row; measured 2026-11-03, implementation, unit B); F-D2
     and D-R have since been committed on PR 59's own branch, each gated
     before and after its rebuild, and D1 to D-R reviewed there
-    (section 0.3's row; measured 2026-11-03, implementation, unit D).
+    (section 0.3's row; measured 2026-11-03, implementation, unit D); C-M57
+    and F-C-M57 have since been measured on PR 57's own branch, uncommitted,
+    by unit CM's implementer and rev 10's amender (section 0.3's row;
+    amended 2026-11-03, implementation: stop-and-amend, unit CM).
 5.  The register scripts (`check_quotes.sh`, `check_greps.sh`) and DD-1's and
     EV-1's checkers on the land trees: records-time checks, run by each
     landing.
@@ -7488,6 +7534,123 @@ implementer/, rev1-r1/, rev2-r1/, fixer/, fixer-r1b/, fixer3/ to fixer6/,
 rr1/ to rr5/ and recorder/ (this record's R31 counts, prek log and the
 merge-tree simulation).
 
+## Stop-and-amend record (rev 10, 2026-11-03)
+
+The stop. Unit CM's implementer (OP-2, PR 57, lane 2) confirmed the pushed
+heads with `git ls-remote` (op2 50840acf2, PR 57 after Slice A; op fa54b8d97,
+PR 56 after Slice C), built a fresh worktree of 50840acf2
+(/dev/shm/fo1/lane2/wt-op2m, CB_BUILD_ROOT=/dev/shm/fo1/lane2/builds,
+CB_JOBS=2, 322 steps, the brief's formula 47a3d9f4e) and measured the base:
+the gate 1950 of 1950, conformance 139/0/22 over 161 with 48 bullets. The
+merge, `git merge --no-ff --no-commit fa54b8d97`, conflicted exactly as
+section 2.3 says, five regions in check/testdata/optional/compare.carbon and
+seven in
+lower/testdata/optional/compare.carbon, every conflicted line a CHECK line, no
+fork/ records file; GOLD-1 resolved both; optional.carbon's diff against
+50840acf2 is C1's 81/10; prek passed with nothing changed; R31's counts of
+fork/conformance/README.md moved only by its new row. The gate with the merge
+in the tree, before the commit, was "1941 passed, 9 failed (exit 1, 33s)": six
+of section 2.3's seven, and three files no passage names for C-M57,
+toolchain/lower/testdata/array/iterate.carbon, for/break_continue.carbon and
+for/for.carbon. It stopped before committing C-M57 (D-FO1-11; D-FO1-4's break
+condition), aborted the merge and left the lane worktree clean at 50840acf2
+with its install rebuilt to 0.0.0-0.dev+50840acf2. Its logs are
+scratchpad/fo1-impl/CM/implementer under
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b
+(cm57_pre_gate.log, cm57_pre_gate_full.log, probe_au3.diff, merge_state/).
+
+Reproduced by the amender (scratchpad/fo1-impl/CM/amend10, section 8 item 14):
+the same merge and GOLD-1 resolution, the resolved goldens byte-identical to
+the implementer's, gives the same nine failures (gate_merged.txt); autoupdate
+of the nine writes CHECK lines only and nothing on its second pass; the three
+files' fill equals the implementer's probe_au3.diff byte for byte; the gate
+after it is 1950 of 1950 (gate_filled.txt) and conformance 140/0/22 over 162
+with 48 bullets (conf.log), the new program stdlib/optional_compare_in_place
+passing and OP-1's and OP-2's programs as before. The filled files are in
+filled/, the whole fill in fcm57.diff (sha1
+743ce9c577eb81b1292057a771ae9a6cc4b0ca5c).
+
+Root cause: a golden the plan's matrix missed, because the prediction was
+measured on a simulation where it was masked. The three files are OP-2's
+goldens: OP-2's 189baa262 filled them with the debug locations of OP-2's prelude
+code after :275, the out-of-line `Optional(T).Get` (:302, its body :303 to :306)
+and `DefaultOptionalStorage(T)`'s `Destroy` impl (:284 to :286). On PR 56's
+branch they print no optional.carbon line after :205, so C1's gate there did not
+name them (section 2.3, unit C). On PR 57's branch C1's net 71 added lines move
+every one of those lines by 71, which is the whole of the refill: in all 42
+changed lines, each a line number raised by 71, no other text. The plan's W-352
+set came from section 0.3's land tree `sim57x60`, where the three files were
+already red for DR-1a's m57 composition, so the delta from nine to sixteen
+failures counted only the seven newly red files and hid W-352's share of these
+three. No moved head (every head re-read), no defect in C1's block (it merges
+cleanly and is unchanged), no upstream rule (the change is in goldens only;
+upstream's tip b7919e8f5 adds a GitHub Actions bump since a7e2f3418, nothing
+under core, docs/design or toolchain, so no R32 statement moves).
+
+The amendment. D-FO1-4's ruling and break condition are kept. Its set names
+OP-2's optional goldens, and these three are OP-2's goldens whose only
+optional.carbon content is OP-2's prelude lines, changed only in their line
+numbers by C1's insertion; rev 10 names them in that set, so the break
+condition does not fire on them, as rev 2 named the two lower files that print
+the prelude's IR names. This is a correction of the set's enumeration, not of
+the decision; a golden outside the ten (the seven and these three), or any
+other change in these three, still fires it. Amended: section 0.3 (the
+masked row and a new row for the branch's measurement), D-FO1-4 (the set),
+section 2.3 (F-C-M57's measured set), section 2.7 step 2 (M57's region rule
+for the three after F-C-M57), section 3 rows 6 and 7, section 4 (the W-352
+row and the three files' row), section 8 (item 14 and the not-run item 4),
+each with the mark "(amended 2026-11-03, implementation: stop-and-amend, unit
+CM: ...)"; and the sign-off table's RR8 row, whose "rev 9 (this commit)" names
+69b749783. No code block, golden source, program, records text, conformance
+row or other decision changes: section 5 has no row for the branch, and its
+stage-15 row stands.
+
+Instructions to the implementer of unit CM:
+
+1.  Re-read the heads with `git ls-remote`: op2 must be 50840acf2 and op
+    fa54b8d97 (D-FO1-11); confirm the lane worktree is clean at 50840acf2 and
+    its install prints 0.0.0-0.dev+50840acf2. No commit was made, so nothing is
+    reset.
+2.  Redo C-M57 as section 2.3 gives it: `git merge --no-ff --no-commit
+    fa54b8d97`; resolve check/testdata/optional/compare.carbon and
+    lower/testdata/optional/compare.carbon by GOLD-1, taking PR 57's side, with
+    `git merge-file --ours` on stages 2, 1 and 3; the results must be
+    byte-identical to merge_state/check_compare.resolved and
+    lower_compare.resolved; `git diff --name-only --diff-filter=U` prints
+    nothing. Run prek on the merged files, R31's counts of
+    fork/conformance/README.md (rows 163 to 164, lines 418 to 419, the rest
+    unchanged), `runner.py --self-test` (162 programs, 56 bullets), the
+    install, and the gate, predicted 1941 passed, 9 failed of 1950, exactly
+    check optional/compare.carbon and lower array/iterate.carbon,
+    for/bindings.carbon, for/break_continue.carbon, for/for.carbon,
+    interop/cpp/pointer.carbon, optional/compare.carbon,
+    optional/destroy.carbon and primitives/optional.carbon. Commit C-M57 with
+    its title verbatim, "OP-2: merge OP-1's W-352 fix (R32 (e))", the body
+    naming D-FO1-4 and this record, then rebuild and install (the version
+    stamp; verify the install's hash against the brief's formula).
+3.  F-C-M57, "OP-2: autoupdate the goldens OP-1's W-352 fix changes": the gate
+    again (the same nine), autoupdate on exactly those nine to its fixpoint,
+    predicted `git diff --numstat` 20/20, 14/14, 14/14, 14/14, 14/14, 7/7,
+    238/301, 21/21 and 21/21 in the gate's order above, CHECK lines only, the
+    three DR-1a files' changed lines each an optional.carbon line number
+    raised by 71 and nothing else, every file byte-identical to amend10's
+    filled/; the second pass writes nothing; the gate 1950 of 1950;
+    conformance 140/0/22 over 162 with 48 bullets; `--self-test` OK. Commit
+    with its title verbatim and explicit paths, the body naming the nine files
+    and, for the three, DR-1a's m57 goldens refilled for OP-2's prelude lines
+    (D-LAND-8's PR naming), then rebuild for the version stamp and gate again.
+4.  No new commit is added: the change is a fill of goldens, no code.
+
+Break condition of this amendment: C-M57's gate names a file other than the
+nine, or the fill of any of the nine writes a line other than a CHECK line, or
+the three DR-1a files change in anything but an optional.carbon line number
+raised by 71, or a filled file differs from amend10's filled/; then STOP for
+the orchestrator's ruling, which must decide whether D-FO1-4's break condition
+fires (W-352 gains `blocked_by` W-320 and PR 56 and PR 57 wait) or the set is
+widened by a ruling. A different region count at M57 in the three files is
+not a difference while every conflicted line is a CHECK line (section 2.7
+step 2).
+
 ## Sign-off
 
 Signed off 2026-11-02 at rev 5: RR3's verdict is APPROVE-WITH-AMENDMENTS with no
@@ -7502,7 +7665,7 @@ of this plan:
 | RR2 | rev 3 (dee3d0cc0) | REJECT | 2 (RR2-1, RR2-2) | 1 (RR2-3) | 3 (RR2-4 to RR2-6) | rev 4 (4a574eaf3) | 0 |
 | RR3 | rev 4 (4a574eaf3) | APPROVE-WITH-AMENDMENTS | 0 | 1 (RR3-1) | 3 (RR3-2 to RR3-4) | rev 5 (5e3279a12) | 0 |
 | RR6 | rev 6 (85125ceb4) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 4 (RR6-1 to RR6-4) | rev 7 (f609533dc) | 0 |
-| RR8 | rev 8 (7e00cbff6) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 (RR8-1 to RR8-3) | rev 9 (this commit) | 0 |
+| RR8 | rev 8 (7e00cbff6) | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 (RR8-1 to RR8-3) | rev 9 (69b749783) | 0 |
 
 Five reviews, 34 findings (6 BLOCKER, 9 MAJOR, 19 MINOR), all folded and none
 rejected; reviews A and B shared some findings (A-B-1 with B-B-1, A-B-3 with
@@ -7542,3 +7705,11 @@ they are: with RR6 and RR8, seven reviews and 41 findings (6 BLOCKER, 9 MAJOR,
 break condition, code block, golden source, program or predicted value either;
 it rewords the break condition of the Stop-and-amend record's amendment
 (RR8-1, RR8-3).
+
+Rev 10 (amended 2026-11-03, implementation: stop-and-amend, unit CM) leaves this
+sign-off as it is: it names the three DR-1a m57 goldens in F-C-M57's measured
+set and in D-FO1-4's set of OP-2's goldens, whose break condition is kept and
+does not fire on them, and records C-M57's and F-C-M57's measured predictions on
+PR 57's branch; it changes no decision's ruling, code block, golden source,
+program, records text or conformance row (the record "Stop-and-amend record
+(rev 10, 2026-11-03)").

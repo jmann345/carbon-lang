@@ -706,8 +706,11 @@ by value (W-309), though a `var` holding it is. C++20 concepts can be used: a
 C++20 concept `IsLarge` applied to a C++ type is a compile-time `bool`, so
 `Cpp.IsLarge(Cpp.Small)` can be a generic argument
 (`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon
-constraints are not exported as C++ concepts (W-029). Using Carbon generics
-from C++ is described in [Using Carbon from C++](#using-carbon-from-c).
+constraints are not exported as C++ concepts (W-029); the design of both
+directions is in
+[Template constraints](../generics/template_constraints.md#mapping-to-and-from-c20-concepts).
+Using Carbon generics from C++ is described in
+[Using Carbon from C++](#using-carbon-from-c).
 
 ## Using Carbon from C++
 

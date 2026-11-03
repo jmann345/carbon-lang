@@ -353,12 +353,6 @@ SAMPLES = [
         "X11_template_dependent_bound.carbon",
     ),
     (
-        "templates.md",
-        "Templates in the 0.1 toolchain",
-        QUOTE,
-        "X12_template_constraint_decl.carbon",
-    ),
-    (
         "metaprogramming.md",
         "Compile-time evaluation in the 0.1 toolchain",
         PROGRAM,

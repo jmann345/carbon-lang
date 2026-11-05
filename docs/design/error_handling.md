@@ -443,6 +443,14 @@ alternatives to match on (`core/prelude/types/optional.carbon`). Rebuilding
 design's B1 stage depends on; see
 [Implementation staging](#implementation-staging).
 
+> **Fork amendment (2026-10-13, OP-1, F-015):** W-058 was discharged without
+> rebuilding `Core.Optional` as a choice: the fork's
+> [Optional design](optional.md) keeps the class (D-EH-1), so the `match` body
+> above does not apply in 0.1, the landed `Try` impl stays as the amendment
+> above records it, signature and body, and `.Some`/`.None` patterns over
+> `Core.Optional` remain future work (W-177). EH-A's amendment above cites the
+> class at `core/prelude/types/optional.carbon:29`; it is at :30 in the fork.
+
 > **Amendment (2026-10-21, DR-1; R32, DR-0).** "The `match` body above applies
 > verbatim once W-058 makes `Optional` a choice", and the paragraph above's
 > "Rebuilding `Core.Optional` as a choice type", no longer hold: W-058 kept

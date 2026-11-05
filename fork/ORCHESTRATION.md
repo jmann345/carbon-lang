@@ -264,10 +264,40 @@ toolchain (every PR body names exactly what ran and what did not), not on a
 hosted run. SC-1 is through fill round 3 (head 2497d5000, gate 1959/1959,
 conformance 130/0/21 over 151) with a round-3 review in progress; W-168 and
 W-169 are reserved for its late residues. OP-1 (claude/carbon-fork-0-1-op,
-fork/optional/plan.md: Core.Optional comparison for W-058) is in planning with
-ids from W-170 and fork design id F-015 if minted. Merge order now: PR 53, PR
+fork/optional/plan.md: Core.Optional comparison for W-058) uses W-170..W-179 and
+W-195 and minted fork design id F-015 (made exact at the OP-1 discharge; it was
+in planning with ids from W-170 and F-015 if minted). Merge order now: PR 53, PR
 51, PR 52, SC-1, PR 54 (EV-1, after its state C integration commit), PR 55
 (ST-1), then OP-1. None is merged.
+
+Later on 2026-10-13, the OP-1 discharge (pushed, PR to open and hold): OP-1
+(claude/carbon-fork-0-1-op, fork/optional/plan.md rev 2, W-058, gap row 78
+"Stdlib: Optional", fork design F-015) is IMPLEMENTED AND DISCHARGED off trunk
+9d3ca60a3, with the row kept PARTIAL by design (D-OP-13) — 5d9edb3e0
+(core/prelude/types/optional.carbon 204 → 275 lines: `final` `EqWith` and
+`OrderedWith` impls for `Core.Optional(T)` whenever `T` is `Core.Eq` or
+`Core.Ordered`, with `std::optional`'s rules; the dated F-015 line above the
+placeholder TODO; three CHECK-free goldens), 4dc9dbefc (the autoupdate fill:
+exactly the three new goldens, no existing golden moved), a8daacf11
+(optional_missing_ops SKIP → PASS, three new PASS programs, one with a C++17
+oracle, three write-tests-first SKIPs, docs/design/optional.md, three dated
+amendments), 1fc03110e (the implementer's pre-review fix), 49e2cf2bf (both
+implementation reviews folded: 2 MAJOR and 17 MINOR, none rejected; the SKIP
+optional_nested_pointer added), aa89cd7cd (the merge of trunk 162c7e839,
+fork/ORCHESTRATION.md only) and the discharge commit (W-058 DISCHARGED; row 78
+stays PARTIAL, bounded by W-170 and W-171; W-170..W-179 and W-195 filed; the
+F-015 decision-log entry). Verification is container-built and NOT of record
+(Actions disabled): the carbonbuild toolchain of 5d9edb3e0, file_test 1945/1945
+on the merge commit, the expected scoreboard 132 PASS / 0 FAIL / 25 SKIP over
+157, 48/56 bullets (scoreboard generated 2026-10-13T23:57:07Z), the eight
+Optional programs the only change from the floor of record 128 / 0 / 22 over
+150, and mutants A, B and M2 each caught by one program. Not run: Bazel and its
+tests, clangd-tidy, any hosted run, an opt-mode toolchain, LLVM assertions,
+non-Linux. Merge position: LAST, after PR 53, PR 51, PR 52, SC-1, PR 54 and PR
+55, with DD-1 after it. The plan's W-190 is re-allocated to W-195, because
+DD-1's plan rev 2 (on its branch at a1d96520a) reserves W-180..W-194 and gives
+W-190 to another defect; that reservation is not on trunk yet. The merge steps
+are Next actions item 5; item 6 holds the two SAFE-1 amendments OP-1 owes.
 
 DD-1 discharge (2026-10-14, state T; pushed after the implementation-review fold
 and again after the second, the third and the fourth document-review rounds'

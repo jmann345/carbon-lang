@@ -1159,10 +1159,13 @@ static auto DeferCppCallOnSymbolicArgs(Context& context, SemIR::LocId loc_id,
   }
   // A form-dependent argument, such as a reference to `x:? Fm`, has no form
   // that the call could take in a specific either, so the call is left to
-  // `PerformCallHelper`, which reports that where the call is written.
+  // `PerformCallHelper`, which reports that where the call is written. So is
+  // a pack expansion argument, which a C++ function has no pack expansion
+  // parameter to match (D-VA-5).
   if (llvm::any_of(arg_ids, [&](SemIR::InstId arg_id) {
         return SemIR::GetExprCategory(context.sem_ir(), arg_id) ==
-               SemIR::ExprCategory::Dependent;
+                   SemIR::ExprCategory::Dependent ||
+               IsPackExpansionArg(context, arg_id);
       })) {
     return SemIR::InstId::None;
   }

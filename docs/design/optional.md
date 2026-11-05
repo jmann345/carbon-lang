@@ -421,10 +421,12 @@ dispatches through `HasValue()` and `Get()`, the same two-way split as the
 design's `match` sketch, because `Core.Optional` is not a choice.
 
 A `for` loop over a type that implements `Iterate` calls its `Next`, which
-returns `Optional(ElementType)`, and stops at the first empty value; the
-toolchain calls `HasValue()` and `Get()` by name, which is why those two names
-are part of this design
-([Loop desugaring](control_flow/loops.md#loop-desugaring)).
+returns `Optional(ElementType)`, and stops at the first empty value; until
+`Core.Optional` is matchable (W-320), the toolchain calls `HasValue()` and
+`Get()` by name in place of the design's `match`, as upstream's checker does
+under its TODO
+([Loop desugaring](control_flow/loops.md#loop-desugaring), its fork amendment
+of 2026-10-21).
 Because `Core.Optional(T)` needs `T: Copy & Destroy` (W-176), so does
 `Iterate.ElementType`: a range of non-copyable values cannot be iterated yet
 (core/prelude/iterate.carbon, "TODO: Support iterating ranges of non-copyable

@@ -58,6 +58,22 @@ inline auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
   }
   return std::get<1>(v) != nullptr ? *std::get<1>(v) * 2 : -9;
 }
+
+inline int nested_cell = 81;
+
+inline auto MakeNested(int k) -> std::optional<int*> {
+  if (k == 0) {
+    return std::nullopt;
+  }
+  if (k == 1) {
+    return static_cast<int*>(nullptr);
+  }
+  return &nested_cell;
+}
+
+inline auto TakeNested(std::optional<int*> o) -> int {
+  return o.has_value() ? (*o != nullptr ? **o : -2) : -1;
+}
 ''';
 
 fn Seed(x: i32) -> i32 { return x + 5; }
@@ -97,6 +113,17 @@ inline auto UseInspectVariant(int n) -> int {
 }
 ''';
 
+fn ShowNested(o: Core.Optional(Core.Optional(i32*))) -> i32 {
+  if (not o.HasValue()) {
+    return -10;
+  }
+  let p: Core.Optional(i32*) = o.Get();
+  if (not p.HasValue()) {
+    return -20;
+  }
+  return *p.Get();
+}
+
 fn Run() -> i32 {
   let some: Core.CppCompat.StdOptional(i32) =
       Core.CppCompat.StdOptional(i32).Some(Seed(30));
@@ -133,5 +160,20 @@ fn Run() -> i32 {
       Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(&cell)));
   Core.Print(Cpp.TakeIntOrPointer(
       Core.CppCompat.StdVariant2(i32, Core.Optional(i32*)).Alt1(no_cell)));
+  // A C++ `std::optional<int*>` converts in one step to
+  // `Core.Optional(Core.Optional(i32*))` and back (needs PR 57's
+  // `Core.Optional(T)` of an Optional payload): empty, engaged with a null
+  // pointer, and engaged with the address of a C++ global holding 81.
+  let empty: Core.Optional(Core.Optional(i32*)) = Cpp.MakeNested(Seed(-5));
+  let engaged_null: Core.Optional(Core.Optional(i32*)) =
+      Cpp.MakeNested(Seed(-4));
+  let engaged_cell: Core.Optional(Core.Optional(i32*)) =
+      Cpp.MakeNested(Seed(-3));
+  Core.Print(ShowNested(empty));
+  Core.Print(ShowNested(engaged_null));
+  Core.Print(ShowNested(engaged_cell));
+  Core.Print(Cpp.TakeNested(empty));
+  Core.Print(Cpp.TakeNested(engaged_null));
+  Core.Print(Cpp.TakeNested(engaged_cell));
   return 0;
 }

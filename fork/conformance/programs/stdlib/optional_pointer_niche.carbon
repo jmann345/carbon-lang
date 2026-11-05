@@ -10,11 +10,14 @@
 //   5
 //   1
 //
-// Pointer-niche slice of the (PARTIAL) Optional bullet: `Optional(T*)` uses
+// Pointer-niche slice of the Optional bullet: `Optional(T*)` uses
 // the null pointer as its `None` representation (`final impl forall
 // [T: type] T* as OptionalStorage` with "pointer.make_null" /
-// "pointer.is_null" builtins, core/prelude/types/optional.carbon:156-179),
-// making it ABI-compatible with a C++ nullable pointer. Same shapes as
+// "pointer.is_null" builtins, core/prelude/types/optional.carbon:181-204),
+// making it ABI-compatible with a C++ nullable pointer. Two `Optional(T*)`
+// values compare exactly when `T*` is `Core.Eq`, and the prelude gives built-in
+// pointers no `==` yet (W-174; optional_pointer_compare.carbon is the SKIPped
+// arbiter). Same shapes as
 // toolchain/lower/testdata/primitives/optional.carbon (`fn Convert(o:
 // Core.Optional(i32*))` with `*o.Get()`). Also mutates through the stored
 // pointer and exercises the implicit `T* -> Optional(T*)` conversion.

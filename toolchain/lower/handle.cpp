@@ -84,9 +84,10 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   // struct, tuple and class inits. An all-constant `array_init` is itself a
   // constant, never reaches here, and is copied whole by its `Assign`.
   for (auto init_id : context.sem_ir().inst_blocks().Get(inst.inits_id)) {
-    if (context.sem_ir().constant_values().Get(init_id).is_constant()) {
-      auto dest_id =
-          SemIR::FindStorageArgForInitializer(context.sem_ir(), init_id);
+    if (context.IsConstant(init_id)) {
+      auto dest_id = SemIR::FindStorageArgForInitializer(
+          context.sem_ir(), init_id, /*allow_transitive=*/true,
+          context.specific_id());
       context.InitializeStorage(context.GetTypeIdOfInst(dest_id), dest_id,
                                 init_id);
     }
@@ -95,15 +96,66 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   context.SetLocal(inst_id, context.GetValue(inst.dest_id));
 }
 
+// Fork (OP-2, fork/optional2/plan.md D-OP2-1, W-171): `AsCompatible` below
+// loads or stores the value of a type with a copy value representation as an
+// object of that type, which is right only when the value's LLVM type is the
+// object's. It is not for a single-element aggregate of a pointer-represented
+// element, such as `(C,)` for a class `C`, whose value holds a pointer to the
+// element; fail loudly there rather than produce a value of the wrong type.
+static auto CheckCopyValueIsObject(FunctionContext& context,
+                                   FunctionContext::TypeInFile type,
+                                   SemIR::ValueRepr repr) -> void {
+  // `FileContext::GetType` does not add to the specific's fingerprint.
+  auto& file_context = context.GetFileContext(type.file);
+  auto* value_type = file_context.GetType(repr.type_id);
+  auto* object_type = file_context.GetType(type.type_id);
+  CARBON_CHECK(value_type == object_type,
+               "as_compatible of a copy value representation {0} that is not "
+               "the object type {1}",
+               *value_type, *object_type);
+}
+
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::AsCompatible inst) -> void {
-  context.SetLocal(inst_id, context.GetValue(inst.source_id));
+  auto* value = context.GetValue(inst.source_id);
+  // Fork (OP-2, fork/optional2/plan.md D-OP2-1, W-171): compatible types share
+  // an object representation, but a value of one can still have a different
+  // value representation from a value of the other: `MaybeUnformed(T)` uses a
+  // pointer where `T` may use a copy (check/type_completion.cpp). In a
+  // generic, which applies is known only per specific, so a value is converted
+  // here.
+  if (SemIR::GetExprCategory(context.sem_ir(), inst_id) ==
+      SemIR::ExprCategory::Value) {
+    auto source_type = context.GetTypeIdOfInst(inst.source_id);
+    auto target_type = context.GetTypeIdOfInst(inst_id);
+    auto source_repr = context.GetValueRepr(source_type).repr;
+    auto target_repr = context.GetValueRepr(target_type).repr;
+    if (source_repr.kind == SemIR::ValueRepr::Pointer &&
+        target_repr.kind == SemIR::ValueRepr::Copy) {
+      CheckCopyValueIsObject(context, target_type, target_repr);
+      value = context.LoadObject(target_type, value);
+    } else if (source_repr.kind == SemIR::ValueRepr::Copy &&
+               target_repr.kind == SemIR::ValueRepr::Pointer) {
+      CheckCopyValueIsObject(context, source_type, source_repr);
+      auto* storage = context.CreateAlloca(target_type);
+      context.StoreObject(source_type, value, storage);
+      value = storage;
+    } else {
+      // `MaybeUnformed` also turns a custom representation into a pointer, but
+      // no type has a custom one yet; fail loudly rather than misread it.
+      CARBON_CHECK(source_repr.kind == target_repr.kind,
+                   "as_compatible between value representations {0} and {1}",
+                   source_repr, target_repr);
+    }
+  }
+  context.SetLocal(inst_id, value);
 }
 
 auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
                 SemIR::Assign inst) -> void {
-  if (SemIR::GetExprCategory(context.sem_ir(), inst.rhs_id) !=
-      SemIR::ExprCategory::InPlaceInitializing) {
+  if (SemIR::GetExprCategory(
+          context.sem_ir(), inst.rhs_id, &context.specific_sem_ir(),
+          context.specific_id()) != SemIR::ExprCategory::InPlaceInitializing) {
     context.InitializeStorage(context.GetTypeIdOfInst(inst.lhs_id), inst.lhs_id,
                               inst.rhs_id);
   }
@@ -488,7 +540,11 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::SpliceBlock inst) -> void {
   context.LowerBlockContents(inst.block_id);
-  context.SetLocal(inst_id, context.GetValue(inst.result_id));
+  // In a template's specific, the result can be an in-place initializer,
+  // which has no value; see the `SpecificInst` case above.
+  if (auto* value = context.GetValue(inst.result_id, /*require_value=*/false)) {
+    context.SetLocal(inst_id, value);
+  }
 }
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
@@ -502,7 +558,12 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
     // Easy case: same file. Just emit the spliced instruction.
     context.AddInstToCurrentFingerprint(inst_value.inst_id);
     context.LowerInst(inst_value.inst_id);
-    context.SetLocal(inst_id, context.GetValue(inst_value.inst_id));
+    // The spliced instruction can be an in-place initializer, which has no
+    // value; see the `SpecificInst` case above.
+    if (auto* value =
+            context.GetValue(inst_value.inst_id, /*require_value=*/false)) {
+      context.SetLocal(inst_id, value);
+    }
   } else {
     // TODO: We don't yet have support for cross-file templates at all. Lowering
     // the result here would mostly just require that we switch the `sem_ir` on

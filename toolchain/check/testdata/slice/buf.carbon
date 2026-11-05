@@ -142,18 +142,20 @@ fn S(b: Core.Buf(i32)) -> Core.Slice(i32) {
 // CHECK:STDOUT:   %int_9.056: %i32 = int_value 9 [concrete]
 // CHECK:STDOUT:   %IndexWith.type.df6: type = generic_interface_type @IndexWith [concrete]
 // CHECK:STDOUT:   %IndexWith.generic: %IndexWith.type.df6 = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.type.3ea: type = facet_type <@IndexWith, @IndexWith(%i64)> [concrete]
-// CHECK:STDOUT:   %Buf.as.IndexWith.impl.At.type.35d: type = fn_type @Buf.as.IndexWith.impl.At, @Buf.as.IndexWith.impl(%T.dc4) [symbolic]
-// CHECK:STDOUT:   %Buf.as.IndexWith.impl.At.061: %Buf.as.IndexWith.impl.At.type.35d = struct_value () [symbolic]
-// CHECK:STDOUT:   %IndexWith.impl_witness.185: <witness> = impl_witness imports.%IndexWith.impl_witness_table, @Buf.as.IndexWith.impl(%facet_value.730) [concrete]
-// CHECK:STDOUT:   %Buf.as.IndexWith.impl.At.type.431: type = fn_type @Buf.as.IndexWith.impl.At, @Buf.as.IndexWith.impl(%facet_value.730) [concrete]
-// CHECK:STDOUT:   %Buf.as.IndexWith.impl.At.69c: %Buf.as.IndexWith.impl.At.type.431 = struct_value () [concrete]
-// CHECK:STDOUT:   %IndexWith.facet: %IndexWith.type.3ea = facet_value %Buf.cfb, (%IndexWith.impl_witness.185) [concrete]
-// CHECK:STDOUT:   %IndexWith.WithSelf.At.type.70b: type = fn_type @IndexWith.WithSelf.At, @IndexWith.WithSelf(%i64, %IndexWith.facet) [concrete]
-// CHECK:STDOUT:   %.793: type = fn_type_with_self_type %IndexWith.WithSelf.At.type.70b, %IndexWith.facet [concrete]
-// CHECK:STDOUT:   %Buf.as.IndexWith.impl.At.specific_fn: <specific function> = specific_function %Buf.as.IndexWith.impl.At.69c, @Buf.as.IndexWith.impl.At(%facet_value.730) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.841: type = generic_interface_type @IndirectIndexWith [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.generic: %IndirectIndexWith.type.841 = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.type.fb1: type = facet_type <@IndirectIndexWith, @IndirectIndexWith(%i64)> [concrete]
+// CHECK:STDOUT:   %Buf.as.IndirectIndexWith.impl.Ref.type.211: type = fn_type @Buf.as.IndirectIndexWith.impl.Ref, @Buf.as.IndirectIndexWith.impl(%T.dc4) [symbolic]
+// CHECK:STDOUT:   %Buf.as.IndirectIndexWith.impl.Ref.dfe: %Buf.as.IndirectIndexWith.impl.Ref.type.211 = struct_value () [symbolic]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness.63f: <witness> = impl_witness imports.%IndirectIndexWith.impl_witness_table, @Buf.as.IndirectIndexWith.impl(%facet_value.730) [concrete]
+// CHECK:STDOUT:   %Buf.as.IndirectIndexWith.impl.Ref.type.a7c: type = fn_type @Buf.as.IndirectIndexWith.impl.Ref, @Buf.as.IndirectIndexWith.impl(%facet_value.730) [concrete]
+// CHECK:STDOUT:   %Buf.as.IndirectIndexWith.impl.Ref.0c9: %Buf.as.IndirectIndexWith.impl.Ref.type.a7c = struct_value () [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.facet.739: %IndirectIndexWith.type.fb1 = facet_value %Buf.cfb, (%IndirectIndexWith.impl_witness.63f) [concrete]
+// CHECK:STDOUT:   %IndirectIndexWith.WithSelf.Ref.type.388: type = fn_type @IndirectIndexWith.WithSelf.Ref, @IndirectIndexWith.WithSelf(%i64, %IndirectIndexWith.facet.739) [concrete]
+// CHECK:STDOUT:   %.6d8: type = fn_type_with_self_type %IndirectIndexWith.WithSelf.Ref.type.388, %IndirectIndexWith.facet.739 [concrete]
+// CHECK:STDOUT:   %Buf.as.IndirectIndexWith.impl.Ref.specific_fn: <specific function> = specific_function %Buf.as.IndirectIndexWith.impl.Ref.0c9, @Buf.as.IndirectIndexWith.impl.Ref(%facet_value.730) [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
-// CHECK:STDOUT:   %Buf.Get.specific_fn.3d1: <specific function> = specific_function %Buf.Get.2c9, @Buf.Get(%facet_value.730) [concrete]
+// CHECK:STDOUT:   %Buf.Get.specific_fn: <specific function> = specific_function %Buf.Get.2c9, @Buf.Get(%facet_value.730) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.89f: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b [concrete]
 // CHECK:STDOUT:   %bound_method.c5e: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.f33 [concrete]
 // CHECK:STDOUT:   %int_1.d98: %i64 = int_value 1 [concrete]
@@ -189,6 +191,7 @@ fn S(b: Core.Buf(i32)) -> Core.Slice(i32) {
 // CHECK:STDOUT:     .Buf = %Core.Buf
 // CHECK:STDOUT:     .ImplicitAs = %Core.ImplicitAs
 // CHECK:STDOUT:     .IndexWith = %Core.IndexWith
+// CHECK:STDOUT:     .IndirectIndexWith = %Core.IndirectIndexWith
 // CHECK:STDOUT:     .AddWith = %Core.AddWith
 // CHECK:STDOUT:     .Destroy = %Core.Destroy
 // CHECK:STDOUT:     import Core//prelude
@@ -208,8 +211,9 @@ fn S(b: Core.Buf(i32)) -> Core.Slice(i32) {
 // CHECK:STDOUT:   %Core.ImplicitAs: %ImplicitAs.type.0ff = import_ref Core//prelude/operators/as, ImplicitAs, loaded [concrete = constants.%ImplicitAs.generic]
 // CHECK:STDOUT:   %Core.IndexWith: %IndexWith.type.df6 = import_ref Core//prelude/operators/index, IndexWith, loaded [concrete = constants.%IndexWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.5c7 = import_ref Core//prelude/types/buf, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.443: @Buf.as.IndexWith.impl.%Buf.as.IndexWith.impl.At.type (%Buf.as.IndexWith.impl.At.type.35d) = import_ref Core//prelude/types/buf, loc{{\d+_\d+}}, loaded [symbolic = @Buf.as.IndexWith.impl.%Buf.as.IndexWith.impl.At (constants.%Buf.as.IndexWith.impl.At.061)]
-// CHECK:STDOUT:   %IndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.5c7, %Core.import_ref.443), @Buf.as.IndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.272: @Buf.as.IndirectIndexWith.impl.%Buf.as.IndirectIndexWith.impl.Ref.type (%Buf.as.IndirectIndexWith.impl.Ref.type.211) = import_ref Core//prelude/types/buf, loc{{\d+_\d+}}, loaded [symbolic = @Buf.as.IndirectIndexWith.impl.%Buf.as.IndirectIndexWith.impl.Ref (constants.%Buf.as.IndirectIndexWith.impl.Ref.dfe)]
+// CHECK:STDOUT:   %IndirectIndexWith.impl_witness_table = impl_witness_table (%Core.import_ref.5c7, %Core.import_ref.272), @Buf.as.IndirectIndexWith.impl [concrete]
+// CHECK:STDOUT:   %Core.IndirectIndexWith: %IndirectIndexWith.type.841 = import_ref Core//prelude/operators/index, IndirectIndexWith, loaded [concrete = constants.%IndirectIndexWith.generic]
 // CHECK:STDOUT:   %Core.AddWith: %AddWith.type.2ef = import_ref Core//prelude/operators/arithmetic, AddWith, loaded [concrete = constants.%AddWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.b4fd3a.1 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.684: @Int.as.AddWith.impl.3af.%Int.as.AddWith.impl.Op.type (%Int.as.AddWith.impl.Op.type.610) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.AddWith.impl.3af.%Int.as.AddWith.impl.Op (constants.%Int.as.AddWith.impl.Op.732)]
@@ -347,18 +351,18 @@ fn S(b: Core.Buf(i32)) -> Core.Slice(i32) {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc11_12: init %i64 = call %bound_method.loc11_12.2(%int_0.loc11) [concrete = constants.%int_0.2e4]
 // CHECK:STDOUT:   %.loc11_12.1: %i64 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc11_12 [concrete = constants.%int_0.2e4]
 // CHECK:STDOUT:   %.loc11_12.2: %i64 = converted %int_0.loc11, %.loc11_12.1 [concrete = constants.%int_0.2e4]
-// CHECK:STDOUT:   %impl.elem1.loc11_13: %.793 = impl_witness_access constants.%IndexWith.impl_witness.185, element1 [concrete = constants.%Buf.as.IndexWith.impl.At.69c]
+// CHECK:STDOUT:   %impl.elem1.loc11_13: %.6d8 = impl_witness_access constants.%IndirectIndexWith.impl_witness.63f, element1 [concrete = constants.%Buf.as.IndirectIndexWith.impl.Ref.0c9]
 // CHECK:STDOUT:   %bound_method.loc11_13.1: <bound method> = bound_method %b.ref.loc11_10, %impl.elem1.loc11_13
-// CHECK:STDOUT:   %specific_fn.loc11_13: <specific function> = specific_function %impl.elem1.loc11_13, @Buf.as.IndexWith.impl.At(constants.%facet_value.730) [concrete = constants.%Buf.as.IndexWith.impl.At.specific_fn]
+// CHECK:STDOUT:   %specific_fn.loc11_13: <specific function> = specific_function %impl.elem1.loc11_13, @Buf.as.IndirectIndexWith.impl.Ref(constants.%facet_value.730) [concrete = constants.%Buf.as.IndirectIndexWith.impl.Ref.specific_fn]
 // CHECK:STDOUT:   %bound_method.loc11_13.2: <bound method> = bound_method %b.ref.loc11_10, %specific_fn.loc11_13
 // CHECK:STDOUT:   %.loc11_10: %Buf.cfb = acquire_value %b.ref.loc11_10
-// CHECK:STDOUT:   %Buf.as.IndexWith.impl.At.call: init %i32 = call %bound_method.loc11_13.2(%.loc11_10, %.loc11_12.2)
+// CHECK:STDOUT:   %Buf.as.IndirectIndexWith.impl.Ref.call: ref %i32 = call %bound_method.loc11_13.2(%.loc11_10, %.loc11_12.2)
 // CHECK:STDOUT:   %b.ref.loc11_17: ref %Buf.cfb = name_ref b, %b
 // CHECK:STDOUT:   %.loc11_18: %Buf.Get.type.8d6 = specific_constant imports.%Core.import_ref.6a6, @Buf(constants.%facet_value.730) [concrete = constants.%Buf.Get.2c9]
 // CHECK:STDOUT:   %Get.ref: %Buf.Get.type.8d6 = name_ref Get, %.loc11_18 [concrete = constants.%Buf.Get.2c9]
 // CHECK:STDOUT:   %Buf.Get.bound: <bound method> = bound_method %b.ref.loc11_17, %Get.ref
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
-// CHECK:STDOUT:   %Buf.Get.specific_fn: <specific function> = specific_function %Get.ref, @Buf.Get(constants.%facet_value.730) [concrete = constants.%Buf.Get.specific_fn.3d1]
+// CHECK:STDOUT:   %Buf.Get.specific_fn: <specific function> = specific_function %Get.ref, @Buf.Get(constants.%facet_value.730) [concrete = constants.%Buf.Get.specific_fn]
 // CHECK:STDOUT:   %bound_method.loc11_24: <bound method> = bound_method %b.ref.loc11_17, %Buf.Get.specific_fn
 // CHECK:STDOUT:   %.loc11_17: %Buf.cfb = acquire_value %b.ref.loc11_17
 // CHECK:STDOUT:   %impl.elem0.loc11_23: %.03f = impl_witness_access constants.%ImplicitAs.impl_witness.227, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.a1b]
@@ -370,14 +374,13 @@ fn S(b: Core.Buf(i32)) -> Core.Slice(i32) {
 // CHECK:STDOUT:   %.loc11_23.2: %i64 = converted %int_1, %.loc11_23.1 [concrete = constants.%int_1.d98]
 // CHECK:STDOUT:   %Buf.Get.call: init %i32 = call %bound_method.loc11_24(%.loc11_17, %.loc11_23.2)
 // CHECK:STDOUT:   %impl.elem1.loc11_15: %.d47 = impl_witness_access constants.%AddWith.impl_witness.833, element1 [concrete = constants.%Int.as.AddWith.impl.Op.365]
-// CHECK:STDOUT:   %bound_method.loc11_15.1: <bound method> = bound_method %Buf.as.IndexWith.impl.At.call, %impl.elem1.loc11_15
+// CHECK:STDOUT:   %bound_method.loc11_15.1: <bound method> = bound_method %Buf.as.IndirectIndexWith.impl.Ref.call, %impl.elem1.loc11_15
 // CHECK:STDOUT:   %specific_fn.loc11_15: <specific function> = specific_function %impl.elem1.loc11_15, @Int.as.AddWith.impl.Op.1(constants.%int_32) [concrete = constants.%Int.as.AddWith.impl.Op.specific_fn.f25]
-// CHECK:STDOUT:   %bound_method.loc11_15.2: <bound method> = bound_method %Buf.as.IndexWith.impl.At.call, %specific_fn.loc11_15
-// CHECK:STDOUT:   %.loc11_13.1: %i32 = value_of_initializer %Buf.as.IndexWith.impl.At.call
-// CHECK:STDOUT:   %.loc11_13.2: %i32 = converted %Buf.as.IndexWith.impl.At.call, %.loc11_13.1
+// CHECK:STDOUT:   %bound_method.loc11_15.2: <bound method> = bound_method %Buf.as.IndirectIndexWith.impl.Ref.call, %specific_fn.loc11_15
+// CHECK:STDOUT:   %.loc11_13: %i32 = acquire_value %Buf.as.IndirectIndexWith.impl.Ref.call
 // CHECK:STDOUT:   %.loc11_24.1: %i32 = value_of_initializer %Buf.Get.call
 // CHECK:STDOUT:   %.loc11_24.2: %i32 = converted %Buf.Get.call, %.loc11_24.1
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32 = call %bound_method.loc11_15.2(%.loc11_13.2, %.loc11_24.2)
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32 = call %bound_method.loc11_15.2(%.loc11_13, %.loc11_24.2)
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %b.var, constants.%Destroy.WithSelf.SelfDestruct.3b2
 // CHECK:STDOUT:   %Destroy.facet.loc9_3.1: %Destroy.type = facet_value constants.%Buf.cfb, (constants.%Destroy.impl_witness.7d0) [concrete = constants.%Destroy.facet.240]
 // CHECK:STDOUT:   %.loc9_3.2: %Destroy.type = converted constants.%Buf.cfb, %Destroy.facet.loc9_3.1 [concrete = constants.%Destroy.facet.240]

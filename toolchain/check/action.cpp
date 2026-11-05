@@ -4,6 +4,7 @@
 
 #include "toolchain/check/action.h"
 
+#include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/generic_region_stack.h"
@@ -11,6 +12,7 @@
 #include "toolchain/check/type.h"
 #include "toolchain/sem_ir/constant.h"
 #include "toolchain/sem_ir/copy_on_write_block.h"
+#include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/generic.h"
 #include "toolchain/sem_ir/id_kind.h"
 #include "toolchain/sem_ir/inst.h"
@@ -203,6 +205,26 @@ auto ActionIsPerformable(Context& context, SemIR::Inst action_inst,
     }
   }
 
+  // A call to an imported C++ function or a C++ template name is resolved by
+  // Clang, which needs the arguments, or their types, to be concrete: it waits
+  // for them even when they are only symbolic, as a checked generic's `T` and
+  // `x: T` are (`PerformCall`, `PerformCallToNonFunction`).
+  if (auto call = action_inst.TryAs<SemIR::CallAction>()) {
+    auto inst_ids = context.inst_blocks().Get(call->inst_block_id);
+    if (context.types().Is<SemIR::CppTemplateNameType>(
+            context.insts().Get(inst_ids.front()).type_id()) ||
+        std::holds_alternative<SemIR::CalleeCppOverloadSet>(
+            SemIR::GetCallee(context.sem_ir(), inst_ids.front()))) {
+      for (auto arg_id : inst_ids.drop_front()) {
+        if (OperandDependenceInSpecific(context, specific_id,
+                                        SemIR::MetaInstId(arg_id)) >
+            SemIR::ConstantDependence::None) {
+          return false;
+        }
+      }
+    }
+  }
+
   return OperandDependenceInSpecific(context, specific_id,
                                      action_inst.type_id()) <
              SemIR::ConstantDependence::Template &&
@@ -369,10 +391,28 @@ static auto RefineTypedOperandInSpecific(Context& /*context*/,
 // `SpecificInst` in order to be referred to from within a specific. If the
 // instruction isn't symbolic within the generic, then either it doesn't depend
 // on the specific at all, or evaluation has already replaced it with the
-// corresponding instruction from the specific.
+// corresponding instruction from the specific. An aggregate literal is
+// converted element by element (`GetAggregateLiteralElements`), so a runtime
+// literal such as `{.a = x, .b = N}` needs one too when an element does, so
+// that its elements are referred to in the specific: `N` is the specific's
+// constant there rather than a template-dependent value.
 static auto NeedsSpecificInst(Context& context, SemIR::InstId inst_id) -> bool {
-  return context.insts().Get(inst_id).type_id().is_symbolic() ||
-         context.constant_values().Get(inst_id).is_symbolic();
+  // The instruction and the elements of the literals it holds, still to test.
+  llvm::SmallVector<SemIR::InstId> work = {inst_id};
+  while (!work.empty()) {
+    auto id = work.pop_back_val();
+    auto inst = context.insts().Get(id);
+    if (inst.type_id().is_symbolic() ||
+        context.constant_values().Get(id).is_symbolic()) {
+      return true;
+    }
+    if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
+      llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
+    } else if (auto literal = inst.TryAs<SemIR::TupleLiteral>()) {
+      llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
+    }
+  }
+  return false;
 }
 
 auto AddSpecificInst(Context& context, SemIR::InstId inst_id,
@@ -474,11 +514,14 @@ auto Internal::BeginPerformDelayedAction(Context& context) -> void {
   // this changes, we should push a region too.
   context.inst_block_stack().Push();
   context.pattern_block_stack().Push();
+  // Fork (SC-1, W-139): see `Context::delayed_action_depth`.
+  ++context.delayed_action_depth();
 }
 
 auto Internal::EndPerformDelayedAction(Context& context,
                                        SemIR::InstId result_id)
     -> SemIR::InstId {
+  --context.delayed_action_depth();
   // If the only created instruction is the result, then we can use it directly.
   auto contents = context.inst_block_stack().PeekCurrentBlockContents();
   auto pattern_contents =

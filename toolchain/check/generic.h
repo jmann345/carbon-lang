@@ -67,6 +67,31 @@ auto GetOrAddInstWithSpecificConstantValue(Context& context,
 // would not actually be used, or when recovering from an error.
 auto DiscardGenericDecl(Context& context) -> void;
 
+// Discards the generic declaration region of a declaration that is never
+// generic itself but can be nested in a generic, such as an alias. The
+// instructions that depend on a generic parameter belong to the enclosing
+// generic, as an expression elsewhere in its scope does, and are attached to
+// it; with no enclosing generic, they are left unattached, as
+// `DiscardGenericDecl` leaves them.
+auto DiscardGenericDeclIntoEnclosingGeneric(Context& context) -> void;
+
+// Adds a copy of `alias`, an alias binding to a template-dependent value, to
+// the eval block of the current generic, so that the value is checked for each
+// specific: an alias requires a constant, and a value that is a runtime value
+// in a specific is diagnosed there (`TryEvalBlockForSpecific`). The copy is in
+// no other block, and its value in a specific is not used.
+auto AddAliasCheckToCurrentGeneric(Context& context, SemIR::LocId loc_id,
+                                   SemIR::AliasBinding alias) -> void;
+
+// When `target_id`, named through a specific as `use_id`, is an alias of a
+// template-dependent value, checks the use for each specific of the current
+// generic too: a nested generic, such as a member function of a class
+// template, evaluates its own copy of the alias's value, which is a runtime
+// value in a specific where the alias's is.
+auto AddAliasUseCheckToCurrentGeneric(Context& context, SemIR::LocId loc_id,
+                                      SemIR::InstId target_id,
+                                      SemIR::InstId use_id) -> void;
+
 // Finish processing a potentially generic declaration and produce a
 // corresponding generic object. Returns SemIR::GenericId::None if this
 // declaration is not actually generic.

@@ -118,6 +118,23 @@ auto ResolvePendingAlternative(Context& context, Parse::NodeId node_id,
                                SemIR::NameId name_id, bool has_parens,
                                int subpattern_count) -> ResolvedAlternative;
 
+// Performs the member access `.Name` names in the scope of the choice type
+// `scrutinee_type_id` (its qualifiers dropped) at `node_id`: a payload-free
+// alternative's constant, or for an unknown name the standard member-access
+// diagnostic. The access is performed now, in the definition, even when the
+// scrutinee's type is template-dependent, such as a generic choice applied
+// to a template parameter (D-TP-11) or a choice declared in a class
+// template: a choice declares its alternatives once for every specific, so
+// lookup on instantiation could find nothing else, and the alternative's
+// metadata (`ResolvePendingAlternative`) is already resolved here. A
+// deferred access would leave a splice whose type is not the scrutinee's
+// where the refutable engine needs the constant
+// (`MatchContext::DoMatchCaseExprPattern`), and would put off the
+// unknown-name diagnostic to each instantiation.
+auto PerformAlternativeAccess(Context& context, Parse::NodeId node_id,
+                              SemIR::TypeId scrutinee_type_id,
+                              SemIR::NameId name_id) -> SemIR::InstId;
+
 // Test pass. `pattern_id` is the finished root; resolves a pending
 // alternative against the scrutinee's type, attaches the pattern block to a
 // `NameBindingDecl` in the current block, classifies the root exactly as the

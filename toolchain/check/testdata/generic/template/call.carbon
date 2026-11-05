@@ -10,7 +10,7 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/generic/template/call.carbon
 
-// --- fail_todo_dependent_call_nonconst_arg.carbon
+// --- dependent_call_nonconst_arg.carbon
 library "[[@TEST_NAME]]";
 
 class X {}
@@ -20,31 +20,35 @@ fn F[template G: type](H: G, x: X) {
 }
 fn TakeX(unused x: X) {}
 
-// CHECK:STDERR: fail_todo_dependent_call_nonconst_arg.carbon:[[@LINE+7]]:21: error: unable to monomorphize specific `F(<type of TakeX>)` [ResolvingSpecificHere]
-// CHECK:STDERR: fn GoodCall(x: X) { F(TakeX, x); }
-// CHECK:STDERR:                     ^
-// CHECK:STDERR: fail_todo_dependent_call_nonconst_arg.carbon:[[@LINE-7]]:3: note: value of type `<type of TakeX>` is not callable [CallToNonCallable]
-// CHECK:STDERR:   H(x);
-// CHECK:STDERR:   ^~~~
-// CHECK:STDERR:
 fn GoodCall(x: X) { F(TakeX, x); }
 
-// --- fail_dependent_call_nonconst_arg_wrong_type.carbon
+// --- dependent_call_two_callees.carbon
 library "[[@TEST_NAME]]";
 
 class X {}
-class Y {}
 fn F[template G: type](H: G, x: X) {
   H(x);
 }
-fn TakeY(unused y: Y) {}
+fn TakeX(unused x: X) {}
+fn AlsoTakeX(unused x: X) {}
 
-// TODO: should fail, but not because of UseOfNonExprAsValue
-// CHECK:STDERR: fail_dependent_call_nonconst_arg_wrong_type.carbon:[[@LINE+7]]:20: error: unable to monomorphize specific `F(<type of TakeY>)` [ResolvingSpecificHere]
-// CHECK:STDERR: fn BadCall(x: X) { F(TakeY, x); }
-// CHECK:STDERR:                    ^
-// CHECK:STDERR: fail_dependent_call_nonconst_arg_wrong_type.carbon:[[@LINE-8]]:3: note: value of type `<type of TakeY>` is not callable [CallToNonCallable]
-// CHECK:STDERR:   H(x);
-// CHECK:STDERR:   ^~~~
-// CHECK:STDERR:
-fn BadCall(x: X) { F(TakeY, x); }
+fn GoodCalls(x: X) {
+  F(TakeX, x);
+  F(AlsoTakeX, x);
+}
+
+// --- dependent_call_struct_literal_arg_with_field_default.carbon
+library "[[@TEST_NAME]]";
+
+class D {
+  var a: ();
+  var b: () = ();
+}
+class K {
+  fn Take(unused d: D) {}
+}
+fn F(template T: type) {
+  T.Take({.a = ()});
+}
+
+fn GoodCall() { F(K); }

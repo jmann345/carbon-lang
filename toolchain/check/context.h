@@ -6,9 +6,11 @@
 #define CARBON_TOOLCHAIN_CHECK_CONTEXT_H_
 
 #include <string>
+#include <utility>
 
 #include "common/map.h"
 #include "common/ostream.h"
+#include "common/set.h"
 #include "llvm/ADT/SmallVector.h"
 #include "toolchain/base/canonical_value_store.h"
 #include "toolchain/base/int.h"
@@ -189,6 +191,21 @@ class Context {
   auto import_ir_constant_values()
       -> llvm::SmallVector<SemIR::ConstantValueStore, 0>& {
     return import_ir_constant_values_;
+  }
+
+  // The imported instructions and generics, for each import IR, that the test
+  // of whether an imported entity is resolved for each instantiation
+  // (`PerInstantiationWalk` in import_ref.cpp) has found to reach no action or
+  // splice, so that the imports into a file walk each once. A generic is
+  // recorded in `decls` once its declaration is found to reach none, and in
+  // `types` once its declaration and definition are.
+  struct PerInstantiationWalkCache {
+    Set<std::pair<SemIR::ImportIRId, SemIR::InstId>> insts;
+    Set<std::pair<SemIR::ImportIRId, SemIR::GenericId>> decls;
+    Set<std::pair<SemIR::ImportIRId, SemIR::GenericId>> types;
+  };
+  auto per_instantiation_walk_cache() -> PerInstantiationWalkCache& {
+    return per_instantiation_walk_cache_;
   }
 
   auto definitions_required_by_decl() -> llvm::SmallVector<SemIR::InstId>& {
@@ -630,6 +647,38 @@ class Context {
     return declaring_impl_decls_;
   }
 
+  // Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): a `require` naming a
+  // `template constraint`, of the interface implemented by `impl_id`, whose
+  // self is the class or union `class_id` still being defined; checked when
+  // that class's or union's definition ends.
+  struct DeferredStructuralRequire {
+    SemIR::ClassId class_id;
+    SemIR::ImplId impl_id;
+    SemIR::RequireImplsId require_id;
+  };
+  auto deferred_structural_requires()
+      -> llvm::SmallVector<DeferredStructuralRequire>& {
+    return deferred_structural_requires_;
+  }
+
+  // Fork (SC-1, W-139): while not null, `CheckStructuralRequirements` defers
+  // the structural requirements of a checked-symbolic self instead of
+  // rejecting them (D-SC-6), counting each deferral here. Set by deduction
+  // while it converts a checked-symbolic argument for a `template` binding,
+  // which it then checks again in each specific (deduce.cpp).
+  auto structural_check_deferrals() -> int*& {
+    return structural_check_deferrals_;
+  }
+
+  // Fork (SC-1, W-139): the number of delayed actions being performed
+  // (`PerformDelayedAction`). Such an action is performed in the resolution of
+  // a specific, so a checked-symbolic self it meets is an argument of that
+  // specific, and the specific for each concrete argument performs the action
+  // again: `CheckStructuralRequirements` defers that self's structural
+  // requirements instead of rejecting them (D-SC-6), and no per-specific
+  // requirement is added for them (deduce.cpp, convert.cpp).
+  auto delayed_action_depth() -> int& { return delayed_action_depth_; }
+
   // Data about a form expression.
   //
   // TODO: consider moving this out of Context.
@@ -866,6 +915,9 @@ class Context {
   // Inline 0 elements because it's expected to require heap allocation.
   llvm::SmallVector<SemIR::ConstantValueStore, 0> import_ir_constant_values_;
 
+  // See `per_instantiation_walk_cache()`.
+  PerInstantiationWalkCache per_instantiation_walk_cache_;
+
   // Declaration instructions of entities that should have definitions by the
   // end of the current source file.
   llvm::SmallVector<SemIR::InstId> definitions_required_by_decl_;
@@ -970,6 +1022,15 @@ class Context {
   // `C as I`, an impl lookup query for `C as I` or `.Self as I` should find
   // that impl being declared (even though it does not yet exist).
   llvm::SmallVector<DeclaringImplDecl> declaring_impl_decls_;
+
+  // Fork (SC-1): see `deferred_structural_requires()`.
+  llvm::SmallVector<DeferredStructuralRequire> deferred_structural_requires_;
+
+  // Fork (SC-1, W-139): see `structural_check_deferrals()`.
+  int* structural_check_deferrals_ = nullptr;
+
+  // Fork (SC-1, W-139): see `delayed_action_depth()`.
+  int delayed_action_depth_ = 0;
 
   // Declared return form for the in-progress function declaration, if any.
   std::optional<FormExpr> return_form_expr_;

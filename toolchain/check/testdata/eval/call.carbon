@@ -162,6 +162,26 @@ fn H() {
   //@dump-sem-ir-end
 }
 
+// --- symbolic_eval_fn_class_literal_with_field_default.carbon
+
+library "[[@TEST_NAME]]";
+
+class C {
+  var a: i32;
+  var b: i32 = 5;
+}
+
+eval fn F(_: i32) -> type { return C; }
+
+fn G(generic X: i32) -> i32 {
+  var v: F(X) = {.a = 1};
+  return v.b;
+}
+
+fn H() -> i32 {
+  return G(3);
+}
+
 // CHECK:STDOUT: --- dependent_call_type.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
@@ -206,7 +226,7 @@ fn H() {
 // CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.d7f: init %C = splice_block %.c83 [concrete = %C.val] {
 // CHECK:STDOUT:       %.6ba47e.2: ref %C = specific_inst @UseFGenerically.%v.var, @UseFGenerically(%int_3.410)
-// CHECK:STDOUT:       <elided>
+// CHECK:STDOUT:       %.c83: init %C to %.6ba47e.2 = class_init () [concrete = %C.val]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %tuple.242: %tuple.type.f7a = tuple_value (%inst.splice_block.426619.1) [concrete]

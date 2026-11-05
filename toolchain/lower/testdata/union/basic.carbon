@@ -719,27 +719,27 @@ var g: IntOrBytes = {.word = 5};
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i64 @_CCopyOptPtr.Main(ptr %p) #0 !dbg !208 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core"(ptr %self) #0 !dbg !208 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %q.var = alloca [8 x i8], align 8, !dbg !213
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %q.var), !dbg !213
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %q.var, ptr align 8 %p, i64 8, i1 false), !dbg !214
-// CHECK:STDOUT:   %.loc10_11.1.n = getelementptr inbounds nuw [8 x i8], ptr %q.var, i32 0, i32 0, !dbg !216
-// CHECK:STDOUT:   %.loc10_11.2 = load i64, ptr %.loc10_11.1.n, align 8, !dbg !216
-// CHECK:STDOUT:   call void @"_CSelfDestruct.110489c9d47256c3:core.Destroy.Core"(ptr %q.var), !dbg !213
-// CHECK:STDOUT:   ret i64 %.loc10_11.2, !dbg !217
+// CHECK:STDOUT:   ret void, !dbg !210
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core"(ptr %self) #0 !dbg !219 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.729fca203337f92a:core.Destroy.Core"(ptr %self) #0 !dbg !212 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !221
+// CHECK:STDOUT:   ret void, !dbg !214
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.729fca203337f92a:core.Destroy.Core"(ptr %self) #0 !dbg !223 {
+// CHECK:STDOUT: define i64 @_CCopyOptPtr.Main(ptr %p) #0 !dbg !216 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !225
+// CHECK:STDOUT:   %q.var = alloca [8 x i8], align 8, !dbg !221
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %q.var), !dbg !221
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %q.var, ptr align 8 %p, i64 8, i1 false), !dbg !222
+// CHECK:STDOUT:   %.loc10_11.1.n = getelementptr inbounds nuw [8 x i8], ptr %q.var, i32 0, i32 0, !dbg !224
+// CHECK:STDOUT:   %.loc10_11.2 = load i64, ptr %.loc10_11.1.n, align 8, !dbg !224
+// CHECK:STDOUT:   call void @"_CSelfDestruct.110489c9d47256c3:core.Destroy.Core"(ptr %q.var), !dbg !221
+// CHECK:STDOUT:   ret i64 %.loc10_11.2, !dbg !225
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -813,21 +813,21 @@ var g: IntOrBytes = {.word = 5};
 // CHECK:STDOUT: !205 = !DILocalVariable(arg: 1, scope: !204, type: !14)
 // CHECK:STDOUT: !206 = !DILocation(line: 189, column: 19, scope: !204)
 // CHECK:STDOUT: !207 = !{!205}
-// CHECK:STDOUT: !208 = distinct !DISubprogram(name: "CopyOptPtr", linkageName: "_CCopyOptPtr.Main", scope: null, file: !196, line: 8, type: !200, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !218)
+// CHECK:STDOUT: !208 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core", scope: null, file: !203, line: 189, type: !16, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !211)
 // CHECK:STDOUT: !209 = !DILocalVariable(arg: 1, scope: !208, type: !14)
-// CHECK:STDOUT: !213 = !DILocation(line: 9, column: 3, scope: !208)
-// CHECK:STDOUT: !214 = !DILocation(line: 9, column: 19, scope: !208)
-// CHECK:STDOUT: !216 = !DILocation(line: 10, column: 10, scope: !208)
-// CHECK:STDOUT: !217 = !DILocation(line: 10, column: 3, scope: !208)
-// CHECK:STDOUT: !218 = !{!209}
-// CHECK:STDOUT: !219 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.0f866e2c9731ba7d:core.Destroy.Core", scope: null, file: !196, line: 9, type: !16, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !222)
-// CHECK:STDOUT: !220 = !DILocalVariable(arg: 1, scope: !219, type: !14)
-// CHECK:STDOUT: !221 = !DILocation(line: 9, column: 3, scope: !219)
-// CHECK:STDOUT: !222 = !{!220}
-// CHECK:STDOUT: !223 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.729fca203337f92a:core.Destroy.Core", scope: null, file: !196, line: 9, type: !16, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !226)
-// CHECK:STDOUT: !224 = !DILocalVariable(arg: 1, scope: !223, type: !14)
-// CHECK:STDOUT: !225 = !DILocation(line: 9, column: 3, scope: !223)
-// CHECK:STDOUT: !226 = !{!224}
+// CHECK:STDOUT: !210 = !DILocation(line: 189, column: 19, scope: !208)
+// CHECK:STDOUT: !211 = !{!209}
+// CHECK:STDOUT: !212 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.729fca203337f92a:core.Destroy.Core", scope: null, file: !203, line: 189, type: !16, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !215)
+// CHECK:STDOUT: !213 = !DILocalVariable(arg: 1, scope: !212, type: !14)
+// CHECK:STDOUT: !214 = !DILocation(line: 189, column: 19, scope: !212)
+// CHECK:STDOUT: !215 = !{!213}
+// CHECK:STDOUT: !216 = distinct !DISubprogram(name: "CopyOptPtr", linkageName: "_CCopyOptPtr.Main", scope: null, file: !196, line: 8, type: !200, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !226)
+// CHECK:STDOUT: !217 = !DILocalVariable(arg: 1, scope: !216, type: !14)
+// CHECK:STDOUT: !221 = !DILocation(line: 9, column: 3, scope: !216)
+// CHECK:STDOUT: !222 = !DILocation(line: 9, column: 19, scope: !216)
+// CHECK:STDOUT: !224 = !DILocation(line: 10, column: 10, scope: !216)
+// CHECK:STDOUT: !225 = !DILocation(line: 10, column: 3, scope: !216)
+// CHECK:STDOUT: !226 = !{!217}
 // CHECK:STDOUT: !227 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.5b309895020f658e:core.Destroy.Core", scope: null, file: !196, line: 9, type: !16, spFlags: DISPFlagDefinition, unit: !197, retainedNodes: !230)
 // CHECK:STDOUT: !228 = !DILocalVariable(arg: 1, scope: !227, type: !14)
 // CHECK:STDOUT: !229 = !DILocation(line: 9, column: 3, scope: !227)

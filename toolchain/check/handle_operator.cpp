@@ -270,26 +270,7 @@ auto HandleParseNode(Context& context, Parse::PostfixOperatorStarId node_id)
 auto HandleParseNode(Context& context, Parse::PrefixOperatorAmpId node_id)
     -> bool {
   auto value_id = context.node_stack().PopExpr();
-  auto type_id = context.insts().Get(value_id).type_id();
-  // Only durable reference expressions can have their address taken.
-  switch (SemIR::GetExprCategory(context.sem_ir(), value_id)) {
-    case SemIR::ExprCategory::DurableRef:
-    case SemIR::ExprCategory::Error:
-      break;
-    default:
-      CARBON_DIAGNOSTIC(AddrOfNonRef, Error,
-                        "cannot take the address of non-reference expression");
-      context.emitter().Emit(LocIdForDiagnostics::TokenOnly(node_id),
-                             AddrOfNonRef);
-      value_id = SemIR::ErrorInst::InstId;
-      break;
-  }
-  // TODO: Preserve spelling of type of operand where possible.
-  auto type_inst_id = context.types().GetTypeInstId(type_id);
-  AddInstAndPush<SemIR::AddrOf>(
-      context, node_id,
-      SemIR::AddrOf{.type_id = GetPointerType(context, type_inst_id),
-                    .lvalue_id = value_id});
+  context.node_stack().Push(node_id, PerformAddrOf(context, node_id, value_id));
   return true;
 }
 
@@ -378,32 +359,9 @@ auto HandleParseNode(Context& context, Parse::PrefixOperatorRefId node_id)
 auto HandleParseNode(Context& context, Parse::PrefixOperatorStarId node_id)
     -> bool {
   auto base_id = context.node_stack().PopExpr();
-
-  auto deref_base_id = PerformPointerDereference(
-      context, node_id, base_id,
-      [&context, &node_id](SemIR::TypeId not_pointer_type_id) {
-        // TODO: Pass in the expression we're trying to dereference to produce a
-        // better diagnostic.
-        CARBON_DIAGNOSTIC(DerefOfNonPointer, Error,
-                          "cannot dereference operand of non-pointer type {0}",
-                          SemIR::TypeId);
-
-        auto builder =
-            context.emitter().Build(LocIdForDiagnostics::TokenOnly(node_id),
-                                    DerefOfNonPointer, not_pointer_type_id);
-
-        // TODO: Check for any facet here, rather than only a type.
-        if (not_pointer_type_id == SemIR::TypeType::TypeId) {
-          CARBON_DIAGNOSTIC(
-              DerefOfType, Note,
-              "to form a pointer type, write the `*` after the pointee type");
-          builder.Note(LocIdForDiagnostics::TokenOnly(node_id), DerefOfType);
-        }
-
-        builder.Emit();
-      });
-
-  context.node_stack().Push(node_id, deref_base_id);
+  context.node_stack().Push(
+      node_id, PerformPointerDereference(context, node_id, base_id,
+                                         PointerDereferenceKind::Star));
   return true;
 }
 

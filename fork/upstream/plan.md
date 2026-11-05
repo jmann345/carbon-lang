@@ -2449,3 +2449,13 @@ gap-analysis row re-cites, the declared-impl destroy IR clutter, the
 pre-existing manufactured decision-log heading ("7700 splice-stepping
 …"), and the Toolchains list in ORCHESTRATION (no new mirrored arbiter,
 since the A/B did not run).
+
+### Landed notes (UA-2, LAND-1)
+
+UA-2 landed on trunk (LAND-1, 2026-11-02): merged as PR 51 by
+985610146 (head f96fe8a7a, trunk before 3d6661c3d; GitHub merged_at
+2026-11-02T02:06:13Z) under R33, fork/land/land1-plan.md section 2.2;
+land-time commits none; container-measured (R33 (b)): gate
+1945 of 1945, conformance 131 PASS, 0 FAIL, 19 SKIP over 150, 48 of 56
+bullets; id re-scans: none; moved to follow-ons: to item 16: OP-2's fold
+of W-197 into W-126.

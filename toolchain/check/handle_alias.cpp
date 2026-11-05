@@ -4,6 +4,7 @@
 
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
+#include "toolchain/check/eval.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/handle.h"
 #include "toolchain/check/inst.h"
@@ -46,7 +47,15 @@ auto HandleParseNode(Context& context, Parse::AliasId /*node_id*/) -> bool {
     expr_id = SemIR::ErrorInst::InstId;
   }
 
-  DiscardGenericDecl(context);
+  // An alias is never generic, but in a generic its value is part of that
+  // generic: `alias B = T.Inner;` in `class C(template T: type)` is evaluated
+  // for each specific of `C`. With diagnosed parameters, the value is an error
+  // and the parameters' bindings stay out of the enclosing generic.
+  if (diagnosed_params) {
+    DiscardGenericDecl(context);
+  } else {
+    DiscardGenericDeclIntoEnclosingGeneric(context);
+  }
 
   auto introducer =
       context.decl_introducer_state_stack().Pop<Lex::TokenKind::Alias>();
@@ -56,6 +65,9 @@ auto HandleParseNode(Context& context, Parse::AliasId /*node_id*/) -> bool {
       {.name_id = name_context.name_id_for_new_inst(),
        .parent_scope_id = name_context.parent_scope_id});
 
+  // Whether the value's category and constant value are known only for each
+  // specific of the enclosing generic.
+  bool check_in_specific = false;
   switch (SemIR::GetExprCategory(context.sem_ir(), expr_id)) {
     case SemIR::ExprCategory::Value:
     case SemIR::ExprCategory::EphemeralRef:
@@ -65,10 +77,21 @@ auto HandleParseNode(Context& context, Parse::AliasId /*node_id*/) -> bool {
       // An alias can refer to a value, a reference, or a non-expression name
       // such as a function or namespace.
       break;
+    case SemIR::ExprCategory::Dependent:
+      // A template-dependent value, such as `T.Inner` or `T.Make()` for a
+      // template parameter `T`, or a C++ call deferred to each specific. It is
+      // not converted here: a conversion would be performed for each specific
+      // outside any function, where the value of `T.Make()` would be
+      // materialized in a temporary. Whether the value is a constant is
+      // checked in each specific instead (`AddAliasCheckToCurrentGeneric`).
+      if (!context.generic_region_stack().Empty()) {
+        check_in_specific = true;
+        break;
+      }
+      [[fallthrough]];
     case SemIR::ExprCategory::ReprInitializing:
     case SemIR::ExprCategory::InPlaceInitializing:
     case SemIR::ExprCategory::Mixed:
-    case SemIR::ExprCategory::Dependent:
     case SemIR::ExprCategory::RefTagged:
     case SemIR::ExprCategory::Pattern:
       // For any other kind of expression, convert to a value or reference.
@@ -77,16 +100,18 @@ auto HandleParseNode(Context& context, Parse::AliasId /*node_id*/) -> bool {
       break;
   }
 
-  if (!context.constant_values().Get(expr_id).is_constant()) {
-    CARBON_DIAGNOSTIC(AliasRequiresConstantValue, Error,
-                      "alias refers to a runtime value");
-    context.emitter().Emit(expr_node, AliasRequiresConstantValue);
+  if (!check_in_specific &&
+      !context.constant_values().Get(expr_id).is_constant()) {
+    DiagnoseAliasRequiresConstantValue(context, SemIR::LocId(expr_node));
   }
-  auto alias_id = AddInst<SemIR::AliasBinding>(
-      context, name_context.loc_id,
-      {.type_id = context.insts().Get(expr_id).type_id(),
-       .entity_name_id = entity_name_id,
-       .value_id = expr_id});
+  SemIR::AliasBinding alias = {
+      .type_id = context.insts().Get(expr_id).type_id(),
+      .entity_name_id = entity_name_id,
+      .value_id = expr_id};
+  auto alias_id = AddInst(context, name_context.loc_id, alias);
+  if (check_in_specific) {
+    AddAliasCheckToCurrentGeneric(context, name_context.loc_id, alias);
+  }
 
   // Add the name of the binding to the current scope.
   context.decl_name_stack().PopScope();

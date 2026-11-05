@@ -2,6 +2,8 @@
 // Exceptions. See /LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <optional>
+
 #include "toolchain/check/context.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/handle.h"
@@ -41,16 +43,18 @@ static auto BuildNamedConstraintDecl(Context& context,
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::NamedConstraintIntroducer>();
 
-  // TODO: PopSoloNodeId(`template`) if it's present, and track that in the
-  // NamedConstraint. Or maybe it should be a modifier, like `abstract class`?
-
-  // Process modifiers.
+  // Process modifiers. `template` marks a template constraint (fork decision
+  // F-010 / SC-1, D-SC-1).
   auto [_, parent_scope_inst] =
       context.name_scopes().GetInstIfValid(name_context.parent_scope_id);
   auto introducer =
       context.decl_introducer_state_stack().Pop<Lex::TokenKind::Constraint>();
   CheckAccessModifiersOnDecl(context, introducer, parent_scope_inst);
-  LimitModifiersOnDecl(context, introducer, KeywordModifierSet::Access);
+  LimitModifiersOnDecl(
+      context, introducer,
+      KeywordModifierSet::Access | KeywordModifierSet::Template);
+  bool is_template =
+      introducer.modifier_set.HasAnyOf(KeywordModifierSet::Template);
 
   auto decl_block_id = context.inst_block_stack().Pop();
 
@@ -62,7 +66,8 @@ static auto BuildNamedConstraintDecl(Context& context,
   SemIR::NamedConstraint constraint_info = {
       name_context.MakeEntityWithParamsBase(name, decl_inst_id,
                                             /*is_extern=*/false,
-                                            SemIR::LibraryNameId::None)};
+                                            SemIR::LibraryNameId::None),
+      {.is_template = is_template}};
 
   DiagnoseIfGenericMissingExplicitParameters(context, constraint_info);
 
@@ -75,10 +80,20 @@ static auto BuildNamedConstraintDecl(Context& context,
                          .new_entity_decl = constraint_decl,
                          .new_entity = constraint_info},
                      is_definition)) {
-    auto prev_decl_generic_id = context.named_constraints()
-                                    .Get(constraint_decl.named_constraint_id)
-                                    .generic_id;
-    FinishGenericRedecl(context, prev_decl_generic_id);
+    auto& prev_constraint_info =
+        context.named_constraints().Get(constraint_decl.named_constraint_id);
+    // Redeclarations must agree on `template` (D-SC-16). `MergeDefinition`
+    // leaves the stored flag alone, so a disagreement is still visible here.
+    // Recover as a template constraint, the permissive mode: a `fn` member of
+    // the definition is then a requirement rather than a cascade of
+    // `FunctionInNonTemplateConstraint`.
+    if (prev_constraint_info.is_template != is_template) {
+      DiagnoseNamedConstraintTemplateMismatch(
+          context, prev_constraint_info.name_id, SemIR::LocId(decl_inst_id),
+          SemIR::LocId(lookup_result.target_inst_id()));
+      prev_constraint_info.is_template = true;
+    }
+    FinishGenericRedecl(context, prev_constraint_info.generic_id);
   } else {
     // Create a new named constraint if this isn't a valid redeclaration.
     constraint_info.generic_id = BuildGenericDecl(context, decl_inst_id);
@@ -111,6 +126,12 @@ auto HandleParseNode(Context& context,
   auto& constraint_info = context.named_constraints().Get(named_constraint_id);
 
   // TODO: Support for `template constraint`.
+  // Fork (SC-1, fork/structural/plan.md D-SC-10 as restated at fill round 8):
+  // `Self` is a checked-phase binding in a `template constraint` too, since a
+  // template-phase `Self` made the names of the body that depend on it
+  // template-dependent in non-template code. A requirement's signature is
+  // therefore checked at the definition as an interface member's is (W-169);
+  // the template phase is SC-B2's prerequisite (W-028).
   bool is_template = false;
 
   // Track that this declaration is the definition.
@@ -185,6 +206,92 @@ auto HandleParseNode(Context& context,
   return true;
 }
 
+// Returns the kind of the first parameter of `function` that is a tuple
+// pattern or an expression pattern, directly or under `var` or a default value
+// (fill round 11, review finding MINOR-1: a `DefaultValuePattern` wraps its
+// subpattern as `var` does; fill round 15, round 14's review 1 finding MAJOR-1:
+// an expression pattern, W-238), or `std::nullopt` if there is none.
+static auto GetRefusedParamPatternKind(Context& context,
+                                       const SemIR::Function& function)
+    -> std::optional<SemIR::InstKind> {
+  for (auto param_patterns_id :
+       {function.implicit_param_patterns_id, function.param_patterns_id}) {
+    for (auto pattern_id :
+         context.inst_blocks().GetOrEmpty(param_patterns_id)) {
+      auto pattern = context.insts().Get(pattern_id);
+      while (true) {
+        if (auto var_pattern = pattern.TryAs<SemIR::AnyVarPattern>()) {
+          pattern = context.insts().Get(var_pattern->subpattern_id);
+        } else if (auto default_pattern =
+                       pattern.TryAs<SemIR::DefaultValuePattern>()) {
+          pattern = context.insts().Get(default_pattern->subpattern_id);
+        } else {
+          break;
+        }
+      }
+      if (pattern.Is<SemIR::TuplePattern>() ||
+          pattern.Is<SemIR::ExprPattern>()) {
+        return pattern.kind();
+      }
+    }
+  }
+  return std::nullopt;
+}
+
+// Collects the structural member requirements of a `template constraint` at
+// its `}`: the `FunctionDecl` instructions of its with-self body block, in
+// declaration order (D-SC-15). A declaration is a requirement only if it is
+// declared directly in the constraint-with-self scope and has no compile-time
+// parameters of its own beyond the with-self generic's (a parameterized
+// requirement is diagnosed as a TODO by `BuildFunctionDecl` and is not
+// collected, D-SC-2 / review fold A12). D-SC-2 as amended at fill rounds 10
+// and 15: a requirement with a tuple pattern or an expression pattern parameter
+// is diagnosed as a TODO here and is not collected, since the signature
+// comparison fails fatally on a `TuplePattern` or an `ExprPattern` pair
+// (merge.cpp `CheckRedeclParam`, as upstream's does for an impl of an interface
+// with such a member; W-234, W-238).
+static auto CollectStructuralMembers(
+    Context& context, const SemIR::NamedConstraint& constraint_info)
+    -> SemIR::InstBlockId {
+  auto with_self_binding_count =
+      context.inst_blocks()
+          .Get(context.generics()
+                   .Get(constraint_info.generic_with_self_id)
+                   .bindings_id)
+          .size();
+  llvm::SmallVector<SemIR::InstId> members;
+  for (auto inst_id :
+       context.inst_blocks().Get(constraint_info.body_block_with_self_id)) {
+    auto fn_decl = context.insts().TryGetAs<SemIR::FunctionDecl>(inst_id);
+    if (!fn_decl) {
+      continue;
+    }
+    const auto& function = context.functions().Get(fn_decl->function_id);
+    if (function.parent_scope_id != constraint_info.scope_with_self_id) {
+      continue;
+    }
+    auto binding_count =
+        function.generic_id.has_value()
+            ? context.inst_blocks()
+                  .Get(context.generics().Get(function.generic_id).bindings_id)
+                  .size()
+            : 0;
+    if (binding_count != with_self_binding_count) {
+      continue;
+    }
+    if (auto refused_kind = GetRefusedParamPatternKind(context, function)) {
+      context.TODO(inst_id,
+                   *refused_kind == SemIR::TuplePattern::Kind
+                       ? "tuple pattern parameter in `template constraint`"
+                       : "expression pattern parameter in `template "
+                         "constraint`");
+      continue;
+    }
+    members.push_back(inst_id);
+  }
+  return context.inst_blocks().Add(members);
+}
+
 auto HandleParseNode(Context& context,
                      Parse::NamedConstraintDefinitionId /*node_id*/) -> bool {
   auto named_constraint_id =
@@ -200,6 +307,10 @@ auto HandleParseNode(Context& context,
   auto& constraint_info = context.named_constraints().Get(named_constraint_id);
   if (!constraint_info.complete) {
     constraint_info.require_impls_block_id = require_impls_block_id;
+    if (constraint_info.is_template) {
+      constraint_info.structural_members_id =
+          CollectStructuralMembers(context, constraint_info);
+    }
     // TODO: Do something with `alias` statements in the body of the
     // constraint.
     constraint_info.complete = true;

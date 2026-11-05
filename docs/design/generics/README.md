@@ -16,6 +16,9 @@ feature of Carbon:
     direction
 -   [Terminology](terminology.md) - A glossary establishing common terminology
     for describing the design
+-   [Template constraints](template_constraints.md) - Structural constraints for
+    template parameters: member requirements, `require` validity blocks, boolean
+    predicates, and the mapping to and from C++20 concepts
 -   [Detailed design](details.md) - In-depth description
     -   [Appendix: Coherence](appendix-coherence.md) - Describes the rationale
         for Carbon's choice to have coherent generics, and the alternatives.

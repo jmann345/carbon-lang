@@ -43,8 +43,14 @@ inline auto IsInitializerCategory(ExprCategory cat) -> bool {
 // can only return `None` if `init_id` is known not to perform in-place
 // initialization; i.e. its type's initializing representation is not in-place,
 // and its category is `Initializing`.
+//
+// `specific_id` is the specific in which `init_id` is evaluated: in a
+// template's specific, a splice in the initializer is resolved to the
+// instruction it splices in that specific.
 auto FindStorageArgForInitializer(const File& sem_ir, InstId init_id,
-                                  bool allow_transitive = true) -> InstId;
+                                  bool allow_transitive = true,
+                                  SpecificId specific_id = SpecificId::None)
+    -> InstId;
 
 // Information about the form of an expression.
 struct FormInfo {

@@ -307,7 +307,8 @@ class TypeCompleter {
              SemIR::CppTemplateNameType, SemIR::FunctionType,
              SemIR::FunctionTypeWithSelfType, SemIR::GenericClassType,
              SemIR::GenericInterfaceType, SemIR::GenericNamedConstraintType,
-             SemIR::InstType, SemIR::OverloadSetType, SemIR::UnboundElementType,
+             SemIR::InstType, SemIR::OverloadSetType,
+             SemIR::StructuralRequirementType, SemIR::UnboundElementType,
              SemIR::WhereExpr>())
   auto BuildInfoForInst(SemIR::TypeId /*type_id*/, InstT /*inst*/) const
       -> SemIR::CompleteTypeInfo {
@@ -1056,6 +1057,11 @@ static auto IdentifyFacetType(Context& context, SemIR::LocId loc_id,
   llvm::SmallVector<SemIR::IdentifiedFacetType::RequiredImpl> extends;
   llvm::SmallVector<SemIR::IdentifiedFacetType::RequiredImpl> impls;
   llvm::SmallVector<SemIR::IdentifiedFacetType::Rewrite> rewrites;
+  // Structural requirements of `template constraint`s (fork decision F-010 /
+  // SC-1, D-SC-15), filled by the three named-constraint loops below and never
+  // from an interface's `require` block (D-SC-6).
+  llvm::SmallVector<SemIR::IdentifiedFacetType::StructuralRequirement>
+      structural;
 
   while (!work.empty()) {
     SelfImplsFacetType next_impls = work.pop_back_val();
@@ -1141,6 +1147,9 @@ static auto IdentifyFacetType(Context& context, SemIR::LocId loc_id,
       if (SpecificHasError(context, constraint_with_self_specific_id)) {
         return SemIR::IdentifiedFacetTypeId::None;
       }
+      if (constraint.is_template) {
+        structural.push_back({self_const_id, extends});
+      }
 
       for (auto require_impls_id : llvm::reverse(require_impls_ids)) {
         const auto& require = context.require_impls().Get(require_impls_id);
@@ -1197,6 +1206,9 @@ static auto IdentifyFacetType(Context& context, SemIR::LocId loc_id,
           constraint.generic_with_self_id, impls.specific_id, self_const_id);
       if (SpecificHasError(context, constraint_with_self_specific_id)) {
         return SemIR::IdentifiedFacetTypeId::None;
+      }
+      if (constraint.is_template) {
+        structural.push_back({self_const_id, impls});
       }
 
       for (auto require_impls_id : llvm::reverse(require_impls_ids)) {
@@ -1257,6 +1269,12 @@ static auto IdentifyFacetType(Context& context, SemIR::LocId loc_id,
       if (SpecificHasError(context, constraint_with_self_specific_id)) {
         return SemIR::IdentifiedFacetTypeId::None;
       }
+      if (constraint.is_template) {
+        structural.push_back(
+            {GetCanonicalFacet(
+                 context, context.constant_values().Get(self_type_inst_id)),
+             impls});
+      }
 
       for (auto require_impls_id : llvm::reverse(require_impls_ids)) {
         const auto& require = context.require_impls().Get(require_impls_id);
@@ -1287,7 +1305,7 @@ static auto IdentifyFacetType(Context& context, SemIR::LocId loc_id,
 
   // TODO: Process other kinds of requirements.
   return context.identified_facet_types().Add(
-      {key, partially_identified, extends, impls, rewrites});
+      {key, partially_identified, extends, impls, rewrites, structural});
 }
 
 auto TryToIdentifyFacetType(Context& context, SemIR::LocId loc_id,

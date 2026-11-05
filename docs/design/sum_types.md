@@ -278,8 +278,9 @@ A `match`, `if let`, `while let` or `let ... else` scrutinee of the C++ class is
 converted to its sum type, so alternative patterns consume it, with the
 coverage rules of any `choice`: a `match` that names every alternative needs no
 `default`. A C++ `std::optional<T>` also converts in one implicit step to and
-from `Core.Optional(T)` when `T` is not a pointer type, and a `Core.Optional(T)`
-is matched as `StdOptional(T)` when `T` is a scalar or pointer type:
+from `Core.Optional(T)` when `T` is not a pointer type; a `Core.Optional(T)` is
+not itself matched through `StdOptional(T)`, since that view was retired as a
+second spelling of the `Match` route (amended 2026-11-05):
 
 ```carbon
 import Core library "io";

@@ -420,7 +420,7 @@ Assignment `o = p;` does not destroy the old value of any class with a
 `Destroy`; that is not specific to `Core.Optional`, and is filed by the strings
 workstream ("assignment does not destroy the overwritten value"). A class that
 declares its own `Destroy` does not yet destroy its fields after that `Destroy`
-runs, so an Optional field of such a class keeps its value (W-197); a class
+runs, so an Optional field of such a class keeps its value (W-126); a class
 without one destroys its fields, an Optional field included.
 
 ## Propagation and iteration
@@ -496,10 +496,18 @@ TODO: `interop with non-identifier package name`" at the prelude's `Optional`
 class: the comparison would need the toolchain to name the `Core` package from
 C++, which it does not yet do (toolchain/check/cpp/export.cpp, W-049).
 
-A mapping of C++'s `std::optional<T>` in either direction is not designed here:
-it is the open half of the fork's work on sum-type consumption with
-`std::variant` and `std::optional` interop (W-011). If that mapping targets
-`Core.Optional(T)`, this design is amended first.
+A C++ `std::optional<T>` keeps its C++ class and has a Carbon sum type,
+`Core.CppCompat.StdOptional(T)`
+([Sum types](sum_types.md#c-stdoptional-and-stdvariant), fork decision
+F-020). For a `T` that is a concrete scalar or pointer payload type, it
+converts to and from `Core.Optional(T)` in one implicit step, through that
+sum type and the prelude's `ImplicitAs` impls, and a `Core.Optional(T)`
+argument is offered to C++ overload resolution as `std::optional<T>`;
+`Core.Optional(T*)` keeps the nullable-pointer mapping above. A
+`Core.Optional(T)` is not matched through that sum type: it is not
+matchable in 0.1 ([Pattern matching](#pattern-matching)). No exported
+signature names `Core.Optional(T)` for a non-pointer `T` (W-049) (amended
+2026-11-05, SV-1, re-derived after DR-1's W-322).
 
 ## 0.1 limits
 
@@ -562,7 +570,7 @@ Each limit is a filed fork work item, with the condition under which it closes:
 -   **Assignment does not destroy the overwritten value** (filed by the strings
     workstream). Closes with assignment that destroys the old value.
 -   **A class that declares its own `Destroy` does not destroy its fields**
-    (W-197), so an Optional field of such a class keeps its value. Closes when
+    (W-126), so an Optional field of such a class keeps its value. Closes when
     such a class's fields are destroyed after its `Destroy` runs.
 
 ## Alternatives considered
@@ -583,8 +591,9 @@ Each limit is a filed fork work item, with the condition under which it closes:
     private interfaces over the storage type, whose fallback compares the values
     `T.Get` returns.
 -   **Rebuilding `Optional` as a `choice` now.** The pointer ABI, the `Try`
-    signature, the names the `for` desugaring calls and the C++ mapping's name
-    all constrain it, and comparison does not need it (W-177).
+    signature, the names the toolchain's `for` calls until `Core.Optional` is
+    matchable (W-320) and the C++ mapping's name all constrain it, and
+    comparison does not need it (W-177).
 -   **A `Destroy` declared on `Optional(T)` itself.** It makes every Optional
     nontrivially destructible, the pointer niche included, so a
     `Core.Optional(T*)` union field stops compiling; the default storage's

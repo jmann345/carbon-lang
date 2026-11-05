@@ -4802,6 +4802,17 @@ only `Core.Optional(T*)` is `UnformedInit`, short of p000257's direction (W-200,
 D-OP2-15); and the row is DONE on a container run, against SL-2's practice
 (D-OP2-16). Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at 3741e72c8; the
+decision-log entry "RG-1: the V-3a register classified at f27a977d8
+(2026-10-28)" has the quotes):_ the adapter arms (classified 2026-10-28, RG-1:
+ALIGNED, W-355; upstream custom_witness.cpp:466-467 "TODO: Handle destruction of
+adapters generally by destroying the adapted type."); `UnformedInit` for
+`Optional(T*)` only (classified 2026-10-28, RG-1: ALIGNED with W-200's gap,
+p000257:274); the two fixes, which upstream f27a977d8 still needs
+(lower/handle.cpp:77, convert.cpp:1564-1567), the replaced lines, W-196 and the
+row (classified 2026-10-28, RG-1: NONE, W-355; no upstream commit since the cut
+touches optional.carbon, whose text has no triviality rule).
+
 _Item 10 (2026-11-02, FO-1):_ a class whose own `Destroy` impl answers the
 `Destroy` query is no longer completed by the custom witness, so a method of
 `C` returning `Core.Optional(Self)` checks (47a3d9f4e; fork/followon/fo1-plan.md
@@ -5524,6 +5535,20 @@ _Landed (2026-11-05, LAND-1, R33):_ merged into trunk as PR 56 by
 b2e04f18d (GitHub merged_at 2026-11-05T20:31:37Z); container-measured (R33 (b)):
 gate 2006 of 2006, conformance 201/0/17 over 218; id re-scans: none;
 moved to follow-ons: none.
+
+> **F-015 amendment (2026-11-05, SV-1, F-020; re-derived by FO-1 after DR-1's
+> W-322).** The `std::optional` mapping this design deferred to W-011
+> relates to `Core.Optional(T)`: a C++ `std::optional<T>` converts to and
+> from `Core.Optional(T)` in one implicit step for a non-pointer `T` that
+> is a concrete scalar or pointer payload type (through
+> `Core.CppCompat.StdOptional(T)` and two prelude `ImplicitAs` impls that
+> use only the public API), and a `Core.Optional(T)` argument is offered to
+> C++ overload resolution as `std::optional<T>`. A `Core.Optional(T)` is
+> not matched through that choice (D-SV-7's view, retired by DR-1,
+> W-322). The class, its API, its storage, the `Try` impl and
+> `Core.Optional(T*)`'s pointer mapping are unchanged;
+> docs/design/optional.md's "C++ interoperability" paragraph says so.
+> W-177 stays open. Veto-able with F-020.
 
 ### TP-1: integrated templates (2026-10-14)
 

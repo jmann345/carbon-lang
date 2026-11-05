@@ -4583,6 +4583,11 @@ D-FO1-4). OP-1's appended block in core/prelude/types/optional.carbon is
 :205-346 since c655d55f3 (the V-3a register entry's `:205-275` described it
 before W-352).
 
+_Landed (2026-11-05, LAND-1, R33):_ merged into trunk as PR 56 by
+b2e04f18d (GitHub merged_at 2026-11-05T20:31:37Z); container-measured (R33 (b)):
+gate 2006 of 2006, conformance 201/0/17 over 218; id re-scans: none;
+moved to follow-ons: none.
+
 ### TP-1: integrated templates (2026-10-14)
 
 Context: W-014 (gap row "Generics: Integrated templates", PARTIAL), with DD-1's

@@ -2763,9 +2763,20 @@ implementer, a fresh worktree of claude/carbon-fork-0-1-op at its pushed head.
 2.  **M56**, "OP-1: merge trunk at `<trunk>` (LAND-1 stage 14, D-LAND-12)":
     docs/design/control_flow/loops.md by DR-1's M-a rule and C.7
     (fork/direction/plan.md section 1.16); docs/design/error_handling.md with
-    both amendments in date order, OP-1's (2026-10-13) then DR-1a's
-    (2026-10-21) (fork/direction/plan.md section 0.8, :708); the records files
-    by D-LAND-5; the README table regenerated.
+    both amendments in date order, OP-1's (2026-10-13) then DR-1a's (2026-10-21)
+    (fork/direction/plan.md section 0.8, :708); the records files by D-LAND-5,
+    fork/gap-analysis.md's regions also by GA-1b: a row extended on both sides
+    takes the PR's row followed by trunk's added sentences verbatim (amended
+    2026-11-05, landing: stage 14, R29 ruling); the README table regenerated.
+
+    Step 2a, **the re-anchor commit** ebca3e2f2, "OP-1: re-anchor optional.md's
+    three loops.md links after M56 (DR-1a's headings)", docs/design/optional.md
+    only, between M56 and C-R: the three links to
+    `control_flow/loops.md#ranged-for-for-user-defined-types`, a heading that
+    DR-1a's d0cfe8082 removed, take `#iterate-interface`, `#loop-desugaring` and
+    `#for`; the message of ebca3e2f2 names 2481ed8f2, DR-1a's later fix commit
+    on the page, which touched no heading (amended 2026-11-05, landing: stage
+    14, R29 ruling).
 3.  **F-M56**: autoupdate on what M56's gate names. Predicted: none, or SV-1's
     choice/optional_pointer_payload.carbon, interop/cpp/stdlib/optional.carbon
     and variant.carbon (CHECK lines of the prelude's Optional), which the land
@@ -2796,9 +2807,18 @@ implementer, a fresh worktree of claude/carbon-fork-0-1-op at its pushed head.
     fork/gap-analysis.md is not among C-R's files; the copy's own abort,
     handle_call.cpp:984, is optional_bool.carbon:6's, not this clause's; PR 57's
     row :85, OP-2's DONE text, takes the row at M57 by D-LAND-5's GA rule).
-6.  Two implementation reviews (OP-1's rule, D-FO1-9) of C1 to L56 (C1 and
-    F-C1 reviewed with C-M57 in view), which are also the document review of
-    C-R's and L56's page edits; fixer; push.
+6.  Two implementation reviews (OP-1's rule, D-FO1-9) of C1 to L56 (C1 and F-C1
+    reviewed with C-M57 in view), which are also the document review of C-R's
+    and L56's page edits; fixer; push. The review fold of R1-m2 is the fix
+    commit 2da8a164d, "OP-1: optional.md's `for` sentence states DR-1a's
+    desugaring (FO-1 stage 14 review fold)", which replaces the sentence on
+    `for` with ``A `for` loop over a type that implements `Iterate` calls its
+    `Next`, which returns `Optional(ElementType)`, and stops at the first empty
+    value; until `Core.Optional` is matchable (W-320), the toolchain calls
+    `HasValue()` and `Get()` by name in place of the design's `match`, as
+    upstream's checker does under its TODO ([Loop
+    desugaring](control_flow/loops.md#loop-desugaring), its fork amendment of
+    2026-10-21).`` (amended 2026-11-05, landing: stage 14, R29 ruling).
 7.  The trunk landing (D-LAND-6) at the pushed head: expected 2006 of 2006,
     201/0/17 over 218, 50 bullets, no refill; records commit with Appendix E's
     fields and E.2's stage-14 values; one fresh reviewer (D-FO1-9). RG-1's OP-1
@@ -2829,7 +2849,11 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     :572-575), OP-2's own edits elsewhere in the file are kept, and the merged
     page is re-read so that no sentence states the pre-W-352 comparison
     behaviour (amended 2026-11-03, implementation review fold: R1-m1 / R2-C-m4 /
-    RR1-C-m1).
+    RR1-C-m1). At M57 trunk's side is also taken for PR 57's copy of the three
+    loops.md links and of the `for` sentence (d25c13bd7:49, :432-436 and :607),
+    which stage 14 re-anchored (ebca3e2f2) and replaced (2da8a164d), Appendix
+    C.3's region rule governing the rest of the page (amended 2026-11-05,
+    landing: stage 14, R29 ruling).
 3.  **F-M57**: autoupdate on what M57's gate names. Predicted (measured on
     `sim57x60` with S and A1, nine refills there): DR-1a's m57 three (lower
     array/iterate, for/break_continue, for/for;
@@ -2872,6 +2896,11 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     leg); row 78's DR-0 sentence kept beside PR 57's DONE text as DR-1's C.3
     rewrites it (item 16, fork/direction/plan.md section 1.16; Appendix E.3's
     text; amended 2026-11-02, review fold: A-m-4: rev 1 wrote it at L56 only);
+    the "Rebuilding `Optional` as a `choice` now" bullet of
+    docs/design/optional.md, in which the words "the names the `for`
+    desugaring calls" become "the names the toolchain's `for` calls until
+    `Core.Optional` is matchable (W-320)" (stage 14's re-review residue
+    RR1-14-m1) (amended 2026-11-05, landing: stage 14, R29 ruling);
     and RG-1's OP-2 note (rg1-plan.md:2553-2560 by D-LAND-15's rule,
     "2026-10-27" read "2026-10-28") (amended 2026-11-02, review fold: B-M-4).
 7.  Two implementation reviews (OP-2's rule, D-FO1-9) of M57 to L57, both
@@ -2996,6 +3025,8 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 20 | sc (60) | L60, B-R2 | SC-1: DD-1's state L (stage 13); SC-1: W-139's register rows (stage 13) | docs/design/templates.md; docs/design/interoperability/README.md; fork/designdocs/samples/ (X12); fork/designdocs/check_samples.py; fork/register/rg1-plan.md; fork/register/rg1-checks.tsv; fork/decision-log.md; fork/inventory/work-items.json (W-374; amended 2026-11-02, review fold: RR3-1) | unchanged; both checker modes 0 errors |
 | 21 | trunk | merge, records | Land PR 60: SC-1, template-style structural conformance (F-010); Land PR 60: records | LAND-1's Appendix A.1; A.3 to A.10 with Appendix E's fields | 2003 of 2003 |
 | 22 | op (56) | M56, F-M56, C-R, L56 | OP-1: merge trunk at `<trunk>` (LAND-1 stage 14, D-LAND-12); OP-1: autoupdate the goldens the land merge changes (stage 14); OP-1: W-352 discharged (D-FO1-4), its files docs/design/optional.md, fork/optional/plan.md, fork/decision-log.md, fork/inventory/work-items.json, fork/register/rg1-plan.md and fork/register/rg1-checks.tsv; OP-1: land-time texts (stage 14) | section 2.6 | 2006 of 2006 |
+| 22a | op (56) | the re-anchor commit | OP-1: re-anchor optional.md's three loops.md links after M56 (DR-1a's headings) | docs/design/optional.md | not owed (documentation only): ebca3e2f2, between M56 ccbe8fb44 and C-R 981e7673d; the three links to `control_flow/loops.md#ranged-for-for-user-defined-types`, a heading DR-1a's d0cfe8082 removed, take `#iterate-interface`, `#loop-desugaring` and `#for` (ebca3e2f2's message names 2481ed8f2, DR-1a's later fix commit on the page, which touched no heading) (amended 2026-11-05, landing: stage 14, R29 ruling) |
+| 22b | op (56) | the review fold's fix commit | OP-1: optional.md's `for` sentence states DR-1a's desugaring (FO-1 stage 14 review fold) | docs/design/optional.md | not owed (documentation only): 2da8a164d, after L56 28691eeed, the review fold of R1-m2, fix commit 2 of 2 of Slice C's D-FO1-10 budget (amended 2026-11-05, landing: stage 14, R29 ruling) |
 | 23 | trunk | merge, records | Land PR 56: OP-1, Core.Optional comparison and the fork design F-015; Land PR 56: records | as row 21 | 2006 of 2006 |
 | 24 | op2 (57) | M57, F-M57, the conditional refill, the nested-pointer leg, L57 | OP-2: merge trunk at `<trunk>` (LAND-1 stage 15, D-LAND-12); OP-2: autoupdate the goldens the land merge changes (stage 15); OP-2: SV-1's nested pointer leg (stage 15); OP-2: land-time texts (stage 15) | section 2.7 | 2011 of 2011 |
 | 25 | trunk | merge, records | Land PR 57: OP-2, Core.Optional owns its value, the MaybeUnformed unsafe-as fix, checked Get; Land PR 57: records | as row 21 | 2011 of 2011 |
@@ -5978,13 +6009,16 @@ and again at be0f11be9; H9.9 reuses T7.1's row, measured 0 at both); after
 H8.7's row, `H8.9`, `G`, `-i -E`, `choice|alternative`,
 `docs/design/variadics.md`, `2` (L59; measured 2 at 68569d234). Each commit runs
 `check_greps.sh <repository> <tip> fork/register/rg1-checks.tsv` at the day's
-tip and writes its "checked <n> silence checks, 1 failed (H10.8, F.1's)"
-line (amended 2026-11-03, landing: stage 13, R29 ruling) in its message
-(91 rows on trunk 03b40f7c5, so 93 after B-R2 and 94 after L59); rg1-plan.md's
-dated counts are not edited (amended 2026-11-02, review fold: B-m-7: rev 1 gave
-H9.7 no check row). B-R2 does not edit TP-1's row H10.8: its classification is
-the orchestrator's and the weekly check's (Appendix F.1, W-355; amended
-2026-11-02, review fold: RR3-1).
+tip and writes its line as measured, with the tip's sha, in its message: 1
+failed (H10.8, F.1's) at b7919e8f5 (B-R2, 2026-11-03); 4 failed (H4.5, H8.5,
+H10.8, H11.10, L rows of upstream's drift, re-anchored by the weekly check of
+2026-11-09) at a1305604f (C-R, 2026-11-05); L59's as measured (amended
+2026-11-03, landing: stage 13, R29 ruling; amended 2026-11-05, landing: stage
+14, R29 ruling) (91 rows on trunk 03b40f7c5, so 93 after B-R2 and 94 after L59);
+rg1-plan.md's dated counts are not edited (amended 2026-11-02, review fold:
+B-m-7: rev 1 gave H9.7 no check row). B-R2 does not edit TP-1's row H10.8: its
+classification is the orchestrator's and the weekly check's (Appendix F.1,
+W-355; amended 2026-11-02, review fold: RR3-1).
 
 ## Appendix E: the landings' fields (LAND-1 Appendix C rows)
 

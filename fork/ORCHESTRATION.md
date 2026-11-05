@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-05 (PR 60 landed by LAND-1; 13 PRs landed,
+Last updated: 2026-11-05 (PR 56 landed by LAND-1; 14 PRs landed,
+4 held; see the paragraph dated 2026-11-05 (20:21 UTC) below; the
+earlier 2026-11-05 text follows).
+2026-11-05 (PR 60 landed by LAND-1; 13 PRs landed,
 5 held; see the paragraph dated 2026-11-05 (18:27 UTC) below; the
 earlier 2026-11-02 text follows).
 2026-11-02 (LAND-1 stages 1 to 12 are done: 12 PRs landed, 6 held;
@@ -1881,6 +1884,13 @@ worktree (a3b2005ce, the head), and trunk and the /home/user/carbon-trunk
 worktree (16227591f), which contain a3b2005ce; 13 PRs landed, 5 held. Next:
 PR 56 (OP-1).
 
+2026-11-05 (20:21 UTC): PR 56 (OP-1) LANDED on trunk by merge
+b2e04f18d under R33 (fork/followon/fo1-plan.md section 2.6), GitHub
+merged_at 2026-11-05T20:31:37Z; container-measured (R33 (b)): gate 2006 of 2006,
+conformance 201/0/17 over 218, 50/56 bullets, gap tally 36/17/2/1;
+id re-scans: none; 14 PRs landed, 4 held. Next: PR 57 (OP-2), after the
+orchestrator retargets it to trunk.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2217,7 +2227,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5) (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for its realignment, completed under the orchestrator's re-ruling of the C++ boundary question, SAFE-3 having stopped, and lands by Next actions item 14); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md at rev 14 0f22798fb, unpushed with its commits 48f2e66a0 and 954f1c542 and four fix commits, the twenty-seven commits mirrored at claude/carbon-fork-0-1-safe-wip, not a PR) STOPPED 2026-10-29 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1, the built-in operator exemption's justification being false under the toolchain's in-place `=`; SAFE-3 (fork/safe/safe3-plan.md at rev 12 14c1ac8ac, unpushed, its twelve plan commits mirrored with SAFE-2's at claude/carbon-fork-0-1-safe-wip) STOPPED 2026-11-02 under the break condition of the orchestrator's re-think ruling of 2026-11-01 on RT1-B1 and RT2-B1, C++ code reaching from an address it receives a Carbon place that the closure of D-SAFE3-13 does not name; W-365 and W-366 reserved and unfiled, their texts in the plan's B.14; PR 53 not merged under R33 (c) until a re-ruling; the pushed head is unchanged. |
 | `claude/carbon-fork-0-1-ev` | LANDED as PR 54 by merge 969e4486c (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T04:04:54Z, merge_commit_sha 969e4486c) — EV-1: the evaluator guides and transcribed programs, in state C with PR 52; gap row 90 DONE; W-062 discharged, W-152, W-153 and W-155 filed; land-time commits d9e311250; container-measured (R33 (b)): gate 1945 of 1945, conformance 143/0/16 over 159, 49/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-st` | LANDED as PR 55 by merge d7a3c13bb (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T05:14:12Z, merge_commit_sha d7a3c13bb) — ST-1: F-014: str comparison, Core.StringBuf and concatenation; gap row 77 DONE; W-057 discharged, W-160 to W-167 filed; land-time commits 69a6f995b, 4520e8dec; container-measured (R33 (b)): gate 1953 of 1953, conformance 148/0/15 over 163, 49/56 bullets; moved to follow-ons: to Next actions item 14: W-144's additions, the seven SAFE-1 reconciliation edits and the cross-branch re-cites; to item 14: the re-reads of the pages SAFE-1 moves and W-148's id; R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 9f12209d8 (first held at 379f20f67; amended 2026-10-21 by DR-1's W-323 records commit, which corrects the loops.md amendment, OP-1's V-3 paragraph, optional.md's matchability text and W-177's route, the description refreshed; W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 once W-352's commit and item 10 are done); amended 2026-10-28 by RG-1's records commit 9f12209d8 (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-op` | LANDED as PR 56 by merge b2e04f18d (2026-11-05, LAND-1, R33; GitHub merged_at 2026-11-05T20:31:37Z, merge_commit_sha b2e04f18d) — OP-1: F-015: `Core.Optional` comparison, in place (W-352 discharged), with DD-1's state L for PR 56; land-time commits none; container-measured (R33 (b)): gate 2006 of 2006, conformance 201/0/17 over 218, 50/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at e23113ba2 (first held at 628273444; a080c7886 merges PR 56's W-323 commit, the description refreshed), stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 16 after PR 56); amended 2026-10-28 by RG-1's merge e23113ba2 of PR 56's commit (R32 (e)), the description refreshed. |
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 once item 13's fix and note 7's ruling are on its branch). |
@@ -2242,9 +2252,9 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 60's landing (2026-11-05, LAND-1, R33 (b)): 196 PASS
-/ 14 SKIP / 0 FAIL programs (210 total); **50/56 bullets green**; gate
-2003 of 2003. R21's hosted run is owed when Actions returns; the paragraph
+Container-measured at PR 56's landing (2026-11-05, LAND-1, R33 (b)): 201 PASS
+/ 17 SKIP / 0 FAIL programs (218 total); **50/56 bullets green**; gate
+2006 of 2006. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
 fork/conformance/out/scoreboard.json's (D-LAND-17).
 
@@ -2531,7 +2541,8 @@ as the work still owed on the branches and after the landing.
     `-10 -20 81 -1 -2 81`) and the refill of fail_todo_core_optional.carbon only
     if PR 57's merge changes it (fork/sumtype-interop/plan.md section 3 item 8
     and section 1.7); DD-1's state L for PR 56; RG-1's OP-2 note (W-343), by
-    D-LAND-15's rule.
+    D-LAND-15's rule. (PR 56 landed 2026-11-05 by merge b2e04f18d, FO-1
+    stage 14; PR 57 follows.)
 17. G-59/66, PR 59 then PR 66 retargeted to trunk (D-LAND-12), owned by VA-1's
     workstream: once item 13's fix and W-367 and note 7's ruling (W-368 if it
     makes a fix) are on PR 59's branch under VA-1's review and item 2's

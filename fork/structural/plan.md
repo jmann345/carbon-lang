@@ -6161,3 +6161,38 @@ and the seven corrected rows); decision-log.md 1/2/44/1/6, 23, 0 before and
 1/2/45/1/6, 27, 0 after (the new entry's heading and its four defects);
 ORCHESTRATION.md 1/1/5/0/0, 8, 4 before and after; gap-analysis.md not edited,
 1/5/23/0/0, 0, 0. The hazard greps over the diff are empty.
+
+### Landed notes (SC-1, LAND-1)
+
+SC-1 landed on trunk (LAND-1, 2026-11-05): merged as PR 60 by 16227591f (head
+a3b2005ce, trunk before 1eb098aaf; GitHub merged_at 2026-11-05T18:56:37Z) under
+R33, fork/followon/fo1-plan.md section 2.5; land-time commits none;
+container-measured (R33 (b)): gate 2003 of 2003, conformance 196 PASS, 0 FAIL,
+14 SKIP over 210, 50 of 56 bullets; id re-scans: W-373 to W-376 at step 9,
+before the records edit: origin/claude/carbon-fork-0-1-sc, fo1-land-sc and the
+/dev/shm/fo1/land/wt-sc worktree (a3b2005ce, the head), and trunk and the
+/home/user/carbon-trunk worktree (16227591f), which contain a3b2005ce; moved to
+follow-ons: none.
+
+Stage 13's landing record, by the orchestrator's ruling under R29 on stage 13's
+phase A review, round 1, and its addenda: CT-1's step 7 at 8e57d7d19: t08 47,
+t09 48, t13 and t14 'member access into incomplete class `C(i32)`' as trunk's
+install, tc5 8, tc6 7; CT-1's break condition not met. M18
+(fork/followon/fo1-plan.md section 2.5 step 5, amended by the same ruling): on
+S's tree 1992 passed, 11 failed of 2003, the eleventh
+fail_template_constraint_requirement_call.carbon, F-M60's own refill; on F-M60's
+tree with the same binary 1993 of 2003, the ten files of the record. The
+register lines at 3d57e4e48 (B-R2) and a3b2005ce, at upstream b7919e8f5:
+fork/register/check_greps.sh "checked 93 silence checks, 1 failed" (H10.8) and
+fork/register/check_quotes.sh "checked 289 quotes, 7 failed" (call.cpp:387 and
+:241; export.cpp:403, :404, :538, :1950 and :1951); at this landing, at upstream
+bfd7f7ae5: "checked 289 quotes, 19 failed" and "checked 93 silence checks, 4
+failed", each failing row in W-355's note for PR 60. The difference between
+phase A's register lines (7 quote and 1 silence-check failures at
+b7919e8f5, 2026-11-03) and the landing's (19 and 4 at bfd7f7ae5, 2026-11-05) is
+upstream drift (R32 (b)); the weekly check of 2026-11-09 re-anchors the quote
+rows and re-classifies H4.5, H8.5, H11.10 and H10.8. H9.5's subject cell is
+qualified "at cc4daba00 (before W-139): " by the same ruling (R2-m4), which
+amends Appendix D.6 of fork/followon/fo1-plan.md. The message of 1eb098aaf, the
+unit CM record's commit, made by the orchestrator, says "07:40 UTC" where its
+timestamp is 2026-11-03T07:33:44Z, a time estimated, not read.

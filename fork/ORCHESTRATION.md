@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-02 (LAND-1 stages 1 to 12 are done: 12 PRs landed, 6 held;
+Last updated: 2026-11-05 (PR 60 landed by LAND-1; 13 PRs landed,
+5 held; see the paragraph dated 2026-11-05 (18:27 UTC) below; the
+earlier 2026-11-02 text follows).
+2026-11-02 (LAND-1 stages 1 to 12 are done: 12 PRs landed, 6 held;
 see the paragraph dated 2026-11-02 (16:54 UTC) below; the earlier 2026-11-02
 text follows).
 2026-11-02 (weekly check fired under R32: the cut HOLDS at 150
@@ -1838,6 +1841,16 @@ upstream's d99b767dd, whose `IsCallPerformable`
 argument, where D-TP-11 forms `Holder(T)` at the definition; its interface half
 is W-374 (FO-1 D-FO1-2 (4)).
 
+2026-11-05 (18:27 UTC): PR 60 (SC-1) LANDED on trunk by merge
+16227591f under R33 (fork/followon/fo1-plan.md section 2.5), GitHub
+merged_at 2026-11-05T18:56:37Z; container-measured (R33 (b)): gate 2003 of 2003,
+conformance 196/0/14 over 210, 50/56 bullets, gap tally 36/17/2/1;
+id re-scans: W-373 to W-376 at step 9, before the records edit:
+origin/claude/carbon-fork-0-1-sc, fo1-land-sc and the /dev/shm/fo1/land/wt-sc
+worktree (a3b2005ce, the head), and trunk and the /home/user/carbon-trunk
+worktree (16227591f), which contain a3b2005ce; 13 PRs landed, 5 held. Next:
+PR 56 (OP-1).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2179,7 +2192,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (pushed as a record, head 14f06b8b3, no PR; decision-log entry "OX-1 parked") — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
 | `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 17 once item 13's fix and note 7's ruling are on its branch). |
 | `claude/carbon-fork-0-1-dd` | LANDED as PR 58 by merge 909c817d3 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T06:23:27Z, merge_commit_sha 909c817d3) — DD-1: design docs without placeholders, with state L for PR 51, PR 54 and PR 55; gap row 70 DONE, row 91 PARTIAL until state L for PR 53, PR 56 and SC-1; W-065 discharged; land-time commits ad7bb2e0c, 9ae576af5; container-measured (R33 (b)): gate 1953 of 1953, conformance 167/0/15 over 182, 49/56 bullets; moved to follow-ons: to items 14, 15 and 16: state L for PR 53, SC-1 and PR 56; R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-sc` | HELD OPEN as PR 60 — SC-1 template-style structural conformance (F-010) at cc4daba00 (W-027 implemented; W-134..W-143, W-151, W-168, W-169, W-232..W-239 filed; expected 130/0/21 over 151; gap row 55 PARTIAL expected); eighteen fill rounds, round 17's toolchain change reviewed with no MAJOR or BLOCKER and the branch found dry; merges after PR 52, before PR 54 (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: lands by Next actions item 15 once W-139's fix and item 10 are done); amended 2026-10-28 by RG-1's records commit cc4daba00 (R32 (e)), the description refreshed. |
+| `claude/carbon-fork-0-1-sc` | LANDED as PR 60 by merge 16227591f (2026-11-05, LAND-1, R33; GitHub merged_at 2026-11-05T18:56:37Z, merge_commit_sha 16227591f) — SC-1: F-010: `template constraint` requirements satisfied by a type's own members, with W-139 realigned (a checked generic's checked-symbolic argument for a `template` binding is checked per specific) and TP-1's S; W-139 discharged, W-140 narrowed, W-373 to W-376 filed; land-time commits none; container-measured (R33 (b)): gate 2003 of 2003, conformance 196/0/14 over 210, 50/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-tp` | LANDED as PR 61 by merge 35fb2aca9 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T09:04:22Z, merge_commit_sha 35fb2aca9) — TP-1: integrated templates with F6's refills (PR 51's split refilled under its fail_todo_ name, which PR 64's L-F renames) and L over PR 58; W-127 for the template shape, W-183, W-192 and W-193 discharged; gap row 54 PARTIAL; land-time commits 2288e99f6, 3f229ecdf, a11a5ea2f; container-measured (R33 (b)): gate 1968 of 1968, conformance 177/0/15 over 192, 49/56 bullets; moved to follow-ons: to item 15: S and its mutant M18; to item 17: the VA-1 compositions; to item 15: M's rules for SC-1's hunks; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-sv` | LANDED as PR 62 by merge 4fd18b93f (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T10:03:37Z, merge_commit_sha 4fd18b93f) — SV-1: F-020: std::optional and std::variant interop mapping; W-011 DISCHARGED; W-284 held until M-VA lands (item 17); gap row 68 PARTIAL; land-time commits 855a90d3b; container-measured (R33 (b)): gate 1976 of 1976, conformance 182/0/15 over 197, 49/56 bullets; moved to follow-ons: to item 17: M-VA and W-284; to item 16: Doc-M, C.5, C.8, the W-177 header cite and F-M's PR 57 part; to item 17: M-VA's mutants M19 and M21 and W-284's clauses; to item 16: the nested-pointer leg and Doc-M's re-derivation; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ct` | LANDED as PR 64 by merge e68882519 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T12:05:55Z, merge_commit_sha e68882519) — CT-1: F-021: C++ templates on symbolic Carbon type arguments, instantiated per specific; PR 51's split renamed unformed_dependent_var by L-F (C-2); W-043 DISCHARGED; gap rows 56 and 42 PARTIAL; land-time commits d2cfbfe72, 4ce74a243, ef8456981, 940b67215; container-measured (R33 (b)): gate 1978 of 1978, conformance 189/0/15 over 204, 49/56 bullets; moved to follow-ons: to item 17: S-VA with its mutant M18, and C.11's split; to items 15 and 16: its PR 60 and PR 57 compositions; R21's hosted gate owed when Actions returns (R33 (b)). |
@@ -2199,9 +2212,9 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 68's landing (2026-11-02, LAND-1, R33 (b)): 193 PASS
-/ 15 SKIP / 0 FAIL programs (208 total); **49/56 bullets green**; gate
-1986 of 1986. R21's hosted run is owed when Actions returns; the paragraph
+Container-measured at PR 60's landing (2026-11-05, LAND-1, R33 (b)): 196 PASS
+/ 14 SKIP / 0 FAIL programs (210 total); **50/56 bullets green**; gate
+2003 of 2003. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
 fork/conformance/out/scoreboard.json's (D-LAND-17).
 
@@ -2464,7 +2477,8 @@ as the work still owed on the branches and after the landing.
     added call.cpp and convert.cpp lines create no `TemporaryStorage` return
     argument, pass no `return_arg_id` and add no `ConvertCallArgs` call
     (fork/direction/plan.md section 0.8), item 10's decided commit, fills, gate
-    and review; then the trunk landing.
+    and review; then the trunk landing. (DONE 2026-11-05: PR 60 landed by merge
+    16227591f, FO-1 stage 13.)
 16. G-56/57, PR 56 then PR 57 retargeted to trunk (D-LAND-12): once W-352's
     commit is on PR 56's branch, merged into PR 57's, under OP-1's reviews, and
     item 10 is decided. Steps: loops.md by DR-1's M-a rule

@@ -9919,6 +9919,14 @@ TP-1's S re-derived (134e3caec; M18 killed, 1993 of 2003, 193/3/14 over 210);
 DR-1's call.cpp and convert.cpp test 0, 0 and 0; fork/followon/fo1-plan.md
 D-FO1-2, D-FO1-3.
 
+_Landed (2026-11-05, LAND-1, R33):_ merged into trunk as PR 60 by
+16227591f (GitHub merged_at 2026-11-05T18:56:37Z); container-measured (R33 (b)):
+gate 2003 of 2003, conformance 196/0/14 over 210; id re-scans: W-373 to W-376 at
+step 9, before the records edit: origin/claude/carbon-fork-0-1-sc, fo1-land-sc
+and the /dev/shm/fo1/land/wt-sc worktree (a3b2005ce, the head), and trunk and
+the /home/user/carbon-trunk worktree (16227591f), which contain a3b2005ce; moved
+to follow-ons: none.
+
 ### SC-1 fill rounds (2026-10-13): four toolchain defects fixed on the container-built arbiter
 
 The SC-1 entry above committed every golden with `AUTOUPDATE` and no CHECK lines

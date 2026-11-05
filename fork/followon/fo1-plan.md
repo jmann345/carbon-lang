@@ -2681,7 +2681,11 @@ of claude/carbon-fork-0-1-sc at cc4daba00 under /dev/shm, its build under
     expected red includes programs); expected, measured on the land tree with
     rev 3's B1 and its fills and again with rev 4's (section 0.3; amended
     2026-11-02, review fold: RR2-1): 1993 of 2003, the ten files there, and 193
-    PASS, 3 COMPILE-FAIL, 14 SKIP over 210, 49 bullets; then S restored and
+    PASS, 3 COMPILE-FAIL, 14 SKIP over 210, 49 bullets; on S's tree 1992
+    passed, 11 failed of 2003, the eleventh
+    fail_template_constraint_requirement_call.carbon, F-M60's own refill; on
+    F-M60's tree with the same binary 1993 of 2003, the ten files of the record
+    (amended 2026-11-03, landing: stage 13, R29 ruling); then S restored and
     rebuilt. The Landed text says "M18 killed" with the counts (D-LAND-20's
     rule).
 6.  **F-M60**, "SC-1: autoupdate the goldens the land merge changes (stage 13)":
@@ -5571,7 +5575,8 @@ W-374, appended by B-R2 after M60, whose tree has TP-1's files (added
 <!-- google-doc-style-resume -->
 
 The `evidence` cites are pinned by B-R at PR 60's branch, with line numbers, and
-re-pinned by B-R2 to M60's tree if the merge moves them; W-374's are pinned by
+re-pinned by B-R2 to the branch head after F-M60 if the merge moves them
+(amended 2026-11-03, landing: stage 13, R29 ruling); W-374's are pinned by
 B-R2 on M60's tree. `<m18>` is section 2.5
 step 5's counts, written by B-R2 into this paragraph (B-R writes the paragraph
 without the clause from "Land merge", which B-R2 appends). The gap row
@@ -5636,7 +5641,8 @@ implementation review fold: R1-m1 / B-R2r1-m1); the fourth is as it was:
 <!-- google-doc-style-resume -->
 
 The pins of the entries B-R filed, as on the branch (B-R's, exact at
-7d13e1626; W-374's are B-R2's, on M60's tree):
+7d13e1626; W-374's are B-R2's, on M60's tree; W-376's first at :244, re-pinned
+by a3b2005ce (amended 2026-11-03, landing: stage 13, R29 ruling)):
 
 <!-- google-doc-style-ignore -->
 
@@ -5655,7 +5661,7 @@ The pins of the entries B-R filed, as on the branch (B-R's, exact at
 ],
 "id": "W-376",
 "evidence": [
-  "toolchain/check/testdata/named_constraint/template_constraint_dependent.carbon:253 `fail_dependent_interface_arg_unsatisfied` (m18i: `W(D)` reported at `J(T)` and again at the blanket impl's `J(V)` where TP-1 forms `J(T)` at the definition, from M60 on; once on PR 60's branch before M60)",
+  "toolchain/check/testdata/named_constraint/template_constraint_dependent.carbon:244 `fail_dependent_interface_arg_unsatisfied` (m18i: `W(D)` reported at `J(T)` and again at the blanket impl's `J(V)` where TP-1 forms `J(T)` at the definition, from M60 on; once on PR 60's branch before M60)",
   "toolchain/check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon:737 `fail_symbolic_arg_impl_thunk_unsatisfied` (thunk1d: the thunk's deduction error, then `F(D)`)",
   "fork/followon/fo1-plan.md D-FO1-2 (1) and (2), section 0.2"
 ],
@@ -5972,7 +5978,8 @@ and again at be0f11be9; H9.9 reuses T7.1's row, measured 0 at both); after
 H8.7's row, `H8.9`, `G`, `-i -E`, `choice|alternative`,
 `docs/design/variadics.md`, `2` (L59; measured 2 at 68569d234). Each commit runs
 `check_greps.sh <repository> <tip> fork/register/rg1-checks.tsv` at the day's
-tip and writes its "checked <n> silence checks, 0 failed" line in its message
+tip and writes its "checked <n> silence checks, 1 failed (H10.8, F.1's)"
+line (amended 2026-11-03, landing: stage 13, R29 ruling) in its message
 (91 rows on trunk 03b40f7c5, so 93 after B-R2 and 94 after L59); rg1-plan.md's
 dated counts are not edited (amended 2026-11-02, review fold: B-m-7: rev 1 gave
 H9.7 no check row). B-R2 does not edit TP-1's row H10.8: its classification is
@@ -5994,6 +6001,11 @@ where empty; titles are the PRs' GitHub titles shortened as LAND-1's C.1 does
 | 57 | op2 | FO-1 2.7 | OP-2 | OP-2, Core.Optional owns its value, the MaybeUnformed unsafe-as fix, checked Get | F-016: ownership, adapter destruction, the MaybeUnformed fix and checked Get, with item 10 fixed; W-170, W-171, W-173 discharged; Optional row DONE | none | PR 59 (VA-1) |
 | 59 | va | FO-1 2.8 | VA-1 | VA-1, definition-checked variadics, slice 1 | W-013 slice 1 with W-367's TODO and W-368's layout, M-VA and S-VA; row 53 PARTIAL; W-343 discharged | none | PR 66 (VA-2), after the orchestrator retargets it to trunk |
 | 66 | va2 | FO-1 2.9 | VA-2 | VA-2, definition-checked variadics, slice 2 | W-212, W-213 and W-225: generic and heterogeneous packs, tuple pack segments, variadic impls | none | the orchestrator's stamp after the follow-ons |
+
+For FO-1's landings, every '<spec>' in A.1, A.4 and A.5, A.1's bare 'section
+<spec> names' included, reads 'fork/followon/fo1-plan.md section <2.N>', the
+Spec column's 'FO-1 2.N' naming this plan's section (amended 2026-11-05,
+landing: stage 13, R29 ruling, RB13-3 and RB13r2-1).
 
 The targets of A.5 and A.6:
 

@@ -646,48 +646,104 @@ import Cpp library "sum.h";
 fn Each(... unused each o: Core.CppCompat.StdOptional(i32)) {}
 
 fn Forward(... each c: Cpp.std.optional(i32)) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:8: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   Each(... each c);
+  // CHECK:STDERR:        ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:9: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Each(... unused each o: Core.CppCompat.StdOptional(i32)) {}
+  // CHECK:STDERR:         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Each(... each c);
 }
 
 fn TakeEach(... unused each c: Cpp.std.optional(i32)) {}
 
 fn Back(... each o: Core.CppCompat.StdOptional(i32)) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:12: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   TakeEach(... each o);
+  // CHECK:STDERR:            ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:13: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn TakeEach(... unused each c: Cpp.std.optional(i32)) {}
+  // CHECK:STDERR:             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   TakeEach(... each o);
 }
 
 fn EachTuple(... unused each t: (Core.CppCompat.StdOptional(i32), i32)) {}
 
 fn ForwardTuple(... each t: (Cpp.std.optional(i32), i32)) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:13: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   EachTuple(... each t);
+  // CHECK:STDERR:             ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:14: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn EachTuple(... unused each t: (Core.CppCompat.StdOptional(i32), i32)) {}
+  // CHECK:STDERR:              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   EachTuple(... each t);
 }
 
 fn TakeEachTuple(... unused each t: (Cpp.std.optional(i32), i32)) {}
 
 fn BackTuple(... each t: (Core.CppCompat.StdOptional(i32), i32)) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:17: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   TakeEachTuple(... each t);
+  // CHECK:STDERR:                 ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:18: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn TakeEachTuple(... unused each t: (Cpp.std.optional(i32), i32)) {}
+  // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   TakeEachTuple(... each t);
 }
 
 fn EachStruct(... unused each s: {.o: Core.CppCompat.StdOptional(i32)}) {}
 
 fn ForwardStruct(... each s: {.o: Cpp.std.optional(i32)}) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:14: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   EachStruct(... each s);
+  // CHECK:STDERR:              ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:15: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn EachStruct(... unused each s: {.o: Core.CppCompat.StdOptional(i32)}) {}
+  // CHECK:STDERR:               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   EachStruct(... each s);
 }
 
 fn TakeEachStruct(... unused each s: {.o: Cpp.std.optional(i32)}) {}
 
 fn BackStruct(... each s: {.o: Core.CppCompat.StdOptional(i32)}) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:18: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   TakeEachStruct(... each s);
+  // CHECK:STDERR:                  ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:19: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn TakeEachStruct(... unused each s: {.o: Cpp.std.optional(i32)}) {}
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   TakeEachStruct(... each s);
 }
 
 fn EachArray(... unused each a: array(Core.CppCompat.StdOptional(i32), 1)) {}
 
 fn ForwardArray(... each t: (Cpp.std.optional(i32),)) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:13: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   EachArray(... each t);
+  // CHECK:STDERR:             ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:14: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn EachArray(... unused each a: array(Core.CppCompat.StdOptional(i32), 1)) {}
+  // CHECK:STDERR:              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   EachArray(... each t);
 }
 
 fn TakeEachArray(... unused each a: array(Cpp.std.optional(i32), 1)) {}
 
 fn BackArray(... each t: (Core.CppCompat.StdOptional(i32),)) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:17: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   TakeEachArray(... each t);
+  // CHECK:STDERR:                 ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:18: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn TakeEachArray(... unused each a: array(Cpp.std.optional(i32), 1)) {}
+  // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   TakeEachArray(... each t);
 }
 
@@ -698,6 +754,13 @@ class SumHolder {
 fn EachSumHolder(... unused each h: SumHolder) {}
 
 fn ForwardClass(... each s: {.o: Cpp.std.optional(i32)}) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:17: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   EachSumHolder(... each s);
+  // CHECK:STDERR:                 ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:18: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn EachSumHolder(... unused each h: SumHolder) {}
+  // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   EachSumHolder(... each s);
 }
 
@@ -708,5 +771,12 @@ class CppHolder {
 fn EachCppHolder(... unused each h: CppHolder) {}
 
 fn BackClass(... each s: {.o: Core.CppCompat.StdOptional(i32)}) {
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE+7]]:17: error: semantics TODO: `conversion of a C++ `std::optional` or `std::variant` for a pack element` [SemanticsTodo]
+  // CHECK:STDERR:   EachCppHolder(... each s);
+  // CHECK:STDERR:                 ^~~~~~~~~~
+  // CHECK:STDERR: fail_todo_pack_element.carbon:[[@LINE-6]]:18: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn EachCppHolder(... unused each h: CppHolder) {}
+  // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   EachCppHolder(... each s);
 }

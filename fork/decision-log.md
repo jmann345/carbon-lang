@@ -4539,14 +4539,15 @@ in a records commit.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_
 optional.carbon:13 and :27 replace upstream lines (the bool import, a blank
-line) and the appended block :205-275 is fork-only (on an upstream edit of
+line) and the appended block :205-346 is fork-only (on an upstream edit of
 optional.carbon, keep both and re-run M-12); `final` on the comparison impls is
 fork policy, since upstream has no Optional comparison (D-OP-3); F-015 itself is
 a fork design for a type upstream has not designed (D-OP-6; re-derived when an
-accepted upstream design lands); the comparisons run `T.Copy` and `T.Destroy`
-once per value when both operands hold one, against comparison_operators.md:316
-and :434's "should have no observable side-effects" (closed when W-177 or a
-by-reference accessor lands, D-OP-4); `None()` is a function where
+accepted upstream design lands); the comparisons ran `T.Copy` and `T.Destroy`
+once per value when both operands held one, against comparison_operators.md:316
+and :434's "should have no observable side-effects", until W-352 (c655d55f3)
+compared the held values in place (closed, D-OP-4's break condition); `None()`
+is a function where
 p002188:489-490 and pattern_matching.md:526-527 (upstream's at f27a977d8,
 corrected 2026-10-28 by RG-1 from :488-489 and this branch's copy's :527-528)
 spell `Optional(T).None` as a
@@ -4559,11 +4560,13 @@ decision-log entry "RG-1: the V-3a register classified at f27a977d8
 fork/register/rg1-plan.md section 2.H5 have the quotes):_ the comparisons'
 `T.Copy` and `T.Destroy` (classified 2026-10-28, RG-1: DRIFT, W-352):
 comparison_operators.md:315-316 and :433-434 say these operations "should have
-no observable side-effects", so OP-1 realigns them by a new commit on this
-branch before it lands (R32 (e)), comparing the held payloads in place over
-value-bound storage with no `Copy` or `Destroy` per operand, a route RG-1's
-read-only probe showed checks on PR 57's install (rg1-plan.md section 4.8 and
-D-RG-10); OP-1 owns the closure, which W-344 had given to DR-1; `None()`
+no observable side-effects", so OP-1 realigned them by a new commit on this
+branch (R32 (e)): the comparisons ran them once per value until W-352
+(c655d55f3), and since then compare the held values in place with no `Copy` or
+`Destroy` per operand (ALIGNED, W-352 discharged; rg1-plan.md H5.4 as
+fork/followon/fo1-plan.md Appendix D.6 amends it), the route RG-1's read-only
+probe showed checks on PR 57's install (rg1-plan.md section 4.8 and D-RG-10);
+OP-1 owned the closure, which W-344 had given to DR-1; `None()`
 (classified 2026-10-28, RG-1: ALIGNED with upstream's
 core/prelude/types/optional.carbon:30 `fn None() -> Self`, the pattern being
 W-320's); the replaced lines, `final` and F-015 itself (classified 2026-10-28,
@@ -4571,6 +4574,14 @@ RG-1: NONE, W-355; optional.carbon:27-28 "The API here is a placeholder", no
 upstream commit since the cut touches optional.carbon, and it has no `EqWith`
 or `OrderedWith` impl); the TY4 statement (classified 2026-10-28, RG-1: NONE,
 W-355; between two fork designs, `TY4` 0 in upstream's docs and proposals).
+
+_W-352 (2026-11-05, FO-1):_ the comparisons compare the held values in
+place through two private interfaces over the storage type, with no `Copy` or
+`Destroy` per operand (c655d55f3), as comparison_operators.md asks; D-OP-4's
+signatures and F-015's API rows are unchanged (fork/followon/fo1-plan.md
+D-FO1-4). OP-1's appended block in core/prelude/types/optional.carbon is
+:205-346 since c655d55f3 (the V-3a register entry's `:205-275` described it
+before W-352).
 
 ### TP-1: integrated templates (2026-10-14)
 

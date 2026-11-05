@@ -57,8 +57,8 @@ statements" (p006357), and the prelude calls the API a placeholder. This page is
 the fork's answer, fork design F-015, recorded in the fork decision log for
 after-the-fact veto. It adopts the type as the prelude implements it, adds
 comparison, and states the ownership rules. The [0.1 limits](#01-limits)
-section lists each filed limit of the 0.1 toolchain against it, and the one
-divergence it discloses, with the condition under which each closes.
+section lists each filed limit of the 0.1 toolchain against it, with the
+condition under which each closes.
 
 A typical use tests for a value before reading it:
 
@@ -155,6 +155,19 @@ impl forall [T: Copy & Destroy] T as OptionalStorage
 
 final impl forall [T: type] T* as OptionalStorage
     where .Type = MaybeUnformed(T*);
+
+private interface OptionalStorageEq(T: Destroy & OptionalStorage & Eq);
+private interface OptionalStorageOrdered(
+    T: Destroy & OptionalStorage & Ordered);
+
+impl forall [T: Destroy & OptionalStorage & Eq]
+    T.(OptionalStorage.Type) as OptionalStorageEq(T);
+impl forall [T: Copy & Destroy & Eq]
+    DefaultOptionalStorage(T) as OptionalStorageEq(T);
+impl forall [T: Destroy & OptionalStorage & Ordered]
+    T.(OptionalStorage.Type) as OptionalStorageOrdered(T);
+impl forall [T: Copy & Destroy & Ordered]
+    DefaultOptionalStorage(T) as OptionalStorageOrdered(T);
 ```
 
 The three conversions behind the public `ImplicitAs` impl go through a private
@@ -320,17 +333,15 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 }
 ```
 
-In 0.1 a comparison of two non-empty values reads each through `Get()`, which
-runs `T`'s `Copy` once and its `Destroy` once per value. The comparison
-operators design says that `EqWith`'s operations and the members of an
-`OrderedWith` implementation "should have no observable side-effects"; for a `T`
-whose `Copy` or `Destroy` has an observable effect, so does comparing two
-`Core.Optional(T)` values. This is a fork divergence, which a by-reference
-accessor or matchability (W-177) removes.
+A comparison of two non-empty values compares the held values in place, with
+no `Copy` and no `Destroy` of `T` per operand, as the comparison operators
+design asks: `EqWith`'s operations and the members of an `OrderedWith`
+implementation "should have no observable side-effects" (fork work item W-352,
+realigned 2026-11-05).
 
-Each comparison tests `HasValue()` on its operands before it calls `Get()`, so
-the storage of an empty operand is never read, and a comparison with an empty
-operand copies nothing. Neither operand is moved, changed or destroyed.
+Each comparison tests `HasValue()` on its operands before it reads a held
+value, so the storage of an empty operand is never read. Neither operand is
+moved, changed or destroyed.
 
 The impls are `final`: when `T` is `Core.Eq`, no other library can change what
 `==` means on `Core.Optional(T)`. Proposal p5337 makes a non-final impl that a
@@ -378,12 +389,9 @@ Proposal p001154's way out, a conditional `TrivialDestructor` impl for
 fork/conformance/programs/stdlib/optional_destroys_value.carbon states the rule
 and is skipped until W-170 lands.
 
-Comparisons never move or destroy a held value. A comparison of two non-empty
-operands runs `T.Copy` and `T.Destroy` once per value, through `Get()`, and one
-with an empty operand runs neither ([Comparison](#comparison)). Until W-170
-lands, a comparison of two non-empty `Core.Optional(Core.Optional(T))` values
-also leaks one copy of each `T` that the inner values hold: each outer `Get()`
-copy is a `Core.Optional(T)`, and destroying it does not destroy its value.
+Comparisons never move, copy or destroy a held value: two non-empty operands
+are compared in place, and an empty operand's storage is not read
+([Comparison](#comparison)).
 
 `Get()` requires `HasValue()`. In 0.1 the requirement is not checked (W-173): on
 an empty value `Get()` returns the unformed storage, and for `Core.Optional(T*)`
@@ -526,11 +534,6 @@ Each limit is a filed fork work item, with the condition under which it closes:
 -   **Assignment does not destroy the overwritten value** (W-160, filed by the
     strings workstream). Closes with assignment that destroys the old value.
 
-One divergence is disclosed rather than filed: in 0.1 a comparison of two
-non-empty values runs `T`'s `Copy` and `Destroy` once per value
-([Comparison](#comparison)). It closes when `Core.Optional` becomes matchable
-(W-177) or gains a by-reference accessor.
-
 ## Alternatives considered
 
 -   **Comparison between different payload types** (C++'s
@@ -543,10 +546,11 @@ non-empty values runs `T`'s `Copy` and `Destroy` once per value
     conversions, with `like` as the mechanism; two impls per direction per
     operand type would also make `Optional(Optional(T)) == Optional(T)`
     ambiguous between nesting levels.
--   **A comparison member in `OptionalStorage`, or a builtin.** It avoids the
-    copies of `Get()`, but needs pointer equality for the niche (W-174) and
-    changes the private interface that every storage implements, for no 0.1
-    benefit.
+-   **A comparison member in `OptionalStorage`, or a builtin.** It changes the
+    private interface that every storage implements and needs pointer equality
+    for the niche (W-174); the in-place comparison (W-352) instead adds two
+    private interfaces over the storage type, whose fallback compares the values
+    `T.Get` returns.
 -   **Rebuilding `Optional` as a `choice` now.** The pointer ABI, the `Try`
     signature, the names the `for` desugaring calls and the C++ mapping's name
     all constrain it, and comparison does not need it (W-177).

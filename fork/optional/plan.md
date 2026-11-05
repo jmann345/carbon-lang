@@ -3502,3 +3502,7 @@ The implementation-review findings and their state after the discharge commit:
 | IR2-8: the TY4 amendment's `match` clause and the safety links | MINOR | Open until PR 53 is on trunk: the texts are in Next actions item 6 |
 | IR2-11: the pre-review fix commit | MINOR | Closed: recorded here and in the decision log |
 | IR2-12: when the merge of trunk is taken | MINOR | Open until OP-1 is next in the queue: Next actions item 5 |
+
+W-352 realigned (2026-11-05, FO-1): c655d55f3 and 4509064fc; D-OP-4's 'Get()
+returns a copy, destroyed by the end of the call' holds for `Get()` and no
+longer for the comparisons (fork/followon/fo1-plan.md section 2.3).

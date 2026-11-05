@@ -376,6 +376,38 @@ parallel; both moved off it (OP-1 to W-195, DD-1 to W-191), so W-190 stays
 unused and is never reused. Merge order: PR 53, PR 51, PR 52, SC-1, PR 54,
 PR 55, PR 56, then DD-1. None is merged.
 
+Later on 2026-10-14, the OP-2 discharge (pushed, PR to open and hold, stacked on
+PR 56): OP-2 (claude/carbon-fork-0-1-op2, fork/optional2/plan.md rev 3, W-170,
+W-171 and W-173, gap row "Stdlib: Optional", fork design F-016) is IMPLEMENTED
+AND DISCHARGED on top of PR 56's head 379f20f67, and the row moves PARTIAL →
+DONE, expected and not of record, by D-OP-13's criterion as amended by D-OP2-16
+— 757cd0e74 (the toolchain: lowering converts a value between
+`MaybeUnformed(T)`'s and `T`'s value representations, convert.cpp's CHECK tests
+the operand, and an adapter is destroyed as its adapted type, F-016; the prelude
+275 → 307 lines: the default storage's `Destroy`, `let Type: Destroy`, a checked
+`Get` that fails-stop, `UnformedInit` for `Core.Optional(T*)` only; five
+CHECK-free goldens), 189baa262 (the fill: the five new goldens and the plan's 28
+refills), 503d25895 (three arbiters SKIP → PASS, four new programs, one with a
+C++17 oracle, optional.md and the dated F-016 amendment of classes.md, the row
+DONE), 9f9ccd768 and f859c7e73 (both implementation reviews folded: 1 MAJOR and
+7 MINOR, none rejected), c396efeae (the merge of trunk f67ab650d,
+fork/ORCHESTRATION.md only) and the discharge commit (W-170, W-171 and W-173
+DISCHARGED; W-196 to W-201 filed; the F-016 decision-log entry). Verification is
+container-built and NOT of record (Actions disabled): the carbonbuild toolchain
+of 9f9ccd768, file_test 1950/1950 on the merge commit, the expected scoreboard
+139 PASS / 0 FAIL / 22 SKIP over 161, 48/56 bullets (scoreboard generated
+2026-10-14T05:49:31Z), the seven Optional programs the only change from PR 56's
+132 / 0 / 25 over 157, and every mutant of the plan's §8.5 caught; the header
+reads 31 / 20 / 4 / 1. Not run: Bazel and its tests, clangd-tidy, ASan, any
+hosted run, an opt-mode toolchain, LLVM assertions, non-Linux. Merge position:
+after PR 56 and before DD-1, since DD-1 merges last at the orchestrator's
+direction (D-OP2-13's break condition); merge order now PR 53, PR 51, PR 52,
+SC-1, PR 54, PR 55, PR 56, OP-2, then DD-1. None is merged. Id reservation: OP-2
+reserves W-196..W-201 and used all six at its discharge (W-197 filed because PR
+51 is not on trunk, to fold into PR 51's W-126; W-201 the spare); fork design id
+F-016 is OP-2's. The merge steps are Next actions item 7; item 6 gains OP-2's
+two SAFE-1 notes.
+
 Later on 2026-10-14: PR 57 (OP-2, claude/carbon-fork-0-1-op2, head 628273444,
 stacked on PR 56 and targeting claude/carbon-fork-0-1-op until PR 56 merges:
 Core.Optional owns and destroys its value, the MaybeUnformed

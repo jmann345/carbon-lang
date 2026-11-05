@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Stdlib: Optional
-// SKIP: known-missing slice of this PARTIAL bullet (W-170): an Optional never destroys the value it holds, because `DefaultOptionalStorage(T)` holds it as a `MaybeUnformed(T)` (core/prelude/types/optional.carbon:140-143), which runs no destructor (core/prelude/types/maybe_unformed.carbon:12-15), and no `Destroy` impl for `Core.Optional` exists; compiled with OP-1 (and on trunk) this program exits 0 printing 2, 1, 1, 0, 3, 2 where EXPECT is 2, 0, 1, 0, 3, 0
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   2
@@ -23,8 +22,8 @@
 // (0); an empty Optional holds nothing, so `HoldNone` has one (1) and none
 // after (0); copying an Optional copies its value, so `HoldCopy` has three (3)
 // and none after (0). Each helper has its own counter, so a miss in one does
-// not carry into the next. Un-SKIP when W-170 lands; the body then needs no
-// change.
+// not carry into the next. W-170 landed at OP-2 (fork/optional2/plan.md),
+// and the body is unchanged.
 
 import Core library "io";
 

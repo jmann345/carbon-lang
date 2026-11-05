@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Stdlib: Optional
-// SKIP: known-missing slice of this PARTIAL bullet (W-171): `Get()` and the copy of a `Core.Optional(Core.Optional(U*))` read the default storage's `MaybeUnformed` field as the inner `Core.Optional(U*)` (core/prelude/types/optional.carbon:169-171 and :172-178), and the lowered storage `Get` passes that field's address where the inner value is expected, with no load (`MaybeUnformed(T)` and `T` differ in value representation, toolchain/check/convert.cpp:1687-1704, the `Core.Optional(bool)` defect); both sides are a `ptr`, so nothing aborts: compiled with OP-1 this program exits 0 printing 1, 1, 1, 0, 0 where EXPECT is 1, 0, 0, 1, 1 (on trunk the four lines before the `==` print the same, and `a == b` is "cannot access member of interface `Core.EqWith(Core.Optional(Core.Optional(C* as Core.OptionalStorage) as Core.OptionalStorage))`")
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   1
@@ -20,7 +19,8 @@
 // `Some(Some(&n))` reaches `n`, which holds 7 (1); and `a == b` compares the
 // two inner `Core.Optional(C*)` values, which hold pointers to different
 // objects with equal `v`, so it is `C*`'s own `==` on them, which compares
-// the objects (1). Un-SKIP when W-171 lands; the body then needs no change.
+// the objects (1). W-171 landed at OP-2 (fork/optional2/plan.md), and the
+// body is unchanged.
 
 import Core library "io";
 

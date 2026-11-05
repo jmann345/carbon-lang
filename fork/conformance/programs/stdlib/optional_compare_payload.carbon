@@ -24,9 +24,9 @@
 // empty value reads no storage (0); the comparisons left no copy alive, so the
 // count is still 2; the held values are unchanged (1 and 2); and each `Get()`
 // copy above died with its statement, so the count is 2 again. The held
-// values themselves are never destroyed in 0.1 (W-170, arbitrated by
-// optional_destroys_value.carbon), which no line here observes: every count is
-// printed before `Run` returns.
+// values are destroyed with their Optionals (W-170, landed at OP-2,
+// arbitrated by optional_destroys_value.carbon), after the last count is
+// printed, so no line here observes it.
 
 import Core library "io";
 

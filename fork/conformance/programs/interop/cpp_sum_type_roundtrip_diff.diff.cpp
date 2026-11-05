@@ -45,6 +45,34 @@ static auto TakeIntOrPointer(std::variant<int, int*> v) -> int {
   return std::get<1>(v) != nullptr ? *std::get<1>(v) * 2 : -9;
 }
 
+static int nested_cell = 81;
+
+static auto MakeNested(int k) -> std::optional<int*> {
+  if (k == 0) {
+    return std::nullopt;
+  }
+  if (k == 1) {
+    return static_cast<int*>(nullptr);
+  }
+  return &nested_cell;
+}
+
+static auto TakeNested(std::optional<int*> o) -> int {
+  return o.has_value() ? (*o != nullptr ? **o : -2) : -1;
+}
+
+// `Core.Optional(Core.Optional(i32*))` is `std::optional<int*>`: the outer
+// empty state is `std::nullopt`, the inner one the null pointer.
+static auto ShowNested(std::optional<int*> o) -> int {
+  if (!o.has_value()) {
+    return -10;
+  }
+  if (*o == nullptr) {
+    return -20;
+  }
+  return **o;
+}
+
 static auto Seed(int x) -> int { return x + 5; }
 
 static auto SeedF(double x) -> double { return x + x; }
@@ -108,5 +136,14 @@ auto main() -> int {
       TakeIntOrPointer(std::variant<int, int*>(std::in_place_index<1>, &cell)));
   Print(TakeIntOrPointer(std::variant<int, int*>(std::in_place_index<1>,
                                                  static_cast<int*>(nullptr))));
+  std::optional<int*> empty = MakeNested(Seed(-5));
+  std::optional<int*> engaged_null = MakeNested(Seed(-4));
+  std::optional<int*> engaged_cell = MakeNested(Seed(-3));
+  Print(ShowNested(empty));
+  Print(ShowNested(engaged_null));
+  Print(ShowNested(engaged_cell));
+  Print(TakeNested(empty));
+  Print(TakeNested(engaged_null));
+  Print(TakeNested(engaged_cell));
   return 0;
 }

@@ -891,9 +891,10 @@ interoperability, though bits will be interpreted differently in each language.
 ## Advanced type mapping: pointers, references, and `const`
 
 Proposal 6357 maps C++ object pointers, and the toolchain implements its table:
-a C++ pointer that may be null, `T*`, is `Core.Optional(T*)` in Carbon, with
-null as an empty `Optional`; a pointer annotated `_Nonnull` is a Carbon pointer
-`T*`, which is never null; `const T*` is `Core.Optional(const T*)`; and `void*`
+a C++ pointer that may be null, `T*`, is `Core.Optional(T*)` in Carbon
+([Optional](../optional.md), fork decision F-015), with null as an empty
+`Optional`; a pointer annotated `_Nonnull` is a Carbon pointer `T*`, which is
+never null; `const T*` is `Core.Optional(const T*)`; and `void*`
 is `Core.Optional(Core.CppCompat.VoidBase*)`. No accepted proposal maps C++
 references yet: proposal 5434, which introduces Carbon's `ref` parameters,
 leaves the modeling of C++ references to a future proposal. The 0.1 toolchain

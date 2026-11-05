@@ -4079,7 +4079,7 @@
         "fork/decision-log.md DR-0 (D-DR-3); fork/rulebook.md R32 (a), (e)"
       ],
       "blocked_by": [],
-      "notes": "Filed 2026-10-21 at DR-0. Both are errors of the fork's process, not of upstream: the V-3 check named a tip and read the design page from the fork's copy. Correction (D-DR-3), one new commit on PR 56's branch before PR 56 lands (R32 (e)), never a rewrite: the loops.md Fork amendment is rewritten to state upstream's current desugaring (a `match` with `case .Some(<pattern>)`) and that the fork's `for` calls `HasValue`/`Get` until W-320 lands; OP-1's V-3 paragraph gains a dated correction naming df3cf9294 and quoting loops.md at 62f1cc6a3. Owner: DR-1. Break condition: PR 56 is closed without merging, and the corrections then go wherever F-015 lands."
+      "notes": "Filed 2026-10-21 at DR-0. Both are errors of the fork's process, not of upstream: the V-3 check named a tip and read the design page from the fork's copy. Correction (D-DR-3), one new commit on PR 56's branch before PR 56 lands (R32 (e)), never a rewrite: the loops.md Fork amendment is rewritten to state upstream's current desugaring (a `match` with `case .Some(<pattern>)`) and that the fork's `for` calls `HasValue`/`Get` until W-320 lands; OP-1's V-3 paragraph gains a dated correction naming df3cf9294 and quoting loops.md at 62f1cc6a3. Owner: DR-1. Break condition: PR 56 is closed without merging, and the corrections then go wherever F-015 lands. DISCHARGED 2026-11-05 by PR 56's commit 894139b34 (C.7, C.8)."
     },
     {
       "id": "W-324",

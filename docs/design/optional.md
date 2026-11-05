@@ -43,7 +43,7 @@ for those uses:
     to serve nullable use cases" ([Values](values.md#pointers)).
 -   **Iteration.** `Iterate.Next` returns `Optional(ElementType)`, and a `for`
     loop runs until it returns an empty value
-    ([Ranged-for for user-defined types](control_flow/loops.md#ranged-for-for-user-defined-types)).
+    ([`Iterate` interface](control_flow/loops.md#iterate-interface)).
 -   **Error propagation.** `Optional(T)` implements `Try`, so `?` propagates
     absence ([Error handling](error_handling.md#optional-and-user-types),
     decision D9).
@@ -416,7 +416,7 @@ A `for` loop over a type that implements `Iterate` calls its `Next`, which
 returns `Optional(ElementType)`, and stops at the first empty value; the
 toolchain calls `HasValue()` and `Get()` by name, which is why those two names
 are part of this design
-([Ranged-for for user-defined types](control_flow/loops.md#ranged-for-for-user-defined-types)).
+([Loop desugaring](control_flow/loops.md#loop-desugaring)).
 Because `Core.Optional(T)` needs `T: Copy & Destroy` (W-176), so does
 `Iterate.ElementType`: a range of non-copyable values cannot be iterated yet
 (core/prelude/iterate.carbon, "TODO: Support iterating ranges of non-copyable
@@ -573,7 +573,7 @@ non-empty values runs `T`'s `Copy` and `Destroy` once per value
     Optional design as future work
 -   Proposal
     [p001885: `for` statement and user types](/proposals/p001885-for-statement-and-user-types.md)
-    and [Loops](control_flow/loops.md#ranged-for-for-user-defined-types)
+    and [Loops](control_flow/loops.md#for)
 -   [Comparison operators](expressions/comparison_operators.md)
 -   [Generics: conditional conformance](generics/details.md#conditional-conformance),
     [`final` impl declarations](generics/details.md#final-impl-declarations) and

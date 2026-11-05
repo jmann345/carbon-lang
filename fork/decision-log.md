@@ -4819,6 +4819,11 @@ _Item 10 (2026-11-02, FO-1):_ a class whose own `Destroy` impl answers the
 on trunk, D-FO1-1); `let Type: Destroy` stays, since upstream's
 `let Type: type` removes W-170's checked-generic destruction (measured).
 
+_Landed (2026-11-05, LAND-1, R33):_ merged into trunk as PR 57 by
+76d13d61b (GitHub merged_at 2026-11-05T21:48:47Z); container-measured (R33 (b)):
+gate 2011 of 2011, conformance 208/0/14 over 222; id re-scans: none;
+moved to follow-ons: none.
+
 ### OP-1 / F-015: Core.Optional comparison and design (2026-10-13)
 
 Milestone bullet "Optional" (docs/project/milestones.md:203, under "Types with

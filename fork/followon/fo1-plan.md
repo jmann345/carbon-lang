@@ -2879,10 +2879,24 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     were in no plan). The runner compiles the `.diff.cpp` with the toolchain's
     clang and compares the outputs; the leg's six lines are the last six of
     both.
-6.  **L57**, "OP-2: land-time texts (stage 15)": OP-2's fold of W-197 into
-    W-126 (W-197's title gains "(FOLDED into W-126)", W-126 gains W-197's OP-2
-    note and the Optional row, row 43 and optional.md name W-126 again,
-    fork/optional2/plan.md's ORCHESTRATION item); SV-1's Doc-M as this plan
+6.  **L57**, "OP-2: land-time texts (stage 15)": OP-2's fold of W-197 into W-126
+    (W-197's title gains "(FOLDED into W-126)", W-126 gains W-197's OP-2 note,
+    ``OP-2 note (fork/optional2/plan.md section 1.7, D-OP2-12; written for this
+    item at OP-2's discharge of 2026-10-14 as W-197's note and folded here on
+    2026-11-05 at FO-1 stage 15, W-197's title gaining "(FOLDED into W-126)"):
+    an Optional field of a class with its own `Destroy` keeps its value (M-9's
+    `Outer`, fork/optional2/plan.md section 0.2), and a class without its own
+    `Destroy` destroys an Optional field (`Plain`); the same defect as this
+    item's `Core.Buf` field, not row-bounding for the Optional row (an owner's
+    defect that reproduces without Optional, D-OP2-12).``, where L57 appended
+    W-197's whole notes and the review fold's fix commit 9cb870434 replaced the
+    appended span by this text (amended 2026-11-05, landing: stage 15, R29
+    ruling), and the Optional row, row 43 and optional.md name W-126 again,
+    fork/optional2/plan.md's ORCHESTRATION item); optional.md names W-160 again
+    where PR 57 gave its title (PR 57's ORCHESTRATION item; the fix commit
+    "OP-2: optional.md names W-160 again; W-126's OP-2 note (FO-1 stage 15
+    review fold)", made in phase A because the list omitted it) (amended
+    2026-11-05, landing: stage 15, R29 ruling); SV-1's Doc-M as this plan
     re-derives it (Appendix C.4: optional.md's C++ interoperability paragraph,
     sum_types.md's sentence that still says a `Core.Optional(T)` is matched as
     `StdOptional(T)`, and the F-015 paragraph of the decision log; SV-1's
@@ -2891,18 +2905,18 @@ C-M57, F-C-M57 (section 2.3), under OP-2's two reviews.
     unmatchable class); C.5's W-177 evidence, Appendix C.5's text, its note
     withdrawn; C.8's F-015 references, the paragraph of Appendix C.4; the W-177
     cite in match_core_optional_diff.carbon's header, a check that W-177
-    resolves on M57's tree (SV-1 section 1.12), no text; F-M's PR 57 part,
-    which is steps 3 to 5 (SV-1's three goldens, the conditional refill and the
-    leg); row 78's DR-0 sentence kept beside PR 57's DONE text as DR-1's C.3
-    rewrites it (item 16, fork/direction/plan.md section 1.16; Appendix E.3's
-    text; amended 2026-11-02, review fold: A-m-4: rev 1 wrote it at L56 only);
-    the "Rebuilding `Optional` as a `choice` now" bullet of
-    docs/design/optional.md, in which the words "the names the `for`
-    desugaring calls" become "the names the toolchain's `for` calls until
-    `Core.Optional` is matchable (W-320)" (stage 14's re-review residue
-    RR1-14-m1) (amended 2026-11-05, landing: stage 14, R29 ruling);
-    and RG-1's OP-2 note (rg1-plan.md:2553-2560 by D-LAND-15's rule,
-    "2026-10-27" read "2026-10-28") (amended 2026-11-02, review fold: B-M-4).
+    resolves on M57's tree (SV-1 section 1.12), no text; F-M's PR 57 part, which
+    is steps 3 to 5 (SV-1's three goldens, the conditional refill and the leg);
+    row 78's DR-0 sentence kept beside PR 57's DONE text as DR-1's C.3 rewrites
+    it (item 16, fork/direction/plan.md section 1.16; Appendix E.3's text;
+    amended 2026-11-02, review fold: A-m-4: rev 1 wrote it at L56 only); the
+    "Rebuilding `Optional` as a `choice` now" bullet of docs/design/optional.md,
+    in which the words "the names the `for` desugaring calls" become "the names
+    the toolchain's `for` calls until `Core.Optional` is matchable (W-320)"
+    (stage 14's re-review residue RR1-14-m1) (amended 2026-11-05, landing: stage
+    14, R29 ruling); and RG-1's OP-2 note (rg1-plan.md:2553-2560 by D-LAND-15's
+    rule, "2026-10-27" read "2026-10-28") (amended 2026-11-02, review fold:
+    B-M-4).
 7.  Two implementation reviews (OP-2's rule, D-FO1-9) of M57 to L57, both
     also the document review of Doc-M's pages (R29(c)); fixer; push.
 8.  The trunk landing at the pushed head: expected 2011 of 2011, 208/0/14
@@ -3029,6 +3043,7 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 22b | op (56) | the review fold's fix commit | OP-1: optional.md's `for` sentence states DR-1a's desugaring (FO-1 stage 14 review fold) | docs/design/optional.md | not owed (documentation only): 2da8a164d, after L56 28691eeed, the review fold of R1-m2, fix commit 2 of 2 of Slice C's D-FO1-10 budget (amended 2026-11-05, landing: stage 14, R29 ruling) |
 | 23 | trunk | merge, records | Land PR 56: OP-1, Core.Optional comparison and the fork design F-015; Land PR 56: records | as row 21 | 2006 of 2006 |
 | 24 | op2 (57) | M57, F-M57, the conditional refill, the nested-pointer leg, L57 | OP-2: merge trunk at `<trunk>` (LAND-1 stage 15, D-LAND-12); OP-2: autoupdate the goldens the land merge changes (stage 15); OP-2: SV-1's nested pointer leg (stage 15); OP-2: land-time texts (stage 15) | section 2.7 | 2011 of 2011 |
+| 24a | op2 (57) | the review fold's fix commit | OP-2: optional.md names W-160 again; W-126's OP-2 note (FO-1 stage 15 review fold) | docs/design/optional.md; fork/inventory/work-items.json | not owed (documentation and records only): 9cb870434, after L57 a563909f5, the review fold of R1-15-m2 and of R2-15-M1, the same finding as R1-15-m1, fix commit 1 of 2 of Slice A's D-FO1-10 budget (amended 2026-11-05, landing: stage 15, R29 ruling) |
 | 25 | trunk | merge, records | Land PR 57: OP-2, Core.Optional owns its value, the MaybeUnformed unsafe-as fix, checked Get; Land PR 57: records | as row 21 | 2011 of 2011 |
 | 26 | va (59) | M59, M-VA, S-VA, F-M59, L59 | VA-1: merge trunk at `<trunk>` (LAND-1 stage 16, D-LAND-12); SV-1's M-VA and CT-1's S-VA messages from their plans; VA-1: autoupdate the goldens the land merge changes (stage 16); VA-1: land-time texts (stage 16) | section 2.8 | 2029 of 2029 |
 | 27 | trunk | merge, records | Land PR 59: VA-1, definition-checked variadics, slice 1; Land PR 59: records | as row 21 | 2029 of 2029 |

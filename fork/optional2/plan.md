@@ -3841,3 +3841,42 @@ check/testdata/optional/destroy.carbon, for which autoupdate writes no CHECK
 line, so no fill commit is made; gate 1950 of 1950 on the branch. The fix and
 this record take OP-2's two implementation reviews before they are pushed
 (fork/followon/fo1-plan.md on trunk, D-FO1-1, D-FO1-9).
+
+OP-2 landed on trunk (LAND-1, 2026-11-05): merged as PR 57 by 76d13d61b (head
+9cb870434, trunk before 6da10b9b5; GitHub merged_at 2026-11-05T21:48:47Z) under
+R33, fork/followon/fo1-plan.md section 2.7; land-time commits none;
+container-measured (R33 (b)): gate 2011 of 2011, conformance 208 PASS, 0 FAIL,
+14 SKIP over 222, 50 of 56 bullets; id re-scans: none; moved to follow-ons:
+none.
+
+Stage 15's landing record, by the orchestrator's ruling under R29 on stage 15's
+phase A and its addenda: the landed commits are M57 0bf6b9ceb, F-M57
+6356cc8c4, the nested-pointer leg c57824b0a, L57 a563909f5 and the review
+fold's fix commit 9cb870434, the pushed head. M57 conflicted in
+docs/design/optional.md in one region, the Ownership paragraph
+(d25c13bd7:394-396, not in the dry run), which took Appendix C.3's text
+(trunk's side) by fork/followon/fo1-plan.md section 2.7 step 2's rule; trunk's
+side was also taken for the three re-anchored loops.md links and the `for`
+sentence of 2da8a164d (stage 14's ruling (d) as its Addendum 2 (ii) extends
+it). The round-1 reviews' findings: R1-15-m2 (optional.md did not name W-160
+again, PR 57's ORCHESTRATION item, which section 2.7 step 6's L57 list
+omitted) and R2-15-M1, the same finding as R1-15-m1 (L57 appended W-197's
+whole notes to W-126's), are fixed by 9cb870434, fix commit 1 of 2 of Slice
+A's D-FO1-10 budget, which names W-160 again and replaces the appended span by
+the ruled OP-2 note. The "Stdlib: Optional" row is PR 57's DONE text with
+Appendix E.3's DR-0 sentence; PR 56's A.10 mark left with PR 56's row text,
+and stage 14's landing record and git history keep it. E.2's stage-15
+Scoreboard prose label ("Expected at OP-2, NOT of record: 139 PASS / 22 SKIP /
+0 FAIL ...") was dropped at M57 by OR-4 and takes no mark; PR 57's own Next
+actions items 5, 6 and 7 were superseded at M57 (OR-5) and by L57. RG-1's OP-2
+note was written from fork/register/rg1-plan.md:2591-2599, where section 2.7
+step 6 cites :2553-2560 (D-LAND-15's rule anchors by text). The register lines
+at upstream 3741e72c8, the landing day's tip: fork/register/check_quotes.sh
+"checked 289 quotes, 19 failed" and fork/register/check_greps.sh "checked 93
+silence checks, 4 failed", each failing row in W-355's note for PR 57; phase A
+measured both at the same tip with the same lines, so no upstream drift lies
+between them. Step 9's label search also finds two lines in PR 57's
+"Later on 2026-10-14, the OP-2 discharge" paragraph, kept by OR-3 outside the
+Scoreboard section, and the ledger's top-level "source" field; neither takes
+A.10's mark, whose prose scope is the Scoreboard section and items' notes
+(ruling (p)).

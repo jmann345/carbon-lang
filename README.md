@@ -275,6 +275,11 @@ For more details, see our [safety design](/docs/design/safety).
 To try out Carbon immediately in your browser, you can use the toolchain at:
 [carbon.compiler-explorer.com](http://carbon.compiler-explorer.com/).
 
+For a step-by-step guide to installing a toolchain on Linux x86-64, the
+status of other platforms, the toolchain this fork's features need, and
+a tutorial through C++ interop, see the
+[getting started guide](/docs/guides/getting_started.md).
+
 We are developing a traditional toolchain for Carbon that can compile and link
 programs. However, Carbon is still an early, experimental project, and so we
 only have very experimental nightly releases of the Carbon toolchain available
@@ -313,6 +318,9 @@ sudo apt install libgcc-11-dev
 # Run it:
 ./forty_two
 ```
+
+To build from CMake, or with explicit Make rules, see
+[Build systems: CMake and Make](/docs/guides/build_systems.md).
 
 As a reminder, the toolchain is still very early and many things don't yet work.
 Please hold off on filing lots of bugs: we know many parts of this don't work
@@ -360,6 +368,7 @@ Learn more about the Carbon project:
 -   [Language design overview](/docs/design)
 -   [Carbon Toolchain](/toolchain)
 -   [FAQ](/docs/project/faq.md)
+-   [Guides: getting started, tutorial, evaluator FAQ](/docs/guides/README.md)
 
 ## Conference talks
 

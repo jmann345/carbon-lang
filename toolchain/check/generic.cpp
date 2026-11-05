@@ -16,6 +16,7 @@
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/diagnostic.h"
 #include "toolchain/sem_ir/constant.h"
+#include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/generic.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
@@ -462,6 +463,75 @@ auto DiscardGenericDecl(Context& context) -> void {
   }
   // Note that we may leak a GenericId here, if one was allocated.
   context.generic_region_stack().Pop();
+}
+
+auto DiscardGenericDeclIntoEnclosingGeneric(Context& context) -> void {
+  llvm::SmallVector<SemIR::InstId> dependent_inst_ids(
+      context.generic_region_stack().PeekDependentInsts());
+  DiscardGenericDecl(context);
+  if (context.generic_region_stack().Empty()) {
+    return;
+  }
+  // Attach them in the order they were added, so that an instruction's
+  // operands are in the eval block before it. An action that refers to one of
+  // them, such as `T.Inner` or a C++ template call in `alias B = T.Inner;`,
+  // then evaluates its operand in each specific of the enclosing generic.
+  for (auto inst_id : dependent_inst_ids) {
+    if (context.constant_values().GetConstantInstId(inst_id) == inst_id) {
+      // A template action, or an element of its result: its own constant
+      // (`AddTemplateConstantInstToEvalBlock`).
+      AttachDependentInstToCurrentGeneric(
+          context, {.inst_id = inst_id, .kind = DependentInstKind::Template});
+      continue;
+    }
+    DependentInstKind kind = DependentInstKind::None;
+    if (context.constant_values().DependsOnGenericParameter(
+            context.types().GetConstantId(
+                context.insts().Get(inst_id).type_id()))) {
+      kind.Add(DependentInstKind::SymbolicType);
+    }
+    if (context.constant_values().DependsOnGenericParameter(
+            context.constant_values().Get(inst_id))) {
+      kind.Add(DependentInstKind::SymbolicConstant);
+    }
+    if (!kind.empty()) {
+      AttachDependentInstToCurrentGeneric(context,
+                                          {.inst_id = inst_id, .kind = kind});
+    }
+  }
+}
+
+auto AddAliasCheckToCurrentGeneric(Context& context, SemIR::LocId loc_id,
+                                   SemIR::AliasBinding alias) -> void {
+  // Only a definition region holds the check: a declaration's eval block holds
+  // each constant once (`PopulateConstantsFromDeclaration`), and a use there is
+  // a type, which is required to be a constant anyway.
+  if (context.generic_region_stack().Empty() ||
+      context.generic_region_stack().PeekPendingGeneric().region !=
+          SemIR::GenericInstIndex::Definition) {
+    return;
+  }
+  // Adding the copy attaches its type and constant value, as for the alias
+  // binding itself, so that its operands are in the eval block before it.
+  auto check_id = AddInstInNoBlock(context, loc_id, alias);
+  GetOrCreatePendingGeneric(context);
+  context.generic_region_stack().AddInstToEvalBlock(check_id);
+}
+
+auto AddAliasUseCheckToCurrentGeneric(Context& context, SemIR::LocId loc_id,
+                                      SemIR::InstId target_id,
+                                      SemIR::InstId use_id) -> void {
+  auto alias = context.insts().TryGetAs<SemIR::AliasBinding>(target_id);
+  if (!alias || context.generic_region_stack().Empty() ||
+      SemIR::GetExprCategory(context.sem_ir(), alias->value_id) !=
+          SemIR::ExprCategory::Dependent) {
+    return;
+  }
+  AddAliasCheckToCurrentGeneric(
+      context, loc_id,
+      {.type_id = context.insts().Get(use_id).type_id(),
+       .entity_name_id = alias->entity_name_id,
+       .value_id = use_id});
 }
 
 auto BuildGeneric(Context& context, SemIR::InstId decl_id) -> SemIR::GenericId {

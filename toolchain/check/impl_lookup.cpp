@@ -20,11 +20,13 @@
 #include "toolchain/check/import_ref.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/period_self.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/subst.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/check/type_structure.h"
 #include "toolchain/sem_ir/declared_facet_type.h"
+#include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/identified_facet_type.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/impl.h"
@@ -221,16 +223,17 @@ static auto FindAndDiagnoseImplLookupCycle(
   return false;
 }
 
-// Gets the set of `SpecificInterface`s that are required by a facet type
-// (as a constant value), and any special requirements.
-static auto GetRequiredImplsFromConstraint(
+// Identifies the facet type of a query (as a constant value) against the query
+// self, for its required `SpecificInterface`s and its structural requirements.
+// Returns `None` if the facet type can not be identified.
+static auto GetIdentifiedFacetTypeForQuery(
     Context& context, SemIR::LocId loc_id,
     SemIR::ConstantId query_self_const_id,
     SemIR::ConstantId query_facet_type_const_id, bool diagnose)
-    -> std::optional<llvm::ArrayRef<SemIR::IdentifiedFacetType::RequiredImpl>> {
+    -> SemIR::IdentifiedFacetTypeId {
   auto facet_type_inst_id =
       context.types().GetTypeInstIdForTypeConstantId(query_facet_type_const_id);
-  auto identified_id = RequireIdentifiedFacetType(
+  return RequireIdentifiedFacetType(
       context, loc_id, query_self_const_id, facet_type_inst_id,
       [&](auto& builder) {
         CARBON_DIAGNOSTIC(ImplLookupInUnidentifiedFacetType, Context,
@@ -239,10 +242,6 @@ static auto GetRequiredImplsFromConstraint(
                         facet_type_inst_id);
       },
       diagnose);
-  if (!identified_id.has_value()) {
-    return std::nullopt;
-  }
-  return context.identified_facet_types().Get(identified_id).required_impls();
 }
 
 static auto TreatImplAsFinal(Context& context, const SemIR::Impl& impl)
@@ -569,6 +568,130 @@ static auto QueryIsConcrete(Context& context, SemIR::ConstantId self_const_id,
     }
   }
   return true;
+}
+
+// Returns whether the constant instruction `inst_id` names a template binding,
+// directly or through its operands. Template dependence alone does not say so:
+// a C++ template instantiated with symbolic arguments and the result of an
+// `eval fn` are template dependent in a checked generic, too.
+static auto NamesTemplateBinding(Context& context, SemIR::InstId inst_id)
+    -> bool {
+  llvm::SmallVector<SemIR::InstId> worklist = {inst_id};
+  llvm::SmallVector<SemIR::InstId> visited;
+  auto push = [&](SemIR::InstId id) {
+    if (!id.has_value() || llvm::is_contained(visited, id)) {
+      return;
+    }
+    auto const_id = context.constant_values().Get(id);
+    if (!const_id.is_symbolic()) {
+      return;
+    }
+    visited.push_back(id);
+    worklist.push_back(id);
+    // An instruction of a generic's body, such as a name reference to an
+    // alias, `B` for `alias B = Cpp.Box(T);`, reaches what it names through
+    // its constant value, not through its operands.
+    auto const_inst_id = context.constant_values().GetInstId(const_id);
+    if (!llvm::is_contained(visited, const_inst_id)) {
+      visited.push_back(const_inst_id);
+      worklist.push_back(const_inst_id);
+    }
+  };
+  auto push_specific = [&](SemIR::SpecificId specific_id) {
+    if (specific_id.has_value()) {
+      for (auto arg_id : context.inst_blocks().Get(
+               context.specifics().Get(specific_id).args_id)) {
+        push(arg_id);
+      }
+    }
+  };
+  while (!worklist.empty()) {
+    auto inst = context.insts().Get(worklist.pop_back_val());
+    if (auto binding = inst.TryAs<SemIR::SymbolicBinding>()) {
+      if (context.entity_names().Get(binding->entity_name_id).is_template) {
+        return true;
+      }
+    }
+    // A symbolic argument of a C++ template name, which
+    // `PerformCallToNonFunction` (call.cpp) wraps so that it is evaluated as a
+    // template: the specialization it names is formed only on instantiation.
+    if (inst.Is<SemIR::TemplateInst>()) {
+      return true;
+    }
+    // A call to a C++ template name or an imported C++ function, which waits
+    // for concrete arguments (`ActionIsPerformable`): a class template's
+    // specific formed for a checked generic's `U`, `C(U).B` for `alias B =
+    // Cpp.Box(T);`, holds `U` itself, not wrapped in a `TemplateInst`.
+    if (auto call = inst.TryAs<SemIR::CallAction>()) {
+      auto inst_ids = context.inst_blocks().Get(call->inst_block_id);
+      if (!inst_ids.empty() &&
+          (context.types().Is<SemIR::CppTemplateNameType>(
+               context.insts().Get(inst_ids.front()).type_id()) ||
+           std::holds_alternative<SemIR::CalleeCppOverloadSet>(
+               SemIR::GetCallee(context.sem_ir(), inst_ids.front())))) {
+        return true;
+      }
+    }
+    for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+      if (auto id = arg.TryAs<SemIR::InstId>()) {
+        push(*id);
+      } else if (auto id = arg.TryAs<SemIR::MetaInstId>()) {
+        // An action's operand: a type that an action forms, such as a C++
+        // template's specialization or a member of a template parameter.
+        push(*id);
+      } else if (auto id = arg.TryAs<SemIR::TypeInstId>()) {
+        push(*id);
+      } else if (auto id = arg.TryAs<SemIR::InstBlockId>()) {
+        if (id->has_value()) {
+          for (auto elem_id : context.inst_blocks().Get(*id)) {
+            push(elem_id);
+          }
+        }
+      } else if (auto id = arg.TryAs<SemIR::MetaInstBlockId>()) {
+        if (id->has_value()) {
+          for (auto elem_id : context.inst_blocks().Get(*id)) {
+            push(elem_id);
+          }
+        }
+      } else if (auto id = arg.TryAs<SemIR::SpecificId>()) {
+        push_specific(*id);
+      } else if (auto id = arg.TryAs<SemIR::SpecificInterfaceId>()) {
+        push_specific(context.specific_interfaces().Get(*id).specific_id);
+      } else if (auto id = arg.TryAs<SemIR::StructTypeFieldsId>()) {
+        for (auto field : context.struct_type_fields().Get(*id)) {
+          push(field.type_inst_id);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// Returns whether impl lookup for the query is delayed until the template it
+// is in is instantiated (proposal 2200: "until all templated types,
+// interfaces, and parameters are known"): its self or its interface names a
+// template binding.
+static auto QueryNamesTemplateBinding(
+    Context& context, SemIR::ConstantId self_const_id,
+    const SemIR::SpecificInterface& specific_interface) -> bool {
+  if (context.constant_values().GetDependence(self_const_id) ==
+          SemIR::ConstantDependence::Template &&
+      NamesTemplateBinding(
+          context, context.constant_values().GetInstId(self_const_id))) {
+    return true;
+  }
+  if (!specific_interface.specific_id.has_value()) {
+    return false;
+  }
+  for (auto arg_id : context.inst_blocks().Get(
+           context.specifics().Get(specific_interface.specific_id).args_id)) {
+    if (context.constant_values().GetDependence(context.constant_values().Get(
+            arg_id)) == SemIR::ConstantDependence::Template &&
+        NamesTemplateBinding(context, arg_id)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 namespace {
@@ -1007,14 +1130,44 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
         query_facet_type_const_id));
   }
 
-  auto req_impls_from_constraint =
-      GetRequiredImplsFromConstraint(context, loc_id, query_self_const_id,
+  auto identified_id =
+      GetIdentifiedFacetTypeForQuery(context, loc_id, query_self_const_id,
                                      query_facet_type_const_id, diagnose);
-  if (!req_impls_from_constraint.has_value()) {
+  if (!identified_id.has_value()) {
     return SemIR::InstBlockIdOrError::MakeError();
   }
-  auto req_impls = *req_impls_from_constraint;
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-3 / D-SC-5): the structural
+  // requirements of `template constraint`s are checked here, before the
+  // interface witnesses, so that a facet type with no interfaces is still
+  // satisfied only by a type with the required members. An unsatisfied
+  // requirement is plain lookup failure (`None`), explained by the conversion's
+  // diagnostic (D-SC-9); a template-phase self is deferred (D-SC-19). After an
+  // error the interfaces are still looked up, so that one the type does not
+  // implement is reported (D-SC-9 as amended at fill round 10).
+  bool structural_error = false;
+  if (!context.identified_facet_types()
+           .Get(identified_id)
+           .structural_requirements()
+           .empty()) {
+    switch (
+        CheckStructuralRequirements(context, loc_id, identified_id, diagnose)) {
+      case StructuralCheckResult::Satisfied:
+        break;
+      case StructuralCheckResult::Unsatisfied:
+        return SemIR::InstBlockId::None;
+      case StructuralCheckResult::Error:
+        structural_error = true;
+        break;
+    }
+  }
+
+  auto req_impls =
+      context.identified_facet_types().Get(identified_id).required_impls();
   if (req_impls.empty()) {
+    if (structural_error) {
+      return SemIR::InstBlockIdOrError::MakeError();
+    }
     return SemIR::InstBlockId::Empty;
   }
 
@@ -1078,6 +1231,16 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
       break;
     }
 
+    // Proposal 2200 ("Use of dependent value is dependent"): impl lookup for a
+    // template-dependent query is performed when the template is
+    // instantiated, so the deferred `LookupImplWitness` is the witness even
+    // when no candidate impl can be shown to apply in the definition.
+    if (QueryNamesTemplateBinding(context, req_impl.self_facet_value,
+                                  req_impl.specific_interface)) {
+      result_witness_ids.push_back(result_witness_id);
+      continue;
+    }
+
     // Did not find a final witness. If we find a non-final witness, then we use
     // the `LookupImplWitness` as our witness so that monomorphization can
     // produce a final witness later.
@@ -1113,6 +1276,9 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
     return SemIR::InstBlockId::None;
   }
 
+  if (structural_error) {
+    return SemIR::InstBlockIdOrError::MakeError();
+  }
   return context.inst_blocks().AddCanonical(result_witness_ids);
 }
 
@@ -1250,6 +1416,13 @@ auto EvalLookupSingleFinalWitness(Context& context, SemIR::LocId loc_id,
   bool query_is_concrete =
       QueryIsConcrete(context, query_self_const_id, query_specific_interface);
   if (!query_is_concrete && context.impl_lookup_no_symbolic_final_lookups()) {
+    return SemIR::ConstantId::None;
+  }
+  // Proposal 2200: impl lookup for a template-dependent query is performed
+  // when the template is instantiated; no impl is selected in the definition,
+  // not even a final one whose requirements could be proven only then.
+  if (QueryNamesTemplateBinding(context, query_self_const_id,
+                                query_specific_interface)) {
     return SemIR::ConstantId::None;
   }
 

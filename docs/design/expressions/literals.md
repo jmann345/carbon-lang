@@ -250,6 +250,9 @@ String literal syntax is covered in the
 
 No design for string types has been through the proposal process yet.
 
+> **Fork note (2026-11-02).** Fork decision F-014 designs the string types; see
+> [Strings](../strings.md).
+
 ## Character literals
 
 Character literals are defined in the

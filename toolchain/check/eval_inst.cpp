@@ -20,6 +20,7 @@
 #include "toolchain/check/import_ref.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/period_self.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/diagnostic.h"
@@ -936,7 +937,11 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
   if (!callee_function.self_type_id.has_value() &&
       fn.GetBuiltinFunctionKind(context.sem_ir()) !=
           SemIR::BuiltinFunctionKind::NoOp &&
-      fn.virtual_modifier != SemIR::Function::VirtualModifier::Abstract) {
+      fn.virtual_modifier != SemIR::Function::VirtualModifier::Abstract &&
+      // Fork (SC-1, W-139): nor a template's specific for a checked-symbolic
+      // argument whose structural requirements wait for a concrete argument;
+      // the caller's specific for that argument requires its definition.
+      !SpecificDefersStructuralChecks(context, inst.specific_id)) {
     // This is not an associated function. Those will be required to be defined
     // as part of checking that the impl is complete.
     context.definitions_required_by_use().push_back(

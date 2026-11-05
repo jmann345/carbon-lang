@@ -624,7 +624,8 @@ has the layout of "discriminant plus a union of its payload types", and the
 compiler implements it that way. The overlapping-storage design decision is made
 once — here — and inherited by choice, by
 [user-defined sum types](sum_types.md#user-defined-sum-types), and by the
-`std::variant` interop mapping built on choice.
+[`std::variant` interop mapping](sum_types.md#c-stdoptional-and-stdvariant)
+built on choice.
 
 This contract operates at the level of the compiler's layout machinery — the
 explicit-layout object representation described in [Layout](#layout) — not at

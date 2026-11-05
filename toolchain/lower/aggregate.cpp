@@ -53,7 +53,11 @@ auto GetAggregateElement(FunctionContext& context, SemIR::InstId aggr_inst_id,
                          llvm::Twine name) -> llvm::Value* {
   auto* aggr_value = context.GetValue(aggr_inst_id);
 
-  switch (SemIR::GetExprCategory(context.sem_ir(), aggr_inst_id)) {
+  // The aggregate can be a splice in a template's specific; its category is
+  // that of the spliced instruction.
+  switch (SemIR::GetExprCategory(context.sem_ir(), aggr_inst_id,
+                                 &context.specific_sem_ir(),
+                                 context.specific_id())) {
     case SemIR::ExprCategory::RefTagged:
     case SemIR::ExprCategory::Error:
     case SemIR::ExprCategory::NotExpr:
@@ -225,9 +229,12 @@ auto EmitAggregateInitializer(FunctionContext& context,
       // it'd be nice to emit a memcpy from a constant followed by the
       // non-constant initialization.
       for (auto [i, ref_id] : llvm::enumerate(refs)) {
-        if (context.sem_ir().constant_values().Get(ref_id).is_constant()) {
-          auto dest_id =
-              SemIR::FindStorageArgForInitializer(context.sem_ir(), ref_id);
+        // Whether the element was skipped as a constant is decided in the
+        // specific, as `LowerInst` decides it.
+        if (context.IsConstant(ref_id)) {
+          auto dest_id = SemIR::FindStorageArgForInitializer(
+              context.sem_ir(), ref_id, /*allow_transitive=*/true,
+              context.specific_id());
           auto src_id = ref_id;
           auto storage_type = context.GetTypeIdOfInst(dest_id);
           context.InitializeStorage(storage_type, dest_id, src_id);

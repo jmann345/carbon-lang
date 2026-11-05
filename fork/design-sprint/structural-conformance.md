@@ -28,7 +28,6 @@ frontier: concept export).
     -   [Option A: implicit structural satisfaction of interfaces for template bindings](#option-a-implicit-structural-satisfaction-of-interfaces-for-template-bindings)
     -   [Option B: `template constraint` + `require` validity blocks (the accepted-design path)](#option-b-template-constraint--require-validity-blocks-the-accepted-design-path)
     -   [Option C: boolean compile-time predicates only](#option-c-boolean-compile-time-predicates-only)
--   [2153 "predicates" direction, but shipping _only_ this leaves the accepted](#2153-predicates-direction-but-shipping-only-this-leaves-the-accepted)
     -   [How C++20 concepts map, in both directions](#how-c20-concepts-map-in-both-directions)
     -   [Recommendation](#recommendation)
     -   [Dependencies on other workstreams](#dependencies-on-other-workstreams)
@@ -446,9 +445,7 @@ coverage is still partial — p002200 lines 1098-1118 lists this as an open
 design question upstream too).
 
 **Evolution risk vs upstream: MEDIUM.** Predicates align with upstream's
-
-## 2153 "predicates" direction, but shipping _only_ this leaves the accepted
-
+issue 2153 "predicates" direction, but shipping _only_ this leaves the accepted
 `template constraint` design unimplemented, and the milestone's "modeling
 the members (like interfaces)" half is only weakly satisfied (members are
 tested by usage inside validity blocks, not declared). Convergence with

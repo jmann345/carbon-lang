@@ -253,15 +253,25 @@ auto CheckFunctionReturnTypeMatches(Context& context,
                                     const SemIR::Function& new_function,
                                     const SemIR::Function& prev_function,
                                     SemIR::SpecificId prev_specific_id,
-                                    bool diagnose) -> bool {
+                                    bool diagnose,
+                                    SemIR::SpecificId new_specific_id,
+                                    bool* found_error) -> bool {
   // TODO: Pass a specific ID for `prev_function` instead of substitutions and
   // use it here.
   auto new_return_type_id =
-      new_function.GetDeclaredReturnType(context.sem_ir());
+      new_function.GetDeclaredReturnType(context.sem_ir(), new_specific_id);
   auto prev_return_type_id =
       prev_function.GetDeclaredReturnType(context.sem_ir(), prev_specific_id);
   if (new_return_type_id == SemIR::ErrorInst::TypeId ||
       prev_return_type_id == SemIR::ErrorInst::TypeId) {
+    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12
+    // and 13): in the errors-match mode, an error return type matches any
+    // return type, though not the absence of one.
+    if (found_error && new_return_type_id.has_value() &&
+        prev_return_type_id.has_value()) {
+      *found_error = true;
+      return true;
+    }
     return false;
   }
   if (!context.types().AreEqualAcrossDeclarations(new_return_type_id,
@@ -350,18 +360,24 @@ static auto CheckFunctionEvaluationModeMatches(
   return false;
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error` passes the errors-match mode through (see function.h).
 auto CheckFunctionTypeMatches(Context& context,
                               const SemIR::Function& new_function,
                               const SemIR::Function& prev_function,
                               SemIR::SpecificId prev_specific_id,
-                              bool check_syntax, bool diagnose) -> bool {
+                              bool check_syntax, bool diagnose,
+                              SemIR::SpecificId new_specific_id,
+                              bool* found_error) -> bool {
   if (!CheckRedeclParamsMatch(context, DeclParams(new_function),
                               DeclParams(prev_function), prev_specific_id,
-                              diagnose, check_syntax)) {
+                              diagnose, check_syntax, new_specific_id,
+                              found_error)) {
     return false;
   }
   if (!CheckFunctionReturnTypeMatches(context, new_function, prev_function,
-                                      prev_specific_id, diagnose)) {
+                                      prev_specific_id, diagnose,
+                                      new_specific_id, found_error)) {
     return false;
   }
   if (!CheckFunctionEvaluationModeMatches(context, new_function, prev_function,

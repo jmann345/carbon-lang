@@ -48,9 +48,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > Template constraints are accepted: proposal 818 introduced
 > `template constraint` declarations, whose member requirements proposal 2200
 > specifies, and fork decision F-010 adds `require` validity blocks and boolean
-> predicates. Member requirements are implemented on the fork's held
-> template-constraint branch (SC-1), and `require` blocks and predicates are
-> fork work item W-028; none of them is in the toolchain this page describes.
+> predicates. [Template constraints](generics/template_constraints.md)
+> specifies all three, and the toolchain implements member requirements;
+> `require` blocks and predicates are fork work item W-028.
 >
 > **Fork note (TP-1, 2026-11-02).** The integrated-templates work (TP-1)
 > resolved many of the limits listed in
@@ -195,9 +195,19 @@ may be less critical. Instead, we expect parameterized types and functions may
 use a mixture of checked and template generic parameters based on where they are
 constrained.
 
-However, if there are still use cases, we would like to explore applying the
-interface constraints of the checked-generics system directly to template
-parameters rather than create a new constraint system.
+Fork amendment (2026-10-12, F-010 / SC-1): template parameters may be
+constrained by interfaces and named constraints (nominally, exactly as checked
+parameters are) and additionally by _template constraints_ — structural member
+requirements, `require` validity blocks, and boolean predicates. The full
+design is [Template constraints](generics/template_constraints.md), fixed by
+fork decision
+[F-010](/fork/decision-log.md);
+member requirements are implemented (a `template constraint` whose body declares
+`fn Get(self) -> i32;`, constraining a `[template T: HasGet]` binding); validity
+blocks and predicates are the SC-B2 workstream. In 0.1, interfaces are not
+satisfied structurally in any phase; whether that rule is permanent or
+0.1-scoped is open sub-fork
+[F-010j](generics/template_constraints.md#open-sub-forks).
 
 ## Templates in the 0.1 toolchain
 
@@ -398,7 +408,7 @@ types that implement the interface: for a class `Circle` with an `Area` method
 and no `impl`, a call `Report(c)` is rejected with
 ``cannot convert type `Circle` into type implementing `HasArea` ``. A
 constraint on the members a type declares is a `template constraint`
-(proposals 818 and 2200; see [Status](#status)).
+([Template constraints](generics/template_constraints.md)).
 
 Rejected where the function is defined, whatever the argument:
 
@@ -562,11 +572,9 @@ Forms of proposal 2200 that are not implemented yet:
     (pinned by `fail_todo_init_template_dependent_bound.carbon` in
     `toolchain/check/testdata/array/init_dependent_bound.carbon`). The upstream
     nightly accepts this initialization.
--   `template constraint` declarations are not parsed: the parser reports
-    `unrecognized declaration introducer` (pinned by
-    `fail_todo_template_constraint.carbon` in
-    `toolchain/parse/testdata/generics/named_constraint/`); see
-    [Status](#status).
+-   The forms of `template constraint` declarations that
+    [Template constraints](generics/template_constraints.md) defers, such as
+    field requirements.
 -   A deduced template parameter is not computed from a class's arguments, as
     the fork note in
     [Functions with template parameters](#functions-with-template-parameters)

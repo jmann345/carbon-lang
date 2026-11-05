@@ -4,6 +4,7 @@
 
 #include "toolchain/sem_ir/identified_facet_type.h"
 
+#include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/canonical_value_store_impl.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/base/value_store_impl.h"
@@ -44,7 +45,8 @@ static auto RequiredLess(const IdentifiedFacetType::RequiredImpl& lhs,
 IdentifiedFacetType::IdentifiedFacetType(
     IdentifiedFacetTypeKey key, bool partially_identified,
     llvm::ArrayRef<RequiredImpl> extends,
-    llvm::ArrayRef<RequiredImpl> self_impls, llvm::ArrayRef<Rewrite> rewrites)
+    llvm::ArrayRef<RequiredImpl> self_impls, llvm::ArrayRef<Rewrite> rewrites,
+    llvm::ArrayRef<StructuralRequirement> structural)
     : key_(key) {
   required_impls_.reserve(extends.size() + self_impls.size());
   llvm::append_range(required_impls_, extends);
@@ -72,6 +74,15 @@ IdentifiedFacetType::IdentifiedFacetType(
   }
 
   rewrites_.assign(rewrites);
+
+  // Keep identification order (the order requirements are reported in) and
+  // drop exact duplicates, such as one template constraint reached through two
+  // named constraints.
+  for (const auto& requirement : structural) {
+    if (!llvm::is_contained(structural_requirements_, requirement)) {
+      structural_requirements_.push_back(requirement);
+    }
+  }
 }
 
 auto AddCanonicalWitnessesBlock(File& sem_ir,

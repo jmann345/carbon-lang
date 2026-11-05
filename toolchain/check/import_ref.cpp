@@ -1965,6 +1965,54 @@ static auto AddAssociatedEntities(ImportContext& context,
   return context.local_inst_blocks().Add(new_associated_entities);
 }
 
+// Given a block ID for the structural member requirements of a `template
+// constraint` (`FunctionDecl` instructions in its with-self scope, D-SC-15),
+// returns a version localized to the current IR: a block of import-refs, one
+// per requirement, in the same order. As in `AddAssociatedEntities`, an entry
+// may itself be an import-ref when the imported IR localized the block from a
+// further import.
+static auto AddStructuralMembers(ImportContext& context,
+                                 SemIR::NameScopeId local_name_scope_id,
+                                 SemIR::InstBlockId structural_members_id)
+    -> SemIR::InstBlockId {
+  if (structural_members_id == SemIR::InstBlockId::Empty) {
+    return SemIR::InstBlockId::Empty;
+  }
+  auto structural_members =
+      context.import_inst_blocks().Get(structural_members_id);
+  llvm::SmallVector<SemIR::InstId> new_structural_members;
+  new_structural_members.reserve(structural_members.size());
+  for (auto inst_id : structural_members) {
+    // Determine the name of the requirement, by switching on its kind.
+    SemIR::NameId import_name_id = SemIR::NameId::None;
+    // We don't need `GetWithAttachedType` here because we don't access the
+    // type.
+    auto inst = context.import_insts().Get(inst_id);
+    CARBON_KIND_SWITCH(inst) {
+      case CARBON_KIND(SemIR::FunctionDecl function_decl): {
+        const auto& function =
+            context.import_functions().Get(function_decl.function_id);
+        import_name_id = function.name_id;
+        break;
+      }
+      case CARBON_KIND_ANY(SemIR::AnyImportRef, import_ref): {
+        import_name_id = context.import_entity_names()
+                             .Get(import_ref.entity_name_id)
+                             .name_id;
+        break;
+      }
+      default:
+        CARBON_FATAL("Unhandled structural member kind: {0}", inst.kind());
+    }
+    auto name_id = GetLocalNameId(context, import_name_id);
+    auto entity_name_id = context.local_entity_names().Add(
+        {.name_id = name_id, .parent_scope_id = local_name_scope_id});
+    new_structural_members.push_back(
+        AddImportRef(context, inst_id, entity_name_id));
+  }
+  return context.local_inst_blocks().Add(new_structural_members);
+}
+
 namespace {
 namespace Internal {
 // Internal concept for instruction kinds that produce unique constants.
@@ -3391,6 +3439,30 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                      resolver, inst.specific_id, specific_data)});
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20): resolves the type of a
+// requirement named with no self type that satisfies it, as `FunctionType`.
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::StructuralRequirementType inst)
+    -> ResolveResult {
+  CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
+  auto fn_val_id = GetLocalConstantInstId(
+      resolver,
+      resolver.import_functions().Get(inst.function_id).first_decl_id());
+
+  auto specific_data = GetLocalSpecificData(resolver, inst.specific_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  auto fn_type_id = resolver.local_insts().Get(fn_val_id).type_id();
+  return ResolveResult::Deduplicated<SemIR::StructuralRequirementType>(
+      resolver, {.type_id = SemIR::TypeType::TypeId,
+                 .function_id = resolver.local_types()
+                                    .GetAs<SemIR::FunctionType>(fn_type_id)
+                                    .function_id,
+                 .specific_id = GetOrAddLocalSpecific(
+                     resolver, inst.specific_id, specific_data)});
+}
+
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::FunctionTypeWithSelfType inst)
     -> ResolveResult {
@@ -4098,7 +4170,8 @@ static auto ImportNamedConstraintDecl(
                                          : SemIR::NameScopeId::None,
             .scope_with_self_id = import_named_constraint.is_complete()
                                       ? AddPlaceholderNameScope(context)
-                                      : SemIR::NameScopeId::None}});
+                                      : SemIR::NameScopeId::None,
+            .is_template = import_named_constraint.is_template}});
 
   if (import_named_constraint.has_parameters()) {
     named_constraint_decl.type_id = GetGenericNamedConstraintType(
@@ -4358,6 +4431,15 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                    SemIR::NameId::None,
                                    local_constraint.scope_without_self_id);
   local_constraint.complete = import_constraint.complete;
+  // The structural member requirements of a `template constraint` live in the
+  // with-self scope, so their import-refs are built here, inside the pushed
+  // block, the way an interface's associated entities are (fork decision
+  // F-010 / SC-1, D-SC-15).
+  if (import_constraint.structural_members_id.has_value()) {
+    local_constraint.structural_members_id =
+        AddStructuralMembers(resolver, local_constraint.scope_with_self_id,
+                             import_constraint.structural_members_id);
+  }
   local_constraint.body_block_with_self_id =
       resolver.local_context().inst_block_stack().Pop();
 
@@ -5516,6 +5598,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::StructValue inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::StructuralRequirementType inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::SymbolicBindingPattern inst): {

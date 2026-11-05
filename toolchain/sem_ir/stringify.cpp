@@ -1154,6 +1154,26 @@ class Stringifier {
     }
   }
 
+  // Fork (SC-1, D-SC-20): `<type of HasN.N>`. The type is only formed for a
+  // requirement, a function whose parent scope is a template constraint's
+  // with-self scope (check/structural_conformance.cpp
+  // `MakeStructuralRequirementName`, and its import).
+  auto StringifyInst(InstId /*inst_id*/, StructuralRequirementType inst)
+      -> void {
+    const auto& fn = sem_ir_->functions().Get(inst.function_id);
+    auto with_self_decl =
+        sem_ir_->name_scopes().TryGetInstAs<NamedConstraintWithSelfDecl>(
+            fn.parent_scope_id);
+    CARBON_CHECK(with_self_decl, "Requirement type of a non-requirement {0}",
+                 inst.function_id);
+    *out_ << "<type of ";
+    step_stack_->Push(
+        SpecificNamedConstraint{
+            .named_constraint_id = with_self_decl->named_constraint_id,
+            .specific_id = inst.specific_id},
+        ".", fn.name_id, ">");
+  }
+
   auto StringifyInst(InstId /*inst_id*/, StructValue inst) -> void {
     auto field_values = sem_ir_->inst_blocks().Get(inst.elements_id);
     if (field_values.empty()) {

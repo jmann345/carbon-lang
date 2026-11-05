@@ -10,18 +10,36 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/named_constraint/invalid_members.carbon
 
-// --- todo_fail_invalid_fn.carbon
+// --- fail_invalid_fn.carbon
 library "[[@TEST_NAME]]";
 
 constraint E {
-  // TODO: Any fn in a non-template constraint is an error.
+  // A fn in a non-template constraint is an error: only a `template
+  // constraint` carries structural member requirements (fork decision F-010 /
+  // SC-1, D-SC-18).
+  // CHECK:STDERR: fail_invalid_fn.carbon:[[@LINE+4]]:3: error: function declaration in a non-`template` `constraint`; use `template constraint` to declare a structural requirement [FunctionInNonTemplateConstraint]
+  // CHECK:STDERR:   fn DeclaredFunction();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn DeclaredFunction();
+  // CHECK:STDERR: fail_invalid_fn.carbon:[[@LINE+4]]:3: error: function declaration in a non-`template` `constraint`; use `template constraint` to declare a structural requirement [FunctionInNonTemplateConstraint]
+  // CHECK:STDERR:   fn DeclaredMethod(self, b: Self);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn DeclaredMethod(self, b: Self);
 }
 
 constraint F {
-  // TODO: Any fn in a non-template constraint is an error.
+  // Likewise for a defined fn.
+  // CHECK:STDERR: fail_invalid_fn.carbon:[[@LINE+4]]:3: error: function declaration in a non-`template` `constraint`; use `template constraint` to declare a structural requirement [FunctionInNonTemplateConstraint]
+  // CHECK:STDERR:   fn DefinedFunction() {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn DefinedFunction() {}
+  // CHECK:STDERR: fail_invalid_fn.carbon:[[@LINE+4]]:3: error: function declaration in a non-`template` `constraint`; use `template constraint` to declare a structural requirement [FunctionInNonTemplateConstraint]
+  // CHECK:STDERR:   fn DefinedMethod(unused self, unused b: Self) {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn DefinedMethod(unused self, unused b: Self) {}
 }
 
@@ -36,16 +54,12 @@ constraint E {
 // --- fail_todo_invalid_var_template.carbon
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_todo_invalid_var_template.carbon:[[@LINE+8]]:1: error: unrecognized declaration introducer [UnrecognizedDecl]
-// CHECK:STDERR: template constraint E {
-// CHECK:STDERR: ^~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_todo_invalid_var_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `handle invalid parse trees in `check`` [SemanticsTodo]
-// CHECK:STDERR: template constraint E {
-// CHECK:STDERR: ^~~~~~~~
-// CHECK:STDERR:
 template constraint E {
   // TODO: Any var in a constraint is an error.
+  // CHECK:STDERR: fail_todo_invalid_var_template.carbon:[[@LINE+4]]:3: error: semantics TODO: `field requirement in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   var c: () = ();
+  // CHECK:STDERR:   ^~~
+  // CHECK:STDERR:
   var c: () = ();
 }
 
@@ -60,15 +74,11 @@ constraint E {
 // --- fail_todo_invalid_let_template.carbon
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_todo_invalid_let_template.carbon:[[@LINE+8]]:1: error: unrecognized declaration introducer [UnrecognizedDecl]
-// CHECK:STDERR: template constraint E {
-// CHECK:STDERR: ^~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_todo_invalid_let_template.carbon:[[@LINE+4]]:1: error: semantics TODO: `handle invalid parse trees in `check`` [SemanticsTodo]
-// CHECK:STDERR: template constraint E {
-// CHECK:STDERR: ^~~~~~~~
-// CHECK:STDERR:
 template constraint E {
   // TODO: Any let in a constraint is an error.
+  // CHECK:STDERR: fail_todo_invalid_let_template.carbon:[[@LINE+4]]:3: error: semantics TODO: `field requirement in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   var c: () = ();
+  // CHECK:STDERR:   ^~~
+  // CHECK:STDERR:
   var c: () = ();
 }

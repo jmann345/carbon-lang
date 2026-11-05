@@ -10,6 +10,7 @@
 #include "toolchain/sem_ir/declared_facet_type.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/specific_interface.h"
+#include "toolchain/sem_ir/specific_named_constraint.h"
 
 namespace Carbon::SemIR {
 
@@ -49,15 +50,35 @@ struct IdentifiedFacetType {
     friend auto operator==(const Rewrite& lhs, const Rewrite& rhs)
         -> bool = default;
   };
+  // A requirement that `self_facet_value` structurally satisfies the member
+  // requirements of the `template constraint` named by `constraint` (fork
+  // decision F-010 / SC-1, D-SC-15). Satisfaction is a boolean check, not a
+  // witness (D-SC-4), so these do not contribute to the witness order.
+  struct StructuralRequirement {
+    ConstantId self_facet_value;
+    SpecificNamedConstraint constraint;
+
+    friend auto operator==(const StructuralRequirement& lhs,
+                           const StructuralRequirement& rhs) -> bool = default;
+  };
 
   IdentifiedFacetType(IdentifiedFacetTypeKey key, bool partially_identified,
                       llvm::ArrayRef<RequiredImpl> extends,
                       llvm::ArrayRef<RequiredImpl> self_impls,
-                      llvm::ArrayRef<Rewrite> rewrites);
+                      llvm::ArrayRef<Rewrite> rewrites,
+                      llvm::ArrayRef<StructuralRequirement> structural = {});
 
   // The order here defines the order of impl witnesses for this facet type.
   auto required_impls() const -> llvm::ArrayRef<RequiredImpl> {
     return required_impls_;
+  }
+
+  // The structural requirements from `template constraint`s mentioned by the
+  // facet type, directly or through named constraints, in the order they were
+  // identified. Deduplicated.
+  auto structural_requirements() const
+      -> llvm::ArrayRef<StructuralRequirement> {
+    return structural_requirements_;
   }
 
   auto rewrites() const -> llvm::ArrayRef<Rewrite> { return rewrites_; }
@@ -104,6 +125,10 @@ struct IdentifiedFacetType {
   // The witness on the LHS should be ignored other than to specify in which
   // interface the associated constant is being rewritten.
   llvm::SmallVector<Rewrite> rewrites_;
+
+  // Structural requirements of template constraints (D-SC-15). Deduplicated,
+  // in identification order.
+  llvm::SmallVector<StructuralRequirement> structural_requirements_;
 
   // The single interface from `required_impls` to implement if this is
   // the facet type to the right of an `impl`...`as`, or `None` if no such

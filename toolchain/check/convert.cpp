@@ -30,6 +30,7 @@
 #include "toolchain/check/operator.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/check/pending_block.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/emitter.h"
@@ -1884,9 +1885,15 @@ static auto CanRemoveQualifiers(SemIR::TypeQualifiers quals,
   return true;
 }
 
+// Diagnoses a failed conversion of `expr_id` to the facet type
+// `target_type_id`. `query_self_const_id` is the self that impl lookup was
+// queried with; fork (SC-1, fork/structural/plan.md D-SC-9): the error carries
+// notes explaining the first unsatisfied structural requirement of a
+// `template constraint`, if that is why lookup failed.
 static auto DiagnoseConversionFailureToConstraintValue(
     Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
-    SemIR::TypeId target_type_id) -> void {
+    SemIR::ConstantId query_self_const_id, SemIR::TypeId target_type_id)
+    -> void {
   CARBON_CHECK(context.types().Is<SemIR::FacetType>(target_type_id));
 
   // If the source is a facet with constraints (possibly converted to `type`),
@@ -1899,14 +1906,21 @@ static auto DiagnoseConversionFailureToConstraintValue(
                       "cannot convert type {0} that implements {1} into type "
                       "implementing {2}",
                       InstIdAsType, SemIR::TypeId, SemIR::TypeId);
-    context.emitter().Emit(loc_id, ConversionFailureFacetToFacet, expr_id,
-                           const_expr_type_id, target_type_id);
+    auto builder =
+        context.emitter().Build(loc_id, ConversionFailureFacetToFacet, expr_id,
+                                const_expr_type_id, target_type_id);
+    NoteStructuralConformanceFailure(context, loc_id, query_self_const_id,
+                                     target_type_id, builder);
+    builder.Emit();
   } else {
     CARBON_DIAGNOSTIC(ConversionFailureTypeToFacet, Error,
                       "cannot convert type {0} into type implementing {1}",
                       InstIdAsType, SemIR::TypeId);
-    context.emitter().Emit(loc_id, ConversionFailureTypeToFacet, expr_id,
-                           target_type_id);
+    auto builder = context.emitter().Build(loc_id, ConversionFailureTypeToFacet,
+                                           expr_id, target_type_id);
+    NoteStructuralConformanceFailure(context, loc_id, query_self_const_id,
+                                     target_type_id, builder);
+    builder.Emit();
   }
 }
 
@@ -2353,6 +2367,28 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       if (lookup_result.has_error_value()) {
         return SemIR::ErrorInst::InstId;
       } else {
+        // Fork (SC-1, W-139; D-SC-19): the structural requirements of a
+        // template-dependent self were deferred, so the conversion is
+        // performed again, as an action, in each specific of the enclosing
+        // generic, where the self is concrete and a failure is diagnosed. A
+        // delayed action adds none: its specific's concrete counterparts
+        // perform it again (`Context::delayed_action_depth`).
+        if (target.diagnose &&
+            context.constant_values().GetDependence(
+                sem_ir.constant_values().Get(type_inst_id)) ==
+                SemIR::ConstantDependence::Template &&
+            context.delayed_action_depth() == 0 &&
+            !context.generic_region_stack().Empty() &&
+            FacetTypeHasStructuralRequirements(context, target.type_id)
+                .has_value()) {
+          AddDependentActionInst(
+              context, loc_id,
+              SemIR::ConvertToValueAction{
+                  .type_id = SemIR::InstType::TypeId,
+                  .inst_id = value_id,
+                  .target_type_inst_id =
+                      context.types().GetTypeInstId(target.type_id)});
+        }
         // Note that `FacetValue`'s type is the same `FacetType` that was used
         // to construct the set of witnesses, ie. the query to
         // `LookupImplWitness()`. This ensures that the witnesses are in the
@@ -2370,8 +2406,9 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       // TODO: Pass this function into `LookupImplWitness` so it can construct
       // the error add notes explaining failure.
       if (target.diagnose) {
-        DiagnoseConversionFailureToConstraintValue(context, loc_id, value_id,
-                                                   target.type_id);
+        DiagnoseConversionFailureToConstraintValue(
+            context, loc_id, value_id,
+            sem_ir.constant_values().Get(type_inst_id), target.type_id);
       }
       return SemIR::ErrorInst::InstId;
     }
@@ -2958,9 +2995,53 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
   return SemIR::InstId::None;
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4 to
+// 7): a value or an initializer that names or holds a `template constraint`
+// requirement, by its type or as a bound method, is refused
+// (`CheckValueIsNotStructuralRequirement`). A reference kept a reference reads
+// no value, as taking its address does not, and is not refused: bound to a
+// `ref` parameter or binding (the callee's own `ref self` and the storage of a
+// `var` pattern or parameter included), used as a member access base, or
+// discarded. So a class, tuple, struct or array with an element of a
+// requirement's type is destroyed through the `ref self` of its synthesized
+// `Destroy.Op` (custom_witness.cpp `MakeSubobjectDestroyOpBody`).
+static auto CheckConversionIsNotOfStructuralRequirement(
+    Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
+    ConversionTarget::Kind kind, bool diagnose) -> bool {
+  switch (kind) {
+    case ConversionTarget::NoOp:
+    case ConversionTarget::ValueOrRef:
+    case ConversionTarget::DurableRef:
+    case ConversionTarget::RefParam:
+    case ConversionTarget::UnmarkedRefParam:
+    case ConversionTarget::Discarded: {
+      auto object_id = expr_id;
+      if (auto ref_tag = context.insts().TryGetAs<SemIR::RefTagExpr>(expr_id)) {
+        object_id = ref_tag->expr_id;
+      }
+      if (SemIR::IsRefCategory(
+              SemIR::GetExprCategory(context.sem_ir(), object_id))) {
+        return true;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return CheckValueIsNotStructuralRequirement(context, loc_id, expr_id,
+                                              diagnose);
+}
+
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertAction action) -> SemIR::InstId {
   const auto& target_bundle = context.bundles().Get(action.target_id);
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckConversionIsNotOfStructuralRequirement(
+          context, loc_id, action.inst_id,
+          ConversionTarget::Kind(target_bundle.conversion_kind.index),
+          /*diagnose=*/true)) {
+    return SemIR::ErrorInst::InstId;
+  }
   // An initializing target always has a storage access block, which the
   // aggregate conversions add element storage to. This action carries no
   // storage, so the block holds only what the conversion itself creates.
@@ -2981,6 +3062,13 @@ auto PerformAction(Context& context, SemIR::LocId loc_id,
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertToCategoryAction action) -> SemIR::InstId {
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckConversionIsNotOfStructuralRequirement(
+          context, loc_id, action.inst_id,
+          ConversionTarget::Kind(action.conversion_kind.index),
+          /*diagnose=*/true)) {
+    return SemIR::ErrorInst::InstId;
+  }
   PendingBlock target_block(&context);
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(action.conversion_kind.index),
@@ -2995,6 +3083,11 @@ auto PerformAction(Context& context, SemIR::LocId loc_id,
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertToValueAction action) -> SemIR::InstId {
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, action.inst_id,
+                                            /*diagnose=*/true)) {
+    return SemIR::ErrorInst::InstId;
+  }
   ConversionTarget target = {.kind = ConversionTarget::Value,
                              .type_id = context.types().GetTypeIdForTypeInstId(
                                  action.target_type_inst_id)};
@@ -3057,6 +3150,11 @@ auto PerformAction(Context& context, SemIR::SpecificId specific_id,
 
   // Form a specific initializer and initialize from it.
   auto expr_id = AddSpecificInst(context, action.init_id, specific_id);
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, expr_id,
+                                            /*diagnose=*/true)) {
+    expr_id = SemIR::ErrorInst::InstId;
+  }
 
   // Perform the initialization. As a side effect, this will update
   // `result_ids` to refer to parts of storage_id.
@@ -3162,6 +3260,17 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
                                  .Get(overload_set_type->overload_set_id)
                                  .name_id);
     }
+    return SemIR::ErrorInst::InstId;
+  }
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4
+  // to 7): a value or an initializer that names or holds a `template
+  // constraint` requirement is refused, and a reference kept a reference is
+  // not (`CheckConversionIsNotOfStructuralRequirement`). A template replays
+  // this check when it converts at instantiation (the `PerformAction`
+  // overloads above).
+  if (!CheckConversionIsNotOfStructuralRequirement(
+          context, loc_id, expr_id, target.kind, target.diagnose)) {
     return SemIR::ErrorInst::InstId;
   }
 

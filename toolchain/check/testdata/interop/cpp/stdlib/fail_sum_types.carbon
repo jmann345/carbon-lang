@@ -631,3 +631,82 @@ fn Back(p: Cpp.std.optional(i16)*) -> Core.CppCompat.StdOptional(i16) {
   // CHECK:STDERR:
   return *p;
 }
+
+// --- fail_todo_pack_element.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "sum.h";
+
+// A pack element is converted in one straight-line block per element, which
+// cannot hold the conversion's branches (§1.11, the land-time rule of §3 item
+// 8): forwarding a pack of C++ optionals to a pack of their sum type, and back;
+// and the same for a pack whose element is a tuple, struct, array or class
+// holding one, whose conversion converts what it projects from the element.
+fn Each(... unused each o: Core.CppCompat.StdOptional(i32)) {}
+
+fn Forward(... each c: Cpp.std.optional(i32)) {
+  Each(... each c);
+}
+
+fn TakeEach(... unused each c: Cpp.std.optional(i32)) {}
+
+fn Back(... each o: Core.CppCompat.StdOptional(i32)) {
+  TakeEach(... each o);
+}
+
+fn EachTuple(... unused each t: (Core.CppCompat.StdOptional(i32), i32)) {}
+
+fn ForwardTuple(... each t: (Cpp.std.optional(i32), i32)) {
+  EachTuple(... each t);
+}
+
+fn TakeEachTuple(... unused each t: (Cpp.std.optional(i32), i32)) {}
+
+fn BackTuple(... each t: (Core.CppCompat.StdOptional(i32), i32)) {
+  TakeEachTuple(... each t);
+}
+
+fn EachStruct(... unused each s: {.o: Core.CppCompat.StdOptional(i32)}) {}
+
+fn ForwardStruct(... each s: {.o: Cpp.std.optional(i32)}) {
+  EachStruct(... each s);
+}
+
+fn TakeEachStruct(... unused each s: {.o: Cpp.std.optional(i32)}) {}
+
+fn BackStruct(... each s: {.o: Core.CppCompat.StdOptional(i32)}) {
+  TakeEachStruct(... each s);
+}
+
+fn EachArray(... unused each a: array(Core.CppCompat.StdOptional(i32), 1)) {}
+
+fn ForwardArray(... each t: (Cpp.std.optional(i32),)) {
+  EachArray(... each t);
+}
+
+fn TakeEachArray(... unused each a: array(Cpp.std.optional(i32), 1)) {}
+
+fn BackArray(... each t: (Core.CppCompat.StdOptional(i32),)) {
+  TakeEachArray(... each t);
+}
+
+class SumHolder {
+  var o: Core.CppCompat.StdOptional(i32);
+}
+
+fn EachSumHolder(... unused each h: SumHolder) {}
+
+fn ForwardClass(... each s: {.o: Cpp.std.optional(i32)}) {
+  EachSumHolder(... each s);
+}
+
+class CppHolder {
+  var o: Cpp.std.optional(i32);
+}
+
+fn EachCppHolder(... unused each h: CppHolder) {}
+
+fn BackClass(... each s: {.o: Core.CppCompat.StdOptional(i32)}) {
+  EachCppHolder(... each s);
+}

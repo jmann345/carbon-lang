@@ -3502,3 +3502,40 @@ The implementation-review findings and their state after the discharge commit:
 | IR2-8: the TY4 amendment's `match` clause and the safety links | MINOR | Open until PR 53 is on trunk: the texts are in Next actions item 6 |
 | IR2-11: the pre-review fix commit | MINOR | Closed: recorded here and in the decision log |
 | IR2-12: when the merge of trunk is taken | MINOR | Open until OP-1 is next in the queue: Next actions item 5 |
+
+W-352 realigned (2026-11-05, FO-1): c655d55f3 and 4509064fc; D-OP-4's 'Get()
+returns a copy, destroyed by the end of the call' holds for `Get()` and no
+longer for the comparisons (fork/followon/fo1-plan.md section 2.3).
+
+OP-1 landed on trunk (LAND-1, 2026-11-05): merged as PR 56 by b2e04f18d (head
+2da8a164d, trunk before bf66ae7ea; GitHub merged_at 2026-11-05T20:31:37Z) under
+R33, fork/followon/fo1-plan.md section 2.6; land-time commits none;
+container-measured (R33 (b)): gate 2006 of 2006, conformance 201 PASS, 0 FAIL,
+17 SKIP over 218, 50 of 56 bullets; id re-scans: none; moved to follow-ons:
+none.
+
+Stage 14's landing record, by the orchestrator's ruling under R29 on stage 14's
+phase A and its addenda: the landed commits are M56 ccbe8fb44, the re-anchor
+commit ebca3e2f2, C-R 981e7673d, L56 28691eeed and the review fold's fix commit
+2da8a164d, the pushed head. Phase A stopped at C-R (D-FO1-11: a text no plan
+gave): after M56, three links of docs/design/optional.md pointed at
+control_flow/loops.md#ranged-for-for-user-defined-types, a heading that
+DR-1a's d0cfe8082 removed, and the ruling re-anchored them by ebca3e2f2 to
+the anchors iterate-interface, loop-desugaring and for, before C-R; the
+message of ebca3e2f2 and the ruling's item (b) wrote 2481ed8f2, DR-1a's later
+fix commit on the page, which touched no heading. M56 composed
+fork/gap-analysis.md's "Control flow: matching — sum-type consumption incl.
+std::variant/std::optional interop" row under GA-1b, the PR's row followed
+by trunk's added sentences verbatim. E.2's stage-14 Scoreboard prose label
+("Expected at OP-1, NOT of record", fa54b8d97 fork/ORCHESTRATION.md:477) was
+dropped at M56 by OR-4 and takes no mark. The round-1 reviews' five MINOR
+findings: R1-m2 fixed by 2da8a164d (fix commit 2 of 2 of Slice C's D-FO1-10
+budget); R1-m1, R1-m3, R2-14-m1 and R2-14-m2 ruled to phase B and folded by
+this landing's records. The round-1 re-review's RR1-14-m1 is a residue carried
+to L57 (fork/followon/fo1-plan.md section 2.7 step 6). The register lines at
+upstream a1305604f, the landing day's tip: fork/register/check_quotes.sh
+"checked 289 quotes, 19 failed" and fork/register/check_greps.sh "checked 93
+silence checks, 4 failed", each failing row in W-355's note for PR 56; C-R
+measured check_greps.sh at the same tip with the same line, where B-R2
+measured 1 failed at b7919e8f5 (2026-11-03): the difference is upstream drift
+(R32 (b)), re-anchored by the weekly check of 2026-11-09.

@@ -28,7 +28,8 @@ auto TryGetCalleeAsBoundMethod(const File& sem_ir, InstId callee_id,
     if (auto splice_inst = inst.TryAs<SpliceInst>()) {
       auto inst_value_id = GetConstantValueInSpecific(
           sem_ir, caller_specific_id, splice_inst->inst_id);
-      if (!inst_value_id.is_concrete()) {
+      if (!inst_value_id.is_concrete() ||
+          inst_value_id == ErrorInst::ConstantId) {
         break;
       }
       callee_id = sem_ir.constant_values()

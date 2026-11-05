@@ -62,17 +62,12 @@ fn G() {
 // CHECK:STDOUT:   %Self.935: %DefaultOrUnformed.type = symbolic_binding Self, 0 [symbolic]
 // CHECK:STDOUT:   %DefaultOrUnformed.WithSelf.Op.type.8f1: type = fn_type @DefaultOrUnformed.WithSelf.Op, @DefaultOrUnformed.WithSelf(%Self.935) [symbolic]
 // CHECK:STDOUT:   %DefaultOrUnformed.WithSelf.Op.ad7: %DefaultOrUnformed.WithSelf.Op.type.8f1 = struct_value () [symbolic]
-// CHECK:STDOUT:   %Default.type: type = facet_type <@Default> [concrete]
-// CHECK:STDOUT:   %T.b09: %Default.type = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9: type = fn_type @T.as_type.as.DefaultOrUnformed.impl.Op, @T.as_type.as.DefaultOrUnformed.impl(%T.b09) [symbolic]
-// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.cfe: %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9 = struct_value () [symbolic]
 // CHECK:STDOUT:   %DefaultOrUnformed.lookup_impl_witness: <witness> = lookup_impl_witness %.537, @DefaultOrUnformed [template]
-// CHECK:STDOUT:   %.0681: require_specific_def_type = require_specific_def @T.as.DefaultOrUnformed.impl(%.537) [template]
 // CHECK:STDOUT:   %DefaultOrUnformed.facet.67e: %DefaultOrUnformed.type = facet_value %.537, (%DefaultOrUnformed.lookup_impl_witness) [template]
-// CHECK:STDOUT:   %.77d: type = type_of_inst @F.%.loc8_25.7 [template]
-// CHECK:STDOUT:   %.984: %.77d = splice_inst @F.%.loc8_25.7 [template]
-// CHECK:STDOUT:   %.b48: type = type_of_inst @F.%.loc8_25.10 [template]
-// CHECK:STDOUT:   %.e18: %.b48 = splice_inst @F.%.loc8_25.10 [template]
+// CHECK:STDOUT:   %.77d: type = type_of_inst @F.%.loc8_25.6 [template]
+// CHECK:STDOUT:   %.984: %.77d = splice_inst @F.%.loc8_25.6 [template]
+// CHECK:STDOUT:   %.b48: type = type_of_inst @F.%.loc8_25.9 [template]
+// CHECK:STDOUT:   %.e18: %.b48 = splice_inst @F.%.loc8_25.9 [template]
 // CHECK:STDOUT:   %tuple.type: type = tuple_type (<instruction>) [concrete]
 // CHECK:STDOUT:   %.5d6: %.537 = splice_inst @F.%tuple.elem0 [template]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
@@ -101,7 +96,10 @@ fn G() {
 // CHECK:STDOUT:   %pattern_type.981: type = pattern_type %S [concrete]
 // CHECK:STDOUT:   %v.patt.5fa: %pattern_type.981 = ref_binding_pattern v [concrete]
 // CHECK:STDOUT:   %v.var_patt.e69: %pattern_type.981 = var_pattern %v.patt.5fa [concrete]
-// CHECK:STDOUT:   %.e53: require_specific_def_type = require_specific_def @T.as.DefaultOrUnformed.impl(%S) [concrete]
+// CHECK:STDOUT:   %Default.type: type = facet_type <@Default> [concrete]
+// CHECK:STDOUT:   %T.b09: %Default.type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9: type = fn_type @T.as_type.as.DefaultOrUnformed.impl.Op, @T.as_type.as.DefaultOrUnformed.impl(%T.b09) [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.cfe: %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9 = struct_value () [symbolic]
 // CHECK:STDOUT:   %S.Op.type: type = fn_type @S.Op [concrete]
 // CHECK:STDOUT:   %S.Op: %S.Op.type = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.9b4: <witness> = custom_witness (%S.Op), @Default [concrete]
@@ -168,11 +166,11 @@ fn G() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.template: %S.type = struct_value () [concrete = constants.%S.template]
 // CHECK:STDOUT:   %Core.import_ref.6dc: %DefaultOrUnformed.assoc_type = import_ref Core//prelude/parts/default, loc{{\d+_\d+}}, loaded [concrete = constants.%assoc0]
-// CHECK:STDOUT:   %Core.import_ref.c2f: @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op.type (%T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9) = import_ref Core//prelude/parts/default, loc{{\d+_\d+}}, loaded [symbolic = @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op (constants.%T.as_type.as.DefaultOrUnformed.impl.Op.cfe)]
-// CHECK:STDOUT:   %DefaultOrUnformed.impl_witness_table.162 = impl_witness_table (%Core.import_ref.c2f), @T.as_type.as.DefaultOrUnformed.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.71d: @Destroy.WithSelf.%Destroy.WithSelf.SelfDestruct.type (%Destroy.WithSelf.SelfDestruct.type.4e5) = import_ref Core//prelude/parts/destroy, loc{{\d+_\d+}}, loaded [symbolic = @Destroy.WithSelf.%Destroy.WithSelf.SelfDestruct (constants.%Destroy.WithSelf.SelfDestruct.4a0)]
 // CHECK:STDOUT:   %X.decl: type = class_decl @X [concrete = constants.%X] {} {}
 // CHECK:STDOUT:   %S.decl: type = class_decl @S [concrete = constants.%S] {} {}
+// CHECK:STDOUT:   %Core.import_ref.c2f: @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op.type (%T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9) = import_ref Core//prelude/parts/default, loc{{\d+_\d+}}, loaded [symbolic = @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op (constants.%T.as_type.as.DefaultOrUnformed.impl.Op.cfe)]
+// CHECK:STDOUT:   %DefaultOrUnformed.impl_witness_table.162 = impl_witness_table (%Core.import_ref.c2f), @T.as_type.as.DefaultOrUnformed.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.d14: @DefaultOrUnformed.WithSelf.%DefaultOrUnformed.WithSelf.Op.type (%DefaultOrUnformed.WithSelf.Op.type.8f1) = import_ref Core//prelude/parts/default, loc{{\d+_\d+}}, loaded [symbolic = @DefaultOrUnformed.WithSelf.%DefaultOrUnformed.WithSelf.Op (constants.%DefaultOrUnformed.WithSelf.Op.ad7)]
 // CHECK:STDOUT:   %S.cpp_destructor.decl: %S.cpp_destructor.type = fn_decl @S.cpp_destructor [concrete = constants.%S.cpp_destructor] {
 // CHECK:STDOUT:     <elided>
@@ -227,15 +225,14 @@ fn G() {
 // CHECK:STDOUT:   %pattern_type.loc8: type = pattern_type %.loc8_24.9 [template = %pattern_type.loc8 (constants.%pattern_type.fcb)]
 // CHECK:STDOUT:   %v.patt.loc8_15.2: @F.%pattern_type.loc8 (%pattern_type.fcb) = ref_binding_pattern v [template = %v.patt.loc8_15.2 (constants.%v.patt.126)]
 // CHECK:STDOUT:   %v.var_patt.loc8_3.2: @F.%pattern_type.loc8 (%pattern_type.fcb) = var_pattern %v.patt.loc8_15.2 [template = %v.var_patt.loc8_3.2 (constants.%v.var_patt.768)]
-// CHECK:STDOUT:   %.loc8_25.6: require_specific_def_type = require_specific_def @T.as.DefaultOrUnformed.impl(%.loc8_24.9) [template = %.loc8_25.6 (constants.%.0681)]
 // CHECK:STDOUT:   %DefaultOrUnformed.lookup_impl_witness: <witness> = lookup_impl_witness %.loc8_24.9, @DefaultOrUnformed [template = %DefaultOrUnformed.lookup_impl_witness (constants.%DefaultOrUnformed.lookup_impl_witness)]
 // CHECK:STDOUT:   %DefaultOrUnformed.facet.loc8_25.2: %DefaultOrUnformed.type = facet_value %.loc8_24.9, (%DefaultOrUnformed.lookup_impl_witness) [template = %DefaultOrUnformed.facet.loc8_25.2 (constants.%DefaultOrUnformed.facet.67e)]
-// CHECK:STDOUT:   %.loc8_25.7: <instruction> = access_member_action %.loc8_25.1, Op [template]
-// CHECK:STDOUT:   %.loc8_25.8: type = type_of_inst %.loc8_25.7 [template = %.loc8_25.8 (constants.%.77d)]
-// CHECK:STDOUT:   %.loc8_25.9: @F.%.loc8_25.8 (%.77d) = splice_inst %.loc8_25.7 [template = %.loc8_25.9 (constants.%.984)]
-// CHECK:STDOUT:   %.loc8_25.10: <instruction> = call_action (%.loc8_25.3), false [template]
-// CHECK:STDOUT:   %.loc8_25.11: type = type_of_inst %.loc8_25.10 [template = %.loc8_25.11 (constants.%.b48)]
-// CHECK:STDOUT:   %.loc8_25.12: @F.%.loc8_25.11 (%.b48) = splice_inst %.loc8_25.10 [template = %.loc8_25.12 (constants.%.e18)]
+// CHECK:STDOUT:   %.loc8_25.6: <instruction> = access_member_action %.loc8_25.1, Op [template]
+// CHECK:STDOUT:   %.loc8_25.7: type = type_of_inst %.loc8_25.6 [template = %.loc8_25.7 (constants.%.77d)]
+// CHECK:STDOUT:   %.loc8_25.8: @F.%.loc8_25.7 (%.77d) = splice_inst %.loc8_25.6 [template = %.loc8_25.8 (constants.%.984)]
+// CHECK:STDOUT:   %.loc8_25.9: <instruction> = call_action (%.loc8_25.3), false [template]
+// CHECK:STDOUT:   %.loc8_25.10: type = type_of_inst %.loc8_25.9 [template = %.loc8_25.10 (constants.%.b48)]
+// CHECK:STDOUT:   %.loc8_25.11: @F.%.loc8_25.10 (%.b48) = splice_inst %.loc8_25.9 [template = %.loc8_25.11 (constants.%.e18)]
 // CHECK:STDOUT:   %.loc8_3.6: %tuple.type = initialize_action %.loc8_25.5, %.loc8_24.9, %v.var, false [template]
 // CHECK:STDOUT:   %tuple.elem0: <instruction> = tuple_access %.loc8_3.6, element0 [template]
 // CHECK:STDOUT:   %.loc8_3.7: @F.%.loc8_24.9 (%.537) = splice_inst %tuple.elem0 [template = %.loc8_3.7 (constants.%.5d6)]
@@ -251,10 +248,10 @@ fn G() {
 // CHECK:STDOUT:     %v.var: ref @F.%.loc8_24.9 (%.537) = var_storage %v.var_patt.loc8_3.1
 // CHECK:STDOUT:     %DefaultOrUnformed.facet.loc8_25.1: %DefaultOrUnformed.type = facet_value constants.%.537, (constants.%DefaultOrUnformed.lookup_impl_witness) [template = %DefaultOrUnformed.facet.loc8_25.2 (constants.%DefaultOrUnformed.facet.67e)]
 // CHECK:STDOUT:     %.loc8_25.1: %DefaultOrUnformed.type = converted constants.%.537, %DefaultOrUnformed.facet.loc8_25.1 [template = %DefaultOrUnformed.facet.loc8_25.2 (constants.%DefaultOrUnformed.facet.67e)]
-// CHECK:STDOUT:     %.loc8_25.2: type = type_of_inst %.loc8_25.7 [template = %.loc8_25.8 (constants.%.77d)]
-// CHECK:STDOUT:     %.loc8_25.3: @F.%.loc8_25.8 (%.77d) = splice_inst %.loc8_25.7 [template = %.loc8_25.9 (constants.%.984)]
-// CHECK:STDOUT:     %.loc8_25.4: type = type_of_inst %.loc8_25.10 [template = %.loc8_25.11 (constants.%.b48)]
-// CHECK:STDOUT:     %.loc8_25.5: @F.%.loc8_25.11 (%.b48) = splice_inst %.loc8_25.10 [template = %.loc8_25.12 (constants.%.e18)]
+// CHECK:STDOUT:     %.loc8_25.2: type = type_of_inst %.loc8_25.6 [template = %.loc8_25.7 (constants.%.77d)]
+// CHECK:STDOUT:     %.loc8_25.3: @F.%.loc8_25.7 (%.77d) = splice_inst %.loc8_25.6 [template = %.loc8_25.8 (constants.%.984)]
+// CHECK:STDOUT:     %.loc8_25.4: type = type_of_inst %.loc8_25.9 [template = %.loc8_25.10 (constants.%.b48)]
+// CHECK:STDOUT:     %.loc8_25.5: @F.%.loc8_25.10 (%.b48) = splice_inst %.loc8_25.9 [template = %.loc8_25.11 (constants.%.e18)]
 // CHECK:STDOUT:     %.loc8_3.1: @F.%.loc8_24.9 (%.537) = splice_inst %tuple.elem0 [template = %.loc8_3.7 (constants.%.5d6)]
 // CHECK:STDOUT:     assign %v.var, %.loc8_3.1
 // CHECK:STDOUT:     %.loc8_24.1: type = splice_block %.loc8_24.4 [template = %.loc8_24.9 (constants.%.537)] {
@@ -315,15 +312,14 @@ fn G() {
 // CHECK:STDOUT:   %pattern_type.loc8 => constants.%pattern_type.981
 // CHECK:STDOUT:   %v.patt.loc8_15.2 => constants.%v.patt.5fa
 // CHECK:STDOUT:   %v.var_patt.loc8_3.2 => constants.%v.var_patt.e69
-// CHECK:STDOUT:   %.loc8_25.6 => constants.%.e53
 // CHECK:STDOUT:   %DefaultOrUnformed.lookup_impl_witness => constants.%DefaultOrUnformed.impl_witness.1ff
 // CHECK:STDOUT:   %DefaultOrUnformed.facet.loc8_25.2 => constants.%DefaultOrUnformed.facet.ba3
-// CHECK:STDOUT:   %.loc8_25.7 => constants.%inst.splice_block.426619.3
-// CHECK:STDOUT:   %.loc8_25.8 => constants.%.805
-// CHECK:STDOUT:   %.loc8_25.9 => constants.%T.as_type.as.DefaultOrUnformed.impl.Op.83d
-// CHECK:STDOUT:   %.loc8_25.10 => constants.%inst.splice_block.426619.4
-// CHECK:STDOUT:   %.loc8_25.11 => constants.%S
-// CHECK:STDOUT:   %.loc8_25.12 => <not constant>
+// CHECK:STDOUT:   %.loc8_25.6 => constants.%inst.splice_block.426619.3
+// CHECK:STDOUT:   %.loc8_25.7 => constants.%.805
+// CHECK:STDOUT:   %.loc8_25.8 => constants.%T.as_type.as.DefaultOrUnformed.impl.Op.83d
+// CHECK:STDOUT:   %.loc8_25.9 => constants.%inst.splice_block.426619.4
+// CHECK:STDOUT:   %.loc8_25.10 => constants.%S
+// CHECK:STDOUT:   %.loc8_25.11 => <not constant>
 // CHECK:STDOUT:   %.loc8_3.6 => constants.%tuple
 // CHECK:STDOUT:   %tuple.elem0 => constants.%inst.splice_block.426619.5
 // CHECK:STDOUT:   %.loc8_3.7 => <not constant>

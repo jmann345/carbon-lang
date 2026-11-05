@@ -14,17 +14,17 @@ interface Iterate {
   let ElementType: Copy & Destroy;
   let CursorType: Destroy;
   fn NewCursor(self) -> CursorType;
-  fn Next(self, cursor: CursorType*) -> Optional(ElementType);
+  fn Next(self, ref cursor: CursorType) -> Optional(ElementType);
 }
 
 impl forall [T: Copy & Destroy, N: IntLiteral]
     array(T, N) as Iterate
     where .ElementType = T and .CursorType = i32 {
   fn NewCursor(unused self) -> i32 { return 0; }
-  fn Next(self, cursor: i32*) -> Optional(T) {
-    if (*cursor < N) {
-      ++*cursor;
-      return Optional(T).Some(self[*cursor - 1]);
+  fn Next(self, ref cursor: i32) -> Optional(T) {
+    if (cursor < N) {
+      ++cursor;
+      return Optional(T).Some(self[cursor - 1]);
     } else {
       return Optional(T).None();
     }
@@ -71,26 +71,26 @@ impl forall [T: CppRange where .ValueType impls Copy]
     return (self.Begin(), self.End());
   }
 
-  fn Next(unused self, cursor: CursorType*) -> Optional(ElementType) {
-    if (cursor->0 != cursor->1) {
-      returned var result: Optional(ElementType) = cursor->0.(CppUnsafeDeref.Op)();
-      ++cursor->0;
+  fn Next(unused self, ref cursor: CursorType) -> Optional(ElementType) {
+    if (cursor.0 != cursor.1) {
+      returned var result: Optional(ElementType) = cursor.0.(CppUnsafeDeref.Op)();
+      ++cursor.0;
       return var;
     }
     return Optional(ElementType).None();
   }
 }
 
-// `final`, as `Slice(T)`'s `IndexWith(i64)` impl is: iterating a `Slice(T)` in
-// a generic body yields `T`, not the abstract `Slice(T).(Iterate.ElementType)`.
+// `final`, as `Slice(T)`'s `IndirectIndexWith(i64)` impl is (D-DR-7): a generic
+// body iterating a `Slice(T)` gets `T`, not `Slice(T).(Iterate.ElementType)`.
 final impl forall [T: Copy & Destroy]
     Slice(T) as Iterate
     where .ElementType = T and .CursorType = i64 {
   fn NewCursor(unused self) -> i64 { return 0; }
-  fn Next(self, cursor: i64*) -> Optional(T) {
-    if (*cursor < self.Size()) {
-      ++*cursor;
-      return Optional(T).Some(self.Get(*cursor - 1));
+  fn Next(self, ref cursor: i64) -> Optional(T) {
+    if (cursor < self.Size()) {
+      ++cursor;
+      return Optional(T).Some(self.Get(cursor - 1));
     } else {
       return Optional(T).None();
     }

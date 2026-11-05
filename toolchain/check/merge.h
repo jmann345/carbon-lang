@@ -66,6 +66,16 @@ auto DiagnoseIfInvalidRedecl(Context& context, Lex::TokenKind decl_kind,
                              RedeclInfo prev_decl,
                              SemIR::ImportIRId prev_import_ir_id) -> void;
 
+// Diagnoses a `template constraint` versus plain `constraint` mismatch between
+// two declarations of one named constraint (fork decision F-010 / SC-1,
+// D-SC-16), with the same "previously declared here" note as the `extern`
+// mismatch. The note's diagnostic lives in merge.cpp, which is why this is
+// declared here rather than beside its caller.
+auto DiagnoseNamedConstraintTemplateMismatch(Context& context,
+                                             SemIR::NameId name_id,
+                                             SemIR::LocId new_loc_id,
+                                             SemIR::LocId prev_loc_id) -> void;
+
 // When the prior name lookup result is an import and we are successfully
 // merging, replace the name lookup result with the reference in the current
 // file.
@@ -113,17 +123,44 @@ struct DeclParams {
 // Checks that the parameters in a redeclaration of an entity match the
 // parameters in the prior declaration. If not, produces a diagnostic if
 // `diagnose` is true, and returns false.
-auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
-                            const DeclParams& prev_entity,
-                            SemIR::SpecificId prev_specific_id, bool diagnose,
-                            bool check_syntax) -> bool;
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-5(d)): `new_specific_id`, when
+// specified, is the specific in which `new_entity`'s parameters are read, as
+// `prev_specific_id` is for `prev_entity` — a member of a generic class
+// specific compared against a requirement declared outside that generic.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 to
+// 14): `found_error`, when not null, selects the errors-match mode, which the
+// structural check uses with `diagnose` false: a parameter with an error no
+// longer fails the comparison as a whole, but is compared as declared with
+// only an erroneous type or default value counted as equal to the type or
+// default value in its place (see `CheckRedeclParam`), and `*found_error` is
+// set when such a parameter is compared. A parameter declared with a form that
+// has an error is the error itself, its binding form included. Everything
+// else, including the binding form of any other parameter with an error and
+// whether a default value is there, is compared as without it.
+auto CheckRedeclParamsMatch(
+    Context& context, const DeclParams& new_entity,
+    const DeclParams& prev_entity, SemIR::SpecificId prev_specific_id,
+    bool diagnose, bool check_syntax,
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None,
+    bool* found_error = nullptr) -> bool;
+
+// Returns whether two declarations' parameters match for `overload fn` member
+// identity (D-OV-3): as `CheckRedeclParamsMatch` with `check_syntax` false
+// decides, except that default values on explicit parameters are ignored,
+// since a default value is not part of a parameter's type. Nothing is
+// diagnosed; returns false if either has an erroneous parameter.
+auto CheckOverloadMemberParamsMatch(Context& context,
+                                    const DeclParams& new_entity,
+                                    const DeclParams& prev_entity) -> bool;
 
 // Returns whether the explicit parameters AFTER the leading `self` parameter of
-// two method declarations have matching types (binding names and syntax are
-// ignored, and nothing is diagnosed). Used by `overload fn` member identity to
-// detect members that differ only in their `self` pattern (D-OV-3). Both
-// entities must have a non-empty explicit parameter list; returns false
-// otherwise or if either has an erroneous parameter.
+// two method declarations have matching types (binding names, syntax and
+// default values are ignored, and nothing is diagnosed). Used by `overload fn`
+// member identity to detect members that differ only in their `self` pattern
+// (D-OV-3). Both entities must have a non-empty explicit parameter list;
+// returns false otherwise or if either has an erroneous parameter.
 auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
                                              const DeclParams& new_entity,
                                              const DeclParams& prev_entity)

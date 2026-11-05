@@ -62,6 +62,13 @@ class PendingBlock {
     return inst_id;
   }
 
+  // Appends an existing instruction, which is not in any block, to the pending
+  // block.
+  auto AddInstId(SemIR::InstId inst_id) -> void { insts_.push_back(inst_id); }
+
+  // The pending instructions, in order.
+  auto insts() const -> llvm::ArrayRef<SemIR::InstId> { return insts_; }
+
   template <typename InstT, typename LocT>
     requires(std::convertible_to<LocT, SemIR::LocId>)
   auto AddInstWithCleanup(LocT loc_id, InstT inst) -> SemIR::InstId {

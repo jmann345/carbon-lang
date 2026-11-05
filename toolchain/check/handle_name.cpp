@@ -46,27 +46,13 @@ auto HandleParseNode(Context& context, Parse::MemberAccessExprId node_id)
 
 auto HandleParseNode(Context& context, Parse::PointerMemberAccessExprId node_id)
     -> bool {
-  auto diagnose_not_pointer = [&context,
-                               &node_id](SemIR::TypeId not_pointer_type_id) {
-    // TODO: Pass in the expression we're trying to dereference to produce a
-    // better diagnostic.
-    CARBON_DIAGNOSTIC(ArrowOperatorOfNonPointer, Error,
-                      "cannot apply `->` operator to non-pointer type {0}",
-                      SemIR::TypeId);
-
-    auto builder =
-        context.emitter().Build(LocIdForDiagnostics::TokenOnly(node_id),
-                                ArrowOperatorOfNonPointer, not_pointer_type_id);
-    builder.Emit();
-  };
-
   auto node_kind = context.node_stack().PeekNodeKind();
 
   if (node_kind == Parse::NodeKind::ParenExpr) {
     auto member_expr_id = context.node_stack().PopExpr();
     auto base_id = context.node_stack().PopExpr();
-    auto deref_base_id = PerformPointerDereference(context, node_id, base_id,
-                                                   diagnose_not_pointer);
+    auto deref_base_id = PerformPointerDereference(
+        context, node_id, base_id, PointerDereferenceKind::Arrow);
     auto member_id = PerformCompoundMemberAccess(context, node_id,
                                                  deref_base_id, member_expr_id);
     context.node_stack().Push(node_id, member_id);
@@ -74,7 +60,7 @@ auto HandleParseNode(Context& context, Parse::PointerMemberAccessExprId node_id)
     auto index_inst_id = context.node_stack().PopExpr();
     auto tuple_pointer_inst_id = context.node_stack().PopExpr();
     auto tuple_inst_id = PerformPointerDereference(
-        context, node_id, tuple_pointer_inst_id, diagnose_not_pointer);
+        context, node_id, tuple_pointer_inst_id, PointerDereferenceKind::Arrow);
     auto tuple_value_inst_id =
         PerformTupleAccess(context, node_id, tuple_inst_id, index_inst_id);
 
@@ -82,8 +68,8 @@ auto HandleParseNode(Context& context, Parse::PointerMemberAccessExprId node_id)
   } else {
     SemIR::NameId name_id = context.node_stack().PopName();
     auto base_id = context.node_stack().PopExpr();
-    auto deref_base_id = PerformPointerDereference(context, node_id, base_id,
-                                                   diagnose_not_pointer);
+    auto deref_base_id = PerformPointerDereference(
+        context, node_id, base_id, PointerDereferenceKind::Arrow);
     auto member_id =
         PerformMemberAccess(context, node_id, deref_base_id, name_id);
     context.node_stack().Push(node_id, member_id);

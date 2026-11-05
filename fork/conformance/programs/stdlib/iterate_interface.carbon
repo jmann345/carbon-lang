@@ -31,10 +31,10 @@ class Countdown {
     fn NewCursor(self) -> i32 {
       return self.start;
     }
-    fn Next(unused self, cursor: i32*) -> Core.Optional(i32) {
-      var value: i32 = *cursor;
+    fn Next(unused self, ref cursor: i32) -> Core.Optional(i32) {
+      var value: i32 = cursor;
       if (value > 0) {
-        *cursor -= 1;
+        cursor -= 1;
         return Core.Optional(i32).Some(value);
       } else {
         return Core.Optional(i32).None();

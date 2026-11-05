@@ -61,19 +61,24 @@ class Slice(T: Copy & Destroy) {
 
 impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 
-// Subscripts are `i64`. An integer literal subscript converts to `i64` at the
-// index expression (check/handle_index.cpp, the literal-subscript rule), so
-// `s[1]` and `s[i]` with `i: i64` both reach this impl. Not a blanket
-// `IndexWith(U: ImplicitAs(i64))` impl: for `U = IntLiteral` its `At` would
-// call a compile-time-only conversion on a runtime `subscript`, which cannot
-// be lowered (`String`'s blanket impl lowers only because its `At` is itself a
-// builtin). `final`, so that in a generic body `s[i]` on a `Slice(T)` has type
-// `T` — a symbolic query resolves only final impls, and through a non-final
-// impl `.ElementType` stays the abstract
-// `Slice(T).(IndexWith(i64).ElementType)` (the `Optional(T) as Try` pattern).
-final impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+// `IndirectIndexWith(i64)` (DR-1 D-DR-7, upstream 6d80ceb58): `Ref` returns
+// `ref T`, so `s[i]` is a durable reference and `s[i] = v` writes through;
+// `IndexWith(i64)` comes from index.carbon's blanket `final` impl. Subscripts
+// are `i64`: an integer literal converts at the index expression
+// (check/handle_index.cpp, the literal-subscript rule). Not a blanket
+// `IndirectIndexWith(U: ImplicitAs(i64))` impl: for `U = IntLiteral` its `Ref`
+// would apply a compile-time-only conversion to a runtime `subscript`. `final`,
+// so that in a generic body `s[i]` on a `Slice(T)` has type `T` — a symbolic
+// query resolves only final impls, and through a non-final impl `.ElementType`
+// stays the abstract `Slice(T).(IndirectIndexWith(i64).ElementType)`.
+final impl forall [T: Copy & Destroy] Slice(T) as IndirectIndexWith(i64)
     where .ElementType = T {
-  fn At(self, subscript: i64) -> T { return self.Get(subscript); }
+  fn Ref(self, subscript: i64) -> ref T {
+    if (subscript < 0 or subscript >= self.Size()) {
+      FailStop("carbon: Core.Slice index out of bounds; terminating\n");
+    }
+    return *PointerOffset(self.Data(), subscript);
+  }
 }
 
 // `const` can be added to the element type (D-SL-10).

@@ -293,6 +293,11 @@ auto ExportClassToCpp(Context& context, SemIR::ClassType class_type)
 
   auto* decl_context =
       ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
+  // Fork (ST-1, fork/string/plan.md D-ST-12): the parent scope could not be
+  // exported and that has been diagnosed, as the other callers check.
+  if (!decl_context) {
+    return nullptr;
+  }
   auto* record_decl = ExportClassToCppInDeclContext(
       context, decl_context, class_info, class_type.specific_id);
 

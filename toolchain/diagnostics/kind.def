@@ -257,6 +257,13 @@ CARBON_DIAGNOSTIC_KIND(CppInteropParseNote)
 CARBON_DIAGNOSTIC_KIND(CppReservedNameShadowed)
 CARBON_DIAGNOSTIC_KIND(CppCatchingImportNonScalarSuccess)
 CARBON_DIAGNOSTIC_KIND(CppExportResultNeedsExpectedHeader)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeNotMapped)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeTooManyAlternatives)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeNotTriviallyCopyable)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeQualifiedAlternative)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeAlternativeNotAdmitted)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeMismatch)
+CARBON_DIAGNOSTIC_KIND(CppSumTypeReverseMismatch)
 CARBON_DIAGNOSTIC_KIND(InlineImportNotCpp)
 CARBON_DIAGNOSTIC_KIND(IncorrectExtension)
 CARBON_DIAGNOSTIC_KIND(IncorrectExtensionImplNote)
@@ -399,8 +406,10 @@ CARBON_DIAGNOSTIC_KIND(MatchFirstInWrongScope)
 CARBON_DIAGNOSTIC_KIND(MatchFirstInWrongScopeNote)
 
 // Named constraint checking.
+CARBON_DIAGNOSTIC_KIND(FunctionInNonTemplateConstraint)
 CARBON_DIAGNOSTIC_KIND(NamedConstraintForwardDeclaredHere)
 CARBON_DIAGNOSTIC_KIND(NamedConstraintIncompleteWithinDefinition)
+CARBON_DIAGNOSTIC_KIND(NamedConstraintRedeclTemplateMismatch)
 
 // Impl checking.
 CARBON_DIAGNOSTIC_KIND(AssociatedConstantHere)
@@ -464,6 +473,17 @@ CARBON_DIAGNOSTIC_KIND(IdentifiedRequireImplsNotImplemented)
 CARBON_DIAGNOSTIC_KIND(InterfaceRequireImplsNotImplemented)
 CARBON_DIAGNOSTIC_KIND(RequireInWrongScope)
 
+// Structural conformance (fork decision F-010 / SC-1).
+CARBON_DIAGNOSTIC_KIND(StructuralMemberInaccessible)
+CARBON_DIAGNOSTIC_KIND(StructuralMemberIsRequirement)
+CARBON_DIAGNOSTIC_KIND(StructuralMemberMismatch)
+CARBON_DIAGNOSTIC_KIND(StructuralMemberMissing)
+CARBON_DIAGNOSTIC_KIND(StructuralRequirementHere)
+CARBON_DIAGNOSTIC_KIND(StructuralRequirementIncompleteType)
+CARBON_DIAGNOSTIC_KIND(StructuralRequirementNeedsConcreteType)
+CARBON_DIAGNOSTIC_KIND(StructuralRequirementUsed)
+CARBON_DIAGNOSTIC_KIND(TemplateConstraintOnNonTemplateBinding)
+
 // Observe checking.
 CARBON_DIAGNOSTIC_KIND(ObserveInWrongScope)
 
@@ -495,6 +515,7 @@ CARBON_DIAGNOSTIC_KIND(MemberNameNotFound)
 CARBON_DIAGNOSTIC_KIND(MemberNameNotFoundInInstScope)
 CARBON_DIAGNOSTIC_KIND(MemberNameNotFoundInSpecificScope)
 CARBON_DIAGNOSTIC_KIND(NoPeriodSelfForDesignator)
+CARBON_DIAGNOSTIC_KIND(TemplateMemberLookupAmbiguous)
 CARBON_DIAGNOSTIC_KIND(UsedBeforeInitialization)
 
 CARBON_DIAGNOSTIC_KIND(AbstractTypeInAdaptDecl)

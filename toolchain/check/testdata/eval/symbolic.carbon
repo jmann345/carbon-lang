@@ -39,12 +39,38 @@ fn G(generic B: bool) {
   let unused n: F(B) = ({}, {});
 }
 
-// TODO: Provide a location for the "cannot initialize" error message.
 fn H() {
-  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE+5]]:3: error: unable to monomorphize specific `G(true)` [ResolvingSpecificHere]
+  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE+7]]:3: error: unable to monomorphize specific `G(true)` [ResolvingSpecificHere]
   // CHECK:STDERR:   G(true);
   // CHECK:STDERR:   ^
-  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon: note: cannot initialize tuple of 0 elements from tuple with 2 elements [TupleInitElementCountMismatch]
+  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_invalid_instantiation.carbon:[[@LINE-7]]:24: note: cannot initialize tuple of 0 elements from tuple with 2 elements [TupleInitElementCountMismatch]
+  // CHECK:STDERR:   let unused n: F(B) = ({}, {});
+  // CHECK:STDERR:                        ^~~~~~~~
+  // CHECK:STDERR:
+  G(true);
+}
+
+// --- fail_symbolic_call_to_eval_fn_non_literal_invalid_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+eval fn F(generic B: bool) -> type {
+  if (B) { return (); }
+  return ({}, {});
+}
+
+eval fn MakePair() -> ({}, {}) { return ({}, {}); }
+
+fn G(generic B: bool) {
+  let unused n: F(B) = MakePair();
+}
+
+// TODO: Provide a location for the "cannot initialize" error message when the
+// initializer is a constant that is not a literal.
+fn H() {
+  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_non_literal_invalid_instantiation.carbon:[[@LINE+5]]:3: error: unable to monomorphize specific `G(true)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   G(true);
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_symbolic_call_to_eval_fn_non_literal_invalid_instantiation.carbon: note: cannot initialize tuple of 0 elements from tuple with 2 elements [TupleInitElementCountMismatch]
   // CHECK:STDERR:
   G(true);
 }

@@ -197,6 +197,8 @@ static auto IsBuiltinWithTrivialDestruction(Context& context,
     case SemIR::IntLiteralType::Kind:
     case SemIR::IntType::Kind:
     case SemIR::PointerType::Kind:
+    // Fork (SC-1, fork/structural/plan.md D-SC-20): as a function type.
+    case SemIR::StructuralRequirementType::Kind:
       // Trivially destructible.
       return true;
     default:

@@ -107,7 +107,8 @@ provides activity metrics.
 ### Is there a demo?
 
 Yes! See the [getting started](/README.md#getting-started) tip for current
-advice.
+advice. For a step-by-step guide and a tutorial, see
+[getting started](/docs/guides/getting_started.md).
 
 ### Where should I ask questions about Carbon Language?
 

@@ -987,6 +987,7 @@ fold: A-M2).
 | H8.6 | (vi) the two cherry-picks are upstream's commits | upstream's own (2ec4bab59 and a045da8e6) | ALIGNED | upstream reverts or reshapes 2ec4bab59 | W-355 |
 | H8.7 | (vii) the next advance's four added conflicts take the fork's side | silent at the tip, check H8.7: 1 upstream commits since the cut touch toolchain/check/handle_pack_expansion.cpp (merge rule, plan M-16) | NONE | the advance | W-355 |
 | H8.8 | (ii) `(... x)` as a tuple: parentheses around a `...` form a tuple, not a grouping | variadics.md:137-139 "As a corollary, if the nearest enclosing delimiters around a `...` are parentheses, they will be interpreted as forming a tuple rather than as grouping." | ALIGNED (amended 2026-10-28, review fold: A-m2) | upstream changes the rule | W-355 |
+| H8.9 | a pack expansion pattern in a choice alternative's parameter list is a semantics TODO (W-367) | silent at the tip, check H8.9: `git grep -c -i -E 'choice\|alternative'` over docs/design/variadics.md = 2 (the "Alternatives considered" heading and its contents link) | NONE | the design speaks to choice alternatives | W-355; W-367 |
 
 ### §2.H9 SC-1 (PR 60, 40a76ab81 :4187-4202)
 

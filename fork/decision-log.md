@@ -10790,6 +10790,20 @@ The next advance's four added conflicts (plan M-16) resolve by taking the
 fork's side, which holds upstream's lines, except the golden of (v).
 Veto-able.
 
+_RG-1 (classified 2026-10-28, upstream f27a977d8, re-checked at a567040d7
+(toolchain/parse/node_kind.def:294, H8.5 fail there; W-355); the decision-log
+entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
+quotes):_ (i) (classified 2026-10-28, RG-1: ALIGNED, W-355;
+variadics.md:47-48 and :92 make `each` a keyword), (ii)'s `(... x)` tuple
+(classified 2026-10-28, RG-1: ALIGNED, W-355; variadics.md :137-139 "they
+will be interpreted as forming a tuple rather than as grouping") and (vi)
+(classified 2026-10-28, RG-1: ALIGNED, W-355; upstream's commits); (ii)'s
+parse kinds, (iv), (v) and (vii) (classified 2026-10-28, RG-1: NONE, W-355;
+internal and merge rules: none of the parse kinds is in upstream's parse,
+none of the eight instructions in its inst_kind.def, and two upstream commits
+since the cut touch pack_expansion.carbon and one handle_pack_expansion.cpp);
+(iii) (classified 2026-10-28, RG-1: NONE, W-230 watches it).
+
 _W-367 and W-368 (2026-11-03, FO-1):_ a pack expansion pattern in a choice
 alternative's parameter list is a semantics TODO (389cf3af0, W-367), and a pack
 is laid out at its element's array stride (a7f6f6395, W-368), so neither form
@@ -19816,7 +19830,7 @@ by copy", no longer hold: no `Core.Optional(T)` scrutinee is matched. Landed
     types alone, so a point where the conversion cannot be built (file
     scope, a template's instantiation) is the call's TODO and never selects
     another member; a template-dependent side is left to instantiation; a
-    pack element, or what a conversion projects from one, is a TODO.
+    pack element, or what a conversion projects from one, is a TODO (W-284).
 -   **D-SV-5**: Carbon to C++ only to the class whose sum type the value is
     (`CppSumTypeReverseMismatch` otherwise); a fresh value passed to a C++
     `T&&` parameter is a TODO (W-285).
@@ -19843,9 +19857,8 @@ V-3 holds: no accepted proposal or leads' direction is contradicted
 (upstream has no `match` and no mapping, fork/sumtype-interop/plan.md §0.9).
 Two divergences are disclosed: the sum types are fork prelude names, and the
 view matches `Core.Optional` by copy. Filed: W-275, W-276, W-277, W-279,
-W-280, W-281, W-285, W-286; W-284 held until M-VA lands; W-282 unused (X-1
-fixed by TP-1 at eafca5cb9); W-278 withdrawn unfiled; W-283 and W-287 to W-294
-unused.
+W-280, W-281, W-285, W-286, W-284; W-282 unused (X-1 fixed by TP-1 at
+eafca5cb9); W-278 withdrawn unfiled; W-283 and W-287 to W-294 unused.
 
 **Focused re-review of the fold, round 1** (2026-10-21). Two fresh reviews of
 the fold's commits and of R and D, at 21060cef4, both APPROVE-WITH-FIXES with

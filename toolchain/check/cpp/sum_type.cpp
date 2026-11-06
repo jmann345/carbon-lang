@@ -253,6 +253,36 @@ auto DiagnoseCppSumTypeNotMapped(Context& context, SemIR::LocId loc_id,
   builder.Emit();
 }
 
+// Returns whether `value_id` is a VA-1 pack element, or is projected from one
+// by the element, field and category steps of a conversion.
+static auto IsPackElementOrProjection(Context& context, SemIR::InstId value_id)
+    -> bool {
+  while (value_id.has_value()) {
+    auto inst = context.insts().Get(value_id);
+    if (inst.Is<SemIR::PackElement>()) {
+      return true;
+    }
+    if (auto access = inst.TryAs<SemIR::TupleAccess>()) {
+      value_id = access->tuple_id;
+    } else if (auto access = inst.TryAs<SemIR::StructAccess>()) {
+      value_id = access->struct_id;
+    } else if (auto index = inst.TryAs<SemIR::ArrayIndex>()) {
+      value_id = index->array_id;
+    } else if (auto access = inst.TryAs<SemIR::ClassElementAccess>()) {
+      value_id = access->base_id;
+    } else if (auto compat = inst.TryAs<SemIR::AsCompatible>()) {
+      value_id = compat->source_id;
+    } else if (auto acquire = inst.TryAs<SemIR::AcquireValue>()) {
+      value_id = acquire->value_id;
+    } else if (auto ref = inst.TryAs<SemIR::ValueAsRef>()) {
+      value_id = ref->value_id;
+    } else {
+      return false;
+    }
+  }
+  return false;
+}
+
 // Returns whether a branching conversion can be built at `loc_id`, and emits a
 // TODO when it cannot. It cannot outside a function body -- a file-scope
 // initializer (W-036's limit, which every branching expression shares) or a
@@ -261,8 +291,10 @@ auto DiagnoseCppSumTypeNotMapped(Context& context, SemIR::LocId loc_id,
 // expression to attribute its blocks to. These are limits of the toolchain, not
 // of the types, so a non-diagnosing caller does not test them: an `overload fn`
 // probe accepts the pair, and the committed call emits the TODO, so which
-// member a call selects does not depend on where the call is.
-static auto CanBuildBranches(Context& context, SemIR::LocId loc_id) -> bool {
+// member a call selects does not depend on where the call is. `value_id` is the
+// value converted, if any.
+static auto CanBuildBranches(Context& context, SemIR::LocId loc_id,
+                             SemIR::InstId value_id) -> bool {
   if (!context.scope_stack().IsInFunctionScope()) {
     context.TODO(loc_id,
                  "conversion of a C++ `std::optional` or `std::variant` "
@@ -277,6 +309,17 @@ static auto CanBuildBranches(Context& context, SemIR::LocId loc_id) -> bool {
                  "with no source expression");
     return false;
   }
+  // A pack element (VA-1) is converted in a block that runs once per element
+  // -- an expansion body, or convert.cpp `ConvertPackToPack` -- and is one
+  // straight-line block, which cannot hold branches. The value is the element,
+  // or what a tuple, struct, array, class or adapter conversion projects from
+  // it.
+  if (IsPackElementOrProjection(context, value_id)) {
+    context.TODO(loc_id,
+                 "conversion of a C++ `std::optional` or `std::variant` "
+                 "for a pack element");
+    return false;
+  }
   return true;
 }
 
@@ -285,7 +328,7 @@ static auto CanBuildBranches(Context& context, SemIR::LocId loc_id) -> bool {
 // branch (`CanBuildBranches`).
 static auto GetNodeIdForBranches(Context& context, SemIR::LocId loc_id)
     -> Parse::NodeId {
-  if (!CanBuildBranches(context, loc_id)) {
+  if (!CanBuildBranches(context, loc_id, SemIR::InstId::None)) {
     return Parse::NodeId::None;
   }
   return context.insts().GetCanonicalLocId(loc_id).node_id();
@@ -829,7 +872,7 @@ static auto ConvertToCppSumClass(Context& context, SemIR::LocId loc_id,
   if (!diagnose) {
     return MakeTestedConversion(context, loc_id, target_type_id);
   }
-  if (!CanBuildBranches(context, loc_id)) {
+  if (!CanBuildBranches(context, loc_id, value_id)) {
     return SemIR::ErrorInst::InstId;
   }
   if (value_type_id != sum_type_id) {
@@ -895,7 +938,7 @@ auto TryConvertCppSumType(Context& context, SemIR::LocId loc_id,
     if (!diagnose) {
       return MakeTestedConversion(context, loc_id, target_type_id);
     }
-    if (!CanBuildBranches(context, loc_id)) {
+    if (!CanBuildBranches(context, loc_id, value_id)) {
       return SemIR::ErrorInst::InstId;
     }
     auto sum_id = ConvertCppSumToCarbon(context, loc_id, value_id, sum_type);

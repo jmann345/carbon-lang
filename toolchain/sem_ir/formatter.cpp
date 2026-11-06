@@ -1295,6 +1295,18 @@ auto Formatter::FormatInstRhs(Inst inst) -> void {
       return;
     }
 
+    case CARBON_KIND(PackExpansionExpr expansion): {
+      FormatArgs(expansion.result_id);
+      FormatTrailingBlock(expansion.body_block_id);
+      return;
+    }
+
+    case CARBON_KIND(PackExpansionStatement statement): {
+      FormatArgs(statement.arity_id);
+      FormatTrailingBlock(statement.body_block_id);
+      return;
+    }
+
     case CARBON_KIND(SpliceBlock splice): {
       FormatArgs(splice.result_id);
       FormatTrailingBlock(splice.block_id);

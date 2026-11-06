@@ -81,6 +81,7 @@ H8.3	G	-i -F	omit each-names	proposals/p002240-variadics.md	2
 H8.4	G	-w -E	PackElement|PackExpansionExpr|PackExpansionPattern|PackExpansionStatement|PackIndex|PackLiteral|PackType|PackValue	toolchain/sem_ir/inst_kind.def	0
 H8.5	L	-	-	toolchain/check/testdata/variadics/pack_expansion.carbon	2
 H8.7	L	-	-	toolchain/check/handle_pack_expansion.cpp	1
+H8.9	G	-i -E	choice|alternative	docs/design/variadics.md	2
 H9.3	G	-w	is_template	toolchain/sem_ir/named_constraint.h	0
 H9.4	G	-w	CalleeCppOverloadSet	toolchain/check	3
 H9.6	G	-w	new_specific_id	toolchain/check	0

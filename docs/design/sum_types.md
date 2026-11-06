@@ -327,6 +327,8 @@ In 0.1, each of these is diagnosed and recorded as a fork work item:
     in a file-scope initializer or a parameter's default value (W-036);
 -   a Carbon sum value passed to a C++ `T&&` parameter, alone or preferred to
     a `const T&` overload such as `std::vector::push_back` (W-285);
+-   a conversion of a VA-1 pack element, in an expansion body or a pack
+    converted to a pack of another element type (W-284);
 -   a `ref` payload binding, since the scrutinee is a copy (W-280);
 -   a C++ `std::optional` or `std::variant` nested in a tuple or struct
     scrutinee (W-281);

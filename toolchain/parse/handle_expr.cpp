@@ -79,6 +79,25 @@ auto HandleExprInPostfix(Context& context) -> void {
       context.PushState(state);
       break;
     }
+    case Lex::TokenKind::Each: {
+      // `each` is part of the name syntax, so it binds more tightly than any
+      // expression syntax (docs/design/variadics.md, "Packs and each-names").
+      auto each_token = context.Consume();
+      if (!context.ConsumeAndAddLeafNodeIf(
+              Lex::TokenKind::Identifier,
+              NodeKind::IdentifierNameNotBeforeSignature)) {
+        CARBON_DIAGNOSTIC(ExpectedIdentifierAfterEach, Error,
+                          "expected identifier after `each`");
+        context.emitter().Emit(*context.position(),
+                               ExpectedIdentifierAfterEach);
+        context.AddInvalidParse(*context.position());
+        context.ReturnErrorOnState();
+        state.has_error = true;
+      }
+      context.AddNode(NodeKind::EachNameExpr, each_token, state.has_error);
+      context.PushState(state);
+      break;
+    }
     case Lex::TokenKind::Fn: {
       context.PushState(state);
       context.PushState(StateKind::LambdaIntroducer);

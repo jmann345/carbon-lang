@@ -501,11 +501,38 @@ auto DominanceVerifier::VerifyAndRecordInst(InstId root_inst_id,
     InstId inst_id;
     // Whether to finish a `SpliceBlock` after its block has been evaluated.
     bool finish_splice_block = false;
+    // For a pack expansion whose body has been evaluated, the size of
+    // `evaluated_order_` before its body; otherwise -1. The body runs once per
+    // element, so nothing it evaluates dominates the code after the expansion.
+    int finish_pack_expansion_scope = -1;
+  };
+
+  // Schedules the body of a pack expansion to be evaluated in place, followed
+  // by the step that ends its scope and records the expansion itself.
+  auto push_pack_expansion_body = [&](llvm::SmallVector<Step>& worklist,
+                                      InstId inst_id, InstBlockId body_id) {
+    worklist.push_back({.inst_id = inst_id,
+                        .finish_pack_expansion_scope =
+                            static_cast<int>(evaluated_order_.size())});
+    for (InstId body_inst_id :
+         llvm::reverse(file_.inst_blocks().Get(body_id))) {
+      worklist.push_back({.inst_id = body_inst_id});
+    }
   };
 
   llvm::SmallVector<Step> worklist = {{.inst_id = root_inst_id}};
   while (!worklist.empty()) {
-    auto [inst_id, finish_splice_block] = worklist.pop_back_val();
+    auto [inst_id, finish_splice_block, finish_pack_expansion_scope] =
+        worklist.pop_back_val();
+    if (finish_pack_expansion_scope >= 0) {
+      for (InstId body_inst_id :
+           llvm::drop_begin(evaluated_order_, finish_pack_expansion_scope)) {
+        evaluated_.Erase(body_inst_id);
+      }
+      evaluated_order_.truncate(finish_pack_expansion_scope);
+      RecordEvaluated(inst_id);
+      continue;
+    }
     if (finish_splice_block) {
       auto splice_block = file_.insts().GetAs<SpliceBlock>(inst_id);
       CARBON_RETURN_IF_ERROR(
@@ -526,6 +553,19 @@ auto DominanceVerifier::VerifyAndRecordInst(InstId root_inst_id,
           worklist.push_back({.inst_id = spliced_id});
         }
       }
+      continue;
+    }
+
+    // A `PackExpansionStatement` or `PackExpansionExpr` evaluates its body in
+    // place, once per element.
+    if (auto statement = inst.TryAs<PackExpansionStatement>()) {
+      CARBON_RETURN_IF_ERROR(
+          VerifyOperand(inst_id, statement->arity_id, block_index));
+      push_pack_expansion_body(worklist, inst_id, statement->body_block_id);
+      continue;
+    }
+    if (auto expansion = inst.TryAs<PackExpansionExpr>()) {
+      push_pack_expansion_body(worklist, inst_id, expansion->body_block_id);
       continue;
     }
 

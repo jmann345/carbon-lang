@@ -355,6 +355,21 @@ auto HandleParseNode(Context& context, Parse::DefaultValuePatternId node_id)
   // specified. We pop that so we can issue the DefaultValuePattern in its
   // place.
   auto pattern_inst_id = context.node_stack().PopPattern();
+
+  // Fork (VA-1, D-VA-5): the variadics design does not say how default values
+  // beside a pack bind, or what a default for a pack would be. A default
+  // before the pack is diagnosed by the pack expansion pattern.
+  auto is_pack_expansion = [&](SemIR::InstId inst_id) {
+    return context.insts().Is<SemIR::PackExpansionPattern>(inst_id);
+  };
+  if (is_pack_expansion(pattern_inst_id) ||
+      llvm::any_of(
+          context.param_and_arg_refs_stack().PeekCurrentBlockContents(),
+          is_pack_expansion)) {
+    return context.TODO(node_id,
+                        "default value in a parameter list with a pack "
+                        "expansion pattern");
+  }
   auto pattern_type_id = context.insts().Get(pattern_inst_id).type_id();
   auto scrutinee_type_id =
       SemIR::ExtractScrutineeType(context.sem_ir(), pattern_type_id);

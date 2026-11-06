@@ -38,6 +38,7 @@ auto HandlePattern(Context& context) -> void {
     case Lex::TokenKind::Generic:
     case Lex::TokenKind::Runtime:
     case Lex::TokenKind::Ref:
+    case Lex::TokenKind::Each:
     // `self` is always a binding, even when its type is omitted (and so is not
     // followed by a `:`).
     case Lex::TokenKind::SelfValueIdentifier:

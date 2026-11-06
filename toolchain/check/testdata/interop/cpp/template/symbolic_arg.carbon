@@ -756,6 +756,23 @@ fn F[template T: type](v: T) -> Cpp.Box(T) {
 
 fn G() -> i32 { return F(9 as i32).value; }
 
+
+// --- fail_pack_expansion_cpp_call_in_definition.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "box.h";
+
+// A C++ function has no pack expansion parameter, so the call is diagnosed
+// where the generic is defined, as for a non-generic callee (VA-1's D-VA-5).
+fn F(... each x: i32) -> i32 {
+  // CHECK:STDERR: fail_pack_expansion_cpp_call_in_definition.carbon:[[@LINE+4]]:22: error: pack expansion argument is not matched by a pack expansion parameter [PackExpansionArgWithoutPackParam]
+  // CHECK:STDERR:   return Cpp.TakeInt(... each x);
+  // CHECK:STDERR:                      ^~~~~~~~~~
+  // CHECK:STDERR:
+  return Cpp.TakeInt(... each x);
+}
+
 // CHECK:STDOUT: --- uninitialized_var.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

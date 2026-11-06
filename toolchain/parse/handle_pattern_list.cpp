@@ -7,9 +7,14 @@
 
 namespace Carbon::Parse {
 
-// Handles PatternListElementAs(Tuple|Explicit|Implicit).
+// Handles PatternListElementAs(Tuple|Explicit|Implicit). A tuple pattern or
+// parameter list element may be a pack expansion, `... pattern`
+// (docs/design/variadics.md, "Pack expansions"); a struct pattern element may
+// not, so only those variants pass `allow_pack_expansion`.
 static auto HandlePatternListElement(Context& context, StateKind pattern_state,
-                                     StateKind finish_state_kind) -> void {
+                                     StateKind finish_state_kind,
+                                     bool allow_pack_expansion = false)
+    -> void {
   auto state = context.PopState();
 
   context.PushStateForPattern(finish_state_kind, state.in_var_pattern,
@@ -28,6 +33,12 @@ static auto HandlePatternListElement(Context& context, StateKind pattern_state,
         state.binding_context, state.ambient_precedence);
   }
 
+  if (allow_pack_expansion &&
+      context.PositionIs(Lex::TokenKind::PeriodPeriodPeriod)) {
+    context.PushState(StateKind::PackExpansionPatternFinish);
+    context.AddLeafNode(NodeKind::PackExpansionStart, context.Consume());
+  }
+
   context.PushStateForPattern(pattern_state, state.in_var_pattern,
                               state.in_unused_pattern,
                               state.in_field_shorthand_pattern,
@@ -36,7 +47,8 @@ static auto HandlePatternListElement(Context& context, StateKind pattern_state,
 
 auto HandlePatternListElementAsTuple(Context& context) -> void {
   HandlePatternListElement(context, StateKind::Pattern,
-                           StateKind::PatternListElementFinishAsTuple);
+                           StateKind::PatternListElementFinishAsTuple,
+                           /*allow_pack_expansion=*/true);
 }
 
 auto HandlePatternListElementAsStruct(Context& context) -> void {
@@ -66,12 +78,23 @@ auto HandlePatternListElementAsStruct(Context& context) -> void {
 
 auto HandlePatternListElementAsExplicit(Context& context) -> void {
   HandlePatternListElement(context, StateKind::Pattern,
-                           StateKind::PatternListElementFinishAsExplicit);
+                           StateKind::PatternListElementFinishAsExplicit,
+                           /*allow_pack_expansion=*/true);
 }
 
 auto HandlePatternListElementAsImplicit(Context& context) -> void {
   HandlePatternListElement(context, StateKind::Pattern,
-                           StateKind::PatternListElementFinishAsImplicit);
+                           StateKind::PatternListElementFinishAsImplicit,
+                           /*allow_pack_expansion=*/true);
+}
+
+auto HandlePackExpansionPatternFinish(Context& context) -> void {
+  auto state = context.PopState();
+
+  context.AddNode(NodeKind::PackExpansionPattern, state.token, state.has_error);
+  if (state.has_error) {
+    context.ReturnErrorOnState();
+  }
 }
 
 auto HandleStructPatternDesignatedFieldFinish(Context& context) -> void {

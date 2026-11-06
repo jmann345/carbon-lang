@@ -21,6 +21,10 @@ library "[[@TEST_NAME]]";
 import Cpp library "templates.h";
 
 fn F[... each T: type](... each x: each T) {
+  // CHECK:STDERR: fail_todo_value_arg.carbon:[[@LINE+4]]:7: error: semantics TODO: `C++ or template-dependent action on an element of a pack of different types` [SemanticsTodo]
+  // CHECK:STDERR:   ... Cpp.Add(each x);
+  // CHECK:STDERR:       ^~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   ... Cpp.Add(each x);
 }
 
@@ -32,6 +36,10 @@ import Cpp library "templates.h";
 fn Consume(x: i32);
 
 fn F[... each T: type](... unused each x: each T) {
+  // CHECK:STDERR: fail_todo_type_arg.carbon:[[@LINE+4]]:15: error: semantics TODO: `C++ or template-dependent action on an element of a pack of different types` [SemanticsTodo]
+  // CHECK:STDERR:   ... Consume(Cpp.SizeOfFn(each T));
+  // CHECK:STDERR:               ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   ... Consume(Cpp.SizeOfFn(each T));
 }
 
@@ -45,6 +53,10 @@ interface I {}
 fn Consume(x: i32);
 
 fn F[... each T: I](... unused each x: each T) {
+  // CHECK:STDERR: fail_todo_facet_type_arg.carbon:[[@LINE+4]]:15: error: semantics TODO: `C++ or template-dependent action on an element of a pack of different types` [SemanticsTodo]
+  // CHECK:STDERR:   ... Consume(Cpp.SizeOfFn(each T));
+  // CHECK:STDERR:               ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   ... Consume(Cpp.SizeOfFn(each T));
 }
 
@@ -54,5 +66,9 @@ library "[[@TEST_NAME]]";
 import Cpp library "templates.h";
 
 fn F[... each T: type](... each x: each T) {
+  // CHECK:STDERR: fail_todo_tuple_literal_arg.carbon:[[@LINE+4]]:3: error: semantics TODO: `C++ or template-dependent action on a tuple literal with a pack segment` [SemanticsTodo]
+  // CHECK:STDERR:   Cpp.Add((... each x));
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Cpp.Add((... each x));
 }

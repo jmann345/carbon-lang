@@ -137,7 +137,7 @@ fn Use(a: array(i32, 3)) -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert(%int_32) [concrete]
 // CHECK:STDOUT:   %bound_method: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_0.3c0: %i32 = int_value 0 [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = value_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.patt.939: %pattern_type.6b6 = value_binding_pattern x [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
 // CHECK:STDOUT:   %Self.0e7: %Destroy.type = symbolic_binding Self, 0 [symbolic]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.4e5: type = fn_type @Destroy.WithSelf.SelfDestruct.1, @Destroy.WithSelf(%Self.0e7) [symbolic]
@@ -345,7 +345,7 @@ fn Use(a: array(i32, 3)) -> i32 {
 // CHECK:STDOUT:       %s.var_patt: %pattern_type.6b6 = var_pattern %s.patt [concrete = constants.%s.var_patt]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     name_binding_decl {
-// CHECK:STDOUT:       %x.patt: %pattern_type.6b6 = value_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:       %x.patt: %pattern_type.6b6 = value_binding_pattern x [concrete = constants.%x.patt.939]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %a.ref: @Sum.%T.loc4_18.1 (%T.67db0b.1) = name_ref a, %a
 // CHECK:STDOUT:     %.loc6_19.1: type = type_of_inst %.loc6_19.25 [template = %.loc6_19.26 (constants.%.8cb5e6.1)]

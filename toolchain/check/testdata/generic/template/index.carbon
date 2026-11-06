@@ -1024,8 +1024,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %x.patt.a01: %pattern_type.333 = wrapper_binding_pattern x, %x.param_patt.d84 [concrete]
 // CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.4e3: type = splice_block %impl.elem0.c75 [concrete = %tuple.type.e55] {
-// CHECK:STDOUT:       %as_type: type = facet_access_type %Container.facet [concrete = %Pairs]
-// CHECK:STDOUT:       %.cd3: type = converted %Container.facet, %as_type [concrete = %Pairs]
+// CHECK:STDOUT:       %as_type.eaa: type = facet_access_type %Container.facet [concrete = %Pairs]
+// CHECK:STDOUT:       %.cd3: type = converted %Container.facet, %as_type.eaa [concrete = %Pairs]
 // CHECK:STDOUT:       %Elem.ref: %Container.assoc_type = name_ref Elem, @Elem.%assoc0 [concrete = %assoc0.318]
 // CHECK:STDOUT:       %impl.elem0.c75: type = impl_witness_access %Container.impl_witness, element0 [concrete = %tuple.type.e55]
 // CHECK:STDOUT:     }

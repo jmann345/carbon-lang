@@ -54,15 +54,15 @@ fn UseMin() -> str { return Min("pear", "apple"); }
 // CHECK:STDOUT:   %str: type = class_type @String [concrete]
 // CHECK:STDOUT:   %pattern_type.adf: type = pattern_type %str [concrete]
 // CHECK:STDOUT:   %a.param_patt: %pattern_type.adf = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete]
+// CHECK:STDOUT:   %a.patt.f11: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.adf = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt.42c: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %.f34: Core.Form = init_form bool [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %return.param_patt.5a1: %pattern_type.831 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.c0c: %pattern_type.831 = return_slot_pattern %return.param_patt.5a1, bool [concrete]
-// CHECK:STDOUT:   %Eq.type: type = fn_type @Eq [concrete]
-// CHECK:STDOUT:   %Eq: %Eq.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Eq.type.0c7: type = fn_type @Eq.loc5 [concrete]
+// CHECK:STDOUT:   %Eq: %Eq.type.0c7 = struct_value () [concrete]
 // CHECK:STDOUT:   %EqWith.type.ca1: type = facet_type <@EqWith, @EqWith(%str)> [concrete]
 // CHECK:STDOUT:   %EqWith.impl_witness.c84: <witness> = impl_witness imports.%EqWith.impl_witness_table.bc8 [concrete]
 // CHECK:STDOUT:   %EqWith.facet.70b: %EqWith.type.ca1 = facet_value %str, (%EqWith.impl_witness.c84) [concrete]
@@ -105,11 +105,11 @@ fn UseMin() -> str { return Min("pear", "apple"); }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
-// CHECK:STDOUT:   %Eq.decl: %Eq.type = fn_decl @Eq [concrete = constants.%Eq] {
+// CHECK:STDOUT:   %Eq.decl: %Eq.type.0c7 = fn_decl @Eq.loc5 [concrete = constants.%Eq] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.f11]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.42c]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc5_26.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -126,9 +126,9 @@ fn UseMin() -> str { return Min("pear", "apple"); }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Ne.decl: %Ne.type = fn_decl @Ne [concrete = constants.%Ne] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.f11]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.42c]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc6_26.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -145,9 +145,9 @@ fn UseMin() -> str { return Min("pear", "apple"); }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Lt.decl: %Lt.type = fn_decl @Lt [concrete = constants.%Lt] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.f11]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.42c]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc7_26.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -164,9 +164,9 @@ fn UseMin() -> str { return Min("pear", "apple"); }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Ge.decl: %Ge.type = fn_decl @Ge [concrete = constants.%Ge] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.adf = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.f11]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.adf = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.adf = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.42c]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.831 = out_param_pattern [concrete = constants.%return.param_patt.5a1]
 // CHECK:STDOUT:     %return.patt: %pattern_type.831 = return_slot_pattern %return.param_patt, %.loc8_26.1 [concrete = constants.%return.patt.c0c]
 // CHECK:STDOUT:   } {
@@ -183,7 +183,7 @@ fn UseMin() -> str { return Min("pear", "apple"); }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Eq(%a.param: %str, %b.param: %str) -> out %return.param: bool {
+// CHECK:STDOUT: fn @Eq.loc5(%a.param: %str, %b.param: %str) -> out %return.param: bool {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %a.ref: %str = name_ref a, %a
 // CHECK:STDOUT:   %b.ref: %str = name_ref b, %b

@@ -139,6 +139,18 @@ struct AddrOf {
   InstId lvalue_id;
 };
 
+// An action that takes the address of a template-dependent operand, `&expr`.
+struct AddrOfAction {
+  static constexpr auto Kind = InstKind::AddrOfAction.Define<Parse::NodeId>(
+      {.ir_name = "addr_of_action",
+       .expr_category = ActionExprCategory(ExprCategory::Value),
+       .constant_kind = InstConstantKind::InstAction,
+       .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId lvalue_id;
+};
+
 // Binds a name as an alias. See AnyBinding for member documentation.
 struct AliasBinding {
   static constexpr auto Kind = InstKind::AliasBinding.Define<Parse::NodeId>(
@@ -1279,6 +1291,19 @@ struct ImportRefLoaded {
   EntityNameId entity_name_id;
 };
 
+// An action that indexes a template-dependent operand, `expr[index]`.
+struct IndexAction {
+  static constexpr auto Kind = InstKind::IndexAction.Define<Parse::NodeId>(
+      {.ir_name = "index_action",
+       .expr_category = ActionExprCategory(ExprCategory::Dependent),
+       .constant_kind = InstConstantKind::InstAction,
+       .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId operand_id;
+  MetaInstId index_id;
+};
+
 // An initializing primitive form.
 struct InitForm {
   static constexpr auto Kind = InstKind::InitForm.Define<Parse::NodeId>(
@@ -1872,6 +1897,21 @@ struct PatternType {
   TypeInstId scrutinee_type_inst_id;
 };
 
+// An action that dereferences a template-dependent operand, `*expr`, or the
+// base of `expr->member` when `is_arrow`.
+struct PointerDereferenceAction {
+  static constexpr auto Kind =
+      InstKind::PointerDereferenceAction.Define<Parse::NodeId>(
+          {.ir_name = "pointer_dereference_action",
+           .expr_category = ActionExprCategory(ExprCategory::Dependent),
+           .constant_kind = InstConstantKind::InstAction,
+           .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId pointer_id;
+  BoolValue is_arrow;
+};
+
 // Modifies a pointee type to be a pointer. This is tracking the `*` in
 // `x: i32*`, where `pointee_id` is `i32` and `type_id` is `type`.
 struct PointerType {
@@ -2228,7 +2268,7 @@ struct SpecificConstant {
   // TODO: Can we make Parse::NodeId more specific?
   static constexpr auto Kind = InstKind::SpecificConstant.Define<Parse::NodeId>(
       {.ir_name = "specific_constant",
-       .expr_category = ComputedExprCategory::SameAsFirstOperand,
+       .expr_category = ComputedExprCategory::DependsOnOperands,
        .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
        .is_lowered = false});
 
@@ -2439,6 +2479,24 @@ struct StructValue {
   InstBlockId elements_id;
 };
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill round 5): the
+// type of a requirement `fn` of a `template constraint` named with no self
+// type that satisfies it, such as `HasN.N`. The corresponding value is an empty
+// `StructValue`, which is not a runtime value: it is only the callee of a call
+// (diagnosed), the member of a compound access, or an `alias` target.
+// `specific_id` is the constraint's specific, without `Self`.
+struct StructuralRequirementType {
+  static constexpr auto Kind =
+      InstKind::StructuralRequirementType.Define<Parse::NoneNodeId>(
+          {.ir_name = "structural_requirement_type",
+           .is_type = InstIsType::Always,
+           .constant_kind = InstConstantKind::WheneverPossible});
+
+  TypeId type_id;
+  FunctionId function_id;
+  SpecificId specific_id;
+};
+
 // Binds a symbolic name, such as `x` in `let x: i32 = 7;`. See AnyBinding for
 // member documentation.
 struct SymbolicBinding {
@@ -2519,6 +2577,20 @@ struct TupleAccess {
   TypeId type_id;
   InstId tuple_id;
   ElementIndex index;
+};
+
+// An action that accesses a tuple element of a template-dependent operand,
+// `expr.N`.
+struct TupleIndexAction {
+  static constexpr auto Kind = InstKind::TupleIndexAction.Define<Parse::NodeId>(
+      {.ir_name = "tuple_index_action",
+       .expr_category = ActionExprCategory(ExprCategory::Dependent),
+       .constant_kind = InstConstantKind::InstAction,
+       .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId tuple_id;
+  MetaInstId index_id;
 };
 
 // Initializes the destination tuple with the given elements.

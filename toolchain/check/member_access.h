@@ -5,8 +5,13 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_MEMBER_ACCESS_H_
 #define CARBON_TOOLCHAIN_CHECK_MEMBER_ACCESS_H_
 
+#include <optional>
+
+#include "llvm/ADT/ArrayRef.h"
 #include "toolchain/check/context.h"
+#include "toolchain/check/name_lookup.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/name_scope.h"
 
 namespace Carbon::Check {
 
@@ -16,6 +21,47 @@ namespace Carbon::Check {
 auto GetHighestAllowedAccess(Context& context,
                              SemIR::ConstantId name_scope_const_id)
     -> SemIR::AccessKind;
+
+// Fork (SC-1): what a member-name lookup through `LookupMemberNameInTypeScopes`
+// found, before any access decision is applied.
+struct MemberLookupInfo {
+  // Whether the name was found in one of the scopes (an error scope does not
+  // count as found).
+  bool found = false;
+  // Whether the name was found only as a member whose access is prohibited
+  // (a private member of a base class, which lookup through an extended scope
+  // prohibits regardless of `access_info`). `found` is false in that case.
+  bool found_but_prohibited = false;
+  // The declared access of the found member, or of the last prohibited member
+  // when `found_but_prohibited`.
+  SemIR::AccessKind access_kind = SemIR::AccessKind::Public;
+};
+
+// The member-access lookup path, used by member access and, exposed by the
+// fork (SC-1, fork/structural/plan.md D-SC-5(b)), by the structural-conformance
+// check. Performs a member name lookup for `name_id` in `lookup_scopes` (the
+// scopes of `name_scope_const_id`), including impl lookup through an alias of
+// an associated entity and the on-demand import of C++ members, and returns the
+// `NameRef` for the member (or `ErrorInst` if nothing was found).
+//
+// D-SC-4 redirect: when the lookup finds a requirement `fn` of a `template
+// constraint` whose `Self` is concrete (`T.Make` once a template's `T` is a
+// class `C`, or `(C as HasMake).Make`), the result is instead the self type's
+// own member of that name, looked up in the self type's scopes, so it can be a
+// member of a different scope than `lookup_scopes`; an `access_info` is then
+// re-derived for the self type's scope.
+//
+// `access_info` is the access context to check against, or `nullopt` to find
+// members regardless of their access (the caller then applies
+// `IsAccessProhibited` to `out_info->access_kind`). With `diagnose` false,
+// nothing is emitted for a missing name, a prohibited access or a missing
+// `impl`. `base_id` is only used when `lookup_in_type_of_base` is true.
+auto LookupMemberNameInTypeScopes(
+    Context& context, SemIR::LocId loc_id, SemIR::InstId base_id,
+    SemIR::NameId name_id, SemIR::ConstantId name_scope_const_id,
+    llvm::ArrayRef<LookupScope> lookup_scopes, bool lookup_in_type_of_base,
+    bool required, std::optional<AccessInfo> access_info, bool diagnose,
+    MemberLookupInfo* out_info = nullptr) -> SemIR::InstId;
 
 // Creates SemIR to perform a member access with base expression `base_id` and
 // member name `name_id`. When `required`, failing to find the name is a
@@ -49,7 +95,9 @@ auto GetAssociatedValue(Context& context, SemIR::LocId loc_id,
                         SemIR::SpecificInterface interface) -> SemIR::InstId;
 
 // Creates SemIR to perform a tuple index with base expression `tuple_inst_id`
-// and index expression `index_inst_id`. Returns the result of the access.
+// and index expression `index_inst_id`. A template-dependent operand of opaque
+// type is indexed when the template is instantiated. Returns the result of the
+// access.
 auto PerformTupleAccess(Context& context, SemIR::LocId loc_id,
                         SemIR::InstId tuple_inst_id,
                         SemIR::InstId index_inst_id) -> SemIR::InstId;

@@ -380,3 +380,51 @@ here.
     heading; second occurrence of the class after the R25 rumdl miss, so a rule.
     Scope, probe nuance and attribution corrected by the rev-3 re-review of that
     plan, 2026-10-05.)
+-   **R32. No direction drift (owner directive 2026-10-21: "Direction drifts are
+    not permitted").** V-3's override clause ('upstream intent is the default
+    preference, overridable with stated good reason') is withdrawn as V-3b:
+    where upstream's recorded direction and a fork design diverge, the fork
+    realigns; a stated good reason records the cost of realignment, it does not
+    license the divergence. Upstream's recorded direction is read at upstream's
+    tip at the time of the check (the fetched upstream/trunk, named by its sha
+    in the check) in all of: accepted proposals, the design pages at that tip
+    (never the fork's copy of a page), prelude identities and signatures, and
+    toolchain TODOs that name a mechanism. (a) Every V-3 check in a plan
+    compares against that tip and quotes the design page's current text for each
+    mechanism the plan touches. (b) A drift found by a weekly upstream check, a
+    V-3 check or a review is filed as a work item owned by a named workstream
+    and scheduled in ORCHESTRATION's Next actions, not recorded as a register
+    note; the V-3a register is a work queue reviewed at each weekly check, each
+    entry carrying its work item. (c) The weekly check lists every upstream
+    commit since the cut that changes a design page's stated mechanism or a
+    prelude signature, by subject, not only the files that conflict. (d) A fork
+    mechanism that is a second spelling of a mechanism upstream has designed is
+    a drift under (b) even while upstream's toolchain has not implemented its
+    design: a scrutinee view where upstream designs Match, a pointer cursor
+    where upstream adopted ref, a read-only index where upstream added
+    IndirectIndexWith. (e) A held PR found to carry a drift is amended before it
+    lands by a new commit on its branch, never by rewriting it. (Origin: owner
+    directive 2026-10-21; decision-log entry DR-0, which records why
+    Core.Optional was left unmatchable.)
+-   **R33. Merging is the orchestrator's call, on verified correctness, while
+    hosted checks are unavailable (owner directive 2026-11-01:
+    "Go ahead and merge changes that are correct").** The hold-open practice
+    from 2026-10-08 (eighteen PRs held, none merged) was the orchestrator's own
+    application of R21 and R28 (c) once GitHub Actions was disabled on the fork,
+    not an owner directive; the orchestrator's report of 2026-11-01 attributed
+    it to the owner, the owner called that a hallucination, and this rule
+    records the correction. Discipline: (a) a held PR is merged into trunk by
+    the orchestrator, by a merge commit (never a squash, never a rewrite of the
+    PR's history), in the recorded land order, when it is correct: its reviews
+    dry, its plan's land-time steps done, and the merged trunk verified in the
+    container by the carbonbuild arbiter (the toolchain built, the file_test
+    gate passing over every golden, the conformance runner's scoreboard not
+    regressing against the PR's expected scoreboard, prek clean), each merge's
+    record stating what was verified and how; (b) while hosted checks are
+    unavailable, R9's scoreboard is the arbiter's, labelled container-measured,
+    and R21's hosted gate is re-run on everything landed under this rule when
+    Actions returns, a failure there being a defect filed against the landed PR
+    and fixed on trunk by a new commit; (c) a PR that is not yet correct, one
+    with an owed fix or an unfinished realignment, is not merged until it is;
+    (d) R28 stands: the owner's machine is never used and no workflow is
+    dispatched. (Origin: owner directive 2026-11-01; decision-log entry LD-0.)

@@ -8190,3 +8190,65 @@ row.
     entry "fork/conformance/programs/generics/variadics_each.carbon (PASS,
     expected)" rather than the file without a line beside that entry, so the
     file is not listed twice.
+
+## FO-1 fold record (2026-11-03)
+
+W-367 and W-368 are fixed on this branch (fork/followon/fo1-plan.md D-FO1-5,
+D-FO1-6). A pack expansion pattern in a choice alternative's parameter list
+(`choice C { A(... each x: i32) }`), which aborted in lowering, is a semantics
+TODO in handle_pack_expansion.cpp's `Pattern` case (389cf3af0, W-367), pinned by
+the splits `fail_todo_choice_alternative`,
+`fail_todo_choice_second_alternative` and `fail_todo_choice_in_class` of
+check/testdata/variadics/fail_todo_slice.carbon (filled by 249f23968). A pack
+of an element whose LLVM type is smaller than its array stride
+(`{.a: i32, .b: bool}`, `Core.Optional(i32)`), which aborted at
+lower/type.cpp's layout check, is laid out at its element's array stride
+(a7f6f6395, W-368), pinned by the split `padded_element` of
+lower/testdata/variadics/pack_expansion.carbon (filled by c7855285a) and by
+fork/conformance/programs/generics/variadics_padded_element.carbon. The gate
+after F-D2 is 1960 of 1960. These commits and this record take VA-1's two
+implementation reviews before they are pushed (D-FO1-9).
+
+VA-1 landed on trunk (LAND-1, 2026-11-06): merged as PR 59 by 0747ed437 (head
+6901d0fd9, trunk before 31280f710; GitHub merged_at 2026-11-06T00:33:24Z) under
+R33, fork/followon/fo1-plan.md section 2.8; land-time commits none;
+container-measured (R33 (b)): gate 2029 of 2029, conformance 218 PASS, 0 FAIL,
+13 SKIP over 231, 51 of 56 bullets; id re-scans: W-367 and W-368 at step 9,
+before the records edit: origin/claude/carbon-fork-0-1-va, fo1-land-va and the
+/dev/shm/fo1/land/wt-va worktree (6901d0fd9, the head), and trunk and the
+/home/user/carbon-trunk worktree (0747ed437), which contain 6901d0fd9; moved to
+follow-ons: none.
+
+Stage 16's landing record, by the orchestrator's ruling under R29 on stage 16's
+phase A and its addenda: the landed commits are M59 fd22a10d9, M-VA bf028fca1,
+S-VA 57b3f8439, the S-VA placement fix 601af4e86, F-M59 c517754e6 and L59
+6901d0fd9, the pushed head. M59 stopped (D-FO1-11) on a conflict no plan named,
+one region in toolchain/check/deduce.cpp's include block, where SC-1's B1
+25a3c6947 (landed at stage 13) added action.h, inst.h and
+structural_conformance.h and VA-1's C4 275967b1d added inst.h, section 0.3's row
+having been measured at 03b40f7c5, before B1 landed. The orchestrator ruled rule
+INC-1, the union of both sides' `#include` lines in the file's order, each once,
+equal to trunk's block at 31280f710, and M59 fd22a10d9 resolved the region by
+it. The container restarted between M59 and M-VA; M59 fd22a10d9 stood as
+committed, was re-measured on a fresh build with the same gate and conformance
+lines, and steps 3 to 6 ran after the rebuild. The continuation stopped a second
+time at S-VA's commit (D-FO1-11), on three texts no plan gave. The three gaps
+were S-VA's title, which CT-1's plan does not give; W-343's discharge text, for
+which RG-1's plan gives the rule but no string; and the SV-1 Branches row's
+W-284 clause once M-VA had landed. The orchestrator ruled the title "CT-1 S-VA:
+a C++ call's pack expansion argument is refused where the call is written
+(D-CT-3, D-VA-5)", W-343's text in RG-1's Appendix A.7 prepend form, and the
+row's words "W-284 held until M-VA lands (item 17)" becoming "W-284 filed at
+M-VA (bf028fca1 on PR 59's branch, FO-1 stage 16, Next actions item 17)", with
+no fix commit and no D-FO1-10 budget touched by them. The continuation stopped a
+third time at F-M59 (D-LAND-8), whose autoupdate moved S-VA's split from after
+symbolic_arg.carbon's `// CHECK:STDOUT:` trailer to before it, a change to lines
+other than CHECK lines. Its cause was S-VA's placement of Appendix C.11's split
+at the literal end of the file, after the trailer, where the split belongs as
+the file's last split before it. The fix commit 601af4e86 placed the split, fix
+commit 1 of Slice D's D-FO1-10 budget, and F-M59 c517754e6 then changed CHECK
+lines only. The register lines at upstream a567040d7, the landing day's tip:
+fork/register/check_quotes.sh "checked 289 quotes, 19 failed" and
+fork/register/check_greps.sh "checked 94 silence checks, 4 failed", each failing
+row in W-355's note for PR 59; phase A measured both at the same tip with the
+same lines, so no upstream drift lies between them.

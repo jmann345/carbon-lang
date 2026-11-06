@@ -70,6 +70,12 @@ auto TryEvalInst(Context& context, InstT inst) -> SemIR::ConstantId {
   return TryEvalInstUnsafe(context, SemIR::InstId::None, inst);
 }
 
+// Diagnoses an alias whose value is not a constant: where the alias is
+// declared, or, for a template-dependent value, on instantiation, when the
+// alias binding is evaluated for a specific of the enclosing generic.
+auto DiagnoseAliasRequiresConstantValue(Context& context, SemIR::LocId loc_id)
+    -> void;
+
 // Evaluates the eval block for a region of a specific. Writes a block
 // containing the evaluated constant values of the instructions in the eval
 // block to the specific.

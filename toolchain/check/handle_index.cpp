@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "toolchain/base/kind_switch.h"
+#include "toolchain/check/action.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/facet_type.h"
@@ -15,6 +16,7 @@
 #include "toolchain/check/literal.h"
 #include "toolchain/check/name_lookup.h"
 #include "toolchain/check/operator.h"
+#include "toolchain/check/pointer_dereference.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/diagnostic.h"
 #include "toolchain/sem_ir/expr_info.h"
@@ -30,42 +32,47 @@ auto HandleParseNode(Context& /*context*/, Parse::IndexExprStartId /*node_id*/)
   return true;
 }
 
-// Performs an index with base expression `operand_inst_id` and
-// `operand_type_id` for types that are not an array. This checks if
-// the base expression implements the `IndexWith` interface; if so, uses the
-// `At` associative method, otherwise prints a diagnostic.
-static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
-                             SemIR::InstId operand_inst_id,
-                             SemIR::InstId index_inst_id) -> SemIR::InstId {
+// Performs an index with base expression `operand_inst_id` for types that are
+// not an array, using the `op_name` method of the interface `interface_name`.
+// On failure, returns an `ErrorInst`, and diagnoses unless `diagnose` is false.
+static auto PerformIndexOperator(Context& context, SemIR::LocId loc_id,
+                                 CoreIdentifier interface_name,
+                                 CoreIdentifier op_name,
+                                 SemIR::InstId operand_inst_id,
+                                 SemIR::InstId index_inst_id, bool diagnose)
+    -> SemIR::InstId {
   SemIR::InstId args[] = {context.types().GetTypeInstId(
       context.insts().Get(index_inst_id).type_id())};
-  Operator op{.interface_name = CoreIdentifier::IndexWith,
+  Operator op{.interface_name = interface_name,
               .interface_args_ref = args,
-              .op_name = CoreIdentifier::At};
-  return BuildBinaryOperator(context, node_id, op, operand_inst_id,
-                             index_inst_id);
+              .op_name = op_name};
+  return BuildBinaryOperator(context, loc_id, op, operand_inst_id,
+                             index_inst_id, diagnose);
 }
 
-// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05). Returns whether
-// `operand_type_id` implements `Core.IndexWith(subscript_type_id)`, from a
-// non-diagnosing impl lookup, or `nullopt` when the question cannot be asked
-// without diagnosing: no `Core.IndexWith`, or one that is not a generic
-// interface over a single `type` parameter (the shapes
-// operators/overloaded/index.carbon pins), which the ordinary dispatch then
-// reports exactly once. The probe emits nothing and leaves no instructions:
-// the facet type is built from the interface and a specific (a constant), and
-// the lookup's scratch instructions are discarded. It does share the
-// dispatch's file-level footprint — the `Core.IndexWith` name lookup loads
-// (or poisons) that name in the `Core` scope exactly as `GetOperatorOpFunction`
-// does — so callers probe only where the dispatch itself would look the name
-// up (never for an erroneous operand, which `BuildBinaryOperator` rejects
-// before any lookup).
+// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05; DR-1, amended
+// 2026-10-22). Returns whether `operand_type_id` implements
+// `Core.<interface_name>(subscript_type_id)`, where `interface_name` is
+// `IndexWith` or `IndirectIndexWith`, from a non-diagnosing impl lookup, or
+// `nullopt` when the question cannot be asked without diagnosing: no such
+// interface in `Core`, or one that is not a generic interface over a single
+// `type` parameter (the shapes operators/overloaded/index.carbon pins), which
+// the ordinary dispatch then reports exactly once. The probe emits nothing
+// and leaves no instructions: the facet type is built from the interface and
+// a specific (a constant), and the lookup's scratch instructions are
+// discarded. It does share the dispatch's file-level footprint — the name
+// lookup loads (or poisons) that name in the `Core` scope exactly as
+// `GetOperatorOpFunction` does — so callers probe only where the dispatch
+// itself looks names up in `Core` (never for an erroneous operand, which
+// `BuildBinaryOperator` rejects before any lookup). A name probed there that
+// the dispatch then does not look up stays loaded all the same; the literal
+// rule's footprint comment below says where for its `Core.IndexWith` probe.
 static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
+                             CoreIdentifier interface_name,
                              SemIR::TypeId operand_type_id,
                              SemIR::TypeId subscript_type_id)
     -> std::optional<bool> {
-  auto interface_inst_id =
-      TryLookupNameInCore(context, loc_id, CoreIdentifier::IndexWith);
+  auto interface_inst_id = TryLookupNameInCore(context, loc_id, interface_name);
   if (!interface_inst_id.has_value()) {
     return std::nullopt;
   }
@@ -102,28 +109,35 @@ static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
   return result.has_value() && !result.has_error_value();
 }
 
-// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05): the
-// literal-subscript rule. An integer literal subscript on an operand that
-// implements `IndexWith(i64)` and has no `IndexWith(Core.IntLiteral)` impl
+// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05; DR-1, amended
+// 2026-10-22): the literal-subscript rule. An integer literal subscript on an
+// operand that implements `IndirectIndexWith(i64)` or `IndexWith(i64)` and has
+// no `IndirectIndexWith(Core.IntLiteral)` or `IndexWith(Core.IntLiteral)` impl
 // converts to `i64` before dispatch — the array arm's hardcoded subscript
 // conversion below, decided by impl lookup. Returns the target type, or
 // `nullopt` to dispatch the literal as written. A blanket `impl forall [U:
-// ImplicitAs(i64)] ... as IndexWith(U)` cannot serve literals instead:
-// `IntLiteral`'s `ImplicitAs(Int(To)).Convert` is compile-time only
-// (`int.convert_checked`), and a runtime `subscript: U` has no constant in
-// the `U = IntLiteral` specific, so that specific cannot lower
+// ImplicitAs(i64)] ... as IndexWith(U)`, or `as IndirectIndexWith(U)`, cannot
+// serve literals instead: `IntLiteral`'s `ImplicitAs(Int(To)).Convert` is
+// compile-time only (`int.convert_checked`), and a runtime `subscript: U` has
+// no constant in the `U = IntLiteral` specific, so that specific cannot lower
 // (lower/handle_call.cpp, "Missing constant value for call to comptime-only
 // function"); `Core.String`'s blanket impl lowers only because its `At` is
-// itself a builtin, lowered at the call site. An operand with its own
-// `IndexWith(Core.IntLiteral)` impl, and one with neither impl, dispatch as
-// written, so their results and diagnostics are unchanged.
+// itself a builtin, lowered at the call site. Such a blanket impl still
+// answers one of this rule's literal probes, so the literal is dispatched as
+// written to that specific, as upstream's dispatch, which has no literal rule,
+// does, and an `At` or `Ref` that uses its subscript at run time aborts
+// lowering there. An operand with its own
+// `IndirectIndexWith(Core.IntLiteral)` or `IndexWith(Core.IntLiteral)` impl,
+// and one with no impl for either subscript type, dispatch as written, so
+// their results and diagnostics are unchanged.
 static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
                                        SemIR::TypeId operand_type_id,
                                        SemIR::TypeId literal_type_id)
     -> std::optional<SemIR::TypeId> {
   auto loc_id = SemIR::LocId(node_id);
   auto has_literal_impl =
-      HasIndexWithImpl(context, loc_id, operand_type_id, literal_type_id);
+      HasIndexWithImpl(context, loc_id, CoreIdentifier::IndexWith,
+                       operand_type_id, literal_type_id);
   if (!has_literal_impl || *has_literal_impl) {
     return std::nullopt;
   }
@@ -137,29 +151,78 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   // discarded. What cannot be discarded is the `Core.Int` import_ref the
   // name lookup loads into this file (and the `Int` generic's constants): a
   // file whose only integer-typed expression is a literal subscript on a
-  // type with neither `IndexWith` impl gains exactly that import_ref in its
-  // SemIR dump (`import_ref Core//prelude/types/int, Int, loaded`). Its
-  // semantics are unchanged — the dispatch still diagnoses
-  // `Core.IndexWith(Core.IntLiteral)` — and there is no way to name `i64`
-  // without it; disclosed in fork/slices/plan.md R-5 (round 4).
+  // type with no `IndexWith` impl for the literal gains that import_ref in
+  // its SemIR dump (`import_ref Core//prelude/types/int, Int, loaded`), and
+  // there is no way to name `i64` without it. A literal the rule then leaves
+  // as written dispatches as it does without the rule, for example to the
+  // `IndirectIndexWith(Core.IntLiteral)` impl the probe below finds, to a C++
+  // `operator[]`, or to the `Core.IndexWith(Core.IntLiteral)` diagnostic.
+  // Likewise the `Core.IndexWith` import_ref the probe above loads
+  // (`import_ref Core//prelude/operators/index, IndexWith, loaded`), with the
+  // blanket `final` `IndexWith` impl its lookup imports, is the rule's own
+  // wherever the dispatch does not look that name up itself: where its
+  // `IndirectIndexWith` attempt succeeds, with the literal as written or
+  // converted to `i64` (`Core.Slice`, `Core.Buf`), and where its `IndexWith`
+  // attempt finds a C++ `operator[]`. A dispatch that diagnoses
+  // `Core.IndexWith(Core.IntLiteral)` looks the name up itself. Disclosed in
+  // fork/slices/plan.md R-5 (round 4) and fork/direction/plan.md sections 1.3
+  // and 2.2.
   context.inst_block_stack().Push();
   auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
                                  context.ints().Add(64));
   context.inst_block_stack().PopAndDiscard();
+  // A non-`Copy` element's `IndirectIndexWith(Core.IntLiteral)` impl is not
+  // covered by the blanket `IndexWith` impl, so it is asked separately. Both
+  // literal impls must be absent, so the order of the probes does not change
+  // the result; this one follows the `Core.Int` lookup so that the names the
+  // rule loads into `Core` keep their order (`IndexWith`, `Int`,
+  // `IndirectIndexWith`), and with it every SemIR dump's `imports`.
+  auto has_literal_ref_impl =
+      HasIndexWithImpl(context, loc_id, CoreIdentifier::IndirectIndexWith,
+                       operand_type_id, literal_type_id);
+  if (!has_literal_ref_impl || *has_literal_ref_impl) {
+    return std::nullopt;
+  }
+  // `IndexWith(i64)` is also implemented by `IndirectIndexWith`'s blanket
+  // `final` impl when the element is `Copy`; probe `IndirectIndexWith(i64)`
+  // first so that a non-`Copy` element is admitted too.
   auto has_i64_impl =
-      HasIndexWithImpl(context, loc_id, operand_type_id, i64_type_id);
+      HasIndexWithImpl(context, loc_id, CoreIdentifier::IndirectIndexWith,
+                       operand_type_id, i64_type_id);
+  if (has_i64_impl && !*has_i64_impl) {
+    has_i64_impl = HasIndexWithImpl(context, loc_id, CoreIdentifier::IndexWith,
+                                    operand_type_id, i64_type_id);
+  }
   if (!has_i64_impl || !*has_i64_impl) {
     return std::nullopt;
   }
   return i64_type_id;
 }
 
-auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
-  auto index_inst_id = context.node_stack().PopExpr();
-  auto operand_inst_id = context.node_stack().PopExpr();
+// Performs an index with base expression `operand_inst_id` and index
+// expression `index_inst_id`, `operand[index]`. A template-dependent operand of
+// opaque type is indexed when the template is instantiated.
+static auto PerformIndex(Context& context, SemIR::LocId loc_id,
+                         SemIR::InstId operand_inst_id,
+                         SemIR::InstId index_inst_id) -> SemIR::InstId {
   operand_inst_id = ConvertToValueOrRefExpr(context, operand_inst_id);
   auto operand_inst = context.insts().Get(operand_inst_id);
   auto operand_type_id = operand_inst.type_id();
+  // Proposal 2200: whether a template-dependent operand is an array, indexed
+  // by `ArrayIndex`, or a type that implements `IndexWith`, is known when the
+  // template is instantiated.
+  if (IsOpaqueTemplateDependentType(context, operand_type_id)) {
+    return AddDependentActionSplice<SemIR::IndexAction>(
+        context, loc_id,
+        {.type_id = SemIR::InstType::TypeId,
+         .operand_id = operand_inst_id,
+         .index_id = index_inst_id},
+        SemIR::TypeInstId::None);
+  }
+  // The types formed below are located at the index expression's parse node.
+  // On instantiation, `loc_id` is the `IndexAction`'s instruction, whose
+  // location is that node.
+  auto node_id = context.insts().GetCanonicalLocId(loc_id).node_id();
 
   CARBON_KIND_SWITCH(context.types().GetAsInst(operand_type_id)) {
     case CARBON_KIND(SemIR::ArrayType array_type): {
@@ -174,13 +237,13 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
         // If the operand is an array value, convert it to an ephemeral
         // reference to an array so we can perform a primitive indexing into it.
         operand_inst_id = AddInst<SemIR::ValueAsRef>(
-            context, node_id,
+            context, loc_id,
             {.type_id = operand_type_id, .value_id = operand_inst_id});
       }
       // Constant evaluation will perform a bounds check on this array indexing
       // if the index is constant.
       auto elem_id = AddInst<SemIR::ArrayIndex>(
-          context, node_id,
+          context, loc_id,
           {.type_id = context.types().GetTypeIdForTypeInstId(
                array_type.element_type_inst_id),
            .array_id = operand_inst_id,
@@ -192,17 +255,38 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
         // and `IndirectIndexWith`.
         elem_id = ConvertToValueExpr(context, elem_id);
       }
-      context.node_stack().Push(node_id, elem_id);
-      return true;
+      return elem_id;
     }
 
     default: {
-      // The literal-subscript probe runs only where `PerformIndexWith` would
-      // itself look `Core.IndexWith` up: `BuildBinaryOperator` exits before
-      // any lookup for an erroneous operand (a namespace or function used as
-      // a value, an unresolved name), and probing there would load or poison
-      // the name in the `Core` scope where the dispatch never does.
+      // Fork (DR-1 D-DR-7, composed with TP-1): whether a template-dependent
+      // operand implements `IndirectIndexWith(I)`, and so which interface
+      // subscripting uses, is known only per specific. An impl lookup that
+      // depends on a template parameter is resolved at monomorphization, where
+      // a failed `IndirectIndexWith` probe is an error rather than a fallback,
+      // so such an index is performed when the template is instantiated, as an
+      // opaque operand's is.
       auto index_type_id = context.insts().Get(index_inst_id).type_id();
+      if (OperandDependence(context, operand_type_id) ==
+              SemIR::ConstantDependence::Template ||
+          OperandDependence(context, index_type_id) ==
+              SemIR::ConstantDependence::Template) {
+        return AddDependentActionSplice<SemIR::IndexAction>(
+            context, loc_id,
+            {.type_id = SemIR::InstType::TypeId,
+             .operand_id = operand_inst_id,
+             .index_id = index_inst_id},
+            SemIR::TypeInstId::None);
+      }
+      // The literal-subscript probe runs only where `PerformIndexOperator`
+      // itself looks `Core.IndirectIndexWith` up, which its first attempt
+      // does for every operand but an erroneous one: `BuildBinaryOperator`
+      // exits before any lookup for an erroneous operand (a namespace or
+      // function used as a value, an unresolved name), and probing there
+      // would load or poison the names in the `Core` scope where the dispatch
+      // never does. The dispatch looks `Core.IndexWith` up only when that
+      // attempt fails and no C++ `operator[]` is found; elsewhere the probe's
+      // load of it is the rule's own (the rule's footprint comment).
       if (operand_inst_id != SemIR::ErrorInst::InstId &&
           context.types().Is<SemIR::IntLiteralType>(index_type_id)) {
         if (auto target_type_id = LiteralSubscriptTargetType(
@@ -212,12 +296,34 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
                                    index_inst_id, *target_type_id);
         }
       }
-      auto elem_id =
-          PerformIndexWith(context, node_id, operand_inst_id, index_inst_id);
-      context.node_stack().Push(node_id, elem_id);
-      return true;
+      // Per the design, prefer `IndirectIndexWith` if the type implements it,
+      // otherwise fall back to `IndexWith`.
+      // TODO: Use `IndexWith.Ref` when the operand is a durable reference.
+      auto elem_id = PerformIndexOperator(
+          context, loc_id, CoreIdentifier::IndirectIndexWith,
+          CoreIdentifier::Ref, operand_inst_id, index_inst_id,
+          /*diagnose=*/false);
+      if (elem_id == SemIR::ErrorInst::InstId) {
+        elem_id = PerformIndexOperator(
+            context, loc_id, CoreIdentifier::IndexWith, CoreIdentifier::At,
+            operand_inst_id, index_inst_id, /*diagnose=*/true);
+      }
+      return elem_id;
     }
   }
+}
+
+auto PerformAction(Context& context, SemIR::LocId loc_id,
+                   SemIR::IndexAction action) -> SemIR::InstId {
+  return PerformIndex(context, loc_id, action.operand_id, action.index_id);
+}
+
+auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
+  auto index_inst_id = context.node_stack().PopExpr();
+  auto operand_inst_id = context.node_stack().PopExpr();
+  context.node_stack().Push(
+      node_id, PerformIndex(context, node_id, operand_inst_id, index_inst_id));
+  return true;
 }
 
 }  // namespace Carbon::Check

@@ -31,6 +31,13 @@ auto LookupCppClassTemplate(
     Context& context, std::initializer_list<llvm::StringRef> name_components)
     -> clang::ClassTemplateDecl*;
 
+// Looks up a C++ type by name, and returns it, or a null type if the lookup
+// finds no type declaration. `name_components` is as for
+// `LookupCppClassTemplate`.
+auto LookupCppType(Context& context,
+                   std::initializer_list<llvm::StringRef> name_components)
+    -> clang::QualType;
+
 // Invents a Clang argument expression to use in overload resolution to
 // represent the given Carbon argument instruction.
 auto InventClangArg(Context& context, SemIR::InstId arg_id) -> clang::Expr*;

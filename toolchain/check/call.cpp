@@ -25,12 +25,14 @@
 #include "toolchain/check/generic.h"
 #include "toolchain/check/import_ref.h"
 #include "toolchain/check/inst.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/thunk.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/format_providers.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/entity_with_params_base.h"
+#include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
@@ -491,10 +493,13 @@ auto PerformCallToFunction(Context& context, SemIR::LocId loc_id,
         context, loc_id, callee.return_pattern_id, *callee_specific_id);
     if (arg_type_id == SemIR::ErrorInst::TypeId) {
       return_type_id = SemIR::ErrorInst::TypeId;
-    } else if (SemIR::InitRepr::ForType(context.sem_ir(), arg_type_id)
+    } else if (callee.call_param_ranges.return_size() > 0 &&
+               SemIR::InitRepr::ForType(context.sem_ir(), arg_type_id)
                    .MightBeInPlace()) {
       // Tentatively use storage for a temporary as the return argument.
       // This will be replaced if necessary when we perform initialization.
+      // Only do this if the callee has a return parameter to receive it;
+      // functions that return by reference or by value don't.
       return_arg_id = AddInst<SemIR::TemporaryStorage>(
           context, loc_id, {.type_id = arg_type_id});
     }
@@ -573,8 +578,11 @@ struct OverloadProbeResult {
 
 // Returns the range of explicit argument counts a member accepts, keyed on
 // whether the call binds a receiver, exactly as `ResolveCalleeInCall` computes
-// the expected count. Carbon has no default arguments, so the range is exact;
-// it is a range so that variadic members (W-013) can widen it.
+// it for the ordinary call `PerformCallToFunction` makes: from the parameter
+// count less the member's trailing parameters with default values
+// (`default_value_arity`) up to the parameter count. A call that omits
+// defaulted arguments selects the member as it would call the same function
+// alone; the commit's pattern match supplies the omitted values.
 static auto GetExplicitArityRange(Context& context,
                                   const SemIR::Function& function,
                                   SemIR::InstId self_id)
@@ -583,7 +591,17 @@ static auto GetExplicitArityRange(Context& context,
       context.inst_blocks().GetOrEmpty(function.param_patterns_id);
   size_t expected_args_size =
       param_patterns.size() - (self_id.has_value() ? 1 : 0);
-  return {expected_args_size, expected_args_size};
+  auto default_value_arity = static_cast<size_t>(function.default_value_arity);
+  if (default_value_arity > expected_args_size) {
+    // Only a bound receiver and a `self` declared in the implicit parameter
+    // list reach this: that `self` is diagnosed (`SelfInImplicitParamList`)
+    // and still found by `FindSelfPattern`, but it is not one of the explicit
+    // parameters the receiver is counted against. `ResolveCalleeInCall` would
+    // abort on this member for every argument count (W-363), so it accepts
+    // none.
+    return {1, 0};
+  }
+  return {expected_args_size - default_value_arity, expected_args_size};
 }
 
 // Returns the leaf parameter pattern of a parameter pattern, looking through
@@ -641,15 +659,23 @@ static auto IntLiteralArgFitsParam(Context& context, SemIR::InstId arg_id,
 }
 
 // The body of `ProbeOverloadCandidate`, run inside its scratch scope: deduces
-// a generic member's arguments (D-OV-4 step 2(d)), then converts each explicit
+// a generic member's arguments (D-OV-4 step 2(d)), then converts each supplied
 // argument to its parameter type in the resulting specific (step 2(e)).
+// Parameters whose arguments the call omits have default values and are not
+// probed: the commit's `CallerPatternMatch` supplies their defaults.
 static auto ProbeOverloadCandidateInScratchScope(
     Context& context, SemIR::LocId loc_id, const SemIR::Function& function,
     SemIR::SpecificId enclosing_specific_id, SemIR::InstId self_id,
     llvm::ArrayRef<SemIR::InstId> arg_ids) -> OverloadProbeResult {
   auto param_pattern_ids =
       context.inst_blocks().GetOrEmpty(function.param_patterns_id);
-  CARBON_CHECK(param_pattern_ids.size() == arg_ids.size());
+  // The arity step admitted the call, so the arguments are a prefix of the
+  // parameters and every omitted parameter is one of the trailing
+  // `default_value_arity` parameters that have default values.
+  CARBON_CHECK(arg_ids.size() <= param_pattern_ids.size() &&
+               param_pattern_ids.size() - arg_ids.size() <=
+                   static_cast<size_t>(function.default_value_arity));
+  param_pattern_ids = param_pattern_ids.take_front(arg_ids.size());
 
   OverloadProbeResult result;
 
@@ -710,13 +736,14 @@ static auto ProbeOverloadCandidateInScratchScope(
 }
 
 // Probes whether a call's arguments select `function` — deducing a generic
-// member's arguments and converting every argument to the corresponding
-// parameter — without diagnosing and without leaving any instruction, cleanup,
-// or generic-region state behind (D-OV-4 steps 2(d) and 2(e)). `arg_ids` is
-// `self` (if bound) followed by the explicit arguments, zipped against all of
-// the function's parameter patterns as `CallerPatternMatch` does. A bound
-// receiver is never converted here: its presence was checked by the caller,
-// and binding it is the commit's job.
+// member's arguments and converting every supplied argument to the
+// corresponding parameter — without diagnosing and without leaving any
+// instruction, cleanup, or generic-region state behind (D-OV-4 steps 2(d) and
+// 2(e)). `arg_ids` is `self` (if bound) followed by the explicit arguments,
+// zipped against the function's leading parameter patterns; the trailing
+// parameters the call omits have default values, which the commit's
+// `CallerPatternMatch` supplies. A bound receiver is never converted here: its
+// presence was checked by the caller, and binding it is the commit's job.
 static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
                                    const SemIR::Function& function,
                                    SemIR::SpecificId enclosing_specific_id,
@@ -938,6 +965,13 @@ static auto PerformCallToNonFunction(Context& context, SemIR::LocId loc_id,
                             .is_desugared = SemIR::BoolValue::From(false)},
           SemIR::TypeInstId::None);
     }
+    case CARBON_KIND(SemIR::StructuralRequirementType requirement_type): {
+      // Fork (SC-1, fork/structural/plan.md D-SC-4 / D-SC-20): a requirement
+      // named with no self type that satisfies it is never called.
+      CheckCalleeIsNotStructuralRequirement(context, loc_id,
+                                            requirement_type.function_id);
+      return SemIR::ErrorInst::InstId;
+    }
     case CARBON_KIND(SemIR::GenericClassType generic_class): {
       return PerformCallToGenericClass(context, loc_id, generic_class.class_id,
                                        generic_class.enclosing_specific_id,
@@ -994,9 +1028,23 @@ static auto IsCallPerformable(Context& context, SemIR::InstId callee_id,
       SemIR::ConstantDependence::Template) {
     return false;
   }
+  // A generic class, interface or named constraint applied to arguments forms
+  // a type. Its arguments are compile-time values that can be symbolic, as in
+  // a checked generic, so a template-dependent argument value makes the type
+  // dependent without making the call dependent; only an argument whose type
+  // is template-dependent defers the call. Forming the type now is what lets
+  // `Holder(T)` in a parameter's type deduce `T`.
+  bool forms_type =
+      context.types()
+          .IsOneOf<SemIR::GenericClassType, SemIR::GenericInterfaceType,
+                   SemIR::GenericNamedConstraintType>(
+              context.insts().Get(callee_id).type_id());
   for (auto arg_id : arg_ids) {
-    if (OperandDependence(context, arg_id) ==
-        SemIR::ConstantDependence::Template) {
+    auto dependence =
+        forms_type
+            ? OperandDependence(context, context.insts().Get(arg_id).type_id())
+            : OperandDependence(context, arg_id);
+    if (dependence == SemIR::ConstantDependence::Template) {
       return false;
     }
   }
@@ -1008,6 +1056,20 @@ static auto PerformCallHelper(Context& context, SemIR::LocId loc_id,
                               SemIR::InstId callee_id,
                               llvm::ArrayRef<SemIR::InstId> arg_ids,
                               bool is_desugared) {
+  // A function's type has one value, the function (proposal 2875), so a
+  // callee of function type with no constant value, such as a template's
+  // parameter `h: G` once `G` is `<type of F>`, calls that function. The
+  // callee expression has already been evaluated; only its value is replaced.
+  if (!context.constant_values().Get(callee_id).is_constant()) {
+    auto callee_type_id = context.insts().Get(callee_id).type_id();
+    if (context.types().Is<SemIR::FunctionType>(callee_type_id)) {
+      callee_id = AddInst<SemIR::StructValue>(
+          context, loc_id,
+          {.type_id = callee_type_id,
+           .elements_id = SemIR::InstBlockId::Empty});
+    }
+  }
+
   // Try treating the callee as a function first.
   auto callee = GetCallee(context.sem_ir(), callee_id);
 
@@ -1029,6 +1091,12 @@ static auto PerformCallHelper(Context& context, SemIR::LocId loc_id,
       return SemIR::ErrorInst::InstId;
     }
     case CARBON_KIND(SemIR::CalleeFunction fn): {
+      // Fork (SC-1, fork/structural/plan.md D-SC-4): a `template constraint`
+      // requirement `fn` is never the callee itself.
+      if (!CheckCalleeIsNotStructuralRequirement(context, loc_id,
+                                                 fn.function_id)) {
+        return SemIR::ErrorInst::InstId;
+      }
       return PerformCallToFunction(context, loc_id, callee_id, fn, arg_ids,
                                    is_desugared);
     }
@@ -1052,10 +1120,85 @@ static auto PerformCallHelper(Context& context, SemIR::LocId loc_id,
   }
 }
 
+// Returns whether a call argument has a symbolic type that is not
+// template-dependent, as a value `x: T` of a checked generic has, or is such a
+// type, as the `T` of `Cpp.Twice(T, x)` is. A value of a concrete type is not,
+// even when the value is symbolic, as `N` of `generic N: i32` is: its C++ type
+// is known where the generic is defined, and so is the call.
+static auto IsCheckedSymbolicCppArg(Context& context, SemIR::InstId arg_id)
+    -> bool {
+  auto type_id = context.insts().Get(arg_id).type_id();
+  if (OperandDependence(context, type_id) ==
+      SemIR::ConstantDependence::Checked) {
+    return true;
+  }
+  return context.types().Is<SemIR::FacetType>(type_id) &&
+         OperandDependence(context, arg_id) ==
+             SemIR::ConstantDependence::Checked;
+}
+
+// A call to an imported C++ function whose argument is a value of a symbolic
+// type that is not template-dependent, such as a checked generic's `x: T`, or
+// is such a type, as the `T` of `Cpp.Twice(T, x)`, cannot be resolved by Clang
+// until the type is known. As for a C++ template name applied to a symbolic
+// argument (`PerformCallToNonFunction`), the call is deferred as a `CallAction`
+// that each specific performs once its arguments' types are concrete
+// (`ActionIsPerformable`); a type argument is wrapped in a `TemplateInst`, as
+// there. Returns `None` if the call is not such a call.
+static auto DeferCppCallOnSymbolicArgs(Context& context, SemIR::LocId loc_id,
+                                       SemIR::InstId callee_id,
+                                       llvm::ArrayRef<SemIR::InstId> arg_ids,
+                                       bool is_desugared) -> SemIR::InstId {
+  if (llvm::none_of(arg_ids,
+                    [&](SemIR::InstId arg_id) {
+                      return IsCheckedSymbolicCppArg(context, arg_id);
+                    }) ||
+      !std::holds_alternative<SemIR::CalleeCppOverloadSet>(
+          GetCallee(context.sem_ir(), callee_id))) {
+    return SemIR::InstId::None;
+  }
+  // A form-dependent argument, such as a reference to `x:? Fm`, has no form
+  // that the call could take in a specific either, so the call is left to
+  // `PerformCallHelper`, which reports that where the call is written. So is
+  // a pack expansion argument, which a C++ function has no pack expansion
+  // parameter to match (D-VA-5).
+  if (llvm::any_of(arg_ids, [&](SemIR::InstId arg_id) {
+        return SemIR::GetExprCategory(context.sem_ir(), arg_id) ==
+                   SemIR::ExprCategory::Dependent ||
+               IsPackExpansionArg(context, arg_id);
+      })) {
+    return SemIR::InstId::None;
+  }
+  llvm::SmallVector<SemIR::InstId> inst_ids = {callee_id};
+  for (auto arg_id : arg_ids) {
+    auto arg = context.insts().Get(arg_id);
+    if (IsCheckedSymbolicCppArg(context, arg_id) &&
+        context.constant_values().Get(arg_id).is_symbolic() &&
+        context.types().Is<SemIR::FacetType>(arg.type_id())) {
+      inst_ids.push_back(AddInst(
+          context, SemIR::LocId(arg_id),
+          SemIR::TemplateInst{.type_id = arg.type_id(), .inst_id = arg_id}));
+    } else {
+      inst_ids.push_back(arg_id);
+    }
+  }
+  return AddDependentActionSplice(
+      context, loc_id,
+      SemIR::CallAction{.type_id = SemIR::InstType::TypeId,
+                        .inst_block_id = context.inst_blocks().Add(inst_ids),
+                        .is_desugared = SemIR::BoolValue::From(is_desugared)},
+      SemIR::TypeInstId::None);
+}
+
 auto PerformCall(Context& context, SemIR::LocId loc_id, SemIR::InstId callee_id,
                  llvm::ArrayRef<SemIR::InstId> arg_ids, bool is_desugared)
     -> SemIR::InstId {
   if (IsCallPerformable(context, callee_id, arg_ids)) {
+    if (auto deferred_id = DeferCppCallOnSymbolicArgs(
+            context, loc_id, callee_id, arg_ids, is_desugared);
+        deferred_id.has_value()) {
+      return deferred_id;
+    }
     return PerformCallHelper(context, loc_id, callee_id, arg_ids, is_desugared);
   }
 

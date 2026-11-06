@@ -84,6 +84,21 @@ auto HandleParseNode(Context& context, Parse::PackExpansionStartId node_id)
                             "pack expansion pattern in a pattern other than a "
                             "parameter list or let");
       }
+      // Fork (VA-1, W-367): a choice alternative's parameter list is an
+      // explicit parameter list too, checked in the alternative's own scope
+      // (`ScopeStack::PushForChoiceAlternative`, the choice's `ClassDecl` with
+      // no name scope), but an alternative's parameters are its payload's
+      // fields, which a pack cannot be yet.
+      // TODO: Support a pack expansion pattern in a choice alternative's
+      // parameter list, or diagnose it as the design decides.
+      if (auto scope_inst_id = context.scope_stack().PeekInstId();
+          scope_inst_id.has_value() &&
+          context.insts().Is<SemIR::ClassDecl>(scope_inst_id) &&
+          !context.scope_stack().PeekNameScopeId().has_value()) {
+        return context.TODO(node_id,
+                            "pack expansion pattern in a choice "
+                            "alternative's parameter list");
+      }
       // Fork (VA-1, D-VA-5): an interface's function is matched by the
       // functions of its impls, and the thunk that adapts one to the other
       // does not clone a pack expansion pattern yet. Fork (VA-2, D-VA2-9): a

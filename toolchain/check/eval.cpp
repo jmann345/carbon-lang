@@ -6,10 +6,12 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <optional>
 #include <utility>
 
 #include "common/raw_string_ostream.h"
+#include "common/set.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/Support/ConvertUTF.h"
 #include "llvm/Support/SaveAndRestore.h"
@@ -242,6 +244,13 @@ class EvalContext {
 
   auto emitter() -> DiagnosticEmitterBase& { return context().emitter(); }
 
+  // Records that the runtime value `inst_id` has been diagnosed where a
+  // constant is required. Returns whether it had not been diagnosed yet, so
+  // that each use of the same value in this context is diagnosed once.
+  auto MarkNonConstantDiagnosed(SemIR::InstId inst_id) -> bool {
+    return diagnosed_non_constant_ids_.Insert(inst_id).is_inserted();
+  }
+
  protected:
   explicit EvalContext(Context* context, SemIR::LocId fallback_loc_id,
                        SemIR::SpecificId specific_id,
@@ -267,6 +276,8 @@ class EvalContext {
   // instructions that have already been evaluated. This is here rather than in
   // `FunctionEvalContext` so we can reference it from `GetConstantValue`.
   std::optional<LocalEvalInfo> local_eval_info_;
+  // Runtime values already diagnosed where a constant is required.
+  Set<SemIR::InstId> diagnosed_non_constant_ids_;
   // Fork (VA-2): see `pack_index()`.
   std::optional<uint64_t> pack_index_;
 };
@@ -465,6 +476,13 @@ static auto DiagnoseNonConstantValue(Context& context, SemIR::LocId loc_id)
   context.emitter().Emit(loc_id, EvalRequiresConstantValue);
 }
 
+auto DiagnoseAliasRequiresConstantValue(Context& context, SemIR::LocId loc_id)
+    -> void {
+  CARBON_DIAGNOSTIC(AliasRequiresConstantValue, Error,
+                    "alias refers to a runtime value");
+  context.emitter().Emit(loc_id, AliasRequiresConstantValue);
+}
+
 // Gets a constant value for an `inst_id`, diagnosing when the input is not a
 // constant value.
 static auto RequireConstantValue(EvalContext& eval_context,
@@ -517,8 +535,21 @@ static auto GetConstantValue(EvalContext& eval_context,
           GetConstantValue(eval_context, SemIR::InstId(inst_id), &inner_phase);
       const_inst_id.has_value()) {
     // The instruction has a constant value. Use that as the operand of the
-    // action.
+    // action, unless the instruction is a struct or tuple literal. A literal
+    // is its own operand, as it is when it is not constant, because converting
+    // a struct literal to a class gives the fields that it omits their default
+    // initializers (`ConvertStructToClass`) and converting its constant value,
+    // a struct value, does not. So a constant literal that is converted for
+    // each instantiation, such as `{.a = 4}` for a class template `D(N)` with
+    // the field `var k: i32 = N + 1;`, or a tuple or struct literal that holds
+    // one, takes the defaults of the class's specific, as it does without a
+    // template. The action refers to the literal's elements in the specific
+    // (`AddSpecificInst`).
     *phase = LatestPhase(*phase, inner_phase);
+    if (eval_context.insts().IsOneOf<SemIR::StructLiteral, SemIR::TupleLiteral>(
+            inst_id)) {
+      return inst_id;
+    }
     return const_inst_id;
   }
 
@@ -3117,6 +3148,125 @@ static auto ConvertEvalResultToConstantId(Context& context,
   return result.existing();
 }
 
+namespace {
+// An operand whose value in an evaluation context is not a constant.
+struct NonConstantOperand {
+  // The operand, or `None` if there is none to point at, such as an argument
+  // of a specific.
+  SemIR::InstId inst_id = SemIR::InstId::None;
+  // Whether the operand is used as a type.
+  bool is_type = false;
+};
+}  // namespace
+
+// Returns whether `inst_id` has a value in this context that is not a
+// constant.
+static auto IsRuntimeOperand(EvalContext& eval_context, SemIR::InstId inst_id)
+    -> bool {
+  return inst_id.has_value() &&
+         !eval_context.GetConstantValue(inst_id).is_constant();
+}
+
+using NonConstantOperands = llvm::SmallVector<NonConstantOperand, 2>;
+
+// Overloads of `AddNonConstantOperandsIn` for each kind of field, which add to
+// `operands` each operand in the field whose value in this context is not a
+// constant. By default, a field has no operand to report, such as the
+// instruction operand of an action, whose value can be a runtime instruction.
+template <typename IdT>
+static auto AddNonConstantOperandsIn(EvalContext& /*eval_context*/, IdT /*id*/,
+                                     NonConstantOperands& /*operands*/)
+    -> void {}
+
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::InstId inst_id,
+                                     NonConstantOperands& operands) -> void {
+  if (IsRuntimeOperand(eval_context, inst_id)) {
+    operands.push_back({.inst_id = inst_id, .is_type = false});
+  }
+}
+
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::TypeInstId inst_id,
+                                     NonConstantOperands& operands) -> void {
+  if (IsRuntimeOperand(eval_context, inst_id)) {
+    operands.push_back({.inst_id = inst_id, .is_type = true});
+  }
+}
+
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::InstBlockId block_id,
+                                     NonConstantOperands& operands) -> void {
+  if (block_id.has_value()) {
+    for (auto inst_id : eval_context.inst_blocks().Get(block_id)) {
+      AddNonConstantOperandsIn(eval_context, inst_id, operands);
+    }
+  }
+}
+
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::StructTypeFieldsId fields_id,
+                                     NonConstantOperands& operands) -> void {
+  for (auto field : eval_context.sem_ir().struct_type_fields().Get(fields_id)) {
+    AddNonConstantOperandsIn(eval_context, field.type_inst_id, operands);
+  }
+}
+
+template <typename BundleT>
+static auto AddNonConstantOperandsIn(EvalContext& eval_context,
+                                     SemIR::BundleId<BundleT> bundle_id,
+                                     NonConstantOperands& operands) -> void {
+  std::apply(
+      [&](auto... ids) {
+        (..., AddNonConstantOperandsIn(eval_context, ids, operands));
+      },
+      eval_context.context().bundles().GetAsTuple(bundle_id));
+}
+
+// Returns the operands of the instruction `inst_id` whose values in this
+// context are not constants, in operand order.
+static auto FindNonConstantOperands(EvalContext& eval_context,
+                                    SemIR::InstId inst_id)
+    -> NonConstantOperands {
+  NonConstantOperands operands;
+  auto inst = eval_context.insts().Get(inst_id);
+  for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+    arg.Dispatch<void>(
+        [&](auto id) { AddNonConstantOperandsIn(eval_context, id, operands); });
+  }
+  return operands;
+}
+
+// Makes the value in this context's specific of the generic's instruction
+// `inst_id`, a runtime value diagnosed where a constant is required, the error
+// constant, as a type expression that cannot be evaluated is an error outside a
+// template (`ExprAsType`), so that its other uses in the specific, such as the
+// type of a variable or of a function's return, are errors instead of a runtime
+// value.
+static auto MakeSpecificValueAnError(EvalContext& eval_context,
+                                     SemIR::InstId inst_id) -> void {
+  auto const_id = eval_context.constant_values().GetAttached(inst_id);
+  if (!const_id.is_symbolic()) {
+    return;
+  }
+  const auto& symbolic =
+      eval_context.constant_values().GetSymbolicConstant(const_id);
+  const auto& specific =
+      eval_context.specifics().Get(eval_context.specific_id());
+  if (symbolic.generic_id != specific.generic_id) {
+    return;
+  }
+  auto value_block_id = specific.GetValueBlock(symbolic.index.region());
+  if (!value_block_id.has_value()) {
+    return;
+  }
+  auto& value_id = eval_context.inst_blocks().GetMutable(
+      value_block_id)[symbolic.index.index()];
+  if (!value_id.has_value()) {
+    value_id = SemIR::ErrorInst::InstId;
+  }
+}
+
 // Evaluates an instruction of a known type in an evaluation context. The
 // default behavior of this function depends on the constant kind of the
 // instruction:
@@ -3152,6 +3302,47 @@ static auto TryEvalTypedInst(EvalContext& eval_context, SemIR::InstId inst_id,
     if ((SemIR::Internal::HasTypeIdMember<InstT> &&
          !ReplaceTypeWithConstantValue(eval_context, inst_id, &inst, &phase)) ||
         !ReplaceAllFieldsWithConstantValues(eval_context, &inst, &phase)) {
+      // In a specific, an operand used as a type, or any operand of a type or
+      // of an instruction that is always constant, can be the result of an
+      // action that is not a constant there: `x.0`, `*p`, `a[0]` or a call on
+      // a template's runtime value, used as a type or as an array bound. Such
+      // an operand is diagnosed where it is used, as it is outside a template
+      // (`ExprAsType`, handle_array.cpp), once for each value: the
+      // instruction's first such operand, or the instruction itself when no
+      // operand can be pointed at. Every such operand is an error in the
+      // specific, so that the instruction's other uses of the specific's
+      // values, such as the element type of `array(x.0, x.1)` read by an
+      // access to its element, see errors rather than runtime values. A type,
+      // or an instruction that is always constant, is then an error too, so
+      // that the types formed from it are errors; any other instruction, such
+      // as an action converting to that type, is not constant, as before.
+      constexpr bool RequiresConstantOperands =
+          ConstantKind == SemIR::InstConstantKind::Always ||
+          InstT::Kind.is_type() == SemIR::InstIsType::Always;
+      if (eval_context.specific_id().has_value()) {
+        bool diagnosed = false;
+        for (auto operand : FindNonConstantOperands(eval_context, inst_id)) {
+          if (!RequiresConstantOperands && !operand.is_type) {
+            continue;
+          }
+          if (!diagnosed) {
+            diagnosed = true;
+            if (eval_context.MarkNonConstantDiagnosed(operand.inst_id)) {
+              DiagnoseNonConstantValue(
+                  eval_context.context(),
+                  eval_context.GetDiagnosticLoc({operand.inst_id, inst_id}));
+            }
+          }
+          MakeSpecificValueAnError(eval_context, operand.inst_id);
+        }
+        if constexpr (RequiresConstantOperands) {
+          if (!diagnosed && eval_context.MarkNonConstantDiagnosed(inst_id)) {
+            DiagnoseNonConstantValue(eval_context.context(),
+                                     eval_context.GetDiagnosticLoc({inst_id}));
+          }
+          return SemIR::ErrorInst::ConstantId;
+        }
+      }
       if constexpr (ConstantKind == SemIR::InstConstantKind::Always) {
         CARBON_FATAL("{0} should always be constant", InstT::Kind);
       }
@@ -3630,6 +3821,19 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
                                          context.insts().Get(inst_id));
     CARBON_CHECK(const_id.has_value(), "Failed to evaluate {0} in eval block",
                  context.insts().Get(inst_id));
+    if (!const_id.is_constant()) {
+      // An alias of a template-dependent value is evaluated for each specific
+      // (`AddAliasCheckToCurrentGeneric`), where its value must be a constant,
+      // as `alias` requires where the value is known: a runtime value, such as
+      // a call to a non-constant function, is diagnosed the same way, and its
+      // uses in the specific are errors.
+      if (auto alias = context.insts().TryGetAs<SemIR::AliasBinding>(inst_id)) {
+        DiagnoseAliasRequiresConstantValue(
+            context, eval_context.GetDiagnosticLoc({alias->value_id, inst_id}));
+        MakeSpecificValueAnError(eval_context, alias->value_id);
+        const_id = SemIR::ErrorInst::ConstantId;
+      }
+    }
     if (const_id == SemIR::ErrorInst::ConstantId) {
       specific.SetHasError(region);
     }

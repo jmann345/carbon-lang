@@ -1074,7 +1074,11 @@ template parameters, use the `template` keyword before `constraint`. Method,
 associated constant, and associated function requirements may only be declared
 inside a `template constraint`. Note that a checked-generic constraint ignores
 the names of members defined for a type, but a template constraint can depend on
-them.
+them. The full design for template constraints — including member requirements,
+`require` validity blocks, boolean predicate requirements, satisfaction and
+probe-mode evaluation semantics, and the mapping to and from C++20 concepts — is
+in [Template constraints](template_constraints.md), fixed by fork decision
+[F-010](/fork/decision-log.md).
 
 There is an analogy between declarations used in a `template constraint` and in
 an `interface` definition. If an `interface` `I` has (non-`alias`,

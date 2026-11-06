@@ -6,16 +6,16 @@
 // EXPECT-STDOUT:
 //   42
 //
-// The executable slice of the evaluator-documentation bullet: the "Getting
-// started" walkthrough in README.md (## Getting started) tells an evaluator
-// to download a nightly carbon_toolchain tarball, write exactly this program
+// The first program of the evaluator documentation: README.md "Getting
+// started" and docs/guides/getting_started.md "Your first program" both tell
+// an evaluator to write exactly this program with the same command
 // (`echo "import Core library \"io\"; fn Run() { Core.Print(42); }" >
 // forty_two.carbon`), then `carbon compile` / `carbon link` / run it. This
-// file is that documented program verbatim (one line, as the doc's echo
-// writes it), proving the getting-started walkthrough's example really
-// compiles, links, and prints 42 on the arbiter toolchain — i.e. the
-// documented evaluation path works, not just exists. The rest of the bullet
-// (FAQ breadth, missing tutorial/walkthrough in docs/guides) is document
-// review; see evaluator_docs_review.carbon.
+// file is what that echo writes, verbatim (one line), so the documented first
+// step compiles, links and prints 42 on the toolchain under test;
+// fork/evaluator/check_samples.py checks that both pages still show the echo
+// and that this body is its output. The tutorial's samples are the
+// project/evaluator_tutorial_* programs, each transcribed byte for byte from
+// docs/guides/tutorial.md.
 
 import Core library "io"; fn Run() { Core.Print(42); }

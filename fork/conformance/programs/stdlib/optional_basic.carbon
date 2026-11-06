@@ -12,17 +12,17 @@
 //   7
 //   42
 //
-// Working slice of the (PARTIAL) Optional bullet: the placeholder API in
-// core/prelude/types/optional.carbon — `Core.Optional(T).None()` /
+// Working slice of the Optional bullet: the API in
+// core/prelude/types/optional.carbon that the fork's design F-015
+// (docs/design/optional.md) adopts — `Core.Optional(T).None()` /
 // `.Some(v)` constructors, `.HasValue()`, `.Get()`, the implicit
 // `T -> Optional(T)` conversion (the `OptionalAs`-backed `ImplicitAs` impl,
 // exercised as `var _: Core.Optional(i32) = a;` in
 // toolchain/lower/testdata/primitives/optional.carbon), and the `Copy` impl
 // (initializing one Optional from another, ibid. `fn F(c) { return c; }`).
 // Call shapes follow examples/advent2024/io_utils.carbon (`unread_char`).
-// The known-missing slice (no approved design — the file itself says the API
-// is a placeholder, optional.carbon:27-28; e.g. no `==`) is encoded in
-// optional_missing_ops.carbon.
+// Comparison is arbitrated by optional_missing_ops.carbon and the three
+// optional_compare_* programs (OP-1).
 
 import Core library "io";
 

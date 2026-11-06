@@ -199,6 +199,40 @@ interface I {
   fn F(... each n: i64);
 }
 
+// --- fail_todo_choice_alternative.carbon
+library "[[@TEST_NAME]]";
+
+// W-367: a pack expansion pattern in a choice alternative's parameter list.
+// CHECK:STDERR: fail_todo_choice_alternative.carbon:[[@LINE+4]]:14: error: semantics TODO: `pack expansion pattern in a choice alternative's parameter list` [SemanticsTodo]
+// CHECK:STDERR: choice C { A(... each x: i32) }
+// CHECK:STDERR:              ^~~
+// CHECK:STDERR:
+choice C { A(... each x: i32) }
+
+// --- fail_todo_choice_second_alternative.carbon
+library "[[@TEST_NAME]]";
+
+// W-367: the second alternative's list is checked in the same alternative
+// scope as the first's.
+// CHECK:STDERR: fail_todo_choice_second_alternative.carbon:[[@LINE+4]]:17: error: semantics TODO: `pack expansion pattern in a choice alternative's parameter list` [SemanticsTodo]
+// CHECK:STDERR: choice C { A, B(... each x: i32) }
+// CHECK:STDERR:                 ^~~
+// CHECK:STDERR:
+choice C { A, B(... each x: i32) }
+
+// --- fail_todo_choice_in_class.carbon
+library "[[@TEST_NAME]]";
+
+// W-367: a choice declared in a class; the alternative's scope, not the
+// class's, is the innermost.
+class Outer {
+  // CHECK:STDERR: fail_todo_choice_in_class.carbon:[[@LINE+4]]:16: error: semantics TODO: `pack expansion pattern in a choice alternative's parameter list` [SemanticsTodo]
+  // CHECK:STDERR:   choice C { A(... each x: i32) }
+  // CHECK:STDERR:                ^~~
+  // CHECK:STDERR:
+  choice C { A(... each x: i32) }
+}
+
 // --- fail_todo_conversion_cleanup.carbon
 library "[[@TEST_NAME]]";
 

@@ -148,8 +148,8 @@ using SpecificsByGeneric =
     GroupedValueStore<GenericId, SpecificId, Tag<CheckIRId>>;
 
 // Collects the specifics in `file`, grouped by the generic they're a specific
-// of. A specific that has never been resolved, or whose resolution failed,
-// doesn't have instructions to check, so is omitted.
+// of. A specific whose definition has never been resolved, or whose resolution
+// failed, doesn't have body instructions to check, so is omitted.
 //
 // This grouping is built once for the file so that each generic function can
 // find its own specifics without scanning all of them.
@@ -159,7 +159,7 @@ using SpecificsByGeneric =
 auto CollectSpecifics(const File& file) -> SpecificsByGeneric {
   return SpecificsByGeneric(file.generics(), [&](auto add) {
     for (const auto& [specific_id, specific] : file.specifics().enumerate()) {
-      if (specific.IsUnresolved() || specific.HasError()) {
+      if (!specific.definition_block_id.has_value() || specific.HasError()) {
         continue;
       }
       add(specific.generic_id, specific_id);

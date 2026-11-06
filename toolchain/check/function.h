@@ -71,23 +71,42 @@ auto MakeGeneratedFunctionDecl(Context& context, SemIR::LocId loc_id,
 // `prev_function_id` is specified, a specific version of `prev_function`.
 // Prints a suitable diagnostic and returns false if not. Never checks for a
 // syntactic match.
-auto CheckFunctionReturnTypeMatches(Context& context,
-                                    const SemIR::Function& new_function,
-                                    const SemIR::Function& prev_function,
-                                    SemIR::SpecificId prev_specific_id,
-                                    bool diagnose = true) -> bool;
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-5(d)): `new_specific_id`, when
+// specified, is the specific version of `new_function` to compare — a member
+// of a generic class specific matched against a requirement declared outside
+// that generic.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 and
+// 13): `found_error`, when not null, selects the errors-match mode, in which an
+// error return type matches any return type, though not the absence of one,
+// and sets `*found_error`.
+auto CheckFunctionReturnTypeMatches(
+    Context& context, const SemIR::Function& new_function,
+    const SemIR::Function& prev_function, SemIR::SpecificId prev_specific_id,
+    bool diagnose = true,
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None,
+    bool* found_error = nullptr) -> bool;
 
 // Checks that `new_function` has the same parameter types and return type as
 // `prev_function`, or if `prev_function_id` is specified, a specific version of
 // `prev_function`. Prints a suitable diagnostic and returns false if not.
 //
 // `check_syntax` is false if the redeclaration can be called via a thunk with
-// implicit conversions from the original declaration.
-auto CheckFunctionTypeMatches(Context& context,
-                              const SemIR::Function& new_function,
-                              const SemIR::Function& prev_function,
-                              SemIR::SpecificId prev_specific_id,
-                              bool check_syntax, bool diagnose = true) -> bool;
+// implicit conversions from the original declaration. `new_specific_id` is as
+// for `CheckFunctionReturnTypeMatches`.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error`, when not null, selects the errors-match mode of
+// `CheckRedeclParamsMatch` and `CheckFunctionReturnTypeMatches`: the
+// comparison is the same, except that a part with an error is compared as they
+// describe instead of failing it, and `*found_error` is set when one is.
+auto CheckFunctionTypeMatches(
+    Context& context, const SemIR::Function& new_function,
+    const SemIR::Function& prev_function, SemIR::SpecificId prev_specific_id,
+    bool check_syntax, bool diagnose = true,
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None,
+    bool* found_error = nullptr) -> bool;
 
 inline auto CheckFunctionTypeMatches(Context& context,
                                      const SemIR::Function& new_function,

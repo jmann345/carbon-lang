@@ -6,10 +6,12 @@
 
 #include "llvm/ADT/SmallBitVector.h"
 #include "toolchain/base/kind_switch.h"
+#include "toolchain/check/action.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/inst.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/subst.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/diagnostic.h"
@@ -209,7 +211,17 @@ class DeductionContext {
   // argument list. Must not be called before deduction is complete.
   auto MakeSpecific() -> SemIR::SpecificId;
 
+  // Fork (SC-1, W-139): a call's deduction, not an impl's, defers the
+  // structural requirements of a checked-symbolic argument for a `template`
+  // binding to each specific (`ConvertBindingArg`).
+  auto DeferStructuralChecksOfTemplateArgs() -> void {
+    defer_structural_checks_of_template_args_ = true;
+  }
+
  private:
+  auto ConvertBindingArg(SemIR::InstId binding_id, SemIR::InstId arg_id,
+                         SemIR::TypeId type_id) -> SemIR::InstId;
+
   auto NoteInitializingParam(SemIR::InstId param_id, SemIR::LocId loc_id,
                              auto& builder) -> void {
     if (auto param = context().insts().TryGetAs<SemIR::SymbolicBindingPattern>(
@@ -228,6 +240,12 @@ class DeductionContext {
   SemIR::LocId loc_id_;
   SemIR::GenericId generic_id_;
   bool diagnose_;
+  // Fork (SC-1, W-139): see `DeferStructuralChecksOfTemplateArgs`.
+  bool defer_structural_checks_of_template_args_ = false;
+  // Fork (SC-1, W-139): the arguments and binding types whose structural
+  // requirements `ConvertBindingArg` deferred to each specific.
+  llvm::SmallVector<std::pair<SemIR::ConstantId, SemIR::TypeId>>
+      deferred_checks_;
 
   DeductionWorklist worklist_;
 
@@ -341,10 +359,7 @@ auto DeductionContext::Deduce() -> bool {
           });
       // `want_value` is only set within types and the arguments for symbolic
       // bindings, so this should never perform a runtime conversion.
-      arg_id = diagnose_ ? ConvertToValueOfType(context(), loc_id_, arg_id,
-                                                param_type_id)
-                         : TryConvertToValueOfType(context(), loc_id_, arg_id,
-                                                   param_type_id);
+      arg_id = ConvertBindingArg(param_id, arg_id, param_type_id);
       if (arg_id == SemIR::ErrorInst::InstId) {
         return false;
       }
@@ -692,10 +707,7 @@ auto DeductionContext::CheckDeductionIsComplete() -> bool {
       }
 
       auto converted_arg_id =
-          diagnose_ ? ConvertToValueOfType(context(), loc_id_, deduced_arg_id,
-                                           binding_type_id)
-                    : TryConvertToValueOfType(context(), loc_id_,
-                                              deduced_arg_id, binding_type_id);
+          ConvertBindingArg(binding_id, deduced_arg_id, binding_type_id);
       // The conversion of the argument to the parameter type can fail after
       // applying the enclosing specific, in which case deduction fails.
       if (converted_arg_id == SemIR::ErrorInst::InstId) {
@@ -732,6 +744,93 @@ auto DeductionContext::CheckDeductionIsComplete() -> bool {
   return true;
 }
 
+// Fork (SC-1, W-139): returns whether `binding_id` is a `template` binding or
+// binding pattern.
+static auto IsTemplateBinding(Context& context, SemIR::InstId binding_id)
+    -> bool {
+  auto entity_name_id = SemIR::EntityNameId::None;
+  if (auto binding =
+          context.insts().TryGetAs<SemIR::SymbolicBinding>(binding_id)) {
+    entity_name_id = binding->entity_name_id;
+  } else if (auto pattern =
+                 context.insts().TryGetAs<SemIR::SymbolicBindingPattern>(
+                     binding_id)) {
+    entity_name_id = pattern->entity_name_id;
+  }
+  return entity_name_id.has_value() &&
+         context.entity_names().Get(entity_name_id).is_template;
+}
+
+// Converts `arg_id`, the argument for the binding or binding pattern
+// `binding_id`, to `type_id`.
+//
+// Fork (SC-1, W-139; leads issue 2153): "We have decided to support passing a
+// symbolic constant to a template parameter" (generics/overview.md), and such
+// a call "relies on monomorphization" (generics/appendix-witness.md). The call
+// stays an ordinary call with a symbolic specific, as when the binding's
+// constraint is an interface: the deduced value is the argument converted at
+// the definition, a checked-symbolic facet value, so the callee's specific and
+// its declared return type stay checked-symbolic. A structural requirement can
+// be checked only for a concrete self (D-SC-6), so when a checked-symbolic
+// argument is converted for a `template` binding whose facet type has
+// structural requirements, the conversion defers them (the facet type's
+// interfaces are still checked here), and a separate requirement is added to
+// the eval block of the enclosing generic: a `ConvertToValueAction` on the
+// argument wrapped in a `TemplateInst`, so that it waits for a concrete
+// argument and is performed in each specific, where a failure is diagnosed.
+// That requirement is not the deduced value. OV-4's probe defers the same
+// requirements without adding it, so that an `overload fn` set's member is
+// chosen as the single function would be, and its commit, which deduces again
+// diagnosing, adds it. A delayed action adds none: it is performed in the
+// resolution of a specific whose argument this is, and the specific for each
+// concrete argument performs it again (`Context::delayed_action_depth`).
+auto DeductionContext::ConvertBindingArg(SemIR::InstId binding_id,
+                                         SemIR::InstId arg_id,
+                                         SemIR::TypeId type_id)
+    -> SemIR::InstId {
+  auto convert = [&] {
+    return diagnose_
+               ? ConvertToValueOfType(context(), loc_id_, arg_id, type_id)
+               : TryConvertToValueOfType(context(), loc_id_, arg_id, type_id);
+  };
+  auto arg_const_id = context().constant_values().Get(arg_id);
+  if (!defer_structural_checks_of_template_args_ ||
+      !IsTemplateBinding(context(), binding_id) ||
+      !arg_const_id.is_symbolic() ||
+      context().constant_values().GetDependence(arg_const_id) !=
+          SemIR::ConstantDependence::Checked ||
+      !FacetTypeHasStructuralRequirements(context(), type_id).has_value()) {
+    return convert();
+  }
+  int deferrals = 0;
+  auto* outer_deferrals =
+      std::exchange(context().structural_check_deferrals(), &deferrals);
+  auto converted_id = convert();
+  context().structural_check_deferrals() = outer_deferrals;
+  if (deferrals == 0 || converted_id == SemIR::ErrorInst::InstId ||
+      !diagnose_ || context().delayed_action_depth() > 0) {
+    return converted_id;
+  }
+  // One requirement per argument and binding type, so that a binding deduced
+  // from two parameters is checked once.
+  auto key = std::pair(arg_const_id, type_id);
+  if (llvm::is_contained(deferred_checks_, key)) {
+    return converted_id;
+  }
+  deferred_checks_.push_back(key);
+  // The `TemplateInst` is in no block: only the action refers to it.
+  auto template_arg_id = AddInstInNoBlock<SemIR::TemplateInst>(
+      context(), loc_id_,
+      {.type_id = context().insts().Get(arg_id).type_id(), .inst_id = arg_id});
+  AddDependentActionInst(
+      context(), loc_id_,
+      SemIR::ConvertToValueAction{
+          .type_id = SemIR::InstType::TypeId,
+          .inst_id = template_arg_id,
+          .target_type_inst_id = context().types().GetTypeInstId(type_id)});
+  return converted_id;
+}
+
 auto DeductionContext::MakeSpecific() -> SemIR::SpecificId {
   // TODO: Convert the deduced values to the types of the bindings.
 
@@ -746,6 +845,10 @@ auto DeduceGenericCallArguments(
     llvm::ArrayRef<SemIR::InstId> arg_ids, bool diagnose) -> SemIR::SpecificId {
   DeductionContext deduction(&context, loc_id, generic_id,
                              enclosing_specific_id, diagnose);
+  // Fork (SC-1, W-139): OV-4's probe, the only non-diagnosing call deduction,
+  // defers too, so that an overload set's first match is the member the call
+  // to a single function would accept (`ConvertBindingArg`).
+  deduction.DeferStructuralChecksOfTemplateArgs();
 
   // Prepare to perform deduction of the parameters against the explicit
   // arguments. When `self` is provided as the method-call receiver it is
@@ -792,9 +895,17 @@ auto DeduceImplArguments(Context& context, SemIR::LocId loc_id,
   // instructions to any enclosing generic, so we push a fresh generic region.
   context.inst_block_stack().Push();
   context.generic_region_stack().Push({.generic_id = SemIR::GenericId::None});
+  // Fork (SC-1, W-139): impl deduction keeps D-SC-6. It may run inside a
+  // call's conversion of a checked-symbolic argument whose structural
+  // requirements are deferred (`ConvertBindingArg`); that deferral is the
+  // call's own binding's, so it is lifted here, and a blanket impl's
+  // `template` binding still rejects a checked-symbolic self.
+  auto* outer_deferrals =
+      std::exchange(context.structural_check_deferrals(), nullptr);
 
   bool success = deduction.Deduce() && deduction.CheckDeductionIsComplete();
 
+  context.structural_check_deferrals() = outer_deferrals;
   context.generic_region_stack().Pop();
   context.inst_block_stack().PopAndDiscard();
 

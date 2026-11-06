@@ -16,7 +16,6 @@
 #include "toolchain/check/handle.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/literal.h"
-#include "toolchain/check/member_access.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/check/refutable_binding.h"
@@ -354,14 +353,12 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
       // member-access diagnostic. Resolve the designator in the scrutinee's
       // choice scope; the name reference lands in the pattern's pending
       // expression region.
-      auto scrutinee_type_inst_id = context.types().GetTypeInstId(
-          context.types().GetUnqualifiedType(scrutinee_type_id));
       if (resolved.lookup && !resolved.alternative) {
         // `MatchAlternativeUnexpectedParens` was diagnosed.
         return push_error();
       }
-      auto member_id = PerformMemberAccess(context, node_id,
-                                           scrutinee_type_inst_id, name_id);
+      auto member_id = PerformAlternativeAccess(context, node_id,
+                                                scrutinee_type_id, name_id);
       // Record the resolution so that the refutable engine can recognize a
       // pattern whose root is this designator. Re-fetch the case-arm
       // context: if the member access ever checks code that opens a nested

@@ -2103,6 +2103,13 @@ conformance 228/0/13 over 241, 51/56 bullets, gap tally 37/17/2/0; id re-scans:
 none; 17 PRs landed, 1 held. Next: the orchestrator's stamp after the
 follow-ons.
 
+2026-11-06 (05:44 UTC): FO-1 stages 13 to 17 are done: 17 PRs landed, 1 held.
+Trunk d95c7569a holds PR 60, 56, 57, 59 and 66 beside LAND-1's twelve, verified
+in the container at each landing (final: gate 2047 of 2047, conformance 228/0/13
+over 241, 51/56 bullets; gap tally 37/17/2/0); R21's hosted gate is owed on all
+seventeen when Actions returns (R33 (b)). Held: PR 53, landing by Next actions
+item 14 when its gate holds. Next: EH-C (W-346) on trunk's base, then UA-3.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2576,16 +2583,11 @@ merge commit.
 
 ### Next actions (dependency order)
 
-LAND-1 comes first (R33, 2026-11-01): fork/land/land1-plan.md (rev 8, signed off
-2026-11-02) lands twelve held PRs into trunk in the recorded order, each merged
-when it is correct and verified in the container: PR 67, 51, 52, 54, 55, 58, 61,
-62, 64, 63, 65 and 68. Six wait behind their gates, each landing by its
-follow-on (items 14 to 17): PR 53 after the realignment of its branch completed
-under the orchestrator's re-ruling of the C++ boundary question
-(fork/safe/safe3-plan.md D-SAFE3-13 and its rev 11 and rev 12 fold records),
-PR 60 after W-139 and item 10, PR 56 and PR 57 after W-352 and item 10, and
-PR 59 and PR 66 after item 13's fix and note 7's ruling. The items below stand
-as the work still owed on the branches and after the landing.
+LAND-1 and FO-1 landed seventeen held PRs into trunk (LAND-1: PR 67, 51, 52, 54,
+55, 58, 61, 62, 64, 63, 65 and 68; FO-1: PR 60, 56, 57, 59 and 66), each merged
+when it was correct and verified in the container. PR 53 waits for the
+realignment of its branch completed under the orchestrator's re-ruling of the
+C++ boundary question (item 14). The items below stand as the work still owed.
 
 1.  **DR-1 (fork/direction/plan.md, rev 4, signed off)**: DR-1a, the `ref`
     cursor (W-321), landed on trunk 2026-11-02 as PR 63 (LAND-1), and DR-1b,

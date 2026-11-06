@@ -682,6 +682,7 @@ fork/inventory/work-items.json and fork/conformance/README.md):
 | PR 59 into trunk | toolchain/check/handle_function.cpp; toolchain/check/deduce.cpp | 1; 1 | OV-4's rule: VA-1's pack gate (`PackExpansionPattern` TODO, `break`) before OV-4's default look-through (`DefaultValuePattern` to `binding_pattern_id`) (ov4-plan.md section 6.2, M's message); deduce.cpp: INC-1: the include block takes the union of both sides' `#include` lines in the file's order, each once (SC-1's action.h and structural_conformance.h beside VA-1's inst.h; equal to trunk's block at 31280f710), a conflict section 0.3's measurement at 03b40f7c5 predates (B1 landed at stage 13) (amended 2026-11-05, landing: stage 16, R29 ruling) |
 | PR 66 over `sim59` | toolchain/check/convert.cpp; toolchain/check/eval.cpp | 1; 1 | VA-2's recorded resolutions (its rule 1 and rule 2, va2-plan.md section 6.2; the `mall` scratch 3d99f544e): convert.cpp keeps TP-1's `SpliceInst` block, closed, then VA-2's pack segment; eval.cpp keeps both members, trunk's `diagnosed_non_constant_ids_` first |
 | PR 66 over `sim59f` | toolchain/check/convert.cpp; eval.cpp; toolchain/lower/type.cpp | 1; 1; 1 | as above, and lower/type.cpp takes VA-2's side: its D-VA2-7 hunk is the same array-stride layout over C1's `element_id` and adds the heterogeneous pack's struct; W-367's hunk in handle_pack_expansion.cpp merges with VA-2's rewritten `Pattern` case without a conflict (it lands after VA-2's "pattern other than a parameter list or let" TODO) |
+| PR 66 into trunk | toolchain/check/convert.cpp; toolchain/check/eval.cpp; toolchain/lower/type.cpp; three goldens (operators/question_optional.carbon, lower/for/bindings.carbon, lower/variadics/pack_expansion.carbon); fork/conformance/README.md; the four records files | 1; 1; 1; CHECK-only regions; 1; records | measured at d95c7569a (2026-11-06, tree 95212089f): the three code regions by section 2.9 item 1's rules; the goldens by GOLD-1 (trunk's side, F-M recomputes them); README.md by README-1 (trunk's side, the table regenerated); the records files by D-LAND-5 (amended 2026-11-06, landing: stage 17, R29 ruling) |
 
 Built and gated (`$CB/build.sh`, `install.sh`, `gate.sh`, `conformance.sh`;
 logs in `$P/<sim>/`):
@@ -2767,7 +2768,13 @@ implementer, a fresh worktree of claude/carbon-fork-0-1-op at its pushed head.
     (fork/direction/plan.md section 0.8, :708); the records files by D-LAND-5,
     fork/gap-analysis.md's regions also by GA-1b: a row extended on both sides
     takes the PR's row followed by trunk's added sentences verbatim (amended
-    2026-11-05, landing: stage 14, R29 ruling); the README table regenerated.
+    2026-11-05, landing: stage 14, R29 ruling); fork/ORCHESTRATION.md's Next
+    actions list is one OR-4 region whether or not git reports a conflict in it
+    (stage 17: git appended PR 66's items 6 to 14 after trunk's item 19
+    without a conflict; the list took trunk's, PR 66's item 6 discharged by
+    the landing and item 13 by the orchestrator's stamp of 2026-10-27 that
+    opened PR 66, OR-5) (amended 2026-11-06, landing: stage 17, R29 ruling);
+    the README table regenerated.
 
     Step 2a, **the re-anchor commit** ebca3e2f2, "OP-1: re-anchor optional.md's
     three loops.md links after M56 (DR-1a's headings)", docs/design/optional.md
@@ -3019,11 +3026,25 @@ there:
     handle_pack_expansion.cpp auto-merges W-367's hunk into VA-2's rewritten
     `Pattern` case (measured), and the merged case is read to confirm the
     choice-alternative test still precedes the parameter-list test.
+    fork/conformance/README.md takes README-1 and the goldens
+    operators/question_optional.carbon, lower/for/bindings.carbon and
+    lower/variadics/pack_expansion.carbon take GOLD-1 (CHECK-only regions,
+    trunk's side, recomputed by F-M), LAND-1's D-LAND-5 rules, which the
+    orchestrator's merge preview at d95c7569a measured (amended 2026-11-06,
+    landing: stage 17, R29 ruling).
 2.  **S-CT**, VA-2's land-time test commit of D-VA2-14 (the new split file
     `fail_todo_cpp_call_on_hetero_element`, VA-2 section A.11), no code.
 3.  **F-M**, the fill M and S-CT need; **L-F**, the README table and program
     headers regenerated; **L**, VA-2's records commit re-quoting the run on the
-    merge.
+    merge (the two gap rows by bullet text, the ledger's evidence of W-212,
+    W-213, W-225 and W-330 to W-339, the decision-log entry's held-state
+    paragraph and va2-plan.md's land-time notes; fork/ORCHESTRATION.md's VA-2
+    row, paragraph and Next actions are the trunk landing's by Appendix A.3,
+    A.4, A.10 and F.2, so L does not edit ORCHESTRATION.md and its message
+    says so; the mutants of D-LAND-20's file rule re-run on the merged build;
+    the orchestrator's ruling 17_A (b) and (d)) and W-212's notes list the
+    re-review's fix commits (va2-plan.md's RR2r2-m2 clause; the stage-17 fix
+    commit e0c617c8e) (amended 2026-11-06, landing: stage 17, R29 ruling).
 4.  Two implementation reviews by VA-2's rule, its section 3 item 12's "two,
     R29(c)", since item 15 states no count (D-FO1-9; amended 2026-11-02, review
     fold: B-m-3); fixer; push.
@@ -3076,7 +3097,8 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 26 | va (59) | M59, M-VA, S-VA, F-M59, L59 | VA-1: merge trunk at `<trunk>` (LAND-1 stage 16, D-LAND-12); SV-1: a sum-type conversion of a VA-1 pack element is a TODO (SV-1's plan, section 3 item 8); CT-1 S-VA: a C++ call's pack expansion argument is refused where the call is written (D-CT-3, D-VA-5) (the orchestrator's title, R29: CT-1's plan gives none) (amended 2026-11-06, landing: stage 16, R29 ruling); VA-1: autoupdate the goldens the land merge changes (stage 16); VA-1: land-time texts (stage 16) | section 2.8 | 2029 of 2029 |
 | 26a | va (59) | the S-VA placement fix commit | CT-1 S-VA fix: the split is placed before symbolic_arg.carbon's autoupdated STDOUT trailer (FO-1 stage 16, R29 ruling) | toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon | not owed (a test source's placement only; the install is unchanged): 601af4e86, between S-VA 57b3f8439 and F-M59 c517754e6, the stop ruling of scratchpad/fo1-impl/land/rulings/16_A.txt Addendum 3 (vi), fix commit 1 of Slice D's D-FO1-10 budget (amended 2026-11-06, landing: stage 16, R29 ruling) |
 | 27 | trunk | merge, records | Land PR 59: VA-1, definition-checked variadics, slice 1; Land PR 59: records | as row 21 | 2029 of 2029 |
-| 28 | va2 (66) | M, S-CT, F-M, L-F, L | VA-2's messages, its section 3 item 15 | section 2.9 | 2047 of 2047 |
+| 28 | va2 (66) | M, S-CT, F-M, L-F, L (L-F made no commit at stage 17: M's README-1 regeneration had already produced the merged table and no program header names a count; the orchestrator's ruling 17_A Addendum 1 (h)) (amended 2026-11-06, landing: stage 17, R29 ruling) | VA-2's messages, its section 3 item 15 | section 2.9 | 2047 of 2047 |
+| 28a | va2 (66) | the L records fix commit | VA-2 L fix: W-212's notes list the re-review's fix commits; MV-3's land-time note (FO-1 stage 17 review fold) | fork/inventory/work-items.json; fork/variadics/va2-plan.md | not owed (records only; the install is unchanged): e0c617c8e, after L 64738cd3e, the review fold of scratchpad/fo1-impl/land/rulings/17_A.txt Addendum 2 (R1-m1, R1-m2), fix commit 1 of 1 of the stage-17 fold (amended 2026-11-06, landing: stage 17, R29 ruling) |
 | 29 | trunk | merge, records | Land PR 66: VA-2, definition-checked variadics, slice 2; Land PR 66: records | as row 21 | 2047 of 2047 |
 
 The trunk landings' titles are each PR's Appendix E title. A records file a

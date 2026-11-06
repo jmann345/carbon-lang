@@ -11092,6 +11092,11 @@ any other callee gets a conversion error with no location or, beside another
 expansion for the same pack, VA-1's merged-arguments TODO, until fix 4 2f5865be3
 (the plan's §2.11).
 
+_Landed (2026-11-06, LAND-1, R33):_ merged into trunk as PR 66 by
+a725dddca (GitHub merged_at 2026-11-06T05:39:40Z); container-measured (R33 (b)):
+gate 2047 of 2047, conformance 228/0/13 over 241; id re-scans: none;
+moved to follow-ons: none.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

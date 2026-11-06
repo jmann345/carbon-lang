@@ -11433,6 +11433,55 @@ writer's scratch directory,
     LAND-1's trunk landing (fork/land/land1-plan.md Appendix A.3, A.4 and A.10,
     fo1-plan.md Appendix F.2), by the ruling's (b).
 
+VA-2 landed on trunk (LAND-1, 2026-11-06): merged as PR 66 by
+a725dddca (head e0c617c8e, trunk before d95c7569a; GitHub merged_at
+2026-11-06T05:39:40Z) under R33, fork/followon/fo1-plan.md section 2.9;
+land-time commits none; container-measured (R33 (b)): gate
+2047 of 2047, conformance 228 PASS, 0 FAIL, 13 SKIP over 241, 51 of 56
+bullets; id re-scans: none; moved to follow-ons: none.
+
+Stage 17's landing record, by the orchestrator's ruling under R29 on stage 17's
+phase A and its addenda (scratchpad/fo1-impl/land/rulings/17_A.txt): the landed
+commits are M 4d89aabdc, S-CT d25ed0246, F-M fabb9c40f, L 64738cd3e and the L
+records fix e0c617c8e, the pushed head, which is section 3 row 28's five
+commits but L-F, then row 28a. The orchestrator's merge preview at d95c7569a
+(2026-11-06, `git merge-tree --write-tree d95c7569a 43c8ab476`, tree 95212089f)
+measured eleven conflicted files, and every conflict M met took a plan rule:
+convert.cpp, eval.cpp and lower/type.cpp by section 2.9 item 1's rules, the
+goldens operators/question_optional.carbon, lower/for/bindings.carbon and
+lower/variadics/pack_expansion.carbon by GOLD-1, fork/conformance/README.md by
+README-1 and the four records files by D-LAND-5. M stopped (D-FO1-11) because
+git appended PR 66's Next actions items 6 to 14 after trunk's item 19 without a
+conflict, and the orchestrator ruled the list one OR-4 region whether or not git
+reports a conflict in it, so the block (merged fork/ORCHESTRATION.md:2802-2894)
+was removed and the list is trunk's. Under OR-5, PR 66's item 6 is discharged
+by this landing and item 13 by the orchestrator's stamp of 2026-10-27 that
+opened PR 66. By the ruling's (b), L edits the two gap rows, the ledger's
+evidence of W-212, W-213, W-225 and W-330 to W-339, the decision-log entry's
+held-state paragraph and the land-time notes above, and fork/ORCHESTRATION.md's
+VA-2 row, paragraph and Next actions are this trunk landing's (LAND-1 Appendix
+A.3, A.4 and A.10, fo1-plan.md Appendix F.2). L's scope is the ruling's (b), and
+landed note (f)'s V-3 comparison of R32 is superseded by D-LAND-19's register
+checks at this landing. L-F made no commit, since M's README-1 regeneration had
+already produced the merged table and no program header names a count. The
+eighteen re-run mutants (MV-1 to MV-4, MV-12, MV-13 and MV-15 to MV-26)
+reproduce their records, MV-12 and MV-13 also killing PR 59's
+variadics_padded_element.carbon and MV-3 also killing tuple_impl_generic.carbon
+identically on PR 66's own head (its section 8.5 row incomplete since fix 4; no
+stop, D-LAND-20). The first conformance run on fabb9c40f (PASS 190, 38
+DIFF-MISMATCH) was discarded because it read a stale carbon_runtimes cache that
+the mutant installs had left, and the fresh-cache rerun, 228/0/13 over 241, is
+the run of record. Review 1's R1-m1 (W-212's notes list the re-review's fix
+commits, va2-plan.md's RR2r2-m2 clause) and R1-m2 (MV-3's gate abort stated in
+the land-time note) are folded by the records fix commit e0c617c8e, and review 2
+approved with no finding. The merged fork/decision-log.md carries the five RG-1
+land-time notes once each (phase A's greps, re-run at this landing). The
+register lines at upstream 4e4b35e6e, the landing day's tip:
+fork/register/check_quotes.sh "checked 289 quotes, 24 failed" and
+fork/register/check_greps.sh "checked 94 silence checks, 6 failed", each failing
+row in W-355's note for PR 66; phase A ran neither script, so no second pair of
+lines is owed.
+
 ## Appendix A. Conformance programs, golden sources and records
 
 Every program is written to `fork/conformance/programs/<path>` by C5, verbatim.

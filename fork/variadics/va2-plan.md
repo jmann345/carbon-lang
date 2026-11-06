@@ -11408,8 +11408,13 @@ writer's scratch directory,
     generics/variadics_padded_element.carbon, PR 59's W-368 program, which the
     merge brings; MV-3 also fails stdlib/tuple_impl_generic.carbon, as it does
     on PR 66's head 43c8ab476 relinked the same way, so the merge does not
-    change it. MV-5 to MV-11 and MV-14 are not re-run: their files,
-    lower/handle_pack_expansion.cpp, core/prelude/copy.carbon and
+    change it, and on both its gate aborts at a CHECK failure in check/eval.cpp
+    (:3138 on the merge, "SymbolicOnly instruction `SpecificImplFunction` has a
+    concrete value") in place of the row's "gate 1965 passed and 12 failed",
+    because §8.5's MV-3 row predates fix 3 ee6144ad9, which changed
+    tuple_impl_generic's text; D-LAND-20 is met, the seven recorded programs
+    failing as the row says (R1-m2). MV-5 to MV-11 and MV-14 are not re-run:
+    their files, lower/handle_pack_expansion.cpp, core/prelude/copy.carbon and
     operators/comparison.carbon, check/type_structure.cpp and
     check/handle_question.cpp, are unchanged by M. (g) The second id re-scan
     (§8.10), immediately before L's ledger edit, after a fetch, over 97 refs and
@@ -11420,10 +11425,13 @@ writer's scratch directory,
     `padded_element` split and program generics/variadics_padded_element.carbon
     stay on the merged tree. (i) L re-quotes the run in the two rows, in W-212's
     and W-225's evidence, the entries whose evidence quotes a run, and in the
-    decision-log entry's held-state paragraph; fork/ORCHESTRATION.md's VA-2 row,
-    paragraph and Next actions are written by LAND-1's trunk landing
-    (fork/land/land1-plan.md Appendix A.3, A.4 and A.10, fo1-plan.md Appendix
-    F.2), by the ruling's (b).
+    decision-log entry's held-state paragraph, and lists the focused re-review's
+    fix commits (fix 3 ee6144ad9 with its fill 903a0c321, fix 4 2f5865be3 with
+    its fill 1517517eb) in W-212's notes as the landed notes' RR2r2-m2 clause
+    (:11310-11313) requires of L (R1-m1, folded by the stage-17 fix commit);
+    fork/ORCHESTRATION.md's VA-2 row, paragraph and Next actions are written by
+    LAND-1's trunk landing (fork/land/land1-plan.md Appendix A.3, A.4 and A.10,
+    fo1-plan.md Appendix F.2), by the ruling's (b).
 
 ## Appendix A. Conformance programs, golden sources and records
 

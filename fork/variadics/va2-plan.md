@@ -11361,6 +11361,69 @@ writer's scratch directory,
     comparison of R32; and these notes. (g) When Actions returns, the hosted
     autoupdate, gate and conformance runs on a tree with VA-2 in it are the
     record, and the "not of record" phrases go in a records commit.
+-   **Land-time notes (VA-2, 2026-11-06)** (FO-1 stage 17,
+    fork/followon/fo1-plan.md section 2.9; the orchestrator's ruling
+    scratchpad/fo1-impl/land/rulings/17_A.txt, R29). Everything measured is
+    EXPECTED, container-built and not of record (R9). (a) M 4d89aabdc merges
+    trunk d95c7569a (merge base b0822a744) with `git merge --no-ff`: convert.cpp
+    by rule 1 (TP-1's `SpliceInst` block closed, then the pack segment),
+    eval.cpp by rule 2 (`diagnosed_non_constant_ids_` first, then
+    `pack_index_`), lower/type.cpp VA-2's side, the three conflicted goldens
+    (question_optional.carbon in 5 regions, lower for/bindings.carbon in 4 and
+    lower variadics/pack_expansion.carbon in 3, CHECK lines only) trunk's side
+    (rule 6), fork/conformance/README.md trunk's side with its table regenerated
+    (241 programs), and the records by fork/land/land1-plan.md D-LAND-5 (OR-2,
+    OR-3, OR-4 with OR-5, GA-1, GA-1b, GA-2, LG-1, LG-6, DL-1 and DL-3);
+    handle_function.cpp, handle_pack_expansion.cpp (its `Pattern` case tests a
+    choice alternative before the parameter list) and deduce.cpp auto-merged;
+    rule 4 does not apply, since trunk does not hold 57bf903ef. By the ruling's
+    (a), fork/ORCHESTRATION.md's Next actions list is one OR-4 region: git
+    appended this branch's items 6 to 14 after trunk's item 19 without a
+    conflict, and the list takes trunk's (item 6 is this landing's own, item 13
+    was discharged by the orchestrator's stamp of 2026-10-27 that opened PR 66,
+    OR-5). The gate on M: 2032 passed and 14 failed, F-M's set. (b) S-CT
+    d25ed0246 adds
+    toolchain/check/testdata/interop/cpp/template/fail_todo_cpp_call_on_hetero_element.carbon,
+    §A.11's file, byte for byte. (c) F-M fabb9c40f, autoupdate to its fixpoint
+    on the fifteen files the gate named, CHECK lines only: the check goldens
+    generic/template/default_init, for_range, index, initialize and match_choice
+    (PR 61 with PR 64, PR 63 or PR 65), interop/cpp/stdlib/optional and variant
+    (PR 62, PR 57), interop/cpp/template/symbolic_arg (PR 64, PR 59),
+    operators/question_optional (PR 57), optional/compare (PR 56, PR 57),
+    slice/write_through (PR 65) and string/compare (PR 55), each with C4's
+    prelude renames; the lower goldens for/bindings (PR 63, PR 57) and
+    variadics/pack_expansion (PR 59's `padded_element`) with this branch's
+    lowering; and S-CT's file. (d) L-F: `runner.py --update-readme-table` on
+    fabb9c40f changes nothing, the table having been regenerated at M, and no
+    program header names a count, so L-F makes no commit. (e) The run on the
+    merge, at fabb9c40f: file_test 2047 passed, 0 failed; conformance 228 PASS /
+    0 FAIL / 13 SKIP over 241 programs, 51/56 bullets PASS (scoreboard generated
+    2026-11-06T01:46:38Z); `runner.py --self-test` "241 programs parsed, 56
+    bullets in table, OK"; DD-1's checker in both modes and EV-1's checker 0
+    errors. (f) The §8.5 mutants whose files M changed (fork/land/land1-plan.md
+    D-LAND-20's file rule), each compiled over the stage build, relinked and run
+    on the gate and the twenty variadic and tuple programs: MV-1, MV-2, MV-4,
+    MV-12, MV-13 and MV-15 to MV-26 reproduce their records, at source lines the
+    merge moved; MV-12 and MV-13 also fail
+    generics/variadics_padded_element.carbon, PR 59's W-368 program, which the
+    merge brings; MV-3 also fails stdlib/tuple_impl_generic.carbon, as it does
+    on PR 66's head 43c8ab476 relinked the same way, so the merge does not
+    change it. MV-5 to MV-11 and MV-14 are not re-run: their files,
+    lower/handle_pack_expansion.cpp, core/prelude/copy.carbon and
+    operators/comparison.carbon, check/type_structure.cpp and
+    check/handle_question.cpp, are unchanged by M. (g) The second id re-scan
+    (§8.10), immediately before L's ledger edit, after a fetch, over 97 refs and
+    the `fork/` trees of 23 worktrees: no ledger but this branch's files any of
+    W-330 to W-339, the highest filed id is W-377 (trunk), and no id is
+    re-allocated. (h) Hand-off notes 7 and 9 are discharged by D-R (8bc84a2bc on
+    PR 59's branch): W-367's split `fail_todo_choice_alternative` and W-368's
+    `padded_element` split and program generics/variadics_padded_element.carbon
+    stay on the merged tree. (i) L re-quotes the run in the two rows, in W-212's
+    and W-225's evidence, the entries whose evidence quotes a run, and in the
+    decision-log entry's held-state paragraph; fork/ORCHESTRATION.md's VA-2 row,
+    paragraph and Next actions are written by LAND-1's trunk landing
+    (fork/land/land1-plan.md Appendix A.3, A.4 and A.10, fo1-plan.md Appendix
+    F.2), by the ruling's (b).
 
 ## Appendix A. Conformance programs, golden sources and records
 

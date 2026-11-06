@@ -10882,10 +10882,12 @@ reviews' records commit); the commits C0 d92a9c709, C0b 64e9736c0 and its fill
 F0 8a7395cf1, C1 0aa8dd347 and F1 1a7c360e0, C2 3af0471b6 and F2 1afda55f0, C3
 3a39d69db and F3 4a627cd6c, C4 b40003716 and F4 1a9a0a11b, C5 4b7ca618e, which
 needs no fill, the fix 1ad7c9b5e and its fill 5bc6e5070, R 42a1ec16f, and D,
-which carries this entry. Expected, not of record (R9), on bdd7b2424, whose
-toolchain is the fix's: file_test 1977 passed, 0 failed, and 147 PASS / 0 FAIL /
-21 SKIP over 168 programs, 49/56 bullets PASS, where PR 59 has 1960 goldens and
-137 / 0 / 21 over 158. The id re-scan before D (plan §8.10, after a fetch, over
+which carries this entry. Expected, not of record (R9), on the merge
+commit 4d89aabdc of trunk d95c7569a (FO-1 stage 17) with S-CT d25ed0246 and
+F-M fabb9c40f, whose toolchain is the merge's: file_test 2047 passed, 0 failed,
+and 228 PASS / 0 FAIL / 13 SKIP over 241 programs, 51/56 bullets PASS, where
+trunk d95c7569a has 2029 goldens and 218 / 0 / 13 over 231. The id re-scan
+before D (plan §8.10, after a fetch, over
 90 refs and 20 worktrees) found none of W-330 to W-339 filed elsewhere, the
 highest filed ids being W-341 to W-344 on trunk and W-340 on DR-1b's branch, so
 no id is re-allocated and none of the ten is unused. PR 51 to PR 65 are held and

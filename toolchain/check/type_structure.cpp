@@ -16,7 +16,15 @@
 namespace Carbon::Check {
 
 auto TypeStructure::CompareStructure(CompareTest test,
-                                     const TypeStructure& other) const -> bool {
+                                     const TypeStructure& other,
+                                     llvm::SmallVectorImpl<int>* ranking) const
+    -> bool {
+  if (test != CompareTest::IsEqualToOrMoreSpecificThan) {
+    ranking = nullptr;
+  }
+  if (ranking) {
+    ranking->clear();
+  }
   const auto& lhs = structure_;
   const auto& rhs = other.structure_;
 
@@ -35,9 +43,33 @@ auto TypeStructure::CompareStructure(CompareTest test,
     if (lhs_cursor == lhs.end() || rhs_cursor == rhs.end()) {
       return false;
     }
+    // Fork (VA-2, D-VA2-8): a pack segment matches a run of the other side's
+    // elements, including the other side's own segment.
+    if (*rhs_cursor == Structural::SymbolicRun) {
+      if (!ConsumeSymbolicRun(lhs_cursor, lhs.end(), lhs_concrete_cursor,
+                              rhs_cursor, rhs.end(), lhs.begin(), ranking)) {
+        return false;
+      }
+      continue;
+    }
+    if (*lhs_cursor == Structural::SymbolicRun) {
+      // A query with a pack segment is less specific than an impl with
+      // elements in its place.
+      if (test == CompareTest::IsEqualToOrMoreSpecificThan) {
+        return false;
+      }
+      if (!ConsumeSymbolicRun(rhs_cursor, rhs.end(), rhs_concrete_cursor,
+                              lhs_cursor, lhs.end())) {
+        return false;
+      }
+      continue;
+    }
     // Same structural element on both sides. Compare concrete values if
     // possible to ensure they match. Both will be consumed.
     if (*lhs_cursor == *rhs_cursor) {
+      if (ranking && *rhs_cursor == Structural::Symbolic) {
+        ranking->push_back(4 * (lhs_cursor - lhs.begin()) + 2);
+      }
       // Each Concrete and ConcreteOpenParen shape entry has a paired concrete
       // value.
       if (*lhs_cursor == Structural::Concrete ||
@@ -72,6 +104,9 @@ auto TypeStructure::CompareStructure(CompareTest test,
         if (*lhs_cursor == Structural::Symbolic) {
           return false;
         }
+        if (ranking) {
+          ranking->push_back(4 * (lhs_cursor - lhs.begin()) + 2);
+        }
         if (!ConsumeRhsSymbolic(lhs_cursor, lhs_concrete_cursor, rhs_cursor)) {
           return false;
         }
@@ -94,6 +129,84 @@ auto TypeStructure::CompareStructure(CompareTest test,
     }
   }
 
+  return true;
+}
+
+auto TypeStructure::CountElementsInGroup(
+    llvm::SmallVector<Structural>::const_iterator cursor,
+    llvm::SmallVector<Structural>::const_iterator end) -> int {
+  int count = 0;
+  int depth = 0;
+  for (; cursor != end; ++cursor) {
+    if (*cursor == Structural::ConcreteCloseParen) {
+      if (depth == 0) {
+        break;
+      }
+      --depth;
+      continue;
+    }
+    if (depth == 0) {
+      ++count;
+    }
+    if (*cursor == Structural::ConcreteOpenParen) {
+      ++depth;
+    }
+  }
+  return count;
+}
+
+auto TypeStructure::ConsumeSymbolicRun(
+    llvm::SmallVector<Structural>::const_iterator& elements_cursor,
+    llvm::SmallVector<Structural>::const_iterator elements_end,
+    llvm::SmallVector<ConcreteType>::const_iterator& elements_concrete_cursor,
+    llvm::SmallVector<Structural>::const_iterator& run_cursor,
+    llvm::SmallVector<Structural>::const_iterator run_end,
+    llvm::SmallVector<Structural>::const_iterator elements_begin,
+    llvm::SmallVectorImpl<int>* ranking) -> bool {
+  // Consume the run.
+  ++run_cursor;
+  // The run takes every element of its tuple except as many as follow it.
+  int after = CountElementsInGroup(run_cursor, run_end);
+  int available = CountElementsInGroup(elements_cursor, elements_end);
+  if (available < after) {
+    return false;
+  }
+  int to_skip = available - after;
+  if (ranking && to_skip == 0) {
+    ranking->push_back(4 * (elements_cursor - elements_begin) + 3);
+  }
+  int depth = 0;
+  while (to_skip > 0) {
+    if (ranking && depth == 0 &&
+        *elements_cursor != Structural::ConcreteCloseParen) {
+      ranking->push_back(4 * (elements_cursor - elements_begin) + 1);
+    }
+    switch (*elements_cursor) {
+      case Structural::ConcreteOpenParen:
+        ++elements_concrete_cursor;
+        ++depth;
+        break;
+      case Structural::ConcreteCloseParen:
+        --depth;
+        if (depth == 0) {
+          --to_skip;
+        }
+        break;
+      case Structural::Concrete:
+        ++elements_concrete_cursor;
+        if (depth == 0) {
+          --to_skip;
+        }
+        break;
+      case Structural::Symbolic:
+      case Structural::SymbolicRun:
+        if (depth == 0) {
+          --to_skip;
+        }
+        break;
+    }
+    ++elements_cursor;
+  }
   return true;
 }
 
@@ -140,6 +253,7 @@ auto TypeStructure::ConsumeRhsSymbolic(
         ++lhs_concrete_cursor;
         break;
       case Structural::Symbolic:
+      case Structural::SymbolicRun:
         break;
     }
     ++lhs_cursor;
@@ -192,6 +306,11 @@ class TypeStructureBuilder {
     symbolic_type_indices_.push_back(structure_.size());
     structure_.push_back(TypeStructure::Structural::Symbolic);
   }
+  // Fork (VA-2, D-VA2-8): a tuple's pack segment.
+  auto AppendStructuralSymbolicRun() -> void {
+    symbolic_type_indices_.push_back(structure_.size());
+    structure_.push_back(TypeStructure::Structural::SymbolicRun);
+  }
 
   Context* context_;
 
@@ -225,8 +344,14 @@ auto TypeStructureBuilder::Build(SemIR::TypeIterator type_iter)
         AppendStructuralConcrete(concrete.type_id);
         break;
       }
-      case CARBON_KIND(Step::SymbolicType _): {
-        AppendStructuralSymbolic();
+      case CARBON_KIND(Step::SymbolicType symbolic): {
+        // Fork (VA-2): a tuple's pack segment.
+        if (symbolic.facet.has_value() &&
+            context_->insts().Is<SemIR::PackType>(symbolic.facet)) {
+          AppendStructuralSymbolicRun();
+        } else {
+          AppendStructuralSymbolic();
+        }
         break;
       }
       case CARBON_KIND(Step::TemplateType _): {
@@ -268,7 +393,12 @@ auto TypeStructureBuilder::Build(SemIR::TypeIterator type_iter)
         break;
       }
       case CARBON_KIND(Step::TupleStartOnly _): {
-        AppendStructuralConcrete(TypeStructure::ConcreteTypeStart::Tuple);
+        // Fork (VA-2, D-VA2-8): the empty tuple is an empty group, as a
+        // tuple of elements is a group of them, so that a pack segment
+        // `(...?)` matches it with an empty run.
+        AppendStructuralConcreteOpenParen(
+            TypeStructure::ConcreteTypeStart::Tuple);
+        AppendStructuralConcreteCloseParen();
         break;
       }
       case CARBON_KIND(Step::TupleStart _): {

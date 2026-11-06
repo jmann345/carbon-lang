@@ -1982,6 +1982,117 @@ worktree (6901d0fd9, the head), and trunk and the /home/user/carbon-trunk
 worktree (0747ed437), which contain 6901d0fd9; 16 PRs landed, 2 held. Next: PR
 66 (VA-2), after the orchestrator retargets it to trunk.
 
+Later on 2026-10-27 (13:25 UTC; the VA-2 discharge; pushed, no PR yet): VA-2
+(claude/carbon-fork-0-1-va2, stacked on PR 59, fork/variadics/va2-plan.md)
+implements packs of different types, tuples with one pack segment, statement
+expansions of `if` and variadic impls, makes the prelude's tuple Copy, EqWith
+and OrderedWith single variadic impls, and fixes the lowering of nested
+aggregate constants; W-225 discharged, W-212 and W-213 narrowed, W-330 to W-339
+filed (W-335 discharged); expected 147 PASS / 0 FAIL / 21 SKIP over 168 on the
+container run of 2026-10-27 on bdd7b2424, whose toolchain is the carbonbuild
+toolchain of the fix 1ad7c9b5e, `conformance.sh` into a private directory with
+scoreboard generated 2026-10-27T13:14:18Z and log
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va2-impl/records/logs/conf_pre.log.
+It merges last, after DR-1b, with the land-time test-only commit S-CT, a golden
+split, after its merge of trunk (fork/variadics/va2-plan.md D-VA2-18), held
+open. It is IMPLEMENTED AND HELD, no PR: plan rev 4 (7188540ca) was signed off
+after two plan reviews (REJECT, ten findings; REJECT, fifteen) and two focused
+re-reviews (REJECT, five; APPROVE-WITH-AMENDMENTS, four); the implementation
+stopped and amended the plan five times (rev 5, 7, 9, 11 and 13), each amendment
+folded after its focused re-review (rev 6, 8, 10, 12 and 14, every one
+APPROVE-WITH-AMENDMENTS); and the two implementation reviews of C5 (REJECT,
+three BLOCKER and five MINOR findings; APPROVE-WITH-FIXES, three MAJOR and eight
+MINOR) were folded by the fix 1ad7c9b5e, its fill 5bc6e5070 and rev 15
+bdd7b2424, so 76 findings (74 distinct) are folded across the plan's eleven
+reviews and none is rejected. Commits: C0 d92a9c709 and C0b 64e9736c0 (the
+lowering of nested aggregate constants, an upstream defect, W-335) with F0
+8a7395cf1; C1 0aa8dd347 (packs of different types in implicit parameter lists)
+with F1 1a7c360e0; C2 3af0471b6 (tuples with one pack segment, `let` pack
+bindings, variadic impls) with F2 1afda55f0; C3 3a39d69db (statement expansions
+of `if`) with F3 4a627cd6c; C4 b40003716 (the prelude's tuple Copy, EqWith and
+OrderedWith) with F4 1a9a0a11b; C5 4b7ca618e (ten programs, three of them
+differential); the fix and its fill; R 42a1ec16f (both rows PARTIAL); and the
+discharge. Verification is container-built and NOT of record (Actions disabled):
+on bdd7b2424, whose toolchain is the fix's, file_test 1977/1977 and the expected
+scoreboard 147 PASS / 0 FAIL / 21 SKIP over 168, 49/56 bullets, ten PASS and ten
+programs over PR 59's 137 / 0 / 21 over 158; eighteen mutants, each killed; and
+the compositions with PR 55, PR 57 (holding PR 56), PR 60, PR 61, PR 62, PR 64
+and DR-1b (on PR 63) and the land simulation (trunk ad2e45a66 with all fifteen
+held PRs, then VA-2) on scratch mirrors, every program PASS on each
+(fork/variadics/va2-plan.md §8.7). The id re-scan before D (after a fetch; 90
+refs and 20 worktrees) found W-330..W-339 filed nowhere else, so all ten are
+filed as reserved and none is unused. Round 1 of the focused re-review of the
+fix commits and these records (2026-10-27, on f8d84ba75; both reviews
+APPROVE-WITH-FIXES) is not dry: review 1's RR1-1-M1, MAJOR (a pack of facets
+does not convert to a narrower facet type, so forwarding a tuple of one pack
+segment and the prelude's variadic impls reject IN forms whose fixed-arity twins
+run), and its RR1-1-m1 need a toolchain change, and review 2's four records-only
+MINORs are folded by the records commit "VA-2 records: re-review round 1
+recorded", which is not a fix commit; round 2 is owed, its fixer taking the fix
+budget's last commit, and the PR opens held with base claude/carbon-fork-0-1-va
+after the first dry round (fork/variadics/va2-plan.md, "Focused re-review of the
+fold, VA-2, round 1 (2026-10-27)"). Round 2 (2026-10-27, pushed, no PR yet): its
+fixer folded both code findings at the root by fix 3 ee6144ad9, the fix budget's
+last commit, with its fill 903a0c321 and the records commit "VA-2 re-review fix:
+round 2 folded into the records": a pack of facets converts to a pack of a
+narrower facet type as a `PackFacetValue`, and a `let` pack pattern's diagnosed
+binding type reports once; no TODO, no id, no shrink, W-225 still discharged;
+expected file_test 1977/1977 and 147 / 0 / 21 over 168, MV-19 to MV-23 killed,
+and the mirrors m64, m60, m57, m62 and mdr green with it; round 2's two reviews
+read it next (fork/variadics/va2-plan.md, "Focused re-review of the fold, VA-2,
+round 2 (2026-10-27)"). Round 2's reviews (2026-10-27, on 53460373d; REJECT and
+APPROVE-WITH-FIXES) are not dry: review 1's RR2-1-B1, BLOCKER (a pack expansion
+pattern in a file-scope `let` aborts the compiler, C2's, where PR 59 reports
+VA-1's TODO), and its RR2-1-m1 and RR2-1-m2 need a toolchain or golden change,
+and the six records-only MINORs (review 2's five and review 1's RR2-1-m3) are
+folded by the records commit "VA-2 records: re-review round 2 recorded"; round 3
+is owed, its fixer taking the plan's shrink line in order or D-VA2-19's break
+condition, since the fix budget is used up, and the PR opens held with base
+claude/carbon-fork-0-1-va after the first dry round. Round 3 (2026-10-27,
+pushed, no PR yet; ROUND 3 FIX UNDER REVIEW): with the fix budget used up, its
+fixer takes D-VA2-19's break condition, since no shrink of the plan's §3 answers
+the three findings without breaking the plan's §0.2 measured rows (shrink 1 does
+not reach C2's `let` hunk; shrink 2 would take back C3's Min, C4's d01 to d03
+and fix 3's forms through the prelude; neither reaches C1's call-argument branch
+or fix 3's import path); the PR stops, and plan rev 16, in the records commit
+"VA-2 re-review fix: round 3 folded into the records", budgets a fourth fix
+commit, fix 4, whose block (the plan's §2.11) is measured on a scratch tree,
+1977/1977 after its fill and 147 / 0 / 21 over 168, and is read by rev 16's
+reviews before it is committed; the head's toolchain does not change, and W-345
+is reserved, not filed (fork/variadics/va2-plan.md, "Focused re-review of the
+fold, VA-2, round 3 (2026-10-27)"). Round 3's reviews (2026-10-27, on dd61722d9;
+REJECT and REJECT; ROUND 4 OWED) find the plan's §2.11 block sound, so rev 16's
+break condition is not met, and find three BLOCKERs of the head that fix 4
+answers: review 1's RR3-1-B1 (19 more file-scope `let` pack pattern shapes
+abort) and RR3-1-B2 and review 2's RR3r2-B1 (`G(... each T)` passes a
+compile-time pack as one argument, so that a callee that deduces its pack runs
+with the wrong arity and no diagnostic and a template-dependent one aborts,
+where PR 59 refuses both with VA-1's TODO); the four records-only MINORs are
+folded by the records commit "VA-2 records: re-review round 3 recorded", and
+round 4's fixer commits fix 4 and its fill by the plan's hand-off note 8 (Next
+actions item 13). Round 4 (2026-10-27, pushed, no PR yet; ROUND 4 FIX UNDER
+REVIEW): fix 4 2f5865be3, "VA-2 fix 4: file-scope `let` pack patterns,
+compile-time packs as call arguments", and its fill 1517517eb, the plan's §2.11
+block and measured fill byte for byte, fold the three BLOCKERs and round 2's
+three code findings: every file-scope `let` pack pattern reports a diagnostic,
+and a compile-time pack expanded as a call's arguments reports `semantics TODO:
+pack expansion of a compile-time pack in a call's argument list` (W-345, filed
+by the records commit "VA-2 re-review fix: round 4 folded into the records"
+after a re-scan); 1977/1977 and 147 / 0 / 21 over 168 in three runs, MV-24 to
+MV-26 killed on the branch, not of record; no finding is open, the fix budget of
+four is used up, and round 4's two reviews read the three commits next
+(fork/variadics/va2-plan.md, "Focused re-review of the fold, VA-2, round 4
+(2026-10-27)"). Round 4's reviews (2026-10-27, on 37991ee80; APPROVE-WITH-FIXES
+twice; ROUND 4 DRY) find no BLOCKER or MAJOR and no finding that needs a change
+of VA-2's toolchain, prelude, goldens or programs: their six records-only MINORs
+are folded by the records commit "VA-2 records: re-review round 4 recorded", and
+review 1's RR4-1-m1, a pack expansion pattern in a choice alternative's
+parameter list that aborts in lowering on PR 59 as on VA-2, is PR 59's to fix
+(Next actions item 14; the plan's hand-off note 9); the PR opens held with base
+claude/carbon-fork-0-1-va (Next actions item 13). Merge order: PR 53, 51, 52,
+60, 54, 55, 56, 57, 58, 59, 61, 62, 64, 63, 65, then VA-2 through its land-time
+items (Next actions item 6). None is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2400,6 +2511,18 @@ by PR 64's landing's container-measured scoreboard, R33 (b), 189/0/15 over 204
 with 49/56 bullets.) CT-1 is measured on PR 61 alone; its landing count is PR
 62's expected state with every earlier PR plus nine PASS, two SKIP fewer and
 seven programs more (fork/cpp-templates/plan.md §5).
+
+Expected at VA-2, NOT of record: 147 PASS / 21 SKIP / 0 FAIL over 168, 49/56
+bullets (a container run on the carbonbuild toolchain of the fix 1ad7c9b5e at
+VA-2's head bdd7b2424, scoreboard generated 2026-10-27T13:14:18Z, the totals of
+C5 4b7ca618e and of the fix's fill 5bc6e5070 too, and of fix 3's fill 903a0c321
+in three runs, the first's scoreboard generated 2026-10-27T15:37:36Z); PR 59's
+158 programs and VA-2's ten, six under the variadics bullet, which holds
+fifteen, and four under the tuple/array bullet, which holds five, all PASS, both
+gap rows PARTIAL. VA-2 is measured on PR 59 alone; its landing count is the
+trunk that holds every held PR plus ten PASS and ten programs
+(fork/variadics/va2-plan.md §5), which commit L re-quotes from the run on the
+merge commit.
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 

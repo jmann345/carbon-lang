@@ -29,14 +29,20 @@ auto HandleParseNode(Context& context, Parse::TupleLiteralId node_id) -> bool {
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::TupleLiteralStart>();
   const auto& inst_block = context.inst_blocks().Get(refs_id);
-  // Fork (VA-1, D-VA-4): a tuple literal with a pack expansion element has a
-  // type with a pack segment, `(... «E; N»)`, which this slice does not
-  // represent; only a call's argument list can hold a pack expansion yet.
+  // Fork (VA-2, D-VA2-8): an element of a pack type is a segment of the tuple,
+  // and its type the segment of the tuple's type: "For a `...` tuple element
+  // expression or pattern, the segments of the operand's type pack become
+  // segments of the type of the enclosing tuple" (docs/design/variadics.md,
+  // "Iterative typechecking of pack expansions"). A tuple of more than one
+  // segment is not implemented.
+  bool has_segment = false;
   for (auto inst : inst_block) {
-    if (context.insts().Is<SemIR::PackExpansionExpr>(inst)) {
-      return context.TODO(inst,
-                          "pack expansion in a tuple literal outside a call's "
-                          "argument list");
+    if (context.types().Is<SemIR::PackType>(
+            context.insts().Get(inst).type_id())) {
+      if (has_segment) {
+        return context.TODO(node_id, "tuple with more than one pack segment");
+      }
+      has_segment = true;
     }
   }
   llvm::SmallVector<SemIR::InstId> type_inst_ids;

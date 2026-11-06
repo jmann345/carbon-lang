@@ -140,6 +140,15 @@ struct Specific : Printable<Specific> {
   // directly on Specific so that they pack together.
   bool decl_block_has_error = false;
   bool definition_block_has_error = false;
+
+  // Fork (VA-2): the values of the declaration and definition regions once
+  // per iteration of the pack expansions in the definition, when the generic
+  // depends on the pack index (docs/design/variadics.md, "Execution
+  // Semantics": "Although the value of `$I` can vary during execution, it is
+  // nevertheless treated as a constant"). Each iteration's values are the
+  // declaration block's entries followed by the definition block's.
+  InstBlockId pack_iteration_block_id = InstBlockId::None;
+  int32_t pack_iteration_count = 0;
 };
 
 // Provides storage for deduplicated specifics, which represent generics plus
@@ -214,6 +223,24 @@ auto GetConstantValueInSpecific(const File& sem_ir, SpecificId specific_id,
 auto GetConstantValueInSpecific(const File& specific_ir, SpecificId specific_id,
                                 const File& inst_ir, InstId inst_id)
     -> std::pair<const File*, ConstantId>;
+
+// Fork (VA-2): as above, within iteration `pack_index` of the pack expansions
+// of the specific's definition, when the specific has per-iteration values.
+auto GetConstantValueInSpecific(const File& specific_ir, SpecificId specific_id,
+                                const File& inst_ir, InstId inst_id,
+                                std::optional<uint64_t> pack_index)
+    -> std::pair<const File*, ConstantId>;
+auto GetTypeOfInstInSpecific(const File& specific_ir, SpecificId specific_id,
+                             const File& inst_ir, InstId inst_id,
+                             std::optional<uint64_t> pack_index)
+    -> std::pair<const File*, TypeId>;
+
+struct PackType;
+
+// Fork (VA-2): returns the type of the element at `index` of a value of the
+// concrete pack type `pack_type`.
+auto GetPackElementTypeId(const File& sem_ir, PackType pack_type,
+                          uint64_t index) -> TypeId;
 
 // Gets the substituted type of an instruction within a specific. Note that this
 // does not perform substitution, and will return `None` if the substituted type

@@ -150,8 +150,8 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:   %Core.Equal.970: @T.as_type.as.EqWith.impl.%T.as_type.as.EqWith.impl.Equal.type.1 (%T.as_type.as.EqWith.impl.Equal.type.8af025.2) = import_ref Core//prelude/types/int, Equal, loaded [symbolic = @T.as_type.as.EqWith.impl.%T.as_type.as.EqWith.impl.Equal.1 (constants.%T.as_type.as.EqWith.impl.Equal.c477d6.2)]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
-// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.cd63: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd63), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -281,7 +281,7 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
-// CHECK:STDOUT:   %tuple: %tuple.type.693 = tuple_value (bool, bool) [concrete]
+// CHECK:STDOUT:   %tuple.52b: %tuple.type.693 = tuple_value (bool, bool) [concrete]
 // CHECK:STDOUT:   %tuple.type.784: type = tuple_type (bool, bool) [concrete]
 // CHECK:STDOUT:   %pattern_type.860: type = pattern_type %tuple.type.784 [concrete]
 // CHECK:STDOUT:   %t.param_patt: %pattern_type.860 = value_param_pattern [concrete]
@@ -298,10 +298,10 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %.e1c: %pattern_type.860 = tuple_pattern (@G.%expr_patt.loc10_11, @G.%expr_patt.loc10_18) [concrete]
 // CHECK:STDOUT:   %EqWith.type.539: type = facet_type <@EqWith, @EqWith(bool)> [concrete]
-// CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table [concrete]
-// CHECK:STDOUT:   %EqWith.facet: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet) [concrete]
-// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness.fb2: <witness> = impl_witness imports.%EqWith.impl_witness_table.5db [concrete]
+// CHECK:STDOUT:   %EqWith.facet.6a4: %EqWith.type.539 = facet_value bool, (%EqWith.impl_witness.fb2) [concrete]
+// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.f71: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(bool, %EqWith.facet.6a4) [concrete]
+// CHECK:STDOUT:   %.4ef: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.f71, %EqWith.facet.6a4 [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.type: type = fn_type @bool.as.EqWith.impl.Equal [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal: %bool.as.EqWith.impl.Equal.type = struct_value () [concrete]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.bound.ed3: <bound method> = bound_method %false, %bool.as.EqWith.impl.Equal [concrete]
@@ -346,7 +346,7 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.a87: %bool.as.EqWith.impl.Equal.type = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %Core.import_ref.e3a = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
+// CHECK:STDOUT:   %EqWith.impl_witness_table.5db = impl_witness_table (%Core.import_ref.a87, %Core.import_ref.e3a), @bool.as.EqWith.impl [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
 // CHECK:STDOUT: }
@@ -364,7 +364,7 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:     %.loc8_20.1: type = splice_block %.loc8_20.3 [concrete = constants.%tuple.type.784] {
 // CHECK:STDOUT:       %.loc8_10: type = type_literal bool [concrete = bool]
 // CHECK:STDOUT:       %.loc8_16: type = type_literal bool [concrete = bool]
-// CHECK:STDOUT:       %.loc8_20.2: %tuple.type.693 = tuple_literal (%.loc8_10, %.loc8_16) [concrete = constants.%tuple]
+// CHECK:STDOUT:       %.loc8_20.2: %tuple.type.693 = tuple_literal (%.loc8_10, %.loc8_16) [concrete = constants.%tuple.52b]
 // CHECK:STDOUT:       %.loc8_20.3: type = converted %.loc8_20.2, constants.%tuple.type.784 [concrete = constants.%tuple.type.784]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %t: %tuple.type.784 = wrapper_binding t, %t.param
@@ -388,13 +388,13 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:   %tuple.elem0.loc9_10.1: bool = tuple_access %t.ref, element0
 // CHECK:STDOUT:   %tuple.elem1.loc9_10.1: bool = tuple_access %t.ref, element1
 // CHECK:STDOUT:   %false.loc10_11: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc10_25.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc10_25.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc10_25.1: <bound method> = bound_method %false.loc10_11, %impl.elem0.loc10_25.1 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc10_25.1: init bool = call %bound_method.loc10_25.1(%false.loc10_11, %tuple.elem0.loc9_10.1)
 // CHECK:STDOUT:   %.loc10_25.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc10_25.1
 // CHECK:STDOUT:   %.loc10_25.2: bool = converted %bool.as.EqWith.impl.Equal.call.loc10_25.1, %.loc10_25.1
 // CHECK:STDOUT:   %false.loc10_18: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc10_25.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc10_25.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc10_25.2: <bound method> = bound_method %false.loc10_18, %impl.elem0.loc10_25.2 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc10_25.2: init bool = call %bound_method.loc10_25.2(%false.loc10_18, %tuple.elem1.loc9_10.1)
 // CHECK:STDOUT:   %.loc10_25.3: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc10_25.2
@@ -432,13 +432,13 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:   %tuple.elem0.loc9_10.2: bool = tuple_access %t.ref, element0
 // CHECK:STDOUT:   %tuple.elem1.loc9_10.2: bool = tuple_access %t.ref, element1
 // CHECK:STDOUT:   %false.loc11_11: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc11_24.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc11_24.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc11_24.1: <bound method> = bound_method %false.loc11_11, %impl.elem0.loc11_24.1 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc11_24.1: init bool = call %bound_method.loc11_24.1(%false.loc11_11, %tuple.elem0.loc9_10.2)
 // CHECK:STDOUT:   %.loc11_24.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc11_24.1
 // CHECK:STDOUT:   %.loc11_24.2: bool = converted %bool.as.EqWith.impl.Equal.call.loc11_24.1, %.loc11_24.1
 // CHECK:STDOUT:   %true.loc11: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc11_24.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc11_24.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc11_24.2: <bound method> = bound_method %true.loc11, %impl.elem0.loc11_24.2 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc11_24.2: init bool = call %bound_method.loc11_24.2(%true.loc11, %tuple.elem1.loc9_10.2)
 // CHECK:STDOUT:   %.loc11_24.3: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc11_24.2
@@ -476,13 +476,13 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:   %tuple.elem0.loc9_10.3: bool = tuple_access %t.ref, element0
 // CHECK:STDOUT:   %tuple.elem1.loc9_10.3: bool = tuple_access %t.ref, element1
 // CHECK:STDOUT:   %true.loc12: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc12_24.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc12_24.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc12_24.1: <bound method> = bound_method %true.loc12, %impl.elem0.loc12_24.1 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc12_24.1: init bool = call %bound_method.loc12_24.1(%true.loc12, %tuple.elem0.loc9_10.3)
 // CHECK:STDOUT:   %.loc12_24.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc12_24.1
 // CHECK:STDOUT:   %.loc12_24.2: bool = converted %bool.as.EqWith.impl.Equal.call.loc12_24.1, %.loc12_24.1
 // CHECK:STDOUT:   %false.loc12_17: bool = bool_literal false [concrete = constants.%false]
-// CHECK:STDOUT:   %impl.elem0.loc12_24.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc12_24.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc12_24.2: <bound method> = bound_method %false.loc12_17, %impl.elem0.loc12_24.2 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.ed3]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc12_24.2: init bool = call %bound_method.loc12_24.2(%false.loc12_17, %tuple.elem1.loc9_10.3)
 // CHECK:STDOUT:   %.loc12_24.3: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc12_24.2
@@ -520,13 +520,13 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:   %tuple.elem0.loc9_10.4: bool = tuple_access %t.ref, element0
 // CHECK:STDOUT:   %tuple.elem1.loc9_10.4: bool = tuple_access %t.ref, element1
 // CHECK:STDOUT:   %true.loc13_11: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc13_23.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc13_23.1: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc13_23.1: <bound method> = bound_method %true.loc13_11, %impl.elem0.loc13_23.1 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc13_23.1: init bool = call %bound_method.loc13_23.1(%true.loc13_11, %tuple.elem0.loc9_10.4)
 // CHECK:STDOUT:   %.loc13_23.1: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc13_23.1
 // CHECK:STDOUT:   %.loc13_23.2: bool = converted %bool.as.EqWith.impl.Equal.call.loc13_23.1, %.loc13_23.1
 // CHECK:STDOUT:   %true.loc13_17: bool = bool_literal true [concrete = constants.%true]
-// CHECK:STDOUT:   %impl.elem0.loc13_23.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
+// CHECK:STDOUT:   %impl.elem0.loc13_23.2: %.4ef = impl_witness_access constants.%EqWith.impl_witness.fb2, element0 [concrete = constants.%bool.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc13_23.2: <bound method> = bound_method %true.loc13_17, %impl.elem0.loc13_23.2 [concrete = constants.%bool.as.EqWith.impl.Equal.bound.e7c]
 // CHECK:STDOUT:   %bool.as.EqWith.impl.Equal.call.loc13_23.2: init bool = call %bound_method.loc13_23.2(%true.loc13_17, %tuple.elem1.loc9_10.4)
 // CHECK:STDOUT:   %.loc13_23.3: bool = value_of_initializer %bool.as.EqWith.impl.Equal.call.loc13_23.2

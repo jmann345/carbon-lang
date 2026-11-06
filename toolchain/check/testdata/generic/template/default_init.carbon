@@ -307,8 +307,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %.8b7: type = fn_type_with_self_type %DefaultOrUnformed.WithSelf.Op.type.2b7, %DefaultOrUnformed.facet.f65 [concrete]
 // CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.011: %.8b7 = splice_block %impl.elem0.d82 [concrete = %T.as_type.as.DefaultOrUnformed.impl.Op.72d] {
-// CHECK:STDOUT:       %as_type: type = facet_access_type %DefaultOrUnformed.facet.f65 [concrete = %i32]
-// CHECK:STDOUT:       %.fe9: type = converted %DefaultOrUnformed.facet.f65, %as_type [concrete = %i32]
+// CHECK:STDOUT:       %as_type.93d: type = facet_access_type %DefaultOrUnformed.facet.f65 [concrete = %i32]
+// CHECK:STDOUT:       %.fe9: type = converted %DefaultOrUnformed.facet.f65, %as_type.93d [concrete = %i32]
 // CHECK:STDOUT:       %Op.ref: %DefaultOrUnformed.assoc_type = name_ref Op, imports.%Core.import_ref.6dc [concrete = %assoc0.b81]
 // CHECK:STDOUT:       %impl.elem0.d82: %.8b7 = impl_witness_access %DefaultOrUnformed.impl_witness.193, element0 [concrete = %T.as_type.as.DefaultOrUnformed.impl.Op.72d]
 // CHECK:STDOUT:     }
@@ -655,7 +655,7 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete]
+// CHECK:STDOUT:   %x.patt.e3b: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete]
 // CHECK:STDOUT:   %.184347.1: Core.Form = init_form %U.67d [template]
 // CHECK:STDOUT:   %pattern_type.51d1c4.1: type = pattern_type %U.67d [template]
 // CHECK:STDOUT:   %return.param_patt.41d2d9.1: %pattern_type.51d1c4.1 = out_param_pattern [template]
@@ -717,7 +717,7 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %Widen.decl: %Widen.type = fn_decl @Widen [concrete = constants.%Widen] {
 // CHECK:STDOUT:     %U.patt.loc4_20.1: %pattern_type.9a5 = symbolic_binding_pattern U, 0, template [template = %U.patt.loc4_20.2 (constants.%U.patt.3a0)]
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%x.param_patt]
-// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt.e3b]
 // CHECK:STDOUT:     %return.param_patt.loc4_39.1: @Widen.%pattern_type (%pattern_type.51d1c4.1) = out_param_pattern [template = %return.param_patt.loc4_39.2 (constants.%return.param_patt.41d2d9.1)]
 // CHECK:STDOUT:     %return.patt.loc4_36.1: @Widen.%pattern_type (%pattern_type.51d1c4.1) = return_slot_pattern %return.param_patt.loc4_39.1, %U.ref [template = %return.patt.loc4_36.2 (constants.%return.patt.b39)]
 // CHECK:STDOUT:   } {

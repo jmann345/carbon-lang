@@ -181,7 +181,16 @@ static auto CheckQuestionPreflight(Context& context,
   bool in_case_guard =
       !context.match_case_stack().empty() &&
       context.match_case_stack().back().else_block_id.has_value();
-  if (in_case_guard || context.region_stack().depth() > 1) {
+  // Fork (VA-2, D-VA2-11): the body of a statement pack expansion is a region
+  // of its own, nested in the function body's, that holds the blocks its
+  // control flow adds; it is a body position, not a captured region.
+  int body_region_depth = 1;
+  if (!context.pack_expansion_stack().empty() &&
+      context.pack_expansion_stack().back().kind ==
+          Context::PackExpansionScope::Kind::Statement) {
+    ++body_region_depth;
+  }
+  if (in_case_guard || context.region_stack().depth() > body_region_depth) {
     CARBON_DIAGNOSTIC(QuestionInPatternContext, Error,
                       "`?` cannot be used inside a pattern, a `case` guard, "
                       "or a binding's type expression");

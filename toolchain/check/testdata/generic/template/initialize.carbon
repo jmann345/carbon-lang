@@ -625,8 +625,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:       %bound_method.56d925.2: <bound method> = bound_method %.97afc0.2, %specific_fn.96a233.2
 // CHECK:STDOUT:       %Int.as.Copy.impl.Op.call.359493.2: init %i32 = call %bound_method.56d925.2(%.97afc0.2)
 // CHECK:STDOUT:       %tuple.elem0: ref @Dup.%T.loc4_18.1 (%T.67db0b.1) = tuple_access @Dup.%return.param, element0
-// CHECK:STDOUT:       %.531e: ref %i32 = specific_inst %tuple.elem0, @Dup(%i32)
-// CHECK:STDOUT:       %.e45: init %i32 to %.531e = in_place_init %Int.as.Copy.impl.Op.call.359493.2
+// CHECK:STDOUT:       %.531: ref %i32 = specific_inst %tuple.elem0, @Dup(%i32)
+// CHECK:STDOUT:       %.e45: init %i32 to %.531 = in_place_init %Int.as.Copy.impl.Op.call.359493.2
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %tuple.24243e.1: %tuple.type.f7a = tuple_value (%inst.splice_block.426619.3) [concrete]

@@ -47,25 +47,9 @@ impl forall [T: type] T* as Copy {
   fn Op(self) -> Self = "primitive_copy";
 }
 
-// TODO: Implement tuple copy as a variadic generic impl.
-impl () as Copy {
-  fn Op(self) -> Self = "no_op";
-}
-
-impl forall [T: Copy] (T,) as Copy {
+impl forall [... each T: Copy] (... each T) as Copy {
   fn Op(self) -> Self {
-    return (self.0.Op(),);
-  }
-}
-
-impl forall [T: Copy, U: Copy] (T, U) as Copy {
-  fn Op(self) -> Self {
-    return (self.0.Op(), self.1.Op());
-  }
-}
-
-impl forall [T: Copy, U: Copy, V: Copy] (T, U, V) as Copy {
-  fn Op(self) -> Self {
-    return (self.0.Op(), self.1.Op(), self.2.Op());
+    let (... each x: each T) = self;
+    return (... each x);
   }
 }

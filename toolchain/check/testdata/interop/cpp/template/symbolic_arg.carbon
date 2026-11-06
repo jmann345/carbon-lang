@@ -873,8 +873,8 @@ fn F(... each x: i32) -> i32 {
 // CHECK:STDOUT:   %.31b: type = fn_type_with_self_type %DefaultOrUnformed.WithSelf.Op.type.0e3, %DefaultOrUnformed.facet.2f2 [concrete]
 // CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.f08: %.31b = splice_block %impl.elem0.0c1 [concrete = %T.as_type.as.DefaultOrUnformed.impl.Op.b24] {
-// CHECK:STDOUT:       %as_type: type = facet_access_type %DefaultOrUnformed.facet.2f2 [concrete = %Box]
-// CHECK:STDOUT:       %.6ea: type = converted %DefaultOrUnformed.facet.2f2, %as_type [concrete = %Box]
+// CHECK:STDOUT:       %as_type.0c2: type = facet_access_type %DefaultOrUnformed.facet.2f2 [concrete = %Box]
+// CHECK:STDOUT:       %.6ea: type = converted %DefaultOrUnformed.facet.2f2, %as_type.0c2 [concrete = %Box]
 // CHECK:STDOUT:       %Op.ref: %DefaultOrUnformed.assoc_type = name_ref Op, imports.%Core.import_ref.6dc [concrete = %assoc0.b81]
 // CHECK:STDOUT:       %impl.elem0.0c1: %.31b = impl_witness_access %DefaultOrUnformed.impl_witness.23f, element0 [concrete = %T.as_type.as.DefaultOrUnformed.impl.Op.b24]
 // CHECK:STDOUT:     }

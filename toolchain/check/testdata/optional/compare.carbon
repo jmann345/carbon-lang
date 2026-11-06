@@ -676,7 +676,7 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %require_complete.b69: <witness> = require_complete_type %Optional.4d3 [symbolic]
 // CHECK:STDOUT:   %EqWith.type.330: type = facet_type <@EqWith, @EqWith(%Optional.4d3)> [symbolic]
 // CHECK:STDOUT:   %EqWith.assoc_type.b51: type = assoc_entity_type @EqWith, @EqWith(%Optional.4d3) [symbolic]
-// CHECK:STDOUT:   %assoc0.eed: %EqWith.assoc_type.b51 = assoc_entity element0, imports.%Core.import_ref.5ba2c [symbolic]
+// CHECK:STDOUT:   %assoc0.eed: %EqWith.assoc_type.b51 = assoc_entity element0, imports.%Core.import_ref.5ba [symbolic]
 // CHECK:STDOUT:   %require_complete.2ce: <witness> = require_complete_type %EqWith.type.330 [symbolic]
 // CHECK:STDOUT:   %assoc0.d00a4a.3: %EqWith.assoc_type.85b = assoc_entity element0, imports.%Core.import_ref.2e55e8.3 [symbolic]
 // CHECK:STDOUT:   %facet_type.342: type = facet_type <@Destroy & @OptionalStorage & @Eq> [concrete]
@@ -691,7 +691,7 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %.764: require_specific_def_type = require_specific_def @Optional.as.EqWith.impl(%facet_value.c84) [symbolic]
 // CHECK:STDOUT:   %EqWith.facet.0d1: %EqWith.type.330 = facet_value %Optional.4d3, (%EqWith.impl_witness.1e9) [symbolic]
 // CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.1f0: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(%Optional.4d3, %EqWith.facet.0d1) [symbolic]
-// CHECK:STDOUT:   %.3e35: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.1f0, %EqWith.facet.0d1 [symbolic]
+// CHECK:STDOUT:   %.3e3: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.1f0, %EqWith.facet.0d1 [symbolic]
 // CHECK:STDOUT:   %Optional.as.EqWith.impl.Equal.specific_fn.3b3: <specific function> = specific_function %Optional.as.EqWith.impl.Equal.48b, @Optional.as.EqWith.impl.Equal(%facet_value.c84) [symbolic]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -731,7 +731,7 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Same.specific_fn: <specific function> = specific_function %Same, @Same(%facet_value.c24) [concrete]
 // CHECK:STDOUT:   %EqWith.type.240: type = facet_type <@EqWith, @EqWith(%Optional.0e7)> [concrete]
 // CHECK:STDOUT:   %EqWith.assoc_type.9c9: type = assoc_entity_type @EqWith, @EqWith(%Optional.0e7) [concrete]
-// CHECK:STDOUT:   %assoc0.1f4: %EqWith.assoc_type.9c9 = assoc_entity element0, imports.%Core.import_ref.5ba2c [concrete]
+// CHECK:STDOUT:   %assoc0.1f4: %EqWith.assoc_type.9c9 = assoc_entity element0, imports.%Core.import_ref.5ba [concrete]
 // CHECK:STDOUT:   %complete_type.91e: <witness> = complete_type_witness %EqWith.type.240 [concrete]
 // CHECK:STDOUT:   %facet_value.68c: %facet_type.342 = facet_value %i64, (%EqWith.impl_witness.932, %custom_witness.f8f, %OptionalStorage.impl_witness.ccf) [concrete]
 // CHECK:STDOUT:   %EqWith.impl_witness.243: <witness> = impl_witness imports.%EqWith.impl_witness_table.978, @Optional.as.EqWith.impl(%facet_value.68c) [concrete]
@@ -759,7 +759,7 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Core.Eq: type = import_ref Core//prelude/operators/comparison, Eq, loaded [concrete = constants.%Eq.type]
 // CHECK:STDOUT:   %Core.import_ref.725: @EqWith.WithSelf.%EqWith.assoc_type (%EqWith.assoc_type.85b) = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [symbolic = @EqWith.WithSelf.%assoc0 (constants.%assoc0.d00a4a.3)]
-// CHECK:STDOUT:   %Core.import_ref.5ba2c: @EqWith.WithSelf.%EqWith.WithSelf.Equal.type (%EqWith.WithSelf.Equal.type.b82) = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [symbolic = @EqWith.WithSelf.%EqWith.WithSelf.Equal (constants.%EqWith.WithSelf.Equal.ae3)]
+// CHECK:STDOUT:   %Core.import_ref.5ba: @EqWith.WithSelf.%EqWith.WithSelf.Equal.type (%EqWith.WithSelf.Equal.type.b82) = import_ref Core//prelude/operators/comparison, loc{{\d+_\d+}}, loaded [symbolic = @EqWith.WithSelf.%EqWith.WithSelf.Equal (constants.%EqWith.WithSelf.Equal.ae3)]
 // CHECK:STDOUT:   %Core.Copy.e5d: type = import_ref Core//prelude/copy, Copy, loaded [concrete = constants.%Copy.type]
 // CHECK:STDOUT:   %Core.BitAndWith: %BitAndWith.type.a06 = import_ref Core//prelude/operators/bitwise, BitAndWith, loaded [concrete = constants.%BitAndWith.generic]
 // CHECK:STDOUT:   %Core.import_ref.05b = import_ref Core//prelude/operators/bitwise, loc{{\d+_\d+}}, unloaded
@@ -907,14 +907,14 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %EqWith.type.loc7_12.2: type = facet_type <@EqWith, @EqWith(%Optional.loc5_66.1)> [symbolic = %EqWith.type.loc7_12.2 (constants.%EqWith.type.330)]
 // CHECK:STDOUT:   %require_complete.loc7: <witness> = require_complete_type %EqWith.type.loc7_12.2 [symbolic = %require_complete.loc7 (constants.%require_complete.2ce)]
 // CHECK:STDOUT:   %EqWith.assoc_type: type = assoc_entity_type @EqWith, @EqWith(%Optional.loc5_66.1) [symbolic = %EqWith.assoc_type (constants.%EqWith.assoc_type.b51)]
-// CHECK:STDOUT:   %assoc0: @Same.%EqWith.assoc_type (%EqWith.assoc_type.b51) = assoc_entity element0, imports.%Core.import_ref.5ba2c [symbolic = %assoc0 (constants.%assoc0.eed)]
+// CHECK:STDOUT:   %assoc0: @Same.%EqWith.assoc_type (%EqWith.assoc_type.b51) = assoc_entity element0, imports.%Core.import_ref.5ba [symbolic = %assoc0 (constants.%assoc0.eed)]
 // CHECK:STDOUT:   %EqWith.lookup_impl_witness: <witness> = lookup_impl_witness %T.loc5_10.1, @EqWith, @EqWith(%T.as_type.loc5_66.1) [symbolic = %EqWith.lookup_impl_witness (constants.%EqWith.lookup_impl_witness.781)]
 // CHECK:STDOUT:   %facet_value.loc7_12.5: %facet_type.342 = facet_value %T.as_type.loc5_66.1, (%EqWith.lookup_impl_witness, %Destroy.lookup_impl_witness, %OptionalStorage.lookup_impl_witness) [symbolic = %facet_value.loc7_12.5 (constants.%facet_value.c84)]
 // CHECK:STDOUT:   %.loc7_12.6: require_specific_def_type = require_specific_def @Optional.as.EqWith.impl(%facet_value.loc7_12.5) [symbolic = %.loc7_12.6 (constants.%.764)]
 // CHECK:STDOUT:   %EqWith.impl_witness: <witness> = impl_witness imports.%EqWith.impl_witness_table.978, @Optional.as.EqWith.impl(%facet_value.loc7_12.5) [symbolic = %EqWith.impl_witness (constants.%EqWith.impl_witness.1e9)]
 // CHECK:STDOUT:   %EqWith.facet: @Same.%EqWith.type.loc7_12.2 (%EqWith.type.330) = facet_value %Optional.loc5_66.1, (%EqWith.impl_witness) [symbolic = %EqWith.facet (constants.%EqWith.facet.0d1)]
 // CHECK:STDOUT:   %EqWith.WithSelf.Equal.type: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(%Optional.loc5_66.1, %EqWith.facet) [symbolic = %EqWith.WithSelf.Equal.type (constants.%EqWith.WithSelf.Equal.type.1f0)]
-// CHECK:STDOUT:   %.loc7_12.7: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type, %EqWith.facet [symbolic = %.loc7_12.7 (constants.%.3e35)]
+// CHECK:STDOUT:   %.loc7_12.7: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type, %EqWith.facet [symbolic = %.loc7_12.7 (constants.%.3e3)]
 // CHECK:STDOUT:   %Optional.as.EqWith.impl.Equal.type: type = fn_type @Optional.as.EqWith.impl.Equal, @Optional.as.EqWith.impl(%facet_value.loc7_12.5) [symbolic = %Optional.as.EqWith.impl.Equal.type (constants.%Optional.as.EqWith.impl.Equal.type.d97)]
 // CHECK:STDOUT:   %Optional.as.EqWith.impl.Equal: @Same.%Optional.as.EqWith.impl.Equal.type (%Optional.as.EqWith.impl.Equal.type.d97) = struct_value () [symbolic = %Optional.as.EqWith.impl.Equal (constants.%Optional.as.EqWith.impl.Equal.48b)]
 // CHECK:STDOUT:   %Optional.as.EqWith.impl.Equal.specific_fn: <specific function> = specific_function %Optional.as.EqWith.impl.Equal, @Optional.as.EqWith.impl.Equal(%facet_value.loc7_12.5) [symbolic = %Optional.as.EqWith.impl.Equal.specific_fn (constants.%Optional.as.EqWith.impl.Equal.specific_fn.3b3)]
@@ -926,7 +926,7 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:     %EqWith.type.loc7_12.1: type = facet_type <@EqWith, @EqWith(constants.%Optional.4d3)> [symbolic = %EqWith.type.loc7_12.2 (constants.%EqWith.type.330)]
 // CHECK:STDOUT:     %.loc7_12.1: @Same.%EqWith.assoc_type (%EqWith.assoc_type.b51) = specific_constant imports.%Core.import_ref.725, @EqWith.WithSelf(constants.%Optional.4d3, constants.%Self.d94) [symbolic = %assoc0 (constants.%assoc0.eed)]
 // CHECK:STDOUT:     %Equal.ref: @Same.%EqWith.assoc_type (%EqWith.assoc_type.b51) = name_ref Equal, %.loc7_12.1 [symbolic = %assoc0 (constants.%assoc0.eed)]
-// CHECK:STDOUT:     %impl.elem0: @Same.%.loc7_12.7 (%.3e35) = impl_witness_access constants.%EqWith.impl_witness.1e9, element0 [symbolic = %Optional.as.EqWith.impl.Equal (constants.%Optional.as.EqWith.impl.Equal.48b)]
+// CHECK:STDOUT:     %impl.elem0: @Same.%.loc7_12.7 (%.3e3) = impl_witness_access constants.%EqWith.impl_witness.1e9, element0 [symbolic = %Optional.as.EqWith.impl.Equal (constants.%Optional.as.EqWith.impl.Equal.48b)]
 // CHECK:STDOUT:     %bound_method.loc7_12.1: <bound method> = bound_method %a.ref, %impl.elem0
 // CHECK:STDOUT:     %facet_value.loc7_12.1: %facet_type.342 = facet_value constants.%T.as_type.5d6f3f.1, (constants.%EqWith.lookup_impl_witness.781, constants.%Destroy.lookup_impl_witness.49108c.2, constants.%OptionalStorage.lookup_impl_witness.a98) [symbolic = %facet_value.loc7_12.5 (constants.%facet_value.c84)]
 // CHECK:STDOUT:     %.loc7_12.2: %facet_type.342 = converted constants.%T.as_type.5d6f3f.1, %facet_value.loc7_12.1 [symbolic = %facet_value.loc7_12.5 (constants.%facet_value.c84)]
@@ -1136,8 +1136,8 @@ fn SameC(a: Core.Optional(C*), b: Core.Optional(C*)) -> bool {
 // CHECK:STDOUT:   %Core.import_ref.174: @Optional.as.OrderedWith.impl.%Optional.as.OrderedWith.impl.Less.type (%Optional.as.OrderedWith.impl.Less.type.5d9) = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, loaded [symbolic = @Optional.as.OrderedWith.impl.%Optional.as.OrderedWith.impl.Less (constants.%Optional.as.OrderedWith.impl.Less.036)]
 // CHECK:STDOUT:   %Core.import_ref.808 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.536 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.175 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %OrderedWith.impl_witness_table.98f = impl_witness_table (%Core.import_ref.174, %Core.import_ref.808, %Core.import_ref.536, %Core.import_ref.175), @Optional.as.OrderedWith.impl [concrete]
+// CHECK:STDOUT:   %Core.import_ref.1750 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
+// CHECK:STDOUT:   %OrderedWith.impl_witness_table.98f = impl_witness_table (%Core.import_ref.174, %Core.import_ref.808, %Core.import_ref.536, %Core.import_ref.1750), @Optional.as.OrderedWith.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: generated {

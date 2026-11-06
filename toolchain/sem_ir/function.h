@@ -5,6 +5,7 @@
 #ifndef CARBON_TOOLCHAIN_SEM_IR_FUNCTION_H_
 #define CARBON_TOOLCHAIN_SEM_IR_FUNCTION_H_
 
+#include "llvm/ADT/SmallVector.h"
 #include "toolchain/base/canonical_value_store.h"
 #include "toolchain/base/value_store.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
@@ -497,6 +498,15 @@ struct DecomposedVirtualFunction {
 auto DecomposeVirtualFunction(const File& sem_ir, InstId fn_decl_id,
                               SpecificId base_class_specific_id)
     -> DecomposedVirtualFunction;
+
+// Fork (VA-2, D-VA2-11): returns the blocks of the body of a statement pack
+// expansion whose first block is `entry_block_id`: that block, followed by
+// the blocks that its branches reach, in lexical order. The body of an
+// expression statement is its first block alone; the body of an `if`
+// statement is a region of blocks whose exits end in `PackExpansionNext` or
+// return from the function.
+auto GetPackExpansionBodyBlocks(const File& sem_ir, InstBlockId entry_block_id)
+    -> llvm::SmallVector<InstBlockId>;
 
 // The key holds values used to canonicalize generated functions for custom
 // witnesses globally across files. The payload holds a link to the Generated

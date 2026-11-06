@@ -10809,6 +10809,14 @@ alternative's parameter list is a semantics TODO (389cf3af0, W-367), and a pack
 is laid out at its element's array stride (a7f6f6395, W-368), so neither form
 aborts (fork/followon/fo1-plan.md D-FO1-5, D-FO1-6).
 
+_Landed (2026-11-06, LAND-1, R33):_ merged into trunk as PR 59 by 0747ed437
+(GitHub merged_at 2026-11-06T00:33:24Z); container-measured (R33 (b)): gate 2029
+of 2029, conformance 218/0/13 over 231; id re-scans: W-367 and W-368 at step 9,
+before the records edit: origin/claude/carbon-fork-0-1-va, fo1-land-va and the
+/dev/shm/fo1/land/wt-va worktree (6901d0fd9, the head), and trunk and the
+/home/user/carbon-trunk worktree (0747ed437), which contain 6901d0fd9; moved to
+follow-ons: none.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

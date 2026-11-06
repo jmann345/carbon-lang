@@ -679,7 +679,7 @@ fork/inventory/work-items.json and fork/conformance/README.md):
 | PR 57 over `sim56` | lower/testdata/array/iterate.carbon; lower/testdata/for/break_continue.carbon; lower/testdata/for/for.carbon | 3; 3; 3, each CHECK lines only | GOLD-1, then DR-1a's m57 refills by autoupdate (fork/direction/plan.md:1566-1574) |
 | PR 60 over `sim57` | the same four as PR 60 into trunk | the same | the same rules; merge.cpp's result is byte-identical to `sim60`'s |
 | PR 56 then PR 57 over `sim60` | as PR 56 and PR 57 above | the same | the same; `sim60x57`'s toolchain, core and docs trees equal `sim57x60`'s (`git diff --stat` empty) |
-| PR 59 into trunk | toolchain/check/handle_function.cpp | 1 | OV-4's rule: VA-1's pack gate (`PackExpansionPattern` TODO, `break`) before OV-4's default look-through (`DefaultValuePattern` to `binding_pattern_id`) (ov4-plan.md section 6.2, M's message) |
+| PR 59 into trunk | toolchain/check/handle_function.cpp; toolchain/check/deduce.cpp | 1; 1 | OV-4's rule: VA-1's pack gate (`PackExpansionPattern` TODO, `break`) before OV-4's default look-through (`DefaultValuePattern` to `binding_pattern_id`) (ov4-plan.md section 6.2, M's message); deduce.cpp: INC-1: the include block takes the union of both sides' `#include` lines in the file's order, each once (SC-1's action.h and structural_conformance.h beside VA-1's inst.h; equal to trunk's block at 31280f710), a conflict section 0.3's measurement at 03b40f7c5 predates (B1 landed at stage 13) (amended 2026-11-05, landing: stage 16, R29 ruling) |
 | PR 66 over `sim59` | toolchain/check/convert.cpp; toolchain/check/eval.cpp | 1; 1 | VA-2's recorded resolutions (its rule 1 and rule 2, va2-plan.md section 6.2; the `mall` scratch 3d99f544e): convert.cpp keeps TP-1's `SpliceInst` block, closed, then VA-2's pack segment; eval.cpp keeps both members, trunk's `diagnosed_non_constant_ids_` first |
 | PR 66 over `sim59f` | toolchain/check/convert.cpp; eval.cpp; toolchain/lower/type.cpp | 1; 1; 1 | as above, and lower/type.cpp takes VA-2's side: its D-VA2-7 hunk is the same array-stride layout over C1's `element_id` and adds the heterogeneous pack's struct; W-367's hunk in handle_pack_expansion.cpp merges with VA-2's rewritten `Pattern` case without a conflict (it lands after VA-2's "pattern other than a parameter list or let" TODO) |
 
@@ -2938,13 +2938,24 @@ stage 13 to 15 stop, stage 16 may run first by the orchestrator's ruling
     toolchain/check/handle_function.cpp by OV-4's rule (VA-1's pack gate,
     the `PackExpansionPattern` TODO and its `break`, before OV-4's default
     look-through from `DefaultValuePattern` to its `binding_pattern_id`;
-    ov4-plan.md section 6.2); the records files by D-LAND-5.
+    ov4-plan.md section 6.2); toolchain/check/deduce.cpp's include block by
+    INC-1 (the union of both sides' `#include` lines in the file's order, each
+    once, equal to trunk's block) (amended 2026-11-05, landing: stage 16, R29
+    ruling); the records files by D-LAND-5.
 3.  **M-VA**, SV-1's land-time hunk (fork/sumtype-interop/plan.md section 3
     item 8, `$W/land/m-va-pack-element.diff`) with its mutants M19 and M21
     run after it (their records in SV-1's section 8); **S-VA**, CT-1's land-time
     code commit (fork/cpp-templates/plan.md section 3 item 13, D-CT-3's refusal
-    of a pack expansion argument) with Appendix C.11's split and its mutant
-    M18 (CT-1's, which reverts S-VA); TP-1's VA-1 compositions: none
+    of a pack expansion argument), titled "CT-1 S-VA: a C++ call's pack
+    expansion argument is refused where the call is written (D-CT-3, D-VA-5)"
+    (CT-1's plan gives S-VA no message; the title is the orchestrator's, R29)
+    (amended 2026-11-06, landing: stage 16, R29 ruling), with Appendix C.11's
+    split and its mutant M18 (CT-1's, which reverts S-VA); C.11's split is
+    appended as the file's last split, before symbolic_arg.carbon's
+    autoupdated `// CHECK:STDOUT:` trailer; a split placed after the trailer is
+    moved there by autoupdate, which D-LAND-8 forbids F-M59 to do, so
+    stage 16's fix commit 601af4e86 placed it (amended 2026-11-06, landing:
+    stage 16, R29 ruling); TP-1's VA-1 compositions: none
     (measured by TP-1, fork/templates/plan.md section 3 item 8).
 4.  **F-M59**: autoupdate on what the gate after S-VA names. Measured on `sim59`
     (trunk 03b40f7c5, without M-VA and S-VA): 2004 of 2004, nothing to fill;
@@ -2956,10 +2967,27 @@ stage 13 to 15 stop, stage 16 may run first by the orchestrator's ruling
     0, 0 at b0822a744).
 6.  **L59**, "VA-1: land-time texts (stage 16)": W-284 with its `blocked_by`
     W-219 and its clauses in row 68, the decision-log entry's D-SV-4 and
-    id-list clauses, W-011's notes and the SV-1 Branches row
+    id-list clauses, W-011's notes and the SV-1 Branches row (the words
+    "W-284 held until M-VA lands (item 17)" become "W-284 filed at M-VA
+    (bf028fca1 on PR 59's branch, FO-1 stage 16, Next actions item 17)";
+    nothing else in the row changes) (amended 2026-11-06, landing: stage 16,
+    R29 ruling)
     (fork/sumtype-interop/plan.md Appendix C.6 to C.9); RG-1's VA-1 note
     (rg1-plan.md:2573-2583 by D-LAND-15's rule) and, as the last of the five
-    notes once PR 57's has landed, W-343's discharge (RG-1's text, :500-504);
+    notes once PR 57's has landed, W-343's discharge (RG-1's rule,
+    rg1-plan.md:500-504, in Appendix A.7's prepend form; the text of ruling
+    (ii), quoted) (amended 2026-11-06, landing: stage 16, R29 ruling);
+
+    > DISCHARGED 2026-11-05 by VA-1's land-time note, the last of the five
+    > (PR 59's L59, FO-1 stage 16, fork/followon/fo1-plan.md section 2.8
+    > step 6; the rule: fork/register/rg1-plan.md:500-504 and
+    > fork/land/land1-plan.md D-LAND-15): UA-2's (PR 51), EV-1's (PR 54) and
+    > DD-1's (PR 58) notes were written by LAND-1's landings and OP-2's
+    > (PR 57) by FO-1 stage 15, each after its block in fork/decision-log.md;
+    > VA-1's is written by this commit after its block, re-checked at
+    > a567040d7; PR 66's copy of VA-1's block carries the same note once
+    > PR 66 merges trunk at stage 17 (rg1-plan.md:503). Original filing:
+
     the NONE register entry for W-367's refusal (Appendix D.6), which D-R
     cannot write because RG-1's register files reach PR 59's branch only at
     M59; and W-367's note, in which "VA-2's hand-off note 9" becomes
@@ -3045,7 +3073,8 @@ R31's counts; the trailers follow a blank line (section 2's preamble).
 | 24 | op2 (57) | M57, F-M57, the conditional refill, the nested-pointer leg, L57 | OP-2: merge trunk at `<trunk>` (LAND-1 stage 15, D-LAND-12); OP-2: autoupdate the goldens the land merge changes (stage 15); OP-2: SV-1's nested pointer leg (stage 15); OP-2: land-time texts (stage 15) | section 2.7 | 2011 of 2011 |
 | 24a | op2 (57) | the review fold's fix commit | OP-2: optional.md names W-160 again; W-126's OP-2 note (FO-1 stage 15 review fold) | docs/design/optional.md; fork/inventory/work-items.json | not owed (documentation and records only): 9cb870434, after L57 a563909f5, the review fold of R1-15-m2 and of R2-15-M1, the same finding as R1-15-m1, fix commit 1 of 2 of Slice A's D-FO1-10 budget (amended 2026-11-05, landing: stage 15, R29 ruling) |
 | 25 | trunk | merge, records | Land PR 57: OP-2, Core.Optional owns its value, the MaybeUnformed unsafe-as fix, checked Get; Land PR 57: records | as row 21 | 2011 of 2011 |
-| 26 | va (59) | M59, M-VA, S-VA, F-M59, L59 | VA-1: merge trunk at `<trunk>` (LAND-1 stage 16, D-LAND-12); SV-1's M-VA and CT-1's S-VA messages from their plans; VA-1: autoupdate the goldens the land merge changes (stage 16); VA-1: land-time texts (stage 16) | section 2.8 | 2029 of 2029 |
+| 26 | va (59) | M59, M-VA, S-VA, F-M59, L59 | VA-1: merge trunk at `<trunk>` (LAND-1 stage 16, D-LAND-12); SV-1: a sum-type conversion of a VA-1 pack element is a TODO (SV-1's plan, section 3 item 8); CT-1 S-VA: a C++ call's pack expansion argument is refused where the call is written (D-CT-3, D-VA-5) (the orchestrator's title, R29: CT-1's plan gives none) (amended 2026-11-06, landing: stage 16, R29 ruling); VA-1: autoupdate the goldens the land merge changes (stage 16); VA-1: land-time texts (stage 16) | section 2.8 | 2029 of 2029 |
+| 26a | va (59) | the S-VA placement fix commit | CT-1 S-VA fix: the split is placed before symbolic_arg.carbon's autoupdated STDOUT trailer (FO-1 stage 16, R29 ruling) | toolchain/check/testdata/interop/cpp/template/symbolic_arg.carbon | not owed (a test source's placement only; the install is unchanged): 601af4e86, between S-VA 57b3f8439 and F-M59 c517754e6, the stop ruling of scratchpad/fo1-impl/land/rulings/16_A.txt Addendum 3 (vi), fix commit 1 of Slice D's D-FO1-10 budget (amended 2026-11-06, landing: stage 16, R29 ruling) |
 | 27 | trunk | merge, records | Land PR 59: VA-1, definition-checked variadics, slice 1; Land PR 59: records | as row 21 | 2029 of 2029 |
 | 28 | va2 (66) | M, S-CT, F-M, L-F, L | VA-2's messages, its section 3 item 15 | section 2.9 | 2047 of 2047 |
 | 29 | trunk | merge, records | Land PR 66: VA-2, definition-checked variadics, slice 2; Land PR 66: records | as row 21 | 2047 of 2047 |

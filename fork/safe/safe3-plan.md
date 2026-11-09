@@ -6,10 +6,23 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # SAFE-3 plan: the built-in operator exemption re-derived from the safety argument
 
-**Status:** rev 13, 2026-11-09 -- NOT signed off (the re-review decides); the
-stop of rev 12 lifted by the orchestrator's ruling of 2026-11-09 (SAFE-4),
-D-SAFE3-13's statement (3) re-ruled. Rev 13, 2026-11-09, is the fixer's fold of
-that ruling, recorded verbatim at the head of the rev 13 fold record with the
+**Status:** rev 14 -- NOT signed off: RR13-M1, RR13-m1 to RR13-m9 (a second
+focused re-review follows). Rev 14, 2026-11-09, is the fixer's fold of SAFE-4
+carry-out round 1, the focused re-review of rev 13 (APPROVE-WITH-AMENDMENTS:
+one MAJOR, RR13-M1, the lowering's `write` call absent from the statement's
+named list of the lowering's own calls while its site is cited, ruled on by the
+orchestrator's addendum of 2026-11-09 to the SAFE-4 ruling, recorded verbatim
+at the head of the rev 14 fold record, which extends the list by `write` under
+POSIX's reservation and makes toolchain/lower's source the list's authority;
+nine MINORs, RR13-m1 to RR13-m9, records, counts and copies; all ten folded,
+the re-review's eight new probes re-run, every output the recorded one and none
+meeting the break condition's first limb; the rev 14 fold record; amended
+2026-11-09, SAFE-4 carry-out round 1: RR13-M1, where the first sentence read
+"rev 13, 2026-11-09 -- NOT signed off (the re-review decides); the stop of rev
+12 lifted by the orchestrator's ruling of 2026-11-09 (SAFE-4), D-SAFE3-13's
+statement (3) re-ruled." and the next began "Rev 13, 2026-11-09, is the fixer's
+fold of that ruling"). Rev 13, 2026-11-09, is the fixer's fold of the SAFE-4
+ruling, recorded verbatim at the head of the rev 13 fold record with the
 statement it adopts: the C++ boundary is stated from C++'s object model over the
 invocation's view, as the escaped places E of an invocation closed under E1 to
 E8, with the quiet extent as T8's second, independent condition, the lowering's
@@ -238,7 +251,9 @@ of 2026-10-29 for RR3-M1, RR4-M1, RR5-M1, RU2-1, RU1-1 and RU1-2).
     order of each, and rev 13's 91 rows, SAFE-4's five scratches and the
     C++-boundary families re-built, re-run on the fork's trunk install and
     the nightly after the container reset of 2026-11-09 lost the earlier
-    sources (amended 2026-11-09, SAFE-4 ruling: S4-1);
+    sources, and the re-review's 8 of rev 13, re-run by rev 14 (amended
+    2026-11-09, SAFE-4 ruling: S4-1; amended 2026-11-09, SAFE-4 carry-out
+    round 1: RR13-m8, where this named no probes of rev 13's re-review);
     PR 67's checks; every sentence on the pages and in the records that states
     the exemption; the interlocks; the collisions; the id re-scan; SAFE-2's
     findings that the tree does not yet carry.
@@ -249,13 +264,17 @@ of 2026-10-29 for RR3-M1, RR4-M1, RR5-M1, RU2-1, RU1-1 and RU1-2).
 -   Section 3, commits and reviews; section 4, the worked-example matrix;
     section 5, scoreboard; section 6, churn and collisions; section 7, risks
     and rejected alternatives; section 8, verification and the not-run list.
--   The review fold records of rev 2 to rev 13, rev 10's opening with the
+-   The review fold records of rev 2 to rev 14, rev 10's opening with the
     orchestrator's ruling of 2026-11-01 quoted whole, rev 11's recording the
     stop on RT1-B1 with the re-think re-review's 5 probes re-run, rev 12's
-    recording RT2-B1 with the second re-think re-review's 6 probes re-run and
+    recording RT2-B1 with the second re-think re-review's 6 probes re-run,
     rev 13's opening with the orchestrator's ruling of 2026-11-09 and the
     statement it adopts quoted whole, the stop lifted, every probe re-run and
-    the ruling's work items specified (amended 2026-11-09, SAFE-4 ruling:
+    the ruling's work items specified, and rev 14's opening with that ruling's
+    addendum of 2026-11-09 on RR13-M1 quoted whole, the carry-out round's ten
+    findings folded and its 8 probes re-run (amended 2026-11-09, SAFE-4
+    carry-out round 1: RR13-M1, where this read "rev 2 to rev 13" and named no
+    rev 14; amended 2026-11-09, SAFE-4 ruling:
     S4-1, where this read "rev 2 to rev 12" and named no rev 13; amended
     2026-11-01, re-think round 1: RT1-B1, where this read "rev 2 to
     rev 10"; amended 2026-11-01, re-think round 2: RT2-B1, RT2-m1, where this
@@ -1162,9 +1181,22 @@ carrying `noalias`, and judge 1's j03c control reading 11 99 as judge 1 recorded
 it, the synthesizer's 11 59 being its unguarded addna.py's anomaly; the
 Carbon-internal probes of statements (1) and (2), which the ruling keeps, are
 not re-built, their rows resting on the outputs recorded above (added
-2026-11-09, SAFE-4 ruling: S4-1). The new probes, with the IR order of the
-function that does the operation (`p` aliasing `q` where the program passes one
-place twice):
+2026-11-09, SAFE-4 ruling: S4-1). The focused re-review of rev 13 (SAFE-4
+carry-out round 1) built eight probes in families the SAFE-4 analysis did not
+try (its scratch
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3-rev13/rr1/new/,
+INDEX.tsv), and the rev 14 fixer re-ran them from those sources, copied into
+/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/safe3-rev13/fixer1/new/
+one directory per probe and run by fixer1/bin/run.sh, the rev 13 runner with its
+paths, on both toolchains with the T8 simulation on the parameter each names:
+every output the one the re-review recorded (the last eight rows of the table
+below), none writing a place outside E during a quiet extent without C++
+undefined behavior and without a call the lowered body shows, and the
+global-initializer probe showing the simulation blind where LLVM's
+static-constructor evaluator folds the global at compile time, section 8 (added
+2026-11-09, SAFE-4 carry-out round 1: RR13-m8). The new probes, with the IR
+order of the function that does the operation (`p` aliasing `q` where the
+program passes one place twice):
 
 | probe | shape | IR order | output |
 | --- | --- | --- | --- |
@@ -1275,6 +1307,14 @@ place twice):
 | j01 to j09 (SAFE-4, judge 1; re-run by rev 13) | `Lib.G(ref y)` running `Poke` in a package compiled without `Main`'s hand-over (j01), the lowering's `memcpy` libcall interposed by the program and handed `&a[0]` (j02), a dead frame's slot reused by `y` at `-O2` (j03; j03b the distance, j03c and the synthesizer's j03d the control), C++ calling the non-exported `G` by its mangled symbol `_CG.Main` (j04), interposed `printf` (j05) and `putchar` (j07) writing through a kept pointer in a call-free extent, a by-value loan carrier forwarded to C++ (j06), interposed `memcpy` through a kept pointer (j08, j08b) and `Outer{d: D, n}` written two steps up from `&o.d.base` (j09) | each as judge 1's INDEX.tsv records | 9 9; 9 9 7; 11 55 (11 59 simulated, 11 99 the true control); 99; [user printf] 5 9 9; 0 9 9; ! 9 9; 5 9 7 (the same simulated); 9 9 12 |
 | j01 to j06, k01 to k05 (SAFE-4, judge 2; re-run by rev 13) | C++ supplying aliased storage, `(ref x, p)` with `p == &x` (j01), two `ref`s on one `int` (j02), a function value's arguments (j03), the override's `self` (j04), a held Carbon object (j05) and the `sret` slot (j06), each forwarded to a quiet non-exported function that writes through the alias; a dangling write with no reuse (k01), the API/impl split compiled per unit (k02), the prelude's `malloc`, `free`, `write` and `abort` inside a `ref` extent (k03, fork only), a callee handing its referent to C++ (k04) and 256-byte tuple copies under an interposed `memcpy` (k05) | each as judge 2's INDEX.tsv records; k02's `Main` module holding `declare @_CKeep.Main` and `declare @_CTick.Main` only | 99 (59 simulated) for j01, j02, j03, j05 and j06 and 9 9 for j04; 1 55; 9 9; 5 5; 9 9; 5 5 0 |
 | s01, s02 (SAFE-4, the synthesizer; re-run by rev 13) | judge 2's j01 with the quiet forwardee in a separate unit (s01); C++ handed `&x` and `&gp` writing the Carbon global `gp = &x`, a later quiet `Mod2(ref x, q)` with `q` read from `gp` (s02) | store, store or call, load | 99 (59 simulated in the library unit); 9 9 (5 9) |
+| init_frame_above (the re-review of rev 13; re-run by rev 14) | a C++ inline variable's dynamic initializer, run before `main`, calls the exported `F(ref x, p)` with `p == &x` (judge 2's j01 alias), which forwards to the quiet `G(ref y, q)`, writing `y`, then `*q`, then reading `y`; no Carbon code calls into C++ (fixer1/new/init_frame_above) | in `G`: store `%y`, store `%q`, load `%y` | 99 (59 with `noalias captures(none)` simulated on `G`'s `y`) |
+| atexit_frame_above (the re-review of rev 13; re-run by rev 14) | C++ registers an `atexit` handler, which after `Run` returns calls the exported `F(ref x, p)` with `p == &x`, forwarded to the quiet `G` | in `G`: the same | 0 99 (0 59 simulated on `G`'s `y`) |
+| tuple_sibling (the re-review of rev 13; re-run by rev 14) | C++ receives `&t.0` of a Carbon tuple `(i32, i32)`, which has no C++ type, and writes `p[1]` while `Mod`'s `ref e` binds `t.1` | in `Mod`: store `%e`, call `FillNext`'s thunk, load `%e` | 9 9 (5 9 simulated on `e`) |
+| carbon_class_sibling_offsetof (the re-review of rev 13; re-run by rev 14) | C++ receives `&s.m` of the Carbon class `S`, which the fork exports as `Carbon::S`, and writes `s.n` by `offsetof(Carbon::S, m)` arithmetic while `Mod`'s `ref e` binds `s.n` | in `Mod`: store `%e`, call the C++ function's thunk, load `%e` | 9 9 (5 9 simulated on `e`) |
+| impl_in_extent (the re-review of rev 13; re-run by rev 14) | `Touch[T:! Poker](ref e, t)` calls `t.Poke()`, resolved for the specific to `Wrap`'s impl, whose body calls C++ `PokeIt`, which writes `x` through the pointer `Keep` received earlier | in `Touch`: store `%e`, call the impl's `Poke`, load `%e` | 9 9 (5 9 simulated on `Touch`'s `e`) |
+| write_interposed_failstop (the re-review of rev 13; re-run by rev 14; fork only, `Core.Buf`) | the program defines `write` in C++; `Mod`'s extent calls `Core.Buf.Get` out of bounds, whose `FailStop` lowers to a direct call of `write` and then of `abort` (toolchain/lower/handle_call.cpp:703-712), and the interposed `write` writes `x` through the pointer `Keep` received before `abort` ends the program | in `Mod`: store `%e`, call `Get`, load `%e`; in `Get`'s failing path, call `write`, call `abort` | "[user write] 9" on stderr, rc 134, with and without the attribute simulated on `Mod`'s `e`; the nightly has no `Core.Buf` |
+| join_in_callee (the re-review of rev 13; re-run by rev 14) | `Spawn` keeps `&x` in a C++ thread; `Mod`'s extent calls the Carbon `Helper`, whose body alone calls C++ `ReleaseAndJoin` | in `Mod`: store `%e`, call `Helper`, load `%e` | 9 9 (5 9 simulated on `Mod`'s `e`) |
+| global_init_cpp_frame (the re-review of rev 13; re-run by rev 14) | `var g: i32 = Cpp.DriveInit();`, a Carbon global's dynamic initializer entering C++, which calls the exported `F(ref x, p)` with `p == &x`, forwarded to the quiet `G` | in `G`: store `%y`, store `%q`, load `%y`; at `-O2` LLVM's static-constructor evaluator folds `g` to 99 at compile time and the simulated build has no `.init_array` section, so the attribute is never exercised | 99 (99 with the attribute simulated on `G`'s `y`: the simulation shows nothing here) |
 
 Facts the probes give, each with the probes that show it: the call-based
 operators evaluate the left operand's place, then the right operand, then the
@@ -1791,16 +1831,33 @@ added 2026-11-01, re-think round 2: RT2-m1). Repeated by the rev 13 fixer on
 lists for origin's tracking refs and the local branches and over fork/ in the 7
 worktrees (`git grep -ohE 'W-3[7-9][0-9]|W-4[0-9][0-9]' <ref> -- fork`): W-370
 to W-381, W-384 to W-390 and W-395 to W-399 appear; W-378 is filed on trunk
-(ARB-2's, 725570464), W-380 is filed on origin/claude/carbon-fork-0-1-ehc's
-ledger with W-381 to W-385 reserved by EH-C's plan (its D-EHC-11), W-386,
+(ARB-2's, 725570464), W-380 is EH-C's, reserved with W-381 to W-385 by its plan
+(fork/eh/ehc-plan.md:66-67 on origin/claude/carbon-fork-0-1-ehc at 70c030a0a,
+its D-EHC-11) and filed on no ledger when rev 13 scanned (the re-review of
+rev 13 found `"id": "W-380"` in no work-items.json on the 84 refs, origin's
+ehc head 70c030a0a ending at W-377 and the local branch at 93b0ac263 at W-378,
+trunk's), W-386,
 W-387, W-390 and W-395 appear only in that plan's sentence listing the ids no
 file names, W-388, W-389, W-396 and W-397 only as range bounds in prose (the
 log's weekly entry and fo1-plan.md), W-398 and W-399 as VA-2's and DR-1's
-bounds, and no ledger on any ref has an id past W-380; so the next free ids
+bounds, and no ledger on any ref has an id past W-378 (amended 2026-11-09,
+SAFE-4 carry-out round 1: RR13-m3, where this read "W-380 is filed on
+origin/claude/carbon-fork-0-1-ehc's ledger with W-381 to W-385 reserved by
+EH-C's plan (its D-EHC-11)" and "no ledger on any ref has an id past W-380");
+so the next free ids
 are W-386 to W-393, which rev 13 reserves for the eight work items the
 orchestrator's ruling of 2026-11-09 files (B.39), and W-365 and W-366 are filed
 by the fold commit as B.14 gives them, the stop lifted (added 2026-11-09, SAFE-4
-ruling: S4-1).
+ruling: S4-1). Repeated by the rev 14 fixer on 2026-11-09 over the same 84
+refs and 7 worktrees (fixer1/scan/idscan-refs.txt, idscan-wt.txt): the same
+ids, W-386 to W-393 on the safe branch and the mirror and in EH-C's sentence
+alone, no ledger on any ref holding one of them; W-380 is now filed on the
+local branch claude/carbon-fork-0-1-ehc's ledger alone, at 07b949dbe, EH-C's
+discharge commit (the worktree /home/user/carbon-ehc), while origin's ehc head
+70c030a0a still ends at W-377 and trunk's 725570464 at W-378, so the ledgers'
+last id on any origin ref is W-378 and on any local ref W-380, and the next
+free ids stay W-386 to W-393; rev 14 mints no id (added 2026-11-09, SAFE-4
+carry-out round 1: RR13-m3).
 
 ### §0.9 SAFE-2's findings that the tree does not carry
 
@@ -2820,7 +2877,37 @@ Each under R29, with its break condition.
     and 0 example `ref` parameters loud beyond the closure, and on the 7
     design pages that use `Cpp` 5 `ref` and 3 `exclusive T*` parameters, of
     which the loud extent withholds 3 and 3 against the closure's 0 and 3, the
-    3 page `ref` parameters the ruling counts; the reserved names: 0 corpus
+    3 page `ref` parameters the ruling counts (the ruling's section 5.4's
+    figure, kept as quoted; what it is, by the scan re-run with its debug
+    output, fixer1/bin/scan_a2.py: the 5 are docs/design/README.md's
+    `destroy`, docs/design/expressions/member_access.md's two `Op` sketches
+    with a `ref p` parameter, :1359 and :1444 at 14c1ac8ac, its `SetField` and
+    its `G(ref a: Cpp.A)`, :1613, and the 3 the scan calls loud are the two
+    `Op` sketches, loud by the scan's unknown-callee rule over the page's
+    pseudo-code intrinsics, `offset_compiler_intrinsic` and its kin, and by no
+    C++ call, and `G`, loud by its C++ member calls `a.(Cpp.p)` and
+    `a.(Cpp.q)()`, which hand C++ `a` as `this`, so that `a` is in E and the
+    closure withholds on it as well, a hand-over the scan's address pattern
+    misses, its closure column reading 0; the scan's signature regex stops at
+    the first `)` and so undercounts the pages' `ref` parameters, a
+    balanced-parenthesis read by fixer1/bin/pagescan.py over every page with
+    `Cpp` in a `carbon` block finding 14 `ref` parameters, README.md's 6,
+    member_access.md's 5, functions_overloading.md's 2 and
+    temporal_safety.md's one `bound ref`, and 5 `exclusive T*`, the re-review's
+    own parser 12 over the seven pages the scan counts; amended 2026-11-09,
+    SAFE-4 carry-out round 1: RR13-m4); the quiet extent's reach of the
+    lowering's own calls, measured for rev 14 on the lowered IR of every corpus
+    program that declares a `ref` parameter, every unit of the program on one
+    invocation, by fixer1/bin/lower_all.py with the re-review's reach_write.py
+    (fixer1/logs/lower_all.log): 10 of the 38 `ref` parameters' extents reach
+    `write` through `Core.Optional.Get`'s `FailStop`, `ReadInputs`'s two,
+    `ReadInt`, `ExtractPossibleFirstPage`, `DefragFiles`, `Fill`, `HasSpace`,
+    `AddLevel`'s two and `ReadAndExecuteActions`, 0 reach C++ code and 0 an
+    indirect call, and the ruling's addendum of 2026-11-09 counts `write`
+    among the implementation's own calls, quiet, so 0 are withheld by it and
+    the 0 and 0 above hold by the addendum's rule, not only by the ruling's
+    citation of handle_call.cpp:704-710 (added 2026-11-09, SAFE-4 carry-out
+    round 1: RR13-M1); the reserved names: 0 corpus
     programs define `printf`, `putchar`, `getchar`, `malloc`, `free`, `abort`,
     `memcpy`, `memset`, `memmove` or `write` in an `inline Cpp` block or a
     `.diff.cpp` twin; and EX-TM-8's `var u: U = {.p = &x}`
@@ -2880,11 +2967,31 @@ Each under R29, with its break condition.
     but by the routes the pages name; the calls the lowering itself
     introduces, to the C library's reserved names (`printf`, `putchar`,
     `getchar`, `malloc`, `free`, `abort`, `memcpy`, `memset`, `memmove`;
+    toolchain/lower/handle_call.cpp:389-415, :704-710, :779-794), to `write`
+    (a POSIX name, not an ISO C library name; handle_call.cpp:703-707,
+    `FailStop`'s call before `abort`, and handle.cpp:366-374, `Main.Run`'s
+    `.Err` epilogue), the named list being the lowering's calls as
+    toolchain/lower names them at the plan's sha, re-read at every weekly
+    check (W-355's method) and extended by a dated mark when the lowering adds
+    one, and to compiler-rt, are the implementation's own, and a program that
+    defines one has undefined behavior by C++'s own rule
+    ([reserved.names.general]/2, [extern.names]/4 for the C library's names;
+    this design's reading) or, for `write`, breaks POSIX's reservation of the
+    names its headers declare (POSIX.1-2017 XSH 2.2.2, `<unistd.h>`), the
+    fork's reading being that such a program interposes the implementation's
+    own hook, which the re-review's probe shows running after no Carbon code
+    can continue, `FailStop` ending in `abort`, so that the attribute cannot
+    be observed through it (amended 2026-11-09, by the orchestrator's addendum
+    of 2026-11-09 to the SAFE-4 ruling, recorded verbatim at the head of the
+    rev 14 fold record, SAFE-4 carry-out round 1: RR13-M1, where the list read
+    "to the C library's reserved names (`printf`, `putchar`, `getchar`,
+    `malloc`, `free`, `abort`, `memcpy`, `memset`, `memmove`;
     toolchain/lower/handle_call.cpp:389-415, :704-710, :779-794) and to
     compiler-rt, are the implementation's own, and a program that defines one
     has undefined behavior by C++'s own rule ([reserved.names.general]/2,
-    [extern.names]/4; this design's reading), as LLVM assumes their semantics
-    without any attribute of T8's (j08); a C++ call of a Carbon function by
+    [extern.names]/4; this design's reading)"), as LLVM assumes their
+    semantics without any attribute of T8's (j08); a C++ call of a Carbon
+    function by
     its mangled symbol, which the interop does not export, is outside the
     interoperability contract (j04); a write through a pointer into storage
     whose duration has ended uses an invalid pointer value, undefined behavior
@@ -2934,7 +3041,13 @@ Each under R29, with its break condition.
     of a program on every invocation, and under per-unit builds 20 of the
     corpus's 38 `ref` parameters, the 18 declarations of examples/advent2024's
     API-library units; the quiet extent 0 conformance and 0 example sites and
-    3 page `ref` parameters; 0 corpus programs defining a reserved name; one
+    3 page `ref` parameters, and its reach of the lowering's own calls 10 of
+    the corpus's 38 `ref` parameters, whose extents reach `write` through
+    `Core.Optional.Get`'s `FailStop`, quiet by the ruling's addendum of
+    2026-11-09 and 0 withheld by it (the rev 14 fixer's fixer1/bin/lower_all.py
+    over the lowered IR of every unit of each program, recorded in D-SAFE3-12;
+    added 2026-11-09, SAFE-4 carry-out round 1: RR13-M1); 0 corpus programs
+    defining a reserved name or `write`; one
     page example re-annotated, EX-TM-8's union store (A.48); nothing in the
     corpus newly rejected. Labelled this design's reading of p005914:204-210
     and p005434:859-868 at ca1898506, which state the attribute's policy and
@@ -2943,7 +3056,12 @@ Each under R29, with its break condition.
     interoperability README.md:248-251 leaving pointer mapping to proposal
     6357), of C++'s object model ([intro.object], [expr.add], [basic.compound],
     [expr.static.cast], [class.virtual]), its reserved names
-    ([reserved.names.general]/2, [extern.names]/4) and its storage duration
+    ([reserved.names.general]/2, [extern.names]/4), of POSIX's reservation of
+    the names its headers declare, under which `write`, no C library name,
+    falls (POSIX.1-2017 XSH 2.2.2, `<unistd.h>`; the lowering's own calls
+    being the list toolchain/lower names at the plan's sha, by the ruling's
+    addendum of 2026-11-09; added 2026-11-09, SAFE-4 carry-out round 1:
+    RR13-M1) and of its storage duration
     ([basic.stc.general]/4), and of the allowlist, D-SAFE-18's trusted
     assumption, its trust for diagnostics only. Rejected (the ruling's item 3,
     the SAFE-4 report's section 4.2): the closure alone, SAFE-4's P1 as its
@@ -2980,7 +3098,13 @@ Each under R29, with its break condition.
     migration count showing the quiet extent withholding on more than half
     the `ref` parameters of functions that call C++ relax it to E's refinement
     by a dated mark. Stop condition for the SAFE-3 round that carries it out
-    (the ruling's section 5.6): rev 13 records the ruling verbatim, re-derives
+    (the ruling's section 5.6, re-cast in this decision's terms, its three
+    sentences merged into one, "D-SAFE3-13 and every copy (5.3)" read as
+    "this decision and every copy (its section 5.3)" and "as rev 10's ruling
+    (5)" as "as the ruling of 2026-11-01's (5)", the substance equal, the
+    report's own text standing in its section 5.6; amended 2026-11-09, SAFE-4
+    carry-out round 1: RR13-m7, where this read "(the ruling's section
+    5.6):"): rev 13 records the ruling verbatim, re-derives
     this decision and every copy (its section 5.3), re-runs every probe of
     SAFE-3's rounds and SAFE-4's four scratches under the statement (every row
     re-traced, the changed rows listed with the probe that decides each),
@@ -3071,7 +3195,12 @@ row that rested on a place C++ code received, T8 withholding on its outermost
 object, flow-insensitively (w01 to w03, y06 and j09 deciding); no row's
 acceptance changes; the new rows for w01 to w05, y06, x01 and SAFE-4's
 families stand before the thread row, which stays last (added 2026-11-09,
-SAFE-4 ruling: S4-1):
+SAFE-4 ruling: S4-1). Rev 14 adds, before the thread row, five rows for the
+eight probes of rev 13's re-review, re-run by the rev 14 fixer (section 0.3),
+and corrects the lowering's-calls row, whose citation of
+[reserved.names.general]/2 and [extern.names]/4 covered `write`, a POSIX name
+the C library does not reserve, as the ruling's addendum of 2026-11-09 has it
+(added 2026-11-09, SAFE-4 carry-out round 1: RR13-M1, RR13-m8, RR13-m9):
 
 | probes | outcome | why `noalias` holds |
 | --- | --- | --- |
@@ -3141,10 +3270,15 @@ SAFE-4 ruling: S4-1):
 | judge 1's j01, judge 2's k02, analyst 1's a09, analyst 2's n11 (rev 13) | a callee whose body the invocation does not check, another package's or unit's `Keep`, `Tick`, `Stash` or `G`, receives its argument as C++ code does (E7), so `&x` handed to it puts `x` in E in the caller, and a function the invocation cannot see every caller of, `Lib.G(ref y)` in a unit compiled alone or `Keep` and `Tick` declared in an API file, receives its parameters as E2's storage (E8); as built, every unit per invocation, E1 and E5 decide the same (added 2026-11-09, SAFE-4 ruling: S4-1) | accepted; T8 withholds on `Mod`'s `s` and on `G`'s `y`, the C++ write erroneous behavior (9 9 in each; 5 9 with the attribute simulated in a callee's unit compiled alone, the miscompile E7 and E8 withhold against) |
 | judge 1's j06, judge 2's k04 (rev 13) | a by-value parameter's loans and a callee's hand-over: `Use(v: CV)` handing `v` to C++ puts the places `v`'s loans lie on, `x`, in E (E3, E5's by-value clause), and `G(ref y)` handing `&y` to C++ puts `x` in E in its caller (E5's callee-to-caller clause) (added 2026-11-09, SAFE-4 ruling: S4-1) | accepted; T8 withholds on `Mod`'s `e` and `s` (0 9 9; 9 9) |
 | the synthesizer's s02, analyst 1's a03, a08, a12, analyst 2's n03, n04, n08, n09, n12b (rev 13) | E is flow-insensitive: `x` handed once, to `Keep`, a lambda, a thread or a callback, is in E for the invocation, a later quiet `Mod2(ref x, q)` with `q` loaded from the C++-written global `gp` (s02), a later `Fire()` (a03, n03, n04), a join (a08, n08) or a destructor the generated `Destroy` witness runs (n12b) writing it while a `ref` is bound; a12's store of `&x` into a C++ global pointer is the Store rule's `StrictStoreOutlivesSource` unmarked, a free destination accepting only free loans, and marked puts `x` in E (E1); n09's address laundered through a C++ result as a pointer or an integer is in E by the hand-over itself (added 2026-11-09, SAFE-4 ruling: S4-1) | accepted, the attributes withheld on `x`; the write erroneous behavior (9 9 in each; 9 9 9 9 for n09) |
-| judge 1's j02, j05, j07, j08, judge 2's k03, k05, analyst 1's a16, analyst 2's n13 (rev 13) | the lowering's own calls, `printf`, `putchar`, `memcpy`, `malloc`, `free`, `write` and `abort`, are the implementation's and quiet; a program that defines one has undefined behavior by C++'s own rule ([reserved.names.general]/2, [extern.names]/4), so j02's, j05's, j07's and j08's writes are outside the design's claim, as LLVM already assumes `memcpy`'s semantics with no attribute of T8's (j08: 5 9 7 with and without it); k03, k05, a16 and n13 reach nothing (added 2026-11-09, SAFE-4 ruling: S4-1) | outside the criterion (9 9 7; [user printf] 5 9 9; ! 9 9; 5 9 7; 5 5; 5 5 0; 1 0; 7 5 5 9 9) |
+| judge 1's j02, j05, j07, j08, judge 2's k03, k05, analyst 1's a16, analyst 2's n13 (rev 13) | the lowering's own calls, `printf`, `putchar`, `getchar`, `memcpy`, `memset`, `memmove`, `malloc`, `free`, `abort` and `write`, the list toolchain/lower names at the plan's sha, are the implementation's and quiet; a program that defines one of the C library's names has undefined behavior by C++'s own rule ([reserved.names.general]/2, [extern.names]/4) and one that defines `write`, a POSIX name, breaks POSIX's reservation (XSH 2.2.2) and interposes the implementation's own hook (the ruling's addendum of 2026-11-09), so j02's, j05's, j07's and j08's writes are outside the design's claim, as LLVM already assumes `memcpy`'s semantics with no attribute of T8's (j08: 5 9 7 with and without it); k03, k05, a16 and n13 reach nothing, k03's `malloc`, `free`, `write` and `abort` from the prelude's bodies being that list's (added 2026-11-09, SAFE-4 ruling: S4-1; amended 2026-11-09, SAFE-4 carry-out round 1: RR13-M1, RR13-m9, where this read "the lowering's own calls, `printf`, `putchar`, `memcpy`, `malloc`, `free`, `write` and `abort`, are the implementation's and quiet; a program that defines one has undefined behavior by C++'s own rule ([reserved.names.general]/2, [extern.names]/4)") | outside the criterion (9 9 7; [user printf] 5 9 9; ! 9 9; 5 9 7; 5 5; 5 5 0; 1 0; 7 5 5 9 9) |
 | judge 1's j03, judge 2's k01, analyst 1's a10 (rev 13) | a write through a pointer into storage whose duration has ended uses an invalid pointer value, undefined behavior by C++'s own rule ([basic.stc.general]/4), which the Debug build's ASan-class detection catches and T8's withholding does not, `y` never having been handed (A.47 rewrites the contract's sentence) (added 2026-11-09, SAFE-4 ruling: S4-1) | outside the criterion (11 55, 11 59 with the attribute simulated against the true control 11 99; 1 55; 5 5) |
 | judge 1's j04 (rev 13) | a C++ call of the non-exported `G` by its mangled symbol `_CG.Main` is outside the interoperability contract; hidden visibility for non-exported functions is W-387 (added 2026-11-09, SAFE-4 ruling: S4-1) | outside the contract (99; 59 simulated) |
 | analyst 1's a01, a05b, a02, analyst 2's n01, n02, n12, t2 (rev 13) | a global is an open place, never attributed (a01, n01); nothing handed keeps the attributes (a05b); no C++ exception unwinds a Carbon frame on either toolchain (a02 under the catching thunk, n02 terminating), EH-C's invariant, W-393; a C++ `thread_local`'s initializer never runs (n12, W-390) and pointer-to-integer `unsafe as` is unimplemented (t2, W-391) (added 2026-11-09, SAFE-4 ruling: S4-1) | accepted or no program (9 9; 11 6; 7 9; rc 134; 5 5 7 5; rejected) |
+| the re-review's init_frame_above, atexit_frame_above and global_init_cpp_frame (rev 14) | a C++ frame above by a route other than a call from `Run`, a C++ inline variable's dynamic initializer before `main`, an `atexit` handler after `Run` returns and a Carbon global's own dynamic initializer entering C++, supplies the exported `F`'s referent and pointee (E2, `F` a function E8 names), and the quiet forwardee `G`'s `ref y` binds a place of E (E5), whatever frame C++ runs in; `var g: i32 = Cpp.DriveInit();` is besides statement (2)'s, a global variable's initializer running a C++ call, `StrictRefFromShared` unmarked (added 2026-11-09, SAFE-4 carry-out round 1: RR13-m8) | the Carbon side accepted, the global's initializer marked; the C++ caller's aliasing erroneous behavior, never undefined behavior (99; 0 99; 99; 59 and 0 59 with the attribute simulated on `G`'s `y`, and 99 for the global's initializer, LLVM's static-constructor evaluator folding `g` at compile time so that the simulation shows nothing there) |
+| the re-review's tuple_sibling (rev 14) | `&t.0` of a Carbon tuple `(i32, i32)`, which has no C++ type, hands C++ a complete `int` object that is no array element and no member of a C++ object, so `*(p + 1)` is C++'s own undefined behavior ([expr.add], [basic.compound]) and E1's outermost object of `t.0` in C++'s sense is `t.0` alone, `t.1` outside E; the pointer argument `StrictCppCallUnannotated` unmarked (added 2026-11-09, SAFE-4 carry-out round 1: RR13-m8) | outside the criterion, an out-of-complete-object write (9 9; 5 9 with the attribute simulated on `e`, the write C++'s own undefined behavior) |
+| the re-review's carbon_class_sibling_offsetof (rev 14) | `&s.m` of the Carbon class `S`, exported as `Carbon::S`, puts `s`, a `Carbon::S` object in C++'s sense, in E as the enclosing object (E1) and `s.n` within it (E4), as n06's C++ struct and a04's `this` do; T8 withholds on `Mod`'s `e` (added 2026-11-09, SAFE-4 carry-out round 1: RR13-m8) | marked, accepted; the write erroneous behavior, never undefined behavior (9 9; 5 9 simulated, the miscompile T8 withholds against) |
+| the re-review's impl_in_extent and join_in_callee (rev 14) | the greatest fixpoint: `Touch`'s extent runs `t.Poke()`, a witness-resolved call of `Wrap`'s impl, whose body calls C++, and `Mod`'s runs the Carbon `Helper`, whose body alone joins the C++ thread, so each extent is loud through its callee and T8 withholds on `e`; `x` is in E from its hand-over to `Keep` or `Spawn` besides (E1, flow-insensitive), and the join gives the happens-before edge (added 2026-11-09, SAFE-4 carry-out round 1: RR13-m8) | accepted, the attributes withheld; the write erroneous behavior (9 9; 9 9; 5 9 simulated in each) |
+| the re-review's write_interposed_failstop (rev 14; RR13-M1) | the lowering's `write` call, which `Core.Buf.Get`'s `FailStop` runs before `abort` (toolchain/lower/handle_call.cpp:703-712) and `Main.Run`'s `.Err` epilogue runs before returning 1 (handle.cpp:366-374), is one of the lowering's own calls, quiet, by the ruling's addendum of 2026-11-09, the list being the lowering's calls as toolchain/lower names them at the plan's sha; a program that defines `write`, a POSIX name and no C library name, breaks POSIX's reservation of the names its headers declare and interposes the implementation's own hook, the fork's reading, and the interposed `write` runs after no Carbon code can continue, `abort` following, so the attribute cannot be observed through it (added 2026-11-09, SAFE-4 carry-out round 1: RR13-M1) | outside the design's claim and unobservable ("[user write] 9" on stderr and rc 134 on the fork with and without the attribute simulated on `Mod`'s `e`; the nightly has no `Core.Buf`) |
 | W-365's Race2, a global two threads write (rev 4) and a free pointer a detached thread receives (rev 5; no probe: NEW syntax, the nightly having no `Core.Thread`) | `x = 1` is exempt by (a) and (b), an `i32` assigned a literal, while a scoped thread reads `x` through a `const i32*` argument, and `*p = 1` through a free `p` is exempt while the detached thread `Core.Thread.Spawn` started with `p`'s `const i32*` copy reads it, paths from another thread that (a) and (b) do not see: M7's, whose rule as stated accepts them (RR2-M1; the free pointer added 2026-10-29, review fold: RR3-m1) | not established across threads until W-365's stage 5 contract holds, under whose frozen hold `x = 1` is `StrictBorrowedObjectMutated` (T4) and which gives free storage, globals and allocator-owned storage, a rule (D-SAFE3-3; amended 2026-10-29, review fold: RR3-m1, where this read "gives globals a rule"; re-traced 2026-11-09, SAFE-4 ruling: S4-1: a write from another thread without a happens-before edge is M7's data race, this item's, every synchronization operation of 0.1 being an imported C++ call, mutation_safety.md:365-369, so a join or a signal in the binding's extent makes it loud and T8 withholds, a08 and n08: 9 9, and a write with no such call in the extent stays this row's) |
 
 ## §2 Spec
@@ -3260,11 +3394,14 @@ named A.34, A.38 and B.34).
 ### §2.3 Commit 2, the records
 
 "SAFE-3 (2/2): records" edits this plan alone: the Status paragraph's first
-sentence, the one that begins "**Status:** rev" (at rev 13 it reads "**Status:**
-rev 13, 2026-11-09 -- NOT signed off (the re-review decides); the stop of rev
-12 lifted by the orchestrator's ruling of 2026-11-09 (SAFE-4), D-SAFE3-13's
-statement (3) re-ruled.", and the signed-off revision the implementer works
-from replaces it; amended 2026-11-09, SAFE-4 ruling: S4-1, where this quoted
+sentence, the one that begins "**Status:** rev" (at rev 14 it reads "**Status:**
+rev 14 -- NOT signed off: RR13-M1, RR13-m1 to RR13-m9 (a second focused
+re-review follows).", and the signed-off revision the implementer works
+from replaces it; amended 2026-11-09, SAFE-4 carry-out round 1: RR13-M1, where
+this quoted rev 13's, "**Status:** rev 13, 2026-11-09 -- NOT signed off (the
+re-review decides); the stop of rev 12 lifted by the orchestrator's ruling of
+2026-11-09 (SAFE-4), D-SAFE3-13's statement (3) re-ruled."; amended
+2026-11-09, SAFE-4 ruling: S4-1, where this quoted
 rev 12's, "**Status:** rev 12 -- NOT signed off: RT2-B1, RT1-B1; SAFE-3's
 planning STOPPED under the re-think ruling's break condition, RT1-M1 and
 RT1-M2 recorded and open.";
@@ -3497,7 +3634,11 @@ into a union's field, a ⊥ destination under E6, `StrictStoreOutlivesSource`
 where the page annotates it accepted (A.48; analyst 2's r_x01 and analyst 1's
 r08: 9 9 9 9 on the fork, the nightly having no `union`), and the new rows
 after l03's being the ruling's families (added 2026-11-09, SAFE-4 ruling:
-S4-1); no other outcome changes:
+S4-1), and again under rev 14's fold of the re-review of rev 13, the
+re-review's eight probes given rows after s02's, no example's outcome
+changing, the lowering's `write` call one of the lowering's own by the ruling's
+addendum of 2026-11-09 (added 2026-11-09, SAFE-4 carry-out round 1: RR13-M1,
+RR13-m8); no other outcome changes:
 
 | example | operators re-traced | SAFE-3 |
 | --- | --- | --- |
@@ -3560,6 +3701,11 @@ describes, takes A.23's third message form, and each such row says so (amended
 | a program defining `memcpy`, `printf` or `putchar`, which the lowering calls, writing a Carbon place through a kept pointer inside a call-free extent (rev 13) | prints 9 9 7, [user printf] 5 9 9, ! 9 9 | undefined behavior by C++'s own rule ([reserved.names.general]/2, [extern.names]/4), outside the design's claim; the lowering's calls the implementation's own (A.37) | the same | judge 1's j02, j05, j07, j08 |
 | a kept pointer to a dead frame's `x` writing `y`, which took the same slot and was never handed (rev 13) | prints 11 55 (11 99 at `-O2`) | undefined behavior by C++'s own rule ([basic.stc.general]/4), the contract's sentence rewritten (A.47); the Debug build detects it | the same | judge 1's j03, j03b to j03d, judge 2's k01 |
 | a quiet extent after C++ laundered the loan through a Carbon global it was handed, `gp = &x` written by C++, `Mod2(ref x, q)` with `q` read from `gp` (rev 13) | accepted, prints 9 9 | accepted; `x` in E from its hand-over (E1, flow-insensitive), the attributes withheld on `Mod2`'s `s` | the same | the synthesizer's s02 |
+| a C++ frame above by a route other than `Run`'s call, a C++ inline variable's dynamic initializer before `main`, an `atexit` handler after `Run` returns or a Carbon global's initializer `var g: i32 = Cpp.DriveInit();`, calling the exported `F(ref x, p)` with `p == &x`, forwarded to the quiet `G(ref y, q)` (rev 14) | accepted, prints 99 (0 99; 99) | the Carbon side accepted but the global's initializer, `StrictRefFromShared` unmarked (statement (2)); E2 then E5, T8 withholding on `F` (E8) and on `G`'s `y`, whatever frame C++ runs in; the C++ caller's aliasing erroneous behavior | the same | the re-review's init_frame_above, atexit_frame_above, global_init_cpp_frame |
+| C++ writing `p[1]` from `&t.0` of a Carbon tuple `(i32, i32)` while `ref e` binds `t.1` (rev 14) | accepted, prints 9 9 | the pointer argument `StrictCppCallUnannotated` unmarked; marked, `t.0` in E alone, a complete `int` object in C++'s sense, and the write past it C++'s own undefined behavior ([expr.add]), outside the claim | the same | the re-review's tuple_sibling |
+| C++ reaching `s.n` from `&s.m` by `offsetof(Carbon::S, m)` on the exported Carbon class `S` while `ref e` binds `s.n` (rev 14) | accepted, prints 9 9 | marked, `s` in E as the enclosing object (E1) and `s.n` within it (E4), T8 withholding on `e`; the write erroneous behavior, never undefined behavior | the same | the re-review's carbon_class_sibling_offsetof |
+| a loud call one level down inside `ref e`'s extent, `t.Poke()` resolved to an impl whose body calls C++, and `Helper()`, whose body joins the C++ thread that holds `&x` (rev 14) | accepted, prints 9 9 | accepted; the extent loud by the greatest fixpoint through the callee, T8 withholding on `e`, `x` in E from its hand-over besides | the same | the re-review's impl_in_extent, join_in_callee |
+| a program defining `write`, which `Core.Buf.Get`'s `FailStop` calls before `abort`, writing a Carbon place through a kept pointer inside the extent (rev 14) | prints "[user write] 9" on stderr, rc 134 (fork only) | `write` one of the lowering's own calls, quiet, by the ruling's addendum of 2026-11-09; the definition breaks POSIX's reservation and interposes the implementation's own hook, which runs after no Carbon code can continue, `abort` following, so nothing observes the attribute through it (A.36, A.37) | the same | the re-review's write_interposed_failstop |
 
 ## §5 Scoreboard
 
@@ -4138,14 +4284,24 @@ being `git merge-tree --write-tree` alone (the rev 13 fold record), and the
 implementer or the re-review rebuilds the tree checker from section 2.1's
 conventions before commit 1; the 193 earlier probes and the re-think rounds'
 w06 to w08 and y01 to y05 are not re-built, statements (1) and (2) standing;
-rev 13's 91 rows run on the fork's trunk install cb726a230 and the nightly,
+rev 13's 91 rows and the re-review's 8 re-run by rev 14 run on the fork's
+trunk install cb726a230 and the nightly,
 neither of which implements T8, so every attribute claim is the analysts'
 simulation, `noalias captures(none)` added to the named parameter in the O0 IR,
 the function `noinline`, compiled `-O2` by the toolchain's own clang and linked
-by `carbon link`; the quiet extent is traced by hand and by analyst 2's
-source-level scan, no lowering computing it; and the per-unit E8 count reads
+by `carbon link`, and the simulation shows nothing where LLVM's
+static-constructor evaluator folds a Carbon global's dynamic initializer at
+compile time, the re-review's global_init_cpp_frame printing 99 with and
+without the attribute, its object holding no `.init_array` section, the
+attribute never exercised; the quiet extent is traced by hand, by analyst 2's
+source-level scan and, for the lowering's own calls, by the re-review's
+reach_write.py over the lowered IR of every unit of a program (the rev 14
+fixer's fixer1/bin/lower_all.py), no lowering computing it; and the per-unit
+E8 count reads
 declarations by text, no unit being compiled alone (added 2026-11-09, SAFE-4
-ruling: S4-1).
+ruling: S4-1; amended 2026-11-09, SAFE-4 carry-out round 1: RR13-M1, RR13-m8,
+where this began "rev 13's 91 rows run" and named neither the evaluator's fold
+nor the reach script).
 
 ## Review fold record (rev 2, 2026-10-29)
 
@@ -5652,7 +5808,9 @@ superseded by a dated paragraph after its blockquote; (2) D-SAFE3-13
 re-derived, its statement (3) the ruling's text verbatim, its Measured sentence
 the rev 13 count, its Rejected sentence the ruling's item 3 and the re-think
 rounds' proposals, its break condition the report's section 5.5 and its stop
-condition for the round the report's section 5.6, the superseded decision
+condition for the round the report's section 5.6, re-cast in the decision's
+terms and not quoted, as the decision's lead now says (amended 2026-11-09,
+SAFE-4 carry-out round 1: RR13-m7), the superseded decision
 quoted by its title, its opening sentence, its obligation, T8, C++ caller,
 claim and stop-condition sentences and its bounds at 14c1ac8ac:2687-2874, and
 D-SAFE3-5's statements (1) and (2) kept as the ruling of 2026-11-01 gave them;
@@ -5674,8 +5832,10 @@ stop-and-amend sections naming the stop and its lifting, and B.39 specifying
 the eight work items; (4) every probe re-run, as section 0.3 records: 91 rows
 under
 scratchpad/safe3-rev13/fixer/probe/ (INDEX.tsv naming each row's source
-directory and its deciding clause), analyst 1's 26 (24 running natively on
-both toolchains, r08 and a02 fork only, a14 fork only with `-std=c++20`),
+directory and its deciding clause), analyst 1's 26 (23 running natively on
+both toolchains, r08 and a02 fork only, a14 fork only with `-std=c++20`;
+amended 2026-11-09, SAFE-4 carry-out round 1: RR13-m5, where this read "24
+running natively", 26 less the three fork-only rows being 23),
 analyst 2's 23 (t2 no program, r_x01 fork only), judge 1's 13 and three smoke
 sources (a fourth, t_memcpy, a leftover with no program), judge 2's 11 (k03
 fork only), the synthesizer's 9 and the five re-built, w01, w03, w04, t01 and
@@ -5711,7 +5871,14 @@ fork/decision-log.md, fork/gap-analysis.md and fork/inventory/work-items.json
 alone, records files, and against origin/claude/carbon-fork-0-1-ehc's head
 70c030a0a (EH-C's plan at its rev 3, signed off; its implementation in flight on
 the local branch at dd4e0497e) tree bccfae264 with the same four files, no
-page or fork/safe/ file conflicting on either; (7) the id re-scan of
+page or fork/safe/ file conflicting on either (the two tree ids are not
+reproducible: at the committed rev 13, 6d3d2d7b4, the same commands give
+e76a45e49 against trunk and c2c234914 against 70c030a0a, measured by the
+re-review and again by the rev 14 fixer, and at 14c1ac8ac f53187404 and
+6bad29e45 by the re-review, the conflict set identical in each; the recorded
+ids were taken on a state the rev 13 fixer did not record, so the trees at
+6d3d2d7b4 stand as the dry run's record, R10; amended 2026-11-09, SAFE-4
+carry-out round 1: RR13-m2); (7) the id re-scan of
 section 0.8 and the eight work items of B.39, W-386 to W-393, each owned
 outside SAFE-3; (8) this Status, the sections list and the hand-off notes.
 
@@ -5765,6 +5932,179 @@ edit.
 | RT1-M2 MAJOR (rev 11) | x01 re-run on the fork (analyst 1's r08, analyst 2's r_x01: 9 9 9 9; 5 9 5 9), t01 and k05 re-built (1 0 9 9; 9 9) | CLOSED by E6: every place T6 reads as ⊥ a ⊥ destination, a union's field among them, the marked launder's place in E (D-SAFE3-13, A.43, A.48, B.37; EX-TM-8 re-annotated, section 4's one changed outcome) |
 | RT2-B1 BLOCKER (rev 12) | y06 re-run (analyst 1's r02b, analyst 2's r_y06: 9 9; 5 9), judge 2's j04 (9 9; 5 9), analyst 1's a15 (9 9) | CLOSED by E1's most-derived object and E2's override `self` (D-SAFE3-13, A.36, A.37, A.49; sections 0.3, 1.3 and 4) |
 | RT2-m1 MINOR (rev 12), the stop path | trunk's fork/ORCHESTRATION.md:99-104 and :1721-1742 at 725570464; the mirror at 14c1ac8ac | CARRIED OUT on trunk on 2026-11-02 and lifted by the ruling: Appendix D's dated paragraph, the Items paragraph and section 0.8 (W-365 and W-366 filed by the fold commit again) |
+
+## Review fold record (rev 14, 2026-11-09)
+
+SAFE-4 carry-out round 1, the focused re-review of rev 13 (6d3d2d7b4 over
+14c1ac8ac), returned APPROVE-WITH-AMENDMENTS: no BLOCKER, one MAJOR, RR13-M1,
+and nine MINORs, RR13-m1 to RR13-m9; no probe meets D-SAFE3-13's break
+condition's first limb, so nothing stopped. Its ids are the re-review's own,
+and this round's marks read "(amended 2026-11-09, SAFE-4 carry-out round 1:
+RR13-M1)" and the like, quoting the superseded text. The orchestrator ruled on
+RR13-M1 by an addendum to the SAFE-4 ruling (R29, 2026-11-09, 21:26 UTC),
+appended to RULING.md under scratchpad/safe4/ as its lines 59 to 80, which the
+rev 14 fixer records here verbatim, byte-equal to the file by
+fixer1/bin/checkaddendum.py, the rev 13 record's first block above staying
+equal to the file's lines 1 to 57 and its second to synth/statement.md:
+
+<!-- google-doc-style-ignore -->
+
+```text
+## Addendum (2026-11-09, 21:26Z, after SAFE-3 rev 13's re-review 1, R29)
+
+RR13-M1 (MAJOR): the lowering's `write` call (toolchain/lower/handle.cpp:366,
+reached by `Core.Optional.Get`'s FailStop path before `abort`) is a call the
+lowering itself introduces, cited by the statement's own source references but
+absent from its named list, and 10 of the corpus's 38 `ref` parameters' extents
+reach it. Ruling: the statement's list of "the calls the lowering itself
+introduces" is extended by `write` (a POSIX name, not an ISO C library name:
+the sentence cites [reserved.names.general]/2 and [extern.names]/4 for the C
+library names and, for `write`, POSIX's reservation of the names its headers
+declare, with the fork's reading that a program defining `write` interposes the
+implementation's own hook; the re-review's probe shows the interposed `write`
+runs after no Carbon code can continue, FailStop ending in `abort`, so the
+attribute cannot be observed through it). The authority is the lowering's
+source, not ISO C's list alone: the named list is the lowering's calls as
+toolchain/lower names them at the plan's sha, re-read at every weekly check
+(W-355's method) and extended by a dated mark when the lowering adds one. The
+cost row records the 10 of 38 figure as the quiet extent's reach of the
+implementation's own calls, which are quiet by this rule (0 withheld by it).
+The statement's 5.1 text in SAFE-3 carries this as a dated amendment of the
+ruling (not as a reviewer's wording), quoting the superseded list. Everything
+else in the ruling stands.
+```
+
+<!-- google-doc-style-resume -->
+
+The addendum cites handle.cpp:366 for the `write` call that
+`Core.Optional.Get`'s `FailStop` reaches; at 14c1ac8ac that call is
+toolchain/lower/handle_call.cpp:703-707, `FailStop`'s, before `abort` at
+:709-712, and handle.cpp:366-374 is the lowering's other `write`, `Main.Run`'s
+`.Err` epilogue before the entry point returns 1; both are the lowering's own
+calls under the addendum's rule and D-SAFE3-13 names both sites. Carried out,
+finding by finding: (RR13-M1) D-SAFE3-13's statement (3) carries the addendum
+as a dated amendment of the ruling, `write` added to the lowering's own calls
+with its two sites, the list stated as toolchain/lower's at the plan's sha,
+re-read at every weekly check (W-355) and extended by a dated mark, the C
+library's names under [reserved.names.general]/2 and [extern.names]/4 and
+`write` under POSIX's reservation (POSIX.1-2017 XSH 2.2.2, the names
+`<unistd.h>` declares), the fork's reading that a program defining it
+interposes the implementation's own hook, which runs after no Carbon code can
+continue, the superseded list quoted; the "Labelled this design's reading"
+sentence names POSIX's reservation beside C++'s; the Measured sentence and
+D-SAFE3-12 record the quiet extent's reach of the lowering's own calls, 10 of
+the corpus's 38 `ref` parameters through `Core.Optional.Get`'s `FailStop`,
+quiet by the addendum and 0 withheld by it; A.36's and A.37's page texts,
+B.12's and B.35's records texts name `write` in the list, each block's lead
+quoting the superseded words; section 1.3's lowering's-calls row cites POSIX
+for `write` (with RR13-m9); the re-review's write_interposed_failstop has a
+row in sections 0.3, 1.3 and 4 as the evidence that an interposed `write` is
+unobservable, `abort` following. (RR13-m1) A.47's lead cites :916-920, the
+lines the replaced words span, the ruling's own ":913-917" kept as quoted in
+the ruling and the report. (RR13-m2) The rev 13 record's dry-run item says its
+tree ids are not reproducible and records the trees at the committed rev 13,
+e76a45e49 against trunk 725570464 and c2c234914 against
+origin/claude/carbon-fork-0-1-ehc's 70c030a0a, measured by the re-review and
+again by the rev 14 fixer, the conflict set identical. (RR13-m3) Section 0.8's
+sentence says W-380 was filed on no ledger when rev 13 scanned, reserved by
+EH-C's plan, and records the rev 14 re-scan: W-380 is now on the local branch
+claude/carbon-fork-0-1-ehc's ledger alone, at 07b949dbe, EH-C's discharge
+commit, on no origin ref's ledger, the next free ids still W-386 to W-393.
+(RR13-m4) D-SAFE3-12's rev 13 sentence names the five page `ref` parameters
+the scan counts and the three it calls loud, member_access.md's two `Op`
+sketches with a `ref p`, loud by the scan's unknown-callee rule over the
+page's pseudo-code intrinsics, and its `G(ref a: Cpp.A)`, loud by C++ member
+calls that hand C++ `a` as `this`, which the closure withholds on too, a
+hand-over the scan's address pattern misses, labels the 5 the scan's with its
+undercount (the signature regex stops at the first `)`) against a
+balanced-parenthesis read's 14 and the re-review's 12, and keeps the ruling's
+3 as quoted. (RR13-m5) The rev 13 record reads 23 natively running rows of
+analyst 1's 26; B.39's W-388 evidence names r02 and r02c as the hanging probes
+and a07 as compiling (5 5), W-391's quotes the toolchains' diagnostic as
+printed, and W-386's gives s01's 99 and 59 apart from the others' 9 9 and 5 9.
+(RR13-m6) A.37's page text reads "the premise ten rounds got wrong" and "two
+consecutive rounds", as the statement and B.12 have it. (RR13-m7) D-SAFE3-13's
+stop-condition lead says the sentence re-casts the report's section 5.6, with
+the three re-castings named, and the rev 13 record's item (2) says the same.
+(RR13-m8) The eight probes have rows in sections 0.3 (one each), 1.3 (five
+rows) and 4 (five rows) with the clauses the re-review's INDEX.tsv gives
+them, every one re-run by the rev 14 fixer, and section 8's simulation
+paragraph says the simulation shows nothing where LLVM's static-constructor
+evaluator folds a Carbon global's dynamic initializer at compile time.
+(RR13-m9) Section 1.3's row no longer cites [reserved.names.general]/2 and
+[extern.names]/4 for `write`. The Status, the sections list, section 2.3's
+quoted Status sentence and this record are updated; nothing is rejected.
+
+Measured for rev 14 on 2026-11-09, at 6d3d2d7b4's tree but this file: the
+re-review's eight probes copied from rr1/new/ into fixer1/new/ and run by
+fixer1/bin/run_new.sh (the rev 13 runner with fixer1's paths, judge 1's
+addna.py) on the fork's trunk install cb726a230 and the 2026.10.12 nightly:
+init_frame_above 99 and 59 with `noalias captures(none)` simulated on `G`'s
+`y`, atexit_frame_above 0 99 and 0 59, tuple_sibling 9 9 and 5 9 on `Mod`'s
+`e`, carbon_class_sibling_offsetof 9 9 and 5 9, impl_in_extent 9 9 and 5 9 on
+`Touch`'s `e`, write_interposed_failstop "[user write] 9" on stderr with rc
+134 with and without the attribute on the fork alone, the nightly having no
+`Core.Buf`, join_in_callee 9 9 and 5 9, global_init_cpp_frame 99 and 99 (its
+object holding no `.init_array` section at either build, `g` folded), every
+output the re-review's (fixer1/logs/run_new.log); the quiet extent's reach of
+the lowering's own calls by fixer1/bin/lower_all.py, which lowers each of the
+24 corpus programs that declare a `ref` parameter with every unit of the
+program on one invocation on the fork install and runs the re-review's
+reach_write.py over the dump (fixer1/lower/, fixer1/logs/lower_all.log; the
+toolchain hangs after the dump is complete for day9_part1, day9_part2,
+day12_part1 and day12_part2, so the script kills a lowering whose dump has not
+grown for forty seconds and reads the complete dump; the other 20 exit 0): 10
+of the 38 `ref` parameters' extents reach `write` through
+`Core.Optional.Get`'s `FailStop`, 0 reach C++ code or an indirect call, as
+D-SAFE3-12 lists them; the page count by fixer1/bin/scan_a2.py, the rev 13
+fixer's copy of analyst 2's scan run with its debug output, and
+fixer1/bin/pagescan.py (fixer1/scan/); the merge-trees
+`git merge-tree --write-tree origin/trunk HEAD` and the same against
+origin/claude/carbon-fork-0-1-ehc at 6d3d2d7b4: e76a45e49 and c2c234914, the
+conflicts fork/ORCHESTRATION.md, fork/decision-log.md, fork/gap-analysis.md and
+fork/inventory/work-items.json on each; the id re-scan over the 84 refs and 7
+worktrees (fixer1/scan/idscan-refs.txt, idscan-wt.txt; section 0.8); the
+addendum and the rev 13 blocks by fixer1/bin/checkaddendum.py; the lines this
+record cites of toolchain/lower/handle_call.cpp and handle.cpp at 14c1ac8ac;
+the model-name grep of this file clean, its hits the scratch paths, the branch
+names and the committer's name only. This plan: r31.py before the fold H1 1,
+H2 27, H3 109, 78 bullets, 38 numbered items, 408 rows, 9248 lines and no
+unguarded line, and after it H1 1, H2 28 (this record), H3 109, 78 bullets, 38
+numbered items, 439 rows (eight in section 0.3, five in section 1.3, five in
+section 4 and the thirteen lines of this record's table), 9625 lines and
+no unguarded line; prek's passes, to a fixpoint with a private cache deleted
+after, recorded in the commit message. Not run: no build, no Strict checker
+(W-148); neither toolchain implements T8, so every attribute claim is a
+simulation, blind where LLVM folds a global's initializer; the 91 rows of rev
+13 are not re-run again by rev 14, the re-review having re-run all of them
+(90 byte-equal, k01 equal in result); the dry-run scripts of section 8 item 4
+stay lost and the tree checker stays the implementer's or the re-review's to
+rebuild; the merge-trees at rev 14's own commit are the next round's to
+measure, a commit's tree being known only once it exists.
+
+The round that follows: rev 14 is not signed off; a second focused re-review
+of rev 14 follows, folded into rev 15; sign-off needs a round with no BLOCKER
+and no MAJOR, and only then does section 3's implementation begin, on PR 53's
+branch, with PR 53's landing by trunk's ORCHESTRATION item 14. Break
+condition, as the ruling's section 5.6: a BLOCKER, or a MAJOR left after the
+second round, stops SAFE-3's planning, the orchestrator recording the state on
+trunk by Appendix D's stop path and turning to the next workstream; a finding
+that meets D-SAFE3-13's break condition's first limb is a BLOCKER, and one
+that meets another limb is folded by its dated edit.
+
+| finding | reproduced by | disposition and where it lands |
+| --- | --- | --- |
+| the orchestrator's addendum of 2026-11-09 to the SAFE-4 ruling (R29, on RR13-M1) | quoted above, byte-equal to RULING.md's lines 59 to 80 by script; the two `write` sites read at 14c1ac8ac | CARRIED OUT: D-SAFE3-13's statement (3) amended as the addendum prescribes, the superseded list quoted; A.36, A.37, B.12, B.35; sections 0.3, 1.3, 4, 8; D-SAFE3-12 |
+| RR13-M1 MAJOR, the lowering's `write` call absent from the statement's named list, the plan's rows and cost assuming it named | write_interposed_failstop re-run ("[user write] 9", rc 134, with and without the attribute); the reach of `write` from 10 of the 38 corpus `ref` parameters by fixer1/bin/lower_all.py and reach_write.py; handle_call.cpp:703-707 and handle.cpp:366-374 at 14c1ac8ac | FOLDED under the addendum: D-SAFE3-13 (the list, the "Labelled" sentence, the Measured sentence), D-SAFE3-12, section 1.3's row and new row, sections 0.3 and 4, section 8, A.36, A.37, B.12, B.35 |
+| RR13-m1 MINOR, A.47's cite :913-917 against the words' lines :916-920 | temporal_safety.md:913-925 at 14c1ac8ac read with line numbers | FOLDED: A.47's lead |
+| RR13-m2 MINOR, the rev 13 record's merge-tree ids not reproducible | the two merge-trees at 6d3d2d7b4: e76a45e49, c2c234914, the same four conflicting files | FOLDED: the rev 13 record's item (6) |
+| RR13-m3 MINOR, W-380 called filed on origin ehc's ledger | the ledger scan over the 84 refs: W-380 on the local ehc branch's ledger alone (07b949dbe), on no origin ref's | FOLDED: section 0.8, with the rev 14 re-scan |
+| RR13-m4 MINOR, the "3 page `ref` parameters" unnamed and the scan's undercount | fixer1/bin/scan_a2.py with its debug output (the 5 and the 3 named), fixer1/bin/pagescan.py (14 by a balanced-parenthesis read) | FOLDED: D-SAFE3-12's rev 13 sentence; the ruling's 3 kept as quoted |
+| RR13-m5 MINOR, four count or evidence strings against the tree | analyst 1's INDEX.tsv (r02b's row naming r02 and r02c, a07's 5 5), r02's source, t2's diagnostic as printed, the synthesizer's s01 row (99, 59); 26 less 3 | FOLDED: the rev 13 record's item (4), B.39's W-386, W-388 and W-391 |
+| RR13-m6 MINOR, A.37's two paraphrased words | the statement and B.12 read beside A.37's block | FOLDED: A.37's block and lead |
+| RR13-m7 MINOR, the stop condition re-cast and called verbatim | the report's section 5.6 read beside D-SAFE3-13's sentence | FOLDED: D-SAFE3-13's lead, the rev 13 record's item (2) |
+| RR13-m8 MINOR, the eight probes' rows and the simulation's blind spot | the eight re-run (above); global_init_cpp_frame's object without `.init_array` | FOLDED: sections 0.3, 1.3, 4 and 8, the sections list |
+| RR13-m9 MINOR, section 1.3's row citing the C library's rule for `write` | the row read against [extern.names]/4's list | FOLDED: section 1.3's row (with RR13-M1) |
 
 ## Hand-off notes for the implementer
 
@@ -7100,7 +7440,15 @@ loans, and a `begin()` that keeps `this` for a later call that writes the place
 while `Mod(ref r)` is bound produces erroneous behavior, never undefined
 behavior (9 after `s.data[0] = 5`)", which the re-think rounds' w01 to w05, y06
 and x01 refute, C++ reaching the whole of a complete object from any pointer
-into it and a C++ frame's storage keeping the attribute once forwarded):
+into it and a C++ frame's storage keeping the attribute once forwarded;
+amended 2026-11-09, SAFE-4 carry-out round 1: RR13-M1, by the ruling's
+addendum of 2026-11-09: `write` added to the lowering's own calls under POSIX's
+reservation, the list being toolchain/lower's at the plan's sha, where the
+block read "the calls the lowering itself introduces, to the C library's
+reserved names (`printf`, `putchar`, `getchar`, `malloc`, `free`, `abort`,
+`memcpy`, `memset`, `memmove`) and to compiler-rt, are the implementation's
+own, and a program that defines one has undefined behavior by C++'s own rule
+([reserved.names.general]/2, [extern.names]/4; this design's reading)."):
 
 <!-- google-doc-style-ignore -->
 
@@ -7170,9 +7518,15 @@ diagnostics only, as Permissive's is. The prelude and the toolchain's runtime
 are trusted as D-SAFE-18 trusts them, handing user C++ code no Carbon place but
 by these routes; the calls the lowering itself introduces, to the C library's
 reserved names (`printf`, `putchar`, `getchar`, `malloc`, `free`, `abort`,
-`memcpy`, `memset`, `memmove`) and to compiler-rt, are the implementation's
-own, and a program that defines one has undefined behavior by C++'s own rule
-([reserved.names.general]/2, [extern.names]/4; this design's reading). The
+`memcpy`, `memset`, `memmove`), to `write` and to compiler-rt, the list being
+the lowering's calls as toolchain/lower names them, re-read at every weekly
+check and extended by a dated mark when the lowering adds one, are the
+implementation's own, and a program that defines one has undefined behavior by
+C++'s own rule ([reserved.names.general]/2, [extern.names]/4; this design's
+reading) or, for `write`, a POSIX name, breaks POSIX's reservation of the
+names its headers declare and interposes the implementation's own hook, which
+runs where no Carbon binding is live, the bounds check's `FailStop` ending in
+`abort` and `Main.Run`'s `.Err` epilogue following `Run`'s return. The
 obligation of unsafe code is the one p005434 states (:861-863), to adhere to
 the `noalias` restrictions of every `ref` the design keeps `noalias`: vacuous
 for C++ code and for Carbon code under a C++ frame, no `ref` such code can
@@ -7226,7 +7580,12 @@ to the place, the unsafe code's under a marker and C++'s own otherwise, is not a
 fact the checker establishes, so a C++ function that breaks it produces
 erroneous behavior, never undefined behavior", which kept the attribute on a
 sibling element, an enclosing object, a C++ frame's storage once forwarded and
-a laundered union read, w01 to w05, y06 and x01):
+a laundered union read, w01 to w05, y06 and x01; amended 2026-11-09, SAFE-4
+carry-out round 1: RR13-M1, RR13-m6: the lowering's own calls named as the C++
+call rule's list with `write`, and the relaxation clause worded as the
+statement and B.12 have it, where the block read "or one of the lowering's own
+calls, the C library's reserved names and compiler-rt;", "the premise the
+design got wrong ten times" and "two consecutive reviews"):
 
 <!-- google-doc-style-ignore -->
 
@@ -7248,15 +7607,16 @@ body runs between the binding's formation and its last use, a parameter's
 being the callee's whole body, is a direct call of a function the invocation
 checked and found quiet, by a greatest fixpoint over the invocation's call
 graph with the prelude's witnesses, thunks and generated `Destroy` functions
-included, or one of the lowering's own calls, the C library's reserved names
-and compiler-rt; a call of C++ code by any route, an indirect call and a call
+included, or one of the lowering's own calls, the C library's reserved names,
+`write` and compiler-rt as the C++ call rule names them; a call of C++ code by
+any route, an indirect call and a call
 of a function the invocation does not check make the extent loud and the
 attributes withheld. The first condition is the attribute's meaning, that no
 carrier of the place was formed outside the invocation's view; the second is
 implied by it whenever E is complete and is kept because E's completeness is
-the premise the design got wrong ten times: it bounds C++'s opportunity, not
-its reach, and is relaxed to E's refinement by a dated mark when two
-consecutive reviews find no place C++ code reaches outside E and a migration
+the premise ten rounds got wrong: it bounds C++'s opportunity, not its reach,
+and is relaxed to E's refinement by a dated mark when two consecutive rounds
+find no place C++ code reaches outside E and a migration
 count shows it withholding on more than half the `ref` parameters of functions
 that call C++. Everything else keeps the attributes. A C++ write to a place of
 E while a Carbon `ref` on it is bound is erroneous behavior, never undefined
@@ -7484,8 +7844,11 @@ decays on the C++ side, under C++'s rules, and hands C++ code the complete array
 
 ### A.47 temporal_safety.md, the unsafe-code contract, the dangling sentence
 
-Words, at :913-917, in the first paragraph of "The unsafe-code contract"
-(:913-925), found once: the paragraph promises that Carbon never miscompiles a
+Words, at :916-920, in the first paragraph of "The unsafe-code contract"
+(:913-925), found once (amended 2026-11-09, SAFE-4 carry-out round 1: RR13-m1,
+where this read "at :913-917", the ruling's and the report's own cite of the
+paragraph, kept as quoted there): the paragraph promises that Carbon never
+miscompiles a
 dangling access "because T8 withholds every aliasing attribute at such a
 boundary", which is false for a place never handed to C++ code whose storage a
 kept pointer reaches once a dead frame's slot is reused (judge 1's j03: 11 55
@@ -8076,12 +8439,16 @@ it, and C++ code receives every place on which a loan lies that is carried,
 transitively, by a value or place it receives, a class value's loan set
 included (D-SAFE3-13), so the checker reports" to "storage a C++ caller
 supplies to a function exported to C++ is bound by that caller, its own
-lowering marking it `noalias`;"):
+lowering marking it `noalias`;"; amended 2026-11-09, SAFE-4 carry-out round 1:
+RR13-M1: `write` among the lowering's own calls under POSIX's reservation, the
+list toolchain/lower's, where the block read "the lowering's calls to the C
+library's reserved names and compiler-rt are the implementation's own and a
+program defining one has C++'s own undefined behavior,"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth, and a type whose value representation is not known when a generic's body is checked, a type parameter among them, is not copy-represented, though `Core.Int(N)` for a symbolic `N` is; anything else is a `ref` binding under the general rule. The two conditions see the operation's own thread: another Carbon-spawned thread reaches the referent only through a loan that crosses into it or through free storage, a global or allocator-owned storage that a free pointer reaches, D-SAFE-16's thread-boundary lifetime rule (W-149), which as stated still accepts the three shapes of W-365, so p005434:83's `noalias` holds by construction within one thread, and across Carbon-spawned threads once residue item W-365's stage 5 contract holds. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the `=` keeps the exemption only when its right operand is formed before the binding, that is, when the right operand is a formed value (the name of a local `var` or `let` or of a parameter, a literal, or an aggregate literal whose elements are such names or literals), or a call of a prelude initializer whose arguments are such and whose body runs no code written outside core/prelude, and when the right operand reads no place through a pointer, a `ref` or any other carrier and carries no loan on the left operand's place or on a place that overlaps it; every other right operand, a user call anywhere in it, a prelude call with any other argument, a read through a carrier, or a `Copy` or `ImplicitAs` written outside core/prelude that the initialization would run, removes the exemption, and the `=` is then a checked reborrow of the left operand for the whole evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s write through a shared path on an open place (`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy being to form the value in a fresh local first and assign the local (an array element at an index the checker cannot prove distinct from the left operand's overlaps it, here and in T4's check of the reborrow, and a value binding of a borrowed object carries its frozen loan; the checked reborrow reports `StrictExclusiveBorrowConflict` for the right operand's read and for a call's use of a carrier it loads through a value it receives, which T3 counts as a use of that carrier, and `StrictSharedBorrowInvalidated` for a carrier it passes, and `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts)). The interim rule only adds conditions, so every program it accepts the rule above accepts. A fresh local's own initialization is exempt, nothing naming its storage until it completes, but a `returned var` names its caller's destination and a global variable's dynamic initializer initializes an open place, so both are checked as an in-place `=` is, and a global constant's temporary is closed: a `returned var` on a closed place, its destination bound for the call by its caller, and a global variable's initializer on an open place, which keeps the exemption only when it is formed before the binding, whatever the rewrite's status, a global variable declared without an initializer having for its initializer the prelude's `DefaultOrUnformed`, which initializes it in place, and which the checker otherwise reports as an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked (D-SAFE-10's closed places). C++ code does with what it receives whatever C++ defines and keeps any pointer it receives for any later entry into C++ code, so the C++ boundary is stated from C++'s object model and T3's carrier relation over the units one invocation checks together, as the escaped places E of the invocation, closed under E1 to E8 (D-SAFE3-13: every place whose address a call hands C++ code with its outermost object taken transitively, every storage a C++ frame supplies to Carbon code under it, every place a loan carried within a place of E lies on, every place within one, the parameters of a function a call site passes a place of E to and a place a callee puts in E, every ⊥ read a ⊥ destination with a marked launder putting its place in E, a callee the invocation does not check receiving its arguments as C++ does, and a function the invocation cannot see every caller of receiving its parameters and result slot as a C++ frame supplies them), so the checker reports `StrictCppCallUnannotated` for an unmarked call that hands C++ code a Carbon place, the allowlist's first shape keeps only by-value arguments whose loan set is empty or free and results in registers, shapes 2 to 4 and the prelude's synthesized range witnesses stay unmarked, their trust for diagnostics only, the lowering's calls to the C library's reserved names and compiler-rt are the implementation's own and a program defining one has C++'s own undefined behavior, a C++ write to a place of E while a Carbon `ref` on it is bound and a C++ caller's aliasing of an exported function's storage however far forwarded are erroneous behavior, a dangling write is C++'s own undefined behavior, a mangled-symbol call is outside the interoperability contract, and a write from another thread without a happens-before edge is M7's data race (W-365); T8 withholds `noalias` and `captures(none)` on every `ref` binding and `exclusive T*` loan formed on a place of E or on a place that overlaps one, wherever and whenever in the invocation it is formed, on every `ref`, `ref self` and `exclusive T*` parameter of a function E8 names or one of whose call sites binds a place of E and on every argument place passed to a callee E7 names, and, as a second, independent condition, emits them only where the binding's extent is quiet, every call the lowered body runs between its formation and its last use a direct call of a function the invocation checked and found quiet or one of the lowering's own, a call of C++ code, an indirect call or an unchecked callee making the extent loud, the second condition relaxed to E's refinement by a dated mark when two consecutive rounds find no place C++ code reaches outside E and a migration count shows it withholding on more than half the `ref` parameters of functions that call C++; a Strict store of a loan that is not free into a ⊥ destination is `StrictStoreOutlivesSource`; and a function value is a carrier of every loan its captures hold, a use of it, a call among them, a use of each.
+SAFE-3 (<date>; D-SAFE3-1 to D-SAFE3-5; fork/safe/safe3-plan.md): superseding the built-in operator test of the three previous notes, an operator's `ref` operand is bound for the operator's call (docs/design/assignment.md:184 rewrites `x = y;` to `x.(AssignWith(U).Op)(y);`, applied to an aggregate by this design's reading while :159-164 leaves the aggregate order to leads issue 686), its other operands evaluated first, and the checker establishes it on any place, with no loan of its own, when it establishes, by two conditions stricter than that property (p005434:859-864), that nothing but the operand can reach the referent while it is bound: what runs then (the impl's body, the thunk of docs/design/generics/details.md:5769-5779 at 9192ee003 and its conversions) is core/prelude code reached through no symbolic witness that an impl written outside core/prelude can fill, and every other operand is a copy that holds no borrowed object or a borrowed object's value binding under its frozen loan, the latter unless its type is copy-represented at every depth, a type being so when it is copy-represented and, if its representation is a one-element tuple or struct's (the type, or an adapter, `const` or `MaybeUnformed` of one), its element is copy-represented at every depth, and a type whose value representation is not known when a generic's body is checked, a type parameter among them, is not copy-represented, though `Core.Int(N)` for a symbolic `N` is; anything else is a `ref` binding under the general rule. The two conditions see the operation's own thread: another Carbon-spawned thread reaches the referent only through a loan that crosses into it or through free storage, a global or allocator-owned storage that a free pointer reaches, D-SAFE-16's thread-boundary lifetime rule (W-149), which as stated still accepts the three shapes of W-365, so p005434:83's `noalias` holds by construction within one thread, and across Carbon-spawned threads once residue item W-365's stage 5 contract holds. The toolchain's interim `=` (toolchain/check/handle_operator.cpp:99-123) initializes in place, in whole or in part, a left operand whose type is not copy-represented at every depth, element by element (toolchain/check/convert.cpp:283-297 gives each element of a by-copy aggregate its own target inside the destination, and :1467-1518 converts an adapter of a tuple or struct part by part), so the checker also implements the interim rule while that stands (W-366): for a left operand whose type is not copy-represented at every depth, the `=` keeps the exemption only when its right operand is formed before the binding, that is, when the right operand is a formed value (the name of a local `var` or `let` or of a parameter, a literal, or an aggregate literal whose elements are such names or literals), or a call of a prelude initializer whose arguments are such and whose body runs no code written outside core/prelude, and when the right operand reads no place through a pointer, a `ref` or any other carrier and carries no loan on the left operand's place or on a place that overlaps it; every other right operand, a user call anywhere in it, a prelude call with any other argument, a read through a carrier, or a `Copy` or `ImplicitAs` written outside core/prelude that the initialization would run, removes the exemption, and the `=` is then a checked reborrow of the left operand for the whole evaluation on a closed place (T4; `StrictExclusiveBorrowConflict`) and M3(d)'s write through a shared path on an open place (`StrictInvalidatingThroughShared`, or an `unsafe` formation), the remedy being to form the value in a fresh local first and assign the local (an array element at an index the checker cannot prove distinct from the left operand's overlaps it, here and in T4's check of the reborrow, and a value binding of a borrowed object carries its frozen loan; the checked reborrow reports `StrictExclusiveBorrowConflict` for the right operand's read and for a call's use of a carrier it loads through a value it receives, which T3 counts as a use of that carrier, and `StrictSharedBorrowInvalidated` for a carrier it passes, and `StrictInvalidatingThroughShared` takes the message form for a `ref` operand that is not exempt (mutation_safety.md's message texts)). The interim rule only adds conditions, so every program it accepts the rule above accepts. A fresh local's own initialization is exempt, nothing naming its storage until it completes, but a `returned var` names its caller's destination and a global variable's dynamic initializer initializes an open place, so both are checked as an in-place `=` is, and a global constant's temporary is closed: a `returned var` on a closed place, its destination bound for the call by its caller, and a global variable's initializer on an open place, which keeps the exemption only when it is formed before the binding, whatever the rewrite's status, a global variable declared without an initializer having for its initializer the prelude's `DefaultOrUnformed`, which initializes it in place, and which the checker otherwise reports as an `unsafe` formation (`var g: T = unsafe F(1);`), `StrictRefFromShared` unmarked (D-SAFE-10's closed places). C++ code does with what it receives whatever C++ defines and keeps any pointer it receives for any later entry into C++ code, so the C++ boundary is stated from C++'s object model and T3's carrier relation over the units one invocation checks together, as the escaped places E of the invocation, closed under E1 to E8 (D-SAFE3-13: every place whose address a call hands C++ code with its outermost object taken transitively, every storage a C++ frame supplies to Carbon code under it, every place a loan carried within a place of E lies on, every place within one, the parameters of a function a call site passes a place of E to and a place a callee puts in E, every ⊥ read a ⊥ destination with a marked launder putting its place in E, a callee the invocation does not check receiving its arguments as C++ does, and a function the invocation cannot see every caller of receiving its parameters and result slot as a C++ frame supplies them), so the checker reports `StrictCppCallUnannotated` for an unmarked call that hands C++ code a Carbon place, the allowlist's first shape keeps only by-value arguments whose loan set is empty or free and results in registers, shapes 2 to 4 and the prelude's synthesized range witnesses stay unmarked, their trust for diagnostics only, the lowering's calls to the C library's reserved names, to `write` and to compiler-rt, the list toolchain/lower names at the plan's sha, are the implementation's own and a program defining one has C++'s own undefined behavior or, for `write`, breaks POSIX's reservation and interposes the implementation's own hook, a C++ write to a place of E while a Carbon `ref` on it is bound and a C++ caller's aliasing of an exported function's storage however far forwarded are erroneous behavior, a dangling write is C++'s own undefined behavior, a mangled-symbol call is outside the interoperability contract, and a write from another thread without a happens-before edge is M7's data race (W-365); T8 withholds `noalias` and `captures(none)` on every `ref` binding and `exclusive T*` loan formed on a place of E or on a place that overlaps one, wherever and whenever in the invocation it is formed, on every `ref`, `ref self` and `exclusive T*` parameter of a function E8 names or one of whose call sites binds a place of E and on every argument place passed to a callee E7 names, and, as a second, independent condition, emits them only where the binding's extent is quiet, every call the lowered body runs between its formation and its last use a direct call of a function the invocation checked and found quiet or one of the lowering's own, a call of C++ code, an indirect call or an unchecked callee making the extent loud, the second condition relaxed to E's refinement by a dated mark when two consecutive rounds find no place C++ code reaches outside E and a migration count shows it withholding on more than half the `ref` parameters of functions that call C++; a Strict store of a loan that is not free into a ⊥ destination is `StrictStoreOutlivesSource`; and a function value is a carrier of every loan its captures hold, a use of it, a call among them, a use of each.
 ```
 
 <!-- google-doc-style-resume -->
@@ -8587,14 +8954,17 @@ alike, on `ref` and `exclusive T*` parameters and loans, a `ref` binding or an
 `exclusive T*` loan formed on such a place or on a place that overlaps one, and
 a `ref` or `exclusive T*` parameter one of whose call sites binds one among
 them, the obligation that the C++ code keeps no pointer to the place not being
-a fact the checker establishes"):
+a fact the checker establishes"; amended 2026-11-09, SAFE-4 carry-out round 1:
+RR13-M1, the lowering's own calls named as A.37 names them, where the new
+words read "or one of the lowering's own calls, a call of C++ code by any
+route"):
 
 <!-- google-doc-style-ignore -->
 
 ```text
 checker established them") — intra-function,
 
-checker established them"), nor on a place C++ code holds, the C++ call rule's escaped places E of the invocation, the units one invocation checks together being the whole-package fact's unit: T8 withholds `noalias` and `captures(none)` on every `ref` binding and `exclusive T*` loan formed on a place of E or on a place that overlaps one, wherever and whenever in the invocation it is formed, on every `ref`, `ref self` and `exclusive T*` parameter of a function the invocation cannot see every caller of (E8) or one of whose call sites binds a place of E, and on every argument place passed to a callee the invocation does not check (E7), and, as a second, independent condition, emits them only where the binding's extent is quiet, every call the lowered body runs between its formation and its last use a direct call of a function the invocation checked and found quiet or one of the lowering's own calls, a call of C++ code by any route, an indirect call or a call of an unchecked function making the extent loud, a C++ write to a place of E while a Carbon `ref` on it is bound being erroneous behavior, never undefined behavior (added <date>, SAFE-3: D-SAFE3-13) — intra-function,
+checker established them"), nor on a place C++ code holds, the C++ call rule's escaped places E of the invocation, the units one invocation checks together being the whole-package fact's unit: T8 withholds `noalias` and `captures(none)` on every `ref` binding and `exclusive T*` loan formed on a place of E or on a place that overlaps one, wherever and whenever in the invocation it is formed, on every `ref`, `ref self` and `exclusive T*` parameter of a function the invocation cannot see every caller of (E8) or one of whose call sites binds a place of E, and on every argument place passed to a callee the invocation does not check (E7), and, as a second, independent condition, emits them only where the binding's extent is quiet, every call the lowered body runs between its formation and its last use a direct call of a function the invocation checked and found quiet or one of the lowering's own calls, the C library's reserved names, `write` and compiler-rt as the C++ call rule names them, a call of C++ code by any route, an indirect call or a call of an unchecked function making the extent loud, a C++ write to a place of E while a Carbon `ref` on it is bound being erroneous behavior, never undefined behavior (added <date>, SAFE-3: D-SAFE3-13) — intra-function,
 ```
 
 <!-- google-doc-style-resume -->
@@ -8687,7 +9057,14 @@ EH-C's invariant as D-SAFE3-13's dependency (W-393); the ids are the next free
 after the rev 13 re-scan of section 0.8, W-378 being ARB-2's on trunk and W-380
 to W-385 EH-C's reservation; each item's bullet is the ledger's existing text
 for the bullet it names, and "none" where no bullet applies (added 2026-11-09,
-SAFE-4 ruling: S4-1):
+SAFE-4 ruling: S4-1; amended 2026-11-09, SAFE-4 carry-out round 1: RR13-m5,
+three evidence strings corrected against the scratches, where W-386's read
+"s01_crosscomp_quiet_alias (9 9 natively; 5 9 with `noalias` simulated in the
+callee's unit compiled alone)", W-388's "analyst 1's r02 and a07
+(scratchpad/safe4/analyst1/probe/, INDEX.tsv): `struct Base { virtual ~Base()
+{} virtual void Virt() {} }` extended by a Carbon class hangs `carbon compile`
+on both toolchains" and W-391's "rejected by both toolchains (\"no
+Core.UnsafeAs(i64) impl\")"):
 
 <!-- google-doc-style-ignore -->
 
@@ -8701,7 +9078,7 @@ SAFE-4 ruling: S4-1):
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
         "fork/safe/safe3-plan.md D-SAFE3-13 as re-ruled on 2026-11-09 (E7, E8; the rev 13 fold record, the SAFE-4 report's section 6) and D-SAFE3-12's rev 13 count: 36 function declarations with 38 `ref` or `ref self` parameters in the conformance programs and examples, 20 of them in the API-library units of examples/advent2024, which E8 withholds on under per-unit builds; 0 as built, every unit of a program on every invocation (fork/conformance/runner.py:28-33)",
-        "SAFE-4's probes: judge 1's j01_crosspkg_caller, judge 2's k02_api_impl_split, analyst 1's a09_cross_package, analyst 2's n11_cross_unit and the synthesizer's s01_crosscomp_quiet_alias (9 9 natively; 5 9 with `noalias` simulated in the callee's unit compiled alone)"
+        "SAFE-4's probes: judge 1's j01_crosspkg_caller, judge 2's k02_api_impl_split, analyst 1's a09_cross_package, analyst 2's n11_cross_unit and the synthesizer's s01_crosscomp_quiet_alias (9 9 natively and 5 9 with `noalias` simulated in the callee's unit compiled alone for j01, k02 and n11, 9 9 for a09, and 99 and 59 for s01)"
       ],
       "blocked_by": ["W-148"],
       "notes": "Filed by SAFE-3's fold commit (<date>; the orchestrator's ruling of 2026-11-09, item 4; fork/safe/safe3-plan.md rev 13 fold record). D-SAFE3-13 withholds the attributes on a function the invocation cannot see every caller of (E8) and on the arguments of a callee it does not check (E7) until a round decides which of a per-library reach fact exported like `bound`, a checked `quiet` attribute (NEW syntax) or an LTO-time closure the fork wants, by a cost count on a corpus built per unit against the machinery's size. Owned outside SAFE-3: the safe-Carbon stage that implements T8 (W-148) or the interop workstream. Break condition (D-SAFE3-13's): a count showing any corpus `ref` newly withheld, or E8 withholding on a program the fork builds per unit, reopens the choice between withholding and this item's fact."
@@ -8728,7 +9105,7 @@ SAFE-4 ruling: S4-1):
       "size": "M",
       "bullet": "none",
       "evidence": [
-        "SAFE-4's analyst 1's r02 and a07 (scratchpad/safe4/analyst1/probe/, INDEX.tsv): `struct Base { virtual ~Base() {} virtual void Virt() {} }` extended by a Carbon class hangs `carbon compile` on both toolchains; r02b, the same without the destructor, compiles and prints 9 9"
+        "SAFE-4's analyst 1's r02 and r02c (scratchpad/safe4/analyst1/probe/, named in INDEX.tsv's r02b row): a C++ `Base` with `virtual ~Base() = default;` and a virtual `Virt`, extended by a Carbon class whose override `Virt` writes a field, hangs `carbon compile` on both toolchains; r02b, the same without the destructor, compiles and prints 9 9, and a07, an array of such classes with no destructor, compiles and prints 5 5 (W-389's stride)"
       ],
       "blocked_by": [],
       "notes": "Filed by SAFE-3's fold commit (<date>; the orchestrator's ruling of 2026-11-09, item 4). Incidental to SAFE-4's analysis of the C++ boundary, which it does not affect (the override's `self` is a C++ frame's storage, D-SAFE3-13's E2, with or without the destructor). Owned outside SAFE-3: the toolchain workstream, measured by the container arbiter (R28). Break condition: a reproduction on upstream's toolchain, which makes it an upstream report first."
@@ -8767,7 +9144,7 @@ SAFE-4 ruling: S4-1):
       "size": "S",
       "bullet": "none",
       "evidence": [
-        "SAFE-4's analyst 2's t2: rejected by both toolchains (\"no Core.UnsafeAs(i64) impl\"); its n09_result_launder reaches the same shape through C++ `ToInt(&y)` (9 9 9 9)",
+        "SAFE-4's analyst 2's t2: rejected by both toolchains (\"cannot convert expression of type `i32*` to `i64` with `unsafe as`\", with the note \"type `i32*` does not implement interface `Core.UnsafeAs(i64)`\", and the reverse direction, `i64` to `i32*`, alike); its n09_result_launder reaches the same shape through C++ `ToInt(&y)` (9 9 9 9)",
         "docs/design/safety/README.md:275-277 and :446 (`unsafe as` from non-pointers, loan set ⊥) and temporal_safety.md's T6 at 14c1ac8ac"
       ],
       "blocked_by": [],

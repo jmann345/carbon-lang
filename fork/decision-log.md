@@ -20846,3 +20846,37 @@ construction (a UA-3 merge taking upstream's lines) fails the arbiter's gate on
 the 15 goldens with `Segmentation fault` and no gtest summary, which re-opens
 W-378 for re-applying the fix; upstream fixing the construction closes the item
 at UA-3.
+
+_Landed (2026-11-09, R33):_ merged into trunk as PR 69 by fca1e9e2f (GitHub
+merged_at 2026-11-09T18:14:39Z, merge method merge, title "Land PR 69: ARB-2,
+construct UnitAndImports in place (its emitter points into itself)"), under R33
+by LAND-1's per-merge procedure (D-LAND-6). The land tree equals the PR head
+b87f130b2 because trunk aee70185c did not move between the cut and the merge, so
+the measurement of 6de18c1f7 above (gate 2047 of 2047, autoupdate 0 changed,
+conformance 228/0/13 over 241, 51/56 bullets; container-measured, R33 (b)) is
+the land tree's; id re-scans: none; moved to follow-ons: none. W-378 is marked
+landed in the ledger (its title's status and a landed line in its notes). The
+arbiter's scripts, README, NOTES and REVIEW-1 are landed by the records commit
+of the same day under fork/tools/carbonbuild, the record, so a container reset
+cannot lose them again; /home/user/arb/carbonbuild stays the running instance,
+synchronised by `diff -r`, and paths.sh keeps pointing at it. The copy is
+byte-identical to the running instance but for the license headers, the
+formatter output of the repository's prek hooks (ruff, clang-format, rumdl,
+trailing whitespace), two lines hand-wrapped where rumdl's reflow left them over
+80 columns, the reviewer's scratchpad path reworded out of REVIEW-1.md, and the
+lint exemptions in pyproject.toml and .codespell_ignore, each listed in that
+commit's message; the copy parses (`bash -n`, `py_compile`), and its
+gen_ninja.py run against the land tree prints the running instance's counts (207
+targets, 393 objects, 2047 test files, patch `landed`).
+src-patches/0001-check-unit-infos-in-place.diff is kept as the landed-detector:
+gen_ninja.py reports it `landed` on every tree that holds the fix and `applied`
+on one that does not, so a measurement of a tree without the fix is never
+mistaken for one of the tree alone. R28 and R33 carry a dated amendment naming
+fork/tools/carbonbuild as the arbiter's home and its acceptance values.
+ORCHESTRATION's paragraph dated 2026-11-09 (18:32 UTC, ARB-2 landed), its
+header, its Branches row for claude/carbon-fork-0-1-arb2 and its Scoreboard
+paragraph, and fork/gap-analysis.md's Scoreboard header (LAND-1 Appendix A.8 and
+A.9; the tallies are unchanged, 37/17/2/0) record the same; A.7's Landed line
+for PR 69's description is quoted in that commit's message for the orchestrator
+to prepend. Next: EH-C (W-346) and SAFE-4 resume on the arbiter; UA-3 carries
+the fix forward or drops it when upstream fixes the construction.

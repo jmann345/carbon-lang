@@ -10,7 +10,15 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-09 (ARB-2: the container arbiter re-created after the
+Last updated: 2026-11-09 (ARB-2 landed: PR 69, the check.cpp fix 6de18c1f7
+with its records, landed on trunk by merge fca1e9e2f under R33, the land tree
+equal to the PR head, W-378 landed; the container arbiter's scripts landed
+under fork/tools/carbonbuild as the record, /home/user/arb/carbonbuild the
+running instance; R28 and R33 amended; container-measured gate 2047 of 2047,
+autoupdate 0 changed, conformance 228/0/13 over 241, 51/56 bullets; 18 PRs
+landed, 1 held; see the paragraph dated 2026-11-09 (18:32 UTC, ARB-2 landed)
+below; the earlier 2026-11-09 text follows).
+2026-11-09 (ARB-2: the container arbiter re-created after the
 reset without Bazel, libstdc++ its one known divergence from the Bazel build;
 its first finding, check.cpp's self-referential copy of `UnitAndImports`, fixed
 as 6de18c1f7 on claude/carbon-fork-0-1-arb2 and filed as W-378;
@@ -2195,6 +2203,26 @@ fork/tools/carbonbuild by a separate records commit; EH-C (W-346) and SAFE-4
 resume on the arbiter; UA-3 carries the fix forward or drops it when upstream
 fixes it. 17 PRs landed, 1 held.
 
+2026-11-09 (18:32 UTC, ARB-2 landed): PR 69 (ARB-2: the check.cpp fix
+6de18c1f7 with its records a8ddebcc6 and b87f130b2) LANDED on trunk by merge
+fca1e9e2f under R33 (LAND-1's D-LAND-6), GitHub merged_at
+2026-11-09T18:14:39Z; the land tree equals the PR head b87f130b2 because trunk
+aee70185c did not move, so the measurement of 6de18c1f7 is the land tree's:
+container-measured (R33 (b)) gate 2047 of 2047, autoupdate 0 changed,
+conformance 228/0/13 over 241, 51/56 bullets, gap tally 37/17/2/0; id
+re-scans: none; moved to follow-ons: none; W-378 landed. The container
+arbiter's scripts, README, NOTES and REVIEW-1 land under fork/tools/carbonbuild
+by the records commit of this paragraph, the record, so a container reset
+cannot lose them again (/home/user/arb/carbonbuild is the running instance,
+synchronised by `diff -r`; the README's section "Provenance and acceptance
+(2026-11-09)" holds the LLVM CMake configuration, the container's layout and
+the acceptance logs; the lint findings the formatters cannot fix are exempted
+for the directory in pyproject.toml rather than hand-edited); R28 and R33 carry
+a dated amendment naming that home and the acceptance values;
+src-patches/0001 is kept as the landed-detector. 18 PRs landed, 1 held. Next:
+EH-C (W-346) and SAFE-4 resume on the arbiter; UA-3 carries the fix forward or
+drops it when upstream fixes the construction.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2545,6 +2573,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-va2` | LANDED as PR 66 by merge a725dddca (2026-11-06, LAND-1, R33; GitHub merged_at 2026-11-06T05:39:40Z, merge_commit_sha a725dddca) — VA-2: W-212, W-213 and W-225: generic and heterogeneous packs, tuple pack segments, variadic impls; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-rg1` | LANDED as PR 67 by merge 7f8c7e696 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T01:17:26Z, merge_commit_sha 7f8c7e696) — RG-1: records only: the V-3a register classified at upstream f27a977d8; W-342 and W-344 discharged, W-343 narrowed to the land-time notes, W-346 to W-356 filed; land-time commits none; container-measured (R33 (b)): gate 1942 of 1942, conformance 128/0/22 over 150, 48/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ov4` | LANDED as PR 68 by merge c62ae211e (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:53:02Z, merge_commit_sha c62ae211e) — OV-4: W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3; land-time commits c6c9d5fe3; container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15 over 208, 49/56 bullets; moved to follow-ons: to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order; R21's hosted gate owed when Actions returns (R33 (b)). |
+| `claude/carbon-fork-0-1-arb2` | LANDED as PR 69 by merge fca1e9e2f (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-09T18:14:39Z, merge_commit_sha fca1e9e2f) — ARB-2: W-378: `UnitAndImports` constructed in place in toolchain/check/check.cpp (its emitter points into itself; the re-created container arbiter's first finding, REVIEW-1 R1-B1), with its records; the arbiter's scripts land under fork/tools/carbonbuild by the records commit of 2026-11-09; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -2556,7 +2585,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 66's landing (2026-11-06, LAND-1, R33 (b)): 228 PASS
+Container-measured at PR 69's landing (2026-11-09, LAND-1, R33 (b)): 228 PASS
 / 13 SKIP / 0 FAIL programs (241 total); **51/56 bullets green**; gate
 2047 of 2047. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is

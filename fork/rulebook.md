@@ -270,7 +270,21 @@ here.
     the gate's file_test pass whenever the owner does dispatch. (Origin:
     owner directive, 2026-09-26, mid-W-077; superseding the same-day
     "rationed use" draft after one accidental fire on a merge push, cancelled
-    within a minute.)
+    within a minute.) Amended 2026-11-09 (ARB-2's close, PR 69's landing):
+    while GitHub Actions is disabled and the owner's machine is never used,
+    the fork's measurement instrument is the container arbiter of R33 (a),
+    the Bazel-free build of the toolchain with its three checks (the
+    file_test gate, autoupdate, the conformance runner), re-created from the
+    BUILD files after the 2026-11-09 container reset. Its scripts' home is
+    fork/tools/carbonbuild, the record; /home/user/arb/carbonbuild is the
+    running instance, synchronised by `diff -r`, and the README there
+    documents the LLVM build, the container's layout and the harness. Its
+    acceptance, on the repository alone at 6de18c1f7 (PR 69's fix, the land
+    tree's toolchain): gate 2047 passed, 0 failed; autoupdate 0 file(s)
+    changed; conformance PASS 228 / FAIL 0 / SKIP 13 over 241 programs, 51 of
+    56 bullets; container-measured, EXPECTED, not of record (R9, R33 (b)).
+    Clauses (b) and (c) stand for the time Actions returns; the fixpoint of
+    (d) is proven by the arbiter's gate meanwhile.
 -   **R29. Throughput rules (owner directive 2026-09-27: "work more
     efficiently", "finish everything without making mistakes", "no more
     questions").** (a) Autonomy: no AskUserQuestion; every fork decision
@@ -428,3 +442,14 @@ here.
     with an owed fix or an unfinished realignment, is not merged until it is;
     (d) R28 stands: the owner's machine is never used and no workflow is
     dispatched. (Origin: owner directive 2026-11-01; decision-log entry LD-0.)
+    Amended 2026-11-09 (ARB-2's close, PR 69's landing): the carbonbuild
+    arbiter of (a) and the container-measured scoreboard of (b), the clause
+    ARB-2's ruling cites as (c), are the container arbiter re-created after
+    the 2026-11-09 reset, whose scripts live in the repository under
+    fork/tools/carbonbuild (the record; /home/user/arb/carbonbuild is the
+    running instance, synchronised by `diff -r`); R28's amendment of the same
+    date names its acceptance, gate 2047 of 2047, autoupdate 0 changed,
+    conformance 228/0/13 over 241 and 51/56 bullets on 6de18c1f7. PR 69 is
+    the first landing it verified: the land tree equals the PR head,
+    trunk aee70185c not having moved, so the measurement of 6de18c1f7 is the
+    land tree's (merge fca1e9e2f, GitHub merged_at 2026-11-09T18:14:39Z).

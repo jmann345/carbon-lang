@@ -18,6 +18,11 @@ ignore = ["ANN401", "ANN204"]
 "proposals/**" = ["ANN"]
 "examples/bazel_test_runner.py" = ["ANN"]
 "fork/conformance/runner.py" = ["ANN"]
+# fork/tools/carbonbuild is the record of the container arbiter's scripts, kept
+# byte-identical to the running instance apart from headers and formatter
+# output (fork/tools/carbonbuild/README.md), so the findings the formatter
+# cannot fix are exempted for it rather than hand-edited.
+"fork/tools/carbonbuild/*.py" = ["ANN", "E402", "E501", "E741", "F401", "F841"]
 "**/lit.cfg.py" = ["ANN"]
 
 [tool.ruff.lint.isort]
@@ -34,6 +39,8 @@ exclude = [
     "**/lit.cfg.py",
     "examples/bazel_test_runner.py",
     "**/*_test.py",
+    # The container arbiter's scripts: see [tool.ruff.lint.per-file-ignores].
+    "fork/tools/carbonbuild/",
 ]
 
 [tool.ty.analysis]

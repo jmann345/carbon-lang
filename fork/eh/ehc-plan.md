@@ -6,10 +6,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # EH-C plan: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346)
 
-**Status:** rev 1, written 2026-11-09 for two adversarial plan reviews.
-Branch `claude/carbon-fork-0-1-ehc` (worktree /home/user/carbon-ehc), cut from
-trunk aee70185c (2026-11-09, "Weekly upstream check 2026-11-09: review fold";
-pushed; no commits of its own before this plan). Trunk's toolchain, prelude and
+**Status:** rev 2 (2026-11-09): reviews A and B folded, 17 findings (the
+section "Review fold record (rev 2, 2026-11-09)" before Appendix A); not
+signed off, the re-review decides. Rev 1 was written 2026-11-09 for two
+adversarial plan reviews. Branch `claude/carbon-fork-0-1-ehc` (worktree
+/home/user/carbon-ehc), cut from trunk aee70185c (2026-11-09, "Weekly upstream
+check 2026-11-09: review fold"; pushed; no commits of its own before this
+plan); trunk moved to fca1e9e2f while the reviews ran (the paragraph after
+this one). Trunk's toolchain, prelude and
 testdata equal the merge a725dddca's: `git diff --stat a725dddca aee70185c --
 toolchain core` is empty, so the container arbiter's install
 /home/user/arb/install/cb726a230/bin/carbon (built from cb726a230, whose
@@ -25,9 +29,38 @@ error-handling workstream's third slice; fork/eh/plan.md (EH-A and EH-B,
 fork/overload/plan.md. **The spec is W-346** (fork/inventory/work-items.json):
 rename `Core.Result(T, E)`'s alternatives `Ok`/`Err` to upstream's
 `Success`/`Failure`, with every use, after the held PRs land and before UA-3.
-Size S. This plan was written once before (2026-11-06, cc2d3a623 on the
-previous container, lost before it was pushed); §0.8 says what this rev keeps
-of it and where it differs.
+Size: the ledger's M (RG-1's estimate; a mechanical rename with a fix budget
+of two would be S by this plan's count, but the ledger's field is kept
+unchanged, D.1; amended 2026-11-09, review fold: A-m3 (d) / B-m5). This plan
+was written once before (2026-11-06, cc2d3a623 on the previous container,
+lost before it was pushed); §0.8 says what this rev keeps of it and where it
+differs.
+
+**Trunk moved while the reviews ran (amended 2026-11-09, review fold: B-m4 /
+A-m3 (e)).** Trunk is fca1e9e2f ("Land PR 69: ARB-2, construct UnitAndImports in
+place (its emitter points into itself)", the merge of
+claude/carbon-fork-0-1-arb2 at b87f130b2 into aee70185c, committed
+2026-11-09T18:14Z; `git ls-remote origin trunk`, origin/trunk and
+/home/user/carbon-trunk agree). Against aee70185c PR 69 changes four files:
+toolchain/check/check.cpp (the fix the arbiter's source patch carries; trunk's
+file equals aee70185c's plus the patch but for a five-line comment, so the
+arbiter's `patch --forward` reports the patch `landed` on that tree, as its
+builds of 6de18c1f7 and b87f130b2 did, and compiles the repository's file),
+fork/inventory/work-items.json (W-378, ARB-2's item, inserted after W-377; 310
+items), fork/decision-log.md (the entry "ARB-2 (2026-11-09): ..." appended at
+:20650 after CT-1's; no line before :20646 moves) and fork/ORCHESTRATION.md (the
+header :10-17 and a dated paragraph of 2026-11-09 (17:41 UTC) at :2167; the
+Branches table has no PR 69 row yet and the header still counts "17 PRs landed":
+LAND-1's records commit for PR 69 is pending). No use site of this plan moves:
+`git diff --stat a725dddca fca1e9e2f -- toolchain core` lists check.cpp only, so
+cb726a230 plus the patch is still trunk's toolchain and every baseline figure
+here stands. `git merge-tree --write-tree fca1e9e2f 7ea4ff096` (the rev 1
+commit) exits 0 (tree 2a1e75aa9): the branch merges trunk clean. The rule
+(D-EHC-12 and §3's M-0 paragraph): the implementation starts with M-0, `git
+merge --no-ff origin/trunk` into the branch before C1, so that C1 to D sit on
+trunk's records (W-380 after W-378) and on trunk's check.cpp (the gate's
+src-patches line then prints `landed`); a land-time M (Appendix F.1) follows
+only if trunk moves again.
 
 **Item:** W-346 (R32 (d); RG-1, D-RG-5). **Reserved ids:** W-380 to W-385
 (§0.7); W-380 filed, W-381 to W-385 unused. **No F id** (R32 makes upstream's
@@ -63,7 +96,10 @@ install above, the upstream nightly
 (a differential oracle only, R30; it has no `Core.Result`), and a prototype of
 the rename built by the arbiter under the label `ehc-planner` from the detached
 worktree /home/user/carbon-ehc-planner at aee70185c (removed when the plan was
-committed, with the label's directories). The arbiter compiles a patched copy
+committed, with the label's directories), re-run by the fold of 2026-11-09 as
+the label `ehc-fixer` from /home/user/carbon-ehc-fixer at aee70185c with
+D-EHC-13's renames and A-m1's lines (removed the same way); where a figure
+below is the fixer's it says so. The arbiter compiles a patched copy
 of toolchain/check/check.cpp (carbonbuild/src-patches/0001-check-unit-infos-
 in-place.diff, ARB-2's R1-B1, unrelated to EH-C; every GATE line prints
 `src-patches.applied`), so every gate figure here is "the tree at SHA plus
@@ -88,9 +124,10 @@ in D-EHC-4 and D-EHC-5.
 | Toolchain identifiers | 1 | 2 | toolchain/check/cpp/thunk.cpp:1506 `identifiers().Add("Ok")`, :1508 `("Err")` |
 | Toolchain comments and names | 12 | 41 | thunk.cpp :1380, :1461-1462, :1510, :1525, :1538 (comments) and its `ok_*`/`err_*` locals :1502-1541; thunk.h:201; handle_choice.cpp:373, :376; handle_match.cpp:60, :62; pattern_match.cpp:1441; refutable_binding.cpp:564; lower/handle.cpp :356-363, :402, :413 (comments), :394-400 (IR names), :421 (the stderr message); lower/constant.cpp:450; lower/context.h :147-153, :214-216; lower/file_context.h :246-250; lower/function_context.h :374-381 (the `main.result.err.message` global) |
 | Install header | 1 | 10 comment lines, 23 code lines | toolchain/install/include/carbon/expected.h :27, :46, :131, :145, :199, :201, :271, :276, :290, :296 (comments); `T ok; E err;` :154-155, :162, the `Payload` constructors :152-153, :161, `payload_.ok`/`.err` :214-254, :309-333, `static expected ok()` :291 |
-| Golden sources | 35 | 342 | 22 check, 11 lower, 2 parse (Appendix A); 328 whole-word lines plus 14 lowercase skeleton lines in the two export goldens |
-| Golden CHECK lines | 32 | 2858 rewritten by the fill | the files of §4; three of the 35 have no CHECK line that moves |
-| Program sources | 18 | 159 | 11 .carbon and 5 .diff.cpp under error_handling/, project/evaluator_tutorial_errors.carbon, control_flow/choice_payload_roundtrip_diff.carbon (Appendix B) |
+| Golden sources | 35 | 350 | 22 check, 11 lower, 2 parse (Appendix A); 328 whole-word lines, 14 lowercase skeleton lines in the two export goldens, and 8 lines the fold added: the five split-name headers `unit_ok`/`i32_ok` and lower main_run/return_result.carbon's three comment lines that name the IR blocks, the message global and the split (amended 2026-11-09, review fold: A-m1 / B-M1) |
+| Golden CHECK lines | 32 | 2871 written, 2863 removed by the fill | the files of §4; three of the 35 have no CHECK line that moves (the fixer's fill; the planner's 2862 written counted the same files before B-M1's split renames, which add 9 to each figure, and its "2858" followed a convention the plan did not state; amended 2026-11-09, review fold: A-m3 (f) / B-M1) |
+| Program sources | 18 | 159 | 11 .carbon and 5 .diff.cpp under error_handling/, project/evaluator_tutorial_errors.carbon, control_flow/choice_payload_roundtrip_diff.carbon (Appendix B); two of them renamed with fork/conformance/README.md's two rows (D-EHC-13) |
+| File and split names | 5 | 7 | fork/conformance/programs/error_handling/run_result_ok.carbon and run_result_err.carbon (`git ls-files | grep -E '(^|[_/])[_.](ok|err)'` lists exactly these two) and the split names `unit_ok` (check main_run/return_result.carbon:23, check operators/question_result.carbon:98, lower main_run/return_result.carbon:24) and `i32_ok` (check main_run/return_result.carbon:32, lower main_run/return_result.carbon:36), which no whole-word grep sees; D-EHC-13 (row added 2026-11-09, review fold: B-M1) |
 | Program EXPECTs | 0 | 0 | no EXPECT line names an alternative (§0.5) |
 | Living docs | 5 | 38 | docs/design/README.md :4047-4048; docs/design/error_handling.md 26 lines (:103-104, :112, :118, :133-136, :153, :156, :173-174, :178, :185, :209, :382-383, :389, :562-563, :695, :697, :736, :864, :949, :953, :1002); docs/design/optional.md:434; docs/guides/tutorial.md :366-390 (the block) and :409; docs/guides/evaluator_faq.md:356 |
 | Living checker | 1 | 3 | fork/evaluator/check_faq.py :167, :226, :229 (the FAQ's reproducers) |
@@ -138,22 +175,22 @@ aee70185c ran beside it), installed, gated, refilled and measured. Results:
 
 | Step | Result |
 | --- | --- |
-| Files changed by the rename | 72: 35 goldens (342 source lines), 18 programs (159 lines), 13 toolchain, prelude and header files (112 lines), 5 docs (38 lines), check_faq.py (3 lines); prek then reflowed 7 long lines in three docs, wrapped the C++ at clang-format's width and asked for check_faq.py:229 to be split (a second pass is clean) |
-| Whole-tree grep after the rename, outside CHECK lines and fork/ | exactly common/raw_hashtable.h:1314 |
+| Files changed by the rename | 73 (the fixer's prototype; the planner's 72 lacked fork/conformance/README.md): 35 goldens (350 source lines), 18 programs (159 lines; run_result_ok.carbon and run_result_err.carbon renamed, D-EHC-13), fork/conformance/README.md (its two rows), 13 toolchain, prelude and header files (`git diff --numstat` before prek: 128 lines replaced and 10 added, result.carbon's history block; the planner's 112 lacked thunk.cpp's six `return_ok`/`return_err` lines and counted result.carbon's rewrite differently), 5 docs (38 lines), check_faq.py (3 lines); prek then reflowed long lines in the docs, wrapped the C++ at clang-format's width and asked for check_faq.py:229 to be split (a second pass is clean) (amended 2026-11-09, review fold: A-m1 / B-M1) |
+| Whole-tree grep after the rename, outside CHECK lines and fork/ | five lines, all dated history (amended 2026-11-09, review fold: A-M1): common/raw_hashtable.h:1314 (English), core/prelude/types/result.carbon:56 (the history comment's "spelled `Ok`/`Err`"), check/testdata/operators/question_result.carbon:156, :160, :166 (the `fail_old_names` split's comment and its two deliberate source lines; :164 and :174 after the fill moves them); after P, twelve more, the amendment lines of Appendix C (§8.7's list); `git ls-files | grep -E '(^|[_/])[_.](ok|err)'` and the split-header grep of §8.7 are empty after D-EHC-13 |
 | `runner.py --self-test` (both sample checkers) | "check_samples: 14 samples, 0 errors", "check_samples: 19 program blocks, 70 fixtures, 2 W2 hits (1 allowlisted, 1 qualified); 0 errors", "self-test: 241 programs parsed, 56 bullets in table, OK" |
-| The same with the tutorial reverted and the programs renamed (the A-M1 state) | "check_samples: 14 samples, 1 errors" (the self-test is red), restored to 0 by the tutorial's eight lines |
-| Gate before any refill | 2015 passed, 32 FAILED, every failure "Autoupdate would make changes" (32 of 32), no crash, no `fail_`-prefix problem: the 32 files of §4 |
+| The same with the tutorial reverted and the programs renamed (the lost rev's A-M1 state) | "check_samples: 14 samples, 1 errors" (the self-test is red), restored to 0 by the tutorial's seven block lines (B.1.17; amended 2026-11-09, review fold: B-m7) |
+| Gate before any refill | `[  PASSED  ] 2015 tests.` and exactly 32 per-test `[  FAILED  ] ToolchainFileTest...` lines, the 32 files of §4, every failure "Autoupdate would make changes" (32 of 32), no crash, no `fail_`-prefix problem. The arbiter's summary line reads `GATE ehc-fixer: 2015 passed, 0 failed` and gate.sh exits 1: gate.sh:121-134 takes its failed count from a gtest "[  FAILED  ] N tests, listed below" summary that file_test does not print, and its exit code from the binary's, so the GATE line alone would read as green; the criterion is the per-test lines (amended 2026-11-09, review fold: A-m2; a note for ARB-2's landing of the scripts, not a change here) |
 | Autoupdate | pass 1 rewrites the 32; pass 2 changes nothing (the gate after it is the proof, R28 (d)) |
 | Gate after the fill | **2047 passed, 0 failed** (the new split is a split, not a file, so the count stays 2047) |
-| The fill's non-CHECK lines | exactly the rename's 342 lines twice plus the 20 lines of the new split; the 32 refilled files have 2858 CHECK lines rewritten (5716 `+`/`-` lines), classified in §4 |
-| Conformance | **PASS 228 / FAIL 0 / SKIP 13 over 241, 51 of 56 bullets**, byte for byte trunk's (/home/user/arb/conformance/ehc-planner/scoreboard.json before the mutants) |
+| The fill's non-CHECK lines | exactly the rename's 350 lines twice plus the 20 lines of the new split (the fixer's `git diff -U0`: 370 `+` and 350 `-` non-CHECK lines over the 35 goldens); the 32 refilled files have 2871 CHECK lines written and 2863 removed (the difference is the split's 8), classified in §4 (amended 2026-11-09, review fold: A-m3 (f) / B-M1) |
+| Conformance | **PASS 228 / FAIL 0 / SKIP 13 over 241, 51 of 56 bullets**, byte for byte trunk's (/home/user/arb/conformance/ehc-planner/scoreboard.json before the mutants); the fixer's run (/home/user/arb/conformance/ehc-fixer/scoreboard.json, its own cache /home/user/arb/cache-ehc-fixer) the same totals, every row's status and detail equal to cb726a230's with the two renamed programs mapped by name (D-EHC-13) |
 | check_faq.py with the prototype | "13 reproducers run, 0 errors" (the renamed line :229 matches the new stderr) |
 | fork/designdocs/check_samples.py --toolchain (the prototype) | "19 program blocks, 70 fixtures (compiled), 2 W2 hits (1 allowlisted, 1 qualified); 0 errors" |
 | p2, p3, p4 with the new spelling on the prototype | `1`/`-7`; `1` and stderr ``carbon: `Main.Run` returned `.Failure` of type `i32`; exiting with code 1`` with exit 1; `11`/`-3`: the baseline's outputs with the one printed name changed |
 | The old spelling on the prototype (p6, p7, p2 unchanged) | ``error: member name `Ok` not found in `Core.Result(i32, i32)` `` for `Core.Result(i32, i32).Ok(1)`; ``member name `Err` not found in `Core.Result(i32, i32)` `` for `.Err(7)`, for `case .Err(e: i32)` and for `if (let .Err(e: i32) = ...)`; in the golden the kind is `[MemberNameNotFoundInSpecificScope]`; no note |
 | prek (R25) on the 72 files | pass 1: rumdl reflowed docs/design/README.md:4047-4048, error_handling.md :112, :736, :864, :949 and tutorial.md:409 (MD013; R31's heading, bullet, numbered and row counts unchanged for all three files), ruff E501 on check_faq.py:229 (fixed by splitting the literal), clang-format wrapped thunk.cpp, lower/handle.cpp, function_context.h and expected.h; pass 2 clean, no file modified |
-| M1, the order swapped (`Failure` first, `Success` second; the prelude only, re-installed) | gate 2040 passed, 7 FAILED: check interop/cpp/exceptions/catching_thunk.carbon, main_run/return_result.carbon, operators/question_result.carbon; lower interop/cpp/exceptions/catching_thunk.carbon, interop/cpp/function/export/result_expected.carbon, main_run/return_result.carbon, operators/question_result.carbon (every golden whose dumps print a `Core.Result` discriminant or alternative index); conformance PASS 224 / FAIL 4 / SKIP 13: run_result_ok.carbon exit 1 for 3 (the success value read as a failure), run_result_err.carbon exit 0 for 1 (the failure's discriminant is now 0), cpp_expected_export.carbon stdout mismatch (`<carbon/expected.h>` reads `disc_ == 0` as a value), cpp_exception_rethrow_export.carbon exit -11 (the header rethrows a null primary); the differential and user-choice programs stay green because they construct by name |
-| M2, the thunk's two minted identifiers left as `"Ok"`/`"Err"` (toolchain rebuilt) | gate over `--filter interop/cpp`: 228 passed, 4 FAILED: check interop/cpp/exceptions/catching_thunk.carbon and fail_catching.carbon, lower interop/cpp/exceptions/catching_thunk.carbon and interop/cpp/function/export/result_expected.carbon, each with ``member name `Ok` not found in `Core.Result(i32, Cpp.Exception)` `` and the `Err` twin at every `?`-selected C++ call (28 occurrences); the identifiers are the root (D-EHC-4) |
+| M1, the order swapped (`Failure` first, `Success` second; the prelude only, re-installed) | gate 2040 passed, 7 FAILED: check interop/cpp/exceptions/catching_thunk.carbon, main_run/return_result.carbon, operators/question_result.carbon; lower interop/cpp/exceptions/catching_thunk.carbon, interop/cpp/function/export/result_expected.carbon, main_run/return_result.carbon, operators/question_result.carbon (every golden whose dumps print a `Core.Result` discriminant or alternative index; the fixer's re-run gives the same seven); conformance PASS 224 / FAIL 4 / SKIP 13: run_result_success.carbon (run_result_ok.carbon before D-EHC-13) exit 1 for 3 (the success value read as a failure), run_result_failure.carbon (run_result_err.carbon) exit 0 for 1 (the failure's discriminant is now 0), cpp_expected_export.carbon stdout mismatch (`<carbon/expected.h>` reads `disc_ == 0` as a value), cpp_exception_rethrow_export.carbon exit -11 (the header rethrows a null primary); the differential and user-choice programs stay green because they construct by name |
+| M2, the thunk's two minted identifiers left as `"Ok"`/`"Err"` (toolchain rebuilt, the prelude restored and re-installed first) | gate over `--filter interop/cpp`: 229 passed, 3 FAILED: check interop/cpp/exceptions/catching_thunk.carbon and fail_catching.carbon, lower interop/cpp/exceptions/catching_thunk.carbon, each with ``member name `Ok` not found in `Core.Result(i32, Cpp.Exception)` `` and the `Err` twin at every `?`-selected C++ call (14 and 14, the 28 occurrences); lower interop/cpp/function/export/result_expected.carbon stays green (its one split constructs `.Success(1)` and has no `?` on a C++ call; its `exception_error` split is the check golden's). The planner's "4" ran M2 with M1's prelude swap still installed and counted that golden, one of M1's seven (228 + 4 = 229 + 3 = 232 is the union); the lost rev's 3 was right. The identifiers are the root (D-EHC-4) (amended 2026-11-09, review fold: A-M2) |
 | M3, a kept alias | not buildable in the prelude: p8's parse error; a user-side alias (p9) is caught by no toolchain check and by the §8.7 grep only, which is D-EHC-2's guard |
 | Restored prototype | full gate 2047 passed, 0 failed again after M2's rebuild |
 
@@ -167,7 +204,13 @@ conflicts in; LAND-1's D-LAND-5 region rules resolve them at PR 53's landing);
 docs/design/README.md, expressions/arithmetic.md, slices.md, unions.md and
 fork/rulebook.md auto-merge. No file EH-C's C1, F1 or P touches conflicts: PR
 53 does not touch core/, toolchain/, the goldens, the programs,
-error_handling.md, optional.md or the guides. PR 53 carries one line with the
+error_handling.md, optional.md or the guides. It does touch
+docs/design/README.md, which P edits too: PR 53's hunks are at :2148, :2168
+and :3900 (`git diff aee70185c...2407efa74 -- docs/design/README.md`), P's at
+:4046-4050, so the page auto-merges; the fixer's prototype commit (C1, F1 and P
+applied) merge-trees against 2407efa74 with conflicts in the same four
+records files only (§8.8 re-measures it on the branch's head) (amended
+2026-11-09, review fold: B-m11). PR 53 carries one line with the
 old spelling, docs/design/safety/rust_interop.md:223 ("with `Ok`/`Err` as the
 variants"), a use of trunk's spelling (D-RG-8); EH-C lands first (W-346's
 schedule puts it before UA-3 and PR 53 waits on SAFE-4), so D-RG-8's break
@@ -219,15 +262,18 @@ Read by sha with `git show upstream/trunk:<path>`:
     (`git log --oneline c1e83b0b7..upstream/trunk -- docs/design/README.md` is
     empty: the page is byte-identical from the cut to the tip, so RG-1's lines
     of 2026-10-28 are the tip's).
--   proposals/p000157-design-direction-for-sum-types.md:228-229 "so their
+-   proposals/p000157-design-direction-for-sum-types.md:227-229 "so their
     detailed design will be addressed in future proposals, and the details
-    discussed here should be considered provisional."; :690-693 `choice
-    Result(Type:$$ T, Type:$$ Error) {` / `Success(T: value),` / `Failure(Error:
-    error),` / `Cancelled`. It is the only proposal that spells any of the four
-    names: `git grep -cE 'Success\(|Failure\(|\bOk\b|\bErr\b' upstream/trunk --
-    proposals` lists p000157 alone (27 lines, all `Success`/`Failure`, at :120,
-    :124, :141, :146, :266-281, :345-374, :403-416, :428, :691-692, :868-879,
-    :981-1005); provisional by its :228-229, corroborating only (D-RG-5).
+    discussed here should be considered provisional." (the sentence begins at
+    :227, "separable, although there are some dependencies between them, so
+    their detailed"; amended 2026-11-09, review fold: A-m3 (b)); :690-693
+    `choice Result(Type:$$ T, Type:$$ Error) {` / `Success(T: value),` /
+    `Failure(Error: error),` / `Cancelled`. It is the only proposal that spells
+    any of the four names: `git grep -cE 'Success\(|Failure\(|\bOk\b|\bErr\b'
+    upstream/trunk -- proposals` lists p000157 alone (27 lines, all
+    `Success`/`Failure`, at :120, :124, :141, :146, :266-281, :345-374,
+    :403-416, :428, :691-692, :868-879, :981-1005); provisional by its :228-229,
+    corroborating only (D-RG-5).
 -   No upstream text spells `Ok` or `Err`: `git grep -nE '\bOk\b|\bErr\b'
     upstream/trunk -- docs/design core proposals` is empty.
 -   Upstream's prelude has no `Result` and no `Try`: `git ls-tree -r
@@ -263,14 +309,21 @@ T1.1 to T1.3 (0 at the tip, the toolchain/parse silence above); the entry
 point's exit code from a `Result` and the `Carbon::expected` export are not
 register rows of their own (EH-A's and EH-B's blocks name them under the
 `Try`-desugar and `Core.Result` entries) and stay NONE under the same silence
-(no `Result`, no `Try`, no header upstream; `git grep -c expected.h
-upstream/trunk -- toolchain` is 0). DR-0's block is untouched (it names no
+(no `Result`, no `Try`, no header upstream; `git grep -n expected.h
+upstream/trunk -- toolchain` lists one unrelated line,
+toolchain/lex/tokenized_buffer_test.cpp:774 `expected.has_leading_space`, and
+no `expected.h` file exists upstream; amended 2026-11-09, review fold: A-m3
+(a)). DR-0's block is untouched (it names no
 W-346 entry). W-355's weekly check reads T2.1 afterwards as an ALIGNED row: its
 quotes are rg1-quotes.tsv's README.md 3858, 3860, 3164-3166, 2176-2177, 3856,
 2167, 3159 and p000157 691, 229 rows (already present, re-anchored on
-2026-11-09), and its new silence check (Appendix D.6) fires if upstream ever
-spells `Ok(` or `Err(` in docs/design or proposals, the upstream-side break
-condition.
+2026-11-09), and its two new silence checks (Appendix D.6) fire if upstream
+ever spells `Ok(` or `Err(` in docs/design or proposals, or declares a `choice
+Result` or `class Result` under core, the two upstream-side break conditions
+(both 0 at ca1898506: check_greps.sh over the tip reports "checked 94 silence
+checks, 0 failed" with trunk's rows and "checked 96 silence checks, 0 failed"
+with the two rows appended; check_quotes.sh "checked 289 quotes, 0 failed";
+amended 2026-11-09, review fold: A-m3 (c) / B-m9).
 
 ### §0.7 The id re-scan
 
@@ -279,12 +332,20 @@ refs/heads`), `git branch -a` lists 83 lines, `git worktree list` 7 worktrees
 (carbon-lang, carbon-arb2, carbon-ehc, carbon-ehc-planner, carbon-safe,
 carbon-trunk, carbon-weekly). `git grep -oE 'W-3[7-9][0-9]|W-4[0-9][0-9]'
 <every ref> -- fork` and `grep -r` over each worktree's fork/ directory find:
-W-370 to W-377 filed on trunk (W-377 the highest, 309 items); W-378 on trunk
-and on claude/carbon-fork-0-1-arb2 (6de18c1f7, worktree /home/user/carbon-arb2)
-only as the 2026-11-09 weekly entry's text (decision-log.md:19596-19598,
-ORCHESTRATION.md:2153), not as a ledger item at scan time, which changes
-nothing because the task names it TAKEN by ARB-2's ledger item and EH-C
-reserves from W-380 regardless; W-379, W-389, W-396 and W-397 as range bounds
+W-370 to W-377 filed on trunk aee70185c (W-377 the highest, 309 items); W-378
+at that scan on trunk and on claude/carbon-fork-0-1-arb2 (6de18c1f7, worktree
+/home/user/carbon-arb2) only as the 2026-11-09 weekly entry's text
+(decision-log.md:19596-19598, ORCHESTRATION.md:2153). _Re-scanned by the fold
+(2026-11-09, after `git fetch origin`; 84 refs, 77 distinct heads, 7
+worktrees, the widened pattern; amended 2026-11-09, review fold: A-m3 (e) /
+B-m4):_ W-378 is now a ledger item, ARB-2's, on claude/carbon-fork-0-1-arb2
+at b87f130b2 and on trunk fca1e9e2f (PR 69; 310 items, W-378 last, size S),
+and its notes name this plan's reservation ("the EH-C re-plan reserves W-380
+to W-385 (its D-EHC-11)"); W-380 appears only as reserved text (the weekly
+entry's sentence, W-378's notes, this plan); W-381, W-384, W-386, W-387,
+W-390 and W-395 only in this plan's own sentence below; so D-EHC-11 stands
+and W-380 is the next free id after W-379's range-bound text. Of the first
+scan: W-379, W-389, W-396 and W-397 as range bounds
 or reserved text (fo1-plan.md:937, land1-plan.md:668-669, decision-log
 :19595); W-380, W-385 and W-388 only in the weekly entry's sentence "no W-378
 and no W-380 to W-388 appears anywhere" (:19596); W-398 and W-399 as range
@@ -310,8 +371,10 @@ unchanged (D-EHC-10); 35 goldens not 34, 18 program files not 6; gate 2015 of
 errors. Differs: (a) ids: the lost rev reserved W-378 to W-385 and filed W-378
 for PR 53's rust_interop.md row; W-378 and W-379 are taken, so EH-C reserves
 W-380 to W-385 and files W-380 (D-EHC-11); (b) the partial-thunk mutant turns
-4 goldens red, not 3 (lower result_expected.carbon's `exception_error` split
-goes with the three); (c) 342 golden source lines, not 328: the lost rev
+3 goldens red, as the lost rev had it: rev 1 said 4 because the planner ran
+M2 with M1's prelude swap still installed and counted lower
+result_expected.carbon, one of M1's seven (corrected 2026-11-09, review fold:
+A-M2); (c) 350 golden source lines, not 328: the lost rev
 counted whole-word lines only and the skeletons' lowercase members are
 renamed too (D-EHC-5); (d) the lost rev's A-M1 (its one MAJOR: the docs sample
 checkers go red at C1 until P) is folded as D-EHC-9 with the checkers named
@@ -328,7 +391,8 @@ after rumdl's reflow (§0.3), and clang-tidy's absence stated with the reason
 its "thunk.cpp:1506-1508" is :1506 and :1508 (two identifiers, the lines
 between them being the `NameId` wrappers), its `Core.Result(i32, String)` probe
 has no `String` type to name (p1), and its "W-378 TAKEN by ARB-2's ledger
-item" is not visible at the branch head scanned (§0.7) but is honored.
+item" was not visible at the branch head first scanned but is now on trunk
+fca1e9e2f (§0.7, PR 69).
 
 ## §1 Design
 
@@ -384,22 +448,23 @@ decides them (§0.6).
     note, the veto recorded against R32). A weekly check that classifies the
     parameter spelling `E` a drift files it as its own item (R32 (b)); nothing
     in this plan depends on it.
--   **D-EHC-2 — no alias, no deprecation period, no compatibility spelling.**
-    A second spelling IS the drift (R32 (d)); keeping `Ok`/`Err` reachable
+-   **D-EHC-2 — no alias, no deprecation period, no compatibility spelling.** A
+    second spelling IS the drift (R32 (d)); keeping `Ok`/`Err` reachable
     anywhere in the prelude or the toolchain would leave the register entry a
     DRIFT. Measured: an alias of an alternative cannot be written inside a
     choice at all (`alias Ok = Success;` inside `choice R` is "error: expected
-    choice alternative name", §0.2 p8), and a file-scope alias of a
-    specific's alternative (`alias ResultOk = Core.Result(i32, i32).Ok;`)
-    compiles (p9), so a user program CAN spell its own alias, and the prelude
-    ships none. The guard against a kept alias is textual, not a toolchain
-    check: the whole-tree grep of §8.7 (0 hits outside closed plans and dated
-    history) at D and at land time, recorded in the decision-log entry as
-    EH-B's §8.4 greps were, and the new register silence check of D-EHC-7
-    (upstream adopting `Ok`/`Err` fires it). No register check greps the
-    fork's tree (check_greps.sh greps upstream's tip), which is why the
-    discharge grep is the guard. _Break condition:_ the user vetoes (D-EHC-1's
-    veto route; then the old spelling returns wholesale, never as an alias).
+    choice alternative name", §0.2 p8), and a file-scope alias of a specific's
+    alternative (`alias ResultOk = Core.Result(i32, i32).Ok;`) compiles (p9), so
+    a user program CAN spell its own alias, and the prelude ships none. The
+    guard against a kept alias is textual, not a toolchain check: the greps of
+    §8.7 (whose answer is the explicit list of dated history lines named there
+    and nothing else; amended 2026-11-09, review fold: A-M1 / B-M1) at C1, D and
+    at land time, recorded in the decision-log entry as EH-B's §8.4 greps were,
+    and the new register silence checks of D-EHC-7 (upstream adopting `Ok`/`Err`
+    fires one). No register check greps the fork's tree (check_greps.sh greps
+    upstream's tip), which is why the discharge grep is the guard. _Break
+    condition:_ the user vetoes (D-EHC-1's veto route; then the old spelling
+    returns wholesale, never as an alias).
 -   **D-EHC-3 — a program that still spells `.Ok` or `.Err` gets the ordinary
     unknown-member diagnostic, with no note, pinned by a new `fail_` split.**
     Measured on the prototype (§0.3): ``error: member name `Ok` not found in
@@ -434,28 +499,35 @@ decides them (§0.6).
     and the global's IR name `main.result.err.message` (to
     `main.result.failure.message`); the comments of handle_choice.cpp:373-376,
     handle_match.cpp:60-62, pattern_match.cpp:1441, refutable_binding.cpp:564
-    and lower/constant.cpp:450. The IR names are user-visible under
-    `--dump-llvm-ir` and in every lower golden, so they are part of the
-    spelling the fork shows. NOT renamed: thunk.cpp's `err_param_type_id`,
-    `err_pointee_type_id` and `err_storage_id`, which name the C++ thunk's
-    error out-pointer parameter `err` (an error object, not an alternative;
-    the thunk's C++ parameter is `void** err`), the differential oracles'
-    `bool ok` struct flag (a C++ oracle's own field), and
-    common/raw_hashtable.h:1314's English "Ok,". The partial-rename mutant
-    (§0.3 M2: the two minted identifiers left as `"Ok"`/`"Err"`) turns the
+    and lower/constant.cpp:450; and, joined by the review fold under this
+    decision's own break condition (amended 2026-11-09, review fold: A-m1),
+    thunk.cpp's `return_ok` (:982-987, the `try` body's `return 0`, the
+    `Success` discriminant) and `return_err` (:1018-1023, the handler's `return
+    1`) to `return_success`/`return_failure`, and lower
+    main_run/return_result.carbon's prose :18-20, which names the blocks
+    `run.result.ok`/`run.result.err` and the global `main.result.err.message`
+    beside CHECK lines that print the new names (Appendix A.2.3). The IR names
+    are user-visible under `--dump-llvm-ir` and in every lower golden, so they
+    are part of the spelling the fork shows. NOT renamed: thunk.cpp's
+    `err_param_type_id`, `err_pointee_type_id` and `err_storage_id`, which name
+    the C++ thunk's error out-pointer parameter `err` (an error object, not an
+    alternative; the thunk's C++ parameter is `void** err`), the differential
+    oracles' `bool ok` struct flag (a C++ oracle's own field), and
+    common/raw_hashtable.h:1314's English "Ok,". The partial-rename mutant (§0.3
+    M2: the two minted identifiers left as `"Ok"`/`"Err"`) turns the three
     catching-thunk goldens red, which proves the identifiers are the root the
-    thunk depends on. _Break condition:_ a review finds another identifier
-    that denotes an alternative (then it joins C1, no new decision).
--   **D-EHC-5 — `<carbon/expected.h>` renames what mirrors the alternatives
-    and keeps the `std::expected` vocabulary.** The payload union's members
-    `ok`/`err` become `success`/`failure` (both `Payload` specializations, their
+    thunk depends on. _Break condition:_ a review finds another identifier that
+    denotes an alternative (then it joins C1, no new decision).
+-   **D-EHC-5 — `<carbon/expected.h>` renames what mirrors the alternatives and
+    keeps the `std::expected` vocabulary.** The payload union's members `ok`/`err`
+    become `success`/`failure` (both `Payload` specializations, their
     constructors and every `payload_.ok`/`payload_.err` use), and the
     `expected<void, E>::ok()` factory becomes `success()`; `has_value()`,
     `operator bool`, `value()`, `operator*`, `error()`, `value_or()`,
     `operator==`, `unexpected<E>`, `has_exception()` and the `std::expected`
     conversions keep their names (they are `std::expected`'s vocabulary, D8's
-    API, not a spelling of the alternatives). The header's comments that say
-    "0 for `Ok` and 1 for `Err`" and "`Ok(value)`", "`Err(error)`" follow the
+    API, not a spelling of the alternatives). The header's comments that say "0
+    for `Ok` and 1 for `Err`" and "`Ok(value)`", "`Err(error)`" follow the
     choice. The goldens' inline skeletons (check and lower
     interop/cpp/function/export/result_expected.carbon) rename their `T ok; E
     err;` members and the `ok(value)` initializer and the `r.ok : r.err` read
@@ -464,11 +536,19 @@ decides them (§0.6).
     load-bearing for the toolchain (the check golden's CHECK lines do not
     change, §4). Measured: cpp_expected_export.carbon and
     cpp_exception_rethrow_export.carbon PASS with the renamed header (its C++
-    uses only `has_value()`, `value()`, `error()` and `rethrow()`), and no file
-    in the tree calls `.ok()` (`git grep -nE '\.ok\(\)'` over the tree is 0
-    before and after). _Break condition:_ an external C++ consumer of the
-    header exists (none: the header is installed by the fork only and no
-    program outside fork/conformance includes it); the user vetoes.
+    uses only `has_value()`, `value()`, `error()` and `rethrow()`), and no
+    consumer of the header calls `.ok()`: `git grep -nE '\.ok\(\)' --
+    toolchain/install/include fork/conformance docs
+    toolchain/check/testdata/interop/cpp/function/export
+    toolchain/lower/testdata/interop/cpp/function/export` is 0 before and after,
+    and `git grep -nE 'expected<[^>]*>::ok\('` over the tree is 0. (Rev 1
+    claimed the unscoped `git grep -nE '\.ok\(\)'` over the tree is 0; it lists
+    180 lines in 43 files at aee70185c, `ErrorOr::ok()` and its kin in common/,
+    toolchain/driver, toolchain/testing and elsewhere, none an `expected`;
+    corrected 2026-11-09, review fold: A-M3 / B-M2.) _Break condition:_ an
+    external C++ consumer of the header exists (none: the header is installed by
+    the fork only and no program outside fork/conformance includes it); the user
+    vetoes.
 -   **D-EHC-6 — the five living docs are rewritten as dated fork amendments
     that keep the page's history, with upstream quoted by sha beside each.**
     Code blocks and code spans that spell the alternatives are renamed IN
@@ -486,39 +566,42 @@ decides them (§0.6).
     sentences, not a sed. _Break condition:_ a review shows an amendment that
     drops a claim the page made before (then the claim is restored as quoted
     history).
--   **D-EHC-7 — the records.** W-346 is DISCHARGED (kind `implemented`, title
-    prefixed "EH-C (DISCHARGED at EH-C, <date>): ...", the ledger's convention,
-    W-341's form) with the evidence of Appendix D.1; the decision-log entry
-    "EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346)
-    (<date>)" is placed directly before the EH-B entry (the log groups by
-    workstream, newest first: EH-B precedes EH-A today), carrying D-EHC-1 to
-    D-EHC-12, the V-3 check of §0.6 with the quotes, the §0 measurements and
-    the reconciliation greps; the F-006 entry's sub-decision F-006a gains the
-    dated reversal note of Appendix D.3 (the user's 2026-07-19 decision
-    reversed under the owner directive of 2026-10-21, veto-able), a note, not a
-    renumbering, so no F id is minted; the V-3a register: rg1-plan.md's T2.1
-    row turns ALIGNED (the quote already in the row), T11.1's and H3.2's notes
-    are updated, one silence check row is appended to rg1-checks.tsv (the
-    upstream-side break condition "the README's examples change to `Ok`/`Err`"
-    becomes a grep that fires) and one comment line to rg1-quotes.tsv naming
-    the rows T2.1 keeps (Appendix D.6; W-355's weekly check then reads T2.1 as
-    an ALIGNED row with a quote check and a silence check, as every other
-    ALIGNED row); the RG-1 entry, the EH-A entry's register paragraph, the
-    UA-1 entry's RG-1 paragraph, V-3's paragraph and the 2026-11-09 weekly
-    entry gain dated "resolved by EH-C" notes where they name W-346 (Appendix
-    D.4, D.5); fork/gap-analysis.md's row "Error handling: dedicated control
-    flow constructs" stays DONE with its evidence cell refreshed and row 70's
-    example `case .Ok(v: i32)` becomes `case .Success(v: i32)` (no row flips,
-    the tally stays 37/17/2/0); fork/ORCHESTRATION.md's header, a dated
-    paragraph, a Branches row, Next actions item 6's W-346 words and the F.3
-    paragraph's "Next:"; fork/eh/plan.md's Status paragraph gains the pointer
-    to this plan; fork/README.md:50's checklist line gains the rename in
-    parentheses. Closed plans (fork/w5-choice, b1, b2, w066, w072, w078a,
-    sumtype-interop, match-replatform, optional, w008, w5-s3, designdocs,
+-   **D-EHC-7 — the records.** W-346 is DISCHARGED (kind `implemented`, its
+    title's leading tag replaced by "EH-C (DISCHARGED at EH-C, <date>; R32 (d);
+    RG-1, D-RG-5): ...", W-341's form, the size field kept at M; amended
+    2026-11-09, review fold: B-m5) with the evidence of Appendix D.1; the
+    decision-log entry "EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure`
+    (W-346) (<date>)" is placed directly before the EH-B entry (the log groups
+    by workstream, newest first: EH-B precedes EH-A today), carrying D-EHC-1 to
+    D-EHC-13, the V-3 check of §0.6 with the quotes and the §0 measurements in
+    R, and its three D-time paragraphs (the reconciliation greps, the id
+    re-scan, the discharge) appended by D (B-M3, §3 items 7 and 8); the F-006
+    entry's sub-decision F-006a gains the dated reversal note of Appendix D.3
+    (the user's 2026-07-19 decision reversed under the owner directive of
+    2026-10-21, veto-able), a note, not a renumbering, so no F id is minted; the
+    V-3a register: rg1-plan.md's T2.1 row turns ALIGNED (the quote already in
+    the row), T11.1's and H3.2's notes are updated, two silence check rows are
+    appended to rg1-checks.tsv (the upstream-side break conditions "the README's
+    examples change to `Ok`/`Err`" and "upstream adds a prelude `Result`" become
+    greps that fire; amended 2026-11-09, review fold: B-m9) and one comment line
+    to rg1-quotes.tsv naming the rows T2.1 keeps (Appendix D.6; W-355's weekly
+    check then reads T2.1 as an ALIGNED row with a quote check and two silence
+    checks, as every other ALIGNED row); the RG-1 entry, the EH-A entry's
+    register paragraph, the UA-1 entry's RG-1 paragraph, V-3's paragraph and the
+    2026-11-09 weekly entry gain dated "resolved by EH-C" notes where they name
+    W-346 (Appendix D.4, D.5); fork/gap-analysis.md's row "Error handling:
+    dedicated control flow constructs" stays DONE with its evidence cell
+    refreshed and row 70's example `case .Ok(v: i32)` becomes `case .Success(v:
+    i32)` (no row flips, the tally stays 37/17/2/0); fork/ORCHESTRATION.md's
+    header, a dated paragraph, a Branches row, Next actions item 6's W-346 words
+    and the F.3 paragraph's "Next:"; fork/eh/plan.md's Status paragraph gains
+    the pointer to this plan; fork/README.md:50's checklist line gains the
+    rename in parentheses. Closed plans (fork/w5-choice, b1, b2, w066, w072,
+    w078a, sumtype-interop, match-replatform, optional, w008, w5-s3, designdocs,
     evaluator, design-sprint, register's prose, and this plan's own history)
     keep their text. _Break condition:_ a records check of D-LAND-6 step 9
-    (rowcheck.py, R31 counts, the model-identifier grep) fails (fix at the
-    text, never by dropping a record).
+    (rowcheck.py, R31 counts, the model-identifier grep) fails (fix at the text,
+    never by dropping a record).
 -   **D-EHC-8 — user test choices and oracle helpers that spell `Ok`/`Err`
     are renamed too.** The goldens' `MyResult`/`IntResult` choices (question*,
     fail_question*, match/*, choice/payload_construct, lower/match/*, the two
@@ -530,7 +613,7 @@ decides them (§0.6).
     idiom, and the task's own inventory names them; the names are incidental
     to every one of these tests (they pin `?`, `match`, payload patterns and
     layouts, never the identifier text), so no test loses its purpose; and the
-    whole-tree grep of §8.7 then has a clean answer. Not renamed: the oracles'
+    greps of §8.7 then have a clean answer. Not renamed: the oracles'
     `bool ok` flag and local bindings such as payload_construct.carbon:24's
     `let err: IntResult = IntResult.Failure;` (a binding named for an error
     value, not an alternative; its SemIR name `%err` stays). _Break
@@ -544,14 +627,19 @@ decides them (§0.6).
     placeholder rule over docs/design), both run by `runner.py --self-test`,
     which conformance.sh runs before every conformance run, and
     fork/evaluator/check_faq.py (the FAQ's quoted diagnostics re-run with a
-    toolchain; D-LAND-6 step 8 runs it at landing). Measured (§0.3): with the
+    toolchain; LAND-1 runs it after D-LAND-6 step 8 as EV-1's land sequence,
+    fork/land/land1-plan.md:1640-1648, `--which fork` and `--which nightly`;
+    amended 2026-11-09, review fold: B-m8). Measured (§0.3): with the
     programs renamed and the tutorial not, the evaluator checker reports
     "check_samples: 14 samples, 1 errors" and the self-test is red; with both
     renamed, "0 errors". So C1 = the prelude, the toolchain, the header, the
-    goldens' sources, the programs' sources, the tutorial's code block, the
-    FAQ's quoted line and check_faq.py's reproducer, and every other docs
-    code block or code span that spells an alternative (they are claims the
-    toolchain now contradicts); P = Appendix C's prose amendments only. Every
+    goldens' sources, the programs' sources (with D-EHC-13's two file
+    renames and fork/conformance/README.md's two rows, which `runner.py
+    --self-test` checks against the programs; amended 2026-11-09, review
+    fold: B-M1), the tutorial's code block, the FAQ's quoted line and
+    check_faq.py's reproducer, and every other docs code block or code span
+    that spells an alternative (they are claims the toolchain now
+    contradicts); P = Appendix C's prose amendments only. Every
     commit is green on its own: C1's gate is red on exactly the 32 goldens of
     §0.3 and nothing else ("Autoupdate would make changes", no crash), its
     self-test green; F1 makes the gate 2047 of 2047; P changes no code. The
@@ -569,7 +657,7 @@ decides them (§0.6).
 -   **D-EHC-10 — no new conformance program; every EXPECT is unchanged.** The
     eighteen touched programs print numbers through `Core.Print` and exit
     codes; none prints an alternative's name, the runner does not assert
-    stderr (run_result_err's message lands in logs/), and the differential
+    stderr (run_result_failure's message lands in logs/), and the differential
     pairs compare stdout bytes that do not contain names. Each EXPECT is
     re-derived by hand in Appendix B from the program's arithmetic and the
     design (R16 (d)); re-measured: 228/0/13 over 241 on the prototype, byte
@@ -579,11 +667,13 @@ decides them (§0.6).
     a match (none does); then its EXPECT changes and the reason is the name.
 -   **D-EHC-11 — ids: W-380 to W-385 reserved; W-380 filed; no F id.** §0.7's
     re-scan at every origin ref, local branch and worktree with the widened
-    command finds W-377 the highest filed id; W-378 and W-379 are named by the
-    task as taken (ARB-2's ledger item; reserved text), and W-380, W-385 and
-    W-388 appear on trunk only inside the 2026-11-09 weekly entry's sentence
-    "no W-378 and no W-380 to W-388 appears anywhere", W-389 and W-396 to
-    W-399 only as range bounds. EH-C reserves W-380 to W-385 and files W-380:
+    command finds W-378 the highest filed id since PR 69 landed (ARB-2's
+    item on trunk fca1e9e2f, whose notes name this reservation; W-377 at the
+    first scan; amended 2026-11-09, review fold: A-m3 (e) / B-m4); W-379 is
+    reserved text (range bounds), and W-380, W-385 and W-388 appear on trunk
+    only inside the 2026-11-09 weekly entry's sentence "no W-378 and no W-380
+    to W-388 appears anywhere" and W-378's notes, W-389 and W-396 to W-399
+    only as range bounds. EH-C reserves W-380 to W-385 and files W-380:
     "PR 53 (SAFE-1): docs/design/safety/rust_interop.md:223 names `Ok`/`Err`
     as `Core.Result`'s variants; a rename commit on PR 53's branch before it
     lands (D-RG-8's break condition, fired by EH-C landing first)" (Appendix
@@ -596,23 +686,59 @@ decides them (§0.6).
 -   **D-EHC-12 — one PR with base trunk, two implementation reviews, a fix
     budget of two, and LAND-1's D-LAND-6 landing.** The PR "EH-C:
     `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346)"
-    (Appendix E) opens with base trunk after its two implementation reviews
-    are dry (R29 (c): two until the container verification is green, then one;
-    EH-C keeps two because the rename spans 72 files) and lands by LAND-1's
-    procedure (fork/land/land1-plan.md D-LAND-6, one landing reviewer, the
-    records commit with Appendix A's texts, specified in Appendix F with
-    `<...>` placeholders). If trunk moved after the branch was cut, a merge of
-    trunk into the branch comes first, as FO-1's stage 17 did (never a rebase,
-    AGENTS.md), with the refill, the gate and conformance re-quoted. The one
-    held PR, PR 53 (claude/carbon-fork-0-1-safe at 2407efa74), conflicts with
-    trunk aee70185c only in the four records files (§0.4) and carries one
-    line with the old spelling (rust_interop.md:223): the rule is D-RG-8's
-    break condition, W-380 (D-EHC-11), and the records conflicts are LAND-1's
-    region rules at PR 53's own landing; EH-C amends no held PR (R32 (e) does
-    not apply: PR 53's line is a use of trunk's spelling, not a drift of its
-    own). _Break condition:_ trunk's toolchain or prelude moves before EH-C
+    (Appendix E) opens with base trunk after its two implementation reviews are
+    dry (R29 (c): two until the container verification is green, then one; EH-C
+    keeps two because the rename spans 73 files) and lands by LAND-1's procedure
+    (fork/land/land1-plan.md D-LAND-6, one landing reviewer, the records commit
+    with Appendix A's texts, specified in Appendix F with `<...>` placeholders).
+    Trunk moved after the branch was cut (fca1e9e2f, PR 69, the Status
+    paragraph), so a merge of trunk into the branch comes FIRST, M-0 before C1
+    (§3's M-0 paragraph), as FO-1's stage 17 did (never a rebase, AGENTS.md); it
+    merges clean (merge-tree exit 0 against the rev 1 commit), and if trunk
+    moves again before the landing, a land-time M follows with the refill, the
+    gate and conformance re-quoted (amended 2026-11-09, review fold: B-m4). The
+    one held PR, PR 53 (claude/carbon-fork-0-1-safe at 2407efa74), conflicts
+    with trunk aee70185c only in the four records files (§0.4) and carries one
+    line with the old spelling (rust_interop.md:223): the rule is D-RG-8's break
+    condition, W-380 (D-EHC-11), and the records conflicts are LAND-1's region
+    rules at PR 53's own landing; EH-C amends no held PR (R32 (e) does not
+    apply: PR 53's line is a use of trunk's spelling, not a drift of its own).
+    _Break condition:_ trunk's toolchain or prelude moves again before EH-C
     lands (then the merge of trunk is followed by a full re-measure, §8.8, and
-    any new use site found by the §8.7 grep joins a fix commit).
+    any new use site found by §8.7's greps joins a fix commit); PR 69's move
+    touched check.cpp only, no use site, and M-0 takes it.
+-   **D-EHC-13 — file names and split names that spell an alternative are
+    renamed too (added 2026-11-09, review fold: B-M1).** The two conformance
+    programs fork/conformance/programs/error_handling/run_result_ok.carbon
+    and run_result_err.carbon become run_result_success.carbon and
+    run_result_failure.carbon (`git mv`, with fork/conformance/README.md's
+    two table rows, which keep their position: the table is sorted by path
+    and `result_prelude_diff` < `run_result_failure` < `run_result_success`),
+    and the golden splits `unit_ok` (check main_run/return_result.carbon:23,
+    check operators/question_result.carbon:98, lower
+    main_run/return_result.carbon:24, with its comment :22) and `i32_ok`
+    (check main_run/return_result.carbon:32, lower
+    main_run/return_result.carbon:36) become `unit_success` and
+    `i32_success`; F1 refills the `--- unit_success.carbon` headers, the
+    `unit_success.carbon:` diagnostic prefixes, the lower dumps' `ModuleID`,
+    `source_filename` and `DIFile` lines (the three goldens gain 2, 1 and 6
+    rewritten CHECK lines over the planner's totals, §4). Reason: W-346 reads
+    "with every use", D-EHC-4 and D-EHC-8 rename lowercase names on the
+    ground that they spell an alternative (`run.result.ok`, `ok_block_id`,
+    the oracles' `Ok(...)` helpers), and a file or split name that spells one
+    is the same case; no grep of the whole-word kind sees an
+    underscore-joined name, so §8.7 gains two name greps. Not renamed:
+    `fail_old_names` (it names the test's subject, not an alternative),
+    `exception_error` (an error object), and the committed hosted scoreboard
+    fork/conformance/out/scoreboard.json (2026-10-06, history), fork/eh/plan.md
+    (history) and the ledger's evidence strings that cite the old file names
+    at a sha (history; the fixer's grep lists them, §8.7). Measured (the
+    fixer's prototype): gate 2047 of 2047 after the fill, conformance
+    228/0/13 over 241 with every row's status equal to the baseline's under
+    the mapped names, `runner.py --self-test` "241 programs parsed, 56
+    bullets in table, OK". _Break condition:_ a review shows a name whose
+    purpose is the old text (none: both programs test the discriminant
+    paths, both splits the `Success` payload shapes).
 
 ## §2 Spec, file by file
 
@@ -635,9 +761,11 @@ variadics/tuple_segment_destroy.carbon), and twelve more check goldens name the
 file in their import lists. The prototype renamed in place and no golden
 outside §4's 35 moved; this spec keeps that property. So lines 20-27 (the
 eight comment lines) become the eight lines below, :29-30 become
-`Success(value: T),` and `Failure(error: E)`, :33-34's comment reads "`expr?`
-continues with the `Success` payload and propagates a `Failure` payload" (a,
-not an), :44-45 become `case .Success(v: T) => ...` and `case .Failure(e: E)
+`Success(value: T),` and `Failure(error: E)`, :33-39 (the `Try` comment,
+seven lines) become the seven lines quoted after the choice, re-flowed at 80
+columns because the in-place rename makes :34 86 columns wide and no .carbon
+line-length hook would catch it (verbatim; amended 2026-11-09, review fold:
+B-m6), :44-45 become `case .Success(v: T) => ...` and `case .Failure(e: E)
 => ...`, :51 becomes `fn FromBreak(b: E) -> Self { return Result(T,
 E).Failure(b); }`, and the dated history goes AFTER :52 as a trailing comment
 block (no golden quotes a line past 51). The import lines, the `Try` impl's
@@ -664,8 +792,25 @@ choice Result(T: type, E: type) {
 
 <!-- google-doc-style-resume -->
 
+The `Try` comment, :33-39, seven lines, each at most 80 columns (B-m6):
+
+<!-- google-doc-style-ignore -->
+
+```carbon
+// `Result` is a `Try` operand and a `Try` return type: `expr?` continues with
+// the `Success` payload and propagates a `Failure` payload through
+// `FromBreak` on the enclosing function's return type (the `ImplicitAs` error
+// conversion is the ordinary argument conversion of that call). The sketch is
+// the design's (docs/design/error_handling.md, "The `Core.Try` interface");
+// `final` licenses impl lookup to apply the `where` rewrites under a symbolic
+// query, so `r?` on a `Result(T, E)` operand in a generic body has type `T`.
+```
+
+<!-- google-doc-style-resume -->
+
 The trailing block, after the impl's closing brace (:52), preceded by one
-blank line:
+blank line (its third line, :56 of the written file, is the one `Ok`/`Err`
+the prelude keeps: dated history, §8.7's list):
 
 <!-- google-doc-style-ignore -->
 
@@ -686,9 +831,13 @@ blank line:
 
 ### §2.2 toolchain/check/cpp/thunk.cpp and thunk.h (C1)
 
-thunk.cpp:1380 "0 = Success, 1 = Failure"; :1461-1462 "then branch: the
-Success block is the taken edge, the Failure block the fall-through."; :1502-
-1541 (the measured form):
+thunk.cpp:982-987 `return_success` (`clang::StmtResult return_success =
+sema.BuildReturnStmt(` / `if (!return_success.isUsable()) {` /
+`try_stmts.push_back(return_success.get());`) and :1018-1023 `return_failure`
+the same way (the `try` body's `return 0` and the handler's `return 1`, the
+discriminant's two values; added 2026-11-09, review fold: A-m1); :1380 "0 =
+Success, 1 = Failure"; :1461-1462 "then branch: the Success block is the taken
+edge, the Failure block the fall-through."; :1502-1541 (the measured form):
 
 <!-- google-doc-style-ignore -->
 
@@ -823,7 +972,9 @@ are untouched.
 ### §2.6 Goldens (C1 the sources, F1 the fill)
 
 The 35 files and every source line, before and after, are Appendix A.1 (check,
-22 files), A.2 (lower, 11), A.4 (parse, 2); the new split `fail_old_names` of
+22 files), A.2 (lower, 11), A.4 (parse, 2), the split renames of D-EHC-13
+among them (A.1.7, A.1.22, A.2.3; added 2026-11-09, review fold: B-M1); the
+new split `fail_old_names` of
 check/testdata/operators/question_result.carbon is A.3, inserted after the
 `fail_class_payload` split's last source line (:149 `fn Use(unused r:
 Core.Result(SomeClass, i32)) {}`) and before the file's trailing
@@ -832,10 +983,15 @@ Core.Result(SomeClass, i32)) {}`) and before the file's trailing
 
 ### §2.7 Programs (C1)
 
-The 18 files and every line are Appendix B, with each EXPECT re-derived. The
-`.diff.cpp` oracles rename their `static auto Ok(...)` / `Err(...)` helpers and
-their comments; their `bool ok` fields stay. `runner.py --self-test` before the
-commit (R7): "241 programs parsed, 56 bullets in table, OK".
+The 18 files and every line are Appendix B, with each EXPECT re-derived. Two
+files are renamed by `git mv` (D-EHC-13; added 2026-11-09, review fold:
+B-M1): run_result_ok.carbon to run_result_success.carbon and
+run_result_err.carbon to run_result_failure.carbon, with
+fork/conformance/README.md's two rows (:345-346 at trunk) spelling the new
+paths in place. The `.diff.cpp` oracles rename their `static auto Ok(...)` /
+`Err(...)` helpers and their comments; their `bool ok` fields stay. `runner.py
+--self-test` before the commit (R7): "241 programs parsed, 56 bullets in
+table, OK" (the fixer's prototype prints the same line).
 
 ### §2.8 Docs (C1 the code, P the prose)
 
@@ -863,7 +1019,8 @@ Core.Result((), i32).Failure(7); }"`, :229 split in two literals (ruff E501):
 ### §2.10 Records (R and D)
 
 Appendix D gives every text verbatim with `<...>` placeholders: D.1 the ledger
-(W-346 discharged, W-380 filed); D.2 the decision-log entry; D.3 the F-006a
+(W-346 discharged, W-380 filed); D.2 the decision-log entry (R writes it
+without its three D-time paragraphs, which D appends: B-M3); D.3 the F-006a
 reversal note; D.4 the RG-1 entry's note; D.5 the EH-A, UA-1, V-3 and
 2026-11-09 weekly notes; D.6 the register (rg1-plan.md's three rows,
 rg1-checks.tsv's new row, rg1-quotes.tsv's comment line); D.7 the gap rows; D.8
@@ -882,18 +1039,31 @@ implementer; the orchestrator opens the PR after the reviews are dry
 fork/variadics/va2-plan.md §3): records that claim the discharge go in the
 last commit, after the reviews (OV-4's B-M5).
 
-1.  **Plan**: fork/eh/ehc-plan.md, this rev 1; later revisions are commits on
-    the same file, each a fold record. Message: "EH-C plan (rev 1):
-    Core.Result alternatives renamed to Success/Failure (W-346)".
+**M-0, before item 2 (added 2026-11-09, review fold: B-m4):** trunk moved to
+fca1e9e2f (PR 69) after the branch was cut, so the implementer's first commit
+is `git merge --no-ff origin/trunk` into the branch (the Status paragraph;
+merge-tree exit 0 against the rev 1 commit, so no conflict is expected; one
+in a records file is resolved by §6.2's rules), message "EH-C (M-0): merge
+trunk <sha> (PR 69, ARB-2) into claude/carbon-fork-0-1-ehc before C1". The
+gate's `src-patches.applied` line prints `landed` from here on, and every
+figure of §8 is measured on this base.
+
+1.  **Plan**: fork/eh/ehc-plan.md, rev 1 and its revisions, commits on the
+    same file, each a fold record. Messages: "EH-C plan (rev 1): Core.Result
+    alternatives renamed to Success/Failure (W-346)", "EH-C plan (rev 2):
+    reviews A and B folded, 17 findings".
 2.  **C1, the rename with every checker-visible line**: §2.1 to §2.5, the 35
     goldens' sources with the new split (Appendix A, no CHECK line touched),
-    the 18 programs (Appendix B), the docs' code blocks and code spans of
-    Appendix C (the tutorial's block, the FAQ's ```text line,
-    error_handling.md's blocks and code-span items, optional.md:434, README's
-    code spans), and check_faq.py (§2.9); upstream re-fetched and the tip
-    named in the message body. Gate on C1 alone: 2015 passed and exactly the
-    32 goldens of §4 failing with "Autoupdate would make changes", no crash,
-    no `fail_`-prefix problem (measured shape, §0.3); `runner.py --self-test`
+    the 18 programs (Appendix B; two renamed by `git mv` with
+    fork/conformance/README.md's two rows, D-EHC-13), the docs' code blocks
+    and code spans of Appendix C (the tutorial's block, the FAQ's ```text
+    line, error_handling.md's blocks and code-span items, optional.md:434,
+    README's code spans), and check_faq.py (§2.9); upstream re-fetched and
+    the tip named in the message body. Gate on C1 alone: `[  PASSED  ] 2015
+    tests.` and exactly the 32 per-test FAILED lines of §4, each "Autoupdate
+    would make changes", no crash, no `fail_`-prefix problem (measured shape,
+    §0.3; the GATE summary line reads "2015 passed, 0 failed" and the script
+    exits 1, A-m2, §8.3); `runner.py --self-test`
     green ("14 samples, 0 errors"; "19 program blocks, 70 fixtures ... 0
     errors"); check_faq.py with the new install green. Message: "EH-C (1/3):
     rename Core.Result's alternatives to Success/Failure: prelude, thunk
@@ -920,21 +1090,28 @@ last commit, after the reviews (OV-4's B-M5).
     toolchain, golden or program change stops the PR at a plan revision (rev
     2) that re-plans it at its root; the shrink line is D-EHC-9's (the prose
     may split or follow; the rename never shrinks).
-7.  **R, the records that claim no discharge**: the decision-log entry EH-C
-    (D.2, its discharge sentence reading "discharged at D"), the F-006a
-    reversal note (D.3), the RG-1 and other dated notes (D.4, D.5), the
-    register rows and files (D.6, checked at the re-fetched tip with
-    check_greps.sh and check_quotes.sh, every count and quote re-read), gap
+7.  **R, the records that claim no discharge**: the decision-log entry EH-C (D.2
+    without its three D-time paragraphs, the reconciliation greps, the id
+    re-scan and the discharge line, which D appends; amended 2026-11-09, review
+    fold: B-M3), the F-006a reversal note (D.3), the RG-1 and other dated notes
+    (D.4, D.5), the register rows and files (D.6, checked at the re-fetched tip
+    with check_greps.sh and check_quotes.sh, every count and quote re-read), gap
     row 70's example (D.7 second item), fork/eh/plan.md's pointer (D.9),
     fork/README.md's note (D.10). Message: "EH-C records: decision-log entry
     EH-C, F-006a's reversal note, register row T2.1 ALIGNED, dated notes".
-8.  **D, the discharge**: the ledger (W-346 DISCHARGED, W-380 filed; D.1),
-    gap row 73's evidence (D.7), ORCHESTRATION's header, dated paragraph,
-    Branches row and Next actions item 6 and the F.3 paragraph (D.8), every
-    `<...>` filled from the commits and runs it names, after the reviews and
-    their fixes; `json.load` of the ledger, `runner.py --self-test`, the
+8.  **D, the discharge**: the ledger (W-346 DISCHARGED, W-380 filed; D.1), gap
+    row 73's evidence (D.7), ORCHESTRATION's header, dated paragraph, Branches
+    row and Next actions item 6 and the F.3 paragraph (D.8), and
+    fork/decision-log.md: the three paragraphs D.2 marks "appended by D" (the
+    greps, run on the tree at <R> and written "the tree at <R>"; the id
+    re-scan's `<n>` refs and `<w>` worktrees; the discharge line, written "_Discharged
+    by this commit: W-346 (EH-C)._" because a commit cannot carry its own sha,
+    OV-4's "and this one"); the placeholders D fills are `<R>`, `<count>`,
+    `<n>`, `<w>` and `<date>` (amended 2026-11-09, review fold: B-M3); every
+    other `<...>` filled from the commits and runs it names, after the reviews
+    and their fixes; `json.load` of the ledger, `runner.py --self-test`, the
     model-identifier grep of the branch's diff, the id re-scan (§8.9), the
-    whole-tree grep (§8.7). Message: "EH-C discharge: W-346 DISCHARGED;
+    reconciliation greps (§8.7). Message: "EH-C discharge: W-346 DISCHARGED;
     W-380 filed; gap row evidence and ORCHESTRATION".
 9.  **The focused re-review**, OV-4's: one fresh agent per round over the fix
     commits, R and D; dry when no BLOCKER, no MAJOR and only records-only
@@ -942,9 +1119,10 @@ last commit, after the reviews (OV-4's B-M5).
 
 **The PR** (Appendix E) opens with base trunk after a dry round, held until
 the orchestrator lands it (R33). **Land-time steps** (D-LAND-6, one landing
-reviewer, Appendix F's texts): (M) if trunk moved since aee70185c, `git merge
---no-ff` of trunk into the branch, conflicts resolved by §6.2's rules, never a
-rebase, as FO-1's stage 17 did; (F-M) the refill on the merged branch, if
+reviewer, Appendix F's texts): (M) if trunk moved since M-0's merge base
+(fca1e9e2f; trunk's first move, PR 69, is M-0's), `git merge --no-ff` of
+trunk into the branch, conflicts resolved by §6.2's rules, never a rebase, as
+FO-1's stage 17 did; (F-M) the refill on the merged branch, if
 autoupdate changes anything, CHECK lines only; (L) the arbiter re-run on the
 branch's head (build, install, gate 2047 of 2047, conformance 228/0/13 over
 241, the three checkers, prek) quoted into Appendix F's records; the landing
@@ -953,11 +1131,18 @@ reviewer's report; the merge into trunk by the orchestrator, the two pushes,
 
 ## §4 Testdata matrix (R16: autoupdate fills; the fill must reproduce these lines)
 
-Hand-traced predictions, then the prototype's measured fill (§0.3; the
-numbers are the fill's rewritten CHECK lines per file: "name" lines spell
-`Success` or `Failure`, "stderr" lines are `CHECK:STDERR` diagnostics, "loc"
-lines change only a `locLL_CC` or `[[@LINE+N]]:CC` column). Prediction, then
-measured, for every refilled file:
+Hand-traced predictions, then the measured fill (the fixer's prototype, §0.3;
+the numbers are the new CHECK lines the fill writes per file, classified by
+one rule so that an implementer reproduces them from `git diff -U0`: "name" =
+a new CHECK line containing `Success`, `Failure`, `success` or `failure`;
+"stderr" = a `CHECK:STDERR` line without one; "loc" = every other new CHECK
+line, which moves only a `locLL_CC` or `[[@LINE+N]]:CC` column or is
+reprinted for its position; the three sum to the total. Rev 1's "loc" column
+followed a narrower rule the plan did not state and is replaced; the totals
+are rev 1's except the three goldens D-EHC-13 touches, which gain the
+`unit_success`/`i32_success` header, `ModuleID`, `source_filename` and
+`DIFile` lines; amended 2026-11-09, review fold: B-M1 / A-m3 (f) / the fixer's
+F-2). Prediction, then measured, for every refilled file:
 
 -   Why columns move: SemIR instruction names embed line and column
     (`%.loc28_30`), and `Success`/`Failure` are 5 and 4 characters longer than
@@ -981,38 +1166,38 @@ measured, for every refilled file:
 
 | Golden | Predicted | Measured (name / stderr / loc-only of total new CHECK lines) |
 | --- | --- | --- |
-| check/choice/payload_construct.carbon | `%Ok`/`%Err` names, `IntResult.Err` ref, columns on :28 | 14 / 0 / 14 of 56 |
-| check/interop/cpp/exceptions/catching_thunk.carbon | every `?`-selected call's two constructor accesses by name, the convergence's columns on seven `return` lines | 209 / 0 / 458 of 679 |
-| check/interop/cpp/exceptions/fail_catching.carbon | seven diagnostics' quoted lines, carets and columns (`:45` to `:50`) | 12 / 31 / 9 of 31 |
-| check/interop/cpp/exceptions/fail_catching_none_mode.carbon | one diagnostic's line and caret | 2 / 6 / 2 of 6 |
-| check/interop/cpp/stdlib/optional.carbon | one `case .Ok` quoted in a diagnostic | 2 / 3 / 0 of 3 |
-| check/main_run/return_result.carbon | the six `return` lines' constructor names and columns in four positive splits | 34 / 0 / 16 of 73 |
-| check/match/choice_payload_guard.carbon | the user choice's names, columns on three `case` lines | 12 / 0 / 125 of 143 |
-| check/match/choice_payload_pattern.carbon | the same, two `case` lines | 12 / 0 / 65 of 83 |
-| check/match/exhaustive_choice.carbon | two user choices, five `case` lines | 24 / 0 / 190 of 226 |
-| check/match/fail_case_never_matches_alternative.carbon | four diagnostics quoting `.Ok(42)` arms | 4 / 4 / 0 of 4 |
-| check/match/fail_choice_alternative_pattern.carbon | seven diagnostics (`.Ok`, `.Err()`, `.Ok(.Err)`, `IntResult.Err`) | 7 / 12 / 1 of 12 |
+| check/choice/payload_construct.carbon | `%Ok`/`%Err` names, `IntResult.Err` ref, columns on :28 | 14 / 0 / 42 of 56 |
+| check/interop/cpp/exceptions/catching_thunk.carbon | every `?`-selected call's two constructor accesses by name, the convergence's columns on seven `return` lines | 209 / 0 / 470 of 679 |
+| check/interop/cpp/exceptions/fail_catching.carbon | seven diagnostics' quoted lines, carets and columns (`:45` to `:50`) | 12 / 19 / 0 of 31 |
+| check/interop/cpp/exceptions/fail_catching_none_mode.carbon | one diagnostic's line and caret | 2 / 4 / 0 of 6 |
+| check/interop/cpp/stdlib/optional.carbon | one `case .Ok` quoted in a diagnostic | 2 / 1 / 0 of 3 |
+| check/main_run/return_result.carbon | the six `return` lines' constructor names and columns in four positive splits, and the `--- unit_success.carbon` / `--- i32_success.carbon` headers (D-EHC-13) | 36 / 0 / 39 of 75 |
+| check/match/choice_payload_guard.carbon | the user choice's names, columns on three `case` lines | 12 / 0 / 131 of 143 |
+| check/match/choice_payload_pattern.carbon | the same, two `case` lines | 12 / 0 / 71 of 83 |
+| check/match/exhaustive_choice.carbon | two user choices, five `case` lines | 24 / 0 / 202 of 226 |
+| check/match/fail_case_never_matches_alternative.carbon | four diagnostics quoting `.Ok(42)` arms | 4 / 0 / 0 of 4 |
+| check/match/fail_choice_alternative_pattern.carbon | seven diagnostics (`.Ok`, `.Err()`, `.Ok(.Err)`, `IntResult.Err`) | 7 / 5 / 0 of 12 |
 | check/match/payload_subpattern.carbon | the names and three `case` lines' columns | 2 / 0 / 134 of 136 |
-| check/match/usefulness_no_false_positive.carbon | six diagnostics quoting arms | 4 / 6 / 0 of 6 |
-| check/operators/fail_question.carbon | diagnostics quoting `MyResult(...).Ok(...)` lines | 4 / 6 / 1 of 6 |
-| check/operators/fail_question_generic.carbon | the `var unused mr: ... .Err(0)` diagnostic | 3 / 4 / 0 of 4 |
-| check/operators/question.carbon | five user choices' names across the splits, every `return ... .Ok(...)` column | 107 / 0 / 178 of 331 |
+| check/match/usefulness_no_false_positive.carbon | six diagnostics quoting arms | 4 / 2 / 0 of 6 |
+| check/operators/fail_question.carbon | diagnostics quoting `MyResult(...).Ok(...)` lines | 4 / 2 / 0 of 6 |
+| check/operators/fail_question_generic.carbon | the `var unused mr: ... .Err(0)` diagnostic | 3 / 1 / 0 of 4 |
+| check/operators/question.carbon | five user choices' names across the splits, every `return ... .Ok(...)` column | 107 / 0 / 224 of 331 |
 | check/operators/question_final.carbon | four user choices' names (its dumps print names only) | 38 / 0 / 0 of 38 |
-| check/operators/question_optional.carbon | three diagnostics quoting `.Ok(o?)` | 4 / 7 / 1 of 7 |
-| check/operators/question_result.carbon | `Core.Result`'s `%Success`/`%Failure` names in four positive splits, their columns, plus the new split's two diagnostics (quoted in §4's note below) | 63 / 8 / 45 of 183 |
-| lower/interop/cpp/exceptions/catching_thunk.carbon | `@Result.Success...`/`@Result.Failure...` callees, the `?` columns in `!dbg` lines | 44 / 0 / 43 of 125 |
-| lower/interop/cpp/function/export/result_expected.carbon | the constructor callees (`@Result.Success.<hash>`) | 12 / 0 / 0 of 17 |
-| lower/main_run/return_result.carbon | `@main.result.failure.message` as `[75 x i8]` with the new text and `i64 74`, `%run.result.is_success`, `run.result.success:` and `run.result.failure:` labels, both splits | 25 / 0 / 5 of 63 |
-| lower/match/choice_payload.carbon | `@IntResult.Success` callee, `case` columns | 6 / 0 / 12 of 21 |
-| lower/match/payload_subpattern.carbon | the same | 8 / 0 / 25 of 37 |
-| lower/operators/question.carbon | `@MyResult.Success...` callees, `return` columns | 38 / 0 / 46 of 117 |
-| lower/operators/question_generic.carbon | the same | 20 / 0 / 32 of 60 |
-| lower/operators/question_generic_crossfile.carbon | the same, and three `CHECK:STDERR` lines (the file's expected unused-binding warnings quote a `.Err` line) | 65 / 3 / 34 of 157 |
-| lower/operators/question_generic_final.carbon | the same | 20 / 0 / 20 of 55 |
-| lower/operators/question_generic_mixed.carbon | the same, three warnings | 26 / 3 / 46 of 83 |
-| lower/operators/question_result.carbon | `@Result.Success.<hash>`/`@Result.Failure.<hash>` callees | 39 / 0 / 5 of 84 |
+| check/operators/question_optional.carbon | three diagnostics quoting `.Ok(o?)` | 4 / 3 / 0 of 7 |
+| check/operators/question_result.carbon | `Core.Result`'s `%Success`/`%Failure` names in four positive splits, their columns, the `--- unit_success.carbon` header (D-EHC-13), plus the new split's two diagnostics (quoted in §4's note below) | 64 / 8 / 112 of 184 |
+| lower/interop/cpp/exceptions/catching_thunk.carbon | `@Result.Success...`/`@Result.Failure...` callees, the `?` columns in `!dbg` lines | 44 / 0 / 81 of 125 |
+| lower/interop/cpp/function/export/result_expected.carbon | the constructor callees (`@Result.Success.<hash>`) | 12 / 0 / 5 of 17 |
+| lower/main_run/return_result.carbon | `@main.result.failure.message` as `[75 x i8]` with the new text and `i64 74`, `%run.result.is_success`, `run.result.success:` and `run.result.failure:` labels, both splits, and their `unit_success.carbon` / `i32_success.carbon` names in the `---` headers, `ModuleID`, `source_filename` and `DIFile` lines (D-EHC-13) | 46 / 0 / 23 of 69 |
+| lower/match/choice_payload.carbon | `@IntResult.Success` callee, `case` columns | 6 / 0 / 15 of 21 |
+| lower/match/payload_subpattern.carbon | the same | 8 / 0 / 29 of 37 |
+| lower/operators/question.carbon | `@MyResult.Success...` callees, `return` columns | 38 / 0 / 79 of 117 |
+| lower/operators/question_generic.carbon | the same | 20 / 0 / 40 of 60 |
+| lower/operators/question_generic_crossfile.carbon | the same, and three `CHECK:STDERR` lines (the file's expected unused-binding warnings quote a `.Err` line) | 65 / 2 / 90 of 157 |
+| lower/operators/question_generic_final.carbon | the same | 20 / 0 / 35 of 55 |
+| lower/operators/question_generic_mixed.carbon | the same, three warnings | 26 / 2 / 55 of 83 |
+| lower/operators/question_result.carbon | `@Result.Success.<hash>`/`@Result.Failure.<hash>` callees | 39 / 0 / 45 of 84 |
 | parse/match/alternative_pattern.carbon | `IdentifierNameNotBeforeSignature 'Success'` and `'Failure'` | 3 / 0 / 0 of 3 |
-| parse/match/fail_alternative_pattern_unclosed.carbon | the unclosed `case .Ok(value: i32 =>` diagnostic's line, caret and columns | 5 / 12 / 4 of 13 |
+| parse/match/fail_alternative_pattern_unclosed.carbon | the unclosed `case .Ok(value: i32 =>` diagnostic's line, caret and columns | 5 / 8 / 0 of 13 |
 
 The new split's fill, measured (the implementer's F1 must reproduce it; the
 `[[@LINE+4]]` offsets are autoupdate's):
@@ -1046,16 +1231,21 @@ Zero: the prototype's scoreboard is PASS 228 / FAIL 0 / SKIP 13 over 241, 51 of
 (Appendix B). The order-swap mutant's four red programs (§0.3 M1) are the
 proof that the programs exercise the discriminant order and the header; the
 partial-thunk mutant's red goldens (M2) that the catching thunk exercises the
-identifiers. The README table is unchanged (241 programs, 56 bullets).
+identifiers. The README table keeps 241 programs and 56 bullets; its two rows
+for the renamed programs spell the new paths (D-EHC-13), and `runner.py
+--self-test` prints "241 programs parsed, 56 bullets in table, OK" on the
+fixer's prototype.
 
 ## §6 Churn and collisions
 
 ### §6.1 Churn
 
-Seventy-two files: 35 goldens (342 source lines; 32 of them refilled, 2858
-CHECK lines) and one new split (20 lines), 18 programs (159 lines), 13
-toolchain, prelude and header files (112 lines plus clang-format's wraps), 5
-docs (38 lines plus Appendix C's amendments) and check_faq.py (3 lines); the
+Seventy-three files (amended 2026-11-09, review fold: A-m1 / B-M1): 35
+goldens (350 source lines; 32 of them refilled, 2871 CHECK lines written) and
+one new split (20 lines), 18 programs (159 lines; two renamed) with
+fork/conformance/README.md's two rows, 13 toolchain, prelude and header files
+(128 lines replaced and 10 added, before clang-format's wraps), 5 docs (38
+lines plus Appendix C's amendments) and check_faq.py (3 lines); the
 records of Appendix D in R and D (fork/decision-log.md, the ledger,
 fork/register/rg1-plan.md, rg1-checks.tsv, rg1-quotes.tsv, fork/gap-analysis.md,
 fork/ORCHESTRATION.md, fork/eh/plan.md, fork/README.md, this plan). No BUILD
@@ -1074,25 +1264,36 @@ kept the line count, and no golden outside §4's 35 moved.
 ### §6.2 Collisions and the merge rules
 
 PR 53 (§0.4): none in EH-C's code, docs or goldens; the four records files by
-LAND-1's region rules at PR 53's landing; rust_interop.md:223 by W-380's
-rename commit on PR 53's branch before it lands. ARB-2's branch
-(claude/carbon-fork-0-1-arb2, 6de18c1f7 at scan time; the check.cpp fix) touches
-toolchain/check/check.cpp and the arbiter's files, none of EH-C's; if it lands
-on trunk first, M (the merge of trunk) takes it clean and the gate's
-`src-patches.applied` line then prints `landed`. If trunk moves in any other
-file EH-C touches, the rule is: the toolchain and prelude keep trunk's side
-plus the rename (a conflict in a renamed line is re-renamed by hand and
-re-measured); goldens take trunk's side and are refilled (F-M), never merged
-by hand (R16); records keep both sides by LAND-1's region rules.
+LAND-1's region rules at PR 53's landing; rust_interop.md:223 by W-380's rename
+commit on PR 53's branch before it lands. ARB-2 LANDED on trunk as PR 69
+(fca1e9e2f, 2026-11-09; the Status paragraph): it touches
+toolchain/check/check.cpp (no use site) and three records files that EH-C's R
+and D edit too (amended 2026-11-09, review fold: B-m4): the ledger, where both
+insert after W-377 (M-0 merges trunk first, so W-380 is inserted after W-378 and
+no conflict arises; were the order ever reversed, the rule is both items kept in
+id order, W-378 then W-380); fork/decision-log.md, where ARB-2's entry is
+appended at the end (:20650) and EH-C's goes before EH-B's (:17707), disjoint
+regions; fork/ORCHESTRATION.md, where PR 69's pending LAND-1 records commit (the
+header's count, a Branches row, a dated paragraph) and EH-C's D.8 edit the same
+regions, resolved by LAND-1's region rules (every row, paragraph and item once;
+the header's landed count read at the time of writing: 18 after PR 69's records,
+19 after EH-C's landing), EH-C's Branches row placed after PR 69's once it
+exists (D.8). After M-0 the gate's `src-patches.applied` line prints `landed`
+(the arbiter compiles trunk's check.cpp, whose only difference from the patch is
+a five-line comment). If trunk moves again in any other file EH-C touches, the
+rule is: the toolchain and prelude keep trunk's side plus the rename (a conflict
+in a renamed line is re-renamed by hand and re-measured); goldens take trunk's
+side and are refilled (F-M), never merged by hand (R16); records keep both sides
+by LAND-1's region rules.
 
 ## §7 Risks and rejected alternatives (falsifiable)
 
 ### §7.1 Risks
 
--   **R-1 — a use site the inventory missed.** Falsifier: §8.7's whole-tree
-    grep at D or L finds `Ok`/`Err` outside closed plans, dated history and
-    common/raw_hashtable.h. Response: a fix commit (budget) renames it at the
-    root; never an allowlist.
+-   **R-1 — a use site the inventory missed.** Falsifier: one of §8.7's four
+    greps, at C1, D or L, answers anything but its listed lines (amended
+    2026-11-09, review fold: A-M1 / B-M1). Response: a fix commit (budget)
+    renames it at the root; never an allowlist.
 -   **R-2 — a golden's purpose was the old name.** Falsifier: a review shows a
     test whose CHECK lines or comments assert the identifier text `Ok`
     itself. Response: that golden keeps a user choice named `Ok` with a
@@ -1109,17 +1310,23 @@ by hand (R16); records keep both sides by LAND-1's region rules.
     history, refill, and the file reverts; any other change is a §4 miss,
     stop and reconcile.
 -   **R-5 — `<carbon/expected.h>`'s rename breaks a consumer.** Falsifier:
-    a C++ file in the tree names `.ok()`, `.ok` or `.err` of an `expected`.
-    Response: measured 0 (D-EHC-5); an external consumer would be a veto
-    route, not a code change.
+    a consumer of the header names `.ok()`, `.ok` or `.err` of an `expected`:
+    §8.7's grep 4 (the scoped `\.ok\(\)` grep over the header's consumers
+    and `expected<[^>]*>::ok\(` over the tree). Response: measured 0 for
+    both at aee70185c and on the prototype (D-EHC-5; the unscoped grep's 180
+    `ErrorOr::ok()`-family lines are not consumers; amended 2026-11-09,
+    review fold: A-M3 / B-M2); an external consumer would be a veto route,
+    not a code change.
 -   **R-6 — rumdl's reflow manufactures a heading or list item (R31).**
     Falsifier: r31.py's counts differ before and after prek on any markdown
     file beyond the headings, items and rows the commit adds. Response:
     rephrase, never revert the reflow. Measured: the prototype's three
     reflowed pages keep their counts.
--   **R-7 — trunk moves before the landing.** Falsifier: `git ls-remote
-    origin trunk` differs from aee70185c at land time. Response: M, F-M and a
-    full re-measure (§8.8); a new use site joins a fix commit.
+-   **R-7 — trunk moves before the landing.** Fired once already: trunk
+    moved to fca1e9e2f (PR 69) while the reviews ran, taken by M-0 before C1
+    (amended 2026-11-09, review fold: B-m4). Falsifier: `git ls-remote origin
+    trunk` differs from M-0's merged trunk at land time. Response: M, F-M and
+    a full re-measure (§8.8); a new use site joins a fix commit.
 -   **R-8 — the user vetoes the reversal.** Falsifier: a veto. Response:
     D-EHC-1's veto route: a revert commit of C1, F1 and P with a refill, the
     F-006a note amended, the veto recorded against R32, W-346 withdrawn; the
@@ -1168,10 +1375,16 @@ by hand (R16); records keep both sides by LAND-1's region rules.
 Build, install, gate before the fill (2015 of 2047, 32 "Autoupdate would make
 changes"), autoupdate to its fixpoint, gate after (2047 of 2047), conformance
 (228/0/13 over 241), the three checkers, the probes, prek to a fixpoint (two
-passes), the mutants M1 and M2, the whole-tree grep, the id re-scan, R31's
+passes), the mutants M1 and M2, the reconciliation grep, the id re-scan, R31's
 counts on the reflowed pages; the worktree and the label's directories
 (/home/user/arb/build/ehc-planner, install/ehc-planner,
-conformance/ehc-planner, cache-ehc-planner) removed afterwards.
+conformance/ehc-planner, cache-ehc-planner) removed afterwards. The fold of
+2026-11-09 re-ran all of it as `ehc-fixer` with D-EHC-13's and A-m1's
+changes (M2 with the prelude restored and re-installed first, then M1's gate
+again), applied Appendix C's prose for the after-P grep, ran prek to a
+fixpoint, measured the merge-trees of §8.8 on a local commit of the
+prototype, and removed its worktree and the label's four directories the
+same way.
 
 ### §8.1 Build (implementer)
 
@@ -1198,9 +1411,17 @@ proves it (R28 (d)). The non-CHECK diff of F1 is empty (§3 item 3).
 
 ### §8.3 Gate
 
-`gate.sh --threads 4`: C1 alone red on exactly the 32 (and nothing else);
-after F1 and after every fix commit's fill, `GATE <label>: 2047 passed, 0
-failed`.
+`gate.sh --threads 4`: on C1 alone, `[  PASSED  ] 2015 tests.` and exactly
+the 32 per-test `[  FAILED  ] ToolchainFileTest...` lines of §4 (and nothing
+else), each "Autoupdate would make changes"; the summary line then reads
+`GATE <label>: 2015 passed, 0 failed` and the script exits 1, because
+gate.sh:121-134 takes its failed count from a gtest "[ FAILED ] N tests,
+listed below" summary that file_test does not print and its exit code from
+the binary's: the per-test lines are the criterion, never the summary's
+second number (amended 2026-11-09, review fold: A-m2; a note for ARB-2's
+landing of the scripts, whose files this plan does not touch). After F1 and
+after every fix commit's fill, `[  PASSED  ] 2047 tests.` and `GATE <label>:
+2047 passed, 0 failed`, exit 0.
 
 ### §8.4 Conformance
 
@@ -1214,11 +1435,18 @@ first; check_faq.py `--which fork --toolchain <install>/bin/carbon` and
 
 ### §8.5 Mutants (the implementer re-runs M1; M2 if thunk.cpp was touched by a fix)
 
-M1: swap result.carbon's two alternatives, `install.py`, `gate.sh`: exactly
-the 7 goldens of §0.3 red; conformance exactly the 4 programs red; restore.
-M2: the two minted identifiers back to `"Ok"`/`"Err"`, rebuild, `gate.sh
---filter interop/cpp`: exactly the 4 goldens of §0.3 red; restore, rebuild.
-Each mutant's output goes in the review hand-off, never in a commit.
+M1: swap result.carbon's two alternatives, `install.py`, `gate.sh`: `[  PASSED
+] 2040 tests.` and exactly the 7 goldens of §0.3 red; conformance exactly the
+4 programs red; restore result.carbon and re-install (`gate.sh` 2047 again)
+BEFORE M2. M2: the two minted identifiers back to `"Ok"`/`"Err"`, rebuild,
+`install.py`, `gate.sh --filter interop/cpp`: `[  PASSED  ] 229 tests.` and
+exactly the 3 goldens of §0.3 red (check interop/cpp/exceptions/
+catching_thunk.carbon and fail_catching.carbon, lower
+interop/cpp/exceptions/catching_thunk.carbon; 14 `Ok` and 14 `Err`
+diagnostics); restore, rebuild, re-install, full gate 2047 (amended
+2026-11-09, review fold: A-M2: rev 1's "4" was measured with M1's prelude
+still installed). Each mutant's output goes in the review hand-off, never in
+a commit.
 
 ### §8.6 prek, R27 and R31 (every commit)
 
@@ -1231,27 +1459,68 @@ prelude impl diffed against error_handling.md's sketch after both are renamed
 every markdown file before the edit, after it and after prek, in the commit
 message, with the headings, items and rows the commit adds named.
 
-### §8.7 The whole-tree grep (at C1, at D, at L)
+### §8.7 The reconciliation greps (at C1, at D, at L)
 
-`git grep -nE '\bOk\b|\bErr\b' -- . ':!fork/'` must list exactly
-common/raw_hashtable.h:1314; over fork/, every hit is a closed plan, a dated
-history note, the ledger's own W-346 text, a register prose paragraph or this
-plan (the list of §0.1's last two rows), and no conformance program, checker,
-living page or golden source line. The result is recorded in the decision-log
-entry (D.2) as EH-B's reconciliation greps were.
+Re-specified 2026-11-09 (review fold: A-M1 / B-M1 / A-M3 / B-M2): four
+greps, each with its expected answer as an explicit list. "Only" and
+"exactly" mean these lists, which are the dated history D-EHC-2 permits;
+anything else is a miss (R-1), and the record never says "only
+common/raw_hashtable.h:1314".
+
+1.  `git grep -nE '\bOk\b|\bErr\b' -- . ':!fork/'` on non-CHECK lines
+    (piped through `grep -vE '^\S+:[0-9]+:\s*// CHECK'`): at C1 exactly five
+    lines, common/raw_hashtable.h:1314 (English), core/prelude/types/
+    result.carbon:56 (the history comment), check/testdata/operators/
+    question_result.carbon:156, :160 and :166 (the `fail_old_names` split's
+    comment and its two deliberate source lines; :164 and :174 after F1);
+    from P on, twelve more, the amendment lines of Appendix C:
+    docs/design/README.md:4052-4053, docs/design/error_handling.md:119-120,
+    :125, :963, :966-967, docs/design/optional.md:434,
+    docs/guides/tutorial.md:409-410 and docs/guides/evaluator_faq.md:359
+    (the fixer's prototype after prek; before it error_handling.md's D1
+    lines were :964, :967-968; the texts are the anchors): seventeen lines
+    in all, every one dated history.
+    Over fork/, every hit is a closed plan, a dated history note, the
+    ledger's own W-346 and W-380 text, a register prose paragraph or this
+    plan (§0.1's last two rows), and no conformance program, checker, living
+    page or golden source line.
+2.  `git ls-files | grep -E '(^|[_/])(ok|err)[_.]'`: empty (D-EHC-13; two
+    program files at trunk).
+3.  `grep -rnE '^// --- .*_(ok|err)\.' toolchain/check/testdata
+    toolchain/lower/testdata toolchain/parse/testdata`: empty (five split
+    headers at trunk); and `git grep -nE 'run_result_(ok|err)|unit_ok|i32_ok'
+    -- .` lists history only: fork/conformance/out/scoreboard.json (4 lines,
+    the hosted scoreboard of 2026-10-06), fork/eh/plan.md (5), fork/inventory/
+    work-items.json:345 (a discharged item's evidence string at a sha), this
+    plan, and fork/gap-analysis.md:73 until D.7 refreshes it (0 there after
+    D).
+4.  `git grep -nE '\.ok\(\)' -- toolchain/install/include fork/conformance
+    docs toolchain/check/testdata/interop/cpp/function/export
+    toolchain/lower/testdata/interop/cpp/function/export` and `git grep -nE
+    'expected<[^>]*>::ok\('` over the tree: both 0 (D-EHC-5). The unscoped
+    `\.ok\(\)` grep lists 180 lines in 43 files at aee70185c
+    (`ErrorOr::ok()` and its kin) and is not a criterion.
+
+The four answers are recorded verbatim, as the lists above with their counts,
+in the paragraph D appends to the decision-log entry (D.2), in D.1 and in F.8.
 
 ### §8.8 The composition mirror and the land-time re-run
 
 Before the implementation reviews: `git merge-tree --write-tree
-<origin/trunk> <branch head>` (exit 0 expected while trunk is aee70185c; with a
-moved trunk, only records conflicts by §6.2). At land time: §8.1 to §8.4 on
-the branch's head after M and F-M, the figures quoted into Appendix F's texts.
+<origin/trunk> <branch head>` (exit 0 expected while trunk is M-0's
+fca1e9e2f; with a moved trunk, only records conflicts by §6.2) and `git
+merge-tree --write-tree 2407efa74 <branch head>` (PR 53's head: conflicts in
+the four records files only, docs/design/README.md auto-merging, as the
+fixer's local prototype commit measured, §0.4; amended 2026-11-09, review
+fold: B-m11 / B-m4). At land time: §8.1 to §8.4 on the branch's head after M
+and F-M, the figures quoted into Appendix F's texts.
 
 ### §8.9 The id re-scan (before D)
 
 §0.7's commands after `git fetch origin` over every origin ref, local branch
 and worktree, widened to `W-3[7-9][0-9]|W-4[0-9][0-9]`: W-380 must appear
-nowhere but this plan and its reserved-text mentions; otherwise the next free
+nowhere but this plan, W-378's notes and the weekly entry's reserved-text
+sentence (§0.7); otherwise the next free
 id, and every cross-reference in D.1, D.2, D.8 and this plan renumbered in the
 same commit.
 
@@ -1264,17 +1533,69 @@ when it returns, R33 (b)); Bazel-only tests (no Bazel, never installed); the
 owner's runner (R28); the nightly on the fork's programs (it has no
 `Core.Result`); a Darwin build (V-1's macOS half, the same bound as EH-B's).
 
+### §8.11 Command forms for this container (added 2026-11-09, review fold: B-m8)
+
+D-LAND-6's steps were written for the previous container (a scratch worktree
+under /dev/shm, `$CB/build.sh /home/user/carbon-trunk`); this landing maps them
+to the arbiter as it stands (/home/user/arb/carbonbuild until ARB-2's scripts
+land under fork/tools/carbonbuild), with `Repository=/home/user/carbon-trunk
+SHA=<label>` on every command and nothing under /dev/shm:
+
+-   step 2: the merge-trees run in a detached worktree under /home/user
+    (`git -C /home/user/carbon-lang worktree add --detach
+    /home/user/carbon-land-<role> <sha>`), removed by its literal path;
+-   step 4: `Repository=... SHA=... /home/user/arb/carbonbuild/build.sh` in the
+    background (a timeout of 7200000 ms; waited with `until [ -f <marker> ];
+    do sleep 20; done` loops of at most nine minutes), then `python3 -I
+    install.py`, `gate.sh --threads 4` (its per-test lines read, §8.3), and
+    `CACHE_HOME=/home/user/arb/cache-<label> conformance.sh --background`
+    waited on /home/user/arb/conformance/<label>/.done; the label's four
+    directories deleted by their literal paths afterwards;
+-   step 7: `autoupdate.sh` over the whole manifest (`--filter` for a subset)
+    to a fixpoint, `git status --porcelain` read after each pass;
+-   step 8: the two sample checkers as D-LAND-6 writes them (`python3 -I
+    fork/designdocs/check_samples.py`, also with `--toolchain
+    /home/user/arb/install/<label>/bin/carbon`, and `python3 -I
+    fork/evaluator/check_samples.py`), then EV-1's land sequence
+    (land1-plan.md:1640-1648): `python3 -I fork/evaluator/check_faq.py --which
+    fork --toolchain /home/user/arb/install/<label>/bin/carbon` and `--which
+    nightly --toolchain /home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.
+    2026.10.12/bin/carbon`, 13 and 17 reproducers, 0 errors each;
+-   the FORM rules for every commit, merge and push (the container's
+    permission check holds what breaks them, and a held command never
+    completes): the message written to a file with the Write tool or in its
+    own command, then `git commit -F <file>` in a separate command; never a
+    heredoc or an inline file write in the same command as a git commit,
+    merge or push; never `$(git ...)`; never a git command inside a `for` or
+    `while` body (lists go to files first, then `xargs -a`); `rm -rf` on
+    literal paths only; every date from `date -u +%F`; commits with
+    `--author='jmann345 <jerrymannstan@gmail.com>'`, `GIT_COMMITTER_NAME=Claude
+    GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the session's attribution
+    trailers after a blank line.
+
 ## Hand-off notes for the implementer
 
+-   Start with M-0 (§3): merge origin/trunk (fca1e9e2f or later) into the
+    branch before C1; the gate's src-patches line then prints `landed`.
 -   Rename on NON-CHECK lines only (the prototype's script matched
     `^\s*// CHECK`, indented ones included); never touch a CHECK line (R16);
     autoupdate fills them. Whole-word `\bOk\b|\bErr\b` leaves `ErrA`, `ErrB`
-    and `ToErrB` alone, as it must.
+    and `ToErrB` alone, as it must. Then D-EHC-13's names: `git mv` the two
+    programs and edit fork/conformance/README.md's two rows in C1; rename the
+    five split headers (and the lower golden's `unit_ok` comment); and A-m1's
+    lines: thunk.cpp's `return_ok`/`return_err` and the lower golden's
+    :18-20.
+-   result.carbon:33-39 is verbatim in §2.1 (seven lines, 80 columns): copy
+    it, as the eight-line comment and the trailing history block.
+-   The C1 gate's summary line reads "2015 passed, 0 failed" with exit 1:
+    read the 32 per-test FAILED lines (§8.3), not the summary.
+-   The FORM rules and the container's command forms are §8.11.
 -   Write Appendix C's sentences by hand: a mechanical rename produces "an
     `Success` value" and "an `Failure` payload" (measured).
 -   check_faq.py:229 must be two literals (ruff E501); clang-format re-wraps
-    four C++ files; rumdl reflows seven long lines in three pages: run prek
-    twice and compare r31.py before and after.
+    four C++ files; rumdl reflows the long lines in the pages (rev 1's seven
+    in three pages at C1; more after P's amendments): run prek twice and
+    compare r31.py before and after.
 -   The new split goes after `fn Use(unused r: Core.Result(SomeClass, i32))
     {}` and before the trailing `// CHECK:STDOUT:` block, CHECK-free; its
     fill must equal §4's quoted lines.
@@ -1289,9 +1610,72 @@ owner's runner (R28); the nightly on the fork's programs (it has no
     err` binding stays (D-EHC-8).
 -   The mutants (M1, M2) are measurements for the review hand-off; restore
     before every commit and re-run the full gate once after M2's rebuild.
--   The arbiter's GATE line prints `src-patches.applied`; the number to
-    quote is "2047 passed, 0 failed" with that line beside it, as every
-    container-measured record since ARB-2 does.
+-   The arbiter's GATE line prints `src-patches.applied` (`landed` on the
+    branch after M-0, `applied` on a tree without PR 69's check.cpp); the
+    number to quote is "2047 passed, 0 failed" with that line beside it, as
+    every container-measured record since ARB-2 does.
+
+## Review fold record (rev 2, 2026-11-09)
+
+Reviews A and B (both APPROVE-WITH-AMENDMENTS; six and eleven findings, three
+MAJOR each, B-M2 the same defect as A-M3) are folded above, each amendment
+marked "(amended 2026-11-09, review fold: <id>)". Every measurement a finding
+rests on was reproduced by the fixer on its own prototype
+(/home/user/carbon-ehc-fixer at aee70185c, label `ehc-fixer`, the rename
+re-applied by its own script with D-EHC-13's and A-m1's changes; worktree and
+the label's four directories removed afterwards, as were the scratch caches):
+build 9 minutes; gate before the fill `[  PASSED  ] 2015 tests.`, 32 per-test
+FAILED lines, summary "2015 passed, 0 failed", exit 1; autoupdate twice
+(identical status after each); gate 2047 of 2047; conformance 228/0/13 over
+241, 51 bullets, every row's status and detail equal to cb726a230's with the
+two renamed programs mapped; `runner.py --self-test` OK; the evaluator and
+designdocs checkers 0 errors (the latter also `--toolchain`); check_faq.py 13
+(fork) and 17 (nightly), 0 errors; M2 with the prelude restored and
+re-installed first: 229 passed, 3 red, 14 `Ok` and 14 `Err` diagnostics;
+restored 2047; M1: 2040 passed, the same seven goldens; restored 2047;
+Appendix C's prose applied for the after-P grep (17 lines); prek to a
+fixpoint (five passes: pass 1 reflowed the pages and wrapped the C++, the
+fixpoint held from pass 4 after F-3 and §2.9's split); the register scripts
+at ca1898506 (289 quotes, 94 then 96 checks, 0 failed); the id re-scan (84
+refs, 7 worktrees); merge-trees of the prototype's local commit against
+2407efa74 (the four records files) and fca1e9e2f (exit 0); R31's counts of
+the five pages unchanged before and after prek. Nothing is rejected.
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| A-M1 | MAJOR | folded, reproduced (5 lines at C1, 17 from P) | §8.7 re-specified as four greps with explicit lists; §0.3, D-EHC-2, D.1, D.2 (D's appended paragraph), F.8 |
+| A-M2 | MAJOR | folded, reproduced (229 passed, 3 red) | §0.3 M2, §0.8 (b), §8.5 (the prelude restored before M2), D-EHC-4, D.2, Appendix E |
+| A-M3 | MAJOR | folded, reproduced (180 lines in 43 files unscoped at aee70185c, 182 on the rev 1 commit from this plan's own text; 0 scoped) | D-EHC-5, R-5, §8.7 grep 4, D.2 |
+| A-m1 | MINOR | folded, in the prototype | D-EHC-4, §2.2 (`return_success`/`return_failure`), A.2.3 (:18, :20), §0.1, §0.3 |
+| A-m2 | MINOR | folded, reproduced (the GATE line and gate.sh:121-134) | §0.3, §3 item 2, §8.3, hand-off |
+| A-m3 | MINOR | folded: (a) one unrelated line, (b) :227-229, (c) 94 and 96, (d) size M kept, (e) W-378 on trunk, §0.7 re-scanned, (f) 2871 written and 2863 removed with the rule stated | §0.6, §0.7, header, D.1, D.6, §0.1, §0.3, §4 |
+| B-M1 | MAJOR | folded: D-EHC-13 renames both program files and the five split headers; measured (gate, conformance, self-test, greps 2 and 3 empty) | D-EHC-13, §0.1 (a row), §0.3, §2.6, §2.7, §4 (three rows re-measured), §5, §6.1, §8.7, A.1.7, A.1.22, A.2.3, B.1.15, B.1.16, B.2, D.7, hand-off |
+| B-M2 | MAJOR | folded with A-M3 | the same |
+| B-M3 | MAJOR | folded | §2.10, §3 items 7 and 8, D.1 ("the tree at <R>"), D.2 (the three paragraphs D appends; "this commit") |
+| B-m4 | MINOR | folded and widened: ARB-2 landed on trunk as PR 69 while the reviews ran | the Status paragraph, §3's M-0, §6.2, §8.8 (merge-tree against trunk: exit 0), D-EHC-11, D-EHC-12, R-7, D.1, D.8, Appendix E, F.1 |
+| B-m5 | MINOR | folded | D.1's title form; size M, header |
+| B-m6 | MINOR | folded, the seven lines measured at 80 columns or less | §2.1, hand-off |
+| B-m7 | MINOR | folded | C.4, §0.3 |
+| B-m8 | MINOR | folded | §8.11; D-EHC-9's check_faq.py step (EV-1's sequence after step 8); hand-off |
+| B-m9 | MINOR | folded, measured (0 at ca1898506, 96 checks) | D.6, §0.6, D-EHC-7, D.2 |
+| B-m10 | MINOR | folded (with PR 69's row) | D.8 |
+| B-m11 | MINOR | folded, measured (the three hunks; the prototype's merge-tree) | §0.4, §8.8 |
+
+The fixer's own findings, folded the same way: F-1 B.1.15's :12 After cell
+read "an `.Failure`" (now "a `.Failure`"); F-2 §4's "loc" column followed a
+rule the plan did not state, so the matrix now states one rule and carries
+the fixer's triples for all 32 goldens (the totals are rev 1's but for
+D-EHC-13's three); F-3 C.2's amendment quoted upstream's link live, which
+fails rumdl's MD051 and the check-links hook in error_handling.md (no
+`#choice-types` anchor there), so the quote sets the markup in a code span as
+§0.6 does; F-4 the prototype's mechanical rename does not split
+check_faq.py:229 (§2.9 already says so; ruff's E501 fails until it is split,
+a hand-off reminder). R31's counts of this file: rev 1 headings 1/17/63/53,
+bullets 50, numbered 22, rows 685; rev 2 before prek and after it in the
+commit message (the added headings are D-EHC-13's none, §8.11 and this
+section; the added items are D-EHC-13, §8.7's four greps, §8.11's five
+bullets and the hand-off's four; the added rows are §0.1's one and this
+table's eighteen).
 
 ## Appendix A: every golden's source edit
 
@@ -1367,11 +1751,13 @@ is the new split, verbatim.
 | --- | --- | --- |
 | :363 | `case .Ok(v: i32) => {` | `case .Success(v: i32) => {` |
 
-#### A.1.7 toolchain/check/testdata/main_run/return_result.carbon (6 lines)
+#### A.1.7 toolchain/check/testdata/main_run/return_result.carbon (8 lines; the two split headers added 2026-11-09, review fold: B-M1)
 
 | Line | Before | After |
 | --- | --- | --- |
+| :23 | `// --- unit_ok.carbon` | `// --- unit_success.carbon` |
 | :28 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
+| :32 | `// --- i32_ok.carbon` | `// --- i32_success.carbon` |
 | :37 | `return Core.Result(i32, i32).Ok(3);` | `return Core.Result(i32, i32).Success(3);` |
 | :45 | `return Core.Result((), i32).Err(n);` | `return Core.Result((), i32).Failure(n);` |
 | :51 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
@@ -1640,7 +2026,7 @@ is the new split, verbatim.
 | --- | --- | --- |
 | :60 | `return Core.Result(i32, i32).Ok(o?);` | `return Core.Result(i32, i32).Success(o?);` |
 
-#### A.1.22 toolchain/check/testdata/operators/question_result.carbon (14 lines)
+#### A.1.22 toolchain/check/testdata/operators/question_result.carbon (15 lines; the split header added 2026-11-09, review fold: B-M1)
 
 | Line | Before | After |
 | --- | --- | --- |
@@ -1653,7 +2039,8 @@ is the new split, verbatim.
 | :87 | `if (n > 0) { return Core.Result(i32, ErrA).Ok(n); }` | `if (n > 0) { return Core.Result(i32, ErrA).Success(n); }` |
 | :88 | `return Core.Result(i32, ErrA).Err(n as ErrA);` | `return Core.Result(i32, ErrA).Failure(n as ErrA);` |
 | :94 | `return Core.Result(i32, ErrB).Ok(v);` | `return Core.Result(i32, ErrB).Success(v);` |
-| :101 | `` // `Core.Result((), E)`: the `()` payload on the `Ok` side (D-EH-2's `` | `` // `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's `` |
+| :98 | `// --- unit_ok.carbon` | `// --- unit_success.carbon` |
+| :101 | `` // `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's `` | `` // `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's `` |
 | :105 | `if (n > 0) { return Core.Result((), i32).Ok(()); }` | `if (n > 0) { return Core.Result((), i32).Success(()); }` |
 | :106 | `return Core.Result((), i32).Err(n);` | `return Core.Result((), i32).Failure(n);` |
 | :113 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
@@ -1683,13 +2070,18 @@ blank line; A.3).
 | :40 | `E err;` | `E failure;` |
 | :47 | `return r.disc == 0 ? r.ok : r.err;` | `return r.disc == 0 ? r.success : r.failure;` |
 
-#### A.2.3 toolchain/lower/testdata/main_run/return_result.carbon (4 lines)
+#### A.2.3 toolchain/lower/testdata/main_run/return_result.carbon (9 lines; :18, :20 added 2026-11-09, review fold: A-m1; :22, :24, :36 review fold: B-M1)
 
 | Line | Before | After |
 | --- | --- | --- |
+| :18 | `` // `load i8` of the discriminant, `icmp eq ... 0`, a branch to `run.result.ok` `` | `` // `load i8` of the discriminant, `icmp eq ... 0`, a branch to `run.result.success` `` |
 | :19 | `` // (`ret i32 0` for `Ok(())`, the `i32` payload load for `Ok(code)`) or `` | `` // (`ret i32 0` for `Success(())`, the `i32` payload load for `Success(code)`) or `` |
+| :20 | `` // `run.result.err` (`call i64 @write(i32 2, ptr @main.result.err.message, `` | `` // `run.result.failure` (`call i64 @write(i32 2, ptr @main.result.failure.message, `` |
+| :22 | `` // `?` in `unit_ok` adds a second `return` sharing the one message global. `` | `` // `?` in `unit_success` adds a second `return` sharing the one message global. `` |
+| :24 | `// --- unit_ok.carbon` | `// --- unit_success.carbon` |
 | :28 | `return Core.Result((), i32).Err(n);` | `return Core.Result((), i32).Failure(n);` |
 | :33 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
+| :36 | `// --- i32_ok.carbon` | `// --- i32_success.carbon` |
 | :40 | `return Core.Result(i32, i32).Ok(3);` | `return Core.Result(i32, i32).Success(3);` |
 
 #### A.2.4 toolchain/lower/testdata/match/choice_payload.carbon (4 lines)
@@ -2063,11 +2455,11 @@ fn Read(r: Core.Result(i32, i32)) -> i32 {
 | :60 | `return Err(ToErrB(f.v));` | `return Failure(ToErrB(f.v));` |
 | :63 | `return Ok(v);` | `return Success(v);` |
 
-#### B.1.15 fork/conformance/programs/error_handling/run_result_err.carbon (7 lines)
+#### B.1.15 fork/conformance/programs/error_handling/run_result_err.carbon, renamed run_result_failure.carbon by `git mv` (7 lines; D-EHC-13, review fold: B-M1)
 
 | Line | Before | After |
 | --- | --- | --- |
-| :12 | `` // `fn Run() -> Core.Result((), i32)` is a valid entry point, and an `.Err` `` | `` // `fn Run() -> Core.Result((), i32)` is a valid entry point, and an `.Failure` `` |
+| :12 | `` // `fn Run() -> Core.Result((), i32)` is a valid entry point, and an `.Err` `` | `` // `fn Run() -> Core.Result((), i32)` is a valid entry point, and a `.Failure` `` |
 | :15 | `` // ("carbon: `Main.Run` returned `.Err` of type `i32`; exiting with code 1" — `` | `` // ("carbon: `Main.Run` returned `.Failure` of type `i32`; exiting with code 1" — `` |
 | :18 | `` // `.Err(7)` on the runtime-computed input `RuntimeSeed(-20)` = 0 (R16d), so `` | `` // `.Failure(7)` on the runtime-computed input `RuntimeSeed(-20)` = 0 (R16d), so `` |
 | :20 | `` // the `?` must NOT run and the trailing `.Ok(())` must NOT exit 0 — a `?` `` | `` // the `?` must NOT run and the trailing `.Success(())` must NOT exit 0 — a `?` `` |
@@ -2075,7 +2467,7 @@ fn Read(r: Core.Result(i32, i32)) -> i32 {
 | :27 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
 | :36 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
 
-#### B.1.16 fork/conformance/programs/error_handling/run_result_ok.carbon (6 lines)
+#### B.1.16 fork/conformance/programs/error_handling/run_result_ok.carbon, renamed run_result_success.carbon by `git mv` (6 lines; D-EHC-13, review fold: B-M1)
 
 | Line | Before | After |
 | --- | --- | --- |
@@ -2161,11 +2553,13 @@ confirms every row PASS.
     `1101`; depth 2: `1`, `1202`; depth 3: `1`, `1303`, the `ErrA` to `ErrB`
     conversion adding 1000); `ErrA`/`ErrB` are not renamed (whole-word
     `Err` does not match them); unchanged.
-10. run_result_err.carbon — EXPECT-EXIT 1, EXPECT-STDOUT `1`. Prints 1;
+10. run_result_failure.carbon (run_result_err.carbon at trunk, D-EHC-13) —
+    EXPECT-EXIT 1, EXPECT-STDOUT `1`. Prints 1;
     `Fails(RuntimeSeed(-20))` = `Fails(0)` = `Failure(7)`, `?` returns it from
     `Run`; the D10 epilogue writes the stderr line (now naming `.Failure`,
     not asserted by the runner) and exits 1; `2` is never printed.
-11. run_result_ok.carbon — EXPECT-EXIT 3, EXPECT-STDOUT `21`, `20`.
+11. run_result_success.carbon (run_result_ok.carbon at trunk, D-EHC-13) —
+    EXPECT-EXIT 3, EXPECT-STDOUT `21`, `20`.
     `Half(42)` = `Success(21)`, prints 21; `Half(40)` = `Success(20)`, prints
     20; `return Success(RuntimeSeed(-17))` = `Success(3)`, the epilogue's
     discriminant 0 returns the payload: exit 3.
@@ -2183,7 +2577,14 @@ confirms every row PASS.
 The five `.diff.cpp` oracles rename only their helper functions and comments
 (`static auto Success(...)`, `static auto Failure(...)`); their `bool ok`
 fields, control flow and arithmetic are untouched, so DIFF-1's equality holds
-by construction and was measured.
+by construction and was measured. The two renamed programs keep their text
+but for the lines above; fork/conformance/README.md's rows
+`error_handling/run_result_err.carbon` and `error_handling/run_result_ok.carbon`
+(:345-346 at trunk) become `error_handling/run_result_failure.carbon` and
+`error_handling/run_result_success.carbon` in place (C1; the runner's
+self-test checks the table against the programs). In the After cell of
+B.1.15's :12, "a `.Failure`", not the mechanical "an `.Failure`" (the fixer's
+F-1, 2026-11-09).
 
 ## Appendix C: the docs amendments, verbatim
 
@@ -2247,7 +2648,7 @@ result choices: the `IntResult` example in the
 > for `Core.Result` are `Ok` and `Err`." RG-1 (D-RG-5, 2026-10-28) classified
 > that spelling a drift under fork/rulebook.md R32 (d), because upstream's
 > README names `Result` as the error representation ("At this point, errors
-> are represented using [choice types](#choice-types) like `Result` and
+> are represented using `[choice types](#choice-types)` like `Result` and
 > `Optional`.", :3858-3860 at ca1898506) and the section it links spells the
 > result choice `Success`/`Failure`; EH-C renamed every use. No alias remains:
 > the former spelling is an ordinary unknown member
@@ -2255,6 +2656,12 @@ result choices: the `IntResult` example in the
 ```
 
 <!-- google-doc-style-resume -->
+
+The quoted link markup in the blockquote is set in a code span, as §0.6 and
+D.2 set it: error_handling.md has no `#choice-types` anchor, and a live link
+there fails rumdl's MD051 and the check-links hook (measured by the fold's
+prek run on the prototype; the fixer's F-3, 2026-11-09). C.1 keeps the live
+link, README.md's anchor being its own.
 
 The sketch lines :133 "// Equivalent to `Core.Result(File,
 IoError).Failure(...)`.", :134 `return .Failure(IoError.NotFound);`, :136
@@ -2302,13 +2709,15 @@ the parenthetical; rumdl reflows the paragraph).
 
 ### C.4 docs/guides/tutorial.md
 
-The block :360-391 (C1): the eight lines of Appendix B.1.17's program, byte
-for byte (the checker compares them). The prose :408-409 (P): "What to notice:
-`Core.Result(T, E)` is a `choice` in the prelude, with the alternatives
+The block :360-391 (C1): the seven renamed lines of Appendix B.1.17's program
+(:366, :368, :374, :379, :380, :387, :390), byte for byte with the program (the
+checker compares them); the page's eighth hit, :409, is prose and goes in P
+(amended 2026-11-09, review fold: B-m7). The prose :408-409 (P): "What to
+notice: `Core.Result(T, E)` is a `choice` in the prelude, with the alternatives
 `Success` and `Failure` (this fork spelled them `Ok`/`Err` until <date>, EH-C,
 W-346; a program written then gets ``member name `Ok` not found in
-`Core.Result(i32, i32)` ``). The postfix `?` returns the error to the caller,
-or unwraps the value." The rest of the paragraph unchanged.
+`Core.Result(i32, i32)` ``). The postfix `?` returns the error to the caller, or
+unwraps the value." The rest of the paragraph unchanged.
 
 ### C.5 docs/guides/evaluator_faq.md:356
 
@@ -2323,8 +2732,10 @@ commit shas; `<tip>` upstream's sha at D's re-fetch.
 
 ### D.1 fork/inventory/work-items.json
 
-W-346: `"kind": "implemented"`; the title prefixed "EH-C (DISCHARGED at EH-C,
-<date>): " before its current text; `evidence` gains, first: "core/prelude/
+W-346: `"kind": "implemented"`; `"size"` stays `"M"` (RG-1's estimate, not
+re-sized); the title's leading tag "EH-C (R32 (d); RG-1, D-RG-5): " replaced
+by "EH-C (DISCHARGED at EH-C, <date>; R32 (d); RG-1, D-RG-5): ", W-341's form
+(amended 2026-11-09, review fold: B-m5); `evidence` gains, first: "core/prelude/
 types/result.carbon:28-31 at <C1> (`Success(value: T)`, `Failure(error: E)`);
 toolchain/check/cpp/thunk.cpp:1506-1509 (the minted identifiers);
 toolchain/lower/handle.cpp:421 (the stderr line); toolchain/install/include/
@@ -2334,8 +2745,14 @@ question_result.carbon; the 18 programs of Appendix B; docs/design/README.md,
 error_handling.md, optional.md, docs/guides/tutorial.md and evaluator_faq.md's
 dated amendments (Appendix C); container-measured (R33 (b)): gate 2047 of
 2047 after the fill <F1>, conformance 228/0/13 over 241, 51/56 bullets; the
-whole-tree grep `git grep -nE '\bOk\b|\bErr\b' -- . ':!fork/'` at <D> lists
-common/raw_hashtable.h:1314 only". `notes` gains, appended: " DISCHARGED
+reconciliation greps of fork/eh/ehc-plan.md §8.7 on the tree at <R>: grep 1
+lists 17 lines, all dated history (common/raw_hashtable.h:1314;
+core/prelude/types/result.carbon:56; the `fail_old_names` split's three
+lines; the twelve amendment lines of docs/design/README.md,
+error_handling.md, optional.md, docs/guides/tutorial.md and
+evaluator_faq.md), greps 2 and 3 (file and split names) are empty, grep 4
+(the header's consumers' `.ok()`) is 0" (amended 2026-11-09, review fold:
+A-M1 / B-M1 / B-M3). `notes` gains, appended: " DISCHARGED
 <date> by EH-C (fork/eh/ehc-plan.md, D-EHC-1 to D-EHC-12): renamed at the
 root with every use; no alias; the former spelling diagnoses
 `MemberNameNotFoundInSpecificScope`; register row T2.1 ALIGNED; F-006a
@@ -2344,7 +2761,9 @@ reversed by a dated note under the owner directive of 2026-10-21, veto-able
 reverted by a new commit and this item reopens with the veto recorded against
 R32)."
 
-W-380, new, after W-377: `"kind": "doc-gap"`, `"title": "PR 53 (SAFE-1; EH-C,
+W-380, new, after W-378 (ARB-2's item, on trunk since PR 69, so the ledger
+ends W-377, W-378, W-380; amended 2026-11-09, review fold: B-m4): `"kind":
+"doc-gap"`, `"title": "PR 53 (SAFE-1; EH-C,
 D-RG-8's break condition): docs/design/safety/rust_interop.md:223 names
 `Ok`/`Err` as `Core.Result`'s variants where trunk now spells
 `Success`/`Failure` -- a rename commit on PR 53's branch before it lands"`,
@@ -2369,7 +2788,9 @@ The `generated` and `source` fields: `source` gains the sentence "EH-C
 ### D.2 fork/decision-log.md: the entry
 
 Placed directly before "### EH-B: catching thunks, Cpp.Exception,
-Carbon::expected export (2026-09-27)":
+Carbon::expected export (2026-09-27)". R writes the first block; D appends
+the second block's three paragraphs to the entry (amended 2026-11-09, review
+fold: B-M3):
 
 <!-- google-doc-style-ignore -->
 
@@ -2380,8 +2801,8 @@ Placed here, before EH-B's entry, because the log groups entries by workstream
 and EH-C is the error-handling workstream's third slice (fork/eh/ehc-plan.md,
 beside fork/eh/plan.md's EH-A and EH-B). Line cites are to trunk aee70185c
 unless a sha is named. Branch claude/carbon-fork-0-1-ehc, commits <plan>
-(the plan), <C1>, <F1>, <P>, the reviews' fix commits <fixes>, <R> and <D>;
-PR <N>, base trunk.
+(the plan's revisions), <M-0> (the merge of trunk fca1e9e2f, PR 69), <C1>,
+<F1>, <P>, the reviews' fix commits <fixes>, <R> and <D>; PR <N>, base trunk.
 
 _The item and the rule._ W-346, filed by RG-1 (D-RG-5, 2026-10-28), classified
 the user's sub-decision F-006a (`Ok`/`Err`, 2026-07-19) a DRIFT under R32 (d):
@@ -2414,8 +2835,9 @@ former spelling is an ordinary unknown member, ``member name `Ok` not found in
 `Core.Result(i32, i32)` `` [MemberNameNotFoundInSpecificScope], no note,
 pinned by the `fail_old_names` split of check/testdata/operators/
 question_result.carbon. D-EHC-4 every toolchain identifier that spells an
-alternative renamed: thunk.cpp's minted `"Success"`/`"Failure"` identifiers
-and its `success_*`/`failure_*` locals, lower/handle.cpp's `run.result.success`
+alternative renamed: thunk.cpp's minted `"Success"`/`"Failure"` identifiers,
+its `success_*`/`failure_*` locals and `return_success`/`return_failure`,
+lower/handle.cpp's `run.result.success`
 /`run.result.failure`/`run.result.is_success` IR names and the stderr line
 ``carbon: `Main.Run` returned `.Failure` of type `E`; exiting with code 1``,
 the `main.result.failure.message` global and its accessors, comments; the
@@ -2429,38 +2851,69 @@ C1 carries every checker-visible line (the tutorial's block, the FAQ's line,
 check_faq.py), P the prose. D-EHC-10 no new program; every EXPECT unchanged.
 D-EHC-11 W-380 to W-385 reserved, W-380 filed for PR 53's
 rust_interop.md:223, no F id. D-EHC-12 one PR, two implementation reviews, a
-fix budget of two, LAND-1's landing.
+fix budget of two, LAND-1's landing, M-0 first because trunk moved to
+fca1e9e2f (PR 69) during the plan's reviews. D-EHC-13 the two program files
+(run_result_success.carbon, run_result_failure.carbon) and the five split
+headers (`unit_success`, `i32_success`) renamed too.
 
 _Measured (container, R33 (b); the plan's §0.3 and §8)._ Gate on C1 alone:
-2015 passed, the 32 goldens of the plan's §4 failing with "Autoupdate would
-make changes"; after <F1>: 2047 passed, 0 failed; conformance 228/0/13 over
-241, 51/56 bullets, byte for byte trunk's; `runner.py --self-test` 0 errors
-on both sample checkers; check_faq.py 13 reproducers, 0 errors (fork) and 17
-(nightly); fork/designdocs/check_samples.py --toolchain 0 errors; prek clean
-at a fixpoint on every commit. _Reconciliation greps at <D>:_ `git grep -nE
-'\bOk\b|\bErr\b' -- . ':!fork/'` lists common/raw_hashtable.h:1314 only;
-over fork/ every hit is a closed plan, a dated history note, W-346's own
-ledger text, RG-1's prose or fork/eh/ehc-plan.md (<count> files, listed in
-the plan's §0.1); `git grep -nE '\.ok\(\)'` is empty; `grep -rn
-'identifiers().Add("' toolchain/check/cpp/thunk.cpp` shows `"Success"` and
-`"Failure"` only.
+`[  PASSED  ] 2015 tests.` with the 32 goldens of the plan's §4 failing with
+"Autoupdate would make changes" (the arbiter's summary line reads "2015
+passed, 0 failed", the per-test lines being the criterion); after <F1>: 2047
+passed, 0 failed; conformance 228/0/13 over 241, 51/56 bullets, byte for byte
+trunk's; `runner.py --self-test` 0 errors on both sample checkers;
+check_faq.py 13 reproducers, 0 errors (fork) and 17 (nightly);
+fork/designdocs/check_samples.py --toolchain 0 errors; prek clean at a
+fixpoint on every commit; the mutants: the order swapped turns 7 goldens and
+4 programs red, the thunk's identifiers left as `Ok`/`Err` turn 3 goldens
+red.
 
 _V-3a register (RG-1's vocabulary, re-read at <tip>):_ T2.1 (F-006a's
 alternatives) ALIGNED with README.md:2176-2177 and :3165-3166, break
 condition D-EHC-1's (upstream renames or reorders; the user vetoes); T11.1
 ALIGNED, its alternatives no longer a drift; T11.3 ALIGNED (the order);
-T11.2, T11.4, T1.1 to T1.3 NONE, unchanged, W-355; a new silence check T2.1
-in fork/register/rg1-checks.tsv (`Ok(`/`Err(` in upstream's docs/design and
-proposals, expected 0) fires the upstream-side break condition.
-
-_Ids._ W-380 to W-385 reserved by the plan's §0.7 re-scan (<n> refs, <w>
-worktrees, after a fetch at D); W-380 filed; W-381 to W-385 unused.
+T11.2, T11.4, T1.1 to T1.3 NONE, unchanged, W-355; two new silence checks
+T2.1 in fork/register/rg1-checks.tsv (`Ok(`/`Err(` in upstream's docs/design
+and proposals; `choice Result`/`class Result` under upstream's core; both 0,
+96 checks in all) fire the upstream-side break conditions.
 
 _Not run._ clang-tidy (no binary in the container's clang 21 subset), R21's
 hosted gate (Actions disabled; owed when it returns), Bazel-only tests (no
 Bazel), the owner's runner (R28).
+```
 
-_Discharged at <D>: W-346 (EH-C)._
+<!-- google-doc-style-resume -->
+
+Appended by D, after the _Not run_ paragraph (`<R>` is R's sha, the tree the
+greps ran on; D's own sha is "this commit", as OV-4's entry wrote "and this
+one"; `<count>`, `<n>` and `<w>` are D's measurements):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+_Reconciliation greps (fork/eh/ehc-plan.md §8.7, on the tree at <R>)._ Grep
+1, `git grep -nE '\bOk\b|\bErr\b' -- . ':!fork/'` on non-CHECK lines: 17
+lines, all dated history: common/raw_hashtable.h:1314 (English),
+core/prelude/types/result.carbon:56 (the history comment), the
+`fail_old_names` split's three lines in check/testdata/operators/
+question_result.carbon, and the twelve amendment lines of
+docs/design/README.md, docs/design/error_handling.md, docs/design/optional.md,
+docs/guides/tutorial.md and docs/guides/evaluator_faq.md; over fork/ every hit
+is a closed plan, a dated history note, W-346's and W-380's own ledger text,
+RG-1's prose or fork/eh/ehc-plan.md (<count> files, listed in the plan's
+§0.1). Grep 2, `git ls-files | grep -E '(^|[_/])(ok|err)[_.]'`: empty. Grep
+3, the split-header grep: empty; the old file names survive only in
+fork/conformance/out/scoreboard.json, fork/eh/plan.md and a ledger evidence
+string at a sha (history). Grep 4, `.ok()` over the header's consumers and
+`expected<[^>]*>::ok\(` over the tree: 0 and 0. `grep -rn
+'identifiers().Add("' toolchain/check/cpp/thunk.cpp` shows `"Success"` and
+`"Failure"` only.
+
+_Ids._ W-380 to W-385 reserved by the plan's §0.7 re-scan (<n> refs, <w>
+worktrees, after a fetch at D); W-380 filed after W-378; W-381 to W-385
+unused.
+
+_Discharged by this commit: W-346 (EH-C)._
 ```
 
 <!-- google-doc-style-resume -->
@@ -2538,13 +2991,15 @@ prose paragraph changes (D-RG-5 and D-RG-8 are history). R31's counts: rows
 unchanged, headings unchanged.
 
 fork/register/rg1-checks.tsv, appended after the last data row, preceded by
-one comment line:
+one comment line (the second row added 2026-11-09, review fold: B-m9: the
+break condition "upstream adds a prelude `Result`" had no silence check):
 
 <!-- google-doc-style-ignore -->
 
 ```text
-# T2.1 ALIGNED since EH-C (<date>, W-346): the upstream-side break condition as a silence check (D-RG-5: the README's examples change to Ok/Err)
+# T2.1 ALIGNED since EH-C (<date>, W-346): the upstream-side break conditions as silence checks (D-RG-5: the README's examples change to Ok/Err; upstream adds a prelude Result)
 T2.1	G	-E	\bOk\(|\bErr\(	docs/design proposals	0
+T2.1	G	-E	choice Result\b|class Result\b	core	0
 ```
 
 <!-- google-doc-style-resume -->
@@ -2553,25 +3008,32 @@ fork/register/rg1-quotes.tsv, one comment line appended: "# T2.1 ALIGNED
 since EH-C (<date>, W-346): its quotes are the docs/design/README.md 3858,
 3860, 3164, 3165, 3166, 2176, 2177, 3856, 2167, 3159 and p000157 691, 229
 rows above". Both scripts, run from the worktree root at <tip> before and
-after: "checked 289 quotes, 0 failed" and "checked 95 silence checks, 0
-failed" (one more check).
+after: "checked 289 quotes, 0 failed" both times; "checked 94 silence
+checks, 0 failed" before and "checked 96 silence checks, 0 failed" after
+(two more checks; the fold measured all four at ca1898506; amended
+2026-11-09, review fold: A-m3 (c) / B-m9).
 
 ### D.7 fork/gap-analysis.md
 
 Row "Error handling: dedicated control flow constructs" (:73) stays DONE; its
 evidence cell gains, before the final sentence "The scalar-payload bound ...":
-"EH-C (<date>, W-346, PR <N>): the alternatives are spelled
-`Success`/`Failure`, upstream's README's (D-RG-5 resolved, register row
-T2.1 ALIGNED); 8/8 programs PASS unchanged, container-measured 228/0/13 over
-241 (R33 (b))." Row 70's example "`case .Ok(v: i32)`" becomes "`case
-.Success(v: i32)`" (R). The header's tally 37/17/2/0 is unchanged by EH-C;
-the landing's A.8 sentence restates it with PR <N>'s figures.
+"EH-C (<date>, W-346, PR <N>): the alternatives are spelled `Success`/`Failure`,
+upstream's README's (D-RG-5 resolved, register row T2.1 ALIGNED); 8/8 programs
+PASS unchanged, container-measured 228/0/13 over 241 (R33 (b))."; the cell's own
+mention of run_result_ok.carbon and run_result_err.carbon is rewritten to
+run_result_success.carbon and run_result_failure.carbon (D-EHC-13; amended
+2026-11-09, review fold: B-M1). Row 70's example "`case .Ok(v: i32)`" becomes "`case
+.Success(v: i32)`" (R). The header's tally 37/17/2/0 is unchanged by EH-C; the
+landing's A.8 sentence restates it with PR <N>'s figures.
 
 ### D.8 fork/ORCHESTRATION.md
 
 Before the landing (D): the Branches table gains, directly after the
-`claude/carbon-fork-0-1-va2` row's position (the table's last workstream
-row): "| `claude/carbon-fork-0-1-ehc` | OPEN as PR <N>, base trunk — EH-C:
+`claude/carbon-fork-0-1-ov4` row (PR 68, :2508 at aee70185c, the table's
+last landed-PR row, before `claude/carbon-fork-0-1-upstream-advance`) or,
+once LAND-1's records for PR 69 add a `claude/carbon-fork-0-1-arb2` row
+there, directly after that row (amended 2026-11-09, review fold: B-m10 /
+B-m4): "| `claude/carbon-fork-0-1-ehc` | OPEN as PR <N>, base trunk — EH-C:
 `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346, R32;
 F-006a reversed, veto-able); commits <C1>, <F1>, <P>, <fixes>, <R>, <D>;
 container-measured (R33 (b), EXPECTED, not of record): gate 2047 of 2047,
@@ -2584,8 +3046,10 @@ its reviews (<date>); it lands by LAND-1's procedure before UA-3, then PR
 53's W-380 rename commit before PR 53 lands." and ":2725 "UA-3 follows W-341
 and W-346." becomes "UA-3 follows W-341 (landed) and W-346 (PR <N>)." The
 header gains the clause "Last updated: <date> (EH-C's PR <N> opened, W-346's
-rename; 17 PRs landed, 1 held, 1 open; see the Branches row; the earlier
-<prev> text follows)." before the current first clause. At the landing:
+rename; <landed> PRs landed, 1 held, 1 open; see the Branches row; the
+earlier <prev> text follows)." before the current first clause, `<landed>`
+being the header's count at the time of writing (17 at aee70185c, 18 once PR
+69's records land; B-m4). At the landing:
 Appendix F's texts replace these.
 
 ### D.9 fork/eh/plan.md
@@ -2618,18 +3082,19 @@ stderr line (``returned `.Failure` of type ...``), `<carbon/expected.h>`'s
 payload members and `success()` factory, 35 goldens (sources renamed,
 CHECK lines refilled by autoupdate; a new `fail_old_names` split pins
 ``member name `Ok` not found in `Core.Result(i32, i32)` ``), 18 conformance
-programs (every EXPECT unchanged), the five pages that teach it (dated
+programs (every EXPECT unchanged; run_result_ok/err.carbon renamed
+run_result_success/failure.carbon with the README's rows), the five pages that teach it (dated
 amendments quoting upstream by sha) and the records. It reverses the user's
 sub-decision F-006a (2026-07-19) under the owner directive of 2026-10-21;
 the user may veto it (fork/eh/ehc-plan.md D-EHC-1).
 
 Plan: fork/eh/ehc-plan.md (rev <n>, two adversarial reviews, <folds>).
-Commits: <C1> rename, <F1> fill, <P> prose, <fixes>, <R> records, <D>
-discharge. Container-measured (R33 (b)): gate 2047 of 2047 (after the fill;
+Commits: <M-0> merge of trunk fca1e9e2f (PR 69), <C1> rename, <F1> fill, <P>
+prose, <fixes>, <R> records, <D> discharge. Container-measured (R33 (b)): gate 2047 of 2047 (after the fill;
 2015 with 32 "Autoupdate would make changes" before it), conformance
 228/0/13 over 241, 51/56 bullets, byte for byte trunk's; both sample
 checkers and check_faq.py 0 errors; mutants: the order swapped turns 7
-goldens and 4 programs red, the thunk's identifiers left as `Ok`/`Err` turn 4
+goldens and 4 programs red, the thunk's identifiers left as `Ok`/`Err` turn 3
 goldens red. Records: W-346 DISCHARGED, W-380 filed (PR 53's
 rust_interop.md:223 rename before it lands), decision-log entry EH-C, F-006a's
 reversal note, register row T2.1 ALIGNED with a new silence check, gap row
@@ -2652,14 +3117,14 @@ from `pull_request_read`; `<g>` the gate (2047 of 2047 expected), `<p>/<f>/
 (37/17/2/0); `<spec>` "fork/eh/ehc-plan.md §3 and Appendix F"; `<land-time
 shas>` M and F-M when trunk moved, else "none".
 
-### F.1 M, the merge of trunk into the branch (only if trunk moved)
+### F.1 M, the merge of trunk into the branch (only if trunk moved again after M-0's fca1e9e2f)
 
 <!-- google-doc-style-ignore -->
 
 ```text
 EH-C land (M): merge trunk <trunk before> into claude/carbon-fork-0-1-ehc
 
-Trunk <trunk before> holds <what landed since aee70185c>. Resolved by
+Trunk <trunk before> holds <what landed since fca1e9e2f>. Resolved by
 fork/eh/ehc-plan.md §6.2: the toolchain and prelude keep trunk's side plus
 the rename; goldens take trunk's side and are refilled by F-M; records keep
 both sides by LAND-1's region rules. No golden is edited by hand.
@@ -2791,8 +3256,9 @@ actions item 14. Record: fork/ORCHESTRATION.md's paragraph dated <date>
 W-346's `notes` gain, appended: " LAND-1 (<date>, PR <N>'s landing): merged
 by <merge sha> (GitHub merged_at <merged_at>); container-measured (R33 (b)):
 gate <g> of <g>, conformance <p>/<f>/<s> over <n>, <b>/56 bullets; the
-whole-tree grep re-run on the merge's tree lists common/raw_hashtable.h:1314
-only."
+reconciliation greps of fork/eh/ehc-plan.md §8.7 re-run on the merge's tree
+give the answers recorded at <R>: grep 1's 17 dated-history lines, greps 2 and
+3 empty, grep 4 zero." (amended 2026-11-09, review fold: A-M1)
 
 ### F.9 The gap header's first sentence (A.8) and ORCHESTRATION's Scoreboard paragraph (A.9)
 

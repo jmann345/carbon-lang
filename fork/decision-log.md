@@ -20925,5 +20925,12 @@ runfiles.py, bzl_eval.py's `builtins` import moved into its import block) are
 fixed identically in the record and the running instance, whose checks pass
 with unchanged counts, pyproject.toml exempts only `ANN` and `E501` for the
 directory, and `crashers` and `sme` stay in .codespell_ignore as the names of
-real files. Next: EH-C (W-346) and SAFE-4 resume on the arbiter; UA-3 carries
-the fix forward or drops it when upstream fixes the construction.
+real files. The review of that commit found one overclaim in its message, that
+ruff's `I` (import order) is clean on both copies: it is clean on the record,
+while the running instance's gen_ninja.py keeps `import paths` before
+`import bazel_graph as bg`, the pre-existing order that the repository's ruff
+hook swapped in the record and that the same message lists among the
+formatter differences; the fold after that review records the correction
+here and changes no script. Next: EH-C (W-346) and SAFE-4 resume on the
+arbiter; UA-3 carries the fix forward or drops it when upstream fixes the
+construction.

@@ -19442,7 +19442,7 @@ under R29).
 | d0badecd2 | Switch tests to use the rendered form of diagnostics (PR 8070) | 888 files: 880 goldens (874 under check, lex, lower and parse, 6 under driver, diagnostics and format) and 8 sources (toolchain/diagnostics/renderer.cpp and .h, renderer_fuzzer.cpp, renderer_test.cpp and stream_consumer.h, toolchain/docs/diagnostics_rendering.md, driver/driver.cpp and testing/file_test.cpp); no new conflict, but after UA-3 every fork-only golden's `CHECK:STDERR` lines take the rendered form through autoupdate, which needs a toolchain (none exists in the container since the reset); it moves H4.5's, H8.5's and H11.10's counts | advance, mechanism |
 | 9fb428d71 | Ensure specific in ImplWitness has resolved definition before accessing witness table (PR 8040) | removes `RequireSpecificDefinition` and `RequireSpecificDefinitionType` (sem_ir/inst_kind.def) and edits check/eval.cpp, eval_inst.cpp, impl_lookup.cpp, import_ref.cpp and type_completion.cpp; trunk keeps 21 non-test uses, the cut's 21, so the fork adds none; no new conflict; it moves H11.9's quotes and H4.5's and H11.10's counts | advance, fix |
 | d99b767dd | Export fields of imported Carbon classes to C++ (PR 8021) | upstream check/cpp/export.cpp, class.cpp, class.h and sem_ir/class.cpp and .h; trunk's export.cpp holds OV-3's thunks; 1 new conflict, check/class.h; it moves the H4.4 and T12.7 quotes; FO-1 read H10.8's `IsCallPerformable` at this sha (call.cpp:449-464, the comment at :449), and the tip's call.cpp is byte-identical to it | advance, mechanism |
-| be0f11be9 | Build a generic scope around `where` expressions (PR 8062) | check/handle_where.cpp, period_self.cpp and eval.cpp and sem_ir/expr_info.cpp; in check/call.cpp only `BuildCalleeSpecificFunction`'s `GetOrAddInst<T>` form changes (two one-line hunks at 68569d234's :198 and :208); `IsCallPerformable` (call.cpp:451-464; :453 at 68569d234, trunk :1025) is unchanged, the only window commit to call.cpp; no new conflict; it moves the H11.2 and T2.8 call.cpp quotes and H10.8's count | advance, mechanism |
+| be0f11be9 | Build a generic scope around `where` expressions (PR 8062) | check/handle_where.cpp, period_self.cpp and eval.cpp and sem_ir/expr_info.cpp; in check/call.cpp only `BuildCalleeSpecificFunction`'s `GetOrAddInst<T>` form changes (two hunks at 68569d234's :198 and :208, each 7 lines to 6, net -1 each); `IsCallPerformable` (call.cpp:451-464; :453 at 68569d234, trunk :1025) is unchanged, the only window commit to call.cpp; no new conflict; it moves the H11.2 and T2.8 call.cpp quotes and H10.8's count | advance, mechanism |
 | 5c9ab26d7 | Give Carbon thunks for C++ callers linkonce_odr linkage (PR 8022) | upstream lower/file_context.cpp, an existing conflict (EH-A's and OV-3's export thunks); no new conflict | advance, fix |
 | 66f03aecb | Export class friends to C++ (PR 8068) | upstream check/cpp/generate_ast.cpp, fork-modified, merges clean; no new conflict | advance, mechanism |
 | ca1898506 | Fix C++ access to Carbon friend members from an unrelated class (PR 8097) | upstream check/cpp/generate_ast.cpp, fork-modified, merges clean, and two access goldens; no new conflict; no register row moves (the scripts' output at 4e4b35e6e and here is byte-identical) | advance, fix |
@@ -19489,7 +19489,7 @@ the record; no decision depends on a class.
 | rg1-quotes.tsv:95 and :219, toolchain/parse/node_kind.def:294 | H8.2 (VA-1; rg1-plan.md:983) | NONE | MOVED to :296 by 5ae3dcaa9 (`PatternListUnderscoreField` at :153) | re-anchored; not fired: no upstream pack kinds, check H8.2 = 0 |
 | rg1-quotes.tsv:109, toolchain/sem_ir/typed_insts.h:1312 | H10.2 (TP-1; rg1-plan.md:1011) | NONE | MOVED to :1327 by d50576ca1 (`GlobalRef`, 15 lines) | re-anchored; not fired |
 | rg1-quotes.tsv:213 and :214, typed_insts.h:2009 and :2013 | H11.9 (CT-1; rg1-plan.md:1036) | NONE (a fix) | MOVED to :2006 and :2010 by d50576ca1 (15 lines added) and 9fb428d71 (18 removed), text unchanged | re-anchored; not fired |
-| rg1-quotes.tsv:110, toolchain/check/call.cpp:387 | H11.2 (CT-1; rg1-plan.md:1029) | ALIGNED | MOVED to :385 by be0f11be9 (two one-line hunks above) | re-anchored; not fired |
+| rg1-quotes.tsv:110, toolchain/check/call.cpp:387 | H11.2 (CT-1; rg1-plan.md:1029) | ALIGNED | MOVED to :385 by be0f11be9 (two hunks above, each 7 lines to 6) | re-anchored; not fired |
 | rg1-quotes.tsv:289, :290 and :293, call.cpp:241, check/pattern_match.cpp:1054 and check/handle_pattern_list.cpp:281 | T2.8 (OV-4; rg1-plan.md:741) | ALIGNED | MOVED to :239 (be0f11be9), :1073 (d50576ca1) and :274 (d50576ca1 and 5ae3dcaa9), text unchanged | re-anchored; not fired: check T2.8 = 3 (`default_value_arity`) |
 | rg1-quotes.tsv:215, :216 and :217, check/cpp/export.cpp:403, :404 and :538 | H4.4 (ST-1; rg1-plan.md:935) | NONE | MOVED to :404, :405 and :539 by d99b767dd (an include at :16) | re-anchored; not fired: :404-405 still unchecked, check H4.4 = 3 |
 | rg1-quotes.tsv:218 and :240, export.cpp:1951 and :1950 | T12.7 (UA-1's watch list; rg1-plan.md:858) | NONE | MOVED to :1955 and :1954 by d99b767dd (lines added at :16 and :748) | re-anchored; not fired: still `CARBON_CHECK`, check T12.7 = 1 |
@@ -19588,11 +19588,14 @@ grep -ohE 'W-3[6-9][0-9]'` over fork/ at 81 refs, the 76 origin tracking refs,
 origin/trunk, origin/claude/carbon-fork-0-1-safe and
 origin/claude/carbon-fork-0-1-safe-wip among them, and 5 local branches, and
 `grep -r` over the fork/ directory of the five worktrees), finds W-377 the
-highest id filed (W-373 to W-377 are filed on trunk), W-371 only as text on PR
-53's branch and the SAFE mirror, and W-379, W-389, W-396 and W-397 to W-399 only
-as range bounds in prose; no W-378 and no W-380 to W-388 appears anywhere. W-378
-to W-385, reserved by an EH-C plan commit lost with the container, are free
-again; W-378 is the next free id, and this check files none.
+highest id filed (W-373 to W-377 are filed on trunk), W-371 only as text (the
+next id reserved for PR 53's realignment, D-LAND-13; on trunk at
+decision-log.md:19527, fo1-plan.md:926 and :929 and land1-plan.md:1176-1177
+and :4262, and on the SAFE mirror, not on PR 53's head 2407efa74; never
+filed; corrected by the review fold), and W-379, W-389, W-396 and W-397 to
+W-399 only as range bounds in prose; no W-378 and no W-380 to W-388 appears
+anywhere. W-378 to W-385, reserved by an EH-C plan commit lost with the
+container, are free again; W-378 is the next free id, and this check files none.
 
 Not run: no build, no probe, no merge, no staging branch and no workflow
 dispatch (R28); the owner's machine was not used, and no toolchain exists in the

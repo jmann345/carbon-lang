@@ -10,7 +10,15 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-09 (weekly check fired under R32: the cut HOLDS at 176
+Last updated: 2026-11-09 (ARB-2: the container arbiter re-created after the
+reset without Bazel, libstdc++ its one known divergence from the Bazel build;
+its first finding, check.cpp's self-referential copy of `UnitAndImports`, fixed
+as 6de18c1f7 on claude/carbon-fork-0-1-arb2 and filed as W-378;
+container-measured gate 2047 of 2047, autoupdate 0 changed, conformance
+228/0/13 over 241, 51/56 bullets; 17 PRs landed, 1 held; see the paragraph
+dated 2026-11-09 (17:41 UTC, ARB-2) below; the earlier 2026-11-09 text
+follows).
+2026-11-09 (weekly check fired under R32: the cut HOLDS at 176
 upstream commits with 191 conflicting files against trunk cb726a230; TP-1's
 register row H10.8 is re-classified DRIFT on the existing W-374, owner TP-1's
 follow-on; no new item; W-372 gains 5ae3dcaa9 and d50576ca1; W-355's 24 moved
@@ -2155,6 +2163,37 @@ probe, no merge, no dispatch, and no toolchain exists since the reset; Actions
 is still disabled (the newest run is of 2026-10-08), so nothing is of record. At
 trunk cb726a230, which the records commit is cut from, 17 PRs are landed and 1
 held.
+
+2026-11-09 (17:41 UTC, ARB-2): the container arbiter is re-created after the
+reset, and its first finding is fixed. ARB-2 rebuilt the carbonbuild arbiter
+from the BUILD files without Bazel (LLVM at the pin 6ec87e7ec4b3 built under
+/home/user/llvm-build; the BUILD graph evaluated as Python; the LLVM 21.1.8
+release clang as the host compiler; libstdc++ where Bazel uses libc++, the one
+known divergence; the scripts under /home/user/arb/carbonbuild until they land
+under fork/tools/carbonbuild), had it reviewed adversarially (REVIEW-1: FIX,
+one blocker, one major, five minor, all folded) and measured its acceptance:
+conformance on cb726a230 with the unpatched busybox PASS 228 / FAIL 0 / SKIP 13
+over 241, 51/56 bullets; the gate 2047 of 2047 on the fix sha below. The
+review's blocker R1-B1 is a defect of trunk's own source:
+toolchain/check/check.cpp:428-432 copies `UnitAndImports` out of a `map_range`
+temporary while its `emitter` points at its own `err_tracker` (UB: under
+libstdc++ the pointer dangles deterministically and file_test crashed on 15
+goldens; libc++ elides the copy, so Bazel's build never saw it; the same lines
+are at upstream's tip ca1898506, upstream-reportable). Ruled a maintenance fix
+under R29 (R32 untouched), not a plan: one commit, 6de18c1f7 on
+claude/carbon-fork-0-1-arb2 (cut from trunk aee70185c), constructs the elements
+in place (reserve, then emplace_back); container-measured, EXPECTED, not of
+record: `GATE 6de18c1f7: 2047 passed, 0 failed`, `AUTOUPDATE 6de18c1f7: 0
+file(s) changed`, `CONFORMANCE 6de18c1f7: PASS 228 / FAIL 0 / SKIP 13 over 241
+programs`, 51/56 bullets, identical to the baseline per program and per bullet;
+two fresh adversarial reviews, both APPROVE with MINOR findings only (records
+and the PR title's width). Filed as W-378 (the next free id after the re-scan:
+W-377 the highest filed on every ref), with the decision-log entry "ARB-2
+(2026-11-09): the container arbiter re-created after the reset". Next: the PR
+with base trunk, landed under R33; the arbiter scripts land under
+fork/tools/carbonbuild by a separate records commit; EH-C (W-346) and SAFE-4
+resume on the arbiter; UA-3 carries the fix forward or drops it when upstream
+fixes it. 17 PRs landed, 1 held.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183

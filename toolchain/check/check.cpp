@@ -423,13 +423,19 @@ auto CheckParseTrees(
   // reference them.
   llvm::SmallVector<std::unique_ptr<SemIR::CppDomain>> cpp_domains;
 
+  // `UnitAndImports` is self-referential (its `emitter` points at its own
+  // `err_tracker`), so it must never be copied or moved: construct the
+  // elements in place, with the capacity reserved up front so that no growth
+  // moves them.
+  //
   // UnitAndImports is big due to its SmallVectors, so we default to 0 on the
   // stack.
-  llvm::SmallVector<UnitAndImports, 0> unit_infos(
-      llvm::map_range(units, [&](Unit& unit) {
-        return UnitAndImports(
-            &unit, tree_and_subtrees_getters.Get(unit.sem_ir->check_ir_id()));
-      }));
+  llvm::SmallVector<UnitAndImports, 0> unit_infos;
+  unit_infos.reserve(units.size());
+  for (Unit& unit : units) {
+    unit_infos.emplace_back(
+        &unit, tree_and_subtrees_getters.Get(unit.sem_ir->check_ir_id()));
+  }
 
   // Dump the raw SemIR in the event of a crash. We dump it to a separate file
   // to keep the stack trace manageable.

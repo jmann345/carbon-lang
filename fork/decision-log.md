@@ -20646,3 +20646,195 @@ and claude/carbon-fork-0-1-ct, origin/pr/64 and the /home/user/carbon-ct
 worktree (4a3220c11, an ancestor of 551a03328); W-312 to W-319 at it: none;
 moved to follow-ons: to item 17: S-VA with its mutant M18, and C.11's split; to
 items 15 and 16: its PR 60 and PR 57 compositions.
+
+### ARB-2 (2026-11-09): the container arbiter re-created after the reset; its first finding, a self-referential copy in check.cpp, fixed on PR branch claude/carbon-fork-0-1-arb2
+
+Placed at the end of the log because ARB-2 is a new workstream and the log
+groups its entries by workstream, not by date (the weekly entries run newest
+first in their own block). Written 2026-11-09 by the records step of the fix,
+on the PR branch claude/carbon-fork-0-1-arb2, cut from trunk aee70185c (the
+weekly check's records of 2026-11-09 on top of FO-1's close stamp cb726a230;
+the toolchain sources are identical to cb726a230's, `git diff --stat cb726a230
+aee70185c -- toolchain` being empty). Records only beside the fix commit below:
+no .carbon, prelude, golden, program or docs file changes. Every decision
+auto-adopted under R29 and open to veto.
+
+_The reset and the re-creation._ The container reset of 2026-11-09 lost every
+worktree and every container-built toolchain, among them the carbonbuild
+arbiter that R33 names as the verification of a landing while GitHub Actions
+is disabled. ARB-2 re-created it from the BUILD files, without Bazel, which is
+never run or installed in the container: LLVM at Carbon's pin (MODULE.bazel's
+`git_override` for `llvm-raw`, 6ec87e7ec4b3) built in the container under
+/home/user/llvm-build; the Bazel BUILD graph of the three binaries
+(carbon-busybox, file_test, make-installation-digest) evaluated as Python by
+bazel_graph.py and bzl_eval.py, so that the compiled sources, flags, generated
+files and install sets are the real rules' own, with gen_ninja.py writing the
+ninja file; the LLVM 21.1.8 release clang as the host compiler, because the
+container's clang 18 cannot compile Carbon; install.py laying out the packaged
+install the nightly tarball uses; runfiles.py, gate.sh, autoupdate.sh and
+conformance.sh running the three acceptance checks as Bazel runs them. The one
+known divergence from the Bazel build is the standard library: the arbiter
+links libstdc++ (the CMake LLVM archives were built with it, and the clang
+subset carries no libc++) where Bazel builds with libc++. The scaffold was
+reviewed adversarially (/home/user/arb/carbonbuild/REVIEW-1.md, verdict FIX:
+one blocker, one major, five minor, all folded), and its acceptance values
+were measured in the container: the conformance harness on cb726a230 with the
+unpatched busybox, `PASS 228 / FAIL 0 / SKIP 13` over 241 programs and 51 of
+56 bullets; the golden gate on the fix sha below, `[  PASSED  ] 2047 tests.`,
+and on cb726a230 itself only with the finding's fix compiled in as a visible
+source overlay (the fold's `GATE cb726a230: 2047 passed, 0 failed`, its line
+reading `0001-check-unit-infos-in-place.diff applied`). The scripts live under
+/home/user/arb/carbonbuild until a separate records commit lands them under
+fork/tools/carbonbuild.
+
+_The finding (REVIEW-1 R1-B1)._ The scaffold review's blocker: the file_test
+binary segfaults on 15 goldens and the gate aborts with no gtest summary. At
+aee70185c, toolchain/check/check.cpp:428-432 builds
+`llvm::SmallVector<UnitAndImports, 0> unit_infos(llvm::map_range(units, ...))`,
+constructing each element from the temporary the lambda returns, and
+`UnitAndImports` (toolchain/check/check_unit.h:59-94) is self-referential: its
+constructor initialises `emitter(&err_tracker, ...)` (check_unit.h:79-83), a
+pointer to another member of the same object, so a copied or moved element's
+emitter still points at the dead temporary's `err_tracker`, and the first
+diagnostic emitted through it is a virtual call through a dangling pointer
+(toolchain/diagnostics/emitter.h:407). The fold sharpened the mechanism: LLVM's
+`SmallVector(const iterator_range&)` appends through `std::uninitialized_copy`
+(llvm/ADT/SmallVector.h:1274-1277 and :723 at the pin); libstdc++ 13 implements
+it through `std::_Construct(p, *first)` (bits/stl_uninitialized.h:120,
+bits/stl_construct.h:109), whose forwarding reference materialises the prvalue
+as a temporary and move-constructs the element from it, so `emitter.consumer_`
+dangles deterministically; libc++ spells the standard's `::new (p) T(*first)`,
+where guaranteed elision constructs the element in place and nothing dangles.
+Bazel's libc++ build is therefore correct by a library-dependent elision, not
+by luck, and the source is undefined behaviour all the same. The 15 goldens
+are the ones whose expected diagnostics go through
+`UnitAndImports::NodeEmitter`:
+toolchain/check/testdata/packages/{fail_api_not_found, fail_cycle,
+fail_duplicate_api, fail_extension, fail_import_default,
+fail_import_inline_not_cpp, fail_import_invalid, fail_import_repeat,
+fail_modifiers, fail_name_with_import_failure, restricted_package_names}.carbon,
+toolchain/check/testdata/interop/cpp/basics/import/fail_fuzzing.carbon,
+toolchain/check/testdata/interop/cpp/operators/spaceship.carbon and
+toolchain/language_server/testdata/text_document/{diagnostics_no_line,
+multiple_files}.carbon. Reproduced on an unpatched arbiter build of aee70185c
+(`SRC_PATCHES=none`; /home/user/arb/build/aee70185c/src-patches.applied is
+empty): each of the 15 run alone ends in `Segmentation fault`, frame 4 in
+`Carbon::Check::CheckParseTrees`, `GATE aee70185c: 0 passed, 0 failed (NO
+GTEST SUMMARY; binary exit 139)` (the fail_cycle run is
+/home/user/arb/logs/gate-aee70185c-20261109T165759Z.log). The literal baseline
+command on cb726a230 no longer shows the crash, because the fold rebuilt that
+baseline with the overlay compiled in (`applied`); the unpatched aee70185c
+build is the reproduction of record. The same lines are at upstream's tip
+ca1898506 (fetched 2026-11-09; toolchain/check/check.cpp:425-429,
+check_unit.h:83): the defect is upstream-reportable, and the fork does not file
+upstream issues.
+
+_The ruling (orchestrator, R29, 2026-11-09)._ Quoted from the task that
+dispatched the fix: "this is a maintenance fix of a defect the arbiter found,
+not a direction or design change (R32 untouched): it is implemented on this
+branch as one minimal, obviously correct, upstream-mergeable commit; measured
+with the container arbiter (gate, autoupdate no-op, conformance;
+container-measured, EXPECTED, not of record under R9 (R33 (c)'s label));
+reviewed by two fresh adversarial reviewers; recorded (a ledger item with the
+next free W id after an id re-scan, a decision-log entry, an ORCHESTRATION
+paragraph); landed by one PR with base trunk under R33. The break condition of
+the ruling: if the fix cannot be made without changing behaviour visible in
+any golden or conformance program, STOP and report (it then needs a plan)."
+(The container-measured label is R33 (b)'s in fork/rulebook.md; the ruling's
+"(c)" is quoted as given.) The break condition did not fire: no golden and no
+conformance program changed.
+
+_The fix (commit 6de18c1f7, author jmann345, parent aee70185c)._ One file,
+toolchain/check/check.cpp, 11 insertions and 5 deletions, at check.cpp:426-439
+of the commit: `unit_infos` is declared empty,
+`unit_infos.reserve(units.size())` is called, and a loop over `units` calls
+`unit_infos.emplace_back(&unit,
+tree_and_subtrees_getters.Get(unit.sem_ir->check_ir_id()))`, under a comment
+stating why (self-referential through `emitter`; never copy or move; the
+reserve keeps later `emplace_back` calls from moving the elements built), above
+the existing size comment. The six code lines are the arbiter's overlay patch
+verbatim, so gen_ninja.py detects the patch as `landed` and compiles the
+repository's file alone. Rejected: deleting `UnitAndImports`' copy and move
+constructors as a guard, because `llvm::SmallVector::reserve` instantiates
+`moveElementsForGrow` and `std::uninitialized_move`, which do not compile for a
+type without a move constructor (verified with the arbiter's exact compile
+command); `std::deque` or a vector of `std::unique_ptr`, which both change
+`BuildApiMapAndDiagnosePackaging`'s `llvm::MutableArrayRef<UnitAndImports>`
+parameter (check.cpp:244) for no gain. Formatted with the clang-format prek runs
+(clang-format 21.1.8), two runs, a fixpoint.
+
+_The measurements (container-measured, EXPECTED, not of record under R9)._ Of
+the repository alone at 6de18c1f7 (opt, clang 21.1.8, libstdc++), the build
+log /home/user/arb/logs/build-6de18c1f7.log (line 7) and
+/home/user/arb/build/6de18c1f7/src-patches.applied both reading
+`0001-check-unit-infos-in-place.diff landed toolchain/check/check.cpp`: the
+golden gate `[  PASSED  ] 2047 tests.`, `GATE 6de18c1f7: 2047 passed, 0 failed`
+(/home/user/arb/logs/gate-6de18c1f7-20261109T171409Z.log; each of the 15
+goldens run alone passes, exit 0); autoupdate
+`AUTOUPDATE 6de18c1f7: 0 file(s) changed (binary exit 0)`, with
+`git status --porcelain` empty before and after
+(/home/user/arb/logs/autoupdate-6de18c1f7-20261109T171419Z.log); conformance
+`CONFORMANCE 6de18c1f7: PASS 228 / FAIL 0 / SKIP 13 over 241 programs;
+bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN (of 56 in the gap-analysis
+table) (runner exit 0)` (/home/user/arb/logs/conformance-6de18c1f7.log;
+scoreboard /home/user/arb/conformance/6de18c1f7/scoreboard.json), with the
+same 228 PASS and 13 SKIP programs and the same 51 PASS and 5 SKIP bullets as
+cb726a230's baseline. Before the fix was on the branch, the overlay
+measurement of the same six lines on cb726a230 gave the same three results
+(the fold, opt), and REVIEW-1's scratch fastbuild of them passed the gate too;
+the fix commit's message attributes that fastbuild pass to the overlay run,
+which was opt only (findings R-A1 and B-3 below), and the commit stands as
+written, every fix being a new commit.
+
+_The reviews._ Two fresh adversarial reviewers, both APPROVE, the worktree
+untouched by either. Reviewer A (the C++ change): no copy or move path
+remains (the reserve, then exactly as many `emplace_back` calls as units;
+every other holder of a `UnitAndImports` is a pointer, a reference or a
+`MutableArrayRef`); no observable change (the same construction order, one
+`Get` per unit, no diagnostic during construction); every citation of the
+commit message checked against the tree, the pin and libstdc++ 13; every
+`map_range` and `to_vector` site in toolchain/ read, no other instance of the
+pattern; three MINOR findings: R-A1, the commit message attributes the
+fastbuild pass to the overlay run (corrected in the records above); R-A2, the
+commit title is 75 columns; R-A3, no guard at the type (deleting the
+constructors does not compile; an optional note on the struct when the defect
+is reported upstream). Reviewer B (upstream fidelity and evidence): the fix
+applies to upstream's check.cpp at ca1898506 with an offset of three lines and
+no fuzz; pure maintenance, no .carbon, docs or fork file, R32 untouched; every
+number in the message re-derived; four MINOR findings: B-1, the title width (a
+PR title of at most 72 columns); B-2, the records cite the unpatched aee70185c
+build as the reproduction (done above); B-3, the records carry the
+repository-alone numbers (done above); B-4, the two stacked comment paragraphs
+may be merged when the fix is offered upstream. Nothing on the commit is
+amended.
+
+_The records._ W-378 is filed in fork/inventory/work-items.json as this
+defect's item (kind toolchain-defect, DISCHARGED at the fix, done on the
+branch; its PR is not yet landed), the next free id after a re-scan of
+origin/trunk, origin/claude/carbon-fork-0-1-safe-wip,
+origin/claude/carbon-fork-0-1-safe and the local branches (trunk,
+weekly-20261109, claude/carbon-fork-0-1-7mwfb7, claude/carbon-fork-0-1-ehc,
+claude/carbon-fork-0-1-safe and this branch) after `git fetch origin`: W-377
+is the highest id filed on every ref; W-378 is named only as "the next free
+id" in the weekly check's records of 2026-11-09 (ORCHESTRATION.md and this
+log) and, in the EH-C re-plan's uncommitted worktree text, as this item's;
+W-379, W-380, W-385, W-388, W-389 and W-396 to W-399 appear only in prose, as
+range bounds or in that weekly entry's id sentence; the EH-C re-plan reserves
+W-380 to W-385 (its D-EHC-11). The item carries the evidence at aee70185c and
+at ca1898506, the fix commit and the three measurement lines.
+ORCHESTRATION's paragraph of 2026-11-09 (17:41 UTC, ARB-2) and its header
+record the same.
+
+_Follow-ups._ The PR with base trunk (one PR, its title at most 72 columns),
+landed under R33 by the orchestrator; the arbiter scripts, README, NOTES and
+REVIEW-1 land under fork/tools/carbonbuild by a separate records commit, with
+the R28 amendment naming the container arbiter; src-patches/0001 is retired
+then, or kept as the landed-detector; EH-C (W-346) and SAFE-4 resume on the
+arbiter. UA-3 carries the fix forward at the next upstream advance, or drops it
+when upstream fixes the construction itself.
+
+_Break condition._ A tree that lands check.cpp without the in-place
+construction (a UA-3 merge taking upstream's lines) fails the arbiter's gate on
+the 15 goldens with `Segmentation fault` and no gtest summary, which re-opens
+W-378 for re-applying the fix; upstream fixing the construction closes the item
+at UA-3.

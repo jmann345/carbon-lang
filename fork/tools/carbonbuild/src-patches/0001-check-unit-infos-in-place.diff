@@ -1,0 +1,23 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+--- a/toolchain/check/check.cpp
++++ b/toolchain/check/check.cpp
+@@ -425,11 +425,12 @@
+
+   // UnitAndImports is big due to its SmallVectors, so we default to 0 on the
+   // stack.
+-  llvm::SmallVector<UnitAndImports, 0> unit_infos(
+-      llvm::map_range(units, [&](Unit& unit) {
+-        return UnitAndImports(
+-            &unit, tree_and_subtrees_getters.Get(unit.sem_ir->check_ir_id()));
+-      }));
++  llvm::SmallVector<UnitAndImports, 0> unit_infos;
++  unit_infos.reserve(units.size());
++  for (Unit& unit : units) {
++    unit_infos.emplace_back(
++        &unit, tree_and_subtrees_getters.Get(unit.sem_ir->check_ir_id()));
++  }
+
+   // Dump the raw SemIR in the event of a crash. We dump it to a separate file
+   // to keep the stack trace manageable.

@@ -10,7 +10,25 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-09 (weekly check fired under R32: the cut HOLDS at 176
+Last updated: 2026-11-09 (ARB-2 landed: PR 69, the check.cpp fix 6de18c1f7
+with its records, landed on trunk by merge fca1e9e2f under R33, the land tree
+equal to the PR head and the head itself measured in the container before the
+merge, W-378 landed; the container arbiter's scripts landed under
+fork/tools/carbonbuild as the record, /home/user/arb/carbonbuild the running
+instance; R28 and R33 amended; container-measured gate 2047 of 2047,
+autoupdate 0 changed, conformance 228/0/13 over 241, 51/56 bullets; 18 PRs
+landed, 1 held; see the paragraph dated 2026-11-09 (18:32 UTC, ARB-2 landed)
+below and the section "Toolchains in the container", re-listed by the fold of
+the same day for the re-created arbiter; the earlier 2026-11-09 text follows).
+2026-11-09 (ARB-2: the container arbiter re-created after the
+reset without Bazel, libstdc++ its one known divergence from the Bazel build;
+its first finding, check.cpp's self-referential copy of `UnitAndImports`, fixed
+as 6de18c1f7 on claude/carbon-fork-0-1-arb2 and filed as W-378;
+container-measured gate 2047 of 2047, autoupdate 0 changed, conformance
+228/0/13 over 241, 51/56 bullets; 17 PRs landed, 1 held; see the paragraph
+dated 2026-11-09 (17:41 UTC, ARB-2) below; the earlier 2026-11-09 text
+follows).
+2026-11-09 (weekly check fired under R32: the cut HOLDS at 176
 upstream commits with 191 conflicting files against trunk cb726a230; TP-1's
 register row H10.8 is re-classified DRIFT on the existing W-374, owner TP-1's
 follow-on; no new item; W-372 gains 5ae3dcaa9 and d50576ca1; W-355's 24 moved
@@ -2156,6 +2174,70 @@ is still disabled (the newest run is of 2026-10-08), so nothing is of record. At
 trunk cb726a230, which the records commit is cut from, 17 PRs are landed and 1
 held.
 
+2026-11-09 (17:41 UTC, ARB-2): the container arbiter is re-created after the
+reset, and its first finding is fixed. ARB-2 rebuilt the carbonbuild arbiter
+from the BUILD files without Bazel (LLVM at the pin 6ec87e7ec4b3 built under
+/home/user/llvm-build; the BUILD graph evaluated as Python; the LLVM 21.1.8
+release clang as the host compiler; libstdc++ where Bazel uses libc++, the one
+known divergence; the scripts under /home/user/arb/carbonbuild until they land
+under fork/tools/carbonbuild), had it reviewed adversarially (REVIEW-1: FIX,
+one blocker, one major, five minor, all folded) and measured its acceptance:
+conformance on cb726a230 with the unpatched busybox PASS 228 / FAIL 0 / SKIP 13
+over 241, 51/56 bullets; the gate 2047 of 2047 on the fix sha below. The
+review's blocker R1-B1 is a defect of trunk's own source:
+toolchain/check/check.cpp:428-432 copies `UnitAndImports` out of a `map_range`
+temporary while its `emitter` points at its own `err_tracker` (UB: under
+libstdc++ the pointer dangles deterministically and file_test crashed on 15
+goldens; libc++ elides the copy, so Bazel's build never saw it; the same lines
+are at upstream's tip ca1898506, upstream-reportable). Ruled a maintenance fix
+under R29 (R32 untouched), not a plan: one commit, 6de18c1f7 on
+claude/carbon-fork-0-1-arb2 (cut from trunk aee70185c), constructs the elements
+in place (reserve, then emplace_back); container-measured, EXPECTED, not of
+record: `GATE 6de18c1f7: 2047 passed, 0 failed`, `AUTOUPDATE 6de18c1f7: 0
+file(s) changed`, `CONFORMANCE 6de18c1f7: PASS 228 / FAIL 0 / SKIP 13 over 241
+programs`, 51/56 bullets, identical to the baseline per program and per bullet;
+two fresh adversarial reviews, both APPROVE with MINOR findings only (records
+and the PR title's width). Filed as W-378 (the next free id after the re-scan:
+W-377 the highest filed on every ref), with the decision-log entry "ARB-2
+(2026-11-09): the container arbiter re-created after the reset". Next: the PR
+with base trunk, landed under R33; the arbiter scripts land under
+fork/tools/carbonbuild by a separate records commit; EH-C (W-346) and SAFE-4
+resume on the arbiter; UA-3 carries the fix forward or drops it when upstream
+fixes it. 17 PRs landed, 1 held.
+
+2026-11-09 (18:32 UTC, ARB-2 landed): PR 69 (ARB-2: the check.cpp fix
+6de18c1f7 with its records a8ddebcc6 and b87f130b2) LANDED on trunk by merge
+fca1e9e2f under R33 (LAND-1's D-LAND-6), GitHub merged_at
+2026-11-09T18:14:39Z; the land tree equals the PR head b87f130b2 because trunk
+aee70185c did not move, and the head itself was measured in the container
+before the merge (18:01 to 18:12 UTC, the checkout /home/user/carbon-arb2;
+under /home/user/arb: logs/build-b87f130b2.log line 7 `landed`,
+logs/gate-b87f130b2-20261109T181044Z.log `[  PASSED  ] 2047 tests.`,
+logs/autoupdate-b87f130b2-20261109T181116Z.log the same with the worktree's
+porcelain empty after it, logs/conformance-b87f130b2.log's totals block and
+conformance/b87f130b2/scoreboard.json), the landing's verification (the merge
+message's "Container-measured on the head"): container-measured (R33 (b)) gate
+2047 of 2047, autoupdate 0 changed, conformance 228/0/13 over 241, 51/56
+bullets, gap tally 37/17/2/0, the same values per check as the fix's
+measurement of 6de18c1f7; id re-scans: none; moved to follow-ons: none; W-378
+landed. The container arbiter's scripts, README, NOTES and REVIEW-1 land under
+fork/tools/carbonbuild by the records commit of this paragraph, the record, so
+a container reset cannot lose them again (/home/user/arb/carbonbuild is the
+running instance, synchronised by `diff -r`; the README's section "Provenance
+and acceptance (2026-11-09)" holds the LLVM CMake configuration, the
+container's layout, the acceptance logs of 6de18c1f7 and, after the fold, the
+head's; the lint findings the formatters cannot fix are exempted for the
+directory in pyproject.toml rather than hand-edited); R28 and R33 carry a dated
+amendment naming that home and the acceptance values; src-patches/0001 is kept
+as the landed-detector. The fold after the two reviews of that commit (the
+same day, records only) cited the head's measurement here and in the
+decision-log, the ledger, R33's amendment and the README, and re-listed the
+section "Toolchains in the container" below for the re-created arbiter (the
+previous arbiter under /home/user/carbon-build and the syn compile check gone
+since the reset). 18 PRs landed, 1 held. Next: EH-C (W-346) and SAFE-4 resume
+on the arbiter; UA-3 carries the fix forward or drops it when upstream fixes
+the construction.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2506,6 +2588,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-va2` | LANDED as PR 66 by merge a725dddca (2026-11-06, LAND-1, R33; GitHub merged_at 2026-11-06T05:39:40Z, merge_commit_sha a725dddca) — VA-2: W-212, W-213 and W-225: generic and heterogeneous packs, tuple pack segments, variadic impls; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-rg1` | LANDED as PR 67 by merge 7f8c7e696 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T01:17:26Z, merge_commit_sha 7f8c7e696) — RG-1: records only: the V-3a register classified at upstream f27a977d8; W-342 and W-344 discharged, W-343 narrowed to the land-time notes, W-346 to W-356 filed; land-time commits none; container-measured (R33 (b)): gate 1942 of 1942, conformance 128/0/22 over 150, 48/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ov4` | LANDED as PR 68 by merge c62ae211e (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:53:02Z, merge_commit_sha c62ae211e) — OV-4: W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3; land-time commits c6c9d5fe3; container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15 over 208, 49/56 bullets; moved to follow-ons: to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order; R21's hosted gate owed when Actions returns (R33 (b)). |
+| `claude/carbon-fork-0-1-arb2` | LANDED as PR 69 by merge fca1e9e2f (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-09T18:14:39Z, merge_commit_sha fca1e9e2f) — ARB-2: W-378: `UnitAndImports` constructed in place in toolchain/check/check.cpp (its emitter points into itself; the re-created container arbiter's first finding, REVIEW-1 R1-B1), with its records; the arbiter's scripts land under fork/tools/carbonbuild by the records commit of 2026-11-09; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -2517,7 +2600,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 66's landing (2026-11-06, LAND-1, R33 (b)): 228 PASS
+Container-measured at PR 69's landing (2026-11-09, LAND-1, R33 (b)): 228 PASS
 / 13 SKIP / 0 FAIL programs (241 total); **51/56 bullets green**; gate
 2047 of 2047. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
@@ -2609,23 +2692,43 @@ merge commit.
 
 ### Toolchains in the container
 
--   `/home/user/carbon-build/carbon-trunk/install/bin/carbon` — fork toolchain
-    (`carbon version`: 0.0.0-0.dev+0bdce60a5), a CMake and Ninja build of trunk
-    0bdce60a5 linked against the container's own LLVM, with its busybox at
-    `install/lib/carbon/carbon-busybox`; the local arbiter for fork features,
-    not the Bazel artifact (re-listed 2026-10-13 at the EV-1 discharge: the two
-    paths listed before, under /home/user/arbiter and /home/user/trial-tc, are
-    gone since the container was recreated)
+-   `/home/user/arb/install/<sha>/bin/carbon` (a symlink to
+    `../lib/carbon/carbon-busybox`) — the container arbiter re-created after the
+    2026-11-09 reset (ARB-2; `carbon version`: 0.0.0-0.dev+unknown), one install
+    per measured commit, built without Bazel by the scripts under
+    fork/tools/carbonbuild (the record) and /home/user/arb/carbonbuild (the
+    running instance, the one that runs; synchronised by `diff -r`; the README
+    there): LLVM at Carbon's pin built by CMake at /home/user/llvm-build from
+    /home/user/llvm-project (by the system clang 18, which rejects the Carbon
+    sources), the LLVM 21.1.8 release clang at /home/user/arb/deps/llvm21 as the
+    host compiler under the toolchain's `-Werror` set, the dependencies under
+    /home/user/arb/deps, builds under /home/user/arb/build/<sha>, logs under
+    /home/user/arb/logs, conformance output under
+    /home/user/arb/conformance/<sha> (paths.sh's defaults; its checkout
+    variable defaults to /home/user/carbon-trunk and each measurement sets it
+    to its worktree). The fork's measurement instrument while Actions is
+    disabled (R28 and R33 as amended 2026-11-09); libstdc++ is its one known
+    divergence from the Bazel build. Installs at the re-listing: aee70185c
+    (unpatched, W-378's reproduction), cb726a230, 6de18c1f7 and b87f130b2
+    (PR 69's fix and head), and role-named builds of in-flight worktrees
+    (ehc-fixer). Re-listed 2026-11-09 at ARB-2's close: the previous arbiter,
+    `/home/user/carbon-build/carbon-trunk/install/bin/carbon` (a CMake and Ninja
+    build of trunk 0bdce60a5 against the container's own LLVM, listed here since
+    the EV-1 discharge of 2026-10-13, when the earlier paths under
+    /home/user/arbiter and /home/user/trial-tc were recorded gone), is gone
+    since the 2026-11-09 container reset, with its scripts, which lived only in
+    a scratchpad.
 -   `/home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12/bin/carbon`
-    — upstream nightly 0.0.0-0.nightly.2026.10.12+62f1cc6
--   The container's clang 18 cannot build the toolchain, but `clang++-19`
-    with libc++ (installed 2026-10-05) and the tablegen outputs built from
-    the bazel-cached llvm-project give a `-fsyntax-only -std=c++20` check
-    under the toolchain's `-Werror` set: the harness is
-    `scratchpad/syn/check_one.sh <path>` (per-worktree variants). It
-    catches compile errors in a fix round before the hosted autoupdate
-    does; it proves nothing about behavior, and the hosted runs stay the
-    arbiter (R28).
+    — upstream nightly 0.0.0-0.nightly.2026.10.12+62f1cc6 (present at the
+    re-listing of 2026-11-09)
+-   The `clang++-19` with libc++ `-fsyntax-only -std=c++20` check under the
+    toolchain's `-Werror` set (installed 2026-10-05; the harness
+    `scratchpad/syn/check_one.sh <path>`, per-worktree variants) is gone since
+    the 2026-11-09 container reset, the compiler and the scratchpad with it
+    (re-listed 2026-11-09). The arbiter's build.sh is the compile check now
+    (the same `-Werror` set, taken from the BUILD graph, with the LLVM 21.1.8
+    clang), and its gate, autoupdate and conformance checks measure behavior;
+    the hosted runs are owed when Actions returns (R28, R33 (b)).
 
 ### Next actions (dependency order)
 

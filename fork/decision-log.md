@@ -20847,36 +20847,74 @@ the 15 goldens with `Segmentation fault` and no gtest summary, which re-opens
 W-378 for re-applying the fix; upstream fixing the construction closes the item
 at UA-3.
 
-_Landed (2026-11-09, R33):_ merged into trunk as PR 69 by fca1e9e2f (GitHub
-merged_at 2026-11-09T18:14:39Z, merge method merge, title "Land PR 69: ARB-2,
-construct UnitAndImports in place (its emitter points into itself)"), under R33
-by LAND-1's per-merge procedure (D-LAND-6). The land tree equals the PR head
-b87f130b2 because trunk aee70185c did not move between the cut and the merge, so
-the measurement of 6de18c1f7 above (gate 2047 of 2047, autoupdate 0 changed,
-conformance 228/0/13 over 241, 51/56 bullets; container-measured, R33 (b)) is
-the land tree's; id re-scans: none; moved to follow-ons: none. W-378 is marked
-landed in the ledger (its title's status and a landed line in its notes). The
-arbiter's scripts, README, NOTES and REVIEW-1 are landed by the records commit
-of the same day under fork/tools/carbonbuild, the record, so a container reset
-cannot lose them again; /home/user/arb/carbonbuild stays the running instance,
-synchronised by `diff -r`, and paths.sh keeps pointing at it. The copy is
-byte-identical to the running instance but for the license headers, the
-formatter output of the repository's prek hooks (ruff, clang-format, rumdl,
-trailing whitespace), two lines hand-wrapped where rumdl's reflow left them over
-80 columns, the reviewer's scratchpad path reworded out of REVIEW-1.md, and the
-lint exemptions in pyproject.toml and .codespell_ignore, each listed in that
-commit's message; the copy parses (`bash -n`, `py_compile`), and its
-gen_ninja.py run against the land tree prints the running instance's counts (207
-targets, 393 objects, 2047 test files, patch `landed`).
+_Landed (2026-11-09, LAND-1, R33):_ merged into trunk as PR 69 by fca1e9e2f
+(GitHub merged_at 2026-11-09T18:14:39Z, merge method merge, title "Land PR 69:
+ARB-2, construct UnitAndImports in place (its emitter points into itself)"),
+under R33 by LAND-1's per-merge procedure (D-LAND-6). The land tree equals the
+PR head b87f130b2 because trunk aee70185c did not move between the cut and the
+merge. The landing's verification is the container's measurement of that head
+itself before the merge (18:01 to 18:12 UTC; the checkout
+/home/user/carbon-arb2 at b87f130b2; opt, clang 21.1.8, libstdc++; the merge
+message's "Container-measured on the head"; R33 (a)), under /home/user/arb:
+logs/build-b87f130b2.log (line 7) and build/b87f130b2/src-patches.applied read
+`0001-check-unit-infos-in-place.diff landed toolchain/check/check.cpp`; the gate
+log logs/gate-b87f130b2-20261109T181044Z.log holds the gtest run and its summary
+`[  PASSED  ] 2047 tests.` (gate 2047 of 2047); the autoupdate log
+logs/autoupdate-b87f130b2-20261109T181116Z.log holds the autoupdate pass's gtest
+run with the same summary, the worktree's `git status --porcelain` empty after
+it (autoupdate 0 changed); the conformance log logs/conformance-b87f130b2.log
+holds the runner's totals block (PASS 228, SKIP 13, every failure status 0,
+bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN of 56), and
+conformance/b87f130b2/scoreboard.json (generated 2026-11-09T18:12:04Z, toolchain
+install/b87f130b2/lib/carbon/carbon-busybox) the same totals: container-measured
+(R33 (b)) gate 2047 of 2047, autoupdate 0 changed, conformance 228/0/13 over
+241, 51/56 bullets, the same values per check as the fix's measurement of
+6de18c1f7 above, which stays the fix's. The `GATE`, `AUTOUPDATE` and
+`CONFORMANCE` lines quoted in the measurements paragraph above are the scripts'
+stdout, which the logs do not hold: a gate or autoupdate log holds the binary's
+output (the gtest run, its summary and the source-patches line), a conformance
+log the runner's output ending in the totals block, and
+conformance-6de18c1f7.log.nohup (likewise conformance-b87f130b2.log.nohup) the
+script's stdout with the totals block and the `CONFORMANCE` line; the autoupdate
+file count is corroborated by the worktree's empty porcelain. Id re-scans: none;
+moved to follow-ons: none. W-378 is marked landed in the ledger (its title's
+status and a landed line in its notes). The arbiter's scripts, README, NOTES and
+REVIEW-1 are landed by the records commit of the same day under
+fork/tools/carbonbuild, the record, so a container reset cannot lose them again;
+/home/user/arb/carbonbuild stays the running instance, synchronised by
+`diff -r`, and paths.sh keeps pointing at it. The copy is byte-identical to the
+running instance but for the license headers, the formatter output of the
+repository's prek hooks (ruff, clang-format, rumdl, trailing whitespace), the
+hand edits listed in that commit's message (three sites hand-wrapped where
+rumdl's reflow left lines over 80 columns, the reviewer's scratchpad path
+reworded out of REVIEW-1.md, README's provenance section) and in the fold's
+(NOTES-A.md's task reference written without its hash, R31 (a), and its
+install-layout code span broken once more), and the lint exemptions in
+pyproject.toml and .codespell_ignore; the copy parses (`bash -n`, `py_compile`),
+and its gen_ninja.py run against the land tree prints the running instance's
+counts (207 targets, 393 objects, 2047 test files, patch `landed`).
 src-patches/0001-check-unit-infos-in-place.diff is kept as the landed-detector:
 gen_ninja.py reports it `landed` on every tree that holds the fix and `applied`
 on one that does not, so a measurement of a tree without the fix is never
 mistaken for one of the tree alone. R28 and R33 carry a dated amendment naming
 fork/tools/carbonbuild as the arbiter's home and its acceptance values.
 ORCHESTRATION's paragraph dated 2026-11-09 (18:32 UTC, ARB-2 landed), its
-header, its Branches row for claude/carbon-fork-0-1-arb2 and its Scoreboard
-paragraph, and fork/gap-analysis.md's Scoreboard header (LAND-1 Appendix A.8 and
-A.9; the tallies are unchanged, 37/17/2/0) record the same; A.7's Landed line
-for PR 69's description is quoted in that commit's message for the orchestrator
-to prepend. Next: EH-C (W-346) and SAFE-4 resume on the arbiter; UA-3 carries
-the fix forward or drops it when upstream fixes the construction.
+header, its Branches row for claude/carbon-fork-0-1-arb2, its Scoreboard
+paragraph and its section "Toolchains in the container" (re-listed by the fold:
+the arbiter's layout; the previous arbiter and the syn compile check gone since
+the reset), and fork/gap-analysis.md's Scoreboard header (LAND-1 Appendix A.8
+and A.9; the tallies are unchanged, 37/17/2/0) record the same; A.7's Landed
+line for PR 69's description is quoted in that commit's message for the
+orchestrator to prepend. The model-identifier grep that commit's message reports
+empty over its added lines matches, over the whole of the records files, six
+scratchpad paths present since before PR 69 (in ORCHESTRATION's paragraph dated
+2026-11-06 (00:18 UTC), in the VA-2 entry here and in evidence lines of W-200,
+W-201, W-212 and W-225 in the ledger) by the first component of the scratchpad
+directory's name, none a model identifier, none added by that commit or by the
+fold. The fold after the two reviews of the records commit (the second commit on
+arb2-tools, records only) cited the head's measurement here, in the ledger, in
+R33's amendment, in ORCHESTRATION and in the README, re-listed the Toolchains
+section, wrote this paragraph's opener in the ledger's form, corrected its count
+of the hand edits and said what each log holds. Next: EH-C (W-346) and SAFE-4
+resume on the arbiter; UA-3 carries the fix forward or drops it when upstream
+fixes the construction.

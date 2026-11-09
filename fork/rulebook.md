@@ -450,6 +450,13 @@ here.
     running instance, synchronised by `diff -r`); R28's amendment of the same
     date names its acceptance, gate 2047 of 2047, autoupdate 0 changed,
     conformance 228/0/13 over 241 and 51/56 bullets on 6de18c1f7. PR 69 is
-    the first landing it verified: the land tree equals the PR head,
-    trunk aee70185c not having moved, so the measurement of 6de18c1f7 is the
-    land tree's (merge fca1e9e2f, GitHub merged_at 2026-11-09T18:14:39Z).
+    the first landing it verified: the land tree equals the PR head
+    b87f130b2, trunk aee70185c not having moved, and the head itself was
+    measured in the container before the merge with the same values per
+    check, the landing's verification under (a) (the logs
+    build-b87f130b2.log, gate-b87f130b2-20261109T181044Z.log,
+    autoupdate-b87f130b2-20261109T181116Z.log and conformance-b87f130b2.log
+    under /home/user/arb/logs and the scoreboard under
+    /home/user/arb/conformance/b87f130b2, named with what each holds in the
+    README's acceptance section; merge fca1e9e2f, GitHub merged_at
+    2026-11-09T18:14:39Z).

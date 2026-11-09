@@ -149,10 +149,13 @@ records) landed on trunk by merge fca1e9e2f under R33, so that a reset cannot
 lose them again. The two copies are kept synchronised by
 `diff -r /home/user/arb/carbonbuild fork/tools/carbonbuild`; the expected
 differences are the license headers, the formatter output of the repository's
-prek hooks (ruff, clang-format, rumdl, trailing whitespace) and the generated
-files the running instance holds and the record does not (`env.sh`, written by
-gen_ninja.py, and `__pycache__`). paths.sh points at the running instance; the
-record is not run from the repository.
+prek hooks (ruff, clang-format, rumdl, trailing whitespace), the hand edits to
+the markdown files listed in the messages of the records commit and its fold
+(re-wraps where the reflow left lines over 80 columns, a scratchpad path and a
+task reference reworded, this section) and the generated files the running
+instance holds and the record does not (`env.sh`, written by gen_ninja.py, and
+`__pycache__`). paths.sh points at the running instance; the record is not run
+from the repository.
 
 The repository's prek hooks run on the record. The lint findings the formatters
 cannot fix are exempted for this directory in pyproject.toml (ruff's `ANN`,
@@ -231,13 +234,16 @@ aee70185c did not move before the merge) with the repository alone, the overlay
 reporting `0001-check-unit-infos-in-place.diff landed toolchain/check/check.cpp`
 (`/home/user/arb/logs/build-6de18c1f7.log` line 7 and
 `/home/user/arb/build/6de18c1f7/src-patches.applied`); opt, clang 21.1.8,
-libstdc++:
+libstdc++. The `GATE`, `AUTOUPDATE` and `CONFORMANCE` lines are the scripts'
+stdout (gate.sh, autoupdate.sh and conformance.sh print them; a log holds the
+binary's or the runner's output, section "The gate harness" below), so the
+table says what each log holds beside them:
 
-| Check | Result | Log |
+| Check | Result (the script's stdout) | Log and what it holds |
 | --- | --- | --- |
-| golden gate | `[  PASSED  ] 2047 tests.`, `GATE 6de18c1f7: 2047 passed, 0 failed` | `/home/user/arb/logs/gate-6de18c1f7-20261109T171409Z.log` |
-| autoupdate | `AUTOUPDATE 6de18c1f7: 0 file(s) changed (binary exit 0)`, `git status --porcelain` empty before and after | `/home/user/arb/logs/autoupdate-6de18c1f7-20261109T171419Z.log` |
-| conformance | `CONFORMANCE 6de18c1f7: PASS 228 / FAIL 0 / SKIP 13 over 241 programs; bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN (of 56 in the gap-analysis table) (runner exit 0)` | `/home/user/arb/logs/conformance-6de18c1f7.log`; scoreboard `/home/user/arb/conformance/6de18c1f7/scoreboard.json` |
+| golden gate | `GATE 6de18c1f7: 2047 passed, 0 failed` | `/home/user/arb/logs/gate-6de18c1f7-20261109T171409Z.log`: the gtest run, its summary `[  PASSED  ] 2047 tests.` and the source-patches line (`landed`) |
+| autoupdate | `AUTOUPDATE 6de18c1f7: 0 file(s) changed (binary exit 0)`, after the script's `git status --porcelain` printout, empty before and after | `/home/user/arb/logs/autoupdate-6de18c1f7-20261109T171419Z.log`: the autoupdate pass's gtest run, `[  PASSED  ] 2047 tests.` and the source-patches line; the porcelain printout and the file count are not in the log (the worktree /home/user/carbon-arb2 is clean at b87f130b2 after both autoupdate passes) |
+| conformance | `CONFORMANCE 6de18c1f7: PASS 228 / FAIL 0 / SKIP 13 over 241 programs; bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN (of 56 in the gap-analysis table) (runner exit 0)`, kept with the totals block in `/home/user/arb/logs/conformance-6de18c1f7.log.nohup` (the script's stdout as captured) | `/home/user/arb/logs/conformance-6de18c1f7.log`: the runner's output, one line per program and the totals block (lines 544 to 552: PASS 228, SKIP 13, every failure status 0, the bullets line); scoreboard `/home/user/arb/conformance/6de18c1f7/scoreboard.json` |
 
 These are the values FO-1's stage 17 recorded at PR 66's landing on 2026-11-06
 with the previous container arbiter (fork/ORCHESTRATION.md's paragraph dated
@@ -248,6 +254,22 @@ Actions returns. `src-patches/0001-check-unit-infos-in-place.diff` stays as
 the landed-detector: gen_ninja.py reports it `landed` on every tree that holds
 the fix and `applied` on one that does not, so a measurement of a tree without
 the fix is never mistaken for one of the tree alone.
+
+### Verification of the landing (the PR head)
+
+The landing's own verification is the measurement of the PR head b87f130b2
+itself (the fix with its two records commits; the land tree, trunk aee70185c
+not having moved; the merge message's "Container-measured on the head"),
+2026-11-09 18:01 to 18:12 UTC, before the merge at 18:14:39 UTC, with
+`REPO=/home/user/carbon-arb2 SHA=b87f130b2`, opt, clang 21.1.8, libstdc++, the
+overlay reporting `landed`; the same values per check as on 6de18c1f7:
+
+| Check | Log and what it holds |
+| --- | --- |
+| build | `/home/user/arb/logs/build-b87f130b2.log`: gen_ninja.py's counts (207 targets, 393 objects, 2047 test files) and, line 7, `0001-check-unit-infos-in-place.diff landed (toolchain/check/check.cpp)`; `/home/user/arb/build/b87f130b2/src-patches.applied` the same |
+| golden gate | `/home/user/arb/logs/gate-b87f130b2-20261109T181044Z.log`: `Ran 2047 tests`, `[  PASSED  ] 2047 tests.` and the source-patches line (`landed`): gate 2047 of 2047 |
+| autoupdate | `/home/user/arb/logs/autoupdate-b87f130b2-20261109T181116Z.log`: the autoupdate pass's `[  PASSED  ] 2047 tests.` and the source-patches line; the worktree's `git status --porcelain` empty after it: autoupdate 0 changed |
+| conformance | `/home/user/arb/logs/conformance-b87f130b2.log`: the totals block (lines 544 to 552: PASS 228, SKIP 13, every failure status 0; bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN of 56); `/home/user/arb/conformance/b87f130b2/scoreboard.json` (generated 2026-11-09T18:12:04Z, toolchain `/home/user/arb/install/b87f130b2/lib/carbon/carbon-busybox`) the same totals; the `CONFORMANCE b87f130b2: PASS 228 / FAIL 0 / SKIP 13 over 241 programs; ...` line in `/home/user/arb/logs/conformance-b87f130b2.log.nohup`: 228/0/13 over 241, 51/56 bullets |
 
 ## The install layout (`install.py`)
 

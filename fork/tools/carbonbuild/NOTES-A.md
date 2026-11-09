@@ -382,8 +382,9 @@ for generated sources, `external/llvm-project/...` for LLVM sources).
     static).
 -   The nightly reference install layout was compared with the toolchain_files
     outputs (`lib/carbon/{core,llvm/bin,llvm/lib/clang/24/include,
-    runtimes/{builtins,libc,libcxx,libcxxabi,libunwind},bazel,carbon_install.txt,
-    install_digest.txt}` all present in the computed `all_data_files`).
+    runtimes/{builtins,libc,libcxx,libcxxabi,libunwind},bazel,
+    carbon_install.txt,install_digest.txt}` all present in the computed
+    `all_data_files`).
 
 ## Full build
 
@@ -515,7 +516,7 @@ after); all changes are under /home/user/arb.
     `SRC_PATCHES=none` paths were exercised in a scratch BUILD_DIR
     (`/home/user/arb/build/fold-test`, removed). Break condition: the acceptance
     on cb726a230 is "REPO at the sha + this patch", and every GATE/AUTOUPDATE
-    output says so; the orchestrator's task #6 lands the fix in the fork, after
+    output says so; the orchestrator's task 6 lands the fix in the fork, after
     which gen_ninja reports the patch as `landed` and the measurement is of REPO
     alone. A new sha where the lines changed but the fix is absent fails
     gen_ninja loudly (delete or refresh the patch). Rejected part of the

@@ -17821,6 +17821,41 @@ _Not run._ clang-tidy (no binary in the container's clang 21 subset), R21's
 hosted gate (Actions disabled; owed when it returns), Bazel-only tests (no
 Bazel), the owner's runner (R28).
 
+_Reconciliation greps (fork/eh/ehc-plan.md §8.7, on the tree at 7218c59f7)._
+Grep 1, `git grep -nE '\bOk\b|\bErr\b' -- . ':!fork/'` on non-CHECK lines: 17
+lines, all dated history: common/raw_hashtable.h:1314 (English),
+core/prelude/types/result.carbon:56 (the history comment), the
+`fail_old_names` split's three lines in check/testdata/operators/
+question_result.carbon (:156, :164, :174), and the twelve amendment lines of
+docs/design/README.md (:4052-4053), docs/design/error_handling.md (:119-120,
+:125, :963, :966-967), docs/design/optional.md (:434), docs/guides/tutorial.md
+(:409 and :411) and docs/guides/evaluator_faq.md (:359); over fork/ every hit
+is a closed plan, a dated history note, W-346's and W-380's own ledger text,
+RG-1's prose, the register's two T2.1 silence-check patterns or
+fork/eh/ehc-plan.md (24 files, listed in the plan's §0.1 but for
+fork/register/rg1-checks.tsv, whose rows the records commit added). Grep 2,
+`git ls-files | grep -E '(^|[_/])(ok|err)[_.]'`: empty. Grep 3, the
+split-header grep: empty; the old file names survive only in
+fork/conformance/out/scoreboard.json (4 lines), fork/eh/plan.md (5), a ledger
+evidence string at a sha (1) and the plan (29), history, and in
+fork/gap-analysis.md:73 (1) until this commit rewrites it. Grep 4, `.ok()`
+over the header's consumers and `expected<[^>]*>::ok\(` over the tree: 0 and
+1, the one line being the plan's own D-EHC-5 sentence
+(fork/eh/ehc-plan.md:540), 0 elsewhere (amended 2026-11-09, review fold: B2).
+`grep -rn 'identifiers().Add("' toolchain/check/cpp/thunk.cpp` shows
+`"Success"` and `"Failure"` only.
+
+_Ids._ W-380 to W-385 reserved by the plan's §0.7 re-scan (84 refs, 79
+distinct heads, 7 worktrees, after a fetch at D): W-380 was no ledger item's
+id on any ref or worktree (0 by the plan's §8.9 count) and appeared only as
+reserved text, in W-378's notes, the weekly entry of 2026-11-09, ARB-2's
+entry, the plan, the records commit before this one and SAFE-3's rev 13 plan
+on the local claude/carbon-fork-0-1-safe (its re-scan reads W-380 to W-385 as
+EH-C's reservation and reserves W-386 to W-393 for its own items); W-380
+filed after W-378; W-381 to W-385 unused.
+
+_Discharged by this commit: W-346 (EH-C)._
+
 ### EH-B: catching thunks, Cpp.Exception, Carbon::expected export (2026-09-27)
 
 Milestone bullet "Error handling: C++ exception interop (-fno-except config,

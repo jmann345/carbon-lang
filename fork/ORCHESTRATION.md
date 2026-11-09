@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-09 (ARB-2 landed: PR 69, the check.cpp fix 6de18c1f7
+Last updated: 2026-11-09 (EH-C implemented and reviewed on
+claude/carbon-fork-0-1-ehc, W-346 discharged at its records commit; 18 PRs
+landed, 1 held; see the Branches row; the earlier 2026-11-09 text follows).
+2026-11-09 (ARB-2 landed: PR 69, the check.cpp fix 6de18c1f7
 with its records, landed on trunk by merge fca1e9e2f under R33, the land tree
 equal to the PR head and the head itself measured in the container before the
 merge, W-378 landed; the container arbiter's scripts landed under
@@ -2134,6 +2137,8 @@ in the container at each landing (final: gate 2047 of 2047, conformance 228/0/13
 over 241, 51/56 bullets; gap tally 37/17/2/0); R21's hosted gate is owed on all
 seventeen when Actions returns (R33 (b)). Held: PR 53, landing by Next actions
 item 14 when its gate holds. Next: EH-C (W-346) on trunk's base, then UA-3.
+(EH-C implemented and reviewed on claude/carbon-fork-0-1-ehc, 2026-11-09; its
+PR follows the focused re-review, then UA-3.)
 
 2026-11-09 (14:20 UTC, weekly check fired): the third weekly check under R32,
 git- and text-based only after the 2026-11-09 container reset. Upstream trunk
@@ -2237,6 +2242,15 @@ previous arbiter under /home/user/carbon-build and the syn compile check gone
 since the reset). 18 PRs landed, 1 held. Next: EH-C (W-346) and SAFE-4 resume
 on the arbiter; UA-3 carries the fix forward or drops it when upstream fixes
 the construction.
+
+2026-11-09 (21:26 UTC): EH-C is IMPLEMENTED AND REVIEWED on
+claude/carbon-fork-0-1-ehc (base trunk 725570464; commits 7ea4ff096, 51013a4a6
+and 70c030a0a (the plan), dd4e0497e (M-0), 2e9b55399 (C1), 45f5b9b16 (F1),
+93b0ac263 (P), no fix commit, 7218c59f7 (R) and this one): `Core.Result`'s
+alternatives are `Success`/`Failure` (W-346 DISCHARGED under R32 (d); F-006a
+reversed, veto-able; W-380 filed for PR 53's line); container-measured (R33
+(b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the
+focused re-review follows, then the PR with base trunk, landed by LAND-1.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -2589,6 +2603,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-rg1` | LANDED as PR 67 by merge 7f8c7e696 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T01:17:26Z, merge_commit_sha 7f8c7e696) — RG-1: records only: the V-3a register classified at upstream f27a977d8; W-342 and W-344 discharged, W-343 narrowed to the land-time notes, W-346 to W-356 filed; land-time commits none; container-measured (R33 (b)): gate 1942 of 1942, conformance 128/0/22 over 150, 48/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ov4` | LANDED as PR 68 by merge c62ae211e (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:53:02Z, merge_commit_sha c62ae211e) — OV-4: W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3; land-time commits c6c9d5fe3; container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15 over 208, 49/56 bullets; moved to follow-ons: to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-arb2` | LANDED as PR 69 by merge fca1e9e2f (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-09T18:14:39Z, merge_commit_sha fca1e9e2f) — ARB-2: W-378: `UnitAndImports` constructed in place in toolchain/check/check.cpp (its emitter points into itself; the re-created container arbiter's first finding, REVIEW-1 R1-B1), with its records; the arbiter's scripts land under fork/tools/carbonbuild by the records commit of 2026-11-09; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
+| `claude/carbon-fork-0-1-ehc` | IMPLEMENTED AND REVIEWED (base trunk 725570464) — EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346 DISCHARGED, R32; F-006a reversed, veto-able; W-380 filed for PR 53's line, W-381 to W-385 unused); commits 2e9b55399, 45f5b9b16, 93b0ac263, no fix commit, 7218c59f7 and this one; container-measured (R33 (b), EXPECTED, not of record): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the PR opens with base trunk after the focused re-review is dry and lands by LAND-1's D-LAND-6. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -2799,8 +2814,11 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     branch with its fills and the template_constraints.md paragraph, under its
     own reviews, before PR 60 lands) and W-352 (OP-1: the in-place comparison
     commit on PR 56's branch with its fills, merged into PR 57's, under its own
-    reviews, before PR 56 lands). After the held PRs land and before UA-3: W-346
-    (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's base, beside W-341).
+    reviews, before PR 56 lands). W-346 (EH-C: `Core.Result`'s
+    `Success`/`Failure`, on trunk's base) is implemented and reviewed on
+    claude/carbon-fork-0-1-ehc (2026-11-09); its PR opens after the focused
+    re-review is dry and lands by LAND-1's procedure before UA-3, then PR 53's
+    W-380 rename commit before PR 53 lands.
     In UA-3's gate, because they need the advance: W-354 (drop D-SL-16's yield
     and D-SL-19's keying against 05a7ecbd3) and W-356 (re-run RG-1's crash
     probe). W-372 (the struct-pattern check layer, filed 2026-11-02 by the
@@ -2825,7 +2843,7 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     of every NONE and ALIGNED entry outside VA-2's, which items 8 and 9
     re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of T5.7 and
     C1.2 (indexing.md:101-121 and a `like` in upstream's parse or check). UA-3
-    follows W-341 and W-346.
+    follows W-341 (landed) and W-346 (implemented; its PR pending).
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

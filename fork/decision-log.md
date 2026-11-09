@@ -20915,6 +20915,15 @@ fold. The fold after the two reviews of the records commit (the second commit on
 arb2-tools, records only) cited the head's measurement here, in the ledger, in
 R33's amendment, in ORCHESTRATION and in the README, re-listed the Toolchains
 section, wrote this paragraph's opener in the ledger's form, corrected its count
-of the hand edits and said what each log holds. Next: EH-C (W-346) and SAFE-4
-resume on the arbiter; UA-3 carries the fix forward or drops it when upstream
-fixes the construction.
+of the hand edits and said what each log holds. The orchestrator's ruling of
+2026-11-09 (R29) on this landing's lint exemptions, that an exemption hiding a
+defect is slop, was carried out by the branch's third commit: the 11 findings
+ruff reported under `F401`, `F841`, `E741` and `E402` (install.py's unused
+`hashlib` and `stat` imports, bazel_graph.py's unused `key` and `order` locals,
+five `l` and one `O` renamed in bzl_eval.py, gen_ninja.py, install.py and
+runfiles.py, bzl_eval.py's `builtins` import moved into its import block) are
+fixed identically in the record and the running instance, whose checks pass
+with unchanged counts, pyproject.toml exempts only `ANN` and `E501` for the
+directory, and `crashers` and `sme` stay in .codespell_ignore as the names of
+real files. Next: EH-C (W-346) and SAFE-4 resume on the arbiter; UA-3 carries
+the fix forward or drops it when upstream fixes the construction.

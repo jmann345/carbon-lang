@@ -39,6 +39,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 """
 
 import ast
+import builtins as _builtins_mod
 import os
 import re
 import sys
@@ -131,8 +132,6 @@ def fail(msg="", *args, **kwargs):
 def struct(**kwargs):
     return types.SimpleNamespace(**kwargs)
 
-
-import builtins as _builtins_mod
 
 _PY_BUILTINS = set(dir(_builtins_mod))
 
@@ -681,7 +680,7 @@ class Package:
             rel,
             gen={"type": "concat_echo", "lines": lines, "src": src},
             origin="genrule %s: echo %s + cat %s"
-            % (t.name, " ".join(repr(l) for l in lines), srcs[0]),
+            % (t.name, " ".join(repr(line) for line in lines), srcs[0]),
         )
 
     def files_of(self, label, _stack=()):

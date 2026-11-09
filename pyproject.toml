@@ -19,10 +19,15 @@ ignore = ["ANN401", "ANN204"]
 "examples/bazel_test_runner.py" = ["ANN"]
 "fork/conformance/runner.py" = ["ANN"]
 # fork/tools/carbonbuild is the record of the container arbiter's scripts, kept
-# byte-identical to the running instance apart from headers and formatter
-# output (fork/tools/carbonbuild/README.md), so the findings the formatter
-# cannot fix are exempted for it rather than hand-edited.
-"fork/tools/carbonbuild/*.py" = ["ANN", "E402", "E501", "E741", "F401", "F841"]
+# in step with the running instance apart from headers and formatter output
+# (fork/tools/carbonbuild/README.md). Only two style rules are exempted for it:
+# type annotations (ANN) and line length (E501), which the formatter cannot
+# supply and which the running instance does not keep. Defects (unused imports
+# and locals, ambiguous names, late imports) are fixed in both copies, never
+# exempted; the three scripts that extend sys.path before importing a sibling
+# (gen_ninja.py, install.py, runfiles.py) mark those imports `# noqa: E402`
+# inline.
+"fork/tools/carbonbuild/*.py" = ["ANN", "E501"]
 "**/lit.cfg.py" = ["ANN"]
 
 [tool.ruff.lint.isort]

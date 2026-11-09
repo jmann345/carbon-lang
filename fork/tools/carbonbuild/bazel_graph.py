@@ -1380,7 +1380,6 @@ class Graph:
     # ---- stub modules for external .bzl files
 
     def _stub_module(self, label):
-        key = str(label)
         g = self
         if label.repo == "rules_cc":
             if label.name == "defs.bzl":
@@ -2214,7 +2213,6 @@ class Graph:
         root = self.target(label, cur)
         seen = set()
         out = []
-        order = []
 
         def visit(t):
             if t.label in seen:

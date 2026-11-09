@@ -42,12 +42,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 """
 
 import argparse
-import hashlib
 import os
 import re
 import shlex
 import shutil
-import stat
 import subprocess
 import sys
 import tempfile
@@ -676,11 +674,17 @@ class Plan:
         """toolchain/base/runtimes_build_info.bzl `_get_substitutions` applied to
         runtimes_build_vars.tpl.bzl."""
         R = self.P["REPO"]
-        O = self.P["LLVM_OVERLAY"]
-        ev = bzl_eval.Evaluator(O, warn=self.note)
-        crt = ev.eval_file(os.path.join(O, "compiler-rt/compiler-rt.bzl"))
-        cxx = ev.eval_file(os.path.join(O, "libcxx/libcxx_library.bzl"))
-        unw = ev.eval_file(os.path.join(O, "libunwind/libunwind_library.bzl"))
+        overlay_dir = self.P["LLVM_OVERLAY"]
+        ev = bzl_eval.Evaluator(overlay_dir, warn=self.note)
+        crt = ev.eval_file(
+            os.path.join(overlay_dir, "compiler-rt/compiler-rt.bzl")
+        )
+        cxx = ev.eval_file(
+            os.path.join(overlay_dir, "libcxx/libcxx_library.bzl")
+        )
+        unw = ev.eval_file(
+            os.path.join(overlay_dir, "libunwind/libunwind_library.bzl")
+        )
 
         def one_per_line(items):
             return "\n" + "\n".join('    "%s",' % i for i in items) + "\n"
@@ -798,7 +802,7 @@ class Plan:
             g = bg.Graph(
                 repo=R,
                 llvm_src=self.P["LLVM_SRC"],
-                llvm_overlay=O,
+                llvm_overlay=overlay_dir,
                 llvm_build=self.P["LLVM_BUILD"],
                 build_mode=self.P.get("CARBON_BUILD_MODE") or "opt",
             )

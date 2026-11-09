@@ -566,7 +566,7 @@ class Gen:
         if "absl" in groups or "re2" in groups or "gtest" in groups:
             rsp = self.deps["ABSL_LIBS"]
             with open(rsp) as f:
-                out += [l.strip() for l in f if l.strip()]
+                out += [line.strip() for line in f if line.strip()]
         return out
 
     # ---- ninja emission
@@ -1009,7 +1009,9 @@ class Gen:
         manifest = g.manifest_text(
             "//toolchain/testing:file_test_autogen_manifest.cpp"
         )
-        n_tests = sum(1 for l in manifest.splitlines() if l.startswith('    "'))
+        n_tests = sum(
+            1 for line in manifest.splitlines() if line.startswith('    "')
+        )
         n_targets = len(order)
         n_ext = sum(
             1 for n in order if isinstance(n.target, bg.ExternalCcTarget)

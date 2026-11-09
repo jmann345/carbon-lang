@@ -157,14 +157,19 @@ instance holds and the record does not (`env.sh`, written by gen_ninja.py, and
 `__pycache__`). paths.sh points at the running instance; the record is not run
 from the repository.
 
-The repository's prek hooks run on the record. The lint findings the formatters
-cannot fix are exempted for this directory in pyproject.toml (ruff's `ANN`,
-`E402`, `E501`, `E741`, `F401` and `F841` for `fork/tools/carbonbuild/*.py`;
-ty excludes the directory) rather than hand-edited, so that the record stays
-the running instance's text; `crashers` and `sme` (a review file name, an ARM
-extension's header name) are in .codespell_ignore. The five markdown files are
-wrapped whole in the Google-doc-style hook's ignore and resume markers, because
-`REPO` is a variable name on nearly every page and the hook rewrites the word.
+The repository's prek hooks run on the record. Two style rules are exempted for
+this directory in pyproject.toml, ruff's `ANN` and `E501` for
+`fork/tools/carbonbuild/*.py` (type annotations and line length, which the
+formatter cannot supply; ty excludes the directory while `ANN` is exempted).
+The defects ruff reported at the landing under `F401`, `F841`, `E741` and
+`E402` (two unused imports, two unused locals, six `l`/`O` names, one late
+import; 11 in all) were fixed in both copies under the orchestrator's ruling of
+2026-11-09, not exempted. `crashers` and `sme` are in .codespell_ignore because
+each names a real file: REVIEW-1.md's `$S/crashers.txt` (the reviewer's list
+of the 15 crashing goldens) and the generated header `arm_sme.h` in the
+`clang_builtin_hdrs` row below. The five markdown files are wrapped whole in
+the Google-doc-style hook's ignore and resume markers, because `REPO` is a
+variable name on nearly every page and the hook rewrites the word.
 
 ### The container's layout
 

@@ -260,16 +260,16 @@ def check(P, quiet):
         if not need_file(mpath, what):
             continue
         with open(mpath, encoding="utf-8") as f:
-            lines = [l for l in f.read().split("\n") if l]
+            lines = [line for line in f.read().split("\n") if line]
         if not lines:
             errors.append(
                 "%s is empty (ReadManifest rejects an empty manifest)"
                 % manifest
             )
         bad = [
-            l
-            for l in lines
-            if not os.path.isfile(os.path.join(install_root, base, l))
+            line
+            for line in lines
+            if not os.path.isfile(os.path.join(install_root, base, line))
         ]
         if bad:
             errors.append(

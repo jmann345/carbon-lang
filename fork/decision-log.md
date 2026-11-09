@@ -17842,6 +17842,10 @@ fork/gap-analysis.md:73 (1) until this commit rewrites it. Grep 4, `.ok()`
 over the header's consumers and `expected<[^>]*>::ok\(` over the tree: 0 and
 1, the one line being the plan's own D-EHC-5 sentence
 (fork/eh/ehc-plan.md:540), 0 elsewhere (amended 2026-11-09, review fold: B2).
+From this commit to the round-1 fold the ledger's own W-346 evidence string
+spelled the second pattern without its backslash and was a second tree-wide
+line; the fold re-spelled it, so the count is one again (amended 2026-11-09,
+review fold: RR1-m2, round 1).
 `grep -rn 'identifiers().Add("' toolchain/check/cpp/thunk.cpp` shows
 `"Success"` and `"Failure"` only.
 

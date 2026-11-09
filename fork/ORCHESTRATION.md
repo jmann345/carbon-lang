@@ -2250,7 +2250,12 @@ and 70c030a0a (the plan), dd4e0497e (M-0), 2e9b55399 (C1), 45f5b9b16 (F1),
 alternatives are `Success`/`Failure` (W-346 DISCHARGED under R32 (d); F-006a
 reversed, veto-able; W-380 filed for PR 53's line); container-measured (R33
 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the
-focused re-review follows, then the PR with base trunk, landed by LAND-1.
+focused re-review follows, then the PR with base trunk, landed by LAND-1. The
+focused re-review's round 1, of 7218c59f7 (R) and 07b949dbe (D), no fix
+commit, is DRY: APPROVE-WITH-AMENDMENTS with four records-only MINORs (RR1-m1
+to RR1-m4), folded by its records commit over D 07b949dbe, so the PR opens
+with base trunk (fork/eh/ehc-plan.md, "Review fold record (re-review round 1,
+2026-11-09)").
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -2603,7 +2608,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-rg1` | LANDED as PR 67 by merge 7f8c7e696 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T01:17:26Z, merge_commit_sha 7f8c7e696) — RG-1: records only: the V-3a register classified at upstream f27a977d8; W-342 and W-344 discharged, W-343 narrowed to the land-time notes, W-346 to W-356 filed; land-time commits none; container-measured (R33 (b)): gate 1942 of 1942, conformance 128/0/22 over 150, 48/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ov4` | LANDED as PR 68 by merge c62ae211e (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:53:02Z, merge_commit_sha c62ae211e) — OV-4: W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3; land-time commits c6c9d5fe3; container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15 over 208, 49/56 bullets; moved to follow-ons: to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-arb2` | LANDED as PR 69 by merge fca1e9e2f (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-09T18:14:39Z, merge_commit_sha fca1e9e2f) — ARB-2: W-378: `UnitAndImports` constructed in place in toolchain/check/check.cpp (its emitter points into itself; the re-created container arbiter's first finding, REVIEW-1 R1-B1), with its records; the arbiter's scripts land under fork/tools/carbonbuild by the records commit of 2026-11-09; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-ehc` | IMPLEMENTED AND REVIEWED (base trunk 725570464) — EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346 DISCHARGED, R32; F-006a reversed, veto-able; W-380 filed for PR 53's line, W-381 to W-385 unused); commits 2e9b55399, 45f5b9b16, 93b0ac263, no fix commit, 7218c59f7 and this one; container-measured (R33 (b), EXPECTED, not of record): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the PR opens with base trunk after the focused re-review is dry and lands by LAND-1's D-LAND-6. |
+| `claude/carbon-fork-0-1-ehc` | IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1 DRY (base trunk 725570464) — EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346 DISCHARGED, R32; F-006a reversed, veto-able; W-380 filed for PR 53's line, W-381 to W-385 unused); commits 2e9b55399, 45f5b9b16, 93b0ac263, no fix commit, 7218c59f7 and this one; container-measured (R33 (b), EXPECTED, not of record): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the PR opens with base trunk after the focused re-review is dry and lands by LAND-1's D-LAND-6. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

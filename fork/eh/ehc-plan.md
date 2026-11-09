@@ -85,10 +85,10 @@ re-scan; 0.8 the lost rev 1 and the task text, confirmed and corrected. §1
 Design (D-EHC-1 to D-EHC-12). §2 Spec, file by file. §3 Commits, the PR and
 the landing. §4 Testdata matrix. §5 Conformance delta. §6 Churn and
 collisions. §7 Risks and rejected alternatives. §8 Verification. Hand-off
-notes. The review fold records (rev 2, rev 3, the implementation reviews) and
-the Sign-off. Appendix A the goldens' source edits; B the programs and their
-EXPECTs; C the docs amendments verbatim; D the records texts verbatim; E the
-PR text; F the land-time texts with `<...>` placeholders.
+notes. The review fold records (rev 2, rev 3, the implementation reviews,
+re-review round 1) and the Sign-off. Appendix A the goldens' source edits; B
+the programs and their EXPECTs; C the docs amendments verbatim; D the records
+texts verbatim; E the PR text; F the land-time texts with `<...>` placeholders.
 
 ## §0 Audit
 
@@ -1558,8 +1558,12 @@ common/raw_hashtable.h:1314".
     toolchain/lower/testdata/interop/cpp/function/export` and `git grep -nE
     'expected<[^>]*>::ok\('` over the tree: 0 and 1, the
     one line being this plan's own D-EHC-5 sentence, 0 elsewhere (measured at
-    C1 and at the head; amended 2026-11-09, review fold: RA-m2 / B2). The
-    unscoped
+    C1 and at the head; amended 2026-11-09, review fold: RA-m2 / B2). A record
+    that spells the second pattern is a hit of its own unless it keeps the
+    regex's backslash: the ledger's W-346 evidence string spelled it without
+    one from the discharge commit to the round-1 fold, a second tree-wide line
+    there, re-spelled by the fold (amended 2026-11-09, review fold: RR1-m2,
+    round 1). The unscoped
     `\.ok\(\)` grep lists 180 lines in 43 files at aee70185c
     (`ErrorOr::ok()` and its kin) and is not a criterion.
 
@@ -1863,6 +1867,46 @@ files, nothing rewritten; §8.8's mirror: origin/trunk 725570464 exit 0 (tree
 | B2 | MINOR | folded with RA-m2 | the same |
 | B3 | MINOR | folded: one clause in the decision-log entry (C1's pages carried the mechanically renamed prose until P, as §2.8 slices it) | D.2's entry as R writes it |
 | B4 | MINOR | folded: the entry quotes the pages as they stand (README.md:4063 its own paragraph after the blank :4062; optional.md:434-435 unreflowed) | D.2's entry as R writes it (D-EHC-6) |
+
+## Review fold record (re-review round 1, 2026-11-09)
+
+The focused re-review's round 1 (§3 item 9: one fresh agent over R 7218c59f7
+and D 07b949dbe, there being no fix commit, re-measured in its own detached
+worktree under the label ehc-rr1) returned APPROVE-WITH-AMENDMENTS: no
+BLOCKER, no MAJOR, four MINORs, every one records-only, so the round is DRY
+and this commit folds it; it changes no code, golden, program, page or
+register file, the fix budget stays at zero of two, and the PR opens with
+base trunk from the refreshed texts (§3's last paragraph). Its marks read
+"(amended 2026-11-09, review fold: RR1-<id>, round 1)": the suffix tells them
+from rev 3's fold of the plan's own re-review, whose ids RR1-M1, RR1-M2 and
+RR1-m1 to RR1-m5 the round's RR1-m1 to RR1-m4 would otherwise repeat (R29;
+break condition: a later round's ids, RR<k>-<id> with k above one, need no
+suffix). The round's figures, container-measured, EXPECTED, not of record:
+gate 2047 of 2047 (`GATE ehc-rr1: 2047 passed, 0 failed`, no per-test FAILED
+line, src-patches `landed`); autoupdate 0 files changed; conformance 228/0/13
+over 241, 51/56 bullets, every row equal to cb726a230's with the two renamed
+programs mapped; the three checkers 0 errors; the mutants not re-run (no fix
+touched the prelude or thunk.cpp); §8.7 at D's head: grep 1 the 17 lines of
+D.2, grep 2 empty, grep 3 history only, grep 4 scoped 0 and tree-wide two, the
+second the ledger's own evidence string (RR1-m2 below); §8.8's mirror:
+origin/trunk 725570464 exit 0 (tree 9e446eb15), 2407efa74 exit 1 (the four
+records files only). Upstream re-fetched by the round and by this fold:
+ca1898506, unchanged. Measured by this fold: the branch's diff against
+origin/trunk at D holds two lines spelling the committer e-mail (this plan's
+own text in §3 and §8.11), not the three D's message claims (RR1-m3); the
+tree-wide grep 4 after RR1-m2's re-spelling is one, this plan's :540, which
+no edit here moves (the Sections sentence is rewrapped line-neutral; every
+other edit is below :540). Also plan-prescribed and left as it stands: D.6's
+T2.1 Verdict cell says "W-346 DISCHARGED" at R, one commit before D claims it
+(RR1-m4's note); the Branches row's "and this one" is D, which the dated
+paragraph's round sentence names by sha.
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR1-m1 | MINOR | folded, reproduced at 2e9b55399 and at D's head (thunk.cpp:1507 and :1509, handle.cpp:423, expected.h:156-157 and :294; C1's clang-format re-wrap moved them from aee70185c's :1506-1509, :421, :154-155 and :291): the ledger's W-346 evidence string and D.1's template cite them at C1, naming aee70185c's as the ones they replace | D.1, fork/inventory/work-items.json |
+| RR1-m2 | MINOR | folded, reproduced (two tree-wide at D's head: this plan's :540 and work-items.json:4799): the ledger's evidence string re-spelled with the regex's backslash, which is no hit, so F.8's "one tree-wide" holds at L; one sentence each in the decision-log entry's reconciliation paragraph, D.2's appended template, §8.7's item 4 and F.8 records the two-line interval | fork/inventory/work-items.json, fork/decision-log.md, §8.7, D.2, F.8 |
+| RR1-m3 | MINOR | folded as a record only (a message is not amended): measured two, the paragraph above | this record |
+| RR1-m4 | MINOR | folded: D.1's template takes the ledger's measured grep sentences; D.8 takes the D-time F.3 parenthetical's text and the round sentence's, and F.5 says the land-time parenthetical replaces D's; Appendix E's block re-wrapped at 80 columns (its three lines of 94, 116 and 108 columns; prek is silent inside the fence); the T2.1 note in the paragraph above | D.1, D.8, F.5, Appendix E, this record |
 
 ## Sign-off
 
@@ -2950,22 +2994,32 @@ re-sized); the title's leading tag "EH-C (R32 (d); RG-1, D-RG-5): " replaced
 by "EH-C (DISCHARGED at EH-C, <date>; R32 (d); RG-1, D-RG-5): ", W-341's form
 (amended 2026-11-09, review fold: B-m5); `evidence` gains, first: "core/prelude/
 types/result.carbon:28-31 at <C1> (`Success(value: T)`, `Failure(error: E)`);
-toolchain/check/cpp/thunk.cpp:1506-1509 (the minted identifiers);
-toolchain/lower/handle.cpp:421 (the stderr line); toolchain/install/include/
-carbon/expected.h:154-155 and :291; the 35 goldens of fork/eh/ehc-plan.md
-Appendix A with the `fail_old_names` split of check/testdata/operators/
-question_result.carbon; the 18 programs of Appendix B; docs/design/README.md,
-error_handling.md, optional.md, docs/guides/tutorial.md and evaluator_faq.md's
-dated amendments (Appendix C); container-measured (R33 (b)): gate 2047 of
-2047 after the fill <F1>, conformance 228/0/13 over 241, 51/56 bullets; the
-reconciliation greps of fork/eh/ehc-plan.md §8.7 on the tree at <R>: grep 1
-lists 17 lines, all dated history (common/raw_hashtable.h:1314;
-core/prelude/types/result.carbon:56; the `fail_old_names` split's three
-lines; the twelve amendment lines of docs/design/README.md,
-error_handling.md, optional.md, docs/guides/tutorial.md and
-evaluator_faq.md), greps 2 and 3 (file and split names) are empty, grep 4
-(the header's consumers' `.ok()`) is 0" (amended 2026-11-09, review fold:
-A-M1 / B-M1 / B-M3). `notes` gains, appended: " DISCHARGED
+toolchain/check/cpp/thunk.cpp:1507 and :1509 (the minted identifiers);
+toolchain/lower/handle.cpp:423 (the stderr line); toolchain/install/include/
+carbon/expected.h:156-157 and :294 (these three cites at <C1> too, where C1's
+clang-format re-wrap moved them from aee70185c's :1506-1509, :421, :154-155
+and :291; amended 2026-11-09, review fold: RR1-m1, round 1); the 35 goldens of
+fork/eh/ehc-plan.md Appendix A with the `fail_old_names` split of
+check/testdata/operators/question_result.carbon; the 18 programs of Appendix
+B; docs/design/README.md, error_handling.md, optional.md,
+docs/guides/tutorial.md and evaluator_faq.md's dated amendments (Appendix C);
+container-measured (R33 (b)): gate 2047 of 2047 after the fill <F1>,
+conformance 228/0/13 over 241, 51/56 bullets; the reconciliation greps of
+fork/eh/ehc-plan.md §8.7 on the tree at <R>: grep 1 lists 17 lines, all dated
+history (common/raw_hashtable.h:1314; core/prelude/types/result.carbon:56; the
+`fail_old_names` split's three lines; the twelve amendment lines of
+docs/design/README.md, error_handling.md, optional.md, docs/guides/tutorial.md
+and evaluator_faq.md), greps 2 and 3 (file and split names) are empty, the old
+file names surviving only as history (the hosted scoreboard of 2026-10-06,
+fork/eh/plan.md, a ledger evidence string at a sha and the plan), grep 4 (the
+header's consumers' `.ok()`) is 0 and the tree-wide `expected<[^>]*>::ok\(`
+grep lists one line, fork/eh/ehc-plan.md:<line>, the plan's own D-EHC-5
+sentence (amended 2026-11-09, review fold: RA-m2 / B2; the pattern re-spelled
+with its backslash 2026-11-09, review fold: RR1-m2, round 1, because this
+string's earlier spelling of it was itself a second tree-wide hit from the
+discharge commit to the round-1 fold)" (amended 2026-11-09, review fold:
+A-M1 / B-M1 / B-M3; the grep sentences the ledger's measured ones since
+2026-11-09, review fold: RR1-m4, round 1). `notes` gains, appended: " DISCHARGED
 <date> by EH-C (fork/eh/ehc-plan.md, D-EHC-1 to D-EHC-12): renamed at the
 root with every use; no alias; the former spelling diagnoses
 `MemberNameNotFoundInSpecificScope`; register row T2.1 ALIGNED; F-006a
@@ -3126,7 +3180,10 @@ fork/conformance/out/scoreboard.json, fork/eh/plan.md and a ledger evidence
 string at a sha (history). Grep 4, `.ok()` over the header's consumers and
 `expected<[^>]*>::ok\(` over the tree: 0 and 1, the one line being this
 plan's own D-EHC-5 sentence (fork/eh/ehc-plan.md:<line>), 0 elsewhere (amended
-2026-11-09, review fold: B2). `grep -rn
+2026-11-09, review fold: B2). From this commit to the round-1 fold the ledger's
+own W-346 evidence string spelled the second pattern without its backslash and
+was a second tree-wide line; the fold re-spelled it, so the count is one again
+(amended 2026-11-09, review fold: RR1-m2, round 1). `grep -rn
 'identifiers().Add("' toolchain/check/cpp/thunk.cpp` shows `"Success"` and
 `"Failure"` only.
 
@@ -3296,7 +3353,19 @@ aee70185c, 18 once PR 69's records land; B-m4). The dated paragraph D adds
 `Success`/`Failure` (W-346 DISCHARGED under R32 (d); F-006a reversed,
 veto-able; W-380 filed for PR 53's line); container-measured (R33 (b)): gate
 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the focused
-re-review follows, then the PR with base trunk, landed by LAND-1." The PR
+re-review follows, then the PR with base trunk, landed by LAND-1." The F.3
+paragraph of 2026-11-06 (05:44 UTC) gets, after "Next: EH-C (W-346) on
+trunk's base, then UA-3.", the parenthetical "(EH-C implemented and reviewed
+on claude/carbon-fork-0-1-ehc, <date>; its PR follows the focused re-review,
+then UA-3.)", which F.5's land-time parenthetical replaces (§3 item 8 named
+this edit and rev 3 gave it no text; the records writer's R29 decision, its
+text added 2026-11-09, review fold: RR1-m4, round 1). After a dry round, that
+round's records commit gives the dated paragraph above one sentence, OV-4's
+form (§3 item 9): "The focused re-review's round <k>, of <R> (R) and <D> (D),
+<fixes>, is DRY: <verdict> with <m> records-only MINORs (<ids>), folded by its
+records commit over D <D>, so the PR opens with base trunk
+(fork/eh/ehc-plan.md, "Review fold record (re-review round <k>, <date>)")."
+(the sentence's text added 2026-11-09, review fold: round 1). The PR
 number is written by the orchestrator's texts of §3 item 10 and by the
 landing's Appendix F, whose texts replace these.
 
@@ -3331,14 +3400,15 @@ payload members and `success()` factory, 35 goldens (sources renamed,
 CHECK lines refilled by autoupdate; a new `fail_old_names` split pins
 ``member name `Ok` not found in `Core.Result(i32, i32)` ``), 18 conformance
 programs (every EXPECT unchanged; run_result_ok/err.carbon renamed
-run_result_success/failure.carbon with the README's rows), the five pages that teach it (dated
-amendments quoting upstream by sha) and the records. It reverses the user's
-sub-decision F-006a (2026-07-19) under the owner directive of 2026-10-21;
-the user may veto it (fork/eh/ehc-plan.md D-EHC-1).
+run_result_success/failure.carbon with the README's rows), the five pages
+that teach it (dated amendments quoting upstream by sha) and the records. It
+reverses the user's sub-decision F-006a (2026-07-19) under the owner directive
+of 2026-10-21; the user may veto it (fork/eh/ehc-plan.md D-EHC-1).
 
 Plan: fork/eh/ehc-plan.md (rev <n>, two adversarial reviews, <folds>).
-Commits: <M-0> merge of trunk 725570464 (PR 69 and the arbiter scripts' records commit), <C1> rename, <F1> fill, <P>
-prose, <fixes>, <R> records, <D> discharge. Container-measured (R33 (b)): gate 2047 of 2047 (after the fill;
+Commits: <M-0> merge of trunk 725570464 (PR 69 and the arbiter scripts'
+records commit), <C1> rename, <F1> fill, <P> prose, <fixes>, <R> records, <D>
+discharge. Container-measured (R33 (b)): gate 2047 of 2047 (after the fill;
 2015 with 32 "Autoupdate would make changes" before it), conformance
 228/0/13 over 241, 51/56 bullets, byte for byte trunk's; both sample
 checkers and check_faq.py 0 errors; mutants: the order swapped turns 7
@@ -3453,10 +3523,11 @@ Header clause: "Last updated: <date> (PR <N> landed by LAND-1; <landed> PRs
 landed, 1 held; see the paragraph dated <date> (<hh:mm> UTC) below; the earlier
 <prev> text follows)." The F.3 paragraph of 2026-11-06 (05:44 UTC) gets, after
 "Next: EH-C (W-346) on trunk's base, then UA-3.", the parenthetical "(EH-C
-landed <date> as PR <N>; next UA-3.)". Next actions item 6: "W-346 (EH-C)
-landed on trunk <date> as PR <N> by merge <merge sha> (LAND-1); PR 53's
-rename commit is W-380 (item 14)."; ":2725" "UA-3 follows W-341 and W-346
-(both landed)."
+landed <date> as PR <N>; next UA-3.)", which replaces D's parenthetical there
+(D.8; amended 2026-11-09, review fold: RR1-m4, round 1). Next actions item 6:
+"W-346 (EH-C) landed on trunk <date> as PR <N> by merge <merge sha> (LAND-1);
+PR 53's rename commit is W-380 (item 14)."; ":2725" "UA-3 follows W-341 and
+W-346 (both landed)."
 
 ### F.6 The Landed paragraph in this plan (A.5)
 
@@ -3511,7 +3582,9 @@ reconciliation greps of fork/eh/ehc-plan.md §8.7 re-run on the merge's tree
 give the answers recorded at <R>: grep 1's 17 dated-history lines, greps 2 and
 3 empty, grep 4 zero over the header's consumers and one tree-wide, this
 plan's own D-EHC-5 sentence." (amended 2026-11-09, review fold: A-M1; the
-tree-wide hit added 2026-11-09, review fold: B2)
+tree-wide hit added 2026-11-09, review fold: B2; one and not two because the
+round-1 fold re-spelled the ledger's own evidence string with the regex's
+backslash, 2026-11-09, review fold: RR1-m2, round 1)
 
 ### F.9 The gap header's first sentence (A.8) and ORCHESTRATION's Scoreboard paragraph (A.9)
 

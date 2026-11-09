@@ -24,7 +24,7 @@
 //   <{ <{ i1, [A-1 x i8] }>, [P x i8] }>
 //
 // (toolchain/lower/testdata/choice/payload_layout.carbon): a one-byte
-// discriminant, 0 for `Ok` and 1 for `Err` (the declaration order in
+// discriminant, 0 for `Success` and 1 for `Failure` (the declaration order in
 // core/prelude/types/result.carbon), padded to the payload alignment A, then
 // the max-of-fields payload region of size P with every alternative's payload
 // at offset zero. Here `disc_` is that byte and `payload_` — a union of `T` and
@@ -43,7 +43,7 @@
 // runtime) has no primary object: `__cxa_current_primary_exception` returns
 // NULL for it, so `ptr()` returns an EMPTY `std::exception_ptr` and `rethrow()`
 // calls `std::terminate()`; `has_value()` on the `expected` is unaffected (the
-// discriminant is `Err` regardless).
+// discriminant is `Failure` regardless).
 //
 // LINKING NOTE (Apple platforms): libc++ on Apple platforms does not re-export
 // `__cxa_rethrow_primary_exception` (libcxxabi/lib/symbols-not-reexported.exp),
@@ -128,8 +128,8 @@ static_assert(std::is_trivially_copyable<Exception>::value &&
                   sizeof(Exception) == sizeof(void*),
               "Carbon::Exception must mirror `Cpp.Exception`'s pointer");
 
-// An error value for constructing an `expected` in its `Err` alternative from
-// C++: `Carbon::expected<int, int> r = Carbon::unexpected<int>(-1);`.
+// An error value for constructing an `expected` in its `Failure` alternative
+// from C++: `Carbon::expected<int, int> r = Carbon::unexpected<int>(-1);`.
 template <typename E>
 class unexpected {
  public:
@@ -142,24 +142,27 @@ class unexpected {
 
 namespace expected_internal {
 
-// The payload region: `Ok` and `Err` payloads at offset zero, sized and
-// aligned by the wider alternative, exactly as Carbon's max-of-fields region.
+// The payload region: `Success` and `Failure` payloads at offset zero, sized
+// and aligned by the wider alternative, exactly as Carbon's max-of-fields
+// region.
 template <typename T, typename E>
 union Payload {
   // Trivial: leaves the region indeterminate, as a Carbon return slot is
   // before the callee writes it.
   Payload() = default;
-  constexpr explicit Payload(T value) : ok(value) {}
-  constexpr Payload(unexpected<E> error, int /*tag*/) : err(error.error()) {}
-  T ok;
-  E err;
+  constexpr explicit Payload(T value) : success(value) {}
+  constexpr Payload(unexpected<E> error, int /*tag*/)
+      : failure(error.error()) {}
+  T success;
+  E failure;
 };
 
 template <typename E>
 union Payload<void, E> {
   Payload() = default;
-  constexpr Payload(unexpected<E> error, int /*tag*/) : err(error.error()) {}
-  E err;
+  constexpr Payload(unexpected<E> error, int /*tag*/)
+      : failure(error.error()) {}
+  E failure;
 };
 
 template <typename T>
@@ -196,9 +199,9 @@ class expected {
   // thunk writes into.
   expected() = default;
 
-  // `Ok(value)`.
+  // `Success(value)`.
   constexpr expected(T value) : disc_(0), payload_(value) { CheckLayout(); }
-  // `Err(error)`.
+  // `Failure(error)`.
   constexpr expected(unexpected<E> error) : disc_(1), payload_(error, 0) {
     CheckLayout();
   }
@@ -211,18 +214,18 @@ class expected {
 
   // Precondition: `has_value()`. Unlike `std::expected::value()`, this never
   // throws: the header is usable with exceptions disabled.
-  constexpr const T& value() const { return payload_.ok; }
-  constexpr T& value() { return payload_.ok; }
-  constexpr const T& operator*() const { return payload_.ok; }
-  constexpr T& operator*() { return payload_.ok; }
+  constexpr const T& value() const { return payload_.success; }
+  constexpr T& value() { return payload_.success; }
+  constexpr const T& operator*() const { return payload_.success; }
+  constexpr T& operator*() { return payload_.success; }
 
   // Precondition: `!has_value()`.
-  constexpr const E& error() const { return payload_.err; }
-  constexpr E& error() { return payload_.err; }
+  constexpr const E& error() const { return payload_.failure; }
+  constexpr E& error() { return payload_.failure; }
 
   template <typename U>
   constexpr T value_or(U&& default_value) const {
-    return has_value() ? payload_.ok
+    return has_value() ? payload_.success
                        : static_cast<T>(std::forward<U>(default_value));
   }
 
@@ -230,8 +233,8 @@ class expected {
     if (lhs.disc_ != rhs.disc_) {
       return false;
     }
-    return lhs.has_value() ? lhs.payload_.ok == rhs.payload_.ok
-                           : lhs.payload_.err == rhs.payload_.err;
+    return lhs.has_value() ? lhs.payload_.success == rhs.payload_.success
+                           : lhs.payload_.failure == rhs.payload_.failure;
   }
   friend constexpr bool operator!=(const expected& lhs, const expected& rhs) {
     return !(lhs == rhs);
@@ -242,16 +245,16 @@ class expected {
   expected(const std::expected<T, E>& other)
       : disc_(other.has_value() ? 0 : 1), payload_() {
     if (other.has_value()) {
-      payload_.ok = *other;
+      payload_.success = *other;
     } else {
-      payload_.err = other.error();
+      payload_.failure = other.error();
     }
   }
   operator std::expected<T, E>() const {
     if (has_value()) {
-      return std::expected<T, E>(payload_.ok);
+      return std::expected<T, E>(payload_.success);
     }
-    return std::expected<T, E>(std::unexpected<E>(payload_.err));
+    return std::expected<T, E>(std::unexpected<E>(payload_.failure));
   }
 #endif
 
@@ -268,12 +271,12 @@ class expected {
                   "Carbon::expected must be trivially copyable");
   }
 
-  // 0 = Ok, 1 = Err: Carbon's alternative declaration order.
+  // 0 = Success, 1 = Failure: Carbon's alternative declaration order.
   unsigned char disc_;
   Payload payload_;
 };
 
-// The `Core.Result((), E)` view: no `Ok` payload.
+// The `Core.Result((), E)` view: no `Success` payload.
 template <typename E>
 class expected<void, E> {
   static_assert(expected_internal::PayloadTypeCheck<E>::value,
@@ -287,13 +290,13 @@ class expected<void, E> {
 
   expected() = default;
 
-  // `Ok(())`.
-  static expected ok() {
+  // `Success(())`.
+  static expected success() {
     expected result;
     result.disc_ = 0;
     return result;
   }
-  // `Err(error)`.
+  // `Failure(error)`.
   constexpr expected(unexpected<E> error) : disc_(1), payload_(error, 0) {
     CheckLayout();
   }
@@ -306,14 +309,14 @@ class expected<void, E> {
   constexpr void value() const {}
 
   // Precondition: `!has_value()`.
-  constexpr const E& error() const { return payload_.err; }
-  constexpr E& error() { return payload_.err; }
+  constexpr const E& error() const { return payload_.failure; }
+  constexpr E& error() { return payload_.failure; }
 
   friend constexpr bool operator==(const expected& lhs, const expected& rhs) {
     if (lhs.disc_ != rhs.disc_) {
       return false;
     }
-    return lhs.has_value() || lhs.payload_.err == rhs.payload_.err;
+    return lhs.has_value() || lhs.payload_.failure == rhs.payload_.failure;
   }
   friend constexpr bool operator!=(const expected& lhs, const expected& rhs) {
     return !(lhs == rhs);
@@ -323,14 +326,14 @@ class expected<void, E> {
   expected(const std::expected<void, E>& other)
       : disc_(other.has_value() ? 0 : 1), payload_() {
     if (!other.has_value()) {
-      payload_.err = other.error();
+      payload_.failure = other.error();
     }
   }
   operator std::expected<void, E>() const {
     if (has_value()) {
       return std::expected<void, E>();
     }
-    return std::expected<void, E>(std::unexpected<E>(payload_.err));
+    return std::expected<void, E>(std::unexpected<E>(payload_.failure));
   }
 #endif
 

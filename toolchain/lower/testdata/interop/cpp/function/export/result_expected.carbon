@@ -26,8 +26,8 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 fn F(n: i32) -> Core.Result(i32, i32) {
-  if (n < 0) { return Core.Result(i32, i32).Err(n); }
-  return Core.Result(i32, i32).Ok(n);
+  if (n < 0) { return Core.Result(i32, i32).Failure(n); }
+  return Core.Result(i32, i32).Success(n);
 }
 
 inline Cpp '''
@@ -36,15 +36,15 @@ template <typename T, typename E>
 struct expected {
   unsigned char disc;
   union {
-    T ok;
-    E err;
+    T success;
+    E failure;
   };
 };
 }  // namespace Carbon
 
 inline int Use(int n) {
   Carbon::expected<int, int> r = Carbon::F(n);
-  return r.disc == 0 ? r.ok : r.err;
+  return r.disc == 0 ? r.success : r.failure;
 }
 ''';
 
@@ -63,8 +63,8 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT:
 // CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
-// CHECK:STDOUT: @Result.val.d4e.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
-// CHECK:STDOUT: @Result.val.ad4.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
+// CHECK:STDOUT: @Result.val.44c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Result.val.519.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
 // CHECK:STDOUT: @.str = private unnamed_addr constant [70 x i8] c"carbon: C++ exception escaped into Carbon through `Use`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -74,11 +74,11 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT:   br i1 %Int.as.OrderedWith.impl.Less.call, label %if.then, label %if.else, !dbg !21
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.then:                                          ; preds = %entry
-// CHECK:STDOUT:   call void @_CErr.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !23
+// CHECK:STDOUT:   call void @_CFailure.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !23
 // CHECK:STDOUT:   ret void, !dbg !24
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.else:                                          ; preds = %entry
-// CHECK:STDOUT:   call void @_COk.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !26
+// CHECK:STDOUT:   call void @_CSuccess.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !26
 // CHECK:STDOUT:   ret void, !dbg !27
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -142,27 +142,27 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !44 {
+// CHECK:STDOUT: define linkonce_odr void @_CFailure.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !44 {
 // CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !46
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !46
-// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !46
+// CHECK:STDOUT:   %Failure = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !46
 // CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !46
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.d4e.anon, i64 8, i1 false), !dbg !46
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Err, align 4, !dbg !46
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !46
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.44c.anon, i64 8, i1 false), !dbg !46
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Failure, align 4, !dbg !46
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Failure, i32 0, i32 0, !dbg !46
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !46
 // CHECK:STDOUT:   ret void, !dbg !46
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_COk.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !48 {
+// CHECK:STDOUT: define linkonce_odr void @_CSuccess.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !48 {
 // CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !50
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !50
-// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !50
+// CHECK:STDOUT:   %Success = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !50
 // CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !51
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.ad4.anon, i64 8, i1 false), !dbg !50
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Ok, align 4, !dbg !50
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Ok, i32 0, i32 0, !dbg !51
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.519.anon, i64 8, i1 false), !dbg !50
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Success, align 4, !dbg !50
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Success, i32 0, i32 0, !dbg !51
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !51
 // CHECK:STDOUT:   ret void, !dbg !50
 // CHECK:STDOUT: }
@@ -285,14 +285,14 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: !41 = !DILocation(line: 29, column: 23, scope: !34)
 // CHECK:STDOUT: !42 = !{!35}
 // CHECK:STDOUT: !43 = !DIFile(filename: "{{.*}}/prelude/types/result.carbon", directory: "")
-// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.Result.Core.8122a03446648385", scope: null, file: !43, line: 28, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !47)
+// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "Failure", linkageName: "_CFailure.Result.Core.8122a03446648385", scope: null, file: !43, line: 28, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !47)
 // CHECK:STDOUT: !45 = !DILocalVariable(arg: 1, scope: !44, type: !6)
 // CHECK:STDOUT: !46 = !DILocation(line: 28, column: 1, scope: !44)
 // CHECK:STDOUT: !47 = !{!45}
-// CHECK:STDOUT: !48 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.Result.Core.8122a03446648385", scope: null, file: !43, line: 28, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !52)
+// CHECK:STDOUT: !48 = distinct !DISubprogram(name: "Success", linkageName: "_CSuccess.Result.Core.8122a03446648385", scope: null, file: !43, line: 28, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !52)
 // CHECK:STDOUT: !49 = !DILocalVariable(arg: 1, scope: !48, type: !6)
 // CHECK:STDOUT: !50 = !DILocation(line: 28, column: 1, scope: !48)
-// CHECK:STDOUT: !51 = !DILocation(line: 29, column: 15, scope: !48)
+// CHECK:STDOUT: !51 = !DILocation(line: 29, column: 20, scope: !48)
 // CHECK:STDOUT: !52 = !{!49}
 // CHECK:STDOUT: !53 = !{!"Simple C++ TBAA"}
 // CHECK:STDOUT: !54 = !{!"omnipotent char", !53, i64 0}

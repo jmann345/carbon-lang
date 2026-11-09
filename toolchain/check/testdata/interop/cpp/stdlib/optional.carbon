@@ -356,11 +356,11 @@ import Cpp library "sum.h";
 // The alternatives are the sum type's, `Some` and `None`.
 fn U(n: i32) -> i32 {
   match (Cpp.MakeOptional(n)) {
-    // CHECK:STDERR: fail_unknown_alternative.carbon:[[@LINE+4]]:10: error: member name `Ok` not found in `Core.CppCompat.StdOptional(i32)` [MemberNameNotFoundInSpecificScope]
-    // CHECK:STDERR:     case .Ok(v: i32) => {
-    // CHECK:STDERR:          ^~~~~~~~~~~
+    // CHECK:STDERR: fail_unknown_alternative.carbon:[[@LINE+4]]:10: error: member name `Success` not found in `Core.CppCompat.StdOptional(i32)` [MemberNameNotFoundInSpecificScope]
+    // CHECK:STDERR:     case .Success(v: i32) => {
+    // CHECK:STDERR:          ^~~~~~~~~~~~~~~~
     // CHECK:STDERR:
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       return v;
     }
     default => {

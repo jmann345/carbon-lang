@@ -18,49 +18,49 @@ struct Result {
   int v;
 };
 
-static auto Ok(int v) -> Result { return {true, v}; }
-static auto Err(int e) -> Result { return {false, e}; }
+static auto Success(int v) -> Result { return {true, v}; }
+static auto Failure(int e) -> Result { return {false, e}; }
 
 // The `ErrA -> ErrB` `ImplicitAs` layer of the Carbon program.
 static auto ToErrB(int a) -> int { return a + 1000; }
 
-static auto Fail(int code) -> Result { return Err(code); }
+static auto Fail(int code) -> Result { return Failure(code); }
 
 static auto Leaf(int n, int fail_at) -> Result {
   if (fail_at == 3) {
-    return Err(303);
+    return Failure(303);
   }
-  return Ok(n * 2);
+  return Success(n * 2);
 }
 
 static auto Mid(int n, int fail_at) -> Result {
   // The explicit spelling of `Leaf(n, fail_at)?` (same error type).
   Result r = Leaf(n, fail_at);
   if (!r.ok) {
-    return Err(r.v);
+    return Failure(r.v);
   }
   int v = r.v;
   if (fail_at == 2) {
-    return Err(202);
+    return Failure(202);
   }
-  return Ok(v);
+  return Success(v);
 }
 
 static auto Top(int n, int fail_at) -> Result {
   // `Mid(n, fail_at)?` with the `ErrA -> ErrB` conversion in `FromBreak`.
   Result r = Mid(n, fail_at);
   if (!r.ok) {
-    return Err(ToErrB(r.v));
+    return Failure(ToErrB(r.v));
   }
   int v = r.v;
   if (fail_at == 1) {
     // `Fail(101)?;` in statement position, converting likewise.
     Result f = Fail(101);
     if (!f.ok) {
-      return Err(ToErrB(f.v));
+      return Failure(ToErrB(f.v));
     }
   }
-  return Ok(v);
+  return Success(v);
 }
 
 static auto Probe(int fail_at, int seed) -> void {

@@ -55,15 +55,15 @@ fn F(x: i32, g: bool, h: bool) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // The alternative-rooted both-guarded twins, silent for the same reason.
 fn F(r: IntResult, g: bool, h: bool) -> i32 {
   match (r) {
-    case .Ok(42) if (g) => { return 1; }
-    case .Ok(42) if (h) => { return 2; }
+    case .Success(42) if (g) => { return 1; }
+    case .Success(42) if (h) => { return 2; }
     default => { return 0; }
   }
   return -1;
@@ -143,8 +143,8 @@ fn F(x: i32) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 choice TwoPayloads {
@@ -165,8 +165,8 @@ fn Tuples(p: (i32, i32)) -> i32 {
 // Distinct payload constants under the same alternative.
 fn Payloads(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(1) => { return 1; }
-    case .Ok(2) => { return 2; }
+    case .Success(1) => { return 1; }
+    case .Success(2) => { return 2; }
     default => { return 0; }
   }
   return -1;
@@ -258,24 +258,24 @@ fn F(f: Flag, g: bool, h: bool) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
-// Full alternative coverage plus a prior ERROR arm (`.Err()` — parens on
+// Full alternative coverage plus a prior ERROR arm (`.Failure()` — parens on
 // a constant alternative, a non-aborting pattern error): the blanket
 // `has_error_arm` suppression keeps the dead `default` SILENT, as
 // `DiagnoseNonexhaustiveMatch` does; only the error arm's own diagnostic
 // appears (W-078a plan §1.4).
 fn F(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(v: i32) => { return v; }
-    case .Err => { return 0; }
-    // CHECK:STDERR: fail_error_arm_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Err` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
-    // CHECK:STDERR:     case .Err() => { return 1; }
-    // CHECK:STDERR:          ^~~~~~
+    case .Success(v: i32) => { return v; }
+    case .Failure => { return 0; }
+    // CHECK:STDERR: fail_error_arm_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Failure` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
+    // CHECK:STDERR:     case .Failure() => { return 1; }
+    // CHECK:STDERR:          ^~~~~~~~~~
     // CHECK:STDERR:
-    case .Err() => { return 1; }
+    case .Failure() => { return 1; }
     default => { return 2; }
   }
   return -1;
@@ -285,8 +285,8 @@ fn F(r: IntResult) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // The W-078a plan §1.4 ASYMMETRY, pinned: an error arm plus a
@@ -298,11 +298,11 @@ choice IntResult {
 // the error arm's own diagnostic appears.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    // CHECK:STDERR: fail_error_arm_wildcard_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Err` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
-    // CHECK:STDERR:     case .Err() => { return 1; }
-    // CHECK:STDERR:          ^~~~~~
+    // CHECK:STDERR: fail_error_arm_wildcard_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Failure` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
+    // CHECK:STDERR:     case .Failure() => { return 1; }
+    // CHECK:STDERR:          ^~~~~~~~~~
     // CHECK:STDERR:
-    case .Err() => { return 1; }
+    case .Failure() => { return 1; }
     case unused c: IntResult => { return 0; }
     default => { return 2; }
   }

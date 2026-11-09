@@ -371,14 +371,16 @@ class FunctionContext {
   }
 
   // The stderr diagnostic of a `Result`-returning `Main.Run` that returns
-  // `.Err` (the handle.cpp `ReturnExpr` epilogue): a private global created on
-  // first use like `printf_int_format_string`, shared by every `return` in
+  // `.Failure` (the handle.cpp `ReturnExpr` epilogue): a private global created
+  // on first use like `printf_int_format_string`, shared by every `return` in
   // `Run`. `message` is the same string at every call site.
-  auto entry_point_result_err_message(llvm::StringRef message) -> llvm::Value* {
-    auto* global = file_context_->entry_point_result_err_message();
+  auto entry_point_result_failure_message(llvm::StringRef message)
+      -> llvm::Value* {
+    auto* global = file_context_->entry_point_result_failure_message();
     if (!global) {
-      global = builder().CreateGlobalString(message, "main.result.err.message");
-      file_context_->SetEntryPointResultErrMessage(global);
+      global =
+          builder().CreateGlobalString(message, "main.result.failure.message");
+      file_context_->SetEntryPointResultFailureMessage(global);
     }
     return global;
   }

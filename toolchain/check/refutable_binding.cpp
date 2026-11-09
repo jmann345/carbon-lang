@@ -561,7 +561,7 @@ auto EmitRefutableBindingBind(Context& context, Parse::NodeId node_id,
     // elements through the tuple-pattern machinery. This re-extraction of a
     // trivially copyable payload in the success block is dominated by the
     // discriminant test, so the read is safe. A binding-free payload
-    // (`case .Ok(42)`) has no bind-pass work, so nothing is extracted. An
+    // (`case .Success(42)`) has no bind-pass work, so nothing is extracted. An
     // arm whose test errored (for example an errored payload element) has
     // nothing sound to bind.
     auto field_ref_id = EmitChoicePayloadFieldAccess(

@@ -10,7 +10,7 @@
 // runtime-computed seeds, and the same error-tagging bases (101/202), so
 // byte-identical output pins where propagation stopped inside the template
 // body and what the break payload was. The int64_t leg compares the
-// Ok payload against the same runtime-computed expectation the
+// Success payload against the same runtime-computed expectation the
 // Carbon side uses. printf("%d\n", ...) mirrors Core.Print's lowering
 // exactly (toolchain/lower/handle_call.cpp).
 
@@ -25,42 +25,42 @@ struct Result {
 };
 
 template <typename T>
-static auto Ok(T v) -> Result<T> {
+static auto Success(T v) -> Result<T> {
   return {true, v, 0};
 }
 
 template <typename T>
-static auto Err(int e) -> Result<T> {
+static auto Failure(int e) -> Result<T> {
   return {false, T{}, e};
 }
 
 template <typename T>
 static auto Step(T x, bool fail, int tag) -> Result<T> {
   if (fail) {
-    return Err<T>(tag);
+    return Failure<T>(tag);
   }
-  return Ok(x);
+  return Success(x);
 }
 
 template <typename T>
 static auto Chain(T x, int fail_at) -> Result<T> {
   // The explicit spelling of `Discard(Step(x, fail_at == 1, 101)?)`: the
   // break path early-returns with the converted payload; the continue
-  // value is discarded and the Ok payload is reconstructed from `x` (the
+  // value is discarded and the Success payload is reconstructed from `x` (the
   // identical value — `Step` passes `x` through), mirroring the discard
   // shape the Carbon side CHOOSES (the SCOPE note in
   // question_generic_diff.carbon — a design choice of this pair, not a
   // language limit; the threading arbiter is the W72b sibling pair).
   Result<T> r1 = Step(x, fail_at == 1, 101);
   if (!r1.ok) {
-    return Err<T>(r1.e);
+    return Failure<T>(r1.e);
   }
   // The explicit spelling of `Discard(Step(x, fail_at == 2, 202)?)`.
   Result<T> r2 = Step(x, fail_at == 2, 202);
   if (!r2.ok) {
-    return Err<T>(r2.e);
+    return Failure<T>(r2.e);
   }
-  return Ok(x);
+  return Success(x);
 }
 
 static auto ProbeI(int fail_at, int seed) -> void {

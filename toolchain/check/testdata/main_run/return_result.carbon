@@ -20,21 +20,21 @@
 // is rejected today. Lowering (lower/testdata/main_run/return_result.carbon)
 // gives these functions the C ABI `i32 main()` and the exit-code epilogue.
 
-// --- unit_ok.carbon
+// --- unit_success.carbon
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 fn Run() -> Core.Result((), i32) {
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 //@dump-sem-ir-end
 
-// --- i32_ok.carbon
+// --- i32_success.carbon
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 fn Run() -> Core.Result(i32, i32) {
-  return Core.Result(i32, i32).Ok(3);
+  return Core.Result(i32, i32).Success(3);
 }
 //@dump-sem-ir-end
 
@@ -42,13 +42,13 @@ fn Run() -> Core.Result(i32, i32) {
 library "[[@TEST_NAME]]";
 
 fn Fails(n: i32) -> Core.Result((), i32) {
-  return Core.Result((), i32).Err(n);
+  return Core.Result((), i32).Failure(n);
 }
 
 //@dump-sem-ir-begin
 fn Run() -> Core.Result((), i32) {
   Fails(7)?;
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 //@dump-sem-ir-end
 
@@ -61,7 +61,7 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Run() -> Core.Result(i64, i32) {
-  return Core.Result(i64, i32).Ok(0);
+  return Core.Result(i64, i32).Success(0);
 }
 
 // --- fail_non_result_class.carbon
@@ -94,10 +94,10 @@ class Code {
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Run() -> Core.Result(Code, i32) {
-  return Core.Result(Code, i32).Err(1);
+  return Core.Result(Code, i32).Failure(1);
 }
 
-// CHECK:STDOUT: --- unit_ok.carbon
+// CHECK:STDOUT: --- unit_success.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
@@ -106,8 +106,8 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %Result.generic: %Result.type = struct_value () [concrete]
 // CHECK:STDOUT:   %E: type = symbolic_binding E, 1 [symbolic]
 // CHECK:STDOUT:   %T: type = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %Result.Ok.type.898: type = fn_type @Result.Ok, @Result(%T, %E) [symbolic]
-// CHECK:STDOUT:   %Result.Ok.58a: %Result.Ok.type.898 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Result.Success.type.fd0: type = fn_type @Result.Success, @Result(%T, %E) [symbolic]
+// CHECK:STDOUT:   %Result.Success.155: %Result.Success.type.fd0 = struct_value () [symbolic]
 // CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -120,9 +120,9 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %return.patt.391: %pattern_type.f2b = return_slot_pattern %return.param_patt.51d, %Result.610 [concrete]
 // CHECK:STDOUT:   %Run.type: type = fn_type @Run [concrete]
 // CHECK:STDOUT:   %Run: %Run.type = struct_value () [concrete]
-// CHECK:STDOUT:   %Result.Ok.type.3fe: type = fn_type @Result.Ok, @Result(%empty_tuple.type, %i32) [concrete]
-// CHECK:STDOUT:   %Result.Ok.a6a: %Result.Ok.type.3fe = struct_value () [concrete]
-// CHECK:STDOUT:   %Result.Ok.specific_fn: <specific function> = specific_function %Result.Ok.a6a, @Result.Ok(%empty_tuple.type, %i32) [concrete]
+// CHECK:STDOUT:   %Result.Success.type.a27: type = fn_type @Result.Success, @Result(%empty_tuple.type, %i32) [concrete]
+// CHECK:STDOUT:   %Result.Success.7ee: %Result.Success.type.a27 = struct_value () [concrete]
+// CHECK:STDOUT:   %Result.Success.specific_fn: <specific function> = specific_function %Result.Success.7ee, @Result.Success(%empty_tuple.type, %i32) [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -133,7 +133,7 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:     import Core//prelude/...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Core.Result: %Result.type = import_ref Core//prelude/types/result, Result, loaded [concrete = constants.%Result.generic]
-// CHECK:STDOUT:   %Core.import_ref.597: @Result.%Result.Ok.type (%Result.Ok.type.898) = import_ref Core//prelude/types/result, loc{{\d+_\d+}}, loaded [symbolic = @Result.%Result.Ok (constants.%Result.Ok.58a)]
+// CHECK:STDOUT:   %Core.import_ref.ff2: @Result.%Result.Success.type (%Result.Success.type.fd0) = import_ref Core//prelude/types/result, loc{{\d+_\d+}}, loaded [symbolic = @Result.%Result.Success (constants.%Result.Success.155)]
 // CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -162,18 +162,18 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %i32.loc5: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %.loc5_29: type = converted %.loc5_23, constants.%empty_tuple.type [concrete = constants.%empty_tuple.type]
 // CHECK:STDOUT:   %Result.loc5: type = class_type @Result, @Result(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.610]
-// CHECK:STDOUT:   %.loc5_30: %Result.Ok.type.3fe = specific_constant imports.%Core.import_ref.597, @Result(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Ok.a6a]
-// CHECK:STDOUT:   %Ok.ref: %Result.Ok.type.3fe = name_ref Ok, %.loc5_30 [concrete = constants.%Result.Ok.a6a]
-// CHECK:STDOUT:   %.loc5_35.1: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %Result.Ok.specific_fn: <specific function> = specific_function %Ok.ref, @Result.Ok(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Ok.specific_fn]
+// CHECK:STDOUT:   %.loc5_30: %Result.Success.type.a27 = specific_constant imports.%Core.import_ref.ff2, @Result(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Success.7ee]
+// CHECK:STDOUT:   %Success.ref: %Result.Success.type.a27 = name_ref Success, %.loc5_30 [concrete = constants.%Result.Success.7ee]
+// CHECK:STDOUT:   %.loc5_40.1: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %Result.Success.specific_fn: <specific function> = specific_function %Success.ref, @Result.Success(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Success.specific_fn]
 // CHECK:STDOUT:   %.loc4_32.1: ref %Result.610 = splice_block %return.param {}
 // CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %.loc5_35.2: %empty_tuple.type = converted %.loc5_35.1, %empty_tuple [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %Result.Ok.call: init %Result.610 to %.loc4_32.1 = call %Result.Ok.specific_fn(%.loc5_35.2)
-// CHECK:STDOUT:   return %Result.Ok.call to %return.param
+// CHECK:STDOUT:   %.loc5_40.2: %empty_tuple.type = converted %.loc5_40.1, %empty_tuple [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %Result.Success.call: init %Result.610 to %.loc4_32.1 = call %Result.Success.specific_fn(%.loc5_40.2)
+// CHECK:STDOUT:   return %Result.Success.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: --- i32_ok.carbon
+// CHECK:STDOUT: --- i32_success.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
@@ -181,8 +181,8 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %Result.generic: %Result.type = struct_value () [concrete]
 // CHECK:STDOUT:   %E: type = symbolic_binding E, 1 [symbolic]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %Result.Ok.type.898: type = fn_type @Result.Ok, @Result(%T.67d, %E) [symbolic]
-// CHECK:STDOUT:   %Result.Ok.58a: %Result.Ok.type.898 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Result.Success.type.fd0: type = fn_type @Result.Success, @Result(%T.67d, %E) [symbolic]
+// CHECK:STDOUT:   %Result.Success.155: %Result.Success.type.fd0 = struct_value () [symbolic]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
 // CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
@@ -194,10 +194,10 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %return.patt.d36: %pattern_type.321 = return_slot_pattern %return.param_patt.8f8, %Result.250 [concrete]
 // CHECK:STDOUT:   %Run.type: type = fn_type @Run [concrete]
 // CHECK:STDOUT:   %Run: %Run.type = struct_value () [concrete]
-// CHECK:STDOUT:   %Result.Ok.type.39c: type = fn_type @Result.Ok, @Result(%i32, %i32) [concrete]
-// CHECK:STDOUT:   %Result.Ok.e0a: %Result.Ok.type.39c = struct_value () [concrete]
+// CHECK:STDOUT:   %Result.Success.type.816: type = fn_type @Result.Success, @Result(%i32, %i32) [concrete]
+// CHECK:STDOUT:   %Result.Success.582: %Result.Success.type.816 = struct_value () [concrete]
 // CHECK:STDOUT:   %int_3.1ba: Core.IntLiteral = int_value 3 [concrete]
-// CHECK:STDOUT:   %Result.Ok.specific_fn: <specific function> = specific_function %Result.Ok.e0a, @Result.Ok(%i32, %i32) [concrete]
+// CHECK:STDOUT:   %Result.Success.specific_fn: <specific function> = specific_function %Result.Success.582, @Result.Success(%i32, %i32) [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.0ff: type = generic_interface_type @ImplicitAs [concrete]
 // CHECK:STDOUT:   %ImplicitAs.generic: %ImplicitAs.type.0ff = struct_value () [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
@@ -225,7 +225,7 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:     import Core//prelude/...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Core.Result: %Result.type = import_ref Core//prelude/types/result, Result, loaded [concrete = constants.%Result.generic]
-// CHECK:STDOUT:   %Core.import_ref.597: @Result.%Result.Ok.type (%Result.Ok.type.898) = import_ref Core//prelude/types/result, loc{{\d+_\d+}}, loaded [symbolic = @Result.%Result.Ok (constants.%Result.Ok.58a)]
+// CHECK:STDOUT:   %Core.import_ref.ff2: @Result.%Result.Success.type (%Result.Success.type.fd0) = import_ref Core//prelude/types/result, loc{{\d+_\d+}}, loaded [symbolic = @Result.%Result.Success (constants.%Result.Success.155)]
 // CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
 // CHECK:STDOUT:   %Core.ImplicitAs: %ImplicitAs.type.0ff = import_ref Core//prelude/operators/as, ImplicitAs, loaded [concrete = constants.%ImplicitAs.generic]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
@@ -255,20 +255,20 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %i32.loc5_22: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %i32.loc5_27: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %Result.loc5: type = class_type @Result, @Result(constants.%i32, constants.%i32) [concrete = constants.%Result.250]
-// CHECK:STDOUT:   %.loc5_31: %Result.Ok.type.39c = specific_constant imports.%Core.import_ref.597, @Result(constants.%i32, constants.%i32) [concrete = constants.%Result.Ok.e0a]
-// CHECK:STDOUT:   %Ok.ref: %Result.Ok.type.39c = name_ref Ok, %.loc5_31 [concrete = constants.%Result.Ok.e0a]
+// CHECK:STDOUT:   %.loc5_31: %Result.Success.type.816 = specific_constant imports.%Core.import_ref.ff2, @Result(constants.%i32, constants.%i32) [concrete = constants.%Result.Success.582]
+// CHECK:STDOUT:   %Success.ref: %Result.Success.type.816 = name_ref Success, %.loc5_31 [concrete = constants.%Result.Success.582]
 // CHECK:STDOUT:   %int_3: Core.IntLiteral = int_value 3 [concrete = constants.%int_3.1ba]
-// CHECK:STDOUT:   %Result.Ok.specific_fn: <specific function> = specific_function %Ok.ref, @Result.Ok(constants.%i32, constants.%i32) [concrete = constants.%Result.Ok.specific_fn]
+// CHECK:STDOUT:   %Result.Success.specific_fn: <specific function> = specific_function %Success.ref, @Result.Success(constants.%i32, constants.%i32) [concrete = constants.%Result.Success.specific_fn]
 // CHECK:STDOUT:   %.loc4_33.1: ref %Result.250 = splice_block %return.param {}
 // CHECK:STDOUT:   %impl.elem0: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc5_35.1: <bound method> = bound_method %int_3, %impl.elem0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
+// CHECK:STDOUT:   %bound_method.loc5_40.1: <bound method> = bound_method %int_3, %impl.elem0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc5_35.2: <bound method> = bound_method %int_3, %specific_fn [concrete = constants.%bound_method]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc5_35.2(%int_3) [concrete = constants.%int_3.410]
-// CHECK:STDOUT:   %.loc5_35.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_3.410]
-// CHECK:STDOUT:   %.loc5_35.2: %i32 = converted %int_3, %.loc5_35.1 [concrete = constants.%int_3.410]
-// CHECK:STDOUT:   %Result.Ok.call: init %Result.250 to %.loc4_33.1 = call %Result.Ok.specific_fn(%.loc5_35.2)
-// CHECK:STDOUT:   return %Result.Ok.call to %return.param
+// CHECK:STDOUT:   %bound_method.loc5_40.2: <bound method> = bound_method %int_3, %specific_fn [concrete = constants.%bound_method]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc5_40.2(%int_3) [concrete = constants.%int_3.410]
+// CHECK:STDOUT:   %.loc5_40.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_3.410]
+// CHECK:STDOUT:   %.loc5_40.2: %i32 = converted %int_3, %.loc5_40.1 [concrete = constants.%int_3.410]
+// CHECK:STDOUT:   %Result.Success.call: init %Result.250 to %.loc4_33.1 = call %Result.Success.specific_fn(%.loc5_40.2)
+// CHECK:STDOUT:   return %Result.Success.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- with_question.carbon
@@ -288,8 +288,8 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %u1: type = class_type @UInt, @UInt(%int_1.5b8) [concrete]
-// CHECK:STDOUT:   %Result.Ok.type.898: type = fn_type @Result.Ok, @Result(%T.67d, %E) [symbolic]
-// CHECK:STDOUT:   %Result.Ok.58a: %Result.Ok.type.898 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Result.Success.type.fd0: type = fn_type @Result.Success, @Result(%T.67d, %E) [symbolic]
+// CHECK:STDOUT:   %Result.Success.155: %Result.Success.type.fd0 = struct_value () [symbolic]
 // CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
 // CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete]
 // CHECK:STDOUT:   %Result.610: type = class_type @Result, @Result(%empty_tuple.type, %i32) [concrete]
@@ -302,10 +302,10 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %pattern_type.cb1: type = pattern_type %empty_tuple.type [concrete]
 // CHECK:STDOUT:   %tuple.type.9fb: type = tuple_type (%empty_tuple.type) [concrete]
 // CHECK:STDOUT:   %tuple.type.a8a: type = tuple_type (%i32) [concrete]
-// CHECK:STDOUT:   %.e98: type = custom_layout_type {size=4, align=4, .Ok@0: %tuple.type.9fb, .Err@0: %tuple.type.a8a} [concrete]
-// CHECK:STDOUT:   %struct_type.discriminant.payload.11d: type = struct_type {.discriminant: %u1, .payload: %.e98} [concrete]
-// CHECK:STDOUT:   %Result.Ok.type.3fe: type = fn_type @Result.Ok, @Result(%empty_tuple.type, %i32) [concrete]
-// CHECK:STDOUT:   %Result.Ok.a6a: %Result.Ok.type.3fe = struct_value () [concrete]
+// CHECK:STDOUT:   %.996: type = custom_layout_type {size=4, align=4, .Success@0: %tuple.type.9fb, .Failure@0: %tuple.type.a8a} [concrete]
+// CHECK:STDOUT:   %struct_type.discriminant.payload.77c: type = struct_type {.discriminant: %u1, .payload: %.996} [concrete]
+// CHECK:STDOUT:   %Result.Success.type.a27: type = fn_type @Result.Success, @Result(%empty_tuple.type, %i32) [concrete]
+// CHECK:STDOUT:   %Result.Success.7ee: %Result.Success.type.a27 = struct_value () [concrete]
 // CHECK:STDOUT:   %Run.type: type = fn_type @Run [concrete]
 // CHECK:STDOUT:   %Run: %Run.type = struct_value () [concrete]
 // CHECK:STDOUT:   %int_7.29f: Core.IntLiteral = int_value 7 [concrete]
@@ -438,18 +438,18 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.8: %Destroy.WithSelf.Op.type.ef016f.8 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.8: type = fn_type @Destroy.WithSelf.SelfDestruct.loc9_11.8 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.8: %Destroy.WithSelf.SelfDestruct.type.fbceb5.8 = struct_value () [concrete]
-// CHECK:STDOUT:   %pattern_type.d16: type = pattern_type %.e98 [concrete]
-// CHECK:STDOUT:   %self.param_patt.736: %pattern_type.d16 = ref_param_pattern [concrete]
-// CHECK:STDOUT:   %self.patt.ba3: %pattern_type.d16 = wrapper_binding_pattern self, %self.param_patt.736 [concrete]
+// CHECK:STDOUT:   %pattern_type.8f0: type = pattern_type %.996 [concrete]
+// CHECK:STDOUT:   %self.param_patt.fc4: %pattern_type.8f0 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.18b: %pattern_type.8f0 = wrapper_binding_pattern self, %self.param_patt.fc4 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.9: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc9_10.1 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.9: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.9 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.9: type = fn_type @Destroy.WithSelf.Op.loc9_10.1 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.9: %Destroy.WithSelf.Op.type.ef016f.9 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.9: type = fn_type @Destroy.WithSelf.SelfDestruct.loc9_10.1 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.9: %Destroy.WithSelf.SelfDestruct.type.fbceb5.9 = struct_value () [concrete]
-// CHECK:STDOUT:   %pattern_type.e76: type = pattern_type %struct_type.discriminant.payload.11d [concrete]
-// CHECK:STDOUT:   %self.param_patt.dd5: %pattern_type.e76 = ref_param_pattern [concrete]
-// CHECK:STDOUT:   %self.patt.28b: %pattern_type.e76 = wrapper_binding_pattern self, %self.param_patt.dd5 [concrete]
+// CHECK:STDOUT:   %pattern_type.47f: type = pattern_type %struct_type.discriminant.payload.77c [concrete]
+// CHECK:STDOUT:   %self.param_patt.de0: %pattern_type.47f = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.c5c: %pattern_type.47f = wrapper_binding_pattern self, %self.param_patt.de0 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.10: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc9_10.2 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.10: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.10 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.10: type = fn_type @Destroy.WithSelf.Op.loc9_10.2 [concrete]
@@ -462,7 +462,7 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.11: %Destroy.WithSelf.Op.type.ef016f.11 = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.11: type = fn_type @Destroy.WithSelf.SelfDestruct.loc9_10.3 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.11: %Destroy.WithSelf.SelfDestruct.type.fbceb5.11 = struct_value () [concrete]
-// CHECK:STDOUT:   %Result.Ok.specific_fn: <specific function> = specific_function %Result.Ok.a6a, @Result.Ok(%empty_tuple.type, %i32) [concrete]
+// CHECK:STDOUT:   %Result.Success.specific_fn: <specific function> = specific_function %Result.Success.7ee, @Result.Success(%empty_tuple.type, %i32) [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -478,7 +478,7 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
 // CHECK:STDOUT:   %Core.Result: %Result.type = import_ref Core//prelude/types/result, Result, loaded [concrete = constants.%Result.generic]
-// CHECK:STDOUT:   %Core.import_ref.597: @Result.%Result.Ok.type (%Result.Ok.type.898) = import_ref Core//prelude/types/result, loc{{\d+_\d+}}, loaded [symbolic = @Result.%Result.Ok (constants.%Result.Ok.58a)]
+// CHECK:STDOUT:   %Core.import_ref.ff2: @Result.%Result.Success.type (%Result.Success.type.fd0) = import_ref Core//prelude/types/result, loc{{\d+_\d+}}, loaded [symbolic = @Result.%Result.Success (constants.%Result.Success.155)]
 // CHECK:STDOUT:   %Core.ImplicitAs: %ImplicitAs.type.0ff = import_ref Core//prelude/operators/as, ImplicitAs, loaded [concrete = constants.%ImplicitAs.generic]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
@@ -611,32 +611,32 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:     %self: ref %ControlFlow.19f = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.9: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.9 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc9_10.1 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.9] {
-// CHECK:STDOUT:     %self.param_patt: %pattern_type.d16 = ref_param_pattern [concrete = constants.%self.param_patt.736]
-// CHECK:STDOUT:     %self.patt: %pattern_type.d16 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.ba3]
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.8f0 = ref_param_pattern [concrete = constants.%self.param_patt.fc4]
+// CHECK:STDOUT:     %self.patt: %pattern_type.8f0 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.18b]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %self.param: ref %.e98 = ref_param call_param0
-// CHECK:STDOUT:     %self: ref %.e98 = wrapper_binding self, %self.param
+// CHECK:STDOUT:     %self.param: ref %.996 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %.996 = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.9: %Destroy.WithSelf.Op.type.ef016f.9 = fn_decl @Destroy.WithSelf.Op.loc9_10.1 [concrete = constants.%Destroy.WithSelf.Op.403171.9] {
-// CHECK:STDOUT:     %self.param_patt: %pattern_type.d16 = ref_param_pattern [concrete = constants.%self.param_patt.736]
-// CHECK:STDOUT:     %self.patt: %pattern_type.d16 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.ba3]
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.8f0 = ref_param_pattern [concrete = constants.%self.param_patt.fc4]
+// CHECK:STDOUT:     %self.patt: %pattern_type.8f0 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.18b]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %self.param: ref %.e98 = ref_param call_param0
-// CHECK:STDOUT:     %self: ref %.e98 = wrapper_binding self, %self.param
+// CHECK:STDOUT:     %self.param: ref %.996 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %.996 = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.10: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.10 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc9_10.2 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.10] {
-// CHECK:STDOUT:     %self.param_patt: %pattern_type.e76 = ref_param_pattern [concrete = constants.%self.param_patt.dd5]
-// CHECK:STDOUT:     %self.patt: %pattern_type.e76 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.28b]
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.47f = ref_param_pattern [concrete = constants.%self.param_patt.de0]
+// CHECK:STDOUT:     %self.patt: %pattern_type.47f = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.c5c]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant.payload.11d = ref_param call_param0
-// CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.11d = wrapper_binding self, %self.param
+// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant.payload.77c = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.77c = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.10: %Destroy.WithSelf.Op.type.ef016f.10 = fn_decl @Destroy.WithSelf.Op.loc9_10.2 [concrete = constants.%Destroy.WithSelf.Op.403171.10] {
-// CHECK:STDOUT:     %self.param_patt: %pattern_type.e76 = ref_param_pattern [concrete = constants.%self.param_patt.dd5]
-// CHECK:STDOUT:     %self.patt: %pattern_type.e76 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.28b]
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.47f = ref_param_pattern [concrete = constants.%self.param_patt.de0]
+// CHECK:STDOUT:     %self.patt: %pattern_type.47f = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.c5c]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant.payload.11d = ref_param call_param0
-// CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.11d = wrapper_binding self, %self.param
+// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant.payload.77c = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.77c = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.11: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.11 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc9_10.3 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.11] {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.f2b = ref_param_pattern [concrete = constants.%self.param_patt.9d4]
@@ -745,15 +745,15 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   %i32.loc10: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %.loc10_29: type = converted %.loc10_23, constants.%empty_tuple.type [concrete = constants.%empty_tuple.type]
 // CHECK:STDOUT:   %Result.loc10: type = class_type @Result, @Result(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.610]
-// CHECK:STDOUT:   %.loc10_30: %Result.Ok.type.3fe = specific_constant imports.%Core.import_ref.597, @Result(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Ok.a6a]
-// CHECK:STDOUT:   %Ok.ref: %Result.Ok.type.3fe = name_ref Ok, %.loc10_30 [concrete = constants.%Result.Ok.a6a]
-// CHECK:STDOUT:   %.loc10_35.1: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %Result.Ok.specific_fn: <specific function> = specific_function %Ok.ref, @Result.Ok(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Ok.specific_fn]
+// CHECK:STDOUT:   %.loc10_30: %Result.Success.type.a27 = specific_constant imports.%Core.import_ref.ff2, @Result(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Success.7ee]
+// CHECK:STDOUT:   %Success.ref: %Result.Success.type.a27 = name_ref Success, %.loc10_30 [concrete = constants.%Result.Success.7ee]
+// CHECK:STDOUT:   %.loc10_40.1: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %Result.Success.specific_fn: <specific function> = specific_function %Success.ref, @Result.Success(constants.%empty_tuple.type, constants.%i32) [concrete = constants.%Result.Success.specific_fn]
 // CHECK:STDOUT:   %.loc8_32.2: ref %Result.610 = splice_block %return.param {}
 // CHECK:STDOUT:   %empty_tuple.loc10: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %.loc10_35.2: %empty_tuple.type = converted %.loc10_35.1, %empty_tuple.loc10 [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %Result.Ok.call: init %Result.610 to %.loc8_32.2 = call %Result.Ok.specific_fn(%.loc10_35.2)
-// CHECK:STDOUT:   return %Result.Ok.call to %return.param
+// CHECK:STDOUT:   %.loc10_40.2: %empty_tuple.type = converted %.loc10_40.1, %empty_tuple.loc10 [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %Result.Success.call: init %Result.610 to %.loc8_32.2 = call %Result.Success.specific_fn(%.loc10_40.2)
+// CHECK:STDOUT:   return %Result.Success.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc9_11.1(%self.param: ref %u1) = "no_op";
@@ -873,23 +873,23 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc9_10.1(%self.param: ref %.e98) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc9_10.1(%self.param: ref %.996) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc9_10.1(%self.param: ref %.e98) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc9_10.1(%self.param: ref %.996) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc9_10.1(%self.param: ref %.e98) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc9_10.1(%self.param: ref %.996) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.9(%self.param)
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.9(%self.param)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc9_10.2(%self.param: ref %struct_type.discriminant.payload.11d) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc9_10.2(%self.param: ref %struct_type.discriminant.payload.77c) {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %.loc9_10.1: ref %.e98 = struct_access %self.param, element1
+// CHECK:STDOUT:   %.loc9_10.1: ref %.996 = struct_access %self.param, element1
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc9_10.1: <bound method> = bound_method %.loc9_10.1, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.9
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc9_10.1: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc9_10.1(%.loc9_10.1)
 // CHECK:STDOUT:   %.loc9_10.2: ref %u1 = struct_access %self.param, element0
@@ -898,9 +898,9 @@ fn Run() -> Core.Result(Code, i32) {
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc9_10.2(%self.param: ref %struct_type.discriminant.payload.11d) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc9_10.2(%self.param: ref %struct_type.discriminant.payload.77c) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc9_10.2(%self.param: ref %struct_type.discriminant.payload.11d) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc9_10.2(%self.param: ref %struct_type.discriminant.payload.77c) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.10(%self.param)
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.10(%self.param)

@@ -32,8 +32,8 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 fn F(n: i32) -> Core.Result(i32, i32) {
-  if (n < 0) { return Core.Result(i32, i32).Err(n); }
-  return Core.Result(i32, i32).Ok(n);
+  if (n < 0) { return Core.Result(i32, i32).Failure(n); }
+  return Core.Result(i32, i32).Success(n);
 }
 
 inline Cpp '''
@@ -42,18 +42,18 @@ template <typename T, typename E>
 struct expected {
   unsigned char disc;
   union {
-    T ok;
-    E err;
+    T success;
+    E failure;
   };
   bool has_value() const { return disc == 0; }
   expected() = default;
-  expected(T value) : disc(0), ok(value) {}
+  expected(T value) : disc(0), success(value) {}
 };
 template <typename E>
 struct expected<void, E> {
   unsigned char disc;
   union {
-    E err;
+    E failure;
   };
   bool has_value() const { return disc == 0; }
 };
@@ -77,8 +77,8 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 fn U(n: i32) -> Core.Result((), i32) {
-  if (n < 0) { return Core.Result((), i32).Err(n); }
-  return Core.Result((), i32).Ok(());
+  if (n < 0) { return Core.Result((), i32).Failure(n); }
+  return Core.Result((), i32).Success(());
 }
 
 inline Cpp '''
@@ -87,18 +87,18 @@ template <typename T, typename E>
 struct expected {
   unsigned char disc;
   union {
-    T ok;
-    E err;
+    T success;
+    E failure;
   };
   bool has_value() const { return disc == 0; }
   expected() = default;
-  expected(T value) : disc(0), ok(value) {}
+  expected(T value) : disc(0), success(value) {}
 };
 template <typename E>
 struct expected<void, E> {
   unsigned char disc;
   union {
-    E err;
+    E failure;
   };
   bool has_value() const { return disc == 0; }
 };
@@ -119,7 +119,7 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 fn X() -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(1);
+  return Core.Result(i32, Cpp.Exception).Success(1);
 }
 
 inline Cpp '''
@@ -128,12 +128,12 @@ template <typename T, typename E>
 struct expected {
   unsigned char disc;
   union {
-    T ok;
-    E err;
+    T success;
+    E failure;
   };
   bool has_value() const { return disc == 0; }
   expected() = default;
-  expected(T value) : disc(0), ok(value) {}
+  expected(T value) : disc(0), success(value) {}
 };
 struct Exception {
   void* p;
@@ -161,7 +161,7 @@ import Cpp;
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn F(n: i32) -> Core.Result(i32, i32) {
-  return Core.Result(i32, i32).Ok(n);
+  return Core.Result(i32, i32).Success(n);
 }
 
 inline Cpp '''

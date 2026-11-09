@@ -16,7 +16,7 @@
 // arbitrates it at RUNTIME with the threaded values LOAD-BEARING in the
 // observable payload: each step's input is computed from the PREVIOUS
 // step's threaded output (`let a: T = Step(x, ..., 101)?;` then
-// `let b: T = Step(a.Combine(), ..., 202)?;` and `Ok(b)` — the plan's
+// `let b: T = Step(a.Combine(), ..., 202)?;` and `Success(b)` — the plan's
 // Combine(a)-style chaining), so a mistyped, misrouted, or
 // seed-reconstructed continue value CHANGES the output — unlike the
 // sibling pair's seed-reconstruction shape (question_generic_diff, the
@@ -49,8 +49,8 @@
 import Core library "io";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // The doc's sanctioned spelling: `final` exempts this impl from
@@ -62,8 +62,8 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable trailing return (reachability doesn't consult match
     // exhaustiveness — fork/b1/plan.md §2.6, W-073 dated amendment):
@@ -76,13 +76,13 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // behavior as the deleted `Diverge` helper.
     return self.(Core.Try.Branch)();
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // The per-type transform the chain applies to each threaded continue
 // value — the arbiter-verified generics/checked_generics.carbon interface
 // shape (a user interface with concrete impls, called through the
-// witness in the generic body). Combine(x) = x + x, so the chain's Ok
+// witness in the generic body). Combine(x) = x + x, so the chain's Success
 // payload (2 * seed) differs from the seed and cannot be reconstructed
 // without the threaded value.
 interface Combinable {
@@ -99,15 +99,15 @@ impl i64 as Combinable {
 
 // A generic step: passes `x` through, or fails with the given tag.
 fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
-  if (fail) { return MyResult(T, i32).Err(tag); }
-  return MyResult(T, i32).Ok(x);
+  if (fail) { return MyResult(T, i32).Failure(tag); }
+  return MyResult(T, i32).Success(x);
 }
 
 // The threading chain (the dissolved shape — this is the point): both `?`
 // continue values are bound `: T` (licensed by the final impl's rewrites)
 // and each is load-bearing — `a` feeds step 2's input through `Combine`,
 // and `b` (step 2's threaded output, = Combine(a) = 2 * seed on success)
-// IS the returned Ok payload. Operand and return type are the SAME
+// IS the returned Success payload. Operand and return type are the SAME
 // specific, so the break path's `FromBreak` conversion stays aligned
 // (the mixed-specific `MyResult(T, i32)` configuration, question_final
 // P-3), and both carrier temporaries ride the B2a symbolic-choice
@@ -121,17 +121,17 @@ fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
 fn Chain[T: Combinable & Core.Destroy](x: T, fail_at: i32) -> MyResult(T, i32) {
   let a: T = Step(x, fail_at == 1, 101)?;
   let b: T = Step(a.Combine(), fail_at == 2, 202)?;
-  return MyResult(T, i32).Ok(b);
+  return MyResult(T, i32).Success(b);
 }
 
-// Prints the outcome tag (0 = Ok, 1 = Err) and the payload.
+// Prints the outcome tag (0 = Success, 1 = Failure) and the payload.
 fn ProbeI(fail_at: i32, seed: i32) {
   match (Chain(seed, fail_at)) {
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       Core.Print(0);
       Core.Print(v);
     }
-    case .Err(e: i32) => {
+    case .Failure(e: i32) => {
       Core.Print(1);
       Core.Print(e);
     }
@@ -139,7 +139,7 @@ fn ProbeI(fail_at: i32, seed: i32) {
 }
 
 // The i64 instantiation: prints the outcome tag, then 1/0 for whether the
-// Ok payload matches the independently runtime-computed expectation
+// Success payload matches the independently runtime-computed expectation
 // (Core.Print takes i32 only), or the i32 break payload directly.
 // ACKNOWLEDGED CHANNEL LIMIT (review round): the i64 payload is observed
 // through this single boolean, so the leg's arbitration power comes from
@@ -150,7 +150,7 @@ fn ProbeI(fail_at: i32, seed: i32) {
 // do not fit in 32 bits.
 fn ProbeL(fail_at: i32, seed: i64, expect: i64) {
   match (Chain(seed, fail_at)) {
-    case .Ok(v: i64) => {
+    case .Success(v: i64) => {
       Core.Print(0);
       if (v == expect) {
         Core.Print(1);
@@ -158,7 +158,7 @@ fn ProbeL(fail_at: i32, seed: i64, expect: i64) {
         Core.Print(0);
       }
     }
-    case .Err(e: i32) => {
+    case .Failure(e: i32) => {
       Core.Print(1);
       Core.Print(e);
     }
@@ -174,7 +174,7 @@ fn Run() -> i32 {
   // the failing step 0..2, RuntimeSeed(22) = 42 seeds the i32 chain,
   // RuntimeSeedL(4294967320) = 2^32 + 44 the i64 chain (high-half
   // significant — see ProbeL's channel note), and
-  // RuntimeSeedL(8589934660) = 2^33 + 88 is the i64 Ok expectation
+  // RuntimeSeedL(8589934660) = 2^33 + 88 is the i64 Success expectation
   // (= 2 * (2^32 + 44)), computed WITHOUT going through the chain or
   // `Combine`.
   ProbeI(RuntimeSeed(-20), RuntimeSeed(22));

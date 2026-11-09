@@ -105,15 +105,15 @@ class Fat {
 }
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Compiles generically post-B2a (the question.carbon WidenedVar shape): the
 // symbolic specific's destroy answer is structural, and the payload check
 // defers while any payload field is symbolic.
 fn Widened(generic T: type) {
-  var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
+  var unused mr: MyResult(T, i32) = MyResult(T, i32).Failure(0);
 }
 
 fn Trigger() {
@@ -121,15 +121,15 @@ fn Trigger() {
   // CHECK:STDERR:   Widened(Fat);
   // CHECK:STDERR:   ^~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-7]]:18: note: `MyResult(T, i32)` evaluates to incomplete type `MyResult(Fat, i32)` [IncompleteTypeInMonomorphization]
-  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
+  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Failure(0);
   // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-19]]:1: note: choice alternative payload type `Fat` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
   // CHECK:STDERR: choice MyResult(T: type, E: type) {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-14]]:37: error: unable to monomorphize specific `Err(i32)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
-  // CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-14]]:37: error: unable to monomorphize specific `Failure(i32)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Failure(0);
+  // CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-26]]:1: note: choice alternative payload type `Fat` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
   // CHECK:STDERR: choice MyResult(T: type, E: type) {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

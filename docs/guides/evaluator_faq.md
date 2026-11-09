@@ -353,8 +353,11 @@ status 3. On this fork's toolchain, `Run` may also return `Core.Result((), E)`;
 an error then prints this line to stderr and exits with status 1:
 
 ```text
-carbon: `Main.Run` returned `.Err` of type `i32`; exiting with code 1
+carbon: `Main.Run` returned `.Failure` of type `i32`; exiting with code 1
 ```
+
+Until 2026-11-09 (EH-C, W-346) the line named `.Err`, the alternative's former
+spelling.
 
 ## Language and interop
 

@@ -1438,7 +1438,7 @@ auto MatchContext::DoMatchCaseExprPattern(
     if (context_.types().Is<SemIR::FunctionType>(result_type_id) ||
         context_.types().GetUnqualifiedType(result_type_id) ==
             context_.types().GetUnqualifiedType(scrutinee_type_id)) {
-      // For example `case IntResult.Err`: only the leading-dot spelling is
+      // For example `case IntResult.Failure`: only the leading-dot spelling is
       // in-slice (SF-4); the qualified form is a recorded work item.
       context_.TODO(introducer_node_id,
                     "qualified alternative pattern in match case");

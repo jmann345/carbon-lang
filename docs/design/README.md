@@ -4044,10 +4044,22 @@ overload resolution") remains
 
 Carbon's error handling is specified in [Error handling](error_handling.md).
 Errors are values: a fallible function returns the [choice type](#choice-types)
-`Core.Result(T, E)`, holding either an `Ok` value or an `Err` error. (The
-alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a;
-the illustrative `IntResult` example [above](#choice-types) uses
-`Success`/`Failure` and is not `Core.Result`.)
+`Core.Result(T, E)`, holding either a `Success` value or a `Failure` error,
+the alternative names of the `IntResult` example [above](#choice-types) and of
+upstream's generic `Result` under "Generic choice types".
+
+> **Fork amendment (2026-11-09, EH-C, W-346).** Until this date the alternatives
+> were spelled `Ok`/`Err` (sub-decision F-006a, user, 2026-07-19), and this
+> paragraph read "(The alternative names `Ok`/`Err` were decided by the user —
+> sub-decision F-006a; the illustrative `IntResult` example above uses
+> `Success`/`Failure` and is not `Core.Result`.)". Under fork/rulebook.md R32
+> that was a second spelling of upstream's mechanism (RG-1, D-RG-5): upstream's
+> docs/design/README.md at ca1898506 says "At this point, errors are
+> represented using [choice types](#choice-types) like `Result` and
+> `Optional`." (:3858-3860) and spells the result choice `Success(value: i32),`
+> / `Failure(error: String),` (:2176-2177) and `Success(value: T),` /
+> `Failure(error: Error)` (:3165-3166). The user may veto the reversal (R29).
+
 Results are consumed with [`match`](#match) and with the combined match
 control-flow forms
 [`if (let ...)` and `let ... else`](pattern_matching.md#refutable-pattern-bindings)

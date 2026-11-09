@@ -406,11 +406,14 @@ Output:
 ```
 
 What to notice: `Core.Result(T, E)` is a `choice` in the prelude, with the
-alternatives `Success` and `Failure`. The postfix `?` returns the error to the
-caller, or unwraps the value. `if (let pattern = value)` runs its block only
-when the pattern matches, and its `else` block otherwise. `Run` may itself
-return `Core.Result((), E)`; an error then prints a line to stderr and exits
-with code 1. Design: [error handling](/docs/design/error_handling.md).
+alternatives `Success` and `Failure` (this fork spelled them `Ok`/`Err` until
+2026-11-09, EH-C, W-346; a program written then gets
+``member name `Ok` not found in `Core.Result(i32, i32)` ``). The postfix `?`
+returns the error to the caller, or unwraps the value. `if (let pattern =
+value)` runs its block only when the pattern matches, and its `else` block
+otherwise. `Run` may itself return `Core.Result((), E)`; an error then prints
+a line to stderr and exits with code 1. Design:
+[error handling](/docs/design/error_handling.md).
 
 If it fails, see the FAQ:
 

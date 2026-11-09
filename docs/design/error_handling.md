@@ -109,13 +109,27 @@ choice Result(T: type, E: type) {
 `E` is not constrained to implement any error interface in 0.1. `Result((), E)`
 is the conventional shape for operations with no interesting success value.
 
-The alternative names are `Success` and `Failure`, decided by the user as part
-of the F-006 review (sub-decision F-006a); see
-[decision D1](#decisions-within-this-design). The illustrative `IntResult`
-example in the [language overview](README.md#choice-types) spells its
-alternatives `Success`/`Failure`; that example predates this decision, is not
-`Core.Result`, and does not set the naming — the normative alternative names for
-`Core.Result` are `Success` and `Failure`.
+The alternative names are `Success` and `Failure`, the spellings of upstream's
+result choices: the `IntResult` example in the
+[language overview](README.md#choice-types) and the generic `Result` under
+"Generic choice types" (upstream docs/design/README.md:2176-2177 and
+:3165-3166 at ca1898506). See [decision D1](#decisions-within-this-design).
+
+> **Fork amendment (2026-11-09, EH-C, W-346).** From F-006a (user, 2026-07-19)
+> until this date the alternatives were spelled `Ok`/`Err`, and this paragraph
+> read: "The alternative names are `Ok` and `Err`, decided by the user as part
+> of the F-006 review (sub-decision F-006a); see decision D1. The illustrative
+> `IntResult` example in the language overview spells its alternatives
+> `Success`/`Failure`; that example predates this decision, is not
+> `Core.Result`, and does not set the naming — the normative alternative names
+> for `Core.Result` are `Ok` and `Err`." RG-1 (D-RG-5, 2026-10-28) classified
+> that spelling a drift under fork/rulebook.md R32 (d), because upstream's
+> README names `Result` as the error representation ("At this point, errors
+> are represented using `[choice types](#choice-types)` like `Result` and
+> `Optional`.", :3858-3860 at ca1898506) and the section it links spells the
+> result choice `Success`/`Failure`; EH-C renamed every use. No alias remains:
+> the former spelling is an ordinary unknown member
+> (`MemberNameNotFoundInSpecificScope`). The user may veto the reversal (R29).
 
 `Result` is a choice type with payloads. Choice-alternative payloads and
 `match` semantics are not yet implemented in the toolchain (see
@@ -945,13 +959,21 @@ these were the reviewable batch for this document, and were ratified by the
 user through the fork's decision process
 ([fork/decision-log.md](/fork/decision-log.md)).
 
--   **D1 — Alternative names are `Success`/`Failure`, decided by the user
-    (sub-decision F-006a).** The option paper left the naming open between
-    `Success`/`Failure` (the spelling of the illustrative `IntResult` example in
-    the [language overview](README.md#choice-types)) and `Success`/`Failure`;
-    the user ratified `Success`/`Failure` as the alternative names for
-    `Core.Result`. The overview's `IntResult` example illustrates choice types
-    generally, is not `Core.Result`, and does not constrain this naming.
+-   **D1 — Alternative names are `Success`/`Failure` (EH-C, 2026-11-09, W-346,
+    under fork/rulebook.md R32; from 2026-07-19 until then `Ok`/`Err`, the
+    user's sub-decision F-006a).** The option paper left the naming open
+    between `Success`/`Failure` (the spelling of the `IntResult` example in
+    the [language overview](README.md#choice-types)) and `Ok`/`Err`; the user
+    ratified `Ok`/`Err` on 2026-07-19, reading the overview's example as
+    illustrative of choice types generally. V-3b (2026-10-21) withdrew that
+    override ground, RG-1 (D-RG-5, 2026-10-28) classified the spelling a
+    drift (upstream's README names `Result` as the error representation,
+    :3858-3860 at ca1898506, and the choice-types section it links spells
+    `Success`/`Failure`, :2176-2177), and EH-C realigned the fork: the
+    prelude, the toolchain, every golden, program and page spell
+    `Success`/`Failure`, the order (`Success` = 0) and the payload names
+    (`value`, `error`) unchanged. The user may veto the reversal (R29); a veto
+    restores F-006a by a dated note here and in fork/decision-log.md.
 -   **D2 — `?` precedence: highest (suffix-operator) group, repeating.**
     Propagation must chain with member access and calls
     (`Open(n)?.Read()?`); any looser binding would force parentheses in the

@@ -356,6 +356,9 @@ an error then prints this line to stderr and exits with status 1:
 carbon: `Main.Run` returned `.Failure` of type `i32`; exiting with code 1
 ```
 
+Until 2026-11-09 (EH-C, W-346) the line named `.Err`, the alternative's former
+spelling.
+
 ## Language and interop
 
 ### Can separately compiled C++ call my Carbon functions?

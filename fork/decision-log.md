@@ -20720,11 +20720,15 @@ multiple_files}.carbon. Reproduced on an unpatched arbiter build of aee70185c
 (`SRC_PATCHES=none`; /home/user/arb/build/aee70185c/src-patches.applied is
 empty): each of the 15 run alone ends in `Segmentation fault`, frame 4 in
 `Carbon::Check::CheckParseTrees`, `GATE aee70185c: 0 passed, 0 failed (NO
-GTEST SUMMARY; binary exit 139)` (the fail_cycle run is
-/home/user/arb/logs/gate-aee70185c-20261109T165759Z.log). The literal baseline
-command on cb726a230 no longer shows the crash, because the fold rebuilt that
-baseline with the overlay compiled in (`applied`); the unpatched aee70185c
-build is the reproduction of record. The same lines are at upstream's tip
+GTEST SUMMARY; binary exit 139)`. The arbiter's gate log holds the binary's
+output, the stack dump with frame 4 in `CheckParseTrees` (the fail_cycle run
+is /home/user/arb/logs/gate-aee70185c-20261109T165759Z.log; reviewer B's
+re-run, gate-aee70185c-20261109T172004Z.log in the same directory, holds the
+same stack dump); the `Segmentation fault` and `GATE` lines are gate.sh's own
+stdout, which the log does not hold. The literal baseline command on cb726a230
+no longer shows the crash, because the fold rebuilt that baseline with the
+overlay compiled in (`applied`); the unpatched aee70185c build is the
+reproduction of record. The same lines are at upstream's tip
 ca1898506 (fetched 2026-11-09; toolchain/check/check.cpp:425-429,
 check_unit.h:83): the defect is upstream-reportable, and the fork does not file
 upstream issues.
@@ -20745,7 +20749,7 @@ any golden or conformance program, STOP and report (it then needs a plan)."
 conformance program changed.
 
 _The fix (commit 6de18c1f7, author jmann345, parent aee70185c)._ One file,
-toolchain/check/check.cpp, 11 insertions and 5 deletions, at check.cpp:426-439
+toolchain/check/check.cpp, 11 insertions and 5 deletions, at check.cpp:426-438
 of the commit: `unit_infos` is declared empty,
 `unit_infos.reserve(units.size())` is called, and a loop over `units` calls
 `unit_infos.emplace_back(&unit,
@@ -20806,7 +20810,11 @@ PR title of at most 72 columns); B-2, the records cite the unpatched aee70185c
 build as the reproduction (done above); B-3, the records carry the
 repository-alone numbers (done above); B-4, the two stacked comment paragraphs
 may be merged when the fix is offered upstream. Nothing on the commit is
-amended.
+amended. The fold after the reviews (a third commit on the branch, records
+only) corrected the fix's line range to check.cpp:426-438 and the description
+of the arbiter's gate logs: a gate log holds the binary's output (the stack
+dump), while the `Segmentation fault` and `GATE` lines B-2 cites are gate.sh's
+stdout, which the log does not hold.
 
 _The records._ W-378 is filed in fork/inventory/work-items.json as this
 defect's item (kind toolchain-defect, DISCHARGED at the fix, done on the

@@ -19,21 +19,21 @@
 import Core library "io";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 fn Consume(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(value: i32) => { return value; }
-    case .Err => { return -1; }
+    case .Success(value: i32) => { return value; }
+    case .Failure => { return -1; }
   }
   return -1;
 }
 
 fn Run() -> i32 {
   var seed: i32 = 40;
-  Core.Print(Consume(IntResult.Ok(seed + 2)));
-  Core.Print(Consume(IntResult.Err));
+  Core.Print(Consume(IntResult.Success(seed + 2)));
+  Core.Print(Consume(IntResult.Failure));
   return 0;
 }

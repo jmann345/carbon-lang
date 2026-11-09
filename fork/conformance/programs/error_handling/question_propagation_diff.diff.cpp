@@ -19,39 +19,39 @@ struct Result {
   int v;
 };
 
-static auto Ok(int v) -> Result { return {true, v}; }
-static auto Err(int e) -> Result { return {false, e}; }
+static auto Success(int v) -> Result { return {true, v}; }
+static auto Failure(int e) -> Result { return {false, e}; }
 
 static auto Leaf(int n, int fail_at) -> Result {
   if (fail_at == 3) {
-    return Err(30 + n);
+    return Failure(30 + n);
   }
-  return Ok(n + 1);
+  return Success(n + 1);
 }
 
 static auto Mid(int n, int fail_at) -> Result {
   // The explicit spelling of `Leaf(n, fail_at)?`.
   Result r = Leaf(n, fail_at);
   if (!r.ok) {
-    return Err(r.v);
+    return Failure(r.v);
   }
   int v = r.v;
   if (fail_at == 2) {
-    return Err(20 + v);
+    return Failure(20 + v);
   }
-  return Ok(v + 1);
+  return Success(v + 1);
 }
 
 static auto Top(int n, int fail_at) -> Result {
   Result r = Mid(n, fail_at);
   if (!r.ok) {
-    return Err(r.v);
+    return Failure(r.v);
   }
   int v = r.v;
   if (fail_at == 1) {
-    return Err(10 + v);
+    return Failure(10 + v);
   }
-  return Ok(v + 1);
+  return Success(v + 1);
 }
 
 static auto Probe(int fail_at, int seed) -> void {

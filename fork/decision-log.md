@@ -38,7 +38,8 @@ F-006..F-011 stand (audit: each was already the lowest-divergence option;
 none contradicts an accepted proposal), but genuinely fork-local
 spellings (for example F-006a Ok/Err vs the README's illustrative
 Success/Failure) enter a divergence-risk register reviewed at each
-upstream merge.
+upstream merge. (F-006a's spelling was realigned by EH-C, 2026-11-09,
+W-346.)
 
 **V-3b (owner directive 2026-10-21): the override clause is withdrawn; see R32
 and entry DR-0.** The clause above, 'upstream intent is the default preference,
@@ -1012,6 +1013,11 @@ _Landed (2026-11-02, LAND-1, R33):_ merged into trunk as PR 67 by
 gate 1942 of 1942, conformance 128/0/22 over 150; id re-scans: none;
 moved to follow-ons: none.
 
+_W-346 resolved (2026-11-09, EH-C):_ D-RG-5's rename is implemented on
+claude/carbon-fork-0-1-ehc (its PR lands by LAND-1); register row T2.1 is
+ALIGNED; F-006a carries its reversal note; PR 53's one line is W-380. See
+the entry "EH-C: ..." under the EH entries.
+
 ### LD-0: the owner's merge directive; the hold-open practice corrected (2026-11-01)
 
 Placed here beside DR-0 because it records an owner directive that amends the
@@ -1486,6 +1492,15 @@ staleness gate (4).
 **Sub-decision F-006a (user, 2026-07-19): variant naming is `Ok`/`Err`**,
 overriding the design README's older Success/Failure spelling; docs and
 prelude code use `Core.Result(T, E)` with alternatives `Ok(T)` / `Err(E)`.
+_Reversed (2026-11-09, EH-C, W-346; fork/eh/ehc-plan.md D-EHC-1):_ the
+alternatives are `Success(value: T)` and `Failure(error: E)`, upstream's
+spellings (docs/design/README.md:2176-2177 and :3165-3166 at ca1898506),
+under the owner directive of 2026-10-21 ("Direction drifts are not
+permitted", R32, V-3b) after RG-1 classified this sub-decision a DRIFT
+(D-RG-5, 2026-10-28); the user's decision of 2026-07-19 is reversed, not
+renumbered, and the user may veto the reversal (R29; the veto route is
+D-EHC-1's). See the entry "EH-C: `Core.Result`'s alternatives renamed to
+`Success`/`Failure` (W-346) (2026-11-09)".
 
 **Sub-decisions F-006b..l (user by way of AskUserQuestion, 2026-07-19), all per
 doc recommendation:** `?` in the suffix-operator precedence group,
@@ -1539,7 +1554,8 @@ fork/register/rg1-checks.tsv): (i) to (iii) NONE, W-355, upstream
 README.md:3858-3859 "Carbon does not have language features dedicated to error
 handling"; `ControlFlow` (checks T1.1 and T1.2) and `interface Try`, `FromBreak`
 or `FromContinue` (T1.3) are 0 in upstream's core, docs/design, proposals and
-toolchain; F-006a DRIFT, W-346._ _Mechanism (plan §2.4 as revised):_ the desugar
+toolchain; F-006a DRIFT, W-346 (resolved 2026-11-09, EH-C: T2.1 ALIGNED)._
+_Mechanism (plan §2.4 as revised):_ the desugar
 (new toolchain/check/handle_question.cpp) emits only existing inst kinds —
 pre-flight (QuestionOutsideFunction; region-depth>1 →
 QuestionInPatternContext, digest item 3's diagnose-and-reject policy, by way of
@@ -17704,6 +17720,146 @@ recognize core/prelude/default.carbon:17's `interface UnformedInit` as a kind,
 and has no `is_union` (check T9.2: 0) and none of the four `Union...`
 diagnostics (T9.3: 0)); F-007's entries are noted after UA-1's review.
 
+### EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346) (2026-11-09)
+
+Placed here, before EH-B's entry, because the log groups entries by workstream
+and EH-C is the error-handling workstream's third slice (fork/eh/ehc-plan.md,
+beside fork/eh/plan.md's EH-A and EH-B). Line cites are to trunk aee70185c
+unless a sha is named. Branch claude/carbon-fork-0-1-ehc, commits 7ea4ff096,
+51013a4a6 and 70c030a0a (the plan's revisions), dd4e0497e (the merge of trunk
+725570464: PR 69 and the arbiter scripts' records commit, trunk having moved
+on from the fca1e9e2f the plan names, with no use site between them; amended
+2026-11-09, review fold: B1), 2e9b55399 (C1), 45f5b9b16 (F1), 93b0ac263 (P),
+no fix commit (the two implementation reviews, A and B, returned
+APPROVE-WITH-AMENDMENTS with seven MINORs, every one plan text or
+records-only, folded here and in the plan; the fix budget of two is unused)
+and this one; the discharge commit appends the last three paragraphs. C1's
+five pages carried the mechanically renamed prose until P rewrote them from
+the plan's Appendix C, as its §2.8 slices the work: the bisectable history
+reads so by design (amended 2026-11-09, review fold: B3).
+
+_The item and the rule._ W-346, filed by RG-1 (D-RG-5, 2026-10-28), classified
+the user's sub-decision F-006a (`Ok`/`Err`, 2026-07-19) a DRIFT under R32 (d):
+upstream's docs/design/README.md names `Result` as Carbon's error
+representation ("At this point, errors are represented using
+`[choice types](#choice-types)` like `Result` and `Optional`.", :3858-3860 at
+ca1898506, re-read at ca1898506, still upstream's tip at the re-fetch of
+2026-11-09) and the choice-types section it links spells the
+result choice `Success(value: i32),` / `Failure(error: String),` (:2176-2177),
+its uses `.Failure(...)`, `.Success(r)`, `case .Success(value: i32)`, `case
+.Failure(error: String)` (:2191-2207), and the generic `Result` under
+"Generic choice types" `Success(value: T),` / `Failure(error: Error)`
+(:3165-3166); no upstream text spells `Ok` or `Err` (`git grep` over
+docs/design, core and proposals is empty); p000157:690-693 spells the same
+and is provisional by its :228-229. Upstream's prelude has no `Result` and no
+`Try`, and its parser has no `?` handler (silence checks T1.1 to T1.3, T11.2,
+T11.4 at ca1898506), so D-EH-1 to D-EH-6 stand and only the spelling changes.
+This entry reverses F-006a under the owner directive of 2026-10-21
+("Direction drifts are not permitted", R32, V-3b); the user may veto it
+(R29), the veto route being D-EHC-1's.
+
+_The decisions_ (fork/eh/ehc-plan.md §1, auto-adopted under R29 (a), each
+with its break condition there): D-EHC-1 the names `Success`/`Failure` in
+upstream's order, `Success` = 0 and `Failure` = 1, which the entry point's
+epilogue, the `Try` impl's arms, the catching thunk's `int` discriminant and
+`<carbon/expected.h>` rely on (the order-swap mutant: 7 goldens and 4
+programs red); the payload names and the parameter `E` unchanged. D-EHC-2 no
+alias, no deprecation period (an alternative alias is a parse error inside a
+choice; a user-side alias is caught by the discharge grep only). D-EHC-3 the
+former spelling is an ordinary unknown member, ``member name `Ok` not found in
+`Core.Result(i32, i32)` `` [MemberNameNotFoundInSpecificScope], no note,
+pinned by the `fail_old_names` split of check/testdata/operators/
+question_result.carbon. D-EHC-4 every toolchain identifier that spells an
+alternative renamed: thunk.cpp's minted `"Success"`/`"Failure"` identifiers,
+its `success_*`/`failure_*` locals and `return_success`/`return_failure`,
+lower/handle.cpp's `run.result.success`
+/`run.result.failure`/`run.result.is_success` IR names and the stderr line
+``carbon: `Main.Run` returned `.Failure` of type `E`; exiting with code 1``,
+the `main.result.failure.message` global and its accessors, comments; the
+thunk's `err` out-pointer locals, the oracles' `bool ok` and
+raw_hashtable.h's English "Ok," stay. D-EHC-5 `<carbon/expected.h>`'s payload
+members `success`/`failure` and `expected<void, E>::success()`; the
+`std::expected` vocabulary unchanged. D-EHC-6 the five pages' dated
+amendments, upstream quoted by sha (Appendix C of the plan; as the pages
+stand, docs/design/README.md:4063's sentence "Results are consumed with ..."
+is its own paragraph after the blank :4062 that keeps it out of the
+blockquote, and docs/design/optional.md:434-435 read as written, rumdl having
+found no line over 80 columns to reflow; amended 2026-11-09, review fold:
+B4). D-EHC-7 these records. D-EHC-8 user test choices and oracle helpers
+renamed too. D-EHC-9 C1 carries every checker-visible line (the tutorial's
+block, the FAQ's line, check_faq.py), P the prose. D-EHC-10 no new program;
+every EXPECT unchanged. D-EHC-11 W-380 to W-385 reserved, W-380 filed for PR
+53's rust_interop.md:223, no F id. D-EHC-12 one PR, two implementation
+reviews, a fix budget of two, LAND-1's landing, M-0 first because trunk moved
+to fca1e9e2f (PR 69) during the plan's reviews and on to 725570464, M-0's
+merge base, before C1. D-EHC-13 the two program files
+(run_result_success.carbon, run_result_failure.carbon) and the five split
+headers (`unit_success`, `i32_success`) renamed too.
+
+_Measured (container, R33 (b); the plan's §0.3 and §8)._ Gate on C1 alone:
+`[  PASSED  ] 2015 tests.` with the 32 goldens of the plan's §4 failing with
+"Autoupdate would make changes" (the arbiter's summary line reads "2015
+passed, 0 failed", the per-test lines being the criterion); after 45f5b9b16:
+2047 passed, 0 failed; conformance 228/0/13 over 241, 51/56 bullets, byte for
+byte trunk's; `runner.py --self-test` 0 errors on both sample checkers;
+check_faq.py 13 reproducers, 0 errors (fork) and 17 (nightly);
+fork/designdocs/check_samples.py --toolchain 0 errors; prek clean at a
+fixpoint on every commit; the mutants: the order swapped turns 7 goldens and
+4 programs red, the thunk's identifiers left as `Ok`/`Err` turn 3 goldens
+red.
+
+_V-3a register (RG-1's vocabulary, re-read at ca1898506):_ T2.1 (F-006a's
+alternatives) ALIGNED with README.md:2176-2177 and :3165-3166, break
+condition D-EHC-1's (upstream renames or reorders; the user vetoes); T11.1
+ALIGNED, its alternatives no longer a drift; T11.3 ALIGNED (the order);
+T11.2, T11.4, T1.1 to T1.3 NONE, unchanged, W-355; two new silence checks
+T2.1 in fork/register/rg1-checks.tsv (`Ok(`/`Err(` in upstream's docs/design
+and proposals; `choice Result`/`class Result` under upstream's core; both 0,
+96 checks in all) fire the upstream-side break conditions.
+
+_Not run._ clang-tidy (no binary in the container's clang 21 subset), R21's
+hosted gate (Actions disabled; owed when it returns), Bazel-only tests (no
+Bazel), the owner's runner (R28).
+
+_Reconciliation greps (fork/eh/ehc-plan.md §8.7, on the tree at 7218c59f7)._
+Grep 1, `git grep -nE '\bOk\b|\bErr\b' -- . ':!fork/'` on non-CHECK lines: 17
+lines, all dated history: common/raw_hashtable.h:1314 (English),
+core/prelude/types/result.carbon:56 (the history comment), the
+`fail_old_names` split's three lines in check/testdata/operators/
+question_result.carbon (:156, :164, :174), and the twelve amendment lines of
+docs/design/README.md (:4052-4053), docs/design/error_handling.md (:119-120,
+:125, :963, :966-967), docs/design/optional.md (:434), docs/guides/tutorial.md
+(:409 and :411) and docs/guides/evaluator_faq.md (:359); over fork/ every hit
+is a closed plan, a dated history note, W-346's and W-380's own ledger text,
+RG-1's prose, the register's two T2.1 silence-check patterns or
+fork/eh/ehc-plan.md (24 files, listed in the plan's §0.1 but for
+fork/register/rg1-checks.tsv, whose rows the records commit added). Grep 2,
+`git ls-files | grep -E '(^|[_/])(ok|err)[_.]'`: empty. Grep 3, the
+split-header grep: empty; the old file names survive only in
+fork/conformance/out/scoreboard.json (4 lines), fork/eh/plan.md (5), a ledger
+evidence string at a sha (1) and the plan (29), history, and in
+fork/gap-analysis.md:73 (1) until this commit rewrites it. Grep 4, `.ok()`
+over the header's consumers and `expected<[^>]*>::ok\(` over the tree: 0 and
+1, the one line being the plan's own D-EHC-5 sentence
+(fork/eh/ehc-plan.md:540), 0 elsewhere (amended 2026-11-09, review fold: B2).
+From this commit to the round-1 fold the ledger's own W-346 evidence string
+spelled the second pattern without its backslash and was a second tree-wide
+line; the fold re-spelled it, so the count is one again (amended 2026-11-09,
+review fold: RR1-m2, round 1).
+`grep -rn 'identifiers().Add("' toolchain/check/cpp/thunk.cpp` shows
+`"Success"` and `"Failure"` only.
+
+_Ids._ W-380 to W-385 reserved by the plan's §0.7 re-scan (84 refs, 79
+distinct heads, 7 worktrees, after a fetch at D): W-380 was no ledger item's
+id on any ref or worktree (0 by the plan's §8.9 count) and appeared only as
+reserved text, in W-378's notes, the weekly entry of 2026-11-09, ARB-2's
+entry, the plan, the records commit before this one and SAFE-3's rev 13 plan
+on the local claude/carbon-fork-0-1-safe (its re-scan reads W-380 to W-385 as
+EH-C's reservation and reserves W-386 to W-393 for its own items); W-380
+filed after W-378; W-381 to W-385 unused.
+
+_Discharged by this commit: W-346 (EH-C)._
+
 ### EH-B: catching thunks, Cpp.Exception, Carbon::expected export (2026-09-27)
 
 Milestone bullet "Error handling: C++ exception interop (-fno-except config,
@@ -18208,13 +18364,13 @@ entry "RG-1: the V-3a register classified at f27a977d8 (2026-10-28)" has the
 quotes, and the checks named are rows of fork/register/rg1-checks.tsv):_ (i)
 `Core.Result` as a choice (classified 2026-10-28, RG-1: ALIGNED, W-355;
 README.md:3859-3860 "errors are represented using `[choice
-types](#choice-types)` like `Result`"; its alternatives are W-346's), the
-library name (classified 2026-10-28, RG-1: NONE, W-355; `git grep -c -F
-prelude/types/result` over upstream core and toolchain is 0, check T11.2), the
-success-first order (classified 2026-10-28, RG-1: ALIGNED, W-355;
-README.md:3165-3166); (ii) the `()` payload (classified 2026-10-28, RG-1: NONE,
-W-355; upstream has no payload allowlist, `IsInSliceChoicePayloadType` 0, check
-T11.4).
+types](#choice-types)` like `Result`"; its alternatives are W-346's, renamed
+`Success`/`Failure` by EH-C, 2026-11-09), the library name (classified
+2026-10-28, RG-1: NONE, W-355; `git grep -c -F prelude/types/result` over
+upstream core and toolchain is 0, check T11.2), the success-first order
+(classified 2026-10-28, RG-1: ALIGNED, W-355; README.md:3165-3166); (ii) the
+`()` payload (classified 2026-10-28, RG-1: NONE, W-355; upstream has no payload
+allowlist, `IsInSliceChoicePayloadType` 0, check T11.4).
 
 _Runner-exposed defect — a review MISS (R28(d)) and a lesson:_ plan §7
 R-12's falsifier fired exactly as written, on optional.carbon rather than
@@ -19203,7 +19359,8 @@ re-checked at e6fddcf97; the entry "RG-1: the V-3a register classified at
 f27a977d8 (2026-10-28)" has the quotes, and the checks named are rows of
 fork/register/rg1-checks.tsv):_ F-006a's `Ok`/`Err` (classified 2026-10-28,
 RG-1: DRIFT, W-346, reversing the user's F-006a under the 2026-10-21 directive,
-veto-able; README.md:3856-3860 names `Result` as the choice that represents
+veto-able; resolved 2026-11-09 by EH-C (ALIGNED); README.md:3856-3860 names
+`Result` as the choice that represents
 errors and links the choice-types section, whose `IntResult` spells
 `Success(value: i32)` and `Failure(error: String)` (:2175-2177), as :3164-3166
 spells `Result`'s `Success(value: T)` and `Failure(error: Error)`); F-007's
@@ -19568,7 +19725,8 @@ both sets since the cut (245) and 174 this week (123), by `comm -12` of the
 sorted lists.
 
 The cut HOLDS, and UA-3 stays scheduled after PR 53 lands and after EH-C
-(W-346), under the UA-1 flow, with these starting-audit tasks added to the
+(W-346) (EH-C: W-346 discharged on its branch 2026-11-09; PR by LAND-1), under
+the UA-1 flow, with these starting-audit tasks added to the
 2026-11-02 entry's: d50576ca1's `GlobalRef`, `ClassScopeLetDecl` and
 `AliasBinding` beside the fork's `MatchCaseArm`, F-007's `WrapperBinding`
 (pattern_match.cpp:1488) and EH-A's and VA-2's lowering, its eleven new
@@ -19596,6 +19754,7 @@ filed; corrected by the review fold), and W-379, W-389, W-396 and W-397 to
 W-399 only as range bounds in prose; no W-378 and no W-380 to W-388 appears
 anywhere. W-378 to W-385, reserved by an EH-C plan commit lost with the
 container, are free again; W-378 is the next free id, and this check files none.
+(EH-C, 2026-11-09: W-380 to W-385 reserved, W-380 filed; the plan's §0.7.)
 
 Not run: no build, no probe, no merge, no staging branch and no workflow
 dispatch (R28); the owner's machine was not used, and no toolchain exists in the

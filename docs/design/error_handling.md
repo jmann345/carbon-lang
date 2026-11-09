@@ -100,8 +100,8 @@ The prelude defines `Result` as a parameterized choice type:
 ```carbon
 // In package Core.
 choice Result(T: type, E: type) {
-  Ok(value: T),
-  Err(error: E)
+  Success(value: T),
+  Failure(error: E)
 }
 ```
 
@@ -109,13 +109,27 @@ choice Result(T: type, E: type) {
 `E` is not constrained to implement any error interface in 0.1. `Result((), E)`
 is the conventional shape for operations with no interesting success value.
 
-The alternative names are `Ok` and `Err`, decided by the user as part of the
-F-006 review (sub-decision F-006a); see
-[decision D1](#decisions-within-this-design). The illustrative `IntResult`
-example in the [language overview](README.md#choice-types) spells its
-alternatives `Success`/`Failure`; that example predates this decision, is not
-`Core.Result`, and does not set the naming — the normative alternative names
-for `Core.Result` are `Ok` and `Err`.
+The alternative names are `Success` and `Failure`, the spellings of upstream's
+result choices: the `IntResult` example in the
+[language overview](README.md#choice-types) and the generic `Result` under
+"Generic choice types" (upstream docs/design/README.md:2176-2177 and
+:3165-3166 at ca1898506). See [decision D1](#decisions-within-this-design).
+
+> **Fork amendment (2026-11-09, EH-C, W-346).** From F-006a (user, 2026-07-19)
+> until this date the alternatives were spelled `Ok`/`Err`, and this paragraph
+> read: "The alternative names are `Ok` and `Err`, decided by the user as part
+> of the F-006 review (sub-decision F-006a); see decision D1. The illustrative
+> `IntResult` example in the language overview spells its alternatives
+> `Success`/`Failure`; that example predates this decision, is not
+> `Core.Result`, and does not set the naming — the normative alternative names
+> for `Core.Result` are `Ok` and `Err`." RG-1 (D-RG-5, 2026-10-28) classified
+> that spelling a drift under fork/rulebook.md R32 (d), because upstream's
+> README names `Result` as the error representation ("At this point, errors
+> are represented using `[choice types](#choice-types)` like `Result` and
+> `Optional`.", :3858-3860 at ca1898506) and the section it links spells the
+> result choice `Success`/`Failure`; EH-C renamed every use. No alias remains:
+> the former spelling is an ordinary unknown member
+> (`MemberNameNotFoundInSpecificScope`). The user may veto the reversal (R29).
 
 `Result` is a choice type with payloads. Choice-alternative payloads and
 `match` semantics are not yet implemented in the toolchain (see
@@ -130,10 +144,10 @@ leading-period shorthand when the type is known from context:
 ```carbon
 fn Open(name: str) -> Core.Result(File, IoError) {
   if (not Exists(name)) {
-    // Equivalent to `Core.Result(File, IoError).Err(...)`.
-    return .Err(IoError.NotFound);
+    // Equivalent to `Core.Result(File, IoError).Failure(...)`.
+    return .Failure(IoError.NotFound);
   }
-  return .Ok(OpenExisting(name));
+  return .Success(OpenExisting(name));
 }
 ```
 
@@ -150,10 +164,10 @@ alternatives and is checked for exhaustiveness:
 ```carbon
 fn Report(name: str) {
   match (Open(name)) {
-    case .Ok(f: File) => {
+    case .Success(f: File) => {
       Print(f.Size());
     }
-    case .Err(e: IoError) => {
+    case .Failure(e: IoError) => {
       PrintError(e);
     }
   }
@@ -170,19 +184,19 @@ enclosing scope and requires the failure arm to diverge:
 
 ```carbon
 fn Copy(from: str, to: str) -> Core.Result((), IoError) {
-  let .Ok(f: File) = Open(from) else {
-    return .Err(IoError.NotFound);
+  let .Success(f: File) = Open(from) else {
+    return .Failure(IoError.NotFound);
   }
   // `f` is in scope here.
   WriteAll(to, f);
-  return .Ok(());
+  return .Success(());
 }
 ```
 
 and the positive form scopes the binding to the success path:
 
 ```carbon
-if (let .Ok(f: File) = Open(name)) {
+if (let .Success(f: File) = Open(name)) {
   Print(f.Size());
 }
 ```
@@ -206,7 +220,7 @@ fn ReadConfig(name: str) -> Core.Result(Config, IoError) {
   // Each `?` unwraps a success value or returns the failure.
   var f: File = Open(name)?;
   var c: Config = Parse(f)?;
-  return .Ok(c);
+  return .Success(c);
 }
 ```
 
@@ -379,14 +393,14 @@ final impl forall [T: type, E: type] Result(T, E) as Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return ControlFlow(T, E).Break(e); }
     }
     // Unreachable trailing return: reachability doesn't consult match
     // exhaustiveness; under `final` the recursive call type-collapses.
     return self.(Try.Branch)();
   }
-  fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
+  fn FromBreak(b: E) -> Self { return Result(T, E).Failure(b); }
 }
 
 final impl forall [T: type] Optional(T) as Try
@@ -559,8 +573,8 @@ process exit code is determined as follows:
 
 -   `fn Run()`: exit code 0.
 -   `fn Run() -> i32`: the returned value.
--   `Result` forms, on `.Ok(())`: exit code 0; on `.Ok(code)`: the
-    returned code; on `.Err(e)`: the runtime writes a diagnostic to
+-   `Result` forms, on `.Success(())`: exit code 0; on `.Success(code)`: the
+    returned code; on `.Failure(e)`: the runtime writes a diagnostic to
     standard error naming the error's type (and, when `E` is
     [`Cpp.Exception`](#cppexception), its message when available), then exits
     with code 1. The failure value is destroyed normally; nothing unwinds.
@@ -692,9 +706,9 @@ import Cpp library "parser.h";
 
 fn ParseAll(input: str) -> Core.Result(i64, Cpp.Exception) {
   // `Cpp.parse` is C++ and may throw. `?` requests the catching thunk;
-  // a thrown exception becomes the `.Err` alternative and propagates.
+  // a thrown exception becomes the `.Failure` alternative and propagates.
   let n: i64 = Cpp.parse(input)?;
-  return .Ok(n);
+  return .Success(n);
 }
 ```
 
@@ -733,10 +747,10 @@ ordinary interop type mapping):
 > (conversions run after the call is emitted) and is deferred as the residue
 > item "catching-import selection in binding/argument contexts"; the one-line
 > workaround is a helper `fn Wrap() -> Core.Result(S, Cpp.Exception) { return
-> .Ok(Cpp.f(x)?); }`. Additionally, in 0.1 a catching import requires the C++
-> return type to map to a scalar (int, float, bool, pointer, after adapters) or
-> `void`, because `Core.Result(S, Cpp.Exception)` is a choice specific bound by
-> SF-6 (`toolchain/check/type.cpp`, `IsInSliceChoicePayloadType`); a class,
+> .Success(Cpp.f(x)?); }`. Additionally, in 0.1 a catching import requires the
+> C++ return type to map to a scalar (int, float, bool, pointer, after adapters)
+> or `void`, because `Core.Result(S, Cpp.Exception)` is a choice specific bound
+> by SF-6 (`toolchain/check/type.cpp`, `IsInSliceChoicePayloadType`); a class,
 > `std::string`, or constructor return is diagnosed at the `?` with a context
 > note naming the C++ callee (`CppCatchingImportNonScalarSuccess`). Break
 > condition: the SF-6 lift (the Sum types bullet, W-010's residue) removes this
@@ -852,24 +866,23 @@ Exporting a `Core.Result` whose success or error type is a Carbon class not
 satisfying the predicate is diagnosed at the export declaration; such types
 cross the boundary by indirection, as elsewhere in interop.
 
-> **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md §1.B.5-1.B.6,
-> V-3a register):** `Cpp.Exception` maps to the support header's
-> layout-identical wrapper `Carbon::Exception` — a struct holding the primary
-> exception object pointer — whose `.ptr()` is the `std::exception_ptr` (the
-> usage line below, `r.error().ptr()`, already assumes the wrapper) and whose
-> `[[noreturn]] rethrow()` rethrows the original object. A FOREIGN exception
-> (one not thrown by the C++ runtime) has no primary object: `ptr()` returns an
-> empty `std::exception_ptr` and `rethrow()` calls `std::terminate()`;
-> `has_value()` is unaffected. `Carbon::expected<T, E>` itself mirrors the
-> choice's object representation (a discriminant byte, `Ok` = 0 and `Err` = 1,
-> then the payload union at the payload alignment), so the mapping is a
-> reinterpretation, not a conversion; the header pins this with
-> `static_assert`s. Apple platforms: libc++ there does not re-export
-> `__cxa_rethrow_primary_exception`, so a C++ consumer calling
-> `ptr()`/`rethrow()` links `-lc++abi`. The header is found BY NAME in the C++
-> translation unit (`namespace Carbon` reopened), and an exported `Core.Result`
-> return without `#include <carbon/expected.h>` is diagnosed
-> (`CppExportResultNeedsExpectedHeader`).
+> **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md §1.B.5-1.B.6, V-3a
+> register):** `Cpp.Exception` maps to the support header's layout-identical
+> wrapper `Carbon::Exception` — a struct holding the primary exception object
+> pointer — whose `.ptr()` is the `std::exception_ptr` (the usage line below,
+> `r.error().ptr()`, already assumes the wrapper) and whose `[[noreturn]]
+> rethrow()` rethrows the original object. A FOREIGN exception (one not thrown
+> by the C++ runtime) has no primary object: `ptr()` returns an empty
+> `std::exception_ptr` and `rethrow()` calls `std::terminate()`; `has_value()`
+> is unaffected. `Carbon::expected<T, E>` itself mirrors the choice's object
+> representation (a discriminant byte, `Success` = 0 and `Failure` = 1, then the
+> payload union at the payload alignment), so the mapping is a reinterpretation,
+> not a conversion; the header pins this with `static_assert`s. Apple platforms:
+> libc++ there does not re-export `__cxa_rethrow_primary_exception`, so a C++
+> consumer calling `ptr()`/`rethrow()` links `-lc++abi`. The header is found BY
+> NAME in the C++ translation unit (`namespace Carbon` reopened), and an
+> exported `Core.Result` return without `#include <carbon/expected.h>` is
+> diagnosed (`CppExportResultNeedsExpectedHeader`).
 
 `Carbon::expected<T, E>` is a class template shipped as a support header in
 the toolchain install tree. It requires only C++17 — the interop target
@@ -946,14 +959,21 @@ these were the reviewable batch for this document, and were ratified by the
 user through the fork's decision process
 ([fork/decision-log.md](/fork/decision-log.md)).
 
--   **D1 — Alternative names are `Ok`/`Err`, decided by the user
-    (sub-decision F-006a).** The option paper left the naming open between
-    `Success`/`Failure` (the spelling of the illustrative `IntResult`
-    example in the [language overview](README.md#choice-types)) and
-    `Ok`/`Err`; the user ratified `Ok`/`Err` as the alternative names for
-    `Core.Result`. The overview's `IntResult` example illustrates choice
-    types generally, is not `Core.Result`, and does not constrain this
-    naming.
+-   **D1 — Alternative names are `Success`/`Failure` (EH-C, 2026-11-09, W-346,
+    under fork/rulebook.md R32; from 2026-07-19 until then `Ok`/`Err`, the
+    user's sub-decision F-006a).** The option paper left the naming open
+    between `Success`/`Failure` (the spelling of the `IntResult` example in
+    the [language overview](README.md#choice-types)) and `Ok`/`Err`; the user
+    ratified `Ok`/`Err` on 2026-07-19, reading the overview's example as
+    illustrative of choice types generally. V-3b (2026-10-21) withdrew that
+    override ground, RG-1 (D-RG-5, 2026-10-28) classified the spelling a
+    drift (upstream's README names `Result` as the error representation,
+    :3858-3860 at ca1898506, and the choice-types section it links spells
+    `Success`/`Failure`, :2176-2177), and EH-C realigned the fork: the
+    prelude, the toolchain, every golden, program and page spell
+    `Success`/`Failure`, the order (`Success` = 0) and the payload names
+    (`value`, `error`) unchanged. The user may veto the reversal (R29); a veto
+    restores F-006a by a dated note here and in fork/decision-log.md.
 -   **D2 — `?` precedence: highest (suffix-operator) group, repeating.**
     Propagation must chain with member access and calls
     (`Open(n)?.Read()?`); any looser binding would force parentheses in the
@@ -999,7 +1019,7 @@ user through the fork's decision process
 -   **D10 — Entry-point return types are fixed as `()`, `i32`,
     `Core.Result((), E)`, and `Core.Result(i32, E)`, combined with either the
     empty parameter list or the already-implemented command-line parameter
-    list `(argc: i32, argv: Core.Optional(char*)*)`; `.Err` maps to a
+    list `(argc: i32, argv: Core.Optional(char*)*)`; `.Failure` maps to a
     stderr diagnostic and exit code 1.** This resolves the overview's open
     note on entry-point signatures with the minimal set that makes `?` usable
     at top level, without outlawing the parameterized signatures the

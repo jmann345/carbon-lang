@@ -109,3 +109,6 @@ C2.6	G	-i -E	total order|weak order|partial order	docs/design/expressions/compar
 # OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): rows T2.8 (F-009j's default values) and T2.9 (the plain-call rule for a member with defaults) of fork/register/rg1-plan.md section 2.T2.
 T2.8	G	-w	default_value_arity	toolchain/check	3
 T2.9	G	-i -E	overload(ed|ing)? (fn|function|set)s?|function overloading	docs/design proposals	40
+# T2.1 ALIGNED since EH-C (2026-11-09, W-346): the upstream-side break conditions as silence checks (D-RG-5: the README's examples change to Ok/Err; upstream adds a prelude Result)
+T2.1	G	-E	\bOk\(|\bErr\(	docs/design proposals	0
+T2.1	G	-E	choice Result\b|class Result\b	core	0

@@ -243,11 +243,11 @@ class FileContext {
   auto SetPrintfIntFormatString(llvm::Value* printf_int_format_string) {
     context().SetPrintfIntFormatString(printf_int_format_string);
   }
-  auto entry_point_result_err_message() -> llvm::Value* {
-    return context().entry_point_result_err_message();
+  auto entry_point_result_failure_message() -> llvm::Value* {
+    return context().entry_point_result_failure_message();
   }
-  auto SetEntryPointResultErrMessage(llvm::Value* message) {
-    context().SetEntryPointResultErrMessage(message);
+  auto SetEntryPointResultFailureMessage(llvm::Value* message) {
+    context().SetEntryPointResultFailureMessage(message);
   }
 
   // Builds the global for the given instruction, which should then be cached by

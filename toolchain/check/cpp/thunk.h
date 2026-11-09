@@ -198,8 +198,8 @@ auto BuildCppThunk(Context& context, const CalleeFunctionInfo& callee_info)
 // a `noexcept` thunk that calls the callee inside `try`, stores the return
 // value through an out-pointer, and on `catch (...)` stores the primary
 // exception object pointer through a trailing `void**` out-parameter,
-// returning the `int` discriminant 0 (Ok) or 1 (Err). Returns `nullptr` on
-// failure.
+// returning the `int` discriminant 0 (Success) or 1 (Failure). Returns
+// `nullptr` on failure.
 auto BuildCppCatchingThunk(Context& context,
                            const SemIR::Function& callee_function)
     -> clang::FunctionDecl*;

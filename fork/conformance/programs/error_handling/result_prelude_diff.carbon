@@ -46,36 +46,36 @@ impl ErrA as Core.ImplicitAs(ErrB) {
 }
 
 fn Fail(code: i32) -> Core.Result(i32, ErrA) {
-  return Core.Result(i32, ErrA).Err(code as ErrA);
+  return Core.Result(i32, ErrA).Failure(code as ErrA);
 }
 
 fn Leaf(n: i32, fail_at: i32) -> Core.Result(i32, ErrA) {
-  if (fail_at == 3) { return Core.Result(i32, ErrA).Err((303 as i32) as ErrA); }
-  return Core.Result(i32, ErrA).Ok(n * 2);
+  if (fail_at == 3) { return Core.Result(i32, ErrA).Failure((303 as i32) as ErrA); }
+  return Core.Result(i32, ErrA).Success(n * 2);
 }
 
 fn Mid(n: i32, fail_at: i32) -> Core.Result(i32, ErrA) {
   // `?` over the prelude type: `ErrA` propagates as `ErrA`, no conversion.
   var v: i32 = Leaf(n, fail_at)?;
-  if (fail_at == 2) { return Core.Result(i32, ErrA).Err((202 as i32) as ErrA); }
-  return Core.Result(i32, ErrA).Ok(v);
+  if (fail_at == 2) { return Core.Result(i32, ErrA).Failure((202 as i32) as ErrA); }
+  return Core.Result(i32, ErrA).Success(v);
 }
 
 fn Top(n: i32, fail_at: i32) -> Core.Result(i32, ErrB) {
   // Both `?` sites convert a propagated `ErrA` to this function's `ErrB`.
   var v: i32 = Mid(n, fail_at)?;
   if (fail_at == 1) { Fail(101)?; }
-  return Core.Result(i32, ErrB).Ok(v);
+  return Core.Result(i32, ErrB).Success(v);
 }
 
-// Prints the outcome tag (0 = Ok, 1 = Err) and the payload.
+// Prints the outcome tag (0 = Success, 1 = Failure) and the payload.
 fn Probe(fail_at: i32, seed: i32) {
   match (Top(seed, fail_at)) {
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       Core.Print(0);
       Core.Print(v);
     }
-    case .Err(e: ErrB) => {
+    case .Failure(e: ErrB) => {
       Core.Print(1);
       Core.Print(e as i32);
     }

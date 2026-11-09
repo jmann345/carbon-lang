@@ -47,7 +47,8 @@ review → fix loops that grind against ground truth.
         implement -> 2 adversarial reviewers -> fixer -> runner-side autoupdate
         -> full suite green -> gated merge). Scoreboard: 63 PASS / 33 SKIP / 0
         FAIL; 39/56 bullets green
--   [x] Design docs landed: error handling (F-006, Ok/Err) and unions (F-007,
+-   [x] Design docs landed: error handling (F-006, Ok/Err; renamed
+        Success/Failure by EH-C, 2026-11-09) and unions (F-007,
         choice-vs-union doctrine), all 23 sub-decisions user-ratified
 -   [ ] Scaled workstreams: W5 choice payloads, error-handling B0, F-008..F-011
         doc authoring

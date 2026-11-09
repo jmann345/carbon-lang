@@ -7,14 +7,14 @@
 // with explicit early returns — the control flow Carbon's generic postfix
 // `?` desugars to — where each step's input is computed from the PREVIOUS
 // step's threaded continue value (`a` -> `Combine(a)` -> `b`) and the
-// final Ok payload IS the last threaded value (`b`, = 2 * seed on
+// final Success payload IS the last threaded value (`b`, = 2 * seed on
 // success). This mirrors the THREADING shape the Carbon side spells with
 // `let a: T = ...?;` under its `final impl` (the W72b arbiter,
 // fork/w072/plan.md §3) — not the sibling pair's discard/reconstruct
 // shape. Instantiated at the same two type arguments (int and int64_t),
 // with the same runtime-selected failure depth, the same runtime-computed
 // seeds, and the same error-tagging bases (101/202); the int64_t leg
-// compares the Ok payload against the same independently runtime-computed
+// compares the Success payload against the same independently runtime-computed
 // expectation the Carbon side uses. printf("%d\n", ...) mirrors
 // Core.Print's lowering exactly (toolchain/lower/handle_call.cpp).
 
@@ -29,12 +29,12 @@ struct Result {
 };
 
 template <typename T>
-static auto Ok(T v) -> Result<T> {
+static auto Success(T v) -> Result<T> {
   return {true, v, 0};
 }
 
 template <typename T>
-static auto Err(int e) -> Result<T> {
+static auto Failure(int e) -> Result<T> {
   return {false, T{}, e};
 }
 
@@ -48,9 +48,9 @@ static auto Combine(T x) -> T {
 template <typename T>
 static auto Step(T x, bool fail, int tag) -> Result<T> {
   if (fail) {
-    return Err<T>(tag);
+    return Failure<T>(tag);
   }
-  return Ok(x);
+  return Success(x);
 }
 
 template <typename T>
@@ -60,7 +60,7 @@ static auto Chain(T x, int fail_at) -> Result<T> {
   // value is BOUND and threaded forward.
   Result<T> r1 = Step(x, fail_at == 1, 101);
   if (!r1.ok) {
-    return Err<T>(r1.e);
+    return Failure<T>(r1.e);
   }
   T a = r1.v;
   // The explicit spelling of
@@ -68,12 +68,12 @@ static auto Chain(T x, int fail_at) -> Result<T> {
   // is computed from step 1's threaded output.
   Result<T> r2 = Step(Combine(a), fail_at == 2, 202);
   if (!r2.ok) {
-    return Err<T>(r2.e);
+    return Failure<T>(r2.e);
   }
   T b = r2.v;
   // The threaded value IS the payload (2 * seed on success) — never
   // reconstructed from the seed.
-  return Ok(b);
+  return Success(b);
 }
 
 static auto ProbeI(int fail_at, int seed) -> void {

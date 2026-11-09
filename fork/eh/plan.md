@@ -24,6 +24,10 @@ LLVM checkout the toolchain builds from (`external/llvm-raw+`).
 bound); discharge notes below are marked "(landed 2026-09-27, EH-A:
 ...)" and leave every EH-B item untouched.
 
+**EH-C (W-346, 2026-11-09): the third slice, `Core.Result`'s alternatives
+renamed to `Success`/`Failure` under R32, has its own plan,
+fork/eh/ehc-plan.md; every `Ok`/`Err` in this file is history.**
+
 **Items:** W-017 (EH-B1 prelude `Core.Result`), W-018 (EH-B2 `?` +
 `Core.Try`), W-019 (EH-B3 catching thunks + `Carbon::expected`), the SF-1
 follow-up carried on W-016, and the two OPEN sub-forks the remainder hangs

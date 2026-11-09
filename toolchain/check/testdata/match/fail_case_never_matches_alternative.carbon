@@ -44,22 +44,22 @@ fn F(s: Signal) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // A duplicate payload constant.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(42) => { return 1; }
+    case .Success(42) => { return 1; }
     // CHECK:STDERR: fail_duplicate_payload_constant.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
-    // CHECK:STDERR:     case .Ok(42) => { return 2; }
+    // CHECK:STDERR:     case .Success(42) => { return 2; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR: fail_duplicate_payload_constant.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
-    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     case .Success(42) => { return 1; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
-    case .Ok(42) => { return 2; }
+    case .Success(42) => { return 2; }
     default => { return 0; }
   }
   return -1;
@@ -69,25 +69,25 @@ fn F(r: IntResult) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
-// Payload subsumption: `.Ok(v: i32)` matches every `.Ok` value, so
-// `.Ok(42)` can never match. The unguarded `.Ok` and `.Err` arms cover the
+// Payload subsumption: `.Success(v: i32)` matches every `.Success` value, so
+// `.Success(42)` can never match. The unguarded `.Success` and `.Failure` arms cover the
 // choice, so no `default` is required.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(v: i32) => { return v; }
+    case .Success(v: i32) => { return v; }
     // CHECK:STDERR: fail_payload_subsumption.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
-    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     case .Success(42) => { return 1; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR: fail_payload_subsumption.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
-    // CHECK:STDERR:     case .Ok(v: i32) => { return v; }
+    // CHECK:STDERR:     case .Success(v: i32) => { return v; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
-    case .Ok(42) => { return 1; }
-    case .Err => { return 0; }
+    case .Success(42) => { return 1; }
+    case .Failure => { return 0; }
   }
   return -1;
 }

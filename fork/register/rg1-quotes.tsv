@@ -317,3 +317,4 @@ docs/design/classes.md	2202	              .descending: bool = false} = {}) {
 docs/design/classes.md	2207	SortIntVector(&v);
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T2.9, line moved +1 by 5ae3dcaa9, text unchanged
 docs/design/pattern_matching.md	697	We do not yet have an approved design for overloaded functions, but it
+# T2.1 ALIGNED since EH-C (2026-11-09, W-346): its quotes are the docs/design/README.md 3858, 3860, 3164, 3165, 3166, 2176, 2177, 3856, 2167, 3159 and p000157 691, 229 rows above

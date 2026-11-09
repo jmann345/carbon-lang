@@ -21,8 +21,8 @@
 import Core library "io";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -36,8 +36,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -48,34 +48,34 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // question_final.carbon), so diverge through the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 fn Leaf(n: i32, fail_at: i32) -> MyResult(i32, i32) {
-  if (fail_at == 3) { return MyResult(i32, i32).Err(30 + n); }
-  return MyResult(i32, i32).Ok(n + 1);
+  if (fail_at == 3) { return MyResult(i32, i32).Failure(30 + n); }
+  return MyResult(i32, i32).Success(n + 1);
 }
 
 fn Mid(n: i32, fail_at: i32) -> MyResult(i32, i32) {
   var v: i32 = Leaf(n, fail_at)?;
-  if (fail_at == 2) { return MyResult(i32, i32).Err(20 + v); }
-  return MyResult(i32, i32).Ok(v + 1);
+  if (fail_at == 2) { return MyResult(i32, i32).Failure(20 + v); }
+  return MyResult(i32, i32).Success(v + 1);
 }
 
 fn Top(n: i32, fail_at: i32) -> MyResult(i32, i32) {
   var v: i32 = Mid(n, fail_at)?;
-  if (fail_at == 1) { return MyResult(i32, i32).Err(10 + v); }
-  return MyResult(i32, i32).Ok(v + 1);
+  if (fail_at == 1) { return MyResult(i32, i32).Failure(10 + v); }
+  return MyResult(i32, i32).Success(v + 1);
 }
 
-// Prints the outcome tag (0 = Ok, 1 = Err) and the payload.
+// Prints the outcome tag (0 = Success, 1 = Failure) and the payload.
 fn Probe(fail_at: i32, seed: i32) {
   match (Top(seed, fail_at)) {
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       Core.Print(0);
       Core.Print(v);
     }
-    case .Err(e: i32) => {
+    case .Failure(e: i32) => {
       Core.Print(1);
       Core.Print(e);
     }

@@ -14,8 +14,8 @@
 // twice: plainly (the fenced thunk, success path — prints `7`) and through
 // `?` in a `Core.Result(i32, Cpp.Exception)` helper, where the runtime input
 // `RuntimeSeed(-22)` = -2 makes it throw; the catching thunk turns the
-// exception into the `.Err` alternative, which `match` observes (prints `-1`).
-// Exit-code belt: the `.Ok` arm returns 1, so a `?` that wrongly continued
+// exception into the `.Failure` alternative, which `match` observes (prints `-1`).
+// Exit-code belt: the `.Success` arm returns 1, so a `?` that wrongly continued
 // with a value fails by exit code, not just stdout.
 //
 // Mechanical repair of the write-tests-first stub, disclosed per R6: the
@@ -25,8 +25,8 @@
 // contexts" (fork/eh/plan.md D-EH-4: the checker has no expected-type
 // channel); the 0.1 selection surface is `?` applied directly to the call,
 // so the call is routed through the one-line `Checked` helper. The
-// leading-period `.Ok(...)` shorthand of the stub is spelled
-// `Core.Result(T, E).Ok(...)` as in every EH-A program.
+// leading-period `.Success(...)` shorthand of the stub is spelled
+// `Core.Result(T, E).Success(...)` as in every EH-A program.
 
 import Core library "io";
 import Cpp inline '''c++
@@ -39,9 +39,9 @@ inline int PositiveOrThrow(int n) {
 ''';
 
 // `?` directly on the C++ call selects the catching thunk: a thrown exception
-// becomes `.Err(Cpp.Exception)` and propagates; a returned value continues.
+// becomes `.Failure(Cpp.Exception)` and propagates; a returned value continues.
 fn Checked(n: i32) -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.PositiveOrThrow(n)?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.PositiveOrThrow(n)?);
 }
 
 fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
@@ -49,10 +49,10 @@ fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
 fn Run() -> i32 {
   // Success path, fenced call: 7.
   Core.Print(Cpp.PositiveOrThrow(RuntimeSeed(-13)));
-  // Failure path: -2 throws; the exception is caught into `.Err`.
+  // Failure path: -2 throws; the exception is caught into `.Failure`.
   match (Checked(RuntimeSeed(-22))) {
-    case .Ok(v: i32) => { v; return 1; }
-    case .Err(e: Cpp.Exception) => { e; Core.Print(-1); }  // caught C++ exception
+    case .Success(v: i32) => { v; return 1; }
+    case .Failure(e: Cpp.Exception) => { e; Core.Print(-1); }  // caught C++ exception
   }
   return 0;
 }

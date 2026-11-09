@@ -6,7 +6,7 @@
 // `CheckedScale` (byte-identical to the Carbon program's inline block), called
 // natively inside `try`/`catch` where the Carbon side uses `?` through the
 // catching thunk. Same probe values in the same order, so byte-identical
-// output pins that a thrown C++ exception becomes the `.Err` alternative
+// output pins that a thrown C++ exception becomes the `.Failure` alternative
 // exactly when the native call throws, and that the success value crosses the
 // catching thunk's return out-pointer unchanged. printf("%d\n", ...) mirrors
 // Core.Print's lowering exactly (toolchain/lower/handle_call.cpp).

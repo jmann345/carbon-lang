@@ -57,10 +57,10 @@ namespace Carbon::Check {
 // (docs/design/pattern_matching.md), so the two values are a closed domain
 // for exhaustiveness and usefulness while dispatch stays on the expression
 // pattern's `==` lane; choice scrutinees with
-// leading-dot alternative patterns — payload-free (`case .Err`), whose
+// leading-dot alternative patterns — payload-free (`case .Failure`), whose
 // discriminant is compared against the scrutinee's `.discriminant` field,
-// and payload-destructuring (`case .Ok(value: i32)`, `case .Ok(42)`), whose
-// payload subpatterns mix bindings, constant integer expressions, and
+// and payload-destructuring (`case .Success(value: i32)`, `case .Success(42)`),
+// whose payload subpatterns mix bindings, constant integer expressions, and
 // nested tuples of those: expression subpatterns contribute payload-value
 // conditions in a block dominated by the discriminant test, and binding
 // subpatterns initialize in the bind pass from the alternative's payload

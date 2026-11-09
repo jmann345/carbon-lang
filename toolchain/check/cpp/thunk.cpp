@@ -979,12 +979,12 @@ static auto BuildCatchingThunkBody(CppContext& cpp_context, clang::Sema& sema,
     return clang::StmtError();
   }
   try_stmts.push_back(store_stmt.get());
-  clang::StmtResult return_ok = sema.BuildReturnStmt(
+  clang::StmtResult return_success = sema.BuildReturnStmt(
       clang_loc, sema.ActOnIntegerConstant(clang_loc, 0).get());
-  if (!return_ok.isUsable()) {
+  if (!return_success.isUsable()) {
     return clang::StmtError();
   }
-  try_stmts.push_back(return_ok.get());
+  try_stmts.push_back(return_success.get());
   clang::CompoundStmt* try_block = clang::CompoundStmt::Create(
       ast_context, try_stmts, clang::FPOptionsOverride(), clang_loc, clang_loc);
 
@@ -1015,12 +1015,12 @@ static auto BuildCatchingThunkBody(CppContext& cpp_context, clang::Sema& sema,
     return clang::StmtError();
   }
   handler_stmts.push_back(store_error_stmt.get());
-  clang::StmtResult return_err = sema.BuildReturnStmt(
+  clang::StmtResult return_failure = sema.BuildReturnStmt(
       clang_loc, sema.ActOnIntegerConstant(clang_loc, 1).get());
-  if (!return_err.isUsable()) {
+  if (!return_failure.isUsable()) {
     return clang::StmtError();
   }
-  handler_stmts.push_back(return_err.get());
+  handler_stmts.push_back(return_failure.get());
   clang::CompoundStmt* handler_block = clang::CompoundStmt::Create(
       ast_context, handler_stmts, clang::FPOptionsOverride(), clang_loc,
       clang_loc);
@@ -1377,7 +1377,7 @@ static auto PerformCppCatchingThunkCall(
       context.inst_blocks().Get(thunk_function.call_params_id);
   thunk_function_params = thunk_function_params.drop_back(
       thunk_function.call_param_ranges.return_size());
-  // The thunk returns the `int` discriminant: 0 = Ok, 1 = Err.
+  // The thunk returns the `int` discriminant: 0 = Success, 1 = Failure.
   auto disc_type_id = thunk_function.GetDeclaredReturnType(context.sem_ir());
   CARBON_CHECK(disc_type_id.has_value());
   CARBON_CHECK(thunk_function_params.size() ==
@@ -1458,8 +1458,8 @@ static auto PerformCppCatchingThunkCall(
        .callee_id = thunk_decl_id,
        .args_id = context.inst_blocks().Add(thunk_arg_ids)});
 
-  // `disc == 0` (the `EmitChoiceDiscriminantTest` idiom), then branch: the Ok
-  // block is the taken edge, the Err block the fall-through.
+  // `disc == 0` (the `EmitChoiceDiscriminantTest` idiom), then branch: the
+  // Success block is the taken edge, the Failure block the fall-through.
   auto zero_id = ConvertToValueOfType(
       context, node_id, MakeIntLiteral(context, node_id, context.ints().Add(0)),
       disc_type_id);
@@ -1499,46 +1499,50 @@ static auto PerformCppCatchingThunkCall(
     return true;
   };
 
-  auto ok_block_id = AddDominatedBlockAndBranchIf(context, node_id, cond_id);
-  auto err_block_id = AddDominatedBlockAndBranch(context, node_id);
+  auto success_block_id =
+      AddDominatedBlockAndBranchIf(context, node_id, cond_id);
+  auto failure_block_id = AddDominatedBlockAndBranch(context, node_id);
 
-  auto ok_name_id =
-      SemIR::NameId::ForIdentifier(context.identifiers().Add("Ok"));
-  auto err_name_id =
-      SemIR::NameId::ForIdentifier(context.identifiers().Add("Err"));
+  auto success_name_id =
+      SemIR::NameId::ForIdentifier(context.identifiers().Add("Success"));
+  auto failure_name_id =
+      SemIR::NameId::ForIdentifier(context.identifiers().Add("Failure"));
 
-  // Ok block: `Core.Result(S, Cpp.Exception).Ok(<ret>)` into the storage.
+  // Success block: `Core.Result(S, Cpp.Exception).Success(<ret>)` into the
+  // storage.
   context.inst_block_stack().Pop();
-  context.inst_block_stack().Push(ok_block_id);
-  context.region_stack().AddToRegion(ok_block_id, node_id);
-  SemIR::InstId ok_arg_id =
+  context.inst_block_stack().Push(success_block_id);
+  context.region_stack().AddToRegion(success_block_id, node_id);
+  SemIR::InstId success_arg_id =
       is_void ? GetOrAddInst<SemIR::TupleValue>(
                     context, loc_id,
                     {.type_id = success_type_id,
                      .elements_id = SemIR::InstBlockId::Empty})
               : ConvertToValueExpr(context, return_slot_id);
-  auto ok_ctor_id =
-      PerformMemberAccess(context, loc_id, result_type.inst_id, ok_name_id);
-  bool ok_initialized = initialize_result(PerformCall(
-      context, loc_id, ok_ctor_id, {ok_arg_id}, /*is_desugared=*/true));
+  auto success_ctor_id = PerformMemberAccess(
+      context, loc_id, result_type.inst_id, success_name_id);
+  bool success_initialized =
+      initialize_result(PerformCall(context, loc_id, success_ctor_id,
+                                    {success_arg_id}, /*is_desugared=*/true));
 
-  // Err block: `Core.Result(S, Cpp.Exception).Err(err as Cpp.Exception)` into
-  // the storage. The `as` is the prelude adapter's conversion from `VoidBase*`.
-  context.inst_block_stack().Push(err_block_id);
-  context.region_stack().AddToRegion(err_block_id, node_id);
+  // Failure block: `Core.Result(S, Cpp.Exception).Failure(err as
+  // Cpp.Exception)` into the storage. The `as` is the prelude adapter's
+  // conversion from `VoidBase*`.
+  context.inst_block_stack().Push(failure_block_id);
+  context.region_stack().AddToRegion(failure_block_id, node_id);
   auto exception_value_id = ConvertForExplicitAs(
       context, node_id, ConvertToValueExpr(context, err_storage_id),
       exception_type.type_id, /*unsafe=*/false);
-  auto err_ctor_id =
-      PerformMemberAccess(context, loc_id, result_type.inst_id, err_name_id);
-  bool err_initialized = initialize_result(
-      PerformCall(context, loc_id, err_ctor_id, {exception_value_id},
+  auto failure_ctor_id = PerformMemberAccess(
+      context, loc_id, result_type.inst_id, failure_name_id);
+  bool failure_initialized = initialize_result(
+      PerformCall(context, loc_id, failure_ctor_id, {exception_value_id},
                   /*is_desugared=*/true));
 
-  // Converge (the Err block is on top), then the initialized storage is the
+  // Converge (the Failure block is on top), then the initialized storage is the
   // call's value.
   AddConvergenceBlockAndPush(context, node_id, 2);
-  if (!ok_initialized || !err_initialized) {
+  if (!success_initialized || !failure_initialized) {
     return SemIR::ErrorInst::InstId;
   }
   auto result_id = ConvertToValueExpr(context, result_storage_id);

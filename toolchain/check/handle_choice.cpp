@@ -370,10 +370,10 @@ static auto InitializeElementInPlace(Context& context, SemIR::LocId loc_id,
 }
 
 // Builds the constructor function for a function-like alternative, and adds it
-// to the choice's scope. For `choice C { Ok(value: i32), ... }` the function
-// behaves like:
+// to the choice's scope. For `choice C { Success(value: i32), ... }` the
+// function behaves like:
 // ```
-//   fn Ok(value: i32) -> C;
+//   fn Success(value: i32) -> C;
 // ```
 // The body initializes the return slot directly: it stores the alternative's
 // index into the `.discriminant` field, and the parameters into this

@@ -56,7 +56,7 @@ inline int Recover(int n) {
 ''';
 
 fn Catching(n: i32) -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.Throws(n)?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.Throws(n)?);
 }
 
 fn RuntimeSeed(x: i32) -> i32 { return x + 20; }

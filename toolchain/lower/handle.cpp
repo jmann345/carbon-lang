@@ -353,14 +353,15 @@ auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
 
 // Emits the exit-code epilogue of a `Main.Run` declared `-> Core.Result(T, E)`
 // (decision D10 of docs/design/error_handling.md, "Entry point") in place of
-// an in-place return's `ret void`: `.Ok(())` exits 0, `.Ok(code)` exits
-// `code`, and `.Err(e)` writes a diagnostic naming `E` to stderr and exits 1.
-// `result_slot` is the local alloca the return slot was bound to
+// an in-place return's `ret void`: `.Success(())` exits 0, `.Success(code)`
+// exits `code`, and `.Failure(e)` writes a diagnostic naming `E` to stderr and
+// exits 1. `result_slot` is the local alloca the return slot was bound to
 // (`FileContext::BuildFunctionBody`), already initialized with the returned
 // value. A choice lowers as `<{ <{ disc, pad }>, [P x i8] }>` with the
-// discriminant stored as an `i8` (`Ok` = 0, `Err` = 1: the declaration order in
-// core/prelude/types/result.carbon) and every payload tuple at offset 0 of the
-// region, so the `Ok(i32)` payload is an `i32` load from the region.
+// discriminant stored as an `i8` (`Success` = 0, `Failure` = 1: the declaration
+// order in core/prelude/types/result.carbon) and every payload tuple at offset
+// 0 of the region, so the `Success(i32)` payload is an `i32` load from the
+// region.
 static auto EmitEntryPointResultEpilogue(
     FunctionContext& context, FunctionContext::TypeInFile result_type,
     llvm::Value* result_slot) -> void {
@@ -391,17 +392,18 @@ static auto EmitEntryPointResultEpilogue(
                          builder.CreateStructGEP(llvm_result_type, result_slot,
                                                  0, "run.result.discriminant"),
                          "run.result.disc");
-  auto* is_ok = builder.CreateICmpEQ(
-      discriminant, llvm::ConstantInt::get(i8_type, 0), "run.result.is_ok");
-  auto* ok_block = llvm::BasicBlock::Create(
-      context.llvm_context(), "run.result.ok", &context.llvm_function());
-  auto* err_block = llvm::BasicBlock::Create(
-      context.llvm_context(), "run.result.err", &context.llvm_function());
-  builder.CreateCondBr(is_ok, ok_block, err_block);
+  auto* is_success =
+      builder.CreateICmpEQ(discriminant, llvm::ConstantInt::get(i8_type, 0),
+                           "run.result.is_success");
+  auto* success_block = llvm::BasicBlock::Create(
+      context.llvm_context(), "run.result.success", &context.llvm_function());
+  auto* failure_block = llvm::BasicBlock::Create(
+      context.llvm_context(), "run.result.failure", &context.llvm_function());
+  builder.CreateCondBr(is_success, success_block, failure_block);
 
-  // `.Ok(())` exits 0; `.Ok(code)` exits `code`. The checker admits exactly
-  // these two success types (`IsValidEntryPointReturnType`).
-  builder.SetInsertPoint(ok_block);
+  // `.Success(())` exits 0; `.Success(code)` exits `code`. The checker admits
+  // exactly these two success types (`IsValidEntryPointReturnType`).
+  builder.SetInsertPoint(success_block);
   if (sem_ir.types().Is<SemIR::TupleType>(success_type_id)) {
     builder.CreateRet(builder.getInt32(0));
   } else {
@@ -410,20 +412,21 @@ static auto EmitEntryPointResultEpilogue(
     builder.CreateRet(builder.CreateLoad(i32_type, payload, "run.result.code"));
   }
 
-  // `.Err(e)`: `write(2, message, length)` — stderr is unbuffered, and no
+  // `.Failure(e)`: `write(2, message, length)` — stderr is unbuffered, and no
   // linkable Carbon runtime object exists to call — then exit 1. The message
   // names `E`; `Cpp.Exception`'s own message is not printed in 0.1.
-  builder.SetInsertPoint(err_block);
+  builder.SetInsertPoint(failure_block);
   auto* ptr_type = llvm::PointerType::get(context.llvm_context(), 0);
   llvm::FunctionCallee write = context.llvm_module().getOrInsertFunction(
       "write", i64_type, i32_type, ptr_type, i64_type);
   std::string message =
-      "carbon: `Main.Run` returned `.Err` of type `" +
+      "carbon: `Main.Run` returned `.Failure` of type `" +
       SemIR::StringifyConstantInst(sem_ir, error_type_inst_id) +
       "`; exiting with code 1\n";
-  builder.CreateCall(write, {builder.getInt32(2),
-                             context.entry_point_result_err_message(message),
-                             llvm::ConstantInt::get(i64_type, message.size())});
+  builder.CreateCall(
+      write,
+      {builder.getInt32(2), context.entry_point_result_failure_message(message),
+       llvm::ConstantInt::get(i64_type, message.size())});
   builder.CreateRet(builder.getInt32(1));
 }
 

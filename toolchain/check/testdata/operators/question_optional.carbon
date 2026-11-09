@@ -47,17 +47,17 @@ library "[[@TEST_NAME]]";
 // D9: `Optional?` inside a `Result`-returning function is a `()`-to-`E`
 // conversion failure at `Core.Result(i32, i32).(Core.Try.FromBreak)`.
 fn Bridge(o: Core.Optional(i32)) -> Core.Result(i32, i32) {
-  // CHECK:STDERR: fail_optional_in_result.carbon:[[@LINE+10]]:35: error: cannot implicitly convert expression of type `()` to `i32` [ConversionFailure]
-  // CHECK:STDERR:   return Core.Result(i32, i32).Ok(o?);
-  // CHECK:STDERR:                                   ^~
-  // CHECK:STDERR: fail_optional_in_result.carbon:[[@LINE+7]]:35: note: type `()` does not implement interface `Core.ImplicitAs(i32)` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return Core.Result(i32, i32).Ok(o?);
-  // CHECK:STDERR:                                   ^~
+  // CHECK:STDERR: fail_optional_in_result.carbon:[[@LINE+10]]:40: error: cannot implicitly convert expression of type `()` to `i32` [ConversionFailure]
+  // CHECK:STDERR:   return Core.Result(i32, i32).Success(o?);
+  // CHECK:STDERR:                                        ^~
+  // CHECK:STDERR: fail_optional_in_result.carbon:[[@LINE+7]]:40: note: type `()` does not implement interface `Core.ImplicitAs(i32)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, i32).Success(o?);
+  // CHECK:STDERR:                                        ^~
   // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:51:16: note: initializing function parameter [InCallToFunctionParam]
-  // CHECK:STDERR:   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
+  // CHECK:STDERR:   fn FromBreak(b: E) -> Self { return Result(T, E).Failure(b); }
   // CHECK:STDERR:                ^~~~
   // CHECK:STDERR:
-  return Core.Result(i32, i32).Ok(o?);
+  return Core.Result(i32, i32).Success(o?);
 }
 
 // --- fail_result_in_optional.carbon

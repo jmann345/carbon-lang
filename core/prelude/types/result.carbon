@@ -18,35 +18,45 @@ import library "prelude/operators/comparison";
 import library "prelude/try";
 
 // The vocabulary type for fallible operations (docs/design/error_handling.md,
-// "The `Core.Result` type"; decision F-006a): `Ok` carries the success
-// value, `Err` the error value. The alternative order fixes the
-// discriminants — `Ok` = 0, `Err` = 1 — which the entry point's exit-code
-// epilogue (toolchain/lower/handle.cpp) and the C++ `Carbon::expected`
-// layout mirror rely on. `E` is not constrained to implement any error
-// interface in 0.1; `Result((), E)` is the conventional shape for operations
-// with no interesting success value.
+// "The `Core.Result` type"): `Success` carries the success value, `Failure`
+// the error value, upstream's spellings (docs/design/README.md, the
+// choice-types section and "Generic choice types"; the history is at the end
+// of this file). The alternative order fixes the discriminants — `Success` =
+// 0, `Failure` = 1 — which the entry point's exit-code epilogue
+// (toolchain/lower/handle.cpp) and the C++ `Carbon::expected` layout mirror
+// rely on. `E` is unconstrained in 0.1; `Result((), E)` is the unit shape.
 choice Result(T: type, E: type) {
-  Ok(value: T),
-  Err(error: E)
+  Success(value: T),
+  Failure(error: E)
 }
 
 // `Result` is a `Try` operand and a `Try` return type: `expr?` continues with
-// the `Ok` payload and propagates an `Err` payload through `FromBreak` on the
-// enclosing function's return type (the `ImplicitAs` error conversion is the
-// ordinary argument conversion of that call). The sketch is the design's
-// (docs/design/error_handling.md, "The `Core.Try` interface"); `final`
-// licenses impl lookup to apply the `where` rewrites under a symbolic query,
-// so `r?` on a `Result(T, E)` operand in a generic body has type `T`.
+// the `Success` payload and propagates a `Failure` payload through
+// `FromBreak` on the enclosing function's return type (the `ImplicitAs` error
+// conversion is the ordinary argument conversion of that call). The sketch is
+// the design's (docs/design/error_handling.md, "The `Core.Try` interface");
+// `final` licenses impl lookup to apply the `where` rewrites under a symbolic
+// query, so `r?` on a `Result(T, E)` operand in a generic body has type `T`.
 final impl forall [T: type, E: type] Result(T, E) as Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return ControlFlow(T, E).Break(e); }
     }
     // Unreachable trailing return: reachability doesn't consult match
     // exhaustiveness; under `final` the recursive call type-collapses.
     return self.(Try.Branch)();
   }
-  fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
+  fn FromBreak(b: E) -> Self { return Result(T, E).Failure(b); }
 }
+
+// History (EH-C, W-346, 2026-11-09; fork/eh/ehc-plan.md D-EHC-1): from fork
+// decision F-006a (user, 2026-07-19) until EH-C the alternatives were spelled
+// `Ok`/`Err`, chosen over the README's `Success`/`Failure` as illustrative.
+// RG-1 (2026-10-28, D-RG-5) classified that a second spelling of upstream's
+// mechanism under fork/rulebook.md R32 (d): upstream's docs/design/README.md
+// (ca1898506) names `Result` as the error representation (:3858-3860) and
+// spells the result choice `Success(value: i32)` / `Failure(error: String)`
+// (:2176-2177) and `Success(value: T)` / `Failure(error: Error)`
+// (:3165-3166). No alias remains; the user may veto the reversal (R29).

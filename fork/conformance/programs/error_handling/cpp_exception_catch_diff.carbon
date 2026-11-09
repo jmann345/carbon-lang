@@ -34,18 +34,18 @@ inline auto CheckedScale(int value, int factor) -> int {
 ''';
 
 // `?` directly on the C++ call: the catching thunk turns a thrown exception
-// into `.Err(Cpp.Exception)`.
+// into `.Failure(Cpp.Exception)`.
 fn Scale(value: i32, factor: i32) -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.CheckedScale(value, factor)?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.CheckedScale(value, factor)?);
 }
 
 fn Probe(value: i32, factor: i32) {
   match (Scale(value, factor)) {
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       Core.Print(1);
       Core.Print(v);
     }
-    case .Err(e: Cpp.Exception) => {
+    case .Failure(e: Cpp.Exception) => {
       e;
       Core.Print(0);
       Core.Print(0 - 1);

@@ -144,13 +144,13 @@ class Context {
     printf_int_format_string_ = printf_int_format_string;
   }
 
-  auto entry_point_result_err_message() -> llvm::Value* {
-    return entry_point_result_err_message_;
+  auto entry_point_result_failure_message() -> llvm::Value* {
+    return entry_point_result_failure_message_;
   }
-  auto SetEntryPointResultErrMessage(llvm::Value* message) {
-    CARBON_CHECK(!entry_point_result_err_message_,
-                 "`Main.Run` `.Err` message already generated");
-    entry_point_result_err_message_ = message;
+  auto SetEntryPointResultFailureMessage(llvm::Value* message) {
+    CARBON_CHECK(!entry_point_result_failure_message_,
+                 "`Main.Run` `.Failure` message already generated");
+    entry_point_result_failure_message_ = message;
   }
 
  private:
@@ -211,9 +211,9 @@ class Context {
   llvm::Value* printf_int_format_string_ = nullptr;
 
   // Global diagnostic string written to stderr when a `Result`-returning
-  // `Main.Run` returns `.Err` (the handle.cpp `ReturnExpr` epilogue). There is
-  // one entry point per compilation, so one message.
-  llvm::Value* entry_point_result_err_message_ = nullptr;
+  // `Main.Run` returns `.Failure` (the handle.cpp `ReturnExpr` epilogue). There
+  // is one entry point per compilation, so one message.
+  llvm::Value* entry_point_result_failure_message_ = nullptr;
 
   // Tracks which specific functions need to have their definitions lowered.
   // This list may grow while lowering generic definitions from this list.

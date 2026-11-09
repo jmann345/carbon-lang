@@ -53,10 +53,10 @@ fn F(r: IntResult) -> i32 {
   match (r) {
     case .Success(42) => { return 1; }
     // CHECK:STDERR: fail_duplicate_payload_constant.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
-    // CHECK:STDERR:     case .Ok(42) => { return 2; }
+    // CHECK:STDERR:     case .Success(42) => { return 2; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR: fail_duplicate_payload_constant.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
-    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     case .Success(42) => { return 1; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case .Success(42) => { return 2; }
@@ -80,10 +80,10 @@ fn F(r: IntResult) -> i32 {
   match (r) {
     case .Success(v: i32) => { return v; }
     // CHECK:STDERR: fail_payload_subsumption.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
-    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     case .Success(42) => { return 1; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR: fail_payload_subsumption.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
-    // CHECK:STDERR:     case .Ok(v: i32) => { return v; }
+    // CHECK:STDERR:     case .Success(v: i32) => { return v; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case .Success(42) => { return 1; }

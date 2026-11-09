@@ -124,9 +124,9 @@ fn H(n: i32) -> MyResult(i32, i32) { return MyResult(i32, i32).Success(n); }
 // region-depth detection (risk R-2).
 fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
   match (r) {
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:26: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-    // CHECK:STDERR:     case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
-    // CHECK:STDERR:                          ^~~~~
+    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:31: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
+    // CHECK:STDERR:     case .Success(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Success(v); }
+    // CHECK:STDERR:                               ^~~~~
     // CHECK:STDERR:
     case .Success(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Success(v); }
     case .Success(w: i32) => { return MyResult(i32, i32).Success(w); }
@@ -169,11 +169,11 @@ fn TypeAnnotation() -> MyResult(i32, i32) {
 fn ExprPattern(n: i32) -> MyResult(i32, i32) {
   match (n) {
     // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+8]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
+    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Success(n); }
     // CHECK:STDERR:          ^~~~~
     // CHECK:STDERR:
     // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer or `bool`` [SemanticsTodo]
-    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
+    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Success(n); }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case H(0)? => { return MyResult(i32, i32).Success(n); }
@@ -238,7 +238,7 @@ fn Outer(n: i32) -> MyResult(i32, ErrC) {
   // CHECK:STDERR:   var v: i32 = Inner(n)?;
   // CHECK:STDERR:                ^~~~~~~~~
   // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE-26]]:16: note: initializing function parameter [InCallToFunctionParam]
-  // CHECK:STDERR:   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  // CHECK:STDERR:   fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
   // CHECK:STDERR:                ^~~~
   // CHECK:STDERR:
   var v: i32 = Inner(n)?;

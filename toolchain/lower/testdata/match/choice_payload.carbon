@@ -37,13 +37,13 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: @IntResult.val.loc22_1.13 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_COk.IntResult.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !13 {
+// CHECK:STDOUT: define void @_CSuccess.IntResult.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !13 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc19_18.1.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !15
 // CHECK:STDOUT:   %.loc19_18.4.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !15
-// CHECK:STDOUT:   %.loc19_18.5.Ok = getelementptr inbounds nuw [4 x i8], ptr %.loc19_18.4.payload, i32 0, i32 0, !dbg !15
-// CHECK:STDOUT:   %.loc20_17.2.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !16
-// CHECK:STDOUT:   store { i32 } %.loc20_17.2.tuple.init, ptr %.loc19_18.5.Ok, align 4, !dbg !15
+// CHECK:STDOUT:   %.loc19_18.5.Success = getelementptr inbounds nuw [4 x i8], ptr %.loc19_18.4.payload, i32 0, i32 0, !dbg !15
+// CHECK:STDOUT:   %.loc20_22.2.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !16
+// CHECK:STDOUT:   store { i32 } %.loc20_22.2.tuple.init, ptr %.loc19_18.5.Success, align 4, !dbg !15
 // CHECK:STDOUT:   store i8 0, ptr %.loc19_18.1.discriminant, align 1, !dbg !15
 // CHECK:STDOUT:   ret void, !dbg !15
 // CHECK:STDOUT: }
@@ -51,24 +51,24 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CConsume.Main(ptr %r) #0 !dbg !18 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc26_26.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %r, i32 0, i32 0, !dbg !24
-// CHECK:STDOUT:   %.loc26_26.4 = load i8, ptr %.loc26_26.3.discriminant, align 1, !dbg !24
-// CHECK:STDOUT:   %.loc26_26.41 = trunc i8 %.loc26_26.4 to i1, !dbg !24
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc26 = icmp eq i1 false, %.loc26_26.41, !dbg !24
+// CHECK:STDOUT:   %.loc26_31.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %r, i32 0, i32 0, !dbg !24
+// CHECK:STDOUT:   %.loc26_31.4 = load i8, ptr %.loc26_31.3.discriminant, align 1, !dbg !24
+// CHECK:STDOUT:   %.loc26_31.41 = trunc i8 %.loc26_31.4 to i1, !dbg !24
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc26 = icmp eq i1 false, %.loc26_31.41, !dbg !24
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc26, label %match.case.then.loc26, label %match.case.else.loc26, !dbg !24
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc26:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc26_26.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %r, i32 0, i32 1, !dbg !24
-// CHECK:STDOUT:   %.loc26_26.8.Ok = getelementptr inbounds nuw [4 x i8], ptr %.loc26_26.7.payload, i32 0, i32 0, !dbg !24
-// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc26_26.8.Ok, i32 0, i32 0, !dbg !24
-// CHECK:STDOUT:   %.loc26_26.9 = load i32, ptr %tuple.elem0.tuple.elem, align 4, !dbg !24
-// CHECK:STDOUT:   ret i32 %.loc26_26.9, !dbg !27
+// CHECK:STDOUT:   %.loc26_31.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %r, i32 0, i32 1, !dbg !24
+// CHECK:STDOUT:   %.loc26_31.8.Success = getelementptr inbounds nuw [4 x i8], ptr %.loc26_31.7.payload, i32 0, i32 0, !dbg !24
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc26_31.8.Success, i32 0, i32 0, !dbg !24
+// CHECK:STDOUT:   %.loc26_31.9 = load i32, ptr %tuple.elem0.tuple.elem, align 4, !dbg !24
+// CHECK:STDOUT:   ret i32 %.loc26_31.9, !dbg !27
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.else.loc26:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc27_15.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %r, i32 0, i32 0, !dbg !28
-// CHECK:STDOUT:   %.loc27_15.4 = load i8, ptr %.loc27_15.3.discriminant, align 1, !dbg !28
-// CHECK:STDOUT:   %.loc27_15.42 = trunc i8 %.loc27_15.4 to i1, !dbg !28
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc27 = icmp eq i1 true, %.loc27_15.42, !dbg !28
+// CHECK:STDOUT:   %.loc27_19.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %r, i32 0, i32 0, !dbg !28
+// CHECK:STDOUT:   %.loc27_19.4 = load i8, ptr %.loc27_19.3.discriminant, align 1, !dbg !28
+// CHECK:STDOUT:   %.loc27_19.42 = trunc i8 %.loc27_19.4 to i1, !dbg !28
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc27 = icmp eq i1 true, %.loc27_19.42, !dbg !28
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc27, label %match.case.then.loc27, label %match.done, !dbg !28
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc27:                            ; preds = %match.case.else.loc26
@@ -93,17 +93,17 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: !10 = !DISubroutineType(types: !9)
 // CHECK:STDOUT: !11 = !{!6, !8}
 // CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
-// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.IntResult.Main", scope: null, file: !4, line: 19, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !17)
+// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "Success", linkageName: "_CSuccess.IntResult.Main", scope: null, file: !4, line: 19, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !17)
 // CHECK:STDOUT: !14 = !DILocalVariable(arg: 1, scope: !13, type: !6)
 // CHECK:STDOUT: !15 = !DILocation(line: 19, column: 1, scope: !13)
-// CHECK:STDOUT: !16 = !DILocation(line: 20, column: 17, scope: !13)
+// CHECK:STDOUT: !16 = !DILocation(line: 20, column: 22, scope: !13)
 // CHECK:STDOUT: !17 = !{!14}
 // CHECK:STDOUT: !18 = distinct !DISubprogram(name: "Consume", linkageName: "_CConsume.Main", scope: null, file: !4, line: 24, type: !12, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !33)
 // CHECK:STDOUT: !19 = !DILocalVariable(arg: 1, scope: !18, type: !8)
 // CHECK:STDOUT: !24 = !DILocation(line: 26, column: 5, scope: !18)
-// CHECK:STDOUT: !27 = !DILocation(line: 26, column: 31, scope: !18)
+// CHECK:STDOUT: !27 = !DILocation(line: 26, column: 36, scope: !18)
 // CHECK:STDOUT: !28 = !DILocation(line: 27, column: 5, scope: !18)
-// CHECK:STDOUT: !30 = !DILocation(line: 27, column: 20, scope: !18)
+// CHECK:STDOUT: !30 = !DILocation(line: 27, column: 24, scope: !18)
 // CHECK:STDOUT: !32 = !DILocation(line: 29, column: 3, scope: !18)
 // CHECK:STDOUT: !33 = !{!19}
 // CHECK:STDOUT:

@@ -121,15 +121,15 @@ fn Trigger() {
   // CHECK:STDERR:   Widened(Fat);
   // CHECK:STDERR:   ^~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-7]]:18: note: `MyResult(T, i32)` evaluates to incomplete type `MyResult(Fat, i32)` [IncompleteTypeInMonomorphization]
-  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
+  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Failure(0);
   // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-19]]:1: note: choice alternative payload type `Fat` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
   // CHECK:STDERR: choice MyResult(T: type, E: type) {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-14]]:37: error: unable to monomorphize specific `Err(i32)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
-  // CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-14]]:37: error: unable to monomorphize specific `Failure(i32)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Failure(0);
+  // CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-26]]:1: note: choice alternative payload type `Fat` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
   // CHECK:STDERR: choice MyResult(T: type, E: type) {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

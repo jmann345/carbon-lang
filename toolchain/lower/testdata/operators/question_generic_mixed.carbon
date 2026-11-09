@@ -90,9 +90,9 @@ fn MakeErr64(tag: i32) -> MyResult(i64, i32) {
 // the writer initialized.
 fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
   match (r) {
-    // CHECK:STDERR: mixed.carbon:[[@LINE+4]]:14: warning: binding `v` unused [UnusedBinding]
-    // CHECK:STDERR:     case .Ok(v: i64) => { return 0; }
-    // CHECK:STDERR:              ^~~~~~
+    // CHECK:STDERR: mixed.carbon:[[@LINE+4]]:19: warning: binding `v` unused [UnusedBinding]
+    // CHECK:STDERR:     case .Success(v: i64) => { return 0; }
+    // CHECK:STDERR:                   ^~~~~~
     // CHECK:STDERR:
     case .Success(v: i64) => { return 0; }
     case .Failure(e: i32) => { return e; }
@@ -105,10 +105,10 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'mixed.carbon'
 // CHECK:STDOUT: source_filename = "mixed.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MyResult.val.142.loc3_35.7 = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.4b9.loc3_35.7 = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
 // CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
 // CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
-// CHECK:STDOUT: @MyResult.val.df1.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.642.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT: @ControlFlow.val.fa9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> zeroinitializer
 // CHECK:STDOUT: @ControlFlow.val.d01.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
 // CHECK:STDOUT:
@@ -129,39 +129,39 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CMakeErr64.Main(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %tag) #0 !dbg !42 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.b7dd877894074427(ptr %return, i32 %tag), !dbg !48
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.b7dd877894074427(ptr %return, i32 %tag), !dbg !48
 // CHECK:STDOUT:   ret void, !dbg !49
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CReadErr64.Main(ptr %r) #0 !dbg !51 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc60_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !57
-// CHECK:STDOUT:   %.loc60_22.4 = load i8, ptr %.loc60_22.3.discriminant, align 1, !dbg !57
-// CHECK:STDOUT:   %.loc60_22.41 = trunc i8 %.loc60_22.4 to i1, !dbg !57
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc60 = icmp eq i1 false, %.loc60_22.41, !dbg !57
+// CHECK:STDOUT:   %.loc60_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !57
+// CHECK:STDOUT:   %.loc60_27.4 = load i8, ptr %.loc60_27.3.discriminant, align 1, !dbg !57
+// CHECK:STDOUT:   %.loc60_27.41 = trunc i8 %.loc60_27.4 to i1, !dbg !57
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc60 = icmp eq i1 false, %.loc60_27.41, !dbg !57
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc60, label %match.case.then.loc60, label %match.case.else.loc60, !dbg !57
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc60:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc60_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !57
-// CHECK:STDOUT:   %.loc60_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc60_22.7.payload, i32 0, i32 0, !dbg !57
-// CHECK:STDOUT:   %tuple.elem0.loc60.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc60_22.8.Ok, i32 0, i32 0, !dbg !57
-// CHECK:STDOUT:   %.loc60_22.9 = load i64, ptr %tuple.elem0.loc60.tuple.elem, align 8, !dbg !57
+// CHECK:STDOUT:   %.loc60_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !57
+// CHECK:STDOUT:   %.loc60_27.8.Success = getelementptr inbounds nuw [8 x i8], ptr %.loc60_27.7.payload, i32 0, i32 0, !dbg !57
+// CHECK:STDOUT:   %tuple.elem0.loc60.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc60_27.8.Success, i32 0, i32 0, !dbg !57
+// CHECK:STDOUT:   %.loc60_27.9 = load i64, ptr %tuple.elem0.loc60.tuple.elem, align 8, !dbg !57
 // CHECK:STDOUT:   ret i32 0, !dbg !59
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.else.loc60:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc61_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !60
-// CHECK:STDOUT:   %.loc61_23.4 = load i8, ptr %.loc61_23.3.discriminant, align 1, !dbg !60
-// CHECK:STDOUT:   %.loc61_23.42 = trunc i8 %.loc61_23.4 to i1, !dbg !60
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc61 = icmp eq i1 true, %.loc61_23.42, !dbg !60
+// CHECK:STDOUT:   %.loc61_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !60
+// CHECK:STDOUT:   %.loc61_27.4 = load i8, ptr %.loc61_27.3.discriminant, align 1, !dbg !60
+// CHECK:STDOUT:   %.loc61_27.42 = trunc i8 %.loc61_27.4 to i1, !dbg !60
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc61 = icmp eq i1 true, %.loc61_27.42, !dbg !60
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc61, label %match.case.then.loc61, label %match.done, !dbg !60
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc61:                            ; preds = %match.case.else.loc60
-// CHECK:STDOUT:   %.loc61_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !60
-// CHECK:STDOUT:   %.loc61_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc61_23.7.payload, i32 0, i32 0, !dbg !60
-// CHECK:STDOUT:   %tuple.elem0.loc61.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc61_23.8.Err, i32 0, i32 0, !dbg !60
-// CHECK:STDOUT:   %.loc61_23.9 = load i32, ptr %tuple.elem0.loc61.tuple.elem, align 4, !dbg !60
-// CHECK:STDOUT:   ret i32 %.loc61_23.9, !dbg !63
+// CHECK:STDOUT:   %.loc61_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !60
+// CHECK:STDOUT:   %.loc61_27.8.Failure = getelementptr inbounds nuw [8 x i8], ptr %.loc61_27.7.payload, i32 0, i32 0, !dbg !60
+// CHECK:STDOUT:   %tuple.elem0.loc61.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc61_27.8.Failure, i32 0, i32 0, !dbg !60
+// CHECK:STDOUT:   %.loc61_27.9 = load i32, ptr %tuple.elem0.loc61.tuple.elem, align 4, !dbg !60
+// CHECK:STDOUT:   ret i32 %.loc61_27.9, !dbg !63
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc60
 // CHECK:STDOUT:   ret i32 -1, !dbg !65
@@ -364,15 +364,15 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.MyResult.Main.b7dd877894074427(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %_) #0 !dbg !165 {
+// CHECK:STDOUT: define linkonce_odr void @_CFailure.MyResult.Main.b7dd877894074427(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %_) #0 !dbg !165 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc3_35.1.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %return, i32 0, i32 0, !dbg !167
 // CHECK:STDOUT:   %.loc3_35.4.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %return, i32 0, i32 1, !dbg !167
-// CHECK:STDOUT:   %.loc3_35.5.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !167
+// CHECK:STDOUT:   %.loc3_35.5.Failure = getelementptr inbounds nuw [8 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !167
 // CHECK:STDOUT:   %.loc6_1.1.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !167
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %return, ptr align 8 @MyResult.val.142.loc3_35.7, i64 16, i1 false), !dbg !167
-// CHECK:STDOUT:   store { i32 } %.loc6_1.1.tuple.init, ptr %.loc3_35.5.Err, align 4, !dbg !167
-// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Err, i32 0, i32 0, !dbg !167
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %return, ptr align 8 @MyResult.val.4b9.loc3_35.7, i64 16, i1 false), !dbg !167
+// CHECK:STDOUT:   store { i32 } %.loc6_1.1.tuple.init, ptr %.loc3_35.5.Failure, align 4, !dbg !167
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Failure, i32 0, i32 0, !dbg !167
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem0.tuple.elem, align 4, !dbg !167
 // CHECK:STDOUT:   ret void, !dbg !167
 // CHECK:STDOUT: }
@@ -383,33 +383,33 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385"(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %self) #0 !dbg !169 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc17_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !175
-// CHECK:STDOUT:   %.loc17_22.4 = load i8, ptr %.loc17_22.3.discriminant, align 1, !dbg !175
-// CHECK:STDOUT:   %.loc17_22.41 = trunc i8 %.loc17_22.4 to i1, !dbg !175
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc17 = icmp eq i1 false, %.loc17_22.41, !dbg !175
+// CHECK:STDOUT:   %.loc17_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !175
+// CHECK:STDOUT:   %.loc17_27.4 = load i8, ptr %.loc17_27.3.discriminant, align 1, !dbg !175
+// CHECK:STDOUT:   %.loc17_27.41 = trunc i8 %.loc17_27.4 to i1, !dbg !175
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc17 = icmp eq i1 false, %.loc17_27.41, !dbg !175
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc17, label %match.case.then.loc17, label %match.case.else.loc17, !dbg !175
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc17:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc17_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !175
-// CHECK:STDOUT:   %.loc17_22.8.Ok = getelementptr inbounds nuw [4 x i8], ptr %.loc17_22.7.payload, i32 0, i32 0, !dbg !175
-// CHECK:STDOUT:   %tuple.elem0.loc17.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc17_22.8.Ok, i32 0, i32 0, !dbg !175
-// CHECK:STDOUT:   %.loc17_22.9 = load i32, ptr %tuple.elem0.loc17.tuple.elem, align 4, !dbg !175
-// CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc17_22.9), !dbg !178
+// CHECK:STDOUT:   %.loc17_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !175
+// CHECK:STDOUT:   %.loc17_27.8.Success = getelementptr inbounds nuw [4 x i8], ptr %.loc17_27.7.payload, i32 0, i32 0, !dbg !175
+// CHECK:STDOUT:   %tuple.elem0.loc17.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc17_27.8.Success, i32 0, i32 0, !dbg !175
+// CHECK:STDOUT:   %.loc17_27.9 = load i32, ptr %tuple.elem0.loc17.tuple.elem, align 4, !dbg !175
+// CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc17_27.9), !dbg !178
 // CHECK:STDOUT:   ret void, !dbg !179
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.else.loc17:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc18_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !180
-// CHECK:STDOUT:   %.loc18_23.4 = load i8, ptr %.loc18_23.3.discriminant, align 1, !dbg !180
-// CHECK:STDOUT:   %.loc18_23.42 = trunc i8 %.loc18_23.4 to i1, !dbg !180
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc18 = icmp eq i1 true, %.loc18_23.42, !dbg !180
+// CHECK:STDOUT:   %.loc18_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !180
+// CHECK:STDOUT:   %.loc18_27.4 = load i8, ptr %.loc18_27.3.discriminant, align 1, !dbg !180
+// CHECK:STDOUT:   %.loc18_27.42 = trunc i8 %.loc18_27.4 to i1, !dbg !180
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc18 = icmp eq i1 true, %.loc18_27.42, !dbg !180
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc18, label %match.case.then.loc18, label %match.done, !dbg !180
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc18:                            ; preds = %match.case.else.loc17
-// CHECK:STDOUT:   %.loc18_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !180
-// CHECK:STDOUT:   %.loc18_23.8.Err = getelementptr inbounds nuw [4 x i8], ptr %.loc18_23.7.payload, i32 0, i32 0, !dbg !180
-// CHECK:STDOUT:   %tuple.elem0.loc18.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc18_23.8.Err, i32 0, i32 0, !dbg !180
-// CHECK:STDOUT:   %.loc18_23.9 = load i32, ptr %tuple.elem0.loc18.tuple.elem, align 4, !dbg !180
-// CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc18_23.9), !dbg !183
+// CHECK:STDOUT:   %.loc18_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !180
+// CHECK:STDOUT:   %.loc18_27.8.Failure = getelementptr inbounds nuw [4 x i8], ptr %.loc18_27.7.payload, i32 0, i32 0, !dbg !180
+// CHECK:STDOUT:   %tuple.elem0.loc18.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc18_27.8.Failure, i32 0, i32 0, !dbg !180
+// CHECK:STDOUT:   %.loc18_27.9 = load i32, ptr %tuple.elem0.loc18.tuple.elem, align 4, !dbg !180
+// CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc18_27.9), !dbg !183
 // CHECK:STDOUT:   ret void, !dbg !184
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc17
@@ -420,40 +420,40 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385"(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %e) #0 !dbg !191 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.8122a03446648385(ptr %return, i32 %e), !dbg !197
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.8122a03446648385(ptr %return, i32 %e), !dbg !197
 // CHECK:STDOUT:   ret void, !dbg !198
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427"(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, ptr %self) #0 !dbg !200 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc17_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 0, !dbg !206
-// CHECK:STDOUT:   %.loc17_22.4 = load i8, ptr %.loc17_22.3.discriminant, align 1, !dbg !206
-// CHECK:STDOUT:   %.loc17_22.41 = trunc i8 %.loc17_22.4 to i1, !dbg !206
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc17 = icmp eq i1 false, %.loc17_22.41, !dbg !206
+// CHECK:STDOUT:   %.loc17_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 0, !dbg !206
+// CHECK:STDOUT:   %.loc17_27.4 = load i8, ptr %.loc17_27.3.discriminant, align 1, !dbg !206
+// CHECK:STDOUT:   %.loc17_27.41 = trunc i8 %.loc17_27.4 to i1, !dbg !206
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc17 = icmp eq i1 false, %.loc17_27.41, !dbg !206
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc17, label %match.case.then.loc17, label %match.case.else.loc17, !dbg !206
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc17:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc17_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !206
-// CHECK:STDOUT:   %.loc17_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc17_22.7.payload, i32 0, i32 0, !dbg !206
-// CHECK:STDOUT:   %tuple.elem0.loc17.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc17_22.8.Ok, i32 0, i32 0, !dbg !206
-// CHECK:STDOUT:   %.loc17_22.9 = load i64, ptr %tuple.elem0.loc17.tuple.elem, align 8, !dbg !206
-// CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.b7dd877894074427(ptr %return, i64 %.loc17_22.9), !dbg !209
+// CHECK:STDOUT:   %.loc17_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !206
+// CHECK:STDOUT:   %.loc17_27.8.Success = getelementptr inbounds nuw [8 x i8], ptr %.loc17_27.7.payload, i32 0, i32 0, !dbg !206
+// CHECK:STDOUT:   %tuple.elem0.loc17.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc17_27.8.Success, i32 0, i32 0, !dbg !206
+// CHECK:STDOUT:   %.loc17_27.9 = load i64, ptr %tuple.elem0.loc17.tuple.elem, align 8, !dbg !206
+// CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.b7dd877894074427(ptr %return, i64 %.loc17_27.9), !dbg !209
 // CHECK:STDOUT:   ret void, !dbg !212
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.else.loc17:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc18_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 0, !dbg !213
-// CHECK:STDOUT:   %.loc18_23.4 = load i8, ptr %.loc18_23.3.discriminant, align 1, !dbg !213
-// CHECK:STDOUT:   %.loc18_23.42 = trunc i8 %.loc18_23.4 to i1, !dbg !213
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc18 = icmp eq i1 true, %.loc18_23.42, !dbg !213
+// CHECK:STDOUT:   %.loc18_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 0, !dbg !213
+// CHECK:STDOUT:   %.loc18_27.4 = load i8, ptr %.loc18_27.3.discriminant, align 1, !dbg !213
+// CHECK:STDOUT:   %.loc18_27.42 = trunc i8 %.loc18_27.4 to i1, !dbg !213
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc18 = icmp eq i1 true, %.loc18_27.42, !dbg !213
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc18, label %match.case.then.loc18, label %match.done, !dbg !213
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc18:                            ; preds = %match.case.else.loc17
-// CHECK:STDOUT:   %.loc18_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !213
-// CHECK:STDOUT:   %.loc18_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc18_23.7.payload, i32 0, i32 0, !dbg !213
-// CHECK:STDOUT:   %tuple.elem0.loc18.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc18_23.8.Err, i32 0, i32 0, !dbg !213
-// CHECK:STDOUT:   %.loc18_23.9 = load i32, ptr %tuple.elem0.loc18.tuple.elem, align 4, !dbg !213
-// CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.b7dd877894074427(ptr %return, i32 %.loc18_23.9), !dbg !216
+// CHECK:STDOUT:   %.loc18_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !213
+// CHECK:STDOUT:   %.loc18_27.8.Failure = getelementptr inbounds nuw [8 x i8], ptr %.loc18_27.7.payload, i32 0, i32 0, !dbg !213
+// CHECK:STDOUT:   %tuple.elem0.loc18.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc18_27.8.Failure, i32 0, i32 0, !dbg !213
+// CHECK:STDOUT:   %.loc18_27.9 = load i32, ptr %tuple.elem0.loc18.tuple.elem, align 4, !dbg !213
+// CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.b7dd877894074427(ptr %return, i32 %.loc18_27.9), !dbg !216
 // CHECK:STDOUT:   ret void, !dbg !217
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc17
@@ -464,7 +464,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427"(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %e) #0 !dbg !222 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.b7dd877894074427(ptr %return, i32 %e), !dbg !228
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.b7dd877894074427(ptr %return, i32 %e), !dbg !228
 // CHECK:STDOUT:   ret void, !dbg !229
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -505,15 +505,15 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !246 {
+// CHECK:STDOUT: define linkonce_odr void @_CFailure.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !246 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc3_35.1.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !248
 // CHECK:STDOUT:   %.loc3_35.4.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !248
-// CHECK:STDOUT:   %.loc3_35.5.Err = getelementptr inbounds nuw [4 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !248
+// CHECK:STDOUT:   %.loc3_35.5.Failure = getelementptr inbounds nuw [4 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !248
 // CHECK:STDOUT:   %.loc6_1.1.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !248
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.df1.loc3_35.7, i64 8, i1 false), !dbg !248
-// CHECK:STDOUT:   store { i32 } %.loc6_1.1.tuple.init, ptr %.loc3_35.5.Err, align 4, !dbg !248
-// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Err, i32 0, i32 0, !dbg !248
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.642.loc3_35.7, i64 8, i1 false), !dbg !248
+// CHECK:STDOUT:   store { i32 } %.loc6_1.1.tuple.init, ptr %.loc3_35.5.Failure, align 4, !dbg !248
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Failure, i32 0, i32 0, !dbg !248
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem0.tuple.elem, align 4, !dbg !248
 // CHECK:STDOUT:   ret void, !dbg !248
 // CHECK:STDOUT: }
@@ -602,9 +602,9 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !51 = distinct !DISubprogram(name: "ReadErr64", linkageName: "_CReadErr64.Main", scope: null, file: !4, line: 54, type: !15, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !66)
 // CHECK:STDOUT: !52 = !DILocalVariable(arg: 1, scope: !51, type: !9)
 // CHECK:STDOUT: !57 = !DILocation(line: 60, column: 5, scope: !51)
-// CHECK:STDOUT: !59 = !DILocation(line: 60, column: 27, scope: !51)
+// CHECK:STDOUT: !59 = !DILocation(line: 60, column: 32, scope: !51)
 // CHECK:STDOUT: !60 = !DILocation(line: 61, column: 5, scope: !51)
-// CHECK:STDOUT: !63 = !DILocation(line: 61, column: 28, scope: !51)
+// CHECK:STDOUT: !63 = !DILocation(line: 61, column: 32, scope: !51)
 // CHECK:STDOUT: !65 = !DILocation(line: 64, column: 3, scope: !51)
 // CHECK:STDOUT: !66 = !{!52}
 // CHECK:STDOUT: !67 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.a968c23fcb066b44:core.Destroy.Core", scope: null, file: !4, line: 31, type: !17, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !70)
@@ -695,18 +695,18 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !162 = !DILocation(line: 32, column: 10, scope: !154)
 // CHECK:STDOUT: !163 = !DILocation(line: 32, column: 3, scope: !154)
 // CHECK:STDOUT: !164 = !{!155}
-// CHECK:STDOUT: !165 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.MyResult.Main.b7dd877894074427", scope: null, file: !4, line: 3, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !168)
+// CHECK:STDOUT: !165 = distinct !DISubprogram(name: "Failure", linkageName: "_CFailure.MyResult.Main.b7dd877894074427", scope: null, file: !4, line: 3, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !168)
 // CHECK:STDOUT: !166 = !DILocalVariable(arg: 1, scope: !165, type: !7)
 // CHECK:STDOUT: !167 = !DILocation(line: 3, column: 1, scope: !165)
 // CHECK:STDOUT: !168 = !{!166}
 // CHECK:STDOUT: !169 = distinct !DISubprogram(name: "Branch", linkageName: "_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", scope: null, file: !4, line: 15, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !190)
 // CHECK:STDOUT: !170 = !DILocalVariable(arg: 1, scope: !169, type: !9)
 // CHECK:STDOUT: !175 = !DILocation(line: 17, column: 7, scope: !169)
-// CHECK:STDOUT: !178 = !DILocation(line: 17, column: 34, scope: !169)
-// CHECK:STDOUT: !179 = !DILocation(line: 17, column: 27, scope: !169)
+// CHECK:STDOUT: !178 = !DILocation(line: 17, column: 39, scope: !169)
+// CHECK:STDOUT: !179 = !DILocation(line: 17, column: 32, scope: !169)
 // CHECK:STDOUT: !180 = !DILocation(line: 18, column: 7, scope: !169)
-// CHECK:STDOUT: !183 = !DILocation(line: 18, column: 35, scope: !169)
-// CHECK:STDOUT: !184 = !DILocation(line: 18, column: 28, scope: !169)
+// CHECK:STDOUT: !183 = !DILocation(line: 18, column: 39, scope: !169)
+// CHECK:STDOUT: !184 = !DILocation(line: 18, column: 32, scope: !169)
 // CHECK:STDOUT: !186 = !DILocation(line: 22, column: 12, scope: !169)
 // CHECK:STDOUT: !187 = !{!9}
 // CHECK:STDOUT: !188 = !DISubroutineType(types: !187)
@@ -720,13 +720,13 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !200 = distinct !DISubprogram(name: "Branch", linkageName: "_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427", scope: null, file: !4, line: 15, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !221)
 // CHECK:STDOUT: !201 = !DILocalVariable(arg: 1, scope: !200, type: !9)
 // CHECK:STDOUT: !206 = !DILocation(line: 17, column: 7, scope: !200)
-// CHECK:STDOUT: !209 = !DILocation(line: 17, column: 34, scope: !200)
+// CHECK:STDOUT: !209 = !DILocation(line: 17, column: 39, scope: !200)
 // CHECK:STDOUT: !210 = !{!9, !8}
 // CHECK:STDOUT: !211 = !DISubroutineType(types: !210)
-// CHECK:STDOUT: !212 = !DILocation(line: 17, column: 27, scope: !200)
+// CHECK:STDOUT: !212 = !DILocation(line: 17, column: 32, scope: !200)
 // CHECK:STDOUT: !213 = !DILocation(line: 18, column: 7, scope: !200)
-// CHECK:STDOUT: !216 = !DILocation(line: 18, column: 35, scope: !200)
-// CHECK:STDOUT: !217 = !DILocation(line: 18, column: 28, scope: !200)
+// CHECK:STDOUT: !216 = !DILocation(line: 18, column: 39, scope: !200)
+// CHECK:STDOUT: !217 = !DILocation(line: 18, column: 32, scope: !200)
 // CHECK:STDOUT: !219 = !DILocation(line: 22, column: 12, scope: !200)
 // CHECK:STDOUT: !220 = !DILocation(line: 22, column: 5, scope: !200)
 // CHECK:STDOUT: !221 = !{!201}
@@ -748,7 +748,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !241 = distinct !DISubprogram(name: "Diverge", linkageName: "_CDiverge.Main.9bba81283511934f", scope: null, file: !4, line: 11, type: !188, spFlags: DISPFlagDefinition, unit: !5)
 // CHECK:STDOUT: !244 = !DILocation(line: 11, column: 45, scope: !241)
 // CHECK:STDOUT: !245 = !DILocation(line: 11, column: 38, scope: !241)
-// CHECK:STDOUT: !246 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !249)
+// CHECK:STDOUT: !246 = distinct !DISubprogram(name: "Failure", linkageName: "_CFailure.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !249)
 // CHECK:STDOUT: !247 = !DILocalVariable(arg: 1, scope: !246, type: !7)
 // CHECK:STDOUT: !248 = !DILocation(line: 3, column: 1, scope: !246)
 // CHECK:STDOUT: !249 = !{!247}

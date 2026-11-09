@@ -271,9 +271,9 @@ fn F(r: IntResult) -> i32 {
   match (r) {
     case .Success(v: i32) => { return v; }
     case .Failure => { return 0; }
-    // CHECK:STDERR: fail_error_arm_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Err` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
-    // CHECK:STDERR:     case .Err() => { return 1; }
-    // CHECK:STDERR:          ^~~~~~
+    // CHECK:STDERR: fail_error_arm_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Failure` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
+    // CHECK:STDERR:     case .Failure() => { return 1; }
+    // CHECK:STDERR:          ^~~~~~~~~~
     // CHECK:STDERR:
     case .Failure() => { return 1; }
     default => { return 2; }
@@ -298,9 +298,9 @@ choice IntResult {
 // the error arm's own diagnostic appears.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    // CHECK:STDERR: fail_error_arm_wildcard_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Err` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
-    // CHECK:STDERR:     case .Err() => { return 1; }
-    // CHECK:STDERR:          ^~~~~~
+    // CHECK:STDERR: fail_error_arm_wildcard_prior_default.carbon:[[@LINE+4]]:10: error: alternative `Failure` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
+    // CHECK:STDERR:     case .Failure() => { return 1; }
+    // CHECK:STDERR:          ^~~~~~~~~~
     // CHECK:STDERR:
     case .Failure() => { return 1; }
     case unused c: IntResult => { return 0; }

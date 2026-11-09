@@ -113,9 +113,9 @@ fn MakeErr64(tag: i32) -> MyResult(i64, i32) {
 // the writer initialized.
 fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
   match (r) {
-    // CHECK:STDERR: use.carbon:[[@LINE+4]]:14: warning: binding `v` unused [UnusedBinding]
-    // CHECK:STDERR:     case .Ok(v: i64) => { return 0; }
-    // CHECK:STDERR:              ^~~~~~
+    // CHECK:STDERR: use.carbon:[[@LINE+4]]:19: warning: binding `v` unused [UnusedBinding]
+    // CHECK:STDERR:     case .Success(v: i64) => { return 0; }
+    // CHECK:STDERR:                   ^~~~~~
     // CHECK:STDERR:
     case .Success(v: i64) => { return 0; }
     case .Failure(e: i32) => { return e; }
@@ -128,8 +128,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'lib.carbon'
 // CHECK:STDOUT: source_filename = "lib.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MyResult.val.30e.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
-// CHECK:STDOUT: @MyResult.val.df1.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.be2.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
+// CHECK:STDOUT: @MyResult.val.642.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
 // CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT:
@@ -211,32 +211,32 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %self) #0 !dbg !72 {
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %self) #0 !dbg !72 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !74
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %self) #0 !dbg !76 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %self) #0 !dbg !76 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_CSubobjectDestroy.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %self), !dbg !78
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %self), !dbg !78
 // CHECK:STDOUT:   ret void, !dbg !78
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.f269577697e84b3c:core.Destroy.Core"(ptr %self) #0 !dbg !80 {
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.7b2ce2a6a3a05f3e:core.Destroy.Core"(ptr %self) #0 !dbg !80 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc42_29.1.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !82
-// CHECK:STDOUT:   call void @"_CSelfDestruct.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %.loc42_29.1.payload), !dbg !82
+// CHECK:STDOUT:   call void @"_CSelfDestruct.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %.loc42_29.1.payload), !dbg !82
 // CHECK:STDOUT:   %.loc42_29.2.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !82
 // CHECK:STDOUT:   call void @"_CSelfDestruct.a968c23fcb066b44:core.Destroy.Core"(ptr %.loc42_29.2.discriminant), !dbg !82
 // CHECK:STDOUT:   ret void, !dbg !82
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f269577697e84b3c:core.Destroy.Core"(ptr %self) #0 !dbg !84 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.7b2ce2a6a3a05f3e:core.Destroy.Core"(ptr %self) #0 !dbg !84 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_CSubobjectDestroy.f269577697e84b3c:core.Destroy.Core"(ptr %self), !dbg !86
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.7b2ce2a6a3a05f3e:core.Destroy.Core"(ptr %self), !dbg !86
 // CHECK:STDOUT:   ret void, !dbg !86
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -316,7 +316,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:   call void @_CDiscard.Main.84588f41d61dafba(i32 %.loc43_30.19), !dbg !118
 // CHECK:STDOUT:   call void @"_CSelfDestruct.32a8d72f0893b152:core.Destroy.Core"(ptr %.loc43_30.3.temp), !dbg !117
 // CHECK:STDOUT:   call void @"_CSelfDestruct.21e9b6df7c6352ff:core.Destroy.Core"(ptr %.loc43_29.1.temp), !dbg !117
-// CHECK:STDOUT:   call void @_COk.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !120
+// CHECK:STDOUT:   call void @_CSuccess.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !120
 // CHECK:STDOUT:   ret void, !dbg !121
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -329,44 +329,44 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:   br i1 %fail, label %if.then, label %if.else, !dbg !133
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.then:                                          ; preds = %entry
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.8122a03446648385(ptr %return, i32 %tag), !dbg !135
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.8122a03446648385(ptr %return, i32 %tag), !dbg !135
 // CHECK:STDOUT:   ret void, !dbg !136
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.else:                                          ; preds = %entry
-// CHECK:STDOUT:   call void @_COk.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !138
+// CHECK:STDOUT:   call void @_CSuccess.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !138
 // CHECK:STDOUT:   ret void, !dbg !139
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385"(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %self) #0 !dbg !141 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc17_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !147
-// CHECK:STDOUT:   %.loc17_22.4 = load i8, ptr %.loc17_22.3.discriminant, align 1, !dbg !147
-// CHECK:STDOUT:   %.loc17_22.41 = trunc i8 %.loc17_22.4 to i1, !dbg !147
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc17 = icmp eq i1 false, %.loc17_22.41, !dbg !147
+// CHECK:STDOUT:   %.loc17_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !147
+// CHECK:STDOUT:   %.loc17_27.4 = load i8, ptr %.loc17_27.3.discriminant, align 1, !dbg !147
+// CHECK:STDOUT:   %.loc17_27.41 = trunc i8 %.loc17_27.4 to i1, !dbg !147
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc17 = icmp eq i1 false, %.loc17_27.41, !dbg !147
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc17, label %match.case.then.loc17, label %match.case.else.loc17, !dbg !147
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc17:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc17_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !147
-// CHECK:STDOUT:   %.loc17_22.8.Ok = getelementptr inbounds nuw [4 x i8], ptr %.loc17_22.7.payload, i32 0, i32 0, !dbg !147
-// CHECK:STDOUT:   %tuple.elem0.loc17.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc17_22.8.Ok, i32 0, i32 0, !dbg !147
-// CHECK:STDOUT:   %.loc17_22.9 = load i32, ptr %tuple.elem0.loc17.tuple.elem, align 4, !dbg !147
-// CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc17_22.9), !dbg !150
+// CHECK:STDOUT:   %.loc17_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !147
+// CHECK:STDOUT:   %.loc17_27.8.Success = getelementptr inbounds nuw [4 x i8], ptr %.loc17_27.7.payload, i32 0, i32 0, !dbg !147
+// CHECK:STDOUT:   %tuple.elem0.loc17.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc17_27.8.Success, i32 0, i32 0, !dbg !147
+// CHECK:STDOUT:   %.loc17_27.9 = load i32, ptr %tuple.elem0.loc17.tuple.elem, align 4, !dbg !147
+// CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc17_27.9), !dbg !150
 // CHECK:STDOUT:   ret void, !dbg !151
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.else.loc17:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc18_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !152
-// CHECK:STDOUT:   %.loc18_23.4 = load i8, ptr %.loc18_23.3.discriminant, align 1, !dbg !152
-// CHECK:STDOUT:   %.loc18_23.42 = trunc i8 %.loc18_23.4 to i1, !dbg !152
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc18 = icmp eq i1 true, %.loc18_23.42, !dbg !152
+// CHECK:STDOUT:   %.loc18_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !152
+// CHECK:STDOUT:   %.loc18_27.4 = load i8, ptr %.loc18_27.3.discriminant, align 1, !dbg !152
+// CHECK:STDOUT:   %.loc18_27.42 = trunc i8 %.loc18_27.4 to i1, !dbg !152
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc18 = icmp eq i1 true, %.loc18_27.42, !dbg !152
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc18, label %match.case.then.loc18, label %match.done, !dbg !152
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc18:                            ; preds = %match.case.else.loc17
-// CHECK:STDOUT:   %.loc18_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !152
-// CHECK:STDOUT:   %.loc18_23.8.Err = getelementptr inbounds nuw [4 x i8], ptr %.loc18_23.7.payload, i32 0, i32 0, !dbg !152
-// CHECK:STDOUT:   %tuple.elem0.loc18.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc18_23.8.Err, i32 0, i32 0, !dbg !152
-// CHECK:STDOUT:   %.loc18_23.9 = load i32, ptr %tuple.elem0.loc18.tuple.elem, align 4, !dbg !152
-// CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc18_23.9), !dbg !155
+// CHECK:STDOUT:   %.loc18_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !152
+// CHECK:STDOUT:   %.loc18_27.8.Failure = getelementptr inbounds nuw [4 x i8], ptr %.loc18_27.7.payload, i32 0, i32 0, !dbg !152
+// CHECK:STDOUT:   %tuple.elem0.loc18.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc18_27.8.Failure, i32 0, i32 0, !dbg !152
+// CHECK:STDOUT:   %.loc18_27.9 = load i32, ptr %tuple.elem0.loc18.tuple.elem, align 4, !dbg !152
+// CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.8122a03446648385(ptr %return, i32 %.loc18_27.9), !dbg !155
 // CHECK:STDOUT:   ret void, !dbg !156
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc17
@@ -377,7 +377,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385"(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %e) #0 !dbg !163 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.8122a03446648385(ptr %return, i32 %e), !dbg !169
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.8122a03446648385(ptr %return, i32 %e), !dbg !169
 // CHECK:STDOUT:   ret void, !dbg !170
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -388,29 +388,29 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_COk.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !177 {
+// CHECK:STDOUT: define linkonce_odr void @_CSuccess.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !177 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc3_35.1.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !179
 // CHECK:STDOUT:   %.loc3_35.4.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !179
-// CHECK:STDOUT:   %.loc3_35.5.Ok = getelementptr inbounds nuw [4 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !179
-// CHECK:STDOUT:   %.loc4_11.1.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !180
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.30e.loc3_35.7, i64 8, i1 false), !dbg !179
-// CHECK:STDOUT:   store { i32 } %.loc4_11.1.tuple.init, ptr %.loc3_35.5.Ok, align 4, !dbg !179
-// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Ok, i32 0, i32 0, !dbg !180
+// CHECK:STDOUT:   %.loc3_35.5.Success = getelementptr inbounds nuw [4 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !179
+// CHECK:STDOUT:   %.loc4_16.1.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !180
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.be2.loc3_35.7, i64 8, i1 false), !dbg !179
+// CHECK:STDOUT:   store { i32 } %.loc4_16.1.tuple.init, ptr %.loc3_35.5.Success, align 4, !dbg !179
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Success, i32 0, i32 0, !dbg !180
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem0.tuple.elem, align 4, !dbg !180
 // CHECK:STDOUT:   ret void, !dbg !179
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !182 {
+// CHECK:STDOUT: define linkonce_odr void @_CFailure.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !182 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc3_35.1.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !184
 // CHECK:STDOUT:   %.loc3_35.4.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !184
-// CHECK:STDOUT:   %.loc3_35.5.Err = getelementptr inbounds nuw [4 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !184
+// CHECK:STDOUT:   %.loc3_35.5.Failure = getelementptr inbounds nuw [4 x i8], ptr %.loc3_35.4.payload, i32 0, i32 0, !dbg !184
 // CHECK:STDOUT:   %.loc6_1.1.tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !184
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.df1.loc3_35.7, i64 8, i1 false), !dbg !184
-// CHECK:STDOUT:   store { i32 } %.loc6_1.1.tuple.init, ptr %.loc3_35.5.Err, align 4, !dbg !184
-// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Err, i32 0, i32 0, !dbg !184
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.642.loc3_35.7, i64 8, i1 false), !dbg !184
+// CHECK:STDOUT:   store { i32 } %.loc6_1.1.tuple.init, ptr %.loc3_35.5.Failure, align 4, !dbg !184
+// CHECK:STDOUT:   %tuple.elem0.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc3_35.5.Failure, i32 0, i32 0, !dbg !184
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem0.tuple.elem, align 4, !dbg !184
 // CHECK:STDOUT:   ret void, !dbg !184
 // CHECK:STDOUT: }
@@ -457,8 +457,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: uselistorder ptr @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @_CDiscard.Main.84588f41d61dafba, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @_COk.MyResult.Main.8122a03446648385, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @_CErr.MyResult.Main.8122a03446648385, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @_CSuccess.MyResult.Main.8122a03446648385, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @_CFailure.MyResult.Main.8122a03446648385, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.memcpy.p0.p0.i64, { 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
@@ -529,19 +529,19 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !69 = !DILocalVariable(arg: 1, scope: !68, type: !8)
 // CHECK:STDOUT: !70 = !DILocation(line: 42, column: 11, scope: !68)
 // CHECK:STDOUT: !71 = !{!69}
-// CHECK:STDOUT: !72 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.bf4a066f5a5b60ea:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !75)
+// CHECK:STDOUT: !72 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.fc1c54b13c7aedfd:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !75)
 // CHECK:STDOUT: !73 = !DILocalVariable(arg: 1, scope: !72, type: !8)
 // CHECK:STDOUT: !74 = !DILocation(line: 42, column: 11, scope: !72)
 // CHECK:STDOUT: !75 = !{!73}
-// CHECK:STDOUT: !76 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.bf4a066f5a5b60ea:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !79)
+// CHECK:STDOUT: !76 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.fc1c54b13c7aedfd:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !79)
 // CHECK:STDOUT: !77 = !DILocalVariable(arg: 1, scope: !76, type: !8)
 // CHECK:STDOUT: !78 = !DILocation(line: 42, column: 11, scope: !76)
 // CHECK:STDOUT: !79 = !{!77}
-// CHECK:STDOUT: !80 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.f269577697e84b3c:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !83)
+// CHECK:STDOUT: !80 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.7b2ce2a6a3a05f3e:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !83)
 // CHECK:STDOUT: !81 = !DILocalVariable(arg: 1, scope: !80, type: !8)
 // CHECK:STDOUT: !82 = !DILocation(line: 42, column: 11, scope: !80)
 // CHECK:STDOUT: !83 = !{!81}
-// CHECK:STDOUT: !84 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f269577697e84b3c:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !87)
+// CHECK:STDOUT: !84 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.7b2ce2a6a3a05f3e:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !87)
 // CHECK:STDOUT: !85 = !DILocalVariable(arg: 1, scope: !84, type: !8)
 // CHECK:STDOUT: !86 = !DILocation(line: 42, column: 11, scope: !84)
 // CHECK:STDOUT: !87 = !{!85}
@@ -583,11 +583,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !141 = distinct !DISubprogram(name: "Branch", linkageName: "_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", scope: null, file: !4, line: 15, type: !111, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !162)
 // CHECK:STDOUT: !142 = !DILocalVariable(arg: 1, scope: !141, type: !8)
 // CHECK:STDOUT: !147 = !DILocation(line: 17, column: 7, scope: !141)
-// CHECK:STDOUT: !150 = !DILocation(line: 17, column: 34, scope: !141)
-// CHECK:STDOUT: !151 = !DILocation(line: 17, column: 27, scope: !141)
+// CHECK:STDOUT: !150 = !DILocation(line: 17, column: 39, scope: !141)
+// CHECK:STDOUT: !151 = !DILocation(line: 17, column: 32, scope: !141)
 // CHECK:STDOUT: !152 = !DILocation(line: 18, column: 7, scope: !141)
-// CHECK:STDOUT: !155 = !DILocation(line: 18, column: 35, scope: !141)
-// CHECK:STDOUT: !156 = !DILocation(line: 18, column: 28, scope: !141)
+// CHECK:STDOUT: !155 = !DILocation(line: 18, column: 39, scope: !141)
+// CHECK:STDOUT: !156 = !DILocation(line: 18, column: 32, scope: !141)
 // CHECK:STDOUT: !158 = !DILocation(line: 22, column: 12, scope: !141)
 // CHECK:STDOUT: !159 = !{!8}
 // CHECK:STDOUT: !160 = !DISubroutineType(types: !159)
@@ -602,12 +602,12 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !173 = !DILocalVariable(arg: 1, scope: !172, type: !7)
 // CHECK:STDOUT: !175 = !DILocation(line: 36, column: 1, scope: !172)
 // CHECK:STDOUT: !176 = !{!173}
-// CHECK:STDOUT: !177 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !181)
+// CHECK:STDOUT: !177 = distinct !DISubprogram(name: "Success", linkageName: "_CSuccess.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !181)
 // CHECK:STDOUT: !178 = !DILocalVariable(arg: 1, scope: !177, type: !7)
 // CHECK:STDOUT: !179 = !DILocation(line: 3, column: 1, scope: !177)
-// CHECK:STDOUT: !180 = !DILocation(line: 4, column: 11, scope: !177)
+// CHECK:STDOUT: !180 = !DILocation(line: 4, column: 16, scope: !177)
 // CHECK:STDOUT: !181 = !{!178}
-// CHECK:STDOUT: !182 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !185)
+// CHECK:STDOUT: !182 = distinct !DISubprogram(name: "Failure", linkageName: "_CFailure.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !185)
 // CHECK:STDOUT: !183 = !DILocalVariable(arg: 1, scope: !182, type: !7)
 // CHECK:STDOUT: !184 = !DILocation(line: 3, column: 1, scope: !182)
 // CHECK:STDOUT: !185 = !{!183}
@@ -629,10 +629,10 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'use.carbon'
 // CHECK:STDOUT: source_filename = "use.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MyResult.val.142.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
-// CHECK:STDOUT: @MyResult.val.30e.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
-// CHECK:STDOUT: @MyResult.val.9f4.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> zeroinitializer
-// CHECK:STDOUT: @MyResult.val.df1.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.4b9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.be2.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
+// CHECK:STDOUT: @MyResult.val.dc7.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @MyResult.val.642.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
 // CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT: @ControlFlow.val.fa9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> zeroinitializer
@@ -655,39 +655,39 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CMakeErr64.Main(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %tag) #0 !dbg !240 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.b7dd877894074427(ptr %return, i32 %tag), !dbg !246
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.b7dd877894074427(ptr %return, i32 %tag), !dbg !246
 // CHECK:STDOUT:   ret void, !dbg !247
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CReadErr64.Main(ptr %r) #0 !dbg !249 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc29_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !255
-// CHECK:STDOUT:   %.loc29_22.4 = load i8, ptr %.loc29_22.3.discriminant, align 1, !dbg !255
-// CHECK:STDOUT:   %.loc29_22.41 = trunc i8 %.loc29_22.4 to i1, !dbg !255
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc29 = icmp eq i1 false, %.loc29_22.41, !dbg !255
+// CHECK:STDOUT:   %.loc29_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !255
+// CHECK:STDOUT:   %.loc29_27.4 = load i8, ptr %.loc29_27.3.discriminant, align 1, !dbg !255
+// CHECK:STDOUT:   %.loc29_27.41 = trunc i8 %.loc29_27.4 to i1, !dbg !255
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc29 = icmp eq i1 false, %.loc29_27.41, !dbg !255
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc29, label %match.case.then.loc29, label %match.case.else.loc29, !dbg !255
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc29:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc29_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !255
-// CHECK:STDOUT:   %.loc29_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc29_22.7.payload, i32 0, i32 0, !dbg !255
-// CHECK:STDOUT:   %tuple.elem0.loc29.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc29_22.8.Ok, i32 0, i32 0, !dbg !255
-// CHECK:STDOUT:   %.loc29_22.9 = load i64, ptr %tuple.elem0.loc29.tuple.elem, align 8, !dbg !255
+// CHECK:STDOUT:   %.loc29_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !255
+// CHECK:STDOUT:   %.loc29_27.8.Success = getelementptr inbounds nuw [8 x i8], ptr %.loc29_27.7.payload, i32 0, i32 0, !dbg !255
+// CHECK:STDOUT:   %tuple.elem0.loc29.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc29_27.8.Success, i32 0, i32 0, !dbg !255
+// CHECK:STDOUT:   %.loc29_27.9 = load i64, ptr %tuple.elem0.loc29.tuple.elem, align 8, !dbg !255
 // CHECK:STDOUT:   ret i32 0, !dbg !257
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.else.loc29:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc30_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !258
-// CHECK:STDOUT:   %.loc30_23.4 = load i8, ptr %.loc30_23.3.discriminant, align 1, !dbg !258
-// CHECK:STDOUT:   %.loc30_23.42 = trunc i8 %.loc30_23.4 to i1, !dbg !258
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc30 = icmp eq i1 true, %.loc30_23.42, !dbg !258
+// CHECK:STDOUT:   %.loc30_27.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !258
+// CHECK:STDOUT:   %.loc30_27.4 = load i8, ptr %.loc30_27.3.discriminant, align 1, !dbg !258
+// CHECK:STDOUT:   %.loc30_27.42 = trunc i8 %.loc30_27.4 to i1, !dbg !258
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc30 = icmp eq i1 true, %.loc30_27.42, !dbg !258
 // CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc30, label %match.case.then.loc30, label %match.done, !dbg !258
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc30:                            ; preds = %match.case.else.loc29
-// CHECK:STDOUT:   %.loc30_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !258
-// CHECK:STDOUT:   %.loc30_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc30_23.7.payload, i32 0, i32 0, !dbg !258
-// CHECK:STDOUT:   %tuple.elem0.loc30.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc30_23.8.Err, i32 0, i32 0, !dbg !258
-// CHECK:STDOUT:   %.loc30_23.9 = load i32, ptr %tuple.elem0.loc30.tuple.elem, align 4, !dbg !258
-// CHECK:STDOUT:   ret i32 %.loc30_23.9, !dbg !261
+// CHECK:STDOUT:   %.loc30_27.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !258
+// CHECK:STDOUT:   %.loc30_27.8.Failure = getelementptr inbounds nuw [8 x i8], ptr %.loc30_27.7.payload, i32 0, i32 0, !dbg !258
+// CHECK:STDOUT:   %tuple.elem0.loc30.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc30_27.8.Failure, i32 0, i32 0, !dbg !258
+// CHECK:STDOUT:   %.loc30_27.9 = load i32, ptr %tuple.elem0.loc30.tuple.elem, align 4, !dbg !258
+// CHECK:STDOUT:   ret i32 %.loc30_27.9, !dbg !261
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc29
 // CHECK:STDOUT:   ret i32 -1, !dbg !263
@@ -764,32 +764,32 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %self) #0 !dbg !305 {
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %self) #0 !dbg !305 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !307
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %self) #0 !dbg !309 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %self) #0 !dbg !309 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_CSubobjectDestroy.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %self), !dbg !311
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %self), !dbg !311
 // CHECK:STDOUT:   ret void, !dbg !311
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.f269577697e84b3c:core.Destroy.Core"(ptr %self) #0 !dbg !313 {
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.7b2ce2a6a3a05f3e:core.Destroy.Core"(ptr %self) #0 !dbg !313 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.1.payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !315
-// CHECK:STDOUT:   call void @"_CSelfDestruct.bf4a066f5a5b60ea:core.Destroy.Core"(ptr %.1.payload), !dbg !315
+// CHECK:STDOUT:   call void @"_CSelfDestruct.fc1c54b13c7aedfd:core.Destroy.Core"(ptr %.1.payload), !dbg !315
 // CHECK:STDOUT:   %.2.discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 0, !dbg !315
 // CHECK:STDOUT:   call void @"_CSelfDestruct.a968c23fcb066b44:core.Destroy.Core"(ptr %.2.discriminant), !dbg !315
 // CHECK:STDOUT:   ret void, !dbg !315
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f269577697e84b3c:core.Destroy.Core"(ptr %self) #0 !dbg !317 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.7b2ce2a6a3a05f3e:core.Destroy.Core"(ptr %self) #0 !dbg !317 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_CSubobjectDestroy.f269577697e84b3c:core.Destroy.Core"(ptr %self), !dbg !319
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.7b2ce2a6a3a05f3e:core.Destroy.Core"(ptr %self), !dbg !319
 // CHECK:STDOUT:   ret void, !dbg !319
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -871,32 +871,32 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.6d73c51926c0a20e:core.Destroy.Core"(ptr %self) #0 !dbg !365 {
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.b24235747fded58d:core.Destroy.Core"(ptr %self) #0 !dbg !365 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !367
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.6d73c51926c0a20e:core.Destroy.Core"(ptr %self) #0 !dbg !369 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.b24235747fded58d:core.Destroy.Core"(ptr %self) #0 !dbg !369 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_CSubobjectDestroy.6d73c51926c0a20e:core.Destroy.Core"(ptr %self), !dbg !371
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.b24235747fded58d:core.Destroy.Core"(ptr %self), !dbg !371
 // CHECK:STDOUT:   ret void, !dbg !371
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.26b3932cce5effda:core.Destroy.Core"(ptr %self) #0 !dbg !373 {
+// CHECK:STDOUT: define weak_odr void @"_CSubobjectDestroy.066fd4a5d44a2a50:core.Destroy.Core"(ptr %self) #0 !dbg !373 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.1.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !375
-// CHECK:STDOUT:   call void @"_CSelfDestruct.6d73c51926c0a20e:core.Destroy.Core"(ptr %.1.payload), !dbg !375
+// CHECK:STDOUT:   call void @"_CSelfDestruct.b24235747fded58d:core.Destroy.Core"(ptr %.1.payload), !dbg !375
 // CHECK:STDOUT:   %.2.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 0, !dbg !375
 // CHECK:STDOUT:   call void @"_CSelfDestruct.a968c23fcb066b44:core.Destroy.Core"(ptr %.2.discriminant), !dbg !375
 // CHECK:STDOUT:   ret void, !dbg !375
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.26b3932cce5effda:core.Destroy.Core"(ptr %self) #0 !dbg !377 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.066fd4a5d44a2a50:core.Destroy.Core"(ptr %self) #0 !dbg !377 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_CSubobjectDestroy.26b3932cce5effda:core.Destroy.Core"(ptr %self), !dbg !379
+// CHECK:STDOUT:   call void @"_CSubobjectDestroy.066fd4a5d44a2a50:core.Destroy.Core"(ptr %self), !dbg !379
 // CHECK:STDOUT:   ret void, !dbg !379
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -975,7 +975,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:   call void @_CDiscard.Main.84588f41d61dafba(i32 %14), !dbg !405
 // CHECK:STDOUT:   call void @"_CSelfDestruct.32a8d72f0893b152:core.Destroy.Core"(ptr %temp5), !dbg !404
 // CHECK:STDOUT:   call void @"_CSelfDestruct.21e9b6df7c6352ff:core.Destroy.Core"(ptr %temp4), !dbg !404
-// CHECK:STDOUT:   call void @_COk.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !407
+// CHECK:STDOUT:   call void @_CSuccess.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !407
 // CHECK:STDOUT:   ret void, !dbg !408
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1041,19 +1041,19 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:   call void @_CDiscard.Main.f249b435619a5146(i64 %14), !dbg !428
 // CHECK:STDOUT:   call void @"_CSelfDestruct.3dff857b72298492:core.Destroy.Core"(ptr %temp5), !dbg !427
 // CHECK:STDOUT:   call void @"_CSelfDestruct.9644e7318f4a981d:core.Destroy.Core"(ptr %temp4), !dbg !427
-// CHECK:STDOUT:   call void @_COk.MyResult.Main.b7dd877894074427(ptr %return, i64 %x), !dbg !430
+// CHECK:STDOUT:   call void @_CSuccess.MyResult.Main.b7dd877894074427(ptr %return, i64 %x), !dbg !430
 // CHECK:STDOUT:   ret void, !dbg !433
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.MyResult.Main.b7dd877894074427(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %_) #0 !dbg !435 {
+// CHECK:STDOUT: define linkonce_odr void @_CFailure.MyResult.Main.b7dd877894074427(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %_) #0 !dbg !435 {
 // CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %return, i32 0, i32 0, !dbg !437
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %return, i32 0, i32 1, !dbg !437
-// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [8 x i8], ptr %payload, i32 0, i32 0, !dbg !437
+// CHECK:STDOUT:   %Failure = getelementptr inbounds nuw [8 x i8], ptr %payload, i32 0, i32 0, !dbg !437
 // CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !437
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %return, ptr align 8 @MyResult.val.142.anon, i64 16, i1 false), !dbg !437
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Err, align 4, !dbg !437
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !437
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %return, ptr align 8 @MyResult.val.4b9.anon, i64 16, i1 false), !dbg !437
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Failure, align 4, !dbg !437
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Failure, i32 0, i32 0, !dbg !437
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !437
 // CHECK:STDOUT:   ret void, !dbg !437
 // CHECK:STDOUT: }
@@ -1068,11 +1068,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:   br i1 %fail, label %1, label %2, !dbg !449
 // CHECK:STDOUT:
 // CHECK:STDOUT: 1:                                                ; preds = %0
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.8122a03446648385(ptr %return, i32 %tag), !dbg !451
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.8122a03446648385(ptr %return, i32 %tag), !dbg !451
 // CHECK:STDOUT:   ret void, !dbg !452
 // CHECK:STDOUT:
 // CHECK:STDOUT: 2:                                                ; preds = %0
-// CHECK:STDOUT:   call void @_COk.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !454
+// CHECK:STDOUT:   call void @_CSuccess.MyResult.Main.8122a03446648385(ptr %return, i32 %x), !dbg !454
 // CHECK:STDOUT:   ret void, !dbg !455
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1086,8 +1086,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: 4:                                                ; preds = %0
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !463
-// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !463
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Ok, i32 0, i32 0, !dbg !463
+// CHECK:STDOUT:   %Success = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !463
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Success, i32 0, i32 0, !dbg !463
 // CHECK:STDOUT:   %5 = load i32, ptr %tuple.elem, align 4, !dbg !463
 // CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.8122a03446648385(ptr %return, i32 %5), !dbg !466
 // CHECK:STDOUT:   ret void, !dbg !467
@@ -1101,8 +1101,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: 10:                                               ; preds = %6
 // CHECK:STDOUT:   %payload2 = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %self, i32 0, i32 1, !dbg !468
-// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [4 x i8], ptr %payload2, i32 0, i32 0, !dbg !468
-// CHECK:STDOUT:   %tuple.elem3 = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !468
+// CHECK:STDOUT:   %Failure = getelementptr inbounds nuw [4 x i8], ptr %payload2, i32 0, i32 0, !dbg !468
+// CHECK:STDOUT:   %tuple.elem3 = getelementptr inbounds nuw { i32 }, ptr %Failure, i32 0, i32 0, !dbg !468
 // CHECK:STDOUT:   %11 = load i32, ptr %tuple.elem3, align 4, !dbg !468
 // CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.8122a03446648385(ptr %return, i32 %11), !dbg !471
 // CHECK:STDOUT:   ret void, !dbg !472
@@ -1114,7 +1114,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385"(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %e) #0 !dbg !477 {
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.8122a03446648385(ptr %return, i32 %e), !dbg !483
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.8122a03446648385(ptr %return, i32 %e), !dbg !483
 // CHECK:STDOUT:   ret void, !dbg !484
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1124,14 +1124,14 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_COk.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !491 {
+// CHECK:STDOUT: define linkonce_odr void @_CSuccess.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !491 {
 // CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !493
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !493
-// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !493
+// CHECK:STDOUT:   %Success = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !493
 // CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !494
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.30e.anon, i64 8, i1 false), !dbg !493
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Ok, align 4, !dbg !493
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Ok, i32 0, i32 0, !dbg !494
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.be2.anon, i64 8, i1 false), !dbg !493
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Success, align 4, !dbg !493
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Success, i32 0, i32 0, !dbg !494
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !494
 // CHECK:STDOUT:   ret void, !dbg !493
 // CHECK:STDOUT: }
@@ -1141,11 +1141,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:   br i1 %fail, label %1, label %2, !dbg !506
 // CHECK:STDOUT:
 // CHECK:STDOUT: 1:                                                ; preds = %0
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.b7dd877894074427(ptr %return, i32 %tag), !dbg !508
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.b7dd877894074427(ptr %return, i32 %tag), !dbg !508
 // CHECK:STDOUT:   ret void, !dbg !509
 // CHECK:STDOUT:
 // CHECK:STDOUT: 2:                                                ; preds = %0
-// CHECK:STDOUT:   call void @_COk.MyResult.Main.b7dd877894074427(ptr %return, i64 %x), !dbg !511
+// CHECK:STDOUT:   call void @_CSuccess.MyResult.Main.b7dd877894074427(ptr %return, i64 %x), !dbg !511
 // CHECK:STDOUT:   ret void, !dbg !512
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1159,8 +1159,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: 4:                                                ; preds = %0
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !520
-// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [8 x i8], ptr %payload, i32 0, i32 0, !dbg !520
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i64 }, ptr %Ok, i32 0, i32 0, !dbg !520
+// CHECK:STDOUT:   %Success = getelementptr inbounds nuw [8 x i8], ptr %payload, i32 0, i32 0, !dbg !520
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i64 }, ptr %Success, i32 0, i32 0, !dbg !520
 // CHECK:STDOUT:   %5 = load i64, ptr %tuple.elem, align 8, !dbg !520
 // CHECK:STDOUT:   call void @_CContinue.ControlFlow.Core.b7dd877894074427(ptr %return, i64 %5), !dbg !523
 // CHECK:STDOUT:   ret void, !dbg !524
@@ -1174,8 +1174,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: 10:                                               ; preds = %6
 // CHECK:STDOUT:   %payload2 = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %self, i32 0, i32 1, !dbg !525
-// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [8 x i8], ptr %payload2, i32 0, i32 0, !dbg !525
-// CHECK:STDOUT:   %tuple.elem3 = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !525
+// CHECK:STDOUT:   %Failure = getelementptr inbounds nuw [8 x i8], ptr %payload2, i32 0, i32 0, !dbg !525
+// CHECK:STDOUT:   %tuple.elem3 = getelementptr inbounds nuw { i32 }, ptr %Failure, i32 0, i32 0, !dbg !525
 // CHECK:STDOUT:   %11 = load i32, ptr %tuple.elem3, align 4, !dbg !525
 // CHECK:STDOUT:   call void @_CBreak.ControlFlow.Core.b7dd877894074427(ptr %return, i32 %11), !dbg !528
 // CHECK:STDOUT:   ret void, !dbg !529
@@ -1187,7 +1187,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427"(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i32 %e) #0 !dbg !534 {
-// CHECK:STDOUT:   call void @_CErr.MyResult.Main.b7dd877894074427(ptr %return, i32 %e), !dbg !540
+// CHECK:STDOUT:   call void @_CFailure.MyResult.Main.b7dd877894074427(ptr %return, i32 %e), !dbg !540
 // CHECK:STDOUT:   ret void, !dbg !541
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1197,14 +1197,14 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_COk.MyResult.Main.b7dd877894074427(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i64 %_) #0 !dbg !548 {
+// CHECK:STDOUT: define linkonce_odr void @_CSuccess.MyResult.Main.b7dd877894074427(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, i64 %_) #0 !dbg !548 {
 // CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %return, i32 0, i32 0, !dbg !550
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %return, i32 0, i32 1, !dbg !550
-// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [8 x i8], ptr %payload, i32 0, i32 0, !dbg !550
+// CHECK:STDOUT:   %Success = getelementptr inbounds nuw [8 x i8], ptr %payload, i32 0, i32 0, !dbg !550
 // CHECK:STDOUT:   %tuple.init = insertvalue { i64 } poison, i64 %_, 0, !dbg !551
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %return, ptr align 8 @MyResult.val.9f4.anon, i64 16, i1 false), !dbg !550
-// CHECK:STDOUT:   store { i64 } %tuple.init, ptr %Ok, align 8, !dbg !550
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i64 }, ptr %Ok, i32 0, i32 0, !dbg !551
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 %return, ptr align 8 @MyResult.val.dc7.anon, i64 16, i1 false), !dbg !550
+// CHECK:STDOUT:   store { i64 } %tuple.init, ptr %Success, align 8, !dbg !550
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i64 }, ptr %Success, i32 0, i32 0, !dbg !551
 // CHECK:STDOUT:   store i64 %_, ptr %tuple.elem, align 8, !dbg !551
 // CHECK:STDOUT:   ret void, !dbg !550
 // CHECK:STDOUT: }
@@ -1213,14 +1213,14 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !553 {
+// CHECK:STDOUT: define linkonce_odr void @_CFailure.MyResult.Main.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !553 {
 // CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !555
 // CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !555
-// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !555
+// CHECK:STDOUT:   %Failure = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !555
 // CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !555
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.df1.anon, i64 8, i1 false), !dbg !555
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Err, align 4, !dbg !555
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !555
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @MyResult.val.642.anon, i64 8, i1 false), !dbg !555
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Failure, align 4, !dbg !555
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Failure, i32 0, i32 0, !dbg !555
 // CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !555
 // CHECK:STDOUT:   ret void, !dbg !555
 // CHECK:STDOUT: }
@@ -1295,14 +1295,14 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: uselistorder ptr @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @_CDiscard.Main.84588f41d61dafba, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @_COk.MyResult.Main.8122a03446648385, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @_CSuccess.MyResult.Main.8122a03446648385, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @_CStep.Main.f249b435619a5146, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @_CDiscard.Main.f249b435619a5146, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @_COk.MyResult.Main.b7dd877894074427, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @_CSuccess.MyResult.Main.b7dd877894074427, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.memcpy.p0.p0.i64, { 0, 1, 2, 3, 4, 7, 6, 5 }
-// CHECK:STDOUT: uselistorder ptr @_CErr.MyResult.Main.8122a03446648385, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @_CFailure.MyResult.Main.8122a03446648385, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
@@ -1364,9 +1364,9 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !249 = distinct !DISubprogram(name: "ReadErr64", linkageName: "_CReadErr64.Main", scope: null, file: !201, line: 23, type: !207, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !264)
 // CHECK:STDOUT: !250 = !DILocalVariable(arg: 1, scope: !249, type: !8)
 // CHECK:STDOUT: !255 = !DILocation(line: 29, column: 5, scope: !249)
-// CHECK:STDOUT: !257 = !DILocation(line: 29, column: 27, scope: !249)
+// CHECK:STDOUT: !257 = !DILocation(line: 29, column: 32, scope: !249)
 // CHECK:STDOUT: !258 = !DILocation(line: 30, column: 5, scope: !249)
-// CHECK:STDOUT: !261 = !DILocation(line: 30, column: 28, scope: !249)
+// CHECK:STDOUT: !261 = !DILocation(line: 30, column: 32, scope: !249)
 // CHECK:STDOUT: !263 = !DILocation(line: 33, column: 3, scope: !249)
 // CHECK:STDOUT: !264 = !{!250}
 // CHECK:STDOUT: !265 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.a968c23fcb066b44:core.Destroy.Core", scope: null, file: !4, line: 42, type: !12, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !268)
@@ -1409,19 +1409,19 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !302 = !DILocalVariable(arg: 1, scope: !301, type: !8)
 // CHECK:STDOUT: !303 = !DILocation(line: 42, column: 11, scope: !301)
 // CHECK:STDOUT: !304 = !{!302}
-// CHECK:STDOUT: !305 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.bf4a066f5a5b60ea:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !308)
+// CHECK:STDOUT: !305 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.fc1c54b13c7aedfd:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !308)
 // CHECK:STDOUT: !306 = !DILocalVariable(arg: 1, scope: !305, type: !8)
 // CHECK:STDOUT: !307 = !DILocation(line: 42, column: 11, scope: !305)
 // CHECK:STDOUT: !308 = !{!306}
-// CHECK:STDOUT: !309 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.bf4a066f5a5b60ea:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !312)
+// CHECK:STDOUT: !309 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.fc1c54b13c7aedfd:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !312)
 // CHECK:STDOUT: !310 = !DILocalVariable(arg: 1, scope: !309, type: !8)
 // CHECK:STDOUT: !311 = !DILocation(line: 42, column: 11, scope: !309)
 // CHECK:STDOUT: !312 = !{!310}
-// CHECK:STDOUT: !313 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.f269577697e84b3c:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !316)
+// CHECK:STDOUT: !313 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.7b2ce2a6a3a05f3e:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !316)
 // CHECK:STDOUT: !314 = !DILocalVariable(arg: 1, scope: !313, type: !8)
 // CHECK:STDOUT: !315 = !DILocation(line: 42, column: 11, scope: !313)
 // CHECK:STDOUT: !316 = !{!314}
-// CHECK:STDOUT: !317 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f269577697e84b3c:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !320)
+// CHECK:STDOUT: !317 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.7b2ce2a6a3a05f3e:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !320)
 // CHECK:STDOUT: !318 = !DILocalVariable(arg: 1, scope: !317, type: !8)
 // CHECK:STDOUT: !319 = !DILocation(line: 42, column: 11, scope: !317)
 // CHECK:STDOUT: !320 = !{!318}
@@ -1469,19 +1469,19 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !362 = !DILocalVariable(arg: 1, scope: !361, type: !8)
 // CHECK:STDOUT: !363 = !DILocation(line: 42, column: 11, scope: !361)
 // CHECK:STDOUT: !364 = !{!362}
-// CHECK:STDOUT: !365 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.6d73c51926c0a20e:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !368)
+// CHECK:STDOUT: !365 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.b24235747fded58d:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !368)
 // CHECK:STDOUT: !366 = !DILocalVariable(arg: 1, scope: !365, type: !8)
 // CHECK:STDOUT: !367 = !DILocation(line: 42, column: 11, scope: !365)
 // CHECK:STDOUT: !368 = !{!366}
-// CHECK:STDOUT: !369 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.6d73c51926c0a20e:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !372)
+// CHECK:STDOUT: !369 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.b24235747fded58d:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !372)
 // CHECK:STDOUT: !370 = !DILocalVariable(arg: 1, scope: !369, type: !8)
 // CHECK:STDOUT: !371 = !DILocation(line: 42, column: 11, scope: !369)
 // CHECK:STDOUT: !372 = !{!370}
-// CHECK:STDOUT: !373 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.26b3932cce5effda:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !376)
+// CHECK:STDOUT: !373 = distinct !DISubprogram(name: "SubobjectDestroy", linkageName: "_CSubobjectDestroy.066fd4a5d44a2a50:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !376)
 // CHECK:STDOUT: !374 = !DILocalVariable(arg: 1, scope: !373, type: !8)
 // CHECK:STDOUT: !375 = !DILocation(line: 42, column: 11, scope: !373)
 // CHECK:STDOUT: !376 = !{!374}
-// CHECK:STDOUT: !377 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.26b3932cce5effda:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !380)
+// CHECK:STDOUT: !377 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.066fd4a5d44a2a50:core.Destroy.Core", scope: null, file: !4, line: 42, type: !16, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !380)
 // CHECK:STDOUT: !378 = !DILocalVariable(arg: 1, scope: !377, type: !8)
 // CHECK:STDOUT: !379 = !DILocation(line: 42, column: 11, scope: !377)
 // CHECK:STDOUT: !380 = !{!378}
@@ -1519,7 +1519,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !432 = !DISubroutineType(types: !431)
 // CHECK:STDOUT: !433 = !DILocation(line: 44, column: 3, scope: !410)
 // CHECK:STDOUT: !434 = !{!411, !412, !413}
-// CHECK:STDOUT: !435 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.MyResult.Main.b7dd877894074427", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !438)
+// CHECK:STDOUT: !435 = distinct !DISubprogram(name: "Failure", linkageName: "_CFailure.MyResult.Main.b7dd877894074427", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !438)
 // CHECK:STDOUT: !436 = !DILocalVariable(arg: 1, scope: !435, type: !7)
 // CHECK:STDOUT: !437 = !DILocation(line: 3, column: 1, scope: !435)
 // CHECK:STDOUT: !438 = !{!436}
@@ -1536,11 +1536,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !457 = distinct !DISubprogram(name: "Branch", linkageName: "_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", scope: null, file: !4, line: 15, type: !111, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !476)
 // CHECK:STDOUT: !458 = !DILocalVariable(arg: 1, scope: !457, type: !8)
 // CHECK:STDOUT: !463 = !DILocation(line: 17, column: 7, scope: !457)
-// CHECK:STDOUT: !466 = !DILocation(line: 17, column: 34, scope: !457)
-// CHECK:STDOUT: !467 = !DILocation(line: 17, column: 27, scope: !457)
+// CHECK:STDOUT: !466 = !DILocation(line: 17, column: 39, scope: !457)
+// CHECK:STDOUT: !467 = !DILocation(line: 17, column: 32, scope: !457)
 // CHECK:STDOUT: !468 = !DILocation(line: 18, column: 7, scope: !457)
-// CHECK:STDOUT: !471 = !DILocation(line: 18, column: 35, scope: !457)
-// CHECK:STDOUT: !472 = !DILocation(line: 18, column: 28, scope: !457)
+// CHECK:STDOUT: !471 = !DILocation(line: 18, column: 39, scope: !457)
+// CHECK:STDOUT: !472 = !DILocation(line: 18, column: 32, scope: !457)
 // CHECK:STDOUT: !474 = !DILocation(line: 22, column: 12, scope: !457)
 // CHECK:STDOUT: !475 = !DILocation(line: 22, column: 5, scope: !457)
 // CHECK:STDOUT: !476 = !{!458}
@@ -1553,10 +1553,10 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !487 = !DILocalVariable(arg: 1, scope: !486, type: !7)
 // CHECK:STDOUT: !489 = !DILocation(line: 36, column: 1, scope: !486)
 // CHECK:STDOUT: !490 = !{!487}
-// CHECK:STDOUT: !491 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !495)
+// CHECK:STDOUT: !491 = distinct !DISubprogram(name: "Success", linkageName: "_CSuccess.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !495)
 // CHECK:STDOUT: !492 = !DILocalVariable(arg: 1, scope: !491, type: !7)
 // CHECK:STDOUT: !493 = !DILocation(line: 3, column: 1, scope: !491)
-// CHECK:STDOUT: !494 = !DILocation(line: 4, column: 11, scope: !491)
+// CHECK:STDOUT: !494 = !DILocation(line: 4, column: 16, scope: !491)
 // CHECK:STDOUT: !495 = !{!492}
 // CHECK:STDOUT: !496 = distinct !DISubprogram(name: "Step", linkageName: "_CStep.Main.f249b435619a5146", scope: null, file: !4, line: 29, type: !423, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !513)
 // CHECK:STDOUT: !497 = !DILocalVariable(arg: 1, scope: !496, type: !203)
@@ -1571,11 +1571,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !514 = distinct !DISubprogram(name: "Branch", linkageName: "_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427", scope: null, file: !4, line: 15, type: !111, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !533)
 // CHECK:STDOUT: !515 = !DILocalVariable(arg: 1, scope: !514, type: !8)
 // CHECK:STDOUT: !520 = !DILocation(line: 17, column: 7, scope: !514)
-// CHECK:STDOUT: !523 = !DILocation(line: 17, column: 34, scope: !514)
-// CHECK:STDOUT: !524 = !DILocation(line: 17, column: 27, scope: !514)
+// CHECK:STDOUT: !523 = !DILocation(line: 17, column: 39, scope: !514)
+// CHECK:STDOUT: !524 = !DILocation(line: 17, column: 32, scope: !514)
 // CHECK:STDOUT: !525 = !DILocation(line: 18, column: 7, scope: !514)
-// CHECK:STDOUT: !528 = !DILocation(line: 18, column: 35, scope: !514)
-// CHECK:STDOUT: !529 = !DILocation(line: 18, column: 28, scope: !514)
+// CHECK:STDOUT: !528 = !DILocation(line: 18, column: 39, scope: !514)
+// CHECK:STDOUT: !529 = !DILocation(line: 18, column: 32, scope: !514)
 // CHECK:STDOUT: !531 = !DILocation(line: 22, column: 12, scope: !514)
 // CHECK:STDOUT: !532 = !DILocation(line: 22, column: 5, scope: !514)
 // CHECK:STDOUT: !533 = !{!515}
@@ -1588,12 +1588,12 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !544 = !DILocalVariable(arg: 1, scope: !543, type: !203)
 // CHECK:STDOUT: !546 = !DILocation(line: 36, column: 1, scope: !543)
 // CHECK:STDOUT: !547 = !{!544}
-// CHECK:STDOUT: !548 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.MyResult.Main.b7dd877894074427", scope: null, file: !4, line: 3, type: !432, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !552)
+// CHECK:STDOUT: !548 = distinct !DISubprogram(name: "Success", linkageName: "_CSuccess.MyResult.Main.b7dd877894074427", scope: null, file: !4, line: 3, type: !432, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !552)
 // CHECK:STDOUT: !549 = !DILocalVariable(arg: 1, scope: !548, type: !203)
 // CHECK:STDOUT: !550 = !DILocation(line: 3, column: 1, scope: !548)
-// CHECK:STDOUT: !551 = !DILocation(line: 4, column: 11, scope: !548)
+// CHECK:STDOUT: !551 = !DILocation(line: 4, column: 16, scope: !548)
 // CHECK:STDOUT: !552 = !{!549}
-// CHECK:STDOUT: !553 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !556)
+// CHECK:STDOUT: !553 = distinct !DISubprogram(name: "Failure", linkageName: "_CFailure.MyResult.Main.8122a03446648385", scope: null, file: !4, line: 3, type: !113, spFlags: DISPFlagDefinition, unit: !202, retainedNodes: !556)
 // CHECK:STDOUT: !554 = !DILocalVariable(arg: 1, scope: !553, type: !7)
 // CHECK:STDOUT: !555 = !DILocation(line: 3, column: 1, scope: !553)
 // CHECK:STDOUT: !556 = !{!554}

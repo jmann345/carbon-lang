@@ -13,20 +13,20 @@
 // closes with an error.
 fn F(x: i32) -> i32 {
   match (x) {
-    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+15]]:13: error: opening symbol without a corresponding closing symbol [UnmatchedOpening]
-    // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
-    // CHECK:STDERR:             ^
-    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+12]]:27: note: possibly missing `)` here [PossiblyMissingBracketHere]
-    // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
-    // CHECK:STDERR:                           ^
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+15]]:18: error: opening symbol without a corresponding closing symbol [UnmatchedOpening]
+    // CHECK:STDERR:     case .Success(value: i32 => { return 1; }
+    // CHECK:STDERR:                  ^
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+12]]:32: note: possibly missing `)` here [PossiblyMissingBracketHere]
+    // CHECK:STDERR:     case .Success(value: i32 => { return 1; }
+    // CHECK:STDERR:                                ^
     // CHECK:STDERR:
-    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+8]]:25: error: expected `,` or `)` [UnexpectedTokenAfterListElement]
-    // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
-    // CHECK:STDERR:                         ^~
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+8]]:30: error: expected `,` or `)` [UnexpectedTokenAfterListElement]
+    // CHECK:STDERR:     case .Success(value: i32 => { return 1; }
+    // CHECK:STDERR:                              ^~
     // CHECK:STDERR:
-    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+4]]:28: error: expected `=>` introducing statement block [ExpectedMatchCaseArrow]
-    // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
-    // CHECK:STDERR:                            ^
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+4]]:33: error: expected `=>` introducing statement block [ExpectedMatchCaseArrow]
+    // CHECK:STDERR:     case .Success(value: i32 => { return 1; }
+    // CHECK:STDERR:                                 ^
     // CHECK:STDERR:
     case .Success(value: i32 => { return 1; }
     default => { return 0; }
@@ -54,7 +54,7 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   │ │ ╭─MatchStatementStart '{'
 // CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
 // CHECK:STDOUT:   │ │ │     │ ╭─AlternativePatternStart '.'
-// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'Ok'
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'Success'
 // CHECK:STDOUT:   │ │ │     │ │ ╭─TuplePatternStart '('
 // CHECK:STDOUT:   │ │ │     │ │ │ ╭─IdentifierNameNotBeforeSignature 'value'
 // CHECK:STDOUT:   │ │ │     │ │ │ ├─BindingPatternTypeStart ':'

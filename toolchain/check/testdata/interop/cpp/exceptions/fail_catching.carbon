@@ -36,12 +36,12 @@ int cannot_throw() noexcept;
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
-  // CHECK:STDERR: fail_noexcept_callee.carbon:[[@LINE+7]]:45: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.cannot_throw()?);
-  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_noexcept_callee.carbon:[[@LINE+4]]:45: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.cannot_throw()?);
-  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_noexcept_callee.carbon:[[@LINE+7]]:50: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(Cpp.cannot_throw()?);
+  // CHECK:STDERR:                                                  ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_noexcept_callee.carbon:[[@LINE+4]]:50: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(Cpp.cannot_throw()?);
+  // CHECK:STDERR:                                                  ^~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   return Core.Result(i32, Cpp.Exception).Success(Cpp.cannot_throw()?);
 }
@@ -57,17 +57,17 @@ int may_throw_int();
 ''';
 
 fn F() -> Core.Result(i32, i32) {
-  // CHECK:STDERR: fail_break_type_mismatch.carbon:[[@LINE+13]]:35: error: operand of `?` is a call to potentially-throwing C++ function `may_throw_int`; a thrown exception propagates as `Cpp.Exception` [QuestionCppCatchingImportNote]
-  // CHECK:STDERR:   return Core.Result(i32, i32).Ok(Cpp.may_throw_int()?);
-  // CHECK:STDERR:                                   ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_break_type_mismatch.carbon:[[@LINE+10]]:35: note: cannot implicitly convert expression of type `Cpp.Exception` to `i32` [ConversionFailure]
-  // CHECK:STDERR:   return Core.Result(i32, i32).Ok(Cpp.may_throw_int()?);
-  // CHECK:STDERR:                                   ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_break_type_mismatch.carbon:[[@LINE+7]]:35: note: type `Cpp.Exception` does not implement interface `Core.ImplicitAs(i32)` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return Core.Result(i32, i32).Ok(Cpp.may_throw_int()?);
-  // CHECK:STDERR:                                   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_break_type_mismatch.carbon:[[@LINE+13]]:40: error: operand of `?` is a call to potentially-throwing C++ function `may_throw_int`; a thrown exception propagates as `Cpp.Exception` [QuestionCppCatchingImportNote]
+  // CHECK:STDERR:   return Core.Result(i32, i32).Success(Cpp.may_throw_int()?);
+  // CHECK:STDERR:                                        ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_break_type_mismatch.carbon:[[@LINE+10]]:40: note: cannot implicitly convert expression of type `Cpp.Exception` to `i32` [ConversionFailure]
+  // CHECK:STDERR:   return Core.Result(i32, i32).Success(Cpp.may_throw_int()?);
+  // CHECK:STDERR:                                        ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_break_type_mismatch.carbon:[[@LINE+7]]:40: note: type `Cpp.Exception` does not implement interface `Core.ImplicitAs(i32)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, i32).Success(Cpp.may_throw_int()?);
+  // CHECK:STDERR:                                        ^~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:51:16: note: initializing function parameter [InCallToFunctionParam]
-  // CHECK:STDERR:   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
+  // CHECK:STDERR:   fn FromBreak(b: E) -> Self { return Result(T, E).Failure(b); }
   // CHECK:STDERR:                ^~~~
   // CHECK:STDERR:
   return Core.Result(i32, i32).Success(Cpp.may_throw_int()?);
@@ -85,12 +85,12 @@ int may_throw_int();
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
   let x: i32 = Cpp.may_throw_int();
-  // CHECK:STDERR: fail_not_direct.carbon:[[@LINE+7]]:45: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(x?);
-  // CHECK:STDERR:                                             ^~
-  // CHECK:STDERR: fail_not_direct.carbon:[[@LINE+4]]:45: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(x?);
-  // CHECK:STDERR:                                             ^~
+  // CHECK:STDERR: fail_not_direct.carbon:[[@LINE+7]]:50: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(x?);
+  // CHECK:STDERR:                                                  ^~
+  // CHECK:STDERR: fail_not_direct.carbon:[[@LINE+4]]:50: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(x?);
+  // CHECK:STDERR:                                                  ^~
   // CHECK:STDERR:
   return Core.Result(i32, Cpp.Exception).Success(x?);
 }
@@ -156,16 +156,16 @@ IntFnPtr get_fn_ptr() noexcept;
 // D-UA-7). The call falls through to the FENCED thunk, and `?` then diagnoses
 // its `i32` operand.
 fn F() -> Core.Result(i32, Cpp.Exception) {
-  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+11]]:45: error: semantics TODO: `Unsupported: catching thunk for a C++ function pointer` [SemanticsTodo]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
-  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+11]]:50: error: semantics TODO: `Unsupported: catching thunk for a C++ function pointer` [SemanticsTodo]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(Cpp.get_fn_ptr()()?);
+  // CHECK:STDERR:                                                  ^~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+7]]:45: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
-  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+4]]:45: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
-  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+7]]:50: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(Cpp.get_fn_ptr()()?);
+  // CHECK:STDERR:                                                  ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+4]]:50: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Success(Cpp.get_fn_ptr()()?);
+  // CHECK:STDERR:                                                  ^~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   return Core.Result(i32, Cpp.Exception).Success(Cpp.get_fn_ptr()()?);
 }

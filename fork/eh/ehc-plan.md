@@ -6,35 +6,36 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # EH-C plan: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346)
 
-**Status:** rev 2 (2026-11-09): reviews A and B folded, 17 findings (the
-section "Review fold record (rev 2, 2026-11-09)" before Appendix A); not
-signed off, the re-review decides. Rev 1 was written 2026-11-09 for two
-adversarial plan reviews. Branch `claude/carbon-fork-0-1-ehc` (worktree
+**Status:** rev 3, 2026-11-09 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds the
+focused re-review RR1 of rev 2 (51013a4a6; APPROVE-WITH-AMENDMENTS: no BLOCKER,
+two MAJORs, five MINORs, all seven folded, none rejected; see "Review fold
+record (rev 3, 2026-11-09)" and the "Sign-off" section, both before Appendix A).
+Rev 2 (2026-11-09) folded reviews A and B, 17 findings (the section "Review fold
+record (rev 2, 2026-11-09)"). Rev 1 was written 2026-11-09 for two adversarial
+plan reviews. Branch `claude/carbon-fork-0-1-ehc` (worktree
 /home/user/carbon-ehc), cut from trunk aee70185c (2026-11-09, "Weekly upstream
-check 2026-11-09: review fold"; pushed; no commits of its own before this
-plan); trunk moved to fca1e9e2f while the reviews ran (the paragraph after
-this one). Trunk's toolchain, prelude and
-testdata equal the merge a725dddca's: `git diff --stat a725dddca aee70185c --
-toolchain core` is empty, so the container arbiter's install
-/home/user/arb/install/cb726a230/bin/carbon (built from cb726a230, whose
-toolchain sources equal trunk's; `carbon version` prints
-0.0.0-0.dev+unknown, the Bazel-equivalent build being unstamped) is the
-baseline for every probe below. Baseline, container-measured on 2026-11-09:
-**gate 2047 passed, 0 failed** (/home/user/arb/logs/gate-cb726a230-
-20261109T163748Z.log, with the arbiter's check.cpp source patch applied, see
-§0.1) and **conformance PASS 228 / FAIL 0 / SKIP 13 over 241, 51 of 56
-bullets** (/home/user/arb/logs/conformance-cb726a230.log). This is the
-error-handling workstream's third slice; fork/eh/plan.md (EH-A and EH-B,
-2026-09-27) is its parent, as fork/overload/ov4-plan.md sits beside
-fork/overload/plan.md. **The spec is W-346** (fork/inventory/work-items.json):
-rename `Core.Result(T, E)`'s alternatives `Ok`/`Err` to upstream's
-`Success`/`Failure`, with every use, after the held PRs land and before UA-3.
-Size: the ledger's M (RG-1's estimate; a mechanical rename with a fix budget
-of two would be S by this plan's count, but the ledger's field is kept
-unchanged, D.1; amended 2026-11-09, review fold: A-m3 (d) / B-m5). This plan
-was written once before (2026-11-06, cc2d3a623 on the previous container,
-lost before it was pushed); §0.8 says what this rev keeps of it and where it
-differs.
+check 2026-11-09: review fold"; pushed; no commits of its own before this plan);
+trunk moved to fca1e9e2f while the reviews ran (the paragraph after this one).
+Trunk's toolchain, prelude and testdata equal the merge a725dddca's: `git diff
+--stat a725dddca aee70185c -- toolchain core` is empty, so the container
+arbiter's install /home/user/arb/install/cb726a230/bin/carbon (built from
+cb726a230, whose toolchain sources equal trunk's; `carbon version` prints
+0.0.0-0.dev+unknown, the Bazel-equivalent build being unstamped) is the baseline
+for every probe below. Baseline, container-measured on 2026-11-09: **gate 2047
+passed, 0 failed** (/home/user/arb/logs/gate-cb726a230- 20261109T163748Z.log,
+with the arbiter's check.cpp source patch applied, see §0.1) and **conformance
+PASS 228 / FAIL 0 / SKIP 13 over 241, 51 of 56 bullets**
+(/home/user/arb/logs/conformance-cb726a230.log). This is the error-handling
+workstream's third slice; fork/eh/plan.md (EH-A and EH-B, 2026-09-27) is its
+parent, as fork/overload/ov4-plan.md sits beside fork/overload/plan.md. **The
+spec is W-346** (fork/inventory/work-items.json): rename `Core.Result(T, E)`'s
+alternatives `Ok`/`Err` to upstream's `Success`/`Failure`, with every use, after
+the held PRs land and before UA-3. Size: the ledger's M (RG-1's estimate; a
+mechanical rename with a fix budget of two would be S by this plan's count, but
+the ledger's field is kept unchanged, D.1; amended 2026-11-09, review fold: A-m3
+(d) / B-m5). This plan was written once before (2026-11-06, cc2d3a623 on the
+previous container, lost before it was pushed); §0.8 says what this rev keeps of
+it and where it differs.
 
 **Trunk moved while the reviews ran (amended 2026-11-09, review fold: B-m4 /
 A-m3 (e)).** Trunk is fca1e9e2f ("Land PR 69: ARB-2, construct UnitAndImports in
@@ -84,7 +85,8 @@ re-scan; 0.8 the lost rev 1 and the task text, confirmed and corrected. §1
 Design (D-EHC-1 to D-EHC-12). §2 Spec, file by file. §3 Commits, the PR and
 the landing. §4 Testdata matrix. §5 Conformance delta. §6 Churn and
 collisions. §7 Risks and rejected alternatives. §8 Verification. Hand-off
-notes. Appendix A the goldens' source edits; B the programs and their EXPECTs;
+notes. The review fold records (rev 2, rev 3) and the Sign-off. Appendix A
+the goldens' source edits; B the programs and their EXPECTs;
 C the docs amendments verbatim; D the records texts verbatim; E the PR text;
 F the land-time texts with `<...>` placeholders.
 
@@ -127,7 +129,7 @@ in D-EHC-4 and D-EHC-5.
 | Golden sources | 35 | 350 | 22 check, 11 lower, 2 parse (Appendix A); 328 whole-word lines, 14 lowercase skeleton lines in the two export goldens, and 8 lines the fold added: the five split-name headers `unit_ok`/`i32_ok` and lower main_run/return_result.carbon's three comment lines that name the IR blocks, the message global and the split (amended 2026-11-09, review fold: A-m1 / B-M1) |
 | Golden CHECK lines | 32 | 2871 written, 2863 removed by the fill | the files of §4; three of the 35 have no CHECK line that moves (the fixer's fill; the planner's 2862 written counted the same files before B-M1's split renames, which add 9 to each figure, and its "2858" followed a convention the plan did not state; amended 2026-11-09, review fold: A-m3 (f) / B-M1) |
 | Program sources | 18 | 159 | 11 .carbon and 5 .diff.cpp under error_handling/, project/evaluator_tutorial_errors.carbon, control_flow/choice_payload_roundtrip_diff.carbon (Appendix B); two of them renamed with fork/conformance/README.md's two rows (D-EHC-13) |
-| File and split names | 5 | 7 | fork/conformance/programs/error_handling/run_result_ok.carbon and run_result_err.carbon (`git ls-files | grep -E '(^|[_/])[_.](ok|err)'` lists exactly these two) and the split names `unit_ok` (check main_run/return_result.carbon:23, check operators/question_result.carbon:98, lower main_run/return_result.carbon:24) and `i32_ok` (check main_run/return_result.carbon:32, lower main_run/return_result.carbon:36), which no whole-word grep sees; D-EHC-13 (row added 2026-11-09, review fold: B-M1) |
+| File and split names | 5 | 7 | fork/conformance/programs/error_handling/run_result_ok.carbon and run_result_err.carbon (§8.7's grep 2 over `git ls-files` lists exactly these two; the pattern is spelled once, in §8.7's list, because rumdl's MD011 rewrites it inside a table cell into rev 2's form with `[_.]` before the name, which lists nothing: the hook honors code spans in a list item, not in a cell; corrected 2026-11-09, review fold: RR1-m2) and the split names `unit_ok` (check main_run/return_result.carbon:23, check operators/question_result.carbon:98, lower main_run/return_result.carbon:24) and `i32_ok` (check main_run/return_result.carbon:32, lower main_run/return_result.carbon:36), which no whole-word grep sees; D-EHC-13 (row added 2026-11-09, review fold: B-M1) |
 | Program EXPECTs | 0 | 0 | no EXPECT line names an alternative (§0.5) |
 | Living docs | 5 | 38 | docs/design/README.md :4047-4048; docs/design/error_handling.md 26 lines (:103-104, :112, :118, :133-136, :153, :156, :173-174, :178, :185, :209, :382-383, :389, :562-563, :695, :697, :736, :864, :949, :953, :1002); docs/design/optional.md:434; docs/guides/tutorial.md :366-390 (the block) and :409; docs/guides/evaluator_faq.md:356 |
 | Living checker | 1 | 3 | fork/evaluator/check_faq.py :167, :226, :229 (the FAQ's reproducers) |
@@ -176,7 +178,7 @@ aee70185c ran beside it), installed, gated, refilled and measured. Results:
 | Step | Result |
 | --- | --- |
 | Files changed by the rename | 73 (the fixer's prototype; the planner's 72 lacked fork/conformance/README.md): 35 goldens (350 source lines), 18 programs (159 lines; run_result_ok.carbon and run_result_err.carbon renamed, D-EHC-13), fork/conformance/README.md (its two rows), 13 toolchain, prelude and header files (`git diff --numstat` before prek: 128 lines replaced and 10 added, result.carbon's history block; the planner's 112 lacked thunk.cpp's six `return_ok`/`return_err` lines and counted result.carbon's rewrite differently), 5 docs (38 lines), check_faq.py (3 lines); prek then reflowed long lines in the docs, wrapped the C++ at clang-format's width and asked for check_faq.py:229 to be split (a second pass is clean) (amended 2026-11-09, review fold: A-m1 / B-M1) |
-| Whole-tree grep after the rename, outside CHECK lines and fork/ | five lines, all dated history (amended 2026-11-09, review fold: A-M1): common/raw_hashtable.h:1314 (English), core/prelude/types/result.carbon:56 (the history comment's "spelled `Ok`/`Err`"), check/testdata/operators/question_result.carbon:156, :160, :166 (the `fail_old_names` split's comment and its two deliberate source lines; :164 and :174 after the fill moves them); after P, twelve more, the amendment lines of Appendix C (§8.7's list); `git ls-files | grep -E '(^|[_/])[_.](ok|err)'` and the split-header grep of §8.7 are empty after D-EHC-13 |
+| Whole-tree grep after the rename, outside CHECK lines and fork/ | five lines, all dated history (amended 2026-11-09, review fold: A-M1): common/raw_hashtable.h:1314 (English), core/prelude/types/result.carbon:56 (the history comment's "spelled `Ok`/`Err`"), check/testdata/operators/question_result.carbon:156, :160, :166 (the `fail_old_names` split's comment and its two deliberate source lines; :164 and :174 after the fill moves them); after P, twelve more, the amendment lines of Appendix C (§8.7's list); §8.7's grep 2 (over `git ls-files`; its pattern spelled there, not in this cell: RR1-m2) and its grep 3, the split-header grep, are empty after D-EHC-13 |
 | `runner.py --self-test` (both sample checkers) | "check_samples: 14 samples, 0 errors", "check_samples: 19 program blocks, 70 fixtures, 2 W2 hits (1 allowlisted, 1 qualified); 0 errors", "self-test: 241 programs parsed, 56 bullets in table, OK" |
 | The same with the tutorial reverted and the programs renamed (the lost rev's A-M1 state) | "check_samples: 14 samples, 1 errors" (the self-test is red), restored to 0 by the tutorial's seven block lines (B.1.17; amended 2026-11-09, review fold: B-m7) |
 | Gate before any refill | `[  PASSED  ] 2015 tests.` and exactly 32 per-test `[  FAILED  ] ToolchainFileTest...` lines, the 32 files of §4, every failure "Autoupdate would make changes" (32 of 32), no crash, no `fail_`-prefix problem. The arbiter's summary line reads `GATE ehc-fixer: 2015 passed, 0 failed` and gate.sh exits 1: gate.sh:121-134 takes its failed count from a gtest "[  FAILED  ] N tests, listed below" summary that file_test does not print, and its exit code from the binary's, so the GATE line alone would read as green; the criterion is the per-test lines (amended 2026-11-09, review fold: A-m2; a note for ARB-2's landing of the scripts, not a change here) |
@@ -341,18 +343,28 @@ worktrees, the widened pattern; amended 2026-11-09, review fold: A-m3 (e) /
 B-m4):_ W-378 is now a ledger item, ARB-2's, on claude/carbon-fork-0-1-arb2
 at b87f130b2 and on trunk fca1e9e2f (PR 69; 310 items, W-378 last, size S),
 and its notes name this plan's reservation ("the EH-C re-plan reserves W-380
-to W-385 (its D-EHC-11)"); W-380 appears only as reserved text (the weekly
-entry's sentence, W-378's notes, this plan); W-381, W-384, W-386, W-387,
-W-390 and W-395 only in this plan's own sentence below; so D-EHC-11 stands
-and W-380 is the next free id after W-379's range-bound text. Of the first
+to W-385 (its D-EHC-11)"); W-380 appears only as reserved text, in four
+places at fca1e9e2f: the weekly entry's sentence (decision-log.md:19596),
+W-378's notes (work-items.json:5161), ARB-2's entry (decision-log.md:20829
+and :20831, "W-379, W-380, W-385, W-388, W-389 and W-396 to W-399 appear
+only in prose" and "the EH-C re-plan reserves W-380 to W-385 (its
+D-EHC-11)") and this plan, and `"id": "W-380"` is in no ledger on any ref or
+worktree, W-378 being the highest id (amended 2026-11-09, review fold:
+RR1-M2); W-381, W-384, W-386, W-387, W-390 and W-395 only in this plan's own
+sentence below; so D-EHC-11 stands and W-380 is the next free id: W-379 is
+skipped because W-378's notes and ARB-2's entry already name W-380 as EH-C's
+(W-379 itself is a range bound only, fo1-plan.md:937, which would not bar
+it: RG-1 filed W-346 despite such a mention; amended 2026-11-09, review
+fold: RR1-m5). Of the first
 scan: W-379, W-389, W-396 and W-397 as range bounds
 or reserved text (fo1-plan.md:937, land1-plan.md:668-669, decision-log
 :19595); W-380, W-385 and W-388 only in the weekly entry's sentence "no W-378
 and no W-380 to W-388 appears anywhere" (:19596); W-398 and W-399 as range
 bounds in six plans; no W-381 to W-384, W-386, W-387 or W-390 to W-395
-anywhere; no W-4xx anywhere; the SAFE worktree (14c1ac8ac) names only W-397 to
-W-399. Decision D-EHC-11: W-380 to W-385 reserved, W-380 filed, re-scanned at
-D (§8.9).
+anywhere; no W-4xx anywhere; the SAFE worktree (14c1ac8ac) names W-370 once
+and W-371 twice (safe3-plan.md:1688-1692, filed items it cites) and W-397 to
+W-399 as range bounds (amended 2026-11-09, review fold: RR1-m5). Decision
+D-EHC-11: W-380 to W-385 reserved, W-380 filed, re-scanned at D (§8.9).
 
 ### §0.8 The lost rev 1 and the task text: confirmed, corrected
 
@@ -369,8 +381,11 @@ unchanged (D-EHC-10); 35 goldens not 34, 18 program files not 6; gate 2015 of
 2047 before the fill and 2047 after one pass; 32 refilled; conformance
 228/0/13; the order-swap mutant's 7 goldens and 4 programs; the checkers at 0
 errors. Differs: (a) ids: the lost rev reserved W-378 to W-385 and filed W-378
-for PR 53's rust_interop.md row; W-378 and W-379 are taken, so EH-C reserves
-W-380 to W-385 and files W-380 (D-EHC-11); (b) the partial-thunk mutant turns
+for PR 53's rust_interop.md row; W-378 is taken (ARB-2's item, PR 69) and
+W-379 is skipped because W-378's notes and ARB-2's entry already name W-380
+as EH-C's (W-379 is a range bound only, fo1-plan.md:937; amended 2026-11-09,
+review fold: RR1-m5), so EH-C reserves W-380 to W-385 and files W-380
+(D-EHC-11); (b) the partial-thunk mutant turns
 3 goldens red, as the lost rev had it: rev 1 said 4 because the planner ran
 M2 with M1's prelude swap still installed and counted lower
 result_expected.carbon, one of M1's seven (corrected 2026-11-09, review fold:
@@ -670,19 +685,27 @@ decides them (§0.6).
     command finds W-378 the highest filed id since PR 69 landed (ARB-2's
     item on trunk fca1e9e2f, whose notes name this reservation; W-377 at the
     first scan; amended 2026-11-09, review fold: A-m3 (e) / B-m4); W-379 is
-    reserved text (range bounds), and W-380, W-385 and W-388 appear on trunk
-    only inside the 2026-11-09 weekly entry's sentence "no W-378 and no W-380
-    to W-388 appears anywhere" and W-378's notes, W-389 and W-396 to W-399
-    only as range bounds. EH-C reserves W-380 to W-385 and files W-380:
+    a range bound only (fo1-plan.md:937) and is skipped because W-378's notes
+    and ARB-2's entry already name W-380 as EH-C's (amended 2026-11-09,
+    review fold: RR1-m5); W-380, W-385 and W-388 appear on trunk only as
+    reserved text, inside the 2026-11-09 weekly entry's sentence "no W-378
+    and no W-380 to W-388 appears anywhere", W-378's notes and ARB-2's entry
+    (decision-log.md:20829 and :20831 at fca1e9e2f; amended 2026-11-09,
+    review fold: RR1-M2), W-389 and W-396 to W-399 only as range bounds. EH-C
+    reserves W-380 to W-385 and files W-380:
     "PR 53 (SAFE-1): docs/design/safety/rust_interop.md:223 names `Ok`/`Err`
     as `Core.Result`'s variants; a rename commit on PR 53's branch before it
     lands (D-RG-8's break condition, fired by EH-C landing first)" (Appendix
     D.1), owner PR 53's landing (ORCHESTRATION Next actions item 14, SAFE-4).
     W-381 to W-385 stay unused unless the reviews need one. No F id: R32 makes
     upstream's spelling the design's, and F-006a is reversed by a dated note.
-    _Break condition:_ the id re-scan at D (§8.9) finds W-380 used (then the
-    next free id, re-scanned, and every cross-reference in this plan's D texts
-    renumbered in the same commit).
+    _Break condition:_ the id re-scan at D (§8.9) finds W-380 used, which
+    means a ledger item with that `id` on any ref or worktree, or a prose
+    text that files it for other work; a prose mention that reserves it for
+    EH-C (W-378's notes, ARB-2's entry, the weekly entry's sentence) is not a
+    use (amended 2026-11-09, review fold: RR1-M2); then the next free id,
+    re-scanned, and every cross-reference in this plan's D texts renumbered
+    in the same commit.
 -   **D-EHC-12 — one PR with base trunk, two implementation reviews, a fix
     budget of two, and LAND-1's D-LAND-6 landing.** The PR "EH-C:
     `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346)"
@@ -1051,7 +1074,8 @@ figure of §8 is measured on this base.
 1.  **Plan**: fork/eh/ehc-plan.md, rev 1 and its revisions, commits on the
     same file, each a fold record. Messages: "EH-C plan (rev 1): Core.Result
     alternatives renamed to Success/Failure (W-346)", "EH-C plan (rev 2):
-    reviews A and B folded, 17 findings".
+    reviews A and B folded, 17 findings", "EH-C plan (rev 3): focused
+    re-review folded, sign-off".
 2.  **C1, the rename with every checker-visible line**: §2.1 to §2.5, the 35
     goldens' sources with the new split (Appendix A, no CHECK line touched),
     the 18 programs (Appendix B; two renamed by `git mv` with
@@ -1107,15 +1131,42 @@ figure of §8 is measured on this base.
     re-scan's `<n>` refs and `<w>` worktrees; the discharge line, written "_Discharged
     by this commit: W-346 (EH-C)._" because a commit cannot carry its own sha,
     OV-4's "and this one"); the placeholders D fills are `<R>`, `<count>`,
-    `<n>`, `<w>` and `<date>` (amended 2026-11-09, review fold: B-M3); every
-    other `<...>` filled from the commits and runs it names, after the reviews
-    and their fixes; `json.load` of the ledger, `runner.py --self-test`, the
-    model-identifier grep of the branch's diff, the id re-scan (§8.9), the
-    reconciliation greps (§8.7). Message: "EH-C discharge: W-346 DISCHARGED;
-    W-380 filed; gap row evidence and ORCHESTRATION".
+    `<n>`, `<w>`, `<date>` and, in D.8, `<C1>`, `<F1>`, `<P>`, `<fixes>`,
+    `<landed>` and `<prev>` (amended 2026-11-09, review fold: B-M3 / RR1-M1); no
+    text R or D writes names a PR number or its own commit's sha: `<N>` exists
+    only after item 10, `<k>` after item 9's round, and D's own sha is "this
+    commit" or "this one" (RR1-M1); every other `<...>` filled from the commits
+    and runs it names, after the reviews and their fixes; `json.load` of the
+    ledger, `runner.py --self-test`, the model-identifier grep of the branch's
+    diff, the id re-scan (§8.9), the reconciliation greps (§8.7). Message: "EH-C
+    discharge: W-346 DISCHARGED; W-380 filed; gap row evidence and
+    ORCHESTRATION".
 9.  **The focused re-review**, OV-4's: one fresh agent per round over the fix
     commits, R and D; dry when no BLOCKER, no MAJOR and only records-only
-    MINORs, folded by one records commit; at most three rounds.
+    MINORs, folded by one records commit; at most three rounds. The dry
+    round's records commit changes D.8's Branches row's leading phrase to
+    "IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND <k> DRY (base trunk
+    fca1e9e2f)" and gives D.8's dated paragraph one sentence naming the
+    round, its verdict and D's sha, as OV-4's did (ov4-plan.md D.8; added
+    2026-11-09, review fold: RR1-M1).
+10. **The PR's records, the orchestrator's (added 2026-11-09, review fold:
+    RR1-M1):** the PR number exists only once the orchestrator opens the PR
+    after the dry round, so no commit of items 2 to 9 names it. The texts
+    that name it are the orchestrator's, written once `<N>` exists:
+    fork/ORCHESTRATION.md's dated paragraph "<date> (<hh:mm> UTC): EH-C is
+    IMPLEMENTED, REVIEWED AND HELD OPEN as PR <N> (claude/carbon-fork-0-1-ehc
+    at <head>, base trunk; commits <plan revisions>, <M-0>, <C1>, <F1>, <P>,
+    <fixes>, <R>, <D> and the round's records commit)", the header clause
+    "Last updated: <date> (EH-C's PR <N> opened, W-346's rename; <landed>
+    PRs landed, 1 held, 1 open; see the Branches row; the earlier <prev>
+    text follows)", Next actions item 6's "is open as PR <N> (<date>)" and
+    ":2725"'s "W-346 (PR <N>)". When the landing follows the opening in the
+    same session (R33: landed when correct), they are omitted and Appendix
+    F's texts alone name the PR; a held PR gets them in trunk's worktree,
+    where they reach trunk with the next records commit, LAND-1's for this
+    PR at the latest, as OV-4's paragraph of 2026-10-28 (13:28 UTC) reached
+    trunk in PR 68's records commit fe0957d54. The Branches row keeps the
+    round's phrase until F.4 replaces it.
 
 **The PR** (Appendix E) opens with base trunk after a dry round, held until
 the orchestrator lands it (R33). **Land-time steps** (D-LAND-6, one landing
@@ -1518,11 +1569,20 @@ and F-M, the figures quoted into Appendix F's texts.
 ### §8.9 The id re-scan (before D)
 
 §0.7's commands after `git fetch origin` over every origin ref, local branch
-and worktree, widened to `W-3[7-9][0-9]|W-4[0-9][0-9]`: W-380 must appear
-nowhere but this plan, W-378's notes and the weekly entry's reserved-text
-sentence (§0.7); otherwise the next free
-id, and every cross-reference in D.1, D.2, D.8 and this plan renumbered in the
-same commit.
+and worktree, widened to `W-3[7-9][0-9]|W-4[0-9][0-9]`. The criterion
+(re-stated 2026-11-09, review fold: RR1-M2, because the rule as first written
+named three places and fired on trunk's own fourth, ARB-2's entry): W-380 is
+no ledger item's id, `grep -c '"id": "W-380"'` over every ref's and
+worktree's fork/inventory/work-items.json giving 0, and every prose
+occurrence reserves it for EH-C or lists it as unused; at fca1e9e2f those
+are this plan, W-378's notes (work-items.json:5161), the weekly entry's
+sentence (decision-log.md:19596) and ARB-2's entry (decision-log.md:20829
+and :20831), and a further mention of the same kind on a newer ref is not a
+use. A ledger item with the id, or a prose text that files it for other
+work, is a use: then the next free id, and every cross-reference in D.1,
+D.2, D.8 and this plan renumbered in the same commit. The counts (`<n>`
+refs, `<w>` worktrees, the ledger count 0, the prose occurrences listed) go
+in D.2's _Ids_ paragraph.
 
 ### §8.10 Not run, and why
 
@@ -1538,13 +1598,30 @@ owner's runner (R28); the nightly on the fork's programs (it has no
 D-LAND-6's steps were written for the previous container (a scratch worktree
 under /dev/shm, `$CB/build.sh /home/user/carbon-trunk`); this landing maps them
 to the arbiter as it stands (/home/user/arb/carbonbuild until ARB-2's scripts
-land under fork/tools/carbonbuild), with `Repository=/home/user/carbon-trunk
-SHA=<label>` on every command and nothing under /dev/shm:
+land under fork/tools/carbonbuild), with the arbiter's two variables set on
+every command as the block below spells them (paths.sh:15 and :17; §8.1's
+form) and nothing under /dev/shm. The worktree variable's name is spelled
+only inside guarded blocks, because the Google-style hook expands it in prose
+and in code spans, which is how rev 2 came to misspell it; a misspelt name
+silently builds paths.sh's default, this worktree at land time and wrong
+anywhere else (corrected 2026-11-09, review fold: RR1-m1):
+
+<!-- google-doc-style-ignore -->
+
+```sh
+REPO=/home/user/carbon-trunk SHA=<label> /home/user/arb/carbonbuild/build.sh
+REPO=/home/user/carbon-trunk SHA=<label> python3 -I /home/user/arb/carbonbuild/install.py
+REPO=/home/user/carbon-trunk SHA=<label> /home/user/arb/carbonbuild/gate.sh --threads 4
+REPO=/home/user/carbon-trunk SHA=<label> /home/user/arb/carbonbuild/autoupdate.sh
+REPO=/home/user/carbon-trunk SHA=<label> CACHE_HOME=/home/user/arb/cache-<label> /home/user/arb/carbonbuild/conformance.sh --background
+```
+
+<!-- google-doc-style-resume -->
 
 -   step 2: the merge-trees run in a detached worktree under /home/user
     (`git -C /home/user/carbon-lang worktree add --detach
     /home/user/carbon-land-<role> <sha>`), removed by its literal path;
--   step 4: `Repository=... SHA=... /home/user/arb/carbonbuild/build.sh` in the
+-   step 4: the block's `build.sh` line in the
     background (a timeout of 7200000 ms; waited with `until [ -f <marker> ];
     do sleep 20; done` loops of at most nine minutes), then `python3 -I
     install.py`, `gate.sh --threads 4` (its per-test lines read, §8.3), and
@@ -1590,6 +1667,15 @@ SHA=<label>` on every command and nothing under /dev/shm:
 -   The C1 gate's summary line reads "2015 passed, 0 failed" with exit 1:
     read the 32 per-test FAILED lines (§8.3), not the summary.
 -   The FORM rules and the container's command forms are §8.11.
+-   Two prek hooks rewrite this plan's own text: rumdl's MD011 turns the
+    file-name grep's `(ok|err)` group followed by its bracket class into the
+    reversed, empty pattern inside a table cell (code spans are honored in
+    list items, not in cells), and the Google-style hook expands the
+    arbiter's worktree variable's name in prose and in code spans. The
+    pattern is spelled once, in §8.7's list; the variables once, in §8.11's
+    guarded block (§8.1's form): re-read both after every prek pass (rev 2's
+    RR1-m1 and RR1-m2 were the hooks' doing; added 2026-11-09, review fold:
+    RR1-m1 / RR1-m2).
 -   Write Appendix C's sentences by hand: a mechanical rename produces "an
     `Success` value" and "an `Failure` payload" (measured).
 -   check_faq.py:229 must be two literals (ruff E501); clang-format re-wraps
@@ -1676,6 +1762,87 @@ commit message (the added headings are D-EHC-13's none, §8.11 and this
 section; the added items are D-EHC-13, §8.7's four greps, §8.11's five
 bullets and the hand-off's four; the added rows are §0.1's one and this
 table's eighteen).
+
+## Review fold record (rev 3, 2026-11-09)
+
+The focused re-review RR1 of rev 2 (51013a4a6; APPROVE-WITH-AMENDMENTS: no
+BLOCKER, two MAJORs, five MINORs, every one a plan-text amendment; its own
+prototype `ehc-rr1` reproduced rev 2's figures, gate 2047 of 2047, conformance
+228/0/13 over 241 with 51 bullets, grep 1's five and seventeen lines, M1's seven
+goldens and four programs, M2's three goldens) is folded above, each amendment
+marked "(amended 2026-11-09, review fold: RR1-<id>)". Every measurement a
+finding rests on was re-measured by the fixer in the container
+(scratchpad/ehc/fixer1/ of this session, not in the repository): W-380 on trunk
+fca1e9e2f at fork/decision-log.md:19596, :20829 and :20831 and
+fork/inventory/work-items.json:5161 (W-378's notes), and `"id": "W-380"` in no
+ledger, W-378 the highest id; the ls-files pattern of rev 2's §0.1 and §0.3
+listing nothing at aee70185c and §8.7's listing exactly run_result_ok.carbon and
+run_result_err.carbon; check/testdata/operators/question_result.carbon:101 at
+aee70185c reading "on the `Ok` side"; `git grep doc-gap -- fork` empty on trunk,
+the README's kinds `todo-stub | fail-test | missing-feature | design-needed |
+infra` and eight kinds in use in the ledger; paths.sh:15 and :17 reading the two
+variables that §8.11's block spells, the worktree one defaulting to
+/home/user/carbon-trunk; RG-1's _Landed_ paragraph at decision-log.md :1010-1013
+at aee70185c and at fca1e9e2f (neither rev 2's ":1008-1011" nor the review's
+":1011-1013"); the SAFE worktree (14c1ac8ac) naming W-370 once and W-371 twice
+(safe3-plan.md:1688-1692) and W-397 to W-399; the tutorial's 8 `Ok`/`Err` lines
+(9 occurrences) at aee70185c against rg1-plan.md:925's "18"; OV-4's row form at
+097c76473 (ORCHESTRATION.md:1020, "IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1
+DRY (base trunk 66bd2ba90)", no PR number; its D.8 wrote "IMPLEMENTED AND
+REVIEWED (base trunk 66bd2ba90)" at D) and its "HELD OPEN as PR 68" paragraph
+reaching trunk in PR 68's records commit fe0957d54; trunk still fca1e9e2f and
+upstream's tip still ca1898506 after a fetch. A prototype of the rename
+(/home/user/carbon-ehc-fixer1 at aee70185c, label `ehc-fixer1`, the re-review's
+own script re-run over the same 73 files; worktree and the label's four
+directories removed afterwards) was built (6.5 minutes at -j4), installed and
+measured, because the sign-off re-quotes its figures: gate before the fill
+`[  PASSED  ] 2015 tests.`, 32 per-test FAILED lines, 32 "Autoupdate would make
+changes", the summary "2015 passed, 0 failed" with exit 1 (§8.3); autoupdate to
+its fixpoint in one pass (the second changes nothing); gate 2047 passed, 0
+failed; §8.7's grep 1 exactly the five lines (common/raw_hashtable.h:1314,
+core/prelude/types/result.carbon:56,
+check/testdata/operators/question_result.carbon:156, :164 and :174), greps 2 and
+3 empty; conformance PASS 228 / FAIL 0 / SKIP 13 over 241, 51 of 56 bullets,
+every row's status and detail equal to cb726a230's with the two renamed programs
+mapped by name. Rev 3 changes no code, golden, program or page text: every
+amendment is plan text or a records template. Nothing is rejected.
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR1-M1 | MAJOR | folded: no R or D text names the PR number, its own sha or a landing; the Branches row in OV-4's form; §3 gains item 10 (the orchestrator's texts); the same tense in D.1's W-380 notes ("EH-C landed before PR 53"), which the review did not cite, is amended with it | D.2's first paragraph and intro, D.4, D.5, D.7, D.8, Appendix D's header, §3 items 8, 9 and 10, D.1's W-380 notes |
+| RR1-M2 | MAJOR | folded, reproduced (W-380 in four places on trunk, none a ledger id) | §8.9's criterion, §0.7, D-EHC-11 and its break condition, D.2's _Ids_ paragraph |
+| RR1-m1 | MINOR | folded, reproduced (paths.sh:15); the misspelling was the Google-style hook's, which expands the name in prose and code spans (seen again at this fold's first prek pass), so the commands moved into a guarded block | §8.11 (a guarded block; step 4), hand-off |
+| RR1-m2 | MINOR | folded, reproduced (nothing, then the two files); the wrong pattern was rumdl's MD011 rewriting the right one inside the two table cells (seen again at this fold's first prek pass), so the cells now point at §8.7's list, where code spans are honored | §0.1, §0.3, hand-off |
+| RR1-m3 | MINOR | folded, reproduced (:101 reads `Ok`) | A.1.22 |
+| RR1-m4 | MINOR | folded: `missing-feature`, W-346's own kind; no new kind minted | D.1 |
+| RR1-m5 | MINOR | folded, each re-measured (:1010-1013, not the review's :1011-1013) | Appendix E, F's fields and F.5, D.4, §0.7, §0.8 (a), D-EHC-11, D.6 |
+
+The fixer's own, folded the same way: F-5 D.8 named no text for the dated
+paragraph that §3 item 8 lists among D's edits, so one is given, without a
+PR number. R31's counts of this file: rev 2 headings 1/18/64/53, bullets 60,
+numbered 26, rows 713; rev 3 before prek and after it in the commit message
+(the added headings are this section and the Sign-off; the added item is §3's
+item 10; the added bullet is the hand-off's note on the two hooks; the added
+rows are this table's nine and the Sign-off's five).
+
+## Sign-off
+
+Every review of this plan, with its verdict and its counts (added 2026-11-09,
+review fold: RR1):
+
+| review | read | verdict | BLOCKER | MAJOR | MINOR | folded | rejected | fold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A: measurements, mutants and the reconciliation greps | rev 1, 7ea4ff096 | APPROVE-WITH-AMENDMENTS | 0 | 3 | 3 | 6 | none | rev 2, "Review fold record (rev 2, 2026-11-09)" |
+| B: names, records, process and the merge | rev 1, 7ea4ff096 | APPROVE-WITH-AMENDMENTS | 0 | 3 | 8 | 11 (B-M2 with A-M3) | none | rev 2, the same |
+| RR1: the focused re-review | rev 2, 51013a4a6 | APPROVE-WITH-AMENDMENTS | 0 | 2 | 5 | 7 | none | rev 3, "Review fold record (rev 3, 2026-11-09)" |
+
+Rev 3 is SIGNED OFF FOR IMPLEMENTATION: the last review's verdict is
+APPROVE-WITH-AMENDMENTS, not REJECT; every finding of the three reviews is
+folded and none rejected; rev 3 changes no code, golden, program or page
+text, so rev 2's container figures stand (gate 2047 of 2047, conformance
+228/0/13 over 241, 51 of 56 bullets, re-measured by the re-review's `ehc-rr1`
+and the fixer's `ehc-fixer1` prototypes). The implementation starts from this
+plan's commit with §3's M-0, then C1.
 
 ## Appendix A: every golden's source edit
 
@@ -2026,7 +2193,7 @@ is the new split, verbatim.
 | --- | --- | --- |
 | :60 | `return Core.Result(i32, i32).Ok(o?);` | `return Core.Result(i32, i32).Success(o?);` |
 
-#### A.1.22 toolchain/check/testdata/operators/question_result.carbon (15 lines; the split header added 2026-11-09, review fold: B-M1)
+#### A.1.22 toolchain/check/testdata/operators/question_result.carbon (15 lines; the split header added 2026-11-09, review fold: B-M1; :101's Before cell corrected 2026-11-09, review fold: RR1-m3)
 
 | Line | Before | After |
 | --- | --- | --- |
@@ -2040,7 +2207,7 @@ is the new split, verbatim.
 | :88 | `return Core.Result(i32, ErrA).Err(n as ErrA);` | `return Core.Result(i32, ErrA).Failure(n as ErrA);` |
 | :94 | `return Core.Result(i32, ErrB).Ok(v);` | `return Core.Result(i32, ErrB).Success(v);` |
 | :98 | `// --- unit_ok.carbon` | `// --- unit_success.carbon` |
-| :101 | `` // `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's `` | `` // `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's `` |
+| :101 | `` // `Core.Result((), E)`: the `()` payload on the `Ok` side (D-EH-2's `` | `` // `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's `` |
 | :105 | `if (n > 0) { return Core.Result((), i32).Ok(()); }` | `if (n > 0) { return Core.Result((), i32).Success(()); }` |
 | :106 | `return Core.Result((), i32).Err(n);` | `return Core.Result((), i32).Failure(n);` |
 | :113 | `return Core.Result((), i32).Ok(());` | `return Core.Result((), i32).Success(());` |
@@ -2727,8 +2894,11 @@ W-346) the line named `.Err`, the alternative's former spelling."
 
 ## Appendix D: the records texts, verbatim
 
-`<date>` is each commit's UTC date; `<C1>`, `<F1>`, `<P>`, `<R>`, `<D>` the
-commit shas; `<tip>` upstream's sha at D's re-fetch.
+`<date>` is each commit's UTC date; `<C1>`, `<F1>`, `<P>`, `<R>` the commit
+shas; `<tip>` upstream's sha at D's re-fetch. No text below names a PR number
+or the sha of the commit that writes it: `<N>` exists only after the PR opens
+(§3 item 10) and a commit's own sha is "this commit" or "this one", OV-4's
+form (amended 2026-11-09, review fold: RR1-M1).
 
 ### D.1 fork/inventory/work-items.json
 
@@ -2763,7 +2933,9 @@ R32)."
 
 W-380, new, after W-378 (ARB-2's item, on trunk since PR 69, so the ledger
 ends W-377, W-378, W-380; amended 2026-11-09, review fold: B-m4): `"kind":
-"doc-gap"`, `"title": "PR 53 (SAFE-1; EH-C,
+"missing-feature"` (W-346's own kind; the ledger's README lists no docs kind
+and rev 2's `doc-gap` existed nowhere, so no new kind is minted; amended
+2026-11-09, review fold: RR1-m4), `"title": "PR 53 (SAFE-1; EH-C,
 D-RG-8's break condition): docs/design/safety/rust_interop.md:223 names
 `Ok`/`Err` as `Core.Result`'s variants where trunk now spells
 `Success`/`Failure` -- a rename commit on PR 53's branch before it lands"`,
@@ -2774,13 +2946,15 @@ D-RG-8's break condition): docs/design/safety/rust_interop.md:223 names
 does not carry the drift; break condition: W-346 is scheduled before a held PR
 that uses the spelling lands; that PR then gains a rename commit before it
 lands)", "fork/eh/ehc-plan.md §0.4, D-EHC-11, D-EHC-12"]`, `"blocked_by":
-[]`, `"notes": "Filed <date> by EH-C at its discharge: EH-C landed before PR
-53 (which waits on SAFE-4, fork/ORCHESTRATION.md Next actions item 14), so
-D-RG-8's break condition fired for PR 53's one line. Work: one commit on
+[]`, `"notes": "Filed <date> by EH-C at its discharge: EH-C lands before PR
+53 (W-346's schedule puts it before UA-3; PR 53 waits on SAFE-4,
+fork/ORCHESTRATION.md Next actions item 14), so D-RG-8's break condition
+fires for PR 53's one line. Work: one commit on
 claude/carbon-fork-0-1-safe that spells the row `Success`/`Failure`, before
 PR 53 lands (R32 (e): a new commit, never a rewrite). Owner: PR 53's landing.
 Break condition: the user vetoes EH-C's reversal (then this item is withdrawn
-with it)."`.
+with it)."` (the notes' tense amended 2026-11-09, review fold: RR1-M1: D
+cannot claim a landing).
 
 The `generated` and `source` fields: `source` gains the sentence "EH-C
 (<date>) discharged W-346 and filed W-380."
@@ -2790,7 +2964,7 @@ The `generated` and `source` fields: `source` gains the sentence "EH-C
 Placed directly before "### EH-B: catching thunks, Cpp.Exception,
 Carbon::expected export (2026-09-27)". R writes the first block; D appends
 the second block's three paragraphs to the entry (amended 2026-11-09, review
-fold: B-M3):
+fold: B-M3); neither names a PR number or its own sha (RR1-M1):
 
 <!-- google-doc-style-ignore -->
 
@@ -2802,7 +2976,8 @@ and EH-C is the error-handling workstream's third slice (fork/eh/ehc-plan.md,
 beside fork/eh/plan.md's EH-A and EH-B). Line cites are to trunk aee70185c
 unless a sha is named. Branch claude/carbon-fork-0-1-ehc, commits <plan>
 (the plan's revisions), <M-0> (the merge of trunk fca1e9e2f, PR 69), <C1>,
-<F1>, <P>, the reviews' fix commits <fixes>, <R> and <D>; PR <N>, base trunk.
+<F1>, <P>, the reviews' fix commits <fixes> and this one; the discharge
+commit appends the last three paragraphs.
 
 _The item and the rule._ W-346, filed by RG-1 (D-RG-5, 2026-10-28), classified
 the user's sub-decision F-006a (`Ok`/`Err`, 2026-07-19) a DRIFT under R32 (d):
@@ -2910,8 +3085,10 @@ string at a sha (history). Grep 4, `.ok()` over the header's consumers and
 `"Failure"` only.
 
 _Ids._ W-380 to W-385 reserved by the plan's §0.7 re-scan (<n> refs, <w>
-worktrees, after a fetch at D); W-380 filed after W-378; W-381 to W-385
-unused.
+worktrees, after a fetch at D): W-380 was no ledger item's id on any ref or
+worktree (0 by the plan's §8.9 count) and appeared only as reserved text, in
+W-378's notes, the weekly entry of 2026-11-09, ARB-2's entry and the plan;
+W-380 filed after W-378; W-381 to W-385 unused.
 
 _Discharged by this commit: W-346 (EH-C)._
 ```
@@ -2942,14 +3119,18 @@ D-EHC-1's). See the entry "EH-C: `Core.Result`'s alternatives renamed to
 ### D.4 The RG-1 entry's note
 
 Appended as the entry's last paragraph (after its _Landed_ paragraph,
-decision-log.md:1008-1011):
+decision-log.md:1010-1013 at aee70185c and at fca1e9e2f; the cite corrected
+2026-11-09, review fold: RR1-m5, by measurement, the review's ":1011-1013"
+being off by one too; the text without a PR number or a landing claim, R
+knowing neither: RR1-M1):
 
 <!-- google-doc-style-ignore -->
 
 ```markdown
-_W-346 resolved (<date>, EH-C):_ D-RG-5's rename landed as PR <N>; register
-row T2.1 is ALIGNED; F-006a carries its reversal note; PR 53's one line is
-W-380. See the entry "EH-C: ..." under the EH entries.
+_W-346 resolved (<date>, EH-C):_ D-RG-5's rename is implemented on
+claude/carbon-fork-0-1-ehc (its PR lands by LAND-1); register row T2.1 is
+ALIGNED; F-006a carries its reversal note; PR 53's one line is W-380. See
+the entry "EH-C: ..." under the EH entries.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2970,8 +3151,10 @@ W-380. See the entry "EH-C: ..." under the EH entries.
     (classified 2026-10-28, RG-1: DRIFT, W-346, ...)"): after "veto-able;"
     insert "resolved <date> by EH-C (ALIGNED);".
 -   The 2026-11-09 weekly entry: after "UA-3 stays scheduled after PR 53
-    lands and after EH-C (W-346)" (:19570-19571) insert " (EH-C landed <date>
-    as PR <N>)"; after "W-378 is the next free id, and this check files none."
+    lands and after EH-C (W-346)" (:19570-19571) insert " (EH-C: W-346
+    discharged on its branch <date>; PR by LAND-1)" (amended 2026-11-09,
+    review fold: RR1-M1); after "W-378 is the next free id, and this check
+    files none."
     (:19598) insert " (EH-C, <date>: W-380 to W-385 reserved, W-380 filed;
     the plan's §0.7.)".
 
@@ -2985,8 +3168,10 @@ amended 2026-10-28, review fold: A-m1, B-m4)"; its Break condition cell:
 the user vetoes the reversal (W-346 reopens)"; its Item cell: "W-355 (the
 quote rows and the silence check T2.1); W-380 for PR 53's line". Row T11.1's
 Verdict cell: "ALIGNED (a choice; its alternatives ALIGNED since EH-C,
-<date>)" and its Item cell "W-355". Row H3.2's Item cell: "the tutorial's 18
-`Ok`/`Err` lines were renamed by EH-C, <date> (D-RG-8)". No other row and no
+<date>)" and its Item cell "W-355". Row H3.2's Item cell: "the tutorial's 8
+`Ok`/`Err` lines (9 occurrences; RG-1 counted 18) were renamed by EH-C,
+<date> (D-RG-8)" (the count §0.1 measured; amended 2026-11-09, review fold:
+RR1-m5). No other row and no
 prose paragraph changes (D-RG-5 and D-RG-8 are history). R31's counts: rows
 unchanged, headings unchanged.
 
@@ -3017,14 +3202,15 @@ checks, 0 failed" before and "checked 96 silence checks, 0 failed" after
 
 Row "Error handling: dedicated control flow constructs" (:73) stays DONE; its
 evidence cell gains, before the final sentence "The scalar-payload bound ...":
-"EH-C (<date>, W-346, PR <N>): the alternatives are spelled `Success`/`Failure`,
+"EH-C (<date>, W-346): the alternatives are spelled `Success`/`Failure`,
 upstream's README's (D-RG-5 resolved, register row T2.1 ALIGNED); 8/8 programs
 PASS unchanged, container-measured 228/0/13 over 241 (R33 (b))."; the cell's own
 mention of run_result_ok.carbon and run_result_err.carbon is rewritten to
 run_result_success.carbon and run_result_failure.carbon (D-EHC-13; amended
 2026-11-09, review fold: B-M1). Row 70's example "`case .Ok(v: i32)`" becomes "`case
 .Success(v: i32)`" (R). The header's tally 37/17/2/0 is unchanged by EH-C; the
-landing's A.8 sentence restates it with PR <N>'s figures.
+landing's A.8 sentence restates it with PR <N>'s figures (the PR number appears
+there first; amended 2026-11-09, review fold: RR1-M1).
 
 ### D.8 fork/ORCHESTRATION.md
 
@@ -3033,24 +3219,40 @@ Before the landing (D): the Branches table gains, directly after the
 last landed-PR row, before `claude/carbon-fork-0-1-upstream-advance`) or,
 once LAND-1's records for PR 69 add a `claude/carbon-fork-0-1-arb2` row
 there, directly after that row (amended 2026-11-09, review fold: B-m10 /
-B-m4): "| `claude/carbon-fork-0-1-ehc` | OPEN as PR <N>, base trunk — EH-C:
-`Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346, R32;
-F-006a reversed, veto-able); commits <C1>, <F1>, <P>, <fixes>, <R>, <D>;
-container-measured (R33 (b), EXPECTED, not of record): gate 2047 of 2047,
-conformance 228/0/13 over 241, 51/56 bullets; lands by LAND-1's D-LAND-6
-after its reviews are dry. |". Next actions item 6's sentence "After the
-held PRs land and before UA-3: W-346 (EH-C: `Core.Result`'s
-`Success`/`Failure`, on trunk's base, beside W-341)." becomes "W-346 (EH-C:
-`Core.Result`'s `Success`/`Failure`, on trunk's base) is open as PR <N> after
-its reviews (<date>); it lands by LAND-1's procedure before UA-3, then PR
-53's W-380 rename commit before PR 53 lands." and ":2725 "UA-3 follows W-341
-and W-346." becomes "UA-3 follows W-341 (landed) and W-346 (PR <N>)." The
-header gains the clause "Last updated: <date> (EH-C's PR <N> opened, W-346's
-rename; <landed> PRs landed, 1 held, 1 open; see the Branches row; the
-earlier <prev> text follows)." before the current first clause, `<landed>`
-being the header's count at the time of writing (17 at aee70185c, 18 once PR
-69's records land; B-m4). At the landing:
-Appendix F's texts replace these.
+B-m4; the row in OV-4's form, without a PR number, amended 2026-11-09,
+review fold: RR1-M1): "| `claude/carbon-fork-0-1-ehc` | IMPLEMENTED AND
+REVIEWED (base trunk fca1e9e2f) — EH-C: `Core.Result`'s alternatives renamed
+to `Success`/`Failure` (W-346 DISCHARGED, R32; F-006a reversed, veto-able;
+W-380 filed for PR 53's line, W-381 to W-385 unused); commits <C1>, <F1>,
+<P>, <fixes>, <R> and this one; container-measured (R33 (b), EXPECTED, not
+of record): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets;
+the PR opens with base trunk after the focused re-review is dry and lands by
+LAND-1's D-LAND-6. |". After a dry round, that round's records commit
+changes the row's leading phrase to "IMPLEMENTED AND REVIEWED; RE-REVIEW
+ROUND <k> DRY (base trunk fca1e9e2f)" (§3 item 9). Next actions item 6's
+sentence "After the held PRs land and before UA-3: W-346 (EH-C:
+`Core.Result`'s `Success`/`Failure`, on trunk's base, beside W-341)."
+becomes "W-346 (EH-C: `Core.Result`'s `Success`/`Failure`, on trunk's base)
+is implemented and reviewed on claude/carbon-fork-0-1-ehc (<date>); its PR
+opens after the focused re-review is dry and lands by LAND-1's procedure
+before UA-3, then PR 53's W-380 rename commit before PR 53 lands." and
+":2725 "UA-3 follows W-341 and W-346." becomes "UA-3 follows W-341 (landed)
+and W-346 (implemented; its PR pending)." The header gains the clause "Last
+updated: <date> (EH-C implemented and reviewed on claude/carbon-fork-0-1-ehc,
+W-346 discharged at its records commit; <landed> PRs landed, 1 held; see the
+Branches row; the earlier <prev> text follows)." before the current first
+clause, `<landed>` being the header's count at the time of writing (17 at
+aee70185c, 18 once PR 69's records land; B-m4). The dated paragraph D adds
+(§3 item 8 names it; rev 2 gave it no text: the fixer's F-5) reads "<date>
+(<hh:mm> UTC): EH-C is IMPLEMENTED AND REVIEWED on claude/carbon-fork-0-1-ehc
+(base trunk fca1e9e2f; commits <plan revisions>, <M-0>, <C1>, <F1>, <P>,
+<fixes>, <R> and this one): `Core.Result`'s alternatives are
+`Success`/`Failure` (W-346 DISCHARGED under R32 (d); F-006a reversed,
+veto-able; W-380 filed for PR 53's line); container-measured (R33 (b)): gate
+2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; the focused
+re-review follows, then the PR with base trunk, landed by LAND-1." The PR
+number is written by the orchestrator's texts of §3 item 10 and by the
+landing's Appendix F, whose texts replace these.
 
 ### D.9 fork/eh/plan.md
 
@@ -3097,7 +3299,7 @@ checkers and check_faq.py 0 errors; mutants: the order swapped turns 7
 goldens and 4 programs red, the thunk's identifiers left as `Ok`/`Err` turn 3
 goldens red. Records: W-346 DISCHARGED, W-380 filed (PR 53's
 rust_interop.md:223 rename before it lands), decision-log entry EH-C, F-006a's
-reversal note, register row T2.1 ALIGNED with a new silence check, gap row
+reversal note, register row T2.1 ALIGNED with two new silence checks, gap row
 evidence, ORCHESTRATION. Not run: clang-tidy (no binary), the hosted gate
 (Actions disabled, owed), Bazel.
 
@@ -3115,7 +3317,10 @@ before>` trunk at the landing; `<merge sha>`, `<merged_at>`, `<api sha>`
 from `pull_request_read`; `<g>` the gate (2047 of 2047 expected), `<p>/<f>/
 <s>` over `<n>` (228/0/13 over 241 expected), `<b>` (51 expected), `<tally>`
 (37/17/2/0); `<spec>` "fork/eh/ehc-plan.md §3 and Appendix F"; `<land-time
-shas>` M and F-M when trunk moved, else "none".
+shas>` M and F-M when trunk moved, else "none"; `<landed>` the header's count
+of landed PRs after this landing (19 when PR 69's records and this PR are the
+only landings after aee70185c's 17, §6.2; added 2026-11-09, review fold:
+RR1-m5, replacing rev 2's "18" in F.5).
 
 ### F.1 M, the merge of trunk into the branch (only if trunk moved again after M-0's fca1e9e2f)
 
@@ -3192,14 +3397,14 @@ forbid-llvm-googletest).
 under R33 (fork/eh/ehc-plan.md §3 and Appendix F), GitHub merged_at
 <merged_at>; container-measured (R33 (b)): gate <g> of <g>, conformance
 <p>/<f>/<s> over <n>, <b>/56 bullets, gap tally <tally>; id re-scans:
-<rescan>; 18 PRs landed, 1 held. Next: PR 53's W-380 rename commit before it
-lands (item 14), then UA-3.
+<rescan>; <landed> PRs landed, 1 held. Next: PR 53's W-380 rename commit
+before it lands (item 14), then UA-3.
 ```
 
 <!-- google-doc-style-resume -->
 
-Header clause: "Last updated: <date> (PR <N> landed by LAND-1; 18 PRs landed,
-1 held; see the paragraph dated <date> (<hh:mm> UTC) below; the earlier
+Header clause: "Last updated: <date> (PR <N> landed by LAND-1; <landed> PRs
+landed, 1 held; see the paragraph dated <date> (<hh:mm> UTC) below; the earlier
 <prev> text follows)." The F.3 paragraph of 2026-11-06 (05:44 UTC) gets, after
 "Next: EH-C (W-346) on trunk's base, then UA-3.", the parenthetical "(EH-C
 landed <date> as PR <N>; next UA-3.)". Next actions item 6: "W-346 (EH-C)

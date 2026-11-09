@@ -360,7 +360,7 @@ fn U(n: i32) -> i32 {
     // CHECK:STDERR:     case .Ok(v: i32) => {
     // CHECK:STDERR:          ^~~~~~~~~~~
     // CHECK:STDERR:
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       return v;
     }
     default => {

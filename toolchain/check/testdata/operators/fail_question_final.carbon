@@ -27,8 +27,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -42,13 +42,13 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // P-6: a disagreeing NARROWER impl after the final impl — the
@@ -77,21 +77,21 @@ impl MyResult(i32, i32) as Core.Try
     match (self) {
       // The disagreeing continue type: payloads route to `Break` so both
       // bindings are used without conjuring a `bool` continue value.
-      case .Ok(v: i32) => { return Core.ControlFlow(bool, i32).Break(v); }
-      case .Err(e: i32) => { return Core.ControlFlow(bool, i32).Break(e); }
+      case .Success(v: i32) => { return Core.ControlFlow(bool, i32).Break(v); }
+      case .Failure(e: i32) => { return Core.ControlFlow(bool, i32).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(bool, i32));
   }
-  fn FromBreak(e: i32) -> Self { return MyResult(i32, i32).Err(e); }
+  fn FromBreak(e: i32) -> Self { return MyResult(i32, i32).Failure(e); }
 }
 
 // --- choice_lib.carbon
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // --- fail_final_impl_crossfile.carbon
@@ -120,11 +120,11 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }

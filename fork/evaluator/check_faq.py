@@ -164,7 +164,7 @@ REPRODUCERS = [
         "nightly",
         one(
             "fn Run() -> Core.Result((), i32) { "
-            "return Core.Result((), i32).Ok(()); }"
+            "return Core.Result((), i32).Success(()); }"
         ),
         COMPILE,
         "error: member name `Result` not found in `Core`",
@@ -223,10 +223,11 @@ REPRODUCERS = [
         "fork",
         one(
             "fn Run() -> Core.Result((), i32) { "
-            "return Core.Result((), i32).Err(7); }"
+            "return Core.Result((), i32).Failure(7); }"
         ),
         BUILD,
-        "carbon: `Main.Run` returned `.Err` of type `i32`; exiting with code 1",
+        "carbon: `Main.Run` returned `.Failure` of type `i32`; "
+        "exiting with code 1",
         1,
     ),
     (

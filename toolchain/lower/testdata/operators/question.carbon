@@ -27,8 +27,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -42,8 +42,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -53,28 +53,28 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 fn Open(n: i32) -> MyResult(i32, i32) {
-  if (n > 0) { return MyResult(i32, i32).Ok(n); }
-  return MyResult(i32, i32).Err(n);
+  if (n > 0) { return MyResult(i32, i32).Success(n); }
+  return MyResult(i32, i32).Failure(n);
 }
 
 fn Wide(n: i64) -> MyResult(i64, i32) {
-  if (n > 0) { return MyResult(i64, i32).Ok(n); }
-  return MyResult(i64, i32).Err(0);
+  if (n > 0) { return MyResult(i64, i32).Success(n); }
+  return MyResult(i64, i32).Failure(0);
 }
 
 fn Basic(n: i32) -> MyResult(i32, i32) {
   var f: i32 = Open(n)?;
-  return MyResult(i32, i32).Ok(f + 1);
+  return MyResult(i32, i32).Success(f + 1);
 }
 
 fn Both(n: i32, m: i64) -> MyResult(i64, i32) {
   var x: i32 = Open(n)?;
   var y: i64 = Wide(m)?;
-  return MyResult(i64, i32).Ok(y + (x as i64));
+  return MyResult(i64, i32).Success(y + (x as i64));
 }
 
 // CHECK:STDOUT: ; ---

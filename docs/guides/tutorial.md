@@ -363,31 +363,31 @@ import Core library "io";
 // Returns the quotient, or the dividend as the error when dividing by zero.
 fn Divide(a: i32, b: i32) -> Core.Result(i32, i32) {
   if (b == 0) {
-    return Core.Result(i32, i32).Err(a);
+    return Core.Result(i32, i32).Failure(a);
   }
-  return Core.Result(i32, i32).Ok(a / b);
+  return Core.Result(i32, i32).Success(a / b);
 }
 
 // `?` returns early with the error; otherwise it unwraps the value.
 fn Average(total: i32, count: i32) -> Core.Result(i32, i32) {
   let mean: i32 = Divide(total, count)?;
-  return Core.Result(i32, i32).Ok(mean);
+  return Core.Result(i32, i32).Success(mean);
 }
 
 fn Report(r: Core.Result(i32, i32)) {
   match (r) {
-    case .Ok(v: i32) => { Core.Print(v); }
-    case .Err(e: i32) => { Core.Print(-e); }
+    case .Success(v: i32) => { Core.Print(v); }
+    case .Failure(e: i32) => { Core.Print(-e); }
   }
 }
 
 fn Run() -> i32 {
   Report(Average(12, 4));
   Report(Average(7, 0));
-  if (let .Ok(v: i32) = Divide(9, 3)) {
+  if (let .Success(v: i32) = Divide(9, 3)) {
     Core.Print(v);
   }
-  if (let .Ok(v: i32) = Divide(1, 0)) {
+  if (let .Success(v: i32) = Divide(1, 0)) {
     Core.Print(v);
   } else {
     Core.Print(0);
@@ -406,11 +406,11 @@ Output:
 ```
 
 What to notice: `Core.Result(T, E)` is a `choice` in the prelude, with the
-alternatives `Ok` and `Err`. The postfix `?` returns the error to the caller,
-or unwraps the value. `if (let pattern = value)` runs its block only when the
-pattern matches, and its `else` block otherwise. `Run` may itself return
-`Core.Result((), E)`; an error then prints a line to stderr and exits with
-code 1. Design: [error handling](/docs/design/error_handling.md).
+alternatives `Success` and `Failure`. The postfix `?` returns the error to the
+caller, or unwraps the value. `if (let pattern = value)` runs its block only
+when the pattern matches, and its `else` block otherwise. `Run` may itself
+return `Core.Result((), E)`; an error then prints a line to stderr and exits
+with code 1. Design: [error handling](/docs/design/error_handling.md).
 
 If it fails, see the FAQ:
 

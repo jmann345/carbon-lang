@@ -18,37 +18,37 @@
 // conditional branch, the break path's payload load + prelude `FromBreak`
 // call + early `ret` through the return slot, and the continue path's
 // payload load as the expression's value. `Unit` additionally lowers a
-// `Core.Result((), i32)` — the zero-sized `Ok(())` payload (D-EH-2).
+// `Core.Result((), i32)` — the zero-sized `Success(())` payload (D-EH-2).
 
 // --- propagate.carbon
 library "[[@TEST_NAME]]";
 
 fn Open(n: i32) -> Core.Result(i32, i32) {
-  if (n > 0) { return Core.Result(i32, i32).Ok(n); }
-  return Core.Result(i32, i32).Err(n);
+  if (n > 0) { return Core.Result(i32, i32).Success(n); }
+  return Core.Result(i32, i32).Failure(n);
 }
 
 fn Basic(n: i32) -> Core.Result(i32, i32) {
   var f: i32 = Open(n)?;
-  return Core.Result(i32, i32).Ok(f + 1);
+  return Core.Result(i32, i32).Success(f + 1);
 }
 
 fn Chain(n: i32) -> Core.Result(i32, i32) {
   var t: i32 = Open(Open(n)?)?;
-  return Core.Result(i32, i32).Ok(t);
+  return Core.Result(i32, i32).Success(t);
 }
 
 // --- unit.carbon
 library "[[@TEST_NAME]]";
 
 fn Check(n: i32) -> Core.Result((), i32) {
-  if (n > 0) { return Core.Result((), i32).Ok(()); }
-  return Core.Result((), i32).Err(n);
+  if (n > 0) { return Core.Result((), i32).Success(()); }
+  return Core.Result((), i32).Failure(n);
 }
 
 fn Unit(n: i32) -> Core.Result((), i32) {
   Check(n)?;
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 
 // CHECK:STDOUT: ; ---

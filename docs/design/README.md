@@ -4044,12 +4044,11 @@ overload resolution") remains
 
 Carbon's error handling is specified in [Error handling](error_handling.md).
 Errors are values: a fallible function returns the [choice type](#choice-types)
-`Core.Result(T, E)`, holding either an `Ok` value or an `Err` error. (The
-alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a;
-the illustrative `IntResult` example [above](#choice-types) uses
-`Success`/`Failure` and is not `Core.Result`.)
-Results are consumed with [`match`](#match) and with the combined match
-control-flow forms
+`Core.Result(T, E)`, holding either an `Success` value or an `Failure` error.
+(The alternative names `Success`/`Failure` were decided by the user —
+sub-decision F-006a; the illustrative `IntResult` example [above](#choice-types)
+uses `Success`/`Failure` and is not `Core.Result`.) Results are consumed with
+[`match`](#match) and with the combined match control-flow forms
 [`if (let ...)` and `let ... else`](pattern_matching.md#refutable-pattern-bindings)
 — adopted in fork decision [F-011](/fork/decision-log.md) and shown applied to
 `Result` in [Error handling](error_handling.md) — and propagated with the

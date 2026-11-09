@@ -38,7 +38,7 @@ int may_throw_int();
 
 //@dump-sem-ir-begin
 fn F() -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.may_throw_int()?);
 }
 //@dump-sem-ir-end
 
@@ -57,7 +57,7 @@ void may_throw();
 //@dump-sem-ir-begin
 fn G() -> Core.Result((), Cpp.Exception) {
   Cpp.may_throw()?;
-  return Core.Result((), Cpp.Exception).Ok(());
+  return Core.Result((), Cpp.Exception).Success(());
 }
 //@dump-sem-ir-end
 
@@ -77,7 +77,7 @@ int g();
 // stays fenced.
 //@dump-sem-ir-begin
 fn H() -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.f(Cpp.g())?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.f(Cpp.g())?);
 }
 //@dump-sem-ir-end
 
@@ -98,7 +98,7 @@ int may_throw_int();
 fn Both() -> Core.Result(i32, Cpp.Exception) {
   var plain: i32 = Cpp.may_throw_int();
   var caught: i32 = Cpp.may_throw_int()?;
-  return Core.Result(i32, Cpp.Exception).Ok(plain + caught);
+  return Core.Result(i32, Cpp.Exception).Success(plain + caught);
 }
 //@dump-sem-ir-end
 
@@ -118,7 +118,7 @@ int may_throw_int();
 fn P() -> Core.Result(i32, Cpp.Exception) {
   var one: i32 = (Cpp.may_throw_int())?;
   var two: i32 = ((Cpp.may_throw_int()))?;
-  return Core.Result(i32, Cpp.Exception).Ok(one + two);
+  return Core.Result(i32, Cpp.Exception).Success(one + two);
 }
 //@dump-sem-ir-end
 
@@ -147,7 +147,7 @@ struct C {
 fn M(c: Cpp.C, p: Cpp.C*) -> Core.Result(i32, Cpp.Exception) {
   var a: i32 = c.get()?;
   var b: i32 = p->mutate()?;
-  return Core.Result(i32, Cpp.Exception).Ok(a + b);
+  return Core.Result(i32, Cpp.Exception).Success(a + b);
 }
 //@dump-sem-ir-end
 
@@ -176,7 +176,7 @@ int may_throw_int();
 // CHECK:STDERR:                            ^~~~~~~~~~~~~
 // CHECK:STDERR:
 fn R() -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.may_throw_int()?);
 }
 //@dump-sem-ir-end
 

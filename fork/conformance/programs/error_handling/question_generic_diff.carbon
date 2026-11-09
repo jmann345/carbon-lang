@@ -17,7 +17,7 @@
 // second step) and every payload is runtime-computed (R16d), each step
 // tagging its error with a distinct base (101/202), so byte-identical
 // output pins WHERE propagation stopped inside the generic body and WHAT
-// the break payload was. The i64 leg additionally compares the Ok
+// the break payload was. The i64 leg additionally compares the Success
 // payload against a runtime-computed expectation, so a corrupted i64
 // payload roundtrip through the wider specific's layout breaks the
 // byte-identical-output requirement. Exit code and stdout must be
@@ -41,7 +41,7 @@
 // ratified doc's own `final impl` spelling
 // (docs/design/error_handling.md's `Try` sketches) the continue value
 // threads as `T` with no compiler change
-// (toolchain/check/testdata/operators/question_final.carbon). The Ok
+// (toolchain/check/testdata/operators/question_final.carbon). The Success
 // payload is reconstructed from `x` — the identical value, since `Step`
 // passes `x` through — keeping the output table and the layout-roundtrip
 // observation intact; the continue-THREADING runtime arbiter is the W72b
@@ -51,8 +51,8 @@
 import Core library "io";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -66,8 +66,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -77,13 +77,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // per the SCOPE note above; under `final` it does), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // A generic step: passes `x` through, or fails with the given tag.
 fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
-  if (fail) { return MyResult(T, i32).Err(tag); }
-  return MyResult(T, i32).Ok(x);
+  if (fail) { return MyResult(T, i32).Failure(tag); }
+  return MyResult(T, i32).Success(x);
 }
 
 // Payload sink — the check golden's proven deduced-sink shape
@@ -103,17 +103,17 @@ fn Discard[U: type](_: U) {}
 fn Chain[T: type](x: T, fail_at: i32) -> MyResult(T, i32) {
   Discard(Step(x, fail_at == 1, 101)?);
   Discard(Step(x, fail_at == 2, 202)?);
-  return MyResult(T, i32).Ok(x);
+  return MyResult(T, i32).Success(x);
 }
 
-// Prints the outcome tag (0 = Ok, 1 = Err) and the payload.
+// Prints the outcome tag (0 = Success, 1 = Failure) and the payload.
 fn ProbeI(fail_at: i32, seed: i32) {
   match (Chain(seed, fail_at)) {
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       Core.Print(0);
       Core.Print(v);
     }
-    case .Err(e: i32) => {
+    case .Failure(e: i32) => {
       Core.Print(1);
       Core.Print(e);
     }
@@ -121,11 +121,11 @@ fn ProbeI(fail_at: i32, seed: i32) {
 }
 
 // The i64 instantiation: prints the outcome tag, then 1/0 for whether the
-// Ok payload matches the runtime-computed expectation (Core.Print takes
+// Success payload matches the runtime-computed expectation (Core.Print takes
 // i32 only), or the i32 break payload directly.
 fn ProbeL(fail_at: i32, seed: i64, expect: i64) {
   match (Chain(seed, fail_at)) {
-    case .Ok(v: i64) => {
+    case .Success(v: i64) => {
       Core.Print(0);
       if (v == expect) {
         Core.Print(1);
@@ -133,7 +133,7 @@ fn ProbeL(fail_at: i32, seed: i64, expect: i64) {
         Core.Print(0);
       }
     }
-    case .Err(e: i32) => {
+    case .Failure(e: i32) => {
       Core.Print(1);
       Core.Print(e);
     }

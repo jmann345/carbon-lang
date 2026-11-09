@@ -16,7 +16,7 @@
 // stores `__cxa_current_primary_exception()` through the error out-pointer and
 // returns the discriminant 1, while the success path stores the return value
 // through the return out-pointer and returns 0; the Carbon caller compares
-// the discriminant with 0 (`icmp`/`br`) and constructs the `Ok` or `Err`
+// the discriminant with 0 (`icmp`/`br`) and constructs the `Success` or `Failure`
 // alternative of `Core.Result(i32, Cpp.Exception)` in each block into ONE
 // shared `alloca` (no `phi`: both blocks store into the same slot, and the
 // convergence block reads it). `G` is the
@@ -40,18 +40,18 @@ struct C {
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.may_throw_int()?);
 }
 
 fn G() -> Core.Result((), Cpp.Exception) {
   Cpp.may_throw()?;
-  return Core.Result((), Cpp.Exception).Ok(());
+  return Core.Result((), Cpp.Exception).Success(());
 }
 
 fn M(c: Cpp.C, p: Cpp.C*) -> Core.Result(i32, Cpp.Exception) {
   var a: i32 = c.get()?;
   var b: i32 = p->mutate()?;
-  return Core.Result(i32, Cpp.Exception).Ok(a + b);
+  return Core.Result(i32, Cpp.Exception).Success(a + b);
 }
 
 // CHECK:STDOUT: ; ---

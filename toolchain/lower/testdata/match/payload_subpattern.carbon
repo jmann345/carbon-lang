@@ -11,21 +11,21 @@
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/lower/testdata/match/payload_subpattern.carbon
 
 // The W-008 plan §4 R-2 anti-regression pin: the payload load for a
-// payload-literal arm (`case .Ok(42)`) must sit in a block reached only
+// payload-literal arm (`case .Success(42)`) must sit in a block reached only
 // when the discriminant compare succeeds — the payload region of a
 // non-active alternative is uninitialized storage, and a hoisted load
 // would feed poison to a branch.
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 fn Consume(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(42) => { return 1; }
-    case .Ok(value: i32) => { return value; }
-    case .Err => { return -1; }
+    case .Success(42) => { return 1; }
+    case .Success(value: i32) => { return value; }
+    case .Failure => { return -1; }
   }
   return -2;
 }

@@ -14,19 +14,19 @@
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // Parentheses are present in an alternative pattern exactly when the
-// alternative declares a parameter list (p2188), so bare `.Ok` is an error.
+// alternative declares a parameter list (p2188), so bare `.Success` is an error.
 fn F(r: IntResult) -> i32 {
   match (r) {
     // CHECK:STDERR: fail_bare_payload_alternative.carbon:[[@LINE+4]]:10: error: alternative `Ok` is declared with a parameter list, so its pattern requires parentheses [MatchAlternativeMissingParens]
     // CHECK:STDERR:     case .Ok => { return 1; }
     // CHECK:STDERR:          ^~~
     // CHECK:STDERR:
-    case .Ok => { return 1; }
+    case .Success => { return 1; }
     default => { return 0; }
   }
   return -1;
@@ -36,19 +36,19 @@ fn F(r: IntResult) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
-// The other direction of the parens-iff-parameter-list rule: `Err` declares
-// no parameter list, so `.Err()` is an error.
+// The other direction of the parens-iff-parameter-list rule: `Failure` declares
+// no parameter list, so `.Failure()` is an error.
 fn F(r: IntResult) -> i32 {
   match (r) {
     // CHECK:STDERR: fail_parens_on_constant_alternative.carbon:[[@LINE+4]]:10: error: alternative `Err` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
     // CHECK:STDERR:     case .Err() => { return 1; }
     // CHECK:STDERR:          ^~~~~~
     // CHECK:STDERR:
-    case .Err() => { return 1; }
+    case .Failure() => { return 1; }
     default => { return 0; }
   }
   return -1;
@@ -84,8 +84,8 @@ fn F(s: Shape) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // An unknown alternative name gets the standard member-access diagnostic,
@@ -110,8 +110,8 @@ fn F(r: IntResult) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // A leading-dot designator inside a payload list is not an alternative
@@ -130,7 +130,7 @@ fn F(r: IntResult) -> i32 {
     // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
     // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~
     // CHECK:STDERR:
-    case .Ok(.Err) => { return 1; }
+    case .Success(.Failure) => { return 1; }
     default => { return 0; }
   }
   return -1;
@@ -140,8 +140,8 @@ fn F(r: IntResult) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // Only the leading-dot alternative pattern spelling is in slice 1
@@ -152,7 +152,7 @@ fn F(r: IntResult) -> i32 {
     // CHECK:STDERR:     case IntResult.Err => { return 1; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
-    case IntResult.Err => { return 1; }
+    case IntResult.Failure => { return 1; }
     default => { return 0; }
   }
   return -1;

@@ -17,14 +17,14 @@
 // the choice's `{discriminant, payload}` representation.
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 fn Consume(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(value: i32) => { return value; }
-    case .Err => { return -1; }
+    case .Success(value: i32) => { return value; }
+    case .Failure => { return -1; }
   }
   return -3;
 }

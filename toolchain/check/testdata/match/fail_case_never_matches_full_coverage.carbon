@@ -72,17 +72,17 @@ fn F(v: One) -> One {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
-// Irrefutable-payload coverage completes the union: `.Ok(v: i32)` covers
-// `.Ok` (a wholly-irrefutable payload counts, exactly as for
-// exhaustiveness), `.Err` covers the rest, and the binding arm is dead.
+// Irrefutable-payload coverage completes the union: `.Success(v: i32)` covers
+// `.Success` (a wholly-irrefutable payload counts, exactly as for
+// exhaustiveness), `.Failure` covers the rest, and the binding arm is dead.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(v: i32) => { return v; }
-    case .Err => { return 0; }
+    case .Success(v: i32) => { return v; }
+    case .Failure => { return 0; }
     // CHECK:STDERR: fail_irrefutable_payload_union.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
     // CHECK:STDERR:     case unused u: IntResult => { return 1; }
     // CHECK:STDERR:     ^~~~

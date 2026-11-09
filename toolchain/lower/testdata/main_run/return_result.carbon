@@ -15,29 +15,29 @@
 // @main()` with ZERO parameters (no `sret`, no `ptr` — the SemIR return
 // parameter is ignored, not lowered), the `Core.Result` return slot as a
 // local `alloca` in the entry block, and at every `return` the epilogue:
-// `load i8` of the discriminant, `icmp eq ... 0`, a branch to `run.result.ok`
-// (`ret i32 0` for `Ok(())`, the `i32` payload load for `Ok(code)`) or
-// `run.result.err` (`call i64 @write(i32 2, ptr @main.result.err.message,
+// `load i8` of the discriminant, `icmp eq ... 0`, a branch to `run.result.success`
+// (`ret i32 0` for `Success(())`, the `i32` payload load for `Success(code)`) or
+// `run.result.failure` (`call i64 @write(i32 2, ptr @main.result.failure.message,
 // i64 <len>)` — `declare i64 @write(i32, ptr, i64)` — then `ret i32 1`). The
-// `?` in `unit_ok` adds a second `return` sharing the one message global.
+// `?` in `unit_success` adds a second `return` sharing the one message global.
 
-// --- unit_ok.carbon
+// --- unit_success.carbon
 library "[[@TEST_NAME]]";
 
 fn Fails(n: i32) -> Core.Result((), i32) {
-  return Core.Result((), i32).Err(n);
+  return Core.Result((), i32).Failure(n);
 }
 
 fn Run() -> Core.Result((), i32) {
   Fails(7)?;
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 
-// --- i32_ok.carbon
+// --- i32_success.carbon
 library "[[@TEST_NAME]]";
 
 fn Run() -> Core.Result(i32, i32) {
-  return Core.Result(i32, i32).Ok(3);
+  return Core.Result(i32, i32).Success(3);
 }
 
 // CHECK:STDOUT: ; ---

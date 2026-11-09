@@ -22,23 +22,23 @@
 // reading `value()`/`error()` in C++ observes exactly the bytes Carbon wrote
 // — a wrong offset would print garbage, never these values (fork/eh/plan.md
 // §7 R-7). Inputs are runtime-selected (`RuntimeSeed(x) = x + 20`, R16d);
-// hand-derived: `Parse(5)` = Ok(5) → 10; `Parse(-3)` = Err(3) → 3;
-// `Check(4)` = Ok(()) → 1; `Check(9)` = Err(9) → 9. Export shape from
+// hand-derived: `Parse(5)` = Success(5) → 10; `Parse(-3)` = Failure(3) → 3;
+// `Check(4)` = Success(()) → 1; `Check(9)` = Failure(9) → 9. Export shape from
 // interop/cpp_export_function.carbon.
 
 import Core library "io";
 import Cpp;
 
-// `.Err(-n)` for a negative input.
+// `.Failure(-n)` for a negative input.
 fn Parse(n: i32) -> Core.Result(i32, i32) {
-  if (n < 0) { return Core.Result(i32, i32).Err(0 - n); }
-  return Core.Result(i32, i32).Ok(n);
+  if (n < 0) { return Core.Result(i32, i32).Failure(0 - n); }
+  return Core.Result(i32, i32).Success(n);
 }
 
-// `.Ok(())` for an even input, `.Err(n)` for an odd one.
+// `.Success(())` for an even input, `.Failure(n)` for an odd one.
 fn Check(n: i32) -> Core.Result((), i32) {
-  if ((n / 2) * 2 == n) { return Core.Result((), i32).Ok(()); }
-  return Core.Result((), i32).Err(n);
+  if ((n / 2) * 2 == n) { return Core.Result((), i32).Success(()); }
+  return Core.Result((), i32).Failure(n);
 }
 
 inline Cpp '''

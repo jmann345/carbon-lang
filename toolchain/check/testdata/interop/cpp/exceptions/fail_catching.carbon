@@ -43,7 +43,7 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.cannot_throw()?);
   // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.cannot_throw()?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.cannot_throw()?);
 }
 
 // --- fail_break_type_mismatch.carbon
@@ -70,7 +70,7 @@ fn F() -> Core.Result(i32, i32) {
   // CHECK:STDERR:   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
   // CHECK:STDERR:                ^~~~
   // CHECK:STDERR:
-  return Core.Result(i32, i32).Ok(Cpp.may_throw_int()?);
+  return Core.Result(i32, i32).Success(Cpp.may_throw_int()?);
 }
 
 // --- fail_not_direct.carbon
@@ -92,7 +92,7 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(x?);
   // CHECK:STDERR:                                             ^~
   // CHECK:STDERR:
-  return Core.Result(i32, Cpp.Exception).Ok(x?);
+  return Core.Result(i32, Cpp.Exception).Success(x?);
 }
 
 // --- fail_class_return.carbon
@@ -114,7 +114,7 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   Cpp.may_throw_class()?;
-  return Core.Result(i32, Cpp.Exception).Ok(0);
+  return Core.Result(i32, Cpp.Exception).Success(0);
 }
 
 // --- fail_ctor_return.carbon
@@ -136,7 +136,7 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   Cpp.Widget.Widget(1)?;
-  return Core.Result(i32, Cpp.Exception).Ok(0);
+  return Core.Result(i32, Cpp.Exception).Success(0);
 }
 
 // --- fail_todo_fn_pointer_catching.carbon
@@ -167,7 +167,7 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
   // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.get_fn_ptr()()?);
 }
 
 // --- fail_nullptr_return.carbon
@@ -189,5 +189,5 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   Cpp.may_throw_null()?;
-  return Core.Result(i32, Cpp.Exception).Ok(0);
+  return Core.Result(i32, Cpp.Exception).Success(0);
 }

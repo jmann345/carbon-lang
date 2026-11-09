@@ -105,15 +105,15 @@ class Fat {
 }
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Compiles generically post-B2a (the question.carbon WidenedVar shape): the
 // symbolic specific's destroy answer is structural, and the payload check
 // defers while any payload field is symbolic.
 fn Widened(generic T: type) {
-  var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
+  var unused mr: MyResult(T, i32) = MyResult(T, i32).Failure(0);
 }
 
 fn Trigger() {

@@ -34,8 +34,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -53,8 +53,8 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6), retained
     // pending W-073: the P-9 observation (this file's
@@ -63,7 +63,7 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // evaluates retiring `Diverge` here, after W72b's runtime arbiter.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // An explicitly `T2`-typed sink (explicit generic argument, NOT deduced
@@ -81,11 +81,11 @@ fn Consume(generic T2: type, x: T2) {}
 // operand `mr: MyResult(T, E)` binds `: T`, because the final impl's
 // rewrite reduces the carrier to `Core.ControlFlow(T, E)` at check time.
 // P-2: the bound value passes where `T` is expected (explicit-argument
-// sink) and wraps back through `Ok` — the full threading round trip.
+// sink) and wraps back through `Success` — the full threading round trip.
 fn Thread[T: type, E: type](mr: MyResult(T, E)) -> MyResult(T, E) {
   let v: T = mr?;
   Consume(T, v);
-  return MyResult(T, E).Ok(v);
+  return MyResult(T, E).Success(v);
 }
 //@dump-sem-ir-end
 
@@ -93,8 +93,8 @@ fn Thread[T: type, E: type](mr: MyResult(T, E)) -> MyResult(T, E) {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -108,13 +108,13 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 //@dump-sem-ir-begin
@@ -128,7 +128,7 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // (fork/w072/plan.md §2.4 step 2).
 fn ThreadMixed[T: type](mr: MyResult(T, i32)) -> MyResult(T, i32) {
   let v: T = mr?;
-  return MyResult(T, i32).Ok(v);
+  return MyResult(T, i32).Success(v);
 }
 //@dump-sem-ir-end
 
@@ -136,8 +136,8 @@ fn ThreadMixed[T: type](mr: MyResult(T, i32)) -> MyResult(T, i32) {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -154,13 +154,13 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // --- use.carbon
@@ -175,7 +175,7 @@ import library "lib";
 // as thread.carbon, operand type imported.
 fn ThreadImported[T: type, E: type](mr: MyResult(T, E)) -> MyResult(T, E) {
   let v: T = mr?;
-  return MyResult(T, E).Ok(v);
+  return MyResult(T, E).Success(v);
 }
 //@dump-sem-ir-end
 
@@ -183,8 +183,8 @@ fn ThreadImported[T: type, E: type](mr: MyResult(T, E)) -> MyResult(T, E) {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // P-9 (OBSERVATION probe, fork/w072/plan.md §3 — no gate): OUTCOME
@@ -212,14 +212,14 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // The P-9 site: formerly a pinned ConversionFailure; under `final`
     // the recursive call's projections reduce and this type-checks.
     return self.(Core.Try.Branch)();
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // CHECK:STDOUT: --- thread.carbon

@@ -15,17 +15,17 @@ library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // A payload-free alternative constant of a payload-carrying choice: the
 // constant covers the payload region with an uninitialized value.
-let err: IntResult = IntResult.Err;
+let err: IntResult = IntResult.Failure;
 
 // Function-like construction of a payload alternative.
 fn Make(n: i32) -> IntResult {
-  return IntResult.Ok(n);
+  return IntResult.Success(n);
 }
 
 fn Use(n: i32) {

@@ -14,7 +14,7 @@
 // exit criteria): the generic `?` chain under the `final impl` spelling,
 // monomorphized at a concrete argument. What this pins: the monomorphized
 // continue value FLOWS — the first `?`'s continue value is the second
-// `Step` call's argument, and the second's is the final `Ok`
+// `Step` call's argument, and the second's is the final `Success`
 // construction's payload — falsified by a `Discard`-shaped dead value or
 // absent flow. Contrast question_generic.carbon and
 // question_generic_crossfile.carbon, whose continue values go through the
@@ -29,8 +29,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -45,19 +45,19 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // A generic step: passes `x` through, or fails with the given tag.
 fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
-  if (fail) { return MyResult(T, i32).Err(tag); }
-  return MyResult(T, i32).Ok(x);
+  if (fail) { return MyResult(T, i32).Failure(tag); }
+  return MyResult(T, i32).Success(x);
 }
 
 // The threading chain: each step's input is the PREVIOUS step's threaded
@@ -67,12 +67,12 @@ fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
 fn Chain[T: type](x: T, failA: bool, failB: bool) -> MyResult(T, i32) {
   let a: T = Step(x, failA, 101)?;
   let b: T = Step(a, failB, 202)?;
-  return MyResult(T, i32).Ok(b);
+  return MyResult(T, i32).Success(b);
 }
 
 // The concrete instantiation that lowers the specific's CFG: discriminant
 // tests, payload accesses, the threaded value's flow into the second call
-// and the `Ok` construction, `FromBreak` calls and early `ret`s on the
+// and the `Success` construction, `FromBreak` calls and early `ret`s on the
 // break edges.
 fn Call(x: i32, failA: bool, failB: bool) -> MyResult(i32, i32) {
   return Chain(x, failA, failB);

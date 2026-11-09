@@ -16,22 +16,22 @@
 // guard evaluate — with the payload binding in scope
 // (docs/design/pattern_matching.md, "Guards"). A failed guard falls
 // through to the next arm: the same alternative is matched twice — once
-// guarded, once unguarded — so `.Ok` values split on the guard while
-// `.Err` stays reachable, and the unguarded arms cover both alternatives
+// guarded, once unguarded — so `.Success` values split on the guard while
+// `.Failure` stays reachable, and the unguarded arms cover both alternatives
 // (a trailing `default` would be dead, W-078a; post-drop this shape is a
 // near-duplicate of exhaustive_choice.carbon's guarded_duplicate —
 // acceptable redundancy, recorded in fork/w078a/plan.md §6.5).
 //@dump-sem-ir-begin
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 fn Consume(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(v: i32) if (v > 0) => { return v; }
-    case .Ok(w: i32) => { return w - 1; }
-    case .Err => { return -10; }
+    case .Success(v: i32) if (v > 0) => { return v; }
+    case .Success(w: i32) => { return w - 1; }
+    case .Failure => { return -10; }
   }
   return -3;
 }

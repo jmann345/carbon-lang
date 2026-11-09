@@ -57,7 +57,7 @@ fn Bridge(o: Core.Optional(i32)) -> Core.Result(i32, i32) {
   // CHECK:STDERR:   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
   // CHECK:STDERR:                ^~~~
   // CHECK:STDERR:
-  return Core.Result(i32, i32).Ok(o?);
+  return Core.Result(i32, i32).Success(o?);
 }
 
 // --- fail_result_in_optional.carbon

@@ -24,8 +24,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -39,8 +39,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -50,12 +50,12 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 fn Open(n: i32) -> MyResult(i32, i32) {
-  if (n > 0) { return MyResult(i32, i32).Ok(n); }
-  return MyResult(i32, i32).Err(n);
+  if (n > 0) { return MyResult(i32, i32).Success(n); }
+  return MyResult(i32, i32).Failure(n);
 }
 
 fn Callee(a: i32, b: i32) -> i32 { return a + b; }
@@ -66,13 +66,13 @@ fn Callee(a: i32, b: i32) -> i32 { return a + b; }
 // and must compile.
 fn Basic(n: i32) -> MyResult(i32, i32) {
   var f: i32 = Open(n)?;
-  return MyResult(i32, i32).Ok(f + 1);
+  return MyResult(i32, i32).Success(f + 1);
 }
 
 // `?` in statement position: the continue value is discarded.
 fn Statement(n: i32) -> MyResult(i32, i32) {
   Open(n)?;
-  return MyResult(i32, i32).Ok(n);
+  return MyResult(i32, i32).Success(n);
 }
 
 // A `?` chain in one statement: the inner `?` is mid-expression — an
@@ -80,14 +80,14 @@ fn Statement(n: i32) -> MyResult(i32, i32) {
 // (plan §2.8, risk R-2).
 fn Chain(n: i32) -> MyResult(i32, i32) {
   var t: i32 = Open(Open(n)?)?;
-  return MyResult(i32, i32).Ok(t);
+  return MyResult(i32, i32).Success(t);
 }
 
 // `?` in argument position of an ordinary call (risk R-2's
 // partially-built-expression falsifier).
 fn Argument(n: i32) -> MyResult(i32, i32) {
   var v: i32 = Callee(n, Open(n)?);
-  return MyResult(i32, i32).Ok(v);
+  return MyResult(i32, i32).Success(v);
 }
 
 // `?` inside a `match` arm body: `GetCurrentFunctionForReturn` is
@@ -96,15 +96,15 @@ fn Argument(n: i32) -> MyResult(i32, i32) {
 // arm's (risk R-2).
 fn InArm(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
   match (r) {
-    case .Ok(v: i32) => {
+    case .Success(v: i32) => {
       var w: i32 = Open(v)?;
-      return MyResult(i32, i32).Ok(w);
+      return MyResult(i32, i32).Success(w);
     }
-    case .Err(e: i32) => { return MyResult(i32, i32).Err(e); }
+    case .Failure(e: i32) => { return MyResult(i32, i32).Failure(e); }
   }
   // Unreachable trailing return (reachability doesn't consult match
   // exhaustiveness — fork/b1/plan.md §2.6): a dead constructible value.
-  return MyResult(i32, i32).Err(0);
+  return MyResult(i32, i32).Failure(0);
 }
 
 // `?` inside both arms of an `if` expression: branched CFG at region
@@ -115,7 +115,7 @@ fn InArm(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // dominated by their creation (upstream's SSA verifier, PR 7771).
 fn InIfExpr(n: i32, c: bool) -> MyResult(i32, i32) {
   var v: i32 = if c then Open(n)? else Open(n + 1)?;
-  return MyResult(i32, i32).Ok(v);
+  return MyResult(i32, i32).Success(v);
 }
 
 // `?` in the right-hand operand of a short-circuit operator: that operand is
@@ -125,7 +125,7 @@ fn InIfExpr(n: i32, c: bool) -> MyResult(i32, i32) {
 // arms above.
 fn InShortCircuit(n: i32, c: bool) -> MyResult(i32, i32) {
   var v: bool = c and Open(n)? > 0;
-  return MyResult(i32, i32).Ok(if v then 1 else 0);
+  return MyResult(i32, i32).Success(if v then 1 else 0);
 }
 //@dump-sem-ir-end
 
@@ -133,8 +133,8 @@ fn InShortCircuit(n: i32, c: bool) -> MyResult(i32, i32) {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -148,8 +148,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -159,7 +159,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 //@dump-sem-ir-begin
@@ -170,7 +170,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 fn Both(a: MyResult(i32, i32), b: MyResult(i64, i32)) -> MyResult(i64, i32) {
   var x: i32 = a?;
   var y: i64 = b?;
-  return MyResult(i64, i32).Ok(y + (x as i64));
+  return MyResult(i64, i32).Success(y + (x as i64));
 }
 //@dump-sem-ir-end
 
@@ -238,8 +238,8 @@ library "[[@TEST_NAME]]";
 // monomorphization re-deriving its own witness.
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -253,8 +253,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -264,7 +264,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // Maker for the scrutinee-temporary probe below; explicit `generic` params
@@ -273,7 +273,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // (MissingGenericFunctionDefinition), unlike the non-generic
 // declaration-only precedent.
 fn MakeMR(generic T2: type, generic E2: type, x: T2) -> MyResult(T2, E2) {
-  return MyResult(T2, E2).Ok(x);
+  return MyResult(T2, E2).Success(x);
 }
 
 // Payload-binding sink (the match/choice_generic_payload_pattern.carbon
@@ -309,7 +309,7 @@ fn PropagateChoice[T: type, E: type](mr: MyResult(T, E), e: E)
   // question_final.carbon. Reduction firing HERE would mean
   // specialization soundness is broken (plan risk R-2: halt).
   Discard(mr?);
-  return MyResult(T, E).Err(e);
+  return MyResult(T, E).Failure(e);
 }
 
 // The §2.2 widening is language-wide, pinned deliberately rather than
@@ -317,7 +317,7 @@ fn PropagateChoice[T: type, E: type](mr: MyResult(T, E), e: E)
 // body compiles — its destroy is the same deferred-`NonTrivial` answer the
 // `?` carrier gets.
 fn WidenedVar[T: type, E: type](t: T, unused e: E) {
-  var unused mr: MyResult(T, E) = MyResult(T, E).Ok(t);
+  var unused mr: MyResult(T, E) = MyResult(T, E).Success(t);
 }
 
 // ...and so does a `match` scrutinee TEMPORARY of a symbolic choice
@@ -329,11 +329,11 @@ fn WidenedVar[T: type, E: type](t: T, unused e: E) {
 // clause fires and the concrete monomorphization re-derives per specific.
 fn WidenedScrutinee[T: type](t: T) -> i32 {
   match (MakeMR(T, i32, t)) {
-    case .Ok(v: T) => {
+    case .Success(v: T) => {
       Discard(v);
       return 1;
     }
-    case .Err(e: i32) => { return e; }
+    case .Failure(e: i32) => { return e; }
   }
   // Unreachable trailing return (reachability doesn't consult match
   // exhaustiveness — fork/b1/plan.md §2.6).
@@ -345,8 +345,8 @@ fn WidenedScrutinee[T: type](t: T) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -360,8 +360,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -371,7 +371,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // D3/F-006c: the break payload's conversion to the RETURN type's break type
@@ -397,14 +397,14 @@ impl ErrA as Core.ImplicitAs(ErrB) {
 }
 
 fn Inner(n: i32) -> MyResult(i32, ErrA) {
-  if (n > 0) { return MyResult(i32, ErrA).Ok(n); }
-  return MyResult(i32, ErrA).Err(n as ErrA);
+  if (n > 0) { return MyResult(i32, ErrA).Success(n); }
+  return MyResult(i32, ErrA).Failure(n as ErrA);
 }
 
 //@dump-sem-ir-begin
 fn Outer(n: i32) -> MyResult(i32, ErrB) {
   var v: i32 = Inner(n)?;
-  return MyResult(i32, ErrB).Ok(v);
+  return MyResult(i32, ErrB).Success(v);
 }
 //@dump-sem-ir-end
 
@@ -412,8 +412,8 @@ fn Outer(n: i32) -> MyResult(i32, ErrB) {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // The §2.6 tripwire, FIRED as designed (W-075, fork/w075/plan.md P-2): this

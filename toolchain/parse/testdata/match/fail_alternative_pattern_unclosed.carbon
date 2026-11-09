@@ -28,7 +28,7 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
     // CHECK:STDERR:                            ^
     // CHECK:STDERR:
-    case .Ok(value: i32 => { return 1; }
+    case .Success(value: i32 => { return 1; }
     default => { return 0; }
   }
   return -1;

@@ -21,14 +21,14 @@
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 //@dump-sem-ir-begin
 fn F(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(42) => { return 1; }
+    case .Success(42) => { return 1; }
     default => { return 0; }
   }
   return -1;
@@ -78,8 +78,8 @@ fn F(s: Shape) -> i32 {
 library "[[@TEST_NAME]]";
 
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // The guard is checked after the bind pass, inline in the arm's body
@@ -87,8 +87,8 @@ choice IntResult {
 //@dump-sem-ir-begin
 fn F(r: IntResult, b: bool) -> i32 {
   match (r) {
-    case .Ok(42) if (b) => { return 1; }
-    case .Ok(value: i32) => { return value; }
+    case .Success(42) if (b) => { return 1; }
+    case .Success(value: i32) => { return value; }
     default => { return 0; }
   }
   return -1;

@@ -26,8 +26,8 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 fn F(n: i32) -> Core.Result(i32, i32) {
-  if (n < 0) { return Core.Result(i32, i32).Err(n); }
-  return Core.Result(i32, i32).Ok(n);
+  if (n < 0) { return Core.Result(i32, i32).Failure(n); }
+  return Core.Result(i32, i32).Success(n);
 }
 
 inline Cpp '''
@@ -36,15 +36,15 @@ template <typename T, typename E>
 struct expected {
   unsigned char disc;
   union {
-    T ok;
-    E err;
+    T success;
+    E failure;
   };
 };
 }  // namespace Carbon
 
 inline int Use(int n) {
   Carbon::expected<int, int> r = Carbon::F(n);
-  return r.disc == 0 ? r.ok : r.err;
+  return r.disc == 0 ? r.success : r.failure;
 }
 ''';
 

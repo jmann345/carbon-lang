@@ -32,5 +32,5 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
   // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
+  return Core.Result(i32, Cpp.Exception).Success(Cpp.may_throw_int()?);
 }

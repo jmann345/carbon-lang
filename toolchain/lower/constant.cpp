@@ -447,7 +447,7 @@ static auto EmitAsConstant(ConstantContext& context,
   // alternative's element store covers a prefix of it. Poison filler taints
   // the whole region when SROA promotes it to a scalar (partial defined bits
   // do not rescue a partially-poison integer), which licensed the optimizer
-  // to replace a stored Err payload with an unrelated value at any
+  // to replace a stored Failure payload with an unrelated value at any
   // optimizing level (the question_generic_diff mixed-width miscompile,
   // fork/b2/mixed-width-diagnosis.md). Zero bytes are defined under any
   // partial overwrite; the cost is only lost UB-detection freedom for reads

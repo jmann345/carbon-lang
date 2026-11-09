@@ -431,7 +431,7 @@ the `Try` impl has `ContinueType = T` and `BreakType = ()`
 There is no implicit bridge to `Core.Result` (D9): inside a function that
 returns `Core.Result(T, E)`, `?` on an Optional propagates absence as the `()`
 that its `Try` impl breaks with, so it compiles only when `()` converts to `E`.
-For `E = ()`, absence propagates as `.Err(())`; for any other `E` it is a
+For `E = ()`, absence propagates as `.Failure(())`; for any other `E` it is a
 conversion error from `()` to `E`. The landed `Try` body
 dispatches through `HasValue()` and `Get()`, the same two-way split as the
 design's `match` sketch, because `Core.Optional` is not a choice. `?` builds a

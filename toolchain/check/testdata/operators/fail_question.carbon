@@ -23,8 +23,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -38,8 +38,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -49,7 +49,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 fn Operand(x: i32) -> MyResult(i32, i32) {
@@ -61,7 +61,7 @@ fn Operand(x: i32) -> MyResult(i32, i32) {
   // CHECK:STDERR:   ^~
   // CHECK:STDERR:
   x?;
-  return MyResult(i32, i32).Ok(x);
+  return MyResult(i32, i32).Success(x);
 }
 
 // Type-position `?` at region depth 1: the operand is the TYPE `i32`, so
@@ -78,15 +78,15 @@ fn TypePosition() -> MyResult(i32, i32) {
   // CHECK:STDERR:   ^~~~
   // CHECK:STDERR:
   i32?;
-  return MyResult(i32, i32).Ok(0);
+  return MyResult(i32, i32).Success(0);
 }
 
 // --- fail_pattern_positions.carbon
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -100,8 +100,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -111,10 +111,10 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
-fn H(n: i32) -> MyResult(i32, i32) { return MyResult(i32, i32).Ok(n); }
+fn H(n: i32) -> MyResult(i32, i32) { return MyResult(i32, i32).Success(n); }
 
 // The three captured-region positions (fork/b1/plan.md §2.4's
 // region-position policy): the operand H(...) and the enclosing return
@@ -128,13 +128,13 @@ fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
     // CHECK:STDERR:     case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
     // CHECK:STDERR:                          ^~~~~
     // CHECK:STDERR:
-    case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
-    case .Ok(w: i32) => { return MyResult(i32, i32).Ok(w); }
-    case .Err(e: i32) => { return MyResult(i32, i32).Err(e); }
+    case .Success(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Success(v); }
+    case .Success(w: i32) => { return MyResult(i32, i32).Success(w); }
+    case .Failure(e: i32) => { return MyResult(i32, i32).Failure(e); }
   }
   // Unreachable trailing return (reachability doesn't consult match
   // exhaustiveness — fork/b1/plan.md §2.6): a dead constructible value.
-  return MyResult(i32, i32).Err(0);
+  return MyResult(i32, i32).Failure(0);
 }
 
 fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
@@ -143,7 +143,7 @@ fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
   // CHECK:STDERR:          ^~
   // CHECK:STDERR:
   var y: r? = 0;
-  return MyResult(i32, i32).Ok(y);
+  return MyResult(i32, i32).Success(y);
 }
 
 // Migrated from the B1a gate pin (fail_todo_question.carbon's type
@@ -158,7 +158,7 @@ fn TypeAnnotation() -> MyResult(i32, i32) {
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
   var p: i32? = 0;
-  return MyResult(i32, i32).Ok(p);
+  return MyResult(i32, i32).Success(p);
 }
 
 // The `case` expression-pattern shape aborts checking at RF-4's
@@ -176,8 +176,8 @@ fn ExprPattern(n: i32) -> MyResult(i32, i32) {
     // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
-    case H(0)? => { return MyResult(i32, i32).Ok(n); }
-    default => { return MyResult(i32, i32).Err(n); }
+    case H(0)? => { return MyResult(i32, i32).Success(n); }
+    default => { return MyResult(i32, i32).Failure(n); }
   }
 }
 
@@ -185,8 +185,8 @@ fn ExprPattern(n: i32) -> MyResult(i32, i32) {
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -200,8 +200,8 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
     // amendment): reachability doesn't consult match exhaustiveness; no
@@ -211,7 +211,7 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // The D3 negative: with no user `ImplicitAs` from the operand's break
@@ -227,7 +227,7 @@ class ErrC {
 }
 
 fn Inner(n: i32) -> MyResult(i32, ErrA) {
-  return MyResult(i32, ErrA).Err(n as ErrA);
+  return MyResult(i32, ErrA).Failure(n as ErrA);
 }
 
 fn Outer(n: i32) -> MyResult(i32, ErrC) {
@@ -242,5 +242,5 @@ fn Outer(n: i32) -> MyResult(i32, ErrC) {
   // CHECK:STDERR:                ^~~~
   // CHECK:STDERR:
   var v: i32 = Inner(n)?;
-  return MyResult(i32, ErrC).Ok(v);
+  return MyResult(i32, ErrC).Success(v);
 }

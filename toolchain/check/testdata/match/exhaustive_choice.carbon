@@ -41,8 +41,8 @@ library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // The docs/design/sum_types.md `match` example's shape (with a concrete
@@ -50,8 +50,8 @@ choice IntResult {
 // and a constant arm cover both alternatives, so no `default` is required.
 fn Consume(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(value: i32) => { return value; }
-    case .Err => { return -1; }
+    case .Success(value: i32) => { return value; }
+    case .Failure => { return -1; }
   }
   return -2;
 }
@@ -62,18 +62,18 @@ library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 choice IntResult {
-  Ok(value: i32),
-  Err
+  Success(value: i32),
+  Failure
 }
 
 // A guarded arm never counts toward coverage, but the same alternative
-// covered again by an unguarded arm does: `.Ok` values split on the guard,
+// covered again by an unguarded arm does: `.Success` values split on the guard,
 // and the match is still exhaustive without a `default` arm.
 fn Consume(r: IntResult) -> i32 {
   match (r) {
-    case .Ok(v: i32) if (v > 0) => { return v; }
-    case .Ok(w: i32) => { return w - 1; }
-    case .Err => { return -10; }
+    case .Success(v: i32) if (v > 0) => { return v; }
+    case .Success(w: i32) => { return w - 1; }
+    case .Failure => { return -10; }
   }
   return -20;
 }

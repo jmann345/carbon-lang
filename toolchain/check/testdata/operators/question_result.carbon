@@ -25,8 +25,8 @@
 library "[[@TEST_NAME]]";
 
 fn Open(n: i32) -> Core.Result(i32, i32) {
-  if (n > 0) { return Core.Result(i32, i32).Ok(n); }
-  return Core.Result(i32, i32).Err(n);
+  if (n > 0) { return Core.Result(i32, i32).Success(n); }
+  return Core.Result(i32, i32).Failure(n);
 }
 
 fn Callee(a: i32, b: i32) -> i32 { return a + b; }
@@ -35,26 +35,26 @@ fn Callee(a: i32, b: i32) -> i32 { return a + b; }
 // `?` in a `var` initializer.
 fn Basic(n: i32) -> Core.Result(i32, i32) {
   var f: i32 = Open(n)?;
-  return Core.Result(i32, i32).Ok(f + 1);
+  return Core.Result(i32, i32).Success(f + 1);
 }
 
 // `?` in statement position: the continue value is discarded.
 fn Statement(n: i32) -> Core.Result(i32, i32) {
   Open(n)?;
-  return Core.Result(i32, i32).Ok(n);
+  return Core.Result(i32, i32).Success(n);
 }
 
 // A `?` chain in one statement: the inner `?` is mid-expression when its
 // break path returns.
 fn Chain(n: i32) -> Core.Result(i32, i32) {
   var t: i32 = Open(Open(n)?)?;
-  return Core.Result(i32, i32).Ok(t);
+  return Core.Result(i32, i32).Success(t);
 }
 
 // `?` in argument position of an ordinary call.
 fn Argument(n: i32) -> Core.Result(i32, i32) {
   var v: i32 = Callee(n, Open(n)?);
-  return Core.Result(i32, i32).Ok(v);
+  return Core.Result(i32, i32).Success(v);
 }
 //@dump-sem-ir-end
 
@@ -84,33 +84,33 @@ impl ErrA as Core.ImplicitAs(ErrB) {
 }
 
 fn Inner(n: i32) -> Core.Result(i32, ErrA) {
-  if (n > 0) { return Core.Result(i32, ErrA).Ok(n); }
-  return Core.Result(i32, ErrA).Err(n as ErrA);
+  if (n > 0) { return Core.Result(i32, ErrA).Success(n); }
+  return Core.Result(i32, ErrA).Failure(n as ErrA);
 }
 
 //@dump-sem-ir-begin
 fn Outer(n: i32) -> Core.Result(i32, ErrB) {
   var v: i32 = Inner(n)?;
-  return Core.Result(i32, ErrB).Ok(v);
+  return Core.Result(i32, ErrB).Success(v);
 }
 //@dump-sem-ir-end
 
-// --- unit_ok.carbon
+// --- unit_success.carbon
 library "[[@TEST_NAME]]";
 
-// `Core.Result((), E)`: the `()` payload on the `Ok` side (D-EH-2's
+// `Core.Result((), E)`: the `()` payload on the `Success` side (D-EH-2's
 // admission of the zero-sized empty tuple), the conventional shape for an
 // operation with no interesting success value.
 fn Check(n: i32) -> Core.Result((), i32) {
-  if (n > 0) { return Core.Result((), i32).Ok(()); }
-  return Core.Result((), i32).Err(n);
+  if (n > 0) { return Core.Result((), i32).Success(()); }
+  return Core.Result((), i32).Failure(n);
 }
 
 //@dump-sem-ir-begin
 fn Both(n: i32) -> Core.Result((), i32) {
   Check(n)?;
   Check(n + 1)?;
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 //@dump-sem-ir-end
 
@@ -124,7 +124,7 @@ library "[[@TEST_NAME]]";
 //@dump-sem-ir-begin
 fn Passthrough[T: type, E: type](r: Core.Result(T, E)) -> Core.Result(T, E) {
   let v: T = r?;
-  return Core.Result(T, E).Ok(v);
+  return Core.Result(T, E).Success(v);
 }
 //@dump-sem-ir-end
 
@@ -147,6 +147,26 @@ class SomeClass {
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Use(unused r: Core.Result(SomeClass, i32)) {}
+
+// --- fail_old_names.carbon
+library "[[@TEST_NAME]]";
+
+// EH-C (W-346; fork/eh/ehc-plan.md D-EHC-3): the alternatives are spelled
+// `Success` and `Failure`, as upstream's docs/design/README.md spells a result
+// choice's; the former spelling `Ok`/`Err` is an ordinary unknown member, with
+// no alias and no note. The constructor form and the pattern form both get
+// `MemberNameNotFoundInSpecificScope`.
+fn Make() -> Core.Result(i32, i32) {
+  return Core.Result(i32, i32).Ok(1);
+}
+
+fn Read(r: Core.Result(i32, i32)) -> i32 {
+  match (r) {
+    case .Success(v: i32) => { return v; }
+    case .Err(e: i32) => { return e; }
+  }
+  return 0;
+}
 
 // CHECK:STDOUT: --- propagate.carbon
 // CHECK:STDOUT:

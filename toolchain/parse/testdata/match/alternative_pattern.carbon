@@ -12,16 +12,16 @@
 // single-subpattern payload list, a multi-subpattern payload list (with and
 // without a trailing comma), and empty parentheses for a zero-payload
 // function-like alternative. A leading-dot pattern is only an alternative
-// pattern at the case root; `.Err` inside parentheses stays an ordinary
+// pattern at the case root; `.Failure` inside parentheses stays an ordinary
 // (expression) pattern.
 fn F(x: i32) -> i32 {
   match (x) {
-    case .Err => { return 0; }
-    case .Ok(value: i32) => { return 1; }
+    case .Failure => { return 0; }
+    case .Success(value: i32) => { return 1; }
     case .Pair(a: i32, b: i32) => { return 2; }
     case .Single(a: i32,) => { return 3; }
     case .On() => { return 4; }
-    case (.Err) => { return 5; }
+    case (.Failure) => { return 5; }
     default => { return 6; }
   }
   return -1;

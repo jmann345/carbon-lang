@@ -18,7 +18,7 @@
 // question_generic_diff conformance program from the single-file golden
 // (question_generic_mixed.carbon). What this pins, in use.carbon's module:
 // every function of the chain (Chain, Step, the Try impl's
-// Branch/FromBreak, the Err/Ok constructors, the ControlFlow constructors)
+// Branch/FromBreak, the Failure/Success constructors, the ControlFlow constructors)
 // must have TWO distinct lowered defines with correct per-width shapes —
 // the i64 leg's carrier and result objects 16 bytes
 // (`<{ <{ i1, [7 x i8] }>, [8 x i8] }>`, payload at byte 8, covering
@@ -37,8 +37,8 @@
 library "[[@TEST_NAME]]";
 
 choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
+  Success(v: T),
+  Failure(e: E)
 }
 
 // Returns a value of any type by never returning — the unreachable
@@ -50,21 +50,21 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
     match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+      case .Success(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Failure(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
     // correction).
     return Diverge(Core.ControlFlow(T, E));
   }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Failure(e); }
 }
 
 // A generic step: passes `x` through, or fails with the given tag — the
 // maker whose call results are the `?` operand temporaries below.
 fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
-  if (fail) { return MyResult(T, i32).Err(tag); }
-  return MyResult(T, i32).Ok(x);
+  if (fail) { return MyResult(T, i32).Failure(tag); }
+  return MyResult(T, i32).Success(x);
 }
 
 // Payload sink — the check golden's proven deduced-sink shape
@@ -77,7 +77,7 @@ fn Discard[U: type](_: U) {}
 fn Chain[T: type](x: T, failA: bool, failB: bool) -> MyResult(T, i32) {
   Discard(Step(x, failA, 101)?);
   Discard(Step(x, failB, 202)?);
-  return MyResult(T, i32).Ok(x);
+  return MyResult(T, i32).Success(x);
 }
 
 // The library's own narrow instantiation: the narrow specifics' LLVM
@@ -102,11 +102,11 @@ fn Call64(x: i64, failA: bool, failB: bool) -> MyResult(i64, i32) {
   return Chain(x, failA, failB);
 }
 
-// Concrete narrow-alternative writer for the wide specific: the `Err`
+// Concrete narrow-alternative writer for the wide specific: the `Failure`
 // constructor call whose covering copy and element stores this golden
 // pins.
 fn MakeErr64(tag: i32) -> MyResult(i64, i32) {
-  return MyResult(i64, i32).Err(tag);
+  return MyResult(i64, i32).Failure(tag);
 }
 
 // Concrete reader: the payload load must address the same 16-byte object
@@ -117,8 +117,8 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
     // CHECK:STDERR:     case .Ok(v: i64) => { return 0; }
     // CHECK:STDERR:              ^~~~~~
     // CHECK:STDERR:
-    case .Ok(v: i64) => { return 0; }
-    case .Err(e: i32) => { return e; }
+    case .Success(v: i64) => { return 0; }
+    case .Failure(e: i32) => { return e; }
   }
   // Unreachable: every arm returns.
   return -1;

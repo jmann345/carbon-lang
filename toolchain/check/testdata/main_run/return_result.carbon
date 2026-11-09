@@ -20,21 +20,21 @@
 // is rejected today. Lowering (lower/testdata/main_run/return_result.carbon)
 // gives these functions the C ABI `i32 main()` and the exit-code epilogue.
 
-// --- unit_ok.carbon
+// --- unit_success.carbon
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 fn Run() -> Core.Result((), i32) {
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 //@dump-sem-ir-end
 
-// --- i32_ok.carbon
+// --- i32_success.carbon
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
 fn Run() -> Core.Result(i32, i32) {
-  return Core.Result(i32, i32).Ok(3);
+  return Core.Result(i32, i32).Success(3);
 }
 //@dump-sem-ir-end
 
@@ -42,13 +42,13 @@ fn Run() -> Core.Result(i32, i32) {
 library "[[@TEST_NAME]]";
 
 fn Fails(n: i32) -> Core.Result((), i32) {
-  return Core.Result((), i32).Err(n);
+  return Core.Result((), i32).Failure(n);
 }
 
 //@dump-sem-ir-begin
 fn Run() -> Core.Result((), i32) {
   Fails(7)?;
-  return Core.Result((), i32).Ok(());
+  return Core.Result((), i32).Success(());
 }
 //@dump-sem-ir-end
 
@@ -61,7 +61,7 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Run() -> Core.Result(i64, i32) {
-  return Core.Result(i64, i32).Ok(0);
+  return Core.Result(i64, i32).Success(0);
 }
 
 // --- fail_non_result_class.carbon
@@ -94,7 +94,7 @@ class Code {
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Run() -> Core.Result(Code, i32) {
-  return Core.Result(Code, i32).Err(1);
+  return Core.Result(Code, i32).Failure(1);
 }
 
 // CHECK:STDOUT: --- unit_ok.carbon

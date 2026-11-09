@@ -10,7 +10,14 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-06 (PR 66 landed by LAND-1; 17 PRs landed,
+Last updated: 2026-11-09 (weekly check fired under R32: the cut HOLDS at 176
+upstream commits with 191 conflicting files against trunk cb726a230; TP-1's
+register row H10.8 is re-classified DRIFT on the existing W-374, owner TP-1's
+follow-on; no new item; W-372 gains 5ae3dcaa9 and d50576ca1; W-355's 24 moved
+quotes and six counts are re-anchored; 17 PRs landed, 1 held; see the paragraph
+dated 2026-11-09 (14:20 UTC, weekly check fired) below; the earlier 2026-11-06
+text follows).
+2026-11-06 (PR 66 landed by LAND-1; 17 PRs landed,
 1 held; see the paragraph dated 2026-11-06 (05:17 UTC) below; the
 earlier 2026-11-06 text follows).
 2026-11-06 (PR 59 landed by LAND-1; 16 PRs landed,
@@ -2110,6 +2117,45 @@ over 241, 51/56 bullets; gap tally 37/17/2/0); R21's hosted gate is owed on all
 seventeen when Actions returns (R33 (b)). Held: PR 53, landing by Next actions
 item 14 when its gate holds. Next: EH-C (W-346) on trunk's base, then UA-3.
 
+2026-11-09 (14:20 UTC, weekly check fired): the third weekly check under R32,
+git- and text-based only after the 2026-11-09 container reset. Upstream trunk
+ca1898506 (2026-11-06) is 176 commits past the c1e83b0b7 cut (26 since last
+week's 68569d234, 1 since 4e4b35e6e); a `git merge-tree` dry run against trunk
+cb726a230 conflicts in 191 files, 69 sources and 122 goldens (last week 138
+against 9863b1087 and 144 against 7134405dc; against the 144, 47 are new, 29
+from FO-1's five landings and 18 from this week's upstream, and none gone), and
+PR 53's head and the SAFE mirror each conflict in the same 134 (117 last week);
+2036 upstream files are touched since the cut, 1222 are fork-modified and 300
+are in both, and this week upstream touched 1195, 174 of them fork-modified
+(decision-log entry "Weekly upstream check 2026-11-09 (R32 direction
+register)"). The cut HOLDS and UA-3 stays scheduled after PR 53 lands and after
+EH-C. Of the window's 26 commits, 15 touch the design, prelude or toolchain
+paths: no new drift, one drift already filed that is also an advance (5ae3dcaa9,
+W-372's: a trailing `,` after `_` and the `PatternListUnderscoreField` parse
+node, which leave the fork's `UnderscoreName`-keyed `_` discard dead after a
+clean merge), nine advances for UA-3's audit (d50576ca1 the largest, with 11 new
+conflicts) and five unrelated; no prelude change. The register: TP-1's row
+H10.8, passed on by FO-1, is re-classified DRIFT, because upstream's
+`IsCallPerformable` (call.cpp:451-464) has deferred every template-dependent
+call argument since the cut, where D-TP-11 forms `Holder(T)` at the definition;
+the existing W-374 carries it (D-RG-9), owner TP-1's follow-on, before UA-3, and
+W-139's convert.cpp requirement is withdrawn when it lands; break condition:
+upstream changes `IsCallPerformable` or README.md:3012-3016. W-355 at the tip:
+"checked 289 quotes, 24 failed" and "checked 94 silence checks, 6 failed" over
+trunk cb726a230's tables, the same as at 4e4b35e6e; 24 quotes MOVED with their
+text unchanged and re-anchored, H4.5 expected 7, H8.5 3, H10.4 2, H11.9 9 and
+H11.10 12 (merge-rule or count signals, none fired) and H10.8 8; after the
+records commit both scripts print "checked 289 quotes, 0 failed" and "checked 94
+silence checks, 0 failed". The V-3a register: (i) to (iii) resolved on trunk;
+(iv) and (v) HOLD with W-324's and W-326's break conditions not fired; (vi)
+HOLDS, W-372 gaining 5ae3dcaa9 and d50576ca1; (vii) added for H10.8; the ten
+section 7 residues, VA-2's six and every other NONE and ALIGNED entry HOLD. Ids:
+W-377 is the highest filed and W-378 the next free; none is filed. No build, no
+probe, no merge, no dispatch, and no toolchain exists since the reset; Actions
+is still disabled (the newest run is of 2026-10-08), so nothing is of record. At
+trunk cb726a230, which the records commit is cut from, 17 PRs are landed and 1
+held.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2660,7 +2706,14 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     4abb6100e's CppThunk checks over OV-3's export goldens and PR 68's
     overload_set_default pair, c7de72757's and 9799a2326's default-value
     exports, and 05a7ecbd3's string.carbon:154 site in W-354's and D-RG-16's
-    evidence.
+    evidence. The weekly upstream check of 2026-11-09 adds upstream 5ae3dcaa9
+    (the `,`? after `_` and `PatternListUnderscoreField`, which leave the fork's
+    `UnderscoreName`-keyed `_` discard dead after a clean merge) and d50576ca1
+    to W-372's take-list, and re-classifies TP-1's register row H10.8 DRIFT on
+    W-374 (D-TP-11's type-forming exception against upstream's
+    `IsCallPerformable`, which defers every template-dependent call argument):
+    owner TP-1's follow-on, on trunk's base before UA-3, needing no advance;
+    W-139's convert.cpp requirement is withdrawn when it lands.
     Land-time notes, each by its PR's land-sequence records commit after
     its register block (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54,
     PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At each

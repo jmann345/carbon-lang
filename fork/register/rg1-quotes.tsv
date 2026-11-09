@@ -18,8 +18,9 @@ proposals/p000157-design-direction-for-sum-types.md	691	Success(T: value),
 proposals/p002875-functions-function-types-and-function-calls.md	481	using placeholder syntax:
 proposals/p002875-functions-function-types-and-function-calls.md	484	overloaded fn Abs[T:! Unsigned](x: T) -> T { return x; }
 proposals/p002875-functions-function-types-and-function-calls.md	475	our current intent is to use the
-docs/design/pattern_matching.md	696	We do not yet have an approved design for overloaded functions, but it
-docs/design/pattern_matching.md	697	is anticipated that declaration order will be used in that case too.
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T2.6, lines moved +1 by 5ae3dcaa9 (pattern_matching.md:417), text unchanged
+docs/design/pattern_matching.md	697	We do not yet have an approved design for overloaded functions, but it
+docs/design/pattern_matching.md	698	is anticipated that declaration order will be used in that case too.
 docs/project/principles/static_open_extension.md	53	function overloading is limited in Carbon to only
 docs/project/principles/static_open_extension.md	54	signatures defined together in the same library.
 proposals/p000157-design-direction-for-sum-types.md	239	A typed `union` facility, such as the one described in proposal
@@ -41,8 +42,9 @@ docs/design/expressions/comparison_operators.md	316	operations should have no ob
 docs/design/expressions/comparison_operators.md	434	should have no observable side-effects.
 proposals/p002188-pattern-matching-syntax-and-semantics.md	489	Note that a pattern of the form `Optional(T).None` is an expression pattern and
 proposals/p002188-pattern-matching-syntax-and-semantics.md	490	is compared using `==`.
-docs/design/pattern_matching.md	526	Note that a pattern of the form `Optional(T).None` is an expression pattern and
-docs/design/pattern_matching.md	527	is compared using `==`.
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H5.5, lines moved +1 by 5ae3dcaa9, text unchanged
+docs/design/pattern_matching.md	527	Note that a pattern of the form `Optional(T).None` is an expression pattern and
+docs/design/pattern_matching.md	528	is compared using `==`.
 core/prelude/types/optional.carbon	30	fn None() -> Self {
 core/prelude/types/optional.carbon	27	We don't have an approved design for an `Optional` type yet, but it's
 core/prelude/types/optional.carbon	28	The API here is a placeholder.
@@ -83,16 +85,19 @@ docs/design/expressions/arithmetic.md	186	Decide whether strings are built-in ty
 docs/design/expressions/arithmetic.md	187	`+` for concatenation. See
 toolchain/check/custom_witness.cpp	466	TODO: Handle destruction of adapters generally by destroying the
 toolchain/check/custom_witness.cpp	467	adapted type.
-toolchain/lower/handle.cpp	77	context.SetLocal(inst_id, context.GetValue(inst.source_id));
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H6.1, line moved +1 by d50576ca1 (an include), text unchanged
+toolchain/lower/handle.cpp	78	context.SetLocal(inst_id, context.GetValue(inst.source_id));
 toolchain/check/convert.cpp	1564	auto value_rep =
 toolchain/check/convert.cpp	1567	SemIR::ValueRepr::ForType(context.sem_ir(), target.type_id);
-docs/design/pattern_matching.md	803	_case_ ::= `case` _pattern_ [`if` _expression_]? `=>` _block_
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H7.4, line moved +1 by 5ae3dcaa9, text unchanged
+docs/design/pattern_matching.md	804	_case_ ::= `case` _pattern_ [`if` _expression_]? `=>` _block_
 # Re-anchored 2026-11-02 (weekly upstream check) at upstream 68569d234: lines moved by 68569d234, c6b54b57e, 4abb6100e and 54f37b35b, text unchanged
 toolchain/parse/handle_match.cpp	180	"expected `(` after `if`");
 proposals/p003938-exporting-imported-names.md	82	`alias` is not fully designed
 docs/design/variadics.md	47	which are marked with the `each` keyword at the
 docs/design/variadics.md	92	An _each-name_ consists of the keyword `each` followed by the name of a pack,
-toolchain/parse/node_kind.def	294	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H8.2, line moved +2 by 5ae3dcaa9 (PatternListUnderscoreField at node_kind.def:153), text unchanged
+toolchain/parse/node_kind.def	296	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
 toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
 docs/design/generics/details.md	1073	template parameters, use the `template` keyword before `constraint`.
 docs/design/generics/details.md	5494	the keyword introducer `interface`, `constraint`, or `template constraint`,
@@ -104,10 +109,13 @@ docs/design/generics/appendix-witness.md	151	Carbon's planned approach to suppor
 docs/design/generics/appendix-witness.md	154	relies on monomorphization.
 proposals/p002200-template-generics.md	205	Impl lookup is delayed until all templated types, interfaces, and parameters
 proposals/p002200-template-generics.md	200	Member lookup into a templated type looks in the actual type value provided
-toolchain/lower/handle.cpp	384	TODO: We don't yet have support for cross-file templates at all. Lowering
-toolchain/lower/handle.cpp	390	CARBON_FATAL("Cross-file template lowering not implemented yet");
-toolchain/sem_ir/typed_insts.h	1312	MetaInstId storage_access_block_id;
-toolchain/check/call.cpp	387	Wrap symbolic template args in a `TemplateInst` so that all symbolic
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H10.7, lines moved +80 by d50576ca1, the cross-file TODO and CARBON_FATAL unchanged
+toolchain/lower/handle.cpp	464	TODO: We don't yet have support for cross-file templates at all. Lowering
+toolchain/lower/handle.cpp	470	CARBON_FATAL("Cross-file template lowering not implemented yet");
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H10.2, line moved +15 by d50576ca1 (GlobalRef), text unchanged
+toolchain/sem_ir/typed_insts.h	1327	MetaInstId storage_access_block_id;
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H11.2, line moved -2 by be0f11be9, text unchanged
+toolchain/check/call.cpp	385	Wrap symbolic template args in a `TemplateInst` so that all symbolic
 toolchain/check/cpp/overload_resolution.cpp	156	static auto IsMoveEquivalentToCopy(clang::QualType type) {
 docs/design/expressions/indexing.md	105	impl as IndexWith(like i64) {
 docs/design/sum_types.md	113	let template Continuation: type;
@@ -210,13 +218,17 @@ docs/design/README.md	1077	bindings. This is not a contextual default: no other 
 docs/design/generics/terminology.md	100	[Associated constants](#interface-parameters-and-associated-constants) are
 docs/design/generics/terminology.md	101	always checked generic bindings.
 docs/design/variadics.md	219	the named pack from the Nth scrutinee. The binding pattern's type expression may
-toolchain/sem_ir/typed_insts.h	2009	struct SpecificConstant {
-toolchain/sem_ir/typed_insts.h	2013	.expr_category = ComputedExprCategory::SameAsFirstOperand,
-toolchain/check/cpp/export.cpp	403	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
-toolchain/check/cpp/export.cpp	404	auto* record_decl = ExportClassToCppInDeclContext(
-toolchain/check/cpp/export.cpp	538	if (!decl_context) {
-toolchain/check/cpp/export.cpp	1951	"can't form a pointer to a template");
-toolchain/parse/node_kind.def	294	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H11.9, lines moved +15 by d50576ca1 and -18 by 9fb428d71, text unchanged
+toolchain/sem_ir/typed_insts.h	2006	struct SpecificConstant {
+toolchain/sem_ir/typed_insts.h	2010	.expr_category = ComputedExprCategory::SameAsFirstOperand,
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H4.4, lines moved +1 by d99b767dd (an include at export.cpp:16), text unchanged; :404-405 still unchecked
+toolchain/check/cpp/export.cpp	404	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
+toolchain/check/cpp/export.cpp	405	auto* record_decl = ExportClassToCppInDeclContext(
+toolchain/check/cpp/export.cpp	539	if (!decl_context) {
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T12.7, line moved +4 by d99b767dd, still CARBON_CHECK
+toolchain/check/cpp/export.cpp	1955	"can't form a pointer to a template");
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H8.2, line moved +2 by 5ae3dcaa9, text unchanged
+toolchain/parse/node_kind.def	296	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
 toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
 toolchain/lower/testdata/var/destroy_control_flow.carbon	18	impl as Core.DestroyImpl {
 toolchain/lower/testdata/var/destroy_control_flow.carbon	187	define linkonce_odr void @_CSelfDestruct.Core.
@@ -237,7 +249,8 @@ docs/design/expressions/comparison_operators.md	463	is a weak, partial, or total
 docs/design/expressions/comparison_operators.md	505	not both.
 docs/design/interoperability/philosophy_and_goals.md	408	Furthermore, if Carbon code calls a C++ function
 docs/design/safety/README.md	249	run-time overhead in order to use additional hardening. Carbon will have
-toolchain/check/cpp/export.cpp	1950	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T12.7, line moved +4 by d99b767dd, still CARBON_CHECK
+toolchain/check/cpp/export.cpp	1954	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
 docs/design/README.md	377	## Build modes
 docs/design/README.md	379	The behavior of the Carbon compiler depends on the _build mode_:
 docs/design/README.md	383	memory usage.
@@ -276,7 +289,8 @@ docs/design/values.md	580	semantic model would be a good case for some syntactic
 docs/design/values.md	581	`unsafe`, although rather than a region, it would seem better to tie it directly
 docs/design/values.md	582	to the operation in question. For example:
 docs/design/values.md	595	s_value.unsafe RefMemberFunction();
-toolchain/parse/typed_nodes.h	1304	An `unsafe` modifier: `a unsafe <operator> b`.
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H1.6, line moved +4 by 5ae3dcaa9, text unchanged
+toolchain/parse/typed_nodes.h	1308	An `unsafe` modifier: `a unsafe <operator> b`.
 toolchain/parse/handle_expr.cpp	396	if (context.PositionIs(Lex::TokenKind::Unsafe)) {
 toolchain/parse/handle_expr.cpp	397	if (context.PositionIs(Lex::TokenKind::As, Lookahead::NextToken)) {
 toolchain/docs/lower.md	140	Any feature of an entity (such
@@ -286,11 +300,13 @@ toolchain/sem_ir/function.h	548	them in mangling.
 # OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): the quotes of rows T2.8 and T2.9 of fork/register/rg1-plan.md section 2.T2.
 toolchain/check/call.cpp	49	// the range [callee_arity - arity_lower_bound_margin, callee_arity]. This
 toolchain/check/call.cpp	50	// allows arity matching when the callee has default arguments for some
-toolchain/check/call.cpp	241	function.default_value_arity);
-toolchain/check/pattern_match.cpp	1054	// If there's no scrutinee supplied, supply the default value instead.
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T2.8, lines moved by be0f11be9 (call.cpp -2) and d50576ca1 (pattern_match.cpp +19), text unchanged
+toolchain/check/call.cpp	239	function.default_value_arity);
+toolchain/check/pattern_match.cpp	1073	// If there's no scrutinee supplied, supply the default value instead.
 toolchain/check/function.cpp	677	// patterns, ensure that if a subpattern provides a default value, all
 toolchain/check/function.cpp	682	// TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this
-toolchain/check/handle_pattern_list.cpp	281	"default value is not a constant");
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T2.8, line moved -7 by d50576ca1 and 5ae3dcaa9, text unchanged
+toolchain/check/handle_pattern_list.cpp	274	"default value is not a constant");
 proposals/p002200-template-generics.md	471	class C4 { fn M[me: Self](p: i32 = 4); }
 proposals/p002200-template-generics.md	474	// using the default value of `4` for `p` when
 proposals/p002200-template-generics.md	214	-   Substitution failure is an error. In C++, [the SFINAE rule](#terminology)
@@ -299,4 +315,5 @@ docs/design/classes.md	2186	### Optional named parameters
 docs/design/classes.md	2188	Structs are being considered as a possible mechanism for implementing optional
 docs/design/classes.md	2202	              .descending: bool = false} = {}) {
 docs/design/classes.md	2207	SortIntVector(&v);
-docs/design/pattern_matching.md	696	We do not yet have an approved design for overloaded functions, but it
+# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T2.9, line moved +1 by 5ae3dcaa9, text unchanged
+docs/design/pattern_matching.md	697	We do not yet have an approved design for overloaded functions, but it

@@ -260,11 +260,13 @@ in `IsCallPerformable` (register row H10.8) against upstream's deferral of every
 template-dependent call argument (check/call.cpp:451-464 at ca1898506, the cut's
 body); work item W-374, owner TP-1's follow-on, before UA-3, W-139's convert.cpp
 requirement being withdrawn when it lands (added 2026-11-09, weekly upstream
-check). (iii) resolved 2026-10-21 by DR-1a, d0cfe8082 and its fill c1cc72a09.
-(i) resolved 2026-10-21 by W-322's 22fe50ff8 and its fill f4660e409 on PR 62
-(written 2026-11-02 at PR 63's landing, LAND-1). (ii) resolved 2026-10-22 by
-DR-1b, 3c54754bc and its fill cf4904138, with 230227264's code by cdaa15710 and
-its fill 06b6479d0.
+check). (vii) resolved 2026-11-16 by TP-2, 75528587c and its fill 6adeedc41;
+H10.8 ALIGNED; W-139's convert.cpp requirement kept (TP-2 D-TP2-3). (iii)
+resolved 2026-10-21 by DR-1a, d0cfe8082 and its fill c1cc72a09. (i) resolved
+2026-10-21 by W-322's 22fe50ff8 and its fill f4660e409 on PR 62 (written
+2026-11-02 at PR 63's landing, LAND-1). (ii) resolved 2026-10-22 by DR-1b,
+3c54754bc and its fill cf4904138, with 230227264's code by cdaa15710 and its
+fill 06b6479d0.
 
 _V-3a register re-check, weekly upstream check 2026-10-26 (upstream 21c825a3f;
 the entry "Weekly upstream check 2026-10-26 (R32 direction register)" has the
@@ -7001,6 +7003,10 @@ definition. W-374 carries it (D-RG-9), owner TP-1's follow-on, before UA-3:
 follow upstream's deferral, refill deduce_class_args.carbon, then withdraw
 W-139's convert.cpp requirement (D-SC-19 as FO-1 amends it). Break condition:
 upstream changes `IsCallPerformable`, or README.md:3012-3016 changes. Veto-able.
+Resolved 2026-11-16 by TP-2 (the entry "TP-2: `IsCallPerformable` follows
+upstream's deferral of every template-dependent call argument (W-374)" below):
+the exception removed at 75528587c, H10.8 ALIGNED; W-139's requirement kept,
+D-TP2-3.
 
 _Weekly upstream check 2026-11-16 (upstream 7a3608bab; the entry "Weekly
 upstream check 2026-11-16 (R32 direction register)" has the quotes):_ (i) is
@@ -7018,7 +7024,10 @@ it by autoupdate, as (i) says; `PointerDereferenceAction`, `TupleIndexAction`,
 in `OperandDependence`'s argument, `context.sem_ir()` for `context`, so the
 DRIFT stands on W-374. Break conditions: upstream reverts or renames its
 `AddrOfAction`; upstream changes which operands or which dependence defer a
-call, or README.md:3012-3016 changes. Veto-able.
+call, or README.md:3012-3016 changes. Veto-able. Resolved 2026-11-16 by TP-2
+(the entry "TP-2: `IsCallPerformable` follows upstream's deferral of every
+template-dependent call argument (W-374)" below): the exception removed at
+75528587c, H10.8 ALIGNED; W-139's requirement kept, D-TP2-3.
 
 Veto digest: D-TP-3 (a copy of the storage chain, not upstream's shared block),
 D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a
@@ -7080,6 +7089,232 @@ to templates.md's W-259 bullet the sentence C.8's W-259 note states, which
 TP-1's Appendix C predates (D-LAND-22), so the landed page differs from Appendix
 C there as well as where the sentence on L above says; check_samples.py, with
 and without --toolchain, reported on it the two outputs quoted above.
+
+### TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374) (2026-11-16)
+
+Context: W-374 (register row H10.8, DRIFT since the weekly upstream check of
+2026-11-09, re-read 2026-11-16), fork/templates/tp2-plan.md rev 3 (a6b38ea92,
+SIGNED OFF FOR IMPLEMENTATION after two plan reviews and one re-review round,
+RR1; amended at fix 1 and by this commit's fold of the implementation reviews,
+each amendment marked with its date and the finding's id, or with "fix 1").
+Line cites are to trunk 701863aa5 unless a sha is named. Branch
+claude/carbon-fork-0-1-tp2, commits 9f09c347b, b87751859 and a6b38ea92 (the
+plan's three revisions), 75528587c (C1), 6adeedc41 (F1), 6892c5d50 (P),
+eb655b5ce (fix 1: the implementation reviews' one MAJOR, A-M1 / B-M1,
+docs-side), 949a8f574 (the merge of trunk 99f4df970, Appendix F.1's M brought
+forward to the records commits because trunk moved by ARB-4's two records
+commits after the fix; no conflict, no build input touched), 043978962 (the
+records, R) and this one (the discharge, D, which appends the last three
+paragraphs). The two implementation reviews (A: toolchain, goldens, probes and
+the M1 mutant on its own label; B: upstream fidelity, amendments, process and
+scope) both returned APPROVE-WITH-AMENDMENTS: no BLOCKER, one MAJOR (the same
+defect, fixed by fix 1) and ten MINORs, all records-only, folded by this commit
+and recorded under "Measured" below. The focused re-review round 1 of the
+implementation (one fresh agent over fix 1, M, R, D and the folds, on its own
+label tp2-rr1) returned APPROVE-WITH-AMENDMENTS: no BLOCKER, no MAJOR, four
+records-only MINORs (RR1-m1 to RR1-m4), folded by the records commit after D
+with the mark "(amended 2026-11-16, review fold: RR1-<id>, implementation
+re-review)"; the round is DRY (the plan's §3 item 9), and the ORCHESTRATION
+Branches row reads "IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1 DRY (base trunk
+701863aa5)".
+
+_The item and the rule._ Upstream's `IsCallPerformable`
+(toolchain/check/call.cpp:449-464 at 7a3608bab, the cut's body at
+c1e83b0b7:425-438 but for 4286832b4's `context.sem_ir()`) returns false when
+`OperandDependence` of the callee or of any argument is
+`SemIR::ConstantDependence::Template`; docs/design/README.md:3012-3016 says
+"type checking for anything dependent on the template parameter can't be
+completed until the template is instantiated with a specific concrete type";
+p002200:208-209 says "type checking of any expression dependent on a templated
+parameter may not be completed until its value is known". TP-1's D-TP-11 made an
+exception for a generic class, interface or named constraint, forming
+`Holder(T)` at the definition; FO-1's m17n_d showed the interface constraint
+converted there and never checked again (rc 5 on trunk, rejected by the
+nightly). TP-2 removes the exception (D-TP2-1): the function's text is
+upstream's but for the `OperandDependence(context, ...)` signature UA-3
+converts.
+
+_The decisions (auto-adopted under R29 (a), veto-able)._ D-TP2-1 the deferral
+rule is upstream's, to the letter, no special case under another name (R17).
+D-TP2-2 the cost is recorded and filed, no fork mechanism: deduction through a
+class type formed from a template parameter (W-396), refutable patterns on a
+template-dependent choice (W-397), two definition-time diagnostics moved to
+instantiation (W-398); upstream's deduce.cpp:443 "TODO: Handle more cases."
+names no mechanism and the nightly rejects the same programs. D-TP2-3 W-139's
+convert.cpp hunk (D-SC-19 part 4) is kept: measured, its removal lets `let
+unused y: HasGet = T;` and `G(T as HasGet)` run for a `D` lacking `Get` (the
+SC-1 split `fail_dependent_conversion_unsatisfied` succeeds), while the deferral
+alone keeps the hunk out of every call's path (the replay converts with
+`delayed_action_depth` positive); the item's "withdrawn" and H9.8's break
+condition were premised on the call case. D-TP2-4 eleven goldens refill
+CHECK-only; W-374's break condition fired by its letter on destroy_calls.carbon
+(its template split `generic_use_inside_template`, D-TP-11's own refill, SemIR
+only), the plan's §0.3 table is the report, and the orchestrator ruled on
+2026-11-16 (R29) that the removal proceeds, the condition's letter amended to
+read a template golden by its changed split's use of a template parameter (STOP
+stays for a changed split with no template). D-TP2-5 two programs SKIP under
+R10, one `// SKIP:` line each in the runner's recorded form; the bar 226/0/15
+over 241 with 51 of 56 bullets, ruled 2026-11-16 (R29). D-TP2-6 the records and
+the register. D-TP2-7 the slices and the fix budget of two. D-TP2-8 W-396 to
+W-400 filed (W-400, an `impl forall` with a template binding whose self or
+interface is formed from it, found by plan review A). D-TP2-9 the PR and the
+landing under R33. D-TP2-10 the docs' dated notes (amended at fix 1: the TP-1
+fork note of docs/design/templates.md:169-172 and its quote fixture X25 claimed
+the deduction the deferral withdraws, so the note gains a dated TP-2 paragraph
+and X25 is re-pinned as an EXPECT-ERROR fixture, the designdocs checker with
+`--toolchain` green on the fix's install).
+
+_V-3 check at 7a3608bab (R32 (a))._ Each statement against the tip: the deferral
+rule, call.cpp:449-464 quoted above; the signature, action.h:93-102 (`const
+SemIR::File&`); deduction, deduce.cpp:395-460 (the `SymbolicBinding` case, the
+`StructValue` TODO, "// TODO: Handle more cases." at :443, the
+`deduce_through()` default); the design, README.md:3012-3016,
+terminology.md:263-268 and :308-311, overview.md:102-108, p002200:205-209, all
+quoted in the plan's §0.8; the twelve upstream commits since the cut that touch
+the function, deduce.cpp or those pages, by sha and subject (4286832b4,
+be0f11be9, 503f09037, db87a84b6, 0d3b606a5, 3af25cc1b, 7beb29f8b, 2c9739799,
+bf5d2a2ac, 62f1cc6a3, 230227264, 4a8993af2), none changing the rule, the pages
+or deduction through a splice. Where upstream is silent (deduction through a
+splice, `match` on one) the plan files the residue and adds nothing. Re-read at
+the tips the implementation met (amended 2026-11-16, review fold: B-m1): the
+plan and its Appendix C.1 quote 7a3608bab; C1's and P's messages name d10a566ab,
+the tip at the implementer's fetch (one commit past 7a3608bab, upstream PR 8144,
+the `where` assignment parse subtree); fix 1 and these records read 645e784aa
+(upstream PRs 8145 and 8131 added). None of the three commits touches call.cpp,
+deduce.cpp, action.h, action.cpp, docs/design/generics, README.md or p002200,
+and call.cpp:449-464, README.md:3012-3016 and p002200:205-209 are identical at
+the three tips, so every quote and line number above holds at each.
+
+_The register (DR-0's block (vii); RG-1's rows H10.8 and H9.8)._ H10.8 ALIGNED
+(D-RG-1): the rule is upstream's text; the quote rows added to rg1-quotes.tsv
+(call.cpp:449, :450, :453, :458; README.md:3012-3016); check H10.8 kept as the L
+count over toolchain/check/call.cpp, 9 at 7a3608bab, read by W-355 as the
+merge-rule signal; break condition D-TP2-1's. H9.8 ALIGNED, its convert.cpp part
+re-described as D-SC-19's own, no longer resting on D-TP-11; check
+`ConvertBindingArg` 0 at 7a3608bab (re-run); break condition's third clause
+re-read by D-TP2-3. The other H9 and H10 checks re-run at 7a3608bab give
+rg1-checks.tsv's expected counts (H10.1 5, FIRED for W-394, UA-3's). W-355
+carries the rows. Checked by this commit at 645e784aa, the re-fetched tip:
+`check_quotes.sh` over rg1-quotes.tsv with the five new rows, 294 quotes, 0
+failed; `check_greps.sh` over rg1-checks.tsv, 96 silence checks, 0 failed (the
+same at 7a3608bab).
+
+_Measured (container, R33 (b); the plan's §0.3 to §0.6)._ Baseline tp2-base:
+gate 2047 of 2047, conformance 228/0/13 over 241. The prototype: gate 2036 of
+2047 before the fill (eleven files), 2047 of 2047 after the fill, the twenty-six
+renames and the pin split; conformance 226/0/15 over 241, 51 of 56 bullets;
+m17n_d rejected as on the nightly; the mutants M1 (the exception renamed: the
+gate's prefix rule and m17n_d catch it, no register check does) and M2 (the hunk
+kept: no double check, e1 and e2 rejected). The implementation, label tp2-impl
+on 75528587c to 6892c5d50 (build 428 steps, no warning, 18:40 to 18:53 UTC): at
+C1 `GATE tp2-impl: 2036 passed, 11 failed`, the eleven files of §0.3 each
+"Autoupdate would make changes", no prefix problem, no crash; autoupdate pass 1
+"11 file(s) changed", pass 2 "0 file(s) changed", exactly the eleven; after F1
+`GATE tp2-impl: 2047 passed, 0 failed`; conformance before the SKIP lines `PASS
+226 / FAIL 2 / SKIP 13 over 241`, bullets 50 PASS, 1 FAIL, 5 SKIP
+(templates_deduce_class_args.carbon COMPILE-FAIL at :62:14 and :63:14, ``cannot
+deduce value for generic parameter `T` ``, and :65:14 for `N`;
+templates_match_dependent_choice.carbon at :46:9 with the scrutinee TODO; the
+pre-insertion lines of the directives' :63, :64, :66 and :47; kept as the
+arbiter's conformance-tp2-impl-noskip log), and on the final tree `PASS 226 /
+FAIL 0 / SKIP 15 over 241`, bullets 51 PASS, 0 FAIL, 5 SKIP, runner exit 0:
+D-TP2-5's bar; `runner.py --self-test` OK. The fix, label tp2-fix on eb655b5ce
+(build 428 steps, status 0, no warning): `GATE tp2-fix: 2047 passed, 0 failed`;
+`AUTOUPDATE tp2-fix: 0 file(s) changed`; `CONFORMANCE tp2-fix: PASS 226 / FAIL 0
+/ SKIP 15 over 241`, bullets 51/0/5; the designdocs checker with `--toolchain` 0
+errors on tp2-fix and on tp2-impl (1 before fix 1, X25's compile failure) and 1
+on tp2-base, "X25_template_deduce_class_arg.carbon: compiled, expected error",
+the fixture now pinning TP-2's behaviour, which the base lacks (A-M1 / B-M1; X25
+is W-396's probe beside ded_holder, its first error at :34:30). Review A's own
+label tp2-reviewA reproduced the gate (2047 passed, 0 failed), conformance
+(226/0/15, bullets 51/0/5, the per-program statuses tp2-base's but the two
+SKIPs), the §4 matrix split by split, the 36 probes of A.4 on tp2-base, its
+install and the nightly, and the M1 mutant caught by the gate (6 of the 20
+template goldens flagged, 11 of 2047; m17n_d rc 5; a2_impl_self 11); review B
+re-ran conformance on the implementer's install under its own label (the same
+line) and §8.5's detectors. The probes on the implementer's install: m17n_d
+compiles, links and runs rc 5 on tp2-base and is rejected on tp2-impl with
+``unable to monomorphize specific `Wrap(D)` `` and the nightly's two notes; e1
+and e2 rejected in `F(D)` with SC-1's three notes on both installs; a2_impl_self
+prints 11 on tp2-base, two errors on tp2-impl (`ImplUnusedBinding`, then
+`MissingImplInMemberAccess`); every answer the plan's §0.4 baseline and
+prototype columns, but the m9td row's prototype cell, which has the seventh
+note, ``initializing generic parameter `T` declared here`` (A-m1; the cell
+amended). §8.7 at C1, at P and at fix 1, against d10a566ab and against
+645e784aa: the two `context.sem_ir()` lines and nothing else; `git grep -c -w
+forms_type -- toolchain` prints no match (exit 1; A-m3: the plan's "is 0" is the
+substance, its wording amended); `OperandDependence(context,` call.cpp 5,
+convert.cpp 6, handle_index.cpp 2, pointer_dereference.cpp 1, fourteen.
+merge-tree against origin/trunk 701863aa5 clean at P and at fix 1; against PR
+53's held head 2407efa74, conflicts in the plan's four records files only
+(§0.7). Deviations folded by this commit (R10): §8.2's CHECK-only check at F1
+prints one line, `-`, the trailing empty line autoupdate leaves at the end of
+toolchain/lower/testdata/template/match_choice.carbon (its last split now lowers
+nothing) and prek's end-of-file-fixer, required before each commit, removes, so
+the goldens' numstat against 701863aa5 is 1567/2428 for the fold's 1567/2427 and
+no CHECK line is hand-written; a fresh autoupdate of C1's goldens re-adds the
+line as its only difference from F1, a second pass changes nothing, and
+autoupdate on the committed heads 6892c5d50 and eb655b5ce is a no-op (A-m2 /
+B-m5). The SKIP line of templates_match_dependent_choice.carbon says "at every
+other `match` here", where the install reports one error, at the first `match`
+(:47:9), and stops; the line stands as the plan's text and W-397's entry carries
+the measured output (B-m4). ARB-4's `nice`d LLVM build ran throughout the
+implementer's and the fixer's builds, as the task's rule allows, hand-off note
+3's letter notwithstanding; both builds 428 steps, status 0, no warning (B-m6;
+the note amended). C1 edits fork/conformance/README.md (two rows by `runner.py
+--update-readme-table`) without R31 counts in its message; they are headings {1:
+1, 2: 4, 3: 4}, bullets 28, numbered 6, rows 243, lines 559, unchanged (B-m2).
+Errata in commit messages, never amended: P's (6892c5d50) says the TP-1 note's
+quoted sentence sits at "181 to 184 after it" and cites "168 to 171"; the note
+is at docs/design/templates.md:169-172 with the sentence at :170 before and
+after P and after fix 1, :168 being the blockquote's blank line (A-m4 / B-m3);
+fix 1's (eb655b5ce) and the plan's C.4 put X25's first error at :33:30, measured
+on the pre-splice file; the re-written header being one line longer, it is at
+:34:30 on tp2-fix and on tp2-impl (the fixer's erratum; C.4 corrected by this
+commit). The merged head 88c9eb8cf (M 949a8f574, R and D on fix 1's tree) is
+measured by the focused re-review round 1 on its own label tp2-rr1 (build 428
+steps, status 0, no warning): `GATE tp2-rr1: 2047 passed, 0 failed`;
+`AUTOUPDATE tp2-rr1: 0 file(s) changed`, the worktree clean; `CONFORMANCE
+tp2-rr1: PASS 226 / FAIL 0 / SKIP 15 over 241`, bullets 51/0/5, the
+per-program statuses tp2-base's but the two SKIPs; `runner.py --self-test`
+OK; the designdocs checker with `--toolchain` 0 errors on its install and 1 on
+tp2-base (X25 "compiled, expected error"); X25's first error at :34:30; §8.7
+the two `context.sem_ir()` lines, `forms_type` no match,
+`OperandDependence(context,` 5/6/2/1; convert.cpp identical to 701863aa5;
+merge-tree against origin/trunk 99f4df970 clean: the merge M, made without
+F.1's re-measure because it touches no build input, is measured by that round,
+and L measures the head again (amended 2026-11-16, review fold: RR1-m1,
+implementation re-review).
+
+_Break conditions._ D-TP2-1's: upstream changes which operands or which
+dependence defer a call, or README.md:3012-3016 or p002200:205-209 change.
+D-TP2-2's: W-396 to W-398's. D-TP2-3's: a double check in one specific, or
+upstream defers a facet conversion of a template-dependent self. D-TP2-4's: a
+changed split with no template parameter, or a golden outside the eleven changes
+at the fill. D-TP2-5's ruling: upstream lands deduction through a dependent
+class type (deduce.cpp's TODO at :443 resolved), and the SKIPs are lifted at the
+next advance that brings it.
+
+_Residues._ W-396, W-397, W-398 (D-TP2-2), W-399 and W-400 (D-TP2-8; TP-1's
+follow-on).
+
+_The §8.7 check on the tree at 043978962._ `diff` of upstream's :449-464 at
+645e784aa against the fork's function (call.cpp:1023-1038) prints the two
+`context.sem_ir()` lines only; `git grep -c -w forms_type -- toolchain` prints
+no match (exit 1); `OperandDependence(context,` call.cpp 5, convert.cpp 6,
+handle_index.cpp 2, pointer_dereference.cpp 1; the model-identifier grep of the
+branch's diff 0 from the plan's sign-off a6b38ea92 to this commit (over the
+whole branch from 701863aa5 the two hits are the plan's own quoted commit
+command in §3 and Appendix E's PR trailer line, carried by the plan commits).
+
+_The id re-scan at D._ 971 refs, 748 distinct heads and 10 worktrees after a
+fetch (2026-11-16, 20:09 UTC): W-396 to W-400 are this branch's ledger ids only
+(no ledger at any head carries an id above W-395); elsewhere range bounds in
+prose, W-396 to W-399 in 17 to 21 heads' fork/ files, every one an id re-scan
+sentence's or a reserved-id list's bound, and W-400 in this branch's two heads,
+local and origin; no other W-4xx.
+
+_Discharged by this commit: W-374 (TP-2)._
 
 ### DD-1: design docs without placeholders (2026-10-14)
 
@@ -19695,7 +19930,7 @@ call.cpp:1045-1046 rewrite the cut's :432).
 | rg1-checks.tsv:67, H4.4 | H4.4 (ST-1; rg1-plan.md:935) | NONE | G count 3 to 5 by 54728e47f (export.cpp:463 and :472, in the new branch) | expected count 5; break condition (upstream adds one at the fork-fixed site) not fired |
 | rg1-checks.tsv:69, H4.5 | H4.5 (ST-1; rg1-plan.md:936) | NONE | L count 7 to 8 by e67b6db91 (shorthand file names) | expected count 8, ST-1's merge-rule signal as on 2026-11-09 (keep the fork's CHECK lines of the two pinned splits, then autoupdate), UA-3's to apply; not fired |
 | rg1-checks.tsv:92, H10.1 | H10.1 (TP-1; rg1-plan.md:1010) | NONE, re-classified DRIFT for `AddrOfAction` | G count 0 to 5 by dbf02ad10, all `AddrOfAction` (handle_operator.cpp:269 and :313, inst_kind.def:26, typed_insts.h:143 and :144) | FIRED (D-RG-3): expected count 5, the row re-classified for `&`, W-394 filed, owner UA-3; the other four forms stay NONE |
-| rg1-checks.tsv:96, H10.8 | H10.8 (TP-1; rg1-plan.md:1017) | DRIFT (W-374) | L count 8 to 9 by 4286832b4 (`IsCallPerformable`'s argument form only) | expected count 9; re-read, the DRIFT stands (below) |
+| rg1-checks.tsv:96, H10.8 | H10.8 (TP-1; rg1-plan.md:1017) | DRIFT (W-374) | L count 8 to 9 by 4286832b4 (`IsCallPerformable`'s argument form only) | expected count 9; re-read, the DRIFT stands (below) (resolved 2026-11-16 by TP-2: ALIGNED) |
 | rg1-checks.tsv:98, H11.4 | H11.4 (CT-1; rg1-plan.md:1031) | NONE | L count 2 to 3 by 4286832b4 (`Context&` to `const SemIR::File&`, mechanical) | expected count 3; merge rule: the fork-added `OperandDependence(context, ...)` lines take the new form at UA-3; not fired |
 | rg1-checks.tsv:104, H11.10 | H11.10 (CT-1; rg1-plan.md:1037) | NONE | L count 12 to 13 by e67b6db91 (var_template.carbon) | expected count 13; merge rule: take upstream's files and refill; not fired |
 
@@ -19745,6 +19980,8 @@ Break condition of this re-read: upstream changes which operands or which
 dependence defer a call in `IsCallPerformable`, or README.md:3012-3016 changes;
 then the row is re-read. Recorded in rg1-plan.md's H10.8 row, its comment line
 in rg1-checks.tsv, DR-0's register block, TP-1's entry and W-374's notes.
+Resolved 2026-11-16 by TP-2 (fork/templates/tp2-plan.md): the row is ALIGNED and
+W-374 DISCHARGED.
 
 _T2.1's first weekly re-read._ EH-C made T2.1 ALIGNED on 2026-11-09 with
 D-EHC-1's break condition; this is its first weekly re-read. No window commit
@@ -19968,7 +20205,7 @@ the record; no decision depends on a class.
 | rg1-checks.tsv:68, H4.5 | H4.5 (ST-1; rg1-plan.md:936) | NONE | L count 5 to 7 by d0badecd2, which re-renders every split's `CHECK:STDERR` lines, the two fork-pinned splits included, with the same diagnostic kinds and messages, and by 9fb428d71 | expected count 7, ST-1's merge-rule signal: keep the fork's CHECK lines of fail_todo_import_plus_with_string_view_conversion and fail_todo_rewrite_equal, then autoupdate (fork/decision-log.md:8927-8930 at cb726a230), UA-3's to apply; break condition (an upstream refill of those splits) borderline and not fired: the pinned failures are unchanged |
 | rg1-checks.tsv:82, H8.5 | H8.5 (VA-1; rg1-plan.md:986) | NONE | L count 2 to 3 by d0badecd2 | expected count 3; merge rule: take upstream's file and refill at the advance (the row's break condition); not fired |
 | rg1-checks.tsv:91, H10.4 | H10.4 (TP-1; rg1-plan.md:1013) | NONE | L count 1 to 2 by d50576ca1 (`WrapperBinding` and `NameRef` lowering for global lets); `SpliceInst` lowering (handle.cpp:452) untouched | expected count 2; merge rule: the row's break condition (upstream's return-form commits 230227264 and 9fd28f730 at the advance); not fired |
-| rg1-checks.tsv:92, H10.8 | H10.8 (TP-1; rg1-plan.md:1017) | NONE, re-classified DRIFT | L count 7 to 8 by be0f11be9, outside `IsCallPerformable` | expected count 8 and the row re-classified DRIFT on W-374 (below) |
+| rg1-checks.tsv:92, H10.8 | H10.8 (TP-1; rg1-plan.md:1017) | NONE, re-classified DRIFT | L count 7 to 8 by be0f11be9, outside `IsCallPerformable` | expected count 8 and the row re-classified DRIFT on W-374 (below) (resolved 2026-11-16 by TP-2: ALIGNED) |
 | rg1-checks.tsv:97, H11.9 | H11.9 (CT-1; rg1-plan.md:1036) | NONE (a fix) | G count 8 to 9 by d50576ca1's `GlobalRef` (typed_insts.h:1057); `SpecificConstant`'s category (:2010) and sem_ir/expr_info.cpp's `SameAsFirstOperand` case unchanged | expected count 9; not fired |
 | rg1-checks.tsv:98, H11.10 | H11.10 (CT-1; rg1-plan.md:1037) | NONE | L count 9 to 12 by a567040d7 (globals), d0badecd2 (range_for and non_type_param) and 9fb428d71 (range_for and generic_call) | expected count 12; merge rule: take upstream's files and refill; not fired |
 
@@ -20030,7 +20267,8 @@ condition, with "the removal changes a golden outside TP-1's and SC-1's template
 goldens"), or README.md:3012-3016 changes; then the row is re-read. The verdict
 is recorded in rg1-plan.md's H10.8 row, H10.8's comment line in rg1-checks.tsv,
 DR-0's register block as entry (vii) and TP-1's entry. Auto-adopted under R29
-(a) and veto-able.
+(a) and veto-able. Resolved 2026-11-16 by TP-2 (fork/templates/tp2-plan.md): the
+row is ALIGNED and W-374 DISCHARGED.
 
 Divergence: 2036 upstream files are touched since the cut (1978 last week) and
 1195 this week (663); 1222 files are modified by the fork since the cut (1053),

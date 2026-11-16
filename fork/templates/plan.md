@@ -2742,6 +2742,35 @@ the name in the definition (TR-13's amendment). _Break condition_, added: a
 check that reads the shape of a type formed here and then hands a value of it to
 code that assumes an operation on it was performed in the definition.
 
+TP-2 (amended 2026-11-16, fork/templates/tp2-plan.md D-TP2-1 and D-TP2-2;
+W-374): this decision's ruling is SUPERSEDED. `IsCallPerformable` is upstream's
+again (toolchain/check/call.cpp:449-464 at 7a3608bab): a call is deferred when
+the callee or any argument is template-dependent, with no exception for a
+generic class, interface or named constraint, as docs/design/README.md:3012-3016
+and proposal 2200 (:205-209) leave type checking of anything dependent on a
+template parameter to instantiation; the text above and its round-10 paragraph
+stand as the record of what the exception did and why. What it bought is
+withdrawn and filed: deduction of `T` from a `Holder(i32)` argument against a
+`Holder(T)` parameter (W-193's forms; deduce_class_args.carbon's five positive
+splits renamed `fail_todo_`, index.carbon's `index_class_with_index_with`, the
+program templates_deduce_class_args.carbon SKIP) is W-396, upstream's deduce.cpp
+having no case for a template-dependent splice and the nightly rejecting the
+same programs; refutable patterns on a template-dependent choice value (round
+10's X-1 forms; match_choice.carbon's splits, the program
+templates_match_dependent_choice.carbon SKIP) are W-397; the two definition-time
+diagnostics of `fail_deref_class_type_param` and
+`fail_class_template_literal_with_dependent_array_bound_unknown_field`, now made
+on instantiation only, are W-398; an `impl forall` with a template binding whose
+self or interface is formed from it is rejected as on the nightly, W-400 (the
+split `fail_todo_impl_forall_formed_self`). The deduce_class_args.carbon forms
+that TP-1 measured on v13 (holder 42, holder_copy_constraint 7,
+template_class_type 9, holder_pointer 5, vec_value_param 3) are then the
+nightly's ``cannot deduce value for generic parameter`` on the fork too;
+`class_argument_expression` and `class_argument_return_type` (explicit `N`)
+still run. The break condition above fired as FO-1's m17n_d (an interface
+constraint converted at the definition and never checked again); TP-2's D-TP2-1
+carries the new one.
+
 ### §1.7 Deferred impl lookup (W-127, C4)
 
 Root cause: §0.4. Cost, measured on v12 (amended 2026-10-14, review fold:
@@ -3455,7 +3484,9 @@ files W-298 (amended 2026-10-21, records: round 11: RR11-1-m1).
 -   D-TP-11. Generic type constructors with template-dependent argument
     values are formed eagerly (§1.6). A refutable pattern on such a type
     resolves its alternative names in the definition (TR-13; amended 2026-10-20,
-    round 10: X-1).
+    round 10: X-1). SUPERSEDED by TP-2 (2026-11-16): the call is deferred as
+    upstream's is; W-396 to W-398 and W-400 carry the forms
+    (fork/templates/tp2-plan.md D-TP2-1, D-TP2-2).
 -   D-TP-12. Impl lookup for a query that names a template binding selects
     no impl in the definition (§1.7; rewritten 2026-10-14, review fold: A-M4
     / B-M5).

@@ -71,18 +71,17 @@ fn Use(n: i32*) -> i32 {
   return Deref(n);
 }
 
-// --- fail_deref_class_type_param.carbon
+// --- todo_fail_deref_class_type_param.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `C(T)` is a deferred `call_action`, so `*c` is a
+// deferred dereference that only an instantiation diagnoses, and this split
+// makes none (fork work item W-398).
 
 class C(T: type) {
   var item: T;
 }
 
 fn F[template T: type](c: C(T)) -> T {
-  // CHECK:STDERR: fail_deref_class_type_param.carbon:[[@LINE+4]]:10: error: cannot dereference operand of non-pointer type `C(T)` [DerefOfNonPointer]
-  // CHECK:STDERR:   return *c;
-  // CHECK:STDERR:          ^
-  // CHECK:STDERR:
   return *c;
 }
 

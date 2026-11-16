@@ -358,14 +358,14 @@ fails if this table is stale):
 | `generics/structural_conformance_checked_caller.carbon` | Generics: Template-style structural conformance to nominal constraints | run |
 | `generics/templates_constant_elements.carbon` | Generics: Integrated templates | run |
 | `generics/templates_constraint_lookup.carbon` | Generics: Integrated templates | run |
-| `generics/templates_deduce_class_args.carbon` | Generics: Integrated templates | run |
+| `generics/templates_deduce_class_args.carbon` | Generics: Integrated templates | SKIP |
 | `generics/templates_dependent_call.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_index.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_member.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_pointer.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_var.carbon` | Generics: Integrated templates | run |
 | `generics/templates_for_dependent_range.carbon` | Generics: Integrated templates | run |
-| `generics/templates_match_dependent_choice.carbon` | Generics: Integrated templates | run |
+| `generics/templates_match_dependent_choice.carbon` | Generics: Integrated templates | SKIP |
 | `generics/templates_return_aggregates_diff.carbon` | Generics: Integrated templates | differential |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |

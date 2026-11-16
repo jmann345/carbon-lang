@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Generics: Integrated templates
+// SKIP: refutable patterns on a template-dependent choice value are withdrawn by TP-2 (fork work item W-397; fork/templates/tp2-plan.md D-TP2-2): with `IsCallPerformable` upstream's, `Opt(T)` is a deferred `call_action` and the scrutinee's type is a splice, so this file fails to compile with `error: semantics TODO: `match on unsupported scrutinee type`` at `match (s) {` in `Count` (:47:9) and at every other `match` here, as trunk did before TP-1's round 10 (X-1) and as the upstream nightly 2026.10.12 reports a TODO (verified on the container arbiter's install of TP-2's prototype). Un-SKIP when W-397's break condition fires: upstream's `match` accepts a scrutinee whose type is a template-dependent splice, or the nightly runs this program.
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   0

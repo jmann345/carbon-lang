@@ -804,9 +804,11 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %Get.type: type = fn_type @Get [concrete]
 // CHECK:STDOUT:   %Get: %Get.type = struct_value () [concrete]
 // CHECK:STDOUT:   %require_complete.944: <witness> = require_complete_type %U.67d [template]
-// CHECK:STDOUT:   %Tag.type.44345c.2: type = facet_type <@Tag, @Tag(%U.67d)> [template]
-// CHECK:STDOUT:   %Tag.lookup_impl_witness: <witness> = lookup_impl_witness %i32, @Tag, @Tag(%U.67d) [template]
-// CHECK:STDOUT:   %Tag.facet.946: %Tag.type.44345c.2 = facet_value %i32, (%Tag.lookup_impl_witness) [template]
+// CHECK:STDOUT:   %.813: type = type_of_inst @Get.%.loc12_23.4 [template]
+// CHECK:STDOUT:   %.84f: %.813 = splice_inst @Get.%.loc12_23.4 [template]
+// CHECK:STDOUT:   %.537: type = splice_inst @Get.%.loc12_23.7 [template]
+// CHECK:STDOUT:   %require_complete.cb0: <witness> = require_complete_type %.537 [template]
+// CHECK:STDOUT:   %.3e3: %.537 = splice_inst @Get.%.loc12_15.2 [template]
 // CHECK:STDOUT:   %.80a: type = type_of_inst @Get.%.loc12_25.3 [template]
 // CHECK:STDOUT:   %.cfe: %.80a = splice_inst @Get.%.loc12_25.3 [template]
 // CHECK:STDOUT:   %.bbc: type = type_of_inst @Get.%.loc12_29.3 [template]
@@ -816,31 +818,41 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %u.param_patt.56f: %pattern_type.831 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %u.patt.0d7: %pattern_type.831 = wrapper_binding_pattern u, %u.param_patt.56f [concrete]
 // CHECK:STDOUT:   %complete_type.127: <witness> = complete_type_witness bool [concrete]
-// CHECK:STDOUT:   %Tag.type.dbe: type = facet_type <@Tag, @Tag(bool)> [concrete]
-// CHECK:STDOUT:   %Tag.impl_witness.693: <witness> = impl_witness @i32.as.Tag.impl.%Tag.impl_witness_table, @i32.as.Tag.impl(bool) [concrete]
+// CHECK:STDOUT:   %Tag.type.dbe4dc.1: type = facet_type <@Tag, @Tag(bool)> [concrete]
+// CHECK:STDOUT:   %inst.facet_type: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %Tag.type.dbe4dc.2: type = facet_type <@Tag, @Tag(bool)> [concrete = %Tag.type.dbe4dc.1]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.97d: type = splice_block %Tag.type.dbe4dc.1 [concrete = %Tag.type.dbe4dc.1] {}
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Tag.assoc_type.1f2: type = assoc_entity_type @Tag, @Tag(bool) [concrete]
 // CHECK:STDOUT:   %assoc0.6cb: %Tag.assoc_type.1f2 = assoc_entity element0, @Tag.WithSelf.%Tag.WithSelf.Id.decl [concrete]
+// CHECK:STDOUT:   %complete_type.107: <witness> = complete_type_witness %Tag.type.dbe4dc.1 [concrete]
+// CHECK:STDOUT:   %Tag.impl_witness.693: <witness> = impl_witness @i32.as.Tag.impl.%Tag.impl_witness_table, @i32.as.Tag.impl(bool) [concrete]
 // CHECK:STDOUT:   %i32.as.Tag.impl.Id.type.011: type = fn_type @i32.as.Tag.impl.Id, @i32.as.Tag.impl(bool) [concrete]
 // CHECK:STDOUT:   %i32.as.Tag.impl.Id.3e3: %i32.as.Tag.impl.Id.type.011 = struct_value () [concrete]
-// CHECK:STDOUT:   %Tag.facet.4f7: %Tag.type.dbe = facet_value %i32, (%Tag.impl_witness.693) [concrete]
-// CHECK:STDOUT:   %Tag.WithSelf.Id.type.fc2: type = fn_type @Tag.WithSelf.Id, @Tag.WithSelf(bool, %Tag.facet.4f7) [concrete]
-// CHECK:STDOUT:   %.4d1: type = fn_type_with_self_type %Tag.WithSelf.Id.type.fc2, %Tag.facet.4f7 [concrete]
-// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:   %Tag.facet.4f7daf.1: %Tag.type.dbe4dc.1 = facet_value %i32, (%Tag.impl_witness.693) [concrete]
+// CHECK:STDOUT:   %inst.facet_value: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %Tag.facet.4f7daf.2: %Tag.type.dbe4dc.1 = facet_value %i32, (%Tag.impl_witness.693) [concrete = %Tag.facet.4f7daf.1]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Tag.WithSelf.Id.type.fc2: type = fn_type @Tag.WithSelf.Id, @Tag.WithSelf(bool, %Tag.facet.4f7daf.1) [concrete]
+// CHECK:STDOUT:   %.4d1: type = fn_type_with_self_type %Tag.WithSelf.Id.type.fc2, %Tag.facet.4f7daf.1 [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.3c3: %.4d1 = splice_block %impl.elem0.2af [concrete = %i32.as.Tag.impl.Id.3e3] {
-// CHECK:STDOUT:       %as_type: type = facet_access_type %Tag.facet.4f7 [concrete = %i32]
-// CHECK:STDOUT:       %.ae0: type = converted %Tag.facet.4f7, %as_type [concrete = %i32]
-// CHECK:STDOUT:       %.01a: %Tag.assoc_type.1f2 = specific_constant @Tag.WithSelf.%assoc0.loc4_17.1, @Tag.WithSelf(bool, %Tag.facet.4f7) [concrete = %assoc0.6cb]
+// CHECK:STDOUT:       %as_type: type = facet_access_type %Tag.facet.4f7daf.1 [concrete = %i32]
+// CHECK:STDOUT:       %.ae0: type = converted %Tag.facet.4f7daf.1, %as_type [concrete = %i32]
+// CHECK:STDOUT:       %.01a: %Tag.assoc_type.1f2 = specific_constant @Tag.WithSelf.%assoc0.loc4_17.1, @Tag.WithSelf(bool, %Tag.facet.4f7daf.1) [concrete = %assoc0.6cb]
 // CHECK:STDOUT:       %Id.ref: %Tag.assoc_type.1f2 = name_ref Id, %.01a [concrete = %assoc0.6cb]
 // CHECK:STDOUT:       %impl.elem0.2af: %.4d1 = impl_witness_access %Tag.impl_witness.693, element0 [concrete = %i32.as.Tag.impl.Id.3e3]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.176: init %i32 = splice_block %i32.as.Tag.impl.Id.call {
 // CHECK:STDOUT:       <elided>
 // CHECK:STDOUT:       %i32.as.Tag.impl.Id.call: init %i32 = call %i32.as.Tag.impl.Id.specific_fn.bd6790.2()
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:   %inst.splice_block.426619.4: <instruction> = inst_value [concrete] {
 // CHECK:STDOUT:     %.7e3: init %i32 = splice_block %.176 {}
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
@@ -876,11 +888,16 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %u.patt.loc11_34.2: @Get.%pattern_type (%pattern_type.51d1c4.3) = wrapper_binding_pattern u, %u.param_patt.loc11_34.2 [template = %u.patt.loc11_34.2 (constants.%u.patt.760)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %U.loc11_18.1 [template = %require_complete (constants.%require_complete.944)]
-// CHECK:STDOUT:   %Tag.type.loc12_23.2: type = facet_type <@Tag, @Tag(%U.loc11_18.1)> [template = %Tag.type.loc12_23.2 (constants.%Tag.type.44345c.2)]
-// CHECK:STDOUT:   %Tag.lookup_impl_witness: <witness> = lookup_impl_witness constants.%i32, @Tag, @Tag(%U.loc11_18.1) [template = %Tag.lookup_impl_witness (constants.%Tag.lookup_impl_witness)]
-// CHECK:STDOUT:   %Tag.facet.loc12_15.2: @Get.%Tag.type.loc12_23.2 (%Tag.type.44345c.2) = facet_value constants.%i32, (%Tag.lookup_impl_witness) [template = %Tag.facet.loc12_15.2 (constants.%Tag.facet.946)]
-// CHECK:STDOUT:   %.loc12_25.3: <instruction> = access_member_action %.loc12_15, Id [template]
+// CHECK:STDOUT:   %require_complete.loc11: <witness> = require_complete_type %U.loc11_18.1 [template = %require_complete.loc11 (constants.%require_complete.944)]
+// CHECK:STDOUT:   %.loc12_23.4: <instruction> = call_action (%Tag.ref, %U.ref.loc12), false [template]
+// CHECK:STDOUT:   %.loc12_23.5: type = type_of_inst %.loc12_23.4 [template = %.loc12_23.5 (constants.%.813)]
+// CHECK:STDOUT:   %.loc12_23.6: @Get.%.loc12_23.5 (%.813) = splice_inst %.loc12_23.4 [template = %.loc12_23.6 (constants.%.84f)]
+// CHECK:STDOUT:   %.loc12_23.7: <instruction> = convert_to_value_action %.loc12_23.2, type [template]
+// CHECK:STDOUT:   %.loc12_23.8: type = splice_inst %.loc12_23.7 [template = %.loc12_23.8 (constants.%.537)]
+// CHECK:STDOUT:   %require_complete.loc12: <witness> = require_complete_type %.loc12_23.8 [template = %require_complete.loc12 (constants.%require_complete.cb0)]
+// CHECK:STDOUT:   %.loc12_15.2: <instruction> = convert_action %i32.loc12, %.loc12_23.8, element7 [template]
+// CHECK:STDOUT:   %.loc12_15.3: @Get.%.loc12_23.8 (%.537) = splice_inst %.loc12_15.2 [template = %.loc12_15.3 (constants.%.3e3)]
+// CHECK:STDOUT:   %.loc12_25.3: <instruction> = access_member_action %.loc12_15.1, Id [template]
 // CHECK:STDOUT:   %.loc12_25.4: type = type_of_inst %.loc12_25.3 [template = %.loc12_25.4 (constants.%.80a)]
 // CHECK:STDOUT:   %.loc12_25.5: @Get.%.loc12_25.4 (%.80a) = splice_inst %.loc12_25.3 [template = %.loc12_25.5 (constants.%.cfe)]
 // CHECK:STDOUT:   %.loc12_29.3: <instruction> = call_action (%.loc12_25.2), false [template]
@@ -894,9 +911,10 @@ fn Use() -> i32 {
 // CHECK:STDOUT:     %i32.loc12: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %Tag.ref: %Tag.type.9ab = name_ref Tag, file.%Tag.decl [concrete = constants.%Tag.generic]
 // CHECK:STDOUT:     %U.ref.loc12: type = name_ref U, %U.loc11_18.2 [template = %U.loc11_18.1 (constants.%U.67d)]
-// CHECK:STDOUT:     %Tag.type.loc12_23.1: type = facet_type <@Tag, @Tag(constants.%U.67d)> [template = %Tag.type.loc12_23.2 (constants.%Tag.type.44345c.2)]
-// CHECK:STDOUT:     %Tag.facet.loc12_15.1: @Get.%Tag.type.loc12_23.2 (%Tag.type.44345c.2) = facet_value %i32.loc12, (constants.%Tag.lookup_impl_witness) [template = %Tag.facet.loc12_15.2 (constants.%Tag.facet.946)]
-// CHECK:STDOUT:     %.loc12_15: @Get.%Tag.type.loc12_23.2 (%Tag.type.44345c.2) = converted %i32.loc12, %Tag.facet.loc12_15.1 [template = %Tag.facet.loc12_15.2 (constants.%Tag.facet.946)]
+// CHECK:STDOUT:     %.loc12_23.1: type = type_of_inst %.loc12_23.4 [template = %.loc12_23.5 (constants.%.813)]
+// CHECK:STDOUT:     %.loc12_23.2: @Get.%.loc12_23.5 (%.813) = splice_inst %.loc12_23.4 [template = %.loc12_23.6 (constants.%.84f)]
+// CHECK:STDOUT:     %.loc12_23.3: type = splice_inst %.loc12_23.7 [template = %.loc12_23.8 (constants.%.537)]
+// CHECK:STDOUT:     %.loc12_15.1: @Get.%.loc12_23.8 (%.537) = splice_inst %.loc12_15.2 [template = %.loc12_15.3 (constants.%.3e3)]
 // CHECK:STDOUT:     %.loc12_25.1: type = type_of_inst %.loc12_25.3 [template = %.loc12_25.4 (constants.%.80a)]
 // CHECK:STDOUT:     %.loc12_25.2: @Get.%.loc12_25.4 (%.80a) = splice_inst %.loc12_25.3 [template = %.loc12_25.5 (constants.%.cfe)]
 // CHECK:STDOUT:     %.loc12_29.1: type = type_of_inst %.loc12_29.3 [template = %.loc12_29.4 (constants.%.bbc)]
@@ -922,17 +940,22 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %u.patt.loc11_34.2 => constants.%u.patt.0d7
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %require_complete => constants.%complete_type.127
-// CHECK:STDOUT:   %Tag.type.loc12_23.2 => constants.%Tag.type.dbe
-// CHECK:STDOUT:   %Tag.lookup_impl_witness => constants.%Tag.impl_witness.693
-// CHECK:STDOUT:   %Tag.facet.loc12_15.2 => constants.%Tag.facet.4f7
-// CHECK:STDOUT:   %.loc12_25.3 => constants.%inst.splice_block.426619.1
+// CHECK:STDOUT:   %require_complete.loc11 => constants.%complete_type.127
+// CHECK:STDOUT:   %.loc12_23.4 => constants.%inst.facet_type
+// CHECK:STDOUT:   %.loc12_23.5 => type
+// CHECK:STDOUT:   %.loc12_23.6 => constants.%Tag.type.dbe4dc.1
+// CHECK:STDOUT:   %.loc12_23.7 => constants.%inst.splice_block.426619.1
+// CHECK:STDOUT:   %.loc12_23.8 => constants.%Tag.type.dbe4dc.1
+// CHECK:STDOUT:   %require_complete.loc12 => constants.%complete_type.107
+// CHECK:STDOUT:   %.loc12_15.2 => constants.%inst.facet_value
+// CHECK:STDOUT:   %.loc12_15.3 => constants.%Tag.facet.4f7daf.1
+// CHECK:STDOUT:   %.loc12_25.3 => constants.%inst.splice_block.426619.2
 // CHECK:STDOUT:   %.loc12_25.4 => constants.%.4d1
 // CHECK:STDOUT:   %.loc12_25.5 => constants.%i32.as.Tag.impl.Id.3e3
-// CHECK:STDOUT:   %.loc12_29.3 => constants.%inst.splice_block.426619.2
+// CHECK:STDOUT:   %.loc12_29.3 => constants.%inst.splice_block.426619.3
 // CHECK:STDOUT:   %.loc12_29.4 => constants.%i32
 // CHECK:STDOUT:   %.loc12_29.5 => <not constant>
-// CHECK:STDOUT:   %.loc12_30.2 => constants.%inst.splice_block.426619.3
+// CHECK:STDOUT:   %.loc12_30.2 => constants.%inst.splice_block.426619.4
 // CHECK:STDOUT:   %.loc12_30.3 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

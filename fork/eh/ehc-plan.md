@@ -37,6 +37,18 @@ the ledger's field is kept unchanged, D.1; amended 2026-11-09, review fold: A-m3
 previous container, lost before it was pushed); §0.8 says what this rev keeps of
 it and where it differs.
 
+EH-C landed on trunk (LAND-1, 2026-11-09): merged as PR 70 by 2cdb7ff4a (head
+d7e1de3e9af6fb92e78c1fb26277f1c173d2981f, trunk before 725570464; GitHub
+merged_at 2026-11-16T14:38:00Z) under R33, fork/eh/ehc-plan.md §3 and Appendix
+F; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047,
+conformance 228 PASS, 0 FAIL, 13 SKIP over 241, 51 of 56 bullets; id re-scans:
+W-380 a ledger item only on the PR's line, claude/carbon-fork-0-1-ehc (local and
+origin) and this landing's worktree, over 84 refs, 78 distinct heads and 7
+worktrees after a fetch; W-381 to W-385 unused; W-386 to W-393 reserved only by
+SAFE-3's rev 13 text on the local claude/carbon-fork-0-1-safe (elsewhere range
+bounds in prose), no ledger use; no W-4xx anywhere; moved to follow-ons: W-380
+to Next actions item 14.
+
 **Trunk moved while the reviews ran (amended 2026-11-09, review fold: B-m4 /
 A-m3 (e)).** Trunk is fca1e9e2f ("Land PR 69: ARB-2, construct UnitAndImports in
 place (its emitter points into itself)", the merge of

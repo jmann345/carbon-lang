@@ -17860,6 +17860,15 @@ filed after W-378; W-381 to W-385 unused.
 
 _Discharged by this commit: W-346 (EH-C)._
 
+_Landed (2026-11-09, LAND-1, R33):_ merged into trunk as PR 70 by 2cdb7ff4a
+(GitHub merged_at 2026-11-16T14:38:00Z); container-measured (R33 (b)): gate 2047
+of 2047, conformance 228/0/13 over 241; id re-scans: W-380 a ledger item only on
+the PR's line, claude/carbon-fork-0-1-ehc (local and origin) and this landing's
+worktree, over 84 refs, 78 distinct heads and 7 worktrees after a fetch; W-381
+to W-385 unused; W-386 to W-393 reserved only by SAFE-3's rev 13 text on the
+local claude/carbon-fork-0-1-safe (elsewhere range bounds in prose), no ledger
+use; no W-4xx anywhere; moved to follow-ons: W-380 to Next actions item 14.
+
 ### EH-B: catching thunks, Cpp.Exception, Carbon::expected export (2026-09-27)
 
 Milestone bullet "Error handling: C++ exception interop (-fno-except config,

@@ -21491,3 +21491,140 @@ ms wall time, 51790 ms across threads`; the five-program conformance run's line
 above, `.done` holding 0 after one 10 s wait); the two edited scripts pass `bash
 -n`, the five files prek to a fixpoint, R31 holds on the three markdown files,
 and the model-identifier grep over the fold's added lines finds 0 hits.
+
+### SAFE-3 stopped a second time (2026-11-16): the SAFE-4 ruling's stop condition fired at rev 15; the orchestrator's Addendum 2 (R29)
+
+Placed at the end of the log, after ARB-2's entry, because the log groups its
+entries by workstream and appends a workstream's first entry after the latest
+one (the weekly entries run newest first in their own block); SAFE-3's first
+stop, of 2026-11-02, was stamped on fork/ORCHESTRATION.md alone, by Appendix
+D's stop path of fork/safe/safe3-plan.md, and this is the SAFE workstream's
+first entry here. Written 2026-11-16 at 15:26 UTC by the stop stamp's records
+commit on trunk, cut from 6ce4af22c (the weekly upstream check's review fold,
+after PR 70's landing 2cdb7ff4a and the check's records commit 94fc0c192);
+records only: no .carbon, prelude, golden, program, docs or toolchain file; no
+build, merge or dispatch; the owner's machine unused. Line cites are to trunk
+6ce4af22c and, for the plan, to the mirror's head 4d31da703. The rulings are
+the orchestrator's under R29 and open to veto.
+
+_The facts._ SAFE-3 (fork/safe/safe3-plan.md, the ground-up re-derivation of
+M3(d) and D-SAFE2-6 on PR 53's branch) stopped at its rev 12 on 2026-11-02
+(fork/ORCHESTRATION.md:113-121 and :1735-1756, the precedent this stamp follows
+line by line). The orchestrator's SAFE-4 ruling of 2026-11-09 (R29; recorded
+verbatim in the plan's rev 13 fold record, safe3-plan.md:5809) lifted that
+stop, replaced D-SAFE3-13's statement (3) and set the round's stop condition,
+the SAFE-4 report's section 5.6: "a BLOCKER, or a MAJOR left after the second
+round, stops SAFE-3's planning; the orchestrator records the state on trunk by
+Appendix D's stop path (PR 53 held at 2407efa74, the work mirrored, W-148 and
+W-366 carrying the open question) and turns to the next workstream". Rev 13
+(6d3d2d7b4, 2026-11-09) carried the ruling out, D-SAFE3-13 re-derived and
+every probe re-run. Re-review 1 (2026-11-09) left one MAJOR, RR13-M1, the
+lowering's `write` call absent from the statement's named list, folded into
+rev 14 (3742e3ec4) with the ruling's Addendum 1 (the rev 14 fold record,
+safe3-plan.md:6146). Re-review 2 (2026-11-16) returned APPROVE-WITH-AMENDMENTS
+with no BLOCKER, two MAJORs and four MINORs (the rev 15 fold record,
+safe3-plan.md:6326-6505): RR14-M1, the addendum's clause that the interposed
+`write` runs after no Carbon code can continue, so that the attribute cannot
+be observed through it, refuted by the probes write_interposed_dse and
+optional_get_none_write_dse (the hook runs inside the live extent, before
+`abort`, and reads the place whose store the attribute lets LLVM remove: 5
+natively, 1 with the attribute simulated); RR14-M2, the addendum's authority
+sentence, "the lowering's calls as toolchain/lower names them at the plan's
+sha", producing neither `memset`, `memmove` nor compiler-rt's names, which
+LLVM's passes and backend introduce (the probes idiom_memset_interposed and
+compiler_rt_interposed); and RR14-m1 to RR14-m4, records only. No probe met
+the break condition's first limb. The orchestrator ruled on the MAJORs'
+substance and on the round's outcome by Addendum 2 of the SAFE-4 ruling (R29,
+2026-11-16, 14:27 UTC), quoted below: the clause is withdrawn, the interposed
+`write` outside the claim by the reservation reading alone; the named list is
+toolchain/lower's calls at the plan's sha plus the reserved-name libcalls
+LLVM's passes and backend introduce for its intrinsics and Carbon's operators
+(memcpy, memset, memmove and compiler-rt's names), the weekly re-read widened
+to the undefined symbols of the corpus's `-O2` objects; and the stop condition
+fires. Rev 15 (4d31da703, committed 2026-11-16T14:54:27Z) records RR14-M1 and
+RR14-M2 as reproduced and NOT folded, folds the four MINORs as records, and
+its Status line reads "rev 15 -- NOT signed off: RR14-M1, RR14-M2; SAFE-3's
+planning STOPPED under the SAFE-4 ruling's stop condition" (safe3-plan.md:9-10;
+Appendix D's "The stop path applies again" paragraph, :9983-10009); Addendum 2
+is NOT folded into rev 15: it stands as the orchestrator's ruling of record for
+this stamp and for whatever round resumes the question, and no third re-review
+is held. The mirror claude/carbon-fork-0-1-safe-wip was fast-forwarded from
+3742e3ec4 to 4d31da703 before this stamp, between 14:55 and 14:58 UTC during
+the weekly upstream check of 2026-11-16, which read it at 4d31da703 at
+14:58:14 UTC (its entry above records the move); `git ls-remote origin` read
+it at 4d31da703 at 15:26 UTC for this stamp. PR 53 is held at 2407efa74 and,
+its realignment unfinished, is not merged under R33 (c) until a re-ruling;
+SAFE-2's twenty-seven commits and SAFE-3's fifteen plan commits stand unpushed
+on claude/carbon-fork-0-1-safe at 4d31da703, mirrored, the mirror not a PR and
+never a base. The open design question, a `ref` binding's `noalias` against
+the reach of C++ code from an address it receives, is carried by W-148 on
+PR 53's ledger and by W-366, which with W-365 is reserved for SAFE-3 and
+unfiled (their texts in the plan's B.14; W-386 to W-393 likewise, B.39); this
+stamp files none of them, trunk's ledger ending at W-395. The stamp's edits are
+Appendix D's four (fork/ORCHESTRATION.md: the header entry, the Branches row of
+claude/carbon-fork-0-1-safe, the paragraph dated 2026-11-16 (15:26 UTC) and
+Next actions items 6 and 14, with dated parentheticals on the two sentences
+that scheduled UA-3 after PR 53's landing), this entry, a dated sentence in
+W-380's ledger notes and a dated amendment at PR 53's gate in
+fork/land/land1-plan.md (D-LAND-12 and section 3's G-53). The weekly check's
+entry above and its ORCHESTRATION paragraph of 14:02 UTC record the stop as a
+fact and leave W-395's schedule to this stamp; this entry supplies it and
+restates nothing of theirs. Still: 19 PRs landed, 1 held (PR 53); GitHub
+Actions disabled.
+
+_Addendum 2, verbatim._ The orchestrator's ruling file under the session's
+scratchpad (safe4/RULING.md, 90 lines: the ruling and how it is carried out,
+lines 1 to 57; Addendum 1, lines 59 to 80; Addendum 2, lines 82 to 88; its
+wording amendment, line 90), whose lines 82 to 90 follow byte for byte. The
+plan's rev 15 fold record quotes lines 82 to 88 as they stood at 14:27 UTC, one
+word apart (the MINORs paragraph's possessive of `Optional.Get`, which
+codespell rejects and the wording amendment of 14:56 UTC re-spelled); the sense
+is unchanged, as the amendment says:
+
+<!-- google-doc-style-ignore -->
+
+```text
+## Addendum 2 (2026-11-16, 14:27Z, after SAFE-3 rev 14's re-review 2, R29)
+
+RR14-M1 (MAJOR): the addendum's clause that the interposed `write` runs after no Carbon code can continue, "so that the attribute cannot be observed through it", and A.36's "runs where no Carbon binding is live", are refuted by the re-review's probes write_interposed_dse and optional_get_none_write_dse (the hook runs inside the live extent, before `abort`, and reads the DSE'd place: 5 natively, 1 with `noalias captures(none)` simulated, on both toolchains; j05 showed the same through printf). Ruling: the clause is withdrawn. The interposed `write` is outside the claim by the reservation reading alone (a program that defines a reserved name interposes the implementation's own hook and is excluded by the parenthesis); the attribute IS observable through any interposed reserved-name hook (j05's printf, this write), as LLVM's own assumptions on reserved names already are (j08). D-SAFE3-13's dated amendment records the two probes and drops the withdrawn clause; A.36's page text says "outside the claim, the definition breaking POSIX's reservation" in place of the live-binding sentence; section 1.3's and 4's rows and the rev 14 record say the same; the two probes gain rows in 0.3, 1.3 and 4. Not a 5.5 first-limb finding (the hook writes nothing; the definition breaks the reservation): the rule stands.
+
+RR14-M2 (MAJOR): the addendum's authority sentence, "the lowering's calls as toolchain/lower names them at the plan's sha", does not produce `memset`, `memmove` or compiler-rt's names, which LLVM's passes (LoopIdiomRecognize) and backend (SelectionDAG's libcall lowering, RuntimeLibcalls) introduce; the re-review's probes idiom_memset_interposed (a Carbon zeroing loop inside the extent becomes a memset libcall at -O2: native 5 5, control 9 9, simulated 5 9) and compiler_rt_interposed (Core.Int(128) `/` -> __divti3: 6 9 with and without the attribute) show them. Ruling: the list is toolchain/lower's named calls at the plan's sha (putchar, printf, getchar, write, abort, malloc, free and the llvm.memcpy intrinsic) PLUS the reserved-name libcalls LLVM's passes and backend introduce for its intrinsics and Carbon's operators (memcpy, memset, memmove and compiler-rt's names), each a reserved name under [reserved.names.general]/2, [extern.names]/4 or [lex.name]/3; the weekly re-read (W-355's method) covers toolchain/lower AND the undefined symbols of the corpus's -O2 objects (or LLVM's RuntimeLibcalls list at the pin); D-SAFE3-13, the Labelled sentence, section 1.3's row, A.36, A.37, B.12 and B.35 say the same; the quiet-extent condition's "every call the lowered body runs" reads the lowered body as the O0 lowering plus those libcalls; the two probes gain rows in 0.3, 1.3 and 4. Soundness is unaffected (both outside the criterion); the authority sentence was inconsistent with the list it governs.
+
+The four MINORs (RR14-m1 the id re-scan re-dated at rev 15: W-380 on origin ehc d7e1de3e9 and on trunk's landing line, nothing past W-380 anywhere, W-386 to W-393 free; RR14-m2 the merge-tree ids as a function of the argument labels, the exact spellings and both shas recorded; RR14-m3 the reach figure labelled as measured on the fork install cb726a230's prelude, 14c1ac8ac's core/ lacking the FailStop of Optional.Get, with the nightly's oracle difference noted; RR14-m4 the round's thirteen probes rowed in 0.3, 1.3 and 4 and global_init_cpp_frame_nofold cited in section 8) are folded as the reviewer states them. Rev 15 carries both amendments as dated amendments of the ruling (not as a reviewer's wording), quoting the superseded clause and sentence. THE STOP CONDITION FIRES (report 5.6, rev 10's ruling (5)): a MAJOR left after the second round stops SAFE-3's planning. Rev 15 therefore records RR14-M1 and RR14-M2 as reproduced and NOT folded, folds the records findings only, and its Status line reads NOT signed off, STOPPED under the SAFE-4 ruling's stop condition; the orchestrator records the state on trunk by Appendix D's stop path (PR 53 held at 2407efa74, the work mirrored at claude/carbon-fork-0-1-safe-wip, W-148 and W-366 carrying the open question) and turns to the next workstream. The two rulings above on the MAJORs' substance stand as the orchestrator's ruling of record for the stop stamp and for whatever round resumes the C++ boundary later: they are NOT folded into rev 15 by this round. No third re-review is held: the ruling's own bound is kept rather than re-litigated (R32). Everything else in the ruling and in Addendum 1 stands.
+
+Wording amendment (2026-11-16, 14:56Z): in the MINORs paragraph above, the possessive form of Optional.Get before the word FailStop (which codespell rejects) now reads "the FailStop of Optional.Get"; the plan's rev 15 fold record quotes the earlier wording, one word apart; the sense is unchanged.
+```
+
+<!-- google-doc-style-resume -->
+
+_What follows (the orchestrator's ruling under R29 and section 5.6's "turns to
+the next workstream")._ UA-3 (ORCHESTRATION Next actions item 6, the upstream
+advance) proceeds as the next workstream WITH PR 53 HELD (R33 (c)); W-380
+(PR 53's rust_interop.md:223 rename) stays owed to PR 53's landing; PR 53's
+branch takes UA-3's trunk afterwards by a merge commit, never a rewrite (R32
+(e)); the C++ boundary question, carried by W-148 on PR 53's ledger and by the
+reserved W-366 (texts B.14), resumes by a re-ruling after UA-3 at the advanced
+base, where upstream's own interoperability and `ref` texts are re-read; the
+two Addendum-2 rulings bind that re-ruling as the floor; W-395 (filed on trunk
+by the weekly upstream check of 2026-11-16: upstream's accepted proposal
+p008110, commit bd116f5e8, removes `bound`, which PR 53's design adopts (T5;
+D-SAFE-11 at temporal_safety.md:1109-1115 of 2407efa74, whose break condition
+it meets); owner SAFE-1; work: realign by new commits on PR 53's branch before
+it lands, re-reading W-347 and W-349; its ledger entry and the weekly check's
+entry above record it) is scheduled WITH PR 53's realignment, after UA-3 at
+the advanced base where `bound` is gone upstream, in the same resumption as the
+C++ boundary re-ruling (one re-ruling round for PR 53 covering both), so that
+PR 53 is realigned once against the upstream it will merge into. Why: the
+report's section 5.6 turns the orchestrator to the next workstream and R33 (c)
+keeps a PR with an unfinished realignment unmerged, so the advance does not
+wait on PR 53; and a re-ruling made before the advance would be re-read against
+the advanced upstream in any case (R32 reads upstream's direction at its tip at
+the time of the check), so one round after UA-3 decides the boundary and
+`bound` together against the base PR 53 will merge into.
+
+_Break condition of the ruling._ The user directs otherwise (R29 veto), or
+upstream changes p005434's `ref`/`noalias` text or docs/design/interoperability
+(then the question is re-read at UA-3 rather than after it), or a soundness
+finding meeting the SAFE-4 report's 5.5 first limb (D-SAFE3-13's break
+condition in the plan) appears in SAFE-1's pages as they stand on PR 53 (then
+PR 53's affected pages are withdrawn by a new commit rather than held).

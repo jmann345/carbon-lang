@@ -254,7 +254,12 @@ states none. Section 4 turns each into the PASS delta the landing must show.
     claude/carbon-fork-0-1-safe-wip; W-365 and W-366 stay reserved and
     unfiled; the orchestrator stamps the stop on trunk from safe3-plan.md
     Appendix D's stop path after Appendix B.1's stamp (amended 2026-11-01,
-    ruling fold: the ruling's item 2).
+    ruling fold: the ruling's item 2; amended 2026-11-16, the SAFE-3 stop stamp:
+    stopped a second time at its plan rev 15 (4d31da703, 2026-11-16) under the
+    SAFE-4 ruling's stop condition, RR14-M1 and RR14-M2, the stop stamped on
+    trunk again, PR 53 held under R33 (c) until a re-ruling after UA-3, which
+    proceeds with PR 53 held; fork/ORCHESTRATION.md's paragraph dated 2026-11-16
+    (15:26 UTC)).
 -   PR 60: W-139 is owed on its branch (Next actions item 6, :1224-1226).
 -   PR 56 and PR 57: W-352 is owed on PR 56's branch and merged into PR 57's
     (:1226-1228).
@@ -1146,7 +1151,16 @@ from an address it receives, a Carbon place that the carrier closure does
 not name); the orchestrator stamps that stop on trunk from safe3-plan.md
 Appendix D's stop path after Appendix B.1's stamp; PR 53's pushed head
 stays 2407efa74, and W-365 and W-366 stay reserved and unfiled (amended
-2026-11-01, ruling fold: the ruling's item 2 / AUD-67-P29); G-60 (PR 60)
+2026-11-01, ruling fold: the ruling's item 2 / AUD-67-P29; amended 2026-11-16,
+the SAFE-3 stop stamp: SAFE-3, resumed at rev 13 by the orchestrator's SAFE-4
+ruling of 2026-11-09, stopped a second time at its plan rev 15 (4d31da703,
+2026-11-16) under that ruling's stop condition, RR14-M1 and RR14-M2, the
+orchestrator's Addendum 2 of 2026-11-16 the ruling of record; the orchestrator
+stamped that stop on trunk by Appendix D's stop path again, PR 53's pushed head
+staying 2407efa74, held under R33 (c) until a re-ruling after UA-3, which
+proceeds with PR 53 held, W-395 scheduled with the realignment, and W-365 and
+W-366 staying reserved and unfiled; fork/ORCHESTRATION.md's paragraph dated
+2026-11-16 (15:26 UTC)); G-60 (PR 60)
 when W-139's fix commit is on PR 60's branch under SC-1's reviews and item
 10 is decided; G-56/57 (PR 56, then PR 57) when W-352's commit is on PR
 56's branch, merged into PR 57's, under OP-1's reviews,
@@ -2297,7 +2311,12 @@ D-LAND-12's gate holds; Appendix B.1's items 14 to 17 name their steps:
     orchestrator stamping the stop on trunk from safe3-plan.md Appendix D's
     stop path after B.1's stamp, PR 53's pushed head staying 2407efa74 and
     W-365 and W-366 reserved and unfiled (amended 2026-11-01, ruling fold:
-    the ruling's item 2): records-only merge (section 0.6); land-time: the
+    the ruling's item 2; amended 2026-11-16, the SAFE-3 stop stamp: stopped a
+    second time at its plan rev 15 (4d31da703) under the SAFE-4 ruling's stop
+    condition, RR14-M1 and RR14-M2, the stop stamped on trunk again, PR 53 held
+    under R33 (c) until a re-ruling after UA-3, which proceeds with PR 53 held;
+    fork/ORCHESTRATION.md's paragraph dated 2026-11-16 (15:26 UTC)):
+    records-only merge (section 0.6); land-time: the
     PR 67 note commit on trunk across the six items' notes, rg1-checks.tsv,
     rg1-quotes.tsv, rg1-plan.md and RG-1's log entry (D-LAND-12;
     AUD-67-P29), ST-1's SAFE-1 edits and its re-reads of the pages SAFE-1

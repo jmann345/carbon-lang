@@ -10,7 +10,15 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-16 (weekly check fired under R32: the cut HOLDS at 197
+Last updated: 2026-11-16 (SAFE-3, the re-derivation of the built-in operator
+exemption on PR 53's branch, is STOPPED a second time at its plan rev 15 under
+the SAFE-4 ruling's stop condition (report section 5.6), re-review 2 having
+left RR14-M1 and RR14-M2; PR 53 is held at 2407efa74 and not merged under R33
+(c) until a re-ruling; the work stands unpushed at 4d31da703, mirrored at
+claude/carbon-fork-0-1-safe-wip; W-365 and W-366 are reserved and unfiled;
+UA-3 proceeds with PR 53 held; 19 PRs landed, 1 held; see the paragraph dated
+2026-11-16 (15:26 UTC) below; the earlier 2026-11-16 text follows).
+2026-11-16 (weekly check fired under R32: the cut HOLDS at 197
 upstream commits with 196 conflicting files against trunk f54ddc64d; register
 row H10.1 FIRED for `AddrOfAction` (upstream dbf02ad10), filed as W-394, owner
 UA-3, and upstream's removal of `bound` (p008110) filed as W-395, owner SAFE-1,
@@ -1062,7 +1070,9 @@ is 85 commits past the c1e83b0b7 cut (49 since last week); a `git merge-tree`
 dry run against trunk 5674fe88b conflicts in 96 files, 30 sources and
 grammars and 66 goldens (decision-log entry "Weekly upstream merge
 2026-10-19"); the cut HOLDS, no staging branch was pushed, and the advance
-(UA-3) is scheduled after the held PRs land, under the UA-1 flow. A
+(UA-3) is scheduled after the held PRs land, under the UA-1 flow (superseded
+2026-11-16: UA-3 proceeds with PR 53 held, by the SAFE-3 stop stamp's paragraph
+dated 2026-11-16 (15:26 UTC) below). A
 `workflow_dispatch` of `Fork: hosted verification` still returns "Actions
 has been disabled for this repository", so nothing is of record and the ten
 held PRs stay open; the daily Actions re-test routine ends with this firing
@@ -1434,7 +1444,9 @@ conflicts in 97 files, 31 sources and grammars and 66 goldens (last week 96, 30
 and 66; the one new file is toolchain/driver/compile_options.cpp); 1846 upstream
 files are touched since the cut, 791 are fork-modified and 197 are in both
 (decision-log entry "Weekly upstream check 2026-10-26 (R32 direction
-register)"). The cut HOLDS and UA-3 stays scheduled after the held PRs land. Of
+register)"). The cut HOLDS and UA-3 stays scheduled after the held PRs land
+(superseded 2026-11-16: UA-3 proceeds with PR 53 held, by the SAFE-3 stop
+stamp's paragraph dated 2026-11-16 (15:26 UTC) below). Of
 the window's 32 commits, 20 touch the design, prelude or toolchain paths: one
 drift, twelve advances for UA-3's audit, seven unrelated; no prelude signature
 changed. The drift: 503f09037 extends upstream's positional default parameter
@@ -1600,7 +1612,9 @@ section 5 gives it: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
 59, 61, 62, 64, 63, 65, 66; the sequence waits at PR 53 for SAFE-1's realignment
 (W-347 to W-351 and W-353), at PR 60 for SC-1's W-139 and at PR 56 for OP-1's
 W-352. Next: OV-4 (W-341) on trunk's base per item 6 below, then EH-C (W-346)
-after the held PRs land, then UA-3.
+after the held PRs land, then UA-3 (superseded 2026-11-16: UA-3 proceeds with
+PR 53 held, by the SAFE-3 stop stamp's paragraph dated 2026-11-16 (15:26 UTC)
+below).
 
 2026-10-28 (12:11 UTC): OV-4 is IMPLEMENTED AND REVIEWED on
 claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev 3, signed off at
@@ -1662,7 +1676,9 @@ PR 68); none is merged. Merge order: PR 67 (RG-1), then PR 53, 51, 52, 60, 54,
 land-time commits M, F-M, L-R and L (fork/overload/ov4-plan.md section 3); the
 sequence waits at PR 53 for SAFE-1's realignment (W-347 to W-351 and W-353), at
 PR 60 for SC-1's W-139 and at PR 56 for OP-1's W-352. Next: EH-C (W-346) after
-the held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs
+the held PRs land, then UA-3 (superseded 2026-11-16: UA-3 proceeds with PR 53
+held, by the SAFE-3 stop stamp's paragraph dated 2026-11-16 (15:26 UTC) below);
+the weekly upstream check of 2026-11-02 runs
 W-355's scripts.
 
 2026-10-29 (08:49 UTC): SAFE-2 is STOPPED at its plan rev 14 on PR 53's branch
@@ -1701,7 +1717,9 @@ are held open (PR 51 to PR 68); none is merged. Merge order unchanged: PR 67
 then PR 68 (OV-4); the sequence waits at PR 53 for SAFE-3, at PR 60 for SC-1's
 W-139 and at PR 56 for OP-1's W-352. Next: SAFE-3's plan and implementation;
 then SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56; EH-C (W-346) after the
-held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs W-355's
+held PRs land, then UA-3 (superseded 2026-11-16: UA-3 proceeds with PR 53 held,
+by the SAFE-3 stop stamp's paragraph dated 2026-11-16 (15:26 UTC) below); the
+weekly upstream check of 2026-11-02 runs W-355's
 scripts from PR 67's branch at its head.
 
 2026-11-01 (17:42 UTC): THE OWNER DIRECTED MERGING. The owner corrected the
@@ -1938,7 +1956,9 @@ on trunk, none gone), and against trunk 7134405dc, after PR 65's and PR 68's
 landings, in 144 (PR 65's six goldens); 1978 upstream files are touched since
 the cut, 1053 are fork-modified and 245 are in both (decision-log entry "Weekly
 upstream check 2026-11-02 (R32 direction register)"). The cut HOLDS and UA-3
-stays scheduled after the held PRs land. Of the window's 33 commits, 21 touch
+stays scheduled after the held PRs land (superseded 2026-11-16: UA-3 proceeds
+with PR 53 held, by the SAFE-3 stop stamp's paragraph dated 2026-11-16
+(15:26 UTC) below). Of the window's 33 commits, 21 touch
 the design, prelude or toolchain paths: one new drift (c6b54b57e), one drift
 already filed that is also an advance (05a7ecbd3, W-354's, the window's only
 prelude signature change), five advances for UA-3's audit and fourteen
@@ -2162,7 +2182,9 @@ PR 53's head and the SAFE mirror each conflict in the same 134 (117 last week);
 are in both, and this week upstream touched 1195, 174 of them fork-modified
 (decision-log entry "Weekly upstream check 2026-11-09 (R32 direction
 register)"). The cut HOLDS and UA-3 stays scheduled after PR 53 lands and after
-EH-C. Of the window's 26 commits, 15 touch the design, prelude or toolchain
+EH-C (superseded 2026-11-16: UA-3 proceeds with PR 53 held, by the SAFE-3 stop
+stamp's paragraph dated 2026-11-16 (15:26 UTC) below). Of the window's 26
+commits, 15 touch the design, prelude or toolchain
 paths: no new drift, one drift already filed that is also an advance (5ae3dcaa9,
 W-372's: a trailing `,` after `_` and the `PatternListUnderscoreField` parse
 node, which leave the fork's `UnderscoreName`-keyed `_` discard dead after a
@@ -2276,8 +2298,11 @@ origin) and this landing's worktree, over 84 refs, 78 distinct heads and 7
 worktrees after a fetch; W-381 to W-385 unused; W-386 to W-393 reserved only by
 SAFE-3's rev 13 text on the local claude/carbon-fork-0-1-safe (elsewhere range
 bounds in prose), no ledger use; no W-4xx anywhere; 19 PRs landed, 1 held. Next:
-PR 53's W-380 rename commit before it lands (item 14), then UA-3. The merge
-commit was made 2026-11-09 at 22:12 UTC and these records were written at 22:16
+PR 53's W-380 rename commit before it lands (item 14), then UA-3 (superseded
+2026-11-16: UA-3 proceeds with PR 53 held, the rename commit staying owed to
+PR 53's landing after UA-3, by the SAFE-3 stop stamp's paragraph dated
+2026-11-16 (15:26 UTC) below). The merge commit was made 2026-11-09 at 22:12
+UTC and these records were written at 22:16
 UTC; the push to origin waited until 2026-11-16 (the orchestrator's session was
 stopped by an out-of-usage-credits outage on 2026-11-09 and a
 monthly-spend-limit outage on 2026-11-12; the landing was re-verified on
@@ -2327,6 +2352,86 @@ highest filed, W-381 to W-393 reserved; W-394 and W-395 are filed. No build, no
 probe, no merge, no dispatch; Actions is still disabled (the newest run is of
 2026-10-08), so nothing is of record. At trunk f54ddc64d, which the records
 commit is cut from, 19 PRs are landed and 1 held.
+
+2026-11-16 (15:26 UTC): SAFE-3 is STOPPED a second time.
+fork/safe/safe3-plan.md, the ground-up re-derivation of M3(d) and D-SAFE2-6 on
+PR 53's branch, whose stop at rev 12 (the paragraph dated 2026-11-02 (00:16
+UTC) above) the orchestrator's SAFE-4 ruling of 2026-11-09 lifted, stopped at
+its rev 15 under that ruling's stop condition, the SAFE-4 report's section 5.6:
+"a BLOCKER, or a MAJOR left after the second round, stops SAFE-3's planning;
+the orchestrator records the state on trunk by Appendix D's stop path (PR 53
+held at 2407efa74, the work mirrored, W-148 and W-366 carrying the open
+question) and turns to the next workstream". The rounds: rev 13 (6d3d2d7b4,
+2026-11-09) carried the ruling out, D-SAFE3-13 re-derived and every probe
+re-run; re-review 1 (2026-11-09) left one MAJOR, RR13-M1, the lowering's
+`write` call absent from the statement's named list, folded into rev 14
+(3742e3ec4) with the ruling's Addendum 1; re-review 2 (2026-11-16,
+APPROVE-WITH-AMENDMENTS, no BLOCKER) left two MAJORs, RR14-M1, the addendum's
+clause that the attribute cannot be observed through the interposed `write`,
+refuted by the probes write_interposed_dse and optional_get_none_write_dse
+(the hook runs inside the live extent, before `abort`, and reads the place
+whose store the attribute lets LLVM remove), and RR14-M2, the addendum's
+authority sentence, toolchain/lower's named calls at the plan's sha, producing
+neither `memset`, `memmove` nor compiler-rt's names, which LLVM's passes and
+backend introduce (the probes idiom_memset_interposed and
+compiler_rt_interposed), and four MINORs, RR14-m1 to RR14-m4, records only.
+The orchestrator ruled on the two MAJORs' substance by Addendum 2 of the SAFE-4
+ruling (R29, 2026-11-16, 14:27 UTC; recorded verbatim in the decision-log entry
+"SAFE-3 stopped a second time (2026-11-16)" and at the head of the plan's
+rev 15 fold record): on RR14-M1, the unobservability clause is withdrawn, the
+interposed `write` staying outside the claim by the reservation reading alone
+and the attribute being observable through any interposed reserved-name hook;
+on RR14-M2, the named list is toolchain/lower's calls at the plan's sha plus
+the reserved-name libcalls LLVM's passes and backend introduce for its
+intrinsics and Carbon's operators (memcpy, memset, memmove and compiler-rt's
+names), the weekly re-read widened to the undefined symbols of the corpus's
+`-O2` objects; and, by section 5.6, the stop condition fires. Rev 15
+(4d31da703, 2026-11-16) records RR14-M1 and RR14-M2 as reproduced and NOT
+folded, folds the four MINORs as records, and its Status line reads "rev 15 --
+NOT signed off: RR14-M1, RR14-M2; SAFE-3's planning STOPPED under the SAFE-4
+ruling's stop condition"; Addendum 2 is not folded into rev 15 and stands as
+the orchestrator's ruling of record for this stamp and for whatever round
+resumes the question, with no third re-review. PR 53 is held at 2407efa74 and,
+its realignment unfinished, is not merged under R33 (c) until a re-ruling;
+SAFE-2's twenty-seven commits and SAFE-3's fifteen plan commits stand unpushed
+on claude/carbon-fork-0-1-safe at 4d31da703, mirrored at
+claude/carbon-fork-0-1-safe-wip, which is not a PR and never a base, the mirror
+fast-forwarded from 3742e3ec4 to 4d31da703 before this stamp (between 14:55
+and 14:58 UTC, during the weekly check of 2026-11-16, which read it at
+4d31da703 at 14:58:14 UTC, its paragraph above) and read at 4d31da703 by `git
+ls-remote origin` at 15:26 UTC for this stamp. The open design question, a
+`ref` binding's `noalias` against the reach of C++ code from an address it
+receives, is carried by W-148 on PR 53's ledger and by W-366, which with W-365
+is reserved for SAFE-3 and unfiled, their texts in the plan's B.14 (W-386 to
+W-393 likewise, their texts in B.39), so that no other workstream takes those
+ids; this stamp files none of them. SAFE-3 made no build, merge or dispatch,
+and this stamp makes none; merges are the orchestrator's under R33; GitHub
+Actions is still disabled; 19 PRs are landed and 1 held under R33, PR 53. What
+follows (the orchestrator's ruling under R29 and section 5.6's "turns to the
+next workstream"): UA-3 (Next actions item 6, the upstream advance) proceeds
+as the next workstream WITH PR 53 HELD (R33 (c)); W-380 (PR 53's
+rust_interop.md:223 rename) stays owed to PR 53's landing; PR 53's branch takes
+UA-3's trunk afterwards by a merge commit, never a rewrite (R32 (e)); the C++
+boundary question, carried by W-148 on PR 53's ledger and by the reserved W-366
+(texts B.14), resumes by a re-ruling after UA-3 at the advanced base, where
+upstream's own interoperability and `ref` texts are re-read; the two
+Addendum-2 rulings bind that re-ruling as the floor; W-395 (filed on trunk by
+the weekly upstream check of 2026-11-16: upstream's accepted proposal p008110,
+commit bd116f5e8, removes `bound`, which PR 53's design adopts (T5; D-SAFE-11
+at temporal_safety.md:1109-1115 of 2407efa74, whose break condition it meets);
+owner SAFE-1; work: realign by new commits on PR 53's branch before it lands,
+re-reading W-347 and W-349; its ledger entry and the weekly check's
+decision-log entry record it) is scheduled WITH PR 53's realignment, after UA-3
+at the advanced base where `bound` is gone upstream, in the same resumption as
+the C++ boundary re-ruling (one re-ruling round for PR 53 covering both), so
+that PR 53 is realigned once against the upstream it will merge into. Break
+condition of the ruling: the user directs otherwise (R29 veto), or upstream
+changes p005434's `ref`/`noalias` text or docs/design/interoperability (then
+the question is re-read at UA-3 rather than after it), or a soundness finding
+meeting the SAFE-4 report's 5.5 first limb (D-SAFE3-13's break condition in
+the plan) appears in SAFE-1's pages as they stand on PR 53 (then PR 53's
+affected pages are withdrawn by a new commit rather than held). PR 53 waits by
+Next actions item 14 and UA-3 proceeds by item 6.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -2661,7 +2766,7 @@ code). Next check: Monday 14:00 UTC.
 | --- | --- |
 | `claude/carbon-fork-0-1-ua2` | LANDED as PR 51 by merge 985610146 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T02:06:13Z, merge_commit_sha 985610146) — UA-2: the reconciliation of the 2026-10 upstream advance, with the container fill f96fe8a7a (1945 of 1945) and hosted conformance 37413300832 (131/0/19 over 150); land-time commits none; container-measured (R33 (b)): gate 1945 of 1945, conformance 131/0/19 over 150, 48/56 bullets; moved to follow-ons: to item 16: OP-2's fold of W-197 into W-126; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-cmake` | LANDED as PR 52 by merge 12217e941 (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T02:33:50Z, merge_commit_sha 12217e941) — CM-1: CMake language modules, examples/cmake and the Make documentation; gap rows 84 and 87 DONE; W-060 and W-061 discharged, W-128 to W-133 filed; land-time commits none; container-measured (R33 (b)): gate 1945 of 1945, conformance 133/0/17 over 150, 49/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5) (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for its realignment, completed under the orchestrator's re-ruling of the C++ boundary question, SAFE-3 having stopped, and lands by Next actions item 14); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md at rev 14 0f22798fb, unpushed with its commits 48f2e66a0 and 954f1c542 and four fix commits, the twenty-seven commits mirrored at claude/carbon-fork-0-1-safe-wip, not a PR) STOPPED 2026-10-29 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1, the built-in operator exemption's justification being false under the toolchain's in-place `=`; SAFE-3 (fork/safe/safe3-plan.md at rev 12 14c1ac8ac, unpushed, its twelve plan commits mirrored with SAFE-2's at claude/carbon-fork-0-1-safe-wip) STOPPED 2026-11-02 under the break condition of the orchestrator's re-think ruling of 2026-11-01 on RT1-B1 and RT2-B1, C++ code reaching from an address it receives a Carbon place that the closure of D-SAFE3-13 does not name; W-365 and W-366 reserved and unfiled, their texts in the plan's B.14; PR 53 not merged under R33 (c) until a re-ruling; the pushed head is unchanged. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at 2407efa74, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence after RG-1's PR (fork/register/rg1-plan.md section 5) (superseded 2026-11-02 by LAND-1, fork/land/land1-plan.md D-LAND-12: waits for its realignment, completed under the orchestrator's re-ruling of the C++ boundary question, SAFE-3 having stopped, and lands by Next actions item 14); amended 2026-10-28 by RG-1's records commit cd3c5b2e1 and its review fix 2407efa74 (R32 (e)), the description refreshed; SAFE-2 (fork/safe/safe2-plan.md at rev 14 0f22798fb, unpushed with its commits 48f2e66a0 and 954f1c542 and four fix commits, the twenty-seven commits mirrored at claude/carbon-fork-0-1-safe-wip, not a PR) STOPPED 2026-10-29 by the orchestrator's rulings (its sections 8.16, 8.19 and 8.20) on PRR3-B1, the built-in operator exemption's justification being false under the toolchain's in-place `=`; SAFE-3 (fork/safe/safe3-plan.md at rev 15 4d31da703, unpushed, its fifteen plan commits mirrored with SAFE-2's at claude/carbon-fork-0-1-safe-wip) STOPPED 2026-11-02 at its rev 12 under the break condition of the orchestrator's re-think ruling of 2026-11-01 on RT1-B1 and RT2-B1, C++ code reaching from an address it receives a Carbon place that the closure of D-SAFE3-13 does not name, resumed at rev 13 by the orchestrator's SAFE-4 ruling of 2026-11-09, and STOPPED a second time 2026-11-16 at rev 15 under that ruling's stop condition (the SAFE-4 report's section 5.6, a MAJOR left after the second round) on RR14-M1 and RR14-M2, the interposed `write` hook observing the attribute inside a live extent and the reserved-name libcalls LLVM's passes and backend introduce that toolchain/lower does not name, both ruled on by the orchestrator's Addendum 2 of 2026-11-16, whose rulings stand of record for the round that resumes the C++ boundary; W-365 and W-366 reserved and unfiled, with W-386 to W-393, their texts in the plan's B.14 and B.39; PR 53 not merged under R33 (c) until a re-ruling after UA-3, which proceeds with PR 53 held; the pushed head is unchanged. |
 | `claude/carbon-fork-0-1-ev` | LANDED as PR 54 by merge 969e4486c (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T04:04:54Z, merge_commit_sha 969e4486c) — EV-1: the evaluator guides and transcribed programs, in state C with PR 52; gap row 90 DONE; W-062 discharged, W-152, W-153 and W-155 filed; land-time commits d9e311250; container-measured (R33 (b)): gate 1945 of 1945, conformance 143/0/16 over 159, 49/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-st` | LANDED as PR 55 by merge d7a3c13bb (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T05:14:12Z, merge_commit_sha d7a3c13bb) — ST-1: F-014: str comparison, Core.StringBuf and concatenation; gap row 77 DONE; W-057 discharged, W-160 to W-167 filed; land-time commits 69a6f995b, 4520e8dec; container-measured (R33 (b)): gate 1953 of 1953, conformance 148/0/15 over 163, 49/56 bullets; moved to follow-ons: to Next actions item 14: W-144's additions, the seven SAFE-1 reconciliation edits and the cross-branch re-cites; to item 14: the re-reads of the pages SAFE-1 moves and W-148's id; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-op` | LANDED as PR 56 by merge b2e04f18d (2026-11-05, LAND-1, R33; GitHub merged_at 2026-11-05T20:31:37Z, merge_commit_sha b2e04f18d) — OP-1: F-015: `Core.Optional` comparison, in place (W-352 discharged), with DD-1's state L for PR 56; land-time commits none; container-measured (R33 (b)): gate 2006 of 2006, conformance 201/0/17 over 218, 50/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
@@ -2883,10 +2988,15 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     W-353 (SAFE-1: SAFE-2's realignment, fork/safe/safe2-plan.md, stopped at rev
     14 on 2026-10-29 by the orchestrator's rulings, PRR3-B1; SAFE-3,
     fork/safe/safe3-plan.md, stopped at its rev 12 on 2026-11-02 under the
-    re-think ruling's break condition (RT1-B1, RT2-B1), the open question
-    carried by W-148 and by W-366, reserved with W-365 and unfiled; PR 53 is
-    held and not merged under R33 (c) until a re-ruling, waiting by item 14
-    while LAND-1 lands the ready PRs), W-139 (SC-1: a fix commit on PR 60's
+    re-think ruling's break condition (RT1-B1, RT2-B1), resumed at rev 13 by
+    the orchestrator's SAFE-4 ruling of 2026-11-09 and stopped a second time at
+    its rev 15 (4d31da703) on 2026-11-16 under that ruling's stop condition
+    (RR14-M1, RR14-M2; the orchestrator's Addendum 2 of 2026-11-16 the ruling
+    of record), the open question carried by W-148 and by W-366, reserved with
+    W-365 and unfiled; PR 53 is held and not merged under R33 (c) until a
+    re-ruling after UA-3, waiting by item 14; UA-3 proceeds with PR 53 held,
+    and PR 53's branch takes UA-3's trunk afterwards by a merge commit, never a
+    rewrite (R32 (e))), W-139 (SC-1: a fix commit on PR 60's
     branch with its fills and the template_constraints.md paragraph, under its
     own reviews, before PR 60 lands) and W-352 (OP-1: the in-place comparison
     commit on PR 56's branch with its fills, merged into PR 57's, under its own
@@ -2913,7 +3023,9 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     own `AddrOfAction` over TP-1's, register row H10.1 fired for `&`; owner
     UA-3, in its gate) and W-395 (upstream's accepted p008110 removes `bound`,
     which PR 53's SAFE design adopts; owner SAFE-1, before PR 53 lands,
-    re-reading W-347 and W-349), re-reads H10.8 (the DRIFT on W-374 stands) and
+    re-reading W-347 and W-349; scheduled 2026-11-16 by the SAFE-3 stop stamp
+    with PR 53's realignment after UA-3, item 14), re-reads H10.8 (the DRIFT on
+    W-374 stands) and
     adds to UA-3's audit 4286832b4's `OperandDependence` signature (eleven
     fork lines in the removed `Context&` form, ten more than the cut's five,
     call.cpp:1045-1046 rewriting the cut's :432; pointer_dereference.cpp:24
@@ -2928,7 +3040,9 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     of every NONE and ALIGNED entry outside VA-2's, which items 8 and 9
     re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of T5.7 and
     C1.2 (indexing.md:101-121 and a `like` in upstream's parse or check). UA-3
-    follows W-341 and W-346 (both landed).
+    follows W-341 and W-346 (both landed) and proceeds with PR 53 held (the
+    SAFE-3 stop stamp of 2026-11-16, its paragraph dated 2026-11-16 (15:26
+    UTC)).
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.
@@ -2976,11 +3090,23 @@ C++ boundary question (item 14). The items below stand as the work still owed.
 14. G-53, PR 53 (fork/land/land1-plan.md D-LAND-12): lands by LAND-1's procedure
     once the realignment of PR 53's branch completed under the orchestrator's
     re-ruling of the C++ boundary question (fork/safe/safe3-plan.md D-SAFE3-13
-    and its rev 11 and rev 12 fold records), SAFE-3 having stopped at its plan
-    rev 12 (14c1ac8ac) with PR 53's pushed head 2407efa74 and W-365 and W-366
-    reserved and unfiled, and once the PR 67 note commit the realignment owes is
-    on trunk as a records commit, across the six items' notes, rg1-checks.tsv's
-    H1.7, rg1-quotes.tsv's eleven rows, rg1-plan.md's H1.7 and H1.13 with the
+    and its rev 11 to rev 15 fold records; the orchestrator's SAFE-4 ruling of
+    2026-11-09 and its Addendum 2 of 2026-11-16, the floor of that re-ruling),
+    SAFE-3 having stopped at its plan rev 12 (14c1ac8ac) on 2026-11-02 and,
+    resumed by the SAFE-4 ruling, a second time at its plan rev 15 (4d31da703,
+    the head of the mirror claude/carbon-fork-0-1-safe-wip) on 2026-11-16 under
+    that ruling's stop condition, with PR 53's pushed head 2407efa74 and W-365
+    and W-366 reserved and unfiled (W-386 to W-393 with them), PR 53 held under
+    R33 (c) until a re-ruling after UA-3 (item 6), at the advanced base, where
+    upstream's own interoperability and `ref` texts are re-read, that one
+    re-ruling round covering W-395 (upstream's removal of `bound`) with it, so
+    that PR 53 is realigned once against the upstream it will merge into, its
+    branch taking UA-3's trunk by a merge commit, never a rewrite (R32 (e)),
+    and its W-380 rename commit owed to its landing (the paragraph dated
+    2026-11-16 (15:26 UTC)), and once the PR 67 note commit the realignment
+    owes is on trunk as a records commit, across the six items' notes,
+    rg1-checks.tsv's H1.7, rg1-quotes.tsv's eleven rows, rg1-plan.md's H1.7 and
+    H1.13 with the
     counts and RG-1's decision-log entry (fork/safe/safe2-plan.md, the placement
     of the six items' notes; fork/safe/safe3-plan.md D-SAFE3-10). Its land-time
     steps: ST-1's SAFE-1 reconciliation (W-144's additions, the seven edits and

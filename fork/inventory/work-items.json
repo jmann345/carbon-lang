@@ -5174,7 +5174,7 @@
         "fork/eh/ehc-plan.md §0.4, D-EHC-11, D-EHC-12"
       ],
       "blocked_by": [],
-      "notes": "Filed 2026-11-09 by EH-C at its discharge: EH-C lands before PR 53 (W-346's schedule puts it before UA-3; PR 53 waits on SAFE-4, fork/ORCHESTRATION.md Next actions item 14), so D-RG-8's break condition fires for PR 53's one line. Work: one commit on claude/carbon-fork-0-1-safe that spells the row `Success`/`Failure`, before PR 53 lands (R32 (e): a new commit, never a rewrite). Owner: PR 53's landing. Break condition: the user vetoes EH-C's reversal (then this item is withdrawn with it)."
+      "notes": "Filed 2026-11-09 by EH-C at its discharge: EH-C lands before PR 53 (W-346's schedule puts it before UA-3; PR 53 waits on SAFE-4, fork/ORCHESTRATION.md Next actions item 14), so D-RG-8's break condition fires for PR 53's one line. Work: one commit on claude/carbon-fork-0-1-safe that spells the row `Success`/`Failure`, before PR 53 lands (R32 (e): a new commit, never a rewrite). Owner: PR 53's landing. Break condition: the user vetoes EH-C's reversal (then this item is withdrawn with it). 2026-11-16 (the SAFE-3 stop stamp: fork/ORCHESTRATION.md's paragraph dated 2026-11-16 (15:26 UTC) and the decision-log entry SAFE-3 stopped a second time (2026-11-16)): SAFE-3 stopped a second time at its plan rev 15 (4d31da703) under the SAFE-4 ruling's stop condition, and PR 53 stays held at 2407efa74 under R33 (c) until a re-ruling after UA-3, which proceeds with PR 53 held; this rename commit stays owed to PR 53's landing, after UA-3, in the same resumption as the realignment and W-395 (Next actions items 6 and 14)."
     },
     {
       "id": "W-394",

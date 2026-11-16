@@ -7103,13 +7103,13 @@ plan's three revisions), 75528587c (C1), 6adeedc41 (F1), 6892c5d50 (P),
 eb655b5ce (fix 1: the implementation reviews' one MAJOR, A-M1 / B-M1,
 docs-side), 949a8f574 (the merge of trunk 99f4df970, Appendix F.1's M brought
 forward to the records commits because trunk moved by ARB-4's two records
-commits after the fix; no conflict, no build input touched) and this one; the
-discharge commit appends the last three paragraphs. The two implementation
-reviews (A: toolchain, goldens, probes and the M1 mutant on its own label; B:
-upstream fidelity, amendments, process and scope) both returned
-APPROVE-WITH-AMENDMENTS: no BLOCKER, one MAJOR (the same defect, fixed by fix 1)
-and ten MINORs, all records-only, folded by this commit and recorded under
-"Measured" below.
+commits after the fix; no conflict, no build input touched), 043978962 (the
+records, R) and this one (the discharge, D, which appends the last three
+paragraphs). The two implementation reviews (A: toolchain, goldens, probes and
+the M1 mutant on its own label; B: upstream fidelity, amendments, process and
+scope) both returned APPROVE-WITH-AMENDMENTS: no BLOCKER, one MAJOR (the same
+defect, fixed by fix 1) and ten MINORs, all records-only, folded by this commit
+and recorded under "Measured" below.
 
 _The item and the rule._ Upstream's `IsCallPerformable`
 (toolchain/check/call.cpp:449-464 at 7a3608bab, the cut's body at
@@ -7277,6 +7277,24 @@ next advance that brings it.
 
 _Residues._ W-396, W-397, W-398 (D-TP2-2), W-399 and W-400 (D-TP2-8; TP-1's
 follow-on).
+
+_The §8.7 check on the tree at 043978962._ `diff` of upstream's :449-464 at
+645e784aa against the fork's function (call.cpp:1023-1038) prints the two
+`context.sem_ir()` lines only; `git grep -c -w forms_type -- toolchain` prints
+no match (exit 1); `OperandDependence(context,` call.cpp 5, convert.cpp 6,
+handle_index.cpp 2, pointer_dereference.cpp 1; the model-identifier grep of the
+branch's diff 0 from the plan's sign-off a6b38ea92 to this commit (over the
+whole branch from 701863aa5 the two hits are the plan's own quoted commit
+command in §3 and Appendix E's PR trailer line, carried by the plan commits).
+
+_The id re-scan at D._ 971 refs, 748 distinct heads and 10 worktrees after a
+fetch (2026-11-16, 20:09 UTC): W-396 to W-400 are this branch's ledger ids only
+(no ledger at any head carries an id above W-395); elsewhere range bounds in
+prose, W-396 to W-399 in 17 to 21 heads' fork/ files, every one an id re-scan
+sentence's or a reserved-id list's bound, and W-400 in this branch's two heads,
+local and origin; no other W-4xx.
+
+_Discharged by this commit: W-374 (TP-2)._
 
 ### DD-1: design docs without placeholders (2026-10-14)
 

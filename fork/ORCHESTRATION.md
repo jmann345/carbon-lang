@@ -2302,8 +2302,10 @@ next workstream, its schedule relative to PR 53, held under R33 (c) while SAFE-3
 stands stopped at rev 15, ruled by the SAFE-3 stop stamp that follows this
 check. Of the window's 21 commits, 16 touch the design, prelude or toolchain
 paths: two new drifts, thirteen advances for UA-3's audit (4286832b4's
-`OperandDependence` signature, with ten fork-added `Context&` lines to convert,
-pointer_dereference.cpp:24 merging clean and not compiling; c0b2cc592's two
+`OperandDependence` signature, with eleven fork lines in the removed `Context&`
+form to convert (ten more than the cut's five; call.cpp:1045-1046 rewrite the
+cut's :432), pointer_dereference.cpp:24 merging clean and not compiling;
+c0b2cc592's two
 parse conflicts beside UN-1 and VA-1; 54728e47f's export.cpp; e67b6db91's
 shorthand file names) and one unrelated; no prelude change. Drifts filed: W-394
 (dbf02ad10 adds upstream's own `AddrOfAction`, so register row H10.1's break
@@ -2912,8 +2914,10 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     UA-3, in its gate) and W-395 (upstream's accepted p008110 removes `bound`,
     which PR 53's SAFE design adopts; owner SAFE-1, before PR 53 lands,
     re-reading W-347 and W-349), re-reads H10.8 (the DRIFT on W-374 stands) and
-    adds to UA-3's audit 4286832b4's `OperandDependence` signature (ten
-    fork-added `Context&` lines, pointer_dereference.cpp:24 merging clean),
+    adds to UA-3's audit 4286832b4's `OperandDependence` signature (eleven
+    fork lines in the removed `Context&` form, ten more than the cut's five,
+    call.cpp:1045-1046 rewriting the cut's :432; pointer_dereference.cpp:24
+    merging clean),
     c0b2cc592's parse conflicts beside UN-1 and VA-1, 54728e47f's export.cpp and
     e67b6db91's shorthand file names in textual SemIR.
     Land-time notes, each by its PR's land-sequence records commit after

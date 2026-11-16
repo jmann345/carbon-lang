@@ -221,11 +221,11 @@ docs/design/variadics.md	219	the named pack from the Nth scrutinee. The binding 
 # Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H11.9, lines moved +12 by dbf02ad10, text unchanged (+15 by d50576ca1 and -18 by 9fb428d71 at ca1898506)
 toolchain/sem_ir/typed_insts.h	2018	struct SpecificConstant {
 toolchain/sem_ir/typed_insts.h	2022	.expr_category = ComputedExprCategory::SameAsFirstOperand,
-# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H4.4, lines moved by 54728e47f (ExportNameScopeToCpp's ParameterizedClassType branch), 404 to 536, 405 to 537 and 539 to 610 (ExportParameterizedClassToCpp), text unchanged; :535-538 still unchecked
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H4.4, lines moved by 54728e47f (ExportNameScopeToCpp's ParameterizedClassType branch), 404 to 536, 405 to 537 and 539 to 610 (ExportParameterizedClassToCpp), text unchanged; :535-538 still unchecked (+1 by d99b767dd at ca1898506)
 toolchain/check/cpp/export.cpp	536	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
 toolchain/check/cpp/export.cpp	537	auto* record_decl = ExportClassToCppInDeclContext(
 toolchain/check/cpp/export.cpp	610	if (!decl_context) {
-# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: T12.7, line moved +65 by 54728e47f and +1 by 72abc7a46, still CARBON_CHECK
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: T12.7, line moved +65 by 54728e47f and +1 by 72abc7a46, still CARBON_CHECK (+4 by d99b767dd at ca1898506)
 toolchain/check/cpp/export.cpp	2021	"can't form a pointer to a template");
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H8.2, line moved +2 by 5ae3dcaa9, text unchanged
 toolchain/parse/node_kind.def	296	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
@@ -249,7 +249,7 @@ docs/design/expressions/comparison_operators.md	463	is a weak, partial, or total
 docs/design/expressions/comparison_operators.md	505	not both.
 docs/design/interoperability/philosophy_and_goals.md	408	Furthermore, if Carbon code calls a C++ function
 docs/design/safety/README.md	249	run-time overhead in order to use additional hardening. Carbon will have
-# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: T12.7, line moved +65 by 54728e47f and +1 by 72abc7a46, still CARBON_CHECK
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: T12.7, line moved +65 by 54728e47f and +1 by 72abc7a46, still CARBON_CHECK (+4 by d99b767dd at ca1898506)
 toolchain/check/cpp/export.cpp	2020	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
 docs/design/README.md	377	## Build modes
 docs/design/README.md	379	The behavior of the Carbon compiler depends on the _build mode_:

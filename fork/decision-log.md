@@ -19681,8 +19681,10 @@ tables print 0 failed in both. Every failure traces to a window commit, and each
 quote was found unchanged at its new line. Rows are lines of
 fork/register/rg1-quotes.tsv and rg1-checks.tsv and of rg1-plan.md at trunk
 f54ddc64d, before this commit's comment lines moved them. Where verifier 2
-corrected reader 2's count of the `OperandDependence` lines UA-3 converts (ten
-fork-added, not fifteen), the correction is the record.
+corrected reader 2's count of the `OperandDependence` lines UA-3 converts (not
+fifteen), the correction is the record, as the review fold states it: eleven
+fork lines in the removed `Context&` form (ten more than the cut's five;
+call.cpp:1045-1046 rewrite the cut's :432).
 
 | Row | Section 2 row, block | Class | At 7a3608bab | Decision |
 | --- | --- | --- | --- | --- |
@@ -19788,8 +19790,10 @@ UA-3 was scheduled after PR 53 lands and after EH-C; PR 53 stays held under R33
 is ruled by the stop stamp on trunk that follows this check. UA-3 runs under the
 UA-1 flow, with these starting-audit tasks added to the 2026-11-02 and
 2026-11-09 entries': W-394 (dbf02ad10's `AddrOfAction` over TP-1's); 4286832b4's
-`OperandDependence` signature, the ten fork-added `Context&` lines converted,
-pointer_dereference.cpp:24 among them, which merges clean and would not compile;
+`OperandDependence` signature, the eleven fork lines in the removed `Context&`
+form converted (ten more than the cut's five; call.cpp:1045-1046 rewrite the
+cut's :432), pointer_dereference.cpp:24 among them, which merges clean and would
+not compile;
 c0b2cc592's two parse conflicts beside UN-1's `UnionContext` and VA-1's `...`
 statement; 54728e47f's export.cpp conflict over OV-3's thunks; e67b6db91's
 shorthand file names, every fork-only golden re-rendered by autoupdate once a

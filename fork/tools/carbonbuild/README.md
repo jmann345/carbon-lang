@@ -266,13 +266,22 @@ tip's tree stops at 0004 (`Reversed (or previously applied) patch detected!`)
 with no `PATCHED` written.
 
 The tip's overlay declares clangd's `Features.inc` with bazel_skylib's
-`write_file` instead of a genrule of echo lines, and libc's generated headers
-with `run_binary` instead of genrules; `bazel_graph.py` models both as rules of
-the evaluator (their outputs declared in the package and analysed like any
-Starlark rule's; `write_file` writes its content at analysis time as the real
-implementation does), which is what the first build of trunk 701863aa5 against
-the tip pin had stopped on (`bazel_graph.StarlarkError: no such target or file:
-@llvm-project//clang-tools-extra/clangd:Features.inc`). `gen_ninja.py` now
+`write_file` instead of a genrule of echo lines, libc's generated headers with
+`run_binary` instead of genrules and its staging headers with `copy_file`;
+`bazel_graph.py` models bazel_skylib's file-producing rules (`write_file`,
+`run_binary`, `expand_template`, `copy_file`, `native_binary`) as rules of the
+evaluator with the real implementations' semantics (their outputs declared in
+the package and analysed like any Starlark rule's; `write_file`,
+`expand_template` and `copy_file` write their content at analysis time as the
+real implementations do, `native_binary` symlinks its `src`), records
+`build_test` as a test target, and lets any other `@bazel_skylib` symbol load
+but raise, naming itself, when called, so that an overlay revision using a rule
+the evaluator lacks stops with the rule's name instead of recording nothing,
+which is what the first build of trunk 701863aa5 against the tip pin had
+stopped on (`bazel_graph.StarlarkError: no such target or file:
+@llvm-project//clang-tools-extra/clangd:Features.inc`); `attr.string_list()`
+defaults to `[]` as in Bazel (a `run_binary` without `args` had raised
+`TypeError`). `gen_ninja.py` now
 prints the pin it builds against (`gen_ninja.py: LLVM 24.0.0git: LLVM_SRC=...
 LLVM_BUILD=... LLVM_OVERLAY=... (<the PATCHED line>)`), so every build log
 says which one was used. Measured 2026-11-16 from the worktree
@@ -303,7 +312,13 @@ builds as before: `=== build.sh done status=0`, `GATE arb4-old: 2047 passed, 0
 failed` (`Ran 2047 tests in 23705 ms wall time, 90035 ms across threads`), and
 its build.ninja differs from the landed tp2-base label's only in the label's
 paths and in the generator comment's own path (the worktree's gen_ninja.py
-against the running instance's).
+against the running instance's). The review fold (commit "ARB-4: review fold")
+re-measured the same way under labels arb4-fx-old and arb4-fx-new: both pins'
+build.ninja byte-identical to the pre-fold generator's with the same closure
+counts, `=== build.sh done status=0` and `GATE arb4-fx-old: 2047 passed, 0
+failed` (`Ran 2047 tests in 35881 ms wall time, 136474 ms across threads`) at
+the old pin, and the tip pin stopping at `[98/428]` on the same three units
+(NOTES-C.md has the probes).
 
 ### Acceptance on the fix sha
 

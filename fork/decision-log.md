@@ -21544,7 +21544,22 @@ ms across threads`), its build.ninja differing from the landed tp2-base label's
 only in the label's paths and the generator comment's own path. The changed
 scripts pass `bash -n` and `py_compile`, the files prek to a fixpoint, R31
 holds on the three markdown files, and the model-identifier grep over the
-commit's added lines finds 0 hits; the label directories were deleted.
+commit's added lines finds 0 hits; the label directories were deleted. The
+review fold (2026-11-16, commit "ARB-4: review fold", the same branch) applied
+the review's two findings: RV-M1, `attr.string_list()` defaulting to `None`
+where Bazel's default is `[]`, so a `run_binary` without `args` raised
+`TypeError` (now `[]`, next to the `string_dict` case, and the implementation
+guards an explicit `None`); RV-M2, the other bazel_skylib file-producing rules
+still stubbed silently (`expand_template`, `copy_file` and `native_binary` are
+now modelled with the real implementations' semantics, `build_test` records a
+test target, and any other `@bazel_skylib` symbol loads but raises naming
+itself when called). Re-measured from the worktree under labels arb4-fx-old
+and arb4-fx-new: both pins' build.ninja byte-identical to the pre-fold
+generator's with the same closure counts, `=== build.sh done status=0` and
+`GATE arb4-fx-old: 2047 passed, 0 failed` (`Ran 2047 tests in 35881 ms wall
+time, 136474 ms across threads`) at the old pin, the tip pin stopping at
+`[98/428]` on the same three units; py_compile, prek to a fixpoint, R31 and the
+model-identifier grep (0 hits) hold; the label directories were deleted.
 
 ### SAFE-3 stopped a second time (2026-11-16): the SAFE-4 ruling's stop condition fired at rev 15; the orchestrator's Addendum 2 (R29)
 

@@ -432,4 +432,59 @@ label's path (`/home/user/arb/build/tp2-base/` against
 `/home/user/carbon-tools/fork/tools/carbonbuild/gen_ninja.py`). The label
 directories were deleted afterwards.
 
+The review fold (2026-11-16, commit "ARB-4: review fold") applied the review's
+two findings. RV-M1: `attr.string_list()` yielded `None` where Bazel's default
+is `[]`, so a `run_binary` without `args` raised `TypeError: 'NoneType' object
+is not iterable` in analysis (every `run_binary` call of the tip's overlay
+passes `args`; a later revision need not); `Target.attr` now maps a
+`string_list` with no value to `[]`, next to the `string_dict` case, and the
+implementation guards an explicit `args = None`. RV-M2: after `write_file` and
+`run_binary` the bazel_skylib branch still returned a permissive stub, so
+`expand_template` (loaded by twelve overlay files at both pins), `copy_file`
+(four at the tip: clang's and libc's staging headers, lldb's test inputs,
+llvm's model headers) and `native_binary` recorded no target and no output;
+`bazel_graph.py` now models the three (`expand_template`: the template with
+every substitution applied, written at analysis time; `copy_file`: the macro's
+executable variant and `is_windows` select, the rule a symlink under
+`allow_symlink` and otherwise a write of the source's bytes, copy_bash's `cp
+-f`; `native_binary`: `out` defaulting to `<name>.exe`, declared as a symlink
+to the executable `src`), records `build_test` as a test target, and returns
+for any other `@bazel_skylib` module a stub whose symbols load but raise
+`StarlarkError` naming the module, the symbol, the package and the rule's name
+when called. Probed 2026-11-16 at both pins (a scratch script over `Graph`):
+`Target.attr("args")` of a `run_binary` without `args` is `[]` and the
+implementation runs with `ctx.attr.args` set to `None`; loading
+`@bazel_skylib//rules:diff_test.bzl` and calling `diff_test` raises
+`@bazel_skylib//rules:diff_test.bzl's diff_test is not modelled by
+bazel_graph.py; called (name = 'probe_diff')`, `dicts.add` from
+`lib:dicts.bzl` raises naming `dicts.add`, `paths.join` still answers;
+`Features.inc` is 227 bytes with the same SHA-256 at both pins (a `write_file`
+at the tip, a genrule at the old pin); the tip's libc package records 425
+`copy_file` targets whose outputs carry their source's bytes
+(`staging/include/llvm-libc-macros/_LIBC_MODULAR_FORMAT_PRINTF.h`: 617 bytes,
+the `select` on `src` resolving to the `-disable.h` header, `is_windows`
+False); clang-tidy's `expand_template` `config` yields a 301-byte
+`clang-tidy-config.h` from the 311-byte template with its two `#cmakedefine01`
+substitutions, and its `native_binary` `run-clang-tidy` an executable
+symlinked to `tool/run-clang-tidy.py`; `libc/test`'s `build_test` records a
+`build_test` target. Re-measured from the worktree, labels arb4-fx-old and
+arb4-fx-new, the running instance untouched: both pins' build.ninja are
+byte-identical to the ones the pre-fold generator wrote (0 diff lines) with the
+same packages evaluated and the same closure counts (`targets in closure: 207
+(152 Carbon cc targets, 34 external, 21 LLVM tool libs)`, `source files
+compiled: 393; generated files: 7 (4 written now, 3 ninja rules); objects:
+393`, `file_test manifest: 2047 test files`; `LLVM archives: 176` and `181`);
+the old pin's build `=== build.sh done status=0 2026-11-16T19:42:23Z`,
+`installed 2074 copied, 133 generated, 36 symlinked files under
+/home/user/arb/install/arb4-fx-old/lib/carbon`, `Ran 2047 tests in 35881 ms
+wall time, 136474 ms across threads` (the tip-pin build ran alongside) and
+`GATE arb4-fx-old: 2047 passed, 0 failed` (log
+/home/user/arb/logs/gate-arb4-fx-old-20261116T194318Z.log), its build.ninja
+against tp2-base's 537 lines a side that normalize to the generator comment's
+path and `builddir`; the tip pin's `install.py --dry-run` `plan: 2274 entries:
+2104 copy, 132 gen, 2 pending, 36 symlink` and its ninja stopped at `[98/428]`
+on the same three units (`function_context.h:407:17`,
+`compile_driver.cpp:271:21`, `constant.cpp:311:30` and `:417:10`). The label
+directories were deleted afterwards.
+
 <!-- google-doc-style-resume -->

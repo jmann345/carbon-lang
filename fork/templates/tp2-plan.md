@@ -6,7 +6,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # TP-2 plan: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374)
 
-**Status:** rev 1, 2026-11-16 -- FOR TWO ADVERSARIAL PLAN REVIEWS. Branch
+**Status:** rev 2, 2026-11-16 -- REVIEWS A AND B FOLDED (the fold record
+after the hand-off notes; the orchestrator's rulings of 2026-11-16 under R29
+are recorded where they apply), NOT SIGNED OFF: the re-review decides. Rev 1
+(9f09c347b) was for two adversarial plan reviews. Branch
 `claude/carbon-fork-0-1-tp2` (worktree /home/user/carbon-tp2), cut from trunk
 701863aa5 (2026-11-16, "Merge trunk 50357c591 into arb3-fix": PR 70 (EH-C), the
 weekly upstream check of 2026-11-16, SAFE-3's second stop stamp and ARB-3's
@@ -30,40 +33,48 @@ arbiter's check.cpp source patch reported `landed`) and **conformance PASS 228
 /home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12 is a
 differential oracle only (R30); it carries upstream's deferral.
 
-**What the measurements settle (§0.3 to §0.6), in four lines.** (1) The
-removal is exactly the item's: the function becomes upstream's text at
-7a3608bab but for the `OperandDependence(context, ...)` signature the fork
-still has (D-TP2-1); on the prototype m17n_d is rejected as on the nightly,
-``unable to monomorphize specific `Wrap(D)` `` with the nightly's two notes
-(W-374 discharged by measurement). (2) Its cost is large and is recorded, not
-licensed away (R32): deduction of a template parameter through a class type
-formed from it (`Holder(T)`, `Holder(T)*`, `Vec(N)`, W-193's forms, which
-D-TP-11 made work) is lost, as it is absent on the nightly; refutable patterns
-on a template-dependent choice value (TP-1 round 10's X-1 family) and
+**What the measurements settle (§0.3 to §0.6), in four lines.** (1) The removal
+is exactly the item's: the function becomes upstream's text at 7a3608bab but for
+the `OperandDependence(context, ...)` signature the fork still has (D-TP2-1); on
+the prototype m17n_d is rejected as on the nightly, ``unable to monomorphize
+specific `Wrap(D)` `` with the nightly's two notes (W-374 discharged by
+measurement). (2) Its cost is large and is recorded, not licensed away (R32):
+deduction of a template parameter through a class type formed from it
+(`Holder(T)`, `Holder(T)*`, `Vec(N)`, W-193's forms, which D-TP-11 made work;
+`Core.Int(N)` too, A-m1) is lost, as it is absent on the nightly; refutable
+patterns on a template-dependent choice value (TP-1 round 10's X-1 family) and
 `index_class_with_index_with` return to upstream's `semantics TODO`; two
-definition-time diagnostics move to instantiation; two conformance programs
-no longer compile. Upstream's deduce.cpp has no mechanism for a
-template-dependent splice ("TODO: Handle more cases.", :443 at 7a3608bab) and
-the nightly rejects the same programs, so the plan files residues W-396 to
-W-399 with probes and break conditions and adds no fork mechanism (R32 (d);
+definition-time diagnostics move to instantiation; an `impl forall` with a
+template binding whose self or interface is formed from it is rejected as on the
+nightly (W-400, review A's A-M1, pinned by a `fail_todo_` split); two
+conformance programs no longer compile. Upstream's deduce.cpp has no mechanism
+for a template-dependent splice ("TODO: Handle more cases.", :443 at 7a3608bab)
+and the nightly rejects the same programs, so the plan files residues W-396 to
+W-400 with probes and break conditions and adds no fork mechanism (R32 (d);
 D-TP2-2). (3) W-139's convert.cpp hunk is NOT removed: measured, its removal
-re-opens the structural check of a conversion outside a call (e1 and e2 run,
-and the SC-1 split `fail_dependent_conversion_unsatisfied` succeeds), while the
+re-opens the structural check of a conversion outside a call (e1 and e2 run, and
+the SC-1 split `fail_dependent_conversion_unsatisfied` succeeds), while the
 deferral alone already keeps it out of every call's path, so the hunk stays,
 narrowed by the deferral and re-described (D-TP2-3; the item's "withdrawn" and
 H9.8's break condition were premised on the call case). (4) Eleven goldens
-refill CHECK-only; one of them, check/testdata/class/destroy_calls.carbon, is
-outside generic/template/ by path but is D-TP-11's own refill (TP-1 §1.6) and
-changes only in its template split, so the item's break condition is judged
-NOT fired, and that judgment is the first question put to the reviews
-(D-TP2-4). Eighteen splits are renamed (`fail_todo_` or `todo_fail_`) with the
-residues named in their comments; after the renames and the fill the gate is
-**2047 passed, 0 failed** and conformance **PASS 226 / FAIL 0 / SKIP 15 over
-241, 51 of 56 bullets** (two programs SKIP under R10 with the residue ids).
+refill CHECK-only; one of them, check/testdata/class/destroy_calls.carbon, lies
+outside TP-1's and SC-1's template golden directories, so W-374's break
+condition FIRED by its letter; §0.3's table is the report, and the orchestrator
+ruled on 2026-11-16 (R29) that the removal PROCEEDS, the changed split
+`generic_use_inside_template` being a template split that D-TP-11 itself
+refilled when TP-1 landed (TP-1 §1.6), the condition's letter amended to read a
+template golden by its changed split's use of a template parameter (D-TP2-4:
+ruled, not judged by this plan). Twenty-six splits are renamed (`fail_todo_` or
+`todo_fail_`) with the residues named in their comments and one added
+`fail_todo_` split pins W-400's form; after the renames, the pin and the fill
+the gate is **2047 passed, 0 failed** and conformance **PASS 226 / FAIL 0 / SKIP
+15 over 241, 51 of 56 bullets** (two programs SKIP under R10 with the residue
+ids; the bar for the landing, D-TP2-5's ruling). (amended 2026-11-16, review
+fold: A-M1 / A-m3 / B3 / B4)
 
-**Item:** W-374 (R32 (b), (d); weekly upstream checks 2026-11-09 and
-2026-11-16; FO-1 D-FO1-2 (4)). **Reserved ids:** W-396 to W-399 (§0.9), all
-four filed by D. **No F id.**
+**Item:** W-374 (R32 (b), (d); weekly upstream checks 2026-11-09 and 2026-11-16;
+FO-1 D-FO1-2 (4)). **Reserved ids:** W-396 to W-400 (§0.9, re-scanned at the
+fold), all five filed by D. **No F id.**
 
 **Design authority:** fork/rulebook.md R16, R17, R29, R30, R31, R32 and R33;
 fork/decision-log.md DR-0 (register block (vii)), RG-1 (D-RG-1, D-RG-3, D-RG-4,
@@ -77,13 +88,13 @@ D-LAND-6 and Appendix A.
 
 §0 Audit (measurements with evidence): 0.1 the baseline; 0.2 the function on
 trunk and upstream, D-TP-11, D-SC-19 part 4 and the two hunks' provenance; 0.3
-the prototype, its fill and the renames; 0.4 the probes on the three
-toolchains; 0.5 the mutants; 0.6 conformance; 0.7 collisions and what UA-3
-inherits; 0.8 upstream's direction register (R32 (a), (c)); 0.9 the id
-re-scan; 0.10 the tree checker and what is not run. §1 Design (D-TP2-1 to
-D-TP2-10). §2 Spec, file by file. §3 Commits, the PR and the landing. §4
-Testdata matrix. §5 Conformance delta. §6 Churn and collisions. §7 Risks and
-rejected alternatives. §8 Verification. Hand-off notes. Appendix A the
+the prototype, its fill and the renames; 0.4 the probes on the three toolchains;
+0.5 the mutants; 0.6 conformance; 0.7 collisions and what UA-3 inherits; 0.8
+upstream's direction register (R32 (a), (c)); 0.9 the id re-scan; 0.10 the tree
+checker and what is not run. §1 Design (D-TP2-1 to D-TP2-10). §2 Spec, file by
+file. §3 Commits, the PR and the landing. §4 Testdata matrix. §5 Conformance
+delta. §6 Churn and collisions. §7 Risks and rejected alternatives. §8
+Verification. Hand-off notes. Review fold record (rev 2). Appendix A the
 goldens' source edits and each file's CHECK change; B the programs and their
 EXPECTs; C the plan and page amendments verbatim; D the records texts verbatim;
 E the PR text; F the land-time texts with `<...>` placeholders.
@@ -275,7 +286,7 @@ changes", no crash. The eleven files, classified for the item's break condition
 | check/testdata/generic/template/match_choice.carbon | TP-1's (round 10, X-1) | `Opt(T)` and `Shape(T)` are splices, so every `match` on them reports ``semantics TODO: `match on unsupported scrutinee type` `` (``refutable pattern binding on unsupported scrutinee type`` for `let` ... `else` and pattern conditions); the specific diagnostics of `fail_nonexhaustive`, `fail_never_matches`, `fail_int_never_matches`, `fail_unknown_alternative`, `fail_guard_on_instantiation`, `fail_int_literal_out_of_range_on_instantiation`, `fail_payload_literal_on_instantiation`, `fail_payload_not_trivial_on_instantiation` and `fail_todo_qualified_alternative` are replaced by that TODO; `class_template_choice` and `fail_unknown_alternative_class_template` (a choice declared in a class template, `C` not formed by a call) are unchanged |
 | check/testdata/generic/template/pointer.carbon | TP-1's | `fail_deref_class_type_param` loses ``cannot dereference operand of non-pointer type `C(T)` `` (the deref of a splice waits for instantiation, which the split never makes) |
 | check/testdata/named_constraint/template_constraint_dependent.carbon | SC-1's (W-139's splits) | the three `Wrap(D)` splits keep their error and gain the note ``initializing generic parameter `T` declared here`` at `class Holder(template T: HasGet)`, the nightly's shape; `fail_dependent_interface_arg_unsatisfied` reports `W(D)` once, at `J(T)`, with that note at `interface J(template T: HasGet)`, and no longer a second time at the blanket impl's `J(V)` (the W-376 cascade's m18i half); `fail_dependent_conversion_unsatisfied` keeps its error when the hunk stays (§0.5) |
-| check/testdata/class/destroy_calls.carbon | TP-1's by substance (D-TP-11's refill, plan §1.6: "generic/template/convert.carbon and class/destroy_calls.carbon refill"), outside generic/template/ by path | only the split `generic_use_inside_template` (`class C(template T: type) {}`, `fn F(template T: type)` at :89-100) changes: `%C.1d0: type = class_type @C, @C(%T) [template]` and the instructions over it become `call_action`/`splice_inst` forms; no STDERR; the other five splits are untouched |
+| check/testdata/class/destroy_calls.carbon | outside TP-1's and SC-1's template golden directories by path: W-374's break condition FIRED by its letter on this file (ruled 2026-11-16, the orchestrator, R29: the removal proceeds, the changed split being D-TP-11's own refill, plan §1.6: "generic/template/convert.carbon and class/destroy_calls.carbon refill"; D-TP2-4; superseding rev 1's cell "TP-1's by substance (D-TP-11's refill, plan §1.6), outside generic/template/ by path") | only the split `generic_use_inside_template` (`class C(template T: type) {}`, `fn F(template T: type)` at :89-100) changes: `%C.1d0: type = class_type @C, @C(%T) [template]` and the instructions over it become `call_action`/`splice_inst` forms; no STDERR; the other five splits are untouched (every hunk of the fill lies after :1017, where that split's STDOUT begins; re-measured at the fold) |
 | lower/testdata/template/class.carbon | TP-1's | two SSA names renumbered (`vc1234`'s neighbour, plan §1.6) |
 | lower/testdata/template/initialize.carbon | TP-1's | the class-template literal specifics are emitted in another order and with other `%.loc` names (929 insertions, 1061 deletions, CHECK lines only); no STDERR |
 | lower/testdata/template/match_choice.carbon | TP-1's (round 10) | `designator_arm`, `let_else_payload` and `int_scrutinee` report the TODOs above and lower nothing; `class_template_choice` unchanged |
@@ -294,14 +305,20 @@ git diff -U0 -- toolchain/check/testdata toolchain/lower/testdata \
 
 <!-- google-doc-style-resume -->
 
-prints nothing (0 lines), where the 36 `// ---` lines it excludes are the
-renames below.
+prints nothing (0 lines), where the `// ---` lines it excludes are the
+renames below (36 on the planner's tree; 53 at the fold, the re-measurement
+below).
 
 **Gate after the fill** (gate-tp2-planner-20261116T161156Z.log): not 2047;
 file_test's `fail_`-prefix rule (testing/file_test/file_test_base.cpp:274,
-`fail_prefix_problems`) reports eighteen splits in five files: sixteen that
-"failed; if failure is expected, add the `fail_` prefix" and two that
-"succeeded; if success is expected, remove the `fail_` prefix":
+`fail_prefix_problems`) reports nineteen prefix problems in six files (amended
+2026-11-16, review fold: B5; rev 1 said "eighteen splits in five files"): the
+eighteen this plan renames, in five files, sixteen that "failed; if failure is
+expected, add the `fail_` prefix" and two that "succeeded; if success is
+expected, remove the `fail_` prefix", and a nineteenth in a sixth file,
+template_constraint_dependent.carbon's `fail_dependent_conversion_unsatisfied`
+"succeeded", because that gate ran on the hunk-removed build: it is the
+measurement that decides D-TP2-3, and M2 restores it (§0.5):
 
 | Golden | Splits that now fail (renamed `fail_todo_`) | Splits that now succeed (renamed `todo_fail_`) |
 | --- | --- | --- |
@@ -319,11 +336,50 @@ restored (§0.5, M2) the fill converged again in one pass
 (autoupdate-tp2-planner-20261116T162905Z.log: 4 files; ...162917Z.log: 0) and
 the gate is **`GATE tp2-planner: 2047 passed, 0 failed`**
 (gate-tp2-planner-20261116T162929Z.log). The eleven goldens' numstat on the
-final tree: destroy_calls 88/59, convert 94/70, deduce_class_args 87/108,
-default_init 52/29, index 53/70, match_choice 82/405, pointer 1/5,
-template_constraint_dependent 16/17, lower class 2/2, lower initialize
-929/1061, lower match_choice 15/530 (insertions/deletions, 3739 CHECK lines in
-all).
+planner's tree (renames only, no TODO line): destroy_calls 88/59, convert
+94/70, deduce_class_args 87/108, default_init 52/29, index 53/70, match_choice
+82/405, pointer 1/5, template_constraint_dependent 16/17, lower class 2/2,
+lower initialize 929/1061, lower match_choice 15/530 (insertions/deletions,
+3739 CHECK lines in all).
+
+**The eight more renames and the pin (amended 2026-11-16, review fold: A-M1 /
+B3).** Eight more match_choice.carbon splits keep failing after the refill but
+with the scrutinee TODO in place of the diagnostic each name promised
+(`fail_nonexhaustive` pinned `MatchNonexhaustive`; `fail_never_matches`,
+`fail_int_never_matches`, `fail_unknown_alternative`,
+`fail_guard_on_instantiation`, `fail_int_literal_out_of_range_on_instantiation`,
+`fail_payload_literal_on_instantiation` and
+`fail_payload_not_trivial_on_instantiation` likewise;
+`fail_todo_qualified_alternative` was already so named): they are renamed
+`fail_todo_` with a W-397 TODO line each, as the tree's convention for a split
+that pins a TODO and R16's weakened-assertion check require (ruled 2026-11-16,
+the orchestrator, R29, ruling 4, superseding rev 1's "The nine `fail_` splits
+of match_choice.carbon whose diagnostic changes keep their names (they still
+fail)"). Twenty-six renames in all (52 `// ---` lines). One split is added,
+`fail_todo_impl_forall_formed_self` in deduce_class_args.carbon, pinning
+W-400's form (A-M1; adopted by ruling 7). **Re-measured at the fold on the
+label tp2-fixer** (the worktree /home/user/carbon-tp2-fixer at 701863aa5 with
+§2.1's diff, the twenty-six renames and their TODO lines, A.3's line, the pin
+split and the hunk kept, C1's exact shape; build-tp2-fixer.log "done status=0
+2026-11-16T17:19:30Z", no warning): the gate before the fill `GATE tp2-fixer:
+2036 passed, 11 failed` (gate-tp2-fixer-20261116T171946Z.log), the eleven
+files above, each "Autoupdate would make changes", 0 prefix problems, no crash
+(B6: the TODO lines and the pin are measured, not inferred); autoupdate 11
+files then 0 (one pass); the gate after the fill `GATE tp2-fixer: 2047 passed,
+0 failed` (gate-tp2-fixer-20261116T172132Z.log). The TODO lines shift the
+splits' source lines, so the dumped SemIR's `loc<line>_<col>` names move with
+them and the numstat is larger than the planner's: destroy_calls 88/59,
+convert 94/70, deduce_class_args 165/143, default_init 52/29, index 80/95,
+match_choice 113/415, pointer 4/5, template_constraint_dependent 18/18, lower
+class 2/2, lower initialize 929/1061, lower match_choice 22/530 (1567
+insertions, 2427 deletions; 3875 CHECK lines; the 119 non-CHECK changed lines
+are exactly the 53 `// ---` lines, the 27 TODO comments over 45 lines, the
+pin's 18 source lines and A.3's three). The pin split's filled diagnostics:
+`` `impl` with unused generic binding [ImplUnusedBinding] `` at the `impl
+forall`, ``warning: binding `self` unused [UnusedBinding]`` in `Val`, and
+``cannot access member of interface `I` in type `Box(i32)` that does not
+implement that interface [MissingImplInMemberAccess]`` at `h.(I.Val)()`; on
+tp2-base the same source runs (the probe a2_impl_self prints 11).
 
 ### §0.4 The probes on the three toolchains
 
@@ -363,6 +419,28 @@ e1n and e2n are outside W-374 (a conversion outside a call): on the fork
 D-TP-12 keeps the impl lookup deferred and nothing forces the unused facet
 value's witness in `F(D)`; filed as W-399 (D-TP2-8).
 
+**Review A's forms (amended 2026-11-16, review fold: A-M1 / A-m1 / A-m4),
+re-run at the fold on tp2-base, the prototype tp2-fixer and the nightly** (the
+sources in A.4; tp2-fixer is M2's shape, call.cpp upstream's and the hunk
+kept):
+
+| Probe | baseline tp2-base | prototype tp2-fixer | the nightly |
+| --- | --- | --- | --- |
+| a2_impl_self (`impl forall [template T: type] Box(T) as I` for `class Box(T: type)` and `interface I { fn Val(self) -> i32; }`; `h.(I.Val)()` on a `Box(i32)`) | prints 11 | `` `impl` with unused generic binding `` at the `impl`, then ``cannot access member of interface `I` in type `Box(i32)` that does not implement that interface`` at the call; two errors | the first error, then a crash (CHECK failure sem_ir/generic.cpp:84, "Given a specific for the wrong generic") |
+| a3_impl_iface (`interface J(T: type)`, `impl forall [template T: type] W as J(T)`, `w.(J(i32).Val)()`) | prints 13 | ``impl as non-facet type `J(T)` `` then the member-access error for `J(i32)` in `W`; two errors | ``impl as non-facet type `<splice of ...>` `` (the splice is not stringified) then the same second error |
+| a8_require (structural: `interface I { require impls HasGet; fn Val(self) -> i32; }`, `impl forall [template T: type] Holder(T) as I`, a `Holder(C)`) | prints 8 | `` `impl` with unused generic binding `` then ``cannot access member of interface `I` in type `Holder(C as HasGet)` ...``; two errors | not applicable (no `template constraint`) |
+| a5_core_int (`fn Bits[template N: Core.IntLiteral](x: Core.Int(N)) -> i32`, called with an `i64`) | prints 1 | ``cannot deduce value for generic parameter `N` `` with `DeductionGenericHere` | the same |
+| declact (`fn Wrap(template F: type, template T: F) -> Holder(T)`; `Caller[U: type]` with `var h: Holder(U) = Wrap(type, U);`; a `C`) | prints 6 | prints 6 | not applicable |
+| declactd (the same with a `D`) | ``unable to monomorphize specific `Caller(D)` `` with SC-1's three notes twice and `InitializingGenericParam`; two errors | the same errors and notes | not applicable |
+
+So the three `impl forall` forms are lost forms outside D-TP2-2's rev 1 list on
+which trunk and the nightly differ: D-TP2-1's falsifier was met, and the cost
+is recorded as W-400 and pinned (D-TP2-2, D-TP2-8), not repaired (R32 (d)).
+a5_core_int is a W-396 form (`N` through `Core.Int(N)`), which the
+int_scrutinee splits hide behind the body's TODO. The declact pair is unchanged
+by TP-2: a declaration-region `call_action` resolved by `MakeSpecific` replays
+as before.
+
 **W-139's probes (fo1-plan.md :396-420, :505-520, :565-600) on the three
 toolchains** (the nightly has no `template constraint`: "unrecognized
 declaration introducer" for every structural probe, as FO-1 recorded):
@@ -384,11 +462,10 @@ declaration introducer" for every structural probe, as FO-1 recorded):
 | thunk1d (`D`) | two errors: the thunk's conversion with `DeductionGenericHere`, then `F(D)` (W-376) | the same | the same |
 | t3s, t7s (`Take[U: type](h: Holder(U))`; `Outer` to `Inner`) | 4; 6 | 4; 6 | 4; 6 |
 
-Not re-created: declact and declactd (a declaration-region `call_action`
-resolved by `MakeSpecific`, fo1-plan.md:570-574), whose exact text is not
-recorded; the W-376 splits `fail_symbolic_arg_impl_thunk_unsatisfied` and
-m18i's pin `fail_dependent_interface_arg_unsatisfied` cover their mechanism
-and are in the gate.
+The declact pair (a declaration-region `call_action` resolved by
+`MakeSpecific`, fo1-plan.md:570-574) was not re-created by rev 1; review A
+re-created it from the description and the fold re-ran it (the table above and
+A.4): TP-2 changes nothing there (amended 2026-11-16, review fold: A-m4).
 
 **The changed goldens' splits, checked with `compile --phase=check` on the
 three toolchains** (90 splits of six goldens; the full table is the plan
@@ -403,7 +480,7 @@ writer's scratch, its rows with a change summarised here):
 | index: the other 23 splits | as filled | unchanged | the nightly rejects the tuple-index forms at the definition (``type `T` does not support tuple indexing``), TP-1's C3 forms |
 | match_choice (check): designator_arm, designator_arm_exhaustive, value_param, nested_match, guard, int_scrutinee | checks | ``semantics TODO: `match on unsupported scrutinee type` `` | ``semantics TODO: `choice alternatives with parameters are not yet supported` `` or ``semantics TODO: `HandleMatchIntroducer` `` |
 | match_choice: pattern_forms, let_else_payload (lower) | checks | ``semantics TODO: `refutable pattern binding on unsupported scrutinee type` `` | the same TODOs as above |
-| match_choice: the nine `fail_` splits named in §0.3's table | their specific diagnostics | the scrutinee TODO | the nightly's TODOs |
+| match_choice: the nine `fail_` splits named in §0.3's table (eight of them renamed `fail_todo_` at the fold, B3) | their specific diagnostics | the scrutinee TODO | the nightly's TODOs |
 | match_choice: class_template_choice, fail_unknown_alternative_class_template, the five `fail_todo_scrutinee_*`, `fail_todo_case_template_constant`, `fail_todo_pattern_form_deferred_call` | as filled | unchanged | the nightly's TODOs |
 | pointer: fail_deref_class_type_param | ``cannot dereference operand of non-pointer type `C(T)` `` | checks | ``cannot dereference operand of non-pointer type `<splice of ...>` `` (the nightly's `*` on a splice is rejected at the definition; TP-1's C3 defers it, D-TP-7) |
 | pointer: the other 11 splits | as filled | unchanged | the nightly rejects `*`, `->` and `&` on `T` at the definition (TP-1's C3) |
@@ -445,7 +522,8 @@ and `fail_todo_designator_arm` likewise,
 `todo_fail_class_template_literal_with_dependent_array_bound_unknown_field`
 "failed", and the SemIR of convert, default_init and the rest reverting; and the
 probe m17n_d, whose rc 5 is W-374's defect. The plan therefore names the gate's
-prefix rule over the eighteen renamed splits and m17n_d as D-TP2-1's detectors
+prefix rule over the twenty-six renamed splits, the pin split and m17n_d as
+D-TP2-1's detectors
 (§8.5), and registers H10.8 with an L check as before plus the quote rows of
 §0.8.
 
@@ -453,21 +531,48 @@ prefix rule over the eighteen renamed splits and m17n_d as D-TP2-1's detectors
 
 On the hunk-removed prototype before any program edit
 (/home/user/arb/conformance/tp2-planner, first run): `CONFORMANCE tp2-planner:
-PASS 226 / FAIL 2 / SKIP 13 over 241 programs; bullets 50 PASS, 1 FAIL, 5
-SKIP`. The two failures: generics/templates_deduce_class_args.carbon (``cannot
-deduce value for generic parameter `T` `` at :62:14 `Core.Print(Get(h));` and
-:63:14 `Core.Print(GetThrough(&h) * 2);`, ``... `N` `` at :65:14
-`Core.Print(Size(v));`) and generics/templates_match_dependent_choice.carbon
-(``semantics TODO: `match on unsupported scrutinee type` `` at :46:9, the
-`match (s)` of `Count`). Both are TP-1's programs for the forms D-TP2-2
-withdraws; neither depends on the hunk. With the two `// SKIP:` directives of
-Appendix B and the README table regenerated (`runner.py
+PASS 226 / FAIL 2 / SKIP 13 over 241 programs; bullets 50 PASS, 1 FAIL, 5 SKIP`.
+The two failures: generics/templates_deduce_class_args.carbon (``cannot deduce
+value for generic parameter `T` `` at :62:14 `Core.Print(Get(h));` and :63:14
+`Core.Print(GetThrough(&h) * 2);`, ``... `N` `` at :65:14
+`Core.Print(Size(v));`) and generics/templates_match_dependent_choice.carbon (``semantics
+TODO: `match on unsupported scrutinee type` `` at :46:9, the `match (s)` of
+`Count`). Both are TP-1's programs for the forms D-TP2-2 withdraws; neither
+depends on the hunk. That first run's log was overwritten by the planner's
+second run (B9); its surviving evidence is the fold's re-run on tp2-fixer before
+the SKIP edit: `CONFORMANCE tp2-fixer: PASS 226 / FAIL 2 / SKIP 13 over 241
+programs; bullets 50 PASS, 1 FAIL, 5 SKIP, 0 NOT-WRITTEN (of 56 in the
+gap-analysis table) (runner exit 1)`, kept as
+/home/user/arb/logs/conformance-tp2-fixer-noskip.txt and
+conformance-tp2-fixer-noskip.log (the CONFORMANCE.txt and the log copied before
+the SKIP edit, which the implementer repeats, §8.4); the two program logs there
+give templates_deduce_class_args.carbon:62:14 and :63:14 (`T`) and :65:14 (`N`)
+``cannot deduce value for generic parameter`` and
+templates_match_dependent_choice.carbon:46:9 ``semantics TODO: `match on
+unsupported scrutinee type` ``. (amended 2026-11-16, review fold: B9) With the
+two `// SKIP:` directives of Appendix B and the README table regenerated (`runner.py
 --update-readme-table`, which the self-test requires), the second run on the
-final tree: **`CONFORMANCE tp2-planner: PASS 226 / FAIL 0 / SKIP 15 over 241
-programs; bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN`** (runner exit 0;
-the bullet stays PASS by the runner's rule, runner.py:876-900: every non-SKIP
-program of the bullet passes and at least one passes). No other program's
-output changed (the scoreboard's other 239 rows equal the baseline's).
+final tree:
+**`CONFORMANCE tp2-planner: PASS 226 / FAIL 0 / SKIP 15 over 241 programs; bullets 51 PASS, 0 FAIL, 5 SKIP, 0 NOT-WRITTEN`**
+(runner exit 0; the bullet stays PASS by the runner's rule, runner.py:876-900:
+every non-SKIP program of the bullet passes and at least one passes). No other
+program's output changed (the scoreboard's other 239 rows equal the baseline's).
+Re-run at the fold with Appendix B's one-line directives (B2): `CONFORMANCE
+tp2-fixer: PASS 226 / FAIL 0 / SKIP 15 over 241 programs; bullets 51 PASS, 0
+FAIL, 5 SKIP, 0 NOT-WRITTEN (of 56 in the gap-analysis table) (runner exit 0)`
+(conformance-tp2-fixer.log, 2026-11-16 17:29 UTC); `runner.py --self-test`
+prints "self-test: 241 programs parsed, 56 bullets in table, OK" and records
+each program's skip_reason as the whole directive line: the marks begin ``SKIP:
+deduction through a class's arguments is withdrawn by TP-2 (fork work item
+W-396; fork/templates/tp2-plan.md D-TP2-2): with `IsCallPerformable`
+upstream's`` and ``SKIP: refutable patterns on a template-dependent choice value
+are withdrawn by TP-2 (fork work item W-397; fork/templates/tp2-plan.md
+D-TP2-2)``, and each ends "or the nightly runs this program." (Appendix B quotes
+them whole); the diagnostics' lines after the insertion of one line at :6 of
+each program are :63:14, :64:14 and :66:14, and :47:9, and the directives name
+those (rev 1's blocks named the pre-insertion lines and were recorded by
+runner.py:263-265 as their first line only). (amended 2026-11-16, review fold:
+B2)
 
 ### §0.7 Collisions and what UA-3 inherits
 
@@ -520,7 +625,7 @@ Read at upstream/trunk 7a3608bab (fetched 2026-11-16 16:02 UTC; `git -C
     that silence (D-TP2-2).
 -   docs/design/README.md:3012-3016 ("Template name lookup"),
     docs/design/generics/terminology.md:260-268 ("Definition checking") and
-    :306-310, and docs/design/generics/overview.md:102-107, verbatim (their
+    :308-311, and docs/design/generics/overview.md:102-108, verbatim (their
     markdown links kept as written):
 
 <!-- google-doc-style-ignore -->
@@ -533,7 +638,7 @@ type checking for anything [dependent](generics/terminology.md#dependent-names)
 on the template parameter can't be completed until the template is instantiated
 with a specific concrete type. When the constraint is just `type`, this gives
 
-terminology.md:262-268:
+terminology.md:263-268:
 even with templates, to check semantics of expressions that are not
 [dependent](#dependent-names) on any template parameter in the definition.
 Adding constraints to template parameters and/or switching them to be checked
@@ -541,13 +646,13 @@ allows the compiler to increase how much of the definition can be checked. Any
 remaining checks are delayed until [instantiation](#instantiation), which can
 fail.
 
-terminology.md:306-310:
+terminology.md:308-311:
     `template` keyword. Expressions using such a binding are
     [dependent](#dependent-names) and are
     [late type checked](#early-versus-late-type-checking) once an instantiation
     provides the binding's value.
 
-overview.md:102-107:
+overview.md:102-108:
 -   With a template generic, the concrete argument value used by the caller is
     used for name lookup and typechecking. With checked generics, that is all
     done with the declared restrictions expressed as the types of bindings in
@@ -560,9 +665,15 @@ overview.md:102-107:
 <!-- google-doc-style-resume -->
 
 The design has deduction; upstream's toolchain has none through a dependent
-class type, the gap W-396 records. The register's remaining quotes:
+class type, the gap W-396 records. (Line labels re-anchored at the fold,
+amended 2026-11-16, review fold: A-m2 / B7: the quoted texts were right; at
+7a3608bab the terminology quote starts at :263, the binding-pattern quote runs
+:308-311 (B7's ":308-310" stops one line short of ":311 provides the binding's
+value."), the overview quote runs :102-108 and the proposal's two sentences
+:205-209 (:207 is blank, so the consequence sentence is :208-209; B7's
+":207-209" counts the blank line).) The register's remaining quotes:
 
--   proposals/p002200-template-generics.md:205-210: "Impl lookup is delayed
+-   proposals/p002200-template-generics.md:205-209: "Impl lookup is delayed
     until all templated types, interfaces, and parameters are known. As a
     consequence of these differences, type checking of any expression dependent
     on a templated parameter may not be completed until its value is known."
@@ -619,10 +730,18 @@ text on claude/carbon-fork-0-1-safe, the SAFE mirror and the stop stamp's
 sentences, no ledger use); W-381 to W-385 EH-C's unused reservation, in prose
 only; W-396 to W-399 in 32 to 36 refs, every one a range bound in the id
 re-scan sentences of fork/decision-log.md (:1030, :19820, :20067-20068,
-:20285-20286, :21302) and fork/direction/plan.md:1034, never a ledger id; no
-W-4xx anywhere. The ledger at 701863aa5 holds 313 items, maximum W-395. **The
-next free id is W-396**; this plan reserves W-396 to W-399 and files all four
-(D-TP2-8).
+:20285-20286, :21302), fork/direction/plan.md:1034 and, listed at the fold
+(amended 2026-11-16, review fold: A-m2), fork/variadics/va2-plan.md,
+fork/eh/ehc-plan.md, fork/overload/ov4-plan.md, fork/register/rg1-plan.md,
+fork/land/land1-plan.md and fork/inventory/work-items.json:5162 (a notes
+field's range bound), never a ledger id; no W-4xx anywhere. The ledger at
+701863aa5 holds 313 items, maximum W-395. **The next free id is W-396**; this
+plan reserves W-396 to W-400 and files all five (D-TP2-8). Re-scanned at the
+fold (2026-11-16 17:17 UTC, after `git fetch origin`, the planner's script):
+969 refs, 745 distinct heads, 11 worktrees; W-396 to W-399 now also in this
+branch's plan (34 to 38 refs), W-400 nowhere (the regex covers `W-4[0-9][0-9]`),
+so **W-400 is the next free id** and is reserved for the `impl forall` family
+(A-M1; ruling 7).
 
 ### §0.10 The tree checker: what is measured and what is not run
 
@@ -633,9 +752,15 @@ autoupdate.sh to a fixpoint, conformance.sh (runner.py over 241 programs),
 `carbon` binaries; `git merge-tree`; the id re-scan; prek on the plan. Not run:
 Bazel (none in the container), clang-tidy and clangd-tidy, the hosted gate
 (Actions disabled), the owner's machine and runner (R28), `--phase=lower`
-dumps of the probes (the gate's lower goldens cover them), and FO-1's declact
-pair (§0.4). The C++ change compiles under the arbiter's clang 21 with the
-repository's flags (the build log has no warning for call.cpp).
+dumps of the probes (the gate's lower goldens cover them). The C++ change
+compiles under the arbiter's clang 21 with the repository's flags (the build
+log has no warning for call.cpp). (Amended 2026-11-16, review fold: A-m4 / B6
+/ B9: FO-1's declact pair is now re-created and run (§0.4); rev 1's C1 gate
+shape with Appendix A's TODO lines was inferred from the renames-only tree and
+is now measured on tp2-fixer with the TODO lines and the pin in place (§0.3);
+rev 1's first conformance run (226/2/13) had no surviving log, the planner's
+second run having overwritten it, and the fold's re-run is kept under its own
+name (§0.6).)
 
 ## §1 Design
 
@@ -645,15 +770,23 @@ repository's flags (the build log has no warning for call.cpp).
 449-464, quoted in §0.2 and §0.8); D-TP-11's `forms_type` test, its ternary
 and its six-line comment are removed, and nothing takes their place under
 another name (R17; M1 of §0.5 is the mutant that keeps the exception renamed,
-caught by the gate's prefix rule on the eighteen renamed splits and by m17n_d).
+caught by the gate's prefix rule on the twenty-six renamed splits and the pin
+split, and by m17n_d).
 The function's text is upstream's but for `OperandDependence(context, ...)`,
 the signature the fork keeps until UA-3 (§0.7). Register row H10.8 becomes
 ALIGNED (D-TP2-6). _Break condition:_ upstream changes which operands or which
 dependence defer a call in `IsCallPerformable`, or docs/design/README.md
-:3012-3016 or p002200:205-210 change; then the row is re-read by the weekly
-check (W-355) and this plan amended. _Falsifier of the choice:_ a probe on the
-prototype that trunk rejects and the nightly accepts, or the reverse, outside
-the forms D-TP2-2 lists (none found in §0.4).
+:3012-3016 or p002200:205-209 change; then the row is re-read by the weekly
+check (W-355) and this plan amended. _Falsifier of the choice:_ a form on which
+trunk and the nightly differ outside the forms D-TP2-2 lists, W-400 included;
+such a form is a cost to record under R32, never a repair by a fork helper (R32
+(d)). (Amended 2026-11-16, review fold: A-M1: rev 1's falsifier sentence, "a
+probe on the prototype that trunk rejects and the nightly accepts, or the
+reverse, outside the forms D-TP2-2 lists (none found in §0.4)", was false:
+review A's a2_impl_self, a3_impl_iface and a8_require, an `impl forall` with a
+template binding whose self or interface is formed from it, run on trunk and
+are rejected by the prototype and the nightly (§0.4); the cost is W-400
+(D-TP2-2, D-TP2-8), pinned by `fail_todo_impl_forall_formed_self`.)
 
 **D-TP2-2, the cost of realignment is recorded, residues are filed, no fork
 mechanism is added.** With the type-forming call deferred, `Holder(T)` in a
@@ -664,7 +797,8 @@ templates_deduce_class_args.carbon). Upstream's deduce.cpp has no case for a
 splice and its "TODO: Handle more cases." names no mechanism (§0.8), so under
 R32 (d) the plan adds none: the forms are filed as W-396 (deduction through a
 class type formed from a template parameter: W-193's forms, re-opened, with
-`ded_holder` as the probe; the workaround is an explicit template argument,
+`ded_holder` as the probe, and `Core.Int(N)`, a5_core_int; the workaround is
+an explicit template argument,
 `ded_explicit`, which runs on every toolchain) and the splits and the program
 are renamed and SKIPped with W-396 in their comments. The same deferral makes a
 generic choice applied to a template parameter a splice, so refutable patterns
@@ -674,14 +808,26 @@ the nightly reports its own TODOs there). Two definition-time diagnostics now
 wait for an instantiation that their splits never make: W-398
 (`fail_deref_class_type_param` and
 `fail_class_template_literal_with_dependent_array_bound_unknown_field`, renamed
-`todo_fail_`; the nightly agrees on the first and the second). The gap row
-stays PARTIAL; its evidence cell says what is withdrawn (D.7). TP-1's D-TP-11
+`todo_fail_`; the nightly agrees on the first and the second). An `impl forall`
+with a template binding whose self (`Box(T)`, `Holder(T)`) or interface
+(`J(T)`) is formed from it is rejected, `` `impl` with unused generic binding ``
+or ``impl as non-facet type `J(T)` ``, as on the nightly, where trunk accepted
+and ran it: W-400 (amended 2026-11-16, review fold: A-M1; the probes
+a2_impl_self, a3_impl_iface and a8_require of §0.4; pinned by the split
+`fail_todo_impl_forall_formed_self` of deduce_class_args.carbon, adopted in C1
+by the orchestrator's ruling 7, R16 preferring a pin to a prose note; no fork
+helper, R32 (d)). W-396 also covers `Core.Int(N)` for a template `N` (A-m1,
+the probe a5_core_int; the int_scrutinee splits' TODO lines name it). The gap
+row stays PARTIAL; its evidence cell names the two SKIPs and the residues
+(D.7; ruling 3). TP-1's D-TP-11
 is amended, not deleted: its history stands and its ruling is superseded by
 this decision (C.1). _Break conditions:_ W-396, upstream's deduce.cpp deduces a
 binding through a template-dependent splice or the nightly runs `ded_holder`
 (then the fork follows the mechanism and the splits lose `fail_todo_`); W-397,
 upstream's `match` accepts a scrutinee whose type is a splice; W-398, upstream
-diagnoses either form at the definition. _Falsifier of the cost:_ a form the
+diagnoses either form at the definition; W-400, upstream's impl lookup deduces
+a template binding through a splice-typed self or interface, or the nightly
+runs a2_impl_self (prints 11). _Falsifier of the cost:_ a form the
 plan lists as lost that runs on the prototype (none: §0.4's tables).
 
 **D-TP2-3, W-139's convert.cpp hunk stays; the deferral narrows it.** The
@@ -710,41 +856,76 @@ structural requirements checked twice in one specific (then the hunk's
 `delayed_action_depth` test is wrong, not its existence), or upstream's
 convert.cpp defers a facet conversion of a template-dependent self (then the
 hunk follows that mechanism). _Falsifier:_ e1 rejected on a build without the
-hunk.
+hunk. (Ruled 2026-11-16, the orchestrator, R29, ruling 6: a finding that this
+keeping contradicts W-374's text is answered by the measurement, e1 and e2 run
+without the hunk; W-374's note says the hunk is kept and why (D.1) and H9.8's
+break condition is re-read accordingly (D.6). Re-measured at the fold on
+tp2-fixer: e1 and e2 rejected in `F(D)` with SC-1's three notes, m17n_d as the
+nightly's, §0.4.)
 
 **D-TP2-4, the goldens and the item's break condition.** The eleven goldens of
-§0.3 refill by autoupdate only (R16), CHECK lines only; the eighteen renamed
-splits are source edits of C1, each with a `// TODO:` line naming the residue
-(Appendix A), in the tree's `fail_todo_`/`todo_fail_` convention; no split is
-deleted and no CHECK line is hand-written.
-check/testdata/class/destroy_calls.carbon is classified TP-1's: TP-1 §1.6 names
-it as D-TP-11's refill, its change is confined to the split
-`generic_use_inside_template` and is the exact reversal of that refill (`class_type
-@C, @C(%T) [template]` back to `call_action` and `splice_inst`), with no
-diagnostic. The item's break condition, "the removal changes a golden outside
-TP-1's and SC-1's template goldens", reads by path (generic/template/,
-lower/template/, named_constraint/) or by substance (the goldens TP-1's D-TP-11
-touched); the plan takes the second reading, because the condition's purpose is
-a blast radius beyond the template forms, which a template split's reversal is
-not, and judges it NOT fired. This is the first question for the plan reviews;
-if a review takes the first reading, the item's instruction is to STOP and
-report, and this plan is that report (every golden named and classified in
-§0.3). _Break condition:_ a golden outside the eleven changes at the
-implementer's fill (then stop: the blast radius is wider than measured); a
-review rules the path reading (then the orchestrator decides whether the removal
-proceeds, with §0.3's table as the evidence).
+§0.3 refill by autoupdate only (R16), CHECK lines only; the twenty-six renamed
+splits and the pin split are source edits of C1, each with a `// TODO:` line
+naming the residue (Appendix A), in the tree's `fail_todo_`/`todo_fail_`
+convention; no split is deleted and no CHECK line is hand-written. W-374's
+break condition, "the removal changes a golden outside TP-1's and SC-1's
+template goldens (then STOP and report)", FIRED by its letter:
+check/testdata/class/destroy_calls.carbon lies outside TP-1's and SC-1's
+template golden directories by any path reading and its CHECK lines change.
+The report is §0.3's table: the file; the split `generic_use_inside_template`
+(`class C(template T: type) {}` and `fn F(template T: type)` at :89-100); the
+change, `class_type @C, @C(%T) [template]` back to `call_action` and
+`splice_inst`, every hunk after :1017 where that split's STDOUT begins; no
+diagnostic. (Ruled 2026-11-16, the orchestrator, R29, ruling 1: THE REMOVAL
+PROCEEDS. The changed split is a template split, its source uses a template
+parameter, that D-TP-11 itself refilled when TP-1 landed (TP-1 §1.6,
+"generic/template/convert.carbon and class/destroy_calls.carbon refill"), so
+it is TP-1's own golden by substance, and the condition's purpose, to catch the
+removal changing non-template behaviour, is not met by it. The condition's
+letter is amended in W-374's note (D.1) and here: a template golden is a golden
+whose changed split uses a template parameter, wherever the file lives; the
+condition stays STOP for any changed split that uses no template. This ruling
+supersedes rev 1's text, "the plan takes the second reading, because the
+condition's purpose is a blast radius beyond the template forms, which a
+template split's reversal is not, and judges it NOT fired. This is the first
+question for the plan reviews; if a review takes the first reading, the item's
+instruction is to STOP and report, and this plan is that report", which review
+B's B4 found to be the planner re-reading the spec to avoid a STOP (R17) and
+review A's A-m3 ruled sound on the substance; the ruling, not the substance
+reading, is the record, and D.1's W-374 note, D.3 and the Status paragraph
+carry the same sentence.) _Break condition of the ruling:_ a changed split with
+no template parameter, or a changed CHECK line of a non-template split in any
+refilled file (then STOP); a golden outside the eleven changes at the
+implementer's fill (then STOP: the blast radius is wider than measured).
+(amended 2026-11-16, review fold: A-m3 / B4)
 
 **D-TP2-5, the programs.** templates_deduce_class_args.carbon and
-templates_match_dependent_choice.carbon gain a `// SKIP:` directive under R10
-(the exact diagnostic, line and column, the residue id and the un-SKIP
-condition; Appendix B), their EXPECT lines unchanged so that un-SKIP is
-mechanical; the README program table is regenerated by `runner.py
---update-readme-table` (two rows `run` to `SKIP`), which the self-test
-requires. Rewriting the programs with explicit template arguments is rejected
-(§7.2: it would hide the loss the SKIP pins). Expected: PASS 226 / FAIL 0 /
-SKIP 15 over 241, 51 of 56 bullets (measured, §0.6). R16 (b)'s presumption is
-answered: the reason cites R32's realignment and the residues. _Break
-condition:_ the implementer's conformance run differs from 226/0/15 or 51/0/5.
+templates_match_dependent_choice.carbon gain one `// SKIP:` line under R10 (the
+exact diagnostic, the line and column after the insertion, the residue id and
+the un-SKIP condition, in the runner's recorded form; Appendix B), their EXPECT
+lines unchanged so that un-SKIP is mechanical; the README program table is
+regenerated by `runner.py --update-readme-table` (two rows `run` to `SKIP`),
+which the self-test requires. Rewriting the programs with explicit template
+arguments is rejected (§7.2: it would hide the loss the SKIP pins). Expected:
+PASS 226 / FAIL 0 / SKIP 15 over 241, 51 of 56 bullets (measured, §0.6, twice).
+R16 (b)'s presumption is answered: the reason cites R32's realignment and the
+residues. (Ruled 2026-11-16, the orchestrator, R29, ruling 3: each SKIP is ONE
+`// SKIP:` line in the runner's recorded form, the diagnostic text, the
+post-insertion file:line, the residue id and the un-SKIP condition, plain
+comment lines after it only if more is needed, superseding rev 1's multi-line
+blocks, whose continuation lines runner.py:263-265 never records, so the
+scoreboard and W-355's readers would have seen a reason without the diagnostic,
+the file:line or the id (B2); the two SKIPs under R10 are accepted as the cost
+of R32 (d): upstream's deferral is the design, the fork's extra deduction was a
+fork mechanism beyond upstream's text, now withdrawn with W-396 filed and owned
+by TP-1's follow-on, and the refutable-pattern family is W-397; the bar for
+TP-2's landing is 226 PASS / 0 FAIL / 15 SKIP over 241 with 51 of 56 bullets,
+stated in §5 and in Appendix F's land-time texts, and the gap row stays PARTIAL
+with its evidence cell naming the two SKIPs and the residues.) _Break
+condition:_ the implementer's conformance run differs from 226/0/15 or 51/0/5;
+of the ruling: upstream lands deduction through a dependent class type
+(deduce.cpp's TODO at :443 resolved), and the SKIPs are lifted at the next
+advance that brings it.
 
 **D-TP2-6, the register and the records.** H10.8: ALIGNED, with the quotes of
 §0.8 (call.cpp:449-450, :453 and :458; README.md:3012-3016) added to
@@ -763,18 +944,19 @@ and the UA-3 sentence (D.8). _Break condition:_ the weekly check classifies a
 row otherwise; its records rule.
 
 **D-TP2-7, the slices and the fix budget.** The plan commit; C1 (call.cpp, the
-eighteen renames with their TODO lines, the SC-1 split's stale TODO line, the
-two SKIP directives, the README table); F1 (the fill); P (the plan and page
-amendments of Appendix C); two implementation reviews; at most two fix commits
-with their fills; R; D; the PR; the landing (§3). The shrink line: the renames
-and the SKIPs may be re-cut by a fix (a split moved between `fail_todo_` and
-`todo_fail_` after the fill), the amendments may follow in a later records
-commit, but the call.cpp change never shrinks and the hunk is never removed
-"to see". _Break condition:_ a third defect needing a toolchain, golden or
-program change stops the PR at rev 2 of this plan.
+twenty-six renames with their TODO lines, the pin split, the SC-1 split's stale
+TODO line, the two SKIP directives, the README table); F1 (the fill); P (the
+plan and page amendments of Appendix C); two implementation reviews; at most two
+fix commits with their fills; R; D; the PR; the landing (§3). The shrink line:
+the renames and the SKIPs may be re-cut by a fix (a split moved between
+`fail_todo_` and `todo_fail_` after the fill), the amendments may follow in a
+later records commit, but the call.cpp change never shrinks and the hunk is
+never removed "to see". _Break condition:_ a third defect needing a toolchain,
+golden or program change stops the PR at rev 2 of this plan.
 
-**D-TP2-8, the residues W-396 to W-399.** W-396 deduction through a class type
-formed from a template parameter (probe ded_holder; break condition above).
+**D-TP2-8, the residues W-396 to W-400.** W-396 deduction through a class type
+formed from a template parameter, `Core.Int(N)` included (probes ded_holder and
+a5_core_int; break condition above).
 W-397 refutable patterns on a template-dependent choice value (probe: the
 program templates_match_dependent_choice.carbon; the match_choice splits).
 W-398 two definition-time diagnostics moved to instantiation (probes: the two
@@ -783,24 +965,34 @@ interface outside a call, its facet value unused, is never checked: e1n and e2n
 run with rc 1 and 3 on trunk and the prototype where the nightly rejects them
 at the definition (``cannot convert type `T` into type implementing `HasGet`
 ``); D-TP-12 keeps the lookup deferred and nothing forces the witness; owner
-TP-1's follow-on, not this plan's (outside W-374: not a call). Each entry has
-its evidence, removal and break condition (D.1). _Break condition:_ the id
-re-scan at D finds any of the four used elsewhere (then the next free ids are
-taken and this plan's texts re-numbered by D).
+TP-1's follow-on, not this plan's (outside W-374: not a call). W-400 an `impl
+forall` with a template binding whose self or interface is formed from it
+(`Box(T) as I`, `W as J(T)`, `Holder(T) as I` with a `require`): trunk accepts
+and runs them (11, 13, 8), the prototype rejects them, and the nightly rejects
+the two nominal ones the same way (a2_impl_self then crashes in
+sem_ir/generic.cpp:84; a8_require is structural, outside the nightly's
+grammar); not W-398's substance (a capability lost, not a diagnostic moved),
+so a residue of its own (ruling 7); pinned by
+`fail_todo_impl_forall_formed_self`; owner TP-1's follow-on; no fork helper
+(R32 (d)). (amended 2026-11-16, review fold: A-M1 / A-m1) Each entry has its
+evidence, removal and break condition (D.1). _Break condition:_ the id re-scan
+at D finds any of the five used elsewhere (then the next free ids are taken
+and this plan's texts re-numbered by D).
 
 **D-TP2-9, the PR and the landing.** One PR, base trunk, opened by the
-orchestrator after a dry review round and landed by LAND-1's D-LAND-6 under
-R33 with one landing reviewer, Appendix F's texts; the land tree is measured
-by the arbiter: gate 2047 of 2047, conformance 226/0/15 over 241, 51 of 56
-bullets. The expected scoreboard is lower than trunk's by two SKIPs, each
-explained by D-TP2-5; R33 (a)'s "not regressing against the PR's expected
-scoreboard" is read against this plan's figures. _Break condition:_ the land
-tree's figures differ (then the landing stops at D-LAND-6 step 4).
+orchestrator after a dry review round and landed by LAND-1's D-LAND-6 under R33
+with one landing reviewer, Appendix F's texts; the land tree is measured by the
+arbiter: gate 2047 of 2047, conformance 226/0/15 over 241, 51 of 56 bullets (the
+bar of D-TP2-5's ruling). The expected scoreboard is lower than trunk's by two
+SKIPs, each explained by D-TP2-5; R33 (a)'s "not regressing against the PR's
+expected scoreboard" is read against this plan's figures. _Break condition:_ the
+land tree's figures differ (then the landing stops at D-LAND-6 step 4).
 
 **D-TP2-10, the docs.** docs/design/templates.md gains two dated TP-2 notes
 (the TP-1 fork note at :228-240 that lists "deduction through a class's
 arguments" among the resolved limits, and the W-193 limit bullet at :578-582
-that says "Resolved by TP-1"), stating the withdrawal and W-396 (C.4).
+that says "Resolved by TP-1"), stating the withdrawal, W-396, W-397 and W-400
+(C.4).
 docs/design/generics/template_constraints.md:484-487 ("when a template
 converts a type that depends on its own template parameters to a template
 constraint, as `Holder(T)` does ... the structural requirements are checked in
@@ -874,9 +1066,11 @@ withdrawn (C.2, C.3).
 
 ### §2.3 Goldens (C1 the sources, F1 the fill)
 
-Eighteen `// ---` lines are renamed and each renamed split gets one `// TODO:`
-comment line after its `library "[[@TEST_NAME]]";` line, naming the residue
-(Appendix A.1 to A.3, verbatim). In
+Twenty-six `// ---` lines are renamed (52 lines) and one split is added
+(`fail_todo_impl_forall_formed_self`, A.1; 53 `// ---` lines changed in all);
+each renamed or added split gets one `// TODO:` comment after its `library
+"[[@TEST_NAME]]";` line, naming the residue (Appendix A.1 to A.3, verbatim; 27
+TODO comments over 45 lines). (amended 2026-11-16, review fold: A-M1 / B3) In
 check/testdata/named_constraint/template_constraint_dependent.carbon the split
 `fail_dependent_interface_arg_unsatisfied`'s comment line "// TODO: with
 TP-1's eager `J(T)`, the impl's `J(V)` is reported too (W-376)." is replaced
@@ -886,8 +1080,9 @@ changes; F1 refills the eleven files (CHECK lines only, §8.2's check).
 
 ### §2.4 Programs (C1)
 
-Appendix B's two `// SKIP:` blocks, inserted after each program's `//
-CONFORMANCE-BULLET:` line; EXPECT lines unchanged; fork/conformance/README.md's
+Appendix B's two one-line `// SKIP:` directives, each inserted as line 6
+after the program's `// CONFORMANCE-BULLET:` line (ruling 3; B2); EXPECT lines
+unchanged; fork/conformance/README.md's
 two rows regenerated by `python3 -I -B fork/conformance/runner.py
 --update-readme-table` (:361 and :368, `run` to `SKIP`).
 
@@ -896,15 +1091,15 @@ two rows regenerated by `python3 -I -B fork/conformance/runner.py
 Appendix C: C.1 D-TP-11's dated amendment (fork/templates/plan.md, after the
 "Round 10" paragraph at :2744, and a line in the decision index at :3455-3458);
 C.2 D-SC-19's dated amendment (fork/structural/plan.md, appended to the bullet
-at :980, and a sentence after D-SC-6's FO-1 paragraph at :446); C.3 D-FO1-2
-(4)'s dated amendment (fork/followon/fo1-plan.md, after :1091) and the
-withdrawal clause's re-read (:1150-1155 gain a dated sentence); C.4 the two
+that ends at :981 (A-m2), and a sentence after D-SC-6's FO-1 paragraph at :446);
+C.3 D-FO1-2 (4)'s dated amendment (fork/followon/fo1-plan.md, after :1091) and
+the withdrawal clause's re-read (:1150-1155 gain a dated sentence); C.4 the two
 templates.md notes. r31.py counts before and after each file.
 
 ### §2.6 Records (R and D)
 
 Appendix D, verbatim with placeholders: D.1 the ledger (W-374 DISCHARGED;
-W-139, W-193, W-376 notes; W-396 to W-399 filed); D.2 W-139's note; D.3 the
+W-139, W-193, W-376 notes; W-396 to W-400 filed); D.2 W-139's note; D.3 the
 decision-log entry "TP-2"; D.4 the dated notes in the TP-1 entry, DR-0's block
 and the two weekly entries; D.5 the UA-3 audit note; D.6 the register files
 and rows; D.7 the gap row; D.8 ORCHESTRATION.
@@ -926,16 +1121,17 @@ Records that claim the discharge go in the last commit.
     "TP-2 plan (rev 2): reviews A and B folded, <n> findings", "TP-2 plan (rev
     3): focused re-review folded, sign-off".
 2.  **C1, the deferral with every checker-visible line**: §2.1's diff, the
-    eighteen renames with their TODO lines and the SC-1 split's comment (A.1 to
-    A.3), the two SKIP directives and the README rows (§2.4). Gate on C1 alone:
-    `GATE <label>: 2036 passed, 11 failed`, exactly §0.3's eleven files, each
-    "Autoupdate would make changes", no prefix problem (the renames are in C1)
-    and no crash (measured shape, §0.3); `runner.py --self-test` green with the
-    regenerated table. Message: "TP-2 (1/3): IsCallPerformable defers every
-    template-dependent call argument, as upstream's (W-374); eighteen template
-    splits renamed for the forms the deferral loses (W-396 to W-398); two
-    programs SKIP". Its body names upstream's tip at the re-fetch and the
-    kept hunk (D-TP2-3).
+    twenty-six renames with their TODO lines, the pin split and the SC-1 split's
+    comment (A.1 to A.3), the two SKIP directives and the README rows (§2.4).
+    Gate on C1 alone: `GATE <label>: 2036 passed, 11 failed`, exactly §0.3's
+    eleven files, each "Autoupdate would make changes", no prefix problem (the
+    renames are in C1) and no crash (measured at the fold on tp2-fixer with the
+    TODO lines and the pin in place, §0.3); `runner.py --self-test` green with
+    the regenerated table. Message: "TP-2 (1/3): IsCallPerformable defers every
+    template-dependent call argument, as upstream's (W-374); twenty-six template
+    splits renamed and one added for the forms the deferral loses (W-396 to
+    W-398, W-400); two programs SKIP". Its body names upstream's tip at the
+    re-fetch and the kept hunk (D-TP2-3).
 3.  **F1, the fill**: autoupdate.sh to its fixpoint (one pass, a second that
     changes nothing); only CHECK lines change (§8.2's check empty); the eleven
     files of §0.3 and no other. Gate after: 2047 of 2047. Message: "TP-2 (2/3):
@@ -955,13 +1151,13 @@ Records that claim the discharge go in the last commit.
     check_greps.sh and check_quotes.sh), D.7's evidence cell. Message: "TP-2
     records: decision-log entry TP-2, register rows H10.8 ALIGNED and H9.8
     re-read, dated notes".
-8.  **D, the discharge**: D.1 (W-374 DISCHARGED; W-396 to W-399 filed; the
+8.  **D, the discharge**: D.1 (W-374 DISCHARGED; W-396 to W-400 filed; the
     notes), D.2, D.8, and D.3's D-time paragraphs (the §8.7 check on the tree
     at <R>, the id re-scan's `<n>` refs and `<w>` worktrees, the discharge
     line "_Discharged by this commit: W-374 (TP-2)._"); no text R or D names a
     PR number or its own sha; `json.load` of the ledger, `runner.py
     --self-test`, the model-identifier grep of the branch's diff (0), the id
-    re-scan (§8.9). Message: "TP-2 discharge: W-374 DISCHARGED; W-396 to W-399
+    re-scan (§8.9). Message: "TP-2 discharge: W-374 DISCHARGED; W-396 to W-400
     filed; gap row evidence and ORCHESTRATION".
 9.  **The focused re-review**: one fresh agent per round over the fix commits,
     R and D; dry when no BLOCKER, no MAJOR and only records-only MINORs; at
@@ -987,11 +1183,12 @@ records commit with F.3 to F.9 filled.
 | check generic/template/deduce_class_args.carbon | fail_todo_holder (was holder) | TP-1's | STDERR gains ``cannot deduce value for generic parameter `T` [DeductionIncomplete]`` at `return GetTemplate(h);` with `DeductionGenericHere` at `fn GetTemplate`; the dumped SemIR of `GetTemplate` shows `Holder(T)` as `call_action (%Holder.generic, %T)` plus `splice_inst`, not `class_type @Holder, @Holder(%T) [template]` | as predicted |
 | the same | fail_todo_holder_copy_constraint, fail_todo_holder_pointer, fail_todo_vec_value_param, fail_todo_template_class_type | TP-1's | the same error at `Get(h)`, `GetThrough(&h)`, `Size(v)`, `GetT(h)` (`N` for `Size`) | as predicted |
 | the same | todo_fail_class_template_literal_with_dependent_array_bound_unknown_field | TP-1's | STDERR empty: the literal's conversion to the splice `Arr(N)` is deferred whole (D-TP-24's rule for a template-dependent target), and `Make` is never instantiated | as predicted |
+| the same | fail_todo_impl_forall_formed_self (added at the fold, A-M1) | TP-1's | STDERR: `` `impl` with unused generic binding [ImplUnusedBinding] `` at `impl forall [template T: type] Box(T) as I`, ``warning: binding `self` unused [UnusedBinding]`` in `Val`, and ``cannot access member of interface `I` in type `Box(i32)` that does not implement that interface [MissingImplInMemberAccess]`` at `h.(I.Val)()` (predicted from the probe a2_impl_self, §0.4) | as predicted (measured at the fold on tp2-fixer) |
 | the same | the other 19 splits | TP-1's | SemIR only where a class template type is formed in a template body (`Make`'s `Arr(N)`, `D(N)`, `Box(T)`): `call_action`/`splice_inst` forms; STDERR unchanged (the `fail_` splits keep ``unable to monomorphize``) | as predicted |
 | check generic/template/index.carbon | fail_todo_index_class_with_index_with | TP-1's | ``cannot deduce value for generic parameter `T` `` at `return Get(v, 0);` | as predicted |
-| check generic/template/match_choice.carbon | fail_todo_designator_arm, fail_todo_designator_arm_exhaustive, fail_todo_value_param, fail_todo_nested_match, fail_todo_guard, fail_todo_int_scrutinee | TP-1's (X-1) | ``semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]`` at each `match (`; the SemIR dump of the function stops there | as predicted |
+| check generic/template/match_choice.carbon | fail_todo_designator_arm, fail_todo_designator_arm_exhaustive, fail_todo_value_param, fail_todo_nested_match, fail_todo_guard, fail_todo_int_scrutinee | TP-1's (X-1) | ``semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]`` at each `match (`; the SemIR dump of the function stops there (fail_todo_int_scrutinee's TODO line also names W-396: `N` is not deduced through `Core.Int(N)`, A-m1, which the body's TODO hides) | as predicted |
 | the same | fail_todo_pattern_forms | TP-1's | ``semantics TODO: `refutable pattern binding on unsupported scrutinee type` `` at the first pattern condition | as predicted |
-| the same | fail_nonexhaustive, fail_never_matches, fail_int_never_matches, fail_unknown_alternative, fail_guard_on_instantiation, fail_int_literal_out_of_range_on_instantiation, fail_payload_literal_on_instantiation, fail_payload_not_trivial_on_instantiation, fail_todo_qualified_alternative | TP-1's | each specific diagnostic replaced by the scrutinee TODO (one error) | as predicted |
+| the same | fail_todo_nonexhaustive, fail_todo_never_matches, fail_todo_int_never_matches, fail_todo_unknown_alternative, fail_todo_guard_on_instantiation, fail_todo_int_literal_out_of_range_on_instantiation, fail_todo_payload_literal_on_instantiation, fail_todo_payload_not_trivial_on_instantiation (the eight renamed from `fail_` at the fold, B3) and fail_todo_qualified_alternative | TP-1's | each specific diagnostic replaced by the scrutinee TODO (one error) | as predicted; re-measured at the fold after the renames (one `SemanticsTodo` CHECK line per split) |
 | the same | class_template_choice, fail_unknown_alternative_class_template, fail_todo_scrutinee_template_type, fail_todo_scrutinee_template_tuple, fail_todo_case_template_constant, fail_todo_scrutinee_deferred_call, fail_todo_scrutinee_dependent_member, fail_todo_pattern_form_deferred_call | TP-1's | unchanged (no call forms their scrutinee's type) | unchanged |
 | check generic/template/pointer.carbon | todo_fail_deref_class_type_param | TP-1's | STDERR empty: `*c` on a splice-typed operand is a deferred `PointerDereferenceAction` (D-TP-7) that no instantiation performs | as predicted (4 CHECK lines removed) |
 | check generic/template/convert.carbon, default_init.carbon; check class/destroy_calls.carbon (`generic_use_inside_template`); lower template/class.carbon, initialize.carbon | the template splits that form `A(T)`, `Tag(U)`, `C(T)`, `D(N)` and kin | TP-1's | SemIR only: `class_type @X, @X(%T) [template]` constants replaced by `call_action` plus `splice_inst`, `type_of_inst` and, where a value is converted to the type, `convert_to_value_action`; lower's specifics renumbered; no STDERR | as predicted; initialize.carbon's specifics are also emitted in another order (929/1061 lines) |
@@ -1007,24 +1204,36 @@ files and the gate passed 2047 after it).
 
 | Program | Baseline | Prototype before the SKIPs | Final | Why |
 | --- | --- | --- | --- | --- |
-| generics/templates_deduce_class_args.carbon | PASS (21 42 3 16 8) | COMPILE-FAIL (``cannot deduce value for generic parameter `T` `` at :62:14 and :63:14, `N` at :65:14) | SKIP (W-396) | D-TP2-2; EXPECT kept |
-| generics/templates_match_dependent_choice.carbon | PASS (0 1 41 7 5 1 0 1 0 2 1 0) | COMPILE-FAIL (``semantics TODO: `match on unsupported scrutinee type` `` at :46:9) | SKIP (W-397) | D-TP2-2; EXPECT kept |
+| generics/templates_deduce_class_args.carbon | PASS (21 42 3 16 8) | COMPILE-FAIL (``cannot deduce value for generic parameter `T` `` at :62:14 and :63:14, `N` at :65:14) | SKIP (W-396; the directive names :63:14, :64:14 and :66:14, the lines after its insertion) | D-TP2-2; EXPECT kept |
+| generics/templates_match_dependent_choice.carbon | PASS (0 1 41 7 5 1 0 1 0 2 1 0) | COMPILE-FAIL (``semantics TODO: `match on unsupported scrutinee type` `` at :46:9) | SKIP (W-397; :47:9 after the insertion) | D-TP2-2; EXPECT kept |
 | the other 239 | as the baseline | unchanged | unchanged | the deferral touches no other program's forms (the templates_dependent_* programs form no class type from a template parameter in a parameter type; templates_constraint_lookup's and structural_conformance's calls replay as before) |
 
-Expected and measured: **PASS 226 / FAIL 0 / SKIP 15 over 241; bullets 51
-PASS, 0 FAIL, 5 SKIP**. The bullet "Generics: Integrated templates" stays PASS
-(runner.py:876-900). The gap tally stays 37 / 17 / 2 / 0 (the row is PARTIAL
-before and after).
+Expected and measured (twice: the planner's tp2-planner and the fold's
+tp2-fixer): **PASS 226 / FAIL 0 / SKIP 15 over 241; bullets 51 PASS, 0 FAIL, 5
+SKIP**. This is the bar for TP-2's landing (ruled 2026-11-16, the orchestrator,
+R29, ruling 3: the two SKIPs under R10 are accepted as the cost of R32 (d),
+upstream's deferral being the design and the fork's extra deduction a fork
+mechanism beyond upstream's text, now withdrawn with W-396 filed and owned by
+TP-1's follow-on and the refutable-pattern family as W-397; Appendix F's
+land-time texts state the same figures; the gap row stays PARTIAL with its
+evidence cell naming the two SKIPs and the residues). _Break condition of the
+ruling:_ upstream lands deduction through a dependent class type (deduce.cpp's
+TODO at :443 resolved): the SKIPs are lifted at the next advance that brings
+it. The bullet "Generics: Integrated templates" stays PASS (runner.py:876-900).
+The gap tally stays 37 / 17 / 2 / 0 (the row is PARTIAL before and after).
 
 ## §6 Churn and collisions
 
 ### §6.1 Churn
 
-call.cpp: 2 insertions, 16 deletions (the function net minus 14 lines).
-Goldens: eleven files, 1419 insertions and 2356 deletions of CHECK lines, plus
-36 `// ---` lines (eighteen renames) and nineteen TODO lines. Programs: two
-blocks of eleven and ten comment lines. README.md: two rows. Plans and pages:
-C.1 to C.4. Records: D.1 to D.8.
+call.cpp: 2 insertions, 16 deletions (the function net minus 14 lines). Goldens:
+eleven files, 1567 insertions and 2427 deletions (3875 CHECK lines, measured at
+the fold with the TODO lines in place, which move the `loc` names; the planner's
+renames-only tree had 1419 and 2356), 53 `// ---` lines (twenty-six renames and
+one added split), 27 TODO comments over 45 lines, the pin's 18 source lines and
+A.3's three. Programs: two one-line `// SKIP:` directives. (amended 2026-11-16,
+review fold: B3 / B6) README.md: two rows. Plans and pages: C.1 to C.4. Records:
+D.1 to D.8.
 
 ### §6.2 Collisions and the merge rules
 
@@ -1032,9 +1241,9 @@ PR 53 (§0.7): four records files, resolved by the records rule; nothing in
 toolchain or testdata. UA-3: `IsCallPerformable` merges as upstream's own
 4286832b4 hunk once TP-2 lands (the fork's text equals upstream's but for the
 argument), and 62f1cc6a3's rename of `GenericClassType` no longer meets a fork
-use in call.cpp's function; the eighteen renamed splits and the two SKIPs are
-fork files upstream never had. A later fork change that restores any lost form
-takes the residue's break condition as its gate.
+use in call.cpp's function; the twenty-six renamed splits, the pin and the two
+SKIPs are fork files upstream never had. A later fork change that restores any
+lost form takes the residue's break condition as its gate.
 
 ## §7 Risks and rejected alternatives (falsifiable)
 
@@ -1056,9 +1265,12 @@ takes the residue's break condition as its gate.
     of the twelve window commits does). _Falsifier:_ a window commit touching
     deduce.cpp's `default:` arm or pattern_match.cpp's scrutinee test.
     Response: W-396 or W-397 follows it at UA-3.
-5.  The item's break condition read by path stops the item at review
-    (D-TP2-4). _Falsifier:_ a review ruling the path reading. Response: the
-    orchestrator's decision with §0.3's table; the plan stands as the report.
+5.  The item's break condition fired by its letter on destroy_calls.carbon and
+    the orchestrator ruled that the removal proceeds (D-TP2-4; resolved
+    2026-11-16). The risk now is the ruling's own break condition: a changed
+    split with no template parameter, or a changed CHECK line of a
+    non-template split in any refilled file. _Falsifier:_ such a line in F1's
+    diff. Response: STOP and report.
 
 ### §7.2 Rejected alternatives (each with its falsifier)
 
@@ -1101,52 +1313,111 @@ this plan was committed; the logs named above stay under /home/user/arb/logs.
 
 ### §8.1 Build (implementer)
 
-`Repository=/home/user/carbon-tp2 SHA=tp2-impl
-/home/user/arb/carbonbuild/build.sh` in the background (9 to 12 minutes; check
-`pgrep -fa 'ninja
--C|file_test|runner.py'` first and wait for another build), then `python3 -I
-/home/user/arb/carbonbuild/install.py` with the same variables. The build log
-must show no warning in call.cpp.
+In the background (9 to 12 minutes; check for another build first and wait for
+it), then the install with the same variables. Every arbiter command of this
+section sits in a guarded block (amended 2026-11-16, review fold: A-M2 / B1;
+ruling 2), so that no prek hook rewrites the arbiter's variable names (ruling 2
+names four: paths.sh's repository variable, which the Google-doc-style hook
+expands to a long word, the label, the cache home and the conformance output):
+rev 1's prose spans had been rewritten by the Google-doc-style hook to a long
+word that paths.sh ignores, so a copy of them would have built and refilled
+paths.sh's default tree (R20).
+
+<!-- google-doc-style-ignore -->
+
+```text
+pgrep -fa 'ninja -C|file_test|runner.py'
+REPO=/home/user/carbon-tp2 SHA=tp2-impl /home/user/arb/carbonbuild/build.sh
+REPO=/home/user/carbon-tp2 SHA=tp2-impl python3 -I /home/user/arb/carbonbuild/install.py
+```
+
+<!-- google-doc-style-resume -->
+
+The build log's first line echoes the variables as paths.sh received them
+(`=== build.sh <time>` followed by the repository path and the label): check it
+before the wait.
+The log must show no warning in call.cpp.
 
 ### §8.2 Autoupdate to its fixpoint
 
-`Repository=/home/user/carbon-tp2 SHA=tp2-impl
-/home/user/arb/carbonbuild/autoupdate.sh --threads 4` twice: pass 1 "11 file(s)
-changed", pass 2 "0 file(s) changed". CHECK-only check: `git diff -U0 F1^ F1 --
-toolchain | grep '^[-+]' | grep -vE
-'^[-+]{3} |^[-+]\s*// CHECK'` empty.
+Twice: pass 1 "11 file(s) changed", pass 2 "0 file(s) changed"; then the
+CHECK-only check, which must print nothing (the second command):
+
+<!-- google-doc-style-ignore -->
+
+```text
+REPO=/home/user/carbon-tp2 SHA=tp2-impl /home/user/arb/carbonbuild/autoupdate.sh --threads 4
+git diff -U0 F1^ F1 -- toolchain | grep '^[-+]' | grep -vE '^[-+]{3} |^[-+]\s*// CHECK'
+```
+
+<!-- google-doc-style-resume -->
 
 ### §8.3 Gate
 
-`gate.sh --threads 4`: on C1 alone `2036 passed, 11 failed`, the eleven
-files, no prefix problem; after F1 `[  PASSED  ] 2047 tests.`, `GATE tp2-impl:
-2047 passed, 0 failed`. The expected count is 2047 (no golden added or split).
+On C1 alone `2036 passed, 11 failed`, the eleven files, no prefix problem
+(measured at the fold with the TODO lines and the pin, §0.3); after F1
+`[  PASSED  ] 2047 tests.`, `GATE tp2-impl: 2047 passed, 0 failed`. The
+expected count is 2047 (no golden file added; the pin is a split of an existing
+one).
+
+<!-- google-doc-style-ignore -->
+
+```text
+REPO=/home/user/carbon-tp2 SHA=tp2-impl /home/user/arb/carbonbuild/gate.sh --threads 4
+```
+
+<!-- google-doc-style-resume -->
 
 ### §8.4 Conformance
 
-`Repository=/home/user/carbon-tp2 SHA=tp2-impl
-CACHE_HOME=/home/user/arb/cache-tp2-impl
-/home/user/arb/carbonbuild/conformance.sh --background`; wait for
-/home/user/arb/conformance/tp2-impl/.done with `until` loops of at most nine
-minutes; the CONFORMANCE line of §5. `python3 -I -B fork/conformance/runner.py
---self-test` green (the README table regenerated in C1).
+Twice: once before the SKIP lines go in (conformance reads the install and the
+programs, so the call.cpp change alone gives the 226/2/13 line; B9) and once
+on the final tree (the 226/0/15 line of §5), the first run's CONFORMANCE.txt
+and log copied under their own names before the second (the fold's are
+conformance-tp2-fixer-noskip.txt and .log under /home/user/arb/logs); wait for
+the marker with `until` loops of at most nine minutes; `runner.py --self-test`
+green (the README table regenerated in C1):
+
+<!-- google-doc-style-ignore -->
+
+```text
+REPO=/home/user/carbon-tp2 SHA=tp2-impl CACHE_HOME=/home/user/arb/cache-tp2-impl /home/user/arb/carbonbuild/conformance.sh --background
+until [ -f /home/user/arb/conformance/tp2-impl/.done ]; do sleep 20; done
+cp /home/user/arb/conformance/tp2-impl/CONFORMANCE.txt /home/user/arb/logs/conformance-tp2-impl-noskip.txt
+python3 -I -B fork/conformance/runner.py --self-test
+```
+
+<!-- google-doc-style-resume -->
 
 ### §8.5 The detectors of D-TP2-1 and D-TP2-3 (the reviewers re-run them)
 
-m17n_d rejected with the nightly's two notes (D-TP2-1); `fail_todo_holder` and
-the other seventeen renamed splits keep their prefixes under the gate; e1 and
-e2 rejected in `F(D)` (D-TP2-3); M1 and M2 as §0.5 if a fix touches call.cpp or
+m17n_d rejected with the nightly's two notes (D-TP2-1); `fail_todo_holder`, the
+other twenty-five renamed splits and the pin split
+`fail_todo_impl_forall_formed_self` keep their prefixes under the gate (on
+tp2-base, whose answers M1 reproduces to the letter, the pin's source runs:
+a2_impl_self prints 11, so M1 fails the pin's prefix rule too); e1 and e2
+rejected in `F(D)` (D-TP2-3); M1 and M2 as §0.5 if a fix touches call.cpp or
 convert.cpp (the implementer re-runs M2's probes on its own build; a reviewer
 builds M1 on its own label).
 
 ### §8.6 prek, R27 and R31 (every commit)
 
-`SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
-XDG_CACHE_HOME=<scratch>/xdg uvx prek run --files <paths>` to a fixpoint; the
-cache directory deleted by its literal path at the end; `python3 -I
-<scratch>/sv1-fixer5/bin/r31.py <file>` before and after each markdown edit,
-counts in the message. R27: the renamed splits are diffed against this plan's
-Appendix A spelling.
+To a fixpoint; the cache directory deleted by its literal path at the end;
+r31.py before and after each markdown edit, counts in the message. R27: the
+renamed splits are diffed against this plan's Appendix A spelling. After prek,
+the plan's commands grep clean of hook rewrites: the third command below
+prints 0 (ruling 2; its pattern is bracketed so that the check does not match
+itself; 0 at rev 2).
+
+<!-- google-doc-style-ignore -->
+
+```text
+SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest XDG_CACHE_HOME=<scratch>/xdg uvx prek run --files <paths>
+python3 -I <scratch>/sv1-fixer5/bin/r31.py <file>
+grep -c 'Reposit[o]ry=' fork/templates/tp2-plan.md
+```
+
+<!-- google-doc-style-resume -->
 
 ### §8.7 The function-equals-upstream check (at C1, at D, at L)
 
@@ -1164,7 +1435,7 @@ rows: 0 FAIL rows.
 
 ### §8.9 The id re-scan (before D)
 
-§0.9's script over every ref and worktree after a fetch; W-396 to W-399 unused
+§0.9's script over every ref and worktree after a fetch; W-396 to W-400 unused
 elsewhere; the counts written into D.3.
 
 ### §8.10 Not run, and why
@@ -1177,11 +1448,13 @@ elsewhere; the counts written into D.3.
     D-SC-19 (fork/structural/plan.md:946-980), D-FO1-2 (4) (fo1-plan.md
     :1060-1091 and :1150-1155) and this plan's §0.2 to §0.5 before C1; the hunk
     in convert.cpp is kept on purpose (D-TP2-3).
-2.  C1 is §2.1's diff plus Appendix A's source edits and Appendix B's blocks;
-    copy them verbatim (R27), then `runner.py --update-readme-table`.
+2.  C1 is §2.1's diff plus Appendix A's source edits and Appendix B's two
+    directives; copy them verbatim (R27), then `runner.py
+    --update-readme-table`.
 3.  Build in the background with a 7200000 ms timeout and poll with `until`
-    loops; a gate or conformance run may overlap another agent's, a build may
-    not.
+    loops, with §8.1's command block copied from its guarded text (the variable
+    spelled as paths.sh reads it, never the hook's long word: ruling 2, B1); a
+    gate or conformance run may overlap another agent's, a build may not.
 4.  F1 is autoupdate's output only; if pass 2 changes a file, stop (§7.1 risk
     1).
 5.  P copies Appendix C verbatim; run r31.py on each file before and after.
@@ -1190,14 +1463,58 @@ elsewhere; the counts written into D.3.
 7.  Delete the label's four directories and the XDG cache by their literal
     paths when done; keep tp2-base.
 8.  Re-create §0.4's probes from Appendix A.4 and keep their outputs in your
-    scratch for the reviewers.
+    scratch for the reviewers (the fold's are under scratchpad/tp2/fixer/out).
+9.  Run conformance once before the SKIP lines go in and keep that run's
+    CONFORMANCE.txt and log under their own names (§8.4; B9).
+
+## Review fold record (rev 2, 2026-11-16)
+
+Reviews A (APPROVE-WITH-AMENDMENTS: A-M1, A-M2, A-m1 to A-m4) and B (REJECT:
+B1 BLOCKER, B2 to B4 MAJOR, B5 to B9 MINOR) on rev 1 (9f09c347b), folded
+under the orchestrator's rulings of 2026-11-16 (R29; seven rulings, each
+quoted where it applies as "(ruled 2026-11-16, the orchestrator, R29: ...)"
+with the superseded text). Every measured finding was reproduced at the fold:
+the detached worktree /home/user/carbon-tp2-fixer (701863aa5 plus C1's exact
+shape: §2.1's diff, the twenty-six renames and their TODO lines, A.3's line,
+the pin split, the hunk kept) built by the arbiter under the label tp2-fixer
+(build 17:12 to 17:19 UTC, 428 steps, no warning; gate 2036/11 before the
+fill, autoupdate 11 files then 0, gate 2047/0 after; conformance 226/2/13
+before the SKIP lines and 226/0/15 with them, both kept under
+/home/user/arb/logs; `runner.py --self-test` OK; the probes of A.4 on tp2-base,
+tp2-fixer and the nightly, outputs under scratchpad/tp2/fixer/out); the
+worktree and the label's four directories were removed when this revision was
+committed, tp2-base kept. Nothing is rejected. Where A and B disagree the plan
+says which is right: A-m3's substance reading and B4's STOP are both replaced
+by ruling 1 (the ruling is the record); B7's labels ":308-310" and ":207-209"
+are themselves off by one against the tip's text and the plan records the
+measured lines. No finding proposed a fork helper for `Holder(T)`, so ruling
+6's rejection clause had nothing to reject; its amendment of W-374's note and
+H9.8's re-read are in D-TP2-3, D.1 and D.6.
+
+| Finding | Disposition | Where |
+| --- | --- | --- |
+| B1 (BLOCKER) and A-M2 (MAJOR): the arbiter commands rewritten by the doc-style hook | FOLDED per ruling 2: every arbiter command of §3, §8 and the hand-off is in a guarded code block; the grep check recorded in §8.6 (its pattern bracketed so that it does not match itself); 0 at rev 2 | §8.1 to §8.4, §8.6, hand-off item 3 |
+| B2 (MAJOR): multi-line SKIP blocks recorded as their first line | FOLDED per ruling 3: one `// SKIP:` line each in the runner's recorded form, post-insertion lines :63:14, :64:14, :66:14 and :47:9; the self-test's marks quoted; conformance re-run 226/0/15 | §0.6, D-TP2-5, §2.4, §5, Appendix B |
+| B3 (MAJOR): eight `fail_` splits that now pin a TODO | FOLDED per ruling 4: renamed `fail_todo_` with a W-397 TODO line each; measured (gate 2047/0; one `SemanticsTodo` CHECK line per split); every count updated | §0.3, D-TP2-7, §2.3, §4, §6.1, §8.5, A.2, D.1 (W-397) |
+| B4 (MAJOR): D-TP2-4 re-read the break condition to avoid a STOP | FOLDED per ruling 1: fired by the letter; §0.3's table the report; the ruling that the removal proceeds; the amended letter; the ruling's break condition; the substance reading dropped as the plan's justification | Status, §0.3's table, D-TP2-4, §7.1 item 5, D.1, D.3, Appendix E |
+| B5 (MINOR): nineteen prefix problems in six files | FOLDED: the planner's log re-read at the fold (19 unique problems; the nineteenth the SC-1 split that decides D-TP2-3) | §0.3 |
+| B6 (MINOR): Appendix A's TODO lines never built | FOLDED: measured at the fold (27 TODO comments over 45 lines; the C1 gate shape with them 2036/11; the `loc` names move and the numstat grows) | §0.3, §0.10, §6.1 |
+| B7 (MINOR) and A-m2 (MINOR): line labels | FOLDED: re-anchored at 7a3608bab (:263-268, :308-311, :102-108, :205-209 and :208-209; :981; :240); the re-scan's file list completed | §0.8, §0.9, §2.5, C.2, C.4, D.3 |
+| B8 (MINOR): the TP-1 entry's 2026-11-16 paragraph | FOLDED: the same "Resolved by TP-2" sentence after its "Veto-able." | D.4 |
+| B9 (MINOR): the first conformance run's evidence | FOLDED per ruling 5: re-run on tp2-fixer before the SKIP edit (226/2/13, runner exit 1), kept as conformance-tp2-fixer-noskip.txt and .log; the implementer repeats it | §0.6, §0.10, §8.4, hand-off item 9 |
+| A-M1 (MAJOR): `impl forall` with a formed self or interface is lost | FOLDED per ruling 7: the cost recorded as W-400 (the re-scan's next free id), the three probes in A.4 and §0.4's table, D-TP2-1's falsifier rewritten, the pin split `fail_todo_impl_forall_formed_self` adopted in C1 and filled at the fold | §0.4, §0.9, D-TP2-1, D-TP2-2, D-TP2-8, §4, A.1, A.4, C.1, C.4, D.1, D.3, D.6, D.7, E, F |
+| A-m1 (MINOR): `Core.Int(N)` is a W-396 form | FOLDED: W-396's title and evidence, the int_scrutinee TODO lines (check and lower) and the probe a5_core_int | §0.4, D-TP2-2, D-TP2-8, §4, A.2, A.4, D.1 |
+| A-m3 (MINOR): record the substance ruling | ANSWERED by ruling 1: the record is the orchestrator's ruling, not the substance reading; A's measurement (every hunk of the fill after :1017) is kept as evidence | D-TP2-4, §0.3 |
+| A-m4 (MINOR): FO-1's declact pair | FOLDED: re-created and run at the fold (declact prints 6; declactd `Caller(D)` with the same notes on tp2-base and tp2-fixer); sources in A.4 | §0.4, §0.10, A.4 |
 
 ## Appendix A: the goldens' source edits and the probes
 
 ### A.1 check/testdata/generic/template/deduce_class_args.carbon
 
-Six `// ---` lines change; each renamed split gets the TODO line shown after
-its `library` line. Verbatim:
+Six `// ---` lines change and one split is added (A-M1's pin, placed before the
+file's `// CHECK:STDOUT:` trailer, after `class_template_field_of_where_alias`);
+each renamed or added split gets the TODO line shown after its `library` line.
+Verbatim:
 
 <!-- google-doc-style-ignore -->
 
@@ -1228,6 +1545,28 @@ library "[[@TEST_NAME]]";
 // TODO: since TP-2 (W-374) `Arr(N)` is a deferred `call_action`, so the
 // literal's unknown field is diagnosed only on instantiation, which this
 // split never makes (fork work item W-398).
+
+// --- fail_todo_impl_forall_formed_self.carbon
+library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Box(T)` in the impl's self is a deferred
+// `call_action`, so the template binding is reported unused and the impl is
+// not found for `Box(i32)` (fork work item W-400).
+
+class Box(T: type) {
+  var item: T;
+}
+
+interface I {
+  fn Val(self) -> i32;
+}
+
+impl forall [template T: type] Box(T) as I {
+  fn Val(self) -> i32 { return 11; }
+}
+
+fn Use(h: Box(i32)) -> i32 {
+  return h.(I.Val)();
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -1238,7 +1577,9 @@ h.item; }`, `fn Use(h: Holder(i32)) -> i32 { return GetTemplate(h); }` (the
 `//@dump-sem-ir-begin` markers around `GetTemplate`); the unknown-field split
 is `class Arr(template N: i32) { var a: array(i32, N); var n: i32; }`, `fn
 Make(template N: i32) -> i32 { var c: Arr(N) = {.a = (1, 2, 3), .m = N};
-return c.n; }`.
+return c.n; }`. The pin split's source is new, the probe a2_impl_self's form in
+the golden's style; its filled CHECK lines are §0.3's (amended 2026-11-16,
+review fold: A-M1).
 
 ### A.2 index.carbon, match_choice.carbon (check and lower), pointer.carbon
 
@@ -1281,7 +1622,42 @@ library "[[@TEST_NAME]]";
 
 // --- fail_todo_int_scrutinee.carbon
 library "[[@TEST_NAME]]";
-// TODO: as fail_todo_designator_arm, for `Core.Int(N)` (W-397).
+// TODO: as fail_todo_designator_arm, for `Core.Int(N)` (W-397); `N` is
+// not deduced through `Core.Int(N)` either (W-396), which the body's TODO
+// hides.
+
+// --- fail_todo_unknown_alternative.carbon
+library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) the scrutinee TODO replaces the diagnostic this
+// split pinned (fork work item W-397).
+
+// --- fail_todo_nonexhaustive.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
+
+// --- fail_todo_never_matches.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
+
+// --- fail_todo_int_never_matches.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative, for `Core.Int(N)` (W-397).
+
+// --- fail_todo_int_literal_out_of_range_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative, for `Core.Int(N)` (W-397).
+
+// --- fail_todo_payload_literal_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
+
+// --- fail_todo_guard_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
+
+// --- fail_todo_payload_not_trivial_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
 ```
 
 ```text
@@ -1297,7 +1673,9 @@ library "[[@TEST_NAME]]";
 
 // --- fail_todo_int_scrutinee.carbon
 library "[[@TEST_NAME]]";
-// TODO: as fail_todo_designator_arm (W-397).
+// TODO: as fail_todo_designator_arm, for `Core.Int(N)` (W-397); `N` is
+// not deduced through `Core.Int(N)` either (W-396), which the body's TODO
+// hides.
 ```
 
 ```text
@@ -1310,11 +1688,15 @@ library "[[@TEST_NAME]]";
 
 <!-- google-doc-style-resume -->
 
-The three blocks are, in order, index.carbon, the check match_choice.carbon
-(seven splits), the lower match_choice.carbon (three) and pointer.carbon. In
-the check and lower match_choice.carbon the `class_template_choice` split keeps
-its name. The nine `fail_` splits of match_choice.carbon whose diagnostic
-changes keep their names (they still fail); their CHECK lines refill.
+The four blocks are, in order, index.carbon, the check match_choice.carbon
+(fifteen splits: the seven that start failing and the eight renamed from
+`fail_` to `fail_todo_` because the scrutinee TODO replaced the diagnostic each
+name promised, B3, ruling 4; `fail_todo_qualified_alternative` was already so
+named), the lower match_choice.carbon (three) and pointer.carbon. In the check
+and lower match_choice.carbon the `class_template_choice` split keeps its name.
+(Amended 2026-11-16, review fold: A-m1 / B3: rev 1's "The nine `fail_` splits
+of match_choice.carbon whose diagnostic changes keep their names (they still
+fail)" is superseded; the two int_scrutinee TODO lines name W-396 too.)
 
 ### A.3 check/testdata/named_constraint/template_constraint_dependent.carbon
 
@@ -1430,6 +1812,33 @@ fn GetExplicit(template T: type, h: Box(T)) -> T { return h.item; }
 fn Run() -> i32 { var h: Box(i32) = {.item = 42}; Core.Print(GetExplicit(i32, h)); return 0; }
 ```
 
+Review A's probes (A-M1, A-m1, A-m4; §0.4's last table; added at the fold).
+a2_impl_self and a3_impl_iface share the deduction probes' `Box`, `Vec` and
+`TBox` lines; a8_require and the declact pair share the structural prefix:
+
+```carbon
+// a2_impl_self
+interface I { fn Val(self) -> i32; }
+impl forall [template T: type] Box(T) as I { fn Val(self) -> i32 { return 11; } }
+fn Run() -> i32 { var h: Box(i32) = {.item = 1}; Core.Print(h.(I.Val)()); return 0; }
+// a3_impl_iface
+interface J(T: type) { fn Val(self) -> i32; }
+class W {}
+impl forall [template T: type] W as J(T) { fn Val(self) -> i32 { return 13; } }
+fn Run() -> i32 { var w: W = {}; Core.Print(w.(J(i32).Val)()); return 0; }
+// a5_core_int (the `import` line only)
+fn Bits[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 { return 1; }
+fn Run() -> i32 { var x: i64 = 3; Core.Print(Bits(x)); return 0; }
+// a8_require
+interface I { require impls HasGet; fn Val(self) -> i32; }
+impl forall [template T: type] Holder(T) as I { fn Val(self) -> i32 { return self.x; } }
+fn Run() -> i32 { var h: Holder(C) = {.x = 8}; Core.Print(h.(I.Val)()); return 0; }
+// declact (declactd with `d` and `return Caller(d);`)
+fn Wrap(template F: type, template T: F) -> Holder(T) { return {.x = 6}; }
+fn Caller[U: type](x: U) -> i32 { var h: Holder(U) = Wrap(type, U); return h.x; }
+fn Run() -> i32 { var c: C = {}; Core.Print(Caller(c)); return 0; }
+```
+
 <!-- google-doc-style-resume -->
 
 ## Appendix B: the programs and their EXPECTs
@@ -1441,23 +1850,17 @@ Inserted after `// CONFORMANCE-BULLET: Generics: Integrated templates`:
 <!-- google-doc-style-ignore -->
 
 ```text
-// SKIP: deduction through a class's arguments is withdrawn by TP-2 (fork work
-// item W-396; fork/templates/tp2-plan.md D-TP2-2): with `IsCallPerformable`
-// upstream's, `Holder(T)` in a parameter's type is a deferred `call_action`,
-// and this file fails to compile with ``error: cannot deduce value for generic
-// parameter `T` `` at `Core.Print(Get(h));` (:62:14) and at
-// `Core.Print(GetThrough(&h) * 2);` (:63:14) and ``error: cannot deduce value
-// for generic parameter `N` `` at `Core.Print(Size(v));` (:65:14), as on the
-// upstream nightly 2026.10.12 (verified on the container arbiter's install of
-// TP-2's prototype). Un-SKIP when W-396's break condition fires: upstream's
-// deduce.cpp deduces a template parameter through a template-dependent splice,
-// or the nightly runs this program.
+// SKIP: deduction through a class's arguments is withdrawn by TP-2 (fork work item W-396; fork/templates/tp2-plan.md D-TP2-2): with `IsCallPerformable` upstream's, `Holder(T)` in a parameter's type is a deferred `call_action`, and this file fails to compile with `error: cannot deduce value for generic parameter `T`` at `Core.Print(Get(h));` (:63:14) and at `Core.Print(GetThrough(&h) * 2);` (:64:14) and `error: cannot deduce value for generic parameter `N`` at `Core.Print(Size(v));` (:66:14), as on the upstream nightly 2026.10.12 (verified on the container arbiter's install of TP-2's prototype). Un-SKIP when W-396's break condition fires: upstream's deduce.cpp deduces a template parameter through a template-dependent splice, or the nightly runs this program.
 ```
 
 <!-- google-doc-style-resume -->
 
-The line numbers are the file's before the insertion (the diagnostics the
-runner logged); the EXPECT lines (21, 42, 3, 16, 8) and the body are unchanged.
+One line, inserted as line 6 (ruling 3; amended 2026-11-16, review fold: B2:
+rev 1's eleven-line block was recorded by runner.py:263-265 as its first line
+only and named the pre-insertion lines); the line numbers are the file's after
+the insertion (:62, :63 and :65 before it, the lines the runner logged); the
+EXPECT lines (21, 42, 3, 16, 8) and the body are unchanged. The runner records
+the whole line as the skip_reason (`runner.py --self-test`'s marks, §0.6).
 EXPECT re-derived (R16 (d)): `Get(h)` returns the item 21; `GetThrough(&h)`
 reads 21 through the pointer, doubled 42; `Size(v)` is `Vec(3)`'s `N`, 3;
 `SumArr(3, 10)` is 10 + 3 + 3, 16; `MakeArr(3)` returns `{.a = (4, 5, 6), .n =
@@ -1471,23 +1874,16 @@ Inserted the same way:
 <!-- google-doc-style-ignore -->
 
 ```text
-// SKIP: refutable patterns on a template-dependent choice value are withdrawn
-// by TP-2 (fork work item W-397; fork/templates/tp2-plan.md D-TP2-2): with
-// `IsCallPerformable` upstream's, `Opt(T)` is a deferred `call_action` and the
-// scrutinee's type is a splice, so this file fails to compile with ``error:
-// semantics TODO: `match on unsupported scrutinee type` `` at `match (s) {`
-// in `Count` (:46:9) and in every other `match` here, as trunk did before
-// TP-1's round 10 (X-1) and as the upstream nightly 2026.10.12 reports a TODO
-// (verified on the container arbiter's install of TP-2's prototype). Un-SKIP
-// when W-397's break condition fires: upstream's `match` accepts a scrutinee
-// whose type is a template-dependent splice, or the nightly runs this program.
+// SKIP: refutable patterns on a template-dependent choice value are withdrawn by TP-2 (fork work item W-397; fork/templates/tp2-plan.md D-TP2-2): with `IsCallPerformable` upstream's, `Opt(T)` is a deferred `call_action` and the scrutinee's type is a splice, so this file fails to compile with `error: semantics TODO: `match on unsupported scrutinee type`` at `match (s) {` in `Count` (:47:9) and at every other `match` here, as trunk did before TP-1's round 10 (X-1) and as the upstream nightly 2026.10.12 reports a TODO (verified on the container arbiter's install of TP-2's prototype). Un-SKIP when W-397's break condition fires: upstream's `match` accepts a scrutinee whose type is a template-dependent splice, or the nightly runs this program.
 ```
 
 <!-- google-doc-style-resume -->
 
-EXPECT (0 1 41 7 5 1 0 1 0 2 1 0) unchanged, re-derived from the program's own
-header: `Count` of a `None` 0 and of a `Some` 1; `Unwrap` 41 and the default 7;
-`Width` 5, 1, 0; `Box(i32).Fill` 1 and `Box(i64).Fill` 0; `Small` 2, 1, 0.
+One line, inserted as line 6 (the `match (s)` of `Count` is :47:9 after it,
+:46:9 before; B2). EXPECT (0 1 41 7 5 1 0 1 0 2 1 0) unchanged, re-derived from
+the program's own header: `Count` of a `None` 0 and of a `Some` 1; `Unwrap` 41
+and the default 7; `Width` 5, 1, 0; `Box(i32).Fill` 1 and `Box(i64).Fill` 0;
+`Small` 2, 1, 0.
 
 ### B.3 fork/conformance/README.md
 
@@ -1506,7 +1902,7 @@ this decision's ruling is SUPERSEDED. `IsCallPerformable` is upstream's again
 (toolchain/check/call.cpp:449-464 at 7a3608bab): a call is deferred when the
 callee or any argument is template-dependent, with no exception for a generic
 class, interface or named constraint, as docs/design/README.md:3012-3016 and
-proposal 2200 (:205-210) leave type checking of anything dependent on a
+proposal 2200 (:205-209) leave type checking of anything dependent on a
 template parameter to instantiation; the text above and its round-10 paragraph
 stand as the record of what the exception did and why. What it bought is
 withdrawn and filed: deduction of `T` from a `Holder(i32)` argument against a
@@ -1519,7 +1915,10 @@ value (round 10's X-1 forms; match_choice.carbon's splits, the program
 templates_match_dependent_choice.carbon SKIP) are W-397; the two
 definition-time diagnostics of `fail_deref_class_type_param` and
 `fail_class_template_literal_with_dependent_array_bound_unknown_field`, now
-made on instantiation only, are W-398. The deduce_class_args.carbon forms that
+made on instantiation only, are W-398; an `impl forall` with a template binding
+whose self or interface is formed from it is rejected as on the nightly, W-400
+(the split `fail_todo_impl_forall_formed_self`). The deduce_class_args.carbon
+forms that
 TP-1 measured on v13 (holder 42, holder_copy_constraint 7, template_class_type
 9, holder_pointer 5, vec_value_param 3) are then the nightly's ``cannot deduce
 value for generic parameter`` on the fork too; `class_argument_expression` and
@@ -1531,10 +1930,10 @@ definition and never checked again); TP-2's D-TP2-1 carries the new one.
 <!-- google-doc-style-resume -->
 
 In the decision index (:3455-3458) the D-TP-11 item gains: " SUPERSEDED by
-TP-2 (<date>): the call is deferred as upstream's is; W-396 to W-398 carry the
-forms (fork/templates/tp2-plan.md D-TP2-1, D-TP2-2)."
+TP-2 (<date>): the call is deferred as upstream's is; W-396 to W-398 and W-400
+carry the forms (fork/templates/tp2-plan.md D-TP2-1, D-TP2-2)."
 
-### C.2 fork/structural/plan.md: D-SC-19 (appended to the bullet at :980) and D-SC-6's FO-1 paragraph (:446)
+### C.2 fork/structural/plan.md: D-SC-19 (appended to the bullet that ends at :981) and D-SC-6's FO-1 paragraph (:446)
 
 <!-- google-doc-style-ignore -->
 
@@ -1591,7 +1990,7 @@ TP-2 amendment.)"
 ### C.4 docs/design/templates.md: two dated notes
 
 After the TP-1 fork note's paragraph that ends "which still stop the compiler
-or are compiled wrongly." (:239), a new blockquote paragraph:
+or are compiled wrongly." (:240; A-m2), a new blockquote paragraph:
 
 <!-- google-doc-style-ignore -->
 
@@ -1605,7 +2004,9 @@ or are compiled wrongly." (:239), a new blockquote paragraph:
 > nightly; passing the argument explicitly, `fn Get(template T: type, h:
 > Holder(T))` called as `Get(i32, h)`, runs. A `match` on a value whose type
 > is a generic choice applied to a template parameter reports the scrutinee
-> TODO below again (W-397).
+> TODO below again (W-397). An `impl forall` with a template binding whose
+> self or interface is formed from it (`impl forall [template T: type] Box(T)
+> as I`) is rejected, as on the nightly (W-400).
 ```
 
 <!-- google-doc-style-resume -->
@@ -1629,11 +2030,24 @@ by <F1>; fork/templates/tp2-plan.md §0.3 to §0.6"; `notes` gain, appended:
 exception removed at <C1>, m17n_d rejected on the branch's install with
 ``unable to monomorphize specific `Wrap(D)` `` and the nightly's two notes
 (TP-2 §0.4), container-measured gate 2047 of 2047 after <F1>, conformance
-226/0/15 over 241, 51/56 bullets. W-139's convert.cpp requirement is NOT
-withdrawn (D-TP2-3: the replay checks a call's argument; a conversion outside
-a call keeps the requirement). The forms the deferral loses are W-396, W-397
-and W-398; W-399 is the interface analogue of a conversion outside a call.
-Break condition of the discharge: D-TP2-1's."
+226/0/15 over 241, 51/56 bullets. The break condition "the removal changes a
+golden outside TP-1's and SC-1's template goldens (then STOP and report)"
+FIRED by its letter on toolchain/check/testdata/class/destroy_calls.carbon
+(the split `generic_use_inside_template`, D-TP-11's own refill, TP-1 §1.6;
+SemIR only, no diagnostic; the report is fork/templates/tp2-plan.md §0.3's
+table); the orchestrator ruled on 2026-11-16 (R29; TP-2 D-TP2-4) that the
+removal proceeds and amended the letter: a template golden is a golden whose
+changed split uses a template parameter, wherever the file lives, and the
+condition stays STOP for any changed split that uses no template. W-139's
+convert.cpp requirement is NOT withdrawn, contrary to this note's 'Removal'
+sentence (D-TP2-3, measured: e1 and e2, a conversion of a template-dependent
+self outside a call, run with rc 1 and 3 without the hunk; the replay checks a
+call's argument only, with `delayed_action_depth` positive, so the requirement
+is kept for a conversion outside a call and H9.8's third clause is re-read,
+TP-2 D.6). The forms the deferral loses are W-396, W-397, W-398 and W-400;
+W-399 is the interface analogue of a conversion outside a call. Break
+condition of the discharge: D-TP2-1's." (The W-374 sentences on the break
+condition and the hunk: amended 2026-11-16, review fold: B4, rulings 1 and 6.)
 
 W-139's `notes` gain: " TP-2 (<date>, fork/templates/tp2-plan.md D-TP2-3;
 W-374 discharged): the convert.cpp requirement of D-SC-19 part 4 is kept, its
@@ -1660,14 +2074,14 @@ New items, inserted after W-395 in id order (fields as W-374's):
 {
   "id": "W-396",
   "kind": "missing-feature",
-  "title": "TP-2 residue (D-TP2-2; W-193's forms re-opened): a deduced template parameter is not deduced through a class type formed from it (`Holder(T)`, `Holder(T)*`, `Vec(N)`, `TBox(T)` for `class TBox(template T: type)`), because the type-forming call is deferred and deduction has no case for a template-dependent splice",
+  "title": "TP-2 residue (D-TP2-2; W-193's forms re-opened): a deduced template parameter is not deduced through a class type formed from it (`Holder(T)`, `Holder(T)*`, `Vec(N)`, `TBox(T)` for `class TBox(template T: type)`, and `Core.Int(N)` for a template `N`), because the type-forming call is deferred and deduction has no case for a template-dependent splice",
   "subsystem": "toolchain/check (deduce.cpp, call.cpp `IsCallPerformable`)",
   "size": "M",
   "bullet": "Generics: Integrated templates",
   "evidence": [
-    "toolchain/check/testdata/generic/template/deduce_class_args.carbon: fail_todo_holder, fail_todo_holder_copy_constraint, fail_todo_holder_pointer, fail_todo_vec_value_param, fail_todo_template_class_type (<F1>); index.carbon: fail_todo_index_class_with_index_with",
+    "toolchain/check/testdata/generic/template/deduce_class_args.carbon: fail_todo_holder, fail_todo_holder_copy_constraint, fail_todo_holder_pointer, fail_todo_vec_value_param, fail_todo_template_class_type (<F1>); index.carbon: fail_todo_index_class_with_index_with; match_choice.carbon (check and lower): fail_todo_int_scrutinee, whose body's TODO hides the deduction loss through `Core.Int(N)`",
     "fork/conformance/programs/generics/templates_deduce_class_args.carbon (SKIP at <C1>)",
-    "upstream toolchain/check/deduce.cpp:443 at 7a3608bab, `// TODO: Handle more cases.`, and the `default:` arm's `deduce_through()` test (:446-456): no case reads through a `SpliceInst`; the nightly 2026.10.12 reports ``cannot deduce value for generic parameter `T` `` for the probe ded_holder (fork/templates/tp2-plan.md Appendix A.4)",
+    "upstream toolchain/check/deduce.cpp:443 at 7a3608bab, `// TODO: Handle more cases.`, and the `default:` arm's `deduce_through()` test (:446-456): no case reads through a `SpliceInst`; the nightly 2026.10.12 reports ``cannot deduce value for generic parameter `T` `` for the probe ded_holder and ``... `N` `` for a5_core_int, `fn Bits[template N: Core.IntLiteral](x: Core.Int(N))` (fork/templates/tp2-plan.md Appendix A.4)",
     "fork/templates/tp2-plan.md §0.4, D-TP2-2"
   ],
   "blocked_by": [],
@@ -1681,7 +2095,7 @@ New items, inserted after W-395 in id order (fields as W-374's):
   "size": "M",
   "bullet": "Generics: Integrated templates",
   "evidence": [
-    "toolchain/check/testdata/generic/template/match_choice.carbon: fail_todo_designator_arm, fail_todo_designator_arm_exhaustive, fail_todo_value_param, fail_todo_nested_match, fail_todo_guard, fail_todo_pattern_forms, fail_todo_int_scrutinee, and the nine `fail_` splits whose specific diagnostics became the TODO (<F1>); toolchain/lower/testdata/template/match_choice.carbon: fail_todo_designator_arm, fail_todo_let_else_payload, fail_todo_int_scrutinee",
+    "toolchain/check/testdata/generic/template/match_choice.carbon: fail_todo_designator_arm, fail_todo_designator_arm_exhaustive, fail_todo_value_param, fail_todo_nested_match, fail_todo_guard, fail_todo_pattern_forms, fail_todo_int_scrutinee, and the nine splits whose specific diagnostics became the TODO, eight of them renamed from `fail_` to `fail_todo_` (fail_todo_nonexhaustive, fail_todo_never_matches, fail_todo_int_never_matches, fail_todo_unknown_alternative, fail_todo_guard_on_instantiation, fail_todo_int_literal_out_of_range_on_instantiation, fail_todo_payload_literal_on_instantiation, fail_todo_payload_not_trivial_on_instantiation) beside fail_todo_qualified_alternative (<F1>); toolchain/lower/testdata/template/match_choice.carbon: fail_todo_designator_arm, fail_todo_let_else_payload, fail_todo_int_scrutinee",
     "fork/conformance/programs/generics/templates_match_dependent_choice.carbon (SKIP at <C1>)",
     "the nightly 2026.10.12 reports ``semantics TODO: `choice alternatives with parameters are not yet supported` `` or ``semantics TODO: `HandleMatchIntroducer` `` on the same splits; trunk before TP-1's round 10 reported the scrutinee TODO (fork/templates/plan.md §1.13 item 26)",
     "fork/templates/tp2-plan.md §0.4, D-TP2-2"
@@ -1717,6 +2131,21 @@ New items, inserted after W-395 in id order (fields as W-374's):
   ],
   "blocked_by": [],
   "notes": "Filed at TP-2's discharge (<date>); outside W-374, which is a call's argument. The deferred witness of D-TP-12 is evaluated only where a use forces it; an unused facet value forces nothing in the specific. The structural analogue is checked by W-139's convert.cpp requirement (D-SC-19 part 4, kept by TP-2's D-TP2-3). Removal: the specific forces the deferred witnesses of its facet values, or the nightly's definition-time rejection is followed (upstream's rule, R32); owner TP-1's follow-on. Break condition: e1n rejected (at the definition or in `F(D)`) on a fork build."
+},
+{
+  "id": "W-400",
+  "kind": "missing-feature",
+  "title": "TP-2 residue (D-TP2-2, D-TP2-8; found by plan review A, A-M1): an `impl forall` with a template binding whose self or interface is formed from it (`impl forall [template T: type] Box(T) as I`; `W as J(T)` for `interface J(T: type)`; `Holder(T) as I` for a structural `I { require impls HasGet; }`) is rejected with ``impl` with unused generic binding` or `impl as non-facet type `J(T)``, and the impl is not found for `Box(i32)`, because the self or interface is a deferred splice",
+  "subsystem": "toolchain/check (impl.cpp, impl_lookup.cpp, call.cpp `IsCallPerformable`)",
+  "size": "M",
+  "bullet": "Generics: Integrated templates",
+  "evidence": [
+    "toolchain/check/testdata/generic/template/deduce_class_args.carbon: fail_todo_impl_forall_formed_self (<F1>): `ImplUnusedBinding` at the impl, `MissingImplInMemberAccess` at `h.(I.Val)()`",
+    "the probes a2_impl_self, a3_impl_iface and a8_require (fork/templates/tp2-plan.md Appendix A.4, §0.4): trunk 701863aa5's install prints 11, 13 and 8; TP-2's prototype rejects all three; the nightly 2026.10.12 rejects a2 (then crashes, CHECK failure sem_ir/generic.cpp:84) and a3 (`impl as non-facet type `<splice of ...>``), and has no `template constraint` for a8",
+    "fork/templates/tp2-plan.md D-TP2-1 (its rev 1 falsifier, met), D-TP2-2, D-TP2-8"
+  ],
+  "blocked_by": [],
+  "notes": "Filed at TP-2's discharge (<date>), id reserved by its plan's rev 2 re-scan (§0.9: no W-4xx anywhere). Not a TP-2 regression against upstream: the nightly rejects the same forms; a TP-1 capability (D-TP-11's eager type forming) withdrawn under R32 because upstream's `IsCallPerformable` defers the type-forming call. Not W-398's substance (a capability lost, not a diagnostic moved to instantiation), so a residue of its own (the orchestrator's ruling 7, 2026-11-16). Workaround: a checked binding (`impl forall [T: type] Box(T) as I`) where the body needs no template semantics. Removal: upstream's mechanism when it designs one (no fork spelling, R32 (d)); owner TP-1's follow-on. Break condition: upstream's impl lookup deduces a template binding through a splice-typed self or interface, or the nightly runs a2_impl_self (prints 11); then the fork follows it and the split loses `fail_todo_`."
 }
 ```
 
@@ -1751,7 +2180,7 @@ c1e83b0b7:425-438 but for 4286832b4's `context.sem_ir()`) returns false when
 `SemIR::ConstantDependence::Template`; docs/design/README.md:3012-3016 says
 "type checking for anything dependent on the template parameter can't be
 completed until the template is instantiated with a specific concrete type";
-p002200:208-210 says "type checking of any expression dependent on a templated
+p002200:208-209 says "type checking of any expression dependent on a templated
 parameter may not be completed until its value is known". TP-1's D-TP-11 made
 an exception for a generic class, interface or named constraint, forming
 `Holder(T)` at the definition; FO-1's m17n_d showed the interface constraint
@@ -1773,10 +2202,18 @@ SC-1 split `fail_dependent_conversion_unsatisfied` succeeds), while the
 deferral alone keeps the hunk out of every call's path (the replay converts
 with `delayed_action_depth` positive); the item's "withdrawn" and H9.8's break
 condition were premised on the call case. D-TP2-4 eleven goldens refill
-CHECK-only; destroy_calls.carbon is D-TP-11's own refill (its template split
-only), so the item's break condition is judged not fired. D-TP2-5 two programs
-SKIP under R10. D-TP2-6 the records and the register. D-TP2-7 the slices and
-the fix budget of two. D-TP2-8 W-396 to W-399 filed. D-TP2-9 the PR and the
+CHECK-only; W-374's break condition fired by its letter on
+destroy_calls.carbon (its template split `generic_use_inside_template`,
+D-TP-11's own refill, SemIR only), the plan's §0.3 table is the report, and
+the orchestrator ruled on 2026-11-16 (R29) that the removal proceeds, the
+condition's letter amended to read a template golden by its changed split's
+use of a template parameter (STOP stays for a changed split with no template).
+D-TP2-5 two programs SKIP under R10, one `// SKIP:` line each in the runner's
+recorded form; the bar 226/0/15 over 241 with 51 of 56 bullets, ruled
+2026-11-16 (R29). D-TP2-6 the records and the register. D-TP2-7 the slices and
+the fix budget of two. D-TP2-8 W-396 to W-400 filed (W-400, an `impl forall`
+with a template binding whose self or interface is formed from it, found by
+plan review A). D-TP2-9 the PR and the
 landing under R33. D-TP2-10 the docs' dated notes.
 
 _V-3 check at 7a3608bab (R32 (a))._ Each statement against the tip: the
@@ -1784,7 +2221,7 @@ deferral rule, call.cpp:449-464 quoted above; the signature, action.h:93-102
 (`const SemIR::File&`); deduction, deduce.cpp:395-460 (the `SymbolicBinding`
 case, the `StructValue` TODO, "// TODO: Handle more cases." at :443, the
 `deduce_through()` default); the design, README.md:3012-3016,
-terminology.md:260-268 and :306-310, overview.md:102-107, p002200:205-210,
+terminology.md:263-268 and :308-311, overview.md:102-108, p002200:205-209,
 all quoted in the plan's §0.8; the twelve upstream commits since the cut that
 touch the function, deduce.cpp or those pages, by sha and subject (4286832b4,
 be0f11be9, 503f09037, db87a84b6, 0d3b606a5, 3af25cc1b, 7beb29f8b, 2c9739799,
@@ -1805,26 +2242,31 @@ UA-3's). W-355 carries the rows.
 
 _Measured (container, R33 (b); the plan's §0.3 to §0.6)._ Baseline tp2-base:
 gate 2047 of 2047, conformance 228/0/13 over 241. The prototype: gate 2036 of
-2047 before the fill (eleven files), 2047 of 2047 after the fill and the
-eighteen renames; conformance 226/0/15 over 241, 51 of 56 bullets; m17n_d
+2047 before the fill (eleven files), 2047 of 2047 after the fill, the
+twenty-six renames and the pin split; conformance 226/0/15 over 241, 51 of 56
+bullets; m17n_d
 rejected as on the nightly; the mutants M1 (the exception renamed: the gate's
 prefix rule and m17n_d catch it, no register check does) and M2 (the hunk
 kept: no double check, e1 and e2 rejected).
 
 _Break conditions._ D-TP2-1's: upstream changes which operands or which
-dependence defer a call, or README.md:3012-3016 or p002200:205-210 change.
+dependence defer a call, or README.md:3012-3016 or p002200:205-209 change.
 D-TP2-2's: W-396 to W-398's. D-TP2-3's: a double check in one specific, or
 upstream defers a facet conversion of a template-dependent self. D-TP2-4's: a
-golden outside the eleven changes at the fill.
+changed split with no template parameter, or a golden outside the eleven
+changes at the fill. D-TP2-5's ruling: upstream lands deduction through a
+dependent class type (deduce.cpp's TODO at :443 resolved), and the SKIPs are
+lifted at the next advance that brings it.
 
-_Residues._ W-396, W-397, W-398 (D-TP2-2), W-399 (D-TP2-8; TP-1's follow-on).
+_Residues._ W-396, W-397, W-398 (D-TP2-2), W-399 and W-400 (D-TP2-8; TP-1's
+follow-on).
 
 _The §8.7 check on the tree at <R>._ `diff` of upstream's :449-464 against the
 fork's function prints the two `context.sem_ir()` lines only; `git grep -c -w
 forms_type -- toolchain` 0; the model-identifier grep of the branch's diff 0.
 
 _The id re-scan at D._ <n> refs, <h> distinct heads and <w> worktrees after a
-fetch: W-396 to W-399 are this branch's ledger ids only; elsewhere range
+fetch: W-396 to W-400 are this branch's ledger ids only; elsewhere range
 bounds in prose; no W-4xx.
 
 _Discharged by this commit: W-374 (TP-2)._
@@ -1837,7 +2279,11 @@ _Discharged by this commit: W-374 (TP-2)._
 The TP-1 entry's register paragraph (fork/decision-log.md:6992-7003, the
 "Weekly upstream check 2026-11-09" paragraph that ends "Veto-able.") gains:
 " Resolved <date> by TP-2 (the entry "TP-2: ..." below): the exception
-removed at <C1>, H10.8 ALIGNED; W-139's requirement kept, D-TP2-3."
+removed at <C1>, H10.8 ALIGNED; W-139's requirement kept, D-TP2-3." The same
+sentence is appended to the TP-1 entry's "Weekly upstream check 2026-11-16"
+paragraph (:7005-7022, the one that ends "call, or README.md:3012-3016
+changes. Veto-able." and says "the DRIFT stands on W-374"), both paragraphs
+being living register notes (amended 2026-11-16, review fold: B8).
 
 DR-0's register block (vii) (:258-263) gains, after "(added 2026-11-09, weekly
 upstream check)": " (vii) resolved <date> by TP-2, <C1> and its fill <F1>;
@@ -1867,7 +2313,7 @@ fork/register/rg1-plan.md row H10.8 (:1017) becomes:
 <!-- google-doc-style-ignore -->
 
 ```text
-| H10.8 | (viii) D-TP-11 forms a generic class type with template-dependent arguments eagerly (SUPERSEDED <date> by TP-2: `IsCallPerformable` defers a call when the callee or any argument is template-dependent, as upstream's does) | check/call.cpp:449-450 "Determines whether a call can be performed immediately" / "non-template-dependent)."; :453 `if (OperandDependence(context.sem_ir(), callee_id) ==` and :458 `if (OperandDependence(context.sem_ir(), arg_id) ==` at 7a3608bab; README.md:3012-3016 "type checking for anything dependent on the template parameter can't be completed until the template is instantiated with a specific concrete type"; check H10.8: `git log --oneline c1e83b0b7..<tip> -- toolchain/check/call.cpp | wc -l` = 9 at 7a3608bab (the merge-rule signal: a moved count means the function or its file changed; re-read the quote rows) | ALIGNED since <date> (TP-2, fork/templates/tp2-plan.md D-TP2-1; D-RG-1: the rule is upstream's text, the fork's function equal to it but for the `Context&` signature UA-3 converts); was NONE (RG-1) then DRIFT (2026-11-09, re-read 2026-11-16) | upstream changes which operands or which dependence defer a call in `IsCallPerformable`, or README.md:3012-3016 or p002200:205-210 change; then the row is re-read | W-355 (W-374 discharged; the lost forms W-396 to W-398) |
+| H10.8 | (viii) D-TP-11 forms a generic class type with template-dependent arguments eagerly (SUPERSEDED <date> by TP-2: `IsCallPerformable` defers a call when the callee or any argument is template-dependent, as upstream's does) | check/call.cpp:449-450 "Determines whether a call can be performed immediately" / "non-template-dependent)."; :453 `if (OperandDependence(context.sem_ir(), callee_id) ==` and :458 `if (OperandDependence(context.sem_ir(), arg_id) ==` at 7a3608bab; README.md:3012-3016 "type checking for anything dependent on the template parameter can't be completed until the template is instantiated with a specific concrete type"; check H10.8: `git log --oneline c1e83b0b7..<tip> -- toolchain/check/call.cpp | wc -l` = 9 at 7a3608bab (the merge-rule signal: a moved count means the function or its file changed; re-read the quote rows) | ALIGNED since <date> (TP-2, fork/templates/tp2-plan.md D-TP2-1; D-RG-1: the rule is upstream's text, the fork's function equal to it but for the `Context&` signature UA-3 converts); was NONE (RG-1) then DRIFT (2026-11-09, re-read 2026-11-16) | upstream changes which operands or which dependence defer a call in `IsCallPerformable`, or README.md:3012-3016 or p002200:205-209 change; then the row is re-read | W-355 (W-374 discharged; the lost forms W-396 to W-398 and W-400) |
 ```
 
 <!-- google-doc-style-resume -->
@@ -1911,13 +2357,18 @@ hook would rewrite). check_quotes.sh at 7a3608bab: 0 FAIL.
 
 Status PARTIAL unchanged. In the evidence cell, after "(W-193, discharged);"
 insert "(TP-2, <date>: withdrawn again, W-396, the type-forming call being
-deferred as upstream's `IsCallPerformable` defers it; an explicit template
-argument runs;)" and after "is checked in the definition and runs (round 10 of
+deferred as upstream's `IsCallPerformable` defers it;
+templates_deduce_class_args.carbon SKIP; an explicit template argument runs;)"
+and after "is checked in the definition and runs (round 10 of
 the focused re-review of the fold; ...)" insert " (TP-2, <date>: withdrawn,
-W-397, the scrutinee's type being a deferred splice; the scrutinee TODO is
-reported again;)"; the Residue list gains ", two definition-time diagnostics
-made on instantiation only (W-398) and an unused facet value of a
-template-dependent self converted to an interface outside a call (W-399)".
+W-397, the scrutinee's type being a deferred splice;
+templates_match_dependent_choice.carbon SKIP; the scrutinee TODO is reported
+again;)"; the Residue list gains ", two definition-time diagnostics made on
+instantiation only (W-398), an `impl forall` with a template binding whose
+self or interface is formed from it (W-400) and an unused facet value of a
+template-dependent self converted to an interface outside a call (W-399)". The
+cell thus names the two SKIPs and the residues, as ruling 3 requires (amended
+2026-11-16, review fold: A-M1).
 Status does not change because the bullet's programs still pass but the two
 SKIPped, the row was PARTIAL before TP-1 resolved W-193 and after, and PARTIAL
 names the same material gaps (W-250 to W-298) that remain.
@@ -1931,20 +2382,21 @@ Dated paragraph, after the last dated paragraph: "<date> (<hh:mm> UTC): TP-2
 (W-374, fork/templates/tp2-plan.md) is IMPLEMENTED AND REVIEWED on
 claude/carbon-fork-0-1-tp2 (commits <plan revisions>, <C1>, <F1>, <P>, <fixes>,
 <R> and this one): `IsCallPerformable` is upstream's (7a3608bab call.cpp:
-449-464 but for the `Context&` signature); eleven goldens refilled, eighteen
-splits renamed, two programs SKIP (W-396, W-397); W-139's convert.cpp
-requirement kept (D-TP2-3); W-396 to W-399 filed; register H10.8 ALIGNED;
+449-464 but for the `Context&` signature); eleven goldens refilled, twenty-six
+splits renamed and one added, two programs SKIP (W-396, W-397); W-139's
+convert.cpp requirement kept (D-TP2-3); W-396 to W-400 filed; register H10.8
+ALIGNED;
 container-measured (R33 (b)): gate 2047 of 2047, conformance 226/0/15 over
 241, 51/56 bullets. Next: the PR with base trunk, LAND-1's landing, then UA-3."
 Branches row, after `claude/carbon-fork-0-1-ehc`'s: "| `claude/carbon-fork-0-1-tp2`
 | IMPLEMENTED AND REVIEWED (base trunk 701863aa5) — TP-2: `IsCallPerformable`
 follows upstream's deferral of every template-dependent call argument (W-374,
-R32); W-396 to W-399 filed; container-measured (R33 (b)): gate 2047 of 2047,
+R32); W-396 to W-400 filed; container-measured (R33 (b)): gate 2047 of 2047,
 conformance 226/0/15 over 241 |". Next actions item 6: the W-374 sentence
 ("re-classifies TP-1's register row H10.8 DRIFT on W-374 ... W-139's convert.cpp
 requirement is withdrawn when it lands.") gains "(TP-2, <date>: done on
 claude/carbon-fork-0-1-tp2, W-374 discharged; the requirement is kept,
-D-TP2-3; W-396 to W-399.)"; the UA-3 sentence "UA-3 follows W-341 and W-346
+D-TP2-3; W-396 to W-400.)"; the UA-3 sentence "UA-3 follows W-341 and W-346
 (both landed) and proceeds with PR 53 held" becomes "UA-3 follows W-341, W-346
 (both landed) and W-374 (TP-2, <state>) and proceeds with PR 53 held". The
 Scoreboard section gains "Expected after TP-2's landing: 226 PASS / 15 SKIP /
@@ -1972,10 +2424,17 @@ Cost, recorded and filed (R32; D-TP2-2): deduction of a template parameter
 through a class type formed from it (W-193's forms) is lost as it is absent on
 the nightly (W-396); refutable patterns on a template-dependent choice value
 return to the scrutinee TODO (W-397); two definition-time diagnostics move to
-instantiation (W-398). Eighteen splits renamed `fail_todo_`/`todo_fail_`, two
-programs SKIP with the residue ids. W-399 (an unused facet value of a
-template-dependent self converted outside a call) found and filed for TP-1's
+instantiation (W-398); an `impl forall` with a template binding whose self or
+interface is formed from it is rejected as on the nightly (W-400, pinned by a
+`fail_todo_` split). Twenty-six splits renamed `fail_todo_`/`todo_fail_`, one
+added, two programs SKIP with the residue ids. W-399 (an unused facet value of
+a template-dependent self converted outside a call) found and filed for TP-1's
 follow-on.
+
+Break condition: W-374's "the removal changes a golden outside TP-1's and
+SC-1's template goldens" fired by its letter on check/testdata/class/
+destroy_calls.carbon's template split (D-TP-11's own refill, SemIR only); the
+orchestrator ruled that the removal proceeds and amended the letter (D-TP2-4).
 
 Kept: W-139's convert.cpp requirement (D-SC-19 part 4). Measured, its removal
 lets a conversion outside a call run unchecked (the SC-1 split
@@ -2043,7 +2502,7 @@ forbid-llvm-googletest).
 <!-- google-doc-style-ignore -->
 
 ```text
-| `claude/carbon-fork-0-1-tp2` | LANDED as PR <N> by merge <merge sha> (<date>, LAND-1, R33; GitHub merged_at <merged_at>, merge_commit_sha <api sha>) — TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374, R32); W-374 discharged, W-396 to W-399 filed; land-time commits <land-time shas>; container-measured (R33 (b)): gate <g> of <g>, conformance <p>/<f>/<s> over <n> |
+| `claude/carbon-fork-0-1-tp2` | LANDED as PR <N> by merge <merge sha> (<date>, LAND-1, R33; GitHub merged_at <merged_at>, merge_commit_sha <api sha>) — TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374, R32); W-374 discharged, W-396 to W-400 filed; land-time commits <land-time shas>; container-measured (R33 (b)): gate <g> of <g>, conformance <p>/<f>/<s> over <n> |
 ```
 
 <!-- google-doc-style-resume -->
@@ -2079,8 +2538,8 @@ TP-2 landed on trunk (LAND-1, <date>): merged as PR <N> by <merge sha> (head
 fork/templates/tp2-plan.md §3 and Appendix F; land-time commits <land-time
 shas>; container-measured (R33 (b)): gate <g> of <g>, conformance <p> PASS,
 <f> FAIL, <s> SKIP over <n>, <b> of 56 bullets; id re-scans: <rescan>; moved to
-follow-ons: W-399 to TP-1's follow-on (Next actions item 6), W-396 to W-398 to
-the weekly check's re-reads (W-355).
+follow-ons: W-399 and W-400 to TP-1's follow-on (Next actions item 6), W-396
+to W-398 to the weekly check's re-reads (W-355).
 ```
 
 <!-- google-doc-style-resume -->
@@ -2095,7 +2554,7 @@ It goes after this plan's Status paragraph.
 _Landed (<date>, LAND-1, R33):_ merged into trunk as PR <N> by <merge sha>
 (GitHub merged_at <merged_at>); container-measured (R33 (b)): gate <g> of <g>,
 conformance <p>/<f>/<s> over <n>; id re-scans: <rescan>; moved to follow-ons:
-W-399 to TP-1's follow-on; W-396 to W-398 to W-355's re-reads.
+W-399 and W-400 to TP-1's follow-on; W-396 to W-398 to W-355's re-reads.
 ```
 
 <!-- google-doc-style-resume -->
@@ -2109,8 +2568,8 @@ The last paragraph of the TP-2 entry (D.3).
 ```text
 **Landed** on trunk <date> by merge <merge sha> (LAND-1, R33; GitHub
 merged_at <merged_at>): container-measured gate <g> of <g>, conformance
-<p>/<f>/<s> over <n>, <b>/56 bullets; moved to follow-ons: W-399 to TP-1's
-follow-on. Record: fork/ORCHESTRATION.md's paragraph dated <date> (<hh:mm>
+<p>/<f>/<s> over <n>, <b>/56 bullets; moved to follow-ons: W-399 and W-400 to
+TP-1's follow-on. Record: fork/ORCHESTRATION.md's paragraph dated <date> (<hh:mm>
 UTC).
 ```
 
@@ -2125,5 +2584,6 @@ check re-run on the merge's tree gives the answer recorded at <R>: the two
 ### F.9 The gap header's first sentence (A.8) and ORCHESTRATION's Scoreboard paragraph (A.9)
 
 As LAND-1's templates, with 37 / 17 / 2 / 0 (unchanged) and PR <N>'s figures
-(226 PASS / 0 FAIL / 15 SKIP over 241, 51/56); row 56 takes no "not of record"
-mark.
+(226 PASS / 0 FAIL / 15 SKIP over 241, 51/56): the bar of D-TP2-5's ruling
+(ruling 3), a landing that measures otherwise stopping at D-LAND-6 step 4
+(D-TP2-9); row 56 takes no "not of record" mark.

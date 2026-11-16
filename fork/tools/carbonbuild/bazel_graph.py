@@ -59,6 +59,15 @@ Generated files and how `file_bytes` reproduces them:
              carbon_cc_toolchain_config_for_install (sed) and clang builtin_headers_gen
              (copy) are interpreted; gen_digest (runs make-installation-digest) is not:
              install.py runs the built tool itself.
+    @bazel_skylib//rules: write_file.bzl, expand_template.bzl and copy_file.bzl
+             -> content computed by the modelled rule (clangd's Features.inc in
+             the overlay at LLVM c744694 is a write_file; a genrule of echo lines
+             at 6ec87e7e; libc's staging headers at c744694 are copy_files);
+             run_binary.bzl is modelled as a ctx.actions.run (libc's generated
+             headers; not in Carbon's closure); native_binary.bzl as a symlink to
+             its src; build_test.bzl records a test target with no file. Any
+             other @bazel_skylib symbol loads but raises, naming itself, when
+             called (nothing is stubbed silently).
     @llvm-project//clang:builtin_headers_gen inputs that Bazel generates with
              clang-tblgen (arm_neon.h, ...) are taken from LLVM_BUILD/lib/clang/<MAJOR>/include.
 
@@ -784,6 +793,9 @@ class Target:
             }
         elif kind == "string_dict" and value is None:
             value = {}
+        elif kind == "string_list" and value is None:
+            # attr.string_list() defaults to [] (Bazel), as label_list does above.
+            value = []
         self._attr_cache[name] = value
         return value
 
@@ -1472,7 +1484,23 @@ class Graph:
                         is_absolute=posixpath.isabs,
                     )
                 }
-            return _PermissiveModule()
+            if label.name == "write_file.bzl":
+                return {"write_file": self._skylib_write_file(label)}
+            if label.name == "run_binary.bzl":
+                return {"run_binary": self._skylib_run_binary(label)}
+            if label.name == "expand_template.bzl":
+                return {"expand_template": self._skylib_expand_template(label)}
+            if label.name == "copy_file.bzl":
+                return {"copy_file": self._skylib_copy_file(label)}
+            if label.name == "native_binary.bzl":
+                return {"native_binary": self._skylib_native_binary(label)}
+            if label.name == "build_test.bzl":
+                # A macro of a sh_test over per-target genrules upstream; the
+                # test's label is all that is ever resolved: a target, no file.
+                return {"build_test": g.native_rule("build_test")}
+            # Loading any other symbol succeeds (a module may be loaded for one
+            # of its symbols); calling it raises, naming it: no silent stub.
+            return _UnmodelledModule(g, label)
         if label.repo == "rules_python":
             return {
                 k: g.native_rule(k)
@@ -1583,6 +1611,242 @@ class Graph:
                 )
             }
         return None
+
+    # ---- bazel_skylib's file-producing rules (rules/write_file.bzl,
+    # rules/run_binary.bzl, rules/expand_template.bzl, rules/copy_file.bzl,
+    # rules/native_binary.bzl), modelled as rules so their outputs are declared
+    # in the package and analysed like any Starlark rule's (ARB-4: the overlay
+    # at LLVM c744694 declares clangd's Features.inc with write_file, libc's
+    # generated headers with run_binary and its staging headers with copy_file;
+    # the overlay at 6ec87e7e used genrules). The review fold added the last
+    # three so that no file-producing skylib rule is stubbed silently.
+
+    def _skylib_write_file(self, module_label):
+        """bazel_skylib `write_file`: `out` is written at analysis time with the
+        `content` lines joined by `newline` ("unix" or "auto" -> "\n" for the
+        fixed linux configuration; "windows" -> "\r\n"), as rules/private/
+        write_file_private.bzl's `_common_impl` does with ctx.actions.write."""
+
+        def write_file(ctx):
+            newline = "\r\n" if ctx.attr.newline == "windows" else "\n"
+            ctx.actions.write(
+                output=ctx.outputs.out,
+                content=newline.join(ctx.attr.content or []),
+                is_executable=ctx.attr.is_executable,
+            )
+            files = depset([ctx.outputs.out])
+            runfiles = ctx.runfiles(files=[ctx.outputs.out])
+            return [DefaultInfo(files=files, runfiles=runfiles)]
+
+        return RuleClass(
+            self,
+            module_label,
+            implementation=write_file,
+            attrs={
+                "out": attr.output(mandatory=True),
+                "content": attr.string_list(mandatory=False, allow_empty=True),
+                "newline": attr.string(default="auto"),
+                "is_executable": attr.bool(default=False),
+            },
+        )
+
+    def _skylib_run_binary(self, module_label):
+        """bazel_skylib `run_binary`: `outs` are produced by running `tool` with
+        `args` over `srcs` (rules/run_binary.bzl's `_run_binary_impl`,
+        ctx.actions.run). The outputs are declared so labels resolve and the
+        action is recorded; its bytes are only reproducible when the tool is a
+        python source file (Graph._run_action), which nothing in Carbon's
+        closure needs today (libc's hdrgen headers are not installed)."""
+
+        def run_binary(ctx):
+            args = [
+                ctx.expand_location(a, ctx.attr.srcs)
+                for a in (ctx.attr.args or [])
+            ]
+            ctx.actions.run(
+                outputs=ctx.outputs.outs,
+                inputs=ctx.files.srcs,
+                tools=[ctx.executable.tool],
+                executable=ctx.executable.tool,
+                arguments=args,
+                env=ctx.attr.env,
+                mnemonic=ctx.attr.mnemonic or None,
+                progress_message=ctx.attr.progress_message or None,
+            )
+            files = depset(ctx.outputs.outs)
+            return [
+                DefaultInfo(
+                    files=files, runfiles=ctx.runfiles(files=ctx.outputs.outs)
+                )
+            ]
+
+        return RuleClass(
+            self,
+            module_label,
+            implementation=run_binary,
+            attrs={
+                "tool": attr.label(
+                    executable=True,
+                    allow_files=True,
+                    mandatory=True,
+                    cfg="exec",
+                ),
+                "env": attr.string_dict(),
+                "srcs": attr.label_list(allow_files=True),
+                "outs": attr.output_list(mandatory=True),
+                "args": attr.string_list(),
+                "mnemonic": attr.string(default=""),
+                "progress_message": attr.string(default=""),
+            },
+        )
+
+    def _skylib_expand_template(self, module_label):
+        """bazel_skylib `expand_template` (rules/private/
+        expand_template_private.bzl): `out` is `template` with every key of
+        `substitutions` replaced by its value (ctx.actions.expand_template),
+        computed at analysis time like write_file's content. The real
+        implementation returns nothing, so Bazel's default DefaultInfo carries
+        the predeclared output; the model returns that explicitly."""
+
+        def expand_template(ctx):
+            ctx.actions.expand_template(
+                template=ctx.file.template,
+                output=ctx.outputs.out,
+                substitutions=ctx.attr.substitutions,
+                is_executable=ctx.attr.is_executable,
+            )
+            return [DefaultInfo(files=depset([ctx.outputs.out]))]
+
+        return RuleClass(
+            self,
+            module_label,
+            implementation=expand_template,
+            attrs={
+                "template": attr.label(mandatory=True, allow_single_file=True),
+                "substitutions": attr.string_dict(mandatory=True),
+                "out": attr.output(mandatory=True),
+                "is_executable": attr.bool(default=False, mandatory=False),
+            },
+        )
+
+    def _skylib_copy_file(self, module_label):
+        """bazel_skylib `copy_file` (rules/private/copy_file_private.bzl): the
+        macro picks the executable rule variant for `is_executable` and passes
+        `is_windows` as a select on @bazel_tools//src/conditions:host_windows
+        (False here: no @bazel_tools condition holds, Graph._condition_true);
+        the rule symlinks `src` to `out` under `allow_symlink`, else copies it
+        (copy_bash's `cp -f`, modelled as a write of the source's bytes, so
+        gen_ninja.py writes the copy like any analysis-written file)."""
+        graph = self
+
+        def copy_file_impl(ctx):
+            if ctx.attr.allow_symlink:
+                if len(ctx.files.src) != 1:
+                    raise StarlarkError(
+                        "src must be a single file when allow_symlink is True"
+                    )
+                ctx.actions.symlink(
+                    output=ctx.outputs.out,
+                    target_file=ctx.files.src[0],
+                    is_executable=ctx.attr.is_executable,
+                )
+            else:
+                ctx.actions.write(
+                    output=ctx.outputs.out,
+                    content=graph.file_bytes(ctx.file.src),
+                    is_executable=ctx.attr.is_executable,
+                )
+            files = depset([ctx.outputs.out])
+            runfiles = ctx.runfiles(files=[ctx.outputs.out])
+            if ctx.attr.is_executable:
+                return [
+                    DefaultInfo(
+                        files=files,
+                        runfiles=runfiles,
+                        executable=ctx.outputs.out,
+                    )
+                ]
+            return [DefaultInfo(files=files, runfiles=runfiles)]
+
+        attrs = {
+            "src": attr.label(mandatory=True, allow_single_file=True),
+            "out": attr.output(mandatory=True),
+            "is_windows": attr.bool(mandatory=True),
+            "is_executable": attr.bool(mandatory=True),
+            "allow_symlink": attr.bool(mandatory=True),
+        }
+        copy_rule = RuleClass(
+            self, module_label, implementation=copy_file_impl, attrs=attrs
+        )
+        copy_xrule = RuleClass(
+            self,
+            module_label,
+            implementation=copy_file_impl,
+            attrs=attrs,
+            executable=True,
+        )
+
+        def copy_file(
+            name, src, out, is_executable=False, allow_symlink=False, **kwargs
+        ):
+            rule = copy_xrule if is_executable else copy_rule
+            return rule(
+                name=name,
+                src=src,
+                out=out,
+                is_windows=Select(
+                    {
+                        "@bazel_tools//src/conditions:host_windows": True,
+                        "//conditions:default": False,
+                    }
+                ),
+                is_executable=is_executable,
+                allow_symlink=allow_symlink,
+                **kwargs,
+            )
+
+        return copy_file
+
+    def _skylib_native_binary(self, module_label):
+        """bazel_skylib `native_binary` (rules/native_binary.bzl): the macro
+        defaults `out` to `<name>.exe`; the rule declares `out` (a string
+        attribute, so select()-able: not a predeclared output and so not
+        addressable by label, as in Bazel) as a symlink to the executable
+        `src`, with `data` as runfiles."""
+
+        def native_binary_impl(ctx):
+            out = ctx.actions.declare_file(ctx.attr.out)
+            ctx.actions.symlink(
+                target_file=ctx.executable.src, output=out, is_executable=True
+            )
+            runfiles = ctx.runfiles(files=ctx.files.data)
+            return DefaultInfo(
+                executable=out, files=depset([out]), runfiles=runfiles
+            )
+
+        rule_class = RuleClass(
+            self,
+            module_label,
+            implementation=native_binary_impl,
+            attrs={
+                "src": attr.label(
+                    executable=True,
+                    allow_files=True,
+                    mandatory=True,
+                    cfg="target",
+                ),
+                "data": attr.label_list(allow_files=True),
+                "out": attr.string(mandatory=True),
+            },
+            executable=True,
+        )
+
+        def native_binary(name, src, out=None, **kwargs):
+            if not out:
+                out = name + ".exe"
+            return rule_class(name=name, src=src, out=out, **kwargs)
+
+        return native_binary
 
     # ---- glob
 
@@ -2159,8 +2423,9 @@ class Graph:
         src_files = []
         for s in srcs:
             src_files.extend(s.files.to_list())
-        # Sequences of `echo '...' >> $@|$(OUTS)` (compiler-rt outline atomics, clangd
-        # Features.inc) optionally followed by `cat $(SRCS) >> $(OUTS)`, joined by && or newlines.
+        # Sequences of `echo '...' >> $@|$(OUTS)` (compiler-rt outline atomics; clangd
+        # Features.inc in the overlay at LLVM 6ec87e7e, a write_file at c744694)
+        # optionally followed by `cat $(SRCS) >> $(OUTS)`, joined by && or newlines.
         parts = [p.strip() for p in re.split(r"&&|\n", cmd) if p.strip()]
         if parts and all(
             re.fullmatch(r"echo '([^']*)' >> (\$@|\$\(OUTS\))", p)
@@ -2398,6 +2663,51 @@ class _PermissiveModule(dict):
 
     def __getitem__(self, k):
         return Permissive(k)
+
+
+class _UnmodelledSymbol:
+    """A symbol of a @bazel_skylib module the evaluator does not model: it can
+    be loaded (and its attributes taken), but calling it raises naming the
+    module, the symbol, the package and the rule's name, so that an overlay
+    revision using a rule the evaluator lacks fails loudly instead of recording
+    nothing (ARB-4 review fold)."""
+
+    def __init__(self, graph, module_label, name):
+        self._graph = graph
+        self._module = module_label
+        self._name = name
+
+    def __call__(self, *args, **kwargs):
+        where = ""
+        if self._graph.ctx_stack:
+            where = " in //%s" % self._graph.current_package().name
+        target = kwargs.get("name")
+        if isinstance(target, str):
+            where += " (name = %r)" % target
+        raise StarlarkError(
+            "%s's %s is not modelled by bazel_graph.py; called%s"
+            % (self._module, self._name, where)
+        )
+
+    def __getattr__(self, name):
+        if name.startswith("__"):
+            raise AttributeError(name)
+        return _UnmodelledSymbol(
+            self._graph, self._module, self._name + "." + name
+        )
+
+
+class _UnmodelledModule(dict):
+    def __init__(self, graph, module_label):
+        super().__init__()
+        self._graph = graph
+        self._label = module_label
+
+    def __contains__(self, k):
+        return True
+
+    def __getitem__(self, k):
+        return _UnmodelledSymbol(self._graph, self._label, k)
 
 
 class _LoadRewriter(ast.NodeTransformer):

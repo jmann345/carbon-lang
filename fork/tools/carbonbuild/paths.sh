@@ -16,7 +16,15 @@ ARB="${ARB:-/home/user/arb}"
 REPO="${REPO:-/home/user/carbon-trunk}"
 # The commit being built; names the build and install directories.
 SHA="${SHA:-cb726a230}"
-# llvm-project at Carbon's pin (MODULE.bazel git_override for llvm-raw).
+# llvm-project at the pin the Carbon tree builds against (MODULE.bazel's
+# git_override for llvm-raw). Two pins exist in the container (ARB-4), selected
+# by LLVM_SRC, LLVM_BUILD and LLVM_OVERLAY together (README, "The LLVM build"):
+#   old pin 6ec87e7ec4b3 (trunk's tree; the defaults)
+#     LLVM_SRC=/home/user/llvm-project LLVM_BUILD=/home/user/llvm-build
+#     LLVM_OVERLAY=/home/user/arb/deps/llvm-overlay/utils/bazel/llvm-project-overlay
+#   tip pin c744694c6ae1 (upstream 7a3608bab's tree, the one UA-3 merges)
+#     LLVM_SRC=/home/user/llvm-project-c744694 LLVM_BUILD=/home/user/llvm-build-c744694
+#     LLVM_OVERLAY=/home/user/arb/deps/llvm-overlay-c744694/utils/bazel/llvm-project-overlay
 LLVM_SRC="${LLVM_SRC:-/home/user/llvm-project}"
 # CMake build of LLVM_SRC (Release; clang+lld; static libs under lib/).
 LLVM_BUILD="${LLVM_BUILD:-/home/user/llvm-build}"
@@ -29,9 +37,11 @@ INSTALL_DIR="${INSTALL_DIR:-$ARB/install/$SHA}"
 CB="${CB:-$ARB/carbonbuild}"
 
 # --- Added by author A (gen_ninja.py / build.sh); same `NAME="${NAME:-default}"` form.
-# Patched copy of LLVM's Bazel overlay (utils/bazel/llvm-project-overlay with Carbon's
-# bazel/llvm_project/000{2,4,5,6}*.patch and 0012 applied, see get_llvm_overlay.sh);
-# gen_ninja.py evaluates compiler-rt/libcxx/libcxxabi/libunwind/libc/BUILD.bazel from it.
+# Patched copy of LLVM's Bazel overlay: LLVM_SRC's utils/bazel/llvm-project-overlay
+# with the overlay-touching patches of the Carbon tree's bazel/llvm_project applied
+# (get_llvm_overlay.sh: 0002 0004 0005 0006 0012 at the old pin, 0012 0013 at the
+# tip pin); gen_ninja.py and install.py evaluate compiler-rt/libcxx/libcxxabi/
+# libunwind/libc/clang-tools-extra BUILD.bazel from it. Must be LLVM_SRC's pin.
 LLVM_OVERLAY="${LLVM_OVERLAY:-$DEPS/llvm-overlay/utils/bazel/llvm-project-overlay}"
 # C++ compiler for the Carbon sources. Carbon requires clang >= 21
 # (docs/project/contribution_tools.md); the system clang 18 rejects the sources

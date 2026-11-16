@@ -21492,6 +21492,75 @@ above, `.done` holding 0 after one 10 s wait); the two edited scripts pass `bash
 -n`, the five files prek to a fixpoint, R31 holds on the three markdown files,
 and the model-identifier grep over the fold's added lines finds 0 hits.
 
+_ARB-4 (2026-11-16): LLVM at the tip's pin._ The container holds a second
+LLVM since 2026-11-16, at c744694c6ae1d12bbf7d0447b4bc91ee94a1904c, the pin of
+upstream 7a3608bab's MODULE.bazel, which UA-3's merged tree needs (a567040d7
+uses `IRBuilder(Module&)` and `PassBuilder(LLVMContext&, ...)`, which the old
+pin lacks): `LLVM_SRC=/home/user/llvm-project-c744694` (a git worktree at that
+commit), `LLVM_BUILD=/home/user/llvm-build-c744694` (the README's CMake
+configuration, built 2026-11-16) and `LLVM_OVERLAY` =
+`/home/user/arb/deps/llvm-overlay-c744694/utils/bazel/llvm-project-overlay`
+(the overlay copied from that worktree with 7a3608bab's patches 0012 and 0013
+applied) select it together, the defaults staying the old pin 6ec87e7ec4b3
+until UA-3 lands. The first build against it (trunk 701863aa5, label
+arb4-smoke) stopped in gen_ninja.py: `bazel_graph.StarlarkError: no such target
+or file: @llvm-project//clang-tools-extra/clangd:Features.inc`, the tip's
+overlay declaring that file with bazel_skylib's `write_file` where the old one
+used a genrule of echo lines, and the evaluator stubbing every `@bazel_skylib`
+rule but the flags, `selects` and `paths`. Fixed on branch arb4-fix, cut from
+trunk 701863aa5, in the commit "ARB-4: the arbiter builds against LLVM at the
+tip pin c744694 (overlay evaluation generalized;
+LLVM_SRC/LLVM_BUILD/LLVM_OVERLAY select the pin)", touching
+fork/tools/carbonbuild/bazel_graph.py (`write_file`
+and `run_binary` modelled as rules of the evaluator with the real
+implementations' semantics, so their outputs are declared in the package and
+written at generation time like every analysis-written file; nothing
+clangd-specific), gen_ninja.py (prints the pin built against, with the
+overlay's `PATCHED` line), get_llvm_overlay.sh (the patch list read from
+`LLVM_PATCHES`, default the tree's bazel/llvm_project: the patches whose `+++
+b/` paths lie under utils/bazel/, in name order, the source patch 0001 skipped;
+the copy rooted at the parent of `LLVM_OVERLAY`; proven into a scratch `DEPS`
+identical to both running overlays but for the `PATCHED` line), paths.sh and
+README.md (the two pins and the three variables), NOTES-C.md (a dated section
+with the proofs) and this paragraph: a maintenance change of the tool, R32
+untouched, no ledger item; the running instance is re-synced from trunk after
+the landing. Measured 2026-11-16 from the worktree /home/user/carbon-tools on
+trunk 701863aa5: against the tip pin (label arb4-new) gen_ninja.py writes the
+same closure as at the old pin (207 targets, 393 objects, 2047 test files; 181
+LLVM archives against 176) and `install.py --dry-run` plans 2274 entries
+against 2243, but ninja stops at `[97/428]` in three Carbon sources written
+against the old pin, the first error
+`/home/user/carbon-trunk/toolchain/lower/function_context.h:407:17: error: only
+virtual member functions can be marked 'override'` (then compile_driver.cpp's
+`no matching constructor for initialization of 'llvm::PassBuilder'` and
+constant.cpp's deprecated `getGetElementPtr` and `IRBuilder`; a `build.sh -k
+0` continuation compiled every other unit, the LLVM tool libraries and clangd
+included, linked `bin/make-installation-digest` and left 10 `FAILED` units, all
+under toolchain/lower/ or toolchain/driver/compile_driver.cpp), the expected
+UA-3 work, not the arbiter's; against the old pin (label arb4-old, no `LLVM_*`
+override) trunk builds as before, `=== build.sh done status=0` and `GATE
+arb4-old: 2047 passed, 0 failed` (`Ran 2047 tests in 23705 ms wall time, 90035
+ms across threads`), its build.ninja differing from the landed tp2-base label's
+only in the label's paths and the generator comment's own path. The changed
+scripts pass `bash -n` and `py_compile`, the files prek to a fixpoint, R31
+holds on the three markdown files, and the model-identifier grep over the
+commit's added lines finds 0 hits; the label directories were deleted. The
+review fold (2026-11-16, commit "ARB-4: review fold", the same branch) applied
+the review's two findings: RV-M1, `attr.string_list()` defaulting to `None`
+where Bazel's default is `[]`, so a `run_binary` without `args` raised
+`TypeError` (now `[]`, next to the `string_dict` case, and the implementation
+guards an explicit `None`); RV-M2, the other bazel_skylib file-producing rules
+still stubbed silently (`expand_template`, `copy_file` and `native_binary` are
+now modelled with the real implementations' semantics, `build_test` records a
+test target, and any other `@bazel_skylib` symbol loads but raises naming
+itself when called). Re-measured from the worktree under labels arb4-fx-old
+and arb4-fx-new: both pins' build.ninja byte-identical to the pre-fold
+generator's with the same closure counts, `=== build.sh done status=0` and
+`GATE arb4-fx-old: 2047 passed, 0 failed` (`Ran 2047 tests in 35881 ms wall
+time, 136474 ms across threads`) at the old pin, the tip pin stopping at
+`[98/428]` on the same three units; py_compile, prek to a fixpoint, R31 and the
+model-identifier grep (0 hits) hold; the label directories were deleted.
+
 ### SAFE-3 stopped a second time (2026-11-16): the SAFE-4 ruling's stop condition fired at rev 15; the orchestrator's Addendum 2 (R29)
 
 Placed at the end of the log, after ARB-2's entry, because the log groups its

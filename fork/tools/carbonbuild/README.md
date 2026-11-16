@@ -10,10 +10,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 The fork is normally built and tested with Bazel on the owner's machine. This
 directory builds the Carbon toolchain and its golden-test runner from the same
-sources without Bazel, against an LLVM built from Carbon's pinned commit
-(MODULE.bazel `git_override` for `llvm-raw`,
-6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc), installs the toolchain in the
-packaged layout the nightly tarball uses, and runs the three acceptance checks:
+sources without Bazel, against an LLVM built from the commit Carbon's
+MODULE.bazel pins (`git_override` for `llvm-raw`; two pins exist since ARB-4,
+section "The LLVM build": the old pin 6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc,
+trunk's and the default, and the tip's pin
+c744694c6ae1d12bbf7d0447b4bc91ee94a1904c for UA-3's tree), installs the
+toolchain in the packaged layout the nightly tarball uses, and runs the three
+acceptance checks:
 the golden gate, autoupdate, and the execution-conformance harness. A previous
 arbiter of this shape was lost in the 2026-11-09 container reset; this one is
 re-created from the BUILD files.
@@ -185,16 +188,27 @@ exporting the variable before running a script (section "Pipeline" above):
 | `ARB` | `/home/user/arb` | everything the arbiter writes: `deps/`, `build/<sha>/`, `install/<sha>/`, `logs/`, `cache/`, `conformance/<sha>/`, and the running instance `carbonbuild/` |
 | `REPO` | `/home/user/carbon-trunk` | the Carbon checkout (a git worktree) to build; read-only for every script but autoupdate.sh |
 | `SHA` | `cb726a230` | the commit being built; names the build, install and conformance directories |
-| `LLVM_SRC` | `/home/user/llvm-project` | llvm-project at Carbon's pin 6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc |
-| `LLVM_BUILD` | `/home/user/llvm-build` | the CMake build of `LLVM_SRC` with the configuration below |
+| `LLVM_SRC` | `/home/user/llvm-project` | llvm-project at the selected pin (section "The LLVM build": the old pin 6ec87e7ec4b3 by default; `/home/user/llvm-project-c744694` for the tip's pin) |
+| `LLVM_BUILD` | `/home/user/llvm-build` | the CMake build of `LLVM_SRC` with the configuration below (`/home/user/llvm-build-c744694` for the tip's pin) |
+| `LLVM_OVERLAY` | `$DEPS/llvm-overlay/utils/bazel/llvm-project-overlay` | the patched copy of `LLVM_SRC`'s Bazel overlay that get_llvm_overlay.sh makes (`$DEPS/llvm-overlay-c744694/utils/bazel/llvm-project-overlay` for the tip's pin); the three `LLVM_*` variables select a pin together |
 
 ### The LLVM build
 
-LLVM at Carbon's pin (MODULE.bazel's `git_override` for `llvm-raw`,
-6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc) was built with CMake (generator
-Ninja, `$LLVM_SRC/llvm` into `$LLVM_BUILD`) by the system clang 18.1.3 as the
-compiler of LLVM; `ninja -j4`, 3750 steps, about 30 minutes on this container.
-The configuration:
+Two LLVM builds exist in the container since ARB-4 (2026-11-16), one per
+commit Carbon's MODULE.bazel pins (`git_override` for `llvm-raw`), and the
+three variables `LLVM_SRC`, `LLVM_BUILD` and `LLVM_OVERLAY` select one together
+(paths.sh documents both; the defaults are the old pin, trunk's, until UA-3
+lands). Every measurement landed up to ARB-4 used the old pin.
+
+| Pin | `LLVM_SRC` | `LLVM_BUILD` | `LLVM_OVERLAY` |
+| --- | --- | --- | --- |
+| old: 6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc (trunk's MODULE.bazel; the defaults) | `/home/user/llvm-project` | `/home/user/llvm-build` (built 2026-11-09; 179 archives under `lib/`, 176 of them linked) | `/home/user/arb/deps/llvm-overlay/utils/bazel/llvm-project-overlay` (trunk's patches 0002 0004 0005 0006 0012) |
+| tip: c744694c6ae1d12bbf7d0447b4bc91ee94a1904c (upstream 7a3608bab's MODULE.bazel, the tree UA-3 merges) | `/home/user/llvm-project-c744694` (a git worktree at that commit) | `/home/user/llvm-build-c744694` (built 2026-11-16; 253 archives under `lib/`, 181 of them linked) | `/home/user/arb/deps/llvm-overlay-c744694/utils/bazel/llvm-project-overlay` (7a3608bab's patches 0012 0013; its `PATCHED` file says so) |
+
+Each was built with CMake (generator Ninja, `$LLVM_SRC/llvm` into
+`$LLVM_BUILD`) by the system clang 18.1.3 as the compiler of LLVM with the
+configuration below; the old pin's build took `ninja -j4` 3750 steps, about 30
+minutes on this container. The configuration:
 
 ```
 -DCMAKE_BUILD_TYPE=Release
@@ -234,6 +248,62 @@ The configuration:
 generated headers and the tool `Opts.inc` files. The host compiler of the Carbon
 sources is the LLVM 21.1.8 release clang (get_clang.sh), and the dependencies
 are built from source at MODULE.bazel's pins (deps.sh).
+
+The overlay copy of a pin is made by `get_llvm_overlay.sh` from
+`$LLVM_SRC/utils/bazel/llvm-project-overlay` and the patches of `LLVM_PATCHES`
+(default `$REPO/bazel/llvm_project`): it applies, in name order, every patch
+whose `+++ b/` paths lie under `utils/bazel/` and skips the source patch 0001,
+so the list follows the tree (0002 0004 0005 0006 0012 at the old pin; 0012
+0013 at the tip's pin, whose overlay holds the libcxx, libcxxabi and libunwind
+filegroups and the fuzzer target itself). The patches must be those of the tree
+whose MODULE.bazel pins `LLVM_SRC`'s commit: a tree written against the old pin
+holds the old set, which does not apply to the tip's overlay, so the tip pin's
+copy is made with `LLVM_PATCHES=<a directory holding 7a3608bab's patches>`.
+Proven 2026-11-16 into a scratch `DEPS`: both copies came out identical to the
+running ones (`diff -r`) apart from the `PATCHED` line, which now also names the
+LLVM commit; a re-run prints `already patched`; and the old set against the
+tip's tree stops at 0004 (`Reversed (or previously applied) patch detected!`)
+with no `PATCHED` written.
+
+The tip's overlay declares clangd's `Features.inc` with bazel_skylib's
+`write_file` instead of a genrule of echo lines, and libc's generated headers
+with `run_binary` instead of genrules; `bazel_graph.py` models both as rules of
+the evaluator (their outputs declared in the package and analysed like any
+Starlark rule's; `write_file` writes its content at analysis time as the real
+implementation does), which is what the first build of trunk 701863aa5 against
+the tip pin had stopped on (`bazel_graph.StarlarkError: no such target or file:
+@llvm-project//clang-tools-extra/clangd:Features.inc`). `gen_ninja.py` now
+prints the pin it builds against (`gen_ninja.py: LLVM 24.0.0git: LLVM_SRC=...
+LLVM_BUILD=... LLVM_OVERLAY=... (<the PATCHED line>)`), so every build log
+says which one was used. Measured 2026-11-16 from the worktree
+/home/user/carbon-tools (branch arb4-fix) on trunk 701863aa5: against the tip
+pin (label arb4-new) gen_ninja.py writes the same closure as at the old pin
+(`targets in closure: 207 (152 Carbon cc targets, 34 external, 21 LLVM tool
+libs)`, `source files compiled: 393; generated files: 7 (4 written now, 3 ninja
+rules); objects: 393`, `file_test manifest: 2047 test files`; `LLVM archives:
+181` against 176) and `install.py --dry-run` plans `2274 entries: 2104 copy,
+132 gen, 2 pending, 36 symlink` against `2243 entries: 2074 copy, 133 gen, 36
+symlink` at the old pin (the tip's libc++ ships 30 more headers and sources,
+`__pstl/backends/statpart/`, `src/debugging/` and others, one libc internal
+header and one clang builtin header more, and libcxxabi's `src/vendor/**` is
+excluded upstream), but ninja stops at step 97 of 428 in three Carbon sources
+written against the old pin, the first error being
+`/home/user/carbon-trunk/toolchain/lower/function_context.h:407:17: error: only
+virtual member functions can be marked 'override'` (then
+`toolchain/driver/compile_driver.cpp:271:21: error: no matching constructor for
+initialization of 'llvm::PassBuilder'`, and the deprecated `getGetElementPtr`
+and `IRBuilder(LLVMContext&)` in toolchain/lower/constant.cpp under
+`-Werror,-Wdeprecated-declarations`); a `build.sh -k 0` continuation compiled
+every other unit, the 21 LLVM tool libraries and clangd against the tip's tree
+included, linked `bin/make-installation-digest` and left 10 `FAILED` units in
+all, every one under toolchain/lower/ or toolchain/driver/compile_driver.cpp:
+UA-3's merge adapts the sources, not the arbiter. Against the old pin (label
+arb4-old, no `LLVM_*` override) trunk
+builds as before: `=== build.sh done status=0`, `GATE arb4-old: 2047 passed, 0
+failed` (`Ran 2047 tests in 23705 ms wall time, 90035 ms across threads`), and
+its build.ninja differs from the landed tp2-base label's only in the label's
+paths and in the generator comment's own path (the worktree's gen_ninja.py
+against the running instance's).
 
 ### Acceptance on the fix sha
 
@@ -299,9 +369,10 @@ rules' own: `toolchain/install/BUILD` for the targets, prefixes and renames,
 `toolchain/base/llvm_tools.bzl`), `core/BUILD`'s globs,
 `toolchain/runtimes/BUILD`'s `configure_cmake_file` defines,
 `bazel/cc_toolchains/BUILD`'s `installed_cc_toolchain_starlark`, and the LLVM
-overlay (`$LLVM_OVERLAY`, utils/bazel/llvm-project-overlay with Carbon's
-`bazel/llvm_project/*.patch` applied, which add the libcxx/libcxxabi/libunwind
-source filegroups) for the runtimes and clang headers. The manifests are
+overlay (`$LLVM_OVERLAY`, utils/bazel/llvm-project-overlay with the
+overlay-touching patches of Carbon's `bazel/llvm_project` applied, which at the
+old pin add the libcxx/libcxxabi/libunwind source filegroups the tip's overlay
+holds itself) for the runtimes and clang headers. The manifests are
 `bazel/manifest/defs.bzl`'s `manifest(strip_package_dir = True)`: one
 package-relative path per line.
 
@@ -524,7 +595,7 @@ and in the .nohup file.
 | `runfiles.py` | the runfiles tree and its verification; writes `$BUILD_DIR/file_test_manifest.txt` |
 | `gate.sh`, `autoupdate.sh`, `conformance.sh` | the three checks |
 | `deps.sh`, `absl_link_order.py`, `deps_smoke/` | the third-party dependencies and their smoke programs (NOTES-B.md) |
-| `get_clang.sh`, `get_llvm_overlay.sh`, `bazel_graph.py`, `gen_ninja.py`, `build.sh`, `env.sh` | the compiler, the patched LLVM overlay, the Bazel graph evaluator, the ninja file and the build (NOTES-A.md); `build.sh [all | file_test | carbon-busybox | make-installation-digest | bin/<name>]` |
+| `get_clang.sh`, `get_llvm_overlay.sh`, `bazel_graph.py`, `gen_ninja.py`, `build.sh`, `env.sh` | the compiler, the patched LLVM overlay (the patch list read from `LLVM_PATCHES`, default the tree's bazel/llvm_project; section "The LLVM build"), the Bazel graph evaluator, the ninja file and the build (NOTES-A.md); `build.sh [all | file_test | carbon-busybox | make-installation-digest | bin/<name>]` |
 | `src-patches/*.diff` | source patches `gen_ninja.py` compiles into copies of REPO files (section above) |
 | `NOTES-A.md`, `NOTES-B.md`, `NOTES-C.md` | each author's record: what was done, verified, left unverified, and every decision with its reason; each ends with "Fold after review 1" naming the REVIEW-1 findings applied or rejected |
 | `REVIEW-1.md` | the adversarial review of the scaffold (verdict FIX; 1 blocker, 1 major, 5 minor) |

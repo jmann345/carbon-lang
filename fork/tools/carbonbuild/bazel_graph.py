@@ -59,6 +59,10 @@ Generated files and how `file_bytes` reproduces them:
              carbon_cc_toolchain_config_for_install (sed) and clang builtin_headers_gen
              (copy) are interpreted; gen_digest (runs make-installation-digest) is not:
              install.py runs the built tool itself.
+    @bazel_skylib//rules:write_file.bzl -> content computed by the modelled rule
+             (clangd's Features.inc in the overlay at LLVM c744694; a genrule of
+             echo lines at 6ec87e7e); run_binary.bzl is modelled as a ctx.actions.run
+             (libc's generated headers; not in Carbon's closure).
     @llvm-project//clang:builtin_headers_gen inputs that Bazel generates with
              clang-tblgen (arm_neon.h, ...) are taken from LLVM_BUILD/lib/clang/<MAJOR>/include.
 
@@ -1472,6 +1476,10 @@ class Graph:
                         is_absolute=posixpath.isabs,
                     )
                 }
+            if label.name == "write_file.bzl":
+                return {"write_file": self._skylib_write_file(label)}
+            if label.name == "run_binary.bzl":
+                return {"run_binary": self._skylib_run_binary(label)}
             return _PermissiveModule()
         if label.repo == "rules_python":
             return {
@@ -1583,6 +1591,90 @@ class Graph:
                 )
             }
         return None
+
+    # ---- bazel_skylib's file-producing rules (rules/write_file.bzl,
+    # rules/run_binary.bzl), modelled as rules so their outputs are declared in
+    # the package and analysed like any Starlark rule's (ARB-4: the overlay at
+    # LLVM c744694 declares clangd's Features.inc with write_file and libc's
+    # generated headers with run_binary; the overlay at 6ec87e7e used genrules).
+
+    def _skylib_write_file(self, module_label):
+        """bazel_skylib `write_file`: `out` is written at analysis time with the
+        `content` lines joined by `newline` ("unix" or "auto" -> "\n" for the
+        fixed linux configuration; "windows" -> "\r\n"), as rules/private/
+        write_file_private.bzl's `_common_impl` does with ctx.actions.write."""
+
+        def write_file(ctx):
+            newline = "\r\n" if ctx.attr.newline == "windows" else "\n"
+            ctx.actions.write(
+                output=ctx.outputs.out,
+                content=newline.join(ctx.attr.content or []),
+                is_executable=ctx.attr.is_executable,
+            )
+            files = depset([ctx.outputs.out])
+            runfiles = ctx.runfiles(files=[ctx.outputs.out])
+            return [DefaultInfo(files=files, runfiles=runfiles)]
+
+        return RuleClass(
+            self,
+            module_label,
+            implementation=write_file,
+            attrs={
+                "out": attr.output(mandatory=True),
+                "content": attr.string_list(mandatory=False, allow_empty=True),
+                "newline": attr.string(default="auto"),
+                "is_executable": attr.bool(default=False),
+            },
+        )
+
+    def _skylib_run_binary(self, module_label):
+        """bazel_skylib `run_binary`: `outs` are produced by running `tool` with
+        `args` over `srcs` (rules/run_binary.bzl's `_run_binary_impl`,
+        ctx.actions.run). The outputs are declared so labels resolve and the
+        action is recorded; its bytes are only reproducible when the tool is a
+        python source file (Graph._run_action), which nothing in Carbon's
+        closure needs today (libc's hdrgen headers are not installed)."""
+
+        def run_binary(ctx):
+            args = [
+                ctx.expand_location(a, ctx.attr.srcs) for a in ctx.attr.args
+            ]
+            ctx.actions.run(
+                outputs=ctx.outputs.outs,
+                inputs=ctx.files.srcs,
+                tools=[ctx.executable.tool],
+                executable=ctx.executable.tool,
+                arguments=args,
+                env=ctx.attr.env,
+                mnemonic=ctx.attr.mnemonic or None,
+                progress_message=ctx.attr.progress_message or None,
+            )
+            files = depset(ctx.outputs.outs)
+            return [
+                DefaultInfo(
+                    files=files, runfiles=ctx.runfiles(files=ctx.outputs.outs)
+                )
+            ]
+
+        return RuleClass(
+            self,
+            module_label,
+            implementation=run_binary,
+            attrs={
+                "tool": attr.label(
+                    executable=True,
+                    allow_files=True,
+                    mandatory=True,
+                    cfg="exec",
+                ),
+                "env": attr.string_dict(),
+                "srcs": attr.label_list(allow_files=True),
+                "outs": attr.output_list(mandatory=True),
+                "args": attr.string_list(),
+                "mnemonic": attr.string(default=""),
+                "progress_message": attr.string(default=""),
+            },
+        )
 
     # ---- glob
 
@@ -2159,8 +2251,9 @@ class Graph:
         src_files = []
         for s in srcs:
             src_files.extend(s.files.to_list())
-        # Sequences of `echo '...' >> $@|$(OUTS)` (compiler-rt outline atomics, clangd
-        # Features.inc) optionally followed by `cat $(SRCS) >> $(OUTS)`, joined by && or newlines.
+        # Sequences of `echo '...' >> $@|$(OUTS)` (compiler-rt outline atomics; clangd
+        # Features.inc in the overlay at LLVM 6ec87e7e, a write_file at c744694)
+        # optionally followed by `cat $(SRCS) >> $(OUTS)`, joined by && or newlines.
         parts = [p.strip() for p in re.split(r"&&|\n", cmd) if p.strip()]
         if parts and all(
             re.fullmatch(r"echo '([^']*)' >> (\$@|\$\(OUTS\))", p)

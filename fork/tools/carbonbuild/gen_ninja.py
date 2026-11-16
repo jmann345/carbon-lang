@@ -24,7 +24,9 @@ writes:
 
 Usage: python3 gen_ninja.py [--verbose]   (reads paths.sh and $DEPS/deps.env)
 Prints the counts: targets in the closure, source files, generated files, objects,
-the number of test files in the file_test manifest and the source patches applied.
+the number of test files in the file_test manifest and the source patches applied,
+and the LLVM pin built against (LLVM_SRC, LLVM_BUILD, LLVM_OVERLAY and the
+overlay's PATCHED line; paths.sh documents the two pins).
 """
 
 __copyright__ = """
@@ -1020,6 +1022,29 @@ class Gen:
         print(
             "gen_ninja.py: mode %s; wrote %s"
             % (self.mode, os.path.join(self.build_dir, "build.ninja"))
+        )
+        # The LLVM pin (ARB-4: two pins exist; the three variables select one).
+        overlay_root = re.sub(
+            r"/utils/bazel/llvm-project-overlay/?$", "", self.P["LLVM_OVERLAY"]
+        )
+        try:
+            with open(os.path.join(overlay_root, "PATCHED")) as f:
+                patched = f.read().strip()
+        except OSError:
+            patched = "no PATCHED file"
+        v = g.llvm_version
+        print(
+            "gen_ninja.py: LLVM %d.%d.%d%s: LLVM_SRC=%s LLVM_BUILD=%s LLVM_OVERLAY=%s (%s)"
+            % (
+                v["MAJOR"],
+                v["MINOR"],
+                v["PATCH"],
+                v["SUFFIX"],
+                self.llvm_src,
+                self.llvm_build,
+                self.P["LLVM_OVERLAY"],
+                patched,
+            )
         )
         print(
             "gen_ninja.py: targets in closure: %d (%d Carbon cc targets, %d external, %d LLVM tool libs)"

@@ -343,4 +343,93 @@ missing busybox left a waiter on `.done` hanging (the check now precedes the
 launch, as the runner's already did). README section "Reporting fixes" holds the
 fold's proofs.
 
+## ARB-4 (2026-11-16): LLVM at the tip's pin
+
+The container holds a second LLVM since 2026-11-16, at c744694c6ae1 (the pin of
+upstream 7a3608bab's MODULE.bazel, which UA-3's merged tree needs:
+`IRBuilder(Module&)`, `PassBuilder(LLVMContext&, ...)`), beside the old pin
+6ec87e7ec4b3 that every landed measurement used:
+`LLVM_SRC=/home/user/llvm-project-c744694`,
+`LLVM_BUILD=/home/user/llvm-build-c744694` and `LLVM_OVERLAY` =
+`/home/user/arb/deps/llvm-overlay-c744694/utils/bazel/llvm-project-overlay`
+(README section "The LLVM build" has the table; paths.sh's defaults stay the old
+pin until UA-3 lands). The orchestrator's first build against it (label
+arb4-smoke) stopped in gen_ninja.py with `bazel_graph.StarlarkError: no such
+target or file: @llvm-project//clang-tools-extra/clangd:Features.inc`: the
+tip's overlay declares that file with bazel_skylib's `write_file` (the old one
+with a genrule of echo lines, which `Graph._genrule_bytes` interprets), and the
+evaluator stubbed every `@bazel_skylib` rule but the flags, `selects` and
+`paths`, so the call recorded no target and no output. ARB-4 models
+`write_file` and `run_binary` (the tip's libc declares its generated headers
+with it) as rules of the evaluator with the real implementations' semantics
+against the fake ctx (`ctx.actions.write` of the content lines joined by the
+`newline` attribute; `ctx.actions.run` of the tool over the sources), so the
+outputs are declared in their package, resolve as labels and are written at
+generation time like every other analysis-written file; nothing clangd-specific
+was added, and the old pin's genrule path is untouched. install.py's
+bzl_eval.py needed no change: its `libc_generated_header` override already
+replaces the macro that now calls `run_binary`, and the tip's overlay evaluates
+with no warning. gen_ninja.py prints the pin it builds against (`gen_ninja.py:
+LLVM 24.0.0git: LLVM_SRC=... LLVM_BUILD=... LLVM_OVERLAY=... (<the PATCHED
+line>)`).
+
+get_llvm_overlay.sh no longer hardcodes the patch list: it reads `LLVM_PATCHES`
+(default `$REPO/bazel/llvm_project`), applies in name order the patches whose
+`+++ b/` paths all lie under `utils/bazel/`, skips the ones touching only
+sources (0001) and stops on a patch touching both or on a directory without an
+overlay patch; the copy's root is the parent of `LLVM_OVERLAY`
+(`<root>/utils/bazel/llvm-project-overlay`), a root holding `PATCHED` is left
+alone (so build.sh's call is a no-op for both pins), and a root without it must
+be removed by hand. Proof (2026-11-16, into a scratch `DEPS`): with trunk's
+patches it wrote `patches: 0002 0004 0005 0006 0012 from
+/home/user/carbon-trunk/bazel/llvm_project (source patches skipped: 0001);
+overlay from llvm-project 6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc at
+/home/user/llvm-project` and `diff -r` against /home/user/arb/deps/llvm-overlay
+differs in that `PATCHED` line alone; with 7a3608bab's three patches as
+`LLVM_PATCHES` and the tip's `LLVM_SRC`, `patches: 0012 0013 from <that
+directory> (source patches skipped: 0001); overlay from llvm-project
+c744694c6ae1d12bbf7d0447b4bc91ee94a1904c at /home/user/llvm-project-c744694`,
+identical to /home/user/arb/deps/llvm-overlay-c744694 but for that line (the
+same two `.orig` backups patch leaves on offset hunks); a re-run prints
+`already patched`; and trunk's set against the tip's tree exits 1 at 0004
+(`Reversed (or previously applied) patch detected!`) writing no `PATCHED`.
+
+Measured from the worktree /home/user/carbon-tools (branch arb4-fix, cut from
+trunk 701863aa5, `REPO=/home/user/carbon-trunk`), the running instance
+untouched and REPO clean before and after. Tip pin, label arb4-new:
+gen_ninja.py `targets in closure: 207 (152 Carbon cc targets, 34 external, 21
+LLVM tool libs)`, `source files compiled: 393; generated files: 7 (4 written
+now, 3 ninja rules); objects: 393`, `file_test manifest: 2047 test files`,
+`LLVM archives: 181` (176 at the old pin), `install.py --dry-run` `plan: 2274
+entries: 2104 copy, 132 gen, 2 pending, 36 symlink` (`clang builtin headers dir
+/home/user/llvm-build-c744694/lib/clang/24/include: 258 entries`) against
+`plan: 2243 entries: 2074 copy, 133 gen, 36 symlink` at the old pin on the same
+tree; ninja stopped at `[97/428]` with three `FAILED` units, all Carbon sources
+written against the old pin, the first error
+`/home/user/carbon-trunk/toolchain/lower/function_context.h:407:17: error: only
+virtual member functions can be marked 'override'`, then
+`/home/user/carbon-trunk/toolchain/driver/compile_driver.cpp:271:21: error: no
+matching constructor for initialization of 'llvm::PassBuilder'` and
+`/home/user/carbon-trunk/toolchain/lower/constant.cpp:311:30: error:
+'getGetElementPtr' is deprecated` with `constant.cpp:417:10: error: 'IRBuilder'
+is deprecated: Use the overload taking Module instead`; a `build.sh -k 0`
+continuation then compiled every other unit, the 21 LLVM tool libraries and
+clangd against the tip's tree included, and linked
+`bin/make-installation-digest`, stopping at `[332/334]` with `ninja: build
+stopped: cannot make progress due to previous errors.` and 10 `FAILED` units in
+all, every one under toolchain/lower/ or toolchain/driver/compile_driver.cpp
+(UA-3's merge adapts them; log /home/user/arb/logs/build-arb4-new.log). Old
+pin, label arb4-old, no
+`LLVM_*` override: `=== build.sh done status=0`, `install.py` `installed 2074
+copied, 133 generated, 36 symlinked files`, `gate.sh --threads 4` `Ran 2047
+tests in 23705 ms wall time, 90035 ms across threads`, `GATE arb4-old: 2047
+passed, 0 failed` (log /home/user/arb/logs/gate-arb4-old-20261116T184710Z.log),
+and `diff /home/user/arb/build/tp2-base/build.ninja
+/home/user/arb/build/arb4-old/build.ninja` is 537 lines a side, every one the
+label's path (`/home/user/arb/build/tp2-base/` against
+`/home/user/arb/build/arb4-old/`) or the generator comment's own path
+(`/home/user/arb/carbonbuild/gen_ninja.py` against
+`/home/user/carbon-tools/fork/tools/carbonbuild/gen_ninja.py`). The label
+directories were deleted afterwards.
+
 <!-- google-doc-style-resume -->

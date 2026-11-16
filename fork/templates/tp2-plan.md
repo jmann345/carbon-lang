@@ -6,10 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # TP-2 plan: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374)
 
-**Status:** rev 2, 2026-11-16 -- REVIEWS A AND B FOLDED (the fold record
-after the hand-off notes; the orchestrator's rulings of 2026-11-16 under R29
-are recorded where they apply), NOT SIGNED OFF: the re-review decides. Rev 1
-(9f09c347b) was for two adversarial plan reviews. Branch
+**Status:** rev 3, 2026-11-16 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds
+the focused re-review RR1 of rev 2 (b87751859; APPROVE-WITH-AMENDMENTS: no
+BLOCKER, no MAJOR, three MINORs, all three folded, none rejected; see "Review
+fold record (rev 3, 2026-11-16)" and the "Sign-off" section, both before
+Appendix A). Rev 2 (2026-11-16, b87751859) folded reviews A and B under the
+orchestrator's rulings of 2026-11-16 (R29), 15 findings (the section "Review
+fold record (rev 2, 2026-11-16)" after the hand-off notes; the rulings are
+recorded where they apply). Rev 1 (9f09c347b) was for two adversarial plan
+reviews. Branch
 `claude/carbon-fork-0-1-tp2` (worktree /home/user/carbon-tp2), cut from trunk
 701863aa5 (2026-11-16, "Merge trunk 50357c591 into arb3-fix": PR 70 (EH-C), the
 weekly upstream check of 2026-11-16, SAFE-3's second stop stamp and ARB-3's
@@ -94,7 +99,8 @@ upstream's direction register (R32 (a), (c)); 0.9 the id re-scan; 0.10 the tree
 checker and what is not run. §1 Design (D-TP2-1 to D-TP2-10). §2 Spec, file by
 file. §3 Commits, the PR and the landing. §4 Testdata matrix. §5 Conformance
 delta. §6 Churn and collisions. §7 Risks and rejected alternatives. §8
-Verification. Hand-off notes. Review fold record (rev 2). Appendix A the
+Verification. Hand-off notes. Review fold records (rev 2, rev 3) and the
+Sign-off. Appendix A the
 goldens' source edits and each file's CHECK change; B the programs and their
 EXPECTs; C the plan and page amendments verbatim; D the records texts verbatim;
 E the PR text; F the land-time texts with `<...>` placeholders.
@@ -117,9 +123,10 @@ ehc-impl) are older trees and were not used.
 
 ### §0.2 The two hunks: trunk, upstream, the decisions behind them
 
-**`IsCallPerformable` on trunk 701863aa5** (toolchain/check/call.cpp:1023-1049;
+**`IsCallPerformable` on trunk 701863aa5** (toolchain/check/call.cpp:1023-1052;
 the comment at :1023-1024, the signature at :1025, D-TP-11's comment and
-`forms_type` at :1031-1047):
+`forms_type` at :1031-1047, `return true;` at :1051 and the closing brace at
+:1052; amended 2026-11-16, review fold: RR1-m3, rev 2 said :1023-1049):
 
 <!-- google-doc-style-ignore -->
 
@@ -328,8 +335,11 @@ measurement that decides D-TP2-3, and M2 restores it (§0.5):
 | check generic/template/pointer.carbon | | fail_deref_class_type_param |
 | lower template/match_choice.carbon | designator_arm, let_else_payload, int_scrutinee | |
 
-The names follow the tree's convention (418 `fail_` splits, 42 `todo_`, among
-them `todo_fail_private_on_redecl` and `todo_fail_alias_two_file`: a split that
+The names follow the tree's convention (2418 `fail_` splits and 45 `todo_`
+splits over check/testdata and lower/testdata at 701863aa5, counted by
+`grep -rh '^// --- fail_'` and `grep -rh '^// --- todo_'`; amended 2026-11-16,
+review fold: RR1-m2, rev 2 said 418 and 42; among them
+`todo_fail_private_on_redecl` and `todo_fail_alias_two_file`: a split that
 should fail and does not is `todo_fail_`; one that should pass and fails is
 `fail_todo_`). With the eighteen renames applied as source edits and the hunk
 restored (§0.5, M2) the fill converged again in one pass
@@ -410,7 +420,7 @@ in `C`. "the same" means the same first diagnostic, count and notes.
 | ded_template_class_type (`class TBox(template T: type)`) | prints 9 | the same error | the same |
 | ded_vec_value_param (`fn Size[template N: i32](unused v: Vec(N))`) | prints 3 | ``cannot deduce value for generic parameter `N` `` | the same |
 | ded_explicit (`fn GetExplicit(template T: type, h: Box(T))`, called `GetExplicit(i32, h)`) | prints 42 | prints 42 | prints 42 |
-| ded_checked_twin (`[T: Core.Copy]`) | prints 42 | prints 42 | prints 42 |
+| ded_checked_twin (`[T: type]`, `-> i32`; amended 2026-11-16, review fold: RR1-m1, the paragraph after this table) | prints 42 | prints 42 | prints 42 |
 | e1n (`let unused y: HasGet = T;` in a template body, interface, called with a `D`) | runs, rc 1 | runs, rc 1 | ``cannot convert type `T` into type implementing `HasGet` `` at the definition |
 | e2n (`G(T as HasGet)`) | runs, rc 3 | runs, rc 3 | the same, at the definition |
 | e3n (`let y: HasGet = T; return x.(HasGet.Get)();`) | ``unable to monomorphize specific `F(D)` `` | the same | at the definition, then the member note |
@@ -418,6 +428,23 @@ in `C`. "the same" means the same first diagnostic, count and notes.
 e1n and e2n are outside W-374 (a conversion outside a call): on the fork
 D-TP-12 keeps the impl lookup deferred and nothing forces the unused facet
 value's witness in `F(D)`; filed as W-399 (D-TP2-8).
+
+ded_checked_twin's row (amended 2026-11-16, review fold: RR1-m1): rev 2
+wrote the twin as `fn GetChecked[T: Core.Copy](h: Box(T)) -> T { return
+h.item; }` and its row as "prints 42" on the three toolchains, but the
+planner's scratch probe was the `[T: type]`, `-> T` form, which tp2-base,
+the prototype and the nightly all reject, ``cannot copy value of type `T` ``
+with the note ``type `T` does not implement interface `Core.Copy` `` (the
+planner's probes_base.txt, probes_nightly.txt and probes_planner.txt record
+that failure; the re-review's and this fold's runs reproduce it), so the row
+was never measured as stated. The twin is now `fn GetChecked[T: type](h:
+Box(T)) -> i32 { return 42; }` (A.4), which prints 42 on tp2-base, the
+prototype tp2-fixer1 and the nightly (scratchpad/tp2/fixer1/out); the
+`[T: Core.Copy]`, `-> T` form as rev 2 wrote it also prints 42 on the three
+when it is compiled at the fold (fixer1's ded_checked_twin_copy). Both forms
+measure the control D-TP2-2 relies on, that a checked parameter still
+deduces through a class specific `Box(T)`; the rejected `-> T` form failed
+on its body's copy of `h.item`, not on deduction.
 
 **Review A's forms (amended 2026-11-16, review fold: A-M1 / A-m1 / A-m4),
 re-run at the fold on tp2-base, the prototype tp2-fixer and the nightly** (the
@@ -463,27 +490,31 @@ declaration introducer" for every structural probe, as FO-1 recorded):
 | t3s, t7s (`Take[U: type](h: Holder(U))`; `Outer` to `Inner`) | 4; 6 | 4; 6 | 4; 6 |
 
 The declact pair (a declaration-region `call_action` resolved by
-`MakeSpecific`, fo1-plan.md:570-574) was not re-created by rev 1; review A
+`MakeSpecific`, fo1-plan.md:574-578; amended 2026-11-16, review fold:
+RR1-m3, rev 2 said :570-574) was not re-created by rev 1; review A
 re-created it from the description and the fold re-ran it (the table above and
 A.4): TP-2 changes nothing there (amended 2026-11-16, review fold: A-m4).
 
 **The changed goldens' splits, checked with `compile --phase=check` on the
-three toolchains** (90 splits of six goldens; the full table is the plan
+three toolchains** (93 splits of six goldens at 701863aa5, deduce_class_args
+24, index 22, match_choice 24, pointer 11, template_constraint_dependent 8
+and lower's match_choice 4; amended 2026-11-16, review fold: RR1-m2, rev 2
+said 90; the full table is the plan
 writer's scratch, its rows with a change summarised here):
 
 | Split | baseline | prototype | the nightly |
 | --- | --- | --- | --- |
 | deduce_class_args: holder, holder_copy_constraint, holder_pointer, template_class_type, vec_value_param | checks | ``cannot deduce value for generic parameter `T` `` (`N`) | the same |
 | deduce_class_args: fail_class_template_literal_with_dependent_array_bound_unknown_field | ``struct `Arr(N)` has no field named `m` `` | checks (no diagnostic) | checks |
-| deduce_class_args: the other 19 splits | as filled | unchanged | the nightly crashes or rejects seven of them (rc 134 or 139 on `class_template_field_of_where_alias` and `fail_checked_generic_calls_template_with_class_template_runtime_literal`; `unable to monomorphize` on the field-default splits), TP-1's W-273 and W-274 forms |
+| deduce_class_args: the other 18 splits (of 24 at 701863aa5; amended 2026-11-16, review fold: RR1-m2, rev 2 said 19) | as filled | unchanged | the nightly crashes or rejects seven of them (rc 134 or 139 on `class_template_field_of_where_alias` and `fail_checked_generic_calls_template_with_class_template_runtime_literal`; `unable to monomorphize` on the field-default splits), TP-1's W-273 and W-274 forms |
 | index: index_class_with_index_with | checks | ``cannot deduce value for generic parameter `T` `` | the same |
-| index: the other 23 splits | as filled | unchanged | the nightly rejects the tuple-index forms at the definition (``type `T` does not support tuple indexing``), TP-1's C3 forms |
+| index: the other 21 splits (of 22; amended 2026-11-16, review fold: RR1-m2, rev 2 said 23) | as filled | unchanged | the nightly rejects the tuple-index forms at the definition (``type `T` does not support tuple indexing``), TP-1's C3 forms |
 | match_choice (check): designator_arm, designator_arm_exhaustive, value_param, nested_match, guard, int_scrutinee | checks | ``semantics TODO: `match on unsupported scrutinee type` `` | ``semantics TODO: `choice alternatives with parameters are not yet supported` `` or ``semantics TODO: `HandleMatchIntroducer` `` |
 | match_choice: pattern_forms, let_else_payload (lower) | checks | ``semantics TODO: `refutable pattern binding on unsupported scrutinee type` `` | the same TODOs as above |
 | match_choice: the nine `fail_` splits named in §0.3's table (eight of them renamed `fail_todo_` at the fold, B3) | their specific diagnostics | the scrutinee TODO | the nightly's TODOs |
-| match_choice: class_template_choice, fail_unknown_alternative_class_template, the five `fail_todo_scrutinee_*`, `fail_todo_case_template_constant`, `fail_todo_pattern_form_deferred_call` | as filled | unchanged | the nightly's TODOs |
+| match_choice: class_template_choice, fail_unknown_alternative_class_template, the four `fail_todo_scrutinee_*` (amended 2026-11-16, review fold: RR1-m2, rev 2 said five), `fail_todo_case_template_constant`, `fail_todo_pattern_form_deferred_call` | as filled | unchanged | the nightly's TODOs |
 | pointer: fail_deref_class_type_param | ``cannot dereference operand of non-pointer type `C(T)` `` | checks | ``cannot dereference operand of non-pointer type `<splice of ...>` `` (the nightly's `*` on a splice is rejected at the definition; TP-1's C3 defers it, D-TP-7) |
-| pointer: the other 11 splits | as filled | unchanged | the nightly rejects `*`, `->` and `&` on `T` at the definition (TP-1's C3) |
+| pointer: the other 10 splits (of 11; amended 2026-11-16, review fold: RR1-m2, rev 2 said 11) | as filled | unchanged | the nightly rejects `*`, `->` and `&` on `T` at the definition (TP-1's C3) |
 | template_constraint_dependent: the six splits | as filled | as §0.3's row | not applicable |
 
 So on every form the removal loses, the fork's new answer is the nightly's
@@ -1184,7 +1215,7 @@ records commit with F.3 to F.9 filled.
 | the same | fail_todo_holder_copy_constraint, fail_todo_holder_pointer, fail_todo_vec_value_param, fail_todo_template_class_type | TP-1's | the same error at `Get(h)`, `GetThrough(&h)`, `Size(v)`, `GetT(h)` (`N` for `Size`) | as predicted |
 | the same | todo_fail_class_template_literal_with_dependent_array_bound_unknown_field | TP-1's | STDERR empty: the literal's conversion to the splice `Arr(N)` is deferred whole (D-TP-24's rule for a template-dependent target), and `Make` is never instantiated | as predicted |
 | the same | fail_todo_impl_forall_formed_self (added at the fold, A-M1) | TP-1's | STDERR: `` `impl` with unused generic binding [ImplUnusedBinding] `` at `impl forall [template T: type] Box(T) as I`, ``warning: binding `self` unused [UnusedBinding]`` in `Val`, and ``cannot access member of interface `I` in type `Box(i32)` that does not implement that interface [MissingImplInMemberAccess]`` at `h.(I.Val)()` (predicted from the probe a2_impl_self, §0.4) | as predicted (measured at the fold on tp2-fixer) |
-| the same | the other 19 splits | TP-1's | SemIR only where a class template type is formed in a template body (`Make`'s `Arr(N)`, `D(N)`, `Box(T)`): `call_action`/`splice_inst` forms; STDERR unchanged (the `fail_` splits keep ``unable to monomorphize``) | as predicted |
+| the same | the other 18 splits (of 24 at 701863aa5, 25 with the pin; amended 2026-11-16, review fold: RR1-m2, rev 2 said 19) | TP-1's | SemIR only where a class template type is formed in a template body (`Make`'s `Arr(N)`, `D(N)`, `Box(T)`): `call_action`/`splice_inst` forms; STDERR unchanged (the `fail_` splits keep ``unable to monomorphize``) | as predicted |
 | check generic/template/index.carbon | fail_todo_index_class_with_index_with | TP-1's | ``cannot deduce value for generic parameter `T` `` at `return Get(v, 0);` | as predicted |
 | check generic/template/match_choice.carbon | fail_todo_designator_arm, fail_todo_designator_arm_exhaustive, fail_todo_value_param, fail_todo_nested_match, fail_todo_guard, fail_todo_int_scrutinee | TP-1's (X-1) | ``semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]`` at each `match (`; the SemIR dump of the function stops there (fail_todo_int_scrutinee's TODO line also names W-396: `N` is not deduced through `Core.Int(N)`, A-m1, which the body's TODO hides) | as predicted |
 | the same | fail_todo_pattern_forms | TP-1's | ``semantics TODO: `refutable pattern binding on unsupported scrutinee type` `` at the first pattern condition | as predicted |
@@ -1463,7 +1494,8 @@ elsewhere; the counts written into D.3.
 7.  Delete the label's four directories and the XDG cache by their literal
     paths when done; keep tp2-base.
 8.  Re-create §0.4's probes from Appendix A.4 and keep their outputs in your
-    scratch for the reviewers (the fold's are under scratchpad/tp2/fixer/out).
+    scratch for the reviewers (the fold's are under scratchpad/tp2/fixer/out
+    and, for the rev 3 twin, scratchpad/tp2/fixer1/out).
 9.  Run conformance once before the SKIP lines go in and keep that run's
     CONFORMANCE.txt and log under their own names (§8.4; B9).
 
@@ -1506,6 +1538,75 @@ H9.8's re-read are in D-TP2-3, D.1 and D.6.
 | A-m1 (MINOR): `Core.Int(N)` is a W-396 form | FOLDED: W-396's title and evidence, the int_scrutinee TODO lines (check and lower) and the probe a5_core_int | §0.4, D-TP2-2, D-TP2-8, §4, A.2, A.4, D.1 |
 | A-m3 (MINOR): record the substance ruling | ANSWERED by ruling 1: the record is the orchestrator's ruling, not the substance reading; A's measurement (every hunk of the fill after :1017) is kept as evidence | D-TP2-4, §0.3 |
 | A-m4 (MINOR): FO-1's declact pair | FOLDED: re-created and run at the fold (declact prints 6; declactd `Caller(D)` with the same notes on tp2-base and tp2-fixer); sources in A.4 | §0.4, §0.10, A.4 |
+
+## Review fold record (rev 3, 2026-11-16)
+
+The focused re-review RR1 of rev 2 (b87751859; APPROVE-WITH-AMENDMENTS: no
+BLOCKER, no MAJOR, three MINORs, each a plan-text correction; its own prototype
+`tp2-rr1`, a detached worktree at 701863aa5 plus rev 2's prototype diff, whose
+119 non-CHECK lines equal Appendix A and B verbatim, reproduced rev 2's figures:
+gate 2047 passed, 0 failed, autoupdate 0 changed, §8.7's diff the two `sem_ir()`
+lines only, `forms_type` 0, conformance 226/0/15 over 241 with 51 of 56 bullets
+and 226/2/13 with the SKIP lines reverted, the 36 probes of A.4 on tp2-base,
+tp2-rr1 and the nightly reproducing every §0.4 row but ded_checked_twin's, W-400
+free across 969 refs, 745 heads and 11 worktrees, check_quotes 0 failed on D.6's
+five rows and check_greps 96/0 at 7a3608bab, merge-tree 4 record conflicts) is
+folded above, each amendment marked "(amended 2026-11-16, review fold:
+RR1-<id>)". Every measurement a finding rests on was re-measured by this fold
+(scratchpad/tp2/fixer1 of this session, not in the repository): the split counts
+at 701863aa5 (`grep -c '^// --- '`: deduce_class_args 24, index 22, pointer 11,
+match_choice 24, template_constraint_dependent 8 and lower's match_choice 4, 93
+in all; the four `fail_todo_scrutinee_*` splits at match_choice.carbon:512,
+:531, :561 and :586; `grep -rh '^// --- fail_'` over check/testdata and
+lower/testdata 2418 and `'^// --- todo_'` 45, `todo_fail_private_on_redecl` and
+`todo_fail_alias_two_file` among them); call.cpp:1023-1052 (the comment at
+:1023-1024, `return true;` at :1051, the brace at :1052);
+fork/templates/plan.md:3341 (§1.13 item 26 is W-295), :2730-2744 (D-TP-11's
+Round 10 paragraph) and :10318 (the round-10 row with ``match on unsupported
+scrutinee type`` at the scrutinee for 24); fork/decision-log.md:7005-7021 (:7022
+blank) and :20002-20033 (the paragraph ends "(a) and veto-able.");
+fo1-plan.md:574-578; and the twin probes on the three toolchains, the prototype
+being the detached worktree /home/user/carbon-tp2-fixer1 at 701863aa5 plus rev
+2's prototype diff, built by the arbiter under the label tp2-fixer1 (build 18:24
+to 18:31 UTC, 428 steps, no warning; gate 2047 passed, 0 failed; autoupdate 0
+changed; conformance PASS 226 / FAIL 0 / SKIP 15 over 241 programs, bullets 51
+PASS, 0 FAIL, 5 SKIP of 56, runner exit 0, under its own cache): the planner's
+`[T: type]`, `-> T` twin rejected ``cannot copy value of type `T` `` on
+tp2-base, tp2-fixer1 and the nightly, A.4's new `[T: type]`, `-> i32` twin and
+rev 2's `[T: Core.Copy]`, `-> T` text both printing 42 on the three
+(scratchpad/tp2/fixer1/out and out_t). The worktree and the label's four
+directories were removed when this revision was committed, tp2-base kept.
+Nothing is rejected; no finding touches a decision, a code line, a golden, a
+program or a page text, so rev 2's prototype figures stand, re-measured by the
+re-review's tp2-rr1 and this fold's tp2-fixer1.
+
+| Finding | Disposition | Where |
+| --- | --- | --- |
+| RR1-m1 (MINOR): §0.4's ded_checked_twin row was never measured as stated (the planner's scratch twin was rejected on all three toolchains) | FOLDED: the row re-measured with the `[T: type]`, `-> i32` twin (prints 42 on tp2-base, tp2-fixer1 and the nightly) and A.4's twin swapped; the planner's rejected `-> T` form and rev 2's `[T: Core.Copy]` text recorded with their measured answers in the paragraph after the table; D-TP2-2's reading unchanged | §0.4 (the row and the paragraph after its table), A.4, hand-off item 8 |
+| RR1-m2 (MINOR): seven split counts off against the goldens at 701863aa5 | FOLDED: 18, 21, 10, 93, four, 2418 and 45, each re-counted at the fold and marked with rev 2's figure | §0.3, §0.4 (five places), §4 |
+| RR1-m3 (MINOR): five line and item cites slip | FOLDED: call.cpp:1023-1052; W-397's evidence points at D-TP-11's Round 10 paragraph (:2730-2744) and the round-10 row (:10318) instead of §1.13 item 26 (W-295); :7005-7021; :20002-20033; fo1-plan.md:574-578 | §0.2, D.1 (W-397's evidence), D.4, §0.4 |
+
+## Sign-off
+
+Every review of this plan, with its verdict and its counts (added 2026-11-16,
+review fold: RR1):
+
+| Review | Read | Verdict | BLOCKER | MAJOR | MINOR | Folded | Rejected | Fold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A: toolchain root causes, design soundness and upstream fidelity | rev 1, 9f09c347b | APPROVE-WITH-AMENDMENTS | 0 | 2 | 4 | 6 (A-M2 with B1; A-m3 answered by ruling 1) | none | rev 2, "Review fold record (rev 2, 2026-11-16)" |
+| B: concreteness, process, Goodhart, scope honesty and cross-workstream consistency | rev 1, 9f09c347b | REJECT | 1 | 3 | 5 | 9 (B4 per ruling 1, B1 per ruling 2, B2 per ruling 3, B3 per ruling 4, B9 per ruling 5) | none | rev 2, the same |
+| RR1: the focused re-review | rev 2, b87751859 | APPROVE-WITH-AMENDMENTS | 0 | 0 | 3 | 3 | none | rev 3, "Review fold record (rev 3, 2026-11-16)" |
+
+Rev 3 is SIGNED OFF FOR IMPLEMENTATION: the last review's verdict is
+APPROVE-WITH-AMENDMENTS, not REJECT; every finding of the three reviews is
+folded, under the orchestrator's seven rulings of 2026-11-16 (R29) where they
+apply, and none rejected; rev 3 changes no decision, code line, golden,
+program or page text (its amendments are a probe's form, seven counts and five
+cites), so rev 2's container figures stand (gate 2047 passed, 0 failed;
+conformance PASS 226 / FAIL 0 / SKIP 15 over 241, 51 of 56 bullets, the
+landing bar of D-TP2-5's ruling; re-measured by the re-review's tp2-rr1 and
+this fold's tp2-fixer1 prototypes). The implementation starts from this
+plan's commit with §3's C1.
 
 ## Appendix A: the goldens' source edits and the probes
 
@@ -1804,8 +1905,8 @@ fn Run() -> i32 { var v: Vec(3) = {.tag = 0}; Core.Print(Size(v)); return 0; }
 // ded_template_class_type
 fn GetT[template T: type](h: TBox(T)) -> T { return h.item; }
 fn Run() -> i32 { var h: TBox(i32) = {.item = 9}; Core.Print(GetT(h)); return 0; }
-// ded_checked_twin
-fn GetChecked[T: Core.Copy](h: Box(T)) -> T { return h.item; }
+// ded_checked_twin (amended 2026-11-16, review fold: RR1-m1; was `[T: Core.Copy]`, `-> T`)
+fn GetChecked[T: type](h: Box(T)) -> i32 { return 42; }
 fn Run() -> i32 { var h: Box(i32) = {.item = 42}; Core.Print(GetChecked(h)); return 0; }
 // ded_explicit
 fn GetExplicit(template T: type, h: Box(T)) -> T { return h.item; }
@@ -2097,7 +2198,7 @@ New items, inserted after W-395 in id order (fields as W-374's):
   "evidence": [
     "toolchain/check/testdata/generic/template/match_choice.carbon: fail_todo_designator_arm, fail_todo_designator_arm_exhaustive, fail_todo_value_param, fail_todo_nested_match, fail_todo_guard, fail_todo_pattern_forms, fail_todo_int_scrutinee, and the nine splits whose specific diagnostics became the TODO, eight of them renamed from `fail_` to `fail_todo_` (fail_todo_nonexhaustive, fail_todo_never_matches, fail_todo_int_never_matches, fail_todo_unknown_alternative, fail_todo_guard_on_instantiation, fail_todo_int_literal_out_of_range_on_instantiation, fail_todo_payload_literal_on_instantiation, fail_todo_payload_not_trivial_on_instantiation) beside fail_todo_qualified_alternative (<F1>); toolchain/lower/testdata/template/match_choice.carbon: fail_todo_designator_arm, fail_todo_let_else_payload, fail_todo_int_scrutinee",
     "fork/conformance/programs/generics/templates_match_dependent_choice.carbon (SKIP at <C1>)",
-    "the nightly 2026.10.12 reports ``semantics TODO: `choice alternatives with parameters are not yet supported` `` or ``semantics TODO: `HandleMatchIntroducer` `` on the same splits; trunk before TP-1's round 10 reported the scrutinee TODO (fork/templates/plan.md §1.13 item 26)",
+    "the nightly 2026.10.12 reports ``semantics TODO: `choice alternatives with parameters are not yet supported` `` or ``semantics TODO: `HandleMatchIntroducer` `` on the same splits; trunk before TP-1's round 10 reported the scrutinee TODO (fork/templates/plan.md D-TP-11's Round 10 paragraph, :2730-2744, and the round-10 probe table's X-1 row at :10318, ``match on unsupported scrutinee type`` at the scrutinee for 24; amended 2026-11-16, review fold: RR1-m3: rev 2 pointed at §1.13 item 26, which is W-295, a `Core.Int(N)` comparison that stops lowering)",
     "fork/templates/tp2-plan.md §0.4, D-TP2-2"
   ],
   "blocked_by": [],
@@ -2281,9 +2382,11 @@ The TP-1 entry's register paragraph (fork/decision-log.md:6992-7003, the
 " Resolved <date> by TP-2 (the entry "TP-2: ..." below): the exception
 removed at <C1>, H10.8 ALIGNED; W-139's requirement kept, D-TP2-3." The same
 sentence is appended to the TP-1 entry's "Weekly upstream check 2026-11-16"
-paragraph (:7005-7022, the one that ends "call, or README.md:3012-3016
-changes. Veto-able." and says "the DRIFT stands on W-374"), both paragraphs
-being living register notes (amended 2026-11-16, review fold: B8).
+paragraph (:7005-7021, :7022 being blank; the one that ends "call, or
+README.md:3012-3016 changes. Veto-able." and says "the DRIFT stands on
+W-374"), both paragraphs being living register notes (amended 2026-11-16,
+review fold: B8; the range re-anchored 2026-11-16, review fold: RR1-m3, rev 2
+said :7005-7022).
 
 DR-0's register block (vii) (:258-263) gains, after "(added 2026-11-09, weekly
 upstream check)": " (vii) resolved <date> by TP-2, <C1> and its fill <F1>;
@@ -2295,7 +2398,8 @@ paragraph "_H10.8's re-read_" (:19730-19747) gains a last sentence "Resolved
 <date> by TP-2 (fork/templates/tp2-plan.md): the row is ALIGNED and W-374
 DISCHARGED." The entry "Weekly upstream check 2026-11-09": its register row
 (:19971) gains the same cell note and its paragraph "_H10.8's verdict_"
-(:20002-20030) the same sentence.
+(:20002-20033; amended 2026-11-16, review fold: RR1-m3, rev 2 said
+:20002-20030) the same sentence.
 
 ### D.5 The UA-3 audit note (fork/ORCHESTRATION.md Next actions item 6)
 

@@ -521,17 +521,30 @@ class Gen:
 
     # ---- archives
 
+    # Name prefixes of the archives linked from $LLVM_BUILD/lib: LLVM's, clang's
+    # and lld's, and those of the components clang's own libraries pull in when
+    # the selected LLVM build enables them (with CLANG_ENABLE_CIR=ON,
+    # libclangFrontendTool.a references the CIR frontend actions of
+    # libclangCIR.a, whose CIRGen objects reference mlir:: and cir:: symbols that
+    # only the same build's libMLIR*.a and libCIR*.a archives define). A build
+    # without such a component provides no archive under its prefix, so the link
+    # line of that build is unchanged by listing it; the group link (NOTES-A.md
+    # D3) pulls only referenced members.
+    LLVM_ARCHIVE_PREFIXES = (
+        "libLLVM",
+        "libclang",
+        "liblld",
+        "libMLIR",
+        "libCIR",
+    )
+
     def llvm_archives(self):
         libdir = os.path.join(self.llvm_build, "lib")
         out = []
         for fn in sorted(os.listdir(libdir)):
             if not fn.endswith(".a"):
                 continue
-            if not (
-                fn.startswith("libLLVM")
-                or fn.startswith("libclang")
-                or fn.startswith("liblld")
-            ):
+            if not fn.startswith(self.LLVM_ARCHIVE_PREFIXES):
                 continue
             if re.search(r"Testing|gtest|gmock|TableGen", fn):
                 continue

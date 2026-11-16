@@ -487,4 +487,96 @@ on the same three units (`function_context.h:407:17`,
 `compile_driver.cpp:271:21`, `constant.cpp:311:30` and `:417:10`). The label
 directories were deleted afterwards.
 
+## ARB-5 (2026-11-16): the MLIR and CIR archives at the tip pin
+
+UA-3's merge prototyper found, on 2026-11-16, that the link of Carbon's
+binaries at the tip pin fails with undefined `mlir::` and `cir::` symbols. The
+tip tree's llvm/CMakeLists.txt declares `option(CLANG_ENABLE_CIR "Build ClangIR
+support into the compiler" ON)` (line 222 at c744694; the old tree declares no
+such option, the variable is unset there and the old build's CMakeCache.txt has
+no entry), so the tip pin's build, made with the README's configuration, which
+does not name the option, holds `CLANG_ENABLE_CIR:BOOL=ON`, built clang's CIR
+libraries and MLIR as a dependency-only project, and its `lib/` holds 69
+`libMLIR*.a` and `libCIR*.a` archives (66 and 3) beside the `libLLVM*`,
+`libclang*` and `liblld*` ones that `gen_ninja.py`'s `llvm_archives()` linked.
+`libclangFrontendTool.a` references the CIR frontend actions
+(`cir::EmitCIRAction::EmitCIRAction()` and 21 other `cir::` symbols by
+`llvm-nm --undefined-only`), which pull `libclangCIR.a`'s CIRGen objects into
+the link, and those reference symbols only the MLIR and CIR archives define.
+ARB-5 adds the two prefixes `libMLIR` and `libCIR` to the archive selection
+(the tuple `LLVM_ARCHIVE_PREFIXES`; the `Testing`, `gtest`, `gmock` and
+`TableGen` exclusions kept): the selection is by what the selected LLVM build
+provides, not by pin, and a build without CIR provides nothing under the new
+prefixes, so its link line is the same as before.
+
+Measured 2026-11-16 from the worktree /home/user/carbon-tools (branch arb5-fix,
+cut from trunk a9892d4bb), the running instance untouched and both trees clean
+before and after (`git status --porcelain` empty). The failure, reproduced with
+the unchanged scripts on the prototype tree /home/user/carbon-ua3-proto
+(detached at 95df37622) at the tip pin under label arb5-repro (`=== build.sh
+2026-11-16T23:20:43Z REPO=/home/user/carbon-ua3-proto SHA=arb5-repro MODE=opt
+CXX=/home/user/arb/deps/llvm21/bin/clang++ JOBS=4`; `targets in closure: 219
+(164 Carbon cc targets, 34 external, 21 LLVM tool libs)`, `source files
+compiled: 400; generated files: 7 (4 written now, 3 ninja rules); objects:
+400`, `file_test manifest: 2114 test files`, `LLVM archives: 181`): ninja
+compiled every unit and linked the digest (`[433/435] LINK
+/home/user/arb/build/arb5-repro/bin/make-installation-digest`), then `FAILED:
+/home/user/arb/build/arb5-repro/bin/carbon-busybox` and `FAILED:
+/home/user/arb/build/arb5-repro/bin/file_test`, each with 20 `undefined
+symbol` errors (the same 20 symbols, then `ld.lld: error: too many errors
+emitted, stopping now (use --error-limit=0 to see all errors)`), the first
+three `ld.lld: error: undefined symbol: mlir::Attribute::getContext() const`
+(`>>> referenced by CIRDataLayoutSpec.cpp`,
+`CIRDataLayoutSpec.cpp.o:(cir::setMLIRDataLayout(mlir::ModuleOp,
+llvm::DataLayout const&)) in archive
+/home/user/llvm-build-c744694/lib/libclangCIR.a`), `ld.lld: error: undefined
+symbol: mlir::translateDataLayout(llvm::DataLayout const&, mlir::MLIRContext*)`
+and `ld.lld: error: undefined symbol: mlir::MLIRContext::getTypeUniquer()`;
+the references come from 94 members of libclangCIR.a and 6 of
+libclangCIRLoweringDirectToLLVM.a; `ninja: build stopped: subcommand failed.`,
+build.sh exit 1 (log /home/user/arb/logs/build-arb5-repro.log).
+
+With the change, the same tree and pin under label arb5-new (`=== build.sh
+2026-11-16T23:28:19Z REPO=/home/user/carbon-ua3-proto SHA=arb5-new MODE=opt
+CXX=/home/user/arb/deps/llvm21/bin/clang++ JOBS=4`): the same closure counts
+and `LLVM archives: 249` (the 68 added are the 69 less `libMLIRTableGen.a`,
+which the `TableGen` exclusion drops), `=== build.sh done status=0
+2026-11-16T23:34:18Z`; with the label's path normalized, its build.ninja
+differs from arb5-repro's in the three `build ...: link` lines and their
+`content =` lines alone (the added archives); `install.py` `installed 2106
+copied, 133 generated, 36 symlinked files under
+/home/user/arb/install/arb5-new/lib/carbon`; `gate.sh --threads 4` `Ran 2114
+tests in 21947 ms wall time, 83132 ms across threads`, `GATE arb5-new: 2108
+passed, 6 failed (6 per-test FAILED line(s) counted; binary exit 1)` (log
+/home/user/arb/logs/gate-arb5-new-20261116T233503Z.log), the six the
+prototype's own, the ones UA-3's prototyper reported on its label ua3-proto:
+toolchain/check/testdata/function/overload/default_values.carbon,
+interop/cpp/function/export/overload_set_default.carbon, lambda/lambda.carbon,
+let/fail_todo_struct_pattern.carbon,
+named_constraint/template_constraint.carbon and optional/destroy.carbon (in
+four a `fail_` file or split succeeds, in two a split fails).
+
+Old pin, trunk a9892d4bb (`REPO=/home/user/carbon-trunk`, no `LLVM_*`
+override), label arb5-old (`=== build.sh 2026-11-16T23:34:38Z
+REPO=/home/user/carbon-trunk SHA=arb5-old MODE=opt
+CXX=/home/user/arb/deps/llvm21/bin/clang++ JOBS=4`): `targets in closure: 207
+(152 Carbon cc targets, 34 external, 21 LLVM tool libs)`, `source files
+compiled: 393; generated files: 7 (4 written now, 3 ninja rules); objects:
+393`, `file_test manifest: 2047 test files`, `LLVM archives: 176` as before,
+`=== build.sh done status=0 2026-11-16T23:41:04Z`, `installed 2074 copied, 133
+generated, 36 symlinked files under /home/user/arb/install/arb5-old/lib/carbon`,
+`Ran 2047 tests in 9135 ms wall time, 34032 ms across threads`, `GATE
+arb5-old: 2047 passed, 0 failed` (log
+/home/user/arb/logs/gate-arb5-old-20261116T234122Z.log); `diff
+/home/user/arb/build/tp2-base/build.ninja
+/home/user/arb/build/arb5-old/build.ninja` is 537 lines a side (2124 diff
+lines), its first hunk `1c1` the generator comment (`# Generated by
+/home/user/arb/carbonbuild/gen_ninja.py for /home/user/carbon-trunk at
+tp2-base; do not edit (re-run gen_ninja.py or build.sh).` against the
+worktree's gen_ninja.py `at arb5-old`) and its second `3c3` `builddir =
+/home/user/arb/build/tp2-base` against `/home/user/arb/build/arb5-old`, and
+with the label's path and the generator comment's path normalized the diff is
+empty (0 lines): the old pin's build.ninja is unchanged. The label directories
+were deleted afterwards.
+
 <!-- google-doc-style-resume -->

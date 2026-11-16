@@ -203,7 +203,7 @@ lands). Every measurement landed up to ARB-4 used the old pin.
 | Pin | `LLVM_SRC` | `LLVM_BUILD` | `LLVM_OVERLAY` |
 | --- | --- | --- | --- |
 | old: 6ec87e7ec4b3ca6f665a02e05d0e5fe9c37cd6cc (trunk's MODULE.bazel; the defaults) | `/home/user/llvm-project` | `/home/user/llvm-build` (built 2026-11-09; 179 archives under `lib/`, 176 of them linked) | `/home/user/arb/deps/llvm-overlay/utils/bazel/llvm-project-overlay` (trunk's patches 0002 0004 0005 0006 0012) |
-| tip: c744694c6ae1d12bbf7d0447b4bc91ee94a1904c (upstream 7a3608bab's MODULE.bazel, the tree UA-3 merges) | `/home/user/llvm-project-c744694` (a git worktree at that commit) | `/home/user/llvm-build-c744694` (built 2026-11-16; 253 archives under `lib/`, 181 of them linked) | `/home/user/arb/deps/llvm-overlay-c744694/utils/bazel/llvm-project-overlay` (7a3608bab's patches 0012 0013; its `PATCHED` file says so) |
+| tip: c744694c6ae1d12bbf7d0447b4bc91ee94a1904c (upstream 7a3608bab's MODULE.bazel, the tree UA-3 merges) | `/home/user/llvm-project-c744694` (a git worktree at that commit) | `/home/user/llvm-build-c744694` (built 2026-11-16 with `CLANG_ENABLE_CIR=ON`, that tree's default; 253 archives under `lib/`, 249 of them linked since ARB-5, 181 before it) | `/home/user/arb/deps/llvm-overlay-c744694/utils/bazel/llvm-project-overlay` (7a3608bab's patches 0012 0013; its `PATCHED` file says so) |
 
 Each was built with CMake (generator Ninja, `$LLVM_SRC/llvm` into
 `$LLVM_BUILD`) by the system clang 18.1.3 as the compiler of LLVM with the
@@ -241,6 +241,30 @@ minutes on this container. The configuration:
 -DLLVM_ENABLE_OCAMLDOC=OFF
 -DLLVM_ENABLE_Z3_SOLVER=OFF
 ```
+
+The configuration does not name `CLANG_ENABLE_CIR`, and its default differs
+between the two trees: the tip's llvm/CMakeLists.txt declares
+`option(CLANG_ENABLE_CIR "Build ClangIR support into the compiler" ON)` (line
+222 at c744694; the old tree declares no such option, the variable is unset
+there and the old build's CMakeCache.txt has no `CLANG_ENABLE_CIR` entry), so
+the tip pin's build holds `CLANG_ENABLE_CIR:BOOL=ON` in its CMakeCache.txt,
+built clang's CIR libraries (`libclangCIR.a`,
+`libclangCIRLoweringDirectToLLVM.a` and the other `libclangCIR*.a`) and MLIR as
+a dependency-only project, and its `lib/` holds 69 `libMLIR*.a` and `libCIR*.a`
+archives, of which the old pin's build has none. Since ARB-5 (2026-11-16)
+`gen_ninja.py` links, from `$LLVM_BUILD/lib`, every archive named `libLLVM*`,
+`libclang*`, `liblld*`, `libMLIR*` or `libCIR*` (the `Testing`, `gtest`,
+`gmock` and `TableGen` archives excluded, as before) in the one `--start-group`
+of NOTES-A.md D3: 249 archives at the tip pin (181 before ARB-5: the 69 less
+`libMLIRTableGen.a`) and the same 176 as before at the old pin, whose
+build.ninja is unchanged. Without them the link of `carbon-busybox` and of
+`file_test` at the tip pin failed with 20 `undefined symbol` errors each (lld's
+error limit; the same 20 symbols), the first `ld.lld: error: undefined symbol:
+mlir::Attribute::getContext() const` referenced by `CIRDataLayoutSpec.cpp.o`
+in `libclangCIR.a`, whose members `libclangFrontendTool.a` pulls in through
+the CIR frontend actions it references (`cir::EmitCIRAction` and others; a
+build without CIR has no such reference and no such archive, so the prefixes
+select nothing there). NOTES-C.md's section "ARB-5" has the measurements.
 
 `LLVM_BUILD_TOOLS=OFF` and `CLANG_BUILD_TOOLS=OFF` leave no `clang` driver in
 `$LLVM_BUILD/bin` (Carbon links clang's libraries and needs none);

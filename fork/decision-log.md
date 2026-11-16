@@ -21811,6 +21811,66 @@ time, 136474 ms across threads`) at the old pin, the tip pin stopping at
 `[98/428]` on the same three units; py_compile, prek to a fixpoint, R31 and the
 model-identifier grep (0 hits) hold; the label directories were deleted.
 
+_ARB-5 (2026-11-16): the MLIR and CIR archives at the tip pin._ UA-3's merge
+prototyper found on 2026-11-16 that at the tip pin the link of Carbon's
+binaries fails with undefined `mlir::` and `cir::` symbols: the tip tree's
+llvm/CMakeLists.txt declares `CLANG_ENABLE_CIR` ON by default (line 222 at
+c744694; the old tree declares no such option), so the tip pin's build, made
+with the README's configuration, holds `CLANG_ENABLE_CIR:BOOL=ON`, built
+clang's CIR libraries and MLIR as a dependency-only project, and its `lib/`
+holds 69 `libMLIR*.a` and `libCIR*.a` archives, of which the old pin's build
+has none, while gen_ninja.py's `llvm_archives()` linked the `libLLVM*`,
+`libclang*` and `liblld*` ones alone; `libclangFrontendTool.a` references the
+CIR frontend actions of `libclangCIR.a`, whose CIRGen objects reference
+symbols only the MLIR and CIR archives define. Reproduced with the unchanged
+scripts on the prototype tree /home/user/carbon-ua3-proto (95df37622) under
+label arb5-repro: `LLVM archives: 181`, `bin/make-installation-digest` linked,
+then `FAILED: /home/user/arb/build/arb5-repro/bin/carbon-busybox` and `FAILED:
+/home/user/arb/build/arb5-repro/bin/file_test` with 20 `undefined symbol`
+errors each (the same 20, lld's error limit), the first `ld.lld: error:
+undefined symbol: mlir::Attribute::getContext() const` (`>>> referenced by
+CIRDataLayoutSpec.cpp` in archive
+`/home/user/llvm-build-c744694/lib/libclangCIR.a`), then `ld.lld: error:
+undefined symbol: mlir::translateDataLayout(llvm::DataLayout const&,
+mlir::MLIRContext*)` and `ld.lld: error: undefined symbol:
+mlir::MLIRContext::getTypeUniquer()`; `ninja: build stopped: subcommand
+failed.`, build.sh exit 1. Fixed on branch arb5-fix, cut from trunk a9892d4bb,
+in the commit "ARB-5: the arbiter links the MLIR and CIR archives of the tip
+LLVM pin (CLANG_ENABLE_CIR=ON)", touching fork/tools/carbonbuild/gen_ninja.py
+(the archive name prefixes linked from `$LLVM_BUILD/lib` are the tuple
+`LLVM_ARCHIVE_PREFIXES`: `libLLVM`, `libclang`, `liblld`, `libMLIR` and
+`libCIR`, the `Testing`, `gtest`, `gmock` and `TableGen` exclusions kept; a
+selection by what the selected LLVM build provides, not by pin, so a build
+without CIR links as before), README.md (section "The LLVM build": the tip
+pin's `CLANG_ENABLE_CIR=ON` and what the arbiter links because of it),
+NOTES-C.md (a dated section with the measurements) and this paragraph: a
+maintenance change of the tool, R32 untouched, no ledger item; the running
+instance is re-synced from trunk after the landing. Measured 2026-11-16 from
+the worktree /home/user/carbon-tools, the running instance untouched, both
+trees clean before and after: the prototype tree at the tip pin under label
+arb5-new, `LLVM archives: 249` (the 69 less `libMLIRTableGen.a`), `=== build.sh
+done status=0 2026-11-16T23:34:18Z`, its build.ninja differing from
+arb5-repro's, the label's path normalized, in the three link lines alone,
+`installed 2106 copied, 133 generated, 36 symlinked files`, `Ran 2114 tests in
+21947 ms wall time, 83132 ms across threads` and `GATE arb5-new: 2108 passed,
+6 failed (6 per-test FAILED line(s) counted; binary exit 1)`, the six the
+prototype's own, the ones its prototyper reported
+(function/overload/default_values.carbon,
+interop/cpp/function/export/overload_set_default.carbon, lambda/lambda.carbon,
+let/fail_todo_struct_pattern.carbon,
+named_constraint/template_constraint.carbon, optional/destroy.carbon); trunk
+a9892d4bb at the old pin under label arb5-old, no `LLVM_*` override, `LLVM
+archives: 176`, `=== build.sh done status=0 2026-11-16T23:41:04Z`, `installed
+2074 copied, 133 generated, 36 symlinked files`, `Ran 2047 tests in 9135 ms
+wall time, 34032 ms across threads` and `GATE arb5-old: 2047 passed, 0
+failed`, and `diff /home/user/arb/build/tp2-base/build.ninja
+/home/user/arb/build/arb5-old/build.ninja` 537 lines a side, every one the
+label's path or the generator comment's own path (empty once both are
+normalized): the old pin's build.ninja is unchanged. gen_ninja.py passes
+py_compile, the four files prek to a fixpoint, R31 holds on the three markdown
+files, the model-identifier grep over the commit's added lines finds 0 hits,
+and the label directories were deleted.
+
 ### SAFE-3 stopped a second time (2026-11-16): the SAFE-4 ruling's stop condition fired at rev 15; the orchestrator's Addendum 2 (R29)
 
 Placed at the end of the log, after ARB-2's entry, because the log groups its

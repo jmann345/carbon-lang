@@ -95,19 +95,20 @@ python3 -I install.py --provenance         # the provenance table below
 python3 -I install.py --compare-nightly /home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12
 
 # The golden gate (//toolchain/testing:file_test over its whole manifest).
-./gate.sh                                  # prints the gtest summary and `GATE <sha>: N passed, M failed`
+./gate.sh                                  # prints the per-test FAILED lines, `Ran N tests` and `GATE <sha>: N passed, M failed` (M = distinct per-test FAILED lines)
 ./gate.sh --filter check/testdata/class    # --file_tests=*check/testdata/class* (gtest wildcard)
 ./gate.sh --threads 4
 ./gate.sh --check                          # build + verify the runfiles tree; run nothing
 ./gate.sh -- --gtest_brief=0               # extra binary arguments
 
 # Autoupdate (the only script that writes into REPO), then `git status --porcelain`.
-./autoupdate.sh [--filter SUBSTR] [--threads N]
+./autoupdate.sh [--filter SUBSTR] [--threads N]   # then `AUTOUPDATE <sha>: N file(s) changed by this run; M pre-existing local change(s) untouched`
 ./autoupdate.sh --check
 
 # Execution-conformance harness (fork/conformance/runner.py).
 ./conformance.sh                           # foreground; prints the totals and `CONFORMANCE <sha>: ...`
 ./conformance.sh --background              # nohup; wait with: until [ -f $CONFORMANCE_OUT/.done ]; do sleep 20; done
+                                           # then read the `CONFORMANCE <sha>: ...` line from $CONFORMANCE_OUT/CONFORMANCE.txt
 ./conformance.sh --filter types/
 ./conformance.sh --check                   # inputs + the runner's --self-test (241 programs, 56 bullets)
 ```
@@ -115,14 +116,17 @@ python3 -I install.py --compare-nightly /home/user/nightly/tc/carbon_toolchain-0
 Logs: `$LOGS` (= `/home/user/arb/logs`): `gate-<sha>-<utc>.log`,
 `autoupdate-<sha>-<utc>.log`, `conformance-<sha>.log` (+ `.nohup`,
 `-selftest.log`). The conformance marker `$CONFORMANCE_OUT/.done` holds the
-runner's exit code.
+runner's exit code and is written last; the `CONFORMANCE <sha>: ...` summary
+line is in `$CONFORMANCE_OUT/CONFORMANCE.txt`, at the end of
+`conformance-<sha>.log` and on stdout (under `--background`, that is
+`conformance-<sha>.log.nohup`).
 
 ## Acceptance (measured on cb726a230 in a later phase)
 
 | Check | Command | Expected |
 | --- | --- | --- |
 | golden gate | `gate.sh` | `[  PASSED  ] 2047 tests.` and `GATE cb726a230: 2047 passed, 0 failed` |
-| autoupdate | `autoupdate.sh` | `git -C /home/user/carbon-trunk status --porcelain` stays empty; `AUTOUPDATE cb726a230: 0 file(s) changed` |
+| autoupdate | `autoupdate.sh` | `git -C /home/user/carbon-trunk status --porcelain` stays empty; `AUTOUPDATE cb726a230: 0 file(s) changed by this run; 0 pre-existing local change(s) untouched` |
 | conformance | `conformance.sh` (= `cd $REPO && python3 -I -B fork/conformance/runner.py --toolchain $INSTALL_DIR/lib/carbon/carbon-busybox --out $CONFORMANCE_OUT`) | `PASS 228 / FAIL 0 / SKIP 13` over 241 programs, 51 of 56 bullets |
 
 `runfiles.py --check` already confirms the manifest size without running
@@ -395,9 +399,12 @@ digest through the VFS and passes either way).
 (common/bazel_working_dir.h would chdir), sources `env.sh` (the `cc_env()`
 variables of bazel/cc_toolchains/defs.bzl), runs `$FILE_TEST_BIN
 [--file_tests=*SUBSTR*] [--threads=N]` from `_main` and parses gtest's brief
-summary (`[  PASSED  ] N tests.`, `[  FAILED  ] N tests, listed below:`).
-`autoupdate.sh` runs the same with `--autoupdate` and prints `git -C $REPO
-status --porcelain`.
+output: `[  PASSED  ] N tests.` for the passed count and the per-test
+`[  FAILED  ] ToolchainFileTest.<test>, ...` lines for the failed count
+(file_test prints no `[  FAILED  ] N tests, listed below:` summary; section
+"Reporting fixes" below). `autoupdate.sh` runs the same with `--autoupdate`,
+prints `git -C $REPO status --porcelain` and counts the paths whose content
+the run changed (a hash per modified or untracked path, before and after).
 
 ## The conformance harness (`conformance.sh`)
 
@@ -410,10 +417,63 @@ into the cache, keyed on `install_digest.txt`
 (toolchain/driver/runtimes_cache.cpp:142-163,182): the first link after a fresh
 install takes minutes (the runner's `--link-timeout` default is 1800 s). The
 runner's `find_clangxx` uses `lib/carbon/llvm/bin/clang++` next to the busybox.
-`--background` runs it under nohup; the marker `$CONFORMANCE_OUT/.done` holds
-the exit code. `-B` keeps python from writing `__pycache__` into REPO (the
-runner imports `fork/evaluator/check_samples.py` and
+`--background` runs it under nohup; the summary line `CONFORMANCE <sha>: ...`
+is written alone to `$CONFORMANCE_OUT/CONFORMANCE.txt` and appended to the log
+before the marker `$CONFORMANCE_OUT/.done`, which holds the exit code, is
+written. `-B` keeps python from writing `__pycache__` into REPO (the runner
+imports `fork/evaluator/check_samples.py` and
 `fork/designdocs/check_samples.py`).
+
+## Reporting fixes (2026-11-16, ARB-3)
+
+Three reporting quirks of the three checks, found by EH-C's implementation and
+landing on 2026-11-09, were fixed on 2026-11-16, each proven on the label
+b87f130b2 without a rebuild: its runfiles write through into the worktree
+/home/user/carbon-arb2, clean at b87f130b2 before and after each proof (`git
+status --porcelain` empty); the fixed scripts ran from a copy of the running
+instance with `LOGS`, `CACHE_HOME` (a copy of the runtimes cache) and
+`CONFORMANCE_OUT` of the proof's own, so that no landed log or scoreboard was
+written. The interface (flags, variables, the `GATE`, `AUTOUPDATE` and
+`CONFORMANCE` prefixes) is unchanged.
+
+`gate.sh` took its failed count from the gtest line `[  FAILED  ] N tests,
+listed below:`, which file_test never prints (with `--gtest_brief=1` it prints
+`[  PASSED  ] N tests.` and one `[  FAILED  ] ToolchainFileTest.<test>, where
+GetParam() = <test> (N ms)` line per failing test, exiting 1), so a run with
+failures printed `GATE <sha>: N passed, 0 failed` and exited 1 by the binary's
+exit code alone. The failed count is now the number of distinct per-test FAILED
+lines, the criterion, and the GATE line says so whenever that count or the
+binary's exit code is not 0. Proof, one CHECK line of
+toolchain/check/testdata/patterns/underscore.carbon edited, `gate.sh --threads
+4 --filter underscore.carbon`: the old script printed `GATE b87f130b2: 1
+passed, 0 failed` and exited 1; the fixed script prints `GATE b87f130b2: 1
+passed, 1 failed (1 per-test FAILED line(s) counted; binary exit 1)` and exits
+1; with the golden restored, `GATE b87f130b2: 2 passed, 0 failed` (exit 0) and
+over the whole manifest `GATE b87f130b2: 2047 passed, 0 failed` (exit 0, `Ran
+2047 tests in 27093 ms wall time, 103496 ms across threads`).
+
+`autoupdate.sh` counted the lines of `git status --porcelain` after the run,
+against HEAD, so an uncommitted fill from an earlier pass counted again on a
+no-op pass. It now hashes every modified or untracked path before and after
+the run and counts the paths whose content this run changed; the rest are
+pre-existing local changes it left untouched, so a fixpoint pass prints 0.
+Proof, `fn H() {` renamed to `fn HH() {` in the same golden, `autoupdate.sh
+--threads 4 --filter underscore.carbon` twice: pass 1 `AUTOUPDATE b87f130b2: 1
+file(s) changed by this run; 0 pre-existing local change(s) untouched (binary
+exit 0)`, pass 2 `AUTOUPDATE b87f130b2: 0 file(s) changed by this run; 1
+pre-existing local change(s) untouched (binary exit 0)`, the golden then
+restored.
+
+`conformance.sh --background` printed its `CONFORMANCE <sha>: ...` summary line
+only to stdout, which under nohup is `$LOGS/conformance-<sha>.log.nohup`. The
+foreground run now writes the line alone to `$CONFORMANCE_OUT/CONFORMANCE.txt`,
+appends it to `$LOGS/conformance-<sha>.log` and writes the `.done` marker
+last, so a caller that has waited on the marker reads the summary file. Proof,
+`conformance.sh --background --filter types/choice_` (5 programs), `until [ -f
+$CONFORMANCE_OUT/.done ]` satisfied after 6 s with the marker holding 0:
+`CONFORMANCE b87f130b2: PASS 5 / FAIL 0 / SKIP 0 over 5 programs; bullets 1
+PASS, 0 FAIL, 0 SKIP, 55 NOT-WRITTEN (of 56 in the gap-analysis table) (runner
+exit 0)` in CONFORMANCE.txt, as the log's last line and in the .nohup file.
 
 ## Files
 

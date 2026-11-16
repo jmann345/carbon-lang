@@ -21407,3 +21407,59 @@ formatter differences; the fold after that review records the correction
 here and changes no script. Next: EH-C (W-346) and SAFE-4 resume on the
 arbiter; UA-3 carries the fix forward or drops it when upstream fixes the
 construction.
+
+_ARB-3 (2026-11-16): the arbiter's reporting fixes._ Three reporting quirks of
+the scripts landed above, found by EH-C's implementation and landing on
+2026-11-09 (ehc-plan.md's A-m2 for the first), are fixed on branch arb3-fix,
+cut from trunk 6ce4af22c, in the one commit "ARB-3: arbiter reporting fixes
+(gate failed count, autoupdate changed count, conformance background summary)"
+touching fork/tools/carbonbuild/gate.sh, autoupdate.sh, conformance.sh,
+README.md (usage, the acceptance row, the harness sections and a section
+"Reporting fixes"), NOTES-C.md and this paragraph: a maintenance fix of the
+tool, its interface (flags, variables, the `GATE`, `AUTOUPDATE` and
+`CONFORMANCE` prefixes that land1-plan.md and ehc-plan.md quote) unchanged,
+R32 untouched, no ledger item; the running instance is re-synced from trunk
+after the landing. (1) gate.sh took its failed count from the gtest line
+`[  FAILED  ] N tests, listed below:`, which file_test never prints (with
+`--gtest_brief=1` it prints `[  PASSED  ] N tests.` and one `[  FAILED  ]
+ToolchainFileTest.<test>, where GetParam() = <test> (N ms)` line per failing
+test and exits 1), so a run with failures printed `GATE <sha>: N passed, 0
+failed` and exited 1 by the binary's exit code alone; the failed count is now
+the number of distinct per-test FAILED lines, the criterion, and the GATE line
+says so whenever that count or the binary's exit code is not 0. (2)
+autoupdate.sh's `AUTOUPDATE <sha>: N file(s) changed` counted the lines of
+`git status --porcelain` after the run, against HEAD, so an uncommitted fill
+from an earlier pass counted again on a no-op second pass; it now hashes every
+modified or untracked path before and after the run and prints `AUTOUPDATE
+<sha>: N file(s) changed by this run; M pre-existing local change(s)
+untouched`, so a fixpoint pass prints 0. (3) conformance.sh --background
+printed its `CONFORMANCE <sha>: ...` line only to stdout, which under nohup is
+`$LOGS/conformance-<sha>.log.nohup`; the foreground run now writes the line
+alone to `$CONFORMANCE_OUT/CONFORMANCE.txt`, appends it to the log and writes
+the `.done` marker last, so a caller that has waited on the marker reads the
+summary file. Proofs, 2026-11-16 15:29 to 15:32 UTC, on the label b87f130b2
+without a rebuild (its runfiles write through into the worktree
+/home/user/carbon-arb2, clean at b87f130b2 before and after each proof, `git
+status --porcelain` empty), the fixed scripts run from a copy of the running
+instance with `LOGS`, `CACHE_HOME` (a copy of the runtimes cache) and
+`CONFORMANCE_OUT` under the task's scratchpad, so that no landed log,
+scoreboard or label directory was written or deleted: one CHECK line of
+toolchain/check/testdata/patterns/underscore.carbon edited, `gate.sh --threads
+4 --filter underscore.carbon` printed, old script, `GATE b87f130b2: 1 passed,
+0 failed` (exit 1) and, fixed script, `GATE b87f130b2: 1 passed, 1 failed (1
+per-test FAILED line(s) counted; binary exit 1)` (exit 1); the golden
+restored, `GATE b87f130b2: 2 passed, 0 failed` (exit 0) and over the whole
+manifest `GATE b87f130b2: 2047 passed, 0 failed` (exit 0; `Ran 2047 tests in
+27093 ms wall time, 103496 ms across threads`); `fn H() {` renamed `fn HH() {`
+in the same golden, `autoupdate.sh --threads 4 --filter underscore.carbon`
+printed on pass 1 `AUTOUPDATE b87f130b2: 1 file(s) changed by this run; 0
+pre-existing local change(s) untouched (binary exit 0)` and on pass 2
+`AUTOUPDATE b87f130b2: 0 file(s) changed by this run; 1 pre-existing local
+change(s) untouched (binary exit 0)`, the golden then restored;
+`conformance.sh --background --filter types/choice_` (5 programs) finished in
+6 s with `.done` holding 0, and `CONFORMANCE b87f130b2: PASS 5 / FAIL 0 / SKIP
+0 over 5 programs; bullets 1 PASS, 0 FAIL, 0 SKIP, 55 NOT-WRITTEN (of 56 in
+the gap-analysis table) (runner exit 0)` stands in CONFORMANCE.txt, as the
+log's last line and in the .nohup file. The three scripts pass `bash -n`, the
+six files prek to a fixpoint, R31 holds on the three markdown files, and the
+model-identifier grep over the commit's added lines finds 0 hits.

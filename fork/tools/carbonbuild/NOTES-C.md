@@ -266,6 +266,7 @@ python3 -I install.py            # or --dry-run first
 ./autoupdate.sh                  # AUTOUPDATE cb726a230: 0 file(s) changed
 ./conformance.sh --background    # until [ -f /home/user/arb/conformance/cb726a230/.done ]; do sleep 20; done
 tail -12 /home/user/arb/logs/conformance-cb726a230.log
+cat /home/user/arb/conformance/cb726a230/CONFORMANCE.txt   # the CONFORMANCE line (ARB-3)
 ```
 
 ## Fold after review 1 (2026-11-09, fixer)
@@ -314,5 +315,21 @@ tail -12 /home/user/arb/logs/conformance-cb726a230.log
     /home/user/carbon-trunk status --porcelain --ignored` empty before and
     after. The whole-manifest `autoupdate.sh` run is left to the measurement
     phase (the gate's dry-run reported no autoupdate difference on any golden).
+
+## ARB-3 (2026-11-16): reporting fixes
+
+The "Unverified" bullet above on gate.sh's summary parsing turned out wrong
+when EH-C's implementation ran the gate on failing goldens (2026-11-09):
+file_test prints no `[  FAILED  ] N tests, listed below:` line, so the failed
+count read 0 while the binary exited 1. ARB-3 (2026-11-16) fixed that in
+gate.sh (the failed count is the number of distinct per-test FAILED lines, the
+criterion, and the GATE line says so when the run is not clean), made
+autoupdate.sh count the paths whose content the run changed (a hash per
+modified or untracked path before and after the run, instead of the porcelain
+line count against HEAD, so a fixpoint pass prints 0) and made conformance.sh
+write its `CONFORMANCE <sha>: ...` line to `$CONFORMANCE_OUT/CONFORMANCE.txt`
+and to the end of the log before the `.done` marker (under `--background`
+stdout is only the .nohup file). README section "Reporting fixes" holds the
+proofs; the Deliverables table above still describes the scripts' interface.
 
 <!-- google-doc-style-resume -->

@@ -19,10 +19,13 @@
 #                                the binary opens; do not run it
 #   gate.sh -- ARGS...           extra arguments for the binary (e.g. --gtest_brief=0)
 #
-# Prints the gtest summary and one final line
+# Prints the per-test `[  FAILED  ] ...` lines (each once), the `Ran N tests`
+# line and one final line
 #   GATE <sha>: <passed> passed, <failed> failed
-# and exits non-zero on any failure (or when the binary did not print a gtest
-# summary). Logs: $LOGS/gate-<sha>-<timestamp>.log.
+# where <failed> is the number of distinct per-test FAILED lines; when that is
+# not 0, or the binary's exit code is not 0, the line carries the reason in
+# parentheses (`(<n> per-test FAILED line(s) counted; binary exit <rc>)`) and
+# the script exits 1. Logs: $LOGS/gate-<sha>-<timestamp>.log.
 set -u
 set -o pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -43,7 +46,7 @@ while [ $# -gt 0 ]; do
     --threads=*) THREADS="${1#--threads=}"; shift ;;
     --autoupdate) AUTOUPDATE=1; shift ;;   # used by autoupdate.sh
     --) shift; EXTRA=("$@"); break ;;
-    -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
     *) echo "gate.sh: unknown argument $1" >&2; exit 2 ;;
   esac
 done
@@ -120,20 +123,27 @@ if [ "$AUTOUPDATE" = 1 ]; then
 fi
 
 # 3. Summary. With --gtest_brief=1 (the binary's default) gtest prints
-# `[  PASSED  ] N tests.` and, on failures, `[  FAILED  ] N tests, listed below:`
-# followed by one `[  FAILED  ] Suite.name` line per test.
+# `[  PASSED  ] N tests.` and, as each test fails, one
+# `[  FAILED  ] ToolchainFileTest.<test>, where GetParam() = <test> (N ms)`
+# line; file_test prints NO `[  FAILED  ] N tests, listed below:` summary
+# (ARB-3, 2026-11-16: the failed count used to be parsed from that absent line
+# and read 0 on a failing run, the exit code alone being 1). The per-test
+# FAILED lines are the criterion: the failed count is the number of distinct
+# test names among them, and the GATE line says so unless the run is clean.
 PASSED=$(grep -E '^\[  PASSED  \] [0-9]+ tests?' "$LOG" | tail -1 | sed -E 's/^\[  PASSED  \] ([0-9]+) .*/\1/')
-FAILED=$(grep -E '^\[  FAILED  \] [0-9]+ tests?, listed below' "$LOG" | tail -1 | sed -E 's/^\[  FAILED  \] ([0-9]+) .*/\1/')
 PASSED=${PASSED:-0}
-FAILED=${FAILED:-0}
-grep -E '^\[  FAILED  \] [A-Za-z]' "$LOG" | sed 's/^/  /' | head -50
+FAILED_TESTS=$(grep -E '^\[  FAILED  \] [A-Za-z]' "$LOG" | sed -E 's/^\[  FAILED  \] ([^ ,]+).*/\1/' | sort -u)
+FAILED=0
+if [ -n "$FAILED_TESTS" ]; then FAILED=$(echo "$FAILED_TESTS" | wc -l); fi
+grep -E '^\[  FAILED  \] [A-Za-z]' "$LOG" | sort -u | sed 's/^/  /' | head -50
 grep -E '^Ran [0-9]+ tests in' "$LOG" | tail -1
 if ! grep -qE '^\[  PASSED  \] [0-9]+ tests?' "$LOG"; then
-  echo "GATE $SHA: $PASSED passed, $FAILED failed (NO GTEST SUMMARY; binary exit $RC)"
+  echo "GATE $SHA: $PASSED passed, $FAILED failed (NO GTEST SUMMARY; $FAILED per-test FAILED line(s) counted; binary exit $RC)"
   exit 1
 fi
-echo "GATE $SHA: $PASSED passed, $FAILED failed"
 if [ "$FAILED" != 0 ] || [ "$RC" != 0 ]; then
+  echo "GATE $SHA: $PASSED passed, $FAILED failed ($FAILED per-test FAILED line(s) counted; binary exit $RC)"
   exit 1
 fi
+echo "GATE $SHA: $PASSED passed, 0 failed"
 exit 0

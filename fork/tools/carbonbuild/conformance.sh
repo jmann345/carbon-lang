@@ -24,13 +24,19 @@
 #   conformance.sh --filter X      only programs whose path contains X
 #   conformance.sh --background    start it under nohup and return at once;
 #                                  wait with `until [ -f $CONFORMANCE_OUT/.done ]; do sleep 20; done`
-#                                  (the marker holds the exit code) and read the log
+#                                  (the marker holds the exit code, and is written
+#                                  last) and read the `CONFORMANCE <sha>: ...` line
+#                                  from $CONFORMANCE_OUT/CONFORMANCE.txt or the
+#                                  end of the log
 #   conformance.sh --check         verify the inputs (busybox, runner, its
 #                                  --self-test, writable cache); run no program
 #   conformance.sh -- ARGS...      extra runner arguments
 #
-# Log: $LOGS/conformance-<sha>.log (overwritten per run). Exit: the runner's
-# (1 if any non-SKIP program fails).
+# Log: $LOGS/conformance-<sha>.log (overwritten per run): the runner's output,
+# then the `CONFORMANCE <sha>: ...` summary line, which is also written alone
+# to $CONFORMANCE_OUT/CONFORMANCE.txt and printed (under --background the
+# stdout is only $LOGS/conformance-<sha>.log.nohup; ARB-3, 2026-11-16). Exit:
+# the runner's (1 if any non-SKIP program fails).
 set -u
 set -o pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -49,7 +55,7 @@ while [ $# -gt 0 ]; do
     --filter) FILTER="$2"; shift 2 ;;
     --filter=*) FILTER="${1#--filter=}"; shift ;;
     --) shift; EXTRA=("$@"); break ;;
-    -h|--help) sed -n '2,32p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,39p' "$0"; exit 0 ;;
     *) echo "conformance.sh: unknown argument $1" >&2; exit 2 ;;
   esac
 done
@@ -58,6 +64,7 @@ BUSYBOX="$INSTALL_DIR/lib/carbon/carbon-busybox"
 RUNNER="$REPO/fork/conformance/runner.py"
 LOG="$LOGS/conformance-$SHA.log"
 DONE="$CONFORMANCE_OUT/.done"
+SUMMARY_FILE="$CONFORMANCE_OUT/CONFORMANCE.txt"
 mkdir -p "$LOGS" "$CACHE_HOME" "$CONFORMANCE_OUT"
 # The runner imports fork/evaluator/check_samples.py and fork/designdocs/
 # check_samples.py from REPO; `-B` keeps python from writing __pycache__ there
@@ -104,7 +111,7 @@ if [ "$MODE_CHECK" = 1 ]; then
 fi
 
 if [ "$BACKGROUND" = 1 ]; then
-  rm -f "$DONE"
+  rm -f "$DONE" "$SUMMARY_FILE"
   FG_ARGS=()
   for a in "${ORIG_ARGS[@]}"; do
     if [ "$a" != "--background" ]; then FG_ARGS+=("$a"); fi
@@ -119,7 +126,7 @@ if [ ! -x "$BUSYBOX" ]; then
   exit 1
 fi
 
-rm -f "$DONE"
+rm -f "$DONE" "$SUMMARY_FILE"
 ARGS=(--toolchain "$BUSYBOX" --out "$CONFORMANCE_OUT")
 if [ -n "$FILTER" ]; then ARGS+=(--filter "$FILTER"); fi
 ARGS+=("${EXTRA[@]}")
@@ -128,7 +135,6 @@ unset BUILD_WORKING_DIRECTORY
 echo "conformance $SHA: python3 -I fork/conformance/runner.py ${ARGS[*]} (cwd $REPO; log $LOG)"
 (cd "$REPO" && "${PY[@]}" "$RUNNER" "${ARGS[@]}") > "$LOG" 2>&1
 RC=$?
-echo "$RC" > "$DONE"
 
 # The runner's totals block ("=== totals ===": one `  <STATUS> <n>` line per
 # status and a `  bullets: ...` line) and its final scoreboard path.
@@ -138,5 +144,12 @@ SKIP_N=$(grep -E '^  SKIP +[0-9]+$' "$LOG" | awk '{print $2}' | tail -1)
 FAIL_N=$(grep -E '^  (COMPILE-FAIL|LINK-FAIL|RUN-FAIL|OUTPUT-MISMATCH|DIFF-MISMATCH) +[0-9]+$' "$LOG" | awk '{s+=$2} END {print s+0}')
 TOTAL=$(grep -cE '^\[[A-Z-]+\] ' "$LOG")
 BULLETS=$(grep -E '^  bullets: ' "$LOG" | tail -1 | sed 's/^  bullets: //')
-echo "CONFORMANCE $SHA: PASS ${PASS_N:-?} / FAIL ${FAIL_N:-?} / SKIP ${SKIP_N:-?} over $TOTAL programs; bullets ${BULLETS:-?} (runner exit $RC)"
+SUMMARY="CONFORMANCE $SHA: PASS ${PASS_N:-?} / FAIL ${FAIL_N:-?} / SKIP ${SKIP_N:-?} over $TOTAL programs; bullets ${BULLETS:-?} (runner exit $RC)"
+# The summary line goes to stdout, to the end of the log and, alone, to
+# $SUMMARY_FILE (ARB-3, 2026-11-16: under --background stdout is only the
+# .nohup file). The .done marker is written last, so a caller that has seen
+# it can read the summary file and the log's last line.
+echo "$SUMMARY" | tee -a "$LOG"
+echo "$SUMMARY" > "$SUMMARY_FILE"
+echo "$RC" > "$DONE"
 exit "$RC"

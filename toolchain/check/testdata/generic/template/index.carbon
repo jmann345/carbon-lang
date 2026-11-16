@@ -48,8 +48,10 @@ fn Use(h: Holder(array(i32, 2))) -> i32 {
   return h.First();
 }
 
-// --- index_class_with_index_with.carbon
+// --- fail_todo_index_class_with_index_with.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Vec(T)` is a deferred `call_action`, and `T` is
+// not deduced through it (fork work item W-396).
 
 class Vec(T: type) {
   var tag: i32;

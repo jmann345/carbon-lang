@@ -10,8 +10,10 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/generic/template/deduce_class_args.carbon
 
-// --- holder.carbon
+// --- fail_todo_holder.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Holder(T)` is a deferred `call_action`, and a
+// template parameter is not deduced through it (fork work item W-396).
 
 class Holder(T: type) {
   var item: T;
@@ -27,8 +29,9 @@ fn Use(h: Holder(i32)) -> i32 {
   return GetTemplate(h);
 }
 
-// --- holder_copy_constraint.carbon
+// --- fail_todo_holder_copy_constraint.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_holder (W-396).
 
 class Holder(T: Core.Copy) {
   var item: T;
@@ -42,8 +45,9 @@ fn Use(h: Holder(i32)) -> i32 {
   return Get(h);
 }
 
-// --- holder_pointer.carbon
+// --- fail_todo_holder_pointer.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_holder (W-396).
 
 class Holder(T: type) {
   var item: T;
@@ -57,8 +61,9 @@ fn Use(h: Holder(i32)*) -> i32 {
   return Get(h);
 }
 
-// --- vec_value_param.carbon
+// --- fail_todo_vec_value_param.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_holder, for a value parameter (W-396).
 
 class Vec(template N: i32) {
   var a: i32;
@@ -72,8 +77,9 @@ fn Use(v: Vec(3)) -> i32 {
   return Size(v);
 }
 
-// --- template_class_type.carbon
+// --- fail_todo_template_class_type.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_holder, for a class template (W-396).
 
 class Holder(template T: type) {
   var item: T;
@@ -174,8 +180,11 @@ fn Use() -> i32 {
   return Make(3);
 }
 
-// --- fail_class_template_literal_with_dependent_array_bound_unknown_field.carbon
+// --- todo_fail_class_template_literal_with_dependent_array_bound_unknown_field.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Arr(N)` is a deferred `call_action`, so the
+// literal's unknown field is diagnosed only on instantiation, which this
+// split never makes (fork work item W-398).
 
 class Arr(template N: i32) {
   var a: array(i32, N);
@@ -456,6 +465,28 @@ class D(template T: HasItem) {
 fn G() -> i32 {
   var d: D(Holder) = {.c = {.x = 1}, .k = 2};
   return d.c.x + d.k;
+}
+
+// --- fail_todo_impl_forall_formed_self.carbon
+library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Box(T)` in the impl's self is a deferred
+// `call_action`, so the template binding is reported unused and the impl is
+// not found for `Box(i32)` (fork work item W-400).
+
+class Box(T: type) {
+  var item: T;
+}
+
+interface I {
+  fn Val(self) -> i32;
+}
+
+impl forall [template T: type] Box(T) as I {
+  fn Val(self) -> i32 { return 11; }
+}
+
+fn Use(h: Box(i32)) -> i32 {
+  return h.(I.Val)();
 }
 
 // CHECK:STDOUT: --- holder.carbon

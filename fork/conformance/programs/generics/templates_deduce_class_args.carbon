@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Generics: Integrated templates
+// SKIP: deduction through a class's arguments is withdrawn by TP-2 (fork work item W-396; fork/templates/tp2-plan.md D-TP2-2): with `IsCallPerformable` upstream's, `Holder(T)` in a parameter's type is a deferred `call_action`, and this file fails to compile with `error: cannot deduce value for generic parameter `T`` at `Core.Print(Get(h));` (:63:14) and at `Core.Print(GetThrough(&h) * 2);` (:64:14) and `error: cannot deduce value for generic parameter `N`` at `Core.Print(Size(v));` (:66:14), as on the upstream nightly 2026.10.12 (verified on the container arbiter's install of TP-2's prototype). Un-SKIP when W-396's break condition fires: upstream's deduce.cpp deduces a template parameter through a template-dependent splice, or the nightly runs this program.
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   21

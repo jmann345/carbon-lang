@@ -24,8 +24,11 @@
 // definition, such as the template parameter itself (proposal 2200's `match`
 // on a dependent value, TR-13), stays a `semantics TODO`.
 
-// --- designator_arm.carbon
+// --- fail_todo_designator_arm.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Opt(T)` is a deferred `call_action`, so a
+// `match` on it reports the scrutinee TODO, as trunk did before TP-1's round
+// 10 (fork work item W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -48,8 +51,9 @@ fn Use() -> i32 {
   return Conv(one);
 }
 
-// --- designator_arm_exhaustive.carbon
+// --- fail_todo_designator_arm_exhaustive.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -100,8 +104,9 @@ fn Use() -> i32 {
   return Outer(i32).Get(x, true);
 }
 
-// --- value_param.carbon
+// --- fail_todo_value_param.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm (W-397).
 
 choice V(N: i32) {
   A,
@@ -121,8 +126,9 @@ fn Use() -> i32 {
   return Kind(3);
 }
 
-// --- nested_match.carbon
+// --- fail_todo_nested_match.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -145,8 +151,9 @@ fn Use(s: Opt(i64)) -> i32 {
   return Inner(s, 1);
 }
 
-// --- guard.carbon
+// --- fail_todo_guard.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -169,8 +176,10 @@ fn Use() -> i32 {
   return Big(a) + Big(b);
 }
 
-// --- pattern_forms.carbon
+// --- fail_todo_pattern_forms.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm, for pattern conditions and
+// `let` ... `else` (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -210,8 +219,11 @@ fn Use(s: Opt(i32), d: i32) -> i32 {
   return d;
 }
 
-// --- int_scrutinee.carbon
+// --- fail_todo_int_scrutinee.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm, for `Core.Int(N)` (W-397); `N` is
+// not deduced through `Core.Int(N)` either (W-396), which the body's TODO
+// hides.
 
 fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
   match (x) {
@@ -236,8 +248,10 @@ fn Use(a: i8, b: i64) -> i32 {
   return Kind(b);
 }
 
-// --- fail_unknown_alternative.carbon
+// --- fail_todo_unknown_alternative.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) the scrutinee TODO replaces the diagnostic this
+// split pinned (fork work item W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -323,8 +337,9 @@ class Outer(template T: type) {
   }
 }
 
-// --- fail_nonexhaustive.carbon
+// --- fail_todo_nonexhaustive.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -342,8 +357,9 @@ fn Conv[template T: type](s: Opt(T)) -> i32 {
   return 1;
 }
 
-// --- fail_never_matches.carbon
+// --- fail_todo_never_matches.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -366,8 +382,9 @@ fn Conv[template T: type](s: Opt(T)) -> i32 {
   return 3;
 }
 
-// --- fail_int_never_matches.carbon
+// --- fail_todo_int_never_matches.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative, for `Core.Int(N)` (W-397).
 
 fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
   match (x) {
@@ -384,8 +401,9 @@ fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
   }
 }
 
-// --- fail_int_literal_out_of_range_on_instantiation.carbon
+// --- fail_todo_int_literal_out_of_range_on_instantiation.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative, for `Core.Int(N)` (W-397).
 
 fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
   match (x) {
@@ -406,8 +424,9 @@ fn Use(a: i8) -> i32 {
   return Kind(a);
 }
 
-// --- fail_payload_literal_on_instantiation.carbon
+// --- fail_todo_payload_literal_on_instantiation.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -433,8 +452,9 @@ fn Use() -> i32 {
   return Conv(true);
 }
 
-// --- fail_guard_on_instantiation.carbon
+// --- fail_todo_guard_on_instantiation.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -461,8 +481,9 @@ fn Use() -> i32 {
   return Conv(a);
 }
 
-// --- fail_payload_not_trivial_on_instantiation.carbon
+// --- fail_todo_payload_not_trivial_on_instantiation.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_unknown_alternative (W-397).
 
 choice Opt(T: type) {
   Some(value: T),

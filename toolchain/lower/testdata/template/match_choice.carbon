@@ -15,8 +15,11 @@
 // compares its own discriminant and reads its payload at its own offset, and
 // an integer of a template-dependent width compares at its own width.
 
-// --- designator_arm.carbon
+// --- fail_todo_designator_arm.carbon
 library "[[@TEST_NAME]]";
+// TODO: since TP-2 (W-374) `Opt(T)` is a deferred `call_action`, so a
+// `match` on it reports the scrutinee TODO and nothing is lowered (fork work
+// item W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -65,8 +68,9 @@ fn Use(x: i32) -> i32 {
   return Outer(i32).Get(x, true);
 }
 
-// --- let_else_payload.carbon
+// --- fail_todo_let_else_payload.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm (W-397).
 
 choice Opt(T: type) {
   Some(value: T),
@@ -82,8 +86,11 @@ fn Use(s: Opt(i64), d: i64) -> i64 {
   return Unwrap(s, d);
 }
 
-// --- int_scrutinee.carbon
+// --- fail_todo_int_scrutinee.carbon
 library "[[@TEST_NAME]]";
+// TODO: as fail_todo_designator_arm, for `Core.Int(N)` (W-397); `N` is
+// not deduced through `Core.Int(N)` either (W-396), which the body's TODO
+// hides.
 
 fn Kind[template N: Core.IntLiteral](x: Core.Int(N)) -> i32 {
   match (x) {

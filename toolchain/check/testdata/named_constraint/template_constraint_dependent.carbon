@@ -246,7 +246,8 @@ library "[[@TEST_NAME]]";
 
 // D-SC-19 as amended for W-139: `J(T)` converts the template-dependent `T` to
 // `HasGet` in `W`'s definition, and `W(D)` performs that conversion again.
-// TODO: with TP-1's eager `J(T)`, the impl's `J(V)` is reported too (W-376).
+// Since TP-2 (W-374) `J(T)` is a deferred `call_action`, so `W(D)` is
+// reported once; the thunk half of W-376 stands.
 template constraint HasGet {
   fn Get(self) -> i32;
 }

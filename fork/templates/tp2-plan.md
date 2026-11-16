@@ -1195,7 +1195,12 @@ Records that claim the discharge go in the last commit.
     paragraphs, D.4, D.5, D.6 (checked at the re-fetched tip with
     check_greps.sh and check_quotes.sh), D.7's evidence cell. Message: "TP-2
     records: decision-log entry TP-2, register rows H10.8 ALIGNED and H9.8
-    re-read, dated notes".
+    re-read, dated notes". (Amended 2026-11-16, review fold: RR1-m3,
+    implementation re-review: this item's "claim no discharge" and the
+    preamble's last sentence reserve the discharge to D, yet D.4's notes and
+    D.6's H10.8 row, assigned here, say "W-374 DISCHARGED" and "discharged";
+    R, 043978962, wrote them as assigned, true at D's tree, the branch head;
+    nothing moves between the commits.)
 8.  **D, the discharge**: D.1 (W-374 DISCHARGED; W-396 to W-400 filed; the
     notes), D.2, D.8, and D.3's D-time paragraphs (the §8.7 check on the tree
     at <R>, the id re-scan's `<n>` refs and `<w>` worktrees, the discharge
@@ -2340,6 +2345,13 @@ New items, inserted after W-395 in id order (fields as W-374's):
 
 <!-- google-doc-style-resume -->
 
+(Amended 2026-11-16, review fold: RR1-m4, implementation re-review: the
+ledger's top-level "source" string also gained the per-discharge sentence
+"TP-2 (2026-11-16) discharged W-374 and filed W-396 to W-400.", the file's
+convention for a discharge (EH-C's "discharged W-346 and filed W-380" sits in
+the same string), which this appendix did not name; the ledger stays as D
+wrote it, `json.load` ok, prettier at a fixpoint.)
+
 ### D.2 W-139's dated note
 
 Given in D.1 (the `notes` sentence); its register twin is D.6's H9.8 text.
@@ -2476,6 +2488,14 @@ A-m3, A-m4 / B-m3, B-m2, B-m4 and B-m6, X25 as W-396's probe and the two
 commit-message errata. The committed entry is the record; the template above
 stands as rev 3 wrote it but for the §8.7 wording.)
 
+(Amended 2026-11-16, review fold: RR1-m1 and RR1-m3, implementation
+re-review: the template's "no W-4xx" reads "no other W-4xx" in the committed
+entry, W-400 being this branch's own ledger id, and its re-scan counts
+distinct heads, 748, beside the 971 refs §0.9 counted, both reproduced by the
+re-review; the Measured paragraph gains, by the dry round's records commit,
+the re-review's measurement of the merged head 88c9eb8cf, the merge M having
+been made without F.1's re-measure (F.1's note).)
+
 ### D.4 The dated notes
 
 The TP-1 entry's register paragraph (fork/decision-log.md:6992-7003, the
@@ -2510,6 +2530,12 @@ in `IsCallPerformable`, so nine fork lines remain in that form (fourteen
 `OperandDependence(context,` call sites in all: call.cpp 5, convert.cpp 6,
 handle_index.cpp 2, pointer_dereference.cpp 1), and 62f1cc6a3's rename of
 `GenericClassType` meets no fork use in that function."
+
+(Amended 2026-11-16, review fold: RR1-m2, implementation re-review: the
+sentence sits inside the audit item's parenthesis, after "merging clean;" and
+before its closing "),", not after it: the words verbatim, its final period
+replaced by "),", so that the item's list of audit entries reads on;
+ORCHESTRATION.md keeps that placement.)
 
 ### D.6 The register files and rows
 
@@ -2609,6 +2635,16 @@ D-TP2-3; W-396 to W-400.)"; the UA-3 sentence "UA-3 follows W-341 and W-346
 Scoreboard section gains "Expected after TP-2's landing: 226 PASS / 15 SKIP /
 0 FAIL (241), 51/56 bullets (two programs SKIP under W-396 and W-397)".
 
+(Amended 2026-11-16, review fold: RR1-m1 and §3 item 9, implementation
+re-review round 1 DRY (APPROVE-WITH-AMENDMENTS: no BLOCKER, no MAJOR, four
+records-only MINORs): the Branches row's leading phrase becomes "IMPLEMENTED
+AND REVIEWED; RE-REVIEW ROUND 1 DRY (base trunk 701863aa5)", the row names the
+merge, "trunk 99f4df970 merged at 949a8f574", and marks the measured figures
+as re-measured on the merged head by the round; the dated paragraph names the
+commits through D, 88c9eb8cf, where it read "this one", and gains one sentence
+naming the round, its verdict and D's sha; the header clause is unchanged, it
+points at the Branches row.)
+
 ## Appendix E: the PR text
 
 <!-- google-doc-style-ignore -->
@@ -2674,6 +2710,16 @@ https://claude.ai/code/session_018tx3BJWJhp2yYjHPRA5fNR
 
 Message: "TP-2 (M): merge trunk <sha> into claude/carbon-fork-0-1-tp2 before
 the landing"; conflicts by §6.2's rules; gate and conformance re-measured.
+(Amended 2026-11-16, review fold: RR1-m1, implementation re-review: M was
+made at 949a8f574 by the records writer, before R, because trunk moved after
+fix 1 (ARB-4's two records commits, fork/decision-log.md's tail and
+fork/tools/carbonbuild; merge-tree clean), without this re-measure, every
+build input being identical; the re-measure is the re-review's, on the merged
+head 88c9eb8cf under its label tp2-rr1: `GATE tp2-rr1: 2047 passed, 0
+failed`, `AUTOUPDATE tp2-rr1: 0 file(s) changed`, `CONFORMANCE tp2-rr1: PASS
+226 / FAIL 0 / SKIP 15 over 241`, bullets 51/0/5. When the merge touches no
+build input the re-measure may be the next review's, and L measures the head
+in any case.)
 
 ### F.2 F-M, the refill on the merged branch (only if autoupdate changes a file)
 

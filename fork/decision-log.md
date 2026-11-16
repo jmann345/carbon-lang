@@ -7109,7 +7109,14 @@ paragraphs). The two implementation reviews (A: toolchain, goldens, probes and
 the M1 mutant on its own label; B: upstream fidelity, amendments, process and
 scope) both returned APPROVE-WITH-AMENDMENTS: no BLOCKER, one MAJOR (the same
 defect, fixed by fix 1) and ten MINORs, all records-only, folded by this commit
-and recorded under "Measured" below.
+and recorded under "Measured" below. The focused re-review round 1 of the
+implementation (one fresh agent over fix 1, M, R, D and the folds, on its own
+label tp2-rr1) returned APPROVE-WITH-AMENDMENTS: no BLOCKER, no MAJOR, four
+records-only MINORs (RR1-m1 to RR1-m4), folded by the records commit after D
+with the mark "(amended 2026-11-16, review fold: RR1-<id>, implementation
+re-review)"; the round is DRY (the plan's §3 item 9), and the ORCHESTRATION
+Branches row reads "IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1 DRY (base trunk
+701863aa5)".
 
 _The item and the rule._ Upstream's `IsCallPerformable`
 (toolchain/check/call.cpp:449-464 at 7a3608bab, the cut's body at
@@ -7264,7 +7271,20 @@ after P and after fix 1, :168 being the blockquote's blank line (A-m4 / B-m3);
 fix 1's (eb655b5ce) and the plan's C.4 put X25's first error at :33:30, measured
 on the pre-splice file; the re-written header being one line longer, it is at
 :34:30 on tp2-fix and on tp2-impl (the fixer's erratum; C.4 corrected by this
-commit).
+commit). The merged head 88c9eb8cf (M 949a8f574, R and D on fix 1's tree) is
+measured by the focused re-review round 1 on its own label tp2-rr1 (build 428
+steps, status 0, no warning): `GATE tp2-rr1: 2047 passed, 0 failed`;
+`AUTOUPDATE tp2-rr1: 0 file(s) changed`, the worktree clean; `CONFORMANCE
+tp2-rr1: PASS 226 / FAIL 0 / SKIP 15 over 241`, bullets 51/0/5, the
+per-program statuses tp2-base's but the two SKIPs; `runner.py --self-test`
+OK; the designdocs checker with `--toolchain` 0 errors on its install and 1 on
+tp2-base (X25 "compiled, expected error"); X25's first error at :34:30; §8.7
+the two `context.sem_ir()` lines, `forms_type` no match,
+`OperandDependence(context,` 5/6/2/1; convert.cpp identical to 701863aa5;
+merge-tree against origin/trunk 99f4df970 clean: the merge M, made without
+F.1's re-measure because it touches no build input, is measured by that round,
+and L measures the head again (amended 2026-11-16, review fold: RR1-m1,
+implementation re-review).
 
 _Break conditions._ D-TP2-1's: upstream changes which operands or which
 dependence defer a call, or README.md:3012-3016 or p002200:205-209 change.

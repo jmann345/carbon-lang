@@ -2440,12 +2440,17 @@ Next actions item 14 and UA-3 proceeds by item 6.
 AND REVIEWED on claude/carbon-fork-0-1-tp2 (commits 9f09c347b, b87751859,
 a6b38ea92, 75528587c, 6adeedc41, 6892c5d50, eb655b5ce, 949a8f574 (the merge of
 Appendix F.1, brought forward because trunk moved after fix 1), 043978962 and
-this one): `IsCallPerformable` is upstream's (7a3608bab call.cpp:449-464 but for
-the `Context&` signature); eleven goldens refilled, twenty-six splits renamed
-and one added, two programs SKIP (W-396, W-397); W-139's convert.cpp requirement
-kept (D-TP2-3); W-396 to W-400 filed; register H10.8 ALIGNED; container-measured
-(R33 (b)): gate 2047 of 2047, conformance 226/0/15 over 241, 51/56 bullets.
-Next: the PR with base trunk, LAND-1's landing, then UA-3.
+88c9eb8cf, the discharge D; amended 2026-11-16, review fold: RR1-m1,
+implementation re-review, where it read "and this one"): `IsCallPerformable`
+is upstream's (7a3608bab call.cpp:449-464 but for the `Context&` signature);
+eleven goldens refilled, twenty-six splits renamed and one added, two programs
+SKIP (W-396, W-397); W-139's convert.cpp requirement kept (D-TP2-3); W-396 to
+W-400 filed; register H10.8 ALIGNED; container-measured (R33 (b)): gate 2047 of
+2047, conformance 226/0/15 over 241, 51/56 bullets. The focused re-review round
+1 of the implementation (over fix 1, M, R and D, 88c9eb8cf) returned
+APPROVE-WITH-AMENDMENTS with no BLOCKER, no MAJOR and four records-only MINORs
+(RR1-m1 to RR1-m4), so the round is DRY (the plan's §3 item 9) and its records
+fold follows D. Next: the PR with base trunk, LAND-1's landing, then UA-3.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -2799,7 +2804,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ov4` | LANDED as PR 68 by merge c62ae211e (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:53:02Z, merge_commit_sha c62ae211e) — OV-4: W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3; land-time commits c6c9d5fe3; container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15 over 208, 49/56 bullets; moved to follow-ons: to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-arb2` | LANDED as PR 69 by merge fca1e9e2f (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-09T18:14:39Z, merge_commit_sha fca1e9e2f) — ARB-2: W-378: `UnitAndImports` constructed in place in toolchain/check/check.cpp (its emitter points into itself; the re-created container arbiter's first finding, REVIEW-1 R1-B1), with its records; the arbiter's scripts land under fork/tools/carbonbuild by the records commit of 2026-11-09; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ehc` | LANDED as PR 70 by merge 2cdb7ff4a (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-16T14:38:00Z, merge_commit_sha 2cdb7ff4a) — EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346, R32; F-006a reversed, veto-able); W-346 discharged, W-380 filed; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: W-380 to Next actions item 14 (PR 53's rename commit); R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-tp2` | IMPLEMENTED AND REVIEWED (base trunk 701863aa5) — TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374, R32); W-396 to W-400 filed; container-measured (R33 (b)): gate 2047 of 2047, conformance 226/0/15 over 241 |
+| `claude/carbon-fork-0-1-tp2` | IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1 DRY (base trunk 701863aa5) — TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374, R32); W-396 to W-400 filed; trunk 99f4df970 merged at 949a8f574; container-measured (R33 (b)): gate 2047 of 2047, conformance 226/0/15 over 241, re-measured on the merged head by re-review round 1 |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

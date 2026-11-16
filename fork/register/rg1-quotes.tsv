@@ -112,8 +112,8 @@ proposals/p002200-template-generics.md	200	Member lookup into a templated type l
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H10.7, lines moved +80 by d50576ca1, the cross-file TODO and CARBON_FATAL unchanged
 toolchain/lower/handle.cpp	464	TODO: We don't yet have support for cross-file templates at all. Lowering
 toolchain/lower/handle.cpp	470	CARBON_FATAL("Cross-file template lowering not implemented yet");
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H10.2, line moved +15 by d50576ca1 (GlobalRef), text unchanged
-toolchain/sem_ir/typed_insts.h	1327	MetaInstId storage_access_block_id;
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H10.2, line moved +12 by dbf02ad10 (upstream's AddrOfAction at typed_insts.h:142-152), text unchanged (+15 by d50576ca1 at ca1898506)
+toolchain/sem_ir/typed_insts.h	1339	MetaInstId storage_access_block_id;
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H11.2, line moved -2 by be0f11be9, text unchanged
 toolchain/check/call.cpp	385	Wrap symbolic template args in a `TemplateInst` so that all symbolic
 toolchain/check/cpp/overload_resolution.cpp	156	static auto IsMoveEquivalentToCopy(clang::QualType type) {
@@ -218,15 +218,15 @@ docs/design/README.md	1077	bindings. This is not a contextual default: no other 
 docs/design/generics/terminology.md	100	[Associated constants](#interface-parameters-and-associated-constants) are
 docs/design/generics/terminology.md	101	always checked generic bindings.
 docs/design/variadics.md	219	the named pack from the Nth scrutinee. The binding pattern's type expression may
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H11.9, lines moved +15 by d50576ca1 and -18 by 9fb428d71, text unchanged
-toolchain/sem_ir/typed_insts.h	2006	struct SpecificConstant {
-toolchain/sem_ir/typed_insts.h	2010	.expr_category = ComputedExprCategory::SameAsFirstOperand,
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H4.4, lines moved +1 by d99b767dd (an include at export.cpp:16), text unchanged; :404-405 still unchecked
-toolchain/check/cpp/export.cpp	404	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
-toolchain/check/cpp/export.cpp	405	auto* record_decl = ExportClassToCppInDeclContext(
-toolchain/check/cpp/export.cpp	539	if (!decl_context) {
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T12.7, line moved +4 by d99b767dd, still CARBON_CHECK
-toolchain/check/cpp/export.cpp	1955	"can't form a pointer to a template");
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H11.9, lines moved +12 by dbf02ad10, text unchanged (+15 by d50576ca1 and -18 by 9fb428d71 at ca1898506)
+toolchain/sem_ir/typed_insts.h	2018	struct SpecificConstant {
+toolchain/sem_ir/typed_insts.h	2022	.expr_category = ComputedExprCategory::SameAsFirstOperand,
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H4.4, lines moved by 54728e47f (ExportNameScopeToCpp's ParameterizedClassType branch), 404 to 536, 405 to 537 and 539 to 610 (ExportParameterizedClassToCpp), text unchanged; :535-538 still unchecked
+toolchain/check/cpp/export.cpp	536	ExportNameScopeToCpp(context, loc_id, class_info.parent_scope_id);
+toolchain/check/cpp/export.cpp	537	auto* record_decl = ExportClassToCppInDeclContext(
+toolchain/check/cpp/export.cpp	610	if (!decl_context) {
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: T12.7, line moved +65 by 54728e47f and +1 by 72abc7a46, still CARBON_CHECK
+toolchain/check/cpp/export.cpp	2021	"can't form a pointer to a template");
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H8.2, line moved +2 by 5ae3dcaa9, text unchanged
 toolchain/parse/node_kind.def	296	CARBON_PARSE_NODE_KIND_STATEMENT(PackExpansionStart)
 toolchain/check/handle_pack_expansion.cpp	12	return context.TODO(node_id, "HandlePackExpansionStart");
@@ -249,8 +249,8 @@ docs/design/expressions/comparison_operators.md	463	is a weak, partial, or total
 docs/design/expressions/comparison_operators.md	505	not both.
 docs/design/interoperability/philosophy_and_goals.md	408	Furthermore, if Carbon code calls a C++ function
 docs/design/safety/README.md	249	run-time overhead in order to use additional hardening. Carbon will have
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T12.7, line moved +4 by d99b767dd, still CARBON_CHECK
-toolchain/check/cpp/export.cpp	1954	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
+# Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: T12.7, line moved +65 by 54728e47f and +1 by 72abc7a46, still CARBON_CHECK
+toolchain/check/cpp/export.cpp	2020	CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
 docs/design/README.md	377	## Build modes
 docs/design/README.md	379	The behavior of the Carbon compiler depends on the _build mode_:
 docs/design/README.md	383	memory usage.

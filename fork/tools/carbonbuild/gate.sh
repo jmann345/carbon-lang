@@ -19,13 +19,18 @@
 #                                the binary opens; do not run it
 #   gate.sh -- ARGS...           extra arguments for the binary (e.g. --gtest_brief=0)
 #
-# Prints the per-test `[  FAILED  ] ...` lines (each once), the `Ran N tests`
-# line and one final line
+# Prints the per-test `[  FAILED  ] ...` lines (each test once: the `(N ms)`
+# suffix is stripped before the lines are de-duplicated, so the second copy of
+# each line under --gtest_brief=0 is not repeated), the `Ran N tests` line and
+# one final line
 #   GATE <sha>: <passed> passed, <failed> failed
 # where <failed> is the number of distinct per-test FAILED lines; when that is
 # not 0, or the binary's exit code is not 0, the line carries the reason in
 # parentheses (`(<n> per-test FAILED line(s) counted; binary exit <rc>)`) and
-# the script exits 1. Logs: $LOGS/gate-<sha>-<timestamp>.log.
+# the script exits 1. When no test ran at all (0 passed, 0 failed: a --filter
+# that matches nothing) the line reads `GATE <sha>: 0 passed, 0 failed (NO
+# TESTS RAN; binary exit <rc>)` and the script exits 1, so that a mistyped
+# filter cannot read as green. Logs: $LOGS/gate-<sha>-<timestamp>.log.
 set -u
 set -o pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,7 +51,7 @@ while [ $# -gt 0 ]; do
     --threads=*) THREADS="${1#--threads=}"; shift ;;
     --autoupdate) AUTOUPDATE=1; shift ;;   # used by autoupdate.sh
     --) shift; EXTRA=("$@"); break ;;
-    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,33p' "$0"; exit 0 ;;
     *) echo "gate.sh: unknown argument $1" >&2; exit 2 ;;
   esac
 done
@@ -130,15 +135,24 @@ fi
 # and read 0 on a failing run, the exit code alone being 1). The per-test
 # FAILED lines are the criterion: the failed count is the number of distinct
 # test names among them, and the GATE line says so unless the run is clean.
+# The lines are printed once per test: with --gtest_brief=0 gtest repeats each
+# without its `(N ms)` suffix in its own `listed below:` block, so the suffix
+# is stripped before `sort -u` (ARB-3 review fold, R-M2). A run of 0 tests
+# (a --filter matching nothing; gtest still prints `[  PASSED  ] 0 tests.`)
+# is not green: `(NO TESTS RAN; binary exit <rc>)`, exit 1 (R-M3).
 PASSED=$(grep -E '^\[  PASSED  \] [0-9]+ tests?' "$LOG" | tail -1 | sed -E 's/^\[  PASSED  \] ([0-9]+) .*/\1/')
 PASSED=${PASSED:-0}
 FAILED_TESTS=$(grep -E '^\[  FAILED  \] [A-Za-z]' "$LOG" | sed -E 's/^\[  FAILED  \] ([^ ,]+).*/\1/' | sort -u)
 FAILED=0
 if [ -n "$FAILED_TESTS" ]; then FAILED=$(echo "$FAILED_TESTS" | wc -l); fi
-grep -E '^\[  FAILED  \] [A-Za-z]' "$LOG" | sort -u | sed 's/^/  /' | head -50
+grep -E '^\[  FAILED  \] [A-Za-z]' "$LOG" | sed -E 's/ \([0-9]+ ms\)$//' | sort -u | sed 's/^/  /' | head -50
 grep -E '^Ran [0-9]+ tests in' "$LOG" | tail -1
 if ! grep -qE '^\[  PASSED  \] [0-9]+ tests?' "$LOG"; then
   echo "GATE $SHA: $PASSED passed, $FAILED failed (NO GTEST SUMMARY; $FAILED per-test FAILED line(s) counted; binary exit $RC)"
+  exit 1
+fi
+if [ "$PASSED" = 0 ] && [ "$FAILED" = 0 ]; then
+  echo "GATE $SHA: 0 passed, 0 failed (NO TESTS RAN; binary exit $RC)"
   exit 1
 fi
 if [ "$FAILED" != 0 ] || [ "$RC" != 0 ]; then

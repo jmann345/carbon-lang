@@ -21411,9 +21411,10 @@ construction.
 _ARB-3 (2026-11-16): the arbiter's reporting fixes._ Three reporting quirks of
 the scripts landed above, found by EH-C's implementation and landing on
 2026-11-09 (ehc-plan.md's A-m2 for the first), are fixed on branch arb3-fix,
-cut from trunk 6ce4af22c, in the one commit "ARB-3: arbiter reporting fixes
-(gate failed count, autoupdate changed count, conformance background summary)"
-touching fork/tools/carbonbuild/gate.sh, autoupdate.sh, conformance.sh,
+cut from trunk 6ce4af22c, in the commit "ARB-3: arbiter reporting fixes (gate
+failed count, autoupdate changed count, conformance background summary)" and
+its review fold "ARB-3: review fold" (at the end of this paragraph), touching
+fork/tools/carbonbuild/gate.sh, autoupdate.sh, conformance.sh,
 README.md (usage, the acceptance row, the harness sections and a section
 "Reporting fixes"), NOTES-C.md and this paragraph: a maintenance fix of the
 tool, its interface (flags, variables, the `GATE`, `AUTOUPDATE` and
@@ -21462,4 +21463,31 @@ change(s) untouched (binary exit 0)`, the golden then restored;
 the gap-analysis table) (runner exit 0)` stands in CONFORMANCE.txt, as the
 log's last line and in the .nohup file. The three scripts pass `bash -n`, the
 six files prek to a fixpoint, R31 holds on the three markdown files, and the
-model-identifier grep over the commit's added lines finds 0 hits.
+model-identifier grep over the commit's added lines finds 0 hits. The review
+(2026-11-16) made four MINOR findings, all folded the same day in the commit
+"ARB-3: review fold" (gate.sh, conformance.sh, README.md, NOTES-C.md and this
+paragraph), each proven on the same label and worktree, clean before and after:
+NOTES-C.md's "How to run" block quoted the old AUTOUPDATE form (corrected);
+gate.sh de-duplicated whole lines, so under `-- --gtest_brief=0` the untimed
+second copy gtest prints of each per-test FAILED line repeated it (four listed
+lines for two failing goldens, the count right), and the `(N ms)` suffix is now
+stripped first: with underscore.carbon and unused_underscore.carbon of
+toolchain/check/testdata/patterns both edited, `gate.sh --threads 4 --filter
+underscore.carbon -- --gtest_brief=0` lists each test once and prints `GATE
+b87f130b2: 0 passed, 2 failed (2 per-test FAILED line(s) counted; binary exit
+1)` (exit 1); a `--filter` matching no test read as green (`GATE b87f130b2: 0
+passed, 0 failed`, exit 0), and `gate.sh --threads 4 --filter
+zz_no_such_test_zz` now prints `GATE b87f130b2: 0 passed, 0 failed (NO TESTS
+RAN; binary exit 0)` and exits 1; conformance.sh --background launched its child
+before checking the busybox, so with the busybox missing the launcher printed
+`started in the background` and exited 0 while the marker never appeared (absent
+after 15 s, the child's error only in the .nohup file), and the busybox is now
+checked before the launch, as the runner already was (a missing runner stopped
+the launcher with `does not exist`, exit 1, in both versions), so the launcher
+prints `is not an executable; run build.sh and install.py first` and exits 1
+with no marker. The clean runs are unchanged (`GATE b87f130b2: 2 passed, 0
+failed`; `GATE b87f130b2: 2047 passed, 0 failed` with `Ran 2047 tests in 13611
+ms wall time, 51790 ms across threads`; the five-program conformance run's line
+above, `.done` holding 0 after one 10 s wait); the two edited scripts pass `bash
+-n`, the five files prek to a fixpoint, R31 holds on the three markdown files,
+and the model-identifier grep over the fold's added lines finds 0 hits.

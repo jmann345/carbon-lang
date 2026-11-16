@@ -27,7 +27,8 @@
 #                                  (the marker holds the exit code, and is written
 #                                  last) and read the `CONFORMANCE <sha>: ...` line
 #                                  from $CONFORMANCE_OUT/CONFORMANCE.txt or the
-#                                  end of the log
+#                                  end of the log; with the runner or the busybox
+#                                  missing it refuses to start (exit 1, no marker)
 #   conformance.sh --check         verify the inputs (busybox, runner, its
 #                                  --self-test, writable cache); run no program
 #   conformance.sh -- ARGS...      extra runner arguments
@@ -55,7 +56,7 @@ while [ $# -gt 0 ]; do
     --filter) FILTER="$2"; shift 2 ;;
     --filter=*) FILTER="${1#--filter=}"; shift ;;
     --) shift; EXTRA=("$@"); break ;;
-    -h|--help) sed -n '2,39p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,40p' "$0"; exit 0 ;;
     *) echo "conformance.sh: unknown argument $1" >&2; exit 2 ;;
   esac
 done
@@ -110,6 +111,14 @@ if [ "$MODE_CHECK" = 1 ]; then
   exit "$RC"
 fi
 
+# The busybox is checked here, before the background launch, like the runner
+# above (ARB-3 review fold, R-M4: a child that found it missing exited without
+# writing the marker, and a waiter on .done never returned).
+if [ ! -x "$BUSYBOX" ]; then
+  echo "conformance: $BUSYBOX is not an executable; run build.sh and install.py first" >&2
+  exit 1
+fi
+
 if [ "$BACKGROUND" = 1 ]; then
   rm -f "$DONE" "$SUMMARY_FILE"
   FG_ARGS=()
@@ -119,11 +128,6 @@ if [ "$BACKGROUND" = 1 ]; then
   nohup "$0" "${FG_ARGS[@]}" > "$LOG.nohup" 2>&1 &
   echo "conformance $SHA: started in the background (pid $!); log $LOG, marker $DONE"
   exit 0
-fi
-
-if [ ! -x "$BUSYBOX" ]; then
-  echo "conformance: $BUSYBOX is not an executable; run build.sh and install.py first" >&2
-  exit 1
 fi
 
 rm -f "$DONE" "$SUMMARY_FILE"

@@ -263,7 +263,7 @@ binary, but `clang-tblgen` and `lib/clang/24/include` exist).
 cd /home/user/arb/carbonbuild
 python3 -I install.py            # or --dry-run first
 ./gate.sh                        # GATE cb726a230: 2047 passed, 0 failed
-./autoupdate.sh                  # AUTOUPDATE cb726a230: 0 file(s) changed
+./autoupdate.sh                  # AUTOUPDATE cb726a230: 0 file(s) changed by this run; 0 pre-existing local change(s) untouched
 ./conformance.sh --background    # until [ -f /home/user/arb/conformance/cb726a230/.done ]; do sleep 20; done
 tail -12 /home/user/arb/logs/conformance-cb726a230.log
 cat /home/user/arb/conformance/cb726a230/CONFORMANCE.txt   # the CONFORMANCE line (ARB-3)
@@ -331,5 +331,16 @@ write its `CONFORMANCE <sha>: ...` line to `$CONFORMANCE_OUT/CONFORMANCE.txt`
 and to the end of the log before the `.done` marker (under `--background`
 stdout is only the .nohup file). README section "Reporting fixes" holds the
 proofs; the Deliverables table above still describes the scripts' interface.
+
+The review of ARB-3 (2026-11-16) made four MINOR findings, folded the same day
+in the commit "ARB-3: review fold": the "How to run" block above quoted the old
+AUTOUPDATE form (corrected); gate.sh de-duplicated whole lines, so the untimed
+second copy of each per-test FAILED line that `-- --gtest_brief=0` prints
+repeated it (the `(N ms)` suffix is now stripped first); a `--filter` matching
+no test read as green (now `(NO TESTS RAN; binary exit <rc>)`, exit 1);
+conformance.sh --background launched its child before checking the busybox, so a
+missing busybox left a waiter on `.done` hanging (the check now precedes the
+launch, as the runner's already did). README section "Reporting fixes" holds the
+fold's proofs.
 
 <!-- google-doc-style-resume -->

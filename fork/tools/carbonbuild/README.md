@@ -402,9 +402,13 @@ variables of bazel/cc_toolchains/defs.bzl), runs `$FILE_TEST_BIN
 output: `[  PASSED  ] N tests.` for the passed count and the per-test
 `[  FAILED  ] ToolchainFileTest.<test>, ...` lines for the failed count
 (file_test prints no `[  FAILED  ] N tests, listed below:` summary; section
-"Reporting fixes" below). `autoupdate.sh` runs the same with `--autoupdate`,
-prints `git -C $REPO status --porcelain` and counts the paths whose content
-the run changed (a hash per modified or untracked path, before and after).
+"Reporting fixes" below); each per-test line is printed once, the `(N ms)`
+suffix stripped before de-duplication, since `--gtest_brief=0` repeats the line
+without it. A run of 0 tests (a `--filter` matching nothing) is not green:
+`GATE <sha>: 0 passed, 0 failed (NO TESTS RAN; binary exit <rc>)`, exit 1.
+`autoupdate.sh` runs the same with `--autoupdate`, prints
+`git -C $REPO status --porcelain` and counts the paths whose content the run
+changed (a hash per modified or untracked path, before and after).
 
 ## The conformance harness (`conformance.sh`)
 
@@ -420,8 +424,9 @@ runner's `find_clangxx` uses `lib/carbon/llvm/bin/clang++` next to the busybox.
 `--background` runs it under nohup; the summary line `CONFORMANCE <sha>: ...`
 is written alone to `$CONFORMANCE_OUT/CONFORMANCE.txt` and appended to the log
 before the marker `$CONFORMANCE_OUT/.done`, which holds the exit code, is
-written. `-B` keeps python from writing `__pycache__` into REPO (the runner
-imports `fork/evaluator/check_samples.py` and
+written; with the runner or the busybox missing, `--background` refuses to
+start (exit 1, no marker). `-B` keeps python from writing `__pycache__` into
+REPO (the runner imports `fork/evaluator/check_samples.py` and
 `fork/designdocs/check_samples.py`).
 
 ## Reporting fixes (2026-11-16, ARB-3)
@@ -474,6 +479,40 @@ $CONFORMANCE_OUT/.done ]` satisfied after 6 s with the marker holding 0:
 `CONFORMANCE b87f130b2: PASS 5 / FAIL 0 / SKIP 0 over 5 programs; bullets 1
 PASS, 0 FAIL, 0 SKIP, 55 NOT-WRITTEN (of 56 in the gap-analysis table) (runner
 exit 0)` in CONFORMANCE.txt, as the log's last line and in the .nohup file.
+
+The review of these fixes (2026-11-16) made four MINOR findings, folded the same
+day in the commit "ARB-3: review fold" and proven on the same label and
+worktree, clean before and after. R-M1: the "How to run" block of NOTES-C.md
+still quoted the old `AUTOUPDATE <sha>: N file(s) changed` form; corrected.
+R-M2: `gate.sh` de-duplicated whole lines, and under `-- --gtest_brief=0` gtest
+prints each failing test twice (the timed line as it fails and an untimed copy
+in its own `listed below:` block), so a two-golden run listed four lines for two
+tests, the count right; the `(N ms)` suffix is now stripped before the lines are
+de-duplicated, and with underscore.carbon and unused_underscore.carbon of
+toolchain/check/testdata/patterns both edited, `gate.sh --threads 4 --filter
+underscore.carbon -- --gtest_brief=0` lists each test once and prints `GATE
+b87f130b2: 0 passed, 2 failed (2 per-test FAILED line(s) counted; binary exit
+1)` (exit 1; the pre-fold script printed the same GATE line over four listed
+lines). R-M3: a `--filter` matching no test read as green (`Ran 0 tests in 0 ms
+wall time, 0 ms across threads`, `[  PASSED  ] 0 tests.`, `GATE b87f130b2: 0
+passed, 0 failed`, exit 0); a run of 0 tests now prints `GATE b87f130b2: 0
+passed, 0 failed (NO TESTS RAN; binary exit 0)` and exits 1 (`gate.sh --threads
+4 --filter zz_no_such_test_zz`). R-M4: `conformance.sh --background` launched
+its child before checking the busybox, so with the busybox missing the launcher
+printed `started in the background` and exited 0 while the child exited 1 into
+the .nohup file and never wrote the marker (`.done` absent after 15 s); the
+busybox is now checked before the launch, as the runner already was (a missing
+runner stopped the launcher with `conformance: .../fork/conformance/runner.py
+does not exist`, exit 1, in both versions), and the launcher prints
+`conformance: .../lib/carbon/carbon-busybox is not an executable; run build.sh
+and install.py first` and exits 1 with no marker. The clean runs are unchanged:
+`GATE b87f130b2: 2 passed, 0 failed` and `GATE b87f130b2: 2047 passed, 0 failed`
+(exit 0; `Ran 2047 tests in 13611 ms wall time, 51790 ms across threads`), and
+`conformance.sh --background --filter types/choice_` with `.done` holding 0
+after one 10 s wait and `CONFORMANCE b87f130b2: PASS 5 / FAIL 0 / SKIP 0 over 5
+programs; bullets 1 PASS, 0 FAIL, 0 SKIP, 55 NOT-WRITTEN (of 56 in the
+gap-analysis table) (runner exit 0)` in CONFORMANCE.txt, as the log's last line
+and in the .nohup file.
 
 ## Files
 

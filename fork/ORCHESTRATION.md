@@ -3029,20 +3029,23 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     adds to UA-3's audit 4286832b4's `OperandDependence` signature (eleven
     fork lines in the removed `Context&` form, ten more than the cut's five,
     call.cpp:1045-1046 rewriting the cut's :432; pointer_dereference.cpp:24
-    merging clean),
-    c0b2cc592's parse conflicts beside UN-1 and VA-1, 54728e47f's export.cpp and
-    e67b6db91's shorthand file names in textual SemIR.
-    Land-time notes, each by its PR's land-sequence records commit after
-    its register block (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54,
-    PR 57's OP-2 block, PR 58 and PR 59; the last discharges W-343. At each
-    weekly upstream check: W-355 (run fork/register/check_quotes.sh and
-    check_greps.sh over their tables at the tip, and re-read the break condition
-    of every NONE and ALIGNED entry outside VA-2's, which items 8 and 9
-    re-read), with W-324's re-check of C1.1 and H5.5 and W-326's of T5.7 and
-    C1.2 (indexing.md:101-121 and a `like` in upstream's parse or check). UA-3
-    follows W-341 and W-346 (both landed) and proceeds with PR 53 held (the
-    SAFE-3 stop stamp of 2026-11-16, its paragraph dated 2026-11-16 (15:26
-    UTC)).
+    merging clean; TP-2 (2026-11-16) restored the cut's one-line form in
+    `IsCallPerformable`, so nine fork lines remain in that form (fourteen
+    `OperandDependence(context,` call sites in all: call.cpp 5, convert.cpp 6,
+    handle_index.cpp 2, pointer_dereference.cpp 1), and 62f1cc6a3's rename of
+    `GenericClassType` meets no fork use in that function), c0b2cc592's parse
+    conflicts beside UN-1 and VA-1, 54728e47f's export.cpp and e67b6db91's
+    shorthand file names in textual SemIR. Land-time notes, each by its PR's
+    land-sequence records commit after its register block
+    (fork/register/rg1-plan.md Appendix A.4): PR 51, PR 54, PR 57's OP-2 block,
+    PR 58 and PR 59; the last discharges W-343. At each weekly upstream check:
+    W-355 (run fork/register/check_quotes.sh and check_greps.sh over their
+    tables at the tip, and re-read the break condition of every NONE and ALIGNED
+    entry outside VA-2's, which items 8 and 9 re-read), with W-324's re-check of
+    C1.1 and H5.5 and W-326's of T5.7 and C1.2 (indexing.md:101-121 and a `like`
+    in upstream's parse or check). UA-3 follows W-341 and W-346 (both landed)
+    and proceeds with PR 53 held (the SAFE-3 stop stamp of 2026-11-16, its
+    paragraph dated 2026-11-16 (15:26 UTC)).
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

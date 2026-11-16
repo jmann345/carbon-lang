@@ -478,7 +478,7 @@ declaration introducer" for every structural probe, as FO-1 recorded):
 | m17 (with a `C`) | prints 5 | prints 5 | prints 5 |
 | m17f (`Holder(T)` returned; `var h: Holder(D) = Wrap(d)`) | two errors: the caller's conversion, then `Wrap(D)` | the same two, the second with the generic-parameter note | the same as with the hunk removed |
 | m17d (through a checked `Caller`) | `Wrap(D)` with SC-1's notes | the same plus the note | the same |
-| m9t, m9td (m17f through a checked `Caller`, `C` and `D`) | m9t prints 5; m9td `Caller(D)`, two errors | the same | the same |
+| m9t, m9td (m17f through a checked `Caller`, `C` and `D`) | m9t prints 5; m9td `Caller(D)`, two errors | the same two, with the generic-parameter note (amended 2026-11-16, review fold: A-m1: rev 3 said "the same"; measured, tp2-base gives the two errors with 6 notes and the implementation's install the same two with 7, the seventh ``initializing generic parameter `T` declared here`` at `class Holder(template T: HasGet)`, as the m17f row records) | the same |
 | e1 (`let unused y: HasGet = T;`, structural, `D`) | ``unable to monomorphize specific `F(D)` `` with SC-1's notes | **runs, rc 1** (the hole re-opened) | ``unable to monomorphize specific `F(D)` `` with SC-1's notes |
 | e2 (`G(T as HasGet)`) | `F(D)`, the same notes | **runs, rc 3** | `F(D)`, the same notes |
 | e1c (e1 with a `C`) | runs, rc 1 | runs, rc 1 | runs, rc 1 |
@@ -1278,7 +1278,12 @@ renames-only tree had 1419 and 2356), 53 `// ---` lines (twenty-six renames and
 one added split), 27 TODO comments over 45 lines, the pin's 18 source lines and
 A.3's three. Programs: two one-line `// SKIP:` directives. (amended 2026-11-16,
 review fold: B3 / B6) README.md: two rows. Plans and pages: C.1 to C.4. Records:
-D.1 to D.8.
+D.1 to D.8. (Amended 2026-11-16, review fold: A-m2 / B-m5: measured at F1
+against 701863aa5, 1567 insertions and 2428 deletions, the one deletion over the
+fold's 2427 being the trailing empty line that autoupdate leaves at the end of
+toolchain/lower/testdata/template/match_choice.carbon and that prek's
+end-of-file-fixer removes; F1 alone 1475 and 2401, the 3875 CHECK lines and that
+line.)
 
 ### §6.2 Collisions and the merge rules
 
@@ -1397,6 +1402,17 @@ git diff -U0 F1^ F1 -- toolchain | grep '^[-+]' | grep -vE '^[-+]{3} |^[-+]\s*//
 
 <!-- google-doc-style-resume -->
 
+(Amended 2026-11-16, review fold: A-m2 / B-m5: at F1, 6adeedc41, the second
+command prints one line, `-`, the trailing empty line autoupdate leaves at the
+end of toolchain/lower/testdata/template/match_choice.carbon, whose last split
+`fail_todo_int_scrutinee` now lowers nothing, and which prek's
+end-of-file-fixer, run before each commit as §3 requires, removes; no CHECK
+line. A fresh autoupdate of C1's eleven goldens re-adds the line as its only
+difference from F1, a second pass changes nothing, and autoupdate on the
+committed head is a no-op, so the fixpoint holds either way and the gate passes;
+prek wins over the empty line, no golden of the tree's 2021 ending in a blank
+line (review B's count).)
+
 ### §8.3 Gate
 
 On C1 alone `2036 passed, 11 failed`, the eleven files, no prefix problem
@@ -1470,7 +1486,9 @@ grep -c 'Reposit[o]ry=' fork/templates/tp2-plan.md
 upstream/trunk:toolchain/check/call.cpp | sed -n 449,464p) <(sed -n 1023,1038p
 toolchain/check/call.cpp)` prints exactly the two lines that differ in
 `context.sem_ir()` and nothing else (line numbers re-derived if trunk's file
-moved); `git grep -c -w forms_type -- toolchain` is 0.
+moved); `git grep -c -w forms_type -- toolchain` prints no match and exits 1
+(amended 2026-11-16, review fold: A-m3: rev 3 said "is 0", the substance; no
+file matches, so no count line is printed).
 
 ### §8.8 The register checkers (at R)
 
@@ -1499,7 +1517,10 @@ elsewhere; the counts written into D.3.
 3.  Build in the background with a 7200000 ms timeout and poll with `until`
     loops, with §8.1's command block copied from its guarded text (the variable
     spelled as paths.sh reads it, never the hook's long word: ruling 2, B1); a
-    gate or conformance run may overlap another agent's, a build may not.
+    gate or conformance run may overlap another agent's, a build may not (a
+    `nice`d LLVM build of ARB-4 excepted; amended 2026-11-16, review fold: B-m6:
+    the implementer's and the fixer's task rule names it as one not to wait for,
+    and it ran throughout both builds, each 428 steps, status 0, no warning).
 4.  F1 is autoupdate's output only; if pass 2 changes a file, stop (§7.1 risk
     1).
 5.  P copies Appendix C verbatim; run r31.py on each file before and after.
@@ -2000,6 +2021,14 @@ the program's own header: `Count` of a `None` 0 and of a `Some` 1; `Unwrap` 41
 and the default 7; `Width` 5, 1, 0; `Box(i32).Fill` 1 and `Box(i64).Fill` 0;
 `Small` 2, 1, 0.
 
+(Amended 2026-11-16, review fold: B-m4: compiled with the branch's install, the
+file reports one error, at the first `match` (:47:9), and stops, so the
+directive's "and at every other `match` here" names the forms the deferral
+loses, not the measured count; the line is the program's text and stands as
+inserted, no program line being spent on a phrase (ruling 3; the fixer's
+decision 5), and W-397's ledger entry and the decision-log entry "TP-2" describe
+the measured output.)
+
 ### B.3 fork/conformance/README.md
 
 Rows :361 and :368 (the two programs' rows): their third column changes from
@@ -2154,8 +2183,11 @@ bullet's "see the TP-2 fork note there" names a note its section has (amended
 The quote fixture of that section,
 fork/designdocs/samples/X25_template_deduce_class_arg.carbon (TP-1's pin of
 W-193's resolution, EXPECT-STDOUT 42), is re-pinned on the TP-2 behaviour, its
-body unchanged (the first error is at `GetTemplate(h)`, :33:30) and its comment
-rewritten; the three directive lines of its header:
+body unchanged (the first error is at `GetTemplate(h)`, :34:30; amended
+2026-11-16, review fold: the fixer's erratum, R10: fix 1's message and this
+appendix at fix 1 said :33:30, measured on the pre-splice file, the re-written
+header being one line longer than the old) and its comment rewritten; the three
+directive lines of its header:
 
 <!-- google-doc-style-ignore -->
 
@@ -2237,11 +2269,12 @@ New items, inserted after W-395 in id order (fields as W-374's):
   "evidence": [
     "toolchain/check/testdata/generic/template/deduce_class_args.carbon: fail_todo_holder, fail_todo_holder_copy_constraint, fail_todo_holder_pointer, fail_todo_vec_value_param, fail_todo_template_class_type (<F1>); index.carbon: fail_todo_index_class_with_index_with; match_choice.carbon (check and lower): fail_todo_int_scrutinee, whose body's TODO hides the deduction loss through `Core.Int(N)`",
     "fork/conformance/programs/generics/templates_deduce_class_args.carbon (SKIP at <C1>)",
+    "fork/designdocs/samples/X25_template_deduce_class_arg.carbon (TP-1's quote fixture of docs/design/templates.md's TP-1 fork note, re-pinned at TP-2's fix 1 as an EXPECT-ERROR fixture: ``cannot deduce value for generic parameter `T` `` at `GetTemplate(h)`, :34:30, on the branch's install, where `GetChecked(h)` still deduces; it compiles on tp2-base, whose checker then reports the expected error as missing; amended 2026-11-16, review fold: A-M1 / B-M1)",
     "upstream toolchain/check/deduce.cpp:443 at 7a3608bab, `// TODO: Handle more cases.`, and the `default:` arm's `deduce_through()` test (:446-456): no case reads through a `SpliceInst`; the nightly 2026.10.12 reports ``cannot deduce value for generic parameter `T` `` for the probe ded_holder and ``... `N` `` for a5_core_int, `fn Bits[template N: Core.IntLiteral](x: Core.Int(N))` (fork/templates/tp2-plan.md Appendix A.4)",
     "fork/templates/tp2-plan.md §0.4, D-TP2-2"
   ],
   "blocked_by": [],
-  "notes": "Filed at TP-2's discharge (<date>), id reserved by its plan (§0.9: the next free id above W-395 across every ref and worktree). Not a TP-2 regression against upstream: the nightly fails the same programs; a TP-1 capability (D-TP-11, W-193's discharge) withdrawn under R32 because upstream's `IsCallPerformable` defers the type-forming call. Workaround: an explicit template argument (`Get(i32, h)`; the probe ded_explicit runs on every toolchain). Removal: upstream's mechanism when it designs one (no fork spelling, R32 (d)). Break condition: upstream's deduce.cpp deduces a binding through a template-dependent splice or `call_action`, or the nightly runs ded_holder (prints 42); then the fork follows it and the six splits lose `fail_todo_`."
+  "notes": "Filed at TP-2's discharge (<date>), id reserved by its plan (§0.9: the next free id above W-395 across every ref and worktree). Not a TP-2 regression against upstream: the nightly fails the same programs; a TP-1 capability (D-TP-11, W-193's discharge) withdrawn under R32 because upstream's `IsCallPerformable` defers the type-forming call. Workaround: an explicit template argument (`Get(i32, h)`; the probe ded_explicit runs on every toolchain). Probes: ded_holder and the fixture X25 (amended 2026-11-16, review fold: A-M1 / B-M1). Removal: upstream's mechanism when it designs one (no fork spelling, R32 (d)). Break condition: upstream's deduce.cpp deduces a binding through a template-dependent splice or `call_action`, or the nightly runs ded_holder (prints 42); then the fork follows it and the six splits lose `fail_todo_`."
 },
 {
   "id": "W-397",
@@ -2257,7 +2290,7 @@ New items, inserted after W-395 in id order (fields as W-374's):
     "fork/templates/tp2-plan.md §0.4, D-TP2-2"
   ],
   "blocked_by": [],
-  "notes": "Filed at TP-2's discharge (<date>). A choice declared in a class template (`class_template_choice`, `Box(T).State`) is unchanged: its type is not formed by a call. W-252 (a `match` on a value whose type is not known where the template is defined) is the neighbour; this item is the class that TP-1 had made work and TP-2 withdraws. Removal: upstream's mechanism for a `match` on a template-dependent scrutinee (none designed at 7a3608bab; no fork spelling, R32 (d)). Break condition: upstream's `match` accepts a scrutinee whose type is a template-dependent splice (pattern_match.cpp or refutable_binding.cpp gain the case), or the nightly runs templates_match_dependent_choice.carbon; then the fork follows it."
+  "notes": "Filed at TP-2's discharge (<date>). Measured output (amended 2026-11-16, review fold: B-m4): the branch's install reports one error on templates_match_dependent_choice.carbon, at its first `match` (:47:9), and stops; the SKIP line's \"at every other `match` here\" names the forms, not the count. A choice declared in a class template (`class_template_choice`, `Box(T).State`) is unchanged: its type is not formed by a call. W-252 (a `match` on a value whose type is not known where the template is defined) is the neighbour; this item is the class that TP-1 had made work and TP-2 withdraws. Removal: upstream's mechanism for a `match` on a template-dependent scrutinee (none designed at 7a3608bab; no fork spelling, R32 (d)). Break condition: upstream's `match` accepts a scrutinee whose type is a template-dependent splice (pattern_match.cpp or refutable_binding.cpp gain the case), or the nightly runs templates_match_dependent_choice.carbon; then the fork follows it."
 },
 {
   "id": "W-398",
@@ -2419,7 +2452,8 @@ follow-on).
 
 _The §8.7 check on the tree at <R>._ `diff` of upstream's :449-464 against the
 fork's function prints the two `context.sem_ir()` lines only; `git grep -c -w
-forms_type -- toolchain` 0; the model-identifier grep of the branch's diff 0.
+forms_type -- toolchain` prints no match (exit 1; amended 2026-11-16, review
+fold: A-m3); the model-identifier grep of the branch's diff 0.
 
 _The id re-scan at D._ <n> refs, <h> distinct heads and <w> worktrees after a
 fetch: W-396 to W-400 are this branch's ledger ids only; elsewhere range
@@ -2429,6 +2463,18 @@ _Discharged by this commit: W-374 (TP-2)._
 ```
 
 <!-- google-doc-style-resume -->
+
+(Amended 2026-11-16, review fold: the entry as the records commit writes it
+keeps the paragraphs above and adds, in the Context paragraph, the merge M of
+Appendix F.1 (brought forward to the records commits: trunk moved after fix 1,
+by ARB-4's two records commits, no conflict) and the implementation reviews'
+verdicts; in the V-3 paragraph, the tips the implementation met, d10a566ab and
+645e784aa, with the plan's 7a3608bab (B-m1); in the register paragraph, the two
+checkers' lines at 645e784aa; in the Measured paragraph, the implementation's,
+the fix's and the reviews' measured lines, the folded MINORs A-m1, A-m2 / B-m5,
+A-m3, A-m4 / B-m3, B-m2, B-m4 and B-m6, X25 as W-396's probe and the two
+commit-message errata. The committed entry is the record; the template above
+stands as rev 3 wrote it but for the §8.7 wording.)
 
 ### D.4 The dated notes
 
@@ -2472,7 +2518,7 @@ fork/register/rg1-plan.md row H10.8 (:1017) becomes:
 <!-- google-doc-style-ignore -->
 
 ```text
-| H10.8 | (viii) D-TP-11 forms a generic class type with template-dependent arguments eagerly (SUPERSEDED <date> by TP-2: `IsCallPerformable` defers a call when the callee or any argument is template-dependent, as upstream's does) | check/call.cpp:449-450 "Determines whether a call can be performed immediately" / "non-template-dependent)."; :453 `if (OperandDependence(context.sem_ir(), callee_id) ==` and :458 `if (OperandDependence(context.sem_ir(), arg_id) ==` at 7a3608bab; README.md:3012-3016 "type checking for anything dependent on the template parameter can't be completed until the template is instantiated with a specific concrete type"; check H10.8: `git log --oneline c1e83b0b7..<tip> -- toolchain/check/call.cpp | wc -l` = 9 at 7a3608bab (the merge-rule signal: a moved count means the function or its file changed; re-read the quote rows) | ALIGNED since <date> (TP-2, fork/templates/tp2-plan.md D-TP2-1; D-RG-1: the rule is upstream's text, the fork's function equal to it but for the `Context&` signature UA-3 converts); was NONE (RG-1) then DRIFT (2026-11-09, re-read 2026-11-16) | upstream changes which operands or which dependence defer a call in `IsCallPerformable`, or README.md:3012-3016 or p002200:205-209 change; then the row is re-read | W-355 (W-374 discharged; the lost forms W-396 to W-398 and W-400) |
+| H10.8 | (viii) D-TP-11 forms a generic class type with template-dependent arguments eagerly (SUPERSEDED <date> by TP-2: `IsCallPerformable` defers a call when the callee or any argument is template-dependent, as upstream's does) | check/call.cpp:449-450 "Determines whether a call can be performed immediately" / "non-template-dependent)."; :453 `if (OperandDependence(context.sem_ir(), callee_id) ==` and :458 `if (OperandDependence(context.sem_ir(), arg_id) ==` at 7a3608bab; README.md:3012-3016 "type checking for anything dependent on the template parameter can't be completed until the template is instantiated with a specific concrete type"; check H10.8: `git log --oneline c1e83b0b7..<tip> -- toolchain/check/call.cpp | wc -l` = 9 at 7a3608bab (the merge-rule signal: a moved count means the function or its file changed; re-read the quote rows) | ALIGNED since <date> (TP-2, fork/templates/tp2-plan.md D-TP2-1; D-RG-1: the rule is upstream's text, the fork's function equal to it but for the `Context&` signature UA-3 converts); was NONE (RG-1) then DRIFT (2026-11-09, re-read 2026-11-16); the quotes identical at d10a566ab, the tip at the implementation, and at 645e784aa, the tip at the fix and the records (amended 2026-11-16, review fold: B-m1) | upstream changes which operands or which dependence defer a call in `IsCallPerformable`, or README.md:3012-3016 or p002200:205-209 change; then the row is re-read | W-355 (W-374 discharged; the lost forms W-396 to W-398 and W-400) |
 ```
 
 <!-- google-doc-style-resume -->
@@ -2540,7 +2586,9 @@ PRs landed, 1 held; see the Branches row; the earlier <prev> text follows)."
 Dated paragraph, after the last dated paragraph: "<date> (<hh:mm> UTC): TP-2
 (W-374, fork/templates/tp2-plan.md) is IMPLEMENTED AND REVIEWED on
 claude/carbon-fork-0-1-tp2 (commits <plan revisions>, <C1>, <F1>, <P>, <fixes>,
-<R> and this one): `IsCallPerformable` is upstream's (7a3608bab call.cpp:
+<M> (the merge of Appendix F.1, brought forward because trunk moved after
+fix 1; amended 2026-11-16, records), <R> and this one): `IsCallPerformable` is
+upstream's (7a3608bab call.cpp:
 449-464 but for the `Context&` signature); eleven goldens refilled, twenty-six
 splits renamed and one added, two programs SKIP (W-396, W-397); W-139's
 convert.cpp requirement kept (D-TP2-3); W-396 to W-400 filed; register H10.8
@@ -2738,7 +2786,8 @@ W-374's `notes` gain, appended: " LAND-1 (<date>, PR <N>'s landing): merged
 by <merge sha> (GitHub merged_at <merged_at>); container-measured (R33 (b)):
 gate <g> of <g>, conformance <p>/<f>/<s> over <n>, <b>/56 bullets; the §8.7
 check re-run on the merge's tree gives the answer recorded at <R>: the two
-`context.sem_ir()` lines only, `forms_type` 0."
+`context.sem_ir()` lines only, `forms_type` no match (exit 1; amended
+2026-11-16, review fold: A-m3)."
 
 ### F.9 The gap header's first sentence (A.8) and ORCHESTRATION's Scoreboard paragraph (A.9)
 

@@ -38,6 +38,21 @@ arbiter's check.cpp source patch reported `landed`) and **conformance PASS 228
 /home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12 is a
 differential oracle only (R30); it carries upstream's deferral.
 
+TP-2 landed on trunk (LAND-1, 2026-11-16): merged as PR 71 by a976a9e2b (head
+d175fcb5ac793a30add2a810e3effd0fa67a51cc, trunk before 99f4df970; GitHub
+merged_at 2026-11-16T21:16:43Z) under R33, fork/templates/tp2-plan.md §3 and
+Appendix F; land-time commits none; container-measured (R33 (b)): gate 2047 of
+2047, conformance 226 PASS, 0 FAIL, 15 SKIP over 241, 51 of 56 bullets; id
+re-scans: W-396 to W-400 ledger items only on the PR's line,
+claude/carbon-fork-0-1-tp2 (local and origin, at d175fcb5a), its worktree and
+this landing's worktree, over 971 refs, 747 distinct heads and 10 worktrees
+after a fetch; W-381 to W-385 unused; W-386 to W-393 reserved only by SAFE-3's
+text on the local claude/carbon-fork-0-1-safe and origin's
+claude/carbon-fork-0-1-safe-wip (elsewhere range bounds in prose), no ledger
+use; no W-4xx but W-400 anywhere, W-400 only on the PR's line; moved to
+follow-ons: W-399 and W-400 to TP-1's follow-on (Next actions item 6), W-396 to
+W-398 to the weekly check's re-reads (W-355).
+
 **What the measurements settle (§0.3 to §0.6), in four lines.** (1) The removal
 is exactly the item's: the function becomes upstream's text at 7a3608bab but for
 the `OperandDependence(context, ...)` signature the fork still has (D-TP2-1); on

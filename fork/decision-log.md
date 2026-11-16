@@ -7316,6 +7316,18 @@ local and origin; no other W-4xx.
 
 _Discharged by this commit: W-374 (TP-2)._
 
+_Landed (2026-11-16, LAND-1, R33):_ merged into trunk as PR 71 by a976a9e2b
+(GitHub merged_at 2026-11-16T21:16:43Z); container-measured (R33 (b)): gate 2047
+of 2047, conformance 226/0/15 over 241; id re-scans: W-396 to W-400 ledger items
+only on the PR's line, claude/carbon-fork-0-1-tp2 (local and origin, at
+d175fcb5a), its worktree and this landing's worktree, over 971 refs, 747
+distinct heads and 10 worktrees after a fetch; W-381 to W-385 unused; W-386 to
+W-393 reserved only by SAFE-3's text on the local claude/carbon-fork-0-1-safe
+and origin's claude/carbon-fork-0-1-safe-wip (elsewhere range bounds in prose),
+no ledger use; no W-4xx but W-400 anywhere, W-400 only on the PR's line; moved
+to follow-ons: W-399 and W-400 to TP-1's follow-on; W-396 to W-398 to W-355's
+re-reads.
+
 ### DD-1: design docs without placeholders (2026-10-14)
 
 Milestone goals "Language design components are documented, cohesive, and

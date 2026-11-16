@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-16 (TP-2 implemented and reviewed on
+Last updated: 2026-11-16 (PR 71 landed by LAND-1; 20 PRs landed, 1 held; see the
+paragraph dated 2026-11-16 (20:57 UTC) below; the earlier 2026-11-16 text
+follows).
+2026-11-16 (TP-2 implemented and reviewed on
 claude/carbon-fork-0-1-tp2, W-374 discharged at its records commit; 19 PRs
 landed, 1 held; see the Branches row; the earlier 2026-11-16 text follows).
 2026-11-16 (SAFE-3, the re-derivation of the built-in operator
@@ -2452,6 +2455,19 @@ APPROVE-WITH-AMENDMENTS with no BLOCKER, no MAJOR and four records-only MINORs
 (RR1-m1 to RR1-m4), so the round is DRY (the plan's §3 item 9) and its records
 fold follows D. Next: the PR with base trunk, LAND-1's landing, then UA-3.
 
+2026-11-16 (20:57 UTC): PR 71 (TP-2) LANDED on trunk by merge a976a9e2b under
+R33 (fork/templates/tp2-plan.md §3 and Appendix F), GitHub merged_at
+2026-11-16T21:16:43Z; container-measured (R33 (b)): gate 2047 of 2047,
+conformance 226/0/15 over 241, 51/56 bullets, gap tally 37/17/2/0; id re-scans:
+W-396 to W-400 ledger items only on the PR's line, claude/carbon-fork-0-1-tp2
+(local and origin, at d175fcb5a), its worktree and this landing's worktree, over
+971 refs, 747 distinct heads and 10 worktrees after a fetch; W-381 to W-385
+unused; W-386 to W-393 reserved only by SAFE-3's text on the local
+claude/carbon-fork-0-1-safe and origin's claude/carbon-fork-0-1-safe-wip
+(elsewhere range bounds in prose), no ledger use; no W-4xx but W-400 anywhere,
+W-400 only on the PR's line; 20 PRs landed, 1 held. Next: UA-3 (W-394's audit
+inherits TP-2's call.cpp as upstream's own 4286832b4 hunk).
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -2804,7 +2820,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ov4` | LANDED as PR 68 by merge c62ae211e (2026-11-02, LAND-1, R33; GitHub merged_at 2026-11-02T15:53:02Z, merge_commit_sha c62ae211e) — OV-4: W-341 DISCHARGED: `overload fn` members with upstream's default parameter values; W-360 to W-363 to UA-3; land-time commits c6c9d5fe3; container-measured (R33 (b)): gate 1986 of 1986, conformance 193/0/15 over 208, 49/56 bullets; moved to follow-ons: to item 15: SC-1's two arguments; to item 17: VA-1's pack gate order; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-arb2` | LANDED as PR 69 by merge fca1e9e2f (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-09T18:14:39Z, merge_commit_sha fca1e9e2f) — ARB-2: W-378: `UnitAndImports` constructed in place in toolchain/check/check.cpp (its emitter points into itself; the re-created container arbiter's first finding, REVIEW-1 R1-B1), with its records; the arbiter's scripts land under fork/tools/carbonbuild by the records commit of 2026-11-09; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: none; R21's hosted gate owed when Actions returns (R33 (b)). |
 | `claude/carbon-fork-0-1-ehc` | LANDED as PR 70 by merge 2cdb7ff4a (2026-11-09, LAND-1, R33; GitHub merged_at 2026-11-16T14:38:00Z, merge_commit_sha 2cdb7ff4a) — EH-C: `Core.Result`'s alternatives renamed to `Success`/`Failure` (W-346, R32; F-006a reversed, veto-able); W-346 discharged, W-380 filed; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 228/0/13 over 241, 51/56 bullets; moved to follow-ons: W-380 to Next actions item 14 (PR 53's rename commit); R21's hosted gate owed when Actions returns (R33 (b)). |
-| `claude/carbon-fork-0-1-tp2` | IMPLEMENTED AND REVIEWED; RE-REVIEW ROUND 1 DRY (base trunk 701863aa5) — TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374, R32); W-396 to W-400 filed; trunk 99f4df970 merged at 949a8f574; container-measured (R33 (b)): gate 2047 of 2047, conformance 226/0/15 over 241, re-measured on the merged head by re-review round 1 |
+| `claude/carbon-fork-0-1-tp2` | LANDED as PR 71 by merge a976a9e2b (2026-11-16, LAND-1, R33; GitHub merged_at 2026-11-16T21:16:43Z, merge_commit_sha a976a9e2b) — TP-2: `IsCallPerformable` follows upstream's deferral of every template-dependent call argument (W-374, R32); W-374 discharged, W-396 to W-400 filed; land-time commits none; container-measured (R33 (b)): gate 2047 of 2047, conformance 226/0/15 over 241 |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
@@ -2816,13 +2832,11 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-Container-measured at PR 70's landing (2026-11-09, LAND-1, R33 (b)): 228 PASS
-/ 13 SKIP / 0 FAIL programs (241 total); **51/56 bullets green**; gate
+Container-measured at PR 71's landing (2026-11-16, LAND-1, R33 (b)): 226 PASS
+/ 15 SKIP / 0 FAIL programs (241 total); **51/56 bullets green**; gate
 2047 of 2047. R21's hosted run is owed when Actions returns; the paragraph
 below is the hosted history; the last hosted scoreboard is
-fork/conformance/out/scoreboard.json's (D-LAND-17). Expected after TP-2's
-landing: 226 PASS / 15 SKIP / 0 FAIL (241), 51/56 bullets (two programs SKIP
-under W-396 and W-397).
+fork/conformance/out/scoreboard.json's (D-LAND-17).
 
 126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets green**
 (GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from
@@ -3042,9 +3056,10 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     owner TP-1's follow-on, on trunk's base before UA-3, needing no advance;
     W-139's convert.cpp requirement is withdrawn when it lands. (TP-2,
     2026-11-16: done on claude/carbon-fork-0-1-tp2, W-374 discharged; the
-    requirement is kept, D-TP2-3; W-396 to W-400.) The weekly upstream check of
-    2026-11-16 files W-394 (upstream dbf02ad10's own `AddrOfAction` over TP-1's,
-    register row H10.1 fired for `&`; owner UA-3, in its gate) and W-395
+    requirement is kept, D-TP2-3; W-396 to W-400.) W-374 (TP-2) landed on trunk
+    2026-11-16 as PR 71 by merge a976a9e2b (LAND-1). The weekly upstream check
+    of 2026-11-16 files W-394 (upstream dbf02ad10's own `AddrOfAction` over
+    TP-1's, register row H10.1 fired for `&`; owner UA-3, in its gate) and W-395
     (upstream's accepted p008110 removes `bound`, which PR 53's SAFE design
     adopts; owner SAFE-1, before PR 53 lands, re-reading W-347 and W-349;
     scheduled 2026-11-16 by the SAFE-3 stop stamp with PR 53's realignment after
@@ -3067,9 +3082,8 @@ C++ boundary question (item 14). The items below stand as the work still owed.
     entry outside VA-2's, which items 8 and 9 re-read), with W-324's re-check of
     C1.1 and H5.5 and W-326's of T5.7 and C1.2 (indexing.md:101-121 and a `like`
     in upstream's parse or check). UA-3 follows W-341, W-346 (both landed) and
-    W-374 (TP-2, implemented and reviewed) and proceeds with PR 53 held (the
-    SAFE-3 stop stamp of 2026-11-16, its paragraph dated 2026-11-16 (15:26
-    UTC)).
+    W-374 (TP-2, landed) and proceeds with PR 53 held (the SAFE-3 stop stamp of
+    2026-11-16, its paragraph dated 2026-11-16 (15:26 UTC)).
 7.  W-332 (p002687's termination rule): owner VA-2 until it lands, then the next
     impl-lookup workstream; take upstream's implementation at each advance if it
     lands first.

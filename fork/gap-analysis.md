@@ -16,8 +16,8 @@ with real test coverage), **PARTIAL** (works with material gaps),
 ## Scoreboard
 
 **37 DONE / 17 PARTIAL / 2 MISSING / 0 DESIGN-ONLY** across 56 milestone bullets
-(reconciled 2026-11-09 at PR 70's landing, LAND-1, against that landing's
-container-measured conformance scoreboard, R33 (b) — 228 PASS / 0 FAIL / 13 SKIP
+(reconciled 2026-11-16 at PR 71's landing, LAND-1, against that landing's
+container-measured conformance scoreboard, R33 (b) — 226 PASS / 0 FAIL / 15 SKIP
 over 241 programs, 51/56 bullets PASS — and the fork/inventory/work-items.json
 ledger; the original 2026-07-19 audit read 24 / 18 / 13 / 1; the if-let /
 let-else row flipped MISSING → PARTIAL at the W-012 landing later the same day).

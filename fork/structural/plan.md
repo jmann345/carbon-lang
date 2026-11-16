@@ -449,7 +449,9 @@ listing them verbatim at discharge (§8.5).
     adds a requirement that each specific performs (convert.cpp,
     `PerformBuiltinConversion`; fork/followon/fo1-plan.md D-FO1-2 (4)), for
     structural requirements only: the interface half of TP-1's eager `Holder(T)`
-    is W-374. An overload set's specific whose argument fails the chosen
+    is W-374. (TP-2, 2026-11-16: the generic-type half is a deferred call since
+    TP-2; the requirement stands for a conversion outside a call, D-SC-19's TP-2
+    amendment.) An overload set's specific whose argument fails the chosen
     member's requirements is rejected, W-375.)
 -   **D-SC-7 — completeness and caching.** Completeness per D-SC-5(a). No
     satisfaction cache in SC-1: the check is linear in the constraint's
@@ -979,6 +981,18 @@ listing them verbatim at discharge (§8.5).
     cannot instantiate a template-phase blanket impl — then the split moves
     to `fail_todo_`, the ladder step is filed as a residue, and D-SC-19's
     rule stands for the `require` entry point alone.
+    (Amended 2026-11-16, TP-2, W-374, fork/templates/tp2-plan.md D-TP2-3: the
+    requirement that FO-1's amendment above adds in convert.cpp for a conversion
+    of a template-phase self (D-FO1-2 (4)) is kept, not withdrawn. With
+    `IsCallPerformable` upstream's, a generic type such as `Holder(T)` is a
+    deferred `call_action` whose replay converts the concrete argument in each
+    specific, so for a call the requirement is never made (the conversion runs
+    inside the replay, where `Context::delayed_action_depth` is positive); for a
+    conversion a template body makes outside a call (`let unused y: HasGet =
+    T;`, `G(T as HasGet)`; the split `fail_dependent_conversion_unsatisfied`) it
+    is the only check, and a build without it runs `F(D)` (TP-2 §0.4). The
+    withdrawal clause of FO-1's B1 (fork/followon/fo1-plan.md:1150-1155) was
+    premised on the call case and is re-read by TP-2.)
 -   **D-SC-20 — a requirement named with no self type is a value of its own
     concrete type (added 2026-10-13 as "has `Self := .Self`", introduced by
     fill round 1's fix 2 and recorded at fill round 2, review finding F4;

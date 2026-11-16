@@ -239,6 +239,19 @@ and returning a tuple.
 > some structs whose field is itself a struct or tuple, which still stop the
 > compiler or are compiled wrongly.
 
+> **Fork note (TP-2, 2026-11-16).** Since TP-2 the toolchain defers a call whose
+> callee or any argument depends on a template parameter, as upstream's does,
+> including a generic class applied to one, so deduction through a class's
+> arguments is withdrawn again (fork work item W-396): `fn
+> Get[template T: type](h: Holder(T)) -> T` is rejected at a call with
+> ``cannot deduce value for generic parameter `T` ``, as on upstream's
+> nightly; passing the argument explicitly, `fn Get(template T: type, h:
+> Holder(T))` called as `Get(i32, h)`, runs. A `match` on a value whose type
+> is a generic choice applied to a template parameter reports the scrutinee
+> TODO below again (W-397). An `impl forall` with a template binding whose
+> self or interface is formed from it (`impl forall [template T: type] Box(T)
+> as I`) is rejected, as on the nightly (W-400).
+
 ```carbon
 import Core library "io";
 
@@ -579,7 +592,7 @@ Forms of proposal 2200 that are not implemented yet:
     the fork note in
     [Functions with template parameters](#functions-with-template-parameters)
     shows (W-193). (Resolved by TP-1, 2026-11-02, as the fork note there
-    says.)
+    says.) (Withdrawn by TP-2, 2026-11-16, W-396: see the TP-2 fork note there.)
 -   An assignment through a template-dependent operand is not checked when
     the template is instantiated: assigning to a field of a `const` object
     through a `ref` parameter of template type, or to a class's `let` member,

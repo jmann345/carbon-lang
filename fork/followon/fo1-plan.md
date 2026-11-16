@@ -1089,6 +1089,18 @@ SC-1's scope and B1's break condition, and TP-1's own repair is upstream's
 deferral, which would also make this hunk unnecessary (amended 2026-11-02,
 review fold: RR3-1).
 
+(Amended 2026-11-16, TP-2, fork/templates/tp2-plan.md D-TP2-3; W-374
+discharged.) TP-2 made `IsCallPerformable` upstream's, so `Holder(T)` is a
+deferred `call_action` and the interface half above is closed by the replay
+(m17n_d is rejected as on the nightly). The hunk of this part is not withdrawn:
+it never fires for a call now (the replay performs the conversion with
+`delayed_action_depth` positive), and it is the only check of a conversion
+outside a call (e1, e2; `fail_dependent_conversion_unsatisfied`), which TP-2
+measured as running with rc 1 and 3 without it. The clause of this decision's
+"Order" paragraph that withdraws the hunk when TP-1 follows the deferral is
+re-read: the `call_action` replay checks a call's argument again, not a
+conversion outside a call; the hunk stays for the latter (TP-2 §0.4, §0.5).
+
 The overload rule (RR1-1; rewritten 2026-11-02, review fold: RR2-3). OV-4's
 probe (`ProbeOverloadCandidateInScratchScope`, the only non-diagnosing call
 deduction) defers a checked-symbolic argument's structural requirements as the
@@ -1154,7 +1166,9 @@ functions (B1 then follows it); or TP-1 follows upstream's deferral of every
 template-dependent call argument (H10.8, W-374), whereupon convert.cpp's hunk
 (part 4) is withdrawn, since the `call_action` replay then checks a
 template-dependent self again, as on PR 60's own branch (amended 2026-11-02,
-review fold: RR3-1).
+review fold: RR3-1). (Re-read 2026-11-16 by TP-2, D-TP2-3: the condition fired,
+the premise holds for a call only, and the hunk is kept for a conversion outside
+a call; D-FO1-2 (4)'s TP-2 amendment.)
 
 **D-FO1-3, W-139's shrink line: the generic class's `require`** (amended
 2026-11-02, review fold: A-B-3 / B-M-1 / B-m-4 / B-m-7). W-139's notes also name

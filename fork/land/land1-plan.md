@@ -254,7 +254,12 @@ states none. Section 4 turns each into the PASS delta the landing must show.
     claude/carbon-fork-0-1-safe-wip; W-365 and W-366 stay reserved and
     unfiled; the orchestrator stamps the stop on trunk from safe3-plan.md
     Appendix D's stop path after Appendix B.1's stamp (amended 2026-11-01,
-    ruling fold: the ruling's item 2).
+    ruling fold: the ruling's item 2; amended 2026-11-16, the SAFE-3 stop stamp:
+    stopped a second time at its plan rev 15 (4d31da703, 2026-11-16) under the
+    SAFE-4 ruling's stop condition, RR14-M1 and RR14-M2, the stop stamped on
+    trunk again, PR 53 held under R33 (c) until a re-ruling after UA-3, which
+    proceeds with PR 53 held; fork/ORCHESTRATION.md's paragraph dated 2026-11-16
+    (15:26 UTC)).
 -   PR 60: W-139 is owed on its branch (Next actions item 6, :1224-1226).
 -   PR 56 and PR 57: W-352 is owed on PR 56's branch and merged into PR 57's
     (:1226-1228).

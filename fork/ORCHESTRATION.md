@@ -1070,7 +1070,9 @@ is 85 commits past the c1e83b0b7 cut (49 since last week); a `git merge-tree`
 dry run against trunk 5674fe88b conflicts in 96 files, 30 sources and
 grammars and 66 goldens (decision-log entry "Weekly upstream merge
 2026-10-19"); the cut HOLDS, no staging branch was pushed, and the advance
-(UA-3) is scheduled after the held PRs land, under the UA-1 flow. A
+(UA-3) is scheduled after the held PRs land, under the UA-1 flow (superseded
+2026-11-16: UA-3 proceeds with PR 53 held, by the SAFE-3 stop stamp's paragraph
+dated 2026-11-16 (15:26 UTC) below). A
 `workflow_dispatch` of `Fork: hosted verification` still returns "Actions
 has been disabled for this repository", so nothing is of record and the ten
 held PRs stay open; the daily Actions re-test routine ends with this firing
@@ -1442,7 +1444,9 @@ conflicts in 97 files, 31 sources and grammars and 66 goldens (last week 96, 30
 and 66; the one new file is toolchain/driver/compile_options.cpp); 1846 upstream
 files are touched since the cut, 791 are fork-modified and 197 are in both
 (decision-log entry "Weekly upstream check 2026-10-26 (R32 direction
-register)"). The cut HOLDS and UA-3 stays scheduled after the held PRs land. Of
+register)"). The cut HOLDS and UA-3 stays scheduled after the held PRs land
+(superseded 2026-11-16: UA-3 proceeds with PR 53 held, by the SAFE-3 stop
+stamp's paragraph dated 2026-11-16 (15:26 UTC) below). Of
 the window's 32 commits, 20 touch the design, prelude or toolchain paths: one
 drift, twelve advances for UA-3's audit, seven unrelated; no prelude signature
 changed. The drift: 503f09037 extends upstream's positional default parameter
@@ -1608,7 +1612,9 @@ section 5 gives it: PR 67 (RG-1), then PR 53, 51, 52, 60, 54, 55, 56, 57, 58,
 59, 61, 62, 64, 63, 65, 66; the sequence waits at PR 53 for SAFE-1's realignment
 (W-347 to W-351 and W-353), at PR 60 for SC-1's W-139 and at PR 56 for OP-1's
 W-352. Next: OV-4 (W-341) on trunk's base per item 6 below, then EH-C (W-346)
-after the held PRs land, then UA-3.
+after the held PRs land, then UA-3 (superseded 2026-11-16: UA-3 proceeds with
+PR 53 held, by the SAFE-3 stop stamp's paragraph dated 2026-11-16 (15:26 UTC)
+below).
 
 2026-10-28 (12:11 UTC): OV-4 is IMPLEMENTED AND REVIEWED on
 claude/carbon-fork-0-1-ov4 (fork/overload/ov4-plan.md rev 3, signed off at
@@ -1670,7 +1676,9 @@ PR 68); none is merged. Merge order: PR 67 (RG-1), then PR 53, 51, 52, 60, 54,
 land-time commits M, F-M, L-R and L (fork/overload/ov4-plan.md section 3); the
 sequence waits at PR 53 for SAFE-1's realignment (W-347 to W-351 and W-353), at
 PR 60 for SC-1's W-139 and at PR 56 for OP-1's W-352. Next: EH-C (W-346) after
-the held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs
+the held PRs land, then UA-3 (superseded 2026-11-16: UA-3 proceeds with PR 53
+held, by the SAFE-3 stop stamp's paragraph dated 2026-11-16 (15:26 UTC) below);
+the weekly upstream check of 2026-11-02 runs
 W-355's scripts.
 
 2026-10-29 (08:49 UTC): SAFE-2 is STOPPED at its plan rev 14 on PR 53's branch
@@ -1709,7 +1717,9 @@ are held open (PR 51 to PR 68); none is merged. Merge order unchanged: PR 67
 then PR 68 (OV-4); the sequence waits at PR 53 for SAFE-3, at PR 60 for SC-1's
 W-139 and at PR 56 for OP-1's W-352. Next: SAFE-3's plan and implementation;
 then SC-1's W-139 on PR 60 and OP-1's W-352 on PR 56; EH-C (W-346) after the
-held PRs land, then UA-3; the weekly upstream check of 2026-11-02 runs W-355's
+held PRs land, then UA-3 (superseded 2026-11-16: UA-3 proceeds with PR 53 held,
+by the SAFE-3 stop stamp's paragraph dated 2026-11-16 (15:26 UTC) below); the
+weekly upstream check of 2026-11-02 runs W-355's
 scripts from PR 67's branch at its head.
 
 2026-11-01 (17:42 UTC): THE OWNER DIRECTED MERGING. The owner corrected the
@@ -1946,7 +1956,9 @@ on trunk, none gone), and against trunk 7134405dc, after PR 65's and PR 68's
 landings, in 144 (PR 65's six goldens); 1978 upstream files are touched since
 the cut, 1053 are fork-modified and 245 are in both (decision-log entry "Weekly
 upstream check 2026-11-02 (R32 direction register)"). The cut HOLDS and UA-3
-stays scheduled after the held PRs land. Of the window's 33 commits, 21 touch
+stays scheduled after the held PRs land (superseded 2026-11-16: UA-3 proceeds
+with PR 53 held, by the SAFE-3 stop stamp's paragraph dated 2026-11-16
+(15:26 UTC) below). Of the window's 33 commits, 21 touch
 the design, prelude or toolchain paths: one new drift (c6b54b57e), one drift
 already filed that is also an advance (05a7ecbd3, W-354's, the window's only
 prelude signature change), five advances for UA-3's audit and fourteen

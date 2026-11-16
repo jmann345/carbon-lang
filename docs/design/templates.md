@@ -170,6 +170,15 @@ declaration.
 > `GetTemplate(h)` deduces `T` as `i32` from `Holder(T)`, as the checked
 > declaration does, and the `Holder(T)*` and `Vec(N)` forms deduce `T` and
 > `N` the same way.
+>
+> **Fork note (TP-2, 2026-11-16).** The deduction is withdrawn again (fork
+> work item W-396): since TP-2 the toolchain defers every call whose callee or
+> argument depends on a template parameter, as upstream's does, so
+> `GetTemplate(h)` is rejected again with
+> ``cannot deduce value for generic parameter `T` ``, as on upstream's nightly,
+> while `GetChecked(h)` still deduces `T` as `i32`; the `Holder(T)*` and
+> `Vec(N)` forms are withdrawn the same way. See the TP-2 fork note in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
 
 ### Overloading
 

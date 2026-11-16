@@ -1032,6 +1032,20 @@ the hunk for a conversion outside one, and is not edited; verified, not
 changed. The gap row's clause on `match` is withdrawn in the evidence cell.
 _Break condition:_ the designdocs checker (`runner.py --self-test`'s W2 rule)
 rejects a note (then it is reworded, not dropped).
+(Amended 2026-11-16, fix 1: A-M1 / B-M1. The designdocs checker with
+`--toolchain`, which §0.10's run left out (the toolchain-free self-test does
+not compile the fixtures), was red on C1+F1 and on P with one error and green
+on tp2-base: the TP-1 fork note at :169-172, "The deduction is implemented:
+`GetTemplate(h)` deduces `T` as `i32` from `Holder(T)`", and its quote fixture
+fork/designdocs/samples/X25_template_deduce_class_arg.carbon, whose
+EXPECT-STDOUT is 42, claimed the capability the deferral withdraws, and the
+W-193 bullet's "see the TP-2 fork note there" named a note that its section
+did not have. That blockquote gains a third dated paragraph, the TP-2 note of
+C.4's third block, and X25 is re-pinned as an EXPECT-ERROR fixture whose QUOTE
+is that paragraph's sentence, its body unchanged; the checker prints 0 errors
+on the fix's install. The fix changes no toolchain, golden or program line; it
+is the first of §3 item 6's two fix commits. The records name X25 as W-396's
+probe beside ded_holder (D.1, D.3).)
 
 ## §2 Spec, file by file
 
@@ -2115,6 +2129,47 @@ or are compiled wrongly." (:240; A-m2), a new blockquote paragraph:
 The W-193 bullet (:578-582) gains, after "(Resolved by TP-1, 2026-11-02, as
 the fork note there says.)": " (Withdrawn by TP-2, <date>, W-396: see the TP-2
 fork note there.)"
+
+The TP-1 fork note's blockquote (:169-172, "**Fork note (TP-1, 2026-11-02).**
+The deduction is implemented: ...") gains a third paragraph, so that the W-193
+bullet's "see the TP-2 fork note there" names a note its section has (amended
+2026-11-16, fix 1: A-M1 / B-M1; D-TP2-10):
+
+<!-- google-doc-style-ignore -->
+
+```markdown
+>
+> **Fork note (TP-2, 2026-11-16).** The deduction is withdrawn again (fork
+> work item W-396): since TP-2 the toolchain defers every call whose callee or
+> argument depends on a template parameter, as upstream's does, so
+> `GetTemplate(h)` is rejected again with
+> ``cannot deduce value for generic parameter `T` ``, as on upstream's nightly,
+> while `GetChecked(h)` still deduces `T` as `i32`; the `Holder(T)*` and
+> `Vec(N)` forms are withdrawn the same way. See the TP-2 fork note in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
+```
+
+<!-- google-doc-style-resume -->
+
+The quote fixture of that section,
+fork/designdocs/samples/X25_template_deduce_class_arg.carbon (TP-1's pin of
+W-193's resolution, EXPECT-STDOUT 42), is re-pinned on the TP-2 behaviour, its
+body unchanged (the first error is at `GetTemplate(h)`, :33:30) and its comment
+rewritten; the three directive lines of its header:
+
+<!-- google-doc-style-ignore -->
+
+```text
+// DESIGN-DOCS-SAMPLE: docs/design/templates.md, "Functions with template parameters", quote
+// EXPECT-ERROR: cannot deduce value for generic parameter `T`
+// QUOTE: `GetTemplate(h)` is rejected again with ``cannot deduce value for generic parameter `T` ``
+```
+
+<!-- google-doc-style-resume -->
+
+`python3 -I fork/designdocs/check_samples.py --toolchain <install>/bin/carbon`
+prints 0 errors on the fix's install, tp2-fix (one error, X25's compile
+failure, on C1+F1 and on P; 0 on tp2-base: the finding).
 
 ## Appendix D: the records texts, verbatim
 

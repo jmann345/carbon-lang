@@ -21869,7 +21869,30 @@ label's path or the generator comment's own path (empty once both are
 normalized): the old pin's build.ninja is unchanged. gen_ninja.py passes
 py_compile, the four files prek to a fixpoint, R31 holds on the three markdown
 files, the model-identifier grep over the commit's added lines finds 0 hits,
-and the label directories were deleted.
+and the label directories were deleted. The review fold (2026-11-23, commit
+"ARB-5: review fold", the same branch) applied the review's two MINOR findings,
+both wording in NOTES-C.md's ARB-5 section: the 22 undefined symbols of
+`libclangFrontendTool.a` had been called "21 other `cir::` symbols" (six are
+the `cir::Emit*Action` constructors, 16 are `mlir::`), and the 94 and 6 of the
+repro's error output had been called members of the two archives (they are the
+`in archive` line counts over the two links, 50 each, naming 11 and 1 distinct
+members; which locations lld prints for a symbol referenced more than three
+times varies from run to run, so the per-archive split is no measurement).
+Re-measured from the worktree under labels arb5-fx-new and arb5-fx-old: the
+prototype tree at the tip pin `LLVM archives: 249`, `=== build.sh done status=0
+2026-11-23T14:17:10Z`, `installed 2106 copied, 133 generated, 36 symlinked
+files`, `Ran 2114 tests in 17200 ms wall time, 65592 ms across threads` and
+`GATE arb5-fx-new: 2108 passed, 6 failed (6 per-test FAILED line(s) counted;
+binary exit 1)`, the same six files, and each binary linked again with its
+response file less the 68 `libMLIR*` and `libCIR*` entries failing as the repro
+did (exit 1, 20 `undefined symbol` errors each, 50 `in archive` lines each);
+trunk a9892d4bb at the old pin `LLVM archives: 176`, `=== build.sh done
+status=0 2026-11-23T14:26:00Z`, `installed 2074 copied, 133 generated, 36
+symlinked files`, `Ran 2047 tests in 11425 ms wall time, 43070 ms across
+threads` and `GATE arb5-fx-old: 2047 passed, 0 failed`, its build.ninja against
+tp2-base's 537 lines a side that normalize to the generator comment's path
+alone and, with that normalized too, to 0 lines; prek to a fixpoint, R31 and
+the model-identifier grep (0 hits) hold; the label directories were deleted.
 
 ### SAFE-3 stopped a second time (2026-11-16): the SAFE-4 ruling's stop condition fired at rev 15; the orchestrator's Addendum 2 (R29)
 

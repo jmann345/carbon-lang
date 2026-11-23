@@ -500,7 +500,8 @@ libraries and MLIR as a dependency-only project, and its `lib/` holds 69
 `libMLIR*.a` and `libCIR*.a` archives (66 and 3) beside the `libLLVM*`,
 `libclang*` and `liblld*` ones that `gen_ninja.py`'s `llvm_archives()` linked.
 `libclangFrontendTool.a` references the CIR frontend actions
-(`cir::EmitCIRAction::EmitCIRAction()` and 21 other `cir::` symbols by
+(`cir::EmitCIRAction::EmitCIRAction()`, the five other `cir::Emit*Action`
+constructors and 16 `mlir::` symbols, 22 in all, by
 `llvm-nm --undefined-only`), which pull `libclangCIR.a`'s CIRGen objects into
 the link, and those reference symbols only the MLIR and CIR archives define.
 ARB-5 adds the two prefixes `libMLIR` and `libCIR` to the archive selection
@@ -532,9 +533,12 @@ llvm::DataLayout const&)) in archive
 /home/user/llvm-build-c744694/lib/libclangCIR.a`), `ld.lld: error: undefined
 symbol: mlir::translateDataLayout(llvm::DataLayout const&, mlir::MLIRContext*)`
 and `ld.lld: error: undefined symbol: mlir::MLIRContext::getTypeUniquer()`;
-the references come from 94 members of libclangCIR.a and 6 of
-libclangCIRLoweringDirectToLLVM.a; `ninja: build stopped: subcommand failed.`,
-build.sh exit 1 (log /home/user/arb/logs/build-arb5-repro.log).
+the 100 `in archive` lines of the two links (50 each: at most three
+`>>> referenced by` locations per undefined symbol, 13 of the 20 followed by a
+`>>> referenced N more times` line) name 11 distinct members of libclangCIR.a
+and 1 of libclangCIRLoweringDirectToLLVM.a (`LowerToLLVM.cpp.o`); `ninja:
+build stopped: subcommand failed.`, build.sh exit 1 (log
+/home/user/arb/logs/build-arb5-repro.log).
 
 With the change, the same tree and pin under label arb5-new (`=== build.sh
 2026-11-16T23:28:19Z REPO=/home/user/carbon-ua3-proto SHA=arb5-new MODE=opt
@@ -578,5 +582,49 @@ worktree's gen_ninja.py `at arb5-old`) and its second `3c3` `builddir =
 with the label's path and the generator comment's path normalized the diff is
 empty (0 lines): the old pin's build.ninja is unchanged. The label directories
 were deleted afterwards.
+
+The review fold (2026-11-23, commit "ARB-5: review fold") applied the review's
+two MINOR findings, both wording in this section. RV5-M1: the 22 undefined
+`cir::` and `mlir::` symbols of `libclangFrontendTool.a` had been called
+"21 other `cir::` symbols"; six are the `cir::Emit*Action` constructors and 16
+are `mlir::` (pass factories and registrations), all from its one member
+`ExecuteCompilerInvocation.cpp.o` (`llvm-nm-18 --undefined-only -C`). RV5-M2:
+the 94 and 6 of the repro's error output had been called members of the two
+archives; they are the `in archive` line counts over the two links (50 each),
+which name 11 and 1 distinct members. Re-measured from the worktree, the
+running instance untouched and both trees clean before and after. The prototype
+tree at the tip pin under label arb5-fx-new (`=== build.sh 2026-11-23T14:08:24Z
+REPO=/home/user/carbon-ua3-proto SHA=arb5-fx-new MODE=opt
+CXX=/home/user/arb/deps/llvm21/bin/clang++ JOBS=4`): the same closure counts,
+`LLVM archives: 249`, `=== build.sh done status=0 2026-11-23T14:17:10Z`,
+`installed 2106 copied, 133 generated, 36 symlinked files under
+/home/user/arb/install/arb5-fx-new/lib/carbon`, `Ran 2114 tests in 17200 ms
+wall time, 65592 ms across threads`, `GATE arb5-fx-new: 2108 passed, 6 failed
+(6 per-test FAILED line(s) counted; binary exit 1)`, the same six files (log
+/home/user/arb/logs/gate-arb5-fx-new-20261123T141758Z.log). The failure, made
+again from that build by linking each binary with its response file less the
+68 `libMLIR*` and `libCIR*` entries (181 archives left): exit 1 and 20
+`undefined symbol` errors for each, the repro's 20, the first
+`ld.lld: error: undefined symbol: mlir::Attribute::getContext() const`
+referenced by `CIRDataLayoutSpec.cpp.o` in libclangCIR.a; 50 `in archive`
+lines each, 47 and 3 for the busybox and 45 and 5 for file_test, naming 11 and
+10 distinct members. Two more links of the busybox printed 45 and 5, then 46
+and 4, with 50 `>>> referenced by` lines every time: which locations lld
+prints for a symbol it finds referenced more than three times varies from run
+to run, so the per-archive split of those lines is no measurement and the
+corrected sentence counts the lines and the members. Trunk a9892d4bb at the
+old pin under label arb5-fx-old (`=== build.sh 2026-11-23T14:18:40Z
+REPO=/home/user/carbon-trunk SHA=arb5-fx-old MODE=opt
+CXX=/home/user/arb/deps/llvm21/bin/clang++ JOBS=4`): `LLVM archives: 176`,
+`=== build.sh done status=0 2026-11-23T14:26:00Z`, `installed 2074 copied, 133
+generated, 36 symlinked files under
+/home/user/arb/install/arb5-fx-old/lib/carbon`, `Ran 2047 tests in 11425 ms
+wall time, 43070 ms across threads`, `GATE arb5-fx-old: 2047 passed, 0 failed`
+(log /home/user/arb/logs/gate-arb5-fx-old-20261123T142639Z.log); `diff
+/home/user/arb/build/tp2-base/build.ninja
+/home/user/arb/build/arb5-fx-old/build.ninja` is 537 lines a side (2124 diff
+lines), the generator comment's path alone once the label's path is
+normalized, and 0 lines once both are. The label directories were deleted
+afterwards.
 
 <!-- google-doc-style-resume -->

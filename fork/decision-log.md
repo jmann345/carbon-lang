@@ -19952,15 +19952,15 @@ subject only; fork touchpoints are trunk a9892d4bb's and upstream lines are
 | 21c87c69b | Fix member access typos (PR 8155) | docs/design/expressions/member_access.md (hunks at :147, :193, :1034-1035, :1207, :1591-1592, :1644 and :1648 of 7a3608bab: typos, instance binding by the member's type rather than `typeof(a)`, `ref p: C` and `SetField(ref c, ...)`) and proposals/p007697-updates-to-member-access.md:316; neither file is fork-modified (trunk member_access.md:1033-1034 is the cut's text) and no register entry cites either; read in full | advance, fix |
 
 Unrelated (8), all outside those paths: the two common/ hashing commits
-4729b4473 (PR 8143) and 34cf614a2 (PR 8119); 26fe61062 (benchmark scripts);
-af53554f1 (docs/project/pull_request_workflow.md and
+4729b4473 (PR 8143) and 34cf614a2 (PR 8119); 26fe61062 (.github, the
+benchmarks workflow); af53554f1 (docs/project/pull_request_workflow.md and
 github_tools/check_dependent_pr.py with its test, none fork-modified); 534197a3c
 (`actionlint` in the prek checks: .github, scripts and .pre-commit-config.yaml,
 whose fork lines are exclude lines, merging clean); f789ad4bd (.github);
 c75778d80 (.github, 14 workflows, 6 of them fork-modified, among them
 .github/workflows/check_dependent_pr.yaml, already in the conflict set by
 b7ea32c3a; .github is not this check's to edit, and UA-3's plan resolves it,
-D-UA3-16 and W-402, a proposal); and 173351f69 (.github and benchmark scripts).
+D-UA3-16 and W-402, a proposal); and 173351f69 (.github, three workflow files).
 Since the cut (R32 (c)'s full window), 17 upstream commits touch docs/design,
 proposals or core/prelude: the 15 the 2026-11-16 entry counts and this week's
 1359231dd and 21c87c69b.

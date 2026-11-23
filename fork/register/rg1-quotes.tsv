@@ -87,8 +87,9 @@ toolchain/check/custom_witness.cpp	466	TODO: Handle destruction of adapters gene
 toolchain/check/custom_witness.cpp	467	adapted type.
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H6.1, line moved +1 by d50576ca1 (an include), text unchanged
 toolchain/lower/handle.cpp	78	context.SetLocal(inst_id, context.GetValue(inst.source_id));
-toolchain/check/convert.cpp	1564	auto value_rep =
-toolchain/check/convert.cpp	1567	SemIR::ValueRepr::ForType(context.sem_ir(), target.type_id);
+# Re-anchored 2026-11-23 (weekly upstream check) at upstream 0072b2812: H6.2, lines moved -1 by 0072b2812 (the diagnostics model), text unchanged
+toolchain/check/convert.cpp	1563	auto value_rep =
+toolchain/check/convert.cpp	1566	SemIR::ValueRepr::ForType(context.sem_ir(), target.type_id);
 # Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H7.4, line moved +1 by 5ae3dcaa9, text unchanged
 docs/design/pattern_matching.md	804	_case_ ::= `case` _pattern_ [`if` _expression_]? `=>` _block_
 # Re-anchored 2026-11-02 (weekly upstream check) at upstream 68569d234: lines moved by 68569d234, c6b54b57e, 4abb6100e and 54f37b35b, text unchanged
@@ -114,8 +115,8 @@ toolchain/lower/handle.cpp	464	TODO: We don't yet have support for cross-file te
 toolchain/lower/handle.cpp	470	CARBON_FATAL("Cross-file template lowering not implemented yet");
 # Re-anchored 2026-11-16 (weekly upstream check) at upstream 7a3608bab: H10.2, line moved +12 by dbf02ad10 (upstream's AddrOfAction at typed_insts.h:142-152), text unchanged (+15 by d50576ca1 at ca1898506)
 toolchain/sem_ir/typed_insts.h	1339	MetaInstId storage_access_block_id;
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: H11.2, line moved -2 by be0f11be9, text unchanged
-toolchain/check/call.cpp	385	Wrap symbolic template args in a `TemplateInst` so that all symbolic
+# Re-anchored 2026-11-23 (weekly upstream check) at upstream 0072b2812: H11.2, line moved +7 by 0072b2812 (the diagnostics model), text unchanged (-2 by be0f11be9 at ca1898506)
+toolchain/check/call.cpp	392	Wrap symbolic template args in a `TemplateInst` so that all symbolic
 toolchain/check/cpp/overload_resolution.cpp	156	static auto IsMoveEquivalentToCopy(clang::QualType type) {
 docs/design/expressions/indexing.md	105	impl as IndexWith(like i64) {
 docs/design/sum_types.md	113	let template Continuation: type;
@@ -168,7 +169,8 @@ core/prelude/destroy.carbon	24	fn Op(ref self) = "no_op";
 core/prelude/destroy.carbon	37	t.(DestroyImpl.Op)();
 core/prelude/destroy.carbon	38	t.(SubobjectDestroy.Op)();
 toolchain/check/control_flow.cpp	158	BuildSelfDestructCall(context, destroy_id);
-toolchain/check/custom_witness.cpp	1054	case SemIR::CoreInterface::SubobjectDestroy:
+# Re-anchored 2026-11-23 (weekly upstream check) at upstream 0072b2812: T5.6 (D-RG-16), line moved +16 by 0072b2812 (the diagnostics model), text unchanged, still the only SubobjectDestroy witness arm
+toolchain/check/custom_witness.cpp	1070	case SemIR::CoreInterface::SubobjectDestroy:
 docs/design/README.md	873	`T` is written `array(T, N)`, which is a shorthand for the library type
 docs/design/README.md	874	`Core.Array(T, N)`. This type is defined in the prelude.
 core/prelude/types/array.carbon	13	class Array(T: type, N: IntLiteral) {
@@ -300,8 +302,8 @@ toolchain/sem_ir/function.h	548	them in mangling.
 # OV-4 (fork/overload/ov4-plan.md section 0.8 and D-OV4-15; added at land time by commit L-R): the quotes of rows T2.8 and T2.9 of fork/register/rg1-plan.md section 2.T2.
 toolchain/check/call.cpp	49	// the range [callee_arity - arity_lower_bound_margin, callee_arity]. This
 toolchain/check/call.cpp	50	// allows arity matching when the callee has default arguments for some
-# Re-anchored 2026-11-09 (weekly upstream check) at upstream ca1898506: T2.8, lines moved by be0f11be9 (call.cpp -2) and d50576ca1 (pattern_match.cpp +19), text unchanged
-toolchain/check/call.cpp	239	function.default_value_arity);
+# Re-anchored 2026-11-23 (weekly upstream check) at upstream 0072b2812: T2.8, the call.cpp line moved +7 by 0072b2812 (the diagnostics model), text unchanged (at ca1898506: call.cpp -2 by be0f11be9, pattern_match.cpp +19 by d50576ca1)
+toolchain/check/call.cpp	246	function.default_value_arity);
 toolchain/check/pattern_match.cpp	1073	// If there's no scrutinee supplied, supply the default value instead.
 toolchain/check/function.cpp	677	// patterns, ensure that if a subpattern provides a default value, all
 toolchain/check/function.cpp	682	// TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this
@@ -319,8 +321,9 @@ docs/design/classes.md	2207	SortIntVector(&v);
 docs/design/pattern_matching.md	697	We do not yet have an approved design for overloaded functions, but it
 # T2.1 ALIGNED since EH-C (2026-11-09, W-346): its quotes are the docs/design/README.md 3858, 3860, 3164, 3165, 3166, 2176, 2177, 3856, 2167, 3159 and p000157 691, 229 rows above
 # TP-2 (2026-11-16): H10.8's quotes at 7a3608bab (identical at d10a566ab and 645e784aa, the tips read at the implementation and at the records)
-toolchain/check/call.cpp	449	Determines whether a call can be performed immediately
-toolchain/check/call.cpp	450	// non-template-dependent).
-toolchain/check/call.cpp	453	if (OperandDependence(context.sem_ir(), callee_id) ==
-toolchain/check/call.cpp	458	if (OperandDependence(context.sem_ir(), arg_id) ==
+# Re-anchored 2026-11-23 (weekly upstream check) at upstream 0072b2812: H10.8, the four call.cpp lines moved +7 by 0072b2812 (the diagnostics model; IsCallPerformable at :456-471, byte-identical to 7a3608bab's :449-464), text unchanged; the README.md row passes
+toolchain/check/call.cpp	456	Determines whether a call can be performed immediately
+toolchain/check/call.cpp	457	// non-template-dependent).
+toolchain/check/call.cpp	460	if (OperandDependence(context.sem_ir(), callee_id) ==
+toolchain/check/call.cpp	465	if (OperandDependence(context.sem_ir(), arg_id) ==
 docs/design/README.md	3015	on the template parameter can't be completed until the template is instantiated

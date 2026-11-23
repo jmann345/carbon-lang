@@ -349,6 +349,32 @@ or count signals and H10.1's, whose break condition fired for `AddrOfAction`
 (bd116f5e8) removes `bound`, which held PR 53 adopts, filed as W-395, owner
 SAFE-1; all re-anchored or filed by this check's records commit.
 
+_V-3a register re-check, weekly upstream check 2026-11-23 (upstream 0072b2812;
+the entry "Weekly upstream check 2026-11-23 (R32 direction register)" has the
+quotes):_ (i) to (iii) stay resolved on trunk; sum_types.md,
+pattern_matching.md, index.carbon, handle_index.cpp, indexing.md, iterate.carbon
+and loops.md are unchanged in the window, so D-DR-2's, slice 3's and W-321's
+break conditions did not fire. (iv) HOLDS: no window commit touches the files it
+cites, so W-324's break condition did not fire. (v) HOLDS: `like` is still a
+keyword token only and indexing.md:105 and :117 still read `like i64`, so
+W-326's break condition did not fire. (vi) HOLDS as filed:
+`SemIR::StructPattern` (typed_insts.h:2190), `PatternListUnderscoreField`
+(node_kind.def:153) and the `_` TODO (handle_pattern_list.cpp:234) are
+unchanged; W-372's break conditions did not fire. (vii), resolved by TP-2, has
+its first weekly re-read as ALIGNED: upstream's `IsCallPerformable` moved to
+call.cpp:456-471 by 0072b2812, byte-identical to 7a3608bab's :449-464, and
+README.md:3012-3016 and p002200:205-209 are unchanged, so the row's break
+condition did not fire. Register row H10.1 has its first weekly re-read as DRIFT
+for `AddrOfAction`: upstream's instruction is unchanged and its handler changed
+only in a diagnostic emit, so W-394's break conditions did not fire. EH-C's T2.1
+has its second weekly re-read: README.md, p000157 and core/ are unchanged and
+both T2.1 silence checks are 0, so D-EHC-1's break condition did not fire. W-395
+(upstream's removal of `bound`) did not fire: p008110 and p005434 are unchanged.
+W-355's scripts at the tip found 9 quotes moved with their text unchanged and
+three counts changed (H4.5, H10.8 and H11.10), every one by upstream 0072b2812's
+diagnostics model, none fired; all are re-anchored by this check's records
+commit, and no item is filed.
+
 _Ids._ The re-scan of every origin ref's and worktree's ledger on 2026-10-21,
 after a fetch (the command in CT-1's fork/cpp-templates/plan.md §0.11, widened
 to `W-3[0-9][0-9]`; 68 origin refs, 16 worktrees), found no W-3xx id anywhere.
@@ -7028,6 +7054,19 @@ call, or README.md:3012-3016 changes. Veto-able. Resolved 2026-11-16 by TP-2
 (the entry "TP-2: `IsCallPerformable` follows upstream's deferral of every
 template-dependent call argument (W-374)" below): the exception removed at
 75528587c, H10.8 ALIGNED; W-139's requirement kept, D-TP2-3.
+
+_Weekly upstream check 2026-11-23 (upstream 0072b2812; the entry "Weekly
+upstream check 2026-11-23 (R32 direction register)" has the quotes):_ (i) is
+re-read for `AddrOfAction`: upstream's instruction is unchanged
+(sem_ir/inst_kind.def:26, typed_insts.h:142-152 with `ExprCategory::Dependent`)
+and its handler in check/handle_operator.cpp changed only in the AddrOfNonRef
+emit (:285-291), `HandleAction<SemIR::AddrOfAction>` now at :316, so the DRIFT
+stands on W-394, owner UA-3. (viii), resolved by TP-2, is re-read as ALIGNED:
+`IsCallPerformable` (check/call.cpp:456-471 at 0072b2812) is byte-identical to
+7a3608bab's :449-464, and README.md:3012-3016 and p002200:205-209 are unchanged.
+Break conditions: upstream reverts or renames its `AddrOfAction`; upstream
+changes which operands or which dependence defer a call in `IsCallPerformable`,
+or README.md:3012-3016 or p002200:205-209 change.
 
 Veto digest: D-TP-3 (a copy of the storage chain, not upstream's shared block),
 D-TP-12 (deferral limited to template bindings), D-TP-13 (a field beside a
@@ -19817,6 +19856,272 @@ each `git grep -c` 0 at the tip; and upstream still asserts
 template")` (check/cpp/export.cpp:1902-1903) where the fork's guard diagnoses
 (T12.7). 05a7ecbd3 rewrote check/custom_witness.cpp, the `is_choice` clauses'
 file, which is UA-3's merge rule, not a design.
+
+### Weekly upstream check 2026-11-23 (R32 direction register): cut HOLDS at 218 commits; a dry-run merge conflicts in 194 files; no drift, no new item; GitHub Actions on the fork is still DISABLED (2026-11-23)
+
+The fifth weekly check under R32, fired at 2026-11-23 14:02 UTC, placed directly
+before the 2026-11-16 entry because this log runs its weekly entries newest
+first. The orchestrator's session was idle from 2026-11-17 to 2026-11-23 under
+an account limit; the check runs one week after the previous one, as scheduled.
+Two readers and two adversarial verifiers measured it, read-only, and the
+records were written, in the records worktree of branch weekly-20261123, cut
+from trunk a9892d4bb (PR 71's landing records, after its merge commit a976a9e2b;
+origin/trunk and the mirror claude/carbon-fork-0-1-7mwfb7 both at a9892d4bb by
+`git ls-remote origin` at 14:23 UTC; no landing in flight), after `git fetch
+upstream trunk` at 2026-11-23 14:12:53 UTC; the orchestrator's fetch at 14:03
+UTC, the verifiers' at 14:18 UTC and, for this commit, fetches at 14:23 and
+14:30 UTC read the same tip. The check is git- and text-based by its method:
+`git merge-tree` dry runs, `git log`, `git diff`, `git grep`, W-355's two
+scripts and reading. The clone is shallow (9863b1087 has no merge base with
+upstream), so dry runs pass `--merge-base=c1e83b0b7`. Two fork toolchains exist
+in the container, as the arbiter's installs /home/user/arb/install/tp2-base
+(trunk's tree before TP-2's call.cpp change, 99f4df970) and
+/home/user/arb/install/ua3-proto (UA-3's prototype: trunk a9892d4bb merged with
+7a3608bab, not trunk), and neither was used: no register entry's re-check needed
+a fork-side probe. No install of trunk a9892d4bb's exact tree exists. No
+upstream toolchain exists, and none was built. Upstream trunk 0072b2812
+(2026-11-22T05:19:35Z, "Start every diagnostic with a single message attached to
+the code", PR 8102) is 218 commits past the c1e83b0b7 cut, 21 past last week's
+7a3608bab (an ancestor of the tip) and 18 past 645e784aa, the tip PR 71's
+landing read; the fork is 414 commits past the cut, 22 past f54ddc64d.
+
+The dry-run merge (`git
+merge-tree --write-tree --name-only --merge-base=c1e83b0b7 upstream/trunk
+a9892d4bb`) exits 1 with tree 98b2c04d2 (the same without `--merge-base`) and
+conflicts in 194 files, 73 sources and 121 goldens, down from 196 (73 and 123)
+against trunk f54ddc64d. The 2026-11-16 list, re-derived at 7a3608bab with the
+same command, gives the count that entry recorded, 196 against f54ddc64d (tree
+b5c727c39, which differs from that entry's d96b49e25 only in its conflict-marker
+labels), and 194 against a9892d4bb (tree 1b3b1e00d). The fork's own landings
+since f54ddc64d account for the whole change: against a976a9e2b's first parent
+99f4df970 (the 2026-11-16 check's records, the SAFE-3 stop stamp, ARB-3 and
+ARB-4) the set is the 196 (tree 623f1f64c), and against a976a9e2b (PR 71, TP-2)
+it is 194 (tree c0184ab59). PR 71 takes two goldens out of the set,
+check/testdata/generic/template/convert.carbon and
+lower/testdata/template/class.carbon; the stop stamp, ARB-3 and ARB-4 add or
+remove none. This week's upstream adds 0 and removes 0: the tip's set is
+identical to the 7a3608bab set against a9892d4bb, and a stepwise dry run against
+a9892d4bb at 645e784aa, 6814311c7, f81d32706 and 4729b4473 gives 194 at each
+step. Against the 2026-11-16 list, then, no file is new and 2 vanished, both PR
+71's. One PR is held: PR 53 (SAFE-1) at 2407efa74, its unpushed SAFE-2 and
+SAFE-3 work mirrored at claude/carbon-fork-0-1-safe-wip, 4d31da703 (SAFE-3 rev
+15, STOPPED 2026-11-16), both read by `git ls-remote origin` at 14:23 UTC. With
+the same command, upstream first, PR 53's head gives tree df1e01c59 and the
+mirror's caf085140, each conflicting in the same 138 files (51 sources, 87
+goldens), identical to their sets at 7a3608bab (trees e410fd8a4 and c4219482e):
+none new, none vanished. UA-3's plan branch claude/carbon-fork-0-1-ua3 at
+0646e5063 (plan rev 1, under review; cut from 701863aa5, before PR 71) gives
+tree c6d16dce6 and 196 files, the set of its base 701863aa5 (tree 0e481e8a7) and
+of f54ddc64d, as expected (written by sha; with the ref name the tree is
+828794b29, its labels differing). Where verifier 1 corrected reader 1 (the
+window's tally, 13 advances and 8 unrelated; f81d32706's testdata counts;
+af53554f1's files; the scope of the `.Note(` re-conversion; 6814311c7's and
+5c4687471's fork-modified files; 21c87c69b's hunks) and verifier 2 corrected
+reader 2 (call.cpp's changed lines; the records that cite
+`HandleAction<SemIR::AddrOfAction>` at :313; W-398's convert.cpp half; W-397's
+whole break condition; parse/handle_let.cpp's directory), the correction is the
+record (the orchestrator's ruling under R29).
+
+R32 (c), the window's commits: every one of the 21 was read; 13 touch
+docs/design, proposals, core/prelude or toolchain/check, lower, parse, lex or
+sem_ir, and all 13 are advances; none is a drift. None touches core/prelude or
+docs/design/README.md; two touch docs/design (1359231dd, expressions/README.md,
+and 21c87c69b, expressions/member_access.md, with
+proposals/p007697-updates-to-member-access.md), and both were read in full.
+Every one of the 13 belongs to the advance after UA-3: UA-3's plan rev 1
+proposes, in D-UA3-1, the tip 7a3608bab and no newer one (a proposal until
+signed off), and no window commit is a drift that would need an earlier fix. The
+8 others are outside those paths and unrelated. Commits are listed by sha and
+subject only; fork touchpoints are trunk a9892d4bb's and upstream lines are
+0072b2812's unless a sha is named.
+
+| Commit | Subject | Fork touchpoint | Class |
+| --- | --- | --- | --- |
+| 0072b2812 | Start every diagnostic with a single message attached to the code (PR 8102) | the diagnostics model, 378 files across check, lower, parse, lex, sem_ir, diagnostics/ and toolchain/docs: it removes `CARBON_DIAGNOSTIC_CONTEXT` (`git grep -c` over toolchain 45 at 7a3608bab, 0 at the tip), renames `AnnotationScope` to `ContextScope` (29 to 0), adds `Diagnoser` (0 to 32) and drops the label's category (`CARBON_DIAGNOSTIC_LABEL(X, Info, ...)` becomes `(X, ...)`, for example check/call.cpp:292); UA-3's plan proposes, in D-UA3-11, converting the fork's own 23 Note/Context declarations and 27 call sites to 7a3608bab's `LABEL`/`CONTEXT` + `Attach` model (fork/upstream/ua3-plan.md:226 at 0646e5063), so the advance after UA-3 converts those a second time (trunk's 98 `.Note(` sites in check and lower include the cut's 77, which upstream removed by 7a3608bab and UA-3's merge takes); 71 fork-modified files, 70 of them also changed by upstream up to 7a3608bab, 49 in the conflict set; `IsCallPerformable` moves from call.cpp:449-464 to :456-471 byte-identical (H10.8, below), and `HandleAction<SemIR::AddrOfAction>` from handle_operator.cpp:313 to :316, the `&` handler changed only in the AddrOfNonRef emit (:285-291, now `Build(...).ExtraRange(value_id).Emit()`); every W-355 failure at the tip is this commit's; no new conflict | advance, mechanism |
+| f81d32706 | Roll LLVM to c03c4571b1b (PR 8152) | MODULE.bazel:94 moves `llvm-raw`'s `commit` from c744694c6ae1d12bbf7d0447b4bc91ee94a1904c ("HEAD as of 2026-11-02") to c03c4571b1b00894a559a265baefe1924db73a27 ("HEAD as of 2026-11-17") and drops patch 0013; trunk's MODULE.bazel:89 is still 6ec87e7ec4b3 and the arbiter's tip pin is c744694 (ARB-4), so the advance after UA-3 needs a third LLVM build in the container (ARB-6, below); 101 files, 92 of them testdata (86 under lower/testdata, 6 under driver/testdata, none under check/testdata); 28 fork-modified (27 goldens and toolchain/install/BUILD), 25 in the conflict set; no new conflict | advance, mechanism |
+| 6814311c7 | Move impl requirement checking to the end of the impl definition (PR 8138) | upstream renames `CheckRequireDeclsSatisfied` (trunk check/impl.h:71 and impl.cpp:993, called at handle_impl.cpp:484) to `CheckImplRequirementsAtEndOfDefinition` (impl.h:74, impl.cpp:811, called at handle_impl.cpp:511) and runs it at the end of the impl definition (p005168); SC-1's D-SC-8(iii) class-end deferral (trunk impl.h:79 and impl.cpp:1091 `CheckDeferredRequireDeclsAtClassEnd`, called at handle_class.cpp:386 and handle_union.cpp:99) stays needed, the class being incomplete at an inner impl's end, so it is not a second spelling of upstream's; 5 fork-modified files (context.cpp, context.h, impl.cpp and node_stack.h, in the conflict set, and impl.h); the comments at handle_require.cpp:306 and structural_conformance.cpp:98 follow the rename; no new conflict | advance, mechanism |
+| 5c4687471 | Introduce `ImportIRId::Local` to represent the local file (PR 8151) | sem_ir/ids.h: `Local` is 0 and `ApiForImpl` becomes 1, with check/merge.cpp, import_ref.cpp, impl_validation.cpp and check_unit.cpp; 8 fork-modified files, 6 in the conflict set (check/testdata/basics/raw_sem_ir/cpp_interop.carbon among them); a hazard no textual conflict shows: trunk's check/handle_function.cpp:379 (`auto prev_import_ir_id = SemIR::ImportIRId::None;`, the overload member redeclaration passed to merge) means the local file, and upstream's merge.cpp:887 now reads `replace_prev_inst = prev_import_ir_id != SemIR::ImportIRId::Local`, so the advance after UA-3 spells it `Local`; no new conflict | advance, mechanism |
+| 6c9a6a4ed | Dump expression category for an InstId (PR 8150) | sem_ir/dump.cpp and sem_ir/BUILD, both fork-modified (OV-1's `OverloadSetId` dump) and merging clean; no new conflict | advance, mechanism |
+| 645e784aa | Move/rename `InstNamer::Namespace` to `TextualNamespace` (PR 8131) | sem_ir/inst_namer.cpp, already conflicting (trunk :331-349 uses `InstNamer::Namespace`), and inst_namer.h, fork-modified, merging clean; the tip PR 71's landing read (D-LAND-19), where both W-355 scripts printed 0 failed; no new conflict | advance, mechanism |
+| d10a566ab | Flatten the where assignment decl parse subtree (PR 8144) | parse/typed_nodes.h, already conflicting (UN-1's), and parse/handle_where.cpp, not fork-modified; trunk has no `where` assignment nodes; no new conflict | advance, mechanism |
+| 873f7a3f7 | Handle `where` assignment in an invalid scope without a decl (PR 8145) | check/handle_where.cpp, not fork-modified, and a golden; W-324's condition (a template associated constant) is untouched | advance, fix |
+| 55ff3be05 | Use the lexer dispatch table to handle special identifier prefixes (PR 8095) | lex/lex.cpp, fork-modified (OV-1's `case TokenKind::Overload:` at trunk :2075), merges clean; no new conflict | advance, mechanism |
+| 4e830a085 | Add fast paths for lexing simple decimal integer literals (PR 8115) | lex/lex.cpp (fork-modified, merges clean), lex/numeric_literal.cpp and .h, its benchmark, fuzzer and test, lex/tokenized_buffer.cpp and lex/BUILD (not fork-modified); no new conflict | advance, mechanism |
+| cc7e70732 | Add test that verifies compound lookup into an interface uses the self specific (PR 8160) | one golden, check/testdata/impl/compound.carbon, not fork-modified; no fork touchpoint | advance, test |
+| 1359231dd | Fix the pointer operator link in the expressions diagram (PR 8154) | docs/design/expressions/README.md:84 links pointer_operators.md for pointer.md (trunk :85 has the old link); the file is fork-modified (EH-A's `x?` rows) and merges clean; it is not docs/design/README.md and holds no choice or error-handling text, so T2.1 is untouched; read in full | advance, fix |
+| 21c87c69b | Fix member access typos (PR 8155) | docs/design/expressions/member_access.md (hunks at :147, :193, :1034-1035, :1207, :1591-1592, :1644 and :1648 of 7a3608bab: typos, instance binding by the member's type rather than `typeof(a)`, `ref p: C` and `SetField(ref c, ...)`) and proposals/p007697-updates-to-member-access.md:316; neither file is fork-modified (trunk member_access.md:1033-1034 is the cut's text) and no register entry cites either; read in full | advance, fix |
+
+Unrelated (8), all outside those paths: the two common/ hashing commits
+4729b4473 (PR 8143) and 34cf614a2 (PR 8119); 26fe61062 (.github, the
+benchmarks workflow); af53554f1 (docs/project/pull_request_workflow.md and
+github_tools/check_dependent_pr.py with its test, none fork-modified); 534197a3c
+(`actionlint` in the prek checks: .github, scripts and .pre-commit-config.yaml,
+whose fork lines are exclude lines, merging clean); f789ad4bd (.github);
+c75778d80 (.github, 14 workflows, 6 of them fork-modified, among them
+.github/workflows/check_dependent_pr.yaml, already in the conflict set by
+b7ea32c3a; .github is not this check's to edit, and UA-3's plan resolves it,
+D-UA3-16 and W-402, a proposal); and 173351f69 (.github, three workflow files).
+Since the cut (R32 (c)'s full window), 17 upstream commits touch docs/design,
+proposals or core/prelude: the 15 the 2026-11-16 entry counts and this week's
+1359231dd and 21c87c69b.
+
+_W-355 at 0072b2812._ Both scripts run from the worktree root as
+fork/register/rg1-plan.md section 4.2 says. Over trunk a9892d4bb's tables,
+before this commit's edits, they print "checked 294 quotes, 9 failed" and
+"checked 96 silence checks, 3 failed"; at 645e784aa they printed 0 failed in
+both (PR 71's landing, D-LAND-19), and at 4729b4473, the tip's parent, they
+print 0 failed in both, so every failure is 0072b2812's, the only window commit
+to call.cpp, convert.cpp, custom_witness.cpp and the three counts' files. Each
+quote was found byte-identical at its new line. Rows are lines of
+fork/register/rg1-quotes.tsv and rg1-checks.tsv and of rg1-plan.md at trunk
+a9892d4bb, before this commit's comment lines moved them.
+
+| Row | Section 2 row, block | Class | At 0072b2812 | Decision |
+| --- | --- | --- | --- | --- |
+| rg1-quotes.tsv:90 and :91, toolchain/check/convert.cpp:1564 and :1567 | H6.2 (D-OP2-2; rg1-plan.md:960) | NONE | MOVED to :1563 and :1566 by 0072b2812 (-1), text unchanged | re-anchored in this commit; not fired |
+| rg1-quotes.tsv:118, check/call.cpp:385 | H11.2 (CT-1; rg1-plan.md:1029) | ALIGNED | MOVED to :392 by 0072b2812 (+7), text unchanged | re-anchored; not fired |
+| rg1-quotes.tsv:171, check/custom_witness.cpp:1054 | T5.6 (D-RG-16; rg1-plan.md:775) | DRIFT (D-RG-16), as filed | MOVED to :1070 by 0072b2812 (+16, its diagnostic lambdas built through `Diagnoser`), text unchanged, still the only `case SemIR::CoreInterface::SubobjectDestroy:` | re-anchored; not fired |
+| rg1-quotes.tsv:304, check/call.cpp:239 | T2.8 (OV-4; rg1-plan.md:741) | ALIGNED | MOVED to :246 by 0072b2812 (+7), text unchanged | re-anchored; not fired |
+| rg1-quotes.tsv:322 to :325, check/call.cpp:449, :450, :453 and :458 | H10.8 (TP-1, ALIGNED by TP-2; rg1-plan.md:1017) | ALIGNED since 2026-11-16 | MOVED to :456, :457, :460 and :465 by 0072b2812 (+7; its call.cpp changes are at :87, :92-104, :272, :290 and :292 of the tip, all diagnostics), `IsCallPerformable` byte-identical | re-anchored; not fired (below); the README.md:3015 row passes |
+| rg1-checks.tsv:70, H4.5 | H4.5 (ST-1; rg1-plan.md:936) | NONE | L count 8 to 9 by 0072b2812 (operators.carbon's rendered diagnostics) | expected count 9; ST-1's merge-rule signal as on 2026-11-16 (keep the fork's CHECK lines of the two pinned splits, then autoupdate), the advance after UA-3's to apply; not fired |
+| rg1-checks.tsv:94, H10.1 | H10.1 (TP-1; rg1-plan.md:1010) | NONE; DRIFT for `AddrOfAction` (W-394) | G count 5, unchanged (handle_operator.cpp:269 and :316, inst_kind.def:26, typed_insts.h:143 and :144) | passes; re-read (below); its comment line gains :313 to :316 |
+| rg1-checks.tsv:98, H10.8 | H10.8 (TP-1, ALIGNED by TP-2; rg1-plan.md:1017) | ALIGNED | L count 9 to 10 by 0072b2812 (diagnostics only: the label's category dropped, `AnnotationScope` to `ContextScope`, an `Attach` on `DeclaredName`) | expected count 10; the merge-rule signal re-read, ALIGNED holds |
+| rg1-checks.tsv:107, H11.10 | H11.10 (CT-1; rg1-plan.md:1037) | NONE | L count 13 to 14 by 0072b2812 (range_for.carbon and non_type_param.carbon re-rendered) | expected count 14; merge rule: take upstream's files and refill; not fired |
+
+After this commit's edits both scripts, run from the worktree root at 0072b2812,
+print "checked 294 quotes, 0 failed" and "checked 96 silence checks, 0 failed".
+Each moved quote row has its line number updated under a "#" comment line naming
+the check and the tip (5 comment lines, one per run of adjacent rows of one
+check: 3 new, for H6.2, T5.6 and H10.8, the last below TP-2's block header, and
+2 replacing the 2026-11-09 line of H11.2 and of T2.8 and keeping its lineage),
+and each changed count's "#" comment line is extended with its commit and merge
+rule (3), H10.1's with its re-read. No break condition fired; no item is filed.
+
+_V-3a register re-check at 0072b2812 (R32 (b)), entry by entry._ Each cited page
+was re-read at the tip; "unchanged" means `git diff 7a3608bab 0072b2812` is
+empty for the entry's files. The window's only docs/design and proposals files
+are expressions/README.md, expressions/member_access.md and p007697 (and
+docs/project/pull_request_workflow.md), and no window commit touches core/.
+DR-0's block lines are trunk a9892d4bb's.
+
+| Entry | Recorded at | Upstream text at 0072b2812 | Break condition | State |
+| --- | --- | --- | --- | --- |
+| (i) PR 62's D-SV-7 `Core.Optional(T)` view (W-322) | DR-0's block (:243-244, resolved at :265-267) | sum_types.md and pattern_matching.md unchanged | D-DR-2's: not fired | RESOLVED on trunk |
+| (ii) D-SL-3's read-only `Core.Slice` (W-109) | DR-0's block (:244-246, resolved at :267-269) | core/prelude/operators/index.carbon, check/handle_index.cpp and expressions/indexing.md unchanged | DR-1 slice 3's: not fired | RESOLVED on trunk |
+| (iii) the pointer cursor of `Core.Iterate.Next` (W-321) | DR-0's block (:247-248, resolved at :264-265) | core/prelude/iterate.carbon and control_flow/loops.md unchanged | W-321's: not fired | RESOLVED on trunk |
+| (iv) `Core.Optional` not matchable: upstream's pages conflict on `Match.Continuation` (W-320 blocked on W-324; residues H5.5 and C1.1) | DR-0's block (:248-253) | sum_types.md:113 (`let template Continuation: type;`) against README.md:1078 ("associated constant, and so no phase keyword is allowed there.") and :3066-3067 ("no phase keyword is allowed, so an associated constant cannot be made `template`.") and generics/terminology.md:100-103; toolchain/parse/handle_let.cpp:41 (`PhaseKeywordInAssociatedConstant, Error,`; :40 at trunk); check/handle_loop_statement.cpp:237-238 (the `.Some(pattern_id)` TODO) and check/handle_match.cpp's 14 TODO handlers; none of these files changed in the window; no `Match` or `Continuation` in upstream core/ or toolchain/check; 873f7a3f7 and d10a566ab handle `where` assignments, not a template associated constant | W-324's ("upstream changes sum_types.md's `Match` declaration, admits template associated constants, or implements `Match` or its loop TODO"): not fired | HOLDS; W-320 stays blocked on W-324 |
+| (v) D-SL-17's literal-subscript rule, a fork spelling of indexing.md's `like i64` (W-326; residues T5.7 and C1.2) | DR-0's block (:253-255) | expressions/indexing.md:105 (`impl as IndexWith(like i64) {`) and :117 (`impl as IndirectIndexWith(like i64) {`), unchanged; lex/token_kind.def:208 (`CARBON_KEYWORD_TOKEN(Like, "like")`) with no `TokenKind::Like` in toolchain, and a whole-word `like` in 58 files and 111 lines of parse, check and core/prelude at both 7a3608bab and the tip | W-326's (`like` lands): not fired | HOLDS; W-326 stays blocked on `like` |
+| (vi) the struct-pattern check layer (W-372) | DR-0's block (:255-258) | sem_ir/typed_insts.h:2190 (`struct StructPattern {`), parse/node_kind.def:153 (`PatternListUnderscoreField`) and check/handle_pattern_list.cpp:234 (`return context.TODO(node_id, "Struct pattern underscore field");`), with pattern_matching.md, unchanged; UA-3's plan proposes upstream's layer (D-UA3-6) | W-372's (upstream reverts or renames the layer, or an owner ruling that the fork keeps its own): not fired; its 2026-11-09 note's (upstream fills the `_` field's check handler): not fired | DRIFT already filed, owner UA-3 until UA-3 lands; W-372 gains a dated re-read, no take-list change |
+| (vii) H10.8, the deferral of a call in `IsCallPerformable` (W-374 DISCHARGED by TP-2; first weekly re-read as ALIGNED) | DR-0's block (:258-264, resolved at :263-264); rg1-plan.md:1017 | check/call.cpp:456-471 (`// Determines whether a call can be performed immediately (that is whether it is` / `// non-template-dependent).`, :460 `if (OperandDependence(context.sem_ir(), callee_id) ==`, :465 `if (OperandDependence(context.sem_ir(), arg_id) ==`), byte-identical to 7a3608bab's :449-464; README.md:3015 ("on the template parameter can't be completed until the template is instantiated") and p002200 unchanged | the row's ("upstream changes which operands or which dependence defer a call in `IsCallPerformable`, or README.md:3012-3016 or p002200:205-209 change"): not fired | ALIGNED HOLDS (below) |
+| H10.1, TP-1's `AddrOfAction` (W-394, owner UA-3; first weekly re-read as DRIFT) | rg1-plan.md:1010; TP-1's entry | sem_ir/inst_kind.def:26 (`CARBON_SEM_IR_INST_KIND(AddrOfAction)`) and typed_insts.h:142-152 (`struct AddrOfAction {` at :143, `ExprCategory::Dependent`, fields `TypeId type_id` and `MetaInstId lvalue_id`) unchanged; check/handle_operator.cpp:268-269 (`PerformAction(..., SemIR::AddrOfAction action)`), the AddrOfNonRef emit at :285-291 now built with `ExtraRange`, `HandleAction<SemIR::AddrOfAction>` at :316 (:313 at 7a3608bab) | W-394's ("upstream reverts or renames its `AddrOfAction`, or an owner ruling that the fork keeps its own"): not fired | DRIFT HOLDS on W-394; UA-3's plan proposes upstream's `AddrOfAction` (D-UA3-7) |
+| W-395, upstream's removal of `bound` (owner SAFE-1, carried by held PR 53; first weekly re-read) | the 2026-11-16 entry; W-395's notes | proposals/p008110-remove-bound.md:1 (its title, "Remove `bound`") and :28 ("Remove the `bound` parameter modifier introduced in"), p005434, expressions/indexing.md and values.md unchanged; no proposal or design page added in the window (`--diff-filter=A` over docs and proposals is empty) | W-395's ("upstream restores `bound` or lands the memory safety design that replaces it, or an owner ruling on PR 53's scope"): not fired | HOLDS; PR 53 held under the stop stamp's ruling, realigned after UA-3 |
+| T2.1, `Core.Result`'s `Success`/`Failure` (W-346 discharged by EH-C; second weekly re-read) | rg1-plan.md:734; the entry "EH-C" | docs/design/README.md:2167 (`### Choice types`), :2175-2177 (`choice IntResult {`, `Success(value: i32),`, `Failure(error: String),`), :3159 (`#### Generic choice types`), :3164-3166 (`choice Result(T: type, Error: type) {`, `Success(value: T),`, `Failure(error: Error)`) and :3856-3860 (`### Error handling`; "errors are represented using `[choice types](#choice-types)` like `Result` and `Optional`."); p000157:691 (`Success(T: value),`) and :229; README.md, p000157 and core/ unchanged; both T2.1 silence checks 0 | D-EHC-1's: upstream renames or reorders the alternatives, or the user vetoes the reversal: not fired | ALIGNED HOLDS |
+| W-396 to W-400, TP-2's residues (W-396 to W-398 re-read by W-355; W-399 and W-400 TP-1's follow-on) | the entry "TP-2"; their notes | check/deduce.cpp, pattern_match.cpp and impl_lookup.cpp changed only in diagnostics (0072b2812) and impl_lookup.cpp in 5c4687471's `ImportIRId::Local` test; check/convert.cpp only in diagnostics, its "struct {0} has no field named `{1}`" check at :839; check/refutable_binding.cpp and pointer_dereference.cpp unchanged; no added line in those files mentions dependence, a splice or a template; 6814311c7 moves impl requirement checking (impl.cpp), not lookup deduction | W-396's ("upstream's deduce.cpp deduces a binding through a template-dependent splice or `call_action`, or the nightly runs ded_holder"), W-397's ("upstream's `match` accepts a scrutinee whose type is a template-dependent splice (pattern_match.cpp or refutable_binding.cpp gain the case), or the nightly runs templates_match_dependent_choice.carbon"), W-398's ("upstream diagnoses either form at the definition for a splice-typed operand") and W-400's ("upstream's impl lookup deduces a template binding through a splice-typed self or interface, or the nightly runs a2_impl_self"): the code halves not fired; the nightly halves not measured (no upstream toolchain); W-399's ("e1n rejected ... on a fork build") states none on upstream | HOLD |
+| The ten residues of fork/register/rg1-plan.md section 7: H5.5, C1.1, T5.7, C1.2, H8.3, C2.1, C2.3, C2.4, C2.5 and C2.6 | rg1-plan.md section 7 | H5.5 and C1.1 as (iv); T5.7 and C1.2 as (v); H8.3 and C2.3 p002240:555 (`### Omit each-names`); C2.1 variadics.md:493 ("> **TODO:** Discuss typechecking `...expand`.") and :750 with check/handle_pack_expansion.cpp:12 (`return context.TODO(node_id, "HandlePackExpansionStart");`); C2.4 variadics.md:219-221 (:221 "so, it must be a deduced parameter of the enclosing pattern.") with :532-546; C2.5 generics/details.md:4906 (`#### Overlap rule`) and :4921-4929; C2.6 comparison_operators.md:457-464 with core/prelude comparison.carbon:25 and :55 (`// TODO: fn Compare`); no window commit to any of these files | each entry's own: not fired | HOLD |
+| VA-2's six plan-state entries (W-217, W-334 with W-222, W-230, W-214, W-338, W-339) | the entry "VA-2: definition-checked variadics, slice 2 (2026-10-27)" and rg1-plan.md's block C2 | as the residues, with comparison_operators.md:311-316 and check/type_structure.cpp (last changed by 35eb25c27) unchanged | each entry's next action: not fired | HOLD |
+| Every other NONE and ALIGNED entry (W-355) | RG-1's blocks (rg1-plan.md section 2) | the scripts' pass after this commit's re-anchors (the W-355 table above) | each entry's own: not fired | HOLD |
+
+_H10.8's first weekly re-read as ALIGNED (TP-2's break condition)._ TP-2 made
+the row ALIGNED on 2026-11-16 with the break condition "upstream changes which
+operands or which dependence defer a call in `IsCallPerformable`, or
+README.md:3012-3016 or p002200:205-209 change". Upstream's `IsCallPerformable`
+(toolchain/check/call.cpp:456-471 at 0072b2812) is byte-identical to 7a3608bab's
+:449-464 (`diff` empty); 0072b2812, the only window commit to call.cpp, moves it
+by seven lines with its diagnostics edits before it, and check H10.8's count
+moves 9 to 10 with it. Against trunk a9892d4bb's function (call.cpp:1023-1038)
+it differs only at its fifth and tenth lines, trunk's
+`OperandDependence(context, callee_id)` and `OperandDependence(context, arg_id)`
+for upstream's `context.sem_ir()`, TP-2's section 8.7 shape, which UA-3
+converts. README.md and p002200 are unchanged. The break condition did not fire,
+and the row stays **ALIGNED**; W-374 stays DISCHARGED and gains nothing.
+Recorded in rg1-plan.md's H10.8 row, its comment line in rg1-checks.tsv, the
+re-anchor comment in rg1-quotes.tsv and DR-0's register block.
+
+_H10.1's first weekly re-read as DRIFT for `AddrOfAction` (W-394)._ Upstream's
+`AddrOfAction` is unchanged in name, slot, fields and category
+(inst_kind.def:26, typed_insts.h:142-152), and its `&` handler in
+check/handle_operator.cpp changed only in the AddrOfNonRef emit (:285-291);
+`HandleAction<SemIR::AddrOfAction>` is at :316, the :313 that W-394's evidence
+and rg1-checks.tsv's H10.1 comment line cite at 7a3608bab. Check H10.1 is 5.
+W-394's break conditions did not fire, and the row stays DRIFT for
+`AddrOfAction` on W-394, owner UA-3, whose plan rev 1 proposes taking upstream's
+instruction and handler (D-UA3-7; a proposal until signed off). Recorded in
+rg1-plan.md's H10.1 row, its comment line, TP-1's entry, DR-0's register block
+and W-394's notes.
+
+_W-395's first weekly re-read._ p008110 and p005434 are unchanged, `bound` is
+not restored, and no memory safety proposal or design page is added in the
+window, so W-395's break condition did not fire. PR 53 stays held under the
+SAFE-3 stop stamp's ruling (UA-3 proceeds with PR 53 held; PR 53 takes UA-3's
+trunk afterwards by a merge commit), and W-395's realignment follows UA-3.
+Recorded in W-395's notes.
+
+_T2.1's second weekly re-read._ No window commit touches docs/design/README.md,
+p000157 or core/, the T2.1 quote rows pass at the tip and both T2.1 silence
+checks (`\bOk\(|\bErr\(` over docs/design and proposals; `choice Result\b|class
+Result\b` over core) are 0, so D-EHC-1's break condition did not fire and the
+row stays ALIGNED. W-346's notes need no line: its discharge's break condition
+is the user's veto, not the weekly re-read; W-355 carries the row. Recorded in
+rg1-plan.md's T2.1 row and DR-0's register block.
+
+Divergence: 2166 upstream files are touched since the cut (2140 last week) and
+559 this week (864), 412 of them testdata and 365 under toolchain/check; 1251
+files are modified by the fork since the cut (1251), `git diff --name-only
+c1e83b0b7 a9892d4bb` over 414 fork commits; 307 are in both sets since the cut
+(306), 139 of them goldens, and 120 this week (108), 60 of them goldens, by
+`comm -12` of the sorted lists; of this week's 120, 83 are in the conflict set
+and 37 merge clean.
+
+The cut HOLDS. UA-3 proceeds at 7a3608bab, the tip its plan rev 1 proposes in
+D-UA3-1 (fork/upstream/ua3-plan.md at 0646e5063 on claude/carbon-fork-0-1-ua3,
+under adversarial review; a proposal until signed off), and takes no newer tip:
+no window commit is a drift, so every one of the 21 belongs to the advance after
+UA-3, which meets the diagnostics model of 0072b2812 (the fork's Note/Context
+sites that D-UA3-11 converts to 7a3608bab's model are converted a second time),
+5c4687471's `ImportIRId::Local` (trunk handle_function.cpp:379's
+`ImportIRId::None` spelled `Local`, a hazard no textual conflict shows),
+6814311c7's rename beside SC-1's class-end deferral, the lexer changes of
+55ff3be05 and 4e830a085 over OV-1's lex.cpp and the two `where` assignment
+commits. The LLVM roll f81d32706 moves the tip's pin to c03c4571b1b0 past the
+arbiter's tip pin c744694 (ARB-4), so that advance needs a third LLVM build in
+the container: an arbiter follow-up, ARB-6, after ARB-5 lands (ARB-5, the
+arbiter's link line at the tip pin, is not on trunk at this commit). The
+register is re-anchored at 0072b2812 as every weekly check re-anchors at its
+tip; D-UA3-1's statement that the next weekly check re-anchors after UA-3's
+landing is the plan's, and UA-3's re-read of the register at 7a3608bab starts
+from the 2026-11-16 anchors, which this commit's comment lines name with each
+move. PR 53 stays held under the stop stamp's ruling (the decision-log entry
+"SAFE-3 stopped a second time (2026-11-16)"), taking UA-3's trunk afterwards by
+a merge commit. No drift is filed. DR-0's register gains a dated re-check;
+TP-1's entry gains a dated note; W-355, W-324, W-326, W-372, W-394 and W-395
+gain dated ledger notes. Break condition of this recommendation: a later weekly
+check finds a drift that must be fixed before UA-3 lands, or UA-3's plan is
+signed off with a tip other than 7a3608bab.
+
+_Ids._ The re-scan for this commit, read-only and after `git fetch origin` at
+14:23 UTC (`git grep -ohE 'W-[0-9]{3}'` over fork/ at origin/trunk a9892d4bb,
+origin/claude/carbon-fork-0-1-safe-wip 4d31da703,
+origin/claude/carbon-fork-0-1-safe 2407efa74, origin/claude/carbon-fork-0-1-ehc
+d7e1de3e9, origin/claude/carbon-fork-0-1-tp2 d175fcb5a and
+origin/claude/carbon-fork-0-1-ua3 0646e5063, and `grep -rohE` over fork/ in the
+worktrees /home/user/carbon-safe, /home/user/carbon-trunk,
+/home/user/carbon-ua3, /home/user/carbon-ua3-proto and /home/user/carbon-tools),
+finds W-400 the highest id filed (on trunk, TP-2's), W-401 and W-402 only in
+UA-3's plan rev 1 (origin/claude/carbon-fork-0-1-ua3 and /home/user/carbon-ua3),
+reserved, W-381 to W-385 reserved by EH-C's D-EHC-11 and W-386 to W-393 reserved
+by SAFE-3's rev 15 text, and no id above W-402 anywhere. No drift is filed, so
+no id is taken; the next free id is W-403.
+
+Not run: no build, no probe, no merge, no staging branch and no workflow
+dispatch (R28); the owner's machine was not used. What a measurement would have
+needed an upstream toolchain for, none exists: the nightly halves of W-396,
+W-397 and W-400's break conditions, and how 0072b2812's diagnostics model and
+f81d32706's LLVM roll re-render the fork's goldens. GitHub Actions on the
+repository is still disabled: its newest workflow run is the 2026-10-08 08:19
+UTC Nightly Release (a read-only listing of the repository's runs, 1833 in all,
+re-read for this commit), so nothing is of record (R9). At trunk a9892d4bb
+ORCHESTRATION's header records 20 PRs landed (PR 67, 51, 52, 54, 55, 58, 61, 62,
+64, 63, 65, 68, 60, 56, 57, 59, 66, 69, 70 and 71) and 1 held (PR 53).
 
 ### Weekly upstream check 2026-11-16 (R32 direction register): cut HOLDS at 197 commits; a dry-run merge conflicts in 196 files; register row H10.1 FIRED for `AddrOfAction`, filed as W-394, and upstream's removal of `bound` filed as W-395; GitHub Actions on the fork is still DISABLED (2026-11-16)
 

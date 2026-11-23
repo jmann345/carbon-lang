@@ -10,7 +10,15 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-11-16 (PR 71 landed by LAND-1; 20 PRs landed, 1 held; see the
+Last updated: 2026-11-23 (weekly check fired under R32: the cut HOLDS at 218
+upstream commits with 194 conflicting files against trunk a9892d4bb; no drift,
+no new item; H10.8's first weekly re-read as ALIGNED, H10.1's as DRIFT on W-394,
+W-395's first and T2.1's second, all holding; W-355's 9 moved quotes and three
+counts re-anchored, every one by upstream 0072b2812; the LLVM roll f81d32706
+makes a third LLVM build (ARB-6) due before the advance after UA-3; 20 PRs
+landed, 1 held; see the paragraph dated 2026-11-23 (14:02 UTC, weekly check
+fired) below; the earlier 2026-11-16 text follows).
+2026-11-16 (PR 71 landed by LAND-1; 20 PRs landed, 1 held; see the
 paragraph dated 2026-11-16 (20:57 UTC) below; the earlier 2026-11-16 text
 follows).
 2026-11-16 (TP-2 implemented and reviewed on
@@ -2467,6 +2475,47 @@ claude/carbon-fork-0-1-safe and origin's claude/carbon-fork-0-1-safe-wip
 (elsewhere range bounds in prose), no ledger use; no W-4xx but W-400 anywhere,
 W-400 only on the PR's line; 20 PRs landed, 1 held. Next: UA-3 (W-394's audit
 inherits TP-2's call.cpp as upstream's own 4286832b4 hunk).
+
+2026-11-23 (14:02 UTC, weekly check fired): the fifth weekly check under R32,
+git- and text-based by its method (two fork toolchains, the arbiter's installs
+tp2-base and ua3-proto, exist and were not used; no upstream toolchain exists);
+the orchestrator's session was idle 2026-11-17 to 2026-11-23 under an account
+limit, and the check ran one week after the previous one, as scheduled. Upstream
+trunk 0072b2812 (2026-11-22), unchanged at the fetches from 14:03 to 14:30 UTC,
+is 218 commits past the c1e83b0b7 cut (21 since last week's 7a3608bab); a `git
+merge-tree` dry run against trunk a9892d4bb conflicts in 194 files, 73 sources
+and 121 goldens (last week 196 against f54ddc64d; PR 71 takes out two goldens,
+the stop stamp, ARB-3 and ARB-4 none, and this week's upstream adds and removes
+none), PR 53's head and the SAFE mirror each conflict in the same 138 as at
+7a3608bab, and UA-3's plan branch at 0646e5063 in its base's 196; 2166 upstream
+files are touched since the cut, 1251 are fork-modified and 307 are in both, and
+this week upstream touched 559, 120 of them fork-modified (decision-log entry
+"Weekly upstream check 2026-11-23 (R32 direction register)"). The cut HOLDS;
+UA-3 proceeds at 7a3608bab per its plan's D-UA3-1 (rev 1 under review, a
+proposal until signed off), and PR 53 stays held under the stop stamp's ruling.
+Of the window's 21 commits, 13 touch the design, prelude or toolchain paths, all
+advances for the advance after UA-3 (0072b2812's diagnostics model, whose fork
+Note/Context sites D-UA3-11 converts to 7a3608bab's model and the next advance
+converts again; 5c4687471's `ImportIRId::Local`, trunk handle_function.cpp:379's
+`None` to be spelled `Local`; 6814311c7's rename beside SC-1's class-end
+deferral; f81d32706's LLVM roll to c03c4571b1b0, past the arbiter's tip pin
+c744694, so that advance needs a third LLVM build in the container, ARB-6, after
+ARB-5 lands), and 8 are unrelated; no drift, no prelude change. The register:
+H10.8's first weekly re-read as ALIGNED (`IsCallPerformable` byte-identical,
+moved to call.cpp:456-471), H10.1's first as DRIFT for `AddrOfAction` on W-394
+(unchanged but for the AddrOfNonRef emit), W-395's first and T2.1's second, all
+holding. W-355 at the tip: "checked 294 quotes, 9 failed" and "checked 96
+silence checks, 3 failed" over trunk a9892d4bb's tables, every failure
+0072b2812's; 9 quotes MOVED with their text unchanged and re-anchored, H4.5
+expected 9, H10.8 10 and H11.10 14 (merge-rule signals, none fired); after the
+records commit both scripts print "checked 294 quotes, 0 failed" and "checked 96
+silence checks, 0 failed". The V-3a register: (i) to (iii) resolved on trunk;
+(iv), (v) and (vi) HOLD; (vii) ALIGNED holds; the ten section 7 residues, VA-2's
+six, W-396 to W-400 and every other NONE and ALIGNED entry HOLD. Ids: W-400 is
+the highest filed, W-381 to W-393 and W-401 and W-402 reserved; none filed, the
+next free W-403. No build, no probe, no merge, no dispatch; Actions is still
+disabled (the newest run is of 2026-10-08), so nothing is of record. At trunk
+a9892d4bb, which the records commit is cut from, 20 PRs are landed and 1 held.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
